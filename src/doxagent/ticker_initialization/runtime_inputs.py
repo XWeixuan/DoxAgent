@@ -15,14 +15,28 @@ class ActivatedRuntimeInputs:
         control: InitializationRepository,
         events: PublishedEventLibraryReader,
         policies: Document3PolicyRepository,
+        runtime_control=None,
     ) -> None:
         self.control = control
         self.events = events
         self.policies = Document3RuntimeProjectionConsumer(policies)
+        self.runtime_control = runtime_control
 
     def __call__(self, ticker: str) -> RuntimeInputSnapshot | None:
         revision = self.control.active_revision(ticker)
+        state = self.runtime_control.get(ticker) if self.runtime_control else None
+        if state and state.get("initialization_incomplete"):
+            if not state.get("activation_id"):
+                return None
+            revision = self.control.revision(state["activation_id"])
         if revision is None:
+            return None
+        return self.from_revision(ticker, revision)
+
+    def for_admission(self, ticker: str, revision_id: str) -> RuntimeInputSnapshot | None:
+        """Validate a candidate without making it the source for ordinary new Cases."""
+        revision = self.control.active_revision(ticker)
+        if not revision or revision["revision_id"] != revision_id:
             return None
         return self.from_revision(ticker, revision)
 

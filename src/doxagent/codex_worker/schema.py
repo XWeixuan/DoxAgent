@@ -85,6 +85,7 @@ class WorkerLoopEvent(WorkerModel):
 
 class WorkerTurnTelemetry(WorkerModel):
     usage: WorkerTokenUsage = Field(default_factory=WorkerTokenUsage)
+    observed_usage: dict[str, int | None] | None = None
     sdk_duration_ms: int | None = Field(default=None, ge=0)
     worker_wall_time_ms: int | None = Field(default=None, ge=0)
     mcp_call_count: int = Field(default=0, ge=0)
@@ -97,6 +98,8 @@ class WorkerTurnTelemetry(WorkerModel):
 
 
 class WorkerJob(WorkerModel):
+    started_at: datetime | None = None
+    finished_at: datetime | None = None
     job_id: str
     run_id: str
     attempt_id: str

@@ -1,0 +1,138 @@
+{
+  "case_id": "MU-W12-007",
+  "status": "COMPLETED",
+  "started_at": "2026-09-08T18:43:59.843990+08:00",
+  "completed_at": "2026-09-08T18:44:28.488246+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E121",
+        "E122",
+        "E123"
+      ]
+    },
+    "w1_final": {
+      "result": "OLD",
+      "confidence": "normal",
+      "reference_ids": [
+        "E121",
+        "E122"
+      ],
+      "reason": "消息核心事实——联邦法院就四项专利起诉Micron（海外制造内存产品）、ITC启动排除及停止命令程序（涉及Micron、Supermicro、HPE、Lenovo）、以及可能走向许可或和解——均已被E121（F369/F370/F371）和E122（F372/F373）完整覆盖。文章为回顾性解释报道，未出现新的阶段变化、新当事方、新数值或新事实状态。"
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "candidate_policy_ids": []
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "no_policy_candidate_recalled"
+    },
+    "route": {
+      "primary_route": "ARCHIVE",
+      "side_effects": [
+        "archive_message"
+      ],
+      "reason": "w1=OLD/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_487dac4ebd3746d2871f25eeb5bd5eff",
+      "case_id": "case_440100021b774400b10822e937bfa0db",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_3caa7013-31f9-9ed4-b7eb-ed5f74eee585",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13477,
+      "output_tokens": 599,
+      "reasoning_tokens": 577,
+      "cached_input_tokens": 12288,
+      "prefix_fingerprint": "bc31fe43c6ebabd4fc723722115d9464ea7b664f00c01e1f616107c8df6bc804",
+      "latency_ms": 8464,
+      "output": {
+        "event_ids": [
+          "E121",
+          "E122",
+          "E123"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:44:08.342020Z",
+      "started_at": "2026-09-08T10:43:59.878169Z",
+      "finished_at": "2026-09-08T10:44:08.342020Z"
+    },
+    {
+      "turn_id": "turn_bbd74d26b07b41ea8b717530bf236d78",
+      "case_id": "case_440100021b774400b10822e937bfa0db",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_c56a60d1-0efe-96cf-85ce-b92768eef570",
+      "previous_response_id": "resp_3caa7013-31f9-9ed4-b7eb-ed5f74eee585",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 3249,
+      "output_tokens": 880,
+      "reasoning_tokens": 743,
+      "cached_input_tokens": 1024,
+      "prefix_fingerprint": "ad360797d4d007f12d6274aa67aefe286a1dcc6bb7d1145536a704cd9f88f41d",
+      "latency_ms": 15019,
+      "output": {
+        "result": "OLD",
+        "confidence": "normal",
+        "reference_ids": [
+          "E121",
+          "E122"
+        ],
+        "reason": "消息核心事实——联邦法院就四项专利起诉Micron（海外制造内存产品）、ITC启动排除及停止命令程序（涉及Micron、Supermicro、HPE、Lenovo）、以及可能走向许可或和解——均已被E121（F369/F370/F371）和E122（F372/F373）完整覆盖。文章为回顾性解释报道，未出现新的阶段变化、新当事方、新数值或新事实状态。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:44:23.383087Z",
+      "started_at": "2026-09-08T10:44:08.363849Z",
+      "finished_at": "2026-09-08T10:44:23.383087Z"
+    },
+    {
+      "turn_id": "turn_c44ec855200a4aee823fad859efcc22a",
+      "case_id": "case_440100021b774400b10822e937bfa0db",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_abf93dbd-383f-9e13-b0cf-f757e2a72def",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 6571,
+      "output_tokens": 2535,
+      "reasoning_tokens": 2526,
+      "cached_input_tokens": 5120,
+      "prefix_fingerprint": "f2c2dc5406ee6290d30c3915855d61097564d2c6dc1ec3341f57f61c28e3c52b",
+      "latency_ms": 28609,
+      "output": {
+        "candidate_policy_ids": []
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:44:28.488246Z",
+      "started_at": "2026-09-08T10:43:59.879168Z",
+      "finished_at": "2026-09-08T10:44:28.488246Z"
+    }
+  ]
+}

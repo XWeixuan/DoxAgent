@@ -17,10 +17,13 @@ T = TypeVar("T", bound=BaseModel)
 
 
 class RuntimeResponsesError(RuntimeError):
-    def __init__(self, code: str, message: str, *, retryable: bool) -> None:
+    def __init__(
+        self, code: str, message: str, *, retryable: bool, usage: dict[str, Any] | None = None
+    ) -> None:
         super().__init__(message)
         self.code = code
         self.retryable = retryable
+        self.usage = usage or {}
 
 
 @dataclass(frozen=True)
@@ -133,18 +136,29 @@ class BailianRuntimeResponsesClient:
 
         latency_ms = round((perf_counter() - started) * 1000)
         response_id = str(getattr(response, "id", "") or "")
+        observed = getattr(response, "usage", None)
+        receipt = {
+            "response_id": response_id or None,
+            "input_tokens": _usage_int(observed, "input_tokens"),
+            "output_tokens": _usage_int(observed, "output_tokens"),
+            "cached_input_tokens": _usage_int(
+                getattr(observed, "input_tokens_details", None), "cached_tokens"
+            ),
+        }
         text = getattr(response, "output_text", None)
         if not response_id:
             raise RuntimeResponsesError(
                 "missing_response_id",
                 "Bailian Responses result did not include a response id",
                 retryable=True,
+                usage=receipt,
             )
         if not isinstance(text, str) or not text.strip():
             raise RuntimeResponsesError(
                 "empty_structured_output",
                 "Bailian Responses result did not include structured output text",
                 retryable=True,
+                usage=receipt,
             )
         try:
             value = request.output_model.model_validate_json(text)
@@ -153,6 +167,7 @@ class BailianRuntimeResponsesClient:
                 "structured_output_validation_failed",
                 f"Strict structured output validation failed: {_validation_error_summary(exc)}",
                 retryable=True,
+                usage=receipt,
             ) from exc
 
         usage = getattr(response, "usage", None)

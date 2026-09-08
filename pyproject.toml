@@ -14,6 +14,7 @@ dependencies = [
     "agent-framework-core>=1.6,<2",
     "anthropic>=0.71,<1",
     "httpx>=0.28,<1",
+    "jsonschema>=4.23,<5",
     "langsmith>=0.8,<1",
     "openai>=2,<3",
     "pydantic>=2,<3",
@@ -35,6 +36,11 @@ dependencies = [
 
 [project.scripts]
 doxagent-ticker-init = "doxagent.ticker_initialization.cli:main"
+doxagent-v2-delivery = "doxagent.persistent_runtime_v2.delivery_worker:main"
+doxagent-v2-control = "doxagent.v2_control.worker:main"
+doxagent-v2-read = "doxagent.v2_read.cli:main"
+doxagent-v2-api = "doxagent.api_v2.cli:main"
+doxagent-v2-scheduler = "doxagent.runtime_scheduler.v2:main"
 cdecr = "cdecr.cli:main"
 codex-document3 = "doxagent.workflows.codex_document3.cli:main"
 doxagent-crawler-plane = "doxagent.crawler_plane.cli:main"

@@ -1,0 +1,65 @@
+........................................................................ [ 33%]
+........................................................................ [ 67%]
+........................F.........FF.F.F..F...F..F....................   [100%]
+================================== FAILURES ===================================
+______ test_w3_retries_twice_then_persists_direct_trade_delta_and_o3_gap ______
+tests\test_persistent_runtime_w3.py:569: in test_w3_retries_twice_then_persists_direct_trade_delta_and_o3_gap
+    assert case.status is RuntimeCaseStatus.PENDING_W3
+E   AssertionError: assert <RuntimeCaseStatus.ADJUDICATED: 'ADJUDICATED'> is <RuntimeCaseStatus.PENDING_W3: 'PENDING_W3'>
+E    +  where <RuntimeCaseStatus.ADJUDICATED: 'ADJUDICATED'> = RuntimeCase(completed_at=None, time_semantics_version=2, runtime_mode='REALTIME', sweep_id=None, closed_cycle_id=None,...nfo=datetime.timezone.utc), updated_at=datetime.datetime(2026, 9, 7, 12, 34, 18, 132197, tzinfo=datetime.timezone.utc)).status
+E    +  and   <RuntimeCaseStatus.PENDING_W3: 'PENDING_W3'> = RuntimeCaseStatus.PENDING_W3
+___ test_router_matches_frozen_sixteen_row_matrix[NEW-True-False-False-W3] ____
+tests\test_persistent_runtime_v2.py:115: in test_router_matches_frozen_sixteen_row_matrix
+    assert decision.primary_route is RuntimePrimaryRoute(expected)
+E   AssertionError: assert <RuntimePrimaryRoute.ADD_TO_DELTA: 'ADD_TO_DELTA'> is <RuntimePrimaryRoute.W3: 'W3'>
+E    +  where <RuntimePrimaryRoute.ADD_TO_DELTA: 'ADD_TO_DELTA'> = RuntimeRouteDecision(primary_route=<RuntimePrimaryRoute.ADD_TO_DELTA: 'ADD_TO_DELTA'>, side_effects=[<RuntimeSideEffect.EMIT_DELTA: 'emit_delta'>], reason='w1=NEW/low;policy_hit=false;w2=normal').primary_route
+E    +  and   <RuntimePrimaryRoute.W3: 'W3'> = RuntimePrimaryRoute('W3')
+___ test_router_matches_frozen_sixteen_row_matrix[NEW-False-False-False-W3] ___
+tests\test_persistent_runtime_v2.py:115: in test_router_matches_frozen_sixteen_row_matrix
+    assert decision.primary_route is RuntimePrimaryRoute(expected)
+E   AssertionError: assert <RuntimePrimaryRoute.ADD_TO_DELTA: 'ADD_TO_DELTA'> is <RuntimePrimaryRoute.W3: 'W3'>
+E    +  where <RuntimePrimaryRoute.ADD_TO_DELTA: 'ADD_TO_DELTA'> = RuntimeRouteDecision(primary_route=<RuntimePrimaryRoute.ADD_TO_DELTA: 'ADD_TO_DELTA'>, side_effects=[<RuntimeSideEffect.EMIT_DELTA: 'emit_delta'>], reason='w1=NEW/normal;policy_hit=false;w2=normal').primary_route
+E    +  and   <RuntimePrimaryRoute.W3: 'W3'> = RuntimePrimaryRoute('W3')
+____ test_router_matches_frozen_sixteen_row_matrix[OLD-False-True-True-W3] ____
+tests\test_persistent_runtime_v2.py:115: in test_router_matches_frozen_sixteen_row_matrix
+    assert decision.primary_route is RuntimePrimaryRoute(expected)
+E   AssertionError: assert <RuntimePrimaryRoute.ARCHIVE: 'ARCHIVE'> is <RuntimePrimaryRoute.W3: 'W3'>
+E    +  where <RuntimePrimaryRoute.ARCHIVE: 'ARCHIVE'> = RuntimeRouteDecision(primary_route=<RuntimePrimaryRoute.ARCHIVE: 'ARCHIVE'>, side_effects=[<RuntimeSideEffect.ARCHIVE_...: 'archive_message'>, <RuntimeSideEffect.MARK_BADCASE: 'mark_badcase'>], reason='w1=OLD/normal;policy_hit=true;w2=low').primary_route
+E    +  and   <RuntimePrimaryRoute.W3: 'W3'> = RuntimePrimaryRoute('W3')
+___ test_router_matches_frozen_sixteen_row_matrix[OLD-False-False-True-W3] ____
+tests\test_persistent_runtime_v2.py:115: in test_router_matches_frozen_sixteen_row_matrix
+    assert decision.primary_route is RuntimePrimaryRoute(expected)
+E   AssertionError: assert <RuntimePrimaryRoute.ARCHIVE: 'ARCHIVE'> is <RuntimePrimaryRoute.W3: 'W3'>
+E    +  where <RuntimePrimaryRoute.ARCHIVE: 'ARCHIVE'> = RuntimeRouteDecision(primary_route=<RuntimePrimaryRoute.ARCHIVE: 'ARCHIVE'>, side_effects=[<RuntimeSideEffect.ARCHIVE_MESSAGE: 'archive_message'>], reason='w1=OLD/normal;policy_hit=false;w2=low').primary_route
+E    +  and   <RuntimePrimaryRoute.W3: 'W3'> = RuntimePrimaryRoute('W3')
+___ test_router_matches_frozen_sixteen_row_matrix[OLD-True-False-False-W3] ____
+tests\test_persistent_runtime_v2.py:115: in test_router_matches_frozen_sixteen_row_matrix
+    assert decision.primary_route is RuntimePrimaryRoute(expected)
+E   AssertionError: assert <RuntimePrimaryRoute.ADD_TO_DELTA: 'ADD_TO_DELTA'> is <RuntimePrimaryRoute.W3: 'W3'>
+E    +  where <RuntimePrimaryRoute.ADD_TO_DELTA: 'ADD_TO_DELTA'> = RuntimeRouteDecision(primary_route=<RuntimePrimaryRoute.ADD_TO_DELTA: 'ADD_TO_DELTA'>, side_effects=[<RuntimeSideEffect.EMIT_DELTA: 'emit_delta'>], reason='w1=OLD/low;policy_hit=false;w2=normal').primary_route
+E    +  and   <RuntimePrimaryRoute.W3: 'W3'> = RuntimePrimaryRoute('W3')
+___________ test_service_runs_parallel_hot_path_then_w3_owned_delta ___________
+tests\test_persistent_runtime_v2.py:342: in test_service_runs_parallel_hot_path_then_w3_owned_delta
+    assert adjudicated.status == "PENDING_W3"
+E   AssertionError: assert <RuntimeCaseS...'ADJUDICATED'> == 'PENDING_W3'
+E     
+E     - PENDING_W3
+E     + ADJUDICATED
+_______ test_any_policy_is_consumed_once_and_removed_from_next_w2_input _______
+tests\test_persistent_runtime_v2.py:593: in test_any_policy_is_consumed_once_and_removed_from_next_w2_input
+    assert second.route is not None and second.route.primary_route is RuntimePrimaryRoute.W3
+E   AssertionError: assert (RuntimeRouteDecision(primary_route=<RuntimePrimaryRoute.ADD_TO_DELTA: 'ADD_TO_DELTA'>, side_effects=[<RuntimeSideEffect.EMIT_DELTA: 'emit_delta'>], reason='w1=NEW/normal;policy_hit=false;w2=normal') is not None and <RuntimePrimaryRoute.ADD_TO_DELTA: 'ADD_TO_DELTA'> is <RuntimePrimaryRoute.W3: 'W3'>)
+E    +  where RuntimeRouteDecision(primary_route=<RuntimePrimaryRoute.ADD_TO_DELTA: 'ADD_TO_DELTA'>, side_effects=[<RuntimeSideEffect.EMIT_DELTA: 'emit_delta'>], reason='w1=NEW/normal;policy_hit=false;w2=normal') = RuntimeCase(completed_at=None, time_semantics_version=2, runtime_mode='REALTIME', sweep_id=None, closed_cycle_id=None,...nfo=datetime.timezone.utc), updated_at=datetime.datetime(2026, 9, 7, 12, 34, 19, 348239, tzinfo=datetime.timezone.utc)).route
+E    +  and   <RuntimePrimaryRoute.ADD_TO_DELTA: 'ADD_TO_DELTA'> = RuntimeRouteDecision(primary_route=<RuntimePrimaryRoute.ADD_TO_DELTA: 'ADD_TO_DELTA'>, side_effects=[<RuntimeSideEffect.EMIT_DELTA: 'emit_delta'>], reason='w1=NEW/normal;policy_hit=false;w2=normal').primary_route
+E    +    where RuntimeRouteDecision(primary_route=<RuntimePrimaryRoute.ADD_TO_DELTA: 'ADD_TO_DELTA'>, side_effects=[<RuntimeSideEffect.EMIT_DELTA: 'emit_delta'>], reason='w1=NEW/normal;policy_hit=false;w2=normal') = RuntimeCase(completed_at=None, time_semantics_version=2, runtime_mode='REALTIME', sweep_id=None, closed_cycle_id=None,...nfo=datetime.timezone.utc), updated_at=datetime.datetime(2026, 9, 7, 12, 34, 19, 348239, tzinfo=datetime.timezone.utc)).route
+E    +  and   <RuntimePrimaryRoute.W3: 'W3'> = RuntimePrimaryRoute.W3
+=========================== short test summary info ===========================
+FAILED tests/test_persistent_runtime_w3.py::test_w3_retries_twice_then_persists_direct_trade_delta_and_o3_gap
+FAILED tests/test_persistent_runtime_v2.py::test_router_matches_frozen_sixteen_row_matrix[NEW-True-False-False-W3]
+FAILED tests/test_persistent_runtime_v2.py::test_router_matches_frozen_sixteen_row_matrix[NEW-False-False-False-W3]
+FAILED tests/test_persistent_runtime_v2.py::test_router_matches_frozen_sixteen_row_matrix[OLD-False-True-True-W3]
+FAILED tests/test_persistent_runtime_v2.py::test_router_matches_frozen_sixteen_row_matrix[OLD-False-False-True-W3]
+FAILED tests/test_persistent_runtime_v2.py::test_router_matches_frozen_sixteen_row_matrix[OLD-True-False-False-W3]
+FAILED tests/test_persistent_runtime_v2.py::test_service_runs_parallel_hot_path_then_w3_owned_delta
+FAILED tests/test_persistent_runtime_v2.py::test_any_policy_is_consumed_once_and_removed_from_next_w2_input
+8 failed, 206 passed, 3 warnings in 105.33s (0:01:45)

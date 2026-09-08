@@ -1,5 +1,17 @@
 # Trade Executor 开发交付记录
 
+## 2026-09-08 RTH 补验收更新
+
+北京时间21:58–22:00（美东09:58–10:00）使用原隔离验收库和当前TWS做真实补测。
+
+- **新增通过：Paper BUY 与 SELL what-if**。均收到 `PreSubmitted`、非空保证金变动及空 warning；周末 what-if 超时项已补验。它们是参数/保证金诊断，不是实际卖空借券或成交证明。
+- Paper、Live 账户连接、合约与交易时段查询仍可用；Paper 最后同步成功，positions为空。
+- **明确阻挡：API实时行情订阅尚未生效。** Paper错误2186原文指出“所请求的实时市场数据需要为API额外订阅……已选择接收延迟市场数据作为替代”；Live错误10089同样指向额外订阅，目标为 `MU NASDAQ.NMS/TOP/ALL`。
+- 因缺生产策略必需的新鲜bid/ask，没有发出可成交订单，没有启动四个suite，也没有遗留验收持仓。RTH LONG/SHORT entry→Exit、MKT自然回退、Extended及Overnight真实成交仍待验，不标记完整交付。
+- 本轮未发现需要改变确定性策略的代码错误；阻挡是两环境均确认的外部行情权限。需要账户持有人先开通/确认MU的API实时L1权限并启用Paper共享，再继续真实验收。不能用延迟价格、人工价格或放宽freshness规则替代。
+
+本轮证据：`eval/trade_execution/20260908/paper_probe.json`、`live_quote_probe.json`、`paper_short_diagnostic.json`。下文保留09-06原始交付记录；what-if的最新状态以上述更新为准。
+
 日期：2026-09-06。按 `trade_execution_implementation_plan_20260906.md` 完成 E0–E6 的代码、确定性测试、周末可进行的连接/协议验收及操作文档。开市成交验收、实时行情授权和真实 Live 交易能力未标记通过。当前没有生产交易进程，也没有开启 Live 下单。
 
 ## 1. 交付内容

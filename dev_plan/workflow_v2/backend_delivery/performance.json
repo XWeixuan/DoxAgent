@@ -1,0 +1,98 @@
+{
+  "machine": "Windows-10-10.0.26200-SP0",
+  "python": "3.11.14",
+  "scope": "OFFLINE_LOCAL_READS",
+  "measurements": [
+    {
+      "rows_per_kind": 10000,
+      "query": "first_page",
+      "median_ms": 4.275999999663327,
+      "max_ms": 5.345400000805967,
+      "response_bytes": 20700,
+      "business_remote_calls": 0,
+      "full_body_reads": 0
+    },
+    {
+      "rows_per_kind": 10000,
+      "query": "filtered_page",
+      "median_ms": 4.091700000572018,
+      "max_ms": 5.7776000030571595,
+      "response_bytes": 20700,
+      "business_remote_calls": 0,
+      "full_body_reads": 0
+    },
+    {
+      "rows_per_kind": 10000,
+      "query": "all_metric",
+      "median_ms": 3.827099997579353,
+      "max_ms": 5.51659999837284,
+      "response_bytes": 7,
+      "business_remote_calls": 0,
+      "full_body_reads": 0
+    },
+    {
+      "rows_per_kind": 10000,
+      "query": "stream_baseline",
+      "median_ms": 54.87350000112201,
+      "max_ms": 56.019799998466624,
+      "response_bytes": 19643,
+      "business_remote_calls": 0,
+      "full_body_reads": 0
+    },
+    {
+      "rows_per_kind": 100000,
+      "query": "first_page",
+      "median_ms": 4.156999999395339,
+      "max_ms": 4.6187000007194,
+      "response_bytes": 20740,
+      "business_remote_calls": 0,
+      "full_body_reads": 0
+    },
+    {
+      "rows_per_kind": 100000,
+      "query": "filtered_page",
+      "median_ms": 4.216100001940504,
+      "max_ms": 4.622100001142826,
+      "response_bytes": 20740,
+      "business_remote_calls": 0,
+      "full_body_reads": 0
+    },
+    {
+      "rows_per_kind": 100000,
+      "query": "all_metric",
+      "median_ms": 4.219000002194662,
+      "max_ms": 4.987799999071285,
+      "response_bytes": 8,
+      "business_remote_calls": 0,
+      "full_body_reads": 0
+    },
+    {
+      "rows_per_kind": 100000,
+      "query": "stream_baseline",
+      "median_ms": 246.75670000215177,
+      "max_ms": 252.0182999978715,
+      "response_bytes": 19663,
+      "business_remote_calls": 0,
+      "full_body_reads": 0
+    }
+  ],
+  "query_plans": {
+    "10000": [
+      [
+        5,
+        0,
+        61,
+        "SEARCH objects USING INDEX objects_page (kind=? AND ticker=?)"
+      ]
+    ],
+    "100000": [
+      [
+        5,
+        0,
+        61,
+        "SEARCH objects USING INDEX objects_page (kind=? AND ticker=?)"
+      ]
+    ]
+  },
+  "at": "2026-09-07T12:42:35.582721+00:00"
+}

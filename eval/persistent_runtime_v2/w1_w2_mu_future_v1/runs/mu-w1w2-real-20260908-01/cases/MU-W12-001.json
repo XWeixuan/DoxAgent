@@ -1,0 +1,136 @@
+{
+  "case_id": "MU-W12-001",
+  "status": "COMPLETED",
+  "started_at": "2026-09-08T18:43:25.074263+08:00",
+  "completed_at": "2026-09-08T18:44:11.715265+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E14",
+        "E79",
+        "E16"
+      ]
+    },
+    "w1_final": {
+      "result": "OLD",
+      "confidence": "normal",
+      "reference_ids": [
+        "E14"
+      ],
+      "reason": "The message's three core facts—Micron's HBM4 design win with NVIDIA (F86), volume shipments of HBM4 for Vera Rubin earlier this year (F85), and HBM4 sales exceeding $1 billion (F84)—are all already captured as active facts in Event E14. The remainder of the article is contextual background on HBM technology and Vera Rubin architecture, not new factual progress."
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "candidate_policy_ids": []
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "no_policy_candidate_recalled"
+    },
+    "route": {
+      "primary_route": "ARCHIVE",
+      "side_effects": [
+        "archive_message"
+      ],
+      "reason": "w1=OLD/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_adafdf16ba5d43ac96e2039cc21949ee",
+      "case_id": "case_d0f4fc52400e49d581b51a235acc8339",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_d8cebff9-333e-9639-8d48-0ff379a38cee",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13520,
+      "output_tokens": 900,
+      "reasoning_tokens": 881,
+      "cached_input_tokens": 13312,
+      "prefix_fingerprint": "bc31fe43c6ebabd4fc723722115d9464ea7b664f00c01e1f616107c8df6bc804",
+      "latency_ms": 13433,
+      "output": {
+        "event_ids": [
+          "E14",
+          "E79",
+          "E16"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:43:38.632047Z",
+      "started_at": "2026-09-08T10:43:25.199492Z",
+      "finished_at": "2026-09-08T10:43:38.632047Z"
+    },
+    {
+      "turn_id": "turn_ae8add9fec6746629a6afe658ffce3e8",
+      "case_id": "case_d0f4fc52400e49d581b51a235acc8339",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_b4be101b-c05e-91dc-896b-fd1625e54100",
+      "previous_response_id": "resp_d8cebff9-333e-9639-8d48-0ff379a38cee",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 3449,
+      "output_tokens": 543,
+      "reasoning_tokens": 434,
+      "cached_input_tokens": 2048,
+      "prefix_fingerprint": "b83f403a54cf995cbc5cc0e9014a729f0cd14a4df3ab723b178c87ef4154e9be",
+      "latency_ms": 7461,
+      "output": {
+        "result": "OLD",
+        "confidence": "normal",
+        "reference_ids": [
+          "E14"
+        ],
+        "reason": "The message's three core facts—Micron's HBM4 design win with NVIDIA (F86), volume shipments of HBM4 for Vera Rubin earlier this year (F85), and HBM4 sales exceeding $1 billion (F84)—are all already captured as active facts in Event E14. The remainder of the article is contextual background on HBM technology and Vera Rubin architecture, not new factual progress."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:43:46.107989Z",
+      "started_at": "2026-09-08T10:43:38.647168Z",
+      "finished_at": "2026-09-08T10:43:46.107989Z"
+    },
+    {
+      "turn_id": "turn_905550e65f5a4ac68aac75c96f8d5298",
+      "case_id": "case_d0f4fc52400e49d581b51a235acc8339",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_a5d2aca5-edca-9bcf-8d37-f4327aad9259",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 6614,
+      "output_tokens": 3977,
+      "reasoning_tokens": 3968,
+      "cached_input_tokens": 6144,
+      "prefix_fingerprint": "f2c2dc5406ee6290d30c3915855d61097564d2c6dc1ec3341f57f61c28e3c52b",
+      "latency_ms": 46515,
+      "output": {
+        "candidate_policy_ids": []
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:44:11.714591Z",
+      "started_at": "2026-09-08T10:43:25.200492Z",
+      "finished_at": "2026-09-08T10:44:11.714591Z"
+    }
+  ]
+}

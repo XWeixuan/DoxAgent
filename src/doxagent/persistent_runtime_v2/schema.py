@@ -168,6 +168,8 @@ class SourceMessageEnvelope(RuntimeV2Model):
     message_bus_event_time: datetime
     stream_item_id: str = Field(min_length=1)
     member_count: int = Field(ge=1)
+    member_message_ids: list[str] = Field(default_factory=list)
+    eligibility_at: datetime | None = None
     snapshot: SourceMessageSnapshot
 
     @classmethod
@@ -185,6 +187,10 @@ class SourceMessageEnvelope(RuntimeV2Model):
             message_bus_event_time=value.item.published_at,
             stream_item_id=value.item.stream_item_id,
             member_count=value.item.member_count,
+            member_message_ids=[member.standard_message_id for member in value.members],
+            eligibility_at=min(
+                (member.normalized_at or value.item.published_at for member in value.members)
+            ),
             snapshot=SourceMessageSnapshot(
                 ticker=value.item.ticker,
                 title=latest.title if not is_buffered else None,
@@ -272,6 +278,19 @@ class W1FactExtractionResult(RuntimeV2Model):
     candidates: list[RuntimeFactCandidate] = Field(min_length=1, max_length=12)
 
 
+class W2Round1RecallResult(RuntimeV2Model):
+    """Candidate Policies recalled by W2 R1; this is never a hit verdict."""
+
+    candidate_policy_ids: list[str] = Field(default_factory=list, max_length=3)
+
+    @field_validator("candidate_policy_ids", mode="before")
+    @classmethod
+    def unique_candidate_policy_ids(cls, value: Any) -> Any:
+        if not isinstance(value, list):
+            return value
+        return list(dict.fromkeys(item.strip() for item in value if item.strip()))
+
+
 class W2MatchedConditions(RuntimeV2Model):
     policy_id: str = Field(min_length=1)
     condition_ids: list[str] = Field(default_factory=list)
@@ -307,6 +326,8 @@ class W2PolicyResult(RuntimeV2Model):
 
 
 class ProvisionalFactDetail(RuntimeV2Model):
+    case_id: str | None = None
+    originating_node: Literal["W1_R3", "W3"] | None = None
     provisional_event_id: str = Field(pattern=r"^E[1-9][0-9]*$")
     ticker: str
     trading_date: date
@@ -360,6 +381,8 @@ class RuntimeModelTurn(RuntimeV2Model):
     error_code: str | None = None
     error_message: str | None = None
     created_at: datetime = Field(default_factory=utc_now)
+    started_at: datetime | None = None
+    finished_at: datetime | None = None
 
 
 class RuntimeEffect(RuntimeV2Model):
@@ -379,6 +402,7 @@ class RuntimeEffect(RuntimeV2Model):
 
 
 class RuntimeCase(RuntimeV2Model):
+    completed_at: datetime | None = None
     time_semantics_version: int = 1
     runtime_mode: Literal["REALTIME", "CLOSED"] = "REALTIME"
     sweep_id: str | None = None
@@ -397,7 +421,7 @@ class RuntimeCase(RuntimeV2Model):
     w1_round1: W1Round1Result | None = None
     w1_final: W1NoveltyResult | None = None
     w1_extraction: W1FactExtractionResult | None = None
-    w2_round1: W2PolicyResult | None = None
+    w2_round1: W2Round1RecallResult | None = None
     w2_final: W2PolicyResult | None = None
     route: RuntimeRouteDecision | None = None
     resolved_route: RuntimeRouteDecision | None = None
@@ -407,6 +431,27 @@ class RuntimeCase(RuntimeV2Model):
     error_message: str | None = None
     created_at: datetime = Field(default_factory=utc_now)
     updated_at: datetime = Field(default_factory=utc_now)
+
+    @model_validator(mode="before")
+    @classmethod
+    def migrate_legacy_w2_round1(cls, value: Any) -> Any:
+        """Read legacy Case summaries while turns retain their original R1 output."""
+
+        if not isinstance(value, dict):
+            return value
+        payload = dict(value)
+        round1 = payload.get("w2_round1")
+        if isinstance(round1, W2PolicyResult):
+            payload["w2_round1"] = {
+                "candidate_policy_ids": round1.policy_ids[:3],
+            }
+        elif isinstance(round1, dict) and "candidate_policy_ids" not in round1:
+            policy_ids = round1.get("policy_ids")
+            if isinstance(policy_ids, list):
+                payload["w2_round1"] = {
+                    "candidate_policy_ids": policy_ids[:3],
+                }
+        return payload
 
     @property
     def ticker(self) -> str:

@@ -41,6 +41,8 @@ Condition fulfillment
 ≠ guaranteed stock-price reaction
 ```
 
+Direct Trading Sufficiency 判断的是“这项新信息是否已经足以改变 expectation”，而不是“这项 expectation 是否已经被经营结果证明”。如果事件到 ticker 的 transmission 已由 D2 与 O3 research 建立，不能仅为了增加确定性继续要求目标公司订单、shipment、收入、利润或份额兑现。
+
 “交易充分”只表示足以支持 Policy 预先规定的方向性响应标准，不表示 O3 执行订单、决定仓位或保证市场反应。
 
 ## 4. Activation Condition 与 OR 语义
@@ -66,6 +68,8 @@ same principal expectation revision
 只有一个独立充分 occurrence 时，Policy 只有一个 Condition。存在多个各自独立充分、但代表同一次 principal revision 和一次决策边界的替代 occurrences 时，才形成多条件 Policy。
 
 若 A、B 单独均不充分，但 `A + B` 共同构成一个自然完整、现实中可由一条消息或一个可判断状态确认的充分 occurrence，则将整体写成一个复合 Condition。A、B 是该 occurrence 的必要属性，而不是两个 OR Conditions。
+
+Natural composite 中的多个属性应共同定义同一次现实动作、决定、合同、规则、交易或生产状态。仅处于同一因果链并不足以构成一个 occurrence。客户决定、供应商订单、目标公司份额、shipment 和利润等由不同主体或后续阶段产生的事实，不因经济相关就自动属于同一个 Condition。
 
 ## 5. Occurrence 与 supporting information
 

@@ -185,7 +185,8 @@ def _structured_result_from_text(
         "chat_json_schema",
         "responses_json_object",
         "responses_json_schema",
-    ] | None = None,
+    ]
+    | None = None,
     output_mode: Literal["json_object", "json_schema"] | None = None,
     effective_reasoning_effort: Literal["none", "low", "high", "max"] | None = None,
     provider_key_fingerprint: str | None = None,
@@ -579,7 +580,12 @@ class DashScopeEmbeddingClient:
                 continue
             try:
                 last_attempted_key = key
-                response = client.embeddings.create(
+                from cdecr.usage_capture import call
+
+                response = call(
+                    client.embeddings.create,
+                    _usage_provider="bailian",
+                    _usage_node="EMBEDDING",
                     model=self.model,
                     input=values,
                     dimensions=self.dimensions,
@@ -694,9 +700,7 @@ class DashScopeStructuredModelClient:
 
     def _key_available(self, key: str) -> bool:
         return (
-            not self._auto_quarantine_enabled
-            or key == "injected"
-            or self._key_health.healthy(key)
+            not self._auto_quarantine_enabled or key == "injected" or self._key_health.healthy(key)
         )
 
     def _record_key_success(self, key: str) -> None:
@@ -730,16 +734,26 @@ class DashScopeStructuredModelClient:
                     else self.reasoning_effort
                 )
                 if effective_strict or self.structured_transport == "chat":
-                    provider_response = await client.chat.completions.create(
+                    from cdecr.usage_capture import acall
+
+                    provider_response = await acall(
+                        client.chat.completions.create,
+                        _usage_provider="bailian",
+                        _usage_node=request.schema_name,
                         **_structured_chat_kwargs(
                             model=self.model,
                             request=request,
                             strict=effective_strict,
                             reasoning_effort=reasoning_effort,
-                        )
+                        ),
                     )
                 else:
-                    provider_response = await client.responses.create(
+                    from cdecr.usage_capture import acall
+
+                    provider_response = await acall(
+                        client.responses.create,
+                        _usage_provider="bailian",
+                        _usage_node=request.schema_name,
                         **_responses_kwargs(
                             model=self.model,
                             request=ResponsesModelRequest(
@@ -756,7 +770,7 @@ class DashScopeStructuredModelClient:
                                 metadata=request.metadata,
                             ),
                             session_cache_header=True,
-                        )
+                        ),
                     )
                 self._record_key_success(key)
                 selected_key = key
@@ -806,9 +820,7 @@ class DashScopeStructuredModelClient:
             ),
             output_mode="json_schema" if effective_strict else "json_object",
             effective_reasoning_effort=(
-                reasoning_effort
-                if effective_strict or not used_chat
-                else "none"
+                reasoning_effort if effective_strict or not used_chat else "none"
             ),
             provider_key_fingerprint=_selected_key_fingerprint(selected_key),
         )
@@ -828,16 +840,26 @@ class DashScopeStructuredModelClient:
             try:
                 last_attempted_key = key
                 if request.output_mode == "json_schema" or request.strict:
-                    provider_response = client.responses.create(
-                        **_responses_json_schema_kwargs(model=self.model, request=request)
+                    from cdecr.usage_capture import call
+
+                    provider_response = call(
+                        client.responses.create,
+                        _usage_provider="bailian",
+                        _usage_node=request.schema_name,
+                        **_responses_json_schema_kwargs(model=self.model, request=request),
                     )
                 else:
-                    provider_response = client.responses.create(
+                    from cdecr.usage_capture import call
+
+                    provider_response = call(
+                        client.responses.create,
+                        _usage_provider="bailian",
+                        _usage_node=request.schema_name,
                         **_responses_kwargs(
                             model=self.model,
                             request=request,
                             session_cache_header=True,
-                        )
+                        ),
                     )
                 self._record_key_success(key)
                 selected_key = key
@@ -910,7 +932,12 @@ class DashScopeStructuredModelClient:
             try:
                 last_attempted_key = key
                 if not effective_strict and self.structured_transport == "responses":
-                    provider_response = client.responses.create(
+                    from cdecr.usage_capture import call
+
+                    provider_response = call(
+                        client.responses.create,
+                        _usage_provider="bailian",
+                        _usage_node=request.schema_name,
                         **_responses_kwargs(
                             model=self.model,
                             request=ResponsesModelRequest(
@@ -930,10 +957,15 @@ class DashScopeStructuredModelClient:
                                 metadata=request.metadata,
                             ),
                             session_cache_header=True,
-                        )
+                        ),
                     )
                 else:
-                    provider_response = client.chat.completions.create(
+                    from cdecr.usage_capture import call
+
+                    provider_response = call(
+                        client.chat.completions.create,
+                        _usage_provider="bailian",
+                        _usage_node=request.schema_name,
                         **_structured_chat_kwargs(
                             model=self.model,
                             request=request,
@@ -943,7 +975,7 @@ class DashScopeStructuredModelClient:
                                 if request.reasoning_effort != "none"
                                 else self.reasoning_effort
                             ),
-                        )
+                        ),
                     )
                 self._record_key_success(key)
                 selected_key = key
@@ -1001,9 +1033,7 @@ class DashScopeStructuredModelClient:
             ),
             output_mode="json_schema" if effective_strict else "json_object",
             effective_reasoning_effort=(
-                effective_reasoning
-                if effective_strict or not used_chat
-                else "none"
+                effective_reasoning if effective_strict or not used_chat else "none"
             ),
             provider_key_fingerprint=_selected_key_fingerprint(selected_key),
         )
@@ -1157,7 +1187,14 @@ class DeepSeekStructuredModelClient:
             )
             kwargs["response_format"] = {"type": "json_object"}
         try:
-            response = await self._async_client.chat.completions.create(**kwargs)
+            from cdecr.usage_capture import acall
+
+            response = await acall(
+                self._async_client.chat.completions.create,
+                _usage_provider="deepseek",
+                _usage_node=request.schema_name,
+                **kwargs,
+            )
         except Exception as exc:
             raise _safe_model_error(exc, self.tier, started_at=started) from exc
         message = response.choices[0].message
@@ -1239,7 +1276,14 @@ class DeepSeekStructuredModelClient:
             )
             kwargs["response_format"] = {"type": "json_object"}
         try:
-            response = self._client.chat.completions.create(**kwargs)
+            from cdecr.usage_capture import call
+
+            response = call(
+                self._client.chat.completions.create,
+                _usage_provider="deepseek",
+                _usage_node=request.schema_name,
+                **kwargs,
+            )
         except Exception as exc:
             raise _safe_model_error(exc, self.tier, started_at=started) from exc
 
@@ -1358,7 +1402,14 @@ class DeepSeekStructuredModelClient:
         else:
             kwargs["response_format"] = {"type": "json_object"}
         try:
-            response = self._client.chat.completions.create(**kwargs)
+            from cdecr.usage_capture import call
+
+            response = call(
+                self._client.chat.completions.create,
+                _usage_provider="deepseek",
+                _usage_node=request.schema_name,
+                **kwargs,
+            )
         except Exception as exc:
             raise _safe_model_error(exc, self.tier, started_at=started) from exc
         message = response.choices[0].message

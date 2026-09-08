@@ -1,0 +1,396 @@
+{
+  "case_id": "MU-W12-022",
+  "status": "COMPLETED",
+  "started_at": "2026-09-08T18:46:40.014252+08:00",
+  "completed_at": "2026-09-08T18:49:06.841212+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E117",
+        "E31",
+        "E111",
+        "E110",
+        "E11"
+      ]
+    },
+    "w1_final": {
+      "result": "NEW",
+      "confidence": "normal",
+      "reference_ids": [],
+      "reason": "The message's core facts—a Chinese National Public Procurement Administration issuing Notice No. 18 of 2027 mandating eligibility review for memory components in designated data-infrastructure projects, and implementation reports identifying cancellations of pending Micron memory-component releases moved to alternative approved supply—are not represented in any loaded Event. E117 covers U.S. policy opposing Apple sourcing from CXMT/YMTC and export controls on technology transfers to CXMT; it is a different government, different mechanism, and opposite sourcing direction. No other loaded Event addresses Chinese procurement eligibility reviews or Micron-specific cancellation in data-infrastructure projects."
+    },
+    "w1_r3": {
+      "candidates": [
+        {
+          "proposition": "The National Public Procurement Administration issued Notice No. 18 of 2027 mandating procurement eligibility review for memory components used in designated data-infrastructure projects, effective May 21, 2027.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "Effective May 21, 2027",
+          "occurrence_date": null,
+          "entities": [
+            "National Public Procurement Administration"
+          ]
+        },
+        {
+          "proposition": "Purchasing entities for designated data-infrastructure projects must conduct an eligibility review before placing, renewing, or releasing purchase orders for high-reliability memory modules, solid-state storage components, and integrated memory assemblies listed in Annex III; items failing the review shall not receive a new purchase release.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "Effective May 21, 2027",
+          "occurrence_date": null,
+          "entities": [
+            "National Public Procurement Administration"
+          ]
+        },
+        {
+          "proposition": "Project operators must complete a review of open, undelivered procurement records within ten working days of the notice's effective date, recording cancellation or substitution decisions for pending releases that fail eligibility.",
+          "assertion_state": "SCHEDULED",
+          "subject_time": "Within ten working days of May 21, 2027",
+          "occurrence_date": null,
+          "entities": [
+            "National Public Procurement Administration"
+          ]
+        },
+        {
+          "proposition": "Implementation reports received by the Administration identify cancellations of pending Micron memory-component releases associated with designated data-infrastructure projects and the movement of corresponding requirements to alternative approved supply arrangements.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "National Public Procurement Administration",
+            "Micron Technology"
+          ]
+        },
+        {
+          "proposition": "The implementation reports do not state a common product code, a common customer name, or a common reason across the individual Micron cancellation entries.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "National Public Procurement Administration",
+            "Micron Technology"
+          ]
+        },
+        {
+          "proposition": "Notice No. 18 of 2027 does not direct project operators to halt operating systems or remove already-installed equipment.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "Effective May 21, 2027",
+          "occurrence_date": null,
+          "entities": [
+            "National Public Procurement Administration"
+          ]
+        },
+        {
+          "proposition": "Annex III defines 'designated data-infrastructure project' to include public-cloud data-service projects together with 'other corresponding infrastructure uses,' containing several project formulations not reproduced in the earlier public summary of the notice.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "National Public Procurement Administration"
+          ]
+        },
+        {
+          "proposition": "Purchasing entities shall not infer a supplier's eligibility from past delivery to a different project class; a prior delivery record may be considered only alongside project-specific review materials required by Annex III.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "Effective May 21, 2027",
+          "occurrence_date": null,
+          "entities": [
+            "National Public Procurement Administration"
+          ]
+        }
+      ]
+    },
+    "w2_r1": {
+      "candidate_policy_ids": [
+        "pol_e28a1b1e8eedc9bf53f5"
+      ]
+    },
+    "w2_final": {
+      "policy_ids": [
+        "pol_e28a1b1e8eedc9bf53f5"
+      ],
+      "matched_condition_ids": [
+        {
+          "policy_id": "pol_e28a1b1e8eedc9bf53f5",
+          "condition_ids": [
+            "C1"
+          ]
+        }
+      ],
+      "confidence": "normal",
+      "reason": "Notice No. 18 of 2027 is a newly issued rule effective May 21, 2027, establishing a procurement eligibility review for designated data-infrastructure projects covering high-reliability memory modules, solid-state storage, and integrated memory assemblies. Point Fourth explicitly states Annex III includes 'several project formulations not reproduced in the earlier public summary,' and the scope extends to public-cloud data-service projects and 'other corresponding infrastructure uses'—a customer/product range beyond the prior CAC-restricted set. Concrete Micron consequences are confirmed in Point Third: pending Micron memory-component releases cancelled and requirements moved to alternative supply. This satisfies C1's requirement of new scope, effectiveness, and identifiable order-cancellation/supply-transfer outcomes."
+    },
+    "route": {
+      "primary_route": "TRADE",
+      "side_effects": [
+        "create_trade_record",
+        "emit_delta"
+      ],
+      "reason": "w1=NEW/normal;policy_hit=true;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_6213e57730ee4d88b9db6f5cb57564b7",
+      "case_id": "case_7f28c4aed43e498db17ceaf6f9309c4d",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_e5fc3822-6307-9750-9246-3a82aa7ff744",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 6613,
+      "output_tokens": 1771,
+      "reasoning_tokens": 1744,
+      "cached_input_tokens": 5120,
+      "prefix_fingerprint": "f2c2dc5406ee6290d30c3915855d61097564d2c6dc1ec3341f57f61c28e3c52b",
+      "latency_ms": 22356,
+      "output": {
+        "candidate_policy_ids": [
+          "pol_e28a1b1e8eedc9bf53f5"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:47:02.436689Z",
+      "started_at": "2026-09-08T10:46:40.081408Z",
+      "finished_at": "2026-09-08T10:47:02.436689Z"
+    },
+    {
+      "turn_id": "turn_0c4b80fca4af462bbe63bcb100f74a7e",
+      "case_id": "case_7f28c4aed43e498db17ceaf6f9309c4d",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_d4f29601-73c0-9514-bd5a-c1aca8d23c44",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13519,
+      "output_tokens": 2002,
+      "reasoning_tokens": 1972,
+      "cached_input_tokens": 12288,
+      "prefix_fingerprint": "bc31fe43c6ebabd4fc723722115d9464ea7b664f00c01e1f616107c8df6bc804",
+      "latency_ms": 23796,
+      "output": {
+        "event_ids": [
+          "E117",
+          "E31",
+          "E111",
+          "E110",
+          "E11"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:47:03.875137Z",
+      "started_at": "2026-09-08T10:46:40.078765Z",
+      "finished_at": "2026-09-08T10:47:03.875137Z"
+    },
+    {
+      "turn_id": "turn_c91ef570094d4d2da2522c2993bc6d09",
+      "case_id": "case_7f28c4aed43e498db17ceaf6f9309c4d",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_f5cc963b-18d7-9074-8f26-4309d508ce35",
+      "previous_response_id": "resp_d4f29601-73c0-9514-bd5a-c1aca8d23c44",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 3603,
+      "output_tokens": 1040,
+      "reasoning_tokens": 895,
+      "cached_input_tokens": 1024,
+      "prefix_fingerprint": "27224227496e350a0a2ec5bafba7165e9fa86db320b6ea0c821876b162f70014",
+      "latency_ms": 16464,
+      "output": {
+        "result": "NEW",
+        "confidence": "normal",
+        "reference_ids": [],
+        "reason": "The message's core facts—a Chinese National Public Procurement Administration issuing Notice No. 18 of 2027 mandating eligibility review for memory components in designated data-infrastructure projects, and implementation reports identifying cancellations of pending Micron memory-component releases moved to alternative approved supply—are not represented in any loaded Event. E117 covers U.S. policy opposing Apple sourcing from CXMT/YMTC and export controls on technology transfers to CXMT; it is a different government, different mechanism, and opposite sourcing direction. No other loaded Event addresses Chinese procurement eligibility reviews or Micron-specific cancellation in data-infrastructure projects."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:47:20.373200Z",
+      "started_at": "2026-09-08T10:47:03.908356Z",
+      "finished_at": "2026-09-08T10:47:20.373200Z"
+    },
+    {
+      "turn_id": "turn_0e487a7df585489e95fcf8f0d86d8512",
+      "case_id": "case_7f28c4aed43e498db17ceaf6f9309c4d",
+      "lane": "W2",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "PENDING_RETRY",
+      "response_id": "resp_2b2af660-9c26-9a2a-99c5-225f9f434b69",
+      "previous_response_id": "resp_e5fc3822-6307-9750-9246-3a82aa7ff744",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 2724,
+      "output_tokens": 4307,
+      "reasoning_tokens": null,
+      "cached_input_tokens": 1664,
+      "prefix_fingerprint": null,
+      "latency_ms": 53682,
+      "output": null,
+      "error_code": "structured_output_validation_failed",
+      "error_message": "Strict structured output validation failed: ValidationError [{\"loc\":\"\",\"type\":\"json_invalid\",\"msg\":\"Invalid JSON: expected `,` or `}` at line 1 column 308\"}]",
+      "created_at": "2026-09-08T10:47:56.117841Z",
+      "started_at": "2026-09-08T10:47:02.436689Z",
+      "finished_at": "2026-09-08T10:47:56.117841Z"
+    },
+    {
+      "turn_id": "turn_62dec6be6139430f987a9e9d67e1318d",
+      "case_id": "case_7f28c4aed43e498db17ceaf6f9309c4d",
+      "lane": "W2",
+      "round_name": "R2",
+      "attempt_number": 2,
+      "status": "OK",
+      "response_id": "resp_666cb371-17d0-9074-92d4-f8fe064c2f51",
+      "previous_response_id": "resp_e5fc3822-6307-9750-9246-3a82aa7ff744",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 2724,
+      "output_tokens": 2371,
+      "reasoning_tokens": 2151,
+      "cached_input_tokens": 2048,
+      "prefix_fingerprint": "55c7511142cbc2b92675a73bc0543e4e6539aa2377aad8f1ca21750f7546d424",
+      "latency_ms": 30005,
+      "output": {
+        "policy_ids": [
+          "pol_e28a1b1e8eedc9bf53f5"
+        ],
+        "matched_condition_ids": [
+          {
+            "policy_id": "pol_e28a1b1e8eedc9bf53f5",
+            "condition_ids": [
+              "C1"
+            ]
+          }
+        ],
+        "confidence": "normal",
+        "reason": "Notice No. 18 of 2027 is a newly issued rule effective May 21, 2027, establishing a procurement eligibility review for designated data-infrastructure projects covering high-reliability memory modules, solid-state storage, and integrated memory assemblies. Point Fourth explicitly states Annex III includes 'several project formulations not reproduced in the earlier public summary,' and the scope extends to public-cloud data-service projects and 'other corresponding infrastructure uses'—a customer/product range beyond the prior CAC-restricted set. Concrete Micron consequences are confirmed in Point Third: pending Micron memory-component releases cancelled and requirements moved to alternative supply. This satisfies C1's requirement of new scope, effectiveness, and identifiable order-cancellation/supply-transfer outcomes."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:48:31.124454Z",
+      "started_at": "2026-09-08T10:48:01.119282Z",
+      "finished_at": "2026-09-08T10:48:31.124454Z"
+    },
+    {
+      "turn_id": "turn_b30ef9994a3746daaccf1343a4560400",
+      "case_id": "case_7f28c4aed43e498db17ceaf6f9309c4d",
+      "lane": "W1",
+      "round_name": "R3",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_87645a27-9b2a-94b2-8d69-3cb87de7cf3d",
+      "previous_response_id": "resp_f5cc963b-18d7-9074-8f26-4309d508ce35",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 2540,
+      "output_tokens": 3107,
+      "reasoning_tokens": 2484,
+      "cached_input_tokens": 1024,
+      "prefix_fingerprint": "c4f4d45158eb9291336b305d4f6b700eb8edc2a6243205099bd508b7b961660c",
+      "latency_ms": 35692,
+      "output": {
+        "candidates": [
+          {
+            "proposition": "The National Public Procurement Administration issued Notice No. 18 of 2027 mandating procurement eligibility review for memory components used in designated data-infrastructure projects, effective May 21, 2027.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "Effective May 21, 2027",
+            "occurrence_date": null,
+            "entities": [
+              "National Public Procurement Administration"
+            ]
+          },
+          {
+            "proposition": "Purchasing entities for designated data-infrastructure projects must conduct an eligibility review before placing, renewing, or releasing purchase orders for high-reliability memory modules, solid-state storage components, and integrated memory assemblies listed in Annex III; items failing the review shall not receive a new purchase release.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "Effective May 21, 2027",
+            "occurrence_date": null,
+            "entities": [
+              "National Public Procurement Administration"
+            ]
+          },
+          {
+            "proposition": "Project operators must complete a review of open, undelivered procurement records within ten working days of the notice's effective date, recording cancellation or substitution decisions for pending releases that fail eligibility.",
+            "assertion_state": "SCHEDULED",
+            "subject_time": "Within ten working days of May 21, 2027",
+            "occurrence_date": null,
+            "entities": [
+              "National Public Procurement Administration"
+            ]
+          },
+          {
+            "proposition": "Implementation reports received by the Administration identify cancellations of pending Micron memory-component releases associated with designated data-infrastructure projects and the movement of corresponding requirements to alternative approved supply arrangements.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "National Public Procurement Administration",
+              "Micron Technology"
+            ]
+          },
+          {
+            "proposition": "The implementation reports do not state a common product code, a common customer name, or a common reason across the individual Micron cancellation entries.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "National Public Procurement Administration",
+              "Micron Technology"
+            ]
+          },
+          {
+            "proposition": "Notice No. 18 of 2027 does not direct project operators to halt operating systems or remove already-installed equipment.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "Effective May 21, 2027",
+            "occurrence_date": null,
+            "entities": [
+              "National Public Procurement Administration"
+            ]
+          },
+          {
+            "proposition": "Annex III defines 'designated data-infrastructure project' to include public-cloud data-service projects together with 'other corresponding infrastructure uses,' containing several project formulations not reproduced in the earlier public summary of the notice.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "National Public Procurement Administration"
+            ]
+          },
+          {
+            "proposition": "Purchasing entities shall not infer a supplier's eligibility from past delivery to a different project class; a prior delivery record may be considered only alongside project-specific review materials required by Annex III.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "Effective May 21, 2027",
+            "occurrence_date": null,
+            "entities": [
+              "National Public Procurement Administration"
+            ]
+          }
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:49:06.818219Z",
+      "started_at": "2026-09-08T10:48:31.125984Z",
+      "finished_at": "2026-09-08T10:49:06.818219Z"
+    }
+  ]
+}

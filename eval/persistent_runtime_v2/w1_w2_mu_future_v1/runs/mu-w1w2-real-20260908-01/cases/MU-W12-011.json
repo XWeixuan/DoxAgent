@@ -1,0 +1,288 @@
+{
+  "case_id": "MU-W12-011",
+  "status": "COMPLETED",
+  "started_at": "2026-09-08T18:45:21.959611+08:00",
+  "completed_at": "2026-09-08T18:46:07.391547+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E8",
+        "E7",
+        "E24"
+      ]
+    },
+    "w1_final": {
+      "result": "NEW",
+      "confidence": "normal",
+      "reference_ids": [
+        "E8"
+      ],
+      "reason": "Known facts (E8/F67) only establish that Micron is 'developing a major facility in New York' as an ongoing state. The current message adds a concrete milestone not covered: the final local construction permit was issued and a physical groundbreaking ceremony occurred at the Clay site, transitioning the project into an active construction phase. This is a stage change beyond the prior 'ongoing development' fact."
+    },
+    "w1_r3": {
+      "candidates": [
+        {
+          "proposition": "Micron Technology received its final local construction permit from the Town of Clay for the planned memory-fabrication site in Clay, New York.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": "2026-09-07",
+          "entities": [
+            "Micron Technology",
+            "Town of Clay",
+            "Clay, New York"
+          ]
+        },
+        {
+          "proposition": "Micron held a groundbreaking ceremony at the Clay, New York memory-fabrication site, marking the first visible construction milestone for the project after months of site planning and local review.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": "2026-09-07",
+          "entities": [
+            "Micron Technology",
+            "Clay, New York"
+          ]
+        },
+        {
+          "proposition": "The approved local permit covers the initial construction package, including grading, stormwater controls, roads, site-security work, and foundations for the first fab campus.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": "2026-09-07",
+          "entities": [
+            "Town of Clay",
+            "Micron Technology"
+          ]
+        },
+        {
+          "proposition": "Crews had begun preparing access roads and utility corridors at the Clay site in advance of the groundbreaking ceremony.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "Micron Technology",
+            "Clay, New York"
+          ]
+        },
+        {
+          "proposition": "No public road closures were announced with the Monday groundbreaking action; temporary traffic changes are expected once grading expands.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": "2026-09-07",
+          "entities": [
+            "Town of Clay",
+            "Clay, New York"
+          ]
+        },
+        {
+          "proposition": "Micron declined to discuss later operating milestones and stated construction updates would be released as individual construction packages advance through approval.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": "2026-09-07",
+          "entities": [
+            "Micron Technology"
+          ]
+        }
+      ]
+    },
+    "w2_r1": {
+      "candidate_policy_ids": []
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "no_policy_candidate_recalled"
+    },
+    "route": {
+      "primary_route": "ADD_TO_DELTA",
+      "side_effects": [
+        "emit_delta"
+      ],
+      "reason": "w1=NEW/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_d5b3843f96244be59bbc318e488413f7",
+      "case_id": "case_ac1d2490772c43249f1ab91448b0be0c",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_4f9f15c2-3ed9-92ae-bed8-a31e7298bed4",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13427,
+      "output_tokens": 1083,
+      "reasoning_tokens": 1066,
+      "cached_input_tokens": 12288,
+      "prefix_fingerprint": "bc31fe43c6ebabd4fc723722115d9464ea7b664f00c01e1f616107c8df6bc804",
+      "latency_ms": 14416,
+      "output": {
+        "event_ids": [
+          "E8",
+          "E7",
+          "E24"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:45:36.407144Z",
+      "started_at": "2026-09-08T10:45:21.990614Z",
+      "finished_at": "2026-09-08T10:45:36.407144Z"
+    },
+    {
+      "turn_id": "turn_e10f401fc0524b5db9a92ff6ce5fc210",
+      "case_id": "case_ac1d2490772c43249f1ab91448b0be0c",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_79d81e89-b25b-9ebc-b887-b47dcb4c9188",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 6521,
+      "output_tokens": 2243,
+      "reasoning_tokens": 2234,
+      "cached_input_tokens": 5120,
+      "prefix_fingerprint": "f2c2dc5406ee6290d30c3915855d61097564d2c6dc1ec3341f57f61c28e3c52b",
+      "latency_ms": 23093,
+      "output": {
+        "candidate_policy_ids": []
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:45:45.085093Z",
+      "started_at": "2026-09-08T10:45:21.991606Z",
+      "finished_at": "2026-09-08T10:45:45.085093Z"
+    },
+    {
+      "turn_id": "turn_e3be80752e4d4fcbb55b480785a8f6bc",
+      "case_id": "case_ac1d2490772c43249f1ab91448b0be0c",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_05f98d44-4b96-950a-b5a5-c283642344fd",
+      "previous_response_id": "resp_4f9f15c2-3ed9-92ae-bed8-a31e7298bed4",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 3092,
+      "output_tokens": 970,
+      "reasoning_tokens": 868,
+      "cached_input_tokens": 2048,
+      "prefix_fingerprint": "78d4ef4b54bec995f69dcfdbb1a869fa45ffcb515c52b0970f8b3932fc16017a",
+      "latency_ms": 12737,
+      "output": {
+        "result": "NEW",
+        "confidence": "normal",
+        "reference_ids": [
+          "E8"
+        ],
+        "reason": "Known facts (E8/F67) only establish that Micron is 'developing a major facility in New York' as an ongoing state. The current message adds a concrete milestone not covered: the final local construction permit was issued and a physical groundbreaking ceremony occurred at the Clay site, transitioning the project into an active construction phase. This is a stage change beyond the prior 'ongoing development' fact."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:45:49.161259Z",
+      "started_at": "2026-09-08T10:45:36.424048Z",
+      "finished_at": "2026-09-08T10:45:49.161259Z"
+    },
+    {
+      "turn_id": "turn_b49f497dba6547b38a1c59642ea3cfc4",
+      "case_id": "case_ac1d2490772c43249f1ab91448b0be0c",
+      "lane": "W1",
+      "round_name": "R3",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_5a228758-d4d7-9cbe-8469-bc645a067eab",
+      "previous_response_id": "resp_05f98d44-4b96-950a-b5a5-c283642344fd",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 2405,
+      "output_tokens": 1537,
+      "reasoning_tokens": 1130,
+      "cached_input_tokens": 1024,
+      "prefix_fingerprint": "dfdccf84660fce373f066558bf8600f88bdbbb0acd80ea8f716fb2d25106bf2d",
+      "latency_ms": 18214,
+      "output": {
+        "candidates": [
+          {
+            "proposition": "Micron Technology received its final local construction permit from the Town of Clay for the planned memory-fabrication site in Clay, New York.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": "2026-09-07",
+            "entities": [
+              "Micron Technology",
+              "Town of Clay",
+              "Clay, New York"
+            ]
+          },
+          {
+            "proposition": "Micron held a groundbreaking ceremony at the Clay, New York memory-fabrication site, marking the first visible construction milestone for the project after months of site planning and local review.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": "2026-09-07",
+            "entities": [
+              "Micron Technology",
+              "Clay, New York"
+            ]
+          },
+          {
+            "proposition": "The approved local permit covers the initial construction package, including grading, stormwater controls, roads, site-security work, and foundations for the first fab campus.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": "2026-09-07",
+            "entities": [
+              "Town of Clay",
+              "Micron Technology"
+            ]
+          },
+          {
+            "proposition": "Crews had begun preparing access roads and utility corridors at the Clay site in advance of the groundbreaking ceremony.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "Micron Technology",
+              "Clay, New York"
+            ]
+          },
+          {
+            "proposition": "No public road closures were announced with the Monday groundbreaking action; temporary traffic changes are expected once grading expands.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": "2026-09-07",
+            "entities": [
+              "Town of Clay",
+              "Clay, New York"
+            ]
+          },
+          {
+            "proposition": "Micron declined to discuss later operating milestones and stated construction updates would be released as individual construction packages advance through approval.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": "2026-09-07",
+            "entities": [
+              "Micron Technology"
+            ]
+          }
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:46:07.376215Z",
+      "started_at": "2026-09-08T10:45:49.161259Z",
+      "finished_at": "2026-09-08T10:46:07.375617Z"
+    }
+  ]
+}

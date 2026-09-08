@@ -1,20 +1,17 @@
-"""Ticker initialization V2 CLI with production adapters and isolated test overrides."""
+"""Ticker initialization V2 CLI with production adapters."""
 
 from __future__ import annotations
 
 import argparse
 import asyncio
-import importlib
 import json
 import signal
-from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
-from typing import cast
 
 from .repository import InitializationRepository
-from .schema import InitializationError, NodeRecord, NodeSpec, RunStatus
-from .service import InitializationWorker, NodeAdapter
+from .schema import InitializationError, NodeSpec, RunStatus
+from .service import InitializationWorker
 
 
 def parser() -> argparse.ArgumentParser:
@@ -40,11 +37,6 @@ def parser() -> argparse.ArgumentParser:
         if name in {"resume", "rerun-node", "rerun-block"}:
             command.add_argument("--reason", required=True)
     worker = commands.add_parser("worker")
-    worker.add_argument(
-        "--adapter-factory",
-        default="doxagent.ticker_initialization.catalog:adapter_factory",
-        help="Python module:callable(node)",
-    )
     worker.add_argument("--once", action="store_true")
     activate = commands.add_parser("activate")
     activate.add_argument("--ticker", required=True)
@@ -72,14 +64,10 @@ def parser() -> argparse.ArgumentParser:
     return root
 
 
-async def _worker(repo: InitializationRepository, factory_path: str, once: bool) -> int:
-    module, separator, name = factory_path.partition(":")
-    if not separator:
-        raise ValueError("adapter factory must be module:callable")
-    factory = cast(
-        Callable[[NodeRecord], NodeAdapter], getattr(importlib.import_module(module), name)
-    )
-    worker = InitializationWorker(repo, factory)
+async def _worker(repo: InitializationRepository, once: bool) -> int:
+    from .catalog import adapter_factory
+
+    worker = InitializationWorker(repo, adapter_factory)
     from doxagent.settings import DoxAgentSettings
 
     from .sync import SupabaseSummarySink, flush_summaries
@@ -266,7 +254,7 @@ def main(argv: list[str] | None = None) -> int:
                 ).model_dump_json(indent=2)
             )
         else:
-            return asyncio.run(_worker(repo, args.adapter_factory, args.once))
+            return asyncio.run(_worker(repo, args.once))
         return 0
     except (InitializationError, ValueError, KeyError) as exc:
         print(json.dumps({"error": str(exc)}, ensure_ascii=False))

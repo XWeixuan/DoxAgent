@@ -37,6 +37,52 @@ def managed() -> bool:
     return _parent.get() is not None
 
 
+def capture_worker(request, job):
+    context = _step.get() or _parent.get()
+    if context is None:
+        return
+    context.checkpoint(
+        worker_invocations={
+            job.job_id: {
+                "job": job.model_dump(mode="json"),
+                "ticker": request.ticker,
+                "node": request.node.value,
+                "model": request.model,
+                "provider": request.model_provider,
+                "run_id": request.run_id,
+                "initialization_id": context.run.initialization_id,
+                "ordinal": context.node.ordinal,
+            }
+        }
+    )
+
+
+def capture_gateway(request, response):
+    context = _step.get() or _parent.get()
+    if context is None or not request.metadata.get("invocation_id"):
+        return
+    from datetime import UTC, datetime
+
+    from .usage_capture import collector
+
+    usage = response.usage or response.audit.usage
+    provider = response.audit.provider.value
+    collector(context)(
+        {
+            "invocation_id": request.metadata["invocation_id"],
+            "scope": "API",
+            "provider": "bailian" if provider == "dashscope" else provider,
+            "node": request.metadata.get("workflow_node") or context.node.key,
+            "model": response.audit.model or request.model,
+            "started_at": request.metadata["invocation_started_at"],
+            "finished_at": request.metadata.get("invocation_finished_at"),
+            "recorded_at": datetime.now(UTC).isoformat(),
+            "usage": usage.model_dump(mode="json") if usage else {},
+            "status": "FAILED" if response.error else "SUCCEEDED",
+        }
+    )
+
+
 def checkpointed_json(key: str, call: Callable[[], Any]) -> Any:
     """Synchronous JSON unit, also usable in asyncio.to_thread's copied context."""
     parent = _parent.get()
@@ -254,7 +300,21 @@ class DurableWorker:
             )
         else:
             request = WorkerRunRequest.model_validate(frozen)
-        return await self.worker.run(request)
+        job = await self.worker.run(request)
+        # Actual worker identity survives cached returns and lease recovery; no prompt is copied.
+        observations = dict(step.node.receipt.get("worker_invocations", {}))
+        observations[job.job_id] = {
+            "job": job.model_dump(mode="json"),
+            "ticker": request.ticker,
+            "node": request.node.value,
+            "model": request.model,
+            "provider": request.model_provider,
+            "run_id": request.run_id,
+            "initialization_id": step.run.initialization_id,
+            "ordinal": step.node.ordinal,
+        }
+        step.checkpoint(worker_invocations=observations)
+        return job
 
     async def cancel(self, job_id: str) -> WorkerJob | None:
         return await self.worker.cancel(job_id)

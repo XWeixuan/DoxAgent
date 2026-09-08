@@ -46,6 +46,7 @@ from doxagent.persistent_runtime_v2.schema import (
     W1NoveltyVerdict,
     W1Round1Result,
     W2PolicyResult,
+    W2Round1RecallResult,
     W3CaseResult,
     W3ContextVersionPin,
     W3CoverageGapRecord,
@@ -131,7 +132,7 @@ def _runtime_case(message_id: str = "msg-w3") -> RuntimeCase:
             reference_ids=[],
             reason="new",
         ),
-        w2_round1=W2PolicyResult(policy_ids=[], confidence=RuntimeConfidence.NORMAL, reason="none"),
+        w2_round1=W2Round1RecallResult(candidate_policy_ids=[]),
         w2_final=W2PolicyResult(policy_ids=[], confidence=RuntimeConfidence.NORMAL, reason="none"),
     )
 
@@ -513,6 +514,8 @@ class _HotResponses:
                 reference_ids=[],
                 reason="new",
             )
+        elif request.output_model is W2Round1RecallResult:
+            value = W2Round1RecallResult(candidate_policy_ids=[])
         else:
             value = W2PolicyResult(
                 policy_ids=[], confidence=RuntimeConfidence.NORMAL, reason="none"

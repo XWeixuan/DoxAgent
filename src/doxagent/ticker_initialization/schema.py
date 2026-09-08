@@ -57,6 +57,8 @@ class RunRecord(Model):
     workflow_version: str = "V2"
     operation_kind: str = "INITIALIZE"
     base_revision: str | None = None
+    control_epoch: int | None = None
+    control_operation_id: str | None = None
     created_at: datetime = Field(default_factory=utc_now)
     updated_at: datetime = Field(default_factory=utc_now)
     state_seq: int = 0

@@ -1,0 +1,122 @@
+name: doxagent-v2
+
+x-environment: &environment
+  DOXAGENT_V2_READ_SQLITE_PATH: /data/read/v2.sqlite3
+  DOXAGENT_TICKER_INITIALIZATION_CONTROL_PATH: /data/initialization/control.sqlite3
+  DOXAGENT_PERSISTENT_RUNTIME_V2_ENABLED: "true"
+  DOXAGENT_PERSISTENT_RUNTIME_V2_STORAGE_MODE: sqlite
+  DOXAGENT_PERSISTENT_RUNTIME_V2_SQLITE_PATH: /data/runtime/runtime.sqlite3
+  DOXAGENT_PERSISTENT_RUNTIME_V2_W3_ENABLED: "true"
+  DOXAGENT_MESSAGE_BUS_V2_ENABLED: "true"
+  DOXAGENT_MESSAGE_BUS_V2_SQLITE_PATH: /data/bus/bus.sqlite3
+  DOXAGENT_MESSAGE_BUS_V2_ADAPTER_ROOT: /data/bus/adapters
+  DOXAGENT_RUNTIME_SCHEDULER_STORAGE_MODE: sqlite
+  DOXAGENT_RUNTIME_SCHEDULER_SQLITE_PATH: /data/scheduler/scheduler.sqlite3
+  DOXAGENT_CODEX_RUNTIME_STORAGE_MODE: sqlite
+  DOXAGENT_CODEX_RUNTIME_SQLITE_PATH: /data/research/research.sqlite3
+  DOXAGENT_CODEX_D1_V2_ENABLED: "true"
+  DOXAGENT_CODEX_RESEARCH_LANES_ENABLED: "true"
+  DOXAGENT_CODEX_DOCUMENT3_ENABLED: "true"
+  DOXAGENT_CODEX_MONITORING_O4_ENABLED: "true"
+  DOXAGENT_CODEX_MONITORING_O4_SQLITE_PATH: /data/o4/o4.sqlite3
+  DOXAGENT_EVENT_LIBRARY_ROOT: /data/events
+  DOXAGENT_CODEX_WORKSPACE_ROOT: /data/workspaces
+  DOXAGENT_CODEX_WORKER_BASE_URL: http://codex-worker:8791
+  DOXAGENT_CODEX_CONTAINER_ISOLATION: "true"
+  DOXAGENT_CRAWLER_PLANE_ROOT: /data/crawler-plane
+  DOXAGENT_CRAWLER_PLANE_SQLITE_PATH: /data/crawler-plane/crawler_plane.sqlite3
+  DOXAGENT_MODEL_USAGE_STORAGE_MODE: sqlite
+  DOXAGENT_MODEL_USAGE_SQLITE_PATH: /data/usage/usage.sqlite3
+  CDECR_SQLITE_PATH: /data/cdecr/cdecr.sqlite3
+  DOXAGENT_CODEX_REMOTE_RUNTIME_STORAGE_ENABLED: "false"
+  DOXAGENT_PERSISTENT_RUNTIME_V2_REMOTE_PROJECTION_ENABLED: "false"
+  CODEX_HOME: /data/codex-home
+
+x-backend: &backend
+  image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:production}
+  build: {context: ., dockerfile: Dockerfile.v2}
+  env_file: ["${DOXAGENT_V2_ENV_FILE:-.env.v2}"]
+  environment: *environment
+  volumes: ["v2-data:/data"]
+  init: true
+  restart: unless-stopped
+  stop_grace_period: 60s
+  security_opt: ["no-new-privileges:true"]
+  logging:
+    driver: json-file
+    options: {max-size: "20m", max-file: "3"}
+  depends_on:
+    v2-migrate: {condition: service_completed_successfully}
+
+services:
+  v2-migrate:
+    <<: *backend
+    restart: "no"
+    depends_on: {}
+    command: [python, -m, doxagent.production_v2, migrate]
+  v2-api:
+    <<: *backend
+    command: [sh, -c, "python -m doxagent.production_v2 check && exec python -m doxagent.api_v2.cli --host 0.0.0.0 --port 8000"]
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz',timeout=3).read()"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+  v2-control:
+    <<: *backend
+    command: [python, -m, doxagent.v2_control.worker, --runtime-db, /data/runtime/runtime.sqlite3, --initialization-db, /data/initialization/control.sqlite3, --bus-db, /data/bus/bus.sqlite3, --scheduler-db, /data/scheduler/scheduler.sqlite3]
+  codex-worker:
+    <<: *backend
+    command: [python, -m, doxagent.codex_worker]
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8791/healthz',timeout=3).read()"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+  v2-initialization:
+    <<: *backend
+    command: [python, -m, doxagent.ticker_initialization.cli, worker]
+    depends_on:
+      v2-migrate: {condition: service_completed_successfully}
+      codex-worker: {condition: service_healthy}
+  v2-message-bus:
+    <<: *backend
+    command: [python, -m, doxagent.message_bus_v2.cli, run-worker]
+  v2-o4:
+    <<: *backend
+    command: [python, -m, doxagent.workflows.codex_monitoring_o4.worker]
+    depends_on:
+      v2-migrate: {condition: service_completed_successfully}
+      codex-worker: {condition: service_healthy}
+  v2-scheduler:
+    <<: *backend
+    command: [python, -m, doxagent.runtime_scheduler.v2]
+    depends_on:
+      v2-migrate: {condition: service_completed_successfully}
+      codex-worker: {condition: service_healthy}
+  v2-projector:
+    <<: *backend
+    command: [python, -m, doxagent.v2_read.cli, project, --read-db, /data/read/v2.sqlite3, --source, research=/data/research/research.sqlite3, --source, initialization=/data/initialization/control.sqlite3, --source, bus=/data/bus/bus.sqlite3, --source, runtime=/data/runtime/runtime.sqlite3, --event-root, /data/events]
+  v2-delivery:
+    <<: *backend
+    command: [python, -m, doxagent.persistent_runtime_v2.delivery_worker, --runtime-db, /data/runtime/runtime.sqlite3]
+  v2-executor:
+    <<: *backend
+    # Exactly one writer across Paper and Live, enforced again by the OS-owned DB lock.
+    command: [python, -m, doxagent.trade_execution.cli, --db, /data/runtime/runtime.sqlite3, run-worker]
+    extra_hosts: ["host.docker.internal:host-gateway"]
+  v2-web:
+    image: ${DOXAGENT_V2_WEB_IMAGE:-doxagent-v2-web:production}
+    build: {context: ., dockerfile: frontend/v2/Dockerfile}
+    restart: unless-stopped
+    ports: ["127.0.0.1:${DOXAGENT_V2_HTTP_PORT:-8082}:80"]
+    depends_on:
+      v2-api: {condition: service_healthy}
+    logging:
+      driver: json-file
+      options: {max-size: "20m", max-file: "3"}
+
+volumes:
+  v2-data:

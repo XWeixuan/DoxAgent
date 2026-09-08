@@ -28,8 +28,8 @@ from doxagent.gateway.tracing import (
 def _usage_from_mapping(value: Mapping[str, Any] | None) -> ModelUsage | None:
     if value is None:
         return None
-    input_tokens = value.get("input_tokens") or value.get("prompt_tokens")
-    output_tokens = value.get("output_tokens") or value.get("completion_tokens")
+    input_tokens = value.get("input_tokens", value.get("prompt_tokens"))
+    output_tokens = value.get("output_tokens", value.get("completion_tokens"))
     total_tokens = value.get("total_tokens")
     if total_tokens is None and input_tokens is not None and output_tokens is not None:
         total_tokens = int(input_tokens) + int(output_tokens)
@@ -37,6 +37,9 @@ def _usage_from_mapping(value: Mapping[str, Any] | None) -> ModelUsage | None:
         input_tokens=input_tokens,
         output_tokens=output_tokens,
         total_tokens=total_tokens,
+        cached_input_tokens=(
+            value.get("input_tokens_details") or value.get("prompt_tokens_details") or {}
+        ).get("cached_tokens"),
     )
 
 

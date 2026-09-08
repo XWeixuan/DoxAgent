@@ -280,6 +280,7 @@ class TickerSourceBinding(BusModel):
 
 
 class TickerMonitoringState(BusModel):
+    continuous_run_started_at: datetime | None = None
     ticker: str
     status: TickerMonitoringStatus = TickerMonitoringStatus.RUNNING
     profile_id: str = "default"
@@ -427,6 +428,7 @@ class MaterializedStreamMember(BusModel):
     source: str
     url: str
     published_at: datetime
+    normalized_at: datetime | None = None
 
 
 class StreamItem(BusModel):
@@ -461,6 +463,7 @@ class ConsumerOffset(BusModel):
 
 
 class PollState(BusModel):
+    last_standard_revision_count: int | None = Field(default=None, ge=0)
     binding_id: str
     source_id: str
     ticker: str

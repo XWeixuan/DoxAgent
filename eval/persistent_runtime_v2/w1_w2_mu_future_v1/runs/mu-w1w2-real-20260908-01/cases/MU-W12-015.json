@@ -1,0 +1,298 @@
+{
+  "case_id": "MU-W12-015",
+  "status": "COMPLETED",
+  "started_at": "2026-09-08T18:44:30.499413+08:00",
+  "completed_at": "2026-09-08T18:45:17.155659+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E13",
+        "E7"
+      ]
+    },
+    "w1_final": {
+      "result": "NEW",
+      "confidence": "normal",
+      "reference_ids": [],
+      "reason": "Core fact is a specific bilateral multi-year supply agreement with named supplier ApexChem, including a dedicated Mesa, AZ purification/blending line and defined volume commitment for ultra-pure wet chemicals. No existing fact (E13's general $3B supply-chain investment effort or E7's $250B fab capex) covers this named supply relationship or the Mesa facility project."
+    },
+    "w1_r3": {
+      "candidates": [
+        {
+          "proposition": "ApexChem and Micron Technology signed a new multi-year U.S. supply agreement for ultra-pure process chemicals used in wafer-fabrication cleaning and surface-preparation steps.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "ApexChem",
+            "Micron Technology"
+          ]
+        },
+        {
+          "proposition": "The agreement includes construction of a new dedicated purification and blending line at ApexChem's Mesa, Arizona campus, which ApexChem retains ownership and operation of, with Micron as its anchor customer.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "ApexChem",
+            "Micron Technology"
+          ]
+        },
+        {
+          "proposition": "The agreement establishes a defined volume commitment for ultra-pure wet chemicals reserved for Micron's domestic manufacturing network.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "ApexChem",
+            "Micron Technology"
+          ]
+        },
+        {
+          "proposition": "Under the agreement, Micron will provide technical specifications and forecast windows used to plan the new Mesa facility.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "ApexChem",
+            "Micron Technology"
+          ]
+        },
+        {
+          "proposition": "Construction of the Mesa line will begin after local permitting is complete; detailed engineering will start after remaining local reviews, followed by construction and process-qualification samples.",
+          "assertion_state": "PLAN",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "ApexChem"
+          ]
+        },
+        {
+          "proposition": "ApexChem expects to hire process engineers, quality specialists and logistics personnel as the Mesa project moves through construction and commissioning, but did not disclose the number of positions or planned annual output.",
+          "assertion_state": "EXPECTED",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "ApexChem"
+          ]
+        },
+        {
+          "proposition": "ApexChem declined to provide the agreement's commercial terms.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "ApexChem",
+            "Micron Technology"
+          ]
+        }
+      ]
+    },
+    "w2_r1": {
+      "candidate_policy_ids": []
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "no_policy_candidate_recalled"
+    },
+    "route": {
+      "primary_route": "ADD_TO_DELTA",
+      "side_effects": [
+        "emit_delta"
+      ],
+      "reason": "w1=NEW/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_a3f57d3a866145399ad6254740e38025",
+      "case_id": "case_b19d0e1990b340358ce2680f625cdd43",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_395d9aa3-3f0f-96b2-8895-75f01c5bb39f",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13454,
+      "output_tokens": 1747,
+      "reasoning_tokens": 1733,
+      "cached_input_tokens": 12288,
+      "prefix_fingerprint": "bc31fe43c6ebabd4fc723722115d9464ea7b664f00c01e1f616107c8df6bc804",
+      "latency_ms": 21396,
+      "output": {
+        "event_ids": [
+          "E13",
+          "E7"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:44:51.940558Z",
+      "started_at": "2026-09-08T10:44:30.543850Z",
+      "finished_at": "2026-09-08T10:44:51.940558Z"
+    },
+    {
+      "turn_id": "turn_aac5cac20b36400aadbd586cd316792e",
+      "case_id": "case_b19d0e1990b340358ce2680f625cdd43",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_c5be5629-9d2a-91f8-8c11-5276445bacbc",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 6548,
+      "output_tokens": 2888,
+      "reasoning_tokens": 2879,
+      "cached_input_tokens": 5120,
+      "prefix_fingerprint": "f2c2dc5406ee6290d30c3915855d61097564d2c6dc1ec3341f57f61c28e3c52b",
+      "latency_ms": 30598,
+      "output": {
+        "candidate_policy_ids": []
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:45:01.143645Z",
+      "started_at": "2026-09-08T10:44:30.546302Z",
+      "finished_at": "2026-09-08T10:45:01.143645Z"
+    },
+    {
+      "turn_id": "turn_4d9ee149335e43b6b5578574297d9d09",
+      "case_id": "case_b19d0e1990b340358ce2680f625cdd43",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_98969f9a-d644-9553-ae81-05d7da20a9e6",
+      "previous_response_id": "resp_395d9aa3-3f0f-96b2-8895-75f01c5bb39f",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 2941,
+      "output_tokens": 963,
+      "reasoning_tokens": 868,
+      "cached_input_tokens": 1664,
+      "prefix_fingerprint": "b05aa34bd8f1b24327b1754a9478cb0a36e44bd9f557453237f6623d9239c8c7",
+      "latency_ms": 13925,
+      "output": {
+        "result": "NEW",
+        "confidence": "normal",
+        "reference_ids": [],
+        "reason": "Core fact is a specific bilateral multi-year supply agreement with named supplier ApexChem, including a dedicated Mesa, AZ purification/blending line and defined volume commitment for ultra-pure wet chemicals. No existing fact (E13's general $3B supply-chain investment effort or E7's $250B fab capex) covers this named supply relationship or the Mesa facility project."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:45:05.878619Z",
+      "started_at": "2026-09-08T10:44:51.953172Z",
+      "finished_at": "2026-09-08T10:45:05.878619Z"
+    },
+    {
+      "turn_id": "turn_192695ff05f8495ea7ee7404a589d21b",
+      "case_id": "case_b19d0e1990b340358ce2680f625cdd43",
+      "lane": "W1",
+      "round_name": "R3",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_ad870179-3ec0-9c8d-8ee4-bdd81fb53658",
+      "previous_response_id": "resp_98969f9a-d644-9553-ae81-05d7da20a9e6",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 2425,
+      "output_tokens": 882,
+      "reasoning_tokens": 463,
+      "cached_input_tokens": 1024,
+      "prefix_fingerprint": "ecd71f2c5671032c686b989b3dc9fd49b53b6f40b612cc298489529630477597",
+      "latency_ms": 11264,
+      "output": {
+        "candidates": [
+          {
+            "proposition": "ApexChem and Micron Technology signed a new multi-year U.S. supply agreement for ultra-pure process chemicals used in wafer-fabrication cleaning and surface-preparation steps.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "ApexChem",
+              "Micron Technology"
+            ]
+          },
+          {
+            "proposition": "The agreement includes construction of a new dedicated purification and blending line at ApexChem's Mesa, Arizona campus, which ApexChem retains ownership and operation of, with Micron as its anchor customer.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "ApexChem",
+              "Micron Technology"
+            ]
+          },
+          {
+            "proposition": "The agreement establishes a defined volume commitment for ultra-pure wet chemicals reserved for Micron's domestic manufacturing network.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "ApexChem",
+              "Micron Technology"
+            ]
+          },
+          {
+            "proposition": "Under the agreement, Micron will provide technical specifications and forecast windows used to plan the new Mesa facility.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "ApexChem",
+              "Micron Technology"
+            ]
+          },
+          {
+            "proposition": "Construction of the Mesa line will begin after local permitting is complete; detailed engineering will start after remaining local reviews, followed by construction and process-qualification samples.",
+            "assertion_state": "PLAN",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "ApexChem"
+            ]
+          },
+          {
+            "proposition": "ApexChem expects to hire process engineers, quality specialists and logistics personnel as the Mesa project moves through construction and commissioning, but did not disclose the number of positions or planned annual output.",
+            "assertion_state": "EXPECTED",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "ApexChem"
+            ]
+          },
+          {
+            "proposition": "ApexChem declined to provide the agreement's commercial terms.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "ApexChem",
+              "Micron Technology"
+            ]
+          }
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:45:17.143654Z",
+      "started_at": "2026-09-08T10:45:05.878619Z",
+      "finished_at": "2026-09-08T10:45:17.143654Z"
+    }
+  ]
+}

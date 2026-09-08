@@ -1,0 +1,342 @@
+{
+  "case_id": "MU-W12-014",
+  "status": "COMPLETED",
+  "started_at": "2026-09-08T18:46:21.360664+08:00",
+  "completed_at": "2026-09-08T18:47:31.410513+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E51",
+        "E73",
+        "E109",
+        "E107",
+        "E27"
+      ]
+    },
+    "w1_final": {
+      "result": "NEW",
+      "confidence": "normal",
+      "reference_ids": [],
+      "reason": "The core fact is Samsung's Galaxy S28 launch announcement specifying 16GB base DRAM (up from 12GB predecessor) to enable on-device AI, plus a broader spring device-launch wave (Aurora Atlas Fold, Helio laptop, Pulseworks watch, etc.). None of the loaded events (E51, E73, E109, E107, E27) cover this product specification change or the multi-vendor AI-device launch cycle; they address memory-price pressure, Apple DRAM securing, and forward AI/robotics demand at a macro level."
+    },
+    "w1_r3": {
+      "candidates": [
+        {
+          "proposition": "Samsung announced the Galaxy S28 base model with 16GB of DRAM, one commercial configuration tier above the 12GB base capacity used in the preceding Galaxy S27 base model.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "2026 spring",
+          "occurrence_date": null,
+          "entities": [
+            "Samsung",
+            "Galaxy S28"
+          ]
+        },
+        {
+          "proposition": "Samsung stated the Galaxy S28's 16GB base DRAM is aimed at supporting more on-device AI features, including longer context handling for translation, photo editing, and personal-search functions.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "Samsung",
+            "Galaxy S28"
+          ]
+        },
+        {
+          "proposition": "Samsung said the Galaxy S28 would be available for preorder in selected markets in the current month, with retail availability beginning later in the spring.",
+          "assertion_state": "SCHEDULED",
+          "subject_time": "2026 spring",
+          "occurrence_date": null,
+          "entities": [
+            "Samsung",
+            "Galaxy S28"
+          ]
+        },
+        {
+          "proposition": "Aurora Mobile introduced the Atlas Fold, a folding handset with a lighter hinge, a larger exterior display, and a new method for shifting app windows between outer and inner screens; reservations opened in three countries with final pricing to be announced closer to availability.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "Aurora Mobile",
+            "Atlas Fold"
+          ]
+        },
+        {
+          "proposition": "Helio Systems showed a thin 14-inch laptop featuring a new neural-processing unit, a matte low-power display, a magnetic accessory rail, and an offline transcription application, arriving in two processor options.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "Helio Systems"
+          ]
+        },
+        {
+          "proposition": "Pulseworks unveiled a fitness watch with a more precise skin-temperature sensor and a redesigned charging puck, capable of flagging changes in recovery patterns but not intended to diagnose illness.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "Pulseworks"
+          ]
+        },
+        {
+          "proposition": "Luma Health introduced a sleep ring adding a daytime stress score based on movement and heart-rate variability.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "Luma Health"
+          ]
+        },
+        {
+          "proposition": "Northline introduced a countertop display combining recipe suggestions with a family calendar; Atria Robotics demonstrated a compact floor cleaner that maps rooms without relying continuously on a cloud connection.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "Northline",
+            "Atria Robotics"
+          ]
+        },
+        {
+          "proposition": "Samsung did not identify component suppliers or disclose supplier shares in its Galaxy S28 launch material.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "Samsung",
+            "Galaxy S28"
+          ]
+        }
+      ]
+    },
+    "w2_r1": {
+      "candidate_policy_ids": []
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "no_policy_candidate_recalled"
+    },
+    "route": {
+      "primary_route": "ADD_TO_DELTA",
+      "side_effects": [
+        "emit_delta"
+      ],
+      "reason": "w1=NEW/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_2d4800e9213949bd88618fd30c40f3bf",
+      "case_id": "case_fc1f5a890e52440d9d1ec7c214a1aed2",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_0d91f137-e73c-9a66-8bcd-f8b218d61d48",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 14332,
+      "output_tokens": 1764,
+      "reasoning_tokens": 1735,
+      "cached_input_tokens": 12288,
+      "prefix_fingerprint": "bc31fe43c6ebabd4fc723722115d9464ea7b664f00c01e1f616107c8df6bc804",
+      "latency_ms": 22065,
+      "output": {
+        "event_ids": [
+          "E51",
+          "E73",
+          "E109",
+          "E107",
+          "E27"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:46:43.487574Z",
+      "started_at": "2026-09-08T10:46:21.423475Z",
+      "finished_at": "2026-09-08T10:46:43.487574Z"
+    },
+    {
+      "turn_id": "turn_ae748e1eecf34c5a971d6f9010980a69",
+      "case_id": "case_fc1f5a890e52440d9d1ec7c214a1aed2",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_1530f9c8-daab-9524-8487-e7aaae73cff4",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 7426,
+      "output_tokens": 2440,
+      "reasoning_tokens": 2431,
+      "cached_input_tokens": 5120,
+      "prefix_fingerprint": "f2c2dc5406ee6290d30c3915855d61097564d2c6dc1ec3341f57f61c28e3c52b",
+      "latency_ms": 27668,
+      "output": {
+        "candidate_policy_ids": []
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:46:49.094039Z",
+      "started_at": "2026-09-08T10:46:21.425671Z",
+      "finished_at": "2026-09-08T10:46:49.094039Z"
+    },
+    {
+      "turn_id": "turn_c19fd324cc934f2c836fccca8fcff930",
+      "case_id": "case_fc1f5a890e52440d9d1ec7c214a1aed2",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_e854290a-4598-94fc-9171-0577a78ece70",
+      "previous_response_id": "resp_0d91f137-e73c-9a66-8bcd-f8b218d61d48",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 5035,
+      "output_tokens": 1341,
+      "reasoning_tokens": 1198,
+      "cached_input_tokens": 1024,
+      "prefix_fingerprint": "0a2f978ef06c30c8fd8e46a88af07b2a45d0e39b18ebaa9841bd30cb0236aa7e",
+      "latency_ms": 22878,
+      "output": {
+        "result": "NEW",
+        "confidence": "normal",
+        "reference_ids": [],
+        "reason": "The core fact is Samsung's Galaxy S28 launch announcement specifying 16GB base DRAM (up from 12GB predecessor) to enable on-device AI, plus a broader spring device-launch wave (Aurora Atlas Fold, Helio laptop, Pulseworks watch, etc.). None of the loaded events (E51, E73, E109, E107, E27) cover this product specification change or the multi-vendor AI-device launch cycle; they address memory-price pressure, Apple DRAM securing, and forward AI/robotics demand at a macro level."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:47:06.407467Z",
+      "started_at": "2026-09-08T10:46:43.530028Z",
+      "finished_at": "2026-09-08T10:47:06.407467Z"
+    },
+    {
+      "turn_id": "turn_2054bd8b01f5412ea5d1ab0d0a9ca440",
+      "case_id": "case_fc1f5a890e52440d9d1ec7c214a1aed2",
+      "lane": "W1",
+      "round_name": "R3",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_a133dc99-6e1a-942c-80f9-4fdef1a8d50b",
+      "previous_response_id": "resp_e854290a-4598-94fc-9171-0577a78ece70",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 3351,
+      "output_tokens": 2151,
+      "reasoning_tokens": 1558,
+      "cached_input_tokens": 1024,
+      "prefix_fingerprint": "793bee197b8a7b2a59991a097a1a2faf27362fae65285a85e8cf51d15e61e21a",
+      "latency_ms": 24992,
+      "output": {
+        "candidates": [
+          {
+            "proposition": "Samsung announced the Galaxy S28 base model with 16GB of DRAM, one commercial configuration tier above the 12GB base capacity used in the preceding Galaxy S27 base model.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "2026 spring",
+            "occurrence_date": null,
+            "entities": [
+              "Samsung",
+              "Galaxy S28"
+            ]
+          },
+          {
+            "proposition": "Samsung stated the Galaxy S28's 16GB base DRAM is aimed at supporting more on-device AI features, including longer context handling for translation, photo editing, and personal-search functions.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "Samsung",
+              "Galaxy S28"
+            ]
+          },
+          {
+            "proposition": "Samsung said the Galaxy S28 would be available for preorder in selected markets in the current month, with retail availability beginning later in the spring.",
+            "assertion_state": "SCHEDULED",
+            "subject_time": "2026 spring",
+            "occurrence_date": null,
+            "entities": [
+              "Samsung",
+              "Galaxy S28"
+            ]
+          },
+          {
+            "proposition": "Aurora Mobile introduced the Atlas Fold, a folding handset with a lighter hinge, a larger exterior display, and a new method for shifting app windows between outer and inner screens; reservations opened in three countries with final pricing to be announced closer to availability.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "Aurora Mobile",
+              "Atlas Fold"
+            ]
+          },
+          {
+            "proposition": "Helio Systems showed a thin 14-inch laptop featuring a new neural-processing unit, a matte low-power display, a magnetic accessory rail, and an offline transcription application, arriving in two processor options.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "Helio Systems"
+            ]
+          },
+          {
+            "proposition": "Pulseworks unveiled a fitness watch with a more precise skin-temperature sensor and a redesigned charging puck, capable of flagging changes in recovery patterns but not intended to diagnose illness.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "Pulseworks"
+            ]
+          },
+          {
+            "proposition": "Luma Health introduced a sleep ring adding a daytime stress score based on movement and heart-rate variability.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "Luma Health"
+            ]
+          },
+          {
+            "proposition": "Northline introduced a countertop display combining recipe suggestions with a family calendar; Atria Robotics demonstrated a compact floor cleaner that maps rooms without relying continuously on a cloud connection.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "Northline",
+              "Atria Robotics"
+            ]
+          },
+          {
+            "proposition": "Samsung did not identify component suppliers or disclose supplier shares in its Galaxy S28 launch material.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "Samsung",
+              "Galaxy S28"
+            ]
+          }
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:47:31.399502Z",
+      "started_at": "2026-09-08T10:47:06.407467Z",
+      "finished_at": "2026-09-08T10:47:31.399502Z"
+    }
+  ]
+}

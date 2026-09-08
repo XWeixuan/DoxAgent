@@ -190,11 +190,13 @@ def build_persistent_runtime_v2_service(
     if settings.ticker_initialization_control_path:
         from doxagent.ticker_initialization.repository import InitializationRepository
         from doxagent.ticker_initialization.runtime_inputs import ActivatedRuntimeInputs
+        from doxagent.v2_control.repository import ControlRepository
 
         input_snapshot_loader = ActivatedRuntimeInputs(
             InitializationRepository(settings.ticker_initialization_control_path),
             event_reader,
             local_policy,
+            runtime_control=ControlRepository(journal) if journal else None,
         )
     if journal and not journal.get("execution", "active"):
         from .execution_bundle import ExecutionBundles
@@ -258,5 +260,6 @@ def build_persistent_runtime_v2_service(
             journal,
             maintain=RuntimeMaintenance(settings, service, journal),
             select=WeekendSelection(settings, service, journal),
+            external_delivery=bool(settings.ticker_initialization_control_path),
         )
     return service

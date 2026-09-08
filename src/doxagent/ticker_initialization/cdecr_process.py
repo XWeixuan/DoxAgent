@@ -134,6 +134,15 @@ def run_child(payload: dict[str, Any], *, runner_factory: Callable[..., Any] | N
 
     guard = threading.Thread(target=watchdog, daemon=True, name="cdecr-owner-watchdog")
     guard.start()
+    from cdecr import usage_capture
+    from .usage_capture import collector
+
+    previous_observer = usage_capture.observer
+    if payload.get("node_key"):
+        usage_node = next(
+            n for n in control.nodes(lease.initialization_id) if n.key == payload["node_key"]
+        )
+        usage_capture.observer = collector(NodeContext(control, lease, usage_node))
     try:
         binding = RuntimeRegistryBinding.model_validate(payload["binding"])
         with _exclusive_registry(Path(binding.registry_path)):
@@ -161,6 +170,7 @@ def run_child(payload: dict[str, Any], *, runner_factory: Callable[..., Any] | N
             control.assert_lease(lease)
             _atomic_json(Path(payload["output"]), result.model_dump(mode="json"))
     finally:
+        usage_capture.observer = previous_observer
         stopped.set()
         guard.join(timeout=1)
 

@@ -1,0 +1,288 @@
+{
+  "case_id": "MU-W12-012",
+  "status": "COMPLETED",
+  "started_at": "2026-09-08T18:45:34.130566+08:00",
+  "completed_at": "2026-09-08T18:46:40.010743+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E42",
+        "E43",
+        "E44"
+      ]
+    },
+    "w1_final": {
+      "result": "NEW",
+      "confidence": "normal",
+      "reference_ids": [
+        "E42"
+      ],
+      "reason": "F174 records the ~80% HBM4 yield as a RUMOR. The current message reports Samsung formally confirming ~80% yield in an on-the-record company disclosure at a Seoul technology briefing. Per the rules, a rumor and a formal confirmation are distinct fact states; the transition to official company disclosure constitutes a new core fact not covered by existing events."
+    },
+    "w1_r3": {
+      "candidates": [
+        {
+          "proposition": "Samsung Electronics formally disclosed that its HBM4 manufacturing yield is approximately 80%, during a technology briefing in Seoul, upgrading a previously reported industry figure to an on-the-record company statement.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "Samsung Electronics",
+            "HBM4"
+          ]
+        },
+        {
+          "proposition": "Samsung specified that the ~80% HBM4 yield figure reflects the range achieved on qualified HBM4 stacks under its current manufacturing process, and published neither a unit count nor a comparison with an earlier official target.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "Samsung Electronics",
+            "HBM4"
+          ]
+        },
+        {
+          "proposition": "Samsung kept HBM4 customer names, shipment quantities, and commercial schedules confidential at the briefing.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "Samsung Electronics",
+            "HBM4"
+          ]
+        },
+        {
+          "proposition": "Samsung stated that remaining work on HBM4 is focused on sustaining ~80% manufacturing performance as customer configurations and platforms evolve.",
+          "assertion_state": "ONGOING",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "Samsung Electronics",
+            "HBM4"
+          ]
+        },
+        {
+          "proposition": "Samsung said it would continue qualifying HBM4 product variants with customers.",
+          "assertion_state": "PLAN",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "Samsung Electronics",
+            "HBM4"
+          ]
+        },
+        {
+          "proposition": "A Samsung spokesperson declined to comment on whether the ~80% HBM4 yield result would alter factory allocation.",
+          "assertion_state": "DENIAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "Samsung Electronics",
+            "HBM4"
+          ]
+        }
+      ]
+    },
+    "w2_r1": {
+      "candidate_policy_ids": []
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "no_policy_candidate_recalled"
+    },
+    "route": {
+      "primary_route": "ADD_TO_DELTA",
+      "side_effects": [
+        "emit_delta"
+      ],
+      "reason": "w1=NEW/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_03420589ab504c319ab1575ffae8b912",
+      "case_id": "case_f2778466373745d0808393442d6ec11e",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_1cfe1f26-e642-9c61-a72f-e3ef8e89589f",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13419,
+      "output_tokens": 852,
+      "reasoning_tokens": 833,
+      "cached_input_tokens": 12288,
+      "prefix_fingerprint": "bc31fe43c6ebabd4fc723722115d9464ea7b664f00c01e1f616107c8df6bc804",
+      "latency_ms": 10842,
+      "output": {
+        "event_ids": [
+          "E42",
+          "E43",
+          "E44"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:45:45.005373Z",
+      "started_at": "2026-09-08T10:45:34.162587Z",
+      "finished_at": "2026-09-08T10:45:45.005373Z"
+    },
+    {
+      "turn_id": "turn_36726702450a49458254ba5fca63f7c7",
+      "case_id": "case_f2778466373745d0808393442d6ec11e",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_9faea402-28a9-9a68-8673-1ecb25ba1bf0",
+      "previous_response_id": "resp_1cfe1f26-e642-9c61-a72f-e3ef8e89589f",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 3201,
+      "output_tokens": 1659,
+      "reasoning_tokens": 1561,
+      "cached_input_tokens": 1024,
+      "prefix_fingerprint": "05f3da67dbde28333d90ca92677954247fc12e09a847877c2d6cbf597c75f848",
+      "latency_ms": 32133,
+      "output": {
+        "result": "NEW",
+        "confidence": "normal",
+        "reference_ids": [
+          "E42"
+        ],
+        "reason": "F174 records the ~80% HBM4 yield as a RUMOR. The current message reports Samsung formally confirming ~80% yield in an on-the-record company disclosure at a Seoul technology briefing. Per the rules, a rumor and a formal confirmation are distinct fact states; the transition to official company disclosure constitutes a new core fact not covered by existing events."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:46:17.159889Z",
+      "started_at": "2026-09-08T10:45:45.027030Z",
+      "finished_at": "2026-09-08T10:46:17.159889Z"
+    },
+    {
+      "turn_id": "turn_b14fe05b30fc4039bf3f3e96d5f3f165",
+      "case_id": "case_f2778466373745d0808393442d6ec11e",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_db9e079a-196b-938c-97b1-06002603fd48",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 6513,
+      "output_tokens": 4386,
+      "reasoning_tokens": 4377,
+      "cached_input_tokens": 5120,
+      "prefix_fingerprint": "f2c2dc5406ee6290d30c3915855d61097564d2c6dc1ec3341f57f61c28e3c52b",
+      "latency_ms": 48015,
+      "output": {
+        "candidate_policy_ids": []
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:46:22.179049Z",
+      "started_at": "2026-09-08T10:45:34.164581Z",
+      "finished_at": "2026-09-08T10:46:22.179049Z"
+    },
+    {
+      "turn_id": "turn_af62710e1fd84875827637551c839dc4",
+      "case_id": "case_f2778466373745d0808393442d6ec11e",
+      "lane": "W1",
+      "round_name": "R3",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_45ced598-737e-927f-a869-9bfe32a7b313",
+      "previous_response_id": "resp_9faea402-28a9-9a68-8673-1ecb25ba1bf0",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 2393,
+      "output_tokens": 1494,
+      "reasoning_tokens": 1139,
+      "cached_input_tokens": 1024,
+      "prefix_fingerprint": "7d37afa746d57aa2eeecbf88e1e70d1112d5625575183af6b6a0cb3c6c96a798",
+      "latency_ms": 17816,
+      "output": {
+        "candidates": [
+          {
+            "proposition": "Samsung Electronics formally disclosed that its HBM4 manufacturing yield is approximately 80%, during a technology briefing in Seoul, upgrading a previously reported industry figure to an on-the-record company statement.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "Samsung Electronics",
+              "HBM4"
+            ]
+          },
+          {
+            "proposition": "Samsung specified that the ~80% HBM4 yield figure reflects the range achieved on qualified HBM4 stacks under its current manufacturing process, and published neither a unit count nor a comparison with an earlier official target.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "Samsung Electronics",
+              "HBM4"
+            ]
+          },
+          {
+            "proposition": "Samsung kept HBM4 customer names, shipment quantities, and commercial schedules confidential at the briefing.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "Samsung Electronics",
+              "HBM4"
+            ]
+          },
+          {
+            "proposition": "Samsung stated that remaining work on HBM4 is focused on sustaining ~80% manufacturing performance as customer configurations and platforms evolve.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "Samsung Electronics",
+              "HBM4"
+            ]
+          },
+          {
+            "proposition": "Samsung said it would continue qualifying HBM4 product variants with customers.",
+            "assertion_state": "PLAN",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "Samsung Electronics",
+              "HBM4"
+            ]
+          },
+          {
+            "proposition": "A Samsung spokesperson declined to comment on whether the ~80% HBM4 yield result would alter factory allocation.",
+            "assertion_state": "DENIAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "Samsung Electronics",
+              "HBM4"
+            ]
+          }
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:46:39.996232Z",
+      "started_at": "2026-09-08T10:46:22.179049Z",
+      "finished_at": "2026-09-08T10:46:39.996232Z"
+    }
+  ]
+}

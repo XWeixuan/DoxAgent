@@ -44,6 +44,9 @@ class WeekendSelection:
         candidates = [
             self.journal.get("candidates", identity) for identity in snapshot["candidate_ids"]
         ]
+        candidates = [
+            item for item in candidates if item and item.get("origin_trade_eligible", True)
+        ]
         released = self.journal.get("trade_intents", f"trade:{task['id']}")
         if released and released["status"] in {"READY", "OUTPUT_RECORDED", "UNKNOWN"}:
             prior = task["receipt"].get("selection_result")
@@ -114,7 +117,8 @@ class WeekendSelection:
                 result = (await self._judge(task, payload)).model_dump()
         parsed = SelectionResult.model_validate(result)
         if parsed.selection_id != task["id"] or (
-            parsed.candidate_id is not None and parsed.candidate_id not in snapshot["candidate_ids"]
+            parsed.candidate_id is not None
+            and parsed.candidate_id not in {item["candidate_id"] for item in candidates}
         ):
             raise ValueError("selection returned an out-of-snapshot identity")
         self.journal.checkpoint(task, selection_result=result)
@@ -182,7 +186,9 @@ class WeekendSelection:
         try:
             await worker.write_text(run_id, "AGENTS.md", prompt)
             await worker.write_text(run_id, "context/selection.json", encode(payload))
-            job = await ReceiptWorker(worker, self.journal, task["id"]).run(
+            job = await ReceiptWorker(
+                worker, self.journal, task["id"], control_epoch=task["inputs"].get("control_epoch")
+            ).run(
                 WorkerRunRequest(
                     workflow_version=CODEX_PERSISTENT_RUNTIME_W3_WORKFLOW_VERSION,
                     research_lane=ResearchLane.PERSISTENT_RUNTIME,

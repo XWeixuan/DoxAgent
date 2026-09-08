@@ -1,0 +1,144 @@
+{
+  "case_id": "MU-W12-004",
+  "status": "COMPLETED",
+  "started_at": "2026-09-08T18:43:25.075262+08:00",
+  "completed_at": "2026-09-08T18:44:13.690610+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E27",
+        "E23",
+        "E56",
+        "E25",
+        "E28"
+      ]
+    },
+    "w1_final": {
+      "result": "OLD",
+      "confidence": "normal",
+      "reference_ids": [
+        "E27",
+        "E56",
+        "E28"
+      ],
+      "reason": "The message is a weekly semiconductor industry roundup. All memory-specific core facts (demand exceeding supply, rising prices, partial customer fulfillment, August sector rally including SK hynix/Kioxia/ETFs, AI-driven capacity constraints, HBM timelines) are covered by E27, E56, and E28. Non-memory observations (packaging crowding, power coordination, networking, foundries, automotive, logistics) are qualitative descriptions of ongoing conditions stated as continuing or recurring, not new specific occurrences or state changes."
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "candidate_policy_ids": []
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "no_policy_candidate_recalled"
+    },
+    "route": {
+      "primary_route": "ARCHIVE",
+      "side_effects": [
+        "archive_message"
+      ],
+      "reason": "w1=OLD/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_55d7aa554977431293a98f499274bda1",
+      "case_id": "case_d500cce9a6e7445b9157ca9df5f7e1b9",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_faf32f33-cc0b-98e5-a080-346edae01ccc",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 14728,
+      "output_tokens": 1033,
+      "reasoning_tokens": 1006,
+      "cached_input_tokens": 12288,
+      "prefix_fingerprint": "bc31fe43c6ebabd4fc723722115d9464ea7b664f00c01e1f616107c8df6bc804",
+      "latency_ms": 15110,
+      "output": {
+        "event_ids": [
+          "E27",
+          "E23",
+          "E56",
+          "E25",
+          "E28"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:43:40.440382Z",
+      "started_at": "2026-09-08T10:43:25.330199Z",
+      "finished_at": "2026-09-08T10:43:40.440382Z"
+    },
+    {
+      "turn_id": "turn_3b484f8cd2384e379dbf6cabac326cf8",
+      "case_id": "case_d500cce9a6e7445b9157ca9df5f7e1b9",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_4a1af7bb-31af-9707-b326-98f5329f609c",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 7822,
+      "output_tokens": 3429,
+      "reasoning_tokens": 3420,
+      "cached_input_tokens": 5120,
+      "prefix_fingerprint": "f2c2dc5406ee6290d30c3915855d61097564d2c6dc1ec3341f57f61c28e3c52b",
+      "latency_ms": 38895,
+      "output": {
+        "candidate_policy_ids": []
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:44:04.226147Z",
+      "started_at": "2026-09-08T10:43:25.331191Z",
+      "finished_at": "2026-09-08T10:44:04.226147Z"
+    },
+    {
+      "turn_id": "turn_565839d880144dcb85df60bbb889974b",
+      "case_id": "case_d500cce9a6e7445b9157ca9df5f7e1b9",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_5d8e6c72-786f-9504-a48d-38466c11a5ae",
+      "previous_response_id": "resp_faf32f33-cc0b-98e5-a080-346edae01ccc",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 5817,
+      "output_tokens": 2121,
+      "reasoning_tokens": 1985,
+      "cached_input_tokens": 1024,
+      "prefix_fingerprint": "47a4473fec7f38330c3c945f06a1a96b3bd8f055a55122bdd209bc898dd4360c",
+      "latency_ms": 33224,
+      "output": {
+        "result": "OLD",
+        "confidence": "normal",
+        "reference_ids": [
+          "E27",
+          "E56",
+          "E28"
+        ],
+        "reason": "The message is a weekly semiconductor industry roundup. All memory-specific core facts (demand exceeding supply, rising prices, partial customer fulfillment, August sector rally including SK hynix/Kioxia/ETFs, AI-driven capacity constraints, HBM timelines) are covered by E27, E56, and E28. Non-memory observations (packaging crowding, power coordination, networking, foundries, automotive, logistics) are qualitative descriptions of ongoing conditions stated as continuing or recurring, not new specific occurrences or state changes."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:44:13.690028Z",
+      "started_at": "2026-09-08T10:43:40.465525Z",
+      "finished_at": "2026-09-08T10:44:13.690028Z"
+    }
+  ]
+}

@@ -8,7 +8,6 @@ from typing import Any
 
 from doxagent.codex_runtime.client import HttpCodexWorkerClient
 from doxagent.event_library.compiler import EventLibraryViewCompiler
-from doxagent.event_library.contracts import ReferenceViewDeltaSnapshot
 from doxagent.event_library.service import EventLibraryService
 from doxagent.semantic_clock import semantic_day
 from doxagent.settings import DoxAgentSettings
@@ -183,7 +182,10 @@ class RuntimeMaintenance:
                 capability_secret=self.settings.codex_capability_secret,
             )
         )
-        durable = ReceiptWorker(worker, self.journal, run_id)
+        durable = ReceiptWorker(
+            worker, self.journal, run_id, control_epoch=task["inputs"].get("control_epoch")
+        )
+        reference_task = {**task, "id": run_id}
         # Freeze O2/O3 assets before dispatch and materialize only immutable snapshots.
         assets = self.journal.get("maintenance_assets", run_id)
         if assets is None:
@@ -217,6 +219,14 @@ class RuntimeMaintenance:
                 raise ValueError("immutable maintenance prompt content changed")
             target.write_text(content, encoding="utf-8")
         try:
+            from .reference_capture import freeze_before
+
+            freeze_before(
+                self.journal,
+                reference_task,
+                EventLibraryViewCompiler(repository),
+                int(event_ref["version"]),
+            )
             if not task["receipt"].get("o2"):
                 o2 = (
                     self.o2_factory(repository, durable)
@@ -320,20 +330,14 @@ class RuntimeMaintenance:
                 )
             published = task["receipt"]["o2"]
             compiler = EventLibraryViewCompiler(repository)
-            delta = (
-                compiler.reference_view_delta(
-                    task["ticker"],
-                    from_version=int(event_ref["version"]),
-                    to_version=published["version"],
-                )
-                if published["version"] != int(event_ref["version"])
-                else ReferenceViewDeltaSnapshot(
-                    ticker=task["ticker"],
-                    from_library_version=published["version"],
-                    to_library_version=published["version"],
-                    reference_view_delta="",
-                    removed_event_ids=[],
-                )
+            from .reference_capture import actual_delta
+
+            delta = actual_delta(
+                self.journal,
+                reference_task,
+                compiler,
+                int(event_ref["version"]),
+                published["version"],
             )
             feed = O3MaintenanceFeed(
                 ticker=task["ticker"],
@@ -351,6 +355,9 @@ class RuntimeMaintenance:
                 ],
             )
             if not task["receipt"].get("o3"):
+                from .reference_capture import prepare
+
+                prepare(self.journal, reference_task, compiler, candidate_root, day, delta)
                 config = self.settings.model_copy(
                     update={
                         "event_library_root": str(candidate_root),
@@ -380,9 +387,13 @@ class RuntimeMaintenance:
                 )
                 if str(result.status) in {"FAILED", "DEGRADED"}:
                     raise ValueError("O3 produced no usable maintenance output")
+                from .reference_capture import settle
+
+                settle(self.journal, run_id, "SUCCEEDED")
                 self.journal.checkpoint(task, o3={"version": result.policy_set_version})
             metadata = {
                 "maintenance_id": task["id"],
+                "control_epoch": task["inputs"].get("control_epoch"),
                 "visibility_day": semantic_day(cutoff).isoformat(),
                 "frame_hash": digest(frame),
             }
@@ -400,6 +411,9 @@ class RuntimeMaintenance:
             self._consume(task, frame)
             return {"revision_id": revision["revision_id"]}
         except Exception:
+            from .reference_capture import settle
+
+            settle(self.journal, run_id, "FAILED")
             # A confirmed successful worker receipt with unusable artifacts needs
             # a new bounded repair turn; uncertain/running jobs retain their key.
             identity = getattr(durable, "last_identity", None)

@@ -1,0 +1,256 @@
+{
+  "case_id": "MU-W12-010",
+  "status": "COMPLETED",
+  "started_at": "2026-09-08T18:44:13.694714+08:00",
+  "completed_at": "2026-09-08T18:45:21.957614+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E17",
+        "E171",
+        "E14",
+        "E79"
+      ]
+    },
+    "w1_final": {
+      "result": "NEW",
+      "confidence": "normal",
+      "reference_ids": [
+        "E17"
+      ],
+      "reason": "Core fact — NVIDIA completed production qualification of Micron's HBM4E for one accelerator program, moving the part from lab characterization to approved-source status — is not represented in any existing fact. F86 records a general HBM design win; F90 records HBM4E still in development targeting 2027 HVM. The specific state transition from 'developing/testing' to 'customer qualification completed for HBM4E' is a new milestone."
+    },
+    "w1_r3": {
+      "candidates": [
+        {
+          "proposition": "NVIDIA completed production qualification of Micron's HBM4E for one forthcoming accelerator program, moving the component from lab characterization to approved-source status for that program.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "forthcoming accelerator program",
+          "occurrence_date": null,
+          "entities": [
+            "NVIDIA",
+            "Micron",
+            "HBM4E"
+          ]
+        },
+        {
+          "proposition": "The HBM4E production qualification covered electrical behavior, thermal operation, signal integrity, and system-level interoperability in NVIDIA reference servers, using stress workloads resembling long-running AI training and inference jobs over a period of several months.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "NVIDIA",
+            "Micron",
+            "HBM4E"
+          ]
+        },
+        {
+          "proposition": "The HBM4E qualification concerned a single named customer and one accelerator program; neither NVIDIA nor Micron identified additional platforms or other cloud operators in the materials reviewed.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "NVIDIA",
+            "Micron"
+          ]
+        },
+        {
+          "proposition": "After the approved-source milestone, the next engineering work for the accelerator program will center on platform design, firmware, thermal settings, and system integration.",
+          "assertion_state": "PLAN",
+          "subject_time": "ongoing accelerator program development",
+          "occurrence_date": null,
+          "entities": [
+            "NVIDIA",
+            "Micron",
+            "HBM4E"
+          ]
+        }
+      ]
+    },
+    "w2_r1": {
+      "candidate_policy_ids": []
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "no_policy_candidate_recalled"
+    },
+    "route": {
+      "primary_route": "ADD_TO_DELTA",
+      "side_effects": [
+        "emit_delta"
+      ],
+      "reason": "w1=NEW/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_1aff4e4dd1334d489197ba86a598a088",
+      "case_id": "case_ca98e9d8610b4179a852b87b93fc31d2",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_206936d9-caee-98b1-a803-cd98d9955a8c",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 6585,
+      "output_tokens": 1958,
+      "reasoning_tokens": 1949,
+      "cached_input_tokens": 5120,
+      "prefix_fingerprint": "f2c2dc5406ee6290d30c3915855d61097564d2c6dc1ec3341f57f61c28e3c52b",
+      "latency_ms": 21548,
+      "output": {
+        "candidate_policy_ids": []
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:44:35.290578Z",
+      "started_at": "2026-09-08T10:44:13.741691Z",
+      "finished_at": "2026-09-08T10:44:35.289573Z"
+    },
+    {
+      "turn_id": "turn_83460dd4cae14206aeb3382e4e8e85ba",
+      "case_id": "case_ca98e9d8610b4179a852b87b93fc31d2",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_f589f5f0-0922-9286-96ca-e384a5fec558",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13491,
+      "output_tokens": 1841,
+      "reasoning_tokens": 1817,
+      "cached_input_tokens": 12288,
+      "prefix_fingerprint": "bc31fe43c6ebabd4fc723722115d9464ea7b664f00c01e1f616107c8df6bc804",
+      "latency_ms": 21726,
+      "output": {
+        "event_ids": [
+          "E17",
+          "E171",
+          "E14",
+          "E79"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:44:35.465835Z",
+      "started_at": "2026-09-08T10:44:13.740678Z",
+      "finished_at": "2026-09-08T10:44:35.465835Z"
+    },
+    {
+      "turn_id": "turn_11c2c890b443415e863eef55e6a002cf",
+      "case_id": "case_ca98e9d8610b4179a852b87b93fc31d2",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_1dbc5b28-df55-9a64-b08a-55663f75e43a",
+      "previous_response_id": "resp_f589f5f0-0922-9286-96ca-e384a5fec558",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 3673,
+      "output_tokens": 1536,
+      "reasoning_tokens": 1419,
+      "cached_input_tokens": 1024,
+      "prefix_fingerprint": "ad8f2bb82c42029e9894d5870e174c9a553207b9483a0385e5c7dc239815cd25",
+      "latency_ms": 18201,
+      "output": {
+        "result": "NEW",
+        "confidence": "normal",
+        "reference_ids": [
+          "E17"
+        ],
+        "reason": "Core fact — NVIDIA completed production qualification of Micron's HBM4E for one accelerator program, moving the part from lab characterization to approved-source status — is not represented in any existing fact. F86 records a general HBM design win; F90 records HBM4E still in development targeting 2027 HVM. The specific state transition from 'developing/testing' to 'customer qualification completed for HBM4E' is a new milestone."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:44:53.692387Z",
+      "started_at": "2026-09-08T10:44:35.490824Z",
+      "finished_at": "2026-09-08T10:44:53.692387Z"
+    },
+    {
+      "turn_id": "turn_a525bc334b5548e7a0748b80b79efb93",
+      "case_id": "case_ca98e9d8610b4179a852b87b93fc31d2",
+      "lane": "W1",
+      "round_name": "R3",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_24b82518-52cc-9d01-8a1f-9587cdedf2ba",
+      "previous_response_id": "resp_1dbc5b28-df55-9a64-b08a-55663f75e43a",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 2484,
+      "output_tokens": 2349,
+      "reasoning_tokens": 2064,
+      "cached_input_tokens": 0,
+      "prefix_fingerprint": "ab0649b8050597df0ab6a0aed8c31016d2530ed259c8c1d53c3b528aa692b7ae",
+      "latency_ms": 28253,
+      "output": {
+        "candidates": [
+          {
+            "proposition": "NVIDIA completed production qualification of Micron's HBM4E for one forthcoming accelerator program, moving the component from lab characterization to approved-source status for that program.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "forthcoming accelerator program",
+            "occurrence_date": null,
+            "entities": [
+              "NVIDIA",
+              "Micron",
+              "HBM4E"
+            ]
+          },
+          {
+            "proposition": "The HBM4E production qualification covered electrical behavior, thermal operation, signal integrity, and system-level interoperability in NVIDIA reference servers, using stress workloads resembling long-running AI training and inference jobs over a period of several months.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "NVIDIA",
+              "Micron",
+              "HBM4E"
+            ]
+          },
+          {
+            "proposition": "The HBM4E qualification concerned a single named customer and one accelerator program; neither NVIDIA nor Micron identified additional platforms or other cloud operators in the materials reviewed.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "NVIDIA",
+              "Micron"
+            ]
+          },
+          {
+            "proposition": "After the approved-source milestone, the next engineering work for the accelerator program will center on platform design, firmware, thermal settings, and system integration.",
+            "assertion_state": "PLAN",
+            "subject_time": "ongoing accelerator program development",
+            "occurrence_date": null,
+            "entities": [
+              "NVIDIA",
+              "Micron",
+              "HBM4E"
+            ]
+          }
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:45:21.945467Z",
+      "started_at": "2026-09-08T10:44:53.692387Z",
+      "finished_at": "2026-09-08T10:45:21.945467Z"
+    }
+  ]
+}

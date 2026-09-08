@@ -47,6 +47,16 @@ def project_turn_telemetry(
     )[:5]
     return WorkerTurnTelemetry(
         usage=_project_usage(usage),
+        observed_usage={
+            key: _optional_nonnegative(getattr(getattr(usage, "last", None), key, None))
+            for key in (
+                "input_tokens",
+                "cached_input_tokens",
+                "output_tokens",
+                "reasoning_output_tokens",
+                "total_tokens",
+            )
+        },
         sdk_duration_ms=duration_ms,
         mcp_call_count=sum(item.item_type == "mcp_tool_call" for item in events),
         command_call_count=sum(item.item_type == "command" for item in events),

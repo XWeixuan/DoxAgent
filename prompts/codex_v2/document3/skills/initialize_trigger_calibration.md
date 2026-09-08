@@ -132,7 +132,18 @@ Coverage Saturation 追求重要 Future Surface 的充分覆盖，不要求枚�
 4. **Message Reality**：谁掌握并通常发布该事实，什么正常消息能够完整确认这一 occurrence？
 5. **Residual Uncertainty**：若更晚的 shipment、revenue、margin、share 或其他兑现仍未知，这项事实是否仍独立充分？
 
-五项均有可辩护答案时才形成 `TRIGGER_READY`；其中任一缺口会改变事件选择、充分性或可判定边界时，先完成对应 Calibration。
+### Runtime Comparison Check
+
+对于任何需要“高于 / 低于 / 提前 / 推迟 / 扩大 / 缩小 / 超过正常 / 相对计划变化”等比较的 Candidate，在判定 `TRIGGER_READY` 前明确回答：
+
+1. W2 未来需要从消息中识别哪个 variable / state？
+2. 最终 Policy 能提供什么明确的 current value、current state 或 market expectation 作为比较锚？
+3. 什么数值、时点、阶段或 categorical transition 构成 trigger boundary？
+4. 新消息与 Runtime Policy 是否足以直接完成比较？
+
+若比较必须依赖 Policy 中没有提供的历史值、行业正常值、市场共识、上一期数值或隐含模型，则该 Candidate 尚不具备 Runtime judgeability，应继续 Calibration 或收敛为 unresolved。
+
+上述五项以及适用的 Runtime Comparison Check 均有可辩护答案时才形成 `TRIGGER_READY`；其中任一缺口会改变事件选择、充分性或可判定边界时，先完成对应 Calibration。
 
 对每个 Path 隔离设定：
 
@@ -174,9 +185,21 @@ Candidate 可以完成整个 expectation revision，也可以只形成一次独�
 
 当 Candidate 同时包含 adoption/qualification、shipment、revenue、margin、share、inventory 等节点时，先区分它们是在共同定义一个现实事件，还是在描述“事件发生 → 经济传导 → 后续兑现”。若前面的业务状态在后续结果未知时已经使当前市场 expectation 产生足够大的方向性偏移，Trigger 停在该状态；后续节点作为 transmission、realization 或 supporting information。
 
+一旦较早状态已经达到 Direct Trading Sufficiency，后续采购、订单、shipment、share、revenue、margin 或其他兑现不再仅因“提高信心”继续加入 Candidate。如果缺少后续结果使方向看起来不确定，先检查真正缺失的是 transmission research 还是 Trigger 本身不足；前者通过研究解决，而不是默认等待 realization。
+
+### External Event Transmission Check
+
+当 Trigger 由客户、竞争者、平台、监管机构或其他外部主体承载时，先判断该外部事件本身是否已经通过 D2 exposure/transmission 对目标 ticker 形成足够的 expectation revision。若是，目标公司后续订单、allocation、份额、shipment、收入或利润属于后续 realization，不作为当前 Trigger 的必要组成。
+
+只有缺少目标公司 exposure 会真正改变方向时，才继续研究 exposure；此时目标是解决 transmission uncertainty，而不是等待目标公司最终经营结果。
+
 ### Real Message Check
 
-对 Candidate 逐项确认：谁拥有该事实，什么正常消息会披露它，该消息是否自然包含 Candidate 要求的全部事实。“一篇综合报道理论上可以汇总多个来源”不等于存在这样的正常单消息 occurrence。若 Candidate 依赖不同事实所有者、发布时间或商业阶段的独立确认，重新拆分、前移到独立充分的边界，或保留 unresolved。
+对 Candidate 逐项确认：谁拥有该事实，什么正常消息会披露它，该消息是否自然包含 Candidate 要求的全部事实，以及该来源通常是否会公开到 Candidate 要求的粒度。“一篇综合报道理论上可以汇总多个来源”不等于存在这样的正常单消息 occurrence。若 Candidate 依赖不同事实所有者、发布时间或商业阶段的独立确认，重新拆分、前移到独立充分的边界，或保留 unresolved。
+
+事实所有者理论上掌握某项信息，不等于现实中通常会公开到该粒度。若正常披露不会提供 customer-specific order、internal wafer allocation、workload-level procurement 或类似高粒度事实，优先寻找更现实可观察的 proxy 或更粗业务边界；若仍无法形成，则 unresolved，而不是发布现实中几乎不会触发的 Policy。
+
+若 Condition 依赖两个或多个季度、交付期、consensus snapshot 或历史比较点，当前新消息必须自身提供完整可比序列，或者 Runtime Projection 已经包含 W2 完成比较所需的此前值；不能假设 W2 会从之前处理过的消息中自行累计隐藏状态。
 
 ## 6. Calibrate Reality、Expectation 与 Trigger Boundary
 
@@ -197,6 +220,8 @@ Calibration 围绕四个相邻但不同的问题：
 
 研究市场对同一 actor/object 下一步状态、时点、规模或商业阶段的当前基准判断。优先使用管理层指引与明确承诺、卖方 consensus 或观点分布、行业预测、已披露 roadmap、合同与监管预期等能直接表达 expectation 的材料；价格表现通常不能单独说明市场具体预计了什么。目标是识别已经被普遍预期的普通进展，而不是重建完整市场研究。
 
+管理层 guidance、roadmap、合同条款或公开计划首先是 known expectation anchors，并不自动等于市场普遍预期。只有不存在重要相反证据，或 sell-side / industry evidence 表明市场以其作为当前基准时，才将其作为主要 market expectation baseline；研究中应区分“已知计划是什么”和“市场已经 price / expect 到哪里”。
+
 ### Trigger boundary
 
 校准真正决定充分性的业务属性：actor importance、commitment strength、commercial stage、magnitude、product/customer/region scope、applicable period、timing shift、production/legal status 和必要 comparator。
@@ -207,7 +232,11 @@ Calibration 围绕四个相邻但不同的问题：
 
 对于“主要客户”“多个 OEM”“重大客户”“主要供应商”“多个平台”等 aggregate actor，判断最大单一 actor 是否已充分、普通单一 actor 是否仍充分；确实需要 aggregate 时，校准最低市场份额、客户类别、产品覆盖或独立主体数量。能用具体 material actor/state 表达时优先具体化，aggregate 表述则应解释其经济 materiality。
 
+“至少两个 / 多个”不构成 materiality 的默认替代。主体数量只有在 breadth 本身决定 expectation revision 时才作为 boundary；若单一大型 actor 已具有足够 exposure，应允许单一 actor Trigger。确实需要 aggregate 时，优先使用收入、需求、供应、客户或平台覆盖等经济 exposure 定义 materiality，而不是机械使用主体数量。
+
 Minimality 校准的是业务阈值，不把自然事件中的 actor、object、period、magnitude 拆成逻辑原子。按以下顺序建立可判定边界：先使用有可靠依据的 quantitative threshold；缺少可靠数值时使用 `non-binding → binding`、`sample → qualification`、`qualification → production` 等 categorical business boundary；两者都无法建立且程度会改变 sufficiency 时保留 unresolved。“显著”“主要”“重大”“大幅”等程度词本身不构成第三种校准方法。
+
+任何看似精确的 boundary，例如“两个季度”“两个客户”“20% 市场份额”或“两个交付期”，都应能在 Stage-A `source_basis`、market expectation research 或 `minimality` 中解释其经济依据；不能仅为了提高 Runtime judgeability 选择方便的整数阈值。
 
 ## 7. Conduct Targeted Research
 

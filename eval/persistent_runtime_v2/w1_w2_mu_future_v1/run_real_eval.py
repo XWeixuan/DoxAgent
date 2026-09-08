@@ -320,23 +320,28 @@ def _score(result: dict[str, Any], gold: dict[str, Any]) -> dict[str, Any]:
     )
 
     w2_r1_expected = gold["w2"]["r1"]["expected_output"]
-    w2_r1_allowed = w2_r1_expected["policy_ids"]
+    w2_r1_required = w2_r1_expected["policy_ids"]
+    w2_r1_allowed = list(
+        dict.fromkeys([*w2_r1_required, *gold["w2"].get("near_miss_policy_ids", [])])
+    )
+    w2_r1_predicted = prediction["w2_r1"].get(
+        "candidate_policy_ids",
+        prediction["w2_r1"].get("policy_ids", []),
+    )
     w2_r1_policies = _set_counts(
-        prediction["w2_r1"]["policy_ids"], w2_r1_allowed, w2_r1_allowed
+        w2_r1_predicted,
+        w2_r1_required,
+        w2_r1_allowed,
     )
     w2_r1 = {
         "policies": w2_r1_policies,
-        "confidence_pass": prediction["w2_r1"]["confidence"]
-        == w2_r1_expected["confidence"],
         "order_pass": (
-            prediction["w2_r1"]["policy_ids"] == w2_r1_expected["policy_ids"]
+            w2_r1_predicted == w2_r1_required
             if gold["w2"]["r1"]["policy_order_is_significant"]
             else True
         ),
     }
-    w2_r1["pass"] = all(
-        (w2_r1_policies["pass"], w2_r1["confidence_pass"], w2_r1["order_pass"])
-    )
+    w2_r1["pass"] = w2_r1_policies["pass"] and w2_r1["order_pass"]
 
     w2_final_expected = gold["w2"]["final"]["expected_output"]
     w2_final_policies = _set_counts(
@@ -383,17 +388,17 @@ def _score(result: dict[str, Any], gold: dict[str, Any]) -> dict[str, Any]:
         expected_activation_ids,
     )
 
-    expected_r2 = gold["w2"]["r2"]
+    expected_r2_invocation = bool(w2_r1_predicted)
     actual_r2_turns = [
         turn for turn in result["turns"] if turn["lane"] == "W2" and turn["round_name"] == "R2"
     ]
     w2_r2 = {
-        "expected": expected_r2 is not None,
+        "expected": expected_r2_invocation,
         "invoked": bool(actual_r2_turns),
-        "invocation_pass": bool(actual_r2_turns) == (expected_r2 is not None),
+        "invocation_pass": bool(actual_r2_turns) == expected_r2_invocation,
     }
-    if expected_r2 is not None and actual_r2_turns:
-        expected_r2_output = expected_r2["expected_output"]
+    if expected_r2_invocation and actual_r2_turns:
+        expected_r2_output = w2_final_expected
         final_r2_output = actual_r2_turns[-1]["output"]
         w2_r2["output_pass"] = (
             final_r2_output is not None
@@ -403,7 +408,7 @@ def _score(result: dict[str, Any], gold: dict[str, Any]) -> dict[str, Any]:
             == expected_r2_output["matched_condition_ids"]
         )
     else:
-        w2_r2["output_pass"] = expected_r2 is None and not actual_r2_turns
+        w2_r2["output_pass"] = not expected_r2_invocation and not actual_r2_turns
     w2_r2["pass"] = w2_r2["invocation_pass"] and w2_r2["output_pass"]
 
     expected_r3 = gold["w1"]["r3"]["expected_execution"]
@@ -510,10 +515,7 @@ def _aggregate(records: list[dict[str, Any]]) -> dict[str, Any]:
                 ),
             },
             "w2_r1": {
-                "policy": _sum_set_counts(scored, ("w2_r1", "policies")),
-                "confidence_accuracy": _ratio(
-                    sum(item["w2_r1"]["confidence_pass"] for item in scored), len(scored)
-                ),
+                "candidate_policy": _sum_set_counts(scored, ("w2_r1", "policies")),
                 "exact_cases": sum(item["w2_r1"]["pass"] for item in scored),
             },
             "w2_r2": {

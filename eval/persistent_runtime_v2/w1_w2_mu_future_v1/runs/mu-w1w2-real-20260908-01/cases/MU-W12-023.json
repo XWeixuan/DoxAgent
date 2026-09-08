@@ -1,0 +1,197 @@
+{
+  "case_id": "MU-W12-023",
+  "status": "COMPLETED",
+  "started_at": "2026-09-08T18:46:46.526595+08:00",
+  "completed_at": "2026-09-08T18:47:53.273900+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E43",
+        "E44",
+        "E42"
+      ]
+    },
+    "w1_final": {
+      "result": "OLD",
+      "confidence": "normal",
+      "reference_ids": [
+        "E43"
+      ],
+      "reason": "F175 (E43) already records Samsung's HBM4 mass production and commercial shipments beginning in February 2026. The current message is explicitly framed by Samsung as a status update of the same product family, not a new milestone; 'broad commercial delivery' restates the ongoing commercial-shipment state without introducing a distinct stage transition, new customer qualification, or quantifiable change."
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "candidate_policy_ids": [
+        "pol_83c565b3ca305ee04c41"
+      ]
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息确认三星HBM4处于'broad commercial delivery'阶段且时间(2027年6月)在2028年前，部分满足量产良率与多客户重复交付的要素。但Condition C1明确要求'同时DRAM市场交期缩短或合同价开始下降'，消息通篇为单一厂商产品状态更新，未涉及任何行业级交期或合同价格变动信息，该必要市场条件完全缺失，Condition未完整成立。"
+    },
+    "route": {
+      "primary_route": "ARCHIVE",
+      "side_effects": [
+        "archive_message"
+      ],
+      "reason": "w1=OLD/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_349b185a920d45c3851b32999686a1cb",
+      "case_id": "case_5a03e4ccc25b43c782b84af0d38df415",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_3e8b23a1-d0bb-9a3c-afc3-cbeae4258ea3",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13445,
+      "output_tokens": 1132,
+      "reasoning_tokens": 1113,
+      "cached_input_tokens": 12288,
+      "prefix_fingerprint": "bc31fe43c6ebabd4fc723722115d9464ea7b664f00c01e1f616107c8df6bc804",
+      "latency_ms": 13775,
+      "output": {
+        "event_ids": [
+          "E43",
+          "E44",
+          "E42"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:47:00.368194Z",
+      "started_at": "2026-09-08T10:46:46.592594Z",
+      "finished_at": "2026-09-08T10:47:00.367197Z"
+    },
+    {
+      "turn_id": "turn_e9e2543050ff419b97c8217ef8f5181a",
+      "case_id": "case_5a03e4ccc25b43c782b84af0d38df415",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "PENDING_RETRY",
+      "response_id": "resp_16356b31-5a60-9ee2-97dc-9c3171e710ee",
+      "previous_response_id": "resp_3e8b23a1-d0bb-9a3c-afc3-cbeae4258ea3",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 3227,
+      "output_tokens": 1173,
+      "reasoning_tokens": null,
+      "cached_input_tokens": 1664,
+      "prefix_fingerprint": null,
+      "latency_ms": 14675,
+      "output": null,
+      "error_code": "structured_output_validation_failed",
+      "error_message": "Strict structured output validation failed: ValidationError [{\"loc\":\"\",\"type\":\"value_error\",\"msg\":\"Value error, OLD requires at least one loaded reference ID\"}]",
+      "created_at": "2026-09-08T10:47:15.071949Z",
+      "started_at": "2026-09-08T10:47:00.396635Z",
+      "finished_at": "2026-09-08T10:47:15.071949Z"
+    },
+    {
+      "turn_id": "turn_3c9a59ecb03e4f4d8c3d563d79cd6f98",
+      "case_id": "case_5a03e4ccc25b43c782b84af0d38df415",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_43ca9dfe-271c-97b0-898a-8e9a96e79fc8",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 6539,
+      "output_tokens": 4640,
+      "reasoning_tokens": 4611,
+      "cached_input_tokens": 5120,
+      "prefix_fingerprint": "f2c2dc5406ee6290d30c3915855d61097564d2c6dc1ec3341f57f61c28e3c52b",
+      "latency_ms": 48552,
+      "output": {
+        "candidate_policy_ids": [
+          "pol_83c565b3ca305ee04c41"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:47:35.146508Z",
+      "started_at": "2026-09-08T10:46:46.594602Z",
+      "finished_at": "2026-09-08T10:47:35.146508Z"
+    },
+    {
+      "turn_id": "turn_560799a3650748869ea26e93357ed957",
+      "case_id": "case_5a03e4ccc25b43c782b84af0d38df415",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 2,
+      "status": "OK",
+      "response_id": "resp_b230a956-c02a-934c-8051-292424808bee",
+      "previous_response_id": "resp_3e8b23a1-d0bb-9a3c-afc3-cbeae4258ea3",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 3227,
+      "output_tokens": 1418,
+      "reasoning_tokens": 1314,
+      "cached_input_tokens": 3072,
+      "prefix_fingerprint": "c1a0ad35976d15be2d11ab79cca46a460f184293fcde79d8d78d95580bac4f61",
+      "latency_ms": 24498,
+      "output": {
+        "result": "OLD",
+        "confidence": "normal",
+        "reference_ids": [
+          "E43"
+        ],
+        "reason": "F175 (E43) already records Samsung's HBM4 mass production and commercial shipments beginning in February 2026. The current message is explicitly framed by Samsung as a status update of the same product family, not a new milestone; 'broad commercial delivery' restates the ongoing commercial-shipment state without introducing a distinct stage transition, new customer qualification, or quantifiable change."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:47:44.569992Z",
+      "started_at": "2026-09-08T10:47:20.072879Z",
+      "finished_at": "2026-09-08T10:47:44.569992Z"
+    },
+    {
+      "turn_id": "turn_8431d175a7a74d65ba3bf68fca495d4c",
+      "case_id": "case_5a03e4ccc25b43c782b84af0d38df415",
+      "lane": "W2",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_a5fe360d-034c-978b-ab64-e616a52100a5",
+      "previous_response_id": "resp_43ca9dfe-271c-97b0-898a-8e9a96e79fc8",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 2686,
+      "output_tokens": 1365,
+      "reasoning_tokens": 1248,
+      "cached_input_tokens": 1664,
+      "prefix_fingerprint": "f2c45d2823d5346251c0df964688827e7e4bc3fb33aa83eb3ed6441dc5cb1fe2",
+      "latency_ms": 18127,
+      "output": {
+        "policy_ids": [],
+        "matched_condition_ids": [],
+        "confidence": "normal",
+        "reason": "消息确认三星HBM4处于'broad commercial delivery'阶段且时间(2027年6月)在2028年前，部分满足量产良率与多客户重复交付的要素。但Condition C1明确要求'同时DRAM市场交期缩短或合同价开始下降'，消息通篇为单一厂商产品状态更新，未涉及任何行业级交期或合同价格变动信息，该必要市场条件完全缺失，Condition未完整成立。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:47:53.273900Z",
+      "started_at": "2026-09-08T10:47:35.146508Z",
+      "finished_at": "2026-09-08T10:47:53.273900Z"
+    }
+  ]
+}

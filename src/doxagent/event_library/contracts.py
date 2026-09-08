@@ -495,9 +495,9 @@ class ReferenceViewDecisionLedgerEntry(StrictModel):
 
 
 class CanonicalRevisionBundle(StrictModel):
-    contract_version: Literal[
-        "event-library-foundation-v1", "event-library-maintenance-v3"
-    ] = "event-library-foundation-v1"
+    contract_version: Literal["event-library-foundation-v1", "event-library-maintenance-v3"] = (
+        "event-library-foundation-v1"
+    )
     run_id: str = Field(min_length=1)
     ticker: str = Field(min_length=1)
     base_library_version: int = Field(ge=0)
@@ -542,9 +542,9 @@ class CanonicalRevisionBundle(StrictModel):
 class CanonicalRevisionBundleManifest(StrictModel):
     """Workspace wire manifest; Event revisions remain in separate JSON files."""
 
-    contract_version: Literal[
-        "event-library-foundation-v1", "event-library-maintenance-v3"
-    ] = "event-library-foundation-v1"
+    contract_version: Literal["event-library-foundation-v1", "event-library-maintenance-v3"] = (
+        "event-library-foundation-v1"
+    )
     run_id: str = Field(min_length=1)
     ticker: str = Field(min_length=1)
     base_library_version: int = Field(ge=0)
@@ -676,9 +676,9 @@ class FrozenRuntimeAtomic(StrictModel):
 
 
 class FrozenRuntimeSnapshot(StrictModel):
-    contract_version: Literal[
-        "event-library-foundation-v1", "frozen-runtime-time-v2"
-    ] = "event-library-foundation-v1"
+    contract_version: Literal["event-library-foundation-v1", "frozen-runtime-time-v2"] = (
+        "event-library-foundation-v1"
+    )
     snapshot_id: str = Field(min_length=1)
     runtime_scope: str = Field(min_length=1)
     epoch_id: str = Field(min_length=1)
@@ -895,22 +895,30 @@ class ReferenceViewDeltaSnapshot(StrictModel):
     to_library_version: int = Field(ge=1)
     reference_view_delta: str
     removed_event_ids: list[str] = Field(default_factory=list)
+    before_reference_snapshot_id: str | None = None
+    after_reference_snapshot_id: str | None = None
 
     @model_validator(mode="after")
     def increasing_versions(self) -> ReferenceViewDeltaSnapshot:
         if self.to_library_version < self.from_library_version:
             raise ValueError("Reference View Delta versions must not go backwards")
-        if self.to_library_version == self.from_library_version and (
-            self.removed_event_ids or self.reference_view_delta.strip()
+        if (
+            self.to_library_version == self.from_library_version
+            and (self.removed_event_ids or self.reference_view_delta.strip())
+            and not (
+                self.before_reference_snapshot_id
+                and self.after_reference_snapshot_id
+                and self.before_reference_snapshot_id != self.after_reference_snapshot_id
+            )
         ):
             raise ValueError("Equal-version Reference View Delta must be empty")
         return self
 
 
 class FrozenViewManifest(StrictModel):
-    contract_version: Literal[
-        "event-library-maintenance-v2", "event-library-maintenance-v3"
-    ] = "event-library-maintenance-v3"
+    contract_version: Literal["event-library-maintenance-v2", "event-library-maintenance-v3"] = (
+        "event-library-maintenance-v3"
+    )
     frozen_view_id: str
     run_id: str
     mode: Literal["INITIALIZE", "INCREMENTAL"]

@@ -51,6 +51,11 @@ def model_usage_event_from_gateway(
     error = response.error
     status = "failed" if error is not None else "retried" if retry_count > 0 else "succeeded"
     return ModelUsageEvent(
+        **(
+            {"event_id": "invocation_" + metadata["invocation_id"]}
+            if metadata.get("invocation_id")
+            else {}
+        ),
         provider=response.audit.provider.value,
         model=response.audit.model or request.model,
         status=status,

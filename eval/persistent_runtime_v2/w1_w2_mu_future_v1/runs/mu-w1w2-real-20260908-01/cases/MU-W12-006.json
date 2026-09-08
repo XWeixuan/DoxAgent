@@ -1,0 +1,136 @@
+{
+  "case_id": "MU-W12-006",
+  "status": "COMPLETED",
+  "started_at": "2026-09-08T18:43:52.028693+08:00",
+  "completed_at": "2026-09-08T18:44:25.445166+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E12",
+        "E117"
+      ]
+    },
+    "w1_final": {
+      "result": "OLD",
+      "confidence": "normal",
+      "reference_ids": [
+        "E12",
+        "E117"
+      ],
+      "reason": "All core facts in the message are directly covered: E12's F79/F80/F81 cover Micron's $6.1B CHIPS award, buyback restriction, and Dec. 9, 2026 expiry; E117's F361/F362 cover U.S. opposition to Apple sourcing from CXMT/YMTC and export controls on tech transfers to CXMT. The article is a policy-backdrop recap with editorial commentary (quotes, analysis) that introduces no new factual event or status change."
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "candidate_policy_ids": []
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "no_policy_candidate_recalled"
+    },
+    "route": {
+      "primary_route": "ARCHIVE",
+      "side_effects": [
+        "archive_message"
+      ],
+      "reason": "w1=OLD/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_dec01551305c4da3b8d3a0bfe191cfcc",
+      "case_id": "case_c101120f26004ca98bb14bea91dfd799",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_78b3c233-d423-9540-a5c5-7af39c45504e",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13468,
+      "output_tokens": 501,
+      "reasoning_tokens": 485,
+      "cached_input_tokens": 12288,
+      "prefix_fingerprint": "bc31fe43c6ebabd4fc723722115d9464ea7b664f00c01e1f616107c8df6bc804",
+      "latency_ms": 6903,
+      "output": {
+        "event_ids": [
+          "E12",
+          "E117"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:43:59.011253Z",
+      "started_at": "2026-09-08T10:43:52.109225Z",
+      "finished_at": "2026-09-08T10:43:59.011253Z"
+    },
+    {
+      "turn_id": "turn_3a560a7ad93c4036948d480e7248d0f4",
+      "case_id": "case_c101120f26004ca98bb14bea91dfd799",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_fc76a99f-2e65-9cd4-a2f2-0c8c5d3f9d56",
+      "previous_response_id": "resp_78b3c233-d423-9540-a5c5-7af39c45504e",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 3128,
+      "output_tokens": 861,
+      "reasoning_tokens": 719,
+      "cached_input_tokens": 1024,
+      "prefix_fingerprint": "7a3d353d4be1c5f9417ba4268442c0cba55540a4ed2cc3e56a3c07b413f0837d",
+      "latency_ms": 10186,
+      "output": {
+        "result": "OLD",
+        "confidence": "normal",
+        "reference_ids": [
+          "E12",
+          "E117"
+        ],
+        "reason": "All core facts in the message are directly covered: E12's F79/F80/F81 cover Micron's $6.1B CHIPS award, buyback restriction, and Dec. 9, 2026 expiry; E117's F361/F362 cover U.S. opposition to Apple sourcing from CXMT/YMTC and export controls on tech transfers to CXMT. The article is a policy-backdrop recap with editorial commentary (quotes, analysis) that introduces no new factual event or status change."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:44:09.207490Z",
+      "started_at": "2026-09-08T10:43:59.021537Z",
+      "finished_at": "2026-09-08T10:44:09.207490Z"
+    },
+    {
+      "turn_id": "turn_6a15ae5eaac34f6b8f319be72f467e2e",
+      "case_id": "case_c101120f26004ca98bb14bea91dfd799",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_589f02b1-eef9-940f-897e-5094605a62db",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 6562,
+      "output_tokens": 3154,
+      "reasoning_tokens": 3145,
+      "cached_input_tokens": 5120,
+      "prefix_fingerprint": "f2c2dc5406ee6290d30c3915855d61097564d2c6dc1ec3341f57f61c28e3c52b",
+      "latency_ms": 33335,
+      "output": {
+        "candidate_policy_ids": []
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:44:25.445166Z",
+      "started_at": "2026-09-08T10:43:52.110232Z",
+      "finished_at": "2026-09-08T10:44:25.445166Z"
+    }
+  ]
+}

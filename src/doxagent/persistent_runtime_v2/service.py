@@ -18,6 +18,7 @@ from pydantic import BaseModel
 from doxagent.event_library.contracts import CanonicalEvent
 from doxagent.event_library.provider import KnownEventIndexSnapshot
 from doxagent.semantic_clock import semantic_day
+from doxagent.v2_control.repository import ControlError, ControlRepository
 from doxagent.workflows.codex_document3.runtime_projection import (
     assert_runtime_projection_compatible,
 )
@@ -59,6 +60,7 @@ from .schema import (
     W1NoveltyVerdict,
     W1Round1Result,
     W2PolicyResult,
+    W2Round1RecallResult,
     W3CaseResult,
     W3CaseStatus,
     W3CoverageGapRecord,
@@ -99,11 +101,37 @@ def _w2_projection_business_payload(
 
 
 def _w2_detail_business_payload(details: PolicyDetailSnapshot) -> dict[str, Any]:
-    """Expose canonical Policy bodies without the versioned retrieval envelope."""
+    """Expose only the recalled Policies' business adjudication fields."""
+
+    by_id = {policy.policy_id: policy for policy in details.policies}
+    ordered = [
+        by_id[policy_id]
+        for policy_id in details.requested_policy_ids
+        if policy_id in by_id
+    ]
 
     return {
         "activation_semantics": "OR",
-        "policies": [policy.model_dump(mode="json") for policy in details.policies],
+        "candidate_policy_ids": list(details.requested_policy_ids),
+        "policies": [
+            {
+                "policy_id": policy.policy_id,
+                "title": policy.title,
+                "match_scope": policy.match_scope,
+                "activation_conditions": [
+                    {
+                        "condition_id": condition.condition_id,
+                        "criterion": condition.criterion,
+                        "calibration": {
+                            "reference_state": condition.calibration.reference_state,
+                            "trigger_boundary": condition.calibration.trigger_boundary,
+                        },
+                    }
+                    for condition in policy.activation_conditions
+                ],
+            }
+            for policy in ordered
+        ],
     }
 
 
@@ -333,6 +361,13 @@ class PersistentRuntimeV2Service:
                 "w12_model": self.responses.model,
                 "w12_effort": getattr(self.responses, "reasoning_effort", "medium"),
             }
+        if self.journal:
+            ControlRepository(self.journal).admit(
+                case.case_id,
+                case.ticker,
+                case.source.eligibility_at or case.source.message_bus_event_time,
+                origin_identity=f"inbox:{case.ticker}:{case.source.source_message_id}",
+            )
         case = self.repository.save_case(case)
         if case.status is not RuntimeCaseStatus.RUNNING:
             return case
@@ -402,7 +437,8 @@ class PersistentRuntimeV2Service:
                     w1_final.result is W1NoveltyVerdict.OLD
                     and w1_final.confidence is RuntimeConfidence.NORMAL
                 ):
-                    w2_r1 = w2_final = W2PolicyResult(
+                    w2_r1 = W2Round1RecallResult()
+                    w2_final = W2PolicyResult(
                         confidence=RuntimeConfidence.NORMAL, reason="closed_old_normal_gate"
                     )
                     case.w2_skipped = True
@@ -413,6 +449,8 @@ class PersistentRuntimeV2Service:
                 w2_future = self._hot_executor.submit(self._run_w2_hot, case, projection)
                 w1_r1, w1_final, w1_response_id = w1_future.result()
                 w2_r1, w2_final, _ = w2_future.result()
+        except ControlError:
+            raise
         except Exception as exc:
             return self._fail_case(case, exc)
 
@@ -551,11 +589,11 @@ class PersistentRuntimeV2Service:
         self,
         case: RuntimeCase,
         projection: RuntimePolicyProjection,
-    ) -> tuple[W2PolicyResult, W2PolicyResult, str]:
+    ) -> tuple[W2Round1RecallResult, W2PolicyResult, str]:
         projected_ids = {item.policy_id for item in projection.policies}
 
-        def validate_r1(value: W2PolicyResult) -> None:
-            if not set(value.policy_ids).issubset(projected_ids):
+        def validate_r1(value: W2Round1RecallResult) -> None:
+            if not set(value.candidate_policy_ids).issubset(projected_ids):
                 raise RuntimeSemanticOutputError(
                     "W2 R1 returned a Policy ID outside the pinned projection"
                 )
@@ -569,18 +607,24 @@ class PersistentRuntimeV2Service:
                 "source_message": case.source.snapshot.model_dump(mode="json"),
                 "runtime_policy_projection": _w2_projection_business_payload(projection),
             },
-            output_model=W2PolicyResult,
-            schema_name="w2_policy_result",
+            output_model=W2Round1RecallResult,
+            schema_name="w2_round1_recall_result",
             cache_context_keys=("runtime_policy_projection",),
             validate=validate_r1,
         )
-        r1 = self._sanitize_condition_attribution(r1, projection)
-        if not r1.policy_ids or r1.confidence is not RuntimeConfidence.LOW:
-            return r1, r1, r1_response_id
+        if not r1.candidate_policy_ids:
+            return (
+                r1,
+                W2PolicyResult(
+                    confidence=RuntimeConfidence.NORMAL,
+                    reason="no_policy_candidate_recalled",
+                ),
+                r1_response_id,
+            )
         details = self.policies.details(
             case.ticker,
             case.version_pin.policy_set_version,
-            r1.policy_ids,
+            r1.candidate_policy_ids,
         )
         if details.missing_policy_ids:
             raise RuntimeInputUnavailable(
@@ -612,10 +656,16 @@ class PersistentRuntimeV2Service:
         )
         current_projection = self._without_consumed_policies(projection)
         active_ids = {item.policy_id for item in current_projection.policies}
+        returned_policy_ids = list(r2.policy_ids)
         r2 = r2.model_copy(
             update={"policy_ids": [item for item in r2.policy_ids if item in active_ids]}
         )
         r2 = self._sanitize_condition_attribution(r2, current_projection)
+        if returned_policy_ids and not r2.policy_ids:
+            r2 = W2PolicyResult(
+                confidence=RuntimeConfidence.NORMAL,
+                reason="all_r2_policy_results_consumed_before_finalization",
+            )
         return r1, r2, r2_response_id
 
     def _without_consumed_policies(
@@ -676,7 +726,16 @@ class PersistentRuntimeV2Service:
         ]
         for turn in reversed(turns):
             if turn.status is RuntimeTechnicalStatus.OK and turn.output is not None:
-                return output_model.model_validate(turn.output), turn.response_id or ""
+                persisted_output = turn.output
+                if (
+                    output_model is W2Round1RecallResult
+                    and "candidate_policy_ids" not in persisted_output
+                    and isinstance(persisted_output.get("policy_ids"), list)
+                ):
+                    persisted_output = {
+                        "candidate_policy_ids": persisted_output["policy_ids"][:3]
+                    }
+                return output_model.model_validate(persisted_output), turn.response_id or ""
         prompt_set = RuntimeV2PromptSet(**case.frozen_inputs.get("prompts", asdict(self.prompts)))
         frozen_round_prompt = getattr(prompt_set, f"{lane.lower()}_{round_name.lower()}")
         if round_name == "R3":
@@ -716,9 +775,15 @@ class PersistentRuntimeV2Service:
                     self.journal.set("round_budget", key, baseline)
                 budget = baseline + 3
         for attempt in range(len(turns) + 1, budget + 1):
+            if self.journal:
+                ControlRepository(self.journal).dispatch(
+                    f"{round_key}:{attempt}", case.ticker, case_id=case.case_id
+                )
             started = perf_counter()
+            started_at = utc_now()
+            result = None
             try:
-                result: RuntimeResponsesResult[T] = self.responses.complete(
+                result = self.responses.complete(
                     RuntimeResponsesRequest(
                         model=case.frozen_inputs.get("models", {}).get("w12_model"),
                         reasoning_effort=case.frozen_inputs.get("models", {}).get("w12_effort"),
@@ -745,6 +810,7 @@ class PersistentRuntimeV2Service:
                     attempt=attempt,
                     previous_response_id=previous_response_id,
                     result=result,
+                    started_at=started_at,
                 )
                 return result.value, result.response_id
             except RuntimeSemanticOutputError as exc:
@@ -774,8 +840,18 @@ class PersistentRuntimeV2Service:
                         "w12_model", self.responses.model
                     ),
                     latency_ms=round((perf_counter() - started) * 1000),
+                    started_at=started_at,
+                    finished_at=utc_now(),
                     error_code=error.code,
                     error_message=str(error),
+                    input_tokens=result.input_tokens if result else error.usage.get("input_tokens"),
+                    output_tokens=result.output_tokens
+                    if result
+                    else error.usage.get("output_tokens"),
+                    cached_input_tokens=result.cached_input_tokens
+                    if result
+                    else error.usage.get("cached_input_tokens"),
+                    response_id=result.response_id if result else error.usage.get("response_id"),
                 )
             )
             if not error.retryable or attempt >= budget:
@@ -794,6 +870,7 @@ class PersistentRuntimeV2Service:
         attempt: int,
         previous_response_id: str | None,
         result: RuntimeResponsesResult[Any],
+        started_at: datetime,
     ) -> None:
         self.repository.append_turn(
             RuntimeModelTurn(
@@ -811,6 +888,8 @@ class PersistentRuntimeV2Service:
                 cached_input_tokens=result.cached_input_tokens,
                 prefix_fingerprint=result.prefix_fingerprint,
                 latency_ms=result.latency_ms,
+                started_at=started_at,
+                finished_at=utc_now(),
                 output=result.value.model_dump(mode="json"),
             )
         )
@@ -922,7 +1001,9 @@ class PersistentRuntimeV2Service:
 
             if isinstance(exc, LeaseLost):
                 return 0
-            if isinstance(exc, W3Error) and exc.code == "w3_ticker_concurrency_busy":
+            if isinstance(exc, ControlError) or (
+                isinstance(exc, W3Error) and exc.code == "w3_ticker_concurrency_busy"
+            ):
                 self.repository.save_effect(
                     effect.model_copy(
                         update={
@@ -1078,6 +1159,12 @@ class PersistentRuntimeV2Service:
         returned_thread: str | None = None
         clear_main = False
         try:
+            if self.journal:
+                ControlRepository(self.journal).dispatch(
+                    f"{case.case_id}:W3:{running.attempt_count}",
+                    case.ticker,
+                    case_id=case.case_id,
+                )
             result, returned_thread, context_pin = self._w3_agent.run(
                 case=case,
                 w3_case=running,
@@ -1176,6 +1263,8 @@ class PersistentRuntimeV2Service:
             )
         for index, candidate in enumerate(result.delta_candidates):
             self.repository.allocate_provisional(
+                case_id=case.case_id,
+                originating_node="W3",
                 ticker=case.ticker,
                 trading_date=case.trading_date,
                 source_message_id=case.source.source_message_id,
@@ -1374,6 +1463,8 @@ class PersistentRuntimeV2Service:
             )
         for index, candidate in enumerate(extraction.candidates):
             self.repository.allocate_provisional(
+                case_id=case.case_id,
+                originating_node="W1_R3",
                 ticker=case.ticker,
                 trading_date=case.trading_date,
                 source_message_id=case.source.source_message_id,
@@ -1414,6 +1505,11 @@ class PersistentRuntimeV2Service:
                 update={
                     "status": status,
                     "technical_status": technical,
+                    "completed_at": (
+                        case.completed_at or utc_now()
+                        if status in {RuntimeCaseStatus.COMPLETED, RuntimeCaseStatus.FAILED}
+                        else None
+                    ),
                     "updated_at": utc_now(),
                 }
             )
@@ -1438,6 +1534,7 @@ class PersistentRuntimeV2Service:
                 ),
                 "error_code": getattr(exc, "code", type(exc).__name__),
                 "error_message": str(exc)[:1000],
+                "completed_at": case.completed_at or utc_now(),
                 "updated_at": utc_now(),
             }
         )

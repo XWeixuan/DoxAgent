@@ -1,0 +1,124 @@
+{
+  "mode": "PAPER_WHATIF_ONLY",
+  "trading_orders": 0,
+  "short_whatif": {
+    "status": "VALIDATED",
+    "rows": [
+      {
+        "status": "PreSubmitted",
+        "initial_margin_change": "363.92",
+        "maintenance_margin_change": "306.92",
+        "warning": ""
+      }
+    ]
+  },
+  "quote_gap": "FRESH_QUOTE_UNAVAILABLE",
+  "diagnostics": [
+    {
+      "request_id": -1,
+      "code": 2104,
+      "message": "市场数据场连接正常:usfarm.nj"
+    },
+    {
+      "request_id": -1,
+      "code": 2104,
+      "message": "市场数据场连接正常:hfarm"
+    },
+    {
+      "request_id": -1,
+      "code": 2104,
+      "message": "市场数据场连接正常:jfarm"
+    },
+    {
+      "request_id": -1,
+      "code": 2104,
+      "message": "市场数据场连接正常:usfuture"
+    },
+    {
+      "request_id": -1,
+      "code": 2104,
+      "message": "市场数据场连接正常:usopt.nj"
+    },
+    {
+      "request_id": -1,
+      "code": 2104,
+      "message": "市场数据场连接正常:eufarmnj"
+    },
+    {
+      "request_id": -1,
+      "code": 2104,
+      "message": "市场数据场连接正常:usfarm"
+    },
+    {
+      "request_id": -1,
+      "code": 2106,
+      "message": "历史市场数据场连接正常:euhmds"
+    },
+    {
+      "request_id": -1,
+      "code": 2106,
+      "message": "历史市场数据场连接正常:fundfarm"
+    },
+    {
+      "request_id": -1,
+      "code": 2106,
+      "message": "历史市场数据场连接正常:ushmds"
+    },
+    {
+      "request_id": -1,
+      "code": 2158,
+      "message": "Sec-def数据场连接正常:secdefil"
+    },
+    {
+      "request_id": -1,
+      "code": 2108,
+      "message": "市场数据场连接暂未激活，但可按需提供。:hfarm"
+    },
+    {
+      "request_id": -1,
+      "code": 2108,
+      "message": "市场数据场连接暂未激活，但可按需提供。:hfarm"
+    },
+    {
+      "request_id": -1,
+      "code": 2108,
+      "message": "市场数据场连接暂未激活，但可按需提供。:jfarm"
+    },
+    {
+      "request_id": -1,
+      "code": 2108,
+      "message": "市场数据场连接暂未激活，但可按需提供。:jfarm"
+    },
+    {
+      "request_id": -1,
+      "code": 2108,
+      "message": "市场数据场连接暂未激活，但可按需提供。:usfuture"
+    },
+    {
+      "request_id": -1,
+      "code": 2108,
+      "message": "市场数据场连接暂未激活，但可按需提供。:usfuture"
+    },
+    {
+      "request_id": -1,
+      "code": 2108,
+      "message": "市场数据场连接暂未激活，但可按需提供。:eufarmnj"
+    },
+    {
+      "request_id": -1,
+      "code": 2108,
+      "message": "市场数据场连接暂未激活，但可按需提供。:eufarmnj"
+    },
+    {
+      "request_id": 10002,
+      "code": 2186,
+      "message": "警告: 所请求的实时市场数据需要为API额外订阅。您已选择接收延迟市场数据作为替代。如需订阅，请参阅\"市场数据连接\"对话框中的相关链接以获取更多详情。:MU NASDAQ.NMS/TOP/ALL"
+    }
+  ],
+  "final_sync": {
+    "complete": true,
+    "positions": {},
+    "at": "2026-09-08T13:59:52.323325+00:00",
+    "history_scope": "BROKER_SESSION_WINDOW"
+  }
+}

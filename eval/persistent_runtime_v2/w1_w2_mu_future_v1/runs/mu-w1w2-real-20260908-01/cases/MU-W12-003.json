@@ -1,0 +1,138 @@
+{
+  "case_id": "MU-W12-003",
+  "status": "COMPLETED",
+  "started_at": "2026-09-08T18:43:25.075262+08:00",
+  "completed_at": "2026-09-08T18:43:52.023682+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E8",
+        "E7",
+        "E24"
+      ]
+    },
+    "w1_final": {
+      "result": "OLD",
+      "confidence": "normal",
+      "reference_ids": [
+        "E7",
+        "E8"
+      ],
+      "reason": "消息核心事实（$250亿美国投资计划、纽约与Idaho/Virginia及海外项目的并列关系、前端存储制造、AI驱动需求）均已被E7的F64/F65/F66覆盖；纽约设施建设已被E8的F67覆盖。其余内容为背景叙述、评论和生态讨论，不构成新的核心事实进展。"
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "candidate_policy_ids": []
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "no_policy_candidate_recalled"
+    },
+    "route": {
+      "primary_route": "ARCHIVE",
+      "side_effects": [
+        "archive_message"
+      ],
+      "reason": "w1=OLD/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_a09e185ec09846658a383268dd4adf32",
+      "case_id": "case_f5f78ebfe21a4fa7babc859600363979",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_f8ed0fef-daab-9a3d-9d4a-25f187917aa0",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13447,
+      "output_tokens": 1092,
+      "reasoning_tokens": 1075,
+      "cached_input_tokens": 12288,
+      "prefix_fingerprint": "bc31fe43c6ebabd4fc723722115d9464ea7b664f00c01e1f616107c8df6bc804",
+      "latency_ms": 14026,
+      "output": {
+        "event_ids": [
+          "E8",
+          "E7",
+          "E24"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:43:39.360405Z",
+      "started_at": "2026-09-08T10:43:25.333694Z",
+      "finished_at": "2026-09-08T10:43:39.359405Z"
+    },
+    {
+      "turn_id": "turn_33f343e4601046338808b16763f8b123",
+      "case_id": "case_f5f78ebfe21a4fa7babc859600363979",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_69f0e632-33dc-9828-942b-06aa0f205604",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 6541,
+      "output_tokens": 1739,
+      "reasoning_tokens": 1730,
+      "cached_input_tokens": 5120,
+      "prefix_fingerprint": "f2c2dc5406ee6290d30c3915855d61097564d2c6dc1ec3341f57f61c28e3c52b",
+      "latency_ms": 19294,
+      "output": {
+        "candidate_policy_ids": []
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:43:44.628139Z",
+      "started_at": "2026-09-08T10:43:25.334697Z",
+      "finished_at": "2026-09-08T10:43:44.628139Z"
+    },
+    {
+      "turn_id": "turn_6a96036b01b646fba9b3765f12133ae8",
+      "case_id": "case_f5f78ebfe21a4fa7babc859600363979",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_042241a7-f2e3-9a5d-8c79-ef771d1ed110",
+      "previous_response_id": "resp_f8ed0fef-daab-9a3d-9d4a-25f187917aa0",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 3112,
+      "output_tokens": 901,
+      "reasoning_tokens": 799,
+      "cached_input_tokens": 1024,
+      "prefix_fingerprint": "78d4ef4b54bec995f69dcfdbb1a869fa45ffcb515c52b0970f8b3932fc16017a",
+      "latency_ms": 12640,
+      "output": {
+        "result": "OLD",
+        "confidence": "normal",
+        "reference_ids": [
+          "E7",
+          "E8"
+        ],
+        "reason": "消息核心事实（$250亿美国投资计划、纽约与Idaho/Virginia及海外项目的并列关系、前端存储制造、AI驱动需求）均已被E7的F64/F65/F66覆盖；纽约设施建设已被E8的F67覆盖。其余内容为背景叙述、评论和生态讨论，不构成新的核心事实进展。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:43:52.023682Z",
+      "started_at": "2026-09-08T10:43:39.383608Z",
+      "finished_at": "2026-09-08T10:43:52.023682Z"
+    }
+  ]
+}

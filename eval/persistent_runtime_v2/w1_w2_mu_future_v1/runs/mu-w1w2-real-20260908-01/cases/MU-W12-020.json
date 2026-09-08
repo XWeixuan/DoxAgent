@@ -1,0 +1,216 @@
+{
+  "case_id": "MU-W12-020",
+  "status": "COMPLETED",
+  "started_at": "2026-09-08T18:45:17.157663+08:00",
+  "completed_at": "2026-09-08T18:46:21.358672+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E125",
+        "E24"
+      ]
+    },
+    "w1_final": {
+      "result": "NEW",
+      "confidence": "normal",
+      "reference_ids": [],
+      "reason": "The core fact—Kioxia's Northern Japan 3D flash customer-qualified output milestone revised from Q2 2027 to Q3 2027—is not covered by any existing fact. E24 references SanDisk/Micron capacity building broadly with unresolved project identities; E125 is a separate product announcement. Neither captures this specific program's timeline state change."
+    },
+    "w1_r3": {
+      "candidates": [
+        {
+          "proposition": "Kioxia revised the expected timing of the Northern Japan 3D flash program's customer-qualified output milestone from the second quarter of calendar 2027 to the third quarter of calendar 2027, a one-quarter delay.",
+          "assertion_state": "GUIDANCE",
+          "subject_time": "Q3 2027 (revised) vs. Q2 2027 (original)",
+          "occurrence_date": "2026-12-14",
+          "entities": [
+            "Kioxia Holdings Corporation"
+          ]
+        },
+        {
+          "proposition": "Kioxia decided to retain the full sequence of process integration, equipment readiness, reliability work, and customer qualification documentation before releasing qualified output to participating customers, rather than compressing the sequence.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "Kioxia Holdings Corporation"
+          ]
+        },
+        {
+          "proposition": "Participating customers of Kioxia's Northern Japan 3D flash program have been informed of the revised customer-qualified output milestone timing.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": "2026-12-14",
+          "entities": [
+            "Kioxia Holdings Corporation"
+          ]
+        }
+      ]
+    },
+    "w2_r1": {
+      "candidate_policy_ids": []
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "no_policy_candidate_recalled"
+    },
+    "route": {
+      "primary_route": "ADD_TO_DELTA",
+      "side_effects": [
+        "emit_delta"
+      ],
+      "reason": "w1=NEW/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_92c25f0081ea45c3a56e80d1a03e6684",
+      "case_id": "case_b8f39c9a46944ad6b13b7c707e0146ad",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_8d6e2e0b-58d2-99df-9480-a59d7fb5cf43",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 6578,
+      "output_tokens": 1982,
+      "reasoning_tokens": 1973,
+      "cached_input_tokens": 5120,
+      "prefix_fingerprint": "f2c2dc5406ee6290d30c3915855d61097564d2c6dc1ec3341f57f61c28e3c52b",
+      "latency_ms": 22454,
+      "output": {
+        "candidate_policy_ids": []
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:45:39.646070Z",
+      "started_at": "2026-09-08T10:45:17.192236Z",
+      "finished_at": "2026-09-08T10:45:39.646070Z"
+    },
+    {
+      "turn_id": "turn_7a12c9aa0307433ea5bab4e668295a3e",
+      "case_id": "case_b8f39c9a46944ad6b13b7c707e0146ad",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_5346164a-667f-90ef-9017-f6759bf7b05b",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13484,
+      "output_tokens": 2743,
+      "reasoning_tokens": 2727,
+      "cached_input_tokens": 12288,
+      "prefix_fingerprint": "bc31fe43c6ebabd4fc723722115d9464ea7b664f00c01e1f616107c8df6bc804",
+      "latency_ms": 32499,
+      "output": {
+        "event_ids": [
+          "E125",
+          "E24"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:45:49.689765Z",
+      "started_at": "2026-09-08T10:45:17.190765Z",
+      "finished_at": "2026-09-08T10:45:49.689765Z"
+    },
+    {
+      "turn_id": "turn_752f32741eb64d80ba23b2d8dc34395c",
+      "case_id": "case_b8f39c9a46944ad6b13b7c707e0146ad",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_a16ec365-067c-92b2-9147-412f2eb5ec14",
+      "previous_response_id": "resp_5346164a-667f-90ef-9017-f6759bf7b05b",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 2829,
+      "output_tokens": 830,
+      "reasoning_tokens": 731,
+      "cached_input_tokens": 1664,
+      "prefix_fingerprint": "e14d5a9ebc4d57693593d17971856f63d6878a80b7a5f2d5fbf57473fd7e5aad",
+      "latency_ms": 10804,
+      "output": {
+        "result": "NEW",
+        "confidence": "normal",
+        "reference_ids": [],
+        "reason": "The core fact—Kioxia's Northern Japan 3D flash customer-qualified output milestone revised from Q2 2027 to Q3 2027—is not covered by any existing fact. E24 references SanDisk/Micron capacity building broadly with unresolved project identities; E125 is a separate product announcement. Neither captures this specific program's timeline state change."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:46:00.505742Z",
+      "started_at": "2026-09-08T10:45:49.701768Z",
+      "finished_at": "2026-09-08T10:46:00.505742Z"
+    },
+    {
+      "turn_id": "turn_f451b6d9294647fb878737d9e6d6d000",
+      "case_id": "case_b8f39c9a46944ad6b13b7c707e0146ad",
+      "lane": "W1",
+      "round_name": "R3",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_e502f57e-596f-96a3-b3bc-54d5954338d5",
+      "previous_response_id": "resp_a16ec365-067c-92b2-9147-412f2eb5ec14",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 2459,
+      "output_tokens": 1417,
+      "reasoning_tokens": 1166,
+      "cached_input_tokens": 1024,
+      "prefix_fingerprint": "44131f74f4bb7fe31edee9de36bcdeab254f61802c36a6203f91177392a279e5",
+      "latency_ms": 20840,
+      "output": {
+        "candidates": [
+          {
+            "proposition": "Kioxia revised the expected timing of the Northern Japan 3D flash program's customer-qualified output milestone from the second quarter of calendar 2027 to the third quarter of calendar 2027, a one-quarter delay.",
+            "assertion_state": "GUIDANCE",
+            "subject_time": "Q3 2027 (revised) vs. Q2 2027 (original)",
+            "occurrence_date": "2026-12-14",
+            "entities": [
+              "Kioxia Holdings Corporation"
+            ]
+          },
+          {
+            "proposition": "Kioxia decided to retain the full sequence of process integration, equipment readiness, reliability work, and customer qualification documentation before releasing qualified output to participating customers, rather than compressing the sequence.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "Kioxia Holdings Corporation"
+            ]
+          },
+          {
+            "proposition": "Participating customers of Kioxia's Northern Japan 3D flash program have been informed of the revised customer-qualified output milestone timing.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": "2026-12-14",
+            "entities": [
+              "Kioxia Holdings Corporation"
+            ]
+          }
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:46:21.345661Z",
+      "started_at": "2026-09-08T10:46:00.505742Z",
+      "finished_at": "2026-09-08T10:46:21.345661Z"
+    }
+  ]
+}

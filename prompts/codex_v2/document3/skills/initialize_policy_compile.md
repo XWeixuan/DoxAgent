@@ -1,6 +1,8 @@
 # O3 Policy Compile
 
-你的任务不是把 Trigger record 重新排版成 Policy，而是判断哪些已经研究充分的 Candidates 属于同一次决策，并为每个 Condition 重新形成稳定 `criterion`、当前具体 `reference_state` 和基于当前市场预期的 `trigger_boundary`。Candidate record 是研究依据，不是字段模板；一对一字段映射不能替代这一轮编译判断。
+你的任务不是把 Trigger record 重新排版成 Policy，而是判断哪些已经研究充分的 Candidates 属于同一次决策，并为每个 Condition 重新形成语义稳定且 Runtime 可执行的 `criterion`、当前具体 `reference_state` 和基于当前市场预期的 `trigger_boundary`。Candidate record 是研究依据，不是字段模板；一对一字段映射不能替代这一轮编译判断。
+
+稳定指监测的业务事件类型不会因无关背景变化而改变，不意味着省略 W2 当前判断所必需的 comparator。动态 current value 或 market baseline 主要由 Calibration 承担，但 Criterion 仍应让 W2 明确正在比较什么变量和什么类型的偏离。
 
 ```text
 逐项复核独立充分性
@@ -100,6 +102,8 @@ Current baseline
 - 不是另一 occurrence 的 Evidence、corroboration 或后果说明；
 - 仍然面向未来，并可由一条新消息判定。
 
+若 Candidate 包含目标公司的订单、allocation、份额、shipment、收入或利润结果，重新判断这些结果是在定义 occurrence，还是只是在证明更早事件已经产生经济后果；后者从当前 Condition 移除。
+
 复核结果按以下方式处理；这些类别只控制编译，不新增输出字段：
 
 - **Ready as-is**：独立充分且 Calibration 完整，进入关系分类。
@@ -144,6 +148,8 @@ Qualification、shipment、revenue、margin 等可以共同构成完整确认链
 ### Natural composite occurrence
 
 多个事实单独不足，但共同描述同一次自然合同、产品、规则或生产状态，且一条合理消息可以确认整体 occurrence。将整体编译为一个 Condition，其 actor、object、scope、period、magnitude 等是事件属性，不拆成多个 OR Conditions。
+
+“同一经济链”本身不构成 natural composite。若多个事实分别由不同 actors、不同 commercial stages 或后续 reporting periods 产生，它们通常不是同一个 occurrence，即使最终指向同一个经济结果。
 
 ### Internal OR Check
 
@@ -212,11 +218,14 @@ Actor、product、customer、contractual nature、quantity、threshold 和 comme
 
 当 Criterion 使用“扩大、下调、提前、推迟、持续、大规模、主流、实质、显著”等相对或程度表达时，使用 Stage A 校准出的可观察数值或 categorical business boundary；若程度决定 sufficiency 而两者均不存在，该 Condition 尚不可编译。Criterion 自身包含 Runtime 判断所需的必要 comparator，数值不为形式精确而创造。
 
-完成后只问一个 Runtime 问题：
+完成后执行 Runtime Comparison Check。如果 Runtime 获得该 Condition 的 Runtime Projection 与一条新消息，它是否能够：
 
-> 如果 Runtime 只看到 Criterion 与当前消息，是否能判断这个自然 occurrence 已经成立？
+1. 识别当前消息中的目标 variable / state；
+2. 从 Policy 中取得对应的 current reality、market expectation 或 comparator；
+3. 确认 trigger boundary；
+4. 直接完成新值与 boundary 的比较？
 
-这检查语义自足性，不要求 Runtime 重新判断完整 expectation 是否兑现。
+若 W2 仍需自行查询历史数据、推断“正常水平”、估算共识或重新研究业务含义，该 Condition 尚不可编译。这项检查不要求 Runtime 重新判断完整 expectation 是否兑现。
 
 ## 8. 完成 Policy-Level Fields
 
@@ -279,5 +288,7 @@ Path 的终态必须与工件一致：
 - Trigger record/state、Worklist、Policy mappings 与 source refs 同步反映任何局部修正。
 
 关闭一个 Shell 前确认：全部 Paths 已进入 `COMPILED` 或 `UNRESOLVED`；所有 ready Candidates 均经 standalone review 和关系分类；每个 Condition 单独充分；Evidence variants 与 supporting information 未变成 Conditions；同一 Policy 成员共享 principal revision、direction 和一次性决策含义；title 对任一 Condition 准确；`match_scope` 覆盖全部 Conditions 且宽于 Activation；Path、Trigger、Policy 与 source refs 一致。
+
+每个包含多个 Conditions 的 Policy 在关闭前，对所有 Condition pairs 实际执行一次 one-time boundary counterfactual。只要存在任意一对满足“C1 触发后 C2 随后发生仍产生新的独立交易 delta”，该 pair 不以同一 OR Policy 发布。
 
 随后使用现有 WaveState 字段更新 `completed_shell_ids`、`current_shell_id`、`completed_path_ids` 和 `updated_at`。全部成功 Shell 完成后，`current_shell_id=null`，所有 terminal Paths 进入 completed state，Policy drafts 均可由 supplied schema 解析，counts 与 workspace 一致；最后只返回 supplied `O3RunResult`，完整业务产物留在 workspace。

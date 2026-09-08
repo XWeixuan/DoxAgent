@@ -13,6 +13,7 @@ from datetime import date, datetime, timedelta
 from typing import Any
 
 from doxagent.semantic_clock import boundary, semantic_day
+from doxagent.v2_control.repository import ControlError, ControlRepository
 
 from .calendar import MarketCalendar
 from .fencing import write_scope
@@ -29,10 +30,12 @@ class RuntimeCoordinator:
         calendar: MarketCalendar | None = None,
         maintain: Callable[[dict[str, Any]], Any] | None = None,
         select: Callable[[dict[str, Any]], Any] | None = None,
+        external_delivery: bool = False,
     ) -> None:
         self.runtime, self.journal = runtime, journal
         self.calendar = calendar or MarketCalendar(journal)
         self.maintain, self.select = maintain, select
+        self.external_delivery = external_delivery
         self._realtime = ThreadPoolExecutor(max_workers=4, thread_name_prefix="runtime-case")
         self._background = ThreadPoolExecutor(max_workers=2, thread_name_prefix="runtime-maintain")
         self._sweeps = ThreadPoolExecutor(max_workers=2, thread_name_prefix="runtime-sweep")
@@ -117,6 +120,10 @@ class RuntimeCoordinator:
         due_at: datetime | None = None,
     ) -> None:
         if self.journal.get_task(identity) is None:
+            control = ControlRepository(self.journal)
+            control.admit(identity, ticker)
+            state = control.get(ticker)
+            inputs = {**inputs, "control_epoch": state["epoch"] if state else None}
             self.journal.put_task(identity, ticker, kind, inputs, due_at=due_at)
 
     def accept(self, source: SourceMessageEnvelope, *, stream_offset: int | None = None) -> str:
@@ -124,6 +131,9 @@ class RuntimeCoordinator:
         identity = f"inbox:{ticker}:{source.source_message_id}"
         if self.journal.get_task(identity):
             return identity
+        ControlRepository(self.journal).admit(
+            identity, ticker, source.eligibility_at or source.message_bus_event_time
+        )
         at = self.journal.clock()
         mode, cycle = self.mode(ticker, at)
         sweeps = self.journal.tasks(ticker=ticker, kind="SWEEP")
@@ -203,7 +213,9 @@ class RuntimeCoordinator:
                 except Exception as exc:
                     self.journal.gap("effects-pump", ticker, type(exc).__name__, str(exc)[:1000])
             self._effect_future = self._effects.submit(self._pump_effects)
-        if self._delivery_future is None or self._delivery_future.done():
+        if not self.external_delivery and (
+            self._delivery_future is None or self._delivery_future.done()
+        ):
             if self._delivery_future is not None:
                 try:
                     self._delivery_future.result()
@@ -301,6 +313,7 @@ class RuntimeCoordinator:
                 for item in self.journal.values("candidates")
                 if item["ticker"] == task["ticker"]
                 and item["status"] == "PENDING"
+                and item.get("origin_trade_eligible", True)
                 and item["created_at"] <= task["due_at"]
             ]
             self.journal.set(
@@ -331,6 +344,9 @@ class RuntimeCoordinator:
     def _execute_owned(self, task: dict[str, Any]) -> None:
         try:
             kind = task["kind"]
+            ControlRepository(self.journal).dispatch(
+                f"{task['id']}:{task['token']}", task["ticker"], case_id=task["id"]
+            )
             if kind == "CASE":
                 self._case(task)
             elif kind == "SWEEP":
@@ -345,6 +361,8 @@ class RuntimeCoordinator:
                 self.journal.finish(task, result=result)
         except LeaseLost:
             return
+        except ControlError:
+            ControlRepository(self.journal).defer(task)
         except Exception as exc:
             try:
                 self.journal.fail(task, exc)

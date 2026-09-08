@@ -94,6 +94,8 @@ class PersistentRuntimeV2Repository(Protocol):
         candidate_index: int,
         candidate: RuntimeFactCandidate,
         published_max_event_numeric_id: int,
+        case_id: str | None = None,
+        originating_node: Literal["W1_R3", "W3"] | None = None,
     ) -> ProvisionalFactDetail: ...
 
     def provisional_snapshot_version(self, ticker: str, trading_date: date) -> int: ...
@@ -281,6 +283,8 @@ class InMemoryPersistentRuntimeV2Repository:
         candidate_index: int,
         candidate: RuntimeFactCandidate,
         published_max_event_numeric_id: int,
+        case_id: str | None = None,
+        originating_node: Literal["W1_R3", "W3"] | None = None,
     ) -> ProvisionalFactDetail:
         identity = _candidate_identity(source_message_id, candidate_index)
         key = (ticker.upper(), trading_date)
@@ -294,6 +298,8 @@ class InMemoryPersistentRuntimeV2Repository:
             snapshot_version += 1
             value = ProvisionalFactDetail(
                 provisional_event_id=f"E{next_numeric}",
+                case_id=case_id,
+                originating_node=originating_node,
                 ticker=key[0],
                 trading_date=trading_date,
                 source_message_id=source_message_id,
@@ -1027,6 +1033,8 @@ class SQLitePersistentRuntimeV2Repository:
         candidate_index: int,
         candidate: RuntimeFactCandidate,
         published_max_event_numeric_id: int,
+        case_id: str | None = None,
+        originating_node: Literal["W1_R3", "W3"] | None = None,
     ) -> ProvisionalFactDetail:
         key = ticker.upper()
         day = trading_date.isoformat()
@@ -1066,6 +1074,8 @@ class SQLitePersistentRuntimeV2Repository:
                 )
             value = ProvisionalFactDetail(
                 provisional_event_id=f"E{next_numeric}",
+                case_id=case_id,
+                originating_node=originating_node,
                 ticker=key,
                 trading_date=trading_date,
                 source_message_id=source_message_id,

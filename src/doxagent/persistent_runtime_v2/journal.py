@@ -32,10 +32,15 @@ class LeaseLost(RuntimeError):
 class RuntimeJournal:
     VERSION = 1
 
-    def __init__(self, path: str | Path, *, clock: Callable[[], datetime] | None = None) -> None:
+    def __init__(self, path: str | Path, *, clock: Callable[[], datetime] | None = None,
+                 initialize: bool = True) -> None:
         self.path = Path(path)
-        self.path.parent.mkdir(parents=True, exist_ok=True)
         self.clock = clock or (lambda: datetime.now(UTC))
+        if not initialize:
+            if not self.path.is_file():
+                raise ValueError("Runtime database has not been migrated")
+            return
+        self.path.parent.mkdir(parents=True, exist_ok=True)
         with self.transaction() as db:
             db.executescript("""
                 CREATE TABLE IF NOT EXISTS orchestration_meta (key TEXT PRIMARY KEY, value TEXT);
@@ -58,6 +63,14 @@ class RuntimeJournal:
                     PRIMARY KEY(namespace,key));
                 CREATE TABLE IF NOT EXISTS runtime_snapshots (
                     id TEXT PRIMARY KEY, payload TEXT NOT NULL);
+                CREATE INDEX IF NOT EXISTS runtime_values_delivery
+                    ON runtime_values(namespace,json_extract(payload,'$.status'),key)
+                    WHERE namespace='trade_intents';
+                CREATE INDEX IF NOT EXISTS runtime_values_output_cohort
+                    ON runtime_values(namespace,json_extract(payload,'$.ticker'),
+                        json_extract(payload,'$.release_semantic_day'),
+                        json_extract(payload,'$.trade.decision'))
+                    WHERE namespace='trade_intents';
             """)
             row = db.execute("SELECT value FROM orchestration_meta WHERE key='version'").fetchone()
             if row and int(row[0]) != self.VERSION:

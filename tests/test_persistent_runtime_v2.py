@@ -46,6 +46,7 @@ from doxagent.persistent_runtime_v2.schema import (
     W1Round1Result,
     W2MatchedConditions,
     W2PolicyResult,
+    W2Round1RecallResult,
     W3CaseResult,
     W3ContextVersionPin,
 )
@@ -65,6 +66,7 @@ from doxagent.persistent_runtime_v2.transport import (
     _safe_transport_error,
 )
 from doxagent.workflows.codex_document3.schema import (
+    Policy,
     PolicyDecision,
     PolicyDetailSnapshot,
     RuntimePolicyProjection,
@@ -228,12 +230,8 @@ class _FakeResponses:
                 reference_ids=[],
                 reason="new qualification fact",
             )
-        elif request.output_model is W2PolicyResult:
-            value = W2PolicyResult(
-                policy_ids=[],
-                confidence="normal",
-                reason="no policy hit",
-            )
+        elif request.output_model is W2Round1RecallResult:
+            value = W2Round1RecallResult(candidate_policy_ids=[])
         else:
             value = W1FactExtractionResult(
                 candidates=[
@@ -344,7 +342,9 @@ def test_service_runs_parallel_hot_path_then_w3_owned_delta(tmp_path: Path) -> N
     assert adjudicated.route.primary_route == "W3"
     assert adjudicated.w1_extraction is None
     w2_request = next(
-        request for request in responses.calls if request.output_model is W2PolicyResult
+        request
+        for request in responses.calls
+        if request.output_model is W2Round1RecallResult
     )
     assert set(w2_request.payload) == {
         "source_message",
@@ -419,14 +419,66 @@ class _AnyPolicies(_FakePolicies):
     def decision(self, ticker: str, version: int, policy_id: str) -> PolicyDecision | None:
         return PolicyDecision.LONG if policy_id == self.record.policy_id else None
 
+    def details(self, ticker: str, version: int, policy_ids: list[str]) -> PolicyDetailSnapshot:
+        policies = (
+            [
+                Policy(
+                    policy_id="pol_any",
+                    title="Customer qualification or production milestone",
+                    source_refs=[
+                        {"shell_id": "shell_1", "expectation_id": "exp_1", "gap_id": "gap_1"}
+                    ],
+                    decision=PolicyDecision.LONG,
+                    match_scope="customer qualification",
+                    activation_conditions=[
+                        {
+                            "condition_id": "C1",
+                            "criterion": "qualification completed",
+                            "calibration": {
+                                "reference_state": "qualification remained pending",
+                                "trigger_boundary": "customer confirms qualification completion",
+                            },
+                        },
+                        {
+                            "condition_id": "C2",
+                            "criterion": "volume production started",
+                            "calibration": {
+                                "reference_state": "volume production had not started",
+                                "trigger_boundary": "commercial volume production begins",
+                            },
+                        },
+                    ],
+                )
+            ]
+            if "pol_any" in policy_ids
+            else []
+        )
+        found = {policy.policy_id for policy in policies}
+        return PolicyDetailSnapshot(
+            ticker=ticker,
+            policy_set_version=version,
+            requested_policy_ids=policy_ids,
+            policies=policies,
+            missing_policy_ids=[policy_id for policy_id in policy_ids if policy_id not in found],
+        )
+
     def activation(self, ticker: str, version: int, policy_id: str) -> RuntimePolicyRecord | None:
         return self.record if policy_id == self.record.policy_id else None
 
 
 class _AnyResponses(_FakeResponses):
     def complete(self, request: RuntimeResponsesRequest[Any]) -> RuntimeResponsesResult[Any]:
-        if request.output_model is W2PolicyResult:
+        if request.output_model is W2Round1RecallResult:
+            with self._lock:
+                self.calls.append(request)
             policies = request.payload["runtime_policy_projection"]["policies"]
+            value: Any = W2Round1RecallResult(
+                candidate_policy_ids=["pol_any"] if policies else []
+            )
+        elif request.output_model is W2PolicyResult:
+            with self._lock:
+                self.calls.append(request)
+            policies = request.payload["policy_details"]["policies"]
             value = W2PolicyResult(
                 policy_ids=["pol_any"] if policies else [],
                 matched_condition_ids=(
@@ -437,7 +489,9 @@ class _AnyResponses(_FakeResponses):
                 confidence="normal",
                 reason="one ANY condition confirmed" if policies else "policy already consumed",
             )
-            return RuntimeResponsesResult(
+        else:
+            return super().complete(request)
+        return RuntimeResponsesResult(
                 value=value,
                 response_id="resp-w2",
                 latency_ms=1,
@@ -446,7 +500,6 @@ class _AnyResponses(_FakeResponses):
                 reasoning_tokens=1,
                 cached_input_tokens=0,
             )
-        return super().complete(request)
 
 
 def test_w2_model_payload_contains_only_business_policy_content() -> None:
@@ -461,8 +514,148 @@ def test_w2_model_payload_contains_only_business_policy_content() -> None:
             "criterion": ["qualification completed", "volume production started"],
         }
     ]
-    detail_payload = _w2_detail_business_payload(_FakePolicies().details("MU", 3, []))
-    assert detail_payload == {"activation_semantics": "OR", "policies": []}
+    detail_payload = _w2_detail_business_payload(
+        _AnyPolicies().details("MU", 3, ["pol_any"])
+    )
+    assert detail_payload == {
+        "activation_semantics": "OR",
+        "candidate_policy_ids": ["pol_any"],
+        "policies": [
+            {
+                "policy_id": "pol_any",
+                "title": "Customer qualification or production milestone",
+                "match_scope": "customer qualification",
+                "activation_conditions": [
+                    {
+                        "condition_id": "C1",
+                        "criterion": "qualification completed",
+                        "calibration": {
+                            "reference_state": "qualification remained pending",
+                            "trigger_boundary": "customer confirms qualification completion",
+                        },
+                    },
+                    {
+                        "condition_id": "C2",
+                        "criterion": "volume production started",
+                        "calibration": {
+                            "reference_state": "volume production had not started",
+                            "trigger_boundary": "commercial volume production begins",
+                        },
+                    },
+                ],
+            }
+        ],
+    }
+    assert "decision" not in detail_payload["policies"][0]
+    assert "source_refs" not in detail_payload["policies"][0]
+
+
+def test_w2_round1_recall_is_bounded_to_three_candidates() -> None:
+    result = W2Round1RecallResult(
+        candidate_policy_ids=["pol_1", "pol_1", "pol_2", "pol_3"]
+    )
+    assert result.candidate_policy_ids == ["pol_1", "pol_2", "pol_3"]
+    with pytest.raises(ValueError, match="at most 3 items"):
+        W2Round1RecallResult(
+            candidate_policy_ids=["pol_1", "pol_2", "pol_3", "pol_4"]
+        )
+
+
+def test_runtime_case_reads_legacy_w2_round1_as_recall_candidates() -> None:
+    payload = RuntimeCase(
+        trading_date=date(2026, 8, 29),
+        source=_source(),
+        version_pin=RuntimeVersionPin(
+            event_library_version=7,
+            provisional_snapshot_version=0,
+            policy_set_version=3,
+            runtime_projection_version=3,
+        ),
+    ).model_dump(mode="json")
+    payload["w2_round1"] = {
+        "policy_ids": ["pol_1"],
+        "matched_condition_ids": [],
+        "confidence": "normal",
+        "reason": "legacy final-style R1",
+    }
+
+    restored = RuntimeCase.model_validate(payload)
+
+    assert restored.w2_round1 == W2Round1RecallResult(
+        candidate_policy_ids=["pol_1"]
+    )
+
+
+def test_w2_nonempty_recall_always_runs_r2() -> None:
+    responses = _AnyResponses()
+    service = PersistentRuntimeV2Service(
+        repository=InMemoryPersistentRuntimeV2Repository(),
+        responses=responses,
+        known_events=_FakeKnownEvents(),
+        policies=_AnyPolicies(),
+        retry_delays_seconds=(0, 0),
+        sleep=lambda _seconds: None,
+        dispatch_effects=False,
+    )
+    case = RuntimeCase(
+        trading_date=date(2026, 8, 29),
+        source=_source(),
+        version_pin=RuntimeVersionPin(
+            event_library_version=7,
+            provisional_snapshot_version=0,
+            policy_set_version=3,
+            runtime_projection_version=3,
+        ),
+    )
+
+    recall, final, _response_id = service._run_w2_hot(
+        case,
+        _AnyPolicies().current_projection("MU"),
+    )
+
+    assert recall.candidate_policy_ids == ["pol_any"]
+    assert final.policy_ids == ["pol_any"]
+    assert [request.output_model for request in responses.calls] == [
+        W2Round1RecallResult,
+        W2PolicyResult,
+    ]
+    assert set(responses.calls[1].payload) == {"source_message", "policy_details"}
+    assert responses.calls[1].cache_context_keys == ("policy_details",)
+    service.close()
+
+
+def test_w2_empty_recall_synthesizes_final_without_r2() -> None:
+    responses = _FakeResponses()
+    service = PersistentRuntimeV2Service(
+        repository=InMemoryPersistentRuntimeV2Repository(),
+        responses=responses,
+        known_events=_FakeKnownEvents(),
+        policies=_FakePolicies(),
+        retry_delays_seconds=(0, 0),
+        sleep=lambda _seconds: None,
+        dispatch_effects=False,
+    )
+    case = RuntimeCase(
+        trading_date=date(2026, 8, 29),
+        source=_source(),
+        version_pin=RuntimeVersionPin(
+            event_library_version=7,
+            provisional_snapshot_version=0,
+            policy_set_version=3,
+            runtime_projection_version=3,
+        ),
+    )
+
+    recall, final, _response_id = service._run_w2_hot(
+        case,
+        _FakePolicies().current_projection("MU"),
+    )
+
+    assert recall.candidate_policy_ids == []
+    assert final.policy_ids == []
+    assert final.confidence is RuntimeConfidence.NORMAL
+    assert [request.output_model for request in responses.calls] == [W2Round1RecallResult]
+    service.close()
 
 
 def test_w1_model_views_exclude_runtime_and_event_library_audit_fields() -> None:
@@ -568,6 +761,18 @@ def test_any_policy_is_consumed_once_and_removed_from_next_w2_input(tmp_path: Pa
 
     first = service.execute_message(_source())
     assert first.route is not None and first.route.primary_route is RuntimePrimaryRoute.TRADE
+    first_w2_calls = [
+        request
+        for request in responses.calls
+        if request.output_model in {W2Round1RecallResult, W2PolicyResult}
+    ]
+    assert [request.output_model for request in first_w2_calls] == [
+        W2Round1RecallResult,
+        W2PolicyResult,
+    ]
+    assert first.w2_round1 == W2Round1RecallResult(candidate_policy_ids=["pol_any"])
+    assert first_w2_calls[1].cache_context_keys == ("policy_details",)
+    assert set(first_w2_calls[1].payload) == {"source_message", "policy_details"}
     assert service.process_pending_effects() == 2
     trades = repository.list_daily_trades("MU", first.trading_date)
     assert len(trades) == 1

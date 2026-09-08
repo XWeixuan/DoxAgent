@@ -60,6 +60,8 @@ class InitializationRepository:
                     id INTEGER PRIMARY KEY AUTOINCREMENT, run_id TEXT NOT NULL,
                     kind TEXT NOT NULL, payload TEXT NOT NULL, created_at TEXT NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS v2_model_invocations (
+                    id TEXT PRIMARY KEY,ticker TEXT,run_id TEXT,payload TEXT NOT NULL);
                 CREATE TABLE IF NOT EXISTS initialization_outbox (
                     run_id TEXT PRIMARY KEY, state_seq INTEGER NOT NULL,
                     payload TEXT NOT NULL
@@ -108,6 +110,8 @@ class InitializationRepository:
         reinitialize: bool = False,
         operation_kind: str | None = None,
         expected_base_revision: str | None = None,
+        control_operation_id: str | None = None,
+        control_epoch: int | None = None,
     ) -> RunRecord:
         ticker = ticker.strip().upper()
         if not re.fullmatch(r"[A-Z][A-Z0-9.-]{0,14}", ticker):
@@ -116,6 +120,14 @@ class InitializationRepository:
             raise ValueError("research cutoff must include timezone")
         self._validate_plan(plan)
         with self._write() as db:
+            if control_operation_id:
+                prior = db.execute(
+                    "SELECT payload FROM initialization_runs WHERE "
+                    "json_extract(payload,'$.control_operation_id')=?",
+                    (control_operation_id,),
+                ).fetchone()
+                if prior:
+                    return RunRecord.model_validate_json(prior[0])
             if db.execute("SELECT 1 FROM ticker_operations WHERE ticker=?", (ticker,)).fetchone():
                 raise InitializationError("DUPLICATE_ACTIVE_INITIALIZATION")
             active = db.execute(
@@ -146,6 +158,8 @@ class InitializationRepository:
                 research_cutoff_at=cutoff,
                 semantic_day=semantic_day(cutoff),
                 base_revision=active[0] if active else None,
+                control_epoch=control_epoch,
+                control_operation_id=control_operation_id,
                 operation_kind=operation_kind or ("REINITIALIZE" if reinitialize else "INITIALIZE"),
             )
             db.execute(
@@ -337,10 +351,16 @@ class InitializationRepository:
 
     def claim(self, owner: str, *, lease_seconds: float = 60) -> Lease | None:
         with self._write() as db:
+            from doxagent.v2_control.mirror import migrate
+
+            migrate(db)
             row = db.execute(
                 """SELECT o.* FROM ticker_operations o
                 JOIN initialization_runs r ON r.id=o.run_id
-                WHERE o.lease_until<=? ORDER BY r.rowid LIMIT 1""",
+                LEFT JOIN v2_consumer_control c ON c.ticker=o.ticker
+                WHERE o.lease_until<=? AND (c.ticker IS NULL OR
+                    json_extract(c.payload,'$.initialization_allowed')=1)
+                ORDER BY r.rowid LIMIT 1""",
                 (time.time(),),
             ).fetchone()
             if row is None:
@@ -394,6 +414,10 @@ class InitializationRepository:
     ) -> NodeRecord:
         with self._write() as db:
             self._fence(db, lease)
+            from doxagent.v2_control.mirror import permit
+
+            run = self._run(db, lease.initialization_id)
+            permit(db, run.ticker, epoch=run.control_epoch, initialization=True)
             node = self._node(db, lease.initialization_id, key)
             if node.status in {"SUCCEEDED", "RUNNING"}:
                 return node
@@ -514,11 +538,23 @@ class InitializationRepository:
             db.execute("DELETE FROM ticker_operations WHERE run_id=?", (lease.initialization_id,))
             return run
 
-    def resume(self, run_id: str, *, reason: str, node_key: str | None = None) -> RunRecord:
+    def resume(
+        self,
+        run_id: str,
+        *,
+        reason: str,
+        node_key: str | None = None,
+        control_epoch: int | None = None,
+        control_operation_id: str | None = None,
+    ) -> RunRecord:
         if not reason.strip():
             raise ValueError("operator reason required")
         with self._write() as db:
             run = self._run(db, run_id)
+            if control_operation_id and run.control_operation_id == control_operation_id:
+                return run
+            if run.error == "OPERATOR_STOPPED":
+                raise InitializationError("removed initialization cannot be resumed")
             if run.status != RunStatus.FAILED:
                 raise InitializationError("resume requires FAILED initialization")
             if db.execute(
@@ -564,6 +600,12 @@ class InitializationRepository:
                 # Previous checkpoint remains discoverable in immutable attempt history.
                 self._save_node(db, run_id, node)
             run.status = RunStatus.QUEUED
+            if control_operation_id:
+                from doxagent.v2_control.mirror import permit
+
+                permit(db, run.ticker, epoch=control_epoch, initialization=True)
+                run.control_epoch = control_epoch
+                run.control_operation_id = control_operation_id
             run.manual_resume_required = False
             run.error = None
             db.execute(
@@ -930,6 +972,9 @@ class InitializationRepository:
     ) -> dict[str, Any]:
         """Short dependency CAS. Runtime never acquires an initialization-wide lease."""
         with self._write() as db:
+            from doxagent.v2_control.mirror import permit
+
+            permit(db, ticker, epoch=metadata.get("control_epoch"))
             prior = db.execute(
                 "SELECT payload FROM activation_revisions WHERE revision_id=?", (identity,)
             ).fetchone()
@@ -971,6 +1016,9 @@ class InitializationRepository:
         with self._write() as db:
             self._fence(db, lease)
             run = self._run(db, lease.initialization_id)
+            from doxagent.v2_control.mirror import permit
+
+            permit(db, run.ticker, epoch=run.control_epoch, initialization=True)
             revision = db.execute(
                 "SELECT * FROM activation_revisions WHERE revision_id=?", (revision_id,)
             ).fetchone()

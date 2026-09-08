@@ -1,0 +1,136 @@
+{
+  "case_id": "MU-W12-001",
+  "status": "COMPLETED",
+  "started_at": "2026-09-08T18:42:23.953934+08:00",
+  "completed_at": "2026-09-08T18:43:12.313952+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E14",
+        "E79",
+        "E15"
+      ]
+    },
+    "w1_final": {
+      "result": "OLD",
+      "confidence": "normal",
+      "reference_ids": [
+        "E14"
+      ],
+      "reason": "消息的三个核心事实——Micron 获得 NVIDIA HBM4 design win（F86）、已开始 Vera Rubin HBM4 量产出货（F85）、HBM4 收入超过 10 亿美元（F84）——均已被 E14 的 canonical facts 完整覆盖。其余内容为技术背景解释、发言人评论和行业展望，未引入新的状态变化或数值进展。"
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "candidate_policy_ids": []
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "no_policy_candidate_recalled"
+    },
+    "route": {
+      "primary_route": "ARCHIVE",
+      "side_effects": [
+        "archive_message"
+      ],
+      "reason": "w1=OLD/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_619b6ea5935e43dd9b07c8d8004fdcf4",
+      "case_id": "case_f0c15cb4617a404d91dab08442f6d913",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_68ba340b-d058-97dc-b6b2-aec5bb1307bc",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13520,
+      "output_tokens": 1374,
+      "reasoning_tokens": 1355,
+      "cached_input_tokens": 0,
+      "prefix_fingerprint": "bc31fe43c6ebabd4fc723722115d9464ea7b664f00c01e1f616107c8df6bc804",
+      "latency_ms": 18299,
+      "output": {
+        "event_ids": [
+          "E14",
+          "E79",
+          "E15"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:42:42.285382Z",
+      "started_at": "2026-09-08T10:42:23.986534Z",
+      "finished_at": "2026-09-08T10:42:42.285382Z"
+    },
+    {
+      "turn_id": "turn_74d2d01c5e21450f9a6e174fe26de730",
+      "case_id": "case_f0c15cb4617a404d91dab08442f6d913",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_3656b3b7-99c1-9419-acc8-0a3825ebc327",
+      "previous_response_id": "resp_68ba340b-d058-97dc-b6b2-aec5bb1307bc",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 3523,
+      "output_tokens": 529,
+      "reasoning_tokens": 423,
+      "cached_input_tokens": 0,
+      "prefix_fingerprint": "c60015200d4a261561779f4dbf6f8355f7f1bd378fbbd4dfc03b821948e2d878",
+      "latency_ms": 7989,
+      "output": {
+        "result": "OLD",
+        "confidence": "normal",
+        "reference_ids": [
+          "E14"
+        ],
+        "reason": "消息的三个核心事实——Micron 获得 NVIDIA HBM4 design win（F86）、已开始 Vera Rubin HBM4 量产出货（F85）、HBM4 收入超过 10 亿美元（F84）——均已被 E14 的 canonical facts 完整覆盖。其余内容为技术背景解释、发言人评论和行业展望，未引入新的状态变化或数值进展。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:42:50.291857Z",
+      "started_at": "2026-09-08T10:42:42.303318Z",
+      "finished_at": "2026-09-08T10:42:50.291857Z"
+    },
+    {
+      "turn_id": "turn_fbed9c90b1ca489cab2143e8c015011a",
+      "case_id": "case_f0c15cb4617a404d91dab08442f6d913",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_4fc401f5-fa93-94d3-93f7-cbef20c449cc",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 6614,
+      "output_tokens": 4337,
+      "reasoning_tokens": 4328,
+      "cached_input_tokens": 0,
+      "prefix_fingerprint": "f2c2dc5406ee6290d30c3915855d61097564d2c6dc1ec3341f57f61c28e3c52b",
+      "latency_ms": 48327,
+      "output": {
+        "candidate_policy_ids": []
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:43:12.313952Z",
+      "started_at": "2026-09-08T10:42:23.987056Z",
+      "finished_at": "2026-09-08T10:43:12.313952Z"
+    }
+  ]
+}

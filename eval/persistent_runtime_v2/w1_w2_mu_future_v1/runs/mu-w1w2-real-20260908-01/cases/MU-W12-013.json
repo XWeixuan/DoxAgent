@@ -1,0 +1,254 @@
+{
+  "case_id": "MU-W12-013",
+  "status": "COMPLETED",
+  "started_at": "2026-09-08T18:45:37.429559+08:00",
+  "completed_at": "2026-09-08T18:46:46.524595+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": []
+    },
+    "w1_final": {
+      "result": "NEW",
+      "confidence": "normal",
+      "reference_ids": [],
+      "reason": "No prior canonical or provisional events are loaded. The core facts—Orion Cloud completing production qualification of Micron's 245TB QLC SSD and accepting its first commercial batch—have no existing coverage in the current event library."
+    },
+    "w1_r3": {
+      "candidates": [
+        {
+          "proposition": "Orion Cloud completed production qualification of Micron Technology's 245TB QLC solid-state drive for its storage-server environment.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": "2026-09-08",
+          "entities": [
+            "Orion Cloud",
+            "Micron Technology"
+          ]
+        },
+        {
+          "proposition": "Orion Cloud accepted its first commercial batch of Micron Technology's 245TB QLC SSD for deployment in the qualified environment.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": "2026-09-08",
+          "entities": [
+            "Orion Cloud",
+            "Micron Technology"
+          ]
+        },
+        {
+          "proposition": "Orion Cloud stated the qualified drives would be introduced under its existing storage-management, monitoring, and replacement procedures within the approved environment.",
+          "assertion_state": "PLAN",
+          "subject_time": "early operating period",
+          "occurrence_date": null,
+          "entities": [
+            "Orion Cloud",
+            "Micron Technology"
+          ]
+        },
+        {
+          "proposition": "A Micron spokesperson declined to discuss commercial terms, drive quantities, or timing of additional shipments related to the 245TB QLC SSD acceptance.",
+          "assertion_state": "DENIAL",
+          "subject_time": null,
+          "occurrence_date": "2026-09-08",
+          "entities": [
+            "Micron Technology",
+            "Orion Cloud"
+          ]
+        },
+        {
+          "proposition": "Orion Cloud declined to identify the specific sites receiving the first batch of the qualified 245TB QLC SSDs, citing non-public storage configuration.",
+          "assertion_state": "DENIAL",
+          "subject_time": null,
+          "occurrence_date": "2026-09-08",
+          "entities": [
+            "Orion Cloud"
+          ]
+        }
+      ]
+    },
+    "w2_r1": {
+      "candidate_policy_ids": []
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "no_policy_candidate_recalled"
+    },
+    "route": {
+      "primary_route": "ADD_TO_DELTA",
+      "side_effects": [
+        "emit_delta"
+      ],
+      "reason": "w1=NEW/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_6d87ee61a3234bbd85a46f20d49a95e2",
+      "case_id": "case_fbec69a268d24974b3f5af384e2bf57d",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_6b1631cf-1516-9fb7-9103-46688d7108d7",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13446,
+      "output_tokens": 1581,
+      "reasoning_tokens": 1573,
+      "cached_input_tokens": 12288,
+      "prefix_fingerprint": "bc31fe43c6ebabd4fc723722115d9464ea7b664f00c01e1f616107c8df6bc804",
+      "latency_ms": 19876,
+      "output": {
+        "event_ids": []
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:45:57.339489Z",
+      "started_at": "2026-09-08T10:45:37.464262Z",
+      "finished_at": "2026-09-08T10:45:57.339489Z"
+    },
+    {
+      "turn_id": "turn_b3b7100d11da421a92133e0829edbb5f",
+      "case_id": "case_fbec69a268d24974b3f5af384e2bf57d",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_b7b4e3aa-e85d-9988-ba1d-5a17f538d77b",
+      "previous_response_id": "resp_6b1631cf-1516-9fb7-9103-46688d7108d7",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 2406,
+      "output_tokens": 265,
+      "reasoning_tokens": 199,
+      "cached_input_tokens": 1664,
+      "prefix_fingerprint": "547b796277ba34a27c5cbecaf7cfb74d8114d9465266c8968361ebd07927de66",
+      "latency_ms": 4353,
+      "output": {
+        "result": "NEW",
+        "confidence": "normal",
+        "reference_ids": [],
+        "reason": "No prior canonical or provisional events are loaded. The core facts—Orion Cloud completing production qualification of Micron's 245TB QLC SSD and accepting its first commercial batch—have no existing coverage in the current event library."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:46:01.694015Z",
+      "started_at": "2026-09-08T10:45:57.340500Z",
+      "finished_at": "2026-09-08T10:46:01.694015Z"
+    },
+    {
+      "turn_id": "turn_e9235318b40940c8996532edf336a224",
+      "case_id": "case_fbec69a268d24974b3f5af384e2bf57d",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_e2e5f184-7e56-94c7-b977-d437f193f9a1",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 6540,
+      "output_tokens": 3014,
+      "reasoning_tokens": 3005,
+      "cached_input_tokens": 5120,
+      "prefix_fingerprint": "f2c2dc5406ee6290d30c3915855d61097564d2c6dc1ec3341f57f61c28e3c52b",
+      "latency_ms": 30350,
+      "output": {
+        "candidate_policy_ids": []
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:46:07.815586Z",
+      "started_at": "2026-09-08T10:45:37.465254Z",
+      "finished_at": "2026-09-08T10:46:07.815586Z"
+    },
+    {
+      "turn_id": "turn_86164aa6203d4d0eb9fb817992054e68",
+      "case_id": "case_fbec69a268d24974b3f5af384e2bf57d",
+      "lane": "W1",
+      "round_name": "R3",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_2ddb4b95-733b-9556-b1ab-43f577c591dd",
+      "previous_response_id": "resp_b7b4e3aa-e85d-9988-ba1d-5a17f538d77b",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 2388,
+      "output_tokens": 3118,
+      "reasoning_tokens": 2775,
+      "cached_input_tokens": 1024,
+      "prefix_fingerprint": "565a5f7ad887354fc2fad558c42ade966bb92ffb968d89b277f7444e7af6a9ea",
+      "latency_ms": 38694,
+      "output": {
+        "candidates": [
+          {
+            "proposition": "Orion Cloud completed production qualification of Micron Technology's 245TB QLC solid-state drive for its storage-server environment.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": "2026-09-08",
+            "entities": [
+              "Orion Cloud",
+              "Micron Technology"
+            ]
+          },
+          {
+            "proposition": "Orion Cloud accepted its first commercial batch of Micron Technology's 245TB QLC SSD for deployment in the qualified environment.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": "2026-09-08",
+            "entities": [
+              "Orion Cloud",
+              "Micron Technology"
+            ]
+          },
+          {
+            "proposition": "Orion Cloud stated the qualified drives would be introduced under its existing storage-management, monitoring, and replacement procedures within the approved environment.",
+            "assertion_state": "PLAN",
+            "subject_time": "early operating period",
+            "occurrence_date": null,
+            "entities": [
+              "Orion Cloud",
+              "Micron Technology"
+            ]
+          },
+          {
+            "proposition": "A Micron spokesperson declined to discuss commercial terms, drive quantities, or timing of additional shipments related to the 245TB QLC SSD acceptance.",
+            "assertion_state": "DENIAL",
+            "subject_time": null,
+            "occurrence_date": "2026-09-08",
+            "entities": [
+              "Micron Technology",
+              "Orion Cloud"
+            ]
+          },
+          {
+            "proposition": "Orion Cloud declined to identify the specific sites receiving the first batch of the qualified 245TB QLC SSDs, citing non-public storage configuration.",
+            "assertion_state": "DENIAL",
+            "subject_time": null,
+            "occurrence_date": "2026-09-08",
+            "entities": [
+              "Orion Cloud"
+            ]
+          }
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:46:46.509563Z",
+      "started_at": "2026-09-08T10:46:07.815586Z",
+      "finished_at": "2026-09-08T10:46:46.509563Z"
+    }
+  ]
+}

@@ -4,6 +4,8 @@ import asyncio
 import json
 import logging
 import re
+from datetime import UTC, datetime
+from uuid import uuid4
 from collections import defaultdict
 from collections.abc import Sequence
 from typing import Protocol
@@ -55,23 +57,29 @@ class ModelGateway:
             attempts = self.max_retries + 1 if client_index == 0 else 1
             for _ in range(attempts):
                 sequenced_request = self._with_langsmith_loop_index(request)
+                sequenced_request.metadata.update(
+                    invocation_id=uuid4().hex,
+                    invocation_started_at=datetime.now(UTC).isoformat(),
+                )
                 response = await self._complete_once(client, sequenced_request)
+                sequenced_request.metadata["invocation_finished_at"] = datetime.now(UTC).isoformat()
                 response.audit.retry_count = retry_count
                 response.audit.fallback_used = client_index > 0
                 response = self._normalize_structured_response(sequenced_request, response)
                 last_response = response
+                self._record_and_return(sequenced_request, response)
 
                 if response.error is None:
-                    return self._record_and_return(sequenced_request, response)
+                    return response
                 if not response.error.retryable:
-                    return self._record_and_return(sequenced_request, response)
+                    return response
                 if client_index == 0 and retry_count < self.max_retries:
                     retry_count += 1
                     continue
                 break
 
         if last_response is not None:
-            return self._record_and_return(sequenced_request, last_response)
+            return last_response
         internal_request = self._with_langsmith_loop_index(request)
         return self._record_and_return(
             internal_request,
@@ -115,6 +123,9 @@ class ModelGateway:
         request: ModelRequest,
         response: ModelResponse,
     ) -> ModelResponse:
+        from doxagent.ticker_initialization.substeps import capture_gateway
+
+        capture_gateway(request, response)
         if self.usage_recorder is None:
             return response
         try:

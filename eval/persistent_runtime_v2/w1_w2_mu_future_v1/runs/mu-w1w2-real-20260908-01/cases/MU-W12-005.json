@@ -1,0 +1,144 @@
+{
+  "case_id": "MU-W12-005",
+  "status": "COMPLETED",
+  "started_at": "2026-09-08T18:43:25.075262+08:00",
+  "completed_at": "2026-09-08T18:43:59.839996+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E14",
+        "E39",
+        "E41",
+        "E17",
+        "E36"
+      ]
+    },
+    "w1_final": {
+      "result": "OLD",
+      "confidence": "normal",
+      "reference_ids": [
+        "E14",
+        "E39",
+        "E41"
+      ],
+      "reason": "All core facts in the message are already covered: SK hynix HBM4 supply to NVIDIA (F169/E39), Samsung HBM4E sampling (F173/E41), Micron NVIDIA HBM design win and Vera Rubin volume shipments (F86, F85/E14), and Micron HBM4E development for 2027 (F90/E17). The remaining content is editorial commentary, stage-explaining context, and a consultant quote that do not introduce new factual claims."
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "candidate_policy_ids": []
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "no_policy_candidate_recalled"
+    },
+    "route": {
+      "primary_route": "ARCHIVE",
+      "side_effects": [
+        "archive_message"
+      ],
+      "reason": "w1=OLD/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_b83023d6535943a8a4eebde0b0919bc3",
+      "case_id": "case_4724e542c2134610ade8e51c6a700e6d",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_8210f66a-8301-9cd2-98b9-53740f2c0b1d",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13471,
+      "output_tokens": 729,
+      "reasoning_tokens": 702,
+      "cached_input_tokens": 12288,
+      "prefix_fingerprint": "bc31fe43c6ebabd4fc723722115d9464ea7b664f00c01e1f616107c8df6bc804",
+      "latency_ms": 10694,
+      "output": {
+        "event_ids": [
+          "E14",
+          "E39",
+          "E41",
+          "E17",
+          "E36"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:43:36.032499Z",
+      "started_at": "2026-09-08T10:43:25.337705Z",
+      "finished_at": "2026-09-08T10:43:36.032499Z"
+    },
+    {
+      "turn_id": "turn_65fdd213c2924a8aa1e0c2394ed8f380",
+      "case_id": "case_4724e542c2134610ade8e51c6a700e6d",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_b1ead92d-d742-97be-b1ee-7493bdfacaee",
+      "previous_response_id": "resp_8210f66a-8301-9cd2-98b9-53740f2c0b1d",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 3944,
+      "output_tokens": 1213,
+      "reasoning_tokens": 1069,
+      "cached_input_tokens": 2048,
+      "prefix_fingerprint": "f82030d02490b9d0094ddda03a672df178f6bf4db970b0b917ea529bab8bd978",
+      "latency_ms": 14424,
+      "output": {
+        "result": "OLD",
+        "confidence": "normal",
+        "reference_ids": [
+          "E14",
+          "E39",
+          "E41"
+        ],
+        "reason": "All core facts in the message are already covered: SK hynix HBM4 supply to NVIDIA (F169/E39), Samsung HBM4E sampling (F173/E41), Micron NVIDIA HBM design win and Vera Rubin volume shipments (F86, F85/E14), and Micron HBM4E development for 2027 (F90/E17). The remaining content is editorial commentary, stage-explaining context, and a consultant quote that do not introduce new factual claims."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:43:50.489602Z",
+      "started_at": "2026-09-08T10:43:36.065614Z",
+      "finished_at": "2026-09-08T10:43:50.489602Z"
+    },
+    {
+      "turn_id": "turn_7e5f84783c59438ab93e3a9c2a7aa22a",
+      "case_id": "case_4724e542c2134610ade8e51c6a700e6d",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_57af1347-0f8a-94c8-b3a7-912e5d60dc7b",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 6565,
+      "output_tokens": 2881,
+      "reasoning_tokens": 2872,
+      "cached_input_tokens": 5120,
+      "prefix_fingerprint": "f2c2dc5406ee6290d30c3915855d61097564d2c6dc1ec3341f57f61c28e3c52b",
+      "latency_ms": 34501,
+      "output": {
+        "candidate_policy_ids": []
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:43:59.838982Z",
+      "started_at": "2026-09-08T10:43:25.338698Z",
+      "finished_at": "2026-09-08T10:43:59.838982Z"
+    }
+  ]
+}

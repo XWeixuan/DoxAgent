@@ -20,6 +20,12 @@ __pycache__/
 build/
 dist/
 node_modules/
+**/node_modules/
+**/dist/
+frontend/v2/artifacts/
+frontend/v2/test-results/
+frontend/v2/.font-download/
+src/doxagent/dashboard_api/
 frontend/dashboard/node_modules/
 frontend/dashboard/dist/
 *.egg-info/

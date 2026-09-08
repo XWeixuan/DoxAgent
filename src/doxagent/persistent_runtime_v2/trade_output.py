@@ -8,6 +8,7 @@ from datetime import date
 from typing import Any, Protocol
 
 from doxagent.semantic_clock import expires_at, semantic_day
+from doxagent.v2_control.repository import control_in, output_permission
 
 from .fencing import assert_write_lease
 from .journal import RuntimeJournal, encode
@@ -84,6 +85,9 @@ class TradeOutputService:
             }
             with self.journal.transaction() as db:
                 assert_write_lease(db)
+                reason, _ = output_permission(db, case.ticker, case.case_id)
+                value["origin_trade_eligible"] = reason is None
+                value["trade_disposition"] = reason
                 db.execute(
                     "INSERT OR IGNORE INTO runtime_values VALUES('candidates',?,?)",
                     (identity, encode(value)),
@@ -99,28 +103,36 @@ class TradeOutputService:
             ).fetchone()
             if old:
                 return str(json.loads(old[0])["status"])
+            reason, execution_pin = output_permission(db, case.ticker, case.case_id)
+            if reason:
+                analysis = {
+                    "case_id": case.case_id,
+                    "ticker": case.ticker,
+                    "trade_disposition": reason,
+                    "trade": trade.model_dump(mode="json"),
+                    "recorded_at": self.journal.clock().isoformat(),
+                }
+                db.execute(
+                    "INSERT OR IGNORE INTO runtime_values VALUES('analysis_trade_decisions',?,?)",
+                    (identity, encode(analysis)),
+                )
+                return reason
             expired = (case.trade_expired and selection_id is None) or (
                 semantic_day(self.journal.clock()) != day
             )
             status = "EXPIRED_SEMANTIC_DAY" if expired else "READY"
             if status == "READY" and selection_id:
-                for row in db.execute(
-                    "SELECT payload FROM runtime_values WHERE namespace='trade_intents'"
-                ):
-                    prior = json.loads(row[0])
-                    if (
-                        prior["ticker"] == case.ticker
-                        and prior["release_semantic_day"] == day.isoformat()
-                        and prior["status"]
-                        not in {
-                            "EXPIRED_SEMANTIC_DAY",
-                            "DUPLICATE_POLICY",
-                            "DUPLICATE_REALTIME_OUTPUT",
-                        }
-                        and prior["trade"]["decision"] == trade.decision.value
-                    ):
-                        status = "DUPLICATE_REALTIME_OUTPUT"
-                        break
+                prior = db.execute(
+                    "SELECT 1 FROM runtime_values WHERE namespace='trade_intents' "
+                    "AND json_extract(payload,'$.ticker')=? "
+                    "AND json_extract(payload,'$.release_semantic_day')=? "
+                    "AND json_extract(payload,'$.trade.decision')=? "
+                    "AND json_extract(payload,'$.status') NOT IN "
+                    "('EXPIRED_SEMANTIC_DAY','DUPLICATE_POLICY','DUPLICATE_REALTIME_OUTPUT') LIMIT 1",
+                    (case.ticker, day.isoformat(), trade.decision.value),
+                ).fetchone()
+                if prior:
+                    status = "DUPLICATE_REALTIME_OUTPUT"
             if status == "READY" and trade.executed_policy_id:
                 claim = PolicyActivationRecord(
                     case_id=case.case_id,
@@ -175,11 +187,14 @@ class TradeOutputService:
                 "status": status,
                 "trade": trade.model_dump(mode="json"),
                 "submitted": False,
+                "released_at": self.journal.clock().isoformat(),
             }
             profile = db.execute(
                 "SELECT payload FROM runtime_values WHERE namespace='trade_execution' AND key='active'"
             ).fetchone()
-            if profile and status == "READY":
+            if execution_pin and status == "READY":
+                intent["execution_pin"] = execution_pin
+            elif profile and status == "READY" and control_in(db, case.ticker) is None:
                 intent["execution_pin"] = json.loads(profile[0])
             db.execute(
                 "INSERT INTO runtime_values VALUES('trade_intents',?,?)", (identity, encode(intent))
@@ -188,7 +203,18 @@ class TradeOutputService:
 
     async def deliver(self, adapter: TradeExecutionAdapter, *, limit: int = 20) -> int:
         count = 0
-        for intent in self.journal.values("trade_intents"):
+        with self.journal.transaction() as db:
+            rows = db.execute(
+                "SELECT v.payload FROM runtime_values v LEFT JOIN runtime_tasks t "
+                "ON t.id='delivery:' || v.key WHERE v.namespace='trade_intents' "
+                "AND json_extract(v.payload,'$.status') IN ('READY','UNKNOWN') "
+                "AND (t.id IS NULL OR (t.status IN ('PENDING','RUNNING') "
+                "AND t.due_at<=? AND (t.lease_until IS NULL OR t.lease_until<=?))) "
+                "ORDER BY coalesce(t.due_at,''),v.key LIMIT ?",
+                (self.journal.clock().isoformat(), self.journal.clock().isoformat(), limit),
+            ).fetchall()
+        for row in rows:
+            intent = json.loads(row[0])
             if count >= limit:
                 break
             if intent["status"] not in {"READY", "UNKNOWN"}:

@@ -296,9 +296,12 @@ class MessageBusV2Service:
         if profile is None:
             raise KeyError(f"default profile not found: {profile_id}")
         for entry in profile.entries:
-            if self.repository.get_binding(
-                f"{normalized}:{entry.source_id}", include_tombstoned=True
-            ) is not None:
+            if (
+                self.repository.get_binding(
+                    f"{normalized}:{entry.source_id}", include_tombstoned=True
+                )
+                is not None
+            ):
                 continue
             source = self.require_source(entry.source_id)
             self.configure_binding(
@@ -461,6 +464,7 @@ class MessageBusV2Service:
             ),
             collected_count=len(result.messages),
         )
+        standard_revisions = 0
         for failure in result.failures:
             self.repository.save_failure(failure)
             self._upsert_failure_alert(failure)
@@ -474,6 +478,11 @@ class MessageBusV2Service:
                 collected_at=now,
             )
             updates: dict[str, int] = {}
+            if ingest.standard_message_id and ingest.decision in {
+                IngestDecision.INSERTED,
+                IngestDecision.REVISION,
+            }:
+                standard_revisions += 1
             if ingest.decision is IngestDecision.INSERTED:
                 updates["inserted_count"] = output.inserted_count + 1
             elif ingest.decision is IngestDecision.REVISION:
@@ -489,24 +498,21 @@ class MessageBusV2Service:
             output = output.model_copy(update=updates)
         saved_state = state.model_copy(
             update={
-                "status": (
-                    PollStatus.PARTIAL if result.failures else PollStatus.SUCCEEDED
-                ),
+                "status": (PollStatus.PARTIAL if result.failures else PollStatus.SUCCEEDED),
                 "checkpoint": ({} if source.kind is SourceKind.CRAWLER else result.next_checkpoint),
                 "bootstrap_complete": True,
                 "last_attempt_at": now,
                 "last_success_at": now,
                 "last_failure_at": now if result.failures else None,
                 "failure_since": None,
-                "last_error_code": (
-                    result.failures[0].error_code if result.failures else None
-                ),
+                "last_error_code": (result.failures[0].error_code if result.failures else None),
                 "last_error_message": (
                     result.failures[0].error_message[:1000] if result.failures else None
                 ),
                 "consecutive_failures": 0,
                 "collected_count": state.collected_count + output.collected_count,
                 "published_count": state.published_count + output.published_count,
+                "last_standard_revision_count": standard_revisions,
                 "updated_at": now,
             }
         )
@@ -534,6 +540,10 @@ class MessageBusV2Service:
     ) -> IngestResult:
         now = collected_at or utc_now()
         try:
+            # Provider metadata cannot forge internal completion-attempt evidence.
+            metadata = dict(message.metadata)
+            metadata.pop("v2_body_completion", None)
+            message = message.model_copy(update={"metadata": metadata})
             materialized = await self.materializer.materialize(message)
         except Exception as exc:
             failure = self._failure(
@@ -683,7 +693,22 @@ class MessageBusV2Service:
         if not force and len(entries) < binding.streaming.buffer.max_items:
             return []
         messages = [message for message, _ in entries]
-        batches = self._pack_buffer(binding, messages)
+        from doxagent.v2_control.mirror import state_in
+
+        with self.repository.transaction() as db:
+            control = state_in(db, binding.ticker)
+        boundary = (control or {}).get("mode_effective_at")
+        if boundary:
+            cutoff = datetime.fromisoformat(boundary)
+            groups = (
+                [message for message in messages if message.normalized_at < cutoff],
+                [message for message in messages if message.normalized_at >= cutoff],
+            )
+            batches = [
+                batch for group in groups if group for batch in self._pack_buffer(binding, group)
+            ]
+        else:
+            batches = self._pack_buffer(binding, messages)
         published = [self.repository.publish_buffered(binding.ticker, batch) for batch in batches]
         return published
 
@@ -854,6 +879,7 @@ class MessageBusV2Service:
         updated = state.model_copy(
             update={
                 "status": PollStatus.FAILED,
+                "last_standard_revision_count": None,
                 "last_attempt_at": now,
                 "last_failure_at": now,
                 "failure_since": state.failure_since or now,

@@ -1,0 +1,70 @@
+# Opt-in services. Use the runbook's explicit service list; this file starts nothing by itself.
+x-v2-env: &v2-env
+  DOXAGENT_V2_READ_SQLITE_PATH: /data/read/active.json
+  DOXAGENT_PERSISTENT_RUNTIME_V2_ENABLED: "true"
+  DOXAGENT_PERSISTENT_RUNTIME_V2_STORAGE_MODE: sqlite
+  DOXAGENT_PERSISTENT_RUNTIME_V2_SQLITE_PATH: /data/runtime/persistent_runtime_v2.sqlite3
+  DOXAGENT_TICKER_INITIALIZATION_CONTROL_PATH: /data/initialization/control.sqlite3
+  DOXAGENT_MESSAGE_BUS_V2_ENABLED: "true"
+  DOXAGENT_MESSAGE_BUS_V2_SQLITE_PATH: /data/bus/message_bus_v2.sqlite3
+  DOXAGENT_RUNTIME_SCHEDULER_STORAGE_MODE: sqlite
+  DOXAGENT_RUNTIME_SCHEDULER_SQLITE_PATH: /data/scheduler/runtime_scheduler.sqlite3
+  DOXAGENT_CODEX_RUNTIME_STORAGE_MODE: sqlite
+  DOXAGENT_CODEX_RUNTIME_SQLITE_PATH: /data/research/codex-runtime.sqlite3
+  DOXAGENT_EVENT_LIBRARY_ROOT: /data/events
+  DOXAGENT_CODEX_WORKER_BASE_URL: ${DOXAGENT_CODEX_WORKER_BASE_URL:-http://codex-worker:8791}
+
+x-v2-common: &v2-common
+  image: ${DOXAGENT_V2_IMAGE:-doxagent:v2-backend}
+  restart: unless-stopped
+  init: true
+  profiles: [v2-backend]
+  env_file: [.env]
+  environment: *v2-env
+  stop_grace_period: 30s
+
+services:
+  v2-api:
+    <<: *v2-common
+    command: [python, -m, doxagent.api_v2.cli, --host, 0.0.0.0, --port, "8000"]
+    ports: ["127.0.0.1:${DOXAGENT_V2_API_PORT:-8002}:8000"]
+    volumes:
+      - ${DOXAGENT_V2_READ_DIR:?set read directory}:/data/read
+      - ${DOXAGENT_V2_RUNTIME_DIR:?set runtime directory}:/data/runtime
+      - ${DOXAGENT_V2_BUS_DIR:?set bus directory}:/data/bus
+  v2-control:
+    <<: *v2-common
+    command: [python, -m, doxagent.v2_control.worker, --runtime-db, /data/runtime/persistent_runtime_v2.sqlite3, --initialization-db, /data/initialization/control.sqlite3, --bus-db, /data/bus/message_bus_v2.sqlite3, --scheduler-db, /data/scheduler/runtime_scheduler.sqlite3]
+    volumes:
+      - ${DOXAGENT_V2_RUNTIME_DIR}:/data/runtime
+      - ${DOXAGENT_V2_INITIALIZATION_DIR:?set initialization directory}:/data/initialization
+      - ${DOXAGENT_V2_BUS_DIR}:/data/bus
+      - ${DOXAGENT_V2_SCHEDULER_DIR:?set scheduler directory}:/data/scheduler
+  v2-projector:
+    <<: *v2-common
+    command: [python, -m, doxagent.v2_read.cli, project, --read-db, /data/read/active.json, --source, runtime=/data/runtime/persistent_runtime_v2.sqlite3, --source, bus=/data/bus/message_bus_v2.sqlite3, --source, initialization=/data/initialization/control.sqlite3, --source, research=/data/research/codex-runtime.sqlite3, --event-root, /data/events]
+    volumes:
+      - ${DOXAGENT_V2_READ_DIR}:/data/read
+      - ${DOXAGENT_V2_RUNTIME_DIR}:/data/runtime:ro
+      - ${DOXAGENT_V2_BUS_DIR}:/data/bus:ro
+      # Invocation spool drain writes initialization receipts; this source is deliberately writable.
+      - ${DOXAGENT_V2_INITIALIZATION_DIR}:/data/initialization
+      - ${DOXAGENT_V2_RESEARCH_DIR:?set research directory}:/data/research:ro
+      - ${DOXAGENT_V2_EVENT_DIR:?set formal event root}:/data/events:ro
+  v2-delivery:
+    <<: *v2-common
+    command: [python, -m, doxagent.persistent_runtime_v2.delivery_worker, --runtime-db, /data/runtime/persistent_runtime_v2.sqlite3]
+    volumes:
+      - ${DOXAGENT_V2_RUNTIME_DIR}:/data/runtime
+  v2-scheduler:
+    <<: *v2-common
+    command: [python, -m, doxagent.runtime_scheduler.v2]
+    volumes:
+      - ${DOXAGENT_V2_RUNTIME_DIR}:/data/runtime
+      - ${DOXAGENT_V2_INITIALIZATION_DIR}:/data/initialization
+      - ${DOXAGENT_V2_BUS_DIR}:/data/bus
+      - ${DOXAGENT_V2_SCHEDULER_DIR}:/data/scheduler
+      - ${DOXAGENT_V2_RESEARCH_DIR}:/data/research
+      - ${DOXAGENT_V2_EVENT_DIR}:/data/events
+# Existing V2 initialization, Message Bus, Codex worker and trade executor must use these same
+# paths and image. They are separate responsibilities; this overlay does not start broker execution.

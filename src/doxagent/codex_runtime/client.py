@@ -71,6 +71,9 @@ class HttpCodexWorkerClient:
                 response = await self._client.get(f"/v1/jobs/{job.job_id}")
                 response.raise_for_status()
                 job = WorkerJob.model_validate(response.json())
+            from doxagent.ticker_initialization.substeps import capture_worker
+
+            capture_worker(request, job)
             return job
         except asyncio.CancelledError:
             if job is not None and request.idempotency_key is None:

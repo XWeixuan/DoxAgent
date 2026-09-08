@@ -140,7 +140,7 @@ class UnifiedRuntimeSchedulerService:
         *,
         document_provider: RuntimeDocumentProvider,
         monitoring_service: MonitoringBusService | None,
-        runtime_service: PersistentRuntimeExecutionService,
+        runtime_service: PersistentRuntimeExecutionService | None,
         runtime_v2_service: PersistentRuntimeV2Service | None = None,
         message_bus_v2_service: MessageBusV2Service | None = None,
         crawler_plane_service: CrawlerPlaneService | None = None,
@@ -222,8 +222,26 @@ class UnifiedRuntimeSchedulerService:
         normalized = _ticker(ticker)
         runtime = self._require_runtime_v2_for_trading()
         bus = self._require_message_bus_v2()
+        from doxagent.v2_control.repository import ControlRepository
+        from doxagent.persistent_runtime_v2.journal import RuntimeJournal
+
+        control = (
+            ControlRepository(runtime.journal).get(normalized)
+            if isinstance(runtime.journal, RuntimeJournal)
+            else None
+        )
+        if control and not (control["analysis_allowed"] or control.get("admission_allowed")):
+            raise ValueError("V2 control has stopped admission")
         loader = runtime.input_snapshot_loader
-        snapshot = loader(normalized) if loader else None
+        from doxagent.ticker_initialization.runtime_inputs import ActivatedRuntimeInputs
+
+        snapshot = (
+            loader.for_admission(normalized, revision_id)
+            if isinstance(loader, ActivatedRuntimeInputs)
+            else loader(normalized)
+            if loader
+            else None
+        )
         if snapshot is None or snapshot.activation_revision_id != revision_id:
             raise ValueError("Runtime has not loaded the requested activation revision")
         if snapshot.index is None or snapshot.projection is None:
@@ -239,7 +257,11 @@ class UnifiedRuntimeSchedulerService:
             update={
                 "status": TickerRunStatus.RUNNING,
                 "health": RuntimeHealth.NORMAL,
-                "monitor_mode": MonitorMode.TRADING,
+                "monitor_mode": (
+                    MonitorMode.MESSAGE_MONITORING
+                    if control and control["requested_mode"] == "MESSAGE_MONITORING"
+                    else MonitorMode.TRADING
+                ),
                 "session_phase": market_session_phase(current_time),
                 "updated_at": current_time,
                 "stopped_at": None,
@@ -252,6 +274,8 @@ class UnifiedRuntimeSchedulerService:
                     "activation_revision_id": revision_id,
                     "workflow_version": "V2",
                     "initial_offset": initial_offset,
+                    "v2_control_epoch": control["epoch"] if control else None,
+                    "v2_control_mode": control["requested_mode"] if control else None,
                 },
             },
             deep=True,
@@ -791,7 +815,18 @@ class UnifiedRuntimeSchedulerService:
         )
         state = self._apply_completed_weekly_update_job(state, now=current_time)
         monitor_mode = _state_monitor_mode(state)
-        should_run_runtime = monitor_mode is MonitorMode.TRADING and (
+        from doxagent.v2_control.repository import ControlRepository
+        from doxagent.persistent_runtime_v2.journal import RuntimeJournal
+
+        runtime_journal = getattr(self.runtime_v2_service, "journal", None)
+        control = (
+            ControlRepository(runtime_journal).get(normalized)
+            if isinstance(runtime_journal, RuntimeJournal)
+            else None
+        )
+        should_run_runtime = (
+            control["analysis_allowed"] if control else monitor_mode is MonitorMode.TRADING
+        ) and (
             self.message_bus_v2_enabled
             or phase
             in {
@@ -1065,7 +1100,10 @@ class UnifiedRuntimeSchedulerService:
             message_bus_status=self.monitoring_status(normalized, now=now, limit=limit),
             runtime_status=self.event_processing_status(normalized, limit=limit),
             trade_intents=self.trade_intents(normalized, limit=limit),
-            exceptions=self.runtime_service.repository.list_exceptions(ticker=normalized)[-limit:],
+            exceptions=(
+                self.runtime_service.repository.list_exceptions(ticker=normalized)[-limit:]
+                if self.runtime_service is not None else []
+            ),
             refresh_requests=self.repository.list_refresh_requests(
                 ticker=normalized,
                 limit=limit,

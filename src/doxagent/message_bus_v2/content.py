@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from doxagent.message_bus_v2.schema import RawMessageInput, new_id
+from doxagent.message_bus_v2.schema import RawMessageInput, new_id, utc_now
 from doxagent.monitoring.media_enrichment import (
     MediaEnrichmentRecord,
     enrich_media_records,
@@ -33,7 +33,22 @@ class ArticleContentMaterializer:
             raw_url=message.url,
             source_name=message.source,
         )
+        started = utc_now()
         _, results = await enrich_media_records([record], concurrency=1)
+        if results and results[0].attempts:
+            message = message.model_copy(
+                update={
+                    "metadata": {
+                        **message.metadata,
+                        "v2_body_completion": {
+                            "attempt_id": new_id("body_attempt"),
+                            "started_at": started.isoformat(),
+                            "finished_at": utc_now().isoformat(),
+                            "succeeded": results[0].succeeded,
+                        },
+                    }
+                }
+            )
         if not results or not results[0].succeeded or not results[0].content:
             if results:
                 metadata = media_enrichment_metadata(message.metadata, results[0])

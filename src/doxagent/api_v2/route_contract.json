@@ -1,0 +1,555 @@
+[
+  {
+    "method": "GET",
+    "path": "/auth/config",
+    "parameters": "无",
+    "response_schema": "AuthConfig",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/auth/me",
+    "parameters": "无",
+    "response_schema": "Principal",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/capabilities",
+    "parameters": "`ticker?`",
+    "response_schema": "Capabilities",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/read-context",
+    "parameters": "`page,ticker?,period?,refresh?`",
+    "response_schema": "ReadContext",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/calendar/trading-days",
+    "parameters": "`view_id,start_day,end_day,P`",
+    "response_schema": "TradingDayPage",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers",
+    "parameters": "`visibility=NAVIGATION`，P",
+    "response_schema": "TickerNavigationPage",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}",
+    "parameters": "无",
+    "response_schema": "TickerState",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/overview/status",
+    "parameters": "V",
+    "response_schema": "OverviewStatus",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/overview/metrics",
+    "parameters": "V",
+    "response_schema": "OverviewMetrics",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/overview/tickers",
+    "parameters": "V，P，`run_state?`、`health?`",
+    "response_schema": "TickerOverviewPage",
+    "transport": "JSON"
+  },
+  {
+    "method": "POST",
+    "path": "/tickers",
+    "parameters": "StartTickerRequest",
+    "response_schema": "Operation",
+    "transport": "JSON"
+  },
+  {
+    "method": "POST",
+    "path": "/tickers/{ticker}/pause",
+    "parameters": "`{}`",
+    "response_schema": "Operation",
+    "transport": "JSON"
+  },
+  {
+    "method": "POST",
+    "path": "/tickers/{ticker}/restart",
+    "parameters": "`{}`",
+    "response_schema": "Operation",
+    "transport": "JSON"
+  },
+  {
+    "method": "DELETE",
+    "path": "/tickers/{ticker}",
+    "parameters": "无 body",
+    "response_schema": "Operation",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/initializations/{initialization_id}",
+    "parameters": "无",
+    "response_schema": "InitializationProgress",
+    "transport": "JSON"
+  },
+  {
+    "method": "POST",
+    "path": "/tickers/{ticker}/initializations/{initialization_id}/resume",
+    "parameters": "`{}`",
+    "response_schema": "Operation",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/operations/{operation_id}",
+    "parameters": "无",
+    "response_schema": "Operation",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/research/current",
+    "parameters": "V",
+    "response_schema": "ResearchSummary",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/research/runs",
+    "parameters": "P",
+    "response_schema": "RunSummaryPage",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/research/runs/{run_id}",
+    "parameters": "无",
+    "response_schema": "ResearchSummary",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/research/runs/{run_id}/sections/{section}",
+    "parameters": "`cursor?`；section=C1/C3/C5",
+    "response_schema": "ContentChunk",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/research/runs/{run_id}/future-nodes",
+    "parameters": "P",
+    "response_schema": "FutureNodeRowPage",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/research/runs/{run_id}/download",
+    "parameters": "无",
+    "response_schema": null,
+    "transport": "ZIP"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/expectations/current",
+    "parameters": "V，`limit?`",
+    "response_schema": "ExpectationsSummary",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/expectations/runs",
+    "parameters": "P",
+    "response_schema": "RunSummaryPage",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/expectations/runs/{run_id}",
+    "parameters": "`limit?`",
+    "response_schema": "ExpectationsSummary",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/expectations/runs/{run_id}/shells",
+    "parameters": "P",
+    "response_schema": "ShellSummaryPage",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/expectations/runs/{run_id}/shells/{shell_id}/units",
+    "parameters": "P",
+    "response_schema": "ShellContent",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/expectations/runs/{run_id}/shells/{shell_id}/units/{expectation_id}",
+    "parameters": "无",
+    "response_schema": "ExpectationUnit",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/contents/{content_id}",
+    "parameters": "`cursor?`",
+    "response_schema": "ContentChunk",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/contents/{content_id}/citations",
+    "parameters": "P",
+    "response_schema": "CitationPage",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/policies/context",
+    "parameters": "V，`limit?`",
+    "response_schema": "PolicyContext",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/policies/shells",
+    "parameters": "V，P",
+    "response_schema": "PolicyShellSummaryPage",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/policies/metrics",
+    "parameters": "V，`shell_id`",
+    "response_schema": "PolicyMetrics",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/policies",
+    "parameters": "V，`shell_id,filter`，P",
+    "response_schema": "PolicySummaryPage",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/policies/{policy_id}/revisions/{policy_revision_id}",
+    "parameters": "`policy_set_version,view_id?`",
+    "response_schema": "PolicyDetail",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/policies/changes",
+    "parameters": "V，`shell_id,policy_id?`，P",
+    "response_schema": "ChangeEventPage",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/policy-sets/{policy_set_version}/download",
+    "parameters": "`runtime_activation_id`",
+    "response_schema": "PolicySetDownload",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/event-library/current",
+    "parameters": "V",
+    "response_schema": "LibraryRef",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/event-library/metrics",
+    "parameters": "V",
+    "response_schema": "EventMetrics",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/event-library/events",
+    "parameters": "V，`filter?`，P",
+    "response_schema": "EventSummaryPage",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/event-library/index",
+    "parameters": "V，`filter?`，P",
+    "response_schema": "EventSummaryPage",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/event-library/snapshots/{library_snapshot_id}/events/{event_id}",
+    "parameters": "`limit?`",
+    "response_schema": "EventDetail",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/event-library/snapshots/{library_snapshot_id}/events/{event_id}/facts",
+    "parameters": "P",
+    "response_schema": "FactRowPage",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/reference-deltas/days",
+    "parameters": "V，P",
+    "response_schema": "DeltaDayPage",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/reference-deltas/days/{semantic_day}",
+    "parameters": "V，P",
+    "response_schema": "ReferenceDelta",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/reference-deltas/{delta_id}/changes/{change_id}/event",
+    "parameters": "`side=before|after`，P",
+    "response_schema": "EventDetail",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/message-bus/status",
+    "parameters": "V",
+    "response_schema": "BusStatus",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/message-bus/metrics",
+    "parameters": "V，F",
+    "response_schema": "BusMetrics",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/message-bus/sources",
+    "parameters": "V，P",
+    "response_schema": "SourceStatusPage",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/messages",
+    "parameters": "V，F，`q?`，P",
+    "response_schema": "MessageBaseline",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/messages/{standard_message_id}/revisions/{revision}",
+    "parameters": "V，`stream_cursor?`",
+    "response_schema": "MessageSummary",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/messages/{standard_message_id}/revisions/{revision}/body",
+    "parameters": "`cursor?`",
+    "response_schema": "ContentChunk",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/messages/events",
+    "parameters": "V，F，`q?`，`cursor?`",
+    "response_schema": null,
+    "transport": "SSE"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/bindings/{binding_id}",
+    "parameters": "无",
+    "response_schema": "BindingConfig",
+    "transport": "JSON"
+  },
+  {
+    "method": "PATCH",
+    "path": "/tickers/{ticker}/bindings/{binding_id}",
+    "parameters": "BindingPatch",
+    "response_schema": "BindingConfig",
+    "transport": "JSON"
+  },
+  {
+    "method": "DELETE",
+    "path": "/tickers/{ticker}/bindings/{binding_id}",
+    "parameters": "无 body",
+    "response_schema": "MutationReceipt",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/available-api-sources",
+    "parameters": "P",
+    "response_schema": "AvailableSourcePage",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/available-api-sources/{source_id}",
+    "parameters": "无",
+    "response_schema": "AvailableSourceDetail",
+    "transport": "JSON"
+  },
+  {
+    "method": "POST",
+    "path": "/tickers/{ticker}/bindings",
+    "parameters": "BindSourceRequest",
+    "response_schema": "BindingConfig",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/runtime/metrics",
+    "parameters": "V",
+    "response_schema": "RuntimeMetrics",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/runtime/graph",
+    "parameters": "V，`limit?`",
+    "response_schema": "GraphBaseline",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/runtime/graph/events",
+    "parameters": "V，`cursor?`",
+    "response_schema": null,
+    "transport": "SSE"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/runtime/nodes/{node_id}",
+    "parameters": "V，`limit?`",
+    "response_schema": "NodeDetail",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/runtime/nodes/{node_id}/cases",
+    "parameters": "V，P",
+    "response_schema": "CaseSummaryPage",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/runtime/cases",
+    "parameters": "V，`result?,source_id?`，P",
+    "response_schema": "CaseSummaryPage",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/runtime/cases/{case_id}",
+    "parameters": "V，`stream_cursor?`",
+    "response_schema": "CaseDetail",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/runtime/cases/{case_id}/attempts",
+    "parameters": "`node=W1|W2|W3`，P",
+    "response_schema": "ModelAttemptPage",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/runtime/cases/{case_id}/messages",
+    "parameters": "V，P",
+    "response_schema": "MessageSummaryPage",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/runtime/cases/{case_id}/candidates",
+    "parameters": "P",
+    "response_schema": "CandidatePage",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/runtime/cases/{case_id}/executions",
+    "parameters": "P",
+    "response_schema": "ExecutionSummaryPage",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/executions/{execution_id}",
+    "parameters": "`limit?`",
+    "response_schema": "ExecutionDetail",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/executions/{execution_id}/orders",
+    "parameters": "P",
+    "response_schema": "OrderSummaryPage",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/executions/{execution_id}/fills",
+    "parameters": "P",
+    "response_schema": "FillPage",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/audit/cost/filters",
+    "parameters": "V，`scope,dimension?`，P",
+    "response_schema": "AuditFilters",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/audit/cost/summary",
+    "parameters": "V，C",
+    "response_schema": "CostSummary",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/audit/cost/trend",
+    "parameters": "V，C，`max_points?`",
+    "response_schema": "CostTrend",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/audit/cost/breakdown",
+    "parameters": "V，C，`dimension=NODE|MODEL,limit?`",
+    "response_schema": "CostBreakdown",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/audit/cost/nodes",
+    "parameters": "V，C，P",
+    "response_schema": "CostNodeRowPage",
+    "transport": "JSON"
+  }
+]

@@ -101,7 +101,19 @@ def _admit_bus(
     if candidate.current_head() != candidate.initialization_id:
         raise ValueError("Message Bus configuration does not match active revision")
     state = bus.repository.get_ticker_state(revision["ticker"])
-    if state is None or head != candidate.initialization_id:
+    with bus.repository.transaction() as db:
+        from doxagent.v2_control.mirror import state_in
+
+        desired = state_in(db, revision["ticker"])
+    if (
+        state is None
+        or head != candidate.initialization_id
+        or (
+            desired
+            and desired.get("admission_allowed")
+            and state.status is not TickerMonitoringStatus.RUNNING
+        )
+    ):
         state = bus.start_ticker(revision["ticker"])
     if state.status is TickerMonitoringStatus.RUNNING:
         control.acknowledge_revision(revision["ticker"], revision["revision_id"], "bus")
@@ -117,8 +129,15 @@ def admit_runtime_revisions(
         if not control.revision_acknowledged(ticker, identity, "bus"):
             continue
         state = scheduler.repository.get_state(ticker)
+        from doxagent.v2_control.repository import ControlRepository
+        from doxagent.persistent_runtime_v2.journal import RuntimeJournal
+
+        journal = getattr(getattr(scheduler, "runtime_v2_service", None), "journal", None)
+        desired = ControlRepository(journal).get(ticker) if isinstance(journal, RuntimeJournal) else None
         if state and state.metadata.get("activation_revision_id") == identity:
-            if state.status not in {TickerRunStatus.RUNNING, TickerRunStatus.DEGRADED}:
+            if state.status not in {TickerRunStatus.RUNNING, TickerRunStatus.DEGRADED} and not (
+                desired and desired.get("admission_allowed")
+            ):
                 continue
         try:
             scheduler.admit_activation(ticker, identity)

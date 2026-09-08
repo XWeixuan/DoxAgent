@@ -1066,7 +1066,7 @@ $232 / $324
 ### 7.4 当前 Shell 默认显示模式
 
 - 页面默认显示模式以当前选中的一个 Shell 为范围。
-- 默认模式显示该 Shell 中的全部 Expectation Unit。
+- 默认选择该 Shell 中顺序第一的 Expectation Unit；主阅读区显示当前选中 Unit 的全部内容（2026-09-08 浏览器批注修订）。
 - 每个 Unit 必须属于当前 Shell，不能混入其他 Shell、其他 D2 运行或其他 ticker 的 Unit。
 - 页面需将 D2 JSON 转换成结构化、适合人类阅读的内容，不以原始 JSON 文本作为主要阅读形式。
 - 内容表达应根据 D2 业务语义选择实际需要展示的字段，不完整照搬所有底层 JSON 字段。
@@ -1078,17 +1078,15 @@ $232 / $324
 
 当前 Shell 正文右侧设置独立的内容路由。该路由支持以下查看范围：
 
-1. 当前 Shell 的默认完整内容，即显示该 Shell 的全部 Unit；
-2. 当前 Shell 中的某一个 Expectation Unit；
-3. 当前 Shell 全部 Unit 的 State；
-4. 当前 Shell 全部 Unit 的 Realization Factors；
-5. 当前 Shell 全部 Unit 的 Potential Gaps。
+1. 上层选择当前 Shell 中的某一个 Expectation Unit；
+2. 下层按 State、Realization Factors 和 Potential Gaps 分组，不设置“全部内容”或“全部某类型”入口；
+3. 每类内容提供二级条目，可定位具体 State value、Factor 或 Gap。
 
 交互规则：
 
 - Unit 路由项对应一个 `expectation_id`。
 - 选择某个 Unit 后，显示该 Unit 的命题、时间范围、State、Realization Factors 和 Potential Gaps。
-- 选择 State、Realization Factors 或 Potential Gaps 时，按当前 Shell 聚合显示其全部 Unit 中对应类型的内容。
+- 选择 State、Realization Factors 或 Potential Gaps 时，只显示当前选中 Unit 中对应类型的内容；具体条目按稳定业务 ID 定位。
 - 点击 Unit 或其他内部路由项不刷新页面，不重新获取 D2，也不改变当前 Shell 或文档版本。
 - 内部路由只作用于当前 Shell，不提供跨 Shell 混合聚合。
 
@@ -1113,7 +1111,7 @@ $232 / $324
 ### 7.7 简化历史文档
 
 - 保留 D2 历史文档功能。
-- 历史列表在用户打开历史文档功能时加载；具体历史 D2 的 Shell 和 Unit 内容在用户选择该历史版本后按需加载。
+- 历史列表在用户点击历史文档按钮后以左侧边栏卡片展示运行概况；选择卡片时在主阅读区按需加载该历史 D2 的 Shell 和 Unit 内容。
 - 历史列表只显示每次历史 D2 的发布时间及 `COMPLETE` 或 `PARTIAL` 状态。
 - 用户可以打开并只读查看某一次历史 D2 的完整 Shell 和 Unit 内容。
 - 历史 D2 不提供激活为当前版本、切换现行版本或其他改变 activation revision 的能力。
@@ -1214,7 +1212,7 @@ D2 正文以 Expectation Shell 和 Expectation Unit 为核心。前端需要理�
 |---|---|---|
 | 多 Shell | D2 O0 形成有序 Shell Seed，O1 按 Shell 独立并行运行 | 顶层导航以一个 Shell 为切换单位，默认选择产物中的第一个 Shell |
 | Shell 名称 | 每个 Shell 提供 `shell_id`、`core_question` 和 `boundary_rule` | 前端使用 `core_question` 作为名称，使用 `shell_id` 保持数据身份 |
-| 多 Unit | 每个 Shell 包含有序的 Expectation Unit 列表 | 默认显示当前 Shell 的全部 Unit，也可切换至某个 Unit |
+| 多 Unit | 每个 Shell 包含有序的 Expectation Unit 列表 | 默认选择当前 Shell 的首个 Unit，按 Unit 切换并提供类型和具体条目的二级菜单 |
 | Unit 内容 | 每个 Unit 包含命题、时间范围、State、Realization Factors 和 Potential Gaps | 右侧路由支持单 Unit 和三类跨 Unit 聚合查看 |
 | 结构化 JSON | D2 正式文档为 `document2.v2` JSON | 前端按业务含义转换，不使用报告排版或通用 JSON 查看器直接替代 |
 | 部分发布 | D2 可发布为 `COMPLETE` 或 `PARTIAL`，每个 Shell 有独立 outcome | `PARTIAL` 中成功与失败 Shell 都保留在导航中，失败状态不得被隐藏或伪装 |
@@ -1234,8 +1232,8 @@ D2 正文以 Expectation Shell 和 Expectation Unit 为核心。前端需要理�
 4. 标题下方按 D2 原始顺序显示 Shell，并使用核心问题作为切换名称。
 5. 首次进入页面时默认选择第一个 Shell。
 6. `PARTIAL` D2 的成功和失败 Shell 均显示，失败 Shell 保留真实状态及已有内容。
-7. 默认模式显示当前 Shell 的全部 Unit。
-8. 右侧内容路由可以切换至某个 Unit，或聚合查看当前 Shell 的全部 State、Realization Factors、Potential Gaps。
+7. 默认选中当前 Shell 的首个 Unit，主阅读区显示该 Unit 的全部内容。
+8. 右侧内容路由切换 Unit，并按类型定位该 Unit 的具体 State、Factor、Gap；索引随页面滚动保持可用，超长索引内部滚动。
 9. Unit 和聚合内容切换不刷新页面、不重新读取 D2、不触发 workflow。
 10. 页面不跨 Shell、跨 D2 运行或跨 ticker 混合 Unit 和结构化内容。
 11. D2 JSON 被转换为结构化的人类可读内容，不以原始 JSON 或通用 JSON 查看器作为正式页面。
@@ -1426,9 +1424,9 @@ D2 正文以 Expectation Shell 和 Expectation Unit 为核心。前端需要理�
 - Policy 正文侧边设置 Policy 路由。
 - 路由以 Policy 为粒度排列，前端名称使用 Policy 的 `title`，数据身份使用 `policy_id`。
 - 路由只显示当前 Shell 与当前状态筛选交集中的全部 Policy。
-- 页面默认选择筛选结果中的第一个 Policy。
-- 当前筛选结果变化后，原选中 Policy 不再属于结果时，当前正文切换到新结果中的第一个 Policy。
-- 选择 Policy 不进行整页刷新，也不触发 workflow；已经读取的正文使用缓存，第一次选择尚未读取的 Policy 时只加载该 Policy 正文。
+- 页面默认显示第一个 Shell 下符合状态筛选的全部 Policy，正文按列表连续排列；分页通过居中的加载更多组件追加。
+- 切换 Shell 或状态筛选后，正文与侧边索引同步切换到该范围的 Policy 列表。
+- 点击侧边 Policy 索引只滚动定位到对应正文，不替换为单篇 Policy，不进行整页刷新或触发 workflow；已读取正文使用缓存。
 - 同名但 `policy_id` 不同的 Policy 保持为不同记录，不按名称错误合并。
 
 ### 8.9 Policy 结构化正文
@@ -1460,7 +1458,7 @@ D2 正文以 Expectation Shell 和 Expectation Unit 为核心。前端需要理�
 ### 8.10 Policy 变更时间线
 
 - 原历史版本入口改为“变更时间线”。
-- 点击入口后从页面左侧展开边栏。
+- 入口位于页面全局操作区，点击后从页面左侧展开边栏，不从属于某个 Policy。
 - 左侧边栏可用面积应大于原历史版本边栏。
 - 时间线为只读，不提供历史 PolicySet 激活、切换现行版本或修改 Policy 的能力。
 - 时间线只记录 Policy 定义生命周期事件，不记录 Policy 命中或交易执行事件。
@@ -1468,7 +1466,7 @@ D2 正文以 Expectation Shell 和 Expectation Unit 为核心。前端需要理�
 - 每次事件显示变更发生时间、事件类型、相关 Policy 及变更简略内容。
 - 变更发生时间以对应正式 PolicySet 版本的发布时间为准。
 - 同一次 PolicySet 发布涉及多个 Policy 时，每个 Policy 的变更事实均需可识别。
-- 打开或查看时间线不进行整页刷新，不改变当前 Shell、筛选、Policy 或 activation revision；第一次打开时按当前 Policy 加载时间线，之后使用缓存。
+- 打开或查看时间线不进行整页刷新，不改变当前 Shell、筛选、Policy 或 activation revision；第一次打开时按当前 ticker 的全部 Shell、全部保留周期加载全局时间线，之后使用缓存。
 - 本文档不规定时间线和左侧边栏的具体视觉设计。
 
 ### 8.11 页面数据需求
@@ -1546,7 +1544,7 @@ D2 正文以 Expectation Shell 和 Expectation Unit 为核心。前端需要理�
 11. 周期交易执行只统计与 Policy 关联且实际产生 Broker fill 的成功交易。
 12. 筛选为单选且默认当前生效，并包含周期新增；其他筛选项受当前周期控制。
 13. Shell 与状态筛选取交集，侧边 Policy 路由只显示交集中的 Policy。
-14. Policy 路由以 `title` 为名称、以 `policy_id` 为身份，默认选择结果中的第一个 Policy。
+14. Policy 索引以 `title` 为名称、以 `policy_id` 为身份，定位当前 Shell 连续列表中的对应正文。
 15. Policy JSON 被转换为结构化的人类可读内容，不以原始 JSON 或通用 JSON 查看器作为正式页面。
 16. 多个激活条件按固定 OR 语义表达，页面不完整平铺所有底层字段。
 17. 原历史版本替换为左侧变更时间线，边栏面积大于原历史版本边栏。
@@ -1831,3 +1829,9 @@ D2 正文以 Expectation Shell 和 Expectation Unit 为核心。前端需要理�
 - 新页面沿用第 2 节的 V1/V2 隔离原则和第 4 节的缓存、加载及数据调用原则，除非后续需求明确修改。
 - 后续需求如果改变已经确认的业务口径，应直接修订对应页面章节，并在文档顶部更新日期。
 - 不在本文档中提前扩展未经确认的模块、控件或配置项。
+
+### 2026-09-09 阅读交互补充（用户确认需求）
+
+- 基础研究所选报告自动顺序加载完整正文；未来节点与预期研究当前 Shell 单元自动续取，不提供手动继续加载报告按钮。传输保持分块及版本校验，未选择的报告与历史不预取。
+- 预期研究章节使用“当前状态 / 实现因素 / 潜在差异”，索引使用“预期单元”；实现因素一行一卡，因素及差异的字段标签强化视觉层次。
+- 交易策略与事件库后续分页采用居中箭头加载更多组件，追加现有列表而不替换。

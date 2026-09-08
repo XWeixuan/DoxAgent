@@ -39,7 +39,8 @@ class WorkerJobManager:
         ).hexdigest()
         job_id = (
             hashlib.sha256(f"{request.run_id}:{request.idempotency_key}".encode()).hexdigest()
-            if request.idempotency_key else uuid4().hex
+            if request.idempotency_key
+            else uuid4().hex
         )
         existing = self._jobs.get(job_id)
         if existing is not None:
@@ -106,7 +107,7 @@ class WorkerJobManager:
         try:
             attempt_root = self._workspaces.ensure_attempt(request.run_id, request.attempt_id)
             run_root = attempt_root.parents[1]
-            await self._update(job_id, status="running")
+            await self._update(job_id, status="running", started_at=utc_now())
             handle = await self._runtime.start(request, run_root)
             self._handles[job_id] = handle
             result = await asyncio.wait_for(handle.run(), timeout=request.timeout_seconds)
@@ -176,7 +177,7 @@ class WorkerJobManager:
         await self._emit(job_id, f"job.{job.status}", job.model_dump(mode="json"))
 
     async def _finish(self, job_id: str, **updates: object) -> None:
-        await self._update(job_id, **updates)
+        await self._update(job_id, finished_at=utc_now(), **updates)
 
     async def _emit(self, job_id: str, event_type: str, payload: dict[str, object]) -> None:
         event = WorkerEvent(

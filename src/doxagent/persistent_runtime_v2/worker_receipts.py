@@ -8,8 +8,18 @@ from .journal import RuntimeJournal, digest
 
 
 class ReceiptWorker:
-    def __init__(self, worker: Any, journal: RuntimeJournal, scope: str) -> None:
+    def __init__(
+        self,
+        worker: Any,
+        journal: RuntimeJournal,
+        scope: str,
+        *,
+        case_id: str | None = None,
+        control_epoch: int | None = None,
+    ) -> None:
         self.worker, self.journal, self.scope = worker, journal, scope
+        self.case_id = case_id
+        self.control_epoch = control_epoch
 
     def __getattr__(self, name: str) -> Any:
         return getattr(self.worker, name)
@@ -45,7 +55,25 @@ class ReceiptWorker:
             self.journal.set("worker_requests", identity, frozen)
             self.journal.set("worker_receipts", identity, None)
             self.journal.set("worker_rejected", identity, False)
+        from doxagent.v2_control.repository import ControlRepository
+
+        ControlRepository(self.journal).dispatch(frozen["idempotency_key"], request.ticker)
         job = await self.worker.run(WorkerRunRequest.model_validate(frozen))
+        self.journal.set(
+            "worker_invocations",
+            job.job_id,
+            {
+                "job": job.model_dump(mode="json"),
+                "ticker": request.ticker,
+                "node": str(request.node),
+                "model": request.model,
+                "provider": request.model_provider,
+                "case_id": self.case_id,
+                "control_epoch": self.control_epoch,
+                "run_id": request.run_id,
+                "ordinal": self.journal.get("worker_generation", identity, 0) + 1,
+            },
+        )
         self.journal.set("worker_receipts", identity, job.model_dump(mode="json"))
         return WorkerJob.model_validate(job)
 

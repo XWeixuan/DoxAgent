@@ -1,0 +1,138 @@
+{
+  "case_id": "MU-W12-009",
+  "status": "COMPLETED",
+  "started_at": "2026-09-08T18:44:11.717270+08:00",
+  "completed_at": "2026-09-08T18:44:36.131432+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E43",
+        "E42",
+        "E41",
+        "E44"
+      ]
+    },
+    "w1_final": {
+      "result": "OLD",
+      "confidence": "normal",
+      "reference_ids": [
+        "E43"
+      ],
+      "reason": "The message's sole core fact — Samsung began mass production and commercial shipments of HBM4 in February 2026 — is directly and fully covered by E43/F175. The remaining content is background context, historian commentary, and general industry discussion, none of which introduce a new factual development."
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "candidate_policy_ids": []
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "no_policy_candidate_recalled"
+    },
+    "route": {
+      "primary_route": "ARCHIVE",
+      "side_effects": [
+        "archive_message"
+      ],
+      "reason": "w1=OLD/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_6b6a2184fed34a7eabe3db7005b5f9f8",
+      "case_id": "case_58f75af23433437abe79b84bf2d75c3f",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_8eda1b4c-f8d0-93eb-ad29-7af9c3cd6e4e",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13459,
+      "output_tokens": 1043,
+      "reasoning_tokens": 1020,
+      "cached_input_tokens": 12288,
+      "prefix_fingerprint": "bc31fe43c6ebabd4fc723722115d9464ea7b664f00c01e1f616107c8df6bc804",
+      "latency_ms": 12947,
+      "output": {
+        "event_ids": [
+          "E43",
+          "E42",
+          "E41",
+          "E44"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:44:24.706472Z",
+      "started_at": "2026-09-08T10:44:11.759279Z",
+      "finished_at": "2026-09-08T10:44:24.705476Z"
+    },
+    {
+      "turn_id": "turn_e8636d4639ff498c8d8c5d21d1f13350",
+      "case_id": "case_58f75af23433437abe79b84bf2d75c3f",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_425bdb86-d659-9686-8a93-d68609187b7a",
+      "previous_response_id": "resp_8eda1b4c-f8d0-93eb-ad29-7af9c3cd6e4e",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 3405,
+      "output_tokens": 473,
+      "reasoning_tokens": 388,
+      "cached_input_tokens": 1024,
+      "prefix_fingerprint": "8949d1d55cf2324c9bbbdfb552200f8dab8a7776f06aa1d985fccbb566335576",
+      "latency_ms": 6512,
+      "output": {
+        "result": "OLD",
+        "confidence": "normal",
+        "reference_ids": [
+          "E43"
+        ],
+        "reason": "The message's sole core fact — Samsung began mass production and commercial shipments of HBM4 in February 2026 — is directly and fully covered by E43/F175. The remaining content is background context, historian commentary, and general industry discussion, none of which introduce a new factual development."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:44:31.244088Z",
+      "started_at": "2026-09-08T10:44:24.732468Z",
+      "finished_at": "2026-09-08T10:44:31.244088Z"
+    },
+    {
+      "turn_id": "turn_c028cecc044b4e01be1fe3f3a4aab5e4",
+      "case_id": "case_58f75af23433437abe79b84bf2d75c3f",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_63199c27-9b1d-962d-a7ed-c653d8afee99",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 6553,
+      "output_tokens": 2041,
+      "reasoning_tokens": 2032,
+      "cached_input_tokens": 5120,
+      "prefix_fingerprint": "f2c2dc5406ee6290d30c3915855d61097564d2c6dc1ec3341f57f61c28e3c52b",
+      "latency_ms": 24371,
+      "output": {
+        "candidate_policy_ids": []
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:44:36.131432Z",
+      "started_at": "2026-09-08T10:44:11.760272Z",
+      "finished_at": "2026-09-08T10:44:36.131432Z"
+    }
+  ]
+}

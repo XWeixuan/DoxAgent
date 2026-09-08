@@ -445,6 +445,27 @@ class MessageBusV2Repository:
 
     def save_ticker_state(self, state: TickerMonitoringState) -> None:
         with self.transaction() as connection:
+            prior = connection.execute(
+                "SELECT data_json FROM ticker_monitoring_states WHERE ticker=?", (state.ticker,)
+            ).fetchone()
+            previous = TickerMonitoringState.model_validate_json(prior[0]) if prior else None
+            began = None
+            if state.status.value == "running":
+                began = (
+                    previous.continuous_run_started_at
+                    if previous and previous.status.value == "running"
+                    else utc_now()
+                )
+            state = state.model_copy(update={"continuous_run_started_at": began})
+            from doxagent.v2_control.mirror import state_in
+
+            control = state_in(connection, state.ticker)
+            if (
+                control
+                and state.status.value == "running"
+                and not (control["analysis_allowed"] or control.get("admission_allowed"))
+            ):
+                raise ValueError("V2 control has stopped Bus admission")
             connection.execute(
                 """insert into ticker_monitoring_states(ticker, status, data_json) values(?,?,?)
                    on conflict(ticker) do update set status=excluded.status,
@@ -559,6 +580,7 @@ class MessageBusV2Repository:
             if latest_row is not None:
                 latest = RawMessage.model_validate_json(latest_row["data_json"])
                 if latest.content_hash == candidate.content_hash:
+                    self._record_body_attempt(connection, candidate, latest)
                     updated = latest.model_copy(
                         update={
                             "last_seen_at": candidate.collected_at,
@@ -574,6 +596,21 @@ class MessageBusV2Repository:
                 decision = IngestDecision.REVISION
             else:
                 decision = IngestDecision.INSERTED
+            # Capture origin at first ingestion, never on a delayed normalization/replay.
+            # Caller metadata is untrusted and cannot manufacture business provenance.
+            from doxagent.v2_control.mirror import state_in
+
+            origin = state_in(connection, candidate.ticker)
+            metadata = dict(candidate.metadata)
+            metadata.pop("v2_control_origin", None)
+            if origin is not None:
+                metadata["v2_control_origin"] = {
+                    "epoch": origin["epoch"],
+                    "mode": origin["mode"],
+                    "recorded_at": candidate.collected_at.isoformat(),
+                }
+            candidate = candidate.model_copy(update={"metadata": metadata})
+            self._record_body_attempt(connection, candidate, candidate)
             connection.execute(
                 """insert into raw_messages(
                      raw_message_id,ticker,source_id,binding_id,identity_key,content_hash,
@@ -595,6 +632,40 @@ class MessageBusV2Repository:
                 ),
             )
             return decision, candidate
+
+    def _record_body_attempt(self, connection, candidate, persisted):
+        attempt = candidate.metadata.get("v2_body_completion")
+        origin = persisted.metadata.get("v2_control_origin")
+        if not attempt or not origin:
+            return
+        audit = AuditRecord(
+            audit_id=attempt["attempt_id"],
+            entity_type="body_completion",
+            entity_id=persisted.raw_message_id,
+            action="completed",
+            actor=UpdateActor.SYSTEM,
+            payload={
+                **attempt,
+                "ticker": persisted.ticker,
+                "source_id": persisted.source_id,
+                "binding_id": persisted.binding_id,
+                "raw_message_id": persisted.raw_message_id,
+                "v2_control_origin": origin,
+            },
+        )
+        connection.execute(
+            "INSERT OR IGNORE INTO audit_log "
+            "(audit_id,entity_type,entity_id,action,created_at,data_json) "
+            "VALUES(?,?,?,?,?,?)",
+            (
+                audit.audit_id,
+                audit.entity_type,
+                audit.entity_id,
+                audit.action,
+                audit.created_at.isoformat(),
+                self._json(audit),
+            ),
+        )
 
     def save_raw(self, raw: RawMessage) -> None:
         with self.transaction() as connection:
@@ -961,6 +1032,7 @@ class MessageBusV2Repository:
                     source=standard.source,
                     url=standard.url,
                     published_at=standard.published_at,
+                    normalized_at=standard.normalized_at,
                 )
             )
         return result
@@ -1007,27 +1079,38 @@ class MessageBusV2Repository:
             elif state.runtime_cursor_initialized:
                 offset = 0
             else:
-                offset = int(connection.execute(
-                    "SELECT coalesce(max(stream_offset),0) FROM stream_items WHERE ticker=?",
-                    (ticker,),
-                ).fetchone()[0])
+                offset = int(
+                    connection.execute(
+                        "SELECT coalesce(max(stream_offset),0) FROM stream_items WHERE ticker=?",
+                        (ticker,),
+                    ).fetchone()[0]
+                )
             if existing is None:
                 cursor = ConsumerOffset(
                     consumer_id=consumer_id, ticker=ticker, stream_offset=offset
                 )
-                connection.execute("""INSERT INTO consumer_offsets
+                connection.execute(
+                    """INSERT INTO consumer_offsets
                     (consumer_id,ticker,stream_offset,committed_at,data_json) VALUES(?,?,?,?,?)""",
                     (
-                        consumer_id, ticker, offset,
-                        cursor.committed_at.isoformat(), self._json(cursor),
+                        consumer_id,
+                        ticker,
+                        offset,
+                        cursor.committed_at.isoformat(),
+                        self._json(cursor),
                     ),
                 )
             if not state.runtime_cursor_initialized:
-                state = state.model_copy(update={
-                    "runtime_cursor_initialized": True, "updated_at": utc_now(),
-                })
-                connection.execute("UPDATE ticker_monitoring_states SET data_json=? WHERE ticker=?",
-                                   (self._json(state), ticker))
+                state = state.model_copy(
+                    update={
+                        "runtime_cursor_initialized": True,
+                        "updated_at": utc_now(),
+                    }
+                )
+                connection.execute(
+                    "UPDATE ticker_monitoring_states SET data_json=? WHERE ticker=?",
+                    (self._json(state), ticker),
+                )
             return offset
 
     def commit_consumer_offset(

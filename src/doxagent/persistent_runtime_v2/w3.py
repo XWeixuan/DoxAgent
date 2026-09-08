@@ -441,7 +441,7 @@ class CodexW3AgentRunner:
         if self._journal:
             from .worker_receipts import ReceiptWorker
 
-            worker = ReceiptWorker(worker, self._journal, w3_case.w3_case_id)
+            worker = ReceiptWorker(worker, self._journal, w3_case.w3_case_id, case_id=case.case_id)
         job = await worker.run(
             WorkerRunRequest(
                 workflow_version=CODEX_PERSISTENT_RUNTIME_W3_WORKFLOW_VERSION,

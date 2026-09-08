@@ -159,6 +159,15 @@ Policy Activated = C1 OR C2 OR ... OR Cn
 
 一个 Condition 可以包含定义同一次 occurrence 所必需的多项业务属性。只有这些属性共同描述一个自然状态，且正常消息能够判断整体状态时，复合表达才成立。Condition 数量由真实存在的独立充分替代触发面决定，不以单条件或多条件比例为目标。
 
+### 4.4 模拟盘可用性反证
+
+对每条 Condition 及每个 OR group 实际完成四项检查：
+
+1. **W2 Executability**：新消息提供什么 new value/state，Policy 提供什么 baseline，boundary 在哪里，W2 能否直接比较；不能时直接修复或隔离为 unresolved。
+2. **Earliest Tradable Boundary**：删除 Condition 中最晚的 procurement、shipment、share、revenue 或 margin fact 后，是否仍形成同方向且具有交易意义的 expectation surprise；若是，当前 Trigger 过晚，应前移。
+3. **Message and Disclosure Granularity**：一条正常现实消息能否确认整个 Condition，信息持有人是否通常会披露到当前粒度；依赖多方拼接或现实中不披露粒度的表达应修复，无法形成可观察边界时隔离为 unresolved。
+4. **OR Pairwise**：对所有 Condition pairs 检查 C1 触发后 C2 随后发生是否仍值得再次交易；若是，两者不能留在同一 OR Policy。
+
 ## 5. Calibration 质量
 
 对每条 OR Condition 独立检查以下链条：
@@ -193,6 +202,8 @@ criterion → 对该 boundary 的稳定 Runtime 表达
 ```
 
 三者应描述同一 actor/object/variable，使用一致的 scope、时间基准、方向和程度门槛。任何字段都不应把 Activation 改写成另一项更严格、更晚的条件。
+
+任何相对型 Criterion 所使用的 comparison target，都必须能在 `reference_state` 或 `trigger_boundary` 中找到具体对应，使 Criterion、reference state 和 boundary 围绕同一个 actor/object/variable 完成比较。
 
 最后检查 Policy 层一致性：每条 `criterion` 与自己的 Calibration 对齐；所有 Conditions 支持同一 `decision`；title 对任一 Condition 单独成立均准确；`match_scope` 宽于 Activation 且不改变边界。
 

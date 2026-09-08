@@ -1,0 +1,142 @@
+{
+  "case_id": "MU-W12-002",
+  "status": "COMPLETED",
+  "started_at": "2026-09-08T18:43:25.075262+08:00",
+  "completed_at": "2026-09-08T18:44:01.908664+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E20",
+        "E15",
+        "E3",
+        "E25",
+        "E23"
+      ]
+    },
+    "w1_final": {
+      "result": "OLD",
+      "confidence": "normal",
+      "reference_ids": [
+        "E20",
+        "E15"
+      ],
+      "reason": "核心事实均已覆盖：HBM约需3倍wafer starts（F93）、HBM挤压非HBM供给（F94）、Micron HBM sold out through 2027 multi-year contracts（F88、F87）。消息为分析性背景文章，分析师评论和规划含义讨论不构成新事实进展。"
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "candidate_policy_ids": []
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "no_policy_candidate_recalled"
+    },
+    "route": {
+      "primary_route": "ARCHIVE",
+      "side_effects": [
+        "archive_message"
+      ],
+      "reason": "w1=OLD/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_f63609f919fd45e1a477ae3b96828bbf",
+      "case_id": "case_a5ff56905cc346c69babf2897a201ee6",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_95b3cc97-d0be-9357-8a97-f8bce6761086",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13460,
+      "output_tokens": 863,
+      "reasoning_tokens": 837,
+      "cached_input_tokens": 12288,
+      "prefix_fingerprint": "bc31fe43c6ebabd4fc723722115d9464ea7b664f00c01e1f616107c8df6bc804",
+      "latency_ms": 12079,
+      "output": {
+        "event_ids": [
+          "E20",
+          "E15",
+          "E3",
+          "E25",
+          "E23"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:43:37.404298Z",
+      "started_at": "2026-09-08T10:43:25.325191Z",
+      "finished_at": "2026-09-08T10:43:37.404298Z"
+    },
+    {
+      "turn_id": "turn_d5578409991f4effbd87b2bbf953eeca",
+      "case_id": "case_a5ff56905cc346c69babf2897a201ee6",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_54ffa12a-e6fa-9b4c-a844-6f08fc28fd5d",
+      "previous_response_id": "resp_95b3cc97-d0be-9357-8a97-f8bce6761086",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 4263,
+      "output_tokens": 1050,
+      "reasoning_tokens": 951,
+      "cached_input_tokens": 1024,
+      "prefix_fingerprint": "8573875db4917c945856ad01e6cb620fd384c92f231dee3e65c7f3f790f8b67d",
+      "latency_ms": 13041,
+      "output": {
+        "result": "OLD",
+        "confidence": "normal",
+        "reference_ids": [
+          "E20",
+          "E15"
+        ],
+        "reason": "核心事实均已覆盖：HBM约需3倍wafer starts（F93）、HBM挤压非HBM供给（F94）、Micron HBM sold out through 2027 multi-year contracts（F88、F87）。消息为分析性背景文章，分析师评论和规划含义讨论不构成新事实进展。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:43:50.469926Z",
+      "started_at": "2026-09-08T10:43:37.429328Z",
+      "finished_at": "2026-09-08T10:43:50.469926Z"
+    },
+    {
+      "turn_id": "turn_d36012e712714d0eab2fee639bdc2a75",
+      "case_id": "case_a5ff56905cc346c69babf2897a201ee6",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_1714c474-2e77-9c30-8b27-f64cbe132712",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 6554,
+      "output_tokens": 3322,
+      "reasoning_tokens": 3313,
+      "cached_input_tokens": 5120,
+      "prefix_fingerprint": "f2c2dc5406ee6290d30c3915855d61097564d2c6dc1ec3341f57f61c28e3c52b",
+      "latency_ms": 36583,
+      "output": {
+        "candidate_policy_ids": []
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:44:01.908664Z",
+      "started_at": "2026-09-08T10:43:25.325191Z",
+      "finished_at": "2026-09-08T10:44:01.908664Z"
+    }
+  ]
+}

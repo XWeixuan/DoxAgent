@@ -1,0 +1,255 @@
+{
+  "case_id": "MU-W12-019",
+  "status": "COMPLETED",
+  "started_at": "2026-09-08T18:44:28.490255+08:00",
+  "completed_at": "2026-09-08T18:45:40.561857+08:00",
+  "seeded_provisional_event_ids": [
+    "E186",
+    "E187",
+    "E188",
+    "E189"
+  ],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E186",
+        "E187",
+        "E188",
+        "E189"
+      ]
+    },
+    "w1_final": {
+      "result": "OLD",
+      "confidence": "normal",
+      "reference_ids": [
+        "E186",
+        "E187",
+        "E188"
+      ],
+      "reason": "消息的全部核心事实均已被已知 provisional events 覆盖：E186 覆盖 November 12 冷却水中断事件本身，E187 覆盖恢复期内 saleable-bit 产出下调，E188 覆盖 12 月底前交付日期修订，E189 覆盖至 2027-01-31 的恢复时间线。消息中额外的操作细节（工具安全状态、隔离修复流程、客户沟通、重启优先级等）属于对同一事实的补充背景，不构成新的核心现实进展。"
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "candidate_policy_ids": [
+        "pol_a2fb4594422ae0c078a2",
+        "pol_c8b3001cc1fac69def5e"
+      ]
+    },
+    "w2_final": {
+      "policy_ids": [
+        "pol_a2fb4594422ae0c078a2"
+      ],
+      "matched_condition_ids": [
+        {
+          "policy_id": "pol_a2fb4594422ae0c078a2",
+          "condition_ids": [
+            "C1"
+          ]
+        }
+      ],
+      "confidence": "normal",
+      "reason": "pol_a2fb4594422ae0c078a2命中C1：Micron明确确认可选关键先进封装区域发生非计划冷却水中断（'unexpected loss of cooling-water pressure'，公司自述'unplanned'并区别于普通维护），同时下调受影响封装的可售bit产量并推迟有限客户交付日期；恢复期至2027年1月31日，公司自述远超正常维护窗口（'hours or days rather than multiple production weeks'），且明确表示不能按常规周排程处理，满足trigger_boundary要求的'具有商业实质的恢复窗口'及客户交付后果。pol_c8b3001cc1fac69def5e未命中：消息描述的是Micron内部共享冷却水回路故障（internal utility loop failure），而非外部关键投入供应商对水/能源/晶圆/化学品/设备实施配给、中断或涨价；消息亦未出现单位成本上调或毛利率指引下调，属于内部设施事故而非供应链投入约束冲击，不满足criterion中'关键投入供应商或Micron确认…发生配给、中断或不可转嫁涨价'的语义范围。"
+    },
+    "route": {
+      "primary_route": "ARCHIVE",
+      "side_effects": [
+        "archive_message",
+        "mark_badcase"
+      ],
+      "reason": "w1=OLD/normal;policy_hit=true;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_6fe905c7a2d842fb971468326963197b",
+      "case_id": "case_66b98f01d0f740ccb36a4c11a003f79a",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_b4e3eaef-58f3-9e89-a6a7-ca928c634231",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13807,
+      "output_tokens": 1179,
+      "reasoning_tokens": 1152,
+      "cached_input_tokens": 12288,
+      "prefix_fingerprint": "bc31fe43c6ebabd4fc723722115d9464ea7b664f00c01e1f616107c8df6bc804",
+      "latency_ms": 14348,
+      "output": {
+        "event_ids": [
+          "E186",
+          "E187",
+          "E188",
+          "E189"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:44:42.879232Z",
+      "started_at": "2026-09-08T10:44:28.531270Z",
+      "finished_at": "2026-09-08T10:44:42.879232Z"
+    },
+    {
+      "turn_id": "turn_c1846bcc0d0641a78678fec9df9b5c27",
+      "case_id": "case_66b98f01d0f740ccb36a4c11a003f79a",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "PENDING_RETRY",
+      "response_id": "resp_79233b94-d21c-919f-aa17-448cda5a7ae6",
+      "previous_response_id": "resp_b4e3eaef-58f3-9e89-a6a7-ca928c634231",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 2767,
+      "output_tokens": 1105,
+      "reasoning_tokens": null,
+      "cached_input_tokens": 1664,
+      "prefix_fingerprint": null,
+      "latency_ms": 14539,
+      "output": null,
+      "error_code": "structured_output_validation_failed",
+      "error_message": "Strict structured output validation failed: ValidationError [{\"loc\":\"reference_ids\",\"type\":\"too_long\",\"msg\":\"List should have at most 3 items after validation, not 4\"}]",
+      "created_at": "2026-09-08T10:44:57.419899Z",
+      "started_at": "2026-09-08T10:44:42.880242Z",
+      "finished_at": "2026-09-08T10:44:57.419899Z"
+    },
+    {
+      "turn_id": "turn_a1f98e22671b42199a3b40ee72dcf463",
+      "case_id": "case_66b98f01d0f740ccb36a4c11a003f79a",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_3e101738-65bd-9c81-8202-cbb0fbd2e756",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 6526,
+      "output_tokens": 2807,
+      "reasoning_tokens": 2762,
+      "cached_input_tokens": 5120,
+      "prefix_fingerprint": "f2c2dc5406ee6290d30c3915855d61097564d2c6dc1ec3341f57f61c28e3c52b",
+      "latency_ms": 30375,
+      "output": {
+        "candidate_policy_ids": [
+          "pol_a2fb4594422ae0c078a2",
+          "pol_c8b3001cc1fac69def5e"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:44:58.908027Z",
+      "started_at": "2026-09-08T10:44:28.532277Z",
+      "finished_at": "2026-09-08T10:44:58.908027Z"
+    },
+    {
+      "turn_id": "turn_7402da84182a4ccf8ce9e36e737ba75a",
+      "case_id": "case_66b98f01d0f740ccb36a4c11a003f79a",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 2,
+      "status": "PENDING_RETRY",
+      "response_id": "resp_5b859431-76f8-958d-9d19-e2246dab3f61",
+      "previous_response_id": "resp_b4e3eaef-58f3-9e89-a6a7-ca928c634231",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 2767,
+      "output_tokens": 758,
+      "reasoning_tokens": null,
+      "cached_input_tokens": 2048,
+      "prefix_fingerprint": null,
+      "latency_ms": 9380,
+      "output": null,
+      "error_code": "structured_output_validation_failed",
+      "error_message": "Strict structured output validation failed: ValidationError [{\"loc\":\"reference_ids\",\"type\":\"too_long\",\"msg\":\"List should have at most 3 items after validation, not 4\"}]",
+      "created_at": "2026-09-08T10:45:11.799664Z",
+      "started_at": "2026-09-08T10:45:02.420477Z",
+      "finished_at": "2026-09-08T10:45:11.799664Z"
+    },
+    {
+      "turn_id": "turn_3eb8abadc973456c8165a1ef72ccf836",
+      "case_id": "case_66b98f01d0f740ccb36a4c11a003f79a",
+      "lane": "W2",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_7c99c10b-ec20-9b13-9478-c1acdd509e40",
+      "previous_response_id": "resp_3e101738-65bd-9c81-8202-cbb0fbd2e756",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 2857,
+      "output_tokens": 1927,
+      "reasoning_tokens": 1613,
+      "cached_input_tokens": 1664,
+      "prefix_fingerprint": "3d522f9a31852c9e4f7e7c5fbe6a2ef3209cbd05fbd50bc618b72237b7fdb957",
+      "latency_ms": 22355,
+      "output": {
+        "policy_ids": [
+          "pol_a2fb4594422ae0c078a2"
+        ],
+        "matched_condition_ids": [
+          {
+            "policy_id": "pol_a2fb4594422ae0c078a2",
+            "condition_ids": [
+              "C1"
+            ]
+          }
+        ],
+        "confidence": "normal",
+        "reason": "pol_a2fb4594422ae0c078a2命中C1：Micron明确确认可选关键先进封装区域发生非计划冷却水中断（'unexpected loss of cooling-water pressure'，公司自述'unplanned'并区别于普通维护），同时下调受影响封装的可售bit产量并推迟有限客户交付日期；恢复期至2027年1月31日，公司自述远超正常维护窗口（'hours or days rather than multiple production weeks'），且明确表示不能按常规周排程处理，满足trigger_boundary要求的'具有商业实质的恢复窗口'及客户交付后果。pol_c8b3001cc1fac69def5e未命中：消息描述的是Micron内部共享冷却水回路故障（internal utility loop failure），而非外部关键投入供应商对水/能源/晶圆/化学品/设备实施配给、中断或涨价；消息亦未出现单位成本上调或毛利率指引下调，属于内部设施事故而非供应链投入约束冲击，不满足criterion中'关键投入供应商或Micron确认…发生配给、中断或不可转嫁涨价'的语义范围。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:45:21.263348Z",
+      "started_at": "2026-09-08T10:44:58.908027Z",
+      "finished_at": "2026-09-08T10:45:21.263348Z"
+    },
+    {
+      "turn_id": "turn_d13c9de6036646839bed1343a107af33",
+      "case_id": "case_66b98f01d0f740ccb36a4c11a003f79a",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 3,
+      "status": "OK",
+      "response_id": "resp_54f1f258-4e43-917c-a4e8-eba0dc4d91a6",
+      "previous_response_id": "resp_b4e3eaef-58f3-9e89-a6a7-ca928c634231",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 2767,
+      "output_tokens": 1491,
+      "reasoning_tokens": 1340,
+      "cached_input_tokens": 2048,
+      "prefix_fingerprint": "407afb5e3faf8147f4ae488b388ef08d774278740d767b2c90f5fa2e0a0ac675",
+      "latency_ms": 18761,
+      "output": {
+        "result": "OLD",
+        "confidence": "normal",
+        "reference_ids": [
+          "E186",
+          "E187",
+          "E188"
+        ],
+        "reason": "消息的全部核心事实均已被已知 provisional events 覆盖：E186 覆盖 November 12 冷却水中断事件本身，E187 覆盖恢复期内 saleable-bit 产出下调，E188 覆盖 12 月底前交付日期修订，E189 覆盖至 2027-01-31 的恢复时间线。消息中额外的操作细节（工具安全状态、隔离修复流程、客户沟通、重启优先级等）属于对同一事实的补充背景，不构成新的核心现实进展。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:45:40.561857Z",
+      "started_at": "2026-09-08T10:45:21.801047Z",
+      "finished_at": "2026-09-08T10:45:40.560850Z"
+    }
+  ]
+}

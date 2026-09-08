@@ -79,6 +79,17 @@ class CandidateConfiguration:
         if not any(binding.enabled and binding.tombstoned_at is None for binding in bindings):
             raise ValueError("candidate has no usable monitoring binding")
         with self.live.transaction() as db:
+            from doxagent.v2_control.mirror import state_in
+
+            control = state_in(db, self.ticker)
+            if control and not (control["analysis_allowed"] or control.get("admission_allowed")):
+                raise ValueError("V2 control has stopped configuration admission")
+            if (
+                control
+                and control.get("minimum_epoch")
+                and (control.get("initialization_id") != self.initialization_id)
+            ):
+                raise ValueError("V2 configuration belongs to a removed initialization")
             db.execute("""CREATE TABLE IF NOT EXISTS initialization_config_receipts (
                 initialization_id TEXT PRIMARY KEY, ticker TEXT NOT NULL,
                 previous_bindings TEXT NOT NULL, previous_operation TEXT)""")

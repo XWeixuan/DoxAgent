@@ -1,0 +1,136 @@
+{
+  "case_id": "MU-W12-008",
+  "status": "COMPLETED",
+  "started_at": "2026-09-08T18:44:01.910667+08:00",
+  "completed_at": "2026-09-08T18:44:30.496644+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E3",
+        "E2"
+      ]
+    },
+    "w1_final": {
+      "result": "OLD",
+      "confidence": "normal",
+      "reference_ids": [
+        "E2",
+        "E3"
+      ],
+      "reason": "Message core facts (16 multiyear agreements, ~$100B cumulative sales through 2030, ~$22B deposits, binding purchase/take-or-pay, price floors and ceilings, reducing spot-market reliance) are all already covered by E2 facts F25–F33 and E3 fact F38. The message explicitly 'reiterates' the existing framework; no new state change or quantitative development is present."
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "candidate_policy_ids": []
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "no_policy_candidate_recalled"
+    },
+    "route": {
+      "primary_route": "ARCHIVE",
+      "side_effects": [
+        "archive_message"
+      ],
+      "reason": "w1=OLD/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_1e83fdfe604f4bad89c7db52ab4e0441",
+      "case_id": "case_5e176c6906c04f18870315759066b4af",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_87a16d6b-dcb6-9d1a-a79e-9e53b31c6c32",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13458,
+      "output_tokens": 1373,
+      "reasoning_tokens": 1360,
+      "cached_input_tokens": 12288,
+      "prefix_fingerprint": "bc31fe43c6ebabd4fc723722115d9464ea7b664f00c01e1f616107c8df6bc804",
+      "latency_ms": 17287,
+      "output": {
+        "event_ids": [
+          "E3",
+          "E2"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:44:19.230144Z",
+      "started_at": "2026-09-08T10:44:01.942812Z",
+      "finished_at": "2026-09-08T10:44:19.230144Z"
+    },
+    {
+      "turn_id": "turn_66f2691f5e30420b91c89772a8195659",
+      "case_id": "case_5e176c6906c04f18870315759066b4af",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_93cca5fe-5c22-9ce8-99e4-9233730921fb",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 6552,
+      "output_tokens": 2098,
+      "reasoning_tokens": 2089,
+      "cached_input_tokens": 5120,
+      "prefix_fingerprint": "f2c2dc5406ee6290d30c3915855d61097564d2c6dc1ec3341f57f61c28e3c52b",
+      "latency_ms": 25039,
+      "output": {
+        "candidate_policy_ids": []
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:44:26.983155Z",
+      "started_at": "2026-09-08T10:44:01.944804Z",
+      "finished_at": "2026-09-08T10:44:26.983155Z"
+    },
+    {
+      "turn_id": "turn_d99d867020c148b2af60d54ead644331",
+      "case_id": "case_5e176c6906c04f18870315759066b4af",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_06bb2d28-7697-95cb-ab20-338ca477eb7d",
+      "previous_response_id": "resp_87a16d6b-dcb6-9d1a-a79e-9e53b31c6c32",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 3824,
+      "output_tokens": 861,
+      "reasoning_tokens": 744,
+      "cached_input_tokens": 1024,
+      "prefix_fingerprint": "a970409aced15397104ca65ffa2cf105156d73ca8604b7a38ce2eaffeff411da",
+      "latency_ms": 11256,
+      "output": {
+        "result": "OLD",
+        "confidence": "normal",
+        "reference_ids": [
+          "E2",
+          "E3"
+        ],
+        "reason": "Message core facts (16 multiyear agreements, ~$100B cumulative sales through 2030, ~$22B deposits, binding purchase/take-or-pay, price floors and ceilings, reducing spot-market reliance) are all already covered by E2 facts F25–F33 and E3 fact F38. The message explicitly 'reiterates' the existing framework; no new state change or quantitative development is present."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:44:30.496104Z",
+      "started_at": "2026-09-08T10:44:19.240147Z",
+      "finished_at": "2026-09-08T10:44:30.496104Z"
+    }
+  ]
+}

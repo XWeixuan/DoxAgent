@@ -1,0 +1,341 @@
+{
+  "case_id": "MU-W12-016",
+  "status": "COMPLETED",
+  "started_at": "2026-09-08T18:44:36.133436+08:00",
+  "completed_at": "2026-09-08T18:45:37.427560+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": []
+    },
+    "w1_final": {
+      "result": "NEW",
+      "confidence": "normal",
+      "reference_ids": [],
+      "reason": "No canonical or provisional events exist; the core facts—Aster Cloud's production deployment of CXL memory pooling and Micron's inclusion as a qualified module supplier—are entirely new with no prior coverage."
+    },
+    "w1_r3": {
+      "candidates": [
+        {
+          "proposition": "Aster Cloud has started a production deployment of CXL memory pooling for a group of internal analytics servers, using the architecture to make memory capacity available across workloads on separate hosts.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "Aster Cloud",
+            "Micron",
+            "CXL"
+          ]
+        },
+        {
+          "proposition": "Micron is listed as one of several qualified module suppliers for Aster Cloud's CXL memory pooling production environment.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "Aster Cloud",
+            "Micron"
+          ]
+        },
+        {
+          "proposition": "Aster Cloud's first production CXL pooling environment supports data-processing jobs with uneven memory requirements where isolated server configurations previously left some capacity underused.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "Aster Cloud"
+          ]
+        },
+        {
+          "proposition": "Aster Cloud's production CXL deployment initially serves a narrow set of analytics workloads.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "Aster Cloud"
+          ]
+        },
+        {
+          "proposition": "Aster Cloud has built new controls for module health, error isolation, and workload placement for the CXL memory pooling environment.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "Aster Cloud"
+          ]
+        },
+        {
+          "proposition": "Aster Cloud plans to expand the CXL pooling deployment only after software teams complete monitoring and recovery tests.",
+          "assertion_state": "PLAN",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "Aster Cloud"
+          ]
+        },
+        {
+          "proposition": "Aster Cloud plans to publish technical material about the CXL deployment after the initial operating phase but provided no schedule or unit figures.",
+          "assertion_state": "PLAN",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "Aster Cloud"
+          ]
+        },
+        {
+          "proposition": "Aster Cloud will not market the CXL pooling as a separate product name; the feature is used behind the service.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "Aster Cloud"
+          ]
+        }
+      ]
+    },
+    "w2_r1": {
+      "candidate_policy_ids": [
+        "pol_ba44e8df4267758d9039"
+      ]
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "量产部署和Micron合格供应商两项已确认，但C1的trigger_boundary要求四项同时成立：净总容量超过被替代主机DRAM、可比工作负载总DRAM采购上升也须确认。消息未披露任何模块数量或采购数据，且明确将池化对净容量的影响描述为不确定（分析师称'Pooling can eliminate waste just as easily as it can make a larger shared resource practical'），未提供总DRAM采购上升的任何证据。缺少两项关键事实，Condition不成立。"
+    },
+    "route": {
+      "primary_route": "ADD_TO_DELTA",
+      "side_effects": [
+        "emit_delta"
+      ],
+      "reason": "w1=NEW/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_9342470240654e8b8be5254b016bde1e",
+      "case_id": "case_e6cb1ff8a0274d6a9ced89c602fa8419",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_9986c8cf-e94d-9967-b384-ea4b6fa7be69",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13442,
+      "output_tokens": 2399,
+      "reasoning_tokens": 2391,
+      "cached_input_tokens": 12288,
+      "prefix_fingerprint": "bc31fe43c6ebabd4fc723722115d9464ea7b664f00c01e1f616107c8df6bc804",
+      "latency_ms": 28707,
+      "output": {
+        "event_ids": []
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:45:04.875985Z",
+      "started_at": "2026-09-08T10:44:36.168840Z",
+      "finished_at": "2026-09-08T10:45:04.875985Z"
+    },
+    {
+      "turn_id": "turn_61b4ec84349e43f394d1efd95ae7fb8b",
+      "case_id": "case_e6cb1ff8a0274d6a9ced89c602fa8419",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_8511e829-99df-90f7-a5f1-6f06a83021f0",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 6536,
+      "output_tokens": 2471,
+      "reasoning_tokens": 2442,
+      "cached_input_tokens": 5120,
+      "prefix_fingerprint": "f2c2dc5406ee6290d30c3915855d61097564d2c6dc1ec3341f57f61c28e3c52b",
+      "latency_ms": 30568,
+      "output": {
+        "candidate_policy_ids": [
+          "pol_ba44e8df4267758d9039"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:45:06.738126Z",
+      "started_at": "2026-09-08T10:44:36.169840Z",
+      "finished_at": "2026-09-08T10:45:06.738126Z"
+    },
+    {
+      "turn_id": "turn_8955134735f4486e8722f6f02f956087",
+      "case_id": "case_e6cb1ff8a0274d6a9ced89c602fa8419",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_c3006b30-2ea3-95a1-9ed6-931244558523",
+      "previous_response_id": "resp_9986c8cf-e94d-9967-b384-ea4b6fa7be69",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 2402,
+      "output_tokens": 320,
+      "reasoning_tokens": 262,
+      "cached_input_tokens": 1664,
+      "prefix_fingerprint": "547b796277ba34a27c5cbecaf7cfb74d8114d9465266c8968361ebd07927de66",
+      "latency_ms": 5209,
+      "output": {
+        "result": "NEW",
+        "confidence": "normal",
+        "reference_ids": [],
+        "reason": "No canonical or provisional events exist; the core facts—Aster Cloud's production deployment of CXL memory pooling and Micron's inclusion as a qualified module supplier—are entirely new with no prior coverage."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:45:10.086177Z",
+      "started_at": "2026-09-08T10:45:04.875985Z",
+      "finished_at": "2026-09-08T10:45:10.085580Z"
+    },
+    {
+      "turn_id": "turn_e28c86832af24d92877cc9c450e38b01",
+      "case_id": "case_e6cb1ff8a0274d6a9ced89c602fa8419",
+      "lane": "W2",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_4b46bbc6-16d4-9b49-a231-776515ad3a54",
+      "previous_response_id": "resp_8511e829-99df-90f7-a5f1-6f06a83021f0",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 2663,
+      "output_tokens": 1139,
+      "reasoning_tokens": 1015,
+      "cached_input_tokens": 1664,
+      "prefix_fingerprint": "869e1e0abed0c1ab9ecae9a556317cfd4c3df772e6f5209d5872819e434a9f6c",
+      "latency_ms": 14534,
+      "output": {
+        "policy_ids": [],
+        "matched_condition_ids": [],
+        "confidence": "normal",
+        "reason": "量产部署和Micron合格供应商两项已确认，但C1的trigger_boundary要求四项同时成立：净总容量超过被替代主机DRAM、可比工作负载总DRAM采购上升也须确认。消息未披露任何模块数量或采购数据，且明确将池化对净容量的影响描述为不确定（分析师称'Pooling can eliminate waste just as easily as it can make a larger shared resource practical'），未提供总DRAM采购上升的任何证据。缺少两项关键事实，Condition不成立。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:45:21.271438Z",
+      "started_at": "2026-09-08T10:45:06.738126Z",
+      "finished_at": "2026-09-08T10:45:21.271438Z"
+    },
+    {
+      "turn_id": "turn_7a3df9e2dec34b2ab00ec10f32fbbe6c",
+      "case_id": "case_e6cb1ff8a0274d6a9ced89c602fa8419",
+      "lane": "W1",
+      "round_name": "R3",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_1783a62d-7cb0-92e2-9991-5625bec4a3c2",
+      "previous_response_id": "resp_c3006b30-2ea3-95a1-9ed6-931244558523",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 2376,
+      "output_tokens": 1277,
+      "reasoning_tokens": 846,
+      "cached_input_tokens": 1024,
+      "prefix_fingerprint": "8bfe0d187281a9a9df7b3e6d28da602b3d3bccb11beca3f715499aceffd8df82",
+      "latency_ms": 16141,
+      "output": {
+        "candidates": [
+          {
+            "proposition": "Aster Cloud has started a production deployment of CXL memory pooling for a group of internal analytics servers, using the architecture to make memory capacity available across workloads on separate hosts.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "Aster Cloud",
+              "Micron",
+              "CXL"
+            ]
+          },
+          {
+            "proposition": "Micron is listed as one of several qualified module suppliers for Aster Cloud's CXL memory pooling production environment.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "Aster Cloud",
+              "Micron"
+            ]
+          },
+          {
+            "proposition": "Aster Cloud's first production CXL pooling environment supports data-processing jobs with uneven memory requirements where isolated server configurations previously left some capacity underused.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "Aster Cloud"
+            ]
+          },
+          {
+            "proposition": "Aster Cloud's production CXL deployment initially serves a narrow set of analytics workloads.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "Aster Cloud"
+            ]
+          },
+          {
+            "proposition": "Aster Cloud has built new controls for module health, error isolation, and workload placement for the CXL memory pooling environment.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "Aster Cloud"
+            ]
+          },
+          {
+            "proposition": "Aster Cloud plans to expand the CXL pooling deployment only after software teams complete monitoring and recovery tests.",
+            "assertion_state": "PLAN",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "Aster Cloud"
+            ]
+          },
+          {
+            "proposition": "Aster Cloud plans to publish technical material about the CXL deployment after the initial operating phase but provided no schedule or unit figures.",
+            "assertion_state": "PLAN",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "Aster Cloud"
+            ]
+          },
+          {
+            "proposition": "Aster Cloud will not market the CXL pooling as a separate product name; the feature is used behind the service.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "Aster Cloud"
+            ]
+          }
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:45:37.413555Z",
+      "started_at": "2026-09-08T10:45:21.272444Z",
+      "finished_at": "2026-09-08T10:45:37.413555Z"
+    }
+  ]
+}

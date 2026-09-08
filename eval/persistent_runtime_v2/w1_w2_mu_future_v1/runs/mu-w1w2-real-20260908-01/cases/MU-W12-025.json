@@ -1,0 +1,320 @@
+{
+  "case_id": "MU-W12-025",
+  "status": "COMPLETED",
+  "started_at": "2026-09-08T18:47:11.352434+08:00",
+  "completed_at": "2026-09-08T18:48:11.668951+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E80",
+        "E3"
+      ]
+    },
+    "w1_final": {
+      "result": "NEW",
+      "confidence": "normal",
+      "reference_ids": [],
+      "reason": "The current message describes a specific firmware correction completed during pre-production sample validation of a 245TB QLC enterprise SSD in a joint Micron-cloud-customer engineering program. Neither E80 (NVIDIA storage ecosystem with 40+ vendors) nor E3 (Micron multiyear customer contracts and supply agreements) contains any fact about a 245TB SSD firmware issue, sample-validation engineering gate, or metadata-recovery-path correction. This is a distinct technical product-validation event not covered by existing facts."
+    },
+    "w1_r3": {
+      "candidates": [
+        {
+          "proposition": "Micron and an unnamed cloud-infrastructure customer completed a firmware correction identified during pre-production sample validation of a 245TB QLC enterprise SSD configuration.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "Micron",
+            "cloud-infrastructure customer"
+          ]
+        },
+        {
+          "proposition": "The firmware issue in the 245TB QLC SSD was traced to handling of a narrow recovery path following an interrupted metadata update.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "Micron",
+            "cloud-infrastructure customer"
+          ]
+        },
+        {
+          "proposition": "The cloud-infrastructure customer repeated the endurance and recovery sequence and confirmed that Micron's corrected firmware build handled the metadata-update path as intended.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "Micron",
+            "cloud-infrastructure customer"
+          ]
+        },
+        {
+          "proposition": "The 245TB QLC SSD firmware correction was completed before the configuration moved into a customer production decision and before the next engineering gate.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "Micron",
+            "cloud-infrastructure customer"
+          ]
+        },
+        {
+          "proposition": "Micron and the cloud-infrastructure customer will continue validating the corrected firmware build under the existing pre-production plan, with the same drive-capacity class and customer evaluation scope.",
+          "assertion_state": "ONGOING",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "Micron",
+            "cloud-infrastructure customer"
+          ]
+        },
+        {
+          "proposition": "The firmware correction did not alter the planned 245TB capacity class or the scope of the customer's evaluation.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "Micron",
+            "cloud-infrastructure customer"
+          ]
+        },
+        {
+          "proposition": "Neither Micron nor the cloud-infrastructure customer discussed the customer's timetable for the remaining program work.",
+          "assertion_state": "DENIAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "Micron",
+            "cloud-infrastructure customer"
+          ]
+        },
+        {
+          "proposition": "Micron did not comment on the individual 245TB SSD customer configuration.",
+          "assertion_state": "DENIAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "Micron"
+          ]
+        }
+      ]
+    },
+    "w2_r1": {
+      "candidate_policy_ids": []
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "no_policy_candidate_recalled"
+    },
+    "route": {
+      "primary_route": "ADD_TO_DELTA",
+      "side_effects": [
+        "emit_delta"
+      ],
+      "reason": "w1=NEW/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_b42d4c2863334819aa690904847eabb5",
+      "case_id": "case_c8445d0bd77a4b6b8b41f26f21420f00",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_d8472eb3-8bb1-9df3-a704-dfcfa6b30cf4",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13406,
+      "output_tokens": 1835,
+      "reasoning_tokens": 1821,
+      "cached_input_tokens": 12288,
+      "prefix_fingerprint": "bc31fe43c6ebabd4fc723722115d9464ea7b664f00c01e1f616107c8df6bc804",
+      "latency_ms": 23711,
+      "output": {
+        "event_ids": [
+          "E80",
+          "E3"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:47:35.129830Z",
+      "started_at": "2026-09-08T10:47:11.418744Z",
+      "finished_at": "2026-09-08T10:47:35.129830Z"
+    },
+    {
+      "turn_id": "turn_13c6402420f7407397d57a51f949b058",
+      "case_id": "case_c8445d0bd77a4b6b8b41f26f21420f00",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_8decb5af-e733-95c3-81c2-6d4ff2a645bf",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 6500,
+      "output_tokens": 2610,
+      "reasoning_tokens": 2601,
+      "cached_input_tokens": 5120,
+      "prefix_fingerprint": "f2c2dc5406ee6290d30c3915855d61097564d2c6dc1ec3341f57f61c28e3c52b",
+      "latency_ms": 30030,
+      "output": {
+        "candidate_policy_ids": []
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:47:41.451612Z",
+      "started_at": "2026-09-08T10:47:11.421147Z",
+      "finished_at": "2026-09-08T10:47:41.451612Z"
+    },
+    {
+      "turn_id": "turn_3a0c224be1c541fdbcf551fc328b1af0",
+      "case_id": "case_c8445d0bd77a4b6b8b41f26f21420f00",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_6e68852b-5368-952e-a88b-13fd30ddedb1",
+      "previous_response_id": "resp_d8472eb3-8bb1-9df3-a704-dfcfa6b30cf4",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 3205,
+      "output_tokens": 850,
+      "reasoning_tokens": 726,
+      "cached_input_tokens": 1664,
+      "prefix_fingerprint": "3f577295a92fad591e121e5a5e3e7847fec94623e1dcbc1c86d7d472f6d0b577",
+      "latency_ms": 15514,
+      "output": {
+        "result": "NEW",
+        "confidence": "normal",
+        "reference_ids": [],
+        "reason": "The current message describes a specific firmware correction completed during pre-production sample validation of a 245TB QLC enterprise SSD in a joint Micron-cloud-customer engineering program. Neither E80 (NVIDIA storage ecosystem with 40+ vendors) nor E3 (Micron multiyear customer contracts and supply agreements) contains any fact about a 245TB SSD firmware issue, sample-validation engineering gate, or metadata-recovery-path correction. This is a distinct technical product-validation event not covered by existing facts."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:47:50.657154Z",
+      "started_at": "2026-09-08T10:47:35.143368Z",
+      "finished_at": "2026-09-08T10:47:50.657154Z"
+    },
+    {
+      "turn_id": "turn_ec005f4704a14d5d961692d880273455",
+      "case_id": "case_c8445d0bd77a4b6b8b41f26f21420f00",
+      "lane": "W1",
+      "round_name": "R3",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_8d743c0e-0fe8-9b63-9f7d-5e8c356242b4",
+      "previous_response_id": "resp_6e68852b-5368-952e-a88b-13fd30ddedb1",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 2406,
+      "output_tokens": 1818,
+      "reasoning_tokens": 1356,
+      "cached_input_tokens": 1024,
+      "prefix_fingerprint": "3cee5deef62df1bd7f64955a0f23207c67ac21d74e5fa86f4d461512ccccc62b",
+      "latency_ms": 20990,
+      "output": {
+        "candidates": [
+          {
+            "proposition": "Micron and an unnamed cloud-infrastructure customer completed a firmware correction identified during pre-production sample validation of a 245TB QLC enterprise SSD configuration.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "Micron",
+              "cloud-infrastructure customer"
+            ]
+          },
+          {
+            "proposition": "The firmware issue in the 245TB QLC SSD was traced to handling of a narrow recovery path following an interrupted metadata update.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "Micron",
+              "cloud-infrastructure customer"
+            ]
+          },
+          {
+            "proposition": "The cloud-infrastructure customer repeated the endurance and recovery sequence and confirmed that Micron's corrected firmware build handled the metadata-update path as intended.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "Micron",
+              "cloud-infrastructure customer"
+            ]
+          },
+          {
+            "proposition": "The 245TB QLC SSD firmware correction was completed before the configuration moved into a customer production decision and before the next engineering gate.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "Micron",
+              "cloud-infrastructure customer"
+            ]
+          },
+          {
+            "proposition": "Micron and the cloud-infrastructure customer will continue validating the corrected firmware build under the existing pre-production plan, with the same drive-capacity class and customer evaluation scope.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "Micron",
+              "cloud-infrastructure customer"
+            ]
+          },
+          {
+            "proposition": "The firmware correction did not alter the planned 245TB capacity class or the scope of the customer's evaluation.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "Micron",
+              "cloud-infrastructure customer"
+            ]
+          },
+          {
+            "proposition": "Neither Micron nor the cloud-infrastructure customer discussed the customer's timetable for the remaining program work.",
+            "assertion_state": "DENIAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "Micron",
+              "cloud-infrastructure customer"
+            ]
+          },
+          {
+            "proposition": "Micron did not comment on the individual 245TB SSD customer configuration.",
+            "assertion_state": "DENIAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "Micron"
+            ]
+          }
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:48:11.648125Z",
+      "started_at": "2026-09-08T10:47:50.657905Z",
+      "finished_at": "2026-09-08T10:48:11.648125Z"
+    }
+  ]
+}

@@ -1,0 +1,139 @@
+{
+  "case_id": "MU-W12-024",
+  "status": "COMPLETED",
+  "started_at": "2026-09-08T18:45:40.563541+08:00",
+  "completed_at": "2026-09-08T18:46:21.604995+08:00",
+  "seeded_provisional_event_ids": [
+    "E186",
+    "E187"
+  ],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E186",
+        "E187"
+      ]
+    },
+    "w1_final": {
+      "result": "OLD",
+      "confidence": "normal",
+      "reference_ids": [
+        "E186",
+        "E187"
+      ],
+      "reason": "消息的两个核心事实——Orion Cloud 完成 Micron 245TB QLC SSD 的生产资格认证（E186）和接受首批商业出货（E187）——均已被 provisional facts 覆盖。其余内容为具体检测项目列举、分析师评论、QLC 技术背景及双方拒绝披露数量的说明，均不改变核心现实进展。"
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "candidate_policy_ids": []
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "no_policy_candidate_recalled"
+    },
+    "route": {
+      "primary_route": "ARCHIVE",
+      "side_effects": [
+        "archive_message"
+      ],
+      "reason": "w1=OLD/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_7ae32bfe36a94bf491e140a6547c5d79",
+      "case_id": "case_7365a02a94054c0a8da01f737c23b2e7",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_d46d63f6-e537-9861-8003-f14c0752b897",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13623,
+      "output_tokens": 798,
+      "reasoning_tokens": 781,
+      "cached_input_tokens": 12288,
+      "prefix_fingerprint": "bc31fe43c6ebabd4fc723722115d9464ea7b664f00c01e1f616107c8df6bc804",
+      "latency_ms": 10957,
+      "output": {
+        "event_ids": [
+          "E186",
+          "E187"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:45:51.571843Z",
+      "started_at": "2026-09-08T10:45:40.614057Z",
+      "finished_at": "2026-09-08T10:45:51.571843Z"
+    },
+    {
+      "turn_id": "turn_644b57af58ba40769228e3a332cf37b3",
+      "case_id": "case_7365a02a94054c0a8da01f737c23b2e7",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_7f807fa1-95ff-9c60-8acb-c0b23b9f46b1",
+      "previous_response_id": "resp_d46d63f6-e537-9861-8003-f14c0752b897",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 2583,
+      "output_tokens": 539,
+      "reasoning_tokens": 433,
+      "cached_input_tokens": 1024,
+      "prefix_fingerprint": "b6890276702e9ced848598d98e7c05ba4057eee0fd65a99da32092f835eece5b",
+      "latency_ms": 11229,
+      "output": {
+        "result": "OLD",
+        "confidence": "normal",
+        "reference_ids": [
+          "E186",
+          "E187"
+        ],
+        "reason": "消息的两个核心事实——Orion Cloud 完成 Micron 245TB QLC SSD 的生产资格认证（E186）和接受首批商业出货（E187）——均已被 provisional facts 覆盖。其余内容为具体检测项目列举、分析师评论、QLC 技术背景及双方拒绝披露数量的说明，均不改变核心现实进展。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:46:02.801047Z",
+      "started_at": "2026-09-08T10:45:51.571843Z",
+      "finished_at": "2026-09-08T10:46:02.801047Z"
+    },
+    {
+      "turn_id": "turn_1660c9e8d3264cc8a5c91c521e70840e",
+      "case_id": "case_7365a02a94054c0a8da01f737c23b2e7",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_c80e0396-d803-9879-a785-8f52c2a564f8",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 6520,
+      "output_tokens": 3638,
+      "reasoning_tokens": 3629,
+      "cached_input_tokens": 5120,
+      "prefix_fingerprint": "f2c2dc5406ee6290d30c3915855d61097564d2c6dc1ec3341f57f61c28e3c52b",
+      "latency_ms": 40990,
+      "output": {
+        "candidate_policy_ids": []
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:46:21.604995Z",
+      "started_at": "2026-09-08T10:45:40.615561Z",
+      "finished_at": "2026-09-08T10:46:21.604995Z"
+    }
+  ]
+}

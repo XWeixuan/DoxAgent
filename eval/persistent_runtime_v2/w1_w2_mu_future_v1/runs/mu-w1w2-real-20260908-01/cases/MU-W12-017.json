@@ -1,0 +1,254 @@
+{
+  "case_id": "MU-W12-017",
+  "status": "COMPLETED",
+  "started_at": "2026-09-08T18:46:07.395142+08:00",
+  "completed_at": "2026-09-08T18:47:11.349440+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": []
+    },
+    "w1_final": {
+      "result": "NEW",
+      "confidence": "normal",
+      "reference_ids": [],
+      "reason": "当前无已加载的 Canonical 或 Provisional Facts，消息核心事实（Redwood 启动 Micron Gen6 QLC SSD 第二批 repeat production deployment 进入同一资格程序）在已知现实中无任何覆盖。"
+    },
+    "w1_r3": {
+      "candidates": [
+        {
+          "proposition": "Redwood Systems began a \"repeat production deployment\" of Micron Gen6 high-capacity QLC SSDs, representing a second lot within its existing production-qualification program.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": "2026-09-08",
+          "entities": [
+            "Redwood Systems",
+            "Micron Technology"
+          ]
+        },
+        {
+          "proposition": "The second lot of Micron Gen6 QLC SSDs is being deployed into the same approved server configuration that received the first lot.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "Redwood Systems",
+            "Micron Technology"
+          ]
+        },
+        {
+          "proposition": "The second-lot drives are handled by the same operations group and remain subject to the same maintenance rules, acceptance criteria, and monitoring plan as the first lot.",
+          "assertion_state": "ONGOING",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "Redwood Systems",
+            "Micron Technology"
+          ]
+        },
+        {
+          "proposition": "Redwood declined to disclose the number of drives in either lot, the locations involved, or the duration of its qualification work, citing confidentiality of its storage layout and operating data.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": "2026-09-08",
+          "entities": [
+            "Redwood Systems"
+          ]
+        },
+        {
+          "proposition": "Micron did not issue a separate release on Redwood's repeat-deployment update and stated it does not comment on timelines or quantities of individual customer programs.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "Micron Technology",
+            "Redwood Systems"
+          ]
+        }
+      ]
+    },
+    "w2_r1": {
+      "candidate_policy_ids": []
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "no_policy_candidate_recalled"
+    },
+    "route": {
+      "primary_route": "ADD_TO_DELTA",
+      "side_effects": [
+        "emit_delta"
+      ],
+      "reason": "w1=NEW/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_8f8b686d96a7461ca6bf15060a61e256",
+      "case_id": "case_00a8bbb9f0e646a68c0664a8ce0bc46a",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_0ea44334-f1be-90e3-a9c4-4037f16552ad",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13424,
+      "output_tokens": 1186,
+      "reasoning_tokens": 1178,
+      "cached_input_tokens": 12288,
+      "prefix_fingerprint": "bc31fe43c6ebabd4fc723722115d9464ea7b664f00c01e1f616107c8df6bc804",
+      "latency_ms": 15435,
+      "output": {
+        "event_ids": []
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:46:22.892667Z",
+      "started_at": "2026-09-08T10:46:07.457094Z",
+      "finished_at": "2026-09-08T10:46:22.892667Z"
+    },
+    {
+      "turn_id": "turn_8bdd6758587f4f9487e581342409a28f",
+      "case_id": "case_00a8bbb9f0e646a68c0664a8ce0bc46a",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_ae02f4b0-fc8e-99a6-9b11-a2755675c330",
+      "previous_response_id": "resp_0ea44334-f1be-90e3-a9c4-4037f16552ad",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 2384,
+      "output_tokens": 433,
+      "reasoning_tokens": 370,
+      "cached_input_tokens": 1664,
+      "prefix_fingerprint": "547b796277ba34a27c5cbecaf7cfb74d8114d9465266c8968361ebd07927de66",
+      "latency_ms": 6908,
+      "output": {
+        "result": "NEW",
+        "confidence": "normal",
+        "reference_ids": [],
+        "reason": "当前无已加载的 Canonical 或 Provisional Facts，消息核心事实（Redwood 启动 Micron Gen6 QLC SSD 第二批 repeat production deployment 进入同一资格程序）在已知现实中无任何覆盖。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:46:29.800325Z",
+      "started_at": "2026-09-08T10:46:22.893184Z",
+      "finished_at": "2026-09-08T10:46:29.800325Z"
+    },
+    {
+      "turn_id": "turn_6677e74eeeae451897c23b3c16e87d11",
+      "case_id": "case_00a8bbb9f0e646a68c0664a8ce0bc46a",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_f5f299cd-825f-9a79-badd-e0f9386366b3",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 6518,
+      "output_tokens": 3648,
+      "reasoning_tokens": 3639,
+      "cached_input_tokens": 5120,
+      "prefix_fingerprint": "f2c2dc5406ee6290d30c3915855d61097564d2c6dc1ec3341f57f61c28e3c52b",
+      "latency_ms": 41562,
+      "output": {
+        "candidate_policy_ids": []
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:46:49.022089Z",
+      "started_at": "2026-09-08T10:46:07.460094Z",
+      "finished_at": "2026-09-08T10:46:49.022089Z"
+    },
+    {
+      "turn_id": "turn_7c15188ab3894617a09f013d556cd684",
+      "case_id": "case_00a8bbb9f0e646a68c0664a8ce0bc46a",
+      "lane": "W1",
+      "round_name": "R3",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_da768c64-ace9-90fe-a268-72aa60fe9620",
+      "previous_response_id": "resp_ae02f4b0-fc8e-99a6-9b11-a2755675c330",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 2363,
+      "output_tokens": 1995,
+      "reasoning_tokens": 1659,
+      "cached_input_tokens": 1024,
+      "prefix_fingerprint": "21bc70316848822887c7b7f28df11a779f8dc5f06a85b0f9d530e483e79c049f",
+      "latency_ms": 22311,
+      "output": {
+        "candidates": [
+          {
+            "proposition": "Redwood Systems began a \"repeat production deployment\" of Micron Gen6 high-capacity QLC SSDs, representing a second lot within its existing production-qualification program.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": "2026-09-08",
+            "entities": [
+              "Redwood Systems",
+              "Micron Technology"
+            ]
+          },
+          {
+            "proposition": "The second lot of Micron Gen6 QLC SSDs is being deployed into the same approved server configuration that received the first lot.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "Redwood Systems",
+              "Micron Technology"
+            ]
+          },
+          {
+            "proposition": "The second-lot drives are handled by the same operations group and remain subject to the same maintenance rules, acceptance criteria, and monitoring plan as the first lot.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "Redwood Systems",
+              "Micron Technology"
+            ]
+          },
+          {
+            "proposition": "Redwood declined to disclose the number of drives in either lot, the locations involved, or the duration of its qualification work, citing confidentiality of its storage layout and operating data.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": "2026-09-08",
+            "entities": [
+              "Redwood Systems"
+            ]
+          },
+          {
+            "proposition": "Micron did not issue a separate release on Redwood's repeat-deployment update and stated it does not comment on timelines or quantities of individual customer programs.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "Micron Technology",
+              "Redwood Systems"
+            ]
+          }
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:47:11.333430Z",
+      "started_at": "2026-09-08T10:46:49.023092Z",
+      "finished_at": "2026-09-08T10:47:11.333430Z"
+    }
+  ]
+}

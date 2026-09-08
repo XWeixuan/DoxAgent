@@ -1,0 +1,362 @@
+{
+  "case_id": "MU-W12-018",
+  "status": "COMPLETED",
+  "started_at": "2026-09-08T18:44:25.448093+08:00",
+  "completed_at": "2026-09-08T18:45:34.128572+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E15",
+        "E17",
+        "E20"
+      ]
+    },
+    "w1_final": {
+      "result": "NEW",
+      "confidence": "normal",
+      "reference_ids": [],
+      "reason": "当前消息的核心事实是Micron在2026年11月12日因冷却水压力意外中断发生先进封装区域非计划停机，导致受影响封装的销售比特产出下调、部分客户交付日期调整、恢复窗口延至2027年1月31日。已加载的E15（HBM产能售罄）、E17（HBM4E开发至2027量产）、E20（HBM3E晶圆消耗比）均为供需/产品路线图层面的事实，未涉及任何具体运营中断事件、产出削减或客户交付调整，全部核心事实均未被覆盖。"
+    },
+    "w1_r3": {
+      "candidates": [
+        {
+          "proposition": "On November 12, 2026, an unexpected loss of cooling-water pressure in a shared utility loop at Micron's advanced-packaging facility required placing a defined group of advanced packaging tools into a controlled safe state; the interruption was not part of a planned maintenance event.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": "2026-11-12",
+          "entities": [
+            "Micron Technology"
+          ]
+        },
+        {
+          "proposition": "The unplanned interruption occurred at a critical advanced-packaging area serving selected high-bandwidth-memory (HBM) and server-memory programs, and removed available capacity from a step used by those affected programs while other manufacturing and packaging areas continued to operate.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": "2026-11-12",
+          "entities": [
+            "Micron Technology"
+          ]
+        },
+        {
+          "proposition": "Following its initial review, Micron reduced its expected saleable-bit output for affected packages during the current recovery period.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": "2026-11-18",
+          "entities": [
+            "Micron Technology"
+          ]
+        },
+        {
+          "proposition": "Micron adjusted delivery dates for a limited set of customer commitments that had been scheduled to leave the affected packaging sequence before the end of December 2026, and informed relevant customers directly to work on revised schedules.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "before end of December 2026",
+          "occurrence_date": "2026-11-18",
+          "entities": [
+            "Micron Technology"
+          ]
+        },
+        {
+          "proposition": "Based on the current engineering plan, Micron expects the affected advanced-packaging area to remain in recovery through January 31, 2027, a window extending beyond the site's ordinary planned-maintenance interval.",
+          "assertion_state": "EXPECTED",
+          "subject_time": "through January 31, 2027",
+          "occurrence_date": null,
+          "entities": [
+            "Micron Technology"
+          ]
+        },
+        {
+          "proposition": "Micron expects the physical repair work at the affected advanced-packaging area to conclude during the week of November 18, 2026, followed by staged equipment return, qualification lots, and controlled restoration of normal release volumes.",
+          "assertion_state": "EXPECTED",
+          "subject_time": "week of November 18, 2026",
+          "occurrence_date": null,
+          "entities": [
+            "Micron Technology"
+          ]
+        },
+        {
+          "proposition": "Micron did not attribute the advanced-packaging interruption to demand conditions, customer specifications, or a product-quality issue, describing it solely as an operational disruption at a key manufacturing-support node.",
+          "assertion_state": "DENIAL",
+          "subject_time": null,
+          "occurrence_date": "2026-11-18",
+          "entities": [
+            "Micron Technology"
+          ]
+        },
+        {
+          "proposition": "Micron stated it is not treating the output reduction and revised delivery schedule as a routine sequencing adjustment, because the affected output cannot be recovered simply by moving material through the normal weekly maintenance calendar.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": "2026-11-18",
+          "entities": [
+            "Micron Technology"
+          ]
+        }
+      ]
+    },
+    "w2_r1": {
+      "candidate_policy_ids": [
+        "pol_a2fb4594422ae0c078a2"
+      ]
+    },
+    "w2_final": {
+      "policy_ids": [
+        "pol_a2fb4594422ae0c078a2"
+      ],
+      "matched_condition_ids": [
+        {
+          "policy_id": "pol_a2fb4594422ae0c078a2",
+          "condition_ids": [
+            "C1"
+          ]
+        }
+      ],
+      "confidence": "normal",
+      "reason": "消息明确确认：(1)先进封装关键节点发生非计划中断（冷却水压力意外丧失，非计划维护）；(2)公司主动下调受影响封装的可售bit产量并调整了一批客户交付日期；(3)恢复窗口至2027年1月31日，跨越正常维护周期（通常为小时至数天），且公司明确表示不能通过正常周维护日历恢复。三个criterion要素均完整满足，达到trigger_boundary要求。"
+    },
+    "route": {
+      "primary_route": "TRADE",
+      "side_effects": [
+        "create_trade_record",
+        "emit_delta"
+      ],
+      "reason": "w1=NEW/normal;policy_hit=true;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_958ebb07725d42fbbfb9815d399e848c",
+      "case_id": "case_a8b5f5f8c53c4b7eac45bc129db72f83",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_90df8fbd-10c0-9b15-9226-e01b6b76db49",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 6562,
+      "output_tokens": 1659,
+      "reasoning_tokens": 1631,
+      "cached_input_tokens": 5120,
+      "prefix_fingerprint": "f2c2dc5406ee6290d30c3915855d61097564d2c6dc1ec3341f57f61c28e3c52b",
+      "latency_ms": 19106,
+      "output": {
+        "candidate_policy_ids": [
+          "pol_a2fb4594422ae0c078a2"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:44:44.591005Z",
+      "started_at": "2026-09-08T10:44:25.484258Z",
+      "finished_at": "2026-09-08T10:44:44.591005Z"
+    },
+    {
+      "turn_id": "turn_2ca0de477c274c0f94d1f3b46cadbf3e",
+      "case_id": "case_a8b5f5f8c53c4b7eac45bc129db72f83",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_b81ee3c3-4001-9c20-acb2-8fbaa478e10a",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13468,
+      "output_tokens": 2280,
+      "reasoning_tokens": 2261,
+      "cached_input_tokens": 12288,
+      "prefix_fingerprint": "bc31fe43c6ebabd4fc723722115d9464ea7b664f00c01e1f616107c8df6bc804",
+      "latency_ms": 27899,
+      "output": {
+        "event_ids": [
+          "E15",
+          "E17",
+          "E20"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:44:53.382104Z",
+      "started_at": "2026-09-08T10:44:25.483256Z",
+      "finished_at": "2026-09-08T10:44:53.382104Z"
+    },
+    {
+      "turn_id": "turn_336af6021f58416ba4b27a409ba8a40e",
+      "case_id": "case_a8b5f5f8c53c4b7eac45bc129db72f83",
+      "lane": "W2",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_5959916f-22f0-945d-a0a3-85db5367fa0a",
+      "previous_response_id": "resp_90df8fbd-10c0-9b15-9226-e01b6b76db49",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 2682,
+      "output_tokens": 958,
+      "reasoning_tokens": 792,
+      "cached_input_tokens": 0,
+      "prefix_fingerprint": "2c23cba21464f9c392e8ec4c5a34f420877b22d18d3a4aa68b4ec66aa861e81c",
+      "latency_ms": 11859,
+      "output": {
+        "policy_ids": [
+          "pol_a2fb4594422ae0c078a2"
+        ],
+        "matched_condition_ids": [
+          {
+            "policy_id": "pol_a2fb4594422ae0c078a2",
+            "condition_ids": [
+              "C1"
+            ]
+          }
+        ],
+        "confidence": "normal",
+        "reason": "消息明确确认：(1)先进封装关键节点发生非计划中断（冷却水压力意外丧失，非计划维护）；(2)公司主动下调受影响封装的可售bit产量并调整了一批客户交付日期；(3)恢复窗口至2027年1月31日，跨越正常维护周期（通常为小时至数天），且公司明确表示不能通过正常周维护日历恢复。三个criterion要素均完整满足，达到trigger_boundary要求。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:44:56.449796Z",
+      "started_at": "2026-09-08T10:44:44.591005Z",
+      "finished_at": "2026-09-08T10:44:56.449796Z"
+    },
+    {
+      "turn_id": "turn_2e4cf648cbc44a4886131a34dc3d8324",
+      "case_id": "case_a8b5f5f8c53c4b7eac45bc129db72f83",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_b6d56c4d-223b-9441-91a4-5e20488f376f",
+      "previous_response_id": "resp_b81ee3c3-4001-9c20-acb2-8fbaa478e10a",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 3135,
+      "output_tokens": 1045,
+      "reasoning_tokens": 894,
+      "cached_input_tokens": 1024,
+      "prefix_fingerprint": "a347689243ee0946fc5e4d8a5eb71725b6aeedbd5bbaeebd54b9b6a2b8f62ef0",
+      "latency_ms": 13785,
+      "output": {
+        "result": "NEW",
+        "confidence": "normal",
+        "reference_ids": [],
+        "reason": "当前消息的核心事实是Micron在2026年11月12日因冷却水压力意外中断发生先进封装区域非计划停机，导致受影响封装的销售比特产出下调、部分客户交付日期调整、恢复窗口延至2027年1月31日。已加载的E15（HBM产能售罄）、E17（HBM4E开发至2027量产）、E20（HBM3E晶圆消耗比）均为供需/产品路线图层面的事实，未涉及任何具体运营中断事件、产出削减或客户交付调整，全部核心事实均未被覆盖。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:45:07.182605Z",
+      "started_at": "2026-09-08T10:44:53.398337Z",
+      "finished_at": "2026-09-08T10:45:07.182605Z"
+    },
+    {
+      "turn_id": "turn_58e8978fc4724d659af829dc5bec0de4",
+      "case_id": "case_a8b5f5f8c53c4b7eac45bc129db72f83",
+      "lane": "W1",
+      "round_name": "R3",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_e22db649-2d6b-91d2-b0f7-f4a0237a8a47",
+      "previous_response_id": "resp_b6d56c4d-223b-9441-91a4-5e20488f376f",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 2495,
+      "output_tokens": 2298,
+      "reasoning_tokens": 1652,
+      "cached_input_tokens": 1024,
+      "prefix_fingerprint": "1d93414733c9e137f54f886783a387e616590bc8ea553539ee2349da2a8f41d0",
+      "latency_ms": 26929,
+      "output": {
+        "candidates": [
+          {
+            "proposition": "On November 12, 2026, an unexpected loss of cooling-water pressure in a shared utility loop at Micron's advanced-packaging facility required placing a defined group of advanced packaging tools into a controlled safe state; the interruption was not part of a planned maintenance event.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": "2026-11-12",
+            "entities": [
+              "Micron Technology"
+            ]
+          },
+          {
+            "proposition": "The unplanned interruption occurred at a critical advanced-packaging area serving selected high-bandwidth-memory (HBM) and server-memory programs, and removed available capacity from a step used by those affected programs while other manufacturing and packaging areas continued to operate.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": "2026-11-12",
+            "entities": [
+              "Micron Technology"
+            ]
+          },
+          {
+            "proposition": "Following its initial review, Micron reduced its expected saleable-bit output for affected packages during the current recovery period.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": "2026-11-18",
+            "entities": [
+              "Micron Technology"
+            ]
+          },
+          {
+            "proposition": "Micron adjusted delivery dates for a limited set of customer commitments that had been scheduled to leave the affected packaging sequence before the end of December 2026, and informed relevant customers directly to work on revised schedules.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "before end of December 2026",
+            "occurrence_date": "2026-11-18",
+            "entities": [
+              "Micron Technology"
+            ]
+          },
+          {
+            "proposition": "Based on the current engineering plan, Micron expects the affected advanced-packaging area to remain in recovery through January 31, 2027, a window extending beyond the site's ordinary planned-maintenance interval.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "through January 31, 2027",
+            "occurrence_date": null,
+            "entities": [
+              "Micron Technology"
+            ]
+          },
+          {
+            "proposition": "Micron expects the physical repair work at the affected advanced-packaging area to conclude during the week of November 18, 2026, followed by staged equipment return, qualification lots, and controlled restoration of normal release volumes.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "week of November 18, 2026",
+            "occurrence_date": null,
+            "entities": [
+              "Micron Technology"
+            ]
+          },
+          {
+            "proposition": "Micron did not attribute the advanced-packaging interruption to demand conditions, customer specifications, or a product-quality issue, describing it solely as an operational disruption at a key manufacturing-support node.",
+            "assertion_state": "DENIAL",
+            "subject_time": null,
+            "occurrence_date": "2026-11-18",
+            "entities": [
+              "Micron Technology"
+            ]
+          },
+          {
+            "proposition": "Micron stated it is not treating the output reduction and revised delivery schedule as a routine sequencing adjustment, because the affected output cannot be recovered simply by moving material through the normal weekly maintenance calendar.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": "2026-11-18",
+            "entities": [
+              "Micron Technology"
+            ]
+          }
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-08T10:45:34.111570Z",
+      "started_at": "2026-09-08T10:45:07.183121Z",
+      "finished_at": "2026-09-08T10:45:34.111570Z"
+    }
+  ]
+}
