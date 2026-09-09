@@ -912,3 +912,4 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-09-09 修复 CDECR 历史消息抓取：Finnhub 与 Benzinga 统一按单日区间请求，单日请求及 retry 之间默认保持 10 秒间隔，每日允许 2 次 retry；单日最终失败隔离并继续后续日期，保留成功日期结果并记录不可用日期，Benzinga 同步改为逐日分页。新增历史 provider 重试/隔离定向测试；未执行远端 workflow。
 2026-09-10 修复 CDECR 恢复收尾：已最终化的 Bulk Epoch 自动收敛遗留 RUNNING native 控制节点，避免 child 已提交但控制面因 unsettled internal execution 无法结束；新增定向恢复测试。
+2026-09-10 修复 CDECR 预构建包只读校验：WAL Registry 改用 SQLite immutable read-only 连接，避免严格校验自身生成 `-wal/-shm` sidecar 后使 bundle 从两文件契约失效；新增无 sidecar 回归测试。

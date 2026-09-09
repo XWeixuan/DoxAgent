@@ -223,7 +223,9 @@ def _validate_registry(
     registry: Path, manifest: CDECRPrebuiltManifest, *, integrity_check: bool
 ) -> None:
     try:
-        with closing(sqlite3.connect(f"file:{registry.as_posix()}?mode=ro", uri=True)) as db:
+        with closing(
+            sqlite3.connect(f"file:{registry.as_posix()}?mode=ro&immutable=1", uri=True)
+        ) as db:
             db.row_factory = sqlite3.Row
             if db.execute("PRAGMA quick_check").fetchone()[0] != "ok":
                 raise PrebuiltError("CDECR_PREBUILT_INVALID", "SQLite quick_check failed")

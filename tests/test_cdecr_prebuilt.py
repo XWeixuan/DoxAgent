@@ -30,6 +30,7 @@ def _bundle(root: Path, *, ticker: str = "MU", status: str = "FINALIZED") -> Pat
     registry = root / "runtime.sqlite3"
     message_ids = ["message-1", "message-2"]
     with closing(sqlite3.connect(registry)) as db:
+        db.execute("PRAGMA journal_mode=WAL")
         db.executescript(
             """
             CREATE TABLE doxagent_ticker_binding (
@@ -134,6 +135,12 @@ def test_import_is_idempotent_and_never_overwrites_different_target(tmp_path: Pa
     target.write_bytes(b"different")
     with pytest.raises(PrebuiltError, match="CDECR_PREBUILT_TARGET_CONFLICT"):
         import_registry(bundle, target)
+
+
+def test_validation_does_not_create_wal_sidecars(tmp_path: Path) -> None:
+    bundle = _bundle(tmp_path / "bundle-work")
+    validate_bundle(bundle, containing_root=tmp_path, integrity_check=True)
+    assert {path.name for path in bundle.iterdir()} == {"manifest.json", "runtime.sqlite3"}
 
 
 def test_symlink_and_extra_files_never_validate(tmp_path: Path) -> None:
