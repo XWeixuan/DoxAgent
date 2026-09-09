@@ -7,6 +7,21 @@ from doxagent.v2_read.outbox import SourceOutbox
 from doxagent.v2_read.repository import ReadStore
 
 
+def test_repeated_migration_preserves_generation_and_existing_data(tmp_path):
+    store = ReadStore(tmp_path / "read.db")
+    store.migrate()
+    store.ingest("test", "one", [{"kind": "marker", "ticker": "MU", "id": "one",
+                                   "data": {"value": 7}}])
+    with store.connect() as db:
+        generation = db.execute("SELECT id FROM generation").fetchone()[0]
+    store.migrate()
+    store.migrate()
+    assert store.get("marker", "MU", "one") == {"value": 7}
+    with store.connect() as db:
+        assert [r[0] for r in db.execute("SELECT version FROM schema_meta")] == [store.VERSION]
+        assert db.execute("SELECT id FROM generation").fetchone()[0] == generation
+
+
 def test_source_capture_commits_with_fact_and_rolls_back_with_failure(tmp_path):
     path = tmp_path / "source.db"
     with sqlite3.connect(path) as db:

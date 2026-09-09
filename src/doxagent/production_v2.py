@@ -101,7 +101,15 @@ def migrate():
         Path(path).mkdir(parents=True, exist_ok=True)
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%S%fZ")
     backup_root = locations["read"].parent.parent / "backups" / stamp
-    with WriterLock(locations["runtime"].with_suffix(".migration")):
+    # Refuse migrations while managed writers still own these databases.
+    with (
+        WriterLock(locations["runtime"].with_suffix(".migration")),
+        WriterLock(locations["runtime"]),
+        WriterLock(Path(str(locations["runtime"]) + ".v2-control")),
+        WriterLock(Path(str(locations["runtime"]) + ".v2-delivery")),
+        WriterLock(Path(str(locations["scheduler"]) + ".v2-scheduler")),
+        WriterLock(Path(str(locations["read"]) + ".projector")),
+    ):
         for name, path in locations.items():
             if path.exists():
                 backup(path, backup_root / (name + ".sqlite3"))

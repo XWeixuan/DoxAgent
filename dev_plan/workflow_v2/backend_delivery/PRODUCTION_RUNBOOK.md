@@ -34,6 +34,8 @@ docker compose -f docker-compose.v2-production.yml build v2-api v2-web
 docker compose -f docker-compose.v2-production.yml run --rm v2-migrate
 ```
 
+正式升级先执行 `docker compose -f docker-compose.v2-production.yml stop`，确认已处置在途交易后再迁移；迁移会获取 managed writer 锁，拒绝在旧 writer 仍运行时修改库。
+
 不要把完整 `compose config` 输出到公开日志，它可能展开环境变量中的密钥。`migrate` 每次迁移前备份已存在的各业务库和读库，安装 capture 后才回填。它不导入录制数据、不创建 ticker、不创建交易 profile、不发订单。
 
 5. 为 `/data/codex-home` 配置正式 Codex SDK/CLI 登录。可使用已授权账户的 auth.json，或按当前官方 CLI 完成登录；不得把登录文件烘焙进镜像。启动后请求内部 `/v1/readiness`（Bearer 为 worker token），确认实际所需模型可用；`/healthz` 只证明 HTTP 进程存活。
@@ -62,7 +64,7 @@ docker compose -f docker-compose.v2-production.yml exec v2-api python -m doxagen
 
 修改已有绑定必须加 `--expected-revision OLD_REVISION`，不得使用全局 activate-profile 替代 ticker binding。Live 使用正式 LIVE profile 和 LIVE_TRADING 绑定；本轮部署验收不导入、不启动 Live 交易任务。
 
-3. broker 只读探测用 `trade_execution.cli probe --profile REVISION`；Paper 真成交验收需要单独明确安排，不能用握手、what-if 或空闲 worker 健康代替。不要在持仓期间停掉 executor，暂停 ticker 仅关闭新分析/新 intent，已接管 Entry、重试、成交与退出仍需 executor 持续管理。
+3. broker 只读探测用 `trade_execution.cli probe --profile REVISION`，在 executor 未运行时执行（探测同样受唯一 writer 锁保护）；已有持仓时不要为了探测停掉 executor。Paper 真成交验收需要单独明确安排，不能用握手、what-if 或空闲 worker 健康代替。不要在持仓期间停掉 executor，暂停 ticker 仅关闭新分析/新 intent，已接管 Entry、重试、成交与退出仍需 executor 持续管理。
 
 ## 现有正式数据迁移与回退
 
@@ -99,3 +101,5 @@ location / {
 定位故障先看 `compose ps`、单服务近期日志、`v2_read.cli diagnose` 和 worker readiness。source gap 不是零数据；账户连接故障不能通过清空任务/消费记录解决。定期轮转备份并检查磁盘，避免无限增长的工件、日志、源收据挤满 SQLite 所在卷。
 
 本地验收结果与未通过的外部业务分支见 `PRODUCTION_ACCEPTANCE.md`。静态构建、空闲拓扑、模型账户 readiness、真实研究成功、Paper 成交和 Live 放行是不同验收层级，必须分别记录。
+
+必要 HTTP 验收脚本：`python scripts/verify_v2_production.py --url http://127.0.0.1:8082 --login --ticker MU --output /secure/path/http-verification.json`。脚本交互读取真实 Supabase 登录，不保存密码/token；ticker 必须是已存在的正式标的，不会创建业务/交易任务。未传 `--login` 时只检查公开配置和 401，报告不会把鉴权/SSE 标成通过。

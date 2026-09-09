@@ -1,4 +1,5 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, LoaderCircle, Plus } from "lucide-react";
 import type { MonitorMode, StartTickerRequest } from "@contract";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,31 @@ export function StartForm({
 }) {
   const runtime = useRuntime();
   const [ticker, setTicker] = useState("");
+  const normalizedTicker = ticker.trim().toUpperCase();
+  const [capabilityTicker, setCapabilityTicker] = useState("");
+  useEffect(() => {
+    const timer = setTimeout(
+      () =>
+        setCapabilityTicker(
+          /^[A-Z0-9][A-Z0-9.-]{0,19}$/.test(normalizedTicker)
+            ? normalizedTicker
+            : "",
+        ),
+      250,
+    );
+    return () => clearTimeout(timer);
+  }, [normalizedTicker]);
+  const tickerCapabilities = useQuery({
+    queryKey: [runtime.scope, "start-capabilities", capabilityTicker],
+    enabled: !!capabilityTicker && !!model.principal.data?.data.can_operate,
+    queryFn: ({ signal }) =>
+      runtime.api.request(
+        "Capabilities",
+        "/capabilities?ticker=" + encodeURIComponent(capabilityTicker),
+        { signal },
+      ),
+    staleTime: 10_000,
+  });
   const [mode, setMode] = useState<MonitorMode>("MESSAGE_MONITORING");
   const [initialization, setInitialization] =
     useState<StartTickerRequest["initialization"]>("FORCE_INITIALIZE");
@@ -35,9 +61,16 @@ export function StartForm({
   const busy =
     pending &&
     ["submitting", "tracking", "unknown", "waiting"].includes(pending.phase);
-  const capabilities = model.capabilities.data?.data;
+  const capabilityQuery = capabilityTicker
+    ? tickerCapabilities
+    : model.capabilities;
+  const capabilities =
+    normalizedTicker === capabilityTicker
+      ? capabilityQuery.data?.data
+      : undefined;
   const available = {
-    MESSAGE_MONITORING: capabilities?.monitoring,
+    MESSAGE_MONITORING:
+      capabilities?.monitoring ?? model.capabilities.data?.data.monitoring,
     PAPER_TRADING: capabilities?.paper_trading,
     LIVE_TRADING: capabilities?.live_trading,
   };
@@ -48,6 +81,10 @@ export function StartForm({
     const normalized = ticker.trim().toUpperCase();
     if (!/^[A-Z0-9][A-Z0-9.-]{0,19}$/.test(normalized)) {
       setError("请输入有效的 Ticker，例如 MU。");
+      return;
+    }
+    if (!enabled) {
+      setError("当前运行模式暂不可用，请检查该标的的执行配置。");
       return;
     }
     setError("");
@@ -162,18 +199,16 @@ export function StartForm({
         </FieldGroup>
       </form>
       {pending && <OperationNotice entry={pending} />}{" "}
-      {!enabled &&
-        model.principal.isSuccess &&
-        model.capabilities.isSuccess && (
-          <p className="form-note">
-            {!model.principal.data?.data.can_operate
-              ? "当前账户暂无该操作权限。"
-              : available[mode]?.message ||
-                (available[mode]?.reason === "CONTROL_WORKER_UNAVAILABLE"
-                  ? "启动服务未就绪。"
-                  : "当前运行模式暂不可用。")}
-          </p>
-        )}
+      {!enabled && model.principal.isSuccess && capabilityQuery.isSuccess && (
+        <p className="form-note">
+          {!model.principal.data?.data.can_operate
+            ? "当前账户暂无该操作权限。"
+            : available[mode]?.message ||
+              (available[mode]?.reason === "CONTROL_WORKER_UNAVAILABLE"
+                ? "启动服务未就绪。"
+                : "当前运行模式暂不可用。")}
+        </p>
+      )}
       {model.principal.error && (
         <Notice danger>
           操作权限读取失败。
@@ -182,13 +217,10 @@ export function StartForm({
           </Button>
         </Notice>
       )}
-      {model.capabilities.error && (
+      {capabilityQuery.error && (
         <Notice danger>
           启动能力读取失败。
-          <Button
-            variant="link"
-            onClick={() => void model.capabilities.refetch()}
-          >
+          <Button variant="link" onClick={() => void capabilityQuery.refetch()}>
             重试
           </Button>
         </Notice>

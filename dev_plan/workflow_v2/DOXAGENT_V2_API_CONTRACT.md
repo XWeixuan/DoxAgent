@@ -205,6 +205,8 @@ Overview 的触发与成功是各自在该窗口发生的业务事件，跨窗�
 | POST | `/tickers/{ticker}/initializations/{initialization_id}/resume` | `{}` | 202 Response<Operation> |
 | GET | `/operations/{operation_id}` | 无 | Response<Operation> |
 
+生产能力查询补充（2026-09-09）：`ticker` 可为尚未 START 的合法标的，用于查询预先配置的正式 Paper/Live binding；不存在控制记录不构成 404。无 binding 时交易能力为不可用。交易能力还要求 control、delivery、executor 心跳有效；未传 ticker 不推断其他标的的账户绑定。启动表单按目标 ticker 查询，提交仍由后端原子校验绑定。
+
 ReadContext：OVERVIEW 禁止 ticker，其余 page 必须 ticker。RESEARCH/EXPECTATIONS 不接受 period；其他默认 PREVIOUS_TRADING_DAY。OVERVIEW 禁止 ALL。refresh 为 `OPEN`（默认）、`MANUAL` 或 `MINUTE`；MINUTE 仅 MESSAGE_BUS/RUNTIME 可用。calendar 单次 start/end 范围最多 366 天，仍分页。
 
 导航包含 running、blocked、paused、stopped；`initialization_incomplete=true`（含失败待恢复）或 removed 的 ticker 均不进入。每次切 ticker 保持当前业务页面；缓存键必须包含 ticker。

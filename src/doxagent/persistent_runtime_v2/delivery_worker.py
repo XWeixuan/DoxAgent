@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import time
 from pathlib import Path
 
 from doxagent.trade_execution.intake import ExecutionIntake
@@ -17,8 +18,12 @@ from .trade_output import TradeOutputService
 
 async def run(journal: RuntimeJournal, *, once: bool = False) -> None:
     service, intake = TradeOutputService(journal), ExecutionIntake(journal)
+    next_heartbeat = 0.0
     while True:
         await service.deliver(intake, limit=20)
+        if time.monotonic() >= next_heartbeat:
+            journal.set("v2_workers", "delivery", {"heartbeat_at": journal.clock().isoformat()})
+            next_heartbeat = time.monotonic() + 10
         if once:
             return
         await asyncio.sleep(1)

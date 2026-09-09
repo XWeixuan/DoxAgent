@@ -64,8 +64,9 @@ class ReadStore:
                 raise ValueError("unsupported V2 read schema")
             db.execute("PRAGMA journal_mode=WAL")
             db.executescript("""
+                BEGIN IMMEDIATE;
                 CREATE TABLE IF NOT EXISTS schema_meta (version INTEGER PRIMARY KEY);
-                INSERT OR IGNORE INTO schema_meta VALUES(1);
+                INSERT INTO schema_meta SELECT 1 WHERE NOT EXISTS (SELECT 1 FROM schema_meta);
                 CREATE TABLE IF NOT EXISTS commits (seq INTEGER PRIMARY KEY AUTOINCREMENT,
                     source TEXT, source_event TEXT, at TEXT, UNIQUE(source,source_event));
                 CREATE TABLE IF NOT EXISTS objects (

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from datetime import date, datetime, timedelta
 from typing import Any
 
@@ -64,9 +65,12 @@ def install(app: FastAPI) -> None:
             ),
         )
         data["nonroutine_repairs"].update(
-            current=available("0"), previous=missing("NOT_APPLICABLE", "NOT_APPLICABLE"),
+            current=available("0"),
+            previous=missing("NOT_APPLICABLE", "NOT_APPLICABLE"),
             change_pct=missing("NOT_APPLICABLE", "NOT_APPLICABLE"),
-            current_coverage=coverage(complete=True), previous_coverage=None, provisional=False,
+            current_coverage=coverage(complete=True),
+            previous_coverage=None,
+            provisional=False,
         )
         return respond(request, "OverviewMetrics", data, view_id=args["view_id"])
 
@@ -84,7 +88,12 @@ def install(app: FastAPI) -> None:
         except ValueError:
             raise ApiFailure("VALIDATION_FAILED", 422) from None
         run_state, health = args.get("run_state"), args.get("health")
-        if run_state is not None and run_state not in {"INITIALIZING", "RUNNING", "PAUSED", "STOPPED"}:
+        if run_state is not None and run_state not in {
+            "INITIALIZING",
+            "RUNNING",
+            "PAUSED",
+            "STOPPED",
+        }:
             raise ApiFailure("VALIDATION_FAILED", 422)
         if health is not None and health not in {"NORMAL", "DEGRADED", "BLOCKED", "UNKNOWN"}:
             raise ApiFailure("VALIDATION_FAILED", 422)
@@ -99,14 +108,27 @@ def install(app: FastAPI) -> None:
                 raise ApiFailure("INVALID_CURSOR", 400) from None
         # Filter the frozen candidate set before pagination; never filter a returned page.
         with store.connect() as db:
-            selected = [row[0] for row in db.execute(
-                "SELECT ticker FROM objects WHERE kind='ticker' AND id=ticker "
-                "AND ticker IN (SELECT value FROM json_each(?)) AND ticker>? "
-                "AND valid_from<=? AND (valid_to IS NULL OR valid_to>?) "
-                "AND (? IS NULL OR json_extract(payload,'$.run_state')=?) "
-                "AND (? IS NULL OR json_extract(payload,'$.health')=?) ORDER BY ticker LIMIT ?",
-                (json.dumps(view["tickers"]), after, view["seq"], view["seq"], run_state, run_state, health, health, limit+1),
-            )]
+            selected = [
+                row[0]
+                for row in db.execute(
+                    "SELECT ticker FROM objects WHERE kind='ticker' AND id=ticker "
+                    "AND ticker IN (SELECT value FROM json_each(?)) AND ticker>? "
+                    "AND valid_from<=? AND (valid_to IS NULL OR valid_to>?) "
+                    "AND (? IS NULL OR json_extract(payload,'$.run_state')=?) "
+                    "AND (? IS NULL OR json_extract(payload,'$.health')=?) ORDER BY ticker LIMIT ?",
+                    (
+                        json.dumps(view["tickers"]),
+                        after,
+                        view["seq"],
+                        view["seq"],
+                        run_state,
+                        run_state,
+                        health,
+                        health,
+                        limit + 1,
+                    ),
+                )
+            ]
         items = []
         for ticker in selected[:limit]:
             state = store.get("ticker", ticker, ticker, view["seq"])
@@ -184,8 +206,9 @@ def install(app: FastAPI) -> None:
     async def capabilities(request: Request) -> Any:
         args = query(request, {"ticker"})
         ticker = args.get("ticker")
-        if ticker and control.get(ticker) is None:
-            raise ApiFailure("TICKER_NOT_FOUND", 404)
+        # A production profile may be bound before the first START command.
+        if ticker and not re.fullmatch(r"[A-Z0-9][A-Z0-9.-]{0,19}", ticker):
+            raise ApiFailure("VALIDATION_FAILED", 422)
         with control.read() as db:
             bindings = {
                 r[0]
@@ -206,6 +229,20 @@ def install(app: FastAPI) -> None:
             ).total_seconds()
             < 30
         )
+        with control.read() as db:
+            execution_workers = {
+                row[0]: (
+                    datetime.now(UTC) - datetime.fromisoformat(json.loads(row[1])["heartbeat_at"])
+                ).total_seconds()
+                < 30
+                for row in db.execute(
+                    "SELECT key,payload FROM runtime_values WHERE namespace='v2_workers' "
+                    "AND key IN ('executor','delivery')"
+                )
+            }
+        execution_ready = fresh and all(
+            execution_workers.get(k, False) for k in ("executor", "delivery")
+        )
 
         def capability(ok: bool, reason: str) -> dict[str, Any]:
             return {"available": ok, "reason": None if ok else reason, "message": None}
@@ -221,8 +258,12 @@ def install(app: FastAPI) -> None:
             }
         value = {
             "monitoring": capability(fresh, "CONTROL_WORKER_UNAVAILABLE"),
-            "paper_trading": capability(fresh and "PAPER_TRADING" in bindings, "MODE_UNAVAILABLE"),
-            "live_trading": capability(fresh and "LIVE_TRADING" in bindings, "MODE_UNAVAILABLE"),
+            "paper_trading": capability(
+                execution_ready and "PAPER_TRADING" in bindings, "MODE_UNAVAILABLE"
+            ),
+            "live_trading": capability(
+                execution_ready and "LIVE_TRADING" in bindings, "MODE_UNAVAILABLE"
+            ),
             "revenue_audit": capability(
                 False,
                 "NOT_RELEASED",

@@ -59,8 +59,18 @@ async def run_worker(executor: Any, *, once: Any = False) -> Any:
     pending: dict[tuple[Any, ...], asyncio.Task[Any]] = {}
     acceptance = None
     next_acceptance = 0.0
+    next_heartbeat = 0.0
     try:
         while True:
+            if time.monotonic() >= next_heartbeat:
+                executor.journal.set(
+                    "v2_workers",
+                    "executor",
+                    {
+                        "heartbeat_at": executor.journal.clock().isoformat(),
+                    },
+                )
+                next_heartbeat = time.monotonic() + 10
             executor.drain_events()
             if (acceptance is None or acceptance.done()) and time.monotonic() >= next_acceptance:
                 if acceptance is not None:

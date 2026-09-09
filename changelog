@@ -884,3 +884,9 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-09 — V2 Policy 零消费证明修复：保存 activation revision 首次接管时间；runtime 消费捕获完整且覆盖首次激活时将无消费投影为 consumed=false / effective=true，未知和已消费边界保留。捕获进度更新、缺口和不可用状态同步重算；修复控制激活时间。备份并修复 MU 隔离联调读库，ACTIVE 42 / COMPLETE、ADD 42；9 项聚焦测试通过，真实 5178 API 验证通过。修复记录见 backend_delivery/BACKEND_INTEGRATION_FIXES_20260909.md。
 
 2026-09-09 · V2 策略阅读需求修正及第三轮批注：当前 Shell 下 Policy 改连续列表，侧边索引滚动定位；D1/D2 自动完整加载所选报告/单元，D2 因素单列、中文标题和字段标签强化；策略/事件/Runtime/消息共用居中渐隐续页，消息独立卡片并支持正文区域点击展开全文。同步 PRD、前端 AGENTS、BROWSER_COMMENTS_REVIEW.md。真实浏览器验证策略42条、未来节点26条、事件20→40、Runtime及消息20→25；23测试、Lint、类型、构建通过。C5切换时5178连接拒绝，遵循异常熔断停止，剩余宽度和细节交互待服务恢复续验；未修改或重启后端。
+
+2026-09-09 — V2 生产接线：前端只保留正式 Supabase auth，移除 demo/mock/录制入口与初始化 adapter-factory 注入入口；旧联调服务停止，入口归档至 .tmp/retired-v2-entrypoints-20260909（不参与打包）。新增完整生产 Compose、Dockerfile.v2、前端 Dockerfile、production_v2 迁移/预检/绑定 CLI、环境模板和生产运行手册；所有服务统一持久化业务路径。受管 Runtime 改用独立 delivery，executor/delivery 提供心跳，交易 capability 校验执行服务新鲜度；API 不再默认读取 .tmp，新增只读健康检查，Nginx 配置 SSE 无缓冲/无缓存。正式验收进度记录于 backend_delivery/PRODUCTION_ACCEPTANCE.md；未发 Live 订单。
+
+2026-09-09 — 生产重启验收增补：修复 ReadStore 重复迁移插入 v1 行导致 schema_meta 唯一键冲突；迁移改为事务内幂等初始化，既有数据与 generation 保留。production_v2 迁移取得全部 managed writer 锁后才备份/迁移。修复首次 Paper/Live 启动无法获取 ticker binding 的能力查询，前端按输入 ticker 防抖读取，后端支持创建前绑定与执行服务心跳门禁；新增两个对应聚焦回归测试通过。
+
+2026-09-09 V2 正式登录补验：真实 Supabase 账户完成 Overview/API、消息基线、Nginx SSE 心跳及 API 中断后同范围自动重连；临时 MU 消息监测生命周期经正式 API 移除，初始化服务恢复，零交易任务/执行。更新 PRODUCTION_ACCEPTANCE.md；未运行完整研究或任何 Paper/Live 订单。
