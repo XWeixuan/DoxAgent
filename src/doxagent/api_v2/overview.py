@@ -10,6 +10,7 @@ from typing import Any
 from fastapi import FastAPI, Request
 
 from doxagent.semantic_clock import boundary
+from doxagent.v2_control.repository import mode_binding_in
 from doxagent.v2_read.repository import instant
 
 from .dto import available, coverage, missing
@@ -211,10 +212,9 @@ def install(app: FastAPI) -> None:
             raise ApiFailure("VALIDATION_FAILED", 422)
         with control.read() as db:
             bindings = {
-                r[0]
-                for r in db.execute(
-                    "SELECT mode FROM v2_mode_binding WHERE ticker=?", (ticker or "",)
-                )
+                mode
+                for mode in ("PAPER_TRADING", "LIVE_TRADING")
+                if mode_binding_in(db, ticker or "", mode) is not None
             }
             heartbeat = db.execute(
                 "SELECT payload FROM runtime_values WHERE namespace='v2_workers' AND key='control'"

@@ -15,7 +15,7 @@ from doxagent.tools.providers.ibkr_tws import (
 )
 
 
-def test_tws_config_is_localhost_only_and_reads_settings(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_tws_config_allows_loopback_and_docker_gateway_only(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("IBKR_TWS_MARKET_DATA_TYPE", "4")
     settings = DoxAgentSettings(
         IBKR_TWS_HOST="localhost",
@@ -33,7 +33,8 @@ def test_tws_config_is_localhost_only_and_reads_settings(monkeypatch: pytest.Mon
         timeout_seconds=12,
         market_data_type=4,
     )
-    with pytest.raises(ValueError, match="only permits localhost"):
+    assert IbkrTwsConfig(host="host.docker.internal").host == "host.docker.internal"
+    with pytest.raises(ValueError, match="loopback"):
         IbkrTwsConfig(host="192.0.2.1")
 
 

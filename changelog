@@ -891,4 +891,17 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-09-09 V2 正式登录补验：真实 Supabase 账户完成 Overview/API、消息基线、Nginx SSE 心跳及 API 中断后同范围自动重连；临时 MU 消息监测生命周期经正式 API 移除，初始化服务恢复，零交易任务/执行。更新 PRODUCTION_ACCEPTANCE.md；未运行完整研究或任何 Paper/Live 订单。
 
-2026-09-09 CDECR V2 ģ��Ǩ�ƣ�M2/M3/M4 �� Package V3 Ĭ�� provider �� DeepSeek �л�Ϊ���� DashScope��ģ��ͳһ��Ϊ qwen3.8-flash���������� reasoning��strict��timeout�������벢�����ã���ͬ����������ģ��� doctor ·��У�顣
+2026-09-09 香港 V2 部署：数据 MCP 的 IBKR socket 增加限定 host.docker.internal 地址支持，保留任意远端地址拒绝；增加官方本地 ibapi 源包镜像层及香港 Docker host 映射 overlay。远端桌面仅通过 SSH 隧道；本轮不发真实订单。
+- 2026-09-09: Replaced the local Bailian default `DASHSCOPE_API_KEY` with the newly supplied workspace key; preserved provider, model, endpoint, and fallback configuration, with secret values omitted from the changelog.
+
+2026-09-09 香港线上切换完成：git pull 至 517dce51 后部署 IBKR 私网地址补丁和官方 ibapi 10.49.2 镜像层；V1 四服务停用且关闭 restart，V2 11 服务启动，正式域名切换，迁移/匿名鉴权/Worker readiness/投影追平验收通过。XFCE、回环 xRDP、SSH 隧道及 Gateway 已安装；IBKR 登录与账户握手待用户操作，无订单。
+
+2026-09-09 修复香港 xRDP 密码更新：Windows text-mode SSH stdin 引入 CRLF 导致密码尾部包含 CR，改用 UTF-8 bytes + LF 更新并核验系统密码哈希匹配；不记录密码或哈希。
+
+2026-09-09 修复香港 IB Gateway 启动权限：root 安装保留了 /root/Jts，桌面用户无法创建 launcher.log。vmoptions 显式设置 -DjtsConfigDir=/home/doxagent-desktop/Jts，目录归桌面用户且权限 0700；重启后 launcher.log 正常创建，日志系统初始化成功。
+
+2026-09-09 香港 IBKR 实际验收完成：Paper Gateway 握手、正式 stdio Data MCP 日线/实时行情、唯一执行器账户/持仓/合约/报价只读 probe 均通过；导入 hk-paper 不可变配置，未绑定标的、未发订单。持久化限制 Gateway API 非回环入站，HK overlay 固定 ibapi 镜像。Live 会话/账户尚未配置，未冒充 Live 验收。
+
+2026-09-09 CDECR V2 模型迁移：M2/M3/M4 与 Package V3 默认 provider 由 DeepSeek 切换为百炼 DashScope，模型统一改为 qwen3.8-flash；保留各层 reasoning、strict、timeout、重试与并发配置，并同步生产环境模板和 doctor 路由校验。
+
+2026-09-09 V2 全局交易模式 binding：支持以 `ticker="*"` 为 Paper/Live 分别配置全局默认执行 profile；capabilities、START/RESTART 与新 intent 统一按“ticker 精确优先、全局默认回退”解析，保留既有不可变 profile pin。前端无需改动，未同步远端、未创建本地或远端实际 binding。

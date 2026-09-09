@@ -1,0 +1,10 @@
+[Unit]
+Description=Restrict IB Gateway API to loopback relays
+After=network.target docker.service
+Before=xrdp.service
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/doxagent-broker-firewall
+RemainAfterExit=yes
+[Install]
+WantedBy=multi-user.target

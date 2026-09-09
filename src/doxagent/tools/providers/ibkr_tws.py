@@ -104,8 +104,8 @@ class IbkrTwsConfig:
     market_data_type: int = 3
 
     def __post_init__(self) -> None:
-        if self.host not in {"127.0.0.1", "localhost"}:
-            raise ValueError("The first-stage IBKR TWS connector only permits localhost.")
+        if self.host not in {"127.0.0.1", "localhost", "host.docker.internal"}:
+            raise ValueError("IBKR TWS must use loopback or the configured Docker host gateway.")
         if not 1 <= self.port <= 65535:
             raise ValueError("IBKR TWS port must be between 1 and 65535.")
         if self.client_id < 0:

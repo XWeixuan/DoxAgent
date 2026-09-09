@@ -1,0 +1,3 @@
+FROM doxagent-v2:production
+COPY pythonclient /opt/ibapi-source
+RUN uv pip install --python /app/.venv/bin/python /opt/ibapi-source && uv pip check --python /app/.venv/bin/python

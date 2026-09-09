@@ -205,7 +205,7 @@ Overview 的触发与成功是各自在该窗口发生的业务事件，跨窗�
 | POST | `/tickers/{ticker}/initializations/{initialization_id}/resume` | `{}` | 202 Response<Operation> |
 | GET | `/operations/{operation_id}` | 无 | Response<Operation> |
 
-生产能力查询补充（2026-09-09）：`ticker` 可为尚未 START 的合法标的，用于查询预先配置的正式 Paper/Live binding；不存在控制记录不构成 404。无 binding 时交易能力为不可用。交易能力还要求 control、delivery、executor 心跳有效；未传 ticker 不推断其他标的的账户绑定。启动表单按目标 ticker 查询，提交仍由后端原子校验绑定。
+生产能力查询补充（2026-09-09）：`ticker` 可为尚未 START 的合法标的，用于查询正式 Paper/Live binding；不存在控制记录不构成 404。每种交易模式先解析 ticker 精确 binding，找不到时回退到 `ticker="*"` 的全局默认 binding；两者都没有时交易能力不可用。精确 binding 覆盖全局默认，Paper 与 Live 的全局默认互不推导。交易能力还要求 control、delivery、executor 心跳有效；未传 ticker 不借用某个具体标的的绑定。启动表单按目标 ticker 查询，提交仍由后端原子解析并校验同一 binding。
 
 ReadContext：OVERVIEW 禁止 ticker，其余 page 必须 ticker。RESEARCH/EXPECTATIONS 不接受 period；其他默认 PREVIOUS_TRADING_DAY。OVERVIEW 禁止 ALL。refresh 为 `OPEN`（默认）、`MANUAL` 或 `MINUTE`；MINUTE 仅 MESSAGE_BUS/RUNTIME 可用。calendar 单次 start/end 范围最多 366 天，仍分页。
 
@@ -676,7 +676,7 @@ Supabase 官方说明 Egress 包括数据库向连接客户端传出的数据，
 
 | 能力缺口 | 缺口存在时契约行为 | 不能冒充的事实 |
 |---|---|---|
-| ticker 级 Paper/Live | capabilities=false、MODE_UNAVAILABLE | 全局 active profile=某环境不证明该 ticker 模式 |
+| Paper/Live binding | capabilities=false、MODE_UNAVAILABLE | ticker 精确 binding 与该模式的 `*` 全局默认均不存在；全局 active profile 不参与判定 |
 | 持久 removed / 暂停统一边界 | 操作不可成功；503 或明确 pending/失败 | 仅当前浏览器隐藏不是删除成功 |
 | 初始化完整失败集/步骤时间 | 真实集合；时间 NOT_RECORDED | 云端前10失败节点、updated_at 不是完整进度 |
 | D1 独立更新时间 | NOT_RECORDED | run 状态变化/发布时间不等于内容修改 |

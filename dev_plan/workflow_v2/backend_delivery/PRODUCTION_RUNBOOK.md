@@ -52,7 +52,7 @@ curl --fail http://127.0.0.1:8082/healthz
 
 ## Paper / Live 绑定
 
-研究与策略生命周期按 ticker 唯一，Paper/Live 仅是新 intent 的执行环境。一个 ticker 可以分别保存 PAPER_TRADING 与 LIVE_TRADING 的不可变 profile binding；切模式不复制研究、不清空消费、不更换旧 intent 的账户 pin。
+研究与策略生命周期按 ticker 唯一，Paper/Live 仅是新 intent 的执行环境。每种交易模式可以保存 `ticker="*"` 的全局默认 profile binding；ticker 精确 binding 优先于全局默认。切模式不复制研究、不清空消费、不更换旧 intent 的账户 pin，修改默认 binding 也只影响之后释放的新 intent。
 
 1. 按 `ExecutionProfile` schema 准备 JSON，包含 profile_id、environment、account_mode、host、port、client_id、expected_account_id、方向与 strategy。Paper 必须绑定真实 Paper 账户；Live Cash 禁止 short。broker 地址从容器可达，宿主 Gateway 可用 `host.docker.internal`；端口本身不是账户环境的证明。
 2. 把 JSON 放在受控 `/data/operator` 路径，导入后记录输出的不可变 revision：
@@ -60,9 +60,10 @@ curl --fail http://127.0.0.1:8082/healthz
 ```bash
 docker compose -f docker-compose.v2-production.yml exec v2-executor python -m doxagent.trade_execution.cli --db /data/runtime/runtime.sqlite3 import-profile --file /data/operator/paper.json
 docker compose -f docker-compose.v2-production.yml exec v2-api python -m doxagent.production_v2 bind-profile --ticker MU --mode PAPER_TRADING --revision REVISION --actor OPERATOR
+docker compose -f docker-compose.v2-production.yml exec v2-api python -m doxagent.production_v2 bind-profile --ticker '*' --mode PAPER_TRADING --revision REVISION --actor OPERATOR
 ```
 
-修改已有绑定必须加 `--expected-revision OLD_REVISION`，不得使用全局 activate-profile 替代 ticker binding。Live 使用正式 LIVE profile 和 LIVE_TRADING 绑定；本轮部署验收不导入、不启动 Live 交易任务。
+第二条命令为全部合法 ticker 安装 Paper 默认 binding；如同时存在 ticker 精确 binding，则使用精确项。修改已有绑定必须加 `--expected-revision OLD_REVISION`，不得使用全局 activate-profile 替代 mode binding。Paper 与 Live 必须分别配置；Live 只接受正式 LIVE profile，不能从 Paper 默认推导。本轮部署验收不导入、不启动 Live 交易任务。
 
 3. broker 只读探测用 `trade_execution.cli probe --profile REVISION`，在 executor 未运行时执行（探测同样受唯一 writer 锁保护）；已有持仓时不要为了探测停掉 executor。Paper 真成交验收需要单独明确安排，不能用握手、what-if 或空闲 worker 健康代替。不要在持仓期间停掉 executor，暂停 ticker 仅关闭新分析/新 intent，已接管 Entry、重试、成交与退出仍需 executor 持续管理。
 

@@ -18,6 +18,7 @@ from uuid import uuid4
 from doxagent.persistent_runtime_v2.journal import RuntimeJournal, encode
 
 MODES = {"MESSAGE_MONITORING", "PAPER_TRADING", "LIVE_TRADING"}
+GLOBAL_BINDING_TICKER = "*"
 
 
 class ControlError(ValueError):
@@ -35,6 +36,23 @@ def control_in(db: sqlite3.Connection, ticker: str) -> dict[str, Any] | None:
     return json.loads(row[0]) if row else None
 
 
+def mode_binding_in(
+    db: sqlite3.Connection, ticker: str, mode: str
+) -> dict[str, Any] | None:
+    """Resolve an exact ticker binding before the mode's global default."""
+    ticker = ticker.strip().upper()
+    row = db.execute(
+        "SELECT payload FROM v2_mode_binding WHERE ticker=? AND mode=?",
+        (ticker, mode),
+    ).fetchone()
+    if row is None and ticker != GLOBAL_BINDING_TICKER:
+        row = db.execute(
+            "SELECT payload FROM v2_mode_binding WHERE ticker=? AND mode=?",
+            (GLOBAL_BINDING_TICKER, mode),
+        ).fetchone()
+    return json.loads(row[0]) if row else None
+
+
 def output_permission(
     db: sqlite3.Connection, ticker: str, case_id: str
 ) -> tuple[str | None, dict[str, Any] | None]:
@@ -49,13 +67,10 @@ def output_permission(
         return "ANALYSIS_ONLY", None
     if not state["new_intent_allowed"] or origin.get("removal_epoch", 0) != state["removal_epoch"]:
         return "SUPPRESSED_BY_CONTROL", None
-    row = db.execute(
-        "SELECT payload FROM v2_mode_binding WHERE ticker=? AND mode=?",
-        (ticker, state["mode"]),
-    ).fetchone()
-    if not row:
+    binding = mode_binding_in(db, ticker, state["mode"])
+    if binding is None:
         return "MODE_UNAVAILABLE", None
-    return None, json.loads(row[0])
+    return None, binding
 
 
 class ControlRepository:
@@ -140,6 +155,11 @@ class ControlRepository:
     ) -> None:
         from doxagent.trade_execution.repository import ExecutionRepository
 
+        ticker = ticker.strip().upper()
+        if ticker != GLOBAL_BINDING_TICKER and not re.fullmatch(
+            r"[A-Z][A-Z0-9.\-]{0,14}", ticker
+        ):
+            raise ControlError("VALIDATION_FAILED", 422)
         profile = ExecutionRepository(self.journal).profile(revision)
         if mode not in {"PAPER_TRADING", "LIVE_TRADING"}:
             raise ControlError("VALIDATION_FAILED", 422)
@@ -148,7 +168,7 @@ class ControlRepository:
         with self.journal.transaction() as db:
             old = db.execute(
                 "SELECT payload FROM v2_mode_binding WHERE ticker=? AND mode=?",
-                (ticker.upper(), mode),
+                (ticker, mode),
             ).fetchone()
             if old and json.loads(old[0])["revision"] == revision:
                 return
@@ -157,17 +177,17 @@ class ControlRepository:
             number = db.execute(
                 "SELECT coalesce(max(revision),0)+1 FROM v2_mode_binding_history "
                 "WHERE ticker=? AND mode=?",
-                (ticker.upper(), mode),
+                (ticker, mode),
             ).fetchone()[0]
             db.execute(
                 "INSERT INTO v2_mode_binding_history VALUES(?,?,?,?,?,?)",
-                (ticker.upper(), mode, number, revision, actor, self.journal.clock().isoformat()),
+                (ticker, mode, number, revision, actor, self.journal.clock().isoformat()),
             )
             db.execute(
                 "INSERT INTO v2_mode_binding VALUES(?,?,?) ON CONFLICT(ticker,mode) "
                 "DO UPDATE SET payload=excluded.payload",
                 (
-                    ticker.upper(),
+                    ticker,
                     mode,
                     encode({"revision": revision, "profile": profile.model_dump(mode="json")}),
                 ),
@@ -228,9 +248,7 @@ class ControlRepository:
             if mode not in MODES:
                 raise ControlError("VALIDATION_FAILED", 422)
             if kind in {"START", "RESTART"} and mode != "MESSAGE_MONITORING":
-                if not db.execute(
-                    "SELECT 1 FROM v2_mode_binding WHERE ticker=? AND mode=?", (ticker, mode)
-                ).fetchone():
+                if mode_binding_in(db, ticker, mode) is None:
                     raise ControlError("MODE_UNAVAILABLE")
             if state and state["removed"] and kind != "START":
                 raise ControlError("TICKER_REMOVED")

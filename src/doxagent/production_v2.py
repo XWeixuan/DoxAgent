@@ -151,7 +151,11 @@ def main():
     commands.add_parser("check")
     commands.add_parser("migrate")
     binding = commands.add_parser("bind-profile")
-    binding.add_argument("--ticker", required=True)
+    binding.add_argument(
+        "--ticker",
+        required=True,
+        help="Ticker symbol, or * to install the mode's global default profile",
+    )
     binding.add_argument("--mode", required=True, choices=["PAPER_TRADING", "LIVE_TRADING"])
     binding.add_argument("--revision", required=True)
     binding.add_argument("--expected-revision")

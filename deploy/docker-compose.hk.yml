@@ -1,0 +1,27 @@
+services:
+  v2-migrate:
+    image: doxagent-v2:hk
+  v2-api:
+    image: doxagent-v2:hk
+  v2-control:
+    image: doxagent-v2:hk
+  codex-worker:
+    image: doxagent-v2:hk
+    extra_hosts: ["host.docker.internal:host-gateway"]
+  v2-initialization:
+    image: doxagent-v2:hk
+    extra_hosts: ["host.docker.internal:host-gateway"]
+  v2-message-bus:
+    image: doxagent-v2:hk
+  v2-o4:
+    image: doxagent-v2:hk
+    extra_hosts: ["host.docker.internal:host-gateway"]
+  v2-scheduler:
+    image: doxagent-v2:hk
+    extra_hosts: ["host.docker.internal:host-gateway"]
+  v2-projector:
+    image: doxagent-v2:hk
+  v2-delivery:
+    image: doxagent-v2:hk
+  v2-executor:
+    image: doxagent-v2:hk
