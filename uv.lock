@@ -454,6 +454,7 @@ dependencies = [
     { name = "uvicorn", extra = ["standard"] },
     { name = "websockets" },
     { name = "yfinance" },
+    { name = "zstandard" },
 ]
 
 [package.dev-dependencies]
@@ -490,6 +491,7 @@ requires-dist = [
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.32,<1" },
     { name = "websockets", specifier = ">=15,<16" },
     { name = "yfinance", specifier = ">=0.2,<0.3" },
+    { name = "zstandard", specifier = ">=0.25,<1" },
 ]
 
 [package.metadata.requires-dev]

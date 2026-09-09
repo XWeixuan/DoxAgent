@@ -50,6 +50,45 @@ curl --fail http://127.0.0.1:8082/healthz
 
 首次部署没有历史数据时，页面显示真实空状态。用正式开发者账户登录后添加 ticker，将通过真实初始化流程生成研究与策略；不能把合成/录制样本填入生产库以使页面看起来有数据。
 
+## CDECR 预构建包
+
+4 GB 香港实例必须同时对 `v2-control` 和 `v2-initialization` 使用 `PREBUILT_REQUIRED`；通用生产拓扑默认 `LOCAL_OR_PREBUILT`。两者通过既有 `v2-data:/data` 共享 `/data/prebuilt/cdecr`，无需新增数据库或独立卷。缺包、坏包或版本/配置 fingerprint 不一致都会明确失败，不得静默回退到远端 CDECR。
+
+在本地与远端使用同一代码和 CDECR 结果配置（密钥值不参与 fingerprint）：
+
+```powershell
+python -m doxagent.cdecr_integration.prebuilt_cli build `
+  --market US --ticker MU `
+  --research-cutoff-at 2026-09-09T02:00:00Z `
+  --output-root C:\DoxAgentData\cdecr-prebuilt
+```
+
+只把生成的 `.tar.zst` 上传到远端 `incoming`，再在容器内发布；绝不能直接复制到 `ready`：
+
+```bash
+scp cdecr-US-MU-*.tar.zst hk:/srv/doxagent/prebuilt-upload/
+docker compose -f docker-compose.v2-production.yml -f deploy/docker-compose.hk.yml \
+  cp /srv/doxagent/prebuilt-upload/cdecr-US-MU-....tar.zst \
+  v2-initialization:/data/prebuilt/cdecr/incoming/
+docker compose -f docker-compose.v2-production.yml -f deploy/docker-compose.hk.yml \
+  run --rm v2-initialization python -m doxagent.cdecr_integration.prebuilt_cli publish \
+  --archive /data/prebuilt/cdecr/incoming/cdecr-US-MU-....tar.zst
+docker compose -f docker-compose.v2-production.yml -f deploy/docker-compose.hk.yml \
+  run --rm v2-initialization python -m doxagent.cdecr_integration.prebuilt_cli list --ticker MU
+```
+
+确认同 ticker 只有一个 `ready` 包后，才通过正式 V2 API 选择 `FORCE_INITIALIZE`。运行记录的 cutoff 必须等于 manifest cutoff，CDECR 节点应出现 `CDECR_PREBUILT_ADOPTED`，随后包进入 `consumed/<initialization_id>`；O2、D2、D3、O4、Activation、Bus 和 Runtime 仍按正式链路执行。验收期间监控内存与进程，确认没有启动 CDECR 子进程，且不发送 Live 订单。
+
+claim 后进程中断时，用下列命令只释放“超过宽限期且没有对应 initialization run”的 orphan claim：
+
+```bash
+docker compose -f docker-compose.v2-production.yml -f deploy/docker-compose.hk.yml \
+  run --rm v2-initialization python -m doxagent.cdecr_integration.prebuilt_cli reconcile \
+  --initialization-db /data/initialization/control.sqlite3 --grace-hours 1
+```
+
+回滚前暂停新初始化，将模式改回 `LOCAL_ONLY` 或回滚代码；保留 `claimed`、`consumed` 和当前 run Registry 证据，不手工修改 active revision。香港实例切回 `LOCAL_ONLY` 不等于允许在 4 GB 内存上执行 CDECR，恢复远端执行前仍须扩容或重新验收并发配置。
+
 ## Paper / Live 绑定
 
 研究与策略生命周期按 ticker 唯一，Paper/Live 仅是新 intent 的执行环境。每种交易模式可以保存 `ticker="*"` 的全局默认 profile binding；ticker 精确 binding 优先于全局默认。切模式不复制研究、不清空消费、不更换旧 intent 的账户 pin，修改默认 binding 也只影响之后释放的新 intent。

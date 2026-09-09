@@ -43,6 +43,41 @@ from doxagent.workflows.codex_event_library.remote_runner import (
 RuntimeFactory = Callable[[RuntimeRegistryBinding], tuple[CDECRRegistry, CDECRWorkflowRunner]]
 
 
+async def stage_historical_sources(
+    *,
+    binding: RuntimeRegistryBinding,
+    registry: CDECRRegistry,
+    staging_path: str | Path,
+    providers: Sequence[HistoricalNewsProvider],
+    as_of: datetime,
+    sample_seed: int = 20260824,
+    max_sources: int = 500,
+) -> tuple[list[str], HistoricalLoadReport]:
+    """Use one source-selection path for normal initialization and prebuilt builds."""
+
+    loader = HistoricalNewsLoader(
+        staging=HistoricalStagingRepository(staging_path),
+        providers=providers,
+        sample_seed=sample_seed,
+        max_sources=max_sources,
+    )
+    sources, report = await loader.load(
+        market=binding.market,
+        ticker=binding.ticker,
+        as_of=as_of,
+    )
+    selected_message_ids: list[str] = []
+    for source in sources:
+        fingerprint = document_fingerprint(source.title, source.text)
+        if registry.has_source_fingerprint(fingerprint):
+            if registry.get_source(source.message_id) is not None:
+                selected_message_ids.append(source.message_id)
+            continue
+        registry.save_source(source, fingerprint=fingerprint)
+        selected_message_ids.append(source.message_id)
+    return selected_message_ids, report
+
+
 class TickerCDECRPipelineCoordinator:
     def __init__(
         self,
@@ -134,26 +169,15 @@ class TickerCDECRPipelineCoordinator:
             historical_report: HistoricalLoadReport | None = None
             if not state.message_ids:
                 state = self._advance(state, TickerJobStage.HISTORICAL_STAGING)
-                loader = HistoricalNewsLoader(
-                    staging=HistoricalStagingRepository(staging_path),
+                selected_message_ids, historical_report = await stage_historical_sources(
+                    binding=binding,
+                    registry=registry,
+                    staging_path=staging_path,
                     providers=self.providers,
+                    as_of=as_of,
                     sample_seed=self.sample_seed,
                     max_sources=self.max_sources,
                 )
-                sources, historical_report = await loader.load(
-                    market=binding.market,
-                    ticker=binding.ticker,
-                    as_of=as_of,
-                )
-                selected_message_ids = []
-                for source in sources:
-                    fingerprint = document_fingerprint(source.title, source.text)
-                    if registry.has_source_fingerprint(fingerprint):
-                        if registry.get_source(source.message_id) is not None:
-                            selected_message_ids.append(source.message_id)
-                        continue
-                    registry.save_source(source, fingerprint=fingerprint)
-                    selected_message_ids.append(source.message_id)
                 state = self._advance(
                     state,
                     TickerJobStage.SOURCES_READY,
@@ -284,6 +308,69 @@ class TickerCDECRPipelineCoordinator:
 
     def status(self, *, market: str, ticker: str) -> TickerJobState | None:
         return self.jobs.latest(market=market.upper(), ticker=ticker.upper())
+
+    def binding_for(self, *, market: str, ticker: str) -> RuntimeRegistryBinding:
+        """Return the canonical target binding without creating its Registry."""
+
+        return self.registry_resolver.resolve(market=market, ticker=ticker)
+
+    def seed_prebuilt_job(
+        self,
+        *,
+        market: str,
+        ticker: str,
+        as_of: datetime,
+        message_ids: list[str],
+        epoch_id: str,
+    ) -> TickerJobState:
+        """Create the current run's durable job state around an imported FINALIZED epoch."""
+
+        binding = self.registry_resolver.resolve(market=market, ticker=ticker)
+        job_id = initialization_job_id(binding.market, binding.ticker, as_of)
+        staging_path = self.state_root / "jobs" / job_id / "historical_staging.sqlite3"
+        event_library_path = (
+            self.event_library_root / binding.market / binding.ticker / "event_library.sqlite3"
+        )
+        seeded = TickerJobState(
+            job_id=job_id,
+            market=binding.market,
+            ticker=binding.ticker,
+            mode=TickerJobMode.INITIALIZE,
+            as_of=as_of,
+            stage=TickerJobStage.CDECR_RUNNING,
+            runtime_scope=binding.runtime_scope,
+            registry_path=binding.registry_path,
+            staging_path=str(staging_path),
+            event_library_path=str(event_library_path),
+            message_ids=list(message_ids),
+            epoch_id=epoch_id,
+            updated_at=datetime.now(UTC),
+        )
+        current = self.jobs.get(job_id)
+        if current is not None:
+            immutable = (
+                current.market,
+                current.ticker,
+                current.as_of,
+                current.runtime_scope,
+                current.registry_path,
+                current.message_ids,
+                current.epoch_id,
+            )
+            expected = (
+                seeded.market,
+                seeded.ticker,
+                seeded.as_of,
+                seeded.runtime_scope,
+                seeded.registry_path,
+                seeded.message_ids,
+                seeded.epoch_id,
+            )
+            if immutable != expected:
+                raise ValueError("prebuilt CDECR job state conflicts with existing state")
+            return current
+        self.jobs.save(seeded)
+        return seeded
 
     async def prepare_runtime_through_delta(
         self,
@@ -613,10 +700,13 @@ class TickerCDECRPipelineCoordinator:
         return updated
 
 
-def _job_id(market: str, ticker: str, as_of: datetime) -> str:
+def initialization_job_id(market: str, ticker: str, as_of: datetime) -> str:
     identity = f"{market.upper()}|{ticker.upper()}|INITIALIZE|{as_of.astimezone(UTC).isoformat()}"
     digest = hashlib.sha256(identity.encode("utf-8")).hexdigest()
     return f"cdecr-init-{market.lower()}-{ticker.lower()}-{digest[:20]}"
+
+
+_job_id = initialization_job_id
 
 
 def _update_job_id(batch: RuntimeNovelMessageBatch) -> str:

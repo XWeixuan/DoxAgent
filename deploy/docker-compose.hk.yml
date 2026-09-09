@@ -5,11 +5,15 @@ services:
     image: doxagent-v2:hk
   v2-control:
     image: doxagent-v2:hk
+    environment:
+      DOXAGENT_CDECR_EXECUTION_MODE: PREBUILT_REQUIRED
   codex-worker:
     image: doxagent-v2:hk
     extra_hosts: ["host.docker.internal:host-gateway"]
   v2-initialization:
     image: doxagent-v2:hk
+    environment:
+      DOXAGENT_CDECR_EXECUTION_MODE: PREBUILT_REQUIRED
     extra_hosts: ["host.docker.internal:host-gateway"]
   v2-message-bus:
     image: doxagent-v2:hk

@@ -905,3 +905,10 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-09 CDECR V2 模型迁移：M2/M3/M4 与 Package V3 默认 provider 由 DeepSeek 切换为百炼 DashScope，模型统一改为 qwen3.8-flash；保留各层 reasoning、strict、timeout、重试与并发配置，并同步生产环境模板和 doctor 路由校验。
 
 2026-09-09 V2 全局交易模式 binding：支持以 `ticker="*"` 为 Paper/Live 分别配置全局默认执行 profile；capabilities、START/RESTART 与新 intent 统一按“ticker 精确优先、全局默认回退”解析，保留既有不可变 profile pin。前端无需改动，未同步远端、未创建本地或远端实际 binding。
+
+2026-09-09 CDECR 预构建交付方案：新增 `dev_plan/workflow_v2/CDECR_PREBUILT_BUNDLE_IMPLEMENTATION_PLAN.md`，明确本地仅执行 CDECR、远端正常创建 V2 初始化 run 并原子接管 Registry 的最小实现；保持 `REUSE_ACTIVE` 与前端/API 契约不变，香港 4 GB 实例使用 `PREBUILT_REQUIRED` 防止缺包或坏包时回退并触发 OOM。仅新增方案文档，未修改业务代码、数据库或远端部署。
+
+2026-09-09 CDECR 预构建交付实现：新增严格 bundle manifest/ref/receipt、SQLite 双重校验与 backup 导出、tar.zst build/publish/list/inspect/reconcile CLI，以及 incoming→ready→claimed→consumed 原子状态机和 ticker 跨进程锁；V2 control 在新 run 创建前固定 bundle/cutoff/NodeSpec，初始化节点幂等导入 Registry、seed 当前 run job state、跳过远端 execute_cdecr 后照常生成 Activity/Snapshot/Delta，并在 NodeResult 持久化后消费 bundle。保留 `REUSE_ACTIVE` 和 API 契约，`PREBUILT_REQUIRED` 禁止缺包/坏包回退；Compose、香港 overlay、环境模板及生产 Runbook 已同步。30 个聚焦测试、Ruff、strict mypy、Compose config 和 lock check 通过；未运行真实模型、远端发布、正式初始化或任何交易。
+
+2026-09-09 修复 CDECR 历史消息抓取：Finnhub 与 Benzinga 统一按单日区间请求，单日请求及 retry 之间默认保持 10 秒间隔，每日允许 2 次 retry；单日最终失败隔离并继续后续日期，保留成功日期结果并记录不可用日期，Benzinga 同步改为逐日分页。新增历史 provider 重试/隔离定向测试；未执行远端 workflow。
+2026-09-10 修复 CDECR 恢复收尾：已最终化的 Bulk Epoch 自动收敛遗留 RUNNING native 控制节点，避免 child 已提交但控制面因 unsettled internal execution 无法结束；新增定向恢复测试。

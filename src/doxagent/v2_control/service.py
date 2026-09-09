@@ -6,8 +6,15 @@ import sqlite3
 from datetime import datetime, timedelta
 from typing import Any
 
+from cdecr.config import CDECRSettings
+from doxagent.cdecr_integration.prebuilt import (
+    CDECRPrebuiltStore,
+    PrebuiltError,
+    configuration_fingerprint,
+)
 from doxagent.message_bus_v2.schema import TickerMonitoringStatus, UpdateActor
 from doxagent.runtime_scheduler.schema import TickerRunStatus
+from doxagent.settings import DoxAgentSettings
 from doxagent.ticker_initialization.catalog import default_plan
 from doxagent.ticker_initialization.schema import RunStatus
 
@@ -22,9 +29,11 @@ class ControlService:
         initialization: Any,
         bus: Any,
         scheduler_repository: Any,
+        settings: DoxAgentSettings | None = None,
     ) -> None:
         self.repository, self.initialization = repository, initialization
         self.bus, self.scheduler = bus, scheduler_repository
+        self.settings = settings or DoxAgentSettings()
 
     def _mirrors(self, state: dict[str, Any], op: dict[str, Any]) -> None:
         with self.initialization._write() as db:
@@ -127,16 +136,60 @@ class ControlService:
             raise ControlError("NO_ACTIVE_REVISION")
         if op["body"].get("initialization") == "FORCE_INITIALIZE" or not active:
             cutoff = op["body"].get("research_cutoff_at")
-            run = self.initialization.submit(
-                ticker,
-                datetime.fromisoformat(cutoff) if cutoff else self.repository.journal.clock(),
-                default_plan(),
-                reinitialize=bool(active),
-                control_operation_id=op["id"],
-                control_epoch=state["epoch"],
-            )
+            prebuilt = None
+            store = None
+            if self.settings.cdecr_execution_mode != "LOCAL_ONLY":
+                store = CDECRPrebuiltStore(self.settings.cdecr_prebuilt_root)
+                try:
+                    prebuilt = store.claim_ready(
+                        market="US",
+                        ticker=ticker,
+                        operation_id=op["id"],
+                        compatibility_version=self.settings.cdecr_prebuilt_compatibility_version,
+                        fingerprint=configuration_fingerprint(CDECRSettings()),
+                        max_age_hours=self.settings.cdecr_prebuilt_max_age_hours,
+                    )
+                except PrebuiltError as exc:
+                    raise ControlError(exc.code) from exc
+                except OSError as exc:
+                    raise RuntimeError("CDECR prebuilt store is temporarily unavailable") from exc
+                if prebuilt is None and self.settings.cdecr_execution_mode == "PREBUILT_REQUIRED":
+                    raise ControlError("CDECR_PREBUILT_REQUIRED")
+            reference, manifest = prebuilt if prebuilt is not None else (None, None)
+            try:
+                run = self.initialization.submit(
+                    ticker,
+                    (
+                        manifest.research_cutoff_at
+                        if manifest is not None
+                        else datetime.fromisoformat(cutoff)
+                        if cutoff
+                        else self.repository.journal.clock()
+                    ),
+                    default_plan(
+                        cdecr_prebuilt_ref=(
+                            reference.model_dump(mode="json") if reference is not None else None
+                        )
+                    ),
+                    reinitialize=bool(active),
+                    control_operation_id=op["id"],
+                    control_epoch=state["epoch"],
+                )
+            except Exception:
+                if store is not None and reference is not None:
+                    if self.initialization.by_control_operation(op["id"]) is None:
+                        try:
+                            store.release_claim(op["id"])
+                        except OSError as exc:
+                            raise RuntimeError(
+                                "CDECR prebuilt claim could not be safely released"
+                            ) from exc
+                raise
             self.repository.settle(op["id"], initialization_id=run.initialization_id)
-            self._mirrors(self.repository.get(ticker), op)
+            effective = self.repository.get(ticker)
+            if effective is None:
+                raise RuntimeError("control state disappeared after initialization submission")
+            self._mirrors(effective, op)
             return True
         identity = active["revision_id"]
         # Workers perform activation and report ACK themselves. No fabricated readiness.
@@ -160,7 +213,10 @@ class ControlService:
         self._ack(state, "bus")
         self._ack(state, "runtime")
         self.repository.settle(op["id"], activation_id=identity)
-        self._mirrors(self.repository.get(ticker), op)
+        effective = self.repository.get(ticker)
+        if effective is None:
+            raise RuntimeError("control state disappeared after activation")
+        self._mirrors(effective, op)
         return True
 
     def tick(self) -> int:

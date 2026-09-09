@@ -65,3 +65,28 @@ def test_committed_degraded_and_crash_receipts_reconcile_without_new_attempt(tmp
     observer.reconcile(registry)
     child = next(n for n in control.nodes(run.initialization_id) if n.inputs.get("managed_by"))
     assert child.status == "SUCCEEDED" and child.ordinal == 1
+
+
+def test_finalized_epoch_reconciles_stale_running_native_receipts(tmp_path):
+    control = InitializationRepository(tmp_path / "control.db")
+    run = control.submit("MU", datetime.now(UTC), [NodeSpec(key="cdecr", block="CDECR")])
+    lease = control.claim("owner")
+    parent = control.begin(lease, "cdecr", {})
+    registry = SQLiteCDECRRegistry(tmp_path / "native.db")
+    registry.initialize()
+    registry.start_bulk_epoch(
+        epoch_id="epoch", manifest_hash="input", orchestrator_version="v2", message_ids=[]
+    )
+    observer = NativeTaskObserver(NodeContext(control, lease, parent))
+    registry.initialization_task_observer = observer
+    ledger = BulkTaskLedger(registry=registry, epoch_id="epoch")
+    task = dict(stage="FIELD", task_id="stale", input_hash="input", snapshot_hash="snapshot")
+    ledger.start(**task)
+
+    registry.update_bulk_epoch("epoch", status="FINALIZED", current_stage="FINALIZED")
+    observer.reconcile(registry)
+
+    child = next(n for n in control.nodes(run.initialization_id) if n.inputs.get("managed_by"))
+    assert child.status == "SUCCEEDED" and child.ordinal == 1
+    control.complete(lease, "cdecr", NodeResult())
+    assert control.finish(lease).status == "SUCCEEDED"

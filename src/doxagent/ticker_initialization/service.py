@@ -93,6 +93,9 @@ class InitializationWorker:
             nodes = [n for n in all_nodes if not n.inputs.get("managed_by")]
             complete = {n.key for n in nodes if n.status == "SUCCEEDED"}
             if len(complete) == len(nodes):
+                for node in nodes:
+                    if node.result is not None:
+                        await self._after_complete(lease, node, node.result)
                 return self.repository.finish(lease)
             exhausted = [n.key for n in nodes if n.status == "FAILED" and n.ordinal >= 2]
             recovering = [n for n in nodes if n.status == "RUNNING"]
@@ -133,6 +136,7 @@ class InitializationWorker:
                 recovered = await adapter.reconcile(context)
             if recovered is not None:
                 self.repository.complete(lease, node.key, recovered)
+                await self._after_complete(lease, node, recovered, adapter=adapter)
                 return
             if previous.status == "RUNNING":
                 # Unknown completion after a crash is charged before a replacement dispatch.
@@ -162,7 +166,30 @@ class InitializationWorker:
                     # spends its remaining retry; no automatic generation reset.
                     visited_failures.update(retryable)
             self.repository.complete(lease, node.key, result)
+            await self._after_complete(lease, node, result, adapter=adapter)
         except LeaseLost:
             raise
         except Exception as exc:
             self.repository.fail(lease, node.key, f"{type(exc).__name__}: {exc}"[:4000])
+
+    async def _after_complete(
+        self,
+        lease: Lease,
+        node: NodeRecord,
+        result: NodeResult,
+        *,
+        adapter: NodeAdapter | None = None,
+    ) -> None:
+        resolved = adapter or self.adapter(node)
+        after_complete = getattr(resolved, "after_complete", None)
+        if after_complete is None:
+            return
+        try:
+            await after_complete(NodeContext(self.repository, lease, node), result)
+            self.repository.clear_post_complete_warning(lease, node.key)
+        except Exception as exc:
+            self.repository.post_complete_warning(
+                lease,
+                node.key,
+                f"{type(exc).__name__}: {exc}"[:1000],
+            )

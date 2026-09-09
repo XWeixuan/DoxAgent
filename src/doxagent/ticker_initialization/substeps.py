@@ -83,8 +83,17 @@ def capture_gateway(request, response):
     )
 
 
-def checkpointed_json(key: str, call: Callable[[], Any]) -> Any:
-    """Synchronous JSON unit, also usable in asyncio.to_thread's copied context."""
+def checkpointed_json(
+    key: str, call: Callable[[], Any], *, max_retries: int = 1
+) -> Any:
+    """Synchronous JSON unit with a bounded durable retry budget.
+
+    The default preserves the existing two-attempt durable-node behavior. Callers
+    that implement a narrower request-level retry policy can pass ``max_retries=0``
+    so one failed request does not consume a second durable attempt.
+    """
+    if max_retries < 0:
+        raise ValueError("max_retries must be non-negative")
     parent = _parent.get()
     if parent is None:
         return call()
@@ -117,7 +126,7 @@ def checkpointed_json(key: str, call: Callable[[], Any]) -> Any:
             if isinstance(exc, LeaseLost):
                 raise
             repo.fail(lease, key, type(exc).__name__)
-            if record.ordinal >= 2:
+            if record.ordinal >= max_retries + 1:
                 raise
 
 

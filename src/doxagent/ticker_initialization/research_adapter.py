@@ -3,15 +3,24 @@
 from __future__ import annotations
 
 import json
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from cdecr.config import CDECRSettings
 from doxagent.cdecr_integration.contracts import O2UpstreamContextManifest
 from doxagent.cdecr_integration.coordinator import TickerCDECRPipelineCoordinator
 from doxagent.cdecr_integration.historical_loader import (
     BenzingaHistoricalNewsProvider,
     FinnhubHistoricalNewsProvider,
     HistoricalNewsProvider,
+)
+from doxagent.cdecr_integration.prebuilt import (
+    CDECRPrebuiltConsumptionReceipt,
+    CDECRPrebuiltRef,
+    CDECRPrebuiltStore,
+    configuration_fingerprint,
+    import_registry,
 )
 from doxagent.cdecr_integration.runtime_factory import build_cdecr_workflow_runner
 from doxagent.codex_runtime.client import HttpCodexWorkerClient
@@ -92,6 +101,29 @@ class ResearchInitializationAdapter:
                 close = getattr(provider, "close", None)
                 if close is not None:
                     close()
+
+    async def after_complete(self, context: NodeContext, result: NodeResult) -> None:
+        raw_reference = context.node.inputs.get("_prebuilt_cdecr")
+        if context.node.key != "cdecr" or raw_reference is None:
+            return
+        reference = CDECRPrebuiltRef.model_validate(raw_reference)
+        pipeline = result.artifacts.get("cdecr")
+        if not isinstance(pipeline, dict):
+            raise ValueError("persisted CDECR result is missing")
+        target = Path(str(pipeline["job"]["registry_path"]))
+        root = context.repository.path.parent / "workspaces" / context.run.initialization_id
+        relative = target.resolve().relative_to(root.resolve()).as_posix()
+        receipt = CDECRPrebuiltConsumptionReceipt(
+            initialization_id=context.run.initialization_id,
+            control_operation_id=reference.claim_owner,
+            bundle_id=reference.bundle_id,
+            registry_sha256=reference.registry_sha256,
+            epoch_id=reference.epoch_id,
+            research_cutoff_at=context.run.research_cutoff_at,
+            adopted_at=datetime.now(UTC),
+            target_registry=relative,
+        )
+        CDECRPrebuiltStore(self.settings.cdecr_prebuilt_root).consume(reference, receipt)
 
     async def _d1(
         self, context: NodeContext, worker: HttpCodexWorkerClient, child_id: str
@@ -176,6 +208,39 @@ class ResearchInitializationAdapter:
             "export_dir": root / "exports",
         }
         if context.node.key == "cdecr":
+            raw_reference = context.node.inputs.get("_prebuilt_cdecr")
+            adopted = raw_reference is not None
+            if not adopted and settings.cdecr_execution_mode == "PREBUILT_REQUIRED":
+                raise RuntimeError("CDECR_PREBUILT_REQUIRED")
+            if adopted:
+                reference = CDECRPrebuiltRef.model_validate(raw_reference)
+                store = CDECRPrebuiltStore(settings.cdecr_prebuilt_root)
+                prebuilt_bundle = store.claimed_bundle(
+                    reference,
+                    compatibility_version=settings.cdecr_prebuilt_compatibility_version,
+                    fingerprint=configuration_fingerprint(CDECRSettings()),
+                    max_age_hours=settings.cdecr_prebuilt_max_age_hours,
+                )
+                binding = coordinator.binding_for(market="US", ticker=context.run.ticker)
+                if (
+                    prebuilt_bundle.manifest.research_cutoff_at
+                    != context.run.research_cutoff_at
+                    or prebuilt_bundle.manifest.runtime_scope != binding.runtime_scope
+                ):
+                    raise ValueError("prebuilt CDECR run identity or cutoff mismatch")
+                import_registry(prebuilt_bundle, binding.registry_path)
+                coordinator.seed_prebuilt_job(
+                    market="US",
+                    ticker=context.run.ticker,
+                    as_of=context.run.research_cutoff_at,
+                    message_ids=prebuilt_bundle.manifest.message_ids,
+                    epoch_id=prebuilt_bundle.manifest.epoch_id,
+                )
+                context.checkpoint(
+                    prebuilt_bundle_id=reference.bundle_id,
+                    prebuilt_registry_sha256=reference.registry_sha256,
+                    prebuilt_imported=True,
+                )
             result = await coordinator.prepare_runtime_through_delta(**kwargs)
             if result.job.stage.value == "FINALIZED_NOOP":
                 return NodeResult(
@@ -184,7 +249,10 @@ class ResearchInitializationAdapter:
                 )
             if not result.job.runtime_snapshot_id or not result.delta_batch_id:
                 raise ValueError("CDECR did not produce a frozen snapshot and delta batch")
-            return NodeResult(artifacts={"cdecr": result.model_dump(mode="json")})
+            return NodeResult(
+                artifacts={"cdecr": result.model_dump(mode="json")},
+                quality_annotations=["CDECR_PREBUILT_ADOPTED"] if adopted else [],
+            )
         assert pipeline is not None
         if pipeline.job.stage.value == "FINALIZED_NOOP":
             from doxagent.event_library.repository import EventLibraryRepository

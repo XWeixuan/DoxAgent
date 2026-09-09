@@ -11,7 +11,7 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 from uuid import uuid4
 
 from .schema import (
@@ -203,6 +203,15 @@ class InitializationRepository:
     def get(self, run_id: str) -> RunRecord:
         with self._connection() as db:
             return self._run(db, run_id)
+
+    def by_control_operation(self, operation_id: str) -> RunRecord | None:
+        with self._connection() as db:
+            row = db.execute(
+                "SELECT payload FROM initialization_runs WHERE "
+                "json_extract(payload,'$.control_operation_id')=?",
+                (operation_id,),
+            ).fetchone()
+        return None if row is None else RunRecord.model_validate_json(row[0])
 
     @staticmethod
     def _run(db: sqlite3.Connection, run_id: str) -> RunRecord:
@@ -455,6 +464,38 @@ class InitializationRepository:
 
     def complete(self, lease: Lease, key: str, result: NodeResult) -> None:
         self._settle(lease, key, result=result)
+
+    def post_complete_warning(self, lease: Lease, key: str, warning: str) -> None:
+        """Retain a post-commit filesystem warning without invalidating usable output."""
+
+        with self._write() as db:
+            self._fence(db, lease)
+            node = self._node(db, lease.initialization_id, key)
+            if node.status != "SUCCEEDED":
+                raise InitializationError("post-complete warning requires succeeded node")
+            node.receipt["post_complete_warning"] = warning
+            self._save_node(db, lease.initialization_id, node)
+            self._event(
+                db,
+                self._run(db, lease.initialization_id),
+                "node.post_complete_warning",
+                {"node": key, "warning": warning},
+            )
+
+    def clear_post_complete_warning(self, lease: Lease, key: str) -> None:
+        with self._write() as db:
+            self._fence(db, lease)
+            node = self._node(db, lease.initialization_id, key)
+            if "post_complete_warning" not in node.receipt:
+                return
+            node.receipt.pop("post_complete_warning")
+            self._save_node(db, lease.initialization_id, node)
+            self._event(
+                db,
+                self._run(db, lease.initialization_id),
+                "node.post_complete_recovered",
+                {"node": key},
+            )
 
     def reconcile_native_success(self, lease: Lease, key: str) -> None:
         """Recognize a committed native task, including a usable degraded result."""
@@ -979,7 +1020,7 @@ class InitializationRepository:
                 "SELECT payload FROM activation_revisions WHERE revision_id=?", (identity,)
             ).fetchone()
             if prior:
-                return json.loads(prior[0])
+                return cast(dict[str, Any], json.loads(prior[0]))
             row = db.execute(
                 "SELECT a.payload FROM ticker_active_revision t "
                 "JOIN activation_revisions a ON a.revision_id=t.revision_id "

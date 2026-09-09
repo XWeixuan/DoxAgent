@@ -1,5 +1,7 @@
 """Frozen ticker initialization V2 topology and production adapter dispatch."""
 
+from typing import Any
+
 from doxagent.settings import DoxAgentSettings
 
 from .activation_adapter import ActivationAdapter
@@ -9,10 +11,11 @@ from .schema import NodeRecord, NodeSpec
 from .service import NodeAdapter
 
 
-def default_plan() -> list[NodeSpec]:
+def default_plan(*, cdecr_prebuilt_ref: dict[str, Any] | None = None) -> list[NodeSpec]:
+    cdecr_inputs = {"_prebuilt_cdecr": cdecr_prebuilt_ref} if cdecr_prebuilt_ref else {}
     return [
         NodeSpec(key="d1", block="D1"),
-        NodeSpec(key="cdecr", block="CDECR"),
+        NodeSpec(key="cdecr", block="CDECR", inputs=cdecr_inputs),
         NodeSpec(key="o2", block="O2", dependencies=["d1", "cdecr"]),
         NodeSpec(key="d2", block="D2", dependencies=["d1", "o2"]),
         NodeSpec(key="d3", block="D3", dependencies=["d2", "o2"]),

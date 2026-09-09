@@ -71,5 +71,14 @@ class NativeTaskObserver:
         }
         for epoch in epochs:
             rows = registry.list_bulk_epoch_tasks(epoch)
+            epoch_record = registry.get_bulk_epoch(epoch)
+            if epoch_record is not None and epoch_record.get("status") == "FINALIZED":
+                # A native task can be durably superseded by a finalized epoch before
+                # the controller receives its terminal callback.  The finalized epoch
+                # is the immutable business boundary; reconcile those stale ledger
+                # rows as committed so controller cleanup cannot strand the parent.
+                running = [row for row in rows if str(row["status"]) == "RUNNING"]
+                if running:
+                    self(epoch, "SUCCEEDED", running)
             for status in {str(row["status"]) for row in rows} - {"RUNNING"}:
                 self(epoch, status, [row for row in rows if row["status"] == status])

@@ -44,6 +44,7 @@ from doxagent.settings import DoxAgentSettings
 
 MAX_HISTORICAL_SOURCES = 500
 MAX_TEXT_CHARS = 50_000
+DEFAULT_HISTORICAL_REQUEST_GAP_SECONDS = 10.0
 TRACKING_QUERY_KEYS = frozenset(
     {"utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content", "ref"}
 )
@@ -159,6 +160,23 @@ class HistoricalStagingRepository:
         return [SourceMessage.model_validate_json(str(row[0])) for row in rows]
 
 
+class _HistoricalRequestPacer:
+    """Keep sequential provider requests at least ``gap_seconds`` apart."""
+
+    def __init__(self, gap_seconds: float) -> None:
+        if gap_seconds < 0:
+            raise ValueError("request_gap_seconds must be non-negative")
+        self._gap_seconds = gap_seconds
+        self._last_started_at: float | None = None
+
+    def wait(self) -> None:
+        if self._last_started_at is not None:
+            remaining = self._gap_seconds - (time.monotonic() - self._last_started_at)
+            if remaining > 0:
+                time.sleep(remaining)
+        self._last_started_at = time.monotonic()
+
+
 class FinnhubHistoricalNewsProvider:
     provider_id = "finnhub_company_news"
 
@@ -168,14 +186,17 @@ class FinnhubHistoricalNewsProvider:
         *,
         client: httpx.Client | None = None,
         max_retries: int = 2,
-        request_gap_seconds: float = 0.05,
+        request_gap_seconds: float = DEFAULT_HISTORICAL_REQUEST_GAP_SECONDS,
     ) -> None:
         if not settings.finnhub_api_key:
             raise ValueError("FINNHUB_API_KEY is required")
+        if max_retries < 0:
+            raise ValueError("max_retries must be non-negative")
         self._settings = settings
         self._client = client or httpx.Client(timeout=settings.tool_http_timeout_seconds)
         self._max_retries = max_retries
-        self._request_gap_seconds = request_gap_seconds
+        self._request_pacer = _HistoricalRequestPacer(request_gap_seconds)
+        self.failed_slices: list[str] = []
         self._source = _source_config(self.provider_id)
 
     def fetch(
@@ -183,6 +204,7 @@ class FinnhubHistoricalNewsProvider:
     ) -> Sequence[FetchedExternalMessage]:
         binding = _binding(ticker, self.provider_id)
         rows: list[FetchedExternalMessage] = []
+        self.failed_slices.clear()
         cursor = window_start.date()
         while cursor <= window_end.date():
             from doxagent.ticker_initialization.substeps import checkpointed_json
@@ -193,10 +215,20 @@ class FinnhubHistoricalNewsProvider:
                 "to": cursor.isoformat(),
                 "token": self._settings.finnhub_api_key,
             }
-            payload = checkpointed_json(
-                f"history:{self.provider_id}:{ticker}:{cursor.isoformat()}",
-                partial(self._get, params),
-            )
+            try:
+                payload = checkpointed_json(
+                    f"history:{self.provider_id}:{ticker}:{cursor.isoformat()}",
+                    partial(self._get, params),
+                    max_retries=0,
+                )
+            except Exception as exc:
+                from doxagent.ticker_initialization.schema import LeaseLost
+
+                if isinstance(exc, LeaseLost):
+                    raise
+                self.failed_slices.append(cursor.isoformat())
+                cursor += timedelta(days=1)
+                continue
             for row in _object_rows(payload):
                 published_at = _parse_datetime(row.get("datetime"))
                 rows.append(
@@ -214,24 +246,19 @@ class FinnhubHistoricalNewsProvider:
                     )
                 )
             cursor += timedelta(days=1)
-            if cursor <= window_end.date() and self._request_gap_seconds:
-                time.sleep(self._request_gap_seconds)
         return rows
 
     def _get(self, params: dict[str, str | int | float | bool | None]) -> object:
-        from doxagent.ticker_initialization.substeps import managed
-
         url = self._settings.finnhub_base_url.rstrip("/") + "/company-news"
-        retries = 0 if managed() else self._max_retries
-        for attempt in range(retries + 1):
+        for attempt in range(self._max_retries + 1):
             try:
+                self._request_pacer.wait()
                 response = self._client.get(url, params=params)
                 response.raise_for_status()
                 return response.json()
             except (httpx.HTTPError, ValueError):
-                if attempt >= retries:
+                if attempt >= self._max_retries:
                     raise
-                time.sleep(0.25 * (attempt + 1))
         raise AssertionError("unreachable")
 
     def close(self) -> None:
@@ -246,15 +273,22 @@ class BenzingaHistoricalNewsProvider:
         settings: DoxAgentSettings,
         *,
         client: httpx.Client | None = None,
+        max_retries: int = 2,
         max_pages: int = 100,
         page_size: int = 100,
+        request_gap_seconds: float = DEFAULT_HISTORICAL_REQUEST_GAP_SECONDS,
     ) -> None:
         if not settings.benzinga_api_key:
             raise ValueError("BENZINGA_API_KEY is required")
+        if max_retries < 0:
+            raise ValueError("max_retries must be non-negative")
         self._settings = settings
         self._client = client or httpx.Client(timeout=settings.tool_http_timeout_seconds)
+        self._max_retries = max_retries
         self._max_pages = max_pages
         self._page_size = min(max(1, page_size), 100)
+        self._request_pacer = _HistoricalRequestPacer(request_gap_seconds)
+        self.failed_slices: list[str] = []
         self._source = _source_config(self.provider_id)
 
     def fetch(
@@ -264,70 +298,86 @@ class BenzingaHistoricalNewsProvider:
         url = self._settings.benzinga_news_base_url.rstrip("/") + "/api/v2/news"
         seen: set[str] = set()
         result: list[FetchedExternalMessage] = []
-        for page in range(self._max_pages):
-            from doxagent.ticker_initialization.substeps import checkpointed_json
+        self.failed_slices.clear()
+        cursor = window_start.date()
+        while cursor <= window_end.date():
+            day = cursor.isoformat()
+            for page in range(self._max_pages):
+                from doxagent.ticker_initialization.substeps import checkpointed_json
 
-            def fetch_page(page_number: int = page) -> object:
-                response = self._client.get(
-                    url,
-                    params={
-                        "token": self._settings.benzinga_api_key,
-                        "tickers": ticker.upper(),
-                        "dateFrom": window_start.date().isoformat(),
-                        "dateTo": window_end.date().isoformat(),
-                        "page": page_number,
-                        "pageSize": self._page_size,
-                        "displayOutput": "full",
-                        "sort": "created:desc",
-                    },
-                    headers={"accept": "application/json"},
-                )
-                response.raise_for_status()
-                return response.json()
+                def fetch_page(page_number: int = page, day_value: str = day) -> object:
+                    for attempt in range(self._max_retries + 1):
+                        try:
+                            self._request_pacer.wait()
+                            response = self._client.get(
+                                url,
+                                params={
+                                    "token": self._settings.benzinga_api_key,
+                                    "tickers": ticker.upper(),
+                                    "dateFrom": day_value,
+                                    "dateTo": day_value,
+                                    "page": page_number,
+                                    "pageSize": self._page_size,
+                                    "displayOutput": "full",
+                                    "sort": "created:desc",
+                                },
+                                headers={"accept": "application/json"},
+                            )
+                            response.raise_for_status()
+                            return response.json()
+                        except (httpx.HTTPError, ValueError):
+                            if attempt >= self._max_retries:
+                                raise
+                    raise AssertionError("unreachable")
 
-            rows = _object_rows(
-                checkpointed_json(
-                    f"history:{self.provider_id}:{ticker}:{window_start.isoformat()}:{page}",
-                    fetch_page,
-                )
-            )
-            if not rows:
-                break
-            new_provider_ids = 0
-            oldest: datetime | None = None
-            for row in rows:
-                provider_id = _optional_text(row.get("id"))
-                identity = (
-                    provider_id
-                    or hashlib.sha256(
-                        json.dumps(row, sort_keys=True, default=str).encode("utf-8")
-                    ).hexdigest()
-                )
-                if identity in seen:
-                    continue
-                seen.add(identity)
-                new_provider_ids += 1
-                published_at = _parse_datetime(row.get("created") or row.get("updated"))
-                if published_at is not None:
-                    oldest = published_at if oldest is None else min(oldest, published_at)
-                result.append(
-                    FetchedExternalMessage(
-                        source_id=self.provider_id,
-                        binding_id=binding.binding_id,
-                        ticker=ticker,
-                        source_type=self._source.source_type,
-                        interface_type=self._source.interface_type,
-                        raw_payload=row,
-                        provider_message_id=provider_id,
-                        source_url=_optional_text(row.get("url")),
-                        source_published_at=published_at,
-                        metadata={"provider": "benzinga", "historical_page": page},
+                try:
+                    rows = _object_rows(
+                        checkpointed_json(
+                            f"history:{self.provider_id}:{ticker}:{day}:{page}",
+                            fetch_page,
+                            max_retries=0,
+                        )
                     )
-                )
-            if new_provider_ids == 0 or oldest is not None and oldest < window_start:
-                break
-            if len(rows) < self._page_size:
-                break
+                except Exception as exc:
+                    from doxagent.ticker_initialization.schema import LeaseLost
+
+                    if isinstance(exc, LeaseLost):
+                        raise
+                    self.failed_slices.append(day)
+                    break
+                if not rows:
+                    break
+                new_provider_ids = 0
+                for row in rows:
+                    provider_id = _optional_text(row.get("id"))
+                    identity = (
+                        provider_id
+                        or hashlib.sha256(
+                            json.dumps(row, sort_keys=True, default=str).encode("utf-8")
+                        ).hexdigest()
+                    )
+                    if identity in seen:
+                        continue
+                    seen.add(identity)
+                    new_provider_ids += 1
+                    published_at = _parse_datetime(row.get("created") or row.get("updated"))
+                    result.append(
+                        FetchedExternalMessage(
+                            source_id=self.provider_id,
+                            binding_id=binding.binding_id,
+                            ticker=ticker,
+                            source_type=self._source.source_type,
+                            interface_type=self._source.interface_type,
+                            raw_payload=row,
+                            provider_message_id=provider_id,
+                            source_url=_optional_text(row.get("url")),
+                            source_published_at=published_at,
+                            metadata={"provider": "benzinga", "historical_page": page},
+                        )
+                    )
+                if new_provider_ids == 0 or len(rows) < self._page_size:
+                    break
+            cursor += timedelta(days=1)
         return result
 
     def close(self) -> None:
@@ -363,6 +413,7 @@ class HistoricalNewsLoader:
         fetched: list[tuple[str, FetchedExternalMessage]] = []
         provider_counts: Counter[str] = Counter()
         provider_failures = 0
+        provider_failed_slices: Counter[str] = Counter()
         for provider in self.providers:
             try:
                 items = await asyncio.to_thread(
@@ -379,6 +430,11 @@ class HistoricalNewsLoader:
                     raise
                 provider_failures += 1
                 continue
+            failed_slices = {
+                str(value) for value in getattr(provider, "failed_slices", ()) if str(value)
+            }
+            if failed_slices:
+                provider_failed_slices[provider.provider_id] += len(failed_slices)
             provider_counts[provider.provider_id] += len(items)
             fetched.extend((self.staging.save_fetched(item), item) for item in items)
         if provider_failures and provider_failures == len(self.providers):
@@ -416,6 +472,8 @@ class HistoricalNewsLoader:
         rejected: Counter[str] = Counter()
         if provider_failures:
             rejected["unavailable_providers"] = provider_failures
+        for provider_id, failed_count in provider_failed_slices.items():
+            rejected[f"unavailable_days:{provider_id}"] = failed_count
         candidates: list[tuple[str, SourceMessage, str, str]] = []
         for staging_id, item, standard in normalized:
             published_at = standard.published_at

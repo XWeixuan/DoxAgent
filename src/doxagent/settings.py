@@ -589,6 +589,24 @@ class DoxAgentSettings(BaseSettings):
         default=None,
         validation_alias="DOXAGENT_TICKER_INITIALIZATION_SUMMARY_KEY",
     )
+    cdecr_execution_mode: Literal["LOCAL_ONLY", "LOCAL_OR_PREBUILT", "PREBUILT_REQUIRED"] = Field(
+        default="LOCAL_ONLY",
+        validation_alias="DOXAGENT_CDECR_EXECUTION_MODE",
+    )
+    cdecr_prebuilt_root: str = Field(
+        default=".tmp/cdecr-prebuilt",
+        validation_alias="DOXAGENT_CDECR_PREBUILT_ROOT",
+    )
+    cdecr_prebuilt_max_age_hours: int = Field(
+        default=24,
+        ge=1,
+        validation_alias="DOXAGENT_CDECR_PREBUILT_MAX_AGE_HOURS",
+    )
+    cdecr_prebuilt_compatibility_version: str = Field(
+        default="cdecr-prebuilt-runtime-v1",
+        min_length=1,
+        validation_alias="DOXAGENT_CDECR_PREBUILT_COMPATIBILITY_VERSION",
+    )
     persistent_runtime_v2_enabled: bool = Field(
         default=False,
         validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_ENABLED",
