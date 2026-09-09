@@ -39,7 +39,7 @@ from cdecr.ports import CDECRRegistry, DecisionAuditRecord, ResponsesModelReques
 PACKAGE_WORKFLOW_CONTRACT_VERSION = "package-global-registry-v3-contract-2"
 PACKAGE_REGISTRY_POLICY_VERSION = "package-global-registry-v3-rolling-2"
 PACKAGE_DESCRIPTION_CONTRACT_VERSION = "package-global-registry-v3-description-2"
-PACKAGE_V3_MODEL = "deepseek-v4-flash"
+PACKAGE_V3_MODEL = "qwen3.8-flash"
 PACKAGE_V3_REASONING_EFFORT = "low"
 PACKAGE_V3_DESCRIPTION_REASONING_EFFORT = "none"
 _PROMPT_ROOT = Path(__file__).parent / "prompts" / "v1"

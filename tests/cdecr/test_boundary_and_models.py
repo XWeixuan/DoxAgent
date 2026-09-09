@@ -595,18 +595,18 @@ def test_settings_parse_deepseek_tier_configuration() -> None:
 
 def test_structured_output_defaults_to_responses_json_object_and_strict_off() -> None:
     settings = CDECRSettings(_env_file=None)
-    assert settings.model_m2_provider == "deepseek"
-    assert settings.model_m3_provider == "deepseek"
-    assert settings.model_m4_provider == "deepseek"
+    assert settings.model_m2_provider == "dashscope"
+    assert settings.model_m3_provider == "dashscope"
+    assert settings.model_m4_provider == "dashscope"
     assert settings.model_m2_strict is False
     assert settings.model_m3_strict is False
     assert settings.model_m4_strict is False
     assert settings.model_m2_reasoning_effort == "none"
     assert settings.model_m3_reasoning_effort == "low"
     assert settings.model_m4_reasoning_effort == "high"
-    assert settings.model_m2 == "deepseek-v4-flash"
-    assert settings.model_m3 == "deepseek-v4-flash"
-    assert settings.model_m4 == "deepseek-v4-flash"
+    assert settings.model_m2 == "qwen3.8-flash"
+    assert settings.model_m3 == "qwen3.8-flash"
+    assert settings.model_m4 == "qwen3.8-flash"
     assert settings.structured_provider_hard_concurrency == 160
     assert settings.structured_provider_initial_burst == 80
     request_value = StructuredModelRequest(

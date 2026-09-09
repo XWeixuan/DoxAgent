@@ -1202,7 +1202,7 @@ def _doctor(settings: CDECRSettings, args: argparse.Namespace) -> int:
         "finalization_version": FINALIZATION_VERSION,
     }
     checks["single_document_routing"] = {
-        "ok": settings.model_m2 == "deepseek-v4-flash"
+        "ok": settings.model_m2 == "qwen3.8-flash"
         and settings.model_m3 == settings.model_m2
         and settings.model_m4 == settings.model_m2
         and settings.model_m2_reasoning_effort == "none"
@@ -1249,7 +1249,7 @@ def _doctor(settings: CDECRSettings, args: argparse.Namespace) -> int:
         }
     checks["cross_document_routing"] = {
         "ok": settings.model_m1 == "qwen3.7-text-embedding"
-        and settings.model_m2 == "deepseek-v4-flash"
+        and settings.model_m2 == "qwen3.8-flash"
         and settings.model_m3 == settings.model_m2
         and settings.model_m4 == settings.model_m2,
         "recall": "m0+m1",

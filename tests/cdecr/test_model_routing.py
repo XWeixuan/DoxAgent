@@ -7,7 +7,6 @@ from cdecr.config import CDECRSettings
 from cdecr.model_routing import InvocationChannel, LLMNode, route_for
 from cdecr.models import (
     DashScopeStructuredModelClient,
-    DeepSeekStructuredModelClient,
     ModelTier,
 )
 
@@ -96,18 +95,18 @@ def test_general_execution_lanes_keep_transport_but_use_m2_profile() -> None:
         "responses",
     )
     assert {m2_lane.model, m3_lane.model, m4_lane.model} == {
-        "deepseek-v4-flash"
+        "qwen3.8-flash"
     }
 
 
 def test_package_transport_uses_m3_profile_without_moving_from_package_lane() -> None:
-    settings = CDECRSettings(DEEPSEEK_API_KEY="secret", _env_file=None)  # type: ignore[call-arg]
+    settings = CDECRSettings(DASHSCOPE_API_KEY="secret", _env_file=None)  # type: ignore[call-arg]
     client = _package_v3_client(settings)
     route = route_for(LLMNode.PACKAGE_CLUSTERING)
 
-    assert isinstance(client, DeepSeekStructuredModelClient)
+    assert isinstance(client, DashScopeStructuredModelClient)
     assert client.tier is ModelTier.M3
-    assert client.model == "deepseek-v4-flash"
+    assert client.model == "qwen3.8-flash"
     assert client.reasoning_effort == "low"
     assert route.scheduler_lane is ModelTier.M4
 
@@ -122,7 +121,7 @@ def test_package_transport_can_still_be_configured_for_dashscope() -> None:
     client = _package_v3_client(settings)
 
     assert isinstance(client, DashScopeStructuredModelClient)
-    assert client.model == "deepseek-v4-flash"
+    assert client.model == "qwen3.8-flash"
     assert client.structured_transport == "responses"
 
 

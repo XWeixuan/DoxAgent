@@ -890,3 +890,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-09 — 生产重启验收增补：修复 ReadStore 重复迁移插入 v1 行导致 schema_meta 唯一键冲突；迁移改为事务内幂等初始化，既有数据与 generation 保留。production_v2 迁移取得全部 managed writer 锁后才备份/迁移。修复首次 Paper/Live 启动无法获取 ticker binding 的能力查询，前端按输入 ticker 防抖读取，后端支持创建前绑定与执行服务心跳门禁；新增两个对应聚焦回归测试通过。
 
 2026-09-09 V2 正式登录补验：真实 Supabase 账户完成 Overview/API、消息基线、Nginx SSE 心跳及 API 中断后同范围自动重连；临时 MU 消息监测生命周期经正式 API 移除，初始化服务恢复，零交易任务/执行。更新 PRODUCTION_ACCEPTANCE.md；未运行完整研究或任何 Paper/Live 订单。
+
+2026-09-09 CDECR V2 ģ��Ǩ�ƣ�M2/M3/M4 �� Package V3 Ĭ�� provider �� DeepSeek �л�Ϊ���� DashScope��ģ��ͳһ��Ϊ qwen3.8-flash���������� reasoning��strict��timeout�������벢�����ã���ͬ����������ģ��� doctor ·��У�顣
