@@ -163,7 +163,7 @@ def test_prompt_stages_share_analyst_episode_and_search_contract() -> None:
     assert "Do not use Web Search" not in combined
 
 
-def test_o2_run_result_rejects_wrong_stage_base_path_coverage_or_validation() -> None:
+def test_o2_run_result_rejects_wrong_base_and_normalizes_model_owned_fields() -> None:
     phase = {
         "attempt_id": "o2-wave-001",
         "stage": EventLibraryRunStage.LOCAL_RECONSTRUCTION,
@@ -172,48 +172,43 @@ def test_o2_run_result_rejects_wrong_stage_base_path_coverage_or_validation() ->
         "prior_attempt_paths": [],
     }
     manifest = SimpleNamespace(base_library_version=0)
-    invalid = [
-        O2RunResult(
-            status="PENDING",
-            stage=EventLibraryRunStage.SURVEY,
-            base_library_version=0,
-            delta_coverage={"total": 1, "resolved": 0, "pending": 1},
-        ),
-        O2RunResult(
-            status="PENDING",
-            stage=EventLibraryRunStage.LOCAL_RECONSTRUCTION,
-            base_library_version=1,
-            delta_coverage={"total": 1, "resolved": 0, "pending": 1},
-        ),
-        O2RunResult(
-            status="PENDING",
-            stage=EventLibraryRunStage.LOCAL_RECONSTRUCTION,
-            base_library_version=0,
-            delta_coverage={"total": 2, "resolved": 0, "pending": 2},
-        ),
-        O2RunResult(
-            status="PENDING",
-            stage=EventLibraryRunStage.LOCAL_RECONSTRUCTION,
-            bundle_path="attempts/other/output/revision_bundle",
-            base_library_version=0,
-            delta_coverage={"total": 1, "resolved": 0, "pending": 1},
-        ),
-        O2RunResult(
-            status="PENDING",
-            stage=EventLibraryRunStage.LOCAL_RECONSTRUCTION,
-            base_library_version=0,
-            delta_coverage={"total": 1, "resolved": 0, "pending": 1},
-            validation="PASS",
-        ),
-    ]
-    for result in invalid:
-        with pytest.raises(ValueError):
-            RemoteEventLibraryInitializer._validate_phase_result(
-                result=result,
-                phase=phase,
-                manifest=manifest,
-                expected_final=False,  # type: ignore[arg-type]
-            )
+    wrong_base = O2RunResult(
+        status="PENDING",
+        stage=EventLibraryRunStage.LOCAL_RECONSTRUCTION,
+        base_library_version=1,
+        delta_coverage={"total": 1, "resolved": 0, "pending": 1},
+    )
+    with pytest.raises(ValueError):
+        RemoteEventLibraryInitializer._validate_phase_result(
+            result=wrong_base,
+            phase=phase,
+            manifest=manifest,
+            expected_final=False,  # type: ignore[arg-type]
+        )
+
+    normalized = O2RunResult(
+        status="BUNDLE_READY",
+        stage=EventLibraryRunStage.SURVEY,
+        bundle_path="attempts/other/output/revision_bundle",
+        base_library_version=0,
+        delta_coverage={"total": 2, "resolved": 2, "pending": 0},
+        validation="PASS",
+    )
+    RemoteEventLibraryInitializer._validate_phase_result(
+        result=normalized,
+        phase=phase,
+        manifest=manifest,
+        expected_final=False,  # type: ignore[arg-type]
+    )
+    assert normalized.status == "PENDING"
+    assert normalized.stage is EventLibraryRunStage.LOCAL_RECONSTRUCTION
+    assert normalized.bundle_path is None
+    assert normalized.delta_coverage.model_dump() == {
+        "total": 1,
+        "resolved": 0,
+        "pending": 1,
+    }
+    assert normalized.validation == "NOT_RUN"
 
 
 @pytest.mark.asyncio
@@ -407,6 +402,32 @@ def test_empty_important_set_is_undefined_without_quadrant_quality_failure(
         "INITIALIZATION_IMPORTANT_ALL_FALSE",
         "INITIALIZATION_REFERENCE_ALL_FALSE",
     }.issubset({item.code for item in semantic.issues})
+    reference_preserved = all_false_bundle.model_copy(
+        update={
+            "event_revisions": [
+                item.model_copy(update={"include_in_reference_view": True})
+                for item in all_false_bundle.event_revisions
+            ]
+        }
+    )
+    validation = service.validator.validate(
+        reference_preserved,
+        context=BundleValidationContext(
+            run_id="quality-v2",
+            ticker="MU",
+            base_library_version=1,
+            delta_batch_ids=[],
+            frozen_as_of=_snapshot().as_of,
+            mode="INITIALIZE",
+        ),
+    )
+    assert validation.publishable
+    assert validation.status is ValidationStatus.PARTIAL
+    assert any(
+        item.code == "INITIALIZATION_IMPORTANT_ALL_FALSE"
+        and item.severity.value == "WARNING"
+        for item in validation.issues
+    )
     service.importer.import_and_publish(all_false_bundle)
     report = compile_quality_report(repository, ticker="MU", version=2)
     assert report.important_event_count == 0

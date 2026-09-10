@@ -157,3 +157,12 @@ C3 在最终成功返回 thread 之前还有三次执行层失败：
 - 重新构建共享 `doxagent-v2:server` 镜像，并用 `--no-deps --force-recreate` 更新十个后端常驻服务；未执行 `v2-migrate`，未修改 `/data` 中的业务库或历史工作区。API、Codex worker 和 Web 健康，其他后端服务均在运行。
 - 正式 CLI 对失败父节点 `d1` 执行 resume 后，D1 generation 6 成功；`d1.assemble`、`d1.publish` 均生成独立成功回执，证明本次只恢复确定性组装/发布，没有重新运行已成功研究节点。
 - 初始化已自动进入 O2：`RUNNING` / `O2`，`state_seq=131`，当前节点 `o2`、`o2.o2-survey`，无 failed node。后续继续按 15 分钟间隔低频复核。
+
+## 2026-09-10 O2 最终修复后的断点恢复阻断
+
+15 分钟低频复核确认，O2 的 16 个 wave、global reconciliation 和 repair-001 均已成功；repair-002 对 1,622 行日期解析账本完成了格式恢复，逐行 tolerant ingest 为 `BAD=0`。但父初始化随后以 `retry budget exhausted: o2` 失败，出现两个相互独立的问题：
+
+1. 基础 O2 阶段已全部完成、仅修复阶段失败时，resume 跳过阶段循环后仍引用循环内的局部变量 `result`，触发 `UnboundLocalError: cannot access local variable 'result' where it is not associated with a value`。
+2. repair-002 的 bundle 在正确 initialization context 下仅剩 `INITIALIZATION_IMPORTANT_ALL_FALSE` 一个 ERROR。996 个 delta 被确定性保留为 pending，没有身份、hash、关系闭包或账本结构错误。重要性属于研究判断；系统既不能伪造 `is_important=true`，也不应因此阻断整个 ticker。该诊断应保留为 WARNING，并让 bundle 以 `PARTIAL` 发布。
+
+最小修复为：resume 从远端 immutable inventory 选择最新已有 repair bundle，且缺少本轮模型 `O2RunResult` 时直接依赖确定性 validator 的 coverage，不再引用未初始化变量；validator 将 `INITIALIZATION_IMPORTANT_ALL_FALSE` 保留为 warning，不改变其他语义/身份硬门禁。新增回归覆盖 repair-002 bundle 选择和 all-false importance 的 `PARTIAL` 可发布行为。

@@ -182,6 +182,9 @@ class RemoteEventLibraryInitializer:
             wave_count=len(self._plan_waves(batch)),
         )
 
+        inventory_paths = [
+            item.relative_path for item in (await self.workspace.inventory(run_id)).files
+        ]
         phases = _resolve_phase_attempts(
             self._phases(
                 batch,
@@ -192,13 +195,14 @@ class RemoteEventLibraryInitializer:
             failed_attempt_id=(
                 failed_attempt_id
                 or _infer_unfinished_attempt(
-                    [item.relative_path for item in (await self.workspace.inventory(run_id)).files],
+                    inventory_paths,
                     completed=completed,
                 )
             ),
         )
         completed_phase_ids = {_base_attempt_id(item) for item in completed}
-        latest_bundle_prefix: str | None = None
+        latest_bundle_prefix = _latest_existing_bundle_prefix(inventory_paths)
+        reported_result: O2RunResult | None = None
         for phase in phases:
             attempt_id = phase["attempt_id"]
             if _base_attempt_id(attempt_id) in completed_phase_ids:
@@ -265,6 +269,7 @@ class RemoteEventLibraryInitializer:
             completed_phase_ids.add(_base_attempt_id(attempt_id))
             if result.bundle_path:
                 latest_bundle_prefix = result.bundle_path.rstrip("/")
+                reported_result = result
             self._save_run(
                 run_id=run_id,
                 manifest=manifest,
@@ -299,7 +304,7 @@ class RemoteEventLibraryInitializer:
                 thread_id=thread_id,
                 completed=completed,
                 mode=mode,
-                reported_result=result,
+                reported_result=reported_result,
             )
         except Exception as exc:
             self._save_run(
@@ -937,13 +942,14 @@ class RemoteEventLibraryInitializer:
         thread_id: str | None,
         completed: list[str],
         mode: Literal["INITIALIZE", "INCREMENTAL"],
-        reported_result: O2RunResult,
+        reported_result: O2RunResult | None,
     ) -> tuple[Path, BundleValidationOutcome, str | None]:
         loaded = RevisionBundleIO.load_tolerant(bundle_dir)
         outcome = self._validate_loaded(loaded, manifest=manifest)
         for repair_number in range(1, self.max_repairs + 1):
             if outcome.publishable:
-                self._require_exact_bundle_coverage(reported_result, outcome)
+                if reported_result is not None:
+                    self._require_exact_bundle_coverage(reported_result, outcome)
                 return bundle_dir, outcome, thread_id
             attempt_id = f"o2-repair-{repair_number:03d}"
             error = "; ".join(f"{item.code}: {item.message}" for item in outcome.issues)
@@ -1344,6 +1350,29 @@ def _infer_unfinished_attempt(paths: list[str], *, completed: list[str]) -> str 
     # phase use its highest immutable retry number.
     first_base = sorted({_base_attempt_id(item) for item in attempts})[0]
     return max((item for item in attempts if _base_attempt_id(item) == first_base), key=order)
+
+
+def _latest_existing_bundle_prefix(paths: list[str]) -> str | None:
+    """Select the latest immutable O2 bundle already written before a resume."""
+
+    suffix = "/output/revision_bundle/manifest.json"
+    prefixes = {
+        normalized[: -len("/manifest.json")]
+        for path in paths
+        if (normalized := path.replace("\\", "/")).startswith("attempts/")
+        and normalized.endswith(suffix)
+    }
+    if not prefixes:
+        return None
+
+    def order(prefix: str) -> tuple[int, int, str]:
+        attempt_id = prefix.split("/", 2)[1]
+        match = re.fullmatch(r"o2-repair-(\d+)(?:-retry-(\d+))?", attempt_id)
+        if match is None:
+            return (0, 0, attempt_id)
+        return (1, int(match.group(1)), attempt_id)
+
+    return max(prefixes, key=order)
 
 
 def _wave_count(item_count: int, wave_size: int) -> int:

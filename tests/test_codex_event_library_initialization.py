@@ -23,6 +23,7 @@ from doxagent.event_library.service import EventLibraryService
 from doxagent.workflows.codex_event_library.remote_runner import (
     RemoteEventLibraryInitializer,
     _infer_unfinished_attempt,
+    _latest_existing_bundle_prefix,
     _resolve_phase_attempts,
 )
 from doxagent.workflows.codex_event_library.schema import (
@@ -69,6 +70,18 @@ def test_failed_phase_resumes_as_new_immutable_attempt_and_repairs_dependencies(
     assert inferred == "o2-survey-retry-001"
     second = _resolve_phase_attempts(phases, completed=[], failed_attempt_id=inferred)
     assert second[0]["attempt_id"] == "o2-survey-retry-002"
+
+
+def test_resume_prefers_latest_existing_repair_bundle() -> None:
+    paths = [
+        "attempts/o2-global-reconciliation/output/revision_bundle/manifest.json",
+        "attempts/o2-repair-001/output/revision_bundle/manifest.json",
+        "attempts/o2-repair-002/output/revision_bundle/events/E1.json",
+        "attempts/o2-repair-002/output/revision_bundle/manifest.json",
+    ]
+    assert _latest_existing_bundle_prefix(paths) == (
+        "attempts/o2-repair-002/output/revision_bundle"
+    )
 
 
 class AsyncLocalWorkspace:

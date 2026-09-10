@@ -1178,12 +1178,18 @@ class RevisionBundleValidator:
             bundle, mode=(None if context is None else context.mode)
         )
         for item in report.issues:
+            # Importance is a governed research judgment, not a structural
+            # integrity fact.  Preserve the diagnostic without forcing the
+            # whole initialization to fail or inventing an importance label.
+            severity = item.severity
+            if item.code == "INITIALIZATION_IMPORTANT_ALL_FALSE":
+                severity = "WARNING"
             issues.append(
                 ValidationIssue(
                     code=item.code,
                     severity=(
                         ValidationSeverity.ERROR
-                        if item.severity == "ERROR"
+                        if severity == "ERROR"
                         else ValidationSeverity.WARNING
                     ),
                     message=item.message,
