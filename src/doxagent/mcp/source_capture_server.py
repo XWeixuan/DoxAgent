@@ -146,13 +146,16 @@ def build_server(service: SourceCaptureService, *, run_id: str, attempt_id: str)
     async def capture_source(
         url: str, source: str | None = None, note: str | None = None
     ) -> dict[str, str]:
-        result = await service.capture(
-            run_id=run_id,
-            attempt_id=attempt_id,
-            url=url,
-            source=source,
-            note=note,
-        )
+        from doxagent.mcp.resource_budget import tool_budget
+
+        async with tool_budget():
+            result = await service.capture(
+                run_id=run_id,
+                attempt_id=attempt_id,
+                url=url,
+                source=source,
+                note=note,
+            )
         return result.as_dict()
 
     return server

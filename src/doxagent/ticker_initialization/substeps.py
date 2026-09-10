@@ -37,7 +37,7 @@ def managed() -> bool:
     return _parent.get() is not None
 
 
-def capture_worker(request, job):
+def capture_worker(request: WorkerRunRequest, job: WorkerJob) -> None:
     context = _step.get() or _parent.get()
     if context is None:
         return
@@ -286,6 +286,10 @@ def durable(kind: str) -> Callable[[Callable[P, Awaitable[T]]], Callable[P, Awai
                     details = failure_details(exc)
                     child.checkpoint(failure=details)
                     repo.fail(lease, key, f"{type(exc).__name__}: {exc}"[:4000])
+                    if details.get("manual_resume_required"):
+                        from doxagent.codex_runtime.errors import InfrastructureRecoveryExhausted
+
+                        raise InfrastructureRecoveryExhausted(str(exc)) from exc
                     if record.ordinal >= 2:
                         raise
                     if details["retryable"]:

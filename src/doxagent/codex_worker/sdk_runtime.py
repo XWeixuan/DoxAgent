@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import os
 import sys
 from dataclasses import dataclass
@@ -48,11 +49,16 @@ class CodexExecutionRuntime(Protocol):
 
 
 class _SdkTurnHandle:
-    def __init__(self, *, thread_id: str, handle: Any) -> None:
+    def __init__(self, *, thread_id: str, handle: Any, audit_path: Path | None = None) -> None:
         self._thread_id = thread_id
+        self.thread_id = thread_id
+        self.turn_id = getattr(handle, "id", None)
         self._handle = handle
+        self._audit_path = audit_path
 
     async def run(self) -> WorkerTurnResult:
+        if self._audit_path is not None and hasattr(self._handle, "stream"):
+            return await self._stream()
         result = await self._handle.run()
         error = getattr(result, "error", None)
         error_message = str(error) if error is not None else None
@@ -73,6 +79,85 @@ class _SdkTurnHandle:
             telemetry=telemetry,
         )
 
+    async def _stream(self) -> WorkerTurnResult:
+        from openai_codex.generated.v2_all import (
+            AgentMessageThreadItem,
+            ItemCompletedNotification,
+            MessagePhase,
+            ThreadTokenUsageUpdatedNotification,
+            TurnCompletedNotification,
+        )
+
+        assert self._audit_path is not None
+        self._audit_path.parent.mkdir(parents=True, exist_ok=True)
+        summary = WorkerTurnTelemetry()
+        usage = None
+        completed = None
+        final = fallback = None
+        sequence = 0
+        # Retain compact, reasoning-free evidence on disk, not SDK tool payloads in RAM.
+        with self._audit_path.open("a", encoding="utf-8") as audit:
+            async for notification in self._handle.stream():
+                payload = notification.payload
+                if (
+                    isinstance(payload, ItemCompletedNotification)
+                    and payload.turn_id == self.turn_id
+                ):
+                    item = payload.item.root
+                    if isinstance(item, AgentMessageThreadItem):
+                        if item.phase == MessagePhase.final_answer:
+                            final = item.text
+                        elif item.phase is None:
+                            fallback = item.text
+                    projected = project_turn_telemetry(
+                        items=[payload.item], usage=None, duration_ms=None
+                    )
+                    for event in projected.events:
+                        event.sequence = sequence
+                        sequence += 1
+                        audit.write(
+                            json.dumps(event.model_dump(mode="json"), ensure_ascii=False) + "\n"
+                        )
+                    audit.flush()
+                    for field in (
+                        "mcp_call_count",
+                        "command_call_count",
+                        "subagent_call_count",
+                        "file_change_count",
+                    ):
+                        setattr(summary, field, getattr(summary, field) + getattr(projected, field))
+                    summary.events = (summary.events + projected.events)[-256:]
+                    summary.failures = (summary.failures + projected.failures)[-64:]
+                    summary.slowest_steps = sorted(
+                        summary.slowest_steps + projected.slowest_steps,
+                        key=lambda e: e.duration_ms or 0,
+                        reverse=True,
+                    )[:5]
+                elif (
+                    isinstance(payload, ThreadTokenUsageUpdatedNotification)
+                    and payload.turn_id == self.turn_id
+                ):
+                    usage = payload.token_usage
+                elif (
+                    isinstance(payload, TurnCompletedNotification)
+                    and payload.turn.id == self.turn_id
+                ):
+                    completed = payload.turn
+        if completed is None:
+            raise RuntimeError("turn completed event not received")
+        projected = project_turn_telemetry(items=(), usage=usage, duration_ms=completed.duration_ms)
+        summary.usage = projected.usage
+        summary.observed_usage = projected.observed_usage
+        summary.sdk_duration_ms = projected.sdk_duration_ms
+        return WorkerTurnResult(
+            self.thread_id,
+            completed.id,
+            completed.status.value,
+            final if final is not None else fallback,
+            str(completed.error) if completed.error else None,
+            summary,
+        )
+
     async def interrupt(self) -> None:
         await self._handle.interrupt()
 
@@ -90,6 +175,8 @@ class OpenAICodexRuntime:
     ) -> None:
         self._settings = settings or DoxAgentSettings()
         self._client = AsyncCodex(config or CodexConfig(client_name="doxagent-codex-worker"))
+        self.receipt_callback: Any = None
+
         secret = capability_secret or self._settings.codex_capability_secret
         if not secret:
             raise ValueError("Codex worker Data MCP requires a capability secret")
@@ -117,11 +204,12 @@ class OpenAICodexRuntime:
             "models": [getattr(model, "id", None) for model in models],
         }
 
+    async def close(self) -> None:
+        await self._client.close()
+
     async def start(self, request: WorkerRunRequest, cwd: Path) -> TurnHandle:
         if request.o4_operations_enabled and not self._container_isolated:
-            raise ValueError(
-                "O4 operational turns require DOXAGENT_CODEX_CONTAINER_ISOLATION=true"
-            )
+            raise ValueError("O4 operational turns require DOXAGENT_CODEX_CONTAINER_ISOLATION=true")
         # Docker supplies the outer isolation boundary. Nested bubblewrap cannot create
         # a user namespace under the hardened container security profile.
         sandbox = (
@@ -134,6 +222,8 @@ class OpenAICodexRuntime:
         multi_agent_enabled = request.allow_subagents and request.max_subagents > 0
         sdk_config: dict[str, Any] = {
             "features.multi_agent": multi_agent_enabled,
+            "agents.max_threads": max(1, request.max_subagents),
+            "agents.max_depth": 1,
             "web_search": "live",
             "mcp_servers.source_capture.command": sys.executable,
             "mcp_servers.source_capture.args": [
@@ -149,10 +239,9 @@ class OpenAICodexRuntime:
             "mcp_servers.source_capture.startup_timeout_sec": 10,
             "mcp_servers.source_capture.tool_timeout_sec": 30,
         }
+
         if request.data_mcp_enabled:
-            allowed_data_tools = self._data_policy.allowed_tools(
-                request.node, request.agent_role
-            )
+            allowed_data_tools = self._data_policy.allowed_tools(request.node, request.agent_role)
             capability = self._data_capabilities.issue(
                 workflow_version=request.workflow_version,
                 research_lane=request.research_lane,
@@ -169,8 +258,7 @@ class OpenAICodexRuntime:
             enabled_mcp_tools.extend(
                 contract.mcp_name
                 for tool_id in sorted(allowed_data_tools)
-                if (contract := self._data_contracts.get(tool_id)) is not None
-                and contract.exposed
+                if (contract := self._data_contracts.get(tool_id)) is not None and contract.exposed
             )
             sdk_config.update(
                 {
@@ -181,16 +269,12 @@ class OpenAICodexRuntime:
                     "mcp_servers.data.env.DOXAGENT_DATA_MCP_PUBLIC_KEY": (
                         self._data_capabilities.public_key
                     ),
-                    "mcp_servers.data.env.DOXAGENT_OBSERVATION_CONTROL_ROOT": str(
-                        control_root
-                    ),
+                    "mcp_servers.data.env.DOXAGENT_OBSERVATION_CONTROL_ROOT": str(control_root),
                     "mcp_servers.data.env.IBKR_TWS_ENABLED": str(
                         self._settings.ibkr_tws_enabled
                     ).lower(),
                     "mcp_servers.data.env.IBKR_TWS_HOST": self._settings.ibkr_tws_host,
-                    "mcp_servers.data.env.IBKR_TWS_PORT": str(
-                        self._settings.ibkr_tws_port
-                    ),
+                    "mcp_servers.data.env.IBKR_TWS_PORT": str(self._settings.ibkr_tws_port),
                     "mcp_servers.data.env.IBKR_TWS_CLIENT_ID": str(
                         self._settings.ibkr_tws_client_id
                     ),
@@ -265,6 +349,11 @@ class OpenAICodexRuntime:
                     "mcp_servers.o4_operations.tool_timeout_sec": 7_200,
                 }
             )
+        for server in ("data", "source_capture", "o4_operations"):
+            if f"mcp_servers.{server}.command" in sdk_config:
+                for name in ("DOXAGENT_CAPSULE_ID", "DOXAGENT_MCP_BUDGET_ROOT"):
+                    if os.environ.get(name):
+                        sdk_config[f"mcp_servers.{server}.env.{name}"] = os.environ[name]
         if request.thread_id:
             thread = await self._client.thread_resume(
                 request.thread_id,
@@ -299,6 +388,8 @@ class OpenAICodexRuntime:
                     f"Never spawn more than {request.max_subagents} subagents."
                 ),
             )
+        if self.receipt_callback is not None:
+            self.receipt_callback(thread.id, None)
         handle = await thread.turn(
             request.prompt,
             cwd=str(cwd),
@@ -309,7 +400,13 @@ class OpenAICodexRuntime:
             approval_mode=ApprovalMode.deny_all,
         )
         await asyncio.sleep(0)
-        return _SdkTurnHandle(thread_id=thread.id, handle=handle)
+        if self.receipt_callback is not None:
+            self.receipt_callback(thread.id, getattr(handle, "id", None))
+        return _SdkTurnHandle(
+            thread_id=thread.id,
+            handle=handle,
+            audit_path=cwd / "attempts" / request.attempt_id / "audit" / "sdk_loop.jsonl",
+        )
 
 
 def _write_atomic_text(path: Path, content: str) -> None:

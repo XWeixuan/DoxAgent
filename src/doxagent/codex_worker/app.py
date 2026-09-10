@@ -3,16 +3,18 @@
 from __future__ import annotations
 
 import hmac
-import io
 import os
+import tempfile
 from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 
 from doxagent.codex_runtime.capabilities import CapabilityTokenCodec
 from doxagent.codex_runtime.errors import CodexRuntimeError
-from doxagent.codex_worker.jobs import WorkerJobManager
+from doxagent.codex_worker.io_budget import DiskBudget, blocking
+from doxagent.codex_worker.jobs import CapacityBusy, WorkerJobManager
 from doxagent.codex_worker.schema import (
     WorkerJob,
     WorkerRunRequest,
@@ -20,7 +22,7 @@ from doxagent.codex_worker.schema import (
     WorkspaceInventory,
     WorkspaceWriteRequest,
 )
-from doxagent.codex_worker.sdk_runtime import CodexExecutionRuntime, OpenAICodexRuntime
+from doxagent.codex_worker.sdk_runtime import CodexExecutionRuntime
 from doxagent.codex_worker.workspace_store import LocalWorkspaceStore
 from doxagent.observations.models import PersistedObservation
 
@@ -35,10 +37,45 @@ def create_worker_app(
     if len(bearer_token) < 24:
         raise ValueError("worker bearer token must contain at least 24 characters")
     workspaces = LocalWorkspaceStore(workspace_root)
-    resolved_runtime = runtime or OpenAICodexRuntime(capability_secret=capability_secret)
-    jobs = WorkerJobManager(resolved_runtime, workspaces)
+    from doxagent.settings import DoxAgentSettings
+    from doxagent.trade_execution.worker import WriterLock
+
+    from .capsules import CapsuleRuntime
+
+    settings = DoxAgentSettings()
+    owner = WriterLock(workspaces.root / "codex-worker") if runtime is None else None
+    if owner is not None:
+        owner.__enter__()
+    resolved_runtime = runtime or CapsuleRuntime(workspaces.root, settings.codex_worker_capacity)
+    try:
+        jobs = WorkerJobManager(
+            resolved_runtime,
+            workspaces,
+            capacity=settings.codex_worker_capacity,
+            queue_limit=settings.codex_worker_queue_limit,
+            subagents=settings.codex_worker_subagents,
+            pressure_enabled=settings.codex_worker_pressure_enabled,
+        )
+    except BaseException:
+        if owner is not None:
+            owner.__exit__()
+        raise
+    disk = DiskBudget()
+
+    @asynccontextmanager
+    async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+        jobs.start()
+        try:
+            yield
+        finally:
+            try:
+                await jobs.close()
+            finally:
+                if owner is not None:
+                    owner.__exit__()
+
     capabilities = CapabilityTokenCodec(capability_secret)
-    app = FastAPI(title="DoxAgent Codex Worker", version="1.0.0")
+    app = FastAPI(title="DoxAgent Codex Worker", version="1.0.0", lifespan=lifespan)
     app.state.workspaces = workspaces
     app.state.jobs = jobs
 
@@ -71,7 +108,7 @@ def create_worker_app(
         x_workspace_capability: str | None = Header(default=None),
     ) -> dict[str, bool]:
         require_capability(run_id, "snapshot", x_workspace_capability)
-        workspaces.snapshot(run_id, snapshot_id)
+        await disk.run(workspaces.snapshot, run_id, snapshot_id)
         return {"ready": True}
 
     @app.post(
@@ -87,12 +124,24 @@ def create_worker_app(
     ) -> dict[str, bool]:
         require_capability(run_id, "snapshot", x_workspace_capability)
         require_capability(destination_run_id, "write", x_destination_capability)
-        workspaces.fork_snapshot(run_id, snapshot_id, destination_run_id)
+        await disk.run(workspaces.fork_snapshot, run_id, snapshot_id, destination_run_id)
         return {"ready": True}
 
     @app.get("/healthz")
     async def healthz() -> dict[str, object]:
         return {"ok": True, "service": "codex-worker", "data_mcp_enabled": True}
+
+    @app.get("/v1/resources", dependencies=[Depends(require_service_auth)])
+    async def resources() -> dict[str, object]:
+        return {
+            "capacity": jobs.capacity,
+            "occupied": sum(w for _, w in jobs._active.values()) + int(jobs._probe_active),
+            "queued": len(jobs.store.queued()),
+            "pressure": jobs.store.metadata("pressure"),
+            "cooldown": jobs.store.metadata("pressure_cooldown"),
+            "dispatcher_running": jobs._pump is not None and not jobs._pump.done(),
+            "generation": jobs.generation,
+        }
 
     @app.get("/v1/capabilities", dependencies=[Depends(require_service_auth)])
     async def worker_capabilities() -> dict[str, object]:
@@ -127,8 +176,19 @@ def create_worker_app(
                 content={"ready": True, "provider_probe": "not_supported"},
             )
         try:
-            payload = await probe()
+            payload = await jobs.probe()
+            if payload.get("provider_probe") == "deferred_capacity":
+                return JSONResponse(
+                    status_code=200,
+                    content={
+                        "ready": True,
+                        "provider_probe": "deferred_capacity",
+                        "provider_verified": False,
+                        "note": "worker accepts queued work; no extra SDK probe dispatched",
+                    },
+                )
             models = payload.get("models", [])
+            models = models if isinstance(models, list) else []
             ready = bool(payload.get("authenticated")) and (
                 model in models if model else bool(models)
             )
@@ -146,6 +206,10 @@ def create_worker_app(
     async def submit_job(request: WorkerRunRequest) -> WorkerJob:
         try:
             return await jobs.submit(request)
+        except CapacityBusy as exc:
+            raise HTTPException(
+                status_code=429, detail="RESOURCE_CAPACITY", headers={"Retry-After": "5"}
+            ) from exc
         except ValueError as exc:
             raise HTTPException(status_code=409, detail=str(exc)) from exc
 
@@ -193,7 +257,8 @@ def create_worker_app(
         x_workspace_capability: str | None = Header(default=None),
     ) -> WorkspaceFileResponse:
         require_capability(run_id, "write", x_workspace_capability)
-        return workspaces.write_text(
+        return await blocking(
+            workspaces.write_text,
             run_id,
             relative_path,
             request.content,
@@ -212,7 +277,7 @@ def create_worker_app(
     ) -> WorkspaceFileResponse:
         require_capability(run_id, "read", x_workspace_capability)
         try:
-            return workspaces.read_text(run_id, relative_path)
+            return await blocking(workspaces.read_text, run_id, relative_path)
         except FileNotFoundError as exc:
             raise HTTPException(status_code=404, detail="workspace file not found") from exc
 
@@ -226,7 +291,7 @@ def create_worker_app(
         x_workspace_capability: str | None = Header(default=None),
     ) -> WorkspaceInventory:
         require_capability(run_id, "inventory", x_workspace_capability)
-        return workspaces.inventory(run_id)
+        return await disk.run(workspaces.inventory, run_id)
 
     @app.get(
         "/v1/workspaces/{run_id}/attempts/{attempt_id}/observations",
@@ -239,7 +304,7 @@ def create_worker_app(
         x_workspace_capability: str | None = Header(default=None),
     ) -> list[PersistedObservation]:
         require_capability(run_id, "read_observations", x_workspace_capability)
-        return workspaces.read_attempt_observations(run_id, attempt_id)
+        return await disk.run(workspaces.read_attempt_observations, run_id, attempt_id)
 
     @app.post(
         "/v1/workspaces/{run_id}/attempts/{attempt_id}/observations",
@@ -253,7 +318,9 @@ def create_worker_app(
         x_workspace_capability: str | None = Header(default=None),
     ) -> list[PersistedObservation]:
         require_capability(run_id, "write_observations", x_workspace_capability)
-        return workspaces.import_attempt_observations(run_id, attempt_id, observations)
+        return await disk.run(
+            workspaces.import_attempt_observations, run_id, attempt_id, observations
+        )
 
     @app.post(
         "/v1/workspaces/{run_id}/publish",
@@ -266,7 +333,7 @@ def create_worker_app(
         x_workspace_capability: str | None = Header(default=None),
     ) -> WorkspaceInventory:
         require_capability(run_id, "publish", x_workspace_capability)
-        return workspaces.publish(run_id, paths)
+        return await disk.run(workspaces.publish, run_id, paths)
 
     @app.delete(
         "/v1/workspaces/{run_id}/attempts/{attempt_id}",
@@ -278,7 +345,7 @@ def create_worker_app(
         x_workspace_capability: str | None = Header(default=None),
     ) -> dict[str, bool]:
         require_capability(run_id, "delete", x_workspace_capability)
-        workspaces.delete_attempt(run_id, attempt_id)
+        await disk.run(workspaces.delete_attempt, run_id, attempt_id)
         return {"deleted": True}
 
     @app.get(
@@ -291,15 +358,25 @@ def create_worker_app(
         x_workspace_capability: str | None = Header(default=None),
     ) -> StreamingResponse:
         require_capability(run_id, "export", x_workspace_capability)
-        buffer = io.BytesIO()
-        digest = workspaces.export_zip(
-            run_id,
-            buffer,
-            control_attempt_id=control_attempt_id,
-        )
-        buffer.seek(0)
+        buffer = tempfile.TemporaryFile(mode="w+b")
+        try:
+            digest = await disk.run(
+                workspaces.export_zip, run_id, buffer, control_attempt_id=control_attempt_id
+            )
+            buffer.seek(0)
+        except BaseException:
+            buffer.close()
+            raise
+
+        async def chunks() -> AsyncIterator[bytes]:
+            try:
+                while data := await blocking(buffer.read, 65536):
+                    yield data
+            finally:
+                buffer.close()
+
         return StreamingResponse(
-            buffer,
+            chunks(),
             media_type="application/zip",
             headers={
                 "Content-Disposition": f'attachment; filename="{run_id}.zip"',

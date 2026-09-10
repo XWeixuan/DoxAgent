@@ -29,6 +29,11 @@ class WorkerUnavailable(CodexRuntimeError):
     retryable = True
 
 
+class InfrastructureRecoveryExhausted(CodexRuntimeError):
+    code = "WORKER_INFRA_RECOVERY_EXHAUSTED"
+    scope = "infrastructure"
+
+
 class StructuredOutputInvalid(CodexRuntimeError):
     code = "STRUCTURED_OUTPUT_INVALID"
     retryable = True

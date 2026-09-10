@@ -41,6 +41,10 @@ async def test_duplicate_dispatch_and_terminal_restart_reconcile(tmp_path: Path)
     )
     first, second = await asyncio.gather(manager.submit(request), manager.submit(request))
     assert first.job_id == second.job_id
+    for _ in range(100):
+        if runtime.calls:
+            break
+        await asyncio.sleep(0.01)
     assert runtime.calls == 1
     with pytest.raises(ValueError, match="different worker request"):
         await manager.submit(request.model_copy(update={"prompt": "changed"}))
@@ -54,3 +58,5 @@ async def test_duplicate_dispatch_and_terminal_restart_reconcile(tmp_path: Path)
     retry = await restarted.submit(request.model_copy(update={"idempotency_key": "node:1:2"}))
     await restarted._tasks[retry.job_id]
     assert runtime.calls == 2
+    await manager.close()
+    await restarted.close()

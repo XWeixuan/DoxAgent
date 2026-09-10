@@ -65,7 +65,12 @@ def parser() -> argparse.ArgumentParser:
 
 
 async def _worker(repo: InitializationRepository, once: bool) -> int:
+    from doxagent.trade_execution.worker import WriterLock
+
     from .catalog import adapter_factory
+
+    owner = WriterLock(repo.path.parent / "initialization-worker")
+    owner.__enter__()
 
     worker = InitializationWorker(repo, adapter_factory)
     from doxagent.settings import DoxAgentSettings
@@ -102,6 +107,7 @@ async def _worker(repo: InitializationRepository, once: bool) -> int:
     except asyncio.CancelledError:
         return 130
     finally:
+        owner.__exit__()
         signal.signal(signal.SIGTERM, previous_signal)
         if mirror_task is not None:
             mirror_task.cancel()

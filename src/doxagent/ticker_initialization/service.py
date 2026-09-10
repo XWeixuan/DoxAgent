@@ -97,7 +97,12 @@ class InitializationWorker:
                     if node.result is not None:
                         await self._after_complete(lease, node, node.result)
                 return self.repository.finish(lease)
-            exhausted = [n.key for n in nodes if n.status == "FAILED" and n.ordinal >= 2]
+            exhausted = [
+                n.key
+                for n in nodes
+                if n.status == "FAILED"
+                and (n.ordinal >= 2 or n.receipt.get("failure", {}).get("manual_resume_required"))
+            ]
             recovering = [n for n in nodes if n.status == "RUNNING"]
             if exhausted and not recovering:
                 for completed_node in nodes:
@@ -152,7 +157,9 @@ class InitializationWorker:
                     break
                 except LeaseLost:
                     raise
-                except Exception:
+                except Exception as exc:
+                    if getattr(exc, "code", None) == "WORKER_INFRA_RECOVERY_EXHAUSTED":
+                        raise
                     retryable = {
                         (child.key, child.execution_id)
                         for child in self.repository.nodes(lease.initialization_id)

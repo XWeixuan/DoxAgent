@@ -705,11 +705,9 @@ async def test_full_document2_workflow_resumes_d1_and_publishes_with_unresolved_
     assert narrative.calls == [("NVDA", AS_OF)]
     review_requests = [item for item in worker.requests if "review" in item.node.value]
     assert {item.run_id for item in review_requests} == {source_run_id}
-    assert {item.thread_id for item in review_requests} == {
-        "original-c1-thread",
-        "original-c3-thread",
-        "original-c5-thread",
-    }
+    # Fresh attempt-local MCP capabilities are required; provenance stays in context,
+    # not in a resident SDK thread carrying an older attempt's tool capability.
+    assert {item.thread_id for item in review_requests} == {None}
     synthesis = next(item for item in worker.requests if item.node is CodexD2Node.O0_SYNTHESIS)
     synthesis_context_file = await workspace.read_text(
         synthesis.run_id,
@@ -730,7 +728,7 @@ async def test_full_document2_workflow_resumes_d1_and_publishes_with_unresolved_
     finalization = next(
         item for item in worker.requests if item.node is CodexD2Node.O0_FINALIZATION
     )
-    assert finalization.thread_id == f"o0-{synthesis.run_id}"
+    assert finalization.thread_id is None
     o1_requests = [item for item in worker.requests if item.agent_role.value.startswith("o1_")]
     assert [item.node for item in o1_requests] == [
         CodexD2Node.O1_STATE,

@@ -334,6 +334,7 @@ class ResearchInitializationAdapter:
         reader = PublishedEventLibraryReader(self.settings.event_library_root or "", market="US")
         tools = default_real_tool_registry(self.settings)
         orchestrator = CodexDocument2Orchestrator(
+            max_shell_concurrency=self.settings.codex_d2_max_concurrency,
             worker=worker,
             workspace=worker,
             repository=self.repository,

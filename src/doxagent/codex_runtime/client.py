@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import asyncio
 import ipaddress
+import time
 from typing import Any, Protocol
 from urllib.parse import urlsplit
+from uuid import uuid4
 
 import httpx
 
@@ -62,21 +64,53 @@ class HttpCodexWorkerClient:
 
     async def run(self, request: WorkerRunRequest) -> WorkerJob:
         job: WorkerJob | None = None
+        original_request = request
+        request = request.model_copy(
+            update={"idempotency_key": request.idempotency_key or uuid4().hex}
+        )
+        unavailable_since: float | None = None
         try:
-            response = await self._client.post("/v1/jobs", json=request.model_dump(mode="json"))
-            response.raise_for_status()
-            job = WorkerJob.model_validate(response.json())
-            while job.status in {"queued", "running"}:
-                await asyncio.sleep(self._poll_seconds)
-                response = await self._client.get(f"/v1/jobs/{job.job_id}")
-                response.raise_for_status()
-                job = WorkerJob.model_validate(response.json())
+            while job is None or job.status in {"queued", "running"}:
+                try:
+                    response = (
+                        await self._client.post("/v1/jobs", json=request.model_dump(mode="json"))
+                        if job is None
+                        else await self._client.get(f"/v1/jobs/{job.job_id}")
+                    )
+                    if response.status_code == 429:
+                        # Admission wait is not a failed execution, even for a full queue.
+                        await asyncio.sleep(5)
+                        continue
+                    response.raise_for_status()
+                    job = WorkerJob.model_validate(response.json())
+                    unavailable_since = None
+                    if job.status in {"queued", "running"}:
+                        await asyncio.sleep(self._poll_seconds)
+                except (httpx.TransportError, httpx.HTTPStatusError) as exc:
+                    if isinstance(exc, httpx.HTTPStatusError) and exc.response.status_code < 500:
+                        raise
+                    unavailable_since = unavailable_since or time.monotonic()
+                    if time.monotonic() - unavailable_since >= 1800:
+                        from .errors import InfrastructureRecoveryExhausted
+
+                        raise InfrastructureRecoveryExhausted(
+                            "worker unavailable for 30 minutes; reconcile the same durable job "
+                            "before manual recovery"
+                        ) from exc
+                    # Same request identity / job, never dispatch a second execution.
+                    await asyncio.sleep(5)
             from doxagent.ticker_initialization.substeps import capture_worker
 
-            capture_worker(request, job)
+            capture_worker(original_request, job)
+            if job.error_code == "WORKER_INFRA_RECOVERY_EXHAUSTED":
+                from .errors import InfrastructureRecoveryExhausted
+
+                raise InfrastructureRecoveryExhausted(
+                    job.error_message or "infrastructure recovery exhausted"
+                )
             return job
         except asyncio.CancelledError:
-            if job is not None and request.idempotency_key is None:
+            if job is not None and original_request.idempotency_key is None:
                 await asyncio.shield(self.cancel(job.job_id))
             raise
         except httpx.HTTPError as exc:

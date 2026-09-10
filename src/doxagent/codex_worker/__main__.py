@@ -10,6 +10,8 @@ def main() -> None:
         host="0.0.0.0",
         port=8791,
         proxy_headers=False,
+        workers=1,
+        reload=False,
     )
 
 

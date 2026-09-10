@@ -114,12 +114,20 @@ class SourceCaptureService:
                                 raise ValueError("source exceeds capture size limit")
                             chunks.append(chunk)
                         payload = b"".join(chunks)
-                        text, title = _extract_payload_text(
-                            payload,
-                            content_type=content_type,
-                            encoding=response.encoding or "utf-8",
-                            url=final_url,
-                        )
+                        from doxagent.codex_worker.io_budget import blocking
+                        from doxagent.mcp.resource_budget import extraction_budget
+
+                        expensive = content_type.partition(";")[
+                            0
+                        ].strip().lower() == "application/pdf" or payload.startswith(b"%PDF-")
+                        async with extraction_budget(expensive=expensive):
+                            text, title = await blocking(
+                                _extract_payload_text,
+                                payload,
+                                content_type=content_type,
+                                encoding=response.encoding or "utf-8",
+                                url=final_url,
+                            )
                         break
                 else:
                     raise ValueError("source exceeded redirect limit")

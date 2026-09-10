@@ -15,6 +15,7 @@ def offline_network_boundary(request: pytest.FixtureRequest, monkeypatch: pytest
         return
     import httpx
     import requests.adapters
+    from openai_codex import AsyncCodex
 
     from doxagent.codex_worker.sdk_runtime import OpenAICodexRuntime
 
@@ -27,6 +28,15 @@ def offline_network_boundary(request: pytest.FixtureRequest, monkeypatch: pytest
 
     async def blocked_async(*args, **kwargs):
         blocked()
+
+    original_start = OpenAICodexRuntime.start
+
+    async def guarded_start(runtime, *args, **kwargs):
+        # Unit tests explicitly inject a fake SDK client; keep the adapter testable
+        # while still preventing a real app-server launch (including subprocess HTTP).
+        if isinstance(runtime._client, AsyncCodex):
+            blocked()
+        return await original_start(runtime, *args, **kwargs)
 
     original_connect = socket.socket.connect
     original_connect_ex = socket.socket.connect_ex
@@ -64,7 +74,7 @@ def offline_network_boundary(request: pytest.FixtureRequest, monkeypatch: pytest
     monkeypatch.setattr(socket.socket, "connect", connect)
     monkeypatch.setattr(socket.socket, "connect_ex", connect_ex)
     monkeypatch.setattr(socket, "getaddrinfo", getaddrinfo)
-    monkeypatch.setattr(OpenAICodexRuntime, "start", blocked_async)
+    monkeypatch.setattr(OpenAICodexRuntime, "start", guarded_start)
     yield
     if attempted:
         pytest.fail(f"offline boundary: {len(attempted)} external attempts blocked")

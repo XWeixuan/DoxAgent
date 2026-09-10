@@ -1,0 +1,94 @@
+services:
+  v2-migrate:
+    mem_limit: 512m
+    memswap_limit: 512m
+    cpus: 1.0
+    pids_limit: 96
+    image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
+  v2-api:
+    mem_limit: 384m
+    memswap_limit: 384m
+    cpus: 0.75
+    pids_limit: 128
+    image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
+  v2-control:
+    mem_limit: 192m
+    memswap_limit: 192m
+    cpus: 0.5
+    pids_limit: 64
+    image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
+    environment:
+      DOXAGENT_CDECR_EXECUTION_MODE: PREBUILT_REQUIRED
+  codex-worker:
+    mem_limit: 3584m
+    memswap_limit: 3584m
+    cpus: 2.75
+    pids_limit: 512
+    environment:
+      DOXAGENT_CODEX_WORKER_CAPACITY: "2"
+      DOXAGENT_CODEX_WORKER_QUEUE_LIMIT: "64"
+      DOXAGENT_CODEX_WORKER_SUBAGENTS: "0"
+      DOXAGENT_CODEX_WORKER_PRESSURE_ENABLED: "true"
+    image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
+    extra_hosts: ["host.docker.internal:host-gateway"]
+  v2-initialization:
+    mem_limit: 640m
+    memswap_limit: 640m
+    cpus: 0.75
+    pids_limit: 128
+    image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
+    environment:
+      DOXAGENT_CDECR_EXECUTION_MODE: PREBUILT_REQUIRED
+      DOXAGENT_CODEX_D2_MAX_CONCURRENCY: "2"
+    extra_hosts: ["host.docker.internal:host-gateway"]
+  v2-message-bus:
+    mem_limit: 256m
+    memswap_limit: 256m
+    cpus: 0.5
+    pids_limit: 96
+    image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
+  v2-o4:
+    mem_limit: 256m
+    memswap_limit: 256m
+    cpus: 0.5
+    pids_limit: 96
+    image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
+    extra_hosts: ["host.docker.internal:host-gateway"]
+  v2-scheduler:
+    mem_limit: 512m
+    memswap_limit: 512m
+    cpus: 1.0
+    pids_limit: 128
+    environment:
+      DOXAGENT_PERSISTENT_RUNTIME_V2_W3_MAX_TICKER_CONCURRENCY: "2"
+    image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
+    extra_hosts: ["host.docker.internal:host-gateway"]
+  v2-projector:
+    mem_limit: 256m
+    memswap_limit: 256m
+    cpus: 0.5
+    pids_limit: 64
+    image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
+  v2-delivery:
+    mem_limit: 128m
+    memswap_limit: 128m
+    cpus: 0.25
+    pids_limit: 64
+    image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
+  v2-executor:
+    mem_limit: 192m
+    memswap_limit: 192m
+    cpus: 0.5
+    pids_limit: 96
+    image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
+
+  v2-web:
+    mem_limit: 64m
+    memswap_limit: 64m
+    cpus: 0.25
+    pids_limit: 64
+
+volumes:
+  v2-data:
+    external: true
+    name: ${DOXAGENT_V2_DATA_VOLUME:-doxagent-v2_v2-data}

@@ -682,4 +682,5 @@ def test_worker_restart_marks_orphaned_active_job_failed(tmp_path: Path) -> None
     manager = WorkerJobManager(_ImmediateRuntime(), store)
     recovered = manager.get("job-1")
     assert recovered and recovered.status == "failed"
-    assert recovered.error_code == "WORKER_RESTARTED"
+    # Legacy JSON has no durable dispatch request; do not invent/replay that execution.
+    assert recovered.error_code == "WORKER_INFRA_RECOVERY_EXHAUSTED"

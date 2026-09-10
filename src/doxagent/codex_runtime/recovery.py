@@ -28,6 +28,7 @@ def failure_details(error: Exception) -> dict[str, Any]:
     )
     return {
         "code": code,
+        "manual_resume_required": code == "WORKER_INFRA_RECOVERY_EXHAUSTED",
         "scope": getattr(error, "scope", "node"),
         "retryable": transient,
         "summary": bounded_text(error),

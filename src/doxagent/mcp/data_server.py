@@ -306,11 +306,18 @@ def build_server(application: DataMcpApplication) -> Server:
                 {"error": {"code": "tool_not_allowed", "message": "tool is not exposed"}},
                 is_error=True,
             )
-        result = await asyncio.to_thread(
-            application.execution.execute,
-            contract.canonical_tool_id,
-            arguments,
+        from doxagent.codex_worker.io_budget import blocking
+        from doxagent.mcp.resource_budget import tool_budget
+
+        expensive = any(
+            part in contract.canonical_tool_id.lower() for part in ("browser", "pdf", "crawl")
         )
+        async with tool_budget(expensive=expensive):
+            result = await blocking(
+                application.execution.execute,
+                contract.canonical_tool_id,
+                arguments,
+            )
         return _call_result(_agent_result_payload(result))
 
     return Server(

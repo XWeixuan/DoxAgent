@@ -1,5 +1,7 @@
 # changelog
 
+- 2026-09-11: 落地 4 核 8GB 的 Workflow V2 资源治理：Worker SQLite 持久准入队列、全局两槽/同 thread 排他、默认禁止内置子 agent、D2/O0 两路、独立 SDK capsule 与超时进程组回收、压力暂停/滞回恢复、基础设施两次独立恢复、HTTP 原 job 重附和完成 receipt 认领；SDK 流式有界统计、MCP 跨进程共享配额、快照/导出取消安全的单路 I/O，以及服务器 Compose 内存/CPU/PID 上限。补直接相关离线测试与实施说明；不包含服务器部署、真实负载/模型验收或 MU 恢复，不将 YAML 配置等同线上限额生效。
+
 - 2026-09-10: 落地 ticker 初始化全链路鲁棒性批次并补齐真实 MU 新故障回归：D1/O2/D2/D3/O4、durable receipt、诊断事件及 Bus/Runtime 接纳按“可证明主体继续、坏项最小隔离、身份/不可变性/真实能力继续硬阻断”处理；Global Research 不再因历史 C4 pre-scan 失败标记否决已齐备的 C1/C3/C5 核心报告。定向测试覆盖恢复、隔离、发布与启动边界。
 
 - 2026-09-10: 修复 Global Research D1 跨 attempt 的 MCP 证据边界：已有 attempt 恢复时不复用旧 Codex thread，避免 Data MCP/Source Capture 子进程继续绑定旧 attempt；引用晋级改为扫描完整结构化 NodeOutput，上游引用重绑定递归覆盖结构化字段。新增结构化引用重绑定回归断言，D1 相关测试 27 passed。

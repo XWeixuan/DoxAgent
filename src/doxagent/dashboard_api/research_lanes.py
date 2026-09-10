@@ -334,6 +334,7 @@ def build_codex_research_lane_service(settings: DoxAgentSettings) -> CodexResear
             **common(ResearchLane.MARKET_SITUATION_RESEARCH)
         ),
         document2_orchestrator=CodexDocument2Orchestrator(
+            max_shell_concurrency=settings.codex_d2_max_concurrency,
             worker=worker,
             workspace=worker,
             repository=repository,

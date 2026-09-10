@@ -5,7 +5,9 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import json
+from collections.abc import Awaitable, Callable
 from datetime import datetime
+from functools import partial
 from typing import Any, Literal, TypeVar, cast
 from uuid import uuid4
 
@@ -68,6 +70,12 @@ ModelT = TypeVar("ModelT", bound=BaseModel)
 
 
 class CodexDocument2Orchestrator:
+    async def _bounded_o0(
+        self, turn: Callable[[], Awaitable[Document2TurnResult]]
+    ) -> Document2TurnResult:
+        async with self._o0_semaphore:
+            return await turn()
+
     def __init__(
         self,
         *,
@@ -82,7 +90,7 @@ class CodexDocument2Orchestrator:
         timeout_seconds: int = 1800,
         max_attempts: int = 2,
         max_subagents: int = 2,
-        max_shell_concurrency: int = 4,
+        max_shell_concurrency: int = 2,
         published_storage: PublishedDocumentStorage | None = None,
         usage_repository: ModelUsageRepository | None = None,
     ) -> None:
@@ -107,6 +115,7 @@ class CodexDocument2Orchestrator:
         )
         self._max_attempts = max_attempts
         self._shell_semaphore = asyncio.Semaphore(max_shell_concurrency)
+        self._o0_semaphore = asyncio.Semaphore(max_shell_concurrency)
         self._published_storage = published_storage
         self._checkpoint_lock = asyncio.Lock()
 
@@ -209,7 +218,7 @@ class CodexDocument2Orchestrator:
         outcomes: list[ShellOutcome] = []
         for seed, result in zip(final_seeds, shell_results, strict=True):
             if isinstance(result, BaseException):
-                if not _allows_branch_degradation(result):
+                if not isinstance(result, Exception) or not _allows_branch_degradation(result):
                     raise result
                 outcomes.append(
                     ShellOutcome(
@@ -477,7 +486,7 @@ class CodexDocument2Orchestrator:
 
         missing_results = await asyncio.gather(
             *(
-                candidate_checkpointed(key, node, primary, source_id)
+                self._bounded_o0(partial(candidate_checkpointed, key, node, primary, source_id))
                 for key, node, primary, source_id in missing_specs
             ),
             return_exceptions=True,
@@ -577,7 +586,7 @@ class CodexDocument2Orchestrator:
 
         review_results = await asyncio.gather(
             *(
-                review_checkpointed(label, node, role, report_key)
+                self._bounded_o0(partial(review_checkpointed, label, node, role, report_key))
                 for label, node, role, report_key in missing_reviews
             ),
             return_exceptions=True,

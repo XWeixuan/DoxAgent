@@ -98,6 +98,13 @@ class WorkerTurnTelemetry(WorkerModel):
 
 
 class WorkerJob(WorkerModel):
+    resource_receipt: dict[str, Any] = Field(default_factory=dict)
+    execution_phase: str = "QUEUED"
+    wait_reason: str | None = None
+    infra_recovery_count: int = 0
+    next_retry_at: float = 0
+    worker_generation: str | None = None
+    cleanup_error: str | None = None
     started_at: datetime | None = None
     finished_at: datetime | None = None
     job_id: str

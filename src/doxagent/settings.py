@@ -20,6 +20,22 @@ class DoxAgentSettings(BaseSettings):
         populate_by_name=True,
     )
 
+    codex_worker_capacity: int = Field(
+        default=2, ge=1, le=16, validation_alias="DOXAGENT_CODEX_WORKER_CAPACITY"
+    )
+    codex_worker_queue_limit: int = Field(
+        default=64, ge=1, le=4096, validation_alias="DOXAGENT_CODEX_WORKER_QUEUE_LIMIT"
+    )
+    codex_worker_subagents: int = Field(
+        default=0, ge=0, le=1, validation_alias="DOXAGENT_CODEX_WORKER_SUBAGENTS"
+    )
+    codex_worker_pressure_enabled: bool = Field(
+        default=False, validation_alias="DOXAGENT_CODEX_WORKER_PRESSURE_ENABLED"
+    )
+    codex_d2_max_concurrency: int = Field(
+        default=2, ge=1, le=16, validation_alias="DOXAGENT_CODEX_D2_MAX_CONCURRENCY"
+    )
+
     storage_mode: Literal["memory", "postgres"] = Field(
         default="memory",
         validation_alias="DOXAGENT_STORAGE_MODE",
@@ -684,8 +700,10 @@ class DoxAgentSettings(BaseSettings):
         le=7200,
         validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_W3_TIMEOUT_SECONDS",
     )
-    persistent_runtime_v2_w3_max_ticker_concurrency: Literal[5] = Field(
+    persistent_runtime_v2_w3_max_ticker_concurrency: int = Field(
         default=5,
+        ge=1,
+        le=32,
         validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_W3_MAX_TICKER_CONCURRENCY",
     )
     persistent_runtime_v2_w3_lease_seconds: int = Field(
