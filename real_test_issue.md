@@ -174,3 +174,9 @@ C3 在最终成功返回 thread 之前还有三次执行层失败：
 SSH 恢复后确认初始化在 `state_seq=300` 以 `retry budget exhausted: d2` 失败。D2 O0 已完整成功；O1 的直接证据包括：一个 finalization 在创建 thread 前因 required Data MCP 20 秒握手超时失败，一个 gaps 随后报 `Cannot send a request, as the client has been closed.`，另一个 realization 被父节点停止并记为 `parent stopped before internal stage settlement`。前者是零 token、零 MCP 调用的瞬时能力启动故障，不是研究内容错误。
 
 编排缺口是 O1 shells 使用默认 `asyncio.gather`：任一分支逸出原始传输异常时，父 D2 立即退出并关闭共享 HTTP client，但其余并行 coroutine 尚未完成，因而产生 closed-client 和未结算子节点。局部修复改为等待所有 shell 分支完成/失败后统一结算；仅允许已分类为 format/transient/shell 的 D2 错误及明确的 closed-client 传输错误降级为失败 shell，SYSTEM、身份、存储、租约和 capability 错误仍硬阻塞。
+
+## 2026-09-11 O4 CONFIGURE strict JSON Schema 阻断
+
+D2 完整 block 重跑 `init-mu-ce1a897cebf549f88d93fa485671644b` 已以 `D2:COMPLETE` 成功，并通过正式 `adopt-artifact` 接纳回原初始化；D3 随后成功完成。O4 CONFIGURE 两次在零 token、零 MCP 调用时被 Responses API 以 `invalid_json_schema` 拒绝：`baseline_summary` 的 schema 未显式设置 `additionalProperties=false`。同类风险还存在于 `desired_binding`、`applied_existing_changes` 和 `admission_evidence` 的任意 JSON map。
+
+修复保持运行时/持久化 dict 合约不变，仅把模型响应 schema 中的任意 map 表示为封闭的 `[{key, value_json}]`，在 Pydantic 输入边界确定性解码回 dict；每个 `value_json` 必须是合法 JSON，键必须非空且唯一。这样满足 strict schema，且不把真实配置对象压扁为空对象。

@@ -54,9 +54,38 @@ from doxagent.workflows.codex_monitoring_o4.schema import (
     SourceNeedPlanItem,
     SourceNeedPriority,
     SourceNeedResolution,
+    strict_json_schema,
 )
 
 NOW = datetime(2026, 9, 2, 12, tzinfo=UTC)
+
+
+def test_o4_response_schema_closes_dynamic_maps_without_changing_runtime_contract() -> None:
+    plan = MonitoringConfigurationPlan.model_validate(
+        {
+            "ticker": "MU",
+            "policy_set_id": "MU:policy-set:1",
+            "policy_set_version": 1,
+            "policy_set_sha256": "a" * 64,
+            "document2_ref": "d2-mu",
+            "baseline_observed_at": NOW.isoformat(),
+            "baseline_summary": [
+                {"key": "sources", "value_json": "6"},
+                {"key": "coverage", "value_json": '{"active":true}'},
+            ],
+            "source_needs": [],
+            "stopping_rationale": "no uncovered material need",
+        }
+    )
+    assert plan.baseline_summary == {"sources": 6, "coverage": {"active": True}}
+    assert plan.model_dump()["baseline_summary"] == plan.baseline_summary
+
+    schema = strict_json_schema(ConfigureCompletion.model_json_schema())
+    baseline = schema["$defs"]["MonitoringConfigurationPlan"]["properties"][
+        "baseline_summary"
+    ]
+    assert baseline["type"] == "array"
+    assert baseline["items"]["additionalProperties"] is False
 
 
 class _FakeRunner:

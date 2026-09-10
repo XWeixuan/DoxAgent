@@ -2,12 +2,21 @@
 
 from __future__ import annotations
 
+import json
 from datetime import UTC, datetime
 from enum import StrEnum
-from typing import Any, Literal, cast
+from typing import Annotated, Any, Literal, cast
 from uuid import uuid4
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    BeforeValidator,
+    ConfigDict,
+    Field,
+    WithJsonSchema,
+    field_validator,
+    model_validator,
+)
 
 from doxagent.codex_runtime.schema import CodexMonitoringO4Node
 
@@ -22,6 +31,49 @@ def new_id(prefix: str) -> str:
 
 class O4Model(BaseModel):
     model_config = ConfigDict(extra="forbid")
+
+
+def _decode_strict_json_map(value: Any) -> Any:
+    """Accept the closed key/value representation required by Responses schemas."""
+
+    if not isinstance(value, list):
+        return value
+    decoded: dict[str, Any] = {}
+    for item in value:
+        if not isinstance(item, dict) or set(item) != {"key", "value_json"}:
+            raise ValueError("JSON map entries require exactly key and value_json")
+        key = item["key"]
+        if not isinstance(key, str) or not key or key in decoded:
+            raise ValueError("JSON map entry keys must be unique non-empty strings")
+        try:
+            decoded[key] = json.loads(item["value_json"])
+        except (TypeError, json.JSONDecodeError) as exc:
+            raise ValueError(f"invalid value_json for {key}") from exc
+    return decoded
+
+
+StrictJsonMap = Annotated[
+    dict[str, Any],
+    BeforeValidator(_decode_strict_json_map),
+    WithJsonSchema(
+        {
+            "type": "array",
+            "description": (
+                "A JSON object encoded as key/value entries. value_json is the compact JSON "
+                "encoding of the value, including quotes for string values."
+            ),
+            "items": {
+                "type": "object",
+                "properties": {
+                    "key": {"type": "string"},
+                    "value_json": {"type": "string"},
+                },
+                "required": ["key", "value_json"],
+                "additionalProperties": False,
+            },
+        }
+    ),
+]
 
 
 class O4RequestStatus(StrEnum):
@@ -101,7 +153,7 @@ class SourceNeedPlanItem(O4Model):
     rationale: str
     existing_source_id: str | None = None
     existing_crawler_id: str | None = None
-    desired_binding: dict[str, Any] = Field(default_factory=dict)
+    desired_binding: StrictJsonMap = Field(default_factory=dict)
     primary_candidate: SourceCandidate | None = None
     alternative_candidates: list[SourceCandidate] = Field(default_factory=list, max_length=3)
 
@@ -129,10 +181,10 @@ class MonitoringConfigurationPlan(O4Model):
     policy_set_sha256: str
     document2_ref: str
     baseline_observed_at: datetime
-    baseline_summary: dict[str, Any]
+    baseline_summary: StrictJsonMap
     source_needs: list[SourceNeedPlanItem]
-    applied_existing_changes: list[dict[str, Any]] = Field(default_factory=list)
-    admission_evidence: list[dict[str, Any]] = Field(default_factory=list)
+    applied_existing_changes: list[StrictJsonMap] = Field(default_factory=list)
+    admission_evidence: list[StrictJsonMap] = Field(default_factory=list)
     deliberate_omissions: list[str] = Field(default_factory=list)
     stopping_rationale: str
     created_at: datetime = Field(default_factory=utc_now)
