@@ -180,3 +180,5 @@ SSH 恢复后确认初始化在 `state_seq=300` 以 `retry budget exhausted: d2`
 D2 完整 block 重跑 `init-mu-ce1a897cebf549f88d93fa485671644b` 已以 `D2:COMPLETE` 成功，并通过正式 `adopt-artifact` 接纳回原初始化；D3 随后成功完成。O4 CONFIGURE 两次在零 token、零 MCP 调用时被 Responses API 以 `invalid_json_schema` 拒绝：`baseline_summary` 的 schema 未显式设置 `additionalProperties=false`。同类风险还存在于 `desired_binding`、`applied_existing_changes` 和 `admission_evidence` 的任意 JSON map。
 
 修复保持运行时/持久化 dict 合约不变，仅把模型响应 schema 中的任意 map 表示为封闭的 `[{key, value_json}]`，在 Pydantic 输入边界确定性解码回 dict；每个 `value_json` 必须是合法 JSON，键必须非空且唯一。这样满足 strict schema，且不把真实配置对象压扁为空对象。
+
+首次部署后 API 继续在零 token 阶段拒绝 `priority`：Pydantic 为带默认值的 enum 生成了同时含 `$ref` 和 `default` 的属性，而 strict response schema 不允许 `$ref` 同级出现该关键字。二次修复对 O4 schema 递归移除全部 `default`，与 D2/O2/D3 已采用的 strict-schema 规范对齐，并增加整棵 schema 的递归断言。

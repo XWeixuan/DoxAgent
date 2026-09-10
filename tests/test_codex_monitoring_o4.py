@@ -87,6 +87,19 @@ def test_o4_response_schema_closes_dynamic_maps_without_changing_runtime_contrac
     assert baseline["type"] == "array"
     assert baseline["items"]["additionalProperties"] is False
 
+    def assert_strict(value: object) -> None:
+        if isinstance(value, list):
+            for item in value:
+                assert_strict(item)
+        elif isinstance(value, dict):
+            assert "default" not in value
+            if value.get("type") == "object" or "properties" in value:
+                assert value.get("additionalProperties") is False
+            for item in value.values():
+                assert_strict(item)
+
+    assert_strict(schema)
+
 
 class _FakeRunner:
     def __init__(self, *, new_crawler: bool, delivery_status: DeliveryItemStatus) -> None:

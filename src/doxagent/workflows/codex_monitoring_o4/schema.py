@@ -366,7 +366,7 @@ def strict_json_schema(schema: dict[str, Any]) -> dict[str, Any]:
             return [walk(item) for item in value]
         if not isinstance(value, dict):
             return value
-        result = {key: walk(item) for key, item in value.items()}
+        result = {key: walk(item) for key, item in value.items() if key != "default"}
         if result.get("type") == "object" or "properties" in result:
             result.setdefault("additionalProperties", False)
             properties = result.get("properties", {})
