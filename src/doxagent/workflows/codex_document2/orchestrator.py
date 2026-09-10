@@ -201,13 +201,16 @@ class CodexDocument2Orchestrator:
                     bundle=bundle,
                 )
                 for seed in final_seeds
-            )
+            ),
+            return_exceptions=True,
         )
         successful_shells: list[ExpectationShell] = []
         shell_artifacts: list[ArtifactRef] = []
         outcomes: list[ShellOutcome] = []
         for seed, result in zip(final_seeds, shell_results, strict=True):
-            if isinstance(result, Exception):
+            if isinstance(result, BaseException):
+                if not _allows_branch_degradation(result):
+                    raise result
                 outcomes.append(
                     ShellOutcome(
                         shell_id=seed.shell_id,
@@ -1162,8 +1165,14 @@ def _allows_branch_degradation(error: BaseException) -> bool:
         error, (LeaseLost, CapabilityDenied, InvalidWorkspacePath, ImmutableWorkspacePath)
     ):
         return False
-    # Storage/lease failures are not research branch gaps.
-    return isinstance(error, (Document2ExecutionError, ValueError))
+    # Storage/lease failures are not research branch gaps. Model/transport
+    # failures may isolate one shell after bounded retries, while request/schema
+    # failures must still stop the workflow.
+    if isinstance(error, Document2ExecutionError):
+        return error.allows_partial
+    if isinstance(error, ValueError):
+        return True
+    return isinstance(error, RuntimeError) and "client has been closed" in str(error).lower()
 
 
 def _append_warning(checkpoint: Document2Checkpoint, warning: str) -> None:

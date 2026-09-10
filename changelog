@@ -929,3 +929,4 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-09-10 V2 ticker 初始化鲁棒性修复（仅本地）：落实审计 A—G，增加旧 receipt 兼容与精确产物认领、D1 宽容接入和独立 assemble/publish 恢复、未解析引用跨汇总非阻塞、O2 逐行与关系闭包隔离/Pending、D2 新线程与 provisional 兜底、D3 failed-worker 成果恢复、O4 逐 need 结算/空计划/局部延期/暂停剩余 continuation、配置安装隔离及 readiness 有界等待与接纳错误留痕。保留身份/hash/租约/真实 consumer ACK 硬约束。31 个不同定向测试通过；未运行全量或真实模型测试，未同步远端。详见 dev_plan/workflow_v2/ticker_initialization_resilience_implementation_20260910.md。
 2026-09-10 MU O2 断点恢复修复：从 immutable workspace 恢复最新 repair bundle，消除基础阶段全完成后的未初始化结果引用；全量 `is_important=false` 保留为语义告警并允许 PARTIAL 发布，不伪造重要性判断，其他身份/结构硬门禁不变。
+2026-09-11 MU D2 并行结算修复：O1 多 Shell 等待全部分支完成后统一结算，Data MCP 启动超时或 closed-client 传输故障仅隔离对应 Shell 并允许 PARTIAL；SYSTEM、身份、存储、租约与 capability 错误继续硬阻塞。

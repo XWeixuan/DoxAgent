@@ -168,3 +168,9 @@ C3 在最终成功返回 thread 之前还有三次执行层失败：
 最小修复为：resume 从远端 immutable inventory 选择最新已有 repair bundle，且缺少本轮模型 `O2RunResult` 时直接依赖确定性 validator 的 coverage，不再引用未初始化变量；validator 将 `INITIALIZATION_IMPORTANT_ALL_FALSE` 保留为 warning，不改变其他语义/身份硬门禁。新增回归覆盖 repair-002 bundle 选择和 all-false importance 的 `PARTIAL` 可发布行为。
 
 部署提交为 `51b6d9a1`；本地相关测试 `18 passed` 且 Ruff 通过。远端只重建并替换 `v2-initialization`，未执行迁移、未改数据库或 workspace。第一次替换误用了非生产 Compose 基文件，容器因缺少配置在业务启动前退出；随后立即按原 `docker-compose.v2-production.yml` + server overlay 恢复，容器内已确认新代码。正式 resume 同一 `o2` 后，O2 从 repair-002 bundle 确定性恢复并发布，初始化已进入 `RUNNING / D2`、`state_seq=206`，当前运行三个 D2 O0 candidate 节点；`failed_nodes` 中仍保留历史 `o2.o2-repair-002` 记录，但不再阻断父流程。
+
+## 2026-09-11 D2 并行 Shell 在 Data MCP 启动超时后失去结算
+
+SSH 恢复后确认初始化在 `state_seq=300` 以 `retry budget exhausted: d2` 失败。D2 O0 已完整成功；O1 的直接证据包括：一个 finalization 在创建 thread 前因 required Data MCP 20 秒握手超时失败，一个 gaps 随后报 `Cannot send a request, as the client has been closed.`，另一个 realization 被父节点停止并记为 `parent stopped before internal stage settlement`。前者是零 token、零 MCP 调用的瞬时能力启动故障，不是研究内容错误。
+
+编排缺口是 O1 shells 使用默认 `asyncio.gather`：任一分支逸出原始传输异常时，父 D2 立即退出并关闭共享 HTTP client，但其余并行 coroutine 尚未完成，因而产生 closed-client 和未结算子节点。局部修复改为等待所有 shell 分支完成/失败后统一结算；仅允许已分类为 format/transient/shell 的 D2 错误及明确的 closed-client 传输错误降级为失败 shell，SYSTEM、身份、存储、租约和 capability 错误仍硬阻塞。

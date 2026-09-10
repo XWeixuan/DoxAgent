@@ -1045,6 +1045,38 @@ async def test_degradable_o1_failures_still_publish_partial(
 
 
 @pytest.mark.asyncio
+async def test_parallel_o1_transport_failure_waits_for_healthy_shell_and_publishes_partial(
+    tmp_path: Path,
+) -> None:
+    repository, workspace, source_run_id = await _global_fixture(tmp_path)
+    orchestrator = CodexDocument2Orchestrator(
+        worker=_TwoShellDocument2Worker(workspace),
+        workspace=workspace,
+        repository=repository,
+        narrative_provider=_NarrativeProvider(InputAvailability.ABSENT),
+        max_attempts=1,
+    )
+    original = orchestrator._research_shell
+
+    async def one_closed_client(**kwargs):
+        if kwargs["seed"].shell_id == "AI需求向盈利兑现":
+            raise RuntimeError("Cannot send a request, as the client has been closed.")
+        return await original(**kwargs)
+
+    orchestrator._research_shell = one_closed_client
+    bundle = await orchestrator.run(
+        Document2RunRequest(
+            run_id="d2-transport-partial",
+            source_global_run_id=source_run_id,
+        )
+    )
+
+    assert bundle.publication_state == "PARTIAL"
+    assert [item.status for item in bundle.shell_outcomes] == ["failed", "completed"]
+    assert bundle.shell_outcomes[0].error_code == "RuntimeError"
+
+
+@pytest.mark.asyncio
 async def test_invalid_request_schema_is_not_misreported_as_shell_partial(tmp_path: Path) -> None:
     repository, workspace, source_run_id = await _global_fixture(tmp_path)
     worker = _FailO1ByKindWorker(workspace, "system")
