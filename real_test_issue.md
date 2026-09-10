@@ -149,3 +149,11 @@ C3 在最终成功返回 thread 之前还有三次执行层失败：
 直接原因是远端镜像仍使用旧 Global Research 发布 gate：它只要看到 workflow checkpoint 中任意历史 `failed_nodes` 就否决整份发布。C4 pre-scan 早期 403 留下的失败标记因此覆盖了当前可用成果，即使相关控制节点及核心 C1/C3/C5 已成功，仍被当作全局失败。这与“C4 缺口可降级、核心研究主体可用即可交接”的既定边界冲突。
 
 本地鲁棒性批次已包含对应修复：发布 gate 改为只检查 C1/C3/C5 是否具有可读报告，C4 enrichment 缺失时复用有效 pre-scan，历史可选节点失败仅记录 `workflow.partial`；同时保留 ticker/输入身份、artifact hash、核心报告缺失和发布存储等硬门禁。新增回归覆盖 C4 pre-scan 执行失败而 C1/C3/C5 可用时仍能发布，避免再次由历史失败标记阻断。
+
+### 部署与恢复结果
+
+- 本地提交并推送 `d0b09e5b4981d752573da222513fdf16e4a4d6e9`；远端 `/home/ubuntu/doxagent` 已通过 `git pull --ff-only` 快进到同一提交。
+- 远端既有工作树先保存为 `stash@{0}: pre-d0b09e5b-sg-working-tree`；与本次提交无关的部署配置已恢复到工作树，stash 继续保留作为恢复点。
+- 重新构建共享 `doxagent-v2:server` 镜像，并用 `--no-deps --force-recreate` 更新十个后端常驻服务；未执行 `v2-migrate`，未修改 `/data` 中的业务库或历史工作区。API、Codex worker 和 Web 健康，其他后端服务均在运行。
+- 正式 CLI 对失败父节点 `d1` 执行 resume 后，D1 generation 6 成功；`d1.assemble`、`d1.publish` 均生成独立成功回执，证明本次只恢复确定性组装/发布，没有重新运行已成功研究节点。
+- 初始化已自动进入 O2：`RUNNING` / `O2`，`state_seq=131`，当前节点 `o2`、`o2.o2-survey`，无 failed node。后续继续按 15 分钟间隔低频复核。
