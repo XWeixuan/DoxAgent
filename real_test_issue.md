@@ -182,3 +182,11 @@ D2 完整 block 重跑 `init-mu-ce1a897cebf549f88d93fa485671644b` 已以 `D2:COM
 修复保持运行时/持久化 dict 合约不变，仅把模型响应 schema 中的任意 map 表示为封闭的 `[{key, value_json}]`，在 Pydantic 输入边界确定性解码回 dict；每个 `value_json` 必须是合法 JSON，键必须非空且唯一。这样满足 strict schema，且不把真实配置对象压扁为空对象。
 
 首次部署后 API 继续在零 token 阶段拒绝 `priority`：Pydantic 为带默认值的 enum 生成了同时含 `$ref` 和 `default` 的属性，而 strict response schema 不允许 `$ref` 同级出现该关键字。二次修复对 O4 schema 递归移除全部 `default`，与 D2/O2/D3 已采用的 strict-schema 规范对齐，并增加整棵 schema 的递归断言。
+
+### MU 初始化最终验收
+
+- 原初始化 `init-mu-1f3e9130ae304b01a7fdf2991a35e028` 最终为 `SUCCEEDED / VERIFY_READY`，`state_seq=343`，`manual_resume_required=false`，无当前运行节点。
+- 所有顶层节点均为 `SUCCEEDED`：D1、CDECR、O2、D2、D3、O4 configure/deliver/register、activation prepare/commit、Bus ready、Runtime ready。状态中保留的旧 O2/D2 内部失败仅是不可变历史审计记录。
+- active revision 为 `init-mu-1f3e9130ae304b01a7fdf2991a35e028-activation`；其中 Document2 指向已完整重跑并接纳的 `init-mu-ce1a897cebf549f88d93fa485671644b-d2`，监控计划 `mu-monitoring-plan-v1-e26ac7bb2a48` 启用了 3 个 binding。
+- Bus 与 Runtime readiness receipt 均引用同一 activation revision 且无质量注解；初始化控制库、Bus、Runtime、O4 配置库和 initialization message-bus 库的 `PRAGMA integrity_check` 均为 `ok`。
+- 11 个 V2 常驻容器全部运行，API、Codex Worker、Web 健康；IB Gateway 真实后端 `4002` 仍在监听。全程未执行 `v2-migrate`、未直接修改业务 SQLite、未删除 workspace、未手工激活 revision、未下单。
