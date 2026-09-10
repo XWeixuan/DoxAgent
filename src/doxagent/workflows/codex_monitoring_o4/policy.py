@@ -200,6 +200,29 @@ class O4PlanFinalizer:
         self,
         plan: MonitoringConfigurationPlan,
         *,
+        source_loader=None,
+        binding_loader=None,
+    ) -> MonitoringConfigurationPlan:
+        items = []
+        omissions = list(plan.deliberate_omissions)
+        for item in plan.source_needs:
+            try:
+                result = self._finalize_one(
+                    plan.model_copy(update={"source_needs": [item]}),
+                    source_loader=source_loader,
+                    binding_loader=binding_loader,
+                )
+                items.extend(result.source_needs)
+            except (ValueError, KeyError) as exc:
+                from doxagent.codex_runtime.recovery import bounded_text
+
+                omissions.append(f"{item.source_need_id}: {bounded_text(exc, 1000)}")
+        return plan.model_copy(update={"source_needs": items, "deliberate_omissions": omissions})
+
+    def _finalize_one(
+        self,
+        plan: MonitoringConfigurationPlan,
+        *,
         source_loader: Callable[[str], Mapping[str, Any]] | None = None,
         binding_loader: Callable[[str], Mapping[str, Any] | None] | None = None,
     ) -> MonitoringConfigurationPlan:
@@ -295,22 +318,33 @@ class DeliveryProgressCoordinator:
             for item in plan.source_needs
             if item.resolution is SourceNeedResolution.NEW_CRAWLER_REQUIRED
         ]
-        expected_ids = {item.source_need_id for item in expected_items}
-        actual_ids = {item.source_need_id for item in submitted.items}
-        if actual_ids != expected_ids or len(actual_ids) != len(submitted.items):
-            raise ValueError("delivery checkpoint source_need_ids differ from immutable plan")
         previous_by_id = {
             item.source_need_id: item for item in (previous.items if previous else [])
         }
-        plan_by_id = {item.source_need_id: item for item in expected_items}
-        items = [
-            self._commit_item(
-                plan_item=plan_by_id[item.source_need_id],
-                previous=previous_by_id.get(item.source_need_id),
-                submitted=item,
-            )
-            for item in submitted.items
-        ]
+        items = []
+        submitted_by_id = {}
+        for item in submitted.items:
+            submitted_by_id.setdefault(item.source_need_id, item)
+        for need in expected_items:
+            prior = previous_by_id.get(need.source_need_id)
+            item = submitted_by_id.get(need.source_need_id) or prior
+            if item is None:
+                item = DeliveryWorkItemCheckpoint(
+                    source_need_id=need.source_need_id,
+                    status=DeliveryItemStatus.REPLAN_REQUIRED,
+                    last_failure="checkpoint item missing",
+                )
+            try:
+                item = self._commit_item(plan_item=need, previous=prior, submitted=item)
+            except ValueError as exc:
+                item = prior or item.model_copy(
+                    update={
+                        "status": DeliveryItemStatus.REPLAN_REQUIRED,
+                        "last_failure": str(exc)[:1000],
+                        "candidate_id": None,
+                    }
+                )
+            items.append(item)
         return submitted.model_copy(update={"items": items})
 
     def _commit_item(

@@ -10,7 +10,7 @@ from contextlib import contextmanager
 from contextvars import ContextVar
 from typing import Any, ParamSpec, TypeVar, cast
 
-from pydantic import BaseModel, TypeAdapter
+from pydantic import BaseModel, TypeAdapter, ValidationError
 
 from doxagent.codex_runtime.client import CodexWorkerClient
 from doxagent.codex_worker.schema import WorkerJob, WorkerRunRequest
@@ -83,9 +83,7 @@ def capture_gateway(request, response):
     )
 
 
-def checkpointed_json(
-    key: str, call: Callable[[], Any], *, max_retries: int = 1
-) -> Any:
+def checkpointed_json(key: str, call: Callable[[], Any], *, max_retries: int = 1) -> Any:
     """Synchronous JSON unit with a bounded durable retry budget.
 
     The default preserves the existing two-attempt durable-node behavior. Callers
@@ -136,6 +134,14 @@ def attempt_identity(fallback: str) -> str:
 
 
 def _codec(kind: str, arguments: dict[str, Any]) -> Any:
+    if kind in {"d1_assemble", "d1_publish"}:
+        from datetime import datetime
+
+        from doxagent.codex_runtime.schema import ArtifactRef
+
+        return TypeAdapter(
+            ArtifactRef if kind == "d1_assemble" else tuple[datetime, list[ArtifactRef]]
+        )
     if kind == "d1":
         from doxagent.codex_runtime.schema import ArtifactRef
         from doxagent.workflows.codex_document1.schema import NodeOutput
@@ -173,7 +179,7 @@ class _D2Codec:
             output=self.output_model.model_validate(payload["output"]),
             artifact=ArtifactRef.model_validate(payload["artifact"]),
             attempt=NodeAttempt.model_validate(payload["attempt"]),
-            job=WorkerJob.model_validate(payload["job"]),
+            job=WorkerJob.model_validate(payload["job"]) if payload.get("job") else None,
             thread_id=payload["thread_id"],
             citation_manifest=CitationManifest.model_validate(payload["citation_manifest"]),
             workspace_run_id=payload["workspace_run_id"],
@@ -192,7 +198,9 @@ def durable(kind: str) -> Callable[[Callable[P, Awaitable[T]]], Callable[P, Awai
             bound = signature.bind(*args, **kwargs)
             bound.apply_defaults()
             arguments = bound.arguments
-            if kind == "o2_repair":
+            if kind in {"d1_assemble", "d1_publish"}:
+                logical = kind.removeprefix("d1_")
+            elif kind == "o2_repair":
                 logical = arguments["attempt_id"]
             elif kind == "o2":
                 from doxagent.workflows.codex_event_library.remote_runner import _base_attempt_id
@@ -223,11 +231,29 @@ def durable(kind: str) -> Callable[[Callable[P, Awaitable[T]]], Callable[P, Awai
             while True:
                 previous = next(n for n in repo.nodes(parent.run.initialization_id) if n.key == key)
                 if previous.status == "SUCCEEDED" and previous.result is not None:
-                    payload = previous.result.artifacts["return"]
-                    result = codec.validate_python(payload)
-                    return cast(T, result)
+                    payload = previous.receipt.get(
+                        "decoded_return_v1", previous.result.artifacts["return"]
+                    )
+                    try:
+                        result = _decode_receipt(codec, kind, payload)
+                    except (ValueError, TypeError, KeyError) as exc:
+                        restored = await _recover_artifact_receipt(kind, arguments, payload, codec)
+                        if restored is not None:
+                            repo.recovered_receipt(
+                                lease, key, codec.dump_python(restored, mode="json")
+                            )
+                            return cast(T, restored)
+                        repo.reject_receipt(lease, key, f"RECEIPT_UNREADABLE: {type(exc).__name__}")
+                    else:
+                        repo.recovered_receipt(lease, key, codec.dump_python(result, mode="json"))
+                        return cast(T, result)
                 if previous.status == "RUNNING" and "validated_return" in previous.receipt:
-                    return cast(T, codec.validate_python(previous.receipt["validated_return"]))
+                    try:
+                        return cast(
+                            T, _decode_receipt(codec, kind, previous.receipt["validated_return"])
+                        )
+                    except (ValueError, TypeError, KeyError) as exc:
+                        repo.reject_receipt(lease, key, f"RECEIPT_UNREADABLE: {type(exc).__name__}")
                 record = repo.begin(lease, key, parent.node.execution_version)
                 child = NodeContext(repo, lease, record)
                 token = _step.set(child)
@@ -244,22 +270,120 @@ def durable(kind: str) -> Callable[[Callable[P, Awaitable[T]]], Callable[P, Awai
                         # The orchestrator confirms this receipt after its stage checks.
                         child.checkpoint(validated_return=payload)
                     else:
-                        repo.complete(lease, key, NodeResult(artifacts={"return": payload}))
+                        repo.complete(
+                            lease,
+                            key,
+                            NodeResult(artifacts={"return": payload, "codec_version": 1}),
+                        )
                     return result
                 except Exception as exc:
                     from .schema import LeaseLost
 
                     if isinstance(exc, LeaseLost):
                         raise
+                    from doxagent.codex_runtime.recovery import failure_details
+
+                    details = failure_details(exc)
+                    child.checkpoint(failure=details)
                     repo.fail(lease, key, f"{type(exc).__name__}: {exc}"[:4000])
                     if record.ordinal >= 2:
                         raise
+                    if details["retryable"]:
+                        import asyncio
+
+                        await asyncio.sleep(1)
                 finally:
                     _step.reset(token)
 
         return wrapped
 
     return decorate
+
+
+async def _recover_artifact_receipt(kind, arguments, payload, codec):
+    """Read only the exact artifact named by the old receipt, with checksum proof."""
+    import copy
+
+    from doxagent.codex_runtime.recovery import ingest_model, json_value
+    from doxagent.codex_runtime.schema import ArtifactRef
+
+    owner = arguments["self"]
+    workspace = getattr(owner, "_workspace", None)
+    if workspace is None or kind not in {"d1", "d2"}:
+        return None
+    try:
+        raw_ref = payload[1] if kind == "d1" else payload["artifact"]
+        ref = ArtifactRef.model_validate(raw_ref)
+        expected_run = (
+            arguments["request"].run_id if kind == "d1" else arguments["persistence_run_id"]
+        )
+        if ref.run_id != expected_run:
+            return None
+        file = await workspace.read_text(ref.run_id, ref.relative_path)
+        if file.content is None or hashlib.sha256(file.content.encode()).hexdigest() != ref.sha256:
+            return None
+        value = copy.deepcopy(payload)
+        if kind == "d1":
+            from doxagent.workflows.codex_document1.schema import NodeOutput
+
+            if not file.content.strip():
+                return None
+            value[0] = NodeOutput(
+                status="PARTIAL",
+                report_markdown=file.content,
+                warnings=["RECEIPT_RECOVERED_FROM_HASHED_REPORT"],
+            ).model_dump(mode="json")
+        else:
+            value["output"] = ingest_model(
+                arguments["output_model"], json_value(file.content)
+            ).model_dump(mode="json")
+        return _decode_receipt(codec, kind, value)
+    except (ValueError, TypeError, KeyError, FileNotFoundError):
+        return None
+
+
+def _decode_receipt(codec: Any, kind: str, payload: Any) -> Any:
+    import copy
+
+    from doxagent.codex_runtime.recovery import bounded_text
+
+    value = copy.deepcopy(payload)
+
+    # Historical models wrote internal aliases and unbounded diagnostic strings.
+    def clean(item: Any) -> Any:
+        if isinstance(item, dict):
+            return {
+                k: bounded_text(v, 3000) if k == "error_message" and v is not None else clean(v)
+                for k, v in item.items()
+            }
+        if isinstance(item, (list, tuple)):
+            return [clean(v) for v in item]
+        return item
+
+    value = clean(value)
+    if kind == "d1":
+        import json
+
+        from doxagent.workflows.codex_document1.recovery import recover_output
+
+        output, _ = recover_output(json.dumps(value[0], ensure_ascii=False))
+        if not (output.report_markdown.strip() or output.entity_relations or output.future_nodes):
+            # Empty optional C4 is valid; the original strict decoder decides.
+            return codec.validate_python(value)
+        value[0] = output.model_dump(mode="json")
+    for _ in range(3):
+        try:
+            return codec.validate_python(value)
+        except ValidationError as exc:
+            errors = exc.errors()
+            if any(e["type"] != "extra_forbidden" for e in errors):
+                raise
+            for error in errors:
+                target = value
+                for part in error["loc"][:-1]:
+                    target = target[part]
+                target.pop(error["loc"][-1], None)
+    return codec.validate_python(value)
 
 
 def settle_stage(node: str, *, error: str | None = None) -> None:

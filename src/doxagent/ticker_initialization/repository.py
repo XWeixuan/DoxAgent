@@ -465,6 +465,24 @@ class InitializationRepository:
     def complete(self, lease: Lease, key: str, result: NodeResult) -> None:
         self._settle(lease, key, result=result)
 
+    def recovered_receipt(self, lease: Lease, key: str, payload: Any) -> None:
+        """Attach a decoded view without replacing the immutable original return."""
+        with self._write() as db:
+            self._fence(db, lease)
+            node = self._node(db, lease.initialization_id, key)
+            node.receipt["decoded_return_v1"] = payload
+            self._save_node(db, lease.initialization_id, node)
+
+    def reject_receipt(self, lease: Lease, key: str, error: str) -> None:
+        """Invalidate only the unreadable child; retain output and spent budget."""
+        with self._write() as db:
+            self._fence(db, lease)
+            node = self._node(db, lease.initialization_id, key)
+            node.status = "FAILED"
+            node.error = error
+            node.receipt.pop("validated_return", None)
+            self._save_node(db, lease.initialization_id, node)
+
     def post_complete_warning(self, lease: Lease, key: str, warning: str) -> None:
         """Retain a post-commit filesystem warning without invalidating usable output."""
 
@@ -943,6 +961,39 @@ class InitializationRepository:
                 ).fetchone()
                 is not None
             )
+
+    def admission_error(self, ticker: str, revision_id: str, worker: str, error: Exception) -> None:
+        from doxagent.codex_runtime.recovery import bounded_text
+
+        with self._write() as db:
+            db.execute(
+                "CREATE TABLE IF NOT EXISTS activation_admission_errors "
+                "(ticker TEXT, revision_id TEXT, worker TEXT, error TEXT, updated REAL, "
+                "PRIMARY KEY(ticker,revision_id,worker))"
+            )
+            db.execute(
+                "INSERT OR REPLACE INTO activation_admission_errors VALUES(?,?,?,?,?)",
+                (
+                    ticker,
+                    revision_id,
+                    worker,
+                    bounded_text(f"{type(error).__name__}: {error}"),
+                    time.time(),
+                ),
+            )
+
+    def admission_failure(self, ticker: str, revision_id: str, worker: str) -> str | None:
+        with self._connection() as db:
+            if not db.execute(
+                "SELECT 1 FROM sqlite_master WHERE name='activation_admission_errors'"
+            ).fetchone():
+                return None
+            row = db.execute(
+                "SELECT error FROM activation_admission_errors "
+                "WHERE ticker=? AND revision_id=? AND worker=?",
+                (ticker, revision_id, worker),
+            ).fetchone()
+            return row[0] if row else None
 
     def rollback_revision(self, lease: Lease, revision_id: str) -> bool:
         with self._write() as db:

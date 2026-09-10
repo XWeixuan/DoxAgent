@@ -223,8 +223,7 @@ class ResearchInitializationAdapter:
                 )
                 binding = coordinator.binding_for(market="US", ticker=context.run.ticker)
                 if (
-                    prebuilt_bundle.manifest.research_cutoff_at
-                    != context.run.research_cutoff_at
+                    prebuilt_bundle.manifest.research_cutoff_at != context.run.research_cutoff_at
                     or prebuilt_bundle.manifest.runtime_scope != binding.runtime_scope
                 ):
                     raise ValueError("prebuilt CDECR run identity or cutoff mismatch")
@@ -369,7 +368,11 @@ class ResearchInitializationAdapter:
             raise ValueError("D2 published body is not available locally")
         path = self._artifact(context, "document2.json", published.content_text)
         return NodeResult(
-            artifacts={"document2": {"run_id": child_id}, "document2_path": str(path)}
+            artifacts={"document2": {"run_id": child_id}, "document2_path": str(path)},
+            quality_annotations=[
+                "D2:" + str(getattr(bundle, "publication_state", "published")),
+                *list(getattr(bundle.checkpoint, "warnings", [])),
+            ],
         )
 
     async def _d3(

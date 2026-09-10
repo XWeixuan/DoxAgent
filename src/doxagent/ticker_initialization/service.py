@@ -170,6 +170,9 @@ class InitializationWorker:
         except LeaseLost:
             raise
         except Exception as exc:
+            from doxagent.codex_runtime.recovery import failure_details
+
+            context.checkpoint(failure=failure_details(exc))
             self.repository.fail(lease, node.key, f"{type(exc).__name__}: {exc}"[:4000])
 
     async def _after_complete(

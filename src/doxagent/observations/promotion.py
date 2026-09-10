@@ -95,9 +95,12 @@ class CitationPromotionService:
                     )
                 )
                 continue
-            source_id = "src_" + hashlib.sha256(
-                f"{run_id}|{attempt_id}|{observation.block_id}|{actual_hash}".encode()
-            ).hexdigest()[:24]
+            source_id = (
+                "src_"
+                + hashlib.sha256(
+                    f"{run_id}|{attempt_id}|{observation.block_id}|{actual_hash}".encode()
+                ).hexdigest()[:24]
+            )
             url = _source_url(observation)
             source = SourceRecord(
                 source_id=source_id,
@@ -164,7 +167,9 @@ class CitationPromotionService:
         self._repository.save_citation_manifest(merged)
         return merged
 
-    def plan_aggregate(self, manifests: list[CitationManifest]) -> AggregateCitationPlan:
+    def plan_aggregate(
+        self, manifests: list[CitationManifest], *, allow_unresolved: bool = False
+    ) -> AggregateCitationPlan:
         aliases_by_attempt: dict[str, dict[str, str]] = {}
         entries: list[CitationEntry] = []
         warnings = [warning for manifest in manifests for warning in manifest.warnings]
@@ -172,10 +177,14 @@ class CitationPromotionService:
             for entry in manifest.entries:
                 if not entry.attempt_id:
                     raise ValueError(f"citation {entry.alias} has no attempt identity")
-                if not entry.resolved:
+                if not entry.resolved and not allow_unresolved:
                     raise ValueError(
                         f"unresolved citation cannot be aggregated: "
                         f"{entry.attempt_id}/{entry.alias}"
+                    )
+                if not entry.resolved:
+                    warnings.append(
+                        f"Unresolved citation retained: {entry.attempt_id}/{entry.alias}"
                     )
                 attempt_aliases = aliases_by_attempt.setdefault(entry.attempt_id, {})
                 remapped = attempt_aliases.get(entry.alias)
@@ -227,4 +236,3 @@ def _source_url(observation: PersistedObservation) -> str | None:
     if isinstance(value, str) and value.startswith(("http://", "https://")):
         return value
     return None
-

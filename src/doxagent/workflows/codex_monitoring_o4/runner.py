@@ -203,10 +203,14 @@ class MonitoringO4AgentRunner:
                 (job.error_message or f"worker ended with {job.status}") + detail,
                 checkpoint_committed=committed,
             )
-        if commit_error is not None:
-            raise O4TurnError(f"delivery checkpoint commit failed: {commit_error}")
         try:
-            result = output_model.model_validate_json(job.final_response)
+            from .recovery import ingest
+
+            result = (
+                ingest(output_model, job.final_response)
+                if output_model in {ConfigureCompletion, DeliverySettlement}
+                else output_model.model_validate_json(job.final_response)
+            )
         except ValidationError as exc:
             raise O4TurnError(f"invalid O4 structured response: {exc}") from exc
         self._validate_correlation(request, result)
@@ -231,7 +235,9 @@ class MonitoringO4AgentRunner:
             content = getattr(response, "content", None)
             if not isinstance(content, str):
                 raise ValueError("workspace checkpoint response has no text content")
-            submitted = DeliveryCheckpoint.model_validate_json(content)
+            from .recovery import ingest
+
+            submitted = ingest(DeliveryCheckpoint, content)
             previous = self._repository.get_delivery_checkpoint(plan.plan_id, plan.plan_version)
             committed = self._progress.commit(
                 plan=plan,

@@ -48,7 +48,7 @@ class Document2TurnResult:
     output: BaseModel
     artifact: ArtifactRef
     attempt: NodeAttempt
-    job: WorkerJob
+    job: WorkerJob | None
     thread_id: str | None
     citation_manifest: CitationManifest
     workspace_run_id: str
@@ -84,12 +84,7 @@ class Document2TurnRunner:
         self._assets = (
             Path(asset_root)
             if asset_root is not None
-            else (
-                Path(__file__).resolve().parents[4]
-                / "prompts"
-                / "codex_v2"
-                / "document2"
-            )
+            else (Path(__file__).resolve().parents[4] / "prompts" / "codex_v2" / "document2")
         )
 
     @durable("d2")
@@ -160,7 +155,7 @@ class Document2TurnRunner:
                 cutoff_at=cutoff_at,
                 prompt=prompt,
                 output_schema=output_schema,
-                thread_id=thread_id,
+                thread_id=None,
                 model=self._model,
                 model_provider=self._model_provider,
                 effort=self._effort,
@@ -168,16 +163,38 @@ class Document2TurnRunner:
                 allow_subagents=allow_subagents,
                 max_subagents=self._max_subagents if allow_subagents else 0,
             )
+            execution_error = None
             try:
                 job = await self._worker.run(request)
             except Exception as exc:
-                raise raised_worker_error(exc, node) from exc
-            if job.status != "succeeded" or not job.final_response:
-                raise worker_execution_error(job, node)
+                from doxagent.codex_runtime.errors import (
+                    CapabilityDenied,
+                    ImmutableWorkspacePath,
+                    InvalidWorkspacePath,
+                )
+                from doxagent.ticker_initialization.schema import LeaseLost
+
+                if isinstance(
+                    exc, (LeaseLost, CapabilityDenied, ImmutableWorkspacePath, InvalidWorkspacePath)
+                ):
+                    raise
+                execution_error = raised_worker_error(exc, node)
             try:
-                parsed = output_model.model_validate_json(job.final_response)
-            except ValidationError as exc:
-                raise format_execution_error(exc, node) from exc
+                from doxagent.codex_runtime.recovery import ingest_model, json_value
+
+                parsed = ingest_model(
+                    output_model, json_value(job.final_response or "" if job else "")
+                )
+            except (ValueError, TypeError) as exc:
+                from .recovery import fallback
+
+                parsed = fallback(output_model, context)
+                if parsed is None:
+                    if execution_error is not None:
+                        raise execution_error from exc
+                    if job and job.status != "succeeded":
+                        raise worker_execution_error(job, node) from exc
+                    raise format_execution_error(exc, node) from exc
             output_json = parsed.model_dump_json(indent=2)
             local_manifest = await self._promote_citations(
                 workspace_run_id=workspace_run_id,
@@ -215,18 +232,21 @@ class Document2TurnRunner:
             attempt = attempt.model_copy(
                 update={
                     "status": AttemptStatus.SUCCEEDED,
-                    "thread_id": job.thread_id or thread_id,
+                    "thread_id": job.thread_id if job else None,
                     "completed_at": utc_now(),
                 }
             )
             self._repository.save_attempt(attempt)
-            self._record_usage(request, job, status="succeeded")
+            if job is not None:
+                self._record_usage(
+                    request, job, status=job.status if job.status != "succeeded" else "succeeded"
+                )
             return Document2TurnResult(
                 output=qualified,
                 artifact=artifact,
                 attempt=attempt,
                 job=job,
-                thread_id=job.thread_id or thread_id,
+                thread_id=job.thread_id if job else None,
                 citation_manifest=local_manifest,
                 workspace_run_id=workspace_run_id,
             )

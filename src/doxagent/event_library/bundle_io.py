@@ -63,13 +63,9 @@ class RevisionBundleIO:
                 for line in residual_path.read_text(encoding="utf-8").splitlines()
                 if line.strip()
             ]
-        review_decisions = RevisionBundleIO._jsonl(
-            root / "reference_review_decisions.jsonl"
-        )
+        review_decisions = RevisionBundleIO._jsonl(root / "reference_review_decisions.jsonl")
         date_ledger = RevisionBundleIO._jsonl(root / "date_resolution_ledger.jsonl")
-        reference_ledger = RevisionBundleIO._jsonl(
-            root / "reference_view_decision_ledger.jsonl"
-        )
+        reference_ledger = RevisionBundleIO._jsonl(root / "reference_view_decision_ledger.jsonl")
         return CanonicalRevisionBundle.model_validate(
             {
                 **manifest,
@@ -99,13 +95,14 @@ class RevisionBundleIO:
             candidate = (root / relative).resolve()
             if root not in candidate.parents:
                 raise ValueError("Bundle event path escapes the Bundle root")
-            raw = candidate.read_text(encoding="utf-8")
+            raw = ""
             try:
+                raw = candidate.read_text(encoding="utf-8")
                 payload = RevisionBundleIO._without_retired_fact_entities(json.loads(raw))
                 event = CanonicalEventRevision.model_validate(payload)
             except Exception as exc:
                 invalid_paths.append(relative)
-                discovered = sorted(set(re.findall(r'\bD[1-9]\d*\b', raw)))
+                discovered = sorted(set(re.findall(r"\bD[1-9]\d*\b", raw)))
                 invalid_delta_ids.update(discovered)
                 issues.append(
                     BundleLoadIssue(
@@ -116,32 +113,82 @@ class RevisionBundleIO:
                 )
                 continue
             events.append(event.model_dump(mode="json"))
-        retirements_path = root / "retirements.json"
-        retirements = (
-            json.loads(retirements_path.read_text(encoding="utf-8"))
-            if retirements_path.exists()
-            else []
+        from doxagent.codex_runtime.recovery import ingest_model, json_value
+
+        from .contracts import (
+            DateResolutionLedgerEntry,
+            EventRetirement,
+            ReferenceReviewDecision,
+            ReferenceViewDecisionLedgerEntry,
+            ResidualDeltaResolution,
         )
-        residuals, normalized_residual_count = RevisionBundleIO._tolerant_residuals(
-            root / "residual_delta_resolutions.jsonl"
+
+        def rows(filename, model, key):
+            path = root / filename
+            if not path.exists():
+                return []
+            text = path.read_text(encoding="utf-8")
+            if filename.endswith(".jsonl"):
+                chunks = text.splitlines()
+            else:
+                try:
+                    parsed = json_value(text)
+                    chunks = [json.dumps(v) for v in parsed] if isinstance(parsed, list) else [text]
+                except ValueError:
+                    chunks = [text]
+            accepted = {}
+            conflicted = set()
+            for index, chunk in enumerate(chunks):
+                if not chunk.strip():
+                    continue
+                try:
+                    raw = json_value(chunk)
+                    if model is ResidualDeltaResolution and isinstance(raw, dict):
+                        if "resolution" not in raw and "disposition" in raw:
+                            raw["resolution"] = raw.pop("disposition")
+                    item = ingest_model(model, raw).model_dump(mode="json")
+                    identity = key(item)
+                    if identity in accepted and accepted[identity] != item:
+                        conflicted.add(identity)
+                        raise ValueError("conflicting duplicate record")
+                    accepted[identity] = item
+                except (ValueError, TypeError) as exc:
+                    invalid_delta_ids.update(re.findall(r"\bD[1-9]\d*\b", chunk))
+                    issues.append(
+                        BundleLoadIssue(
+                            code="ROW_QUARANTINED",
+                            message=f"{filename}:{index + 1}: {type(exc).__name__}",
+                            item_id=filename,
+                        )
+                    )
+            return [item for key, item in accepted.items() if key not in conflicted]
+
+        retirements = rows("retirements.json", EventRetirement, lambda r: r["event_id"])
+        residuals = rows(
+            "residual_delta_resolutions.jsonl", ResidualDeltaResolution, lambda r: r["delta_id"]
         )
-        if normalized_residual_count:
+        review_decisions = rows(
+            "reference_review_decisions.jsonl", ReferenceReviewDecision, lambda r: r["event_id"]
+        )
+        date_ledger = rows(
+            "date_resolution_ledger.jsonl",
+            DateResolutionLedgerEntry,
+            lambda r: (r["semantic_role"], r.get("event_id"), r.get("fact_id"), r.get("delta_id")),
+        )
+        reference_ledger = rows(
+            "reference_view_decision_ledger.jsonl",
+            ReferenceViewDecisionLedgerEntry,
+            lambda r: r["event_id"],
+        )
+        event_ids = [e["event_id"] for e in events]
+        duplicates = {key for key in event_ids if event_ids.count(key) > 1}
+        if duplicates:
             issues.append(
                 BundleLoadIssue(
-                    code="RESIDUAL_WIRE_NORMALIZED",
-                    message=(
-                        f"Normalized {normalized_residual_count} residual records from the "
-                        "workspace alias to the frozen resolution contract"
-                    ),
+                    code="DUPLICATE_EVENTS_QUARANTINED", message=str(sorted(duplicates))
                 )
             )
-        review_decisions = RevisionBundleIO._jsonl(
-            root / "reference_review_decisions.jsonl"
-        )
-        date_ledger = RevisionBundleIO._jsonl(root / "date_resolution_ledger.jsonl")
-        reference_ledger = RevisionBundleIO._jsonl(
-            root / "reference_view_decision_ledger.jsonl"
-        )
+            events = [e for e in events if e["event_id"] not in duplicates]
         bundle = CanonicalRevisionBundle.model_validate(
             {
                 **manifest,

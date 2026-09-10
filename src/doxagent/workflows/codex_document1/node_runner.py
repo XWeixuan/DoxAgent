@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import logging
+import re
 import sqlite3
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
@@ -10,6 +12,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Literal
 from uuid import uuid4
+
+import httpx
 
 from doxagent.codex_runtime.client import CodexWorkerClient, WorkspaceClient
 from doxagent.codex_runtime.errors import StructuredOutputInvalid
@@ -19,6 +23,7 @@ from doxagent.codex_runtime.schema import (
     ArtifactKind,
     ArtifactRef,
     AttemptStatus,
+    CitationEntry,
     CitationManifest,
     CodexAgentRole,
     CodexD1Node,
@@ -81,9 +86,7 @@ class CodexD1NodeRunner:
         worker: CodexWorkerClient,
         workspace: WorkspaceClient,
         repository: CodexRuntimeRepository,
-        prompt_root: str | Path = (
-            "prompts/codex_v2/document1/compatibility/legacy_document1"
-        ),
+        prompt_root: str | Path = ("prompts/codex_v2/document1/compatibility/legacy_document1"),
         model: str = "gpt-5.6-luna",
         model_provider: str | None = None,
         effort: Literal["low", "medium", "high", "xhigh", "max"] = "max",
@@ -239,8 +242,23 @@ class CodexD1NodeRunner:
                 in {CodexD1Node.C1, CodexD1Node.C3, CodexD1Node.O4_A, CodexD1Node.C5},
                 max_subagents=self._max_subagents,
             )
-            job = await self._worker.run(worker_request)
-            if job.thread_id:
+            execution_error = None
+            try:
+                job = await self._worker.run(worker_request)
+            except Exception as exc:
+                from doxagent.codex_runtime.errors import (
+                    CapabilityDenied,
+                    ImmutableWorkspacePath,
+                    InvalidWorkspacePath,
+                )
+                from doxagent.ticker_initialization.schema import LeaseLost
+
+                if isinstance(
+                    exc, (LeaseLost, CapabilityDenied, ImmutableWorkspacePath, InvalidWorkspacePath)
+                ):
+                    raise
+                execution_error = exc
+            if job is not None and job.thread_id:
                 self._repository.save_thread(
                     ThreadRecord(
                         workflow_version=self._workflow_version,
@@ -253,21 +271,45 @@ class CodexD1NodeRunner:
                         model_provider=self._model_provider,
                     )
                 )
-            if job.status != "succeeded" or not job.final_response:
-                raise StructuredOutputInvalid(job.error_message or "worker returned no response")
-            output = NodeOutput.model_validate_json(job.final_response)
-            validate_node_output(
-                node,
-                output,
-                require_complete_c4_enrichment=(
-                    self._research_lane is ResearchLane.GLOBAL_RESEARCH
+            from .recovery import recover_output
+
+            output, quarantined = recover_output(job.final_response or "" if job else "")
+            if job is None or job.status != "succeeded":
+                reason = (job.error_code or job.status) if job else type(execution_error).__name__
+                output.warnings.append(f"WORKER_RECOVERY: {reason}")
+            if seeded.structured_output_path and not (
+                output.entity_relations or output.future_nodes
+            ):
+                try:
+                    saved = await self._workspace.read_text(run_id, seeded.structured_output_path)
+                    recovered, issues = recover_output(saved.content or "")
+                    if recovered.entity_relations or recovered.future_nodes:
+                        output = recovered
+                        quarantined.extend(issues)
+                except FileNotFoundError:
+                    pass
+            try:
+                await self._attempt_outputs.validate(
+                    run_id=run_id, node=node, seeded=seeded, output=output
+                )
+            except StructuredOutputInvalid:
+                if execution_error is not None:
+                    raise execution_error from None
+                if job and job.status != "succeeded":
+                    from doxagent.codex_runtime.errors import WorkerUnavailable
+
+                    error = WorkerUnavailable(job.error_message or job.status)
+                    error.code = job.error_code or "WORKER_TURN_FAILED"
+                    raise error from None
+                raise
+            validate_node_output(node, output)
+            await self._write_diagnostic(
+                run_id,
+                f"attempts/{attempt_id}/audit/ingestion.json",
+                __import__("json").dumps(
+                    {"version": 1, "warnings": output.warnings, "quarantined": quarantined},
+                    ensure_ascii=False,
                 ),
-            )
-            await self._attempt_outputs.validate(
-                run_id=run_id,
-                node=node,
-                seeded=seeded,
-                output=output,
             )
             report, completion = await self._contexts.write_output(
                 run_id=run_id,
@@ -282,19 +324,21 @@ class CodexD1NodeRunner:
                 attempt_id=attempt_id,
                 artifact_id=report.artifact_id,
                 anchor=node.value,
-                markdown=output.report_markdown,
+                # C4 emits governed citations inside structured relation/future-node
+                # fields while other nodes primarily emit them in report_markdown.
+                # Promote from the complete validated output so every handoff can
+                # be rebound into the next attempt's private observation store.
+                markdown=output.model_dump_json(by_alias=True),
             )
             unresolved = sorted({entry.alias for entry in manifest.entries if not entry.resolved})
-            if self._research_lane is not ResearchLane.LEGACY_DOCUMENT1 and unresolved:
-                raise StructuredOutputInvalid(
-                    "unresolved citation aliases: " + ", ".join(unresolved)
-                )
+            if unresolved:
+                output.warnings.append("UNRESOLVED_CITATIONS: " + ", ".join(unresolved))
             self._repository.save_artifact(report)
             self._repository.save_artifact(completion)
             attempt = attempt.model_copy(
                 update={
                     "status": AttemptStatus.SUCCEEDED,
-                    "thread_id": job.thread_id,
+                    "thread_id": job.thread_id if job else selected_thread_id,
                     "completed_at": utc_now(),
                 }
             )
@@ -308,7 +352,8 @@ class CodexD1NodeRunner:
                 citation=("passed" if not manifest.warnings else "passed_with_warnings"),
                 citation_warnings=manifest.warnings,
             )
-            self._record_usage(worker_request, job)
+            if job is not None:
+                self._record_usage(worker_request, job)
             return NodeRunResult(output, report, attempt, job, seeded)
         except Exception as exc:
             attempt = attempt.model_copy(
@@ -329,7 +374,7 @@ class CodexD1NodeRunner:
                     schema="failed",
                     progressive="failed",
                     citation="not_run",
-                    error=bounded_error_message(exc),
+                    error=str(exc),
                 )
             if job is not None:
                 self._record_usage(
@@ -412,6 +457,12 @@ class CodexD1NodeRunner:
             manifest = CitationManifest(
                 run_id=run_id,
                 artifact_id=artifact_id,
+                entries=[
+                    CitationEntry(
+                        alias=alias, attempt_id=attempt_id, resolved=False, warning=warning
+                    )
+                    for alias in sorted(set(re.findall(r"【cite:(O[1-9]\d*)】", markdown)))
+                ],
                 warnings=[*warnings, warning],
             )
             self._repository.save_citation_manifest(manifest)
@@ -445,6 +496,8 @@ class CodexD1NodeRunner:
                 "run_id": run_id,
                 "attempt_id": attempt_id,
             }
+        if not isinstance(payload, dict):
+            payload = {"run_id": run_id, "attempt_id": attempt_id}
         payload["job_status"] = job.status if job is not None else "not_started"
         payload["validation"] = {
             "schema": schema,
@@ -453,11 +506,17 @@ class CodexD1NodeRunner:
             "citation_warnings": citation_warnings or [],
             "error": error,
         }
-        await self._workspace.write_text(
+        await self._write_diagnostic(
             run_id,
             path,
             json.dumps(payload, ensure_ascii=False, indent=2),
         )
+
+    async def _write_diagnostic(self, run_id: str, path: str, content: str) -> None:
+        try:
+            await self._workspace.write_text(run_id, path, content)
+        except (OSError, httpx.HTTPError):
+            logging.getLogger(__name__).warning("Diagnostic write failed: %s", path, exc_info=True)
 
     def _record_usage(
         self,
@@ -534,5 +593,6 @@ def validate_node_output(
 
 
 def bounded_error_message(exc: BaseException) -> str:
-    value = str(exc).strip() or exc.__class__.__name__
-    return value if len(value) <= 2_000 else value[:1_997] + "..."
+    from doxagent.codex_runtime.recovery import bounded_text
+
+    return bounded_text(str(exc).strip() or exc.__class__.__name__, 2000)

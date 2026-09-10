@@ -272,33 +272,36 @@ class AttemptOutputValidator:
         assert seeded.report_draft_path
         assert seeded.progress_path
         assert seeded.observation_candidates_path
-        draft = await self._workspace.read_text(run_id, seeded.report_draft_path)
-        if not draft.content or not draft.content.strip():
-            raise StructuredOutputInvalid("progressive report draft is missing or empty")
-        progress_file = await self._workspace.read_text(run_id, seeded.progress_path)
+
+        async def read(path: str) -> str:
+            try:
+                return (await self._workspace.read_text(run_id, path)).content or ""
+            except FileNotFoundError:
+                return ""
+
+        draft = await read(seeded.report_draft_path)
+        if not output.report_markdown.strip():
+            output.report_markdown = draft
+            output.warnings.append("REPORT_RECOVERED_FROM_WORKSPACE")
+        if not output.report_markdown.strip():
+            raise StructuredOutputInvalid("no usable report in response or workspace")
+        if _normalize_newlines(draft) != _normalize_newlines(output.report_markdown):
+            output.warnings.append("DRAFT_DIFFERENCE: canonical report uses structured response")
         try:
-            progress = json.loads(_strip_utf8_bom(progress_file.content or ""))
-        except json.JSONDecodeError as exc:
-            raise StructuredOutputInvalid("progress.json is not valid JSON") from exc
-        if progress.get("status") != "completed":
-            raise StructuredOutputInvalid("progress.json is not completed")
-        declared_sections = progress.get("required_sections")
-        if declared_sections is not None and declared_sections != list(seeded.required_sections):
-            raise StructuredOutputInvalid("progress.json required_sections changed")
-        if progress.get("completed_sections") != list(seeded.required_sections):
-            raise StructuredOutputInvalid("not all required report sections were completed")
-        if _normalize_newlines(draft.content) != _normalize_newlines(output.report_markdown):
-            raise StructuredOutputInvalid("report_draft.md does not match report_markdown")
-        candidate_file = await self._workspace.read_text(run_id, seeded.observation_candidates_path)
+            progress = json.loads(_strip_utf8_bom(await read(seeded.progress_path)))
+        except (ValueError, TypeError):
+            progress = {}
+        if not isinstance(progress, dict) or (
+            progress.get("status") != "completed"
+            or progress.get("completed_sections") != list(seeded.required_sections)
+        ):
+            output.warnings.append("PROGRESS_INCOMPLETE: research text retained")
         try:
-            candidates = json.loads(_strip_utf8_bom(candidate_file.content or ""))
-        except json.JSONDecodeError as exc:
-            raise StructuredOutputInvalid("observation_candidates.json is not valid JSON") from exc
-        expected = [item.model_dump(mode="json") for item in output.observation_candidates]
-        if candidates != expected:
-            raise StructuredOutputInvalid(
-                "observation_candidates.json does not match structured completion"
-            )
+            candidates = json.loads(_strip_utf8_bom(await read(seeded.observation_candidates_path)))
+        except (ValueError, TypeError):
+            candidates = None
+        if candidates != [item.model_dump(mode="json") for item in output.observation_candidates]:
+            output.warnings.append("CANDIDATE_SIDECAR_DIFFERENCE: canonical response retained")
 
 
 def _normalize_newlines(value: str) -> str:

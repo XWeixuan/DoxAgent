@@ -92,6 +92,109 @@ class RevisionBundleValidator:
         force_pending_delta_ids: list[str] | None = None,
         context: BundleValidationContext | None = None,
     ) -> BundleValidationOutcome:
+        """Iteratively isolate conflicting edits, never publish invalid graph edges."""
+        original_issues = list(initial_issues or [])
+        current = bundle.model_copy(deep=True)
+        recovered: list[ValidationIssue] = []
+        pending = set(force_pending_delta_ids or [])
+        fatal = {
+            "BUNDLE_IDENTITY_MISMATCH",
+            "UNKNOWN_DELTA_BATCH",
+            "STALE_BASE",
+            "TICKER_MISMATCH",
+            "BASE_MISMATCH",
+            "AMBIGUOUS_DELTA_IDS",
+        }
+        # Each iteration removes at least one edit/ledger row. Bound by input size.
+        limit = 2 + sum(len(v) for v in current.model_dump().values() if isinstance(v, list))
+        for _ in range(limit):
+            outcome = self._validate_once(
+                current,
+                initial_issues=original_issues,
+                force_pending_delta_ids=sorted(pending),
+                context=context,
+            )
+            errors = [i for i in outcome.issues if i.severity is ValidationSeverity.ERROR]
+            if not errors:
+                if recovered:
+                    outcome.status = ValidationStatus.PARTIAL
+                    outcome.issues = recovered + outcome.issues
+                return outcome
+            if any(i.code in fatal or i in original_issues for i in errors):
+                return outcome
+            bad = {i.item_id for i in errors if i.item_id}
+            cycle = self._relation_cycle(current)
+            bad.update(cycle or [])
+            for event in current.event_revisions:
+                if any(f.fact_id in bad for f in event.facts):
+                    bad.add(event.event_id)
+                if any(
+                    getattr(row, "delta_id", None) in bad and row.event_id == event.event_id
+                    for row in current.date_resolution_ledger
+                ):
+                    bad.add(event.event_id)
+            # Remove dependent edits as well; existing published events remain intact.
+            changed = True
+            while changed:
+                before = len(bad)
+                for event in current.event_revisions:
+                    refs = {
+                        *event.related_event_ids,
+                        *event.derived_from_event_ids,
+                        event.supersedes_event_id,
+                    }
+                    if refs & bad:
+                        bad.add(event.event_id)
+                for item in current.event_retirements:
+                    if item.redirect_to_event_id in bad:
+                        bad.add(item.event_id)
+                changed = len(bad) != before
+            before = current.model_dump_json()
+            edits = [e for e in current.event_revisions if e.event_id not in bad]
+            for row in current.date_resolution_ledger:
+                if row.event_id in bad or row.fact_id in bad or row.delta_id in bad:
+                    if row.delta_id:
+                        pending.add(row.delta_id)
+            current = current.model_copy(
+                update={
+                    "event_revisions": edits,
+                    "event_retirements": [
+                        r for r in current.event_retirements if r.event_id not in bad
+                    ],
+                    "reference_review_decisions": [
+                        r for r in current.reference_review_decisions if r.event_id not in bad
+                    ],
+                    "reference_view_decision_ledger": [
+                        r for r in current.reference_view_decision_ledger if r.event_id not in bad
+                    ],
+                    "date_resolution_ledger": [
+                        r
+                        for r in current.date_resolution_ledger
+                        if r.event_id not in bad and r.fact_id not in bad and r.delta_id not in bad
+                    ],
+                }
+            )
+            if current.model_dump_json() == before:
+                return outcome  # Unknown/global defect: never pretend it was repaired.
+            recovered.extend(
+                i.model_copy(
+                    update={
+                        "severity": ValidationSeverity.WARNING,
+                        "message": "QUARANTINED: " + i.message,
+                    }
+                )
+                for i in errors
+            )
+        return outcome
+
+    def _validate_once(
+        self,
+        bundle: CanonicalRevisionBundle,
+        *,
+        initial_issues: list[ValidationIssue] | None = None,
+        force_pending_delta_ids: list[str] | None = None,
+        context: BundleValidationContext | None = None,
+    ) -> BundleValidationOutcome:
         issues: list[ValidationIssue] = list(initial_issues or [])
         if context is not None:
             identity = (
@@ -188,6 +291,38 @@ class RevisionBundleValidator:
                 )
             )
         normalized = self._validate_and_normalize_reviews(normalized, issues, context)
+        if context is not None and normalized.contract_version == "event-library-maintenance-v3":
+            from .contracts import ReferenceViewDecisionLedgerEntry
+
+            ledgers = {row.event_id: row for row in normalized.reference_view_decision_ledger}
+            for decision in normalized.reference_review_decisions:
+                if (
+                    decision.is_important is not None
+                    and decision.reference_view_basis is not None
+                    and decision.note
+                    and decision.reference_view_basis.includes == decision.include_in_reference_view
+                ):
+                    ledger = ReferenceViewDecisionLedgerEntry(
+                        event_id=decision.event_id,
+                        is_important=decision.is_important,
+                        include_in_reference_view=decision.include_in_reference_view,
+                        reference_view_basis=decision.reference_view_basis,
+                        note=decision.note,
+                        review_reason=decision.candidate_reason,
+                        as_of=context.frozen_as_of,
+                    )
+                    if ledgers.get(decision.event_id) != ledger:
+                        issues.append(
+                            self._warning(
+                                "REFERENCE_LEDGER_REBUILT",
+                                "Redundant ledger reconstructed from canonical review decision",
+                                decision.event_id,
+                            )
+                        )
+                    ledgers[decision.event_id] = ledger
+            normalized = normalized.model_copy(
+                update={"reference_view_decision_ledger": list(ledgers.values())}
+            )
         self._validate_time_contract(normalized, batches, issues, context)
         self._validate_reference_contract(normalized, issues, context)
         self._semantic_checks(normalized, issues, context)
@@ -634,7 +769,7 @@ class RevisionBundleValidator:
         }
         for delta_id in sorted(set(delta_by_id) - ledger_delta_ids):
             issues.append(
-                self._error(
+                self._warning(
                     "DATE_RESOLUTION_LEDGER_DELTA_COVERAGE",
                     "Every maintenance-v3 Delta requires at least one date ledger row",
                     delta_id,
@@ -723,9 +858,7 @@ class RevisionBundleValidator:
                         event.event_id,
                     )
                 )
-            event_start = occurrence_start(
-                event.occurred_at, event.occurrence_time_precision
-            )
+            event_start = occurrence_start(event.occurred_at, event.occurrence_time_precision)
             if as_of is not None and event_start is not None and event_start > as_of:
                 issues.append(
                     self._error(
@@ -734,9 +867,7 @@ class RevisionBundleValidator:
                         event.event_id,
                     )
                 )
-            consumed = {
-                delta_id for fact in event.facts for delta_id in fact.consumes_delta_ids
-            }
+            consumed = {delta_id for fact in event.facts for delta_id in fact.consumes_delta_ids}
             traceable = any(
                 delta_by_id[delta_id].occurrence_date_candidates
                 for delta_id in consumed
@@ -748,18 +879,22 @@ class RevisionBundleValidator:
                 OccurrenceTimePrecision.YEAR,
                 OccurrenceTimePrecision.INTERVAL,
             }
-            if (traceable or broad_precision) and (
-                event.occurrence_time_precision is OccurrenceTimePrecision.UNKNOWN
-                or broad_precision
-            ) and (
-                ledger is None
-                or (
-                    broad_precision
-                    and ledger.status is not DateResolutionStatus.GENUINELY_PERIOD_WIDE
-                )
-                or (
+            if (
+                (traceable or broad_precision)
+                and (
                     event.occurrence_time_precision is OccurrenceTimePrecision.UNKNOWN
-                    and ledger.status is not DateResolutionStatus.UNRESOLVED
+                    or broad_precision
+                )
+                and (
+                    ledger is None
+                    or (
+                        broad_precision
+                        and ledger.status is not DateResolutionStatus.GENUINELY_PERIOD_WIDE
+                    )
+                    or (
+                        event.occurrence_time_precision is OccurrenceTimePrecision.UNKNOWN
+                        and ledger.status is not DateResolutionStatus.UNRESOLVED
+                    )
                 )
             ):
                 code = (
@@ -784,13 +919,10 @@ class RevisionBundleValidator:
                         )
                     )
                     continue
-                if (
-                    fact.fact_occurrence_time_precision is not OccurrenceTimePrecision.DAY
-                    or (
-                        fact.fact_occurred_at != "SAME"
-                        and not occurrence_time_matches_precision(
-                            fact.fact_occurred_at, OccurrenceTimePrecision.DAY
-                        )
+                if fact.fact_occurrence_time_precision is not OccurrenceTimePrecision.DAY or (
+                    fact.fact_occurred_at != "SAME"
+                    and not occurrence_time_matches_precision(
+                        fact.fact_occurred_at, OccurrenceTimePrecision.DAY
                     )
                 ):
                     issues.append(
@@ -948,9 +1080,7 @@ class RevisionBundleValidator:
                 revision.include_in_reference_view
                 if revision is not None
                 else (
-                    None
-                    if current_decision is None
-                    else current_decision.include_in_reference_view
+                    None if current_decision is None else current_decision.include_in_reference_view
                 )
             )
             if expected_important is not None and row.is_important != expected_important:

@@ -111,7 +111,7 @@ class InternalNodeAdapter:
             effort=settings.codex_reasoning_effort,
             timeout_seconds=settings.codex_node_timeout_seconds,
         )
-        if kind == "d1":
+        if kind in {"d1", "d1_assemble", "d1_publish"}:
             from doxagent.codex_runtime.schema import ResearchLane
             from doxagent.horizontal_collection.collector import HorizontalCollector
             from doxagent.horizontal_collection.compiler import HorizontalStateCompiler
@@ -133,7 +133,11 @@ class InternalNodeAdapter:
                 horizontal_compiler=HorizontalStateCompiler(metrics=metrics, targets=targets),
                 max_attempts=1,
             )
-            return owner, owner._execute_node
+            return owner, {
+                "d1": owner._execute_node,
+                "d1_assemble": owner._write_final_document,
+                "d1_publish": owner._publish_references,
+            }[kind]
         if kind == "d2":
             from doxagent.workflows.codex_document2.runner import Document2TurnRunner
 

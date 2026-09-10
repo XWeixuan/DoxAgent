@@ -200,9 +200,9 @@ async def test_bundle_injects_canonical_agent_and_skill_sources(
     run_id = f"run-{node.value}-skill"
     skill_path = f"attempts/{node.value}-1/input/skills/{skill_name}"
     injected_skill = (await workspace.read_text(run_id, skill_path)).content or ""
-    injected_agent = (await workspace.read_text(run_id, seeded.task_path.replace(
-        "task.json", "task.md"
-    ))).content or ""
+    injected_agent = (
+        await workspace.read_text(run_id, seeded.task_path.replace("task.json", "task.md"))
+    ).content or ""
     assert injected_skill == Path(canonical_skill).read_text(encoding="utf-8")
     assert injected_agent == Path(canonical_agent).read_text(encoding="utf-8")
     assert len(injected_skill.encode("utf-8")) >= minimum_bytes
@@ -259,12 +259,8 @@ async def test_c4_bundle_declares_and_seeds_structured_output_path(tmp_path: Pat
         context_payload={"ticker": "NVDA"},
         horizontal=None,
     )
-    assert seeded.structured_output_path == (
-        "attempts/c4-pre-1/output/completion.json"
-    )
-    task = json.loads(
-        (await workspace.read_text("run-c4-output", seeded.task_path)).content or ""
-    )
+    assert seeded.structured_output_path == ("attempts/c4-pre-1/output/completion.json")
+    task = json.loads((await workspace.read_text("run-c4-output", seeded.task_path)).content or "")
     assert task["schema_version"] == "codex-d1-attempt-task-v4"
     assert task["structured_output_path"] == seeded.structured_output_path
     assert task["progress_contract"] is None
@@ -295,9 +291,7 @@ async def test_attempt_bundle_hashes_and_seals_manual_upstream(tmp_path: Path) -
         manual_upstream={"c1.md": "Changed C1 conclusion"},
     )
     assert first.input_sha256 != second_hash
-    assert first.manual_upstream_paths == (
-        "attempts/o4-a-1/input/manual_upstream/c1.md",
-    )
+    assert first.manual_upstream_paths == ("attempts/o4-a-1/input/manual_upstream/c1.md",)
     task = json.loads(
         (await workspace.read_text("run-manual-upstream", first.task_path)).content or ""
     )
@@ -313,9 +307,7 @@ async def test_attempt_bundle_hashes_and_seals_manual_upstream(tmp_path: Path) -
     assert copied.content == "Current C1 conclusion"
     audit = json.loads(
         (
-            await workspace.read_text(
-                "run-manual-upstream", "attempts/o4-a-1/audit/bundle.json"
-            )
+            await workspace.read_text("run-manual-upstream", "attempts/o4-a-1/audit/bundle.json")
         ).content
         or ""
     )
@@ -440,6 +432,7 @@ async def test_upstream_observation_is_rehydrated_with_lineage(tmp_path: Path) -
     payload = upstream_handoff(
         {
             "report_markdown": f"Revenue fact【cite:{stored.alias}】",
+            "entity_relations": [{"关系说明": f"Structured fact【cite:{stored.alias}】"}],
             "warnings": [],
             "observation_candidates": [
                 {"metric_key": "fin_revenue", "source_aliases": [stored.alias]}
@@ -452,6 +445,7 @@ async def test_upstream_observation_is_rehydrated_with_lineage(tmp_path: Path) -
     )
     handoff = rebound["upstream"]
     assert handoff["report_markdown"] == "Revenue fact【cite:O1】"
+    assert handoff["entity_relations"][0]["关系说明"] == "Structured fact【cite:O1】"
     assert handoff["observation_candidates"][0]["source_aliases"] == ["O1"]
     imported = await workspace.read_attempt_observations("run-rebind", "o4-a-current")
     assert imported[0].metadata["rehydrated"] is True

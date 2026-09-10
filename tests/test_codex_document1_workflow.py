@@ -95,6 +95,35 @@ def test_node_output_schema_is_strict_at_every_object_boundary() -> None:
     assert_strict(NODE_OUTPUT_SCHEMA)
 
 
+def test_node_output_restores_internal_names_from_durable_receipts() -> None:
+    output = NodeOutput.model_validate(
+        {
+            "status": "completed",
+            "entity_relations": [
+                {
+                    "relation_subject": "MU",
+                    "relation_object": "HBM",
+                    "relation_type": "product",
+                    "relation_description": "memory",
+                    "related_business_or_product": "HBM4",
+                }
+            ],
+            "future_nodes": [
+                {
+                    "time": "2026-Q4",
+                    "future_event": "earnings",
+                    "relationship_to_target": "issuer event",
+                    "source": "company",
+                    "source_published_at": "2026-09-01",
+                }
+            ],
+        }
+    )
+
+    assert output.entity_relations[0].relation_subject == "MU"
+    assert output.future_nodes[0].future_event == "earnings"
+
+
 def test_cross_node_handoff_preserves_lineage_for_rebinding() -> None:
     output = NodeOutput(
         status="completed",
@@ -397,6 +426,48 @@ async def test_global_research_runs_exact_new_dag_and_publishes_only_c1_c3_c5(
         ).content
     )["payload"]["c4_pre_scan"]
     assert c1_context["future_nodes"] == []
+
+
+@pytest.mark.asyncio
+async def test_global_research_c4_pre_scan_failure_does_not_block_core_reports(
+    tmp_path: Path,
+) -> None:
+    class PartialC4PreScanOrchestrator(CodexGlobalResearchOrchestrator):
+        async def _execute_or_partial(self, request, node, payload, checkpoint, **kwargs):
+            if node is CodexD1Node.C4_PRE_SCAN:
+                self._fail_checkpoint(checkpoint, node)
+                return NodeOutput(status="failed", summary="pre-scan unavailable"), None
+            return await super()._execute_or_partial(
+                request, node, payload, checkpoint, **kwargs
+            )
+
+    collector, compiler = _empty_horizontal()
+    repository = InMemoryCodexRuntimeRepository()
+    workspace = LocalWorkspaceClient(LocalWorkspaceStore(tmp_path / "global-workspaces"))
+    worker = _FakeWorker(workspace)
+    orchestrator = PartialC4PreScanOrchestrator(
+        worker=worker,
+        workspace=workspace,
+        repository=repository,
+        horizontal_collector=collector,
+        horizontal_compiler=compiler,
+        model="test-model",
+        max_attempts=1,
+    )
+
+    bundle = await orchestrator.run(
+        GlobalResearchRunRequest(
+            run_id="global-c4-pre-partial",
+            ticker="MU",
+            research_brief="test",
+        )
+    )
+
+    assert bundle.status == "published"
+    assert {"c1", "c3", "c5", "global_research"}.issubset(bundle.reports)
+    checkpoint = repository.get_checkpoint("global-c4-pre-partial")
+    assert checkpoint is not None
+    assert CodexD1Node.C4_PRE_SCAN in checkpoint.failed_nodes
 
 
 @pytest.mark.asyncio

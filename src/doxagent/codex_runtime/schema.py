@@ -15,21 +15,17 @@ CODEX_GLOBAL_RESEARCH_WORKFLOW_VERSION: Final[Literal["codex_global_research_v1"
 CODEX_MARKET_SITUATION_WORKFLOW_VERSION: Final[Literal["codex_market_situation_v1"]] = (
     "codex_market_situation_v1"
 )
-CODEX_DOCUMENT2_WORKFLOW_VERSION: Final[Literal["codex_document2_v1"]] = (
-    "codex_document2_v1"
-)
+CODEX_DOCUMENT2_WORKFLOW_VERSION: Final[Literal["codex_document2_v1"]] = "codex_document2_v1"
 CODEX_EVENT_LIBRARY_WORKFLOW_VERSION: Final[Literal["codex_event_library_v1"]] = (
     "codex_event_library_v1"
 )
-CODEX_DOCUMENT3_WORKFLOW_VERSION: Final[Literal["codex_document3_v1"]] = (
-    "codex_document3_v1"
+CODEX_DOCUMENT3_WORKFLOW_VERSION: Final[Literal["codex_document3_v1"]] = "codex_document3_v1"
+CODEX_PERSISTENT_RUNTIME_W3_WORKFLOW_VERSION: Final[Literal["persistent_runtime_w3_v1"]] = (
+    "persistent_runtime_w3_v1"
 )
-CODEX_PERSISTENT_RUNTIME_W3_WORKFLOW_VERSION: Final[
-    Literal["persistent_runtime_w3_v1"]
-] = "persistent_runtime_w3_v1"
-CODEX_MONITORING_O4_WORKFLOW_VERSION: Final[
-    Literal["codex_monitoring_o4_v1"]
-] = "codex_monitoring_o4_v1"
+CODEX_MONITORING_O4_WORKFLOW_VERSION: Final[Literal["codex_monitoring_o4_v1"]] = (
+    "codex_monitoring_o4_v1"
+)
 CodexWorkflowVersion: TypeAlias = Literal[
     "codex_d1_v2",
     "codex_global_research_v1",
@@ -281,9 +277,9 @@ class NodeAttempt(StrictModel):
     @field_validator("error_message")
     @classmethod
     def error_message_stays_small(cls, value: str | None) -> str | None:
-        if value is not None and len(value.encode("utf-8")) > 4096:
-            raise ValueError("attempt error_message exceeds 4 KiB")
-        return value
+        from .recovery import bounded_text
+
+        return bounded_text(value, 4000) if value is not None else None
 
     @model_validator(mode="after")
     def attempt_stays_small(self) -> NodeAttempt:
@@ -306,9 +302,7 @@ class WorkflowCheckpoint(StrictModel):
 
     @field_validator("completed_nodes", "current_nodes", "failed_nodes")
     @classmethod
-    def node_arrays_are_bounded(
-        cls, value: list[CodexResearchNode]
-    ) -> list[CodexResearchNode]:
+    def node_arrays_are_bounded(cls, value: list[CodexResearchNode]) -> list[CodexResearchNode]:
         if len(value) > 64:
             raise ValueError("checkpoint node arrays are limited to 64 items")
         return value
@@ -352,6 +346,11 @@ class NormalizedAgentObservation(AgentObservationCandidate):
 
 
 class EntityRelation(StrictModel):
+    # Durable D1 receipts are serialized with field names, while agent wire
+    # output uses the governed Chinese aliases. Accept both forms when a
+    # completed child node is restored after a process restart.
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
     relation_subject: str = Field(alias="关系主体")
     relation_object: str = Field(alias="关系对象")
     relation_type: str = Field(alias="关系类型")
@@ -360,6 +359,9 @@ class EntityRelation(StrictModel):
 
 
 class FutureNode(StrictModel):
+    # See EntityRelation: persisted durable returns use internal field names.
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
     time: str = Field(alias="时间")
     future_event: str = Field(alias="未来事项")
     relationship_to_target: str = Field(alias="与目标公司的关系")
@@ -429,7 +431,14 @@ class WorkflowEvent(StrictModel):
         import json
 
         if len(json.dumps(value, ensure_ascii=False, default=str).encode("utf-8")) > 16384:
-            raise ValueError("workflow event payload exceeds 16 KiB")
+            from .recovery import bounded_text
+
+            raw = json.dumps(value, ensure_ascii=False, default=str)
+            return {
+                "truncated": True,
+                "payload_sha256": __import__("hashlib").sha256(raw.encode("utf-8")).hexdigest(),
+                "summary": bounded_text(raw, 6000),
+            }
         return value
 
     @model_validator(mode="after")

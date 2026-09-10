@@ -67,7 +67,7 @@ class ActivationAdapter:
             if policy is None or index is None:
                 raise ValueError("activation has no usable Index/Projection")
             self._documents_available(context.run.ticker, refs)
-            await self._w3_ready()
+            await self._wait_w3(context)
             # Only references enter the revision; bodies remain in local artifact storage.
             selected = {
                 key: refs[key]
@@ -96,17 +96,42 @@ class ActivationAdapter:
                 raise ValueError("activation was superseded before readiness")
             if context.repository.revision_acknowledged(context.run.ticker, identity, worker):
                 if worker == "runtime":
-                    await self._w3_ready()
+                    await self._wait_w3(context, deadline=deadline)
                     if not context.repository.revision_acknowledged(
                         context.run.ticker, identity, "bus"
                     ):
-                        raise ValueError("Bus readiness expired before Runtime completion")
+                        if time.monotonic() >= deadline:
+                            raise TimeoutError("Bus readiness expired before Runtime completion")
+                        await asyncio.sleep(1)
+                        continue
                 return NodeResult(artifacts={"revision_id": identity, "worker": worker})
             if time.monotonic() >= deadline:
+                reason = context.repository.admission_failure(context.run.ticker, identity, worker)
                 raise TimeoutError(
-                    f"{worker} did not acknowledge activation within startup timeout"
+                    f"{worker} did not acknowledge activation within startup timeout: "
+                    f"{reason or 'no consumer error recorded'}"
                 )
             await asyncio.sleep(1)
+
+    async def _wait_w3(self, context: NodeContext, *, deadline: float | None = None) -> None:
+        import httpx
+
+        deadline = (
+            deadline
+            if deadline is not None
+            else time.monotonic() + float(context.node.inputs.get("startup_timeout_seconds", 180))
+        )
+        while True:
+            try:
+                await asyncio.wait_for(
+                    self._w3_ready(), timeout=max(0.01, deadline - time.monotonic())
+                )
+                return
+            except (httpx.HTTPError, TimeoutError, ValueError) as exc:
+                context.checkpoint(readiness_error=f"{type(exc).__name__}: {str(exc)[:1000]}")
+                if time.monotonic() >= deadline:
+                    raise
+                await asyncio.sleep(min(2, max(0, deadline - time.monotonic())))
 
     async def _w3_ready(self) -> None:
         import httpx

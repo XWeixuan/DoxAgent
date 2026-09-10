@@ -56,7 +56,9 @@ def decode(value: Any) -> Any:
         raise ValueError("invalid invocation type")
     model = getattr(importlib.import_module(module), name)
     if kind in {"model", "type"} and isinstance(model, type) and issubclass(model, BaseModel):
-        return model if kind == "type" else model.model_validate(parts[1])
+        from doxagent.codex_runtime.recovery import ingest_model
+
+        return model if kind == "type" else ingest_model(model, parts[1])
     if kind == "enum" and isinstance(model, type) and issubclass(model, Enum):
         return model(parts[1])
     raise ValueError("invalid invocation type or tag")

@@ -68,13 +68,37 @@ class CDECRWorkflowRunner:
             raise ValueError(f"unknown SourceMessage IDs: {', '.join(sorted(missing))}")
         documents = list(self.document_processor.process_batch(requested))
         status_by_message = {
-            str(item.message_id): _enum_value(getattr(item, "status", ""))
-            for item in documents
+            str(item.message_id): _enum_value(getattr(item, "status", "")) for item in documents
         }
         if set(status_by_message) != set(requested):
-            raise ValueError("document processor did not return complete message ID coverage")
-        eligible = [item for item in requested if status_by_message[item] == "SUCCEEDED"]
+            missing_outputs = set(requested) - set(status_by_message)
+            loader = getattr(
+                self.registry, "get_latest_completed_document_result_for_message", None
+            )
+            for message_id in sorted(missing_outputs):
+                recovered = loader(message_id) if loader else None
+                if recovered is not None:
+                    status_by_message[message_id] = _enum_value(recovered.status)
+            missing_outputs = set(requested) - set(status_by_message)
+            if missing_outputs:
+                from pathlib import Path
+
+                gap = {
+                    "runtime_scope": self.binding.runtime_scope,
+                    "requested": requested,
+                    "pending_message_ids": sorted(missing_outputs),
+                }
+                encoded = json.dumps(gap, ensure_ascii=False, sort_keys=True)
+                root = Path(self.binding.registry_path).parent / "document_gaps"
+                root.mkdir(parents=True, exist_ok=True)
+                path = root / (hashlib.sha256(encoded.encode()).hexdigest() + ".json")
+                path.write_text(encoded, encoding="utf-8")
+                if not any(status_by_message.get(item) == "SUCCEEDED" for item in requested):
+                    raise RuntimeError("CDECR has no usable documents; missing outputs recorded")
+        eligible = [item for item in requested if status_by_message.get(item) == "SUCCEEDED"]
         if not eligible:
+            if any(status_by_message.get(item) in {"FAILED", "ERROR"} for item in requested):
+                raise RuntimeError("CDECR document processing failed without usable output")
             return CDECRWorkflowResult(
                 market=self.binding.market,
                 ticker=self.binding.ticker,
@@ -151,8 +175,7 @@ class CDECRWorkflowRunner:
                         "member_event_ids": [
                             event_id
                             for event_id in item.member_event_ids
-                            if eligible_atomic_ids is None
-                            or event_id in eligible_atomic_ids
+                            if eligible_atomic_ids is None or event_id in eligible_atomic_ids
                         ]
                     }
                 )

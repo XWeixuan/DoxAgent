@@ -1,5 +1,11 @@
 # changelog
 
+- 2026-09-10: 落地 ticker 初始化全链路鲁棒性批次并补齐真实 MU 新故障回归：D1/O2/D2/D3/O4、durable receipt、诊断事件及 Bus/Runtime 接纳按“可证明主体继续、坏项最小隔离、身份/不可变性/真实能力继续硬阻断”处理；Global Research 不再因历史 C4 pre-scan 失败标记否决已齐备的 C1/C3/C5 核心报告。定向测试覆盖恢复、隔离、发布与启动边界。
+
+- 2026-09-10: 修复 Global Research D1 跨 attempt 的 MCP 证据边界：已有 attempt 恢复时不复用旧 Codex thread，避免 Data MCP/Source Capture 子进程继续绑定旧 attempt；引用晋级改为扫描完整结构化 NodeOutput，上游引用重绑定递归覆盖结构化字段。新增结构化引用重绑定回归断言，D1 相关测试 27 passed。
+
+- 2026-09-10: 修复真实 MU 初始化 resume 的 D1 durable receipt 兼容性：EntityRelation/FutureNode 同时接受受治理中文 alias 与持久化内部字段名，避免恢复已成功 C4 结果时触发大规模 Pydantic alias 校验失败；D1 `node.failed` 事件改用有界异常文本，避免原始异常再次触发 `WorkflowEvent payload exceeds 16 KiB` 并掩盖根因。新增对应回归测试，保留失败审计并继续使用正式 resume 链路。
+
 - 2026-09-07: 在用户明确授权后，将 ticker initialization 低频摘要迁移应用到远端 Supabase。远端 migration history 已登记为 `20260907061350_ticker_initialization_summaries`；本地迁移文件、离线检查与运维记录同步为该版本，避免未来 `db push` 重复识别同一 DDL。已核验表、RLS、SECURITY INVOKER RPC 及 anon/authenticated/service_role 权限；未写入业务摘要、未启动 ticker 或模型任务。
 
 - 2026-09-06: 调优 Persistent Runtime V2 的 W1/W2 Responses 缓存：实测确认原 `x-dashscope-session-cache: enable` 只在完整请求复现时高命中、不同 Case 的公共 Event/Policy 前缀三种布局均为 0；保留 Responses API，改用官方 compatible endpoint 与默认隐式缓存，将 W1-R1 index、W1-R2 Event Detail、W2-R1 projection、W2-R2 Policy Detail、W1-R3 source message 确定性序列化为只读业务前缀，动态 Case 后置，远端不再继承 `previous_response_id` 但保留本地 lineage，并在 turn 记录 `prefix_fingerprint`。真实 round 测试的 W1-R1/W2-R1/W1-R2/W2-R2/W1-R3 缓存占比分别为 81.39%/88.51%/69.32%/41.23%/71.77%；最终 MU-W12-018 Case 技术完成，首轮缓存 10,368/25,413（40.80%），立即暖重复为 23,168/26,970（85.90%）。新增可复现 AB/逐轮验收脚本及报告；Responses usage 未返回 `cache_creation_input_tokens`，未作推断。
@@ -913,3 +919,12 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-09 修复 CDECR 历史消息抓取：Finnhub 与 Benzinga 统一按单日区间请求，单日请求及 retry 之间默认保持 10 秒间隔，每日允许 2 次 retry；单日最终失败隔离并继续后续日期，保留成功日期结果并记录不可用日期，Benzinga 同步改为逐日分页。新增历史 provider 重试/隔离定向测试；未执行远端 workflow。
 2026-09-10 修复 CDECR 恢复收尾：已最终化的 Bulk Epoch 自动收敛遗留 RUNNING native 控制节点，避免 child 已提交但控制面因 unsettled internal execution 无法结束；新增定向恢复测试。
 2026-09-10 修复 CDECR 预构建包只读校验：WAL Registry 改用 SQLite immutable read-only 连接，避免严格校验自身生成 `-wal/-shm` sidecar 后使 bundle 从两文件契约失效；新增无 sidecar 回归测试。
+2026-09-10 新增 `docs/ssh-connection-guide.md`：持久化香港与新加坡云服务器经 Clash/Ncat 的 SSH alias、密钥路径、主机指纹、无密码验证、文件传输和故障排查；不记录密码或私钥内容，并明确新加坡服务器尚未假设任何部署目录或服务。
+
+2026-09-10 新加坡迁移准备：扫描未发现 V2 业务代码绑定香港公网 IP；清除旧监控设置和页面的香港 SSH 默认值，部署脚本使用项目/认证文件参数，增加可配置镜像的 server overlay。保留历史操作文档，迁移不部署 DoxAtlas。
+
+2026-09-10 新加坡迁移记录：新增 SG_DEPLOYMENT.md，记录一致性备份/迁移、真实 Codex SDK 成功、DNS 切换与待完成 Gateway 验收；服务器 Compose 显式复用恢复后的 external volume。
+2026-09-10 桌面连接排障：确认云端 SSH/xRDP 正常，本地代理链路中断导致 14389 隧道退出；新增 connect-sg-desktop.ps1 自动重连入口，待实际链路恢复验证。公网 DNS 已复核为新加坡，HTTPS 200。
+2026-09-10 新加坡上线验收：启动全部 11 个 V2 常驻服务；Paper executor 只读 probe PASS、Data MCP 两个真实行情调用通过；投影四源追平 FRESH，Overview 同步延迟提示消失，登录与启动能力恢复。保留香港 MU 的历史 D1 403 失败，未重跑业务或发出订单。
+
+2026-09-10 V2 ticker 初始化鲁棒性修复（仅本地）：落实审计 A—G，增加旧 receipt 兼容与精确产物认领、D1 宽容接入和独立 assemble/publish 恢复、未解析引用跨汇总非阻塞、O2 逐行与关系闭包隔离/Pending、D2 新线程与 provisional 兜底、D3 failed-worker 成果恢复、O4 逐 need 结算/空计划/局部延期/暂停剩余 continuation、配置安装隔离及 readiness 有界等待与接纳错误留痕。保留身份/hash/租约/真实 consumer ACK 硬约束。31 个不同定向测试通过；未运行全量或真实模型测试，未同步远端。详见 dev_plan/workflow_v2/ticker_initialization_resilience_implementation_20260910.md。

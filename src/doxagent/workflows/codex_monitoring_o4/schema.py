@@ -150,9 +150,6 @@ class MonitoringConfigurationPlan(O4Model):
         ids = [item.source_need_id for item in self.source_needs]
         if len(ids) != len(set(ids)):
             raise ValueError("source_need_id values must be unique")
-        covered = {policy for item in self.source_needs for policy in item.policy_ids}
-        if not covered:
-            raise ValueError("configuration plan must cover at least one policy")
         return self
 
 

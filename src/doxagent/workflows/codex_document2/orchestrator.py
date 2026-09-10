@@ -687,8 +687,6 @@ class CodexDocument2Orchestrator:
         common: dict[str, object],
     ) -> Document2TurnResult:
         original = self._repository.get_thread(request.source_global_run_id, role.value)
-        if original is None:
-            raise ValueError(f"original Global Research {reviewer_label} thread is unavailable")
         return await self._run_with_retry(
             persistence_run_id=request.run_id,
             workspace_run_id=request.source_global_run_id,
@@ -705,7 +703,7 @@ class CodexDocument2Orchestrator:
             output_model=DomainReviewResult,
             agent_asset=f"agents/{report_key}-review.md",
             skill_asset="skills/domain-review.md",
-            thread_id=original.thread_id,
+            thread_id=original.thread_id if original else None,
             artifact_key=f"o0/reviews/{report_key}",
             fresh_on_retry=False,
         )
@@ -820,8 +818,8 @@ class CodexDocument2Orchestrator:
                 )
                 await self._save_progress(bundle, checkpoint)
                 return shell, final_ref
-            except Document2ExecutionError as exc:
-                if not exc.allows_partial:
+            except (Document2ExecutionError, ValueError) as exc:
+                if not _allows_branch_degradation(exc):
                     raise
                 if "state" in locals():
                     state.error = _bounded(str(exc))
@@ -921,7 +919,7 @@ class CodexDocument2Orchestrator:
         state: ShellRunState,
     ) -> dict[str, object]:
         value = prepared.event_library
-        if value.status is InputAvailability.AVAILABLE and not state.event_library_injected:
+        if value.status is InputAvailability.AVAILABLE:
             return value.model_dump(mode="json")
         return {
             "status": value.status.value,
@@ -1153,7 +1151,19 @@ def _shell_key(shell_id: str) -> str:
 
 
 def _allows_branch_degradation(error: BaseException) -> bool:
-    return isinstance(error, Document2ExecutionError) and error.allows_partial
+    from doxagent.codex_runtime.errors import (
+        CapabilityDenied,
+        ImmutableWorkspacePath,
+        InvalidWorkspacePath,
+    )
+    from doxagent.ticker_initialization.schema import LeaseLost
+
+    if isinstance(
+        error, (LeaseLost, CapabilityDenied, InvalidWorkspacePath, ImmutableWorkspacePath)
+    ):
+        return False
+    # Storage/lease failures are not research branch gaps.
+    return isinstance(error, (Document2ExecutionError, ValueError))
 
 
 def _append_warning(checkpoint: Document2Checkpoint, warning: str) -> None:

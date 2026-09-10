@@ -104,12 +104,17 @@ class WorkerJobManager:
     async def _run(self, job_id: str, request: WorkerRunRequest) -> None:
         job = self._jobs[job_id]
         started = time.monotonic()
+        phase = "START_THREAD"
         try:
             attempt_root = self._workspaces.ensure_attempt(request.run_id, request.attempt_id)
             run_root = attempt_root.parents[1]
             await self._update(job_id, status="running", started_at=utc_now())
-            handle = await self._runtime.start(request, run_root)
+            phase = "START_THREAD"
+            handle = await asyncio.wait_for(
+                self._runtime.start(request, run_root), timeout=min(120, request.timeout_seconds)
+            )
             self._handles[job_id] = handle
+            phase = "RUN_TURN"
             result = await asyncio.wait_for(handle.run(), timeout=request.timeout_seconds)
             telemetry = result.telemetry
             if telemetry is not None:
@@ -150,8 +155,10 @@ class WorkerJobManager:
             await self._finish(
                 job_id,
                 status="failed",
-                error_code="CODEX_TURN_TIMEOUT",
-                error_message=f"turn exceeded {request.timeout_seconds} seconds",
+                error_code="CODEX_START_TIMEOUT"
+                if phase == "START_THREAD"
+                else "CODEX_TURN_TIMEOUT",
+                error_message=f"{phase} exceeded its timeout budget",
                 telemetry=self._failure_telemetry(
                     started,
                     f"timeout:{request.timeout_seconds}s",
@@ -163,7 +170,7 @@ class WorkerJobManager:
                 job_id,
                 status="failed",
                 error_code=getattr(exc, "code", "CODEX_WORKER_ERROR"),
-                error_message=str(exc),
+                error_message=f"{locals().get('phase', 'PREPARE')}: {exc}",
                 telemetry=self._failure_telemetry(started, str(exc)),
             )
             self._persist_telemetry(request, self._jobs[job_id])

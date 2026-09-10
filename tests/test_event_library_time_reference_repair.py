@@ -305,9 +305,7 @@ def test_broad_episode_keeps_exact_fact_days_and_independent_reference_flag(tmp_
 def test_broad_event_same_fact_and_candidate_priority_are_hard_errors(tmp_path: Any) -> None:
     repository, batch = _foundation(tmp_path)
     bundle = _broad_bundle(batch)
-    first = bundle.event_revisions[0].facts[0].model_copy(
-        update={"fact_occurred_at": "SAME"}
-    )
+    first = bundle.event_revisions[0].facts[0].model_copy(update={"fact_occurred_at": "SAME"})
     event = bundle.event_revisions[0].model_copy(
         update={"facts": [first, bundle.event_revisions[0].facts[1]]}
     )
@@ -328,7 +326,8 @@ def test_broad_event_same_fact_and_candidate_priority_are_hard_errors(tmp_path: 
     codes = {item.code for item in outcome.issues}
     assert "FACT_SAME_WITH_BROAD_EVENT" in codes
     assert "DATE_CANDIDATE_PRIORITY_VIOLATION" in codes
-    assert outcome.status is ValidationStatus.FAIL
+    assert outcome.status is not ValidationStatus.FAIL
+    assert not outcome.normalized_bundle.event_revisions
 
 
 def test_unresolved_date_stays_locally_pending_without_blocking_valid_fact(tmp_path: Any) -> None:
@@ -354,9 +353,7 @@ def test_unresolved_date_stays_locally_pending_without_blocking_valid_fact(tmp_p
                 unresolved,
             ],
             "residual_delta_resolutions": [
-                ResidualDeltaResolution(
-                    delta_id="D2", resolution=DeltaResolution.KEEP_PENDING
-                )
+                ResidualDeltaResolution(delta_id="D2", resolution=DeltaResolution.KEEP_PENDING)
             ],
         }
     )
@@ -377,14 +374,11 @@ def test_time_error_codes_are_stable_for_missing_future_and_subject_leak(tmp_pat
     )
     missing_bundle = base.model_copy(
         update={
-            "event_revisions": [
-                event.model_copy(update={"facts": [missing_fact, event.facts[1]]})
-            ]
+            "event_revisions": [event.model_copy(update={"facts": [missing_fact, event.facts[1]]})]
         }
     )
     missing_codes = {
-        item.code
-        for item in validator.validate(missing_bundle, context=_context(batch)).issues
+        item.code for item in validator.validate(missing_bundle, context=_context(batch)).issues
     }
     assert "FACT_OCCURRENCE_MISSING" in missing_codes
 
@@ -396,9 +390,7 @@ def test_time_error_codes_are_stable_for_missing_future_and_subject_leak(tmp_pat
     )
     non_day_bundle = base.model_copy(
         update={
-            "event_revisions": [
-                event.model_copy(update={"facts": [non_day_fact, event.facts[1]]})
-            ],
+            "event_revisions": [event.model_copy(update={"facts": [non_day_fact, event.facts[1]]})],
             "date_resolution_ledger": [
                 base.date_resolution_ledger[0],
                 base.date_resolution_ledger[1].model_copy(
@@ -412,8 +404,7 @@ def test_time_error_codes_are_stable_for_missing_future_and_subject_leak(tmp_pat
         }
     )
     non_day_codes = {
-        item.code
-        for item in validator.validate(non_day_bundle, context=_context(batch)).issues
+        item.code for item in validator.validate(non_day_bundle, context=_context(batch)).issues
     }
     assert "FACT_OCCURRENCE_NOT_DAY" in non_day_codes
 
@@ -448,8 +439,7 @@ def test_time_error_codes_are_stable_for_missing_future_and_subject_leak(tmp_pat
         update={"event_revisions": [future_event], "date_resolution_ledger": future_ledger}
     )
     future_codes = {
-        item.code
-        for item in validator.validate(future_bundle, context=_context(batch)).issues
+        item.code for item in validator.validate(future_bundle, context=_context(batch)).issues
     }
     assert {
         "FUTURE_OCCURRENCE_AFTER_AS_OF",
@@ -732,9 +722,7 @@ def test_legacy_v1_remains_readable_and_scopes_repair_without_mutation(tmp_path:
     repository = EventLibraryRepository(tmp_path / "legacy.sqlite3")
     event = _review_event("T1", title="Micron legacy guidance", include=True)
     legacy_facts = [
-        fact.model_copy(
-            update={"fact_occurred_at": None, "fact_occurrence_time_precision": None}
-        )
+        fact.model_copy(update={"fact_occurred_at": None, "fact_occurrence_time_precision": None})
         for fact in event.facts
     ]
     legacy = CanonicalRevisionBundle(

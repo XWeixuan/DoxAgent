@@ -80,8 +80,11 @@ def admit_bus_revisions(control: InitializationRepository, bus: MessageBusV2Serv
     for revision in control.active_revisions():
         try:
             _admit_bus(control, bus, revision)
-        except Exception:
-            logging.getLogger(__name__).warning("bus activation pending for %s", revision["ticker"])
+        except Exception as exc:
+            control.admission_error(revision["ticker"], revision["revision_id"], "bus", exc)
+            logging.getLogger(__name__).warning(
+                "bus activation pending for %s: %s", revision["ticker"], type(exc).__name__
+            )
 
 
 def _admit_bus(
@@ -129,11 +132,13 @@ def admit_runtime_revisions(
         if not control.revision_acknowledged(ticker, identity, "bus"):
             continue
         state = scheduler.repository.get_state(ticker)
-        from doxagent.v2_control.repository import ControlRepository
         from doxagent.persistent_runtime_v2.journal import RuntimeJournal
+        from doxagent.v2_control.repository import ControlRepository
 
         journal = getattr(getattr(scheduler, "runtime_v2_service", None), "journal", None)
-        desired = ControlRepository(journal).get(ticker) if isinstance(journal, RuntimeJournal) else None
+        desired = (
+            ControlRepository(journal).get(ticker) if isinstance(journal, RuntimeJournal) else None
+        )
         if state and state.metadata.get("activation_revision_id") == identity:
             if state.status not in {TickerRunStatus.RUNNING, TickerRunStatus.DEGRADED} and not (
                 desired and desired.get("admission_allowed")
@@ -141,8 +146,11 @@ def admit_runtime_revisions(
                 continue
         try:
             scheduler.admit_activation(ticker, identity)
-        except Exception:
-            logging.getLogger(__name__).warning("runtime activation pending for %s", ticker)
+        except Exception as exc:
+            control.admission_error(ticker, identity, "runtime", exc)
+            logging.getLogger(__name__).warning(
+                "runtime activation pending for %s: %s", ticker, type(exc).__name__
+            )
             continue
         if control.acknowledge_revision(ticker, identity, "runtime"):
             ready.add(ticker)

@@ -453,6 +453,17 @@ class Document3AgentRunner:
             try:
                 last_job = await self._worker.run(request)
             except Exception as exc:
+                from doxagent.codex_runtime.errors import (
+                    CapabilityDenied,
+                    ImmutableWorkspacePath,
+                    InvalidWorkspacePath,
+                )
+                from doxagent.ticker_initialization.schema import LeaseLost
+
+                if isinstance(
+                    exc, (LeaseLost, CapabilityDenied, ImmutableWorkspacePath, InvalidWorkspacePath)
+                ):
+                    raise
                 self._save_attempt(
                     attempt.model_copy(
                         update={
@@ -533,6 +544,23 @@ class Document3AgentRunner:
                 )
             )
             return result, current_thread
+        # Only hand back an advisory receipt when a real stage artifact exists.
+        # The orchestrator still verifies frozen inputs and fully normalizes it.
+        required = {
+            CodexD3Node.O3_TRIGGER_CALIBRATION: "output/work/worklist.jsonl",
+            CodexD3Node.O3_POLICY_COMPILE: "output/work/worklist.jsonl",
+            CodexD3Node.O3_FINAL_REVIEW: "output/work/worklist.jsonl",
+        }.get(node)
+        if required:
+            try:
+                file = await self.workspace.read_text(run_id, required)
+                if file.content and file.content.strip():
+                    return self._fallback_result(
+                        output_model,
+                        reason="Worker failed; stage artifacts require canonical validation",
+                    ), current_thread
+            except FileNotFoundError:
+                pass
         raise O3TurnError(f"{node.value} failed after {max_attempts} attempts", job=last_job)
 
     async def prepare_node_contracts(

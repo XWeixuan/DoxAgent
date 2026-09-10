@@ -109,18 +109,15 @@ async def test_deliver_retries_without_rerunning_configure_and_keeps_candidate_u
 
 
 @pytest.mark.asyncio
-async def test_unfinished_settlement_exhausts_budget_and_manual_resume_only_retries_deliver(
+async def test_unfinished_settlement_defers_need_without_repeating_configure(
     tmp_path: Path,
 ):
     runner = _FakeRunner(new_crawler=True, delivery_status=DeliveryItemStatus.IN_PROGRESS)
     control, run, candidate, adapter = setup(tmp_path, runner)
     worker = InitializationWorker(control, lambda _: adapter)
-    assert (await worker.run_once()).status == "FAILED"
-    assert len(control.attempts(run.initialization_id, "o4.deliver")) == 2
-    assert await worker.run_once() is None
-    runner.delivery_status = DeliveryItemStatus.HUMAN_INTERVENTION_REQUIRED
-    control.resume(run.initialization_id, reason="offline operator recovery", node_key="o4.deliver")
     assert (await worker.run_once()).status == "SUCCEEDED"
+    assert len(control.attempts(run.initialization_id, "o4.deliver")) == 1
+    assert await worker.run_once() is None
     assert [r.node for r in runner.requests].count(CodexMonitoringO4Node.CONFIGURE) == 1
     assert candidate.live.get_ticker_state("MU") is None
 

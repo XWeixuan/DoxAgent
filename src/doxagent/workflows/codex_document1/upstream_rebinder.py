@@ -129,16 +129,24 @@ class UpstreamObservationRebinder:
     ) -> dict[str, Any]:
         if warning:
             warnings.append(warning)
-        report = value.get("report_markdown")
-        if isinstance(report, str):
-            value["report_markdown"] = _CITATION.sub(
-                lambda match: (
-                    f"【cite:{mapping[match.group(1)]}】"
-                    if match.group(1) in mapping
-                    else "[upstream evidence unavailable]"
-                ),
-                report,
-            )
+
+        def rewrite(item: Any) -> Any:
+            if isinstance(item, str):
+                return _CITATION.sub(
+                    lambda match: (
+                        f"【cite:{mapping[match.group(1)]}】"
+                        if match.group(1) in mapping
+                        else "[upstream evidence unavailable]"
+                    ),
+                    item,
+                )
+            if isinstance(item, list):
+                return [rewrite(child) for child in item]
+            if isinstance(item, dict):
+                return {key: rewrite(child) for key, child in item.items()}
+            return item
+
+        value = rewrite(value)
         candidates = value.get("observation_candidates")
         if isinstance(candidates, list):
             for candidate in candidates:

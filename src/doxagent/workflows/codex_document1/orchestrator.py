@@ -92,9 +92,7 @@ class CodexDocument1Orchestrator:
         repository: CodexRuntimeRepository,
         horizontal_collector: HorizontalCollector,
         horizontal_compiler: HorizontalStateCompiler,
-        prompt_root: str | Path = (
-            "prompts/codex_v2/document1/compatibility/legacy_document1"
-        ),
+        prompt_root: str | Path = ("prompts/codex_v2/document1/compatibility/legacy_document1"),
         model: str = "gpt-5.6-luna",
         model_provider: str | None = None,
         effort: Literal["low", "medium", "high", "xhigh", "max"] = "max",
@@ -386,17 +384,29 @@ class CodexDocument1Orchestrator:
                 request, node, payload, checkpoint, horizontal=horizontal
             )
         except Exception as exc:
+            from doxagent.codex_runtime.errors import (
+                CapabilityDenied,
+                ImmutableWorkspacePath,
+                InvalidWorkspacePath,
+            )
+            from doxagent.ticker_initialization.schema import LeaseLost
+
+            if isinstance(
+                exc, (LeaseLost, CapabilityDenied, ImmutableWorkspacePath, InvalidWorkspacePath)
+            ):
+                raise
             self._fail_checkpoint(checkpoint, node)
+            error = bounded_error_message(exc)
             await self._event(
                 request.run_id,
                 "node.failed",
-                {"node": node.value, "error": str(exc)},
+                {"node": node.value, "error": error},
             )
             return (
                 NodeOutput(
                     status="failed",
                     summary=f"{node.value} failed",
-                    warnings=[f"{node.value}: {exc}"],
+                    warnings=[f"{node.value}: {error}"],
                 ),
                 None,
             )
@@ -431,9 +441,16 @@ class CodexDocument1Orchestrator:
         for attempt_offset in range(1 if managed() else self._max_attempts):
             attempt_number = first_attempt_number + attempt_offset
             attempt_id = attempt_identity(f"{node.value}-{attempt_number}-{uuid4().hex[:10]}")
+            # Data MCP and Source Capture are attempt-scoped. A resumed Codex
+            # thread can keep their stdio subprocesses (and their old env) alive,
+            # which would write/read evidence under the previous attempt. Start a
+            # fresh thread whenever this node already has attempt history; normal
+            # first-run cross-node thread continuity remains unchanged.
             request_thread_id = (
                 thread.thread_id if thread is not None and attempt_offset == 0 else None
             )
+            if previous_attempts:
+                request_thread_id = None
             self._start_checkpoint(checkpoint, node)
             try:
                 result = await self._node_runner.run_attempt(
@@ -814,6 +831,12 @@ class CodexDocument1Orchestrator:
         content: str,
         kind: ArtifactKind,
     ) -> ArtifactRef:
+        existing = self._repository.get_artifact_by_path(run_id, relative_path)
+        if (
+            existing is not None
+            and existing.sha256 == hashlib.sha256(content.encode("utf-8")).hexdigest()
+        ):
+            return existing
         metadata = await self._workspace.write_text(run_id, relative_path, content)
         artifact = ArtifactRef(
             workflow_version=self._workflow_version,
@@ -831,6 +854,7 @@ class CodexDocument1Orchestrator:
         self._repository.save_artifact(artifact)
         return artifact
 
+    @durable("d1_assemble")
     async def _write_final_document(
         self,
         run_id: str,
@@ -856,6 +880,7 @@ class CodexDocument1Orchestrator:
         self._repository.save_artifact(artifact)
         return artifact
 
+    @durable("d1_publish")
     async def _publish_references(
         self,
         run_id: str,

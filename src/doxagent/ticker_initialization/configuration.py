@@ -76,6 +76,27 @@ class CandidateConfiguration:
     def install(self) -> None:
         """Atomically install the ticker portfolio; retain all consumer/poll history."""
         bindings = self.candidate.list_bindings(ticker=self.ticker)
+        semantic_fields = {"kind", "adapter_ref", "parameter_schema", "scheduler_group"}
+        valid_bindings = []
+        for binding in bindings:
+            source = self.candidate.get_source(binding.source_id)
+            existing = self.live.get_source(binding.source_id)
+            if (
+                source is None
+                or not source.enabled
+                or (
+                    existing
+                    and existing.model_dump(include=semantic_fields)
+                    != source.model_dump(include=semantic_fields)
+                )
+            ):
+                # Preserve a currently valid binding instead of overwriting a shared source.
+                prior = self.live.get_binding(binding.binding_id)
+                if prior and prior.ticker == self.ticker and existing and existing.enabled:
+                    valid_bindings.append(prior)
+                continue
+            valid_bindings.append(binding)
+        bindings = valid_bindings
         if not any(binding.enabled and binding.tombstoned_at is None for binding in bindings):
             raise ValueError("candidate has no usable monitoring binding")
         with self.live.transaction() as db:
@@ -124,14 +145,14 @@ class CandidateConfiguration:
             for binding in bindings:
                 source = self.candidate.get_source(binding.source_id)
                 if source is None:
-                    raise ValueError(f"candidate source missing: {binding.source_id}")
+                    continue  # Existing binding retained during preflight.
                 existing = self.live.get_source(binding.source_id)
                 semantic_fields = {"kind", "adapter_ref", "parameter_schema", "scheduler_group"}
                 if existing and existing.model_dump(include=semantic_fields) != source.model_dump(
                     include=semantic_fields
                 ):
                     # Shared source mutation must not silently affect other tickers.
-                    raise ValueError(f"shared source changed: {binding.source_id}")
+                    continue  # Preserve shared live definition; never overwrite it.
                 db.execute(
                     """INSERT OR IGNORE INTO source_definitions
                     SELECT * FROM candidate.source_definitions WHERE source_id=?""",

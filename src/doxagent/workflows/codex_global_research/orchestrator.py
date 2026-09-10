@@ -147,22 +147,39 @@ class CodexGlobalResearchOrchestrator(CodexDocument1Orchestrator):
         if c4_enriched_ref:
             reports[CodexD1Node.C4_ENRICHMENT.value] = c4_enriched_ref
 
-        if checkpoint.failed_nodes:
-            failed = [node.value for node in checkpoint.failed_nodes]
+        missing = [
+            node.value
+            for node in (CodexD1Node.C1, CodexD1Node.C3, CodexD1Node.C5)
+            if node.value not in reports or not outputs[node].report_markdown.strip()
+        ]
+        if missing:
+            failed = missing
             await self._event(request.run_id, "workflow.failed", {"failed_nodes": failed})
             raise RuntimeError("Global Research publish blocked by: " + ", ".join(failed))
+        if not (c4_enriched.entity_relations or c4_enriched.future_nodes):
+            c4_enriched = c4_pre.model_copy(deep=True)
+        if checkpoint.failed_nodes:
+            await self._event(
+                request.run_id,
+                "workflow.partial",
+                {"optional_failed_nodes": [n.value for n in checkpoint.failed_nodes]},
+            )
 
         citation_nodes = (CodexD1Node.C1, CodexD1Node.C3, CodexD1Node.C5)
         node_manifests = []
         for node in citation_nodes:
             reference = reports[node.value]
-            manifest = self._repository.get_citation_manifest(
-                request.run_id, reference.artifact_id
-            )
+            manifest = self._repository.get_citation_manifest(request.run_id, reference.artifact_id)
             if manifest is None:
-                raise RuntimeError(f"citation manifest missing for {node.value}")
+                manifest = await self._node_runner._promote_attempt_citations(
+                    run_id=request.run_id,
+                    attempt_id=reference.attempt_id,
+                    artifact_id=reference.artifact_id,
+                    anchor=node.value,
+                    markdown=outputs[node].model_dump_json(by_alias=True),
+                )
             node_manifests.append(manifest)
-        citation_plan = self._citations.plan_aggregate(node_manifests)
+        citation_plan = self._citations.plan_aggregate(node_manifests, allow_unresolved=True)
         aggregate_outputs = dict(outputs)
         for node in citation_nodes:
             reference = reports[node.value]
@@ -181,7 +198,9 @@ class CodexGlobalResearchOrchestrator(CodexDocument1Orchestrator):
             relative_path="artifacts/global_research/global_research_v1.md",
         )
         reports["global_research"] = final_ref
-        citation_manifest = self._citations.commit_aggregate(
+        citation_manifest = self._repository.get_citation_manifest(
+            request.run_id, final_ref.artifact_id
+        ) or self._citations.commit_aggregate(
             run_id=request.run_id,
             artifact_id=final_ref.artifact_id,
             plan=citation_plan,

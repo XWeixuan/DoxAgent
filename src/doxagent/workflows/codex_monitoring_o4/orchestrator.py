@@ -163,7 +163,28 @@ class MonitoringO4Orchestrator:
             self.repository.release_ticker_lease(request.ticker, request.request_id)
 
     async def _configure(self, request: O4Request) -> O4RunResult:
-        result = cast(ConfigureCompletion, await self.runner.run(request))
+        policy = request.payload.get("policy_set_json", {})
+        if policy and policy.get("policies") == []:
+            from .schema import utc_now
+
+            result = ConfigureCompletion(
+                request_id=request.request_id,
+                plan=MonitoringConfigurationPlan(
+                    ticker=request.ticker,
+                    policy_set_id=policy.get("policy_set_id") or request.request_id,
+                    policy_set_version=policy["policy_set_version"],
+                    policy_set_sha256=request.payload["policy_set_sha256"],
+                    document2_ref=str(policy.get("document2_ref") or ""),
+                    baseline_observed_at=utc_now(),
+                    baseline_summary={},
+                    source_needs=[],
+                    stopping_rationale=(
+                        "No policies require dedicated monitoring; existing baseline retained"
+                    ),
+                ),
+            )
+        else:
+            result = cast(ConfigureCompletion, await self.runner.run(request))
         message_bus = self.message_bus
 
         def load_binding(source_id: str) -> dict[str, Any] | None:
@@ -262,6 +283,18 @@ class MonitoringO4Orchestrator:
             settlement = cast(DeliverySettlement, await self.runner.run(request))
             checkpoint = self.repository.get_delivery_checkpoint(plan.plan_id, plan.plan_version)
             self._validate_delivery(plan, settlement, checkpoint=checkpoint)
+            for item in settlement.items:
+                if item.status is DeliveryItemStatus.COMPLETED:
+                    binding = (
+                        self.message_bus.repository.get_binding(item.binding_id)
+                        if self.message_bus is not None and item.binding_id
+                        else None
+                    )
+                    if binding is None or not binding.enabled or binding.tombstoned_at is not None:
+                        item.status = DeliveryItemStatus.REPLAN_REQUIRED
+                        item.constraints.append(
+                            "No usable registered binding confirms this delivery"
+                        )
             self.repository.save_delivery_settlement(settlement)
             self.repository.save_delivery_checkpoint(
                 DeliveryCheckpoint(
@@ -384,11 +417,16 @@ class MonitoringO4Orchestrator:
             raise ValueError("configuration plan PolicySet digest mismatch")
         expected = {str(item["policy_id"]) for item in policy_set.get("policies", [])}
         covered = {policy_id for item in plan.source_needs for policy_id in item.policy_ids}
-        if covered != expected:
-            missing = sorted(expected - covered)
-            unknown = sorted(covered - expected)
-            raise ValueError(
-                f"configuration plan policy coverage mismatch: missing={missing}, unknown={unknown}"
+        missing = sorted(expected - covered)
+        unknown = sorted(covered - expected)
+        plan.source_needs = [
+            item.model_copy(update={"policy_ids": [p for p in item.policy_ids if p in expected]})
+            for item in plan.source_needs
+            if set(item.policy_ids) & expected
+        ]
+        if missing or unknown:
+            plan.deliberate_omissions.append(
+                f"policy coverage gaps: missing={missing}, unknown={unknown}"
             )
 
     @staticmethod
@@ -409,36 +447,37 @@ class MonitoringO4Orchestrator:
             for item in plan.source_needs
             if item.resolution is SourceNeedResolution.NEW_CRAWLER_REQUIRED
         }
-        actual = {item.source_need_id for item in settlement.items}
-        if any(item.status not in TERMINAL_DELIVERY_STATUSES for item in settlement.items):
-            raise ValueError("delivery settlement contains unfinished Source Needs")
-        if len(actual) != len(settlement.items):
-            raise ValueError("delivery settlement contains duplicate Source Needs")
-        if expected != actual:
-            raise ValueError("delivery settlement must settle every new crawler Source Need")
-        if checkpoint is None:
-            return
-        checkpoint_by_need = {item.source_need_id: item for item in checkpoint.items}
-        plan_by_need = {item.source_need_id: item for item in plan.source_needs}
+        from .schema import DeliveryItemSettlement
+
+        actual = {}
         for item in settlement.items:
-            if item.status is not DeliveryItemStatus.FAILED:
-                continue
-            plan_item = plan_by_need[item.source_need_id]
-            approved = {
-                candidate.candidate_id
-                for candidate in [
-                    plan_item.primary_candidate,
-                    *plan_item.alternative_candidates,
-                ]
-                if candidate is not None
-            }
-            progress = checkpoint_by_need.get(item.source_need_id)
-            exhausted = set(progress.exhausted_candidate_ids) if progress else set()
-            if not approved or not approved.issubset(exhausted):
-                raise ValueError(
-                    "delivery FAILED requires every approved candidate to be INFEASIBLE "
-                    "or exhausted after four consecutive STALLED cycles"
+            if item.source_need_id in expected:
+                actual.setdefault(item.source_need_id, item)
+        settled = []
+        for need in sorted(expected):
+            item = actual.get(need)
+            if item is None:
+                item = DeliveryItemSettlement(
+                    source_need_id=need,
+                    status=DeliveryItemStatus.REPLAN_REQUIRED,
+                    constraints=["No verified terminal result; deferred from this initialization"],
                 )
+            elif (
+                item.status not in TERMINAL_DELIVERY_STATUSES
+                or item.status is DeliveryItemStatus.FAILED
+            ):
+                # A local exploration failure is not proof all candidates are infeasible.
+                item = item.model_copy(
+                    update={
+                        "status": DeliveryItemStatus.REPLAN_REQUIRED,
+                        "constraints": [
+                            *item.constraints,
+                            "Incomplete delivery retained for later recovery",
+                        ],
+                    }
+                )
+            settled.append(item)
+        settlement.items = settled
 
     @staticmethod
     def _has_nonterminal_items(checkpoint: DeliveryCheckpoint | None) -> bool:

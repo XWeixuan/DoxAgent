@@ -131,7 +131,50 @@ class O4InitializationAdapter:
             else:
                 raise ValueError(f"unsupported O4 initialization node: {context.node.key}")
             context.checkpoint(request_id=request.request_id, o4_database=runtime.repository.path)
-            return self._process_result(runtime, await runtime.orchestrator.process(request))
+            result = await runtime.orchestrator.process(request)
+            if (
+                request.node is CodexMonitoringO4Node.DELIVER
+                and result.request.status is O4RequestStatus.INTERRUPTED
+                and context.node.ordinal >= 2
+            ):
+                from doxagent.workflows.codex_monitoring_o4.schema import (
+                    DeliveryItemSettlement,
+                    DeliveryItemStatus,
+                    DeliverySettlement,
+                )
+
+                settlement = DeliverySettlement(
+                    request_id=request.request_id,
+                    plan_id=plan.plan_id,
+                    plan_version=plan.plan_version,
+                    ticker=plan.ticker,
+                    items=[
+                        DeliveryItemSettlement(
+                            source_need_id=need.source_need_id,
+                            status=DeliveryItemStatus.REPLAN_REQUIRED,
+                            constraints=[
+                                "Turn budget exhausted; keep registered capabilities and checkpoint"
+                            ],
+                        )
+                        for need in plan.source_needs
+                        if need.resolution is SourceNeedResolution.NEW_CRAWLER_REQUIRED
+                    ],
+                    summary="Unfinished needs deferred; no crawler success inferred",
+                )
+                runtime.repository.save_delivery_settlement(settlement)
+                result.request.status = O4RequestStatus.DEGRADED
+                runtime.repository.save_request(result.request)
+                for queued in runtime.repository.list_requests(ticker=request.ticker):
+                    if (
+                        queued.logical_request_id == request.logical_request_id
+                        and queued.status is O4RequestStatus.PENDING
+                    ):
+                        queued.status = O4RequestStatus.HELD
+                        queued.error = (
+                            "Initialization delivery budget exhausted; deferred for replan"
+                        )
+                        runtime.repository.save_request(queued)
+            return self._process_result(runtime, result)
         finally:
             await runtime.close()
 
