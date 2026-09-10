@@ -166,3 +166,5 @@ C3 在最终成功返回 thread 之前还有三次执行层失败：
 2. repair-002 的 bundle 在正确 initialization context 下仅剩 `INITIALIZATION_IMPORTANT_ALL_FALSE` 一个 ERROR。996 个 delta 被确定性保留为 pending，没有身份、hash、关系闭包或账本结构错误。重要性属于研究判断；系统既不能伪造 `is_important=true`，也不应因此阻断整个 ticker。该诊断应保留为 WARNING，并让 bundle 以 `PARTIAL` 发布。
 
 最小修复为：resume 从远端 immutable inventory 选择最新已有 repair bundle，且缺少本轮模型 `O2RunResult` 时直接依赖确定性 validator 的 coverage，不再引用未初始化变量；validator 将 `INITIALIZATION_IMPORTANT_ALL_FALSE` 保留为 warning，不改变其他语义/身份硬门禁。新增回归覆盖 repair-002 bundle 选择和 all-false importance 的 `PARTIAL` 可发布行为。
+
+部署提交为 `51b6d9a1`；本地相关测试 `18 passed` 且 Ruff 通过。远端只重建并替换 `v2-initialization`，未执行迁移、未改数据库或 workspace。第一次替换误用了非生产 Compose 基文件，容器因缺少配置在业务启动前退出；随后立即按原 `docker-compose.v2-production.yml` + server overlay 恢复，容器内已确认新代码。正式 resume 同一 `o2` 后，O2 从 repair-002 bundle 确定性恢复并发布，初始化已进入 `RUNNING / D2`、`state_seq=206`，当前运行三个 D2 O0 candidate 节点；`failed_nodes` 中仍保留历史 `o2.o2-repair-002` 记录，但不再阻断父流程。
