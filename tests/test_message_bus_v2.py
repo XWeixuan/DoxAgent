@@ -181,6 +181,198 @@ async def test_ticker_local_dedupe_revision_and_bootstrap(tmp_path: Path) -> Non
     assert repository.latest_stream_offset("MU") == 2
 
 
+async def test_reappearing_historical_revision_is_a_duplicate(tmp_path: Path) -> None:
+    repository, service = _bus(tmp_path / "bus.sqlite3")
+    service.start_ticker("MU")
+    source = service.require_source("benzinga_news")
+    binding = repository.get_binding("MU:benzinga_news")
+    assert binding is not None
+
+    first = await service.accept_message(
+        source=source,
+        binding=binding,
+        message=_input("oscillating", body="provider summary"),
+        bootstrap=False,
+        collected_at=NOW,
+    )
+    second = await service.accept_message(
+        source=source,
+        binding=binding,
+        message=_input("oscillating", body="full article body"),
+        bootstrap=False,
+        collected_at=NOW + timedelta(minutes=1),
+    )
+    reverted = await service.accept_message(
+        source=source,
+        binding=binding,
+        message=_input("oscillating", body="provider summary"),
+        bootstrap=False,
+        collected_at=NOW + timedelta(minutes=2),
+    )
+
+    assert first.decision.value == "inserted"
+    assert second.decision.value == "revision"
+    assert reverted.decision.value == "duplicate"
+    rows = repository.list_raw(ticker="MU", limit=10)
+    assert len(rows) == 2
+    assert sorted(row.revision for row in rows) == [1, 2]
+    assert next(row for row in rows if row.revision == 1).duplicate_seen_count == 1
+
+
+async def test_same_provider_payload_cannot_create_volatile_enrichment_revision(
+    tmp_path: Path,
+) -> None:
+    repository, service = _bus(tmp_path / "bus.sqlite3")
+    service.start_ticker("MU")
+    source = service.require_source("finnhub_company_news")
+    binding = repository.get_binding("MU:finnhub_company_news")
+    assert binding is not None
+    provider_payload = {"id": "stable-provider-item", "summary": "provider summary"}
+
+    first = await service.accept_message(
+        source=source,
+        binding=binding,
+        message=_input("stable-provider-item", body="Body with MU +0.45%").model_copy(
+            update={"raw_payload": provider_payload}
+        ),
+        bootstrap=False,
+        collected_at=NOW,
+    )
+    repeated = await service.accept_message(
+        source=source,
+        binding=binding,
+        message=_input("stable-provider-item", body="Body with MU -0.85%").model_copy(
+            update={"raw_payload": provider_payload}
+        ),
+        bootstrap=False,
+        collected_at=NOW + timedelta(minutes=1),
+    )
+
+    assert first.decision.value == "inserted"
+    assert repeated.decision.value == "duplicate"
+    assert len(repository.list_raw(ticker="MU", limit=10)) == 1
+    assert repository.latest_stream_offset("MU") == 1
+
+
+def test_managed_v2_scheduler_detail_does_not_require_legacy_runtime(tmp_path: Path) -> None:
+    _repository, bus = _bus(tmp_path / "managed-v2.sqlite3")
+    scheduler = UnifiedRuntimeSchedulerService(
+        InMemoryRuntimeSchedulerRepository(),
+        document_provider=_UsableDocuments(),  # type: ignore[arg-type]
+        monitoring_service=None,
+        runtime_service=None,
+        message_bus_v2_service=bus,
+        message_bus_v2_enabled=True,
+    )
+    scheduler.start_ticker("MU", now=NOW)
+
+    assert scheduler.trade_intents("MU") == []
+    assert scheduler.detail("MU", now=NOW).trade_intents == []
+
+
+async def test_poll_isolates_one_ingest_exception_and_completes_bootstrap(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repository, service = _bus(tmp_path / "bus.sqlite3")
+    service.start_ticker("MU")
+    source = service.require_source("benzinga_news")
+    binding = repository.get_binding("MU:benzinga_news")
+    assert binding is not None
+    original = repository.record_raw
+
+    def record_with_one_failure(candidate: RawMessage):
+        if candidate.external_id == "bad":
+            raise RuntimeError("isolated row failure")
+        return original(candidate)
+
+    monkeypatch.setattr(repository, "record_raw", record_with_one_failure)
+    result = await service.accept_poll_result(
+        source=source,
+        binding=binding,
+        result=PollResult(messages=[_input("good-a"), _input("bad"), _input("good-b")]),
+        attempted_at=NOW,
+    )
+
+    state = repository.get_poll_state(binding)
+    assert result.bootstrap_suppressed_count == 2
+    assert result.invalid_count == 1
+    assert state.bootstrap_complete is True
+    assert state.status.value == "partial"
+    assert state.last_error_code == "RuntimeError"
+    assert len(repository.list_raw(ticker="MU", limit=10)) == 2
+
+
+def test_bootstrap_migrates_only_legacy_default_news_windows(tmp_path: Path) -> None:
+    from datetime import time
+
+    from doxagent.message_bus_v2.schema import ActiveWindow
+
+    repository, service = _bus(tmp_path / "bus.sqlite3")
+    service.start_ticker("MU")
+    legacy = ActiveWindow(
+        timezone="America/New_York",
+        weekdays=[0, 1, 2, 3, 4],
+        start_time=time(7),
+        end_time=time(18),
+    )
+    profile = repository.get_default_profile("default")
+    assert profile is not None
+    service.save_default_profile(
+        profile.model_copy(
+            update={
+                "entries": [
+                    entry.model_copy(
+                        update={
+                            "polling": entry.polling.model_copy(update={"active_windows": [legacy]})
+                        }
+                    )
+                    for entry in profile.entries
+                ]
+            }
+        )
+    )
+    for binding in repository.list_bindings(ticker="MU"):
+        service.update_binding(
+            binding.binding_id,
+            {
+                "polling": binding.polling.model_copy(
+                    update={"active_windows": [legacy]}
+                ).model_dump(mode="json")
+            },
+            actor=UpdateActor.SYSTEM,
+        )
+    custom = service.configure_binding(
+        ticker="MU",
+        source_id="tikhub_x_user_posts",
+        source_parameters={"usernames": ["MicronTech"]},
+        polling={
+            "target_interval_seconds": 600,
+            "active_windows": [
+                {
+                    "timezone": "America/New_York",
+                    "weekdays": [0, 1, 2, 3, 4],
+                    "start_time": "08:00:00",
+                    "end_time": "17:00:00",
+                }
+            ],
+        },
+        actor=UpdateActor.AGENT,
+    )
+
+    service.bootstrap()
+
+    migrated_profile = repository.get_default_profile("default")
+    assert migrated_profile is not None
+    assert all(not entry.polling.active_windows for entry in migrated_profile.entries)
+    for source_id in ("benzinga_news", "finnhub_company_news"):
+        migrated = repository.get_binding(f"MU:{source_id}")
+        assert migrated is not None
+        assert migrated.polling.active_windows == []
+    unchanged = repository.get_binding(custom.binding_id)
+    assert unchanged is not None
+    assert unchanged.polling.active_windows[0].start_time == time(8)
+
+
 async def test_buffer_compilation_restart_and_independent_cursors(tmp_path: Path) -> None:
     database = tmp_path / "bus.sqlite3"
     repository, service = _bus(database)
@@ -321,9 +513,7 @@ async def test_hard_delete_flushes_buffer_and_preserves_immutable_history(
         bootstrap=False,
     )
 
-    result = service.hard_delete_source(
-        "benzinga_news", actor=UpdateActor.AGENT, reason="obsolete"
-    )
+    result = service.hard_delete_source("benzinga_news", actor=UpdateActor.AGENT, reason="obsolete")
     assert len(result.flushed_stream_item_ids) == 1
     assert repository.get_source("benzinga_news") is None
     assert repository.get_binding(binding.binding_id, include_tombstoned=True) is None
@@ -448,8 +638,7 @@ async def test_scheduler_group_limiter_spacing_and_rephase_for_1_10_50(
         stress_eligible = [pair for pair in eligible if pair[0].source_id == "stress_source"]
         scheduler._initialize_due_slots(stress_eligible, NOW)
         due_values = [
-            repository.get_poll_state(binding).next_dispatch_at
-            for _, binding in stress_eligible
+            repository.get_poll_state(binding).next_dispatch_at for _, binding in stress_eligible
         ]
         assert len(due_values) == count
         assert min(due_values) == NOW
@@ -472,9 +661,7 @@ async def test_scheduler_group_limiter_spacing_and_rephase_for_1_10_50(
                 if pair[0].source_id == "stress_source"
             ]
             scheduler._initialize_due_slots(updated, NOW + timedelta(seconds=1))
-            after = [
-                repository.get_poll_state(binding).next_dispatch_at for _, binding in updated
-            ]
+            after = [repository.get_poll_state(binding).next_dispatch_at for _, binding in updated]
             assert len(after) == 11
             assert after != before
         await registry.close()
@@ -630,9 +817,9 @@ async def test_all_six_builtin_adapters_with_fixed_responses(tmp_path: Path) -> 
             requested_at=NOW,
             request_permit=permit,
         )
-        result = await registry.resolve(
-            source.adapter_ref, source_version=source.version
-        ).poll(context)
+        result = await registry.resolve(source.adapter_ref, source_version=source.version).poll(
+            context
+        )
         assert len(result.messages) == 1, source_id
         assert result.failures == []
         assert result.messages[0].url.startswith("http")
@@ -689,7 +876,7 @@ def test_agent_tools_mutate_full_control_plane_through_shared_service(
         {
             "source_id": "micron_ir",
             "patch": {
-                    "adapter_ref": "crawler:micron_ir_v2",
+                "adapter_ref": "crawler:micron_ir_v2",
                 "scheduler_constraints": {
                     "minimum_request_gap_seconds": 10,
                     "max_concurrency": 2,
@@ -773,6 +960,24 @@ class _AcceptingRuntimeV2:
                 "case_id": f"case-{len(self.envelopes)}",
                 "status": RuntimeCaseStatus.COMPLETED,
                 "route": None,
+            },
+        )()
+
+
+class _DashboardRuntimeV2:
+    def __init__(self, source_message_id: str) -> None:
+        self.repository = type("Repository", (), {"list_cases": lambda _self, _ticker: []})()
+        self.journal = type(
+            "Journal",
+            (),
+            {
+                "tasks": lambda _self, **_kwargs: [
+                    {
+                        "id": f"inbox:MU:{source_message_id}",
+                        "status": "PENDING",
+                        "inputs": {"source": {"source_message_id": source_message_id}},
+                    }
+                ]
             },
         )()
 
@@ -889,3 +1094,44 @@ def test_dashboard_v2_api_uses_native_contract_without_legacy_fields(tmp_path: P
     )
     assert deleted.status_code == 200
     assert deleted.json()["data"]["historical_messages_preserved"] is True
+
+
+async def test_dashboard_v2_messages_expose_runtime_v2_task_state(tmp_path: Path) -> None:
+    repository, bus = _bus(tmp_path / "dashboard-runtime-bus.sqlite3")
+    source = bus.require_source("finnhub_company_news")
+    bus.start_ticker("MU")
+    binding = repository.get_binding("MU:finnhub_company_news")
+    assert binding is not None
+    accepted = await bus.accept_message(
+        source=source,
+        binding=binding,
+        message=_input("runtime-linked"),
+        bootstrap=False,
+    )
+    assert accepted.standard_message_id is not None
+    legacy_runtime = PersistentRuntimeExecutionService.from_settings()
+    legacy_runtime.repository = InMemoryPersistentRuntimeRepository()
+    scheduler = UnifiedRuntimeSchedulerService(
+        InMemoryRuntimeSchedulerRepository(),
+        document_provider=_UsableDocuments(),  # type: ignore[arg-type]
+        monitoring_service=None,
+        runtime_service=legacy_runtime,
+        runtime_v2_service=_DashboardRuntimeV2(accepted.standard_message_id),  # type: ignore[arg-type]
+        message_bus_v2_service=bus,
+        message_bus_v2_enabled=True,
+    )
+    scheduler.start_ticker("MU", now=NOW)
+    client = TestClient(
+        create_app(
+            mode="real",
+            auth_mode="mock-open",
+            dashboard_api=DashboardStateAPI(scheduler),
+        )
+    )
+
+    response = client.get("/api/dashboard/v1/tickers/MU/message-bus/messages")
+
+    assert response.status_code == 200
+    item = response.json()["data"]["items"][0]
+    assert item["processing_status"] == "pending"
+    assert item["runtime_execution_id"] == f"inbox:MU:{accepted.standard_message_id}"

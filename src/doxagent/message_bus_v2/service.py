@@ -5,7 +5,9 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime, timedelta
 from typing import Protocol
+from urllib.parse import urlparse
 
+from doxagent.content_enrichment.schema import EnrichmentJob
 from doxagent.message_bus_v2.compiler import compiled_body_length_for_members
 from doxagent.message_bus_v2.manifests import initial_default_profile, initial_sources
 from doxagent.message_bus_v2.repository import MessageBusV2Repository
@@ -21,6 +23,7 @@ from doxagent.message_bus_v2.schema import (
     MaterializedStreamMember,
     OperationalAlert,
     PollExecutionResult,
+    PollingConfig,
     PollResult,
     PollState,
     PollStatus,
@@ -65,9 +68,13 @@ class MessageBusV2Service:
         repository: MessageBusV2Repository,
         *,
         materializer: ContentMaterializer | None = None,
+        enrichment_queue_enabled: bool = False,
+        enrichment_retry_deadline_seconds: int = 180,
     ) -> None:
         self.repository = repository
         self.materializer = materializer or PassthroughContentMaterializer()
+        self.enrichment_queue_enabled = enrichment_queue_enabled
+        self.enrichment_retry_deadline_seconds = max(1, enrichment_retry_deadline_seconds)
 
     def bootstrap(self) -> None:
         for source in initial_sources():
@@ -75,6 +82,65 @@ class MessageBusV2Service:
                 self.register_source(source)
         if self.repository.get_default_profile("default") is None:
             self.save_default_profile(initial_default_profile())
+        self._migrate_legacy_default_news_windows()
+
+    def _migrate_legacy_default_news_windows(self) -> None:
+        """Remove the retired weekday 07:00-18:00 ET gate from default news polling.
+
+        Persistent Runtime owns market-session and 02:00 ET closed-day scheduling.  This
+        migration is deliberately fingerprinted so unrelated custom active windows remain
+        untouched.
+        """
+
+        default_sources = {"benzinga_news", "finnhub_company_news"}
+
+        def uses_legacy_window(polling: object) -> bool:
+            if not isinstance(polling, PollingConfig):
+                return False
+            windows = polling.active_windows
+            return len(windows) == 1 and windows[0].model_dump(mode="json") == {
+                "timezone": "America/New_York",
+                "weekdays": [0, 1, 2, 3, 4],
+                "start_time": "07:00:00",
+                "end_time": "18:00:00",
+            }
+
+        profile = self.repository.get_default_profile("default")
+        if profile is not None:
+            entries = [
+                entry.model_copy(
+                    update={"polling": entry.polling.model_copy(update={"active_windows": []})}
+                )
+                if entry.source_id in default_sources and uses_legacy_window(entry.polling)
+                else entry
+                for entry in profile.entries
+            ]
+            if entries != profile.entries:
+                self.save_default_profile(
+                    profile.model_copy(
+                        update={
+                            "entries": entries,
+                            "updated_by": UpdateActor.SYSTEM,
+                            "updated_reason": (
+                                "migrate default news polling to shared calendar schedule"
+                            ),
+                        }
+                    )
+                )
+
+        for binding in self.repository.list_bindings():
+            if binding.source_id not in default_sources or not uses_legacy_window(binding.polling):
+                continue
+            self.update_binding(
+                binding.binding_id,
+                {
+                    "polling": binding.polling.model_copy(update={"active_windows": []}).model_dump(
+                        mode="json"
+                    )
+                },
+                actor=UpdateActor.SYSTEM,
+                reason="migrate default news polling to shared calendar schedule",
+            )
 
     # -- source registry -------------------------------------------------------------
 
@@ -465,18 +531,45 @@ class MessageBusV2Service:
             collected_count=len(result.messages),
         )
         standard_revisions = 0
+        poll_errors = [(failure.error_code, failure.error_message) for failure in result.failures]
         for failure in result.failures:
             self.repository.save_failure(failure)
             self._upsert_failure_alert(failure)
             output = output.model_copy(update={"invalid_count": output.invalid_count + 1})
         for input_message in result.messages:
-            ingest = await self.accept_message(
-                source=source,
-                binding=binding,
-                message=input_message,
-                bootstrap=bootstrap,
-                collected_at=now,
-            )
+            try:
+                if self.enrichment_queue_enabled:
+                    _, created = self.enqueue_enrichment(
+                        source=source,
+                        binding=binding,
+                        message=input_message,
+                        bootstrap=bootstrap,
+                        poll_run_id=output.poll_run_id,
+                        collected_at=now,
+                    )
+                    if created:
+                        output = output.model_copy(update={"queued_count": output.queued_count + 1})
+                    continue
+                ingest = await self.accept_message(
+                    source=source,
+                    binding=binding,
+                    message=input_message,
+                    bootstrap=bootstrap,
+                    collected_at=now,
+                )
+            except Exception as exc:
+                failure = self._failure(
+                    source=source,
+                    binding=binding,
+                    code=type(exc).__name__,
+                    message=str(exc),
+                    payload=input_message.raw_payload,
+                )
+                self.repository.save_failure(failure)
+                self._upsert_failure_alert(failure)
+                poll_errors.append((failure.error_code, failure.error_message))
+                output = output.model_copy(update={"invalid_count": output.invalid_count + 1})
+                continue
             updates: dict[str, int] = {}
             if ingest.standard_message_id and ingest.decision in {
                 IngestDecision.INSERTED,
@@ -493,22 +586,23 @@ class MessageBusV2Service:
                 updates["bootstrap_suppressed_count"] = output.bootstrap_suppressed_count + 1
             elif ingest.decision is IngestDecision.INVALID:
                 updates["invalid_count"] = output.invalid_count + 1
+                poll_errors.append(
+                    (ingest.error_code or "message_ingest_invalid", "message ingestion rejected")
+                )
             if ingest.stream_item_ids:
                 updates["published_count"] = output.published_count + len(ingest.stream_item_ids)
             output = output.model_copy(update=updates)
         saved_state = state.model_copy(
             update={
-                "status": (PollStatus.PARTIAL if result.failures else PollStatus.SUCCEEDED),
+                "status": (PollStatus.PARTIAL if poll_errors else PollStatus.SUCCEEDED),
                 "checkpoint": ({} if source.kind is SourceKind.CRAWLER else result.next_checkpoint),
                 "bootstrap_complete": True,
                 "last_attempt_at": now,
                 "last_success_at": now,
-                "last_failure_at": now if result.failures else None,
-                "failure_since": None,
-                "last_error_code": (result.failures[0].error_code if result.failures else None),
-                "last_error_message": (
-                    result.failures[0].error_message[:1000] if result.failures else None
-                ),
+                "last_failure_at": now if poll_errors else None,
+                "failure_since": (state.failure_since or now) if poll_errors else None,
+                "last_error_code": poll_errors[0][0] if poll_errors else None,
+                "last_error_message": poll_errors[0][1][:1000] if poll_errors else None,
                 "consecutive_failures": 0,
                 "collected_count": state.collected_count + output.collected_count,
                 "published_count": state.published_count + output.published_count,
@@ -520,6 +614,55 @@ class MessageBusV2Service:
         self.repository.resolve_alert(f"poll_failure:{binding.binding_id}")
         self._refresh_source_failure_alert(source.source_id, now=now)
         return output
+
+    def enqueue_enrichment(
+        self,
+        *,
+        source: SourceDefinition,
+        binding: TickerSourceBinding,
+        message: RawMessageInput,
+        bootstrap: bool,
+        poll_run_id: str,
+        collected_at: datetime | None = None,
+    ) -> tuple[EnrichmentJob, bool]:
+        """Durably stage provider output before any network enrichment work."""
+
+        now = collected_at or utc_now()
+        clean_metadata = dict(message.metadata)
+        clean_metadata.pop("v2_body_completion", None)
+        clean = message.model_copy(update={"metadata": clean_metadata})
+        intake_key = sha256_text(
+            canonical_json(
+                {
+                    "binding_id": binding.binding_id,
+                    "source_item_key": source_item_key_for(source.source_id, clean),
+                    "url": clean.url,
+                    "published_at": clean.published_at,
+                }
+            )
+        )
+        job = EnrichmentJob(
+            job_id=new_id("enrich"),
+            intake_key=intake_key,
+            poll_run_id=poll_run_id,
+            source=source,
+            binding=binding,
+            message=clean,
+            bootstrap=bootstrap,
+            created_at=now,
+            updated_at=now,
+            last_seen_at=now,
+            not_before=now,
+            deadline_at=now + timedelta(seconds=self.enrichment_retry_deadline_seconds),
+        )
+        if self.repository.has_seen_provider_payload(
+            ticker=binding.ticker,
+            source_id=source.source_id,
+            identity_key=identity_key_for(source.source_id, clean),
+            raw_hash=sha256_text(canonical_json(clean.raw_payload)),
+        ):
+            return job, False
+        return self.repository.enqueue_enrichment_job(job)
 
     @staticmethod
     def _validate_source_adapter(source: SourceDefinition) -> None:
@@ -537,13 +680,17 @@ class MessageBusV2Service:
         message: RawMessageInput,
         bootstrap: bool,
         collected_at: datetime | None = None,
+        trusted_enrichment: bool = False,
     ) -> IngestResult:
         now = collected_at or utc_now()
         try:
             # Provider metadata cannot forge internal completion-attempt evidence.
             metadata = dict(message.metadata)
-            metadata.pop("v2_body_completion", None)
+            if not trusted_enrichment:
+                metadata.pop("v2_body_completion", None)
             message = message.model_copy(update={"metadata": metadata})
+            fallback = message.fallback_body
+            message = message.model_copy(update={"body": fallback})
             materialized = await self.materializer.materialize(message)
         except Exception as exc:
             failure = self._failure(
@@ -556,9 +703,16 @@ class MessageBusV2Service:
             self.repository.save_failure(failure)
             self._upsert_failure_alert(failure)
             return IngestResult(decision=IngestDecision.INVALID, error_code=failure.error_code)
-        effective_source = materialized.source or source.display_name
+        effective_source = materialized.publisher_name or materialized.source or source.display_name
+        publisher_name = materialized.publisher_name or materialized.source or source.display_name
+        resolved_domain = urlparse(materialized.url).hostname
         materialized = RawMessageInput.model_validate(
-            {**materialized.model_dump(), "source": effective_source}
+            {
+                **materialized.model_dump(),
+                "body": materialized.fallback_body,
+                "source": effective_source,
+                "publisher_name": publisher_name,
+            }
         )
         raw_hash = sha256_text(canonical_json(materialized.raw_payload))
         raw = RawMessage(
@@ -573,8 +727,10 @@ class MessageBusV2Service:
             content_hash=content_hash_for(materialized),
             raw_hash=raw_hash,
             title=materialized.title,
-            body=materialized.body,
+            body=materialized.fallback_body,
             source=effective_source,
+            publisher_name=publisher_name,
+            resolved_domain=resolved_domain,
             url=materialized.url,
             published_at=materialized.published_at,
             collected_at=now,
@@ -771,6 +927,8 @@ class MessageBusV2Service:
             title=raw.title,
             body=raw.body,
             source=raw.source,
+            publisher_name=raw.publisher_name,
+            resolved_domain=raw.resolved_domain,
             url=raw.url,
             published_at=raw.published_at,
             collected_at=raw.collected_at,
@@ -830,6 +988,8 @@ class MessageBusV2Service:
             title=message.title,
             body=message.body,
             source=message.source,
+            publisher_name=message.publisher_name,
+            resolved_domain=message.resolved_domain,
             url=message.url,
             published_at=message.published_at,
         )

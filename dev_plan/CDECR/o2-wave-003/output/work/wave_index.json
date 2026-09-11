@@ -1,0 +1,149 @@
+{
+  "entries": [
+    {
+      "candidate_key": "CANDIDATE_MEMORY_MARKET_SHARE_AND_COMPETITIVE_POSITION",
+      "assigned_delta_ids": [
+        "D871"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-003/output/work/drafts/T1.json"
+      ],
+      "unresolved_recommendation": "Merge or complement with the prior-wave competitive-memory share draft after deciding whether this Q2 NAND share disclosure is a distinct milestone or part of the current baseline."
+    },
+    {
+      "candidate_key": "CANDIDATE_MU_FY26_Q3_EARNINGS_AND_Q4_GUIDANCE",
+      "assigned_delta_ids": [
+        "D7",
+        "D165",
+        "D668",
+        "D943",
+        "D757",
+        "D311",
+        "D306",
+        "D378"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-003/output/work/drafts/T2.json"
+      ],
+      "unresolved_recommendation": "Merge the complementary revenue, gross-margin, free-cash-flow, and Q4-revenue-guidance Facts into the prior-wave FY2026 Q3 earnings Event anchored to the 2026-06-24 disclosure."
+    },
+    {
+      "candidate_key": "CANDIDATE_MU_MARKET_REPRICING_EPISODES_2026",
+      "assigned_delta_ids": [
+        "D828",
+        "D211",
+        "D355",
+        "D791",
+        "D215",
+        "D489",
+        "D775",
+        "D930"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-003/output/work/drafts/T3.json"
+      ],
+      "unresolved_recommendation": "Reconcile this June-September interval with the prior-wave market-episode draft; preserve distinct June peak, post-June-24 decline, July sell-off, and August support-break Facts without causal overreach."
+    },
+    {
+      "candidate_key": "CANDIDATE_NVIDIA_FY27_Q2_EARNINGS_AND_GUIDANCE",
+      "assigned_delta_ids": [
+        "D900",
+        "D475"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-003/output/work/drafts/T4.json"
+      ],
+      "unresolved_recommendation": "Merge the revenue and Vera Rubin shipment Facts into the prior-wave NVIDIA FY2027 Q2 context only if the shipment report belongs to that disclosure cycle; retain the indirect Micron demand path."
+    },
+    {
+      "candidate_key": "CANDIDATE_MU_TAIWAN_LABOR_INCENTIVE_DISPUTE",
+      "assigned_delta_ids": [
+        "D323",
+        "D688",
+        "D712"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-003/output/work/drafts/T5.json"
+      ],
+      "unresolved_recommendation": "Merge the duplicate August survey propositions into the prior-wave open labor/incentive matter and verify the survey date and scope."
+    },
+    {
+      "candidate_key": "CANDIDATE_MU_ANALYST_ACTIONS_OTHER",
+      "assigned_delta_ids": [
+        "D803"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: the proposition identifies a Buy action in early August but does not establish an exact action date; do not use the 2026-09-08 source-publication date as the analyst-action occurrence."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_RELEVANT_UNRESOLVED_OCCURRENCE",
+      "assigned_delta_ids": [
+        "D73",
+        "D377",
+        "D205",
+        "D296",
+        "D333",
+        "D164"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: plausible MU or industry relevance remains, but occurrence, attribution, or target-specific boundary is not sufficiently reconstructed in this wave."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_STANDALONE_MARKET_OR_VALUATION_SNAPSHOT",
+      "assigned_delta_ids": [
+        "D606",
+        "D611",
+        "D821",
+        "D584",
+        "D637",
+        "D217",
+        "D576",
+        "D84",
+        "D256",
+        "D282",
+        "D419",
+        "D790",
+        "D876",
+        "D907",
+        "D523",
+        "D875"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: standalone fund, ownership, price-performance, volatility, technical, search, or trading snapshots do not establish a bounded material MU Event."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_NON_TARGET_COMPETITOR_OR_INDUSTRY_BACKGROUND",
+      "assigned_delta_ids": [
+        "D897",
+        "D152",
+        "D183",
+        "D866",
+        "D490",
+        "D167",
+        "D645",
+        "D202",
+        "D842"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: competitor, Sandisk, CXMT, SK hynix, or Netlist background lacks a sufficiently concrete direct MU occurrence or target transmission path for this wave."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_UNRELATED_OR_NO_TARGET_PATH",
+      "assigned_delta_ids": [
+        "D314",
+        "D462"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: macro capital-goods imports and an unrelated portfolio-loss report do not establish a direct MU Event or concrete non-trivial exposure path."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_UNCONFIRMED_OR_HYPOTHETICAL",
+      "assigned_delta_ids": [
+        "D618",
+        "D388"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: the CXMT testing report and Appaloosa memory-position report remain rumor or uncorroborated market commentary."
+    }
+  ]
+}

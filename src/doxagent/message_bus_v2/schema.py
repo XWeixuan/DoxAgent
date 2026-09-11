@@ -59,6 +59,11 @@ class SourceKind(StrEnum):
     CRAWLER = "crawler"
 
 
+class ContentEnrichmentMode(StrEnum):
+    ENRICH = "enrich"
+    SKIP = "skip"
+
+
 class PublicationMode(StrEnum):
     IMMEDIATE = "immediate"
     BUFFERED = "buffered"
@@ -178,12 +183,26 @@ class SourceDefinition(BusModel):
     default_streaming_config: StreamingConfig = Field(default_factory=StreamingConfig)
     scheduler_group: str
     scheduler_constraints: SchedulerConstraints = Field(default_factory=SchedulerConstraints)
+    content_enrichment_mode: ContentEnrichmentMode = ContentEnrichmentMode.ENRICH
     enabled: bool = True
     version: int = Field(default=1, ge=1)
     created_at: datetime = Field(default_factory=utc_now)
     updated_at: datetime = Field(default_factory=utc_now)
     updated_by: UpdateActor = UpdateActor.USER
     updated_reason: str | None = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def _short_message_default(cls, value: Any) -> Any:
+        if not isinstance(value, dict) or "content_enrichment_mode" in value:
+            return value
+        if value.get("source_id") in {
+            "stocktwits_messages",
+            "tikhub_x_search",
+            "tikhub_x_user_posts",
+        }:
+            return {**value, "content_enrichment_mode": ContentEnrichmentMode.SKIP}
+        return value
 
     @field_validator("source_id", "scheduler_group")
     @classmethod
@@ -300,14 +319,16 @@ class RawMessageInput(BusModel):
     external_id: str | None = None
     source_item_key: str | None = None
     title: str | None = None
-    body: str
+    body: str | None = None
+    summary: str | None = None
     source: str | None = None
+    publisher_name: str | None = None
     url: str
     published_at: datetime
     raw_payload: JsonObject
     metadata: JsonObject = Field(default_factory=dict)
 
-    @field_validator("body", "url")
+    @field_validator("url")
     @classmethod
     def _non_empty(cls, value: str) -> str:
         result = value.strip()
@@ -315,13 +336,18 @@ class RawMessageInput(BusModel):
             raise ValueError("value is required")
         return result
 
-    @field_validator("title", "source")
+    @field_validator("title", "body", "summary", "source", "publisher_name")
     @classmethod
     def _optional_text(cls, value: str | None) -> str | None:
         if value is None:
             return None
         result = value.strip()
         return result or None
+
+    @property
+    def fallback_body(self) -> str:
+        """Prefer native article body, then provider summary, without blocking intake."""
+        return self.body or self.summary or ""
 
     @field_validator("url")
     @classmethod
@@ -375,6 +401,8 @@ class RawMessage(BusModel):
     title: str | None = None
     body: str
     source: str
+    publisher_name: str | None = None
+    resolved_domain: str | None = None
     url: str
     published_at: datetime
     collected_at: datetime
@@ -404,6 +432,8 @@ class StandardMessage(BusModel):
     title: str | None = None
     body: str
     source: str
+    publisher_name: str | None = None
+    resolved_domain: str | None = None
     url: str
     published_at: datetime
     collected_at: datetime
@@ -426,6 +456,8 @@ class MaterializedStreamMember(BusModel):
     title: str | None = None
     body: str
     source: str
+    publisher_name: str | None = None
+    resolved_domain: str | None = None
     url: str
     published_at: datetime
     normalized_at: datetime | None = None
@@ -565,6 +597,7 @@ class PollExecutionResult(BusModel):
     binding_id: str
     crawler_execution_id: str | None = None
     collected_count: int = 0
+    queued_count: int = 0
     inserted_count: int = 0
     duplicate_count: int = 0
     revision_count: int = 0

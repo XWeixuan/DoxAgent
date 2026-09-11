@@ -1014,25 +1014,21 @@ RawMessageInput
       ↓
 Contract Validation
       ↓
-Raw persistence
-      ↓
-Identity
-      ↓
-Exact duplicate check
+Durable Enrichment Intake Queue
       ↓
 Basic normalization
       ↓
-Body validity check
+body → summary → 空串 fallback
       ↓
-需要时 URL enrichment
+全局 Content Enrichment Hub（并发 8、统一域名限流）
       ↓
-正文 extraction
-      ↓
-选择 full body / summary fallback
+成功覆盖正文；失败保留 fallback；瞬态错误最多 retry 一次
       ↓
 final normalization
       ↓
-content_hash
+source_item identity / identity_key / content_hash
+      ↓
+Raw persistence / exact dedupe / revision detection
       ↓
 Immutable StandardMessage
 ```
@@ -1063,6 +1059,8 @@ v2 改成：
 title           optional
 body            required
 source          required
+publisher_name  optional（明确发布方）
+resolved_domain optional（最终 URL 域名）
 url             required
 published_at    required
 ```
@@ -2009,20 +2007,16 @@ process restart
 
 ---
 
-## Phase 4 — Raw → Standard Pipeline
+## Phase 4 — Enrichment → Raw → Standard Pipeline
 
 实现：
 
 ```text
-Raw intake
-Raw persistence
-
-source_item identity
-ticker dedupe
-revision detection
-
-body validation
-content enrichment
+durable enrichment intake queue
+body/summary fallback
+global content enrichment
+source_item identity / content_hash
+Raw persistence / ticker dedupe / revision detection
 
 StandardMessage finalization
 ```
@@ -2034,7 +2028,7 @@ StandardMessage finalization
 ```text
 title null allowed
 
-body required
+body/summary 均可为空，最终 Raw body 为字符串
 
 source fallback
 

@@ -1,0 +1,45 @@
+{
+  "event_id": "T2",
+  "ticker": "MU",
+  "title": "Micron scheduled its FY2026 Q4 earnings release",
+  "event_type": "EARNINGS_RELEASE",
+  "occurred_at": "2026-08-28",
+  "occurrence_time_precision": "DAY",
+  "canonical_summary": "Micron publicly scheduled its FY2026 fourth-quarter results for September 30, 2026, creating the active forward reporting-calendar item.",
+  "known_event_summary": "2026-08-28 Micron scheduled its FY2026 Q4 earnings report for 2026-09-30; later reports repeated the same scheduled date.",
+  "is_important": true,
+  "include_in_reference_view": true,
+  "facts": [
+    {
+      "fact_id": "TF34",
+      "proposition": "Micron scheduled its FY2026 Q4 earnings report for 2026-09-30.",
+      "assertion_state": "SCHEDULED",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "2026-09-30",
+      "consumes_delta_ids": [
+        "D22",
+        "D154",
+        "D232",
+        "D234",
+        "D264",
+        "D287",
+        "D304",
+        "D330",
+        "D340",
+        "D390",
+        "D453",
+        "D531",
+        "D814",
+        "D881"
+      ]
+    }
+  ],
+  "price_analysis": null,
+  "related_event_ids": [
+    "T1"
+  ],
+  "derived_from_event_ids": [],
+  "supersedes_event_id": null,
+  "status": "ACTIVE"
+}

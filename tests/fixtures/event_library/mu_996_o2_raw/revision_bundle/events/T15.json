@@ -1,0 +1,30 @@
+{
+  "event_id": "T15",
+  "ticker": "MU",
+  "title": "Mizuho maintained Outperform while lowering Micron's target",
+  "event_type": "ANALYST_ACTION",
+  "occurred_at": "2026-08-25",
+  "occurrence_time_precision": "DAY",
+  "canonical_summary": "Mizuho maintained an Outperform rating while lowering its Micron price target to $1,300.",
+  "known_event_summary": "2026-08-25 Mizuho kept Micron at Outperform and lowered the price target to $1,300.",
+  "is_important": false,
+  "include_in_reference_view": false,
+  "facts": [
+    {
+      "fact_id": "TF282",
+      "proposition": "Mizuho lowered its Micron price target to $1,300 while maintaining an Outperform rating.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D925"
+      ]
+    }
+  ],
+  "price_analysis": null,
+  "related_event_ids": [],
+  "derived_from_event_ids": [],
+  "supersedes_event_id": null,
+  "status": "ACTIVE"
+}

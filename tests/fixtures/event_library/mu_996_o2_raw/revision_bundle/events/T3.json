@@ -1,0 +1,386 @@
+{
+  "event_id": "T3",
+  "ticker": "MU",
+  "title": "NVIDIA FY2027 Q2 earnings cycle reinforced AI and memory demand",
+  "event_type": "EARNINGS_RELEASE",
+  "occurred_at": "2026-08-26",
+  "occurrence_time_precision": "DAY",
+  "canonical_summary": "NVIDIA's FY2027 Q2 disclosure and bounded follow-on cycle reported strong revenue and data-center growth, high AI infrastructure spending, capacity constraints, memory procurement and forward demand guidance relevant to Micron.",
+  "known_event_summary": "2026-08-26 NVIDIA FY2027 Q2 earnings cycle: revenue was $96.2 billion, data-center revenue was $89.0 billion, gross margin was 75%, Q3 revenue guidance was about $108 billion, and supplier commitments later reached about $279 billion primarily for memory.",
+  "is_important": true,
+  "include_in_reference_view": true,
+  "facts": [
+    {
+      "fact_id": "TF35",
+      "proposition": "NVIDIA reporting projected about 70% revenue growth in fiscal 2028.",
+      "assertion_state": "EXPECTED",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2028",
+      "consumes_delta_ids": [
+        "D62",
+        "D438"
+      ]
+    },
+    {
+      "fact_id": "TF36",
+      "proposition": "NVIDIA executives indicated that memory-chip shortages would continue.",
+      "assertion_state": "ONGOING",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D75"
+      ]
+    },
+    {
+      "fact_id": "TF37",
+      "proposition": "NVIDIA projected approximately 89% revenue growth for the next quarter.",
+      "assertion_state": "EXPECTED",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2027-Q3",
+      "consumes_delta_ids": [
+        "D186"
+      ]
+    },
+    {
+      "fact_id": "TF38",
+      "proposition": "NVIDIA forecast nearly $800 billion of 2026 AI data-center infrastructure spending by the five largest hyperscalers.",
+      "assertion_state": "FORECAST",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2026",
+      "consumes_delta_ids": [
+        "D288",
+        "D762"
+      ]
+    },
+    {
+      "fact_id": "TF39",
+      "proposition": "NVIDIA reported a 75% gross margin in FY2027 Q2.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2027-Q2",
+      "consumes_delta_ids": [
+        "D294"
+      ]
+    },
+    {
+      "fact_id": "TF40",
+      "proposition": "NVIDIA's Vera Rubin platform entered full production.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D310"
+      ]
+    },
+    {
+      "fact_id": "TF41",
+      "proposition": "NVIDIA reported FY2027 Q2 revenue of approximately $96.2 billion, up 106% year over year, as part of record quarterly results.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2027-Q2",
+      "consumes_delta_ids": [
+        "D423",
+        "D715",
+        "D782",
+        "D900",
+        "D923"
+      ]
+    },
+    {
+      "fact_id": "TF42",
+      "proposition": "NVIDIA expected the five largest hyperscalers to spend about $1.3 trillion on capital expenditure in 2027.",
+      "assertion_state": "EXPECTED",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "2027",
+      "consumes_delta_ids": [
+        "D503",
+        "D793"
+      ]
+    },
+    {
+      "fact_id": "TF43",
+      "proposition": "NVIDIA guided FY2027 Q3 revenue to approximately $108 billion.",
+      "assertion_state": "GUIDANCE",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2027-Q3",
+      "consumes_delta_ids": [
+        "D649",
+        "D754"
+      ]
+    },
+    {
+      "fact_id": "TF44",
+      "proposition": "NVIDIA expected Vera Rubin to account for about 20% of Data Center revenue in FY2027 Q3.",
+      "assertion_state": "EXPECTED",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2027-Q3",
+      "consumes_delta_ids": [
+        "D687"
+      ]
+    },
+    {
+      "fact_id": "TF45",
+      "proposition": "NVIDIA Data Center revenue reached approximately $89.0 billion, up 117%, in FY2027 Q2.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2027-Q2",
+      "consumes_delta_ids": [
+        "D990"
+      ]
+    },
+    {
+      "fact_id": "TF46",
+      "proposition": "NVIDIA shares initially rose about 8.7% after the FY2027 Q2 earnings disclosure.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-08-27",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D47",
+        "D270",
+        "D839"
+      ]
+    },
+    {
+      "fact_id": "TF47",
+      "proposition": "NVIDIA expected gross margin to decline from 75% in FY2027 Q2 to 71%-72% in Q4 because of memory costs.",
+      "assertion_state": "EXPECTED",
+      "fact_occurred_at": "2026-08-27",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2027-Q4",
+      "consumes_delta_ids": [
+        "D204",
+        "D483"
+      ]
+    },
+    {
+      "fact_id": "TF48",
+      "proposition": "NVIDIA purchases accelerator HBM primarily from Micron, SK Hynix and Samsung.",
+      "assertion_state": "ONGOING",
+      "fact_occurred_at": "2026-08-27",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D564"
+      ]
+    },
+    {
+      "fact_id": "TF49",
+      "proposition": "NVIDIA reported that product demand significantly exceeded supply capacity, which remained restricted.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-08-27",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D667"
+      ]
+    },
+    {
+      "fact_id": "TF50",
+      "proposition": "NVIDIA secured long-term supply agreements with all three major memory manufacturers.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-08-27",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D707"
+      ]
+    },
+    {
+      "fact_id": "TF51",
+      "proposition": "Jensen Huang stated that AI factories were expanding beyond model training into inference, agentic AI, enterprise computing and robotics.",
+      "assertion_state": "ONGOING",
+      "fact_occurred_at": "2026-08-27",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D736"
+      ]
+    },
+    {
+      "fact_id": "TF52",
+      "proposition": "NVIDIA expected demand to grow by approximately 100% in the following year.",
+      "assertion_state": "EXPECTED",
+      "fact_occurred_at": "2026-08-27",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2028",
+      "consumes_delta_ids": [
+        "D746",
+        "D994"
+      ]
+    },
+    {
+      "fact_id": "TF53",
+      "proposition": "NVIDIA stated that supply constraints limited revenue growth to approximately 70%.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-08-27",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D783"
+      ]
+    },
+    {
+      "fact_id": "TF54",
+      "proposition": "NVIDIA data-center revenue increased about 92% year over year in the last quarter.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-08-31",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2027-Q2",
+      "consumes_delta_ids": [
+        "D135"
+      ]
+    },
+    {
+      "fact_id": "TF55",
+      "proposition": "NVIDIA stated that memory price increases had exceeded prior expectations and could rise further the following year.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-08-31",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "2027",
+      "consumes_delta_ids": [
+        "D794"
+      ]
+    },
+    {
+      "fact_id": "TF56",
+      "proposition": "NVIDIA's supply and capacity commitments to suppliers reached approximately $279 billion, primarily for memory procurement.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-09-01",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2027-Q2",
+      "consumes_delta_ids": [
+        "D392",
+        "D840"
+      ]
+    },
+    {
+      "fact_id": "TF57",
+      "proposition": "NVIDIA raised performance expectations for the remainder of the current year and the following year.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-09-01",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2027..FY2028",
+      "consumes_delta_ids": [
+        "D991"
+      ]
+    },
+    {
+      "fact_id": "TF58",
+      "proposition": "NVIDIA began production shipments of the Vera Rubin platform in August 2026.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-09-02",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "2026-08",
+      "consumes_delta_ids": [
+        "D475"
+      ]
+    },
+    {
+      "fact_id": "TF59",
+      "proposition": "NVIDIA's Vera Rubin platform delivered tenfold agent throughput versus Grace Blackwell at scale.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-09-03",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D100"
+      ]
+    },
+    {
+      "fact_id": "TF60",
+      "proposition": "NVIDIA faced the challenge of sustaining demand amid large-scale AI-customer spending.",
+      "assertion_state": "ONGOING",
+      "fact_occurred_at": "2026-09-03",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D478"
+      ]
+    },
+    {
+      "fact_id": "TF61",
+      "proposition": "NVIDIA was shifting toward hardware designed for agentic AI.",
+      "assertion_state": "ONGOING",
+      "fact_occurred_at": "2026-09-03",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D770"
+      ]
+    },
+    {
+      "fact_id": "TF62",
+      "proposition": "NVIDIA developed Arm-based CPUs aimed at agentic AI.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-09-04",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D624"
+      ]
+    },
+    {
+      "fact_id": "TF63",
+      "proposition": "NVIDIA stated that it remained capacity-constrained.",
+      "assertion_state": "ONGOING",
+      "fact_occurred_at": "2026-09-04",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D703"
+      ]
+    },
+    {
+      "fact_id": "TF64",
+      "proposition": "NVIDIA's increased supplier commitments were primarily attributed to memory procurement.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-09-05",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D414"
+      ]
+    },
+    {
+      "fact_id": "TF65",
+      "proposition": "Jensen Huang argued that NVIDIA computing infrastructure was an income-generating asset.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-09-08",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D500"
+      ]
+    },
+    {
+      "fact_id": "TF66",
+      "proposition": "Micron's net profit margin exceeded NVIDIA's in their most recent quarters.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-09-09",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "MOST_RECENT_QUARTERS",
+      "consumes_delta_ids": [
+        "D235"
+      ]
+    }
+  ],
+  "price_analysis": null,
+  "related_event_ids": [
+    "T19"
+  ],
+  "derived_from_event_ids": [],
+  "supersedes_event_id": null,
+  "status": "ACTIVE"
+}

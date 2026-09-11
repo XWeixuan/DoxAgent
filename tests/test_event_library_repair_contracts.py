@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import sqlite3
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from types import SimpleNamespace
@@ -44,6 +45,7 @@ from doxagent.event_library.contracts import (
     ReferenceReviewReason,
     RuntimePackageDelta,
 )
+from doxagent.event_library.importer import RevisionBundleImporter
 from doxagent.event_library.quality import (
     compile_bundle_semantic_report,
     compile_quality_report,
@@ -100,6 +102,131 @@ def test_tolerant_residual_wire_normalizes_known_alias_only(tmp_path: Path) -> N
     rows, count = RevisionBundleIO._tolerant_residuals(path)
     assert count == 1
     assert rows == [{"delta_id": "D1", "resolution": "KEEP_PENDING"}]
+
+
+def test_tolerant_event_wire_applies_only_audited_mechanical_defaults(
+    tmp_path: Path,
+) -> None:
+    bundle_path = _copy_bundle(tmp_path / "wire-normalization", "delta:test")
+    manifest_path = bundle_path / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["event_revisions"] = ["events/T1.json"]
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    event_path = bundle_path / "events/T1.json"
+    event = json.loads(event_path.read_text(encoding="utf-8"))
+    event.update(
+        {
+            "ticker": "wrong",
+            "title": None,
+            "event_type": "UNRECOGNIZED",
+            "occurred_at": None,
+            "occurrence_time_precision": "BROKEN",
+            "is_important": None,
+            "include_in_reference_view": None,
+            "price_analysis": {"forbidden": True},
+        }
+    )
+    event["facts"][0]["assertion_state"] = "BROKEN"
+    event["facts"][0]["consumes_delta_ids"] = ["D1", "D1", "invalid"]
+    event_path.write_text(json.dumps(event), encoding="utf-8")
+
+    loaded = RevisionBundleIO.load_tolerant(bundle_path)
+
+    normalized = loaded.bundle.event_revisions[0]
+    assert normalized.ticker == "MU"
+    assert normalized.title == normalized.canonical_summary
+    assert normalized.event_type.value == "OTHER_CORPORATE_EVENT"
+    assert normalized.occurred_at is None
+    assert normalized.occurrence_time_precision.value == "UNKNOWN"
+    assert normalized.is_important is False
+    assert normalized.include_in_reference_view is False
+    assert normalized.price_analysis is None
+    assert normalized.facts[0].assertion_state is CanonicalAssertionState.UNKNOWN
+    assert normalized.facts[0].consumes_delta_ids == ["D1"]
+    assert {
+        "EVENT_TICKER_NORMALIZED",
+        "EVENT_TITLE_DEFAULTED",
+        "EVENT_TYPE_NORMALIZED",
+        "EVENT_OCCURRENCE_LEFT_NULL",
+        "EVENT_IMPORTANCE_DEFAULTED",
+        "EVENT_REFERENCE_DEFAULTED",
+        "PRICE_ANALYSIS_CLEARED",
+        "FACT_ASSERTION_STATE_NORMALIZED",
+        "FACT_CONSUMES_NORMALIZED",
+    }.issubset({item["code"] for item in loaded.normalization_actions})
+
+
+def test_tolerant_event_wire_falls_back_to_earliest_fact_occurrence(tmp_path: Path) -> None:
+    bundle_path = _copy_bundle(tmp_path / "event-time-fallback", "delta:test")
+    event_path = bundle_path / "events/T1.json"
+    event = json.loads(event_path.read_text(encoding="utf-8"))
+    event["occurred_at"] = None
+    event["occurrence_time_precision"] = "UNKNOWN"
+    event["facts"] = [
+        {
+            "fact_id": "TF1",
+            "proposition": "Later exact-day Fact.",
+            "assertion_state": "ACTUAL",
+            "subject_time": None,
+            "fact_occurred_at": "2026-06-24",
+            "fact_occurrence_time_precision": "DAY",
+            "consumes_delta_ids": ["D1"],
+        },
+        {
+            "fact_id": "TF2",
+            "proposition": "Earlier exact-day Fact.",
+            "assertion_state": "ACTUAL",
+            "subject_time": None,
+            "fact_occurred_at": "2026-06-20",
+            "fact_occurrence_time_precision": "DAY",
+            "consumes_delta_ids": ["D2"],
+        },
+        {
+            "fact_id": "TF3",
+            "proposition": "Earlier but broad Fact.",
+            "assertion_state": "ACTUAL",
+            "subject_time": None,
+            "fact_occurred_at": "2026-01",
+            "fact_occurrence_time_precision": "MONTH",
+            "consumes_delta_ids": ["D3"],
+        },
+    ]
+    event_path.write_text(json.dumps(event), encoding="utf-8")
+
+    loaded = RevisionBundleIO.load_tolerant(bundle_path)
+
+    normalized = loaded.bundle.event_revisions[0]
+    assert normalized.occurred_at == "2026-06-20"
+    assert normalized.occurrence_time_precision.value == "DAY"
+    assert any(
+        item["code"] == "EVENT_OCCURRENCE_FACT_FALLBACK"
+        and item["fact_id"] == "TF2"
+        for item in loaded.normalization_actions
+    )
+
+
+def test_tolerant_event_wire_uses_earliest_broad_fact_when_no_day_exists(
+    tmp_path: Path,
+) -> None:
+    bundle_path = _copy_bundle(tmp_path / "event-time-broad-fallback", "delta:test")
+    event_path = bundle_path / "events/T1.json"
+    event = json.loads(event_path.read_text(encoding="utf-8"))
+    event["occurred_at"] = None
+    event["occurrence_time_precision"] = "UNKNOWN"
+    for fact, value, precision in zip(
+        event["facts"],
+        ["2026-Q3", "2026-05", None, None],
+        ["QUARTER", "MONTH", None, None],
+        strict=True,
+    ):
+        fact["fact_occurred_at"] = value
+        fact["fact_occurrence_time_precision"] = precision
+    event_path.write_text(json.dumps(event), encoding="utf-8")
+
+    normalized = RevisionBundleIO.load_tolerant(bundle_path).bundle.event_revisions[0]
+
+    assert normalized.occurred_at == "2026-05"
+    assert normalized.occurrence_time_precision.value == "MONTH"
 
 
 def test_frozen_view_materializes_complete_schema_index_and_combined_skill(
@@ -422,12 +549,8 @@ def test_empty_important_set_is_undefined_without_quadrant_quality_failure(
         ),
     )
     assert validation.publishable
-    assert validation.status is ValidationStatus.PARTIAL
-    assert any(
-        item.code == "INITIALIZATION_IMPORTANT_ALL_FALSE"
-        and item.severity.value == "WARNING"
-        for item in validation.issues
-    )
+    assert validation.status is ValidationStatus.PASS
+    assert validation.issues == []
     service.importer.import_and_publish(all_false_bundle)
     report = compile_quality_report(repository, ticker="MU", version=2)
     assert report.important_event_count == 0
@@ -521,6 +644,158 @@ def test_tolerant_bundle_keeps_valid_events_and_marks_bad_event_delta_pending(
     assert bad_path.read_text(encoding="utf-8") == raw_bad
 
 
+def test_mu_996_original_o2_bundle_replays_without_semantic_quarantine(
+    tmp_path: Path,
+) -> None:
+    """The production MU artifact is the regression boundary for O2 ingest."""
+
+    fixture = Path("tests/fixtures/event_library/mu_996_o2_raw")
+    batch = DeltaBatch.model_validate_json(
+        (fixture / "delta_batch.json").read_text(encoding="utf-8")
+    )
+    repository = EventLibraryRepository(tmp_path / "event_library.sqlite3")
+    repository.save_delta_batch(batch)
+    loaded = RevisionBundleIO.load_tolerant(fixture / "revision_bundle")
+    context = BundleValidationContext(
+        run_id=loaded.bundle.run_id,
+        ticker="MU",
+        base_library_version=0,
+        delta_batch_ids=[batch.batch_id],
+        frozen_as_of=datetime(2026, 9, 9, 12, 54, 48, tzinfo=UTC),
+        mode="INITIALIZE",
+        required_contract_version="event-library-maintenance-v3",
+    )
+
+    result, outcome = RevisionBundleImporter(repository).import_tolerant_and_publish(
+        loaded,
+        context=context,
+    )
+
+    assert outcome.publishable
+    assert len(outcome.normalized_bundle.event_revisions) == 23
+    assert sum(len(event.facts) for event in outcome.normalized_bundle.event_revisions) == 296
+    assert outcome.resolved_delta_count == 399
+    assert outcome.pending_delta_count == 597
+    assert sum(
+        issue.code == "DATE_CANDIDATE_SELECTION_DIFFERENCE" for issue in outcome.issues
+    ) == 204
+    assert result.applied_event_count == 23
+    assert result.pending_delta_count == 597
+    assert len(repository.published_events("MU")) == 23
+    assert sum(len(event.facts) for event in repository.published_events("MU")) == 296
+    with sqlite3.connect(repository.path) as connection:
+        stored_hash = connection.execute(
+            "SELECT raw_bundle_hash FROM bundle_import_diagnostics WHERE batch_id=?",
+            (batch.batch_id,),
+        ).fetchone()[0]
+    assert stored_hash == loaded.raw_bundle_hash
+    assert (
+        tmp_path
+        / "artifacts/event_library/import_diagnostics"
+        / f"{loaded.raw_bundle_hash}.json"
+    ).is_file()
+    repeated, _ = RevisionBundleImporter(repository).import_tolerant_and_publish(
+        loaded,
+        context=context,
+    )
+    assert repeated.published_library_version == result.published_library_version == 1
+
+    runner = RemoteEventLibraryInitializer(
+        worker=None,  # type: ignore[arg-type]
+        workspace=None,  # type: ignore[arg-type]
+        service=EventLibraryService(repository),
+        local_workspace_root=tmp_path,
+    )
+    plans = runner._plan_waves(batch)
+    manifest = SimpleNamespace(frozen_view_id="fv-mu-996", delta_batch_ids=[batch.batch_id])
+    contexts = [
+        runner._wave_runtime_context(
+            batch=batch,
+            manifest=manifest,  # type: ignore[arg-type]
+            plan=plan,
+            plans=plans,
+        )
+        for plan in plans
+    ]
+    assert sum(item["coverage"]["package_grouped_delta_count"] for item in contexts) == 12
+    assert sum(item["coverage"]["ungrouped_delta_count"] for item in contexts) == 984
+
+
+def test_conflicting_and_unknown_delta_mappings_preserve_canonical_content(
+    tmp_path: Path,
+) -> None:
+    repository = EventLibraryRepository(tmp_path / "event_library.sqlite3")
+    batch = DeltaBatch(
+        batch_id="delta:mapping-fail-open",
+        ticker="MU",
+        runtime_scope="cdecr:US:MU",
+        source_snapshot_id="snapshot",
+        source_epoch_id="epoch",
+        base_library_version=0,
+        items=[
+            DeltaItem(
+                delta_id=f"D{index}",
+                runtime_atomic_id=f"A{index}",
+                runtime_atomic_version=1,
+                runtime_signature=f"sig-{index}",
+                proposition=f"Delta {index}",
+                assertion_state=CanonicalAssertionState.ACTUAL,
+            )
+            for index in (1, 2)
+        ],
+    )
+    repository.save_delta_batch(batch)
+    events = []
+    for event_no in (1, 2):
+        events.append(
+            CanonicalEventRevision.model_validate(
+                {
+                    "event_id": f"T{event_no}",
+                    "ticker": "MU",
+                    "title": f"Event {event_no}",
+                    "event_type": "OTHER_CORPORATE_EVENT",
+                    "occurred_at": "UNKNOWN",
+                    "occurrence_time_precision": "UNKNOWN",
+                    "canonical_summary": f"Event {event_no}",
+                    "known_event_summary": f"Event {event_no}",
+                    "is_important": False,
+                    "include_in_reference_view": False,
+                    "facts": [
+                        {
+                            "fact_id": f"TF{event_no}",
+                            "proposition": f"Fact {event_no}",
+                            "assertion_state": "ACTUAL",
+                            "consumes_delta_ids": ["D1", "D999"],
+                        }
+                    ],
+                }
+            )
+        )
+    bundle = CanonicalRevisionBundle(
+        run_id="mapping-fail-open",
+        ticker="MU",
+        base_library_version=0,
+        delta_batch_ids=[batch.batch_id],
+        event_revisions=events,
+        residual_delta_resolutions=[
+            {"delta_id": "D1", "resolution": "KEEP_PENDING"}
+        ],
+    )
+
+    result, outcome = RevisionBundleImporter(repository).import_and_publish(bundle)
+
+    assert result.applied_event_count == 2
+    assert result.pending_delta_count == 2
+    assert len(repository.published_events("MU")) == 2
+    assert sum(len(item.facts) for item in repository.published_events("MU")) == 2
+    assert outcome.normalized_bundle.event_revisions == bundle.event_revisions
+    assert {item.code for item in outcome.issues} == {
+        "CONFLICTING_DELTA_DISPOSITION",
+        "MISSING_DELTA_DISPOSITION",
+        "UNKNOWN_DELTA_DISPOSITION_IGNORED",
+    }
+
+
 def test_review_only_publish_keeps_head_and_is_idempotent(tmp_path: Path) -> None:
     repository, service, workspace, _, orchestrator = _foundation(tmp_path)
     batch, _, _ = orchestrator.prepare(
@@ -599,11 +874,105 @@ def test_package_aware_waves_cover_346_atomic_deltas_once(tmp_path: Path) -> Non
         wave_token_budget=100_000,
     )
     waves = runner._plan_waves(batch)
-    flattened = [item.delta_id for wave in waves for item in wave]
+    flattened = [delta_id for wave in waves for delta_id in wave.delta_ids]
     assert len(waves) == 4
     assert len(flattened) == len(set(flattened)) == 346
     assert set(flattened) == {f"D{index}" for index in range(1, 347)}
-    assert all(len(wave) <= 100 for wave in waves)
+    assert all(len(wave.delta_ids) <= 100 for wave in waves)
+
+
+def test_wave_runtime_context_is_stable_and_preserves_split_package_members(
+    tmp_path: Path,
+) -> None:
+    items = [
+        DeltaItem(
+            delta_id=f"D{index}",
+            runtime_atomic_id=f"A{index}",
+            runtime_atomic_version=1,
+            runtime_signature=f"s{index}",
+            proposition=f"Atomic {index}",
+            assertion_state=CanonicalAssertionState.ACTUAL,
+            runtime_hint_ids=(["R1", "R2"] if index <= 2 else ["R1"]),
+        )
+        for index in range(1, 6)
+    ]
+    batch = DeltaBatch(
+        batch_id="delta:split",
+        ticker="MU",
+        runtime_scope="cdecr:US:MU",
+        source_snapshot_id="snapshot",
+        source_epoch_id="epoch",
+        base_library_version=0,
+        items=items,
+        runtime_packages=[
+            RuntimePackageDelta(
+                runtime_hint_id="R1",
+                title="Primary package",
+                runtime_package_version=1,
+                member_delta_ids=[f"D{index}" for index in range(1, 6)],
+            ),
+            RuntimePackageDelta(
+                runtime_hint_id="R2",
+                title="Secondary package",
+                runtime_package_version=1,
+                member_delta_ids=["D1", "D2"],
+            ),
+        ],
+    )
+    service = EventLibraryService(EventLibraryRepository(tmp_path / "library.sqlite3"))
+    runner = RemoteEventLibraryInitializer(
+        worker=None,  # type: ignore[arg-type]
+        workspace=None,  # type: ignore[arg-type]
+        service=service,
+        local_workspace_root=tmp_path,
+        wave_size=2,
+        wave_token_budget=100_000,
+    )
+    plans = runner._plan_waves(batch)
+    manifest = SimpleNamespace(frozen_view_id="fv-test", delta_batch_ids=[batch.batch_id])
+    contexts = [
+        runner._wave_runtime_context(
+            batch=batch,
+            manifest=manifest,  # type: ignore[arg-type]
+            plan=plan,
+            plans=plans,
+        )
+        for plan in plans
+    ]
+    represented = []
+    for context in contexts:
+        grouped = [
+            atomic["delta_id"]
+            for group in context["package_groups"]
+            for atomic in group["atomics"]
+        ]
+        ungrouped = [item["delta_id"] for item in context["ungrouped_atomics"]]
+        assert grouped + ungrouped == context["assigned_delta_ids"]
+        represented.extend(grouped + ungrouped)
+        assert context["coverage"]["split_package_count"] == 1
+    assert represented == [f"D{index}" for index in range(1, 6)]
+    assert contexts[0]["package_groups"][0]["full_member_delta_ids"] == [
+        "D1",
+        "D2",
+        "D3",
+        "D4",
+        "D5",
+    ]
+    assert contexts[0]["package_groups"][0]["atomics"][0][
+        "secondary_runtime_hint_ids"
+    ] == ["R2"]
+    assert json.dumps(contexts, sort_keys=True) == json.dumps(
+        [
+            runner._wave_runtime_context(
+                batch=batch,
+                manifest=manifest,  # type: ignore[arg-type]
+                plan=plan,
+                plans=plans,
+            )
+            for plan in plans
+        ],
+        sort_keys=True,
+    )
 
 
 @pytest.mark.asyncio

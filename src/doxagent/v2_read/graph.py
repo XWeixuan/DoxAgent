@@ -63,7 +63,7 @@ def project(
     native = store.get("native:runtime_v2_cases", ticker, identity) or {}
     for item in incoming:
         if item["kind"] == "native:runtime_v2_cases" and item["id"] == identity:
-            native = item["data"]
+            native = item["data"] or {}
     for node in set(prior["nodes"]) | nodes:
         selected = [t for t in turns.values() if t["node_id"] == node]
         completed = [t["timing"]["completed_at"]["value"] for t in selected]

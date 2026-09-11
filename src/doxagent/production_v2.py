@@ -74,6 +74,7 @@ def check(*, databases=True):
 def migrate():
     from doxagent.codex_runtime.repository import SQLiteCodexRuntimeRepository
     from doxagent.message_bus_v2.repository import MessageBusV2Repository
+    from doxagent.message_bus_v2.service import MessageBusV2Service
     from doxagent.model_usage.repository import SQLiteModelUsageRepository
     from doxagent.persistent_runtime_v2.journal import RuntimeJournal
     from doxagent.persistent_runtime_v2.repository import SQLitePersistentRuntimeV2Repository
@@ -116,7 +117,8 @@ def migrate():
         SQLiteCodexRuntimeRepository(locations["research"])
         SQLiteDocument3PolicyRepository(locations["research"])
         InitializationRepository(locations["initialization"])
-        MessageBusV2Repository(locations["bus"])
+        bus_repository = MessageBusV2Repository(locations["bus"])
+        MessageBusV2Service(bus_repository).bootstrap()
         SQLitePersistentRuntimeV2Repository(locations["runtime"])
         journal = RuntimeJournal(locations["runtime"])
         ControlRepository(journal).migrate()

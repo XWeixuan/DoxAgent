@@ -41,3 +41,5 @@ Include complete revisions only for new or affected Events. Input navigation and
 ## Completion
 
 Return the current `O2RunResult` with `status: PENDING`, `stage: RECONSTRUCT_AND_EDIT`, `bundle_path: null`, the supplied base version, exact Delta coverage, and `validation: NOT_RUN`.
+
+Your Event/Fact/date/relationship and Delta decisions remain authoritative business semantics. Later deterministic processing only checks identity and prepares representable persistence input.

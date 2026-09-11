@@ -10,6 +10,8 @@ from pydantic import Field
 
 from doxagent.event_library.contracts import (
     CanonicalEventRevision,
+    CanonicalEventType,
+    CanonicalFactRevision,
     CanonicalObjectStatus,
     CanonicalRevisionBundle,
     CanonicalSubjectTimeMarker,
@@ -92,100 +94,14 @@ class RevisionBundleValidator:
         force_pending_delta_ids: list[str] | None = None,
         context: BundleValidationContext | None = None,
     ) -> BundleValidationOutcome:
-        """Iteratively isolate conflicting edits, never publish invalid graph edges."""
-        original_issues = list(initial_issues or [])
-        current = bundle.model_copy(deep=True)
-        recovered: list[ValidationIssue] = []
-        pending = set(force_pending_delta_ids or [])
-        fatal = {
-            "BUNDLE_IDENTITY_MISMATCH",
-            "UNKNOWN_DELTA_BATCH",
-            "STALE_BASE",
-            "TICKER_MISMATCH",
-            "BASE_MISMATCH",
-            "AMBIGUOUS_DELTA_IDS",
-        }
-        # Each iteration removes at least one edit/ledger row. Bound by input size.
-        limit = 2 + sum(len(v) for v in current.model_dump().values() if isinstance(v, list))
-        for _ in range(limit):
-            outcome = self._validate_once(
-                current,
-                initial_issues=original_issues,
-                force_pending_delta_ids=sorted(pending),
-                context=context,
-            )
-            errors = [i for i in outcome.issues if i.severity is ValidationSeverity.ERROR]
-            if not errors:
-                if recovered:
-                    outcome.status = ValidationStatus.PARTIAL
-                    outcome.issues = recovered + outcome.issues
-                return outcome
-            if any(i.code in fatal or i in original_issues for i in errors):
-                return outcome
-            bad = {i.item_id for i in errors if i.item_id}
-            cycle = self._relation_cycle(current)
-            bad.update(cycle or [])
-            for event in current.event_revisions:
-                if any(f.fact_id in bad for f in event.facts):
-                    bad.add(event.event_id)
-                if any(
-                    getattr(row, "delta_id", None) in bad and row.event_id == event.event_id
-                    for row in current.date_resolution_ledger
-                ):
-                    bad.add(event.event_id)
-            # Remove dependent edits as well; existing published events remain intact.
-            changed = True
-            while changed:
-                before = len(bad)
-                for event in current.event_revisions:
-                    refs = {
-                        *event.related_event_ids,
-                        *event.derived_from_event_ids,
-                        event.supersedes_event_id,
-                    }
-                    if refs & bad:
-                        bad.add(event.event_id)
-                for item in current.event_retirements:
-                    if item.redirect_to_event_id in bad:
-                        bad.add(item.event_id)
-                changed = len(bad) != before
-            before = current.model_dump_json()
-            edits = [e for e in current.event_revisions if e.event_id not in bad]
-            for row in current.date_resolution_ledger:
-                if row.event_id in bad or row.fact_id in bad or row.delta_id in bad:
-                    if row.delta_id:
-                        pending.add(row.delta_id)
-            current = current.model_copy(
-                update={
-                    "event_revisions": edits,
-                    "event_retirements": [
-                        r for r in current.event_retirements if r.event_id not in bad
-                    ],
-                    "reference_review_decisions": [
-                        r for r in current.reference_review_decisions if r.event_id not in bad
-                    ],
-                    "reference_view_decision_ledger": [
-                        r for r in current.reference_view_decision_ledger if r.event_id not in bad
-                    ],
-                    "date_resolution_ledger": [
-                        r
-                        for r in current.date_resolution_ledger
-                        if r.event_id not in bad and r.fact_id not in bad and r.delta_id not in bad
-                    ],
-                }
-            )
-            if current.model_dump_json() == before:
-                return outcome  # Unknown/global defect: never pretend it was repaired.
-            recovered.extend(
-                i.model_copy(
-                    update={
-                        "severity": ValidationSeverity.WARNING,
-                        "message": "QUARANTINED: " + i.message,
-                    }
-                )
-                for i in errors
-            )
-        return outcome
+        """Prepare an O2 Bundle for import without re-deciding O2 semantics."""
+
+        return self._validate_once(
+            bundle.model_copy(deep=True),
+            initial_issues=initial_issues,
+            force_pending_delta_ids=force_pending_delta_ids,
+            context=context,
+        )
 
     def _validate_once(
         self,
@@ -266,69 +182,27 @@ class RevisionBundleValidator:
             )
         if any(issue.severity is ValidationSeverity.ERROR for issue in issues):
             return self._failed(issues, total=len(expected_delta_ids))
-
-        accepted_events = self._filter_event_revisions(bundle, issues)
-        accepted_retirements = self._filter_retirements(bundle, accepted_events, issues)
-        if any(issue.severity is ValidationSeverity.ERROR for issue in issues):
+        if expected_delta_ids and not (bundle.event_revisions or bundle.residual_delta_resolutions):
+            issues.append(
+                self._error(
+                    "BUNDLE_CONTENT_UNREADABLE",
+                    "No Event or residual disposition survived artifact decoding",
+                )
+            )
             return self._failed(issues, total=len(expected_delta_ids))
-        normalized = bundle.model_copy(
-            update={
-                "event_revisions": accepted_events,
-                "event_retirements": accepted_retirements,
-            },
-            deep=True,
-        )
+
+        identity_issues = self._identity_integrity_issues(bundle)
+        if identity_issues:
+            issues.extend(identity_issues)
+            return self._failed(issues, total=len(expected_delta_ids))
+
+        normalized = self._normalize_persistence_shape(bundle, issues)
         if force_pending_delta_ids:
             normalized = self._force_pending(normalized, force_pending_delta_ids)
         normalized = self._normalize_delta_coverage(normalized, expected_delta_ids, issues)
         normalized = self._filter_invalid_duplicate_targets(normalized, issues)
-        cycle = self._relation_cycle(normalized)
-        if cycle:
-            issues.append(
-                self._error(
-                    "RELATION_CYCLE",
-                    f"Event lifecycle/derivation graph contains a cycle: {' -> '.join(cycle)}",
-                )
-            )
-        normalized = self._validate_and_normalize_reviews(normalized, issues, context)
-        if context is not None and normalized.contract_version == "event-library-maintenance-v3":
-            from .contracts import ReferenceViewDecisionLedgerEntry
-
-            ledgers = {row.event_id: row for row in normalized.reference_view_decision_ledger}
-            for decision in normalized.reference_review_decisions:
-                if (
-                    decision.is_important is not None
-                    and decision.reference_view_basis is not None
-                    and decision.note
-                    and decision.reference_view_basis.includes == decision.include_in_reference_view
-                ):
-                    ledger = ReferenceViewDecisionLedgerEntry(
-                        event_id=decision.event_id,
-                        is_important=decision.is_important,
-                        include_in_reference_view=decision.include_in_reference_view,
-                        reference_view_basis=decision.reference_view_basis,
-                        note=decision.note,
-                        review_reason=decision.candidate_reason,
-                        as_of=context.frozen_as_of,
-                    )
-                    if ledgers.get(decision.event_id) != ledger:
-                        issues.append(
-                            self._warning(
-                                "REFERENCE_LEDGER_REBUILT",
-                                "Redundant ledger reconstructed from canonical review decision",
-                                decision.event_id,
-                            )
-                        )
-                    ledgers[decision.event_id] = ledger
-            normalized = normalized.model_copy(
-                update={"reference_view_decision_ledger": list(ledgers.values())}
-            )
-        self._validate_time_contract(normalized, batches, issues, context)
-        self._validate_reference_contract(normalized, issues, context)
-        self._semantic_checks(normalized, issues, context)
-        if any(issue.severity is ValidationSeverity.ERROR for issue in issues):
-            return self._failed(issues, total=len(expected_delta_ids))
-        normalized = self._normalize_delta_coverage(normalized, expected_delta_ids, issues)
+        normalized = self._normalize_reviews_authoritative(normalized, issues, context)
+        self._observe_date_selection_differences(normalized, batches, issues)
         pending_count = sum(
             item.resolution is DeltaResolution.KEEP_PENDING
             for item in normalized.residual_delta_resolutions
@@ -343,6 +217,308 @@ class RevisionBundleValidator:
             resolved_delta_count=resolved_count,
             pending_delta_count=pending_count,
         )
+
+    def _identity_integrity_issues(
+        self, bundle: CanonicalRevisionBundle
+    ) -> list[ValidationIssue]:
+        """Reject IDs that would create or move stable identities implicitly."""
+
+        existing = {
+            event.event_id: event
+            for event in self._repository.published_events(
+                bundle.ticker, bundle.base_library_version
+            )
+        }
+        fact_owner = {
+            fact.fact_id: event.event_id for event in existing.values() for fact in event.facts
+        }
+        issues: list[ValidationIssue] = []
+        seen_events: set[str] = set()
+        seen_facts: set[str] = set()
+        for event in bundle.event_revisions:
+            if event.event_id in seen_events:
+                issues.append(
+                    self._error(
+                        "DUPLICATE_EVENT_IDENTITY",
+                        "An Event identity appears more than once in the Bundle",
+                        event.event_id,
+                    )
+                )
+            seen_events.add(event.event_id)
+            if event.event_id.startswith("E") and event.event_id not in existing:
+                issues.append(
+                    self._error(
+                        "UNKNOWN_STABLE_EVENT",
+                        "A stable Event ID does not exist at the base version",
+                        event.event_id,
+                    )
+                )
+            for fact in event.facts:
+                if fact.fact_id in seen_facts:
+                    issues.append(
+                        self._error(
+                            "DUPLICATE_FACT_IDENTITY",
+                            "A Fact identity appears more than once in the Bundle",
+                            fact.fact_id,
+                        )
+                    )
+                seen_facts.add(fact.fact_id)
+                if fact.fact_id.startswith("F") and fact.fact_id not in fact_owner:
+                    issues.append(
+                        self._error(
+                            "UNKNOWN_STABLE_FACT",
+                            "A stable Fact ID does not exist at the base version",
+                            fact.fact_id,
+                        )
+                    )
+                elif fact.fact_id.startswith("F") and fact_owner[fact.fact_id] != event.event_id:
+                    issues.append(
+                        self._error(
+                            "FACT_IDENTITY_MOVED",
+                            f"Stable Fact belongs to {fact_owner[fact.fact_id]}",
+                            fact.fact_id,
+                        )
+                    )
+        return issues
+
+    def _normalize_persistence_shape(
+        self,
+        bundle: CanonicalRevisionBundle,
+        issues: list[ValidationIssue],
+    ) -> CanonicalRevisionBundle:
+        """Apply only code-owned protection and drop only unresolvable edges."""
+
+        existing = {
+            event.event_id: event
+            for event in self._repository.published_events(
+                bundle.ticker, bundle.base_library_version
+            )
+        }
+        incoming_ids = {event.event_id for event in bundle.event_revisions}
+        known_ids = set(existing) | incoming_ids
+        events: list[CanonicalEventRevision] = []
+        for event in bundle.event_revisions:
+            current = existing.get(event.event_id)
+            update: dict[str, object] = {}
+            if event.ticker != bundle.ticker:
+                update["ticker"] = bundle.ticker
+                issues.append(
+                    self._warning(
+                        "EVENT_TICKER_NORMALIZED",
+                        "Event ticker was replaced by the Frozen Bundle ticker",
+                        event.event_id,
+                    )
+                )
+            protected = None if current is None else current.price_analysis
+            if event.price_analysis != protected:
+                update["price_analysis"] = protected
+                issues.append(
+                    self._warning(
+                        "PRICE_ANALYSIS_PROTECTED",
+                        "Code-owned price_analysis was restored without dropping the Event",
+                        event.event_id,
+                    )
+                )
+            related = [item for item in event.related_event_ids if item in known_ids]
+            derived = [item for item in event.derived_from_event_ids if item in known_ids]
+            supersedes = (
+                event.supersedes_event_id if event.supersedes_event_id in known_ids else None
+            )
+            if (
+                related != list(event.related_event_ids)
+                or derived != list(event.derived_from_event_ids)
+                or supersedes != event.supersedes_event_id
+            ):
+                update.update(
+                    {
+                        "related_event_ids": related,
+                        "derived_from_event_ids": derived,
+                        "supersedes_event_id": supersedes,
+                    }
+                )
+                issues.append(
+                    self._warning(
+                        "DANGLING_RELATION_DROPPED",
+                        "Only unresolvable relation edges were omitted",
+                        event.event_id,
+                    )
+                )
+            events.append(event.model_copy(update=update))
+
+        active_targets = set(existing) | {
+            event.event_id for event in events if event.status is CanonicalObjectStatus.ACTIVE
+        }
+        retirements: list[EventRetirement] = []
+        for retirement in bundle.event_retirements:
+            if (
+                retirement.event_id not in known_ids
+                or retirement.redirect_to_event_id not in active_targets
+            ):
+                issues.append(
+                    self._warning(
+                        "RETIREMENT_SKIPPED",
+                        "Unresolvable retirement was skipped without changing its source Event",
+                        retirement.event_id,
+                    )
+                )
+                continue
+            retirements.append(retirement)
+        return bundle.model_copy(
+            update={"event_revisions": events, "event_retirements": retirements}
+        )
+
+    def _normalize_reviews_authoritative(
+        self,
+        bundle: CanonicalRevisionBundle,
+        issues: list[ValidationIssue],
+        context: BundleValidationContext | None,
+    ) -> CanonicalRevisionBundle:
+        """Preserve O2 flags while deriving only review scheduling metadata."""
+
+        existing = {
+            event.event_id: event
+            for event in self._repository.published_events(
+                bundle.ticker, bundle.base_library_version
+            )
+        }
+        revisions = {event.event_id: event for event in bundle.event_revisions}
+        decisions = []
+        seen: set[str] = set()
+        synthesized = list(bundle.event_revisions)
+        for decision in bundle.reference_review_decisions:
+            if decision.event_id in seen:
+                issues.append(
+                    self._warning(
+                        "DUPLICATE_REFERENCE_REVIEW_IGNORED",
+                        "The first review decision was retained",
+                        decision.event_id,
+                    )
+                )
+                continue
+            seen.add(decision.event_id)
+            current = existing.get(decision.event_id)
+            revision = revisions.get(decision.event_id)
+            if current is None and revision is None:
+                issues.append(
+                    self._warning(
+                        "UNKNOWN_REFERENCE_REVIEW_IGNORED",
+                        "Review decision target is not present in the base or Bundle",
+                        decision.event_id,
+                    )
+                )
+                continue
+            next_important = (
+                decision.is_important
+                if decision.is_important is not None
+                else (
+                    revision.is_important
+                    if revision is not None
+                    else bool(current and current.is_important)
+                )
+            )
+            next_include = decision.include_in_reference_view
+            prior_important = bool(current and current.is_important)
+            prior_include = bool(current and current.include_in_reference_view)
+            update: dict[str, object] = {
+                "changed": (prior_important != next_important or prior_include != next_include)
+            }
+            if context is not None:
+                source = revision or current
+                assert source is not None
+                mode, reason, next_at = classify_review(
+                    anchor=event_review_anchor(source),
+                    as_of=context.frozen_as_of,
+                    include_in_reference_view=next_include,
+                )
+                update.update(
+                    {
+                        "reviewed_at": context.frozen_as_of,
+                        "review_mode": mode,
+                        "candidate_reason": reason,
+                        "next_review_at": next_at,
+                    }
+                )
+            decisions.append(decision.model_copy(update=update))
+            if (
+                context is not None
+                and context.review_only
+                and revision is None
+                and current is not None
+            ):
+                event_type = (
+                    current.event_type
+                    if current.event_type in {item.value for item in CanonicalEventType}
+                    else CanonicalEventType.OTHER_CORPORATE_EVENT.value
+                )
+                payload = current.model_dump(mode="json")
+                payload.update(
+                    {
+                        "event_type": event_type,
+                        "is_important": next_important,
+                        "include_in_reference_view": next_include,
+                        "facts": [
+                            CanonicalFactRevision.model_validate(
+                                {**fact.model_dump(mode="json"), "consumes_delta_ids": []}
+                            ).model_dump(mode="json")
+                            for fact in current.facts
+                        ],
+                    }
+                )
+                synthesized.append(CanonicalEventRevision.model_validate(payload))
+                issues.append(
+                    self._warning(
+                        "REVIEW_REVISION_SYNTHESIZED",
+                        "Complete revision copied from Published base with O2-selected flags",
+                        decision.event_id,
+                    )
+                )
+        return bundle.model_copy(
+            update={
+                "event_revisions": synthesized,
+                "reference_review_decisions": decisions,
+            }
+        )
+
+    def _observe_date_selection_differences(
+        self,
+        bundle: CanonicalRevisionBundle,
+        batches: list[DeltaBatch],
+        issues: list[ValidationIssue],
+    ) -> None:
+        """Record Frozen candidate differences without changing O2 content."""
+
+        delta_by_id = {item.delta_id: item for batch in batches for item in batch.items}
+        priority = {
+            "PROPOSITION_EVIDENCE": 1,
+            "OFFICIAL_RELEASE_DATE": 2,
+            "RUNTIME_CONFIRMED_OCCURRENCE": 3,
+            "SOURCE_PUBLISHED_AT": 4,
+            "FOCUSED_WEB_SEARCH": 5,
+        }
+        for entry in bundle.date_resolution_ledger:
+            if (
+                entry.delta_id is None
+                or entry.delta_id not in delta_by_id
+                or entry.status is not DateResolutionStatus.RESOLVED
+            ):
+                continue
+            candidates = delta_by_id[entry.delta_id].occurrence_date_candidates
+            if not candidates:
+                continue
+            highest = min(priority[item.source_kind.value] for item in candidates)
+            top_dates = {
+                item.candidate_date
+                for item in candidates
+                if priority[item.source_kind.value] == highest
+            }
+            if len(top_dates) == 1 and entry.selected_date not in top_dates:
+                issues.append(
+                    self._warning(
+                        "DATE_CANDIDATE_SELECTION_DIFFERENCE",
+                        "O2 selected a date different from the highest-priority Frozen candidate",
+                        entry.fact_id or entry.event_id or entry.delta_id,
+                    )
+                )
 
     def _filter_event_revisions(
         self,
@@ -514,18 +690,30 @@ class RevisionBundleValidator:
         expected: list[str],
         issues: list[ValidationIssue],
     ) -> CanonicalRevisionBundle:
-        placements: list[str] = [
+        fact_placements: list[str] = [
             delta_id
             for event in bundle.event_revisions
             for fact in event.facts
             for delta_id in fact.consumes_delta_ids
-        ] + [item.delta_id for item in bundle.residual_delta_resolutions]
-        counts = Counter(placements)
+        ]
+        residuals_by_delta: dict[str, list[ResidualDeltaResolution]] = {}
+        for item in bundle.residual_delta_resolutions:
+            residuals_by_delta.setdefault(item.delta_id, []).append(item)
+        fact_counts = Counter(fact_placements)
         expected_set = set(expected)
-        conflicts = {item for item, count in counts.items() if count != 1} | (
-            set(placements) - expected_set
-        )
-        missing = expected_set - set(placements)
+        unknown = (set(fact_placements) | set(residuals_by_delta)) - expected_set
+        conflicts = {
+            delta_id
+            for delta_id in expected_set
+            if fact_counts[delta_id] > 1
+            or (fact_counts[delta_id] and residuals_by_delta.get(delta_id))
+            or len(residuals_by_delta.get(delta_id, [])) > 1
+        }
+        missing = {
+            delta_id
+            for delta_id in expected_set
+            if fact_counts[delta_id] == 0 and not residuals_by_delta.get(delta_id)
+        }
         if conflicts:
             for delta_id in sorted(conflicts):
                 issues.append(
@@ -535,6 +723,14 @@ class RevisionBundleValidator:
                         delta_id,
                     )
                 )
+        for delta_id in sorted(unknown):
+            issues.append(
+                self._warning(
+                    "UNKNOWN_DELTA_DISPOSITION_IGNORED",
+                    "Unknown D# was excluded from database mapping without deleting content",
+                    delta_id,
+                )
+            )
         if missing:
             for delta_id in sorted(missing):
                 issues.append(
@@ -544,34 +740,19 @@ class RevisionBundleValidator:
                         delta_id,
                     )
                 )
-        forced_pending = conflicts.intersection(expected_set) | missing
-        events = []
-        for event in bundle.event_revisions:
-            facts = [
-                fact.model_copy(
-                    update={
-                        "consumes_delta_ids": [
-                            item
-                            for item in fact.consumes_delta_ids
-                            if item not in forced_pending and item in expected_set
-                        ]
-                    }
+        normalized_residuals: list[ResidualDeltaResolution] = []
+        for delta_id in expected:
+            rows = residuals_by_delta.get(delta_id, [])
+            if delta_id in conflicts or delta_id in missing:
+                normalized_residuals.append(
+                    ResidualDeltaResolution(
+                        delta_id=delta_id,
+                        resolution=DeltaResolution.KEEP_PENDING,
+                    )
                 )
-                for fact in event.facts
-            ]
-            events.append(event.model_copy(update={"facts": facts}))
-        residuals = [
-            item
-            for item in bundle.residual_delta_resolutions
-            if item.delta_id not in forced_pending and item.delta_id in expected_set
-        ]
-        residuals.extend(
-            ResidualDeltaResolution(delta_id=item, resolution=DeltaResolution.KEEP_PENDING)
-            for item in sorted(forced_pending)
-        )
-        return bundle.model_copy(
-            update={"event_revisions": events, "residual_delta_resolutions": residuals}
-        )
+            elif fact_counts[delta_id] == 0 and len(rows) == 1:
+                normalized_residuals.append(rows[0])
+        return bundle.model_copy(update={"residual_delta_resolutions": normalized_residuals})
 
     def _filter_invalid_duplicate_targets(
         self,

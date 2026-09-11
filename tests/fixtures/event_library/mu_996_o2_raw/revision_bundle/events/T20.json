@@ -1,0 +1,54 @@
+{
+  "event_id": "T20",
+  "ticker": "MU",
+  "title": "Micron progressed SOCAMM2, MRDIMM and server-memory products",
+  "event_type": "PRODUCT_MILESTONE",
+  "occurred_at": "2026-09-02..2026-09-03",
+  "occurrence_time_precision": "INTERVAL",
+  "canonical_summary": "Micron described continued progress on HBM-adjacent server-memory products, including SOCAMM2 capacity and MRDIMM and next-generation server-memory development.",
+  "known_event_summary": "September 2-3, 2026 Micron server-memory milestones: SOCAMM2 was described at up to 2 TB per CPU platform while MRDIMM and next-generation server memory remained on track.",
+  "is_important": true,
+  "include_in_reference_view": true,
+  "facts": [
+    {
+      "fact_id": "TF289",
+      "proposition": "Development of MRDIMM and next-generation server memory remains on track.",
+      "assertion_state": "ONGOING",
+      "fact_occurred_at": "2026-09-02",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D329"
+      ]
+    },
+    {
+      "fact_id": "TF290",
+      "proposition": "Micron Technology is advancing high-performance data-center memory products, including HBM4, DDR5, and LPDRAM-based SOCAMM2.",
+      "assertion_state": "ONGOING",
+      "fact_occurred_at": "2026-09-03",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D283"
+      ]
+    },
+    {
+      "fact_id": "TF291",
+      "proposition": "Micron's SOCAMM2 provides up to 2 terabytes of memory per CPU platform.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-09-03",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D557"
+      ]
+    }
+  ],
+  "price_analysis": null,
+  "related_event_ids": [
+    "T19"
+  ],
+  "derived_from_event_ids": [],
+  "supersedes_event_id": null,
+  "status": "ACTIVE"
+}

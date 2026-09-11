@@ -725,6 +725,7 @@ class RealDashboardOverviewService:
             source_labels = {
                 source.source_id: source.display_name for source in bus.repository.list_sources()
             }
+            runtime_refs = self._message_bus_v2_runtime_refs(normalized)
             values = bus.repository.list_standard(ticker=normalized, limit=READ_AGGREGATION_LIMIT)
             if source_id:
                 values = [value for value in values if value.source_id == source_id]
@@ -741,6 +742,7 @@ class RealDashboardOverviewService:
                     value,
                     source_label=source_labels.get(value.source_id),
                     include_body=False,
+                    runtime_ref=runtime_refs.get(value.standard_message_id),
                 )
                 for value in values
             ]
@@ -814,6 +816,9 @@ class RealDashboardOverviewService:
                 message,
                 source_label=source.display_name if source else None,
                 include_body=True,
+                runtime_ref=self._message_bus_v2_runtime_refs(normalized).get(
+                    message.standard_message_id
+                ),
             )
         if not self.dashboard_api.scheduler._legacy_monitoring_service_enabled:
             raise MessageBusMessageNotFound(normalized, message_id)
@@ -832,6 +837,29 @@ class RealDashboardOverviewService:
             source_label=legacy_source.display_name if legacy_source is not None else None,
             include_body=True,
         )
+
+    def _message_bus_v2_runtime_refs(self, ticker: str) -> dict[str, tuple[str, str]]:
+        """Map Message Bus v2 ids to their durable Runtime v2 state and identity."""
+
+        runtime = self.dashboard_api.scheduler.runtime_v2_service
+        if runtime is None:
+            return {}
+        refs: dict[str, tuple[str, str]] = {}
+        repository = getattr(runtime, "repository", None)
+        if repository is not None:
+            for case in repository.list_cases(ticker):
+                refs[case.source.source_message_id] = (
+                    case.status.value.lower(),
+                    case.case_id,
+                )
+        journal = getattr(runtime, "journal", None)
+        if journal is not None:
+            for task in journal.tasks(ticker=ticker, kind="CASE"):
+                source = task.get("inputs", {}).get("source", {})
+                message_id = source.get("source_message_id")
+                if isinstance(message_id, str) and message_id not in refs:
+                    refs[message_id] = (str(task["status"]).lower(), str(task["id"]))
+        return refs
 
     def message_bus_config(self, ticker: str) -> JsonObject:
         normalized = _ticker(ticker)
@@ -2820,6 +2848,7 @@ def _message_bus_v2_item(
     *,
     source_label: str | None,
     include_body: bool,
+    runtime_ref: tuple[str, str] | None = None,
 ) -> JsonObject:
     return {
         "message_id": message.standard_message_id,
@@ -2827,16 +2856,18 @@ def _message_bus_v2_item(
         "ticker": message.ticker,
         "source_id": message.source_id,
         "source_label": source_label or message.source,
+        "publisher_name": message.publisher_name or message.source,
+        "resolved_domain": message.resolved_domain,
         "collected_at": _dt(message.collected_at),
         "published_at": _dt(message.published_at),
         "title": message.title or _truncate(message.body, 120),
         "summary": _truncate(message.body, 240),
         "body": message.body if include_body else None,
         "url": message.url,
-        "processing_status": "completed",
+        "processing_status": runtime_ref[0] if runtime_ref else "message_bus_pending",
         "revision": message.revision,
         "source_item_key": message.source_item_key,
-        "runtime_execution_id": None,
+        "runtime_execution_id": runtime_ref[1] if runtime_ref else None,
     }
 
 
@@ -2865,6 +2896,7 @@ def _message_bus_v2_source_config(
         "parameter_schema": source.parameter_schema,
         "scheduler_group": source.scheduler_group,
         "scheduler_constraints": source.scheduler_constraints.model_dump(mode="json"),
+        "content_enrichment_mode": source.content_enrichment_mode.value,
         "binding": binding.model_dump(mode="json") if binding else None,
         "poll_state": (
             poll_state.model_dump(mode="json")
@@ -2883,6 +2915,7 @@ def _message_bus_v2_source_config(
             "parameter_schema",
             "scheduler_group",
             "scheduler_constraints",
+            "content_enrichment_mode",
             "enabled",
             "source_parameters",
             "polling",

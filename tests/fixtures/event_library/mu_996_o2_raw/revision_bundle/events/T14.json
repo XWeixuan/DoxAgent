@@ -1,0 +1,30 @@
+{
+  "event_id": "T14",
+  "ticker": "MU",
+  "title": "New Street Research upgraded Micron to Buy with a $1,250 target",
+  "event_type": "ANALYST_ACTION",
+  "occurred_at": "2026-08-14",
+  "occurrence_time_precision": "DAY",
+  "canonical_summary": "New Street Research upgraded Micron to Buy and set a $1,250 price target/forecast.",
+  "known_event_summary": "2026-08-14 New Street Research upgraded Micron to Buy with a $1,250 price target.",
+  "is_important": false,
+  "include_in_reference_view": false,
+  "facts": [
+    {
+      "fact_id": "TF281",
+      "proposition": "New Street Research upgraded Micron to Buy with a $1,250 price target.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D260"
+      ]
+    }
+  ],
+  "price_analysis": null,
+  "related_event_ids": [],
+  "derived_from_event_ids": [],
+  "supersedes_event_id": null,
+  "status": "ACTIVE"
+}

@@ -156,6 +156,8 @@ All four importance/Reference combinations are valid without being quotas: a cur
 
 Use the supplied Date Resolution Ledger to preserve date candidates, the selected date and precision, its Event-occurrence, Fact-occurrence, or subject-time role, and resolution status. Use the Reference View Decision Ledger for the independent importance and Reference decisions, the matching basis, concise note, review reason, and Frozen `as_of`. Keep these decision fields in the supplied ledger and review artifacts rather than adding them to Canonical Event or Fact objects.
 
+These ledgers are O2 decision audit records. Deterministic import preparation may normalize their wire representation or omit an unreadable sidecar row, but it does not use them to override or remove O2 Event/Fact semantics. Global Reconciliation or the final incremental review is the last business-semantic decision point.
+
 ### Relationships, status, and retirement
 
 - `related_event_ids`: independent related milestones without replacement or derivation direction;

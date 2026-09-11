@@ -1,6 +1,6 @@
 # Message Bus v2 / Crawler Plane：O4 Agent 集成操作手册
 
-> 当前实现基线：2026-09-02。本文以仓库中已经落地的代码、持久化 schema 和本轮测试结果为事实源，不以早期设计文档补全不存在的能力；测试未覆盖处按代码明确标出接口边界，不宣称生产验收。
+> 当前实现基线：2026-09-11。本文以仓库中已经落地的代码、持久化 schema 和本轮测试结果为事实源，不以早期设计文档补全不存在的能力；测试未覆盖处按代码明确标出接口边界，不宣称生产验收。
 
 ## 1. 先读结论：O4 应如何操作
 
@@ -23,7 +23,12 @@ O4 对这两个组件的标准操作面是：
 | `DOXAGENT_MESSAGE_BUS_V2_SQLITE_PATH` | `.tmp/message_bus_v2.sqlite3` | compose 中为 `/app/.tmp/message_bus_v2.sqlite3` |
 | `DOXAGENT_MESSAGE_BUS_V2_WORKER_SLEEP_SECONDS` | `1` | worker 主循环空转间隔 |
 | `DOXAGENT_MESSAGE_BUS_V2_ADAPTER_ROOT` | `.tmp/message_bus_v2_adapters` | `file:` API adapter 的受管根目录 |
-| `DOXAGENT_MESSAGE_BUS_V2_CONTENT_ENRICHMENT_ENABLED` | `true` | API 消息正文 enrichment 开关 |
+| `DOXAGENT_MESSAGE_BUS_V2_CONTENT_ENRICHMENT_ENABLED` | `true` | 旧版兼容总开关；关闭时 Message Bus 不写补全队列 |
+| `DOXAGENT_CONTENT_ENRICHMENT_ENABLED` | `true` | 全局正文补全中台开关 |
+| `DOXAGENT_CONTENT_ENRICHMENT_MAX_CONCURRENCY` | `8` | 所有 ticker/source 共用的最大网络并行数 |
+| `DOXAGENT_CONTENT_ENRICHMENT_RETRY_DEADLINE_SECONDS` | `180` | 首次入队起算的一次 retry 绝对截止时间 |
+| `DOXAGENT_CONTENT_ENRICHMENT_RETRY_DELAY_SECONDS` | `30` | 无 `Retry-After` 时的 retry 等待时间 |
+| `DOXAGENT_CONTENT_ENRICHMENT_WORKER_SLEEP_SECONDS` | `0.25` | 中台队列空闲轮询间隔 |
 | `DOXAGENT_CRAWLER_PLANE_ROOT` | `.tmp/crawler-plane` | compose 中为 `/var/lib/doxagent/workspaces/crawler-plane` |
 | `DOXAGENT_CRAWLER_PLANE_SQLITE_PATH` | `.tmp/crawler-plane/crawler_plane.sqlite3` | compose 中位于同一 crawler-plane 根目录 |
 | `DOXAGENT_CRAWLER_PLANE_WORKER_PROCESSES` | `4` | 只接受 `4..8` |
@@ -31,6 +36,13 @@ O4 对这两个组件的标准操作面是：
 | `DOXAGENT_CRAWLER_PLANE_MAX_RESPONSE_BYTES` | `10_000_000` | 单次 HTTP body 或 rendered DOM 上限 |
 
 实现：[`settings.py`](../src/doxagent/settings.py)、[`.env.example`](../.env.example)、[`docker-compose.yml`](../docker-compose.yml)。
+
+正文补全由独立的 `v2-content-enrichment` 服务执行。Message Bus poll 只把消息写入同一 SQLite
+持久队列，不等待目标站点；中台每批最多 claim 8 条，并在进程生命周期内共用域名 limiter。
+业务写入顺序为 `queue → enrichment → identity/content_hash → Raw dedupe → Standard/stream`。
+所有 source 默认补全，`SourceDefinition.content_enrichment_mode=skip` 用于 Stocktwits、TikHub 等
+正文与短消息本体没有区分的来源。补全失败保持原 body，原 body 为空时保持 summary，再为空则保存空串；
+失败只影响该消息，不阻塞 poll 或其他任务。
 
 ### 2.2 三种调用入口
 

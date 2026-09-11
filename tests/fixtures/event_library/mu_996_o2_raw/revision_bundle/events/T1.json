@@ -1,0 +1,420 @@
+{
+  "event_id": "T1",
+  "ticker": "MU",
+  "title": "Micron FY2026 Q3 results and FY2026 Q4 guidance",
+  "event_type": "EARNINGS_RELEASE",
+  "occurred_at": "2026-06-24",
+  "occurrence_time_precision": "DAY",
+  "canonical_summary": "Micron's FY2026 third-quarter release reported record revenue, profitability, cash generation and segment results, and set the FY2026 fourth-quarter operating baseline.",
+  "known_event_summary": "2026-06-24 Micron FY2026 Q3 earnings release: revenue was about $41.46 billion, gross margin was about 84.6%-85%, EPS was $24.67, and management guided FY2026 Q4 revenue near $50 billion and adjusted gross margin near 86%.",
+  "is_important": true,
+  "include_in_reference_view": true,
+  "facts": [
+    {
+      "fact_id": "TF1",
+      "proposition": "Micron reported approximately $41.46-$41.5 billion of FY2026 Q3 revenue for the quarter ended May 28, 2026, up about 346% year over year.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2026-Q3",
+      "consumes_delta_ids": [
+        "D7",
+        "D165",
+        "D194",
+        "D345",
+        "D378",
+        "D496",
+        "D552",
+        "D568",
+        "D638",
+        "D668",
+        "D799",
+        "D943",
+        "D978",
+        "D981"
+      ]
+    },
+    {
+      "fact_id": "TF10",
+      "proposition": "Micron reported approximately $18.3 billion of adjusted free cash flow in FY2026 Q3.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2026-Q3",
+      "consumes_delta_ids": [
+        "D229",
+        "D306",
+        "D709",
+        "D714"
+      ]
+    },
+    {
+      "fact_id": "TF11",
+      "proposition": "Micron's Mobile and Client business had approximately an 87% gross margin in FY2026 Q3.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2026-Q3",
+      "consumes_delta_ids": [
+        "D279"
+      ]
+    },
+    {
+      "fact_id": "TF12",
+      "proposition": "Micron management guided FY2026 Q4 revenue to approximately $50 billion, with a range near $49-$51 billion.",
+      "assertion_state": "GUIDANCE",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2026-Q4",
+      "consumes_delta_ids": [
+        "D290",
+        "D311",
+        "D382",
+        "D747",
+        "D748"
+      ]
+    },
+    {
+      "fact_id": "TF13",
+      "proposition": "Micron generated approximately $26.1 billion of year-to-date free cash flow.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "YTD",
+      "consumes_delta_ids": [
+        "D346"
+      ]
+    },
+    {
+      "fact_id": "TF14",
+      "proposition": "Micron reported an approximately 84.9% gross margin in the latest quarter.",
+      "assertion_state": "ONGOING",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2026-Q3",
+      "consumes_delta_ids": [
+        "D371"
+      ]
+    },
+    {
+      "fact_id": "TF15",
+      "proposition": "Micron reported FY2026 Q3 adjusted EPS of $24.67, with year-over-year EPS growth reported above 1,200%.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2026-Q3",
+      "consumes_delta_ids": [
+        "D379",
+        "D708",
+        "D902"
+      ]
+    },
+    {
+      "fact_id": "TF16",
+      "proposition": "Micron's revenue increased by more than 70% sequentially in the reported quarter.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2026-Q3",
+      "consumes_delta_ids": [
+        "D413"
+      ]
+    },
+    {
+      "fact_id": "TF17",
+      "proposition": "Micron generated approximately $28.86 billion of net income in the previous fiscal quarter.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2026-Q2",
+      "consumes_delta_ids": [
+        "D439"
+      ]
+    },
+    {
+      "fact_id": "TF18",
+      "proposition": "Micron management guided FY2026 Q4 adjusted gross margin to approximately 86%.",
+      "assertion_state": "GUIDANCE",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2026-Q4",
+      "consumes_delta_ids": [
+        "D456",
+        "D474",
+        "D600"
+      ]
+    },
+    {
+      "fact_id": "TF19",
+      "proposition": "Micron reported Mobile and Client revenue of approximately $27.2 billion.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2026-Q3",
+      "consumes_delta_ids": [
+        "D504"
+      ]
+    },
+    {
+      "fact_id": "TF2",
+      "proposition": "Micron's Cloud Memory segment generated approximately $13.8 billion of FY2026 Q3 revenue.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2026-Q3",
+      "consumes_delta_ids": [
+        "D14",
+        "D265",
+        "D857"
+      ]
+    },
+    {
+      "fact_id": "TF20",
+      "proposition": "Micron's Core Data Center segment generated approximately $11.52 billion of FY2026 Q3 revenue.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2026-Q3",
+      "consumes_delta_ids": [
+        "D543",
+        "D937"
+      ]
+    },
+    {
+      "fact_id": "TF21",
+      "proposition": "Micron's Mobile and Client business generated approximately $11.5 billion of FY2026 Q3 revenue.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2026-Q3",
+      "consumes_delta_ids": [
+        "D553"
+      ]
+    },
+    {
+      "fact_id": "TF22",
+      "proposition": "Micron's DRAM revenue was approximately $31.3 billion in FY2026 Q3.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2026-Q3",
+      "consumes_delta_ids": [
+        "D571"
+      ]
+    },
+    {
+      "fact_id": "TF23",
+      "proposition": "Micron materially revised its forward guidance higher.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2026-Q4",
+      "consumes_delta_ids": [
+        "D587"
+      ]
+    },
+    {
+      "fact_id": "TF24",
+      "proposition": "Micron management guided FY2026 Q4 non-GAAP EPS to approximately $30-$32.",
+      "assertion_state": "GUIDANCE",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2026-Q4",
+      "consumes_delta_ids": [
+        "D596"
+      ]
+    },
+    {
+      "fact_id": "TF25",
+      "proposition": "Micron's data-center segment margin reached approximately 87% in FY2026 Q3.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2026-Q3",
+      "consumes_delta_ids": [
+        "D617"
+      ]
+    },
+    {
+      "fact_id": "TF26",
+      "proposition": "Micron reported Core Data Center revenue of approximately $21.2 billion in the reported period.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2026-Q3",
+      "consumes_delta_ids": [
+        "D623"
+      ]
+    },
+    {
+      "fact_id": "TF27",
+      "proposition": "Micron's Automotive and Embedded segment revenue was approximately $10.5 billion.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2026-Q3",
+      "consumes_delta_ids": [
+        "D672"
+      ]
+    },
+    {
+      "fact_id": "TF28",
+      "proposition": "Micron reported FY2026 Q3 gross margin of approximately 84.6%-85%, versus about 38% a year earlier.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2026-Q3",
+      "consumes_delta_ids": [
+        "D689",
+        "D757",
+        "D809",
+        "D816"
+      ]
+    },
+    {
+      "fact_id": "TF29",
+      "proposition": "Micron generated approximately $25.4 billion of FY2026 Q3 operating cash flow.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2026-Q3",
+      "consumes_delta_ids": [
+        "D771",
+        "D885"
+      ]
+    },
+    {
+      "fact_id": "TF3",
+      "proposition": "Micron's DRAM bit shipments increased by a low single-digit percentage in FY2026 Q3.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2026-Q3",
+      "consumes_delta_ids": [
+        "D92"
+      ]
+    },
+    {
+      "fact_id": "TF30",
+      "proposition": "Micron reported an approximately 84.9% adjusted gross margin in the latest quarterly release.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2026-Q3",
+      "consumes_delta_ids": [
+        "D919"
+      ]
+    },
+    {
+      "fact_id": "TF31",
+      "proposition": "Micron's CEO stated that AI proliferation had structurally transformed the memory industry.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2026-Q3",
+      "consumes_delta_ids": [
+        "D940"
+      ]
+    },
+    {
+      "fact_id": "TF32",
+      "proposition": "All four Micron business segments produced triple-digit percentage growth in FY2026 Q3.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2026-Q3",
+      "consumes_delta_ids": [
+        "D963"
+      ]
+    },
+    {
+      "fact_id": "TF4",
+      "proposition": "Micron reported a financial metric of $25.11 versus $1.91 a year earlier for the reported period.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2026-Q3",
+      "consumes_delta_ids": [
+        "D114"
+      ]
+    },
+    {
+      "fact_id": "TF5",
+      "proposition": "Micron reported approximately $28.2-$28.24 billion of FY2026 Q3 net income.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2026-Q3",
+      "consumes_delta_ids": [
+        "D136",
+        "D630"
+      ]
+    },
+    {
+      "fact_id": "TF6",
+      "proposition": "Cloud-memory and core data-center businesses represented approximately 61% of Micron's FY2026 Q3 revenue.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2026-Q3",
+      "consumes_delta_ids": [
+        "D156"
+      ]
+    },
+    {
+      "fact_id": "TF7",
+      "proposition": "Micron reported record FY2026 Q3 financial results.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2026-Q3",
+      "consumes_delta_ids": [
+        "D159",
+        "D830"
+      ]
+    },
+    {
+      "fact_id": "TF8",
+      "proposition": "Micron's NAND revenue was approximately $9.9 billion in FY2026 Q3.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2026-Q3",
+      "consumes_delta_ids": [
+        "D180"
+      ]
+    },
+    {
+      "fact_id": "TF9",
+      "proposition": "Micron reported approximately $33.3 billion of FY2026 Q3 operating income and an operating margin near 80%.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2026-Q3",
+      "consumes_delta_ids": [
+        "D191",
+        "D271",
+        "D855",
+        "D886"
+      ]
+    },
+    {
+      "fact_id": "TF33",
+      "proposition": "Micron and NVIDIA were reported to have net profit margins above 60% in their respective recent quarters.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-09-09",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2026-Q3",
+      "consumes_delta_ids": [
+        "D947"
+      ]
+    }
+  ],
+  "price_analysis": null,
+  "related_event_ids": [
+    "T2"
+  ],
+  "derived_from_event_ids": [],
+  "supersedes_event_id": null,
+  "status": "ACTIVE"
+}

@@ -1,0 +1,33 @@
+{
+  "event_id": "T23",
+  "ticker": "MU",
+  "title": "A separate Netlist patent matter retained a $445 million damages award against Micron",
+  "event_type": "LITIGATION_MILESTONE",
+  "occurred_at": "2026-09-02",
+  "occurrence_time_precision": "DAY",
+  "canonical_summary": "A separate Netlist patent matter was described as retaining a $445 million damages award against Micron.",
+  "known_event_summary": "2026-09-02 Netlist litigation status: a separate patent matter retained a $445 million damages award against Micron.",
+  "is_important": true,
+  "include_in_reference_view": true,
+  "facts": [
+    {
+      "fact_id": "TF296",
+      "proposition": "Netlist holds a $445 million damages award against Micron based on separate patents.",
+      "assertion_state": "ONGOING",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D431"
+      ]
+    }
+  ],
+  "price_analysis": null,
+  "related_event_ids": [
+    "T21",
+    "T22"
+  ],
+  "derived_from_event_ids": [],
+  "supersedes_event_id": null,
+  "status": "ACTIVE"
+}

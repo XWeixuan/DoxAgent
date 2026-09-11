@@ -1,0 +1,55 @@
+{
+  "event_id": "T19",
+  "ticker": "MU",
+  "title": "Micron advanced HBM4 capability and high-volume shipment milestones",
+  "event_type": "PRODUCT_MILESTONE",
+  "occurred_at": "2026-09-01..2026-09-03",
+  "occurrence_time_precision": "INTERVAL",
+  "canonical_summary": "Micron reports described HBM4 bandwidth capability, high-volume shipment for a lead customer's platform and production for NVIDIA's Vera Rubin ecosystem.",
+  "known_event_summary": "September 1-3, 2026 Micron HBM4 milestone: HBM4 entered high-volume/production shipment descriptions, delivered more than 2.8 TB/s bandwidth and supported NVIDIA Vera Rubin.",
+  "is_important": true,
+  "include_in_reference_view": true,
+  "facts": [
+    {
+      "fact_id": "TF286",
+      "proposition": "Micron Technology's HBM4 memory was in high-volume shipments for its lead customer's platform.",
+      "assertion_state": "ONGOING",
+      "fact_occurred_at": "2026-09-01",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D409"
+      ]
+    },
+    {
+      "fact_id": "TF287",
+      "proposition": "Micron's HBM4 delivers more than 2.8 terabytes per second of bandwidth.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-09-03",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D112"
+      ]
+    },
+    {
+      "fact_id": "TF288",
+      "proposition": "Micron produces HBM4 high bandwidth memory for integration into Nvidia's Vera Rubin platform.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-09-03",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D701"
+      ]
+    }
+  ],
+  "price_analysis": null,
+  "related_event_ids": [
+    "T3",
+    "T12"
+  ],
+  "derived_from_event_ids": [],
+  "supersedes_event_id": null,
+  "status": "ACTIVE"
+}

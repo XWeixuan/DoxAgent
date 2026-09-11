@@ -1,0 +1,31 @@
+{
+  "event_id": "T16",
+  "ticker": "MU",
+  "title": "Citigroup lowered Micron's price target to $1,150",
+  "event_type": "ANALYST_ACTION",
+  "occurred_at": "2026-08-07",
+  "occurrence_time_precision": "DAY",
+  "canonical_summary": "Citigroup lowered its Micron price target/forecast to $1,150 in a dated analyst action.",
+  "known_event_summary": "2026-08-07 Citigroup lowered Micron's price target to $1,150; duplicate reports describe the same analyst action.",
+  "is_important": false,
+  "include_in_reference_view": false,
+  "facts": [
+    {
+      "fact_id": "TF283",
+      "proposition": "Citigroup lowered Micron's price target or forecast to approximately $1,150 on 2026-08-07.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D664",
+        "D776"
+      ]
+    }
+  ],
+  "price_analysis": null,
+  "related_event_ids": [],
+  "derived_from_event_ids": [],
+  "supersedes_event_id": null,
+  "status": "ACTIVE"
+}

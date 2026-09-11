@@ -1,0 +1,34 @@
+{
+  "event_id": "T12",
+  "ticker": "MU",
+  "title": "Micron held a sole-U.S.-based HBM manufacturing position",
+  "event_type": "SUPPLY_DEMAND_UPDATE",
+  "occurred_at": "UNKNOWN",
+  "occurrence_time_precision": "UNKNOWN",
+  "canonical_summary": "Two reports described Micron as the only U.S.-based high-bandwidth-memory manufacturer, an ongoing supply-chain position distinct from individual HBM4 shipment milestones.",
+  "known_event_summary": "August 27-28, 2026 Micron position: Micron was described as the sole U.S.-based manufacturer of high-bandwidth memory.",
+  "is_important": true,
+  "include_in_reference_view": true,
+  "facts": [
+    {
+      "fact_id": "TF279",
+      "proposition": "Micron was described as the sole U.S.-based manufacturer of high-bandwidth memory.",
+      "assertion_state": "ONGOING",
+      "fact_occurred_at": "2026-08-27",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D817",
+        "D987"
+      ]
+    }
+  ],
+  "price_analysis": null,
+  "related_event_ids": [
+    "T4",
+    "T19"
+  ],
+  "derived_from_event_ids": [],
+  "supersedes_event_id": null,
+  "status": "ACTIVE"
+}

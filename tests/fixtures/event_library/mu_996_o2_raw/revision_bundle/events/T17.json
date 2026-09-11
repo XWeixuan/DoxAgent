@@ -1,0 +1,30 @@
+{
+  "event_id": "T17",
+  "ticker": "MU",
+  "title": "An analyst downgraded Micron from Buy to Hold",
+  "event_type": "ANALYST_ACTION",
+  "occurred_at": "2026-09-08",
+  "occurrence_time_precision": "DAY",
+  "canonical_summary": "A dated analyst action downgraded Micron from Buy to Hold.",
+  "known_event_summary": "2026-09-08 an analyst downgraded Micron from Buy to Hold.",
+  "is_important": false,
+  "include_in_reference_view": true,
+  "facts": [
+    {
+      "fact_id": "TF284",
+      "proposition": "Micron Technology, Inc. was downgraded from Buy to Hold.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D470"
+      ]
+    }
+  ],
+  "price_analysis": null,
+  "related_event_ids": [],
+  "derived_from_event_ids": [],
+  "supersedes_event_id": null,
+  "status": "ACTIVE"
+}

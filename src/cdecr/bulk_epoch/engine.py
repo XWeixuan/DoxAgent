@@ -51,10 +51,37 @@ from cdecr.parent_occurrence import ParentOccurrenceService
 from cdecr.ports import CDECRRegistry, StructuredModelClient
 from cdecr.single_document_contracts import ModelCallSummary
 
-BULK_STAGE_GRAPH_VERSION = "cdecr-bulk-epoch-v12-token-quality-recovery"
+BULK_STAGE_GRAPH_VERSION = "cdecr-bulk-epoch-v13-runtime-package-closure"
 FIELD_EPOCH_POLICY_VERSION = "field-epoch-planned-batching-v2-pure-prepare"
 FIELD_PLAN_ARTIFACT_KIND = "field_plan_v2"
 FIELD_OVERLAY_ARTIFACT_KIND = "field_overlay_v2"
+
+
+def _require_exact_atomic_coverage(
+    *,
+    stage: str,
+    expected_event_ids: Sequence[str],
+    grouped_event_ids: Sequence[Sequence[str]],
+) -> None:
+    """Hard-block a stage when its Atomic partition is incomplete or overlapping."""
+
+    expected = set(expected_event_ids)
+    flattened = [event_id for group in grouped_event_ids for event_id in group]
+    actual = set(flattened)
+    duplicates = sorted(
+        event_id for event_id, count in Counter(flattened).items() if count != 1
+    )
+    if expected == actual and not duplicates:
+        return
+    missing = sorted(expected - actual)
+    extra = sorted(actual - expected)
+    raise RuntimeError(
+        "CDECR_ATOMIC_CLOSURE_FAILED "
+        f"stage={stage} expected_count={len(expected)} actual_count={len(actual)} "
+        f"missing_count={len(missing)} extra_count={len(extra)} "
+        f"duplicate_count={len(duplicates)} missing_sample={missing[:10]} "
+        f"extra_sample={extra[:10]} duplicate_sample={duplicates[:10]}"
+    )
 
 
 def _n9_fail_open_cap(task_count: int) -> int:
@@ -292,6 +319,47 @@ class BulkEpochEngine:
 
         return dict(self._last_n9_failure_recovery)
 
+    def _require_finalized_epoch_closure(self, epoch_id: str) -> None:
+        final_events = self.registry.list_current_atomic_events(limit=10000)
+        expected_event_ids = sorted(event.event_id for event in final_events)
+        atomic_artifact = self.registry.get_bulk_epoch_artifact(
+            epoch_id, "atomic_partition_v1"
+        )
+        package_artifact = self.registry.get_bulk_epoch_artifact(
+            epoch_id, "package_partition_v3"
+        )
+        if atomic_artifact is None or package_artifact is None:
+            raise RuntimeError(
+                "CDECR_ATOMIC_CLOSURE_FAILED stage=FINALIZED_EPOCH_REUSE "
+                "reason=missing_partition_artifact"
+            )
+        _require_exact_atomic_coverage(
+            stage="FINALIZED_ATOMIC_ARTIFACT_REUSE",
+            expected_event_ids=expected_event_ids,
+            grouped_event_ids=[
+                [str(event_id) for event_id in atomic_artifact["payload"]["event_ids"]]
+            ],
+        )
+        packages = [
+            package
+            for package_id in package_artifact["payload"]["package_ids"]
+            if (package := self.registry.get_current_package(str(package_id))) is not None
+        ]
+        _require_exact_atomic_coverage(
+            stage="FINALIZED_PACKAGE_ARTIFACT_REUSE",
+            expected_event_ids=expected_event_ids,
+            grouped_event_ids=[package.member_event_ids for package in packages],
+        )
+        active_package_ids = self.registry.list_packages_for_events(expected_event_ids)
+        _require_exact_atomic_coverage(
+            stage="FINALIZED_ACTIVE_MEMBERSHIPS",
+            expected_event_ids=expected_event_ids,
+            grouped_event_ids=[
+                [event_id for _ in package_ids]
+                for event_id, package_ids in active_package_ids.items()
+            ],
+        )
+
     def _writer(self) -> BulkWriter:
         return BulkWriter(
             low_watermark=self.writer_queue_low_watermark,
@@ -359,6 +427,7 @@ class BulkEpochEngine:
             message_ids=ordered_ids,
         )
         if epoch["status"] == "FINALIZED":
+            self._require_finalized_epoch_closure(epoch_id)
             result = epoch.get("result")
             deterministic_runtime = (
                 result.get("deterministic_runtime") if isinstance(result, Mapping) else None
@@ -1188,11 +1257,25 @@ class BulkEpochEngine:
 
         package_started = perf_counter()
         self.registry.update_bulk_epoch(epoch_id, status="RUNNING", current_stage="PARENT_INDUCE")
+        final_events = self.registry.list_current_atomic_events(limit=10000)
+        expected_event_ids = sorted(event.event_id for event in final_events)
+        atomic_artifact = self.registry.get_bulk_epoch_artifact(epoch_id, "atomic_partition_v1")
+        if atomic_artifact is None:
+            raise RuntimeError(
+                "CDECR_ATOMIC_CLOSURE_FAILED stage=PARENT_PACKAGE_INPUT "
+                "reason=missing_atomic_partition_v1"
+            )
+        _require_exact_atomic_coverage(
+            stage="PARENT_PACKAGE_INPUT",
+            expected_event_ids=expected_event_ids,
+            grouped_event_ids=[
+                [str(event_id) for event_id in atomic_artifact["payload"]["event_ids"]]
+            ],
+        )
         applied_artifact = self.registry.get_bulk_epoch_artifact(epoch_id, "package_partition_v3")
         package_assignments: list[PackageAssignmentRecord] = []
         package_stage_telemetry: dict[str, object] = {}
         if applied_artifact is None:
-            final_events = self.registry.list_current_atomic_events(limit=10000)
             existing_packages = self.registry.list_current_packages(limit=10000)
             frozen_artifact = self.registry.get_bulk_epoch_artifact(
                 epoch_id, "package_frozen_partition_v3"
@@ -1303,6 +1386,11 @@ class BulkEpochEngine:
                 existing_packages=existing_packages,
                 run_id=coordinator_run_id,
             )
+            _require_exact_atomic_coverage(
+                stage="PACKAGE_PROJECTED",
+                expected_event_ids=expected_event_ids,
+                grouped_event_ids=[[membership.event_id for membership in memberships]],
+            )
             self.registry.activate_package_partition_v3(
                 packages=packages,
                 memberships=memberships,
@@ -1310,6 +1398,15 @@ class BulkEpochEngine:
                 external_relations=external_relations,
                 redirects=redirects,
                 run_id=coordinator_run_id,
+            )
+            active_package_ids = self.registry.list_packages_for_events(expected_event_ids)
+            _require_exact_atomic_coverage(
+                stage="PACKAGE_COMMITTED",
+                expected_event_ids=expected_event_ids,
+                grouped_event_ids=[
+                    [event_id for _ in package_ids]
+                    for event_id, package_ids in active_package_ids.items()
+                ],
             )
             package_stage_telemetry.update(
                 {
@@ -1329,6 +1426,8 @@ class BulkEpochEngine:
                     "partition_hash": partition.partition_hash,
                     "package_ids": sorted(item.package_id for item in packages),
                     "assignment_ids": sorted(item.assignment_id for item in package_assignments),
+                    "event_ids": expected_event_ids,
+                    "membership_count": len(memberships),
                     **package_stage_telemetry,
                 },
             )
@@ -1338,6 +1437,20 @@ class BulkEpochEngine:
                 for package_id in applied_artifact["payload"]["package_ids"]
                 if (package := self.registry.get_current_package(str(package_id))) is not None
             ]
+            _require_exact_atomic_coverage(
+                stage="PACKAGE_ARTIFACT_REUSE",
+                expected_event_ids=expected_event_ids,
+                grouped_event_ids=[package.member_event_ids for package in packages],
+            )
+            active_package_ids = self.registry.list_packages_for_events(expected_event_ids)
+            _require_exact_atomic_coverage(
+                stage="PACKAGE_ARTIFACT_ACTIVE_MEMBERSHIPS",
+                expected_event_ids=expected_event_ids,
+                grouped_event_ids=[
+                    [event_id for _ in package_ids]
+                    for event_id, package_ids in active_package_ids.items()
+                ],
+            )
             event_ids = {event_id for package in packages for event_id in package.member_event_ids}
             package_assignments = [
                 assignment

@@ -4,7 +4,7 @@ Reconstruct the assigned wave into locally complete Canonical Event drafts. Surv
 
 ## Working context
 
-Use the Survey occurrence and date ledgers and catalog to recover candidate intent, then read every assigned Delta in its Package context. Use prior-wave indexes and drafts to recognize possible cross-wave occurrences. Carry forward the business understanding established from C1, C3, C5, and Future Nodes when judging relevance and boundaries.
+After the five control files, read and verify the task's `wave_runtime_context_path`. Use this single immutable file as the authoritative joined Package → Atomic view for every assigned Delta, including primary/secondary memberships, ungrouped Atomics, and cross-wave package members. Use the Survey occurrence and date ledgers and catalog to recover candidate intent. Use prior-wave indexes and drafts to recognize possible cross-wave occurrences. Carry forward the business understanding established from C1, C3, C5, and Future Nodes when judging relevance and boundaries.
 
 ## Reconstruction method
 

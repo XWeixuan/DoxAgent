@@ -6,7 +6,11 @@ from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from pathlib import Path
 from time import perf_counter
+from types import SimpleNamespace
 
+import pytest
+
+from cdecr.bulk_epoch.engine import BulkEpochEngine, _require_exact_atomic_coverage
 from cdecr.bulk_epoch.executor import AsyncModelExecutor
 from cdecr.bulk_epoch.writer import BulkWriter
 from cdecr.models import ModelTier
@@ -16,6 +20,56 @@ from cdecr.scheduler import CDECRScheduler, StructuredProviderGate
 from tests.cdecr.test_cross_document import (
     FakeStructured,
 )
+
+
+def test_atomic_closure_accepts_exact_partition() -> None:
+    _require_exact_atomic_coverage(
+        stage="TEST",
+        expected_event_ids=["A", "B", "C"],
+        grouped_event_ids=[["A", "B"], ["C"]],
+    )
+
+
+def test_atomic_closure_rejects_missing_and_duplicate_memberships() -> None:
+    with pytest.raises(RuntimeError, match="CDECR_ATOMIC_CLOSURE_FAILED") as exc_info:
+        _require_exact_atomic_coverage(
+            stage="PACKAGE_COMMITTED",
+            expected_event_ids=["A", "B", "C"],
+            grouped_event_ids=[["A", "A"], ["B"]],
+        )
+
+    message = str(exc_info.value)
+    assert "missing_count=1" in message
+    assert "duplicate_count=1" in message
+
+
+def test_finalized_epoch_reuse_rejects_incomplete_package_artifact() -> None:
+    class ClosureRegistry:
+        def list_current_atomic_events(self, *, limit: int) -> list[SimpleNamespace]:
+            assert limit == 10000
+            return [SimpleNamespace(event_id="A"), SimpleNamespace(event_id="B")]
+
+        def get_bulk_epoch_artifact(self, epoch_id: str, kind: str) -> dict[str, object]:
+            assert epoch_id == "epoch"
+            payload = (
+                {"event_ids": ["A", "B"]}
+                if kind == "atomic_partition_v1"
+                else {"package_ids": ["P"]}
+            )
+            return {"payload": payload}
+
+        def get_current_package(self, package_id: str) -> SimpleNamespace:
+            assert package_id == "P"
+            return SimpleNamespace(member_event_ids=["A"])
+
+        def list_packages_for_events(self, event_ids: list[str]) -> dict[str, list[str]]:
+            return {event_id: (["P"] if event_id == "A" else []) for event_id in event_ids}
+
+    engine = object.__new__(BulkEpochEngine)
+    engine.registry = ClosureRegistry()  # type: ignore[assignment]
+
+    with pytest.raises(RuntimeError, match="FINALIZED_PACKAGE_ARTIFACT_REUSE"):
+        engine._require_finalized_epoch_closure("epoch")
 
 
 class AsyncFakeStructured:

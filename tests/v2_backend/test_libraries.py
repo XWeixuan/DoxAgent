@@ -1,7 +1,6 @@
 import sqlite3
 
 from doxagent.event_library.repository import EventLibraryRepository
-from doxagent.v2_read.identities import migrate
 from doxagent.v2_read.libraries import LibraryIndexer
 from tests.test_codex_event_library_incremental import _publish_v1
 
@@ -12,8 +11,6 @@ def test_independent_branches_same_numeric_ids_have_different_birth_keys(tmp_pat
         root = tmp_path / name
         path = root / "US" / "MU" / "event_library.sqlite3"
         repository = EventLibraryRepository(path)
-        with repository._write() as db:
-            migrate(db)
         _publish_v1(repository, root)
         reference, records = LibraryIndexer(root).index("MU", 1)
         snapshots.append((reference, records))

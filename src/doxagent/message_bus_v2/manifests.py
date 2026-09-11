@@ -2,10 +2,8 @@
 
 from __future__ import annotations
 
-from datetime import time
-
 from doxagent.message_bus_v2.schema import (
-    ActiveWindow,
+    ContentEnrichmentMode,
     DefaultMonitoringProfile,
     DefaultProfileEntry,
     PollingConfig,
@@ -25,6 +23,7 @@ def _source(
     scheduler_group: str | None = None,
     properties: dict[str, object] | None = None,
     required: list[str] | None = None,
+    content_enrichment_mode: ContentEnrichmentMode = ContentEnrichmentMode.ENRICH,
 ) -> SourceDefinition:
     return SourceDefinition(
         source_id=source_id,
@@ -42,6 +41,7 @@ def _source(
             minimum_request_gap_seconds=1,
             max_concurrency=1,
         ),
+        content_enrichment_mode=content_enrichment_mode,
         updated_by=UpdateActor.SYSTEM,
         updated_reason="initial Message Bus v2 manifest",
     )
@@ -56,13 +56,18 @@ def initial_sources() -> list[SourceDefinition]:
             properties={"search_terms": {**string_array, "maxItems": 3}},
         ),
         _source("finnhub_company_news", "Finnhub Company News API"),
-        _source("stocktwits_messages", "Stocktwits Messages API"),
+        _source(
+            "stocktwits_messages",
+            "Stocktwits Messages API",
+            content_enrichment_mode=ContentEnrichmentMode.SKIP,
+        ),
         _source(
             "tikhub_x_search",
             "TikHub X Search API",
             scheduler_group="tikhub",
             properties={"search_terms": {**string_array, "minItems": 1, "maxItems": 3}},
             required=["search_terms"],
+            content_enrichment_mode=ContentEnrichmentMode.SKIP,
         ),
         _source(
             "tikhub_x_user_posts",
@@ -70,6 +75,7 @@ def initial_sources() -> list[SourceDefinition]:
             scheduler_group="tikhub",
             properties={"usernames": {**string_array, "minItems": 1, "maxItems": 2}},
             required=["usernames"],
+            content_enrichment_mode=ContentEnrichmentMode.SKIP,
         ),
         _source(
             "newswire_rss",
@@ -81,17 +87,11 @@ def initial_sources() -> list[SourceDefinition]:
 
 
 def initial_default_profile() -> DefaultMonitoringProfile:
-    window = ActiveWindow(
-        timezone="America/New_York",
-        weekdays=[0, 1, 2, 3, 4],
-        start_time=time(7, 0),
-        end_time=time(18, 0),
-    )
     polling = PollingConfig(
         target_interval_seconds=60,
         tolerance_ratio=0.10,
         alert_after_seconds=1800,
-        active_windows=[window],
+        active_windows=[],
     )
     return DefaultMonitoringProfile(
         profile_id="default",
@@ -108,7 +108,10 @@ def initial_default_profile() -> DefaultMonitoringProfile:
             ),
         ],
         updated_by=UpdateActor.SYSTEM,
-        updated_reason="initial profile: Benzinga and Finnhub only",
+        updated_reason=(
+            "initial profile: Benzinga and Finnhub; shared calendar owns continuous-session "
+            "polling and the 02:00 ET closed-day sweep"
+        ),
     )
 
 

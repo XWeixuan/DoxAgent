@@ -227,7 +227,7 @@ function FullEvents({
     </>
   );
 }
-function EventCard({
+export function EventCard({
   ticker,
   summary,
   open,
@@ -241,12 +241,8 @@ function EventCard({
   const path =
     tickerPath(ticker) +
     `/event-library/snapshots/${id(summary.library_snapshot_id)}/events/${id(summary.event_id)}?limit=20`;
-  const details = useRead("Event", open ? path : null);
-  const [important, setImportant] = useState(false);
-  useEffect(() => {
-    if (details.data?.data.data)
-      setImportant(details.data.data.data.event.is_important);
-  }, [details.data]);
+  const details = useRead("Event", path);
+  const important = details.data?.data.data?.event.is_important;
   return (
     <article className="event-card" id={"event-" + summary.event_key}>
       <button
@@ -272,15 +268,19 @@ function EventCard({
         </span>
         <ChevronDown className="event-chevron" aria-hidden="true" />
       </button>
-      {open && (
-        <EventBody
-          ticker={ticker}
-          path={
-            tickerPath(ticker) +
-            `/event-library/snapshots/${id(summary.library_snapshot_id)}/events/${id(summary.event_id)}?limit=20`
-          }
-        />
-      )}
+      <div hidden={!open}>
+        <Module query={details} label="事件正文">
+          {(data) => (
+            <EventContent
+              ticker={ticker}
+              data={data}
+              path={path}
+              delta={false}
+              loadFully
+            />
+          )}
+        </Module>
+      </div>
     </article>
   );
 }
@@ -307,16 +307,18 @@ function EventContent({
   data,
   path,
   delta,
+  loadFully = false,
 }: {
   ticker: string;
   data: EventDetail;
   path: string;
   delta: boolean;
+  loadFully?: boolean;
 }) {
   const [more, setMore] = useState(false);
   const q = usePages<FactRow, "Facts">(
     "Facts",
-    more && !delta
+    (loadFully || more) && !delta
       ? tickerPath(ticker) +
           `/event-library/snapshots/${id(data.library.library_snapshot_id)}/events/${id(data.event.event_id)}/facts?limit=20`
       : null,
@@ -332,6 +334,10 @@ function EventContent({
     data.facts,
   );
   const pages = delta ? dq : q;
+  const { hasNextPage, isFetching, error, fetchNextPage } = pages;
+  useEffect(() => {
+    if (loadFully && hasNextPage && !isFetching && !error) void fetchNextPage();
+  }, [loadFully, hasNextPage, isFetching, error, fetchNextPage]);
   const facts = pages.data?.data.data?.items ?? data.facts.items,
     e = data.event;
   return (
@@ -355,7 +361,7 @@ function EventContent({
           </article>
         ))}
       </div>
-      {(pages.hasNextPage || (!more && data.facts.has_more)) && (
+      {!loadFully && (pages.hasNextPage || (!more && data.facts.has_more)) && (
         <LoadMore
           variant="outline"
           onClick={() => (more ? void pages.fetchNextPage() : setMore(true))}
@@ -363,7 +369,14 @@ function EventContent({
           更多事实
         </LoadMore>
       )}
-      {pages.error && <Notice danger>{pages.error.message}</Notice>}
+      {pages.error && (
+        <Notice danger>
+          {pages.error.message}
+          <Button variant="link" onClick={() => void pages.fetchNextPage()}>
+            重试加载事实
+          </Button>
+        </Notice>
+      )}
       {(e.related_event_ids.length > 0 ||
         e.derived_from_event_ids.length > 0 ||
         e.supersedes_event_id) && (

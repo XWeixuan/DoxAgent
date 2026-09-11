@@ -1,0 +1,136 @@
+{
+  "entries": [
+    {
+      "candidate_key": "CANDIDATE_MU_FY26_Q3_EARNINGS_AND_Q4_GUIDANCE",
+      "assigned_delta_ids": [
+        "D474",
+        "D771",
+        "D379",
+        "D114"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-016/output/work/drafts/T1.json"
+      ],
+      "unresolved_recommendation": "Anchor the later publications to the prior 2026-06-24 Micron FY2026 Q3 release; merge the 86% Q4 margin, operating-cash-flow, EPS, and $25.11 comparison Facts without inferring a metric label absent from D114."
+    },
+    {
+      "candidate_key": "CANDIDATE_NVIDIA_FY27_Q2_EARNINGS_AND_GUIDANCE",
+      "assigned_delta_ids": [
+        "D649",
+        "D994",
+        "D392",
+        "D840"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-016/output/work/drafts/T2.json"
+      ],
+      "unresolved_recommendation": "Anchor the cycle to the prior 2026-08-26 NVIDIA FY2027 Q2 release; reconcile the $279 billion duplicate supplier-commitment reports and preserve the $108 billion guidance and 100% demand outlook as distinct Facts."
+    },
+    {
+      "candidate_key": "CANDIDATE_MEMORY_MARKET_SUPPLY_DEMAND_AND_PRICING_STATE",
+      "assigned_delta_ids": [
+        "D883",
+        "D527",
+        "D58",
+        "D872"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-016/output/work/drafts/T3.json"
+      ],
+      "unresolved_recommendation": "Reconcile this period-wide memory-market state with prior supply, shortage, DRAM, NAND, and pricing drafts; preserve the exact forecast horizons and do not turn analyst price forecasts into Micron guidance."
+    },
+    {
+      "candidate_key": "CANDIDATE_MU_MARKET_REPRICING_EPISODES_2026",
+      "assigned_delta_ids": [
+        "D972"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-016/output/work/drafts/T4.json"
+      ],
+      "unresolved_recommendation": "Merge the September 4 volatility characterization into the prior June-September Micron market episode only if the broader episode retains this retrospective assessment; do not infer a causal price move."
+    },
+    {
+      "candidate_key": "CANDIDATE_MU_TAIWAN_LABOR_INCENTIVE_DISPUTE",
+      "assigned_delta_ids": [
+        "D479",
+        "D499"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-016/output/work/drafts/T5.json"
+      ],
+      "unresolved_recommendation": "Reconcile the September 1 expected and September 2 actual bonus descriptions with prior Taiwan labor drafts; preserve the state change and do not infer settlement or strike authorization."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_STANDALONE_FORECAST_OR_ANALYST_SNAPSHOT",
+      "assigned_delta_ids": [
+        "D640",
+        "D955",
+        "D309",
+        "D735",
+        "D18"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: standalone analyst, consensus, or external forecast snapshots lack a sufficiently bounded Micron issuer action or reconstructed target Event."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_UNCONFIRMED_OR_HYPOTHETICAL",
+      "assigned_delta_ids": [
+        "D509"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: hypothetical memory oversupply and price-downside scenario lacks a dated realized occurrence or confirmed issuer action."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_STANDALONE_MARKET_OR_VALUATION_SNAPSHOT",
+      "assigned_delta_ids": [
+        "D484",
+        "D565",
+        "D555",
+        "D895",
+        "D315",
+        "D641",
+        "D549",
+        "D604",
+        "D176",
+        "D262"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: standalone price return, ownership, trading-level, or volatility snapshot does not independently establish a bounded material Micron Event."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_RELEVANT_UNRESOLVED_OCCURRENCE",
+      "assigned_delta_ids": [
+        "D607",
+        "D519",
+        "D24",
+        "D99",
+        "D550",
+        "D247",
+        "D248",
+        "D55"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: potentially relevant material remains unresolved in occurrence identity, target path, attribution, or current consequence; do not guess a Canonical Event."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_UNRELATED_OR_NO_TARGET_PATH",
+      "assigned_delta_ids": [
+        "D675",
+        "D700",
+        "D570",
+        "D516",
+        "D554"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: other-company operating or capex material lacks a direct Micron Event or concrete non-trivial target transmission path."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_BACKGROUND_OR_NO_CURRENT_OCCURRENCE",
+      "assigned_delta_ids": [
+        "D863"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: trailing-margin background lacks a current bounded occurrence with durable incremental downstream utility."
+    }
+  ]
+}

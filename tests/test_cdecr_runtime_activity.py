@@ -96,3 +96,45 @@ def test_registry_freezes_60_day_eligibility_for_atomic_and_package_views(
         "A60",
         "A61",
     }
+
+
+def test_atomic_stage_batch_extends_active_runtime_eligibility(tmp_path: Path) -> None:
+    registry = SQLiteCDECRRegistry(tmp_path / "runtime.sqlite3")
+    registry.initialize()
+    as_of = datetime(2026, 8, 24, 12, tzinfo=UTC)
+    registry.save_source(
+        source("RECENT").model_copy(update={"published_at": as_of - timedelta(days=60)}),
+        fingerprint="c" * 64,
+    )
+    registry.save_source(
+        source("STALE").model_copy(update={"published_at": as_of - timedelta(days=61)}),
+        fingerprint="d" * 64,
+    )
+    registry.save_mention(mention("M-RECENT", "RECENT"))
+    registry.save_mention(mention("M-STALE", "STALE"))
+
+    assert registry.activate_runtime_eligibility(as_of=as_of, days=60)[
+        "eligible_atomic_ids"
+    ] == []
+    result = registry.save_atomic_stage_batch(
+        [
+            {"event": atomic(event_id="A-RECENT", mention_ids=["M-RECENT"])},
+            {"event": atomic(event_id="A-STALE", mention_ids=["M-STALE"])},
+        ],
+        chunk_size=2,
+    )
+
+    assert result == {"rows": 2, "transactions": 1, "retries": 0, "degraded": 0}
+    assert registry.runtime_eligibility_snapshot() == {
+        "contract_version": "runtime_activity_v1",
+        "cutoff": (as_of - timedelta(days=60)).isoformat(),
+        "eligible_atomic_ids": ["A-RECENT"],
+    }
+    assert [item.event_id for item in registry.list_current_atomic_events(limit=100)] == [
+        "A-RECENT"
+    ]
+    registry.deactivate_runtime_eligibility()
+    assert {item.event_id for item in registry.list_current_atomic_events(limit=100)} == {
+        "A-RECENT",
+        "A-STALE",
+    }

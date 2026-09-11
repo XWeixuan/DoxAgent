@@ -11,4 +11,4 @@ FROM nginx:1.28-alpine
 COPY frontend/v2/deploy/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/frontend/v2/dist /usr/share/nginx/html
 EXPOSE 80
-HEALTHCHECK --interval=15s --timeout=3s --retries=3 CMD wget -q -O /dev/null http://127.0.0.1/healthz || exit 1
+HEALTHCHECK --interval=15s --timeout=3s --retries=3 CMD wget -q -O /dev/null http://127.0.0.1/api/doxagent/v2/auth/config || exit 1

@@ -6,9 +6,10 @@ import hashlib
 import json
 import re
 import shutil
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Literal, TypedDict
+from typing import Any, Literal, NotRequired, TypedDict
 
 from doxagent.codex_runtime.client import CodexWorkerClient, WorkspaceClient
 from doxagent.codex_runtime.errors import StructuredOutputInvalid
@@ -52,10 +53,20 @@ class _O2Phase(TypedDict):
     skill_asset: str
     delta_ids: list[str]
     prior_attempt_paths: list[str]
+    wave_plan: NotRequired[WavePlan]
+
+
+@dataclass(frozen=True)
+class WavePlan:
+    wave_id: str
+    delta_ids: list[str]
+    estimated_tokens: int
+    primary_package_ids: list[str]
+    split_package_ids: list[str]
 
 
 class RemoteEventLibraryInitializer:
-    """Run SURVEY, deterministic waves, reconciliation, validation, and V1 publish."""
+    """Run SURVEY, deterministic waves, reconciliation, import prep, and V1 publish."""
 
     def __init__(
         self,
@@ -87,6 +98,7 @@ class RemoteEventLibraryInitializer:
         self.wave_size = wave_size
         self.wave_token_budget = wave_token_budget
         self.max_repairs = max_repairs
+        self._wave_plan_cache: dict[str, tuple[str, list[WavePlan]]] = {}
 
     async def run(
         self,
@@ -249,6 +261,7 @@ class RemoteEventLibraryInitializer:
                     allowed_detail_ids=allowed_detail_ids,
                     review_candidates=review_candidates,
                     expected_final=expected_final,
+                    batch=batch,
                 )
             except Exception as exc:
                 self._save_run(
@@ -400,15 +413,16 @@ class RemoteEventLibraryInitializer:
             }
         ]
         prior = ["attempts/o2-survey/output/work"]
-        for index, wave in enumerate(self._plan_waves(batch), start=1):
-            attempt_id = f"o2-wave-{index:03d}"
+        for wave in self._plan_waves(batch):
+            attempt_id = wave.wave_id
             phases.append(
                 {
                     "attempt_id": attempt_id,
                     "stage": EventLibraryRunStage.LOCAL_RECONSTRUCTION,
                     "skill_asset": "skills/initialize-wave.md",
-                    "delta_ids": [item.delta_id for item in wave],
+                    "delta_ids": list(wave.delta_ids),
                     "prior_attempt_paths": list(prior),
+                    "wave_plan": wave,
                 }
             )
             prior.append(f"attempts/{attempt_id}/output/work")
@@ -423,41 +437,61 @@ class RemoteEventLibraryInitializer:
         )
         return phases
 
-    def _plan_waves(self, batch: DeltaBatch) -> list[list[Any]]:
-        """Assign every Atomic Delta once, keeping its primary Package together."""
+    def _plan_waves(self, batch: DeltaBatch) -> list[WavePlan]:
+        """Build one stable Package-aware plan and reuse it throughout the run."""
 
+        fingerprint = hashlib.sha256(
+            (batch.model_dump_json() + f"|{self.wave_size}|{self.wave_token_budget}").encode(
+                "utf-8"
+            )
+        ).hexdigest()
+        cached = self._wave_plan_cache.get(batch.batch_id)
+        if cached is not None and cached[0] == fingerprint:
+            return cached[1]
         items_by_id = {item.delta_id: item for item in batch.items}
-        package_members: dict[str, list[Any]] = {}
+        package_members: dict[str, list[str]] = {}
         if batch.runtime_packages:
             for package in sorted(batch.runtime_packages, key=lambda item: item.runtime_hint_id):
                 package_members[package.runtime_hint_id] = [
-                    items_by_id[item] for item in package.member_delta_ids if item in items_by_id
+                    item for item in package.member_delta_ids if item in items_by_id
                 ]
         else:
             # Legacy v1 batches are upgraded in-memory without mutating their immutable DB row.
             for hint in sorted(batch.runtime_hints, key=lambda item: item.runtime_hint_id):
                 package_members[hint.runtime_hint_id] = [
-                    item for item in batch.items if hint.runtime_hint_id in item.runtime_hint_ids
+                    item.delta_id
+                    for item in batch.items
+                    if hint.runtime_hint_id in item.runtime_hint_ids
                 ]
+        primary_package_by_delta: dict[str, str | None] = {
+            item.delta_id: None for item in batch.items
+        }
         assigned: set[str] = set()
-        groups: list[list[Any]] = []
-        for _hint_id, members in package_members.items():
-            primary = [item for item in members if item.delta_id not in assigned]
+        groups: list[list[str]] = []
+        for hint_id, members in package_members.items():
+            primary = [item for item in members if item not in assigned]
             if primary:
                 groups.append(primary)
-                assigned.update(item.delta_id for item in primary)
-        ungrouped = [item for item in batch.items if item.delta_id not in assigned]
+                assigned.update(primary)
+                for delta_id in primary:
+                    primary_package_by_delta[delta_id] = hint_id
+        ungrouped = [item.delta_id for item in batch.items if item.delta_id not in assigned]
         if ungrouped:
             groups.append(ungrouped)
-        chunks: list[list[Any]] = []
+        chunks: list[list[str]] = []
         for group in groups:
             ordered = sorted(
                 group,
-                key=lambda item: (item.time, tuple(item.entities), int(item.delta_id[1:])),
+                key=lambda delta_id: (
+                    items_by_id[delta_id].time or "",
+                    tuple(items_by_id[delta_id].entities),
+                    int(delta_id[1:]),
+                ),
             )
-            current: list[Any] = []
+            current: list[str] = []
             estimated_tokens = 0
-            for item in ordered:
+            for delta_id in ordered:
+                item = items_by_id[delta_id]
                 item_tokens = max(1, len(item.model_dump_json()) // 4)
                 if current and (
                     len(current) >= self.wave_size
@@ -466,15 +500,19 @@ class RemoteEventLibraryInitializer:
                     chunks.append(current)
                     current = []
                     estimated_tokens = 0
-                current.append(item)
+                current.append(delta_id)
                 estimated_tokens += item_tokens
             if current:
                 chunks.append(current)
-        waves: list[list[Any]] = []
+        waves: list[list[str]] = []
         for chunk in chunks:
-            chunk_tokens = sum(max(1, len(item.model_dump_json()) // 4) for item in chunk)
+            chunk_tokens = sum(
+                max(1, len(items_by_id[item].model_dump_json()) // 4) for item in chunk
+            )
             if waves:
-                last_tokens = sum(max(1, len(item.model_dump_json()) // 4) for item in waves[-1])
+                last_tokens = sum(
+                    max(1, len(items_by_id[item].model_dump_json()) // 4) for item in waves[-1]
+                )
                 if (
                     len(waves[-1]) + len(chunk) <= self.wave_size
                     and last_tokens + chunk_tokens <= self.wave_token_budget
@@ -482,7 +520,42 @@ class RemoteEventLibraryInitializer:
                     waves[-1].extend(chunk)
                     continue
             waves.append(list(chunk))
-        return waves
+        delta_to_wave = {
+            delta_id: f"o2-wave-{index:03d}"
+            for index, wave in enumerate(waves, start=1)
+            for delta_id in wave
+        }
+        split_packages = {
+            hint_id
+            for hint_id, members in package_members.items()
+            if len({delta_to_wave[item] for item in members if item in delta_to_wave}) > 1
+        }
+        plans = [
+            WavePlan(
+                wave_id=f"o2-wave-{index:03d}",
+                delta_ids=list(wave),
+                estimated_tokens=sum(
+                    max(1, len(items_by_id[item].model_dump_json()) // 4) for item in wave
+                ),
+                primary_package_ids=sorted(
+                    {
+                        package_id
+                        for item in wave
+                        if (package_id := primary_package_by_delta[item]) is not None
+                    }
+                ),
+                split_package_ids=sorted(
+                    {
+                        package_id
+                        for item in wave
+                        if (package_id := primary_package_by_delta[item]) in split_packages
+                    }
+                ),
+            )
+            for index, wave in enumerate(waves, start=1)
+        ]
+        self._wave_plan_cache[batch.batch_id] = (fingerprint, plans)
+        return plans
 
     @durable("o2")
     async def _execute_phase(
@@ -498,7 +571,16 @@ class RemoteEventLibraryInitializer:
         allowed_detail_ids: list[str],
         review_candidates: list[ReferenceReviewCandidate],
         expected_final: bool,
+        batch: DeltaBatch,
     ) -> tuple[O2RunResult, str | None]:
+        wave_runtime_context = None
+        if (wave_plan := phase.get("wave_plan")) is not None:
+            wave_runtime_context = self._wave_runtime_context(
+                batch=batch,
+                manifest=manifest,
+                plan=wave_plan,
+                plans=self._plan_waves(batch),
+            )
         await self._seed_attempt(
             run_id=run_id,
             manifest=manifest,
@@ -511,6 +593,7 @@ class RemoteEventLibraryInitializer:
             frozen_root=frozen_root,
             allowed_event_detail_ids=allowed_detail_ids,
             review_candidates=review_candidates,
+            wave_runtime_context=wave_runtime_context,
         )
         request = self._worker_request(
             run_id=run_id,
@@ -569,6 +652,7 @@ class RemoteEventLibraryInitializer:
         frozen_root: Path | None = None,
         allowed_event_detail_ids: list[str] | None = None,
         review_candidates: list[ReferenceReviewCandidate] | None = None,
+        wave_runtime_context: dict[str, Any] | None = None,
     ) -> None:
         prefix = f"attempts/{attempt_id}/input"
         allowed = sorted(set(allowed_event_detail_ids or []))
@@ -626,6 +710,7 @@ class RemoteEventLibraryInitializer:
             prior_attempt_paths=prior_attempt_paths,
             previous_failure=previous_failure,
             task_metadata=task_metadata,
+            wave_runtime_context=wave_runtime_context,
         )
         # Remote Worker uses the provider-strict schema variant.
         assets["output_schema.json"] = _json_text(O2_RUN_RESULT_SCHEMA)
@@ -640,6 +725,120 @@ class RemoteEventLibraryInitializer:
                     raise ValueError(f"immutable O2 input mismatch on resume: {relative}")
                 continue
             await self.workspace.write_text(run_id, relative, content)
+
+    def _wave_runtime_context(
+        self,
+        *,
+        batch: DeltaBatch,
+        manifest: FrozenViewManifest,
+        plan: WavePlan,
+        plans: list[WavePlan],
+    ) -> dict[str, Any]:
+        items = {item.delta_id: item for item in batch.items}
+        delta_to_wave = {delta_id: item.wave_id for item in plans for delta_id in item.delta_ids}
+        packages = {item.runtime_hint_id: item for item in batch.runtime_packages}
+        if not packages:
+            hint_titles = {item.runtime_hint_id: item.title for item in batch.runtime_hints}
+            for hint_id in sorted(hint_titles):
+                members = [
+                    item.delta_id for item in batch.items if hint_id in item.runtime_hint_ids
+                ]
+                if members:
+                    from doxagent.event_library.contracts import RuntimePackageDelta
+
+                    packages[hint_id] = RuntimePackageDelta(
+                        runtime_hint_id=hint_id,
+                        title=hint_titles[hint_id],
+                        runtime_package_version=1,
+                        member_delta_ids=members,
+                    )
+        primary_by_delta: dict[str, str | None] = {}
+        for delta_id, item in items.items():
+            candidates = sorted(hint for hint in item.runtime_hint_ids if hint in packages)
+            primary_by_delta[delta_id] = candidates[0] if candidates else None
+
+        def atomic(delta_id: str) -> dict[str, Any]:
+            item = items[delta_id]
+            primary = primary_by_delta[delta_id]
+            return {
+                "delta_id": item.delta_id,
+                "proposition": item.proposition,
+                "raw_time": item.time,
+                "subject_time": item.subject_time,
+                "occurrence_date_candidates": [
+                    candidate.model_dump(mode="json")
+                    for candidate in item.occurrence_date_candidates
+                ],
+                "assertion_state": item.assertion_state.value,
+                "entities": list(item.entities),
+                "runtime_hint_ids": list(item.runtime_hint_ids),
+                "primary_runtime_hint_id": primary,
+                "secondary_runtime_hint_ids": [
+                    hint for hint in item.runtime_hint_ids if hint != primary
+                ],
+                "target_suggestion_ids": list(item.target_suggestion_ids),
+                "source_message_ids": list(item.source_message_ids),
+            }
+
+        package_groups: list[dict[str, Any]] = []
+        assigned = set(plan.delta_ids)
+        for hint_id in plan.primary_package_ids:
+            package = packages[hint_id]
+            primary_members = [
+                delta_id
+                for delta_id in package.member_delta_ids
+                if primary_by_delta.get(delta_id) == hint_id
+            ]
+            wave_members = [delta_id for delta_id in primary_members if delta_id in assigned]
+            package_groups.append(
+                {
+                    "runtime_hint_id": hint_id,
+                    "title": package.title,
+                    "runtime_package_version": package.runtime_package_version,
+                    "full_member_delta_ids": list(package.member_delta_ids),
+                    "wave_member_delta_ids": wave_members,
+                    "out_of_wave_members": [
+                        {"delta_id": delta_id, "wave_id": delta_to_wave[delta_id]}
+                        for delta_id in package.member_delta_ids
+                        if delta_id not in assigned and delta_id in delta_to_wave
+                    ],
+                    "time_anchors": list(package.time_anchors),
+                    "subject_time_anchors": list(package.subject_time_anchors),
+                    "entity_anchors": list(package.entity_anchors),
+                    "source_message_ids": list(package.source_message_ids),
+                    "occurrence_date_candidates": [
+                        candidate.model_dump(mode="json")
+                        for candidate in package.occurrence_date_candidates
+                    ],
+                    "atomics": [atomic(delta_id) for delta_id in wave_members],
+                }
+            )
+        ungrouped = [
+            atomic(delta_id) for delta_id in plan.delta_ids if primary_by_delta[delta_id] is None
+        ]
+        grouped_count = sum(len(group["atomics"]) for group in package_groups)
+        return {
+            "contract_version": "o2-wave-runtime-context-v1",
+            "frozen_view_id": manifest.frozen_view_id,
+            "delta_batch_ids": list(manifest.delta_batch_ids),
+            "wave_id": plan.wave_id,
+            "wave_index": int(plan.wave_id.rsplit("-", 1)[-1]),
+            "wave_count": len(plans),
+            "assigned_delta_ids": list(plan.delta_ids),
+            "planner": {
+                "max_delta_count": self.wave_size,
+                "estimated_token_budget": self.wave_token_budget,
+                "estimated_tokens": plan.estimated_tokens,
+            },
+            "package_groups": package_groups,
+            "ungrouped_atomics": ungrouped,
+            "coverage": {
+                "assigned_delta_count": len(plan.delta_ids),
+                "package_grouped_delta_count": grouped_count,
+                "ungrouped_delta_count": len(ungrouped),
+                "split_package_count": len(plan.split_package_ids),
+            },
+        }
 
     async def _write_immutable(self, run_id: str, relative: str, content: str) -> None:
         inventory = await self.workspace.inventory(run_id)
@@ -944,43 +1143,51 @@ class RemoteEventLibraryInitializer:
         mode: Literal["INITIALIZE", "INCREMENTAL"],
         reported_result: O2RunResult | None,
     ) -> tuple[Path, BundleValidationOutcome, str | None]:
+        del reported_result
+        load_error: Exception | None = None
+        try:
+            loaded = RevisionBundleIO.load_tolerant(bundle_dir)
+        except (OSError, ValueError) as exc:
+            load_error = exc
+        else:
+            outcome = self._validate_loaded(loaded, manifest=manifest)
+            if outcome.publishable:
+                return bundle_dir, outcome, thread_id
+            if any(item.code == "BUNDLE_CONTENT_UNREADABLE" for item in outcome.issues):
+                load_error = ValueError("all formal Bundle content is unreadable")
+            else:
+                # Frozen identity, stale base, and batch ambiguity are hard safety
+                # failures.  They must never be turned into a semantic model repair.
+                raise ValueError(
+                    "O2 Bundle failed identity/import safety checks: "
+                    + "; ".join(f"{item.code}: {item.message}" for item in outcome.issues)
+                )
+
+        # Only a wholly unreadable artifact gets one artifact-reconstruction
+        # turn.  Semantic diagnostics and local row recovery never reach here.
+        attempt_id = "o2-repair-001"
+        result, thread_id = await self._execute_repair(
+            run_id=run_id,
+            manifest=manifest,
+            attempt_id=attempt_id,
+            bundle_remote_prefix=bundle_remote_prefix,
+            error=f"ARTIFACT_UNREADABLE: {type(load_error).__name__}: {load_error}",
+            mode=mode,
+            cutoff_at=cutoff_at,
+            thread_id=thread_id,
+            final_repair=True,
+        )
+        completed.append(attempt_id)
+        assert result.bundle_path is not None
+        bundle_dir = await self._download_tree(
+            run_id=run_id,
+            remote_prefix=result.bundle_path.rstrip("/"),
+            local_root=self.local_workspace_root / run_id / "downloads" / "repair-1",
+        )
         loaded = RevisionBundleIO.load_tolerant(bundle_dir)
         outcome = self._validate_loaded(loaded, manifest=manifest)
-        for repair_number in range(1, self.max_repairs + 1):
-            if outcome.publishable:
-                if reported_result is not None:
-                    self._require_exact_bundle_coverage(reported_result, outcome)
-                return bundle_dir, outcome, thread_id
-            attempt_id = f"o2-repair-{repair_number:03d}"
-            error = "; ".join(f"{item.code}: {item.message}" for item in outcome.issues)
-            result, thread_id = await self._execute_repair(
-                run_id=run_id,
-                manifest=manifest,
-                attempt_id=attempt_id,
-                bundle_remote_prefix=bundle_remote_prefix,
-                error=error,
-                mode=mode,
-                cutoff_at=cutoff_at,
-                thread_id=thread_id,
-                final_repair=repair_number == self.max_repairs,
-            )
-            completed.append(attempt_id)
-            assert result.bundle_path is not None
-            bundle_remote_prefix = result.bundle_path.rstrip("/")
-            bundle_dir = await self._download_tree(
-                run_id=run_id,
-                remote_prefix=bundle_remote_prefix,
-                local_root=(
-                    self.local_workspace_root / run_id / "downloads" / f"repair-{repair_number}"
-                ),
-            )
-            loaded = RevisionBundleIO.load_tolerant(bundle_dir)
-            outcome = self._validate_loaded(loaded, manifest=manifest)
-            reported_result = result
-            if outcome.publishable:
-                self._require_exact_bundle_coverage(result, outcome)
         if not outcome.publishable:
-            raise ValueError("O2 Revision Bundle failed deterministic validation after repairs")
+            raise ValueError("O2 artifact repair failed identity/import safety checks")
         return bundle_dir, outcome, thread_id
 
     @durable("o2_repair")
@@ -1060,9 +1267,7 @@ class RemoteEventLibraryInitializer:
         )
         loaded = RevisionBundleIO.load_tolerant(bundle_dir)
         outcome = self._validate_loaded(loaded, manifest=manifest)
-        if outcome.publishable:
-            self._require_exact_bundle_coverage(result, outcome)
-        elif final_repair:
+        if not outcome.publishable and final_repair:
             raise ValueError("O2 final repair has no publishable bundle")
         return result, thread_id
 
@@ -1170,6 +1375,17 @@ class RemoteEventLibraryInitializer:
             )
             for item in loaded.issues
         ]
+        if loaded.normalization_actions:
+            issues.append(
+                ValidationIssue(
+                    code="O2_WIRE_NORMALIZED",
+                    severity=ValidationSeverity.WARNING,
+                    message=(
+                        f"Applied {len(loaded.normalization_actions)} mechanical wire "
+                        "normalizations"
+                    ),
+                )
+            )
         return self.service.validator.validate(
             loaded.bundle,
             initial_issues=issues,
@@ -1311,15 +1527,16 @@ def _resolve_phase_attempts(
                 path.replace(f"attempts/{prior_base}/", f"attempts/{prior_actual}/")
                 for path in prior_paths
             ]
-        resolved.append(
-            {
-                "attempt_id": actual,
-                "stage": phase["stage"],
-                "skill_asset": phase["skill_asset"],
-                "delta_ids": list(phase["delta_ids"]),
-                "prior_attempt_paths": prior_paths,
-            }
-        )
+        resolved_phase: _O2Phase = {
+            "attempt_id": actual,
+            "stage": phase["stage"],
+            "skill_asset": phase["skill_asset"],
+            "delta_ids": list(phase["delta_ids"]),
+            "prior_attempt_paths": prior_paths,
+        }
+        if "wave_plan" in phase:
+            resolved_phase["wave_plan"] = phase["wave_plan"]
+        resolved.append(resolved_phase)
     return resolved
 
 

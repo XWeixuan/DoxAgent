@@ -47,6 +47,12 @@ services:
     cpus: 0.5
     pids_limit: 96
     image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
+  v2-content-enrichment:
+    mem_limit: 384m
+    memswap_limit: 384m
+    cpus: 1.0
+    pids_limit: 128
+    image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
   v2-o4:
     mem_limit: 256m
     memswap_limit: 256m

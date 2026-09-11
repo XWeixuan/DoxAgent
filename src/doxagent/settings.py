@@ -516,11 +516,11 @@ class DoxAgentSettings(BaseSettings):
         validation_alias="DOXAGENT_MONITORING_POLLER_SLEEP_SECONDS",
     )
     monitoring_remote_ssh_alias: str = Field(
-        default="doxagent-hk",
+        default="",
         validation_alias="DOXAGENT_MONITORING_REMOTE_SSH_ALIAS",
     )
     monitoring_remote_path: str = Field(
-        default="/root/doxagent",
+        default="",
         validation_alias="DOXAGENT_MONITORING_REMOTE_PATH",
     )
     monitoring_remote_timeout_seconds: int = Field(
@@ -548,6 +548,33 @@ class DoxAgentSettings(BaseSettings):
     message_bus_v2_content_enrichment_enabled: bool = Field(
         default=True,
         validation_alias="DOXAGENT_MESSAGE_BUS_V2_CONTENT_ENRICHMENT_ENABLED",
+    )
+    content_enrichment_enabled: bool = Field(
+        default=True,
+        validation_alias="DOXAGENT_CONTENT_ENRICHMENT_ENABLED",
+    )
+    content_enrichment_max_concurrency: int = Field(
+        default=8,
+        ge=1,
+        le=8,
+        validation_alias="DOXAGENT_CONTENT_ENRICHMENT_MAX_CONCURRENCY",
+    )
+    content_enrichment_retry_deadline_seconds: int = Field(
+        default=180,
+        ge=1,
+        le=180,
+        validation_alias="DOXAGENT_CONTENT_ENRICHMENT_RETRY_DEADLINE_SECONDS",
+    )
+    content_enrichment_retry_delay_seconds: int = Field(
+        default=30,
+        ge=0,
+        le=180,
+        validation_alias="DOXAGENT_CONTENT_ENRICHMENT_RETRY_DELAY_SECONDS",
+    )
+    content_enrichment_worker_sleep_seconds: float = Field(
+        default=0.25,
+        ge=0.05,
+        validation_alias="DOXAGENT_CONTENT_ENRICHMENT_WORKER_SLEEP_SECONDS",
     )
     crawler_plane_root: str = Field(
         default=".tmp/crawler-plane",

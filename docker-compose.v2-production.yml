@@ -88,6 +88,11 @@ services:
   v2-message-bus:
     <<: *backend
     command: [python, -m, doxagent.message_bus_v2.cli, run-worker]
+  v2-content-enrichment:
+    <<: *backend
+    command: [python, -m, doxagent.content_enrichment.cli, run-worker]
+    depends_on:
+      v2-migrate: {condition: service_completed_successfully}
   v2-o4:
     <<: *backend
     command: [python, -m, doxagent.workflows.codex_monitoring_o4.worker]

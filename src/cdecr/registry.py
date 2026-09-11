@@ -2054,6 +2054,47 @@ class SQLiteCDECRRegistry:
                         break
         return saved
 
+    def _extend_runtime_eligibility_for_events(
+        self,
+        events: Sequence[AtomicEvent],
+    ) -> None:
+        """Add newly committed, recently observed Atomics to an active eligibility view."""
+
+        if not events:
+            return
+        mention_to_event_ids: dict[str, set[str]] = {}
+        for event in events:
+            for mention_id in event.mention_ids:
+                mention_to_event_ids.setdefault(mention_id, set()).add(event.event_id)
+        if not mention_to_event_ids:
+            return
+        mention_ids = sorted(mention_to_event_ids)
+        with self._runtime_eligibility_lock:
+            cutoff = self._runtime_eligibility_cutoff
+            eligible = self._runtime_eligible_atomic_ids
+            if cutoff is None or eligible is None:
+                return
+            newly_eligible: set[str] = set()
+            with self._read_connection(snapshot=True) as connection:
+                for offset in range(0, len(mention_ids), 400):
+                    chunk = mention_ids[offset : offset + 400]
+                    placeholders = ",".join("?" for _ in chunk)
+                    rows = connection.execute(
+                        "SELECT mentions.mention_id, sources.published_at "
+                        "FROM event_mentions mentions "
+                        "JOIN source_messages sources "
+                        "ON sources.message_id=mentions.message_id "
+                        f"WHERE mentions.mention_id IN ({placeholders})",
+                        tuple(chunk),
+                    ).fetchall()
+                    for row in rows:
+                        published_at = datetime.fromisoformat(str(row["published_at"]))
+                        if published_at >= cutoff:
+                            newly_eligible.update(
+                                mention_to_event_ids[str(row["mention_id"])]
+                            )
+            eligible.update(newly_eligible)
+
     def save_package(self, package: EventPackage) -> bool:
         payload = _json_payload(package)
         saved = self._save_versioned(
@@ -2128,6 +2169,7 @@ class SQLiteCDECRRegistry:
         def write(chunk: Sequence[tuple[int, dict[str, Any]]]) -> None:
             if not chunk:
                 return
+            committed_events: list[AtomicEvent] = []
             try:
                 with self._connection() as connection:
                     connection.execute("BEGIN IMMEDIATE")
@@ -2161,6 +2203,7 @@ class SQLiteCDECRRegistry:
                                 mention_ids=event.mention_ids,
                             )
                             self._refresh_atomic_recall_in_transaction(connection, event)
+                            committed_events.append(event)
                         assignment = record.get("assignment")
                         if assignment is not None:
                             payload = _json_payload(assignment)
@@ -2233,8 +2276,6 @@ class SQLiteCDECRRegistry:
                             ),
                         )
                     connection.commit()
-                counts["rows"] += len(chunk)
-                counts["transactions"] += 1
             except (ImmutableRecordConflict, VersionConflict, RegistryError, sqlite3.Error):
                 if len(chunk) > 1:
                     counts["retries"] += 1
@@ -2243,6 +2284,10 @@ class SQLiteCDECRRegistry:
                     write(chunk[middle:])
                 else:
                     counts["degraded"] += 1
+                return
+            self._extend_runtime_eligibility_for_events(committed_events)
+            counts["rows"] += len(chunk)
+            counts["transactions"] += 1
 
         for offset in range(0, len(indexed), max(1, chunk_size)):
             write(indexed[offset : offset + max(1, chunk_size)])

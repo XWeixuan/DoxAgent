@@ -1,0 +1,86 @@
+{
+  "entries": [
+    {
+      "candidate_key": "CANDIDATE_DRAM_THREE_SUPPLIER_STRUCTURE",
+      "assigned_delta_ids": [
+        "D933"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-001/output/work/drafts/T1.json"
+      ],
+      "unresolved_recommendation": "Treat T1 as a genuinely period-wide current market-structure observation; Global Reconciliation should verify the scope of dominance and whether a dated milestone exists."
+    },
+    {
+      "candidate_key": "CANDIDATE_MU_NEW_STREET_ANALYST_ACTION_2026_08_14",
+      "assigned_delta_ids": [
+        "D260"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-001/output/work/drafts/T2.json"
+      ],
+      "unresolved_recommendation": "Keep separate from the Mizuho action unless the full wave establishes a shared catalyst and bounded response episode."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_STANDALONE_MARKET_OR_VALUATION_SNAPSHOT",
+      "assigned_delta_ids": [
+        "D458"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: standalone forward-P/E snapshot with conflicting publication dates and no independently reconstructed Event occurrence."
+    },
+    {
+      "candidate_key": "CANDIDATE_MU_MIZUHO_ANALYST_ACTION_2026_08_25",
+      "assigned_delta_ids": [
+        "D925"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-001/output/work/drafts/T3.json"
+      ],
+      "unresolved_recommendation": "Keep separate from the New Street action unless a shared catalyst is established; preserve Mizuho's rating and target as institution-specific."
+    },
+    {
+      "candidate_key": "CANDIDATE_MU_FY26_Q3_EARNINGS_AND_Q4_GUIDANCE",
+      "assigned_delta_ids": [
+        "D630",
+        "D382",
+        "D596"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-001/output/work/drafts/T4.json"
+      ],
+      "unresolved_recommendation": "Verify the 2026-06-24 disclosure date against the 2026-06-25 filing date while retaining Q3 actuals and Q4 guidance as distinct Facts."
+    },
+    {
+      "candidate_key": "CANDIDATE_MU_FY26_Q4_EARNINGS_SCHEDULE",
+      "assigned_delta_ids": [
+        "D154"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-001/output/work/drafts/T5.json"
+      ],
+      "unresolved_recommendation": "Verify that 2026-08-28 is the first public scheduling announcement and later supersession by the actual Q4 release."
+    },
+    {
+      "candidate_key": "CANDIDATE_NVIDIA_FY27_Q2_EARNINGS_AND_GUIDANCE",
+      "assigned_delta_ids": [
+        "D990",
+        "D438",
+        "D715"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-001/output/work/drafts/T6.json"
+      ],
+      "unresolved_recommendation": "Confirm the 2026-08-26 NVIDIA release date, treat 2026-07-26 as fiscal-Q2 subject-period context for D990, and validate the indirect Micron demand path."
+    },
+    {
+      "candidate_key": "CANDIDATE_MU_SOLE_US_HBM_MANUFACTURER",
+      "assigned_delta_ids": [
+        "D987"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-001/output/work/drafts/T7.json"
+      ],
+      "unresolved_recommendation": "Treat T7 as an ongoing position with no established formation date; Global Reconciliation should verify the U.S.-based and HBM-generation scope."
+    }
+  ]
+}

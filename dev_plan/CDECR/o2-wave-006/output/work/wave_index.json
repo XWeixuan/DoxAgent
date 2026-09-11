@@ -1,0 +1,147 @@
+{
+  "entries": [
+    {
+      "candidate_key": "CANDIDATE_MU_MARKET_REPRICING_EPISODES_2026",
+      "assigned_delta_ids": [
+        "D421"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-006/output/work/drafts/T1.json"
+      ],
+      "unresolved_recommendation": "Merge this dated September 4 roughly 6% memory-sector rally into the prior June-September Micron market-episode draft as a constituent recovery/sector-rally Fact; do not infer a cause from the source."
+    },
+    {
+      "candidate_key": "CANDIDATE_MU_TAIWAN_LABOR_INCENTIVE_DISPUTE",
+      "assigned_delta_ids": [
+        "D277",
+        "D644",
+        "D682",
+        "D812"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-006/output/work/drafts/T2.json",
+        "attempts/o2-wave-006/output/work/drafts/T3.json"
+      ],
+      "unresolved_recommendation": "Keep the planned October bonus distribution separate from the planned/expected announcement of incentive-plan details, then reconcile both with the prior survey, compensation, and potential-strike milestones without treating future plans as completed actions."
+    },
+    {
+      "candidate_key": "CANDIDATE_MU_FY26_Q4_EARNINGS_SCHEDULE",
+      "assigned_delta_ids": [
+        "D234",
+        "D22",
+        "D232",
+        "D264",
+        "D287",
+        "D304",
+        "D330",
+        "D340",
+        "D453",
+        "D814",
+        "D390",
+        "D881"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-006/output/work/drafts/T4.json"
+      ],
+      "unresolved_recommendation": "Merge the twelve current-wave duplicate schedule reports into prior-wave T5/D154, which anchors the first public announcement to 2026-08-28; preserve 2026-09-30 as scheduled subject time and let the actual release supersede this forward calendar item."
+    },
+    {
+      "candidate_key": "CANDIDATE_MU_CAPACITY_AND_CAPEX_EXPANSION",
+      "assigned_delta_ids": [
+        "D200"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-006/output/work/drafts/T5.json"
+      ],
+      "unresolved_recommendation": "Retain as a forward capacity-expansion plan for 2027-2028, but reconcile it with the broader capacity/capex chain and distinguish planned commissioning from completed or qualified production."
+    },
+    {
+      "candidate_key": "CANDIDATE_MU_STRATEGIC_CUSTOMER_AGREEMENTS",
+      "assigned_delta_ids": [
+        "D175"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-006/output/work/drafts/T6.json"
+      ],
+      "unresolved_recommendation": "Verify whether the reserved 2027 capacity reflects a specific strategic customer agreement, deposit, or order-book statement; do not convert the reservation into recognized revenue or a quantified contract."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_STANDALONE_MARKET_OR_VALUATION_SNAPSHOT",
+      "assigned_delta_ids": [
+        "D426",
+        "D446",
+        "D492",
+        "D493",
+        "D593",
+        "D594",
+        "D720",
+        "D869",
+        "D979",
+        "D893",
+        "D653",
+        "D124",
+        "D744",
+        "D787",
+        "D958",
+        "D351"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: standalone Micron price, volume, closing-price, valuation, after-hours, premarket, drawdown, or return snapshots do not independently establish a bounded material market episode."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_RELEVANT_UNRESOLVED_OCCURRENCE",
+      "assigned_delta_ids": [
+        "D464",
+        "D559",
+        "D970",
+        "D352",
+        "D660",
+        "D795",
+        "D868"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: Sandisk/competitor moves, broad memory-chip appreciation, an earnings-surprise list, and sector-rally commentary remain plausibly relevant but lack a sufficiently bounded Micron-specific occurrence beyond market snapshots or external commentary."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_BACKGROUND_OR_NO_CURRENT_OCCURRENCE",
+      "assigned_delta_ids": [
+        "D648"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: broad investor positioning and interest-rate commentary after the jobs report lacks a current Micron-specific event boundary or durable target consequence."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_UNRELATED_OR_NO_TARGET_PATH",
+      "assigned_delta_ids": [
+        "D737",
+        "D585",
+        "D740",
+        "D696",
+        "D450",
+        "D674"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: other-company price moves, a scheduled BLS release, a market holiday, and general Seagate commentary do not establish a direct Micron Event or concrete non-trivial exposure path."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_NON_TARGET_COMPETITOR_OR_INDUSTRY_BACKGROUND",
+      "assigned_delta_ids": [
+        "D567",
+        "D954"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: Samsung and SK hynix standalone stock moves are competitor/industry background without a bounded direct Micron occurrence or concrete target transmission."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_STANDALONE_FORECAST_OR_ANALYST_SNAPSHOT",
+      "assigned_delta_ids": [
+        "D148",
+        "D21",
+        "D78",
+        "D356"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: external AI/DRAM forecasts and standalone Micron revenue or earnings projections lack a concrete issuer action or bounded target-specific forecast event."
+    }
+  ]
+}

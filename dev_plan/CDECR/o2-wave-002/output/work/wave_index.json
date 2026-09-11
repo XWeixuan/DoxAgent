@@ -1,0 +1,176 @@
+{
+  "entries": [
+    {
+      "candidate_key": "CANDIDATE_MEMORY_MARKET_SUPPLY_DEMAND_AND_PRICING_STATE",
+      "assigned_delta_ids": [
+        "D19",
+        "D76",
+        "D95",
+        "D428",
+        "D560",
+        "D605",
+        "D838",
+        "D878",
+        "D892",
+        "D961"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-002/output/work/drafts/T1.json"
+      ],
+      "unresolved_recommendation": "Global Reconciliation should decide whether the historical Q1/Q2 price observations and 2026-2027 forecasts are one supply-demand theme cluster or separate disclosure Events; retain Micron transmission and subject periods."
+    },
+    {
+      "candidate_key": "CANDIDATE_MU_FY26_Q3_EARNINGS_AND_Q4_GUIDANCE",
+      "assigned_delta_ids": [
+        "D271",
+        "D345",
+        "D638",
+        "D816"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-002/output/work/drafts/T2.json"
+      ],
+      "unresolved_recommendation": "Merge the complementary local T2 Facts into prior-wave T4 after confirming the 2026-06-24 release versus 2026-06-25 filing date; D345/D638 are rounded duplicates of one revenue Fact."
+    },
+    {
+      "candidate_key": "CANDIDATE_MEMORY_MARKET_SHARE_AND_COMPETITIVE_POSITION",
+      "assigned_delta_ids": [
+        "D129",
+        "D297",
+        "D432",
+        "D810",
+        "D959"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-002/output/work/drafts/T3.json"
+      ],
+      "unresolved_recommendation": "Global Reconciliation should preserve separate subject periods and decide whether competitor-share reports form a single current baseline or multiple issuer/industry disclosures."
+    },
+    {
+      "candidate_key": "CANDIDATE_NVIDIA_FY27_Q2_EARNINGS_AND_GUIDANCE",
+      "assigned_delta_ids": [
+        "D288",
+        "D762"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-002/output/work/drafts/T4.json"
+      ],
+      "unresolved_recommendation": "Merge the $800B hyperscaler AI-spending Fact into prior-wave NVIDIA T6 if the 2026-08-26 earnings-cycle boundary is confirmed; preserve the indirect MU demand path."
+    },
+    {
+      "candidate_key": "CANDIDATE_MU_HBM4_AND_SERVER_MEMORY_PRODUCT_MILESTONES",
+      "assigned_delta_ids": [
+        "D170",
+        "D569"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-002/output/work/drafts/T5.json"
+      ],
+      "unresolved_recommendation": "Reconcile the sold-out-capacity Fact with pending D44 and distinguish the ongoing allocation state from product shipment/qualification milestones."
+    },
+    {
+      "candidate_key": "CANDIDATE_MU_MARKET_REPRICING_EPISODES_2026",
+      "assigned_delta_ids": [
+        "D153",
+        "D581"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-002/output/work/drafts/T6.json"
+      ],
+      "unresolved_recommendation": "Validate that the Q2 surge and pre-profit-taking YTD gain constitute a bounded repricing episode rather than standalone price snapshots; do not add unsupported causal attribution."
+    },
+    {
+      "candidate_key": "CANDIDATE_MU_TAIWAN_LABOR_INCENTIVE_DISPUTE",
+      "assigned_delta_ids": [
+        "D909"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-002/output/work/drafts/T7.json"
+      ],
+      "unresolved_recommendation": "Keep the compensation-package statement tied to the open labor/incentive matter and later reconcile with mediation, authorization, denial, or settlement Facts from other waves."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_UNRELATED_OR_NO_TARGET_PATH",
+      "assigned_delta_ids": [
+        "D341",
+        "D367",
+        "D563",
+        "D639",
+        "D980"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: unrelated or general-company/macro facts lack a direct MU Event or concrete non-trivial exposure path."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_STANDALONE_MARKET_OR_VALUATION_SNAPSHOT",
+      "assigned_delta_ids": [
+        "D37",
+        "D81",
+        "D139",
+        "D143",
+        "D240",
+        "D357",
+        "D582",
+        "D632",
+        "D705",
+        "D717",
+        "D755",
+        "D789",
+        "D858",
+        "D899",
+        "D921"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: standalone price, return, trading, fund, or performance snapshots do not establish a bounded material market episode."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_RELEVANT_UNRESOLVED_OCCURRENCE",
+      "assigned_delta_ids": [
+        "D4",
+        "D44",
+        "D163",
+        "D209",
+        "D226",
+        "D303",
+        "D320",
+        "D332",
+        "D370",
+        "D540",
+        "D806",
+        "D807"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: plausible relevance remains, but occurrence boundary, target path, or attribution is unresolved; do not guess around prior or competing drafts."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_STANDALONE_FORECAST_OR_ANALYST_SNAPSHOT",
+      "assigned_delta_ids": [
+        "D20",
+        "D185",
+        "D188",
+        "D258",
+        "D364",
+        "D535",
+        "D966"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: standalone third-party/industry forecasts lack a concrete issuer action or bounded event occurrence."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_NON_TARGET_COMPETITOR_OR_INDUSTRY_BACKGROUND",
+      "assigned_delta_ids": [
+        "D573"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: Sandisk/SK hynix High Bandwidth Flash standardization has no sufficiently concrete current MU transmission path in this wave."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_BACKGROUND_OR_NO_CURRENT_OCCURRENCE",
+      "assigned_delta_ids": [
+        "D13"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: Micron founding history is stale background rather than a current Canonical Event."
+    }
+  ]
+}

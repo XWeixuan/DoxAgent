@@ -1,0 +1,113 @@
+{
+  "entries": [
+    {
+      "candidate_key": "CANDIDATE_MU_TAIWAN_LABOR_INCENTIVE_DISPUTE",
+      "assigned_delta_ids": [
+        "D772",
+        "D634"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-005/output/work/drafts/T1.json",
+        "attempts/o2-wave-005/output/work/drafts/T2.json"
+      ],
+      "unresolved_recommendation": "Reconcile D772 with the prior-wave labor-escalation draft as a possible duplicate or complementary report; keep D634 as a separate conditional formal-vote expectation unless the source record shows it was part of the same disclosure."
+    },
+    {
+      "candidate_key": "CANDIDATE_NETLIST_MICRON_LITIGATION",
+      "assigned_delta_ids": [
+        "D533",
+        "D891"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-005/output/work/drafts/T3.json"
+      ],
+      "unresolved_recommendation": "Treat D533 and D891 as duplicate summaries of the 2026-09-02 Federal Circuit/PTAB milestone, then verify the precise Micron patent exposure and link this milestone to the broader Netlist litigation chain."
+    },
+    {
+      "candidate_key": "CANDIDATE_MU_MARKET_REPRICING_EPISODES_2026",
+      "assigned_delta_ids": [
+        "D946"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-005/output/work/drafts/T4.json"
+      ],
+      "unresolved_recommendation": "Merge this dated September 2 recovery observation into the prior June-September Micron market-episode draft only if the broader episode retains a distinct recovery phase; do not infer unsupported causal attribution."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_STANDALONE_MARKET_OR_VALUATION_SNAPSHOT",
+      "assigned_delta_ids": [
+        "D713",
+        "D734",
+        "D753",
+        "D786",
+        "D877",
+        "D884",
+        "D36",
+        "D233",
+        "D804",
+        "D934",
+        "D544",
+        "D592",
+        "D686",
+        "D846",
+        "D915",
+        "D57",
+        "D86",
+        "D137",
+        "D149",
+        "D255",
+        "D299",
+        "D316",
+        "D322"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: standalone stock-price, volume, return, sentiment, market-capitalization, valuation, or price-target snapshots do not independently establish a bounded material MU market episode or issuer/analyst action."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_NON_TARGET_COMPETITOR_OR_INDUSTRY_BACKGROUND",
+      "assigned_delta_ids": [
+        "D66",
+        "D548",
+        "D312"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: Netlist/Sandisk price or conference observations do not establish a direct Micron occurrence or sufficiently concrete non-trivial target transmission."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_RELEVANT_UNRESOLVED_OCCURRENCE",
+      "assigned_delta_ids": [
+        "D113",
+        "D91",
+        "D267",
+        "D400"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: the memory-market stabilization/market-cap/closing-price/top-performer observations are plausibly relevant but lack a sufficiently bounded Micron-specific event boundary or durable action beyond market snapshots."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_UNRELATED_OR_NO_TARGET_PATH",
+      "assigned_delta_ids": [
+        "D50",
+        "D108",
+        "D335",
+        "D397",
+        "D430",
+        "D759",
+        "D71",
+        "D111",
+        "D349",
+        "D358"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: macro rates, other-company price moves, and a general long-short portfolio comment do not establish a direct Micron Event or concrete non-trivial exposure path."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_STANDALONE_FORECAST_OR_ANALYST_SNAPSHOT",
+      "assigned_delta_ids": [
+        "D162"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: the South Korea investment-report observation is an external industry snapshot without a Micron-specific action, forecast, or bounded target consequence."
+    }
+  ]
+}

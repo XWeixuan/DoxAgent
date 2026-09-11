@@ -11,13 +11,14 @@ from __future__ import annotations
 import sqlite3
 from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
-from datetime import datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from types import TracebackType
 from typing import Literal, TypeVar
 
 from pydantic import BaseModel
 
+from doxagent.content_enrichment.schema import EnrichmentJob, EnrichmentJobStatus
 from doxagent.message_bus_v2.schema import (
     AcquisitionFailure,
     AuditRecord,
@@ -168,6 +169,17 @@ class MessageBusV2Repository:
                     on raw_messages(ticker, source_id, identity_key, revision desc);
                 create index if not exists idx_mbv2_raw_processing
                     on raw_messages(processing_status, collected_at);
+                create table if not exists content_enrichment_jobs (
+                    job_id text primary key,
+                    intake_key text not null unique,
+                    status text not null,
+                    not_before text not null,
+                    lease_expires_at text,
+                    created_at text not null,
+                    data_json text not null
+                );
+                create index if not exists idx_mbv2_enrichment_ready
+                    on content_enrichment_jobs(status, not_before, created_at);
                 create table if not exists source_item_baselines (
                     binding_id text not null,
                     identity_key text not null,
@@ -569,8 +581,172 @@ class MessageBusV2Repository:
 
     # -- Raw, Standard and buffering -------------------------------------------------
 
+    def enqueue_enrichment_job(self, job: EnrichmentJob) -> tuple[EnrichmentJob, bool]:
+        """Insert one active intake job, or return the already queued equivalent."""
+
+        with self.transaction() as connection:
+            existing_row = connection.execute(
+                "select data_json from content_enrichment_jobs where intake_key=?",
+                (job.intake_key,),
+            ).fetchone()
+            if existing_row is not None:
+                existing = EnrichmentJob.model_validate_json(existing_row["data_json"])
+                refreshed = existing.model_copy(
+                    update={"last_seen_at": job.last_seen_at, "updated_at": job.updated_at}
+                )
+                connection.execute(
+                    "update content_enrichment_jobs set data_json=? where job_id=?",
+                    (self._json(refreshed), existing.job_id),
+                )
+                return refreshed, False
+            connection.execute(
+                """insert into content_enrichment_jobs(
+                     job_id,intake_key,status,not_before,lease_expires_at,created_at,data_json)
+                   values(?,?,?,?,?,?,?)""",
+                (
+                    job.job_id,
+                    job.intake_key,
+                    job.status.value,
+                    job.not_before.isoformat(),
+                    None,
+                    job.created_at.isoformat(),
+                    self._json(job),
+                ),
+            )
+        return job, True
+
+    def claim_enrichment_jobs(
+        self, *, limit: int, now: datetime | None = None, lease_seconds: int = 60
+    ) -> list[EnrichmentJob]:
+        """Atomically claim ready jobs and recover expired worker leases."""
+
+        current = (now or utc_now()).astimezone(UTC)
+        lease_until = current + timedelta(seconds=lease_seconds)
+        with self.transaction() as connection:
+            expired = connection.execute(
+                """select data_json from content_enrichment_jobs
+                   where status=? and lease_expires_at is not null and lease_expires_at<=?""",
+                (EnrichmentJobStatus.RUNNING.value, current.isoformat()),
+            ).fetchall()
+            for row in expired:
+                job = EnrichmentJob.model_validate_json(row["data_json"])
+                recovered = job.model_copy(
+                    update={
+                        "status": EnrichmentJobStatus.QUEUED,
+                        "lease_expires_at": None,
+                        "updated_at": current,
+                    }
+                )
+                connection.execute(
+                    """update content_enrichment_jobs
+                       set status=?,lease_expires_at=null,data_json=? where job_id=?""",
+                    (recovered.status.value, self._json(recovered), recovered.job_id),
+                )
+            rows = connection.execute(
+                """select data_json from content_enrichment_jobs
+                   where status in (?,?) and not_before<=?
+                   order by created_at limit ?""",
+                (
+                    EnrichmentJobStatus.QUEUED.value,
+                    EnrichmentJobStatus.RETRY_WAIT.value,
+                    current.isoformat(),
+                    max(1, limit),
+                ),
+            ).fetchall()
+            claimed = []
+            for row in rows:
+                existing = EnrichmentJob.model_validate_json(row["data_json"])
+                job = existing.model_copy(
+                    update={
+                        "status": EnrichmentJobStatus.RUNNING,
+                        "attempt_count": existing.attempt_count + 1,
+                        "lease_expires_at": lease_until,
+                        "updated_at": current,
+                    }
+                )
+                connection.execute(
+                    """update content_enrichment_jobs
+                       set status=?,lease_expires_at=?,data_json=? where job_id=?""",
+                    (
+                        job.status.value,
+                        lease_until.isoformat(),
+                        self._json(job),
+                        job.job_id,
+                    ),
+                )
+                claimed.append(job)
+        return claimed
+
+    def requeue_enrichment_job(self, job: EnrichmentJob) -> None:
+        with self.transaction() as connection:
+            connection.execute(
+                """update content_enrichment_jobs
+                   set status=?,not_before=?,lease_expires_at=null,data_json=? where job_id=?""",
+                (job.status.value, job.not_before.isoformat(), self._json(job), job.job_id),
+            )
+
+    def delete_enrichment_job(self, job_id: str) -> None:
+        with self.transaction() as connection:
+            connection.execute("delete from content_enrichment_jobs where job_id=?", (job_id,))
+
+    def list_enrichment_jobs(self, *, limit: int = 100) -> list[EnrichmentJob]:
+        with self._connect() as connection:
+            rows = connection.execute(
+                "select data_json from content_enrichment_jobs order by created_at limit ?",
+                (max(1, limit),),
+            ).fetchall()
+        return self._models(EnrichmentJob, rows)
+
+    def has_seen_provider_payload(
+        self,
+        *,
+        ticker: str,
+        source_id: str,
+        identity_key: str,
+        raw_hash: str,
+    ) -> bool:
+        """Return whether this exact provider payload was already materialized."""
+
+        with self._connect() as connection:
+            row = connection.execute(
+                """select 1 from raw_messages
+                   where ticker=? and source_id=? and identity_key=? and raw_hash=?
+                   limit 1""",
+                (ticker, source_id, identity_key, raw_hash),
+            ).fetchone()
+        return row is not None
+
     def record_raw(self, candidate: RawMessage) -> tuple[IngestDecision, RawMessage]:
         with self.transaction() as connection:
+            matching_row = connection.execute(
+                """select data_json from raw_messages
+                   where ticker=? and source_id=? and identity_key=?
+                   and (content_hash=? or raw_hash=?)
+                   order by case when content_hash=? then 0 else 1 end
+                   limit 1""",
+                (
+                    candidate.ticker,
+                    candidate.source_id,
+                    candidate.identity_key,
+                    candidate.content_hash,
+                    candidate.raw_hash,
+                    candidate.content_hash,
+                ),
+            ).fetchone()
+            if matching_row is not None:
+                matching = RawMessage.model_validate_json(matching_row["data_json"])
+                self._record_body_attempt(connection, candidate, matching)
+                updated = matching.model_copy(
+                    update={
+                        "last_seen_at": candidate.collected_at,
+                        "duplicate_seen_count": matching.duplicate_seen_count + 1,
+                    }
+                )
+                connection.execute(
+                    "update raw_messages set data_json=? where raw_message_id=?",
+                    (self._json(updated), updated.raw_message_id),
+                )
+                return IngestDecision.DUPLICATE, updated
             latest_row = connection.execute(
                 """select data_json from raw_messages
                    where ticker=? and source_id=? and identity_key=?
@@ -579,19 +755,6 @@ class MessageBusV2Repository:
             ).fetchone()
             if latest_row is not None:
                 latest = RawMessage.model_validate_json(latest_row["data_json"])
-                if latest.content_hash == candidate.content_hash:
-                    self._record_body_attempt(connection, candidate, latest)
-                    updated = latest.model_copy(
-                        update={
-                            "last_seen_at": candidate.collected_at,
-                            "duplicate_seen_count": latest.duplicate_seen_count + 1,
-                        }
-                    )
-                    connection.execute(
-                        "update raw_messages set data_json=? where raw_message_id=?",
-                        (self._json(updated), updated.raw_message_id),
-                    )
-                    return IngestDecision.DUPLICATE, updated
                 candidate = candidate.model_copy(update={"revision": latest.revision + 1})
                 decision = IngestDecision.REVISION
             else:
@@ -633,7 +796,12 @@ class MessageBusV2Repository:
             )
             return decision, candidate
 
-    def _record_body_attempt(self, connection, candidate, persisted):
+    def _record_body_attempt(
+        self,
+        connection: sqlite3.Connection,
+        candidate: RawMessage,
+        persisted: RawMessage,
+    ) -> None:
         attempt = candidate.metadata.get("v2_body_completion")
         origin = persisted.metadata.get("v2_control_origin")
         if not attempt or not origin:
@@ -1030,6 +1198,8 @@ class MessageBusV2Repository:
                     title=standard.title,
                     body=standard.body,
                     source=standard.source,
+                    publisher_name=standard.publisher_name,
+                    resolved_domain=standard.resolved_domain,
                     url=standard.url,
                     published_at=standard.published_at,
                     normalized_at=standard.normalized_at,
@@ -1346,6 +1516,7 @@ class MessageBusV2Repository:
             "source_definitions",
             "ticker_source_bindings",
             "raw_messages",
+            "content_enrichment_jobs",
             "standard_messages",
             "stream_items",
             "buffer_entries",

@@ -21,7 +21,12 @@ from doxagent.codex_worker.workspace_store import LocalWorkspaceStore
 from doxagent.event_library.bundle_io import RevisionBundleIO
 from doxagent.event_library.contracts import FrozenViewManifest
 from doxagent.event_library.repository import EventLibraryRepository
-from doxagent.event_library.validator import BundleValidationOutcome, RevisionBundleValidator
+from doxagent.event_library.validator import (
+    BundleValidationOutcome,
+    RevisionBundleValidator,
+    ValidationIssue,
+    ValidationSeverity,
+)
 from doxagent.workflows.codex_event_library.context import EventLibraryAttemptSeeder
 from doxagent.workflows.codex_event_library.schema import (
     EventLibraryRunStage,
@@ -64,6 +69,7 @@ class EventLibraryAgentRunner:
         assigned_delta_ids: list[str] | None = None,
         prior_attempt_paths: list[str] | None = None,
         task_metadata: dict[str, Any] | None = None,
+        wave_runtime_context: dict[str, Any] | None = None,
     ) -> PreparedO2Attempt:
         prepared = self._seeder.seed(
             run_id=run_id,
@@ -75,6 +81,7 @@ class EventLibraryAgentRunner:
             assigned_delta_ids=assigned_delta_ids,
             prior_attempt_paths=prior_attempt_paths,
             task_metadata=task_metadata,
+            wave_runtime_context=wave_runtime_context,
         )
         try:
             previous = self.load_state(run_id)
@@ -184,8 +191,32 @@ class EventLibraryAgentRunner:
     def validate_and_promote(
         self, *, run_id: str, bundle_path: str | Path
     ) -> tuple[Path, BundleValidationOutcome]:
-        bundle = RevisionBundleIO.load(bundle_path)
-        outcome = self._validator.validate(bundle)
+        loaded = RevisionBundleIO.load_tolerant(bundle_path)
+        initial_issues = [
+            ValidationIssue(
+                code=item.code,
+                severity=ValidationSeverity.WARNING,
+                message=item.message,
+                item_id=item.item_id,
+            )
+            for item in loaded.issues
+        ]
+        if loaded.normalization_actions:
+            initial_issues.append(
+                ValidationIssue(
+                    code="O2_WIRE_NORMALIZED",
+                    severity=ValidationSeverity.WARNING,
+                    message=(
+                        f"Applied {len(loaded.normalization_actions)} mechanical wire "
+                        "normalizations"
+                    ),
+                )
+            )
+        outcome = self._validator.validate(
+            loaded.bundle,
+            initial_issues=initial_issues,
+            force_pending_delta_ids=loaded.invalid_delta_ids,
+        )
         state = self.load_state(run_id)
         if not outcome.publishable or outcome.normalized_bundle is None:
             self._save_state(
@@ -196,7 +227,7 @@ class EventLibraryAgentRunner:
                     }
                 )
             )
-            raise ValueError("O2 Revision Bundle failed deterministic validation")
+            raise ValueError("O2 Revision Bundle failed identity/import safety checks")
         digest = _directory_hash(Path(bundle_path))
         run_root = self.workspace.ensure_run(run_id)
         destination = run_root / "artifacts" / "event_library" / "revision_bundles" / digest[:24]

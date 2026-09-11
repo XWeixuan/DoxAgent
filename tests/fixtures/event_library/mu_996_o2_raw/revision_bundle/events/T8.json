@@ -1,0 +1,56 @@
+{
+  "event_id": "T8",
+  "ticker": "MU",
+  "title": "Micron announced Research Labs and related research investment",
+  "event_type": "CAPACITY_OR_CAPEX",
+  "occurred_at": "2026-08-27..2026-08-28",
+  "occurrence_time_precision": "INTERVAL",
+  "canonical_summary": "Micron announced a new research-lab investment anchored in Boise and described related research and training investment, establishing a long-term technology and capacity-development milestone.",
+  "known_event_summary": "August 27-28, 2026 Micron Research Labs announcement: Micron introduced a Boise-anchored research-lab program with a planned investment of about $10 billion over the next decade.",
+  "is_important": true,
+  "include_in_reference_view": true,
+  "facts": [
+    {
+      "fact_id": "TF235",
+      "proposition": "Micron announced Micron Research Labs and a new approximately $10 billion U.S. research investment.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-08-27",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D300",
+        "D888",
+        "D932"
+      ]
+    },
+    {
+      "fact_id": "TF236",
+      "proposition": "Micron Technology has made recent investments in research and training facilities in Boise.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-09-01",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D466"
+      ]
+    },
+    {
+      "fact_id": "TF237",
+      "proposition": "Micron planned approximately $10 billion of new research-lab investment over the next decade.",
+      "assertion_state": "PLAN",
+      "fact_occurred_at": "2026-09-02",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D831"
+      ]
+    }
+  ],
+  "price_analysis": null,
+  "related_event_ids": [
+    "T7"
+  ],
+  "derived_from_event_ids": [],
+  "supersedes_event_id": null,
+  "status": "ACTIVE"
+}

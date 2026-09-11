@@ -1,0 +1,206 @@
+{
+  "event_id": "T10",
+  "ticker": "MU",
+  "title": "Micron shares moved through a volatile 2026 repricing episode",
+  "event_type": "MARKET_EPISODE",
+  "occurred_at": "2026-06..2026-09",
+  "occurrence_time_precision": "INTERVAL",
+  "canonical_summary": "Micron's June peak, July sell-off, August support break, pre-NVIDIA de-risking and September recovery formed a volatile multi-month market-repricing episode rather than a single standalone price snapshot.",
+  "known_event_summary": "June-September 2026 Micron market episode: the stock reached a June high, fell about 20% in July and below support in August, then recovered and was sharply re-rated in September amid high daily volatility.",
+  "is_important": true,
+  "include_in_reference_view": true,
+  "facts": [
+    {
+      "fact_id": "TF258",
+      "proposition": "Micron Technology shares declined by approximately 23% from their all-time high.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-06-25",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D791"
+      ]
+    },
+    {
+      "fact_id": "TF259",
+      "proposition": "Micron shares decreased by 5.5% due to investor de-risking ahead of Nvidia's earnings report.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-08-24",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D521"
+      ]
+    },
+    {
+      "fact_id": "TF260",
+      "proposition": "Micron stock price recorded a swing low in July.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-08-27",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "2026-07",
+      "consumes_delta_ids": [
+        "D215"
+      ]
+    },
+    {
+      "fact_id": "TF261",
+      "proposition": "Micron stock had increased 189.28% year to date before recent profit-taking.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-08-27",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "2026-01-01..2026-08-27",
+      "consumes_delta_ids": [
+        "D581"
+      ]
+    },
+    {
+      "fact_id": "TF262",
+      "proposition": "Micron stock reached a swing high and a 52-week high in June.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-08-27",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "2026-06",
+      "consumes_delta_ids": [
+        "D828"
+      ]
+    },
+    {
+      "fact_id": "TF263",
+      "proposition": "Micron stock price broke below technical support levels in August.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-08-27",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "2026-08",
+      "consumes_delta_ids": [
+        "D930"
+      ]
+    },
+    {
+      "fact_id": "TF264",
+      "proposition": "Micron stock price dropped 11% since June 24.",
+      "assertion_state": "ONGOING",
+      "fact_occurred_at": "2026-08-31",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D355"
+      ]
+    },
+    {
+      "fact_id": "TF265",
+      "proposition": "Micron Technology's stock price surged 19% in June and plunged 20% in July amidst daily volatility of 7% to 8%.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-09-01",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D692"
+      ]
+    },
+    {
+      "fact_id": "TF266",
+      "proposition": "Nvidia and Micron Technology performed strongly in the market recovery.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-09-02",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D946"
+      ]
+    },
+    {
+      "fact_id": "TF267",
+      "proposition": "The share price of Micron Technology, Inc. declined by more than one-third.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-09-03",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "2026-07",
+      "consumes_delta_ids": [
+        "D489"
+      ]
+    },
+    {
+      "fact_id": "TF268",
+      "proposition": "Micron stock rose 19% in June.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-09-04",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "2026-06",
+      "consumes_delta_ids": [
+        "D211"
+      ]
+    },
+    {
+      "fact_id": "TF269",
+      "proposition": "Stocks of Seagate, Western Digital, and Micron Technology rose by approximately 6%.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-09-04",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D421"
+      ]
+    },
+    {
+      "fact_id": "TF270",
+      "proposition": "Micron stock fell 20% in July.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-09-04",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "2026-07",
+      "consumes_delta_ids": [
+        "D775"
+      ]
+    },
+    {
+      "fact_id": "TF271",
+      "proposition": "KC Rajkumar stated that a high-volatility regime rendered Micron stock uninvestable despite strong fundamentals.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-09-04",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "PRE_FY2026_Q3_EARNINGS",
+      "consumes_delta_ids": [
+        "D972"
+      ]
+    },
+    {
+      "fact_id": "TF272",
+      "proposition": "Micron Technology's stock surged during the second quarter of 2026.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-09-08",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2026-Q2",
+      "consumes_delta_ids": [
+        "D153"
+      ]
+    },
+    {
+      "fact_id": "TF273",
+      "proposition": "Investors sharply re-rated Micron Technology, Inc.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-09-08",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D608"
+      ]
+    },
+    {
+      "fact_id": "TF274",
+      "proposition": "Micron stock rallied by 23%.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-09-08",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D957"
+      ]
+    }
+  ],
+  "price_analysis": null,
+  "related_event_ids": [],
+  "derived_from_event_ids": [],
+  "supersedes_event_id": null,
+  "status": "ACTIVE"
+}

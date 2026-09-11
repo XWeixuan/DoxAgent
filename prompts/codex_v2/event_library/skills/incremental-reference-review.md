@@ -43,4 +43,4 @@ A review-only run may contain decisions without an Event revision; the determini
 
 ## Completion
 
-Return the current `O2RunResult` with `status: BUNDLE_READY`, `stage: REFERENCE_REVIEW`, the workspace-relative bundle path, the supplied base version, exact Delta coverage, and `validation: NOT_RUN`. Deterministic validation follows this stage.
+Return the current `O2RunResult` with `status: BUNDLE_READY`, `stage: REFERENCE_REVIEW`, the workspace-relative bundle path, the supplied base version, exact Delta coverage, and `validation: NOT_RUN`. This is the final business-semantic review; deterministic identity and import preparation follows.

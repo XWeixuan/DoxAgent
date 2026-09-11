@@ -6,6 +6,8 @@ Produce the initialization Revision Bundle as the single global Canonical judgme
 
 Read the complete pending Delta, published C1/C3/C5 reports, Future Nodes, Survey ledger and catalog, and every Wave index, draft, and provisional decision ledger. Original Delta supplies the factual basis; D1 research supplies business interpretation; Survey and Wave outputs are prior research hypotheses to refine from the global view.
 
+Global Reconciliation is the final business-semantic decision for Event/Fact boundaries, dates, relationships, importance, Reference View, and Delta disposition. Deterministic processing after this stage checks identity and prepares the Bundle for import; it does not re-decide these conclusions.
+
 ## Global occurrence synthesis
 
 1. Reconstruct the Event set from occurrence identity rather than Package, topic, wave, or temporary ID. Merge cross-wave drafts for the same occurrence and split drafts that combine distinct actions, disclosures, matter stages, catalysts, or information cycles. Different Fact dates remain within one Event when the shared-catalyst and bounded-window test establishes a valid theme cluster.
@@ -53,4 +55,4 @@ Write the two ledgers to their task-supplied work paths and copy the same rows i
 
 ## Completion
 
-Return the current `O2RunResult` with `status: BUNDLE_READY`, `stage: GLOBAL_RECONCILIATION`, the workspace-relative bundle path, the supplied base version, exact Delta coverage, and `validation: NOT_RUN`. Deterministic validation follows this stage.
+Return the current `O2RunResult` with `status: BUNDLE_READY`, `stage: GLOBAL_RECONCILIATION`, the workspace-relative bundle path, the supplied base version, exact Delta coverage, and `validation: NOT_RUN`. Deterministic identity and import preparation follows this stage.

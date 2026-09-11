@@ -390,7 +390,10 @@ class RuntimeMaintenance:
                 from .reference_capture import settle
 
                 settle(self.journal, run_id, "SUCCEEDED")
-                self.journal.checkpoint(task, o3={"version": result.policy_set_version})
+                policy_ref = {"version": result.policy_set_version}
+                if str(result.status) != "NOOP":
+                    policy_ref["run_id"] = run_id + "-o3"
+                self.journal.checkpoint(task, o3=policy_ref)
             metadata = {
                 "maintenance_id": task["id"],
                 "control_epoch": task["inputs"].get("control_epoch"),

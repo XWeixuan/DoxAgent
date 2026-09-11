@@ -1,0 +1,241 @@
+{
+  "event_id": "T9",
+  "ticker": "MU",
+  "title": "Micron expanded multi-year Strategic Customer Agreements and supply commitments",
+  "event_type": "MATERIAL_CONTRACT",
+  "occurred_at": "2026-08-31..2026-09-08",
+  "occurrence_time_precision": "INTERVAL",
+  "canonical_summary": "Micron's multi-year Strategic Customer Agreements used take-or-pay, quantity and price-band terms, customer commitments and reserved capacity to increase forward demand and pricing visibility while leaving delivery and cash-conversion questions open.",
+  "known_event_summary": "August 31-September 8, 2026 Micron strategic-customer-contract update: sixteen agreements and roughly $22 billion of commitments or deposits, price floors/bands and reserved 2027 capacity were described alongside a broader long-term-contract order book.",
+  "is_important": true,
+  "include_in_reference_view": true,
+  "facts": [
+    {
+      "fact_id": "TF238",
+      "proposition": "Customers have locked in $22 billion in supply commitments with Micron.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-08-31",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D751"
+      ]
+    },
+    {
+      "fact_id": "TF239",
+      "proposition": "Micron completed 16 Strategic Customer Agreements (SCAs).",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-09-01",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D361"
+      ]
+    },
+    {
+      "fact_id": "TF240",
+      "proposition": "Micron states that its Strategic Customer Agreements generally use take-or-pay commitments with fixed pricing or pricing bands.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-09-01",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D538"
+      ]
+    },
+    {
+      "fact_id": "TF241",
+      "proposition": "Take-or-pay supply contracts secure high margins for Micron while capping upside potential.",
+      "assertion_state": "ONGOING",
+      "fact_occurred_at": "2026-09-02",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D207"
+      ]
+    },
+    {
+      "fact_id": "TF242",
+      "proposition": "CEO Sanjay Mehrotra stated that multi-year Strategic Customer Agreements will significantly enhance the durability and predictability of Micron's strong financial performance.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-09-02",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D731"
+      ]
+    },
+    {
+      "fact_id": "TF243",
+      "proposition": "A significant portion of Micron's 2027 production capacity is reserved through long-term customer agreements.",
+      "assertion_state": "ONGOING",
+      "fact_occurred_at": "2026-09-02",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "2027",
+      "consumes_delta_ids": [
+        "D829"
+      ]
+    },
+    {
+      "fact_id": "TF244",
+      "proposition": "Micron Technology is unable to fulfill its entire order book.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-09-02",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D944"
+      ]
+    },
+    {
+      "fact_id": "TF245",
+      "proposition": "Micron claims that contract minimum prices should generate gross margins well above previous peak quarterly margins.",
+      "assertion_state": "EXPECTED",
+      "fact_occurred_at": "2026-09-03",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D103"
+      ]
+    },
+    {
+      "fact_id": "TF246",
+      "proposition": "A significant portion of Micron's 2027 capacity has been reserved.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-09-03",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "2027",
+      "consumes_delta_ids": [
+        "D175"
+      ]
+    },
+    {
+      "fact_id": "TF247",
+      "proposition": "Micron expects $22 billion of customer deposits and related financial commitments.",
+      "assertion_state": "EXPECTED",
+      "fact_occurred_at": "2026-09-03",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D506"
+      ]
+    },
+    {
+      "fact_id": "TF248",
+      "proposition": "Micron's new strategic customer agreements require customers to commit to specific purchase volumes.",
+      "assertion_state": "ONGOING",
+      "fact_occurred_at": "2026-09-03",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D578"
+      ]
+    },
+    {
+      "fact_id": "TF249",
+      "proposition": "Most of Micron's strategic customer contracts have fixed prices or set minimum and maximum prices.",
+      "assertion_state": "ONGOING",
+      "fact_occurred_at": "2026-09-03",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D879"
+      ]
+    },
+    {
+      "fact_id": "TF250",
+      "proposition": "Micron and its rivals have begun locking in long-term contracts for up to five years.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-09-04",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D805"
+      ]
+    },
+    {
+      "fact_id": "TF251",
+      "proposition": "Micron CEO Sanjay Mehrotra stated that strategic customer agreements will significantly enhance the durability and predictability of the company's strong financial performance.",
+      "assertion_state": "EXPECTED",
+      "fact_occurred_at": "2026-09-07",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D992"
+      ]
+    },
+    {
+      "fact_id": "TF252",
+      "proposition": "Micron has $22 billion in commitments serving as collateral.",
+      "assertion_state": "ONGOING",
+      "fact_occurred_at": "2026-09-08",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D505"
+      ]
+    },
+    {
+      "fact_id": "TF253",
+      "proposition": "The composition of Micron's long-term contracts regarding DRAM/NAND versus HBM weighting is uncertain.",
+      "assertion_state": "ONGOING",
+      "fact_occurred_at": "2026-09-08",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D528"
+      ]
+    },
+    {
+      "fact_id": "TF254",
+      "proposition": "Sixteen strategic customer agreements carry $22 billion in commitments.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-09-08",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D602"
+      ]
+    },
+    {
+      "fact_id": "TF255",
+      "proposition": "Micron holds $100B in long-term contracts.",
+      "assertion_state": "ONGOING",
+      "fact_occurred_at": "2026-09-08",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D968"
+      ]
+    },
+    {
+      "fact_id": "TF256",
+      "proposition": "Ceilings on existing products in Micron's new agreements could limit shortage-driven upside across contracted volumes.",
+      "assertion_state": "HYPOTHETICAL",
+      "fact_occurred_at": "2026-09-09",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D196"
+      ]
+    },
+    {
+      "fact_id": "TF257",
+      "proposition": "Micron's new agreements provide valuable price floors.",
+      "assertion_state": "ONGOING",
+      "fact_occurred_at": "2026-09-09",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D318"
+      ]
+    }
+  ],
+  "price_analysis": null,
+  "related_event_ids": [
+    "T7"
+  ],
+  "derived_from_event_ids": [],
+  "supersedes_event_id": null,
+  "status": "ACTIVE"
+}

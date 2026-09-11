@@ -271,10 +271,10 @@ class CanonicalEvent(StrictModel):
         min_length=1, description="Actor, action and distinguishing object of this occurrence."
     )
     event_type: str = Field(min_length=1, description="Frozen uppercase canonical Event type.")
-    occurred_at: str = Field(
-        min_length=1,
+    occurred_at: str | None = Field(
         description=(
-            "Action or information-release time in the form required by occurrence_time_precision."
+            "Action or information-release time in the form required by occurrence_time_precision; "
+            "null only when neither the Event nor any Fact supplies a usable occurrence time."
         ),
     )
     occurrence_time_precision: OccurrenceTimePrecision = Field(
@@ -784,7 +784,7 @@ class RuntimePackageDelta(StrictModel):
 class ReferenceReviewCandidate(StrictModel):
     event_id: str
     event_type: str
-    occurred_at: str
+    occurred_at: str | None
     occurrence_time_precision: OccurrenceTimePrecision
     occurrence_anchor: date | None = None
     title: str

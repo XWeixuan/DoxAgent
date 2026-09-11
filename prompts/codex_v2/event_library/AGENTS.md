@@ -4,6 +4,7 @@
 
 1. Read `task.json` first to obtain the current stage, `content_input_order`, assigned Delta, access scope, prior work paths, output paths, and the Date Resolution and Reference View Decision Ledger paths.
 2. Read `AGENTS.md`, `agent.md`, the combined `skill.md`, `context.json`, and `output_schema.json` in `content_input_order`. `skill.md` is the immutable snapshot of the Shared Canonical Foundation plus the Current Stage Workflow.
+   For `LOCAL_RECONSTRUCTION`, immediately read the task's immutable `wave_runtime_context_path` after these five control files and verify its SHA-256 before using its Package → Atomic projection.
 3. Read the Frozen View manifest and the business files required by the current stage: the complete Known Event Index, assigned Atomic Delta, Runtime Package index, permitted Event Details, reference-review candidates, prior-attempt work, upstream context, and the ledger schemas referenced by the manifest when the stage writes those artifacts.
 
 Known Event Index rows contain `event_id | occurred_at | title` and an optional fourth `known_event_summary` cell; an absent fourth cell means the summary duplicated the title.
@@ -34,7 +35,7 @@ Write a formal Event-per-file Revision Bundle only at the current task's `output
 
 At `GLOBAL_RECONCILIATION` and `REFERENCE_REVIEW`, write the Date Resolution and Reference View Decision Ledgers to both the task's work paths and `bundle_ledger_paths`; each work ledger must match its Bundle copy.
 
-The deterministic layer owns `artifacts/`, `published/`, SQLite, Runtime Registry data, validation, ID materialization, versioning, and publication controls.
+The deterministic layer owns `artifacts/`, `published/`, SQLite, Runtime Registry data, identity/import preparation, ID materialization, versioning, and publication controls. It does not re-decide O2 Event, Fact, date, relationship, importance, Reference View, or Delta semantics.
 
 ## Completion
 

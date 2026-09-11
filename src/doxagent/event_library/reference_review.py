@@ -20,10 +20,12 @@ _YEAR = re.compile(r"^\s*(\d{4})\s*$")
 
 
 def occurrence_anchor(
-    value: str, precision: OccurrenceTimePrecision | str | None = None
+    value: str | None, precision: OccurrenceTimePrecision | str | None = None
 ) -> date | None:
     """Return the shared view/review anchor for one Canonical occurrence time."""
 
+    if value is None:
+        return None
     cleaned = value.strip()
     if cleaned == "UNKNOWN":
         return None
@@ -67,10 +69,12 @@ def occurrence_anchor(
 
 
 def occurrence_start(
-    value: str, precision: OccurrenceTimePrecision | str | None = None
+    value: str | None, precision: OccurrenceTimePrecision | str | None = None
 ) -> date | None:
     """Return the first calendar date represented by an occurrence wire value."""
 
+    if value is None:
+        return None
     cleaned = value.strip()
     if cleaned == "UNKNOWN":
         return None
@@ -106,9 +110,13 @@ def occurrence_start(
     return occurrence_anchor(cleaned, precision)
 
 
-def occurrence_time_matches_precision(value: str, precision: OccurrenceTimePrecision) -> bool:
+def occurrence_time_matches_precision(
+    value: str | None, precision: OccurrenceTimePrecision
+) -> bool:
     """Hard wire check for the frozen precision-to-value mapping."""
 
+    if value is None:
+        return precision is OccurrenceTimePrecision.UNKNOWN
     cleaned = value.strip()
     if precision is OccurrenceTimePrecision.UNKNOWN:
         return cleaned == "UNKNOWN"

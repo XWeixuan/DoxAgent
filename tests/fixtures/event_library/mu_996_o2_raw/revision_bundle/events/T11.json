@@ -1,0 +1,66 @@
+{
+  "event_id": "T11",
+  "ticker": "MU",
+  "title": "Samsung, SK Hynix and Micron remained the core mainstream DRAM suppliers",
+  "event_type": "SUPPLY_DEMAND_UPDATE",
+  "occurred_at": "UNKNOWN",
+  "occurrence_time_precision": "UNKNOWN",
+  "canonical_summary": "Current industry observations continued to place Samsung, SK Hynix and Micron at the center of mainstream DRAM supply while the group operated near capacity and shifted wafer allocation toward HBM.",
+  "known_event_summary": "August 27-September 7, 2026 mainstream DRAM structure: Samsung, SK Hynix and Micron dominated the market, operated at capacity and tilted wafer capacity toward HBM.",
+  "is_important": true,
+  "include_in_reference_view": true,
+  "facts": [
+    {
+      "fact_id": "TF275",
+      "proposition": "The three major memory manufacturers are operating at capacity.",
+      "assertion_state": "ONGOING",
+      "fact_occurred_at": "2026-08-27",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D336"
+      ]
+    },
+    {
+      "fact_id": "TF276",
+      "proposition": "The mainstream DRAM market is dominated by Samsung Electronics, SK Hynix, and Micron Technology.",
+      "assertion_state": "ONGOING",
+      "fact_occurred_at": "2026-08-27",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D933"
+      ]
+    },
+    {
+      "fact_id": "TF277",
+      "proposition": "Samsung Electronics, SK Hynix, and Micron are operating at capacity.",
+      "assertion_state": "ONGOING",
+      "fact_occurred_at": "2026-09-01",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D656"
+      ]
+    },
+    {
+      "fact_id": "TF278",
+      "proposition": "SK Hynix, Micron, and Samsung have tilted wafer capacity toward high-bandwidth memory (HBM).",
+      "assertion_state": "ONGOING",
+      "fact_occurred_at": "2026-09-03",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D918"
+      ]
+    }
+  ],
+  "price_analysis": null,
+  "related_event_ids": [
+    "T4",
+    "T6"
+  ],
+  "derived_from_event_ids": [],
+  "supersedes_event_id": null,
+  "status": "ACTIVE"
+}

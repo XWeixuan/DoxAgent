@@ -64,7 +64,7 @@ def test_event_diagnostics_stay_bounded_for_chinese_payload():
     assert len(json.dumps(event.payload, ensure_ascii=False).encode()) < 16384
 
 
-def test_o2_isolates_bad_event_and_bad_jsonl_but_preserves_healthy_event(tmp_path):
+def test_o2_keeps_event_when_only_relation_and_sidecar_are_bad(tmp_path):
     from tests.test_event_library_foundation import _copy_bundle, _foundation, _snapshot
 
     repository, _, workspace, _, orchestrator = _foundation(tmp_path)
@@ -84,9 +84,10 @@ def test_o2_isolates_bad_event_and_bad_jsonl_but_preserves_healthy_event(tmp_pat
     loaded = RevisionBundleIO.load_tolerant(path)
     outcome = RevisionBundleValidator(repository).validate(loaded.bundle)
     assert outcome.publishable, outcome.issues
-    assert [e.event_id for e in outcome.normalized_bundle.event_revisions] == ["T1"]
+    assert [e.event_id for e in outcome.normalized_bundle.event_revisions] == ["T1", "T2"]
+    assert outcome.normalized_bundle.event_revisions[1].related_event_ids == []
     assert outcome.pending_delta_count > 0
-    assert any(i.code == "UNKNOWN_EVENT_RELATION_TARGET" for i in outcome.issues)
+    assert any(i.code == "DANGLING_RELATION_DROPPED" for i in outcome.issues)
     wrong = loaded.bundle.model_copy(update={"base_library_version": 42})
     assert not RevisionBundleValidator(repository).validate(wrong).publishable
 

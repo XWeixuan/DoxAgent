@@ -4,29 +4,12 @@ DoxAgent is a message-side equity research agent system. The first development
 phase builds only the project baseline and the scaffolding needed for the later
 Blackboard initialization workflow.
 
-监测管线
-.\scripts\monitoring-viewer.cmd 8766
-http://127.0.0.1:8766
----
-启动测试：
-$env:DOXAGENT_RUN_REAL_API_TESTS="1"
-uv run pytest -m real_api tests/test_phase17_real_initialization_smoke.py
+## V2 生产部署
 
-前端启动方式：
-uv run python -m doxagent.dashboard_api --host 127.0.0.1 --port 8780
-cd frontend/dashboard
-npm run dev
-http://localhost:5173/
-
-前后端build：
-ssh doxagent-hk 'cd /root/doxagent && docker compose build dashboard runtime-scheduler'
-ssh doxagent-hk 'cd /root/doxagent && docker compose up -d --force-recreate dashboard runtime-scheduler && docker compose stop monitoring-poller || true'
-ssh doxagent-hk 'cd /root/doxagent && docker compose restart dashboard runtime-scheduler'
-ssh doxagent-hk 'cd /root/doxagent && docker compose stop dashboard runtime-scheduler'
-ssh doxagent-hk 'cd /root/doxagent && docker compose logs -f dashboard runtime-scheduler'
-
-
-
+当前生产部署使用 `docker-compose.v2-production.yml` 与 `deploy/docker-compose.server.yml`。
+连接方式见 [SSH 指南](docs/ssh-connection-guide.md)，新加坡部署与迁移记录见
+[新加坡运行手册](dev_plan/workflow_v2/backend_delivery/SG_DEPLOYMENT.md)。
+旧 V1 dashboard/runtime-scheduler Compose 不再作为上线入口。
 
 ## Phase 0 Scope
 

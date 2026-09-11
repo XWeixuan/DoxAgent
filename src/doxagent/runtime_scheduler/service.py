@@ -222,8 +222,8 @@ class UnifiedRuntimeSchedulerService:
         normalized = _ticker(ticker)
         runtime = self._require_runtime_v2_for_trading()
         bus = self._require_message_bus_v2()
-        from doxagent.v2_control.repository import ControlRepository
         from doxagent.persistent_runtime_v2.journal import RuntimeJournal
+        from doxagent.v2_control.repository import ControlRepository
 
         control = (
             ControlRepository(runtime.journal).get(normalized)
@@ -815,8 +815,8 @@ class UnifiedRuntimeSchedulerService:
         )
         state = self._apply_completed_weekly_update_job(state, now=current_time)
         monitor_mode = _state_monitor_mode(state)
-        from doxagent.v2_control.repository import ControlRepository
         from doxagent.persistent_runtime_v2.journal import RuntimeJournal
+        from doxagent.v2_control.repository import ControlRepository
 
         runtime_journal = getattr(self.runtime_v2_service, "journal", None)
         control = (
@@ -1267,6 +1267,8 @@ class UnifiedRuntimeSchedulerService:
         )
 
     def trade_intents(self, ticker: str, *, limit: int = 50) -> list[TradeIntentView]:
+        if self.runtime_service is None:
+            return []
         records = self.runtime_service.repository.list_trading_records(ticker=_ticker(ticker))
         return [TradeIntentView.from_record(record) for record in records[-limit:]]
 

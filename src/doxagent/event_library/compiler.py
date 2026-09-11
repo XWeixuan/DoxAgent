@@ -55,13 +55,15 @@ def _wire_cell(value: str) -> str:
     return " ".join(value.replace("|", r"\|").split())
 
 
-def _display_occurrence_time(value: str) -> str:
+def _display_occurrence_time(value: str | None) -> str:
     """Render precise zoned timestamps as an Eastern calendar date.
 
     A date or timezone-naive value is never shifted because the source contract
     does not establish which timezone it belongs to.
     """
 
+    if value is None:
+        return "UNKNOWN"
     cleaned = value.strip()
     if _ISO_DATE.fullmatch(cleaned):
         return cleaned
@@ -149,7 +151,7 @@ def _reference_fact_lines(event: CanonicalEvent) -> list[str]:
         proposition = _wire_cell(fact.proposition)
         occurred = _wire_cell(fact.fact_occurred_at or "LEGACY_UNAVAILABLE")
         if fact.fact_occurred_at == "SAME":
-            occurred = _wire_cell(event.occurred_at)
+            occurred = _wire_cell(event.occurred_at or "LEGACY_UNAVAILABLE")
         subject = _wire_cell(fact.subject_time or "null")
         lines.append(f"- Fact occurred_at: {occurred}")
         lines.append(f"  Fact subject_time: {subject}")
@@ -159,7 +161,7 @@ def _reference_fact_lines(event: CanonicalEvent) -> list[str]:
 
 def _fact_occurrence_display(event: CanonicalEvent, value: str | None) -> str:
     if value == "SAME":
-        return event.occurred_at
+        return event.occurred_at or "LEGACY_UNAVAILABLE"
     return value or "LEGACY_UNAVAILABLE"
 
 
@@ -952,7 +954,8 @@ class EventLibraryViewCompiler:
                 [
                     f"## {event.event_id} — {event.title}",
                     "",
-                    f"- Event time: {event.occurred_at} [{event.occurrence_time_precision.value}]",
+                    f"- Event time: {event.occurred_at or 'null'} "
+                    f"[{event.occurrence_time_precision.value}]",
                     f"- Type: {event.event_type}",
                     f"- Summary: {event.canonical_summary}",
                     "",

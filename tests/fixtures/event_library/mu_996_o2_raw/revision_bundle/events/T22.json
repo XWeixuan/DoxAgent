@@ -1,0 +1,46 @@
+{
+  "event_id": "T22",
+  "ticker": "MU",
+  "title": "Netlist patent rulings were affirmed or left in an active appeal involving Micron",
+  "event_type": "LITIGATION_MILESTONE",
+  "occurred_at": "2026-09-02",
+  "occurrence_time_precision": "DAY",
+  "canonical_summary": "PTAB and Federal Circuit materials described invalidation of challenged Netlist patent claims and Micron's continued procedural position in the appeal.",
+  "known_event_summary": "2026-09-02 Netlist patent milestone: the Federal Circuit/Patent Office rulings invalidated challenged Netlist patents while Micron remained the sole appellee in the appeal.",
+  "is_important": true,
+  "include_in_reference_view": true,
+  "facts": [
+    {
+      "fact_id": "TF294",
+      "proposition": "Patent Office and Federal Circuit rulings invalidated challenged Netlist patent claims in the Micron-related matter.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D395",
+        "D533",
+        "D891"
+      ]
+    },
+    {
+      "fact_id": "TF295",
+      "proposition": "Micron Technology Inc. remained the sole appellee in the appeal.",
+      "assertion_state": "ONGOING",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D756"
+      ]
+    }
+  ],
+  "price_analysis": null,
+  "related_event_ids": [
+    "T21",
+    "T23"
+  ],
+  "derived_from_event_ids": [],
+  "supersedes_event_id": null,
+  "status": "ACTIVE"
+}

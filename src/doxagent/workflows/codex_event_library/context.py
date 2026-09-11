@@ -34,8 +34,9 @@ def build_attempt_assets(
     prior_attempt_paths: list[str] | None = None,
     previous_failure: str | None = None,
     task_metadata: dict[str, Any] | None = None,
+    wave_runtime_context: dict[str, Any] | None = None,
 ) -> dict[str, str]:
-    """Build the one canonical six-file attempt input set."""
+    """Build canonical attempt inputs plus immutable wave context when required."""
 
     root = Path(prompt_root)
     foundation_path = root / "skills" / "foundation.md"
@@ -50,6 +51,14 @@ def build_attempt_assets(
             f"# Current Stage Contract\n\n{stage_content}\n"
         )
     metadata = dict(task_metadata or {})
+    is_wave = stage == "LOCAL_RECONSTRUCTION"
+    if is_wave != (wave_runtime_context is not None):
+        raise ValueError("wave_runtime_context is required only for LOCAL_RECONSTRUCTION attempts")
+    wave_text = (
+        None
+        if wave_runtime_context is None
+        else json.dumps(wave_runtime_context, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+    )
     task = {
         "workflow": "codex_event_library_v1",
         "attempt_id": attempt_id,
@@ -90,11 +99,16 @@ def build_attempt_assets(
                 f"attempts/{attempt_id}/output/revision_bundle/date_resolution_ledger.jsonl"
             ),
             "reference_view_decision": (
-                "attempts/"
-                f"{attempt_id}/output/revision_bundle/reference_view_decision_ledger.jsonl"
+                f"attempts/{attempt_id}/output/revision_bundle/reference_view_decision_ledger.jsonl"
             ),
         },
         "previous_failure": previous_failure,
+        "wave_runtime_context_path": (
+            f"attempts/{attempt_id}/input/wave_runtime_context.json" if is_wave else None
+        ),
+        "wave_runtime_context_sha256": (
+            hashlib.sha256(wave_text.encode("utf-8")).hexdigest() if wave_text is not None else None
+        ),
         "prompt_manifest": {
             "foundation_source": "skills/foundation.md",
             "foundation_sha256": hashlib.sha256((foundation + "\n").encode("utf-8")).hexdigest(),
@@ -104,7 +118,7 @@ def build_attempt_assets(
         },
         "metadata": metadata,
     }
-    return {
+    assets = {
         "AGENTS.md": (root / "AGENTS.md").read_text(encoding="utf-8"),
         "agent.md": (root / "agents" / "o2.md").read_text(encoding="utf-8"),
         "skill.md": combined_skill,
@@ -112,6 +126,9 @@ def build_attempt_assets(
         "context.json": manifest.model_dump_json(indent=2) + "\n",
         "output_schema.json": json.dumps(O2_RUN_RESULT_SCHEMA, ensure_ascii=False, indent=2) + "\n",
     }
+    if wave_text is not None:
+        assets["wave_runtime_context.json"] = wave_text
+    return assets
 
 
 class EventLibraryAttemptSeeder:
@@ -135,6 +152,7 @@ class EventLibraryAttemptSeeder:
         assigned_delta_ids: list[str] | None = None,
         prior_attempt_paths: list[str] | None = None,
         task_metadata: dict[str, Any] | None = None,
+        wave_runtime_context: dict[str, Any] | None = None,
     ) -> PreparedO2Attempt:
         self._workspace.ensure_attempt(run_id, attempt_id)
         prefix = f"attempts/{attempt_id}/input"
@@ -148,6 +166,7 @@ class EventLibraryAttemptSeeder:
             prior_attempt_paths=prior_attempt_paths,
             previous_failure=previous_failure,
             task_metadata=task_metadata,
+            wave_runtime_context=wave_runtime_context,
         )
         for name, content in assets.items():
             self._workspace.write_text(run_id, f"{prefix}/{name}", content)

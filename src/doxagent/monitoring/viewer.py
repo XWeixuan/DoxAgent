@@ -1093,7 +1093,7 @@ INDEX_HTML = r"""<!doctype html>
         <div class="card-header">
           <div>
             <h2 class="card-title">Remote</h2>
-            <p class="card-description" id="remote-label">doxagent-hk</p>
+            <p class="card-description" id="remote-label">未配置远端</p>
           </div>
           <span id="remote-badge" class="badge warn">checking</span>
         </div>
@@ -1273,7 +1273,7 @@ INDEX_HTML = r"""<!doctype html>
 
     function render(data) {
       const meta = data.meta || {};
-      $("remote-label").textContent = `${meta.remote_alias || "doxagent-hk"} / ${state.scope}`;
+      $("remote-label").textContent = `${meta.remote_alias || "未配置远端"} / ${state.scope}`;
       $("remote-badge").textContent = data.ok ? "connected" : "attention";
       $("remote-badge").className = data.ok ? "badge ok" : "badge bad";
       $("remote-meta").textContent = `${formatDuration(meta.viewer_uptime_seconds || 0)} uptime, ${meta.latency_ms || 0} ms check`;

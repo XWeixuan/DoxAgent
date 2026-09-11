@@ -1,0 +1,30 @@
+{
+  "event_id": "T18",
+  "ticker": "MU",
+  "title": "An analyst initiated Micron coverage with Hold",
+  "event_type": "ANALYST_ACTION",
+  "occurred_at": "2026-09-02",
+  "occurrence_time_precision": "DAY",
+  "canonical_summary": "An analyst initiated coverage of Micron with a Hold rating.",
+  "known_event_summary": "2026-09-02 an analyst initiated Micron coverage with a Hold rating.",
+  "is_important": false,
+  "include_in_reference_view": true,
+  "facts": [
+    {
+      "fact_id": "TF285",
+      "proposition": "An analyst initiates coverage on Micron Technology, Inc. with a Hold rating.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "SAME",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D749"
+      ]
+    }
+  ],
+  "price_analysis": null,
+  "related_event_ids": [],
+  "derived_from_event_ids": [],
+  "supersedes_event_id": null,
+  "status": "ACTIVE"
+}

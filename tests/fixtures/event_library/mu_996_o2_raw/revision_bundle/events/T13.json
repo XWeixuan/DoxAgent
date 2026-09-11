@@ -1,0 +1,31 @@
+{
+  "event_id": "T13",
+  "ticker": "MU",
+  "title": "Micron reorganized leadership for global operations and customer delivery",
+  "event_type": "MANAGEMENT_CHANGE",
+  "occurred_at": "2026-09-01",
+  "occurrence_time_precision": "DAY",
+  "canonical_summary": "Micron disclosed fresh leadership changes placing key operational and customer-delivery responsibilities within a new management structure.",
+  "known_event_summary": "2026-09-01 Micron management change: fresh leadership appointments included Manish Bhatia taking responsibility for global operations and customer delivery.",
+  "is_important": true,
+  "include_in_reference_view": true,
+  "facts": [
+    {
+      "fact_id": "TF280",
+      "proposition": "Micron made fresh leadership changes including placing Manish Bhatia in charge of global operations and customer delivery.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-08-26",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D121",
+        "D198"
+      ]
+    }
+  ],
+  "price_analysis": null,
+  "related_event_ids": [],
+  "derived_from_event_ids": [],
+  "supersedes_event_id": null,
+  "status": "ACTIVE"
+}

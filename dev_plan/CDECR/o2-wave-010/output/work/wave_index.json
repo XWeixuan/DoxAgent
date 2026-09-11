@@ -1,0 +1,208 @@
+{
+  "entries": [
+    {
+      "candidate_key": "CANDIDATE_MU_STRATEGIC_CUSTOMER_AGREEMENTS",
+      "assigned_delta_ids": [
+        "D318",
+        "D361"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-010/output/work/drafts/T1.json"
+      ],
+      "unresolved_recommendation": "Merge this September agreement update with wave009 strategic-agreement Facts and prior reserved-capacity drafts; verify whether all 16 SCAs are the same disclosure cycle."
+    },
+    {
+      "candidate_key": "CANDIDATE_MEMORY_MARKET_SUPPLY_DEMAND_AND_PRICING_STATE",
+      "assigned_delta_ids": [
+        "D274",
+        "D278",
+        "D281",
+        "D289",
+        "D313",
+        "D363",
+        "D365",
+        "D385",
+        "D399",
+        "D407"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-010/output/work/drafts/T2.json"
+      ],
+      "unresolved_recommendation": "This is a genuinely period-wide market state; merge with wave009 and earlier memory supply/pricing outlook drafts without treating each publication or republication as a new Event."
+    },
+    {
+      "candidate_key": "CANDIDATE_MU_HBM4_AND_SERVER_MEMORY_PRODUCT_MILESTONES",
+      "assigned_delta_ids": [
+        "D283",
+        "D329",
+        "D409"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-010/output/work/drafts/T3.json"
+      ],
+      "unresolved_recommendation": "Merge with prior HBM4/server-memory product drafts while preserving the different product stages: portfolio advancement, development, and high-volume shipment."
+    },
+    {
+      "candidate_key": "CANDIDATE_MU_CAPACITY_AND_CAPEX_EXPANSION",
+      "assigned_delta_ids": [
+        "D300"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-010/output/work/drafts/T4.json"
+      ],
+      "unresolved_recommendation": "Reconcile with prior U.S. capacity, facility-schedule, and capex-program drafts; keep this research-lab investment distinct if it is a separate commitment."
+    },
+    {
+      "candidate_key": "CANDIDATE_NVIDIA_FY27_Q2_EARNINGS_AND_GUIDANCE",
+      "assigned_delta_ids": [
+        "D310"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-010/output/work/drafts/T5.json"
+      ],
+      "unresolved_recommendation": "Keep this product-production milestone distinct from the NVIDIA FY2027 Q2 earnings Event, while reconciling it with prior Vera Rubin shipment and performance drafts."
+    },
+    {
+      "candidate_key": "CANDIDATE_DRAM_THREE_SUPPLIER_STRUCTURE",
+      "assigned_delta_ids": [
+        "D336"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-010/output/work/drafts/T6.json"
+      ],
+      "unresolved_recommendation": "Merge or complement the prior three-supplier DRAM-structure draft; retain UNKNOWN parent time because this is a current structural observation rather than a formation-date milestone."
+    },
+    {
+      "candidate_key": "CANDIDATE_MU_TAIWAN_LABOR_INCENTIVE_DISPUTE",
+      "assigned_delta_ids": [
+        "D326",
+        "D343",
+        "D404"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-010/output/work/drafts/T7.json"
+      ],
+      "unresolved_recommendation": "Merge with prior Taiwan compensation, demands, potential-strike, and no-vote drafts; preserve the denial as a current procedural update and do not infer settlement."
+    },
+    {
+      "candidate_key": "CANDIDATE_MU_FY26_Q3_EARNINGS_AND_Q4_GUIDANCE",
+      "assigned_delta_ids": [
+        "D371",
+        "D413"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-010/output/work/drafts/T8.json"
+      ],
+      "unresolved_recommendation": "Merge these complementary Facts into the prior Micron FY2026 Q3 earnings Event anchored to the 2026-06-24 disclosure; September source dates are later republications or summaries."
+    },
+    {
+      "candidate_key": "CANDIDATE_NETLIST_MICRON_LITIGATION",
+      "assigned_delta_ids": [
+        "D395"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-010/output/work/drafts/T9.json"
+      ],
+      "unresolved_recommendation": "Reconcile with the prior Netlist PTAB/Federal Circuit milestone and the wave009 ITC filing; verify whether this patent-specific determination is a complementary Fact or the same appeal occurrence."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_UNRELATED_OR_NO_TARGET_PATH",
+      "assigned_delta_ids": [
+        "D261",
+        "D263",
+        "D302",
+        "D327",
+        "D344",
+        "D383",
+        "D394",
+        "D398"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: unrelated or broad external material lacks a direct Micron Event or concrete non-trivial target path."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_STANDALONE_MARKET_OR_VALUATION_SNAPSHOT",
+      "assigned_delta_ids": [
+        "D268",
+        "D284",
+        "D286",
+        "D293",
+        "D331",
+        "D339",
+        "D348",
+        "D359",
+        "D372",
+        "D373",
+        "D389"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: standalone price, valuation, rating, fund, or market snapshot does not independently establish a bounded material Micron Event."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_RELEVANT_UNRESOLVED_OCCURRENCE",
+      "assigned_delta_ids": [
+        "D272",
+        "D275",
+        "D285",
+        "D292",
+        "D298",
+        "D301",
+        "D328",
+        "D334",
+        "D366",
+        "D387",
+        "D393",
+        "D403",
+        "D405",
+        "D408",
+        "D411",
+        "D412"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: plausibly relevant material remains unresolved in occurrence boundary, target path, attribution, or current consequence; do not guess a Canonical Event."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_STANDALONE_FORECAST_OR_ANALYST_SNAPSHOT",
+      "assigned_delta_ids": [
+        "D273",
+        "D325",
+        "D342",
+        "D353",
+        "D369",
+        "D384"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: standalone analyst or external forecast snapshot lacks a sufficiently bounded Micron issuer action or reconstructed target Event."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_UNCONFIRMED_OR_HYPOTHETICAL",
+      "assigned_delta_ids": [
+        "D291",
+        "D338",
+        "D380"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: hypothetical or unconfirmed material lacks a settled action and date-specific Canonical occurrence."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_NON_TARGET_COMPETITOR_OR_INDUSTRY_BACKGROUND",
+      "assigned_delta_ids": [
+        "D319",
+        "D354",
+        "D362",
+        "D374"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: competitor or other-company background lacks a sufficiently concrete direct Micron occurrence or target transmission path."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_BACKGROUND_OR_NO_CURRENT_OCCURRENCE",
+      "assigned_delta_ids": [
+        "D386",
+        "D410"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: background or generic context lacks a current canonical occurrence with durable downstream utility."
+    }
+  ]
+}

@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from doxagent.crawler_plane.factory import build_crawler_plane_service
 from doxagent.crawler_plane.service import CrawlerPlaneService
 from doxagent.message_bus_v2.adapters import AdapterRegistry
-from doxagent.message_bus_v2.content import ArticleContentMaterializer
 from doxagent.message_bus_v2.repository import MessageBusV2Repository
 from doxagent.message_bus_v2.scheduler import GlobalPollScheduler
 from doxagent.message_bus_v2.service import MessageBusV2Service
@@ -64,10 +63,14 @@ def build_message_bus_v2_service(
     settings: DoxAgentSettings,
 ) -> tuple[MessageBusV2Repository, MessageBusV2Service]:
     repository = MessageBusV2Repository(settings.message_bus_v2_sqlite_path)
-    materializer = (
-        ArticleContentMaterializer() if settings.message_bus_v2_content_enrichment_enabled else None
+    service = MessageBusV2Service(
+        repository,
+        enrichment_queue_enabled=(
+            settings.content_enrichment_enabled
+            and settings.message_bus_v2_content_enrichment_enabled
+        ),
+        enrichment_retry_deadline_seconds=settings.content_enrichment_retry_deadline_seconds,
     )
-    service = MessageBusV2Service(repository, materializer=materializer)
     service.bootstrap()
     return repository, service
 

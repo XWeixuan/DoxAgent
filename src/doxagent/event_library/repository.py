@@ -29,9 +29,10 @@ from doxagent.event_library.contracts import (
     ReferenceViewBasis,
     ReferenceViewDeltaSnapshot,
 )
+from doxagent.event_library.identities import migrate as migrate_birth_identities
 from doxagent.event_library.reference_review import classify_review, event_review_anchor
 
-EVENT_LIBRARY_SCHEMA_VERSION = 3
+EVENT_LIBRARY_SCHEMA_VERSION = 5
 
 
 class EventLibraryError(RuntimeError):
@@ -241,6 +242,14 @@ class EventLibraryRepository:
                     target_fact_no INTEGER,
                     PRIMARY KEY (batch_id, delta_id)
                 );
+                CREATE TABLE IF NOT EXISTS bundle_import_diagnostics (
+                    batch_id TEXT NOT NULL,
+                    published_version INTEGER NOT NULL,
+                    raw_bundle_hash TEXT NOT NULL,
+                    diagnostics_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    PRIMARY KEY (batch_id, published_version)
+                );
                 CREATE UNIQUE INDEX IF NOT EXISTS idx_delta_runtime_identity
                     ON delta_items (
                         runtime_scope, runtime_atomic_id, runtime_atomic_version, runtime_signature
@@ -313,6 +322,7 @@ class EventLibraryRepository:
                     ON reference_review_schedule (ticker,next_review_at,event_no);
                 """
             )
+            migrate_birth_identities(connection)
             connection.execute(f"PRAGMA user_version={EVENT_LIBRARY_SCHEMA_VERSION}")
 
     def save_reference_view_delta(self, payload: ReferenceViewDeltaSnapshot) -> None:
@@ -405,9 +415,7 @@ class EventLibraryRepository:
             ).fetchone()
         return None if row is None else int(row["base_version"])
 
-    def max_published_event_numeric_id(
-        self, ticker: str, version: int | None = None
-    ) -> int:
+    def max_published_event_numeric_id(self, ticker: str, version: int | None = None) -> int:
         """Return the highest stable Event number allocated by a Published version."""
 
         normalized = self._ticker(ticker)
@@ -907,9 +915,7 @@ class EventLibraryRepository:
                     related_event_ids=event.related_event_ids,
                     supersedes_event_id=event.supersedes_event_id,
                     supersedes_event_ids=(
-                        []
-                        if event.supersedes_event_id is None
-                        else [event.supersedes_event_id]
+                        [] if event.supersedes_event_id is None else [event.supersedes_event_id]
                     ),
                     superseded_by_event_ids=sorted(superseded_by.get(event_id, [])),
                     frozen_as_of=as_of,
@@ -952,6 +958,7 @@ class EventLibraryRepository:
         bundle: CanonicalRevisionBundle,
         *,
         source_bundle: CanonicalRevisionBundle | None = None,
+        import_diagnostics: dict[str, Any] | None = None,
         frozen_as_of: datetime | None = None,
     ) -> PublicationResult:
         """Import a validator-approved Bundle and switch the Published head in one transaction."""
@@ -1071,6 +1078,25 @@ class EventLibraryRepository:
                         batch_id,
                     ),
                 )
+                if import_diagnostics is not None:
+                    raw_hash = str(import_diagnostics["raw_bundle_hash"])
+                    connection.execute(
+                        """
+                        INSERT INTO bundle_import_diagnostics(
+                            batch_id,published_version,raw_bundle_hash,diagnostics_json,created_at
+                        ) VALUES (?,?,?,?,?)
+                        ON CONFLICT(batch_id,published_version) DO UPDATE SET
+                            raw_bundle_hash=excluded.raw_bundle_hash,
+                            diagnostics_json=excluded.diagnostics_json
+                        """,
+                        (
+                            batch_id,
+                            published_version,
+                            raw_hash,
+                            _json(import_diagnostics),
+                            _now(),
+                        ),
+                    )
             return result
 
     def _write_reference_reviews(
@@ -1546,13 +1572,14 @@ class EventLibraryRepository:
         published_version: int,
     ) -> dict[str, int]:
         del published_version
-        dispositions: dict[str, tuple[str, str | None, str | None]] = {}
+        fact_placements: dict[str, list[tuple[str, str]]] = {}
         for event in bundle.event_revisions:
             stable_event = event_map.get(event.event_id, event.event_id)
             for fact in event.facts:
                 stable_fact = fact_map.get(fact.fact_id, fact.fact_id)
                 for delta_id in fact.consumes_delta_ids:
-                    dispositions[delta_id] = ("PUBLISHED_FACT", stable_event, stable_fact)
+                    fact_placements.setdefault(delta_id, []).append((stable_event, stable_fact))
+        residuals: dict[str, list[tuple[str, str | None, str | None]]] = {}
         for item in bundle.residual_delta_resolutions:
             target_event = (
                 None
@@ -1564,7 +1591,9 @@ class EventLibraryRepository:
                 if item.target_fact_id is None
                 else fact_map.get(item.target_fact_id, item.target_fact_id)
             )
-            dispositions[item.delta_id] = (item.resolution.value, target_event, target_fact)
+            residuals.setdefault(item.delta_id, []).append(
+                (item.resolution.value, target_event, target_fact)
+            )
         counts = {"pending": 0, "dropped": 0, "duplicate": 0}
         now = _now()
         for batch_id in bundle.delta_batch_ids:
@@ -1573,7 +1602,29 @@ class EventLibraryRepository:
             ).fetchall()
             for row in rows:
                 delta_id = str(row["delta_id"])
-                resolution, target_event, target_fact = dispositions[delta_id]
+                placements = fact_placements.get(delta_id, [])
+                explicit = residuals.get(delta_id, [])
+                if len(placements) == 1 and not explicit:
+                    target_event, target_fact = placements[0]
+                    resolution = "PUBLISHED_FACT"
+                elif not placements and len(explicit) == 1:
+                    resolution, target_event, target_fact = explicit[0]
+                    if resolution == DeltaResolution.DUPLICATE_FACT.value and (
+                        target_event is None or target_fact is None
+                    ):
+                        resolution, target_event, target_fact = (
+                            DeltaResolution.KEEP_PENDING.value,
+                            None,
+                            None,
+                        )
+                else:
+                    # Missing, conflicting, or multiply placed mappings never
+                    # delete Canonical content and never roll back the batch.
+                    resolution, target_event, target_fact = (
+                        DeltaResolution.KEEP_PENDING.value,
+                        None,
+                        None,
+                    )
                 status = (
                     "PENDING" if resolution == DeltaResolution.KEEP_PENDING.value else "RESOLVED"
                 )

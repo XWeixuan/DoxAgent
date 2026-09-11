@@ -181,6 +181,7 @@ class CrawlerSourceAdapter:
                 title=item.title,
                 body=item.body,
                 source=item.source,
+                publisher_name=item.source,
                 url=item.url,
                 published_at=item.published_at,
                 raw_payload=item.model_dump(mode="json"),
@@ -306,16 +307,14 @@ class _BaseAdapter:
         source: object,
         url: object,
         published_at: object,
+        summary: object = None,
         metadata: JsonObject | None = None,
     ) -> tuple[RawMessageInput | None, AcquisitionFailure | None]:
         identifier = _text_or_none(external_id)
         normalized_url = _absolute_url(url)
         normalized_time = _datetime_or_none(published_at)
         normalized_body = _html_to_text(body)
-        if not normalized_body:
-            return None, self._failure(
-                context, "missing_body", "provider item has no body", payload
-            )
+        normalized_summary = _html_to_text(summary)
         if normalized_url is None:
             return None, self._failure(
                 context, "missing_absolute_url", "provider item has no absolute URL", payload
@@ -328,8 +327,10 @@ class _BaseAdapter:
             external_id=identifier,
             source_item_key=identifier,
             title=_text_or_none(title),
-            body=normalized_body,
+            body=normalized_body or None,
+            summary=normalized_summary or None,
             source=_text_or_none(source),
+            publisher_name=_text_or_none(source),
             url=normalized_url,
             published_at=normalized_time,
             raw_payload=payload,
@@ -363,7 +364,8 @@ class BenzingaNewsAdapter(_BaseAdapter):
                 row,
                 external_id=row.get("id"),
                 title=row.get("title"),
-                body=row.get("body") or row.get("teaser"),
+                body=row.get("body"),
+                summary=row.get("teaser"),
                 source=row.get("author") or "Benzinga",
                 url=row.get("url"),
                 published_at=row.get("created") or row.get("updated"),
@@ -395,7 +397,8 @@ class FinnhubCompanyNewsAdapter(_BaseAdapter):
                 row,
                 external_id=row.get("id"),
                 title=row.get("headline"),
-                body=row.get("summary"),
+                body=None,
+                summary=row.get("summary"),
                 source=row.get("source") or "Finnhub",
                 url=row.get("url"),
                 published_at=row.get("datetime"),
@@ -562,7 +565,8 @@ class NewswireRSSAdapter(_BaseAdapter):
                     row,
                     external_id=row.get("guid") or row.get("id"),
                     title=row.get("title"),
-                    body=row.get("summary") or row.get("description") or row.get("title"),
+                    body=None,
+                    summary=row.get("summary") or row.get("description") or row.get("title"),
                     source=row.get("source") or urlparse(str(feed_url)).netloc,
                     url=row.get("link"),
                     published_at=row.get("published") or row.get("pubDate") or row.get("updated"),

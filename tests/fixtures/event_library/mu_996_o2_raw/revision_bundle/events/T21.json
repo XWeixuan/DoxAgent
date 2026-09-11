@@ -1,0 +1,45 @@
+{
+  "event_id": "T21",
+  "ticker": "MU",
+  "title": "Netlist filed and pursued an ITC patent action involving Micron",
+  "event_type": "LITIGATION_MILESTONE",
+  "occurred_at": "2026-09-01..2026-09-02",
+  "occurrence_time_precision": "INTERVAL",
+  "canonical_summary": "Netlist filed an International Trade Commission patent-infringement action naming Micron and sought exclusion and cease-and-desist remedies.",
+  "known_event_summary": "September 1-2, 2026 Netlist litigation milestone: Netlist filed or reported an ITC patent action involving Micron and sought exclusion and cease-and-desist orders.",
+  "is_important": true,
+  "include_in_reference_view": true,
+  "facts": [
+    {
+      "fact_id": "TF292",
+      "proposition": "Netlist filed an International Trade Commission patent action involving Micron.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-09-01",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D181",
+        "D612"
+      ]
+    },
+    {
+      "fact_id": "TF293",
+      "proposition": "Netlist is seeking exclusion and cease-and-desist orders against Micron and others.",
+      "assertion_state": "ONGOING",
+      "fact_occurred_at": "2026-09-01",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D199"
+      ]
+    }
+  ],
+  "price_analysis": null,
+  "related_event_ids": [
+    "T22",
+    "T23"
+  ],
+  "derived_from_event_ids": [],
+  "supersedes_event_id": null,
+  "status": "ACTIVE"
+}

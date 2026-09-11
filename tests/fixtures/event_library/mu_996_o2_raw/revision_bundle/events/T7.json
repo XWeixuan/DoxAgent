@@ -1,0 +1,162 @@
+{
+  "event_id": "T7",
+  "ticker": "MU",
+  "title": "Micron advanced U.S., Taiwan and global manufacturing capacity plans",
+  "event_type": "CAPACITY_OR_CAPEX",
+  "occurred_at": "2026-08-27..2026-09-08",
+  "occurrence_time_precision": "INTERVAL",
+  "canonical_summary": "Micron's current capacity and capital-investment matter included large U.S. manufacturing commitments, Idaho and Taiwan expansion, new facilities, planned capital spending, site acquisition and related jobs and execution exposure.",
+  "known_event_summary": "August 27-September 8, 2026 Micron capacity baseline: the company and public officials described more than $250 billion of U.S. manufacturing investment, Idaho/Taiwan expansion, new 2027-2028 facilities and capital spending above $25 billion.",
+  "is_important": true,
+  "include_in_reference_view": true,
+  "facts": [
+    {
+      "fact_id": "TF223",
+      "proposition": "Micron maintained or raised a planned U.S. manufacturing investment of more than $250 billion through 2035.",
+      "assertion_state": "PLAN",
+      "fact_occurred_at": "2026-08-27",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "2035",
+      "consumes_delta_ids": [
+        "D42",
+        "D721",
+        "D802",
+        "D850"
+      ]
+    },
+    {
+      "fact_id": "TF224",
+      "proposition": "Micron's U.S. expansion was described as creating tens of thousands of American jobs.",
+      "assertion_state": "ONGOING",
+      "fact_occurred_at": "2026-08-27",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D63",
+        "D150"
+      ]
+    },
+    {
+      "fact_id": "TF225",
+      "proposition": "Micron is modernizing Taiwanese capacity for DRAM and HBM.",
+      "assertion_state": "ONGOING",
+      "fact_occurred_at": "2026-09-01",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D94"
+      ]
+    },
+    {
+      "fact_id": "TF226",
+      "proposition": "U.S. officials highlighted or praised Micron's approximately $250 billion domestic expansion commitment.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-09-01",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "2035",
+      "consumes_delta_ids": [
+        "D130",
+        "D140"
+      ]
+    },
+    {
+      "fact_id": "TF227",
+      "proposition": "Micron warns that losing Taiwan production could materially adversely affect the company.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-09-01",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D452"
+      ]
+    },
+    {
+      "fact_id": "TF228",
+      "proposition": "Micron Technology prioritizes fabrication capacity for advanced server DDR5, high-capacity solid-state storage, and specialized HBM3E modules.",
+      "assertion_state": "ONGOING",
+      "fact_occurred_at": "2026-09-01",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D494"
+      ]
+    },
+    {
+      "fact_id": "TF229",
+      "proposition": "Micron recently acquired a new Tongluo site to expand leading-edge memory production.",
+      "assertion_state": "ACTUAL",
+      "fact_occurred_at": "2026-09-01",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D781"
+      ]
+    },
+    {
+      "fact_id": "TF230",
+      "proposition": "Micron has invested about $43.9 billion in Taiwan.",
+      "assertion_state": "ONGOING",
+      "fact_occurred_at": "2026-09-02",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D49"
+      ]
+    },
+    {
+      "fact_id": "TF231",
+      "proposition": "Micron's new production facilities were expected to come online from mid-2027 into 2028 or later.",
+      "assertion_state": "PLAN",
+      "fact_occurred_at": "2026-09-02",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "2027..2028",
+      "consumes_delta_ids": [
+        "D200",
+        "D434"
+      ]
+    },
+    {
+      "fact_id": "TF232",
+      "proposition": "Micron is constructing new production facilities to expand manufacturing capacity.",
+      "assertion_state": "ONGOING",
+      "fact_occurred_at": "2026-09-02",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D491"
+      ]
+    },
+    {
+      "fact_id": "TF233",
+      "proposition": "Micron planned capital spending exceeding $25 billion.",
+      "assertion_state": "PLAN",
+      "fact_occurred_at": "2026-09-02",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": "FY2026",
+      "consumes_delta_ids": [
+        "D601",
+        "D763"
+      ]
+    },
+    {
+      "fact_id": "TF234",
+      "proposition": "Micron was building additional memory-chip production capacity in Idaho.",
+      "assertion_state": "ONGOING",
+      "fact_occurred_at": "2026-09-08",
+      "fact_occurrence_time_precision": "DAY",
+      "subject_time": null,
+      "consumes_delta_ids": [
+        "D213",
+        "D673"
+      ]
+    }
+  ],
+  "price_analysis": null,
+  "related_event_ids": [
+    "T8",
+    "T9"
+  ],
+  "derived_from_event_ids": [],
+  "supersedes_event_id": null,
+  "status": "ACTIVE"
+}

@@ -183,6 +183,8 @@ class FetchAttempt:
     latency_ms: int | None = None
     reason: str | None = None
     response_bytes: int | None = None
+    retry_after_seconds: float | None = None
+    transient_hint: bool = False
 
     def to_payload(self) -> JsonObject:
         return {
@@ -195,6 +197,8 @@ class FetchAttempt:
             "latency_ms": self.latency_ms,
             "reason": self.reason,
             "response_bytes": self.response_bytes,
+            "retry_after_seconds": self.retry_after_seconds,
+            "transient_hint": self.transient_hint,
         }
 
 
@@ -617,6 +621,12 @@ async def _fetch_text(
                 latency_ms=_elapsed_ms(started),
                 reason=reason,
                 response_bytes=len(text.encode(errors="ignore")),
+                retry_after_seconds=_retry_after_seconds(response.headers),
+                transient_hint=(
+                    status_code in {408, 425, 429}
+                    or status_code >= 500
+                    or any(marker in text.lower() for marker in POISON_PAGE_MARKERS)
+                ),
             )
             if reason:
                 raise FetchFailure(attempt)
@@ -633,6 +643,18 @@ async def _fetch_text(
                 reason=_failure_reason(exc),
             )
             raise FetchFailure(attempt) from exc
+
+
+def _retry_after_seconds(headers: Mapping[str, str]) -> float | None:
+    value = next(
+        (item for key, item in headers.items() if str(key).lower() == "retry-after"), None
+    )
+    if value is None:
+        return None
+    try:
+        return max(0.0, float(value))
+    except (TypeError, ValueError):
+        return None
 
 
 async def _try_reader_fallback(

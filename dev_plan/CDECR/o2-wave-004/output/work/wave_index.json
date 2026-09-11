@@ -1,0 +1,134 @@
+{
+  "entries": [
+    {
+      "candidate_key": "CANDIDATE_MU_ANALYST_ACTIONS_OTHER",
+      "assigned_delta_ids": [
+        "D664",
+        "D776"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-004/output/work/drafts/T1.json"
+      ],
+      "unresolved_recommendation": "Merge the duplicate Citigroup target/forecast propositions into the broader August analyst-response scope only after checking whether the institution action is distinct from New Street, Mizuho, and other analyst actions."
+    },
+    {
+      "candidate_key": "CANDIDATE_MU_MARKET_REPRICING_EPISODES_2026",
+      "assigned_delta_ids": [
+        "D521"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-004/output/work/drafts/T2.json"
+      ],
+      "unresolved_recommendation": "Merge this dated pre-NVIDIA-earnings de-risking move into the prior-wave June-September Micron market-episode draft if the broader episode retains this distinct catalyst and date."
+    },
+    {
+      "candidate_key": "CANDIDATE_NVIDIA_FY27_Q2_EARNINGS_AND_GUIDANCE",
+      "assigned_delta_ids": [
+        "D923",
+        "D270",
+        "D736",
+        "D839"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-004/output/work/drafts/T3.json"
+      ],
+      "unresolved_recommendation": "Merge with the prior-wave NVIDIA FY2027 Q2 drafts; retain the 2026-08-26 revenue disclosure, 2026-08-27 executive outlook and price-response Facts only if the full Event boundary supports one earnings-information cycle."
+    },
+    {
+      "candidate_key": "CANDIDATE_MU_FY26_Q3_EARNINGS_AND_Q4_GUIDANCE",
+      "assigned_delta_ids": [
+        "D290"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-004/output/work/drafts/T4.json"
+      ],
+      "unresolved_recommendation": "Merge the $50 billion fourth-quarter guidance Fact into the prior-wave FY2026 Q3 earnings Event and preserve FY2026 Q4 as its subject horizon."
+    },
+    {
+      "candidate_key": "CANDIDATE_MU_TAIWAN_LABOR_INCENTIVE_DISPUTE",
+      "assigned_delta_ids": [
+        "D376"
+      ],
+      "draft_paths": [
+        "attempts/o2-wave-004/output/work/drafts/T5.json"
+      ],
+      "unresolved_recommendation": "Keep as a distinct escalation milestone related to the prior-wave survey/compensation Facts; reconcile the 2026-09-01 action date against the later 2026-09-03 publication candidate."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_STANDALONE_MARKET_OR_VALUATION_SNAPSHOT",
+      "assigned_delta_ids": [
+        "D138",
+        "D542",
+        "D192",
+        "D222",
+        "D591",
+        "D906",
+        "D158",
+        "D702",
+        "D752",
+        "D792",
+        "D87",
+        "D221",
+        "D457",
+        "D579",
+        "D635",
+        "D636",
+        "D666",
+        "D685",
+        "D706"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: standalone price, return, short-interest, market-capitalization, or trading snapshots do not independently establish a bounded material MU Event."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_RELEVANT_UNRESOLVED_OCCURRENCE",
+      "assigned_delta_ids": [
+        "D501",
+        "D68",
+        "D228",
+        "D429",
+        "D926",
+        "D276",
+        "D643"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: plausible relevance remains, but the assigned proposition lacks a sufficiently settled target-specific occurrence, period, attribution, or non-trivial exposure path."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_UNRELATED_OR_NO_TARGET_PATH",
+      "assigned_delta_ids": [
+        "D119",
+        "D681",
+        "D59",
+        "D613"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: Sandisk short interest, a Federal Reserve rate-hike probability, AMD price movement, and a Taiwan medal presentation do not establish a direct MU Event or concrete target path."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_STANDALONE_FORECAST_OR_ANALYST_SNAPSHOT",
+      "assigned_delta_ids": [
+        "D627",
+        "D663"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: Marvell/NVIDIA price or target snapshots are standalone external analyst/market observations without a reconstructed MU occurrence."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_NON_TARGET_COMPETITOR_OR_INDUSTRY_BACKGROUND",
+      "assigned_delta_ids": [
+        "D766"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: Jensen Huang's long-term OpenAI/Anthropic customer-confidence statement is external competitive background without a sufficiently concrete direct MU transmission."
+    },
+    {
+      "candidate_key": "KEEP_PENDING_UNCONFIRMED_OR_HYPOTHETICAL",
+      "assigned_delta_ids": [
+        "D764"
+      ],
+      "draft_paths": [],
+      "unresolved_recommendation": "KEEP_PENDING: the reported possible semiconductor-tariff consideration remains rumor and lacks a settled policy action."
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 import hashlib
+import json
 from datetime import UTC, datetime
 
 from fastapi.testclient import TestClient
@@ -17,13 +18,129 @@ from doxagent.persistent_runtime_v2.schema import RuntimeCase, RuntimeVersionPin
 from doxagent.v2_control.repository import ControlRepository
 from doxagent.v2_read.artifacts import PublishedArtifacts
 from doxagent.v2_read.formal import FormalProjectors
-from doxagent.v2_read.identities import migrate
+from doxagent.v2_read.graph import project as project_graph
 from doxagent.v2_read.repository import ReadStore
 from doxagent.workflows.codex_document3.schema import Document3Bundle, Document3Handoff
 from tests.test_codex_document3_workflow import NOW, _policy_set, _seed_published_d2
 from tests.test_codex_event_library_incremental import _publish_v1
 from tests.test_persistent_runtime_v2 import _source
 from tests.v2_backend.test_api import OfflineAuth
+
+
+def test_graph_projection_accepts_native_case_delete(tmp_path):
+    store = ReadStore(tmp_path / "read.db")
+    store.migrate()
+    summary = {
+        "case_id": "case-delete",
+        "results": ["ARCHIVE"],
+        "first_round_shape": "PARALLEL",
+        "w3_status": None,
+        "status": "COMPLETED",
+        "semantic_day": "2026-09-11",
+        "received_at": "2026-09-11T12:00:00Z",
+    }
+
+    records, metrics = project_graph(
+        store,
+        "MU",
+        summary,
+        [
+            {
+                "kind": "native:runtime_v2_cases",
+                "ticker": "MU",
+                "id": "case-delete",
+                "data": None,
+            }
+        ],
+    )
+
+    assert records
+    assert metrics
+
+
+def test_formal_projection_ignores_successful_internal_d1_d2_nodes(tmp_path):
+    store = ReadStore(tmp_path / "read.db")
+    store.migrate()
+    run_id = "init-mu"
+    store.ingest(
+        "initialization",
+        "run",
+        [
+            {
+                "kind": "native:initialization_runs",
+                "ticker": "MU",
+                "id": run_id,
+                "data": {
+                    "initialization_id": run_id,
+                    "ticker": "MU",
+                    "control_operation_id": "operation-a",
+                    "status": "RUNNING",
+                    "state_seq": 1,
+                    "manual_resume_required": False,
+                    "error": None,
+                },
+            }
+        ],
+    )
+    mapper = FormalProjectors(store)
+    payload = {
+        "key": "d2.o0.candidate",
+        "block": "D2",
+        "dependencies": [],
+        "inputs": {"managed_by": "d2"},
+        "status": "SUCCEEDED",
+        "receipt": {},
+        "result": {"artifacts": {"return": {"output": {}}}},
+    }
+    records, metrics = mapper(
+        {
+            "source": "initialization",
+            "seq": 1,
+            "table_name": "initialization_nodes",
+            "entity_id": json.dumps([run_id, "d2.o0.candidate"]),
+            "operation": "UPDATE",
+            "recorded_at": "2026-09-11T00:00:00Z",
+            "row": {
+                "run_id": run_id,
+                "node_key": "d2.o0.candidate",
+                "payload": json.dumps(payload),
+            },
+        }
+    )
+    assert [record["kind"] for record in records] == [
+        "native:initialization_nodes",
+        "initialization",
+    ]
+    assert metrics == []
+
+
+def test_runtime_noop_activation_inherits_base_policy_run(tmp_path):
+    store = ReadStore(tmp_path / "read.db")
+    store.migrate()
+    store.ingest(
+        "initialization",
+        "base",
+        [
+            {
+                "kind": "activation_revision",
+                "ticker": "MU",
+                "id": "activation-base",
+                "data": {"policy_set": {"policy_set_version": 7, "run_id": "d3-base"}},
+            }
+        ],
+    )
+    mapper = FormalProjectors(store)
+    assert (
+        mapper._policy_run_id(
+                {
+                    "ticker": "MU",
+                    "revision_id": "runtime-maintain-fixture-activation",
+                    "base_revision": "activation-base",
+                "artifacts": {"document3": {"version": 7}},
+            }
+        )
+        == "d3-base"
+    )
 
 
 def test_formal_activation_indexes_exact_documents_policy_and_library(tmp_path):
@@ -110,8 +227,6 @@ def test_formal_activation_indexes_exact_documents_policy_and_library(tmp_path):
     )
     root = tmp_path / "events"
     events = EventLibraryRepository(root / "US" / "MU" / "event_library.sqlite3")
-    with events._write() as db:
-        migrate(db)
     _publish_v1(events, root)
     store = ReadStore(tmp_path / "read.db")
     store.migrate()

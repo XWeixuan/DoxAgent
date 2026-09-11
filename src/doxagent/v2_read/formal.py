@@ -126,7 +126,12 @@ class FormalProjectors(DomainProjectors):
                     calls, counts = worker_usage(observation)
                     records.extend(calls)
                     metrics.extend(counts)
-            if node["status"] == "SUCCEEDED" and node["block"] in {"D1", "D2"}:
+            if (
+                node["status"] == "SUCCEEDED"
+                and node["block"] in {"D1", "D2"}
+                and event["row"]["node_key"] == node["block"].lower()
+            ):
+                role = "document1" if node["block"] == "D1" else "document2"
                 ticker = records[0]["ticker"]
                 run = self.store.get("native:initialization_runs", ticker, event["row"]["run_id"])
                 # A historical test run in the same database is not proof of business provenance.
@@ -136,7 +141,6 @@ class FormalProjectors(DomainProjectors):
                     return records, metrics
                 if self.artifacts is None:
                     raise ValueError("formal research source is not configured")
-                role = "document1" if node["block"] == "D1" else "document2"
                 ref = node["result"]["artifacts"][role]
                 records.extend(
                     self.artifacts.index(ref["run_id"], ticker, lineage=run["initialization_id"])
@@ -217,7 +221,7 @@ class FormalProjectors(DomainProjectors):
             raise ValueError("formal event source is not configured")
         library, indexed = LibraryIndexer(root).index(ticker, refs["event_library"]["version"])
         records.extend(indexed)
-        run_id = refs["document3"]["run_id"]
+        run_id = self._policy_run_id(revision)
         bundle = self.artifacts.source.record("bundles", run_id, run_id)
         if bundle["ticker"] != ticker or bundle["status"] != "published":
             raise ValueError("PINNED_ARTIFACT_MISSING")
@@ -329,3 +333,32 @@ class FormalProjectors(DomainProjectors):
             {"kind": "activation_revision", "ticker": ticker, "id": identity, "data": active}
         )
         return records
+
+    def _policy_run_id(self, revision: dict[str, Any]) -> str:
+        policy = revision["artifacts"]["document3"]
+        if policy.get("run_id"):
+            return str(policy["run_id"])
+        candidate = revision["revision_id"].removesuffix("-activation") + "-o3"
+        if self.artifacts is not None:
+            try:
+                bundle = self.artifacts.source.record("bundles", candidate, candidate)
+            except KeyError:
+                bundle = None
+            handoff = (bundle or {}).get("handoff") or {}
+            if (
+                bundle
+                and bundle.get("ticker") == revision["ticker"]
+                and bundle.get("status") == "published"
+                and handoff.get("policy_set_version") == policy["version"]
+            ):
+                return candidate
+        base_revision = revision.get("base_revision")
+        base = (
+            self.store.get("activation_revision", revision["ticker"], base_revision)
+            if base_revision
+            else None
+        )
+        base_policy = (base or {}).get("policy_set") or {}
+        if base_policy.get("policy_set_version") == policy["version"] and base_policy.get("run_id"):
+            return str(base_policy["run_id"])
+        raise ValueError("POLICY_RUN_ID_MISSING")
