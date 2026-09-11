@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from collections.abc import Sequence
 from datetime import UTC, datetime, timedelta
 from typing import Protocol
@@ -18,6 +19,8 @@ from doxagent.monitoring.media_enrichment import (
     MediaExtractionResult,
     media_enrichment_metadata,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class ExtractorLike(Protocol):
@@ -49,10 +52,20 @@ class ContentEnrichmentHub:
         )
         if not jobs:
             return 0
-        await asyncio.gather(
-            *(self._process(job, current) for job in jobs), return_exceptions=True
-        )
+        await asyncio.gather(*(self._process_guarded(job, current) for job in jobs))
         return len(jobs)
+
+    async def _process_guarded(self, job: EnrichmentJob, now: datetime) -> None:
+        try:
+            await self._process(job, now)
+        except Exception:
+            logger.exception(
+                "content enrichment infrastructure failure job_id=%s ticker=%s source_id=%s",
+                job.job_id,
+                job.binding.ticker,
+                job.source.source_id,
+            )
+            raise
 
     async def close(self) -> None:
         close = getattr(self.extractor, "close", None)

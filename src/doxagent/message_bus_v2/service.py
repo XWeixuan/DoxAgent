@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime, timedelta
-from typing import Protocol
 from urllib.parse import urlparse
 
 from doxagent.content_enrichment.schema import EnrichmentJob
@@ -51,15 +50,6 @@ from doxagent.message_bus_v2.schema import (
 )
 
 
-class ContentMaterializer(Protocol):
-    async def materialize(self, message: RawMessageInput) -> RawMessageInput: ...
-
-
-class PassthroughContentMaterializer:
-    async def materialize(self, message: RawMessageInput) -> RawMessageInput:
-        return message
-
-
 class MessageBusV2Service:
     """One control/data-plane service used by worker, dashboard and agent tools."""
 
@@ -67,12 +57,10 @@ class MessageBusV2Service:
         self,
         repository: MessageBusV2Repository,
         *,
-        materializer: ContentMaterializer | None = None,
         enrichment_queue_enabled: bool = False,
         enrichment_retry_deadline_seconds: int = 180,
     ) -> None:
         self.repository = repository
-        self.materializer = materializer or PassthroughContentMaterializer()
         self.enrichment_queue_enabled = enrichment_queue_enabled
         self.enrichment_retry_deadline_seconds = max(1, enrichment_retry_deadline_seconds)
 
@@ -631,13 +619,14 @@ class MessageBusV2Service:
         clean_metadata = dict(message.metadata)
         clean_metadata.pop("v2_body_completion", None)
         clean = message.model_copy(update={"metadata": clean_metadata})
+        identity_key = identity_key_for(source.source_id, clean)
+        provider_raw_hash = sha256_text(canonical_json(clean.raw_payload))
         intake_key = sha256_text(
             canonical_json(
                 {
                     "binding_id": binding.binding_id,
-                    "source_item_key": source_item_key_for(source.source_id, clean),
-                    "url": clean.url,
-                    "published_at": clean.published_at,
+                    "identity_key": identity_key,
+                    "provider_raw_hash": provider_raw_hash,
                 }
             )
         )
@@ -648,6 +637,7 @@ class MessageBusV2Service:
             source=source,
             binding=binding,
             message=clean,
+            provider_raw_hash=provider_raw_hash,
             bootstrap=bootstrap,
             created_at=now,
             updated_at=now,
@@ -658,8 +648,8 @@ class MessageBusV2Service:
         if self.repository.has_seen_provider_payload(
             ticker=binding.ticker,
             source_id=source.source_id,
-            identity_key=identity_key_for(source.source_id, clean),
-            raw_hash=sha256_text(canonical_json(clean.raw_payload)),
+            identity_key=identity_key,
+            raw_hash=provider_raw_hash,
         ):
             return job, False
         return self.repository.enqueue_enrichment_job(job)
@@ -683,26 +673,14 @@ class MessageBusV2Service:
         trusted_enrichment: bool = False,
     ) -> IngestResult:
         now = collected_at or utc_now()
-        try:
-            # Provider metadata cannot forge internal completion-attempt evidence.
-            metadata = dict(message.metadata)
-            if not trusted_enrichment:
-                metadata.pop("v2_body_completion", None)
-            message = message.model_copy(update={"metadata": metadata})
-            fallback = message.fallback_body
-            message = message.model_copy(update={"body": fallback})
-            materialized = await self.materializer.materialize(message)
-        except Exception as exc:
-            failure = self._failure(
-                source=source,
-                binding=binding,
-                code="content_materialization_failed",
-                message=str(exc),
-                payload=message.raw_payload,
-            )
-            self.repository.save_failure(failure)
-            self._upsert_failure_alert(failure)
-            return IngestResult(decision=IngestDecision.INVALID, error_code=failure.error_code)
+        # Provider metadata cannot forge internal completion-attempt evidence. Network
+        # enrichment has exactly one execution path: the durable ContentEnrichmentHub.
+        metadata = dict(message.metadata)
+        if not trusted_enrichment:
+            metadata.pop("v2_body_completion", None)
+        materialized = message.model_copy(
+            update={"metadata": metadata, "body": message.fallback_body}
+        )
         effective_source = materialized.publisher_name or materialized.source or source.display_name
         publisher_name = materialized.publisher_name or materialized.source or source.display_name
         resolved_domain = urlparse(materialized.url).hostname
@@ -743,7 +721,26 @@ class MessageBusV2Service:
         )
         decision, persisted = self.repository.record_raw(raw)
         if decision is IngestDecision.DUPLICATE:
+            if persisted.processing_status in {
+                RawProcessingStatus.PENDING,
+                RawProcessingStatus.PROCESSING,
+            }:
+                return self._complete_persisted_raw(persisted, decision=decision)
             return IngestResult(decision=decision, raw_message_id=persisted.raw_message_id)
+        if not persisted.title and not persisted.body:
+            unavailable_metadata = dict(persisted.metadata)
+            unavailable_metadata["content_unavailable"] = {
+                "reason": "missing_title_and_body",
+                "recorded_at": now.isoformat(),
+            }
+            completed = persisted.model_copy(
+                update={
+                    "processing_status": RawProcessingStatus.COMPLETED,
+                    "metadata": unavailable_metadata,
+                }
+            )
+            self.repository.save_raw(completed)
+            return IngestResult(decision=decision, raw_message_id=completed.raw_message_id)
         if bootstrap:
             self.repository.add_baseline(persisted)
             completed = persisted.model_copy(
@@ -789,6 +786,57 @@ class MessageBusV2Service:
                 )
             )
             raise
+
+    def _complete_persisted_raw(
+        self,
+        raw: RawMessage,
+        *,
+        decision: IngestDecision,
+    ) -> IngestResult:
+        """Close the crash window without depending on the scheduler recovery loop."""
+
+        if raw.bootstrap_suppressed:
+            self.repository.add_baseline(raw)
+            self.repository.save_raw(
+                raw.model_copy(update={"processing_status": RawProcessingStatus.COMPLETED})
+            )
+            return IngestResult(decision=decision, raw_message_id=raw.raw_message_id)
+        if not raw.title and not raw.body:
+            unavailable_metadata = dict(raw.metadata)
+            unavailable_metadata["content_unavailable"] = {
+                "reason": "missing_title_and_body",
+                "recorded_at": utc_now().isoformat(),
+            }
+            self.repository.save_raw(
+                raw.model_copy(
+                    update={
+                        "processing_status": RawProcessingStatus.COMPLETED,
+                        "metadata": unavailable_metadata,
+                    }
+                )
+            )
+            return IngestResult(decision=decision, raw_message_id=raw.raw_message_id)
+        processing = raw.model_copy(
+            update={
+                "processing_status": RawProcessingStatus.PROCESSING,
+                "processing_attempts": raw.processing_attempts + 1,
+            }
+        )
+        self.repository.save_raw(processing)
+        standard = self.repository.get_standard_for_raw(processing.raw_message_id)
+        if standard is None:
+            standard = self._standardize(processing)
+        stream_item = self.repository.finalize_standard(
+            raw=processing,
+            message=standard,
+            streaming=processing.streaming_config,
+        )
+        return IngestResult(
+            decision=decision,
+            raw_message_id=processing.raw_message_id,
+            standard_message_id=standard.standard_message_id,
+            stream_item_ids=[stream_item.stream_item_id] if stream_item else [],
+        )
 
     def retry_pending_raw(self, *, limit: int = 100, source_id: str | None = None) -> int:
         """Complete durable Raw rows left pending by an interrupted process."""
@@ -1147,8 +1195,4 @@ class MessageBusV2Service:
         )
 
 
-__all__ = [
-    "ContentMaterializer",
-    "MessageBusV2Service",
-    "PassthroughContentMaterializer",
-]
+__all__ = ["MessageBusV2Service"]

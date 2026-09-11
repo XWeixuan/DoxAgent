@@ -4,6 +4,8 @@ import asyncio
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
+import pytest
+
 from doxagent.content_enrichment.service import ContentEnrichmentHub
 from doxagent.message_bus_v2.repository import MessageBusV2Repository
 from doxagent.message_bus_v2.schema import (
@@ -15,9 +17,12 @@ from doxagent.message_bus_v2.schema import (
 )
 from doxagent.message_bus_v2.service import MessageBusV2Service
 from doxagent.monitoring.media_enrichment import (
+    DomainFetchController,
     FetchAttempt,
+    FetchFailure,
     MediaEnrichmentRecord,
     MediaExtractionResult,
+    _resolve_fetch_url,
 )
 
 
@@ -126,6 +131,81 @@ async def test_completed_bootstrap_payload_is_not_reenriched_or_published(
     assert extractor.calls == 1
 
 
+async def test_active_queue_keeps_distinct_provider_revisions(tmp_path: Path) -> None:
+    repository, bus, source, binding = _setup(tmp_path)
+    original = _message(61, summary="provider summary").model_copy(
+        update={"raw_payload": {"id": 61, "headline": "original"}}
+    )
+    corrected = original.model_copy(
+        update={
+            "title": "Corrected title",
+            "raw_payload": {"id": 61, "headline": "corrected"},
+        }
+    )
+
+    _, first_created = bus.enqueue_enrichment(
+        source=source,
+        binding=binding,
+        message=original,
+        bootstrap=False,
+        poll_run_id="poll-original",
+    )
+    _, second_created = bus.enqueue_enrichment(
+        source=source,
+        binding=binding,
+        message=corrected,
+        bootstrap=False,
+        poll_run_id="poll-corrected",
+    )
+
+    assert first_created is True
+    assert second_created is True
+    assert len(repository.list_enrichment_jobs()) == 2
+
+
+async def test_worker_surfaces_finalization_infrastructure_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repository, bus, source, binding = _setup(tmp_path)
+    bus.enqueue_enrichment(
+        source=source,
+        binding=binding,
+        message=_message(62, summary="provider summary"),
+        bootstrap=False,
+        poll_run_id="poll-failure",
+    )
+
+    async def fail_finalization(**_kwargs):
+        raise RuntimeError("sqlite unavailable")
+
+    monkeypatch.setattr(bus, "accept_message", fail_finalization)
+    hub = ContentEnrichmentHub(repository, bus, extractor=_ConcurrentExtractor())
+
+    with pytest.raises(RuntimeError, match="sqlite unavailable"):
+        await hub.run_once()
+
+
+async def test_empty_content_stays_raw_only(tmp_path: Path) -> None:
+    repository, bus, source, binding = _setup(tmp_path)
+    source = source.model_copy(update={"content_enrichment_mode": ContentEnrichmentMode.SKIP})
+    empty = _message(63).model_copy(update={"title": None, "body": None, "summary": None})
+    bus.enqueue_enrichment(
+        source=source,
+        binding=binding,
+        message=empty,
+        bootstrap=False,
+        poll_run_id="poll-empty",
+    )
+    hub = ContentEnrichmentHub(repository, bus, extractor=_ForbiddenExtractor())
+
+    assert await hub.run_once() == 1
+    raw = repository.list_raw(ticker="MU")[0]
+    assert raw.processing_status.value == "completed"
+    assert raw.metadata["content_unavailable"]["reason"] == "missing_title_and_body"
+    assert repository.list_standard(ticker="MU") == []
+    assert repository.latest_stream_offset("MU") == 0
+
+
 async def test_global_queue_limits_concurrency_and_keeps_overflow(tmp_path: Path) -> None:
     repository, bus, source, binding = _setup(tmp_path)
     poll = await bus.accept_poll_result(
@@ -201,6 +281,45 @@ async def test_retry_once_then_identity_and_raw_use_enriched_body(tmp_path: Path
     assert raw.resolved_domain == "publisher.test"
     assert raw.metadata["media_enrichment"]["attempts"][0]["status_code"] == 429
     assert extractor.calls == 2
+
+
+class _RedirectRateLimitedSession:
+    async def get(self, *_args, **_kwargs):
+        class Response:
+            status_code = 429
+            headers = {"Retry-After": "1"}
+            text = "rate limited"
+            url = "https://finnhub.io/api/news?id=1"
+
+        return Response()
+
+
+async def test_finnhub_redirect_429_is_structured_and_retryable() -> None:
+    controller = DomainFetchController()
+    with pytest.raises(FetchFailure) as captured:
+        await _resolve_fetch_url(
+            _RedirectRateLimitedSession(),  # type: ignore[arg-type]
+            "https://finnhub.io/api/news?id=1",
+            controller,
+        )
+    attempt = captured.value.attempt
+    assert attempt.status_code == 429
+    assert attempt.transient_hint is True
+    assert attempt.retry_after_seconds == 1
+    record = MediaEnrichmentRecord(
+        standard_message_id="standard",
+        raw_message_id="raw",
+        source_id="finnhub_company_news",
+        ticker="MU",
+        title="Title",
+        body="summary",
+        url="https://finnhub.io/api/news?id=1",
+        raw_url="https://finnhub.io/api/news?id=1",
+        source_name="Finnhub",
+    )
+    assert ContentEnrichmentHub._retryable(
+        MediaExtractionResult(record=record, reason="http_429", attempts=(attempt,))
+    )
 
 
 class _ForbiddenExtractor:

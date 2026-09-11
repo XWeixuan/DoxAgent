@@ -438,7 +438,19 @@ async def extract_media_record(
     final_url = source_url
     controller = fetch_controller or DomainFetchController()
     try:
-        final_url = await _resolve_fetch_url(session, source_url)
+        final_url = await _resolve_fetch_url(session, source_url, controller)
+    except FetchFailure as exc:
+        attempts.append(exc.attempt)
+        return _failed_result(
+            record,
+            exc.attempt.reason or "redirect_failed",
+            started,
+            existing_quality=existing_quality,
+            final_url=final_url,
+            attempts=attempts,
+            fetch_profile=exc.attempt.fetch_profile,
+            http_status=exc.attempt.status_code,
+        )
     except Exception as exc:
         return _failed_result(
             record,
@@ -728,7 +740,11 @@ async def _try_reader_fallback(
         )
 
 
-async def _resolve_fetch_url(session: AsyncSessionLike, url: str) -> str:
+async def _resolve_fetch_url(
+    session: AsyncSessionLike,
+    url: str,
+    controller: DomainFetchController,
+) -> str:
     normalized = _normalize_candidate_url(url, base_url=None)
     if normalized is None:
         raise ValueError("invalid_url")
@@ -737,14 +753,43 @@ async def _resolve_fetch_url(session: AsyncSessionLike, url: str) -> str:
 
     current = normalized
     for _ in range(MAX_FINNHUB_REDIRECT_HOPS):
-        response = await session.get(
-            current,
-            headers=_request_headers(referer="https://finnhub.io/"),
-            allow_redirects=False,
-            timeout=REQUEST_TIMEOUT_SECONDS,
-        )
-        if response.status_code >= 400:
-            raise ValueError(f"redirect_http_{response.status_code}")
+        async with controller.enter(current, phase="redirect") as fetch_profile:
+            started = time.monotonic()
+            try:
+                response = await session.get(
+                    current,
+                    headers=_request_headers(referer="https://finnhub.io/"),
+                    allow_redirects=False,
+                    timeout=REQUEST_TIMEOUT_SECONDS,
+                )
+            except Exception as exc:
+                raise FetchFailure(
+                    FetchAttempt(
+                        phase="redirect",
+                        url=current,
+                        domain=_host_label(current),
+                        fetch_profile=fetch_profile,
+                        latency_ms=_elapsed_ms(started),
+                        reason=_failure_reason(exc),
+                    )
+                ) from exc
+            if response.status_code >= 400:
+                status_code = int(response.status_code)
+                raise FetchFailure(
+                    FetchAttempt(
+                        phase="redirect",
+                        url=current,
+                        domain=_host_label(current),
+                        final_url=str(response.url),
+                        fetch_profile=fetch_profile,
+                        status_code=status_code,
+                        latency_ms=_elapsed_ms(started),
+                        reason=f"http_{status_code}",
+                        response_bytes=len(str(response.text or "").encode(errors="ignore")),
+                        retry_after_seconds=_retry_after_seconds(response.headers),
+                        transient_hint=(status_code in {408, 425, 429} or status_code >= 500),
+                    )
+                )
 
         location = _header(response.headers, "location")
         if location:

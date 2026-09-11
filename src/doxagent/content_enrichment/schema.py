@@ -29,6 +29,7 @@ class EnrichmentJob(BusModel):
     source: SourceDefinition
     binding: TickerSourceBinding
     message: RawMessageInput
+    provider_raw_hash: str | None = None
     bootstrap: bool = False
     status: EnrichmentJobStatus = EnrichmentJobStatus.QUEUED
     attempt_count: int = Field(default=0, ge=0)

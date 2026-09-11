@@ -489,6 +489,53 @@ def test_pending_raw_recovery_is_idempotent_and_transactional(tmp_path: Path) ->
     assert repository.latest_stream_offset("MU") == 1
 
 
+async def test_duplicate_intake_completes_matching_pending_raw(tmp_path: Path) -> None:
+    repository, service = _bus(tmp_path / "duplicate-pending.sqlite3")
+    service.start_ticker("MU")
+    source = service.require_source("benzinga_news")
+    binding = repository.get_binding("MU:benzinga_news")
+    assert binding is not None
+    value = _input("crash-between-raw-and-standard")
+    raw = RawMessage(
+        raw_message_id=new_id("raw"),
+        ticker="MU",
+        source_id=source.source_id,
+        binding_id=binding.binding_id,
+        source_definition_version=source.version,
+        external_id=value.external_id,
+        source_item_key=source_item_key_for(source.source_id, value),
+        identity_key=identity_key_for(source.source_id, value),
+        content_hash=content_hash_for(value),
+        raw_hash=sha256_text(canonical_json(value.raw_payload)),
+        title=value.title,
+        body=value.fallback_body,
+        source=value.source or source.display_name,
+        url=value.url,
+        published_at=value.published_at,
+        collected_at=NOW,
+        raw_payload=value.raw_payload,
+        streaming_config=StreamingConfig(publication_mode=PublicationMode.IMMEDIATE),
+        first_seen_at=NOW,
+        last_seen_at=NOW,
+    )
+    repository.record_raw(raw)
+
+    result = await service.accept_message(
+        source=source,
+        binding=binding,
+        message=value,
+        bootstrap=False,
+        collected_at=NOW + timedelta(seconds=1),
+    )
+
+    assert result.decision.value == "duplicate"
+    assert result.standard_message_id is not None
+    assert repository.latest_stream_offset("MU") == 1
+    completed = repository.get_raw(raw.raw_message_id)
+    assert completed is not None
+    assert completed.processing_status is RawProcessingStatus.COMPLETED
+
+
 async def test_hard_delete_flushes_buffer_and_preserves_immutable_history(
     tmp_path: Path,
 ) -> None:
