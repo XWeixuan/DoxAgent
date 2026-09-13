@@ -389,6 +389,23 @@ class DoxAgentSettings(BaseSettings):
         le=4,
         validation_alias="IBKR_TWS_MARKET_DATA_TYPE",
     )
+    ibkr_news_client_id: int = Field(
+        default=73,
+        ge=0,
+        validation_alias="IBKR_NEWS_CLIENT_ID",
+    )
+    ibkr_news_max_articles_per_poll: int = Field(
+        default=20,
+        ge=1,
+        le=100,
+        validation_alias="IBKR_NEWS_MAX_ARTICLES_PER_POLL",
+    )
+    ibkr_news_article_concurrency: int = Field(
+        default=4,
+        ge=1,
+        le=8,
+        validation_alias="IBKR_NEWS_ARTICLE_CONCURRENCY",
+    )
     stocktwits_rapidapi_key: str | None = Field(
         default=None,
         validation_alias="STOCKTWITS_RAPIDAPI_KEY",
@@ -549,6 +566,14 @@ class DoxAgentSettings(BaseSettings):
         default=True,
         validation_alias="DOXAGENT_MESSAGE_BUS_V2_CONTENT_ENRICHMENT_ENABLED",
     )
+    message_bus_v2_hidden_news_domains: str = Field(
+        default="",
+        validation_alias="DOXAGENT_MESSAGE_BUS_V2_HIDDEN_NEWS_DOMAINS",
+    )
+    message_bus_v2_hidden_news_publishers: str = Field(
+        default="",
+        validation_alias="DOXAGENT_MESSAGE_BUS_V2_HIDDEN_NEWS_PUBLISHERS",
+    )
     content_enrichment_enabled: bool = Field(
         default=True,
         validation_alias="DOXAGENT_CONTENT_ENRICHMENT_ENABLED",
@@ -623,6 +648,22 @@ class DoxAgentSettings(BaseSettings):
         default=10_000_000,
         ge=1,
         validation_alias="DOXAGENT_CRAWLER_PLANE_MAX_RESPONSE_BYTES",
+    )
+    crawler_plane_browser_headless: bool = Field(
+        default=True,
+        validation_alias="DOXAGENT_CRAWLER_PLANE_BROWSER_HEADLESS",
+    )
+    crawler_plane_browser_channel: str | None = Field(
+        default=None,
+        validation_alias="DOXAGENT_CRAWLER_PLANE_BROWSER_CHANNEL",
+    )
+    crawler_plane_browser_identity_dir: str | None = Field(
+        default=None,
+        validation_alias="DOXAGENT_CRAWLER_PLANE_BROWSER_IDENTITY_DIR",
+    )
+    crawler_plane_browser_cdp_url: str | None = Field(
+        default=None,
+        validation_alias="DOXAGENT_CRAWLER_PLANE_BROWSER_CDP_URL",
     )
     persistent_runtime_storage_mode: Literal["memory", "sqlite"] = Field(
         default="sqlite",

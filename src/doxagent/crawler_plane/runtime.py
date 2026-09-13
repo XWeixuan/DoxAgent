@@ -11,7 +11,8 @@ from contextlib import AbstractAsyncContextManager, asynccontextmanager
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from functools import partial
-from typing import Any, Literal
+from typing import Any, Literal, cast
+from urllib.parse import quote
 
 import httpx
 
@@ -40,21 +41,66 @@ async def unlimited_request_permit() -> Any:
 
 
 class PlaywrightBrowserRuntime:
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        *,
+        headless: bool = True,
+        channel: str | None = None,
+        identity_dir: str | None = None,
+        cdp_url: str | None = None,
+    ) -> None:
         self._playwright: Any | None = None
         self._browser: Any | None = None
+        self._context: Any | None = None
+        self._owns_browser = False
         self._lock = asyncio.Lock()
+        self.headless = headless
+        self.channel = channel
+        self.identity_dir = identity_dir
+        self.cdp_url = cdp_url
+
+    async def _ensure(self) -> Any:
+        if self._context is not None:
+            return self._context
+        try:
+            from playwright.async_api import async_playwright
+        except ImportError as exc:
+            raise RuntimeError("Playwright is not installed") from exc
+        playwright = await async_playwright().start()
+        self._playwright = playwright
+        try:
+            if self.cdp_url:
+                self._browser = await playwright.chromium.connect_over_cdp(self.cdp_url)
+                contexts = self._browser.contexts
+                if not contexts:
+                    raise RuntimeError("CDP browser has no persistent default context")
+                self._context = contexts[0]
+            elif self.identity_dir:
+                self._context = await playwright.chromium.launch_persistent_context(
+                    self.identity_dir,
+                    headless=self.headless,
+                    channel=self.channel or None,
+                )
+                self._owns_browser = True
+            else:
+                self._browser = await playwright.chromium.launch(
+                    headless=self.headless,
+                    channel=self.channel or None,
+                )
+                self._context = await self._browser.new_context()
+                self._owns_browser = True
+        except Exception:
+            await playwright.stop()
+            self._playwright = None
+            self._browser = None
+            self._context = None
+            raise
+        return self._context
 
     async def get(self, url: str) -> tuple[int, str, dict[str, str], str]:
         async with self._lock:
-            if self._browser is None:
-                try:
-                    from playwright.async_api import async_playwright
-                except ImportError as exc:
-                    raise RuntimeError("Playwright is not installed") from exc
-                self._playwright = await async_playwright().start()
-                self._browser = await self._playwright.chromium.launch(headless=True)
-            page = await self._browser.new_page()
+            context = await self._ensure()
+            page = await context.new_page()
             try:
                 response = await page.goto(url, wait_until="networkidle")
                 html = await page.content()
@@ -64,10 +110,58 @@ class PlaywrightBrowserRuntime:
             finally:
                 await page.close()
 
+    async def reuters_search(self, query: str, offset: int) -> list[dict[str, object]]:
+        async with self._lock:
+            context = await self._ensure()
+            page = await context.new_page()
+            try:
+                response = await page.goto(
+                    f"https://www.reuters.com/site-search/?query={quote(query)}&offset={offset}",
+                    wait_until="domcontentloaded",
+                )
+                status = response.status if response is not None else 200
+                if status >= 400:
+                    raise RuntimeError(f"Reuters search returned HTTP {status}")
+                await page.wait_for_timeout(1500)
+                rows = await page.evaluate(
+                    """() => {
+                      const months = '(?:January|February|March|April|May|June|July|August|'
+                        + 'September|October|November|December)';
+                      const pattern = new RegExp(months + '\\s+\\d{1,2},\\s+\\d{4}');
+                      const out = [], seen = new Set();
+                      for (const link of document.querySelectorAll('main a[href]')) {
+                        const href = link.getAttribute('href') || '';
+                        const title = (link.textContent || '').trim();
+                        const articlePath = /\\/[^/]+\\/[^/]+-\\d{4}-\\d{2}-\\d{2}\\//;
+                        if (!title || title.length < 15 || !href.startsWith('/')
+                            || !articlePath.test(href) || seen.has(href)) continue;
+                        let node = link, text = '';
+                        for (let i = 0; i < 6 && node; i++, node = node.parentElement) {
+                          text = (node.textContent || '').replace(/\\s+/g, ' ').trim();
+                          if (pattern.test(text)) break;
+                        }
+                        const match = text.match(pattern);
+                        if (!match) continue;
+                        seen.add(href);
+                        const summary = text.replace(title, '').replace(match[0], '').trim();
+                        out.push({url: href, title, date: match[0], summary});
+                      }
+                      return out;
+                    }"""
+                )
+                return cast(list[dict[str, object]], rows)
+            finally:
+                await page.close()
+
     async def close(self) -> None:
-        if self._browser is not None:
-            await self._browser.close()
-            self._browser = None
+        if self._owns_browser:
+            if self._context is not None:
+                await self._context.close()
+            if self._browser is not None:
+                await self._browser.close()
+        self._context = None
+        self._browser = None
+        self._owns_browser = False
         if self._playwright is not None:
             await self._playwright.stop()
             self._playwright = None

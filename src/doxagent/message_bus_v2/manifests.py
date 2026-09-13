@@ -83,6 +83,30 @@ def initial_sources() -> list[SourceDefinition]:
             properties={"rss_urls": {**string_array, "minItems": 1, "maxItems": 3}},
             required=["rss_urls"],
         ),
+        _source(
+            "yahoo_finance_news",
+            "Yahoo Finance News",
+            properties={"snippet_count": {"type": "integer", "minimum": 10, "maximum": 200}},
+        ),
+        _source("ibkr_news", "IBKR News API", scheduler_group="ibkr_news"),
+        _source(
+            "reuters_site_search",
+            "Reuters Site Search",
+            kind=SourceKind.CRAWLER,
+            properties={
+                "company_short_name": {"type": "string", "minLength": 1},
+                "max_pages": {"type": "integer", "minimum": 1, "maximum": 10},
+            },
+        ),
+        _source(
+            "google_news_search_rss",
+            "Google News Search RSS",
+            properties={
+                "search_terms": {**string_array, "minItems": 1, "maxItems": 10},
+                "domains": {**string_array, "maxItems": 10},
+            },
+            required=["search_terms"],
+        ),
     ]
 
 
@@ -106,10 +130,26 @@ def initial_default_profile() -> DefaultMonitoringProfile:
                 polling=polling,
                 streaming=StreamingConfig(),
             ),
+            DefaultProfileEntry(
+                source_id="yahoo_finance_news",
+                polling=polling,
+                streaming=StreamingConfig(),
+            ),
+            DefaultProfileEntry(
+                source_id="ibkr_news",
+                polling=polling,
+                streaming=StreamingConfig(),
+            ),
+            DefaultProfileEntry(
+                source_id="reuters_site_search",
+                polling=polling,
+                streaming=StreamingConfig(),
+            ),
         ],
         updated_by=UpdateActor.SYSTEM,
         updated_reason=(
-            "initial profile: Benzinga and Finnhub; shared calendar owns continuous-session "
+            "initial profile: Benzinga, Finnhub, Yahoo, IBKR and Reuters; shared calendar owns "
+            "continuous-session "
             "polling and the 02:00 ET closed-day sweep"
         ),
     )

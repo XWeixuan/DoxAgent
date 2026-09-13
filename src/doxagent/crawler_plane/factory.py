@@ -5,7 +5,7 @@ from __future__ import annotations
 from doxagent.crawler_plane.assets import CrawlerAssetStore
 from doxagent.crawler_plane.certification import CrawlerCertificationService
 from doxagent.crawler_plane.repository import CrawlerPlaneRepository
-from doxagent.crawler_plane.runtime import CrawlerWorkerPool
+from doxagent.crawler_plane.runtime import CrawlerWorkerPool, PlaywrightBrowserRuntime
 from doxagent.crawler_plane.service import CrawlerPlaneService
 from doxagent.message_bus_v2.service import MessageBusV2Service
 from doxagent.settings import DoxAgentSettings
@@ -25,6 +25,12 @@ def build_crawler_plane_service(
         repository,
         assets,
         worker_pool=worker_pool,
+        browser=PlaywrightBrowserRuntime(
+            headless=settings.crawler_plane_browser_headless,
+            channel=settings.crawler_plane_browser_channel,
+            identity_dir=settings.crawler_plane_browser_identity_dir,
+            cdp_url=settings.crawler_plane_browser_cdp_url,
+        ),
         execution_timeout_seconds=settings.crawler_plane_execution_timeout_seconds,
         max_response_bytes=settings.crawler_plane_max_response_bytes,
         message_bus=message_bus,

@@ -9,6 +9,7 @@ from urllib.parse import urlparse
 from doxagent.content_enrichment.schema import EnrichmentJob
 from doxagent.message_bus_v2.compiler import compiled_body_length_for_members
 from doxagent.message_bus_v2.manifests import initial_default_profile, initial_sources
+from doxagent.message_bus_v2.news_policy import HiddenNewsIngressPolicy
 from doxagent.message_bus_v2.repository import MessageBusV2Repository
 from doxagent.message_bus_v2.schema import (
     AcquisitionFailure,
@@ -60,11 +61,13 @@ class MessageBusV2Service:
         enrichment_queue_enabled: bool = False,
         enrichment_retry_deadline_seconds: int = 180,
         enrichment_pipeline_version: str | None = "body_v2.1",
+        hidden_news_policy: HiddenNewsIngressPolicy | None = None,
     ) -> None:
         self.repository = repository
         self.enrichment_queue_enabled = enrichment_queue_enabled
         self.enrichment_retry_deadline_seconds = max(1, enrichment_retry_deadline_seconds)
         self.enrichment_pipeline_version = enrichment_pipeline_version
+        self.hidden_news_policy = hidden_news_policy or HiddenNewsIngressPolicy()
 
     def bootstrap(self) -> None:
         for source in initial_sources():
@@ -72,7 +75,27 @@ class MessageBusV2Service:
                 self.register_source(source)
         if self.repository.get_default_profile("default") is None:
             self.save_default_profile(initial_default_profile())
+        else:
+            self._append_missing_default_sources()
         self._migrate_legacy_default_news_windows()
+
+    def _append_missing_default_sources(self) -> None:
+        current = self.repository.get_default_profile("default")
+        if current is None:
+            return
+        desired = initial_default_profile()
+        existing = {entry.source_id for entry in current.entries}
+        # Only migrate profiles that still contain the complete legacy default pair.
+        # An operator-created empty or replacement profile remains authoritative.
+        if not {"benzinga_news", "finnhub_company_news"}.issubset(existing):
+            return
+        additions = [entry for entry in desired.entries if entry.source_id not in existing]
+        if additions:
+            self.save_default_profile(current.model_copy(update={
+                "entries": [*current.entries, *additions],
+                "updated_by": UpdateActor.SYSTEM,
+                "updated_reason": "register Message Bus v2 default Yahoo, IBKR and Reuters sources",
+            }))
 
     def _migrate_legacy_default_news_windows(self) -> None:
         """Remove the retired weekday 07:00-18:00 ET gate from default news polling.
@@ -82,7 +105,13 @@ class MessageBusV2Service:
         untouched.
         """
 
-        default_sources = {"benzinga_news", "finnhub_company_news"}
+        default_sources = {
+            "benzinga_news",
+            "finnhub_company_news",
+            "yahoo_finance_news",
+            "ibkr_news",
+            "reuters_site_search",
+        }
 
         def uses_legacy_window(polling: object) -> bool:
             if not isinstance(polling, PollingConfig):
@@ -507,6 +536,7 @@ class MessageBusV2Service:
         result: PollResult,
         attempted_at: datetime | None = None,
     ) -> PollExecutionResult:
+        result = self.hidden_news_policy.apply(source.source_id, result)
         now = attempted_at or utc_now()
         state = self.repository.get_poll_state(binding)
         bootstrap = not state.bootstrap_complete
@@ -666,8 +696,11 @@ class MessageBusV2Service:
     @staticmethod
     def _validate_source_adapter(source: SourceDefinition) -> None:
         is_crawler_ref = source.adapter_ref.startswith("crawler:")
-        if source.kind is SourceKind.CRAWLER and not is_crawler_ref:
-            raise ValueError("crawler sources must use adapter_ref crawler:<crawler_id>")
+        is_builtin_ref = source.adapter_ref.startswith("builtin:")
+        if source.kind is SourceKind.CRAWLER and not (is_crawler_ref or is_builtin_ref):
+            raise ValueError(
+                "crawler sources must use adapter_ref crawler:<crawler_id> or builtin:"
+            )
         if source.kind is SourceKind.API and is_crawler_ref:
             raise ValueError("API sources may not use a crawler adapter_ref")
 

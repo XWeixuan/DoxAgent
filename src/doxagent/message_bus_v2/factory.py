@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from doxagent.crawler_plane.factory import build_crawler_plane_service
 from doxagent.crawler_plane.service import CrawlerPlaneService
 from doxagent.message_bus_v2.adapters import AdapterRegistry
+from doxagent.message_bus_v2.news_policy import HiddenNewsIngressPolicy
 from doxagent.message_bus_v2.repository import MessageBusV2Repository
 from doxagent.message_bus_v2.scheduler import GlobalPollScheduler
 from doxagent.message_bus_v2.service import MessageBusV2Service
@@ -72,6 +73,10 @@ def build_message_bus_v2_service(
         enrichment_retry_deadline_seconds=settings.content_enrichment_retry_deadline_seconds,
         enrichment_pipeline_version=(
             "body_v2.1" if settings.content_enrichment_pipeline_enabled else None
+        ),
+        hidden_news_policy=HiddenNewsIngressPolicy.from_strings(
+            domains=settings.message_bus_v2_hidden_news_domains,
+            publishers=settings.message_bus_v2_hidden_news_publishers,
         ),
     )
     service.bootstrap()

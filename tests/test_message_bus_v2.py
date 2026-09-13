@@ -93,12 +93,19 @@ def test_bootstrap_registry_profile_and_ticker_materialization(tmp_path: Path) -
         "tikhub_x_search",
         "tikhub_x_user_posts",
         "newswire_rss",
+        "yahoo_finance_news",
+        "ibkr_news",
+        "reuters_site_search",
+        "google_news_search_rss",
     }
     profile = repository.get_default_profile("default")
     assert profile is not None
     assert [entry.source_id for entry in profile.entries] == [
         "benzinga_news",
         "finnhub_company_news",
+        "yahoo_finance_news",
+        "ibkr_news",
+        "reuters_site_search",
     ]
 
     state = service.start_ticker("mu", actor=UpdateActor.AGENT)
@@ -107,12 +114,15 @@ def test_bootstrap_registry_profile_and_ticker_materialization(tmp_path: Path) -
     assert {binding.source_id for binding in bindings} == {
         "benzinga_news",
         "finnhub_company_news",
+        "yahoo_finance_news",
+        "ibkr_news",
+        "reuters_site_search",
     }
     assert all(binding.polling.target_interval_seconds == 60 for binding in bindings)
 
     # Profiles are materialized templates, not live parents.
     service.save_default_profile(profile.model_copy(update={"entries": []}))
-    assert len(repository.list_bindings(ticker="MU")) == 2
+    assert len(repository.list_bindings(ticker="MU")) == 5
 
 
 def test_disabled_flag_has_no_v1_fallback_and_does_not_bootstrap_v2_db(
@@ -835,7 +845,19 @@ async def test_all_six_builtin_adapters_with_fixed_responses(tmp_path: Path) -> 
         client=client,
     )
     repository, service = _bus(tmp_path / "providers.sqlite3")
-    sources = {source.source_id: source for source in initial_sources()}
+    legacy_ids = {
+        "benzinga_news",
+        "finnhub_company_news",
+        "stocktwits_messages",
+        "tikhub_x_search",
+        "tikhub_x_user_posts",
+        "newswire_rss",
+    }
+    sources = {
+        source.source_id: source
+        for source in initial_sources()
+        if source.source_id in legacy_ids
+    }
     parameters = {
         "benzinga_news": {},
         "finnhub_company_news": {},

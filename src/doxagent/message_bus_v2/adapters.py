@@ -23,6 +23,12 @@ from doxagent.crawler_plane.schema import (
     NetworkMode,
 )
 from doxagent.crawler_plane.service import CrawlerPlaneService
+from doxagent.message_bus_v2.ibkr_news import IbkrNewsAdapter
+from doxagent.message_bus_v2.news_adapters import (
+    GoogleNewsSearchRssAdapter,
+    ReutersSiteSearchAdapter,
+    YahooFinanceNewsAdapter,
+)
 from doxagent.message_bus_v2.schema import (
     AcquisitionFailure,
     JsonObject,
@@ -75,10 +81,21 @@ class AdapterRegistry:
             "tikhub_x_search": TikHubXSearchAdapter(settings, self.client),
             "tikhub_x_user_posts": TikHubXUserPostsAdapter(settings, self.client),
             "newswire_rss": NewswireRSSAdapter(settings, self.client),
+            "yahoo_finance_news": YahooFinanceNewsAdapter(settings, self.client),
+            "ibkr_news": IbkrNewsAdapter(settings),
+            "reuters_site_search": ReutersSiteSearchAdapter(
+                crawler_plane.browser if crawler_plane is not None else None,
+                self.client,
+            ),
+            "google_news_search_rss": GoogleNewsSearchRssAdapter(settings, self.client),
         }
         self._dynamic_cache: dict[tuple[str, int], SourceAdapter] = {}
 
     async def close(self) -> None:
+        ibkr = self._builtins.get("ibkr_news")
+        close = getattr(ibkr, "close", None)
+        if callable(close):
+            close()
         if self._owns_client:
             await self.client.aclose()
 
@@ -384,29 +401,44 @@ class BenzingaNewsAdapter(_BaseAdapter):
         page = int(context.checkpoint.get("page", 0))
         # Provider paging is not a snapshot token: preserve UNKNOWN coverage.
         # Use update time so revisions of older articles are not skipped.
-        data = await self._json(context,
+        data = await self._json(
+            context,
             self.settings.benzinga_news_base_url.rstrip("/") + "/api/v2/news",
-            params={"token": _require(self.settings.benzinga_api_key, "BENZINGA_API_KEY"),
-                    "pageSize": 100, "page": page, "displayOutput": "full", "sort": "updated:asc",
-                    "primaryTickers": context.ticker,
-                    "updatedSince": int(context.window_start.timestamp())},
-            headers={"accept": "application/json"})
+            params={
+                "token": _require(self.settings.benzinga_api_key, "BENZINGA_API_KEY"),
+                "pageSize": 100,
+                "page": page,
+                "displayOutput": "full",
+                "sort": "updated:asc",
+                "primaryTickers": context.ticker,
+                "updatedSince": int(context.window_start.timestamp()),
+            },
+            headers={"accept": "application/json"},
+        )
         rows = _rows(data)
-        bounded = [row for row in rows if (stamp := _datetime_or_none(row.get("updated") or row.get("created")))
-                   and context.window_start <= stamp < context.window_cutoff]
+        bounded = [
+            row
+            for row in rows
+            if (stamp := _datetime_or_none(row.get("updated") or row.get("created")))
+            and context.window_start <= stamp < context.window_cutoff
+        ]
         result = self._rows(context, bounded, query_mode="closed_window_primary_tickers")
         reached_cutoff = bool(rows) and all(
             (stamp := _datetime_or_none(row.get("updated") or row.get("created")))
-            and stamp >= context.window_cutoff for row in rows)
+            and stamp >= context.window_cutoff
+            for row in rows
+        )
 
         capped = page >= 99 and len(rows) >= 100
-        return result.model_copy(update={"next_checkpoint": {"page": page + 1},
-            "window_done": len(rows) < 100 or capped or reached_cutoff,
-            "window_coverage": "PARTIAL" if capped or result.failures else "UNKNOWN"})
+        return result.model_copy(
+            update={
+                "next_checkpoint": {"page": page + 1},
+                "window_done": len(rows) < 100 or capped or reached_cutoff,
+                "window_coverage": "PARTIAL" if capped or result.failures else "UNKNOWN",
+            }
+        )
 
-    def _rows(
-        self, context: PollContext, rows: list[JsonObject], *, query_mode: str
-    ) -> PollResult:
+    def _rows(self, context: PollContext, rows: list[JsonObject], *, query_mode: str) -> PollResult:
         messages: list[RawMessageInput] = []
         failures: list[AcquisitionFailure] = []
         for row in rows:
@@ -420,9 +452,20 @@ class BenzingaNewsAdapter(_BaseAdapter):
                 source=row.get("author") or "Benzinga",
                 url=row.get("url"),
                 published_at=row.get("created") or row.get("updated"),
-                metadata={"provider": "benzinga", "query_mode": query_mode,
-                          **({"sweep_updated_at": (_datetime_or_none(row.get("updated") or row.get("created"))).isoformat()}
-                             if context.window_cutoff and _datetime_or_none(row.get("updated") or row.get("created")) else {})},
+                metadata={
+                    "provider": "benzinga",
+                    "query_mode": query_mode,
+                    **(
+                        {
+                            "sweep_updated_at": (
+                                _datetime_or_none(row.get("updated") or row.get("created"))
+                            ).isoformat()
+                        }
+                        if context.window_cutoff
+                        and _datetime_or_none(row.get("updated") or row.get("created"))
+                        else {}
+                    ),
+                },
             )
             (messages if message else failures).append(cast(Any, message or failure))
         return PollResult(
@@ -436,9 +479,13 @@ class FinnhubCompanyNewsAdapter(_BaseAdapter):
     async def poll(self, context: PollContext) -> PollResult:
         token = _require(self.settings.finnhub_api_key, "FINNHUB_API_KEY")
         today = context.window_cutoff.date() if context.window_cutoff else utc_now().date()
-        page_day = (datetime.fromisoformat(context.checkpoint["day"]).date()
-                    if context.window_cutoff and context.checkpoint.get("day") else
-                    context.window_start.date() if context.window_start else today - timedelta(days=3))
+        page_day = (
+            datetime.fromisoformat(context.checkpoint["day"]).date()
+            if context.window_cutoff and context.checkpoint.get("day")
+            else context.window_start.date()
+            if context.window_start
+            else today - timedelta(days=3)
+        )
         data = await self._json(
             context,
             self.settings.finnhub_base_url.rstrip("/") + "/company-news",
@@ -465,10 +512,15 @@ class FinnhubCompanyNewsAdapter(_BaseAdapter):
                 metadata={"provider": "finnhub", "category": row.get("category")},
             )
             (messages if message else failures).append(cast(Any, message or failure))
-        return PollResult(messages=messages, failures=failures,
-            next_checkpoint={"day": (page_day + timedelta(days=1)).isoformat()} if context.window_cutoff else {},
+        return PollResult(
+            messages=messages,
+            failures=failures,
+            next_checkpoint={"day": (page_day + timedelta(days=1)).isoformat()}
+            if context.window_cutoff
+            else {},
             window_done=page_day >= today if context.window_cutoff else True,
-            window_coverage="PARTIAL" if failures else "UNKNOWN")
+            window_coverage="PARTIAL" if failures else "UNKNOWN",
+        )
 
 
 class StocktwitsMessagesAdapter(_BaseAdapter):
@@ -843,8 +895,12 @@ __all__ = [
     "CrawlerAdapterExecutionError",
     "CrawlerSourceAdapter",
     "FinnhubCompanyNewsAdapter",
+    "GoogleNewsSearchRssAdapter",
+    "IbkrNewsAdapter",
     "NewswireRSSAdapter",
+    "ReutersSiteSearchAdapter",
     "StocktwitsMessagesAdapter",
     "TikHubXSearchAdapter",
     "TikHubXUserPostsAdapter",
+    "YahooFinanceNewsAdapter",
 ]

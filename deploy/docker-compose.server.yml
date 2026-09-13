@@ -43,6 +43,7 @@ services:
       DOXAGENT_CODEX_D2_MAX_CONCURRENCY: "2"
     extra_hosts: ["host.docker.internal:host-gateway"]
   v2-message-bus:
+    extra_hosts: ["host.docker.internal:host-gateway"]
     mem_limit: 256m
     memswap_limit: 256m
     cpus: 0.5

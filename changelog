@@ -990,3 +990,11 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-09-14 · 修复 Overview Gateway 卡片：移除与数值重叠的图标，两行标签和值左右对齐；Gateway 改为独立 /overview/gateway-status 请求，卡片内骨架，不阻塞当前时段、KPI 或列表；维持打开/导航返回/手动刷新触发。8项针对性后端测试（含普通Status不调用探测）通过，类型/ESLint通过。排查确认9月13日23:45:06自动重启后23:45:10授权失败，4002未监听，relay正常；详细记录 GATEWAY_DISCONNECT_20260914.md。
 2026-09-14 · 修复 IB Gateway 长连接就绪：Trade Executor 现在仅为当前 RUNNING ticker 已绑定的 Paper/Live profile 建立并每 10 秒检查长连接，空 Job 时也保持 API Client 在线；连接失败只记录隔离状态并自动重试，不激活未配置 profile、不调用订单方法。新增聚焦测试覆盖 RUNNING 连接与 PAUSED 不连接。
+2026-09-14 · 新增新加坡远程桌面一键启动脚本：自动建立 `doxagent-sg` SSH 转发并打开 `mstsc`，首次运行通过 Windows Credential Manager 保存 RDP 凭据，支持 `-ForgetSavedCredential` 重新录入及 `-NoCredentialSave` 使用普通登录框；脚本不保存明文密码。
+2026-09-14 · 修复新加坡远程桌面脚本的凭据检测：`cmdkey /list` 在目标不存在时也返回 0，现同时识别 `* NONE *`，确保首次运行确实提示并保存 RDP 凭据。
+2026-09-14 · 优化新加坡远程桌面启动：改用临时 `.rdp` 配置传入用户名和 `prompt for credentials:i:0`，让已保存的 Windows RDP 凭据被 mstsc 自动使用；退出后清理临时配置，不写入密码。
+2026-09-14 · 修复新加坡远程桌面窗口尺寸：临时 `.rdp` 配置恢复当前主屏分辨率，启用窗口缩放与动态分辨率，避免连接打开为小尺寸且无法调整。
+2026-09-14 · 补充远程桌面初始窗口位置尺寸，按当前主屏打开大窗口，同时保留手动调整能力。
+2026-09-14 · Message Bus V2 新增 Yahoo Finance、IBKR News、Reuters Site Search、Google News Search RSS 四路消息源并完成内置注册。Yahoo 采用 NCP 主路径与 Finance Search 回退，IBKR 复用长连接订阅 News Tick 292 并以 Historical News 补查，Reuters 复用可持久化 Playwright 会话且仅保留今天/前一天搜索日期，Google 支持搜索词、域名限定及 canonical URL 解码。Yahoo/Google 在 Raw 与正文补全入库前共享隐藏域名/信源名黑名单（默认均为空）；前三路进入 60 秒默认 profile，Google 保持默认关闭并由 O2/O4 显式配置。新增聚焦单元测试和实网 Yahoo/Google 验证；当前本机 Reuters 新 headless 会话仍获 HTTP 401、IBKR 7496 不可达，均按 source-local degraded 处理而不阻断总线。
+2026-09-14 · Message Bus V2 四路新闻源部署前补强：Crawler Plane 浏览器新增可选 CDP 附着模式，以复用独立持久 Chrome 的默认身份上下文且关闭运行时时不终止外部浏览器；Reuters 验收元数据增加抓取页数和原始搜索结果数；新加坡 v2-message-bus 增加 host.docker.internal 映射，修复容器无法连接宿主机 IB Gateway 的确定性阻断。Reuters 新身份仍需完成站点挑战后才可从 degraded 恢复，未把空 profile 视为可用。
+2026-09-14 · IBKR News 针对官方 ibapi 10.49 修正新旧 `error()` 回调参数兼容，避免把 errorTime 误记为错误码；292 订阅只在新连接时执行一次 Historical News 补洞，后续一分钟 polling 排空长连接队列，不再静默分钟级重复查询 24 小时历史。历史/实时积压按每轮上限分批、正文请求以小并发执行，并显式报告 pending_count 与 hasMore/coverage。
