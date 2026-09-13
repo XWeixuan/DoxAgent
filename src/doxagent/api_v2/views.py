@@ -82,6 +82,7 @@ class Views:
                 )
         activation = self.store.get("activation", ticker or "", "active", seq)
         clock = self.calendar.clock(now, maintenance_pending=maintenance)
+        semantic = page in {"MESSAGE_BUS", "RUNTIME", "EVENTS", "POLICIES"}
         selected = period or "PREVIOUS_TRADING_DAY"
         if selected not in {
             "PREVIOUS_TRADING_DAY",
@@ -95,7 +96,7 @@ class Views:
             None
             if page in {"RESEARCH", "EXPECTATIONS"}
             else self.calendar.period(
-                selected, now, first_at=datetime.fromisoformat(first) if first else None
+                selected, now, first_at=datetime.fromisoformat(first) if first else None, semantic=semantic
             )
         )
         value = {
@@ -107,9 +108,9 @@ class Views:
             "period_options": [
                 {
                     "period": p,
-                    "selectable": p != "CURRENT_TRADING_DAY" or clock["is_trading_day"]["value"],
+                    "selectable": semantic or p != "CURRENT_TRADING_DAY" or clock["is_trading_day"]["value"],
                     "reason": "NON_TRADING_DAY"
-                    if p == "CURRENT_TRADING_DAY" and not clock["is_trading_day"]["value"]
+                    if not semantic and p == "CURRENT_TRADING_DAY" and not clock["is_trading_day"]["value"]
                     else None,
                 }
                 for p in (

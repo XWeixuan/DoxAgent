@@ -9,12 +9,14 @@ Runtime consumer and API can safely share the database.
 from __future__ import annotations
 
 import sqlite3
+import json
 from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from types import TracebackType
 from typing import Literal, TypeVar
+from urllib.parse import urlparse
 
 from pydantic import BaseModel
 
@@ -650,16 +652,38 @@ class MessageBusV2Repository:
                     EnrichmentJobStatus.QUEUED.value,
                     EnrichmentJobStatus.RETRY_WAIT.value,
                     current.isoformat(),
-                    max(1, limit),
+                    max(64, min(1024, limit * 128)),
                 ),
             ).fetchall()
+            # A bounded ready window spreads claims across publishers; the HTTP
+            # controller still enforces actual request pacing after redirects.
+            ready = [EnrichmentJob.model_validate_json(row["data_json"]) for row in rows]
+            host_counts: dict[str, int] = {}
+            running = connection.execute(
+                "select data_json from content_enrichment_jobs where status=?",
+                (EnrichmentJobStatus.RUNNING.value,),
+            ).fetchall()
+            for row in running:
+                active = EnrichmentJob.model_validate_json(row["data_json"])
+                host = urlparse(active.message.url).hostname or ""
+                host_counts[host] = host_counts.get(host, 0) + 1
+            selected = []
+            while ready and len(selected) < max(1, limit):
+                existing = min(
+                    ready,
+                    key=lambda item: host_counts.get(urlparse(item.message.url).hostname or "", 0),
+                )
+                ready.remove(existing)
+                selected.append(existing)
+                host = urlparse(existing.message.url).hostname or ""
+                host_counts[host] = host_counts.get(host, 0) + 1
             claimed = []
-            for row in rows:
-                existing = EnrichmentJob.model_validate_json(row["data_json"])
+            for existing in selected:
                 job = existing.model_copy(
                     update={
                         "status": EnrichmentJobStatus.RUNNING,
                         "attempt_count": existing.attempt_count + 1,
+                        "claim_token": new_id("claim"),
                         "lease_expires_at": lease_until,
                         "updated_at": current,
                     }
@@ -679,15 +703,49 @@ class MessageBusV2Repository:
 
     def requeue_enrichment_job(self, job: EnrichmentJob) -> None:
         with self.transaction() as connection:
+            if job.claim_token:
+                self._assert_enrichment_claim(connection, job.job_id, job.claim_token)
             connection.execute(
                 """update content_enrichment_jobs
                    set status=?,not_before=?,lease_expires_at=null,data_json=? where job_id=?""",
                 (job.status.value, job.not_before.isoformat(), self._json(job), job.job_id),
             )
 
-    def delete_enrichment_job(self, job_id: str) -> None:
+    def pending_enrichment_ids(self, identities: list[str]) -> list[str]:
+        with self._connect() as connection:
+            return [row[0] for row in connection.execute(
+                "select job_id from content_enrichment_jobs where job_id in "
+                "(select value from json_each(?))", (json.dumps(identities),))]
+
+    def delete_enrichment_job(self, job_id: str, *, claim_token: str | None = None) -> None:
         with self.transaction() as connection:
+            if claim_token:
+                self._assert_enrichment_claim(connection, job_id, claim_token)
             connection.execute("delete from content_enrichment_jobs where job_id=?", (job_id,))
+
+    @staticmethod
+    def _assert_enrichment_claim(
+        connection: sqlite3.Connection, job_id: str, claim_token: str,
+    ) -> EnrichmentJob:
+        row = connection.execute(
+            "select data_json from content_enrichment_jobs where job_id=?", (job_id,),
+        ).fetchone()
+        job = EnrichmentJob.model_validate_json(row["data_json"]) if row else None
+        if (job is None or job.status is not EnrichmentJobStatus.RUNNING
+                or job.claim_token != claim_token or job.lease_expires_at is None
+                or job.lease_expires_at <= utc_now()):
+            raise RuntimeError("enrichment_lease_lost")
+        return job
+
+    def renew_enrichment_claim(self, job_id: str, claim_token: str) -> None:
+        with self.transaction() as connection:
+            job = self._assert_enrichment_claim(connection, job_id, claim_token)
+            renewed = job.model_copy(update={"lease_expires_at": utc_now()+timedelta(seconds=60)})
+            assert renewed.lease_expires_at is not None
+            connection.execute(
+                "update content_enrichment_jobs set lease_expires_at=?,data_json=? where job_id=?",
+                (renewed.lease_expires_at.isoformat(), self._json(renewed), job_id),
+            )
 
     def list_enrichment_jobs(self, *, limit: int = 100) -> list[EnrichmentJob]:
         with self._connect() as connection:
@@ -716,8 +774,12 @@ class MessageBusV2Repository:
             ).fetchone()
         return row is not None
 
-    def record_raw(self, candidate: RawMessage) -> tuple[IngestDecision, RawMessage]:
+    def record_raw(self, candidate: RawMessage, *,
+                   enrichment_claim: tuple[str, str] | None = None
+                   ) -> tuple[IngestDecision, RawMessage]:
         with self.transaction() as connection:
+            if enrichment_claim:
+                self._assert_enrichment_claim(connection, *enrichment_claim)
             matching_row = connection.execute(
                 """select data_json from raw_messages
                    where ticker=? and source_id=? and identity_key=?

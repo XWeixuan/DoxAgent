@@ -542,13 +542,10 @@
           "$ref": "#/$defs/Count"
         },
         "membership": {
-          "anyOf": [
-            {
-              "const": "LISTED_TRADING_DAYS"
-            },
-            {
-              "const": "ALL_SEMANTIC_DAYS"
-            }
+          "enum": [
+            "LISTED_TRADING_DAYS",
+            "LISTED_SEMANTIC_DAYS",
+            "ALL_SEMANTIC_DAYS"
           ]
         },
         "coverage": {
@@ -1085,6 +1082,16 @@
         },
         "monitoring_configuration_id": {
           "$ref": "#/$defs/Id"
+        },
+        "maintenance": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MaintenanceDisposition"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [
@@ -3899,6 +3906,16 @@
           "anyOf": [
             {
               "$ref": "#/$defs/Id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "maintenance": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MaintenanceDisposition"
             },
             {
               "type": "null"
@@ -6744,6 +6761,19 @@
         },
         "reasoning": {
           "$ref": "#/$defs/Resource__f6c6a9ccb193"
+        },
+        "fact_attributions": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/FactAttribution"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [
@@ -6889,6 +6919,13 @@
         },
         "reasoning": {
           "$ref": "#/$defs/Resource__f6c6a9ccb193"
+        },
+        "reasoning_stage": {
+          "enum": [
+            "R1",
+            "R2",
+            null
+          ]
         }
       },
       "required": [
@@ -21070,6 +21107,90 @@
         "has_more",
         "snapshot_id",
         "limit"
+      ],
+      "additionalProperties": false
+    },
+    "FactAttribution": {
+      "type": "object",
+      "properties": {
+        "event_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "fact_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Id"
+          }
+        }
+      },
+      "required": [
+        "event_id",
+        "fact_ids"
+      ],
+      "additionalProperties": false
+    },
+    "MaintenanceDisposition": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "MAINTAIN_COMPLETED",
+            "INITIALIZED"
+          ]
+        },
+        "policy_disposition": {
+          "type": "string",
+          "enum": [
+            "CONTENT_CHANGED",
+            "NO_CHANGE",
+            "INHERITED",
+            "UNKNOWN"
+          ]
+        },
+        "event_disposition": {
+          "type": "string",
+          "enum": [
+            "CONTENT_CHANGED",
+            "NO_CHANGE",
+            "UNKNOWN"
+          ]
+        },
+        "from_policy_version": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Count"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "to_policy_version": {
+          "$ref": "#/$defs/Count"
+        },
+        "from_library_version": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Count"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "to_library_version": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "status",
+        "policy_disposition",
+        "event_disposition",
+        "from_policy_version",
+        "to_policy_version",
+        "from_library_version",
+        "to_library_version"
       ],
       "additionalProperties": false
     }

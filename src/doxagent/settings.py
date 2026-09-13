@@ -553,6 +553,30 @@ class DoxAgentSettings(BaseSettings):
         default=True,
         validation_alias="DOXAGENT_CONTENT_ENRICHMENT_ENABLED",
     )
+    content_enrichment_pipeline_enabled: bool = Field(
+        default=False, validation_alias="DOXAGENT_CONTENT_ENRICHMENT_PIPELINE_ENABLED",
+    )
+    content_enrichment_browser_enabled: bool = Field(
+        default=False, validation_alias="DOXAGENT_CONTENT_ENRICHMENT_BROWSER_ENABLED",
+    )
+    content_enrichment_browser_headless: bool = Field(
+        default=True, validation_alias="DOXAGENT_CONTENT_ENRICHMENT_BROWSER_HEADLESS",
+    )
+    content_enrichment_browser_channel: str | None = Field(
+        default=None, validation_alias="DOXAGENT_CONTENT_ENRICHMENT_BROWSER_CHANNEL",
+    )
+    content_enrichment_trusted_proxy_dns: bool = Field(
+        default=False, validation_alias="DOXAGENT_CONTENT_ENRICHMENT_TRUSTED_PROXY_DNS",
+    )
+    content_enrichment_identity_dir: str | None = Field(
+        default=None, validation_alias="DOXAGENT_CONTENT_ENRICHMENT_IDENTITY_DIR",
+    )
+    content_enrichment_authenticated_hosts: str = Field(
+        default="", validation_alias="DOXAGENT_CONTENT_ENRICHMENT_AUTHENTICATED_HOSTS",
+    )
+    content_enrichment_disabled_hosts: str = Field(
+        default="", validation_alias="DOXAGENT_CONTENT_ENRICHMENT_DISABLED_HOSTS",
+    )
     content_enrichment_max_concurrency: int = Field(
         default=8,
         ge=1,

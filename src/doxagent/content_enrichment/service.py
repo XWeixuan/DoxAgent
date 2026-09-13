@@ -4,12 +4,15 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import time
 from collections.abc import Sequence
+from contextlib import suppress
 from datetime import UTC, datetime, timedelta
 from typing import Protocol
 
 from doxagent.content_enrichment.extractor import SharedContentExtractor
 from doxagent.content_enrichment.schema import EnrichmentJob, EnrichmentJobStatus
+from doxagent.content_enrichment.transport import DEADLINE
 from doxagent.message_bus_v2.repository import MessageBusV2Repository
 from doxagent.message_bus_v2.schema import ContentEnrichmentMode, RawMessageInput, utc_now
 from doxagent.message_bus_v2.service import MessageBusV2Service
@@ -56,9 +59,13 @@ class ContentEnrichmentHub:
         return len(jobs)
 
     async def _process_guarded(self, job: EnrichmentJob, now: datetime) -> None:
+        heartbeat = asyncio.create_task(self._renew(job))
         try:
             await self._process(job, now)
-        except Exception:
+        except Exception as exc:
+            if isinstance(exc, RuntimeError) and str(exc) == "enrichment_lease_lost":
+                logger.warning("discarded stale enrichment worker job_id=%s", job.job_id)
+                return
             logger.exception(
                 "content enrichment infrastructure failure job_id=%s ticker=%s source_id=%s",
                 job.job_id,
@@ -66,6 +73,48 @@ class ContentEnrichmentHub:
                 job.source.source_id,
             )
             raise
+        finally:
+            heartbeat.cancel()
+            with suppress(asyncio.CancelledError):
+                await heartbeat
+
+    async def _renew(self, job: EnrichmentJob) -> None:
+        while job.claim_token:
+            await asyncio.sleep(20)
+            try:
+                self.repository.renew_enrichment_claim(job.job_id, job.claim_token)
+            except RuntimeError as exc:
+                if str(exc) == "enrichment_lease_lost":
+                    return
+                raise
+
+    async def run(self, stop: asyncio.Event, *, sleep_seconds: float = 0.25) -> None:
+        """Keep free slots occupied without waiting for the slowest member of a batch."""
+        active: set[asyncio.Task[None]] = set()
+        try:
+            while not stop.is_set():
+                finished = {task for task in active if task.done()}
+                for task in finished:
+                    task.result()
+                active -= finished
+                if len(active) < self.concurrency:
+                    now = utc_now()
+                    jobs = self.repository.claim_enrichment_jobs(
+                        limit=self.concurrency - len(active),
+                        now=now,
+                        lease_seconds=60,
+                    )
+                    active.update(
+                        asyncio.create_task(self._process_guarded(job, now)) for job in jobs
+                    )
+                try:
+                    await asyncio.wait_for(stop.wait(), timeout=sleep_seconds)
+                except TimeoutError:
+                    pass
+        finally:
+            for task in active:
+                task.cancel()
+            await asyncio.gather(*active, return_exceptions=True)
 
     async def close(self) -> None:
         close = getattr(self.extractor, "close", None)
@@ -100,7 +149,35 @@ class ContentEnrichmentHub:
             ),
         )
         try:
-            result = await self.extractor.extract(record)
+            seconds = (job.deadline_at - max(now, utc_now())).total_seconds()
+            if seconds <= 0 or job.attempt_count > 2:
+                result = MediaExtractionResult(
+                    record=record,
+                    reason="deadline_exceeded" if seconds <= 0 else "attempt_limit_exceeded",
+                    diagnostics={
+                        "outcome": "UNAVAILABLE",
+                        "stage": "intake",
+                        "budget_exhausted": True,
+                    },
+                )
+            else:
+                token = DEADLINE.set(time.monotonic() + seconds)
+                try:
+                    async with asyncio.timeout(seconds):
+                        if isinstance(self.extractor, SharedContentExtractor):
+                            result = await self.extractor.extract_version(
+                                record, job.pipeline_version
+                            )
+                        else:
+                            result = await self.extractor.extract(record)
+                finally:
+                    DEADLINE.reset(token)
+        except TimeoutError:
+            result = MediaExtractionResult(
+                record=record,
+                reason="deadline_exceeded",
+                diagnostics={"outcome": "UNAVAILABLE", "stage": "fetch", "budget_exhausted": True},
+            )
         except Exception as exc:
             result = MediaExtractionResult(record=record, reason=type(exc).__name__.lower())
 
@@ -134,6 +211,12 @@ class ContentEnrichmentHub:
         enrichment = dict(metadata.get("media_enrichment", {}))
         enrichment["attempts"] = attempts
         enrichment["queue_attempt_count"] = job.attempt_count
+        enrichment.setdefault("pipeline_version", job.pipeline_version or "legacy")
+        enrichment.setdefault("reason_code", result.reason)
+        enrichment.setdefault("outcome", "FULL" if result.succeeded else "UNAVAILABLE")
+        failure_index = enrichment.get("failure_attempt_id")
+        if isinstance(failure_index, int):
+            enrichment["failure_attempt_id"] = len(job.prior_attempts) + failure_index
         metadata["media_enrichment"] = enrichment
         metadata["v2_body_completion"] = {
             "attempt_id": job.job_id,
@@ -162,8 +245,10 @@ class ContentEnrichmentHub:
             bootstrap=job.bootstrap,
             collected_at=job.created_at,
             trusted_enrichment=True,
+            enrichment_input=job.message,
+            enrichment_claim=(job.job_id, job.claim_token) if job.claim_token else None,
         )
-        self.repository.delete_enrichment_job(job.job_id)
+        self.repository.delete_enrichment_job(job.job_id, claim_token=job.claim_token)
 
     def _retry_after(self, attempts: Sequence[FetchAttempt]) -> float:
         values = [item.retry_after_seconds for item in attempts if item.retry_after_seconds]
@@ -171,12 +256,23 @@ class ContentEnrichmentHub:
 
     @staticmethod
     def _retryable(result: MediaExtractionResult) -> bool:
-        if any(item.transient_hint for item in result.attempts):
-            return True
+        reason = (result.reason or "").lower()
+        if reason in {
+            "deadline_exceeded",
+            "subscription_required",
+            "login_required",
+            "reauth_required",
+            "entitlement_missing",
+            "challenge_required",
+            "non_article_target",
+            "publisher_identity_mismatch",
+        }:
+            return False
         status = result.http_status
+        if status is None and result.attempts and result.attempts[-1].reason == result.reason:
+            status = result.attempts[-1].status_code
         if status in {408, 425, 429} or (status is not None and status >= 500):
             return True
-        reason = (result.reason or "").lower()
         return any(
             marker in reason
             for marker in (
@@ -191,8 +287,7 @@ class ContentEnrichmentHub:
                 "ssl",
                 "temporarily",
                 "rate_limit",
-                "captcha",
-                "challenge",
+                "domain_cooldown",
             )
         )
 

@@ -110,7 +110,7 @@ def project(store, value):
                 "changed_paths": changed_paths(
                     before["event"] if before else None, after["event"] if after else None
                 ),
-                "summary": "O3 实际 Reference 输入变化",
+                "summary": "Reference View 输入变化（非 Policy 内容变更）",
             },
         )
         changes.append(change)

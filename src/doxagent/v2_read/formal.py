@@ -316,10 +316,31 @@ class FormalProjectors(DomainProjectors):
                 },
             }
         )
+        base = self.store.get("activation_revision", ticker, revision.get("base_revision") or "")
+        prior_policy = (base or {}).get("policy_set")
+        prior_library = (base or {}).get("event_library")
+        lifecycle = {
+            "status": "MAINTAIN_COMPLETED" if base else "INITIALIZED",
+            "policy_disposition": (
+                "UNKNOWN" if not prior_policy else
+                "INHERITED" if prior_policy["artifact_id"] == ref["artifact_id"] else
+                "NO_CHANGE" if prior_policy["content_sha256"] == ref["content_sha256"] else "CONTENT_CHANGED"
+            ),
+            "event_disposition": (
+                "UNKNOWN" if not prior_library else
+                "NO_CHANGE" if prior_library["library_snapshot_id"] == library["library_snapshot_id"]
+                else "CONTENT_CHANGED"
+            ),
+            "from_policy_version": prior_policy["policy_set_version"] if prior_policy else None,
+            "to_policy_version": ref["policy_set_version"],
+            "from_library_version": prior_library["library_version"] if prior_library else None,
+            "to_library_version": library["library_version"],
+        }
         active = validate(
             "Activation",
             {
                 "runtime_activation_id": identity,
+                "maintenance": lifecycle,
                 "activated_at": missing(),
                 **documents,
                 "policy_set": ref,

@@ -340,22 +340,73 @@ class _BaseAdapter:
 
 class BenzingaNewsAdapter(_BaseAdapter):
     async def poll(self, context: PollContext) -> PollResult:
+        if context.window_cutoff is not None:
+            return await self._window_page(context)
         token = _require(self.settings.benzinga_api_key, "BENZINGA_API_KEY")
+        common_params = {
+            "token": token,
+            "pageSize": 100,
+            "displayOutput": "full",
+            "sort": "created:desc",
+        }
+        window_end = context.requested_at.date()
+        window_start = window_end - timedelta(days=30)
         data = await self._json(
             context,
             self.settings.benzinga_news_base_url.rstrip("/") + "/api/v2/news",
             params={
-                "token": token,
-                "pageSize": 50,
-                "displayOutput": "full",
-                "sort": "created:desc",
-                "tickers": context.ticker,
+                **common_params,
+                "topics": context.ticker,
+                "dateFrom": window_start.isoformat(),
+                "dateTo": window_end.isoformat(),
             },
             headers={"accept": "application/json"},
         )
-        return self._rows(context, _rows(data))
+        rows = [row for row in _rows(data) if _benzinga_row_has_ticker(row, context.ticker)]
+        query_mode = "bounded_topics_ticker"
+        if not rows:
+            data = await self._json(
+                context,
+                self.settings.benzinga_news_base_url.rstrip("/") + "/api/v2/news",
+                params={
+                    **common_params,
+                    "primaryTickers": context.ticker,
+                    "dateFrom": window_start.isoformat(),
+                    "dateTo": window_end.isoformat(),
+                },
+                headers={"accept": "application/json"},
+            )
+            rows = _rows(data)
+            query_mode = "primary_tickers_fallback"
+        return self._rows(context, rows, query_mode=query_mode)
 
-    def _rows(self, context: PollContext, rows: list[JsonObject]) -> PollResult:
+    async def _window_page(self, context: PollContext) -> PollResult:
+        page = int(context.checkpoint.get("page", 0))
+        # Provider paging is not a snapshot token: preserve UNKNOWN coverage.
+        # Use update time so revisions of older articles are not skipped.
+        data = await self._json(context,
+            self.settings.benzinga_news_base_url.rstrip("/") + "/api/v2/news",
+            params={"token": _require(self.settings.benzinga_api_key, "BENZINGA_API_KEY"),
+                    "pageSize": 100, "page": page, "displayOutput": "full", "sort": "updated:asc",
+                    "primaryTickers": context.ticker,
+                    "updatedSince": int(context.window_start.timestamp())},
+            headers={"accept": "application/json"})
+        rows = _rows(data)
+        bounded = [row for row in rows if (stamp := _datetime_or_none(row.get("updated") or row.get("created")))
+                   and context.window_start <= stamp < context.window_cutoff]
+        result = self._rows(context, bounded, query_mode="closed_window_primary_tickers")
+        reached_cutoff = bool(rows) and all(
+            (stamp := _datetime_or_none(row.get("updated") or row.get("created")))
+            and stamp >= context.window_cutoff for row in rows)
+
+        capped = page >= 99 and len(rows) >= 100
+        return result.model_copy(update={"next_checkpoint": {"page": page + 1},
+            "window_done": len(rows) < 100 or capped or reached_cutoff,
+            "window_coverage": "PARTIAL" if capped or result.failures else "UNKNOWN"})
+
+    def _rows(
+        self, context: PollContext, rows: list[JsonObject], *, query_mode: str
+    ) -> PollResult:
         messages: list[RawMessageInput] = []
         failures: list[AcquisitionFailure] = []
         for row in rows:
@@ -369,23 +420,32 @@ class BenzingaNewsAdapter(_BaseAdapter):
                 source=row.get("author") or "Benzinga",
                 url=row.get("url"),
                 published_at=row.get("created") or row.get("updated"),
-                metadata={"provider": "benzinga"},
+                metadata={"provider": "benzinga", "query_mode": query_mode,
+                          **({"sweep_updated_at": (_datetime_or_none(row.get("updated") or row.get("created"))).isoformat()}
+                             if context.window_cutoff and _datetime_or_none(row.get("updated") or row.get("created")) else {})},
             )
             (messages if message else failures).append(cast(Any, message or failure))
-        return PollResult(messages=messages, failures=failures)
+        return PollResult(
+            messages=messages,
+            failures=failures,
+            acquisition_metadata={"provider": "benzinga", "query_mode": query_mode},
+        )
 
 
 class FinnhubCompanyNewsAdapter(_BaseAdapter):
     async def poll(self, context: PollContext) -> PollResult:
         token = _require(self.settings.finnhub_api_key, "FINNHUB_API_KEY")
-        today = utc_now().date()
+        today = context.window_cutoff.date() if context.window_cutoff else utc_now().date()
+        page_day = (datetime.fromisoformat(context.checkpoint["day"]).date()
+                    if context.window_cutoff and context.checkpoint.get("day") else
+                    context.window_start.date() if context.window_start else today - timedelta(days=3))
         data = await self._json(
             context,
             self.settings.finnhub_base_url.rstrip("/") + "/company-news",
             params={
                 "symbol": context.ticker,
-                "from": (today - timedelta(days=3)).isoformat(),
-                "to": today.isoformat(),
+                "from": page_day.isoformat(),
+                "to": (page_day if context.window_cutoff else today).isoformat(),
                 "token": token,
             },
         )
@@ -405,7 +465,10 @@ class FinnhubCompanyNewsAdapter(_BaseAdapter):
                 metadata={"provider": "finnhub", "category": row.get("category")},
             )
             (messages if message else failures).append(cast(Any, message or failure))
-        return PollResult(messages=messages, failures=failures)
+        return PollResult(messages=messages, failures=failures,
+            next_checkpoint={"day": (page_day + timedelta(days=1)).isoformat()} if context.window_cutoff else {},
+            window_done=page_day >= today if context.window_cutoff else True,
+            window_coverage="PARTIAL" if failures else "UNKNOWN")
 
 
 class StocktwitsMessagesAdapter(_BaseAdapter):
@@ -591,6 +654,17 @@ def _rows(value: object) -> list[JsonObject]:
             if isinstance(child, list):
                 return [dict(row) for row in child if isinstance(row, dict)]
     return []
+
+
+def _benzinga_row_has_ticker(row: JsonObject, ticker: str) -> bool:
+    expected = ticker.strip().upper()
+    stocks = row.get("stocks")
+    if not isinstance(stocks, list):
+        return False
+    return any(
+        isinstance(stock, dict) and str(stock.get("name") or "").strip().upper() == expected
+        for stock in stocks
+    )
 
 
 def _stocktwits_rows(value: object) -> list[JsonObject]:

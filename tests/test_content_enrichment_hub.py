@@ -389,4 +389,4 @@ async def test_expired_retry_is_discarded_to_fallback(tmp_path: Path) -> None:
     assert await hub.run_once() == 1
     assert repository.list_enrichment_jobs() == []
     assert repository.list_raw(ticker="MU")[0].body == "deadline fallback"
-    assert extractor.calls == 1
+    assert extractor.calls == 0

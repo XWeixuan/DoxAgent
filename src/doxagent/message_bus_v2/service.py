@@ -59,10 +59,12 @@ class MessageBusV2Service:
         *,
         enrichment_queue_enabled: bool = False,
         enrichment_retry_deadline_seconds: int = 180,
+        enrichment_pipeline_version: str | None = "body_v2.1",
     ) -> None:
         self.repository = repository
         self.enrichment_queue_enabled = enrichment_queue_enabled
         self.enrichment_retry_deadline_seconds = max(1, enrichment_retry_deadline_seconds)
+        self.enrichment_pipeline_version = enrichment_pipeline_version
 
     def bootstrap(self) -> None:
         for source in initial_sources():
@@ -509,6 +511,9 @@ class MessageBusV2Service:
         state = self.repository.get_poll_state(binding)
         bootstrap = not state.bootstrap_complete
         output = PollExecutionResult(
+            next_checkpoint=result.next_checkpoint,
+            window_coverage=result.window_coverage,
+            window_done=result.window_done,
             poll_run_id=str(result.acquisition_metadata.get("poll_run_id") or new_id("poll")),
             binding_id=binding.binding_id,
             crawler_execution_id=(
@@ -527,7 +532,7 @@ class MessageBusV2Service:
         for input_message in result.messages:
             try:
                 if self.enrichment_queue_enabled:
-                    _, created = self.enqueue_enrichment(
+                    job, created = self.enqueue_enrichment(
                         source=source,
                         binding=binding,
                         message=input_message,
@@ -535,6 +540,7 @@ class MessageBusV2Service:
                         poll_run_id=output.poll_run_id,
                         collected_at=now,
                     )
+                    output.enrichment_job_ids.append(job.job_id)
                     if created:
                         output = output.model_copy(update={"queued_count": output.queued_count + 1})
                     continue
@@ -580,6 +586,8 @@ class MessageBusV2Service:
             if ingest.stream_item_ids:
                 updates["published_count"] = output.published_count + len(ingest.stream_item_ids)
             output = output.model_copy(update=updates)
+        if poll_errors:
+            output.window_coverage = "PARTIAL"
         saved_state = state.model_copy(
             update={
                 "status": (PollStatus.PARTIAL if poll_errors else PollStatus.SUCCEEDED),
@@ -631,7 +639,7 @@ class MessageBusV2Service:
             )
         )
         job = EnrichmentJob(
-            job_id=new_id("enrich"),
+            job_id="enrich-" + intake_key,
             intake_key=intake_key,
             poll_run_id=poll_run_id,
             source=source,
@@ -644,6 +652,7 @@ class MessageBusV2Service:
             last_seen_at=now,
             not_before=now,
             deadline_at=now + timedelta(seconds=self.enrichment_retry_deadline_seconds),
+            pipeline_version=self.enrichment_pipeline_version,
         )
         if self.repository.has_seen_provider_payload(
             ticker=binding.ticker,
@@ -671,6 +680,8 @@ class MessageBusV2Service:
         bootstrap: bool,
         collected_at: datetime | None = None,
         trusted_enrichment: bool = False,
+        enrichment_input: RawMessageInput | None = None,
+        enrichment_claim: tuple[str, str] | None = None,
     ) -> IngestResult:
         now = collected_at or utc_now()
         # Provider metadata cannot forge internal completion-attempt evidence. Network
@@ -693,6 +704,9 @@ class MessageBusV2Service:
             }
         )
         raw_hash = sha256_text(canonical_json(materialized.raw_payload))
+        identity_input = (
+            enrichment_input if trusted_enrichment and enrichment_input else materialized
+        )
         raw = RawMessage(
             raw_message_id=new_id("raw"),
             ticker=binding.ticker,
@@ -700,8 +714,12 @@ class MessageBusV2Service:
             binding_id=binding.binding_id,
             source_definition_version=source.version,
             external_id=materialized.external_id,
-            source_item_key=source_item_key_for(source.source_id, materialized),
-            identity_key=identity_key_for(source.source_id, materialized),
+            source_item_key=source_item_key_for(
+                source.source_id, identity_input
+            ),
+            identity_key=identity_key_for(
+                source.source_id, identity_input
+            ),
             content_hash=content_hash_for(materialized),
             raw_hash=raw_hash,
             title=materialized.title,
@@ -719,7 +737,10 @@ class MessageBusV2Service:
             last_seen_at=now,
             bootstrap_suppressed=bootstrap,
         )
-        decision, persisted = self.repository.record_raw(raw)
+        decision, persisted = (
+            self.repository.record_raw(raw, enrichment_claim=enrichment_claim)
+            if enrichment_claim else self.repository.record_raw(raw)
+        )
         if decision is IngestDecision.DUPLICATE:
             if persisted.processing_status in {
                 RawProcessingStatus.PENDING,

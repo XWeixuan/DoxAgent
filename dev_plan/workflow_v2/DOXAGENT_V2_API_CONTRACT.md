@@ -496,7 +496,11 @@ PENDING_RETRY、W3 等待不提前算最终失败。失败与已发生结果允�
 
 Reasoning 仅返回已持久化、面向业务解释的 W1/W2 `reason` 与 W3 novelty/policy/expert_trade reason，不返回模型内部 token reasoning、system prompt 或整个 Worker transcript。Case 详情给 ContentRef，打开 reasoning 时读取 contents；消息 body 同理按需。
 
-W1 原生最终只给 E# reference_ids，没有已判定 F# 时 references.fact_ids=[]，不创造“命中 Fact”。W3 对应引用也保留真实粒度。provisional 与 canonical 通过 EventLink.kind/快照上下文区分。
+W1 原生最终新增 `fact_attributions: [{event_id, fact_ids}] | null`，记录实际参与判定的 canonical Fact 身份；写入时验证 Event 在 reference_ids 中、Fact 确属本轮加载的固定版本 Event Detail。不得使用整个 Event 的所有 Fact 充当归因。Case `w1.data.fact_attributions` 保留原始归因：null/缺字段表示历史未记录，[] 表示已返回但没有 canonical Fact 归因（例如仅 provisional 参照）。成功解析的 `references.fact_ids` 只包含该 Event 的已记录归因；无归因保持 []。局部快照缺失时仍通过 fact_attributions 保留原始 E#/F#，未解析的 Event 不产生链接，不回退到当前版本。W3 未新增 Fact 归因输出，继续保留真实粒度。provisional 与 canonical 通过 EventLink.kind/快照上下文区分。
+
+W2 R1 新增 `reason: string | null`（最长 1000 字符；历史缺省 null），新请求 prompt 要求返回可展示的召回业务依据，包括空候选的排除依据。无候选的最终 NO HIT 汇总沿用 R1 reason，仍不执行 R2。`w2.data.reasoning_stage?: "R1" | "R2" | null` 指示解释所属阶段：空召回为 R1，有候选完成最终判定为 R2，历史无法识别为 null。原有 reasoning 仍为按需 ContentRef；候选存在时仍使用 W2 最终 reason，命中条件与 Policy ID 原样保留。历史仅有 `no_policy_candidate_recalled` 机器标记、没有召回解释时，reasoning 返回 NOT_PRODUCED/NOT_RECORDED，不把机器标记冒充分析。
+
+以上字段随 RuntimeCase 持久化，并经原有 source receipts/MVCC 投影进入固定 Case view。旧读取版本不就地改写；升级后新 Case 自然具备新字段。历史已存 R1 reason 如需展示须按读模型重建流程生成新投影/新 view，不能从模型内部日志补造解释。
 
 局部固定引用缺失不使整个 CaseDetail 返回404：保留可读取的判断、轮次、正文和固定版本，相关 W1/W2/W3 Resource 标为 PARTIAL，reason=UNRESOLVED_REFERENCE、coverage 含 PINNED_ARTIFACT_MISSING。无法解析的原始身份通过可选 `unresolved_reference_ids` / `unresolved_policy_ids` 保留，不伪造 EventLink/PolicyLink，不换用最新版本。缺少整个激活 pin 的情况仍保留正式错误边界。
 
@@ -743,3 +747,12 @@ Supabase 官方说明 Egress 包括数据库向连接客户端传出的数据，
 ### 2026-09-08 Runtime 节点路径补充
 
 `NodeDetail.path_edges?: GraphEdge[]` 返回当前 ticker、view 和完整周期内实际经过该节点的 Case 所贡献的边及去重 Case 数，最多为固定节点集合的边数量。它不从最近 Case 分页或全局边做可达性拼接。节点点击及分钟详情读取同时取得此字段，前端据此高亮；缺少该字段时不推导替代路径。`/runtime/nodes/{node_id}/cases` 用于节点记录续页。
+
+
+### 2026-09-13 BE-11–14：休市周期补充
+
+- MESSAGE_BUS/RUNTIME/EVENTS/POLICIES 的 CURRENT_TRADING_DAY 参数兼容保留名称，但代表 ET02 当前 semantic day，每天可选；TRADING_DAYS_7/30 在这些页面枚举连续 7/30 个 semantic days，membership=LISTED_SEMANTIC_DAYS。trading_days 为兼容字段，按 membership 解释其成员（包含周末）；trading_day_count 为该列表大小。PREVIOUS_TRADING_DAY 仍指上一交易所 session。OVERVIEW/COST 等交易指标继续使用 LISTED_TRADING_DAYS。列表、图及 SSE scope 一致使用固定成员，不将休市日排除。
+- PollContext 支持固定 window_start/window_cutoff，窗口为半开区间。Source Sweep 的持久 receipt 含每页 checkpoint、稳定 enrichment job_ids、覆盖级别和 poll_done；全部归属 job 终态并强制 flush binding buffer 后才冻结 stream_highwater。恢复不重 poll 已完成分页，不使用普通延迟补全作为第二次维护理由。
+- 每个 binding/source version 独立保留成功扫描 cutoff 与 coverage；PARTIAL 不推进成功扫描位置。Benzinga 按 updatedSince 分页、按 update time 排除 cutoff 外项目；Finnhub 按日期逐段请求，保存日期进度。第三方缺少快照/完整性证明时，即使请求成功也维持 UNKNOWN；分页上限/无效项目为 PARTIAL。成功扫描位置不等同于完整性证书，不能据此宣称历史零遗漏。
+- Activation 与 PolicyContext 新增可选 maintenance。status 为 MAINTAIN_COMPLETED 或 INITIALIZED；policy_disposition 为 CONTENT_CHANGED/NO_CHANGE/INHERITED/UNKNOWN，event_disposition 单独给出。携带前后 Policy/Library 版本。新 activation 不等于 Policy 内容改变；同 artifact 继承为 INHERITED、同内容 hash 为 NO_CHANGE。历史无 base 不推断内容变化，允许 null/UNKNOWN。
+- Reference View Delta 是 O3 的输入变化，不是 O3 Policy 输出变化；两者必须独立解释。既有历史 Case、维护、激活不改写或删除，不为验收补跑真实交易。

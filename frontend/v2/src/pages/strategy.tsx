@@ -169,6 +169,15 @@ function Policies({
           />
         )}
       </Module>
+      {data.maintenance?.status === "MAINTAIN_COMPLETED" && (
+        <Notice>
+          最新维护已完成 · {data.maintenance.policy_disposition === "CONTENT_CHANGED"
+            ? `Policy 内容已变更（v${data.maintenance.from_policy_version} → v${data.maintenance.to_policy_version}）`
+            : ["NO_CHANGE", "INHERITED"].includes(data.maintenance.policy_disposition)
+              ? `Policy 无内容变化（v${data.maintenance.to_policy_version}）`
+              : "Policy 内容变化未记录"}
+        </Notice>
+      )}
       <div className="strategy-filter-bar">
         <label className="policy-filter">
           策略状态

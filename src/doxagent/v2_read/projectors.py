@@ -558,6 +558,12 @@ class DomainProjectors:
         for name, result in (("w1", value.get("w1_final")), ("w2", value.get("w2_final"))):
             if result and result.get("reason"):
                 reasons[name] = self.store.put_content(ticker, result["reason"])
+        recall = value.get("w2_round1") or {}
+        if recall.get("reason") and not recall.get("candidate_policy_ids"):
+            reasons["w2"] = self.store.put_content(ticker, recall["reason"])
+        elif (value.get("w2_final") or {}).get("reason") == "no_policy_candidate_recalled":
+            # Historical routing marker is not a recorded recall explanation.
+            reasons.pop("w2", None)
         for name in ("novelty", "policy", "expert_trade"):
             result = (value.get("w3_result") or {}).get(name)
             if result and result.get("reason"):

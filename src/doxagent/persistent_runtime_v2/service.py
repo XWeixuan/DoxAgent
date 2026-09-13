@@ -175,7 +175,8 @@ def _w1_final_business_payload(value: W1NoveltyResult | None) -> dict[str, Any] 
         return None
     return value.model_dump(
         mode="json",
-        include={"result", "reference_ids", "reason"},
+        include={"result", "reference_ids", "fact_attributions", "reason"},
+        exclude_none=True,
     )
 
 
@@ -555,7 +556,14 @@ class PersistentRuntimeV2Service:
             *[item.provisional_event_id for item in provisional_details],
         }
 
+        loaded_facts = {
+            event.event_id: {fact.fact_id for fact in event.facts} for event in details.events
+        }
+
         def validate(value: W1NoveltyResult) -> None:
+            for attribution in value.fact_attributions or []:
+                if not set(attribution.fact_ids).issubset(loaded_facts.get(attribution.event_id, set())):
+                    raise RuntimeSemanticOutputError("W1 R2 returned a Fact outside the loaded Event snapshot")
             if not set(value.reference_ids).issubset(loaded_ids):
                 raise RuntimeSemanticOutputError(
                     "W1 R2 returned a reference ID that was not loaded"
@@ -617,7 +625,7 @@ class PersistentRuntimeV2Service:
                 r1,
                 W2PolicyResult(
                     confidence=RuntimeConfidence.NORMAL,
-                    reason="no_policy_candidate_recalled",
+                    reason=r1.reason or "no_policy_candidate_recalled",
                 ),
                 r1_response_id,
             )

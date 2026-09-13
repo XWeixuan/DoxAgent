@@ -77,7 +77,7 @@ class PageCalendar:
             "next_minute_at": instant(now.replace(second=0, microsecond=0) + timedelta(minutes=1)),
         }
 
-    def window(self, days: list[date], now: datetime) -> dict[str, Any]:
+    def window(self, days: list[date], now: datetime, *, semantic: bool = False) -> dict[str, Any]:
         start, end = boundary(days[0]), boundary(days[-1] + timedelta(days=1))
         return {
             "start_at": instant(start),
@@ -85,7 +85,7 @@ class PageCalendar:
             "observed_until": instant(min(now, end)),
             "trading_days": [str(d) for d in days],
             "trading_day_count": len(days),
-            "membership": "LISTED_TRADING_DAYS",
+            "membership": "LISTED_SEMANTIC_DAYS" if semantic else "LISTED_TRADING_DAYS",
             "coverage": coverage(
                 complete=now >= end,
                 at=instant(min(now, end)),
@@ -94,7 +94,7 @@ class PageCalendar:
         }
 
     def period(
-        self, selected: str, now: datetime, *, first_at: datetime | None = None
+        self, selected: str, now: datetime, *, first_at: datetime | None = None, semantic: bool = False
     ) -> dict[str, Any]:
         day = semantic_day(now)
         if selected == "ALL":
@@ -122,19 +122,22 @@ class PageCalendar:
         if selected == "PREVIOUS_TRADING_DAY":
             current = self.previous(day)
         elif selected == "CURRENT_TRADING_DAY":
-            if not self.calendar.is_session(day):
+            if not semantic and not self.calendar.is_session(day):
                 raise ValueError("NON_TRADING_DAY")
             current = [day]
         elif selected in {"TRADING_DAYS_7", "TRADING_DAYS_30"}:
-            current = self.previous(day + timedelta(days=1), int(selected.rsplit("_", 1)[1]))
+            count = int(selected.rsplit("_", 1)[1])
+            current = ([day - timedelta(days=i) for i in reversed(range(count))] if semantic
+                       else self.previous(day + timedelta(days=1), count))
         else:
             raise ValueError("INVALID_PERIOD")
-        previous = self.previous(current[0], len(current))
+        previous = ([current[0] - timedelta(days=i) for i in reversed(range(1, len(current) + 1))]
+                    if semantic and selected != "PREVIOUS_TRADING_DAY" else self.previous(current[0], len(current)))
         complete = now >= boundary(current[-1] + timedelta(days=1))
         return {
             "selected": selected,
-            "current": self.window(current, now),
-            "previous": self.window(previous, now),
+            "current": self.window(current, now, semantic=semantic),
+            "previous": self.window(previous, now, semantic=semantic),
             "comparison_applicable": complete,
             "comparison_reasons": [] if complete else ["WINDOW_INCOMPLETE"],
         }

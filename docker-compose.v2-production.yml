@@ -91,6 +91,10 @@ services:
   v2-content-enrichment:
     <<: *backend
     command: [python, -m, doxagent.content_enrichment.cli, run-worker]
+    environment:
+      <<: *environment
+      DOXAGENT_CONTENT_ENRICHMENT_IDENTITY_DIR: /identities
+    volumes: ["v2-data:/data", "v2-enrichment-identities:/identities"]
     depends_on:
       v2-migrate: {condition: service_completed_successfully}
   v2-o4:
@@ -128,4 +132,5 @@ services:
       options: {max-size: "20m", max-file: "3"}
 
 volumes:
+  v2-enrichment-identities:
   v2-data:

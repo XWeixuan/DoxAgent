@@ -2629,3 +2629,6 @@
 .message-scroll .message-card { border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin: 8px 0 16px; background: var(--card); cursor: pointer; }
 .message-scroll .message-card:hover { border-color: var(--primary); }
 .message-scroll .message-card:focus-within { outline: 2px solid var(--ring); outline-offset: 2px; }
+
+/* Source status shares the bounded message stream height. */
+[data-page="message-bus"] .source-status-list { height: max(840px, calc(100dvh - 120px)); max-height: none; overflow-y: auto; }

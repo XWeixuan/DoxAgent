@@ -55,7 +55,10 @@ export default function CaseDetails({
                   <span>置信度 {valueText(d.w1.data.confidence)}</span>
                   {d.w1.data.references.map((r) => (
                     <span key={r.event_id}>
-                      {r.event_id} {r.fact_ids.join("、")}
+                      事件 {r.event_id} ·{" "}
+                      {r.fact_ids.length
+                        ? "事实 " + r.fact_ids.join("、")
+                        : "Fact 归因未提供"}
                     </span>
                   ))}
                 </div>
@@ -65,6 +68,18 @@ export default function CaseDetails({
                   node="W1"
                   first={d.w1.data.attempts}
                 />
+                {d.w1.data.unresolved_reference_ids?.length ? (
+                  <Notice>
+                    判定引用（快照详情未解析）：
+                    {d.w1.data.unresolved_reference_ids.join("、")}
+                  </Notice>
+                ) : null}
+                {d.w1.data.novelty.state === "AVAILABLE" &&
+                  d.w1.data.novelty.value === "OLD" &&
+                  !d.w1.data.references.length &&
+                  !d.w1.data.unresolved_reference_ids?.length && (
+                    <Notice>该旧信息判定未提供 Event / Fact 归因。</Notice>
+                  )}
                 <Reason ticker={ticker} content={d.w1.data.reasoning} />
               </>
             ) : (
@@ -84,7 +99,10 @@ export default function CaseDetails({
                   <span>置信度 {valueText(d.w2.data.confidence)}</span>
                   {d.w2.data.policies.map((p) => (
                     <span key={p.policy_id}>
-                      {p.policy_id} · {p.condition_ids.join("、")}
+                      策略 {p.policy_id} ·{" "}
+                      {p.condition_ids.length
+                        ? "命中条件 " + p.condition_ids.join("、")
+                        : "命中条件未提供"}
                     </span>
                   ))}
                 </div>
@@ -94,6 +112,18 @@ export default function CaseDetails({
                   node="W2"
                   first={d.w2.data.attempts}
                 />
+                {d.w2.data.unresolved_policy_ids?.length ? (
+                  <Notice>
+                    命中策略（快照详情未解析）：
+                    {d.w2.data.unresolved_policy_ids.join("、")}
+                  </Notice>
+                ) : null}
+                {d.w2.data.policy_hit.state === "AVAILABLE" &&
+                  d.w2.data.policy_hit.value &&
+                  !d.w2.data.policies.length &&
+                  !d.w2.data.unresolved_policy_ids?.length && (
+                    <Notice>该命中判定未提供策略归因。</Notice>
+                  )}
                 <Reason ticker={ticker} content={d.w2.data.reasoning} />
               </>
             ) : (
@@ -117,7 +147,10 @@ export default function CaseDetails({
               </div>
               {d.w3.data.references.map((r) => (
                 <span className="domain-tag" key={r.event_id}>
-                  {r.event_id} {r.fact_ids.join("、")}
+                  事件 {r.event_id} ·{" "}
+                  {r.fact_ids.length
+                    ? "事实 " + r.fact_ids.join("、")
+                    : "Fact 归因未提供"}
                 </span>
               ))}
               <dl>
@@ -209,7 +242,7 @@ function Reason({
       </Button>
       {open &&
         (content.data ? (
-          <ContentReader ticker={ticker} content={content.data} />
+          <ContentReader ticker={ticker} content={content.data} loadFully />
         ) : (
           <Notice>判断依据未记录</Notice>
         ))}

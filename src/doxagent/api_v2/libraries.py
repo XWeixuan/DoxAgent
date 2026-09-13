@@ -68,8 +68,25 @@ def install(app: FastAPI) -> None:
         if not policies:
             raise ApiFailure("PINNED_ARTIFACT_MISSING", 404)
         shells = policy_shells(request, ticker, args, view, activation)
+        maintenance = activation.get("maintenance")
+        if maintenance is None:
+            native_revision = store.get("native:activation_revisions", ticker,
+                activation["runtime_activation_id"], view["seq"]) or {}
+            base = store.get("activation_revision", ticker, native_revision.get("base_revision") or "", view["seq"])
+            if base:
+                before, after = base["policy_set"], activation["policy_set"]
+                maintenance = {
+                    "status": "MAINTAIN_COMPLETED",
+                    "policy_disposition": "INHERITED" if before["artifact_id"] == after["artifact_id"] else
+                        "NO_CHANGE" if before["content_sha256"] == after["content_sha256"] else "CONTENT_CHANGED",
+                    "event_disposition": "NO_CHANGE" if base["event_library"]["library_snapshot_id"] == activation["event_library"]["library_snapshot_id"] else "CONTENT_CHANGED",
+                    "from_policy_version": before["policy_set_version"], "to_policy_version": after["policy_set_version"],
+                    "from_library_version": base["event_library"]["library_version"],
+                    "to_library_version": activation["event_library"]["library_version"],
+                }
         value = {
             "runtime_activation_id": activation["runtime_activation_id"],
+            "maintenance": maintenance,
             "document2": activation["document2"],
             "policy_set": activation["policy_set"],
             "source_document2": policies["source_document2"],

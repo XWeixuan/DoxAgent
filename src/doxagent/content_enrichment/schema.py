@@ -40,6 +40,8 @@ class EnrichmentJob(BusModel):
     not_before: datetime = Field(default_factory=utc_now)
     deadline_at: datetime
     lease_expires_at: datetime | None = None
+    claim_token: str | None = None
+    pipeline_version: str | None = None
 
 
 __all__ = ["EnrichmentJob", "EnrichmentJobStatus"]

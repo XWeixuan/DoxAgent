@@ -951,3 +951,33 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-09-11 MU 实时消息假 revision 与状态链路修复：正文补全入队前按 ticker/source/identity/raw_hash 跳过已处理的相同 provider payload，Raw 落库再次以 raw_hash 防御并发重复，避免网页实时行情变化把同一 Finnhub 新闻制造为新 revision；Managed V2 scheduler 的详情读取不再依赖空 legacy Runtime，Dashboard 消息流关联真实 Runtime V2 task/case 状态与身份；Read Projector 可安全处理 Native Runtime Case 删除事件的空 payload。新增 5 项聚焦回归测试。
 2026-09-12 MU P0 正文补全事故后续收敛：移除 Message Bus V2 内已废弃的同步正文补全 bridge，耐久 enrichment 入队键加入 provider raw hash 以保留真实 provider revision；worker 不再静默吞掉基础设施/结算异常，重复 intake 可立即完成中断遗留 Raw，标题和正文均为空的记录仅保留 Raw；Finnhub redirect 纳入共享域名限流并将 429/5xx 结构化为可重试失败。事故相关 22 项聚焦测试及变更文件 Ruff 通过。
+
+2026-09-12 · 修复 V2 Overview / 标的页面持续显示同步延迟提示：根因是前端将所有 meta.freshness=STALE 转成常驻警告，而后端 STALE 来自全局 source_health（任一检查超过30秒、checkpoint落后、错误或gap），且固化在读取view中，并非当前页面刷新失败。统一 staleMessage 仅在明确 refresh_error 时显示错误，STALE 且无错误不再提示；保留请求错误、PARTIAL 覆盖及业务健康提示，不改后端freshness事实或刷新策略。3项聚焦回归、TypeScript与变更文件ESLint通过；未部署远端。
+2026-09-12 V2 正文补全优化诊断与开发方案：新增整体方案及本地诊断证据，核对 1000 条 CSV/XLSX，61 条公开样本覆盖全部 54 个来源/域名与原因分组，完成 8 项确定性缺陷复现；补充错误文章目标、候选抢占、长截断假全文、reader challenge 隐藏、动态应用壳及队列预算问题，并定义 Publisher/会员 Session 路径与验收。本轮未修改业务实现、业务数据库、账号或远端部署。
+
+2026-09-12 · V2 Runtime/消息总线/指标提示修复：判定明细补充引用/命中条件标签、未解析 Event/Policy ID 与缺失归因说明，reasoning 展开自动完整读取。消息源与 KPI 查询切回组件或浏览器可见时后台刷新，保留列表和已显示数据；消息源状态栏与消息流等高；当天新增使用独立语义当天/source_id聚合。缺失指标移除重复覆盖徽标，完整性未知收为说明图标，PARTIAL数值保留“统计不完整”；Overview 移除无诊断的 UNKNOWN 健康徽标，保留运行状态及明确健康异常。W2 固定原因码/R1无分析字段、W1 fact_ids 固定空的后端缺口及0消息计数边界已追加 FRONTEND_INTEGRATION_ISSUES.md，未伪造归因。2项针对性展示测试、TypeScript、变更文件ESLint通过；未做浏览器端到端验收或远端部署。
+
+2026-09-12 Runtime 归因补充：W2 R1 持久化可展示的召回理由，无候选不伪造 R2；W1 精确 Fact 归因验证与 Case 固定快照输出，历史未知及未解析身份保留。同步 API contract/共享类型/wire schema；保留其他任务未提交改动。
+归因补充验证：7 项直接相关测试通过，覆盖无候选不执行 R2、有候选执行 R2、旧记录兼容、精确 Fact 往返、固定快照 API 和引用缺失保留；前端 wire 验证器生成成功。未部署远端，未重跑或回填历史 Case。
+
+2026-09-12 V2 正文补全优化（本地实现，experimental）
+- 新增独立 V2 多候选正文质量判定、原文来源链、受限逐跳 HTTP/reader、同页展开与站点浏览器路径；Seeking Alpha 只取实际正文容器，排除摘要/作者介绍/披露拼接假全文。V1 内核行为保留。
+- 新增独立 publisher profile、常规登录 CLI、单飞会话恢复及人工验证出口；账号路径未完成真实会员验收，默认关闭。
+- 队列新增 claim token/续租/事务写入守卫、绝对 deadline、持续补位与域名分散领取；补全保持原始 provider identity/raw hash。
+- 新增 1000 条隔离基线、同快照回放与有限补抓工具、定向回归测试；新增策略总开关默认关闭，保留回滚路径与独立身份卷。结果和未完成验收见 dev_plan/workflow_v2/v2_body_enrichment_implementation_20260912.md。
+- 验证补充：正文补全专项 47 passed；1000 条最终回放 505 程序接受（9 新增、24 新拒绝）；50 条独立对照的 48 条既有成功全部保留。修复对照暴露的 429 reader 回退、Fool 标题头与 HTML 推荐尾部；SA 真实会员/服务器验收仍未完成。
+
+2026-09-13 Seeking Alpha 登录后补充验证
+- 个人 Chrome 两篇历史失败文章已验证可访问完整英文正文；修复作者简介展开控件误阻断及正文末尾 IG 推广污染，正文管线 28 passed、相关 Ruff 通过。
+- 真实后台 DOM 抽取、独立 profile 登录复用与失效恢复仍待验收；详见 dev_plan/workflow_v2/v2_body_enrichment_member_test_20260913.md。
+
+2026-09-13 三个免费发布站抓取诊断与修复
+- 修复 AWS WAF 202 被误判文章身份不匹配、Cloudflare/DataDome 检查页识别；浏览器等待正文节点并按文章范围判断登录/订阅墙，挑战不再提示配置会员。
+- 新增显式 Chrome channel/headless 配置，保留默认行为。匿名有界面 Chrome 的实际 V2 链路恢复 3 条 Barchart badcase；TheStreet/24-7 Wall St 普通 Chrome 免费可读，但独立自动化仍被拦截，未宣称恢复。
+- 50 条历史快照分类核对；相关 43 passed、Ruff/mypy 通过。详情见 dev_plan/workflow_v2/v2_free_publishers_diagnosis_20260913.md。
+
+2026-09-13 Benzinga Message Bus v2 空结果修复
+- 真实复现默认 `tickers=MU` 返回 HTTP 200 空数组；同一 key 的无过滤请求和官方 `primaryTickers=MU` 分别返回 20 条与 11 条，确认不是 key 或 Newsfeed 权限失效。
+- Benzinga v2 adapter 默认直接查询近 30 天 `topics=<ticker>`（`pageSize=100`），仅保留 `stocks` 明确关联该 ticker 的记录；严格结果为空才回退同窗口的 `primaryTickers`，并记录实际 query mode。隔离 Message Bus 全链路成功采集 21 条 MU Raw，首次 bootstrap 按设计不发布。三项聚焦测试及 touched-file Ruff 通过。
+
+2026-09-13 BE-11–14：休市 Source Sweep 固定截止/分页进度与 intake 终态栅栏；消息/Runtime/Event/Policy 使用包含休市日的 semantic window；维护与内容变更 disposition 分离。同步共享契约/验证 schema/策略显示，保留历史事实。整体交付包含此前未提交的正文补全与 Runtime 归因修复。

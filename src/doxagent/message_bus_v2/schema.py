@@ -557,6 +557,9 @@ class SchedulerGroupState(BusModel):
 
 
 class PollResult(BusModel):
+    window_coverage: Literal["COMPLETE", "PARTIAL", "UNKNOWN"] = "UNKNOWN"
+    window_done: bool = True
+
     messages: list[RawMessageInput] = Field(default_factory=list)
     next_checkpoint: JsonObject = Field(default_factory=dict)
     acquisition_metadata: JsonObject = Field(default_factory=dict)
@@ -568,6 +571,9 @@ RequestPermitFactory = Callable[[], AbstractAsyncContextManager[None]]
 
 
 class PollContext(BusModel):
+    window_start: datetime | None = None
+    window_cutoff: datetime | None = None
+
     poll_run_id: str = Field(default_factory=lambda: new_id("poll"))
     ticker: str
     source: SourceDefinition
@@ -593,6 +599,11 @@ class IngestResult(BusModel):
 
 
 class PollExecutionResult(BusModel):
+    enrichment_job_ids: list[str] = Field(default_factory=list)
+    next_checkpoint: JsonObject = Field(default_factory=dict)
+    window_coverage: Literal["COMPLETE", "PARTIAL", "UNKNOWN"] = "UNKNOWN"
+    window_done: bool = True
+
     poll_run_id: str = Field(default_factory=lambda: new_id("poll"))
     binding_id: str
     crawler_execution_id: str | None = None

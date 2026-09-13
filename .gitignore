@@ -43,3 +43,13 @@ eval/brief_state_exports/*.json
 # Local recovery and smoke outputs
 recovery/
 exports/document1_document2_smoke/
+# Publisher login profiles contain credentials; never commit them.
+/.publisher-identities/
+
+# Local provider captures and operator reports are not deployment source.
+/exports/body_enrichment_audit_20260912/
+/exports/body_enrichment_implementation_20260912/
+/exports/free_publishers_20260913/
+/exports/free_publishers_chrome_20260913/
+/exports/free_publishers_*probe.py
+/outputs/

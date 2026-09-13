@@ -58,9 +58,8 @@ class BusOrchestration:
                     self.journal.get("schedule", binding.ticker, {}).get("mode") == "REALTIME"
                 )
             pending_sweep = any(
-                t["status"] in {"PENDING", "RUNNING"}
-                and t["inputs"]["binding"]["binding_id"] == binding.binding_id
-                for t in self.journal.tasks(kind="SOURCE_SWEEP")
+                t["status"] not in {"SUCCEEDED", "FAILED"}
+                for t in self.journal.tasks(ticker=binding.ticker, kind="SWEEP")
             )
             if realtime and not pending_sweep:
                 state = scheduler.repository.get_poll_state(binding)
@@ -108,44 +107,70 @@ class BusOrchestration:
         await asyncio.sleep(0)
         return results
 
-    async def _source(self, scheduler: Any, task: dict[str, Any]) -> Any:
-        try:
-            from datetime import datetime
+    def _yield_source(self, task: dict[str, Any]) -> None:
+        from datetime import timedelta
+        with self.journal.transaction() as db:
+            self.journal.fence(db, task)
+            db.execute("UPDATE runtime_tasks SET status='PENDING',due_at=? WHERE id=?",
+                       ((self.journal.clock() + timedelta(seconds=5)).isoformat(), task["id"]))
 
-            if semantic_day(datetime.fromisoformat(task["inputs"]["cutoff"])) < semantic_day(
-                self.journal.clock()
-            ):
-                self.journal.gap(
-                    "coverage:" + task["id"],
-                    task["ticker"],
-                    "HISTORICAL_COVERAGE_UNKNOWN",
-                    "Historical source backfill deferred",
-                )
-                self.journal.finish(
-                    task,
-                    coverage="UNKNOWN",
-                    skipped_historical=True,
-                    stream_highwater=scheduler.repository.latest_stream_offset(task["ticker"]),
-                )
-                return None
-            result = await asyncio.wait_for(
-                scheduler._poll(
-                    SourceDefinition.model_validate(task["inputs"]["source"]),
-                    TickerSourceBinding.model_validate(task["inputs"]["binding"]),
-                    self.journal.clock(),
-                ),
-                timeout=600,
-            )
-            if result.error_code:
-                raise RuntimeError(result.error_code)
-            highwater = scheduler.repository.latest_stream_offset(task["ticker"])
-            self.journal.finish(
-                task,
-                stream_highwater=highwater,
-                coverage="UNKNOWN",
-                attempted_cutoff=task["inputs"]["cutoff"],
-            )
+    async def _source(self, scheduler: Any, task: dict[str, Any]) -> Any:
+        from datetime import datetime, timedelta
+        try:
+            binding = TickerSourceBinding.model_validate(task["inputs"]["binding"])
+            source = SourceDefinition.model_validate(task["inputs"]["source"])
+            cursor_key = f"{binding.binding_id}:{source.version}:{binding.version}"
+            receipt = task["receipt"]
+            cutoff = datetime.fromisoformat(task["inputs"]["cutoff"])
+            if "window_start" not in receipt:
+                successful = self.journal.get("source_sweep_cursor", cursor_key, {})
+                start = successful.get("cutoff") or (cutoff - timedelta(days=30)).isoformat()
+                self.journal.checkpoint(task, window_start=start, cutoff=cutoff.isoformat(),
+                                        page_cursor={}, job_ids=[], page_coverages=[], poll_done=False)
+            receipt = task["receipt"]
+            result = None
+            if not receipt["poll_done"]:
+                result = await asyncio.wait_for(scheduler._poll(
+                    source, binding, self.journal.clock(),
+                    window_start=datetime.fromisoformat(receipt["window_start"]),
+                    window_cutoff=cutoff, checkpoint=receipt["page_cursor"]), timeout=600)
+                if result.error_code:
+                    raise RuntimeError(result.error_code)
+                # A replay may re-read this page after a crash. Intake identity deduplication
+                # returns the same live job IDs; completed provider payloads are also deduped.
+                self.journal.checkpoint(task,
+                    job_ids=sorted(set(receipt["job_ids"]) | set(result.enrichment_job_ids)),
+                    page_cursor=result.next_checkpoint,
+                    page_coverages=[*receipt["page_coverages"], result.window_coverage],
+                    poll_done=result.window_done)
+                if not result.window_done:
+                    self._yield_source(task)
+                    return result
+            receipt = task["receipt"]
+            pending = scheduler.repository.pending_enrichment_ids(receipt["job_ids"])
+            if pending:
+                self.journal.checkpoint(task, pending_job_count=len(pending))
+                self._yield_source(task)
+                return result
+            scheduler.service.flush_binding(binding.binding_id, force=True)
+            coverage = ("COMPLETE" if all(v == "COMPLETE" for v in receipt["page_coverages"])
+                        else "PARTIAL" if "PARTIAL" in receipt["page_coverages"] else "UNKNOWN")
+            if coverage != "PARTIAL":
+                self.journal.set("source_sweep_cursor", cursor_key,
+                                 {"cutoff": cutoff.isoformat(), "source_task": task["id"], "coverage": coverage})
+            self.journal.finish(task, pending_job_count=0, coverage=coverage,
+                settlement="INTAKE_TERMINAL", attempted_cutoff=cutoff.isoformat(),
+                stream_highwater=scheduler.repository.latest_stream_offset(task["ticker"]))
             return result
         except Exception as exc:
-            self.journal.fail(task, exc)
+            if (task.get("failures", 0) + 1 >= task.get("max_failures", 3)
+                    and task["receipt"].get("job_ids")):
+                self.journal.gap("coverage:" + task["id"], task["ticker"],
+                                 "SOURCE_WINDOW_PARTIAL", type(exc).__name__)
+                self.journal.checkpoint(task, poll_done=True,
+                    page_coverages=[*task["receipt"].get("page_coverages", []), "PARTIAL"],
+                    poll_error=type(exc).__name__)
+                self._yield_source(task)
+            else:
+                self.journal.fail(task, exc)
             return None

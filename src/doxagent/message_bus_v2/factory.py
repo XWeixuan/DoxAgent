@@ -70,6 +70,9 @@ def build_message_bus_v2_service(
             and settings.message_bus_v2_content_enrichment_enabled
         ),
         enrichment_retry_deadline_seconds=settings.content_enrichment_retry_deadline_seconds,
+        enrichment_pipeline_version=(
+            "body_v2.1" if settings.content_enrichment_pipeline_enabled else None
+        ),
     )
     service.bootstrap()
     return repository, service

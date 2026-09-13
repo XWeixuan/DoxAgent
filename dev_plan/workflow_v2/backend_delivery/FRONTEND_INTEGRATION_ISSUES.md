@@ -148,3 +148,61 @@ results=[]时按result_settled显示“结果未记录”或“尚未形成结�
 4. 当前包没有同pin完成W3、真实Candidate释放/消费、Entry/Exit/Fill/PnL，也没有正数Codex成本样本。这些能力不能记为通过；Paper/Live真实交易测试须沿正式执行验收条件单独进行。
 
 本轮完成的是“所有页面均进入真实API环境检查，并处理已发现前端问题”；不是“所有生产能力已通过”。后端修复和上述缺口补验前，不建议宣布可以完整上线。
+
+
+## 2026-09-12 Runtime 判定归因缺失（本轮前端排查）
+
+### P1 W2 无候选时没有可展示的 R1 分析
+- `persistent_runtime_v2/service.py` W2 R1 的 candidate_policy_ids 为空时，直接构造 reason=`no_policy_candidate_recalled` 的 W2PolicyResult；并非前端折叠组件吞掉 reasoning。
+- `schema.py` W2Round1RecallResult 只定义 candidate_policy_ids，没有分析字段。`v2_read/projectors.py` case_reasoning 只保存 w2_final.reason，Case API 也只暴露此 ContentRef。
+- 需要后端在业务输出中记录可展示的召回判断依据（不是模型内部思维链），投影并按 Case 固定版本提供。历史未记录的分析不能由前端补写，也不能把无候选当成发生过 R2 判定。
+- 验收：无候选显示真实召回解释；有候选未命中显示最终判断解释；命中展示真实 Policy ID 与 matched_condition_ids。前端已展示可用的策略/条件，并增加 unresolved_policy_ids 提示，展开完整续取正文。
+
+### P1 W1 Event / Fact 归因
+- `api_v2/case_detail.py` references() 仅遍历 reference_ids；成功解析 Event 时仍将 fact_ids 固定写成 []。解析失败时身份进入 unresolved_reference_ids，旧前端未显示这些 ID。
+- 前端已补齐未解析 ID，并明确“Fact 归因未提供”及 OLD 完全无归因情形；不得把整个 Event 下的所有 Fact 冒充判旧依据。
+- 需要后端确认原始判定记录是否含精确 Fact 归因，按被该 Case 固定的库快照返回；若模型输出未记录，补充业务输出与持久化链路。历史缺失须保留明确未知。
+- 验收：OLD 的 Event 和实际参与判定的 Fact 可追溯；缺失快照保留原始 ID；不链接到当前新版本冒充原版本。
+
+### 当天新增计数边界
+- 前端已通过 CURRENT_TRADING_DAY + source_id 的 BusMetrics 单独读取当天新增，未将 last_published_count 重命名冒充日累计。
+- `api_v2/bus_metrics.py` 对消息数为 0 的 current 返回 missing()，所以当天暂无消息时目前仍可能显示“未记录”；前端保留接口语义，没有擅自补 0。若来源覆盖完整，应由后端返回明确的 0。
+
+### 2026-09-12 后端补充处理（Runtime 判定归因）
+- W2 R1 增加业务 reason；无候选保留 R1 解释且不执行 R2。Case reasoning 沿用 ContentRef，新增 reasoning_stage；历史机器标记不冒充召回分析。
+- W1 增加精确 fact_attributions，写入时约束到已加载的 Event/Fact；Case 保留原始 E#/F# 并按固定快照提供 EventLink.fact_ids。历史 null 表示未记录，局部引用缺失保留原始归因并 PARTIAL。
+- API contract、共享 TypeScript、后端 wire schema 和前端生成验证器同步更新。此次不改 Bus 当天零计数；不回填历史判断，不自动重放线上 Case。
+
+## 2026-09-13 Closed Cycle 真实线上排查
+
+线上权威记录证明 Sunday 02:00 ET 已执行三个 Source Sweep，并产生 12 条 Stream/12 个 Runtime Case；以下问题不是“任务未启动”，而是 Closed Cycle 编排与读取契约尚未闭合。
+
+### BE-11 · P0 · Closed Sweep 未实现 per-source cursor/cutoff 完整增量
+- `persistent_runtime_v2/bus_orchestration.py::_source()` 仍调用普通 `scheduler._poll(source, binding, now)`，没有把 `[last_successful_cursor, sweep_cutoff)` 传入 adapter，也没有为 Finnhub/Benzinga 持久化 pagination cursor。
+- 2026-09-13 三个 Source Sweep 虽均为 `SUCCEEDED`，receipt 均为 `coverage=UNKNOWN`；这只能证明到点调用过 provider，不能证明完整覆盖上次成功位置至 cutoff 的增量。
+- 修复边界：每个 Source 独立保存成功 cursor/pagination state；请求和落库必须受固定 cutoff 约束；只有覆盖闭合才记 `COMPLETE`，不支持或无法证明时继续显式 `UNKNOWN/PARTIAL`。
+- 验收：连续休市两次 Sweep 无漏项、无跨 cutoff 项、重启可从成功 cursor 恢复；重复 provider payload 不产生 revision，单源失败不伪装为全 Sweep 完整。
+
+### BE-12 · P0 · 异步 enrichment 与 stream highwater 之间缺少 Sweep 结算栅栏
+- Source Sweep 在本轮 enrichment jobs 尚未终态时读取 `latest_stream_offset` 并完成；2026-09-13 主 Sweep 只冻结 4 条，稍后完成的 8 条被拆到 supplemental Sweep。
+- 同一个计划内 02:00 Sweep 因此执行成 `4 + 8` 两批，并触发两次 O2/O3 maintenance、两次 activation；这不符合“本 Sweep 全部 dedupe/确定性排序后统一进入 Runtime，再 Maintain 一次”的冻结方案。
+- 修复边界：poll receipt 必须带本轮稳定 intake/job 集合；等这些 job 全部进入 terminal（成功、明确 fallback 或隔离失败）后再取得 stream highwater、冻结 roster。正常异步晚到不得自动开启第二次 maintenance；补充 Sweep 只用于有明确身份和恢复语义的异常补偿。
+- 验收：一次计划 Sweep 只有一个 frozen roster、一个 pinned Runtime bundle、一个 maintenance/activation；进程中断恢复不重复 Case，也不把同批消息拆到新版本。
+
+### BE-13 · P1 · Message Bus/Runtime 页面仍用交易日窗口排除休市 semantic day
+- `v2_read/calendar.py` 在非交易日拒绝 `CURRENT_TRADING_DAY`，`TRADING_DAYS_7/30` 也只枚举交易所 session；`api_v2/views.py` 因此在周末把“当天”设为不可选。
+- 9 月 13 日的 12 条 Message/Case 均正确标记 `semantic_day=2026-09-13`，但不属于任何返回的 trading-day membership，所以当天、近 7 天页面都不可见；Event/maintenance lifecycle 使用另一套可见日期，造成同一页面体系互相矛盾。
+- 修复边界：Message Bus、Runtime、Event/Policy lifecycle 使用包含休市日的 semantic-day window，“当前 semantic day”每天可选；真正依赖交易所 session 的行情、PnL 等指标继续保留 trading-day window，不做全局粗暴替换。
+- 验收：周六/周日当天能够查看 Closed Sweep 的 Message、Case 和失败状态；7/30 日窗口包含对应 semantic days，且交易日比较指标的 membership 仍保持明确。
+
+### BE-14 · P2 · O3 NOOP/继承版本被展示为内容变更
+- 2026-09-13 两次 maintenance 均完成并产生新 activation revision，但 O3 receipt 的 policy version 始终为 v2；前端仍显示 O3 变更，混淆“维护任务/激活发生”与“Policy 内容版本改变”。
+- 修复边界：后端 lifecycle DTO 明确区分 `MAINTAIN_COMPLETED`、`NO_CHANGE/INHERITED`、`CONTENT_CHANGED`，前端只按该权威 disposition 展示，不由新 activation revision 推断 Policy 内容修改。
+- 验收：O2 Event Library 真实 v2→v3→v4 可显示两次变更；O3 版本保持 v2 时显示维护完成但无内容变化。
+
+### BE-11–14 修复记录（2026-09-13）
+- BE-11：固定半开窗口、Benzinga update-time 分页/Finnhub 日期分页；每源版本独立持久化扫描位置、页进度和 coverage。没有 provider 完整性证书继续 UNKNOWN，达到页上限/项目错误为 PARTIAL，不能宣称历史全覆盖。
+- BE-12：receipt 保存稳定 intake job 集合；分页完成后跨进程恢复等待 job 终态、flush buffered publication，再取 highwater。等待不消耗失败预算、不阻塞其他来源；未结束的 Sweep 期间禁止同 ticker 提前恢复普通 polling。
+- BE-13：四个业务页面采用 LISTED_SEMANTIC_DAYS，周末当天可选，7/30 日包含休市日；交易指标保持原 session window，SSE 与列表采用同一成员列表。
+- BE-14：Activation/PolicyContext maintenance 明确区分维护完成、继承/无变化、内容变化及未知；策略页按权威 disposition 展示，Reference Delta 文案明确是输入变化。
+- 必要验证：休市扫描栅栏及恢复、固定 cutoff/pagination、周末窗口与交易窗口隔离、固定版本归因/激活 DTO；前端类型检查通过。真实连续两个休市 Sweep 的结果须在下一计划周期自然运行后检查，本次不人为触发维护/订单。

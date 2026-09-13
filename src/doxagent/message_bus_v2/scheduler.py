@@ -204,6 +204,8 @@ class GlobalPollScheduler:
         source: SourceDefinition,
         binding: TickerSourceBinding,
         attempted_at: datetime,
+        *, window_start: datetime | None = None, window_cutoff: datetime | None = None,
+        checkpoint: dict | None = None,
     ) -> PollExecutionResult:
         # Snapshot source and binding for this poll. Updates become visible on the next poll.
         state = self.repository.get_poll_state(binding)
@@ -215,13 +217,21 @@ class GlobalPollScheduler:
             ticker=binding.ticker,
             source=source,
             binding=binding,
-            checkpoint=state.checkpoint,
+            checkpoint=state.checkpoint if checkpoint is None else checkpoint,
+            window_start=window_start,
+            window_cutoff=window_cutoff,
             requested_at=attempted_at,
             request_permit=limiter.permit,
         )
         try:
             adapter = self.adapters.resolve(source.adapter_ref, source_version=source.version)
             result = await adapter.poll(context)
+            if window_cutoff is not None:
+                # Never admit provider rows outside the immutable half-open sweep window.
+                result = result.model_copy(update={"messages": [m for m in result.messages
+                    if (stamp := datetime.fromisoformat(m.metadata["sweep_updated_at"])
+                        if m.metadata.get("sweep_updated_at") else m.published_at) is not None
+                    and window_start <= stamp < window_cutoff]})
             result = result.model_copy(
                 update={
                     "acquisition_metadata": {

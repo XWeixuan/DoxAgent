@@ -65,7 +65,7 @@ class MessageStreams:
             ):
                 raise ApiFailure("VALIDATION_FAILED", 422)
         window = view["wire"]["period"]["current"]
-        if window["membership"] == "LISTED_TRADING_DAYS":
+        if window["membership"] in {"LISTED_TRADING_DAYS", "LISTED_SEMANTIC_DAYS"}:
             filters["days"] = window["trading_days"]
         return filters
 

@@ -226,10 +226,24 @@ class W1Round1Result(RuntimeV2Model):
         return list(dict.fromkeys(normalized))
 
 
+class W1FactAttribution(RuntimeV2Model):
+    event_id: str = Field(pattern=r"^E[0-9]+$")
+    fact_ids: list[str] = Field(min_length=1, max_length=32)
+
+    @field_validator("fact_ids")
+    @classmethod
+    def normalized_facts(cls, value: list[str]) -> list[str]:
+        values = list(dict.fromkeys(item.strip().upper() for item in value))
+        if any(not item.startswith("F") or not item[1:].isdigit() for item in values):
+            raise ValueError("fact_ids must contain exact F# identifiers")
+        return values
+
+
 class W1NoveltyResult(RuntimeV2Model):
     result: W1NoveltyVerdict
     confidence: RuntimeConfidence
     reference_ids: list[str] = Field(default_factory=list, max_length=3)
+    fact_attributions: list[W1FactAttribution] | None = None
     reason: str = Field(min_length=1, max_length=1000)
 
     @field_validator("reference_ids")
@@ -244,6 +258,10 @@ class W1NoveltyResult(RuntimeV2Model):
     def old_requires_reference(self) -> W1NoveltyResult:
         if self.result is W1NoveltyVerdict.OLD and not self.reference_ids:
             raise ValueError("OLD requires at least one loaded reference ID")
+        if self.fact_attributions is not None:
+            ids = [item.event_id for item in self.fact_attributions]
+            if len(ids) != len(set(ids)) or not set(ids).issubset(self.reference_ids):
+                raise ValueError("Fact attribution must uniquely reference selected Events")
         return self
 
 
@@ -282,6 +300,7 @@ class W2Round1RecallResult(RuntimeV2Model):
     """Candidate Policies recalled by W2 R1; this is never a hit verdict."""
 
     candidate_policy_ids: list[str] = Field(default_factory=list, max_length=3)
+    reason: str | None = Field(default=None, min_length=1, max_length=1000)
 
     @field_validator("candidate_policy_ids", mode="before")
     @classmethod

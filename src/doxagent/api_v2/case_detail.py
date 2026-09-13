@@ -118,6 +118,10 @@ def install(app: FastAPI) -> None:
 
         def references(result: dict) -> list[dict]:
             values = []
+            attribution = {
+                item["event_id"]: item["fact_ids"]
+                for item in result.get("fact_attributions") or []
+            }
             for identity in result.get("reference_ids", []):
                 event = store.get(
                     "event_detail", ticker, library["library_snapshot_id"] + ":" + identity, seq
@@ -147,7 +151,7 @@ def install(app: FastAPI) -> None:
                         "kind": "CANONICAL" if event else "PROVISIONAL",
                         "event_key": event["event_key"] if event else None,
                         "event_id": identity,
-                        "fact_ids": [],
+                        "fact_ids": attribution.get(identity, []),
                         "library_snapshot_id": library["library_snapshot_id"],
                         "library_version": library["library_version"],
                         "provisional_snapshot_version": None
@@ -191,6 +195,7 @@ def install(app: FastAPI) -> None:
                 "novelty": available(w1["result"]),
                 "confidence": available(w1["confidence"]),
                 "references": references(w1),
+                "fact_attributions": w1.get("fact_attributions"),
                 "timing": interval("W1"),
                 "attempts": page("attempt", "W1"),
                 "reasoning": resource(reasons.get("w1")),
@@ -201,6 +206,9 @@ def install(app: FastAPI) -> None:
         second = (
             {
                 "skipped": case["w2_skipped"],
+                "reasoning_stage": (
+                    "R1" if not case["w2_round1"].get("candidate_policy_ids") else "R2"
+                ) if case.get("w2_round1") is not None else None,
                 "policy_hit": available(bool(w2["policy_ids"])),
                 "confidence": available(w2["confidence"]),
                 "policies": policies(w2),

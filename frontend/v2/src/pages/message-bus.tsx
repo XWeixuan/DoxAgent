@@ -177,9 +177,59 @@ function MessageStream({
     ]);
     return { status, metrics, sources };
   };
-  const minute = useQuery({ queryKey: minuteKey, queryFn: readMinute });
+  const minute = useQuery({
+    queryKey: minuteKey,
+    queryFn: readMinute,
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: "always",
+  });
+  const sourceIds = [
+    ...new Set(
+      minute.data?.sources.data.data?.items.map((s) => s.source.source_id) ??
+        [],
+    ),
+  ].sort();
+  const daily = useQuery({
+    queryKey: [scope, "bus-source-today", ticker, sourceIds],
+    enabled: sourceIds.length > 0,
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: "always",
+    queryFn: async () => {
+      const c = await api.request(
+        "ReadContext",
+        "/read-context" +
+          queryString({
+            ticker,
+            page: "MESSAGE_BUS",
+            period: "CURRENT_TRADING_DAY",
+            refresh: "MINUTE",
+          }),
+      );
+      const counts = await Promise.all(
+        sourceIds.map(async (source_id) => {
+          const r = await api.request(
+            "BusMetrics",
+            tickerPath(ticker) +
+              "/message-bus/metrics" +
+              queryString({ view_id: c.data.view_id, source_id }),
+            { view: c.data.view_id },
+          );
+          return [source_id, r.data.data?.published_revisions] as const;
+        }),
+      );
+      return {
+        counts: Object.fromEntries(counts),
+        day: c.data.clock.semantic_day,
+      };
+    },
+  });
   const minuteError = useMinuteReads(context, async () => {
-    await minute.refetch();
+    await Promise.all([
+      minute.refetch(),
+      ...(sourceIds.length ? [daily.refetch()] : []),
+    ]);
   });
   const path =
     tickerPath(ticker) +
@@ -372,6 +422,12 @@ function MessageStream({
       </div>
       {streamError && <Notice danger>{streamError}</Notice>}
       {minuteError && <Notice danger>{minuteError}</Notice>}
+      {minute.error && (
+        <Notice danger>消息源状态刷新失败：{minute.error.message}</Notice>
+      )}
+      {daily.error && (
+        <Notice danger>当天消息统计读取失败：{daily.error.message}</Notice>
+      )}
       <div className="bus-layout">
         <section className="stream-panel">
           {" "}
@@ -516,7 +572,8 @@ function MessageStream({
             <SourceCard
               key={s.source.binding_id}
               status={s}
-              semanticDay={context.data.clock.semantic_day}
+              today={daily.data?.counts[s.source.source_id]}
+              semanticDay={daily.data?.day ?? context.data.clock.semantic_day}
             />
           ))}
           {!sources.length && <p>没有已绑定消息源</p>}
@@ -528,9 +585,11 @@ function MessageStream({
 export function SourceCard({
   status: s,
   semanticDay,
+  today,
 }: {
   status: SourceStatus;
   semanticDay?: string;
+  today?: import("@contract").Metric;
 }) {
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
@@ -622,8 +681,8 @@ export function SourceCard({
               formatSourceSuccess(v, semanticDay),
             )}
           </dd>
-          <dt>最近新增</dt>
-          <dd>{valueText(s.last_published_count)}</dd>
+          <dt>当天新增</dt>
+          <dd>{today ? metricText(today) : "未记录"}</dd>
           <dt>轮询延迟</dt>
           <dd>
             {valueText(s.last_poll_latency_seconds, (v) => v.toFixed(2) + "s")}

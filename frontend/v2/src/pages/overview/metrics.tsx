@@ -7,6 +7,7 @@ import {
   Coins,
   Wrench,
   ChartNoAxesCombined,
+  Info,
 } from "lucide-react";
 import type { Coverage, Metric, OverviewMetrics } from "@contract";
 import { Badge } from "@/components/ui/badge";
@@ -50,7 +51,9 @@ export function Comparison({
 export function MetricNote({ metric }: { metric: Metric }) {
   return (
     <>
-      <CoverageNote coverage={metric.current_coverage} />
+      {metric.current.state === "AVAILABLE" && (
+        <CoverageNote coverage={metric.current_coverage} />
+      )}
       {metric.provisional && (
         <Badge className="coverage-badge tone-warning" variant="outline">
           暂估
@@ -60,13 +63,22 @@ export function MetricNote({ metric }: { metric: Metric }) {
   );
 }
 export function CoverageNote({ coverage }: { coverage: Coverage }) {
-  return coverage.state !== "COMPLETE" ? (
+  if (coverage.state === "UNKNOWN")
+    return (
+      <span
+        title="统计完整性尚未确认，当前数值可能未覆盖全部记录。"
+        aria-label="统计完整性尚未确认"
+      >
+        <Info aria-hidden="true" size={14} />
+      </span>
+    );
+  return coverage.state === "PARTIAL" ? (
     <Badge
       className="coverage-badge tone-warning"
       variant="outline"
       title={coverage.reasons.join(" · ")}
     >
-      {coverage.state === "UNKNOWN" ? "覆盖未知" : "部分覆盖"}
+      统计不完整
     </Badge>
   ) : null;
 }

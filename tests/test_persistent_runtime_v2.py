@@ -231,7 +231,7 @@ class _FakeResponses:
                 reason="new qualification fact",
             )
         elif request.output_model is W2Round1RecallResult:
-            value = W2Round1RecallResult(candidate_policy_ids=[])
+            value = W2Round1RecallResult(candidate_policy_ids=[], reason="No criterion covers the reported qualification fact")
         else:
             value = W1FactExtractionResult(
                 candidates=[
@@ -652,6 +652,7 @@ def test_w2_empty_recall_synthesizes_final_without_r2() -> None:
     )
 
     assert recall.candidate_policy_ids == []
+    assert final.reason == recall.reason == "No criterion covers the reported qualification fact"
     assert final.policy_ids == []
     assert final.confidence is RuntimeConfidence.NORMAL
     assert [request.output_model for request in responses.calls] == [W2Round1RecallResult]
@@ -1034,3 +1035,14 @@ def test_bailian_validation_error_is_actionable_without_raw_output() -> None:
     assert captured.value.code == "structured_output_validation_failed"
     assert "OLD requires at least one loaded reference ID" in message
     assert "output_text" not in message
+
+
+def test_w1_fact_attribution_survives_roundtrip_and_rejects_wrong_event():
+    from pydantic import ValidationError
+    result = W1NoveltyResult(result="OLD", confidence="normal", reference_ids=["E1"],
+        fact_attributions=[{"event_id": "E1", "fact_ids": ["F2"]}], reason="Existing fact covers this")
+    assert W1NoveltyResult.model_validate_json(result.model_dump_json()).fact_attributions[0].fact_ids == ["F2"]
+    assert W1NoveltyResult(result="OLD", confidence="normal", reference_ids=["E1"], reason="legacy").fact_attributions is None
+    with pytest.raises(ValidationError):
+        W1NoveltyResult(result="OLD", confidence="normal", reference_ids=["E1"],
+            fact_attributions=[{"event_id": "E2", "fact_ids": ["F2"]}], reason="invalid")

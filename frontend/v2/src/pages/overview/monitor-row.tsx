@@ -75,11 +75,13 @@ export function MonitorRow({
         <TableCell>
           <div className="status-stack">
             <StatusBadge dimension="run" value={state.run_state} />
-            <StatusBadge
-              dimension="health"
-              value={state.health}
-              title={state.health_reasons.join(" · ")}
-            />
+            {state.health !== "UNKNOWN" && (
+              <StatusBadge
+                dimension="health"
+                value={state.health}
+                title={state.health_reasons.join(" · ")}
+              />
+            )}
           </div>
         </TableCell>
         <TableCell className="time-cell">

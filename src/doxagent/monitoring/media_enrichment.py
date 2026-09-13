@@ -229,6 +229,7 @@ class MediaExtractionResult:
     attempts: tuple[FetchAttempt, ...] = ()
     existing_quality: BodyQuality | None = None
     extracted_quality: BodyQuality | None = None
+    diagnostics: JsonObject = field(default_factory=dict)
 
     @property
     def succeeded(self) -> bool:
@@ -361,6 +362,8 @@ def media_enrichment_metadata(
     if result.content:
         enrichment["content_sha256"] = hashlib.sha256(result.content.encode()).hexdigest()
         enrichment["content_length"] = len(result.content)
+    if result.diagnostics:
+        enrichment.update(result.diagnostics)
     payload["media_enrichment"] = enrichment
     return payload
 

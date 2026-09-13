@@ -1,5 +1,6 @@
 import hashlib
 import json
+import pytest
 from datetime import UTC, datetime
 
 from fastapi.testclient import TestClient
@@ -143,7 +144,8 @@ def test_runtime_noop_activation_inherits_base_policy_run(tmp_path):
     )
 
 
-def test_formal_activation_indexes_exact_documents_policy_and_library(tmp_path):
+@pytest.mark.parametrize("attribution_recorded", [False, True, "resolved"])
+def test_formal_activation_indexes_exact_documents_policy_and_library(tmp_path, attribution_recorded):
     source = SQLiteCodexRuntimeRepository(tmp_path / "research.db")
     _seed_published_d2(source)
 
@@ -246,6 +248,7 @@ def test_formal_activation_indexes_exact_documents_policy_and_library(tmp_path):
     )
     store.ingest("initialization", "activation-a", records)
     active = store.get("activation_revision", "MU", "activation-a")
+    assert active["maintenance"]["status"] == "INITIALIZED"
     assert active["document2"]["content_sha256"] == d2.sha256
     assert active["policy_set"]["content_sha256"] == policy_ref.sha256
     assert store.get("research_download", "MU", "d1-mu")
@@ -289,6 +292,18 @@ def test_formal_activation_indexes_exact_documents_policy_and_library(tmp_path):
         "matched_condition_ids": [],
         "reason": "No hit",
     }
+    if attribution_recorded:
+        case["w1_final"]["fact_attributions"] = [{"event_id": "E99", "fact_ids": ["F7"]}]
+        case["w1_final"]["reference_ids"] = ["E99"]
+        case["w2_round1"] = {"candidate_policy_ids": [], "reason": "No criterion matches the reported fact"}
+        case["w2_final"]["reason"] = "no_policy_candidate_recalled"
+    if attribution_recorded == "resolved":
+        event_record = next(r for r in records if r["kind"] == "event")
+        event_id = event_record["id"].rsplit(":", 1)[-1]
+        fact_record = next(r for r in records if r["kind"] == "fact" and r["parent"] == event_record["id"])
+        expected_fact = fact_record["data"]["fact"]["fact_id"]
+        case["w1_final"].update(result="OLD", reference_ids=[event_id],
+            fact_attributions=[{"event_id":event_id, "fact_ids":[expected_fact]}])
     seq = store.ingest(
         "fixture",
         "case",
@@ -322,8 +337,21 @@ def test_formal_activation_indexes_exact_documents_policy_and_library(tmp_path):
             headers={"Authorization": "Bearer offline"},
         )
         assert response.status_code == 200, response.text
-        data = response.json()["data"]
+        data = response.json()["data"]["data"]
         assert data["document1"]["value"]["run_id"] == "d1-mu"
         assert data["document2"]["value"]["content_sha256"] == d2.sha256
         assert data["w1"]["data"]["reasoning"]["data"]["content_id"]
         assert "New facts" not in response.text
+        if attribution_recorded == "resolved":
+            reference = data["w1"]["data"]["references"][0]
+            assert reference["fact_ids"] == [expected_fact]
+            assert reference["library_snapshot_id"] == active["event_library"]["library_snapshot_id"]
+            assert data["w1"]["state"] == "AVAILABLE"
+        elif attribution_recorded:
+            assert data["w1"]["state"] == "PARTIAL"
+            assert data["w1"]["data"]["unresolved_reference_ids"] == ["E99"]
+            assert data["w1"]["data"]["fact_attributions"] == [{"event_id":"E99", "fact_ids":["F7"]}]
+            assert data["w2"]["data"]["reasoning_stage"] == "R1"
+            assert data["w2"]["data"]["reasoning"]["state"] == "AVAILABLE"
+        else:
+            assert data["w1"]["data"]["fact_attributions"] is None

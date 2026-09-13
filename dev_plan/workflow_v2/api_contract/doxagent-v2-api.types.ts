@@ -82,7 +82,7 @@ export interface DayWindow {
   observed_until: Instant;
   trading_days: Day[]; // [] only for ALL; obtain full calendar with paged calendar route
   trading_day_count: Count;
-  membership: "LISTED_TRADING_DAYS" | "ALL_SEMANTIC_DAYS";
+  membership: "LISTED_TRADING_DAYS" | "LISTED_SEMANTIC_DAYS" | "ALL_SEMANTIC_DAYS";
   coverage: Coverage;
 }
 export interface PeriodContext {
@@ -121,7 +121,15 @@ export interface DocumentRef {
 }
 export interface LibraryRef { library_snapshot_id: Id; library_version: Count; published_at: Instant; content_sha256: string }
 export interface PolicySetRef extends DocumentRef { policy_set_version: Count }
+export interface MaintenanceDisposition {
+  status: "MAINTAIN_COMPLETED" | "INITIALIZED";
+  policy_disposition: "CONTENT_CHANGED" | "NO_CHANGE" | "INHERITED" | "UNKNOWN";
+  event_disposition: "CONTENT_CHANGED" | "NO_CHANGE" | "UNKNOWN";
+  from_policy_version: Count | null; to_policy_version: Count;
+  from_library_version: Count | null; to_library_version: Count;
+}
 export interface Activation {
+  maintenance?: MaintenanceDisposition | null;
   runtime_activation_id: Id;
   activated_at: Value<Instant>;
   document1: DocumentRef;
@@ -410,6 +418,7 @@ export interface PolicySummary {
 export interface PolicyDetail { summary: PolicySummary; source_document2: DocumentRef; activation_semantics: "OR"; policy: Policy }
 export type PolicyShellSummary = Pick<ShellSummary, "shell_id" | "ordinal" | "core_question">;
 export interface PolicyContext {
+  maintenance?: MaintenanceDisposition | null;
   runtime_activation_id: Id;
   document2: DocumentRef;
   policy_set: PolicySetRef;
@@ -614,12 +623,16 @@ export interface EventLink {
   semantic_day: Day | null;
 }
 export interface PolicyLink { policy_id: Id; policy_set_version: Count; policy_activation_revision: string; condition_ids: Id[] }
+export interface FactAttribution { event_id: Id; fact_ids: Id[] }
 export interface W1Detail {
+  /** null or absent: historical evidence not recorded; []: recorded with no canonical Fact attribution. */
+  fact_attributions?: FactAttribution[] | null;
   unresolved_reference_ids?: Id[];
   novelty: Value<"NEW" | "OLD">; confidence: Value<Confidence>; references: EventLink[];
   timing: Timing; attempts: Page<ModelAttempt>; reasoning: Resource<ContentRef>;
 }
 export interface W2Detail {
+  reasoning_stage?: "R1" | "R2" | null;
   unresolved_policy_ids?: Id[];
   skipped: boolean; policy_hit: Value<boolean>; confidence: Value<Confidence>;
   policies: PolicyLink[]; timing: Timing; attempts: Page<ModelAttempt>; reasoning: Resource<ContentRef>;

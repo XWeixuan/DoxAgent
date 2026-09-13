@@ -255,7 +255,9 @@ export const queryString = (values: Record<string, string | undefined>) => {
   });
   return `?${params}`;
 };
+// STALE is aggregate source freshness, not evidence that this page failed to
+// refresh. Only an explicit refresh error warrants a persistent warning.
 export const staleMessage = (meta?: Meta) =>
-  meta?.freshness === "STALE"
-    ? meta.refresh_error?.message || "数据源同步延迟，显示已保存的内容。"
+  meta?.refresh_error
+    ? meta.refresh_error.message?.trim() || "刷新失败，显示已保存的内容。"
     : null;

@@ -751,6 +751,7 @@ async def test_all_six_builtin_adapters_with_fixed_responses(tmp_path: Path) -> 
                         "author": "Reuters",
                         "url": "https://example.test/bz-1",
                         "created": timestamp,
+                        "stocks": [{"name": "MU"}],
                     }
                 ],
             )
@@ -873,6 +874,128 @@ async def test_all_six_builtin_adapters_with_fixed_responses(tmp_path: Path) -> 
         assert result.messages[0].published_at.tzinfo is not None
         assert permit_counts[source_id] == 1
 
+    await client.aclose()
+
+
+async def test_benzinga_adapter_falls_back_to_primary_ticker_when_bounded_topics_is_empty(
+    tmp_path: Path,
+) -> None:
+    requests: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        if request.url.params.get("topics") == "MU":
+            return httpx.Response(200, json=[])
+        assert request.url.params.get("primaryTickers") == "MU"
+        return httpx.Response(
+            200,
+            json=[
+                {
+                    "id": "bz-primary-1",
+                    "title": "Micron primary ticker story",
+                    "body": "Micron body",
+                    "author": "Benzinga",
+                    "url": "https://example.test/bz-primary-1",
+                    "created": "2026-09-12T12:00:00Z",
+                }
+            ],
+        )
+
+    client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+    registry = AdapterRegistry(
+        DoxAgentSettings(_env_file=None, benzinga_api_key="test"),
+        adapter_root=tmp_path / "adapters",
+        client=client,
+    )
+    repository, service = _bus(tmp_path / "benzinga-fallback.sqlite3")
+    source = service.require_source("benzinga_news")
+    binding = service.configure_binding(
+        ticker="MU",
+        source_id=source.source_id,
+        actor=UpdateActor.SYSTEM,
+    )
+
+    @asynccontextmanager
+    async def permit() -> AsyncIterator[None]:
+        yield
+
+    result = await registry.resolve(source.adapter_ref, source_version=source.version).poll(
+        PollContext(
+            ticker="MU",
+            source=source,
+            binding=binding,
+            requested_at=NOW,
+            request_permit=permit,
+        )
+    )
+
+    assert len(requests) == 2
+    assert result.failures == []
+    assert [message.external_id for message in result.messages] == ["bz-primary-1"]
+    assert result.messages[0].metadata["query_mode"] == "primary_tickers_fallback"
+    assert result.acquisition_metadata == {
+        "provider": "benzinga",
+        "query_mode": "primary_tickers_fallback",
+    }
+    await client.aclose()
+
+
+async def test_benzinga_adapter_defaults_to_bounded_topics_with_ticker_filter(
+    tmp_path: Path,
+) -> None:
+    requests: list[httpx.Request] = []
+
+    def row(identifier: str, ticker: str) -> dict[str, object]:
+        return {
+            "id": identifier,
+            "title": f"Story for {ticker}",
+            "body": "Body",
+            "author": "Benzinga",
+            "url": f"https://example.test/{identifier}",
+            "created": "2026-09-01T11:00:00Z",
+            "stocks": [{"name": ticker}],
+        }
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        assert request.url.params.get("topics") == "MU"
+        return httpx.Response(200, json=[row("mu-1", "MU"), row("noise-1", "AAPL")])
+
+    client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+    registry = AdapterRegistry(
+        DoxAgentSettings(_env_file=None, benzinga_api_key="test"),
+        adapter_root=tmp_path / "adapters",
+        client=client,
+    )
+    repository, service = _bus(tmp_path / "benzinga-topic-fallback.sqlite3")
+    source = service.require_source("benzinga_news")
+    binding = service.configure_binding(
+        ticker="MU",
+        source_id=source.source_id,
+        actor=UpdateActor.SYSTEM,
+    )
+
+    @asynccontextmanager
+    async def permit() -> AsyncIterator[None]:
+        yield
+
+    result = await registry.resolve(source.adapter_ref, source_version=source.version).poll(
+        PollContext(
+            ticker="MU",
+            source=source,
+            binding=binding,
+            requested_at=NOW,
+            request_permit=permit,
+        )
+    )
+
+    assert len(requests) == 1
+    assert requests[0].url.params["pageSize"] == "100"
+    assert requests[0].url.params["dateFrom"] == "2026-08-02"
+    assert requests[0].url.params["dateTo"] == "2026-09-01"
+    assert [message.external_id for message in result.messages] == ["mu-1"]
+    assert result.messages[0].metadata["query_mode"] == "bounded_topics_ticker"
+    assert result.acquisition_metadata["query_mode"] == "bounded_topics_ticker"
     await client.aclose()
 
 
