@@ -148,13 +148,18 @@ class YahooFinanceNewsAdapter:
         except (httpx.HTTPError, ValueError):
             rows = []
             mode = "finance_search_fallback"
+            fallback_count = min(count, 10)
             last_error: Exception | None = None
             for host in ("query1.finance.yahoo.com", "query2.finance.yahoo.com"):
                 try:
                     async with context.request_permit():
                         response = await self.client.get(
                             f"https://{host}/v1/finance/search",
-                            params={"q": context.ticker, "newsCount": count, "quotesCount": 0},
+                            params={
+                                "q": context.ticker,
+                                "newsCount": fallback_count,
+                                "quotesCount": 0,
+                            },
                             headers={"User-Agent": self.settings.monitoring_rss_user_agent},
                         )
                         response.raise_for_status()
@@ -227,6 +232,7 @@ class YahooFinanceNewsAdapter:
                 "provider": "yahoo_finance",
                 "query_mode": mode,
                 "window_hours": 24,
+                "requested_count": count if mode == "ncp_latest_news" else fallback_count,
             },
         )
 

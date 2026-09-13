@@ -96,6 +96,22 @@ async def test_yahoo_ncp_filters_24h_and_preserves_publisher_domain(tmp_path: Pa
     await client.aclose()
 
 
+async def test_yahoo_search_fallback_is_bounded_to_ten(tmp_path: Path) -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path == "/xhr/ncp":
+            return httpx.Response(401)
+        assert request.url.params["newsCount"] == "10"
+        return httpx.Response(200, json={"news": []})
+
+    context, _ = _context(tmp_path, "yahoo_finance_news", {"snippet_count": 200})
+    client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+    result = await YahooFinanceNewsAdapter(DoxAgentSettings(_env_file=None), client).poll(context)
+    assert result.messages == []
+    assert result.window_coverage == "PARTIAL"
+    assert result.acquisition_metadata["requested_count"] == 10
+    await client.aclose()
+
+
 async def test_google_rss_terms_domains_and_24h_filter(tmp_path: Path) -> None:
     requests: list[httpx.Request] = []
 

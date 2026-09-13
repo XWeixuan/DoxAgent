@@ -1000,3 +1000,4 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-14 · IBKR News 针对官方 ibapi 10.49 修正新旧 `error()` 回调参数兼容，避免把 errorTime 误记为错误码；292 订阅只在新连接时执行一次 Historical News 补洞，后续一分钟 polling 排空长连接队列，不再静默分钟级重复查询 24 小时历史。历史/实时积压按每轮上限分批、正文请求以小并发执行，并显式报告 pending_count 与 hasMore/coverage。
 2026-09-14 · 远端 IBKR News 实测补充兼容历史新闻的毫秒 epoch 时间字段，避免将 13 位时间戳按秒解释造成超出 datetime 年份范围；秒级 tick 292 时间戳保持原样，非法/越界时间仍按 item-local 无效数据隔离。
 2026-09-14 · Reuters 浏览器远端验收发现 256MB Message Bus 容器不足以稳定承载 Chromium；服务器 overlay 将 v2-message-bus 调整为 1GB 内存、256MB `/dev/shm`、1 CPU 与 256 PID，避免浏览器采集挤停常驻总线。Reuters HTTP 401 仍按 source-local degraded 处理，资源扩容不作为身份恢复证据。
+2026-09-14 · Yahoo Finance 远端连续探针触发全出口 429 后，修正 Search fallback 与方案不一致的请求量：NCP 仍取 100/可配 200，Query1/2 回退严格限制 `newsCount=10` 并在 acquisition metadata 记录实际请求量；429 继续作为 source-local failure，不以缓存或空结果伪装成功。
