@@ -1,0 +1,13 @@
+[Unit]
+Description=DoxAgent Reuters Chrome CDP relay for Docker bridge
+After=docker.service doxagent-reuters-chrome.service
+Requires=doxagent-reuters-chrome.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/socat TCP-LISTEN:19223,bind=172.17.0.1,reuseaddr,fork TCP:127.0.0.1:9223
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

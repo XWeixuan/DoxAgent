@@ -1,0 +1,17 @@
+[Unit]
+Description=DoxAgent Reuters persistent Chrome identity
+After=network-online.target xrdp.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=doxagent-desktop
+Environment=DISPLAY=:10
+Environment=XAUTHORITY=/home/doxagent-desktop/.Xauthority
+ExecStart=/usr/bin/google-chrome-stable --remote-debugging-address=127.0.0.1 --remote-debugging-port=9223 --remote-allow-origins=* --user-data-dir=/home/doxagent-desktop/.config/doxagent/reuters-chrome --no-first-run --no-default-browser-check --disable-sync https://www.reuters.com/site-search/?query=micron&offset=0
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=20
+
+[Install]
+WantedBy=multi-user.target
