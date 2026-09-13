@@ -206,3 +206,10 @@ results=[]时按result_settled显示“结果未记录”或“尚未形成结�
 - BE-13：四个业务页面采用 LISTED_SEMANTIC_DAYS，周末当天可选，7/30 日包含休市日；交易指标保持原 session window，SSE 与列表采用同一成员列表。
 - BE-14：Activation/PolicyContext maintenance 明确区分维护完成、继承/无变化、内容变化及未知；策略页按权威 disposition 展示，Reference Delta 文案明确是输入变化。
 - 必要验证：休市扫描栅栏及恢复、固定 cutoff/pagination、周末窗口与交易窗口隔离、固定版本归因/激活 DTO；前端类型检查通过。真实连续两个休市 Sweep 的结果须在下一计划周期自然运行后检查，本次不人为触发维护/订单。
+
+### BE-11–14 新加坡部署验收（2026-09-13）
+- 代码提交 `b2539116` 已推送 main，新加坡已 `git pull --ff-only`；生产前后端重新构建并切换，补入服务器已有官方 ibapi 10.49.2。
+- 8 个数据库完成备份及完整性校验，备份目录 `/data/backups/20260913T151451127807Z`；12 个服务运行，API/Web/Codex Worker 健康，公网 `/healthz` 返回 ok。
+- 已登录生产 UI 验收：消息总线周日“当天”可选，周期新增 12；近 7 天为 26，包含 9 月 13 日记录。Runtime 当天处理 12，原有 1 条失败可见。策略页显示“最新维护已完成 · Policy 无内容变化（v2）”。
+- 两轮运行检查无服务重启；四个 source head/checkpoint 均追平且 error 为空。未重跑历史 Sweep/维护，trade jobs/executions 均保持 0。
+- 保留历史 coverage=UNKNOWN；连续两个自然休市周期的完整端到端运行验收仍待后续计划任务，不能用本次页面验收替代。

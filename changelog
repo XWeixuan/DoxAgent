@@ -981,3 +981,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 - Benzinga v2 adapter 默认直接查询近 30 天 `topics=<ticker>`（`pageSize=100`），仅保留 `stocks` 明确关联该 ticker 的记录；严格结果为空才回退同窗口的 `primaryTickers`，并记录实际 query mode。隔离 Message Bus 全链路成功采集 21 条 MU Raw，首次 bootstrap 按设计不发布。三项聚焦测试及 touched-file Ruff 通过。
 
 2026-09-13 BE-11–14：休市 Source Sweep 固定截止/分页进度与 intake 终态栅栏；消息/Runtime/Event/Policy 使用包含休市日的 semantic window；维护与内容变更 disposition 分离。同步共享契约/验证 schema/策略显示，保留历史事实。整体交付包含此前未提交的正文补全与 Runtime 归因修复。
+
+2026-09-13 BE-11–14 Singapore deployment: pushed/pulled b2539116; rebuilt backend/frontend with official ibapi 10.49.2; backed up and verified 8 databases; 12 services running. Authenticated UI verified Sunday Message Bus 12 / 7-day 26, Runtime 12 with historical failure visible, Policy v2 maintenance without content change. Source projections caught up; no trade jobs or executions. Historical coverage remains UNKNOWN; next natural closed-cycle acceptance is pending.
