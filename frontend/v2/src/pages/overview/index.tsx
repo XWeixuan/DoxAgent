@@ -1,6 +1,7 @@
+import { Skeleton } from "@/components/ui/skeleton";
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Activity, Clock3, RefreshCw, ScanLine } from "lucide-react";
+import { Clock3, RefreshCw, ScanLine } from "lucide-react";
 import type { Period } from "@contract";
 import { Button } from "@/components/ui/button";
 import {
@@ -182,46 +183,63 @@ export default function Overview() {
                   </div>
                 </article>
                 <article className="realtime-card">
-                  <div className="realtime-icon">
-                    <Activity aria-hidden="true" />
-                  </div>
-                  <div className="realtime-content">
-                    <div className="ticker-state-row">
-                      <h2>Ticker 状态</h2>
-                      <div className="ticker-totals">
-                        <span
-                          className="healthy-count"
-                          aria-label={`正常 ${valueText(data.normal_tickers)}`}
-                          title="正常"
-                        >
-                          {valueText(data.normal_tickers)}
-                        </span>
-                        <i>/</i>
-                        <span
-                          className="blocked-count"
-                          aria-label={`阻塞 ${valueText(data.blocked_tickers)}`}
-                          title="阻塞"
-                        >
-                          {valueText(data.blocked_tickers)}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="gateway-status">
-                      <span>IB Gateway 状态</span>
-                      <strong
-                        className={
-                          data.ib_gateway_status === "CONNECTED"
-                            ? "healthy-count"
-                            : "blocked-count"
-                        }
+                  <div className="realtime-content ticker-gateway-content">
+                    {model.gateway.isFetching || model.gateway.isPending ? (
+                      <div
+                        className="gateway-skeleton"
+                        role="status"
+                        aria-label="正在检测 IB Gateway"
                       >
-                        {data.ib_gateway_status === "CONNECTED"
-                          ? "正常"
-                          : data.ib_gateway_status === "DISCONNECTED"
-                            ? "断开"
-                            : "未检测"}
-                      </strong>
-                    </div>
+                        <Skeleton className="h-5 w-full" />
+                        <Skeleton className="h-5 w-full" />
+                      </div>
+                    ) : (
+                      <>
+                        <div className="ticker-state-row">
+                          <h2>Ticker 状态</h2>
+                          <div className="ticker-totals">
+                            <span
+                              className="healthy-count"
+                              aria-label={`正常 ${valueText(data.normal_tickers)}`}
+                              title="正常"
+                            >
+                              {valueText(data.normal_tickers)}
+                            </span>
+                            <i>/</i>
+                            <span
+                              className="blocked-count"
+                              aria-label={`阻塞 ${valueText(data.blocked_tickers)}`}
+                              title="阻塞"
+                            >
+                              {valueText(data.blocked_tickers)}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="gateway-status">
+                          <span>IB Gateway 状态</span>
+                          <strong
+                            title={model.gateway.error?.message}
+                            className={
+                              !model.gateway.isError &&
+                              model.gateway.data?.data.data
+                                ?.ib_gateway_status === "CONNECTED"
+                                ? "healthy-count"
+                                : "blocked-count"
+                            }
+                          >
+                            {model.gateway.isError
+                              ? "检测失败"
+                              : model.gateway.data?.data.data
+                                    ?.ib_gateway_status === "CONNECTED"
+                                ? "正常"
+                                : model.gateway.data?.data.data
+                                      ?.ib_gateway_status === "DISCONNECTED"
+                                  ? "断开"
+                                  : "未检测"}
+                          </strong>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </article>
               </div>

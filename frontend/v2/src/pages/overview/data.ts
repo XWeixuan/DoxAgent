@@ -73,6 +73,14 @@ export function useOverview(period: Period, run: string, health: string) {
     enabled: !!context.data,
     queryFn: ({ signal }) => load("Status", "/overview/status", signal),
   });
+  const gateway = useQuery({
+    queryKey: [scope, "overview-gateway"],
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: false,
+    enabled: !!context.data,
+    queryFn: ({ signal }) => load("Status", "/overview/gateway-status", signal),
+  });
   const metrics = useQuery({
     queryKey: [scope, "overview-metrics", period],
     enabled: !!context.data,
@@ -105,6 +113,7 @@ export function useOverview(period: Period, run: string, health: string) {
     query.setQueryData(contextKey, fresh);
     await Promise.allSettled([
       status.refetch(),
+      gateway.refetch(),
       metrics.refetch(),
       list.refetch(),
     ]);
@@ -145,6 +154,7 @@ export function useOverview(period: Period, run: string, health: string) {
   return {
     context,
     status,
+    gateway,
     metrics,
     list,
     capabilities,

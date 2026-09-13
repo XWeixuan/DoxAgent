@@ -2635,3 +2635,10 @@
 
 .gateway-status { display: flex; align-items: center; gap: 12px; margin-top: 8px; font-size: 14px; }
 .ticker-state-row { display: flex; align-items: center; gap: 12px; }
+
+.ticker-gateway-content { width: 100%; min-width: 0; }
+.ticker-gateway-content .ticker-state-row, .ticker-gateway-content .gateway-status { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+.ticker-gateway-content h2 { margin: 0; white-space: nowrap; }
+.ticker-gateway-content .ticker-totals { font-size: 22px; gap: 5px; white-space: nowrap; }
+.ticker-gateway-content .gateway-status { margin-top: 14px; font-size: 14px; white-space: nowrap; }
+.gateway-skeleton { display: grid; gap: 16px; padding-top: 5px; }

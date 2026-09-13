@@ -760,3 +760,5 @@ Supabase 官方说明 Egress 包括数据库向连接客户端传出的数据，
 ### 2026-09-14 Gateway Overview 指标
 
 OverviewStatus 增加可选 ib_gateway_status（CONNECTED / DISCONNECTED），来自请求时独立只读 IB API 握手、非空 managedAccounts、currentTime 响应及连接状态联合检查，不属于 view 固定的业务数据。首次打开/导航返回 Overview 和手动刷新触发；无定时或浏览器 focus 轮询。同时请求合并，单次等待最多8秒；失败显示断开，旧接口缺字段显示未检测。客户端 ID 默认197401，可用 DOXAGENT_IB_GATEWAY_HEALTH_CLIENT_ID 配置为独占值，地址沿用 IBKR_TWS_HOST/PORT。
+
+2026-09-14 补充：Gateway 探测已拆为独立 GET /overview/gateway-status?view_id=...（沿用 OverviewStatus DTO，仅该路由填充 ib_gateway_status）；/overview/status 不探测 Gateway。前端探测请求独立并行，状态卡片内显示骨架，其他模块即时显示。

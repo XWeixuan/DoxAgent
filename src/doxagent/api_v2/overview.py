@@ -329,6 +329,7 @@ def install(app: FastAPI) -> None:
             view_id=view["wire"]["view_id"],
         )
 
+    @app.get(prefix + "/overview/gateway-status")
     @app.get(prefix + "/overview/status")
     async def overview_status(request: Request) -> Any:
         args = query(request, {"view_id"})
@@ -353,7 +354,8 @@ def install(app: FastAPI) -> None:
                     sum(s["health"] in {"NORMAL", "DEGRADED"} for s in states)
                 ),
                 "blocked_tickers": available(sum(s["health"] == "BLOCKED" for s in states if s)),
-                "ib_gateway_status": await gateway.status(),
+                **({"ib_gateway_status": await gateway.status()}
+                   if request.url.path.endswith("/gateway-status") else {}),
             },
             view_id=args["view_id"],
             resource_coverage=coverage(

@@ -987,3 +987,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-14 · Overview Ticker 状态卡增加 IB Gateway 状态：上行保留 Ticker 正常/阻塞数，下行显示 Gateway 正常/断开。后端采用独立 client ID 的只读探测，要求 nextValidId 握手、非空登录账户回执、当前时间响应及连接未报断开；不根据进程/端口存活判断，不调用订单接口或暴露账户信息。仅首次打开、返回 Overview 和手动刷新读取，无定时/窗口焦点探测；只合并并发探测，不复用上次结果跳过手动检查。同步可选 wire 字段/schema 与服务器 API host-gateway 映射。7 项针对性后端测试通过，前端类型/构建/ESLint通过；按用户要求随后同步新加坡并重建 API 与 Web，界面验收交用户。
 
 2026-09-14 · Gateway 状态部署完成：main 已同步新加坡，使用 Compose 内置构建能力重建 v2-api/v2-web 并叠加官方 ibapi 层，仅重建并替换 API/Web 容器。两服务 healthy，公网 /overview HTTP200。真实只读探测当前为 DISCONNECTED，进一步确认 IB API isConnected=false、未收到 nextValidId/账户回执，未以进程状态冒充正常；未执行订单，未做用户保留的界面验收。部署代码99909510。
+
+2026-09-14 · 修复 Overview Gateway 卡片：移除与数值重叠的图标，两行标签和值左右对齐；Gateway 改为独立 /overview/gateway-status 请求，卡片内骨架，不阻塞当前时段、KPI 或列表；维持打开/导航返回/手动刷新触发。8项针对性后端测试（含普通Status不调用探测）通过，类型/ESLint通过。排查确认9月13日23:45:06自动重启后23:45:10授权失败，4002未监听，relay正常；详细记录 GATEWAY_DISCONNECT_20260914.md。

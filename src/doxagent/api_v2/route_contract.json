@@ -57,6 +57,13 @@
   },
   {
     "method": "GET",
+    "path": "/overview/gateway-status",
+    "parameters": "V",
+    "response_schema": "OverviewStatus",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
     "path": "/overview/metrics",
     "parameters": "V",
     "response_schema": "OverviewMetrics",
