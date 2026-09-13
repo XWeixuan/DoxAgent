@@ -3,10 +3,56 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import os
 import time
 from pathlib import Path
 from typing import Any
+
+
+def active_profile_revisions(executor: Any) -> list[str]:
+    """Return only profiles bound to ticker controls that are currently running."""
+    from doxagent.v2_control.repository import ControlRepository, mode_binding_in
+
+    control = ControlRepository(executor.journal)
+    with control.read() as db:
+        tables = {
+            row[0]
+            for row in db.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' "
+                "AND name IN ('v2_ticker_control','v2_mode_binding')"
+            )
+        }
+        if tables != {"v2_ticker_control", "v2_mode_binding"}:
+            return []
+        states = [json.loads(row[0]) for row in db.execute("SELECT payload FROM v2_ticker_control")]
+        revisions = []
+        for state in states:
+            if state.get("status") != "RUNNING" or state.get("mode") not in {
+                "PAPER_TRADING",
+                "LIVE_TRADING",
+            }:
+                continue
+            binding = mode_binding_in(db, state["ticker"], state["mode"])
+            if binding and binding["revision"] not in revisions:
+                revisions.append(binding["revision"])
+        return revisions
+
+
+def maintain_connections(executor: Any) -> dict[str, str]:
+    """Keep configured execution sockets ready without submitting broker commands."""
+    results = {}
+    for revision in active_profile_revisions(executor):
+        try:
+            executor.broker(revision).connect()
+            results[revision] = "CONNECTED"
+        except Exception as exc:
+            results[revision] = f"DISCONNECTED:{type(exc).__name__}"
+        current = executor.journal.get("execution_connections", revision)
+        value = {"status": results[revision]}
+        if current != value:
+            executor.journal.set("execution_connections", revision, value)
+    return results
 
 
 class WriterLock:
@@ -60,6 +106,7 @@ async def run_worker(executor: Any, *, once: Any = False) -> Any:
     acceptance = None
     next_acceptance = 0.0
     next_heartbeat = 0.0
+    next_connection_check = 0.0
     try:
         while True:
             if time.monotonic() >= next_heartbeat:
@@ -71,6 +118,9 @@ async def run_worker(executor: Any, *, once: Any = False) -> Any:
                     },
                 )
                 next_heartbeat = time.monotonic() + 10
+            if time.monotonic() >= next_connection_check:
+                maintain_connections(executor)
+                next_connection_check = time.monotonic() + 10
             executor.drain_events()
             if (acceptance is None or acceptance.done()) and time.monotonic() >= next_acceptance:
                 if acceptance is not None:

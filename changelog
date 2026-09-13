@@ -989,3 +989,4 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-14 · Gateway 状态部署完成：main 已同步新加坡，使用 Compose 内置构建能力重建 v2-api/v2-web 并叠加官方 ibapi 层，仅重建并替换 API/Web 容器。两服务 healthy，公网 /overview HTTP200。真实只读探测当前为 DISCONNECTED，进一步确认 IB API isConnected=false、未收到 nextValidId/账户回执，未以进程状态冒充正常；未执行订单，未做用户保留的界面验收。部署代码99909510。
 
 2026-09-14 · 修复 Overview Gateway 卡片：移除与数值重叠的图标，两行标签和值左右对齐；Gateway 改为独立 /overview/gateway-status 请求，卡片内骨架，不阻塞当前时段、KPI 或列表；维持打开/导航返回/手动刷新触发。8项针对性后端测试（含普通Status不调用探测）通过，类型/ESLint通过。排查确认9月13日23:45:06自动重启后23:45:10授权失败，4002未监听，relay正常；详细记录 GATEWAY_DISCONNECT_20260914.md。
+2026-09-14 · 修复 IB Gateway 长连接就绪：Trade Executor 现在仅为当前 RUNNING ticker 已绑定的 Paper/Live profile 建立并每 10 秒检查长连接，空 Job 时也保持 API Client 在线；连接失败只记录隔离状态并自动重试，不激活未配置 profile、不调用订单方法。新增聚焦测试覆盖 RUNNING 连接与 PAUSED 不连接。

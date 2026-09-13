@@ -11,7 +11,11 @@ from doxagent.trade_execution.repository import ExecutionRepository
 from doxagent.trade_execution.schema import ExecutionProfile, Strategy, account_fuse
 from doxagent.trade_execution.sessions import Sessions
 from doxagent.trade_execution.strategy import order_type, price_and_quantity, round_price
-from doxagent.trade_execution.worker import WriterLock
+from doxagent.trade_execution.worker import (
+    WriterLock,
+    active_profile_revisions,
+    maintain_connections,
+)
 
 
 class Clock:
@@ -66,9 +70,10 @@ class Broker:
         self.quote_calls = 0
         self.quote_price = 100
         self.clock = None
+        self.connect_calls = 0
 
     def connect(self):
-        pass
+        self.connect_calls += 1
 
     def close(self):
         pass
@@ -335,3 +340,34 @@ def test_writer_singleton(tmp_path):
                 pass
     with WriterLock(tmp_path / "runtime.db") as second:
         second.assert_owned()
+
+
+def test_worker_keeps_only_running_bound_profile_connected(setup):
+    from doxagent.v2_control.repository import ControlRepository
+
+    _, repo, revision, executor, broker = setup
+    control = ControlRepository(repo.journal)
+    control.migrate()
+    control.bind("MU", "PAPER_TRADING", revision)
+    with repo.journal.transaction() as db:
+        db.execute(
+            "INSERT INTO v2_ticker_control VALUES(?,?,?)",
+            (
+                "MU",
+                1,
+                '{"ticker":"MU","mode":"PAPER_TRADING","status":"RUNNING"}',
+            ),
+        )
+
+    assert active_profile_revisions(executor) == [revision]
+    assert maintain_connections(executor) == {revision: "CONNECTED"}
+    assert broker.connect_calls == 1
+
+    with repo.journal.transaction() as db:
+        db.execute(
+            "UPDATE v2_ticker_control SET payload=? WHERE ticker='MU'",
+            ('{"ticker":"MU","mode":"PAPER_TRADING","status":"PAUSED"}',),
+        )
+    assert active_profile_revisions(executor) == []
+    assert maintain_connections(executor) == {}
+    assert broker.connect_calls == 1
