@@ -44,10 +44,11 @@ services:
     extra_hosts: ["host.docker.internal:host-gateway"]
   v2-message-bus:
     extra_hosts: ["host.docker.internal:host-gateway"]
-    mem_limit: 256m
-    memswap_limit: 256m
-    cpus: 0.5
-    pids_limit: 96
+    mem_limit: 1024m
+    memswap_limit: 1024m
+    cpus: 1.0
+    pids_limit: 256
+    shm_size: 256m
     image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
   v2-content-enrichment:
     mem_limit: 384m
