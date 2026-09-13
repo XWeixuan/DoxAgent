@@ -2632,3 +2632,6 @@
 
 /* Source status shares the bounded message stream height. */
 [data-page="message-bus"] .source-status-list { height: max(840px, calc(100dvh - 120px)); max-height: none; overflow-y: auto; }
+
+.gateway-status { display: flex; align-items: center; gap: 12px; margin-top: 8px; font-size: 14px; }
+.ticker-state-row { display: flex; align-items: center; gap: 12px; }

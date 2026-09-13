@@ -15,9 +15,11 @@ from doxagent.v2_read.repository import instant
 
 from .dto import available, coverage, missing
 from .errors import ApiFailure
+from .ib_gateway import GatewayMonitor
 
 
 def install(app: FastAPI) -> None:
+    gateway = GatewayMonitor()
     prefix = "/api/doxagent/v2"
     store, views, control = app.state.store, app.state.views, app.state.control
     query, respond = app.state.query, app.state.respond
@@ -351,6 +353,7 @@ def install(app: FastAPI) -> None:
                     sum(s["health"] in {"NORMAL", "DEGRADED"} for s in states)
                 ),
                 "blocked_tickers": available(sum(s["health"] == "BLOCKED" for s in states if s)),
+                "ib_gateway_status": await gateway.status(),
             },
             view_id=args["view_id"],
             resource_coverage=coverage(

@@ -756,3 +756,7 @@ Supabase 官方说明 Egress 包括数据库向连接客户端传出的数据，
 - 每个 binding/source version 独立保留成功扫描 cutoff 与 coverage；PARTIAL 不推进成功扫描位置。Benzinga 按 updatedSince 分页、按 update time 排除 cutoff 外项目；Finnhub 按日期逐段请求，保存日期进度。第三方缺少快照/完整性证明时，即使请求成功也维持 UNKNOWN；分页上限/无效项目为 PARTIAL。成功扫描位置不等同于完整性证书，不能据此宣称历史零遗漏。
 - Activation 与 PolicyContext 新增可选 maintenance。status 为 MAINTAIN_COMPLETED 或 INITIALIZED；policy_disposition 为 CONTENT_CHANGED/NO_CHANGE/INHERITED/UNKNOWN，event_disposition 单独给出。携带前后 Policy/Library 版本。新 activation 不等于 Policy 内容改变；同 artifact 继承为 INHERITED、同内容 hash 为 NO_CHANGE。历史无 base 不推断内容变化，允许 null/UNKNOWN。
 - Reference View Delta 是 O3 的输入变化，不是 O3 Policy 输出变化；两者必须独立解释。既有历史 Case、维护、激活不改写或删除，不为验收补跑真实交易。
+
+### 2026-09-14 Gateway Overview 指标
+
+OverviewStatus 增加可选 ib_gateway_status（CONNECTED / DISCONNECTED），来自请求时独立只读 IB API 握手、非空 managedAccounts、currentTime 响应及连接状态联合检查，不属于 view 固定的业务数据。首次打开/导航返回 Overview 和手动刷新触发；无定时或浏览器 focus 轮询。同时请求合并，单次等待最多8秒；失败显示断开，旧接口缺字段显示未检测。客户端 ID 默认197401，可用 DOXAGENT_IB_GATEWAY_HEALTH_CLIENT_ID 配置为独占值，地址沿用 IBKR_TWS_HOST/PORT。

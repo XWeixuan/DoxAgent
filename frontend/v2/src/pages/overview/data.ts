@@ -67,6 +67,9 @@ export function useOverview(period: Period, run: string, health: string) {
   };
   const status = useQuery({
     queryKey: [scope, "overview-status"],
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: false,
     enabled: !!context.data,
     queryFn: ({ signal }) => load("Status", "/overview/status", signal),
   });

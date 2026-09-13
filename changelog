@@ -983,3 +983,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-13 BE-11–14：休市 Source Sweep 固定截止/分页进度与 intake 终态栅栏；消息/Runtime/Event/Policy 使用包含休市日的 semantic window；维护与内容变更 disposition 分离。同步共享契约/验证 schema/策略显示，保留历史事实。整体交付包含此前未提交的正文补全与 Runtime 归因修复。
 
 2026-09-13 BE-11–14 Singapore deployment: pushed/pulled b2539116; rebuilt backend/frontend with official ibapi 10.49.2; backed up and verified 8 databases; 12 services running. Authenticated UI verified Sunday Message Bus 12 / 7-day 26, Runtime 12 with historical failure visible, Policy v2 maintenance without content change. Source projections caught up; no trade jobs or executions. Historical coverage remains UNKNOWN; next natural closed-cycle acceptance is pending.
+
+2026-09-14 · Overview Ticker 状态卡增加 IB Gateway 状态：上行保留 Ticker 正常/阻塞数，下行显示 Gateway 正常/断开。后端采用独立 client ID 的只读探测，要求 nextValidId 握手、非空登录账户回执、当前时间响应及连接未报断开；不根据进程/端口存活判断，不调用订单接口或暴露账户信息。仅首次打开、返回 Overview 和手动刷新读取，无定时/窗口焦点探测；只合并并发探测，不复用上次结果跳过手动检查。同步可选 wire 字段/schema 与服务器 API host-gateway 映射。7 项针对性后端测试通过，前端类型/构建/ESLint通过；按用户要求随后同步新加坡并重建 API 与 Web，界面验收交用户。

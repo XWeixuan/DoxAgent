@@ -6,6 +6,7 @@ services:
     pids_limit: 96
     image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
   v2-api:
+    extra_hosts: ["host.docker.internal:host-gateway"]
     mem_limit: 384m
     memswap_limit: 384m
     cpus: 0.75

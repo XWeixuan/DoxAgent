@@ -195,7 +195,7 @@ export interface TickerNavigation {
   removed: false;
 }
 export interface SourceCounts { normal: Value<Count>; abnormal: Value<Count> }
-export interface OverviewStatus { clock: ClockContext; normal_tickers: Value<Count>; blocked_tickers: Value<Count> }
+export interface OverviewStatus { ib_gateway_status?: "CONNECTED" | "DISCONNECTED"; clock: ClockContext; normal_tickers: Value<Count>; blocked_tickers: Value<Count> }
 export interface OverviewMetrics {
   policy_hits: Metric;
   trade_executed: Metric;
