@@ -9,7 +9,7 @@ from pathlib import Path
 import httpx
 
 from doxagent.message_bus_v2.google_news import resolve_google_news_urls
-from doxagent.message_bus_v2.ibkr_news import IbkrNewsAdapter, _parse_error_args
+from doxagent.message_bus_v2.ibkr_news import IbkrNewsAdapter, _parse_error_args, _published
 from doxagent.message_bus_v2.manifests import initial_sources
 from doxagent.message_bus_v2.news_adapters import (
     GoogleNewsSearchRssAdapter,
@@ -265,6 +265,7 @@ def test_ibkr_error_callback_supports_current_and_legacy_signatures() -> None:
         "farm connected",
     )
     assert _parse_error_args((504, "not connected", "")) == (504, "not connected")
+    assert _published("1789330454998") == datetime.fromtimestamp(1789330454.998, UTC)
 
 
 def test_yahoo_and_google_hidden_filter_is_empty_by_default_and_blocks_both_dimensions() -> None:

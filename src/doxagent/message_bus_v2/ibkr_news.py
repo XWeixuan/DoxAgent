@@ -335,7 +335,13 @@ def _parse_error_args(args: tuple[Any, ...]) -> tuple[int | None, str]:
 
 def _published(value: object) -> datetime | None:
     if isinstance(value, (int, float)) or str(value).isdigit():
-        return datetime.fromtimestamp(float(str(value)), UTC)
+        timestamp = float(str(value))
+        if timestamp > 10_000_000_000:
+            timestamp /= 1000
+        try:
+            return datetime.fromtimestamp(timestamp, UTC)
+        except (OSError, OverflowError, ValueError):
+            return None
     text = str(value or "").strip()
     for pattern in ("%Y%m%d %H:%M:%S", "%Y-%m-%d %H:%M:%S"):
         try:
