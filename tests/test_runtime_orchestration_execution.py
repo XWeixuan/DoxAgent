@@ -108,6 +108,123 @@ def test_holiday_schedule_idempotent_and_final_realtime_does_not_wait(tmp_path):
         runtime.close()
 
 
+def _wave_fixture(tmp_path, count):
+    now = [datetime(2026, 9, 14, 8, tzinfo=UTC)]
+    runtime, journal = runtime_at(tmp_path, now)
+    coordinator = RuntimeCoordinator(runtime, journal)
+    journal.put_task(
+        "sweep",
+        "MU",
+        "SWEEP",
+        {
+            "day": "2026-09-14",
+            "cutoff": now[0].isoformat(),
+            "closed_cycle_id": "2026-09-13",
+        },
+    )
+    journal.set("sweep_roster", "sweep", {"source_tasks": []})
+    members = []
+    for index in range(count):
+        identity = f"case-{index:02}"
+        journal.put_task(
+            identity,
+            "MU",
+            "CASE",
+            {
+                "mode": "CLOSED",
+                "sweep_id": "sweep",
+                "stream_offset": index + 1,
+            },
+            max_failures=1,
+        )
+        members.append(identity)
+    journal.set("sweep_members", "sweep", members)
+    return runtime, journal, coordinator, members
+
+
+def test_closed_sweep_processes_twenty_member_waves_before_starting_next_w1(tmp_path, monkeypatch):
+    runtime, journal, coordinator, members = _wave_fixture(tmp_path, 45)
+    calls = []
+
+    def execute_case(task, *, phase="ALL"):
+        calls.append((phase, task["id"]))
+        if phase == "ALL":
+            journal.finish(task)
+
+    monkeypatch.setattr(coordinator, "_case", execute_case)
+    try:
+        coordinator._sweep(journal.claim("sweep"))
+        first_next_wave = calls.index(("W1", members[20]))
+        assert calls[:20] == [("W1", identity) for identity in members[:20]]
+        assert calls[20:first_next_wave] == [("ALL", identity) for identity in members[:20]]
+        assert [phase for phase, identity in calls if identity in members[20:40]][:20] == [
+            "W1"
+        ] * 20
+        receipt = journal.get_task("sweep")["receipt"]
+        assert receipt["wave_size"] == 20
+        assert receipt["total_waves"] == 3
+        assert receipt["completed_waves"] == 3
+        assert receipt["wave_phase"] == "COMPLETE"
+    finally:
+        coordinator.close()
+        runtime.close()
+
+
+def test_closed_sweep_wave_isolates_w1_failure_and_resumes_from_w2_checkpoint(
+    tmp_path, monkeypatch
+):
+    runtime, journal, coordinator, members = _wave_fixture(tmp_path, 20)
+    calls = []
+
+    def fail_one_case(task, *, phase="ALL"):
+        calls.append((phase, task["id"]))
+        if phase == "W1" and task["id"] == members[5]:
+            raise RuntimeError("fixture W1 failure")
+        if phase == "ALL":
+            journal.finish(task)
+
+    monkeypatch.setattr(coordinator, "_case", fail_one_case)
+    try:
+        coordinator._sweep(journal.claim("sweep"))
+        assert ("ALL", members[5]) not in calls
+        assert ("ALL", members[19]) in calls
+        assert journal.get_task(members[5])["status"] == "FAILED"
+        assert journal.get_task("sweep")["receipt"]["wave_w1_failed"] == 1
+    finally:
+        coordinator.close()
+        runtime.close()
+
+    runtime, journal, coordinator, members = _wave_fixture(tmp_path / "resume", 20)
+    resumed_calls = []
+    parent = journal.claim("sweep")
+    for identity in members[:10]:
+        journal.finish(journal.claim(identity))
+    journal.checkpoint(
+        parent,
+        wave_size=20,
+        total_waves=1,
+        total_members=20,
+        wave_index=1,
+        wave_phase="W2",
+        member_index=10,
+        wave_w1_failed_members=[],
+        wave_w2_failed_members=[],
+        wave_w2_skipped_members=[],
+    )
+
+    def resume_case(task, *, phase="ALL"):
+        resumed_calls.append((phase, task["id"]))
+        journal.finish(task)
+
+    monkeypatch.setattr(coordinator, "_case", resume_case)
+    try:
+        coordinator._sweep(parent)
+        assert resumed_calls == [("ALL", identity) for identity in members[10:]]
+    finally:
+        coordinator.close()
+        runtime.close()
+
+
 def test_new_case_uses_new_prompt_but_old_case_and_cross_day_facts_keep_their_pin(tmp_path):
     from dataclasses import replace
 

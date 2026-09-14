@@ -46,7 +46,7 @@ def _message(index: int, *, body: str | None = None, summary: str | None = None)
         source="Reuters",
         publisher_name="Reuters",
         url=f"https://example.test/article/{index}",
-        published_at=datetime(2026, 9, 11, 10, index % 60, tzinfo=UTC),
+        published_at=datetime.now(UTC),
         raw_payload={"id": index},
     )
 

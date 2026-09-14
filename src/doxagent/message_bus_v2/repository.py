@@ -8,14 +8,14 @@ Runtime consumer and API can safely share the database.
 
 from __future__ import annotations
 
-import sqlite3
 import json
+import sqlite3
 from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from types import TracebackType
-from typing import Literal, TypeVar
+from typing import Any, Literal, TypeVar
 from urllib.parse import urlparse
 
 from pydantic import BaseModel
@@ -33,6 +33,7 @@ from doxagent.message_bus_v2.schema import (
     PollState,
     PublicationMode,
     RawMessage,
+    RawMessageInput,
     RawProcessingStatus,
     SchedulerGroupState,
     SourceDefinition,
@@ -100,8 +101,81 @@ class MessageBusV2Repository:
     def close(self) -> None:
         """Connections are operation-scoped; provided for lifecycle symmetry."""
 
+    def record_admission(
+        self,
+        message: Any,
+        reason: str,
+        stage: str,
+        binding_id: str = "",
+        connection: sqlite3.Connection | None = None,
+    ) -> None:
+        from .schema import identity_key_for
+
+        value = {
+            "reason": reason,
+            "stage": stage,
+            "published_at": message.published_at.isoformat(),
+            "checked_at": utc_now().isoformat(),
+            "binding_id": binding_id,
+            "context": message.admission_context.model_dump(mode="json")
+            if message.admission_context
+            else None,
+        }
+        key = (
+            getattr(message, "standard_message_id", None)
+            or getattr(message, "raw_message_id", None)
+            or identity_key_for(binding_id, message)
+        )
+        scope = (
+            message.admission_context.sweep_id if message.admission_context else None
+        ) or "REALTIME"
+        args = (f"{binding_id}:{key}:{scope}:{stage}", json.dumps(value))
+        if connection is not None:
+            connection.execute("INSERT OR REPLACE INTO message_admission_results VALUES(?,?)", args)
+        else:
+            with self.transaction() as db:
+                db.execute("INSERT OR REPLACE INTO message_admission_results VALUES(?,?)", args)
+
+    def resolve_first_seen(self, message: RawMessageInput, binding_id: str) -> RawMessageInput:
+        """Pin unknown publication dates across polls, revisions and process restarts."""
+        from .schema import identity_key_for
+
+        key = identity_key_for(binding_id, message)
+        with self.transaction() as db:
+            db.execute(
+                "INSERT INTO message_first_seen VALUES(?,?) ON CONFLICT(id) DO UPDATE SET "
+                "first_seen_at=min(first_seen_at,excluded.first_seen_at)",
+                (
+                    key,
+                    (
+                        utc_now()
+                        if message.publication_time_basis == "UNKNOWN_FIRST_SEEN"
+                        else message.published_at
+                    )
+                    .astimezone(UTC)
+                    .isoformat(),
+                ),
+            )
+            row = db.execute(
+                "SELECT first_seen_at FROM message_first_seen WHERE id=?", (key,)
+            ).fetchone()
+        if (
+            message.publication_time_basis == "UNKNOWN_FIRST_SEEN"
+            or message.metadata.get("publication_time_origin") == "UPDATED_FALLBACK"
+        ):
+            return message.model_copy(update={"published_at": datetime.fromisoformat(row[0])})
+        return message
+
     def _initialize(self) -> None:
         with self.transaction() as connection:
+            connection.execute(
+                "CREATE TABLE IF NOT EXISTS message_first_seen "
+                "(id TEXT PRIMARY KEY, first_seen_at TEXT NOT NULL)"
+            )
+            connection.execute(
+                "CREATE TABLE IF NOT EXISTS message_admission_results "
+                "(id TEXT PRIMARY KEY, data_json TEXT NOT NULL)"
+            )
             connection.executescript(
                 """
                 create table if not exists source_definitions (
@@ -593,14 +667,32 @@ class MessageBusV2Repository:
             ).fetchone()
             if existing_row is not None:
                 existing = EnrichmentJob.model_validate_json(existing_row["data_json"])
-                refreshed = existing.model_copy(
-                    update={"last_seen_at": job.last_seen_at, "updated_at": job.updated_at}
+                from .admission import evaluate_admission
+
+                expired = evaluate_admission(
+                    existing.message.published_at,
+                    existing.message.admission_context,
+                    utc_now(),
+                    existing.message.publication_time_basis,
                 )
-                connection.execute(
-                    "update content_enrichment_jobs set data_json=? where job_id=?",
-                    (self._json(refreshed), existing.job_id),
-                )
-                return refreshed, False
+                if (
+                    expired
+                    and job.message.admission_context
+                    and job.message.admission_context.mode == "CLOSED_SWEEP"
+                ):
+                    connection.execute(
+                        "DELETE FROM content_enrichment_jobs WHERE job_id=?", (existing.job_id,)
+                    )
+                    # Fall through to insert a fresh lease with the same durable intake identity.
+                else:
+                    refreshed = existing.model_copy(
+                        update={"last_seen_at": job.last_seen_at, "updated_at": job.updated_at}
+                    )
+                    connection.execute(
+                        "update content_enrichment_jobs set data_json=? where job_id=?",
+                        (self._json(refreshed), existing.job_id),
+                    )
+                    return refreshed, False
             connection.execute(
                 """insert into content_enrichment_jobs(
                      job_id,intake_key,status,not_before,lease_expires_at,created_at,data_json)
@@ -667,7 +759,7 @@ class MessageBusV2Repository:
                 active = EnrichmentJob.model_validate_json(row["data_json"])
                 host = urlparse(active.message.url).hostname or ""
                 host_counts[host] = host_counts.get(host, 0) + 1
-            selected = []
+            selected: list[EnrichmentJob] = []
             while ready and len(selected) < max(1, limit):
                 existing = min(
                     ready,
@@ -713,9 +805,14 @@ class MessageBusV2Repository:
 
     def pending_enrichment_ids(self, identities: list[str]) -> list[str]:
         with self._connect() as connection:
-            return [row[0] for row in connection.execute(
-                "select job_id from content_enrichment_jobs where job_id in "
-                "(select value from json_each(?))", (json.dumps(identities),))]
+            return [
+                row[0]
+                for row in connection.execute(
+                    "select job_id from content_enrichment_jobs where job_id in "
+                    "(select value from json_each(?))",
+                    (json.dumps(identities),),
+                )
+            ]
 
     def delete_enrichment_job(self, job_id: str, *, claim_token: str | None = None) -> None:
         with self.transaction() as connection:
@@ -725,22 +822,29 @@ class MessageBusV2Repository:
 
     @staticmethod
     def _assert_enrichment_claim(
-        connection: sqlite3.Connection, job_id: str, claim_token: str,
+        connection: sqlite3.Connection,
+        job_id: str,
+        claim_token: str,
     ) -> EnrichmentJob:
         row = connection.execute(
-            "select data_json from content_enrichment_jobs where job_id=?", (job_id,),
+            "select data_json from content_enrichment_jobs where job_id=?",
+            (job_id,),
         ).fetchone()
         job = EnrichmentJob.model_validate_json(row["data_json"]) if row else None
-        if (job is None or job.status is not EnrichmentJobStatus.RUNNING
-                or job.claim_token != claim_token or job.lease_expires_at is None
-                or job.lease_expires_at <= utc_now()):
+        if (
+            job is None
+            or job.status is not EnrichmentJobStatus.RUNNING
+            or job.claim_token != claim_token
+            or job.lease_expires_at is None
+            or job.lease_expires_at <= utc_now()
+        ):
             raise RuntimeError("enrichment_lease_lost")
         return job
 
     def renew_enrichment_claim(self, job_id: str, claim_token: str) -> None:
         with self.transaction() as connection:
             job = self._assert_enrichment_claim(connection, job_id, claim_token)
-            renewed = job.model_copy(update={"lease_expires_at": utc_now()+timedelta(seconds=60)})
+            renewed = job.model_copy(update={"lease_expires_at": utc_now() + timedelta(seconds=60)})
             assert renewed.lease_expires_at is not None
             connection.execute(
                 "update content_enrichment_jobs set lease_expires_at=?,data_json=? where job_id=?",
@@ -767,16 +871,19 @@ class MessageBusV2Repository:
 
         with self._connect() as connection:
             row = connection.execute(
-                """select 1 from raw_messages
+                """select 1 from raw_messages r
                    where ticker=? and source_id=? and identity_key=? and raw_hash=?
-                   limit 1""",
+                   and (json_extract(r.data_json,'$.bootstrap_suppressed')=1 or exists(
+                     select 1 from standard_messages st join stream_members sm
+                     on sm.standard_message_id=st.standard_message_id
+                     where st.raw_message_id=r.raw_message_id)) limit 1""",
                 (ticker, source_id, identity_key, raw_hash),
             ).fetchone()
         return row is not None
 
-    def record_raw(self, candidate: RawMessage, *,
-                   enrichment_claim: tuple[str, str] | None = None
-                   ) -> tuple[IngestDecision, RawMessage]:
+    def record_raw(
+        self, candidate: RawMessage, *, enrichment_claim: tuple[str, str] | None = None
+    ) -> tuple[IngestDecision, RawMessage]:
         with self.transaction() as connection:
             if enrichment_claim:
                 self._assert_enrichment_claim(connection, *enrichment_claim)
@@ -798,6 +905,41 @@ class MessageBusV2Repository:
             if matching_row is not None:
                 matching = RawMessage.model_validate_json(matching_row["data_json"])
                 self._record_body_attempt(connection, candidate, matching)
+                # An unpublished expired Raw is not a consumption receipt. Reuse its
+                # identity and materialized body when a legitimate sweep adopts it.
+                published = connection.execute(
+                    "SELECT 1 FROM standard_messages st JOIN stream_members sm ON "
+                    "sm.standard_message_id=st.standard_message_id WHERE st.raw_message_id=?",
+                    (matching.raw_message_id,),
+                ).fetchone()
+                if (
+                    not published
+                    and not matching.bootstrap_suppressed
+                    and candidate.admission_context
+                    and candidate.admission_context.mode == "CLOSED_SWEEP"
+                ):
+                    matching = matching.model_copy(
+                        update={
+                            "admission_context": candidate.admission_context,
+                            "processing_status": RawProcessingStatus.PENDING,
+                        }
+                    )
+                    stored = connection.execute(
+                        "SELECT data_json FROM standard_messages WHERE raw_message_id=?",
+                        (matching.raw_message_id,),
+                    ).fetchone()
+                    if stored:
+                        standard = StandardMessage.model_validate_json(stored[0]).model_copy(
+                            update={"admission_context": candidate.admission_context}
+                        )
+                        connection.execute(
+                            "UPDATE standard_messages SET data_json=? WHERE raw_message_id=?",
+                            (self._json(standard), matching.raw_message_id),
+                        )
+                        connection.execute(
+                            "UPDATE buffer_entries SET data_json=? WHERE standard_message_id=?",
+                            (self._json(standard), standard.standard_message_id),
+                        )
                 updated = matching.model_copy(
                     update={
                         "last_seen_at": candidate.collected_at,
@@ -1124,7 +1266,7 @@ class MessageBusV2Repository:
 
     def publish(
         self, ticker: str, messages: Sequence[StandardMessage], mode: PublicationMode
-    ) -> StreamItem:
+    ) -> StreamItem | None:
         if not messages:
             raise ValueError("cannot publish an empty stream item")
         normalized_ticker = ticker.strip().upper()
@@ -1133,7 +1275,9 @@ class MessageBusV2Repository:
         with self.transaction() as connection:
             return self._publish_in_transaction(connection, normalized_ticker, messages, mode)
 
-    def publish_buffered(self, ticker: str, messages: Sequence[StandardMessage]) -> StreamItem:
+    def publish_buffered(
+        self, ticker: str, messages: Sequence[StandardMessage]
+    ) -> StreamItem | None:
         """Atomically publish a buffered batch and remove exactly its pending members."""
 
         if not messages:
@@ -1149,8 +1293,19 @@ class MessageBusV2Repository:
                     where standard_message_id in ({placeholders})""",
                 identifiers,
             ).fetchall()
-            if {str(row[0]) for row in present} != set(identifiers):
-                raise ValueError("buffer membership changed before publication")
+            pending_ids = {str(row[0]) for row in present}
+            messages = [
+                message
+                for message in messages
+                if message.standard_message_id in pending_ids
+                or connection.execute(
+                    "SELECT 1 FROM stream_members WHERE standard_message_id=? LIMIT 1",
+                    (message.standard_message_id,),
+                ).fetchone()
+                is not None
+            ]
+            if not messages:
+                return None  # Another publisher already terminally filtered this batch.
             item = self._publish_in_transaction(
                 connection, normalized_ticker, messages, PublicationMode.BUFFERED
             )
@@ -1166,7 +1321,35 @@ class MessageBusV2Repository:
         ticker: str,
         messages: Sequence[StandardMessage],
         mode: PublicationMode,
-    ) -> StreamItem:
+    ) -> StreamItem | None:
+        from .admission import evaluate_admission
+
+        eligible = []
+        existing_receipt: StreamItem | None = None
+        for message in messages:
+            previous = connection.execute(
+                "SELECT si.data_json FROM stream_items si JOIN stream_members sm "
+                "ON sm.stream_item_id=si.stream_item_id WHERE sm.standard_message_id=? LIMIT 1",
+                (message.standard_message_id,),
+            ).fetchone()
+            if previous is not None:
+                existing_receipt = StreamItem.model_validate_json(previous[0])
+                continue
+            reason = evaluate_admission(
+                message.published_at,
+                message.admission_context,
+                utc_now(),
+                message.publication_time_basis,
+            )
+            if reason:
+                self.record_admission(
+                    message, reason, "PUBLICATION", message.binding_id, connection
+                )
+            else:
+                eligible.append(message)
+        if not eligible:
+            return existing_receipt
+        messages = eligible
         item_id = new_id("stream")
         now = utc_now()
         row = connection.execute(
@@ -1265,6 +1448,8 @@ class MessageBusV2Repository:
                     url=standard.url,
                     published_at=standard.published_at,
                     normalized_at=standard.normalized_at,
+                    admission_context=standard.admission_context,
+                    publication_time_basis=standard.publication_time_basis,
                 )
             )
         return result

@@ -259,8 +259,8 @@ class IbkrNewsGateway:
             eligible = [
                 row
                 for row in unique.values()
-                if (stamp := _published(row.get("time"))) is not None
-                and since <= stamp <= until + timedelta(minutes=5)
+                if (stamp := _published(row.get("time"))) is None
+                or since <= stamp <= until + timedelta(minutes=5)
             ]
             eligible.sort(key=lambda row: _published(row.get("time")) or since, reverse=True)
             limit = self.settings.ibkr_news_max_articles_per_poll
@@ -277,8 +277,7 @@ class IbkrNewsGateway:
                         str(row.get("articleId")),
                     )
                     not in emitted_keys
-                    and (stamp := _published(row.get("time"))) is not None
-                    and stamp >= since
+                    and ((stamp := _published(row.get("time"))) is None or stamp >= since)
                 ]
             with ThreadPoolExecutor(
                 max_workers=self.settings.ibkr_news_article_concurrency,
@@ -370,10 +369,8 @@ class IbkrNewsAdapter:
         messages: list[RawMessageInput] = []
         for row in rows:
             published = _published(row.get("time"))
-            if (
-                published is None
-                or published < since
-                or published > context.requested_at + timedelta(minutes=5)
+            if published is not None and (
+                published < since or published > context.requested_at + timedelta(minutes=5)
             ):
                 continue
             article_id = str(row.get("articleId") or "")
@@ -402,7 +399,8 @@ class IbkrNewsAdapter:
                     source=publisher,
                     publisher_name=publisher,
                     url=url,
-                    published_at=published,
+                    published_at=published or context.requested_at,
+                    publication_time_basis="EXACT" if published else "UNKNOWN_FIRST_SEEN",
                     raw_payload=row,
                     metadata={
                         "provider": "ibkr",

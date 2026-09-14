@@ -69,7 +69,7 @@ class BailianRuntimeResponsesClient:
         base_url: str,
         model: str = "qwen3.8-flash",
         reasoning_effort: str = "medium",
-        timeout_seconds: float = 60.0,
+        timeout_seconds: float = 120.0,
         session_cache: bool = False,
         client: OpenAI | None = None,
     ) -> None:
@@ -79,6 +79,7 @@ class BailianRuntimeResponsesClient:
             raise ValueError("Persistent Runtime V2 reasoning effort is frozen to medium")
         self.model = model
         self.reasoning_effort = reasoning_effort
+        self.timeout_seconds = timeout_seconds
         self.session_cache = session_cache
         self._client = client or OpenAI(
             api_key=api_key,

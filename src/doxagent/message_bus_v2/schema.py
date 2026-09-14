@@ -21,6 +21,8 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from .admission import AdmissionContext
+
 JsonObject = dict[str, Any]
 
 
@@ -102,6 +104,7 @@ class IngestDecision(StrEnum):
     REVISION = "revision"
     BOOTSTRAP_SUPPRESSED = "bootstrap_suppressed"
     INVALID = "invalid"
+    FILTERED = "filtered"
 
 
 class SchedulerConstraints(BusModel):
@@ -316,6 +319,31 @@ class TickerMonitoringState(BusModel):
 
 
 class RawMessageInput(BusModel):
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_time_precision(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            return data
+        data = dict(data)
+        stamp = data.get("published_at")
+        if stamp is None:
+            data.update(published_at=utc_now(), publication_time_basis="UNKNOWN_FIRST_SEEN")
+        elif isinstance(stamp, str) and len(stamp.strip()) == 10:
+            data.update(
+                published_at=datetime.fromisoformat(stamp).replace(
+                    hour=12, tzinfo=ZoneInfo("America/New_York")
+                ),
+                publication_time_basis="DATE",
+            )
+        elif (
+            data.get("publication_time_basis") != "UNKNOWN_FIRST_SEEN"
+            and data.get("metadata", {}).get("publication_time_precision") == "day"
+        ):
+            data["publication_time_basis"] = "DATE"
+        return data
+
+    admission_context: AdmissionContext | None = None
+    publication_time_basis: str = "EXACT"
     external_id: str | None = None
     source_item_key: str | None = None
     title: str | None = None
@@ -386,6 +414,19 @@ class RawMessageInput(BusModel):
 
 
 class RawMessage(BusModel):
+    @model_validator(mode="before")
+    @classmethod
+    def preserve_legacy_date_basis(cls, data: Any) -> Any:
+        if (
+            isinstance(data, dict)
+            and "publication_time_basis" not in data
+            and (data.get("metadata") or {}).get("publication_time_precision") == "day"
+        ):
+            return {**data, "publication_time_basis": "DATE"}
+        return data
+
+    admission_context: AdmissionContext | None = None
+    publication_time_basis: str = "EXACT"
     raw_message_id: str
     schema_version: Literal[2] = 2
     ticker: str
@@ -419,6 +460,19 @@ class RawMessage(BusModel):
 
 
 class StandardMessage(BusModel):
+    @model_validator(mode="before")
+    @classmethod
+    def preserve_legacy_date_basis(cls, data: Any) -> Any:
+        if (
+            isinstance(data, dict)
+            and "publication_time_basis" not in data
+            and (data.get("metadata") or {}).get("publication_time_precision") == "day"
+        ):
+            return {**data, "publication_time_basis": "DATE"}
+        return data
+
+    admission_context: AdmissionContext | None = None
+    publication_time_basis: str = "EXACT"
     standard_message_id: str
     schema_version: Literal[2] = 2
     raw_message_id: str
@@ -448,6 +502,8 @@ class StreamMember(BusModel):
 
 
 class MaterializedStreamMember(BusModel):
+    admission_context: AdmissionContext | None = None
+    publication_time_basis: str = "EXACT"
     stream_item_id: str
     member_index: int = Field(ge=0)
     standard_message_id: str
@@ -512,6 +568,7 @@ class PollState(BusModel):
     last_error_message: str | None = None
     consecutive_failures: int = 0
     last_latency_ms: int | None = Field(default=None, ge=0)
+    filtered_count: int = 0
     collected_count: int = 0
     published_count: int = 0
     updated_at: datetime = Field(default_factory=utc_now)
@@ -608,6 +665,7 @@ class PollExecutionResult(BusModel):
     binding_id: str
     crawler_execution_id: str | None = None
     collected_count: int = 0
+    filtered_count: int = 0
     queued_count: int = 0
     inserted_count: int = 0
     duplicate_count: int = 0

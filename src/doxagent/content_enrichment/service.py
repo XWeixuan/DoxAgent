@@ -122,6 +122,20 @@ class ContentEnrichmentHub:
             await close()
 
     async def _process(self, job: EnrichmentJob, now: datetime) -> None:
+        from doxagent.message_bus_v2.admission import evaluate_admission
+
+        reason = evaluate_admission(
+            job.message.published_at,
+            job.message.admission_context,
+            now,
+            job.message.publication_time_basis,
+        )
+        if reason:
+            self.repository.record_admission(
+                job.message, reason, "ENRICHMENT_DEQUEUE", job.binding.binding_id
+            )
+            self.repository.delete_enrichment_job(job.job_id, claim_token=job.claim_token)
+            return
         if job.source.content_enrichment_mode is ContentEnrichmentMode.SKIP:
             metadata = dict(job.message.metadata)
             metadata["media_enrichment"] = {

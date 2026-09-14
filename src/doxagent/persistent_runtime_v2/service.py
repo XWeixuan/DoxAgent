@@ -104,11 +104,7 @@ def _w2_detail_business_payload(details: PolicyDetailSnapshot) -> dict[str, Any]
     """Expose only the recalled Policies' business adjudication fields."""
 
     by_id = {policy.policy_id: policy for policy in details.policies}
-    ordered = [
-        by_id[policy_id]
-        for policy_id in details.requested_policy_ids
-        if policy_id in by_id
-    ]
+    ordered = [by_id[policy_id] for policy_id in details.requested_policy_ids if policy_id in by_id]
 
     return {
         "activation_semantics": "OR",
@@ -201,6 +197,7 @@ class PersistentRuntimeV2Service:
         prompts: RuntimeV2PromptSet | None = None,
         prompt_root: Path | None = None,
         retry_delays_seconds: tuple[float, float] = (5.0, 10.0),
+        max_retry_attempts: int = 1,
         sleep: Callable[[float], None] = time.sleep,
         dispatch_effects: bool = True,
         projection_outbox: RuntimeV2ProjectionOutbox | None = None,
@@ -221,7 +218,10 @@ class PersistentRuntimeV2Service:
         self.execution_bundles = ExecutionBundles(journal) if journal else None
         if self.execution_bundles and journal and not journal.get("execution", "active"):
             self.execution_bundles.publish(self.prompts)
+        if max_retry_attempts < 0:
+            raise ValueError("max_retry_attempts must be non-negative")
         self.retry_delays_seconds = retry_delays_seconds
+        self.max_retry_attempts = max_retry_attempts
         self._sleep = sleep
         self._dispatch_effects = dispatch_effects
         self._projection_outbox = projection_outbox
@@ -278,6 +278,10 @@ class PersistentRuntimeV2Service:
     ) -> RuntimeCase:
         if self._closed:
             raise RuntimeError("Persistent Runtime V2 service is closed")
+        if self.journal and self.journal.get("invalid_admissions", source.source_message_id):
+            raise RuntimeInputUnavailable(
+                "invalid_admission", "Message excluded by admission reconciliation"
+            )
         existing = self.repository.get_case_by_source(source.source_message_id)
         if existing is not None:
             if existing.status != RuntimeCaseStatus.RUNNING:
@@ -562,8 +566,12 @@ class PersistentRuntimeV2Service:
 
         def validate(value: W1NoveltyResult) -> None:
             for attribution in value.fact_attributions or []:
-                if not set(attribution.fact_ids).issubset(loaded_facts.get(attribution.event_id, set())):
-                    raise RuntimeSemanticOutputError("W1 R2 returned a Fact outside the loaded Event snapshot")
+                if not set(attribution.fact_ids).issubset(
+                    loaded_facts.get(attribution.event_id, set())
+                ):
+                    raise RuntimeSemanticOutputError(
+                        "W1 R2 returned a Fact outside the loaded Event snapshot"
+                    )
             if not set(value.reference_ids).issubset(loaded_ids):
                 raise RuntimeSemanticOutputError(
                     "W1 R2 returned a reference ID that was not loaded"
@@ -740,9 +748,7 @@ class PersistentRuntimeV2Service:
                     and "candidate_policy_ids" not in persisted_output
                     and isinstance(persisted_output.get("policy_ids"), list)
                 ):
-                    persisted_output = {
-                        "candidate_policy_ids": persisted_output["policy_ids"][:3]
-                    }
+                    persisted_output = {"candidate_policy_ids": persisted_output["policy_ids"][:3]}
                 return output_model.model_validate(persisted_output), turn.response_id or ""
         prompt_set = RuntimeV2PromptSet(**case.frozen_inputs.get("prompts", asdict(self.prompts)))
         frozen_round_prompt = getattr(prompt_set, f"{lane.lower()}_{round_name.lower()}")
@@ -772,7 +778,7 @@ class PersistentRuntimeV2Service:
         else:
             frozen = {"instructions": prompt_set.instructions(frozen_round_prompt)}
         last_error: Exception | None = None
-        budget = 3
+        budget = self.max_retry_attempts + 1
         if self.journal:
             generation = self.journal.get("round_resume", case.case_id, 0)
             if generation:
@@ -781,7 +787,14 @@ class PersistentRuntimeV2Service:
                 if baseline is None:
                     baseline = len(turns)
                     self.journal.set("round_budget", key, baseline)
-                budget = baseline + 3
+                budget = baseline + self.max_retry_attempts + 1
+        if len(turns) >= budget:
+            latest = turns[-1]
+            raise RuntimeResponsesError(
+                latest.error_code or "round_retry_exhausted",
+                latest.error_message or "Runtime model retry budget exhausted",
+                retryable=False,
+            )
         for attempt in range(len(turns) + 1, budget + 1):
             if self.journal:
                 ControlRepository(self.journal).dispatch(
@@ -1060,6 +1073,10 @@ class PersistentRuntimeV2Service:
         case = self.repository.get_case(effect.case_id)
         if case is None or case.w1_final is None or case.w2_final is None or case.route is None:
             raise RuntimeInputUnavailable("case_unavailable", "Routed Runtime Case is unavailable")
+        if self.journal and self.journal.get("invalid_admissions", case.source.source_message_id):
+            raise RuntimeInputUnavailable(
+                "invalid_admission", "Message excluded by admission reconciliation"
+            )
         if effect.effect_type is RuntimeSideEffect.EMIT_DELTA:
             self._execute_r3(case, effect)
             return

@@ -899,16 +899,46 @@ class UnifiedRuntimeSchedulerService:
                     runtime.process_pending_effects(limit=20)
                 for stream_item in pending_stream:
                     if coordinator is not None:
-                        coordinator.accept(
-                            SourceMessageEnvelope.from_stream_item(stream_item),
-                            stream_offset=stream_item.item.stream_offset,
-                        )
+                        coordinator.accept_stream(stream_item)
                         coordinator.journal.set(
                             "inbox_highwater", normalized, stream_item.item.stream_offset
                         )
                         bus.commit_stream(RUNTIME_V2_CONSUMER_ID, stream_item)
                         consumed_count += 1
                         continue
+                    from doxagent.message_bus_v2.admission import evaluate_admission
+                    from doxagent.message_bus_v2.schema import MaterializedStreamItem, utc_now
+
+                    original_stream = stream_item
+                    existing_source = SourceMessageEnvelope.from_stream_item(stream_item)
+                    if (
+                        runtime.repository.get_case_by_source(existing_source.source_message_id)
+                        is None
+                    ):
+                        eligible = []
+                        for member in stream_item.members:
+                            reason = evaluate_admission(
+                                member.published_at, None, utc_now(), member.publication_time_basis
+                            )
+                            if reason:
+                                bus.repository.record_admission(
+                                    member, reason, "RUNTIME_LEGACY", member.binding_id
+                                )
+                            else:
+                                eligible.append(member)
+                        if not eligible:
+                            bus.commit_stream(RUNTIME_V2_CONSUMER_ID, original_stream)
+                            consumed_count += 1
+                            continue
+                        stream_item = MaterializedStreamItem(
+                            item=stream_item.item.model_copy(
+                                update={"member_count": len(eligible)}
+                            ),
+                            members=[
+                                m.model_copy(update={"member_index": i})
+                                for i, m in enumerate(eligible)
+                            ],
+                        )
                     case = runtime.execute_message(
                         SourceMessageEnvelope.from_stream_item(stream_item)
                     )
@@ -1102,7 +1132,8 @@ class UnifiedRuntimeSchedulerService:
             trade_intents=self.trade_intents(normalized, limit=limit),
             exceptions=(
                 self.runtime_service.repository.list_exceptions(ticker=normalized)[-limit:]
-                if self.runtime_service is not None else []
+                if self.runtime_service is not None
+                else []
             ),
             refresh_requests=self.repository.list_refresh_requests(
                 ticker=normalized,

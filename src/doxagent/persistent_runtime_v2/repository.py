@@ -515,6 +515,8 @@ class SQLitePersistentRuntimeV2Repository:
         items = self._read_models(
             ProvisionalFactDetail,
             "SELECT payload_json FROM runtime_v2_candidates WHERE ticker=? "
+            "AND NOT EXISTS (SELECT 1 FROM runtime_v2_admission_exclusions e WHERE "
+            "e.source_message_id=runtime_v2_candidates.source_message_id) "
             "AND (trading_date=? OR (?=0 AND trading_date<? AND daily_status!='PROCESSED')) "
             "ORDER BY trading_date,created_at,candidate_identity",
             (ticker.upper(), trading_date.isoformat(), int(current_only), trading_date.isoformat()),
@@ -626,6 +628,9 @@ class SQLitePersistentRuntimeV2Repository:
                     payload_json TEXT NOT NULL,
                     created_at TEXT NOT NULL,
                     UNIQUE(ticker, trading_date, provisional_event_id)
+                );
+                CREATE TABLE IF NOT EXISTS runtime_v2_admission_exclusions (
+                    source_message_id TEXT PRIMARY KEY, payload_json TEXT NOT NULL
                 );
                 CREATE INDEX IF NOT EXISTS idx_runtime_v2_candidates_daily
                     ON runtime_v2_candidates(ticker, trading_date, daily_status, candidate_index);
@@ -1121,6 +1126,8 @@ class SQLitePersistentRuntimeV2Repository:
             ProvisionalFactDetail,
             "SELECT payload_json FROM runtime_v2_candidates "
             "WHERE ticker=? AND trading_date=? "
+            "AND NOT EXISTS (SELECT 1 FROM runtime_v2_admission_exclusions e WHERE "
+            "e.source_message_id=runtime_v2_candidates.source_message_id) "
             "ORDER BY CAST(SUBSTR(provisional_event_id, 2) AS INTEGER)",
             (ticker.upper(), trading_date.isoformat()),
         )
@@ -1340,6 +1347,8 @@ class SQLitePersistentRuntimeV2Repository:
             ProvisionalFactDetail,
             "SELECT payload_json FROM runtime_v2_candidates "
             "WHERE ticker=? AND trading_date=? AND daily_status='PENDING' "
+            "AND NOT EXISTS (SELECT 1 FROM runtime_v2_admission_exclusions e WHERE "
+            "e.source_message_id=runtime_v2_candidates.source_message_id) "
             "ORDER BY candidate_index, created_at",
             (ticker.upper(), trading_date.isoformat()),
         )

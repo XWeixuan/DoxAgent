@@ -75,6 +75,8 @@ class RuntimeMaintenance:
             }
         if task["inputs"].get("case_ids"):
             selected = set(task["inputs"]["case_ids"])
+        selected -= {case.case_id for case in cases if self.journal.get(
+            "invalid_admissions", case.source.source_message_id)}
         dates = {case.trading_date for case in cases if case.case_id in selected}
         sources = {case.source.source_message_id for case in cases if case.case_id in selected}
         candidates: list[dict[str, Any]] = []

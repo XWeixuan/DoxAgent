@@ -201,6 +201,14 @@ class CrawlerSourceAdapter:
                 publisher_name=item.source,
                 url=item.url,
                 published_at=item.published_at,
+                publication_time_basis=str(
+                    item.metadata.get("publication_time_basis")
+                    or (
+                        "DATE"
+                        if item.metadata.get("publication_time_precision") == "day"
+                        else "EXACT"
+                    )
+                ),
                 raw_payload=item.model_dump(mode="json"),
                 metadata={
                     **item.metadata,
@@ -336,10 +344,21 @@ class _BaseAdapter:
             return None, self._failure(
                 context, "missing_absolute_url", "provider item has no absolute URL", payload
             )
+        basis = "EXACT"
         if normalized_time is None:
-            return None, self._failure(
-                context, "missing_published_at", "provider item has no published_at", payload
-            )
+            normalized_time = context.requested_at
+            basis = "UNKNOWN_FIRST_SEEN"
+        elif isinstance(published_at, str) and len(published_at.strip()) <= 10:
+            # Preserve the calendar date at noon ET; do not claim precise publication.
+            from zoneinfo import ZoneInfo
+
+            normalized_time = normalized_time.replace(hour=12, tzinfo=ZoneInfo("America/New_York"))
+            basis = "DATE"
+        if (
+            basis != "UNKNOWN_FIRST_SEEN"
+            and (metadata or {}).get("publication_time_precision") == "day"
+        ):
+            basis = "DATE"
         return RawMessageInput(
             external_id=identifier,
             source_item_key=identifier,
@@ -350,6 +369,7 @@ class _BaseAdapter:
             publisher_name=_text_or_none(source),
             url=normalized_url,
             published_at=normalized_time,
+            publication_time_basis=basis,
             raw_payload=payload,
             metadata=metadata or {},
         ), None
@@ -398,6 +418,7 @@ class BenzingaNewsAdapter(_BaseAdapter):
         return self._rows(context, rows, query_mode=query_mode)
 
     async def _window_page(self, context: PollContext) -> PollResult:
+        assert context.window_start is not None and context.window_cutoff is not None
         page = int(context.checkpoint.get("page", 0))
         # Provider paging is not a snapshot token: preserve UNKNOWN coverage.
         # Use update time so revisions of older articles are not skipped.
@@ -416,13 +437,7 @@ class BenzingaNewsAdapter(_BaseAdapter):
             headers={"accept": "application/json"},
         )
         rows = _rows(data)
-        bounded = [
-            row
-            for row in rows
-            if (stamp := _datetime_or_none(row.get("updated") or row.get("created")))
-            and context.window_start <= stamp < context.window_cutoff
-        ]
-        result = self._rows(context, bounded, query_mode="closed_window_primary_tickers")
+        result = self._rows(context, rows, query_mode="closed_window_primary_tickers")
         reached_cutoff = bool(rows) and all(
             (stamp := _datetime_or_none(row.get("updated") or row.get("created")))
             and stamp >= context.window_cutoff
@@ -453,12 +468,17 @@ class BenzingaNewsAdapter(_BaseAdapter):
                 url=row.get("url"),
                 published_at=row.get("created") or row.get("updated"),
                 metadata={
+                    "publication_time_precision": "exact" if row.get("created") else "day",
+                    "publication_time_origin": (
+                        "PUBLISHED" if row.get("created") else "UPDATED_FALLBACK"
+                    ),
                     "provider": "benzinga",
                     "query_mode": query_mode,
                     **(
                         {
                             "sweep_updated_at": (
                                 _datetime_or_none(row.get("updated") or row.get("created"))
+                                or context.requested_at
                             ).isoformat()
                         }
                         if context.window_cutoff
@@ -471,7 +491,10 @@ class BenzingaNewsAdapter(_BaseAdapter):
         return PollResult(
             messages=messages,
             failures=failures,
-            acquisition_metadata={"provider": "benzinga", "query_mode": query_mode},
+            acquisition_metadata={
+                "provider": "benzinga",
+                "query_mode": query_mode,
+            },
         )
 
 
@@ -685,7 +708,18 @@ class NewswireRSSAdapter(_BaseAdapter):
                     source=row.get("source") or urlparse(str(feed_url)).netloc,
                     url=row.get("link"),
                     published_at=row.get("published") or row.get("pubDate") or row.get("updated"),
-                    metadata={"provider": "rss", "feed_url": feed_url},
+                    metadata={
+                        "provider": "rss",
+                        "feed_url": feed_url,
+                        "publication_time_origin": (
+                            "PUBLISHED"
+                            if row.get("published") or row.get("pubDate")
+                            else "UPDATED_FALLBACK"
+                        ),
+                        "publication_time_precision": "exact"
+                        if row.get("published") or row.get("pubDate")
+                        else "day",
+                    },
                 )
                 (messages if message else failures).append(cast(Any, message or failure))
         return PollResult(messages=messages, failures=failures)

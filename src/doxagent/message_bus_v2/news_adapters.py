@@ -11,6 +11,7 @@ from html.parser import HTMLParser
 from typing import Any, Protocol, cast
 from urllib.parse import urlencode, urlparse
 from xml.etree import ElementTree
+from zoneinfo import ZoneInfo
 
 import httpx
 
@@ -171,17 +172,24 @@ class YahooFinanceNewsAdapter:
             if not rows and last_error is not None:
                 raise last_error from None
 
-        cutoff = context.requested_at - timedelta(hours=24)
         messages: list[RawMessageInput] = []
         failures: list[AcquisitionFailure] = []
         for row in rows:
-            published = _dt(row.get("pubDate") or row.get("providerPublishTime"))
-            if published is None:
-                failures.append(
-                    _failure(context, "missing_published_at", "Yahoo item has no date", row)
+            original_time = row.get("pubDate") or row.get("providerPublishTime")
+            published = _dt(original_time)
+            basis = "EXACT"
+            if isinstance(original_time, str) and len(original_time.strip()) == 10:
+                published = datetime.fromisoformat(original_time).replace(
+                    hour=12, tzinfo=ZoneInfo("America/New_York")
                 )
-                continue
-            if published < cutoff or published > context.requested_at + timedelta(minutes=5):
+                basis = "DATE"
+            if published is None:
+                published, basis = context.requested_at, "UNKNOWN_FIRST_SEEN"
+            if basis == "EXACT" and (
+                published < (context.window_start or context.requested_at - timedelta(hours=24))
+                or published
+                > (context.window_cutoff or context.requested_at) + timedelta(minutes=5)
+            ):
                 continue
             provider = row.get("provider") if isinstance(row.get("provider"), dict) else {}
             canonical = row.get("canonicalUrl") if isinstance(row.get("canonicalUrl"), dict) else {}
@@ -217,6 +225,7 @@ class YahooFinanceNewsAdapter:
                     publisher_name=publisher,
                     url=url,
                     published_at=published,
+                    publication_time_basis=basis,
                     raw_payload=row,
                     metadata={
                         "provider": "yahoo_finance",
@@ -292,22 +301,24 @@ class GoogleNewsSearchRssAdapter:
         self._resolved_urls.update(resolved)
         while len(self._resolved_urls) > 5_000:
             self._resolved_urls.pop(next(iter(self._resolved_urls)))
-        cutoff = context.requested_at - timedelta(hours=24)
         messages: list[RawMessageInput] = []
         failures: list[AcquisitionFailure] = []
         for row in rows:
-            published = _dt(row.get("pubDate"))
-            if published is None:
-                failures.append(
-                    _failure(
-                        context,
-                        "missing_published_at",
-                        "Google News item has no parseable pubDate",
-                        row,
-                    )
+            original_time = row.get("pubDate")
+            published = _dt(original_time)
+            basis = "EXACT"
+            if isinstance(original_time, str) and len(original_time.strip()) == 10:
+                published = datetime.fromisoformat(original_time).replace(
+                    hour=12, tzinfo=ZoneInfo("America/New_York")
                 )
-                continue
-            if published < cutoff or published > context.requested_at + timedelta(minutes=5):
+                basis = "DATE"
+            if published is None:
+                published, basis = context.requested_at, "UNKNOWN_FIRST_SEEN"
+            if basis == "EXACT" and (
+                published < (context.window_start or context.requested_at - timedelta(hours=24))
+                or published
+                > (context.window_cutoff or context.requested_at) + timedelta(minutes=5)
+            ):
                 continue
             wrapper = str(row.get("link") or "")
             target = self._resolved_urls.get(wrapper, wrapper)
@@ -348,6 +359,7 @@ class GoogleNewsSearchRssAdapter:
                     publisher_name=publisher,
                     url=target,
                     published_at=published,
+                    publication_time_basis=basis,
                     raw_payload=row,
                     metadata={
                         "provider": "google_news",
@@ -406,9 +418,7 @@ class ReutersSiteSearchAdapter:
             ticker = context.ticker.casefold()
             names = [catalog_match.name, *catalog_match.aliases]
             candidates = [
-                _company_search_name(name)
-                for name in names
-                if name.strip().casefold() != ticker
+                _company_search_name(name) for name in names if name.strip().casefold() != ticker
             ]
             if not candidates:
                 candidates = [catalog_match.name]
@@ -442,7 +452,9 @@ class ReutersSiteSearchAdapter:
             raise RuntimeError("Reuters source requires the shared Playwright browser runtime")
         query, query_source = await self._query(context)
         max_pages = int(context.binding.source_parameters.get("max_pages", 2))
-        cutoff = context.requested_at.date() - timedelta(days=1)
+        cutoff = (context.window_cutoff or context.requested_at).astimezone(
+            ZoneInfo("America/New_York")
+        ).date() - timedelta(days=1)
         messages: list[RawMessageInput] = []
         failures: list[AcquisitionFailure] = []
         seen: set[str] = set()
@@ -461,17 +473,8 @@ class ReutersSiteSearchAdapter:
             for raw in rows:
                 row = dict(raw)
                 published_date = _reuters_date(row.get("date"))
-                if published_date is None:
-                    failures.append(
-                        _failure(
-                            context,
-                            "search_result_date_unresolved",
-                            "Reuters result has no parseable search date",
-                            cast(JsonObject, row),
-                        )
-                    )
-                    continue
-                if published_date < cutoff:
+                basis = "DATE" if published_date is not None else "UNKNOWN_FIRST_SEEN"
+                if published_date is not None and published_date < cutoff:
                     stopped_on_old = True
                     continue
                 url = str(row.get("url") or "")
@@ -490,7 +493,13 @@ class ReutersSiteSearchAdapter:
                     continue
                 seen.add(url)
                 identifier = sha256_text(url)
-                published = datetime.combine(published_date, time(hour=12), tzinfo=UTC)
+                published = (
+                    datetime.combine(
+                        published_date, time(hour=12), tzinfo=ZoneInfo("America/New_York")
+                    )
+                    if published_date
+                    else context.requested_at
+                )
                 messages.append(
                     RawMessageInput(
                         external_id=identifier,
@@ -502,13 +511,16 @@ class ReutersSiteSearchAdapter:
                         publisher_name="Reuters",
                         url=url,
                         published_at=published,
+                        publication_time_basis=basis,
                         raw_payload=cast(JsonObject, row),
                         metadata={
                             "provider": "reuters",
                             "query": query,
                             "query_source": query_source,
-                            "publication_time_precision": "day",
-                            "search_result_date": published_date.isoformat(),
+                            "publication_time_precision": "day" if published_date else "unknown",
+                            "search_result_date": published_date.isoformat()
+                            if published_date
+                            else None,
                         },
                     )
                 )

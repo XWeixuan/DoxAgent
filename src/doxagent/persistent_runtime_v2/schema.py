@@ -16,6 +16,7 @@ from doxagent.event_library.contracts import (
     CanonicalEvent,
     ReferenceViewDeltaSnapshot,
 )
+from doxagent.message_bus_v2.admission import AdmissionContext
 from doxagent.message_bus_v2.compiler import compile_stream_item
 from doxagent.message_bus_v2.schema import MaterializedStreamItem, PublicationMode
 from doxagent.workflows.codex_document3.schema import PolicyDecision
@@ -156,6 +157,8 @@ class SourceMessageSnapshot(RuntimeV2Model):
 
 
 class SourceMessageEnvelope(RuntimeV2Model):
+    admission_context: AdmissionContext | None = None
+    publication_time_basis: str = "EXACT"
     """Operational/audit fields kept outside the model-visible snapshot."""
 
     source_message_id: str = Field(min_length=1)
@@ -178,6 +181,8 @@ class SourceMessageEnvelope(RuntimeV2Model):
         latest = compiled.latest
         is_buffered = value.item.publication_mode is PublicationMode.BUFFERED
         return cls(
+            admission_context=latest.admission_context,
+            publication_time_basis=latest.publication_time_basis,
             source_message_id=latest.standard_message_id,
             source_id=latest.source_id,
             binding_id=latest.binding_id,
@@ -189,7 +194,7 @@ class SourceMessageEnvelope(RuntimeV2Model):
             member_count=value.item.member_count,
             member_message_ids=[member.standard_message_id for member in value.members],
             eligibility_at=min(
-                (member.normalized_at or value.item.published_at for member in value.members)
+                member.normalized_at or value.item.published_at for member in value.members
             ),
             snapshot=SourceMessageSnapshot(
                 ticker=value.item.ticker,

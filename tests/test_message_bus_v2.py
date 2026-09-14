@@ -58,6 +58,13 @@ from doxagent.tools.schema import ToolRequest
 
 NOW = datetime(2026, 9, 1, 12, tzinfo=UTC)
 
+@pytest.fixture(autouse=True)
+def _publication_clock(monkeypatch):
+    monkeypatch.setattr("doxagent.message_bus_v2.service.utc_now", lambda: NOW)
+    monkeypatch.setattr("doxagent.message_bus_v2.schema.utc_now", lambda: NOW)
+    monkeypatch.setattr("doxagent.message_bus_v2.repository.utc_now", lambda: NOW)
+
+
 
 def _bus(path: Path) -> tuple[MessageBusV2Repository, MessageBusV2Service]:
     repository = MessageBusV2Repository(path)
@@ -1138,6 +1145,8 @@ class _UsableDocuments:
 
 class _AcceptingRuntimeV2:
     def __init__(self) -> None:
+        from doxagent.persistent_runtime_v2.repository import InMemoryPersistentRuntimeV2Repository
+        self.repository = InMemoryPersistentRuntimeV2Repository()
         self.envelopes: list[SourceMessageEnvelope] = []
 
     def process_pending_effects(self, *, limit: int) -> list[object]:

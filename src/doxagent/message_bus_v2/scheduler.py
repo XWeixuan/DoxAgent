@@ -10,13 +10,17 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
+from .admission import AdmissionContext
+
 if TYPE_CHECKING:
+    from doxagent.persistent_runtime_v2.bus_orchestration import BusOrchestration
     from doxagent.ticker_initialization.repository import InitializationRepository
 
 from doxagent.message_bus_v2.adapters import AdapterRegistry
 from doxagent.message_bus_v2.repository import MessageBusV2Repository
 from doxagent.message_bus_v2.schema import (
     AlertSeverity,
+    JsonObject,
     OperationalAlert,
     PollContext,
     PollExecutionResult,
@@ -87,6 +91,7 @@ class GlobalPollScheduler:
         self._clock = clock
         self._sleep = sleep
         self._limiters: dict[str, tuple[SchedulerConstraints, SchedulerGroupLimiter]] = {}
+        self.runtime_orchestration: BusOrchestration | None = None
         self.activation_admission: Callable[[], None] | None = None
         self.initialization_control: InitializationRepository | None = None
 
@@ -104,7 +109,7 @@ class GlobalPollScheduler:
             return await self._run_admitted_once()
 
     async def _run_admitted_once(self) -> list[PollExecutionResult]:
-        orchestration = getattr(self, "runtime_orchestration", None)
+        orchestration = self.runtime_orchestration
         if orchestration is not None:
             return await orchestration.run_once(self)
         now = utc_now()
@@ -204,8 +209,11 @@ class GlobalPollScheduler:
         source: SourceDefinition,
         binding: TickerSourceBinding,
         attempted_at: datetime,
-        *, window_start: datetime | None = None, window_cutoff: datetime | None = None,
-        checkpoint: dict | None = None,
+        *,
+        window_start: datetime | None = None,
+        window_cutoff: datetime | None = None,
+        checkpoint: JsonObject | None = None,
+        admission_context: AdmissionContext | None = None,
     ) -> PollExecutionResult:
         # Snapshot source and binding for this poll. Updates become visible on the next poll.
         state = self.repository.get_poll_state(binding)
@@ -226,12 +234,6 @@ class GlobalPollScheduler:
         try:
             adapter = self.adapters.resolve(source.adapter_ref, source_version=source.version)
             result = await adapter.poll(context)
-            if window_cutoff is not None:
-                # Never admit provider rows outside the immutable half-open sweep window.
-                result = result.model_copy(update={"messages": [m for m in result.messages
-                    if (stamp := datetime.fromisoformat(m.metadata["sweep_updated_at"])
-                        if m.metadata.get("sweep_updated_at") else m.published_at) is not None
-                    and window_start <= stamp < window_cutoff]})
             result = result.model_copy(
                 update={
                     "acquisition_metadata": {
@@ -245,7 +247,10 @@ class GlobalPollScheduler:
                 binding=binding,
                 result=result,
                 attempted_at=attempted_at,
+                admission_context=admission_context,
             )
+            if window_cutoff is not None:
+                return execution
             if execution.crawler_execution_id and self.adapters.crawler_plane is not None:
                 self.adapters.crawler_plane.record_message_bus_telemetry(
                     execution.crawler_execution_id,
@@ -273,31 +278,32 @@ class GlobalPollScheduler:
             return execution
         except Exception as exc:
             crawler_execution_id = getattr(exc, "crawler_execution_id", None)
-            self.service.record_poll_failure(
-                binding,
-                code=type(exc).__name__,
-                message=str(exc),
-                attempted_at=attempted_at,
-            )
-            refreshed = self.repository.get_poll_state(binding)
-            self.repository.save_poll_state(
-                refreshed.model_copy(
-                    update={
-                        "target_due_at": self._next_due(
-                            refreshed.target_due_at or attempted_at,
-                            attempted_at,
-                            binding.polling.target_interval_seconds,
-                        ),
-                        "next_dispatch_at": self._next_due(
-                            refreshed.target_due_at or attempted_at,
-                            attempted_at,
-                            binding.polling.target_interval_seconds,
-                        ),
-                        "last_latency_ms": max(0, int((self._clock() - started_at) * 1000)),
-                        "updated_at": attempted_at,
-                    }
+            if window_cutoff is None:
+                self.service.record_poll_failure(
+                    binding,
+                    code=type(exc).__name__,
+                    message=str(exc),
+                    attempted_at=attempted_at,
                 )
-            )
+                refreshed = self.repository.get_poll_state(binding)
+                self.repository.save_poll_state(
+                    refreshed.model_copy(
+                        update={
+                            "target_due_at": self._next_due(
+                                refreshed.target_due_at or attempted_at,
+                                attempted_at,
+                                binding.polling.target_interval_seconds,
+                            ),
+                            "next_dispatch_at": self._next_due(
+                                refreshed.target_due_at or attempted_at,
+                                attempted_at,
+                                binding.polling.target_interval_seconds,
+                            ),
+                            "last_latency_ms": max(0, int((self._clock() - started_at) * 1000)),
+                            "updated_at": attempted_at,
+                        }
+                    )
+                )
             execution = PollExecutionResult(
                 poll_run_id=poll_run_id,
                 binding_id=binding.binding_id,

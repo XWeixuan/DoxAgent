@@ -50,6 +50,8 @@ from doxagent.message_bus_v2.schema import (
     validate_parameter_schema,
 )
 
+from .admission import AdmissionContext, evaluate_admission
+
 
 class MessageBusV2Service:
     """One control/data-plane service used by worker, dashboard and agent tools."""
@@ -91,11 +93,17 @@ class MessageBusV2Service:
             return
         additions = [entry for entry in desired.entries if entry.source_id not in existing]
         if additions:
-            self.save_default_profile(current.model_copy(update={
-                "entries": [*current.entries, *additions],
-                "updated_by": UpdateActor.SYSTEM,
-                "updated_reason": "register Message Bus v2 default Yahoo, IBKR and Reuters sources",
-            }))
+            self.save_default_profile(
+                current.model_copy(
+                    update={
+                        "entries": [*current.entries, *additions],
+                        "updated_by": UpdateActor.SYSTEM,
+                        "updated_reason": (
+                            "register Message Bus v2 default Yahoo, IBKR and Reuters sources"
+                        ),
+                    }
+                )
+            )
 
     def _migrate_legacy_default_news_windows(self) -> None:
         """Remove the retired weekday 07:00-18:00 ET gate from default news polling.
@@ -535,11 +543,14 @@ class MessageBusV2Service:
         binding: TickerSourceBinding,
         result: PollResult,
         attempted_at: datetime | None = None,
+        admission_context: AdmissionContext | None = None,
     ) -> PollExecutionResult:
         result = self.hidden_news_policy.apply(source.source_id, result)
         now = attempted_at or utc_now()
         state = self.repository.get_poll_state(binding)
-        bootstrap = not state.bootstrap_complete
+        bootstrap = not state.bootstrap_complete and not (
+            admission_context and admission_context.mode == "CLOSED_SWEEP"
+        )
         output = PollExecutionResult(
             next_checkpoint=result.next_checkpoint,
             window_coverage=result.window_coverage,
@@ -560,6 +571,22 @@ class MessageBusV2Service:
             self._upsert_failure_alert(failure)
             output = output.model_copy(update={"invalid_count": output.invalid_count + 1})
         for input_message in result.messages:
+            input_message = self.repository.resolve_first_seen(input_message, binding.binding_id)
+            input_message = input_message.model_copy(
+                update={"admission_context": admission_context or AdmissionContext()}
+            )
+            reason = evaluate_admission(
+                input_message.published_at,
+                input_message.admission_context,
+                utc_now(),
+                input_message.publication_time_basis,
+            )
+            if reason:
+                self.repository.record_admission(
+                    input_message, reason, "INTAKE", binding.binding_id
+                )
+                output.filtered_count += 1
+                continue
             try:
                 if self.enrichment_queue_enabled:
                     job, created = self.enqueue_enrichment(
@@ -570,6 +597,8 @@ class MessageBusV2Service:
                         poll_run_id=output.poll_run_id,
                         collected_at=now,
                     )
+                    if job is None:
+                        continue
                     output.enrichment_job_ids.append(job.job_id)
                     if created:
                         output = output.model_copy(update={"queued_count": output.queued_count + 1})
@@ -608,6 +637,8 @@ class MessageBusV2Service:
                 updates["duplicate_count"] = output.duplicate_count + 1
             elif ingest.decision is IngestDecision.BOOTSTRAP_SUPPRESSED:
                 updates["bootstrap_suppressed_count"] = output.bootstrap_suppressed_count + 1
+            elif ingest.decision is IngestDecision.FILTERED:
+                updates["filtered_count"] = output.filtered_count + 1
             elif ingest.decision is IngestDecision.INVALID:
                 updates["invalid_count"] = output.invalid_count + 1
                 poll_errors.append(
@@ -631,12 +662,14 @@ class MessageBusV2Service:
                 "last_error_message": poll_errors[0][1][:1000] if poll_errors else None,
                 "consecutive_failures": 0,
                 "collected_count": state.collected_count + output.collected_count,
+                "filtered_count": state.filtered_count + output.filtered_count,
                 "published_count": state.published_count + output.published_count,
                 "last_standard_revision_count": standard_revisions,
                 "updated_at": now,
             }
         )
-        self.repository.save_poll_state(saved_state)
+        if not admission_context or admission_context.mode == "REALTIME":
+            self.repository.save_poll_state(saved_state)
         self.repository.resolve_alert(f"poll_failure:{binding.binding_id}")
         self._refresh_source_failure_alert(source.source_id, now=now)
         return output
@@ -650,10 +683,22 @@ class MessageBusV2Service:
         bootstrap: bool,
         poll_run_id: str,
         collected_at: datetime | None = None,
-    ) -> tuple[EnrichmentJob, bool]:
+    ) -> tuple[EnrichmentJob | None, bool]:
         """Durably stage provider output before any network enrichment work."""
 
         now = collected_at or utc_now()
+        message = self.repository.resolve_first_seen(message, binding.binding_id)
+        reason = evaluate_admission(
+            message.published_at,
+            message.admission_context,
+            utc_now(),
+            message.publication_time_basis,
+        )
+        if reason:
+            self.repository.record_admission(
+                message, reason, "ENRICHMENT_INTAKE", binding.binding_id
+            )
+            return None, False
         clean_metadata = dict(message.metadata)
         clean_metadata.pop("v2_body_completion", None)
         clean = message.model_copy(update={"metadata": clean_metadata})
@@ -717,6 +762,16 @@ class MessageBusV2Service:
         enrichment_claim: tuple[str, str] | None = None,
     ) -> IngestResult:
         now = collected_at or utc_now()
+        message = self.repository.resolve_first_seen(message, binding.binding_id)
+        reason = evaluate_admission(
+            message.published_at,
+            message.admission_context,
+            utc_now(),
+            message.publication_time_basis,
+        )
+        if reason:
+            self.repository.record_admission(message, reason, "RAW_INTAKE", binding.binding_id)
+            return IngestResult(decision=IngestDecision.FILTERED, error_code=reason)
         # Provider metadata cannot forge internal completion-attempt evidence. Network
         # enrichment has exactly one execution path: the durable ContentEnrichmentHub.
         metadata = dict(message.metadata)
@@ -741,18 +796,16 @@ class MessageBusV2Service:
             enrichment_input if trusted_enrichment and enrichment_input else materialized
         )
         raw = RawMessage(
+            admission_context=materialized.admission_context,
+            publication_time_basis=materialized.publication_time_basis,
             raw_message_id=new_id("raw"),
             ticker=binding.ticker,
             source_id=source.source_id,
             binding_id=binding.binding_id,
             source_definition_version=source.version,
             external_id=materialized.external_id,
-            source_item_key=source_item_key_for(
-                source.source_id, identity_input
-            ),
-            identity_key=identity_key_for(
-                source.source_id, identity_input
-            ),
+            source_item_key=source_item_key_for(source.source_id, identity_input),
+            identity_key=identity_key_for(source.source_id, identity_input),
             content_hash=content_hash_for(materialized),
             raw_hash=raw_hash,
             title=materialized.title,
@@ -772,7 +825,8 @@ class MessageBusV2Service:
         )
         decision, persisted = (
             self.repository.record_raw(raw, enrichment_claim=enrichment_claim)
-            if enrichment_claim else self.repository.record_raw(raw)
+            if enrichment_claim
+            else self.repository.record_raw(raw)
         )
         if decision is IngestDecision.DUPLICATE:
             if persisted.processing_status in {
@@ -967,8 +1021,20 @@ class MessageBusV2Service:
             ]
         else:
             batches = self._pack_buffer(binding, messages)
-        published = [self.repository.publish_buffered(binding.ticker, batch) for batch in batches]
-        return published
+        # A compiled Case must have exactly one business owner.
+        grouped: list[list[StandardMessage]] = []
+        for batch in batches:
+            owner_groups: dict[str, list[StandardMessage]] = {}
+            for message in batch:
+                owner = (
+                    message.admission_context.model_dump_json()
+                    if message.admission_context
+                    else "legacy"
+                )
+                owner_groups.setdefault(owner, []).append(message)
+            grouped.extend(owner_groups.values())
+        published = [self.repository.publish_buffered(binding.ticker, batch) for batch in grouped]
+        return [item for item in published if item is not None]
 
     def pending_stream(
         self, consumer_id: str, ticker: str, *, limit: int = 100
@@ -1017,6 +1083,8 @@ class MessageBusV2Service:
     @staticmethod
     def _standardize(raw: RawMessage) -> StandardMessage:
         return StandardMessage(
+            admission_context=raw.admission_context,
+            publication_time_basis=raw.publication_time_basis,
             standard_message_id=new_id("std"),
             raw_message_id=raw.raw_message_id,
             ticker=raw.ticker,

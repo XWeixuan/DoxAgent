@@ -79,6 +79,28 @@ class CrawlerAlertType(StrEnum):
 
 
 class CrawlerObservation(CrawlerModel):
+    @model_validator(mode="before")
+    @classmethod
+    def publication_date_compatibility(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            return data
+        value = dict(data)
+        metadata = dict(value.get("metadata") or {})
+        stamp = value.get("published_at")
+        if stamp is None or stamp == "":
+            value["published_at"] = utc_now()
+            metadata["publication_time_basis"] = "UNKNOWN_FIRST_SEEN"
+        elif isinstance(stamp, str) and len(stamp.strip()) == 10:
+            from zoneinfo import ZoneInfo
+
+            value["published_at"] = datetime.fromisoformat(stamp).replace(
+                hour=12, tzinfo=ZoneInfo("America/New_York")
+            )
+            metadata["publication_time_basis"] = "DATE"
+            metadata["publication_time_precision"] = "day"
+        value["metadata"] = metadata
+        return value
+
     title: str | None = None
     body: str = Field(min_length=1)
     source: str = Field(min_length=1)
@@ -152,9 +174,7 @@ class CrawlerItemFailure(CrawlerModel):
             ).encode("utf-8")
         )
         if size > MAX_RETRY_PAYLOAD_BYTES:
-            raise ValueError(
-                f"retry_payload exceeds {MAX_RETRY_PAYLOAD_BYTES} encoded bytes"
-            )
+            raise ValueError(f"retry_payload exceeds {MAX_RETRY_PAYLOAD_BYTES} encoded bytes")
         return value
 
 
@@ -361,9 +381,7 @@ class CertificationCase(CrawlerModel):
     expected_item_failure_keys: list[str] = Field(default_factory=list)
     expected_retry_keys: list[str] = Field(default_factory=list)
     expected_checkpoint: JsonObject | None = None
-    observation_assertions: list[CertificationObservationAssertion] = Field(
-        default_factory=list
-    )
+    observation_assertions: list[CertificationObservationAssertion] = Field(default_factory=list)
 
 
 class CertificationCheckResult(CrawlerModel):

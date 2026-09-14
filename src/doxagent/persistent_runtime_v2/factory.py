@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 from pathlib import Path
 
 from doxagent.codex_runtime.client import HttpCodexWorkerClient
@@ -37,6 +38,8 @@ from .service import PersistentRuntimeV2Service
 from .transport import BailianRuntimeResponsesClient
 from .w3 import CodexW3AgentRunner, PublishedW3ContextProvider
 
+logger = logging.getLogger(__name__)
+
 
 def build_persistent_runtime_v2_service(
     settings: DoxAgentSettings,
@@ -49,13 +52,10 @@ def build_persistent_runtime_v2_service(
         raise ValueError("Persistent Runtime V2 requires strict mode")
     if settings.persistent_runtime_v2_model != "qwen3.8-flash":
         raise ValueError("Persistent Runtime V2 model is frozen to qwen3.8-flash")
-    if settings.persistent_runtime_v2_retry_attempts != 2:
-        raise ValueError("Persistent Runtime V2 requires exactly two automatic retries")
-    if (
-        settings.persistent_runtime_v2_first_retry_delay_seconds != 5
-        or settings.persistent_runtime_v2_second_retry_delay_seconds != 10
-    ):
-        raise ValueError("Persistent Runtime V2 retry delays are frozen to 5s and 10s")
+    if settings.persistent_runtime_v2_retry_attempts != 1:
+        raise ValueError("Persistent Runtime V2 requires exactly one automatic retry")
+    if settings.persistent_runtime_v2_first_retry_delay_seconds != 5:
+        raise ValueError("Persistent Runtime V2 retry delay is frozen to 5s")
     if not settings.event_library_root:
         raise ValueError("Persistent Runtime V2 requires DOXAGENT_EVENT_LIBRARY_ROOT")
     if settings.ticker_initialization_control_path:
@@ -110,6 +110,11 @@ def build_persistent_runtime_v2_service(
         reasoning_effort=settings.persistent_runtime_v2_reasoning_effort,
         timeout_seconds=settings.persistent_runtime_v2_timeout_seconds,
         session_cache=settings.persistent_runtime_v2_session_cache_enabled,
+    )
+    logger.info(
+        "Persistent Runtime V2 model transport configured: timeout_seconds=%s automatic_retries=%s",
+        settings.persistent_runtime_v2_timeout_seconds,
+        settings.persistent_runtime_v2_retry_attempts,
     )
     projection_outbox = None
     if settings.persistent_runtime_v2_remote_projection_enabled:
@@ -245,6 +250,7 @@ def build_persistent_runtime_v2_service(
             settings.persistent_runtime_v2_first_retry_delay_seconds,
             settings.persistent_runtime_v2_second_retry_delay_seconds,
         ),
+        max_retry_attempts=settings.persistent_runtime_v2_retry_attempts,
         projection_outbox=projection_outbox,
         w3_agent=w3_agent,
         w3_max_ticker_concurrency=(settings.persistent_runtime_v2_w3_max_ticker_concurrency),

@@ -12,6 +12,7 @@ from concurrent.futures import Future, ThreadPoolExecutor
 from datetime import date, datetime, timedelta
 from typing import Any
 
+from doxagent.message_bus_v2.schema import MaterializedStreamItem, MaterializedStreamMember
 from doxagent.semantic_clock import boundary, semantic_day
 from doxagent.v2_control.repository import ControlError, ControlRepository
 
@@ -19,6 +20,8 @@ from .calendar import MarketCalendar
 from .fencing import write_scope
 from .journal import LeaseLost, RuntimeJournal, digest
 from .schema import RuntimeCaseStatus, SourceMessageEnvelope
+
+SWEEP_WAVE_SIZE = 20
 
 
 class RuntimeCoordinator:
@@ -78,6 +81,7 @@ class RuntimeCoordinator:
                     {
                         "day": current.isoformat(),
                         "cutoff": boundary(current).isoformat(),
+                        "window_start": boundary(previous).isoformat(),
                         "closed_cycle_id": previous_closed,
                         "final": self.calendar.is_session(current),
                         "calendar_version": self.calendar.calendar_version,
@@ -126,10 +130,95 @@ class RuntimeCoordinator:
             inputs = {**inputs, "control_epoch": state["epoch"] if state else None}
             self.journal.put_task(identity, ticker, kind, inputs, due_at=due_at)
 
+    def accept_stream(self, stream_item: MaterializedStreamItem) -> None:
+        from doxagent.message_bus_v2.admission import evaluate_admission
+
+        # Freeze the compiled groups before admitting any Case. On cursor retry use
+        # this plan, never shrink a buffered group around an already accepted latest item.
+        receipt_key = f"{stream_item.item.ticker}:{stream_item.item.stream_item_id}"
+        plan = self.journal.get("stream_admission_plans", receipt_key)
+        if plan is None:
+            previous = SourceMessageEnvelope.from_stream_item(stream_item)
+            if self.journal.get_task(
+                f"inbox:{stream_item.item.ticker}:{previous.source_message_id}"
+            ):
+                return
+            groups: dict[str, list[MaterializedStreamMember]] = {}
+            for member in stream_item.members:
+                identity = f"inbox:{stream_item.item.ticker}:{member.standard_message_id}"
+                reason = evaluate_admission(
+                    member.published_at,
+                    member.admission_context,
+                    self.journal.clock(),
+                    member.publication_time_basis,
+                )
+                context = member.admission_context
+                if not reason and context and context.mode == "CLOSED_SWEEP":
+                    parent = self.journal.get_task(context.sweep_id or "")
+                    child = self.journal.get_task(context.source_task_id or "")
+                    if (
+                        not parent
+                        or not child
+                        or parent["ticker"] != stream_item.item.ticker
+                        or child["inputs"].get("sweep_id") != context.sweep_id
+                    ):
+                        reason = "SWEEP_OWNER_MISMATCH"
+                    elif datetime.fromisoformat(parent["inputs"]["cutoff"]) != context.cutoff:
+                        reason = "SWEEP_WINDOW_MISMATCH"
+                    elif (
+                        parent["inputs"].get("window_start")
+                        and datetime.fromisoformat(parent["inputs"]["window_start"])
+                        != context.window_start
+                    ):
+                        reason = "SWEEP_WINDOW_MISMATCH"
+                if reason:
+                    self.journal.set(
+                        "message_admission_skips",
+                        identity,
+                        {
+                            "reason": reason,
+                            "stream_offset": stream_item.item.stream_offset,
+                            "published_at": member.published_at.isoformat(),
+                        },
+                    )
+                    continue
+                key = context.model_dump_json() if context else "legacy"
+                groups.setdefault(key, []).append(member)
+            plan = []
+            for members in groups.values():
+                value = MaterializedStreamItem(
+                    item=stream_item.item.model_copy(update={"member_count": len(members)}),
+                    members=[
+                        m.model_copy(update={"member_index": i}) for i, m in enumerate(members)
+                    ],
+                )
+                plan.append(SourceMessageEnvelope.from_stream_item(value).model_dump(mode="json"))
+            self.journal.set("stream_admission_plans", receipt_key, plan)
+        for source in plan:
+            self.accept(
+                SourceMessageEnvelope.model_validate(source),
+                stream_offset=stream_item.item.stream_offset,
+            )
+
     def accept(self, source: SourceMessageEnvelope, *, stream_offset: int | None = None) -> str:
         ticker = source.snapshot.ticker
         identity = f"inbox:{ticker}:{source.source_message_id}"
         if self.journal.get_task(identity):
+            return identity
+        from doxagent.message_bus_v2.admission import evaluate_admission
+
+        reason = evaluate_admission(
+            source.published_at,
+            source.admission_context,
+            self.journal.clock(),
+            source.publication_time_basis,
+        )
+        if reason:
+            self.journal.set(
+                "message_admission_skips",
+                identity,
+                {"reason": reason, "stream_offset": stream_offset},
+            )
             return identity
         ControlRepository(self.journal).admit(
             identity, ticker, source.eligibility_at or source.message_bus_event_time
@@ -138,13 +227,13 @@ class RuntimeCoordinator:
         mode, cycle = self.mode(ticker, at)
         sweeps = self.journal.tasks(ticker=ticker, kind="SWEEP")
         owner = None
-        for sweep in reversed(sweeps):
-            if source.occurrence_source_time < datetime.fromisoformat(
-                sweep["inputs"]["cutoff"]
-            ) and sweep["status"] not in {"SUCCEEDED", "FAILED"}:
-                owner = sweep["id"]
-                mode, cycle = "CLOSED", sweep["inputs"]["closed_cycle_id"]
-                break
+        if source.admission_context and source.admission_context.mode == "CLOSED_SWEEP":
+            context = source.admission_context
+            parent = self.journal.get_task(context.sweep_id or "")
+            if not parent or datetime.fromisoformat(parent["inputs"]["cutoff"]) != context.cutoff:
+                raise ValueError("SWEEP_OWNER_MISMATCH")
+            owner = context.sweep_id
+            mode, cycle = "CLOSED", parent["inputs"]["closed_cycle_id"]
         if mode == "CLOSED" and owner is None:
             # Durable arrivals await the next daily sweep; no extra source poll.
             owner = f"sweep:{ticker}:{semantic_day(at) + timedelta(days=1)}"
@@ -169,14 +258,17 @@ class RuntimeCoordinator:
             self.journal.set("sweep_roster", owner, {"source_tasks": []})
         if owner and self.journal.get("sweep_members", owner) is not None:
             original = owner
+            original_task = self.journal.get_task(original)
+            original_inputs = original_task["inputs"] if original_task else {}
             owner = f"supplemental:{original}:{source.source_message_id}"
             self._schedule(
                 owner,
                 ticker,
                 "SWEEP",
                 {
-                    "day": semantic_day(at).isoformat(),
-                    "cutoff": at.isoformat(),
+                    "day": original_inputs.get("day", semantic_day(at).isoformat()),
+                    "cutoff": original_inputs.get("cutoff", at.isoformat()),
+                    "window_start": original_inputs.get("window_start"),
                     "closed_cycle_id": cycle,
                     "final": False,
                     "supplemental": True,
@@ -275,6 +367,10 @@ class RuntimeCoordinator:
                 self._futures[task["id"]] = pool.submit(self._execute, lease)
 
     def _waiting_cases(self, task: dict[str, Any]) -> bool:
+        if task["inputs"].get("repair_id"):
+            parent = self.journal.get_task(task["inputs"].get("sweep_id", ""))
+            if parent and parent["status"] not in {"SUCCEEDED", "FAILED"}:
+                return True
         cutoff = datetime.fromisoformat(task["inputs"]["cutoff"])
         cases = [
             item
@@ -391,6 +487,9 @@ class RuntimeCoordinator:
     def _case_guarded(self, task: dict[str, Any], *, phase: str = "ALL") -> None:
         inputs = task["inputs"]
         source = SourceMessageEnvelope.model_validate(inputs["source"])
+        if self.journal.get("invalid_admissions", source.source_message_id):
+            self.journal.finish(task, admission_excluded=True)
+            return
         admitted = datetime.fromisoformat(inputs["admitted_at"])
         snapshot = None
         bundle_id = None
@@ -487,23 +586,146 @@ class RuntimeCoordinator:
                     item["id"],
                 )
             )
-            members = [item["id"] for item in cases]
+            from doxagent.message_bus_v2.admission import AdmissionContext, evaluate_admission
+
+            members = []
+            for item in cases:
+                source = SourceMessageEnvelope.model_validate(item["inputs"]["source"])
+                context = source.admission_context
+                if context is None:
+                    cutoff = datetime.fromisoformat(task["inputs"]["cutoff"])
+                    context = AdmissionContext(
+                        mode="CLOSED_SWEEP",
+                        sweep_id=task["id"],
+                        source_task_id="legacy-manifest-check",
+                        window_start=datetime.fromisoformat(
+                            task["inputs"].get("window_start")
+                            or boundary(semantic_day(cutoff) - timedelta(days=1)).isoformat()
+                        ),
+                        cutoff=cutoff,
+                    )
+                reason = evaluate_admission(
+                    source.published_at,
+                    context,
+                    datetime.fromisoformat(item["inputs"]["admitted_at"])
+                    if context.mode == "REALTIME" else self.journal.clock(),
+                    source.publication_time_basis,
+                )
+                if reason:
+                    self.journal.set(
+                        "invalid_admissions",
+                        source.source_message_id,
+                        {"reason": reason, "stage": "SWEEP_FREEZE", "sweep_id": task["id"]},
+                    )
+                else:
+                    members.append(item["id"])
             self.journal.set("sweep_members", task["id"], members)
-        for phase in ("W1", "ALL"):
-            for identity in members:
-                child = self.journal.claim(identity, seconds=120)
-                if child is None:
-                    continue
-                try:
-                    self._case(child, phase=phase)
-                    if phase == "W1":
-                        with self.journal.transaction() as db:
-                            self.journal.fence(db, child)
-                            db.execute(
-                                "UPDATE runtime_tasks SET status='PENDING' WHERE id=?", (identity,)
-                            )
-                except Exception as exc:
-                    self.journal.fail(child, exc, retryable=False)
+        # The immutable original manifest remains available for incident audit.
+        members = [
+            identity
+            for identity in members
+            if not self.journal.get(
+                "invalid_admissions",
+                (self.journal.get_task(identity) or {})
+                .get("inputs", {})
+                .get("source", {})
+                .get("source_message_id", ""),
+            )
+        ]
+        self.journal.set("sweep_effective_members", task["id"], members)
+        waves = [
+            members[start : start + SWEEP_WAVE_SIZE]
+            for start in range(0, len(members), SWEEP_WAVE_SIZE)
+        ]
+        self.journal.checkpoint(
+            task,
+            wave_size=SWEEP_WAVE_SIZE,
+            total_waves=len(waves),
+            total_members=len(members),
+        )
+        for wave_offset, wave_members in enumerate(waves):
+            wave_index = wave_offset + 1
+            receipt = task["receipt"]
+            if receipt.get("completed_waves", 0) >= wave_index:
+                continue
+            resume_w2 = (
+                receipt.get("wave_index") == wave_index and receipt.get("wave_phase") == "W2"
+            )
+            w1_failed = set(
+                receipt.get("wave_w1_failed_members", [])
+                if receipt.get("wave_index") == wave_index
+                else []
+            )
+            if not resume_w2:
+                self.journal.checkpoint(
+                    task,
+                    wave_index=wave_index,
+                    wave_phase="W1",
+                    member_index=(
+                        receipt.get("member_index", 0)
+                        if receipt.get("wave_index") == wave_index
+                        and receipt.get("wave_phase") == "W1"
+                        else 0
+                    ),
+                    wave_w1_failed_members=sorted(w1_failed),
+                    wave_w2_failed_members=[],
+                    wave_w2_skipped_members=[],
+                )
+                if not self._run_sweep_wave_phase(
+                    task,
+                    wave_members,
+                    wave_index=wave_index,
+                    phase="W1",
+                    w1_failed=w1_failed,
+                ):
+                    return
+                self.journal.checkpoint(
+                    task,
+                    wave_index=wave_index,
+                    wave_phase="W2",
+                    member_index=0,
+                    wave_w1_failed_members=sorted(w1_failed),
+                    wave_w2_failed_members=[],
+                    wave_w2_skipped_members=[],
+                )
+            if not self._run_sweep_wave_phase(
+                task,
+                wave_members,
+                wave_index=wave_index,
+                phase="ALL",
+                w1_failed=w1_failed,
+            ):
+                return
+            next_wave = wave_index + 1
+            self.journal.checkpoint(
+                task,
+                completed_waves=wave_index,
+                wave_index=next_wave if next_wave <= len(waves) else wave_index,
+                wave_phase="W1" if next_wave <= len(waves) else "COMPLETE",
+                member_index=0,
+                wave_w1_settled=0 if next_wave <= len(waves) else len(wave_members),
+                wave_w1_failed=0 if next_wave <= len(waves) else len(w1_failed),
+                wave_w2_settled=(
+                    0 if next_wave <= len(waves) else len(wave_members) - len(w1_failed)
+                ),
+                wave_w2_failed=(
+                    0
+                    if next_wave <= len(waves)
+                    else len(task["receipt"].get("wave_w2_failed_members", []))
+                ),
+                wave_w2_skipped=(
+                    0
+                    if next_wave <= len(waves)
+                    else len(task["receipt"].get("wave_w2_skipped_members", []))
+                ),
+                wave_w1_failed_members=[] if next_wave <= len(waves) else sorted(w1_failed),
+                wave_w2_failed_members=[]
+                if next_wave <= len(waves)
+                else task["receipt"].get("wave_w2_failed_members", []),
+                wave_w2_skipped_members=[]
+                if next_wave <= len(waves)
+                else task["receipt"].get("wave_w2_skipped_members", []),
+            )
         self.journal.set("w3_batch", task["id"], {"members": members, "ready": True})
         self.runtime.dispatch_pending_effects(limit=max(20, len(members) * 3))
         identity = f"maintain:{task['id']}"
@@ -519,7 +741,127 @@ class RuntimeCoordinator:
                 "members": members,
             },
         )
-        self.journal.finish(task, members=members)
+        self.journal.finish(
+            task,
+            members=members,
+            completed_waves=len(waves),
+            wave_phase="COMPLETE",
+            member_index=0,
+        )
+
+    def _run_sweep_wave_phase(
+        self,
+        task: dict[str, Any],
+        members: list[str],
+        *,
+        wave_index: int,
+        phase: str,
+        w1_failed: set[str],
+    ) -> bool:
+        receipt = task["receipt"]
+        start = (
+            int(receipt.get("member_index", 0))
+            if receipt.get("wave_index") == wave_index
+            and receipt.get("wave_phase") == ("W1" if phase == "W1" else "W2")
+            else 0
+        )
+        w2_failed = set(receipt.get("wave_w2_failed_members", []))
+        w2_skipped = set(receipt.get("wave_w2_skipped_members", []))
+        for member_offset in range(start, len(members)):
+            identity = members[member_offset]
+            if phase == "ALL" and identity in w1_failed:
+                self._checkpoint_sweep_member(
+                    task,
+                    members=members,
+                    wave_index=wave_index,
+                    phase=phase,
+                    member_index=member_offset + 1,
+                    w1_failed=w1_failed,
+                    w2_failed=w2_failed,
+                    w2_skipped=w2_skipped,
+                )
+                if self.journal.get("pause", task["ticker"]):
+                    self._yield_task(task)
+                    return False
+                continue
+            child = self.journal.claim(identity, seconds=120)
+            if child is None:
+                current = self.journal.get_task(identity)
+                if current is None or current["status"] not in {"SUCCEEDED", "FAILED"}:
+                    self._yield_task(task)
+                    return False
+                if phase == "W1" and current["status"] == "FAILED":
+                    w1_failed.add(identity)
+                elif phase == "ALL":
+                    if current["status"] == "FAILED":
+                        w2_failed.add(identity)
+                    self._record_wave_skip(current, w2_skipped)
+            else:
+                try:
+                    self._case(child, phase=phase)
+                    if phase == "W1":
+                        with self.journal.transaction() as db:
+                            self.journal.fence(db, child)
+                            db.execute(
+                                "UPDATE runtime_tasks SET status='PENDING',updated_at=? WHERE id=?",
+                                (self.journal.clock().isoformat(), identity),
+                            )
+                    else:
+                        self._record_wave_skip(self.journal.get_task(identity), w2_skipped)
+                except Exception as exc:
+                    self.journal.fail(child, exc, retryable=False)
+                    (w1_failed if phase == "W1" else w2_failed).add(identity)
+            self._checkpoint_sweep_member(
+                task,
+                members=members,
+                wave_index=wave_index,
+                phase=phase,
+                member_index=member_offset + 1,
+                w1_failed=w1_failed,
+                w2_failed=w2_failed,
+                w2_skipped=w2_skipped,
+            )
+            if self.journal.get("pause", task["ticker"]):
+                self._yield_task(task)
+                return False
+        return True
+
+    def _checkpoint_sweep_member(
+        self,
+        task: dict[str, Any],
+        *,
+        members: list[str],
+        wave_index: int,
+        phase: str,
+        member_index: int,
+        w1_failed: set[str],
+        w2_failed: set[str],
+        w2_skipped: set[str],
+    ) -> None:
+        processed_members = set(members[:member_index])
+        processed_w1_failures = len(w1_failed & processed_members)
+        self.journal.checkpoint(
+            task,
+            wave_index=wave_index,
+            wave_phase="W1" if phase == "W1" else "W2",
+            member_index=member_index,
+            wave_w1_settled=member_index if phase == "W1" else len(members),
+            wave_w1_failed=len(w1_failed),
+            wave_w2_settled=(member_index - processed_w1_failures) if phase == "ALL" else 0,
+            wave_w2_failed=len(w2_failed),
+            wave_w2_skipped=len(w2_skipped),
+            wave_w1_failed_members=sorted(w1_failed),
+            wave_w2_failed_members=sorted(w2_failed),
+            wave_w2_skipped_members=sorted(w2_skipped),
+        )
+
+    def _record_wave_skip(self, task: dict[str, Any] | None, skipped: set[str]) -> None:
+        if not task:
+            return
+        case_id = task["receipt"].get("case_id")
+        case = self.runtime.repository.get_case(case_id) if case_id else None
+        if case and case.w2_skipped:
+            skipped.add(task["id"])
 
     def _yield_task(self, task: dict[str, Any]) -> None:
         with self.journal.transaction() as db:

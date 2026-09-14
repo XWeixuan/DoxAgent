@@ -579,28 +579,36 @@ class DoxAgentSettings(BaseSettings):
         validation_alias="DOXAGENT_CONTENT_ENRICHMENT_ENABLED",
     )
     content_enrichment_pipeline_enabled: bool = Field(
-        default=False, validation_alias="DOXAGENT_CONTENT_ENRICHMENT_PIPELINE_ENABLED",
+        default=False,
+        validation_alias="DOXAGENT_CONTENT_ENRICHMENT_PIPELINE_ENABLED",
     )
     content_enrichment_browser_enabled: bool = Field(
-        default=False, validation_alias="DOXAGENT_CONTENT_ENRICHMENT_BROWSER_ENABLED",
+        default=False,
+        validation_alias="DOXAGENT_CONTENT_ENRICHMENT_BROWSER_ENABLED",
     )
     content_enrichment_browser_headless: bool = Field(
-        default=True, validation_alias="DOXAGENT_CONTENT_ENRICHMENT_BROWSER_HEADLESS",
+        default=True,
+        validation_alias="DOXAGENT_CONTENT_ENRICHMENT_BROWSER_HEADLESS",
     )
     content_enrichment_browser_channel: str | None = Field(
-        default=None, validation_alias="DOXAGENT_CONTENT_ENRICHMENT_BROWSER_CHANNEL",
+        default=None,
+        validation_alias="DOXAGENT_CONTENT_ENRICHMENT_BROWSER_CHANNEL",
     )
     content_enrichment_trusted_proxy_dns: bool = Field(
-        default=False, validation_alias="DOXAGENT_CONTENT_ENRICHMENT_TRUSTED_PROXY_DNS",
+        default=False,
+        validation_alias="DOXAGENT_CONTENT_ENRICHMENT_TRUSTED_PROXY_DNS",
     )
     content_enrichment_identity_dir: str | None = Field(
-        default=None, validation_alias="DOXAGENT_CONTENT_ENRICHMENT_IDENTITY_DIR",
+        default=None,
+        validation_alias="DOXAGENT_CONTENT_ENRICHMENT_IDENTITY_DIR",
     )
     content_enrichment_authenticated_hosts: str = Field(
-        default="", validation_alias="DOXAGENT_CONTENT_ENRICHMENT_AUTHENTICATED_HOSTS",
+        default="",
+        validation_alias="DOXAGENT_CONTENT_ENRICHMENT_AUTHENTICATED_HOSTS",
     )
     content_enrichment_disabled_hosts: str = Field(
-        default="", validation_alias="DOXAGENT_CONTENT_ENRICHMENT_DISABLED_HOSTS",
+        default="",
+        validation_alias="DOXAGENT_CONTENT_ENRICHMENT_DISABLED_HOSTS",
     )
     content_enrichment_max_concurrency: int = Field(
         default=8,
@@ -748,14 +756,14 @@ class DoxAgentSettings(BaseSettings):
         validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_SESSION_CACHE_ENABLED",
     )
     persistent_runtime_v2_timeout_seconds: float = Field(
-        default=60.0,
+        default=120.0,
         gt=0,
         validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_TIMEOUT_SECONDS",
     )
     persistent_runtime_v2_retry_attempts: int = Field(
-        default=2,
+        default=1,
         ge=0,
-        le=2,
+        le=1,
         validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_RETRY_ATTEMPTS",
     )
     persistent_runtime_v2_first_retry_delay_seconds: float = Field(

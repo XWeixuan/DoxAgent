@@ -65,6 +65,7 @@ from doxagent.persistent_runtime_v2.transport import (
     RuntimeResponsesResult,
     _safe_transport_error,
 )
+from doxagent.settings import DoxAgentSettings
 from doxagent.workflows.codex_document3.schema import (
     Policy,
     PolicyDecision,
@@ -231,7 +232,10 @@ class _FakeResponses:
                 reason="new qualification fact",
             )
         elif request.output_model is W2Round1RecallResult:
-            value = W2Round1RecallResult(candidate_policy_ids=[], reason="No criterion covers the reported qualification fact")
+            value = W2Round1RecallResult(
+                candidate_policy_ids=[],
+                reason="No criterion covers the reported qualification fact",
+            )
         else:
             value = W1FactExtractionResult(
                 candidates=[
@@ -252,6 +256,24 @@ class _FakeResponses:
             reasoning_tokens=1,
             cached_input_tokens=0,
         )
+
+
+class _RetryingW1Responses(_FakeResponses):
+    def __init__(self, failures: int) -> None:
+        super().__init__()
+        self.failures = failures
+        self.w1_r1_attempts = 0
+
+    def complete(self, request: RuntimeResponsesRequest[Any]) -> RuntimeResponsesResult[Any]:
+        if request.output_model is W1Round1Result:
+            self.w1_r1_attempts += 1
+            if self.w1_r1_attempts <= self.failures:
+                raise RuntimeResponsesError(
+                    "provider_timeout",
+                    "fixture provider timeout",
+                    retryable=True,
+                )
+        return super().complete(request)
 
 
 def _source() -> SourceMessageEnvelope:
@@ -342,9 +364,7 @@ def test_service_runs_parallel_hot_path_then_w3_owned_delta(tmp_path: Path) -> N
     assert adjudicated.route.primary_route == "W3"
     assert adjudicated.w1_extraction is None
     w2_request = next(
-        request
-        for request in responses.calls
-        if request.output_model is W2Round1RecallResult
+        request for request in responses.calls if request.output_model is W2Round1RecallResult
     )
     assert set(w2_request.payload) == {
         "source_message",
@@ -394,9 +414,41 @@ def test_service_runs_parallel_hot_path_then_w3_owned_delta(tmp_path: Path) -> N
         "RUNTIME_CONFIRMED_OCCURRENCE"
     )
     service.close()
-    service.close()
     with pytest.raises(RuntimeError, match="service is closed"):
         service.execute_message(_source())
+
+
+@pytest.mark.parametrize(("failures", "expected_status"), [(1, "ADJUDICATED"), (2, "FAILED")])
+def test_runtime_model_round_retries_at_most_once(failures: int, expected_status: str) -> None:
+    responses = _RetryingW1Responses(failures)
+    repository = InMemoryPersistentRuntimeV2Repository()
+    service = PersistentRuntimeV2Service(
+        repository=repository,
+        responses=responses,
+        known_events=_FakeKnownEvents(),
+        policies=_FakePolicies(),
+        retry_delays_seconds=(0, 0),
+        max_retry_attempts=1,
+        sleep=lambda _seconds: None,
+        dispatch_effects=False,
+    )
+    try:
+        result = service.execute_message(_source())
+        assert result.status == expected_status
+        assert responses.w1_r1_attempts == 2
+        attempts = [
+            turn.attempt_number
+            for turn in repository.list_turns(result.case_id)
+            if turn.lane == "W1" and turn.round_name == "R1"
+        ]
+        assert attempts == [1, 2]
+    finally:
+        service.close()
+
+
+def test_runtime_v2_model_timeout_and_retry_defaults_are_frozen() -> None:
+    assert DoxAgentSettings.model_fields["persistent_runtime_v2_timeout_seconds"].default == 120.0
+    assert DoxAgentSettings.model_fields["persistent_runtime_v2_retry_attempts"].default == 1
 
 
 class _AnyPolicies(_FakePolicies):
@@ -472,9 +524,7 @@ class _AnyResponses(_FakeResponses):
             with self._lock:
                 self.calls.append(request)
             policies = request.payload["runtime_policy_projection"]["policies"]
-            value: Any = W2Round1RecallResult(
-                candidate_policy_ids=["pol_any"] if policies else []
-            )
+            value: Any = W2Round1RecallResult(candidate_policy_ids=["pol_any"] if policies else [])
         elif request.output_model is W2PolicyResult:
             with self._lock:
                 self.calls.append(request)
@@ -492,14 +542,14 @@ class _AnyResponses(_FakeResponses):
         else:
             return super().complete(request)
         return RuntimeResponsesResult(
-                value=value,
-                response_id="resp-w2",
-                latency_ms=1,
-                input_tokens=10,
-                output_tokens=5,
-                reasoning_tokens=1,
-                cached_input_tokens=0,
-            )
+            value=value,
+            response_id="resp-w2",
+            latency_ms=1,
+            input_tokens=10,
+            output_tokens=5,
+            reasoning_tokens=1,
+            cached_input_tokens=0,
+        )
 
 
 def test_w2_model_payload_contains_only_business_policy_content() -> None:
@@ -514,9 +564,7 @@ def test_w2_model_payload_contains_only_business_policy_content() -> None:
             "criterion": ["qualification completed", "volume production started"],
         }
     ]
-    detail_payload = _w2_detail_business_payload(
-        _AnyPolicies().details("MU", 3, ["pol_any"])
-    )
+    detail_payload = _w2_detail_business_payload(_AnyPolicies().details("MU", 3, ["pol_any"]))
     assert detail_payload == {
         "activation_semantics": "OR",
         "candidate_policy_ids": ["pol_any"],
@@ -551,14 +599,10 @@ def test_w2_model_payload_contains_only_business_policy_content() -> None:
 
 
 def test_w2_round1_recall_is_bounded_to_three_candidates() -> None:
-    result = W2Round1RecallResult(
-        candidate_policy_ids=["pol_1", "pol_1", "pol_2", "pol_3"]
-    )
+    result = W2Round1RecallResult(candidate_policy_ids=["pol_1", "pol_1", "pol_2", "pol_3"])
     assert result.candidate_policy_ids == ["pol_1", "pol_2", "pol_3"]
     with pytest.raises(ValueError, match="at most 3 items"):
-        W2Round1RecallResult(
-            candidate_policy_ids=["pol_1", "pol_2", "pol_3", "pol_4"]
-        )
+        W2Round1RecallResult(candidate_policy_ids=["pol_1", "pol_2", "pol_3", "pol_4"])
 
 
 def test_runtime_case_reads_legacy_w2_round1_as_recall_candidates() -> None:
@@ -581,9 +625,7 @@ def test_runtime_case_reads_legacy_w2_round1_as_recall_candidates() -> None:
 
     restored = RuntimeCase.model_validate(payload)
 
-    assert restored.w2_round1 == W2Round1RecallResult(
-        candidate_policy_ids=["pol_1"]
-    )
+    assert restored.w2_round1 == W2Round1RecallResult(candidate_policy_ids=["pol_1"])
 
 
 def test_w2_nonempty_recall_always_runs_r2() -> None:
@@ -968,6 +1010,7 @@ def test_bailian_transport_uses_readonly_prefix_and_implicit_cache() -> None:
             previous_response_id="resp-prior-for-audit-only",
         )
     )
+    assert client.timeout_seconds == 120.0
     assert result.value.event_ids == []
     assert fake.responses.kwargs["store"] is True
     assert fake.responses.kwargs["reasoning"] == {"effort": "medium"}
@@ -1002,9 +1045,7 @@ def test_bailian_transport_can_still_enable_session_cache_explicitly() -> None:
             schema_name="w1_round1_result",
         )
     )
-    assert fake.responses.kwargs["extra_headers"] == {
-        "x-dashscope-session-cache": "enable"
-    }
+    assert fake.responses.kwargs["extra_headers"] == {"x-dashscope-session-cache": "enable"}
 
 
 def test_bailian_arrearage_is_non_retryable_and_secret_safe() -> None:
@@ -1039,10 +1080,28 @@ def test_bailian_validation_error_is_actionable_without_raw_output() -> None:
 
 def test_w1_fact_attribution_survives_roundtrip_and_rejects_wrong_event():
     from pydantic import ValidationError
-    result = W1NoveltyResult(result="OLD", confidence="normal", reference_ids=["E1"],
-        fact_attributions=[{"event_id": "E1", "fact_ids": ["F2"]}], reason="Existing fact covers this")
-    assert W1NoveltyResult.model_validate_json(result.model_dump_json()).fact_attributions[0].fact_ids == ["F2"]
-    assert W1NoveltyResult(result="OLD", confidence="normal", reference_ids=["E1"], reason="legacy").fact_attributions is None
+
+    result = W1NoveltyResult(
+        result="OLD",
+        confidence="normal",
+        reference_ids=["E1"],
+        fact_attributions=[{"event_id": "E1", "fact_ids": ["F2"]}],
+        reason="Existing fact covers this",
+    )
+    assert W1NoveltyResult.model_validate_json(result.model_dump_json()).fact_attributions[
+        0
+    ].fact_ids == ["F2"]
+    assert (
+        W1NoveltyResult(
+            result="OLD", confidence="normal", reference_ids=["E1"], reason="legacy"
+        ).fact_attributions
+        is None
+    )
     with pytest.raises(ValidationError):
-        W1NoveltyResult(result="OLD", confidence="normal", reference_ids=["E1"],
-            fact_attributions=[{"event_id": "E2", "fact_ids": ["F2"]}], reason="invalid")
+        W1NoveltyResult(
+            result="OLD",
+            confidence="normal",
+            reference_ids=["E1"],
+            fact_attributions=[{"event_id": "E2", "fact_ids": ["F2"]}],
+            reason="invalid",
+        )
