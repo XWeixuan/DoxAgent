@@ -118,7 +118,14 @@ class ProjectionWorker:
             with self.store.connect() as db:
                 repair = db.execute("SELECT min(CASE WHEN event NOT GLOB '*[^0-9]*' THEN CAST(event AS INTEGER) ELSE 0 END) FROM gaps WHERE source=?", (source.source,)).fetchone()[0]
             if hasattr(source, "acknowledge"):
-                source.acknowledge(consumer, checkpoint, repair)
+                try:
+                    source.acknowledge(consumer, checkpoint, repair)
+                except sqlite3.OperationalError as exc:
+                    if getattr(exc, "sqlite_errorcode", None) not in (sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED):
+                        raise
+                    # Retaining the old acknowledgement is conservative: archive
+                    # cannot pass it. Retry next tick without restarting ingestion.
+                    pass
             capture = source.capture()
             if capture:
                 observed = instant(datetime.now(UTC))

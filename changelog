@@ -1034,3 +1034,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-14 · 投影积压读取放大修复：先分页读取热/归档源事件坐标，只有进入本轮处理的事件才加载 payload；时间预算到达后不再丢弃已预读的大批正文。保持来源顺序、归档回读及 gap 记录语义。
 
 - 修复工件引用触发器受外层 UPSERT 冲突策略覆盖的问题；发布时只升级触发器，不清理任何历史行。Runtime 真实投影与归档回放三个必要用例通过。
+
+- 来源消费者确认遇到 SQLITE_BUSY/LOCKED 时保留旧归档水位并在下轮重试，避免瞬时写锁导致投影进程重启。
