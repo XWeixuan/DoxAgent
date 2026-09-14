@@ -38,6 +38,7 @@ class DeferredQueries:
     async def submit(self, job):
         if job.get("method","GET") != "GET":
             raise ApiFailure("VALIDATION_FAILED",422)
+        job = {**job,"headers":{key:value for key,value in job.get("headers",{}).items() if key != "if-none-match"}}
         existing = self.existing(job)
         if existing is not None:
             return existing

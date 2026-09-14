@@ -177,6 +177,8 @@ def create_app(
                     if deferred and exc.status == 503:
                         return await app.state.deferred_queries.submit(job)
                     raise
+                if deferred and status == 503:
+                    return await app.state.deferred_queries.submit(job)
                 return Response(content, status_code=status, headers=headers)
             return await call_next(request)
         except ApiFailure as exc:

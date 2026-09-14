@@ -1022,3 +1022,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-14 · V2 数据库优化发布：完成事务内去重/延迟 seq、热对象与指标目录、分页历史分支、批量页面聚合、固定覆盖证明、独立查询/控制进程池和延迟精确查询、轻量 SSE、有校验的正文/原生大字段引用与保留维护工具。同步 API Contract、类型、资源模板和 DB_OPTIMIZATION_RUNBOOK.md；必要定向检查及前端生产构建通过。按用户指示不执行远端存量清理、GC、VACUUM 或影子切换；本条记录时准备推送并部署。
 
 2026-09-14 · 部署备份校验收敛：SQLite backup 完成后改用 quick_check，避免膨胀旧库的全索引 integrity_check 放大随机读取；增加显式 --resume-backup，在停写锁保护下检查备份结构、schema 和源水位后复用已完成的备份，不清理远端文件。
+
+2026-09-14 · 延迟查询收尾：SQLite 主动中断返回的 503 同样转入有界后台精确查询；后台缓存移除条件请求头，避免将某个客户端的 304 复用于同 owner 的其他请求。
