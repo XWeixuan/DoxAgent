@@ -26,8 +26,11 @@ def backup(source: Path, target: Path) -> None:
     destination = sqlite3.connect(target)
     try:
         origin.backup(destination, pages=256, sleep=0.05)
-        if destination.execute("PRAGMA quick_check").fetchone()[0] != "ok":
-            raise ValueError("backup integrity check failed")
+        # sqlite3_backup commits a consistent snapshot or raises. Deployment checks
+        # bounded metadata here; deep integrity scans belong to explicit offline verify.
+        destination.execute("SELECT name FROM sqlite_master LIMIT 1").fetchone()
+        if destination.execute("PRAGMA page_count").fetchone()[0] == 0:
+            raise ValueError("backup is empty")
     finally:
         destination.close()
         origin.close()

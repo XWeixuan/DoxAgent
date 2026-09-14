@@ -135,9 +135,9 @@ def migrate(*, resume_backup=None):
                     # Explicit operator resume while all writers remain fenced. The backup API
                     # already committed the copy; do not repeat a multi-GB full-index check.
                     with sqlite3.connect(path.resolve().as_uri()+"?mode=ro",uri=True) as live, sqlite3.connect(target.as_uri()+"?mode=ro",uri=True) as saved:
-                        if saved.execute("PRAGMA quick_check").fetchone()[0] != "ok":
-                            raise ValueError("resume backup structural check failed: " + name)
-                        schema = "SELECT name,sql FROM sqlite_master WHERE type='table' ORDER BY name"
+                        if live.execute("PRAGMA page_count").fetchone() != saved.execute("PRAGMA page_count").fetchone():
+                            raise ValueError("resume backup page count changed: " + name)
+                        schema = "SELECT type,name,sql FROM sqlite_master ORDER BY type,name"
                         if live.execute(schema).fetchall() != saved.execute(schema).fetchall():
                             raise ValueError("resume backup schema changed: " + name)
                         table = "commits" if name == "read" else "v2_source_outbox"

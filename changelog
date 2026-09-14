@@ -1024,3 +1024,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-14 · 部署备份校验收敛：SQLite backup 完成后改用 quick_check，避免膨胀旧库的全索引 integrity_check 放大随机读取；增加显式 --resume-backup，在停写锁保护下检查备份结构、schema 和源水位后复用已完成的备份，不清理远端文件。
 
 2026-09-14 · 延迟查询收尾：SQLite 主动中断返回的 503 同样转入有界后台精确查询；后台缓存移除条件请求头，避免将某个客户端的 304 复用于同 owner 的其他请求。
+
+2026-09-14 · 部署校验边界修正：旧库 quick_check 仍产生高读取放大；部署改为验证 SQLite backup 已提交副本的可打开性、schema、页数和 source head，一致性深扫保留在显式离线 verify。恢复升级仍要求全部写者停稳且水位相同；未删除存量数据。
