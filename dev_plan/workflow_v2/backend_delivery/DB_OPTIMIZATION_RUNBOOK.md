@@ -31,7 +31,7 @@ sudo docker compose -f docker-compose.v2-production.yml -f deploy/docker-compose
 sudo docker compose -f docker-compose.v2-production.yml -f deploy/docker-compose.server.yml up -d
 ```
 
-升级对受影响的现有库做一致性备份并注册 release marker；普通重启跳过全库备份、DDL 和 backfill。外部 native/content/receipt 文件必须与 DB 备份同时保存，不能仅复制 sqlite3 文件。API server 配额从 384 MiB 调整为 1536 MiB，容纳有界子进程；无额外 Uvicorn 多 worker。
+升级对受影响的现有库做一致性备份并注册 release marker；普通重启跳过全库备份、全量 schema/backfill；本次补丁会幂等升级旧工件引用触发器。外部 native/content/receipt 文件必须与 DB 备份同时保存，不能仅复制 sqlite3 文件。API server 配额从 384 MiB 调整为 1536 MiB，容纳有界子进程；无额外 Uvicorn 多 worker。
 
 验收只检查 commit、镜像、容器、healthz、auth/config、投影 checkpoint/head/gap 及有界业务请求；不执行真实订单或重跑历史研究。
 
@@ -53,3 +53,21 @@ sudo docker compose -f docker-compose.v2-production.yml -f deploy/docker-compose
 ## 必要验证记录
 
 已针对去重、元数据变化、source 高水位/归档回读、NativeContent roundtrip/backup、Policy 覆盖、Bus 日期/筛选更正、Cost、SSE、OpenAPI 和 Graph 节点路径做定向检查；发现的 SSE 方法绑定及 Graph 直接投影聚合缺失已修复。前端 schema/typecheck/production build 已通过。最终部署结果在完成远端检查后追加。
+
+## 2026-09-14 远端发布记录
+
+已将代码推送 main 并在新加坡 `/home/ubuntu/doxagent` 拉取，使用两个生产 Compose 文件构建共享后端镜像并更新服务。schema 3 已生效；一致性备份位于 `/data/backups/20260914T141029911261Z-resume-runtime`。发布中的验证采用停止写者后的 schema/页数/水位检查，未对远端大库运行清理或压缩；完整恢复验证仍需离线副本。
+
+必要检查还发现并修复了三项真实运行问题：
+
+- 老正文补全 audit 缺少 started_at，产生大量 KeyError gap。新记录保存真实起止时间，旧记录保留时间未知，不能加入有限日期窗口冒充已知发生时间。
+- 投影先读取有限事件坐标，再逐项加载真正需要处理的 payload，避免每轮预读后丢弃整批大对象；旧 task 的纯租约变化也不新增投影版本。
+- 工件触发器采用显式 UPSERT 冲突处理，避免外层业务 UPSERT 导致 artifact.id 重复报错；来源确认遇到短暂写锁只延迟确认，旧归档保护水位仍有效。
+
+本地 Runtime 实际投影与 receipt 归档回读 3 个定向用例通过，旧正文时间未知用例通过；此前的前端生产构建及针对快照、指标、Policy、SSE 的定向检查已通过。不扩展无关回归。
+
+在线抽样（14:46 UTC）中，Ticker/消息/Case/Policy 的 20 行有界查询为 1–22 ms，消息汇总约 11 ms；启动完成后的 auth/config 返回 200，约 2.6 ms。这些是单次样本，不是 p95、冷缓存或长期容量验收。
+
+部署前备份已有 7,394 条 Bus KeyError gap；服务更新前继续产生的记录也已纳入自动 repair。修复后 Bus checkpoint 可追平 head，gap 数开始下降；Runtime 仍有历史 receipt 待处理。积压及 gap 消失前保留 PARTIAL/同步延迟，不能把服务健康误报为业务覆盖完整。正常投影回放只更新读模型，不重新执行研究或发送订单。
+
+本轮未执行远端历史清理、GC、receipt 归档、影子切换或存量压缩；maintenance profile 关闭，旧文件大小不会立即缩小。未发出验收订单。远端带 Supabase 登录的业务 HTTP/SSE 没有重测，不将本地 SSE 检查当作线上登录态验收。
