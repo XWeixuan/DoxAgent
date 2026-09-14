@@ -1036,3 +1036,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 - 修复工件引用触发器受外层 UPSERT 冲突策略覆盖的问题；发布时只升级触发器，不清理任何历史行。Runtime 真实投影与归档回放三个必要用例通过。
 
 - 来源消费者确认遇到 SQLITE_BUSY/LOCKED 时保留旧归档水位并在下轮重试，避免瞬时写锁导致投影进程重启。
+
+- 新加坡已重建并启动 12 个 V2 服务，后端镜像统一、无重启/OOM；公开 HTTP 与真实读库小范围检查通过。历史投影积压仍在自动追赶，未执行任何远端历史清理。详见 DB_OPTIMIZATION_RUNBOOK.md。

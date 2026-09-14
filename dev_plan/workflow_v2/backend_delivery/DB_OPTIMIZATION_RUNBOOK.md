@@ -71,3 +71,5 @@ sudo docker compose -f docker-compose.v2-production.yml -f deploy/docker-compose
 部署前备份已有 7,394 条 Bus KeyError gap；服务更新前继续产生的记录也已纳入自动 repair。修复后 Bus checkpoint 可追平 head，gap 数开始下降；Runtime 仍有历史 receipt 待处理。积压及 gap 消失前保留 PARTIAL/同步延迟，不能把服务健康误报为业务覆盖完整。正常投影回放只更新读模型，不重新执行研究或发送订单。
 
 本轮未执行远端历史清理、GC、receipt 归档、影子切换或存量压缩；maintenance profile 关闭，旧文件大小不会立即缩小。未发出验收订单。远端带 Supabase 登录的业务 HTTP/SSE 没有重测，不将本地 SSE 检查当作线上登录态验收。
+
+最终服务检查：11 个后端容器均运行同一镜像 `sha256:f1f0838128833ab52351b0d2de1dc9d870144f096b46b14e1ab465a849760732`，加上 Web 共 12 个服务；检查时 restart=0、OOM=false。通过 Nginx 的首页、healthz、Supabase auth/config 和未登录 401 拦截检查通过。14:49 UTC 的第二轮有界业务读取为 1.6–5.3 ms；Bus 25972/25972、Research 943/943、Initialization 54839/54839，Runtime 827265/852016，gap 从修复启动后的 8599 降至 7839，仍需正常追赶。
