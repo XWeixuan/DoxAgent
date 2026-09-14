@@ -235,7 +235,7 @@ def install(app: FastAPI) -> None:
     async def events(ticker: str, request: Request) -> Any:
         args = query(request, {"view_id", "source_kind", "source_id", "route", "q", "cursor"})
         view_id, owner = args.get("view_id", ""), request.state.principal.user_id
-        runner = app.state.query_runner
+        runner = app.state.stream_runner or app.state.query_runner
         prepared = (await runner.run({"kind": "message_prepare", "owner": owner, "ticker": ticker,
                                       "view_id": view_id, "args": args, "header": request.headers.get("last-event-id")})
                     if runner else streams.prepare(owner, ticker, view_id, args, request.headers.get("last-event-id")))
@@ -278,7 +278,7 @@ def install(app: FastAPI) -> None:
                         + "\n\n"
                     )
                     return
-                runner = app.state.query_runner
+                runner = app.state.stream_runner or app.state.query_runner
                 try:
                     result = (await runner.run({"kind": "message", "owner": owner, "state": current})
                               if runner else streams.next(owner, current))
@@ -299,7 +299,7 @@ def install(app: FastAPI) -> None:
                     wire, current = result
                     if wire:
                         yield wire
-                    await asyncio.sleep(0)
+                    await asyncio.sleep(.1)
                     continue
                 if time.monotonic() - last_heartbeat >= 15:
                     yield ": keepalive\n\n"

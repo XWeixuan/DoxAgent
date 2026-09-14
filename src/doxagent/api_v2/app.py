@@ -91,9 +91,19 @@ def create_app(
         try:
             if owns_auth and not query_worker:
                 from .query_runner import QueryRunner
-                app.state.query_runner = QueryRunner(workers=limits.query_workers, queue_limit=limits.query_queue)
+                app.state.query_runner = QueryRunner(
+                    workers=limits.query_workers,
+                    queue_limit=limits.query_queue,
+                    name="read",
+                )
                 await app.state.query_runner.start()
-                app.state.control_runner = QueryRunner(workers=1, queue_limit=8)
+                app.state.stream_runner = QueryRunner(
+                    workers=limits.stream_workers,
+                    queue_limit=8,
+                    name="stream",
+                )
+                await app.state.stream_runner.start()
+                app.state.control_runner = QueryRunner(workers=1, queue_limit=8, name="control")
                 await app.state.control_runner.start()
             yield
         finally:
@@ -101,12 +111,15 @@ def create_app(
                 await app.state.query_runner.close()
             if app.state.control_runner is not None:
                 await app.state.control_runner.close()
+            if app.state.stream_runner is not None:
+                await app.state.stream_runner.close()
             await app.state.deferred_queries.close()
             if owns_auth:
                 await auth.close()
 
     app = FastAPI(title="DoxAgent V2", version=VERSION, lifespan=lifespan)
     app.state.query_runner = None
+    app.state.stream_runner = None
     app.state.control_runner = None
     from .background_queries import DeferredQueries
     app.state.deferred_queries = DeferredQueries()
@@ -114,6 +127,23 @@ def create_app(
     @app.get("/healthz", include_in_schema=False)
     async def healthz():
         return {"ok": True, "service": "v2-api"}
+
+    @app.get("/readyz", include_in_schema=False)
+    async def readyz():
+        pools = [
+            runner.snapshot()
+            for runner in (
+                app.state.query_runner,
+                app.state.stream_runner,
+                app.state.control_runner,
+            )
+            if runner is not None
+        ]
+        ready = not pools or all(pool["serving"] > 0 for pool in pools)
+        return JSONResponse(
+            {"ok": ready, "service": "v2-api", "query_pools": pools},
+            status_code=200 if ready else 503,
+        )
 
     app.state.store, app.state.control, app.state.auth, app.state.views = (
         store,

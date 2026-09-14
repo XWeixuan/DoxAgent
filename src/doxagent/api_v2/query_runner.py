@@ -2,12 +2,16 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import multiprocessing as mp
 import time
 from dataclasses import dataclass
 from typing import Any
 
 from .errors import ApiFailure
+
+
+logger = logging.getLogger("doxagent.v2.queries")
 
 
 def _worker(pipe):
@@ -64,46 +68,127 @@ def _worker(pipe):
         try:
             pipe.send((True, asyncio.run(execute(job))))
         except ApiFailure as exc:
-            pipe.send((False, (exc.code, exc.status)))
-        except Exception:
-            pipe.send((False, ("STORE_UNAVAILABLE", 503)))
+            pipe.send((False, (exc.code, exc.status, "ApiFailure")))
+        except Exception as exc:
+            # Do not send exception text or request data across the process boundary.
+            pipe.send((False, ("STORE_UNAVAILABLE", 503, type(exc).__name__)))
 
 
-@dataclass
+@dataclass(eq=False)
 class Slot:
     process: Any
     pipe: Any
+    identity: int
+    state: str = "STARTING"
 
 
 class QueryRunner:
-    def __init__(self, workers=2, queue_limit=16):
+    def __init__(self, workers=2, queue_limit=16, *, name="read"):
         self.workers, self.queue_limit = workers, queue_limit
+        self.name = name
         self.available = asyncio.Queue()
         self.slots = []
         self.waiting = 0
         self.closed = False
-        self.recoveries = set()
+        self.reapers = set()
+        self.supervisor = None
+        self.wake = asyncio.Event()
+        self.spawn_lock = asyncio.Lock()
+        self.slot_sequence = 0
         self.idle_streams = {}
 
-    async def _replace(self):
+    def snapshot(self):
+        counts = {state: 0 for state in ("STARTING", "READY", "BUSY", "TERMINATING", "DEAD")}
+        serving = 0
+        for slot in self.slots:
+            counts[slot.state] = counts.get(slot.state, 0) + 1
+            if slot.state in {"READY", "BUSY"} and slot.process.is_alive():
+                serving += 1
+        return {
+            "name": self.name,
+            "target": self.workers,
+            "serving": serving,
+            "available": self.available.qsize(),
+            "waiting": self.waiting,
+            "states": counts,
+        }
+
+    def _purge_available(self, retired):
+        keep = []
+        while True:
+            try:
+                slot = self.available.get_nowait()
+            except asyncio.QueueEmpty:
+                break
+            if slot is not retired and slot.state == "READY" and slot.process.is_alive():
+                keep.append(slot)
+        for slot in keep:
+            self.available.put_nowait(slot)
+
+    async def _reap(self, slot):
+        started = time.monotonic()
+        killed = False
         try:
-            slot = await self._new()
-            if not self.closed:
-                self.available.put_nowait(slot)
-        except Exception:
-            # Capacity remains reduced; requests fail boundedly rather than spawning endlessly.
+            while slot.process.is_alive():
+                await asyncio.to_thread(slot.process.join, .25)
+                if slot.process.is_alive() and not killed and time.monotonic() - started >= 1:
+                    killed = True
+                    try:
+                        slot.process.kill()
+                    except (AttributeError, OSError):
+                        pass
+                await asyncio.sleep(0)
+        finally:
+            if not slot.process.is_alive():
+                slot.state = "DEAD"
+                self._purge_available(slot)
+                if slot in self.slots:
+                    self.slots.remove(slot)
+                logger.warning(
+                    "query_pool=%s slot=%d state=dead reap_ms=%.1f",
+                    self.name,
+                    slot.identity,
+                    (time.monotonic() - started) * 1000,
+                )
+                self.wake.set()
+
+    def _retire(self, slot, reason):
+        if slot.state in {"TERMINATING", "DEAD"}:
             return
+        slot.state = "TERMINATING"
+        self._purge_available(slot)
+        logger.warning(
+            "query_pool=%s slot=%d state=terminating reason=%s pid=%s",
+            self.name,
+            slot.identity,
+            reason,
+            getattr(slot.process, "pid", None),
+        )
+        try:
+            if slot.process.is_alive():
+                slot.process.terminate()
+        except OSError:
+            pass
+        try:
+            slot.pipe.close()
+        except OSError:
+            pass
+        task = asyncio.create_task(self._reap(slot))
+        self.reapers.add(task)
+        task.add_done_callback(self.reapers.discard)
 
     async def _new(self):
-        if self.closed or len(self.slots) >= self.workers:
-            raise RuntimeError("query worker capacity exhausted")
-        context = mp.get_context("spawn")
-        parent, child = context.Pipe()
-        process = context.Process(target=_worker, args=(child,), daemon=True)
-        process.start()
-        child.close()
-        slot = Slot(process, parent)
-        self.slots.append(slot)
+        async with self.spawn_lock:
+            if self.closed or len(self.slots) >= self.workers:
+                raise RuntimeError("query worker capacity exhausted")
+            context = mp.get_context("spawn")
+            parent, child = context.Pipe()
+            process = context.Process(target=_worker, args=(child,), daemon=True)
+            process.start()
+            child.close()
+            self.slot_sequence += 1
+            slot = Slot(process, parent, self.slot_sequence)
+            self.slots.append(slot)
         try:
             until = time.monotonic() + 60
             while not parent.poll():
@@ -112,19 +197,74 @@ class QueryRunner:
                 await asyncio.sleep(.05)
             if parent.recv() != (True, "ready"):
                 raise RuntimeError("query worker handshake failed")
+            slot.state = "READY"
+            logger.warning(
+                "query_pool=%s slot=%d state=ready pid=%s",
+                self.name,
+                slot.identity,
+                getattr(slot.process, "pid", None),
+            )
             return slot
         except BaseException:
-            if process.is_alive():
-                process.terminate()
-            await asyncio.to_thread(process.join, .25)
-            parent.close()
-            if not process.is_alive():
-                self.slots.remove(slot)
+            self._retire(slot, "startup_failed")
             raise
 
+    async def _supervise(self):
+        retry = .1
+        while not self.closed:
+            for slot in list(self.slots):
+                if slot.state in {"READY", "BUSY"} and not slot.process.is_alive():
+                    self._retire(slot, "unexpected_exit")
+            if len(self.slots) < self.workers:
+                try:
+                    slot = await self._new()
+                    if not self.closed:
+                        self.available.put_nowait(slot)
+                    retry = .1
+                    continue
+                except asyncio.CancelledError:
+                    raise
+                except Exception as exc:
+                    logger.warning(
+                        "query_pool=%s replacement_failed=%s retry_seconds=%.1f",
+                        self.name,
+                        type(exc).__name__,
+                        retry,
+                    )
+                    wait = retry
+                    retry = min(5, retry * 2)
+            else:
+                wait = .5
+            self.wake.clear()
+            try:
+                await asyncio.wait_for(self.wake.wait(), wait)
+            except TimeoutError:
+                pass
+
     async def start(self):
-        for _ in range(self.workers):
-            self.available.put_nowait(await self._new())
+        if self.supervisor is not None:
+            return
+        self.supervisor = asyncio.create_task(self._supervise())
+        self.wake.set()
+        until = time.monotonic() + 60
+        while self.snapshot()["serving"] < self.workers:
+            if self.supervisor.done():
+                await self.supervisor
+                raise RuntimeError("query worker supervisor stopped")
+            if time.monotonic() >= until:
+                raise RuntimeError("query worker startup failed")
+            await asyncio.sleep(.05)
+
+    async def _checkout(self, deadline):
+        while True:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise TimeoutError
+            slot = await asyncio.wait_for(self.available.get(), remaining)
+            if slot.state == "READY" and slot.process.is_alive():
+                slot.state = "BUSY"
+                return slot
+            self._retire(slot, "stale_available_slot")
 
     async def run(self, job, timeout=2):
         idle_key = None
@@ -137,58 +277,113 @@ class QueryRunner:
         self.waiting += 1
         slot = None
         broken = False
-        deadline = time.monotonic() + timeout
+        failure = "none"
+        started = time.monotonic()
+        hard_deadline = started + timeout
+        cancellation_grace = min(.2, max(.05, timeout * .1))
+        soft_deadline = hard_deadline - cancellation_grace
         try:
-            slot = await asyncio.wait_for(self.available.get(), timeout)
-            job = {**job, "deadline": deadline}
-            await asyncio.wait_for(asyncio.to_thread(slot.pipe.send, job), max(.001, deadline - time.monotonic()))
+            slot = await self._checkout(hard_deadline)
+            if time.monotonic() >= soft_deadline:
+                failure = "queue_timeout"
+                raise ApiFailure("STORE_UNAVAILABLE", 503, retryable=True)
+            job = {**job, "deadline": soft_deadline}
+            await asyncio.wait_for(
+                asyncio.to_thread(slot.pipe.send, job),
+                max(.001, hard_deadline - time.monotonic()),
+            )
             while not slot.pipe.poll():
-                if not slot.process.is_alive() or time.monotonic() >= deadline:
+                if not slot.process.is_alive():
                     broken = True
+                    failure = "worker_exit"
+                    raise ApiFailure("STORE_UNAVAILABLE", 503, retryable=True)
+                if time.monotonic() >= hard_deadline:
+                    broken = True
+                    failure = "hard_timeout"
                     raise ApiFailure("STORE_UNAVAILABLE", 503, retryable=True)
                 await asyncio.sleep(.005)
-            ok, result = await asyncio.wait_for(asyncio.to_thread(slot.pipe.recv), max(.001, deadline - time.monotonic()))
+            ok, result = await asyncio.wait_for(
+                asyncio.to_thread(slot.pipe.recv),
+                max(.001, hard_deadline - time.monotonic()),
+            )
             if not ok:
+                failure = "child_" + (result[2] if len(result) > 2 else "failure")
+                logger.warning(
+                    "query_pool=%s slot=%d kind=%s child_failure=%s",
+                    self.name,
+                    slot.identity,
+                    job["kind"],
+                    failure,
+                )
                 raise ApiFailure(result[0], result[1], retryable=True)
             if result is None and idle_key is not None:
                 if len(self.idle_streams) >= 4096:
                     now = time.monotonic()
-                    self.idle_streams = {key: until for key, until in self.idle_streams.items() if until > now}
+                    self.idle_streams = {
+                        key: until
+                        for key, until in self.idle_streams.items()
+                        if until > now
+                    }
                     if len(self.idle_streams) >= 4096:
                         self.idle_streams.pop(next(iter(self.idle_streams)))
                 self.idle_streams[idle_key] = time.monotonic() + 1
             return result
-        except (EOFError, BrokenPipeError, OSError, asyncio.TimeoutError):
+        except TimeoutError:
             broken = slot is not None
+            failure = "hard_timeout" if slot is not None else "capacity_timeout"
+            raise ApiFailure("STORE_UNAVAILABLE", 503, retryable=True) from None
+        except (EOFError, BrokenPipeError, OSError):
+            broken = slot is not None
+            failure = "transport_failure" if slot is not None else "capacity_timeout"
             raise ApiFailure("STORE_UNAVAILABLE", 503, retryable=True) from None
         except asyncio.CancelledError:
             broken = slot is not None
+            failure = "client_cancelled"
             raise
         finally:
-            import logging
-            logging.getLogger("doxagent.v2.queries").info("query kind=%s elapsed_ms=%.1f canceled=%s queued=%d", job["kind"], (time.monotonic() - deadline + timeout)*1000, broken, self.waiting-1)
             self.waiting -= 1
+            log = logger.warning if broken or failure != "none" else logger.info
+            log(
+                "query_pool=%s kind=%s elapsed_ms=%.1f broken=%s failure=%s queued=%d",
+                self.name,
+                job["kind"],
+                (time.monotonic() - started) * 1000,
+                broken,
+                failure,
+                self.waiting,
+            )
             if slot is not None:
                 if broken:
-                    slot.process.terminate()
-                    await asyncio.to_thread(slot.process.join, .25)
-                    slot.pipe.close()
-                    # Do not replace an unkillable I/O process and exceed the hard cap.
-                    if not slot.process.is_alive() and not self.closed:
-                        self.slots.remove(slot)
-                        recovery = asyncio.create_task(self._replace())
-                        self.recoveries.add(recovery)
-                        recovery.add_done_callback(self.recoveries.discard)
+                    self._retire(slot, failure)
                 else:
-                    self.available.put_nowait(slot)
+                    slot.state = "READY"
+                    if not self.closed and slot.process.is_alive():
+                        self.available.put_nowait(slot)
+                    else:
+                        self._retire(slot, "closed_or_exited")
 
     async def close(self):
         self.closed = True
-        for task in list(self.recoveries):
+        self.wake.set()
+        if self.supervisor is not None:
+            self.supervisor.cancel()
+            await asyncio.gather(self.supervisor, return_exceptions=True)
+        for task in list(self.reapers):
             task.cancel()
-        await asyncio.gather(*self.recoveries, return_exceptions=True)
-        for slot in self.slots:
-            if slot.process.is_alive():
-                slot.process.terminate()
-            await asyncio.to_thread(slot.process.join, .25)
-            slot.pipe.close()
+        await asyncio.gather(*self.reapers, return_exceptions=True)
+        for slot in list(self.slots):
+            try:
+                if slot.process.is_alive():
+                    slot.process.terminate()
+                    await asyncio.to_thread(slot.process.join, .25)
+                if slot.process.is_alive():
+                    slot.process.kill()
+                    await asyncio.to_thread(slot.process.join, .25)
+            finally:
+                try:
+                    slot.pipe.close()
+                except OSError:
+                    pass
+                slot.state = "DEAD"
+        self.slots.clear()
+        self._purge_available(None)

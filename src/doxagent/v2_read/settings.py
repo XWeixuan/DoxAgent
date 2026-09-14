@@ -1,6 +1,6 @@
 """Hard-bounded resource settings; retention cannot weaken the public contract."""
-from dataclasses import dataclass
 import os
+from dataclasses import dataclass
 
 
 def integer(name, default, low, high):
@@ -14,6 +14,7 @@ def integer(name, default, low, high):
 class Limits:
     query_workers: int = 2
     query_queue: int = 16
+    stream_workers: int = 1
     query_seconds: int = 2
     detail_seconds: int = 5
     mvcc_hours: int = 24
@@ -21,6 +22,12 @@ class Limits:
 
     @classmethod
     def load(cls):
-        return cls(integer("QUERY_WORKERS",2,1,4), integer("QUERY_QUEUE",16,1,64),
-                   integer("QUERY_SECONDS",2,1,2), integer("DETAIL_SECONDS",5,2,5),
-                   integer("MVCC_HOURS",24,24,168), integer("DIAGNOSTIC_DAYS",30,30,365))
+        return cls(
+            query_workers=integer("QUERY_WORKERS", 2, 1, 4),
+            query_queue=integer("QUERY_QUEUE", 16, 1, 64),
+            stream_workers=integer("STREAM_WORKERS", 1, 1, 2),
+            query_seconds=integer("QUERY_SECONDS", 2, 1, 2),
+            detail_seconds=integer("DETAIL_SECONDS", 5, 2, 5),
+            mvcc_hours=integer("MVCC_HOURS", 24, 24, 168),
+            diagnostic_days=integer("DIAGNOSTIC_DAYS", 30, 30, 365),
+        )

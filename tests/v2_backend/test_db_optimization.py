@@ -7,7 +7,7 @@ from datetime import datetime, UTC, timedelta
 import pytest
 
 from doxagent.api_v2.auth import Principal
-from doxagent.api_v2.query_runner import QueryRunner
+from doxagent.api_v2.query_runner import QueryRunner, Slot
 from doxagent.persistent_runtime_v2.journal import RuntimeJournal
 from doxagent.v2_control.repository import ControlRepository
 from doxagent.v2_read.cli import backup
@@ -77,6 +77,117 @@ async def test_spawned_query_worker_uses_verified_principal_and_closes(tmp_path,
     finally:
         await runner.close()
     assert not any(slot.process.is_alive() for slot in runner.slots)
+
+
+@pytest.mark.asyncio
+async def test_query_pool_reaps_delayed_exit_before_restoring_capacity(monkeypatch):
+    class Pipe:
+        def close(self):
+            pass
+
+    class DelayedProcess:
+        pid = 101
+
+        def __init__(self):
+            self.alive = True
+            self.joins = 0
+
+        def is_alive(self):
+            return self.alive
+
+        def terminate(self):
+            pass
+
+        def join(self, timeout):
+            time.sleep(.01)
+            self.joins += 1
+            if self.joins == 3:
+                self.alive = False
+
+        def kill(self):
+            self.alive = False
+
+    class HealthyProcess(DelayedProcess):
+        pid = 102
+
+        def terminate(self):
+            self.alive = False
+
+        def join(self, timeout):
+            pass
+
+    runner = QueryRunner(workers=1, name="test")
+    delayed = DelayedProcess()
+    old = Slot(delayed, Pipe(), 1, "BUSY")
+    runner.slots.append(old)
+    runner.slot_sequence = 1
+    replacements = []
+
+    async def replacement():
+        # The old process must continue to consume the physical slot until dead.
+        assert not delayed.is_alive()
+        runner.slot_sequence += 1
+        slot = Slot(HealthyProcess(), Pipe(), runner.slot_sequence, "READY")
+        replacements.append(slot)
+        runner.slots.append(slot)
+        return slot
+
+    monkeypatch.setattr(runner, "_new", replacement)
+    runner.supervisor = asyncio.create_task(runner._supervise())
+    try:
+        runner._retire(old, "test_timeout")
+        await asyncio.wait_for(runner.available.get(), 1)
+        assert delayed.joins >= 3
+        assert len(replacements) == 1
+        assert runner.snapshot()["serving"] == 1
+        assert runner.slots == replacements
+    finally:
+        await runner.close()
+
+
+@pytest.mark.asyncio
+async def test_query_pool_gives_cooperative_interrupt_a_grace_window():
+    class Process:
+        pid = 103
+        alive = True
+
+        def is_alive(self):
+            return self.alive
+
+        def terminate(self):
+            self.alive = False
+
+        def kill(self):
+            self.alive = False
+
+        def join(self, timeout):
+            pass
+
+    class Pipe:
+        sent = None
+
+        def send(self, job):
+            self.sent = job
+
+        def poll(self):
+            return self.sent is not None
+
+        def recv(self):
+            return True, "ok"
+
+        def close(self):
+            pass
+
+    runner = QueryRunner(workers=1, name="test")
+    pipe = Pipe()
+    runner.slots.append(Slot(Process(), pipe, 1, "READY"))
+    runner.available.put_nowait(runner.slots[0])
+    started = time.monotonic()
+    try:
+        assert await runner.run({"kind": "test"}, timeout=1) == "ok"
+        assert started + .85 <= pipe.sent["deadline"] <= started + .95
+    finally:
+        await runner.close()
 
 
 def test_native_large_input_roundtrip_capture_and_backup(tmp_path):

@@ -295,7 +295,7 @@ def install(app: FastAPI):
     async def events(ticker: str, request: Request):
         args = app.state.query(request, {"view_id", "cursor"})
         owner, view_id = request.state.principal.user_id, args.get("view_id", "")
-        runner = app.state.query_runner
+        runner = app.state.stream_runner or app.state.query_runner
         prepared = (await runner.run({"kind": "graph_prepare", "owner": owner, "ticker": ticker,
                                       "view_id": view_id, "args": args, "header": request.headers.get("last-event-id")})
                     if runner else graphs.prepare(owner, ticker, view_id, args, request.headers.get("last-event-id")))
@@ -319,10 +319,14 @@ def install(app: FastAPI):
                 elif str(semantic_day(datetime.now(UTC))) != view["wire"]["clock"]["semantic_day"]:
                     reason = "SCOPE_MISMATCH"
                 try:
-                    runner = app.state.query_runner
+                    runner = app.state.stream_runner or app.state.query_runner
                     result = ((await runner.run({"kind": "graph", "owner": owner, "state": current, "view": view})
                                if runner else graphs.next(owner, current, view)) if reason is None else None)
                 except ApiFailure as exc:
+                    if exc.status != 410:
+                        yield ": query temporarily unavailable\n\n"
+                        await asyncio.sleep(2)
+                        continue
                     reason, result = exc.code, None
                 if reason:
                     payload = {"reason": reason, "replacement_required": True}
@@ -351,7 +355,7 @@ def install(app: FastAPI):
                 elif time.monotonic() - heartbeat >= 15:
                     yield ": keepalive\n\n"
                     heartbeat = time.monotonic()
-                await asyncio.sleep(0 if result else 1)
+                await asyncio.sleep(.1 if result else 1)
 
         return StreamingResponse(
             generate(),

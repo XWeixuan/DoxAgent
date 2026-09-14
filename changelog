@@ -1038,3 +1038,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 - 来源消费者确认遇到 SQLITE_BUSY/LOCKED 时保留旧归档水位并在下轮重试，避免瞬时写锁导致投影进程重启。
 
 - 新加坡已重建并启动 12 个 V2 服务，后端镜像统一、无重启/OOM；公开 HTTP 与真实读库小范围检查通过。历史投影积压仍在自动追赶，未执行任何远端历史清理。详见 DB_OPTIMIZATION_RUNBOOK.md。
+
+2026-09-15 · V2 查询池自愈补丁：为 read/stream/control 子进程池增加常驻 supervisor、延迟退出 reaper、有界补建重试和软硬超时缓冲；SSE 使用独立单 worker 并限制持续追赶热循环，新增内部 readiness 与结构化故障状态。保持进程总量有界，不修改业务 DTO、SQLite schema 或交易执行语义。
