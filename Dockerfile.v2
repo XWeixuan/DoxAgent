@@ -13,6 +13,15 @@ RUN --mount=type=cache,target=/root/.cache/uv uv sync --frozen --no-install-proj
 RUN playwright install --with-deps chromium
 COPY src ./src
 RUN uv sync --frozen --no-group dev
+ARG IBKR_TWS_API_VERSION=1049.02
+ARG IBKR_TWS_API_SHA256=d1878128eb725bf744ab796f0ad518b915f2fce0f2c4ab3b9476f8a7fcf7649a
+RUN curl -fsSL "https://interactivebrokers.github.io/downloads/twsapi_macunix.${IBKR_TWS_API_VERSION}.zip" \
+        -o /tmp/twsapi.zip \
+    && echo "${IBKR_TWS_API_SHA256}  /tmp/twsapi.zip" | sha256sum -c - \
+    && python -m zipfile -e /tmp/twsapi.zip /tmp/twsapi \
+    && uv pip install --python /app/.venv/bin/python /tmp/twsapi/IBJts/source/pythonclient \
+    && uv pip check --python /app/.venv/bin/python \
+    && rm -rf /tmp/twsapi /tmp/twsapi.zip
 COPY prompts ./prompts
 COPY dev_plan/workflow_v2/api_contract ./dev_plan/workflow_v2/api_contract
 CMD ["python", "-m", "doxagent.production_v2", "check"]
