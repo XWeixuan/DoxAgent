@@ -122,7 +122,16 @@ class PlaywrightBrowserRuntime:
                 status = response.status if response is not None else 200
                 if status >= 400:
                     raise RuntimeError(f"Reuters search returned HTTP {status}")
-                await page.wait_for_timeout(1500)
+                await page.wait_for_function(
+                    """() => {
+                      const body = document.body?.innerText || '';
+                      const articlePath = /\/[^/]+\/[^/]+-\d{4}-\d{2}-\d{2}\//;
+                      const hasArticle = [...document.querySelectorAll('main a[href]')]
+                        .some(link => articlePath.test(link.getAttribute('href') || ''));
+                      return hasArticle || /Search results for[\s\S]*?\\b0 results\\b/i.test(body);
+                    }""",
+                    timeout=12_000,
+                )
                 rows = await page.evaluate(
                     """() => {
                       const months = '(?:January|February|March|April|May|June|July|August|'
@@ -141,10 +150,15 @@ class PlaywrightBrowserRuntime:
                           if (pattern.test(text)) break;
                         }
                         const match = text.match(pattern);
-                        if (!match) continue;
+                        const urlDate = href.match(/-(\d{4}-\d{2}-\d{2})\/$/);
+                        const publishedDate = match?.[0] || urlDate?.[1];
+                        if (!publishedDate) continue;
                         seen.add(href);
-                        const summary = text.replace(title, '').replace(match[0], '').trim();
-                        out.push({url: href, title, date: match[0], summary});
+                        const summary = text
+                          .replace(title, '')
+                          .replace(match?.[0] || '', '')
+                          .trim();
+                        out.push({url: href, title, date: publishedDate, summary});
                       }
                       return out;
                     }"""
