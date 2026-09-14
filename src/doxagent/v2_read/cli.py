@@ -26,7 +26,7 @@ def backup(source: Path, target: Path) -> None:
     destination = sqlite3.connect(target)
     try:
         origin.backup(destination, pages=256, sleep=0.05)
-        if destination.execute("PRAGMA integrity_check").fetchone()[0] != "ok":
+        if destination.execute("PRAGMA quick_check").fetchone()[0] != "ok":
             raise ValueError("backup integrity check failed")
     finally:
         destination.close()

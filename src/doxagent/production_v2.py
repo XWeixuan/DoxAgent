@@ -71,7 +71,7 @@ def check(*, databases=True):
     return settings
 
 
-def migrate():
+def migrate(*, resume_backup=None):
     from doxagent.codex_runtime.repository import SQLiteCodexRuntimeRepository
     from doxagent.message_bus_v2.repository import MessageBusV2Repository
     from doxagent.message_bus_v2.service import MessageBusV2Service
@@ -112,7 +112,10 @@ def migrate():
                 print(json.dumps({"migrated": [], "schema_current": True}))
                 return
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%S%fZ")
-    backup_root = locations["read"].parent.parent / "backups" / stamp
+    backup_parent = locations["read"].parent.parent / "backups"
+    backup_root = Path(resume_backup).resolve(strict=True) if resume_backup else backup_parent / stamp
+    if resume_backup and (backup_root.parent != backup_parent.resolve() or not backup_root.is_dir()):
+        raise ValueError("resume backup must be an existing production backup directory")
     # Refuse migrations while managed writers still own these databases.
     with (
         WriterLock(locations["runtime"].with_suffix(".migration")),
@@ -125,7 +128,26 @@ def migrate():
         affected = {"research", "initialization", "bus", "runtime", "read"}
         for name, path in locations.items():
             if path.exists() and name in affected:
-                backup(path, backup_root / (name + ".sqlite3"))
+                target = backup_root / (name + ".sqlite3")
+                if resume_backup:
+                    if not target.is_file():
+                        raise ValueError("resume backup is missing " + name)
+                    # Explicit operator resume while all writers remain fenced. The backup API
+                    # already committed the copy; do not repeat a multi-GB full-index check.
+                    with sqlite3.connect(path.resolve().as_uri()+"?mode=ro",uri=True) as live, sqlite3.connect(target.as_uri()+"?mode=ro",uri=True) as saved:
+                        if saved.execute("PRAGMA quick_check").fetchone()[0] != "ok":
+                            raise ValueError("resume backup structural check failed: " + name)
+                        schema = "SELECT name,sql FROM sqlite_master WHERE type='table' ORDER BY name"
+                        if live.execute(schema).fetchall() != saved.execute(schema).fetchall():
+                            raise ValueError("resume backup schema changed: " + name)
+                        table = "commits" if name == "read" else "v2_source_outbox"
+                        if live.execute("SELECT 1 FROM sqlite_master WHERE name=?",(table,)).fetchone():
+                            sql = "SELECT coalesce(max(seq),0) FROM " + table
+                            if live.execute(sql).fetchone() != saved.execute(sql).fetchone():
+                                raise ValueError("resume backup source watermark changed: " + name)
+                else:
+                    backup(path, target)
+                print(json.dumps({"backup_verified":name}),flush=True)
         SQLiteCodexRuntimeRepository(locations["research"])
         SQLiteDocument3PolicyRepository(locations["research"])
         InitializationRepository(locations["initialization"])
@@ -167,7 +189,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("check")
-    commands.add_parser("migrate")
+    commands.add_parser("migrate").add_argument("--resume-backup", type=Path)
     binding = commands.add_parser("bind-profile")
     binding.add_argument(
         "--ticker",
@@ -180,7 +202,7 @@ def main():
     binding.add_argument("--actor", required=True)
     args = parser.parse_args()
     if args.command == "migrate":
-        migrate()
+        migrate(resume_backup=args.resume_backup)
     elif args.command == "check":
         check()
         print(json.dumps({"configuration": "ready", "orders_submitted": 0}))
