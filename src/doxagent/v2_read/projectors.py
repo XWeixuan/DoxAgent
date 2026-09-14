@@ -375,10 +375,11 @@ class DomainProjectors:
                         "id": attempt["attempt_id"],
                         "parent": attempt["raw_message_id"],
                         "source_id": attempt["source_id"],
-                        "day": semantic_day(
-                            datetime.fromisoformat(attempt["started_at"])
-                        ).isoformat(),
-                        "data": attempt,
+                        # Legacy receipts prove the attempt, not its start date. Keep
+                        # ALL evidence; do not assign it to an invented daily cohort.
+                        "day": semantic_day(datetime.fromisoformat(attempt["started_at"])).isoformat()
+                        if attempt.get("started_at") else "",
+                        "data": {**attempt, "time_basis": "STARTED_AT" if attempt.get("started_at") else "NOT_RECORDED"},
                     }
                 )
         elif table == "stream_members":

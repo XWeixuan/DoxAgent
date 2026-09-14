@@ -109,6 +109,11 @@ def migrate(*, resume_backup=None):
     if marker.is_file() and json.loads(marker.read_text(encoding="utf-8")) == expected and all(path.is_file() for path in locations.values()):
         with sqlite3.connect(locations["read"].resolve().as_uri() + "?mode=ro", uri=True) as db:
             if db.execute("SELECT version FROM schema_meta").fetchone()[0] == ReadStore.VERSION:
+                from doxagent.v2_read.artifact_registry import upgrade_native_trigger_conflicts
+                for name in ("read", "research", "initialization", "bus", "runtime"):
+                    with sqlite3.connect(locations[name], timeout=10) as native:
+                        native.execute("BEGIN IMMEDIATE")
+                        upgrade_native_trigger_conflicts(native)
                 print(json.dumps({"migrated": [], "schema_current": True}))
                 return
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%S%fZ")

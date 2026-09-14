@@ -775,3 +775,5 @@ OverviewStatus 增加可选 ib_gateway_status（CONNECTED / DISCONNECTED），�
 - 前端局部等待，每 2 秒最多等待 100 秒，取消/退出页面停止轮询。保留已有数据，不增加全页刷新；不得将“仍在计算”渲染为业务零值。
 - 单次 SSE 读取最多 512 个变更身份或 256 KiB 元数据；无法完整处理的超大提交显式 `BASELINE_UNAVAILABLE` reset，禁止静默截断。普通流包仍维持原 32 KiB 上限。
 - 正文与大字段可使用不可变、SHA-256 校验的外部压缩块；公开 content_id、业务版本、正文 hash、UTF-8 byte offset、鉴权不变。缺失文件返回不可用，不能伪造空正文。
+
+补充正文尝试时间语义：历史 audit 若只证明 attempt_id/结果而没有实际 started_at，保留尝试事实与未知时间，不以 audit.created_at 伪造开始时间，不计入任意指定日窗口；ALL 仍可包含该已证明的尝试，coverage 保持不完整。新正文补全写入实际 started_at/completed_at。

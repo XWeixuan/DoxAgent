@@ -42,6 +42,7 @@ def test_receipt_archive_keeps_head_identity_and_can_replay(tmp_path):
         db.execute("UPDATE runtime_v2_cases SET payload_json=payload_json")
         db.execute("UPDATE v2_source_outbox SET recorded_at=?", ((datetime.now(UTC)-timedelta(days=9)).isoformat(),))
     assert source.head() == 1
+    assert source.coordinates(0) == [1]
     event = source.event(1)
     source.acknowledge("read", 1)
     checkpoint = tmp_path / "checkpoint.db"
@@ -52,6 +53,7 @@ def test_receipt_archive_keeps_head_identity_and_can_replay(tmp_path):
     source.acknowledge("read", 1)
     assert source.archive(checkpoint, before=before) == 1
     assert source.head() == 1
+    assert source.coordinates(0) == [1]
     assert source.event(1) == event
     assert source.read(0) == [event]
 
@@ -116,3 +118,16 @@ def test_bus_aggregate_corrections_and_batch_metrics(tmp_path):
     expected = service.metric("messages",["MU"],seq,days=["2026-09-12"],previous_days=["2026-09-11"])
     service.prime(["messages"],["MU"],seq,[["2026-09-12"],["2026-09-11"]])
     assert service.metric("messages",["MU"],seq,days=["2026-09-12"],previous_days=["2026-09-11"]) == expected
+
+
+def test_legacy_body_audit_keeps_unknown_time_without_blocking_projection(tmp_path):
+    from doxagent.v2_read.projectors import DomainProjectors
+    store=ReadStore(tmp_path / "read.db")
+    store.migrate()
+    attempt={"attempt_id":"a","ticker":"MU","source_id":"s","raw_message_id":"r","succeeded":True,"v2_control_origin":{"epoch":1}}
+    value={"entity_type":"body_completion","payload":attempt}
+    records,_=DomainProjectors(store)({"table_name":"audit_log","source":"bus","seq":1,"entity_id":"a","operation":"INSERT","row":{"data_json":json.dumps(value)}})
+    row=next(row for row in records if row["kind"]=="body_attempt")
+    assert row["day"] == ""
+    assert row["data"]["time_basis"] == "NOT_RECORDED"
+    assert row["data"]["succeeded"] is True

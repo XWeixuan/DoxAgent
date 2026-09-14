@@ -42,7 +42,7 @@ class ProjectionWorker:
                             raise sqlite3.OperationalError("SOURCE_EPOCH_MISMATCH")
                         db.execute("INSERT OR IGNORE INTO source_epochs VALUES(?,?)", (source.source, capture_identity["source_epoch"]))
                 head = source.head()
-                events = source.read(position, limit)
+                events = source.coordinates(position, limit) if hasattr(source,"coordinates") else source.read(position, limit)
             except (sqlite3.OperationalError, OSError, ValueError) as exc:
                 reason = "SOURCE_EPOCH_MISMATCH" if str(exc) == "SOURCE_EPOCH_MISMATCH" else "SOURCE_UNAVAILABLE"
                 with self.store.connect(write=True) as db:
@@ -73,9 +73,14 @@ class ProjectionWorker:
                     "DELETE FROM gaps WHERE source=? AND event='source-unavailable'",
                     (source.source,),
                 )
-            for event in events:
-                event["source"] = source.source
+            for candidate in events:
+                coordinate = candidate if isinstance(candidate,int) else candidate["seq"]
+                event = {"seq":coordinate,"recorded_at":None}
                 try:
+                    loaded = source.event(candidate) if isinstance(candidate,int) else candidate
+                    if loaded is None:
+                        raise ValueError("SOURCE_RECEIPT_MISSING")
+                    event = {**loaded,"source":source.source}
                     records, contributions = self.mapper(event)
                     self.store.ingest(
                         source.source,
@@ -85,7 +90,7 @@ class ProjectionWorker:
                         position=event["seq"],
                         at=event["recorded_at"],
                     )
-                except (ValueError, KeyError, TypeError, sqlite3.OperationalError) as exc:
+                except (ValueError, KeyError, TypeError, OSError, sqlite3.OperationalError) as exc:
                     self.store.ingest(
                         source.source,
                         str(event["seq"]),

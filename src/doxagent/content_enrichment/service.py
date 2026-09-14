@@ -234,6 +234,8 @@ class ContentEnrichmentHub:
         metadata["media_enrichment"] = enrichment
         metadata["v2_body_completion"] = {
             "attempt_id": job.job_id,
+            "started_at": now.isoformat(),
+            "completed_at": finished_at.isoformat(),
             "succeeded": result.succeeded,
             "reason": result.reason,
             "attempt_count": job.attempt_count,

@@ -329,6 +329,12 @@ class ReadStore:
                 payload = record.get("data")
                 previous = json.loads(old[0]) if old else None
                 comparable = dict(payload) if isinstance(payload, dict) else payload
+                if kind == "native:runtime_tasks":
+                    for technical in ("lease_until", "updated_at"):
+                        if isinstance(previous, dict):
+                            previous.pop(technical, None)
+                        if isinstance(comparable, dict):
+                            comparable.pop(technical, None)
                 if kind in {"message", "case"}:
                     revision_key = "row_revision" if kind == "message" else "revision"
                     if isinstance(previous, dict):

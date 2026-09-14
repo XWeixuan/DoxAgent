@@ -41,10 +41,10 @@ def native_triggers(db, table, columns, identity):
             changed = "UPDATE OF " + quoted(column) if operation == "UPDATE" else "INSERT"
             db.execute("CREATE TRIGGER IF NOT EXISTS " + name + " AFTER " + changed + " ON " + quoted(table) +
                 " WHEN instr(NEW." + quoted(column) + ",'$doxagent_content_v1')>0 BEGIN "
-                "INSERT OR IGNORE INTO artifact(id,sha256,size,codec,location,class,created_at) "
+                "INSERT INTO artifact(id,sha256,size,codec,location,class,created_at) "
                 "SELECT value,value,0,'json-chunks-v1','native-files/'||substr(value,1,2)||'/'||value,'BUSINESS',strftime('%Y-%m-%dT%H:%M:%fZ','now') "
-                "FROM json_tree(NEW." + quoted(column) + ") WHERE key='$doxagent_content_v1'; "
-                "INSERT OR IGNORE INTO artifact_ref SELECT '" + table + "'," + identity + ",value FROM json_tree(NEW." + quoted(column) + ") WHERE key='$doxagent_content_v1'; END")
+                "FROM json_tree(NEW." + quoted(column) + ") WHERE key='$doxagent_content_v1' ON CONFLICT DO NOTHING; "
+                "INSERT INTO artifact_ref SELECT '" + table + "'," + identity + ",value FROM json_tree(NEW." + quoted(column) + ") WHERE key='$doxagent_content_v1' ON CONFLICT DO NOTHING; END")
 
 
 def retain(db, identity, sha256, size, *, codec, location, owner_type, owner_id, classification="BUSINESS"):
@@ -168,3 +168,15 @@ def register_diagnostic(store, path, *, created_at, producer, identity):
         db.execute("INSERT OR IGNORE INTO artifact(id,sha256,size,codec,location,class,created_at) VALUES(?,?,?,'raw',?,'DIAGNOSTIC',?)",
                    (identity,digest,path.stat().st_size,str(path.relative_to(root)),created_at))
     return identity
+
+
+def upgrade_native_trigger_conflicts(db):
+    """Small transactional DDL repair; leaves all rows and capture identities intact."""
+    rows = db.execute("SELECT name,sql FROM sqlite_master WHERE type='trigger' AND name LIKE 'v2_artifact_%'").fetchall()
+    for name, sql in rows:
+        if "INSERT OR IGNORE INTO artifact" not in sql:
+            continue
+        fixed = sql.replace("INSERT OR IGNORE INTO artifact", "INSERT INTO artifact").replace(
+            "WHERE key='$doxagent_content_v1';", "WHERE key='$doxagent_content_v1' ON CONFLICT DO NOTHING;")
+        db.execute("DROP TRIGGER " + quoted(name))
+        db.execute(fixed)

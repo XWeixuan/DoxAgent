@@ -1026,3 +1026,11 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-14 · 延迟查询收尾：SQLite 主动中断返回的 503 同样转入有界后台精确查询；后台缓存移除条件请求头，避免将某个客户端的 304 复用于同 owner 的其他请求。
 
 2026-09-14 · 部署校验边界修正：旧库 quick_check 仍产生高读取放大；部署改为验证 SQLite backup 已提交副本的可打开性、schema、页数和 source head，一致性深扫保留在显式离线 verify。恢复升级仍要求全部写者停稳且水位相同；未删除存量数据。
+
+2026-09-14 · RKLB CDECR 真实断点恢复验收（本地）：使用修复镜像从原 `init-rklb-7fe374c627fc4197bde429afa2fd9aeb` / `bulk-epoch:3fe7f4db5eba100ad5ac90c8` 的 `PARTIAL_PARENT_RESOLUTION` 断点继续，未重抓 91 条消息，也未运行其他模块。Epoch 已 FINALIZED：790 mentions、647 atomic heads/6 redirects/641 canonical active atomics，641/641 全部覆盖为 78 个有效 Package，311/311 Parent Occurrences 全部归包。新 strict Chat JSON Schema 路径 8 次调用全部 completed/stop，4 个 batch 全部 FINALIZED，已记录 provider status、incomplete details 及 text/reasoning token；旧 `PVB-e140e83418fd6b274b1a` 作为失败历史保留。资源监测于 120 秒基线后启动，16 分 22 秒运行期内容器观测内存峰值 497.7 MiB、CDECR PSS 峰值 226.8 MiB、swap/OOM/OOM-kill 均为 0，采样器以 COMPLETED 收尾。
+
+2026-09-14 · 真实库投影验收修复：定位部署前已有 7,394 条 Bus KeyError gap，原因为正文补全生产者未写 started_at。新 receipt 记录实际开始/完成时间；旧 receipt 保留尝试事实但时间未知，不伪造日归属，允许正常修复投影。历史 Runtime task 单纯续租回放也按语义去重。
+
+2026-09-14 · 投影积压读取放大修复：先分页读取热/归档源事件坐标，只有进入本轮处理的事件才加载 payload；时间预算到达后不再丢弃已预读的大批正文。保持来源顺序、归档回读及 gap 记录语义。
+
+- 修复工件引用触发器受外层 UPSERT 冲突策略覆盖的问题；发布时只升级触发器，不清理任何历史行。Runtime 真实投影与归档回放三个必要用例通过。

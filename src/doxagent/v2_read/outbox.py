@@ -219,6 +219,17 @@ class SourceOutbox:
         finally:
             db.close()
 
+    def coordinates(self, after: int, limit: int = 100) -> list[int]:
+        """Read only bounded transport identities; load payload when it is processed."""
+        if not 1 <= limit <= 500:
+            raise ValueError("invalid projection batch size")
+        db = self.connection()
+        try:
+            return [row[0] for row in db.execute(
+                "SELECT seq FROM (SELECT seq FROM (SELECT seq FROM v2_source_outbox WHERE seq>? ORDER BY seq LIMIT ?) UNION SELECT seq FROM (SELECT seq FROM v2_receipt_archive WHERE seq>? ORDER BY seq LIMIT ?)) ORDER BY seq LIMIT ?", (after,limit,after,limit,limit))]
+        finally:
+            db.close()
+
     def head(self) -> int:
         db = self.connection()
         try:
