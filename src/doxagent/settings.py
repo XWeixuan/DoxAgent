@@ -574,6 +574,10 @@ class DoxAgentSettings(BaseSettings):
         default="",
         validation_alias="DOXAGENT_MESSAGE_BUS_V2_HIDDEN_NEWS_PUBLISHERS",
     )
+    message_bus_v2_yahoo_reader_proxy_url: str = Field(
+        default="https://r.jina.ai/http://query1.finance.yahoo.com/v1/finance/search",
+        validation_alias="DOXAGENT_MESSAGE_BUS_V2_YAHOO_READER_PROXY_URL",
+    )
     content_enrichment_enabled: bool = Field(
         default=True,
         validation_alias="DOXAGENT_CONTENT_ENRICHMENT_ENABLED",

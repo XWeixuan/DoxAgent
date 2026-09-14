@@ -1011,3 +1011,4 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-14 · Persistent Runtime V2 有界 wave/超时/realtime 解耦修复（本地）：CLOSED Sweep 固定每 20 条顺序完成 W1 后立即处理该 wave 的 W2，并持久化可恢复进度与失败/skip 统计；Runtime V2 模型超时改为 120 秒，每个逻辑 round 最多自动重试一次，保留人工 rerun 的独立 generation；pending Sweep 不再阻断 02:01 realtime polling。7 项定向测试、相关 Ruff 与 mypy 通过；未调用真实模型、未处理事故数据、未部署远端。
 
 2026-09-14 · 消息时效/Sweep P0：修订并落实日期级今天+昨天兼容、未知日期持久首次发现、共享30分钟/固定Sweep窗口准入、队列及发布/Runtime成员筛选和幂等、去除30天业务回退及实时抓取阻塞；远端隔离418条错误成员及其88条provisional，恢复10条合法成员续跑。真实Finnhub249条验收：普通流0条发布、Sweep10条发布，未调用模型。相关测试分批通过。最终镜像已部署主要服务；Scheduler保持核心修复版本继续合法Case，待合适窗口统一镜像，详见message_freshness_and_sweep_delivery_20260914.md。
+2026-09-14 · Yahoo Finance 远端 IP 级 429 恢复：保留 NCP、Query1、Query2 为前三优先级，仅三者均请求失败时通过可配置的 Jina Reader 转发同一 Yahoo Query1 结构化 JSON；转发路径显式记录 `finance_search_reader_proxy_fallback`/PARTIAL，不把第三方转发冒充直连完整覆盖。远端连续响应包含当前小时 Yahoo 新闻，黑名单与统一正文补全边界不变。

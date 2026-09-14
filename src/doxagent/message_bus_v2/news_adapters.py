@@ -129,6 +129,20 @@ def _yahoo_contents(value: object) -> list[JsonObject]:
     return list(unique.values())
 
 
+def _reader_proxy_json(value: str) -> JsonObject:
+    """Extract the upstream JSON body from a Jina Reader text response."""
+
+    marker = "Markdown Content:\n"
+    content = value.split(marker, 1)[1] if marker in value else value
+    start = content.find("{")
+    if start < 0:
+        raise ValueError("Yahoo reader proxy response did not contain JSON")
+    parsed, _ = json.JSONDecoder().raw_decode(content[start:])
+    if not isinstance(parsed, dict):
+        raise ValueError("Yahoo reader proxy response was not a JSON object")
+    return dict(cast(dict[str, Any], parsed))
+
+
 class YahooFinanceNewsAdapter:
     def __init__(self, settings: DoxAgentSettings, client: httpx.AsyncClient) -> None:
         self.settings = settings
@@ -170,7 +184,26 @@ class YahooFinanceNewsAdapter:
                 except (httpx.HTTPError, ValueError) as exc:
                     last_error = exc
             if not rows and last_error is not None:
-                raise last_error from None
+                proxy_url = self.settings.message_bus_v2_yahoo_reader_proxy_url.strip()
+                if not proxy_url:
+                    raise last_error from None
+                mode = "finance_search_reader_proxy_fallback"
+                try:
+                    async with context.request_permit():
+                        response = await self.client.get(
+                            proxy_url,
+                            params={
+                                "q": context.ticker,
+                                "newsCount": fallback_count,
+                                "quotesCount": 0,
+                            },
+                            headers={"User-Agent": self.settings.monitoring_rss_user_agent},
+                        )
+                        response.raise_for_status()
+                        payload = _reader_proxy_json(response.text)
+                        rows = _yahoo_contents(payload.get("news", []))
+                except (httpx.HTTPError, ValueError, json.JSONDecodeError) as exc:
+                    raise exc from None
 
         messages: list[RawMessageInput] = []
         failures: list[AcquisitionFailure] = []
@@ -243,6 +276,11 @@ class YahooFinanceNewsAdapter:
                 "query_mode": mode,
                 "window_hours": 24,
                 "requested_count": count if mode == "ncp_latest_news" else fallback_count,
+                "endpoint": (
+                    "query1_via_reader_proxy"
+                    if mode == "finance_search_reader_proxy_fallback"
+                    else mode
+                ),
             },
         )
 

@@ -112,6 +112,49 @@ async def test_yahoo_search_fallback_is_bounded_to_ten(tmp_path: Path) -> None:
     await client.aclose()
 
 
+async def test_yahoo_reader_proxy_is_last_fallback(tmp_path: Path) -> None:
+    requests: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        if request.url.host != "r.jina.ai":
+            return httpx.Response(429)
+        assert request.url.params["newsCount"] == "10"
+        payload = {
+            "news": [
+                {
+                    "uuid": "proxy-new",
+                    "title": "Micron proxy result",
+                    "publisher": "Yahoo Finance",
+                    "link": "https://finance.yahoo.com/news/proxy-new",
+                    "providerPublishTime": int(NOW.timestamp()),
+                }
+            ]
+        }
+        return httpx.Response(
+            200,
+            text="Title: \n\nURL Source: upstream\n\nMarkdown Content:\n"
+            + json.dumps(payload),
+        )
+
+    context, _ = _context(tmp_path, "yahoo_finance_news", {})
+    client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+    result = await YahooFinanceNewsAdapter(DoxAgentSettings(_env_file=None), client).poll(context)
+    assert [item.external_id for item in result.messages] == ["proxy-new"]
+    assert result.window_coverage == "PARTIAL"
+    assert result.acquisition_metadata["query_mode"] == (
+        "finance_search_reader_proxy_fallback"
+    )
+    assert result.acquisition_metadata["endpoint"] == "query1_via_reader_proxy"
+    assert [request.url.host for request in requests] == [
+        "finance.yahoo.com",
+        "query1.finance.yahoo.com",
+        "query2.finance.yahoo.com",
+        "r.jina.ai",
+    ]
+    await client.aclose()
+
+
 async def test_google_rss_terms_domains_and_24h_filter(tmp_path: Path) -> None:
     requests: list[httpx.Request] = []
 
