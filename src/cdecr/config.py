@@ -205,7 +205,10 @@ class CDECRSettings(BaseSettings):
         default=6000, ge=1000, le=32000, alias="CDECR_PARENT_CONTEXT_SOFT_TOKEN_BUDGET"
     )
     package_v3_batch_size: int = Field(
-        default=200, ge=1, le=200, alias="CDECR_PACKAGE_V3_BATCH_SIZE"
+        default=100, ge=1, le=200, alias="CDECR_PACKAGE_V3_BATCH_SIZE"
+    )
+    package_v3_strict_output: bool = Field(
+        default=True, alias="CDECR_PACKAGE_V3_STRICT_OUTPUT"
     )
     package_v3_provider: Literal["dashscope", "deepseek"] = Field(
         default="dashscope", alias="CDECR_PACKAGE_V3_PROVIDER"

@@ -13,7 +13,7 @@ from .repository import encode
 def rows(store, kind, ticker, parent=None):
     # Worker-side enumeration of one immutable version, never an HTTP history scan.
     with store.connect() as db:
-        sql = "SELECT id,payload FROM objects WHERE kind=? AND ticker=? AND valid_to IS NULL"
+        sql = "SELECT id,payload FROM object_current WHERE kind=? AND ticker=? AND valid_to IS NULL"
         args = [kind, ticker]
         if parent is not None:
             sql += " AND parent=?"
@@ -176,9 +176,20 @@ def consumption_projection(store, capture):
     start, end = capture.get("started_at"), capture.get("end_at")
     records = []
     with store.connect() as db:
-        catalog = db.execute(
-            "SELECT ticker,id,payload FROM objects WHERE kind='policy_catalog' AND valid_to IS NULL"
-        ).fetchall()
+        # Only admissions crossing a proof boundary or invalidated negative evidence need work.
+        if covered and start and end:
+            catalog = db.execute(
+                "SELECT p.ticker,p.id,p.payload FROM object_current p JOIN object_current a "
+                "ON a.kind='policy_admission' AND a.ticker=p.ticker AND a.id=p.id "
+                "WHERE p.kind='policy_catalog' AND json_extract(p.payload,'$.consumed.value') IS NULL "
+                "AND julianday(json_extract(a.payload,'$.first_activated_at')) BETWEEN julianday(?) AND julianday(?)",
+                (start, end),
+            ).fetchall()
+        else:
+            catalog = db.execute(
+                "SELECT ticker,id,payload FROM object_current WHERE kind='policy_catalog' "
+                "AND json_extract(payload,'$.consumed.value')=0"
+            ).fetchall()
     for ticker, key, payload in catalog:
         summary = json.loads(payload)
         before = dict(summary)

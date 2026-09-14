@@ -138,3 +138,31 @@ def test_atomic_stage_batch_extends_active_runtime_eligibility(tmp_path: Path) -
         "A-RECENT",
         "A-STALE",
     }
+
+
+def test_unfinalized_runtime_activity_is_discarded_but_finalized_artifact_is_kept(
+    tmp_path: Path,
+) -> None:
+    registry = SQLiteCDECRRegistry(tmp_path / "runtime.sqlite3")
+    registry.initialize()
+    for epoch_id in ("epoch-partial", "epoch-final"):
+        registry.start_bulk_epoch(
+            epoch_id=epoch_id,
+            manifest_hash=epoch_id,
+            orchestrator_version="test",
+            message_ids=[],
+        )
+        registry.save_bulk_epoch_artifact(
+            epoch_id=epoch_id,
+            artifact_kind="runtime_activity_v1",
+            artifact_hash=epoch_id,
+            upstream_hash=epoch_id,
+            payload={"eligible_atomic_ids": [epoch_id]},
+        )
+    registry.update_bulk_epoch(
+        "epoch-final", status="FINALIZED", current_stage="FINALIZED"
+    )
+
+    assert registry.discard_unfinalized_runtime_activity_artifacts() == 1
+    assert registry.get_bulk_epoch_artifact("epoch-partial", "runtime_activity_v1") is None
+    assert registry.get_bulk_epoch_artifact("epoch-final", "runtime_activity_v1") is not None

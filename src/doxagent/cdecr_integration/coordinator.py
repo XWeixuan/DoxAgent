@@ -217,11 +217,26 @@ class TickerCDECRPipelineCoordinator:
                 )
             else:
                 state = self._advance(state, TickerJobStage.CDECR_RUNNING)
-                cdecr_result = (
-                    await self.cdecr_executor(binding, message_ids, as_of)
-                    if self.cdecr_executor is not None
-                    else _run_cdecr(cdecr_runner, message_ids, as_of)
-                )
+                try:
+                    cdecr_result = (
+                        await self.cdecr_executor(binding, message_ids, as_of)
+                        if self.cdecr_executor is not None
+                        else _run_cdecr(cdecr_runner, message_ids, as_of)
+                    )
+                except Exception as exc:
+                    incomplete = _unfinished_epoch(Path(binding.registry_path))
+                    state = self._advance(
+                        state,
+                        TickerJobStage.FAILED,
+                        epoch_id=(
+                            str(incomplete["epoch_id"])
+                            if incomplete is not None
+                            else state.epoch_id
+                        ),
+                        error_code=str(getattr(exc, "code", type(exc).__name__)),
+                        error_message=str(exc)[:2000],
+                    )
+                    raise
             if cdecr_result.status == "FINALIZED_NOOP":
                 state = self._advance(state, TickerJobStage.FINALIZED_NOOP)
                 return TickerPipelineResult(
@@ -607,7 +622,22 @@ class TickerCDECRPipelineCoordinator:
                 )
             else:
                 state = self._advance(state, TickerJobStage.CDECR_RUNNING)
-                cdecr_result = _run_cdecr(cdecr_runner, message_ids, as_of)
+                try:
+                    cdecr_result = _run_cdecr(cdecr_runner, message_ids, as_of)
+                except Exception as exc:
+                    incomplete = _unfinished_epoch(Path(binding.registry_path))
+                    state = self._advance(
+                        state,
+                        TickerJobStage.FAILED,
+                        epoch_id=(
+                            str(incomplete["epoch_id"])
+                            if incomplete is not None
+                            else state.epoch_id
+                        ),
+                        error_code=str(getattr(exc, "code", type(exc).__name__)),
+                        error_message=str(exc)[:2000],
+                    )
+                    raise
             if cdecr_result.status == "FINALIZED_NOOP":
                 state = self._advance(state, TickerJobStage.FINALIZED_NOOP)
                 return TickerPipelineResult(job=state, cdecr=cdecr_result)

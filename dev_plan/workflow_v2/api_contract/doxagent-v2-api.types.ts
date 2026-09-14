@@ -741,3 +741,12 @@ export interface CostBreakdown {
   items: ShareRow[]; other: ShareRow | null; coverage: Coverage;
 }
 export interface CostNodeRow { node_id: string; label: string; models: { provider: string; model_id: string }[]; totals: UsageTotals }
+
+/** Temporary response only for deferred exact keyword aggregates. */
+export interface DeferredQueryTicket {
+  query_id: string;
+  state: 'QUEUED' | 'RUNNING';
+  retry_after_seconds: number;
+  expires_at: Instant;
+  result_path: string;
+}

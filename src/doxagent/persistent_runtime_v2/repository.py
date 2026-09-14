@@ -542,6 +542,8 @@ class SQLitePersistentRuntimeV2Repository:
 
     def __init__(self, path: str | Path) -> None:
         self.path = Path(path)
+        from doxagent.v2_read.native_content import NativeContent
+        self.content = NativeContent(self.path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self._lock = threading.RLock()
         self._initialize()
@@ -552,7 +554,7 @@ class SQLitePersistentRuntimeV2Repository:
             timeout=30,
             factory=_ClosingSQLiteConnection,
         )
-        connection.row_factory = sqlite3.Row
+        connection.row_factory = self.content.row
         connection.execute("PRAGMA foreign_keys=ON")
         connection.execute("PRAGMA busy_timeout=30000")
         return connection
@@ -726,7 +728,7 @@ class SQLitePersistentRuntimeV2Repository:
                 connection.execute("ALTER TABLE runtime_v2_w3_cases ADD COLUMN updated_at TEXT")
 
     def save_case(self, case: RuntimeCase) -> RuntimeCase:
-        payload = case.model_dump_json()
+        payload = self.content.encode(case.model_dump(mode="json"))
         with self._lock, self._connect() as connection:
             existing = connection.execute(
                 "SELECT payload_json FROM runtime_v2_cases WHERE source_message_id = ?",
@@ -768,7 +770,7 @@ class SQLitePersistentRuntimeV2Repository:
         effects: list[RuntimeEffect],
         w3_case: W3RouteCase | None = None,
     ) -> RuntimeCase:
-        payload = case.model_dump_json()
+        payload = self.content.encode(case.model_dump(mode="json"))
         with self._lock, self._connect() as connection:
             connection.execute("BEGIN IMMEDIATE")
             connection.execute(
@@ -811,7 +813,7 @@ class SQLitePersistentRuntimeV2Repository:
                         effect.status.value,
                         effect.attempt_count,
                         effect.available_at.isoformat(),
-                        effect.model_dump_json(),
+                        self.content.encode(effect.model_dump(mode="json")),
                         effect.updated_at.isoformat(),
                     ),
                 )
@@ -827,7 +829,7 @@ class SQLitePersistentRuntimeV2Repository:
                         w3_case.case_id,
                         w3_case.ticker,
                         w3_case.status.value,
-                        w3_case.model_dump_json(),
+                        self.content.encode(w3_case.model_dump(mode="json")),
                         w3_case.created_at.isoformat(),
                         w3_case.updated_at.isoformat(),
                     ),
@@ -869,7 +871,7 @@ class SQLitePersistentRuntimeV2Repository:
                     turn.attempt_number,
                     turn.status.value,
                     turn.response_id,
-                    turn.model_dump_json(),
+                    self.content.encode(turn.model_dump(mode="json")),
                     turn.created_at.isoformat(),
                 ),
             )
@@ -906,7 +908,7 @@ class SQLitePersistentRuntimeV2Repository:
                     effect.status.value,
                     effect.attempt_count,
                     effect.available_at.isoformat(),
-                    effect.model_dump_json(),
+                    self.content.encode(effect.model_dump(mode="json")),
                     effect.updated_at.isoformat(),
                 ),
             )
@@ -943,7 +945,7 @@ class SQLitePersistentRuntimeV2Repository:
                     "WHERE effect_id=?",
                     (
                         running.status.value,
-                        running.model_dump_json(),
+                        self.content.encode(running.model_dump(mode="json")),
                         now.isoformat(),
                         running.effect_id,
                     ),
@@ -970,7 +972,7 @@ class SQLitePersistentRuntimeV2Repository:
             current.updated_at = utc_now()
             db.execute(
                 "UPDATE runtime_v2_effects SET payload_json=?,updated_at=? WHERE effect_id=?",
-                (current.model_dump_json(), current.updated_at.isoformat(), effect.effect_id),
+                (self.content.encode(current.model_dump(mode="json")), current.updated_at.isoformat(), effect.effect_id),
             )
 
     def save_effect(self, effect: RuntimeEffect) -> RuntimeEffect:
@@ -991,7 +993,7 @@ class SQLitePersistentRuntimeV2Repository:
                     effect.status.value,
                     effect.attempt_count,
                     effect.available_at.isoformat(),
-                    effect.model_dump_json(),
+                    self.content.encode(effect.model_dump(mode="json")),
                     effect.updated_at.isoformat(),
                     effect.effect_id,
                 ),
@@ -1105,7 +1107,7 @@ class SQLitePersistentRuntimeV2Repository:
                     source_message_id,
                     candidate_index,
                     value.runtime_signature,
-                    value.model_dump_json(),
+                    self.content.encode(value.model_dump(mode="json")),
                     value.created_at.isoformat(),
                 ),
             )
@@ -1165,7 +1167,7 @@ class SQLitePersistentRuntimeV2Repository:
                     value.case_id,
                     value.source_message_id,
                     value.policy_set_version,
-                    value.model_dump_json(),
+                    self.content.encode(value.model_dump(mode="json")),
                     value.activated_at.isoformat(),
                 ),
             )
@@ -1205,7 +1207,7 @@ class SQLitePersistentRuntimeV2Repository:
                     value.case_id,
                     value.ticker,
                     value.status.value,
-                    value.model_dump_json(),
+                    self.content.encode(value.model_dump(mode="json")),
                     value.created_at.isoformat(),
                     value.updated_at.isoformat(),
                 ),
@@ -1404,7 +1406,7 @@ class SQLitePersistentRuntimeV2Repository:
                     value.ticker.upper(),
                     value.trading_date.isoformat(),
                     value.stage.value,
-                    value.model_dump_json(),
+                    self.content.encode(value.model_dump(mode="json")),
                     value.updated_at.isoformat(),
                 ),
             )
@@ -1447,8 +1449,8 @@ class SQLitePersistentRuntimeV2Repository:
                 W3CoverageGapRecord,
             )
 
-    @staticmethod
     def _mark_daily_payloads(
+        self,
         connection: sqlite3.Connection,
         table: str,
         id_field: str,
@@ -1468,7 +1470,7 @@ class SQLitePersistentRuntimeV2Repository:
             updated = value.model_copy(update={"daily_status": DailyRecordStatus.PROCESSED})
             connection.execute(
                 f"UPDATE {table} SET daily_status='PROCESSED',payload_json=? WHERE case_id=?",
-                (updated.model_dump_json(), row["case_id"]),
+                (self.content.encode(updated.model_dump(mode="json")), row["case_id"]),
             )
 
     def _insert_case_record(self, table: str, value: T, case_id: str) -> T:
@@ -1480,7 +1482,7 @@ class SQLitePersistentRuntimeV2Repository:
                 return type(value).model_validate_json(row[0])
             connection.execute(
                 f"INSERT INTO {table} (case_id, payload_json, created_at) VALUES (?, ?, ?)",
-                (case_id, value.model_dump_json(), _created_at(value).isoformat()),
+                (case_id, self.content.encode(value.model_dump(mode="json")), _created_at(value).isoformat()),
             )
         return value
 
@@ -1501,7 +1503,7 @@ class SQLitePersistentRuntimeV2Repository:
                     value.ticker,
                     value.trading_date.isoformat(),
                     value.daily_status.value,
-                    value.model_dump_json(),
+                    self.content.encode(value.model_dump(mode="json")),
                     _created_at(value).isoformat(),
                 ),
             )

@@ -52,8 +52,13 @@ class ModelAdapterError(RuntimeError):
         latency_ms: int = 0,
         input_tokens: int | None = None,
         output_tokens: int | None = None,
+        reasoning_tokens: int | None = None,
+        text_tokens: int | None = None,
         raw_response_text: str | None = None,
         provider_key_fingerprint: str | None = None,
+        provider_status: str | None = None,
+        incomplete_details: Mapping[str, object] | None = None,
+        finish_reason: str | None = None,
         parse_diagnostics: Mapping[str, object] | None = None,
     ) -> None:
         self.tier = tier
@@ -62,8 +67,13 @@ class ModelAdapterError(RuntimeError):
         self.latency_ms = latency_ms
         self.input_tokens = input_tokens
         self.output_tokens = output_tokens
+        self.reasoning_tokens = reasoning_tokens
+        self.text_tokens = text_tokens
         self.raw_response_text = raw_response_text
         self.provider_key_fingerprint = provider_key_fingerprint
+        self.provider_status = provider_status
+        self.incomplete_details = dict(incomplete_details or {})
+        self.finish_reason = finish_reason
         self.parse_diagnostics = dict(parse_diagnostics or {})
         suffix = f" (HTTP {status_code})" if status_code is not None else ""
         super().__init__(f"{tier.value} model call failed: {code}{suffix}")
@@ -139,7 +149,24 @@ def _cached_input_usage_value(usage: object | None) -> int | None:
     details = getattr(usage, "input_tokens_details", None)
     if details is None and isinstance(usage, Mapping):
         details = usage.get("input_tokens_details")
+    if details is None:
+        details = getattr(usage, "prompt_tokens_details", None)
+    if details is None and isinstance(usage, Mapping):
+        details = usage.get("prompt_tokens_details")
     return _usage_value(details, "cached_tokens", "cached_input_tokens")
+
+
+def _small_provider_details(value: object | None) -> dict[str, object]:
+    if value is None:
+        return {}
+    if isinstance(value, Mapping):
+        return {str(key): item for key, item in value.items()}
+    dump = getattr(value, "model_dump", None)
+    if callable(dump):
+        payload = dump(exclude_none=True)
+        if isinstance(payload, Mapping):
+            return {str(key): item for key, item in payload.items()}
+    return {"detail": str(value)[:500]}
 
 
 def _selected_key_fingerprint(key: str | None) -> str | None:
@@ -190,7 +217,30 @@ def _structured_result_from_text(
     output_mode: Literal["json_object", "json_schema"] | None = None,
     effective_reasoning_effort: Literal["none", "low", "high", "max"] | None = None,
     provider_key_fingerprint: str | None = None,
+    provider_status: str | None = None,
+    incomplete_details: Mapping[str, object] | None = None,
+    finish_reason: str | None = None,
 ) -> StructuredModelResult:
+    text_tokens = (
+        max(0, output_tokens - reasoning_tokens)
+        if output_tokens is not None and reasoning_tokens is not None
+        else output_tokens
+    )
+    if provider_status == "incomplete" or finish_reason == "length":
+        raise ModelAdapterError(
+            tier=tier,
+            code="output_incomplete",
+            latency_ms=round((perf_counter() - started_at) * 1000),
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            reasoning_tokens=reasoning_tokens,
+            text_tokens=text_tokens,
+            raw_response_text=text if isinstance(text, str) else None,
+            provider_key_fingerprint=provider_key_fingerprint,
+            provider_status=provider_status,
+            incomplete_details=incomplete_details,
+            finish_reason=finish_reason,
+        )
     if not isinstance(text, str) or not text.strip():
         raise ModelAdapterError(
             tier=tier,
@@ -198,6 +248,11 @@ def _structured_result_from_text(
             latency_ms=round((perf_counter() - started_at) * 1000),
             input_tokens=input_tokens,
             output_tokens=output_tokens,
+            reasoning_tokens=reasoning_tokens,
+            text_tokens=text_tokens,
+            provider_status=provider_status,
+            incomplete_details=incomplete_details,
+            finish_reason=finish_reason,
         )
     diagnostics: dict[str, object] = {}
     if payload_override is not None:
@@ -213,8 +268,13 @@ def _structured_result_from_text(
                 latency_ms=round((perf_counter() - started_at) * 1000),
                 input_tokens=input_tokens,
                 output_tokens=output_tokens,
+                reasoning_tokens=reasoning_tokens,
+                text_tokens=text_tokens,
                 raw_response_text=text,
                 provider_key_fingerprint=provider_key_fingerprint,
+                provider_status=provider_status,
+                incomplete_details=incomplete_details,
+                finish_reason=finish_reason,
                 parse_diagnostics=_json_failure_diagnostics(text, exc),
             ) from exc
     if not isinstance(payload, dict):
@@ -224,8 +284,13 @@ def _structured_result_from_text(
             latency_ms=round((perf_counter() - started_at) * 1000),
             input_tokens=input_tokens,
             output_tokens=output_tokens,
+            reasoning_tokens=reasoning_tokens,
+            text_tokens=text_tokens,
             raw_response_text=text,
             provider_key_fingerprint=provider_key_fingerprint,
+            provider_status=provider_status,
+            incomplete_details=incomplete_details,
+            finish_reason=finish_reason,
             parse_diagnostics=diagnostics,
         )
     return StructuredModelResult(
@@ -234,6 +299,7 @@ def _structured_result_from_text(
         input_tokens=input_tokens,
         output_tokens=output_tokens,
         reasoning_tokens=reasoning_tokens,
+        text_tokens=text_tokens,
         cached_input_tokens=cached_input_tokens,
         latency_ms=round((perf_counter() - started_at) * 1000),
         request_id=request_id,
@@ -242,6 +308,9 @@ def _structured_result_from_text(
         output_mode=output_mode,
         effective_reasoning_effort=effective_reasoning_effort,
         provider_key_fingerprint=provider_key_fingerprint,
+        provider_status=provider_status,
+        incomplete_details=dict(incomplete_details or {}),
+        finish_reason=finish_reason,
         parse_diagnostics=diagnostics,
     )
 
@@ -435,36 +504,6 @@ def _structured_chat_kwargs(
         ],
         "response_format": {"type": "json_object"},
         "extra_body": {"enable_thinking": False},
-    }
-
-
-def _responses_json_schema_kwargs(
-    *,
-    model: str,
-    request: ResponsesModelRequest,
-) -> dict[str, Any]:
-    return {
-        "model": model,
-        "input": _responses_input_with_schema(request),
-        "text": {
-            "format": {
-                "type": "json_schema",
-                "name": request.schema_name,
-                "strict": True,
-                "schema": bailian_strict_wire_schema(request.json_schema),
-            }
-        },
-        "reasoning": {"effort": request.reasoning_effort},
-        **(
-            {"previous_response_id": request.previous_response_id}
-            if request.previous_response_id is not None
-            else {}
-        ),
-        **(
-            {"extra_headers": {"x-dashscope-session-cache": "enable"}}
-            if request.session_cache
-            else {}
-        ),
     }
 
 
@@ -843,10 +882,10 @@ class DashScopeStructuredModelClient:
                     from cdecr.usage_capture import call
 
                     provider_response = call(
-                        client.responses.create,
+                        client.chat.completions.create,
                         _usage_provider="bailian",
                         _usage_node=request.schema_name,
-                        **_responses_json_schema_kwargs(model=self.model, request=request),
+                        **_chat_json_schema_kwargs(model=self.model, request=request),
                     )
                 else:
                     from cdecr.usage_capture import call
@@ -884,17 +923,38 @@ class DashScopeStructuredModelClient:
             ) from last_error
         usage = getattr(provider_response, "usage", None)
         if request.output_mode == "json_schema" or request.strict:
-            text = getattr(provider_response, "output_text", None)
+            choice = provider_response.choices[0]
+            text = choice.message.content
             input_tokens = _usage_value(usage, "input_tokens", "prompt_tokens")
             output_tokens = _usage_value(usage, "output_tokens", "completion_tokens")
             response_id = getattr(provider_response, "id", None) or getattr(
                 provider_response, "_request_id", None
             )
+            finish_reason = getattr(choice, "finish_reason", None)
+            provider_status = getattr(provider_response, "status", None)
+            if provider_status is None:
+                provider_status = (
+                    "completed"
+                    if finish_reason == "stop"
+                    else "incomplete"
+                    if finish_reason == "length"
+                    else None
+                )
+            incomplete_details = _small_provider_details(
+                getattr(provider_response, "incomplete_details", None)
+            )
+            if not incomplete_details and finish_reason not in {None, "stop"}:
+                incomplete_details = {"finish_reason": str(finish_reason)}
         else:
             text = getattr(provider_response, "output_text", None)
             input_tokens = _usage_value(usage, "input_tokens", "prompt_tokens")
             output_tokens = _usage_value(usage, "output_tokens", "completion_tokens")
             response_id = getattr(provider_response, "id", None)
+            finish_reason = None
+            provider_status = getattr(provider_response, "status", None)
+            incomplete_details = _small_provider_details(
+                getattr(provider_response, "incomplete_details", None)
+            )
         normalized_payload = _response_payload_for_request(text, request)
         return _structured_result_from_text(
             tier=self.tier,
@@ -909,13 +969,16 @@ class DashScopeStructuredModelClient:
             response_id=response_id,
             payload_override=normalized_payload,
             transport=(
-                "responses_json_schema"
+                "chat_json_schema"
                 if request.output_mode == "json_schema" or request.strict
                 else "responses_json_object"
             ),
             output_mode=request.output_mode,
             effective_reasoning_effort=request.reasoning_effort,
             provider_key_fingerprint=_selected_key_fingerprint(selected_key),
+            provider_status=(str(provider_status) if provider_status is not None else None),
+            incomplete_details=incomplete_details,
+            finish_reason=(str(finish_reason) if finish_reason is not None else None),
         )
 
     def complete(self, request: StructuredModelRequest) -> StructuredModelResult:

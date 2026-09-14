@@ -34,6 +34,12 @@ x-environment: &environment
   DOXAGENT_CDECR_PREBUILT_COMPATIBILITY_VERSION: ${DOXAGENT_CDECR_PREBUILT_COMPATIBILITY_VERSION:-cdecr-prebuilt-runtime-v1}
   DOXAGENT_CODEX_REMOTE_RUNTIME_STORAGE_ENABLED: "false"
   DOXAGENT_PERSISTENT_RUNTIME_V2_REMOTE_PROJECTION_ENABLED: "false"
+  DOXAGENT_V2_DB_QUERY_WORKERS: ${DOXAGENT_V2_DB_QUERY_WORKERS:-2}
+  DOXAGENT_V2_DB_QUERY_QUEUE: ${DOXAGENT_V2_DB_QUERY_QUEUE:-16}
+  DOXAGENT_V2_DB_QUERY_SECONDS: ${DOXAGENT_V2_DB_QUERY_SECONDS:-2}
+  DOXAGENT_V2_DB_DETAIL_SECONDS: ${DOXAGENT_V2_DB_DETAIL_SECONDS:-5}
+  DOXAGENT_V2_DB_MVCC_HOURS: ${DOXAGENT_V2_DB_MVCC_HOURS:-24}
+  DOXAGENT_V2_DB_DIAGNOSTIC_DAYS: ${DOXAGENT_V2_DB_DIAGNOSTIC_DAYS:-30}
   CODEX_HOME: /data/codex-home
 
 x-backend: &backend
@@ -115,6 +121,10 @@ services:
   v2-delivery:
     <<: *backend
     command: [python, -m, doxagent.persistent_runtime_v2.delivery_worker, --runtime-db, /data/runtime/runtime.sqlite3]
+  v2-maintenance:
+    <<: *backend
+    profiles: [maintenance]
+    command: [python, -m, doxagent.v2_read.cli, gc-worker, --read-db, /data/read/v2.sqlite3]
   v2-executor:
     <<: *backend
     # Exactly one writer across Paper and Live, enforced again by the OS-owned DB lock.

@@ -9,7 +9,7 @@ import re
 import sqlite3
 import time
 from collections import Counter, defaultdict
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from datetime import UTC, date, datetime, timedelta
 from functools import partial
 from pathlib import Path
@@ -306,38 +306,74 @@ class BenzingaHistoricalNewsProvider:
                 from doxagent.ticker_initialization.substeps import checkpointed_json
 
                 def fetch_page(page_number: int = page, day_value: str = day) -> object:
-                    for attempt in range(self._max_retries + 1):
-                        try:
-                            self._request_pacer.wait()
-                            response = self._client.get(
-                                url,
-                                params={
-                                    "token": self._settings.benzinga_api_key,
-                                    "tickers": ticker.upper(),
-                                    "dateFrom": day_value,
-                                    "dateTo": day_value,
-                                    "page": page_number,
-                                    "pageSize": self._page_size,
-                                    "displayOutput": "full",
-                                    "sort": "created:desc",
-                                },
-                                headers={"accept": "application/json"},
+                    common = {
+                        "token": self._settings.benzinga_api_key,
+                        "dateFrom": day_value,
+                        "dateTo": day_value,
+                        "page": page_number,
+                        "pageSize": self._page_size,
+                        "displayOutput": "full",
+                        "sort": "created:desc",
+                    }
+
+                    def request(params: dict[str, object]) -> object:
+                        for attempt in range(self._max_retries + 1):
+                            try:
+                                self._request_pacer.wait()
+                                response = self._client.get(
+                                    url,
+                                    params=params,
+                                    headers={"accept": "application/json"},
+                                )
+                                response.raise_for_status()
+                                return response.json()
+                            except (httpx.HTTPError, ValueError):
+                                if attempt >= self._max_retries:
+                                    raise
+                        raise AssertionError("unreachable")
+
+                    topic_rows = _object_rows(
+                        request({**common, "topics": ticker.upper()})
+                    )
+                    rows = [
+                        row for row in topic_rows if _benzinga_row_has_ticker(row, ticker)
+                    ]
+                    ticker_filtered_count = len(rows)
+                    query_mode = "bounded_topics_ticker"
+                    if not rows:
+                        rows = [
+                            row
+                            for row in _object_rows(
+                                request({**common, "primaryTickers": ticker.upper()})
                             )
-                            response.raise_for_status()
-                            return response.json()
-                        except (httpx.HTTPError, ValueError):
-                            if attempt >= self._max_retries:
-                                raise
-                    raise AssertionError("unreachable")
+                            if _benzinga_row_has_ticker(row, ticker)
+                        ]
+                        query_mode = "primary_tickers_fallback"
+                    return {
+                        "rows": rows,
+                        "query_mode": query_mode,
+                        "topic_row_count": len(topic_rows),
+                        "ticker_filtered_count": ticker_filtered_count,
+                    }
 
                 try:
-                    rows = _object_rows(
-                        checkpointed_json(
+                    page_payload = checkpointed_json(
                             f"history:{self.provider_id}:{ticker}:{day}:{page}",
                             fetch_page,
                             max_retries=0,
                         )
-                    )
+                    if isinstance(page_payload, Mapping):
+                        rows = _object_rows(page_payload.get("rows"))
+                        query_mode = str(page_payload.get("query_mode") or "unknown")
+                        topic_row_count = int(page_payload.get("topic_row_count") or 0)
+                        ticker_filtered_count = int(
+                            page_payload.get("ticker_filtered_count") or 0
+                        )
+                    else:
+                        rows = _object_rows(page_payload)
+                        query_mode = "legacy_checkpoint"
+                        topic_row_count = len(rows)
+                        ticker_filtered_count = len(rows)
                 except Exception as exc:
                     from doxagent.ticker_initialization.schema import LeaseLost
 
@@ -372,7 +408,13 @@ class BenzingaHistoricalNewsProvider:
                             provider_message_id=provider_id,
                             source_url=_optional_text(row.get("url")),
                             source_published_at=published_at,
-                            metadata={"provider": "benzinga", "historical_page": page},
+                            metadata={
+                                "provider": "benzinga",
+                                "historical_page": page,
+                                "query_mode": query_mode,
+                                "topic_row_count": topic_row_count,
+                                "ticker_filtered_count": ticker_filtered_count,
+                            },
                         )
                     )
                 if new_provider_ids == 0 or len(rows) < self._page_size:
@@ -382,6 +424,18 @@ class BenzingaHistoricalNewsProvider:
 
     def close(self) -> None:
         self._client.close()
+
+
+def _benzinga_row_has_ticker(row: Mapping[str, object], ticker: str) -> bool:
+    expected = ticker.strip().upper()
+    stocks = row.get("stocks")
+    if not isinstance(stocks, list):
+        return False
+    return any(
+        isinstance(stock, Mapping)
+        and str(stock.get("name") or "").strip().upper() == expected
+        for stock in stocks
+    )
 
 
 class HistoricalNewsLoader:

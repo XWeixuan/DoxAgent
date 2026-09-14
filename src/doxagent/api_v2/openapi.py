@@ -173,6 +173,15 @@ def install(app: FastAPI) -> None:
                         "application/json": {"schema": {"$ref": "#/components/schemas/" + body}}
                     },
                 }
+        ticket = {"description":"Exact aggregate is queued or running; poll result_path every 2 seconds, at most 100 seconds.",
+                  "headers":{"Retry-After":{"schema":{"type":"integer"}}},
+                  "content":{"application/json":{"schema":{"$ref":"#/components/schemas/DeferredQueryTicket"}}}}
+        for path, methods in value["paths"].items():
+            if path.endswith("/message-bus/metrics") or path.endswith("/queries/{query_id}"):
+                methods["get"]["responses"]["202"] = ticket
+        value["paths"]["/api/doxagent/v2/queries/{query_id}"]["get"]["responses"]["200"] = {
+            "description":"Original exact aggregate response, preserving its fixed view, ETag and coverage.",
+            "content":{"application/json":{"schema":value["paths"]["/api/doxagent/v2/tickers/{ticker}/message-bus/metrics"]["get"]["responses"]["200"]["content"]["application/json"]["schema"]}}}
         value["x-v2-route-coverage"] = coverage(app)
         app.openapi_schema = value
         return value

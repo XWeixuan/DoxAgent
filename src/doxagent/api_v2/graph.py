@@ -23,6 +23,16 @@ class Graphs:
     def __init__(self, store, views):
         self.store, self.views = store, views
 
+    def prepare(self, owner, ticker, view_id, args, header):
+        view = self.views.get(owner, view_id, ticker)
+        if header and args.get("cursor") and header != args["cursor"]:
+            raise ApiFailure("INVALID_CURSOR", 400)
+        cursor = header or args.get("cursor")
+        if not cursor:
+            raise ApiFailure("CURSOR_REQUIRED", 400)
+        state = self.cursor(owner, cursor, ticker, view_id)
+        return view, state, cursor
+
     def scope(self, ticker, view_id, limit):
         return hashlib.sha256(encode(["graph", ticker, view_id, limit]).encode()).hexdigest()
 
@@ -49,7 +59,7 @@ class Graphs:
     def counts(self, ticker, seq, days):
         where = [
             "ticker=?",
-            "metric LIKE 'graph_%'",
+            "metric IN ('graph_cases','graph_failed','graph_low','graph_seconds','graph_samples','graph_results','graph_edges')",
             "valid_from<=?",
             "(valid_to IS NULL OR valid_to>?)",
         ]
@@ -62,7 +72,7 @@ class Graphs:
         totals = {}
         with self.store.connect() as db:
             for row in db.execute(
-                "SELECT metric,dimensions,value FROM metric_buckets WHERE " + " AND ".join(where),
+                "SELECT metric,dimensions,value FROM " + self.store.metric_table(seq) + " WHERE " + " AND ".join(where),
                 params,
             ):
                 key = (row[0], row[1])
@@ -71,14 +81,17 @@ class Graphs:
         def value(metric, dimensions):
             return totals.get((metric, encode(dimensions)), Decimal(0))
 
+        observation_table = self.store.snapshot_table(seq)
+        window = " AND day IN (SELECT value FROM json_each(?))" if days is not None else ""
+        statement = "SELECT * FROM (SELECT parent,payload FROM " + observation_table + " WHERE kind='graph_observation' AND ticker=? AND parent=? AND valid_from<=? AND (valid_to IS NULL OR valid_to>?)" + window + " ORDER BY sort_key DESC,id DESC LIMIT 1)"
+        import json
+        with self.store.connect() as db:
+            latest_by_node = {row[0]:json.loads(row[1])["latest_at"] for row in db.execute(" UNION ALL ".join(statement for _ in NODES),[value for node in NODES for value in (ticker,node,seq,seq,*([json.dumps(days)] if days is not None else []))])}
         nodes = []
         for node in NODES:
             dimensions = {"node": node}
             samples = value("graph_samples", dimensions)
-            latest = self.store.page(
-                "graph_observation", ticker, seq, parent=node, days=days, limit=1
-            )
-            at = latest[0]["data"]["latest_at"] if latest else None
+            at = latest_by_node.get(node)
             nodes.append(
                 validate(
                     "NodeCounts",
@@ -123,6 +136,23 @@ class Graphs:
         return nodes, edges
 
     def paths(self, ticker, seq, days, node):
+        with self.store.connect() as db:
+            start = db.execute("SELECT value FROM read_meta WHERE key='graph_paths_from'").fetchone()
+            if start and seq >= int(start[0]):
+                where = ["metric='graph_paths'", "ticker=?", "node=?", "valid_from<=?", "(valid_to IS NULL OR valid_to>?)"]
+                params = [ticker,node,seq,seq]
+                if days is None:
+                    where.append("day='*'")
+                else:
+                    where.append("day IN ("+",".join("?" for _ in days)+")" if days else "0")
+                    params.extend(days)
+                counts = {}
+                import json
+                for raw,value in db.execute("SELECT dimensions,value FROM " + self.store.metric_table(seq) + " WHERE "+" AND ".join(where),params):
+                    dimensions = json.loads(raw)
+                    key = (dimensions["from"],dimensions["to"])
+                    counts[key] = counts.get(key,0)+int(Decimal(value))
+                return [{"edge_id":a+":"+b,"from":a,"to":b,"case_count":count} for (a,b),count in sorted(counts.items()) if count]
         clauses = ["m.kind='graph_member'", "m.ticker=?", "m.parent=?",
                    "m.valid_from<=?", "(m.valid_to IS NULL OR m.valid_to>?)",
                    "g.kind='graph_case'", "g.valid_from<=?", "(g.valid_to IS NULL OR g.valid_to>?)"]
@@ -153,7 +183,8 @@ class Graphs:
             "view_id": view_id,
             "limit": limit,
             "seq": view["seq"],
-            "head": [[c["case_id"], c] for c in cases["items"]],
+            "head": [[c["case_id"], c["revision"]] for c in cases["items"]],
+            "node_hashes": {node["node_id"]:hashlib.sha256(encode(node).encode()).hexdigest() for node in nodes},
         }
         token = self.store.save_token(owner, self.scope(ticker, view_id, limit), state)
         return validate(
@@ -177,21 +208,21 @@ class Graphs:
         rows = self.store.page(
             "case", state["ticker"], seq, days=self.days(view), limit=state["limit"]
         )
-        old = dict(state["head"])
-        current = {row["id"]: row["data"] for row in rows}
+        old = {key: value.get("revision") if isinstance(value, dict) else value for key, value in state["head"]}
+        current = {row["id"]: row["data"]["revision"] for row in rows}
         nodes, edges = self.counts(state["ticker"], seq, self.days(view))
         payload = validate(
             "GraphDelta",
             {
                 "previous_graph_revision": state["seq"],
                 "graph_revision": seq,
-                "upsert_cases": [row["data"] for row in rows if old.get(row["id"]) != row["data"]],
+                "upsert_cases": [row["data"] for row in rows if old.get(row["id"]) != row["data"]["revision"]],
                 "remove_case_ids": [identity for identity in old if identity not in current],
-                "replace_nodes": nodes,
+                "replace_nodes": [node for node in nodes if state.get("node_hashes",{}).get(node["node_id"]) != hashlib.sha256(encode(node).encode()).hexdigest()],
                 "replace_edges": edges,
             },
         )
-        updated = {**state, "seq": seq, "head": list(current.items())}
+        updated = {**state, "seq": seq, "head": list(current.items()), "node_hashes": {node["node_id"]:hashlib.sha256(encode(node).encode()).hexdigest() for node in nodes}}
         scope = self.scope(state["ticker"], state["view_id"], state["limit"])
         token = self.store.save_token(owner, scope, updated)
         envelope = {
@@ -264,14 +295,11 @@ def install(app: FastAPI):
     async def events(ticker: str, request: Request):
         args = app.state.query(request, {"view_id", "cursor"})
         owner, view_id = request.state.principal.user_id, args.get("view_id", "")
-        view = graphs.views.get(owner, view_id, ticker)
-        header = request.headers.get("last-event-id")
-        if header and args.get("cursor") and header != args["cursor"]:
-            raise ApiFailure("INVALID_CURSOR", 400)
-        cursor = header or args.get("cursor")
-        if not cursor:
-            raise ApiFailure("CURSOR_REQUIRED", 400)
-        state = graphs.cursor(owner, cursor, ticker, view_id)
+        runner = app.state.query_runner
+        prepared = (await runner.run({"kind": "graph_prepare", "owner": owner, "ticker": ticker,
+                                      "view_id": view_id, "args": args, "header": request.headers.get("last-event-id")})
+                    if runner else graphs.prepare(owner, ticker, view_id, args, request.headers.get("last-event-id")))
+        view, state, cursor = prepared
 
         async def generate():
             current = state
@@ -291,7 +319,9 @@ def install(app: FastAPI):
                 elif str(semantic_day(datetime.now(UTC))) != view["wire"]["clock"]["semantic_day"]:
                     reason = "SCOPE_MISMATCH"
                 try:
-                    result = graphs.next(owner, current, view) if reason is None else None
+                    runner = app.state.query_runner
+                    result = ((await runner.run({"kind": "graph", "owner": owner, "state": current, "view": view})
+                               if runner else graphs.next(owner, current, view)) if reason is None else None)
                 except ApiFailure as exc:
                     reason, result = exc.code, None
                 if reason:

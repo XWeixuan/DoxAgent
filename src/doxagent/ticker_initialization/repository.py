@@ -33,6 +33,8 @@ from .schema import (
 class InitializationRepository:
     def __init__(self, path: str | Path) -> None:
         self.path = Path(path).resolve()
+        from doxagent.v2_read.native_content import NativeContent
+        self.content = NativeContent(self.path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self._connection() as db:
             db.execute("PRAGMA journal_mode=WAL")
@@ -83,7 +85,7 @@ class InitializationRepository:
     @contextmanager
     def _connection(self) -> Iterator[sqlite3.Connection]:
         db = sqlite3.connect(self.path, timeout=30)
-        db.row_factory = sqlite3.Row
+        db.row_factory = self.content.row
         db.execute("PRAGMA busy_timeout=30000")
         db.execute("PRAGMA synchronous=FULL")
         try:
@@ -167,7 +169,7 @@ class InitializationRepository:
                 (
                     run.initialization_id,
                     ticker,
-                    run.model_dump_json(),
+                    self.content.encode(run.model_dump(mode="json")),
                 ),
             )
             db.execute(
@@ -239,15 +241,15 @@ class InitializationRepository:
             raise KeyError(key)
         return NodeRecord.model_validate_json(row[0])
 
-    @staticmethod
-    def _save_node(db: sqlite3.Connection, run_id: str, node: NodeRecord) -> None:
+    def _save_node(self, db: sqlite3.Connection, run_id: str, node: NodeRecord) -> None:
         db.execute(
             """INSERT INTO initialization_nodes VALUES (?,?,?)
-            ON CONFLICT(run_id,node_key) DO UPDATE SET payload=excluded.payload""",
+            ON CONFLICT(run_id,node_key) DO UPDATE SET payload=excluded.payload
+            WHERE initialization_nodes.payload IS NOT excluded.payload""",
             (
                 run_id,
                 node.key,
-                node.model_dump_json(),
+                self.content.encode(node.model_dump(mode="json")),
             ),
         )
         if node.execution_id:
@@ -260,12 +262,12 @@ class InitializationRepository:
                     node.key,
                     node.generation,
                     node.ordinal,
-                    node.model_dump_json(),
+                    self.content.encode(node.model_dump(mode="json")),
                 ),
             )
 
-    @staticmethod
     def _event(
+        self,
         db: sqlite3.Connection,
         run: RunRecord,
         kind: str,
@@ -276,13 +278,13 @@ class InitializationRepository:
         db.execute(
             "UPDATE initialization_runs SET payload=? WHERE id=?",
             (
-                run.model_dump_json(),
+                self.content.encode(run.model_dump(mode="json")),
                 run.initialization_id,
             ),
         )
         db.execute(
             "INSERT INTO initialization_events(run_id,kind,payload,created_at) VALUES(?,?,?,?)",
-            (run.initialization_id, kind, json.dumps(payload), run.updated_at.isoformat()),
+            (run.initialization_id, kind, self.content.encode(payload), run.updated_at.isoformat()),
         )
         # Explicit allowlist: never mirror frozen inputs, node receipts, or model text.
         summary = run.model_dump(mode="json", exclude={"error"})
@@ -532,8 +534,20 @@ class InitializationRepository:
                 db, self._run(db, lease.initialization_id), "native.reconciled", {"node": key}
             )
 
-    def fail(self, lease: Lease, key: str, error: str) -> None:
-        self._settle(lease, key, error=error)
+    def fail(
+        self,
+        lease: Lease,
+        key: str,
+        error: str,
+        *,
+        native_failure_status: str | None = None,
+    ) -> None:
+        self._settle(
+            lease,
+            key,
+            error=error,
+            native_failure_status=native_failure_status,
+        )
 
     def _settle(
         self,
@@ -542,6 +556,7 @@ class InitializationRepository:
         *,
         result: NodeResult | None = None,
         error: str | None = None,
+        native_failure_status: str | None = None,
     ) -> None:
         with self._write() as db:
             self._fence(db, lease)
@@ -551,6 +566,8 @@ class InitializationRepository:
             node.status = "SUCCEEDED" if result is not None else "FAILED"
             node.result = result
             node.error = error
+            if native_failure_status is not None:
+                node.receipt["native_failure_status"] = native_failure_status
             self._save_node(db, lease.initialization_id, node)
             self._event(
                 db,
@@ -870,7 +887,10 @@ class InitializationRepository:
                     for n in by_key.values()
                 ]
             )
-            for node in by_key.values():
+            added = [node for key, node in by_key.items() if key not in {n.key for n in existing}]
+            if not added:
+                return
+            for node in added:
                 self._save_node(db, lease.initialization_id, node)
             self._event(
                 db,

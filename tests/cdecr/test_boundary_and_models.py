@@ -60,7 +60,12 @@ class FakeChat:
     def create(self, **kwargs: Any) -> Any:
         self.kwargs = kwargs
         return SimpleNamespace(
-            choices=[SimpleNamespace(message=SimpleNamespace(content='{"ok":true}'))],
+            choices=[
+                SimpleNamespace(
+                    message=SimpleNamespace(content='{"ok":true}'),
+                    finish_reason="stop",
+                )
+            ],
             usage=SimpleNamespace(prompt_tokens=4, completion_tokens=2),
             _request_id="request-2",
         )
@@ -616,6 +621,119 @@ def test_structured_output_defaults_to_responses_json_object_and_strict_off() ->
     )
     assert request_value.output_mode == "json_object"
     assert request_value.strict is False
+
+
+def test_package_response_uses_chat_json_schema_and_records_completion_tokens() -> None:
+    fake = FakeOpenAI()
+    def complete(**kwargs: Any) -> Any:
+        fake.chat.completions.kwargs = kwargs
+        return SimpleNamespace(
+            choices=[
+                SimpleNamespace(
+                    message=SimpleNamespace(content='{"ok":true}'),
+                    finish_reason="stop",
+                )
+            ],
+            usage=SimpleNamespace(
+                prompt_tokens=11,
+                completion_tokens=19,
+                completion_tokens_details=SimpleNamespace(reasoning_tokens=7),
+            ),
+            id="response-1",
+            _request_id="request-4",
+        )
+
+    fake.chat.completions.create = complete  # type: ignore[method-assign]
+    client = DashScopeStructuredModelClient(
+        tier=ModelTier.M3,
+        api_key="key",
+        base_url="https://example.test",
+        model="qwen3.8-flash",
+        client=fake,  # type: ignore[arg-type]
+    )
+    request_value = ResponsesModelRequest(
+        input=[
+            {"role": "system", "content": "system"},
+            {"role": "user", "content": "payload"},
+        ],
+        json_schema={
+            "type": "object",
+            "properties": {"ok": {"type": "boolean"}},
+            "required": ["ok"],
+            "additionalProperties": False,
+        },
+        output_mode="json_schema",
+        schema_name="package_v3_initial_clustering",
+        strict=True,
+        reasoning_effort="low",
+    )
+
+    result = client.complete_response(request_value)
+
+    assert fake.responses.kwargs == {}
+    assert fake.chat.completions.kwargs["response_format"] == {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "package_v3_initial_clustering",
+            "strict": True,
+            "schema": request_value.json_schema,
+        },
+    }
+    assert result.transport == "chat_json_schema"
+    assert result.provider_status == "completed"
+    assert result.finish_reason == "stop"
+    assert result.output_tokens == 19
+    assert result.reasoning_tokens == 7
+    assert result.text_tokens == 12
+
+
+def test_package_response_surfaces_length_truncation_details() -> None:
+    fake = FakeOpenAI()
+    def complete(**kwargs: Any) -> Any:
+        fake.chat.completions.kwargs = kwargs
+        return SimpleNamespace(
+            choices=[
+                SimpleNamespace(
+                    message=SimpleNamespace(content='{"ok":'),
+                    finish_reason="length",
+                )
+            ],
+            usage=SimpleNamespace(
+                prompt_tokens=5,
+                completion_tokens=30,
+                completion_tokens_details=SimpleNamespace(reasoning_tokens=23),
+            ),
+            status="incomplete",
+            incomplete_details={"reason": "max_output_tokens"},
+            _request_id="request-5",
+        )
+
+    fake.chat.completions.create = complete  # type: ignore[method-assign]
+    client = DashScopeStructuredModelClient(
+        tier=ModelTier.M3,
+        api_key="key",
+        base_url="https://example.test",
+        model="qwen3.8-flash",
+        client=fake,  # type: ignore[arg-type]
+    )
+    request_value = ResponsesModelRequest(
+        input=[{"role": "user", "content": "payload"}],
+        json_schema={"type": "object", "additionalProperties": False},
+        output_mode="json_schema",
+        schema_name="package_v3_initial_clustering",
+        strict=True,
+        reasoning_effort="low",
+    )
+
+    with pytest.raises(ModelAdapterError) as caught:
+        client.complete_response(request_value)
+
+    assert caught.value.code == "output_incomplete"
+    assert caught.value.provider_status == "incomplete"
+    assert caught.value.incomplete_details == {"reason": "max_output_tokens"}
+    assert caught.value.finish_reason == "length"
+    assert caught.value.reasoning_tokens == 23
+    assert caught.value.text_tokens == 7
 
 
 def test_embedding_retries_provider_failure_with_fallback(

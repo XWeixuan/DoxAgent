@@ -72,7 +72,7 @@ class ControlService:
 
         with self.repository.journal.transaction() as db:
             db.execute(
-                "INSERT OR REPLACE INTO v2_control_ack VALUES(?,?,?,?)",
+                "INSERT OR IGNORE INTO v2_control_ack VALUES(?,?,?,?)",
                 (
                     state["ticker"],
                     state["epoch"],

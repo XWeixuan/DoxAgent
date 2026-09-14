@@ -48,6 +48,7 @@ from cdecr.kb_v2 import (
 from cdecr.models import ModelAdapterError
 from cdecr.ports import CDECRRegistry, DecisionAuditRecord
 from cdecr.preprocessing import exact_document_fingerprint
+from cdecr.registry import ImmutableRecordConflict
 
 FIELD_RESOLVER_VERSION = "canonical-field-resolution-v8-parallel-pure-prepare"
 
@@ -502,7 +503,7 @@ class CanonicalFieldResolutionEngine:
                 if item.decision_plan is not None
             ]
             prepare_finished = perf_counter()
-            outputs, decision_errors, planned_telemetry = self.field_resolver.decide_prepared(
+            outputs, _decision_errors, planned_telemetry = self.field_resolver.decide_prepared(
                 all_plans,
                 max_workers=max_workers,
             )
@@ -518,24 +519,6 @@ class CanonicalFieldResolutionEngine:
                             "task_id": task_id,
                             "status": "FAILED",
                             "error_code": failed_during_prepare[task_id],
-                        }
-                    )
-                    continue
-                task_errors = [
-                    decision_errors[item.decision_plan.semantic_task_id]
-                    for item in prepared_by_task[task_id]
-                    if item.decision_plan is not None
-                    and item.decision_plan.semantic_task_id in decision_errors
-                ]
-                if task_errors:
-                    first_error = task_errors[0]
-                    finished_records.append(
-                        {
-                            "task_id": task_id,
-                            "status": "FAILED",
-                            "error_code": str(
-                                getattr(first_error, "code", type(first_error).__name__)
-                            ),
                         }
                     )
                     continue
@@ -871,7 +854,7 @@ class CanonicalFieldResolutionEngine:
                         reason="COREFERENCE_NOT_ELIGIBLE",
                     )
                     self._audit_unresolved(primary, list(plan.matches), run_id=run_id)
-            except (FieldCoreferenceError, ModelAdapterError) as exc:
+            except (FieldCoreferenceError, ModelAdapterError, ImmutableRecordConflict) as exc:
                 result = self.field_resolver.canonicalize_unresolved(
                     primary.value,
                     mention_id=primary.mention_id,

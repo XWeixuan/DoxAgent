@@ -4,15 +4,23 @@
 def project(store, ticker, records):
     from .projectors import state_wire
 
+    dependencies = {"native:v2_ticker_control", "native:v2_control_ack", "native:ticker_monitoring_states",
+                    "native:poll_states", "native:ticker_source_bindings", "native:source_definitions"}
+    if not any(record["kind"] in dependencies for record in records):
+        return
+
     def latest(kind, identity):
-        return next(
+        incoming = next(
             (
                 r["data"]
                 for r in reversed(records)
                 if r["kind"] == kind and r["ticker"] == ticker and r["id"] == identity
             ),
-            store.get(kind, ticker, identity),
+            None,
         )
+        if any(r["kind"] == kind and r["ticker"] == ticker and r["id"] == identity for r in records):
+            return incoming
+        return store.get(kind, ticker, identity)
 
     state = latest("native:v2_ticker_control", ticker)
     if not state:
@@ -31,7 +39,7 @@ def project(store, ticker, records):
                 polls = {
                     r[0]: json.loads(r[1])
                     for r in db.execute(
-                        "SELECT id,payload FROM objects WHERE kind='native:poll_states' "
+                        "SELECT id,payload FROM object_current WHERE kind='native:poll_states' "
                         "AND ticker=? AND valid_to IS NULL",
                         (ticker,),
                     )

@@ -62,6 +62,7 @@ def create_app(
     auth: Any = None,
     calendar: PageCalendar | None = None,
     bindings: Any = None,
+    query_worker: bool = False,
 ) -> FastAPI:
     store = store or ReadStore(os.environ["DOXAGENT_V2_READ_SQLITE_PATH"])
     control = control or ControlRepository(
@@ -70,6 +71,8 @@ def create_app(
             initialize=False,
         )
     )
+    from doxagent.v2_read.settings import Limits
+    limits = Limits.load()
     owns_auth = auth is None
     auth = auth or SupabaseAuth(
         os.environ.get("DOXAGENT_DASHBOARD_SUPABASE_URL", ""),
@@ -86,19 +89,30 @@ def create_app(
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         try:
+            if owns_auth and not query_worker:
+                from .query_runner import QueryRunner
+                app.state.query_runner = QueryRunner(workers=limits.query_workers, queue_limit=limits.query_queue)
+                await app.state.query_runner.start()
+                app.state.control_runner = QueryRunner(workers=1, queue_limit=8)
+                await app.state.control_runner.start()
             yield
         finally:
+            if app.state.query_runner is not None:
+                await app.state.query_runner.close()
+            if app.state.control_runner is not None:
+                await app.state.control_runner.close()
+            await app.state.deferred_queries.close()
             if owns_auth:
                 await auth.close()
 
     app = FastAPI(title="DoxAgent V2", version=VERSION, lifespan=lifespan)
+    app.state.query_runner = None
+    app.state.control_runner = None
+    from .background_queries import DeferredQueries
+    app.state.deferred_queries = DeferredQueries()
 
     @app.get("/healthz", include_in_schema=False)
     async def healthz():
-        with store.connect() as db:
-            db.execute("SELECT version FROM schema_meta").fetchone()
-        with control.read() as db:
-            db.execute("SELECT ticker FROM v2_ticker_control LIMIT 0")
         return {"ok": True, "service": "v2-api"}
 
     app.state.store, app.state.control, app.state.auth, app.state.views = (
@@ -115,6 +129,9 @@ def create_app(
 
     @app.middleware("http")
     async def boundary(request: Request, call_next: Any) -> Any:
+        from doxagent.v2_read.query_budget import frozen_proofs, request_views
+        frozen_proofs.set(None)
+        request_views.set({})
         request.state.request_id = uuid4().hex
         try:
             if not request.url.path.startswith(PREFIX):
@@ -136,9 +153,34 @@ def create_app(
                 if not header.startswith("Bearer "):
                     raise ApiFailure("UNAUTHORIZED", 401)
                 request.state.principal = await auth.authenticate(header[7:])
+            runner = app.state.query_runner if request.method == "GET" else app.state.control_runner
+            path = request.url.path
+            if (runner is not None
+                    and path not in {PREFIX + "/auth/config", PREFIX + "/auth/me"}
+                    and not path.startswith(PREFIX + "/queries/")
+                    and not path.endswith(("/messages/events", "/runtime/graph/events"))):
+                job = {
+                    "kind": "http", "url": str(request.url.path) + ("?" + request.url.query if request.url.query else ""),
+                    "principal": request.state.principal, "method": request.method,
+                    "gateway_status": await app.state.gateway_monitor.status() if path.endswith("/overview/gateway-status") else None,
+                    "body": request._body if request.method != "GET" else None,
+                    "headers": {k: v for k, v in request.headers.items() if k in {"if-none-match", "if-match", "idempotency-key", "accept", "content-type"}},
+                }
+                deferred = request.method == "GET" and bool(request.query_params.get("q")) and path.endswith("/metrics")
+                if deferred:
+                    existing = app.state.deferred_queries.existing(job)
+                    if existing is not None:
+                        return existing
+                try:
+                    status, headers, content = await runner.run(job, timeout=limits.detail_seconds if "/body" in path or "/download" in path else limits.query_seconds)
+                except ApiFailure as exc:
+                    if deferred and exc.status == 503:
+                        return await app.state.deferred_queries.submit(job)
+                    raise
+                return Response(content, status_code=status, headers=headers)
             return await call_next(request)
         except ApiFailure as exc:
-            return JSONResponse(exc.payload(request.state.request_id), status_code=exc.status)
+            return JSONResponse(exc.payload(request.state.request_id), status_code=exc.status, headers={"Retry-After": "2"} if exc.status == 503 else None)
         except sqlite3.OperationalError:
             return JSONResponse(
                 ApiFailure("STORE_UNAVAILABLE", 503, retryable=True).payload(
@@ -149,7 +191,7 @@ def create_app(
 
     @app.exception_handler(ApiFailure)
     async def api_error(request: Request, exc: ApiFailure) -> JSONResponse:
-        return JSONResponse(exc.payload(request.state.request_id), status_code=exc.status)
+        return JSONResponse(exc.payload(request.state.request_id), status_code=exc.status, headers={"Retry-After": "2"} if exc.status == 503 else None)
 
     @app.exception_handler(ControlError)
     async def control_error(request: Request, exc: ControlError) -> JSONResponse:
@@ -232,7 +274,7 @@ def create_app(
                 "scope_key": scope,
                 "as_of": view["as_of"] if view else instant(datetime.now(UTC)),
                 "representation_revision": revision,
-                "freshness": view.get("freshness", "STALE") if view else store.freshness(),
+                "freshness": ("FRESH" if name in {"AuthConfig", "Principal"} else view.get("freshness", "STALE") if view else store.freshness()),
                 "refresh_error": None,
             },
         }
@@ -260,6 +302,11 @@ def create_app(
         return JSONResponse(payload, status_code=status, headers=response_headers)
 
     app.state.respond, app.state.query = response, query
+
+    @app.get(PREFIX + "/queries/{query_id}")
+    async def query_result(query_id: str, request: Request):
+        query(request, set())
+        return app.state.deferred_queries.poll(request.state.principal, query_id)
 
     @app.get(PREFIX + "/auth/config")
     async def auth_config(request: Request) -> Any:

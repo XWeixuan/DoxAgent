@@ -762,3 +762,16 @@ Supabase 官方说明 Egress 包括数据库向连接客户端传出的数据，
 OverviewStatus 增加可选 ib_gateway_status（CONNECTED / DISCONNECTED），来自请求时独立只读 IB API 握手、非空 managedAccounts、currentTime 响应及连接状态联合检查，不属于 view 固定的业务数据。首次打开/导航返回 Overview 和手动刷新触发；无定时或浏览器 focus 轮询。同时请求合并，单次等待最多8秒；失败显示断开，旧接口缺字段显示未检测。客户端 ID 默认197401，可用 DOXAGENT_IB_GATEWAY_HEALTH_CLIENT_ID 配置为独占值，地址沿用 IBKR_TWS_HOST/PORT。
 
 2026-09-14 补充：Gateway 探测已拆为独立 GET /overview/gateway-status?view_id=...（沿用 OverviewStatus DTO，仅该路由填充 ib_gateway_status）；/overview/status 不探测 Gateway。前端探测请求独立并行，状态卡片内显示骨架，其他模块即时显示。
+
+
+## 2026-09-14 数据库优化：版本、查询预算与内容存储
+
+- `read_seq` 是可观察业务投影版本。源 checkpoint/head 前进不保证 read_seq 增长；等价写入、覆盖观测刷新不产生消息或 Graph SSE。
+- View 固定 capture proof、范围和 read_seq；完整覆盖的历史闭合区间不因后续 heartbeat 变化丢失。消费账本覆盖前首次激活仍保持未知；覆盖后首次激活且无消费证明时 consumed=false。捕获 epoch 冲突阻断对应源的负证据。
+- View、分页与 SSE cursor 最长有效 24 小时，子 cursor 不延长原 view 生命周期；过期返回既有 410/reset。维护保留有效 pin 及 REMOVE 所需的前版本；正常升级不重新编号、不重置公开 generation。
+- 普通查询预算 2 秒，正文/下载查询 5 秒；过载或超时返回 `503 STORE_UNAVAILABLE` 和 `Retry-After: 2`。控制准入和只读工作分别在有界进程池执行，鉴权配置不读取业务库。
+- 关键词消息指标仍精确计算，不采样、不缩短窗口。普通预算不能完成时，允许 `202 DeferredQueryTicket`：`query_id`、`state: QUEUED|RUNNING`、`retry_after_seconds: 2`、`expires_at`、`result_path: /queries/{query_id}`。它是传输层临时响应，不是业务 Operation。
+- `GET /queries/{query_id}` 需要同一 Supabase owner/tier；排队/计算中返回上述 202；成功返回原指标的完整 200 envelope（保留原 view 和 ETag），失败返回原 error envelope。内部终态分别为 SUCCEEDED/FAILED。缓存 5 分钟，进程重启或到期返回 `410 QUERY_EXPIRED`。后台任务登记与原 view 同寿命的 storage pin，原 view 到期不能继续读取结果。
+- 前端局部等待，每 2 秒最多等待 100 秒，取消/退出页面停止轮询。保留已有数据，不增加全页刷新；不得将“仍在计算”渲染为业务零值。
+- 单次 SSE 读取最多 512 个变更身份或 256 KiB 元数据；无法完整处理的超大提交显式 `BASELINE_UNAVAILABLE` reset，禁止静默截断。普通流包仍维持原 32 KiB 上限。
+- 正文与大字段可使用不可变、SHA-256 校验的外部压缩块；公开 content_id、业务版本、正文 hash、UTF-8 byte offset、鉴权不变。缺失文件返回不可用，不能伪造空正文。

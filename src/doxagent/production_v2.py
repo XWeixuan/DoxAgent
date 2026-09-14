@@ -100,6 +100,17 @@ def migrate():
         settings.crawler_plane_root,
     ):
         Path(path).mkdir(parents=True, exist_ok=True)
+    # Explicit release schema marker. Ordinary restarts do not instantiate mutating
+    # repositories, backfill sources, or take another full database backup.
+    import sqlite3
+    from doxagent.v2_read.maintenance import atomic_json
+    marker = locations["read"].parent / "production-schema.json"
+    expected = {"version": "20260914-db-v3", "paths": {key: str(value) for key, value in locations.items()}}
+    if marker.is_file() and json.loads(marker.read_text(encoding="utf-8")) == expected and all(path.is_file() for path in locations.values()):
+        with sqlite3.connect(locations["read"].resolve().as_uri() + "?mode=ro", uri=True) as db:
+            if db.execute("SELECT version FROM schema_meta").fetchone()[0] == ReadStore.VERSION:
+                print(json.dumps({"migrated": [], "schema_current": True}))
+                return
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%S%fZ")
     backup_root = locations["read"].parent.parent / "backups" / stamp
     # Refuse migrations while managed writers still own these databases.
@@ -111,8 +122,9 @@ def migrate():
         WriterLock(Path(str(locations["scheduler"]) + ".v2-scheduler")),
         WriterLock(Path(str(locations["read"]) + ".projector")),
     ):
+        affected = {"research", "initialization", "bus", "runtime", "read"}
         for name, path in locations.items():
-            if path.exists():
+            if path.exists() and name in affected:
                 backup(path, backup_root / (name + ".sqlite3"))
         SQLiteCodexRuntimeRepository(locations["research"])
         SQLiteDocument3PolicyRepository(locations["research"])
@@ -123,9 +135,12 @@ def migrate():
         journal = RuntimeJournal(locations["runtime"])
         ControlRepository(journal).migrate()
         ExecutionRepository(journal)
-        SQLiteRuntimeSchedulerRepository(locations["scheduler"])
-        SQLiteModelUsageRepository(locations["usage"])
-        MonitoringO4Repository(locations["o4"])
+        if not locations["scheduler"].exists():
+            SQLiteRuntimeSchedulerRepository(locations["scheduler"])
+        if not locations["usage"].exists():
+            SQLiteModelUsageRepository(locations["usage"])
+        if not locations["o4"].exists():
+            MonitoringO4Repository(locations["o4"])
         ReadStore(locations["read"]).migrate()
         captured = {}
         for name in ("research", "initialization", "bus", "runtime"):
@@ -136,6 +151,7 @@ def migrate():
             for table in captured[name]:
                 while source.backfill(table, limit=500):
                     pass
+        atomic_json(marker, expected)
         print(
             json.dumps(
                 {

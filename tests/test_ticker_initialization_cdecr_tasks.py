@@ -90,3 +90,24 @@ def test_finalized_epoch_reconciles_stale_running_native_receipts(tmp_path):
     assert child.status == "SUCCEEDED" and child.ordinal == 1
     control.complete(lease, "cdecr", NodeResult())
     assert control.finish(lease).status == "SUCCEEDED"
+
+
+def test_native_terminal_failure_receipt_is_not_marked_retryable(tmp_path):
+    control = InitializationRepository(tmp_path / "control.db")
+    run = control.submit("MU", datetime.now(UTC), [NodeSpec(key="cdecr", block="CDECR")])
+    lease = control.claim("owner")
+    parent = control.begin(lease, "cdecr", {})
+    observer = NativeTaskObserver(NodeContext(control, lease, parent))
+    row = {
+        "stage": "FIELD",
+        "task_id": "terminal-field",
+        "input_hash": "input",
+        "snapshot_hash": "snapshot",
+    }
+
+    observer("epoch", "RUNNING", [row])
+    observer("epoch", "FAILED_TERMINAL", [row])
+
+    child = next(n for n in control.nodes(run.initialization_id) if n.inputs.get("managed_by"))
+    assert child.status == "FAILED"
+    assert child.receipt["native_failure_status"] == "FAILED_TERMINAL"

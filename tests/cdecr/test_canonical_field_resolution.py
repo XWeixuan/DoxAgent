@@ -482,6 +482,56 @@ def test_participant_unknown_uses_typed_multi_catalog_candidates(
     }
 
 
+def test_planned_field_provider_failure_canonicalizes_unresolved_without_terminal_hole(
+    tmp_path: Path,
+) -> None:
+    class FailingModel:
+        def complete(self, request: StructuredModelRequest) -> object:
+            del request
+            error = RuntimeError("provider unavailable")
+            error.code = "provider_error"  # type: ignore[attr-defined]
+            raise error
+
+    registry = SQLiteCDECRRegistry(tmp_path / "field-provider-failure.sqlite3")
+    registry.initialize()
+    kb = _catalog(tmp_path)
+    resolver = FieldCoreferenceResolver(
+        registry=registry,
+        embedding_client=Embeddings(),
+        model_client=FailingModel(),  # type: ignore[arg-type]
+        catalog_hash=kb.catalog_hash,
+    )
+    engine = CanonicalFieldResolutionEngine(
+        registry=registry,
+        knowledge_base=kb,
+        field_resolver=resolver,
+        planned_batching=True,
+    )
+    source = _source()
+    mention = _mention("M-PROVIDER-FAIL", "Acme")
+    registry.save_source(source, fingerprint="p" * 64)
+    registry.save_mention(mention)
+    registry.start_cross_document_run(
+        run_id="field-provider-failure",
+        processing_key="field-provider-failure",
+        message_id=source.message_id,
+        engine_version="test",
+        prompt_version="test",
+        model_config={},
+    )
+
+    summary = engine.resolve_epoch(
+        [(source, [mention])], run_id="field-provider-failure", max_workers=1
+    )
+
+    link = registry.get_field_link(mention.mention_id, "participants[0]")
+    assert summary.failed_group_count == 0
+    assert link is not None
+    entry = registry.resolve_field_registry_entry(link.registry_id)
+    assert entry is not None
+    assert entry.external_id is None
+
+
 def test_safe_deterministic_match_rejects_alias_and_cross_catalog_collision(
     tmp_path: Path,
 ) -> None:

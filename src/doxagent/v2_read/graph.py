@@ -26,7 +26,7 @@ def project(
         turns = {
             row[0]: json.loads(row[1])
             for row in db.execute(
-                "SELECT id,payload FROM objects WHERE kind='attempt' AND ticker=? "
+                "SELECT id,payload FROM object_current WHERE kind='attempt' AND ticker=? "
                 "AND parent=? AND valid_to IS NULL",
                 (ticker, identity),
             )

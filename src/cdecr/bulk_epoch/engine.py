@@ -253,7 +253,7 @@ class BulkEpochEngine:
         embedding_batch_executor: bool = True,
         package_responses_client: StructuredModelClient | None = None,
         package_model_m4: str | None = None,
-        package_v3_batch_size: int = 200,
+        package_v3_batch_size: int = 100,
         package_v3_context_token_budget: int = 100_000,
         package_v3_context_reserve_tokens: int = 8_000,
         package_v3_description_token_budget: int = 32_000,
@@ -262,7 +262,7 @@ class BulkEpochEngine:
         package_v3_description_reasoning_effort: Literal[
             "none", "low", "high", "max"
         ] = "none",
-        package_v3_strict_output: bool = False,
+        package_v3_strict_output: bool = True,
     ) -> None:
         self.registry = registry
         self.core = core

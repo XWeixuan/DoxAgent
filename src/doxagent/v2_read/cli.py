@@ -31,6 +31,19 @@ def backup(source: Path, target: Path) -> None:
     finally:
         destination.close()
         origin.close()
+    from .content_files import ContentFiles
+    ContentFiles(source.parent / "content-files").backup(target, target.parent / "content-files")
+    native_root = source.parent / "native-files"
+    if native_root.exists():
+        identities = [path.parent.name for path in native_root.glob("*/*/manifest.json")]
+        ContentFiles(native_root).copy(identities, target.parent / "native-files")
+
+    with sqlite3.connect(target.resolve().as_uri() + "?mode=ro", uri=True) as db:
+        if db.execute("SELECT 1 FROM sqlite_master WHERE name='v2_receipt_archive'").fetchone():
+            identities = [r[0] for r in db.execute("SELECT DISTINCT digest FROM v2_receipt_archive")]
+            for (name,) in db.execute("SELECT source FROM v2_source_state"):
+                ContentFiles(source.parent / "receipt-files" / name).copy(identities, target.parent / "receipt-files" / name)
+
 
 
 def main() -> None:
@@ -46,6 +59,11 @@ def main() -> None:
             "rebuild",
             "switch",
             "gc",
+            "gc-worker",
+            "inventory",
+            "diagnostics-gc",
+            "compact",
+            "archive",
             "import-history",
             "verify",
         ),
@@ -62,6 +80,7 @@ def main() -> None:
     parser.add_argument("--artifact-root", type=Path, action="append", default=[])
     parser.add_argument("--alias", type=Path)
     parser.add_argument("--manifest", type=Path)
+    parser.add_argument("--target", type=Path)
     args = parser.parse_args()
     if not 1 <= args.limit <= 500:
         parser.error("limit must be 1..500")
@@ -94,6 +113,13 @@ def main() -> None:
                 {"dry_run": args.dry_run, "sources": report, "read_schema": ReadStore.VERSION}
             )
         )
+    elif args.command == "inventory":
+        from .artifact_registry import inventory
+        print(json.dumps(inventory(store,limit=args.limit)))
+    elif args.command == "diagnostics-gc":
+        from .artifact_registry import collect_diagnostics
+        from datetime import datetime, UTC
+        print(json.dumps({"quarantined":collect_diagnostics(store,now=datetime.now(UTC),limit=min(args.limit,10))}))
     elif args.command == "backup":
         if not args.backup_dir:
             parser.error("backup directory required")
@@ -116,6 +142,14 @@ def main() -> None:
         from .maintenance import verify_shadow
 
         print(json.dumps(verify_shadow(store, sources)))
+    elif args.command == "compact":
+        if not args.target:
+            parser.error("compact requires --target with a new shadow database path")
+        from .maintenance import compact
+        print(json.dumps(compact(args.read_db, args.target)))
+    elif args.command == "gc-worker":
+        from .maintenance import run_gc
+        run_gc(store, once=args.once)
     elif args.command == "gc":
         from .maintenance import collect
 
@@ -132,6 +166,24 @@ def main() -> None:
         if not args.alias or not sources:
             parser.error("switch requires an alias and the complete source set")
         print(json.dumps(activate_alias(args.alias, args.read_db, sources)))
+    elif args.command == "archive":
+        if not args.manifest or not sources:
+            parser.error("archive requires source registrations and a verified backup --manifest")
+        from datetime import datetime, UTC, timedelta
+        from .maintenance import digest
+        manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
+        if manifest.get("format") != "doxagent.v2.backup.1":
+            parser.error("unsupported checkpoint manifest")
+        archived = {}
+        for source in sources:
+            entry = next((item for item in manifest["databases"] if item["source"] == source.source and Path(item["original"]).resolve() == source.path), None)
+            if not entry:
+                parser.error("checkpoint does not contain this source")
+            checkpoint = (args.manifest.parent / entry["file"]).resolve(strict=True)
+            if checkpoint.parent != args.manifest.parent.resolve() or digest(checkpoint) != entry["sha256"]:
+                parser.error("checkpoint checksum or location invalid")
+            archived[source.source] = source.archive(checkpoint, before=(datetime.now(UTC)-timedelta(days=7)).isoformat(), limit=args.limit)
+        print(json.dumps({"archived": archived}))
     elif args.command == "backfill":
         if len(sources) != 1 or not args.table:
             parser.error("backfill needs exactly one source and --table")
@@ -142,6 +194,11 @@ def main() -> None:
                 json.dumps(
                     {
                         "read_seq": store.highwater(db),
+                        "database_bytes": store.path.stat().st_size,
+                        "wal_bytes": Path(str(store.path)+"-wal").stat().st_size if Path(str(store.path)+"-wal").exists() else 0,
+                        "free_page_bytes": db.execute("PRAGMA freelist_count").fetchone()[0] * db.execute("PRAGMA page_size").fetchone()[0],
+                        "retained_floor": db.execute("SELECT value FROM read_meta WHERE key='retained_floor'").fetchone()[0],
+                        "active_view_pins": db.execute("SELECT count(*) FROM views WHERE expires_at>strftime('%Y-%m-%dT%H:%M:%fZ','now')").fetchone()[0],
                         "checkpoints": [dict(r) for r in db.execute("SELECT * FROM checkpoints")],
                         "gap_count": db.execute("SELECT COUNT(*) FROM gaps").fetchone()[0],
                         "schema": db.execute("SELECT version FROM schema_meta").fetchone()[0],

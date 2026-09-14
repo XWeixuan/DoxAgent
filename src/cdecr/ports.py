@@ -133,6 +133,7 @@ class StructuredModelResult(StrictModel):
     input_tokens: int | None = None
     output_tokens: int | None = None
     reasoning_tokens: int | None = None
+    text_tokens: int | None = None
     cached_input_tokens: int | None = None
     latency_ms: int = Field(ge=0)
     request_id: str | None = None
@@ -146,6 +147,9 @@ class StructuredModelResult(StrictModel):
     output_mode: Literal["json_object", "json_schema"] | None = None
     effective_reasoning_effort: Literal["none", "low", "high", "max"] | None = None
     provider_key_fingerprint: str | None = None
+    provider_status: str | None = None
+    incomplete_details: dict[str, object] = Field(default_factory=dict)
+    finish_reason: str | None = None
     parse_diagnostics: dict[str, object] = Field(default_factory=dict)
 
     @field_validator("payload", mode="before")

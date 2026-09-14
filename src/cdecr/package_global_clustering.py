@@ -66,14 +66,14 @@ class PackageWorkflowV3Service:
         self,
         *,
         registry: CDECRRegistry,
-        batch_size: int = 200,
+        batch_size: int = 100,
         context_token_budget: int = 100_000,
         context_reserve_tokens: int = 8_000,
         description_pack_token_budget: int = 32_000,
         description_active_requests: int = 16,
         reasoning_effort: Literal["none", "low", "high", "max"] = "low",
         description_reasoning_effort: Literal["none", "low", "high", "max"] = "none",
-        strict_output: bool = False,
+        strict_output: bool = True,
     ) -> None:
         self.registry = registry
         self.batch_size = max(1, min(200, batch_size))
@@ -473,7 +473,7 @@ class PackageWorkflowV3Service:
                 "stage": stage,
                 "package_workflow": "v3",
                 "transport": (
-                    "responses_json_schema" if self.strict_output else "responses_json_object"
+                    "chat_json_schema" if self.strict_output else "responses_json_object"
                 ),
             },
         )
@@ -482,8 +482,10 @@ class PackageWorkflowV3Service:
         self,
         pending: Sequence[PackageParentOccurrenceV3],
         registry_cards: Sequence[PackageV3RegistryCard],
+        *,
+        batch_size: int | None = None,
     ) -> list[PackageParentOccurrenceV3]:
-        size = min(self.batch_size, len(pending))
+        size = min(batch_size or self.batch_size, len(pending))
         registry_payload = [item.model_dump(mode="json") for item in registry_cards]
         while size:
             payload = {
@@ -954,6 +956,7 @@ class PackageWorkflowV3Service:
         failures: list[PackageWorkflowV3Failure] = []
         batch_telemetry: list[dict[str, object]] = []
         last_affected = {str(item) for item in current_payload.get("affected_mcp_ids", [])}
+        active_batch_size = self.batch_size
         while pending:
             base_version = int(current_payload.get("registry_version", 0))
             base_hash = str(current_payload.get("registry_hash", ""))
@@ -966,7 +969,7 @@ class PackageWorkflowV3Service:
                 for item in current_mcps
             ]
             try:
-                batch = self._fit_batch(pending, cards)
+                batch = self._fit_batch(pending, cards, batch_size=active_batch_size)
             except ValueError as exc:
                 failures.append(
                     PackageWorkflowV3Failure(
@@ -1194,6 +1197,18 @@ class PackageWorkflowV3Service:
                     affected_mcp_ids=(staged.get("affected_mcp_ids", []) if staged else []),
                     error_code=error_code,
                 )
+                if error_code in {"json_truncated", "output_incomplete"} and len(batch) > 50:
+                    active_batch_size = 50
+                    batch_telemetry.append(
+                        {
+                            "batch_id": batch_id,
+                            "status": "SPLIT_AFTER_JSON_TRUNCATION",
+                            "input_count": len(batch),
+                            "next_batch_size": active_batch_size,
+                            "error_code": error_code,
+                        }
+                    )
+                    continue
                 failures.append(
                     PackageWorkflowV3Failure(
                         stage=(

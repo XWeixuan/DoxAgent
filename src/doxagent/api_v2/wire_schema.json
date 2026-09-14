@@ -21203,6 +21203,40 @@
         "to_library_version"
       ],
       "additionalProperties": false
+    },
+    "DeferredQueryTicket": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "query_id",
+        "state",
+        "retry_after_seconds",
+        "expires_at",
+        "result_path"
+      ],
+      "properties": {
+        "query_id": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{32}$"
+        },
+        "state": {
+          "enum": [
+            "QUEUED",
+            "RUNNING"
+          ]
+        },
+        "retry_after_seconds": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "expires_at": {
+          "$ref": "#/$defs/Instant"
+        },
+        "result_path": {
+          "type": "string",
+          "pattern": "^/queries/[0-9a-f]{32}$"
+        }
+      }
     }
   }
 }

@@ -225,7 +225,6 @@ class RuntimeCoordinator:
         )
         at = self.journal.clock()
         mode, cycle = self.mode(ticker, at)
-        sweeps = self.journal.tasks(ticker=ticker, kind="SWEEP")
         owner = None
         if source.admission_context and source.admission_context.mode == "CLOSED_SWEEP":
             context = source.admission_context
@@ -240,7 +239,7 @@ class RuntimeCoordinator:
         if (
             mode == "CLOSED"
             and source.message_bus_event_time < boundary(semantic_day(at))
-            and not any(sweep["id"] == owner for sweep in sweeps)
+            and self.journal.get_task(owner) is None
         ):
             owner = f"drain:{ticker}:{semantic_day(at)}"
             self._schedule(
@@ -541,13 +540,7 @@ class RuntimeCoordinator:
         highwater = max(
             (item["receipt"].get("stream_highwater", 0) for item in source_tasks if item), default=0
         )
-        admitted_highwater = max(
-            (
-                item["inputs"].get("stream_offset") or 0
-                for item in self.journal.tasks(ticker=task["ticker"], kind="CASE")
-            ),
-            default=0,
-        )
+        admitted_highwater = self.journal.task_highwater(task["ticker"])
         if highwater > max(
             admitted_highwater, self.journal.get("inbox_highwater", task["ticker"], 0)
         ):

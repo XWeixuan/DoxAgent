@@ -73,7 +73,7 @@ def install(app):
                 "items": items,
                 "limit": limit,
                 "has_more": more,
-                "next_cursor": store.save_token(owner, scope, {"after": selected[limit - 1]})
+                "next_cursor": store.save_token(owner, scope, {"after": selected[limit - 1], "view_id": args["view_id"], "seq": view["seq"]})
                 if more
                 else None,
                 "snapshot_id": args["view_id"],

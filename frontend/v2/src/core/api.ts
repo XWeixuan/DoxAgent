@@ -221,6 +221,35 @@ export class ApiClient {
           res = await send();
         else this.auth.invalidate();
       }
+      // Deferred exact aggregates keep this query pending and preserve cached data.
+      // Poll only the owner-scoped relative endpoint; never forward auth to a URL.
+      const computationDeadline = Date.now() + 100_000;
+      while (res.status === 202 && (!options.method || options.method === "GET")) {
+        const ticket = await res.json();
+        if (!["QUEUED", "RUNNING"].includes(ticket?.state) || !/^[a-f0-9]{32}$/.test(ticket.query_id) ||
+            ticket.result_path !== `/queries/${ticket.query_id}`)
+          throw new ApiFailure("INVALID_RESPONSE", "计算任务不符合 V2 契约。");
+        if (Date.now() >= computationDeadline)
+          throw new ApiFailure("QUERY_TIMEOUT", "计算尚未完成，请稍后重试。", 503);
+        await new Promise<void>((resolve, reject) => {
+          const canceled = () => {
+            clearTimeout(timer);
+            reject(new DOMException("Session changed", "AbortError"));
+          };
+          const timer = setTimeout(() => {
+            controller.signal.removeEventListener("abort", canceled);
+            resolve();
+          }, 2000);
+          if (controller.signal.aborted) canceled();
+          else controller.signal.addEventListener("abort", canceled, { once: true });
+        });
+        if (epoch !== this.epoch || controller.signal.aborted)
+          throw new DOMException("Session changed", "AbortError");
+        res = await this.fetcher(API_PREFIX + ticket.result_path, {
+          headers: { Authorization: `Bearer ${this.auth.token() ?? ""}` },
+          signal: controller.signal, cache: "no-store", redirect: "error",
+        });
+      }
       if (epoch !== this.epoch || controller.signal.aborted)
         throw new DOMException("Session changed", "AbortError");
       const body = await res.json().catch(() => null);

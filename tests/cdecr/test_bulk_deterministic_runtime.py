@@ -629,8 +629,10 @@ def test_embedding_transport_failure_does_not_recursive_split(tmp_path: Path) ->
         stage="runtime-test",
     )
     assert vectors == {}
-    assert models.calls == [8]
-    assert telemetry.provider_failure_count == 1
+    assert models.calls == [8, 8]
+    assert telemetry.retry_count == 1
+    assert telemetry.provider_failure_count == 2
+    assert telemetry.cap_reduction_count == 0
     assert telemetry.single_item_failure_count == 0
 
 

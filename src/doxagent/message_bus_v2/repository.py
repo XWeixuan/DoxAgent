@@ -68,6 +68,8 @@ class _ClosingConnection(sqlite3.Connection):
 class MessageBusV2Repository:
     def __init__(self, sqlite_path: str | Path) -> None:
         self.path = Path(sqlite_path)
+        from doxagent.v2_read.native_content import NativeContent
+        self.content = NativeContent(self.path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self._initialize()
 
@@ -78,7 +80,7 @@ class MessageBusV2Repository:
             isolation_level=None,
             factory=_ClosingConnection,
         )
-        connection.row_factory = sqlite3.Row
+        connection.row_factory = self.content.row
         connection.execute("pragma journal_mode = WAL")
         connection.execute("pragma synchronous = NORMAL")
         connection.execute("pragma foreign_keys = ON")
@@ -359,8 +361,9 @@ class MessageBusV2Repository:
                 """
             )
 
-    @staticmethod
-    def _json(model: BaseModel) -> str:
+    def _json(self, model: BaseModel) -> str:
+        if isinstance(model, (RawMessage, EnrichmentJob)):
+            return self.content.encode(model.model_dump(mode="json"))
         return model.model_dump_json()
 
     @staticmethod

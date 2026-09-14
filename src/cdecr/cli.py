@@ -558,7 +558,7 @@ def _cross_document_engine(
         package_v3_description_reasoning_effort=(
             settings.package_v3_description_reasoning_effort
         ),
-        package_v3_strict_output=settings.model_m4_strict,
+        package_v3_strict_output=settings.package_v3_strict_output,
         atomic_cosine_backend=settings.atomic_cosine_backend,
     )
 
@@ -669,7 +669,7 @@ def _bulk_epoch_engine(
         package_v3_description_reasoning_effort=(
             settings.package_v3_description_reasoning_effort
         ),
-        package_v3_strict_output=settings.model_m4_strict,
+        package_v3_strict_output=settings.package_v3_strict_output,
     )
 
 

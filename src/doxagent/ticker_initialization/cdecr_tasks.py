@@ -59,7 +59,12 @@ class NativeTaskObserver:
         else:
             for spec in specs:
                 if nodes[spec.key].status == "RUNNING":
-                    repo.fail(lease, spec.key, "native task " + status)
+                    repo.fail(
+                        lease,
+                        spec.key,
+                        "native task " + status,
+                        native_failure_status=status,
+                    )
 
     def reconcile(self, registry: Any) -> None:
         # Native writes can commit before the controller receipt. This also handles

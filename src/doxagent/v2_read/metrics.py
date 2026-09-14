@@ -29,6 +29,47 @@ def compare(
 class Metrics:
     def __init__(self, store: ReadStore) -> None:
         self.store = store
+        self._values = {}
+
+    def prime(self, names, tickers, seq, windows, *, distinct=()):
+        """One dimensional reduction for all cards and selected ticker rows."""
+        names = set(names)
+        names |= {name + suffix for name in list(names) for suffix in ("_samples", "_provisional")}
+        windows = list(dict.fromkeys(None if days is None else tuple(days) for days in windows))
+        wanted_days = set(day for days in windows if days is not None for day in days)
+        if None in windows:
+            wanted_days.add("*")
+        if not tickers:
+            return
+        where = "metric IN (SELECT value FROM json_each(?)) AND ticker IN (SELECT value FROM json_each(?)) AND day IN (SELECT value FROM json_each(?)) AND valid_from<=? AND (valid_to IS NULL OR valid_to>?)"
+        import json
+        with self.store.connect() as db:
+            rows = list(db.execute("SELECT metric,ticker,day,value FROM " + self.store.metric_table(seq) + " WHERE " + where,
+                                   (json.dumps(sorted(names)), json.dumps(tickers), json.dumps(sorted(wanted_days)), seq, seq)))
+            distinct_rows = list(db.execute(
+                "SELECT metric,ticker,day,coalesce(json_extract(dimensions,'$.business_key'),entity) FROM " + self.store.metric_table(seq,"contributions") + " WHERE metric IN (SELECT value FROM json_each(?)) AND ticker IN (SELECT value FROM json_each(?)) AND valid_from<=? AND (valid_to IS NULL OR valid_to>?) AND CAST(value AS NUMERIC)!=0" +
+                ("" if None in windows else " AND day IN (SELECT value FROM json_each(?))"),
+                (json.dumps(list(distinct)), json.dumps(tickers), seq, seq, *([] if None in windows else [json.dumps(sorted(wanted_days))])))) if distinct else []
+        for window in windows:
+            selected_days = set(window) if window is not None else {"*"}
+            totals = {}
+            for metric,ticker,day,value in rows:
+                if day in selected_days:
+                    key = (metric,ticker)
+                    totals[key] = totals.get(key,Decimal(0)) + Decimal(value)
+            identities = {}
+            for metric,ticker,day,identity in distinct_rows:
+                if window is None or day in selected_days:
+                    identities.setdefault((metric,ticker),set()).add(identity)
+            for selected in ([ticker] for ticker in tickers):
+                for name in names:
+                    self._values[(name,tuple(selected),seq,window,False,None)] = totals.get((name,selected[0]),Decimal(0))
+                for name in distinct:
+                    self._values[(name,tuple(selected),seq,window,True,None)] = Decimal(len(identities.get((name,selected[0]),())))
+            for name in names:
+                self._values[(name,tuple(tickers),seq,window,False,None)] = sum((totals.get((name,ticker),Decimal(0)) for ticker in tickers),Decimal(0))
+            for name in distinct:
+                self._values[(name,tuple(tickers),seq,window,True,None)] = Decimal(sum(len(identities.get((name,ticker),())) for ticker in tickers))
 
     def complete(self, identity, seq, days):
         if not days:
@@ -55,13 +96,13 @@ class Metrics:
             value = self.store.get("capture_coverage", "", source, seq)
             if (
                 not value
-                or not value["complete"]
+                or not (value["complete"] or value.get("closed_end_at"))
                 or not tables <= set(json.loads(value["tables_json"]))
             ):
                 return False
             if (
                 datetime.fromisoformat(value["started_at"]) > start
-                or datetime.fromisoformat(value["end_at"]) < end
+                or datetime.fromisoformat(value.get("closed_end_at") or value["end_at"]) < end
             ):
                 return False
         return True
@@ -76,6 +117,9 @@ class Metrics:
         distinct: bool = False,
         dimensions: str | None = None,
     ) -> Decimal:
+        key = (metric,tuple(tickers),seq,None if days is None else tuple(days),distinct,dimensions)
+        if key in self._values:
+            return self._values[key]
         where = ["metric=?", "valid_from<=?", "(valid_to IS NULL OR valid_to>?)"]
         parameters: list[Any] = [metric, seq, seq]
         where.append("ticker IN (" + ",".join("?" for _ in tickers) + ")" if tickers else "0")
@@ -94,7 +138,7 @@ class Metrics:
                 row = db.execute(
                     "SELECT COUNT(*) FROM (SELECT DISTINCT ticker,"
                     "coalesce(json_extract(dimensions,'$.business_key'),entity) "
-                    "FROM contributions WHERE " + " AND ".join(where) + ")",
+                    "FROM " + self.store.metric_table(seq,"contributions") + " WHERE " + " AND ".join(where) + ")",
                     parameters,
                 ).fetchone()
                 return Decimal(row[0])
@@ -103,7 +147,7 @@ class Metrics:
                 (
                     Decimal(r[0])
                     for r in db.execute(
-                        "SELECT value FROM metric_buckets WHERE " + " AND ".join(where), parameters
+                        "SELECT value FROM " + self.store.metric_table(seq) + " WHERE " + " AND ".join(where), parameters
                     )
                 ),
                 Decimal(0),

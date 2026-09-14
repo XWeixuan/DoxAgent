@@ -34,9 +34,17 @@ class ProjectionWorker:
                     from doxagent.ticker_initialization.usage_capture import flush
 
                     flush(source.path, limit=limit)
+                capture_identity = source.capture()
+                if capture_identity and capture_identity.get("source_epoch"):
+                    with self.store.connect(write=True) as db:
+                        prior_epoch = db.execute("SELECT epoch FROM source_epochs WHERE source=?", (source.source,)).fetchone()
+                        if prior_epoch and prior_epoch[0] != capture_identity["source_epoch"]:
+                            raise sqlite3.OperationalError("SOURCE_EPOCH_MISMATCH")
+                        db.execute("INSERT OR IGNORE INTO source_epochs VALUES(?,?)", (source.source, capture_identity["source_epoch"]))
                 head = source.head()
                 events = source.read(position, limit)
-            except sqlite3.OperationalError:
+            except (sqlite3.OperationalError, OSError, ValueError) as exc:
+                reason = "SOURCE_EPOCH_MISMATCH" if str(exc) == "SOURCE_EPOCH_MISMATCH" else "SOURCE_UNAVAILABLE"
                 with self.store.connect(write=True) as db:
                     db.execute(
                         "INSERT OR REPLACE INTO source_health VALUES(?,?,?,?,?)",
@@ -45,12 +53,12 @@ class ProjectionWorker:
                             0,
                             position,
                             instant(datetime.now(UTC)),
-                            "SOURCE_UNAVAILABLE",
+                            reason,
                         ),
                     )
                     db.execute(
                         "INSERT OR IGNORE INTO gaps(source,event,reason) VALUES(?,?,?)",
-                        (source.source, "source-unavailable", "SOURCE_UNAVAILABLE"),
+                        (source.source, "source-unavailable", reason),
                     )
                 capture = self.store.get("capture_coverage", "", source.source)
                 if capture:
@@ -100,6 +108,12 @@ class ProjectionWorker:
                 gap = db.execute(
                     "SELECT 1 FROM gaps WHERE source=? LIMIT 1", (source.source,)
                 ).fetchone()
+            from hashlib import sha256
+            consumer = "read:" + sha256(str(self.store.path).encode()).hexdigest()[:24]
+            with self.store.connect() as db:
+                repair = db.execute("SELECT min(CASE WHEN event NOT GLOB '*[^0-9]*' THEN CAST(event AS INTEGER) ELSE 0 END) FROM gaps WHERE source=?", (source.source,)).fetchone()[0]
+            if hasattr(source, "acknowledge"):
+                source.acknowledge(consumer, checkpoint, repair)
             capture = source.capture()
             if capture:
                 observed = instant(datetime.now(UTC))

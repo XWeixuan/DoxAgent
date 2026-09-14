@@ -102,6 +102,7 @@ def install(app):
             except ValueError:
                 raise ApiFailure("INVALID_CURSOR", 400) from None
         sql, parameters = selection(ticker, view["seq"], shell, days)
+        sql = sql.replace("FROM objects ", "FROM " + store.snapshot_table(view["seq"]) + " ")
         unknown = uncertain(sql, parameters) if selected == "ACTIVE" else 0
         with store.connect() as db:
             rows = db.execute(
@@ -118,7 +119,7 @@ def install(app):
             ]
             items.append(value)
         more = len(rows) > limit
-        cursor = store.save_token(owner, scope, {"after": rows[limit - 1]["id"]}) if more else None
+        cursor = store.save_token(owner, scope, {"after": rows[limit - 1]["id"], "view_id": args["view_id"], "seq": view["seq"]}) if more else None
         return app.state.respond(
             request,
             "PolicySummaryPage",
@@ -157,6 +158,7 @@ def install(app):
         args = app.state.query(request, {"view_id", "shell_id"})
         view, shell, days = context(request, ticker, args)
         sql, parameters = selection(ticker, view["seq"], shell, days)
+        sql = sql.replace("FROM objects ", "FROM " + store.snapshot_table(view["seq"]) + " ")
         with store.connect() as db:
             result = db.execute(
                 "SELECT coalesce(sum(ACTIVE),0) AS active, "

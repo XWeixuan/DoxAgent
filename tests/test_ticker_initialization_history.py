@@ -170,6 +170,7 @@ async def test_benzinga_fetches_daily_ranges_and_retries_page(tmp_path):
                         "title": f"MU update {date_from}",
                         "description": "A deterministic test news item.",
                         "url": f"https://example.com/{date_from}",
+                        "stocks": [{"name": "MU"}],
                     }
                 ]
             },
@@ -195,5 +196,55 @@ async def test_benzinga_fetches_daily_ranges_and_retries_page(tmp_path):
         assert calls == {"2026-09-04": 1, "2026-09-05": 3, "2026-09-06": 1}
         assert len(rows) == 3
         assert provider.failed_slices == []
+    finally:
+        provider.close()
+
+
+@pytest.mark.asyncio
+async def test_benzinga_uses_primary_tickers_only_after_strict_topic_filter_is_empty():
+    modes = []
+
+    def handle(request):
+        if "topics" in request.url.params:
+            modes.append("topics")
+            ticker = "OTHER"
+        else:
+            modes.append("primaryTickers")
+            ticker = "MU"
+        return httpx.Response(
+            200,
+            json={
+                "data": [
+                    {
+                        "id": f"{ticker}-1",
+                        "created": "2026-09-05T12:00:00+00:00",
+                        "title": f"{ticker} update",
+                        "description": "A deterministic test news item.",
+                        "url": f"https://example.com/{ticker}",
+                        "stocks": [{"name": ticker}],
+                    }
+                ]
+            },
+        )
+
+    settings = DoxAgentSettings(_env_file=None).model_copy(
+        update={"benzinga_api_key": "offline-secret"}
+    )
+    provider = BenzingaHistoricalNewsProvider(
+        settings,
+        client=httpx.Client(transport=httpx.MockTransport(handle)),
+        max_pages=1,
+        request_gap_seconds=0,
+    )
+    try:
+        rows = await asyncio.to_thread(
+            provider.fetch,
+            ticker="MU",
+            window_start=datetime(2026, 9, 5, tzinfo=UTC),
+            window_end=datetime(2026, 9, 5, tzinfo=UTC),
+        )
+        assert modes == ["topics", "primaryTickers"]
+        assert [row.provider_message_id for row in rows] == ["MU-1"]
+        assert rows[0].metadata["query_mode"] == "primary_tickers_fallback"
     finally:
         provider.close()

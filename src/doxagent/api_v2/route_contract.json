@@ -558,5 +558,12 @@
     "parameters": "V，C，P",
     "response_schema": "CostNodeRowPage",
     "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/queries/{query_id}",
+    "parameters": "query_id (owner-scoped, 5 minute expiry)",
+    "response_schema": null,
+    "transport": "JSON"
   }
 ]

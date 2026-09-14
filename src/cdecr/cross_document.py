@@ -297,6 +297,11 @@ def _model_result_transport_metadata(result: StructuredModelResult) -> dict[str,
         "output_mode": result.output_mode,
         "effective_reasoning_effort": result.effective_reasoning_effort,
         "provider_key_fingerprint": result.provider_key_fingerprint,
+        "provider_status": result.provider_status,
+        "incomplete_details": result.incomplete_details,
+        "finish_reason": result.finish_reason,
+        "text_tokens": result.text_tokens,
+        "reasoning_tokens": result.reasoning_tokens,
         "parse_diagnostics": result.parse_diagnostics,
     }
 
@@ -308,6 +313,11 @@ def _model_error_parse_metadata(exc: Exception) -> dict[str, object]:
         "exception_class": type(exc).__name__,
         "provider_key_fingerprint": exc.provider_key_fingerprint,
         "provider_status_code": exc.status_code,
+        "provider_status": exc.provider_status,
+        "incomplete_details": exc.incomplete_details,
+        "finish_reason": exc.finish_reason,
+        "text_tokens": exc.text_tokens,
+        "reasoning_tokens": exc.reasoning_tokens,
         "provider_failure_class": classify_provider_error(exc).value,
         "physical_attempt_count": int(getattr(exc, "physical_attempt_count", 1)),
         "retry_attempt_count": int(getattr(exc, "retry_attempt_count", 0)),
@@ -893,6 +903,15 @@ class _AuditedModels:
             except Exception as exc:
                 scheduled = take_scheduled_call_metrics(client)
                 latency, code = _safe_error(exc)
+                if (
+                    isinstance(exc, ModelAdapterError)
+                    and stage.startswith("package_v3_")
+                    and code == "invalid_json"
+                    and str(exc.parse_diagnostics.get("parse_error", "")).startswith(
+                        "Unterminated string"
+                    )
+                ):
+                    code = "json_truncated"
                 self.registry.record_model_call(
                     model_call_id=call_id,
                     run_id=self.run_id,
@@ -919,7 +938,15 @@ class _AuditedModels:
                     schema_hash=schema_hash,
                     input_hash=input_hash,
                 )
-                raise CrossDocumentPipelineError(call_stage, code) from exc
+                raise CrossDocumentPipelineError(
+                    call_stage,
+                    code,
+                    repair_payload=(
+                        exc.raw_response_text
+                        if isinstance(exc, ModelAdapterError)
+                        else None
+                    ),
+                ) from exc
             self.registry.record_model_call(
                 model_call_id=call_id,
                 run_id=self.run_id,
@@ -959,6 +986,7 @@ class _AuditedModels:
             )
             return result
 
+        initial: StructuredModelResult | None = None
         try:
             initial = execute(request, repaired=False)
             output = output_type.model_validate(initial.payload)
@@ -967,6 +995,13 @@ class _AuditedModels:
         except (ValidationError, ValueError, CrossDocumentPipelineError) as first_error:
             if not is_content_repairable(first_error):
                 raise
+            prior_output: object | None = (
+                initial.payload
+                if initial is not None
+                else first_error.repair_payload
+                if isinstance(first_error, CrossDocumentPipelineError)
+                else None
+            )
             repair_input = [
                 *request.input,
                 {
@@ -975,6 +1010,7 @@ class _AuditedModels:
                         {
                             "repair": "Correct the prior invalid output using only input IDs.",
                             "validation_error": str(first_error)[:1200],
+                            "prior_invalid_output": prior_output,
                         },
                         ensure_ascii=False,
                     ),
@@ -1315,7 +1351,7 @@ class CrossDocumentEngine:
         atomic_enforced_rules: Sequence[str] | None = None,
         knowledge_base: V2KnowledgeBase | None = None,
         package_registry_scope_id: str = "cdecr-default",
-        package_v3_batch_size: int = 200,
+        package_v3_batch_size: int = 100,
         package_v3_context_token_budget: int = 100_000,
         package_v3_context_reserve_tokens: int = 8_000,
         package_v3_description_token_budget: int = 32_000,
@@ -1324,7 +1360,7 @@ class CrossDocumentEngine:
         package_v3_description_reasoning_effort: Literal[
             "none", "low", "high", "max"
         ] = "none",
-        package_v3_strict_output: bool = False,
+        package_v3_strict_output: bool = True,
         atomic_cosine_backend: str = "matrix",
     ) -> None:
         self.registry = registry

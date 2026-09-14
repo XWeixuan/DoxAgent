@@ -9,6 +9,26 @@ from .dto import available, coverage, missing
 
 
 def counts(store, ticker, seq, filters, days):
+    if not filters.get("q"):
+        with store.connect() as db:
+            start = db.execute("SELECT value FROM read_meta WHERE key='bus_aggregates_from'").fetchone()
+            if start and seq >= int(start[0]):
+                where = ["metric IN ('bus_messages','bus_body_attempts','bus_body_succeeded')", "ticker=?", "valid_from<=?", "(valid_to IS NULL OR valid_to>?)"]
+                params = [ticker,seq,seq]
+                for field in ("source_id","source_kind","route"):
+                    if filters.get(field):
+                        where.append(field+"=?")
+                        params.append(filters[field])
+                if days is None:
+                    where.append("day='*'")
+                else:
+                    where.append("day IN ("+",".join("?" for _ in days)+")" if days else "0")
+                    params.extend(days)
+                totals = {}
+                for metric,value in db.execute("SELECT metric,value FROM " + store.metric_table(seq) + " WHERE "+" AND ".join(where),params):
+                    totals[metric] = totals.get(metric,Decimal(0))+Decimal(value)
+                attempts = totals.get("bus_body_attempts",Decimal(0))
+                return totals.get("bus_messages",Decimal(0)), totals.get("bus_body_succeeded",Decimal(0))/attempts if attempts else None
     clauses = [
         "m.kind='message'",
         "m.ticker=?",
@@ -31,13 +51,13 @@ def counts(store, ticker, seq, filters, days):
     window_args = [json.dumps(days)] if days is not None else []
     with store.connect() as db:
         messages = db.execute(
-            "SELECT count(*) FROM objects m WHERE " + where + window, [*args, *window_args]
+            "SELECT count(*) FROM " + store.snapshot_table(seq) + " m WHERE " + where + window, [*args, *window_args]
         ).fetchone()[0]
         attempts = db.execute(
             "SELECT count(*),coalesce(sum(json_extract(a.payload,'$.succeeded')),0) "
-            "FROM objects m JOIN objects l ON l.kind='message_raw_link' AND l.ticker=m.ticker "
+            "FROM " + store.snapshot_table(seq) + " m JOIN " + store.snapshot_table(seq) + " l ON l.kind='message_raw_link' AND l.ticker=m.ticker "
             "AND l.parent=m.id AND l.valid_from<=? AND (l.valid_to IS NULL OR l.valid_to>?) "
-            "JOIN objects a ON a.kind='body_attempt' AND a.ticker=m.ticker AND a.parent=l.id "
+            "JOIN " + store.snapshot_table(seq) + " a ON a.kind='body_attempt' AND a.ticker=m.ticker AND a.parent=l.id "
             "AND a.valid_from<=? AND (a.valid_to IS NULL OR a.valid_to>?) WHERE "
             + where
             + (" AND a.day IN (SELECT value FROM json_each(?))" if days is not None else ""),

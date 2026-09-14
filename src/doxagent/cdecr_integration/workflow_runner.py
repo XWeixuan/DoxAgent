@@ -109,9 +109,15 @@ class CDECRWorkflowRunner:
                 eligible_document_count=0,
                 completed_at=datetime.now(UTC),
             )
+        cleanup = getattr(
+            self.registry, "discard_unfinalized_runtime_activity_artifacts", None
+        )
+        if callable(cleanup):
+            cleanup()
         activation = getattr(self.registry, "activate_runtime_eligibility", None)
         deactivation = getattr(self.registry, "deactivate_runtime_eligibility", None)
         activity_payload = activation(as_of=as_of, days=60) if as_of and activation else None
+        final_payload: dict[str, object] | None = None
         try:
             self.bulk_epoch_engine.process_batch(eligible)
             epoch_id = self.bulk_epoch_engine.last_epoch_id
@@ -121,14 +127,6 @@ class CDECRWorkflowRunner:
                     snapshot_reader() if snapshot_reader is not None else activity_payload
                 ) or activity_payload
                 final_payload = {**activity_payload, **final_payload}
-                encoded = json.dumps(final_payload, ensure_ascii=False, sort_keys=True)
-                self.registry.save_bulk_epoch_artifact(
-                    epoch_id=epoch_id,
-                    artifact_kind="runtime_activity_v1",
-                    artifact_hash=hashlib.sha256(encoded.encode("utf-8")).hexdigest(),
-                    upstream_hash=epoch_id,
-                    payload=final_payload,
-                )
         finally:
             if deactivation is not None:
                 deactivation()
@@ -138,6 +136,15 @@ class CDECRWorkflowRunner:
         epoch = self.registry.get_bulk_epoch(epoch_id)
         if epoch is None or str(epoch.get("status")) != "FINALIZED":
             raise RuntimeError(f"CDECR epoch {epoch_id!r} did not reach FINALIZED")
+        if final_payload is not None:
+            encoded = json.dumps(final_payload, ensure_ascii=False, sort_keys=True)
+            self.registry.save_bulk_epoch_artifact(
+                epoch_id=epoch_id,
+                artifact_kind="runtime_activity_v1",
+                artifact_hash=hashlib.sha256(encoded.encode("utf-8")).hexdigest(),
+                upstream_hash=epoch_id,
+                payload=final_payload,
+            )
         return CDECRWorkflowResult(
             market=self.binding.market,
             ticker=self.binding.ticker,

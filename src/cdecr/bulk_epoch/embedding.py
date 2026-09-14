@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from cdecr.ports import CDECRRegistry
+from cdecr.provider_resilience import is_retryable_provider_failure
 
 
 @dataclass(frozen=True)
@@ -149,7 +150,9 @@ class EmbeddingBatchExecutor:
         single_item_failure_count = 0
 
         def request(
-            batch: tuple[EmbeddingWorkItem, ...]
+            batch: tuple[EmbeddingWorkItem, ...],
+            *,
+            allow_provider_retry: bool = True,
         ) -> tuple[
             list[tuple[EmbeddingWorkItem, list[float], str]],
             list[int],
@@ -173,6 +176,17 @@ class EmbeddingBatchExecutor:
                     [],
                 )
             except Exception as exc:
+                if allow_provider_retry and is_retryable_provider_failure(exc):
+                    output, sizes, retries, errors, failure_batches = request(
+                        batch, allow_provider_retry=False
+                    )
+                    return (
+                        output,
+                        local_sizes + sizes,
+                        retries + 1,
+                        errors,
+                        [len(batch), *failure_batches],
+                    )
                 if len(batch) == 1 or not _is_split_safe_embedding_error(exc):
                     return (
                         [],
@@ -233,7 +247,9 @@ class EmbeddingBatchExecutor:
                 )
             successful_sizes.extend([len(output)] if output else [])
             provider_failure_count += len(failure_batches)
-            cap_reduction_count += retries
+            cap_reduction_count += len(
+                {size for size in sizes[1:] if size < sizes[0]}
+            )
             single_item_failure_count += sum(size == 1 for size in failure_batches)
         registry.save_embeddings(save_records)
         return vectors, EmbeddingBatchTelemetry(

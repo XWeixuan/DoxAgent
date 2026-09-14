@@ -25,8 +25,7 @@ def selection(ticker, seq, days):
         )
         args.extend([label, seq, seq, *([json.dumps(days)] if days is not None else [])])
     sql = (
-        "SELECT e.id,e.payload,occurrence_anchor(json_extract(e.payload,'$.occurred_at'),"
-        "json_extract(e.payload,'$.occurrence_time_precision')) "
+        "SELECT e.id,e.payload,e.sort_key "
         "AS occurred_at,e.route='ACTIVE' AS ACTIVE,"
         + ",".join(flags)
         + (
@@ -74,8 +73,8 @@ def install(app):
             except ValueError:
                 raise ApiFailure("INVALID_CURSOR", 400) from None
         sql, params = selection(ticker, view["seq"], days)
+        sql = sql.replace("FROM objects ", "FROM " + store.snapshot_table(view["seq"]) + " ")
         with store.connect() as db:
-            db.create_function("occurrence_anchor", 2, occurrence_anchor, deterministic=True)
             rows = db.execute(
                 "SELECT * FROM ("
                 + sql
@@ -95,7 +94,7 @@ def install(app):
         more = len(rows) > limit
         cursor = (
             store.save_token(
-                owner, scope, {"after": [rows[limit - 1]["occurred_at"], rows[limit - 1]["id"]]}
+                owner, scope, {"after": [rows[limit - 1]["occurred_at"], rows[limit - 1]["id"]], "view_id": args["view_id"], "seq": view["seq"]}
             )
             if more
             else None

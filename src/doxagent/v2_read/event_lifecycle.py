@@ -7,6 +7,7 @@ from doxagent.semantic_clock import semantic_day
 
 from .lifecycle import rows
 from .repository import encode
+from .ordering import occurrence_anchor
 
 
 def activate(store, ticker, activation, at):
@@ -60,6 +61,7 @@ def activate(store, ticker, activation, at):
                     "id": key,
                     "data": after,
                     "route": "ACTIVE" if is_active else "RETIRED",
+                    "sort": occurrence_anchor(after.get("occurred_at"), after.get("occurrence_time_precision")) if label == "event" else key,
                 }
             )
             revision_key = label + "_revision_id"

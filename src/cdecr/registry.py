@@ -399,6 +399,22 @@ class SQLiteCDECRRegistry:
                 "eligible_atomic_ids": sorted(self._runtime_eligible_atomic_ids),
             }
 
+    def discard_unfinalized_runtime_activity_artifacts(self) -> int:
+        """Remove legacy final-activity artifacts written before an epoch finalized."""
+
+        with self._connection() as connection:
+            cursor = connection.execute(
+                """
+                DELETE FROM bulk_epoch_artifacts
+                WHERE artifact_kind = 'runtime_activity_v1'
+                  AND epoch_id IN (
+                      SELECT epoch_id FROM bulk_epochs WHERE status <> 'FINALIZED'
+                  )
+                """
+            )
+            connection.commit()
+            return max(0, int(cursor.rowcount))
+
     def deactivate_runtime_eligibility(self) -> None:
         with self._runtime_eligibility_lock:
             self._runtime_eligible_atomic_ids = None
@@ -5265,7 +5281,14 @@ class SQLiteCDECRRegistry:
                 (source_event_id, target_event_id, run_id, reason, _now()),
             )
             connection.commit()
-            return True
+        with self._runtime_eligibility_lock:
+            if self._runtime_eligible_atomic_ids is not None:
+                if source_event_id in self._runtime_eligible_atomic_ids:
+                    self._runtime_eligible_atomic_ids.discard(source_event_id)
+                    self._runtime_eligible_atomic_ids.add(
+                        self.resolve_atomic_event_root(target_event_id)
+                    )
+        return True
 
     def resolve_atomic_event_root(self, event_id: str, *, max_depth: int = 32) -> str:
         with self._connection() as connection:

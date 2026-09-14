@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 from cdecr.contracts import MembershipRelation, PackageFamily
 from cdecr.models import _chat_json_schema_kwargs
 from cdecr.package_global_clustering import PackageWorkflowV3Service
@@ -43,7 +45,7 @@ def _start_run(store, *, run_id: str) -> None:
     )
 
 
-def test_v3_responses_use_true_strict_json_schema_without_prompt_duplication() -> None:
+def test_v3_chat_uses_true_strict_json_schema_without_prompt_duplication() -> None:
     request = ResponsesModelRequest(
         input=[
             {"role": "system", "content": "system"},
@@ -86,8 +88,8 @@ def test_v3_uses_m3_low_for_clustering_and_m2_none_for_description() -> None:
     )
     assert cluster.reasoning_effort == "low"
     assert description.reasoning_effort == "none"
-    assert cluster.output_mode == description.output_mode == "json_object"
-    assert cluster.strict is description.strict is False
+    assert cluster.output_mode == description.output_mode == "json_schema"
+    assert cluster.strict is description.strict is True
 
     strict_service = PackageWorkflowV3Service(  # type: ignore[arg-type]
         registry=object(), strict_output=True
@@ -214,6 +216,66 @@ def test_v3_201_occurrences_run_initial_then_rolling_and_replay_without_calls(
     )
     assert replay.status == "FINALIZED"
     assert replay.partition == result.partition
+
+
+def test_v3_truncated_100_item_batch_restarts_from_same_checkpoint_in_50s(tmp_path) -> None:
+    class TruncatedOutput(RuntimeError):
+        code = "json_truncated"
+
+    class SplitModels(ScriptedParentModels):
+        def __init__(self) -> None:
+            super().__init__()
+            self.clustering_sizes: list[int] = []
+            self.failed_once = False
+
+        def typed_response(self, **kwargs):
+            stage = kwargs["stage"]
+            if stage in {
+                "package_v3_initial_clustering",
+                "package_v3_rolling_clustering",
+            }:
+                payload = json.loads(kwargs["request"].input[-1]["content"])
+                key = (
+                    "parent_occurrences"
+                    if stage == "package_v3_initial_clustering"
+                    else "new_parent_occurrences"
+                )
+                self.clustering_sizes.append(len(payload[key]))
+                if not self.failed_once:
+                    self.failed_once = True
+                    raise TruncatedOutput("provider output ended before JSON closed")
+            return super().typed_response(**kwargs)
+
+    store = registry(tmp_path)
+    store.save_source(source("MSG-1"), fingerprint="3" * 64)
+    _start_run(store, run_id="package-v3-split")
+    proposals = [_proposal(index) for index in range(1, 102)]
+    events = [
+        atomic(event_id=f"EVENT-{index:03d}", mention_ids=[f"MENTION-{index:03d}"])
+        for index in range(1, 102)
+    ]
+    models = SplitModels()
+
+    result = PackageWorkflowV3Service(registry=store, batch_size=100).run(
+        events=events,
+        proposals=proposals,
+        external_links=[],
+        models=models,
+        run_id="package-v3-split",
+        registry_scope_id="scope-v3-split",
+    )
+
+    assert result.status == "FINALIZED", result
+    assert result.partition is not None
+    assert models.clustering_sizes == [100, 50, 50, 1]
+    assert len(result.partition.groups[0].atomic_event_ids) == 101
+    split = next(
+        item
+        for item in result.telemetry["batches"]
+        if item.get("status") == "SPLIT_AFTER_JSON_TRUNCATION"
+    )
+    assert split["input_count"] == 100
+    assert split["next_batch_size"] == 50
 
 
 def test_v3_projection_has_one_membership_per_atomic(tmp_path) -> None:

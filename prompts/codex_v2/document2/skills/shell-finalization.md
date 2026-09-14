@@ -66,20 +66,41 @@ Candidate Discovery or require every unaffected choice to be re-justified.
 
 ## Final research-context boundary review
 
-After applying local decisions, review the resulting topology once as a whole. This is a structural
-validation of O1 context boundaries, not a drive toward fewer Shells.
+After applying the domain reviews, read the resulting topology as the future O1/O3 research
+architecture. Each Shell should represent one bounded research context with a recognizable common
+core. Ask whether every Unit is placed where its detailed State, realization mechanisms, evidence,
+and future-event research can be maintained most coherently. Economic dependencies may cross Shell
+boundaries and do not need to be absorbed into one end-to-end context.
 
-- **Shell context coherence:** Units inside each Shell should benefit from one long-lived, complete
-  research context while retaining independent update paths.
-- **Adjacent Shell separation:** confirm that separate O1 threads are required because the research
-  systems are largely independent or shared context would materially confuse them, rather than
-  because products, end markets, policies, events, or immediate outcomes differ.
+- **Shell context coherence:** identify the common context core the Units repeatedly reuse. Context
+  sharing is not automatically transitive: A/B and B/C overlap does not establish an A/B/C core.
+  The Shell should remain a recognizable research system rather than a chain-connected collection.
+- **Adjacent context boundaries:** related Shells may exchange important dependencies while
+  maintaining different research centers. Check whether each side has its own actors, State
+  families, mechanisms, evidence cadence, horizons, or event space deserving persistent treatment
+  as a separate context.
+- **Shell breadth:** examine whether adding later Units mainly reuses the common context or adds
+  new research domains connected only through value transmission. In the latter case, reconsider
+  the internal boundary.
 - **Single-Unit Shell necessity:** confirm that no natural adjacent Shell supplies useful shared
   context while preserving the Unit's independence.
 - **Shell and Unit distinctness:** a `core_question` should not be almost fully answered by one Unit;
   normally it requires the combined propositions in that Shell.
 - **Object-level integrity:** confirm that State-like variables, Realization Factors, occurred
   events, Future Nodes, and market measurement or inference tasks have not survived as Units.
+
+For each final Shell, state internally in one clear sentence what type of long-lived Research Owner
+its O1 would be: what it must keep knowing, researching, and updating. An end-to-end company thesis
+is too diffuse an identity; multiple nearly identical identities may indicate a fragmented common
+core. Use this execution test to revisit grouping in either direction.
+
+A final Shell with 6 or more Units triggers a Boundary Challenge: check for multiple bounded research
+centers across actors, State families, evidence interfaces, realization mechanisms, future-event
+spaces, and horizons. Six is a review trigger, not a limit; a broad Shell may retain a dominant common
+core. Reverse-validate any proposed partition: do the new Shells have distinct research identities,
+or would O1 repeatedly rebuild the same actors, State, mechanisms and event context merely to cover
+different local outcomes? Adjust fragmented partitions without treating re-merging as the preferred
+answer. Judge the final boundary by shared-core coherence and research depth, not Unit count.
 
 Apply any correction through the existing Shell and Unit fields; this review adds no output field.
 
@@ -93,7 +114,8 @@ kebab-case, snake_case, coded IDs, or machine-style slugs; runtime UUIDs belong 
 Each final Shell contains:
 
 - `shell_id`: the stable semantic identity of the shared research system;
-- `core_question`: the common terminal investment or economic question served by all its Units;
+- `core_question`: the common research question that defines why the included Units belong in one
+  shared context;
 - `boundary_rule`: why these Units require full shared context, why they remain separate
   propositions, and what distinguishes this Shell from adjacent Shells;
 - `units`: the final Unit seeds.
@@ -118,6 +140,7 @@ recommendation. Keep each note brief and outcome-focused.
 
 Finalization is complete when all three reviews have informed one unified decision, material
 feedback and unassigned Candidates have a deliberate disposition, retained Units have distinct
-update paths, each Shell corresponds to a coherent and genuinely independent long-lived O1 research
-context, and no temporary handles remain. Return one `ShellFinalizationResult` with the final
+update paths, each Shell corresponds to a coherent, bounded long-lived O1/O3 research context with a
+clear common context core and understandable dependencies on adjacent Shells, and no temporary
+handles remain. Return one `ShellFinalizationResult` with the final
 `shells` and brief `finalization_note`.

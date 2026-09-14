@@ -69,6 +69,17 @@ class MessageStreams:
             filters["days"] = window["trading_days"]
         return filters
 
+    def prepare(self, owner, ticker, view_id, args, header):
+        view = self.views.get(owner, view_id, ticker)
+        filters = self.filters(args, view)
+        if header and args.get("cursor") and header != args["cursor"]:
+            raise ApiFailure("INVALID_CURSOR", 400)
+        cursor = header or args.get("cursor")
+        if not cursor:
+            raise ApiFailure("CURSOR_REQUIRED", 400)
+        state = self.cursor(owner, cursor, ticker=ticker, view_id=view_id, filters=filters)
+        return view, state, filters, cursor
+
     @staticmethod
     def scope(ticker: str, view_id: str, filters: dict[str, Any], limit: int) -> str:
         return hashlib.sha256(
@@ -224,15 +235,11 @@ def install(app: FastAPI) -> None:
     async def events(ticker: str, request: Request) -> Any:
         args = query(request, {"view_id", "source_kind", "source_id", "route", "q", "cursor"})
         view_id, owner = args.get("view_id", ""), request.state.principal.user_id
-        view = streams.views.get(owner, view_id, ticker)
-        filters = streams.filters(args, view)
-        header = request.headers.get("last-event-id")
-        if header and args.get("cursor") and header != args["cursor"]:
-            raise ApiFailure("INVALID_CURSOR", 400)
-        cursor = header or args.get("cursor")
-        if not cursor:
-            raise ApiFailure("CURSOR_REQUIRED", 400)
-        state = streams.cursor(owner, cursor, ticker=ticker, view_id=view_id, filters=filters)
+        runner = app.state.query_runner
+        prepared = (await runner.run({"kind": "message_prepare", "owner": owner, "ticker": ticker,
+                                      "view_id": view_id, "args": args, "header": request.headers.get("last-event-id")})
+                    if runner else streams.prepare(owner, ticker, view_id, args, request.headers.get("last-event-id")))
+        view, state, filters, cursor = prepared
         token = request.headers["authorization"][7:]
 
         async def generate() -> Any:
@@ -271,7 +278,23 @@ def install(app: FastAPI) -> None:
                         + "\n\n"
                     )
                     return
-                result = streams.next(owner, current)
+                runner = app.state.query_runner
+                try:
+                    result = (await runner.run({"kind": "message", "owner": owner, "state": current})
+                              if runner else streams.next(owner, current))
+                except ApiFailure as exc:
+                    if exc.status != 410:
+                        yield ": query temporarily unavailable\n\n"
+                        await asyncio.sleep(2)
+                        continue
+                    yield "event: reset\ndata: " + encode({
+                        "event_id": cursor, "stream_cursor": cursor, "view_id": view_id,
+                        "scope_key": streams.scope(ticker, view_id, filters, current["limit"]),
+                        "sequence": str(current["seq"] * 100000 + current["ordinal"]),
+                        "emitted_at": instant(datetime.now(UTC)),
+                        "payload": {"reason": "BASELINE_UNAVAILABLE", "replacement_required": True},
+                    }) + "\n\n"
+                    return
                 if result:
                     wire, current = result
                     if wire:

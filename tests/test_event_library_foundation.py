@@ -171,11 +171,34 @@ def test_workflow_runner_uses_explicit_ids_and_noops_without_eligible_documents(
 
 def test_workflow_runner_returns_the_finalized_bulk_epoch() -> None:
     class Registry:
+        def __init__(self) -> None:
+            self.saved_artifacts = []
+
         def get_source(self, message_id: str) -> object | None:
             return object() if message_id == "m1" else None
 
         def get_bulk_epoch(self, epoch_id: str) -> dict[str, str]:
             return {"epoch_id": epoch_id, "status": "FINALIZED"}
+
+        def discard_unfinalized_runtime_activity_artifacts(self) -> int:
+            return 0
+
+        def activate_runtime_eligibility(self, *, as_of, days):
+            assert days == 60
+            return {
+                "contract_version": "runtime_activity_v1",
+                "as_of": as_of.isoformat(),
+                "eligible_atomic_ids": ["A1"],
+            }
+
+        def runtime_eligibility_snapshot(self):
+            return {"eligible_atomic_ids": ["A1"]}
+
+        def deactivate_runtime_eligibility(self) -> None:
+            return None
+
+        def save_bulk_epoch_artifact(self, **kwargs) -> None:
+            self.saved_artifacts.append(kwargs)
 
     class Documents:
         def process_batch(self, message_ids: list[str]) -> list[SimpleNamespace]:
@@ -192,6 +215,7 @@ def test_workflow_runner_returns_the_finalized_bulk_epoch() -> None:
             self.last_epoch_id = "bulk-epoch:fixture"
             return []
 
+    registry = Registry()
     runner = CDECRWorkflowRunner(
         binding=RuntimeRegistryBinding(
             market="US",
@@ -199,14 +223,16 @@ def test_workflow_runner_returns_the_finalized_bulk_epoch() -> None:
             runtime_scope="cdecr:US:MU",
             registry_path="runtime.sqlite3",
         ),
-        registry=Registry(),  # type: ignore[arg-type]
+        registry=registry,  # type: ignore[arg-type]
         document_processor=Documents(),
         bulk_epoch_engine=Bulk(),
     )
-    result = runner.run(["m1"])
+    result = runner.run(["m1"], as_of=datetime(2026, 9, 14, tzinfo=UTC))
     assert result.status == "FINALIZED"
     assert result.epoch_id == "bulk-epoch:fixture"
     assert result.eligible_document_count == 1
+    assert registry.saved_artifacts[0]["artifact_kind"] == "runtime_activity_v1"
+    assert registry.saved_artifacts[0]["payload"]["eligible_atomic_ids"] == ["A1"]
 
 
 def test_mu_gold_frozen_snapshot_to_published_v1_without_model(tmp_path: Path) -> None:

@@ -20,6 +20,7 @@ from .ib_gateway import GatewayMonitor
 
 def install(app: FastAPI) -> None:
     gateway = GatewayMonitor()
+    app.state.gateway_monitor = gateway
     prefix = "/api/doxagent/v2"
     store, views, control = app.state.store, app.state.views, app.state.control
     query, respond = app.state.query, app.state.respond
@@ -30,12 +31,14 @@ def install(app: FastAPI) -> None:
             raise ApiFailure("SCOPE_MISMATCH", 400)
         return view
 
-    def measures(view, tickers, names):
+    def measures(view, tickers, names, service=None):
         from doxagent.v2_read.metrics import Metrics
 
         period = view["wire"]["period"]
         previous = period["previous"]
-        service = Metrics(store)
+        if service is None:
+            service = Metrics(store)
+            service.prime(names, tickers, view["seq"], [period["current"]["trading_days"], previous["trading_days"] if previous else []], distinct=("policy_hits",))
         return {
             name: service.metric(
                 name,
@@ -79,7 +82,7 @@ def install(app: FastAPI) -> None:
 
     @app.get(prefix + "/overview/tickers")
     async def overview_tickers(request: Request):
-        from .bus import aggregates
+        from .bus import aggregates_many
 
         args = query(request, {"view_id", "limit", "cursor", "run_state", "health"})
         view = overview_view(request, args)
@@ -114,7 +117,7 @@ def install(app: FastAPI) -> None:
             selected = [
                 row[0]
                 for row in db.execute(
-                    "SELECT ticker FROM objects WHERE kind='ticker' AND id=ticker "
+                    "SELECT ticker FROM " + store.snapshot_table(view["seq"]) + " WHERE kind='ticker' AND id=ticker "
                     "AND ticker IN (SELECT value FROM json_each(?)) AND ticker>? "
                     "AND valid_from<=? AND (valid_to IS NULL OR valid_to>?) "
                     "AND (? IS NULL OR json_extract(payload,'$.run_state')=?) "
@@ -132,26 +135,41 @@ def install(app: FastAPI) -> None:
                     ),
                 )
             ]
+        from doxagent.v2_read.metrics import Metrics
+        service = Metrics(store)
+        period = view["wire"]["period"]
+        service.prime(("trade_executed", "trade_triggered", "messages", "api_token_cost"), selected[:limit], view["seq"],
+                      [period["current"]["trading_days"], period["previous"]["trading_days"] if period["previous"] else []])
+        source_counts = aggregates_many(store, selected[:limit], view["seq"])
+        states = store.batch_get([("ticker",ticker,ticker) for ticker in selected[:limit]],view["seq"])
+        initializations = store.batch_get([("initialization",ticker,states[("ticker",ticker,ticker)]["initialization_id"]) for ticker in selected[:limit] if states[("ticker",ticker,ticker)]["initialization_id"]],view["seq"])
+        latest_by_ticker = {}
+        table = store.snapshot_table(view["seq"])
+        if selected[:limit]:
+            sql = " UNION ALL ".join("SELECT * FROM (SELECT ticker,payload FROM " + table + " WHERE kind='message' AND ticker=? AND valid_from<=? AND (valid_to IS NULL OR valid_to>?) ORDER BY sort_key DESC,id DESC LIMIT 1)" for ticker in selected[:limit])
+            with store.connect() as db:
+                latest_by_ticker = {row[0]:json.loads(row[1]) for row in db.execute(sql,[value for ticker in selected[:limit] for value in (ticker,view["seq"],view["seq"])])}
         items = []
         for ticker in selected[:limit]:
-            state = store.get("ticker", ticker, ticker, view["seq"])
-            latest = store.page("message", ticker, view["seq"], limit=1)
+            state = states[("ticker",ticker,ticker)]
+            latest = latest_by_ticker.get(ticker)
             initialization = (
-                store.get("initialization", ticker, state["initialization_id"], view["seq"])
+                initializations.get(("initialization",ticker,state["initialization_id"]))
                 if state["initialization_id"]
                 else None
             )
             items.append(
                 {
                     "state": state,
-                    "last_standard_message_at": available(latest[0]["data"]["stream_published_at"])
+                    "last_standard_message_at": available(latest["stream_published_at"])
                     if latest
                     else missing(),
-                    "source_counts": aggregates(store, ticker, view["seq"])[0],
+                    "source_counts": source_counts[ticker][0],
                     "metrics": measures(
                         view,
                         [ticker],
                         ("trade_executed", "trade_triggered", "messages", "api_token_cost"),
+                        service=service,
                     ),
                     "initialization": {
                         "state": "AVAILABLE" if initialization else "UNAVAILABLE",
@@ -164,7 +182,7 @@ def install(app: FastAPI) -> None:
                 }
             )
         more = len(selected) > limit
-        cursor = store.save_token(owner, scope, {"after": selected[limit - 1]}) if more else None
+        cursor = store.save_token(owner, scope, {"after": selected[limit - 1], "view_id": args["view_id"], "seq": view["seq"]}) if more else None
         return respond(
             request,
             "TickerOverviewPage",
@@ -315,7 +333,7 @@ def install(app: FastAPI) -> None:
                 )
             day += timedelta(days=1)
         more = len(items) > limit
-        cursor = store.save_token(owner, scope, {"day": items[-1]["day"]}) if more else None
+        cursor = store.save_token(owner, scope, {"day": items[-1]["day"], "view_id": args["view_id"], "seq": view["seq"]}) if more else None
         return respond(
             request,
             "TradingDayPage",
@@ -336,7 +354,7 @@ def install(app: FastAPI) -> None:
         view = views.get(request.state.principal.user_id, args.get("view_id", ""))
         if view["wire"]["page"] != "OVERVIEW":
             raise ApiFailure("SCOPE_MISMATCH", 400)
-        states = [store.get("ticker", ticker, ticker, view["seq"]) for ticker in view["tickers"]]
+        states = list(store.batch_get([("ticker",ticker,ticker) for ticker in view["tickers"]],view["seq"]).values())
         states = [
             s
             for s in states
@@ -354,7 +372,7 @@ def install(app: FastAPI) -> None:
                     sum(s["health"] in {"NORMAL", "DEGRADED"} for s in states)
                 ),
                 "blocked_tickers": available(sum(s["health"] == "BLOCKED" for s in states if s)),
-                **({"ib_gateway_status": await gateway.status()}
+                **({"ib_gateway_status": getattr(app.state, "gateway_override", None) or await gateway.status()}
                    if request.url.path.endswith("/gateway-status") else {}),
             },
             view_id=args["view_id"],

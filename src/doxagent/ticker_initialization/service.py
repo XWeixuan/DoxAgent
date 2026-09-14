@@ -166,6 +166,11 @@ class InitializationWorker:
                         if child.inputs.get("managed_by") == node.key
                         and child.status == "FAILED"
                         and child.ordinal < 2
+                        and (
+                            child.inputs.get("kind") != "cdecr_native"
+                            or child.receipt.get("native_failure_status")
+                            == "FAILED_RETRYABLE"
+                        )
                     }
                     if not retryable - visited_failures:
                         raise

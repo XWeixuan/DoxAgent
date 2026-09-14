@@ -35,6 +35,8 @@ class RuntimeJournal:
     def __init__(self, path: str | Path, *, clock: Callable[[], datetime] | None = None,
                  initialize: bool = True) -> None:
         self.path = Path(path)
+        from doxagent.v2_read.native_content import NativeContent
+        self.content = NativeContent(self.path)
         self.clock = clock or (lambda: datetime.now(UTC))
         if not initialize:
             if not self.path.is_file():
@@ -50,6 +52,7 @@ class RuntimeJournal:
                     generation INTEGER NOT NULL DEFAULT 1, failures INTEGER NOT NULL DEFAULT 0,
                     max_failures INTEGER NOT NULL DEFAULT 2, owner TEXT, token INTEGER DEFAULT 0,
                     lease_until TEXT, due_at TEXT NOT NULL, updated_at TEXT NOT NULL);
+                CREATE INDEX IF NOT EXISTS runtime_task_stream_head ON runtime_tasks(ticker,kind,coalesce(json_extract(inputs,'$.stream_offset'),0) DESC);
                 CREATE INDEX IF NOT EXISTS runtime_tasks_due ON runtime_tasks(kind,status,due_at);
                 CREATE INDEX IF NOT EXISTS runtime_tasks_ticker_status
                     ON runtime_tasks(ticker,status,kind);
@@ -80,13 +83,14 @@ class RuntimeJournal:
             )
 
     @contextmanager
-    def transaction(self) -> Iterator[sqlite3.Connection]:
+    def transaction(self, *, write: bool = True) -> Iterator[sqlite3.Connection]:
         db = sqlite3.connect(self.path, timeout=30)
-        db.row_factory = sqlite3.Row
+        db.row_factory = self.content.row
         try:
-            db.execute("PRAGMA journal_mode=WAL")
-            db.execute("PRAGMA synchronous=FULL")
-            db.execute("BEGIN IMMEDIATE")
+            if write:
+                db.execute("PRAGMA journal_mode=WAL")
+                db.execute("PRAGMA synchronous=FULL")
+            db.execute("BEGIN IMMEDIATE" if write else "BEGIN")
             yield db
             db.commit()
         except BaseException:
@@ -130,7 +134,7 @@ class RuntimeJournal:
                     identity,
                     ticker,
                     kind,
-                    encode(inputs),
+                    self.content.encode(inputs),
                     max_failures,
                     (due_at or self.clock()).isoformat(),
                     now,
@@ -141,7 +145,7 @@ class RuntimeJournal:
             )
 
     def get_task(self, identity: str) -> dict[str, Any] | None:
-        with self.transaction() as db:
+        with self.transaction(write=False) as db:
             row = db.execute("SELECT * FROM runtime_tasks WHERE id=?", (identity,)).fetchone()
             return self._task(row) if row else None
 
@@ -153,15 +157,28 @@ class RuntimeJournal:
         active_only: bool = False,
         sweep_id: str | None = None,
     ) -> list[dict[str, Any]]:
-        with self.transaction() as db:
-            rows = db.execute(
-                "SELECT * FROM runtime_tasks WHERE (? IS NULL OR ticker=?) "
-                "AND (? IS NULL OR kind=?) "
-                "AND (?=0 OR status IN ('PENDING','RUNNING')) "
-                "AND (? IS NULL OR json_extract(inputs,'$.sweep_id')=?) ORDER BY due_at,id",
-                (ticker, ticker, kind, kind, int(active_only), sweep_id, sweep_id),
-            ).fetchall()
+        clauses, parameters = [], []
+        for column, value in (("ticker", ticker), ("kind", kind)):
+            if value is not None:
+                clauses.append(column + "=?")
+                parameters.append(value)
+        if active_only:
+            clauses.append("status IN ('PENDING','RUNNING')")
+        if sweep_id is not None:
+            clauses.append("json_extract(inputs,'$.sweep_id')=?")
+            parameters.append(sweep_id)
+        with self.transaction(write=False) as db:
+            rows = db.execute("SELECT * FROM runtime_tasks" +
+                              (" WHERE " + " AND ".join(clauses) if clauses else "") +
+                              " ORDER BY due_at,id", parameters).fetchall()
             return [self._task(row) for row in rows]
+
+    def task_highwater(self, ticker: str) -> int:
+        with self.transaction(write=False) as db:
+            row = db.execute("SELECT coalesce(json_extract(inputs,'$.stream_offset'),0) FROM runtime_tasks "
+                             "WHERE ticker=? AND kind='CASE' ORDER BY coalesce(json_extract(inputs,'$.stream_offset'),0) DESC LIMIT 1",
+                             (ticker,)).fetchone()
+            return int(row[0]) if row else 0
 
     def claim(self, identity: str, *, seconds: float = 1800) -> dict[str, Any] | None:
         now = self.clock()
@@ -228,7 +245,7 @@ class RuntimeJournal:
             value = {**json.loads(row["receipt"]), **receipt}
             db.execute(
                 "UPDATE runtime_tasks SET receipt=?,updated_at=? WHERE id=?",
-                (encode(value), self.clock().isoformat(), task["id"]),
+                (self.content.encode(value), self.clock().isoformat(), task["id"]),
             )
             task["receipt"] = value
 
@@ -238,7 +255,7 @@ class RuntimeJournal:
             value = {**json.loads(row["receipt"]), **receipt}
             db.execute(
                 "UPDATE runtime_tasks SET status='SUCCEEDED',receipt=?,updated_at=? WHERE id=?",
-                (encode(value), self.clock().isoformat(), task["id"]),
+                (self.content.encode(value), self.clock().isoformat(), task["id"]),
             )
             db.execute("UPDATE runtime_gaps SET closed=1 WHERE task_id=?", (task["id"],))
 
@@ -273,7 +290,7 @@ class RuntimeJournal:
             self._gap(db, identity, ticker, code, detail)
 
     def gaps(self, ticker: str | None = None) -> list[dict[str, Any]]:
-        with self.transaction() as db:
+        with self.transaction(write=False) as db:
             return [
                 dict(row)
                 for row in db.execute(
@@ -292,11 +309,11 @@ class RuntimeJournal:
             db.execute(
                 "UPDATE runtime_tasks SET status='PENDING',generation=generation+1,"
                 "failures=0,receipt=?,due_at=? WHERE id=?",
-                (encode(receipt), self.clock().isoformat(), identity),
+                (self.content.encode(receipt), self.clock().isoformat(), identity),
             )
 
     def get(self, namespace: str, key: str, default: Any = None) -> Any:
-        with self.transaction() as db:
+        with self.transaction(write=False) as db:
             row = db.execute(
                 "SELECT payload FROM runtime_values WHERE namespace=? AND key=?", (namespace, key)
             ).fetchone()
@@ -306,8 +323,8 @@ class RuntimeJournal:
         with self.transaction() as db:
             db.execute(
                 "INSERT INTO runtime_values VALUES(?,?,?) ON CONFLICT(namespace,key) "
-                "DO UPDATE SET payload=excluded.payload",
-                (namespace, key, encode(value)),
+                "DO UPDATE SET payload=excluded.payload WHERE runtime_values.payload IS NOT excluded.payload",
+                (namespace, key, self.content.encode(value) if namespace in {"worker_requests", "worker_receipts", "round_inputs", "worker_invocations", "sweep_bundle"} else encode(value)),
             )
 
     def delete(self, namespace: str, key: str) -> None:
@@ -315,7 +332,7 @@ class RuntimeJournal:
             db.execute("DELETE FROM runtime_values WHERE namespace=? AND key=?", (namespace, key))
 
     def values(self, namespace: str) -> list[Any]:
-        with self.transaction() as db:
+        with self.transaction(write=False) as db:
             return [
                 json.loads(row[0])
                 for row in db.execute(
@@ -328,12 +345,12 @@ class RuntimeJournal:
         identity = digest(value)
         with self.transaction() as db:
             db.execute(
-                "INSERT OR IGNORE INTO runtime_snapshots VALUES(?,?)", (identity, encode(value))
+                "INSERT OR IGNORE INTO runtime_snapshots VALUES(?,?)", (identity, self.content.encode(value))
             )
         return identity
 
     def snapshot(self, identity: str) -> Any:
-        with self.transaction() as db:
+        with self.transaction(write=False) as db:
             row = db.execute(
                 "SELECT payload FROM runtime_snapshots WHERE id=?", (identity,)
             ).fetchone()

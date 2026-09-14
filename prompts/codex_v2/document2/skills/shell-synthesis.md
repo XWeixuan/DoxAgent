@@ -16,16 +16,20 @@ benefits from review.
 Ask two different questions:
 
 1. **Unit:** Is this a material middle-level proposition that can be updated independently?
-2. **Shell:** Which Units must share full research context to be understood and researched
-   correctly?
+2. **Shell:** Which Units depend on the same bounded body of research strongly enough that one
+   long-lived O1 context should maintain them together?
 
-Independent updateability keeps propositions as separate Units; it does not require separate
-Shells. Upstream and downstream propositions may remain distinct Units in one Shell when they share
-the same business system and value-transmission context. Shell boundaries answer which Units one O1
-should research inside a shared, persistent context. Establish a separate Shell when the two
-research systems can largely be studied independently and combining them would make unrelated
-context persist or confuse State, Factor, event, or transmission interpretation. Different products,
-end markets, event paths, policies, or immediate outcomes are not sufficient by themselves.
+Independent updateability keeps propositions as separate Units. Shell grouping asks a different
+question: whether those Units repeatedly reuse the same core research context.
+
+A Shell's shared context is not the union of every upstream and downstream dependency along one
+value chain. Look for the common context core that most included Units directly need: actors,
+business or industry mechanisms, State families, evidence interfaces, realization logic, horizons,
+and future-event space.
+
+Value transmission may cross Shell boundaries. Two Units can be economically connected, and one
+can materially affect the other, while still belonging to different research contexts when each
+requires a substantially different body of persistent knowledge to be researched deeply.
 
 ## Analyze candidate relationships
 
@@ -37,24 +41,53 @@ Use relation analysis as a thinking method rather than a pairwise labeling exerc
   their sources support the same question.
 - **Causal relationship:** Causal proximity alone does not merge propositions. Different horizons,
   event spaces, validation paths, or economic outcomes can justify separate Units.
-- **Shared context:** Units belong in one Shell when researching any of them correctly requires much
-  of the same business and industry background, external actors, expectation state, realization
-  mechanisms, future event space, and value-transmission path.
-- **Independent system:** Questions affecting the same ticker may belong to different Shells when
-  each can be researched without the other's core context and sharing one persistent context would
-  materially mix unrelated systems.
+- **Shared research context:** Consider whether the Units repeatedly rely on the same core actors,
+  mechanisms, State families, evidence sources or interfaces, realization questions, and future
+  event space. Shared context is strongest when this common core is directly useful across the
+  cluster, not merely when different Units can be connected through an end-to-end causal chain.
+- **Context boundary:** A new Shell becomes useful when a group of Units has its own coherent
+  research center of gravity. The group may still transmit value to or receive dependencies from
+  another Shell; separation means its detailed research can be maintained as a distinct context,
+  not that the two systems are economically unrelated.
 
-Test the boundary as an execution choice. If two proposed O1 threads would repeatedly load and
-reconstruct much of the same business context, actors, State, realization mechanisms, future events,
-and value-transmission chain, shared Shell context is a strong fit. If one O1 would instead carry
-substantial unrelated context that obscures two otherwise independent research systems, separation
-is a strong fit.
+## Keep shared context bounded
+
+Context overlap is not automatically transitive. Unit A may share important context with B, and B
+with C, without A and C needing the same persistent research context.
+
+When a provisional Shell grows, look at the cluster as a whole. Ask what context remains common
+across the included Units and what new context each additional Unit introduces. A Shell is coherent
+when its shared core remains the main research context; it becomes diffuse when its apparent
+coherence depends mainly on chaining adjacent relationships across different research systems.
+
+Test the boundary as an execution choice. Imagine the persistent context that O1 must carry while
+researching every Unit in the proposed Shell. Repeatedly reusing the same core actors, mechanisms,
+State families, evidence interfaces, and event space creates research depth and consistency.
+If adding a group mainly introduces another set of actors, data, mechanisms, horizons, and future
+events, while its connection is primarily upstream/downstream transmission, that group has the
+shape of another research context. Aim for a context complete for its research system and bounded
+enough for one O1 to maintain depth across all included Units.
 
 A single-Unit Shell is valid but exceptional. Before creating one, examine the natural adjacent
 Shells, whether the Unit remains independently maintainable inside one of them, whether shared
-context improves its research, and whether separation removes genuinely unrelated context rather
+context improves its research, and whether the Unit has its own coherent research center rather
 than only making the taxonomy neater. If its `core_question` nearly repeats its sole Unit, reconsider
-whether an independent Shell boundary exists.
+whether a distinct Shell boundary exists.
+
+Before accepting each Shell, describe internally in one clear sentence what kind of long-lived
+Research Owner its O1 would be: what it must keep knowing, researching, and updating. An identity
+that merely spans the company's end-to-end investment thesis signals a diffuse boundary; several
+nearly identical owner descriptions signal possible fragmentation of one common context core.
+
+For any provisional Shell with 6 or more Units, perform a Boundary Challenge: look for two or more
+bounded research centers differentiated by core actors, State families, evidence interfaces,
+realization mechanisms, future-event spaces, or horizons. Determine whether one common context core
+still dominates. If a partition emerges, reverse-test it: would the new O1 contexts repeatedly
+rebuild the same core research, merely dividing local value-chain outcomes? Adjust the partition if
+it fragments one research system without creating distinct research identities. Six Units triggers
+review, not a capacity limit; retain a broad Shell when its shared core remains coherent. Reverse
+validation tests fragmentation rather than favoring re-merging. These are reasoning checks, not new
+output fields.
 
 ## Decide provisional Unit status
 
@@ -80,9 +113,12 @@ preserve that reference so candidates with the same branch-local `U#` never coll
 `provisional_shells` item contains:
 
 - `shell_temp_id`;
-- `core_question`: the common terminal investment question served by the Shell;
-- `boundary_reasoning`: the shared economic and value-transmission system, why full context is
-  shared, why the included propositions remain separate Units, and what belongs outside;
+- `core_question`: the common research question that makes these Units worth maintaining inside one
+  shared context; express the research system they jointly illuminate rather than the company's
+  full upstream-to-terminal value chain;
+- `boundary_reasoning`: the common context core the Units share, why it improves joint research,
+  why the Units remain separately updateable, how important dependencies connect to adjacent
+  Shells, and where this research context stops;
 - `candidate_units`: each retained `candidate_ref`, original branch-local Candidate ID, and its
   normalized wording.
 
@@ -99,7 +135,10 @@ limitations that affect the structural synthesis.
 
 Synthesis is complete when all Candidates are accounted for, duplicates are normalized, retained
 Units have distinct update paths, and every Shell explains both its shared context and separation
-boundary. Before returning, check the topology for context fragmentation: adjacent Shells should not
-force separate O1 threads to repeatedly reconstruct substantially the same research system. The
-draft should be clear enough for Domain Review to challenge without pre-empting O1's later Detail
+boundary. Before returning, inspect the topology in both directions: adjacent Shells should not
+duplicate a naturally shared research context, and a large Shell should not depend on transitive
+value-chain connections to hold together distinct research systems. Each provisional Shell should
+have a recognizable common core that lets one O1 research all its Units deeply. Complete the Research
+Identity Test and any 6+ Unit Boundary Challenge, including reverse validation of proposed partitions.
+The draft should be clear enough for Domain Review to challenge without pre-empting O1's later Detail
 research.

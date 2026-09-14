@@ -7,9 +7,9 @@ services:
     image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
   v2-api:
     extra_hosts: ["host.docker.internal:host-gateway"]
-    mem_limit: 384m
-    memswap_limit: 384m
-    cpus: 0.75
+    mem_limit: 1536m
+    memswap_limit: 1536m
+    cpus: 1.5
     pids_limit: 128
     image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
   v2-control:

@@ -1,0 +1,26 @@
+"""Hard-bounded resource settings; retention cannot weaken the public contract."""
+from dataclasses import dataclass
+import os
+
+
+def integer(name, default, low, high):
+    value = int(os.environ.get("DOXAGENT_V2_DB_" + name, default))
+    if not low <= value <= high:
+        raise ValueError("invalid DOXAGENT_V2_DB_" + name)
+    return value
+
+
+@dataclass(frozen=True)
+class Limits:
+    query_workers: int = 2
+    query_queue: int = 16
+    query_seconds: int = 2
+    detail_seconds: int = 5
+    mvcc_hours: int = 24
+    diagnostic_days: int = 30
+
+    @classmethod
+    def load(cls):
+        return cls(integer("QUERY_WORKERS",2,1,4), integer("QUERY_QUEUE",16,1,64),
+                   integer("QUERY_SECONDS",2,1,2), integer("DETAIL_SECONDS",5,2,5),
+                   integer("MVCC_HOURS",24,24,168), integer("DIAGNOSTIC_DAYS",30,30,365))

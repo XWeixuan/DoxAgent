@@ -36,6 +36,7 @@ def install(app: FastAPI) -> None:
         days = None if period["selected"] == "ALL" else period["current"]["trading_days"]
         previous = period["previous"]["trading_days"] if period["previous"] else None
         service = Metrics(store)
+        service.prime(("processed_cases","new_cases","old_cases","hit_cases","w3_cases","new_fact_candidates","executed_cases","policy_decided_cases","hot_path_seconds","hot_path_samples","w3_seconds","w3_samples"), [ticker], view["seq"], [days,previous or []])
         values = {
             name: service.metric(name, [ticker], view["seq"], days=days, previous_days=previous)
             for name in (

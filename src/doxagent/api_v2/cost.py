@@ -40,12 +40,12 @@ class Costs:
             "ticker=?",
             "valid_from<=?",
             "(valid_to IS NULL OR valid_to>?)",
-            "json_extract(dimensions,'$.scope')=?",
+            "scope=?",
         ]
         params = [ticker, view["seq"], view["seq"], args["scope"]]
         for key, field in (("node_id", "node"), ("provider", "provider"), ("model_id", "model")):
             if args.get(key):
-                where.append("json_extract(dimensions,'$." + field + "')=?")
+                where.append(field + "=?")
                 params.append(args[key])
         period = view["wire"]["period"]
         if period["selected"] == "ALL":
@@ -56,14 +56,15 @@ class Costs:
             params.extend(days)
         return where, params
 
-    def totals(self, ticker, view, args):
-        where, params = self.conditions(ticker, view, args)
-        sums = {}
-        with self.store.connect() as db:
-            for row in db.execute(
-                "SELECT metric,value FROM metric_buckets WHERE " + " AND ".join(where), params
-            ):
-                sums[row[0]] = sums.get(row[0], Decimal(0)) + Decimal(row[1])
+    def totals(self, ticker, view, args, *, sums=None):
+        if sums is None:
+            where, params = self.conditions(ticker, view, args)
+            sums = {}
+            with self.store.connect() as db:
+                for row in db.execute(
+                    "SELECT metric,value FROM " + self.store.metric_table(view["seq"]) + " WHERE " + " AND ".join(where), params
+                ):
+                    sums[row[0]] = sums.get(row[0], Decimal(0)) + Decimal(row[1])
         requests = int(sums.get("requests", 0))
         observed = coverage(count=requests)
 
@@ -145,16 +146,16 @@ class Costs:
                 raise ApiFailure("INVALID_CURSOR", 400) from None
         where, params = self.conditions(ticker, view, args)
         expression = (
-            "json_extract(dimensions,'$.node')"
+            "node"
             if dimension == "NODE"
-            else "json_array(json_extract(dimensions,'$.provider'),"
-            "json_extract(dimensions,'$.model'))"
+            else "json_array(provider,"
+            "model)"
         )
         with self.store.connect() as db:
             rows = db.execute(
                 "SELECT DISTINCT "
                 + expression
-                + " AS item FROM metric_buckets WHERE "
+                + " AS item FROM " + self.store.metric_table(view["seq"]) + " WHERE "
                 + " AND ".join(where)
                 + " AND metric='requests' AND "
                 + expression
@@ -169,7 +170,7 @@ class Costs:
             else {"provider": json.loads(row[0])[0], "model_id": json.loads(row[0])[1]}
             for row in selected
         ]
-        cursor = self.store.save_token(owner, scope, {"after": selected[-1][0]}) if more else None
+        cursor = self.store.save_token(owner, scope, {"after": selected[-1][0], "view_id": view_id, "seq": view["seq"]}) if more else None
         return {
             "items": items,
             "limit": limit,
@@ -230,27 +231,30 @@ def install(app: FastAPI):
         page = costs.choices(
             request.state.principal.user_id, ticker, args["view_id"], current, args, "NODE"
         )
+        identities = [item["node_id"] for item in page["items"]]
+        grouped, models = {key: {} for key in identities}, {key: set() for key in identities}
+        if identities:
+            where, params = costs.conditions(ticker, current, args)
+            where.append("node IN (" + ",".join("?" for _ in identities) + ")")
+            with costs.store.connect() as db:
+                for metric, amount, dimensions in db.execute(
+                    "SELECT metric,value,dimensions FROM " + costs.store.metric_table(current["seq"]) + " WHERE " + " AND ".join(where),
+                    [*params, *identities],
+                ):
+                    dim = json.loads(dimensions)
+                    sums = grouped[dim["node"]]
+                    sums[metric] = sums.get(metric, Decimal(0)) + Decimal(amount)
+                    if metric == "requests":
+                        models[dim["node"]].add((dim["provider"], dim["model"]))
         items = []
         for item in page["items"]:
-            selected = {**args, "node_id": item["node_id"]}
-            where, params = costs.conditions(ticker, current, selected)
-            with costs.store.connect() as db:
-                rows = db.execute(
-                    "SELECT DISTINCT json_extract(dimensions,'$.provider'),"
-                    "json_extract(dimensions,'$.model') FROM metric_buckets WHERE "
-                    + " AND ".join(where)
-                    + " AND metric='requests' ORDER BY 1,2 LIMIT 101",
-                    params,
-                ).fetchall()
-            if len(rows) > 100:
+            key = item["node_id"]
+            if len(models[key]) > 100:
                 raise ApiFailure("RESOURCE_TOO_LARGE", 413)
-            items.append(
-                {
-                    **item,
-                    "models": [{"provider": row[0], "model_id": row[1]} for row in rows],
-                    "totals": costs.totals(ticker, current, selected),
-                }
-            )
+            items.append({**item,
+                "models": [{"provider": provider, "model_id": model} for provider, model in sorted(models[key])],
+                "totals": costs.totals(ticker, current, args, sums=grouped[key]),
+            })
         page["items"] = items
         return app.state.respond(request, "CostNodeRowPage", page, view_id=args["view_id"])
 
@@ -267,7 +271,7 @@ def install(app: FastAPI):
         groups = {}
         with costs.store.connect() as db:
             for row in db.execute(
-                "SELECT dimensions,value FROM metric_buckets WHERE "
+                "SELECT dimensions,value FROM " + costs.store.metric_table(current["seq"]) + " WHERE "
                 + " AND ".join(where)
                 + " AND metric=?",
                 [*params, metric],
@@ -316,7 +320,7 @@ def install(app: FastAPI):
         days = {}
         with costs.store.connect() as db:
             for row in db.execute(
-                "SELECT day,metric,value FROM metric_buckets WHERE "
+                "SELECT day,metric,value FROM " + costs.store.metric_table(current["seq"]) + " WHERE "
                 + " AND ".join(where)
                 + " AND metric IN ('requests','total_tokens','total_tokens_samples',"
                 "'total_cost_usd','total_cost_usd_samples') ORDER BY day",
