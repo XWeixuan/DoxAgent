@@ -14,6 +14,7 @@ from xml.etree import ElementTree
 
 import httpx
 
+from cdecr.kb_v2 import V2KnowledgeBase
 from doxagent.message_bus_v2.google_news import resolve_google_news_urls
 from doxagent.message_bus_v2.schema import (
     AcquisitionFailure,
@@ -387,13 +388,33 @@ class ReutersSiteSearchAdapter:
         self.browser = browser
         self.client = client
         self._company_names: dict[str, str] = {}
+        self._company_kb = V2KnowledgeBase()
 
     async def _query(self, context: PollContext) -> tuple[str, str]:
         configured = context.binding.source_parameters.get("company_short_name")
         if configured:
             return str(configured).strip(), "binding"
         if context.ticker in self._company_names:
-            return self._company_names[context.ticker], "yahoo_symbol_cache"
+            return self._company_names[context.ticker], "company_name_cache"
+        catalog_matches = self._company_kb.lookup("companies", context.ticker, limit=8)
+        expected_id = "COMPANY_" + re.sub(r"[^A-Z0-9]+", "_", context.ticker.upper()).strip("_")
+        catalog_match = next(
+            (item for item in catalog_matches if item.external_id == expected_id),
+            catalog_matches[0] if len(catalog_matches) == 1 else None,
+        )
+        if catalog_match is not None:
+            ticker = context.ticker.casefold()
+            names = [catalog_match.name, *catalog_match.aliases]
+            candidates = [
+                _company_search_name(name)
+                for name in names
+                if name.strip().casefold() != ticker
+            ]
+            if not candidates:
+                candidates = [catalog_match.name]
+            search_name = min(candidates, key=lambda value: (len(value), value.casefold()))
+            self._company_names[context.ticker] = search_name
+            return search_name, "cdecr_company_catalog"
         if self.client is not None:
             try:
                 async with context.request_permit():

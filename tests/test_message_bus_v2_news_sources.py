@@ -215,18 +215,33 @@ async def test_reuters_uses_today_and_previous_day_only(tmp_path: Path) -> None:
     assert result.acquisition_metadata["search_result_count"] == 3
 
 
-async def test_reuters_default_binding_resolves_company_name_from_ticker(tmp_path: Path) -> None:
+async def test_reuters_default_binding_resolves_company_name_from_cdecr_catalog(
+    tmp_path: Path,
+) -> None:
     class Browser:
         async def reuters_search(self, query: str, offset: int) -> list[dict[str, object]]:
             assert query == "Micron"
             return []
 
+    context, _ = _context(tmp_path, "reuters_site_search", {})
+    result = await ReutersSiteSearchAdapter(Browser()).poll(context)
+    assert result.messages == []
+    assert result.acquisition_metadata["query_source"] == "cdecr_company_catalog"
+
+
+async def test_reuters_unknown_ticker_falls_back_to_yahoo_symbol_lookup(tmp_path: Path) -> None:
+    class Browser:
+        async def reuters_search(self, query: str, offset: int) -> list[dict[str, object]]:
+            assert query == "Example"
+            return []
+
     def handler(request: httpx.Request) -> httpx.Response:
         assert request.url.host == "query1.finance.yahoo.com"
-        assert request.url.params["q"] == "MU"
-        return httpx.Response(200, json={"quotes": [{"shortname": "Micron Technology, Inc."}]})
+        assert request.url.params["q"] == "NOTREAL123"
+        return httpx.Response(200, json={"quotes": [{"shortname": "Example Technology, Inc."}]})
 
     context, _ = _context(tmp_path, "reuters_site_search", {})
+    context = context.model_copy(update={"ticker": "NOTREAL123"})
     client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
     result = await ReutersSiteSearchAdapter(Browser(), client).poll(context)
     assert result.messages == []
