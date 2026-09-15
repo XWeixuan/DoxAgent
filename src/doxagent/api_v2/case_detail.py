@@ -3,13 +3,11 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime
 from typing import Any
 
 from fastapi import FastAPI, Request
 
-from doxagent.v2_read.runtime import timing
-
+from .case_evidence import CaseEvidence
 from .dto import available, coverage, missing
 from .errors import ApiFailure
 
@@ -40,10 +38,27 @@ def install(app: FastAPI) -> None:
             ]
             view = {**view, "seq": seq}
         summary = store.get("case", ticker, case_id, seq)
-        case = store.get("native:runtime_v2_cases", ticker, case_id, seq)
+        evidence = CaseEvidence(store, ticker, case_id, seq)
+        case = evidence.fields(
+            "native:runtime_v2_cases",
+            case_id,
+            [
+                "version_pin",
+                "trading_date",
+                "w1_final",
+                "w2_final",
+                "w2_round1",
+                "w2_skipped",
+                "w3_result",
+                "error_code",
+                "status",
+            ],
+        )
         if not case or not summary:
             raise ApiFailure("RESOURCE_NOT_FOUND", 404)
         pin = case["version_pin"]
+        if not pin:
+            raise ApiFailure("PINNED_ARTIFACT_MISSING", 404)
         activation = store.get(
             "activation_revision", ticker, pin.get("activation_revision_id") or "", seq
         )
@@ -68,72 +83,52 @@ def install(app: FastAPI) -> None:
                 limit=20,
             )
 
-        with store.connect() as db:
-            attempts = [
-                json.loads(row[0])
-                for row in db.execute(
-                    "SELECT payload FROM objects WHERE kind='attempt' AND ticker=? AND parent=? "
-                    "AND valid_from<=? AND (valid_to IS NULL OR valid_to>?)",
-                    (ticker, case_id, seq, seq),
-                )
-            ]
+        groups = evidence.attempt_groups()
 
         def interval(node: str | None) -> dict:
-            selected = (
-                [a for a in attempts if a["node_id"] == node]
-                if node
-                else [
-                    a
-                    for a in attempts
-                    if a["node_id"] in {"W1", "W2"} and a["round"] in {"R1", "R2"}
-                ]
-            )
-            if not selected:
-                return timing(None, None)
-            starts = [a["timing"]["first_started_at"]["value"] for a in selected]
-            ends = [a["timing"]["completed_at"]["value"] for a in selected]
-            if not all(starts) or not all(ends):
-                return timing(None, None)
-            value = timing(
-                min(starts, key=datetime.fromisoformat), max(ends, key=datetime.fromisoformat)
-            )
-            value["basis"] = "DERIVED_FROM_RECORDED_INTERVALS"
-            return value
+            return evidence.interval(groups, node)
 
         reference_gaps = {}
 
-        def partial(value, reference_result=None, policy_result=None):
+        def partial(value, reference_result=None, policy_result=None, candidate_result=None):
             result = resource(value)
             refs = reference_gaps.get(id(reference_result), [])
             policies = reference_gaps.get(id(policy_result), [])
-            if refs or policies:
+            candidates = reference_gaps.get(id(candidate_result), [])
+            if value is not None and (refs or policies or candidates):
                 if refs:
                     value["unresolved_reference_ids"] = refs
                 if policies:
                     value["unresolved_policy_ids"] = policies
-                result.update(state="PARTIAL", reason="UNRESOLVED_REFERENCE",
-                    coverage=coverage(count=len(value.get("references", [])) + len(value.get("policies", [])),
-                                      reasons=["PINNED_ARTIFACT_MISSING"]))
+                result.update(
+                    state="PARTIAL",
+                    reason="UNRESOLVED_REFERENCE",
+                    coverage=coverage(
+                        count=len(value.get("references", [])) + len(value.get("policies", [])),
+                        reasons=["PINNED_ARTIFACT_MISSING"],
+                    ),
+                )
             return result
 
         def references(result: dict) -> list[dict]:
             values = []
             attribution = {
-                item["event_id"]: item["fact_ids"]
-                for item in result.get("fact_attributions") or []
+                item["event_id"]: item["fact_ids"] for item in result.get("fact_attributions") or []
             }
             for identity in result.get("reference_ids", []):
-                event = store.get(
-                    "event_detail", ticker, library["library_snapshot_id"] + ":" + identity, seq
-                )
+                parent = library["library_snapshot_id"] + ":" + identity
+                event = evidence.fields("event_detail", parent, ["event_key", "event.title"])
+                provisional = None
                 if event is None:
                     with store.connect() as db:
                         provisional = db.execute(
-                            "SELECT 1 FROM objects WHERE kind='native:runtime_v2_candidates' "
+                            "SELECT id FROM objects WHERE kind='native:runtime_v2_candidates' "
                             "AND ticker=? AND json_extract(payload,'$.provisional_event_id')=? "
                             "AND json_extract(payload,'$.trading_date')=? "
                             "AND json_extract(payload,'$.snapshot_version')<=? "
-                            "AND valid_from<=? AND (valid_to IS NULL OR valid_to>?) LIMIT 1",
+                            "AND valid_from<=? AND (valid_to IS NULL OR valid_to>?) "
+                            "ORDER BY json_extract(payload,'$.snapshot_version') DESC, "
+                            "valid_from DESC LIMIT 1",
                             (
                                 ticker,
                                 identity,
@@ -146,12 +141,40 @@ def install(app: FastAPI) -> None:
                     if not provisional:
                         reference_gaps.setdefault(id(result), []).append(identity)
                         continue
+                    provisional = evidence.fields(
+                        "native:runtime_v2_candidates", provisional[0], ["candidate"]
+                    )
+                facts = []
+                with store.connect() as db:
+                    for fact_id in attribution.get(identity, []) if event else []:
+                        row = db.execute(
+                            "SELECT json_extract(payload,'$.fact.proposition') AS proposition "
+                            "FROM objects "
+                            "WHERE kind='fact' AND ticker=? AND parent=? "
+                            "AND json_extract(payload,'$.fact.fact_id')=? "
+                            "AND valid_from<=? AND (valid_to IS NULL OR valid_to>?) LIMIT 1",
+                            (ticker, parent, fact_id, seq, seq),
+                        ).fetchone()
+                        facts.append(
+                            {
+                                "fact_id": fact_id,
+                                "proposition": available(row[0]) if row and row[0] else missing(),
+                            }
+                        )
+                proposition = ((provisional or {}).get("candidate") or {}).get("proposition")
                 values.append(
                     {
                         "kind": "CANONICAL" if event else "PROVISIONAL",
                         "event_key": event["event_key"] if event else None,
                         "event_id": identity,
                         "fact_ids": attribution.get(identity, []),
+                        "title": available(event["event.title"])
+                        if event and event["event.title"]
+                        else missing(),
+                        "facts": facts,
+                        "provisional_proposition": available(proposition)
+                        if proposition
+                        else missing(),
                         "library_snapshot_id": library["library_snapshot_id"],
                         "library_version": library["library_version"],
                         "provisional_snapshot_version": None
@@ -170,7 +193,9 @@ def install(app: FastAPI) -> None:
             with store.connect() as db:
                 for identity in result.get("policy_ids", []):
                     row = db.execute(
-                        "SELECT payload FROM objects WHERE kind='policy_detail' AND ticker=? "
+                        "SELECT json_extract(payload,'$.summary.title') AS title, "
+                        "json_extract(payload,'$.summary.policy_activation_revision') AS revision "
+                        "FROM objects WHERE kind='policy_detail' AND ticker=? "
                         "AND parent=? AND json_extract(payload,'$.summary.policy_id')=? "
                         "AND valid_from<=? AND (valid_to IS NULL OR valid_to>?) LIMIT 1",
                         (ticker, activation["policy_set"]["artifact_id"], identity, seq, seq),
@@ -178,61 +203,99 @@ def install(app: FastAPI) -> None:
                     if not row:
                         reference_gaps.setdefault(id(result), []).append(identity)
                         continue
-                    policy = json.loads(row[0])["summary"]
                     selected.append(
                         {
                             "policy_id": identity,
                             "policy_set_version": pin["policy_set_version"],
-                            "policy_activation_revision": policy["policy_activation_revision"],
+                            "policy_activation_revision": row["revision"],
+                            "title": available(row["title"]) if row["title"] else missing(),
                             "condition_ids": attribution.get(identity, []),
                         }
                     )
             return selected
 
         w1, w2, w3 = case.get("w1_final"), case.get("w2_final"), case.get("w3_result")
+        recalled = case.get("w2_round1")
+        if recalled is None:
+            recalled = (evidence.latest_success("W2", "R1") or {}).get("output")
+        if not isinstance(recalled, dict) or not isinstance(
+            recalled.get("candidate_policy_ids"), list
+        ):
+            recalled = None
+        candidates_result = {"policy_ids": (recalled or {}).get("candidate_policy_ids", [])}
+        candidate_policies = policies(candidates_result)
         first = (
             {
-                "novelty": available(w1["result"]),
-                "confidence": available(w1["confidence"]),
-                "references": references(w1),
-                "fact_attributions": w1.get("fact_attributions"),
+                "novelty": available(w1["result"]) if w1 else missing(),
+                "confidence": available(w1["confidence"]) if w1 else missing(),
+                "references": references(w1) if w1 else [],
+                "fact_attributions": (w1 or {}).get("fact_attributions"),
+                "rounds": evidence.rounds(groups, "W1"),
                 "timing": interval("W1"),
                 "attempts": page("attempt", "W1"),
                 "reasoning": resource(reasons.get("w1")),
             }
-            if w1
+            if w1 or any(g["node"] == "W1" for g in groups)
             else None
         )
         second = (
             {
-                "skipped": case["w2_skipped"],
+                "skipped": bool(case["w2_skipped"]),
                 "reasoning_stage": (
-                    "R1" if not case["w2_round1"].get("candidate_policy_ids") else "R2"
-                ) if case.get("w2_round1") is not None else None,
-                "policy_hit": available(bool(w2["policy_ids"])),
-                "confidence": available(w2["confidence"]),
-                "policies": policies(w2),
+                    "R1" if not recalled.get("candidate_policy_ids") else "R2" if w2 else None
+                )
+                if recalled is not None
+                else None,
+                "policy_hit": available(bool(w2["policy_ids"])) if w2 else missing(),
+                "confidence": available(w2["confidence"]) if w2 else missing(),
+                "policies": policies(w2) if w2 else [],
+                **({"candidate_policies": candidate_policies} if recalled is not None else {}),
+                "unresolved_candidate_policy_ids": reference_gaps.get(id(candidates_result), []),
+                "rounds": evidence.rounds(
+                    groups,
+                    "W2",
+                    bool(case["w2_skipped"]),
+                    recalled is not None and not recalled.get("candidate_policy_ids"),
+                ),
                 "timing": interval("W2"),
                 "attempts": page("attempt", "W2"),
                 "reasoning": resource(reasons.get("w2")),
             }
-            if w2 and not case["w2_skipped"]
+            if w2
+            or recalled is not None
+            or case["w2_skipped"]
+            or any(g["node"] == "W2" for g in groups)
             else None
         )
         third = None
         if not w3 and summary["initial_route"] == "W3":
-            route = store.get("native:runtime_v2_w3_cases", ticker, case_id, seq)
+            route = evidence.fields("native:runtime_v2_w3_cases", case_id, ["mode"])
             if route:
                 third = {
-                    "status": summary["w3_status"], "mode": route["mode"],
-                    **{name: missing() for name in ("novelty", "policy_hit", "expert_trade_evaluated",
-                        "expert_trade", "direction", "prior_expectation", "expectation_delta")},
-                    "references": [], "policies": [], "timing": interval("W3"),
+                    "status": summary["w3_status"],
+                    "mode": route["mode"],
+                    **{
+                        name: missing()
+                        for name in (
+                            "novelty",
+                            "policy_hit",
+                            "expert_trade_evaluated",
+                            "expert_trade",
+                            "direction",
+                            "prior_expectation",
+                            "expectation_delta",
+                        )
+                    },
+                    "references": [],
+                    "policies": [],
+                    "timing": interval("W3"),
                     "attempts": page("attempt", "W3"),
-                    "reasoning": {name: resource(None) for name in ("novelty", "policy", "expert_trade")},
+                    "reasoning": {
+                        name: resource(None) for name in ("novelty", "policy", "expert_trade")
+                    },
                 }
         if w3:
-            route = store.get("native:runtime_v2_w3_cases", ticker, case_id, seq)
+            route = evidence.fields("native:runtime_v2_w3_cases", case_id, ["mode"])
             if not route:
                 raise ApiFailure("PINNED_ARTIFACT_MISSING", 404)
             expert = w3["expert_trade"]
@@ -265,12 +328,22 @@ def install(app: FastAPI) -> None:
                 ).fetchone()[0]
                 for kind in ("candidate", "execution")
             }
-        failures = []
-        for attempt in attempts:
-            if attempt["error"] and attempt["timing"]["completed_at"]["value"]:
-                failures.append({"failure_id": attempt["attempt_id"], "stage": attempt["node_id"],
-                                 "status": attempt["status"], "error": attempt["error"],
-                                 "occurred_at": attempt["timing"]["completed_at"]["value"]})
+        with store.connect() as db:
+            failures = [
+                json.loads(row[0])
+                for row in db.execute(
+                    "SELECT json_object('failure_id',id,'stage',route,"
+                    "'status',json_extract(payload,'$.status'), "
+                    "'error',json_extract(payload,'$.error'),'occurred_at',"
+                    "json_extract(payload,'$.timing.completed_at.value')) "
+                    "FROM objects WHERE kind='attempt' AND ticker=? AND parent=? "
+                    "AND json_extract(payload,'$.error') IS NOT NULL "
+                    "AND json_extract(payload,'$.timing.completed_at.value') IS NOT NULL "
+                    "AND valid_from<=? AND (valid_to IS NULL OR valid_to>?) "
+                    "ORDER BY sort_key DESC,id DESC LIMIT 20",
+                    (ticker, case_id, seq, seq),
+                )
+            ]
         if case.get("error_code") and summary["completed_at"]["value"]:
             failures.append(
                 {
@@ -291,7 +364,7 @@ def install(app: FastAPI) -> None:
             "provisional_snapshot_version": pin["provisional_snapshot_version"],
             "hot_path": interval(None),
             "w1": partial(first, w1),
-            "w2": partial(second, policy_result=w2),
+            "w2": partial(second, policy_result=w2, candidate_result=candidates_result),
             "w3": partial(third, (w3 or {}).get("novelty"), (w3 or {}).get("policy")),
             "messages": page("message"),
             "failures": failures,
@@ -300,7 +373,14 @@ def install(app: FastAPI) -> None:
             "results": summary["results"],
         }
         return app.state.respond(
-            request, "CaseDetail", value, view_id=args["view_id"], read_seq=seq,
-            resource_coverage=coverage(complete=not reference_gaps, count=1,
-                reasons=["PINNED_ARTIFACT_MISSING"] if reference_gaps else []),
+            request,
+            "CaseDetail",
+            value,
+            view_id=args["view_id"],
+            read_seq=seq,
+            resource_coverage=coverage(
+                complete=not reference_gaps,
+                count=1,
+                reasons=["PINNED_ARTIFACT_MISSING"] if reference_gaps else [],
+            ),
         )

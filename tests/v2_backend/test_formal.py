@@ -133,10 +133,10 @@ def test_runtime_noop_activation_inherits_base_policy_run(tmp_path):
     mapper = FormalProjectors(store)
     assert (
         mapper._policy_run_id(
-                {
-                    "ticker": "MU",
-                    "revision_id": "runtime-maintain-fixture-activation",
-                    "base_revision": "activation-base",
+            {
+                "ticker": "MU",
+                "revision_id": "runtime-maintain-fixture-activation",
+                "base_revision": "activation-base",
                 "artifacts": {"document3": {"version": 7}},
             }
         )
@@ -145,7 +145,9 @@ def test_runtime_noop_activation_inherits_base_policy_run(tmp_path):
 
 
 @pytest.mark.parametrize("attribution_recorded", [False, True, "resolved"])
-def test_formal_activation_indexes_exact_documents_policy_and_library(tmp_path, attribution_recorded):
+def test_formal_activation_indexes_exact_documents_policy_and_library(
+    tmp_path, attribution_recorded, monkeypatch
+):
     source = SQLiteCodexRuntimeRepository(tmp_path / "research.db")
     _seed_published_d2(source)
 
@@ -295,15 +297,25 @@ def test_formal_activation_indexes_exact_documents_policy_and_library(tmp_path, 
     if attribution_recorded:
         case["w1_final"]["fact_attributions"] = [{"event_id": "E99", "fact_ids": ["F7"]}]
         case["w1_final"]["reference_ids"] = ["E99"]
-        case["w2_round1"] = {"candidate_policy_ids": [], "reason": "No criterion matches the reported fact"}
+        case["w2_round1"] = {
+            "candidate_policy_ids": [],
+            "reason": "No criterion matches the reported fact",
+        }
         case["w2_final"]["reason"] = "no_policy_candidate_recalled"
     if attribution_recorded == "resolved":
         event_record = next(r for r in records if r["kind"] == "event")
         event_id = event_record["id"].rsplit(":", 1)[-1]
-        fact_record = next(r for r in records if r["kind"] == "fact" and r["parent"] == event_record["id"])
+        fact_record = next(
+            r for r in records if r["kind"] == "fact" and r["parent"] == event_record["id"]
+        )
         expected_fact = fact_record["data"]["fact"]["fact_id"]
-        case["w1_final"].update(result="OLD", reference_ids=[event_id],
-            fact_attributions=[{"event_id":event_id, "fact_ids":[expected_fact]}])
+        case["w1_final"].update(
+            result="OLD",
+            reference_ids=[event_id],
+            fact_attributions=[{"event_id": event_id, "fact_ids": [expected_fact]}],
+        )
+    # Detail must never open the native Case's unrelated historical inputs.
+    case["frozen_inputs"] = {"unrelated_history": "irrelevant" * 100000}
     seq = store.ingest(
         "fixture",
         "case",
@@ -330,6 +342,16 @@ def test_formal_activation_indexes_exact_documents_policy_and_library(tmp_path, 
     )
     control = ControlRepository(RuntimeJournal(tmp_path / "runtime.db"))
     control.migrate()
+    from doxagent.v2_read.content_files import ContentFiles
+
+    original_read = ContentFiles.read
+
+    def bounded_read(self, *args, **kwargs):
+        result = original_read(self, *args, **kwargs)
+        assert b"unrelated_history" not in result
+        return result
+
+    monkeypatch.setattr(ContentFiles, "read", bounded_read)
     with TestClient(create_app(store=store, control=control, auth=OfflineAuth())) as client:
         response = client.get(
             PREFIX + f"/tickers/MU/runtime/cases/{case['case_id']}",
@@ -345,13 +367,111 @@ def test_formal_activation_indexes_exact_documents_policy_and_library(tmp_path, 
         if attribution_recorded == "resolved":
             reference = data["w1"]["data"]["references"][0]
             assert reference["fact_ids"] == [expected_fact]
-            assert reference["library_snapshot_id"] == active["event_library"]["library_snapshot_id"]
+            assert (
+                reference["library_snapshot_id"] == active["event_library"]["library_snapshot_id"]
+            )
             assert data["w1"]["state"] == "AVAILABLE"
+            assert reference["title"]["value"] == event_record["data"]["title"]
+            assert (
+                reference["facts"][0]["proposition"]["value"]
+                == fact_record["data"]["fact"]["proposition"]
+            )
         elif attribution_recorded:
             assert data["w1"]["state"] == "PARTIAL"
             assert data["w1"]["data"]["unresolved_reference_ids"] == ["E99"]
-            assert data["w1"]["data"]["fact_attributions"] == [{"event_id":"E99", "fact_ids":["F7"]}]
+            assert data["w1"]["data"]["fact_attributions"] == [
+                {"event_id": "E99", "fact_ids": ["F7"]}
+            ]
             assert data["w2"]["data"]["reasoning_stage"] == "R1"
             assert data["w2"]["data"]["reasoning"]["state"] == "AVAILABLE"
+            assert data["w2"]["data"]["rounds"][1]["not_executed_reason"] == "NO_POLICY_CANDIDATE"
         else:
             assert data["w1"]["data"]["fact_attributions"] is None
+        if attribution_recorded == "resolved":
+            from doxagent.v2_read.runtime import timing
+
+            policy_record = next(r for r in records if r["kind"] == "policy_detail")
+            policy_id = policy_record["data"]["summary"]["policy_id"]
+            case.update(w2_final=None, w2_round1=None, status="FAILED")
+
+            def attempt_record(identity, round_name, status):
+                return {
+                    "kind": "attempt",
+                    "ticker": "MU",
+                    "id": identity,
+                    "parent": case["case_id"],
+                    "route": "W2",
+                    "sort": NOW.isoformat(),
+                    "data": {
+                        "attempt_id": identity,
+                        "turn_id": identity,
+                        "node_id": "W2",
+                        "round": round_name,
+                        "ordinal": 1,
+                        "attempt_number": 1,
+                        "status": status,
+                        "timing": timing("2026-09-08T12:00:00Z", "2026-09-08T12:01:00Z"),
+                        "error": None,
+                    },
+                }
+
+            # Fixture writes are not endpoint reads and may inspect the prior revision.
+            monkeypatch.setattr(ContentFiles, "read", original_read)
+            current_seq = store.ingest(
+                "fixture",
+                "failed-r2",
+                [
+                    {
+                        "kind": "native:runtime_v2_cases",
+                        "ticker": "MU",
+                        "id": case["case_id"],
+                        "data": case,
+                    },
+                    *mapper.case(case, 2),
+                    attempt_record("r1-turn", "R1", "SUCCEEDED"),
+                    attempt_record("r2-turn", "R2", "FAILED"),
+                    {
+                        "kind": "native:runtime_v2_turns",
+                        "ticker": "MU",
+                        "id": "r1-turn",
+                        "data": {"output": {"candidate_policy_ids": [policy_id]}},
+                    },
+                ],
+            )
+            current_view = store.save_token(
+                "developer",
+                "runtime-current",
+                {
+                    "seq": current_seq,
+                    "as_of": "2026-09-08T12:02:00Z",
+                    "wire": {"page": "RUNTIME", "ticker": "MU"},
+                },
+                view=True,
+                now=datetime.now(UTC),
+            )
+            monkeypatch.setattr(ContentFiles, "read", bounded_read)
+            response = client.get(
+                PREFIX + f"/tickers/MU/runtime/cases/{case['case_id']}",
+                params={"view_id": current_view},
+                headers={"Authorization": "Bearer offline"},
+            )
+            assert response.status_code == 200, response.text
+            second = response.json()["data"]["data"]["w2"]["data"]
+            assert (
+                second["candidate_policies"][0]["title"]["value"]
+                == policy_record["data"]["summary"]["title"]
+            )
+            assert second["policies"] == []
+            assert second["policy_hit"]["value"] is None
+            assert second["rounds"][1]["attempt_count"] == 1
+            assert second["rounds"][1]["not_executed_reason"] is None
+            assert any(
+                a["round"] == "R2" and a["status"] == "FAILED" for a in second["attempts"]["items"]
+            )
+            response = client.get(
+                PREFIX + f"/tickers/MU/runtime/cases/{case['case_id']}/attempts",
+                params={"view_id": view, "node": "W2"},
+                headers={"Authorization": "Bearer offline"},
+            )
+            assert response.status_code == 200, response.text
+            assert response.json()["data"]["data"]["items"] == []

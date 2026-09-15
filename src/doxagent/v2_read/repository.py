@@ -88,6 +88,16 @@ class ReadStore:
                 CREATE INDEX IF NOT EXISTS objects_page ON objects(kind,ticker,sort_key,id);
                 CREATE INDEX IF NOT EXISTS objects_parent
                     ON objects(kind,ticker,parent,sort_key,id);
+                CREATE INDEX IF NOT EXISTS case_fact_evidence ON objects(
+                    kind,ticker,parent,json_extract(payload,'$.fact.fact_id'),valid_from)
+                    WHERE kind='fact';
+                CREATE INDEX IF NOT EXISTS case_policy_evidence ON objects(
+                    kind,ticker,parent,json_extract(payload,'$.summary.policy_id'),valid_from)
+                    WHERE kind='policy_detail';
+                CREATE INDEX IF NOT EXISTS case_provisional_evidence ON objects(
+                    kind,ticker,json_extract(payload,'$.provisional_event_id'),
+                    json_extract(payload,'$.trading_date'),json_extract(payload,'$.snapshot_version'),valid_from)
+                    WHERE kind='native:runtime_v2_candidates';
                 CREATE INDEX IF NOT EXISTS objects_day ON objects(kind,ticker,day,valid_from);
                 CREATE INDEX IF NOT EXISTS objects_day_page ON objects(kind,ticker,day,sort_key,id);
                 CREATE INDEX IF NOT EXISTS objects_source_page ON objects(kind,ticker,source_id,day,sort_key,id);

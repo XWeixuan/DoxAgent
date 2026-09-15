@@ -1,5 +1,5 @@
 import { LoadMore } from "@/components/load-more";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import type {
   ContentRef,
   Resource,
@@ -8,6 +8,10 @@ import type {
   MessageSummary,
   Candidate,
   ExecutionSummary,
+  EventLink,
+  PolicyLink,
+  RuntimeRound,
+  FactAttribution,
 } from "@contract";
 import { useRead, tickerPath, id } from "@/core/page-query";
 import { usePages } from "@/core/paged-query";
@@ -66,6 +70,8 @@ export default function CaseDetails({
                   ticker={ticker}
                   caseId={caseId}
                   node="W1"
+                  view={view}
+                  rounds={d.w1.data.rounds}
                   first={d.w1.data.attempts}
                 />
                 {d.w1.data.unresolved_reference_ids?.length ? (
@@ -80,7 +86,13 @@ export default function CaseDetails({
                   !d.w1.data.unresolved_reference_ids?.length && (
                     <Notice>该旧信息判定未提供 Event / Fact 归因。</Notice>
                   )}
-                <Reason ticker={ticker} content={d.w1.data.reasoning} />
+                <Reason ticker={ticker} content={d.w1.data.reasoning}>
+                  <EventEvidence
+                    references={d.w1.data.references}
+                    unresolved={d.w1.data.unresolved_reference_ids}
+                    attributions={d.w1.data.fact_attributions}
+                  />
+                </Reason>
               </>
             ) : (
               <p>尚未形成 W1 判定</p>
@@ -92,9 +104,11 @@ export default function CaseDetails({
               <>
                 <div className="verdict">
                   <strong>
-                    {valueText(d.w2.data.policy_hit, (v) =>
-                      v ? "命中" : "未命中",
-                    )}
+                    {d.w2.data.skipped
+                      ? "已跳过"
+                      : valueText(d.w2.data.policy_hit, (v) =>
+                          v ? "命中" : "未命中",
+                        )}
                   </strong>
                   <span>置信度 {valueText(d.w2.data.confidence)}</span>
                   {d.w2.data.policies.map((p) => (
@@ -110,6 +124,8 @@ export default function CaseDetails({
                   ticker={ticker}
                   caseId={caseId}
                   node="W2"
+                  view={view}
+                  rounds={d.w2.data.rounds}
                   first={d.w2.data.attempts}
                 />
                 {d.w2.data.unresolved_policy_ids?.length ? (
@@ -124,7 +140,19 @@ export default function CaseDetails({
                   !d.w2.data.unresolved_policy_ids?.length && (
                     <Notice>该命中判定未提供策略归因。</Notice>
                   )}
-                <Reason ticker={ticker} content={d.w2.data.reasoning} />
+                <Reason ticker={ticker} content={d.w2.data.reasoning}>
+                  <PolicyEvidence
+                    label="R1 召回候选 Policy"
+                    policies={d.w2.data.candidate_policies}
+                    unresolved={d.w2.data.unresolved_candidate_policy_ids}
+                  />
+                  <PolicyEvidence
+                    label="最终命中 Policy"
+                    policies={d.w2.data.policies}
+                    unresolved={d.w2.data.unresolved_policy_ids}
+                    recorded={d.w2.data.policy_hit.state === "AVAILABLE"}
+                  />
+                </Reason>
               </>
             ) : (
               <p>尚未形成 W2 判定</p>
@@ -170,6 +198,7 @@ export default function CaseDetails({
                 ticker={ticker}
                 caseId={caseId}
                 node="W3"
+                view={view}
                 first={d.w3.data.attempts}
               />
               <Reason
@@ -224,10 +253,12 @@ function Reason({
   ticker,
   content,
   label = "判断依据",
+  children,
 }: {
   ticker: string;
   content: Resource<ContentRef>;
   label?: string;
+  children?: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   return (
@@ -240,12 +271,19 @@ function Reason({
         {open ? "收起" : "展开"}
         {label}
       </Button>
-      {open &&
-        (content.data ? (
-          <ContentReader ticker={ticker} content={content.data} loadFully />
-        ) : (
-          <Notice>判断依据未记录</Notice>
-        ))}
+      {open && (
+        <div className="grid gap-3">
+          <div>
+            {children && <h4>判断说明</h4>}
+            {content.data ? (
+              <ContentReader ticker={ticker} content={content.data} loadFully />
+            ) : (
+              <Notice>判断依据未记录</Notice>
+            )}
+          </div>
+          {children}
+        </div>
+      )}
     </div>
   );
 }
@@ -254,11 +292,15 @@ function Attempts({
   caseId,
   node,
   first,
+  view,
+  rounds,
 }: {
   ticker: string;
   caseId: string;
   node: string;
   first: Page<ModelAttempt>;
+  view: string;
+  rounds?: RuntimeRound[];
 }) {
   const [more, setMore] = useState(false);
   const q = usePages<ModelAttempt, "Attempts">(
@@ -266,13 +308,16 @@ function Attempts({
     more
       ? tickerPath(ticker) +
           `/runtime/cases/${id(caseId)}/attempts` +
-          queryString({ node, limit: "20" })
+          queryString({ node, limit: "20", view_id: view })
       : null,
     (r) => r.data,
-    undefined,
+    view,
     first,
   );
   const rows = q.data?.data.data?.items ?? first.items;
+  const roundNames = rounds?.map((r) => r.round) ?? [
+    ...new Set(rows.map((a) => a.round)),
+  ];
   return (
     <>
       <table className="domain-table attempts">
@@ -285,18 +330,22 @@ function Attempts({
           </tr>
         </thead>
         <tbody>
-          {rows.map((a) => (
-            <tr key={a.attempt_id}>
-              <td>
-                {a.node_id} · {a.round}
-              </td>
-              <td>{a.attempt_number}</td>
-              <td>{a.status}</td>
-              <td>{valueText(a.timing.wall_seconds, (v) => v.toFixed(2))}</td>
-            </tr>
-          ))}
+          {roundNames.map((round) => {
+            const attempts = rows.filter((a) => a.round === round);
+            const summary = rounds?.find((r) => r.round === round);
+            return (
+              <RoundRows
+                key={round}
+                node={node}
+                round={round}
+                summary={summary}
+                attempts={attempts}
+              />
+            );
+          })}
         </tbody>
       </table>
+      {q.error && <Notice danger>尝试记录加载失败，请重试。</Notice>}
       {(q.hasNextPage || (!more && first.has_more)) && (
         <LoadMore
           variant="outline"
@@ -306,6 +355,143 @@ function Attempts({
         </LoadMore>
       )}
     </>
+  );
+}
+export function RoundRows({
+  node,
+  round,
+  summary,
+  attempts,
+}: {
+  node: string;
+  round: string;
+  summary?: RuntimeRound;
+  attempts: ModelAttempt[];
+}) {
+  return (
+    <>
+      <tr>
+        <th colSpan={4}>
+          {node} · {round}
+          {summary ? ` · ${summary.attempt_count} 次尝试` : ""}
+        </th>
+      </tr>
+      {!attempts.length && (
+        <tr>
+          <td>
+            {node} · {round}
+          </td>
+          <td>—</td>
+          <td colSpan={2}>
+            {summary?.attempt_count
+              ? "本轮尝试不在当前页，请加载更多尝试"
+              : summary?.not_executed_reason === "NO_POLICY_CANDIDATE"
+                ? "未执行：未召回候选 Policy"
+                : summary?.not_executed_reason === "W2_SKIPPED"
+                  ? "未执行：W2 已跳过"
+                  : "暂无执行记录"}
+          </td>
+        </tr>
+      )}
+      {attempts.map((a) => (
+        <tr key={a.attempt_id}>
+          <td>
+            {a.node_id} · {a.round}
+          </td>
+          <td>{a.attempt_number}</td>
+          <td>{a.status}</td>
+          <td>{valueText(a.timing.wall_seconds, (v) => v.toFixed(2))}</td>
+        </tr>
+      ))}
+    </>
+  );
+}
+export function EventEvidence({
+  references,
+  unresolved,
+  attributions,
+}: {
+  references: EventLink[];
+  unresolved?: string[];
+  attributions?: FactAttribution[] | null;
+}) {
+  return (
+    <div className="grid gap-2">
+      <h4>引用 Event / Fact</h4>
+      {!references.length && <p>未记录可解析的 Event / Fact 引用</p>}
+      {references.map((r) => (
+        <div className="grid gap-1" key={r.event_id}>
+          <p>
+            {r.kind === "PROVISIONAL" ? "临时事件" : "事件"} {r.event_id} ·{" "}
+            {r.title ? valueText(r.title) : "名称未记录"}
+          </p>
+          {r.kind === "PROVISIONAL" ? (
+            <p>
+              {r.provisional_proposition
+                ? valueText(r.provisional_proposition)
+                : "临时事实未解析"}
+            </p>
+          ) : r.fact_ids.length ? (
+            r.fact_ids.map((factId) => {
+              const fact = r.facts?.find((f) => f.fact_id === factId);
+              return (
+                <p key={factId}>
+                  事实 {factId} ·{" "}
+                  {fact ? valueText(fact.proposition) : "事实内容未解析"}
+                </p>
+              );
+            })
+          ) : (
+            <p>Fact 归因未提供</p>
+          )}
+        </div>
+      ))}
+      {unresolved?.map((eventId) => (
+        <div key={eventId}>
+          <p>事件 {eventId} · 固定快照名称未解析</p>
+          {attributions
+            ?.find((a) => a.event_id === eventId)
+            ?.fact_ids.map((factId) => (
+              <p key={factId}>事实 {factId} · 固定快照内容未解析</p>
+            ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+export function PolicyEvidence({
+  label,
+  policies,
+  unresolved,
+  recorded = true,
+}: {
+  label: string;
+  policies?: PolicyLink[];
+  unresolved?: string[];
+  recorded?: boolean;
+}) {
+  return (
+    <div className="grid gap-2">
+      <h4>{label}</h4>
+      {!recorded ? (
+        <p>尚未形成最终判定</p>
+      ) : policies === undefined ? (
+        <p>候选信息未记录</p>
+      ) : !policies.length && !unresolved?.length ? (
+        <p>无</p>
+      ) : null}
+      {policies?.map((p) => (
+        <p key={p.policy_id}>
+          策略 {p.policy_id} · {p.title ? valueText(p.title) : "名称未记录"}
+          {p.condition_ids.length
+            ? ` · 命中条件 ${p.condition_ids.join("、")}`
+            : ""}
+        </p>
+      ))}
+      {unresolved?.map((policyId) => (
+        <p key={policyId}>策略 {policyId} · 固定快照名称未解析</p>
+      ))}
+    </div>
   );
 }
 function CaseMessage({

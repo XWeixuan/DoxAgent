@@ -101,21 +101,26 @@ def install(app: FastAPI) -> None:
 
     @app.get(prefix + "/cases/{case_id}/attempts")
     async def attempts(ticker: str, case_id: str, request: Request) -> Any:
-        args = query(request, {"node", "limit", "cursor"})
-        require_case(ticker, case_id)
+        args = query(request, {"node", "limit", "cursor", "view_id"})
+        owner = request.state.principal.user_id
+        view = views.get(owner, args["view_id"], ticker) if args.get("view_id") else None
+        if view and view["wire"]["page"] != "RUNTIME":
+            raise ApiFailure("SCOPE_MISMATCH", 400)
+        require_case(ticker, case_id, view["seq"] if view else None)
         if args.get("node") not in {"W1", "W2", "W3"}:
             raise ApiFailure("VALIDATION_FAILED", 422)
         value = views.page(
             request.state.principal.user_id,
             "attempt",
             ticker,
-            view=None,
+            view=view,
+            view_id=args.get("view_id"),
             parent=case_id,
             route=args["node"],
             limit=int(args.get("limit", 20)),
             cursor=args.get("cursor"),
         )
-        return respond(request, "ModelAttemptPage", value)
+        return respond(request, "ModelAttemptPage", value, view_id=args.get("view_id"))
 
     @app.get(prefix + "/cases/{case_id}/messages")
     async def messages(ticker: str, case_id: str, request: Request) -> Any:

@@ -616,15 +616,26 @@ export interface ModelAttempt {
   error: ApiError | null;
 }
 export interface EventLink {
+  /** Display evidence from this Case's pinned snapshot; never current-head fallback. */
+  title?: Value<string>;
+  facts?: { fact_id: Id; proposition: Value<string> }[];
+  provisional_proposition?: Value<string>;
   kind: "CANONICAL" | "PROVISIONAL";
   event_key: Id | null; event_id: Id; fact_ids: Id[];
   library_snapshot_id: Id;
   library_version: Count; provisional_snapshot_version: Count | null;
   semantic_day: Day | null;
 }
-export interface PolicyLink { policy_id: Id; policy_set_version: Count; policy_activation_revision: string; condition_ids: Id[] }
+export interface PolicyLink { title?: Value<string>; policy_id: Id; policy_set_version: Count; policy_activation_revision: string; condition_ids: Id[] }
+export interface RuntimeRound {
+  round: "R1" | "R2" | "R3";
+  attempt_count: Count;
+  /** Only set when non-execution is proven, not inferred from a truncated attempts page. */
+  not_executed_reason: "W2_SKIPPED" | "NO_POLICY_CANDIDATE" | null;
+}
 export interface FactAttribution { event_id: Id; fact_ids: Id[] }
 export interface W1Detail {
+  rounds?: RuntimeRound[];
   /** null or absent: historical evidence not recorded; []: recorded with no canonical Fact attribution. */
   fact_attributions?: FactAttribution[] | null;
   unresolved_reference_ids?: Id[];
@@ -632,6 +643,9 @@ export interface W1Detail {
   timing: Timing; attempts: Page<ModelAttempt>; reasoning: Resource<ContentRef>;
 }
 export interface W2Detail {
+  rounds?: RuntimeRound[];
+  candidate_policies?: PolicyLink[];
+  unresolved_candidate_policy_ids?: Id[];
   reasoning_stage?: "R1" | "R2" | null;
   unresolved_policy_ids?: Id[];
   skipped: boolean; policy_hit: Value<boolean>; confidence: Value<Confidence>;

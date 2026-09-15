@@ -478,7 +478,7 @@
   {
     "method": "GET",
     "path": "/tickers/{ticker}/runtime/cases/{case_id}/attempts",
-    "parameters": "`node=W1|W2|W3`，P",
+    "parameters": "`node=W1|W2|W3`，可选 `view_id`（RUNTIME 固定水位），P",
     "response_schema": "ModelAttemptPage",
     "transport": "JSON"
   },

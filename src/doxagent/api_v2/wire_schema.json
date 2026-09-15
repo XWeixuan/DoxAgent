@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "source_sha256": "54e3f4c8648bb95f5358bd6485f48b1052b0d1b03351e4e0e663e7913ac0b705",
+  "source_sha256": "0422f4f98aa3ac3587bede7a261fcf88c09d687b463d1233fba19625256b5178",
   "$defs": {
     "Id": {
       "type": "string"
@@ -542,10 +542,16 @@
           "$ref": "#/$defs/Count"
         },
         "membership": {
-          "enum": [
-            "LISTED_TRADING_DAYS",
-            "LISTED_SEMANTIC_DAYS",
-            "ALL_SEMANTIC_DAYS"
+          "anyOf": [
+            {
+              "const": "LISTED_TRADING_DAYS"
+            },
+            {
+              "const": "LISTED_SEMANTIC_DAYS"
+            },
+            {
+              "const": "ALL_SEMANTIC_DAYS"
+            }
           ]
         },
         "coverage": {
@@ -1059,9 +1065,99 @@
       ],
       "additionalProperties": false
     },
+    "MaintenanceDisposition": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "anyOf": [
+            {
+              "const": "MAINTAIN_COMPLETED"
+            },
+            {
+              "const": "INITIALIZED"
+            }
+          ]
+        },
+        "policy_disposition": {
+          "anyOf": [
+            {
+              "const": "CONTENT_CHANGED"
+            },
+            {
+              "const": "NO_CHANGE"
+            },
+            {
+              "const": "INHERITED"
+            },
+            {
+              "const": "UNKNOWN"
+            }
+          ]
+        },
+        "event_disposition": {
+          "anyOf": [
+            {
+              "const": "CONTENT_CHANGED"
+            },
+            {
+              "const": "NO_CHANGE"
+            },
+            {
+              "const": "UNKNOWN"
+            }
+          ]
+        },
+        "from_policy_version": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Count"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "to_policy_version": {
+          "$ref": "#/$defs/Count"
+        },
+        "from_library_version": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Count"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "to_library_version": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "status",
+        "policy_disposition",
+        "event_disposition",
+        "from_policy_version",
+        "to_policy_version",
+        "from_library_version",
+        "to_library_version"
+      ],
+      "additionalProperties": false
+    },
     "Activation": {
       "type": "object",
       "properties": {
+        "maintenance": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MaintenanceDisposition"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "runtime_activation_id": {
           "$ref": "#/$defs/Id"
         },
@@ -1082,16 +1178,6 @@
         },
         "monitoring_configuration_id": {
           "$ref": "#/$defs/Id"
-        },
-        "maintenance": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/MaintenanceDisposition"
-            },
-            {
-              "type": "null"
-            }
-          ]
         }
       },
       "required": [
@@ -1705,15 +1791,6 @@
     "OverviewStatus": {
       "type": "object",
       "properties": {
-        "clock": {
-          "$ref": "#/$defs/ClockContext"
-        },
-        "normal_tickers": {
-          "$ref": "#/$defs/Value__61b35f382dc9"
-        },
-        "blocked_tickers": {
-          "$ref": "#/$defs/Value__61b35f382dc9"
-        },
         "ib_gateway_status": {
           "anyOf": [
             {
@@ -1723,6 +1800,15 @@
               "const": "DISCONNECTED"
             }
           ]
+        },
+        "clock": {
+          "$ref": "#/$defs/ClockContext"
+        },
+        "normal_tickers": {
+          "$ref": "#/$defs/Value__61b35f382dc9"
+        },
+        "blocked_tickers": {
+          "$ref": "#/$defs/Value__61b35f382dc9"
         }
       },
       "required": [
@@ -3894,6 +3980,16 @@
     "PolicyContext": {
       "type": "object",
       "properties": {
+        "maintenance": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MaintenanceDisposition"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "runtime_activation_id": {
           "$ref": "#/$defs/Id"
         },
@@ -3916,16 +4012,6 @@
           "anyOf": [
             {
               "$ref": "#/$defs/Id"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "maintenance": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/MaintenanceDisposition"
             },
             {
               "type": "null"
@@ -6647,6 +6733,31 @@
     "EventLink": {
       "type": "object",
       "properties": {
+        "title": {
+          "$ref": "#/$defs/Value__8f3d8a04fb57"
+        },
+        "facts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "fact_id": {
+                "$ref": "#/$defs/Id"
+              },
+              "proposition": {
+                "$ref": "#/$defs/Value__8f3d8a04fb57"
+              }
+            },
+            "required": [
+              "fact_id",
+              "proposition"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "provisional_proposition": {
+          "$ref": "#/$defs/Value__8f3d8a04fb57"
+        },
         "kind": {
           "anyOf": [
             {
@@ -6718,6 +6829,9 @@
     "PolicyLink": {
       "type": "object",
       "properties": {
+        "title": {
+          "$ref": "#/$defs/Value__8f3d8a04fb57"
+        },
         "policy_id": {
           "$ref": "#/$defs/Id"
         },
@@ -6742,9 +6856,87 @@
       ],
       "additionalProperties": false
     },
+    "RuntimeRound": {
+      "type": "object",
+      "properties": {
+        "round": {
+          "anyOf": [
+            {
+              "const": "R1"
+            },
+            {
+              "const": "R2"
+            },
+            {
+              "const": "R3"
+            }
+          ]
+        },
+        "attempt_count": {
+          "$ref": "#/$defs/Count"
+        },
+        "not_executed_reason": {
+          "anyOf": [
+            {
+              "const": "W2_SKIPPED"
+            },
+            {
+              "const": "NO_POLICY_CANDIDATE"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "round",
+        "attempt_count",
+        "not_executed_reason"
+      ],
+      "additionalProperties": false
+    },
+    "FactAttribution": {
+      "type": "object",
+      "properties": {
+        "event_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "fact_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Id"
+          }
+        }
+      },
+      "required": [
+        "event_id",
+        "fact_ids"
+      ],
+      "additionalProperties": false
+    },
     "W1Detail": {
       "type": "object",
       "properties": {
+        "rounds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RuntimeRound"
+          }
+        },
+        "fact_attributions": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/FactAttribution"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "unresolved_reference_ids": {
           "type": "array",
           "items": {
@@ -6771,19 +6963,6 @@
         },
         "reasoning": {
           "$ref": "#/$defs/Resource__f6c6a9ccb193"
-        },
-        "fact_attributions": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/FactAttribution"
-              }
-            },
-            {
-              "type": "null"
-            }
-          ]
         }
       },
       "required": [
@@ -6900,6 +7079,37 @@
     "W2Detail": {
       "type": "object",
       "properties": {
+        "rounds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RuntimeRound"
+          }
+        },
+        "candidate_policies": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PolicyLink"
+          }
+        },
+        "unresolved_candidate_policy_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Id"
+          }
+        },
+        "reasoning_stage": {
+          "anyOf": [
+            {
+              "const": "R1"
+            },
+            {
+              "const": "R2"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "unresolved_policy_ids": {
           "type": "array",
           "items": {
@@ -6929,13 +7139,6 @@
         },
         "reasoning": {
           "$ref": "#/$defs/Resource__f6c6a9ccb193"
-        },
-        "reasoning_stage": {
-          "enum": [
-            "R1",
-            "R2",
-            null
-          ]
         }
       },
       "required": [
@@ -8579,6 +8782,41 @@
         "label",
         "models",
         "totals"
+      ],
+      "additionalProperties": false
+    },
+    "DeferredQueryTicket": {
+      "type": "object",
+      "properties": {
+        "query_id": {
+          "type": "string"
+        },
+        "state": {
+          "anyOf": [
+            {
+              "const": "QUEUED"
+            },
+            {
+              "const": "RUNNING"
+            }
+          ]
+        },
+        "retry_after_seconds": {
+          "type": "number"
+        },
+        "expires_at": {
+          "$ref": "#/$defs/Instant"
+        },
+        "result_path": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "query_id",
+        "state",
+        "retry_after_seconds",
+        "expires_at",
+        "result_path"
       ],
       "additionalProperties": false
     },
@@ -10575,6 +10813,98 @@
           "type": "array",
           "items": {
             "$ref": "#/$defs/PolicySetRef"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "snapshot_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "limit": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor",
+        "has_more",
+        "snapshot_id",
+        "limit"
+      ],
+      "additionalProperties": false
+    },
+    "MaintenanceDispositionResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/MaintenanceDisposition"
+        },
+        "meta": {
+          "$ref": "#/$defs/Meta"
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ],
+      "additionalProperties": false
+    },
+    "Page__8d13840b4775": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MaintenanceDisposition"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "snapshot_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "limit": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor",
+        "has_more",
+        "snapshot_id",
+        "limit"
+      ],
+      "additionalProperties": false
+    },
+    "MaintenanceDispositionPage": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MaintenanceDisposition"
           }
         },
         "next_cursor": {
@@ -19264,6 +19594,190 @@
       ],
       "additionalProperties": false
     },
+    "RuntimeRoundResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/RuntimeRound"
+        },
+        "meta": {
+          "$ref": "#/$defs/Meta"
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ],
+      "additionalProperties": false
+    },
+    "Page__4e2b4f82c4ec": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RuntimeRound"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "snapshot_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "limit": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor",
+        "has_more",
+        "snapshot_id",
+        "limit"
+      ],
+      "additionalProperties": false
+    },
+    "RuntimeRoundPage": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RuntimeRound"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "snapshot_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "limit": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor",
+        "has_more",
+        "snapshot_id",
+        "limit"
+      ],
+      "additionalProperties": false
+    },
+    "FactAttributionResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/FactAttribution"
+        },
+        "meta": {
+          "$ref": "#/$defs/Meta"
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ],
+      "additionalProperties": false
+    },
+    "Page__0289f0be5ff9": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FactAttribution"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "snapshot_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "limit": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor",
+        "has_more",
+        "snapshot_id",
+        "limit"
+      ],
+      "additionalProperties": false
+    },
+    "FactAttributionPage": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FactAttribution"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "snapshot_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "limit": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor",
+        "has_more",
+        "snapshot_id",
+        "limit"
+      ],
+      "additionalProperties": false
+    },
     "W1DetailResponse": {
       "type": "object",
       "properties": {
@@ -21120,123 +21634,97 @@
       ],
       "additionalProperties": false
     },
-    "FactAttribution": {
+    "DeferredQueryTicketResponse": {
       "type": "object",
       "properties": {
-        "event_id": {
-          "$ref": "#/$defs/Id"
+        "data": {
+          "$ref": "#/$defs/DeferredQueryTicket"
         },
-        "fact_ids": {
+        "meta": {
+          "$ref": "#/$defs/Meta"
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ],
+      "additionalProperties": false
+    },
+    "Page__a7cb8bb48d82": {
+      "type": "object",
+      "properties": {
+        "items": {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/Id"
+            "$ref": "#/$defs/DeferredQueryTicket"
           }
-        }
-      },
-      "required": [
-        "event_id",
-        "fact_ids"
-      ],
-      "additionalProperties": false
-    },
-    "MaintenanceDisposition": {
-      "type": "object",
-      "properties": {
-        "status": {
-          "type": "string",
-          "enum": [
-            "MAINTAIN_COMPLETED",
-            "INITIALIZED"
-          ]
         },
-        "policy_disposition": {
-          "type": "string",
-          "enum": [
-            "CONTENT_CHANGED",
-            "NO_CHANGE",
-            "INHERITED",
-            "UNKNOWN"
-          ]
-        },
-        "event_disposition": {
-          "type": "string",
-          "enum": [
-            "CONTENT_CHANGED",
-            "NO_CHANGE",
-            "UNKNOWN"
-          ]
-        },
-        "from_policy_version": {
+        "next_cursor": {
           "anyOf": [
             {
-              "$ref": "#/$defs/Count"
+              "type": "string"
             },
             {
               "type": "null"
             }
           ]
         },
-        "to_policy_version": {
-          "$ref": "#/$defs/Count"
+        "has_more": {
+          "type": "boolean"
         },
-        "from_library_version": {
+        "snapshot_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "limit": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor",
+        "has_more",
+        "snapshot_id",
+        "limit"
+      ],
+      "additionalProperties": false
+    },
+    "DeferredQueryTicketPage": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DeferredQueryTicket"
+          }
+        },
+        "next_cursor": {
           "anyOf": [
             {
-              "$ref": "#/$defs/Count"
+              "type": "string"
             },
             {
               "type": "null"
             }
           ]
         },
-        "to_library_version": {
+        "has_more": {
+          "type": "boolean"
+        },
+        "snapshot_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "limit": {
           "$ref": "#/$defs/Count"
         }
       },
       "required": [
-        "status",
-        "policy_disposition",
-        "event_disposition",
-        "from_policy_version",
-        "to_policy_version",
-        "from_library_version",
-        "to_library_version"
+        "items",
+        "next_cursor",
+        "has_more",
+        "snapshot_id",
+        "limit"
       ],
       "additionalProperties": false
-    },
-    "DeferredQueryTicket": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "query_id",
-        "state",
-        "retry_after_seconds",
-        "expires_at",
-        "result_path"
-      ],
-      "properties": {
-        "query_id": {
-          "type": "string",
-          "pattern": "^[0-9a-f]{32}$"
-        },
-        "state": {
-          "enum": [
-            "QUEUED",
-            "RUNNING"
-          ]
-        },
-        "retry_after_seconds": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "expires_at": {
-          "$ref": "#/$defs/Instant"
-        },
-        "result_path": {
-          "type": "string",
-          "pattern": "^/queries/[0-9a-f]{32}$"
-        }
-      }
     }
   }
 }

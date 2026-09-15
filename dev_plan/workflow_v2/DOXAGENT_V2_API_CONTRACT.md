@@ -468,7 +468,7 @@ StandardMessage 本身没有进入流时间，必须通过 StreamMember/StreamIt
 | GET | `/tickers/{ticker}/runtime/nodes/{node_id}/cases` | V，P | Page<CaseSummary> |
 | GET | `/tickers/{ticker}/runtime/cases` | V，`result?,source_id?`，P | Page<CaseSummary> |
 | GET | `/tickers/{ticker}/runtime/cases/{case_id}` | V，`stream_cursor?` | CaseDetail |
-| GET | `/tickers/{ticker}/runtime/cases/{case_id}/attempts` | `node=W1|W2|W3`，P | Page<ModelAttempt> |
+| GET | `/tickers/{ticker}/runtime/cases/{case_id}/attempts` | `node=W1|W2|W3`，可选 `view_id`（RUNTIME 固定水位），P | Page<ModelAttempt> |
 | GET | `/tickers/{ticker}/runtime/cases/{case_id}/messages` | V，P | Page<MessageSummary> |
 | GET | `/tickers/{ticker}/runtime/cases/{case_id}/candidates` | P | Page<Candidate> |
 | GET | `/tickers/{ticker}/runtime/cases/{case_id}/executions` | P | Page<ExecutionSummary> |
@@ -503,6 +503,15 @@ W2 R1 新增 `reason: string | null`（最长 1000 字符；历史缺省 null）
 以上字段随 RuntimeCase 持久化，并经原有 source receipts/MVCC 投影进入固定 Case view。旧读取版本不就地改写；升级后新 Case 自然具备新字段。历史已存 R1 reason 如需展示须按读模型重建流程生成新投影/新 view，不能从模型内部日志补造解释。
 
 局部固定引用缺失不使整个 CaseDetail 返回404：保留可读取的判断、轮次、正文和固定版本，相关 W1/W2/W3 Resource 标为 PARTIAL，reason=UNRESOLVED_REFERENCE、coverage 含 PINNED_ARTIFACT_MISSING。无法解析的原始身份通过可选 `unresolved_reference_ids` / `unresolved_policy_ids` 保留，不伪造 EventLink/PolicyLink，不换用最新版本。缺少整个激活 pin 的情况仍保留正式错误边界。
+
+#### Case 研判展示补充（2026-09-16，兼容增量字段）
+
+- `EventLink.title`、`facts: [{fact_id, proposition}]`、`provisional_proposition` 及 `PolicyLink.title` 均使用 Value 显式表示未记录状态。只解析当前 Case 实际归因的 Fact，不返回 Event 全部 Fact；临时参照展示真实候选命题，不伪造 canonical F#。名称/命题来源限定于 Case 的 activation、library snapshot、policy artifact 和 provisional 版本边界，禁止改用最新快照。
+- W1/W2 可选 `rounds: [{round, attempt_count, not_executed_reason}]` 为当前 Case 的完整标量计数，不受第一页 20 条尝试截断影响。只有确证跳过或 R1 空召回且没有 R2 尝试，才设置 W2_SKIPPED / NO_POLICY_CANDIDATE；无记录不等于成功或跳过。已发生尝试但尚无最终判定时仍返回阶段详情，最终 verdict/confidence 为未记录。前端 W2 同时展示 R1/R2，失败/重试照实展示。
+- W2 可选 `candidate_policies` 与 `unresolved_candidate_policy_ids` 保留 R1 实际召回，与最终 `policies` 分开；未知 R1 结果不冒充空召回。读取已持久化的 R1 结构化 output，不读取 raw_output、prompt、模型思维或重新调用模型。
+- 新客户端的尝试分页传 `view_id`，续页与 CaseDetail 同水位；旧客户端省略时保留原行为。缺失固定引用继续按原有局部未解析语义展示。
+- CaseDetail 原生 Case 仅按 `(kind,ticker,case_id,MVCC)` 点取所需字段，SQL 不选择整份 payload、不解引用 frozen_inputs/source body。单个选中外部字段限 64 KiB，超限不加载。尝试耗时/轮次用该 Case 的标量聚合；失败摘要最多最近 20 条尝试失败加一个终态，完整尝试通过每页最多 100 条（默认 20）有界游标读取。
+- Event 名称按固定 snapshot+Event ID 点取；Fact 命题按固定 snapshot+Event、Fact ID 的索引点取；Policy 名称按固定 artifact+Policy ID 的索引点取；provisional 按 ticker+Event ID+语义日及冻结 snapshot 上界索引取最新一条。无 JOIN、无整个库载入、无历史 Case 或候选正文全量扫描；新增局部表达式索引保障这些查询边界。
 
 ### 9.3 KPI 与耗时
 
