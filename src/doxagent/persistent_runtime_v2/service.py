@@ -492,6 +492,9 @@ class PersistentRuntimeV2Service:
                 "w2_round1": w2_r1,
                 "w2_final": w2_final,
                 "route": route,
+                "technical_status": RuntimeTechnicalStatus.OK,
+                "error_code": None,
+                "error_message": None,
                 "hot_path_latency_ms": round((perf_counter() - started) * 1000),
                 "updated_at": utc_now(),
             }
@@ -1553,6 +1556,8 @@ class PersistentRuntimeV2Service:
                 update={
                     "status": status,
                     "technical_status": technical,
+                    "error_code": case.error_code if technical is RuntimeTechnicalStatus.FAILED else None,
+                    "error_message": case.error_message if technical is RuntimeTechnicalStatus.FAILED else None,
                     "completed_at": (
                         case.completed_at or utc_now()
                         if status in {RuntimeCaseStatus.COMPLETED, RuntimeCaseStatus.FAILED}
