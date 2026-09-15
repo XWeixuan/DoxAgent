@@ -38,6 +38,9 @@ class Page:
     async def content(self):
         return article(self.text)
 
+    async def evaluate_all(self, *args):
+        return False
+
     async def close(self):
         self.closed = True
 
@@ -63,6 +66,34 @@ async def test_incomplete_cookie_http_falls_through_to_render(monkeypatch, tmp_p
     assert page.navigations == 1 and page.closed
     assert state["auth_state"] == "UNVERIFIED"
     context.request.get.assert_awaited_once()
+
+
+async def test_hidden_sa_body_is_not_accepted_as_authorized_visible_text(monkeypatch, tmp_path):
+    browser, page, _ = configured(monkeypatch, tmp_path, BODY)
+    page.evaluate_all = AsyncMock(return_value=True)
+    result, state = await browser.read(page.url)
+    assert result.reason == "subscription_required" and not result.text
+    assert state["auth_state"] == "UNVERIFIED"
+
+
+async def test_navigation_length_does_not_replace_article_hydration(monkeypatch, tmp_path):
+    browser, page, _ = configured(monkeypatch, tmp_path, "Long navigation " * 100)
+    ready = False
+    async def content():
+        if ready:
+            return article(BODY).replace(
+                '</h1>', '</h1><div data-test-id="content-container">'
+            ).replace('</article>', '</div></article>')
+        return '<div id="root"><nav>Long navigation</nav></div>'
+    async def hydrate(*args, **kwargs):
+        nonlocal ready
+        ready = True
+    page.content = content
+    page.wait_for_function = AsyncMock(side_effect=hydrate)
+    result, _ = await browser.read(page.url)
+    assert not result.reason and BODY.splitlines()[0] in result.text
+    page.wait_for_function.assert_awaited_once()
+    assert page.wait_for_function.call_args.kwargs['arg'] == '[data-test-id="content-container"]'
 
 
 async def test_session_recovery_rechecks_article_in_same_job(monkeypatch, tmp_path):

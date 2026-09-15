@@ -172,13 +172,22 @@ class PublisherBrowser:
                             initial.access_reason == "render_required"
                             or passive_check
                             or len(text.strip()) < 120
+                            or (not initial.candidates and initial.access_reason is None)
                         ):
                             try:
+                                selector = (
+                                    '[data-test-id="content-container"]'
+                                    if host.removeprefix("www.") == "seekingalpha.com"
+                                    else '[data-id="LiveCoverageCard_index_CardBlock"]'
+                                    if host.removeprefix("www.") == "barrons.com"
+                                    and "/card/" in urlparse(url).path
+                                    else 'article, [itemprop="articleBody"], .article-content, '
+                                    '.article-body, [data-testid="article-body"]'
+                                )
                                 await page.wait_for_function(
-                                    """() => Array.from(document.querySelectorAll(
-                                        'article, [itemprop="articleBody"], .article-content, '
-                                        + '.article-body, [data-testid="article-body"]'
-                                    )).some(n => n.innerText.trim().length > 120)""",
+                                    """selector => Array.from(document.querySelectorAll(selector))
+                                        .some(n => n.innerText.trim().length > 120)""",
+                                    arg=selector,
                                     timeout=remaining(8) * 1000,
                                 )
                             except Exception:
@@ -248,6 +257,20 @@ class PublisherBrowser:
                                 status,
                                 "login_required" if login_wall else "subscription_required",
                             ), state
+                        if host.removeprefix("www.") == "seekingalpha.com":
+                            hidden = await page.locator(
+                                '[data-test-id="content-container"]'
+                            ).evaluate_all("""nodes => nodes.length > 0 && Array.from(
+                                nodes[0].querySelectorAll('p,h2,h3,table')
+                            ).some(n => n.textContent.trim().length > 120 && (
+                                getComputedStyle(n).visibility === 'hidden'
+                                || getComputedStyle(n).display === 'none'
+                                || n.getClientRects().length === 0
+                            ))""")
+                            if hidden:
+                                return Observation(
+                                    page.url, "", status, "subscription_required"
+                                ), self._state(host, "UNVERIFIED")
                         html = await page.content()
                         return Observation(page.url, html, status), self._state(host, "UNVERIFIED")
                     finally:
