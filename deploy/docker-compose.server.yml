@@ -64,8 +64,9 @@ services:
     image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
     extra_hosts: ["host.docker.internal:host-gateway"]
   v2-scheduler:
-    mem_limit: 512m
-    memswap_limit: 512m
+    # Daily O2/O3 framing loads the existing Runtime evidence; 512 MiB OOMs on MU.
+    mem_limit: 1536m
+    memswap_limit: 1536m
     cpus: 1.0
     pids_limit: 128
     environment:
