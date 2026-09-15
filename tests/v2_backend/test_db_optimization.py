@@ -69,6 +69,14 @@ async def test_spawned_query_worker_uses_verified_principal_and_closes(tmp_path,
     runner = QueryRunner(workers=1)
     try:
         await runner.start()
+        context = await runner.run({
+            "kind": "http",
+            "url": ("/api/doxagent/v2/read-context?page=OVERVIEW"
+                    "&period=PREVIOUS_TRADING_DAY&refresh=OPEN"),
+            "headers": {},
+            "principal": Principal("alice", "DEVELOPER", time.time()+60),
+        }, timeout=2)
+        assert context[0] == 200, context[2]
         result = await runner.run({"kind": "http", "url": "/api/doxagent/v2/auth/me", "headers": {},
                                    "principal": Principal("alice", "DEVELOPER", time.time()+60)})
         assert result[0] == 200

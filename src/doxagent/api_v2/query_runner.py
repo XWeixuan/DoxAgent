@@ -57,6 +57,10 @@ def _worker(pipe):
             return Graphs(app.state.store, app.state.views).next(job["owner"], job["state"], job["view"])
         raise ValueError("unsupported query")
 
+    # First-use exchange calendar imports can exceed the request deadline.
+    # Complete them before advertising capacity, including replacement workers.
+    from datetime import UTC, datetime
+    app.state.views.calendar.clock(datetime.now(UTC))
     pipe.send((True, "ready"))
     while True:
         try:
