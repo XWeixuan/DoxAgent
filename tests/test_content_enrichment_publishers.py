@@ -97,3 +97,49 @@ def test_rolling_broadcast_captions_extend_windows_without_repeating_speech():
         'Transcript\n\nI THINK MEMORY IS GROWING.\n'
         'ANOTHER SPEAKER THINKS SO.\nI THINK MEMORY IS GROWING.'
     )
+
+
+def test_reuters_div_paragraphs_exclude_recommendations_and_newsletter():
+    from doxagent.content_enrichment.quality import choose_candidate, inspect_html
+    paras = BODY.split('\n\n')
+    body = ''.join(f'<div data-testid="paragraph-{i}">{p}</div>' for i, p in enumerate(paras))
+    page = f'<h1>{TITLE}</h1><div data-testid="ArticleBody">{body}<p>Newsletter</p></div>'
+    page += '<article><p>Unrelated recommendation</p></article>'
+    c, _, _ = choose_candidate(
+        inspect_html(page, 'https://www.reuters.com/world/news/', TITLE), TITLE)
+    assert c and c.text == BODY and c.method == 'reuters_article_body'
+
+
+def test_wsj_author_biography_cannot_outrank_the_actual_body():
+    from doxagent.content_enrichment.quality import choose_candidate, inspect_html
+    body = ''.join(f'<p data-type="paragraph">{p}</p>' for p in BODY.split('\n\n'))
+    page = f'<h1>{TITLE}</h1><article><div class="paywall">{body}</div>'
+    page += '<article><p>' + 'This is an author biography. ' * 50 + '</p></article></article>'
+    c, _, _ = choose_candidate(inspect_html(page, 'https://www.wsj.com/finance/news', TITLE), TITLE)
+    assert c and c.text == BODY and c.method == 'wsj_article_body'
+
+
+def test_barrons_live_card_accepts_short_complete_body_without_timestamp_or_byline():
+    from doxagent.content_enrichment.quality import choose_candidate, inspect_html
+    brief = BODY.split('\n\n')[0]
+    page = f'<div data-id="LiveCoverageCard_index_CardWrapper"><h1>{TITLE}</h1><p>By Author</p>'
+    page += f'<div data-id="LiveCoverageCard_index_CardBlock"><p class="FormattedText">{brief}'
+    page += '</p></div></div>'
+    c, outcome, _ = choose_candidate(inspect_html(
+        page, 'https://www.barrons.com/livecoverage/day/card/news', TITLE), TITLE)
+    assert c and c.text == brief and outcome == 'SHORT_FULL'
+
+
+def test_localized_sa_outside_article_matches_original_title_only_for_exact_article_id():
+    from doxagent.content_enrichment.quality import choose_candidate, inspect_html
+    attrs = {'originalTitle': TITLE}
+    data = {'article': {'response': {'data': {
+        'id': '123', 'type': 'fullArticle', 'attributes': attrs,
+    }}}}
+    body = '公司扩建工厂以满足需求增长。管理层预计明年开始安装设备。' * 35
+    page = '<h1>本地语言标题</h1><div data-test-id="content-container"><p>' + body + '</p></div>'
+    page += '<script>window.SSR_DATA=' + json.dumps(data) + ';</script>'
+    url = 'https://seekingalpha.com/article/123-memory'
+    c, _, _ = choose_candidate(inspect_html(page, url, TITLE), TITLE)
+    assert c and c.text == body and c.method == 'sa_article_body'
+    assert choose_candidate(inspect_html(page, url.replace('123', '999'), TITLE), TITLE)[0] is None

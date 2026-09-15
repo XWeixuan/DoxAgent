@@ -169,10 +169,7 @@ class ArticlePipeline:
                     if candidate:
                         content, method = candidate.text, "browser_" + candidate.method
                         url = rendered.url
-                        if browser_reason in {
-                            "login_required",
-                            "subscription_required",
-                        } and auth.get("credential_ref"):
+                        if auth.get("credential_ref"):
                             verified = getattr(self.browser, "verified", None)
                             if verified:
                                 diagnostics.update(verified(urlparse(url).hostname or "") or {})

@@ -1062,3 +1062,7 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-15 · Yahoo Playwright 高优获取补修：核实新闻卡片已在 SSR document 内，listener 在 goto 前且能捕获其他 XHR，并非注册晚；浏览器链路扩展为原生响应→受限 SvelteKit hydration JSON→真实页面 JS 同源 POST fetch，明确记录 capture_method，20 秒有界截止及请求取消；普通 / bootstrap 数量复用 20 / 100。BrowserRuntime 本地真实获取 20 条且全部有摘要/精确发布时间；远端新闻页、Chrome UA 首页初始化仍 Edge 429，未宣称远端可用或默认启用。导航 429 在主动 fetch 前停止，429 按 5/15/30 分钟与 Retry-After 冷却。36 项定向测试通过，未部署、写库、重启或修改 O1/O2/O3 skill。
 
 2026-09-15 · V2 正文试跑 badcase 修复：405 条代表记录均走 legacy，按用户口径排除 149 条后登记 256 条；新增 IBKR/Benzinga 原生文章正文严格匹配与零网络接收、operator Chrome CDP 连接/断连重连及故障 reader 降级，修复 Benzinga 无 H1 reader、评论登录页尾与 TheStreet 作者尾部，增加 24/7 Wall St. 公开 WordPress 文章路径与 CNBC 当前免费视频官方字幕（时长覆盖、滚动去重、转录来源标记）。6 条原生正文、13 条隔离真实抓取、3 条真实响应解析有证据；远端反爬仍有未解样本，主机外部重启后桌面 Chrome 尚未恢复，不宣称全量恢复。86 项定向测试、Ruff/mypy 通过；本地修复及远端 /tmp 隔离验证，未提交/部署、改变生产开关或重放历史消息；账号测试待用户远端登录。详见 v2_body_trial_badcase_repair_20260915.md。
+
+2026-09-15 · V2 STORE_UNAVAILABLE 冷启动修复：查询子进程在 ready 握手前预热交易日历，避免 read-context 首次加载 pandas/exchange_calendars 超过 2 秒硬截止后被反复回收；替换进程同样预热，不扩大查询超时、不改业务库。真实 spawned worker 首次 read-context 与协作截止两项定向测试通过；部署限定 v2-api。
+
+2026-09-15 · 会员正文路径补修：整体代码/测试/文档 badf5ed2 已推送并在 doxagent-sg 重建 backend；真实账号样本暴露 Reuters div 正文漏段、WSJ 作者简介优先级、Barron’s 短实时卡片及 Seeking Alpha 中文页面新容器问题，增加各站正文范围与同文章 ID 的原始标题校验、中文句末识别。operator CDP 使用正常渲染页面而不以 request 预取短文提前结束，保存身份 revision，HTTP 401 后的正文成功也验证身份，允许外部正常重新登录后再试。68 项相邻测试、Ruff/mypy 通过，账号最终远端复测及免费站点补修继续进行。

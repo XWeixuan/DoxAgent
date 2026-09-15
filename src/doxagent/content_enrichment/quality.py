@@ -11,6 +11,7 @@ from urllib.parse import urljoin, urlparse
 
 from lxml import html as html_parser  # type: ignore[import-untyped]
 
+from doxagent.content_enrichment.publishers import seeking_alpha_original_title
 from doxagent.monitoring.media_enrichment import _default_extractor
 
 
@@ -188,6 +189,11 @@ def inspect_html(html: str, url: str, expected_title: str | None) -> Inspection:
         result.page_kind, result.access_reason = "challenge", "challenge_required"
         return result
     path = urlparse(url).path.lower()
+    host = (urlparse(url).hostname or "").removeprefix("www.")
+    if host == "seekingalpha.com":
+        original = seeking_alpha_original_title(root.xpath("//script/text()"), url)
+        if original and expected_title and title_match(original, expected_title):
+            result.headline = original
     if (urlparse(url).hostname or "").removeprefix("www.") == "finnhub.io":
         targets = []
         for value in root.xpath(
@@ -213,6 +219,16 @@ def inspect_html(html: str, url: str, expected_title: str | None) -> Inspection:
         '//*[contains(@class,"article-body") or contains(@class,"articleBody") '
         'or contains(@class,"body-content") or contains(@class,"article-content")]|//article'
     )
+    sa_bodies = root.xpath('//*[@data-test-id="content-container"]') if (
+        host == "seekingalpha.com" and "/article/" in path
+    ) else []
+    if sa_bodies:
+        article_nodes = sa_bodies[:1]
+    wsj_bodies = root.xpath(
+        '//article//*[contains(concat(" ",normalize-space(@class)," ")," paywall ")]'
+    ) if host == "wsj.com" else []
+    if wsj_bodies:
+        article_nodes = wsj_bodies[:1]
     gate_text = " ".join(_node_text(n) for n in article_nodes) or visible
     if re.search(
         r"This headline only article is a sample of real.time intelligence", gate_text, re.I
@@ -267,11 +283,38 @@ def inspect_html(html: str, url: str, expected_title: str | None) -> Inspection:
         result.candidates.append(
             Candidate(clean(extracted), "trafilatura", bool(article_nodes), result.headline)
         )
+    if host == "reuters.com":
+        paragraphs = root.xpath(
+            '//*[@data-testid="ArticleBody"]//*[starts-with(@data-testid,"paragraph-")]'
+        )
+        if paragraphs:
+            text = "\n\n".join(
+                clean(re.sub(r",? opens new tab", "", n.text_content())) for n in paragraphs
+            )
+            result.candidates = [Candidate(text, "reuters_article_body", True, result.headline, 30)]
+    if host == "barrons.com" and "/livecoverage/" in path and "/card/" in path:
+        cards = root.xpath('//*[@data-id="LiveCoverageCard_index_CardWrapper"][.//h1]')
+        result.candidates = []
+        for card in cards:
+            headline = clean(" ".join(card.xpath('.//h1//text()')))
+            if expected_title and not title_match(headline, expected_title):
+                continue
+            paragraphs = card.xpath(
+                './/*[@data-id="LiveCoverageCard_index_CardBlock"]'
+                '//p[contains(@class,"FormattedText")]'
+            )
+            if paragraphs:
+                text = "\n\n".join(clean(n.text_content()) for n in paragraphs)
+                result.candidates.append(Candidate(text, "barrons_live_card", True, headline, 30))
+    if wsj_bodies:
+        blocks = wsj_bodies[0].xpath('./p[@data-type="paragraph"]|./h2|./h3')
+        text = "\n\n".join(clean(n.text_content()) for n in blocks)
+        result.candidates = [Candidate(text, "wsj_article_body", True, result.headline, 30)]
     expansion_root = root
     if (urlparse(url).hostname or "").removeprefix("www.") == "seekingalpha.com":
         # SA's outer <article> also contains summary, biography and disclosures.
         # Only its first content container is the article, even on a long regwall page.
-        bodies = root.xpath('//article//*[@data-test-id="content-container"]')
+        bodies = sa_bodies
         if bodies:
             expansion_root = bodies[0]
             result.candidates = [
@@ -441,12 +484,12 @@ def choose_candidate(
             continue
         if info.page_kind == "media" and not re.search(r"transcript|逐字稿", body, re.I):
             continue
-        if len(body) >= 800 and len(re.findall(r"[.!?](?:\s|$)", body)) >= 4:
+        if len(body) >= 800 and len(re.findall(r"[.!?](?:\s|$)|[。！？]", body)) >= 4:
             accepted.append(candidate)
         elif (
             candidate.structured
             and len(body) >= 120
-            and re.search(r'[.!?]["\u201d\u2019)]?$', body)
+            and re.search(r'[.!?。！？]["\u201d\u2019)]?$', body)
         ):
             if not info.expansion_required and not info.subscription_article:
                 accepted.append(candidate)

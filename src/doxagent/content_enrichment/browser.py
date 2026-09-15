@@ -68,7 +68,15 @@ class PublisherBrowser:
                     channel=self.channel,
                     accept_downloads=False,
                 )
-                # On-disk identity is unverified until a real article succeeds.
+            else:
+                if self._browser is None:
+                    self._browser = await self._playwright.chromium.launch(
+                        headless=self.headless, channel=self.channel
+                    )
+                context = await self._browser.new_context(accept_downloads=False)
+            if host in self.authenticated_hosts and self.identity_dir:
+                directory = self.identity_dir / host
+                # Both managed profiles and operator CDP retain identity revisions.
                 state_path = directory / "status.json"
                 if state_path.exists():
                     try:
@@ -77,12 +85,6 @@ class PublisherBrowser:
                         saved = {}
                     self._states[host] = saved if isinstance(saved, dict) else {}
                     self._states[host]["auth_state"] = "UNVERIFIED"
-            else:
-                if self._browser is None:
-                    self._browser = await self._playwright.chromium.launch(
-                        headless=self.headless, channel=self.channel
-                    )
-                context = await self._browser.new_context(accept_downloads=False)
             self._contexts[host] = context
             return context
 
@@ -116,10 +118,10 @@ class PublisherBrowser:
                 await public_url(url, trusted_proxy_dns=self.trusted_proxy_dns)
                 async with self._locks.setdefault(host, asyncio.Lock()), self._slots:
                     state = self._states.get(host, {})
-                    if state.get("auth_state") == "REAUTH_REQUIRED":
+                    if state.get("auth_state") == "REAUTH_REQUIRED" and not self.cdp_url:
                         return Observation(url, "", 0, "reauth_required"), state
                     context = await self._context(host)
-                    if host in self.authenticated_hosts:
+                    if host in self.authenticated_hosts and not self.cdp_url:
                         response = await context.request.get(
                             url, max_redirects=0, timeout=remaining() * 1000
                         )

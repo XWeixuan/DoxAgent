@@ -8,6 +8,32 @@ from html import escape
 from urllib.parse import urlencode, urlparse
 
 
+def seeking_alpha_original_title(scripts: list[str], url: str) -> str | None:
+    """A localized page retains the exact article's original title in public SSR metadata."""
+    expected = re.match(r"/article/(\d+)-", urlparse(url).path)
+    if not expected:
+        return None
+    for script in scripts:
+        prefix = re.match(r"\s*window\.SSR_DATA\s*=\s*", script)
+        if not prefix:
+            continue
+        try:
+            data, _ = json.JSONDecoder().raw_decode(script[prefix.end():])
+        except ValueError:
+            continue
+        for key in ("article", "response", "data"):
+            data = data.get(key) if isinstance(data, dict) else None
+        if not isinstance(data, dict) or str(data.get("id")) != expected[1]:
+            continue
+        attributes = data.get("attributes")
+        if data.get("type") != "fullArticle" or not isinstance(attributes, dict):
+            continue
+        title = attributes.get("originalTitle")
+        if isinstance(title, str) and title.strip():
+            return title
+    return None
+
+
 def public_article_api(url: str) -> str | None:
     parsed = urlparse(url)
     if parsed.hostname not in {"247wallst.com", "www.247wallst.com"}:

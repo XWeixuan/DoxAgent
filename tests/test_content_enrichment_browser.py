@@ -167,9 +167,13 @@ async def test_public_reader_still_runs_when_optional_browser_runtime_fails(fail
     assert result.diagnostics["browser_failure_reason"] == failure
 
 
-async def test_protected_content_never_uses_public_reader_and_validates_identity():
+@pytest.mark.parametrize("status", [200, 401])
+async def test_protected_content_never_uses_public_reader_and_validates_identity(status):
     url = Page.url
-    session = Session({url: response(url, article("Sign in to read"))})
+    session = Session({url: response(
+        url, article("Sign in to read") if status == 200 else '<title>Unauthorized</title>',
+        status=status,
+    )})
     browser = AsyncMock()
     browser.read.return_value = (
         Observation(
@@ -190,6 +194,23 @@ async def test_protected_content_never_uses_public_reader_and_validates_identity
     ).extract(MediaEnrichmentRecord("id", "id", "source", "MU", TITLE, "", url))
     assert result.succeeded and session.calls == [url]
     assert result.diagnostics["session_revision"] == 1
+
+
+async def test_cdp_identity_restores_revision_and_requires_article_verification(tmp_path):
+    import json
+    host = "www.reuters.com"
+    directory = tmp_path / host
+    directory.mkdir()
+    (directory / "status.json").write_text(json.dumps({
+        "auth_state": "VALID", "session_revision": 7,
+    }))
+    browser = PublisherBrowser(cdp_url="http://browser:9223", identity_dir=tmp_path,
+                               authenticated_hosts={host})
+    browser._playwright = AsyncMock()
+    browser._playwright.chromium.connect_over_cdp.return_value = Mock(contexts=[Mock()])
+    await browser._context(host)
+    assert browser._states[host]["auth_state"] == "UNVERIFIED"
+    assert browser.verified(host)["session_revision"] == 8
 
 
 @pytest.mark.parametrize(
