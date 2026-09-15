@@ -6,7 +6,7 @@ import hashlib
 import json
 from datetime import UTC, date, datetime
 from enum import StrEnum
-from typing import Any, Final, Literal
+from typing import Annotated, Any, Final, Literal
 from uuid import uuid4
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -243,13 +243,22 @@ class W1Round1Result(RuntimeV2Model):
 
 class W1FactAttribution(RuntimeV2Model):
     event_id: str = Field(pattern=r"^E[0-9]+$")
-    fact_ids: list[str] = Field(min_length=1, max_length=32)
+    fact_ids: list[
+        Annotated[
+            str, Field(pattern=r"^(F[0-9]+|.*[Pp][Rr][Oo][Vv][Ii][Ss][Ii][Oo][Nn][Aa][Ll].*)$")
+        ]
+    ] = Field(max_length=32)
 
-    @field_validator("fact_ids")
+    @field_validator("fact_ids", mode="before")
     @classmethod
     def normalized_facts(cls, value: list[str]) -> list[str]:
+        if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
+            return value
         values = list(dict.fromkeys(item.strip().upper() for item in value))
-        if any(not item.startswith("F") or not item[1:].isdigit() for item in values):
+        if any(
+            "PROVISIONAL" not in item and (not item.startswith("F") or not item[1:].isdigit())
+            for item in values
+        ):
             raise ValueError("fact_ids must contain exact F# identifiers")
         return values
 
@@ -412,6 +421,8 @@ class RuntimeModelTurn(RuntimeV2Model):
     prefix_fingerprint: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
     latency_ms: int = Field(ge=0)
     output: JsonObject | None = None
+    raw_output: str | None = None
+    validation_warnings: list[str] = Field(default_factory=list)
     error_code: str | None = None
     error_message: str | None = None
     created_at: datetime = Field(default_factory=utc_now)

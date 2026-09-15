@@ -566,6 +566,10 @@ class PersistentRuntimeV2Service:
 
         def validate(value: W1NoveltyResult) -> None:
             for attribution in value.fact_attributions or []:
+                if attribution.event_id in found_provisional:
+                    if any("provisional" not in f.lower() for f in attribution.fact_ids):
+                        raise RuntimeSemanticOutputError("Provisional Event cannot attribute canonical Facts")
+                    continue
                 if not set(attribution.fact_ids).issubset(
                     loaded_facts.get(attribution.event_id, set())
                 ):
@@ -766,9 +770,16 @@ class PersistentRuntimeV2Service:
                     "schema_hash": digest(output_model.model_json_schema()),
                 }
                 self.journal.set("round_inputs", round_key, frozen)
-            if frozen.get("schema_hash", digest(output_model.model_json_schema())) != digest(
-                output_model.model_json_schema()
-            ):
+            schema = output_model.model_json_schema()
+            compatible_hashes = {digest(schema)}
+            if output_model is W1NoveltyResult:
+                import copy
+                legacy = copy.deepcopy(schema)
+                legacy["$defs"]["W1FactAttribution"]["properties"]["fact_ids"].update(
+                    items={"type": "string"}, minItems=1,
+                )
+                compatible_hashes.add(digest(legacy))
+            if frozen.get("schema_hash", digest(schema)) not in compatible_hashes:
                 raise RuntimeResponsesError(
                     "round_schema_incompatible", "Frozen round schema changed", retryable=False
                 )
@@ -777,7 +788,12 @@ class PersistentRuntimeV2Service:
             cache_context_keys = tuple(frozen.get("cache_context_keys", cache_context_keys))
         else:
             frozen = {"instructions": prompt_set.instructions(frozen_round_prompt)}
-        last_error: Exception | None = None
+        last_error: Exception | None = (
+            RuntimeResponsesError(turns[-1].error_code or "prior_attempt_failed",
+                                  turns[-1].error_message or "Previous attempt failed",
+                                  retryable=True)
+            if turns and turns[-1].error_code else None
+        )
         budget = self.max_retry_attempts + 1
         if self.journal:
             generation = self.journal.get("round_resume", case.case_id, 0)
@@ -808,7 +824,10 @@ class PersistentRuntimeV2Service:
                     RuntimeResponsesRequest(
                         model=case.frozen_inputs.get("models", {}).get("w12_model"),
                         reasoning_effort=case.frozen_inputs.get("models", {}).get("w12_effort"),
-                        instructions=frozen["instructions"],
+                        instructions=frozen["instructions"] + (
+                            "\nCorrection for previous attempt: " + str(last_error)
+                            if last_error else ""
+                        ),
                         payload=payload,
                         output_model=output_model,
                         schema_name=schema_name,
@@ -873,6 +892,8 @@ class PersistentRuntimeV2Service:
                     if result
                     else error.usage.get("cached_input_tokens"),
                     response_id=result.response_id if result else error.usage.get("response_id"),
+                    raw_output=result.raw_output if result else error.usage.get("raw_output"),
+                    validation_warnings=list(result.validation_warnings) if result else [],
                 )
             )
             if not error.retryable or attempt >= budget:
@@ -912,6 +933,8 @@ class PersistentRuntimeV2Service:
                 started_at=started_at,
                 finished_at=utc_now(),
                 output=result.value.model_dump(mode="json"),
+                raw_output=result.raw_output,
+                validation_warnings=list(result.validation_warnings),
             )
         )
 

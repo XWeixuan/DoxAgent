@@ -204,7 +204,7 @@ def build_persistent_runtime_v2_service(
             local_policy,
             runtime_control=ControlRepository(journal) if journal else None,
         )
-    if journal and not journal.get("execution", "active"):
+    if journal:
         from .execution_bundle import ExecutionBundles
         from .prompts import RuntimeV2PromptSet
 

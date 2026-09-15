@@ -1074,3 +1074,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-15 · 会员正文身份优先与反爬诊断补修：已配置身份的域名直接走 operator CDP，沿用域名并发节奏及浏览器 429 Retry-After 冷却，身份故障不送第三方 reader；识别活动 PerimeterX 遮罩和 DataDome CAPTCHA iframe，避免误报空正文。99 项正文定向测试、Ruff/mypy 通过；Reuters/WSJ 各 2 篇、SA 1 篇真实正文成功，Barron’s/SA 部分文章待正常人机验证，MarketWatch 仍需文章授权验证。免费 15 样本 4 成功，保留拒绝/空字幕失败，未降低门槛或重放历史消息。详见 v2_body_account_delivery_20260915.md。
 
 2026-09-15 · 正文远端交付验收补记：7f98b31d 已部署同镜像 11 backend，API/worker healthy、Chrome active，第二轮消息源全部恢复成功。两条 IBKR 自然新闻 body_v2.1 原生 FULL 零网络补抓并发布；身份优先复测 Reuters/WSJ 成功且五条均仅 browser 阶段，SA/Barron’s 仍有人机验证或导航超时，MarketWatch 尚未授权验收。保留未解免费样本与失败状态，详见账号交付报告。
+
+2026-09-15 · W1 R2 归因失败修复：fact_ids 允许空数组及含 provisional 的兜底标识，格式约束显式进入 wire schema；只有本轮加载的 provisional Event 可使用该兜底，canonical/未知引用保持语义检查。隔离已加载 provisional 的伪 Fact 标签并保存原始响应/警告，重试带具体校验反馈。启动发布最新 execution bundle，旧 Case/轮次输入不覆盖；仅兼容已核对的旧 W1 schema hash。10 项定向/恢复测试通过；旧路由断言不在本轮变更范围。部署后通过原任务身份恢复四个已定位失败，不删历史、不重跑已成功 W1 R1/W2 R1、不测试订单。

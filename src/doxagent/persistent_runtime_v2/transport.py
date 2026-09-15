@@ -49,6 +49,8 @@ class RuntimeResponsesResult(Generic[T]):
     reasoning_tokens: int | None
     cached_input_tokens: int | None
     prefix_fingerprint: str | None = None
+    raw_output: str | None = None
+    validation_warnings: tuple[str, ...] = ()
 
 
 class RuntimeResponsesClient(Protocol):
@@ -147,6 +149,8 @@ class BailianRuntimeResponsesClient:
             ),
         }
         text = getattr(response, "output_text", None)
+        if isinstance(text, str):
+            receipt["raw_output"] = text
         if not response_id:
             raise RuntimeResponsesError(
                 "missing_response_id",
@@ -162,7 +166,8 @@ class BailianRuntimeResponsesClient:
                 usage=receipt,
             )
         try:
-            value = request.output_model.model_validate_json(text)
+            validation_text, warnings = normalize_w1_attributions(text, request)
+            value = request.output_model.model_validate_json(validation_text)
         except (ValidationError, ValueError, json.JSONDecodeError) as exc:
             raise RuntimeResponsesError(
                 "structured_output_validation_failed",
@@ -183,7 +188,35 @@ class BailianRuntimeResponsesClient:
             reasoning_tokens=_usage_int(output_details, "reasoning_tokens"),
             cached_input_tokens=_usage_int(details, "cached_tokens"),
             prefix_fingerprint=prefix_fingerprint,
+            raw_output=text,
+            validation_warnings=tuple(warnings),
         )
+
+
+def normalize_w1_attributions(text: str, request: RuntimeResponsesRequest) -> tuple[str, list[str]]:
+    """Isolate invented canonical Fact labels only for loaded provisional Events."""
+    if request.schema_name != "w1_novelty_result":
+        return text, []
+    try:
+        value = json.loads(text)
+    except ValueError:
+        return text, []
+    if not isinstance(value, dict) or not isinstance(value.get("fact_attributions"), list):
+        return text, []
+    details = request.payload.get("event_details", {})
+    provisional = {e["provisional_event_id"] for e in details.get("provisional_events", [])}
+    canonical = {e["event_id"] for e in details.get("canonical_events", [])}
+    warnings = []
+    for attribution in value["fact_attributions"]:
+        if not isinstance(attribution, dict):
+            continue
+        identity = attribution.get("event_id")
+        facts = attribution.get("fact_ids")
+        if identity in provisional and identity not in canonical and isinstance(facts, list):
+            if any(isinstance(f, str) and "provisional" not in f.lower() for f in facts):
+                attribution["fact_ids"] = []
+                warnings.append(f"PROVISIONAL_FACT_ATTRIBUTION_ISOLATED:{identity}")
+    return json.dumps(value, ensure_ascii=False), warnings
 
 
 def _json_text(value: Any) -> str:
