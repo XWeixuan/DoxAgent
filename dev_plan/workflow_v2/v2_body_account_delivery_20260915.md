@@ -32,6 +32,13 @@
 
 最新正文 5 文件共 99 项定向测试通过，正文模块 Ruff/mypy 通过；已有 Yahoo 相邻 36 项及 API 预热 2 项定向测试通过。部署检查覆盖远端 commit、实际 server 镜像、各 backend 容器运行/OOM/restart、真实 API 健康和消息源多轮轮询。
 
-启用后截至已检查轮询时刻没有新的 Raw 输入，队列为空，因此尚未取得自然新任务的 body_v2.1 发布验收。消息源 status=succeeded 仅证明轮询成功，不证明新闻完整性。
+11:38 UTC 的生产检查已取得三条自然新消息：两条 IBKR 通过 body_v2.1 / native_provider_article / FULL 接收并发布，正文 1677 / 2767 字符、attempts=[]；一条 Yahoo→Fool 为 direct 429 后 reader 403，保留 UNAVAILABLE，未误标全文。队列随后为空。消息源第二轮全部 succeeded、连续失败为 0；第一轮 Benzinga 曾 ReadTimeout 一次，下一轮自行恢复。轮询成功不证明新闻完整性。
 
 证据保留本地 `exports/body_delivery_20260915/`：`acceptance_summary.json`、`body-access-results-final/probe.jsonl`、`body-free-results/probe.jsonl` 及对应正文/响应；原始数据不提交。最终身份优先路径部署复测结果在交付补记中记录。
+
+## 最终交付补记
+
+- 代码提交 **7f98b31d** 已 push，远端快进拉取、重建及重启 11 个 backend；所有实际镜像一致为 `sha256:55991a031ce83ee5c1495798f1d91c2b0b251752c1cc24fa3f5362582aaa85c3`。API 与 Codex worker healthy，所有 backend restart=0、OOM=false；真实 API `/healthz` 返回 `{"ok":true,"service":"v2-api"}`，8082 网关 200，Chrome service active / CDP 200。
+- 7f98b31d 的身份优先路径复测 5 篇：Reuters 3785、WSJ 7287 字符成功；Barron’s 与第一篇 SA 为 challenge_required；第二篇 SA 导航 render_timeout，其随后取得页面仍可供人工验证排查。五篇均只产生 browser 阶段、access_path=publisher_identity_browser，没有匿名 HTTP 或第三方 reader 请求。前一轮 SA 抓取成功不代表当前会话稳定，账号验收仍部分未完成。
+- MarketWatch 身份域名已进入运行环境，但目标文章仍需正常登录/订阅授权后再验收；不能推断 Dow Jones 系列账号权限相同。
+- 最新证据：`body-identity-first-results/probe.jsonl` 及 `body-identity-first-evidence.tgz`。自然发布验收 ID：`std_25f25dc050af4ab6b52bd7cf2fbfc4c0` → `stream_7e05e90a5e1a45daa32fa14a26e1dee2`；`std_543f5c6e9cf74e149ed77fc85d0a88c5` → `stream_8df162a9cafd45ab9620ad7f648f1856`。仅只读观察生产结果，未手工重放或修改业务记录。

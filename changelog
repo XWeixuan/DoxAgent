@@ -1072,3 +1072,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-15 · 会员页面渲染补修：远端实际复测定位 SA/Barron’s 在导航已很长但正文尚未 hydration 时提前结束，改为正文候选缺失时有界等待各站真实正文节点；SA 使用计算后的可见性验证授权正文，拒绝 DOM 中隐藏的实质段落，不因残留 invisible 类误伤 CSS 已解锁的文章。20 项浏览器定向测试通过；继续远端文章级复测。
 
 2026-09-15 · 会员正文身份优先与反爬诊断补修：已配置身份的域名直接走 operator CDP，沿用域名并发节奏及浏览器 429 Retry-After 冷却，身份故障不送第三方 reader；识别活动 PerimeterX 遮罩和 DataDome CAPTCHA iframe，避免误报空正文。99 项正文定向测试、Ruff/mypy 通过；Reuters/WSJ 各 2 篇、SA 1 篇真实正文成功，Barron’s/SA 部分文章待正常人机验证，MarketWatch 仍需文章授权验证。免费 15 样本 4 成功，保留拒绝/空字幕失败，未降低门槛或重放历史消息。详见 v2_body_account_delivery_20260915.md。
+
+2026-09-15 · 正文远端交付验收补记：7f98b31d 已部署同镜像 11 backend，API/worker healthy、Chrome active，第二轮消息源全部恢复成功。两条 IBKR 自然新闻 body_v2.1 原生 FULL 零网络补抓并发布；身份优先复测 Reuters/WSJ 成功且五条均仅 browser 阶段，SA/Barron’s 仍有人机验证或导航超时，MarketWatch 尚未授权验收。保留未解免费样本与失败状态，详见账号交付报告。
