@@ -1078,3 +1078,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-15 · W1 R2 归因失败修复：fact_ids 允许空数组及含 provisional 的兜底标识，格式约束显式进入 wire schema；只有本轮加载的 provisional Event 可使用该兜底，canonical/未知引用保持语义检查。隔离已加载 provisional 的伪 Fact 标签并保存原始响应/警告，重试带具体校验反馈。启动发布最新 execution bundle，旧 Case/轮次输入不覆盖；仅兼容已核对的旧 W1 schema hash。10 项定向/恢复测试通过；旧路由断言不在本轮变更范围。部署后通过原任务身份恢复四个已定位失败，不删历史、不重跑已成功 W1 R1/W2 R1、不测试订单。
 
 2026-09-15 · W1 恢复完成态补修：成功研判/效果完成时清除 Case 当前 error_code/error_message 并恢复 technical_status=OK；旧失败原文、轮次与 response_id 仍完整保留，防止前端完成态携带已失效的当前错误。
+
+2026-09-16 · O3 初始化模型分流：Trigger Calibration、Policy Compile、Final Review（含初始化恢复调用）默认使用 gpt-5.6-sol / medium，新增 DOXAGENT_CODEX_D3_INITIALIZE_MODEL 与 DOXAGENT_CODEX_D3_INITIALIZE_EFFORT 配置；O3_MAINTAIN 继续使用全局 gpt-5.6-luna / max，线程记录保存实际请求模型，不改变提示词、业务契约或其他节点。3 项模型分流/单线程发布定向测试及 Ruff 通过；额外恢复测试在未修改的 HEAD runner 下同样失败，未扩展修改其行为。RKLB 已完成 Registry 以 SQLite backup 导出预构建包，保持 2026-09-14 研究截止时间，不重跑 CDECR。

@@ -76,6 +76,8 @@ class Document3AgentRunner:
         model: str,
         model_provider: str | None,
         effort: Literal["low", "medium", "high", "xhigh", "max"] = "max",
+        initialize_model: str | None = None,
+        initialize_effort: Literal["low", "medium", "high", "xhigh", "max"] | None = None,
         timeout_seconds: int = 1800,
         runtime_repository: O3ExecutionStateRepository | None = None,
     ) -> None:
@@ -91,6 +93,8 @@ class Document3AgentRunner:
         self._model = model
         self._model_provider = model_provider
         self._effort = effort
+        self._initialize_model = initialize_model or model
+        self._initialize_effort = initialize_effort or effort
         self._timeout_seconds = timeout_seconds
         self._runtime_repository = runtime_repository
 
@@ -443,9 +447,13 @@ class Document3AgentRunner:
                 prompt=prompt,
                 output_schema=schema,
                 thread_id=current_thread,
-                model=self._model,
+                model=(
+                    self._model if node == CodexD3Node.O3_MAINTAIN else self._initialize_model
+                ),
                 model_provider=self._model_provider,
-                effort=self._effort,
+                effort=(
+                    self._effort if node == CodexD3Node.O3_MAINTAIN else self._initialize_effort
+                ),
                 timeout_seconds=self._timeout_seconds,
                 allow_subagents=False,
                 max_subagents=0,
@@ -476,7 +484,7 @@ class Document3AgentRunner:
                 )
                 continue
             current_thread = last_job.thread_id or current_thread
-            self._save_thread(run_id, ticker, current_thread)
+            self._save_thread(run_id, ticker, current_thread, model=request.model)
             if last_job.status != "succeeded":
                 status = (
                     AttemptStatus.CANCELLED
@@ -648,7 +656,9 @@ class Document3AgentRunner:
         record = self._runtime_repository.get_thread(run_id, CodexD3AgentRole.O3.value)
         return record.thread_id if record is not None else None
 
-    def _save_thread(self, run_id: str, ticker: str, thread_id: str | None) -> None:
+    def _save_thread(
+        self, run_id: str, ticker: str, thread_id: str | None, *, model: str
+    ) -> None:
         if self._runtime_repository is None or thread_id is None:
             return
         prior = self._runtime_repository.get_thread(run_id, CodexD3AgentRole.O3.value)
@@ -660,7 +670,7 @@ class Document3AgentRunner:
                 run_id=run_id,
                 agent_role=CodexD3AgentRole.O3,
                 thread_id=thread_id,
-                model=self._model,
+                model=model,
                 model_provider=self._model_provider,
                 created_at=prior.created_at if prior is not None else utc_now(),
                 updated_at=utc_now(),

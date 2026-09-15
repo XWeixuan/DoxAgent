@@ -104,6 +104,8 @@ def build_document3_orchestrator(
         model=config.model,
         model_provider=config.model_provider,
         effort=config.reasoning_effort,
+        initialize_model=settings.codex_d3_initialize_model,
+        initialize_effort=settings.codex_d3_initialize_effort,
         timeout_seconds=config.node_timeout_seconds,
         runtime_repository=runtime_repository,
     )

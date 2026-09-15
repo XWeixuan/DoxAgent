@@ -1058,8 +1058,10 @@ async def test_input_preparation_accepts_partial_d2_and_excludes_failed_shells()
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("initialize_model", [None, "gpt-5.6-sol"])
 async def test_initialize_runs_single_o3_thread_and_publishes_canonical_artifacts(
     tmp_path: Path,
+    initialize_model: str | None,
 ) -> None:
     runtime = InMemoryCodexRuntimeRepository()
     policy_repository = InMemoryDocument3PolicyRepository()
@@ -1073,6 +1075,8 @@ async def test_initialize_runs_single_o3_thread_and_publishes_canonical_artifact
         model="test-model",
         model_provider=None,
         runtime_repository=runtime,
+        initialize_model=initialize_model,
+        initialize_effort="medium" if initialize_model else None,
     )
     preparer = Document3InputPreparer(
         runtime_repository=runtime,
@@ -1090,6 +1094,12 @@ async def test_initialize_runs_single_o3_thread_and_publishes_canonical_artifact
     )
 
     assert result.status.value == "COMPLETED"
+    assert {(r.model, r.effort) for r in worker.requests} == {
+        (initialize_model or "test-model", "medium" if initialize_model else "max")
+    }
+    assert runtime.get_thread("d3-mu-test", CodexD3AgentRole.O3.value).model == (
+        initialize_model or "test-model"
+    )
     assert result.policy_set_version == 1
     current = policy_repository.get_current("MU")
     assert current is not None
@@ -1250,6 +1260,8 @@ async def test_maintenance_is_delta_driven_noop_degraded_and_atomic(
             workspace=workspace,
             model="test-model",
             model_provider=None,
+            initialize_model="gpt-5.6-sol",
+            initialize_effort="medium",
         ),
         policy_repository=policy_repository,
         runtime_repository=runtime,
@@ -1267,3 +1279,4 @@ async def test_maintenance_is_delta_driven_noop_degraded_and_atomic(
     assert noop.status.value == "NOOP" and noop.policy_set_version == 2
     assert degraded.status.value == "DEGRADED" and degraded.policy_set_version == 2
     assert len(worker.requests) == 1
+    assert (worker.requests[0].model, worker.requests[0].effort) == ("test-model", "max")

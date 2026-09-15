@@ -153,6 +153,14 @@ class DoxAgentSettings(BaseSettings):
         ge=30,
         validation_alias="DOXAGENT_CODEX_NODE_TIMEOUT_SECONDS",
     )
+    codex_d3_initialize_model: str = Field(
+        default="gpt-5.6-sol",
+        validation_alias="DOXAGENT_CODEX_D3_INITIALIZE_MODEL",
+    )
+    codex_d3_initialize_effort: Literal["low", "medium", "high", "xhigh", "max"] = Field(
+        default="medium",
+        validation_alias="DOXAGENT_CODEX_D3_INITIALIZE_EFFORT",
+    )
     codex_node_max_attempts: int = Field(
         default=2,
         ge=1,
