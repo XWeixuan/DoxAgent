@@ -24,12 +24,14 @@ class PublisherBrowser:
         max_pages: int = 2,
         headless: bool = True,
         channel: str | None = None,
+        cdp_url: str | None = None,
         trusted_proxy_dns: bool = False,
     ) -> None:
         self.identity_dir = identity_dir
         self.authenticated_hosts = authenticated_hosts or set()
         self.headless = headless
         self.channel = channel
+        self.cdp_url = cdp_url
         self.trusted_proxy_dns = trusted_proxy_dns
         self._slots = asyncio.Semaphore(max_pages)
         self._locks: dict[str, asyncio.Lock] = {}
@@ -45,9 +47,19 @@ class PublisherBrowser:
                 from playwright.async_api import async_playwright
 
                 self._playwright = await async_playwright().start()
+            if self.cdp_url and self._browser and not self._browser.is_connected():
+                self._contexts.clear()
+                self._browser = None
             if host in self._contexts:
                 return self._contexts[host]
-            if host in self.authenticated_hosts and self.identity_dir:
+            if self.cdp_url:
+                # Operator-managed Chrome owns its profile and lifetime. Only our pages close.
+                if self._browser is None:
+                    self._browser = await self._playwright.chromium.connect_over_cdp(self.cdp_url)
+                if not self._browser.contexts:
+                    raise RuntimeError("CDP browser has no persistent context")
+                context = self._browser.contexts[0]
+            elif host in self.authenticated_hosts and self.identity_dir:
                 directory = self.identity_dir / host
                 directory.mkdir(parents=True, exist_ok=True, mode=0o700)
                 context = await self._playwright.chromium.launch_persistent_context(
@@ -136,7 +148,9 @@ class PublisherBrowser:
                             except Exception:
                                 await route.abort()
                                 return
-                            if route.request.resource_type in {"image", "media", "font"}:
+                            if not self.cdp_url and route.request.resource_type in {
+                                "image", "media", "font"
+                            }:
                                 await route.abort()
                             else:
                                 await route.continue_()
@@ -149,7 +163,14 @@ class PublisherBrowser:
                         await page.locator("body").wait_for(timeout=remaining(5) * 1000)
                         text = await page.locator("body").inner_text()
                         initial = inspect_html(await page.content(), page.url, None)
-                        if initial.access_reason == "render_required" or len(text.strip()) < 120:
+                        passive_check = initial.access_reason == "challenge_required" and not (
+                            CHALLENGE.search(text)
+                        )
+                        if (
+                            initial.access_reason == "render_required"
+                            or passive_check
+                            or len(text.strip()) < 120
+                        ):
                             try:
                                 await page.wait_for_function(
                                     """() => Array.from(document.querySelectorAll(
@@ -246,10 +267,11 @@ class PublisherBrowser:
         return {}
 
     async def close(self) -> None:
-        for context in self._contexts.values():
-            await context.close()
+        if not self.cdp_url:
+            for context in self._contexts.values():
+                await context.close()
         self._contexts.clear()
-        if self._browser:
+        if self._browser and not self.cdp_url:
             await self._browser.close()
         if self._playwright:
             await self._playwright.stop()

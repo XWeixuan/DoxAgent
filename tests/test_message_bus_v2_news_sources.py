@@ -125,7 +125,9 @@ async def test_yahoo_search_fallback_is_bounded_to_ten(tmp_path: Path) -> None:
 
     context, _ = _context(tmp_path, "yahoo_finance_news", {"snippet_count": 200})
     client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
-    result = await YahooFinanceNewsAdapter(DoxAgentSettings(_env_file=None), client).poll(context)
+    result = await YahooFinanceNewsAdapter(
+        DoxAgentSettings(_env_file=None), client
+    ).poll_legacy_search(context)
     assert result.messages == []
     assert result.window_coverage == "PARTIAL"
     assert result.acquisition_metadata["requested_count"] == 10
@@ -153,18 +155,17 @@ async def test_yahoo_reader_proxy_is_last_fallback(tmp_path: Path) -> None:
         }
         return httpx.Response(
             200,
-            text="Title: \n\nURL Source: upstream\n\nMarkdown Content:\n"
-            + json.dumps(payload),
+            text="Title: \n\nURL Source: upstream\n\nMarkdown Content:\n" + json.dumps(payload),
         )
 
     context, _ = _context(tmp_path, "yahoo_finance_news", {})
     client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
-    result = await YahooFinanceNewsAdapter(DoxAgentSettings(_env_file=None), client).poll(context)
+    result = await YahooFinanceNewsAdapter(
+        DoxAgentSettings(_env_file=None), client
+    ).poll_legacy_search(context)
     assert [item.external_id for item in result.messages] == ["proxy-new"]
     assert result.window_coverage == "PARTIAL"
-    assert result.acquisition_metadata["query_mode"] == (
-        "finance_search_reader_proxy_fallback"
-    )
+    assert result.acquisition_metadata["query_mode"] == ("finance_search_reader_proxy_fallback")
     assert result.acquisition_metadata["endpoint"] == "query1_via_reader_proxy"
     assert [request.url.host for request in requests] == [
         "finance.yahoo.com",

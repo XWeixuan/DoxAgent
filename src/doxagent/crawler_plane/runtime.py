@@ -180,6 +180,22 @@ class PlaywrightBrowserRuntime:
             finally:
                 await page.close()
 
+    async def yahoo_latest_news(self, ticker: str, *, timeout_seconds=20, snippet_count=20):
+        from doxagent.message_bus_v2.yahoo_sources import capture_latest_news
+
+        async with self._lock:
+            context = await self._ensure()
+            page = await context.new_page()
+            try:
+                return await capture_latest_news(
+                    page,
+                    ticker,
+                    timeout_seconds=timeout_seconds,
+                    snippet_count=snippet_count,
+                )
+            finally:
+                await page.close()
+
     async def close(self) -> None:
         if self._owns_browser:
             if self._context is not None:

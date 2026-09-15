@@ -11,6 +11,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Protocol
 
 from doxagent.content_enrichment.extractor import SharedContentExtractor
+from doxagent.content_enrichment.native import native_article
 from doxagent.content_enrichment.schema import EnrichmentJob, EnrichmentJobStatus
 from doxagent.content_enrichment.transport import DEADLINE
 from doxagent.message_bus_v2.repository import MessageBusV2Repository
@@ -137,7 +138,10 @@ class ContentEnrichmentHub:
             self.repository.delete_enrichment_job(job.job_id, claim_token=job.claim_token)
             return
         generic_url = job.message.metadata.get("identity_evidence", {}).get("url_kind") == "generic"
-        if job.source.content_enrichment_mode is ContentEnrichmentMode.SKIP or generic_url:
+        native = native_article(job.message)
+        if job.source.content_enrichment_mode is ContentEnrichmentMode.SKIP or (
+            generic_url and not native
+        ):
             metadata = dict(job.message.metadata)
             metadata["media_enrichment"] = {
                 "status": "skipped",
@@ -165,7 +169,21 @@ class ContentEnrichmentHub:
         )
         try:
             seconds = (job.deadline_at - max(now, utc_now())).total_seconds()
-            if seconds <= 0 or job.attempt_count > 2:
+            if native:
+                result = MediaExtractionResult(
+                    record=record,
+                    content=native.text,
+                    final_url=record.url,
+                    extraction_method=native.method,
+                    diagnostics={
+                        "outcome": "FULL" if len(native.text) >= 800 else "SHORT_FULL",
+                        "stage": "validate",
+                        "body_source": "provider_article_api",
+                        "identity_match": "provider_article_id",
+                        "candidate_summary": [native.summary()],
+                    },
+                )
+            elif seconds <= 0 or job.attempt_count > 2:
                 result = MediaExtractionResult(
                     record=record,
                     reason="deadline_exceeded" if seconds <= 0 else "attempt_limit_exceeded",

@@ -43,8 +43,8 @@ class YahooTransport:
         self._factory, self._gap, self._jitter = session_factory, gap, jitter
         self._clock, self._wall_clock, self._sleep = clock, wall_clock, sleep
         self._session = None
-        self._until = self._next_start = 0.0
-        self._strikes = 0
+        self._next_start = 0.0
+        self._circuits = {}
         self._loop = asyncio.new_event_loop()
         self._thread = threading.Thread(
             target=self._loop.run_forever, name="yahoo-http", daemon=True
@@ -56,15 +56,16 @@ class YahooTransport:
         future = asyncio.run_coroutine_threadsafe(self._request(method, url, **kwargs), self._loop)
         return await asyncio.wrap_future(future)
 
-    async def _request(self, method: str, url: str, **kwargs: Any):
+    async def _request(self, method: str, url: str, *, rate_scope="api", **kwargs: Any):
         if self._lock is None:
             self._lock = asyncio.Lock()
         async with self._lock:
-            if self._clock() < self._until:
-                raise YahooRateLimited(self._until - self._clock())
+            until, strikes = self._circuits.get(rate_scope, (0, 0))
+            if self._clock() < until:
+                raise YahooRateLimited(until - self._clock())
             await self._sleep(max(0, self._next_start - self._clock()))
-            if self._clock() < self._until:
-                raise YahooRateLimited(self._until - self._clock())
+            if self._clock() < until:
+                raise YahooRateLimited(until - self._clock())
             if self._session is None:
                 self._session = self._factory(impersonate="chrome", max_clients=1)
             self._next_start = self._clock() + self._gap + random.uniform(0, self._jitter)
@@ -75,8 +76,8 @@ class YahooTransport:
                     "Yahoo browser transport request failed", request=httpx.Request(method, url)
                 ) from exc
             if response.status_code == 429:
-                self._strikes += 1
-                delay = (300, 900, 1800)[min(self._strikes - 1, 2)]
+                strikes += 1
+                delay = (300, 900, 1800)[min(strikes - 1, 2)]
                 retry = response.headers.get("Retry-After")
                 try:
                     seconds = float(retry)
@@ -86,7 +87,7 @@ class YahooTransport:
                     except (TypeError, ValueError, OverflowError):
                         seconds = 0
                 delay = max(delay, seconds if math.isfinite(seconds) else 0)
-                self._until = self._clock() + delay
+                self._circuits[rate_scope] = (self._clock() + delay, strikes)
                 raise YahooRateLimited(delay)
             if not 200 <= response.status_code < 300:
                 error = (
@@ -100,8 +101,7 @@ class YahooTransport:
                     response=httpx.Response(response.status_code),
                 )
             # Only a successful request closes a half-open circuit.
-            self._strikes = 0
-            self._until = 0
+            self._circuits.pop(rate_scope, None)
             return response
 
     async def _close(self):

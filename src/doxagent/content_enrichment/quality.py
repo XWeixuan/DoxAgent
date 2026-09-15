@@ -97,7 +97,7 @@ def _json_articles(value: Any) -> list[dict[str, Any]]:
     return result
 
 
-def _node_text(node: Any, *, sa_body: bool = False) -> str:
+def _node_text(node: Any, *, sa_body: bool = False, street_body: bool = False) -> str:
     # Work on a copy: selectors and access evidence need the original document.
     copy = html_parser.fromstring(html_parser.tostring(node))
     for junk in copy.xpath(
@@ -119,6 +119,10 @@ def _node_text(node: Any, *, sa_body: bool = False) -> str:
         ):
             continue
         text = clean(paragraph.text_content())
+        if street_body and paragraph.tag in {"h2", "h3"} and re.fullmatch(
+            r"About the authors?", text, re.I
+        ):
+            break
         if sa_body and paragraph.tag in {"h2", "h3"} and re.fullmatch(
             r"More on my IG service", text, re.I
         ):
@@ -176,6 +180,7 @@ def inspect_html(html: str, url: str, expected_title: str | None) -> Inspection:
         if (
             ("captcha-delivery.com" in html and "Please enable JS" in visible)
             or ("/cdn-cgi/challenge-platform/" in html and "_cf_chl_opt" in html)
+            or re.search(r"access denied.*cloudflare|cloudflare to restrict access", title, re.I)
         ):
             result.page_kind, result.access_reason = "challenge", "challenge_required"
             return result
@@ -241,7 +246,10 @@ def inspect_html(html: str, url: str, expected_title: str | None) -> Inspection:
                     Candidate(clean(body), "json_ld_article_body", True, headline)
                 )
     for node in article_nodes:
-        text = _node_text(node)
+        text = _node_text(
+            node,
+            street_body=(urlparse(url).hostname or "").removeprefix("www.") == "thestreet.com",
+        )
         if text:
             result.candidates.append(
                 Candidate(
@@ -312,9 +320,6 @@ def inspect_reader(text: str, url: str, expected_title: str | None) -> Inspectio
     if CHALLENGE.search(text[:2000]):
         result.page_kind, result.access_reason = "challenge", "challenge_required"
         return result
-    if WALL.search(text):
-        result.access_reason = "subscription_required"
-        return result
     # Locate article heading; do not fall back to arbitrary navigation text for Yahoo.
     lines = text.splitlines()
     heads = [
@@ -324,19 +329,36 @@ def inspect_reader(text: str, url: str, expected_title: str | None) -> Inspectio
     if not matching and (urlparse(url).hostname or "").removeprefix("www.") in {
         "chartmill.com",
         "fool.com",
+        "benzinga.com",
     }:
         # These observed reader templates start directly with the article after their headers.
         title_header = next((line[7:].strip() for line in lines if line.startswith("Title: ")), "")
         marker = next((i for i, line in enumerate(lines) if line == "Markdown Content:"), None)
-        if marker is not None and expected_title and title_match(title_header, expected_title):
+        source = next((line[12:].strip() for line in lines if line.startswith("URL Source: ")), "")
+        trusted_header = (urlparse(url).hostname or "").removeprefix("www.") != "benzinga.com" or (
+            source == url
+        )
+        if (
+            marker is not None and expected_title and title_match(title_header, expected_title)
+            and trusted_header
+        ):
             matching = [(marker, title_header)]
     if not matching:
+        if WALL.search(text):
+            result.access_reason = "subscription_required"
         return result
     start, result.headline = matching[0]
     selected: list[str] = []
     in_ad = False
     for line in lines[start + 1 :]:
         plain = clean(re.sub(r"^[#>*\s]+", "", line))
+        if re.fullmatch(
+            r"View Comments|Terms and Privacy Policy|About the authors?", plain, re.I
+        ):
+            break
+        if WALL.search(plain):
+            result.access_reason = "subscription_required"
+            return result
         if re.match(
             r"^(?:Sign up for our daily news|Sign up to the newsletter|Related Company Profiles|"
             r"More Relevant|Privacy Preference Center|Manage Consent Preferences)",

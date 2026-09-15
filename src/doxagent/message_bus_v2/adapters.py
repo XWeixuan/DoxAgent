@@ -81,7 +81,11 @@ class AdapterRegistry:
             "tikhub_x_search": TikHubXSearchAdapter(settings, self.client),
             "tikhub_x_user_posts": TikHubXUserPostsAdapter(settings, self.client),
             "newswire_rss": NewswireRSSAdapter(settings, self.client),
-            "yahoo_finance_news": YahooFinanceNewsAdapter(settings, self.client),
+            "yahoo_finance_news": YahooFinanceNewsAdapter(
+                settings,
+                self.client,
+                browser=crawler_plane.browser if crawler_plane is not None else None,
+            ),
             "ibkr_news": IbkrNewsAdapter(settings),
             "reuters_site_search": ReutersSiteSearchAdapter(
                 crawler_plane.browser if crawler_plane is not None else None,

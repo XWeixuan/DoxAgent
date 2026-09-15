@@ -6,7 +6,10 @@ import time
 from typing import Any, Protocol
 from urllib.parse import urlparse
 
+from doxagent.content_enrichment.captions import caption_text, cnbc_caption_source
+from doxagent.content_enrichment.publishers import public_api_html, public_article_api
 from doxagent.content_enrichment.quality import (
+    Candidate,
     Inspection,
     choose_candidate,
     inspect_html,
@@ -60,6 +63,7 @@ class ArticlePipeline:
         status = 0
         method = None
         content = None
+        specific_body_source = None
         visited = set()
         for hop in range(3):
             if not url:
@@ -90,6 +94,43 @@ class ArticlePipeline:
                 url = target
                 continue
             browser_reason = reason
+            caption_source = cnbc_caption_source(observation.text, url, record.title)
+            if caption_source and reason == "unsupported_media":
+                headline, target, duration = caption_source
+                captions = await self.transport.fetch(target, attempts, phase="captions")
+                text = caption_text(captions.text, duration=duration) if not captions.reason else ""
+                if text:
+                    caption_info = Inspection(
+                        candidates=[Candidate(text, "cnbc_public_captions", True, headline, 20)],
+                        headline=headline, page_kind="media",
+                    )
+                    candidate, caption_outcome, _ = choose_candidate(caption_info, record.title)
+                    if candidate:
+                        info, outcome = caption_info, caption_outcome
+                        content, method = candidate.text, candidate.method
+                        specific_body_source = target
+                        diagnostics["content_role"] = "video_transcript"
+                        source_chain.append({
+                            "from_url": url, "to_url": target,
+                            "evidence": "current_free_video_caption_encoding",
+                        })
+                        break
+            api_url = public_article_api(url)
+            if api_url and reason in {"http_403", "challenge_required", "empty_extract"}:
+                api = await self.transport.fetch(api_url, attempts, phase="publisher_api")
+                html = public_api_html(api.text, url) if not api.reason else None
+                if html:
+                    api_info = inspect_html(html, url, record.title)
+                    candidate, api_outcome, _ = choose_candidate(api_info, record.title)
+                    if candidate:
+                        info, outcome = api_info, api_outcome
+                        content, method = candidate.text, "public_wp_article_api"
+                        specific_body_source = api_url
+                        source_chain.append({
+                            "from_url": url, "to_url": api_url,
+                            "evidence": "public_wp_article_api",
+                        })
+                        break
             if self.browser and reason in {
                 "expand_required",
                 "render_required",
@@ -115,7 +156,12 @@ class ArticlePipeline:
                     )
                 )
                 if rendered.reason:
-                    reason = rendered.reason
+                    diagnostics["browser_failure_reason"] = rendered.reason
+                    reason = (
+                        browser_reason if rendered.reason in {
+                            "browser_unavailable", "browser_runtime_missing", "render_timeout"
+                        } else rendered.reason
+                    )
                 else:
                     info = inspect_html(rendered.text, rendered.url, record.title)
                     candidate, outcome, reason = choose_candidate(info, record.title)
@@ -154,12 +200,14 @@ class ArticlePipeline:
                     "http_403",
                     "http_404",
                     "http_429",
+                    "domain_cooldown",
                     "http_500",
                     "http_502",
                     "http_503",
                     "http_504",
                     "timeout",
                     "render_required",
+                    "challenge_required",
                 }
                 and browser_reason not in {"subscription_required", "login_required"}
                 and not diagnostics.get("credential_ref")
@@ -199,7 +247,7 @@ class ArticlePipeline:
                 "reason_code": None if content else reason,
                 "stage": "validate" if content else self._stage(reason),
                 "resolved_article_url": url,
-                "body_source_url": url if content else None,
+                "body_source_url": (specific_body_source or url) if content else None,
                 "origin_publisher": urlparse(url).hostname,
                 "identity_match": "supported" if content else "unknown",
                 "candidate_summary": [c.summary() for c in info.candidates][:10],

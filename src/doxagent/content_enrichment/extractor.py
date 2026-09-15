@@ -7,7 +7,7 @@ from pathlib import Path
 
 from doxagent.content_enrichment.browser import PublisherBrowser
 from doxagent.content_enrichment.pipeline import ArticlePipeline
-from doxagent.content_enrichment.transport import PublicTransport
+from doxagent.content_enrichment.transport import PublicTransport, browser_session_factory
 from doxagent.monitoring.media_enrichment import (
     AsyncSessionLike,
     DomainFetchController,
@@ -32,6 +32,7 @@ class SharedContentExtractor:
         browser_enabled: bool = False,
         browser_headless: bool = True,
         browser_channel: str | None = None,
+        browser_cdp_url: str | None = None,
         identity_dir: Path | None = None,
         authenticated_hosts: set[str] | None = None,
         disabled_hosts: set[str] | None = None,
@@ -39,7 +40,10 @@ class SharedContentExtractor:
     ) -> None:
         self._semaphore = asyncio.Semaphore(max(1, min(8, concurrency)))
         self._controller = DomainFetchController()
-        self._session_factory = session_factory or _default_session_factory()
+        self._session_factory = session_factory or (
+            browser_session_factory() if pipeline_enabled and extractor is None
+            else _default_session_factory()
+        )
         self._extractor = extractor or _default_extractor()
         self._reader_fallback = extractor is None
         self._session_context: AsyncSessionLike | None = None
@@ -53,6 +57,7 @@ class SharedContentExtractor:
             PublisherBrowser(
                 headless=browser_headless,
                 channel=browser_channel,
+                cdp_url=browser_cdp_url,
                 identity_dir=identity_dir,
                 authenticated_hosts=authenticated_hosts,
                 trusted_proxy_dns=trusted_proxy_dns,

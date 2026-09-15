@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+import time as monotonic_time
 from datetime import UTC, date, datetime, time, timedelta
 from email.utils import parsedate_to_datetime
 from html import unescape
@@ -145,15 +146,97 @@ def _reader_proxy_json(value: str) -> JsonObject:
 
 class YahooFinanceNewsAdapter:
     def __init__(
-        self, settings: DoxAgentSettings, client: httpx.AsyncClient, *, transport=None
+        self, settings: DoxAgentSettings, client: httpx.AsyncClient, *, transport=None, browser=None
     ) -> None:
         from .yahoo_transport import shared_yahoo_transport
 
         self.settings = settings
         # The registry's httpx client remains for other providers; Yahoo owns no session.
         self.transport = transport or shared_yahoo_transport()
+        self.browser = browser
+        self._browser_retry_at = 0.0
+        self._page_api_retry_at = 0.0
+        self._page_strikes = 0
 
     async def poll(self, context: PollContext) -> PollResult:
+        from .yahoo_sources import acquire_yahoo_rss
+        from .yahoo_transport import YahooRateLimited
+
+        count = (
+            100
+            if context.is_bootstrap or context.is_gap_recovery
+            else max(10, min(20, int(context.binding.source_parameters.get("snippet_count", 20))))
+        )
+        attempts = []
+        if (
+            context.binding.source_parameters.get("page_network_enabled", False)
+            and self.browser is not None
+            and monotonic_time.monotonic() >= self._browser_retry_at
+        ):
+            # Reserve the probe before awaiting: concurrent tickers must not queue
+            # repeated browser probes while the first one is still running.
+            self._browser_retry_at = monotonic_time.monotonic() + 300
+            try:
+                async with context.request_permit():
+                    rows, metadata = await self.browser.yahoo_latest_news(
+                        context.ticker,
+                        snippet_count=count,
+                    )
+                self._browser_retry_at = 0.0
+                self._page_strikes = 0
+                return self._map_result(
+                    context, rows, "page_network_ncp", count, {**metadata, "attempts": attempts}
+                )
+            except Exception as exc:
+                self._browser_retry_at = monotonic_time.monotonic() + 300
+                if getattr(exc, "status_code", None) == 429:
+                    self._page_strikes += 1
+                    delay = max(
+                        (300, 900, 1800)[min(self._page_strikes - 1, 2)],
+                        getattr(exc, "retry_after_seconds", 0),
+                    )
+                    self._browser_retry_at = monotonic_time.monotonic() + delay
+                    self._page_api_retry_at = self._browser_retry_at
+                attempts.append({"route": "page_network_ncp", "error": type(exc).__name__})
+        try:
+            if monotonic_time.monotonic() < self._page_api_retry_at:
+                raise YahooRateLimited(self._page_api_retry_at - monotonic_time.monotonic())
+            async with context.request_permit():
+                response = await self.transport.request(
+                    "POST",
+                    "https://finance.yahoo.com/xhr/ncp",
+                    params={"queryRef": "latestNews", "serviceKey": "ncp_fin"},
+                    json={"serviceConfig": {"snippetCount": count, "s": [context.ticker]}},
+                    timeout=self.settings.tool_http_timeout_seconds,
+                )
+            payload = response.json()
+            rows = _yahoo_contents(payload)
+            if (
+                not rows
+                and not (
+                    isinstance(payload, dict)
+                    and any(k in payload for k in ("data", "finance", "news"))
+                )
+                and payload != []
+            ):
+                raise ValueError("Yahoo NCP response schema unrecognized")
+            return self._map_result(context, rows, "ncp_latest_news", count, {"attempts": attempts})
+        except (httpx.HTTPError, ValueError, YahooRateLimited) as exc:
+            attempts.append({"route": "ncp_latest_news", "error": type(exc).__name__})
+        # RSS is a separate endpoint family, not another Query API retry.
+        # Its success must not clear the NCP/API rate-limit circuit.
+        async with context.request_permit():
+            rows, metadata = await acquire_yahoo_rss(
+                self.transport,
+                context.ticker,
+                timeout_seconds=self.settings.tool_http_timeout_seconds,
+            )
+        return self._map_result(
+            context, rows, "legacy_headline_rss", count, {**metadata, "attempts": attempts}
+        )
+
+    async def poll_legacy_search(self, context: PollContext) -> PollResult:
+        """Retained for explicit diagnostics only; never used by automatic polling."""
         from .yahoo_transport import YahooEndpointUnavailable
 
         count = (
@@ -226,6 +309,11 @@ class YahooFinanceNewsAdapter:
                 except (httpx.HTTPError, ValueError, json.JSONDecodeError) as exc:
                     raise exc from None
 
+        return self._map_result(
+            context, rows, mode, count if mode == "ncp_latest_news" else fallback_count
+        )
+
+    def _map_result(self, context, rows, mode, count, metadata=None) -> PollResult:
         messages: list[RawMessageInput] = []
         failures: list[AcquisitionFailure] = []
         for row in rows:
@@ -289,6 +377,11 @@ class YahooFinanceNewsAdapter:
                             "mutable": True,
                         },
                         "query_mode": mode,
+                        **(
+                            {"capture_method": metadata["capture_method"]}
+                            if metadata and "capture_method" in metadata
+                            else {}
+                        ),
                         "publisher_domain": _domain(provider_url),
                     },
                 )
@@ -296,17 +389,20 @@ class YahooFinanceNewsAdapter:
         return PollResult(
             messages=messages,
             failures=failures,
-            window_coverage="PARTIAL" if mode.endswith("fallback") or failures else "COMPLETE",
+            window_coverage="COMPLETE" if mode == "ncp_latest_news" and not failures else "PARTIAL",
             acquisition_metadata={
                 "provider": "yahoo_finance",
                 "query_mode": mode,
                 "window_hours": 24,
-                "requested_count": count if mode == "ncp_latest_news" else fallback_count,
+                "requested_count": count
+                if mode not in ("page_network_ncp", "legacy_headline_rss")
+                else None,
                 "endpoint": (
                     "query1_via_reader_proxy"
                     if mode == "finance_search_reader_proxy_fallback"
                     else mode
                 ),
+                **(metadata or {}),
             },
         )
 

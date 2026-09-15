@@ -1056,3 +1056,9 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-15 · 同稿仅发布一次：确认稿件身份后，正文补充/实质修订只更新既有 canonical Raw、Standard 与 buffer，取消同稿新 Stream/Runtime 版本发布；保留采集观察/来源与 append-only 内容修订快照，正文失败不降级已有内容。REALTIME 首次领取任务时原子冻结最新内容及修订号，重试/恢复与 CLOSED 输入不刷新；防止旧发布 worker 覆盖新内容并释放领取失败的预算预约。保留同标题不同稿/身份冲突/ticker 隔离；未清理历史、修改 O1/O2/O3 prompt/skill 或部署远端。定向测试通过，详见 message_article_once_delivery_20260915.md；已完成 Case 不自动消费后补新事实为本次明确取舍。
 
 2026-09-15 · Projector 基础预算饥饿修复：取消每批投影强制峰值申请；聚合正常预算中固定预留 128 MiB，其他工作/峰值审批不得占用。基础投影单 worker 使用该预留，不重复依赖长期维护预约，不被等待中的重任务优先级全局阻塞；仍检查真实聚合 RAM、MemAvailable 安全余量、PSI/swap 压力，实测高用量可按原规则申请峰值。按用户要求整体提交同步本地 O3 skill、Yahoo transport、同稿仅发布一次等既有修改；不删除数据或订单测试。
+
+2026-09-15 · Yahoo 页面网络截取与 RSS 获取路径：新增 Playwright 原生 latestNews response 截取（ticker 校验、12 秒截止、共享 browser 与 5 分钟失败冷却）及 Chrome 共享 session 的旧 RSS fallback；NCP/API 与 RSS circuit 分组，RSS 成功不解除 NCP 退避。Search/Reader Search 保留为手动诊断入口，退出自动轮询。真实页面未触发目标 NCP 响应，因此截取方案默认关闭、显式实验开启后才置首选；默认 NCP→RSS。RSS 本地及远端无落库验证成功，远端新 adapter 在 NCP 429 后返回 18 条有效消息；未部署、重启、清理数据或修改 O1/O2/O3 skill。详见 yahoo_page_network_rss_validation_20260915.md。
+
+2026-09-15 · Yahoo Playwright 高优获取补修：核实新闻卡片已在 SSR document 内，listener 在 goto 前且能捕获其他 XHR，并非注册晚；浏览器链路扩展为原生响应→受限 SvelteKit hydration JSON→真实页面 JS 同源 POST fetch，明确记录 capture_method，20 秒有界截止及请求取消；普通 / bootstrap 数量复用 20 / 100。BrowserRuntime 本地真实获取 20 条且全部有摘要/精确发布时间；远端新闻页、Chrome UA 首页初始化仍 Edge 429，未宣称远端可用或默认启用。导航 429 在主动 fetch 前停止，429 按 5/15/30 分钟与 Retry-After 冷却。36 项定向测试通过，未部署、写库、重启或修改 O1/O2/O3 skill。
+
+2026-09-15 · V2 正文试跑 badcase 修复：405 条代表记录均走 legacy，按用户口径排除 149 条后登记 256 条；新增 IBKR/Benzinga 原生文章正文严格匹配与零网络接收、operator Chrome CDP 连接/断连重连及故障 reader 降级，修复 Benzinga 无 H1 reader、评论登录页尾与 TheStreet 作者尾部，增加 24/7 Wall St. 公开 WordPress 文章路径与 CNBC 当前免费视频官方字幕（时长覆盖、滚动去重、转录来源标记）。6 条原生正文、13 条隔离真实抓取、3 条真实响应解析有证据；远端反爬仍有未解样本，主机外部重启后桌面 Chrome 尚未恢复，不宣称全量恢复。86 项定向测试、Ruff/mypy 通过；本地修复及远端 /tmp 隔离验证，未提交/部署、改变生产开关或重放历史消息；账号测试待用户远端登录。详见 v2_body_trial_badcase_repair_20260915.md。

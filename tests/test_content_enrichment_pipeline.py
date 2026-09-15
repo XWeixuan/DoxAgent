@@ -363,6 +363,14 @@ def test_chartmill_reader_header_and_newsletter_link_are_not_false_failures():
     assert choose_candidate(info, TITLE)[0]
 
 
+def test_benzinga_reader_without_h1_requires_matching_source_url():
+    url = 'https://www.benzinga.com/markets/options/news'
+    reader = f'Title: {TITLE}\nURL Source: {url}\nMarkdown Content:\n\n{BODY}'
+    chosen, _, _ = choose_candidate(inspect_reader(reader, url, TITLE), TITLE)
+    assert chosen and chosen.text == BODY
+    assert choose_candidate(inspect_reader(reader, url + '/other', TITLE), TITLE)[0] is None
+
+
 async def test_unknown_frozen_pipeline_version_does_not_start_network():
     from doxagent.content_enrichment.extractor import SharedContentExtractor
     from doxagent.monitoring.media_enrichment import MediaEnrichmentRecord
@@ -440,6 +448,40 @@ async def test_aws_202_bootstrap_reaches_browser_and_validates_rendered_title():
     ).extract(MediaEnrichmentRecord('id', 'id', 's', 'MU', TITLE, '', url))
     assert result.succeeded and session.calls == [url]
     browser.read.assert_awaited_once()
+
+
+def test_reader_footer_login_is_not_an_article_gate():
+    text = '# ' + TITLE + '\n\n' + BODY + '\n\nView Comments\nSign in to read comments'
+    info = inspect_reader(text, 'https://finance.yahoo.com/a', TITLE)
+    chosen, _, _ = choose_candidate(info, TITLE)
+    assert chosen and chosen.text == BODY
+    wall = '# ' + TITLE + '\n\nSubscribe to read this article\n\n' + BODY
+    info = inspect_reader(wall, 'https://finance.yahoo.com/a', TITLE)
+    assert choose_candidate(info, TITLE)[0] is None
+
+
+def test_thestreet_body_excludes_author_heading_and_names():
+    page = article().replace(
+        '</article>', '<h2>About the Authors</h2><p>Author biography</p></article>'
+    )
+    chosen, _, _ = choose_candidate(inspect_html(page, 'https://www.thestreet.com/a', TITLE), TITLE)
+    assert chosen and chosen.text == BODY
+
+
+async def test_public_challenge_can_use_reader_without_any_authenticated_identity():
+    from doxagent.monitoring.media_enrichment import MediaEnrichmentRecord
+
+    url = 'https://www.benzinga.com/news/a'
+    session = Session({
+        url: response(url, '<title>Verify you are human</title>', status=403),
+        'https://r.jina.ai/' + url: response(
+            'https://r.jina.ai/' + url, '# ' + TITLE + '\n' + BODY
+        ),
+    })
+    result = await ArticlePipeline(
+        PublicTransport(session, DomainFetchController(), validate_urls=False)
+    ).extract(MediaEnrichmentRecord('id', 'id', 's', 'MU', TITLE, '', url))
+    assert result.succeeded and session.calls == [url, 'https://r.jina.ai/' + url]
 
 
 @pytest.mark.parametrize("control", ["<button>Show more</button>", '<a href="#bio">Read more</a>'])

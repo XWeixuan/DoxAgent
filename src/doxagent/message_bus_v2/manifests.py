@@ -86,7 +86,10 @@ def initial_sources() -> list[SourceDefinition]:
         _source(
             "yahoo_finance_news",
             "Yahoo Finance News",
-            properties={"snippet_count": {"type": "integer", "minimum": 10, "maximum": 200}},
+            properties={
+                "snippet_count": {"type": "integer", "minimum": 10, "maximum": 200},
+                "page_network_enabled": {"type": "boolean", "default": False},
+            },
         ),
         _source("ibkr_news", "IBKR News API", scheduler_group="ibkr_news"),
         _source(

@@ -18,10 +18,16 @@ from doxagent.monitoring.media_enrichment import (
     DomainFetchController,
     FetchAttempt,
     _failure_reason,
-    _request_headers,
 )
 
 DEADLINE: ContextVar[float | None] = ContextVar("body_completion_deadline", default=None)
+
+
+def browser_session_factory() -> Any:
+    from curl_cffi.requests import AsyncSession
+
+    # Let curl_cffi keep the browser UA/client hints aligned with its TLS profile.
+    return lambda: AsyncSession(impersonate="chrome", timeout=12)
 
 
 def remaining(cap: float = 12) -> float:
@@ -211,7 +217,11 @@ class PublicTransport:
         if self.cooldowns.get(urlparse(url).hostname or "", 0) > time.monotonic():
             raise ValueError("domain_cooldown")
         kwargs = {
-            "headers": _request_headers(referer="https://www.google.com/", url=url, phase=phase),
+            "headers": {
+                "Accept": "text/markdown,text/plain;q=0.9,*/*;q=0.8" if phase == "reader"
+                else "text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8",
+                "Accept-Language": "en-US,en;q=0.9",
+            },
             "allow_redirects": False,
             "timeout": remaining(12),
         }

@@ -598,6 +598,10 @@ class DoxAgentSettings(BaseSettings):
         default=None,
         validation_alias="DOXAGENT_CONTENT_ENRICHMENT_BROWSER_CHANNEL",
     )
+    content_enrichment_browser_cdp_url: str | None = Field(
+        default=None,
+        validation_alias="DOXAGENT_CONTENT_ENRICHMENT_BROWSER_CDP_URL",
+    )
     content_enrichment_trusted_proxy_dns: bool = Field(
         default=False,
         validation_alias="DOXAGENT_CONTENT_ENRICHMENT_TRUSTED_PROXY_DNS",

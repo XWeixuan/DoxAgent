@@ -41,6 +41,7 @@ async def _run(settings: DoxAgentSettings, *, once: bool) -> int:
             browser_enabled=settings.content_enrichment_browser_enabled,
             browser_headless=settings.content_enrichment_browser_headless,
             browser_channel=settings.content_enrichment_browser_channel,
+            browser_cdp_url=settings.content_enrichment_browser_cdp_url,
             trusted_proxy_dns=settings.content_enrichment_trusted_proxy_dns,
             identity_dir=Path(settings.content_enrichment_identity_dir)
             if settings.content_enrichment_identity_dir
@@ -90,6 +91,7 @@ async def _login(settings: DoxAgentSettings, host: str, url: str) -> None:
         },
         headless=False,
         channel=settings.content_enrichment_browser_channel,
+        cdp_url=settings.content_enrichment_browser_cdp_url,
         trusted_proxy_dns=settings.content_enrichment_trusted_proxy_dns,
     )
     try:

@@ -68,7 +68,7 @@ async def test_retry_after_http_date():
 
 
 @pytest.mark.parametrize("status", [429, 403, 401, 503])
-async def test_ncp_block_or_service_failure_never_falls_back(tmp_path, status):
+async def test_ncp_block_or_service_failure_tries_only_rss(tmp_path, status):
     requests = []
 
     def handler(request):
@@ -84,8 +84,9 @@ async def test_ncp_block_or_service_failure_never_falls_back(tmp_path, status):
             )
             with pytest.raises((YahooRateLimited, httpx.HTTPStatusError)):
                 await adapter.poll(context)
-        assert len(requests) == 1
+        assert len(requests) == 2
         assert requests[0].url.path == "/xhr/ncp"
+        assert requests[1].url.host == "feeds.finance.yahoo.com"
     finally:
         transport.close()
 
@@ -131,7 +132,7 @@ async def test_query_429_does_not_continue_to_query2_or_reader(tmp_path):
             with pytest.raises(YahooRateLimited):
                 await YahooFinanceNewsAdapter(
                     DoxAgentSettings(_env_file=None), client, transport=transport
-                ).poll(context)
+                ).poll_legacy_search(context)
         assert [r.url.host for r in requests] == ["finance.yahoo.com", "query1.finance.yahoo.com"]
     finally:
         transport.close()
@@ -206,7 +207,7 @@ async def test_success_resets_backoff():
         transport.close()
 
 
-async def test_schema_failure_allows_query_fallback(tmp_path):
+async def test_retained_manual_schema_failure_allows_query_fallback(tmp_path):
     requests = []
 
     def handler(request):
@@ -223,7 +224,7 @@ async def test_schema_failure_allows_query_fallback(tmp_path):
         async with httpx.AsyncClient() as client:
             result = await YahooFinanceNewsAdapter(
                 DoxAgentSettings(_env_file=None), client, transport=transport
-            ).poll(context)
+            ).poll_legacy_search(context)
         assert result.acquisition_metadata["query_mode"] == "finance_search_fallback"
         assert len(requests) == 2
     finally:
