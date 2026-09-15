@@ -7,7 +7,7 @@ import json
 import re
 import sqlite3
 import time
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
@@ -360,7 +360,8 @@ class InitializationRepository:
             ),
         )
 
-    def claim(self, owner: str, *, lease_seconds: float = 60) -> Lease | None:
+    def claim(self, owner: str, *, lease_seconds: float = 60,
+              permit: Callable[[str], bool] | None = None) -> Lease | None:
         with self._write() as db:
             from doxagent.v2_control.mirror import migrate
 
@@ -379,6 +380,8 @@ class InitializationRepository:
             run = self._run(db, row["run_id"])
             if run.status not in {RunStatus.QUEUED, RunStatus.RUNNING}:
                 return None
+            if permit is not None and not permit(run.initialization_id):
+                return None  # No dispatch, attempt charge, or run status transition.
             token = row["token"] + 1
             db.execute(
                 "UPDATE ticker_operations SET owner=?,token=?,lease_until=? WHERE ticker=?",

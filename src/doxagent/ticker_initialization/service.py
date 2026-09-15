@@ -65,9 +65,24 @@ class InitializationWorker:
         self.owner = uuid4().hex
 
     async def run_once(self) -> RunRecord | None:
-        lease = self.repository.claim(self.owner, lease_seconds=self.lease_seconds)
-        if lease is None:
-            return None
+        from doxagent.resource_budget import acquire, release, renew
+
+        token = None
+        def permit(identity):
+            nonlocal token
+            token = acquire("initialization", self.owner, batch="initialization:" + identity)
+            return token is not None
+        try:
+            lease = self.repository.claim(self.owner, lease_seconds=self.lease_seconds,
+                                          permit=permit)
+            if lease is None:
+                return None
+            with renew(token):
+                return await self._run_lease(lease)
+        finally:
+            release(token)
+
+    async def _run_lease(self, lease: Lease) -> RunRecord | None:
         work = asyncio.create_task(self._drive(lease))
         heartbeat = asyncio.create_task(self._heartbeat(lease))
         try:

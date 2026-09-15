@@ -43,6 +43,7 @@ class RuntimeCoordinator:
         self._background = ThreadPoolExecutor(max_workers=2, thread_name_prefix="runtime-maintain")
         self._sweeps = ThreadPoolExecutor(max_workers=2, thread_name_prefix="runtime-sweep")
         self._futures: dict[str, Future[Any]] = {}
+        self._resource_tokens: dict[str, str] = {}
         self._closed = False
         self._effects = ThreadPoolExecutor(max_workers=1, thread_name_prefix="runtime-effects")
         self._effect_future: Future[Any] | None = None
@@ -361,9 +362,17 @@ class RuntimeCoordinator:
             ]
             if len(active) >= capacity:
                 continue
+            from doxagent.resource_budget import acquire, release
+            token = acquire("realtime" if kind == "CASE" else "maintenance", task["id"],
+                            batch="maintenance:" + ticker)
+            if token is None:
+                continue
             lease = self.journal.claim(task["id"], seconds=120)
             if lease:
+                self._resource_tokens[task["id"]] = token
                 self._futures[task["id"]] = pool.submit(self._execute, lease)
+            else:
+                release(token)
 
     def _waiting_cases(self, task: dict[str, Any]) -> bool:
         if task["inputs"].get("repair_id"):
@@ -371,24 +380,8 @@ class RuntimeCoordinator:
             if parent and parent["status"] not in {"SUCCEEDED", "FAILED"}:
                 return True
         cutoff = datetime.fromisoformat(task["inputs"]["cutoff"])
-        cases = [
-            item
-            for item in self.journal.tasks(ticker=task["ticker"], kind="CASE", active_only=True)
-            if datetime.fromisoformat(item["inputs"]["admitted_at"]) < cutoff
-            and item["status"] in {"PENDING", "RUNNING"}
-        ]
-        unfinished = bool(cases)
-        for case in self.runtime.repository.list_cases(task["ticker"]):
-            relevant = (
-                case.sweep_id == task["inputs"].get("sweep_id")
-                if task["inputs"].get("sweep_id")
-                else case.trading_date.isoformat() == task["inputs"]["day"]
-            )
-            if relevant and any(
-                effect.status.value not in {"COMPLETED", "FAILED"}
-                for effect in self.runtime.repository.list_effects(case.case_id)
-            ):
-                unfinished = True
+        from .bounded_inputs import unfinished as scope_unfinished
+        unfinished = scope_unfinished(self.runtime.repository, self.journal, task)
         waiting = unfinished and self.journal.clock() < cutoff + timedelta(hours=1)
         if unfinished and not waiting:
             self.journal.gap(
@@ -431,10 +424,15 @@ class RuntimeCoordinator:
         )
 
     def _execute(self, task: dict[str, Any]) -> None:
-        from .heartbeat import heartbeat
+        from doxagent.resource_budget import release, renew
 
-        with heartbeat(lambda: self.journal.renew(task)):
-            self._execute_owned(task)
+        from .heartbeat import heartbeat
+        token = self._resource_tokens.get(task["id"])
+        try:
+            with heartbeat(lambda: self.journal.renew(task)), renew(token):
+                self._execute_owned(task)
+        finally:
+            release(self._resource_tokens.pop(task["id"], None))
 
     def _execute_owned(self, task: dict[str, Any]) -> None:
         try:

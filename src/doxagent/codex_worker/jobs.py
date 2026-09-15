@@ -86,6 +86,8 @@ class WorkerJobManager:
         self._processes_recovered = not hasattr(runtime, "recover")
         self._pump: asyncio.Task[None] | None = None
         self._tasks: dict[str, asyncio.Task[None]] = {}
+        self._resource_tokens: dict[str, str] = {}
+        self._budget_wait = False
         self._handles: dict[str, TurnHandle] = {}
         self._condition = asyncio.Condition()
         self._resource_log = RotatingFileHandler(
@@ -256,11 +258,12 @@ class WorkerJobManager:
                         self._tasks[victim].cancel()
             reap = getattr(self._runtime, "reap_idle", None)
             if reap is not None:
-                await reap(all_idle=self.pressure.paused)
+                await reap(all_idle=self.pressure.paused or self._budget_wait)
             self._schedule()
             await asyncio.sleep(0.25)
 
     def _schedule(self) -> None:
+        self._budget_wait = False
         if (
             self._closed
             or not self._processes_recovered
@@ -289,6 +292,23 @@ class WorkerJobManager:
                 self._probe_active
             ) > self.capacity or identity in {key for key, _ in self._active.values()}:
                 continue
+            from doxagent.resource_budget import acquire
+
+            maintenance = request.run_id.startswith("runtime-maintain-")
+            runtime = request.research_lane.value == "persistent_runtime"
+            kind = ("codex_maintenance" if maintenance else
+                    "codex_runtime" if runtime else "codex_initialization")
+            batch = ("maintenance:" + request.ticker if maintenance else "initialization:" +
+                     (request.initialization_id or
+                      request.run_id.split("-d1")[0].split("-d2")[0]))
+            token = acquire(kind, job_id, batch=batch, slots=weight)
+            if token is None:
+                self._budget_wait = True
+                if job.wait_reason != "RESOURCE_BUDGET_WAIT":
+                    self._jobs[job_id] = job.model_copy(
+                        update={"wait_reason": "RESOURCE_BUDGET_WAIT"})
+                continue
+            self._resource_tokens[job_id] = token
             self._active[job_id] = (identity, weight)
             self._runtime_streak = (
                 self._runtime_streak + 1
@@ -313,10 +333,17 @@ class WorkerJobManager:
         # Cancellation before the coroutine's first instruction has no finally block.
         if task.cancelled() and self._jobs[job_id].execution_phase == "QUEUED":
             self._active.pop(job_id, None)
+            from doxagent.resource_budget import release
+            release(self._resource_tokens.pop(job_id, None))
         if not task.cancelled():
             task.exception()  # Retrieve supervisor errors; durable status remains inspectable.
 
     async def _execute(self, job_id: str, request: WorkerRunRequest) -> None:
+        from doxagent.resource_budget import renew
+        with renew(self._resource_tokens.get(job_id)):
+            await self._execute_leased(job_id, request)
+
+    async def _execute_leased(self, job_id: str, request: WorkerRunRequest) -> None:
         try:
             await self._run(job_id, request)
         finally:
@@ -379,6 +406,8 @@ class WorkerJobManager:
             await blocking(self._persist_telemetry, request, self._jobs[job_id])
             if cleanup_ok:
                 self._active.pop(job_id, None)
+                from doxagent.resource_budget import release
+                release(self._resource_tokens.pop(job_id, None))
 
     async def close(self) -> None:
         self._closed = True

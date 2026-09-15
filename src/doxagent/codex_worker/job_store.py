@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 from contextlib import closing
 from pathlib import Path
@@ -85,6 +86,11 @@ class JobStore:
 
     def queued(self, *, prefer_runtime: bool = True) -> list[str]:
         order = "priority DESC, sequence" if prefer_runtime else "priority ASC, sequence"
+        if os.getenv("DOXAGENT_RESOURCE_SOCKET"):
+            order = ("CASE WHEN json_extract(request,'$.research_lane')="
+                     "'persistent_runtime' THEN 0 "
+                     "WHEN json_extract(request,'$.run_id') LIKE 'runtime-maintain-%' THEN 1 "
+                     "ELSE 2 END,sequence")
         with closing(self.connect()) as db:
             return [
                 r[0]

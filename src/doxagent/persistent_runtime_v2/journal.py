@@ -58,6 +58,9 @@ class RuntimeJournal:
                     ON runtime_tasks(ticker,status,kind);
                 CREATE INDEX IF NOT EXISTS runtime_tasks_sweep
                     ON runtime_tasks(json_extract(inputs,'$.sweep_id'),kind);
+                CREATE INDEX IF NOT EXISTS runtime_tasks_wait_scope
+                    ON runtime_tasks(ticker,kind,status,json_extract(inputs,'$.sweep_id'),
+                                     json_extract(inputs,'$.admitted_at'));
                 CREATE TABLE IF NOT EXISTS runtime_gaps (
                     id TEXT PRIMARY KEY, task_id TEXT, ticker TEXT, code TEXT, detail TEXT,
                     closed INTEGER DEFAULT 0, created_at TEXT);
@@ -66,6 +69,8 @@ class RuntimeJournal:
                     PRIMARY KEY(namespace,key));
                 CREATE TABLE IF NOT EXISTS runtime_snapshots (
                     id TEXT PRIMARY KEY, payload TEXT NOT NULL);
+                CREATE INDEX IF NOT EXISTS runtime_values_case_member
+                    ON runtime_values(namespace,json_extract(payload,'$.case_id'),key);
                 CREATE INDEX IF NOT EXISTS runtime_values_delivery
                     ON runtime_values(namespace,json_extract(payload,'$.status'),key)
                     WHERE namespace='trade_intents';

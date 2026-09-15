@@ -15,6 +15,7 @@ from doxagent.ticker_initialization.repository import InitializationRepository
 from doxagent.workflows.codex_document3.service import build_document3_orchestrator
 from doxagent.workflows.codex_event_library.remote_runner import RemoteEventLibraryInitializer
 
+from .bounded_inputs import case_values
 from .daily import RuntimeDeltaBatchAdapter
 from .event_branch import branch_library
 from .journal import RuntimeJournal, digest
@@ -63,64 +64,17 @@ class RuntimeMaintenance:
                 "SUPERSEDED",
                 "Rebase maintenance records onto manual/current activation",
             )
-        day = date.fromisoformat(task["inputs"]["day"])
-        cases = self.runtime.repository.list_cases(task["ticker"])
-        if task["inputs"].get("scope") == "SWEEP":
-            selected = {
-                case.case_id for case in cases if case.sweep_id == task["inputs"]["sweep_id"]
-            }
-        else:
-            selected = {
-                case.case_id for case in cases if case.trading_date == day and case.sweep_id is None
-            }
-        if task["inputs"].get("case_ids"):
-            selected = set(task["inputs"]["case_ids"])
-        selected -= {case.case_id for case in cases if self.journal.get(
-            "invalid_admissions", case.source.source_message_id)}
-        dates = {case.trading_date for case in cases if case.case_id in selected}
-        sources = {case.source.source_message_id for case in cases if case.case_id in selected}
-        candidates: list[dict[str, Any]] = []
-        trades: list[dict[str, Any]] = []
-        badcases: list[dict[str, Any]] = []
-        gaps: list[dict[str, Any]] = []
-        for value in sorted(dates):
-            candidates.extend(
-                item.model_dump(mode="json")
-                for item in self.runtime.repository.list_daily_candidates(task["ticker"], value)
-                if item.source_message_id in sources
-            )
-            trades.extend(
-                item.model_dump(mode="json")
-                for item in self.runtime.repository.list_daily_trades(task["ticker"], value)
-                if item.case_id in selected
-            )
-            badcases.extend(
-                item.model_dump(mode="json")
-                for item in self.runtime.repository.list_daily_badcases(task["ticker"], value)
-                if item.case_id in selected
-            )
-            gaps.extend(
-                item.model_dump(mode="json")
-                for item in self.runtime.repository.list_daily_w3_coverage_gaps(
-                    task["ticker"], value
-                )
-                if item.case_id in selected
-            )
+        from .bounded_inputs import members, records
+        membership = members(self.runtime.repository, self.journal, task)
+        selected = {item["case_id"] for item in membership}
+        inputs = ({key: prior[key] for key in ("candidates", "trades", "badcases", "gaps")}
+                  if prior else records(self.runtime.repository, membership, ticker=task["ticker"]))
         frame = {
             "base": current,
             "run_id": "runtime-maintain-" + digest([task["id"], current["revision_id"]])[:24],
-            "candidates": candidates,
-            "trades": trades,
-            "badcases": badcases,
-            "gaps": gaps,
+            **inputs,
             "case_ids": sorted(selected),
-            "effect_versions": {
-                identity: [
-                    (effect.effect_id, effect.attempt_count, effect.status.value)
-                    for effect in self.runtime.repository.list_effects(identity)
-                ]
-                for identity in selected
-            },
+            "effect_versions": {item["case_id"]: item["effects"] for item in membership},
             "execution_bundle_id": prior.get("execution_bundle_id")
             if prior
             else self.journal.get("execution", "active"),
@@ -350,11 +304,7 @@ class RuntimeMaintenance:
                 w3_coverage_gaps=[
                     W3CoverageGapRecord.model_validate(item) for item in frame["gaps"]
                 ],
-                trade_candidates=[
-                    item
-                    for item in self.journal.values("candidates")
-                    if item["case_id"] in frame["case_ids"]
-                ],
+                trade_candidates=list(case_values(self.journal, "candidates", frame["case_ids"])),
             )
             if not task["receipt"].get("o3"):
                 from .reference_capture import prepare

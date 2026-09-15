@@ -579,6 +579,10 @@ class SQLitePersistentRuntimeV2Repository:
                     ON runtime_v2_cases(status, updated_at);
                 CREATE INDEX IF NOT EXISTS idx_runtime_v2_cases_ticker_date
                     ON runtime_v2_cases(ticker, trading_date, created_at);
+                CREATE INDEX IF NOT EXISTS idx_runtime_v2_cases_maintenance
+                    ON runtime_v2_cases(ticker,trading_date,json_extract(payload_json,'$.sweep_id'),case_id);
+                CREATE INDEX IF NOT EXISTS idx_runtime_v2_cases_sweep
+                    ON runtime_v2_cases(ticker,json_extract(payload_json,'$.sweep_id'),case_id);
 
                 CREATE TABLE IF NOT EXISTS runtime_v2_turns (
                     turn_id TEXT PRIMARY KEY,
@@ -609,6 +613,8 @@ class SQLitePersistentRuntimeV2Repository:
                 CREATE INDEX IF NOT EXISTS idx_runtime_v2_effects_pending
                     ON runtime_v2_effects(status, available_at)
                     WHERE status IN ('PENDING', 'PENDING_RETRY');
+                CREATE INDEX IF NOT EXISTS idx_runtime_v2_effects_case_state
+                    ON runtime_v2_effects(case_id,status,effect_id);
 
                 CREATE TABLE IF NOT EXISTS runtime_v2_provisional_counters (
                     ticker TEXT NOT NULL,
@@ -636,6 +642,8 @@ class SQLitePersistentRuntimeV2Repository:
                 );
                 CREATE INDEX IF NOT EXISTS idx_runtime_v2_candidates_daily
                     ON runtime_v2_candidates(ticker, trading_date, daily_status, candidate_index);
+                CREATE INDEX IF NOT EXISTS idx_runtime_v2_candidates_source_daily
+                    ON runtime_v2_candidates(source_message_id,daily_status,candidate_identity);
 
                 CREATE TABLE IF NOT EXISTS runtime_v2_archives (
                     case_id TEXT PRIMARY KEY REFERENCES runtime_v2_cases(case_id),
@@ -652,6 +660,8 @@ class SQLitePersistentRuntimeV2Repository:
                 );
                 CREATE INDEX IF NOT EXISTS idx_runtime_v2_trade_daily
                     ON runtime_v2_trade_records(ticker, trading_date, daily_status, created_at);
+                CREATE INDEX IF NOT EXISTS idx_runtime_v2_trade_record_identity
+                    ON runtime_v2_trade_records(json_extract(payload_json,'$.trade_record_id'),daily_status);
                 CREATE TABLE IF NOT EXISTS runtime_v2_policy_activations (
                     ticker TEXT NOT NULL,
                     policy_id TEXT NOT NULL,
@@ -675,6 +685,8 @@ class SQLitePersistentRuntimeV2Repository:
                 );
                 CREATE INDEX IF NOT EXISTS idx_runtime_v2_badcase_daily
                     ON runtime_v2_badcases(ticker, trading_date, daily_status, created_at);
+                CREATE INDEX IF NOT EXISTS idx_runtime_v2_badcase_record_identity
+                    ON runtime_v2_badcases(json_extract(payload_json,'$.badcase_id'),daily_status);
                 CREATE TABLE IF NOT EXISTS runtime_v2_w3_cases (
                     case_id TEXT PRIMARY KEY REFERENCES runtime_v2_cases(case_id),
                     ticker TEXT NOT NULL,
@@ -711,6 +723,8 @@ class SQLitePersistentRuntimeV2Repository:
                     ON runtime_v2_w3_coverage_gaps(
                         ticker, trading_date, daily_status, created_at
                     );
+                CREATE INDEX IF NOT EXISTS idx_runtime_v2_gap_record_identity
+                    ON runtime_v2_w3_coverage_gaps(json_extract(payload_json,'$.coverage_gap_id'),daily_status);
                 CREATE TABLE IF NOT EXISTS runtime_v2_daily_close_runs (
                     ticker TEXT NOT NULL,
                     trading_date TEXT NOT NULL,
@@ -1460,18 +1474,21 @@ class SQLitePersistentRuntimeV2Repository:
         wanted = set(record_ids)
         if not wanted:
             return
-        rows = connection.execute(
-            f"SELECT case_id,payload_json FROM {table} WHERE daily_status='PENDING'"
-        ).fetchall()
-        for row in rows:
-            value = model.model_validate_json(row["payload_json"])
-            if getattr(value, id_field) not in wanted:
-                continue
-            updated = value.model_copy(update={"daily_status": DailyRecordStatus.PROCESSED})
-            connection.execute(
-                f"UPDATE {table} SET daily_status='PROCESSED',payload_json=? WHERE case_id=?",
-                (self.content.encode(updated.model_dump(mode="json")), row["case_id"]),
-            )
+        ordered = sorted(wanted)
+        for offset in range(0, len(ordered), 100):
+            ids = ordered[offset:offset+100]
+            rows = connection.execute(
+                f"SELECT case_id,payload_json FROM {table} WHERE daily_status='PENDING' "
+                f"AND json_extract(payload_json,'$.{id_field}') IN (" +
+                ",".join("?" for _ in ids) + ")", ids
+            ).fetchall()
+            for row in rows:
+                value = model.model_validate_json(row["payload_json"])
+                updated = value.model_copy(update={"daily_status": DailyRecordStatus.PROCESSED})
+                connection.execute(
+                    f"UPDATE {table} SET daily_status='PROCESSED',payload_json=? WHERE case_id=?",
+                    (self.content.encode(updated.model_dump(mode="json")), row["case_id"]),
+                )
 
     def _insert_case_record(self, table: str, value: T, case_id: str) -> T:
         with self._connect() as connection:

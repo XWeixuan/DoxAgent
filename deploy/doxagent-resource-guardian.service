@@ -1,0 +1,23 @@
+[Unit]
+Description=DoxAgent bounded host resource quota guardian
+Requires=docker.service doxagent-app.slice
+After=docker.service doxagent-app.slice
+
+[Service]
+ExecStart=/usr/bin/python3 /home/ubuntu/doxagent/scripts/resource_guardian.py
+Restart=on-failure
+RestartSec=5
+RuntimeDirectory=doxagent-resources
+RuntimeDirectoryPreserve=yes
+MemoryMax=128M
+TasksMax=32
+NoNewPrivileges=yes
+PrivateNetwork=yes
+RestrictAddressFamilies=AF_UNIX
+ProtectHome=read-only
+ProtectSystem=strict
+ReadWritePaths=/run/doxagent-resources
+InaccessiblePaths=/var/lib/docker/volumes -/home/ubuntu/.env
+
+[Install]
+WantedBy=multi-user.target
