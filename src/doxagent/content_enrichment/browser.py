@@ -12,7 +12,7 @@ from urllib.parse import urlparse
 
 from doxagent.content_enrichment.identity import recover_seeking_alpha
 from doxagent.content_enrichment.quality import CHALLENGE, choose_candidate, inspect_html
-from doxagent.content_enrichment.transport import Observation, public_url, remaining
+from doxagent.content_enrichment.transport import Observation, public_url, remaining, retry_after
 
 
 class PublisherBrowser:
@@ -162,10 +162,18 @@ class PublisherBrowser:
                             url, wait_until="domcontentloaded", timeout=remaining(25) * 1000
                         )
                         status = response.status if response else 0
+                        if status == 429:
+                            delay = retry_after(response.headers.get("retry-after"))
+                            state = self._state(host, "UNVERIFIED")
+                            state["retry_after_seconds"] = delay if delay is not None else 30
+                            return Observation(page.url, "", status, "http_429"), state
                         await page.locator("body").wait_for(timeout=remaining(5) * 1000)
                         text = await page.locator("body").inner_text()
                         initial = inspect_html(await page.content(), page.url, None)
-                        passive_check = initial.access_reason == "challenge_required" and not (
+                        passive_check = (
+                            initial.access_reason == "challenge_required"
+                            and not initial.interactive_challenge
+                        ) and not (
                             CHALLENGE.search(text)
                         )
                         if (

@@ -72,7 +72,18 @@ class ArticlePipeline:
                 reason = "publisher_loop"
                 break
             visited.add(url)
-            observation = await self.transport.fetch(url, attempts)
+            identities = getattr(self.browser, "authenticated_hosts", None)
+            identity_path = isinstance(identities, set) and urlparse(url).hostname in identities
+            if identity_path:
+                # Access policy selects the identity browser; this is not a synthetic HTTP error.
+                cooling = self.transport.cooldowns.get(urlparse(url).hostname or "", 0)
+                observation = Observation(
+                    url, "", 0,
+                    "domain_cooldown" if cooling > time.monotonic() else "identity_required",
+                )
+                diagnostics["access_path"] = "publisher_identity_browser"
+            else:
+                observation = await self.transport.fetch(url, attempts)
             url, status = observation.url, observation.status
             if observation.reason:
                 reason = observation.reason
@@ -139,11 +150,18 @@ class ArticlePipeline:
                 "challenge_required",
                 "http_401",
                 "http_403",
+                "identity_required",
                 "empty_extract",
                 "incomplete_extract",
                 "article_identity_unknown",
             }:
-                rendered, auth = await self.browser.read(url, expand=info.expansion_required)
+                async with self.transport.controller.enter(url, phase="browser"):
+                    rendered, auth = await self.browser.read(url, expand=info.expansion_required)
+                if rendered.status == 429:
+                    delay = auth.get("retry_after_seconds", 30)
+                    self.transport.cooldowns[urlparse(url).hostname or ""] = (
+                        time.monotonic() + max(0, float(delay))
+                    )
                 diagnostics.update(auth)
                 status = rendered.status
                 attempts.append(
@@ -158,7 +176,7 @@ class ArticlePipeline:
                 if rendered.reason:
                     diagnostics["browser_failure_reason"] = rendered.reason
                     reason = (
-                        browser_reason if rendered.reason in {
+                        browser_reason if not identity_path and rendered.reason in {
                             "browser_unavailable", "browser_runtime_missing", "render_timeout"
                         } else rendered.reason
                     )
@@ -189,6 +207,7 @@ class ArticlePipeline:
             # Never route authenticated / subscription content through a third-party reader.
             if (
                 self.reader_enabled
+                and not identity_path
                 and reason
                 in {
                     "empty_extract",

@@ -1070,3 +1070,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-15 · V2 STORE_UNAVAILABLE 冷启动修复：查询子进程在 ready 握手前预热交易日历，避免 read-context 首次加载 pandas/exchange_calendars 超过 2 秒硬截止后被反复回收；替换进程同样预热，不扩大查询超时、不改业务库。真实 spawned worker 首次 read-context 与协作截止两项定向测试通过；部署限定 v2-api。
 
 2026-09-15 · 会员页面渲染补修：远端实际复测定位 SA/Barron’s 在导航已很长但正文尚未 hydration 时提前结束，改为正文候选缺失时有界等待各站真实正文节点；SA 使用计算后的可见性验证授权正文，拒绝 DOM 中隐藏的实质段落，不因残留 invisible 类误伤 CSS 已解锁的文章。20 项浏览器定向测试通过；继续远端文章级复测。
+
+2026-09-15 · 会员正文身份优先与反爬诊断补修：已配置身份的域名直接走 operator CDP，沿用域名并发节奏及浏览器 429 Retry-After 冷却，身份故障不送第三方 reader；识别活动 PerimeterX 遮罩和 DataDome CAPTCHA iframe，避免误报空正文。99 项正文定向测试、Ruff/mypy 通过；Reuters/WSJ 各 2 篇、SA 1 篇真实正文成功，Barron’s/SA 部分文章待正常人机验证，MarketWatch 仍需文章授权验证。免费 15 样本 4 成功，保留拒绝/空字幕失败，未降低门槛或重放历史消息。详见 v2_body_account_delivery_20260915.md。

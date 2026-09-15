@@ -143,3 +143,15 @@ def test_localized_sa_outside_article_matches_original_title_only_for_exact_arti
     c, _, _ = choose_candidate(inspect_html(page, url, TITLE), TITLE)
     assert c and c.text == body and c.method == 'sa_article_body'
     assert choose_candidate(inspect_html(page, url.replace('123', '999'), TITLE), TITLE)[0] is None
+
+
+@pytest.mark.parametrize('page', [
+    '<title>barrons.com</title><iframe src="https://geo.captcha-delivery.com/captcha/"></iframe>',
+    '<div id="px-captcha-wrapper" class="px-captcha-visible"></div>'
+    '<article><p>Teaser</p></article>',
+])
+def test_active_iframe_or_perimeterx_challenge_is_not_an_empty_article(page):
+    from doxagent.content_enrichment.quality import inspect_html
+    assert inspect_html(page, 'https://www.barrons.com/articles/news', TITLE).access_reason == (
+        'challenge_required'
+    )

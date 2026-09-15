@@ -244,6 +244,40 @@ async def test_cdp_identity_restores_revision_and_requires_article_verification(
     assert browser.verified(host)["session_revision"] == 8
 
 
+@pytest.mark.parametrize("reason", [None, "challenge_required"])
+async def test_configured_identity_does_not_issue_anonymous_http_requests(reason):
+    url = "https://www.reuters.com/world/news/"
+    session = Session({})
+    browser = AsyncMock()
+    browser.authenticated_hosts = {"www.reuters.com"}
+    browser.read.return_value = (Observation(url, article(), 200, reason),
+                                 {"credential_ref": "www.reuters.com"})
+    browser.verified = Mock(return_value={"auth_state": "VALID"})
+    result = await ArticlePipeline(
+        PublicTransport(session, DomainFetchController(), validate_urls=False), browser=browser
+    ).extract(MediaEnrichmentRecord("id", "id", "source", "MU", TITLE, "", url))
+    assert session.calls == []
+    assert result.succeeded is (reason is None)
+    assert result.diagnostics["access_path"] == "publisher_identity_browser"
+
+
+async def test_identity_browser_429_observes_shared_cooldown_without_reader():
+    url = "https://www.reuters.com/world/news/"
+    session = Session({})
+    browser = AsyncMock()
+    browser.authenticated_hosts = {"www.reuters.com"}
+    browser.read.return_value = (Observation(url, "", 429, "http_429"),
+                                 {"credential_ref": "www.reuters.com", "retry_after_seconds": 60})
+    pipeline = ArticlePipeline(
+        PublicTransport(session, DomainFetchController(), validate_urls=False), browser=browser
+    )
+    record = MediaEnrichmentRecord("id", "id", "source", "MU", TITLE, "", url)
+    assert (await pipeline.extract(record)).reason == "http_429"
+    assert (await pipeline.extract(record)).reason == "domain_cooldown"
+    browser.read.assert_awaited_once()
+    assert session.calls == []
+
+
 @pytest.mark.parametrize(
     "url",
     [

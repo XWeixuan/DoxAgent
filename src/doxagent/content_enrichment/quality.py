@@ -63,6 +63,7 @@ class Inspection:
     publisher_links: list[str] = field(default_factory=list)
     page_kind: str = "unknown"
     access_reason: str | None = None
+    interactive_challenge: bool = False
     expansion_required: bool = False
     subscription_article: bool = False
 
@@ -168,11 +169,22 @@ def inspect_html(html: str, url: str, expected_title: str | None) -> Inspection:
         )
     # WAF bootstrap documents are not articles, even when served as HTTP 202.
     # Do this before title matching: otherwise the browser fallback is never reached.
+    if root.xpath(
+        '//*[@id="px-captcha-wrapper" and '
+        'contains(concat(" ",normalize-space(@class)," ")," px-captcha-visible ")]'
+    ):
+        result.page_kind, result.access_reason = "challenge", "challenge_required"
+        result.interactive_challenge = True
+        return result
     has_article_body = bool(root.xpath(
         '//article//p|//*[@itemprop="articleBody"]//p|'
         '//*[contains(@class,"article-content") or contains(@class,"article-body")]//p'
     ))
     if not has_article_body:
+        captcha_frame = any(
+            (urlparse(src).hostname or "").endswith(".captcha-delivery.com")
+            for src in root.xpath("//iframe/@src")
+        )
         if "awsWafCookieDomainList" in html and (
             "challenge.js" in html or "gokuProps" in html
         ):
@@ -180,10 +192,12 @@ def inspect_html(html: str, url: str, expected_title: str | None) -> Inspection:
             return result
         if (
             ("captcha-delivery.com" in html and "Please enable JS" in visible)
+            or captcha_frame
             or ("/cdn-cgi/challenge-platform/" in html and "_cf_chl_opt" in html)
             or re.search(r"access denied.*cloudflare|cloudflare to restrict access", title, re.I)
         ):
             result.page_kind, result.access_reason = "challenge", "challenge_required"
+            result.interactive_challenge = captcha_frame
             return result
     if CHALLENGE.search(title) or (CHALLENGE.search(visible) and not root.xpath("//article//p")):
         result.page_kind, result.access_reason = "challenge", "challenge_required"
