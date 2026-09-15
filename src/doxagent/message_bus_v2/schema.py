@@ -325,6 +325,8 @@ class RawMessageInput(BusModel):
         if not isinstance(data, dict):
             return data
         data = dict(data)
+        if isinstance(data.get("url"), str):
+            data.setdefault("raw_url", data["url"])
         stamp = data.get("published_at")
         if stamp is None:
             data.update(published_at=utc_now(), publication_time_basis="UNKNOWN_FIRST_SEEN")
@@ -352,6 +354,7 @@ class RawMessageInput(BusModel):
     source: str | None = None
     publisher_name: str | None = None
     url: str
+    raw_url: str | None = None
     published_at: datetime
     raw_payload: JsonObject
     metadata: JsonObject = Field(default_factory=dict)
@@ -388,7 +391,6 @@ class RawMessageInput(BusModel):
             "gclid",
             "mc_cid",
             "mc_eid",
-            "ref",
         }
         query = [
             (key, item)
@@ -502,6 +504,7 @@ class StreamMember(BusModel):
 
 
 class MaterializedStreamMember(BusModel):
+    metadata: JsonObject = Field(default_factory=dict)
     admission_context: AdmissionContext | None = None
     publication_time_basis: str = "EXACT"
     stream_item_id: str

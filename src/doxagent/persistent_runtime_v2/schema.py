@@ -172,6 +172,10 @@ class SourceMessageEnvelope(RuntimeV2Model):
     stream_item_id: str = Field(min_length=1)
     member_count: int = Field(ge=1)
     member_message_ids: list[str] = Field(default_factory=list)
+    logical_message_id: str | None = None
+    business_version: int | None = None
+    update_kind: str | None = None
+    previous_raw_message_id: str | None = None
     eligibility_at: datetime | None = None
     snapshot: SourceMessageSnapshot
 
@@ -193,6 +197,12 @@ class SourceMessageEnvelope(RuntimeV2Model):
             stream_item_id=value.item.stream_item_id,
             member_count=value.item.member_count,
             member_message_ids=[member.standard_message_id for member in value.members],
+            logical_message_id=latest.metadata.get("message_version", {}).get("logical_message_id"),
+            business_version=latest.metadata.get("message_version", {}).get("business_version"),
+            update_kind=latest.metadata.get("message_version", {}).get("classification"),
+            previous_raw_message_id=latest.metadata.get("message_version", {}).get(
+                "previous_raw_message_id"
+            ),
             eligibility_at=min(
                 member.normalized_at or value.item.published_at for member in value.members
             ),

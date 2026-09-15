@@ -7,6 +7,7 @@ from datetime import UTC, datetime, timedelta
 from urllib.parse import urlparse
 
 from doxagent.content_enrichment.schema import EnrichmentJob
+from doxagent.message_bus_v2 import deduplication as dedup
 from doxagent.message_bus_v2.compiler import compiled_body_length_for_members
 from doxagent.message_bus_v2.manifests import initial_default_profile, initial_sources
 from doxagent.message_bus_v2.news_policy import HiddenNewsIngressPolicy
@@ -704,12 +705,20 @@ class MessageBusV2Service:
         clean = message.model_copy(update={"metadata": clean_metadata})
         identity_key = identity_key_for(source.source_id, clean)
         provider_raw_hash = sha256_text(canonical_json(clean.raw_payload))
+        reused = self.repository.observe_input(
+            clean,
+            ticker=binding.ticker,
+            source_id=source.source_id,
+            identity_key=identity_key,
+            now=now,
+        )
         intake_key = sha256_text(
             canonical_json(
                 {
                     "binding_id": binding.binding_id,
                     "identity_key": identity_key,
-                    "provider_raw_hash": provider_raw_hash,
+                    "input_fingerprint": dedup.stable_fingerprint(clean),
+                    "recheck_window": int(now.timestamp()) // 1800,
                 }
             )
         )
@@ -729,12 +738,7 @@ class MessageBusV2Service:
             deadline_at=now + timedelta(seconds=self.enrichment_retry_deadline_seconds),
             pipeline_version=self.enrichment_pipeline_version,
         )
-        if self.repository.has_seen_provider_payload(
-            ticker=binding.ticker,
-            source_id=source.source_id,
-            identity_key=identity_key,
-            raw_hash=provider_raw_hash,
-        ):
+        if reused:
             return job, False
         return self.repository.enqueue_enrichment_job(job)
 
@@ -777,8 +781,41 @@ class MessageBusV2Service:
         metadata = dict(message.metadata)
         if not trusted_enrichment:
             metadata.pop("v2_body_completion", None)
+        original = enrichment_input if trusted_enrichment and enrichment_input else message
+        evidence = dedup.content_evidence(message, original)
+        evidence["checked_at"] = utc_now().isoformat()
+        metadata["content_evidence"] = evidence
+        identity_evidence = dict(original.metadata.get("identity_evidence", {}))
+        identity_evidence["original_url"] = original.url
+        identity_evidence["original_raw_url"] = original.raw_url or original.url
+        # Only successful article-identity validation establishes redirect/publisher aliases.
+        enrichment = metadata.get("media_enrichment", {})
+        if (
+            trusted_enrichment
+            and enrichment.get("succeeded")
+            and enrichment.get("identity_match") == "supported"
+        ):
+            identity_evidence["verified_urls"] = list(
+                dict.fromkeys(
+                    [
+                        *identity_evidence.get("verified_urls", []),
+                        original.url,
+                        message.url,
+                        *[
+                            hop["to_url"]
+                            for hop in enrichment.get("source_chain", [])
+                            if hop.get("to_url")
+                        ],
+                    ]
+                )
+            )
+        metadata["identity_evidence"] = identity_evidence
         materialized = message.model_copy(
-            update={"metadata": metadata, "body": message.fallback_body}
+            update={
+                "metadata": metadata,
+                "body": evidence.get("article_body") or evidence.get("summary") or "",
+                "summary": evidence.get("summary"),
+            }
         )
         effective_source = materialized.publisher_name or materialized.source or source.display_name
         publisher_name = materialized.publisher_name or materialized.source or source.display_name
@@ -832,6 +869,7 @@ class MessageBusV2Service:
             if persisted.processing_status in {
                 RawProcessingStatus.PENDING,
                 RawProcessingStatus.PROCESSING,
+                RawProcessingStatus.FAILED,
             }:
                 return self._complete_persisted_raw(persisted, decision=decision)
             return IngestResult(decision=decision, raw_message_id=persisted.raw_message_id)
@@ -953,6 +991,7 @@ class MessageBusV2Service:
         values = [
             *self.repository.list_raw(status=RawProcessingStatus.PENDING, limit=limit),
             *self.repository.list_raw(status=RawProcessingStatus.PROCESSING, limit=limit),
+            *self.repository.list_raw(status=RawProcessingStatus.FAILED, limit=limit),
         ]
         for raw in values[:limit]:
             if source_id is not None and raw.source_id != source_id:

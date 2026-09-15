@@ -1040,3 +1040,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 - 新加坡已重建并启动 12 个 V2 服务，后端镜像统一、无重启/OOM；公开 HTTP 与真实读库小范围检查通过。历史投影积压仍在自动追赶，未执行任何远端历史清理。详见 DB_OPTIMIZATION_RUNBOOK.md。
 
 2026-09-15 · V2 查询池自愈补丁：为 read/stream/control 子进程池增加常驻 supervisor、延迟退出 reaper、有界补建重试和软硬超时缓冲；SSE 使用独立单 worker 并限制持续追赶热循环，新增内部 readiness 与结构化故障状态。保持进程总量有界，不修改业务 DTO、SQLite schema 或交易执行语义。
+
+2026-09-15 · Message Bus V2 三层去重与业务更新修复：新增聚合采集观察、并列 ID/文章 URL 别名、ticker 内完整正文 fingerprint 与原子业务版本预约；补全任务按稳定业务输入幂等并保留 30 分钟有界复查。分开保留原生正文/摘要/内容质量，拒绝降级发布，正文补充与编辑更新携带逻辑消息 ID、业务版本及前一 Raw 关联进入 Runtime。修复 Reuters 单卡片摘要/日期隔离、IBKR 小数秒历史时间与通用 URL 补全跳过、Yahoo/Reader 地址拼接及导航正文拒绝；Dow Jones 别名仅由完整正文与兼容上下文确认，不按 `$` 后缀硬合并。历史 Raw/消息/hash/Runtime ID 保留，未修改 O1 或 skill，未部署或清理远端。定向测试、真实浏览器 DOM 测试与 44 条生产只读样本的本地回放通过；详见 dev_plan/workflow_v2/message_bus_deduplication_repair_delivery_20260915.md。

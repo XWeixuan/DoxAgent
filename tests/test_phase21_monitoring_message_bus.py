@@ -495,7 +495,7 @@ async def test_media_enrichment_reader_fallback_recovers_yahoo_after_429() -> No
     assert source is not None
     title = "Micron demand improves as AI memory orders broaden"
     article_url = "https://finance.yahoo.com/news/micron-ai-memory-demand-101.html"
-    reader_url = f"https://r.jina.ai/http://{article_url}"
+    reader_url = f"https://r.jina.ai/{article_url}"
     service.ingest_fetched(
         source=source,
         fetched=[

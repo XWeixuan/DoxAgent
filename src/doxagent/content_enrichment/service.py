@@ -136,12 +136,13 @@ class ContentEnrichmentHub:
             )
             self.repository.delete_enrichment_job(job.job_id, claim_token=job.claim_token)
             return
-        if job.source.content_enrichment_mode is ContentEnrichmentMode.SKIP:
+        generic_url = job.message.metadata.get("identity_evidence", {}).get("url_kind") == "generic"
+        if job.source.content_enrichment_mode is ContentEnrichmentMode.SKIP or generic_url:
             metadata = dict(job.message.metadata)
             metadata["media_enrichment"] = {
                 "status": "skipped",
                 "succeeded": False,
-                "reason": "source_blacklist",
+                "reason": "non_article_url" if generic_url else "source_blacklist",
                 "attempted_at": now.isoformat(),
                 "attempts": [],
             }
@@ -244,7 +245,7 @@ class ContentEnrichmentHub:
         publisher = job.message.publisher_name or job.message.source or job.source.display_name
         message = job.message.model_copy(
             update={
-                "body": result.content if result.succeeded else fallback,
+                "body": result.content if result.succeeded else job.message.body,
                 "source": publisher,
                 "publisher_name": publisher,
                 "url": final_url,

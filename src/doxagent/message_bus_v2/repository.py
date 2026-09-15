@@ -21,6 +21,7 @@ from urllib.parse import urlparse
 from pydantic import BaseModel
 
 from doxagent.content_enrichment.schema import EnrichmentJob, EnrichmentJobStatus
+from doxagent.message_bus_v2 import deduplication as dedup
 from doxagent.message_bus_v2.schema import (
     AcquisitionFailure,
     AuditRecord,
@@ -69,6 +70,7 @@ class MessageBusV2Repository:
     def __init__(self, sqlite_path: str | Path) -> None:
         self.path = Path(sqlite_path)
         from doxagent.v2_read.native_content import NativeContent
+
         self.content = NativeContent(self.path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self._initialize()
@@ -360,6 +362,567 @@ class MessageBusV2Repository:
                     on audit_log(entity_type, entity_id, created_at desc);
                 """
             )
+            connection.executescript(dedup.SCHEMA)
+            connection.execute(
+                "create index if not exists raw_article_url "
+                "on raw_messages(ticker,json_extract(data_json,'$.url'))"
+            )
+            connection.execute(
+                "create index if not exists raw_article_title "
+                "on raw_messages(ticker,json_extract(data_json,'$.title'))"
+            )
+
+    def _adopt_legacy(self, connection: sqlite3.Connection, raw: RawMessage) -> RawMessage:
+        """Index historical identity lazily without rewriting Raw or old IDs/hashes."""
+        if raw.metadata.get("message_version"):
+            return raw
+        from doxagent.message_bus_v2.schema import canonical_json, sha256_text
+
+        summary = raw.raw_payload.get("summary") or raw.raw_payload.get("description")
+        if not isinstance(summary, str) or dedup.invalid_page(summary):
+            summary = None
+        body = raw.body if not dedup.invalid_page(raw.body) else None
+        if body == summary:
+            body = None
+        media = raw.metadata.get("media_enrichment", {})
+        full = bool(
+            body
+            and (
+                media.get("succeeded")
+                or (raw.raw_payload.get("articleText") and raw.raw_payload.get("articleType") == 0)
+            )
+            and dedup.assess_media_body(body, raw.title).complete_like
+        )
+        first = connection.execute(
+            """select raw_message_id from raw_messages where ticker=? and source_id=?
+               and identity_key=? order by revision limit 1""",
+            (raw.ticker, raw.source_id, raw.identity_key),
+        ).fetchone()
+        logical_id = "message_" + first[0]
+        metadata = {
+            **raw.metadata,
+            "message_version": {
+                "logical_message_id": logical_id,
+                "business_version": raw.revision,
+                "classification": "LEGACY_VERSION",
+            },
+            "content_evidence": {
+                "article_body": body,
+                "summary": summary,
+                "kind": "FULL" if full else "BODY" if body else "SUMMARY" if summary else "EMPTY",
+                "body_fingerprint": sha256_text(dedup.text(body)) if full else None,
+            },
+        }
+        if raw.source_id == "yahoo_finance_news":
+            metadata["identity_evidence"] = {
+                **metadata.get("identity_evidence", {}),
+                "id_kind": "stable_article",
+            }
+        adopted = raw.model_copy(update={"metadata": metadata})
+        connection.execute(
+            "insert or ignore into logical_message_versions values(?,?,?,?,?,?)",
+            (
+                raw.ticker,
+                logical_id,
+                raw.revision,
+                raw.raw_message_id,
+                metadata["content_evidence"]["body_fingerprint"],
+                canonical_json(metadata["message_version"]),
+            ),
+        )
+        for key in dedup.aliases(adopted):
+            connection.execute(
+                "insert or ignore into message_identity_aliases values(?,?,?)",
+                (raw.ticker, key, logical_id),
+            )
+        return adopted
+
+    def observe_input(
+        self,
+        message: RawMessageInput,
+        *,
+        ticker: str,
+        source_id: str,
+        identity_key: str,
+        now: datetime,
+    ) -> bool:
+        """Preserve provider evidence before enrichment; reuse only recent completed input.
+
+        A 30-minute recheck bounds caching even for sources without update signals.
+        Pending/failed publication is deliberately never treated as a receipt.
+        """
+        from doxagent.message_bus_v2.schema import canonical_json, sha256_text
+
+        raw_hash = sha256_text(canonical_json(message.raw_payload))
+        fields = dedup.stable_fields(message)
+        key_url = dedup.article_url(
+            message.url, message.metadata.get("identity_evidence", {}).get("url_kind", "unknown")
+        )
+        with self.transaction() as connection:
+            reusable = None
+            rows = connection.execute(
+                """select r.data_json, o.data_json as payload_json from message_observations o
+                   join raw_messages r on r.raw_message_id=o.canonical_raw_id
+                   where o.ticker=? and o.source_id=? and o.identity_key=?
+                   and o.last_seen_at>=? and (json_extract(r.data_json,'$.bootstrap_suppressed')=1
+                   or exists(select 1 from standard_messages s join stream_members sm
+                     on sm.standard_message_id=s.standard_message_id
+                     where s.raw_message_id=r.raw_message_id))
+                   order by o.last_seen_at desc limit 8""",
+                (ticker, source_id, identity_key, (now - timedelta(minutes=30)).isoformat()),
+            ).fetchall()
+            if key_url:
+                rows += connection.execute(
+                    """select r.data_json, null as payload_json from message_identity_aliases a
+                       join logical_message_versions v on v.ticker=a.ticker
+                         and v.logical_message_id=a.logical_message_id
+                       join raw_messages r on r.raw_message_id=v.raw_message_id
+                       where a.ticker=? and a.alias=? and exists(select 1 from standard_messages s
+                         join stream_members sm on sm.standard_message_id=s.standard_message_id
+                         where s.raw_message_id=r.raw_message_id)
+                       order by v.business_version desc limit 8""",
+                    (ticker, "url:" + key_url),
+                ).fetchall()
+            for row in rows:
+                raw = RawMessage.model_validate_json(row["data_json"])
+                old = raw.metadata.get("content_evidence", {}).get("input_fields", {})
+                if row["payload_json"]:
+                    observation = json.loads(row["payload_json"])
+                    old = observation.get("metadata", {}).get("content_evidence", {}).get(
+                        "input_fields"
+                    ) or dedup.stable_fields(RawMessageInput.model_validate(observation))
+                # Missing fields do not invalidate a richer previous observation. Time/URL
+                # conflicts and meaningful supplied fields must still be checked.
+                key_url = dedup.article_url(
+                    message.url,
+                    message.metadata.get("identity_evidence", {}).get("url_kind", "unknown"),
+                )
+                if key_url and "url:" + key_url not in dedup.aliases(raw):
+                    logical_id = raw.metadata.get("message_version", {}).get("logical_message_id")
+                    if not connection.execute(
+                        "select 1 from message_identity_aliases "
+                        "where ticker=? and alias=? and logical_message_id=?",
+                        (ticker, "url:" + key_url, logical_id),
+                    ).fetchone():
+                        continue
+                if old and all(
+                    not value
+                    or old.get(key) == value
+                    or (key == "published_at" and raw.raw_hash == raw_hash)
+                    for key, value in fields.items()
+                ):
+                    checked = raw.metadata.get("content_evidence", {}).get(
+                        "checked_at", raw.collected_at.isoformat()
+                    )
+                    if now - datetime.fromisoformat(checked.replace("Z", "+00:00")) < timedelta(
+                        minutes=30
+                    ):
+                        reusable = raw
+                        break
+            connection.execute(
+                """insert into message_observations(ticker,source_id,identity_key,raw_hash,
+                     input_fingerprint,first_seen_at,last_seen_at,data_json,canonical_raw_id,logical_message_id,classification)
+                   values(?,?,?,?,?,?,?,?,?,?,?) on conflict(ticker,source_id,identity_key,raw_hash)
+                   do update set last_seen_at=excluded.last_seen_at,seen_count=seen_count+1""",
+                (
+                    ticker,
+                    source_id,
+                    identity_key,
+                    raw_hash,
+                    dedup.stable_fingerprint(message),
+                    now.isoformat(),
+                    now.isoformat(),
+                    self.content.encode(message.model_dump(mode="json")),
+                    reusable.raw_message_id if reusable else None,
+                    reusable.metadata.get("message_version", {}).get("logical_message_id")
+                    if reusable
+                    else None,
+                    "INPUT_REUSED" if reusable else "OBSERVED",
+                ),
+            )
+            if reusable:
+                logical_id = reusable.metadata["message_version"]["logical_message_id"]
+                connection.execute(
+                    "insert or ignore into message_identity_aliases values(?,?,?)",
+                    (ticker, "id:" + identity_key, logical_id),
+                )
+                association = {
+                    "source_id": source_id,
+                    "external_id": message.external_id,
+                    "url": message.url,
+                }
+                sources = list(reusable.metadata.get("message_sources", []))
+                for item in [
+                    {
+                        "source_id": reusable.source_id,
+                        "external_id": reusable.external_id,
+                        "url": reusable.url,
+                    },
+                    association,
+                ]:
+                    if item not in sources:
+                        sources.append(item)
+                metadata = {**reusable.metadata, "message_sources": sources}
+                reusable = reusable.model_copy(update={"metadata": metadata})
+                connection.execute(
+                    "update raw_messages set data_json=? where raw_message_id=?",
+                    (self._json(reusable), reusable.raw_message_id),
+                )
+                for row in connection.execute(
+                    "select data_json from standard_messages where raw_message_id=?",
+                    (reusable.raw_message_id,),
+                ):
+                    standard = StandardMessage.model_validate_json(row["data_json"])
+                    connection.execute(
+                        "update standard_messages set data_json=? where standard_message_id=?",
+                        (
+                            self._json(standard.model_copy(update={"metadata": metadata})),
+                            standard.standard_message_id,
+                        ),
+                    )
+            return reusable is not None
+
+    def _dedup_candidate(
+        self, connection: sqlite3.Connection, candidate: RawMessage
+    ) -> tuple[RawMessage, RawMessage | None]:
+        """Reserve a logical version or merge an observation, under BEGIN IMMEDIATE."""
+        if "content_evidence" not in candidate.metadata:
+            return candidate, None  # Legacy caller compatibility.
+        keys = dedup.aliases(candidate)
+        # Read a bounded indexed legacy candidate set; do not rewrite all old history.
+        rows = connection.execute(
+            """select data_json from raw_messages where ticker=? and source_id=? and identity_key=?
+               order by revision desc limit 1""",
+            (candidate.ticker, candidate.source_id, candidate.identity_key),
+        ).fetchall()
+        if candidate.title:
+            rows += connection.execute(
+                """select data_json from raw_messages
+                   where ticker=? and json_extract(data_json,'$.title')=?
+                   order by collected_at desc limit 32""",
+                (candidate.ticker, candidate.title),
+            ).fetchall()
+        for key in keys:
+            if key.startswith("url:"):
+                rows += connection.execute(
+                    """select data_json from raw_messages
+                       where ticker=? and json_extract(data_json,'$.url')=?
+                       order by collected_at desc limit 8""",
+                    (candidate.ticker, key[4:]),
+                ).fetchall()
+        legacy: dict[str, RawMessage] = {}
+        for row in rows:
+            raw = RawMessage.model_validate_json(row["data_json"])
+            if not raw.metadata.get("message_version"):
+                adopted = self._adopt_legacy(connection, raw)
+                legacy[adopted.raw_message_id] = adopted
+        logical_ids: set[str] = set()
+        for key in keys:
+            logical_ids.update(
+                row[0]
+                for row in connection.execute(
+                    "select logical_message_id from message_identity_aliases "
+                    "where ticker=? and alias=?",
+                    (candidate.ticker, key),
+                )
+            )
+        matches = []
+        for logical_id in logical_ids:
+            row = connection.execute(
+                """select r.data_json from logical_message_versions v join raw_messages r
+                   on r.raw_message_id=v.raw_message_id where v.ticker=? and v.logical_message_id=?
+                   order by v.business_version desc limit 1""",
+                (candidate.ticker, logical_id),
+            ).fetchone()
+            if row:
+                old = RawMessage.model_validate_json(row["data_json"])
+                old = legacy.get(old.raw_message_id, old)
+                if not old.metadata.get("message_version"):
+                    old = self._adopt_legacy(connection, old)
+                if not dedup.context_conflict(old, candidate):
+                    matches.append(old)
+        # Multiple incompatible candidate identities: do not force an ambiguous merge.
+        old = matches[0] if len(matches) == 1 else None
+        fingerprint = candidate.metadata["content_evidence"].get("body_fingerprint")
+        content_matched = False
+        if not matches and fingerprint:
+            rows = connection.execute(
+                """select r.data_json from logical_message_versions v join raw_messages r
+                   on r.raw_message_id=v.raw_message_id where v.ticker=? and v.body_fingerprint=?
+                   order by v.business_version desc limit 32""",
+                (candidate.ticker, fingerprint),
+            ).fetchall()
+            for row in rows:
+                found = RawMessage.model_validate_json(row["data_json"])
+                found = legacy.get(found.raw_message_id, found)
+                if not found.metadata.get("message_version"):
+                    found = self._adopt_legacy(connection, found)
+                if not dedup.context_conflict(found, candidate, content_match=True):
+                    old = found
+                    content_matched = True
+                    break
+        version = old.metadata.get("message_version", {}) if old else {}
+        logical_id = version.get("logical_message_id") or new_id("message")
+        classification = dedup.classify(old, candidate) if old else "NEW_MESSAGE"
+        if (
+            old
+            and fingerprint
+            and fingerprint == old.metadata.get("content_evidence", {}).get("body_fingerprint")
+            and (content_matched or old.source_id != candidate.source_id)
+            and not dedup.context_conflict(old, candidate, content_match=True)
+        ):
+            classification = "SAME_VERSION"
+        if (
+            old
+            and old.raw_hash == candidate.raw_hash
+            and classification != "CONTENT_SUPPLEMENT"
+            and dedup.text(old.title) == dedup.text(candidate.title)
+            and all(
+                not candidate.metadata["content_evidence"].get("input_fields", {}).get(k)
+                or candidate.metadata["content_evidence"].get("input_fields", {}).get(k)
+                == old.metadata.get("content_evidence", {}).get("input_fields", {}).get(k)
+                for k in ("updated_at", "provider_version")
+            )
+        ):
+            checked = old.metadata.get("content_evidence", {}).get(
+                "checked_at", old.collected_at.isoformat()
+            )
+            if candidate.collected_at - datetime.fromisoformat(
+                checked.replace("Z", "+00:00")
+            ) < timedelta(minutes=30):
+                classification = "SAME_VERSION"
+        # Recheck against all prior versions: a stale provider version must not republish.
+        if old and classification in {"BUSINESS_UPDATE", "CONTENT_SUPPLEMENT"}:
+            for row in connection.execute(
+                """select r.data_json from logical_message_versions v join raw_messages r
+                   on r.raw_message_id=v.raw_message_id
+                   where v.ticker=? and v.logical_message_id=?""",
+                (candidate.ticker, logical_id),
+            ):
+                prior = RawMessage.model_validate_json(row["data_json"])
+                if not prior.metadata.get("message_version"):
+                    prior = self._adopt_legacy(connection, prior)
+                if dedup.classify(prior, candidate) == "SAME_VERSION":
+                    classification = "SAME_VERSION"
+                    old = prior
+                    version = prior.metadata.get("message_version", version)
+                    break
+        suppressed = old is not None and classification in {"SAME_VERSION", "TECHNICAL_CHANGE"}
+        target = old if suppressed else candidate
+        assert target is not None
+        if old:
+            latest_version = (
+                connection.execute(
+                    "select max(business_version) from logical_message_versions "
+                    "where ticker=? and logical_message_id=?",
+                    (candidate.ticker, logical_id),
+                ).fetchone()[0]
+                or 0
+            )
+        else:
+            latest_version = 0
+        business_version = version.get("business_version", 1) if suppressed else latest_version + 1
+        version_meta = {
+            "logical_message_id": logical_id,
+            "business_version": business_version,
+            "classification": classification,
+            "previous_raw_message_id": old.raw_message_id if old and not suppressed else None,
+        }
+        candidate = candidate.model_copy(
+            update={"metadata": {**candidate.metadata, "message_version": version_meta}}
+        )
+        for key in keys:
+            connection.execute(
+                "insert or ignore into message_identity_aliases values(?,?,?)",
+                (candidate.ticker, key, logical_id),
+            )
+        from doxagent.message_bus_v2.schema import canonical_json
+
+        connection.execute(
+            """insert into message_observations(ticker,source_id,identity_key,raw_hash,
+                 input_fingerprint,
+                 first_seen_at,last_seen_at,data_json,logical_message_id,canonical_raw_id,classification)
+               values(?,?,?,?,?,?,?,?,?,?,?) on conflict(ticker,source_id,identity_key,raw_hash)
+               do update set last_seen_at=excluded.last_seen_at,
+                 logical_message_id=excluded.logical_message_id,
+                 canonical_raw_id=excluded.canonical_raw_id,classification=excluded.classification""",
+            (
+                candidate.ticker,
+                candidate.source_id,
+                candidate.identity_key,
+                candidate.raw_hash,
+                candidate.metadata["content_evidence"]["input_fingerprint"],
+                candidate.collected_at.isoformat(),
+                utc_now().isoformat(),
+                self._json(candidate),
+                logical_id,
+                target.raw_message_id,
+                classification,
+            ),
+        )
+        if suppressed:
+            # Evidence is append-only in observations; provenance view can be refreshed in place.
+            sources = list(old.metadata.get("message_sources", []))
+            association = {
+                "source_id": candidate.source_id,
+                "external_id": candidate.external_id,
+                "url": candidate.url,
+            }
+            for item in [
+                {"source_id": old.source_id, "external_id": old.external_id, "url": old.url},
+                association,
+            ]:
+                if item not in sources:
+                    sources.append(item)
+            evidence = dict(old.metadata.get("content_evidence", {}))
+            evidence["checked_at"] = utc_now().isoformat()
+            new_evidence = candidate.metadata["content_evidence"]
+            if new_evidence.get("kind") == "FULL" and dedup.text(
+                evidence.get("article_body")
+            ) == dedup.text(new_evidence.get("article_body")):
+                evidence.update(
+                    {k: new_evidence[k] for k in ("kind", "body_fingerprint", "body_source")}
+                )
+                connection.execute(
+                    "update logical_message_versions set body_fingerprint=? where raw_message_id=?",
+                    (evidence["body_fingerprint"], old.raw_message_id),
+                )
+            if not evidence.get("summary"):
+                evidence["summary"] = candidate.metadata["content_evidence"].get("summary")
+            identity_evidence = dict(old.metadata.get("identity_evidence", {}))
+            identity_evidence["verified_urls"] = list(
+                dict.fromkeys(
+                    [
+                        *identity_evidence.get("verified_urls", []),
+                        *candidate.metadata.get("identity_evidence", {}).get("verified_urls", []),
+                    ]
+                )
+            )
+            updated = old.model_copy(
+                update={
+                    "metadata": {
+                        **old.metadata,
+                        "message_sources": sources,
+                        "content_evidence": evidence,
+                        "identity_evidence": identity_evidence,
+                    },
+                    "duplicate_seen_count": old.duplicate_seen_count + 1,
+                    "last_seen_at": utc_now(),
+                }
+            )
+            published = connection.execute(
+                "select 1 from standard_messages s join stream_members sm "
+                "on sm.standard_message_id=s.standard_message_id where s.raw_message_id=?",
+                (old.raw_message_id,),
+            ).fetchone()
+            if (
+                not published
+                and not old.bootstrap_suppressed
+                and candidate.admission_context
+                and candidate.admission_context.mode == "CLOSED_SWEEP"
+            ):
+                updated = updated.model_copy(
+                    update={
+                        "admission_context": candidate.admission_context,
+                        "processing_status": RawProcessingStatus.PENDING,
+                    }
+                )
+            connection.execute(
+                "update raw_messages set data_json=?,processing_status=? where raw_message_id=?",
+                (self._json(updated), updated.processing_status.value, old.raw_message_id),
+            )
+            for row in connection.execute(
+                "select data_json from standard_messages where raw_message_id=?",
+                (old.raw_message_id,),
+            ):
+                standard = StandardMessage.model_validate_json(row["data_json"])
+                standard = standard.model_copy(
+                    update={
+                        "metadata": updated.metadata,
+                        "admission_context": updated.admission_context,
+                    }
+                )
+                connection.execute(
+                    "update standard_messages set data_json=? where standard_message_id=?",
+                    (self._json(standard), standard.standard_message_id),
+                )
+                connection.execute(
+                    "update buffer_entries set data_json=? where standard_message_id=?",
+                    (self._json(standard), standard.standard_message_id),
+                )
+            self._record_body_attempt(connection, candidate, updated)
+            return candidate, updated
+        connection.execute(
+            "insert into logical_message_versions values(?,?,?,?,?,?)",
+            (
+                candidate.ticker,
+                logical_id,
+                business_version,
+                candidate.raw_message_id,
+                fingerprint,
+                canonical_json(version_meta),
+            ),
+        )
+        if old:
+            # Missing/new lower-quality fields never erase information in an actual update.
+            evidence = dict(candidate.metadata["content_evidence"])
+            if not evidence.get("article_body") and old.metadata.get("content_evidence", {}).get(
+                "article_body"
+            ):
+                correction = (
+                    classification == "BUSINESS_UPDATE"
+                    and evidence.get("summary")
+                    and dedup.text(evidence["summary"])
+                    != dedup.text(old.metadata.get("content_evidence", {}).get("summary"))
+                )
+                if correction:
+                    evidence["previous_article_body"] = old.metadata["content_evidence"][
+                        "article_body"
+                    ]
+                    evidence["kind"] = "SUMMARY_UPDATE"
+                    evidence["body_fingerprint"] = None
+                    candidate = candidate.model_copy(
+                        update={
+                            "body": evidence["summary"]
+                            + "\n\n[Previous article body — retained context, "
+                            "not the current correction]\n" + old.body
+                        }
+                    )
+                else:
+                    evidence.update(
+                        {
+                            k: old.metadata["content_evidence"].get(k)
+                            for k in ("article_body", "kind", "body_fingerprint", "body_source")
+                        }
+                    )
+                    candidate = candidate.model_copy(update={"body": old.body})
+            if not evidence.get("summary"):
+                evidence["summary"] = old.metadata.get("content_evidence", {}).get("summary")
+            sources = list(old.metadata.get("message_sources", []))
+            for item in [
+                {"source_id": old.source_id, "external_id": old.external_id, "url": old.url},
+                {
+                    "source_id": candidate.source_id,
+                    "external_id": candidate.external_id,
+                    "url": candidate.url,
+                },
+            ]:
+                if item not in sources:
+                    sources.append(item)
+            candidate = candidate.model_copy(
+                update={
+                    "metadata": {
+                        **candidate.metadata,
+                        "content_evidence": evidence,
+                        "message_sources": sources,
+                    }
+                }
+            )
+            connection.execute(
+                "update logical_message_versions set body_fingerprint=? where raw_message_id=?",
+                (evidence.get("body_fingerprint"), candidate.raw_message_id),
+            )
+        return candidate, None
 
     def _json(self, model: BaseModel) -> str:
         if isinstance(model, (RawMessage, EnrichmentJob)):
@@ -890,10 +1453,13 @@ class MessageBusV2Repository:
         with self.transaction() as connection:
             if enrichment_claim:
                 self._assert_enrichment_claim(connection, *enrichment_claim)
+            candidate, duplicate = self._dedup_candidate(connection, candidate)
+            if duplicate is not None:
+                return IngestDecision.DUPLICATE, duplicate
             matching_row = connection.execute(
                 """select data_json from raw_messages
                    where ticker=? and source_id=? and identity_key=?
-                   and (content_hash=? or raw_hash=?)
+                   and (content_hash=? or (raw_hash=? and ?=0))
                    order by case when content_hash=? then 0 else 1 end
                    limit 1""",
                 (
@@ -902,11 +1468,41 @@ class MessageBusV2Repository:
                     candidate.identity_key,
                     candidate.content_hash,
                     candidate.raw_hash,
+                    int("content_evidence" in candidate.metadata),
                     candidate.content_hash,
                 ),
             ).fetchone()
             if matching_row is not None:
+                # A conservative ambiguity fallback may find an exact legacy hash.
+                # Remove only this uncommitted reservation, never historical evidence.
+                connection.execute(
+                    "delete from logical_message_versions where raw_message_id=?",
+                    (candidate.raw_message_id,),
+                )
                 matching = RawMessage.model_validate_json(matching_row["data_json"])
+                if "content_evidence" in candidate.metadata:
+                    matching = self._adopt_legacy(connection, matching)
+                    reserved_id = candidate.metadata["message_version"]["logical_message_id"]
+                    connection.execute(
+                        "delete from message_identity_aliases "
+                        "where ticker=? and logical_message_id=? "
+                        "and not exists(select 1 from logical_message_versions "
+                        "where ticker=? and logical_message_id=?)",
+                        (candidate.ticker, reserved_id, candidate.ticker, reserved_id),
+                    )
+                    connection.execute(
+                        "update message_observations set canonical_raw_id=?,logical_message_id=?, "
+                        "classification='SAME_VERSION' "
+                        "where ticker=? and source_id=? and identity_key=? and raw_hash=?",
+                        (
+                            matching.raw_message_id,
+                            matching.metadata["message_version"]["logical_message_id"],
+                            candidate.ticker,
+                            candidate.source_id,
+                            candidate.identity_key,
+                            candidate.raw_hash,
+                        ),
+                    )
                 self._record_body_attempt(connection, candidate, matching)
                 # An unpublished expired Raw is not a consumption receipt. Reuse its
                 # identity and materialized body when a legitimate sweep adopts it.
@@ -1044,11 +1640,48 @@ class MessageBusV2Repository:
 
     def save_raw(self, raw: RawMessage) -> None:
         with self.transaction() as connection:
+            raw = self._retain_concurrent_evidence(connection, raw)
             connection.execute(
                 """update raw_messages set processing_status=?, data_json=?
                    where raw_message_id=?""",
                 (raw.processing_status.value, self._json(raw), raw.raw_message_id),
             )
+
+    def _retain_concurrent_evidence(
+        self, connection: sqlite3.Connection, raw: RawMessage
+    ) -> RawMessage:
+        row = connection.execute(
+            "select data_json from raw_messages where raw_message_id=?", (raw.raw_message_id,)
+        ).fetchone()
+        if not row:
+            return raw
+        stored = RawMessage.model_validate_json(row["data_json"])
+        metadata = dict(raw.metadata)
+        sources = list(stored.metadata.get("message_sources", []))
+        for item in metadata.get("message_sources", []):
+            if item not in sources:
+                sources.append(item)
+        if sources:
+            metadata["message_sources"] = sources
+        identity = dict(metadata.get("identity_evidence", {}))
+        identity["verified_urls"] = list(
+            dict.fromkeys(
+                [
+                    *stored.metadata.get("identity_evidence", {}).get("verified_urls", []),
+                    *identity.get("verified_urls", []),
+                ]
+            )
+        )
+        metadata["identity_evidence"] = identity
+        updates = {
+            "metadata": metadata,
+            "duplicate_seen_count": max(raw.duplicate_seen_count, stored.duplicate_seen_count),
+            "last_seen_at": max(raw.last_seen_at, stored.last_seen_at),
+        }
+        # A stale worker cannot undo an already committed publication.
+        if stored.processing_status is RawProcessingStatus.COMPLETED:
+            updates["processing_status"] = RawProcessingStatus.COMPLETED
+        return raw.model_copy(update=updates)
 
     def get_raw(self, raw_message_id: str) -> RawMessage | None:
         with self._connect() as connection:
@@ -1125,6 +1758,8 @@ class MessageBusV2Repository:
 
         completed = raw.model_copy(update={"processing_status": RawProcessingStatus.COMPLETED})
         with self.transaction() as connection:
+            completed = self._retain_concurrent_evidence(connection, completed)
+            message = message.model_copy(update={"metadata": completed.metadata})
             connection.execute(
                 """insert into standard_messages(
                      standard_message_id,raw_message_id,ticker,source_id,binding_id,published_at,data_json)
@@ -1367,6 +2002,15 @@ class MessageBusV2Repository:
             publication_mode=mode,
             published_at=now,
             member_count=len(messages),
+            event_type=(
+                "message_bus_v2.stream_item.content_updated"
+                if any(
+                    m.metadata.get("message_version", {}).get("classification")
+                    in {"BUSINESS_UPDATE", "CONTENT_SUPPLEMENT"}
+                    for m in messages
+                )
+                else "message_bus_v2.stream_item.published"
+            ),
         )
         connection.execute(
             """insert into stream_items(
@@ -1438,6 +2082,7 @@ class MessageBusV2Repository:
             standard = StandardMessage.model_validate_json(row["standard_json"])
             result.append(
                 MaterializedStreamMember(
+                    metadata=standard.metadata,
                     stream_item_id=relation.stream_item_id,
                     member_index=relation.member_index,
                     standard_message_id=relation.standard_message_id,

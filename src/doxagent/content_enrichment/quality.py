@@ -409,6 +409,8 @@ def choose_candidate(
     accepted = []
     for candidate in info.candidates:
         body = candidate.text
+        if re.match(r"(?:Search results for|1\.\s*News\s*[•·])", body.strip(), re.I):
+            continue
         if WALL.search(body) or body.rstrip().endswith(("...", "…")):
             continue
         if info.publisher_links:

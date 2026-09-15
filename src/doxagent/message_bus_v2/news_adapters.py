@@ -262,6 +262,11 @@ class YahooFinanceNewsAdapter:
                     raw_payload=row,
                     metadata={
                         "provider": "yahoo_finance",
+                        "identity_evidence": {
+                            "id_kind": "stable_article",
+                            "url_kind": "article",
+                            "mutable": True,
+                        },
                         "query_mode": mode,
                         "publisher_domain": _domain(provider_url),
                     },
@@ -538,6 +543,20 @@ class ReutersSiteSearchAdapter:
                     if published_date
                     else context.requested_at
                 )
+                relative = re.fullmatch(
+                    r"(\d+)\s+(mins?|minutes?|hours?)\s+ago",
+                    str(row.get("relative_time") or ""),
+                    re.I,
+                )
+                estimated_time = None
+                if relative:
+                    delta = (
+                        timedelta(hours=int(relative[1]))
+                        if relative[2].lower().startswith("hour")
+                        else timedelta(minutes=int(relative[1]))
+                    )
+                    estimated_time = (context.requested_at - delta).isoformat()
+                card_date = _reuters_date(row.get("card_date"))
                 messages.append(
                     RawMessageInput(
                         external_id=identifier,
@@ -553,6 +572,18 @@ class ReutersSiteSearchAdapter:
                         raw_payload=cast(JsonObject, row),
                         metadata={
                             "provider": "reuters",
+                            "identity_evidence": {
+                                "id_kind": "article_url",
+                                "url_kind": "article",
+                                "mutable": True,
+                            },
+                            "date_basis": row.get("date_basis", "url_date"),
+                            "card_date": row.get("card_date"),
+                            "relative_time": row.get("relative_time"),
+                            "estimated_publication_time": estimated_time,
+                            "date_conflict": bool(
+                                card_date and published_date and card_date != published_date
+                            ),
                             "query": query,
                             "query_source": query_source,
                             "publication_time_precision": "day" if published_date else "unknown",

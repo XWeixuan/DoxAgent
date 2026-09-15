@@ -144,21 +144,34 @@ class PlaywrightBrowserRuntime:
                         const articlePath = /\\/[^/]+\\/[^/]+-\\d{4}-\\d{2}-\\d{2}\\//;
                         if (!title || title.length < 15 || !href.startsWith('/')
                             || !articlePath.test(href) || seen.has(href)) continue;
-                        let node = link, text = '';
+                        let node = link, card = null;
                         for (let i = 0; i < 6 && node; i++, node = node.parentElement) {
-                          text = (node.textContent || '').replace(/\\s+/g, ' ').trim();
-                          if (pattern.test(text)) break;
+                          if (node.tagName === 'MAIN' || node.tagName === 'BODY') break;
+                          const articles = new Set([...node.querySelectorAll('a[href]')]
+                            .map(a => a.getAttribute('href'))
+                            .filter(h => articlePath.test(h || '')));
+                          if (articles.size > 1) break;
+                          if (articles.size === 1) card = node;
+                          if (card && node.matches('article, li, [data-testid*="card"]')) break;
                         }
+                        const text = (card?.innerText || card?.textContent || '')
+                          .replace(/\\s+/g, ' ').trim();
                         const match = text.match(pattern);
                         const urlDate = href.match(/-(\d{4}-\d{2}-\d{2})\/$/);
-                        const publishedDate = match?.[0] || urlDate?.[1];
+                        const publishedDate = urlDate?.[1] || match?.[0];
                         if (!publishedDate) continue;
                         seen.add(href);
-                        const summary = text
-                          .replace(title, '')
-                          .replace(match?.[0] || '', '')
-                          .trim();
-                        out.push({url: href, title, date: publishedDate, summary});
+                        const summaryNode = card?.querySelector(
+                          '[data-testid*="description"], [data-testid*="summary"], p');
+                        let summary = (summaryNode?.textContent || '').trim();
+                        const relativePattern = /\\b\\d+\\s+(?:mins?|minutes?|hours?)\\s+ago\\b/i;
+                        if (summary === title || (summary.length < 80
+                            && (relativePattern.test(summary) || pattern.test(summary))))
+                          summary = '';
+                        const relative = text.match(relativePattern)?.[0];
+                        out.push({url: href, title, date: publishedDate, summary,
+                          date_basis: urlDate ? 'url_date' : 'card_date',
+                          card_date: match?.[0] || null, relative_time: relative || null});
                       }
                       return out;
                     }"""

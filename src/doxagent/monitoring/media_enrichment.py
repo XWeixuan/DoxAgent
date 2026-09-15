@@ -31,7 +31,7 @@ MAX_FINNHUB_REDIRECT_HOPS = 5
 COMPLETE_BODY_MIN_CHARS = 800
 COMPLETE_BODY_MIN_SENTENCES = 4
 MIN_ACCEPTED_EXTRACT_CHARS = 600
-JINA_READER_BASE_URL = "https://r.jina.ai/http://"
+JINA_READER_BASE_URL = "https://r.jina.ai/"
 
 REDIRECT_QUERY_KEYS = ("url", "u", "target", "redirect", "redirect_url")
 TRUNCATION_MARKERS = (
@@ -298,6 +298,8 @@ def assess_media_body(body: str | None, title: str | None = None) -> BodyQuality
 
     if not text:
         return BodyQuality(body_length, sentence_count, "empty", False)
+    if re.match(r"(?:Search results for|1\.\s*News\s*[•·])", text, re.I):
+        return BodyQuality(body_length, sentence_count, "non_article_listing", False)
     if title_text and text.lower() == title_text.lower():
         return BodyQuality(body_length, sentence_count, "same_as_title", False)
     if _looks_like_html(text):

@@ -342,7 +342,7 @@ def _published(value: object) -> datetime | None:
         except (OSError, OverflowError, ValueError):
             return None
     text = str(value or "").strip()
-    for pattern in ("%Y%m%d %H:%M:%S", "%Y-%m-%d %H:%M:%S"):
+    for pattern in ("%Y%m%d %H:%M:%S", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M:%S.%f"):
         try:
             return datetime.strptime(text.removesuffix(" UTC").strip(), pattern).replace(tzinfo=UTC)
         except ValueError:
@@ -404,6 +404,10 @@ class IbkrNewsAdapter:
                     raw_payload=row,
                     metadata={
                         "provider": "ibkr",
+                        "identity_evidence": {
+                            "id_kind": "provider_article",
+                            "url_kind": "article" if link_match else "generic",
+                        },
                         "provider_code": provider_code,
                         "article_id": article_id,
                         "canonical_url_available": bool(link_match),
