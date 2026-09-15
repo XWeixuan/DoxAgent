@@ -43,9 +43,12 @@ Reader 请求统一为 `https://r.jina.ai/` 加原始 `http(s)://...`，不再�
 
 本轮没有 git push、远端 build/restart 或历史清理。上线后需小范围观察消息发布增量、来源关联、正文质量和 Runtime 更新关联；真实正文网络可用性尚未重新验收。没有修改 O1 编排或任何 skill。
 
-## 2026-09-15 部署与附加检查（进行中）
+## 2026-09-15 部署与附加检查
 
 - 代码提交 `7b9de5eb` 已推送；新加坡远端使用两份既有 Compose 配置 fast-forward 拉取，重新构建后端共享镜像及前端镜像、重建默认服务。API、前端与 Codex worker 健康检查通过。
 - 附加检查确认调度器在旧镜像、部署前已连续出现 Docker `oom` / `exitCode=137`，512 MiB 上限阻止每日维护推进；交易日 2026-09-14 的每日任务在 2026-09-15 06:00 UTC 创建后仍 Pending。保持 CPU、并发和编排不变，将调度器内存与含 swap 总上限同时有界提高至 1536 MiB，待复查。
 - 部署前 IB Gateway 已通过只读 API 握手、账户可用及服务时钟检查。Reuters 搜索 HTTP 401 从 2026-09-14 15:56 UTC 起已存在，本次发布不宣称解决外部访问失败。
 - 未清理历史数据，未纳入其他对话尚未提交的 O3 prompt/skill 改动。
+- 临时 1536 MiB 调度器仍 OOM，每日任务没有推进；撤回该无效配置，保留原部署边界。此项检查未通过，不能宣称 O2/O3 正常；记录为 `FRONTEND_INTEGRATION_ISSUES.md` 的 BE-15，需单独后端修复。
+- 重启后 Finnhub、Benzinga、IBKR、Yahoo 连续轮询成功，TikHub 10 分钟周期也成功；Reuters 仍为既有 HTTP 401。新增去重表已创建，但观察期间没有通过 freshness 的新增稿件，因此没有生产去重/内容更新样本，不能以零新增证明线上去重效果。
+- 重启后 Gateway 再次通过实际只读 API 登录/账户/时钟检查；未修改 Gateway 配置或重启 Gateway，也未提交订单。

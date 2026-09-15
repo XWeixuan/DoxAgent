@@ -213,3 +213,12 @@ results=[]时按result_settled显示“结果未记录”或“尚未形成结�
 - 已登录生产 UI 验收：消息总线周日“当天”可选，周期新增 12；近 7 天为 26，包含 9 月 13 日记录。Runtime 当天处理 12，原有 1 条失败可见。策略页显示“最新维护已完成 · Policy 无内容变化（v2）”。
 - 两轮运行检查无服务重启；四个 source head/checkpoint 均追平且 error 为空。未重跑历史 Sweep/维护，trade jobs/executions 均保持 0。
 - 保留历史 coverage=UNKNOWN；连续两个自然休市周期的完整端到端运行验收仍待后续计划任务，不能用本次页面验收替代。
+
+### BE-15 · P0 · Runtime 调度器 OOM 阻止 O2/O3 每日维护（2026-09-15）
+
+- 新加坡本次 Message Bus 去重部署前，旧镜像已有连续 Docker `oom` / `die exitCode=137`，约每 12–15 秒重启；本次代码 `7b9de5eb` 切换后仍复现，因此不能归因为此次发布造成的新故障。
+- `daily:MU:2026-09-14` 于 2026-09-15 06:00:01 UTC 创建，检查时仍 `PENDING`、failures=0、receipt 为空；O2/O3 尚未开始。最近成功维护为 `maintain:sweep:MU:2026-09-14`，O2 v4、O3 v2。
+- 临时把调度器 memory/memswap 从 512 MiB 提高到 1536 MiB 后，仍出现 OOM，未能推进任务；撤回无效调整，不继续扩大内存、不清理证据或伪造完成状态。
+- 代码风险定位：`RuntimeCoordinator._waiting_cases()` 为每日任务遍历 `repository.list_cases(ticker)`；SQLite 实现无日期/状态边界地查询该 ticker 全部 Case，`_read_models()` 先 `fetchall()`，NativeContent row 解引用完整历史 payload，再构造全部模型。MU 现有 1376 个 Case task。该全历史加载是需优先验证的内存风险，尚未通过进程调用栈/分配采样证明唯一 OOM 点。
+- 修复建议：调度/等待判断改用限定日或 sweep 的状态/效果存在性查询，避免加载历史正文；每日 frame 只加载本维护集合且有界读取必要证据。不要修改 O2/O3 prompt、skill、业务截止时间、维护输入语义或删除历史数据。
+- 验收：既有 MU 历史规模下调度进程不重启、不 OOM；每日任务自然从 Pending 推进至 O2/O3、保留真实 receipt/activation；消息轮询与 Gateway 只读 API 仍可用。本轮仅记录，未实施后端代码修复。
