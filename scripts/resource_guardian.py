@@ -185,6 +185,9 @@ class Guardian:
             return False
         if not self.resize(service, maximum):
             return False
+        if extra:
+            # A fresh grant starts a fresh quiet period, not an old idle timer.
+            self.low_since.pop(service, None)
         if extra or renewal:
             self.leases[service] = time.monotonic() + 900
         return True

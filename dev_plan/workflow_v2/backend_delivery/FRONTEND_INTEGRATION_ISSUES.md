@@ -222,3 +222,4 @@ results=[]时按result_settled显示“结果未记录”或“尚未形成结�
 - 代码风险定位：`RuntimeCoordinator._waiting_cases()` 为每日任务遍历 `repository.list_cases(ticker)`；SQLite 实现无日期/状态边界地查询该 ticker 全部 Case，`_read_models()` 先 `fetchall()`，NativeContent row 解引用完整历史 payload，再构造全部模型。MU 现有 1376 个 Case task。该全历史加载是需优先验证的内存风险，尚未通过进程调用栈/分配采样证明唯一 OOM 点。
 - 修复建议：调度/等待判断改用限定日或 sweep 的状态/效果存在性查询，避免加载历史正文；每日 frame 只加载本维护集合且有界读取必要证据。不要修改 O2/O3 prompt、skill、业务截止时间、维护输入语义或删除历史数据。
 - 验收：既有 MU 历史规模下调度进程不重启、不 OOM；每日任务自然从 Pending 推进至 O2/O3、保留真实 receipt/activation；消息轮询与 Gateway 只读 API 仍可用。本轮仅记录，未实施后端代码修复。
+- 2026-09-15 修复进展：`4633bb11` 已部署；等待/维护改为目标集合标量查询、冻结 ID/版本及每批 100 条读取，增加聚合预算与额度租约。08:45–08:46 UTC 新容器零重启、父 cgroup 零 OOM，三条原 Pending 消息均已自然完成 W1/W2，daily 已 RUNNING 并开始 O2；API/Gateway/主要新闻轮询可用。O3 待 O2 完成依既有顺序推进，维护全程峰值及最终 receipt/activation 仍待自然完成核验。详见 `../runtime_oom_budget_delivery_20260915.md`。

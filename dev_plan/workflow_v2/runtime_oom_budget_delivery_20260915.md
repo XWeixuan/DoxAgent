@@ -34,4 +34,10 @@ Projector CPU 为 1.0；其余 CPU/PID 不普遍放宽。`memswap_limit` 为 RAM
 
 ## 部署结果
 
-待部署后的实际证据追加。
+- 代码 `4633bb11` 已 push、远端 `pull --ff-only` 并重建 backend/web，2026-09-15 08:42 UTC 左右全部默认服务重建完成；宿主机 slice 与 guardian 已启用。其他对话正在修改的 Yahoo/正文与 O3 文件未混入本次发布。
+- 08:45–08:46 UTC 复查：所有新容器 RestartCount=0、OOMKilled=false；父 cgroup `memory.events` 的 high/max/oom/oom_kill 均为 0，应用 swap 使用 0。聚合观测峰值约 3274 MiB，Scheduler 约 297 MiB；这只是本轮维护启动阶段实测，非 O2/O3 全程峰值保证，暂不再放宽额度。
+- Scheduler/Projector 曾在线升至 2048/640 MiB，并在低用量两分钟后回到 1024/384 MiB，容器未重启。新峰值授权会重置低用量计时，避免旧计时让新租约立即收回；该边界定向测试通过。
+- 三条原 Pending inbox 均按原身份 SUCCEEDED，关联 Case 均已完成 W1/W2（各次模型调用 attempt=1）；两条 Case 为 COMPLETED，一条为 ADJUDICATED，后续效果交付继续正常推进。未人为重放消息。
+- `daily:MU:2026-09-14` 已 RUNNING、failures=0；冻结 frame 包含 490 个有效候选，原 run_id/receipt 保留，O2 工作正在执行；O3 须待 O2 receipt 后按既有顺序启动，尚不能宣称本轮维护最终完成。
+- Web `/` 与 API `/readyz` HTTP 200；Gateway 登录态只读 probe=true。Finnhub/Benzinga/IBKR/Yahoo 重启后自然轮询 succeeded。Reuters 的既有 HTTP 401 仍存在，未将其误报为本次修复恢复。
+- 最终部署前必要组合测试 12 项通过；峰值计时补丁单文件 5 项通过。未执行订单测试、swapoff、历史删除或全面性能回归。

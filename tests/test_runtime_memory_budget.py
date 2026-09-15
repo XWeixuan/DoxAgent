@@ -164,6 +164,10 @@ def test_resource_budget_wait_and_heavy_batch_isolation(monkeypatch):
 
 def test_quota_recovery_cannot_shrink_busy_or_expand_under_pressure(monkeypatch):
     g, m = guardian(monkeypatch)
+    g.low_since["v2-projector"] = 0
+    assert g.peak("v2-projector")
+    assert "v2-projector" not in g.low_since
+    g.resize("v2-projector", 384)
     g.containers["v2-scheduler"].update(limit=2048 * m.MIB, current=1100 * m.MIB)
     assert not g.resize("v2-scheduler", 1024)
     assert g.containers["v2-scheduler"]["limit"] == 2048 * m.MIB

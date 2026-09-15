@@ -1046,3 +1046,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-15 · Message Bus 去重修复新加坡发布：7b9de5eb 已 push/pull、重建共享后端与前端镜像并重启默认服务，API/Web/Codex worker 健康，新闻轮询与 Gateway 实际只读 API 可用。附加检查发现部署前已存在调度器 OOM，O2/O3 每日任务仍 Pending；1536 MiB 临时配置仍失败，撤回无效调整，记入后端 BE-15。未清理历史、修改 O1/O3 skill 或人为触发维护/交易；生产去重发布样本仍待自然新增稿件验收。
 
 2026-09-15 · Yahoo NCP 本地最小修复验证：新闻 adapter 改为进程共享 curl_cffi AsyncSession/Chrome impersonation，单并发与 1.5–2 秒 stagger；普通 polling 10–20 条、bootstrap/显式窗口恢复 100 条。任一 Yahoo adapter 请求 429 打开全局 5/15/30 分钟 circuit，尊重 Retry-After，不重试或绕到 Search/Reader；NCP 仅 endpoint/schema 失效允许 Search。26 项定向测试通过；本地旧 httpx 与新 Chrome transport 均 HTTP 200，新路径返回 20 条，因此未证实线上 TLS 指纹归因。robots.txt 列有 /xhr 禁止抓取，停止进一步真实探测。仅本地，未提交/部署，详见 yahoo_ncp_browser_transport_validation_20260915.md。
+
+2026-09-15 · Runtime OOM 发布验收：4633bb11 远端构建重启后容器零重启/OOM，原三条消息已自然完成 W1/W2，daily 开始 O2，API/Gateway 与主要轮询可用；O3 与完整维护峰值待自然推进核验。宿主机 guardian 新峰值授权重置低用量两分钟计时，防止旧计时过早回收；定向 5 项测试通过。未合并其他对话未提交修复。
