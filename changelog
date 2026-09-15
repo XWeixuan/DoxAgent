@@ -1039,12 +1039,20 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 - 新加坡已重建并启动 12 个 V2 服务，后端镜像统一、无重启/OOM；公开 HTTP 与真实读库小范围检查通过。历史投影积压仍在自动追赶，未执行任何远端历史清理。详见 DB_OPTIMIZATION_RUNBOOK.md。
 
+2026-09-14 · O3 模拟盘 Prompt/Skill 局部调优：o3.md、foundation、Trigger Calibration、Policy Compile 与 MAINTAIN 区分信息充分与确认强度，补充 confidence padding、同变量 comparator 闭合、明确 market prior、Exposure Anchor 和 Alternative/Additive/Sequential 判断；维护阶段同步预期与比较锚并保留最早可交易边界。架构、schema、OR、Final Review 与 Runtime 不变；定向 diff 检查通过，未运行真实 Pilot。
+
 2026-09-15 · V2 查询池自愈补丁：为 read/stream/control 子进程池增加常驻 supervisor、延迟退出 reaper、有界补建重试和软硬超时缓冲；SSE 使用独立单 worker 并限制持续追赶热循环，新增内部 readiness 与结构化故障状态。保持进程总量有界，不修改业务 DTO、SQLite schema 或交易执行语义。
 
 2026-09-15 · Message Bus V2 三层去重与业务更新修复：新增聚合采集观察、并列 ID/文章 URL 别名、ticker 内完整正文 fingerprint 与原子业务版本预约；补全任务按稳定业务输入幂等并保留 30 分钟有界复查。分开保留原生正文/摘要/内容质量，拒绝降级发布，正文补充与编辑更新携带逻辑消息 ID、业务版本及前一 Raw 关联进入 Runtime。修复 Reuters 单卡片摘要/日期隔离、IBKR 小数秒历史时间与通用 URL 补全跳过、Yahoo/Reader 地址拼接及导航正文拒绝；Dow Jones 别名仅由完整正文与兼容上下文确认，不按 `$` 后缀硬合并。历史 Raw/消息/hash/Runtime ID 保留，未修改 O1 或 skill，未部署或清理远端。定向测试、真实浏览器 DOM 测试与 44 条生产只读样本的本地回放通过；详见 dev_plan/workflow_v2/message_bus_deduplication_repair_delivery_20260915.md。
 
 2026-09-15 · Message Bus 去重修复新加坡发布：7b9de5eb 已 push/pull、重建共享后端与前端镜像并重启默认服务，API/Web/Codex worker 健康，新闻轮询与 Gateway 实际只读 API 可用。附加检查发现部署前已存在调度器 OOM，O2/O3 每日任务仍 Pending；1536 MiB 临时配置仍失败，撤回无效调整，记入后端 BE-15。未清理历史、修改 O1/O3 skill 或人为触发维护/交易；生产去重发布样本仍待自然新增稿件验收。
 
-2026-09-15 · Yahoo NCP 本地最小修复验证：新闻 adapter 改为进程共享 curl_cffi AsyncSession/Chrome impersonation，单并发与 1.5–2 秒 stagger；普通 polling 10–20 条、bootstrap/显式窗口恢复 100 条。任一 Yahoo adapter 请求 429 打开全局 5/15/30 分钟 circuit，尊重 Retry-After，不重试或绕到 Search/Reader；NCP 仅 endpoint/schema 失效允许 Search。26 项定向测试通过；本地旧 httpx 与新 Chrome transport 均 HTTP 200，新路径返回 20 条，因此未证实线上 TLS 指纹归因。robots.txt 列有 /xhr 禁止抓取，停止进一步真实探测。仅本地，未提交/部署，详见 yahoo_ncp_browser_transport_validation_20260915.md。
+2026-09-15 · Runtime OOM 核心修复与资源预算：等待判断仅查目标日/sweep/补偿集合标量状态，维护固化 Case/效果版本集合并每 100 条 keyset 读取必要候选/记录，移除维护链路全历史 Case/交易候选/完成标记 hydration；新增对应 SQLite 索引。新增独立宿主机 guardian、聚合 5120/5632 MiB RAM 与 512 MiB swap 父 cgroup、固定三服务有界峰值借用、工作预约/续约、Codex 第二 slot 及全服务器重批次准入，预算等待不扣重试。Scheduler/Delivery/Projector 默认 RAM 为 1024/256/384 MiB，Projector CPU=1.0；保留 20 条 wave、业务身份、cutoff/receipt/activation，未修改 O1/O3 skill、清理历史或进行订单测试。详见 runtime_oom_budget_delivery_20260915.md。
 
 2026-09-15 · Runtime OOM 发布验收：4633bb11 远端构建重启后容器零重启/OOM，原三条消息已自然完成 W1/W2，daily 开始 O2，API/Gateway 与主要轮询可用；O3 与完整维护峰值待自然推进核验。宿主机 guardian 新峰值授权重置低用量两分钟计时，防止旧计时过早回收；定向 5 项测试通过。未合并其他对话未提交修复。
+
+2026-09-15 · Yahoo NCP 本地最小修复验证：新闻 adapter 改为进程共享 curl_cffi AsyncSession/Chrome impersonation，单并发与 1.5–2 秒 stagger；普通 polling 10–20 条、bootstrap/显式窗口恢复 100 条。任一 Yahoo adapter 请求 429 打开全局 5/15/30 分钟 circuit，尊重 Retry-After，不重试或绕到 Search/Reader；NCP 仅 endpoint/schema 失效允许 Search。26 项定向测试通过；本地旧 httpx 与新 Chrome transport 均 HTTP 200，新路径返回 20 条，因此未证实线上 TLS 指纹归因。robots.txt 列有 /xhr 禁止抓取，停止进一步真实探测。仅本地，未提交/部署，详见 yahoo_ncp_browser_transport_validation_20260915.md。
+
+2026-09-15 · 同稿仅发布一次：确认稿件身份后，正文补充/实质修订只更新既有 canonical Raw、Standard 与 buffer，取消同稿新 Stream/Runtime 版本发布；保留采集观察/来源与 append-only 内容修订快照，正文失败不降级已有内容。REALTIME 首次领取任务时原子冻结最新内容及修订号，重试/恢复与 CLOSED 输入不刷新；防止旧发布 worker 覆盖新内容并释放领取失败的预算预约。保留同标题不同稿/身份冲突/ticker 隔离；未清理历史、修改 O1/O2/O3 prompt/skill 或部署远端。定向测试通过，详见 message_article_once_delivery_20260915.md；已完成 Case 不自动消费后补新事实为本次明确取舍。
+
+2026-09-15 · Projector 基础预算饥饿修复：取消每批投影强制峰值申请；聚合正常预算中固定预留 128 MiB，其他工作/峰值审批不得占用。基础投影单 worker 使用该预留，不重复依赖长期维护预约，不被等待中的重任务优先级全局阻塞；仍检查真实聚合 RAM、MemAvailable 安全余量、PSI/swap 压力，实测高用量可按原规则申请峰值。按用户要求整体提交同步本地 O3 skill、Yahoo transport、同稿仅发布一次等既有修改；不删除数据或订单测试。

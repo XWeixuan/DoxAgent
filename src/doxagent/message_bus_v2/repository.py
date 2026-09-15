@@ -675,7 +675,7 @@ class MessageBusV2Repository:
         if (
             old
             and old.raw_hash == candidate.raw_hash
-            and classification != "CONTENT_SUPPLEMENT"
+            and classification not in {"CONTENT_SUPPLEMENT", "BUSINESS_UPDATE"}
             and dedup.text(old.title) == dedup.text(candidate.title)
             and all(
                 not candidate.metadata["content_evidence"].get("input_fields", {}).get(k)
@@ -707,7 +707,9 @@ class MessageBusV2Repository:
                     old = prior
                     version = prior.metadata.get("message_version", version)
                     break
-        suppressed = old is not None and classification in {"SAME_VERSION", "TECHNICAL_CHANGE"}
+        # Article identity owns publication. Content differences are audited in place,
+        # never a second Stream/Runtime admission for an already matched article.
+        suppressed = old is not None
         target = old if suppressed else candidate
         assert target is not None
         if old:
@@ -727,6 +729,8 @@ class MessageBusV2Repository:
             "business_version": business_version,
             "classification": classification,
             "previous_raw_message_id": old.raw_message_id if old and not suppressed else None,
+            "publication_policy": "ARTICLE_ONCE",
+            "content_revision": 1,
         }
         candidate = candidate.model_copy(
             update={"metadata": {**candidate.metadata, "message_version": version_meta}}
@@ -777,6 +781,34 @@ class MessageBusV2Repository:
             evidence = dict(old.metadata.get("content_evidence", {}))
             evidence["checked_at"] = utc_now().isoformat()
             new_evidence = candidate.metadata["content_evidence"]
+            refresh = classification in {"BUSINESS_UPDATE", "CONTENT_SUPPLEMENT"}
+            explicit_update = any(
+                new_evidence.get("input_fields", {}).get(k)
+                and new_evidence["input_fields"][k] != evidence.get("input_fields", {}).get(k)
+                for k in ("updated_at", "provider_version")
+            )
+            if refresh:
+                if new_evidence.get("article_body") and (
+                    evidence.get("kind") != "FULL"
+                    or new_evidence.get("kind") == "FULL"
+                    or explicit_update
+                ):
+                    evidence = {**new_evidence, "checked_at": utc_now().isoformat()}
+                    if not evidence.get("summary"):
+                        evidence["summary"] = old.metadata.get("content_evidence", {}).get(
+                            "summary"
+                        )
+                elif explicit_update and new_evidence.get("summary"):
+                    evidence = {
+                        **new_evidence,
+                        "previous_article_body": evidence.get("article_body"),
+                        "kind": "SUMMARY_UPDATE",
+                        "checked_at": utc_now().isoformat(),
+                    }
+                elif new_evidence.get("summary"):
+                    evidence["summary"] = new_evidence["summary"]
+                    if not evidence.get("article_body"):
+                        evidence.update(new_evidence)
             if new_evidence.get("kind") == "FULL" and dedup.text(
                 evidence.get("article_body")
             ) == dedup.text(new_evidence.get("article_body")):
@@ -798,10 +830,21 @@ class MessageBusV2Repository:
                     ]
                 )
             )
+            latest_completion = {}
+            if new_evidence.get("article_body") and evidence.get(
+                "article_body"
+            ) == new_evidence["article_body"]:
+                latest_completion = {
+                    k: candidate.metadata[k] for k in ("media_enrichment", "v2_body_completion")
+                    if k in candidate.metadata
+                }
             updated = old.model_copy(
                 update={
+                    "title": (candidate.title or old.title) if refresh else old.title,
+                    "body": (evidence.get("article_body") or evidence.get("summary") or old.body),
                     "metadata": {
                         **old.metadata,
+                        **latest_completion,
                         "message_sources": sources,
                         "content_evidence": evidence,
                         "identity_evidence": identity_evidence,
@@ -809,6 +852,29 @@ class MessageBusV2Repository:
                     "duplicate_seen_count": old.duplicate_seen_count + 1,
                     "last_seen_at": utc_now(),
                 }
+            )
+            old_revision = old.metadata.get("message_version", {}).get("content_revision", 1)
+            content_changed = (
+                updated.body != old.body or updated.title != old.title
+                or evidence.get("summary") != old.metadata.get("content_evidence", {}).get(
+                    "summary"
+                )
+                or evidence.get("kind") != old.metadata.get("content_evidence", {}).get("kind")
+            )
+            updated.metadata["message_version"] = {
+                **old.metadata.get("message_version", version_meta),
+                "publication_policy": "ARTICLE_ONCE",
+                "content_revision": old_revision + int(content_changed),
+            }
+            if content_changed:
+                for revision, snapshot in [(old_revision, old), (old_revision + 1, updated)]:
+                    connection.execute(
+                        "insert or ignore into message_content_revisions values(?,?,?,?)",
+                        (old.ticker, logical_id, revision, self._json(snapshot)),
+                    )
+            connection.execute(
+                "update logical_message_versions set body_fingerprint=? where raw_message_id=?",
+                (evidence.get("body_fingerprint"), old.raw_message_id),
             )
             published = connection.execute(
                 "select 1 from standard_messages s join stream_members sm "
@@ -838,6 +904,8 @@ class MessageBusV2Repository:
                 standard = StandardMessage.model_validate_json(row["data_json"])
                 standard = standard.model_copy(
                     update={
+                        "body": updated.body,
+                        "title": updated.title,
                         "metadata": updated.metadata,
                         "admission_context": updated.admission_context,
                     }
@@ -862,6 +930,10 @@ class MessageBusV2Repository:
                 fingerprint,
                 canonical_json(version_meta),
             ),
+        )
+        connection.execute(
+            "insert or ignore into message_content_revisions values(?,?,?,?)",
+            (candidate.ticker, logical_id, 1, self._json(candidate)),
         )
         if old:
             # Missing/new lower-quality fields never erase information in an actual update.
@@ -1678,6 +1750,18 @@ class MessageBusV2Repository:
             "duplicate_seen_count": max(raw.duplicate_seen_count, stored.duplicate_seen_count),
             "last_seen_at": max(raw.last_seen_at, stored.last_seen_at),
         }
+        if stored.metadata.get("message_version", {}).get("content_revision", 1) > metadata.get(
+            "message_version", {}
+        ).get("content_revision", 1):
+            # A first-publication worker cannot overwrite content refreshed concurrently.
+            metadata.update({
+                k: stored.metadata[k]
+                for k in (
+                    "content_evidence", "message_version", "media_enrichment", "v2_body_completion"
+                )
+                if k in stored.metadata
+            })
+            updates.update(body=stored.body, title=stored.title)
         # A stale worker cannot undo an already committed publication.
         if stored.processing_status is RawProcessingStatus.COMPLETED:
             updates["processing_status"] = RawProcessingStatus.COMPLETED
@@ -1759,7 +1843,9 @@ class MessageBusV2Repository:
         completed = raw.model_copy(update={"processing_status": RawProcessingStatus.COMPLETED})
         with self.transaction() as connection:
             completed = self._retain_concurrent_evidence(connection, completed)
-            message = message.model_copy(update={"metadata": completed.metadata})
+            message = message.model_copy(update={
+                "metadata": completed.metadata, "title": completed.title, "body": completed.body,
+            })
             connection.execute(
                 """insert into standard_messages(
                      standard_message_id,raw_message_id,ticker,source_id,binding_id,published_at,data_json)

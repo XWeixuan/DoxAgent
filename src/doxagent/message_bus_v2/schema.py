@@ -631,6 +631,8 @@ RequestPermitFactory = Callable[[], AbstractAsyncContextManager[None]]
 
 
 class PollContext(BusModel):
+    is_bootstrap: bool = False
+    is_gap_recovery: bool = False
     window_start: datetime | None = None
     window_cutoff: datetime | None = None
 

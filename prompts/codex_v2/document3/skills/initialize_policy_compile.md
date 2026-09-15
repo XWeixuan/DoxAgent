@@ -2,6 +2,8 @@
 
 你的任务不是把 Trigger record 重新排版成 Policy，而是判断哪些已经研究充分的 Candidates 属于同一次决策，并为每个 Condition 重新形成语义稳定且 Runtime 可执行的 `criterion`、当前具体 `reference_state` 和基于当前市场预期的 `trigger_boundary`。Candidate record 是研究依据，不是字段模板；一对一字段映射不能替代这一轮编译判断。
 
+Compile 的价值不是让 Candidate 更“完整”，而是删除研究阶段残留的 confirmation padding，只保留 Runtime 真正需要判断的事件和比较边界。
+
 稳定指监测的业务事件类型不会因无关背景变化而改变，不意味着省略 W2 当前判断所必需的 comparator。动态 current value 或 market baseline 主要由 Calibration 承担，但 Criterion 仍应让 W2 明确正在比较什么变量和什么类型的偏离。
 
 ```text
@@ -104,6 +106,8 @@ Current baseline
 
 若 Candidate 包含目标公司的订单、allocation、份额、shipment、收入或利润结果，重新判断这些结果是在定义 occurrence，还是只是在证明更早事件已经产生经济后果；后者从当前 Condition 移除。
 
+对包含多个 AND 属性的 Candidate，从最晚发生的属性开始检查：去掉它后，剩余 occurrence 若已满足 Stage-A calibrated surprise boundary，该属性通常属于 confirmation / realization，而不是当前 Condition。
+
 复核结果按以下方式处理；这些类别只控制编译，不新增输出字段：
 
 - **Ready as-is**：独立充分且 Calibration 完整，进入关系分类。
@@ -135,6 +139,8 @@ Current baseline
 
 Occurrences 不同，但每项单独充分，修改同一个 principal expectation revision，支持相同方向，并会消费同一个 current-baseline 决策边界。它们组成同一 Policy 的 `OR` Conditions。
 
+对任意一对 Candidates，先区分三种关系再执行该反事实：**Alternative**——任一个发生都消费同一次 current decision boundary，进入同一 OR Policy；**Additive**——C1 后 C2 仍产生新的独立信息 delta，形成不同 Policies；**Sequential**——C2 是 C1 的后续 realization / confirmation，保留更早 Trigger，只有形成新的独立 revision 时才另建 Policy。这是内部关系判断，不新增对象或字段。
+
 使用一次性边界反事实：假设 C1 今天触发并使 Policy 被消费、现实 baseline 已更新，C2 明天随后发生是否仍会产生新的、值得再次交易的 expectation delta？若是，C1/C2 属于不同 Policies；若否，才可能是同一 Policy 的替代充分路径。
 
 ### Different principal revisions
@@ -150,6 +156,8 @@ Qualification、shipment、revenue、margin 等可以共同构成完整确认链
 多个事实单独不足，但共同描述同一次自然合同、产品、规则或生产状态，且一条合理消息可以确认整体 occurrence。将整体编译为一个 Condition，其 actor、object、scope、period、magnitude 等是事件属性，不拆成多个 OR Conditions。
 
 “同一经济链”本身不构成 natural composite。若多个事实分别由不同 actors、不同 commercial stages 或后续 reporting periods 产生，它们通常不是同一个 occurrence，即使最终指向同一个经济结果。
+
+把 Criterion 当作一句现实新闻标题：它应描述一件现实状态，而不是把“发生了什么、为什么重要、后来造成什么结果”全部写进一句话。
 
 ### Internal OR Check
 
@@ -226,6 +234,8 @@ Actor、product、customer、contractual nature、quantity、threshold 和 comme
 4. 直接完成新值与 boundary 的比较？
 
 若 W2 仍需自行查询历史数据、推断“正常水平”、估算共识或重新研究业务含义，该 Condition 尚不可编译。这项检查不要求 Runtime 重新判断完整 expectation 是否兑现。
+
+只有 message operand、Policy comparator 与 trigger boundary 指向同一业务变量、时间口径和计量/状态维度，且 W2 无需自行补历史状态时，Comparison Check 才通过。Reference state 中的研究说明、数据缺失说明或 Runtime 操作指令不能替代 comparator。
 
 ## 8. 完成 Policy-Level Fields
 

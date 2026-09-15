@@ -22,7 +22,7 @@ Reference View 是现实变化入口，而不是全部世界状态。结合 Poli
 
 `reason` 说明可能需要维护的 Policy 状态，而不是复述相关消息。例如，“客户 qualification 已完成，C1 可能已成为持续现实，当前 `reference_state` 可能过时”比“出现客户相关新闻”更能指导后续判断。
 
-重点识别四类变化：现实沿既有路径推进；某个 Condition 可能已经成立；比较基准或 Calibration 已经移动；原 Path 可能已经走完或失去适用性。完成全部 Policy 的候选扫描后，再进入研究与 Patch 判断。
+重点识别五类变化：现实沿既有路径推进；某个 Condition 可能已经成立；比较基准或 Calibration 已经移动；原 Path 可能已经走完或失去适用性；当前 market expectation 或 Runtime comparator 已显著移动，即使 trigger-bearing 现实尚未发生。完成全部 Policy 的候选扫描后，再进入研究与 Patch 判断。
 
 跨过具有业务意义的时间节点可以形成 `POSSIBLE_CHANGE`，但时间流逝本身不证明 Condition 已满足；预定窗口已经过去只意味着需要确认实际结果。
 
@@ -36,8 +36,10 @@ Reference View 是现实变化入口，而不是全部世界状态。结合 Poli
 
 - **Keep**：进一步确认后，现实没有改变 Policy；不产生 Patch。
 - **Absorb established reality**：某个 Condition 已成为持续现实，而同一 Path 仍有剩余交易意义。将该现实吸收到剩余 Condition 的 `reference_state`，移除已经成为历史的 Condition，并重新表达剩余未来边界。这样未来同一条消息只需满足仍待发生的 Conditions。
-- **Recalibrate**：Trigger 尚未发生，但现实起点、时间基准或阶段已经推进。联动检查 `reference_state`、`trigger_boundary` 与 `criterion`，并在召回范围实际变化时更新 `match_scope`。
+  Absorb 后，剩余 Condition 不因前一状态已成立而自动升级为更晚的高确认节点；新 baseline 下较早的下一状态若已足以产生新的 expectation delta，就停在该边界。
+- **Recalibrate**：Trigger 尚未发生，但现实起点、时间基准、阶段、market expectation 或 comparator 已经推进。联动检查 `reference_state`、`trigger_boundary` 与 `criterion`，并在召回范围实际变化时更新 `match_scope`。重新确认 W2 comparison contract：消息 variable、最新 comparison anchor 与 boundary 仍可直接比较；过时的值、窗口和 expectation 应更新，研究说明不替代可执行的 comparator。
 - **Advance or Retire**：原 Trigger 已经成为历史时，判断同一 Tradable Path 是否仍存在自然延续且具有直接交易意义。现实对象、原 expectation transmission 和 `decision` 不变，只是沿既有状态链继续推进，才属于同一路径；存在时推进到下一现实状态，路径已经走完或失效时 retire。
+  Advance 时，重新判断新 current reality 与 market expectation 下，下一项最早仍具有独立交易意义的状态，而非直接选取原 realization chain 的下一个完整确认节点。
 
 缺少完美数值不妨碍依据清晰的商业阶段或法律状态维护 Policy；变化结论应来自现实含义，而不是措辞优化。
 

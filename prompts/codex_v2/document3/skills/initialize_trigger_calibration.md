@@ -132,18 +132,24 @@ Coverage Saturation 追求重要 Future Surface 的充分覆盖，不要求枚�
 4. **Message Reality**：谁掌握并通常发布该事实，什么正常消息能够完整确认这一 occurrence？
 5. **Residual Uncertainty**：若更晚的 shipment、revenue、margin、share 或其他兑现仍未知，这项事实是否仍独立充分？
 
+### Confidence Padding Check
+
+检查 Candidate 中仅增加判断置信度的附加条件，如第二个季度、客户、平台、交付窗口、重复 shipment 或后续收入/利润。逐项问：删除它以后，剩余状态是否仍越过当前 market expectation，形成同方向且足够 material 的 revision？若是，该附加条件不属于 Trigger boundary。只有 persistence、breadth 或后续状态本身就是被交易的 expectation variable 时，例如持续盈利恶化或多客户商业采用，它才构成必要边界。
+
 ### Runtime Comparison Check
 
 对于任何需要“高于 / 低于 / 提前 / 推迟 / 扩大 / 缩小 / 超过正常 / 相对计划变化”等比较的 Candidate，在判定 `TRIGGER_READY` 前明确回答：
 
 1. W2 未来需要从消息中识别哪个 variable / state？
-2. 最终 Policy 能提供什么明确的 current value、current state 或 market expectation 作为比较锚？
-3. 什么数值、时点、阶段或 categorical transition 构成 trigger boundary？
-4. 新消息与 Runtime Policy 是否足以直接完成比较？
+2. Policy 能否提供与消息目标 variable 同维度、同口径的明确 comparison operand？“原窗口、正常水平、当前计划、历史峰值、前期水平”的具体值/状态是否已写入 Policy，或未来消息本身会明确同时披露 old → new？
+3. 什么数值、时点、阶段或 categorical transition 构成同一 variable/state 的 trigger boundary？容量、带宽、收入占比、出货占比与 ASP 等不同计量维度分别比较。
+4. 新消息与 Policy 是否足以按同一变量、时间口径和计量/状态维度直接完成比较，而无需 W2 补查历史状态？
 
 若比较必须依赖 Policy 中没有提供的历史值、行业正常值、市场共识、上一期数值或隐含模型，则该 Candidate 尚不具备 Runtime judgeability，应继续 Calibration 或收敛为 unresolved。
 
-上述五项以及适用的 Runtime Comparison Check 均有可辩护答案时才形成 `TRIGGER_READY`；其中任一缺口会改变事件选择、充分性或可判定边界时，先完成对应 Calibration。
+“当前没有统一序列”“Runtime需自行比较”是缺口说明，不是 comparator；未给出原窗口、正常状态或当前计划，且消息也不会自带旧值时，比较同样未闭合。必要 comparator 无法获得时继续定向研究，仍无法建立则 `TRIGGER_UNRESOLVED`。
+
+上述五问、Confidence Padding Check 以及适用的 Runtime Comparison Check 均有可辩护答案时才形成 `TRIGGER_READY`；其中任一缺口会改变事件选择、充分性或可判定边界时，先完成对应 Calibration。
 
 对每个 Path 隔离设定：
 
@@ -189,11 +195,13 @@ Candidate 可以完成整个 expectation revision，也可以只形成一次独�
 
 ### External Event Transmission Check
 
-当 Trigger 由客户、竞争者、平台、监管机构或其他外部主体承载时，先判断该外部事件本身是否已经通过 D2 exposure/transmission 对目标 ticker 形成足够的 expectation revision。若是，目标公司后续订单、allocation、份额、shipment、收入或利润属于后续 realization，不作为当前 Trigger 的必要组成。
+**Exposure Anchor** 是事件发生前已存在、足以让外部变化稳定传导到 ticker 的现实连接，如 supplier status、design win、qualification、合同、客户关系、份额、product exposure 或 D2 已确认的经济敏感性。
 
-只有缺少目标公司 exposure 会真正改变方向时，才继续研究 exposure；此时目标是解决 transmission uncertainty，而不是等待目标公司最终经营结果。
+当 Trigger 由外部主体承载时，已有 Exposure Anchor 则优先判断外部事件本身是否已形成 material expectation revision；目标公司后续订单、allocation、份额、shipment、收入或利润若只是捕获/损失价值的证明，属于后续 realization。缺少 Exposure Anchor 时先研究连接是否成立；仍无法建立则 `TRIGGER_UNRESOLVED`，而不是以后续经营结果代替 exposure research。
 
 ### Real Message Check
+
+Message Reality 要确认的是一个现实信息生产单位，而非理论上能拼成一篇报道的材料集合：一次合同决定、规格变化、监管决定、qualification 结果、财报状态或明确生产计划变化，都可能对应一个自然 Condition。
 
 对 Candidate 逐项确认：谁拥有该事实，什么正常消息会披露它，该消息是否自然包含 Candidate 要求的全部事实，以及该来源通常是否会公开到 Candidate 要求的粒度。“一篇综合报道理论上可以汇总多个来源”不等于存在这样的正常单消息 occurrence。若 Candidate 依赖不同事实所有者、发布时间或商业阶段的独立确认，重新拆分、前移到独立充分的边界，或保留 unresolved。
 
@@ -234,6 +242,8 @@ Calibration 围绕四个相邻但不同的问题：
 
 “至少两个 / 多个”不构成 materiality 的默认替代。主体数量只有在 breadth 本身决定 expectation revision 时才作为 boundary；若单一大型 actor 已具有足够 exposure，应允许单一 actor Trigger。确实需要 aggregate 时，优先使用收入、需求、供应、客户或平台覆盖等经济 exposure 定义 materiality，而不是机械使用主体数量。
 
+区分 **economic breadth** 与 **anti-noise confirmation**：前者表示多个主体共同覆盖足够大的需求、供给或 exposure，数量本身改变 expectation；后者只用第二个主体证明第一件事不是偶然。只有前者属于 Trigger materiality。
+
 Minimality 校准的是业务阈值，不把自然事件中的 actor、object、period、magnitude 拆成逻辑原子。按以下顺序建立可判定边界：先使用有可靠依据的 quantitative threshold；缺少可靠数值时使用 `non-binding → binding`、`sample → qualification`、`qualification → production` 等 categorical business boundary；两者都无法建立且程度会改变 sufficiency 时保留 unresolved。“显著”“主要”“重大”“大幅”等程度词本身不构成第三种校准方法。
 
 任何看似精确的 boundary，例如“两个季度”“两个客户”“20% 市场份额”或“两个交付期”，都应能在 Stage-A `source_basis`、market expectation research 或 `minimality` 中解释其经济依据；不能仅为了提高 Runtime judgeability 选择方便的整数阈值。
@@ -264,6 +274,8 @@ D2
 + 现实消息路径
 + Runtime 可判定边界
 ```
+
+其中市场预期基线应支持一句明确的内部判断：“截至 cutoff，市场对该 variable 的普通下一步进展大致已预计到 X，因此 Y 才是新增 surprise。”现有 `trade_sufficiency` / `minimality` 结论应支持这一区分，无需新增字段。
 
 研究目标是解决既定 Trigger 问题，而不是穷尽主题或重做 D2。一般的信息不完整不等于 unresolved；只有缺失事实阻止形成独立充分或 Runtime 可判定边界时，才收敛为 `TRIGGER_UNRESOLVED`。
 

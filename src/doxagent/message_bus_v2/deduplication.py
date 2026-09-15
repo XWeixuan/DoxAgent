@@ -225,4 +225,8 @@ create index if not exists logical_content on logical_message_versions(ticker,bo
 create table if not exists message_identity_aliases (
  ticker text not null, alias text not null, logical_message_id text not null,
  primary key(ticker,alias,logical_message_id));
+create table if not exists message_content_revisions (
+ ticker text not null, logical_message_id text not null, content_revision integer not null,
+ data_json text not null,
+ primary key(ticker,logical_message_id,content_revision));
 """

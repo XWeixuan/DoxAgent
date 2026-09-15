@@ -177,3 +177,70 @@ def test_quota_recovery_cannot_shrink_busy_or_expand_under_pressure(monkeypatch)
     assert not g.handle(
         "v2-api", {"command": "acquire", "kind": "maintenance", "identity": "spoof"}
     )["ok"]
+
+
+def test_basic_projection_earmark_survives_resident_maintenance(monkeypatch):
+    g, m = guardian(monkeypatch)
+    g.metrics.update(app_current=3331 * m.MIB, available=2657 * m.MIB)
+    g.work = {
+        "daily": {
+            "service": "v2-scheduler",
+            "identity": "daily",
+            "bytes": 512 * m.MIB,
+            "heavy": True,
+            "batch": "maintenance:MU",
+        },
+        "o2": {
+            "service": "codex-worker",
+            "identity": "o2",
+            "bytes": 1024 * m.MIB,
+            "heavy": True,
+            "batch": "maintenance:MU",
+        },
+    }
+    g.waiting[("codex-worker", "waiting")] = (1, time.monotonic() + 10)
+    assert not g.fits(128 * m.MIB)
+    result = g.handle(
+        "v2-projector",
+        {
+            "command": "acquire",
+            "kind": "projection",
+            "identity": "batch1",
+        },
+    )
+    assert result["ok"]
+    assert g.containers["v2-projector"]["limit"] == 384 * m.MIB
+    assert "v2-projector" not in g.leases
+    assert not g.handle(
+        "v2-projector",
+        {
+            "command": "acquire",
+            "kind": "projection",
+            "identity": "batch2",
+        },
+    )["ok"]
+    g.handle("v2-projector", {"command": "release", "token": result["token"]})
+    g.metrics["available"] = 1100 * m.MIB
+    assert not g.handle(
+        "v2-projector",
+        {
+            "command": "acquire",
+            "kind": "projection",
+            "identity": "unsafe",
+        },
+    )["ok"]
+    g.metrics.update(available=2657 * m.MIB, pressure=1)
+    assert not g.fits(0, basic_projection=True)
+
+
+def test_other_work_cannot_spend_projection_earmark(monkeypatch):
+    g, m = guardian(monkeypatch)
+    g.metrics.update(app_current=4000 * m.MIB, available=5000 * m.MIB)
+    assert not g.handle(
+        "codex-worker",
+        {
+            "command": "acquire",
+            "kind": "codex_runtime",
+            "identity": "slot",
+        },
+    )["ok"]

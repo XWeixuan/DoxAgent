@@ -144,24 +144,45 @@ def _reader_proxy_json(value: str) -> JsonObject:
 
 
 class YahooFinanceNewsAdapter:
-    def __init__(self, settings: DoxAgentSettings, client: httpx.AsyncClient) -> None:
+    def __init__(
+        self, settings: DoxAgentSettings, client: httpx.AsyncClient, *, transport=None
+    ) -> None:
+        from .yahoo_transport import shared_yahoo_transport
+
         self.settings = settings
-        self.client = client
+        # The registry's httpx client remains for other providers; Yahoo owns no session.
+        self.transport = transport or shared_yahoo_transport()
 
     async def poll(self, context: PollContext) -> PollResult:
-        count = int(context.binding.source_parameters.get("snippet_count", 100))
+        from .yahoo_transport import YahooEndpointUnavailable
+
+        count = (
+            100
+            if context.is_bootstrap or context.is_gap_recovery
+            else max(10, min(20, int(context.binding.source_parameters.get("snippet_count", 20))))
+        )
         mode = "ncp_latest_news"
         try:
             async with context.request_permit():
-                response = await self.client.post(
+                response = await self.transport.request(
+                    "POST",
                     "https://finance.yahoo.com/xhr/ncp",
                     params={"queryRef": "latestNews", "serviceKey": "ncp_fin"},
                     json={"serviceConfig": {"snippetCount": count, "s": [context.ticker]}},
-                    headers={"User-Agent": self.settings.monitoring_rss_user_agent},
+                    timeout=self.settings.tool_http_timeout_seconds,
                 )
-                response.raise_for_status()
-                rows = _yahoo_contents(response.json())
-        except (httpx.HTTPError, ValueError):
+                payload = response.json()
+                rows = _yahoo_contents(payload)
+                if (
+                    not rows
+                    and not (
+                        isinstance(payload, dict)
+                        and any(key in payload for key in ("data", "finance", "news"))
+                    )
+                    and payload != []
+                ):
+                    raise ValueError("Yahoo NCP response schema unrecognized")
+        except (YahooEndpointUnavailable, ValueError):
             rows = []
             mode = "finance_search_fallback"
             fallback_count = min(count, 10)
@@ -169,16 +190,16 @@ class YahooFinanceNewsAdapter:
             for host in ("query1.finance.yahoo.com", "query2.finance.yahoo.com"):
                 try:
                     async with context.request_permit():
-                        response = await self.client.get(
+                        response = await self.transport.request(
+                            "GET",
                             f"https://{host}/v1/finance/search",
                             params={
                                 "q": context.ticker,
                                 "newsCount": fallback_count,
                                 "quotesCount": 0,
                             },
-                            headers={"User-Agent": self.settings.monitoring_rss_user_agent},
+                            timeout=self.settings.tool_http_timeout_seconds,
                         )
-                        response.raise_for_status()
                         rows = _yahoo_contents(response.json().get("news", []))
                     break
                 except (httpx.HTTPError, ValueError) as exc:
@@ -190,16 +211,16 @@ class YahooFinanceNewsAdapter:
                 mode = "finance_search_reader_proxy_fallback"
                 try:
                     async with context.request_permit():
-                        response = await self.client.get(
+                        response = await self.transport.request(
+                            "GET",
                             proxy_url,
                             params={
                                 "q": context.ticker,
                                 "newsCount": fallback_count,
                                 "quotesCount": 0,
                             },
-                            headers={"User-Agent": self.settings.monitoring_rss_user_agent},
+                            timeout=self.settings.tool_http_timeout_seconds,
                         )
-                        response.raise_for_status()
                         payload = _reader_proxy_json(response.text)
                         rows = _yahoo_contents(payload.get("news", []))
                 except (httpx.HTTPError, ValueError, json.JSONDecodeError) as exc:

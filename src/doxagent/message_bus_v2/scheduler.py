@@ -221,6 +221,8 @@ class GlobalPollScheduler:
         limiter = self._limiter(source)
         poll_run_id = new_id("poll")
         context = PollContext(
+            is_bootstrap=not state.bootstrap_complete,
+            is_gap_recovery=window_start is not None or window_cutoff is not None,
             poll_run_id=poll_run_id,
             ticker=binding.ticker,
             source=source,

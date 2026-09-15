@@ -185,7 +185,10 @@ class RuntimeJournal:
                              (ticker,)).fetchone()
             return int(row[0]) if row else 0
 
-    def claim(self, identity: str, *, seconds: float = 1800) -> dict[str, Any] | None:
+    def claim(
+        self, identity: str, *, seconds: float = 1800,
+        prepare_inputs: Callable[[dict[str, Any]], dict[str, Any]] | None = None,
+    ) -> dict[str, Any] | None:
         now = self.clock()
         with self.transaction() as db:
             row = db.execute("SELECT * FROM runtime_tasks WHERE id=?", (identity,)).fetchone()
@@ -206,6 +209,12 @@ class RuntimeJournal:
                 >= cap
             ):
                 return None
+            if prepare_inputs is not None and row["kind"] == "CASE" and row["token"] == 0:
+                # Freeze content in the same fenced transaction as first ownership.
+                # A reclaimed/retried task never refreshes model-visible inputs.
+                inputs = prepare_inputs(json.loads(row["inputs"]))
+                db.execute("UPDATE runtime_tasks SET inputs=? WHERE id=?",
+                           (self.content.encode(inputs), identity))
             db.execute(
                 "UPDATE runtime_tasks SET status='RUNNING',owner=?,token=token+1,"
                 "lease_until=?,updated_at=? WHERE id=?",

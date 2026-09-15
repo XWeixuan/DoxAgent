@@ -7,6 +7,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import httpx
+import pytest
 
 from doxagent.message_bus_v2.google_news import resolve_google_news_urls
 from doxagent.message_bus_v2.ibkr_news import IbkrNewsAdapter, _parse_error_args, _published
@@ -23,6 +24,25 @@ from doxagent.message_bus_v2.service import MessageBusV2Service
 from doxagent.settings import DoxAgentSettings
 
 NOW = datetime(2026, 9, 14, 12, tzinfo=UTC)
+
+
+@pytest.fixture(autouse=True)
+def yahoo_mock_transport(monkeypatch):
+    # Keep existing provider fixtures on MockTransport, never make live requests.
+    from doxagent.message_bus_v2.yahoo_transport import YahooTransport
+
+    original = YahooFinanceNewsAdapter.__init__
+    transports = []
+
+    def initialize(self, settings, client, **kwargs):
+        transport = YahooTransport(session_factory=lambda **_: client, gap=0, jitter=0)
+        transports.append(transport)
+        original(self, settings, client, transport=transport)
+
+    monkeypatch.setattr(YahooFinanceNewsAdapter, "__init__", initialize)
+    yield
+    for transport in transports:
+        transport.close()
 
 
 @asynccontextmanager
@@ -99,7 +119,7 @@ async def test_yahoo_ncp_filters_24h_and_preserves_publisher_domain(tmp_path: Pa
 async def test_yahoo_search_fallback_is_bounded_to_ten(tmp_path: Path) -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         if request.url.path == "/xhr/ncp":
-            return httpx.Response(401)
+            return httpx.Response(404)
         assert request.url.params["newsCount"] == "10"
         return httpx.Response(200, json={"news": []})
 
@@ -118,7 +138,7 @@ async def test_yahoo_reader_proxy_is_last_fallback(tmp_path: Path) -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         requests.append(request)
         if request.url.host != "r.jina.ai":
-            return httpx.Response(429)
+            return httpx.Response(404)
         assert request.url.params["newsCount"] == "10"
         payload = {
             "news": [

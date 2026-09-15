@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+from functools import partial
 from pathlib import Path
 
 from doxagent.codex_runtime.client import HttpCodexWorkerClient
@@ -259,6 +260,7 @@ def build_persistent_runtime_v2_service(
     if journal:
         from .coordinator import RuntimeCoordinator
         from .maintenance import RuntimeMaintenance
+        from .message_content import prepare_message_inputs
         from .selection import WeekendSelection
 
         service.coordinator = RuntimeCoordinator(
@@ -267,5 +269,9 @@ def build_persistent_runtime_v2_service(
             maintain=RuntimeMaintenance(settings, service, journal),
             select=WeekendSelection(settings, service, journal),
             external_delivery=bool(settings.ticker_initialization_control_path),
+            prepare_case_inputs=(
+                partial(prepare_message_inputs, path=settings.message_bus_v2_sqlite_path)
+                if settings.message_bus_v2_enabled else None
+            ),
         )
     return service

@@ -34,11 +34,13 @@ class RuntimeCoordinator:
         maintain: Callable[[dict[str, Any]], Any] | None = None,
         select: Callable[[dict[str, Any]], Any] | None = None,
         external_delivery: bool = False,
+        prepare_case_inputs: Callable[[dict[str, Any]], dict[str, Any]] | None = None,
     ) -> None:
         self.runtime, self.journal = runtime, journal
         self.calendar = calendar or MarketCalendar(journal)
         self.maintain, self.select = maintain, select
         self.external_delivery = external_delivery
+        self.prepare_case_inputs = prepare_case_inputs
         self._realtime = ThreadPoolExecutor(max_workers=4, thread_name_prefix="runtime-case")
         self._background = ThreadPoolExecutor(max_workers=2, thread_name_prefix="runtime-maintain")
         self._sweeps = ThreadPoolExecutor(max_workers=2, thread_name_prefix="runtime-sweep")
@@ -367,7 +369,13 @@ class RuntimeCoordinator:
                             batch="maintenance:" + ticker)
             if token is None:
                 continue
-            lease = self.journal.claim(task["id"], seconds=120)
+            try:
+                lease = self.journal.claim(
+                    task["id"], seconds=120, prepare_inputs=self.prepare_case_inputs,
+                )
+            except Exception:
+                release(token)
+                raise
             if lease:
                 self._resource_tokens[task["id"]] = token
                 self._futures[task["id"]] = pool.submit(self._execute, lease)

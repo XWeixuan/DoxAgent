@@ -194,8 +194,8 @@ async def test_ticker_local_dedupe_revision_and_bootstrap(tmp_path: Path) -> Non
         bootstrap=False,
     )
     assert duplicate.decision.value == "duplicate"
-    assert revision.decision.value == "revision"
-    assert repository.latest_stream_offset("MU") == 2
+    assert revision.decision.value == "duplicate"
+    assert repository.latest_stream_offset("MU") == 1
 
 
 async def test_reappearing_historical_revision_is_a_duplicate(tmp_path: Path) -> None:
@@ -228,12 +228,13 @@ async def test_reappearing_historical_revision_is_a_duplicate(tmp_path: Path) ->
     )
 
     assert first.decision.value == "inserted"
-    assert second.decision.value == "revision"
+    assert second.decision.value == "duplicate"
     assert reverted.decision.value == "duplicate"
     rows = repository.list_raw(ticker="MU", limit=10)
-    assert len(rows) == 2
-    assert sorted(row.revision for row in rows) == [1, 2]
-    assert next(row for row in rows if row.revision == 1).duplicate_seen_count == 1
+    assert len(rows) == 1
+    assert rows[0].revision == 1
+    assert rows[0].duplicate_seen_count == 2
+    assert repository.latest_stream_offset("MU") == 1
 
 
 async def test_same_provider_payload_cannot_create_volatile_enrichment_revision(
@@ -502,7 +503,8 @@ def test_pending_raw_recovery_is_idempotent_and_transactional(tmp_path: Path) ->
     repository.save_raw(
         completed.model_copy(update={"processing_status": RawProcessingStatus.PROCESSING})
     )
-    assert service.retry_pending_raw() == 1
+    # A stale save cannot reopen an already completed publication.
+    assert service.retry_pending_raw() == 0
     assert repository.latest_stream_offset("MU") == 1
 
 

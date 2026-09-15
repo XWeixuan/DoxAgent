@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime, timedelta
 
@@ -111,20 +112,28 @@ async def test_full_body_empty_tick_never_downgrades(bus):
     assert repo.latest_stream_offset("MU") == 1
 
 
-async def test_supplement_and_live_update_have_linked_runtime_input(bus):
+async def test_supplement_and_editorial_update_refresh_one_publication(bus):
     repo, _ = bus
     first = await accept(bus, message(body=None, summary="Micron plans a new factory."))
     supplement = await accept(bus, message())
     changed = await accept(bus, message(body=BODY.replace("15 billion", "20 billion")))
-    assert repo.latest_stream_offset("MU") == 3
+    assert repo.latest_stream_offset("MU") == 1
     items = repo.read_stream("MU", after_offset=0, limit=10)
     envelopes = [SourceMessageEnvelope.from_stream_item(i) for i in items]
     assert len({e.logical_message_id for e in envelopes}) == 1
-    assert [e.business_version for e in envelopes] == [1, 2, 3]
-    assert envelopes[1].update_kind == "CONTENT_SUPPLEMENT"
-    assert envelopes[1].previous_raw_message_id == first.raw_message_id
-    assert envelopes[2].previous_raw_message_id == supplement.raw_message_id
-    assert changed.stream_item_ids
+    assert [e.business_version for e in envelopes] == [1]
+    assert all(e.previous_raw_message_id is None for e in envelopes)
+    assert envelopes[0].snapshot.body == BODY.replace("15 billion", "20 billion").strip()
+    assert first.raw_message_id == supplement.raw_message_id == changed.raw_message_id
+    assert not supplement.stream_item_ids and not changed.stream_item_ids
+    assert repo.get_raw(first.raw_message_id).metadata["message_version"]["content_revision"] == 3
+    with repo._connect() as c:
+        history = c.execute(
+            "select data_json from message_content_revisions order by content_revision"
+        ).fetchall()
+        assert len(history) == 3
+        assert 'Micron plans a new factory.' in history[0][0]
+        assert '15 billion' in history[1][0] and '20 billion' in history[2][0]
 
 
 async def test_stable_input_noise_and_bounded_recheck(bus):
@@ -199,7 +208,20 @@ async def test_failed_publication_is_recoverable_not_a_receipt(bus, monkeypatch)
 async def test_legacy_revisions_are_one_identity_without_rewriting_history(bus):
     repo, _ = bus
     first = await accept(bus, message(body="Earlier bulletin."))
-    await accept(bus, message(body="Updated bulletin."))
+    # Seed a genuinely pre-ARTICLE_ONCE second publication; do not rewrite it.
+    original = repo.get_raw(first.raw_message_id)
+    legacy = original.model_copy(update={
+        "raw_message_id": "raw_legacy_second", "body": "Updated bulletin.",
+        "content_hash": "legacy-updated", "raw_hash": "legacy-updated",
+        "metadata": {k: v for k, v in original.metadata.items()
+                     if k not in {"content_evidence", "message_version"}},
+    })
+    _, legacy = repo.record_raw(legacy)
+    standard = repo.get_standard_for_raw(original.raw_message_id).model_copy(update={
+        "standard_message_id": "std_legacy_second", "raw_message_id": legacy.raw_message_id,
+        "body": legacy.body, "revision": legacy.revision, "metadata": legacy.metadata,
+    })
+    repo.finalize_standard(raw=legacy, message=standard, streaming=legacy.streaming_config)
     with repo.transaction() as c:
         for table in [
             "logical_message_versions",
@@ -295,7 +317,7 @@ async def test_publisher_short_correction_is_not_rejected_by_old_body_length(bus
         metadata={"identity_evidence": {"url_kind": "article", "provider_version": "corrected-2"}},
     )
     result = await accept(bus, correction)
-    assert result.stream_item_ids
+    assert not result.stream_item_ids
     updated = repo.get_raw(result.raw_message_id)
     assert updated.body.startswith("Correction: investment is 20 billion")
     assert updated.metadata["content_evidence"]["previous_article_body"]
@@ -338,5 +360,88 @@ async def test_cross_provider_headline_variant_but_trusted_editorial_change(bus)
     )
     assert (await accept(bus, variant, source="finnhub_company_news")).decision.value == "duplicate"
     editorial = message(title="Micron announces revised Idaho manufacturing investment")
-    assert (await accept(bus, editorial)).stream_item_ids
-    assert repo.latest_stream_offset("MU") == 2
+    assert not (await accept(bus, editorial)).stream_item_ids
+    assert repo.latest_stream_offset("MU") == 1
+    assert repo.read_stream("MU", after_offset=0)[0].members[0].title == editorial.title
+
+
+async def test_pending_claim_uses_latest_content_and_retry_keeps_frozen_input(bus, tmp_path):
+    from functools import partial
+
+    from doxagent.persistent_runtime_v2.journal import RuntimeJournal
+    from doxagent.persistent_runtime_v2.message_content import prepare_message_inputs
+
+    repo, _ = bus
+    await accept(bus, message(body=None, summary=None))
+    source = SourceMessageEnvelope.from_stream_item(repo.read_stream("MU", after_offset=0)[0])
+    at = [NOW]
+    journal = RuntimeJournal(tmp_path / "runtime.sqlite3", clock=lambda: at[0])
+    inputs = {"source": json.loads(source.model_dump_json()), "mode": "REALTIME"}
+    journal.put_task("case:1", "MU", "CASE", inputs)
+    await accept(bus, message())
+    prepare = partial(prepare_message_inputs, path=repo.path)
+    task = journal.claim("case:1", prepare_inputs=prepare)
+    assert task["inputs"]["source"]["snapshot"]["body"] == BODY.strip()
+    assert task["inputs"]["message_content_revisions"] == {source.source_message_id: 2}
+    await accept(bus, message(body=BODY.replace("15 billion", "20 billion")))
+    assert journal.get_task("case:1")["inputs"] == task["inputs"]
+    journal.fail(task, RuntimeError("retry"))
+    at[0] += timedelta(minutes=1)
+    retry = journal.claim("case:1", prepare_inputs=lambda _: pytest.fail("retry refreshed content"))
+    assert retry["inputs"] == task["inputs"]
+    assert retry["token"] == 2
+    journal.finish(retry)
+    assert journal.claim("case:1", prepare_inputs=prepare) is None
+    assert repo.latest_stream_offset("MU") == 1
+
+
+async def test_prepare_failure_does_not_claim_or_mutate_pending_task(bus, tmp_path):
+    from doxagent.persistent_runtime_v2.journal import RuntimeJournal
+    repo, _ = bus
+    journal = RuntimeJournal(tmp_path / "runtime.sqlite3", clock=lambda: NOW)
+    inputs = {"mode": "REALTIME", "source": {"body": "original"}}
+    journal.put_task("case:1", "MU", "CASE", inputs)
+    def fail(_):
+        raise LookupError("temporarily missing stream")
+    with pytest.raises(LookupError):
+        journal.claim("case:1", prepare_inputs=fail)
+    task = journal.get_task("case:1")
+    assert task["status"] == "PENDING" and task["token"] == 0
+    assert task["inputs"] == inputs
+
+
+async def test_same_transport_payload_can_refresh_body_without_republishing(bus):
+    repo, _ = bus
+    await accept(bus, message(raw_payload={"id": "stable"}))
+    updated_body = BODY.replace("15 billion", "20 billion")
+    changed = await accept(bus, message(body=updated_body, raw_payload={"id": "stable"}))
+    assert not changed.stream_item_ids
+    assert repo.get_raw(changed.raw_message_id).body == updated_body.strip()
+    assert repo.latest_stream_offset("MU") == 1
+
+
+def test_closed_roster_inputs_are_not_refreshed():
+    from doxagent.persistent_runtime_v2.message_content import prepare_message_inputs
+    inputs = {"mode": "CLOSED", "source": {"body": "frozen sweep body"}}
+    assert prepare_message_inputs(inputs, path="does-not-exist.sqlite3") is inputs
+
+
+async def test_stale_publication_worker_cannot_undo_latest_article_content(bus):
+    from doxagent.message_bus_v2.schema import RawProcessingStatus
+    repo, _ = bus
+    first = await accept(bus, message())
+    stale = repo.get_raw(first.raw_message_id)
+    stale_standard = repo.get_standard_for_raw(first.raw_message_id)
+    stale.metadata["v2_body_completion"] = {"status": "FAILED"}
+    changed_body = BODY.replace("15 billion", "20 billion")
+    changed = message(body=changed_body)
+    changed.metadata["v2_body_completion"] = {"status": "SUCCEEDED"}
+    await accept(bus, changed, trusted_enrichment=True)
+    repo.save_raw(stale.model_copy(update={"processing_status": RawProcessingStatus.PROCESSING}))
+    repo.finalize_standard(raw=stale, message=stale_standard, streaming=stale.streaming_config)
+    assert repo.get_raw(first.raw_message_id).body == changed_body.strip()
+    assert repo.get_standard_for_raw(first.raw_message_id).body == changed_body.strip()
+    assert repo.get_raw(first.raw_message_id).metadata["v2_body_completion"] == {
+        "status": "SUCCEEDED"
+    }
+    assert repo.latest_stream_offset("MU") == 1

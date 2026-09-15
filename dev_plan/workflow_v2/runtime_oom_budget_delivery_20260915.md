@@ -41,3 +41,10 @@ Projector CPU 为 1.0；其余 CPU/PID 不普遍放宽。`memswap_limit` 为 RAM
 - `daily:MU:2026-09-14` 已 RUNNING、failures=0；冻结 frame 包含 490 个有效候选，原 run_id/receipt 保留，O2 工作正在执行；O3 须待 O2 receipt 后按既有顺序启动，尚不能宣称本轮维护最终完成。
 - Web `/` 与 API `/readyz` HTTP 200；Gateway 登录态只读 probe=true。Finnhub/Benzinga/IBKR/Yahoo 重启后自然轮询 succeeded。Reuters 的既有 HTTP 401 仍存在，未将其误报为本次修复恢复。
 - 最终部署前必要组合测试 12 项通过；峰值计时补丁单文件 5 项通过。未执行订单测试、swapoff、历史删除或全面性能回归。
+
+## 后续 Projector 饥饿修复
+
+- 维护持续运行后，Projector 因完整工作预约与强制峰值叠加被长期拒绝，前端读库停在旧 Running/NOT_PROCESSED；业务库五条 Case 已完成。这是资源准入的遗漏，不是新的 Scheduler OOM。
+- 取消 Projector 每批强制申请峰值。固定基础投影 128 MiB 在其他工作与峰值借用审批前预留；投影消费该已预留额度，不再依赖长期维护完整预约，也不被等候中的高内存任务饿死。只允许一个基础投影批次。
+- 基础额度不是绕过安全边界：实际应用使用+128 MiB 不得超出 5120 MiB，主机 MemAvailable 仍须保留 1024+128 MiB，无 PSI/swap 压力且 metrics 新鲜才执行；高内存历史工作不增加并发，Projector 实测超过默认 75% 时仍走有界峰值审批。
+- 用户明确要求整体同步全部本地未提交修改，包含其他对话 O3 skill、Yahoo transport 与同稿仅发布一次；相关行为取舍仍见对应交付文档。未清理历史或触发订单测试。

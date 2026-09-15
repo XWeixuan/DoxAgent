@@ -16,6 +16,7 @@ from uuid import uuid4
 
 MIB = 1024**2
 NORMAL, HARD, SAFETY = 5120 * MIB, 5632 * MIB, 1024 * MIB
+PROJECTION_RESERVE = 128 * MIB
 QUOTAS = {
     "v2-scheduler": (1024, 2048, 512),
     "v2-delivery": (256, 384, 128),
@@ -137,13 +138,20 @@ class Guardian:
             "at": time.time(),
         }
 
-    def fits(self, extra, *, emergency=False):
+    def fits(self, extra, *, emergency=False, basic_projection=False):
         m = self.metrics
-        reserved = sum(w["bytes"] for w in self.work.values())
+        # Fund one basic projection batch before admitting other work/peak borrowing.
+        # Its execution consumes this earmark, not another reservation dependent on
+        # long-running maintenance's still-outstanding work estimates.
+        reserved = PROJECTION_RESERVE + sum(
+            w["bytes"] for w in self.work.values() if w["service"] != "v2-projector"
+        )
         borrowed = sum(
             max(0, self.containers.get(s, {}).get("limit", d * MIB) - d * MIB)
             for s, (d, _, _) in QUOTAS.items()
         )
+        if basic_projection:
+            reserved, borrowed, extra = PROJECTION_RESERVE, 0, 0
         return bool(
             m
             and time.time() - m["at"] < 12
@@ -216,16 +224,19 @@ class Guardian:
                 "codex_maintenance",
                 "codex_initialization",
             }
+            basic_projection = service == "v2-projector" and kind == "projection"
+            if basic_projection and any(w["service"] == service for w in self.work.values()):
+                return {"ok": False, "reason": "PROJECTION_BATCH_BUSY"}
             conflict = heavy and any(w["heavy"] and w["batch"] != batch for w in self.work.values())
-            higher = any(p < priority and until > now for p, until in self.waiting.values())
-            if conflict or higher or not self.fits(amount * MIB):
+            higher = not basic_projection and any(
+                p < priority and until > now for p, until in self.waiting.values()
+            )
+            if conflict or higher or not self.fits(amount * MIB, basic_projection=basic_projection):
                 self.waiting[(service, identity)] = (priority, now + 10)
                 return {"ok": False, "reason": "RESOURCE_BUDGET_WAIT"}
-            # Obtain a bounded peak before beginning metadata framing or a projection batch.
-            if service in {"v2-scheduler", "v2-projector"} and kind in {
-                "maintenance",
-                "projection",
-            }:
+            # Metadata framing requests a peak; basic projection runs at its default.
+            # Projector can still borrow a bounded peak on measured >75% usage.
+            if service == "v2-scheduler" and kind == "maintenance":
                 if not self.peak(service):
                     self.waiting[(service, identity)] = (priority, now + 10)
                     return {"ok": False, "reason": "PEAK_BUDGET_WAIT"}
