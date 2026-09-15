@@ -22,6 +22,23 @@ def instant(at: datetime) -> str:
     return at.astimezone(UTC).isoformat().replace("+00:00", "Z")
 
 
+def migrate_case_evidence_indexes(db) -> None:
+    """Add display lookup indexes to an existing release without a full migration."""
+    for name, fields, kind in (
+        ("case_fact_evidence", "parent,json_extract(payload,'$.fact.fact_id'),valid_from", "fact"),
+        ("case_policy_evidence", "parent,json_extract(payload,'$.summary.policy_id'),valid_from", "policy_detail"),
+        ("case_provisional_evidence", "json_extract(payload,'$.provisional_event_id'),"
+         "json_extract(payload,'$.trading_date'),json_extract(payload,'$.snapshot_version'),valid_from",
+         "native:runtime_v2_candidates"),
+    ):
+        if not db.execute("SELECT 1 FROM sqlite_master WHERE type='index' AND name=?", (name,)).fetchone():
+            # SQLite sorts on disk with a small page cache; no Python payload loading.
+            db.execute("PRAGMA cache_size=-8192")
+            db.execute("PRAGMA temp_store=FILE")
+            db.execute("CREATE INDEX IF NOT EXISTS " + name + " ON objects(kind,ticker," +
+                       fields + ") WHERE kind='" + kind + "'")
+
+
 class ReadStore:
     VERSION = 3
 
@@ -88,16 +105,6 @@ class ReadStore:
                 CREATE INDEX IF NOT EXISTS objects_page ON objects(kind,ticker,sort_key,id);
                 CREATE INDEX IF NOT EXISTS objects_parent
                     ON objects(kind,ticker,parent,sort_key,id);
-                CREATE INDEX IF NOT EXISTS case_fact_evidence ON objects(
-                    kind,ticker,parent,json_extract(payload,'$.fact.fact_id'),valid_from)
-                    WHERE kind='fact';
-                CREATE INDEX IF NOT EXISTS case_policy_evidence ON objects(
-                    kind,ticker,parent,json_extract(payload,'$.summary.policy_id'),valid_from)
-                    WHERE kind='policy_detail';
-                CREATE INDEX IF NOT EXISTS case_provisional_evidence ON objects(
-                    kind,ticker,json_extract(payload,'$.provisional_event_id'),
-                    json_extract(payload,'$.trading_date'),json_extract(payload,'$.snapshot_version'),valid_from)
-                    WHERE kind='native:runtime_v2_candidates';
                 CREATE INDEX IF NOT EXISTS objects_day ON objects(kind,ticker,day,valid_from);
                 CREATE INDEX IF NOT EXISTS objects_day_page ON objects(kind,ticker,day,sort_key,id);
                 CREATE INDEX IF NOT EXISTS objects_source_page ON objects(kind,ticker,source_id,day,sort_key,id);
@@ -189,6 +196,7 @@ class ReadStore:
                     AND id=OLD.id AND valid_from=OLD.valid_from;
                 END;
             """)
+            migrate_case_evidence_indexes(db)
             from .artifact_registry import migrate as migrate_artifacts, native_triggers
             migrate_artifacts(db)
             native_triggers(db, "objects", ["payload"], "json_array(NEW.kind,NEW.ticker,NEW.id,NEW.valid_from)")

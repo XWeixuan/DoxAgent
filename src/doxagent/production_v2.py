@@ -114,6 +114,9 @@ def migrate(*, resume_backup=None):
                     with sqlite3.connect(locations[name], timeout=10) as native:
                         native.execute("BEGIN IMMEDIATE")
                         upgrade_native_trigger_conflicts(native)
+                        if name == "read":
+                            from doxagent.v2_read.repository import migrate_case_evidence_indexes
+                            migrate_case_evidence_indexes(native)
                 print(json.dumps({"migrated": [], "schema_current": True}))
                 return
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%S%fZ")

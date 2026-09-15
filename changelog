@@ -1082,3 +1082,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-16 · O3 初始化模型分流：Trigger Calibration、Policy Compile、Final Review（含初始化恢复调用）默认使用 gpt-5.6-sol / medium，新增 DOXAGENT_CODEX_D3_INITIALIZE_MODEL 与 DOXAGENT_CODEX_D3_INITIALIZE_EFFORT 配置；O3_MAINTAIN 继续使用全局 gpt-5.6-luna / max，线程记录保存实际请求模型，不改变提示词、业务契约或其他节点。3 项模型分流/单线程发布定向测试及 Ruff 通过；额外恢复测试在未修改的 HEAD runner 下同样失败，未扩展修改其行为。RKLB 已完成 Registry 以 SQLite backup 导出预构建包，保持 2026-09-14 研究截止时间，不重跑 CDECR。
 
 2026-09-16 · Runtime Case 研判展示修复：W1/W2 分轮展示真实 R1/R2（保留R3）尝试，W2空召回明确R2未执行，未知召回不冒充空候选；展开依据追加固定快照 Event标题/实际Fact命题、provisional候选命题及分开的候选/最终Policy名称。CaseDetail取消完整原生Case/全部attempt payload加载，改精确字段点取、单Case标量聚合与有界失败摘要，事实/策略/临时候选新增局部身份索引，尝试续页固定view水位；同步TS/Markdown及双端生成API schema。9项后端、4项前端定向测试、类型/构建及1262/1559px组件级合成浏览器验证通过；不改prompt/业务编排/skill，不写生产DB、不部署。详见 runtime_case_round_evidence_delivery_20260916.md。
+
+2026-09-16 · Runtime Case 索引部署补修：生产 schema-current 快速迁移入口也安装三个缺失的局部身份索引；按名称检查幂等，SQLite 8MiB页缓存/磁盘临时排序，不加载历史payload或执行全量读库迁移/重放。原始诊断exports不提交，应用正常重建重启，Gateway宿主进程不重启。
