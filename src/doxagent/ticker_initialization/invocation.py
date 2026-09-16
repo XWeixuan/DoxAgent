@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib
+from dataclasses import asdict, is_dataclass
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
@@ -16,6 +17,8 @@ def encode(value: Any) -> Any:
         return ["enum", _name(type(value)), value.value]
     if isinstance(value, BaseModel):
         return ["model", _name(type(value)), value.model_dump(mode="json")]
+    if is_dataclass(value) and not isinstance(value, type):
+        return ["dataclass", _name(type(value)), encode(asdict(value))]
     if isinstance(value, type) and issubclass(value, BaseModel):
         return ["type", _name(value)]
     if isinstance(value, datetime):
@@ -59,6 +62,8 @@ def decode(value: Any) -> Any:
         from doxagent.codex_runtime.recovery import ingest_model
 
         return model if kind == "type" else ingest_model(model, parts[1])
+    if kind == "dataclass" and isinstance(model, type) and is_dataclass(model):
+        return model(**decode(parts[1]))
     if kind == "enum" and isinstance(model, type) and issubclass(model, Enum):
         return model(parts[1])
     raise ValueError("invalid invocation type or tag")

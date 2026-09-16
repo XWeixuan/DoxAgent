@@ -20,6 +20,7 @@ from doxagent.workflows.codex_document3.inputs import Document3InputPreparer
 from doxagent.workflows.codex_document3.orchestrator import Document3Orchestrator
 from doxagent.workflows.codex_document3.repository import InMemoryDocument3PolicyRepository
 from doxagent.workflows.codex_document3.runner import Document3AgentRunner
+from doxagent.workflows.codex_event_library.remote_runner import WavePlan
 from tests.test_codex_document3_workflow import (
     NOW,
     _O3WorkerStub,
@@ -55,6 +56,7 @@ def test_invocation_codec_preserves_tag_like_data_and_rejects_external_types():
         "node": CodexD3Node.O3_POLICY_COMPILE,
         "time": datetime.now(UTC),
         "tuple": (1, None),
+        "wave": WavePlan("o2-wave-001", ["delta-1"], 120, ["package-1"], []),
     }
     assert decode(encode(value)) == value
     with pytest.raises(ValueError):

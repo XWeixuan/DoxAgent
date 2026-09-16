@@ -1096,3 +1096,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-16 · 资源保护最终去重与公平性补修：Docker Memory limit/peak 只作为未使用上限遥测，不再作为已经分配的 RAM 参与应用与宿主准入；实际工作集、任务尚未兑现增量、1 GiB 宿主安全余量、PSI/swap 和硬上限继续生效。Worker 压力控制改用扣除 inactive_file 的工作集，避免页缓存触发 2.8 GiB 假暂停；启用资源守护器时恢复“三个 Persistent Runtime 后让出一个非 Runtime 机会”的队列轮转，防止固定排序绕过公平策略。31 项资源定向测试及 Ruff 通过。
 
 2026-09-16 · 初始化子任务资源批次归一化：Worker 对未显式携带 initialization_id 的 O2/O3/O4 等 `init-<ticker>-<uuid>-...` 子任务，从 run_id 稳定提取父初始化 ID；避免子任务完整 run_id 被误当成新批次，与自己的父初始化租约产生 HEAVY_BATCH_CONFLICT。显式 initialization_id、维护批次及旧 D1/D2 兼容路径不变。
+
+2026-09-16 · O2 WavePlan 持久调用修复：初始化子步骤 invocation codec 在限定 doxagent.* 类型白名单内支持 dataclass 的结构化递归编码与恢复，使 O2 wave 的 WavePlan 可随 workspace snapshot 冻结并在失败后精确恢复；继续拒绝外部类型与可执行导入路径，不使用 pickle，不重跑已成功 survey。
