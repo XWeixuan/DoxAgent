@@ -15,7 +15,7 @@ from pathlib import Path
 from uuid import uuid4
 
 MIB = 1024**2
-NORMAL, HARD, SAFETY = 5120 * MIB, 5632 * MIB, 1024 * MIB
+NORMAL, HARD, SAFETY = 6144 * MIB, 6656 * MIB, 1024 * MIB
 PROJECTION_RESERVE = 128 * MIB
 QUOTAS = {
     "v2-scheduler": (1024, 2048, 512),
@@ -70,17 +70,26 @@ class Guardian:
         self.swap_pressure_since = None
         self.state_path = Path("/run/doxagent-resources/leases.json")
         self.peaks = {}
+        try:
+            self.boot_id = Path("/proc/sys/kernel/random/boot_id").read_text().strip()
+        except OSError:
+            self.boot_id = "non-linux-test-boot"
         if self.state_path.is_file():
             state = json.loads(self.state_path.read_text())
-            self.work = state.get("work", {})
-            self.leases = state.get("leases", {})
-            self.peaks = state.get("peaks", {})
+            # Legacy state has no boot id and is accepted once so an in-flight
+            # deployment is not orphaned. All newly persisted state is scoped to
+            # one kernel boot; monotonic expiries must never survive a reboot.
+            if state.get("boot_id") in {None, self.boot_id}:
+                self.work = state.get("work", {})
+                self.leases = state.get("leases", {})
+                self.peaks = state.get("peaks", {})
 
     def persist(self):
         temporary = self.state_path.with_suffix(".tmp")
         temporary.write_text(
             json.dumps(
                 {
+                    "boot_id": self.boot_id,
                     "work": self.work,
                     "leases": self.leases,
                     "metrics": self.metrics,
@@ -128,8 +137,19 @@ class Guardian:
         self.containers = result
         for service, container in result.items():
             self.peaks[service] = max(self.peaks.get(service, 0), container["current"])
+        app_current = int((self.root / "memory.current").read_text())
+        app_stat = {
+            line.split()[0]: int(line.split()[1])
+            for line in (self.root / "memory.stat").read_text().splitlines()
+        }
+        inactive_file = min(app_current, app_stat.get("inactive_file", 0))
         self.metrics = {
-            "app_current": int((self.root / "memory.current").read_text()),
+            "app_current": app_current,
+            # Inactive file pages are reclaimable by the kernel under memory.high.
+            # Keep raw current for the hard guard and use working current only for
+            # normal admission.
+            "working_current": app_current - inactive_file,
+            "inactive_file": inactive_file,
             "app_swap": int((self.root / "memory.swap.current").read_text()),
             "available": info["MemAvailable"],
             "pressure": pressure,
@@ -138,21 +158,35 @@ class Guardian:
             "at": time.time(),
         }
 
-    def fits(self, extra, *, emergency=False, basic_projection=False):
+    def budget(self, extra, *, emergency=False, basic_projection=False):
         m = self.metrics
         # Fund one basic projection batch before admitting other work/peak borrowing.
         # Its execution consumes this earmark, not another reservation dependent on
         # long-running maintenance's still-outstanding work estimates.
-        reserved = PROJECTION_RESERVE + sum(
-            w["bytes"] for w in self.work.values() if w["service"] != "v2-projector"
-        )
+        outstanding_by_service = {}
+        for service in {w["service"] for w in self.work.values()}:
+            if service == "v2-projector":
+                continue
+            entries = [w for w in self.work.values() if w["service"] == service]
+            total = sum(w["bytes"] for w in entries)
+            current = self.containers.get(service, {}).get("current", 0)
+            baselines = [w.get("baseline_current") for w in entries]
+            baseline = min((b for b in baselines if isinstance(b, int)), default=current)
+            observed_growth = max(0, current - baseline)
+            outstanding_by_service[service] = max(0, total - observed_growth)
+        reserved = PROJECTION_RESERVE + sum(outstanding_by_service.values())
+        now = time.monotonic()
         borrowed_by_service = {
             service: max(
                 0,
                 self.containers.get(service, {}).get("limit", default * MIB)
-                - default * MIB,
+                - max(
+                    default * MIB,
+                    self.containers.get(service, {}).get("current", default * MIB),
+                ),
             )
             for service, (default, _, _) in QUOTAS.items()
+            if self.leases.get(service, 0) > now
         }
         borrowed = sum(borrowed_by_service.values())
         # The fixed projection reserve and the projector's borrowed peak both fund
@@ -162,14 +196,44 @@ class Guardian:
         borrowed -= min(PROJECTION_RESERVE, borrowed_by_service.get("v2-projector", 0))
         if basic_projection:
             reserved, borrowed, extra = PROJECTION_RESERVE, 0, 0
-        return bool(
-            m
-            and time.time() - m["at"] < 12
-            and not m["swapping"]
-            and m["pressure"] < 1
-            and m["app_current"] + reserved + borrowed + extra <= (HARD if emergency else NORMAL)
-            and m["available"] >= SAFETY + reserved + borrowed + extra
-        )
+        working = m.get("working_current", m.get("app_current", 0))
+        projected = working + reserved + borrowed + extra
+        host_required = SAFETY + reserved + borrowed + extra
+        reason = None
+        if not m or time.time() - m.get("at", 0) >= 12:
+            reason = "RESOURCE_METRICS_STALE"
+        elif m.get("swapping"):
+            reason = "SWAP_PRESSURE_WAIT"
+        elif m.get("pressure", 0) >= 1:
+            reason = "PSI_PRESSURE_WAIT"
+        elif m.get("app_current", 0) >= HARD:
+            reason = "CGROUP_HARD_GUARD_WAIT"
+        elif projected > (HARD if emergency else NORMAL):
+            reason = "MEMORY_HEADROOM_WAIT"
+        elif m.get("available", 0) < host_required:
+            reason = "HOST_SAFETY_WAIT"
+        return {
+            "ok": reason is None,
+            "reason": reason,
+            "raw_current_mib": m.get("app_current", 0) // MIB,
+            "working_current_mib": working // MIB,
+            "inactive_file_mib": m.get("inactive_file", 0) // MIB,
+            "outstanding_mib": reserved // MIB,
+            "borrowed_mib": borrowed // MIB,
+            "candidate_mib": extra // MIB,
+            "projected_mib": projected // MIB,
+            "limit_mib": (HARD if emergency else NORMAL) // MIB,
+            "host_available_mib": m.get("available", 0) // MIB,
+            "host_required_mib": host_required // MIB,
+            "outstanding_by_service_mib": {
+                service: value // MIB for service, value in outstanding_by_service.items()
+            },
+        }
+
+    def fits(self, extra, *, emergency=False, basic_projection=False):
+        return self.budget(
+            extra, emergency=emergency, basic_projection=basic_projection
+        )["ok"]
 
     def resize(self, service, amount):
         default, peak, swap = QUOTAS[service]
@@ -243,7 +307,11 @@ class Guardian:
             )
             if conflict or higher or not self.fits(amount * MIB, basic_projection=basic_projection):
                 self.waiting[(service, identity)] = (priority, now + 10)
-                return {"ok": False, "reason": "RESOURCE_BUDGET_WAIT"}
+                if conflict:
+                    return {"ok": False, "reason": "HEAVY_BATCH_CONFLICT"}
+                if higher:
+                    return {"ok": False, "reason": "PRIORITY_WAIT"}
+                return self.budget(amount * MIB, basic_projection=basic_projection)
             # Metadata framing requests a peak; basic projection runs at its default.
             # Projector can still borrow a bounded peak on measured >75% usage.
             if service == "v2-scheduler" and kind == "maintenance":
@@ -257,6 +325,7 @@ class Guardian:
                 "batch": batch,
                 "heavy": heavy,
                 "bytes": amount * MIB,
+                "baseline_current": self.containers.get(service, {}).get("current", 0),
                 "expires": now + 120,
             }
             self.waiting.pop((service, identity), None)
@@ -279,6 +348,10 @@ class Guardian:
         now = time.monotonic()
         # Expired reservations are not forcibly interrupted. Current RAM remains in the budget.
         self.work = {k: w for k, w in self.work.items() if w["expires"] > now}
+        for work in self.work.values():
+            work.setdefault(
+                "baseline_current", self.containers.get(work["service"], {}).get("current", 0)
+            )
         self.waiting = {k: v for k, v in self.waiting.items() if v[1] > now}
         for service, (default, _peak, _) in QUOTAS.items():
             c = self.containers.get(service)
@@ -298,11 +371,16 @@ class Guardian:
             # Expired grants await safe reclaim; they do not become perpetual renewed grants.
             if self.leases.get(service, now + 1) <= now and c["current"] >= default * MIB:
                 logging.info("expired quota service=%s reclaim=deferred_busy", service)
+        budget = self.budget(0)
         logging.info(
-            "budget app_mib=%d available_mib=%d swap_mib=%d reservations=%d",
+            "budget app_mib=%d working_mib=%d available_mib=%d swap_mib=%d "
+            "outstanding_mib=%d borrowed_mib=%d reservations=%d",
             self.metrics["app_current"] // MIB,
+            self.metrics["working_current"] // MIB,
             self.metrics["available"] // MIB,
             self.metrics["app_swap"] // MIB,
+            budget["outstanding_mib"],
+            budget["borrowed_mib"],
             len(self.work),
         )
         self.persist()

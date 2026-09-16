@@ -47,4 +47,11 @@ Projector CPU 为 1.0；其余 CPU/PID 不普遍放宽。`memswap_limit` 为 RAM
 - 维护持续运行后，Projector 因完整工作预约与强制峰值叠加被长期拒绝，前端读库停在旧 Running/NOT_PROCESSED；业务库五条 Case 已完成。这是资源准入的遗漏，不是新的 Scheduler OOM。
 - 取消 Projector 每批强制申请峰值。固定基础投影 128 MiB 在其他工作与峰值借用审批前预留；投影消费该已预留额度，不再依赖长期维护完整预约，也不被等候中的高内存任务饿死。只允许一个基础投影批次。
 - 基础额度不是绕过安全边界：实际应用使用+128 MiB 不得超出 5120 MiB，主机 MemAvailable 仍须保留 1024+128 MiB，无 PSI/swap 压力且 metrics 新鲜才执行；高内存历史工作不增加并发，Projector 实测超过默认 75% 时仍走有界峰值审批。
+
+## 2026-09-16 资源账本修订
+
+- 应用 slice 调整为 MemoryHigh=6144 MiB、MemoryMax=6656 MiB、MemorySwapMax=512 MiB；仍保留至少 1024 MiB 宿主机安全余量。
+- `memory.current` 不再与完整活动预留直接相加。正常准入使用扣除 `inactive_file` 的有效工作集；原始 current 继续用于硬边界。每个服务记录准入内存基线，实际增长只抵扣一次对应服务预算，准入计算剩余预留而非原始预留。
+- Docker peak limit 不是实际占用；只有有效 peak lease 的尚未使用额度进入预算。Projector 固定预留和 peak 只保留较大者。
+- 拒绝原因细分为 metrics stale、内存余量、宿主安全余量、PSI、swap、重批次冲突和优先级等待，并携带计算明细。持久 lease 绑定 kernel boot ID，避免 monotonic 到期值跨重启污染。
 - 用户明确要求整体同步全部本地未提交修改，包含其他对话 O3 skill、Yahoo transport 与同稿仅发布一次；相关行为取舍仍见对应交付文档。未清理历史或触发订单测试。

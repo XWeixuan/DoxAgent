@@ -32,8 +32,12 @@ def request(command: str, **values):
 
 
 def acquire(kind: str, identity: str, *, batch: str | None = None, slots: int = 1):
-    result = request("acquire", kind=kind, identity=identity, batch=batch, slots=slots)
+    result = acquire_admission(kind, identity, batch=batch, slots=slots)
     return result.get("token", "disabled") if result.get("ok") else None
+
+
+def acquire_admission(kind: str, identity: str, *, batch: str | None = None, slots: int = 1):
+    return request("acquire", kind=kind, identity=identity, batch=batch, slots=slots)
 
 
 def release(token):

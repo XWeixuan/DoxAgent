@@ -235,7 +235,7 @@ def test_basic_projection_earmark_survives_resident_maintenance(monkeypatch):
 
 def test_other_work_cannot_spend_projection_earmark(monkeypatch):
     g, m = guardian(monkeypatch)
-    g.metrics.update(app_current=4000 * m.MIB, available=5000 * m.MIB)
+    g.metrics.update(app_current=5000 * m.MIB, available=5000 * m.MIB)
     assert not g.handle(
         "codex-worker",
         {
@@ -273,3 +273,46 @@ def test_projector_peak_and_projection_earmark_are_not_double_reserved(monkeypat
         },
     )
     assert result["ok"]
+
+
+def test_observed_service_growth_reduces_only_its_remaining_reservation(monkeypatch):
+    g, m = guardian(monkeypatch)
+    g.metrics.update(app_current=4200 * m.MIB, working_current=3000 * m.MIB,
+                     inactive_file=1200 * m.MIB, available=3500 * m.MIB)
+    g.containers["v2-initialization"] = {
+        "limit": 640 * m.MIB,
+        "current": 300 * m.MIB,
+    }
+    g.work = {
+        "parent": {
+            "service": "v2-initialization",
+            "identity": "parent",
+            "bytes": 512 * m.MIB,
+            "baseline_current": 200 * m.MIB,
+            "heavy": True,
+            "batch": "initialization:RKLB",
+        }
+    }
+    budget = g.budget(1024 * m.MIB)
+    assert budget["raw_current_mib"] == 4200
+    assert budget["working_current_mib"] == 3000
+    assert budget["outstanding_by_service_mib"]["v2-initialization"] == 412
+    assert budget["projected_mib"] == 4564
+    assert budget["ok"]
+
+
+def test_peak_limit_is_not_usage_and_only_active_unused_headroom_is_reserved(monkeypatch):
+    g, m = guardian(monkeypatch)
+    g.containers["v2-projector"].update(limit=640 * m.MIB, current=500 * m.MIB)
+    assert g.budget(0)["borrowed_mib"] == 0
+    g.leases["v2-projector"] = time.monotonic() + 60
+    # 140 MiB remains below the peak; 128 MiB overlaps the fixed projection reserve.
+    assert g.budget(0)["borrowed_mib"] == 12
+
+
+def test_application_slice_keeps_one_gib_host_margin():
+    root = Path(__file__).resolve().parents[1]
+    text = (root / "deploy/doxagent-app.slice").read_text()
+    assert "MemoryHigh=6144M" in text
+    assert "MemoryMax=6656M" in text
+    assert "MemorySwapMax=512M" in text

@@ -292,7 +292,7 @@ class WorkerJobManager:
                 self._probe_active
             ) > self.capacity or identity in {key for key, _ in self._active.values()}:
                 continue
-            from doxagent.resource_budget import acquire
+            from doxagent.resource_budget import acquire_admission
 
             maintenance = request.run_id.startswith("runtime-maintain-")
             runtime = request.research_lane.value == "persistent_runtime"
@@ -301,12 +301,19 @@ class WorkerJobManager:
             batch = ("maintenance:" + request.ticker if maintenance else "initialization:" +
                      (request.initialization_id or
                       request.run_id.split("-d1")[0].split("-d2")[0]))
-            token = acquire(kind, job_id, batch=batch, slots=weight)
+            admission = acquire_admission(kind, job_id, batch=batch, slots=weight)
+            token = admission.get("token", "disabled") if admission.get("ok") else None
             if token is None:
                 self._budget_wait = True
-                if job.wait_reason != "RESOURCE_BUDGET_WAIT":
+                reason = str(admission.get("reason") or "RESOURCE_BUDGET_WAIT")
+                if job.wait_reason != reason or job.resource_receipt.get("admission") != admission:
                     self._jobs[job_id] = job.model_copy(
-                        update={"wait_reason": "RESOURCE_BUDGET_WAIT"})
+                        update={
+                            "wait_reason": reason,
+                            "resource_receipt": {**job.resource_receipt, "admission": admission},
+                        }
+                    )
+                    self.store.save(self._jobs[job_id])
                 continue
             self._resource_tokens[job_id] = token
             self._active[job_id] = (identity, weight)

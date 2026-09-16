@@ -41,3 +41,10 @@ No confirmed issue at baseline. Append evidence, root cause, repair, verificatio
 - Temporarily stopped `doxagent-v2-v2-content-enrichment-1`, which is not a dependency of the active D1 research nodes. This reduced application-cgroup usage enough for guarded admission without changing the 5 GiB ceiling, estimates, or safety reserve.
 - D1 `c1` obtained a 1024 MiB Codex reservation and entered genuine `RUNNING` at `2026-09-16T04:22:14.146475Z`, with thread and turn IDs present. D1 `c3` remains safely queued and should start after `c1` releases its reservation.
 - Restore content enrichment after the constrained D1 Codex work no longer needs the slot, then verify its worker health. Do not run both high-memory tasks concurrently by weakening admission rules.
+
+### RKLB-002 — resource reservations counted as consumption
+
+- Root cause replay: with application cgroup current near 3261 MiB and host available near 4089 MiB, the guardian added a 512 MiB parent reservation, 1024 MiB Codex candidate, 128 MiB projection earmark, and 256 MiB projector peak-limit headroom. The resulting 5181 MiB estimate exceeded the former 5120 MiB normal gate even though the host had ample available memory.
+- The first containment (`5a50a189`) removed only the overlapping projection earmark/peak component and allowed D1 `c3` to start with content enrichment restored. It did not fully correct the reservation model.
+- Full repair separates raw cgroup current, reclaimable inactive-file cache, effective working current, per-service observed growth, remaining work reservations, live unused peak headroom, and candidate incremental demand. Docker limits are no longer treated as consumption. Reservation state is bound to kernel boot ID and denials expose their actual gate and budget components.
+- Application slice target becomes MemoryHigh 6144 MiB / MemoryMax 6656 MiB / MemorySwapMax 512 MiB, retaining at least 1024 MiB host safety headroom plus PSI and swap-pressure gates.

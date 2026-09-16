@@ -341,12 +341,14 @@ def test_server_resource_envelope():
     services = overlay["services"]
     total = 0
     for name, service in services.items():
-        assert service["mem_limit"] == service["memswap_limit"]
+        assert int(service["memswap_limit"].removesuffix("m")) >= int(
+            service["mem_limit"].removesuffix("m")
+        )
         assert 0 < service["cpus"] <= 2.75
         assert 0 < service["pids_limit"] <= 512
         if name != "v2-migrate":
             total += int(service["mem_limit"].removesuffix("m"))
-    assert total == 6464
+    assert total == 9536
     assert services["codex-worker"]["environment"]["DOXAGENT_CODEX_WORKER_CAPACITY"] == "2"
     assert services["v2-initialization"]["environment"]["DOXAGENT_CODEX_D2_MAX_CONCURRENCY"] == "2"
 

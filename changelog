@@ -1088,3 +1088,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-16 · W2 R1 召回提示词更新：采用用户调整的精简Policy候选召回规则，区分合理触发可能与最终HIT证明，不强制召回、不改schema/编排/skill。生产近两天655条成功R1逐Case有界核对，44条精简Policy均与冻结投影及发送reference fingerprint一致；非空召回进入R2、空召回终止及bundle旧版本保留共3项定向测试通过。仅替换活动execution bundle的w2_r1，其他prompt/资产及既有Case冻结版本保持不变。
 
 2026-09-16 · 资源守护器假性紧张修复：投影器固定 128 MiB 基础预留与其动态峰值借额存在同一用途的重叠，改为保留两者较大值而非叠加；继续计入真实应用占用、其他活跃任务预留、宿主可用内存、PSI/swap 与 1 GiB 安全余量。新增 RKLB 实际 3.2–3.4 GiB 应用占用场景回归，避免空闲峰值额度把安全 Codex 初始化误判为资源不足。
+
+2026-09-16 · 资源准入账本整体修复：应用 slice 提升为 MemoryHigh 6 GiB / MemoryMax 6.5 GiB，保留 1 GiB 宿主安全余量和 512 MiB swap 上限；区分原始 cgroup 占用、扣除 inactive_file 的工作集、活动任务剩余预留及候选增量。任务按服务准入基线递减剩余预留，峰值 limit 仅在有效 lease 下计算尚未使用的借额，投影预留不重复；持久状态绑定 boot ID。资源拒绝细分真实内存、宿主余量、PSI、swap、批次冲突和优先级，并写入 Worker receipt，避免把预留额度伪装成实际占用。
