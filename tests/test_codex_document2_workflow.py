@@ -694,7 +694,11 @@ async def test_full_document2_workflow_resumes_d1_and_publishes_with_unresolved_
     )
 
     bundle = await orchestrator.run(
-        Document2RunRequest(run_id="document2-run-1", source_global_run_id=source_run_id)
+        Document2RunRequest(
+            run_id="document2-run-1",
+            source_global_run_id=source_run_id,
+            initialization_id="init-nvda-0123456789abcdef0123456789abcdef",
+        )
     )
 
     assert bundle.status == "published"
@@ -708,6 +712,9 @@ async def test_full_document2_workflow_resumes_d1_and_publishes_with_unresolved_
     # Fresh attempt-local MCP capabilities are required; provenance stays in context,
     # not in a resident SDK thread carrying an older attempt's tool capability.
     assert {item.thread_id for item in review_requests} == {None}
+    assert {
+        item.initialization_id for item in worker.requests
+    } == {"init-nvda-0123456789abcdef0123456789abcdef"}
     synthesis = next(item for item in worker.requests if item.node is CodexD2Node.O0_SYNTHESIS)
     synthesis_context_file = await workspace.read_text(
         synthesis.run_id,

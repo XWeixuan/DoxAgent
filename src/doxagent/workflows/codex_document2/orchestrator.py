@@ -532,6 +532,7 @@ class CodexDocument2Orchestrator:
                 skill_asset="skills/shell-synthesis.md",
                 thread_id=checkpoint.o0_thread_ids.get("synthesis") or None,
                 artifact_key="o0/synthesis",
+                initialization_id=request.initialization_id,
             )
             provisional = cast(ShellSynthesisResult, synthesis.output)
             synthesis_ref = synthesis.artifact
@@ -628,6 +629,7 @@ class CodexDocument2Orchestrator:
             skill_asset="skills/shell-finalization.md",
             thread_id=checkpoint.o0_thread_ids.get("synthesis") or None,
             artifact_key="o0/finalization",
+            initialization_id=request.initialization_id,
         )
         finalized = cast(ShellFinalizationResult, finalization.output)
         checkpoint.o0_thread_ids["synthesis"] = finalization.thread_id or ""
@@ -682,6 +684,7 @@ class CodexDocument2Orchestrator:
             skill_asset="skills/candidate-discovery.md",
             thread_id=checkpoint.o0_thread_ids.get(f"candidate:{key}") or None,
             artifact_key=f"o0/candidates/{key}",
+            initialization_id=request.initialization_id,
         )
         return result
 
@@ -718,6 +721,7 @@ class CodexDocument2Orchestrator:
             thread_id=original.thread_id if original else None,
             artifact_key=f"o0/reviews/{report_key}",
             fresh_on_retry=False,
+            initialization_id=request.initialization_id,
         )
 
     async def _research_shell(
@@ -799,6 +803,7 @@ class CodexDocument2Orchestrator:
                         thread_id=state.thread_id,
                         allow_subagents=False,
                         artifact_key=f"shells/{key}/{stage.value.lower()}",
+                        initialization_id=request.initialization_id,
                     )
                     shell = cast(ExpectationShell, turn.output)
                     state.thread_id = turn.thread_id
@@ -886,6 +891,7 @@ class CodexDocument2Orchestrator:
         allow_subagents: bool = False,
         artifact_key: str,
         fresh_on_retry: bool = True,
+        initialization_id: str | None = None,
     ) -> Document2TurnResult:
         previous_failure: str | None = None
         active_thread = thread_id
@@ -906,6 +912,7 @@ class CodexDocument2Orchestrator:
                     allow_subagents=allow_subagents,
                     previous_failure=previous_failure,
                     artifact_key=artifact_key,
+                    initialization_id=initialization_id,
                 )
             except Document2ExecutionError as exc:
                 previous_failure = _bounded(str(exc))

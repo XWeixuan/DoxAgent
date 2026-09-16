@@ -353,6 +353,7 @@ class ResearchInitializationAdapter:
                 ticker=context.run.ticker,
                 source_global_run_id=context.dependency("d1").artifacts["document1"]["run_id"],
                 as_of=context.run.research_cutoff_at,
+                initialization_id=context.run.initialization_id,
                 reuse_published_partial=True,
             )
         )

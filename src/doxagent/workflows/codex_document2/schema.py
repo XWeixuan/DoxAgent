@@ -379,6 +379,7 @@ class Document2RunRequest(ContractModel):
     source_global_run_id: str
     ticker: str | None = None
     as_of: datetime | None = None
+    initialization_id: str | None = None
     force_new: bool = False
     reuse_published_partial: bool = False
 

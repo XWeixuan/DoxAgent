@@ -1098,3 +1098,11 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-16 · 初始化子任务资源批次归一化：Worker 对未显式携带 initialization_id 的 O2/O3/O4 等 `init-<ticker>-<uuid>-...` 子任务，从 run_id 稳定提取父初始化 ID；避免子任务完整 run_id 被误当成新批次，与自己的父初始化租约产生 HEAVY_BATCH_CONFLICT。显式 initialization_id、维护批次及旧 D1/D2 兼容路径不变。
 
 2026-09-16 · O2 WavePlan 持久调用修复：初始化子步骤 invocation codec 在限定 doxagent.* 类型白名单内支持 dataclass 的结构化递归编码与恢复，使 O2 wave 的 WavePlan 可随 workspace snapshot 冻结并在失败后精确恢复；继续拒绝外部类型与可执行导入路径，不使用 pickle，不重跑已成功 survey。
+
+2026-09-16 · 修订 4C16G 资源安全与弹性执行方案：删除固定 slot、Realtime 永久保留容量、weighted capacity 和全局 Execution Pool Manager，收敛为现有 durable store 上的 realtime-first/background-aging 弹性启动、局部 Browser/CDECR 物理约束及 NORMAL/PRESSURE/CRITICAL 三态异常保护；顶层边界采用 MemoryHigh 14 GiB / MemoryMax 15 GiB / SwapMax 1 GiB，目标支持 15–25 ticker 和健康状态 10–20+ I/O/LLM execution。
+
+2026-09-16 · 4C16G 资源架构本地落地：删除旧 Resource Guardian socket、预测式内存预约、Heavy Batch Mutex、父 Initialization/Maintenance/Projector 资源租约、Worker 固定 capacity/slot weight 与 W3 ticker 并发 Gate；Codex Worker 改为 durable realtime/background 队列、3 个一波的冷启动 ramp、同 thread 排他、后台 aging、过期 Safety 快照 fail-open，并允许健康状态 active execution 持续超过旧 6 上限。新增真实 cgroup/MemAvailable/PSI/swap/OOM 三态 Safety Controller，PRESSURE 仅暂停新后台 heavy launch，CRITICAL 每轮只回收一个实际 RSS 最大的可恢复后台 capsule；CDECR 与正文 Browser 仅在真实压力期暂停新后台启动。部署边界更新为顶层 14G/15G/1G 与按服务 4C16G 故障隔离上限，移除硬 CPU quota；Initialization 编排并发提升至 16，Browser page 局部并发起步 4，CDECR 仅实际子进程阶段串行。变更仅在本地，未提交、push、部署或操作远端。
+
+2026-09-16 · Persistent Runtime 前置路由恢复 09-02 冻结矩阵：任一 W1/W2 low Case 统一进入 W3；正常置信度下 NEW+Policy 直达 Trade、NEW+无 Policy 进入 W3、OLD 归档。修复 09-07 旧 §45 规则回退造成的 5 个唯一路由冲突，同步更正旧方案矩阵及一个重试测试中的失效成功状态断言；不修改 W3 结果路由、资源编排或执行池逻辑。
+
+2026-09-16 · D2 初始化资源批次身份补修：将可选 `initialization_id` 从 initialization-origin `Document2RunRequest` 逐层传入 O0/O1/Domain Review 的 Worker 请求；避免安全的匿名 `d2ws-*` workspace run ID 被旧资源守护器当作新 heavy batch，造成 RKLB D2 子任务 `HEAVY_BATCH_CONFLICT`。独立 Document2 保持无父身份，真实跨初始化隔离不变。Document2 定向回归 24 passed，Ruff 通过。

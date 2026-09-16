@@ -105,6 +105,7 @@ class Document2TurnRunner:
         allow_subagents: bool = False,
         previous_failure: str | None = None,
         artifact_key: str | None = None,
+        initialization_id: str | None = None,
     ) -> Document2TurnResult:
         attempt_number = self._next_attempt_number(persistence_run_id, node)
         attempt_id = attempt_identity(self._attempt_id(node, attempt_number))
@@ -162,6 +163,7 @@ class Document2TurnRunner:
                 timeout_seconds=self._timeout,
                 allow_subagents=allow_subagents,
                 max_subagents=self._max_subagents if allow_subagents else 0,
+                initialization_id=initialization_id,
             )
             execution_error = None
             try:
