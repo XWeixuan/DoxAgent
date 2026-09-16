@@ -23,11 +23,16 @@ from doxagent.monitoring.media_enrichment import (
 DEADLINE: ContextVar[float | None] = ContextVar("body_completion_deadline", default=None)
 
 
-def browser_session_factory() -> Any:
+def browser_session_factory(proxy_url: str | None = None) -> Any:
     from curl_cffi.requests import AsyncSession
 
     # Let curl_cffi keep the browser UA/client hints aligned with its TLS profile.
-    return lambda: AsyncSession(impersonate="chrome", timeout=12)
+    def factory() -> Any:
+        if proxy_url:
+            return AsyncSession(impersonate="chrome", timeout=12, proxy=proxy_url)
+        return AsyncSession(impersonate="chrome", timeout=12)
+
+    return factory
 
 
 def remaining(cap: float = 12) -> float:

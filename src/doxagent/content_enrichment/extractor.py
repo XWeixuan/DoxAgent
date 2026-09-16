@@ -37,11 +37,12 @@ class SharedContentExtractor:
         authenticated_hosts: set[str] | None = None,
         disabled_hosts: set[str] | None = None,
         trusted_proxy_dns: bool = False,
+        proxy_url: str | None = None,
     ) -> None:
         self._semaphore = asyncio.Semaphore(max(1, min(8, concurrency)))
         self._controller = DomainFetchController()
         self._session_factory = session_factory or (
-            browser_session_factory() if pipeline_enabled and extractor is None
+            browser_session_factory(proxy_url) if pipeline_enabled and extractor is None
             else _default_session_factory()
         )
         self._extractor = extractor or _default_extractor()
@@ -61,6 +62,8 @@ class SharedContentExtractor:
                 identity_dir=identity_dir,
                 authenticated_hosts=authenticated_hosts,
                 trusted_proxy_dns=trusted_proxy_dns,
+                pause_on_pressure=True,
+                proxy_url=proxy_url,
             )
             if browser_enabled
             else None

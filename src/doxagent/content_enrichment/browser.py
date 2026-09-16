@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import re
 from datetime import UTC, datetime
 from pathlib import Path
@@ -13,6 +14,7 @@ from urllib.parse import urlparse
 from doxagent.content_enrichment.identity import recover_seeking_alpha
 from doxagent.content_enrichment.quality import CHALLENGE, choose_candidate, inspect_html
 from doxagent.content_enrichment.transport import Observation, public_url, remaining, retry_after
+from doxagent.resource_safety import SafetyLevel, SafetyStateReader
 
 
 class PublisherBrowser:
@@ -21,11 +23,13 @@ class PublisherBrowser:
         *,
         identity_dir: Path | None = None,
         authenticated_hosts: set[str] | None = None,
-        max_pages: int = 2,
+        max_pages: int = 4,
         headless: bool = True,
         channel: str | None = None,
         cdp_url: str | None = None,
         trusted_proxy_dns: bool = False,
+        pause_on_pressure: bool = False,
+        proxy_url: str | None = None,
     ) -> None:
         self.identity_dir = identity_dir
         self.authenticated_hosts = authenticated_hosts or set()
@@ -33,9 +37,14 @@ class PublisherBrowser:
         self.channel = channel
         self.cdp_url = cdp_url
         self.trusted_proxy_dns = trusted_proxy_dns
+        self.proxy_url = proxy_url
+        configured_safety = os.getenv("DOXAGENT_SAFETY_STATE_PATH")
+        self._safety = SafetyStateReader(Path(configured_safety) if configured_safety else None)
+        self._pause_on_pressure = pause_on_pressure
         self._slots = asyncio.Semaphore(max_pages)
         self._locks: dict[str, asyncio.Lock] = {}
         self._contexts: dict[str, Any] = {}
+        self._owned_contexts: list[Any] = []
         self._playwright: Any = None
         self._browser: Any = None
         self._start_lock = asyncio.Lock()
@@ -58,20 +67,35 @@ class PublisherBrowser:
                     self._browser = await self._playwright.chromium.connect_over_cdp(self.cdp_url)
                 if not self._browser.contexts:
                     raise RuntimeError("CDP browser has no persistent context")
-                context = self._browser.contexts[0]
+                if host in self.authenticated_hosts or not self.proxy_url:
+                    context = self._browser.contexts[0]
+                else:
+                    context = await self._browser.new_context(
+                        accept_downloads=False, proxy={"server": self.proxy_url}
+                    )
+                    self._owned_contexts.append(context)
             elif host in self.authenticated_hosts and self.identity_dir:
                 directory = self.identity_dir / host
                 directory.mkdir(parents=True, exist_ok=True, mode=0o700)
+                launch_options: dict[str, Any] = {}
+                if self.proxy_url:
+                    launch_options["proxy"] = {"server": self.proxy_url}
                 context = await self._playwright.chromium.launch_persistent_context(
                     str(directory / "profile"),
                     headless=self.headless,
                     channel=self.channel,
                     accept_downloads=False,
+                    **launch_options,
                 )
             else:
                 if self._browser is None:
+                    launch_options = {}
+                    if self.proxy_url:
+                        launch_options["proxy"] = {"server": self.proxy_url}
                     self._browser = await self._playwright.chromium.launch(
-                        headless=self.headless, channel=self.channel
+                        headless=self.headless,
+                        channel=self.channel,
+                        **launch_options,
                     )
                 context = await self._browser.new_context(accept_downloads=False)
             if host in self.authenticated_hosts and self.identity_dir:
@@ -113,6 +137,8 @@ class PublisherBrowser:
         host = urlparse(url).hostname or ""
         if not host or not re.fullmatch(r"[a-zA-Z0-9.-]+", host):
             return Observation(url, "", 0, "invalid_url"), {}
+        while self._pause_on_pressure and self._safety.read().level is not SafetyLevel.NORMAL:
+            await asyncio.sleep(2)
         try:
             async with asyncio.timeout(remaining(35)):
                 await public_url(url, trusted_proxy_dns=self.trusted_proxy_dns)
@@ -300,6 +326,9 @@ class PublisherBrowser:
         return {}
 
     async def close(self) -> None:
+        for context in self._owned_contexts:
+            await context.close()
+        self._owned_contexts.clear()
         if not self.cdp_url:
             for context in self._contexts.values():
                 await context.close()

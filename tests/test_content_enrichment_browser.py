@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock
 
 import pytest
@@ -9,6 +10,34 @@ from doxagent.content_enrichment.pipeline import ArticlePipeline
 from doxagent.content_enrichment.transport import Observation, PublicTransport
 from doxagent.monitoring.media_enrichment import DomainFetchController, MediaEnrichmentRecord
 from tests.test_content_enrichment_pipeline import BODY, TITLE, Session, article, response
+
+
+async def test_cdp_public_context_uses_proxy_but_identity_keeps_operator_context(monkeypatch):
+    default_context = SimpleNamespace()
+    proxy_context = SimpleNamespace(close=AsyncMock())
+    browser_handle = SimpleNamespace(
+        contexts=[default_context],
+        is_connected=Mock(return_value=True),
+        new_context=AsyncMock(return_value=proxy_context),
+    )
+    chromium = SimpleNamespace(connect_over_cdp=AsyncMock(return_value=browser_handle))
+    playwright = SimpleNamespace(chromium=chromium, stop=AsyncMock())
+    manager = SimpleNamespace(start=AsyncMock(return_value=playwright))
+    monkeypatch.setattr("playwright.async_api.async_playwright", lambda: manager)
+    browser = PublisherBrowser(
+        cdp_url="http://127.0.0.1:9222",
+        proxy_url="http://doxagent-egress-clash:7893",
+        authenticated_hosts={"www.reuters.com"},
+    )
+
+    assert await browser._context("www.fool.com") is proxy_context
+    assert await browser._context("www.reuters.com") is default_context
+    browser_handle.new_context.assert_awaited_once_with(
+        accept_downloads=False,
+        proxy={"server": "http://doxagent-egress-clash:7893"},
+    )
+    await browser.close()
+    proxy_context.close.assert_awaited_once()
 
 
 class Page:

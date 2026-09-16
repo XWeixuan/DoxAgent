@@ -1106,3 +1106,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-16 · Persistent Runtime 前置路由恢复 09-02 冻结矩阵：任一 W1/W2 low Case 统一进入 W3；正常置信度下 NEW+Policy 直达 Trade、NEW+无 Policy 进入 W3、OLD 归档。修复 09-07 旧 §45 规则回退造成的 5 个唯一路由冲突，同步更正旧方案矩阵及一个重试测试中的失效成功状态断言；不修改 W3 结果路由、资源编排或执行池逻辑。
 
 2026-09-16 · D2 初始化资源批次身份补修：将可选 `initialization_id` 从 initialization-origin `Document2RunRequest` 逐层传入 O0/O1/Domain Review 的 Worker 请求；避免安全的匿名 `d2ws-*` workspace run ID 被旧资源守护器当作新 heavy batch，造成 RKLB D2 子任务 `HEAVY_BATCH_CONFLICT`。独立 Document2 保持无父身份，真实跨初始化隔离不变。Document2 定向回归 24 passed，Ruff 通过。
+
+2026-09-17 · 正文/Yahoo/Reuters 隔离代理出口：远端部署 Flower_SS Mihomo v1.19.31 sidecar，仅内部 Docker 网络、无端口映射/TUN/主机路由改动；90 个节点远端筛选 44 个可达，15 节点×9 站矩阵区分 IP、客户端指纹与站点自身限制。真实正文样本由 4/15 提升至日本节点 8/15；Reuters 仅荷兰节点 200。新增显式 DOXAGENT_CRAWLER_EGRESS_PROXY_URL，限定正文、Yahoo 与 Crawler Plane context，账号默认 context 与其他服务不代理。RKLB D2 初始化运行中，未重启业务容器或激活生产变量；详见 v2_body_proxy_egress_validation_20260917.md。

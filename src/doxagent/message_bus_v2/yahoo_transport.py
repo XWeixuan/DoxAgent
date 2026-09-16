@@ -39,9 +39,11 @@ class YahooTransport:
         clock=time.monotonic,
         wall_clock=time.time,
         sleep=asyncio.sleep,
+        proxy_url: str | None = None,
     ) -> None:
         self._factory, self._gap, self._jitter = session_factory, gap, jitter
         self._clock, self._wall_clock, self._sleep = clock, wall_clock, sleep
+        self._proxy_url = proxy_url
         self._session = None
         self._next_start = 0.0
         self._circuits = {}
@@ -67,7 +69,10 @@ class YahooTransport:
             if self._clock() < until:
                 raise YahooRateLimited(until - self._clock())
             if self._session is None:
-                self._session = self._factory(impersonate="chrome", max_clients=1)
+                options = {"impersonate": "chrome", "max_clients": 1}
+                if self._proxy_url:
+                    options["proxy"] = self._proxy_url
+                self._session = self._factory(**options)
             self._next_start = self._clock() + self._gap + random.uniform(0, self._jitter)
             try:
                 response = await self._session.request(method, url, **kwargs)
@@ -127,10 +132,10 @@ _shared = None
 _shared_lock = threading.Lock()
 
 
-def shared_yahoo_transport() -> YahooTransport:
+def shared_yahoo_transport(proxy_url: str | None = None) -> YahooTransport:
     global _shared
     with _shared_lock:
         if _shared is None:
-            _shared = YahooTransport()
+            _shared = YahooTransport(proxy_url=proxy_url)
             atexit.register(_shared.close)
         return _shared

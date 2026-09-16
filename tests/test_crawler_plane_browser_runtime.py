@@ -28,6 +28,32 @@ async def test_cdp_runtime_reuses_default_persistent_context(
 
 
 @pytest.mark.asyncio
+async def test_cdp_runtime_uses_scoped_proxy_context(monkeypatch: pytest.MonkeyPatch) -> None:
+    default_context = SimpleNamespace()
+    proxy_context = SimpleNamespace(close=AsyncMock())
+    browser = SimpleNamespace(
+        contexts=[default_context],
+        new_context=AsyncMock(return_value=proxy_context),
+    )
+    chromium = SimpleNamespace(connect_over_cdp=AsyncMock(return_value=browser))
+    playwright = SimpleNamespace(chromium=chromium, stop=AsyncMock())
+    manager = SimpleNamespace(start=AsyncMock(return_value=playwright))
+    monkeypatch.setattr("playwright.async_api.async_playwright", lambda: manager)
+
+    runtime = PlaywrightBrowserRuntime(
+        cdp_url="http://127.0.0.1:9222",
+        proxy_url="http://doxagent-egress-clash:7893",
+    )
+    assert await runtime._ensure() is proxy_context
+    browser.new_context.assert_awaited_once_with(
+        accept_downloads=False,
+        proxy={"server": "http://doxagent-egress-clash:7893"},
+    )
+    await runtime.close()
+    proxy_context.close.assert_awaited_once()
+
+
+@pytest.mark.asyncio
 async def test_cdp_runtime_rejects_ephemeral_context(monkeypatch: pytest.MonkeyPatch) -> None:
     browser = SimpleNamespace(contexts=[])
     chromium = SimpleNamespace(connect_over_cdp=AsyncMock(return_value=browser))

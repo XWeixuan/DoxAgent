@@ -152,7 +152,7 @@ class YahooFinanceNewsAdapter:
 
         self.settings = settings
         # The registry's httpx client remains for other providers; Yahoo owns no session.
-        self.transport = transport or shared_yahoo_transport()
+        self.transport = transport or shared_yahoo_transport(settings.crawler_egress_proxy_url)
         self.browser = browser
         self._browser_retry_at = 0.0
         self._page_api_retry_at = 0.0

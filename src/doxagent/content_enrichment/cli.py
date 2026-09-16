@@ -38,6 +38,7 @@ async def _run(settings: DoxAgentSettings, *, once: bool) -> int:
         extractor=SharedContentExtractor(
             concurrency=settings.content_enrichment_max_concurrency,
             pipeline_enabled=settings.content_enrichment_pipeline_enabled,
+            proxy_url=settings.crawler_egress_proxy_url,
             browser_enabled=settings.content_enrichment_browser_enabled,
             browser_headless=settings.content_enrichment_browser_headless,
             browser_channel=settings.content_enrichment_browser_channel,

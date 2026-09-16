@@ -606,6 +606,10 @@ class DoxAgentSettings(BaseSettings):
         default=None,
         validation_alias="DOXAGENT_CONTENT_ENRICHMENT_BROWSER_CHANNEL",
     )
+    crawler_egress_proxy_url: str | None = Field(
+        default=None,
+        validation_alias="DOXAGENT_CRAWLER_EGRESS_PROXY_URL",
+    )
     content_enrichment_browser_cdp_url: str | None = Field(
         default=None,
         validation_alias="DOXAGENT_CONTENT_ENRICHMENT_BROWSER_CDP_URL",

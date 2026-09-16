@@ -48,6 +48,7 @@ class PlaywrightBrowserRuntime:
         channel: str | None = None,
         identity_dir: str | None = None,
         cdp_url: str | None = None,
+        proxy_url: str | None = None,
     ) -> None:
         self._playwright: Any | None = None
         self._browser: Any | None = None
@@ -58,6 +59,8 @@ class PlaywrightBrowserRuntime:
         self.channel = channel
         self.identity_dir = identity_dir
         self.cdp_url = cdp_url
+        self.proxy_url = proxy_url
+        self._owns_context = False
 
     async def _ensure(self) -> Any:
         if self._context is not None:
@@ -68,24 +71,35 @@ class PlaywrightBrowserRuntime:
             raise RuntimeError("Playwright is not installed") from exc
         playwright = await async_playwright().start()
         self._playwright = playwright
+        proxy_options: dict[str, Any] = {}
+        if self.proxy_url:
+            proxy_options["proxy"] = {"server": self.proxy_url}
         try:
             if self.cdp_url:
                 self._browser = await playwright.chromium.connect_over_cdp(self.cdp_url)
                 contexts = self._browser.contexts
                 if not contexts:
                     raise RuntimeError("CDP browser has no persistent default context")
-                self._context = contexts[0]
+                if self.proxy_url:
+                    self._context = await self._browser.new_context(
+                        accept_downloads=False, **proxy_options
+                    )
+                    self._owns_context = True
+                else:
+                    self._context = contexts[0]
             elif self.identity_dir:
                 self._context = await playwright.chromium.launch_persistent_context(
                     self.identity_dir,
                     headless=self.headless,
                     channel=self.channel or None,
+                    **proxy_options,
                 )
                 self._owns_browser = True
             else:
                 self._browser = await playwright.chromium.launch(
                     headless=self.headless,
                     channel=self.channel or None,
+                    **proxy_options,
                 )
                 self._context = await self._browser.new_context()
                 self._owns_browser = True
@@ -197,6 +211,8 @@ class PlaywrightBrowserRuntime:
                 await page.close()
 
     async def close(self) -> None:
+        if self._owns_context and self._context is not None:
+            await self._context.close()
         if self._owns_browser:
             if self._context is not None:
                 await self._context.close()
@@ -205,6 +221,7 @@ class PlaywrightBrowserRuntime:
         self._context = None
         self._browser = None
         self._owns_browser = False
+        self._owns_context = False
         if self._playwright is not None:
             await self._playwright.stop()
             self._playwright = None

@@ -25,6 +25,22 @@ def make_transport(handler, **kwargs):
     return YahooTransport(session_factory=factory, gap=0, jitter=0, **kwargs), calls
 
 
+async def test_proxy_is_scoped_to_yahoo_session_factory():
+    transport, factories = make_transport(
+        lambda _: httpx.Response(200, json={}),
+        proxy_url="http://doxagent-egress-clash:7893",
+    )
+    try:
+        await transport.request("GET", "https://query1.finance.yahoo.com/test")
+        assert factories == [{
+            "impersonate": "chrome",
+            "max_clients": 1,
+            "proxy": "http://doxagent-egress-clash:7893",
+        }]
+    finally:
+        transport.close()
+
+
 async def test_429_global_circuit_retry_after_and_single_half_open():
     now = [0.0]
     requests = []

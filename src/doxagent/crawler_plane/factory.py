@@ -30,6 +30,7 @@ def build_crawler_plane_service(
             channel=settings.crawler_plane_browser_channel,
             identity_dir=settings.crawler_plane_browser_identity_dir,
             cdp_url=settings.crawler_plane_browser_cdp_url,
+            proxy_url=settings.crawler_egress_proxy_url,
         ),
         execution_timeout_seconds=settings.crawler_plane_execution_timeout_seconds,
         max_response_bytes=settings.crawler_plane_max_response_bytes,
