@@ -169,7 +169,7 @@ class YahooFinanceNewsAdapter:
         )
         attempts = []
         if (
-            context.binding.source_parameters.get("page_network_enabled", False)
+            context.binding.source_parameters.get("page_network_enabled", True)
             and self.browser is not None
             and monotonic_time.monotonic() >= self._browser_retry_at
         ):

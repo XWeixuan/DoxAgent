@@ -1108,3 +1108,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-16 · D2 初始化资源批次身份补修：将可选 `initialization_id` 从 initialization-origin `Document2RunRequest` 逐层传入 O0/O1/Domain Review 的 Worker 请求；避免安全的匿名 `d2ws-*` workspace run ID 被旧资源守护器当作新 heavy batch，造成 RKLB D2 子任务 `HEAVY_BATCH_CONFLICT`。独立 Document2 保持无父身份，真实跨初始化隔离不变。Document2 定向回归 24 passed，Ruff 通过。
 
 2026-09-17 · 正文/Yahoo/Reuters 隔离代理出口：远端部署 Flower_SS Mihomo v1.19.31 sidecar，仅内部 Docker 网络、无端口映射/TUN/主机路由改动；90 个节点远端筛选 44 个可达，15 节点×9 站矩阵区分 IP、客户端指纹与站点自身限制。真实正文样本由 4/15 提升至日本节点 8/15；Reuters 仅荷兰节点 200。新增显式 DOXAGENT_CRAWLER_EGRESS_PROXY_URL，限定正文、Yahoo 与 Crawler Plane context，账号默认 context 与其他服务不代理。RKLB D2 初始化运行中，未重启业务容器或激活生产变量；详见 v2_body_proxy_egress_validation_20260917.md。
+
+2026-09-17 · Reuters/Yahoo 消息源代理抓取恢复：Reuters Site Search 通过 Crawler Plane 显式使用 DOXAGENT_CRAWLER_EGRESS_PROXY_URL；共享 CDP 不可用或上下文已关闭时，自动重建无身份的代理 Chromium，避免 TargetClosedError 长期锁死。Yahoo Finance News 恢复页面爬虫→NCP→RSS 默认优先级，并保留失败冷却与回退；43 项相关测试及 Ruff 通过，待远端真实流量验收。

@@ -91,10 +91,10 @@ async def test_page_capture_priority_and_failed_probe_cooldown(tmp_path):
         transport.close()
 
 
-async def test_unvalidated_page_route_is_disabled_by_default(tmp_path):
+async def test_validated_page_route_is_enabled_by_default(tmp_path):
     class Browser:
         async def yahoo_latest_news(self, ticker, **kwargs):
-            pytest.fail("unvalidated page route must require explicit opt-in")
+            return rss_yahoo_rows(RSS), {"network_status": 200, "capture_method": "ssr"}
 
     transport, _ = make_transport(lambda _: httpx.Response(200, json={"data": []}))
     try:
@@ -106,7 +106,7 @@ async def test_unvalidated_page_route_is_disabled_by_default(tmp_path):
                 transport=transport,
                 browser=Browser(),
             ).poll(context)
-            assert result.acquisition_metadata["query_mode"] == "ncp_latest_news"
+            assert result.acquisition_metadata["query_mode"] == "page_network_ncp"
     finally:
         transport.close()
 

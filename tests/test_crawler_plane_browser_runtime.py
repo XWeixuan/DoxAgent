@@ -21,7 +21,9 @@ async def test_cdp_runtime_reuses_default_persistent_context(
 
     runtime = PlaywrightBrowserRuntime(cdp_url="http://127.0.0.1:9222")
     assert await runtime._ensure() is context
-    chromium.connect_over_cdp.assert_awaited_once_with("http://127.0.0.1:9222")
+    chromium.connect_over_cdp.assert_awaited_once_with(
+        "http://127.0.0.1:9222", timeout=5_000
+    )
 
     await runtime.close()
     playwright.stop.assert_awaited_once()
@@ -51,6 +53,54 @@ async def test_cdp_runtime_uses_scoped_proxy_context(monkeypatch: pytest.MonkeyP
     )
     await runtime.close()
     proxy_context.close.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_proxy_runtime_falls_back_when_operator_cdp_is_offline(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    proxy_context = SimpleNamespace(close=AsyncMock())
+    fallback_browser = SimpleNamespace(
+        new_context=AsyncMock(return_value=proxy_context), close=AsyncMock()
+    )
+    chromium = SimpleNamespace(
+        connect_over_cdp=AsyncMock(side_effect=RuntimeError("connection refused")),
+        launch=AsyncMock(return_value=fallback_browser),
+    )
+    playwright = SimpleNamespace(chromium=chromium, stop=AsyncMock())
+    manager = SimpleNamespace(start=AsyncMock(return_value=playwright))
+    monkeypatch.setattr("playwright.async_api.async_playwright", lambda: manager)
+
+    runtime = PlaywrightBrowserRuntime(
+        cdp_url="http://127.0.0.1:9222",
+        proxy_url="http://doxagent-egress-clash:7893",
+    )
+    assert await runtime._ensure() is proxy_context
+    chromium.launch.assert_awaited_once_with(
+        headless=True,
+        channel=None,
+        proxy={"server": "http://doxagent-egress-clash:7893"},
+    )
+    await runtime.close()
+    fallback_browser.close.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_new_page_rebuilds_a_closed_browser_context() -> None:
+    closed_context = SimpleNamespace(
+        new_page=AsyncMock(
+            side_effect=RuntimeError("Target page, context or browser has been closed")
+        )
+    )
+    page = SimpleNamespace()
+    replacement_context = SimpleNamespace(new_page=AsyncMock(return_value=page))
+    runtime = PlaywrightBrowserRuntime()
+    runtime._ensure = AsyncMock(side_effect=[closed_context, replacement_context])
+    runtime._discard = AsyncMock()
+
+    assert await runtime._new_page() is page
+    runtime._discard.assert_awaited_once()
+    assert runtime._ensure.await_count == 2
 
 
 @pytest.mark.asyncio

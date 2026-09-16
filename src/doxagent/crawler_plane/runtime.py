@@ -76,7 +76,9 @@ class PlaywrightBrowserRuntime:
             proxy_options["proxy"] = {"server": self.proxy_url}
         try:
             if self.cdp_url:
-                self._browser = await playwright.chromium.connect_over_cdp(self.cdp_url)
+                self._browser = await playwright.chromium.connect_over_cdp(
+                    self.cdp_url, timeout=5_000
+                )
                 contexts = self._browser.contexts
                 if not contexts:
                     raise RuntimeError("CDP browser has no persistent default context")
@@ -103,18 +105,60 @@ class PlaywrightBrowserRuntime:
                 )
                 self._context = await self._browser.new_context()
                 self._owns_browser = True
-        except Exception:
+        except Exception as cdp_error:
+            if self.cdp_url and self.proxy_url:
+                # Public news crawling must not remain down when the operator
+                # desktop browser is closed. The fallback has no saved identity.
+                try:
+                    self._browser = await playwright.chromium.launch(
+                        headless=self.headless,
+                        channel=self.channel or None,
+                        **proxy_options,
+                    )
+                    self._context = await self._browser.new_context()
+                    self._owns_browser = True
+                    return self._context
+                except Exception:
+                    pass
             await playwright.stop()
             self._playwright = None
             self._browser = None
             self._context = None
-            raise
+            raise cdp_error
         return self._context
+
+    async def _new_page(self) -> Any:
+        context = await self._ensure()
+        try:
+            return await context.new_page()
+        except Exception as exc:
+            if "closed" not in str(exc).casefold() and "TargetClosed" not in type(exc).__name__:
+                raise
+            await self._discard()
+            return await (await self._ensure()).new_page()
+
+    async def _discard(self) -> None:
+        if self._owns_context and self._context is not None:
+            try:
+                await self._context.close()
+            except Exception:
+                pass
+        if self._owns_browser and self._browser is not None:
+            try:
+                await self._browser.close()
+            except Exception:
+                pass
+        if self._playwright is not None:
+            try:
+                await self._playwright.stop()
+            except Exception:
+                pass
+        self._context = self._browser = self._playwright = None
+        self._owns_browser = self._owns_context = False
 
     async def get(self, url: str) -> tuple[int, str, dict[str, str], str]:
         async with self._lock:
-            context = await self._ensure()
-            page = await context.new_page()
+            page = await self._new_page()
             try:
                 response = await page.goto(url, wait_until="networkidle")
                 html = await page.content()
@@ -126,8 +170,7 @@ class PlaywrightBrowserRuntime:
 
     async def reuters_search(self, query: str, offset: int) -> list[dict[str, object]]:
         async with self._lock:
-            context = await self._ensure()
-            page = await context.new_page()
+            page = await self._new_page()
             try:
                 response = await page.goto(
                     f"https://www.reuters.com/site-search/?query={quote(query)}&offset={offset}",
@@ -198,8 +241,7 @@ class PlaywrightBrowserRuntime:
         from doxagent.message_bus_v2.yahoo_sources import capture_latest_news
 
         async with self._lock:
-            context = await self._ensure()
-            page = await context.new_page()
+            page = await self._new_page()
             try:
                 return await capture_latest_news(
                     page,
@@ -211,20 +253,7 @@ class PlaywrightBrowserRuntime:
                 await page.close()
 
     async def close(self) -> None:
-        if self._owns_context and self._context is not None:
-            await self._context.close()
-        if self._owns_browser:
-            if self._context is not None:
-                await self._context.close()
-            if self._browser is not None:
-                await self._browser.close()
-        self._context = None
-        self._browser = None
-        self._owns_browser = False
-        self._owns_context = False
-        if self._playwright is not None:
-            await self._playwright.stop()
-            self._playwright = None
+        await self._discard()
 
 
 class ParentNetworkSession:
