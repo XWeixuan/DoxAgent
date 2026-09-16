@@ -49,3 +49,13 @@ Mihomo 使用 rule 模式：`reuters.com` 固定荷兰标准 2；其他代理流
 ## 激活约束
 
 RKLB 初始化尚在运行，因此本轮先完成 sidecar、代码和隔离实测，不重启 message-bus/content-enrichment。生产激活必须等该初始化结束后，再设置 `DOXAGENT_CRAWLER_EGRESS_PROXY_URL=http://doxagent-egress-clash:7893`，仅重建/重启 message-bus 与 content-enrichment，随后检查自然 Yahoo/Reuters 轮询、正文成功率、429 冷却和代理 fallback 状态。不得把 sidecar 存活等同于正文链路已切换。
+
+## Reuters/Yahoo 消息源定向激活（2026-09-17）
+
+后续按用户要求在不停止 RKLB 初始化的前提下，仅激活消息总线的公开新闻抓取出口。远端仓库更新到 `c692278f`，`.env.v2` 设置 `DOXAGENT_CRAWLER_EGRESS_PROXY_URL=http://doxagent-egress-clash:7893`，重新构建共享 server 镜像，但只强制替换 `v2-message-bus` 容器。初始化容器未重启：启动时间始终为 `2026-09-16T15:20:51.843603893Z`，restart=0、OOM=false；Clash 同样 restart=0、OOM=false。
+
+Reuters 原连续 1,327 次失败，错误为缓存 CDP context 已关闭后的 `TargetClosedError`。Crawler Plane 现在将 CDP 连接限制为 5 秒；CDP 不可用且配置公开爬虫代理时，启动无保存身份的代理 Chromium；context 后续被关闭时丢弃并重建。部署后 17:06–17:09 UTC 连续自然轮询成功，consecutive_failures 清零，17:08 与 17:09 轮延迟约 2.45–2.51 秒，累计采集计数继续从 2,591 增至 2,595。Mihomo 日志确认 `www.reuters.com` 与 `dd.reuters.com` 命中 Reuters 专属荷兰节点。
+
+Yahoo Finance News 恢复页面爬虫 → NCP → RSS 的默认顺序；已有绑定未设置 `page_network_enabled` 时也启用页面路径，页面失败仍保持冷却并依次回退。生产容器内的不落库诊断得到 `query_mode=page_network_ncp`、HTTP 200、`capture_method=page_js_fetch`、20 条消息、attempts 为空；Mihomo 日志确认 `finance.yahoo.com`、`s.yimg.com`、`query1/2.finance.yahoo.com` 等页面与内部接口均走日本节点。17:08–17:09 UTC 的自然轮询连续成功、consecutive_failures=0，未再出现抓取 429。
+
+本地 Reuters/Yahoo/Crawler Plane 定向测试 43 passed，Ruff 通过。远端验收区分了“轮询状态成功”和“页面首选路径成功”：后者以适配器的 query_mode、HTTP 状态、实际消息数及 Clash 连接日志共同确认。
