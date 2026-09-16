@@ -87,10 +87,17 @@ class JobStore:
     def queued(self, *, prefer_runtime: bool = True) -> list[str]:
         order = "priority DESC, sequence" if prefer_runtime else "priority ASC, sequence"
         if os.getenv("DOXAGENT_RESOURCE_SOCKET"):
-            order = ("CASE WHEN json_extract(request,'$.research_lane')="
-                     "'persistent_runtime' THEN 0 "
-                     "WHEN json_extract(request,'$.run_id') LIKE 'runtime-maintain-%' THEN 1 "
-                     "ELSE 2 END,sequence")
+            if prefer_runtime:
+                order = ("CASE WHEN json_extract(request,'$.research_lane')="
+                         "'persistent_runtime' THEN 0 "
+                         "WHEN json_extract(request,'$.run_id') LIKE 'runtime-maintain-%' THEN 1 "
+                         "ELSE 2 END,sequence")
+            else:
+                # After three consecutive runtime dispatches, honor the manager's
+                # fairness turn. The prior resource-aware order ignored
+                # prefer_runtime and could starve initialization indefinitely.
+                order = ("CASE WHEN json_extract(request,'$.research_lane')="
+                         "'persistent_runtime' THEN 1 ELSE 0 END,sequence")
         with closing(self.connect()) as db:
             return [
                 r[0]

@@ -156,7 +156,7 @@ def test_resource_budget_wait_and_heavy_batch_isolation(monkeypatch):
             "batch": "init:NVDA",
         },
     )["ok"]
-    assert not g.handle(
+    assert g.handle(
         "codex-worker", {"command": "acquire", "kind": "codex_runtime", "identity": "second-slot"}
     )["ok"]
     assert g.containers["v2-scheduler"]["limit"] == 2048 * m.MIB
@@ -335,13 +335,35 @@ def test_observed_service_growth_reduces_only_its_remaining_reservation(monkeypa
     assert budget["ok"]
 
 
-def test_peak_limit_is_not_usage_and_only_active_unused_headroom_is_reserved(monkeypatch):
+def test_peak_limit_is_telemetry_and_never_reserved_as_usage(monkeypatch):
     g, m = guardian(monkeypatch)
     g.containers["v2-projector"].update(limit=640 * m.MIB, current=500 * m.MIB)
     assert g.budget(0)["borrowed_mib"] == 0
     g.leases["v2-projector"] = time.monotonic() + 60
-    # 140 MiB remains below the peak; 128 MiB overlaps the fixed projection reserve.
-    assert g.budget(0)["borrowed_mib"] == 12
+    budget = g.budget(0)
+    assert budget["borrowed_mib"] == 140
+    assert budget["counted_borrowed_mib"] == 0
+
+
+def test_scheduler_peak_ceiling_does_not_block_realtime_on_unused_memory(monkeypatch):
+    g, m = guardian(monkeypatch)
+    g.metrics.update(
+        app_current=2806 * m.MIB,
+        working_current=2806 * m.MIB,
+        available=1640 * m.MIB,
+    )
+    g.containers["v2-scheduler"].update(limit=2048 * m.MIB, current=900 * m.MIB)
+    g.leases["v2-scheduler"] = time.monotonic() + 60
+
+    # Historical accounting required 1 GiB safety + 128 MiB projection +
+    # 1,148 MiB unused scheduler ceiling + 128 MiB candidate and blocked all
+    # realtime Cases. Only committed growth is now charged.
+    result = g.handle(
+        "v2-scheduler",
+        {"command": "acquire", "kind": "realtime", "identity": "case-1"},
+    )
+    assert result["ok"]
+    assert g.budget(0)["counted_borrowed_mib"] == 0
 
 
 def test_application_slice_keeps_one_gib_host_margin():

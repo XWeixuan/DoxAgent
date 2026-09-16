@@ -10,6 +10,8 @@ from pathlib import Path
 @dataclass
 class PressureSample:
     memory: int | None = None
+    working_memory: int | None = None
+    inactive_file: int | None = None
     available: int | None = None
     full: float | None = None
     swap: int | None = None
@@ -22,6 +24,12 @@ def sample() -> PressureSample:
         # Container cgroup root only. No unlimited host-root pseudo-capacity inference.
         if (root / "memory.max").read_text().strip() != "max":
             result.memory = int((root / "memory.current").read_text())
+            stats = {
+                line.split()[0]: int(line.split()[1])
+                for line in (root / "memory.stat").read_text().splitlines()
+            }
+            result.inactive_file = min(result.memory, stats.get("inactive_file", 0))
+            result.working_memory = result.memory - result.inactive_file
             result.swap = int((root / "memory.swap.current").read_text())
             line = next(
                 x
@@ -60,7 +68,11 @@ class PressureController:
         else:
             self._stall_since = None
         stall = self._stall_since is not None and now - self._stall_since >= 10
-        memory = value.memory or 0
+        # memory.current includes reclaimable file cache. Pausing admission on the
+        # raw value turns useful cache into a false OOM signal, so pressure control
+        # follows the effective working set. Missing new metrics retain legacy
+        # behavior for compatibility and conservative failure handling.
+        memory = value.working_memory if value.working_memory is not None else value.memory or 0
         self.extreme = (memory >= 3.25 * gib and (stall or memory > self._previous)) or (
             value.available is not None and value.available < 384 * 1024**2 and stall
         )

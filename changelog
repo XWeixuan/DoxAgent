@@ -1092,3 +1092,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-16 · 资源准入账本整体修复：应用 slice 提升为 MemoryHigh 6 GiB / MemoryMax 6.5 GiB，保留 1 GiB 宿主安全余量和 512 MiB swap 上限；区分原始 cgroup 占用、扣除 inactive_file 的工作集、活动任务剩余预留及候选增量。任务按服务准入基线递减剩余预留，峰值 limit 仅在有效 lease 下计算尚未使用的借额，投影预留不重复；持久状态绑定 boot ID。资源拒绝细分真实内存、宿主余量、PSI、swap、批次冲突和优先级，并写入 Worker receipt，避免把预留额度伪装成实际占用。
 
 2026-09-16 · 资源优先级反转补修：等待中的高优先级任务只有在当前重任务批次约束下确实可运行时才阻挡低优先级准入；因跨批次重任务冲突而无法运行的 Runtime/维护等待者不再持续饿死同批次 ticker 初始化子任务。等待记录保存批次、重任务属性及明确阻塞原因，保留真正可运行高优任务的让行语义。
+
+2026-09-16 · 资源保护最终去重与公平性补修：Docker Memory limit/peak 只作为未使用上限遥测，不再作为已经分配的 RAM 参与应用与宿主准入；实际工作集、任务尚未兑现增量、1 GiB 宿主安全余量、PSI/swap 和硬上限继续生效。Worker 压力控制改用扣除 inactive_file 的工作集，避免页缓存触发 2.8 GiB 假暂停；启用资源守护器时恢复“三个 Persistent Runtime 后让出一个非 Runtime 机会”的队列轮转，防止固定排序绕过公平策略。31 项资源定向测试及 Ruff 通过。

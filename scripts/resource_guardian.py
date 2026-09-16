@@ -176,7 +176,7 @@ class Guardian:
             outstanding_by_service[service] = max(0, total - observed_growth)
         reserved = PROJECTION_RESERVE + sum(outstanding_by_service.values())
         now = time.monotonic()
-        borrowed_by_service = {
+        ceiling_headroom_by_service = {
             service: max(
                 0,
                 self.containers.get(service, {}).get("limit", default * MIB)
@@ -188,17 +188,18 @@ class Guardian:
             for service, (default, _, _) in QUOTAS.items()
             if self.leases.get(service, 0) > now
         }
-        borrowed = sum(borrowed_by_service.values())
-        # The fixed projection reserve and the projector's borrowed peak both fund
-        # the same future projector growth. Counting their overlap made an idle
-        # peak limit consume two reservations even though container limits do not
-        # allocate RAM. Keep the larger protection, not their sum.
-        borrowed -= min(PROJECTION_RESERVE, borrowed_by_service.get("v2-projector", 0))
+        ceiling_headroom = sum(ceiling_headroom_by_service.values())
+        # A Docker memory limit is a ceiling, not committed memory. Raising it does
+        # not allocate pages, and charging the unused gap here double-counts future
+        # growth already covered by the work reservation and then by memory.current
+        # as pages become resident. Keep it as telemetry, but never spend host or
+        # application headroom on an unused ceiling.
+        counted_ceiling_headroom = 0
         if basic_projection:
-            reserved, borrowed, extra = PROJECTION_RESERVE, 0, 0
+            reserved, ceiling_headroom, extra = PROJECTION_RESERVE, 0, 0
         working = m.get("working_current", m.get("app_current", 0))
-        projected = working + reserved + borrowed + extra
-        host_required = SAFETY + reserved + borrowed + extra
+        projected = working + reserved + counted_ceiling_headroom + extra
+        host_required = SAFETY + reserved + counted_ceiling_headroom + extra
         reason = None
         if not m or time.time() - m.get("at", 0) >= 12:
             reason = "RESOURCE_METRICS_STALE"
@@ -219,7 +220,8 @@ class Guardian:
             "working_current_mib": working // MIB,
             "inactive_file_mib": m.get("inactive_file", 0) // MIB,
             "outstanding_mib": reserved // MIB,
-            "borrowed_mib": borrowed // MIB,
+            "borrowed_mib": ceiling_headroom // MIB,
+            "counted_borrowed_mib": counted_ceiling_headroom // MIB,
             "candidate_mib": extra // MIB,
             "projected_mib": projected // MIB,
             "limit_mib": (HARD if emergency else NORMAL) // MIB,
@@ -227,6 +229,10 @@ class Guardian:
             "host_required_mib": host_required // MIB,
             "outstanding_by_service_mib": {
                 service: value // MIB for service, value in outstanding_by_service.items()
+            },
+            "ceiling_headroom_by_service_mib": {
+                service: value // MIB
+                for service, value in ceiling_headroom_by_service.items()
             },
         }
 
@@ -263,7 +269,9 @@ class Guardian:
             return False
         default, maximum, _ = QUOTAS[service]
         extra = max(0, maximum * MIB - c["limit"])
-        if extra and not self.fits(extra, emergency=True):
+        # Raising a limit allocates no memory. Gate on measured state and active
+        # work reservations, not the entire unused limit gap.
+        if extra and not self.fits(0, emergency=True):
             return False
         if not self.resize(service, maximum):
             return False
@@ -405,13 +413,15 @@ class Guardian:
         budget = self.budget(0)
         logging.info(
             "budget app_mib=%d working_mib=%d available_mib=%d swap_mib=%d "
-            "outstanding_mib=%d borrowed_mib=%d reservations=%d",
+            "outstanding_mib=%d ceiling_headroom_mib=%d "
+            "counted_ceiling_headroom_mib=%d reservations=%d",
             self.metrics["app_current"] // MIB,
             self.metrics["working_current"] // MIB,
             self.metrics["available"] // MIB,
             self.metrics["app_swap"] // MIB,
             budget["outstanding_mib"],
             budget["borrowed_mib"],
+            budget["counted_borrowed_mib"],
             len(self.work),
         )
         self.persist()

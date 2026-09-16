@@ -7,13 +7,14 @@ from types import SimpleNamespace
 
 import pytest
 
-from doxagent.codex_runtime.schema import CodexAgentRole, CodexD1Node
+from doxagent.codex_runtime.schema import CodexAgentRole, CodexD1Node, ResearchLane
 from doxagent.codex_worker.capsules import CapsuleError
 from doxagent.codex_worker.io_budget import DiskBudget
+from doxagent.codex_worker.job_store import JobStore
 from doxagent.codex_worker.jobs import CapacityBusy, WorkerJobManager
 from doxagent.codex_worker.pressure import PressureController, PressureSample
 from doxagent.codex_worker.result_receipt import commit, receipt_path
-from doxagent.codex_worker.schema import WorkerRunRequest
+from doxagent.codex_worker.schema import WorkerJob, WorkerRunRequest
 from doxagent.codex_worker.sdk_runtime import WorkerTurnResult, _SdkTurnHandle
 from doxagent.codex_worker.workspace_store import LocalWorkspaceStore
 from doxagent.mcp.resource_budget import tool_budget
@@ -228,6 +229,43 @@ def test_pressure_hysteresis_and_missing_metrics():
     assert not controller.paused
     controller.update(PressureSample(memory=int(3.3 * gib)), now=33)
     assert controller.paused and controller.extreme
+
+
+def test_pressure_uses_working_set_not_reclaimable_file_cache():
+    controller = PressureController()
+    gib = 1024**3
+    controller.update(
+        PressureSample(
+            memory=int(3.2 * gib),
+            working_memory=int(2.1 * gib),
+            inactive_file=int(1.1 * gib),
+            available=2 * gib,
+            full=0,
+        ),
+        now=0,
+    )
+    assert not controller.paused
+    assert not controller.extreme
+
+
+def test_resource_aware_queue_honors_non_runtime_fairness_turn(tmp_path, monkeypatch):
+    monkeypatch.setenv("DOXAGENT_RESOURCE_SOCKET", "/tmp/guardian.sock")
+    store = JobStore(tmp_path)
+    runtime_request = request(1, research_lane=ResearchLane.PERSISTENT_RUNTIME)
+    init_request = request(2)
+    runtime_job = WorkerJob(
+        job_id="runtime", run_id=runtime_request.run_id,
+        attempt_id=runtime_request.attempt_id, status="queued",
+    )
+    init_job = WorkerJob(
+        job_id="init", run_id=init_request.run_id,
+        attempt_id=init_request.attempt_id, status="queued",
+    )
+    store.save(runtime_job, runtime_request)
+    store.save(init_job, init_request)
+
+    assert store.queued(prefer_runtime=True) == ["runtime", "init"]
+    assert store.queued(prefer_runtime=False) == ["init", "runtime"]
 
 
 @pytest.mark.asyncio
