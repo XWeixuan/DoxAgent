@@ -11,7 +11,7 @@ from doxagent.codex_runtime.schema import CodexAgentRole, CodexD1Node, ResearchL
 from doxagent.codex_worker.capsules import CapsuleError
 from doxagent.codex_worker.io_budget import DiskBudget
 from doxagent.codex_worker.job_store import JobStore
-from doxagent.codex_worker.jobs import CapacityBusy, WorkerJobManager
+from doxagent.codex_worker.jobs import CapacityBusy, WorkerJobManager, _resource_batch
 from doxagent.codex_worker.pressure import PressureController, PressureSample
 from doxagent.codex_worker.result_receipt import commit, receipt_path
 from doxagent.codex_worker.schema import WorkerJob, WorkerRunRequest
@@ -266,6 +266,17 @@ def test_resource_aware_queue_honors_non_runtime_fairness_turn(tmp_path, monkeyp
 
     assert store.queued(prefer_runtime=True) == ["runtime", "init"]
     assert store.queued(prefer_runtime=False) == ["init", "runtime"]
+
+
+def test_initialization_child_without_explicit_id_uses_parent_resource_batch():
+    child = request(3).model_copy(
+        update={
+            "run_id": "init-rklb-9631e4071e75470a97313eafbbdc51aa-o2-rklb-c8b8aac84957f2e1"
+        }
+    )
+    assert _resource_batch(child, maintenance=False) == (
+        "initialization:init-rklb-9631e4071e75470a97313eafbbdc51aa"
+    )
 
 
 @pytest.mark.asyncio

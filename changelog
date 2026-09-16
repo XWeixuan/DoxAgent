@@ -1094,3 +1094,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-16 · 资源优先级反转补修：等待中的高优先级任务只有在当前重任务批次约束下确实可运行时才阻挡低优先级准入；因跨批次重任务冲突而无法运行的 Runtime/维护等待者不再持续饿死同批次 ticker 初始化子任务。等待记录保存批次、重任务属性及明确阻塞原因，保留真正可运行高优任务的让行语义。
 
 2026-09-16 · 资源保护最终去重与公平性补修：Docker Memory limit/peak 只作为未使用上限遥测，不再作为已经分配的 RAM 参与应用与宿主准入；实际工作集、任务尚未兑现增量、1 GiB 宿主安全余量、PSI/swap 和硬上限继续生效。Worker 压力控制改用扣除 inactive_file 的工作集，避免页缓存触发 2.8 GiB 假暂停；启用资源守护器时恢复“三个 Persistent Runtime 后让出一个非 Runtime 机会”的队列轮转，防止固定排序绕过公平策略。31 项资源定向测试及 Ruff 通过。
+
+2026-09-16 · 初始化子任务资源批次归一化：Worker 对未显式携带 initialization_id 的 O2/O3/O4 等 `init-<ticker>-<uuid>-...` 子任务，从 run_id 稳定提取父初始化 ID；避免子任务完整 run_id 被误当成新批次，与自己的父初始化租约产生 HEAVY_BATCH_CONFLICT。显式 initialization_id、维护批次及旧 D1/D2 兼容路径不变。

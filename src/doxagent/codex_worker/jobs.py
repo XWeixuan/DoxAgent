@@ -6,6 +6,7 @@ import asyncio
 import hashlib
 import json
 import logging
+import re
 import time
 from collections.abc import AsyncIterator
 from contextlib import suppress
@@ -27,6 +28,19 @@ from doxagent.codex_worker.schema import (
 )
 from doxagent.codex_worker.sdk_runtime import CodexExecutionRuntime, TurnHandle
 from doxagent.codex_worker.workspace_store import LocalWorkspaceStore
+
+_INITIALIZATION_RUN = re.compile(r"^(init-[A-Za-z0-9.]+-[0-9a-fA-F]{32})(?:-|$)")
+
+
+def _resource_batch(request: WorkerRunRequest, *, maintenance: bool) -> str:
+    if maintenance:
+        return "maintenance:" + request.ticker
+    if request.initialization_id:
+        return "initialization:" + request.initialization_id
+    match = _INITIALIZATION_RUN.match(request.run_id)
+    if match:
+        return "initialization:" + match.group(1)
+    return "initialization:" + request.run_id.split("-d1")[0].split("-d2")[0]
 
 
 class CapacityBusy(Exception):
@@ -298,9 +312,7 @@ class WorkerJobManager:
             runtime = request.research_lane.value == "persistent_runtime"
             kind = ("codex_maintenance" if maintenance else
                     "codex_runtime" if runtime else "codex_initialization")
-            batch = ("maintenance:" + request.ticker if maintenance else "initialization:" +
-                     (request.initialization_id or
-                      request.run_id.split("-d1")[0].split("-d2")[0]))
+            batch = _resource_batch(request, maintenance=maintenance)
             admission = acquire_admission(kind, job_id, batch=batch, slots=weight)
             token = admission.get("token", "disabled") if admission.get("ok") else None
             if token is None:
