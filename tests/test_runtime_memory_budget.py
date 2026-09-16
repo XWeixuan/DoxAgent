@@ -162,6 +162,40 @@ def test_resource_budget_wait_and_heavy_batch_isolation(monkeypatch):
     assert g.containers["v2-scheduler"]["limit"] == 2048 * m.MIB
 
 
+def test_ineligible_high_priority_waiter_does_not_starve_active_batch(monkeypatch):
+    g, _ = guardian(monkeypatch)
+    parent = g.handle(
+        "v2-initialization",
+        {
+            "command": "acquire",
+            "kind": "initialization",
+            "identity": "parent",
+            "batch": "initialization:RKLB",
+        },
+    )
+    assert parent["ok"]
+    blocked = g.handle(
+        "codex-worker",
+        {
+            "command": "acquire",
+            "kind": "codex_maintenance",
+            "identity": "runtime-other",
+            "batch": "maintenance:MU",
+        },
+    )
+    assert blocked["reason"] == "HEAVY_BATCH_CONFLICT"
+    same_batch = g.handle(
+        "codex-worker",
+        {
+            "command": "acquire",
+            "kind": "codex_initialization",
+            "identity": "rklb-c4",
+            "batch": "initialization:RKLB",
+        },
+    )
+    assert same_batch["ok"]
+
+
 def test_quota_recovery_cannot_shrink_busy_or_expand_under_pressure(monkeypatch):
     g, m = guardian(monkeypatch)
     g.low_since["v2-projector"] = 0

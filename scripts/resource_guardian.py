@@ -302,11 +302,38 @@ class Guardian:
             if basic_projection and any(w["service"] == service for w in self.work.values()):
                 return {"ok": False, "reason": "PROJECTION_BATCH_BUSY"}
             conflict = heavy and any(w["heavy"] and w["batch"] != batch for w in self.work.values())
+            def eligible_higher(waiter):
+                if isinstance(waiter, (list, tuple)):  # transient legacy in-memory shape
+                    p, until = waiter
+                    return p < priority and until > now
+                waiter_conflict = waiter["heavy"] and any(
+                    w["heavy"] and w["batch"] != waiter["batch"]
+                    for w in self.work.values()
+                )
+                return (
+                    waiter["priority"] < priority
+                    and waiter["until"] > now
+                    and not waiter_conflict
+                )
+
             higher = not basic_projection and any(
-                p < priority and until > now for p, until in self.waiting.values()
+                eligible_higher(waiter) for waiter in self.waiting.values()
             )
             if conflict or higher or not self.fits(amount * MIB, basic_projection=basic_projection):
-                self.waiting[(service, identity)] = (priority, now + 10)
+                reason = (
+                    "HEAVY_BATCH_CONFLICT"
+                    if conflict
+                    else "PRIORITY_WAIT"
+                    if higher
+                    else self.budget(amount * MIB, basic_projection=basic_projection)["reason"]
+                )
+                self.waiting[(service, identity)] = {
+                    "priority": priority,
+                    "until": now + 10,
+                    "batch": batch,
+                    "heavy": heavy,
+                    "reason": reason,
+                }
                 if conflict:
                     return {"ok": False, "reason": "HEAVY_BATCH_CONFLICT"}
                 if higher:
@@ -352,7 +379,11 @@ class Guardian:
             work.setdefault(
                 "baseline_current", self.containers.get(work["service"], {}).get("current", 0)
             )
-        self.waiting = {k: v for k, v in self.waiting.items() if v[1] > now}
+        self.waiting = {
+            key: value
+            for key, value in self.waiting.items()
+            if (value[1] if isinstance(value, (list, tuple)) else value["until"]) > now
+        }
         for service, (default, _peak, _) in QUOTAS.items():
             c = self.containers.get(service)
             if not c:
