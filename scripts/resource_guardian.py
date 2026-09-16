@@ -146,10 +146,20 @@ class Guardian:
         reserved = PROJECTION_RESERVE + sum(
             w["bytes"] for w in self.work.values() if w["service"] != "v2-projector"
         )
-        borrowed = sum(
-            max(0, self.containers.get(s, {}).get("limit", d * MIB) - d * MIB)
-            for s, (d, _, _) in QUOTAS.items()
-        )
+        borrowed_by_service = {
+            service: max(
+                0,
+                self.containers.get(service, {}).get("limit", default * MIB)
+                - default * MIB,
+            )
+            for service, (default, _, _) in QUOTAS.items()
+        }
+        borrowed = sum(borrowed_by_service.values())
+        # The fixed projection reserve and the projector's borrowed peak both fund
+        # the same future projector growth. Counting their overlap made an idle
+        # peak limit consume two reservations even though container limits do not
+        # allocate RAM. Keep the larger protection, not their sum.
+        borrowed -= min(PROJECTION_RESERVE, borrowed_by_service.get("v2-projector", 0))
         if basic_projection:
             reserved, borrowed, extra = PROJECTION_RESERVE, 0, 0
         return bool(

@@ -244,3 +244,32 @@ def test_other_work_cannot_spend_projection_earmark(monkeypatch):
             "identity": "slot",
         },
     )["ok"]
+
+
+def test_projector_peak_and_projection_earmark_are_not_double_reserved(monkeypatch):
+    g, m = guardian(monkeypatch)
+    g.metrics.update(app_current=3310 * m.MIB, available=4000 * m.MIB)
+    g.work = {
+        "parent": {
+            "service": "v2-initialization",
+            "identity": "parent",
+            "bytes": 512 * m.MIB,
+            "heavy": True,
+            "batch": "initialization:RKLB",
+        }
+    }
+    g.containers["v2-projector"].update(limit=640 * m.MIB, current=145 * m.MIB)
+
+    # 3310 resident + 512 parent + max(128 projection reserve, 256 peak
+    # borrowing) + 1024 Codex work = 5102 MiB. The old additive accounting
+    # produced 5230 MiB and falsely blocked an otherwise safe admission.
+    result = g.handle(
+        "codex-worker",
+        {
+            "command": "acquire",
+            "kind": "codex_initialization",
+            "identity": "c3",
+            "batch": "initialization:RKLB",
+        },
+    )
+    assert result["ok"]
