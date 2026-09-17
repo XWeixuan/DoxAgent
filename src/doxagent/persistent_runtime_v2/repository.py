@@ -378,15 +378,13 @@ class InMemoryPersistentRuntimeV2Repository:
         max_concurrency: int = 5,
         lease_seconds: int = 1200,
     ) -> W3ThreadSlot | None:
+        del max_concurrency
         del lease_seconds
         normalized = ticker.upper()
         with self._lock:
             existing = self._w3_slots.get(case_id)
             if existing is not None:
                 return existing
-            active = [slot for slot in self._w3_slots.values() if slot.ticker == normalized]
-            if len(active) >= max_concurrency:
-                return None
             if normalized not in self._w3_main_cases:
                 kind = W3ThreadKind.MAIN
                 self._w3_main_cases[normalized] = case_id
@@ -1243,6 +1241,7 @@ class SQLitePersistentRuntimeV2Repository:
         max_concurrency: int = 5,
         lease_seconds: int = 1200,
     ) -> W3ThreadSlot | None:
+        del max_concurrency
         normalized = ticker.upper()
         cutoff = utc_now() - timedelta(seconds=lease_seconds)
         with self._lock, self._connect() as connection:
@@ -1284,15 +1283,6 @@ class SQLitePersistentRuntimeV2Repository:
                     thread_id=(str(binding[0]) if binding and binding[0] else None),
                     acquired_at=datetime.fromisoformat(str(existing[1])),
                 )
-            active = int(
-                connection.execute(
-                    "SELECT COUNT(*) FROM runtime_v2_w3_thread_slots "
-                    "WHERE ticker=? OR ticker LIKE ?",
-                    (normalized.split("@", 1)[0], normalized.split("@", 1)[0] + "@%"),
-                ).fetchone()[0]
-            )
-            if active >= max_concurrency:
-                return None
             now = utc_now()
             if binding is None:
                 connection.execute(

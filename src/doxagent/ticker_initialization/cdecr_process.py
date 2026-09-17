@@ -17,10 +17,22 @@ from pathlib import Path
 from typing import Any, cast
 
 from doxagent.cdecr_integration.contracts import CDECRWorkflowResult, RuntimeRegistryBinding
+from doxagent.resource_safety import SafetyLevel, SafetyStateReader
 
 from .repository import InitializationRepository
 from .schema import Lease
 from .service import NodeContext
+
+_LOCAL_CDECR = asyncio.Semaphore(1)
+
+
+async def _wait_for_background_launch() -> None:
+    """Pause only the real CPU-heavy launch while actual pressure is active."""
+
+    configured = os.getenv("DOXAGENT_SAFETY_STATE_PATH")
+    reader = SafetyStateReader(Path(configured) if configured else None)
+    while reader.read().level is not SafetyLevel.NORMAL:
+        await asyncio.sleep(2)
 
 
 def _atomic_json(path: Path, value: dict[str, Any]) -> None:
@@ -53,25 +65,31 @@ async def execute_cdecr(
     }
     _atomic_json(manifest, payload)
     context.checkpoint(cdecr_dispatch=str(manifest))
-    # Only the child writes this log; never relay model/provider logs to CLI stdout.
-    with (root / "worker.log").open("ab") as log:
-        process = await asyncio.create_subprocess_exec(
-            sys.executable,
-            "-m",
-            "doxagent.ticker_initialization.cdecr_process",
-            "--input",
-            str(manifest),
-            stdout=log,
-            stderr=log,
-            creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
-        )
-        try:
-            code = await process.wait()
-        except BaseException:
-            if process.returncode is None:
-                process.terminate()
-            await process.wait()
-            raise
+    # This is the one genuinely CPU-heavy local stage on a 4-core host.  Its
+    # semaphore is local to CDECR and is never held by the parent workflow.
+    await _wait_for_background_launch()
+    async with _LOCAL_CDECR:
+        # Pressure can change while this call waits for the local CPU semaphore.
+        await _wait_for_background_launch()
+        # Only the child writes this log; never relay model/provider logs to CLI stdout.
+        with (root / "worker.log").open("ab") as log:
+            process = await asyncio.create_subprocess_exec(
+                sys.executable,
+                "-m",
+                "doxagent.ticker_initialization.cdecr_process",
+                "--input",
+                str(manifest),
+                stdout=log,
+                stderr=log,
+                creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
+            )
+            try:
+                code = await process.wait()
+            except BaseException:
+                if process.returncode is None:
+                    process.terminate()
+                await process.wait()
+                raise
     context.repository.assert_lease(context.lease)
     if code != 0 or not output.is_file():
         raise RuntimeError(f"CDECR child stopped (exit={code}); dispatch={root.name}")

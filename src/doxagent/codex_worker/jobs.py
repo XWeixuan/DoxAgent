@@ -5,20 +5,16 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import json
-import logging
-import re
 import time
 from collections.abc import AsyncIterator
 from contextlib import suppress
-from dataclasses import asdict
 from functools import partial
-from logging.handlers import RotatingFileHandler
+from pathlib import Path
 from uuid import uuid4
 
 from doxagent.codex_runtime.schema import utc_now
 from doxagent.codex_worker.io_budget import blocking
 from doxagent.codex_worker.job_store import JobStore
-from doxagent.codex_worker.pressure import PressureController, sample
 from doxagent.codex_worker.result_receipt import receipt_path
 from doxagent.codex_worker.schema import (
     WorkerEvent,
@@ -28,23 +24,21 @@ from doxagent.codex_worker.schema import (
 )
 from doxagent.codex_worker.sdk_runtime import CodexExecutionRuntime, TurnHandle
 from doxagent.codex_worker.workspace_store import LocalWorkspaceStore
-
-_INITIALIZATION_RUN = re.compile(r"^(init-[A-Za-z0-9.]+-[0-9a-fA-F]{32})(?:-|$)")
-
-
-def _resource_batch(request: WorkerRunRequest, *, maintenance: bool) -> str:
-    if maintenance:
-        return "maintenance:" + request.ticker
-    if request.initialization_id:
-        return "initialization:" + request.initialization_id
-    match = _INITIALIZATION_RUN.match(request.run_id)
-    if match:
-        return "initialization:" + match.group(1)
-    return "initialization:" + request.run_id.split("-d1")[0].split("-d2")[0]
+from doxagent.resource_safety import SafetyLevel, SafetyStateReader
 
 
-class CapacityBusy(Exception):
-    """No execution was dispatched or charged."""
+def _execution_lane(request: WorkerRunRequest) -> str:
+    if request.execution_lane:
+        return request.execution_lane
+    if request.run_id.startswith("runtime-maintain-"):
+        return "background"
+    if request.research_lane.value == "persistent_runtime":
+        return "realtime"
+    return "background"
+
+
+class QueueHighWatermark(Exception):
+    """Durable storage protection, unrelated to execution concurrency."""
 
 
 class _Jobs:
@@ -72,45 +66,41 @@ class WorkerJobManager:
         runtime: CodexExecutionRuntime,
         workspaces: LocalWorkspaceStore,
         *,
-        capacity: int = 2,
-        queue_limit: int = 64,
+        queue_high_watermark: int = 10000,
         subagents: int = 0,
-        pressure_enabled: bool = False,
+        launch_wave_size: int = 3,
+        launch_interval_seconds: float = 2.0,
+        startup_concurrency: int = 3,
+        background_aging_seconds: float = 300,
+        safety_state_path: Path | None = None,
     ) -> None:
         self._runtime = runtime
         self._workspaces = workspaces
         self.store = JobStore(workspaces.root)
         self._jobs = _Jobs(self.store)
-        self.capacity, self.queue_limit, self.subagents = capacity, queue_limit, subagents
+        self.queue_high_watermark = queue_high_watermark
+        self.subagents = subagents
+        self.launch_wave_size = max(1, launch_wave_size)
+        self.launch_interval_seconds = max(0.05, launch_interval_seconds)
+        self.background_aging_seconds = max(1, background_aging_seconds)
         self.generation = uuid4().hex
-        self._active: dict[str, tuple[str, int]] = {}
+        self._active: dict[str, str] = {}
+        self._active_lanes: dict[str, str] = {}
         self._pending_finish: dict[str, dict[str, object]] = {}
-        self._startup = asyncio.Semaphore(1)
+        self.startup_concurrency = max(1, startup_concurrency)
+        self._startup = asyncio.Semaphore(self.startup_concurrency)
         self._closed = False
-        self._runtime_streak = 0
         self._probe_active = False
-        self.pressure = PressureController()
-        self.pressure_enabled = pressure_enabled
-        self._sample_at = 0.0
-        self._pressure_interruptions: list[float] = list(
-            self.store.metadata("pressure_cooldown").get("interruptions", [])
-        )
-        self._cooldown_until = float(self.store.metadata("pressure_cooldown").get("until", 0))
+        self.safety = SafetyStateReader(safety_state_path)
         self._forced_reason: dict[str, str] = {}
+        self._critical_intervened = False
+        self._next_launch_at = 0.0
         self._processes_recovered = not hasattr(runtime, "recover")
         self._pump: asyncio.Task[None] | None = None
         self._tasks: dict[str, asyncio.Task[None]] = {}
-        self._resource_tokens: dict[str, str] = {}
-        self._budget_wait = False
+        self._starting: set[str] = set()
         self._handles: dict[str, TurnHandle] = {}
         self._condition = asyncio.Condition()
-        self._resource_log = RotatingFileHandler(
-            workspaces.root / "resource-samples.jsonl",
-            maxBytes=4 * 1024**2,
-            backupCount=3,
-            encoding="utf-8",
-            delay=True,
-        )
         self._recover_snapshots()
         if hasattr(runtime, "receipt_callback"):
             runtime.receipt_callback = self._capture_identity
@@ -139,15 +129,15 @@ class WorkerJobManager:
                 raise ValueError("idempotency key reused for a different worker request")
             self.start()
             return existing.model_copy(deep=True)
-        if self._closed or len(self.store.queued()) >= self.queue_limit:
-            raise CapacityBusy("RESOURCE_CAPACITY")
+        if self._closed or len(self.store.queued()) >= self.queue_high_watermark:
+            raise QueueHighWatermark("QUEUE_STORAGE_HIGH_WATERMARK")
         job = WorkerJob(
             job_id=job_id,
             run_id=request.run_id,
             attempt_id=request.attempt_id,
             request_sha256=request_sha256,
             status="queued",
-            wait_reason="RESOURCE_CAPACITY",
+            wait_reason="LAUNCH_RAMP",
         )
         # Persist before the first await: duplicate HTTP submissions cannot dispatch twice.
         self.store.save(job, request)
@@ -165,14 +155,14 @@ class WorkerJobManager:
         probe = getattr(self._runtime, "probe", None)
         if probe is None:
             return {"provider_probe": "not_supported"}
+        snapshot = self.safety.read()
         if (
             self._probe_active
             or not self._processes_recovered
-            or self.pressure.paused
-            or sum(w for _, w in self._active.values()) >= self.capacity
+            or snapshot.level is not SafetyLevel.NORMAL
         ):
             return {"provider_probe": "deferred_capacity"}
-        # Readiness must not create a third resident SDK/MCP stack or steal a job slot.
+        # Readiness follows the cold-start ramp but does not consume long-lived capacity.
         self._probe_active = True
         quarantined = False
         try:
@@ -191,101 +181,83 @@ class WorkerJobManager:
             self._processes_recovered = True
             self._recover_snapshots()  # Completions may commit during old-process cleanup.
         while not self._closed:
-            if self.pressure_enabled and time.monotonic() >= self._sample_at:
-                value = await asyncio.to_thread(sample)
-                self.pressure.update(value)
-                self._resource_log.emit(
-                    logging.makeLogRecord(
-                        {
-                            "msg": json.dumps(
-                                {
-                                    **asdict(value),
-                                    "at": time.time(),
-                                    "paused": self.pressure.paused,
-                                    "occupied": sum(w for _, w in self._active.values()),
-                                }
-                            )
-                        }
+            snapshot = self.safety.read()
+            self.store.metadata(
+                "safety",
+                {
+                    "level": snapshot.level.value,
+                    "observed_at": snapshot.observed_at,
+                    "reasons": list(snapshot.reasons),
+                    "stale": snapshot.stale,
+                },
+            )
+            if snapshot.level is not SafetyLevel.CRITICAL:
+                self._critical_intervened = False
+            if (
+                snapshot.level is SafetyLevel.CRITICAL
+                and self._tasks
+                and not self._critical_intervened
+            ):
+                candidates = [
+                    key
+                    for key in self._tasks
+                    if self._active_lanes.get(key) == "background"
+                    and self._jobs[key].execution_phase in {"STARTING", "RUNNING"}
+                ]
+                if candidates:
+                    measure = getattr(self._runtime, "memory_for", lambda _request: 0)
+                    victim = max(
+                        candidates,
+                        key=lambda key: measure(self.store.request(key))
+                        if self.store.request(key) is not None
+                        else 0,
                     )
-                )
-                self._sample_at = time.monotonic() + 5
-                self.store.metadata(
-                    "pressure", {**asdict(value), "paused": self.pressure.paused, "at": time.time()}
-                )
-                measure = getattr(self._runtime, "memory_for", None)
-                if measure is not None:
-                    for key in list(self._tasks):
-                        request = self.store.request(key)
-                        if request is None:
-                            continue
-                        rss = await asyncio.to_thread(measure, request)
-                        receipt = self._jobs[key].resource_receipt
-                        await self._update(
-                            key,
-                            resource_receipt={
-                                **receipt,
-                                "rss_bytes": rss,
-                                "peak_rss_bytes": max(rss, receipt.get("peak_rss_bytes", 0)),
-                            },
-                        )
-                reap = getattr(self._runtime, "reap_idle", None)
-                if self.pressure.paused and reap is not None:
-                    reclaimed = await reap(all_idle=True)
-                    if reclaimed:
-                        value = await asyncio.to_thread(sample)
-                        self.pressure.update(value)
-                if self.pressure.extreme and self._tasks and not self._forced_reason:
-                    candidates = [
-                        key
-                        for key in self._tasks
-                        if key not in self._forced_reason
-                        and self._jobs[key].execution_phase in {"STARTING", "RUNNING"}
-                    ]
-                    if candidates:
-
-                        def priority(key: str) -> tuple[int, int]:
-                            request = self.store.request(key)
-                            measure = getattr(self._runtime, "memory_for", lambda _request: 0)
-                            return (
-                                int(
-                                    request is not None
-                                    and request.research_lane.value == "persistent_runtime"
-                                ),
-                                -measure(request) if request else 0,
-                            )
-
-                        victim = min(candidates, key=priority)
-                        now = time.time()
-                        self._pressure_interruptions = [
-                            t for t in self._pressure_interruptions if now - t < 600
-                        ] + [now]
-                        if len(self._pressure_interruptions) >= 3:
-                            self._cooldown_until = now + 600
-                        self.store.metadata(
-                            "pressure_cooldown",
-                            {
-                                "until": self._cooldown_until,
-                                "interruptions": self._pressure_interruptions,
-                            },
-                        )
-                        self._forced_reason[victim] = "WORKER_RESOURCE_PRESSURE"
-                        self._tasks[victim].cancel()
+                    self._critical_intervened = True
+                    self._forced_reason[victim] = "WORKER_RESOURCE_CRITICAL"
+                    self._tasks[victim].cancel()
             reap = getattr(self._runtime, "reap_idle", None)
             if reap is not None:
-                await reap(all_idle=self.pressure.paused or self._budget_wait)
+                await reap(all_idle=snapshot.level is not SafetyLevel.NORMAL)
             self._schedule()
             await asyncio.sleep(0.25)
 
     def _schedule(self) -> None:
-        self._budget_wait = False
-        if (
-            self._closed
-            or not self._processes_recovered
-            or self.pressure.paused
-            or time.time() < self._cooldown_until
-        ):
+        if self._closed or not self._processes_recovered:
             return
-        for job_id in self.store.queued(prefer_runtime=self._runtime_streak < 3):
+        now = time.monotonic()
+        if now < self._next_launch_at:
+            return
+        snapshot = self.safety.read()
+        realtime = self.store.queued(lane="realtime")
+        background = self.store.queued(lane="background")
+        if snapshot.level is SafetyLevel.CRITICAL:
+            self._mark_waiting(realtime + background, "SAFETY_CRITICAL")
+            return
+        if snapshot.level is SafetyLevel.PRESSURE:
+            self._mark_waiting(background, "SAFETY_PRESSURE")
+            queued = realtime
+            wave_size = 1
+        else:
+            oldest_background = self._jobs.get(background[0]) if background else None
+            aged = bool(
+                oldest_background
+                and (utc_now() - oldest_background.created_at).total_seconds()
+                >= self.background_aging_seconds
+            )
+            if aged and realtime:
+                queued = realtime[: self.launch_wave_size - 1] + background[:1]
+                queued += realtime[self.launch_wave_size - 1 :] + background[1:]
+            else:
+                queued = realtime + background
+            wave_size = self.launch_wave_size
+        launched = 0
+        wave_size = min(
+            wave_size,
+            max(0, self.startup_concurrency - len(self._starting)),
+        )
+        for job_id in queued:
+            if launched >= wave_size:
+                break
             if job_id in self._tasks:
                 continue
             job = self._jobs[job_id]
@@ -297,43 +269,26 @@ class WorkerJobManager:
             effective_subagents = (
                 min(self.subagents, request.max_subagents) if request.allow_subagents else 0
             )
-            weight = 1 + effective_subagents
+            lane = _execution_lane(request)
             effective_thread = (
                 job.thread_id if job.infra_recovery_count and job.thread_id else request.thread_id
             )
             identity = effective_thread or request.run_id
-            if sum(w for _, w in self._active.values()) + weight + int(
-                self._probe_active
-            ) > self.capacity or identity in {key for key, _ in self._active.values()}:
+            if identity in set(self._active.values()):
                 continue
-            from doxagent.resource_budget import acquire_admission
-
-            maintenance = request.run_id.startswith("runtime-maintain-")
-            runtime = request.research_lane.value == "persistent_runtime"
-            kind = ("codex_maintenance" if maintenance else
-                    "codex_runtime" if runtime else "codex_initialization")
-            batch = _resource_batch(request, maintenance=maintenance)
-            admission = acquire_admission(kind, job_id, batch=batch, slots=weight)
-            token = admission.get("token", "disabled") if admission.get("ok") else None
-            if token is None:
-                self._budget_wait = True
-                reason = str(admission.get("reason") or "RESOURCE_BUDGET_WAIT")
-                if job.wait_reason != reason or job.resource_receipt.get("admission") != admission:
-                    self._jobs[job_id] = job.model_copy(
-                        update={
-                            "wait_reason": reason,
-                            "resource_receipt": {**job.resource_receipt, "admission": admission},
-                        }
-                    )
-                    self.store.save(self._jobs[job_id])
-                continue
-            self._resource_tokens[job_id] = token
-            self._active[job_id] = (identity, weight)
-            self._runtime_streak = (
-                self._runtime_streak + 1
-                if request.research_lane.value == "persistent_runtime"
-                else 0
+            self._active[job_id] = identity
+            self._active_lanes[job_id] = lane
+            self._jobs[job_id] = job.model_copy(
+                update={
+                    "wait_reason": None,
+                    "resource_receipt": {
+                        **job.resource_receipt,
+                        "execution_lane": lane,
+                        "dispatch_safety_level": snapshot.level.value,
+                    },
+                }
             )
+            self.store.save(self._jobs[job_id])
             effective = request.model_copy(
                 update={
                     "allow_subagents": bool(effective_subagents),
@@ -343,24 +298,31 @@ class WorkerJobManager:
             )
             task = asyncio.create_task(self._execute(job_id, effective))
             self._tasks[job_id] = task
+            self._starting.add(job_id)
             task.add_done_callback(partial(self._task_done, job_id))
-            if self._runtime_streak == 3:
-                break  # Recompute research-first fairness on the next dispatcher tick.
+            launched += 1
+        if launched:
+            self._next_launch_at = now + self.launch_interval_seconds
+
+    def _mark_waiting(self, job_ids: list[str], reason: str) -> None:
+        for job_id in job_ids:
+            job = self._jobs.get(job_id)
+            if job is not None and job.wait_reason != reason:
+                self._jobs[job_id] = job.model_copy(update={"wait_reason": reason})
+                self.store.save(self._jobs[job_id])
 
     def _task_done(self, job_id: str, task: asyncio.Task[None]) -> None:
         self._tasks.pop(job_id, None)
         # Cancellation before the coroutine's first instruction has no finally block.
         if task.cancelled() and self._jobs[job_id].execution_phase == "QUEUED":
             self._active.pop(job_id, None)
-            from doxagent.resource_budget import release
-            release(self._resource_tokens.pop(job_id, None))
+            self._active_lanes.pop(job_id, None)
+        self._starting.discard(job_id)
         if not task.cancelled():
             task.exception()  # Retrieve supervisor errors; durable status remains inspectable.
 
     async def _execute(self, job_id: str, request: WorkerRunRequest) -> None:
-        from doxagent.resource_budget import renew
-        with renew(self._resource_tokens.get(job_id)):
-            await self._execute_leased(job_id, request)
+        await self._execute_leased(job_id, request)
 
     async def _execute_leased(self, job_id: str, request: WorkerRunRequest) -> None:
         try:
@@ -395,6 +357,7 @@ class WorkerJobManager:
             infrastructure = finish.get("error_code") in {
                 "WORKER_PROCESS_EXITED",
                 "WORKER_RESOURCE_PRESSURE",
+                "WORKER_RESOURCE_CRITICAL",
                 "WORKER_RESTARTED",
                 "WORKER_MCP_UNAVAILABLE",
             }
@@ -425,8 +388,7 @@ class WorkerJobManager:
             await blocking(self._persist_telemetry, request, self._jobs[job_id])
             if cleanup_ok:
                 self._active.pop(job_id, None)
-                from doxagent.resource_budget import release
-                release(self._resource_tokens.pop(job_id, None))
+                self._active_lanes.pop(job_id, None)
 
     async def close(self) -> None:
         self._closed = True
@@ -440,11 +402,47 @@ class WorkerJobManager:
         close = getattr(self._runtime, "close", None)
         if close is not None:
             await close()
-        self._resource_log.close()
 
     def get(self, job_id: str) -> WorkerJob | None:
         job = self._jobs.get(job_id)
         return job.model_copy(deep=True) if job else None
+
+    def resources(self) -> dict[str, object]:
+        snapshot = self.safety.read()
+        now = utc_now()
+        active_by_lane = {
+            lane: sum(1 for value in self._active_lanes.values() if value == lane)
+            for lane in ("realtime", "background")
+        }
+        return {
+            "dispatcher": "elastic",
+            "active_executions": len(self._active),
+            "cold_starts": len(self._starting),
+            "active_by_lane": active_by_lane,
+            "queued": len(self.store.queued()),
+            "queued_by_lane": self.store.queued_counts(),
+            "oldest_queue_wait_seconds": {
+                lane: (
+                    max(0.0, (now - oldest.created_at).total_seconds())
+                    if (oldest := self.store.oldest_queued(lane)) is not None
+                    else 0.0
+                )
+                for lane in ("realtime", "background")
+            },
+            "launch_ramp": {
+                "wave_size": self.launch_wave_size,
+                "interval_seconds": self.launch_interval_seconds,
+                "startup_concurrency": self.startup_concurrency,
+            },
+            "safety": {
+                "level": snapshot.level.value,
+                "observed_at": snapshot.observed_at,
+                "reasons": list(snapshot.reasons),
+                "stale": snapshot.stale,
+            },
+            "dispatcher_running": self._pump is not None and not self._pump.done(),
+            "generation": self.generation,
+        }
 
     async def cancel(self, job_id: str) -> WorkerJob | None:
         job = self._jobs.get(job_id)
@@ -459,6 +457,7 @@ class WorkerJobManager:
             await asyncio.gather(task, return_exceptions=True)
             if self._jobs[job_id].status == "queued":
                 self._active.pop(job_id, None)
+                self._active_lanes.pop(job_id, None)
                 await self._update(
                     job_id, status="cancelled", execution_phase="SETTLED", finished_at=utc_now()
                 )
@@ -508,11 +507,15 @@ class WorkerJobManager:
                 execution_phase="STARTING",
             )
             phase = "START_THREAD"
-            async with self._startup:
-                handle = await asyncio.wait_for(
-                    self._runtime.start(request, run_root),
-                    timeout=min(120, request.timeout_seconds),
-                )
+            cold_start_started = time.monotonic()
+            try:
+                async with self._startup:
+                    handle = await asyncio.wait_for(
+                        self._runtime.start(request, run_root),
+                        timeout=min(120, request.timeout_seconds),
+                    )
+            finally:
+                self._starting.discard(job_id)
             self._handles[job_id] = handle
             process = getattr(handle, "process", None)
             await self._update(
@@ -523,6 +526,7 @@ class WorkerJobManager:
                 resource_receipt={
                     "capsule_id": getattr(handle, "identity", None),
                     "pid": getattr(process, "pid", None),
+                    "cold_start_ms": int((time.monotonic() - cold_start_started) * 1000),
                     "queue_wait_ms": max(
                         0, int((utc_now() - job.created_at).total_seconds() * 1000)
                     ),

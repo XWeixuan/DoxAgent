@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import os
 import sqlite3
 from contextlib import closing
 from pathlib import Path
@@ -84,25 +83,58 @@ class JobStore:
                 )
             ]
 
-    def queued(self, *, prefer_runtime: bool = True) -> list[str]:
-        order = "priority DESC, sequence" if prefer_runtime else "priority ASC, sequence"
-        if os.getenv("DOXAGENT_RESOURCE_SOCKET"):
-            if prefer_runtime:
-                order = ("CASE WHEN json_extract(request,'$.research_lane')="
-                         "'persistent_runtime' THEN 0 "
-                         "WHEN json_extract(request,'$.run_id') LIKE 'runtime-maintain-%' THEN 1 "
-                         "ELSE 2 END,sequence")
-            else:
-                # After three consecutive runtime dispatches, honor the manager's
-                # fairness turn. The prior resource-aware order ignored
-                # prefer_runtime and could starve initialization indefinitely.
-                order = ("CASE WHEN json_extract(request,'$.research_lane')="
-                         "'persistent_runtime' THEN 1 ELSE 0 END,sequence")
+    @staticmethod
+    def _lane_expression() -> str:
+        return (
+            "CASE WHEN json_extract(request,'$.execution_lane') IN ('realtime','background') "
+            "THEN json_extract(request,'$.execution_lane') "
+            "WHEN json_extract(request,'$.research_lane')='persistent_runtime' "
+            "AND json_extract(request,'$.run_id') NOT LIKE 'runtime-maintain-%' "
+            "THEN 'realtime' ELSE 'background' END"
+        )
+
+    def queued(
+        self,
+        *,
+        lane: str | None = None,
+        prefer_runtime: bool | None = None,
+    ) -> list[str]:
+        del prefer_runtime  # Compatibility only; lane policy owns ordering now.
+        lane_expression = self._lane_expression()
+        where = "status='queued'"
+        values: tuple[object, ...] = ()
+        if lane is not None:
+            where += f" AND {lane_expression}=?"
+            values = (lane,)
+        order = (
+            "CASE WHEN json_extract(request,'$.deadline_at') IS NULL THEN 1 ELSE 0 END,"
+            "json_extract(request,'$.deadline_at'),sequence"
+        )
         with closing(self.connect()) as db:
             return [
                 r[0]
-                for r in db.execute("SELECT id FROM jobs WHERE status='queued' ORDER BY " + order)
+                for r in db.execute(
+                    f"SELECT id FROM jobs WHERE {where} ORDER BY {order}", values
+                )
             ]
+
+    def queued_counts(self) -> dict[str, int]:
+        expression = self._lane_expression()
+        with closing(self.connect()) as db:
+            rows = db.execute(
+                f"SELECT {expression},COUNT(*) FROM jobs WHERE status='queued' GROUP BY 1"
+            ).fetchall()
+        return {str(lane): int(count) for lane, count in rows}
+
+    def oldest_queued(self, lane: str) -> WorkerJob | None:
+        expression = self._lane_expression()
+        with closing(self.connect()) as db:
+            row = db.execute(
+                f"SELECT payload FROM jobs WHERE status='queued' AND {expression}=? "
+                "ORDER BY sequence LIMIT 1",
+                (lane,),
+            ).fetchone()
+        return WorkerJob.model_validate_json(row[0]) if row else None
 
     def event(self, job_id: str, kind: str, payload: dict[str, Any]) -> None:
         with closing(self.connect()) as db, db:

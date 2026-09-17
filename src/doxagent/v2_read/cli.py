@@ -223,10 +223,7 @@ def main() -> None:
 
         with WriterLock(Path(str(store.path) + ".projector")):
             while True:
-                from doxagent.resource_budget import work
-                with work("projection") as admitted:
-                    if admitted:
-                        worker.tick(limit=args.limit)
+                worker.tick(limit=args.limit)
                 if args.once:
                     return
                 time.sleep(1)

@@ -7,6 +7,7 @@ import os
 import tempfile
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
 from fastapi.responses import JSONResponse, StreamingResponse
@@ -14,7 +15,7 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from doxagent.codex_runtime.capabilities import CapabilityTokenCodec
 from doxagent.codex_runtime.errors import CodexRuntimeError
 from doxagent.codex_worker.io_budget import DiskBudget, blocking
-from doxagent.codex_worker.jobs import CapacityBusy, WorkerJobManager
+from doxagent.codex_worker.jobs import QueueHighWatermark, WorkerJobManager
 from doxagent.codex_worker.schema import (
     WorkerJob,
     WorkerRunRequest,
@@ -46,15 +47,20 @@ def create_worker_app(
     owner = WriterLock(workspaces.root / "codex-worker") if runtime is None else None
     if owner is not None:
         owner.__enter__()
-    resolved_runtime = runtime or CapsuleRuntime(workspaces.root, settings.codex_worker_capacity)
+    resolved_runtime = runtime or CapsuleRuntime(workspaces.root)
     try:
         jobs = WorkerJobManager(
             resolved_runtime,
             workspaces,
-            capacity=settings.codex_worker_capacity,
-            queue_limit=settings.codex_worker_queue_limit,
+            queue_high_watermark=settings.codex_queue_high_watermark,
             subagents=settings.codex_worker_subagents,
-            pressure_enabled=settings.codex_worker_pressure_enabled,
+            launch_wave_size=settings.codex_launch_wave_size,
+            launch_interval_seconds=settings.codex_launch_interval_seconds,
+            startup_concurrency=settings.codex_startup_concurrency,
+            background_aging_seconds=settings.codex_background_aging_seconds,
+            safety_state_path=(
+                Path(settings.safety_state_path) if settings.safety_state_path else None
+            ),
         )
     except BaseException:
         if owner is not None:
@@ -133,15 +139,7 @@ def create_worker_app(
 
     @app.get("/v1/resources", dependencies=[Depends(require_service_auth)])
     async def resources() -> dict[str, object]:
-        return {
-            "capacity": jobs.capacity,
-            "occupied": sum(w for _, w in jobs._active.values()) + int(jobs._probe_active),
-            "queued": len(jobs.store.queued()),
-            "pressure": jobs.store.metadata("pressure"),
-            "cooldown": jobs.store.metadata("pressure_cooldown"),
-            "dispatcher_running": jobs._pump is not None and not jobs._pump.done(),
-            "generation": jobs.generation,
-        }
+        return jobs.resources()
 
     @app.get("/v1/capabilities", dependencies=[Depends(require_service_auth)])
     async def worker_capabilities() -> dict[str, object]:
@@ -206,9 +204,11 @@ def create_worker_app(
     async def submit_job(request: WorkerRunRequest) -> WorkerJob:
         try:
             return await jobs.submit(request)
-        except CapacityBusy as exc:
+        except QueueHighWatermark as exc:
             raise HTTPException(
-                status_code=429, detail="RESOURCE_CAPACITY", headers={"Retry-After": "5"}
+                status_code=429,
+                detail="QUEUE_STORAGE_HIGH_WATERMARK",
+                headers={"Retry-After": "5"},
             ) from exc
         except ValueError as exc:
             raise HTTPException(status_code=409, detail=str(exc)) from exc

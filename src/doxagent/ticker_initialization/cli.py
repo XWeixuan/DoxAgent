@@ -72,12 +72,15 @@ async def _worker(repo: InitializationRepository, once: bool) -> int:
     owner = WriterLock(repo.path.parent / "initialization-worker")
     owner.__enter__()
 
-    worker = InitializationWorker(repo, adapter_factory)
     from doxagent.settings import DoxAgentSettings
 
     from .sync import SupabaseSummarySink, flush_summaries
 
     settings = DoxAgentSettings()
+    workers = [
+        InitializationWorker(repo, adapter_factory)
+        for _ in range(1 if once else settings.ticker_initialization_concurrency)
+    ]
     sink = (
         SupabaseSummarySink(
             settings.ticker_initialization_summary_url, settings.ticker_initialization_summary_key
@@ -103,7 +106,9 @@ async def _worker(repo: InitializationRepository, once: bool) -> int:
 
     signal.signal(signal.SIGTERM, terminate)
     try:
-        return await _run_loop(worker, once)
+        if once:
+            return await _run_loop(workers[0], True)
+        return await _run_parallel_loop(workers)
     except asyncio.CancelledError:
         return 130
     finally:
@@ -125,6 +130,21 @@ async def _run_loop(worker: InitializationWorker, once: bool) -> int:
             return 1 if result and result.status == RunStatus.FAILED else 0
         if result is None:
             await asyncio.sleep(1)
+
+
+async def _run_parallel_loop(workers: list[InitializationWorker]) -> int:
+    """Keep many ticker orchestrators live without reserving stage resources."""
+
+    async def drive(worker: InitializationWorker) -> None:
+        while True:
+            result = await worker.run_once()
+            if result is not None:
+                print(result.model_dump_json())
+            else:
+                await asyncio.sleep(0.25)
+
+    await asyncio.gather(*(drive(worker) for worker in workers))
+    return 0
 
 
 def main(argv: list[str] | None = None) -> int:

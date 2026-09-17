@@ -63,6 +63,8 @@ class WorkerRunRequest(WorkerModel):
     allow_subagents: bool = False
     max_subagents: int = Field(default=2, ge=0, le=2)
     timeout_seconds: int = Field(default=1800, ge=30, le=7200)
+    execution_lane: Literal["realtime", "background"] | None = None
+    deadline_at: datetime | None = None
 
 
 class WorkerTokenUsage(WorkerModel):

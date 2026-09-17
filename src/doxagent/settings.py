@@ -20,17 +20,38 @@ class DoxAgentSettings(BaseSettings):
         populate_by_name=True,
     )
 
-    codex_worker_capacity: int = Field(
-        default=2, ge=1, le=16, validation_alias="DOXAGENT_CODEX_WORKER_CAPACITY"
+    codex_queue_high_watermark: int = Field(
+        default=10000,
+        ge=100,
+        le=100000,
+        validation_alias="DOXAGENT_CODEX_QUEUE_HIGH_WATERMARK",
     )
-    codex_worker_queue_limit: int = Field(
-        default=64, ge=1, le=4096, validation_alias="DOXAGENT_CODEX_WORKER_QUEUE_LIMIT"
+    codex_launch_wave_size: int = Field(
+        default=3, ge=1, le=32, validation_alias="DOXAGENT_CODEX_LAUNCH_WAVE_SIZE"
+    )
+    codex_launch_interval_seconds: float = Field(
+        default=2.0,
+        ge=0.05,
+        le=60,
+        validation_alias="DOXAGENT_CODEX_LAUNCH_INTERVAL_SECONDS",
+    )
+    codex_startup_concurrency: int = Field(
+        default=3, ge=1, le=16, validation_alias="DOXAGENT_CODEX_STARTUP_CONCURRENCY"
+    )
+    codex_background_aging_seconds: float = Field(
+        default=300,
+        ge=1,
+        le=86400,
+        validation_alias="DOXAGENT_CODEX_BACKGROUND_AGING_SECONDS",
+    )
+    ticker_initialization_concurrency: int = Field(
+        default=16, ge=1, le=32, validation_alias="DOXAGENT_TICKER_INITIALIZATION_CONCURRENCY"
+    )
+    safety_state_path: str | None = Field(
+        default=None, validation_alias="DOXAGENT_SAFETY_STATE_PATH"
     )
     codex_worker_subagents: int = Field(
         default=0, ge=0, le=1, validation_alias="DOXAGENT_CODEX_WORKER_SUBAGENTS"
-    )
-    codex_worker_pressure_enabled: bool = Field(
-        default=False, validation_alias="DOXAGENT_CODEX_WORKER_PRESSURE_ENABLED"
     )
     codex_d2_max_concurrency: int = Field(
         default=2, ge=1, le=16, validation_alias="DOXAGENT_CODEX_D2_MAX_CONCURRENCY"
@@ -819,12 +840,6 @@ class DoxAgentSettings(BaseSettings):
         ge=30,
         le=7200,
         validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_W3_TIMEOUT_SECONDS",
-    )
-    persistent_runtime_v2_w3_max_ticker_concurrency: int = Field(
-        default=5,
-        ge=1,
-        le=32,
-        validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_W3_MAX_TICKER_CONCURRENCY",
     )
     persistent_runtime_v2_w3_lease_seconds: int = Field(
         default=1200,

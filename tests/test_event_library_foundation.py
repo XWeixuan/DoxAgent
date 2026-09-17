@@ -110,6 +110,33 @@ def test_frozen_contracts_reject_runtime_provenance_fields() -> None:
         CanonicalEvent.model_validate(payload)
 
 
+def test_published_event_allows_empty_membership_only_after_retirement() -> None:
+    payload = {
+        "event_id": "E1",
+        "ticker": "MU",
+        "title": "Occurrence",
+        "event_type": "DISCLOSURE",
+        "occurred_at": "2026-08-24",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "A canonical summary.",
+        "known_event_summary": "A distinguishing known event summary.",
+        "is_important": False,
+        "include_in_reference_view": False,
+        "related_event_ids": [],
+        "supersedes_event_id": None,
+        "derived_from_event_ids": [],
+        "facts": [],
+        "price_analysis": None,
+    }
+
+    with pytest.raises(ValidationError, match="ACTIVE Events require at least one Fact"):
+        CanonicalEvent.model_validate(payload)
+
+    retired = CanonicalEvent.model_validate({**payload, "status": "MERGED"})
+    assert retired.facts == []
+
+
 def test_per_ticker_registry_binding_is_deterministic_and_rejects_mismatch(
     tmp_path: Path,
 ) -> None:

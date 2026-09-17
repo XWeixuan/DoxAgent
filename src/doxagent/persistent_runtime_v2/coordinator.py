@@ -41,11 +41,15 @@ class RuntimeCoordinator:
         self.maintain, self.select = maintain, select
         self.external_delivery = external_delivery
         self.prepare_case_inputs = prepare_case_inputs
-        self._realtime = ThreadPoolExecutor(max_workers=4, thread_name_prefix="runtime-case")
-        self._background = ThreadPoolExecutor(max_workers=2, thread_name_prefix="runtime-maintain")
-        self._sweeps = ThreadPoolExecutor(max_workers=2, thread_name_prefix="runtime-sweep")
+        # These executors are transport for blocking provider clients, not resource
+        # admission pools.  Their generous bounds keep the intended 15-25 ticker
+        # workload away from an artificial 4/2 workflow gate.
+        self._realtime = ThreadPoolExecutor(max_workers=64, thread_name_prefix="runtime-case")
+        self._background = ThreadPoolExecutor(
+            max_workers=32, thread_name_prefix="runtime-maintain"
+        )
+        self._sweeps = ThreadPoolExecutor(max_workers=32, thread_name_prefix="runtime-sweep")
         self._futures: dict[str, Future[Any]] = {}
-        self._resource_tokens: dict[str, str] = {}
         self._closed = False
         self._effects = ThreadPoolExecutor(max_workers=1, thread_name_prefix="runtime-effects")
         self._effect_future: Future[Any] | None = None
@@ -358,29 +362,11 @@ class RuntimeCoordinator:
                 if kind == "CASE"
                 else (self._sweeps if kind == "SWEEP" else self._background)
             )
-            capacity = 4 if kind == "CASE" else 2
-            active = [
-                key for key in self._futures if (self.journal.get_task(key) or {})["kind"] == kind
-            ]
-            if len(active) >= capacity:
-                continue
-            from doxagent.resource_budget import acquire, release
-            token = acquire("realtime" if kind == "CASE" else "maintenance", task["id"],
-                            batch="maintenance:" + ticker)
-            if token is None:
-                continue
-            try:
-                lease = self.journal.claim(
-                    task["id"], seconds=120, prepare_inputs=self.prepare_case_inputs,
-                )
-            except Exception:
-                release(token)
-                raise
+            lease = self.journal.claim(
+                task["id"], seconds=120, prepare_inputs=self.prepare_case_inputs,
+            )
             if lease:
-                self._resource_tokens[task["id"]] = token
                 self._futures[task["id"]] = pool.submit(self._execute, lease)
-            else:
-                release(token)
 
     def _waiting_cases(self, task: dict[str, Any]) -> bool:
         if task["inputs"].get("repair_id"):
@@ -432,15 +418,9 @@ class RuntimeCoordinator:
         )
 
     def _execute(self, task: dict[str, Any]) -> None:
-        from doxagent.resource_budget import release, renew
-
         from .heartbeat import heartbeat
-        token = self._resource_tokens.get(task["id"])
-        try:
-            with heartbeat(lambda: self.journal.renew(task)), renew(token):
-                self._execute_owned(task)
-        finally:
-            release(self._resource_tokens.pop(task["id"], None))
+        with heartbeat(lambda: self.journal.renew(task)):
+            self._execute_owned(task)
 
     def _execute_owned(self, task: dict[str, Any]) -> None:
         try:

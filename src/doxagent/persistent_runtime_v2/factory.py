@@ -254,7 +254,6 @@ def build_persistent_runtime_v2_service(
         max_retry_attempts=settings.persistent_runtime_v2_retry_attempts,
         projection_outbox=projection_outbox,
         w3_agent=w3_agent,
-        w3_max_ticker_concurrency=(settings.persistent_runtime_v2_w3_max_ticker_concurrency),
         w3_lease_seconds=settings.persistent_runtime_v2_w3_lease_seconds,
     )
     if journal:

@@ -418,7 +418,7 @@ def test_service_runs_parallel_hot_path_then_w3_owned_delta(tmp_path: Path) -> N
         service.execute_message(_source())
 
 
-@pytest.mark.parametrize(("failures", "expected_status"), [(1, "ADJUDICATED"), (2, "FAILED")])
+@pytest.mark.parametrize(("failures", "expected_status"), [(1, "PENDING_W3"), (2, "FAILED")])
 def test_runtime_model_round_retries_at_most_once(failures: int, expected_status: str) -> None:
     responses = _RetryingW1Responses(failures)
     repository = InMemoryPersistentRuntimeV2Repository()

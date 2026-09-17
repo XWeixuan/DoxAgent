@@ -309,7 +309,11 @@ class CanonicalEvent(StrictModel):
         description="Earlier Events from which this occurrence directly derives.",
     )
     facts: Sequence[CanonicalFact] = Field(
-        min_length=1, description="Complete active Fact membership for this Event revision."
+        default_factory=list,
+        description=(
+            "Complete active Fact membership for this Event revision. ACTIVE Events require at "
+            "least one Fact; retired MERGED/SUPPRESSED snapshots may have none."
+        ),
     )
     price_analysis: dict[str, Any] | None = Field(
         default=None,
@@ -342,6 +346,8 @@ class CanonicalEvent(StrictModel):
 
     @model_validator(mode="after")
     def validate_membership(self) -> CanonicalEvent:
+        if self.status is CanonicalObjectStatus.ACTIVE and not self.facts:
+            raise ValueError("ACTIVE Events require at least one Fact")
         fact_ids = [item.fact_id for item in self.facts]
         if len(fact_ids) != len(set(fact_ids)):
             raise ValueError("facts must have unique fact_id values")

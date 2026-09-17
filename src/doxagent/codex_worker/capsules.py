@@ -1,4 +1,4 @@
-"""Bounded, thread-affine SDK process capsules, independently reclaimable."""
+"""Thread-affine SDK process capsules with elastic active concurrency."""
 
 from __future__ import annotations
 
@@ -129,8 +129,8 @@ class Capsule:
 
 
 class CapsuleRuntime:
-    def __init__(self, root: Path, capacity: int = 2) -> None:
-        self.root, self.capacity = root, capacity
+    def __init__(self, root: Path) -> None:
+        self.root = root
         self.pool: list[Capsule] = []
         self.active: dict[str, Capsule] = {}
         self._lock = asyncio.Lock()
@@ -159,36 +159,27 @@ class CapsuleRuntime:
     def key(request: WorkerRunRequest) -> str:
         return request.run_id + ":" + (request.idempotency_key or request.attempt_id)
 
-    async def _take(self, thread_id: str | None, weight: int = 1) -> Capsule:
+    async def _take(self, thread_id: str | None) -> Capsule:
         async with self._lock:
             idle = [c for c in self.pool if not c.busy]
-            if thread_id is not None and weight == 1:
+            if thread_id is not None:
                 match = next((c for c in idle if c.thread_id == thread_id), None)
                 if match is not None:
                     match.busy = True
                     return match
-            # Clear other resident sessions before allocating native subagent capacity.
-            while len(self.pool) > self.capacity - weight and idle:
-                old = idle.pop(0)
-                if weight == 1 and old.thread_id == thread_id:
-                    old.busy = True
-                    return old
-                await old.close()
-                self.pool.remove(old)
-            if len(self.pool) >= self.capacity - weight + 1:
-                raise CapsuleError("RESOURCE_CAPACITY", "all capsules occupied")
             capsule = Capsule(self.root)
             self.pool.append(capsule)
-            try:
-                await capsule.launch()
-            except BaseException:
-                await capsule.close()
+        try:
+            await capsule.launch()
+        except BaseException:
+            await capsule.close()
+            async with self._lock:
                 self.pool.remove(capsule)
-                raise
-            return capsule
+            raise
+        return capsule
 
     async def start(self, request: WorkerRunRequest, cwd: Path) -> Capsule:
-        capsule = await self._take(request.thread_id, 1 + request.max_subagents)
+        capsule = await self._take(request.thread_id)
         self.active[self.key(request)] = capsule
         capsule.healthy = False
         await capsule.send(

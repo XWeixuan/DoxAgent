@@ -1578,15 +1578,15 @@ Router 使用 W2 最终轮结果。
 | NEW |      否 |          否 |      是 | W3                |
 | NEW |      是 |          是 |      否 | W3                |
 | NEW |      否 |          是 |      否 | TRADE             |
-| NEW |      是 |          否 |      否 | ADD_TO_DELTA      |
-| NEW |      否 |          否 |      否 | ADD_TO_DELTA      |
+| NEW |      是 |          否 |      否 | W3                |
+| NEW |      否 |          否 |      否 | W3                |
 | OLD |      是 |          是 |      是 | W3                |
-| OLD |      否 |          是 |      是 | ARCHIVE + BADCASE |
+| OLD |      否 |          是 |      是 | W3                |
 | OLD |      是 |          否 |      是 | W3                |
-| OLD |      否 |          否 |      是 | ARCHIVE           |
+| OLD |      否 |          否 |      是 | W3                |
 | OLD |      是 |          是 |      否 | W3                |
 | OLD |      否 |          是 |      否 | ARCHIVE + BADCASE |
-| OLD |      是 |          否 |      否 | ADD_TO_DELTA      |
+| OLD |      是 |          否 |      否 | W3                |
 | OLD |      否 |          否 |      否 | ARCHIVE           |
 
 ---

@@ -438,19 +438,21 @@ def test_w3_has_web_search_skill_but_no_data_mcp_budget() -> None:
     )
 
 
-def test_sqlite_w3_main_and_fallback_slots_enforce_only_ticker_limit(
+def test_sqlite_w3_thread_binding_has_no_ticker_capacity_gate(
     tmp_path: Path,
 ) -> None:
     repository = SQLitePersistentRuntimeV2Repository(tmp_path / "runtime.sqlite3")
     cases = [_runtime_case(f"msg-{index}") for index in range(6)]
     for case in cases:
         repository.save_case(case)
-    slots = [repository.acquire_w3_slot(ticker="MU", case_id=case.case_id) for case in cases[:5]]
+    slots = [repository.acquire_w3_slot(ticker="MU", case_id=case.case_id) for case in cases]
     assert slots[0] is not None and slots[0].kind is W3ThreadKind.MAIN
     assert all(slot is not None and slot.kind is W3ThreadKind.FALLBACK for slot in slots[1:])
-    assert repository.acquire_w3_slot(ticker="MU", case_id=cases[5].case_id) is None
+    assert slots[5] is not None and slots[5].kind is W3ThreadKind.FALLBACK
     repository.release_w3_slot(cast(Any, slots[0]), thread_id="thread-mu-main")
-    resumed = repository.acquire_w3_slot(ticker="MU", case_id=cases[5].case_id)
+    extra = _runtime_case("msg-extra")
+    repository.save_case(extra)
+    resumed = repository.acquire_w3_slot(ticker="MU", case_id=extra.case_id)
     assert resumed is not None
     assert resumed.kind is W3ThreadKind.MAIN
     assert resumed.thread_id == "thread-mu-main"

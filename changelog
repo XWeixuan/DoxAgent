@@ -1112,3 +1112,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-17 · Reuters/Yahoo 消息源代理抓取恢复：Reuters Site Search 通过 Crawler Plane 显式使用 DOXAGENT_CRAWLER_EGRESS_PROXY_URL；共享 CDP 不可用或上下文已关闭时，自动重建无身份的代理 Chromium，避免 TargetClosedError 长期锁死。Yahoo Finance News 恢复页面爬虫→NCP→RSS 默认优先级，并保留失败冷却与回退；43 项相关测试及 Ruff 通过，待远端真实流量验收。
 
 2026-09-17 · Reuters/Yahoo 代理消息源远端验收：仅重建并替换 v2-message-bus，初始化容器启动时间不变、restart=0、OOM=false。Reuters 从连续 1,327 次 TargetClosedError 恢复并连续多轮成功，Clash 确认走荷兰节点；Yahoo 页面首选路径诊断为 page_network_ncp / HTTP 200 / page_js_fetch，返回 20 条且无回退尝试，页面与内部接口走日本节点，自然轮询连续成功且未再出现抓取 429。提交 c692278f 已部署。
+
+2026-09-17 · Overview RKLB 终态投影修复：Event Library 已退役的 MERGED/SUPPRESSED Event 可以没有当前活跃 Fact，仅 ACTIVE Event 继续强制至少一个 Fact。避免合法的无成员退役 Event 在 V2 Library 投影时触发 ValidationError，进而使 activation revision 缺失、ticker control 终态永久留在 gap，Overview 误显示 INITIALIZING/BLOCKED。保留发布修订 CanonicalEventRevision 的非空 Fact 要求。

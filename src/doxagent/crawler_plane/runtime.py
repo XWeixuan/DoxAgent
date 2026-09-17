@@ -48,13 +48,15 @@ class PlaywrightBrowserRuntime:
         channel: str | None = None,
         identity_dir: str | None = None,
         cdp_url: str | None = None,
+        max_pages: int = 4,
         proxy_url: str | None = None,
     ) -> None:
         self._playwright: Any | None = None
         self._browser: Any | None = None
         self._context: Any | None = None
         self._owns_browser = False
-        self._lock = asyncio.Lock()
+        self._start_lock = asyncio.Lock()
+        self._slots = asyncio.Semaphore(max(1, max_pages))
         self.headless = headless
         self.channel = channel
         self.identity_dir = identity_dir
@@ -65,51 +67,42 @@ class PlaywrightBrowserRuntime:
     async def _ensure(self) -> Any:
         if self._context is not None:
             return self._context
-        try:
-            from playwright.async_api import async_playwright
-        except ImportError as exc:
-            raise RuntimeError("Playwright is not installed") from exc
-        playwright = await async_playwright().start()
-        self._playwright = playwright
-        proxy_options: dict[str, Any] = {}
-        if self.proxy_url:
-            proxy_options["proxy"] = {"server": self.proxy_url}
-        try:
-            if self.cdp_url:
-                self._browser = await playwright.chromium.connect_over_cdp(
-                    self.cdp_url, timeout=5_000
-                )
-                contexts = self._browser.contexts
-                if not contexts:
-                    raise RuntimeError("CDP browser has no persistent default context")
-                if self.proxy_url:
-                    self._context = await self._browser.new_context(
-                        accept_downloads=False, **proxy_options
+        async with self._start_lock:
+            if self._context is not None:
+                return self._context
+            try:
+                from playwright.async_api import async_playwright
+            except ImportError as exc:
+                raise RuntimeError("Playwright is not installed") from exc
+            playwright = await async_playwright().start()
+            self._playwright = playwright
+            proxy_options: dict[str, Any] = {}
+            if self.proxy_url:
+                proxy_options["proxy"] = {"server": self.proxy_url}
+            try:
+                if self.cdp_url:
+                    self._browser = await playwright.chromium.connect_over_cdp(
+                        self.cdp_url, timeout=5_000
                     )
-                    self._owns_context = True
+                    contexts = self._browser.contexts
+                    if not contexts:
+                        raise RuntimeError("CDP browser has no persistent default context")
+                    if self.proxy_url:
+                        self._context = await self._browser.new_context(
+                            accept_downloads=False, **proxy_options
+                        )
+                        self._owns_context = True
+                    else:
+                        self._context = contexts[0]
+                elif self.identity_dir:
+                    self._context = await playwright.chromium.launch_persistent_context(
+                        self.identity_dir,
+                        headless=self.headless,
+                        channel=self.channel or None,
+                        **proxy_options,
+                    )
+                    self._owns_browser = True
                 else:
-                    self._context = contexts[0]
-            elif self.identity_dir:
-                self._context = await playwright.chromium.launch_persistent_context(
-                    self.identity_dir,
-                    headless=self.headless,
-                    channel=self.channel or None,
-                    **proxy_options,
-                )
-                self._owns_browser = True
-            else:
-                self._browser = await playwright.chromium.launch(
-                    headless=self.headless,
-                    channel=self.channel or None,
-                    **proxy_options,
-                )
-                self._context = await self._browser.new_context()
-                self._owns_browser = True
-        except Exception as cdp_error:
-            if self.cdp_url and self.proxy_url:
-                # Public news crawling must not remain down when the operator
-                # desktop browser is closed. The fallback has no saved identity.
-                try:
                     self._browser = await playwright.chromium.launch(
                         headless=self.headless,
                         channel=self.channel or None,
@@ -117,14 +110,26 @@ class PlaywrightBrowserRuntime:
                     )
                     self._context = await self._browser.new_context()
                     self._owns_browser = True
-                    return self._context
-                except Exception:
-                    pass
-            await playwright.stop()
-            self._playwright = None
-            self._browser = None
-            self._context = None
-            raise cdp_error
+            except Exception as cdp_error:
+                if self.cdp_url and self.proxy_url:
+                    # Public news crawling must not remain down when the operator
+                    # desktop browser is closed. The fallback has no saved identity.
+                    try:
+                        self._browser = await playwright.chromium.launch(
+                            headless=self.headless,
+                            channel=self.channel or None,
+                            **proxy_options,
+                        )
+                        self._context = await self._browser.new_context()
+                        self._owns_browser = True
+                        return self._context
+                    except Exception:
+                        pass
+                await playwright.stop()
+                self._playwright = None
+                self._browser = None
+                self._context = None
+                raise cdp_error
         return self._context
 
     async def _new_page(self) -> Any:
@@ -157,7 +162,7 @@ class PlaywrightBrowserRuntime:
         self._owns_browser = self._owns_context = False
 
     async def get(self, url: str) -> tuple[int, str, dict[str, str], str]:
-        async with self._lock:
+        async with self._slots:
             page = await self._new_page()
             try:
                 response = await page.goto(url, wait_until="networkidle")
@@ -169,7 +174,7 @@ class PlaywrightBrowserRuntime:
                 await page.close()
 
     async def reuters_search(self, query: str, offset: int) -> list[dict[str, object]]:
-        async with self._lock:
+        async with self._slots:
             page = await self._new_page()
             try:
                 response = await page.goto(
@@ -240,7 +245,7 @@ class PlaywrightBrowserRuntime:
     async def yahoo_latest_news(self, ticker: str, *, timeout_seconds=20, snippet_count=20):
         from doxagent.message_bus_v2.yahoo_sources import capture_latest_news
 
-        async with self._lock:
+        async with self._slots:
             page = await self._new_page()
             try:
                 return await capture_latest_news(

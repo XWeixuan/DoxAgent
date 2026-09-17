@@ -202,7 +202,6 @@ class PersistentRuntimeV2Service:
         dispatch_effects: bool = True,
         projection_outbox: RuntimeV2ProjectionOutbox | None = None,
         w3_agent: W3Agent | None = None,
-        w3_max_ticker_concurrency: int = 5,
         w3_lease_seconds: int = 1200,
         input_snapshot_loader: Callable[[str], RuntimeInputSnapshot | None] | None = None,
         journal: RuntimeJournal | None = None,
@@ -226,7 +225,6 @@ class PersistentRuntimeV2Service:
         self._dispatch_effects = dispatch_effects
         self._projection_outbox = projection_outbox
         self._w3_agent = w3_agent
-        self._w3_max_ticker_concurrency = w3_max_ticker_concurrency
         self._w3_lease_seconds = w3_lease_seconds
         self._hot_executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="prv2-hot")
         self._effect_executor = ThreadPoolExecutor(
@@ -1048,9 +1046,7 @@ class PersistentRuntimeV2Service:
 
             if isinstance(exc, LeaseLost):
                 return 0
-            if isinstance(exc, ControlError) or (
-                isinstance(exc, W3Error) and exc.code == "w3_ticker_concurrency_busy"
-            ):
+            if isinstance(exc, ControlError):
                 self.repository.save_effect(
                     effect.model_copy(
                         update={
@@ -1198,14 +1194,9 @@ class PersistentRuntimeV2Service:
                 else case.ticker
             ),
             case_id=case.case_id,
-            max_concurrency=self._w3_max_ticker_concurrency,
             lease_seconds=self._w3_lease_seconds,
         )
-        if slot is None:
-            raise W3Error(
-                "w3_ticker_concurrency_busy",
-                f"{case.ticker} already has five active W3 turns",
-            )
+        assert slot is not None
         self.repository.save_w3_case(running)
         returned_thread: str | None = None
         clear_main = False
