@@ -1,0 +1,34 @@
+import asyncio,json,os,time,gzip,hashlib
+from pathlib import Path
+import doxagent.content_enrichment
+if Path('/tmp/body-trial-code').exists():
+ doxagent.content_enrichment.__path__.insert(0,'/tmp/body-trial-code')
+from doxagent.content_enrichment.browser import PublisherBrowser
+from doxagent.content_enrichment.pipeline import ArticlePipeline
+from doxagent.content_enrichment.transport import PublicTransport,DEADLINE,browser_session_factory
+from doxagent.monitoring.media_enrichment import _default_session_factory,DomainFetchController,MediaEnrichmentRecord
+class CaptureTransport(PublicTransport):
+ async def fetch(self,url,attempts,**kwargs):
+  obs=await super().fetch(url,attempts,**kwargs)
+  if obs.text:
+   name=hashlib.sha256(url.encode()).hexdigest()
+   root=Path('/tmp/body-trial-results-v2')
+   (root/(name+'.gz')).write_bytes(gzip.compress(obs.text.encode()))
+  return obs
+async def main():
+ root=Path('/tmp/body-trial-results-v2');root.mkdir(exist_ok=True)
+ rows=json.loads(Path('/tmp/body-trial-input.json').read_text())
+ b=None
+ async with browser_session_factory()() as session:
+  pipeline=ArticlePipeline(CaptureTransport(session,DomainFetchController()),browser=b)
+  with (root/'probe.jsonl').open('w') as f:
+   for r in rows:
+    token=DEADLINE.set(time.monotonic()+65)
+    try:
+     result=await pipeline.extract(MediaEnrichmentRecord(r['id'],r['id'],r['source_id'],'MU',r['title'],r['body'],r['url']))
+     data={'id':r['id'],'url':r['url'],'title':r['title'],'prior_reason':r['prior_reason'],'succeeded':result.succeeded,'reason':result.reason,'chars':len(result.content or ''),'method':result.extraction_method,'diagnostics':result.diagnostics,'attempts':[a.to_payload() for a in result.attempts]}
+     if result.content: (root/(r['id']+'.txt')).write_text(result.content)
+     f.write(json.dumps(data)+'\n');f.flush();print(r['id'],result.succeeded,result.reason,data['chars'],flush=True)
+    finally: DEADLINE.reset(token)
+ if b: await b.close()
+asyncio.run(main())

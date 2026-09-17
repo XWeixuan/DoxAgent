@@ -1,0 +1,47 @@
+Dell Technologies (DELL) just posted another monster beat-and-raise quarter that saw DELL stock jump more than 15% on Sept. 1 and almost 5% in the following session. But as delighted as Dell investors are, Micron Technology (MU) investors should be equally ready to celebrate. The quarterly numbers validate Micron's growth trajectory, and it shows there is little let up in sight.
+
+Dell's Numbers Tell the Story
+
+Dell reported record fiscal second-quarter revenue of $47 billion, up 58% from a year earlier. Non-GAAP earnings came in at $7.04 per share, crushing Wall Street's estimate of roughly $4.72 per share. Even better, Dell raised its fiscal 2027 revenue forecast by $25 billion to $192 billion and lifted its non-GAAP EPS outlook for fiscal 2027 to $25.50.
+
+Dell booked $60.9 billion of AI-server orders, generated $16.4 billion of AI-server revenue, and ended the quarter with a $95 billion backlog, up from $51.3 billion just three months earlier. Full-year AI-server revenue guidance jumped from $60 billion to $74 billion. During Q2, Dell's traditional server and networking revenue soared 122% year-over-year (YOY) to $10.5 billion, while storage revenue increased 26% YOY to $4.9 billion.
+
+The most recent quarter is another vote of confidence for AI spending, but the bigger takeaway may just be that the opportunity for Micron investors is broader.
+
+The Micron Connection
+
+Dell's PowerEdge servers are flying off the shelves, its AI-server backlog is exploding, and customers are buying more of the memory and storage that make those systems work. The data center doesn't just need GPUs and high-bandwidth memory (HBM). It needs enormous amounts of conventional DRAM and NAND, too. Dell's results suggest that demand remains exceptionally strong across that entire stack.
+
+That's important for Micron because the two companies have a direct product relationship: Micron supplies DDR5 server memory and data-center SSDs used across Dell's infrastructure portfolio. That's the sweet spot for Micron.
+
+Dell's PowerEdge servers require substantial amounts of DDR5 memory, while its storage infrastructure uses enterprise SSDs built with NAND flash. As Dell sells more servers and storage, it creates more demand for the components Micron supplies.
+
+That relationship lines up remarkably well with Micron's own results. In its fiscal Q3, Micron generated $41.5 billion of revenue. DRAM accounted for $31.3 billion, or 76% of revenue, while NAND contributed $9.9 billion, or 24%. Data-center SSD revenue alone topped $5 billion.
+
+Pricing was the real story. DRAM average selling prices jumped in the low-60% range sequentially, while NAND prices surged in the mid-80% range. Bit shipments increased only in the low- to mid-single digits. That's evidence of a supply-constrained market, not simply a unit-growth story.
+
+Meanwhile, Dell is telling investors that demand remains strong.
+
+Dell's result Micron read-through AI-server backlog of $95 billion DDR5 plus HBM Traditional servers up 122% Server DDR5 Storage up 26% NAND and data-center SSDs
+
+Don't Get Too Focused on HBM
+
+HBM remains a major opportunity. Micron said that HBM4 generated more than $1 billion of revenue in the company's fiscal Q3 and is ramping faster than HBM3E. But HBM is only part of the equation.
+
+Although every AI rack needs HBM attached to its accelerators, most is allocated by Nvidia (NVDA), and SK Hynix (SKHY) is still the primary HBM supplier to Nvidia. It's all the conventional DRAM in the servers and the NAND storage behind them that is ultimately more important to Micron's long-term thesis.
+
+The Risk Investors Can't Ignore
+
+There is one important caveat. Memory remains a cyclical, concentrated industry dominated by Samsung, SK Hynix, and Micron. Today's extraordinary pricing won't last forever. Micron is already guiding $50 billion of fiscal Q4 revenue, with an estimated non-GAAP gross margin of about 86%. A meaningful increase in memory supply could eventually pressure those margins.
+
+Dell's $95 billion backlog also isn't the same as $95 billion in recognized revenue. Still, the demand signal is hard to ignore.
+
+Dell is raising its AI-server forecast while simultaneously selling dramatically more conventional servers and storage. Those products consume the DDR5 and NAND that make up the overwhelming majority of Micron's business.
+
+Bottom Line
+
+Dell's monster Q2 strengthens the Micron thesis for a reason that has little to do with chasing the latest HBM headline.
+
+PowerEdge needs DDR5. Data-center storage needs NAND SSDs. AI servers need both, plus HBM. That's why Micron investors should view Dell's Q2 results as a confirmation of the broader memory cycle. AI isn't simply creating demand for faster chips. It's forcing data centers to buy more memory and storage everywhere.
+
+Micron's $50 billion quarterly revenue guide shows investors are already paying up for that shortage. Dell's latest results suggest the demand supporting those prices isn't going away yet. For MU stock shareholders, that's arguably the more important signal.

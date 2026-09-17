@@ -1,0 +1,236 @@
+[
+  {
+    "id": "std_14378a9f91ae49eaa9f0e52913798380",
+    "capture": "exports\\body_trial_20260915\\body-detail\\std_14378a9f91ae49eaa9f0e52913798380.html.gz",
+    "accepted": false,
+    "outcome": "UNAVAILABLE",
+    "reason": "challenge_required",
+    "chars": 0,
+    "method": null
+  },
+  {
+    "id": "std_14378a9f91ae49eaa9f0e52913798380",
+    "capture": "exports\\body_trial_20260915\\body-detail\\std_14378a9f91ae49eaa9f0e52913798380.reader.gz",
+    "accepted": true,
+    "outcome": "FULL",
+    "reason": "complete_article",
+    "chars": 8110,
+    "method": "reader_article"
+  },
+  {
+    "id": "std_1fa87268aa7d417f968e0be3ad0fb6bf",
+    "capture": "exports\\body_trial_20260915\\body-detail\\std_1fa87268aa7d417f968e0be3ad0fb6bf.html.gz",
+    "accepted": false,
+    "outcome": "UNAVAILABLE",
+    "reason": "challenge_required",
+    "chars": 0,
+    "method": null
+  },
+  {
+    "id": "std_1fa87268aa7d417f968e0be3ad0fb6bf",
+    "capture": "exports\\body_trial_20260915\\body-detail\\std_1fa87268aa7d417f968e0be3ad0fb6bf.reader.gz",
+    "accepted": true,
+    "outcome": "FULL",
+    "reason": "complete_article",
+    "chars": 2471,
+    "method": "reader_article"
+  },
+  {
+    "id": "std_2453828f61e84474a26d11f2f2e92c97",
+    "capture": "exports\\body_trial_20260915\\body-detail\\std_2453828f61e84474a26d11f2f2e92c97.html.gz",
+    "accepted": false,
+    "outcome": "UNAVAILABLE",
+    "reason": "empty_extract",
+    "chars": 0,
+    "method": null
+  },
+  {
+    "id": "std_2453828f61e84474a26d11f2f2e92c97",
+    "capture": "exports\\body_trial_20260915\\body-detail\\std_2453828f61e84474a26d11f2f2e92c97.reader.gz",
+    "accepted": false,
+    "outcome": "UNAVAILABLE",
+    "reason": "challenge_required",
+    "chars": 0,
+    "method": null
+  },
+  {
+    "id": "std_2f119c478ead4dd8b567ad2fd3ba3051",
+    "capture": "exports\\body_trial_20260915\\body-detail\\std_2f119c478ead4dd8b567ad2fd3ba3051.html.gz",
+    "accepted": false,
+    "outcome": "UNAVAILABLE",
+    "reason": "challenge_required",
+    "chars": 0,
+    "method": null
+  },
+  {
+    "id": "std_2f119c478ead4dd8b567ad2fd3ba3051",
+    "capture": "exports\\body_trial_20260915\\body-detail\\std_2f119c478ead4dd8b567ad2fd3ba3051.reader.gz",
+    "accepted": false,
+    "outcome": "UNAVAILABLE",
+    "reason": "empty_extract",
+    "chars": 0,
+    "method": null
+  },
+  {
+    "id": "std_4201b7409e11458c9d607fb69b996b8b",
+    "capture": "exports\\body_trial_20260915\\body-detail\\std_4201b7409e11458c9d607fb69b996b8b.html.gz",
+    "accepted": false,
+    "outcome": "UNAVAILABLE",
+    "reason": "challenge_required",
+    "chars": 0,
+    "method": null
+  },
+  {
+    "id": "std_4201b7409e11458c9d607fb69b996b8b",
+    "capture": "exports\\body_trial_20260915\\body-detail\\std_4201b7409e11458c9d607fb69b996b8b.reader.gz",
+    "accepted": true,
+    "outcome": "FULL",
+    "reason": "complete_article",
+    "chars": 8603,
+    "method": "reader_article"
+  },
+  {
+    "id": "std_49a94245591a4982ab0f26abdff0e235",
+    "capture": "exports\\body_trial_20260915\\body-detail\\std_49a94245591a4982ab0f26abdff0e235.html.gz",
+    "accepted": false,
+    "outcome": "PARTIAL",
+    "reason": "article_identity_unknown",
+    "chars": 0,
+    "method": null
+  },
+  {
+    "id": "std_49a94245591a4982ab0f26abdff0e235",
+    "capture": "exports\\body_trial_20260915\\body-detail\\std_49a94245591a4982ab0f26abdff0e235.reader.gz",
+    "accepted": true,
+    "outcome": "FULL",
+    "reason": "complete_article",
+    "chars": 3286,
+    "method": "reader_article"
+  },
+  {
+    "id": "std_645ee6210e534294b5eded617626c51a",
+    "capture": "exports\\body_trial_20260915\\body-detail\\std_645ee6210e534294b5eded617626c51a.html.gz",
+    "accepted": false,
+    "outcome": "UNAVAILABLE",
+    "reason": "challenge_required",
+    "chars": 0,
+    "method": null
+  },
+  {
+    "id": "std_645ee6210e534294b5eded617626c51a",
+    "capture": "exports\\body_trial_20260915\\body-detail\\std_645ee6210e534294b5eded617626c51a.reader.gz",
+    "accepted": false,
+    "outcome": "UNAVAILABLE",
+    "reason": "empty_extract",
+    "chars": 0,
+    "method": null
+  },
+  {
+    "id": "std_921a00e6ac3b436999342f59077ebb9d",
+    "capture": "exports\\body_trial_20260915\\body-detail\\std_921a00e6ac3b436999342f59077ebb9d.html.gz",
+    "accepted": false,
+    "outcome": "PARTIAL",
+    "reason": "article_identity_unknown",
+    "chars": 0,
+    "method": null
+  },
+  {
+    "id": "std_921a00e6ac3b436999342f59077ebb9d",
+    "capture": "exports\\body_trial_20260915\\body-detail\\std_921a00e6ac3b436999342f59077ebb9d.reader.gz",
+    "accepted": false,
+    "outcome": "UNAVAILABLE",
+    "reason": "subscription_required",
+    "chars": 0,
+    "method": null
+  },
+  {
+    "id": "std_aa1dadd7f4b244e0a4cb5f34d0c01f61",
+    "capture": "exports\\body_trial_20260915\\body-detail\\std_aa1dadd7f4b244e0a4cb5f34d0c01f61.html.gz",
+    "accepted": false,
+    "outcome": "UNAVAILABLE",
+    "reason": "challenge_required",
+    "chars": 0,
+    "method": null
+  },
+  {
+    "id": "std_aa1dadd7f4b244e0a4cb5f34d0c01f61",
+    "capture": "exports\\body_trial_20260915\\body-detail\\std_aa1dadd7f4b244e0a4cb5f34d0c01f61.reader.gz",
+    "accepted": false,
+    "outcome": "UNAVAILABLE",
+    "reason": "empty_extract",
+    "chars": 0,
+    "method": null
+  },
+  {
+    "id": "std_ad632be1c978422eb4c061ec4eb605fe",
+    "capture": "exports\\body_trial_20260915\\body-detail\\std_ad632be1c978422eb4c061ec4eb605fe.html.gz",
+    "accepted": false,
+    "outcome": "PARTIAL",
+    "reason": "article_identity_unknown",
+    "chars": 0,
+    "method": null
+  },
+  {
+    "id": "std_ad632be1c978422eb4c061ec4eb605fe",
+    "capture": "exports\\body_trial_20260915\\body-detail\\std_ad632be1c978422eb4c061ec4eb605fe.reader.gz",
+    "accepted": true,
+    "outcome": "FULL",
+    "reason": "complete_article",
+    "chars": 8261,
+    "method": "reader_article"
+  },
+  {
+    "id": "std_b921a6d7f5fe4e6f840ba3632e72cdad",
+    "capture": "exports\\body_trial_20260915\\body-detail\\std_b921a6d7f5fe4e6f840ba3632e72cdad.html.gz",
+    "accepted": false,
+    "outcome": "PARTIAL",
+    "reason": "article_identity_unknown",
+    "chars": 0,
+    "method": null
+  },
+  {
+    "id": "std_b921a6d7f5fe4e6f840ba3632e72cdad",
+    "capture": "exports\\body_trial_20260915\\body-detail\\std_b921a6d7f5fe4e6f840ba3632e72cdad.reader.gz",
+    "accepted": false,
+    "outcome": "UNAVAILABLE",
+    "reason": "subscription_required",
+    "chars": 0,
+    "method": null
+  },
+  {
+    "id": "std_d89428b3a112493c805c81434ab51e2a",
+    "capture": "exports\\body_trial_20260915\\body-detail\\std_d89428b3a112493c805c81434ab51e2a.html.gz",
+    "accepted": false,
+    "outcome": "UNAVAILABLE",
+    "reason": "unsupported_media",
+    "chars": 0,
+    "method": null
+  },
+  {
+    "id": "std_d89428b3a112493c805c81434ab51e2a",
+    "capture": "exports\\body_trial_20260915\\body-detail\\std_d89428b3a112493c805c81434ab51e2a.reader.gz",
+    "accepted": false,
+    "outcome": "UNAVAILABLE",
+    "reason": "empty_extract",
+    "chars": 0,
+    "method": null
+  },
+  {
+    "id": "std_e55e6df9fe0a43f0954b8cf99ac32d4b",
+    "capture": "exports\\body_trial_20260915\\body-detail\\std_e55e6df9fe0a43f0954b8cf99ac32d4b.html.gz",
+    "accepted": true,
+    "outcome": "FULL",
+    "reason": "complete_article",
+    "chars": 1348,
+    "method": "article_dom"
+  },
+  {
+    "id": "std_e55e6df9fe0a43f0954b8cf99ac32d4b",
+    "capture": "exports\\body_trial_20260915\\body-detail\\std_e55e6df9fe0a43f0954b8cf99ac32d4b.reader.gz",
+    "accepted": false,
+    "outcome": "UNAVAILABLE",
+    "reason": "empty_extract",
+    "chars": 0,
+    "method": null
+  }
+]

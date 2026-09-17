@@ -1,0 +1,1352 @@
+[
+  {
+    "id": "std_2453828f61e84474a26d11f2f2e92c97",
+    "url": "https://www.thestreet.com/investing/billionaire-david-tepper-just-dumped-a-red-hot-ai-stock",
+    "title": "Billionaire David Tepper just dumped a red-hot AI stock",
+    "body": "Tepper just abandoned one AI winner for another",
+    "source_id": "finnhub_company_news",
+    "raw_payload": {
+      "category": "company",
+      "datetime": 1788325380,
+      "headline": "Billionaire David Tepper just dumped a red-hot AI stock",
+      "id": 141376322,
+      "image": "https://s.yimg.com/rz/stage/p/yahoo_finance_en-US_h_p_finance_2.png",
+      "related": "MU",
+      "source": "Yahoo",
+      "summary": "Tepper just abandoned one AI winner for another",
+      "url": "https://finnhub.io/api/news?id=f250a05c26737fa78787528c9a6d6ace76ff8f883c5823379cdda09f0211d594"
+    },
+    "metadata": {
+      "provider": "finnhub",
+      "category": "company",
+      "media_enrichment": {
+        "status": "failed",
+        "succeeded": false,
+        "reason": "empty_extract",
+        "attempted_at": "2026-09-14T06:05:01.508374Z",
+        "source_url": "https://finnhub.io/api/news?id=f250a05c26737fa78787528c9a6d6ace76ff8f883c5823379cdda09f0211d594",
+        "final_url": "https://www.thestreet.com/investing/billionaire-david-tepper-just-dumped-a-red-hot-ai-stock",
+        "final_domain": "thestreet.com",
+        "source_name": "thestreet.com",
+        "method": "jina_reader_markdown",
+        "extraction_method": "jina_reader_markdown",
+        "fetch_profile": "reader:thestreet.com:c1:gap0.25:j0.15",
+        "http_status": 200,
+        "latency_ms": 4331,
+        "attempts": [
+          {
+            "phase": "direct",
+            "url": "https://www.thestreet.com/investing/billionaire-david-tepper-just-dumped-a-red-hot-ai-stock",
+            "domain": "thestreet.com",
+            "final_url": "https://www.thestreet.com/investing/billionaire-david-tepper-just-dumped-a-red-hot-ai-stock",
+            "fetch_profile": "direct:thestreet.com:c1:gap0.25:j0.15",
+            "status_code": 403,
+            "latency_ms": 29,
+            "reason": "http_403",
+            "response_bytes": 776,
+            "retry_after_seconds": null,
+            "transient_hint": true
+          },
+          {
+            "phase": "reader",
+            "url": "https://r.jina.ai/http://https://www.thestreet.com/investing/billionaire-david-tepper-just-dumped-a-red-hot-ai-stock",
+            "domain": "thestreet.com",
+            "final_url": "https://r.jina.ai/http://https://www.thestreet.com/investing/billionaire-david-tepper-just-dumped-a-red-hot-ai-stock",
+            "fetch_profile": "reader:thestreet.com:c1:gap0.25:j0.15",
+            "status_code": 200,
+            "latency_ms": 2665,
+            "reason": null,
+            "response_bytes": 248,
+            "retry_after_seconds": null,
+            "transient_hint": true
+          }
+        ],
+        "existing_quality": {
+          "body_length": 47,
+          "sentence_count": 1,
+          "reason": "very_short",
+          "complete_like": false
+        },
+        "extracted_quality": {
+          "body_length": 0,
+          "sentence_count": 0,
+          "reason": "empty",
+          "complete_like": false
+        },
+        "queue_attempt_count": 1,
+        "pipeline_version": "legacy",
+        "reason_code": "empty_extract",
+        "outcome": "UNAVAILABLE"
+      },
+      "v2_body_completion": {
+        "attempt_id": "enrich-faccc178f8120787ff1f26f09b5055cbb3f8dcc96d13e288a49636031f59ddc3",
+        "succeeded": false,
+        "reason": "empty_extract",
+        "attempt_count": 1
+      },
+      "v2_control_origin": {
+        "epoch": 3,
+        "mode": "PAPER_TRADING",
+        "recorded_at": "2026-09-14T06:02:42.736856+00:00"
+      }
+    },
+    "prior_reason": "empty_extract"
+  },
+  {
+    "id": "std_2f119c478ead4dd8b567ad2fd3ba3051",
+    "url": "https://247wallst.com/investing/2026/08/31/apple-just-raised-mac-and-ipad-prices-20-so-who-is-getting-rich-off-the-shortage/",
+    "title": "Apple Just Raised Mac and iPad Prices 20%, So Who Is Getting Rich Off the Shortage?",
+    "body": "Mac and iPad prices just jumped 20% because of a memory shortage, and someone in the supply chain is pocketing enormous profits. Tracing the money reveals a winner most Apple investors are not watching.",
+    "source_id": "finnhub_company_news",
+    "raw_payload": {
+      "category": "company",
+      "datetime": 1788208518,
+      "headline": "Apple Just Raised Mac and iPad Prices 20%, So Who Is Getting Rich Off the Shortage?",
+      "id": 141360763,
+      "image": "https://s.yimg.com/rz/stage/p/yahoo_finance_en-US_h_p_finance_2.png",
+      "related": "MU",
+      "source": "Yahoo",
+      "summary": "Mac and iPad prices just jumped 20% because of a memory shortage, and someone in the supply chain is pocketing enormous profits. Tracing the money reveals a winner most Apple investors are not watching.",
+      "url": "https://finnhub.io/api/news?id=71ddfa7f9919509fc5a9bd10bbb07c4a49af8159cff36752c85a64ea345a07be"
+    },
+    "metadata": {
+      "provider": "finnhub",
+      "category": "company",
+      "media_enrichment": {
+        "status": "failed",
+        "succeeded": false,
+        "reason": "http_403",
+        "attempted_at": "2026-09-14T06:03:59.798511Z",
+        "source_url": "https://finnhub.io/api/news?id=71ddfa7f9919509fc5a9bd10bbb07c4a49af8159cff36752c85a64ea345a07be",
+        "final_url": "https://247wallst.com/investing/2026/08/31/apple-just-raised-mac-and-ipad-prices-20-so-who-is-getting-rich-off-the-shortage/",
+        "final_domain": "247wallst.com",
+        "source_name": "247wallst.com",
+        "method": "curl_cffi_trafilatura",
+        "extraction_method": null,
+        "fetch_profile": "direct:247wallst.com:c4:gap0.05:j0.05",
+        "http_status": 403,
+        "latency_ms": 2338,
+        "attempts": [
+          {
+            "phase": "direct",
+            "url": "https://247wallst.com/investing/2026/08/31/apple-just-raised-mac-and-ipad-prices-20-so-who-is-getting-rich-off-the-shortage/",
+            "domain": "247wallst.com",
+            "final_url": "https://247wallst.com/investing/2026/08/31/apple-just-raised-mac-and-ipad-prices-20-so-who-is-getting-rich-off-the-shortage/",
+            "fetch_profile": "direct:247wallst.com:c4:gap0.05:j0.05",
+            "status_code": 403,
+            "latency_ms": 1352,
+            "reason": "http_403",
+            "response_bytes": 6392,
+            "retry_after_seconds": null,
+            "transient_hint": true
+          }
+        ],
+        "existing_quality": {
+          "body_length": 202,
+          "sentence_count": 2,
+          "reason": "short_summary",
+          "complete_like": false
+        },
+        "extracted_quality": null,
+        "queue_attempt_count": 1,
+        "pipeline_version": "legacy",
+        "reason_code": "http_403",
+        "outcome": "UNAVAILABLE"
+      },
+      "v2_body_completion": {
+        "attempt_id": "enrich-82f8fc9af648add1f5f8840a11fc2da86b2a6eb35f62e39e27fb00bc5733dae2",
+        "succeeded": false,
+        "reason": "http_403",
+        "attempt_count": 1
+      },
+      "v2_control_origin": {
+        "epoch": 3,
+        "mode": "PAPER_TRADING",
+        "recorded_at": "2026-09-14T06:02:22.586511+00:00"
+      }
+    },
+    "prior_reason": "http_403"
+  },
+  {
+    "id": "std_ad632be1c978422eb4c061ec4eb605fe",
+    "url": "https://finance.yahoo.com/markets/stocks/articles/3-great-quality-stocks-own-201414086.html",
+    "title": "3 Great Quality Stocks To Own In September 2026",
+    "body": "With inflation data guiding expectations for future central bank moves, many investors are looking for companies that can hold their own if borrowing costs stay high for longer than hoped. Solid profitability, strong returns on shareholder equity and sensible use of debt can help cushion portfolio shocks. This article highlights three stocks from a quality focused screener that filters for robust balance sheets and resilient business performance. The three stocks below are only a sample from...",
+    "source_id": "finnhub_company_news",
+    "raw_payload": {
+      "category": "company",
+      "datetime": 1788639254,
+      "headline": "3 Great Quality Stocks To Own In September 2026",
+      "id": 141546867,
+      "image": "https://s.yimg.com/rz/stage/p/yahoo_finance_en-US_h_p_finance_2.png",
+      "related": "MU",
+      "source": "Yahoo",
+      "summary": "With inflation data guiding expectations for future central bank moves, many investors are looking for companies that can hold their own if borrowing costs stay high for longer than hoped. Solid profitability, strong returns on shareholder equity and sensible use of debt can help cushion portfolio shocks. This article highlights three stocks from a quality focused screener that filters for robust balance sheets and resilient business performance. The three stocks below are only a sample from...",
+      "url": "https://finnhub.io/api/news?id=c912721bc44c42ed311c8e2103ce56f65c18c4661abc046b7a2e25041bd9ac5b"
+    },
+    "metadata": {
+      "provider": "finnhub",
+      "category": "company",
+      "media_enrichment": {
+        "status": "failed",
+        "succeeded": false,
+        "reason": "http_403",
+        "attempted_at": "2026-09-14T06:06:05.918466Z",
+        "source_url": "https://finnhub.io/api/news?id=c912721bc44c42ed311c8e2103ce56f65c18c4661abc046b7a2e25041bd9ac5b",
+        "final_url": "https://finance.yahoo.com/markets/stocks/articles/3-great-quality-stocks-own-201414086.html",
+        "final_domain": "finance.yahoo.com",
+        "source_name": "finance.yahoo.com",
+        "method": "jina_reader_markdown",
+        "extraction_method": "jina_reader_markdown",
+        "fetch_profile": "reader:finance.yahoo.com:c2:gap0.15:j0.10",
+        "http_status": 403,
+        "latency_ms": 1911,
+        "attempts": [
+          {
+            "phase": "direct",
+            "url": "https://finance.yahoo.com/markets/stocks/articles/3-great-quality-stocks-own-201414086.html",
+            "domain": "finance.yahoo.com",
+            "final_url": "https://finance.yahoo.com/markets/stocks/articles/3-great-quality-stocks-own-201414086.html",
+            "fetch_profile": "direct:finance.yahoo.com:c2:gap0.15:j0.10",
+            "status_code": 429,
+            "latency_ms": 6,
+            "reason": "http_429",
+            "response_bytes": 23,
+            "retry_after_seconds": null,
+            "transient_hint": true
+          },
+          {
+            "phase": "reader",
+            "url": "https://r.jina.ai/http://https://finance.yahoo.com/markets/stocks/articles/3-great-quality-stocks-own-201414086.html",
+            "domain": "finance.yahoo.com",
+            "final_url": "https://r.jina.ai/http://https://finance.yahoo.com/markets/stocks/articles/3-great-quality-stocks-own-201414086.html",
+            "fetch_profile": "reader:finance.yahoo.com:c2:gap0.15:j0.10",
+            "status_code": 429,
+            "latency_ms": 1076,
+            "reason": "http_429",
+            "response_bytes": 242,
+            "retry_after_seconds": 1.0,
+            "transient_hint": true
+          },
+          {
+            "phase": "direct",
+            "url": "https://finance.yahoo.com/markets/stocks/articles/3-great-quality-stocks-own-201414086.html",
+            "domain": "finance.yahoo.com",
+            "final_url": "https://finance.yahoo.com/markets/stocks/articles/3-great-quality-stocks-own-201414086.html",
+            "fetch_profile": "direct:finance.yahoo.com:c2:gap0.15:j0.10",
+            "status_code": 429,
+            "latency_ms": 4,
+            "reason": "http_429",
+            "response_bytes": 23,
+            "retry_after_seconds": null,
+            "transient_hint": true
+          },
+          {
+            "phase": "reader",
+            "url": "https://r.jina.ai/http://https://finance.yahoo.com/markets/stocks/articles/3-great-quality-stocks-own-201414086.html",
+            "domain": "finance.yahoo.com",
+            "final_url": "https://r.jina.ai/http://https://finance.yahoo.com/markets/stocks/articles/3-great-quality-stocks-own-201414086.html",
+            "fetch_profile": "reader:finance.yahoo.com:c2:gap0.15:j0.10",
+            "status_code": 403,
+            "latency_ms": 1280,
+            "reason": "http_403",
+            "response_bytes": 677,
+            "retry_after_seconds": null,
+            "transient_hint": true
+          }
+        ],
+        "existing_quality": {
+          "body_length": 499,
+          "sentence_count": 4,
+          "reason": "truncated_or_paywall_marker",
+          "complete_like": false
+        },
+        "extracted_quality": null,
+        "queue_attempt_count": 2,
+        "pipeline_version": "legacy",
+        "reason_code": "http_403",
+        "outcome": "UNAVAILABLE"
+      },
+      "v2_body_completion": {
+        "attempt_id": "enrich-fb919a9f3c4abcf99e6c09feb47bc0f860baf6bc8e1b1598a5fa9eee3a403ddd",
+        "succeeded": false,
+        "reason": "http_403",
+        "attempt_count": 2
+      },
+      "v2_control_origin": {
+        "epoch": 3,
+        "mode": "PAPER_TRADING",
+        "recorded_at": "2026-09-14T06:03:06.876140+00:00"
+      }
+    },
+    "prior_reason": "http_403"
+  },
+  {
+    "id": "std_645ee6210e534294b5eded617626c51a",
+    "url": "https://investorshub.advfn.com/market-news/article/35410/micron-shares-fall-1-8-following-taiwan-incentive-pay-report",
+    "title": "Micron shares fall 1.8% following Taiwan incentive pay report",
+    "body": "Micron Technology (NASDAQ:MU) shares fell 1. 8% in pre-market trading on Tuesday following a report concerning employee incentive payments at the company’s Taiwan operations, while technology stocks also faced broader pressure from higher interest rates.",
+    "source_id": "finnhub_company_news",
+    "raw_payload": {
+      "category": "company",
+      "datetime": 1788275166,
+      "headline": "Micron shares fall 1.8% following Taiwan incentive pay report",
+      "id": 141369788,
+      "image": "https://s.yimg.com/rz/stage/p/yahoo_finance_en-US_h_p_finance_2.png",
+      "related": "MU",
+      "source": "Yahoo",
+      "summary": "Micron Technology (NASDAQ:MU) shares fell 1. 8% in pre-market trading on Tuesday following a report concerning employee incentive payments at the company’s Taiwan operations, while technology stocks also faced broader pressure from higher interest rates.",
+      "url": "https://finnhub.io/api/news?id=1f111c1f4d2e021adc06c74def5533bfccb0b2810cbfd9a291027f98e7e08481"
+    },
+    "metadata": {
+      "provider": "finnhub",
+      "category": "company",
+      "media_enrichment": {
+        "status": "failed",
+        "succeeded": false,
+        "reason": "http_403",
+        "attempted_at": "2026-09-14T06:04:20.210608Z",
+        "source_url": "https://finnhub.io/api/news?id=1f111c1f4d2e021adc06c74def5533bfccb0b2810cbfd9a291027f98e7e08481",
+        "final_url": "https://investorshub.advfn.com/market-news/article/35410/micron-shares-fall-1-8-following-taiwan-incentive-pay-report",
+        "final_domain": "investorshub.advfn.com",
+        "source_name": "investorshub.advfn.com",
+        "method": "curl_cffi_trafilatura",
+        "extraction_method": null,
+        "fetch_profile": "direct:investorshub.advfn.com:c4:gap0.05:j0.05",
+        "http_status": 403,
+        "latency_ms": 987,
+        "attempts": [
+          {
+            "phase": "direct",
+            "url": "https://investorshub.advfn.com/market-news/article/35410/micron-shares-fall-1-8-following-taiwan-incentive-pay-report",
+            "domain": "investorshub.advfn.com",
+            "final_url": "https://investorshub.advfn.com/market-news/article/35410/micron-shares-fall-1-8-following-taiwan-incentive-pay-report",
+            "fetch_profile": "direct:investorshub.advfn.com:c4:gap0.05:j0.05",
+            "status_code": 403,
+            "latency_ms": 542,
+            "reason": "http_403",
+            "response_bytes": 8178,
+            "retry_after_seconds": null,
+            "transient_hint": true
+          }
+        ],
+        "existing_quality": {
+          "body_length": 254,
+          "sentence_count": 2,
+          "reason": "short_summary",
+          "complete_like": false
+        },
+        "extracted_quality": null,
+        "queue_attempt_count": 1,
+        "pipeline_version": "legacy",
+        "reason_code": "http_403",
+        "outcome": "UNAVAILABLE"
+      },
+      "v2_body_completion": {
+        "attempt_id": "enrich-3ff725444035a9803e7e2b5019d8dcc002b993d4e032792937a1f75b598398cb",
+        "succeeded": false,
+        "reason": "http_403",
+        "attempt_count": 1
+      },
+      "v2_control_origin": {
+        "epoch": 3,
+        "mode": "PAPER_TRADING",
+        "recorded_at": "2026-09-14T06:02:31.347389+00:00"
+      }
+    },
+    "prior_reason": "http_403"
+  },
+  {
+    "id": "std_14378a9f91ae49eaa9f0e52913798380",
+    "url": "https://www.benzinga.com/markets/options/26/09/61584569/10-information-technology-stocks-whale-alerts-today-s-session",
+    "title": "10 Information Technology Stocks With Whale Alerts In Today’s Session",
+    "body": "This whale alert can help traders discover the next big trading opportunities. Whales are entities with large sums of money and we track their transactions here at Benzinga on our options activity scanner. Traders often",
+    "source_id": "finnhub_company_news",
+    "raw_payload": {
+      "category": "company",
+      "datetime": 1788356125,
+      "headline": "10 Information Technology Stocks With Whale Alerts In Today’s Session",
+      "id": 141379133,
+      "image": "https://cdn.benzinga.com/files/images/story/2025/11/06/aggregated_options_1.jpg?width=2048&height=1536",
+      "related": "MU",
+      "source": "Benzinga",
+      "summary": "This whale alert can help traders discover the next big trading opportunities.\nWhales are entities with large sums of money and we track their transactions here at Benzinga on our options activity scanner.\nTraders often",
+      "url": "https://finnhub.io/api/news?id=b7240a26d0776cc054f578d6022e182b62798b2d505a6e068fa74594ea57513a"
+    },
+    "metadata": {
+      "provider": "finnhub",
+      "category": "company",
+      "media_enrichment": {
+        "status": "failed",
+        "succeeded": false,
+        "reason": "http_403",
+        "attempted_at": "2026-09-14T06:04:47.805032Z",
+        "source_url": "https://finnhub.io/api/news?id=b7240a26d0776cc054f578d6022e182b62798b2d505a6e068fa74594ea57513a",
+        "final_url": "https://www.benzinga.com/markets/options/26/09/61584569/10-information-technology-stocks-whale-alerts-today-s-session",
+        "final_domain": "benzinga.com",
+        "source_name": "benzinga.com",
+        "method": "jina_reader_markdown",
+        "extraction_method": "jina_reader_markdown",
+        "fetch_profile": "reader:benzinga.com:c4:gap0.05:j0.05",
+        "http_status": 403,
+        "latency_ms": 1479,
+        "attempts": [
+          {
+            "phase": "direct",
+            "url": "https://www.benzinga.com/markets/options/26/09/61584569/10-information-technology-stocks-whale-alerts-today-s-session",
+            "domain": "benzinga.com",
+            "final_url": "https://www.benzinga.com/markets/options/26/09/61584569/10-information-technology-stocks-whale-alerts-today-s-session",
+            "fetch_profile": "direct:benzinga.com:c4:gap0.05:j0.05",
+            "status_code": 403,
+            "latency_ms": 318,
+            "reason": "http_403",
+            "response_bytes": 6365,
+            "retry_after_seconds": null,
+            "transient_hint": true
+          },
+          {
+            "phase": "reader",
+            "url": "https://r.jina.ai/http://https://www.benzinga.com/markets/options/26/09/61584569/10-information-technology-stocks-whale-alerts-today-s-session",
+            "domain": "benzinga.com",
+            "final_url": "https://r.jina.ai/http://https://www.benzinga.com/markets/options/26/09/61584569/10-information-technology-stocks-whale-alerts-today-s-session",
+            "fetch_profile": "reader:benzinga.com:c4:gap0.05:j0.05",
+            "status_code": 403,
+            "latency_ms": 481,
+            "reason": "http_403",
+            "response_bytes": 601,
+            "retry_after_seconds": null,
+            "transient_hint": false
+          }
+        ],
+        "existing_quality": {
+          "body_length": 219,
+          "sentence_count": 3,
+          "reason": "short_summary",
+          "complete_like": false
+        },
+        "extracted_quality": null,
+        "queue_attempt_count": 1,
+        "pipeline_version": "legacy",
+        "reason_code": "http_403",
+        "outcome": "UNAVAILABLE"
+      },
+      "v2_body_completion": {
+        "attempt_id": "enrich-ad13e34476816d4d22760ec91770b7bfc6fc8652e4735212b8f8a95a259e0fdb",
+        "succeeded": false,
+        "reason": "http_403",
+        "attempt_count": 1
+      },
+      "v2_control_origin": {
+        "epoch": 3,
+        "mode": "PAPER_TRADING",
+        "recorded_at": "2026-09-14T06:02:42.736856+00:00"
+      }
+    },
+    "prior_reason": "http_403"
+  },
+  {
+    "id": "std_aa1dadd7f4b244e0a4cb5f34d0c01f61",
+    "url": "https://www.investopedia.com/market-update-memory-other-ai-related-stocks-lead-the-markets-top-performers-friday-12108315",
+    "title": "Memory, Other AI-Related Stocks Lead the Market’s Top Performers Friday",
+    "body": "The AI trade is bucking the trend Friday.",
+    "source_id": "finnhub_company_news",
+    "raw_payload": {
+      "category": "company",
+      "datetime": 1788541461,
+      "headline": "Memory, Other AI-Related Stocks Lead the Market’s Top Performers Friday",
+      "id": 141455006,
+      "image": "https://s.yimg.com/rz/stage/p/yahoo_finance_en-US_h_p_finance_2.png",
+      "related": "MU",
+      "source": "Yahoo",
+      "summary": "The AI trade is bucking the trend Friday.",
+      "url": "https://finnhub.io/api/news?id=e4161564548a3626f34aa7ef8802402585fd635be3fc690cf2e0e450ab94bb4e"
+    },
+    "metadata": {
+      "provider": "finnhub",
+      "category": "company",
+      "media_enrichment": {
+        "status": "failed",
+        "succeeded": false,
+        "reason": "http_403",
+        "attempted_at": "2026-09-14T06:05:47.280013Z",
+        "source_url": "https://finnhub.io/api/news?id=e4161564548a3626f34aa7ef8802402585fd635be3fc690cf2e0e450ab94bb4e",
+        "final_url": "https://www.investopedia.com/market-update-memory-other-ai-related-stocks-lead-the-markets-top-performers-friday-12108315",
+        "final_domain": "investopedia.com",
+        "source_name": "investopedia.com",
+        "method": "curl_cffi_trafilatura",
+        "extraction_method": null,
+        "fetch_profile": "direct:investopedia.com:c4:gap0.05:j0.05",
+        "http_status": 403,
+        "latency_ms": 3775,
+        "attempts": [
+          {
+            "phase": "direct",
+            "url": "https://www.investopedia.com/market-update-memory-other-ai-related-stocks-lead-the-markets-top-performers-friday-12108315",
+            "domain": "investopedia.com",
+            "final_url": "https://www.investopedia.com/market-update-memory-other-ai-related-stocks-lead-the-markets-top-performers-friday-12108315",
+            "fetch_profile": "direct:investopedia.com:c4:gap0.05:j0.05",
+            "status_code": 403,
+            "latency_ms": 2497,
+            "reason": "http_403",
+            "response_bytes": 681093,
+            "retry_after_seconds": null,
+            "transient_hint": true
+          }
+        ],
+        "existing_quality": {
+          "body_length": 41,
+          "sentence_count": 1,
+          "reason": "very_short",
+          "complete_like": false
+        },
+        "extracted_quality": null,
+        "queue_attempt_count": 1,
+        "pipeline_version": "legacy",
+        "reason_code": "http_403",
+        "outcome": "UNAVAILABLE"
+      },
+      "v2_body_completion": {
+        "attempt_id": "enrich-5ba5aa93dd78fcd7f0b90c6dc31d5ce358b4abb043d6d2dd40beb9bafd9c3c03",
+        "succeeded": false,
+        "reason": "http_403",
+        "attempt_count": 1
+      },
+      "v2_control_origin": {
+        "epoch": 3,
+        "mode": "PAPER_TRADING",
+        "recorded_at": "2026-09-14T06:02:59.368115+00:00"
+      }
+    },
+    "prior_reason": "http_403"
+  },
+  {
+    "id": "std_c55125c783924025bbd19551ec22b134",
+    "url": "https://www.barchart.com/story/news/4461422/dells-monster-quarter-just-confirmed-microns-biggest-opportunity-is-not-just-hbm",
+    "title": "Dell’s Monster Quarter Just Confirmed Micron’s Biggest Opportunity Is Not Just HBM",
+    "body": "Dell's huge beat-and-raise quarter signals broad data-center demand for DDR5 and NAND, strengthening Micron's memory-cycle thesis beyond the AI-driven HBM boom.",
+    "source_id": "finnhub_company_news",
+    "raw_payload": {
+      "category": "company",
+      "datetime": 1788616802,
+      "headline": "Dell’s Monster Quarter Just Confirmed Micron’s Biggest Opportunity Is Not Just HBM",
+      "id": 141546873,
+      "image": "https://s.yimg.com/rz/stage/p/yahoo_finance_en-US_h_p_finance_2.png",
+      "related": "MU",
+      "source": "Yahoo",
+      "summary": "Dell's huge beat-and-raise quarter signals broad data-center demand for DDR5 and NAND, strengthening Micron's memory-cycle thesis beyond the AI-driven HBM boom.",
+      "url": "https://finnhub.io/api/news?id=743c402c67e77c790014c16340cec858f7f85b00fd68fe8787616e50dc271338"
+    },
+    "metadata": {
+      "provider": "finnhub",
+      "category": "company",
+      "media_enrichment": {
+        "status": "failed",
+        "succeeded": false,
+        "reason": "poison_or_navigation_extract",
+        "attempted_at": "2026-09-14T06:06:03.314039Z",
+        "source_url": "https://finnhub.io/api/news?id=743c402c67e77c790014c16340cec858f7f85b00fd68fe8787616e50dc271338",
+        "final_url": "https://www.barchart.com/story/news/4461422/dells-monster-quarter-just-confirmed-microns-biggest-opportunity-is-not-just-hbm",
+        "final_domain": "barchart.com",
+        "source_name": "barchart.com",
+        "method": "trafilatura",
+        "extraction_method": "trafilatura",
+        "fetch_profile": "direct:barchart.com:c4:gap0.05:j0.05",
+        "http_status": 202,
+        "latency_ms": 596,
+        "attempts": [
+          {
+            "phase": "direct",
+            "url": "https://www.barchart.com/story/news/4461422/dells-monster-quarter-just-confirmed-microns-biggest-opportunity-is-not-just-hbm",
+            "domain": "barchart.com",
+            "final_url": "https://www.barchart.com/story/news/4461422/dells-monster-quarter-just-confirmed-microns-biggest-opportunity-is-not-just-hbm",
+            "fetch_profile": "direct:barchart.com:c4:gap0.05:j0.05",
+            "status_code": 202,
+            "latency_ms": 143,
+            "reason": null,
+            "response_bytes": 1997,
+            "retry_after_seconds": null,
+            "transient_hint": true
+          }
+        ],
+        "existing_quality": {
+          "body_length": 160,
+          "sentence_count": 1,
+          "reason": "short_summary",
+          "complete_like": false
+        },
+        "extracted_quality": {
+          "body_length": 157,
+          "sentence_count": 3,
+          "reason": "very_short",
+          "complete_like": false
+        },
+        "queue_attempt_count": 1,
+        "pipeline_version": "legacy",
+        "reason_code": "poison_or_navigation_extract",
+        "outcome": "UNAVAILABLE"
+      },
+      "v2_body_completion": {
+        "attempt_id": "enrich-d20566e282bb479f280c09c8cac2feffde64f73cfb3613befc8c3d41628192ca",
+        "succeeded": false,
+        "reason": "poison_or_navigation_extract",
+        "attempt_count": 1
+      },
+      "v2_control_origin": {
+        "epoch": 3,
+        "mode": "PAPER_TRADING",
+        "recorded_at": "2026-09-14T06:03:06.876140+00:00"
+      }
+    },
+    "prior_reason": "poison_or_navigation_extract"
+  },
+  {
+    "id": "std_94723c3240ed477c8228950dce44f5d5",
+    "url": "https://www.investmentmonitor.ai/news/taiwanese-firms-20bn-us-investment/",
+    "title": "Taiwanese firms pledge additional $20bn US investment in chip industry",
+    "body": "MOEA Minister Kung Ming-hsin noted that semiconductor sector links between Taiwan and the US are deepening, with companies increasingly treating US-based investment as a core part of their strategic planning.",
+    "source_id": "finnhub_company_news",
+    "raw_payload": {
+      "category": "company",
+      "datetime": 1788359931,
+      "headline": "Taiwanese firms pledge additional $20bn US investment in chip industry",
+      "id": 141376307,
+      "image": "https://s.yimg.com/rz/stage/p/yahoo_finance_en-US_h_p_finance_2.png",
+      "related": "MU",
+      "source": "Yahoo",
+      "summary": "MOEA Minister Kung Ming-hsin noted that semiconductor sector links between Taiwan and the US are deepening, with companies increasingly treating US-based investment as a core part of their strategic planning.",
+      "url": "https://finnhub.io/api/news?id=0f045a077b96faf92c2dc105610827f28378538ee893dad140f6723f2c6538df"
+    },
+    "metadata": {
+      "provider": "finnhub",
+      "category": "company",
+      "media_enrichment": {
+        "status": "failed",
+        "succeeded": false,
+        "reason": "poison_or_navigation_extract",
+        "attempted_at": "2026-09-14T06:04:46.348262Z",
+        "source_url": "https://finnhub.io/api/news?id=0f045a077b96faf92c2dc105610827f28378538ee893dad140f6723f2c6538df",
+        "final_url": "https://www.investmentmonitor.ai/news/taiwanese-firms-20bn-us-investment/",
+        "final_domain": "investmentmonitor.ai",
+        "source_name": "investmentmonitor.ai",
+        "method": "trafilatura",
+        "extraction_method": "trafilatura",
+        "fetch_profile": "direct:investmentmonitor.ai:c4:gap0.05:j0.05",
+        "http_status": 200,
+        "latency_ms": 2891,
+        "attempts": [
+          {
+            "phase": "direct",
+            "url": "https://www.investmentmonitor.ai/news/taiwanese-firms-20bn-us-investment/",
+            "domain": "investmentmonitor.ai",
+            "final_url": "https://www.investmentmonitor.ai/news/taiwanese-firms-20bn-us-investment/",
+            "fetch_profile": "direct:investmentmonitor.ai:c4:gap0.05:j0.05",
+            "status_code": 200,
+            "latency_ms": 199,
+            "reason": null,
+            "response_bytes": 3038,
+            "retry_after_seconds": null,
+            "transient_hint": true
+          }
+        ],
+        "existing_quality": {
+          "body_length": 208,
+          "sentence_count": 1,
+          "reason": "short_summary",
+          "complete_like": false
+        },
+        "extracted_quality": {
+          "body_length": 286,
+          "sentence_count": 5,
+          "reason": "short_summary",
+          "complete_like": false
+        },
+        "queue_attempt_count": 1,
+        "pipeline_version": "legacy",
+        "reason_code": "poison_or_navigation_extract",
+        "outcome": "UNAVAILABLE"
+      },
+      "v2_body_completion": {
+        "attempt_id": "enrich-9752aec3c0d149cfea05885a42cf09fd4d37f5fb9ce7bad49efd6aa8cd934b25",
+        "succeeded": false,
+        "reason": "poison_or_navigation_extract",
+        "attempt_count": 1
+      },
+      "v2_control_origin": {
+        "epoch": 3,
+        "mode": "PAPER_TRADING",
+        "recorded_at": "2026-09-14T06:02:42.736856+00:00"
+      }
+    },
+    "prior_reason": "poison_or_navigation_extract"
+  },
+  {
+    "id": "std_b921a6d7f5fe4e6f840ba3632e72cdad",
+    "url": "https://finance.yahoo.com/markets/stocks/articles/social-buzz-wallstreetbets-stocks-mixed-103552041.html",
+    "title": "Social Buzz: Wallstreetbets Stocks Mixed Pre-Bell Thursday; Snowflake to Advance, Broadcom to Decline",
+    "body": "The most-talked-about stocks in the Reddit subforum Wallstreetbets were mixed hours before Thursday'",
+    "source_id": "finnhub_company_news",
+    "raw_payload": {
+      "category": "company",
+      "datetime": 1788431752,
+      "headline": "Social Buzz: Wallstreetbets Stocks Mixed Pre-Bell Thursday; Snowflake to Advance, Broadcom to Decline",
+      "id": 141397264,
+      "image": "https://s.yimg.com/rz/stage/p/yahoo_finance_en-US_h_p_finance_2.png",
+      "related": "MU",
+      "source": "Yahoo",
+      "summary": "The most-talked-about stocks in the Reddit subforum Wallstreetbets were mixed hours before Thursday'",
+      "url": "https://finnhub.io/api/news?id=6961cd37cb81f997ef8b51b82ca4c9e96b19c9a7357046bef8d1797113b94246"
+    },
+    "metadata": {
+      "provider": "finnhub",
+      "category": "company",
+      "media_enrichment": {
+        "status": "failed",
+        "succeeded": false,
+        "reason": "source_summary_only",
+        "attempted_at": "2026-09-14T06:05:16.770377Z",
+        "source_url": "https://finnhub.io/api/news?id=6961cd37cb81f997ef8b51b82ca4c9e96b19c9a7357046bef8d1797113b94246",
+        "final_url": "https://finance.yahoo.com/markets/stocks/articles/social-buzz-wallstreetbets-stocks-mixed-103552041.html",
+        "final_domain": "finance.yahoo.com",
+        "source_name": "finance.yahoo.com",
+        "method": "trafilatura",
+        "extraction_method": "trafilatura",
+        "fetch_profile": "direct:finance.yahoo.com:c2:gap0.15:j0.10",
+        "http_status": 200,
+        "latency_ms": 1740,
+        "attempts": [
+          {
+            "phase": "direct",
+            "url": "https://finance.yahoo.com/markets/stocks/articles/social-buzz-wallstreetbets-stocks-mixed-103552041.html",
+            "domain": "finance.yahoo.com",
+            "final_url": "https://finance.yahoo.com/markets/stocks/articles/social-buzz-wallstreetbets-stocks-mixed-103552041.html",
+            "fetch_profile": "direct:finance.yahoo.com:c2:gap0.15:j0.10",
+            "status_code": 200,
+            "latency_ms": 1047,
+            "reason": null,
+            "response_bytes": 978695,
+            "retry_after_seconds": null,
+            "transient_hint": true
+          }
+        ],
+        "existing_quality": {
+          "body_length": 100,
+          "sentence_count": 1,
+          "reason": "very_short",
+          "complete_like": false
+        },
+        "extracted_quality": {
+          "body_length": 346,
+          "sentence_count": 2,
+          "reason": "short_summary",
+          "complete_like": false
+        },
+        "queue_attempt_count": 1,
+        "pipeline_version": "legacy",
+        "reason_code": "source_summary_only",
+        "outcome": "UNAVAILABLE"
+      },
+      "v2_body_completion": {
+        "attempt_id": "enrich-40972df71785fc52220e432ea3beed210ae1376276acf2b3762db9e19f11c8e5",
+        "succeeded": false,
+        "reason": "source_summary_only",
+        "attempt_count": 1
+      },
+      "v2_control_origin": {
+        "epoch": 3,
+        "mode": "PAPER_TRADING",
+        "recorded_at": "2026-09-14T06:02:51.636676+00:00"
+      }
+    },
+    "prior_reason": "source_summary_only"
+  },
+  {
+    "id": "std_4f8ba92a0a5f42468817e391c0fe3371",
+    "url": "https://finnhub.io/api/news?id=28d40cabdaa85583d675830e9678925a7a093aa77878c44cd6fe626ba14b92a0",
+    "title": "David Tepper Cuts Micron Stake, Exits SanDisk as Appaloosa Goes Big on These Magnificent 7 Stocks in Q2",
+    "body": "David Tepper cuts Micron and SanDisk as Appaloosa turns cautious on memory stocks while adding to Magnificent 7 bets.",
+    "source_id": "finnhub_company_news",
+    "raw_payload": {
+      "category": "company",
+      "datetime": 1786959195,
+      "headline": "David Tepper Cuts Micron Stake, Exits SanDisk as Appaloosa Goes Big on These Magnificent 7 Stocks in Q2",
+      "id": 141238575,
+      "image": "https://cdn.benzinga.com/files/images/story/2026/08/17/Magnificent-Seven-stocks.jpg?width=2048&height=1536",
+      "related": "MU",
+      "source": "Benzinga",
+      "summary": "David Tepper cuts Micron and SanDisk as Appaloosa turns cautious on memory stocks while adding to Magnificent 7 bets.",
+      "url": "https://finnhub.io/api/news?id=28d40cabdaa85583d675830e9678925a7a093aa77878c44cd6fe626ba14b92a0"
+    },
+    "metadata": {
+      "provider": "finnhub",
+      "category": "company",
+      "media_enrichment": {
+        "status": "failed",
+        "succeeded": false,
+        "reason": "timeout",
+        "attempted_at": "2026-09-14T06:01:34.225289Z",
+        "source_url": "https://finnhub.io/api/news?id=28d40cabdaa85583d675830e9678925a7a093aa77878c44cd6fe626ba14b92a0",
+        "final_url": "https://finnhub.io/api/news?id=28d40cabdaa85583d675830e9678925a7a093aa77878c44cd6fe626ba14b92a0",
+        "final_domain": "finnhub.io",
+        "source_name": "finnhub.io",
+        "method": "curl_cffi_trafilatura",
+        "extraction_method": null,
+        "fetch_profile": "redirect:finnhub.io:c4:gap0.05:j0.05",
+        "http_status": null,
+        "latency_ms": 12002,
+        "attempts": [
+          {
+            "phase": "direct",
+            "url": "https://www.benzinga.com/markets/tech/26/08/61246219/david-tepper-cuts-micron-stake-exits-sandisk-as-appaloosa-goes-big-on-these-magnificent-7-stocks-in-q2",
+            "domain": "benzinga.com",
+            "final_url": "https://www.benzinga.com/markets/tech/26/08/61246219/david-tepper-cuts-micron-stake-exits-sandisk-as-appaloosa-goes-big-on-these-magnificent-7-stocks-in-q2",
+            "fetch_profile": "direct:benzinga.com:c4:gap0.05:j0.05",
+            "status_code": 403,
+            "latency_ms": 189,
+            "reason": "http_403",
+            "response_bytes": 6543,
+            "retry_after_seconds": null,
+            "transient_hint": true
+          },
+          {
+            "phase": "reader",
+            "url": "https://r.jina.ai/http://https://www.benzinga.com/markets/tech/26/08/61246219/david-tepper-cuts-micron-stake-exits-sandisk-as-appaloosa-goes-big-on-these-magnificent-7-stocks-in-q2",
+            "domain": "benzinga.com",
+            "final_url": null,
+            "fetch_profile": "reader:benzinga.com:c4:gap0.05:j0.05",
+            "status_code": null,
+            "latency_ms": 10002,
+            "reason": "timeout",
+            "response_bytes": null,
+            "retry_after_seconds": null,
+            "transient_hint": false
+          },
+          {
+            "phase": "redirect",
+            "url": "https://finnhub.io/api/news?id=28d40cabdaa85583d675830e9678925a7a093aa77878c44cd6fe626ba14b92a0",
+            "domain": "finnhub.io",
+            "final_url": null,
+            "fetch_profile": "redirect:finnhub.io:c4:gap0.05:j0.05",
+            "status_code": null,
+            "latency_ms": 12001,
+            "reason": "timeout",
+            "response_bytes": null,
+            "retry_after_seconds": null,
+            "transient_hint": false
+          }
+        ],
+        "existing_quality": {
+          "body_length": 117,
+          "sentence_count": 1,
+          "reason": "very_short",
+          "complete_like": false
+        },
+        "extracted_quality": null,
+        "queue_attempt_count": 2,
+        "pipeline_version": "legacy",
+        "reason_code": "timeout",
+        "outcome": "UNAVAILABLE"
+      },
+      "v2_body_completion": {
+        "attempt_id": "enrich-36082aa8400132d378b6ae2004e28e99e809daa6b974a409f91ec8ecec13a238",
+        "succeeded": false,
+        "reason": "timeout",
+        "attempt_count": 2
+      },
+      "v2_control_origin": {
+        "epoch": 3,
+        "mode": "PAPER_TRADING",
+        "recorded_at": "2026-09-14T06:00:19.644883+00:00"
+      }
+    },
+    "prior_reason": "timeout"
+  },
+  {
+    "id": "std_74af50951a344a2a8e3cd30fa8b2bc27",
+    "url": "https://www.fool.com/investing/2026/08/22/alphabet-and-amazon-are-investing-420-billion-in-a/",
+    "title": "Alphabet and Amazon Are Investing $420 Billion in Artificial Intelligence (AI) Infrastructure: 4 Hardware Stocks Set to Profit",
+    "body": "The AI hyperscalers are spending a ton of money on computing power.",
+    "source_id": "finnhub_company_news",
+    "raw_payload": {
+      "category": "company",
+      "datetime": 1787398500,
+      "headline": "Alphabet and Amazon Are Investing $420 Billion in Artificial Intelligence (AI) Infrastructure: 4 Hardware Stocks Set to Profit",
+      "id": 141277868,
+      "image": "https://s.yimg.com/rz/stage/p/yahoo_finance_en-US_h_p_finance_2.png",
+      "related": "MU",
+      "source": "Yahoo",
+      "summary": "The AI hyperscalers are spending a ton of money on computing power.",
+      "url": "https://finnhub.io/api/news?id=45010cc5dfaaf75e827cb8825140c700529ba7fb5c0db0795bcec5c068e82173"
+    },
+    "metadata": {
+      "provider": "finnhub",
+      "category": "company",
+      "media_enrichment": {
+        "status": "failed",
+        "succeeded": false,
+        "reason": "timeout",
+        "attempted_at": "2026-09-14T06:02:51.367789Z",
+        "source_url": "https://finnhub.io/api/news?id=45010cc5dfaaf75e827cb8825140c700529ba7fb5c0db0795bcec5c068e82173",
+        "final_url": "https://www.fool.com/investing/2026/08/22/alphabet-and-amazon-are-investing-420-billion-in-a/",
+        "final_domain": "fool.com",
+        "source_name": "fool.com",
+        "method": "jina_reader_markdown",
+        "extraction_method": "jina_reader_markdown",
+        "fetch_profile": "reader:fool.com:c2:gap0.15:j0.10",
+        "http_status": 429,
+        "latency_ms": 16555,
+        "attempts": [
+          {
+            "phase": "direct",
+            "url": "https://www.fool.com/investing/2026/08/22/alphabet-and-amazon-are-investing-420-billion-in-a/",
+            "domain": "fool.com",
+            "final_url": "https://www.fool.com/investing/2026/08/22/alphabet-and-amazon-are-investing-420-billion-in-a/",
+            "fetch_profile": "direct:fool.com:c2:gap0.15:j0.10",
+            "status_code": 429,
+            "latency_ms": 1357,
+            "reason": "http_429",
+            "response_bytes": 454774,
+            "retry_after_seconds": 281.0,
+            "transient_hint": true
+          },
+          {
+            "phase": "reader",
+            "url": "https://r.jina.ai/http://https://www.fool.com/investing/2026/08/22/alphabet-and-amazon-are-investing-420-billion-in-a/",
+            "domain": "fool.com",
+            "final_url": null,
+            "fetch_profile": "reader:fool.com:c2:gap0.15:j0.10",
+            "status_code": null,
+            "latency_ms": 10002,
+            "reason": "timeout",
+            "response_bytes": null,
+            "retry_after_seconds": null,
+            "transient_hint": false
+          }
+        ],
+        "existing_quality": {
+          "body_length": 67,
+          "sentence_count": 1,
+          "reason": "very_short",
+          "complete_like": false
+        },
+        "extracted_quality": null,
+        "queue_attempt_count": 1,
+        "pipeline_version": "legacy",
+        "reason_code": "timeout",
+        "outcome": "UNAVAILABLE"
+      },
+      "v2_body_completion": {
+        "attempt_id": "enrich-661b575521bdfb9b38fc2f00e7a8812ab9ff443df6dc8de313993367e9d7b056",
+        "succeeded": false,
+        "reason": "timeout",
+        "attempt_count": 1
+      },
+      "v2_control_origin": {
+        "epoch": 3,
+        "mode": "PAPER_TRADING",
+        "recorded_at": "2026-09-14T06:01:03.164862+00:00"
+      }
+    },
+    "prior_reason": "timeout"
+  },
+  {
+    "id": "std_49a94245591a4982ab0f26abdff0e235",
+    "url": "https://finance.yahoo.com/video/why-higher-yields-arent-scaring-201500563.html",
+    "title": "Why higher yields aren't scaring off retail traders",
+    "body": "Charles Schwab Head Trading & Derivatives Strategist Joe Mazzola joins Jared Blikre to break down how higher Treasury yields are impacting retail traders—and what it means for their portfolios and trading strategies.",
+    "source_id": "finnhub_company_news",
+    "raw_payload": {
+      "category": "company",
+      "datetime": 1787346900,
+      "headline": "Why higher yields aren't scaring off retail traders",
+      "id": 141278021,
+      "image": "https://s.yimg.com/rz/stage/p/yahoo_finance_en-US_h_p_finance_2.png",
+      "related": "MU",
+      "source": "Yahoo",
+      "summary": "Charles Schwab Head Trading & Derivatives Strategist Joe Mazzola joins Jared Blikre to break down how higher Treasury yields are impacting retail traders—and what it means for their portfolios and trading strategies.",
+      "url": "https://finnhub.io/api/news?id=eb64c8de3895cd5bde8c1e113ae8d57eba6f096472c988b6d7d2ff7cfc724933"
+    },
+    "metadata": {
+      "provider": "finnhub",
+      "category": "company",
+      "media_enrichment": {
+        "status": "failed",
+        "succeeded": false,
+        "reason": "unsupported_media",
+        "attempted_at": "2026-09-14T06:02:15.275987Z",
+        "source_url": "https://finnhub.io/api/news?id=eb64c8de3895cd5bde8c1e113ae8d57eba6f096472c988b6d7d2ff7cfc724933",
+        "final_url": "https://finance.yahoo.com/video/why-higher-yields-arent-scaring-201500563.html",
+        "final_domain": "finance.yahoo.com",
+        "source_name": "finance.yahoo.com",
+        "method": "trafilatura",
+        "extraction_method": "trafilatura",
+        "fetch_profile": "direct:finance.yahoo.com:c2:gap0.15:j0.10",
+        "http_status": 200,
+        "latency_ms": 1601,
+        "attempts": [
+          {
+            "phase": "direct",
+            "url": "https://finance.yahoo.com/video/why-higher-yields-arent-scaring-201500563.html",
+            "domain": "finance.yahoo.com",
+            "final_url": "https://finance.yahoo.com/video/why-higher-yields-arent-scaring-201500563.html",
+            "fetch_profile": "direct:finance.yahoo.com:c2:gap0.15:j0.10",
+            "status_code": 200,
+            "latency_ms": 1081,
+            "reason": null,
+            "response_bytes": 903998,
+            "retry_after_seconds": null,
+            "transient_hint": true
+          }
+        ],
+        "existing_quality": {
+          "body_length": 216,
+          "sentence_count": 1,
+          "reason": "short_summary",
+          "complete_like": false
+        },
+        "extracted_quality": {
+          "body_length": 2656,
+          "sentence_count": 21,
+          "reason": "complete_like",
+          "complete_like": true
+        },
+        "queue_attempt_count": 1,
+        "pipeline_version": "legacy",
+        "reason_code": "unsupported_media",
+        "outcome": "UNAVAILABLE"
+      },
+      "v2_body_completion": {
+        "attempt_id": "enrich-93ed931535ae909644c3fa9556625ca12ffd6dd8cc2e5305e495611d9c7da37e",
+        "succeeded": false,
+        "reason": "unsupported_media",
+        "attempt_count": 1
+      },
+      "v2_control_origin": {
+        "epoch": 3,
+        "mode": "PAPER_TRADING",
+        "recorded_at": "2026-09-14T06:00:55.700296+00:00"
+      }
+    },
+    "prior_reason": "unsupported_media"
+  },
+  {
+    "id": "std_d89428b3a112493c805c81434ab51e2a",
+    "url": "https://www.cnbc.com/video/2026/09/06/the-real-estate-bet-behind-the-ai-infrastructure-boom.html",
+    "title": "Chasing AI fortunes, investors race to snap up land",
+    "body": "Investors are spending billions of dollars buying up land in hopes of developing it into data centers or other AI infrastructure. The buildout is impacting communities across the country, sparking confrontations between tech companies, developers, local governments and residents. CNBC traveled to Lancaster County, Pennsylvania and Boise, Idaho to learn more about the real estate bet behind the AI boom.",
+    "source_id": "finnhub_company_news",
+    "raw_payload": {
+      "category": "company",
+      "datetime": 1788681301,
+      "headline": "Chasing AI fortunes, investors race to snap up land",
+      "id": 141592299,
+      "image": "https://image.cnbcfm.com/api/v1/image/108357335-1788295288691-thumb60.jpg?v=1788295334&w=1920&h=1080",
+      "related": "MU",
+      "source": "CNBC",
+      "summary": "Investors are spending billions of dollars buying up land in hopes of developing it into data centers or other AI infrastructure. The buildout is impacting communities across the country, sparking confrontations between tech companies, developers, local governments and residents. CNBC traveled to Lancaster County, Pennsylvania and Boise, Idaho to learn more about the real estate bet behind the AI boom.",
+      "url": "https://finnhub.io/api/news?id=4b80b21a8bc58f264632165fd4b12db5a0fb72f12e99241d32dadf01db1d788b"
+    },
+    "metadata": {
+      "provider": "finnhub",
+      "category": "company",
+      "media_enrichment": {
+        "status": "failed",
+        "succeeded": false,
+        "reason": "unsupported_media",
+        "attempted_at": "2026-09-14T06:06:08.908475Z",
+        "source_url": "https://finnhub.io/api/news?id=4b80b21a8bc58f264632165fd4b12db5a0fb72f12e99241d32dadf01db1d788b",
+        "final_url": "https://www.cnbc.com/video/2026/09/06/the-real-estate-bet-behind-the-ai-infrastructure-boom.html",
+        "final_domain": "cnbc.com",
+        "source_name": "cnbc.com",
+        "method": "trafilatura",
+        "extraction_method": "trafilatura",
+        "fetch_profile": "direct:cnbc.com:c4:gap0.05:j0.05",
+        "http_status": 200,
+        "latency_ms": 1837,
+        "attempts": [
+          {
+            "phase": "direct",
+            "url": "https://www.cnbc.com/video/2026/09/06/the-real-estate-bet-behind-the-ai-infrastructure-boom.html",
+            "domain": "cnbc.com",
+            "final_url": "https://www.cnbc.com/video/2026/09/06/the-real-estate-bet-behind-the-ai-infrastructure-boom.html",
+            "fetch_profile": "direct:cnbc.com:c4:gap0.05:j0.05",
+            "status_code": 200,
+            "latency_ms": 1003,
+            "reason": null,
+            "response_bytes": 890801,
+            "retry_after_seconds": null,
+            "transient_hint": true
+          }
+        ],
+        "existing_quality": {
+          "body_length": 405,
+          "sentence_count": 3,
+          "reason": "short_summary",
+          "complete_like": false
+        },
+        "extracted_quality": {
+          "body_length": 495,
+          "sentence_count": 4,
+          "reason": "short_summary",
+          "complete_like": false
+        },
+        "queue_attempt_count": 1,
+        "pipeline_version": "legacy",
+        "reason_code": "unsupported_media",
+        "outcome": "UNAVAILABLE"
+      },
+      "v2_body_completion": {
+        "attempt_id": "enrich-757ecdeefef51969981f7c3f972f00b528b9349d3aa8f48e587485139ab4e8de",
+        "succeeded": false,
+        "reason": "unsupported_media",
+        "attempt_count": 1
+      },
+      "v2_control_origin": {
+        "epoch": 3,
+        "mode": "PAPER_TRADING",
+        "recorded_at": "2026-09-14T06:03:14.289269+00:00"
+      }
+    },
+    "prior_reason": "unsupported_media"
+  },
+  {
+    "id": "std_921a00e6ac3b436999342f59077ebb9d",
+    "url": "https://finance.yahoo.com/technology/ai/articles/anthropic-ceo-urges-ai-industry-101357356.html",
+    "title": "Anthropic CEO Urges AI Industry to Slow Development Pace; Chip Stocks Slide",
+    "body": "Amazon-backed (AMZN) Anthropic Chief Executive Dario Amodei called for the AI industry to slow the p",
+    "source_id": "yahoo_finance_news",
+    "raw_payload": {
+      "id": "706dd0f7-f265-312a-9465-e33d10bd1b5c",
+      "contentType": "STORY",
+      "title": "Anthropic CEO Urges AI Industry to Slow Development Pace; Chip Stocks Slide",
+      "description": "",
+      "summary": "Amazon-backed (AMZN) Anthropic Chief Executive Dario Amodei called for the AI industry to slow the p",
+      "pubDate": "2026-09-14T10:13:57Z",
+      "displayTime": "2026-09-14T10:13:57Z",
+      "isHosted": true,
+      "bypassModal": false,
+      "previewUrl": null,
+      "thumbnail": null,
+      "provider": {
+        "displayName": "MT Newswires",
+        "url": "https://www.mtnewswires.com/",
+        "sourceId": "mt_newswires_premium_news_706"
+      },
+      "canonicalUrl": {
+        "url": "https://finance.yahoo.com/technology/ai/articles/anthropic-ceo-urges-ai-industry-101357356.html",
+        "site": "finance",
+        "region": "US",
+        "lang": "en-US"
+      },
+      "clickThroughUrl": {
+        "url": "https://finance.yahoo.com/technology/ai/articles/anthropic-ceo-urges-ai-industry-101357356.html",
+        "site": "finance",
+        "region": "US",
+        "lang": "en-US"
+      },
+      "metadata": {
+        "editorsPick": false
+      },
+      "finance": {
+        "premiumFinance": {
+          "isPremiumNews": true,
+          "isPremiumFreeNews": false
+        }
+      },
+      "storyline": null
+    },
+    "metadata": {
+      "provider": "yahoo_finance",
+      "query_mode": "ncp_latest_news",
+      "publisher_domain": "mtnewswires.com",
+      "media_enrichment": {
+        "status": "failed",
+        "succeeded": false,
+        "reason": "empty_extract",
+        "attempted_at": "2026-09-14T10:32:34.360479Z",
+        "source_url": "https://finance.yahoo.com/technology/ai/articles/anthropic-ceo-urges-ai-industry-101357356.html",
+        "final_url": "https://finance.yahoo.com/technology/ai/articles/anthropic-ceo-urges-ai-industry-101357356.html",
+        "final_domain": "finance.yahoo.com",
+        "source_name": "finance.yahoo.com",
+        "method": "jina_reader_markdown",
+        "extraction_method": "jina_reader_markdown",
+        "fetch_profile": "reader:finance.yahoo.com:c2:gap0.15:j0.10",
+        "http_status": 200,
+        "latency_ms": 8608,
+        "attempts": [
+          {
+            "phase": "direct",
+            "url": "https://finance.yahoo.com/technology/ai/articles/anthropic-ceo-urges-ai-industry-101357356.html",
+            "domain": "finance.yahoo.com",
+            "final_url": "https://finance.yahoo.com/technology/ai/articles/anthropic-ceo-urges-ai-industry-101357356.html",
+            "fetch_profile": "direct:finance.yahoo.com:c2:gap0.15:j0.10",
+            "status_code": 429,
+            "latency_ms": 21,
+            "reason": "http_429",
+            "response_bytes": 23,
+            "retry_after_seconds": null,
+            "transient_hint": true
+          },
+          {
+            "phase": "reader",
+            "url": "https://r.jina.ai/http://https://finance.yahoo.com/technology/ai/articles/anthropic-ceo-urges-ai-industry-101357356.html",
+            "domain": "finance.yahoo.com",
+            "final_url": "https://r.jina.ai/http://https://finance.yahoo.com/technology/ai/articles/anthropic-ceo-urges-ai-industry-101357356.html",
+            "fetch_profile": "reader:finance.yahoo.com:c2:gap0.15:j0.10",
+            "status_code": 200,
+            "latency_ms": 8406,
+            "reason": null,
+            "response_bytes": 202,
+            "retry_after_seconds": null,
+            "transient_hint": false
+          }
+        ],
+        "existing_quality": {
+          "body_length": 100,
+          "sentence_count": 1,
+          "reason": "very_short",
+          "complete_like": false
+        },
+        "extracted_quality": {
+          "body_length": 0,
+          "sentence_count": 0,
+          "reason": "empty",
+          "complete_like": false
+        },
+        "queue_attempt_count": 1,
+        "pipeline_version": "legacy",
+        "reason_code": "empty_extract",
+        "outcome": "UNAVAILABLE"
+      },
+      "v2_body_completion": {
+        "attempt_id": "enrich-96d968deeb2ac98162f57cc4e46edc3b209183d8af643510f72ffaf87735a303",
+        "succeeded": false,
+        "reason": "empty_extract",
+        "attempt_count": 1
+      },
+      "v2_control_origin": {
+        "epoch": 3,
+        "mode": "PAPER_TRADING",
+        "recorded_at": "2026-09-14T10:32:25.008478+00:00"
+      }
+    },
+    "prior_reason": "empty_extract"
+  },
+  {
+    "id": "std_e55e6df9fe0a43f0954b8cf99ac32d4b",
+    "url": "https://finance.yahoo.com/technology/ai/articles/anthropic-still-plans-2026-ipo-150602685.html",
+    "title": "Anthropic still plans 2026 IPO despite AI safety concerns - Axios",
+    "body": "",
+    "source_id": "yahoo_finance_news",
+    "raw_payload": {
+      "link": "https://finance.yahoo.com/technology/ai/articles/anthropic-still-plans-2026-ipo-150602685.html",
+      "providerPublishTime": 1789398362,
+      "publisher": "Investing.com",
+      "relatedTickers": [
+        "ANTP",
+        "ANTHROPICUSD"
+      ],
+      "title": "Anthropic still plans 2026 IPO despite AI safety concerns - Axios",
+      "type": "STORY",
+      "uuid": "08b065f6-ca07-3257-8079-69d57d8daaa5"
+    },
+    "metadata": {
+      "media_enrichment": {
+        "attempted_at": "2026-09-14T15:10:29.456433Z",
+        "attempts": [
+          {
+            "domain": "finance.yahoo.com",
+            "fetch_profile": "direct:finance.yahoo.com:c2:gap0.15:j0.10",
+            "final_url": "https://finance.yahoo.com/technology/ai/articles/anthropic-still-plans-2026-ipo-150602685.html",
+            "latency_ms": 18,
+            "phase": "direct",
+            "reason": "http_429",
+            "response_bytes": 23,
+            "retry_after_seconds": null,
+            "status_code": 429,
+            "transient_hint": true,
+            "url": "https://finance.yahoo.com/technology/ai/articles/anthropic-still-plans-2026-ipo-150602685.html"
+          },
+          {
+            "domain": "finance.yahoo.com",
+            "fetch_profile": "reader:finance.yahoo.com:c2:gap0.15:j0.10",
+            "final_url": null,
+            "latency_ms": 10002,
+            "phase": "reader",
+            "reason": "timeout",
+            "response_bytes": null,
+            "retry_after_seconds": null,
+            "status_code": null,
+            "transient_hint": false,
+            "url": "https://r.jina.ai/http://https://finance.yahoo.com/technology/ai/articles/anthropic-still-plans-2026-ipo-150602685.html"
+          },
+          {
+            "domain": "finance.yahoo.com",
+            "fetch_profile": "direct:finance.yahoo.com:c2:gap0.15:j0.10",
+            "final_url": "https://finance.yahoo.com/technology/ai/articles/anthropic-still-plans-2026-ipo-150602685.html",
+            "latency_ms": 5,
+            "phase": "direct",
+            "reason": "http_429",
+            "response_bytes": 23,
+            "retry_after_seconds": null,
+            "status_code": 429,
+            "transient_hint": true,
+            "url": "https://finance.yahoo.com/technology/ai/articles/anthropic-still-plans-2026-ipo-150602685.html"
+          },
+          {
+            "domain": "finance.yahoo.com",
+            "fetch_profile": "reader:finance.yahoo.com:c2:gap0.15:j0.10",
+            "final_url": null,
+            "latency_ms": 10002,
+            "phase": "reader",
+            "reason": "timeout",
+            "response_bytes": null,
+            "retry_after_seconds": null,
+            "status_code": null,
+            "transient_hint": false,
+            "url": "https://r.jina.ai/http://https://finance.yahoo.com/technology/ai/articles/anthropic-still-plans-2026-ipo-150602685.html"
+          }
+        ],
+        "existing_quality": {
+          "body_length": 0,
+          "complete_like": false,
+          "reason": "empty",
+          "sentence_count": 0
+        },
+        "extracted_quality": null,
+        "extraction_method": "jina_reader_markdown",
+        "fetch_profile": "reader:finance.yahoo.com:c2:gap0.15:j0.10",
+        "final_domain": "finance.yahoo.com",
+        "final_url": "https://finance.yahoo.com/technology/ai/articles/anthropic-still-plans-2026-ipo-150602685.html",
+        "http_status": 429,
+        "latency_ms": 16153,
+        "method": "jina_reader_markdown",
+        "outcome": "UNAVAILABLE",
+        "pipeline_version": "legacy",
+        "queue_attempt_count": 2,
+        "reason": "timeout",
+        "reason_code": "timeout",
+        "source_name": "finance.yahoo.com",
+        "source_url": "https://finance.yahoo.com/technology/ai/articles/anthropic-still-plans-2026-ipo-150602685.html",
+        "status": "failed",
+        "succeeded": false
+      },
+      "provider": "yahoo_finance",
+      "publisher_domain": "finance.yahoo.com",
+      "query_mode": "finance_search_reader_proxy_fallback",
+      "v2_body_completion": {
+        "attempt_count": 2,
+        "attempt_id": "enrich-0a2b36ec770a8dd06a39b8e7a5d1b080a9c6718f724405fc00bfd85d22ebd9ca",
+        "completed_at": "2026-09-14T15:10:29.456405+00:00",
+        "reason": "timeout",
+        "started_at": "2026-09-14T15:10:13.293690+00:00",
+        "succeeded": false
+      },
+      "v2_control_origin": {
+        "epoch": 3,
+        "mode": "PAPER_TRADING",
+        "recorded_at": "2026-09-14T15:09:25.985832+00:00"
+      }
+    },
+    "prior_reason": "timeout"
+  }
+]

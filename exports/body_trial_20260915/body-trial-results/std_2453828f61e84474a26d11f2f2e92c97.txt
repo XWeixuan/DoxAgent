@@ -1,0 +1,161 @@
+David Tepper recently walked away from one of the hottest semiconductor trades of 2026.
+
+Billionaire’s Appaloosa Management fully withdrew its investment in Sandisk (SNDK) during the second quarter, after commencing the position only a quarter earlier, its latest 13F filing showed.
+
+But Tepper did not shy away from artificial intelligence.
+
+He scrambled farther into it.
+
+Appaloosa established a new Broadcom (AVGO) position of 150,000 shares worth about $56.7 million as of June 30. The fund simultaneously continued holding enormous positions across the AI ecosystem, including Amazon, Micron, Taiwan Semiconductor, Alphabet, Nvidia and Meta.
+
+This makes the move far more intriguing than just collecting profits.
+
+Tepper did a remarkable job of swapping out a firm that benefited from the scarcity and growing pricing of AI storage for one that was better positioned closer to the bespoke silicon and networking architecture that powers hyperscale AI data centers.
+
+For ordinary investors, the question is straightforward: Did Tepper just cash out of the hottest part of the AI cycle before the economics change?
+
+Tepper sold Sandisk after an almost unbelievable earnings explosion
+
+Sandisk’s recent financials suggest Tepper had enough profits to protect. Revenue rose 51% sequentially and 372% year-over-year to $8.97 billion in fiscal fourth quarter. GAAP net income was $6.9 billion, and diluted EPS was $43.97. Its gross margin rose to 84.6%.
+
+That is not a typo.
+
+Sandisk said around two-thirds of its sequential revenue growth came from higher prices and one-third from increased volumes.
+
+The AI data center explosion has changed the company’s business.
+
+Data-center revenue for Sandisk rose 437% to $5.15 billion in fiscal 2026. 4Q data-center revenue was nearly $2.98 billion, almost double the previous quarter.
+
+That type of operational leverage may create huge gains.
+
+It may also explain in detail why an experienced investor would want to harvest them.
+
+Memory markets have been cyclical before. Prices go higher as supplies become tighter, producers add capacity and ultimately the economics may stabilize.
+
+Tepper didn’t wait around to see where that cycle peaks.
+
+Broadcom gives Tepper a very different AI bet
+
+The AI potential at Broadcom is unique.
+
+Instead, Broadcom is within the architecture of hyperscale artificial intelligence systems and less dependent upon escalating memory costs.
+
+Its high-speed networking equipment and proprietary AI accelerators are used to link large clusters of computers.
+
+And the figures are becoming big.
+
+Broadcom said it reported $10.8 billion in AI semiconductor sales for fiscal Q2, increasing 143% year over year.
+
+More Manager Buy/Sells:
+
+Michael Burry increases his bet against popular chip giant
+
+Warren Buffett reveals he broke his own investing pattern
+
+Mark Cuban bets on MLB with Athletics minority stake
+
+The demand for specialized AI accelerators and AI networking has been more than expected, said Broadcom CEO Hock Tan.
+
+Broadcom projected $16 billion in AI semiconductor sales for fiscal Q3, up more than 200% year over year.
+
+Tan said, “The momentum continues.”
+
+That brief comment helps clarify why Tepper’s rotation is worth watching.
+
+He has not sold off a rapidly developing AI firm and moved into cash.
+
+He sold one fast-growing AI startup and purchased another that may have a different economic motive for its development.
+
+Tepper’s portfolio shows he is hardly turning bearish on AI
+
+That idea is much more obvious in the remainder of Appaloosa’s repertoire.
+
+Amazon was the fund’s largest disclosed holding at $1.19 billion on June 30, 15.4% of the portfolio.
+
+Micron came in second, with almost $1.13 billion.
+
+Taiwan Semiconductor accounted for around $788 million, Alphabet for about $654 million, Meta for some $380 million, and Nvidia for about $305 million.
+
+That’s a modest stake compared to Broadcom’s $56.7 million.
+
+But the point is that it was new.
+
+Appaloosa also cut down its holding in Sandisk altogether, which was worth around $178.7 million, based on portfolio monitoring data from the disclosures.
+
+That makes the broad direction of the trade difficult to miss. Tepper appears comfortable owning AI infrastructure. He simply changed which piece of it he wanted.
+
+Sandisk’s spectacular numbers contain the risk investors should watch
+
+There’s a certain irony in Tepper selling Sandisk just when its financials appear almost outrageously excellent.
+
+Full-year fiscal 2026 revenue reached $20.25 billion, up 175%. GAAP net income reached $11.43 billion, compared with a loss the prior year. Fiscal-year gross margin jumped to 71.5%, compared with roughly 30% a year earlier.
+
+Sandisk had an even more powerful viewpoint.
+
+Management expects to generate between $10.3 billion and $10.8 billion in sales and between $44 and $46 in non-GAAP EPS in fiscal first quarter 2027.
+
+The stats might make Tepper appear hasty in his resignation.
+
+But they also highlight a typical challenge for investors.
+
+Sometimes the finest moment operationally for a cyclical firm might be the most risky time to expect present margin and price would last forever.
+
+Pricing was responsible for around two-thirds of Sandisk’s sequential sales gain in the fourth quarter, the company said.
+
+That’s a positive sign when prices are going up.
+
+It also informs investors about which variable matters when supply and demand finally go back into balance.
+
+The trade may be about durability rather than growth
+
+That is where Broadcom becomes an interesting alternative.
+
+Both firms are susceptible to huge AI infrastructure investment.
+
+But their economics are not the same.
+
+Sandisk offers the storage capacity that artificial intelligence systems are rapidly demanding.
+
+Broadcom is in specialized accelerators and networking solutions that can be incorporated in hyperscalers’ multi-year infrastructure road plans.
+
+Broadcom’s AI semiconductor sales for the fiscal second quarter was $10.8 billion, already around four times the size of Sandisk’s quarterly data-center revenue.
+
+And Broadcom expects the AI semiconductor number to hit $16 billion in the coming quarter.
+
+It doesn’t mean Broadcom is secure by default.
+
+That valuation has its own risk, especially if investors anticipate remarkable AI growth to continue.
+
+But Tepper may be picking between two kinds of danger.
+
+Investors have to assess SanDisk based on the sustainability of historically high memory prices and profits.
+
+With Broadcom, they have to think about how long the hyperscalers are going to be buying specialized AI processors and networking.
+
+Tepper’s move carries one important warning
+
+Investors should not just follow the trade.
+
+13F is history.
+
+Appaloosa reported its holdings as of June 30 in an Aug. 14 filing. It doesn’t say when Tepper acquired Broadcom or sold Sandisk during the quarter, the prices he paid, or whether he has since changed either position.
+
+The limitation matters. Tepper could have changed his mind already. But the revealed rotation still provides the average investor with something more useful than a ticker to copy. It provides a framework for thinking about the next phase of AI investing. The first phase rewarded almost all aspects of scarce computing capacity. The next stage might be more picky.
+
+Investors may have to separate firms that are beneficiaries of excellent price cycles from those with enduring positions in the AI architecture.
+
+Tepper’s portfolio implies he is making that difference today.
+
+He sold Sandisk following one of the greatest semiconductor runs of the year.
+
+Then he bought Broadcom with new money.
+
+The billionaire isn’t leaving the AI boom. He appears to be betting that its next winners may look different from its last ones.
+
+About the authors
+
+Faizan Farooque
+
+Dana Sullivan Kilroy
+
+TheStreet Writer/Editor

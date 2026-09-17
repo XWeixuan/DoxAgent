@@ -1,0 +1,198 @@
+{
+  "body-access-results-final": {
+    "total": 8,
+    "accepted": 5,
+    "rows": [
+      {
+        "id": "std_778fe292bbf5471e9fc70d204958cf0f",
+        "url": "https://www.reuters.com/world/asia-pacific/asml-extends-chipmaking-dominance-customers-embrace-high-na-2026-09-14/",
+        "succeeded": true,
+        "reason": null,
+        "chars": 3785,
+        "method": "browser_reuters_article_body"
+      },
+      {
+        "id": "std_cfe8906cd35946bb9e9411c68d88e35b",
+        "url": "https://www.reuters.com/world/china/ai-linked-asian-stocks-slump-after-top-lab-ceos-call-slowing-down-technologys-2026-09-14/",
+        "succeeded": true,
+        "reason": null,
+        "chars": 5212,
+        "method": "browser_reuters_article_body"
+      },
+      {
+        "id": "std_b507a8c26a044ecfb5ce3829303d21e4",
+        "url": "https://www.barrons.com/articles/micron-stock-price-memory-chips-ai-f9a51c2e?siteid=yhoof2&yptr=yahoo",
+        "succeeded": false,
+        "reason": "empty_extract",
+        "chars": 0,
+        "method": null
+      },
+      {
+        "id": "std_3d0a624bab4444d1bcc9019417568a84",
+        "url": "https://www.barrons.com/livecoverage/stock-market-news-today-091426/card/wall-street-fear-index-jumps-as-brutal-ai-selloff-hits-market-lRY6Sjw10ISlwtLhYwZD?siteid=yhoof2&yptr=yahoo",
+        "succeeded": false,
+        "reason": "empty_extract",
+        "chars": 0,
+        "method": null
+      },
+      {
+        "id": "std_f20ea437d1fe48f094121fe2232166ca",
+        "url": "https://seekingalpha.com/article/4940102-ai-semiconductor-chips-vs-software-stocks-understanding-cyclicality-and-disruption",
+        "succeeded": true,
+        "reason": null,
+        "chars": 2064,
+        "method": "browser_sa_article_body"
+      },
+      {
+        "id": "std_160658f7b5df4123bba727cc1f784f20",
+        "url": "https://seekingalpha.com/article/4937134-micron-strong-buy-as-kospi-fear-looks-overdone",
+        "succeeded": false,
+        "reason": "empty_extract",
+        "chars": 0,
+        "method": null
+      },
+      {
+        "id": "wsj_bonds",
+        "url": "https://www.wsj.com/finance/investing/bond-markets-hedge-funds-003c6ea8",
+        "succeeded": true,
+        "reason": null,
+        "chars": 7287,
+        "method": "browser_wsj_article_body"
+      },
+      {
+        "id": "wsj_ai",
+        "url": "https://www.wsj.com/finance/stocks/ai-leaders-are-calling-for-a-slowdown-but-wall-street-keeps-on-buying-7c671903",
+        "succeeded": true,
+        "reason": null,
+        "chars": 6969,
+        "method": "browser_wsj_article_body"
+      }
+    ]
+  },
+  "body-free-results": {
+    "total": 15,
+    "accepted": 4,
+    "rows": [
+      {
+        "id": "std_2453828f61e84474a26d11f2f2e92c97",
+        "url": "https://www.thestreet.com/investing/billionaire-david-tepper-just-dumped-a-red-hot-ai-stock",
+        "succeeded": false,
+        "reason": "http_403",
+        "chars": 0,
+        "method": null
+      },
+      {
+        "id": "std_2f119c478ead4dd8b567ad2fd3ba3051",
+        "url": "https://247wallst.com/investing/2026/08/31/apple-just-raised-mac-and-ipad-prices-20-so-who-is-getting-rich-off-the-shortage/",
+        "succeeded": false,
+        "reason": "http_403",
+        "chars": 0,
+        "method": null
+      },
+      {
+        "id": "std_ad632be1c978422eb4c061ec4eb605fe",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/3-great-quality-stocks-own-201414086.html",
+        "succeeded": true,
+        "reason": null,
+        "chars": 7566,
+        "method": "article_dom"
+      },
+      {
+        "id": "std_645ee6210e534294b5eded617626c51a",
+        "url": "https://investorshub.advfn.com/market-news/article/35410/micron-shares-fall-1-8-following-taiwan-incentive-pay-report",
+        "succeeded": false,
+        "reason": "http_403",
+        "chars": 0,
+        "method": null
+      },
+      {
+        "id": "std_14378a9f91ae49eaa9f0e52913798380",
+        "url": "https://www.benzinga.com/markets/options/26/09/61584569/10-information-technology-stocks-whale-alerts-today-s-session",
+        "succeeded": false,
+        "reason": "http_403",
+        "chars": 0,
+        "method": null
+      },
+      {
+        "id": "std_aa1dadd7f4b244e0a4cb5f34d0c01f61",
+        "url": "https://www.investopedia.com/market-update-memory-other-ai-related-stocks-lead-the-markets-top-performers-friday-12108315",
+        "succeeded": false,
+        "reason": "http_451",
+        "chars": 0,
+        "method": null
+      },
+      {
+        "id": "std_c55125c783924025bbd19551ec22b134",
+        "url": "https://www.barchart.com/story/news/4461422/dells-monster-quarter-just-confirmed-microns-biggest-opportunity-is-not-just-hbm",
+        "succeeded": true,
+        "reason": null,
+        "chars": 5059,
+        "method": "browser_article_dom"
+      },
+      {
+        "id": "std_94723c3240ed477c8228950dce44f5d5",
+        "url": "https://www.investmentmonitor.ai/news/taiwanese-firms-20bn-us-investment/",
+        "succeeded": true,
+        "reason": null,
+        "chars": 2742,
+        "method": "browser_article_dom"
+      },
+      {
+        "id": "std_b921a6d7f5fe4e6f840ba3632e72cdad",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/social-buzz-wallstreetbets-stocks-mixed-103552041.html",
+        "succeeded": false,
+        "reason": "http_403",
+        "chars": 0,
+        "method": null
+      },
+      {
+        "id": "std_4f8ba92a0a5f42468817e391c0fe3371",
+        "url": "https://finnhub.io/api/news?id=28d40cabdaa85583d675830e9678925a7a093aa77878c44cd6fe626ba14b92a0",
+        "succeeded": false,
+        "reason": "http_403",
+        "chars": 0,
+        "method": null
+      },
+      {
+        "id": "std_74af50951a344a2a8e3cd30fa8b2bc27",
+        "url": "https://www.fool.com/investing/2026/08/22/alphabet-and-amazon-are-investing-420-billion-in-a/",
+        "succeeded": true,
+        "reason": null,
+        "chars": 3720,
+        "method": "article_dom"
+      },
+      {
+        "id": "std_49a94245591a4982ab0f26abdff0e235",
+        "url": "https://finance.yahoo.com/video/why-higher-yields-arent-scaring-201500563.html",
+        "succeeded": false,
+        "reason": "http_403",
+        "chars": 0,
+        "method": null
+      },
+      {
+        "id": "std_d89428b3a112493c805c81434ab51e2a",
+        "url": "https://www.cnbc.com/video/2026/09/06/the-real-estate-bet-behind-the-ai-infrastructure-boom.html",
+        "succeeded": false,
+        "reason": "unsupported_media",
+        "chars": 0,
+        "method": null
+      },
+      {
+        "id": "std_921a00e6ac3b436999342f59077ebb9d",
+        "url": "https://finance.yahoo.com/technology/ai/articles/anthropic-ceo-urges-ai-industry-101357356.html",
+        "succeeded": false,
+        "reason": "http_403",
+        "chars": 0,
+        "method": null
+      },
+      {
+        "id": "std_e55e6df9fe0a43f0954b8cf99ac32d4b",
+        "url": "https://finance.yahoo.com/technology/ai/articles/anthropic-still-plans-2026-ipo-150602685.html",
+        "succeeded": false,
+        "reason": "http_403",
+        "chars": 0,
+        "method": null
+      }
+    ]
+  }
+}

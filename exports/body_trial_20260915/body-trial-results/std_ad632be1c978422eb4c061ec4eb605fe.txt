@@ -1,0 +1,85 @@
+Sasha Jovanovic
+
+September 5, 2026 6 min read
+
+MSFT +1.97%
+
+MU -5.25%
+
+PLTR +3.64%
+
+Explore stocks on CoinbaseTrading disclosure
+
+Trading disclosure
+
+The above button links to Coinbase. Yahoo Finance is not a broker-dealer or investment adviser and does not offer securities or cryptocurrencies for sale or facilitate trading. Coinbase pays us for certain activity generated through this link. Prices displayed are informational.
+
+Learn more
+
+With inflation data guiding expectations for future central bank moves, many investors are looking for companies that can hold their own if borrowing costs stay high for longer than hoped. Solid profitability, strong returns on shareholder equity and sensible use of debt can help cushion portfolio shocks. This article highlights three stocks from a quality focused screener that filters for robust balance sheets and resilient business performance.
+
+The three stocks below are only a sample from this quality focused idea, and the full screen surfaced 49 more companies with similarly strong balance sheets, returns on equity and business track records that are not covered here. To identify and analyze the rest of these high quality candidates, head straight to the Solid Balance Sheet and Fundamentals screener.
+
+Microsoft (MSFT)
+
+Overview:** Microsoft is a global software and cloud company that provides operating systems, productivity tools like Microsoft 365 and Teams, and its Azure cloud platform to individuals and enterprises. Its high margin, subscription based cloud and enterprise software businesses are a key driver of the strong returns and cash generation that support its solid balance sheet.
+
+Operations:** Microsoft generates about US$138b from Intelligent Cloud, US$140b from Productivity and Business Processes, and US$54b from More Personal Computing, with revenue split roughly between the United States and other countries.
+
+Market Cap:** US$3.8t
+
+Investors looking at the Solid Balance Sheet and Fundamentals theme may find Microsoft hard to ignore, because Azure, Microsoft 365 and Dynamics 365 combine high margin, recurring revenue with a very large cloud backlog and substantial free cash flow. That financial strength is what allows heavy AI and data center spending without stretching the balance sheet, even as investors debate how quickly this investment will show up in margins. At the same time, rising regulatory pressure around cloud licensing and the sheer scale of AI capex keep the story far from risk free. If you want to understand whether the current AI build out and high ROE justify the price, Microsoft rewards a closer look.
+
+Microsoft's AI and cloud engine may look unstoppable, yet the real question is how that cash flow story compares with the risks around regulation and AI capex. Get the full picture in the analysis report for Microsoft
+
+NasdaqGS:MSFT Earnings & Revenue Growth as at Sep 2026
+
+Micron Technology (MU)
+
+Overview:** Micron Technology is a global memory and storage manufacturer that supplies DRAM, high bandwidth memory, CXL based memory and data center SSDs that are essential for cloud, AI and enterprise servers, alongside products for PCs, smartphones, cars and industrial equipment. Its cloud memory and core data center units, which focus on high margin DRAM and SSD lines, are the clearest link to the Solid Balance Sheet and Fundamentals theme because they underpin high returns on equity and cash generation, even though mobile and client segments also contribute a significant share of revenue.
+
+Story Continues
+
+Operations:** Micron generates most of its revenue from the Cloud Memory Business Unit at about US$31.3b and the Mobile and Client Business Unit at about US$27.2b, followed by the Core Data Center Business Unit at about US$21.2b and the Automotive and Embedded Business Unit at about US$10.5b, with other activities contributing a small amount.
+
+Market Cap:** US$1.1t
+
+Micron Technology is worth attention if you want exposure to AI infrastructure through a company that already reports very high profitability metrics. The key attraction is its data center memory and storage portfolio, which supports a 50.1% ROE and a 55.9% net margin, helped by high value DRAM, HBM and SSD products that are critical to cloud and AI workloads. Long term customer agreements on DRAM and NAND aim to smooth out some of the classic memory cycle swings. Yet investors still need to weigh peak earnings risk, heavy planned capex and rising competition from Chinese memory producers. If you want to understand whether those strong fundamentals and contracts are enough to offset cycle risk, Micron's story deserves a deeper look.
+
+Micron's high ROE and strong net margins suggest something bigger is developing in its AI memory and storage business. Get the full story from the analysis report for Micron Technology
+
+NasdaqGS:MU Earnings & Revenue Growth as at Sep 2026
+
+Palantir Technologies (PLTR)
+
+Overview:** Palantir Technologies builds data and AI platforms that help governments and companies pull together huge volumes of information and turn it into decisions. Its Foundry platform is a key driver of recurring commercial revenue and high customer retention that supports the Solid Balance Sheet and Fundamentals theme. Alongside Foundry, Palantir sells Gotham for defense and intelligence operations, Apollo for software deployment across complex environments, and an AI Platform that connects large language models to customer data.
+
+Operations:** Palantir generates about US$3.2b of revenue from government customers and around US$2.9b from commercial clients worldwide, with the United States contributing roughly US$4.8b.
+
+Market Cap:** US$438.6b
+
+Palantir Technologies combines a mix of high quality fundamentals and punchy expectations that some investors may view as significant. A roughly 31% ROE and net margins near 49% reflect a software model that can generate substantial cash flow, supported by recurring Foundry contracts and long dated government programs such as Maven and the TITAN battlefield system. The balance sheet has no debt and substantial cash, which allows for continued investment in AI while keeping financial risk contained. The trade off is valuation, with the stock priced at a premium, so any setback in growth or margins could affect sentiment quickly. For investors focused on durable earnings and a solid balance sheet, the key question is whether that quality profile and contract pipeline are sufficient to justify the current price level.
+
+Palantir's high margins and contract pipeline suggest that the current story might only be half written. However, the real twist lies in how those earnings compare with expectations in the analyst forecasts for Palantir Technologies
+
+NasdaqGS:PLTR Earnings & Revenue Growth as at Sep 2026
+
+Seeking Fresh Alternatives Before They Fly
+
+New ideas can move from quiet to breakout quickly. Review these fresh stock lists before any momentum is widely recognized and potential entry points start to change.
+
+Explore early price and earnings trends by scanning a curated group of potential breakout opportunities with the 47 high quality undervalued stocks
+
+Follow long-term structural themes by tracking a hand picked set of grid and electrification companies through the 39 power grid technology and infrastructure stocks
+
+Review the next wave of automation by examining carefully filtered industrial and tech stocks in the 36 robotics and automation stocks
+
+_This article by Simply Wall St is general in nature._**_We provide commentary based on historical data and analyst forecasts only using an unbiased methodology and our articles are not intended to be financial advice._**_It does not constitute a recommendation to buy or sell any stock, and does not take account of your objectives, or your financial situation. We aim to bring you long-term focused analysis driven by fundamental data. Note that our analysis may not factor in the latest price-sensitive company announcements or qualitative material. Simply Wall St has no position in any stocks mentioned._
+
+Have feedback on this article? Concerned about the content?****Get in touch****with us directly.**_Alternatively, email__editorial-team@simplywallst.com_%20from%205th%20September%202026)
+
+View Comments
+
+Terms and Privacy Policy
+
+More Info

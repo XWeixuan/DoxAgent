@@ -1,0 +1,95 @@
+This whale alert can help traders discover the next big trading opportunities.
+
+Whales are entities with large sums of money and we track their transactions here at Benzinga on our options activity scanner.
+
+Traders often look for circumstances when the market estimation of an option diverges away from its normal worth. Abnormal amounts of trading activity could push option prices to hyperbolic or underperforming levels.
+
+Below are some instances of options activity happening in the Information Technology sector:
+
+| **Symbol** | **PUT/CALL** | **Trade Type** | **Sentiment** | **Exp. Date** | **Strike Price** | **Total Trade Price** | **Open Interest** | **Volume** |
+
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+
+| NVDA | CALL | SWEEP | BULLISH | 09/02/26 | $225.00 | $27.5K | 35.8K | 354.0K |
+
+| MU | PUT | TRADE | NEUTRAL | 09/02/26 | $950.00 | $35.0K | 1.3K | 7.3K |
+
+| WULF | CALL | SWEEP | BULLISH | 11/20/26 | $16.00 | $49.9K | 22.1K | 6.1K |
+
+| CLSK | CALL | SWEEP | NEUTRAL | 09/18/26 | $12.00 | $35.1K | 18.6K | 5.3K |
+
+| NOK | PUT | TRADE | NEUTRAL | 12/18/26 | $8.00 | $85.8K | 10.9K | 2.3K |
+
+| SNDK | CALL | TRADE | BULLISH | 09/04/26 | $1540.00 | $35.8K | 359 | 2.2K |
+
+| MSFT | PUT | SWEEP | BEARISH | 09/04/26 | $487.50 | $28.7K | 418 | 1.9K |
+
+| AVGO | PUT | SWEEP | BULLISH | 09/04/26 | $325.00 | $102.4K | 2.5K | 1.8K |
+
+| DELL | PUT | SWEEP | BULLISH | 09/18/26 | $425.00 | $75.4K | 2.0K | 1.7K |
+
+| COHR | PUT | TRADE | BEARISH | 09/11/26 | $240.00 | $43.0K | 147 | 1.2K |
+
+| **Symbol** | **PUT/CALL** | **Trade Type** | **Sentiment** | **Exp. Date** | **Strike Price** | **Total Trade Price** | **Open Interest** | **Volume** |
+
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+
+| NVDA | CALL | SWEEP | BULLISH | 09/02/26 | $225.00 | $27.5K | 35.8K | 354.0K |
+
+| MU | PUT | TRADE | NEUTRAL | 09/02/26 | $950.00 | $35.0K | 1.3K | 7.3K |
+
+| WULF | CALL | SWEEP | BULLISH | 11/20/26 | $16.00 | $49.9K | 22.1K | 6.1K |
+
+| CLSK | CALL | SWEEP | NEUTRAL | 09/18/26 | $12.00 | $35.1K | 18.6K | 5.3K |
+
+| NOK | PUT | TRADE | NEUTRAL | 12/18/26 | $8.00 | $85.8K | 10.9K | 2.3K |
+
+| SNDK | CALL | TRADE | BULLISH | 09/04/26 | $1540.00 | $35.8K | 359 | 2.2K |
+
+| MSFT | PUT | SWEEP | BEARISH | 09/04/26 | $487.50 | $28.7K | 418 | 1.9K |
+
+| AVGO | PUT | SWEEP | BULLISH | 09/04/26 | $325.00 | $102.4K | 2.5K | 1.8K |
+
+| DELL | PUT | SWEEP | BULLISH | 09/18/26 | $425.00 | $75.4K | 2.0K | 1.7K |
+
+| COHR | PUT | TRADE | BEARISH | 09/11/26 | $240.00 | $43.0K | 147 | 1.2K |
+
+Explanation
+
+These bullet-by-bullet explanations have been constructed using the accompanying table.
+
+• For **NVDA** (NASDAQ:NVDA), we notice a **call** option **sweep** that happens to be **bullish**, is expiring today. Parties traded **266** contract(s) at a **$225.00** strike. This particular call needed to be split into 11 different trades to become filled. The total cost received by the writing party (or parties) was **$27.5K**, with a price of **$103.0** per contract. There were **35848** open contracts at this strike prior to today, and today **354063** contract(s) were bought and sold.
+
+• For **MU** (NASDAQ:MU), we notice a **put** option **trade** that happens to be **neutral**, is expiring today. Parties traded **50** contract(s) at a **$950.00** strike. The total cost received by the writing party (or parties) was **$35.0K**, with a price of **$700.0** per contract. There were **1351** open contracts at this strike prior to today, and today **7336** contract(s) were bought and sold.
+
+• For **WULF** (NASDAQ:WULF), we notice a **call** option **sweep** that happens to be **bullish**, expiring in 79 day(s) on **November 20, 2026**. This event was a transfer of **270** contract(s) at a **$16.00** strike. This particular call needed to be split into 37 different trades to become filled. The total cost received by the writing party (or parties) was **$49.9K**, with a price of **$185.0** per contract. There were **22120** open contracts at this strike prior to today, and today **6117** contract(s) were bought and sold.
+
+• Regarding **CLSK** (NASDAQ:CLSK), we observe a **call** option **sweep** with **neutral** sentiment. It expires in 16 day(s) on **September 18, 2026**. Parties traded **975** contract(s) at a **$12.00** strike. This particular call needed to be split into 168 different trades to become filled. The total cost received by the writing party (or parties) was **$35.1K**, with a price of **$37.0** per contract. There were **18613** open contracts at this strike prior to today, and today **5311** contract(s) were bought and sold.
+
+• Regarding **NOK** (NYSE:NOK), we observe a **put** option **trade** with **neutral** sentiment. It expires in 107 day(s) on **December 18, 2026**. Parties traded **2200** contract(s) at a **$8.00** strike. The total cost received by the writing party (or parties) was **$85.8K**, with a price of **$39.0** per contract. There were **10944** open contracts at this strike prior to today, and today **2375** contract(s) were bought and sold.
+
+• Regarding **SNDK** (NASDAQ:SNDK), we observe a **call** option **trade** with **bullish** sentiment. It expires in 2 day(s) on **September 4, 2026**. Parties traded **10** contract(s) at a **$1540.00** strike. The total cost received by the writing party (or parties) was **$35.8K**, with a price of **$3588.0** per contract. There were **359** open contracts at this strike prior to today, and today **2228** contract(s) were bought and sold.
+
+• Regarding **MSFT** (NASDAQ:MSFT), we observe a **put** option **sweep** with **bearish** sentiment. It expires in 2 day(s) on **September 4, 2026**. Parties traded **250** contract(s) at a **$487.50** strike. This particular put needed to be split into 18 different trades to become filled. The total cost received by the writing party (or parties) was **$28.7K**, with a price of **$115.0** per contract. There were **418** open contracts at this strike prior to today, and today **1950** contract(s) were bought and sold.
+
+• Regarding **AVGO** (NASDAQ:AVGO), we observe a **put** option **sweep** with **bullish** sentiment. It expires in 2 day(s) on **September 4, 2026**. Parties traded **753** contract(s) at a **$325.00** strike. This particular put needed to be split into 42 different trades to become filled. The total cost received by the writing party (or parties) was **$102.4K**, with a price of **$136.0** per contract. There were **2548** open contracts at this strike prior to today, and today **1802** contract(s) were bought and sold.
+
+• Regarding **DELL** (NYSE:DELL), we observe a **put** option **sweep** with **bullish** sentiment. It expires in 16 day(s) on **September 18, 2026**. Parties traded **100** contract(s) at a **$425.00** strike. This particular put needed to be split into 3 different trades to become filled. The total cost received by the writing party (or parties) was **$75.4K**, with a price of **$755.0** per contract. There were **2004** open contracts at this strike prior to today, and today **1754** contract(s) were bought and sold.
+
+• Regarding **COHR** (NYSE:COHR), we observe a **put** option **trade** with **bearish** sentiment. It expires in 9 day(s) on **September 11, 2026**. Parties traded **200** contract(s) at a **$240.00** strike. The total cost received by the writing party (or parties) was **$43.0K**, with a price of **$215.0** per contract. There were **147** open contracts at this strike prior to today, and today **1210** contract(s) were bought and sold.
+
+Options Alert Terminology**
+
+- **Call Contracts:** The right to buy shares as indicated in the contract.
+
+- **Put Contracts:** The right to sell shares as indicated in the contract.
+
+- **Expiration Date:** When the contract expires. One must act on the contract by this date if one wants to use it.
+
+- **Premium/Option Price:** The price of the contract.
+
+For more information, read more about unusual options activity.
+
+This article was generated by Benzinga's automated content engine and reviewed by an editor.
+
+© 2026 Benzinga.com. Benzinga does not provide investment advice. All rights reserved.

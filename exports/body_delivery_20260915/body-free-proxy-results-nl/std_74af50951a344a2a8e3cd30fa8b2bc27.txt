@@ -1,0 +1,37 @@
+Amazon and Alphabet are two of the biggest spenders in the AI world. Both see huge demand for their cloud computing products and are spending as much money as they can get their hands on to meet it.
+
+In 2026, Alphabet expects to spend between $195 billion and $205 billion, while Amazon expects to spend around $220 billion. The money is flowing directly to several hardware companies, including Nvidia (NVDA +1.72%), Broadcom (AVGO +0.74%), Micron (MU -0.03%), and Sandisk (SNDK +0.00%).
+
+I think these four stocks look like great deals now, and with Alphabet and Amazon expected to spend more next year, there could be several years' worth of strong growth ahead.
+
+Image source: Getty Images.
+
+Nvidia and Broadcom
+
+Nvidia is a no-brainer beneficiary, as its computing units are the AI industry standard. Cloud computing clients demand access to Nvidia's products because they're universally recognized as best in class. By running workloads on Nvidia hardware, clients could easily switch to another provider if pricing terms become unacceptable. However, there are other options available.
+
+NASDAQ: NVDA
+
+Key Data Points
+
+Broadcom provides some alternatives and has partnered with Alphabet to develop the Tensor Processing Unit, a custom AI chip that is purpose-built for AI workloads.
+
+TPUs provide superior cost-performance compared to Nvidia's chips, but the workloads must be set up properly for them to work. This can lock clients into using Alphabet's cloud computing ecosystem, so it may not be for everyone. However, with massive demand for TPUs on Alphabet's cloud computing server, there's no doubt that some of Alphabet's $200 billion in spending will go directly to Broadcom.
+
+Broadcom and Nvidia are primed to benefit from all of this spending, and 2026 is far from the peak. Nvidia has informed investors that it expects AI hyperscaler spending to top $1 trillion next year. Broadcom expects its custom AI semiconductor division to deliver more than $100 billion in sales, despite having $10.8 billion in the second quarter.
+
+NASDAQ: AVGO
+
+These two are some of the biggest beneficiaries of the spending, but they'd likely have a greater share if it weren't for Micron and Sandisk.
+
+Micron and Sandisk
+
+It's no secret that memory chip prices have skyrocketed. This specifically caused Amazon to increase its 2026 spending plans from $200 billion to $220 billion, and likely influenced Alphabet to do the same. Micron and Sandisk both produce memory chips and are benefiting in a big way from soaring prices.
+
+In Sandisk's latest quarterly results, it attributed a third of revenue growth to increased output, while two-thirds of its growth came from rising prices. This is all occurring because the memory chip market doesn't have enough capacity to meet massive demand from the AI hyperscalers. A lack of supply and rising demand result in soaring prices, and that's exactly what's going on right now in the memory chip industry.
+
+NASDAQ: SNDK
+
+Nothing is changing in terms of input costs for these two; just the end selling price. This is allowing Micron and Sandisk to make a fortune from the market conditions, making them two stocks primed to cash in on the massive amount of spending that Amazon and Alphabet are doing right now.
+
+The shortage won't last forever, but Micron's management team is certain that it will last into 2028. That means that there is still plenty of room for memory chip prices to continue rising, boosting Micron's and Sandisk's prospects. While they may not be as stable as Nvidia or Broadcom, they offer greater upside. By combining all four of these stocks into a single basket, investors can benefit from AI hyperscaler spending that could last for several more years.

@@ -208,6 +208,8 @@ def durable(kind: str) -> Callable[[Callable[P, Awaitable[T]]], Callable[P, Awai
                 logical = _base_attempt_id(arguments["phase"]["attempt_id"])
             else:
                 logical = arguments["node"].value
+            if kind == "d3" and arguments.get("durable_key"):
+                logical += ":" + str(arguments["durable_key"])
             if kind == "d2":
                 logical += (
                     ":"
@@ -390,12 +392,19 @@ def _decode_receipt(codec: Any, kind: str, payload: Any) -> Any:
     return codec.validate_python(value)
 
 
-def settle_stage(node: str, *, error: str | None = None) -> None:
+def settle_stage(
+    node: str,
+    *,
+    durable_key: str | None = None,
+    error: str | None = None,
+) -> None:
     """Bridge a validated/recovered D3 stage to its durable execution ledger."""
     parent = _parent.get()
     if parent is None:
         return
     key = parent.node.key + "." + node
+    if durable_key:
+        key += ":" + durable_key
     child = next(
         (n for n in parent.repository.nodes(parent.run.initialization_id) if n.key == key), None
     )

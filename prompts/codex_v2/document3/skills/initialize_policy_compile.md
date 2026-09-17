@@ -17,7 +17,7 @@ Compile 既不是对 Stage A 的机械包装，也不是第二次开放研究。
 
 ## 1. Working Contract 与输入优先级
 
-按当前 node prompt 读取 D2、Previous Policy Set、Policy schema，以及完整的：
+按当前 node prompt 读取当前 Document2 Shell slice、Previous Policy Set、Policy schema，以及当前 Shell 对应的完整 Stage-A 工件：
 
 ```text
 trigger_calibrations.jsonl
@@ -32,7 +32,7 @@ policies/
 
 1. **Stage-A Trigger Calibration**：Candidate occurrence、trigger-bearing actor/object、current state、独立充分性、最低边界、disclosure route 与 judgeability；
 2. **D2**：principal expectation revision、ticker transmission、direction 与 provenance；
-3. **Previous Policy Set / existing drafts**：Policy 连续性、已有边界、身份与 canonicalization 参考。
+3. **Previous Policy Set**：当前 Shell Policy 的历史语义和身份连续性参考；**existing drafts** 仅用于恢复当前 Shell 已有写入、了解 workspace 文件状态和避免误覆盖，不是当前 Turn 的跨 Shell 比较或合并对象。
 
 本阶段在冻结输入内完成语义复核与局部修正，不重新从 D2 `recognition_criteria` 生成 Trigger Surface，也不开展常规开放 Web/Data MCP 研究。若 Candidate 需要新增实质研究才能确定充分性或边界，将其收敛为 `UNRESOLVED`，并在现有工件中写明具体缺口；辅助 Conditions 不能代替缺失研究。
 
@@ -42,25 +42,24 @@ Compile 负责更新最终 Worklist status 和 `policy_ids`、Policy drafts、`c
 
 ## 2. Recovery 与 Shell Compile Wave
 
-先恢复已有 Stage-A 工件、Worklist、Policy drafts、Calibration Log 和 WaveState。从 `current_shell_id` 或首个未完成 Shell 继续，保留已经完成并通过当前语义检查的 drafts。
+当前 node prompt 已指定本 Turn 唯一处理的 `shell_id`。先恢复该 Shell 的 Stage-A 工件、Worklist entries、Calibration Log、WaveState 和该 Shell 已经写入的 Policy drafts。不得自行选择其他 Shell，不得重新复核已完成 Shell，也不得修改来源不包含当前 `shell_id` 的 Policy drafts。
 
 每个 Shell 必须先读取全部 Candidate dispositions，再开始编译：
 
 ```text
-load all Candidates in the Shell
+load all Candidates in the current Shell
 → reconstruct every ready Candidate
 → review standalone sufficiency
-→ classify Candidate relationships
-→ build provisional Policy groups
-→ compare with the global Working Registry
-→ write or update Policy drafts
-→ map all member Paths
-→ close the Shell
+→ classify relationships across all Candidates in the current Shell
+→ build current-Shell provisional Policy groups
+→ write new drafts or resume drafts already created for the current Shell
+→ map current-Shell member Paths
+→ close the current Shell Compile Wave
 ```
 
 以完成关系分类的 provisional Policy group 作为 progressive write 单位，而不是看到第一条 Candidate 就锁定一条 Policy。这样，同一 Shell 后续出现的替代 Trigger、Evidence variant 或重复 occurrence 能进入同一次分组判断。
 
-新 Shell 的 groups 同时与 Previous Policy Set、已完成 Shell 的 drafts 和当前 Shell 其他 groups 比较。跨 Shell 指向同一 principal expectation revision 和一次性决策边界时，更新同一个 canonical draft，并追加准确的 source refs 与 Path mappings。
+当前 Shell 的 provisional groups 在当前 Shell 的全部 Candidates 之间执行原有业务关系判断。Previous Policy Set 可以用于理解当前 Shell 的历史语义与身份连续性；已完成 Shell 的 drafts 不属于本 Turn 的语义比较对象。即使不同 Shell 的 drafts 在主题、方向、occurrence 或措辞上看起来相近，本 Turn 也不合并、不改写、不建立跨 Shell Path mappings；这些关系统一留给 Final Global Pass 判断。
 
 ## 3. 重建 Candidate 的业务含义
 
@@ -255,9 +254,9 @@ Provisional Policy Group
 - `title` 用简短中文概括 principal expectation revision 或现实触发主题，不枚举 Conditions 或写成长因果句。
 - `match_scope` 针对当前 Policy 的 OR Conditions 重新生成，取直接相关消息、确认或否定消息、接近 boundary 的进展和同一 occurrence 不同披露渠道的合理并集。它宽于 Activation，但仍围绕当前 Policy reality surface；不使用跨 Policy 通用事件类别清单，也不从 D2 `recognition_criteria` 自动扩充。
 
-## 9. Working Registry Canonicalization
+## 9. Current-Shell Working Registry Canonicalization
 
-写入 draft 前，比较 Previous Policy Set、completed-Shell drafts 与当前 provisional groups 的：
+写入 draft 前，在当前 Shell 的 provisional groups 以及 retry 时已由当前 Shell 创建的 drafts 之间比较：
 
 ```text
 principal expectation revision
@@ -274,13 +273,15 @@ principal expectation revision
 
 Condition 去重采用同一逻辑：同一 occurrence 的不同来源、同一最低边界的不同措辞、被最低充分状态完全包含的更强状态，以及纯 supporting evidence 只保留一个 Condition。Actors 能独立发生、各自足够重要，且不同 occurrences 消费同一决策边界时，可以保留多个 OR Conditions。
 
+`output/work/policies/` 中其他 Shell 的 drafts 可以被读取，但只用于确认 workspace 状态、恢复安全写入和避免 temporary ID 或文件覆盖。不得因此重新审计其他 Shell draft、与当前 provisional group 做语义比较、合并 source refs、共享 temporary `policy_id`，或修改其 Conditions、title、`match_scope` 和 mappings。跨 Shell 的重复、冲突、合并、拆分和全局 canonicalization 由 Final Global Pass 负责。
+
 ## 10. Progressive Write 与 Stage Completion
 
 一个 provisional group 完成关系分类、编译和 canonicalization 后立即：
 
 ```text
 write or update output/work/policies/<temporary_policy_id>.json
-→ update the Working Registry
+→ update the current Shell entries in the Working Registry
 → attach policy_id to every member Path
 → update Worklist statuses
 → write applicable Calibration Log entries
@@ -301,4 +302,4 @@ Path 的终态必须与工件一致：
 
 每个包含多个 Conditions 的 Policy 在关闭前，对所有 Condition pairs 实际执行一次 one-time boundary counterfactual。只要存在任意一对满足“C1 触发后 C2 随后发生仍产生新的独立交易 delta”，该 pair 不以同一 OR Policy 发布。
 
-随后使用现有 WaveState 字段更新 `completed_shell_ids`、`current_shell_id`、`completed_path_ids` 和 `updated_at`。全部成功 Shell 完成后，`current_shell_id=null`，所有 terminal Paths 进入 completed state，Policy drafts 均可由 supplied schema 解析，counts 与 workspace 一致；最后只返回 supplied `O3RunResult`，完整业务产物留在 workspace。
+当前 Shell Compile Wave 完成后，使用现有 WaveState 字段将当前 `shell_id` 追加到 `completed_shell_ids`，追加当前 Shell 的 terminal `completed_path_ids`，将 `current_shell_id` 设为 `null` 并更新 `updated_at`；不得移除此前 Shell 的进度，也不得根据当前 slice 判断全部 D2 Shell 已完成。确认当前 Shell 的 terminal Paths、Policy drafts、Trigger records/state 和 source refs 相互一致，且当前 Shell drafts 可由 supplied schema 解析。最后只返回 supplied `O3RunResult`，完整业务产物留在 workspace；跨 Shell 检查留给 Final Global Pass。

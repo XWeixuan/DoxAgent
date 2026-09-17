@@ -1,0 +1,137 @@
+by Benzinga InsightsBenzinga Staff Writer
+
+Follow
+
+Stock Score Locked: Want to See it?
+
+Benzinga Rankings give you vital metrics on any stock – anytime.
+
+Reveal Full Score
+
+Edge Rankings
+
+Momentum 68.61
+
+Growth 98.11
+
+Quality 97.43
+
+Value 7.57
+
+Price Trend
+
+Short
+
+Medium
+
+Long
+
+Overview
+
+This whale alert can help traders discover the next big trading opportunities.
+
+Whales are entities with large sums of money and we track their transactions here at Benzinga on our options activity scanner.
+
+Traders will search for circumstances when the market estimation of an option diverges heavily from its normal worth. High amounts of trading activity could push option prices to exaggerated or underestimated levels.
+
+Here's the list of options activity happening in today's session:
+
+| **Symbol** | **PUT/CALL** | **Trade Type** | **Sentiment** | **Exp. Date** | **Strike Price** | **Total Trade Price** | **Open Interest** | **Volume** |
+
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+
+| NVDA | CALL | SWEEP | BULLISH | 09/14/26 | $212.50 | $27.5K | 139 | 267.7K |
+
+| MU | CALL | SWEEP | BEARISH | 09/14/26 | $935.00 | $31.0K | 181 | 22.6K |
+
+| SNDK | PUT | TRADE | BULLISH | 09/18/26 | $1400.00 | $45.6K | 2.0K | 9.1K |
+
+| CRWD | PUT | TRADE | NEUTRAL | 09/18/26 | $230.00 | $33.5K | 693 | 4.7K |
+
+| ORCL | CALL | SWEEP | BEARISH | 10/16/26 | $160.00 | $130.5K | 9.5K | 3.4K |
+
+| TSM | PUT | SWEEP | BEARISH | 10/16/26 | $420.00 | $757.5K | 3.9K | 3.1K |
+
+| INTC | PUT | SWEEP | BEARISH | 10/16/26 | $90.00 | $60.4K | 21.2K | 2.6K |
+
+| NTSK | CALL | SWEEP | BEARISH | 12/18/26 | $22.50 | $117.7K | 418 | 1.9K |
+
+| CRCL | CALL | TRADE | BEARISH | 09/18/26 | $96.00 | $33.7K | 3.6K | 1.2K |
+
+| PANW | CALL | SWEEP | BULLISH | 10/16/26 | $350.00 | $94.7K | 1.5K | 950 |
+
+Symbol****PUT/CALL****Trade Type****Sentiment****Exp. Date****Strike Price****Total Trade Price****Open Interest****Volume** NVDA CALL SWEEP BULLISH 09/14/26 $212.50 $27.5K 139 267.7K MU CALL SWEEP BEARISH 09/14/26 $935.00 $31.0K 181 22.6K SNDK PUT TRADE BULLISH 09/18/26 $1400.00 $45.6K 2.0K 9.1K CRWD PUT TRADE NEUTRAL 09/18/26 $230.00 $33.5K 693 4.7K ORCL CALL SWEEP BEARISH 10/16/26 $160.00 $130.5K 9.5K 3.4K TSM PUT SWEEP BEARISH 10/16/26 $420.00 $757.5K 3.9K 3.1K INTC PUT SWEEP BEARISH 10/16/26 $90.00 $60.4K 21.2K 2.6K NTSK CALL SWEEP BEARISH 12/18/26 $22.50 $117.7K 418 1.9K CRCL CALL TRADE BEARISH 09/18/26 $96.00 $33.7K 3.6K 1.2K PANW CALL SWEEP BULLISH 10/16/26 $350.00 $94.7K 1.5K 950
+
+Explanation
+
+These itemized elaborations have been created using the accompanying table.
+
+• For **NVDA** (NASDAQ:NVDA), we notice a **call** option **sweep** that happens to be **bullish**, is expiring today. Parties traded **550** contract(s) at a **$212.50** strike. This particular call needed to be split into 40 different trades to become filled. The total cost received by the writing party (or parties) was **$27.5K**, with a price of **$50.0** per contract. There were **139** open contracts at this strike prior to today, and today **267719** contract(s) were bought and sold.
+
+• For **MU** (NASDAQ:MU), we notice a **call** option **sweep** that happens to be **bearish**, is expiring today. Parties traded **405** contract(s) at a **$935.00** strike. This particular call needed to be split into 31 different trades to become filled. The total cost received by the writing party (or parties) was **$31.0K**, with a price of **$76.0** per contract. There were **181** open contracts at this strike prior to today, and today **22628** contract(s) were bought and sold.
+
+• For **SNDK** (NASDAQ:SNDK), we notice a **put** option **trade** that happens to be **bullish**, expiring in 4 day(s) on **September 18, 2026**. This event was a transfer of **95** contract(s) at a **$1400.00** strike. The total cost received by the writing party (or parties) was **$45.6K**, with a price of **$480.0** per contract. There were **2028** open contracts at this strike prior to today, and today **9158** contract(s) were bought and sold.
+
+• For **CRWD** (NASDAQ:CRWD), we notice a **put** option **trade** that happens to be **neutral**, expiring in 4 day(s) on **September 18, 2026**. This event was a transfer of **100** contract(s) at a **$230.00** strike. The total cost received by the writing party (or parties) was **$33.5K**, with a price of **$335.0** per contract. There were **693** open contracts at this strike prior to today, and today **4748** contract(s) were bought and sold.
+
+• For **ORCL** (NYSE:ORCL), we notice a **call** option **sweep** that happens to be **bearish**, expiring in 32 day(s) on **October 16, 2026**. This event was a transfer of **418** contract(s) at a **$160.00** strike. This particular call needed to be split into 19 different trades to become filled. The total cost received by the writing party (or parties) was **$130.5K**, with a price of **$316.0** per contract. There were **9511** open contracts at this strike prior to today, and today **3490** contract(s) were bought and sold.
+
+• For **TSM** (NYSE:TSM), we notice a **put** option **sweep** that happens to be **bearish**, expiring in 32 day(s) on **October 16, 2026**. This event was a transfer of **500** contract(s) at a **$420.00** strike. This particular put needed to be split into 7 different trades to become filled. The total cost received by the writing party (or parties) was **$757.5K**, with a price of **$1515.0** per contract. There were **3923** open contracts at this strike prior to today, and today **3120** contract(s) were bought and sold.
+
+• For **INTC** (NASDAQ:INTC), we notice a **put** option **sweep** that happens to be **bearish**, expiring in 32 day(s) on **October 16, 2026**. This event was a transfer of **186** contract(s) at a **$90.00** strike. This particular put needed to be split into 44 different trades to become filled. The total cost received by the writing party (or parties) was **$60.4K**, with a price of **$325.0** per contract. There were **21208** open contracts at this strike prior to today, and today **2654** contract(s) were bought and sold.
+
+• For **NTSK** (NASDAQ:NTSK), we notice a **call** option **sweep** that happens to be **bearish**, expiring in 95 day(s) on **December 18, 2026**. This event was a transfer of **900** contract(s) at a **$22.50** strike. This particular call needed to be split into 29 different trades to become filled. The total cost received by the writing party (or parties) was **$117.7K**, with a price of **$130.0** per contract. There were **418** open contracts at this strike prior to today, and today **1917** contract(s) were bought and sold.
+
+• For **CRCL** (NYSE:CRCL), we notice a **call** option **trade** that happens to be **bearish**, expiring in 4 day(s) on **September 18, 2026**. This event was a transfer of **75** contract(s) at a **$96.00** strike. The total cost received by the writing party (or parties) was **$33.7K**, with a price of **$450.0** per contract. There were **3633** open contracts at this strike prior to today, and today **1279** contract(s) were bought and sold.
+
+• For **PANW** (NASDAQ:PANW), we notice a **call** option **sweep** that happens to be **bullish**, expiring in 32 day(s) on **October 16, 2026**. This event was a transfer of **24** contract(s) at a **$350.00** strike. This particular call needed to be split into 3 different trades to become filled. The total cost received by the writing party (or parties) was **$94.7K**, with a price of **$3948.0** per contract. There were **1595** open contracts at this strike prior to today, and today **950** contract(s) were bought and sold.
+
+Options Alert Terminology**
+
+- **Call Contracts:** The right to buy shares as indicated in the contract.
+
+- **Put Contracts:** The right to sell shares as indicated in the contract.
+
+- **Expiration Date:** When the contract expires. One must act on the contract by this date if one wants to use it.
+
+- **Premium/Option Price:** The price of the contract.
+
+For more information, read more about unusual options activity.
+
+This article was generated by Benzinga's automated content engine and reviewed by an editor.
+
+Stock Score Locked: Want to See it?
+
+Benzinga Rankings give you vital metrics on any stock – anytime.
+
+Reveal Full Score
+
+Edge Rankings
+
+Momentum 68.61
+
+Growth 98.11
+
+Quality 97.43
+
+Value 7.57
+
+Price Trend
+
+Short
+
+Medium
+
+Long
+
+Overview
+
+Market News and Data brought to you by Benzinga APIs
+
+© 2026 Benzinga.com. Benzinga does not provide investment advice. All rights reserved.
+
+To add **Benzinga News** as your preferred source on Google, click here.
+
+Posted In:**
+
+OptionsBZI-AUOA

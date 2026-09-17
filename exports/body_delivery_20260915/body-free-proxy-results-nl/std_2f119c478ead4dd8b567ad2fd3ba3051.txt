@@ -1,0 +1,33 @@
+Mac and iPad prices just jumped 20% because of a memory shortage, and someone in the supply chain is pocketing enormous profits. Tracing the money reveals a winner most Apple investors are not watching.
+
+On Tim Cook’s last day as chief executive of Apple, CNBC’s MacKenzie Sigalos reported Mac and iPad prices are already up 20%, and the company is signaling that iPhone increases are next. The reason, in Cook’s own words from the July earnings call, is a “100-year flood on the memory pricing with exponential increases in memory prices.” Apple’s September 9 launch event is days away, with a foldable iPhone expected to debut at Apple Park on September 4 during John Ternus’s first week in the top job.
+
+So who is getting rich off the shortage that just made a MacBook cost hundreds of dollars more? Look one link up the supply chain, at the memory suppliers.
+
+Memory Is Where the Money Went
+
+Micron Technology (NASDAQ:MU | MU Price Prediction), the only U.S.-based memory maker, has become the clearest financial beneficiary of the AI-driven DRAM squeeze now showing up on Apple’s price tags. Shares closed at $932.86 on August 28 and traded near $940 on Monday, leaving the stock up 227% year to date and 666% over the past twelve months. Apple (NASDAQ:AAPL), by contrast, is up 17.9% year to date and down 5.4% over the past month, closing Monday near $315. One company is passing costs through. The other is collecting them.
+
+Micron’s June-quarter results show the mechanics. Revenue reached $41.46 billion, up 345.7% from a year earlier, with GAAP gross margin expanding to 84.6% from 37.7%. DRAM prices rose in the low 60s percentage range sequentially; NAND prices rose in the mid-80s. Guidance for the current quarter calls for revenue of $50 billion, plus or minus $1 billion, at roughly 86% gross margin. CEO Sanjay Mehrotra told analysts the tightness is structural: “We expect tight conditions to persist beyond calendar 2027 as a result of AI-driven demand across all segments coupled with structural supply constraints.”
+
+To lock that in, Micron has signed 16 Strategic Customer Agreements, mostly five-year take-or-pay contracts covering roughly 20% of DRAM and a third of NAND volume, with minimum committed revenue of about $100 billion and $22 billion in customer cash deposits and letters of credit. Mehrotra told UBS that “at the floor price that our profitability levels at the gross margins and the floor prices are higher than peak margins at any time in the past.” A 666% twelve-month run on a memory maker is the kind of setup we reverse-engineered from past monster tech winners in a free playbook you can grab here.
+
+Why Apple Blinked
+
+Cook explained the pricing decision in July: “On the pricing front, we reluctantly raised prices.” He noted that the DRAM market has three suppliers, that September-quarter memory costs would be higher still, and that supply constraints would affect iPhone, Mac, and iPad. CFO Kevan Parekh told analysts that “more than 100% of” the sequential margin move was explained by memory costs. Apple’s guided September-quarter gross margin of 47% to 48% includes only about one percentage point of tariff-refund benefit, down from two in June.
+
+Jim Cramer’s counterweight, delivered on Mad Money in July, is worth noting: “You should own Apple and Nvidia, not trade them,” arguing Apple’s brand lets it pass memory costs through. That is the bull case. The bear case is that the pass-through is already tested, and consumers have not yet felt it on the iPhone.
+
+What Ternus Inherits and What to Watch
+
+Ternus takes the desk with a $4.6 trillion market cap, a decelerating services segment pressured by App Store rulings, and a bill of materials that Micron intends to keep expensive through 2027. Key signals come fast: Apple’s September 9 event and whether iPhone pricing formally moves; the company’s next earnings call and gross-margin commentary against the 47% to 48% guide; and Micron’s fiscal Q4 print against the $50 billion revenue and 86% margin outlook. If Micron delivers and Apple’s margin holds, Cramer wins the argument. If margin slips and iPhone units soften on a higher shelf price, the AI memory trade will have quietly rewired who captures the profit in a MacBook.
+
+Data Sources
+
+CNBC: John Ternus takes over as Apple CEO: source for the 20% price hike on Mac and iPad, the iPhone signaling, and the CEO transition context.
+
+Contact [email protected] for any questions or corrections.
+
+Jake has been been working in financial media for almost 15 years. He focuses on all things personal finance for 24/7 Wall St. with high hopes to educate and entertain. Most recently, Jake spent 12 years working various roles at The Motley Fool. He started copy editing fool.com content, worked on premium and marketing campaigns, and helped launch The Ascent, a personal finance brand.
+
+His work has been featured on platforms like MSN, Yahoo Finance, USA Today, and more. He's written about credit cards, social security, ETFs, savings accounts, and just about anything else you can imagine when thinking about money. Jake love to cook, play golf, and tell people he's never had a cavity. (It's true!)

@@ -1,0 +1,124 @@
+{
+  "resolved_settings": {
+    "content_enrichment_enabled": true,
+    "message_bus_v2_content_enrichment_enabled": true,
+    "content_enrichment_pipeline_enabled": false,
+    "content_enrichment_browser_enabled": false
+  },
+  "ibkr_poll_code": "    async def poll(self, context: PollContext) -> PollResult:\n        since = context.requested_at - timedelta(hours=24)\n        async with context.request_permit():\n            rows, metadata = await asyncio.to_thread(\n                self.gateway.poll, context.ticker, since, context.requested_at\n            )\n        providers_value = metadata.get(\"provider_names\")\n        providers = (\n            cast(dict[str, object], providers_value) if isinstance(providers_value, dict) else {}\n        )\n        messages: list[RawMessageInput] = []\n        for row in rows:\n            published = _published(row.get(\"time\"))\n            if published is not None and (\n                published < since or published > context.requested_at + timedelta(minutes=5)\n            ):\n                continue\n            article_id = str(row.get(\"articleId\") or \"\")\n            provider_code = str(row.get(\"providerCode\") or \"IBKR\")\n            raw_body = str(row.get(\"articleText\") or \"\").strip()\n            link_match = re.search(\n                r'https?://[^\\s\"<>]+', raw_body or str(row.get(\"extraData\") or \"\")\n            )\n            body = re.sub(r\"\\s+\", \" \", unescape(re.sub(r\"<[^>]+>\", \" \", raw_body))).strip() or None\n            url = (\n                link_match.group(0).rstrip(\".,)\")\n                if link_match\n                else \"https://www.interactivebrokers.com/en/trading/providers.php\"\n            )\n            publisher = str(providers.get(provider_code) or provider_code)\n            messages.append(\n                RawMessageInput(\n                    external_id=f\"{provider_code}:{article_id}\",\n                    source_item_key=f\"{provider_code}:{article_id}\",\n                    title=(\n                        re.sub(r\"^(?:\\{[^}]+\\}\\s*)+\", \"\", str(row.get(\"headline\") or \"\")).strip()\n                        or None\n                    ),\n                    body=body,\n                    summary=None,\n                    source=publisher,\n                    publisher_name=publisher,\n                    url=url,\n                    published_at=published or context.requested_at,\n                    publication_time_basis=\"EXACT\" if published else \"UNKNOWN_FIRST_SEEN\",\n                    raw_payload=row,\n                    metadata={\n                        \"provider\": \"ibkr\",\n                        \"identity_evidence\": {\n                            \"id_kind\": \"provider_article\",\n                            \"url_kind\": \"article\" if link_match else \"generic\",\n                        },\n                        \"provider_code\": provider_code,\n                        \"article_id\": article_id,\n                        \"canonical_url_available\": bool(link_match),\n                        \"transport\": row.get(\"transport\"),\n                    },\n                )\n            )\n        return PollResult(\n            messages=messages,\n            window_coverage=\"PARTIAL\"\n            if metadata.get(\"has_more\") or metadata.get(\"pending_count\") or metadata.get(\"errors\")\n            else \"COMPLETE\",\n            acquisition_metadata=metadata,\n        )\n",
+  "resolved_source_modes": [
+    [
+      "benzinga_news",
+      "enrich"
+    ],
+    [
+      "finnhub_company_news",
+      "enrich"
+    ],
+    [
+      "stocktwits_messages",
+      "skip"
+    ],
+    [
+      "tikhub_x_search",
+      "skip"
+    ],
+    [
+      "tikhub_x_user_posts",
+      "skip"
+    ],
+    [
+      "newswire_rss",
+      "enrich"
+    ],
+    [
+      "yahoo_finance_news",
+      "enrich"
+    ],
+    [
+      "ibkr_news",
+      "enrich"
+    ],
+    [
+      "reuters_site_search",
+      "enrich"
+    ],
+    [
+      "google_news_search_rss",
+      "enrich"
+    ]
+  ],
+  "global_stream_counts": [
+    {
+      "ticker": "MU",
+      "source_id": "finnhub_company_news",
+      "enrichment_status": "success",
+      "skip_reason": "",
+      "count": 107
+    },
+    {
+      "ticker": "MU",
+      "source_id": "finnhub_company_news",
+      "enrichment_status": "failed",
+      "skip_reason": "",
+      "count": 336
+    },
+    {
+      "ticker": "MU",
+      "source_id": "benzinga_news",
+      "enrichment_status": "success",
+      "skip_reason": "",
+      "count": 3
+    },
+    {
+      "ticker": "MU",
+      "source_id": "yahoo_finance_news",
+      "enrichment_status": "failed",
+      "skip_reason": "",
+      "count": 93
+    },
+    {
+      "ticker": "MU",
+      "source_id": "reuters_site_search",
+      "enrichment_status": "failed",
+      "skip_reason": "",
+      "count": 405
+    },
+    {
+      "ticker": "MU",
+      "source_id": "ibkr_news",
+      "enrichment_status": "failed",
+      "skip_reason": "",
+      "count": 383
+    },
+    {
+      "ticker": "MU",
+      "source_id": "ibkr_news",
+      "enrichment_status": "success",
+      "skip_reason": "",
+      "count": 3
+    },
+    {
+      "ticker": "MU",
+      "source_id": "yahoo_finance_news",
+      "enrichment_status": "success",
+      "skip_reason": "",
+      "count": 35
+    },
+    {
+      "ticker": "MU",
+      "source_id": "benzinga_news",
+      "enrichment_status": "failed",
+      "skip_reason": "",
+      "count": 2
+    },
+    {
+      "ticker": "MU",
+      "source_id": "tikhub_x_user_posts",
+      "enrichment_status": "skipped",
+      "skip_reason": "source_blacklist",
+      "count": 2
+    }
+  ],
+  "missing_enrichment_records": []
+}

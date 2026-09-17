@@ -1,0 +1,146 @@
+[
+  {
+    "id": "std_4201b7409e11458c9d607fb69b996b8b",
+    "source": "benzinga_news",
+    "chars": 6383,
+    "sha256": "a93f4f6abfee43f59238ef71779c7707436e36187ea269762363009edbd5c92d"
+  },
+  {
+    "id": "std_1fa87268aa7d417f968e0be3ad0fb6bf",
+    "source": "benzinga_news",
+    "chars": 4923,
+    "sha256": "210111b449057585b78d7cb231b3486affa85d3a5f4dc172aef3af45e07af01d"
+  },
+  {
+    "id": "std_dd19c0b9810e492abe798f6517ccf5b2",
+    "source": "ibkr_news",
+    "chars": 3575,
+    "sha256": "2eeb51ba3b92ceb603fa5c80d88e704c32ccc276b84bc5c1de6d4ccf3802c983"
+  },
+  {
+    "id": "std_1464e1459f7c4163b0749e5ed28b5ebd",
+    "source": "ibkr_news",
+    "chars": 2606,
+    "sha256": "41233b095ab6954130db24f12c94b9d2a587548e1a1071272fb52c7cf5c51370"
+  },
+  {
+    "id": "std_0326c03cfe584e7abbba742ee1f9a4f9",
+    "source": "ibkr_news",
+    "chars": 10025,
+    "sha256": "40e46d28392cf80d29aff4898ada570ef7a3addfd6b7dc91982cac2c1f9af5da"
+  },
+  {
+    "id": "std_169395ad72b7436a875fe4c212cfd401",
+    "source": "ibkr_news",
+    "chars": 5651,
+    "sha256": "7a4c34e79ac2cff97ab364997e87f8a0f1e3d99d48b2f508d93a67e68bc673ca"
+  },
+  {
+    "id": "std_58d336e3560947ff864ac37345805b9f",
+    "source": "ibkr_news",
+    "chars": 7374,
+    "sha256": "a8ccaefb368c56cb5b82cb72d6c98eb74ddfca887f1a604a3ffe61189f75f35f"
+  },
+  {
+    "id": "std_ae76e1e3ce4e4fff83b9b9d64865c8be",
+    "source": "ibkr_news",
+    "chars": 5916,
+    "sha256": "f28e55fd26588dbcc759fd23cc24e4fc9027b38b247fdbf791d3f29f677808b2"
+  },
+  {
+    "id": "std_64443353c38e4f3dbdf3bd778b6ecc57",
+    "source": "ibkr_news",
+    "chars": 4947,
+    "sha256": "0f89caf1827e2323a46cac5ed06c2371697c66bd3d411cfc329fc9522eabce7a"
+  },
+  {
+    "id": "std_f6945c91d1924312be7e7f472d4da5c5",
+    "source": "ibkr_news",
+    "chars": 5595,
+    "sha256": "fbf069bf2dd5faa14282883e9a365a9278df238a0b2ceebbfb725345f4f94d1c"
+  },
+  {
+    "id": "std_b25ba0c96bbb4db8bbe334db40f16178",
+    "source": "ibkr_news",
+    "chars": 3181,
+    "sha256": "21ea102f7f38ab0907d3891a07e3d48bd3339bd60e326369729b943d51821724"
+  },
+  {
+    "id": "std_a150022d598d44a591483368e9667117",
+    "source": "ibkr_news",
+    "chars": 2173,
+    "sha256": "61f4a01ee19571375e05061706ad7fe1f9c8149f4febbe04a06b1963d489cefa"
+  },
+  {
+    "id": "std_c43ac7ef603c47c986721e8eb8d7ea79",
+    "source": "ibkr_news",
+    "chars": 6315,
+    "sha256": "638c5e3117c29a476e3b3f274b4856406e9730af8f97e87aa257e782bd233430"
+  },
+  {
+    "id": "std_da350af81bbb45ce96ea60624f916e6a",
+    "source": "ibkr_news",
+    "chars": 5060,
+    "sha256": "f3cff6e676cba9adb51a14ef39b801b189d8da85cfd162189037e8fa03ed3e5e"
+  },
+  {
+    "id": "std_4d9d4dab27794a5ea8f7384856ad5f33",
+    "source": "ibkr_news",
+    "chars": 4632,
+    "sha256": "1bd2333a3d5768d413b4fd56ba9da4f7cabd3d206ccf38f81f554aa502339155"
+  },
+  {
+    "id": "std_0d360153c57f4b6cb570c82328b5b821",
+    "source": "ibkr_news",
+    "chars": 7920,
+    "sha256": "cc3a5a084eecb44fa44a061ca479138420bd7f334e80090d05d5fd9a35a62343"
+  },
+  {
+    "id": "std_d87390179842457585d39f547b818e60",
+    "source": "ibkr_news",
+    "chars": 3624,
+    "sha256": "0500b1ac83b5ac2e0681d834ff1b6517c9e7e0040ea6a454efd9fdfebeb27774"
+  },
+  {
+    "id": "std_157050d0cd604d889bef5873ff2ebf9e",
+    "source": "ibkr_news",
+    "chars": 7558,
+    "sha256": "61915793ddfefc1ddc4f36474f067bb05b06decf71684adb5b6912e2f12c26aa"
+  },
+  {
+    "id": "std_4719db7444b441088203c87032d02149",
+    "source": "ibkr_news",
+    "chars": 3499,
+    "sha256": "7c82074fa95e99687398e54d2a59d2e790110d55bd36016f583929dca2e2384a"
+  },
+  {
+    "id": "std_904619b1fbeb4e2186fc43f677b110a8",
+    "source": "ibkr_news",
+    "chars": 5249,
+    "sha256": "0032b86d9c13aa29b469309f8f4e4ffb795e37cf2a94f01834ee0da97c37d06a"
+  },
+  {
+    "id": "std_af41572595004720bf42b01eddb70216",
+    "source": "ibkr_news",
+    "chars": 8147,
+    "sha256": "969d3f3ee90e3a3d02e510bdc57da3ae28638612c107655e6350c1aa79acadca"
+  },
+  {
+    "id": "std_18df688aee3d43e8831397b8a337b655",
+    "source": "ibkr_news",
+    "chars": 3923,
+    "sha256": "d82851e94da03342dc8c2481b2c65fcb028ca81195f937dbcc8d0d981df5bd69"
+  },
+  {
+    "id": "std_50828db0d049435ead0af8a371837c17",
+    "source": "ibkr_news",
+    "chars": 3164,
+    "sha256": "a2f1422c9a1d83647bcde485ddaece4adf7f60ade6ce8a93185899cd4c31bdd5"
+  },
+  {
+    "id": "std_1cc022351bfa4ddd8840872dd30ca8c6",
+    "source": "ibkr_news",
+    "chars": 533,
+    "sha256": "669ec82976d81b7a4c8ee41dfa439afd9b3c67c12b6329f668988cc910a843de"
+  }
+]

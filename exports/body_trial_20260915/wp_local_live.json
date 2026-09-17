@@ -1,0 +1,100 @@
+{
+  "succeeded": true,
+  "reason": null,
+  "chars": 5168,
+  "method": "article_dom",
+  "diagnostics": {
+    "pipeline_version": "body_v2.1",
+    "policy_version": 1,
+    "input_url": "https://247wallst.com/investing/2026/08/31/apple-just-raised-mac-and-ipad-prices-20-so-who-is-getting-rich-off-the-shortage/",
+    "source_chain": [],
+    "candidate_summary": [
+      {
+        "method": "article_dom",
+        "chars": 5168,
+        "sha256": "f19af272481d4e0d6ca73ec840d77a08567a096b298cfa444723d6dcb2a597cf",
+        "structured": true
+      },
+      {
+        "method": "article_dom",
+        "chars": 115,
+        "sha256": "59f07fc908bcbf8fd3e795a4c82181df76a31522480f00a2007b22bc9298a9b1",
+        "structured": true
+      },
+      {
+        "method": "article_dom",
+        "chars": 69,
+        "sha256": "f4fab4ca554f472c427e374ae2af996859336b3ca2209305e7d8e3ed158ba045",
+        "structured": true
+      },
+      {
+        "method": "article_dom",
+        "chars": 101,
+        "sha256": "51594b6cecd7b9f81c3baa77e55bf121b7b804fc2e11ce8f72cbcec736a36d63",
+        "structured": true
+      },
+      {
+        "method": "article_dom",
+        "chars": 290,
+        "sha256": "6207f43a345c06700c972cee54b309ad342836a97dac77f8afb15d095bd3b84b",
+        "structured": true
+      },
+      {
+        "method": "article_dom",
+        "chars": 285,
+        "sha256": "f5c9b558f22522331f1c67673eb879a288c06f59448d39ee35b5be20bacfc01c",
+        "structured": true
+      },
+      {
+        "method": "article_dom",
+        "chars": 275,
+        "sha256": "4fa3e5bc6693c9373e0983a53252afe2a6832f37bd8ea1145444a6b849e1cbfb",
+        "structured": true
+      },
+      {
+        "method": "article_dom",
+        "chars": 287,
+        "sha256": "144fb425bb51b7a8f4352038a9dd98411e6d6e84f380cdf5e7da2c28d8edd5bb",
+        "structured": true
+      },
+      {
+        "method": "article_dom",
+        "chars": 285,
+        "sha256": "621880ae3932f01a205dac3d1f3c6c37965b8eab10813583d729051a1267ce29",
+        "structured": true
+      },
+      {
+        "method": "article_dom",
+        "chars": 274,
+        "sha256": "9e0fe1d487e396acb7d1f2cfecc9bc759ae2720c8856a2e1b74430ceb9bd5b88",
+        "structured": true
+      }
+    ],
+    "outcome": "FULL",
+    "page_kind": "article",
+    "reason_code": null,
+    "stage": "validate",
+    "resolved_article_url": "https://247wallst.com/investing/2026/08/31/apple-just-raised-mac-and-ipad-prices-20-so-who-is-getting-rich-off-the-shortage/",
+    "body_source_url": "https://247wallst.com/investing/2026/08/31/apple-just-raised-mac-and-ipad-prices-20-so-who-is-getting-rich-off-the-shortage/",
+    "origin_publisher": "247wallst.com",
+    "identity_match": "supported",
+    "failure_attempt_id": null,
+    "next_action": null,
+    "budget_exhausted": false
+  },
+  "attempts": [
+    {
+      "phase": "direct",
+      "url": "https://247wallst.com/investing/2026/08/31/apple-just-raised-mac-and-ipad-prices-20-so-who-is-getting-rich-off-the-shortage/",
+      "domain": "247wallst.com",
+      "final_url": "https://247wallst.com/investing/2026/08/31/apple-just-raised-mac-and-ipad-prices-20-so-who-is-getting-rich-off-the-shortage/",
+      "fetch_profile": null,
+      "status_code": 200,
+      "latency_ms": 1264,
+      "reason": null,
+      "response_bytes": 327112,
+      "retry_after_seconds": null,
+      "transient_hint": false
+    }
+  ]
+}

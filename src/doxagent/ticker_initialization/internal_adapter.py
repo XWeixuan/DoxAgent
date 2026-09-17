@@ -83,9 +83,16 @@ class InternalNodeAdapter:
                 else:
                     findings.extend(await owner._validate_compile_checkpoint(run_id, prepared))
                 warnings = [str(f.code) for f in findings]
-                settle_stage(arguments["node"].value)
+                settle_stage(
+                    arguments["node"].value,
+                    durable_key=arguments.get("durable_key"),
+                )
             except Exception as exc:
-                settle_stage(arguments["node"].value, error=str(exc))
+                settle_stage(
+                    arguments["node"].value,
+                    durable_key=arguments.get("durable_key"),
+                    error=str(exc),
+                )
                 raise
         return NodeResult(
             artifacts={

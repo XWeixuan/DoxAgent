@@ -92,15 +92,30 @@ from doxagent.workflows.codex_document3.validator import (
 NOW = datetime(2026, 8, 26, tzinfo=UTC)
 
 
-def _source() -> dict[str, str]:
-    return {"shell_id": "S1", "expectation_id": "E1", "gap_id": "G1"}
+def _source(
+    shell_id: str = "S1",
+    expectation_id: str = "E1",
+    gap_id: str = "G1",
+) -> dict[str, str]:
+    return {
+        "shell_id": shell_id,
+        "expectation_id": expectation_id,
+        "gap_id": gap_id,
+    }
 
 
-def _policy(policy_id: str = "tmp_1", *, criterion: str = "公司正式确认量产") -> Policy:
+def _policy(
+    policy_id: str = "tmp_1",
+    *,
+    criterion: str = "公司正式确认量产",
+    shell_id: str = "S1",
+    expectation_id: str = "E1",
+    gap_id: str = "G1",
+) -> Policy:
     return Policy(
         policy_id=policy_id,
         title="量产状态推进",
-        source_refs=[_source()],
+        source_refs=[_source(shell_id, expectation_id, gap_id)],
         decision=PolicyDecision.LONG,
         match_scope="公司或客户正式披露的量产消息",
         activation_conditions=[
@@ -158,12 +173,18 @@ def test_document3_runtime_identity_is_separate_and_o3_is_read_only() -> None:
     )
 
 
-def _trigger_record() -> TriggerCalibrationRecord:
+def _trigger_record(
+    *,
+    shell_id: str = "S1",
+    expectation_id: str = "E1",
+    gap_id: str = "G1",
+    path_id: str = "P1",
+) -> TriggerCalibrationRecord:
     return TriggerCalibrationRecord(
-        shell_id="S1",
-        expectation_id="E1",
-        gap_id="G1",
-        path_id="P1",
+        shell_id=shell_id,
+        expectation_id=expectation_id,
+        gap_id=gap_id,
+        path_id=path_id,
         trigger_bearing_actor="公司",
         trigger_bearing_object="量产项目",
         current_state="当前仅处于验证阶段",
@@ -394,7 +415,9 @@ def test_semantic_diagnostics_are_nonblocking_but_require_review_explanation() -
         _policy(f"tmp_{index}", criterion="进入商业量产或大规模放量").model_copy(
             update={
                 "activation_conditions": [
-                    _policy().activation_conditions[0].model_copy(
+                    _policy()
+                    .activation_conditions[0]
+                    .model_copy(
                         update={
                             "condition_id": f"C{index}",
                             "criterion": "进入商业量产或大规模放量",
@@ -901,6 +924,200 @@ class _O3WorkerStub:
         return None
 
 
+class _MultiShellO3WorkerStub(_O3WorkerStub):
+    async def run(self, request):
+        self.requests.append(request)
+        shell_id = "S2" if "Shell S2" in request.prompt else "S1"
+        index = 2 if shell_id == "S2" else 1
+        expectation_id = f"E{index}"
+        gap_id = f"G{index}"
+        path_id = f"P{index}"
+
+        if request.node is CodexD3Node.O3_TRIGGER_CALIBRATION:
+            work_response = await self.workspace.read_text(
+                request.run_id, "output/work/worklist.jsonl"
+            )
+            worklist = [
+                WorklistEntry.model_validate_json(line)
+                for line in (work_response.content or "").splitlines()
+                if line.strip()
+            ]
+            worklist = [item for item in worklist if item.path_id != path_id]
+            worklist.append(
+                WorklistEntry(
+                    shell_id=shell_id,
+                    expectation_id=expectation_id,
+                    gap_id=gap_id,
+                    path_id=path_id,
+                    direction=PolicyDecision.LONG,
+                    path_summary=f"Shell {index} 业务推进",
+                    d2_boundary_sufficient=True,
+                    status=PathStatus.PENDING,
+                )
+            )
+            await self.workspace.write_text(
+                request.run_id,
+                "output/work/worklist.jsonl",
+                "".join(item.model_dump_json() + "\n" for item in worklist),
+            )
+
+            trigger_response = await self.workspace.read_text(
+                request.run_id, "output/work/trigger_calibrations.jsonl"
+            )
+            trigger_records = [
+                TriggerCalibrationRecord.model_validate_json(line)
+                for line in (trigger_response.content or "").splitlines()
+                if line.strip()
+            ]
+            trigger_records = [item for item in trigger_records if item.path_id != path_id]
+            trigger_records.append(
+                _trigger_record(
+                    shell_id=shell_id,
+                    expectation_id=expectation_id,
+                    gap_id=gap_id,
+                    path_id=path_id,
+                )
+            )
+            await self.workspace.write_text(
+                request.run_id,
+                "output/work/trigger_calibrations.jsonl",
+                "".join(item.model_dump_json() + "\n" for item in trigger_records),
+            )
+
+            state_response = await self.workspace.read_text(
+                request.run_id, "output/work/trigger_calibration_state.json"
+            )
+            state = TriggerCalibrationState.model_validate_json(state_response.content)
+            dispositions = [item for item in state.path_dispositions if item.path_id != path_id]
+            dispositions.append(
+                TriggerPathDisposition(
+                    shell_id=shell_id,
+                    expectation_id=expectation_id,
+                    gap_id=gap_id,
+                    path_id=path_id,
+                    disposition=TriggerDisposition.TRIGGER_READY,
+                )
+            )
+            await self.workspace.write_text(
+                request.run_id,
+                "output/work/trigger_calibration_state.json",
+                state.model_copy(
+                    update={
+                        "completed_shell_ids": list(
+                            dict.fromkeys([*state.completed_shell_ids, shell_id])
+                        ),
+                        "current_shell_id": None,
+                        "path_dispositions": dispositions,
+                        "unprocessed_path_count": 0,
+                    }
+                ).model_dump_json(indent=2),
+            )
+            response = {
+                "status": "COMPLETED",
+                "processed_gap_count": 1,
+                "processed_path_count": 1,
+                "unprocessed_path_count": 0,
+            }
+        elif request.node is CodexD3Node.O3_POLICY_COMPILE:
+            work_response = await self.workspace.read_text(
+                request.run_id, "output/work/worklist.jsonl"
+            )
+            worklist = [
+                WorklistEntry.model_validate_json(line)
+                for line in (work_response.content or "").splitlines()
+                if line.strip()
+            ]
+            worklist = [
+                item.model_copy(
+                    update={"status": PathStatus.COMPILED, "policy_ids": [f"tmp_{index}"]}
+                )
+                if item.path_id == path_id
+                else item
+                for item in worklist
+            ]
+            await self.workspace.write_text(
+                request.run_id,
+                "output/work/worklist.jsonl",
+                "".join(item.model_dump_json() + "\n" for item in worklist),
+            )
+            policy = _policy(
+                f"tmp_{index}",
+                criterion=(
+                    "公司正式确认量产" if shell_id == "S1" else "客户正式确认进入规模化部署"
+                ),
+                shell_id=shell_id,
+                expectation_id=expectation_id,
+                gap_id=gap_id,
+            )
+            if shell_id == "S2":
+                condition = policy.activation_conditions[0]
+                policy = policy.model_copy(
+                    update={
+                        "title": "客户规模化部署推进",
+                        "activation_conditions": [
+                            condition.model_copy(
+                                update={
+                                    "calibration": condition.calibration.model_copy(
+                                        update={
+                                            "reference_state": "客户当前仍处于试点阶段",
+                                            "trigger_boundary": "进入正式规模化部署",
+                                        }
+                                    )
+                                }
+                            )
+                        ],
+                    }
+                )
+            await self.workspace.write_text(
+                request.run_id,
+                f"output/work/policies/tmp_{index}.json",
+                policy.model_dump_json(indent=2),
+            )
+            wave_response = await self.workspace.read_text(
+                request.run_id, "output/work/wave_state.json"
+            )
+            wave_state = WaveState.model_validate_json(wave_response.content)
+            await self.workspace.write_text(
+                request.run_id,
+                "output/work/wave_state.json",
+                wave_state.model_copy(
+                    update={
+                        "completed_shell_ids": list(
+                            dict.fromkeys([*wave_state.completed_shell_ids, shell_id])
+                        ),
+                        "completed_path_ids": list(
+                            dict.fromkeys([*wave_state.completed_path_ids, path_id])
+                        ),
+                    }
+                ).model_dump_json(indent=2),
+            )
+            response = {
+                "status": "COMPLETED",
+                "processed_gap_count": 1,
+                "policy_count": 1,
+                "unresolved_path_count": 0,
+                "warning_count": 0,
+                "policy_set_version": None,
+            }
+        else:
+            response = {
+                "status": "PASSED",
+                "issue_count": 0,
+                "blocking_issue_count": 0,
+                "issues": [],
+                "diagnostics_reviewed": True,
+                "diagnostics_explanation": "Reviewed both Shell waves and their distinct policies.",
+            }
+        return WorkerJob(
+            job_id=f"job-{len(self.requests)}",
+            run_id=request.run_id,
+            attempt_id=request.attempt_id,
+            status="succeeded",
+            thread_id="thread-o3",
+            final_response=json.dumps(response),
+        )
+
+
 class _CompileRetryWorker(_O3WorkerStub):
     def __init__(self, workspace: _AsyncWorkspace) -> None:
         super().__init__(workspace)
@@ -922,6 +1139,31 @@ class _CompileRetryWorker(_O3WorkerStub):
         return await super().run(request)
 
 
+class _SecondShellCompileRetryWorker(_MultiShellO3WorkerStub):
+    def __init__(self, workspace: _AsyncWorkspace) -> None:
+        super().__init__(workspace)
+        self.second_shell_failures_remaining = 2
+
+    async def run(self, request):
+        if (
+            request.node is CodexD3Node.O3_POLICY_COMPILE
+            and "Shell S2" in request.prompt
+            and self.second_shell_failures_remaining
+        ):
+            self.second_shell_failures_remaining -= 1
+            self.requests.append(request)
+            return WorkerJob(
+                job_id=f"job-{len(self.requests)}",
+                run_id=request.run_id,
+                attempt_id=request.attempt_id,
+                status="failed",
+                thread_id="thread-o3",
+                error_code="TEST_INTERRUPT",
+                error_message="second Shell compile interrupted",
+            )
+        return await super().run(request)
+
+
 def _refactored_prompt_root(tmp_path: Path) -> Path:
     source = Path(__file__).resolve().parents[1] / "prompts" / "codex_v2" / "document3"
     target = tmp_path / "document3-prompts"
@@ -935,7 +1177,10 @@ def _refactored_prompt_root(tmp_path: Path) -> Path:
 
 
 def _seed_published_d2(
-    repository: InMemoryCodexRuntimeRepository, *, partial: bool = False
+    repository: InMemoryCodexRuntimeRepository,
+    *,
+    partial: bool = False,
+    shell_count: int = 1,
 ) -> None:
     manifest_entry = InputManifestEntry(status=InputAvailability.AVAILABLE)
     document = Document2Document(
@@ -969,7 +1214,34 @@ def _seed_published_d2(
                         ],
                     )
                 ],
-            )
+            ),
+            *(
+                [
+                    ExpectationShell(
+                        shell_id="S2",
+                        core_question="何时进入规模化部署？",
+                        boundary_rule="只覆盖规模化部署阶段",
+                        units=[
+                            ExpectationUnit(
+                                expectation_id="E2",
+                                proposition="客户仍处试点阶段",
+                                horizon="未来十二个月",
+                                potential_gaps=[
+                                    PotentialGap(
+                                        gap_id="G2",
+                                        possible_occurrence="进入规模化部署",
+                                        derivation="规模化部署会改变收入预期",
+                                        expected_revision="上修客户采用预期",
+                                        recognition_criteria="客户确认规模化部署",
+                                    )
+                                ],
+                            )
+                        ],
+                    )
+                ]
+                if shell_count > 1
+                else []
+            ),
         ],
         shell_outcomes=(
             [
@@ -1126,13 +1398,152 @@ async def test_initialize_runs_single_o3_thread_and_publishes_canonical_artifact
 
     with patch.object(orchestrator, "_enqueue_monitoring_o4", new_callable=AsyncMock) as enqueue:
         await orchestrator.initialize(
-            ticker="MU", document2_run_id="d2-mu", run_id="d3-mu-test", enqueue_o4=False,
+            ticker="MU",
+            document2_run_id="d2-mu",
+            run_id="d3-mu-test",
+            enqueue_o4=False,
         )
         enqueue.assert_not_awaited()
         await orchestrator.initialize(
-            ticker="MU", document2_run_id="d2-mu", run_id="d3-mu-test",
+            ticker="MU",
+            document2_run_id="d2-mu",
+            run_id="d3-mu-test",
         )
         enqueue.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_initialize_runs_two_turns_per_shell_with_document2_slices(
+    tmp_path: Path,
+) -> None:
+    runtime = InMemoryCodexRuntimeRepository()
+    policy_repository = InMemoryDocument3PolicyRepository()
+    _seed_published_d2(runtime, shell_count=2)
+    workspace = _AsyncWorkspace(tmp_path / "multi-shell-workspace")
+    worker = _MultiShellO3WorkerStub(workspace)
+    runner = Document3AgentRunner(
+        worker=worker,
+        workspace=workspace,
+        prompt_root=_refactored_prompt_root(tmp_path),
+        model="test-model",
+        model_provider=None,
+        runtime_repository=runtime,
+    )
+    orchestrator = Document3Orchestrator(
+        input_preparer=Document3InputPreparer(
+            runtime_repository=runtime,
+            policy_repository=policy_repository,
+        ),
+        agent_runner=runner,
+        policy_repository=policy_repository,
+        runtime_repository=runtime,
+    )
+
+    result = await orchestrator.initialize(
+        ticker="MU",
+        document2_run_id="d2-mu",
+        run_id="d3-mu-two-shells",
+        cutoff_at=NOW,
+    )
+
+    assert result.status is O3RunStatus.COMPLETED
+    assert [request.node for request in worker.requests] == [
+        CodexD3Node.O3_TRIGGER_CALIBRATION,
+        CodexD3Node.O3_POLICY_COMPILE,
+        CodexD3Node.O3_TRIGGER_CALIBRATION,
+        CodexD3Node.O3_POLICY_COMPILE,
+        CodexD3Node.O3_FINAL_REVIEW,
+    ]
+    assert [request.thread_id for request in worker.requests] == [
+        None,
+        "thread-o3",
+        "thread-o3",
+        "thread-o3",
+        "thread-o3",
+    ]
+    expected_slices = [
+        "context/document3/document2_shells/0001_S1.json",
+        "context/document3/document2_shells/0001_S1.json",
+        "context/document3/document2_shells/0002_S2.json",
+        "context/document3/document2_shells/0002_S2.json",
+    ]
+    for request, expected_slice in zip(worker.requests[:4], expected_slices, strict=True):
+        assert expected_slice in request.prompt
+        assert "context/document3/document2.json" not in request.prompt
+    assert "context/document3/initialize_policy_compile.md" not in worker.requests[0].prompt
+    assert "context/document3/initialize_trigger_calibration.md" not in worker.requests[1].prompt
+    assert "context/document3/document2_shells/" in worker.requests[-1].prompt
+
+    first_slice = Document2Document.model_validate_json(
+        workspace.local.read_text(
+            "d3-mu-two-shells",
+            "context/document3/document2_shells/0001_S1.json",
+        ).content
+    )
+    second_slice = Document2Document.model_validate_json(
+        workspace.local.read_text(
+            "d3-mu-two-shells",
+            "context/document3/document2_shells/0002_S2.json",
+        ).content
+    )
+    assert [shell.shell_id for shell in first_slice.shells] == ["S1"]
+    assert [shell.shell_id for shell in second_slice.shells] == ["S2"]
+    assert first_slice.document2_run_id == second_slice.document2_run_id == "d2-mu"
+
+
+@pytest.mark.asyncio
+async def test_initialize_resume_continues_at_incomplete_shell_compile_wave(
+    tmp_path: Path,
+) -> None:
+    runtime = InMemoryCodexRuntimeRepository()
+    policy_repository = InMemoryDocument3PolicyRepository()
+    _seed_published_d2(runtime, shell_count=2)
+    workspace = _AsyncWorkspace(tmp_path / "multi-shell-resume-workspace")
+    worker = _SecondShellCompileRetryWorker(workspace)
+    runner = Document3AgentRunner(
+        worker=worker,
+        workspace=workspace,
+        prompt_root=_refactored_prompt_root(tmp_path),
+        model="test-model",
+        model_provider=None,
+        runtime_repository=runtime,
+    )
+    orchestrator = Document3Orchestrator(
+        input_preparer=Document3InputPreparer(
+            runtime_repository=runtime,
+            policy_repository=policy_repository,
+        ),
+        agent_runner=runner,
+        policy_repository=policy_repository,
+        runtime_repository=runtime,
+    )
+
+    with pytest.raises(Exception, match="d3_o3_policy_compile failed"):
+        await orchestrator.initialize(
+            ticker="MU",
+            document2_run_id="d2-mu",
+            run_id="d3-mu-two-shell-resume",
+            cutoff_at=NOW,
+        )
+
+    result = await orchestrator.initialize(
+        ticker="MU",
+        document2_run_id="d2-mu",
+        run_id="d3-mu-two-shell-resume",
+        cutoff_at=NOW,
+    )
+
+    assert result.status is O3RunStatus.COMPLETED
+    calibration_requests = [
+        item for item in worker.requests if item.node is CodexD3Node.O3_TRIGGER_CALIBRATION
+    ]
+    compile_requests = [
+        item for item in worker.requests if item.node is CodexD3Node.O3_POLICY_COMPILE
+    ]
+    assert len(calibration_requests) == 2
+    assert sum("Shell S1" in item.prompt for item in compile_requests) == 1
+    assert sum("Shell S2" in item.prompt for item in compile_requests) == 3
+    assert worker.requests[-1].node is CodexD3Node.O3_FINAL_REVIEW
 
 
 @pytest.mark.asyncio

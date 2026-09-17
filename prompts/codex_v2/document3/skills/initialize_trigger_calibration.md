@@ -12,7 +12,7 @@
 
 目标是建立具有合理覆盖度的 Candidate Trigger Surface。开放召回先扩大可能性覆盖，严格筛选再决定哪些事件达到独立充分性；两者是连续但不同的工作。每条 `TRIGGER_READY` record 应能独立进入 Policy Compile，不依赖其他 records 才获得方向意义。`TRIGGER_UNRESOLVED` 是有效 disposition，研究缺口真实存在时不为表面覆盖强造 Trigger。
 
-后续 Policy Compile 负责 Candidate 关系分类、OR grouping、Policy-level fields 与 canonicalization；本阶段只建立和校准 Paths 与 Candidate records。
+当前 Shell 后续的独立 Policy Compile Turn 负责消费本 Turn 已冻结的 Candidate records，在当前 Shell 全部 Candidates 之间完成 Candidate 关系分类、OR grouping、Policy-level fields 与 canonicalization；本阶段只建立和校准当前 Shell 的 Paths 与 Candidate records。跨 Shell 的比较和 canonicalization 由全部 Shell 完成后的 Final Global Pass 负责。
 
 ## 1. Working Contract
 
@@ -20,7 +20,7 @@
 
 ```text
 task.json
-document2.json
+node prompt 指定的 document2_shells/<current_shell>.json
 reference_event_view.md
 previous_policy_set.json
 worklist.jsonl
@@ -31,20 +31,20 @@ Trigger Calibration record/state schemas
 
 各输入承担不同角色：
 
-- `document2.json`：expectation、State、Realization Factors、Potential Gaps、expected revision、recognition surface 与 provenance 的研究基线；
+- 当前 Document2 Shell slice：本 Turn 唯一允许处理的 Shell，完整提供该 Shell 的 expectation、State、Realization Factors、Potential Gaps、expected revision、recognition surface 与 provenance；
 - `reference_event_view.md`：冻结的近期现实补充，不是完整世界状态；
 - `previous_policy_set.json`：已有 actor、现实边界和语义连续性的参考，不决定本轮 Future Surface；
 - `worklist.jsonl`：所有待研究 Tradable Paths 的持久清单；
 - `trigger_calibrations.jsonl`：ready Paths 的严格研究记录；
 - `trigger_calibration_state.json`：Shell 进度与全部 Path dispositions。
 
-本阶段可以新增或补充 Worklist Paths、写入或修正 Trigger records 与 dispositions，并更新 current/completed Shell 状态。Worklist `status` 保持 `PENDING`，`policy_ids` 保持空列表；最终 `COMPILED` / `UNRESOLVED`、Policy drafts、`calibration_log.jsonl` 与 `wave_state.json` 由 Policy Compile 处理。
+本阶段可以新增或补充当前 Shell 的 Worklist Paths、写入或修正当前 Shell 的 Trigger records 与 dispositions，并更新 current/completed Shell 状态。当前 Shell 的 Worklist `status` 保持 `PENDING`，`policy_ids` 保持空列表；不得重置其他 Shell 已有的 terminal status 或 `policy_ids`。最终 `COMPILED` / `UNRESOLVED`、Policy drafts、`calibration_log.jsonl` 与 `wave_state.json` 由 Policy Compile 处理。
 
 每条 Path 的业务语义应来自对该对象逐项完成的研究与判断。程序适合读取、检索、计数、排序、ID/引用检查、schema validation、格式转换，以及在内容已经逐项形成后的机械写入；循环、模板、字段映射或字符串拼接不代替 Worklist、Trigger record 或自然语言字段的语义形成。D2 原文可以在重新判断后保留，但 `candidate_trigger = possible_occurrence`、`current_state = Unit State`、`judgeability = recognition_criteria` 之类的默认映射不构成研究结论。
 
 ## 2. Recovery 与 Frozen Context
 
-先读取已有 Worklist、Trigger records 和 Trigger state，从 `current_shell_id` 或首个未完成 Shell 恢复。已闭合 Shell 保持不变；已有 Path 以 `path_id` 和精确 D2 refs 恢复，新发现的重要 Path 可以追加而不覆盖无关条目。每次修改同步更新 Trigger state，使 retry 能从未闭合处继续。
+当前 node prompt 已指定本 Turn 唯一处理的 `shell_id` 和 Document2 Shell slice。先读取该 Shell 已有的 Worklist entries、Trigger records 和 Trigger state dispositions，并从该 Shell 未闭合的 Path 恢复。不得自行选择其他未完成 Shell，也不得读取或修改其他 Shell 的业务记录。已有 Path 以 `path_id` 和精确 D2 refs 恢复，新发现的重要 Path 可以追加到当前 Shell，但不得覆盖无关条目。每次修改同步更新当前 Shell 的 Trigger state，使 retry 能从该 Shell 的未闭合处继续。
 
 同一次 INITIALIZE run 中，D2、Reference View、Previous Policy Set、task 与 cutoff 保持冻结。使用输入实际提供的 snapshot、published 或 `as_of` 理解时间边界；未提供的时间保持未知。本 Turn 的外部研究遵守 `task.json.cutoff_at`。
 
@@ -298,7 +298,7 @@ D2
 
 Trigger record、state disposition 与 Worklist 使用相同 `path_id` 和 D2 refs。每完成一项工作，就更新 `current_shell_id`、dispositions、`unprocessed_path_count` 与 `updated_at`。
 
-## 9. Close the Shell and Complete the Stage
+## 9. Close the Current Shell Calibration Wave
 
 一个 Shell 只有在以下工作闭合后完成：
 
@@ -311,13 +311,12 @@ Trigger record、state disposition 与 Worklist 使用相同 `path_id` 和 D2 re
 - unresolved reason 指向具体边界；
 - Worklist `status=PENDING` 且 `policy_ids=[]`，等待 Compile 接管。
 
-全部成功 Shell 完成后：
+当前 Shell Calibration Wave 完成后：
 
 ```text
-stage_status = COMPLETED
 current_shell_id = null
-unprocessed_path_count = 0
-completed_shell_ids = all completed D2 Shells
+completed_shell_ids = existing completed Shells + current shell_id
+unprocessed_path_count = current Shell paths without disposition
 ```
 
-最后确认 Worklist 覆盖完整 source surface，每个 Path 只有一个 disposition，record/state/Worklist refs 一致，冻结输入未被修改。按 supplied node schema 返回单个 `TriggerCalibrationRunResult`，计数与 workspace 实际状态一致；完整研究结论留在过程工件中，不在最终回复重复。
+不得根据当前 slice 自行判断全部 D2 Shell 已完成，也不负责把全局 `stage_status` 推进为 `COMPLETED`；编排器会在所有 Shell Calibration Waves 结束后统一收敛。最后确认当前 Shell 的 Worklist 覆盖完整 source surface，每个当前 Shell Path 只有一个 disposition，record/state/Worklist refs 一致，冻结输入未被修改。按 supplied node schema 返回单个 `TriggerCalibrationRunResult`，计数与 workspace 实际状态一致；完整研究结论留在过程工件中，不在最终回复重复。本 Turn 到此结束，不执行 Policy Compile。

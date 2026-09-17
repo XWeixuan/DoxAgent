@@ -1,0 +1,63 @@
+by Piero CingariBenzinga Staff Writer
+
+Follow
+
+Stock Score Locked: Want to See it?
+
+Benzinga Rankings give you vital metrics on any stock – anytime.
+
+Reveal Full Score
+
+Edge Rankings
+
+Momentum 68.61
+
+Growth 98.11
+
+Quality 97.43
+
+Value 7.57
+
+Price Trend
+
+Short
+
+Medium
+
+Long
+
+Overview
+
+Every artificial intelligence company may want the race to slow down. None can afford to be the first to stop running.
+
+That is **Bank of America’s** answer to Monday’s AI-driven sell-off.
+
+• NVIDIA stock is facing resistance. What’s driving NVDA stock lower?**
+
+Semiconductor and AI-related stocks sank Monday after Anthropic CEO **Dario Amodei** published a weekend essay urging the industry to slow the pace of frontier model development, with OpenAI CEO **Sam Altman** and **Elon Musk** backing him.
+
+Yet, Bank of America semiconductor analyst **Vivek Arya** said investors are focusing on the wrong variable.
+
+The key question is not whether AI executives want more restraint. It is whether commercial and geopolitical competition will allow it.
+
+Arya described the controversy as “noise” within a “secular bull market” that could push annual AI capital spending above $3 trillion by 2030.
+
+“Recent frontier-lab controversy, including OpenAI’s Hugging Face incident, high-profile Anthropic researcher departures, and Dario Amodei’s public appeal for industry restraint, has intensified debate around AI’s pace. We view these events as noise relative to a secular market where AI-capex could surge 3x to $3tn+by decade-end,” Arya said.
+
+Rivalry Is the Variable, Not Regulation**
+
+Arya frames AI as a prisoner’s dilemma.
+
+Every participant could benefit if the entire industry advanced more carefully. But any company that slows alone risks surrendering customers, talent and technological leadership to competitors.
+
+The same logic operates across several fronts.
+
+American labs are competing against Chinese developers. Hyperscalers are racing against specialized cloud providers. Governments are funding sovereign AI systems, while OpenAI, Anthropic and other laboratories pursue increasingly powerful models.
+
+The economic prize is too large for any participant to trust that its rivals will voluntarily wait.
+
+Everyone wants the brakes. Nobody wants to touch them first.
+
+That makes a coordinated slowdown possible in theory but difficult in practice.
+
+Even new safety agreements may alter how AI systems are developed without reducing the infrastructure required to build them.

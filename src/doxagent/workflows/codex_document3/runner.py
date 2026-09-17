@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Literal, Protocol, cast
@@ -23,6 +24,7 @@ from doxagent.codex_runtime.schema import (
 )
 from doxagent.codex_worker.schema import WorkerJob, WorkerRunRequest
 from doxagent.ticker_initialization.substeps import attempt_identity, durable
+from doxagent.workflows.codex_document2.schema import Document2Document
 
 from .schema import (
     CalibrationLogEntry,
@@ -48,6 +50,19 @@ INITIALIZE_BUSINESS_INPUT_PATHS = (
     "context/document3/task.json",
 )
 INPUT_MANIFEST_PATH = "context/document3/input_manifest.json"
+DOCUMENT2_SHELL_DIRECTORY = "context/document3/document2_shells"
+
+
+def document2_shell_path(*, ordinal: int, shell_id: str) -> str:
+    safe_shell_id = re.sub(r"[^A-Za-z0-9._-]+", "-", shell_id).strip("-._") or "shell"
+    return f"{DOCUMENT2_SHELL_DIRECTORY}/{ordinal:04d}_{safe_shell_id}.json"
+
+
+def document2_shell_paths(document2: Document2Document) -> tuple[str, ...]:
+    return tuple(
+        document2_shell_path(ordinal=ordinal, shell_id=shell.shell_id)
+        for ordinal, shell in enumerate(document2.shells, start=1)
+    )
 
 
 class O3ExecutionStateRepository(Protocol):
@@ -107,6 +122,7 @@ class Document3AgentRunner:
         previous_policy_set_json: str | None,
         task: Document3InitializeTask,
     ) -> None:
+        document2 = Document2Document.model_validate_json(document2_json)
         files = self._load_prompt_assets(
             {
                 "context/document3/AGENTS.md": "AGENTS.md",
@@ -176,6 +192,11 @@ class Document3AgentRunner:
                 ),
             }
         )
+        for ordinal, shell in enumerate(document2.shells, start=1):
+            shell_document = document2.model_copy(update={"shells": [shell]})
+            files[document2_shell_path(ordinal=ordinal, shell_id=shell.shell_id)] = (
+                shell_document.model_dump_json(indent=2)
+            )
         for path, content in files.items():
             await self.workspace.write_text(run_id, path, content)
 
@@ -224,12 +245,14 @@ class Document3AgentRunner:
             loaded[target] = source_path.read_text(encoding="utf-8")
         return loaded
 
-    async def run_trigger_calibration(
+    async def run_trigger_calibration_wave(
         self,
         *,
         run_id: str,
         ticker: str,
         cutoff_at: datetime,
+        shell_id: str,
+        document2_slice_path: str,
         thread_id: str | None = None,
     ) -> tuple[TriggerCalibrationRunResult, str | None]:
         return await self._run_with_resume(
@@ -240,6 +263,7 @@ class Document3AgentRunner:
             output_model=TriggerCalibrationRunResult,
             max_attempts=2,
             thread_id=thread_id,
+            durable_key=shell_id,
             required_context_paths=(
                 "context/document3/task.json",
                 "context/document3/AGENTS.md",
@@ -249,7 +273,7 @@ class Document3AgentRunner:
                 "context/document3/trigger_calibration_record.schema.json",
                 "context/document3/trigger_calibration_state.schema.json",
                 "context/document3/worklist.schema.json",
-                "context/document3/document2.json",
+                document2_slice_path,
                 "context/document3/reference_event_view.md",
                 "context/document3/previous_policy_set.json",
                 "output/work/worklist.jsonl",
@@ -257,17 +281,21 @@ class Document3AgentRunner:
                 "output/work/trigger_calibration_state.json",
             ),
             instruction=(
-                "Complete every Shell Trigger Calibration wave before any Policy drafting. "
-                "Keep Worklist status PENDING; persist all dispositions and Stage-A progress."
+                f"This is the Trigger Calibration wave for Shell {shell_id}. Process only "
+                "that Shell from the supplied Document2 slice. Keep Worklist status PENDING, "
+                "persist this Shell's dispositions and Stage-A progress, then end the Turn. "
+                "Do not execute Policy Compile in this Turn."
             ),
         )
 
-    async def run_policy_compile(
+    async def run_policy_compile_wave(
         self,
         *,
         run_id: str,
         ticker: str,
         cutoff_at: datetime,
+        shell_id: str,
+        document2_slice_path: str,
         thread_id: str | None,
     ) -> tuple[O3RunResult, str | None]:
         return await self._run_with_resume(
@@ -278,6 +306,7 @@ class Document3AgentRunner:
             output_model=O3RunResult,
             max_attempts=2,
             thread_id=thread_id,
+            durable_key=shell_id,
             required_context_paths=(
                 "context/document3/task.json",
                 "context/document3/AGENTS.md",
@@ -288,7 +317,7 @@ class Document3AgentRunner:
                 "context/document3/worklist.schema.json",
                 "context/document3/calibration_log.schema.json",
                 "context/document3/wave_state.schema.json",
-                "context/document3/document2.json",
+                document2_slice_path,
                 "context/document3/previous_policy_set.json",
                 "output/work/trigger_calibrations.jsonl",
                 "output/work/trigger_calibration_state.json",
@@ -298,9 +327,13 @@ class Document3AgentRunner:
                 "output/work/policies/",
             ),
             instruction=(
-                "Compile the frozen Stage-A Trigger surface in Shell waves. Do not rebuild "
-                "the path surface. Update final Worklist statuses, Policy drafts, calibration "
-                "compatibility log, and wave_state. Resume existing compile checkpoints."
+                f"This is the Policy Compile wave for Shell {shell_id}. Consume only that "
+                "Shell's frozen Stage-A Trigger surface; do not rebuild the path surface. "
+                "Classify and group all Candidates within the current Shell, without comparing, "
+                "merging, or rewriting Policies from other Shells. Existing drafts may be read "
+                "only for workspace recovery and safe writes. Update this Shell's Worklist "
+                "statuses, Policy drafts, calibration compatibility log, and wave_state, then "
+                "end the Turn."
             ),
         )
 
@@ -332,7 +365,7 @@ class Document3AgentRunner:
                 "context/document3/worklist.schema.json",
                 "context/document3/calibration_log.schema.json",
                 "context/document3/wave_state.schema.json",
-                "context/document3/document2.json",
+                f"{DOCUMENT2_SHELL_DIRECTORY}/",
                 "context/document3/reference_event_view.md",
                 "context/document3/previous_policy_set.json",
                 "output/work/worklist.jsonl",
@@ -394,6 +427,7 @@ class Document3AgentRunner:
         required_context_paths: tuple[str, ...],
         instruction: str,
         thread_id: str | None = None,
+        durable_key: str | None = None,
     ) -> tuple[Any, str | None]:
         schema = await self.prepare_node_contracts(
             run_id=run_id,
@@ -410,7 +444,13 @@ class Document3AgentRunner:
         )
         for offset in range(max_attempts):
             attempt_number = first_attempt + offset
-            attempt_id = attempt_identity(f"{node.value}-{attempt_number:02d}")
+            attempt_suffix = (
+                re.sub(r"[^A-Za-z0-9._-]+", "-", durable_key).strip("-._") if durable_key else ""
+            )
+            fallback_id = node.value
+            if attempt_suffix:
+                fallback_id += f"-{attempt_suffix}"
+            attempt_id = attempt_identity(f"{fallback_id}-{attempt_number:02d}")
             prompt = (
                 f"D3 node {node.value}; attempt {attempt_id}. Read these frozen/local "
                 f"workspace paths in order: {', '.join(required_context_paths)}, and "
@@ -447,9 +487,7 @@ class Document3AgentRunner:
                 prompt=prompt,
                 output_schema=schema,
                 thread_id=current_thread,
-                model=(
-                    self._model if node == CodexD3Node.O3_MAINTAIN else self._initialize_model
-                ),
+                model=(self._model if node == CodexD3Node.O3_MAINTAIN else self._initialize_model),
                 model_provider=self._model_provider,
                 effort=(
                     self._effort if node == CodexD3Node.O3_MAINTAIN else self._initialize_effort
@@ -552,16 +590,31 @@ class Document3AgentRunner:
                 )
             )
             return result, current_thread
-        # Only hand back an advisory receipt when a real stage artifact exists.
-        # The orchestrator still verifies frozen inputs and fully normalizes it.
-        required = {
-            CodexD3Node.O3_TRIGGER_CALIBRATION: "output/work/worklist.jsonl",
-            CodexD3Node.O3_POLICY_COMPILE: "output/work/worklist.jsonl",
-            CodexD3Node.O3_FINAL_REVIEW: "output/work/worklist.jsonl",
-        }.get(node)
-        if required:
+        # Only hand back an advisory receipt when this exact wave has a durable
+        # workspace checkpoint. Artifacts from an earlier Shell/stage are not
+        # evidence that the failed wave completed.
+        checkpoint_path: str | None = None
+        checkpoint_model: type[BaseModel] | None = None
+        if node is CodexD3Node.O3_TRIGGER_CALIBRATION and durable_key:
+            checkpoint_path = "output/work/trigger_calibration_state.json"
+            checkpoint_model = TriggerCalibrationState
+        elif node is CodexD3Node.O3_POLICY_COMPILE and durable_key:
+            checkpoint_path = "output/work/wave_state.json"
+            checkpoint_model = WaveState
+        if checkpoint_path is not None and checkpoint_model is not None:
             try:
-                file = await self.workspace.read_text(run_id, required)
+                file = await self.workspace.read_text(run_id, checkpoint_path)
+                checkpoint = checkpoint_model.model_validate_json(file.content or "{}")
+                if durable_key in getattr(checkpoint, "completed_shell_ids", []):
+                    return self._fallback_result(
+                        output_model,
+                        reason="Worker failed; stage artifacts require canonical validation",
+                    ), current_thread
+            except (FileNotFoundError, ValidationError):
+                pass
+        elif node is CodexD3Node.O3_FINAL_REVIEW:
+            try:
+                file = await self.workspace.read_text(run_id, "output/work/worklist.jsonl")
                 if file.content and file.content.strip():
                     return self._fallback_result(
                         output_model,
@@ -656,9 +709,7 @@ class Document3AgentRunner:
         record = self._runtime_repository.get_thread(run_id, CodexD3AgentRole.O3.value)
         return record.thread_id if record is not None else None
 
-    def _save_thread(
-        self, run_id: str, ticker: str, thread_id: str | None, *, model: str
-    ) -> None:
+    def _save_thread(self, run_id: str, ticker: str, thread_id: str | None, *, model: str) -> None:
         if self._runtime_repository is None or thread_id is None:
             return
         prior = self._runtime_repository.get_thread(run_id, CodexD3AgentRole.O3.value)

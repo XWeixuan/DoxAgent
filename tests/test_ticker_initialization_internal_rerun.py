@@ -64,7 +64,9 @@ def test_invocation_codec_preserves_tag_like_data_and_rejects_external_types():
 
 
 @pytest.mark.asyncio
-async def test_real_d3_compile_rerun_only_invokes_compile_in_pre_node_fork(tmp_path, monkeypatch):
+async def test_real_d3_shell_compile_rerun_only_invokes_selected_wave_in_pre_node_fork(
+    tmp_path, monkeypatch
+):
     runtime = InMemoryCodexRuntimeRepository()
     policies = InMemoryDocument3PolicyRepository()
     _seed_published_d2(runtime)
@@ -118,7 +120,7 @@ async def test_real_d3_compile_rerun_only_invokes_compile_in_pre_node_fork(tmp_p
     count = len(model.requests)
     rerun = control.rerun(
         initial.initialization_id,
-        node_key="d3." + CodexD3Node.O3_POLICY_COMPILE.value,
+        node_key="d3." + CodexD3Node.O3_POLICY_COMPILE.value + ":S1",
         reason="offline single-node replacement",
     )
     adapter = InternalNodeAdapter(DoxAgentSettings())

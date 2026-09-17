@@ -1,0 +1,167 @@
+{
+  "total": 405,
+  "counts": [
+    {
+      "scope": "task1",
+      "decision": "native_api_body_verified",
+      "count": 6
+    },
+    {
+      "scope": "excluded_by_user",
+      "decision": "excluded_budget_rate_or_investors_account",
+      "count": 149
+    },
+    {
+      "scope": "task1",
+      "decision": "needs_remote_account_validation",
+      "count": 50
+    },
+    {
+      "scope": "task1",
+      "decision": "live_isolated_pipeline_recovered",
+      "count": 13
+    },
+    {
+      "scope": "task1",
+      "decision": "free_site_runtime_or_access_unresolved",
+      "count": 162
+    },
+    {
+      "scope": "task1",
+      "decision": "captured_response_parser_verified",
+      "count": 3
+    },
+    {
+      "scope": "task1",
+      "decision": "resolve_original_publisher_or_entitlement",
+      "count": 21
+    },
+    {
+      "scope": "task1",
+      "decision": "empty_public_caption_remains_unsupported",
+      "count": 1
+    }
+  ],
+  "remaining_domain_reason_counts": [
+    {
+      "domain": "benzinga.com",
+      "reason": "incomplete_extract",
+      "count": 1
+    },
+    {
+      "domain": "benzinga.com",
+      "reason": "timeout",
+      "count": 4
+    },
+    {
+      "domain": "seekingalpha.com",
+      "reason": "empty_extract",
+      "count": 2
+    },
+    {
+      "domain": "thestreet.com",
+      "reason": "empty_extract",
+      "count": 5
+    },
+    {
+      "domain": "247wallst.com",
+      "reason": "http_403",
+      "count": 18
+    },
+    {
+      "domain": "finance.yahoo.com",
+      "reason": "http_403",
+      "count": 65
+    },
+    {
+      "domain": "investorshub.advfn.com",
+      "reason": "http_403",
+      "count": 1
+    },
+    {
+      "domain": "benzinga.com",
+      "reason": "http_403",
+      "count": 43
+    },
+    {
+      "domain": "investopedia.com",
+      "reason": "http_403",
+      "count": 1
+    },
+    {
+      "domain": "seekingalpha.com",
+      "reason": "incomplete_extract",
+      "count": 42
+    },
+    {
+      "domain": "barchart.com",
+      "reason": "poison_or_navigation_extract",
+      "count": 5
+    },
+    {
+      "domain": "investmentmonitor.ai",
+      "reason": "poison_or_navigation_extract",
+      "count": 1
+    },
+    {
+      "domain": "finance.yahoo.com",
+      "reason": "source_summary_only",
+      "count": 21
+    },
+    {
+      "domain": "finnhub.io",
+      "reason": "timeout",
+      "count": 1
+    },
+    {
+      "domain": "fool.com",
+      "reason": "timeout",
+      "count": 9
+    },
+    {
+      "domain": "finance.yahoo.com",
+      "reason": "unsupported_media",
+      "count": 3
+    },
+    {
+      "domain": "cnbc.com",
+      "reason": "unsupported_media",
+      "count": 9
+    },
+    {
+      "domain": "marketwatch.com",
+      "reason": "http_401",
+      "count": 1
+    },
+    {
+      "domain": "investors.micron.com",
+      "reason": "http_403",
+      "count": 1
+    },
+    {
+      "domain": "interactivebrokers.com",
+      "reason": "http_404",
+      "count": 1
+    },
+    {
+      "domain": "reuters.com",
+      "reason": "http_401",
+      "count": 3
+    },
+    {
+      "domain": "finance.yahoo.com",
+      "reason": "empty_extract",
+      "count": 11
+    },
+    {
+      "domain": "barrons.com",
+      "reason": "http_401",
+      "count": 3
+    },
+    {
+      "domain": "finance.yahoo.com",
+      "reason": "timeout",
+      "count": 5
+    }
+  ]
+}

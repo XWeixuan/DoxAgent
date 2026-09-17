@@ -1,0 +1,165 @@
+{
+  "window_start_utc": "2026-09-12T09:46:02.765506+00:00",
+  "window_end_utc": "2026-09-15T09:46:02.765506+00:00",
+  "total_published": 1369,
+  "failed_published": 1219,
+  "after_exact_url_dedup": 432,
+  "after_exact_title_dedup": 405,
+  "url_duplicates_removed": 787,
+  "title_duplicates_removed": 27,
+  "raw_source_counts": {
+    "yahoo_finance_news": 93,
+    "ibkr_news": 383,
+    "benzinga_news": 2,
+    "reuters_site_search": 405,
+    "finnhub_company_news": 336
+  },
+  "dedup_source_counts": {
+    "benzinga_news": 2,
+    "finnhub_company_news": 326,
+    "ibkr_news": 22,
+    "reuters_site_search": 3,
+    "yahoo_finance_news": 52
+  },
+  "dedup_source_reason_counts": [
+    {
+      "source_id": "benzinga_news",
+      "reason": "incomplete_extract",
+      "count": 1
+    },
+    {
+      "source_id": "benzinga_news",
+      "reason": "timeout",
+      "count": 1
+    },
+    {
+      "source_id": "finnhub_company_news",
+      "reason": "deadline_exceeded",
+      "count": 28
+    },
+    {
+      "source_id": "finnhub_company_news",
+      "reason": "empty_extract",
+      "count": 7
+    },
+    {
+      "source_id": "finnhub_company_news",
+      "reason": "http_403",
+      "count": 121
+    },
+    {
+      "source_id": "finnhub_company_news",
+      "reason": "http_429",
+      "count": 100
+    },
+    {
+      "source_id": "finnhub_company_news",
+      "reason": "incomplete_extract",
+      "count": 42
+    },
+    {
+      "source_id": "finnhub_company_news",
+      "reason": "poison_or_navigation_extract",
+      "count": 6
+    },
+    {
+      "source_id": "finnhub_company_news",
+      "reason": "source_summary_only",
+      "count": 1
+    },
+    {
+      "source_id": "finnhub_company_news",
+      "reason": "timeout",
+      "count": 11
+    },
+    {
+      "source_id": "finnhub_company_news",
+      "reason": "unsupported_media",
+      "count": 10
+    },
+    {
+      "source_id": "ibkr_news",
+      "reason": "http_401",
+      "count": 1
+    },
+    {
+      "source_id": "ibkr_news",
+      "reason": "http_403",
+      "count": 1
+    },
+    {
+      "source_id": "ibkr_news",
+      "reason": "http_404",
+      "count": 1
+    },
+    {
+      "source_id": "ibkr_news",
+      "reason": "incomplete_extract",
+      "count": 18
+    },
+    {
+      "source_id": "ibkr_news",
+      "reason": "timeout",
+      "count": 1
+    },
+    {
+      "source_id": "reuters_site_search",
+      "reason": "http_401",
+      "count": 3
+    },
+    {
+      "source_id": "yahoo_finance_news",
+      "reason": "empty_extract",
+      "count": 11
+    },
+    {
+      "source_id": "yahoo_finance_news",
+      "reason": "http_401",
+      "count": 3
+    },
+    {
+      "source_id": "yahoo_finance_news",
+      "reason": "http_403",
+      "count": 7
+    },
+    {
+      "source_id": "yahoo_finance_news",
+      "reason": "incomplete_extract",
+      "count": 3
+    },
+    {
+      "source_id": "yahoo_finance_news",
+      "reason": "source_summary_only",
+      "count": 20
+    },
+    {
+      "source_id": "yahoo_finance_news",
+      "reason": "timeout",
+      "count": 6
+    },
+    {
+      "source_id": "yahoo_finance_news",
+      "reason": "unsupported_media",
+      "count": 2
+    }
+  ],
+  "generic_url_collapses": [
+    {
+      "url": "http://www.marketwatch.com/newsviewer",
+      "occurrences": 23,
+      "distinct_titles": 17
+    },
+    {
+      "url": "https://www.interactivebrokers.com/en/trading/providers.php",
+      "occurrences": 231,
+      "distinct_titles": 161
+    },
+    {
+      "url": "https://www.benzinga.com/quote/MU/analyst-ratings",
+      "occurrences": 2,
+      "distinct_titles": 2
+    }
+  ],
+  "ibkr_native_complete_like_failed_count": 365,
+  "dedup_rule": "Case-sensitive exact original Standard URL; then case-sensitive exact representative title; keep latest stream occurrence. No trim, URL rewrite, case folding, punctuation normalization or fuzzy matching."
+}

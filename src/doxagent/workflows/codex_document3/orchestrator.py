@@ -34,9 +34,12 @@ from .inputs import Document3InputPreparer, PreparedDocument3Inputs
 from .recovery import RecoveryResult, parse_json, parse_jsonl
 from .repository import Document3PolicyRepository
 from .runner import (
+    DOCUMENT2_SHELL_DIRECTORY,
     INITIALIZE_BUSINESS_INPUT_PATHS,
     INPUT_MANIFEST_PATH,
     Document3AgentRunner,
+    document2_shell_path,
+    document2_shell_paths,
 )
 from .runtime_projection import assert_runtime_projection_compatible, project_policy_set
 from .schema import (
@@ -172,6 +175,7 @@ class Document3Orchestrator:
             )
         )
         active_node: CodexD3Node | None = None
+        active_wave_key: str | None = None
         recovery_findings: list[ValidationFinding] = []
         try:
             inventory = await self._agent.workspace.inventory(selected_run_id)
@@ -242,83 +246,6 @@ class Document3Orchestrator:
                 except (FileNotFoundError, ValueError):
                     self._reset_from_stage_a(checkpoint)
 
-            # A prior process may have failed after a successful SDK turn but before
-            # the old strict checkpoint parser completed. Recover usable Stage-A
-            # artifacts before spending another model turn or clearing progress.
-            if CodexD3Node.O3_TRIGGER_CALIBRATION not in checkpoint.completed_nodes:
-                current_inventory = await self._agent.workspace.inventory(selected_run_id)
-                worklist_file = next(
-                    (
-                        item
-                        for item in current_inventory.files
-                        if item.relative_path == "output/work/worklist.jsonl"
-                    ),
-                    None,
-                )
-                if worklist_file is not None and worklist_file.size_bytes > 0:
-                    try:
-                        recovered = await self._validate_stage_a_checkpoint(
-                            selected_run_id,
-                            prepared,
-                            require_pending_worklist=True,
-                        )
-                    except ValueError:
-                        pass
-                    else:
-                        recovery_findings.extend(recovered)
-                        recovery_findings.append(
-                            self._recovery_finding(
-                                "STAGE_A_CHECKPOINT_RECOVERED",
-                                "Existing Stage-A artifacts were recovered without "
-                                "rerunning Node A.",
-                                scope=ValidationScope.STAGE,
-                                action="resume_from_policy_compile",
-                            )
-                        )
-                        self._complete_node(checkpoint, CodexD3Node.O3_TRIGGER_CALIBRATION)
-
-            if CodexD3Node.O3_TRIGGER_CALIBRATION not in checkpoint.completed_nodes:
-                active_node = CodexD3Node.O3_TRIGGER_CALIBRATION
-                self._start_node(checkpoint, active_node)
-                await self._agent.prepare_node_contracts(
-                    run_id=selected_run_id,
-                    node=active_node,
-                )
-                boundary_before = await self._workspace_snapshot(selected_run_id)
-                stage_a_result, thread_id = await self._agent.run_trigger_calibration(
-                    run_id=selected_run_id,
-                    ticker=normalized_ticker,
-                    cutoff_at=cutoff,
-                    thread_id=thread_id,
-                )
-                if stage_a_result.status != "COMPLETED":
-                    recovery_findings.append(
-                        self._recovery_finding(
-                            "STAGE_A_AGENT_DECLARED_FAILURE",
-                            "O3 Trigger Calibration declared failure; workspace "
-                            "artifacts decide progression.",
-                            scope=ValidationScope.STAGE,
-                            action="inspect_workspace_artifacts",
-                        )
-                    )
-                recovery_findings.extend(
-                    await self._assert_agent_write_boundary(
-                        selected_run_id,
-                        initialize=True,
-                        baseline=boundary_before,
-                    )
-                )
-                await self._verify_input_manifest(selected_run_id)
-                recovery_findings.extend(
-                    await self._validate_stage_a_checkpoint(
-                        selected_run_id,
-                        prepared,
-                        require_pending_worklist=True,
-                    )
-                )
-                self._complete_node(checkpoint, active_node)
-                active_node = None
-
             if CodexD3Node.O3_POLICY_COMPILE in checkpoint.completed_nodes:
                 recovery_findings.extend(
                     await self._assert_agent_write_boundary(selected_run_id, initialize=True)
@@ -331,46 +258,159 @@ class Document3Orchestrator:
                 except (FileNotFoundError, ValueError):
                     self._reset_from_compile(checkpoint)
 
-            if CodexD3Node.O3_POLICY_COMPILE not in checkpoint.completed_nodes:
-                active_node = CodexD3Node.O3_POLICY_COMPILE
-                self._start_node(checkpoint, active_node)
-                await self._agent.prepare_node_contracts(
-                    run_id=selected_run_id,
-                    node=active_node,
+            trigger_state_result = await self._read_json_recoverable(
+                selected_run_id,
+                "output/work/trigger_calibration_state.json",
+                TriggerCalibrationState,
+            )
+            recovery_findings.extend(trigger_state_result.findings)
+            calibrated_shell_ids = set(
+                trigger_state_result.values[0].completed_shell_ids
+                if trigger_state_result.values
+                else []
+            )
+            wave_state_result = await self._read_json_recoverable(
+                selected_run_id, "output/work/wave_state.json", WaveState
+            )
+            recovery_findings.extend(wave_state_result.findings)
+            compiled_shell_ids = set(
+                wave_state_result.values[0].completed_shell_ids if wave_state_result.values else []
+            )
+
+            trigger_stage_complete = (
+                CodexD3Node.O3_TRIGGER_CALIBRATION in checkpoint.completed_nodes
+            )
+            compile_stage_complete = CodexD3Node.O3_POLICY_COMPILE in checkpoint.completed_nodes
+
+            for ordinal, shell in enumerate(prepared.document2.shells, start=1):
+                from doxagent.ticker_initialization.substeps import settle_stage
+
+                shell_id = shell.shell_id
+                shell_slice_path = document2_shell_path(
+                    ordinal=ordinal,
+                    shell_id=shell_id,
                 )
-                boundary_before = await self._workspace_snapshot(selected_run_id)
-                compile_result, thread_id = await self._agent.run_policy_compile(
-                    run_id=selected_run_id,
-                    ticker=normalized_ticker,
-                    cutoff_at=cutoff,
-                    thread_id=thread_id,
-                )
-                if compile_result.status not in {
-                    O3RunStatus.COMPLETED,
-                    O3RunStatus.PARTIAL,
-                }:
-                    recovery_findings.append(
-                        self._recovery_finding(
-                            "COMPILE_AGENT_DECLARED_NONTERMINAL",
-                            "O3 Policy Compile returned a nonterminal status; "
-                            "artifacts decide progression.",
-                            scope=ValidationScope.STAGE,
-                            action="continue_to_final_review",
+                if shell_id in calibrated_shell_ids:
+                    settle_stage(
+                        CodexD3Node.O3_TRIGGER_CALIBRATION.value,
+                        durable_key=shell_id,
+                    )
+                if shell_id in compiled_shell_ids:
+                    settle_stage(
+                        CodexD3Node.O3_POLICY_COMPILE.value,
+                        durable_key=shell_id,
+                    )
+
+                if not trigger_stage_complete and shell_id not in calibrated_shell_ids:
+                    active_node = CodexD3Node.O3_TRIGGER_CALIBRATION
+                    active_wave_key = shell_id
+                    self._start_node(checkpoint, active_node)
+                    await self._agent.prepare_node_contracts(
+                        run_id=selected_run_id,
+                        node=active_node,
+                    )
+                    boundary_before = await self._workspace_snapshot(selected_run_id)
+                    stage_a_result, thread_id = await self._agent.run_trigger_calibration_wave(
+                        run_id=selected_run_id,
+                        ticker=normalized_ticker,
+                        cutoff_at=cutoff,
+                        shell_id=shell_id,
+                        document2_slice_path=shell_slice_path,
+                        thread_id=thread_id,
+                    )
+                    if stage_a_result.status != "COMPLETED":
+                        recovery_findings.append(
+                            self._recovery_finding(
+                                "STAGE_A_AGENT_DECLARED_FAILURE",
+                                "O3 Trigger Calibration declared failure; workspace "
+                                "artifacts decide progression.",
+                                scope=ValidationScope.STAGE,
+                                action="inspect_workspace_artifacts",
+                            )
+                        )
+                    recovery_findings.extend(
+                        await self._assert_agent_write_boundary(
+                            selected_run_id,
+                            initialize=True,
+                            baseline=boundary_before,
                         )
                     )
+                    await self._verify_input_manifest(selected_run_id)
+                    recovery_findings.extend(
+                        await self._mark_calibration_wave_completed(
+                            selected_run_id,
+                            shell_id,
+                        )
+                    )
+                    calibrated_shell_ids.add(shell_id)
+                    self._finish_wave(checkpoint, active_node, durable_key=shell_id)
+                    active_node = None
+                    active_wave_key = None
+
+                if not compile_stage_complete and shell_id not in compiled_shell_ids:
+                    active_node = CodexD3Node.O3_POLICY_COMPILE
+                    active_wave_key = shell_id
+                    self._start_node(checkpoint, active_node)
+                    await self._agent.prepare_node_contracts(
+                        run_id=selected_run_id,
+                        node=active_node,
+                    )
+                    boundary_before = await self._workspace_snapshot(selected_run_id)
+                    compile_result, thread_id = await self._agent.run_policy_compile_wave(
+                        run_id=selected_run_id,
+                        ticker=normalized_ticker,
+                        cutoff_at=cutoff,
+                        shell_id=shell_id,
+                        document2_slice_path=shell_slice_path,
+                        thread_id=thread_id,
+                    )
+                    if compile_result.status not in {
+                        O3RunStatus.COMPLETED,
+                        O3RunStatus.PARTIAL,
+                    }:
+                        recovery_findings.append(
+                            self._recovery_finding(
+                                "COMPILE_AGENT_DECLARED_NONTERMINAL",
+                                "O3 Policy Compile returned a nonterminal status; "
+                                "artifacts decide progression.",
+                                scope=ValidationScope.STAGE,
+                                action="continue_to_final_review",
+                            )
+                        )
+                    recovery_findings.extend(
+                        await self._assert_agent_write_boundary(
+                            selected_run_id,
+                            initialize=True,
+                            baseline=boundary_before,
+                        )
+                    )
+                    await self._verify_input_manifest(selected_run_id)
+                    recovery_findings.extend(
+                        await self._mark_compile_wave_completed(
+                            selected_run_id,
+                            shell_id,
+                        )
+                    )
+                    compiled_shell_ids.add(shell_id)
+                    self._finish_wave(checkpoint, active_node, durable_key=shell_id)
+                    active_node = None
+                    active_wave_key = None
+
+            if CodexD3Node.O3_TRIGGER_CALIBRATION not in checkpoint.completed_nodes:
                 recovery_findings.extend(
-                    await self._assert_agent_write_boundary(
+                    await self._validate_stage_a_checkpoint(
                         selected_run_id,
-                        initialize=True,
-                        baseline=boundary_before,
+                        prepared,
+                        require_pending_worklist=False,
                     )
                 )
-                await self._verify_input_manifest(selected_run_id)
+                self._complete_node(checkpoint, CodexD3Node.O3_TRIGGER_CALIBRATION)
+
+            if CodexD3Node.O3_POLICY_COMPILE not in checkpoint.completed_nodes:
                 recovery_findings.extend(
                     await self._validate_compile_checkpoint(selected_run_id, prepared)
                 )
-                self._complete_node(checkpoint, active_node)
-                active_node = None
+                self._complete_node(checkpoint, CodexD3Node.O3_POLICY_COMPILE)
 
             recovery_findings.extend(
                 await self._assert_agent_write_boundary(selected_run_id, initialize=True)
@@ -743,7 +783,7 @@ class Document3Orchestrator:
             )
         except Exception as exc:
             if active_node is not None:
-                self._fail_node(checkpoint, active_node)
+                self._fail_node(checkpoint, active_node, durable_key=active_wave_key)
             self._runtime_repository.save_bundle(
                 Document3Bundle(
                     ticker=normalized_ticker,
@@ -982,7 +1022,8 @@ class Document3Orchestrator:
     async def _create_input_manifest(self, run_id: str) -> Document3InputManifest:
         inventory = await self._agent.workspace.inventory(run_id)
         by_path = {item.relative_path: item for item in inventory.files}
-        missing = [path for path in INITIALIZE_BUSINESS_INPUT_PATHS if path not in by_path]
+        input_paths = await self._initialize_business_input_paths(run_id)
+        missing = [path for path in input_paths if path not in by_path]
         if missing:
             raise ValueError(f"Cannot freeze missing D3 inputs: {missing}")
         manifest = Document3InputManifest(
@@ -992,7 +1033,7 @@ class Document3Orchestrator:
                     size_bytes=by_path[path].size_bytes,
                     sha256=by_path[path].sha256,
                 )
-                for path in INITIALIZE_BUSINESS_INPUT_PATHS
+                for path in input_paths
             ]
         )
         await self._agent.workspace.write_text(
@@ -1002,7 +1043,7 @@ class Document3Orchestrator:
 
     async def _verify_input_manifest(self, run_id: str) -> Document3InputManifest:
         manifest = await self._read_json(run_id, INPUT_MANIFEST_PATH, Document3InputManifest)
-        expected_paths = set(INITIALIZE_BUSINESS_INPUT_PATHS)
+        expected_paths = set(await self._initialize_business_input_paths(run_id))
         manifest_paths = {item.relative_path for item in manifest.files}
         if manifest_paths != expected_paths:
             raise ValueError("D3 input manifest does not contain the exact frozen input set")
@@ -1015,6 +1056,14 @@ class Document3Orchestrator:
             if current.size_bytes != item.size_bytes or current.sha256 != item.sha256:
                 raise ValueError(f"Frozen D3 input changed: {item.relative_path}")
         return manifest
+
+    async def _initialize_business_input_paths(self, run_id: str) -> tuple[str, ...]:
+        document2 = await self._read_json(
+            run_id,
+            "context/document3/document2.json",
+            Document2Document,
+        )
+        return (*INITIALIZE_BUSINESS_INPUT_PATHS, *document2_shell_paths(document2))
 
     async def _load_frozen_initialize_inputs(
         self,
@@ -1137,6 +1186,77 @@ class Document3Orchestrator:
                 run_id, path, result.values[0].model_dump_json(indent=2)
             )
         return result
+
+    async def _mark_calibration_wave_completed(
+        self,
+        run_id: str,
+        shell_id: str,
+    ) -> list[ValidationFinding]:
+        state_result = await self._read_json_recoverable(
+            run_id,
+            "output/work/trigger_calibration_state.json",
+            TriggerCalibrationState,
+        )
+        state = state_result.values[0] if state_result.values else TriggerCalibrationState()
+        completed_shell_ids = list(dict.fromkeys([*state.completed_shell_ids, shell_id]))
+        state = state.model_copy(
+            update={
+                "stage_status": TriggerCalibrationStageStatus.IN_PROGRESS,
+                "completed_shell_ids": completed_shell_ids,
+                "current_shell_id": None,
+                "updated_at": utc_now(),
+            }
+        )
+        await self._agent.workspace.write_text(
+            run_id,
+            "output/work/trigger_calibration_state.json",
+            state.model_dump_json(indent=2),
+        )
+        return state_result.findings
+
+    async def _mark_compile_wave_completed(
+        self,
+        run_id: str,
+        shell_id: str,
+    ) -> list[ValidationFinding]:
+        wave_result = await self._read_json_recoverable(
+            run_id,
+            "output/work/wave_state.json",
+            WaveState,
+        )
+        work_result = await self._read_jsonl_recoverable(
+            run_id,
+            "output/work/worklist.jsonl",
+            WorklistEntry,
+        )
+        wave_state = wave_result.values[0] if wave_result.values else WaveState()
+        completed_shell_ids = list(dict.fromkeys([*wave_state.completed_shell_ids, shell_id]))
+        completed_path_ids = list(
+            dict.fromkeys(
+                [
+                    *wave_state.completed_path_ids,
+                    *(
+                        item.path_id
+                        for item in work_result.values
+                        if item.shell_id == shell_id and item.status is not PathStatus.PENDING
+                    ),
+                ]
+            )
+        )
+        wave_state = wave_state.model_copy(
+            update={
+                "completed_shell_ids": completed_shell_ids,
+                "current_shell_id": None,
+                "completed_path_ids": completed_path_ids,
+                "updated_at": utc_now(),
+            }
+        )
+        await self._agent.workspace.write_text(
+            run_id,
+            "output/work/wave_state.json",
+            wave_state.model_dump_json(indent=2),
+        )
+        return [*wave_result.findings, *work_result.findings]
 
     async def _recover_stage_a_artifacts(
         self,
@@ -1417,6 +1537,21 @@ class Document3Orchestrator:
         checkpoint.updated_at = utc_now()
         self._runtime_repository.save_checkpoint(checkpoint)
 
+    def _finish_wave(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        node: CodexD3Node,
+        *,
+        durable_key: str,
+    ) -> None:
+        from doxagent.ticker_initialization.substeps import settle_stage
+
+        settle_stage(node.value, durable_key=durable_key)
+        checkpoint.current_nodes = [item for item in checkpoint.current_nodes if item != node]
+        checkpoint.failed_nodes = [item for item in checkpoint.failed_nodes if item != node]
+        checkpoint.updated_at = utc_now()
+        self._runtime_repository.save_checkpoint(checkpoint)
+
     def _complete_node(self, checkpoint: WorkflowCheckpoint, node: CodexD3Node) -> None:
         from doxagent.ticker_initialization.substeps import settle_stage
 
@@ -1427,10 +1562,20 @@ class Document3Orchestrator:
         checkpoint.updated_at = utc_now()
         self._runtime_repository.save_checkpoint(checkpoint)
 
-    def _fail_node(self, checkpoint: WorkflowCheckpoint, node: CodexD3Node) -> None:
+    def _fail_node(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        node: CodexD3Node,
+        *,
+        durable_key: str | None = None,
+    ) -> None:
         from doxagent.ticker_initialization.substeps import settle_stage
 
-        settle_stage(node.value, error="stage did not produce usable workspace artifacts")
+        settle_stage(
+            node.value,
+            durable_key=durable_key,
+            error="stage did not produce usable workspace artifacts",
+        )
         checkpoint.failed_nodes = list(dict.fromkeys([*checkpoint.failed_nodes, node]))
         checkpoint.current_nodes = [item for item in checkpoint.current_nodes if item != node]
         checkpoint.updated_at = utc_now()
@@ -1563,6 +1708,7 @@ class Document3Orchestrator:
             and item.relative_path not in deterministic_release_paths
             and not item.relative_path.startswith("published/")
             and not (initialize and item.relative_path in allowed_initialize_context)
+            and not (initialize and item.relative_path.startswith(f"{DOCUMENT2_SHELL_DIRECTORY}/"))
             and not (not initialize and item.relative_path.startswith("context/document3/"))
         ]
         sensitive_unauthorized = [

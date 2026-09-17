@@ -1,0 +1,45 @@
+Sept 14 (Reuters) - AI-linked stocks plunged worldwide ​on Monday after leaders of the biggest artificial intelligence companies warned of potentially existential risks from the technology, shaking confidence in the industry whose vast infrastructure spending has driven ‌world stock markets to record highs.
+
+The selloff rippled through the industry, where companies are increasingly relying on debt and circular financing to fund ambitious AI spending plans even as global borrowing costs, reflected in multi-year-high bond yields, continue to rise.
+
+Anthropic CEO Dario Amodei, in a lengthy essay shared on X on Saturday, called on AI companies to slow the rate at which they advance model capabilities amid mounting fears AI could be misused. Both Elon Musk, who runs xAI, and Sam Altman, CEO of OpenAI, said they agree ​with Amodei.
+
+Altman also said the company would not proceed with an IPO this year, citing safety concerns.
+
+Wall Street's major tech index, the Nasdaq 100 (.NDX), slid 1.2% to a six-week ​low in early trading as chip stocks, which have led the AI rally, fell the most, although it pared losses in early afternoon and was last ⁠down 0.4%.
+
+"If this does lead to sort of a slowdown and a rethink of AI spending, that will have ramifications for the economy and some important sectors of the stock market, because essentially, we've been running ​hot based on AI spending," said Steve Sosnick, chief market analyst at Interactive Brokers.
+
+The Philadelphia chip index (.SOX) dropped 5.2%, with Nvidia (NVDA.O) down 3%, Advanced Micro Devices (AMD.O) off 4.5% and Micron (MU.O) falling 5.4%.
+
+Semiconductor equipment makers Lam Research (LRCX.O), Applied ​Materials (AMAT.O) and tech utility Bloom Energy (BE.N) lost more than 6% each.
+
+Earlier in the day, Europe's tech sector fell 2.2%, dragged by ASML's 6% decline, alongside steep losses in Infineon and Siemens Energy, while in Asia, SoftBank plunged more than 10% and chipmakers TSMC and SK Hynix also retreated.
+
+Alarm about the potential harm from AI spiked earlier this month when Anthropic researcher Jacob Coxon resigned, stating that the AI giants are "gambling with our lives."
+
+A few days later, the San Francisco-based AI ​lab released a threat intelligence report detailing how its Claude AI models were used for activities ranging from weapons development and cyber operations to surveillance and fraud.
+
+Over the weekend, Amodei wrote that in six to 12 months, ​AI agents "could be capable of taking over the entire internet potentially causing hundreds of billions of dollars in damage." Separately, OpenAI's Altman warned in an interview that the risk of human extinction posed by AI was serious enough that AI ‌companies and governments ⁠should act.
+
+"The warnings should be taken seriously," said Gillian Hadfield, Bloomberg Distinguished Professor of AI Alignment and Governance at Johns Hopkins University. "There are real risks of models doing things we don’t want them to do and which we don’t anticipate well."
+
+Several U.S. lawmakers have raised concern about AI's rapid progress and called for new rules. U.S. Senate negotiators are debating legislation that would require AI companies to demonstrate they are taking reasonable precautions, Reuters reported on Monday.
+
+But U.S. President Donald Trump on Monday appeared to dismiss the worries as a "sick conspiracy" against AI and data centers, which have become a flashpoint in the midterm elections.
+
+AI-related trades have powered many of the gains in ​global equities since OpenAI released ChatGPT in 2022, but ​more recently cyberattacks by rogue AI agents and ⁠public discontent with data centre construction have raised opposition to the development of the industry.
+
+The U.S. and Chinese governments are expected to hold AI safety talks as part of bilateral discussions taking place this month, Reuters reported. But China's state-backed Global Times criticized the Anthropic essay in an editorial, calling it a "Cold War playbook" intended ​to curb the country's technological development.
+
+A growing concern for OpenAI and Anthropic is the rising competition from more affordable Chinese models such as Moonshot AI's Kimi ​K3, Alibaba's Qwen and DeepSeek's ⁠offerings, which could pressure the pricing of larger, more costly models.
+
+Some investors dismissed the warnings from Anthropic and OpenAI.
+
+Michael Burry, whose successful bets against the U.S. housing market before the 2008 financial crisis were chronicled in the movie "The Big Short", said in a message on X the warnings were "hype and puffery" and "cover for real uncontrollable slowing growth".
+
+Others have argued that record capital spending commitments suggest AI development is unlikely to slow. Morgan Stanley forecast earlier this ⁠year that AI ​spending will surpass $1.3 trillion by 2027.
+
+"The competitive race between companies and countries remains intense, and it's difficult to imagine firms voluntarily ​stepping back while rivals continue to push ahead," Deutsche Bank said in a note.
+
+Meanwhile, Amodei's Anthropic has pushed ahead with its public debut, expected next month as sources told Reuters that the company is in talks to bring in Nvidia as an anchor investor.

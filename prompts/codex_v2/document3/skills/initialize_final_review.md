@@ -16,11 +16,11 @@ Foundation 定义共享业务 invariant，前两个 stage skills 定义研究与
 任一 Condition 已成为现实，原 Policy 相对于旧 baseline 的边界即已被消费
 ```
 
-Final Review 在冻结证据足以唯一决定修改时直接修复并同步全部相关工件；需要新事实、新阈值、新 actor 或新传导机制的问题进入 ReviewResult。目标是得到覆盖闭合、语义一致、仍面向未来且可由 Runtime 低自由度判定的 Policy drafts，而不是重跑前两阶段或追求更少的 Policy、Condition 或 issue。
+Final Review 在冻结证据足以唯一决定修改时直接修复并同步全部相关工件；需要新事实、新阈值、新 actor 或新传导机制时，可以继续必要的实质研究并直接修复，研究后仍不能唯一决定的问题进入 ReviewResult。目标是得到覆盖闭合、语义一致、仍面向未来且可由 Runtime 低自由度判定的 Policy drafts，而不是机械重跑前两阶段或追求更少的 Policy、Condition 或 issue。
 
 ## 1. 重建全局状态
 
-按当前 node prompt 读取 `task.json`、完整 Published D2、可选 Reference View、Previous Policy Set、supplied schemas，以及当前 attempt 的完整：
+按当前 node prompt 读取 `task.json`、全部 Document2 Shell slices、可选 Reference View、Previous Policy Set、supplied schemas，以及当前 attempt 的完整：
 
 ```text
 worklist.jsonl
@@ -32,7 +32,9 @@ policies/
 coverage_map.json
 ```
 
-这些工件而非会话记忆构成本 Turn 的完整上下文。D2 定义 expectation、经济传导和 revision space；Reference View 表示冻结时点可用的现实补充；Trigger records/state 保存 Candidate 语义与 disposition；Worklist 和 Policy drafts 保存编译结果。D2、Worklist 与 Policy drafts 是 coverage 关系的业务源，`coverage_map.json` 是 Final Review 需要与修复后源对象保持同步的派生视图。Previous Policy Set 仅用于语义与身份连续性比较。
+这些工件而非会话记忆构成本 Turn 的完整上下文。Document2 Shell slices 共同定义完整 expectation、经济传导和 revision space；根据 Worklist、Trigger 和 Policy 的 `shell_id + expectation_id + gap_id` 按需读取对应 slice，不要求一次性把所有 Shell 内容同时保留在当前注意力中。Reference View 表示冻结时点可用的现实补充；Trigger records/state 保存 Candidate 语义与 disposition；Worklist 和 Policy drafts 保存编译结果。Document2 slices、Worklist 与 Policy drafts 是 coverage 关系的业务源，`coverage_map.json` 是 Final Review 需要与修复后源对象保持同步的派生视图。Previous Policy Set 仅用于语义与身份连续性比较。
+
+这是 INITIALIZE 中唯一承担跨 Shell Policy 比较的阶段。前序 Compile Waves 有意只完成各自 Shell 内的编译，因此本 Turn 必须检查不同 Shell drafts 是否存在重复 occurrence、相同一次性决策边界、矛盾 Activation Standard、错误的跨 Shell 拆分或本应保持独立的不同 revisions。只有本 Turn 可以跨 Shell 合并、拆分或改写 Policy，并且每次修改必须同步相关 Worklist mappings、Trigger state、Calibration Log、WaveState、source refs 和 CoverageMap。本次 wave 编排不限制 Final Review 原有的研究权限；发现必要问题时可以继续实质研究，并在证据充分时直接修复。
 
 先在内部建立四个视图；它们是复核框架，不新增文件或字段。
 
@@ -91,7 +93,7 @@ Expectation / Unit
 5. 每条 Policy 的 `source_refs` 只包含真实支持其交易含义的 D2 refs，并保留合并前全部有效 provenance。
 6. Worklist、Trigger state、Policy drafts、WaveState 与 CoverageMap 对同一关系给出一致结果。
 
-若成功 Shell 的整个 Gap 缺失，现有工件不足以在 Final Review 中补造其 Path 和 Candidate：记录需要返回前序阶段处理的 residual issue。Coverage 完整不等于每条 Path 都生成 Policy；当前 schema 中不能发布的历史、耗尽或无法校准路径统一使用 `UNRESOLVED` 和准确原因表达。
+若成功 Shell 的整个 Gap 缺失，先判断能否依据现有工件或本 Turn 的必要实质研究直接补齐其 Path、Candidate 和后续编译关系；能够闭合时直接修复并同步全部工件，仍不能闭合时记录 residual issue。Coverage 完整不等于每条 Path 都生成 Policy；当前 schema 中不能发布的历史、耗尽或无法校准路径统一使用 `UNRESOLVED` 和准确原因表达。
 
 ## 3. 全局 Canonicalization
 
@@ -221,7 +223,7 @@ criterion → 对该 boundary 的稳定 Runtime 表达
 
 - 其余 Conditions 只是在同一 revision 下的替代实现方式：原 Policy 不进入新的 Active draft 集合；相关 Path 使用 `UNRESOLVED`、Trigger disposition 使用 `TRIGGER_UNRESOLVED`，并在现有 reason 字段说明边界已进入 baseline 或被消费，再同步 CoverageMap。
 - 其余 Condition 相对于新 baseline 仍产生新的独立显著增量：只有冻结工件已经明确定义新 baseline、边界、revision 和方向时，才重校准为新的 Policy，并按经济含义变化维护 temporary identity。
-- 下一项边界需要新事实或实质研究：隔离受影响 Policy，将相关 Path 设为 unresolved，并在 ReviewResult 标记 `requires_research`。
+- 下一项边界需要新事实或实质研究：可以在本 Turn 继续必要研究；研究后能够唯一决定时直接重校准并同步，仍不能决定时隔离受影响 Policy，将相关 Path 设为 unresolved，并在 ReviewResult 标记 `requires_research`。
 
 ### 已被证伪或失去可能性
 
@@ -253,7 +255,7 @@ Reference View 的空白不是尚未发生的证明。将不确定性作为 resi
 
 冻结证据充分时，可直接修正引用与 Coverage、合并同一 occurrence、移除 supporting 或 nested Condition、修复 OR 分组、对齐唯一明确的方向/标题/Calibration、重写 summary/scope、处理已成现实 Condition、同步状态以及修复 schema/语言问题。
 
-Condition 数量或时间窗口、actor materiality、复合 occurrence、Policy 拆分、已消费边界后的新 Policy、`decision` 等实质判断，只有冻结工件共同指向唯一答案时才直接修改。需要新增事实、阈值、actor、Path、thesis 或 transmission 才能决定的问题保留原始依据，识别受影响的 Gap/Path/Trigger/Policy/Condition，并在 ReviewResult 中准确说明缺口；Final Review 不在本 Turn 获取新证据或现场补造 Candidate。
+Condition 数量或时间窗口、actor materiality、复合 occurrence、Policy 拆分、已消费边界后的新 Policy、`decision` 等实质判断，只有现有工件或本 Turn 继续研究取得的可靠证据共同指向唯一答案时才直接修改。需要新增事实、阈值、actor、Path、thesis 或 transmission 才能决定的问题，可以继续实质研究；研究后能够唯一决定时直接修复并同步，仍不能唯一决定时保留原始依据，识别受影响的 Gap/Path/Trigger/Policy/Condition，并在 ReviewResult 中准确说明缺口。
 
 一次直接修复完成意味着：业务工件已经修改、所有引用工件已经同步、受影响 Policy group 已重新复核、问题不再存在于最终集合。每次修改后重新读取受影响的全部 Policy drafts、Worklist Paths、Trigger records/state 和 CoverageMap；发生 Policy 合并或拆分时，再比较同一 revision 和 direction 下的相关 Policies。
 

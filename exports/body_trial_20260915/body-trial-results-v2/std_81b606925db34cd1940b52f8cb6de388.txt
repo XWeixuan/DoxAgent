@@ -1,0 +1,163 @@
+Transcript
+
+now one of AI's biggest winners,
+is building big in its hometown of Boise,
+Idaho, transforming it into America's latest boomtown.
+Newly minted millionaires, gated communities with
+sprawling homes and a downtown filled with new
+businesses and new people.
+It's been an influx of Californians here.
+Probably about every 10% of the people I know are
+transplants.
+So much more development.
+A lot of restaurants popping up.
+Change is certainly here.
+That change is driven largely by the AI boom and
+the insatiable need for the chips that make it possible.
+Every AI processor from Nvidia or AMD needs memory
+so it can rapidly access data to execute tasks,
+and there isn't enough of it.
+And that's what micron makes and why it's spending $50
+billion to expand in Boise, building two huge new fabs.
+The first is set to pump out memory chips next year.
+It does require that we think about how we are able
+to staff with 17,000 jobs.
+We've had to open up talent pathways that didn't exist
+or haven't existed in the U.S.
+For sure, for for decades.
+CNBC went to Boise to see Micron's construction and
+ask locals about all the changes firsthand.
+Micron is the only U.S.
+based company that makes the high bandwidth memory HBM
+that's most crucial for AI.
+HBM is made up of stacks of general purpose Dram,
+which is also what's used in consumer electronics.
+Now, AI is gobbling up so much that the prices of
+memory and electronics like Apple MacBooks and iPads are
+soaring. So is Micron's stock,
+and with it the net worth of its employees.
+But the memory industry is known for being in a classic
+boom and bust cycle.
+And I think. So goes Micron,
+so goes Boise.
+Micron started here.
+You know this is Micron's hometown.
+Micron was founded in Boise nearly 50 years ago in the
+basement of a dental office,
+and by 1981, its first chip plant was
+up and running here.
+Remember our name when choosing your career.
+Boise remains Micron's headquarters and a big hub
+for R & D and packaging.
+Micron manufactures some chips in Virginia,
+but most of its leading edge memory production happens
+overseas at fabs in Taiwan, Japan and Singapore.
+With Boise's new fab online next year,
+that's about to change.
+The excitement around micron here locally
+is pretty amazing.
+While SK Hynix and Samsung, both based in Korea,
+ship more of that coveted high bandwidth memory for
+AI, micron is the only one building a front end fab to
+manufacture memory on U.S.
+soil. Sk Hynix is building a packaging fab in Indiana,
+where memory chips will be stacked and wired together,
+but all its new manufacturing fabs are being
+built in Korea, along with new fabs from
+Samsung there. That's why Micron's project in Boise is
+such a big deal, along with an even bigger
+$100 billion campus with up to four fabs.
+Micron is building in Clay, New York,
+where it just poured the first concrete.
+This is critical capability,
+which also brings with it for micron alone Grid
+thousand American jobs.
+The U.S. government is giving Micron up to $6.2
+billion of Chips act funds to support the project.
+Construction on Micron's first Boise Fab began in
+2023 with planned completion in 2027.
+The second Boise Fab planned for late 2028 is still a
+patch of dirt nearby.
+It's far from Micron's only presence in the area,
+but it will be the largest.
+In the last 12 months, in talking to friends and
+people that I know that work for Micron, they're not only
+excited about the growth that they physically can
+see, but they're excited about the growth they see
+electronically in their stocks.
+One big way Micron attracts all these workers is by
+offering stock awards to employees,
+a considerable opportunity for wealth,
+considering Micron's performance
+over the last year.
+We actually had one gentleman who was very
+blessed with the amount of stock that he had,
+mostly Micron, and when he came back in
+after eight days and we said,
+what has changed in your life since we met last time?
+And he said, I'm $1 million richer in
+eight trading days.
+JT Belnap's wealth management firm,
+now focuses almost entirely on managing money for
+Micron employees.
+Whenever you see a company exploding like Micron,
+it's so exciting.
+But what you don't realize is it's equally stressful
+when you have a stock that goes from $100 a share to
+well over $1,000 a share, and you have people
+concerned, how long is that going to last?
+Well, you don't know when that
+window is going to close.
+Whether or not they feel that the stock is going to
+continue to rise or not.
+They're just going to take their profits now and invest
+it into real estate.
+Mortgage broker Gerald Robinson consulted with four
+Micron clients looking to buy homes just in the
+last few weeks.
+We're just seeing an influx of people coming from out of
+state that are building. We're seeing birth rate
+where, you know, people are buying their very
+first home. And so we're just really not seeing that
+keeping up with the amount of houses that are needed.
+Which of course changes the housing market in what until
+now has been a relatively affordable area.
+There's been a 4.5% rise in homes sold above their list
+price since last year, topping national averages.
+I think the median price in Boise is still hovering
+around 560, 575, so there's still plenty of
+opportunity here and still plenty of room to grow.
+But now we're just seeing the lower incomes maybe
+getting a little bit more and more priced out.
+Micron expects to create about 3,500 direct jobs at
+the new sites, adding to about 7,000 people
+there today. While some Boise residents we talked to
+are fans of the changes, others worry about traffic
+and strain on resources.
+From 2020 to 2025, Idaho's population growth of
+10.4% was already the fastest in the nation.
+The city has certainly grown out,
+and the out is tough for people that live in Boise
+because the traffic is much more than it used to be.
+And it's not just Micron.
+Meta is building an $800 million data center 20 miles
+west in Kuna, Idaho, that it says will
+create 100 long term jobs.
+There's a flurry of new offices from Micron
+suppliers like Lam Research and cleanroom builder
+excite, plus contractors coming in for lucrative jobs
+helping to build Micron's fabs.
+I'll be closing a house for a electrician that came in
+from out of state, and Micron is paying him an
+exorbitant amount of money to be an electrician on that
+fab. And he's just buying a house because of that.
+Micron's project includes utility and water treatment
+buildings to support the resource intensive process
+of making chips.
+Local utility Idaho Power told CNBC that it does not
+expect large load growth, including Micron's
+expansion, to increase electric bills for other
+customers. Water is also a concern for some we spoke to
+as smoke clouded the sky from active
+wildfires nearby.
+We have a drought going on and you can drive out as

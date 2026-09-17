@@ -1,0 +1,49 @@
+Key Points
+
+Micron Technology shares fell amid worries about reduced artificial-intelligence infrastructure investment.
+
+The latest concern follows calls over the weekend from the heads of Anthropic, OpenAI and SpaceX for a slowdown in AI development.
+
+UBS analysts estimate that about 90% of nearly $1 trillion in AI capital expenditure between 2025 and 2027 is set to be spent on memory.
+
+It looks like another day of pain for Micron Technology MU-5.25%, with the memory-chip stock on the sharp end of worries about reduced artificial-intelligence infrastructure investment. But there’s no real evidence yet of an AI pause.
+
+MU
+
+-5.25%
+
+Micron shares were down 4.5% at $930.90 on Monday. Added to losses from last week, the stock was on pace to lose all of its September gains.
+
+American depositary receipts of peer SK Hynix 000660-0.41% declined 6.9%.
+
+000660
+
+-0.41%
+
+Micron is a volatile stock, having risen more than sixfold in the past 12 months, and it reacts sharply to anything that indicates a slowdown in AI spending.
+
+Advertisement - Scroll to Continue
+
+The latest worry is the bosses of Anthropic, OpenAI, and SpaceX SPCX-2.02% all calling for a slowdown in AI development over the weekend.
+
+SPCX
+
+-2.02%
+
+That would be pretty bad for the memory-chip market, as AI hardware has driven a supply shortage and soaring prices. Analysts at UBS estimate that out of a nearly $1 trillion increase in AI capital expenditure between 2025 and 2027, around 90% is set to be spent on memory. A true pause in the technology would put all of that at risk.
+
+“We now expect AI capex to reach nearly $1 trillion this year and around $1.4 trillion by 2027,” wrote UBS economist Arend Kapyteyn in a research note. “An increasing share of that spending is being absorbed by memory costs, reflecting in part the sharp rise in memory prices this year and the further increases expected next year.”
+
+Lucky for Micron, then, that we still seem to be a way off from anyone actually stopping construction of data centers. The most concrete measure so far has been Claude developer Anthropic’s commitment to allowing third-party evaluators access to its systems. Meanwhile, the company appears to be steaming ahead with plans for an initial public offering that could value the company at $2 trillion—not exactly a sign that spending is about to stop.
+
+Nancy Tengler, CEO and CIO at Laffer Tengler Investments, said she was using the weakness to add to her position in Micron.
+
+“The AI build-out backlog is in place, and these data centers are being built. That that will continue to drive growth for some time,” Tengler said. “What the stock market is concerned about, obviously, is where are we two to three years out. I think we will still be in a buildout that’s a once in a generation technological revolution.”
+
+So far, the Trump administration is still backing the data-center buildout, and no AI executive has said they would reduce their capex spending. A more immediate issue might be high borrowing costs as markets bet on the Federal Reserve to raise interest rates this week.
+
+But Micron has weathered AI spending concerns before, and so far this looks just like another bout of volatility.
+
+Write to Adam Clark at adam.clark@barrons.comExternal link
+
+Copyright ©2026 Dow Jones & Company, Inc. All Rights Reserved. 87990cbe856818d5eddac44c7b1cdeb8

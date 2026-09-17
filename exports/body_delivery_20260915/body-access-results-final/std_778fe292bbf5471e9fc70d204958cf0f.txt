@@ -1,0 +1,41 @@
+AMSTERDAM, Sept 14 (Reuters) - As Dutch ​computer chip equipment maker ASML (ASML.AS) broke ground on a new plant in Eindhoven last week, CFO Roger Dassen said the AI boom ‌had transformed the mood among customers.
+
+Its existing $200 million EUV machines, essential for making advanced AI chips, are all but sold out through 2027, while customers have made a flurry of commitments to adopt its next generation of $400 million High NA tools.
+
+"Can you give me more? Can you give it to me fast?" was the tone of one recent conversation ​with a major customer, Dassen said.
+
+TSMC (2330.TW), Samsung (005930.KS) and SK Hynix (000660.KS) all set dates to begin using High NA in production, while early adopter ​Intel (INTC.O) said the machines are already meeting throughput and reliability standards. Together with the new capacity plans, the developments suggest Europe's ⁠most valuable company can continue its dominance in chip-printing lithography machines into the 2030s.
+
+"I don't think we're at the end of (the AI boom), to ​be honest," CEO Christophe Fouquet told Reuters by phone.
+
+ASML's customers include all major chipmakers, notably Taiwan's TSMC, which produces chips for Apple and Nvidia. TSMC had ​previously questioned whether High NA justified its $400 million price tag, but has now committed to using the technology from 2030.
+
+Chipmakers spent years evaluating whether advances in chip packaging, three-dimensional stacking and other manufacturing techniques could reduce the need for High NA.
+
+The commitments suggest the industry's biggest players still expect shrinking chip features will be needed to improve performance.
+
+High ​NA can print features about 40% smaller than standard EUV systems, potentially cutting manufacturing steps and increasing productivity - but it costs roughly twice as much.
+
+JPMorgan estimates ASML held a 94% share of the global lithography market in 2025.
+
+At the cutting edge, its position is stronger still: ASML has had a monopoly since ‌the late ⁠2010s on machines that use extreme ultraviolet light needed to create the smallest circuitry in the most powerful commercial AI chips.
+
+High NA, first shipped in 2023, is the next generation of EUV tech.
+
+ASML has no commercial rival in EUV. Japan's Nikon (7731.T) and Canon (7751.T), along with emerging Chinese competitors, make systems using deep ultraviolet light, an older technology. Morningstar analyst Javier Correonero said fears that these firms are close to catching up to ASML in lithography amount ​to "misinformation."
+
+The trillion-dollar ​global semiconductor industry makes investment ⁠decisions years before chips reach production, with manufacturers, equipment suppliers and materials firms coordinating so that new tools, chemicals and processes work together.
+
+Some experts had questioned whether chipmakers would adopt High NA widely enough to justify its development ​costs.
+
+"I've never doubted it, because there was no alternative," said InsingerGilissen analyst Jos Versteeg.
+
+Samsung said it will start ​memory chip production with ⁠High NA tools in 2028, which Morningstar's Correonero said was earlier than the market expected.
+
+Memory specialist SK Hynix (000660.KS) also announced it will use High NA from 2028, while Micron (MU.O) has ordered tools but not set a date for using them in production.
+
+Intel (INTC.O), the first adopter, said on Tuesday it has now processed more ⁠than a ​million wafers with High NA tools.
+
+Fouquet said that the threshold for memory firms to adopt ​High NA was lower, due to the smaller size of their finished chips.
+
+"You see a bit more aggressiveness in the plans of those guys on many things, that includes High NA," ​he said. "All of them are moving forward with plans to adopt High NA in high-volume manufacturing."

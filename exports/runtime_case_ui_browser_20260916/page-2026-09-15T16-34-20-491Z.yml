@@ -1,0 +1,69 @@
+- main [ref=e3]:
+  - generic [ref=e4]:
+    - heading "Micron focused Runtime Case" [level=2] [ref=e5]
+    - paragraph [ref=e6]: Synthetic News · API
+    - generic [ref=e7]:
+      - heading "W1 · 新旧判定" [level=3] [ref=e8]
+      - generic [ref=e9]:
+        - strong [ref=e10]: OLD
+        - generic [ref=e11]: 置信度 normal
+        - generic [ref=e12]: 事件 E14 · 事实 F281
+        - generic [ref=e13]: 事件 E81 · Fact 归因未提供
+      - table [ref=e14]:
+        - rowgroup [ref=e15]:
+          - row [ref=e16]:
+            - columnheader "节点 / 轮次" [ref=e17]
+            - columnheader "尝试" [ref=e18]
+            - columnheader "状态" [ref=e19]
+            - columnheader "耗时（秒）" [ref=e20]
+        - rowgroup [ref=e21]:
+          - row [ref=e22]:
+            - columnheader "W1 · R1 · 1 次尝试" [ref=e23]
+          - row [ref=e24]:
+            - cell "W1 · R1" [ref=e25]
+            - cell "1" [ref=e26]
+            - cell "SUCCEEDED" [ref=e27]
+            - cell "60.00" [ref=e28]
+          - row [ref=e29]:
+            - columnheader "W1 · R2 · 1 次尝试" [ref=e30]
+          - row [ref=e31]:
+            - cell "W1 · R2" [ref=e32]
+            - cell "1" [ref=e33]
+            - cell "SUCCEEDED" [ref=e34]
+            - cell "60.00" [ref=e35]
+      - button "展开判断依据" [ref=e37] [cursor=pointer]
+    - generic [ref=e38]:
+      - heading "W2 · Policy 判定" [level=3] [ref=e39]
+      - generic [ref=e40]:
+        - strong [ref=e41]: 命中
+        - generic [ref=e42]: 置信度 normal
+        - generic [ref=e43]: 策略 P8 · 命中条件 C2
+      - table [ref=e44]:
+        - rowgroup [ref=e45]:
+          - row [ref=e46]:
+            - columnheader "节点 / 轮次" [ref=e47]
+            - columnheader "尝试" [ref=e48]
+            - columnheader "状态" [ref=e49]
+            - columnheader "耗时（秒）" [ref=e50]
+        - rowgroup [ref=e51]:
+          - row [ref=e52]:
+            - columnheader "W2 · R1 · 1 次尝试" [ref=e53]
+          - row [ref=e54]:
+            - cell "W2 · R1" [ref=e55]
+            - cell "1" [ref=e56]
+            - cell "SUCCEEDED" [ref=e57]
+            - cell "60.00" [ref=e58]
+          - row [ref=e59]:
+            - columnheader "W2 · R2 · 2 次尝试" [ref=e60]
+          - row [ref=e61]:
+            - cell "W2 · R2" [ref=e62]
+            - cell "1" [ref=e63]
+            - cell "FAILED" [ref=e64]
+            - cell "60.00" [ref=e65]
+          - row [ref=e66]:
+            - cell "W2 · R2" [ref=e67]
+            - cell "2" [ref=e68]
+            - cell "SUCCEEDED" [ref=e69]
+            - cell "60.00" [ref=e70]
+      - button "展开判断依据" [ref=e72] [cursor=pointer]
+    - heading "消息正文" [level=3] [ref=e74]
