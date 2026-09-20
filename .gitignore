@@ -21,6 +21,8 @@ htmlcov/
 .env
 .env.*
 !.env.example
+# Deployment credentials are provisioned out of band and must never enter Git.
+/deploy/secrets/
 
 # Build outputs
 build/
