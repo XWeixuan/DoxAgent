@@ -4,6 +4,9 @@ x-cgroup-boundary: &cgroup-boundary
 services:
   v2-site-access:
     <<: *cgroup-boundary
+    build:
+      args:
+        BASE_IMAGE: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
     mem_limit: 6g
     memswap_limit: 7g
     pids_limit: 1024

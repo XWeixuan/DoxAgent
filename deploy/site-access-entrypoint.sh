@@ -3,9 +3,10 @@ set -eu
 
 if [ "${DOXAGENT_SITE_ACCESS_BROWSER_HEADLESS:-true}" = "false" ]; then
   export DISPLAY="${DISPLAY:-:99}"
+  display_number=${DISPLAY#:}
+  rm -f "/tmp/.X${display_number}-lock" "/tmp/.X11-unix/X${display_number}"
   Xvfb "$DISPLAY" -screen 0 1440x1000x24 -nolisten tcp &
   xvfb_pid=$!
-  display_number=${DISPLAY#:}
   attempts=0
   while [ ! -S "/tmp/.X11-unix/X${display_number}" ]; do
     if ! kill -0 "$xvfb_pid" 2>/dev/null; then
