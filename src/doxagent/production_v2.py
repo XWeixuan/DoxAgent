@@ -105,7 +105,7 @@ def migrate(*, resume_backup=None):
     import sqlite3
     from doxagent.v2_read.maintenance import atomic_json
     marker = locations["read"].parent / "production-schema.json"
-    expected = {"version": "20260914-db-v3", "paths": {key: str(value) for key, value in locations.items()}}
+    expected = {"version": "20260921-db-v4", "paths": {key: str(value) for key, value in locations.items()}}
     if marker.is_file() and json.loads(marker.read_text(encoding="utf-8")) == expected and all(path.is_file() for path in locations.values()):
         with sqlite3.connect(locations["read"].resolve().as_uri() + "?mode=ro", uri=True) as db:
             if db.execute("SELECT version FROM schema_meta").fetchone()[0] == ReadStore.VERSION:

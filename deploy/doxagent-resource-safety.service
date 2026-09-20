@@ -4,6 +4,7 @@ Requires=doxagent-app.slice
 After=doxagent-app.slice
 
 [Service]
+Slice=system.slice
 ExecStart=/usr/bin/python3 /home/ubuntu/doxagent/scripts/resource_safety_controller.py
 Restart=on-failure
 RestartSec=5

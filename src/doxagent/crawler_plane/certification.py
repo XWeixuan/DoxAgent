@@ -199,9 +199,7 @@ class CrawlerCertificationService:
                 result = await self._execute_case(
                     version, case, case.cassette_refs[0], case.initial_checkpoint
                 )
-                failure = self._case_failure(
-                    CertificationCheck.PACKAGE_FAILURES, case, result
-                )
+                failure = self._case_failure(CertificationCheck.PACKAGE_FAILURES, case, result)
                 if failure is not None:
                     return failure
         return self._pass(CertificationCheck.PACKAGE_FAILURES)
@@ -353,13 +351,11 @@ class CrawlerCertificationService:
                     "url_prefix",
                 ),
                 (
-                    assertion.published_at is None
-                    or item.published_at == assertion.published_at,
+                    assertion.published_at is None or item.published_at == assertion.published_at,
                     "published_at",
                 ),
                 (
-                    assertion.body_contains is None
-                    or assertion.body_contains in item.body,
+                    assertion.body_contains is None or assertion.body_contains in item.body,
                     "body_contains",
                 ),
                 (
@@ -410,10 +406,7 @@ class CrawlerCertificationService:
         )
 
     def _live_probe_cassette_ref(self, version: CrawlerVersion, digest: str) -> str:
-        if (
-            version.live_probe_execution_id is None
-            or version.live_probe_digest != digest
-        ):
+        if version.live_probe_execution_id is None or version.live_probe_digest != digest:
             raise ValueError(
                 "live-derived replay requires a successful live probe of the current digest"
             )

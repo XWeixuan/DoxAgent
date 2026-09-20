@@ -34,6 +34,7 @@ class InitializationRepository:
     def __init__(self, path: str | Path) -> None:
         self.path = Path(path).resolve()
         from doxagent.v2_read.native_content import NativeContent
+
         self.content = NativeContent(self.path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self._connection() as db:
@@ -45,7 +46,10 @@ class InitializationRepository:
                 CREATE TABLE IF NOT EXISTS ticker_operations (
                     ticker TEXT PRIMARY KEY, run_id TEXT NOT NULL UNIQUE,
                     owner TEXT, token INTEGER NOT NULL DEFAULT 0,
-                    lease_until REAL NOT NULL DEFAULT 0
+                    lease_until REAL NOT NULL DEFAULT 0,
+                    execution_lane TEXT NOT NULL DEFAULT 'normal',
+                    repair_incident_id TEXT,
+                    repair_round_id TEXT
                 );
                 CREATE TABLE IF NOT EXISTS initialization_nodes (
                     run_id TEXT NOT NULL, node_key TEXT NOT NULL, payload TEXT NOT NULL,
@@ -80,7 +84,91 @@ class InitializationRepository:
                     revision_id TEXT NOT NULL, heartbeat REAL NOT NULL,
                     PRIMARY KEY(ticker, worker)
                 );
+                CREATE TABLE IF NOT EXISTS initialization_repair_incidents (
+                    id TEXT PRIMARY KEY,
+                    initialization_id TEXT NOT NULL UNIQUE,
+                    ticker TEXT NOT NULL,
+                    status TEXT NOT NULL,
+                    phase TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    payload TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS initialization_repair_rounds (
+                    id TEXT PRIMARY KEY,
+                    incident_id TEXT NOT NULL,
+                    seq INTEGER NOT NULL,
+                    status TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    payload TEXT NOT NULL,
+                    UNIQUE(incident_id,seq)
+                );
+                CREATE TABLE IF NOT EXISTS initialization_repair_node_budgets (
+                    incident_id TEXT NOT NULL,
+                    node_key TEXT NOT NULL,
+                    rounds_started INTEGER NOT NULL CHECK(rounds_started BETWEEN 0 AND 3),
+                    payload TEXT NOT NULL,
+                    PRIMARY KEY(incident_id,node_key)
+                );
+                CREATE TABLE IF NOT EXISTS initialization_repair_issue_entries (
+                    entry_id TEXT PRIMARY KEY,
+                    incident_id TEXT NOT NULL,
+                    round_id TEXT,
+                    kind TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    payload TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS cdecr_dispatches (
+                    dispatch_id TEXT PRIMARY KEY,
+                    initialization_id TEXT NOT NULL,
+                    node_key TEXT NOT NULL,
+                    execution_id TEXT NOT NULL,
+                    execution_identity TEXT NOT NULL,
+                    execution_version TEXT NOT NULL,
+                    input_ref TEXT,
+                    input_hash TEXT,
+                    status TEXT NOT NULL,
+                    generation INTEGER NOT NULL DEFAULT 0,
+                    owner TEXT,
+                    lease_until REAL NOT NULL DEFAULT 0,
+                    heartbeat REAL,
+                    result_ref TEXT,
+                    error TEXT,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    UNIQUE(initialization_id,node_key,execution_id)
+                );
+                CREATE INDEX IF NOT EXISTS initialization_repair_incident_status
+                    ON initialization_repair_incidents(status,updated_at);
+                CREATE INDEX IF NOT EXISTS initialization_repair_round_incident
+                    ON initialization_repair_rounds(incident_id,seq);
+                CREATE INDEX IF NOT EXISTS initialization_repair_issue_incident
+                    ON initialization_repair_issue_entries(incident_id,created_at);
+                CREATE INDEX IF NOT EXISTS cdecr_dispatch_claim
+                    ON cdecr_dispatches(execution_identity,status,lease_until,created_at);
             """)
+            columns = {row[1] for row in db.execute("PRAGMA table_info(ticker_operations)")}
+            if "execution_lane" not in columns:
+                db.execute(
+                    "ALTER TABLE ticker_operations ADD COLUMN "
+                    "execution_lane TEXT NOT NULL DEFAULT 'normal'"
+                )
+            if "repair_incident_id" not in columns:
+                db.execute("ALTER TABLE ticker_operations ADD COLUMN repair_incident_id TEXT")
+            if "repair_round_id" not in columns:
+                db.execute("ALTER TABLE ticker_operations ADD COLUMN repair_round_id TEXT")
+            dispatch_columns = {
+                row[1] for row in db.execute("PRAGMA table_info(cdecr_dispatches)")
+            }
+            if "input_ref" not in dispatch_columns:
+                db.execute("ALTER TABLE cdecr_dispatches ADD COLUMN input_ref TEXT")
+            if "input_hash" not in dispatch_columns:
+                db.execute("ALTER TABLE cdecr_dispatches ADD COLUMN input_hash TEXT")
+            db.execute(
+                "CREATE INDEX IF NOT EXISTS ticker_operations_lane_lease "
+                "ON ticker_operations(execution_lane,lease_until)"
+            )
 
     @contextmanager
     def _connection(self) -> Iterator[sqlite3.Connection]:
@@ -360,8 +448,9 @@ class InitializationRepository:
             ),
         )
 
-    def claim(self, owner: str, *, lease_seconds: float = 60,
-              permit: Callable[[str], bool] | None = None) -> Lease | None:
+    def claim(
+        self, owner: str, *, lease_seconds: float = 60, permit: Callable[[str], bool] | None = None
+    ) -> Lease | None:
         with self._write() as db:
             from doxagent.v2_control.mirror import migrate
 
@@ -370,8 +459,12 @@ class InitializationRepository:
                 """SELECT o.* FROM ticker_operations o
                 JOIN initialization_runs r ON r.id=o.run_id
                 LEFT JOIN v2_consumer_control c ON c.ticker=o.ticker
-                WHERE o.lease_until<=? AND (c.ticker IS NULL OR
+                WHERE o.execution_lane='normal' AND o.lease_until<=? AND (c.ticker IS NULL OR
                     json_extract(c.payload,'$.initialization_allowed')=1)
+                AND NOT EXISTS (
+                    SELECT 1 FROM cdecr_dispatches d
+                    WHERE d.initialization_id=o.run_id AND d.status IN ('QUEUED','RUNNING')
+                )
                 ORDER BY r.rowid LIMIT 1""",
                 (time.time(),),
             ).fetchone()
@@ -390,6 +483,69 @@ class InitializationRepository:
             run.status = RunStatus.RUNNING
             self._event(db, run, "claimed", {"token": token})
             return Lease(initialization_id=run.initialization_id, owner=owner, token=token)
+
+    def claim_repair(
+        self,
+        run_id: str,
+        incident_id: str,
+        round_id: str,
+        owner: str,
+        *,
+        lease_seconds: float = 60,
+    ) -> Lease | None:
+        """Claim exactly one routed repair execution; no queue fallback is permitted."""
+
+        with self._write() as db:
+            from doxagent.v2_control.mirror import migrate
+
+            migrate(db)
+            row = db.execute(
+                """SELECT o.* FROM ticker_operations o
+                JOIN initialization_runs r ON r.id=o.run_id
+                LEFT JOIN v2_consumer_control c ON c.ticker=o.ticker
+                WHERE o.run_id=? AND o.execution_lane='repair'
+                AND o.repair_incident_id=? AND o.repair_round_id=?
+                AND o.lease_until<=? AND (c.ticker IS NULL OR
+                    (json_extract(c.payload,'$.initialization_allowed')=1 AND
+                     json_extract(c.payload,'$.epoch')=
+                     json_extract(r.payload,'$.control_epoch')))
+                AND NOT EXISTS (
+                    SELECT 1 FROM cdecr_dispatches d
+                    WHERE d.initialization_id=o.run_id AND d.status IN ('QUEUED','RUNNING')
+                )""",
+                (run_id, incident_id, round_id, time.time()),
+            ).fetchone()
+            if row is None:
+                return None
+            run = self._run(db, run_id)
+            if run.status not in {RunStatus.QUEUED, RunStatus.RUNNING}:
+                return None
+            token = row["token"] + 1
+            db.execute(
+                "UPDATE ticker_operations SET owner=?,token=?,lease_until=? WHERE run_id=?",
+                (owner, token, time.time() + lease_seconds, run_id),
+            )
+            run.status = RunStatus.RUNNING
+            self._event(
+                db,
+                run,
+                "repair.claimed",
+                {"token": token, "incident_id": incident_id, "round_id": round_id},
+            )
+            return Lease(initialization_id=run_id, owner=owner, token=token)
+
+    def repair_route(self, run_id: str) -> dict[str, str] | None:
+        """Return the active immutable prompt/execution routing identity."""
+
+        with self._connection() as db:
+            row = db.execute(
+                "SELECT execution_lane,repair_incident_id,repair_round_id "
+                "FROM ticker_operations WHERE run_id=?",
+                (run_id,),
+            ).fetchone()
+        if row is None or row[0] != "repair" or not row[1] or not row[2]:
+            return None
+        return {"incident_id": str(row[1]), "round_id": str(row[2])}
 
     @staticmethod
     def _fence(db: sqlite3.Connection, lease: Lease) -> None:
@@ -419,6 +575,248 @@ class InitializationRepository:
         """Read-only fencing check for owned local execution processes."""
         with self._connection() as db:
             self._fence(db, lease)
+
+    def release_lease(self, lease: Lease) -> None:
+        """Release workflow ownership while keeping its durable ticker operation active."""
+
+        with self._write() as db:
+            self._fence(db, lease)
+            db.execute(
+                "UPDATE ticker_operations SET owner=NULL,lease_until=0 WHERE run_id=?",
+                (lease.initialization_id,),
+            )
+
+    def enqueue_cdecr_dispatch(
+        self,
+        lease: Lease,
+        key: str,
+        *,
+        execution_identity: str,
+    ) -> str:
+        """Persist one dispatch per immutable node execution."""
+
+        with self._write() as db:
+            self._fence(db, lease)
+            node = self._node(db, lease.initialization_id, key)
+            if node.status != "RUNNING" or not node.execution_id:
+                raise InitializationError("CDECR dispatch requires a running node execution")
+            digest = hashlib.sha256(
+                f"{lease.initialization_id}:{key}:{node.execution_id}".encode()
+            ).hexdigest()[:24]
+            dispatch_id = f"cdecr-dispatch:{digest}"
+            now = utc_now().isoformat()
+            run = self._run(db, lease.initialization_id)
+            input_ref, input_hash = self._cdecr_input_identity(run, node)
+            db.execute(
+                """INSERT INTO cdecr_dispatches(
+                    dispatch_id,initialization_id,node_key,execution_id,
+                    execution_identity,execution_version,input_ref,input_hash,
+                    status,created_at,updated_at
+                ) VALUES (?,?,?,?,?,?,?,?,'QUEUED',?,?)
+                ON CONFLICT(initialization_id,node_key,execution_id) DO NOTHING""",
+                (
+                    dispatch_id,
+                    lease.initialization_id,
+                    key,
+                    node.execution_id,
+                    execution_identity,
+                    self.content.encode(node.execution_version),
+                    input_ref,
+                    input_hash,
+                    now,
+                    now,
+                ),
+            )
+            row = db.execute(
+                "SELECT dispatch_id,status FROM cdecr_dispatches "
+                "WHERE initialization_id=? AND node_key=? AND execution_id=?",
+                (lease.initialization_id, key, node.execution_id),
+            ).fetchone()
+            assert row is not None
+            if row[1] in {"FAILED", "CANCELLED"}:
+                raise InitializationError(f"CDECR dispatch is terminal: {row[1]}")
+            dispatch_id = str(row[0])
+            node.receipt.update(
+                {"cdecr_dispatch_id": dispatch_id, "cdecr_dispatch_status": str(row[1])}
+            )
+            self._save_node(db, lease.initialization_id, node)
+            return dispatch_id
+
+    @staticmethod
+    def _cdecr_input_identity(run: RunRecord, node: NodeRecord) -> tuple[str, str]:
+        input_ref = (
+            f"initialization-node:{run.initialization_id}:{node.key}:{node.execution_id}"
+        )
+        payload = {
+            "initialization_id": run.initialization_id,
+            "ticker": run.ticker,
+            "research_cutoff_at": run.research_cutoff_at.isoformat(),
+            "node_key": node.key,
+            "execution_id": node.execution_id,
+            "execution_version": node.execution_version,
+            "inputs": node.inputs,
+        }
+        digest = hashlib.sha256(
+            json.dumps(
+                payload,
+                ensure_ascii=False,
+                separators=(",", ":"),
+                sort_keys=True,
+            ).encode()
+        ).hexdigest()
+        return input_ref, digest
+
+    def cdecr_dispatch_input_matches(
+        self, dispatch: dict[str, Any], node: NodeRecord
+    ) -> bool:
+        run = self.get(str(dispatch["initialization_id"]))
+        expected_ref, expected_hash = self._cdecr_input_identity(run, node)
+        return (
+            dispatch.get("input_ref") == expected_ref
+            and dispatch.get("input_hash") == expected_hash
+        )
+
+    def cdecr_dispatch(self, dispatch_id: str) -> dict[str, Any] | None:
+        with self._connection() as db:
+            row = db.execute(
+                "SELECT * FROM cdecr_dispatches WHERE dispatch_id=?", (dispatch_id,)
+            ).fetchone()
+        return None if row is None else dict(row)
+
+    def claim_cdecr_dispatch(
+        self,
+        owner: str,
+        execution_identity: str,
+        *,
+        execution_version: dict[str, str] | None = None,
+        lease_seconds: float = 60,
+    ) -> tuple[dict[str, Any], Lease] | None:
+        """Claim one matching dispatch and its workflow fence in the same transaction."""
+
+        now = time.time()
+        with self._write() as db:
+            version_filter = "" if execution_version is None else "AND d.execution_version=?"
+            params: list[object] = [execution_identity, now, now]
+            if execution_version is not None:
+                params.append(self.content.encode(execution_version))
+            row = db.execute(
+                f"""SELECT d.* FROM cdecr_dispatches d
+                JOIN ticker_operations o ON o.run_id=d.initialization_id
+                WHERE d.execution_identity=?
+                AND (d.status='QUEUED' OR (d.status='RUNNING' AND d.lease_until<=?))
+                AND o.lease_until<=?
+                {version_filter}
+                ORDER BY d.created_at LIMIT 1""",
+                params,
+            ).fetchone()
+            if row is None:
+                return None
+            operation = db.execute(
+                "SELECT token FROM ticker_operations WHERE run_id=?",
+                (row["initialization_id"],),
+            ).fetchone()
+            assert operation is not None
+            token = int(operation[0]) + 1
+            generation = int(row["generation"]) + 1
+            expires = now + lease_seconds
+            db.execute(
+                "UPDATE ticker_operations SET owner=?,token=?,lease_until=? WHERE run_id=?",
+                (owner, token, expires, row["initialization_id"]),
+            )
+            db.execute(
+                """UPDATE cdecr_dispatches SET status='RUNNING',generation=?,owner=?,
+                lease_until=?,heartbeat=?,updated_at=?,error=NULL WHERE dispatch_id=?""",
+                (
+                    generation,
+                    owner,
+                    expires,
+                    now,
+                    utc_now().isoformat(),
+                    row["dispatch_id"],
+                ),
+            )
+            claimed = dict(row)
+            claimed.update(
+                {"status": "RUNNING", "generation": generation, "owner": owner,
+                 "lease_until": expires, "heartbeat": now}
+            )
+            return claimed, Lease(
+                initialization_id=str(row["initialization_id"]), owner=owner, token=token
+            )
+
+    def heartbeat_cdecr_dispatch(
+        self,
+        lease: Lease,
+        dispatch_id: str,
+        generation: int,
+        *,
+        lease_seconds: float = 60,
+    ) -> None:
+        now = time.time()
+        with self._write() as db:
+            self._fence(db, lease)
+            row = db.execute(
+                "SELECT owner,generation,status FROM cdecr_dispatches WHERE dispatch_id=?",
+                (dispatch_id,),
+            ).fetchone()
+            if (
+                row is None
+                or row[0] != lease.owner
+                or int(row[1]) != generation
+                or row[2] != "RUNNING"
+            ):
+                raise LeaseLost("CDECR dispatch lease expired or superseded")
+            expires = now + lease_seconds
+            db.execute(
+                "UPDATE ticker_operations SET lease_until=? WHERE run_id=?",
+                (expires, lease.initialization_id),
+            )
+            db.execute(
+                "UPDATE cdecr_dispatches SET lease_until=?,heartbeat=?,updated_at=? "
+                "WHERE dispatch_id=?",
+                (expires, now, utc_now().isoformat(), dispatch_id),
+            )
+
+    def settle_cdecr_dispatch(
+        self,
+        lease: Lease,
+        dispatch_id: str,
+        generation: int,
+        *,
+        status: str,
+        result_ref: str | None = None,
+        error: str | None = None,
+    ) -> None:
+        if status not in {"SUCCEEDED", "FAILED", "CANCELLED"}:
+            raise ValueError("invalid CDECR dispatch terminal status")
+        with self._write() as db:
+            self._fence(db, lease)
+            row = db.execute(
+                "SELECT owner,generation,status,node_key FROM cdecr_dispatches "
+                "WHERE dispatch_id=?",
+                (dispatch_id,),
+            ).fetchone()
+            if (
+                row is None
+                or row[0] != lease.owner
+                or int(row[1]) != generation
+                or row[2] != "RUNNING"
+            ):
+                raise LeaseLost("CDECR dispatch settlement lost its fence")
+            db.execute(
+                """UPDATE cdecr_dispatches SET status=?,lease_until=0,
+                result_ref=?,error=?,updated_at=? WHERE dispatch_id=?""",
+                (status, result_ref, error, utc_now().isoformat(), dispatch_id),
+            )
+            node = self._node(db, lease.initialization_id, str(row[3]))
+            node.receipt.update(
+                {"cdecr_dispatch_id": dispatch_id, "cdecr_dispatch_status": status}
+            )
+            self._save_node(db, lease.initialization_id, node)
+            db.execute(
+                "UPDATE ticker_operations SET owner=NULL,lease_until=0 WHERE run_id=?",
+                (lease.initialization_id,),
+            )
 
     def begin(
         self,
@@ -629,71 +1027,153 @@ class InitializationRepository:
         if not reason.strip():
             raise ValueError("operator reason required")
         with self._write() as db:
-            run = self._run(db, run_id)
-            if control_operation_id and run.control_operation_id == control_operation_id:
-                return run
-            if run.error == "OPERATOR_STOPPED":
-                raise InitializationError("removed initialization cannot be resumed")
-            if run.status != RunStatus.FAILED:
-                raise InitializationError("resume requires FAILED initialization")
-            if db.execute(
-                "SELECT 1 FROM ticker_operations WHERE ticker=?", (run.ticker,)
-            ).fetchone():
-                raise InitializationError("DUPLICATE_ACTIVE_INITIALIZATION")
-            nodes = [
-                NodeRecord.model_validate_json(row[0])
-                for row in db.execute(
-                    "SELECT payload FROM initialization_nodes WHERE run_id=?", (run_id,)
-                )
-            ]
-            targets = [
-                n for n in nodes if n.status == "FAILED" and (node_key is None or n.key == node_key)
-            ]
-            if not targets:
-                raise InitializationError("no selected failed node")
-            if any(n.inputs.get("_invalidated") for n in targets):
-                raise InitializationError("invalidated handoffs require adopt or isolated rerun")
-            parents = {n.inputs.get("managed_by") for n in targets}
-            targets.extend(n for n in nodes if n.key in parents and n not in targets)
-            commit = next((n for n in nodes if n.key == "activation.commit"), None)
-            active = db.execute(
-                "SELECT revision_id FROM ticker_active_revision WHERE ticker=?", (run.ticker,)
+            incident = db.execute(
+                "SELECT id,status FROM initialization_repair_incidents "
+                "WHERE initialization_id=? AND status IN ('ACTIVE','HUMAN_REQUIRED')",
+                (run_id,),
             ).fetchone()
-            if (
-                commit
-                and commit.status == "SUCCEEDED"
-                and (active is None or active[0] != run_id + "-activation")
-            ):
-                targets.extend(
-                    n
-                    for n in nodes
-                    if n.key in {"activation.commit", "bus.ready", "runtime.ready"}
-                    and n not in targets
-                )
-            for node in targets:
-                node.generation += 1
-                node.ordinal = 0
-                node.execution_id = None
-                node.status = "PENDING"
-                node.error = None
-                # Previous checkpoint remains discoverable in immutable attempt history.
-                self._save_node(db, run_id, node)
-            run.status = RunStatus.QUEUED
-            if control_operation_id:
-                from doxagent.v2_control.mirror import permit
-
-                permit(db, run.ticker, epoch=control_epoch, initialization=True)
-                run.control_epoch = control_epoch
-                run.control_operation_id = control_operation_id
-            run.manual_resume_required = False
-            run.error = None
-            db.execute(
-                "INSERT INTO ticker_operations(ticker,run_id) VALUES (?,?)", (run.ticker, run_id)
+            if incident is not None:
+                raise InitializationError(f"REPAIR_OWNS_INITIALIZATION:{incident[0]}")
+            return self._resume_in_transaction(
+                db,
+                run_id,
+                reason=reason,
+                node_key=node_key,
+                control_epoch=control_epoch,
+                control_operation_id=control_operation_id,
             )
-            self._event(
-                db, run, "manual.resume", {"reason": reason, "nodes": [n.key for n in targets]}
+
+    def resume_for_repair(
+        self,
+        run_id: str,
+        *,
+        incident_id: str,
+        round_id: str,
+        control_epoch: int,
+        control_operation_id: str,
+    ) -> RunRecord:
+        with self._write() as db:
+            incident = db.execute(
+                "SELECT status,payload FROM initialization_repair_incidents "
+                "WHERE id=? AND initialization_id=?",
+                (incident_id, run_id),
+            ).fetchone()
+            repair_round = db.execute(
+                "SELECT status,payload FROM initialization_repair_rounds "
+                "WHERE id=? AND incident_id=?",
+                (round_id, incident_id),
+            ).fetchone()
+            if incident is None or incident[0] != "ACTIVE":
+                raise InitializationError("REPAIR_INCIDENT_NOT_ACTIVE")
+            if repair_round is None or repair_round[0] not in {"VERIFIED", "QUEUED"}:
+                raise InitializationError("REPAIR_ROUND_NOT_VERIFIED")
+            run = self._resume_in_transaction(
+                db,
+                run_id,
+                reason=f"automatic repair {incident_id}/{round_id}",
+                node_key=None,
+                control_epoch=control_epoch,
+                control_operation_id=control_operation_id,
+                execution_lane="repair",
+                repair_incident_id=incident_id,
+                repair_round_id=round_id,
+                event_kind="repair.resume",
             )
             return run
+
+    def _resume_in_transaction(
+        self,
+        db: sqlite3.Connection,
+        run_id: str,
+        *,
+        reason: str,
+        node_key: str | None,
+        control_epoch: int | None,
+        control_operation_id: str | None,
+        execution_lane: str = "normal",
+        repair_incident_id: str | None = None,
+        repair_round_id: str | None = None,
+        event_kind: str = "manual.resume",
+    ) -> RunRecord:
+        run = self._run(db, run_id)
+        if control_operation_id and run.control_operation_id == control_operation_id:
+            return run
+        if run.error == "OPERATOR_STOPPED":
+            raise InitializationError("removed initialization cannot be resumed")
+        if run.status != RunStatus.FAILED:
+            raise InitializationError("resume requires FAILED initialization")
+        if db.execute("SELECT 1 FROM ticker_operations WHERE ticker=?", (run.ticker,)).fetchone():
+            raise InitializationError("DUPLICATE_ACTIVE_INITIALIZATION")
+        nodes = [
+            NodeRecord.model_validate_json(row[0])
+            for row in db.execute(
+                "SELECT payload FROM initialization_nodes WHERE run_id=?", (run_id,)
+            )
+        ]
+        targets = [
+            n for n in nodes if n.status == "FAILED" and (node_key is None or n.key == node_key)
+        ]
+        if not targets:
+            raise InitializationError("no selected failed node")
+        if any(n.inputs.get("_invalidated") for n in targets):
+            raise InitializationError("invalidated handoffs require adopt or isolated rerun")
+        parents = {n.inputs.get("managed_by") for n in targets}
+        targets.extend(n for n in nodes if n.key in parents and n not in targets)
+        commit = next((n for n in nodes if n.key == "activation.commit"), None)
+        active = db.execute(
+            "SELECT revision_id FROM ticker_active_revision WHERE ticker=?", (run.ticker,)
+        ).fetchone()
+        if (
+            commit
+            and commit.status == "SUCCEEDED"
+            and (active is None or active[0] != run_id + "-activation")
+        ):
+            targets.extend(
+                n
+                for n in nodes
+                if n.key in {"activation.commit", "bus.ready", "runtime.ready"} and n not in targets
+            )
+        for node in targets:
+            db.execute(
+                """UPDATE cdecr_dispatches SET status='CANCELLED',lease_until=0,
+                error='node generation replaced by resume',updated_at=?
+                WHERE initialization_id=? AND node_key=?
+                AND status IN ('QUEUED','RUNNING')""",
+                (utc_now().isoformat(), run_id, node.key),
+            )
+            node.generation += 1
+            node.ordinal = 0
+            node.execution_id = None
+            node.status = "PENDING"
+            node.error = None
+            self._save_node(db, run_id, node)
+        run.status = RunStatus.QUEUED
+        if control_operation_id:
+            from doxagent.v2_control.mirror import permit
+
+            permit(db, run.ticker, epoch=control_epoch, initialization=True)
+            run.control_epoch = control_epoch
+            run.control_operation_id = control_operation_id
+        run.manual_resume_required = False
+        run.error = None
+        db.execute(
+            "INSERT INTO ticker_operations"
+            "(ticker,run_id,execution_lane,repair_incident_id,repair_round_id) "
+            "VALUES (?,?,?,?,?)",
+            (run.ticker, run_id, execution_lane, repair_incident_id, repair_round_id),
+        )
+        self._event(
+            db,
+            run,
+            event_kind,
+            {
+                "reason": reason,
+                "nodes": [n.key for n in targets],
+                "incident_id": repair_incident_id,
+                "round_id": repair_round_id,
+            },
+        )
+        return run
 
     def attempts(self, run_id: str, key: str) -> list[NodeRecord]:
         with self._connection() as db:

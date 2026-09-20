@@ -36,9 +36,7 @@ def control_in(db: sqlite3.Connection, ticker: str) -> dict[str, Any] | None:
     return json.loads(row[0]) if row else None
 
 
-def mode_binding_in(
-    db: sqlite3.Connection, ticker: str, mode: str
-) -> dict[str, Any] | None:
+def mode_binding_in(db: sqlite3.Connection, ticker: str, mode: str) -> dict[str, Any] | None:
     """Resolve an exact ticker binding before the mode's global default."""
     ticker = ticker.strip().upper()
     row = db.execute(
@@ -156,9 +154,7 @@ class ControlRepository:
         from doxagent.trade_execution.repository import ExecutionRepository
 
         ticker = ticker.strip().upper()
-        if ticker != GLOBAL_BINDING_TICKER and not re.fullmatch(
-            r"[A-Z][A-Z0-9.\-]{0,14}", ticker
-        ):
+        if ticker != GLOBAL_BINDING_TICKER and not re.fullmatch(r"[A-Z][A-Z0-9.\-]{0,14}", ticker):
             raise ControlError("VALIDATION_FAILED", 422)
         profile = ExecutionRepository(self.journal).profile(revision)
         if mode not in {"PAPER_TRADING", "LIVE_TRADING"}:
@@ -314,6 +310,31 @@ class ControlRepository:
             db.execute("INSERT INTO v2_idempotency VALUES(?,?,?,?)", (scope, kh, bh, op["id"]))
             self._save(db, state, kind)
             return op
+
+    def submit_repair_resume(
+        self,
+        ticker: str,
+        initialization_id: str,
+        incident_id: str,
+        round_id: str,
+        *,
+        expected: str,
+    ) -> dict[str, Any]:
+        """Private Guardian entry point; the public API cannot supply repair routing."""
+
+        return self.submit(
+            ticker,
+            "RESUME_INITIALIZATION",
+            actor="system:initialization-guardian",
+            key=f"repair:{incident_id}:{round_id}",
+            body={
+                "initialization_id": initialization_id,
+                "repair_incident_id": incident_id,
+                "repair_round_id": round_id,
+                "_internal_repair_resume": True,
+            },
+            expected=expected,
+        )
 
     @staticmethod
     def _operation(db: sqlite3.Connection, identity: str) -> dict[str, Any]:

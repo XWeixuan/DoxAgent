@@ -110,6 +110,31 @@ class TickerCDECRPipelineCoordinator:
         self.run_namespace = run_namespace
         self.cdecr_executor = cdecr_executor
 
+    def _frozen_snapshot_path(self, job_id: str) -> Path:
+        return self.state_root / "jobs" / job_id / "frozen_runtime_snapshot.json"
+
+    def _persist_frozen_snapshot(self, job_id: str, snapshot: FrozenRuntimeSnapshot) -> Path:
+        path = self._frozen_snapshot_path(job_id)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        temporary = path.with_suffix(".tmp")
+        temporary.write_text(snapshot.model_dump_json(), encoding="utf-8")
+        temporary.replace(path)
+        return path
+
+    def _load_frozen_snapshot(self, state: TickerJobState) -> FrozenRuntimeSnapshot:
+        path = self._frozen_snapshot_path(state.job_id)
+        if not path.is_file():
+            raise RuntimeError("prepared CDECR handoff is missing its frozen snapshot artifact")
+        snapshot = FrozenRuntimeSnapshot.model_validate_json(path.read_text(encoding="utf-8"))
+        if (
+            snapshot.snapshot_id != state.runtime_snapshot_id
+            or snapshot.epoch_id != state.epoch_id
+            or snapshot.runtime_scope != state.runtime_scope
+            or snapshot.ticker != state.ticker
+        ):
+            raise RuntimeError("prepared CDECR frozen snapshot identity mismatch")
+        return snapshot
+
     async def initialize(
         self,
         *,
@@ -261,6 +286,7 @@ class TickerCDECRPipelineCoordinator:
                 as_of=as_of,
                 eligible_atomic_ids=activity.eligible_atomic_ids,
             )
+            self._persist_frozen_snapshot(job_id, snapshot)
             service = EventLibraryService(EventLibraryRepository(event_library_path))
             batch = service.delta_compiler.compile(snapshot)
             o2_run_id = (
@@ -431,25 +457,19 @@ class TickerCDECRPipelineCoordinator:
         if not state.epoch_id or not state.o2_run_id:
             raise RuntimeError("O2 continuation requires a FINALIZED epoch and prepared run ID")
         o2_run_id = state.o2_run_id
-        binding = self.registry_resolver.bind(market=market, ticker=ticker)
-        if _epoch_status(Path(binding.registry_path), state.epoch_id) != "FINALIZED":
+        if _epoch_status(Path(state.registry_path), state.epoch_id) != "FINALIZED":
             raise RuntimeError("O2 continuation refused because CDECR epoch is not FINALIZED")
         with self.jobs.ticker_lock(
-            market=binding.market, ticker=binding.ticker, owner=state.job_id
+            market=state.market, ticker=state.ticker, owner=state.job_id
         ):
-            registry, cdecr_runner = self.runtime_factory(binding)
-            activity = project_runtime_activity(
-                registry=registry,
-                runtime_scope=binding.runtime_scope,
-                as_of=as_of,
-            )
-            snapshot = cdecr_runner.freeze_finalized_snapshot(
-                epoch_id=state.epoch_id,
-                as_of=as_of,
-                eligible_atomic_ids=activity.eligible_atomic_ids,
-            )
+            snapshot = self._load_frozen_snapshot(state)
             service = EventLibraryService(EventLibraryRepository(state.event_library_path))
-            batch = service.delta_compiler.compile(snapshot)
+            if not state.delta_batch_id:
+                raise RuntimeError("prepared CDECR handoff is missing its Delta batch")
+            batch = service.repository.get_delta_batch(state.delta_batch_id)
+            if batch is None or batch.source_snapshot_id != snapshot.snapshot_id:
+                raise RuntimeError("prepared CDECR Delta batch identity mismatch")
+            activity = prepared.activity
             if self.o2_factory is None:
                 raise RuntimeError("O2 real-model initializer is not configured")
             state = self._advance(state, TickerJobStage.O2_RUNNING)

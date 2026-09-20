@@ -79,6 +79,10 @@ class DoxAgentSettings(BaseSettings):
         default=False,
         validation_alias="DOXAGENT_CODEX_MONITORING_O4_ENABLED",
     )
+    ticker_initialization_o4_delivery_enabled: bool = Field(
+        default=False,
+        validation_alias="DOXAGENT_TICKER_INITIALIZATION_O4_DELIVERY_ENABLED",
+    )
     codex_monitoring_o4_sqlite_path: str = Field(
         default=".tmp/codex-monitoring-o4.sqlite3",
         validation_alias="DOXAGENT_CODEX_MONITORING_O4_SQLITE_PATH",
@@ -807,9 +811,48 @@ class DoxAgentSettings(BaseSettings):
         default=None,
         validation_alias="DOXAGENT_TICKER_INITIALIZATION_SUMMARY_KEY",
     )
-    cdecr_execution_mode: Literal["LOCAL_ONLY", "LOCAL_OR_PREBUILT", "PREBUILT_REQUIRED"] = Field(
+    initialization_repair_enabled: bool = Field(
+        default=False,
+        validation_alias="DOXAGENT_INITIALIZATION_REPAIR_ENABLED",
+    )
+    initialization_repair_scan_seconds: float = Field(
+        default=30.0,
+        ge=1.0,
+        validation_alias="DOXAGENT_INITIALIZATION_REPAIR_SCAN_SECONDS",
+    )
+    initialization_repair_root: str = Field(
+        default="/var/lib/doxagent/initialization-repair",
+        validation_alias="DOXAGENT_INITIALIZATION_REPAIR_ROOT",
+    )
+    initialization_repair_source_repository: str | None = Field(
+        default=None,
+        validation_alias="DOXAGENT_INITIALIZATION_REPAIR_SOURCE_REPOSITORY",
+    )
+    initialization_repair_production_container: str = Field(
+        default="doxagent-v2-initialization-1",
+        validation_alias="DOXAGENT_INITIALIZATION_REPAIR_PRODUCTION_CONTAINER",
+    )
+    initialization_repair_agent_image: str = Field(
+        default="doxagent-initialization-repair-agent:server",
+        validation_alias="DOXAGENT_INITIALIZATION_REPAIR_AGENT_IMAGE",
+    )
+    initialization_repair_codex_auth_file: str | None = Field(
+        default=None,
+        validation_alias="DOXAGENT_INITIALIZATION_REPAIR_CODEX_AUTH_FILE",
+    )
+    initialization_repair_docker_executable: str = Field(
+        default="docker",
+        validation_alias="DOXAGENT_INITIALIZATION_REPAIR_DOCKER_EXECUTABLE",
+    )
+    cdecr_execution_mode: Literal[
+        "LOCAL_ONLY", "LOCAL_OR_PREBUILT", "PREBUILT_REQUIRED", "REMOTE_EXECUTOR"
+    ] = Field(
         default="LOCAL_ONLY",
         validation_alias="DOXAGENT_CDECR_EXECUTION_MODE",
+    )
+    cdecr_dispatch_identity: str = Field(
+        default="production",
+        validation_alias="DOXAGENT_CDECR_DISPATCH_IDENTITY",
     )
     cdecr_prebuilt_root: str = Field(
         default=".tmp/cdecr-prebuilt",

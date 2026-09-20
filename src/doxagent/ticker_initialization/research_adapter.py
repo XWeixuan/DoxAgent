@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -48,7 +49,7 @@ from doxagent.workflows.codex_global_research import (
     GlobalResearchRunRequest,
 )
 
-from .schema import NodeResult
+from .schema import ExecutionDeferred, NodeResult
 from .service import NodeContext
 
 
@@ -74,6 +75,27 @@ class ResearchInitializationAdapter:
 
     async def execute(self, context: NodeContext) -> NodeResult:
         settings = self.settings
+        raw_prebuilt = (
+            context.node.inputs.get("_prebuilt_cdecr")
+            if context.node.key == "cdecr"
+            else None
+        )
+        if raw_prebuilt is not None and settings.cdecr_execution_mode not in {
+            "LOCAL_OR_PREBUILT",
+            "PREBUILT_REQUIRED",
+        }:
+            raise RuntimeError("CDECR_PREBUILT_DISABLED")
+        if (
+            context.node.key == "cdecr"
+            and settings.cdecr_execution_mode == "REMOTE_EXECUTOR"
+            and os.getenv("DOXAGENT_CDECR_EXECUTOR_PROCESS") != "1"
+        ):
+            dispatch_id = context.repository.enqueue_cdecr_dispatch(
+                context.lease,
+                context.node.key,
+                execution_identity=settings.cdecr_dispatch_identity,
+            )
+            raise ExecutionDeferred(dispatch_id)
         if not settings.codex_worker_bearer_token or not settings.codex_capability_secret:
             raise ValueError("initialization requires configured Codex Worker credentials")
         if not settings.event_library_root:

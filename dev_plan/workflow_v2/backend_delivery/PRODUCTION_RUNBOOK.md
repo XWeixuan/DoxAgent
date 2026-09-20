@@ -50,9 +50,11 @@ curl --fail http://127.0.0.1:8082/healthz
 
 首次部署没有历史数据时，页面显示真实空状态。用正式开发者账户登录后添加 ticker，将通过真实初始化流程生成研究与策略；不能把合成/录制样本填入生产库以使页面看起来有数据。
 
-## CDECR 预构建包
+## CDECR 执行域与已冻结的预构建包
 
-4 GB 香港实例必须同时对 `v2-control` 和 `v2-initialization` 使用 `PREBUILT_REQUIRED`；通用生产拓扑默认 `LOCAL_OR_PREBUILT`。两者通过既有 `v2-data:/data` 共享 `/data/prebuilt/cdecr`，无需新增数据库或独立卷。缺包、坏包或版本/配置 fingerprint 不一致都会明确失败，不得静默回退到远端 CDECR。
+当前生产模式是 `REMOTE_EXECUTOR`：Control 不 claim 预构建包，Initialization 只持久化 durable dispatch，独立常驻 `v2-cdecr-executor` 完成 CDECR，并在执行域内冻结 snapshot/Delta 供 O2 读取。预构建实现和 `/data/prebuilt/cdecr` 历史证据保留但处于冻结状态；只有显式切换到 `LOCAL_OR_PREBUILT` 或 `PREBUILT_REQUIRED` 才允许解冻，不能仅向 `ready` 目录放包来改变生产路径。
+
+以下命令仅用于人工解冻或灾难恢复演练，不属于日常 ticker 初始化流程。
 
 在本地与远端使用同一代码和 CDECR 结果配置（密钥值不参与 fingerprint）：
 
@@ -87,7 +89,7 @@ docker compose -f docker-compose.v2-production.yml -f deploy/docker-compose.hk.y
   --initialization-db /data/initialization/control.sqlite3 --grace-hours 1
 ```
 
-回滚前暂停新初始化，将模式改回 `LOCAL_ONLY` 或回滚代码；保留 `claimed`、`consumed` 和当前 run Registry 证据，不手工修改 active revision。香港实例切回 `LOCAL_ONLY` 不等于允许在 4 GB 内存上执行 CDECR，恢复远端执行前仍须扩容或重新验收并发配置。
+退出预构建应急模式前暂停新初始化，将生产模式恢复为 `REMOTE_EXECUTOR`；保留 `claimed`、`consumed` 和当前 run Registry 证据，不手工修改 active revision。`LOCAL_ONLY` 只用于明确的单进程本地执行场景，不能作为当前独立执行域生产拓扑的回滚目标。
 
 ## Paper / Live 绑定
 

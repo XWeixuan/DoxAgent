@@ -18,6 +18,7 @@ x-environment: &environment
   DOXAGENT_CODEX_RESEARCH_LANES_ENABLED: "true"
   DOXAGENT_CODEX_DOCUMENT3_ENABLED: "true"
   DOXAGENT_CODEX_MONITORING_O4_ENABLED: "true"
+  DOXAGENT_TICKER_INITIALIZATION_O4_DELIVERY_ENABLED: "false"
   DOXAGENT_CODEX_MONITORING_O4_SQLITE_PATH: /data/o4/o4.sqlite3
   DOXAGENT_EVENT_LIBRARY_ROOT: /data/events
   DOXAGENT_CODEX_WORKSPACE_ROOT: /data/workspaces
@@ -31,7 +32,8 @@ x-environment: &environment
   DOXAGENT_MODEL_USAGE_STORAGE_MODE: sqlite
   DOXAGENT_MODEL_USAGE_SQLITE_PATH: /data/usage/usage.sqlite3
   CDECR_SQLITE_PATH: /data/cdecr/cdecr.sqlite3
-  DOXAGENT_CDECR_EXECUTION_MODE: ${DOXAGENT_CDECR_EXECUTION_MODE:-LOCAL_OR_PREBUILT}
+  DOXAGENT_CDECR_EXECUTION_MODE: ${DOXAGENT_CDECR_EXECUTION_MODE:-REMOTE_EXECUTOR}
+  DOXAGENT_CDECR_DISPATCH_IDENTITY: ${DOXAGENT_CDECR_DISPATCH_IDENTITY:-production}
   DOXAGENT_CDECR_PREBUILT_ROOT: /data/prebuilt/cdecr
   DOXAGENT_CDECR_PREBUILT_MAX_AGE_HOURS: ${DOXAGENT_CDECR_PREBUILT_MAX_AGE_HOURS:-24}
   DOXAGENT_CDECR_PREBUILT_COMPATIBILITY_VERSION: ${DOXAGENT_CDECR_PREBUILT_COMPATIBILITY_VERSION:-cdecr-prebuilt-runtime-v1}
@@ -129,6 +131,23 @@ services:
     depends_on:
       v2-migrate: {condition: service_completed_successfully}
       codex-worker: {condition: service_healthy}
+      v2-cdecr-executor: {condition: service_healthy}
+  v2-cdecr-executor:
+    <<: *backend
+    command: [python, -m, doxagent.ticker_initialization.cdecr_executor]
+    environment:
+      <<: *environment
+      DOXAGENT_SAFETY_STATE_PATH: /run/doxagent-resources/safety.json
+      DOXAGENT_CDECR_DISPATCH_IDENTITY: production
+    volumes: ["v2-data:/data", "/run/doxagent-resources:/run/doxagent-resources:ro"]
+    healthcheck:
+      test: [CMD, python, -m, doxagent.ticker_initialization.cdecr_executor, --healthcheck]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    depends_on:
+      v2-migrate: {condition: service_completed_successfully}
   v2-message-bus:
     <<: *backend
     command: [python, -m, doxagent.message_bus_v2.cli, run-worker]

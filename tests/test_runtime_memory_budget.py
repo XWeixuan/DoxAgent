@@ -132,14 +132,21 @@ def test_safety_controller_uses_actual_pressure_and_hysteresis(tmp_path):
     assert controller.evaluate(pressure, now=17)[0] == "PRESSURE"
     assert controller.evaluate(healthy, now=20)[0] == "PRESSURE"
     assert controller.evaluate(healthy, now=80)[0] == "NORMAL"
+    descendant_only = module.Sample(
+        observed_at=4, memory_current=10 * module.GIB, memory_max=15 * module.GIB,
+        memory_swap_current=0, host_available=4 * module.GIB,
+        psi_some_avg10=0, psi_full_avg10=0, swap_io_bytes_per_minute=0,
+        high_events=1, oom_events=0, descendant_oom_events=1,
+    )
+    assert controller.evaluate(descendant_only, now=81)[0] == "NORMAL"
     critical = module.Sample(
         observed_at=4, memory_current=int(14.8 * module.GIB),
         memory_max=15 * module.GIB, memory_swap_current=0,
         host_available=2 * module.GIB, psi_some_avg10=0, psi_full_avg10=0,
         swap_io_bytes_per_minute=0, high_events=1, oom_events=0,
     )
-    assert controller.evaluate(critical, now=81)[0] == "NORMAL"
-    assert controller.evaluate(critical, now=86)[0] == "CRITICAL"
+    assert controller.evaluate(critical, now=82)[0] == "NORMAL"
+    assert controller.evaluate(critical, now=87)[0] == "CRITICAL"
 
 
 def test_application_slice_uses_approved_4c16g_boundary():
@@ -148,3 +155,26 @@ def test_application_slice_uses_approved_4c16g_boundary():
     assert "MemoryHigh=14G" in text
     assert "MemoryMax=15G" in text
     assert "MemorySwapMax=1G" in text
+
+
+def test_safety_controller_stays_outside_app_slice_and_browser_is_accounted():
+    root = Path(__file__).resolve().parents[1]
+    safety = (root / "deploy/doxagent-resource-safety.service").read_text()
+    assert "Slice=system.slice" in safety
+    chrome = (root / "deploy/doxagent-reuters-chrome.service").read_text()
+    assert "Slice=doxagent-app.slice" in chrome
+    assert "MemoryMax=6G" in chrome
+    assert "MemorySwapMax=1G" in chrome
+
+
+def test_optional_repair_guardian_is_inside_app_slice_with_wide_swap_buffer():
+    import yaml
+
+    root = Path(__file__).resolve().parents[1]
+    compose = yaml.safe_load(
+        (root / "deploy/docker-compose.initialization-repair.yml").read_text()
+    )
+    guardian = compose["services"]["initialization-guardian"]
+    assert guardian["cgroup_parent"] == "doxagent-app.slice"
+    assert guardian["mem_limit"] == "2g"
+    assert guardian["memswap_limit"] == "3g"

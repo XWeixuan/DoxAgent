@@ -177,7 +177,9 @@ class PublisherBrowser:
                                 await route.abort()
                                 return
                             if not self.cdp_url and route.request.resource_type in {
-                                "image", "media", "font"
+                                "image",
+                                "media",
+                                "font",
                             }:
                                 await route.abort()
                             else:
@@ -199,9 +201,7 @@ class PublisherBrowser:
                         passive_check = (
                             initial.access_reason == "challenge_required"
                             and not initial.interactive_challenge
-                        ) and not (
-                            CHALLENGE.search(text)
-                        )
+                        ) and not (CHALLENGE.search(text))
                         if (
                             initial.access_reason == "render_required"
                             or passive_check
@@ -228,9 +228,8 @@ class PublisherBrowser:
                                 pass
                             text = await page.locator("body").inner_text()
                         inspection = inspect_html(await page.content(), page.url, None)
-                        if (
-                            inspection.access_reason == "challenge_required"
-                            or CHALLENGE.search(text)
+                        if inspection.access_reason == "challenge_required" or CHALLENGE.search(
+                            text
                         ):
                             state = self._state(
                                 host,

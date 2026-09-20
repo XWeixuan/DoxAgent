@@ -412,9 +412,7 @@ class CrawlerPlaneRepository:
                 returned = current.model_copy(
                     update={
                         "status": status,
-                        "next_attempt_at": (
-                            now if status is CrawlerRetryStatus.PENDING else None
-                        ),
+                        "next_attempt_at": (now if status is CrawlerRetryStatus.PENDING else None),
                         "last_execution_id": value.execution_id,
                         "last_attempt_version": value.crawler_version,
                         "updated_at": now,
@@ -508,9 +506,7 @@ class CrawlerPlaneRepository:
         return self._set_retry_state(retry_id, CrawlerRetryStatus.PENDING, reset=True)
 
     @classmethod
-    def _save_execution(
-        cls, connection: sqlite3.Connection, value: CrawlerExecutionResult
-    ) -> None:
+    def _save_execution(cls, connection: sqlite3.Connection, value: CrawlerExecutionResult) -> None:
         connection.execute(
             """insert into crawler_executions(
                  execution_id,poll_run_id,crawler_id,crawler_version,source_id,
@@ -566,11 +562,7 @@ class CrawlerPlaneRepository:
                where crawler_id=? and binding_id=? and item_key=?""",
             (crawler_id.strip().lower(), binding_id, item_key),
         ).fetchone()
-        return (
-            CrawlerRetryItem.model_validate_json(row["data_json"])
-            if row is not None
-            else None
-        )
+        return CrawlerRetryItem.model_validate_json(row["data_json"]) if row is not None else None
 
     def _set_retry_state(
         self,

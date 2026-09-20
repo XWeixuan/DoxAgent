@@ -1,94 +1,366 @@
-# RKLB Singapore real initialization
+# RKLB 真实初始化：故障根因与修复审计
 
-## Monitoring baseline — 2026-09-15 18:46 UTC
+## 1. 文档范围
 
-- Initialization: `init-rklb-9631e4071e75470a97313eafbbdc51aa`.
-- Host: `doxagent-sg` (`VM-0-15-ubuntu`); repository: `/home/ubuntu/doxagent`; deployed Git HEAD: `15c7e3f`.
-- State: `RUNNING / UPSTREAM`, state sequence 7; CDECR succeeded; D1 / `d1.c4_pre_scan` running; no failed nodes.
-- Created at 18:22 UTC; current execution is approximately 24 minutes old. No confirmed blockage at baseline.
-- Worker health reports `ok=true`, `data_mcp_enabled=true`; API, Web, and Worker containers report healthy.
-- Check every 60 minutes. Investigate failures or evidenced stalls; preserve initialization and artifacts, repair locally with targeted checks, deploy only necessary services, and recover through supported resume.
-- Completion requires terminal success and activation / Bus / Runtime acceptance, not merely healthy containers.
+本文不再按轮询时间记录运行流水，而只保留能够暴露系统性缺陷、影响后续初始化可靠性的故障。
 
-## Issues
+以下内容已从本文移除：
 
-No confirmed issue at baseline. Append evidence, root cause, repair, verification, deployment revision, and resume outcome for each incident.
+- 内存预留、cgroup 上限、资源 admission 与优先级反转；
+- Worker 重任务队列、公平性和 heavy-batch 排队策略；
+- O2/D2 子任务因初始化批次身份缺失而被资源队列误分类的问题。
 
-### RKLB-001 — 2026-09-15 19:47 UTC: resource admission wait
+这些问题已有独立修复和测试，不再在本文件重复。本文集中讨论四个后续问题域：
 
-- Run remains RUNNING at sequence 7. Authenticated Worker job inspection shows `queued / QUEUED / RESOURCE_BUDGET_WAIT`, with no start timestamp and no other running or queued Worker jobs.
-- Guardian is active and sampling normally. At 19:48 UTC, available memory was approximately 1701 MiB; app current approximately 2884 MiB; pressure zero; no sustained swapping. One 512 MiB initialization reservation belongs to this RKLB run; no borrowed service quotas.
-- Code requires 1024 MiB safety + 128 MiB projection reserve + 512 MiB parent initialization reservation + 1024 MiB Codex initialization estimate = 2688 MiB available for admission. Current headroom fails this check by approximately 987 MiB. This is a verified capacity gate, not model timeout or failed artifact validation.
-- No safety thresholds weakened, no unrelated service stopped, no database mutation, no deployment or resume: the original job is queued and will be admitted automatically when resources fit. Resume would not resolve insufficient memory.
-- Further progress requires reducing actual resident memory safely or increasing host capacity; monitor continues hourly. Request direction before stopping unrelated services or changing host capacity/safety policy.
+1. durable invocation 无法持久化真实节点参数；
+2. 投影链被一个合法的退役 Event 永久阻塞，导致 Overview 与权威状态不一致；
+3. D3 产生系统性无效结果后仍被标记为成功，并进一步让 O4 形成空配置假完成。
 
-#### Authorized recovery — 2026-09-16 02:27 UTC
+## 2. 结论摘要
 
-- User authorized closing the browser to release memory. Identified desktop Chrome parent PID 22055, owned by `doxagent-desktop`, with Reuters profile `reuters-chrome` and debugging port 9223; sent SIGTERM only to this browser parent. No container, IB Gateway, desktop session, or safety policy changed.
-- Available memory increased from 1620 to 4005 MiB; used swap decreased from 1206 to 435 MiB. Browser profile files retained; desktop browser/debugging endpoint closed.
-- Original Worker job automatically obtained a 1024 MiB reservation and started at `2026-09-16T02:27:28.993785Z`: `running / STARTING`, wait reason cleared, no error. No resume or deployment needed. IB Gateway Java PID 305103 remains listening on port 4002 (listener check only, not authenticated API verification). Hourly monitoring continues.
+| 问题域 | 直接表现 | 系统根因 | 当前状态 |
+| --- | --- | --- | --- |
+| Durable invocation 完整性 | O2 Wave 在模型调用前因 `WavePlan` 无法序列化而失败 | durable codec 只覆盖通用类型，没有覆盖 workflow 自有的冻结 dataclass | 已修复已出现类型；仍需做类型面审计 |
+| 投影与 Overview 一致性 | Runtime 已 RUNNING，Overview 仍为 INITIALIZING/BLOCKED | Event Library 读取模型把“退役后零活跃 Fact”的合法状态判成非法，activation gap 又阻断后续 ticker-control 投影 | RKLB 实例已闭环；同类 poison-event 可观测性仍不足 |
+| D3 语义假完成 | 147 条 Policy 在数分钟内生成，Final Review 又全部撤销，但父节点仍 SUCCEEDED | 全量 Surface 被塞进两个大 Turn；同时编排器把 `REVIEW_BLOCKED` 降级成 `PARTIAL` | Shell-wave 编排已修复并通过 RKLB 重跑；阻塞语义仍未彻底修复 |
+| O4 空配置假完成 | D3 为零 Policy 时，O4 不运行模型却在约 1 秒内完成 | 空 Policy 快速路径被解释成“无需专门监测”，注册又只验证存在任意 Binding，不验证 Policy coverage | 尚未修复；本次 O3-only 重跑主动绕过 O4 |
 
-#### Recurrence — 2026-09-16 04:18 UTC
+## 3. Issue A：O2 WavePlan 无法进入 durable invocation
 
-- `c4_pre_scan` succeeded, then D1 `c1` and `c3` were dispatched but both remained queued with `RESOURCE_BUDGET_WAIT`; neither attempt had started. No failed nodes.
-- Available host memory was approximately 3.85 GiB, but application cgroup usage plus the parent initialization reservation, projection reserve, and one Codex initialization estimate exceeded the 5 GiB normal-admission ceiling by roughly 45–220 MiB.
-- Reclaimed 256 MiB from the application cgroup page cache and restarted the healthy but idle Codex Worker only after confirming its durable store contained no running jobs (two queued RKLB jobs only). Worker returned healthy and both queued jobs were preserved. No model work was interrupted, no database edited, and no safety threshold changed.
-- Application cgroup usage fell from approximately 3505 to 3341 MiB, but admission remained marginally above the protected ceiling at this observation. Leave the durable queue intact and recheck at the next scheduled interval.
+### 3.1 现象与排除项
 
-#### Capacity recovery — 2026-09-16 04:22 UTC
+`o2-survey` 已成功，但第一个 O2 Wave 在模型 dispatch 之前失败：
 
-- User required the initialization to be made runnable. Closing nonessential XFCE UI processes did not affect application-cgroup accounting; Xorg and IB Gateway were preserved, with Gateway still listening on port 4002.
-- Temporarily stopped `doxagent-v2-v2-content-enrichment-1`, which is not a dependency of the active D1 research nodes. This reduced application-cgroup usage enough for guarded admission without changing the 5 GiB ceiling, estimates, or safety reserve.
-- D1 `c1` obtained a 1024 MiB Codex reservation and entered genuine `RUNNING` at `2026-09-16T04:22:14.146475Z`, with thread and turn IDs present. D1 `c3` remains safely queued and should start after `c1` releases its reservation.
-- Restore content enrichment after the constrained D1 Codex work no longer needs the slot, then verify its worker health. Do not run both high-memory tasks concurrently by weakening admission rules.
+```text
+TypeError: unsupported invocation argument: WavePlan
+```
 
-### RKLB-002 — resource reservations counted as consumption
+失败发生在 durable substep 冻结调用参数时，因此不是模型错误、额度问题、Event Library 校验失败，也不是运行时资源不足。父 O2 因子节点连续失败耗尽重试预算，只能等待人工 resume。
 
-- Root cause replay: with application cgroup current near 3261 MiB and host available near 4089 MiB, the guardian added a 512 MiB parent reservation, 1024 MiB Codex candidate, 128 MiB projection earmark, and 256 MiB projector peak-limit headroom. The resulting 5181 MiB estimate exceeded the former 5120 MiB normal gate even though the host had ample available memory.
-- The first containment (`5a50a189`) removed only the overlapping projection earmark/peak component and allowed D1 `c3` to start with content enrichment restored. It did not fully correct the reservation model.
-- Full repair separates raw cgroup current, reclaimable inactive-file cache, effective working current, per-service observed growth, remaining work reservations, live unused peak headroom, and candidate incremental demand. Docker limits are no longer treated as consumption. Reservation state is bound to kernel boot ID and denials expose their actual gate and budget components.
-- Application slice target becomes MemoryHigh 6144 MiB / MemoryMax 6656 MiB / MemorySwapMax 512 MiB, retaining at least 1024 MiB host safety headroom plus PSI and swap-pressure gates.
-- Full repair commit `c989057d` passed 27 targeted resource-governance tests and Ruff. It was pulled on Singapore; the live slice reports 6442450944 / 6979321856 / 536870912 bytes for high / max / swap-max. The restarted guardian reports raw, working, inactive-file-derived, outstanding, borrowed, and host-available components while preserving the active D1 `c3` lease.
-- At deployment verification, raw application current was approximately 3905 MiB, effective working current 3079 MiB, host available 3468 MiB, outstanding 1663 MiB, borrowed 128 MiB, PSI zero, and no active swapping. D1 `c3` remained genuinely running with its original thread; it was not interrupted. Worker image rollout is deferred until the durable store has no running job, then only `codex-worker` will be rebuilt/recreated to expose structured admission receipts.
-- Follow-up found D1 `c4_enrichment` queued even though the repaired ledger returned `ok=true` (projected 4334 MiB versus 6144 MiB). Root cause was priority inversion: a higher-priority task repeatedly waiting on an incompatible heavy batch was still allowed to block the compatible RKLB child. The fix records waiter batch/weight/reason and grants priority only to a waiter eligible under the current heavy-batch set.
+### 3.2 根因
 
-### RKLB-003 — unused ceilings and queue policy still behaved like memory pressure
+Ticker initialization 的内部子节点要把“调用参数 + pre-node workspace snapshot”写入 durable receipt，才能做到：
 
-- RKLB's observed ~4.3 GiB projection was below the live 6 GiB normal limit. The actual `c4_enrichment` blocker was not memory: a higher-priority waiter from an incompatible heavy batch kept refreshing `PRIORITY_WAIT`. Commit `07a0396c` corrected that priority inversion and the original `c4_enrichment` job started at `2026-09-16T06:37:46.586032Z` without replacement or resume.
-- A read-only replay of MU's 2026-09-15 production Cases exactly reproduced the reported latency distribution when latency is measured from Case creation to first model turn: 19 exceeded one hour, 18 exceeded two hours, and 15 exceeded four hours; maximum queue wait was 6.818 hours. This was queue/admission time, not model execution. For the longest Case, the first turn began after 6.818 hours and all remaining work finished in about 35 seconds.
-- The first blocked wave was admitted at 20:01–20:02 UTC but its first four model turns did not start until 02:27–02:28 UTC. Guardian telemetry immediately before release showed application current ~2806 MiB, host `MemAvailable` ~1632–1663 MiB, and one active reservation. At 02:27:19 UTC host availability jumped to ~4014 MiB; four Case reservations appeared and execution began. This proves the coordinator was waiting on resource admission rather than running slowly.
-- The old admission equation charged unused Docker peak-limit headroom as if it were committed memory, in addition to the same service's task reservation and eventual resident pages. A limit increase allocates no pages, so this was a second representation of possible future growth. It inflated both the application projection and `SAFETY + reservation` host requirement, causing all four realtime slots to remain idle.
-- Final accounting repair keeps peak/limit headroom as telemetry only. Normal admission now charges effective working memory plus remaining per-service work reservations plus the candidate increment; real resident growth is captured by `memory.current`, while the 6 GiB/6.5 GiB slice, 1 GiB host margin, PSI, swap-pressure, and hard cgroup guards remain authoritative. Raising a Docker limit is gated on measured safety but does not reserve its entire unused gap.
-- Two adjacent false-block paths were also corrected: Worker pressure uses `working_memory = memory.current - inactive_file` instead of treating reclaimable page cache as resident pressure, and the resource-aware queue now honors the existing fairness turn after three consecutive Persistent Runtime dispatches instead of hard-sorting Runtime ahead forever.
-- Local verification: 31 targeted resource/Worker tests passed and Ruff passed. The guardian change can be deployed independently; the Worker pressure/fairness change must not recreate the Worker while RKLB `c4_enrichment` is still running.
-- Commit `34d32cf6` was pushed and fast-forwarded on Singapore. Only `doxagent-resource-guardian.service` was restarted; RKLB `c4_enrichment` remained `running / RUNNING` with its original `2026-09-16T06:37:46.586032Z` start and no error. Live guardian telemetry reports raw ~4407 MiB, working ~3099 MiB, outstanding ~1088 MiB, unused ceiling headroom 256 MiB, counted ceiling headroom 0 MiB, host available ~3481 MiB, and an active service. Worker rebuild remains deferred until no job is running.
+- 进程重启后重附着；
+- 只重跑失败的内部节点；
+- 从节点执行前的精确 workspace 恢复，而不是重跑整个父阶段。
 
-### RKLB-004 — O2 child misclassified as a conflicting initialization batch
+但 invocation codec 的类型系统只支持 Pydantic model、Enum、Path、datetime、tuple/list/dict 等通用对象。O2 的 `WavePlan` 是 repository-owned frozen dataclass，属于正常业务合同，却不在 codec 可表达范围内。
 
-- D1 completed successfully and initialization advanced to O2. With no Worker job running, the latest shared image was built and only `codex-worker` was recreated; the durable O2 survey job remained queued and the Worker became healthy. New resource samples confirmed `working_memory` and `inactive_file` telemetry with `paused=false`.
-- The preserved O2 job reported `HEAVY_BATCH_CONFLICT`. Its request had run_id `init-rklb-9631e4071e75470a97313eafbbdc51aa-o2-rklb-c8b8aac84957f2e1` and no explicit `initialization_id`. Worker fallback parsing only stripped `-d1`/`-d2`, so it treated the full O2 run_id as a different heavy batch from the active parent `initialization:init-rklb-9631e4071e75470a97313eafbbdc51aa`.
-- Repair normalizes any `init-<ticker>-<32 hex id>-...` child to its parent initialization batch when the explicit field is absent. This preserves explicit IDs, maintenance batches, and legacy D1/D2 parsing while allowing the original durable O2 job to be admitted under its own parent.
-- Commit `2dde0033` passed 32 targeted resource/Worker tests and Ruff, was pushed and fast-forwarded remotely, and only `codex-worker` was rebuilt/recreated after reconfirming the O2 job was queued rather than running. The container returned healthy; the original durable `o2-survey` job cleared its wait reason and entered `running / STARTING` at `2026-09-16T07:37:44.106880Z`. No initialization resume or job replacement was required.
+本质上这是两套合同漂移：workflow 已把 `WavePlan` 当成 durable node 输入，durable layer 却没有把它纳入可持久化类型闭包。错误直到真实 O2 Wave 才暴露，说明此前测试只验证了通用示例，没有覆盖生产节点的完整 invocation surface。
 
-### RKLB-005 — O2 WavePlan absent from durable invocation codec
+### 3.3 已实施修复
 
-- `o2-survey` succeeded, but `o2.o2-wave-001` failed before model dispatch with `TypeError: unsupported invocation argument: WavePlan`; the parent exhausted its retry budget and required manual resume. This was a control-plane serialization gap, not a model, resource, or Event Library validation failure.
-- The durable substep decorator freezes every invocation before execution so a failed child can be rerun in the exact pre-node workspace. `WavePlan` is a repository-owned frozen dataclass, while the codec supported Pydantic models, enums, paths, datetimes and containers only.
-- Repair adds recursively encoded repository-owned dataclasses and reconstructs them only after the existing `doxagent.*` module/name allowlist check. It does not enable pickle or operator-supplied import paths. Resume scope remains the failed wave and parent O2; the successful survey artifact is preserved.
-- Commit `c48a5258` passed five focused invocation/substep tests and Ruff, was pushed, pulled, and deployed by recreating only the already-failed initialization service. Supported resume targeted `o2.o2-wave-001`, which also reset its managed parent O2; `o2-survey` remained SUCCEEDED. The initialization is currently QUEUED behind an already-running MU maintenance heavy batch, with no failed nodes; do not interrupt that active work or bypass heavy-batch isolation.
+提交 `c48a5258` 增加了受控 dataclass 编解码：
 
-### RKLB-006 — D2 Document2 children lost their parent initialization batch
+- 使用显式 `dataclass` tag 持久化 repository-owned dataclass；
+- 字段继续递归经过既有 codec，不使用 pickle；
+- decode 前仍执行 `doxagent.*` module/name allowlist，不能由 receipt 指定任意 import path；
+- 新增 `WavePlan` round-trip 回归测试；
+- resume 只重置失败 Wave 与其托管父 O2，保留已经成功的 survey。
 
-- After O2 completed, D2 created two durable Worker jobs for `d2_o0_candidate_c1` and `d2_o0_candidate_c3`. Both were queued at creation with `HEAVY_BATCH_CONFLICT`, no start timestamp, and no model turn. This was not memory pressure: the jobs carry ticker `RKLB`, but their deliberately opaque `d2ws-<hash>` workspace run IDs and `initialization_id=null` made the resource guardian classify each as a separate initialization batch.
-- Repair preserves the parent initialization identity on `Document2RunRequest`, forwards it through every O0/O1/review turn, and sets it on the resulting `WorkerRunRequest`. Ordinary standalone Document2 runs keep `null`; only an initialization-origin D2 is grouped with its parent. This is the same identity-preservation principle used for O2 children, without weakening genuine cross-initialization isolation.
-- Local verification: Document2 workflow regression passed 24 tests and Ruff passed. After deployment, the original durable D2 jobs should clear their wait reason automatically; no job replacement or broad resource-policy change is required.
+修复后，原失败节点通过正式 resume 恢复，没有重做成功的上游研究。
 
-### RKLB-007 — Overview retained INITIALIZING/BLOCKED after successful activation
+### 3.4 同类风险与待修复项
 
-- The authoritative Runtime control row is revision 4 with `status=RUNNING`, `initialization_incomplete=false`, `analysis_allowed=true`, and the committed activation ID. Initialization progress is independently projected as `SUCCEEDED` with all six public steps settled.
-- The Overview read model nevertheless remained at ticker-control revision 3 (`INITIALIZING`, `initialization_failed=true`, `health=BLOCKED`). Runtime source event `866098` was present and the source checkpoint had advanced beyond it, but the event remained in a retry gap. Its prerequisite activation event `55594` was also in a permanent `ValidationError` gap.
-- Root cause: RKLB Event `E66` is a legitimate `MERGED` event with no active Fact membership after retirement. `CanonicalEvent` incorrectly required at least one Fact for every lifecycle state, so V2 activation projection could not index the pinned Event Library. The missing activation revision then made ticker-control revision 4 fail with `ValueError` on every retry.
-- Repair keeps the non-empty Fact invariant for `ACTIVE` events and for new `CanonicalEventRevision` writes, while allowing published `MERGED`/`SUPPRESSED` snapshots to have zero current Facts. This restores the existing immutable artifact rather than editing production data or fabricating membership.
-- Local verification: the active-empty rejection, retired-empty acceptance, and V2 Library indexing tests pass. The adjacent resource/runtime suite reports 73 passed; the changed initialization paths report five passed. Deployment must rebuild the projector/API application image and verify both gaps clear, the read-model ticker reaches revision 4/RUNNING, and Overview no longer renders initialization or blocked state.
-- Deployment verification: commit `ce74500a` was pushed and fast-forwarded on Singapore, the new pressure-based safety service was installed, and the full V2 stack was rebuilt/recreated. Migration exited 0; Web/API/Worker are healthy, all inspected containers have restart count 0 and were not OOM-killed. The application slice is live at MemoryHigh 14 GiB / MemoryMax 15 GiB / MemorySwapMax 1 GiB, and safety state is `NORMAL`.
-- Projector recovery consumed the existing immutable receipts without database repair: initialization gap `55594` and Runtime gap `866098` are gone. The read model now contains the activation revision and active pointer; RKLB ticker control is revision 4 with `RUNNING`, `initialization_incomplete=false`, effective mode `PAPER_TRADING`, and no initialization failure. Initialization progress remains `SUCCEEDED` with every public step settled, so Overview no longer has a backend basis for rendering initialization or blocked state.
+当前修复解决了“已出现的 dataclass 类型”，但还不是 durable invocation 完整性的系统证明：
+
+- 缺少对全部 durable-decorated 函数签名的自动枚举与 encode/decode round-trip 测试；
+- `dataclasses.asdict()` 会把嵌套 dataclass 展平成普通 dict，未来若出现需要保留嵌套具体类型的合同，仍可能解码失真；
+- 新增 workflow 参数类型时，没有静态或启动期检查确保它属于 codec 的闭包。
+
+建议增加一项合同测试：枚举所有 durable invocation fixture，以真实参数执行 `decode(encode(args))`，并比较类型和值；任何新类型必须先注册和测试，不能等到生产 resume 路径暴露。
+
+## 4. Issue B：合法退役 Event 阻断 activation 与 Overview 投影
+
+### 4.1 表面矛盾
+
+RKLB 初始化和 Runtime 权威状态已经完成：
+
+- Runtime control revision 4 为 `RUNNING`；
+- `initialization_incomplete=false`；
+- `analysis_allowed=true`；
+- activation ID 已提交；
+- 初始化 progress 为 `SUCCEEDED`。
+
+但 Overview read model 一直停在 revision 3，并显示：
+
+```text
+INITIALIZING
+initialization_failed=true
+health=BLOCKED
+```
+
+因此问题不在初始化执行，而在“权威写模型 → projector → read model”的投影链。
+
+### 4.2 失败链路
+
+投影 gap 不是两个独立错误，而是一条依赖链：
+
+```text
+RKLB Event E66 读取失败
+→ activation event 55594 无法建立 pinned Event Library 索引
+→ activation revision 未进入 read model
+→ ticker-control event 866098 找不到前置 activation
+→ revision 4 每次重试都失败
+→ Overview 永久显示旧 revision 3
+```
+
+源 checkpoint 已经越过这些事件，但 gap 会持续重试；所以“checkpoint 前进”并不等于 read model 已完整收敛。
+
+### 4.3 根因
+
+RKLB Event `E66` 是已经合并退役的 `MERGED` Event。其 Fact 已迁移或退休，因此当前活跃 Fact membership 为空是合法终态。
+
+旧 `CanonicalEvent` 合同却对所有生命周期状态统一施加 `facts.min_length=1`。这混淆了两类不同不变量：
+
+- `ACTIVE` Event 必须至少有一个当前 Fact；
+- `MERGED` / `SUPPRESSED` Event 可以在退役后没有当前活跃 Fact，但仍必须作为不可变历史快照存在。
+
+Projector 读取合法的历史产物时触发 `ValidationError`，导致一个记录级生命周期差异升级为 activation 和整个 ticker-control 投影的永久阻塞。
+
+### 4.4 已实施修复
+
+提交 `ce74500a` 调整了读取合同，而没有修改生产数据：
+
+- `ACTIVE` Event 继续强制至少一个 Fact；
+- 已发布的 `MERGED` / `SUPPRESSED` Event 允许零当前 Fact；
+- 新写入的 `CanonicalEventRevision` 仍保留严格的非空约束，避免用“退役兼容”放宽新 revision 的写入质量；
+- 增加 ACTIVE-empty 拒绝、retired-empty 接受和 V2 Library indexing 测试。
+
+部署后 projector 使用原有不可变 receipts 自动恢复：
+
+- gap `55594` 和 `866098` 清除；
+- activation revision 与 active pointer 进入 read model；
+- ticker control 到达 revision 4 / `RUNNING`；
+- Overview 不再有显示 INITIALIZING/BLOCKED 的后端依据。
+
+### 4.5 同类风险与待修复项
+
+RKLB 的具体 schema 问题已修复，但 poison-event 的故障放大机制仍值得处理：
+
+- 当前下游 gap 主要暴露最后一个 `ValueError`，不直接展示被哪个上游 gap 阻塞；
+- Overview 只显示旧状态，无法区分“初始化未完成”和“投影滞后/投影失败”；
+- 对其他 lifecycle-aware read contract 尚无统一审计，未来 schema 演进仍可能让合法历史对象无法读取；
+- checkpoint、gap 数量、active revision 和 read-model revision 没有形成一个面向运营的收敛判据。
+
+建议把 `source event → prerequisite gap → downstream gap` 依赖链投影到诊断接口，并在 Overview 将 `CONTROL_STATE_STALE` 与真实 `INITIALIZING` 分开。部署验收必须同时验证 source head、checkpoint、零 gap、active revision 和 read-model revision，不能只看容器健康或初始化节点终态。
+
+## 5. Issue C：D3/O3 在语义上失败，却在控制面成功
+
+### 5.1 真实失败结果
+
+原 D3 run：
+
+```text
+init-rklb-9631e4071e75470a97313eafbbdc51aa-d3
+```
+
+原编排只用了三个 Agent Turn 处理完整的 147 Path Surface：
+
+| 阶段 | 耗时 | 返回表象 |
+| --- | ---: | --- |
+| Trigger Calibration | 约 3 分 07 秒 | 147 Path 全部完成 |
+| Policy Compile | 约 1 分 18 秒 | 147 Policy |
+| Final Review | 约 1 分 27 秒 | `REVIEW_BLOCKED` |
+
+Final Review 发现的不是少量残留，而是系统性失败：
+
+- 147/147 Trigger 机械复用了 D2 `possible_occurrence`；
+- 147/147 被声明为 boundary sufficient；
+- 139 条存在 hidden-OR 候选；
+- 31 条使用没有 comparator 的程度词；
+- 前两阶段产生了不可信的零 unresolved 结果。
+
+Final Review 随后将 147 条 Path 全部改为 `UNRESOLVED`，将 Trigger disposition 全部改成 `TRIGGER_UNRESOLVED`，删除全部 147 个 Policy draft，并返回：
+
+```text
+REVIEW_BLOCKED
+SYSTEMIC_TRIGGER_CALIBRATION_MISSING
+requires_research=true
+blocking=true
+```
+
+最终发布物实际是：
+
+```text
+publication_state=PARTIAL
+policy_count=0
+```
+
+前端 D3 全空因此不是展示错误，而是后端真实发布了零 Policy。
+
+### 5.2 已排除模型额度故障
+
+对应 Codex thread 明确记录：
+
+```text
+model=gpt-5.6-sol
+reasoning_effort=medium
+weekly used_percent=100%
+credits.has_credits=true
+rate_limit_reached_type=null
+```
+
+三个 Turn 都正常执行并持续扣减赠送额度，没有 rate-limit rejection、模型 fallback 或 context overflow。并且同一个模型在 Final Review 正确发现了系统性缺陷。
+
+因此不能把结果归因于“周额度用完导致模型没运行”。更准确的结论是：前两个 Turn 在过大的工作面上选择了机械批量生成，而编排和验收没有及时阻止这种执行方式。
+
+### 5.3 根因一：工作面与 Turn 粒度错误
+
+旧编排把五个业务 Shell、147 条 Path 放进一次 Trigger Calibration 和一次 Policy Compile。模型面对过大的输入和写入面时，用程序化批量转换代替逐 Path calibration；结构校验仍能通过，因为引用、数量和 schema 看起来闭合。
+
+这暴露了一个重要边界：
+
+> schema 完整、Path 数量覆盖和 Agent 返回 `COMPLETED`，都不能证明 Trigger 已完成独立市场基线和可交易边界校准。
+
+### 5.4 根因二：Final Review 的阻塞语义被降级
+
+当前 orchestrator 对以下结果：
+
+```text
+review.status == REVIEW_BLOCKED
+blocking_issue_count > 0
+```
+
+仍写入 `FINAL_REVIEW_AGENT_BLOCK_REQUEST`，并统一转换为：
+
+```text
+severity=RECOVERABLE
+recovery_action=continue_partial
+```
+
+随后完成 Final Review checkpoint、继续 deterministic validation、assembly 和 publish。由于“所有 Path 均为 UNRESOLVED、零 Policy”在结构上仍可表达为 PARTIAL，父 D3 最终被控制面标记为成功。
+
+这里误用了“局部坏项不得阻塞整体”的恢复原则。该原则适用于个别 Path 无法研究；不适用于 147/147 全部失效、`requires_research=true`、关键发布组件为空的系统性失败。
+
+### 5.5 已实施修复：按 Shell 拆分并持久化每个 Wave
+
+提交 `d7d1c24c` 重构了 D3 编排：
+
+- 每个 Document2 Shell 单独生成冻结 slice；
+- 每个 Shell 依次运行 Trigger Calibration 和 Policy Compile；
+- 五个 Shell 共形成十个可观察、可恢复的业务 Turn，Final Review 保持全局复核；
+- durable child key 加入 `shell_id`，可以只恢复失败的 calibration/compile wave；
+- `trigger_calibration_state.completed_shell_ids` 与 `wave_state.completed_shell_ids` 决定断点，不再把整个 D3 当作一个不可分割节点；
+- input manifest 纳入动态 Shell slices，保持冻结输入校验；
+- 新增双 Shell 执行顺序、同线程连续性、per-Shell slice 和第二 Shell Compile 精确 resume 测试。
+
+RKLB O3-only 正式重跑 `init-rklb-70af5e578a774711b05dcd70e19a67b2` 的结果证明该编排能够产出可用结果：
+
+```text
+Final Review: PASSED
+Path: 147 completed
+Policy: 98
+Condition: 106
+UNRESOLVED Path: 29
+Policy Set version: 2
+publication_state: PARTIAL
+activation: SUCCEEDED / VERIFY_READY
+```
+
+`PARTIAL` 在这次结果中来自有明确理由的 29 条 Path-level `UNRESOLVED`，不是零 Policy 或全局 Review 阻塞。新 D3 已激活为：
+
+```text
+init-rklb-70af5e578a774711b05dcd70e19a67b2-activation
+```
+
+### 5.6 尚未闭环的同类问题
+
+Shell-wave 重构降低了机械批量生成风险并改善了断点恢复，但以下假成功条件仍存在于当前代码：
+
+1. **`REVIEW_BLOCKED` 仍被无条件降级。** 需要区分 Path-local recoverable issue 与 global/critical blocker。至少在全部或高比例 Path unresolved、零 Policy、`requires_research=true`、Final Review 明确 blocking 时停止发布并让 D3 可正式 resume。
+2. **非空关键产物不是 D3 成功条件。** 对有 147 条 expected Path 的初始化，零 Policy 不能只凭结构闭合进入成功终态；应增加“可用 Policy 或有业务上充分的全量 NO_POLICY 证明”这一关键组件 gate。
+3. **阶段声明仍过度信任 artifact shape。** 每个 Shell 的 `COMPLETED` 应结合语义诊断，例如 D2 文本逐字复制率、boundary-sufficient 异常集中、零 unresolved、hidden-OR 密度和 comparator 缺失；这些指标不能自动定罪，但达到系统性阈值时必须进入 Final Review 前的显式风险状态。
+4. **状态轮询仍可能只看控制面。** 初始化监测应同时读取 Final Review status、Policy 数量、unresolved 比例和 publication state；`SUCCEEDED` 只表示编排终止，不应单独对外宣称业务完成。
+
+## 6. Issue D：D3 空产物触发 O4 空配置假完成
+
+### 6.1 失败传播
+
+原 D3 发布零 Policy 后，O4 收到的输入为：
+
+```text
+publication_state=PARTIAL
+policies=[]
+```
+
+O4 并没有运行所谓的 `gpt-5.6-sol medium` 配置节点。`_configure()` 对空 Policy Set 存在确定性快速路径，直接生成：
+
+```text
+source_needs=[]
+baseline_summary={}
+stopping_rationale="No policies require dedicated monitoring; existing baseline retained"
+```
+
+因此 `o4.configure` 在不到一秒内完成；`o4.deliver` 因不存在 `NEW_CRAWLER_REQUIRED` 返回 `NOOP`；`o4.register` 只要发现 ticker 已存在任意 enabled Binding 就成功。RKLB 原有五个通用 Binding 因而被错误当成 O4 配置完成证据。
+
+真实 O4 数据却是：
+
+```text
+source_needs=0
+delivery_checkpoints=0
+delivery_settlements=0
+worker_dispatches=0
+```
+
+这解释了为什么 O4 看似瞬间完成、前端却没有任何与 D3 Policy 对应的监测配置。
+
+### 6.2 根因
+
+系统没有区分两种语义完全不同的“空 Policy Set”：
+
+- 合法业务结论：经过完整 Review，确实没有任何需要持续监测的 Policy；
+- 上游失败产物：D3 被阻塞、关键 Policy 被全部撤销或尚未完成研究。
+
+O4 仅检查 `policies == []`，没有检查 D3 Final Review、publication reason、expected Path、unresolved 比例或 critical-component 状态。注册阶段又验证“存在任意可用 Binding”，而不是“每个 Policy 的 monitoring need 已被覆盖或有明确 omission”。两个弱验收叠加后形成跨节点假成功。
+
+### 6.3 当前处理与验证边界
+
+这次 RKLB 重跑根据额度约束只执行 O3，并保留现有监测配置，没有运行 O4。这样避免再次消耗 O4 模型额度，也让 RKLB 以新 D3 version 2 完成激活；但它不是 O4 bug 的修复或验收。
+
+因此当前状态必须准确表述为：
+
+- D3/O3 已重跑、通过 Final Review 并正式激活；
+- 原监测配置被保留，用户将另行调整；
+- O4 自动配置的空输入假成功路径仍存在；
+- 原五个 Binding 不能被当作 98 条新 Policy 的 coverage 证明。
+
+### 6.4 待修复项
+
+1. O4 初始化收到 `policies=[]` 时，只有上游携带明确的 `NO_MONITORING_REQUIRED` 业务证明才允许成功；`PARTIAL`、`REVIEW_BLOCKED` 或关键组件缺失必须拒绝配置。
+2. O4 configure plan 需要记录 Policy coverage：每条 Policy 必须映射到 existing coverage、new source need 或 deliberate omission，不能只返回空 `source_needs`。
+3. O4 register 成功条件必须验证 plan coverage 和 delivery settlement；ticker 上已有任意 Binding 只能证明 Message Bus 可用，不能证明本次 Plan 已交付。
+4. Overview 应分别展示 D3 Policy readiness、O4 plan coverage 和 Message Bus binding readiness，避免一个笼统“初始化完成”掩盖空配置。
+5. 增加端到端回归：`REVIEW_BLOCKED + zero policies` 不得进入 O4；非空 Policy Set 的 O4 plan 必须覆盖全部 Policy 或留下逐项可审计 omission。
+
+## 7. 后续修复优先级
+
+### P0：阻止再次产生假完成
+
+- 把系统性 `REVIEW_BLOCKED` 升级为真正的 D3 blocker；
+- 阻止异常零 Policy Set 进入 O4；
+- 初始化业务完成判定加入 Final Review、Policy 数量和 O4 coverage。
+
+### P1：让故障可定位而不是只显示旧状态
+
+- 暴露 projector gap 的前置依赖链；
+- 区分初始化执行中、初始化失败和 read-model stale；
+- 对 durable invocation 建立全类型 round-trip 合同测试。
+
+### P2：防止语义批量生成回归
+
+- 将异常复制率、零 unresolved、boundary-sufficient 集中度等作为风险诊断；
+- 保留 per-Shell Turn、per-Shell durable key 和精确 resume；
+- 用真实多 Shell acceptance 覆盖 D3 → activation，并单独补做 D3 → O4 coverage acceptance。
+
+## 8. 最终状态
+
+截至本次审计：
+
+- RKLB D3 version 2 已激活，Final Review `PASSED`；
+- 98 条 Policy / 106 个 Condition 可用，29 条 Path 以明确原因保留 `UNRESOLVED`；
+- 初始化运行 `init-rklb-70af5e578a774711b05dcd70e19a67b2` 为 `SUCCEEDED / VERIFY_READY`；
+- Overview 投影故障已经恢复；
+- O4 自动配置没有在本次重跑中执行，现有监测配置不代表新 Policy coverage；
+- D3 系统性 Review blocker 的终态语义和 O4 空计划验收仍是两个必须补齐的 P0。

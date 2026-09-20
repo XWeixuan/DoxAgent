@@ -44,6 +44,8 @@ TABLES = {
         "initialization_runs",
         "initialization_nodes",
         "initialization_events",
+        "initialization_repair_incidents",
+        "initialization_repair_rounds",
         "activation_revisions",
         "ticker_active_revision",
     ),
@@ -187,8 +189,9 @@ class SourceOutbox:
                         "strftime('%Y-%m-%dT%H:%M:%fZ','now')); END"
                     )
             db.execute(
-                "INSERT OR IGNORE INTO v2_capture_meta "
-                "VALUES(?,strftime('%Y-%m-%dT%H:%M:%fZ','now'),?)",
+                "INSERT INTO v2_capture_meta "
+                "VALUES(?,strftime('%Y-%m-%dT%H:%M:%fZ','now'),?) "
+                "ON CONFLICT(source) DO UPDATE SET tables_json=excluded.tables_json",
                 (self.source, json.dumps(selected)),
             )
             db.commit()

@@ -29,7 +29,7 @@ from .schema import (
     WorklistEntry,
 )
 
-_GLOBAL_FATAL_CODES = {"STALE_BASE"}
+_GLOBAL_FATAL_CODES = {"SHELL_ZERO_POLICY", "STALE_BASE"}
 
 
 def _finding(code: str, message: str, *, blocking: bool = False) -> ValidationFinding:
@@ -311,6 +311,16 @@ def validate_initial_artifacts(
         for policy in policies
         for ref in policy.source_refs
     }
+    expected_shells = {shell_id for shell_id, _, _ in expected}
+    policy_shells = {shell_id for shell_id, _, _ in source_refs}
+    for shell_id in sorted(expected_shells - policy_shells):
+        findings.append(
+            _finding(
+                "SHELL_ZERO_POLICY",
+                f"D3 Shell 没有任何最终 Policy: {shell_id}",
+                blocking=True,
+            )
+        )
     for ref in sorted(source_refs - expected):
         findings.append(_finding("UNKNOWN_SOURCE_REF", f"Policy 引用了 D2 不存在的 Gap: {ref}"))
 
@@ -325,7 +335,6 @@ def validate_initial_artifacts(
         findings.extend(stage_report.findings)
 
     if wave_state is not None:
-        expected_shells = {item[0] for item in expected}
         terminal_path_ids = {
             item.path_id for item in worklist if item.status is not PathStatus.PENDING
         }

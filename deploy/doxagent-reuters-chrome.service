@@ -1,10 +1,12 @@
 [Unit]
 Description=DoxAgent Reuters persistent Chrome identity
-After=network-online.target xrdp.service
+After=network-online.target xrdp.service doxagent-app.slice
 Wants=network-online.target
+Requires=doxagent-app.slice
 
 [Service]
 Type=simple
+Slice=doxagent-app.slice
 User=doxagent-desktop
 Environment=DISPLAY=:10
 Environment=XAUTHORITY=/home/doxagent-desktop/.Xauthority
@@ -12,6 +14,9 @@ ExecStart=/usr/bin/google-chrome-stable --remote-debugging-address=127.0.0.1 --r
 Restart=on-failure
 RestartSec=5
 TimeoutStopSec=20
+MemoryMax=6G
+MemorySwapMax=1G
+TasksMax=1024
 
 [Install]
 WantedBy=multi-user.target

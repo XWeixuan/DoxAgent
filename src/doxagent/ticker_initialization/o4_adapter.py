@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from doxagent.codex_runtime.schema import CodexMonitoringO4Node
+from doxagent.codex_worker.schema import WorkerRunRequest
 from doxagent.settings import DoxAgentSettings
 from doxagent.workflows.codex_monitoring_o4.schema import (
     MonitoringConfigurationPlan,
@@ -24,6 +25,9 @@ from doxagent.workflows.codex_monitoring_o4.service import (
 
 from .schema import NodeRecord, NodeResult
 from .service import NodeContext
+
+_DELIVERY_FROZEN = "CRAWLER_DELIVERY_FROZEN"
+_DELIVERY_FROZEN_NOT_EXECUTED = "CRAWLER_DELIVERY_FROZEN_NOT_EXECUTED"
 
 
 class O4InitializationAdapter:
@@ -51,10 +55,41 @@ class O4InitializationAdapter:
             ).prepare(
                 snapshot_from=candidate_bus_path(self.settings.message_bus_v2_sqlite_path, source)
             )
+
+        def transform(
+            request: WorkerRunRequest,
+        ) -> tuple[WorkerRunRequest, dict[str, Any] | None]:
+            from doxagent.initialization_repair.repair_prompts import apply
+
+            patched, metadata = apply(
+                request,
+                repository=context.repository,
+                initialization_id=context.run.initialization_id,
+                node_key=context.node.key,
+            )
+            if metadata is not None:
+                metadata = {**metadata, "candidate_prompt": patched.prompt}
+            return patched, metadata
+
+        def observe(request: WorkerRunRequest, metadata: dict[str, Any]) -> None:
+            import hashlib
+
+            context.checkpoint(
+                repair_prompt={
+                    **metadata,
+                    "actual_request_sha256": hashlib.sha256(
+                        request.model_dump_json().encode()
+                    ).hexdigest(),
+                    "actual_prompt_sha256": hashlib.sha256(request.prompt.encode()).hexdigest(),
+                }
+            )
+
         return build_monitoring_o4_runtime(
             self.settings,
             initialization_id=context.run.initialization_id,
             ticker=context.run.ticker,
+            initialization_prompt_transform=transform,
+            initialization_prompt_observer=observe,
         )
 
     async def reconcile(self, context: NodeContext) -> NodeResult | None:
@@ -62,6 +97,11 @@ class O4InitializationAdapter:
         try:
             if context.node.key == "o4.register":
                 return self._registration(runtime, context)
+            if (
+                context.node.key == "o4.deliver"
+                and not self.settings.ticker_initialization_o4_delivery_enabled
+            ):
+                return self._frozen_delivery(runtime, context)
             request = self._owned_request(runtime, context)
             if request is None:
                 return None
@@ -79,6 +119,11 @@ class O4InitializationAdapter:
         try:
             if context.node.key == "o4.register":
                 return self._registration(runtime, context)
+            if (
+                context.node.key == "o4.deliver"
+                and not self.settings.ticker_initialization_o4_delivery_enabled
+            ):
+                return self._frozen_delivery(runtime, context)
             if context.node.key == "o4.configure":
                 policy = self._input(context, "policy_set_path")
                 document2 = self._input(context, "document2_path")
@@ -279,11 +324,14 @@ class O4InitializationAdapter:
                 raise ValueError("O4 DELIVER has no terminal settlement")
             runtime.orchestrator._validate_delivery(plan, settlement)
         runtime.repository.release_ticker_lease(request.ticker, request.request_id)
+        quality_annotations = (
+            [request.status.value] if request.status is O4RequestStatus.DEGRADED else []
+        )
+        if request.payload.get("crawler_delivery_state") == "FROZEN":
+            quality_annotations.append(_DELIVERY_FROZEN)
         return NodeResult(
             artifacts={**self._refs(runtime, plan), "request_id": request.request_id},
-            quality_annotations=[request.status.value]
-            if request.status is O4RequestStatus.DEGRADED
-            else [],
+            quality_annotations=quality_annotations,
         )
 
     def _process_result(self, runtime: MonitoringO4Runtime, result: O4RunResult) -> NodeResult:
@@ -292,14 +340,31 @@ class O4InitializationAdapter:
         return self._completed(runtime, result.request)
 
     def _registration(self, runtime: MonitoringO4Runtime, context: NodeContext) -> NodeResult:
-        delivered = context.dependency("o4.deliver")
-        refs = delivered.artifacts
+        dependency_keys = {
+            *context.node.dependencies,
+            *context.node.inputs.get("_replay_dependencies", {}),
+        }
+        upstream_key = next(
+            (key for key in ("o4.deliver", "o4.configure") if key in dependency_keys), None
+        )
+        if upstream_key is None:
+            raise ValueError("O4 registration requires CONFIGURE or DELIVER output")
+        upstream = context.dependency(upstream_key)
+        refs = upstream.artifacts
         plan = self._import_plan(runtime, context, refs)
-        needs_delivery = any(
+        pending_crawler_need_count = sum(
             item.resolution is SourceNeedResolution.NEW_CRAWLER_REQUIRED
             for item in plan.source_needs
         )
-        if needs_delivery:
+        frozen = bool(
+            pending_crawler_need_count
+            and not self.settings.ticker_initialization_o4_delivery_enabled
+            and (
+                upstream_key == "o4.configure"
+                or _DELIVERY_FROZEN_NOT_EXECUTED in upstream.quality_annotations
+            )
+        )
+        if pending_crawler_need_count and not frozen:
             request = runtime.repository.get_request(refs.get("request_id", ""))
             if request is None:
                 raise ValueError("O4 registration requires terminal DELIVER settlement")
@@ -318,6 +383,16 @@ class O4InitializationAdapter:
         ]
         if not usable:
             raise ValueError("ticker has no usable registered monitoring binding")
+        quality_annotations = list(upstream.quality_annotations)
+        if frozen and _DELIVERY_FROZEN not in quality_annotations:
+            quality_annotations.append(_DELIVERY_FROZEN)
+        delivery_state = (
+            "FROZEN"
+            if frozen
+            else "SETTLED"
+            if pending_crawler_need_count
+            else "NOT_REQUIRED"
+        )
         # The signed O4 operations already registered sources/bindings in this
         # candidate. Do not repeat probes, start polling, or mutate live configuration.
         return NodeResult(
@@ -328,9 +403,51 @@ class O4InitializationAdapter:
                     "plan_id": plan.plan_id,
                     "plan_version": plan.plan_version,
                     "enabled_binding_count": len(usable),
+                    "crawler_delivery_state": delivery_state,
+                    "pending_crawler_need_count": (
+                        pending_crawler_need_count if frozen else 0
+                    ),
                 }
             },
-            quality_annotations=delivered.quality_annotations,
+            quality_annotations=quality_annotations,
+        )
+
+    def _frozen_delivery(
+        self, runtime: MonitoringO4Runtime, context: NodeContext
+    ) -> NodeResult:
+        """Settle a pre-freeze frozen-plan node without dispatching an agent turn."""
+
+        plan = self._plan(runtime, context)
+        requests = [
+            request
+            for request in runtime.repository.list_requests(ticker=context.run.ticker)
+            if request.initialization_id == context.run.initialization_id
+            and request.node is CodexMonitoringO4Node.DELIVER
+            and request.payload.get("plan_json", {}).get("plan_id") == plan.plan_id
+        ]
+        completed = next(
+            (
+                request
+                for request in reversed(requests)
+                if request.status in {O4RequestStatus.SUCCEEDED, O4RequestStatus.DEGRADED}
+            ),
+            None,
+        )
+        if completed is not None:
+            return self._completed(runtime, completed)
+        if any(request.status is O4RequestStatus.RUNNING for request in requests):
+            raise RuntimeError(
+                "active O4 DELIVER must finish or be cancelled before the freeze is applied"
+            )
+        for request in requests:
+            if request.status is O4RequestStatus.HELD:
+                continue
+            request.status = O4RequestStatus.HELD
+            request.error = "Ticker initialization crawler delivery is frozen by policy"
+            runtime.repository.save_request(request)
+        return NodeResult(
+            artifacts=self._refs(runtime, plan),
+            quality_annotations=[_DELIVERY_FROZEN_NOT_EXECUTED],
         )
 
 

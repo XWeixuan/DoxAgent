@@ -114,3 +114,11 @@ class LeaseLost(InitializationError):
 
 class BudgetExhausted(InitializationError):
     pass
+
+
+class ExecutionDeferred(InitializationError):
+    """A durable external executor owns the running node; release the workflow lease."""
+
+    def __init__(self, dispatch_id: str) -> None:
+        self.dispatch_id = dispatch_id
+        super().__init__(f"execution deferred to {dispatch_id}")

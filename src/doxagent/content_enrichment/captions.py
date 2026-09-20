@@ -26,7 +26,7 @@ def cnbc_caption_source(html: str, url: str, title: str | None) -> tuple[str, st
         if not prefix:
             continue
         try:
-            data, _ = json.JSONDecoder().raw_decode(script[prefix.end():])
+            data, _ = json.JSONDecoder().raw_decode(script[prefix.end() :])
         except ValueError:
             continue
         for node in _objects(data):
@@ -75,9 +75,11 @@ def caption_text(text: str, *, duration: float | None = None) -> str:
         timings = re.findall(r"(\d{2}:\d{2}:\d{2}\.\d+) --> (\d{2}:\d{2}:\d{2}\.\d+)", text)
         if not timings:
             return ""
+
         def seconds(value: str) -> float:
             hours, minutes, seconds_value = value.split(":")
             return int(hours) * 3600 + int(minutes) * 60 + float(seconds_value)
+
         if (
             seconds(timings[0][0]) > max(15, duration * 0.05)
             or seconds(timings[-1][1]) < duration * 0.95
@@ -90,7 +92,7 @@ def caption_text(text: str, *, duration: float | None = None) -> str:
         timing = next((i for i, row in enumerate(rows) if " --> " in row), None)
         if timing is None or block.startswith(("NOTE", "STYLE", "REGION")):
             continue
-        cue = re.sub(r"\s+", " ", unescape(re.sub(r"<[^>]*>", "", " ".join(rows[timing+1:]))))
+        cue = re.sub(r"\s+", " ", unescape(re.sub(r"<[^>]*>", "", " ".join(rows[timing + 1 :]))))
         cue = cue.strip()
         words = cue.split()
         if not words:

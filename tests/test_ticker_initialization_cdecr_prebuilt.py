@@ -33,7 +33,12 @@ from doxagent.settings import DoxAgentSettings
 from doxagent.ticker_initialization.catalog import default_plan
 from doxagent.ticker_initialization.repository import InitializationRepository
 from doxagent.ticker_initialization.research_adapter import ResearchInitializationAdapter
-from doxagent.ticker_initialization.schema import NodeResult, NodeSpec, RunStatus
+from doxagent.ticker_initialization.schema import (
+    ExecutionDeferred,
+    NodeResult,
+    NodeSpec,
+    RunStatus,
+)
 from doxagent.ticker_initialization.service import InitializationWorker, NodeContext
 from doxagent.v2_control.repository import ControlError, ControlRepository
 from doxagent.v2_control.service import ControlService
@@ -139,6 +144,39 @@ def test_control_claims_bundle_and_pins_cutoff_and_node_reference(tmp_path: Path
     assert (store.root / "claimed" / operation["id"] / reference["bundle_id"]).is_dir()
 
 
+def test_remote_executor_mode_does_not_implicitly_claim_prebuilt_bundle(tmp_path: Path) -> None:
+    now = datetime.now(UTC)
+    cutoff = now - timedelta(minutes=10)
+    store = CDECRPrebuiltStore(tmp_path / "prebuilt")
+    _ready_bundle(store, "MU", now)
+    settings = DoxAgentSettings(
+        _env_file=None,
+        cdecr_execution_mode="REMOTE_EXECUTOR",
+        cdecr_dispatch_identity="production",
+        cdecr_prebuilt_root=str(store.root),
+    )
+    service, control = _control_service(tmp_path, settings)
+    operation = control.submit(
+        "MU",
+        "START",
+        actor="test",
+        key="request-remote",
+        body={
+            "monitor_mode": "MESSAGE_MONITORING",
+            "initialization": "FORCE_INITIALIZE",
+            "research_cutoff_at": cutoff.isoformat(),
+        },
+    )
+    assert service.step(operation)
+    run = service.initialization.by_control_operation(operation["id"])
+    assert run is not None and run.research_cutoff_at == cutoff
+    cdecr = next(
+        node for node in service.initialization.nodes(run.initialization_id) if node.key == "cdecr"
+    )
+    assert "_prebuilt_cdecr" not in cdecr.inputs
+    assert len(store.list_ready(ticker="MU")) == 1
+
+
 def test_required_mode_fails_without_bundle_and_reuse_semantics_stay_first(tmp_path: Path) -> None:
     settings = DoxAgentSettings(
         _env_file=None,
@@ -211,6 +249,20 @@ def test_default_plan_only_changes_cdecr_inputs() -> None:
     }
 
 
+def test_default_plan_freezes_o4_delivery_but_can_restore_original_topology() -> None:
+    frozen = default_plan()
+    enabled = default_plan(o4_delivery_enabled=True)
+
+    assert "o4.deliver" not in {node.key for node in frozen}
+    assert next(node for node in frozen if node.key == "o4.register").dependencies == [
+        "o4.configure"
+    ]
+    assert "o4.deliver" in {node.key for node in enabled}
+    assert next(node for node in enabled if node.key == "o4.register").dependencies == [
+        "o4.deliver"
+    ]
+
+
 def test_seeded_prebuilt_job_is_idempotent(tmp_path: Path) -> None:
     coordinator = TickerCDECRPipelineCoordinator(
         registry_root=tmp_path / "registry",
@@ -266,6 +318,36 @@ async def test_adapter_required_mode_never_falls_back_to_local_cdecr(
     assert not (
         tmp_path / "initialization" / "workspaces" / run.initialization_id / "registry"
     ).exists()
+
+
+@pytest.mark.asyncio
+async def test_archived_prebuilt_reference_is_rejected_outside_explicit_prebuilt_modes(
+    tmp_path: Path,
+) -> None:
+    repository = InitializationRepository(tmp_path / "initialization.sqlite3")
+    run = repository.submit(
+        "MU",
+        datetime.now(UTC),
+        [
+            NodeSpec(
+                key="cdecr",
+                block="CDECR",
+                inputs={"_prebuilt_cdecr": {"bundle_id": "archived-bundle"}},
+            )
+        ],
+    )
+    lease = repository.claim("worker")
+    assert lease is not None
+    node = repository.begin(lease, "cdecr", {})
+
+    for mode in ("LOCAL_ONLY", "REMOTE_EXECUTOR"):
+        adapter = ResearchInitializationAdapter(
+            DoxAgentSettings(_env_file=None, cdecr_execution_mode=mode)
+        )
+        with pytest.raises(RuntimeError, match="CDECR_PREBUILT_DISABLED"):
+            await adapter.execute(NodeContext(repository, lease, node))
+
+    assert repository.get(run.initialization_id).status.value == "RUNNING"
 
 
 @pytest.mark.asyncio
@@ -384,6 +466,7 @@ async def test_adapter_imports_prebuilt_and_skips_cdecr_execution(
         event_library_root=str(tmp_path / "events"),
         codex_runtime_sqlite_path=str(tmp_path / "research.sqlite3"),
         cdecr_prebuilt_root=str(store.root),
+        cdecr_execution_mode="LOCAL_OR_PREBUILT",
     )
     adapter = ResearchInitializationAdapter(settings)
     result = await adapter.execute(context)
@@ -392,3 +475,32 @@ async def test_adapter_imports_prebuilt_and_skips_cdecr_execution(
     repository.complete(lease, "cdecr", result)
     await adapter.after_complete(context, result)
     assert (store.root / "consumed" / run.initialization_id / reference.bundle_id).is_dir()
+
+
+@pytest.mark.asyncio
+async def test_remote_adapter_persists_dispatch_before_any_local_cdecr_work(tmp_path: Path) -> None:
+    repository = InitializationRepository(tmp_path / "initialization.sqlite3")
+    run = repository.submit(
+        "MU",
+        datetime.now(UTC),
+        [NodeSpec(key="cdecr", block="CDECR")],
+    )
+    lease = repository.claim("initialization-controller")
+    assert lease is not None
+    node = repository.begin(lease, "cdecr", {})
+    adapter = ResearchInitializationAdapter(
+        DoxAgentSettings(
+            _env_file=None,
+            cdecr_execution_mode="REMOTE_EXECUTOR",
+            cdecr_dispatch_identity="production",
+        )
+    )
+
+    with pytest.raises(ExecutionDeferred) as deferred:
+        await adapter.execute(NodeContext(repository, lease, node))
+
+    dispatch = repository.cdecr_dispatch(deferred.value.dispatch_id)
+    assert dispatch is not None
+    assert dispatch["initialization_id"] == run.initialization_id
+    assert dispatch["execution_identity"] == "production"
+    assert dispatch["status"] == "QUEUED"

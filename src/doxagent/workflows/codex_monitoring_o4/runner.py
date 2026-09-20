@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
 from pathlib import Path
-from typing import Protocol, cast
+from typing import Any, Protocol, cast
 
 from pydantic import BaseModel, ValidationError
 
@@ -56,6 +57,12 @@ class MonitoringO4AgentRunner:
         model_provider: str | None = None,
         timeout_seconds: int = 7_200,
         prompt_root: str | Path | None = None,
+        initialization_prompt_transform: Callable[
+            [WorkerRunRequest], tuple[WorkerRunRequest, dict[str, Any] | None]
+        ]
+        | None = None,
+        initialization_prompt_observer: Callable[[WorkerRunRequest, dict[str, Any]], None]
+        | None = None,
     ) -> None:
         self._worker = worker
         self._workspace = workspace
@@ -64,6 +71,8 @@ class MonitoringO4AgentRunner:
         self._model_provider = model_provider
         self._timeout_seconds = timeout_seconds
         self._progress = DeliveryProgressCoordinator()
+        self._initialization_prompt_transform = initialization_prompt_transform
+        self._initialization_prompt_observer = initialization_prompt_observer
         self._prompt_root = (
             Path(prompt_root)
             if prompt_root is not None
@@ -180,8 +189,21 @@ class MonitoringO4AgentRunner:
                 max_subagents=0,
                 timeout_seconds=self._timeout_seconds,
             )
+            repair_prompt: dict[str, Any] | None = None
+            if request.initialization_id and self._initialization_prompt_transform is not None:
+                worker_request, repair_prompt = self._initialization_prompt_transform(
+                    worker_request
+                )
             if request.initialization_id:
                 worker_request = self._repository.freeze_worker_dispatch(worker_request)
+            if (
+                repair_prompt is not None
+                and worker_request.prompt == repair_prompt.get("candidate_prompt")
+                and self._initialization_prompt_observer is not None
+            ):
+                observed = dict(repair_prompt)
+                observed.pop("candidate_prompt", None)
+                self._initialization_prompt_observer(worker_request, observed)
             job = await self._worker.run(worker_request)
         except Exception as exc:
             committed, commit_error = await self.commit_progressive_checkpoint(

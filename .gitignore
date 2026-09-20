@@ -55,3 +55,5 @@ exports/document1_document2_smoke/
 /exports/free_publishers_chrome_20260913/
 /exports/free_publishers_*probe.py
 /outputs/
+/init-issue.md
+/.initialization-repair/

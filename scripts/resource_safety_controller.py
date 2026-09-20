@@ -27,6 +27,8 @@ class Sample:
     swap_io_bytes_per_minute: float
     high_events: int
     oom_events: int
+    descendant_oom_events: int = 0
+    local_oom_events_available: bool = True
 
 
 def _read_int(path: Path) -> int:
@@ -85,6 +87,10 @@ class SafetyController:
             swap_rate = max(0, pages - previous_pages) * PAGE_SIZE * 60 / elapsed
         self._previous_swap = (now, pages)
         events = _key_values(self.root / "memory.events")
+        local_path = self.root / "memory.events.local"
+        local_events = _key_values(local_path) if local_path.is_file() else {}
+        hierarchical_oom = events.get("oom", 0) + events.get("oom_kill", 0)
+        local_oom = local_events.get("oom", 0) + local_events.get("oom_kill", 0)
         return Sample(
             observed_at=time.time(),
             memory_current=_read_int(self.root / "memory.current"),
@@ -95,7 +101,9 @@ class SafetyController:
             psi_full_avg10=_psi(self.root, "full"),
             swap_io_bytes_per_minute=swap_rate,
             high_events=events.get("high", 0),
-            oom_events=events.get("oom", 0) + events.get("oom_kill", 0),
+            oom_events=local_oom,
+            descendant_oom_events=max(0, hierarchical_oom - local_oom),
+            local_oom_events_available=local_path.is_file(),
         )
 
     def evaluate(self, sample: Sample, now: float | None = None) -> tuple[str, list[str]]:

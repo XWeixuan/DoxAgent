@@ -1,0 +1,41 @@
+services:
+  initialization-guardian:
+    cgroup_parent: doxagent-app.slice
+    mem_limit: 2g
+    memswap_limit: 3g
+    pids_limit: 128
+    image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:production}
+    restart: unless-stopped
+    init: true
+    env_file: ["${DOXAGENT_V2_ENV_FILE:-.env.v2}"]
+    environment:
+      DOXAGENT_INITIALIZATION_REPAIR_ENABLED: "true"
+      DOXAGENT_INITIALIZATION_REPAIR_ROOT: /var/lib/doxagent/initialization-repair
+      DOXAGENT_INITIALIZATION_REPAIR_SOURCE_REPOSITORY: /repair-source
+      DOXAGENT_INITIALIZATION_REPAIR_PRODUCTION_CONTAINER: ${DOXAGENT_INITIALIZATION_REPAIR_PRODUCTION_CONTAINER:?set the exact v2-initialization container name}
+      DOXAGENT_INITIALIZATION_REPAIR_AGENT_IMAGE: ${DOXAGENT_INITIALIZATION_REPAIR_AGENT_IMAGE:-doxagent-initialization-repair-agent:server}
+      DOXAGENT_INITIALIZATION_REPAIR_CODEX_AUTH_FILE: /var/lib/doxagent/initialization-repair/auth.json
+    command:
+      - doxagent-initialization-repair
+      - guardian
+      - --initialization-db
+      - /data/initialization/control.sqlite3
+      - --runtime-db
+      - /data/runtime/runtime.sqlite3
+    volumes:
+      - v2-data:/data
+      - type: bind
+        source: ${DOXAGENT_INITIALIZATION_REPAIR_HOST_ROOT:-/var/lib/doxagent/initialization-repair}
+        target: /var/lib/doxagent/initialization-repair
+      - type: bind
+        source: ${DOXAGENT_INITIALIZATION_REPAIR_SOURCE_REPOSITORY:?set the deployed source repository path}
+        target: /repair-source
+        read_only: true
+      - /var/run/docker.sock:/var/run/docker.sock
+    security_opt: ["no-new-privileges:true"]
+    stop_grace_period: 60s
+
+volumes:
+  v2-data:
+    external: true
+    name: ${DOXAGENT_V2_DATA_VOLUME:-doxagent-v2_v2-data}

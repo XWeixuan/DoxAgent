@@ -261,7 +261,7 @@ ReadContext：OVERVIEW 禁止 ticker，其余 page 必须 ticker。RESEARCH/EXPE
 
 正常/阻塞只对无未完成初始化、未暂停/停止、未移除的 ticker 统计；BLOCKED 计阻塞；NORMAL/DEGRADED 且仍可运行计正常。UNKNOWN 不归入任一类，对应计数 coverage=PARTIAL。个别源失败或孤立 Case gap 不能自动升为整个 ticker BLOCKED。
 
-OverviewMetrics 的 policy_hits/trade_executed/trade_triggered/messages 依 §3.4。api_token_cost 只计可计价 V2 API 调用，Codex 不估算美元费用，缺少可计价部分通过 coverage 暴露。nonroutine_repairs 固定 AVAILABLE 0、无环比，明确此版本 Repair 未纳入自动运行。收益依 §10，Paper/Live 分开。
+OverviewMetrics 的 policy_hits/trade_executed/trade_triggered/messages 依 §3.4。api_token_cost 只计可计价 V2 API 调用，Codex 不估算美元费用，缺少可计价部分通过 coverage 暴露。nonroutine_repairs 统计所选交易日窗口内成功创建的 Ticker Initialization Guardian repair round；同一 round 的 Agent follow-up、状态更新、Control/Executor 重试不得重复计数，且不提供环比。收益依 §10，Paper/Live 分开。
 
 ## 5. 基础投研与预期研究
 

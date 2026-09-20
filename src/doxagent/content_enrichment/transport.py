@@ -223,7 +223,8 @@ class PublicTransport:
             raise ValueError("domain_cooldown")
         kwargs = {
             "headers": {
-                "Accept": "text/markdown,text/plain;q=0.9,*/*;q=0.8" if phase == "reader"
+                "Accept": "text/markdown,text/plain;q=0.9,*/*;q=0.8"
+                if phase == "reader"
                 else "text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8",
                 "Accept-Language": "en-US,en;q=0.9",
             },

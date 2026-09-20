@@ -85,6 +85,12 @@ class Metrics:
             "processed_cases": {"runtime": {"runtime_v2_cases"}},
             "policy_hits": {"runtime": {"runtime_v2_cases", "runtime_v2_w3_cases"}},
             "policy_ar_hits": {"runtime": {"runtime_v2_cases", "runtime_v2_w3_cases"}},
+            "nonroutine_repairs": {
+                "initialization": {
+                    "initialization_repair_incidents",
+                    "initialization_repair_rounds",
+                }
+            },
         }.get(identity)
         if not requirements:
             return False

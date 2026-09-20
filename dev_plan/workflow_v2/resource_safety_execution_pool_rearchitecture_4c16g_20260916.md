@@ -365,23 +365,17 @@ Safety Controller 每 2 秒左右读取 Linux/cgroup 真实指标并发布一个
 
 ### 10.2 服务 hard limit 初值
 
-服务 limit 是故障隔离上限，不是预分配、reservation 或 dispatcher capacity；总和允许超过父 cgroup。
+本节原来的固定服务上限会在父级仍有充足资源时制造局部 OOM，已经由
+`service_cgroup_elastic_memory_cdecr_executor_4c16g_20260921.md` 全面取代。
 
-| 服务/执行域 | 建议 MemoryMax 初值 | 说明 |
-|---|---:|---|
-| Codex Worker + capsules | 8 GiB | 允许 10–20+ I/O turn 探索；实际压力由顶层 Controller 观察 |
-| Scheduler/Runtime | 2 GiB | 多 ticker durable state 与轻量推进 |
-| Message Bus | 2 GiB | 保证接入、正文排队和浏览器暂态空间 |
-| API | 2 GiB | 查询 worker、缓存与突发读取 |
-| Initialization controller | 1.5 GiB | 多 run 编排，不长期承载模型/CDECR |
-| 独立 operator/browser scope（如存在） | 3 GiB | Chromium 的局部故障边界 |
-| Content enrichment | 1 GiB | HTTP/正文处理；浏览器另做局部保护 |
-| Projector | 1 GiB | 固定批处理，无动态 peak lease |
-| O4 | 768 MiB | 轻量调度；Codex/Browser execution 不在此重复预约 |
-| Delivery | 768 MiB | 幂等交付与 outbox |
-| Control | 512 MiB | 压力下仍需响应 |
-| Executor | 512 MiB | 交易状态提交不受后台研究 Gate |
-| Web | 128 MiB | 静态/代理服务 |
+新口径为：顶层 14G/15G/1G 是共享容量边界；Codex、API、Message Bus、Runtime、
+Content Enrichment 和 Projector 等弹性执行域使用与父级等宽的 15g RAM / 16g
+RAM+swap 边界；轻量稳定服务只保留足够宽松的故障熔断线。CDECR 使用独立常驻
+executor，初始 6g RAM / 7g RAM+swap，Initialization controller 不再承载其重型
+子进程、冻结快照和 Delta 编译。
+
+这些 limit 不预分配资源，也不相加形成准入预算。所有子级额外 swap 共同受父级
+1 GiB 上限约束。逐服务数值、进程归属、恢复协议和验收矩阵以 2026-09-21 方案为准。
 
 不建议用严格 CPU quota 把 I/O 型服务压死。大多数服务使用 CPU weight/正常竞争；只有持续 CPU-heavy 子进程可设置约 2.5 核的局部上限，为 Message Bus、数据库和控制面保留调度机会。
 
@@ -490,7 +484,7 @@ Safety Controller 每 2 秒左右读取 Linux/cgroup 真实指标并发布一个
 
 ### Phase A：先建立物理边界和观测
 
-1. 配置顶层 14G/15G/1G cgroup 与静态 service hard limit。
+1. 配置顶层 14G/15G/1G cgroup、弹性域等宽边界与宽松故障 hard limit。
 2. Safety Controller 先以只读 shadow 方式发布 NORMAL/PRESSURE/CRITICAL。
 3. 增加 queue delay、active execution、RSS/PSI/swap/OOM 遥测。
 4. 验证 Controller 停止不会阻断任何业务。
@@ -562,7 +556,7 @@ Safety Controller 每 2 秒左右读取 Linux/cgroup 真实指标并发布一个
 4. 逼近 15G 或 OOM 事件增长时进入 CRITICAL，只回收一个可恢复 background execution。
 5. 已健康运行的 background 在普通 PRESSURE 下不被强杀。
 6. Safety Controller 停止或快照过期不会停止 dispatch；cgroup hard boundary 仍有效。
-7. 单 capsule 泄漏受 service/capsule cgroup 限制，不能拖死宿主。
+7. 弹性域泄漏最终受顶层 app cgroup 限制；CDECR/Browser 等独立故障域受自身宽松上限限制。
 
 ### 16.3 恢复与一致性
 

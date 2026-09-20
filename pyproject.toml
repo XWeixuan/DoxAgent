@@ -38,6 +38,7 @@ dependencies = [
 
 [project.scripts]
 doxagent-ticker-init = "doxagent.ticker_initialization.cli:main"
+doxagent-initialization-repair = "doxagent.initialization_repair.cli:main"
 doxagent-v2-delivery = "doxagent.persistent_runtime_v2.delivery_worker:main"
 doxagent-v2-control = "doxagent.v2_control.worker:main"
 doxagent-v2-read = "doxagent.v2_read.cli:main"

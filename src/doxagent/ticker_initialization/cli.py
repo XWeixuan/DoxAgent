@@ -38,6 +38,10 @@ def parser() -> argparse.ArgumentParser:
             command.add_argument("--reason", required=True)
     worker = commands.add_parser("worker")
     worker.add_argument("--once", action="store_true")
+    repair = commands.add_parser("repair-execute")
+    repair.add_argument("--initialization-id", required=True)
+    repair.add_argument("--incident-id", required=True)
+    repair.add_argument("--round-id", required=True)
     activate = commands.add_parser("activate")
     activate.add_argument("--ticker", required=True)
     activate.add_argument("--artifacts", type=Path, required=True)
@@ -147,14 +151,59 @@ async def _run_parallel_loop(workers: list[InitializationWorker]) -> int:
     return 0
 
 
+async def _repair_execute(
+    repo: InitializationRepository,
+    initialization_id: str,
+    incident_id: str,
+    round_id: str,
+) -> int:
+    """Execute only the repair-routed initialization named by all three identities."""
+
+    from doxagent.trade_execution.worker import WriterLock
+
+    from .catalog import adapter_factory
+
+    lock_path = repo.path.parent / f"repair-{initialization_id}"
+    with WriterLock(lock_path):
+        worker = InitializationWorker(repo, adapter_factory)
+        lease = repo.claim_repair(
+            initialization_id,
+            incident_id,
+            round_id,
+            worker.owner,
+            lease_seconds=worker.lease_seconds,
+        )
+        if lease is None:
+            raise InitializationError("REPAIR_ROUTE_NOT_CLAIMABLE")
+        result = await worker.run_claimed(lease)
+        while result is not None and result.status is RunStatus.RUNNING:
+            await asyncio.sleep(0.5)
+            lease = repo.claim_repair(
+                initialization_id,
+                incident_id,
+                round_id,
+                worker.owner,
+                lease_seconds=worker.lease_seconds,
+            )
+            if lease is None:
+                result = repo.get(initialization_id)
+                continue
+            result = await worker.run_claimed(lease)
+        if result is None:
+            raise InitializationError("REPAIR_EXECUTION_LOST")
+        print(result.model_dump_json())
+        return 1 if result.status == RunStatus.FAILED else 0
+
+
 def main(argv: list[str] | None = None) -> int:
     args = parser().parse_args(argv)
     try:
         from doxagent.settings import DoxAgentSettings
 
+        settings = DoxAgentSettings()
         repo = InitializationRepository(
             args.database
-            or DoxAgentSettings().ticker_initialization_control_path
+            or settings.ticker_initialization_control_path
             or Path(".tmp/ticker_initialization/control.sqlite3")
         )
         if args.command in {"submit", "reinitialize"}:
@@ -166,7 +215,9 @@ def main(argv: list[str] | None = None) -> int:
                     for n in json.loads(args.plan.read_text(encoding="utf-8"))
                 ]
                 if args.plan
-                else default_plan()
+                else default_plan(
+                    o4_delivery_enabled=settings.ticker_initialization_o4_delivery_enabled
+                )
             )
             run = repo.submit(
                 args.ticker,
@@ -279,8 +330,17 @@ def main(argv: list[str] | None = None) -> int:
                     reason=args.reason,
                 ).model_dump_json(indent=2)
             )
-        else:
+        elif args.command == "worker":
             return asyncio.run(_worker(repo, args.once))
+        else:
+            return asyncio.run(
+                _repair_execute(
+                    repo,
+                    args.initialization_id,
+                    args.incident_id,
+                    args.round_id,
+                )
+            )
         return 0
     except (InitializationError, ValueError, KeyError) as exc:
         print(json.dumps({"error": str(exc)}, ensure_ascii=False))

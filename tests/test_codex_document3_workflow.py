@@ -366,13 +366,49 @@ def test_validator_is_lenient_and_marks_coverage_problems_partial() -> None:
                 resolved=True,
             )
         ],
-        policies=[_policy()],
+        policies=[_policy(), _policy("tmp_2", shell_id="S2", expectation_id="E2", gap_id="G2")],
     )
 
     assert report.valid is True
     assert report.publication_state is PublicationState.PARTIAL
     assert {item.code for item in report.findings} >= {"UNCOVERED_GAP"}
     assert not report.blocking_findings
+
+
+def test_validator_blocks_when_any_expected_shell_has_zero_policy() -> None:
+    report = validate_initial_artifacts(
+        expected_gap_refs=[("S1", "E1", "G1"), ("S2", "E2", "G2")],
+        worklist=[
+            WorklistEntry(
+                shell_id="S1",
+                expectation_id="E1",
+                gap_id="G1",
+                path_id="P1",
+                direction=PolicyDecision.LONG,
+                path_summary="compiled",
+                d2_boundary_sufficient=True,
+                status=PathStatus.COMPILED,
+                policy_ids=["tmp_1"],
+            ),
+            WorklistEntry(
+                shell_id="S2",
+                expectation_id="E2",
+                gap_id="G2",
+                path_id="P2",
+                direction=PolicyDecision.SHORT,
+                path_summary="unresolved",
+                d2_boundary_sufficient=True,
+                status=PathStatus.UNRESOLVED,
+                unresolved_reason="公开信息不足",
+            ),
+        ],
+        calibration_log=[],
+        policies=[_policy()],
+    )
+
+    assert report.valid is False
+    assert report.publication_state is PublicationState.PARTIAL
+    assert [(item.code, item.blocking) for item in report.findings] == [("SHELL_ZERO_POLICY", True)]
 
 
 def test_many_independent_conditions_are_neutral_for_publication() -> None:
@@ -1164,6 +1200,45 @@ class _SecondShellCompileRetryWorker(_MultiShellO3WorkerStub):
         return await super().run(request)
 
 
+class _FinalReviewRemovesSecondShellPolicyWorker(_MultiShellO3WorkerStub):
+    async def run(self, request):
+        if request.node is CodexD3Node.O3_FINAL_REVIEW:
+            work_response = await self.workspace.read_text(
+                request.run_id, "output/work/worklist.jsonl"
+            )
+            worklist = [
+                WorklistEntry.model_validate_json(line)
+                for line in (work_response.content or "").splitlines()
+                if line.strip()
+            ]
+            worklist = [
+                item.model_copy(
+                    update={
+                        "status": PathStatus.UNRESOLVED,
+                        "policy_ids": [],
+                        "unresolved_reason": "Final Review removed the unusable Shell policy.",
+                    }
+                )
+                if item.shell_id == "S2"
+                else item
+                for item in worklist
+            ]
+            await self.workspace.write_text(
+                request.run_id,
+                "output/work/worklist.jsonl",
+                "".join(item.model_dump_json() + "\n" for item in worklist),
+            )
+            policy_path = (
+                self.workspace.local.ensure_run(request.run_id)
+                / "output"
+                / "work"
+                / "policies"
+                / "tmp_2.json"
+            )
+            policy_path.unlink()
+        return await super().run(request)
+
+
 def _refactored_prompt_root(tmp_path: Path) -> Path:
     source = Path(__file__).resolve().parents[1] / "prompts" / "codex_v2" / "document3"
     target = tmp_path / "document3-prompts"
@@ -1489,6 +1564,47 @@ async def test_initialize_runs_two_turns_per_shell_with_document2_slices(
     assert [shell.shell_id for shell in first_slice.shells] == ["S1"]
     assert [shell.shell_id for shell in second_slice.shells] == ["S2"]
     assert first_slice.document2_run_id == second_slice.document2_run_id == "d2-mu"
+
+
+@pytest.mark.asyncio
+async def test_initialize_fails_when_final_review_leaves_one_shell_without_policy(
+    tmp_path: Path,
+) -> None:
+    runtime = InMemoryCodexRuntimeRepository()
+    policy_repository = InMemoryDocument3PolicyRepository()
+    _seed_published_d2(runtime, shell_count=2)
+    workspace = _AsyncWorkspace(tmp_path / "zero-policy-shell-workspace")
+    worker = _FinalReviewRemovesSecondShellPolicyWorker(workspace)
+    runner = Document3AgentRunner(
+        worker=worker,
+        workspace=workspace,
+        prompt_root=_refactored_prompt_root(tmp_path),
+        model="test-model",
+        model_provider=None,
+        runtime_repository=runtime,
+    )
+    orchestrator = Document3Orchestrator(
+        input_preparer=Document3InputPreparer(
+            runtime_repository=runtime,
+            policy_repository=policy_repository,
+        ),
+        agent_runner=runner,
+        policy_repository=policy_repository,
+        runtime_repository=runtime,
+    )
+
+    with pytest.raises(ValueError, match="D3 Shell 没有任何最终 Policy: S2"):
+        await orchestrator.initialize(
+            ticker="MU",
+            document2_run_id="d2-mu",
+            run_id="d3-mu-zero-policy-shell",
+            cutoff_at=NOW,
+        )
+
+    bundle = runtime.get_bundle("d3-mu-zero-policy-shell")
+    assert bundle is not None
+    assert bundle.status == "failed"
+    assert policy_repository.get_current("MU") is None
 
 
 @pytest.mark.asyncio

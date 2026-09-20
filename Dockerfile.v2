@@ -1,8 +1,13 @@
 # Production backend and Codex worker share one immutable application image.
 FROM ghcr.io/astral-sh/uv:0.8.14-python3.11-bookworm-slim
+ARG DOXAGENT_BUILD_COMMIT=unversioned
+ARG DOXAGENT_SOURCE_SHA256=""
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 UV_LINK_MODE=copy \
     UV_PROJECT_ENVIRONMENT=/app/.venv PATH="/app/.venv/bin:$PATH" \
-    PLAYWRIGHT_BROWSERS_PATH=/ms-playwright CODEX_HOME=/data/codex-home
+    PLAYWRIGHT_BROWSERS_PATH=/ms-playwright CODEX_HOME=/data/codex-home \
+    DOXAGENT_BUILD_COMMIT=${DOXAGENT_BUILD_COMMIT}
+LABEL org.opencontainers.image.revision=${DOXAGENT_BUILD_COMMIT} \
+      doxagent.source.sha256=${DOXAGENT_SOURCE_SHA256}
 WORKDIR /app
 RUN sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources \
     && printf 'Acquire::Retries "3";\n' > /etc/apt/apt.conf.d/80-retries \

@@ -650,7 +650,7 @@ Reasoning 和完整正文默认不进入列表首屏，可分别按需读取。
 
 已确认不做或暂不做的能力：
 
-- O4 非例行 Repair 当前固定为 0；
+- O4 非例行 Repair 暂未纳入；Ticker Initialization Guardian repair round 已接入非例行维护触发数；
 - 收益审计正文；
 - Codex Token 到订阅周额度的换算；
 - V1 数据回退；

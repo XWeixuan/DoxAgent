@@ -1,6 +1,7 @@
 import base64
 import json
 import time
+from datetime import UTC, datetime, timedelta
 
 import httpx
 import pytest
@@ -100,3 +101,74 @@ def test_api_startup_does_not_create_missing_read_database(tmp_path):
     with pytest.raises(sqlite3.OperationalError):
         create_app(store=ReadStore(path), control=control, auth=OfflineAuth())
     assert not path.exists()
+
+
+@pytest.mark.parametrize("repair_count", [0, 2])
+def test_overview_nonroutine_repairs_uses_projected_round_count(tmp_path, repair_count):
+    store = ReadStore(tmp_path / "read.db")
+    store.migrate()
+    now = datetime(2026, 9, 21, 16, tzinfo=UTC)
+    day = "2026-09-21"
+    store.ingest(
+        "fixture",
+        "ticker",
+        [{"kind": "ticker", "ticker": "MU", "id": "MU", "data": {"removed": False}}],
+    )
+    contributions = [
+        {
+            "metric": "nonroutine_repairs",
+            "ticker": "MU",
+            "entity": f"round-{index}",
+            "day": day,
+            "value": 1,
+        }
+        for index in range(repair_count)
+    ]
+    store.ingest("initialization", "repair-rounds", [], contributions=contributions)
+    store.ingest(
+        "capture_coverage",
+        "initialization-proof",
+        [
+            {
+                "kind": "capture_coverage",
+                "ticker": "",
+                "id": "initialization",
+                "data": {
+                    "source": "initialization",
+                    "started_at": (now - timedelta(days=60)).isoformat(),
+                    "end_at": (now + timedelta(days=2)).isoformat(),
+                    "closed_end_at": (now + timedelta(days=2)).isoformat(),
+                    "complete": True,
+                    "tables_json": json.dumps(
+                        [
+                            "initialization_repair_incidents",
+                            "initialization_repair_rounds",
+                        ]
+                    ),
+                },
+            }
+        ],
+    )
+    control = ControlRepository(RuntimeJournal(tmp_path / "runtime.db"))
+    control.migrate()
+    app = create_app(store=store, control=control, auth=OfflineAuth())
+    with TestClient(app) as client:
+        view = app.state.views.create(
+            "developer",
+            "OVERVIEW",
+            None,
+            "CURRENT_TRADING_DAY",
+            now=now,
+        )
+        response = client.get(
+            PREFIX + "/overview/metrics",
+            params={"view_id": view["view_id"]},
+            headers={"Authorization": "Bearer offline"},
+        )
+    assert response.status_code == 200, response.text
+    metric = response.json()["data"]["data"]["nonroutine_repairs"]
+    assert metric["current"]["state"] == "AVAILABLE"
+    assert metric["current"]["value"] == str(repair_count)
+    assert metric["current_coverage"]["state"] == "COMPLETE"
+    assert metric["previous"]["reason"] == "NOT_APPLICABLE"
+    assert metric["change_pct"]["reason"] == "NOT_APPLICABLE"

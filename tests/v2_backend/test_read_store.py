@@ -43,6 +43,27 @@ def test_source_capture_commits_with_fact_and_rolls_back_with_failure(tmp_path):
     assert outbox.backfill("runtime_v2_cases", limit=1) == 0
 
 
+def test_source_migration_refreshes_capture_table_coverage(tmp_path):
+    from doxagent.ticker_initialization import InitializationRepository
+
+    repository = InitializationRepository(tmp_path / "initialization.db")
+    outbox = SourceOutbox(repository.path, "initialization")
+    outbox.migrate()
+    with outbox.connection(write=True) as db:
+        db.execute(
+            "UPDATE v2_capture_meta SET tables_json='[\"initialization_runs\"]' "
+            "WHERE source='initialization'"
+        )
+    outbox.migrate()
+    capture = outbox.capture()
+    assert capture is not None
+    tables = set(__import__("json").loads(capture["tables_json"]))
+    assert {
+        "initialization_repair_incidents",
+        "initialization_repair_rounds",
+    } <= tables
+
+
 def test_snapshot_does_not_drift_and_out_of_order_entity_does_not_regress(tmp_path):
     store = ReadStore(tmp_path / "read.db")
     store.migrate()

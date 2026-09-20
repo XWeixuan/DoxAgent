@@ -71,10 +71,8 @@ def install(app: FastAPI) -> None:
             ),
         )
         data["nonroutine_repairs"].update(
-            current=available("0"),
             previous=missing("NOT_APPLICABLE", "NOT_APPLICABLE"),
             change_pct=missing("NOT_APPLICABLE", "NOT_APPLICABLE"),
-            current_coverage=coverage(complete=True),
             previous_coverage=None,
             provisional=False,
         )

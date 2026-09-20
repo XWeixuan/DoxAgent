@@ -18,7 +18,7 @@ def seeking_alpha_original_title(scripts: list[str], url: str) -> str | None:
         if not prefix:
             continue
         try:
-            data, _ = json.JSONDecoder().raw_decode(script[prefix.end():])
+            data, _ = json.JSONDecoder().raw_decode(script[prefix.end() :])
         except ValueError:
             continue
         for key in ("article", "response", "data"):
@@ -74,7 +74,10 @@ def public_api_html(text: str, article_url: str) -> str | None:
             continue
         return (
             '<link rel="canonical" href="' + escape(article_url, quote=True) + '">'
-            '<article><h1>' + heading + '</h1><div itemprop="articleBody">'
-            + body + '</div></article>'
+            "<article><h1>"
+            + heading
+            + '</h1><div itemprop="articleBody">'
+            + body
+            + "</div></article>"
         )
     return None

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["incident_id", "overrides"],
+  "properties": {
+    "incident_id": {"type": "string", "minLength": 1},
+    "overrides": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["node_key", "supplement", "reason"],
+        "properties": {
+          "node_key": {"type": "string", "minLength": 1},
+          "supplement": {"type": "string", "minLength": 1},
+          "reason": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}

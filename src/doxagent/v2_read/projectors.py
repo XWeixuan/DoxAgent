@@ -86,7 +86,27 @@ class DomainProjectors:
         table, row, value = event["table_name"], event["row"], native(event)
         ticker = value.get("ticker", row.get("ticker", ""))
         initialization_run = None
-        if table.startswith("initialization_"):
+        if table == "initialization_repair_incidents":
+            ticker = value["ticker"]
+        elif table == "initialization_repair_rounds":
+            with self.store.connect() as db:
+                found = db.execute(
+                    "SELECT ticker FROM objects "
+                    "WHERE kind='native:initialization_repair_incidents' "
+                    "AND id=? AND valid_to IS NULL",
+                    (value["incident_id"],),
+                ).fetchone()
+                if not found and event["operation"] == "DELETE":
+                    found = db.execute(
+                        "SELECT ticker FROM objects "
+                        "WHERE kind='native:initialization_repair_rounds' "
+                        "AND id=? AND valid_to IS NULL",
+                        (value["round_id"],),
+                    ).fetchone()
+            if not found:
+                raise ValueError("repair incident must be indexed before repair round")
+            ticker = found[0]
+        elif table.startswith("initialization_"):
             if table == "initialization_runs":
                 initialization_run = value
             else:
@@ -157,6 +177,10 @@ class DomainProjectors:
             "runtime_v2_policy_activations",
         }:
             identity = event["entity_id"]
+        if table == "initialization_repair_incidents":
+            identity = value["incident_id"]
+        if table == "initialization_repair_rounds":
+            identity = value["round_id"]
         record = {
             "kind": "native:" + table,
             "ticker": ticker,
@@ -166,6 +190,16 @@ class DomainProjectors:
             "source_id": value.get("source_id"),
         }
         records, metrics = [record], []
+        if table == "initialization_repair_rounds":
+            metrics.append(
+                {
+                    "metric": "nonroutine_repairs",
+                    "ticker": ticker,
+                    "entity": value["round_id"],
+                    "day": semantic_day(datetime.fromisoformat(value["created_at"])).isoformat(),
+                    "value": None if event["operation"] == "DELETE" else 1,
+                }
+            )
         if table == "v2_analysis_admission":
             records.append(
                 {

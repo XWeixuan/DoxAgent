@@ -31,6 +31,8 @@ frontend/dashboard/dist/
 *.egg-info/
 htmlcov/
 .coverage
+/.initialization-repair/
+/init-issue.md
 
 eval/brief_state_exports/
 references/

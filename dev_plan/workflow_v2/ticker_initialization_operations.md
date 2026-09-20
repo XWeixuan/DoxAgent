@@ -48,7 +48,7 @@ uv run doxagent-ticker-init reinitialize --ticker MU --research-cutoff-at <times
 - 显式 `activate` / `replace-artifact` / `rollback` 才改变消费者的 active revision；这些操作同样排他、可恢复并保留审计。新的输入只影响新 Case，正在运行的 Case 保持原有引用。
 - `reinitialize` 是显式完整重初始化入口，默认不会自动触发；同一 ticker 有 active operation 时所有重复请求都被拒绝。
 
-内部原始输入、完整 receipt、workspace snapshot、错误详情仅在本地。不要把 `inspect-node` 输出或数据库随意上传。进度 phase 为 UPSTREAM、O2、D2、D3、O4_CONFIGURE、O4_DELIVER、REGISTER、ACTIVATE、START_BUS、START_RUNTIME、VERIFY_READY；动态节点不提供误导性的固定百分比。PARTIAL/DEGRADED 仅为诊断标签，运行结果只使用 SUCCEEDED/FAILED。
+内部原始输入、完整 receipt、workspace snapshot、错误详情仅在本地。不要把 `inspect-node` 输出或数据库随意上传。进度 phase 为 UPSTREAM、O2、D2、D3、O4_CONFIGURE、REGISTER、ACTIVATE、START_BUS、START_RUNTIME、VERIFY_READY；仅当显式启用 `DOXAGENT_TICKER_INITIALIZATION_O4_DELIVERY_ENABLED` 时才在 O4_CONFIGURE 与 REGISTER 之间出现 O4_DELIVER。动态节点不提供误导性的固定百分比。PARTIAL/DEGRADED 仅为诊断标签，运行结果只使用 SUCCEEDED/FAILED。
 
 ### 备份与灾难恢复
 

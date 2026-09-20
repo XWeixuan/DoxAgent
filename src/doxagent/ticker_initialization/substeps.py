@@ -430,8 +430,16 @@ class DurableWorker:
             return await self.worker.run(request)
         frozen = step.node.receipt.get("worker_request")
         if frozen is None:
+            from doxagent.initialization_repair.repair_prompts import apply
+
+            request, repair_prompt = apply(
+                request,
+                repository=step.repository,
+                initialization_id=step.run.initialization_id,
+                node_key=step.node.key,
+            )
             request = request.model_copy(update={"idempotency_key": step.node.execution_id})
-            step.checkpoint(
+            checkpoint: dict[str, Any] = dict(
                 worker_request=request.model_dump(mode="json"),
                 dispatch_provenance={
                     "request_sha256": hashlib.sha256(
@@ -444,6 +452,9 @@ class DurableWorker:
                     "workflow_version": request.workflow_version,
                 },
             )
+            if repair_prompt is not None:
+                checkpoint["repair_prompt"] = repair_prompt
+            step.checkpoint(**checkpoint)
         else:
             request = WorkerRunRequest.model_validate(frozen)
         job = await self.worker.run(request)

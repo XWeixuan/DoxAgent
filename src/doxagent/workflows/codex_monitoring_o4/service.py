@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
+from typing import Any
 
 from doxagent.codex_runtime.client import HttpCodexWorkerClient
+from doxagent.codex_worker.schema import WorkerRunRequest
 from doxagent.crawler_plane.factory import build_crawler_plane_service
 from doxagent.crawler_plane.service import CrawlerPlaneService
 from doxagent.message_bus_v2.factory import build_message_bus_v2_service
@@ -45,6 +48,12 @@ def build_monitoring_o4_runtime(
     context_provider: O4ConfigurationContextProvider | None = None,
     initialization_id: str | None = None,
     ticker: str | None = None,
+    initialization_prompt_transform: Callable[
+        [WorkerRunRequest], tuple[WorkerRunRequest, dict[str, Any] | None]
+    ]
+    | None = None,
+    initialization_prompt_observer: Callable[[WorkerRunRequest, dict[str, Any]], None]
+    | None = None,
 ) -> MonitoringO4Runtime:
     if not settings.codex_monitoring_o4_enabled:
         raise RuntimeError("DOXAGENT_CODEX_MONITORING_O4_ENABLED is false")
@@ -86,6 +95,8 @@ def build_monitoring_o4_runtime(
         model=settings.codex_monitoring_o4_model,
         model_provider=settings.codex_model_provider,
         timeout_seconds=settings.codex_monitoring_o4_timeout_seconds,
+        initialization_prompt_transform=initialization_prompt_transform,
+        initialization_prompt_observer=initialization_prompt_observer,
     )
     orchestrator = MonitoringO4Orchestrator(
         initialization_only=True,
@@ -94,6 +105,9 @@ def build_monitoring_o4_runtime(
         message_bus=message_bus,
         message_bus_enabled=settings.message_bus_v2_enabled,
         context_provider=context_provider,
+        initialization_delivery_enabled=(
+            settings.ticker_initialization_o4_delivery_enabled
+        ),
         mutation_policy=O4MutationPolicy(
             standard_poll_seconds=settings.o4_standard_poll_seconds,
             tikhub_poll_seconds=settings.o4_tikhub_poll_seconds,

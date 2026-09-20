@@ -1,6 +1,13 @@
 # DoxAgent V2 CDECR 预构建交付包开发方案
 
-> 状态：可实施方案  
+> **状态更新（2026-09-21）：冻结封存。** 当前生产 ticker 初始化使用
+> `REMOTE_EXECUTOR`，经 durable dispatch 交给独立常驻 CDECR executor；不得自动
+> claim 或采用预构建包。本方案的构建、校验、发布、消费实现与历史证据继续保留，
+> 仅在显式切换到 `LOCAL_OR_PREBUILT` 或 `PREBUILT_REQUIRED` 后作为人工应急能力
+> 解冻。下文关于香港 4 GB / 默认启用预构建的部署说明属于历史方案，不再代表当前
+> 生产配置。
+
+> 历史状态：已实现，现冻结
 > 日期：2026-09-09  
 > 范围：只拆分 ticker 初始化中的 CDECR 高内存阶段；D1、O2、D2、D3、O4、激活、Message Bus、Persistent Runtime 和交易链路继续在远端按现有 V2 拓扑运行。
 

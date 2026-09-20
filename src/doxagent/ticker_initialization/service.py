@@ -8,7 +8,7 @@ from typing import Any, Protocol
 from uuid import uuid4
 
 from .repository import InitializationRepository
-from .schema import Lease, LeaseLost, NodeRecord, NodeResult, RunRecord
+from .schema import ExecutionDeferred, Lease, LeaseLost, NodeRecord, NodeResult, RunRecord
 
 
 class NodeAdapter(Protocol):
@@ -68,9 +68,11 @@ class InitializationWorker:
         lease = self.repository.claim(self.owner, lease_seconds=self.lease_seconds)
         if lease is None:
             return None
-        return await self._run_lease(lease)
+        return await self.run_claimed(lease)
 
-    async def _run_lease(self, lease: Lease) -> RunRecord | None:
+    async def run_claimed(self, lease: Lease) -> RunRecord | None:
+        """Drive an already fenced lease, including a repair-routed lease."""
+
         work = asyncio.create_task(self._drive(lease))
         heartbeat = asyncio.create_task(self._heartbeat(lease))
         try:
@@ -79,6 +81,9 @@ class InitializationWorker:
                 await heartbeat
                 raise LeaseLost("heartbeat stopped")
             return await work
+        except ExecutionDeferred:
+            self.repository.release_lease(lease)
+            return self.repository.get(lease.initialization_id)
         finally:
             for task in (work, heartbeat):
                 if not task.done():
@@ -160,6 +165,8 @@ class InitializationWorker:
                     break
                 except LeaseLost:
                     raise
+                except ExecutionDeferred:
+                    raise
                 except Exception as exc:
                     if getattr(exc, "code", None) == "WORKER_INFRA_RECOVERY_EXHAUSTED":
                         raise
@@ -171,8 +178,7 @@ class InitializationWorker:
                         and child.ordinal < 2
                         and (
                             child.inputs.get("kind") != "cdecr_native"
-                            or child.receipt.get("native_failure_status")
-                            == "FAILED_RETRYABLE"
+                            or child.receipt.get("native_failure_status") == "FAILED_RETRYABLE"
                         )
                     }
                     if not retryable - visited_failures:
@@ -183,6 +189,8 @@ class InitializationWorker:
             self.repository.complete(lease, node.key, result)
             await self._after_complete(lease, node, result, adapter=adapter)
         except LeaseLost:
+            raise
+        except ExecutionDeferred:
             raise
         except Exception as exc:
             from doxagent.codex_runtime.recovery import failure_details

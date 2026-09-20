@@ -13,31 +13,31 @@ services:
       DOXAGENT_SAFETY_STATE_PATH: /run/doxagent-resources/safety.json
   v2-migrate:
     <<: *cgroup-boundary
-    mem_limit: 768m
-    memswap_limit: 768m
+    mem_limit: 4g
+    memswap_limit: 5g
     pids_limit: 96
     image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
   v2-api:
     <<: *cgroup-boundary
     extra_hosts: ["host.docker.internal:host-gateway"]
-    mem_limit: 2g
-    memswap_limit: 2g
-    pids_limit: 128
+    mem_limit: 15g
+    memswap_limit: 16g
+    pids_limit: 512
     image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
   v2-control:
     <<: *cgroup-boundary
-    mem_limit: 512m
-    memswap_limit: 512m
+    mem_limit: 2g
+    memswap_limit: 3g
     pids_limit: 64
     image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
     environment:
-      DOXAGENT_CDECR_EXECUTION_MODE: PREBUILT_REQUIRED
+      DOXAGENT_CDECR_EXECUTION_MODE: REMOTE_EXECUTOR
   codex-worker:
     <<: *cgroup-boundary
     volumes: ["/run/doxagent-resources:/run/doxagent-resources:ro"]
-    mem_limit: 8g
-    memswap_limit: 9g
-    pids_limit: 1024
+    mem_limit: 15g
+    memswap_limit: 16g
+    pids_limit: 4096
     environment:
       DOXAGENT_SAFETY_STATE_PATH: /run/doxagent-resources/safety.json
       DOXAGENT_CODEX_QUEUE_HIGH_WATERMARK: "10000"
@@ -51,79 +51,92 @@ services:
   v2-initialization:
     <<: *cgroup-boundary
     volumes: ["/run/doxagent-resources:/run/doxagent-resources:ro"]
-    mem_limit: 1536m
-    memswap_limit: 1536m
+    mem_limit: 4g
+    memswap_limit: 5g
     pids_limit: 256
     image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
     environment:
       DOXAGENT_SAFETY_STATE_PATH: /run/doxagent-resources/safety.json
-      DOXAGENT_CDECR_EXECUTION_MODE: PREBUILT_REQUIRED
+      DOXAGENT_CDECR_EXECUTION_MODE: REMOTE_EXECUTOR
       DOXAGENT_TICKER_INITIALIZATION_CONCURRENCY: "16"
       DOXAGENT_CODEX_D2_MAX_CONCURRENCY: "8"
     extra_hosts: ["host.docker.internal:host-gateway"]
+  v2-cdecr-executor:
+    <<: *cgroup-boundary
+    volumes: ["/run/doxagent-resources:/run/doxagent-resources:ro"]
+    mem_limit: 6g
+    memswap_limit: 7g
+    pids_limit: 512
+    environment:
+      DOXAGENT_SAFETY_STATE_PATH: /run/doxagent-resources/safety.json
+      DOXAGENT_CDECR_DISPATCH_IDENTITY: production
+    image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
   v2-message-bus:
     <<: *cgroup-boundary
     extra_hosts: ["host.docker.internal:host-gateway"]
-    mem_limit: 2g
-    memswap_limit: 2g
+    mem_limit: 15g
+    memswap_limit: 16g
     pids_limit: 384
     shm_size: 512m
     image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
   v2-content-enrichment:
     <<: *cgroup-boundary
     volumes: ["/run/doxagent-resources:/run/doxagent-resources:ro"]
-    mem_limit: 1g
-    memswap_limit: 1g
-    pids_limit: 128
+    mem_limit: 15g
+    memswap_limit: 16g
+    pids_limit: 512
+    shm_size: 512m
     environment:
       DOXAGENT_SAFETY_STATE_PATH: /run/doxagent-resources/safety.json
     image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
   v2-o4:
     <<: *cgroup-boundary
-    mem_limit: 768m
-    memswap_limit: 768m
+    mem_limit: 4g
+    memswap_limit: 5g
     pids_limit: 96
     image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
     extra_hosts: ["host.docker.internal:host-gateway"]
   v2-scheduler:
     <<: *cgroup-boundary
-    mem_limit: 2g
-    memswap_limit: 2g
+    mem_limit: 15g
+    memswap_limit: 16g
     pids_limit: 384
     image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
     extra_hosts: ["host.docker.internal:host-gateway"]
   v2-projector:
     <<: *cgroup-boundary
-    mem_limit: 1g
-    memswap_limit: 1g
+    mem_limit: 15g
+    memswap_limit: 16g
     pids_limit: 64
     image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
   v2-delivery:
     <<: *cgroup-boundary
-    mem_limit: 768m
-    memswap_limit: 768m
+    mem_limit: 2g
+    memswap_limit: 3g
     pids_limit: 64
     image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
   v2-maintenance:
     <<: *cgroup-boundary
-    mem_limit: 512m
-    memswap_limit: 512m
+    mem_limit: 2g
+    memswap_limit: 3g
     pids_limit: 64
     image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
   v2-executor:
     <<: *cgroup-boundary
-    mem_limit: 512m
-    memswap_limit: 512m
+    mem_limit: 2g
+    memswap_limit: 3g
     pids_limit: 96
     image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
-
   v2-web:
     <<: *cgroup-boundary
-    mem_limit: 128m
-    memswap_limit: 128m
+    mem_limit: 512m
+    memswap_limit: 1536m
     pids_limit: 64
 
 volumes:
+  v2-site-strategy:
+    external: true
+    name: ${DOXAGENT_SITE_STRATEGY_VOLUME:-doxagent-v2_v2-site-strategy}
   v2-data:
     external: true
     name: ${DOXAGENT_V2_DATA_VOLUME:-doxagent-v2_v2-data}

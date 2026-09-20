@@ -123,12 +123,22 @@ class ControlService:
             run = self.initialization.get(identity)
             if run.ticker != ticker:
                 raise ControlError("RESOURCE_NOT_FOUND", 404)
-            self.initialization.resume(
-                identity,
-                reason="V2 explicit resume",
-                control_epoch=state["epoch"],
-                control_operation_id=op["id"],
-            )
+            body = op["body"]
+            if body.get("_internal_repair_resume"):
+                self.initialization.resume_for_repair(
+                    identity,
+                    incident_id=body["repair_incident_id"],
+                    round_id=body["repair_round_id"],
+                    control_epoch=state["epoch"],
+                    control_operation_id=op["id"],
+                )
+            else:
+                self.initialization.resume(
+                    identity,
+                    reason="V2 explicit resume",
+                    control_epoch=state["epoch"],
+                    control_operation_id=op["id"],
+                )
             self.repository.settle(op["id"], initialization_id=identity)
             return True
         active = self.initialization.active_revision(ticker)
@@ -138,7 +148,7 @@ class ControlService:
             cutoff = op["body"].get("research_cutoff_at")
             prebuilt = None
             store = None
-            if self.settings.cdecr_execution_mode != "LOCAL_ONLY":
+            if self.settings.cdecr_execution_mode in {"LOCAL_OR_PREBUILT", "PREBUILT_REQUIRED"}:
                 store = CDECRPrebuiltStore(self.settings.cdecr_prebuilt_root)
                 try:
                     prebuilt = store.claim_ready(
@@ -169,7 +179,10 @@ class ControlService:
                     default_plan(
                         cdecr_prebuilt_ref=(
                             reference.model_dump(mode="json") if reference is not None else None
-                        )
+                        ),
+                        o4_delivery_enabled=(
+                            self.settings.ticker_initialization_o4_delivery_enabled
+                        ),
                     ),
                     reinitialize=bool(active),
                     control_operation_id=op["id"],

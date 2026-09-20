@@ -11,34 +11,50 @@ from .schema import NodeRecord, NodeSpec
 from .service import NodeAdapter
 
 
-def default_plan(*, cdecr_prebuilt_ref: dict[str, Any] | None = None) -> list[NodeSpec]:
+def default_plan(
+    *,
+    cdecr_prebuilt_ref: dict[str, Any] | None = None,
+    o4_delivery_enabled: bool = False,
+) -> list[NodeSpec]:
     cdecr_inputs = {"_prebuilt_cdecr": cdecr_prebuilt_ref} if cdecr_prebuilt_ref else {}
-    return [
+    plan = [
         NodeSpec(key="d1", block="D1"),
         NodeSpec(key="cdecr", block="CDECR", inputs=cdecr_inputs),
         NodeSpec(key="o2", block="O2", dependencies=["d1", "cdecr"]),
         NodeSpec(key="d2", block="D2", dependencies=["d1", "o2"]),
         NodeSpec(key="d3", block="D3", dependencies=["d2", "o2"]),
         NodeSpec(key="o4.configure", block="O4", dependencies=["d3"]),
-        NodeSpec(key="o4.deliver", block="O4", dependencies=["o4.configure"]),
-        NodeSpec(key="o4.register", block="REGISTER", dependencies=["o4.deliver"]),
-        NodeSpec(
-            key="activation.prepare",
-            block="ACTIVATION",
-            dependencies=["d1", "o2", "d2", "d3", "o4.register"],
-        ),
-        NodeSpec(key="activation.commit", block="ACTIVATION", dependencies=["activation.prepare"]),
-        NodeSpec(
-            key="bus.ready",
-            block="BUS_START",
-            dependencies=["activation.prepare", "activation.commit"],
-        ),
-        NodeSpec(
-            key="runtime.ready",
-            block="RUNTIME_START",
-            dependencies=["activation.prepare", "bus.ready"],
-        ),
     ]
+    o4_terminal = "o4.configure"
+    if o4_delivery_enabled:
+        plan.append(NodeSpec(key="o4.deliver", block="O4", dependencies=["o4.configure"]))
+        o4_terminal = "o4.deliver"
+    plan.extend(
+        [
+            NodeSpec(key="o4.register", block="REGISTER", dependencies=[o4_terminal]),
+            NodeSpec(
+                key="activation.prepare",
+                block="ACTIVATION",
+                dependencies=["d1", "o2", "d2", "d3", "o4.register"],
+            ),
+            NodeSpec(
+                key="activation.commit",
+                block="ACTIVATION",
+                dependencies=["activation.prepare"],
+            ),
+            NodeSpec(
+                key="bus.ready",
+                block="BUS_START",
+                dependencies=["activation.prepare", "activation.commit"],
+            ),
+            NodeSpec(
+                key="runtime.ready",
+                block="RUNTIME_START",
+                dependencies=["activation.prepare", "bus.ready"],
+            ),
+        ]
+    )
+    return plan
 
 
 def adapter_factory(node: NodeRecord) -> NodeAdapter:

@@ -50,6 +50,7 @@ class MonitoringO4Orchestrator:
         context_provider: O4ConfigurationContextProvider | None = None,
         mutation_policy: O4MutationPolicy | None = None,
         initialization_only: bool = False,
+        initialization_delivery_enabled: bool = True,
     ) -> None:
         self.repository = repository
         self.initialization_only = initialization_only
@@ -59,6 +60,7 @@ class MonitoringO4Orchestrator:
         self.context_provider = context_provider
         self.mutation_policy = mutation_policy or O4MutationPolicy()
         self.plan_finalizer = O4PlanFinalizer(self.mutation_policy)
+        self.initialization_delivery_enabled = initialization_delivery_enabled
 
     def submit_configure(
         self,
@@ -229,6 +231,12 @@ class MonitoringO4Orchestrator:
                 monitoring_started=started,
                 degraded_reasons=[reason] if reason else [],
             )
+        if request.initialization_id and not self.initialization_delivery_enabled:
+            request.payload["crawler_delivery_state"] = "FROZEN"
+            request.payload["pending_crawler_need_count"] = len(new_items)
+            request.status = O4RequestStatus.SUCCEEDED
+            self.repository.save_request(request)
+            return O4RunResult(request=request, plan=result.plan)
         delivery_request = self.repository.enqueue(
             O4Request(
                 ticker=request.ticker,

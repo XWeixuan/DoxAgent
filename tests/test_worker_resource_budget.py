@@ -482,11 +482,26 @@ def test_server_resource_envelope():
 
     for service in services.values():
         assert mib(service["memswap_limit"]) >= mib(service["mem_limit"])
-        assert 0 < service["pids_limit"] <= 1024
-    assert mib(services["codex-worker"]["mem_limit"]) == 8192
+        assert 0 < service["pids_limit"] <= 4096
+        assert service["cgroup_parent"] == "doxagent-app.slice"
+    for name in (
+        "v2-api",
+        "codex-worker",
+        "v2-message-bus",
+        "v2-content-enrichment",
+        "v2-scheduler",
+        "v2-projector",
+    ):
+        assert mib(services[name]["mem_limit"]) == 15 * 1024
+        assert mib(services[name]["memswap_limit"]) == 16 * 1024
+    assert mib(services["v2-cdecr-executor"]["mem_limit"]) == 6 * 1024
+    assert mib(services["v2-cdecr-executor"]["memswap_limit"]) == 7 * 1024
     assert "DOXAGENT_CODEX_WORKER_CAPACITY" not in services["codex-worker"]["environment"]
     assert services["codex-worker"]["environment"]["DOXAGENT_CODEX_LAUNCH_WAVE_SIZE"] == "3"
     assert services["v2-initialization"]["environment"]["DOXAGENT_CODEX_D2_MAX_CONCURRENCY"] == "8"
+    assert services["v2-initialization"]["environment"]["DOXAGENT_CDECR_EXECUTION_MODE"] == (
+        "REMOTE_EXECUTOR"
+    )
 
 
 @pytest.mark.asyncio
