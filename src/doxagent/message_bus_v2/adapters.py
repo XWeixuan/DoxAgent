@@ -104,6 +104,10 @@ class AdapterRegistry:
             await self.client.aclose()
 
     def resolve(self, adapter_ref: str, *, source_version: int) -> SourceAdapter:
+        if adapter_ref == "site:auto":
+            if self.crawler_plane is None or self.crawler_plane.site_access_client is None:
+                raise AdapterLoadError("Site Strategy crawler selection is unavailable")
+            return SiteStrategyCrawlerAdapter(self)
         if adapter_ref.startswith("crawler:"):
             if self.crawler_plane is None:
                 raise AdapterLoadError("Crawler Plane is unavailable")
@@ -190,6 +194,24 @@ class CrawlerSourceAdapter:
             CrawlerExecutionStatus.SUCCEEDED,
             CrawlerExecutionStatus.PARTIAL,
         }:
+            marker = "site_access_deferred:"
+            if marker in (execution.error_message or ""):
+                value = (execution.error_message or "").split(marker, 1)[1].split()[0]
+                retry_at = None
+                if value:
+                    try:
+                        retry_at = datetime.fromisoformat(value)
+                    except ValueError:
+                        retry_at = None
+                return PollResult(
+                    window_done=False,
+                    site_access_deferred=True,
+                    site_access_retry_not_before=retry_at,
+                    acquisition_metadata={
+                        "crawler_execution_id": execution.execution_id,
+                        "site_access_deferred": True,
+                    },
+                )
             raise CrawlerAdapterExecutionError(
                 execution.execution_id,
                 f"Crawler Plane execution {execution.execution_id} failed: "
@@ -272,6 +294,56 @@ class CrawlerSourceAdapter:
                 "crawler_content_digest": execution.crawler_content_digest,
                 "crawler_retry_keys": execution.retry_keys,
             },
+        )
+
+
+class SiteStrategyCrawlerAdapter:
+    """Resolve a listing URL to a governed crawler reference at poll time."""
+
+    BUILTIN_REFS = {
+        "builtin:yahoo_page@1": "yahoo_finance_news",
+        "builtin:reuters_search@1": "reuters_site_search",
+    }
+
+    def __init__(self, registry: AdapterRegistry) -> None:
+        self.registry = registry
+
+    async def poll(self, context: PollContext) -> PollResult:
+        url = next(
+            (
+                str(context.binding.source_parameters[key])
+                for key in ("listing_url", "url", "base_url")
+                if context.binding.source_parameters.get(key)
+            ),
+            "",
+        )
+        if not url:
+            raise AdapterLoadError("site:auto requires listing_url, url or base_url")
+        assert self.registry.crawler_plane is not None
+        assert self.registry.crawler_plane.site_access_client is not None
+        resolved = await self.registry.crawler_plane.site_access_client.resolve(url)
+        if resolved.crawler is None:
+            raise AdapterLoadError(f"site {resolved.site_id} has no crawler strategy")
+        reference = resolved.crawler.ref
+        if reference.startswith("crawler:"):
+            adapter: SourceAdapter = CrawlerSourceAdapter(
+                self.registry.crawler_plane, reference.removeprefix("crawler:")
+            )
+        else:
+            builtin = self.BUILTIN_REFS.get(reference)
+            if builtin is None:
+                raise AdapterLoadError(f"unsupported builtin crawler strategy: {reference}")
+            adapter = self.registry._builtins[builtin]
+        result = await adapter.poll(context)
+        return result.model_copy(
+            update={
+                "acquisition_metadata": {
+                    **result.acquisition_metadata,
+                    "site_id": resolved.site_id,
+                    "site_strategy_revision": resolved.strategy_revision,
+                    "site_crawler_ref": reference,
+                }
+            }
         )
 
 

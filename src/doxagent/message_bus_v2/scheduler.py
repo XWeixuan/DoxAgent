@@ -244,6 +244,29 @@ class GlobalPollScheduler:
                     }
                 }
             )
+            if result.site_access_deferred:
+                retry_at = result.site_access_retry_not_before or (
+                    attempted_at + timedelta(seconds=5)
+                )
+                retry_at = max(retry_at, attempted_at + timedelta(seconds=1))
+                self.repository.save_poll_state(
+                    state.model_copy(
+                        update={
+                            "next_dispatch_at": retry_at,
+                            "last_latency_ms": max(0, int((self._clock() - started_at) * 1000)),
+                            "updated_at": attempted_at,
+                        }
+                    )
+                )
+                return PollExecutionResult(
+                    poll_run_id=poll_run_id,
+                    binding_id=binding.binding_id,
+                    next_checkpoint=state.checkpoint,
+                    window_coverage="UNKNOWN",
+                    window_done=False,
+                    site_access_deferred=True,
+                    site_access_retry_not_before=retry_at,
+                )
             execution = await self.service.accept_poll_result(
                 source=source,
                 binding=binding,

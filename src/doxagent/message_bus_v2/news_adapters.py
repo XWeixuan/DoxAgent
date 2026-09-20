@@ -28,10 +28,13 @@ from doxagent.message_bus_v2.schema import (
     sha256_text,
 )
 from doxagent.settings import DoxAgentSettings
+from doxagent.site_strategy.client import SiteAccessError
 
 
 class ReutersBrowser(Protocol):
-    async def reuters_search(self, query: str, offset: int) -> list[dict[str, object]]: ...
+    async def reuters_search(
+        self, query: str, offset: int, *, operation_id: str | None = None
+    ) -> list[dict[str, object]]: ...
 
 
 def _dt(value: object) -> datetime | None:
@@ -146,7 +149,12 @@ def _reader_proxy_json(value: str) -> JsonObject:
 
 class YahooFinanceNewsAdapter:
     def __init__(
-        self, settings: DoxAgentSettings, client: httpx.AsyncClient, *, transport=None, browser=None
+        self,
+        settings: DoxAgentSettings,
+        client: httpx.AsyncClient,
+        *,
+        transport: Any = None,
+        browser: Any = None,
     ) -> None:
         from .yahoo_transport import shared_yahoo_transport
 
@@ -167,29 +175,45 @@ class YahooFinanceNewsAdapter:
             if context.is_bootstrap or context.is_gap_recovery
             else max(10, min(20, int(context.binding.source_parameters.get("snippet_count", 20))))
         )
-        attempts = []
+        attempts: list[dict[str, Any]] = []
+        managed_browser = bool(getattr(self.browser, "site_managed", False))
         if (
             context.binding.source_parameters.get("page_network_enabled", True)
             and self.browser is not None
-            and monotonic_time.monotonic() >= self._browser_retry_at
+            and (managed_browser or monotonic_time.monotonic() >= self._browser_retry_at)
         ):
             # Reserve the probe before awaiting: concurrent tickers must not queue
             # repeated browser probes while the first one is still running.
-            self._browser_retry_at = monotonic_time.monotonic() + 300
+            if not managed_browser:
+                self._browser_retry_at = monotonic_time.monotonic() + 300
             try:
                 async with context.request_permit():
-                    rows, metadata = await self.browser.yahoo_latest_news(
-                        context.ticker,
-                        snippet_count=count,
-                    )
+                    if managed_browser:
+                        rows, metadata = await self.browser.yahoo_latest_news(
+                            context.ticker,
+                            snippet_count=count,
+                            operation_id=context.poll_run_id,
+                        )
+                    else:
+                        rows, metadata = await self.browser.yahoo_latest_news(
+                            context.ticker, snippet_count=count
+                        )
                 self._browser_retry_at = 0.0
                 self._page_strikes = 0
                 return self._map_result(
                     context, rows, "page_network_ncp", count, {**metadata, "attempts": attempts}
                 )
             except Exception as exc:
-                self._browser_retry_at = monotonic_time.monotonic() + 300
-                if getattr(exc, "status_code", None) == 429:
+                if isinstance(exc, SiteAccessError) and exc.site_access_deferred:
+                    return PollResult(
+                        window_done=False,
+                        site_access_deferred=True,
+                        site_access_retry_not_before=exc.result.retry_not_before,
+                        acquisition_metadata={"attempts": attempts},
+                    )
+                if not managed_browser:
+                    self._browser_retry_at = monotonic_time.monotonic() + 300
+                if not managed_browser and getattr(exc, "status_code", None) == 429:
                     self._page_strikes += 1
                     delay = max(
                         (300, 900, 1800)[min(self._page_strikes - 1, 2)],
@@ -199,7 +223,7 @@ class YahooFinanceNewsAdapter:
                     self._page_api_retry_at = self._browser_retry_at
                 attempts.append({"route": "page_network_ncp", "error": type(exc).__name__})
         try:
-            if monotonic_time.monotonic() < self._page_api_retry_at:
+            if not managed_browser and monotonic_time.monotonic() < self._page_api_retry_at:
                 raise YahooRateLimited(self._page_api_retry_at - monotonic_time.monotonic())
             async with context.request_permit():
                 response = await self.transport.request(
@@ -313,7 +337,14 @@ class YahooFinanceNewsAdapter:
             context, rows, mode, count if mode == "ncp_latest_news" else fallback_count
         )
 
-    def _map_result(self, context, rows, mode, count, metadata=None) -> PollResult:
+    def _map_result(
+        self,
+        context: PollContext,
+        rows: list[JsonObject],
+        mode: str,
+        count: int,
+        metadata: JsonObject | None = None,
+    ) -> PollResult:
         messages: list[RawMessageInput] = []
         failures: list[AcquisitionFailure] = []
         for row in rows:
@@ -554,7 +585,7 @@ def _reuters_date(value: object) -> date | None:
 class ReutersSiteSearchAdapter:
     def __init__(
         self,
-        browser: ReutersBrowser | None,
+        browser: Any | None,
         client: httpx.AsyncClient | None = None,
     ) -> None:
         self.browser = browser
@@ -623,8 +654,24 @@ class ReutersSiteSearchAdapter:
         search_result_count = 0
         pages_fetched = 0
         for page in range(max_pages):
-            async with context.request_permit():
-                rows = await self.browser.reuters_search(query, page * 20)
+            try:
+                async with context.request_permit():
+                    if getattr(self.browser, "site_managed", False):
+                        rows = await self.browser.reuters_search(
+                            query,
+                            page * 20,
+                            operation_id=f"{context.poll_run_id}:{page}",
+                        )
+                    else:
+                        rows = await self.browser.reuters_search(query, page * 20)
+            except SiteAccessError as exc:
+                if exc.site_access_deferred:
+                    return PollResult(
+                        window_done=False,
+                        site_access_deferred=True,
+                        site_access_retry_not_before=exc.result.retry_not_before,
+                    )
+                raise
             pages_fetched += 1
             search_result_count += len(rows)
             if not rows:

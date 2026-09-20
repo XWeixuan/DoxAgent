@@ -625,6 +625,8 @@ class PollResult(BusModel):
     acquisition_metadata: JsonObject = Field(default_factory=dict)
     optional_next_poll_hint: datetime | None = None
     failures: list[AcquisitionFailure] = Field(default_factory=list)
+    site_access_deferred: bool = False
+    site_access_retry_not_before: datetime | None = None
 
 
 RequestPermitFactory = Callable[[], AbstractAsyncContextManager[None]]
@@ -680,6 +682,8 @@ class PollExecutionResult(BusModel):
     published_count: int = 0
     error_code: str | None = None
     error_message: str | None = None
+    site_access_deferred: bool = False
+    site_access_retry_not_before: datetime | None = None
 
 
 class AuditRecord(BusModel):

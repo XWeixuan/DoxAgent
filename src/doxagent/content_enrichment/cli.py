@@ -13,6 +13,8 @@ from doxagent.content_enrichment.extractor import SharedContentExtractor
 from doxagent.content_enrichment.service import ContentEnrichmentHub
 from doxagent.message_bus_v2.factory import build_message_bus_v2_service
 from doxagent.settings import DoxAgentSettings
+from doxagent.site_strategy.client import SiteAccessClient
+from doxagent.site_strategy.tokens import read_token
 
 
 def _stop_event() -> asyncio.Event:
@@ -30,15 +32,32 @@ def _stop_event() -> asyncio.Event:
 
 async def _run(settings: DoxAgentSettings, *, once: bool) -> int:
     repository, bus = build_message_bus_v2_service(settings)
+    site_token = read_token(
+        settings.site_access_worker_token,
+        settings.site_access_worker_token_file,
+    )
+    if settings.site_access_enabled and not site_token:
+        raise ValueError("Site Access is enabled but the worker token is unavailable")
+    site_client = (
+        SiteAccessClient(
+            settings.site_access_url,
+            token=site_token,
+        )
+        if settings.site_access_enabled
+        else None
+    )
     hub = ContentEnrichmentHub(
         repository,
         bus,
         concurrency=settings.content_enrichment_max_concurrency,
         retry_delay_seconds=settings.content_enrichment_retry_delay_seconds,
+        site_access_client=site_client,
         extractor=SharedContentExtractor(
             concurrency=settings.content_enrichment_max_concurrency,
             pipeline_enabled=settings.content_enrichment_pipeline_enabled,
             proxy_url=settings.crawler_egress_proxy_url,
+            site_access_client=site_client,
+            close_site_access_client=True,
             browser_enabled=settings.content_enrichment_browser_enabled,
             browser_headless=settings.content_enrichment_browser_headless,
             browser_channel=settings.content_enrichment_browser_channel,

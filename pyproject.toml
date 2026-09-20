@@ -33,6 +33,7 @@ dependencies = [
     "pypdf>=6,<7",
     "playwright>=1.55,<2",
     "zstandard>=0.25,<1",
+    "PyYAML>=6,<7",
 ]
 
 [project.scripts]
@@ -47,6 +48,7 @@ codex-document3 = "doxagent.workflows.codex_document3.cli:main"
 doxagent-crawler-plane = "doxagent.crawler_plane.cli:main"
 doxagent-monitoring-o4 = "doxagent.workflows.codex_monitoring_o4.cli:main"
 doxagent-monitoring-o4-pilot = "doxagent.workflows.codex_monitoring_o4.pilot_cli:main"
+doxagent-site-strategy = "doxagent.site_strategy.cli:main"
 
 [dependency-groups]
 dev = [
@@ -56,6 +58,7 @@ dev = [
     "pytest-cov>=7,<8",
     "ruff>=0.14,<1",
     "types-jsonschema>=4.23,<5",
+    "types-PyYAML>=6,<7",
 ]
 
 [tool.hatch.build.targets.wheel]

@@ -9,9 +9,16 @@ from dataclasses import dataclass, field
 from typing import Any
 from urllib.parse import urljoin, urlparse
 
-from lxml import html as html_parser  # type: ignore[import-untyped]
+from lxml import html as html_parser
 
-from doxagent.content_enrichment.publishers import seeking_alpha_original_title
+from doxagent.content_enrichment.strategies import legacy_strategy_ref
+from doxagent.content_enrichment.strategies.adapters import (
+    READER_HEADER_STRATEGIES,
+    apply_candidate_overrides,
+    article_node_options,
+    prepare_document,
+    select_article_nodes,
+)
 from doxagent.monitoring.media_enrichment import _default_extractor
 
 
@@ -121,12 +128,16 @@ def _node_text(node: Any, *, sa_body: bool = False, street_body: bool = False) -
         ):
             continue
         text = clean(paragraph.text_content())
-        if street_body and paragraph.tag in {"h2", "h3"} and re.fullmatch(
-            r"About the authors?", text, re.I
+        if (
+            street_body
+            and paragraph.tag in {"h2", "h3"}
+            and re.fullmatch(r"About the authors?", text, re.I)
         ):
             break
-        if sa_body and paragraph.tag in {"h2", "h3"} and re.fullmatch(
-            r"More on my IG service", text, re.I
+        if (
+            sa_body
+            and paragraph.tag in {"h2", "h3"}
+            and re.fullmatch(r"More on my IG service", text, re.I)
         ):
             break
         if re.match(
@@ -147,7 +158,14 @@ def _node_text(node: Any, *, sa_body: bool = False, street_body: bool = False) -
     return "\n\n".join(lines)
 
 
-def inspect_html(html: str, url: str, expected_title: str | None) -> Inspection:
+def inspect_html(
+    html: str,
+    url: str,
+    expected_title: str | None,
+    *,
+    strategy_ref: str | None = None,
+    strategy_parameters: dict[str, Any] | None = None,
+) -> Inspection:
     result = Inspection()
     if not html.strip():
         return result
@@ -155,6 +173,13 @@ def inspect_html(html: str, url: str, expected_title: str | None) -> Inspection:
         root = html_parser.fromstring(html)
     except (ValueError, html_parser.etree.ParserError):
         return result
+    strategy = strategy_ref or legacy_strategy_ref(url)
+    parameters = strategy_parameters or {}
+    for selector in parameters.get("remove_xpath", []):
+        if isinstance(selector, str):
+            for node in root.xpath(selector):
+                if hasattr(node, "drop_tree"):
+                    node.drop_tree()
     headlines = root.xpath("//h1//text()")
     result.headline = clean(" ".join(headlines))
     if not result.headline:
@@ -176,18 +201,18 @@ def inspect_html(html: str, url: str, expected_title: str | None) -> Inspection:
         result.page_kind, result.access_reason = "challenge", "challenge_required"
         result.interactive_challenge = True
         return result
-    has_article_body = bool(root.xpath(
-        '//article//p|//*[@itemprop="articleBody"]//p|'
-        '//*[contains(@class,"article-content") or contains(@class,"article-body")]//p'
-    ))
+    has_article_body = bool(
+        root.xpath(
+            '//article//p|//*[@itemprop="articleBody"]//p|'
+            '//*[contains(@class,"article-content") or contains(@class,"article-body")]//p'
+        )
+    )
     if not has_article_body:
         captcha_frame = any(
             (urlparse(src).hostname or "").endswith(".captcha-delivery.com")
             for src in root.xpath("//iframe/@src")
         )
-        if "awsWafCookieDomainList" in html and (
-            "challenge.js" in html or "gokuProps" in html
-        ):
+        if "awsWafCookieDomainList" in html and ("challenge.js" in html or "gokuProps" in html):
             result.page_kind, result.access_reason = "app_shell", "render_required"
             return result
         if (
@@ -203,46 +228,30 @@ def inspect_html(html: str, url: str, expected_title: str | None) -> Inspection:
         result.page_kind, result.access_reason = "challenge", "challenge_required"
         return result
     path = urlparse(url).path.lower()
-    host = (urlparse(url).hostname or "").removeprefix("www.")
-    if host == "seekingalpha.com":
-        original = seeking_alpha_original_title(root.xpath("//script/text()"), url)
-        if original and expected_title and title_match(original, expected_title):
-            result.headline = original
-    if (urlparse(url).hostname or "").removeprefix("www.") == "finnhub.io":
-        targets = []
-        for value in root.xpath(
-            '//meta[translate(@http-equiv,"REFSH","refsh")="refresh"]/@content'
-        ):
-            match = re.search(r"url\s*=\s*['\"]?([^'\"]+)", value, re.I)
-            if match:
-                targets.append(match[1].strip())
-        for script in root.xpath("//script/text()"):
-            targets.extend(
-                re.findall(r"(?:window\.)?location(?:\.href)?\s*=\s*['\"]([^'\"]+)", script)
-            )
-        result.publisher_links = list(dict.fromkeys(urljoin(url, target) for target in targets))
-        result.page_kind = "redirect"
-        if result.publisher_links:
-            return result
+    if prepare_document(
+        strategy,
+        root,
+        url,
+        expected_title,
+        result,
+        title_match=title_match,
+    ):
+        return result
     if re.search(r"/(?:quote|quotes|search)(?:/|$)", path) or path.rstrip("/") == "/market-news":
         result.page_kind = "quote" if "/quote" in path else "listing"
         return result
-    article_nodes = root.xpath(
+    generic_nodes = root.xpath(
         '//*[@data-testid="article-body"]|//*[@itemprop="articleBody"]|'
         '//*[contains(concat(" ",normalize-space(@class)," ")," caas-body ")]|'
         '//*[contains(@class,"article-body") or contains(@class,"articleBody") '
         'or contains(@class,"body-content") or contains(@class,"article-content")]|//article'
     )
-    sa_bodies = root.xpath('//*[@data-test-id="content-container"]') if (
-        host == "seekingalpha.com" and "/article/" in path
-    ) else []
-    if sa_bodies:
-        article_nodes = sa_bodies[:1]
-    wsj_bodies = root.xpath(
-        '//article//*[contains(concat(" ",normalize-space(@class)," ")," paywall ")]'
-    ) if host == "wsj.com" else []
-    if wsj_bodies:
-        article_nodes = wsj_bodies[:1]
+    configured_nodes = []
+    for selector in parameters.get("body_xpath", []):
+        if isinstance(selector, str):
+            configured_nodes.extend(root.xpath(selector))
+    strategy_document = select_article_nodes(strategy, root, path, generic_nodes, configured_nodes)
+    article_nodes = strategy_document.article_nodes
     gate_text = " ".join(_node_text(n) for n in article_nodes) or visible
     if re.search(
         r"This headline only article is a sample of real.time intelligence", gate_text, re.I
@@ -276,10 +285,7 @@ def inspect_html(html: str, url: str, expected_title: str | None) -> Inspection:
                     Candidate(clean(body), "json_ld_article_body", True, headline)
                 )
     for node in article_nodes:
-        text = _node_text(
-            node,
-            street_body=(urlparse(url).hostname or "").removeprefix("www.") == "thestreet.com",
-        )
+        text = _node_text(node, **article_node_options(strategy))
         if text:
             result.candidates.append(
                 Candidate(
@@ -297,53 +303,20 @@ def inspect_html(html: str, url: str, expected_title: str | None) -> Inspection:
         result.candidates.append(
             Candidate(clean(extracted), "trafilatura", bool(article_nodes), result.headline)
         )
-    if host == "reuters.com":
-        paragraphs = root.xpath(
-            '//*[@data-testid="ArticleBody"]//*[starts-with(@data-testid,"paragraph-")]'
-        )
-        if paragraphs:
-            text = "\n\n".join(
-                clean(re.sub(r",? opens new tab", "", n.text_content())) for n in paragraphs
-            )
-            result.candidates = [Candidate(text, "reuters_article_body", True, result.headline, 30)]
-    if host == "barrons.com" and "/livecoverage/" in path and "/card/" in path:
-        cards = root.xpath('//*[@data-id="LiveCoverageCard_index_CardWrapper"][.//h1]')
-        result.candidates = []
-        for card in cards:
-            headline = clean(" ".join(card.xpath('.//h1//text()')))
-            if expected_title and not title_match(headline, expected_title):
-                continue
-            paragraphs = card.xpath(
-                './/*[@data-id="LiveCoverageCard_index_CardBlock"]'
-                '//p[contains(@class,"FormattedText")]'
-            )
-            if paragraphs:
-                text = "\n\n".join(clean(n.text_content()) for n in paragraphs)
-                result.candidates.append(Candidate(text, "barrons_live_card", True, headline, 30))
-    if wsj_bodies:
-        blocks = wsj_bodies[0].xpath('./p[@data-type="paragraph"]|./h2|./h3')
-        text = "\n\n".join(clean(n.text_content()) for n in blocks)
-        result.candidates = [Candidate(text, "wsj_article_body", True, result.headline, 30)]
-    expansion_root = root
-    if (urlparse(url).hostname or "").removeprefix("www.") == "seekingalpha.com":
-        # SA's outer <article> also contains summary, biography and disclosures.
-        # Only its first content container is the article, even on a long regwall page.
-        bodies = sa_bodies
-        if bodies:
-            expansion_root = bodies[0]
-            result.candidates = [
-                Candidate(
-                    _node_text(bodies[0], sa_body=True),
-                    "sa_article_body", True, result.headline, 20,
-                )
-            ]
-        elif "/article/" in path:
-            result.candidates = []
-        result.subscription_article |= bool(
-            root.xpath(
-                '//script[@type="application/ld+json" and contains(text(),"isAccessibleForFree")]'
-            )
-        ) and '"isAccessibleForFree":"False"' in html.replace(" ", "")
+    expansion_root = apply_candidate_overrides(
+        strategy,
+        root,
+        url,
+        path,
+        html,
+        expected_title,
+        result,
+        strategy_document,
+        clean=clean,
+        title_match=title_match,
+        node_text=_node_text,
+        candidate_type=Candidate,
+    )
     # Only semantically identified original-article links; never arbitrary external assets.
     for link in expansion_root.xpath(".//a[@href]"):
         label = clean(link.text_content())
@@ -372,7 +345,13 @@ def inspect_html(html: str, url: str, expected_title: str | None) -> Inspection:
     return result
 
 
-def inspect_reader(text: str, url: str, expected_title: str | None) -> Inspection:
+def inspect_reader(
+    text: str,
+    url: str,
+    expected_title: str | None,
+    *,
+    strategy_ref: str | None = None,
+) -> Inspection:
     result = Inspection(page_kind="article")
     if CHALLENGE.search(text[:2000]):
         result.page_kind, result.access_reason = "challenge", "challenge_required"
@@ -383,20 +362,17 @@ def inspect_reader(text: str, url: str, expected_title: str | None) -> Inspectio
         (i, line.lstrip("# ").strip()) for i, line in enumerate(lines) if line.startswith("# ")
     ]
     matching = [(i, h) for i, h in heads if expected_title and title_match(h, expected_title)]
-    if not matching and (urlparse(url).hostname or "").removeprefix("www.") in {
-        "chartmill.com",
-        "fool.com",
-        "benzinga.com",
-    }:
+    strategy = strategy_ref or legacy_strategy_ref(url)
+    if not matching and strategy in READER_HEADER_STRATEGIES:
         # These observed reader templates start directly with the article after their headers.
         title_header = next((line[7:].strip() for line in lines if line.startswith("Title: ")), "")
         marker = next((i for i, line in enumerate(lines) if line == "Markdown Content:"), None)
         source = next((line[12:].strip() for line in lines if line.startswith("URL Source: ")), "")
-        trusted_header = (urlparse(url).hostname or "").removeprefix("www.") != "benzinga.com" or (
-            source == url
-        )
+        trusted_header = strategy != "builtin:benzinga@1" or source == url
         if (
-            marker is not None and expected_title and title_match(title_header, expected_title)
+            marker is not None
+            and expected_title
+            and title_match(title_header, expected_title)
             and trusted_header
         ):
             matching = [(marker, title_header)]
@@ -409,9 +385,7 @@ def inspect_reader(text: str, url: str, expected_title: str | None) -> Inspectio
     in_ad = False
     for line in lines[start + 1 :]:
         plain = clean(re.sub(r"^[#>*\s]+", "", line))
-        if re.fullmatch(
-            r"View Comments|Terms and Privacy Policy|About the authors?", plain, re.I
-        ):
+        if re.fullmatch(r"View Comments|Terms and Privacy Policy|About the authors?", plain, re.I):
             break
         if WALL.search(plain):
             result.access_reason = "subscription_required"

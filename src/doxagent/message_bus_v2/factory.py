@@ -72,7 +72,9 @@ def build_message_bus_v2_service(
         ),
         enrichment_retry_deadline_seconds=settings.content_enrichment_retry_deadline_seconds,
         enrichment_pipeline_version=(
-            "body_v2.1" if settings.content_enrichment_pipeline_enabled else None
+            ("body_v2.2" if settings.site_access_enabled else "body_v2.1")
+            if settings.content_enrichment_pipeline_enabled
+            else None
         ),
         hidden_news_policy=HiddenNewsIngressPolicy.from_strings(
             domains=settings.message_bus_v2_hidden_news_domains,

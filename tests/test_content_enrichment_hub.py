@@ -102,6 +102,84 @@ class _VolatileExtractor:
         )
 
 
+class _GovernedExtractor:
+    async def extract(self, record: MediaEnrichmentRecord) -> MediaExtractionResult:
+        return MediaExtractionResult(
+            record=record,
+            content="Governed full article body",
+            final_url=record.url,
+            source_name="example.test",
+            diagnostics={
+                "site_id": "generic",
+                "strategy_ref": "builtin:generic_body@1",
+                "outcome": "FULL",
+                "site_access_trace": [
+                    {
+                        "site_id": "generic",
+                        "combination_id": "generic-direct",
+                        "profile_id": "generic-direct-profile",
+                        "egress_id": "direct",
+                        "strategy_ref": "builtin:generic_body@1",
+                    }
+                ],
+            },
+        )
+
+
+class _OutcomeClient:
+    def __init__(self) -> None:
+        self.outcomes = []
+        self.fail_once = True
+
+    async def submit_outcomes(self, outcomes) -> None:
+        if self.fail_once:
+            self.fail_once = False
+            raise OSError("owner temporarily unavailable")
+        self.outcomes.extend(outcomes)
+
+
+async def test_body_v22_result_uses_transactional_outbox_and_confirms_delivery(
+    tmp_path: Path,
+) -> None:
+    repository, bus, source, binding = _setup(tmp_path)
+    bus.enrichment_pipeline_version = "body_v2.2"
+    bus.enqueue_enrichment(
+        source=source,
+        binding=binding,
+        message=_message(58, summary="provider summary"),
+        bootstrap=False,
+        poll_run_id=new_id("poll"),
+    )
+    client = _OutcomeClient()
+    hub = ContentEnrichmentHub(
+        repository,
+        bus,
+        extractor=_GovernedExtractor(),
+        site_access_client=client,  # type: ignore[arg-type]
+    )
+
+    assert await hub.run_once() == 1
+    with repository._connect() as connection:
+        pending = connection.execute(
+            "select status,payload_json from site_strategy_result_outbox"
+        ).fetchall()
+    assert len(pending) == 1
+    assert pending[0]["status"] == "PENDING"
+    assert '"final_site_id": "generic"' in pending[0]["payload_json"]
+    assert repository.list_enrichment_jobs() == []
+
+    # Move the deterministic retry window forward without sleeping.
+    with repository.transaction() as connection:
+        connection.execute(
+            "update site_strategy_result_outbox set next_attempt_at=?",
+            (datetime.now(UTC).isoformat(),),
+        )
+    assert await hub.run_once() == 0
+    assert len(client.outcomes) == 1
+    assert client.outcomes[0].outcome == "FULL"
+    assert repository.list_site_strategy_outbox() == []
+
+
 async def test_completed_bootstrap_payload_is_not_reenriched_or_published(
     tmp_path: Path,
 ) -> None:

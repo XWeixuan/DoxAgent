@@ -58,12 +58,12 @@ from doxagent.tools.schema import ToolRequest
 
 NOW = datetime(2026, 9, 1, 12, tzinfo=UTC)
 
+
 @pytest.fixture(autouse=True)
 def _publication_clock(monkeypatch):
     monkeypatch.setattr("doxagent.message_bus_v2.service.utc_now", lambda: NOW)
     monkeypatch.setattr("doxagent.message_bus_v2.schema.utc_now", lambda: NOW)
     monkeypatch.setattr("doxagent.message_bus_v2.repository.utc_now", lambda: NOW)
-
 
 
 def _bus(path: Path) -> tuple[MessageBusV2Repository, MessageBusV2Service]:
@@ -863,9 +863,7 @@ async def test_all_six_builtin_adapters_with_fixed_responses(tmp_path: Path) -> 
         "newswire_rss",
     }
     sources = {
-        source.source_id: source
-        for source in initial_sources()
-        if source.source_id in legacy_ids
+        source.source_id: source for source in initial_sources() if source.source_id in legacy_ids
     }
     parameters = {
         "benzinga_news": {},
@@ -1148,6 +1146,7 @@ class _UsableDocuments:
 class _AcceptingRuntimeV2:
     def __init__(self) -> None:
         from doxagent.persistent_runtime_v2.repository import InMemoryPersistentRuntimeV2Repository
+
         self.repository = InMemoryPersistentRuntimeV2Repository()
         self.envelopes: list[SourceMessageEnvelope] = []
 
@@ -1338,3 +1337,37 @@ async def test_dashboard_v2_messages_expose_runtime_v2_task_state(tmp_path: Path
     item = response.json()["data"]["items"][0]
     assert item["processing_status"] == "pending"
     assert item["runtime_execution_id"] == f"inbox:MU:{accepted.standard_message_id}"
+
+
+async def test_site_access_deferral_preserves_checkpoint_and_skips_acceptance(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repository, service = _bus(tmp_path / "deferred.sqlite3")
+    service.start_ticker("MU")
+    source = service.require_source("yahoo_finance_news")
+    binding = repository.get_binding("MU:yahoo_finance_news")
+    assert binding is not None
+    state = repository.get_poll_state(binding).model_copy(
+        update={"checkpoint": {"cursor": "stable"}, "bootstrap_complete": True}
+    )
+    repository.save_poll_state(state)
+
+    class _DeferredAdapter:
+        async def poll(self, _context: PollContext) -> PollResult:
+            return PollResult(
+                site_access_deferred=True,
+                site_access_retry_not_before=NOW + timedelta(seconds=17),
+            )
+
+    registry = AdapterRegistry(DoxAgentSettings(_env_file=None), adapter_root=tmp_path)
+    monkeypatch.setattr(registry, "resolve", lambda *_args, **_kwargs: _DeferredAdapter())
+    scheduler = GlobalPollScheduler(repository, service, registry)
+
+    execution = await scheduler._poll(source, binding, NOW)
+
+    refreshed = repository.get_poll_state(binding)
+    assert execution.site_access_deferred is True
+    assert execution.next_checkpoint == {"cursor": "stable"}
+    assert refreshed.checkpoint == {"cursor": "stable"}
+    assert refreshed.next_dispatch_at == NOW + timedelta(seconds=17)
+    assert repository.list_raw(ticker="MU") == []

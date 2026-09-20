@@ -47,6 +47,7 @@ from doxagent.crawler_plane.schema import (
 if TYPE_CHECKING:
     from doxagent.message_bus_v2.schema import SourceDefinition
 from doxagent.message_bus_v2.service import MessageBusV2Service
+from doxagent.site_strategy.client import SiteAccessClient
 
 from .quality import quality_summary, quality_warnings
 
@@ -63,10 +64,11 @@ class CrawlerPlaneService:
         *,
         worker_pool: CrawlerWorkerPool,
         http_client: httpx.AsyncClient | None = None,
-        browser: PlaywrightBrowserRuntime | None = None,
+        browser: Any | None = None,
         execution_timeout_seconds: float = 120,
         max_response_bytes: int = 10_000_000,
         message_bus: MessageBusV2Service | None = None,
+        site_access_client: SiteAccessClient | None = None,
     ) -> None:
         self.repository = repository
         self.assets = assets
@@ -77,6 +79,7 @@ class CrawlerPlaneService:
         self.execution_timeout_seconds = execution_timeout_seconds
         self.max_response_bytes = max_response_bytes
         self.message_bus = message_bus
+        self.site_access_client = site_access_client
         self.health = CrawlerHealthService(repository)
         self.certification_service: CertificationService | None = None
 
@@ -349,6 +352,7 @@ class CrawlerPlaneService:
             request_permit=request_permit,
             client=self.http_client,
             browser=self.browser,
+            site_access_client=self.site_access_client,
             replay=replay,
             max_response_bytes=self.max_response_bytes,
         )
@@ -684,6 +688,8 @@ class CrawlerPlaneService:
         await self.browser.close()
         if self._owns_http_client:
             await self.http_client.aclose()
+        if self.site_access_client is not None:
+            await self.site_access_client.close()
         self.repository.close()
 
     def _load_cassette(self, ref: str | None, package_path: str) -> NetworkCassette | None:

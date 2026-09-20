@@ -12,7 +12,6 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from functools import partial
 from typing import Any, Literal, cast
-from urllib.parse import quote
 
 import httpx
 
@@ -26,6 +25,8 @@ from doxagent.crawler_plane.schema import (
     WorkerJobResult,
 )
 from doxagent.crawler_plane.worker_runtime import worker_main
+from doxagent.site_strategy.client import SiteAccessClient, SiteAccessError
+from doxagent.site_strategy.schema import AccessMode, AccessRequest, SitePurpose
 
 RequestPermitFactory = Callable[[], AbstractAsyncContextManager[None]]
 
@@ -72,7 +73,7 @@ class PlaywrightBrowserRuntime:
                 return self._context
             try:
                 from playwright.async_api import async_playwright
-            except ImportError as exc:
+            except ImportError as exc:  # type: ignore[unreachable]
                 raise RuntimeError("Playwright is not installed") from exc
             playwright = await async_playwright().start()
             self._playwright = playwright
@@ -174,85 +175,35 @@ class PlaywrightBrowserRuntime:
                 await page.close()
 
     async def reuters_search(self, query: str, offset: int) -> list[dict[str, object]]:
+        from doxagent.message_bus_v2.reuters_sources import capture_reuters_search
+
         async with self._slots:
             page = await self._new_page()
             try:
-                response = await page.goto(
-                    f"https://www.reuters.com/site-search/?query={quote(query)}&offset={offset}",
-                    wait_until="domcontentloaded",
-                )
-                status = response.status if response is not None else 200
-                if status >= 400:
-                    raise RuntimeError(f"Reuters search returned HTTP {status}")
-                await page.wait_for_function(
-                    """() => {
-                      const body = document.body?.innerText || '';
-                      const articlePath = /\/[^/]+\/[^/]+-\d{4}-\d{2}-\d{2}\//;
-                      const hasArticle = [...document.querySelectorAll('main a[href]')]
-                        .some(link => articlePath.test(link.getAttribute('href') || ''));
-                      return hasArticle || /Search results for[\s\S]*?\\b0 results\\b/i.test(body);
-                    }""",
-                    timeout=12_000,
-                )
-                rows = await page.evaluate(
-                    """() => {
-                      const months = '(?:January|February|March|April|May|June|July|August|'
-                        + 'September|October|November|December)';
-                      const pattern = new RegExp(months + '\\s+\\d{1,2},\\s+\\d{4}');
-                      const out = [], seen = new Set();
-                      for (const link of document.querySelectorAll('main a[href]')) {
-                        const href = link.getAttribute('href') || '';
-                        const title = (link.textContent || '').trim();
-                        const articlePath = /\\/[^/]+\\/[^/]+-\\d{4}-\\d{2}-\\d{2}\\//;
-                        if (!title || title.length < 15 || !href.startsWith('/')
-                            || !articlePath.test(href) || seen.has(href)) continue;
-                        let node = link, card = null;
-                        for (let i = 0; i < 6 && node; i++, node = node.parentElement) {
-                          if (node.tagName === 'MAIN' || node.tagName === 'BODY') break;
-                          const articles = new Set([...node.querySelectorAll('a[href]')]
-                            .map(a => a.getAttribute('href'))
-                            .filter(h => articlePath.test(h || '')));
-                          if (articles.size > 1) break;
-                          if (articles.size === 1) card = node;
-                          if (card && node.matches('article, li, [data-testid*="card"]')) break;
-                        }
-                        const text = (card?.innerText || card?.textContent || '')
-                          .replace(/\\s+/g, ' ').trim();
-                        const match = text.match(pattern);
-                        const urlDate = href.match(/-(\d{4}-\d{2}-\d{2})\/$/);
-                        const publishedDate = urlDate?.[1] || match?.[0];
-                        if (!publishedDate) continue;
-                        seen.add(href);
-                        const summaryNode = card?.querySelector(
-                          '[data-testid*="description"], [data-testid*="summary"], p');
-                        let summary = (summaryNode?.textContent || '').trim();
-                        const relativePattern = /\\b\\d+\\s+(?:mins?|minutes?|hours?)\\s+ago\\b/i;
-                        if (summary === title || (summary.length < 80
-                            && (relativePattern.test(summary) || pattern.test(summary))))
-                          summary = '';
-                        const relative = text.match(relativePattern)?.[0];
-                        out.push({url: href, title, date: publishedDate, summary,
-                          date_basis: urlDate ? 'url_date' : 'card_date',
-                          card_date: match?.[0] || null, relative_time: relative || null});
-                      }
-                      return out;
-                    }"""
-                )
-                return cast(list[dict[str, object]], rows)
+                return await capture_reuters_search(page, query, offset)
             finally:
                 await page.close()
 
-    async def yahoo_latest_news(self, ticker: str, *, timeout_seconds=20, snippet_count=20):
+    async def yahoo_latest_news(
+        self,
+        ticker: str,
+        *,
+        timeout_seconds: int = 20,
+        snippet_count: int = 20,
+    ) -> tuple[list[dict[str, object]], dict[str, object]]:
         from doxagent.message_bus_v2.yahoo_sources import capture_latest_news
 
         async with self._slots:
             page = await self._new_page()
             try:
-                return await capture_latest_news(
-                    page,
-                    ticker,
-                    timeout_seconds=timeout_seconds,
-                    snippet_count=snippet_count,
+                return cast(
+                    tuple[list[dict[str, object]], dict[str, object]],
+                    await capture_latest_news(
+                        page,
+                        ticker,
+                        timeout_seconds=timeout_seconds,
+                        snippet_count=snippet_count,
+                    ),
                 )
             finally:
                 await page.close()
@@ -272,7 +223,8 @@ class ParentNetworkSession:
         asset_store: CrawlerAssetStore,
         request_permit: RequestPermitFactory,
         client: httpx.AsyncClient,
-        browser: PlaywrightBrowserRuntime,
+        browser: Any,
+        site_access_client: SiteAccessClient | None = None,
         replay: NetworkCassette | None = None,
         max_response_bytes: int = 10_000_000,
     ) -> None:
@@ -284,6 +236,7 @@ class ParentNetworkSession:
         self.request_permit = request_permit
         self.client = client
         self.browser = browser
+        self.site_access_client = site_access_client
         self.replay = replay
         self.max_response_bytes = max_response_bytes
         self.exchanges: list[NetworkExchange] = []
@@ -321,8 +274,61 @@ class ParentNetworkSession:
 
     async def _http(self, payload: dict[str, Any]) -> dict[str, Any]:
         method = str(payload.get("method", "GET")).upper()
+        if method not in {"GET", "POST"}:
+            raise ValueError("crawler Site Access supports only GET and POST")
+        access_method = cast(Literal["GET", "POST"], method)
         url = str(payload["url"])
         headers = {str(k): str(v) for k, v in dict(payload.get("headers", {})).items()}
+        if self.site_access_client is not None:
+            current = url
+            for hop in range(4):
+                async with self.request_permit():
+                    result = await self.site_access_client.execute(
+                        AccessRequest(
+                            operation_id=(
+                                f"crawler:{self.execution_id}:http:{len(self.exchanges) + 1}:{hop}"
+                            ),
+                            purpose=SitePurpose.CRAWLER,
+                            url=current,
+                            method=access_method,
+                            parameters={
+                                key: payload[key] for key in ("params", "json") if key in payload
+                            },
+                            allowed_headers=headers,
+                            mode=AccessMode.HTTP_PUBLIC,
+                            max_response_bytes=self.max_response_bytes,
+                            remaining_budget_ms=120_000,
+                        )
+                    )
+                if result.disposition.value == "BUDGET_DEFERRED":
+                    value = result.retry_not_before.isoformat() if result.retry_not_before else ""
+                    raise RuntimeError(f"site_access_deferred:{value}")
+                if result.disposition.value not in {"SUCCESS", "REDIRECT_REQUIRED"}:
+                    raise SiteAccessError(result)
+                body = result.body.encode("utf-8")
+                if len(body) > self.max_response_bytes:
+                    raise RuntimeError("crawler response exceeds global max_response_bytes")
+                final_url = result.final_url or current
+                self._record(
+                    "http",
+                    method,
+                    current,
+                    headers,
+                    result.status_code or 0,
+                    final_url,
+                    result.headers,
+                    result.body,
+                )
+                if result.redirect_url:
+                    current = result.redirect_url
+                    continue
+                return {
+                    "status_code": result.status_code or 0,
+                    "url": final_url,
+                    "headers": result.headers,
+                    "body": result.body,
+                }
+            raise RuntimeError("site_access_redirect_hop_limit")
         async with self.request_permit():
             if "params" in payload:
                 response = await self.client.request(
@@ -359,7 +365,14 @@ class ParentNetworkSession:
     async def _browser(self, payload: dict[str, Any]) -> dict[str, Any]:
         url = str(payload["url"])
         async with self.request_permit():
-            status, final_url, headers, html = await self.browser.get(url)
+            if getattr(self.browser, "site_managed", False):
+                status, final_url, headers, html = await self.browser.get(
+                    url,
+                    operation_id=f"crawler:{self.execution_id}:browser:{len(self.exchanges) + 1}",
+                    remaining_budget_ms=120_000,
+                )
+            else:
+                status, final_url, headers, html = await self.browser.get(url)
         raw = html.encode("utf-8")
         if len(raw) > self.max_response_bytes:
             raise RuntimeError("rendered DOM exceeds global max_response_bytes")

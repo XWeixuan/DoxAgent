@@ -23,6 +23,8 @@ from doxagent.monitoring.media_enrichment import (
     MediaExtractionResult,
     media_enrichment_metadata,
 )
+from doxagent.site_strategy.client import SiteAccessClient
+from doxagent.site_strategy.schema import BodyOutcome
 
 logger = logging.getLogger(__name__)
 
@@ -42,14 +44,18 @@ class ContentEnrichmentHub:
         extractor: ExtractorLike | None = None,
         concurrency: int = 8,
         retry_delay_seconds: int = 30,
+        site_access_client: SiteAccessClient | None = None,
     ) -> None:
         self.repository = repository
         self.bus = bus
         self.concurrency = max(1, min(8, concurrency))
         self.retry_delay_seconds = max(0, retry_delay_seconds)
         self.extractor = extractor or SharedContentExtractor(concurrency=self.concurrency)
+        self.site_access_client = site_access_client
+        self._last_outbox_flush = 0.0
 
     async def run_once(self, *, now: datetime | None = None) -> int:
+        await self._flush_outcomes(force=True)
         current = (now or utc_now()).astimezone(UTC)
         jobs = self.repository.claim_enrichment_jobs(
             limit=self.concurrency, now=current, lease_seconds=60
@@ -57,6 +63,7 @@ class ContentEnrichmentHub:
         if not jobs:
             return 0
         await asyncio.gather(*(self._process_guarded(job, current) for job in jobs))
+        await self._flush_outcomes(force=True)
         return len(jobs)
 
     async def _process_guarded(self, job: EnrichmentJob, now: datetime) -> None:
@@ -94,6 +101,7 @@ class ContentEnrichmentHub:
         active: set[asyncio.Task[None]] = set()
         try:
             while not stop.is_set():
+                await self._flush_outcomes()
                 finished = {task for task in active if task.done()}
                 for task in finished:
                     task.result()
@@ -283,7 +291,57 @@ class ContentEnrichmentHub:
             enrichment_input=job.message,
             enrichment_claim=(job.job_id, job.claim_token) if job.claim_token else None,
         )
-        self.repository.delete_enrichment_job(job.job_id, claim_token=job.claim_token)
+        self.repository.complete_enrichment_job_with_outcome(
+            job.job_id,
+            job.claim_token,
+            self._outcome_payload(job, message),
+        )
+
+    @staticmethod
+    def _outcome_payload(job: EnrichmentJob, message: RawMessageInput) -> dict[str, object] | None:
+        enrichment = message.metadata.get("media_enrichment", {})
+        if enrichment.get("pipeline_version") != "body_v2.2":
+            return None
+        trace = enrichment.get("site_access_trace") or []
+        final_access = trace[-1] if isinstance(trace, list) and trace else {}
+        return {
+            "job_id": job.job_id,
+            "final_site_id": enrichment.get("site_id") or final_access.get("site_id") or "generic",
+            "strategy_ref": enrichment.get("strategy_ref")
+            or final_access.get("strategy_ref")
+            or "builtin:generic@1",
+            "combination_id": final_access.get("combination_id"),
+            "outcome": enrichment.get("outcome") or "UNAVAILABLE",
+            "reason": enrichment.get("reason_code"),
+            "completed_at": utc_now().isoformat(),
+            "payload": {
+                "source_id": job.source.source_id,
+                "ticker": job.binding.ticker,
+                "url": message.url,
+                "access_trace": trace,
+            },
+        }
+
+    async def _flush_outcomes(self, *, force: bool = False) -> None:
+        if self.site_access_client is None:
+            return
+        now = time.monotonic()
+        if not force and now - self._last_outbox_flush < 10:
+            return
+        self._last_outbox_flush = now
+        rows = self.repository.list_site_strategy_outbox(limit=100)
+        if not rows:
+            return
+        ids = [str(row["outbox_id"]) for row in rows]
+        try:
+            outcomes = [BodyOutcome.model_validate(row["payload"]) for row in rows]
+            await self.site_access_client.submit_outcomes(outcomes)
+        except Exception:
+            self.repository.retry_site_strategy_outbox(ids)
+            logger.warning("Site Strategy outcome flush failed", exc_info=True)
+        else:
+            self.repository.confirm_site_strategy_outbox(ids)
+            self.repository.prune_site_strategy_outbox()
 
     def _retry_after(self, attempts: Sequence[FetchAttempt]) -> float:
         values = [item.retry_after_seconds for item in attempts if item.retry_after_seconds]

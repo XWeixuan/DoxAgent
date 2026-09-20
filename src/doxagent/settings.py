@@ -607,6 +607,67 @@ class DoxAgentSettings(BaseSettings):
         default="https://r.jina.ai/http://query1.finance.yahoo.com/v1/finance/search",
         validation_alias="DOXAGENT_MESSAGE_BUS_V2_YAHOO_READER_PROXY_URL",
     )
+    site_access_enabled: bool = Field(
+        default=False,
+        validation_alias="DOXAGENT_SITE_ACCESS_ENABLED",
+    )
+    site_access_url: str = Field(
+        default="http://v2-site-access:8011",
+        validation_alias="DOXAGENT_SITE_ACCESS_URL",
+    )
+    site_access_worker_token: str | None = Field(
+        default=None,
+        validation_alias="DOXAGENT_SITE_ACCESS_WORKER_TOKEN",
+    )
+    site_access_admin_token: str | None = Field(
+        default=None,
+        validation_alias="DOXAGENT_SITE_ACCESS_ADMIN_TOKEN",
+    )
+    site_access_worker_token_file: str | None = Field(
+        default=None,
+        validation_alias="DOXAGENT_SITE_ACCESS_WORKER_TOKEN_FILE",
+    )
+    site_access_admin_token_file: str | None = Field(
+        default=None,
+        validation_alias="DOXAGENT_SITE_ACCESS_ADMIN_TOKEN_FILE",
+    )
+    site_access_sqlite_path: str = Field(
+        default=".tmp/site-strategy/site_strategy.sqlite3",
+        validation_alias="DOXAGENT_SITE_ACCESS_SQLITE_PATH",
+    )
+    site_access_profile_root: str = Field(
+        default=".tmp/site-strategy/profiles",
+        validation_alias="DOXAGENT_SITE_ACCESS_PROFILE_ROOT",
+    )
+    site_access_credential_root: str = Field(
+        default=".tmp/site-strategy/credentials",
+        validation_alias="DOXAGENT_SITE_ACCESS_CREDENTIAL_ROOT",
+    )
+    site_access_browser_headless: bool = Field(
+        default=True,
+        validation_alias="DOXAGENT_SITE_ACCESS_BROWSER_HEADLESS",
+    )
+    site_access_browser_channel: str | None = Field(
+        default=None,
+        validation_alias="DOXAGENT_SITE_ACCESS_BROWSER_CHANNEL",
+    )
+    site_access_browser_max_processes: int = Field(
+        default=4,
+        ge=1,
+        le=8,
+        validation_alias="DOXAGENT_SITE_ACCESS_BROWSER_MAX_PROCESSES",
+    )
+    site_access_browser_max_pages: int = Field(
+        default=4,
+        ge=1,
+        le=16,
+        validation_alias="DOXAGENT_SITE_ACCESS_BROWSER_MAX_PAGES",
+    )
+    site_access_browser_idle_seconds: float = Field(
+        default=300,
+        ge=1,
+        validation_alias="DOXAGENT_SITE_ACCESS_BROWSER_IDLE_SECONDS",
+    )
     content_enrichment_enabled: bool = Field(
         default=True,
         validation_alias="DOXAGENT_CONTENT_ENRICHMENT_ENABLED",

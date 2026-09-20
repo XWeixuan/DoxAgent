@@ -260,6 +260,18 @@ class MessageBusV2Repository:
                 );
                 create index if not exists idx_mbv2_enrichment_ready
                     on content_enrichment_jobs(status, not_before, created_at);
+                create table if not exists site_strategy_result_outbox (
+                    outbox_id text primary key,
+                    kind text not null,
+                    status text not null,
+                    attempts integer not null default 0,
+                    next_attempt_at text not null,
+                    created_at text not null,
+                    confirmed_at text,
+                    payload_json text not null
+                );
+                create index if not exists idx_site_strategy_outbox_ready
+                    on site_strategy_result_outbox(status,next_attempt_at,created_at);
                 create table if not exists source_item_baselines (
                     binding_id text not null,
                     identity_key text not null,
@@ -831,11 +843,13 @@ class MessageBusV2Repository:
                 )
             )
             latest_completion = {}
-            if new_evidence.get("article_body") and evidence.get(
-                "article_body"
-            ) == new_evidence["article_body"]:
+            if (
+                new_evidence.get("article_body")
+                and evidence.get("article_body") == new_evidence["article_body"]
+            ):
                 latest_completion = {
-                    k: candidate.metadata[k] for k in ("media_enrichment", "v2_body_completion")
+                    k: candidate.metadata[k]
+                    for k in ("media_enrichment", "v2_body_completion")
                     if k in candidate.metadata
                 }
             updated = old.model_copy(
@@ -855,10 +869,10 @@ class MessageBusV2Repository:
             )
             old_revision = old.metadata.get("message_version", {}).get("content_revision", 1)
             content_changed = (
-                updated.body != old.body or updated.title != old.title
-                or evidence.get("summary") != old.metadata.get("content_evidence", {}).get(
-                    "summary"
-                )
+                updated.body != old.body
+                or updated.title != old.title
+                or evidence.get("summary")
+                != old.metadata.get("content_evidence", {}).get("summary")
                 or evidence.get("kind") != old.metadata.get("content_evidence", {}).get("kind")
             )
             updated.metadata["message_version"] = {
@@ -1458,6 +1472,130 @@ class MessageBusV2Repository:
                 self._assert_enrichment_claim(connection, job_id, claim_token)
             connection.execute("delete from content_enrichment_jobs where job_id=?", (job_id,))
 
+    def list_site_strategy_outbox(self, *, limit: int = 100) -> list[dict[str, Any]]:
+        now = utc_now().isoformat()
+        with self._connect() as connection:
+            rows = connection.execute(
+                """select outbox_id,attempts,payload_json from site_strategy_result_outbox
+                   where status='PENDING' and next_attempt_at<=?
+                   order by created_at limit ?""",
+                (now, max(1, min(limit, 1000))),
+            ).fetchall()
+        return [
+            {
+                "outbox_id": row["outbox_id"],
+                "attempts": row["attempts"],
+                "payload": json.loads(row["payload_json"]),
+            }
+            for row in rows
+        ]
+
+    def complete_enrichment_job_with_outcome(
+        self,
+        job_id: str,
+        claim_token: str | None,
+        payload: dict[str, Any] | None,
+    ) -> None:
+        with self.transaction() as connection:
+            row = connection.execute(
+                "select 1 from content_enrichment_jobs where job_id=?", (job_id,)
+            ).fetchone()
+            if row is None:
+                return
+            if claim_token:
+                self._assert_enrichment_claim(connection, job_id, claim_token)
+            if payload:
+                now = utc_now().isoformat()
+                connection.execute(
+                    """insert or ignore into site_strategy_result_outbox(
+                           outbox_id,kind,status,attempts,next_attempt_at,created_at,payload_json
+                       ) values(?,?,?,?,?,?,?)""",
+                    (
+                        job_id,
+                        "body",
+                        "PENDING",
+                        0,
+                        now,
+                        now,
+                        json.dumps(payload, ensure_ascii=False, default=str),
+                    ),
+                )
+            connection.execute("delete from content_enrichment_jobs where job_id=?", (job_id,))
+
+    def confirm_site_strategy_outbox(self, outbox_ids: list[str]) -> None:
+        if not outbox_ids:
+            return
+        now = utc_now().isoformat()
+        with self.transaction() as connection:
+            connection.execute(
+                """update site_strategy_result_outbox set status='CONFIRMED',confirmed_at=?
+                   where outbox_id in (select value from json_each(?))""",
+                (now, json.dumps(outbox_ids)),
+            )
+
+    def retry_site_strategy_outbox(self, outbox_ids: list[str]) -> None:
+        if not outbox_ids:
+            return
+        with self.transaction() as connection:
+            rows = connection.execute(
+                """select outbox_id,attempts from site_strategy_result_outbox
+                   where outbox_id in (select value from json_each(?))""",
+                (json.dumps(outbox_ids),),
+            ).fetchall()
+            for row in rows:
+                attempts = int(row["attempts"]) + 1
+                delay = min(600, 2 ** min(attempts, 9))
+                connection.execute(
+                    """update site_strategy_result_outbox set attempts=?,next_attempt_at=?
+                       where outbox_id=?""",
+                    (
+                        attempts,
+                        (utc_now() + timedelta(seconds=delay)).isoformat(),
+                        row["outbox_id"],
+                    ),
+                )
+
+    def prune_site_strategy_outbox(self, *, now: datetime | None = None) -> int:
+        cutoff = (now or utc_now()) - timedelta(days=7)
+        with self.transaction() as connection:
+            return connection.execute(
+                "delete from site_strategy_result_outbox where status='CONFIRMED' "
+                "and confirmed_at<?",
+                (cutoff.isoformat(),),
+            ).rowcount
+
+    @staticmethod
+    def _body_outcome_payload(candidate: RawMessage) -> dict[str, Any] | None:
+        enrichment = candidate.metadata.get("media_enrichment", {})
+        completion = candidate.metadata.get("v2_body_completion", {})
+        if enrichment.get("pipeline_version") != "body_v2.2":
+            return None
+        job_id = completion.get("attempt_id")
+        if not isinstance(job_id, str) or not job_id:
+            return None
+        trace = enrichment.get("site_access_trace") or []
+        final_access = trace[-1] if isinstance(trace, list) and trace else {}
+        return {
+            "job_id": job_id,
+            "final_site_id": enrichment.get("site_id")
+            or final_access.get("site_id")
+            or candidate.resolved_domain
+            or "generic",
+            "strategy_ref": enrichment.get("strategy_ref")
+            or final_access.get("strategy_ref")
+            or "builtin:generic@1",
+            "combination_id": final_access.get("combination_id"),
+            "outcome": enrichment.get("outcome") or "UNAVAILABLE",
+            "reason": enrichment.get("reason_code"),
+            "completed_at": completion.get("completed_at") or utc_now().isoformat(),
+            "payload": {
+                "source_id": candidate.source_id,
+                "ticker": candidate.ticker,
+                "url": candidate.url,
+                "access_trace": trace,
+            },
+        }
+
     @staticmethod
     def _assert_enrichment_claim(
         connection: sqlite3.Connection,
@@ -1522,28 +1660,51 @@ class MessageBusV2Repository:
     def record_raw(
         self, candidate: RawMessage, *, enrichment_claim: tuple[str, str] | None = None
     ) -> tuple[IngestDecision, RawMessage]:
+        site_outcome = self._body_outcome_payload(candidate)
         with self.transaction() as connection:
-            if enrichment_claim:
-                self._assert_enrichment_claim(connection, *enrichment_claim)
-            candidate, duplicate = self._dedup_candidate(connection, candidate)
-            if duplicate is not None:
-                return IngestDecision.DUPLICATE, duplicate
-            matching_row = connection.execute(
-                """select data_json from raw_messages
+            try:
+                if enrichment_claim:
+                    self._assert_enrichment_claim(connection, *enrichment_claim)
+                candidate, duplicate = self._dedup_candidate(connection, candidate)
+                if duplicate is not None:
+                    return IngestDecision.DUPLICATE, duplicate
+                matching_row = connection.execute(
+                    """select data_json from raw_messages
                    where ticker=? and source_id=? and identity_key=?
                    and (content_hash=? or (raw_hash=? and ?=0))
                    order by case when content_hash=? then 0 else 1 end
                    limit 1""",
-                (
-                    candidate.ticker,
-                    candidate.source_id,
-                    candidate.identity_key,
-                    candidate.content_hash,
-                    candidate.raw_hash,
-                    int("content_evidence" in candidate.metadata),
-                    candidate.content_hash,
-                ),
-            ).fetchone()
+                    (
+                        candidate.ticker,
+                        candidate.source_id,
+                        candidate.identity_key,
+                        candidate.content_hash,
+                        candidate.raw_hash,
+                        int("content_evidence" in candidate.metadata),
+                        candidate.content_hash,
+                    ),
+                ).fetchone()
+            finally:
+                if enrichment_claim and site_outcome:
+                    now = utc_now().isoformat()
+                    connection.execute(
+                        """insert or ignore into site_strategy_result_outbox(
+                               outbox_id,kind,status,attempts,next_attempt_at,created_at,payload_json
+                           ) values(?,?,?,?,?,?,?)""",
+                        (
+                            site_outcome["job_id"],
+                            "body",
+                            "PENDING",
+                            0,
+                            now,
+                            now,
+                            json.dumps(site_outcome, ensure_ascii=False, default=str),
+                        ),
+                    )
+                    connection.execute(
+                        "delete from content_enrichment_jobs where job_id=?",
+                        (enrichment_claim[0],),
+                    )
             if matching_row is not None:
                 # A conservative ambiguity fallback may find an exact legacy hash.
                 # Remove only this uncommitted reservation, never historical evidence.
@@ -1754,13 +1915,18 @@ class MessageBusV2Repository:
             "message_version", {}
         ).get("content_revision", 1):
             # A first-publication worker cannot overwrite content refreshed concurrently.
-            metadata.update({
-                k: stored.metadata[k]
-                for k in (
-                    "content_evidence", "message_version", "media_enrichment", "v2_body_completion"
-                )
-                if k in stored.metadata
-            })
+            metadata.update(
+                {
+                    k: stored.metadata[k]
+                    for k in (
+                        "content_evidence",
+                        "message_version",
+                        "media_enrichment",
+                        "v2_body_completion",
+                    )
+                    if k in stored.metadata
+                }
+            )
             updates.update(body=stored.body, title=stored.title)
         # A stale worker cannot undo an already committed publication.
         if stored.processing_status is RawProcessingStatus.COMPLETED:
@@ -1843,9 +2009,13 @@ class MessageBusV2Repository:
         completed = raw.model_copy(update={"processing_status": RawProcessingStatus.COMPLETED})
         with self.transaction() as connection:
             completed = self._retain_concurrent_evidence(connection, completed)
-            message = message.model_copy(update={
-                "metadata": completed.metadata, "title": completed.title, "body": completed.body,
-            })
+            message = message.model_copy(
+                update={
+                    "metadata": completed.metadata,
+                    "title": completed.title,
+                    "body": completed.body,
+                }
+            )
             connection.execute(
                 """insert into standard_messages(
                      standard_message_id,raw_message_id,ticker,source_id,binding_id,published_at,data_json)

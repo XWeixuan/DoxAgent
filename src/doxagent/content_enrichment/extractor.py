@@ -6,6 +6,7 @@ import asyncio
 from pathlib import Path
 
 from doxagent.content_enrichment.browser import PublisherBrowser
+from doxagent.content_enrichment.managed import SiteAccessBrowserReader, SiteAccessTransport
 from doxagent.content_enrichment.pipeline import ArticlePipeline
 from doxagent.content_enrichment.transport import PublicTransport, browser_session_factory
 from doxagent.monitoring.media_enrichment import (
@@ -19,6 +20,7 @@ from doxagent.monitoring.media_enrichment import (
     _default_session_factory,
     extract_media_record,
 )
+from doxagent.site_strategy.client import SiteAccessClient
 
 
 class SharedContentExtractor:
@@ -38,11 +40,14 @@ class SharedContentExtractor:
         disabled_hosts: set[str] | None = None,
         trusted_proxy_dns: bool = False,
         proxy_url: str | None = None,
+        site_access_client: SiteAccessClient | None = None,
+        close_site_access_client: bool = False,
     ) -> None:
         self._semaphore = asyncio.Semaphore(max(1, min(8, concurrency)))
         self._controller = DomainFetchController()
         self._session_factory = session_factory or (
-            browser_session_factory(proxy_url) if pipeline_enabled and extractor is None
+            browser_session_factory(proxy_url)
+            if pipeline_enabled and extractor is None
             else _default_session_factory()
         )
         self._extractor = extractor or _default_extractor()
@@ -52,6 +57,9 @@ class SharedContentExtractor:
         self._session_lock = asyncio.Lock()
         self._pipeline_enabled = pipeline_enabled and extractor is None
         self._pipeline: ArticlePipeline | None = None
+        self._managed_pipeline: ArticlePipeline | None = None
+        self._site_access_client = site_access_client
+        self._close_site_access_client = close_site_access_client
         self._disabled_hosts = disabled_hosts or set()
         self._trusted_proxy_dns = trusted_proxy_dns
         self._browser = (
@@ -87,10 +95,24 @@ class SharedContentExtractor:
                     browser=self._browser,
                     disabled_hosts=self._disabled_hosts,
                 )
+                if self._site_access_client is not None:
+                    managed_transport = SiteAccessTransport(self._site_access_client)
+                    self._managed_pipeline = ArticlePipeline(
+                        managed_transport,  # type: ignore[arg-type]
+                        browser=SiteAccessBrowserReader(
+                            self._site_access_client,
+                            managed_transport,
+                        ),
+                        site_client=self._site_access_client,
+                        disabled_hosts=self._disabled_hosts,
+                        pipeline_version="body_v2.2",
+                    )
 
     async def close(self) -> None:
         if self._browser:
             await self._browser.close()
+        if self._close_site_access_client and self._site_access_client is not None:
+            await self._site_access_client.close()
         async with self._session_lock:
             if self._session is not None:
                 assert self._session_context is not None
@@ -106,7 +128,7 @@ class SharedContentExtractor:
         record: MediaEnrichmentRecord,
         version: str | None,
     ) -> MediaExtractionResult:
-        if version not in {None, "body_v2.1"}:
+        if version not in {None, "body_v2.1", "body_v2.2"}:
             return MediaExtractionResult(
                 record=record,
                 reason="pipeline_version_unavailable",
@@ -117,6 +139,13 @@ class SharedContentExtractor:
             assert self._session is not None
             from urllib.parse import urlparse
 
+            if (
+                version == "body_v2.2"
+                and self._pipeline_enabled
+                and self._managed_pipeline is not None
+                and urlparse(record.fetch_url or "").hostname not in self._disabled_hosts
+            ):
+                return await self._managed_pipeline.extract(record)
             if (
                 version == "body_v2.1"
                 and self._pipeline_enabled
