@@ -111,6 +111,8 @@ def test_open_persists_root_session_but_never_returns_token(admin, monkeypatch) 
 
     assert result["ok"] is True
     assert "login_token" not in result
+    assert result["browser_host"] == "www.barrons.com"
+    assert "browser_url" not in result
     stored = admin._read_session()
     assert stored["login_token"] == "a" * 32
     if os.name == "posix":

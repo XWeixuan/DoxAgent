@@ -372,7 +372,7 @@ def command_open(profile_id: str) -> dict[str, Any]:
             "profile_id": profile_id,
             "site_name": selected["site_name"],
             "egress_node": selected["egress_node"],
-            "browser_url": response.get("url"),
+            "browser_host": urlsplit(str(response.get("url") or "")).hostname,
             "opened_in_seconds": round(time.monotonic() - started, 2),
         }
 
@@ -497,7 +497,10 @@ def command_recover() -> dict[str, Any]:
         return {
             "ok": True,
             "session": _public_session(session),
-            "browser": {"url": inspection.get("url"), "title": inspection.get("title")},
+            "browser": {
+                "host": urlsplit(str(inspection.get("url") or "")).hostname,
+                "title": inspection.get("title"),
+            },
         }
 
 
