@@ -52,6 +52,56 @@ def test_seed_resolver_uses_exact_ownership_and_isolated_generic_runtime(
     assert unknown_a.runtime_key != unknown_b.runtime_key
 
 
+def test_seed_adds_verification_urls_and_idempotently_upgrades_missing_value(
+    site_service: SiteStrategyService,
+) -> None:
+    barrons = site_service.repository.get_strategy("barrons")
+    assert barrons is not None
+    assert barrons.auth.verification_url
+    assert site_service.resolve(barrons.auth.verification_url).site_id == "barrons"
+
+    without_url = barrons.model_copy(
+        update={"auth": barrons.auth.model_copy(update={"verification_url": None})}
+    )
+    missing = site_service.apply_strategy(
+        without_url, expected_revision=barrons.revision, actor="test:remove-verification"
+    )
+    bootstrap_seed(site_service.repository, site_service)
+    upgraded = site_service.repository.get_strategy("barrons")
+    assert upgraded is not None
+    assert upgraded.revision == missing.revision + 1
+    assert upgraded.auth.verification_url
+    assert (
+        site_service.repository.list_revisions("barrons")[0]["actor"]
+        == "seed:auth-verification-url"
+    )
+
+    bootstrap_seed(site_service.repository, site_service)
+    unchanged = site_service.repository.get_strategy("barrons")
+    assert unchanged is not None
+    assert unchanged.revision == upgraded.revision
+
+
+def test_seed_does_not_override_registered_verification_url(
+    site_service: SiteStrategyService,
+) -> None:
+    wsj = site_service.repository.get_strategy("wsj")
+    assert wsj is not None
+    custom_url = "https://www.wsj.com/articles/operator-selected-verification"
+    customized = site_service.apply_strategy(
+        wsj.model_copy(
+            update={"auth": wsj.auth.model_copy(update={"verification_url": custom_url})}
+        ),
+        expected_revision=wsj.revision,
+        actor="operator",
+    )
+    bootstrap_seed(site_service.repository, site_service)
+    current = site_service.repository.get_strategy("wsj")
+    assert current is not None
+    assert current.revision == customized.revision
+    assert current.auth.verification_url == custom_url
+
+
 def test_strategy_apply_is_revision_cas_and_profile_binding_is_immutable(
     site_service: SiteStrategyService,
 ) -> None:

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=消息源登录维护
+Comment=维护消息网站 Browser Profile 登录状态
+Exec=/usr/local/bin/doxagent-site-login-ui
+Icon=web-browser
+Terminal=false
+Categories=Network;
+StartupNotify=true

@@ -43,4 +43,6 @@ install -m 755 /home/ubuntu/doxagent/deploy/doxagent-broker-firewall /usr/local/
 install -m 644 /home/ubuntu/doxagent/deploy/doxagent-broker-firewall.service /etc/systemd/system/
 systemctl daemon-reload
 systemctl enable --now doxagent-broker-firewall doxagent-ibkr-paper-relay
+DOXAGENT_REPO_ROOT=/home/ubuntu/doxagent \
+  bash /home/ubuntu/doxagent/deploy/install-site-login-desktop.sh
 systemctl restart xrdp

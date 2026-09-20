@@ -151,15 +151,16 @@ class AuthPolicy(SiteModel):
     crawler_requirement: Literal["inherit", "none", "optional", "required"] = "inherit"
     body_requirement: Literal["inherit", "none", "optional", "required"] = "inherit"
     login_url: str | None = None
+    verification_url: str | None = None
 
-    @field_validator("login_url")
+    @field_validator("login_url", "verification_url")
     @classmethod
-    def _login_url(cls, value: str | None) -> str | None:
+    def _absolute_url(cls, value: str | None) -> str | None:
         if value is None:
             return None
         parsed = urlsplit(value.strip())
         if parsed.scheme not in {"http", "https"} or not parsed.hostname:
-            raise ValueError("login_url must be absolute HTTP(S)")
+            raise ValueError("auth URLs must be absolute HTTP(S)")
         return value.strip()
 
 

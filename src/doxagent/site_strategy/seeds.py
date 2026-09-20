@@ -55,8 +55,28 @@ def bootstrap_seed(repository: SiteStrategyRepository, service: SiteStrategyServ
                         login_url=spec.auth.login_url,
                     )
                 )
-        if repository.get_head(spec.site_id) is None:
+        head = repository.get_head(spec.site_id)
+        if head is None:
             service.apply_strategy(spec, expected_revision=None, actor="seed")
+        else:
+            current = repository.get_strategy(spec.site_id)
+            if (
+                current is not None
+                and current.auth.verification_url is None
+                and spec.auth.verification_url is not None
+            ):
+                upgraded = current.model_copy(
+                    update={
+                        "auth": current.auth.model_copy(
+                            update={"verification_url": spec.auth.verification_url}
+                        )
+                    }
+                )
+                service.apply_strategy(
+                    upgraded,
+                    expected_revision=current.revision,
+                    actor="seed:auth-verification-url",
+                )
     return [item.site_id for item in specs]
 
 
@@ -116,6 +136,10 @@ def seed_specs() -> list[SiteStrategySpec]:
             egresses=("us-standard-5", "jp-standard-6"),
             auth="required",
             login_url="https://www.barrons.com/login",
+            verification_url=(
+                "https://www.barrons.com/articles/"
+                "annaly-capital-sports-mortgage-reit-dividend-stock-price-3972cdfb"
+            ),
             support=("accounts.barrons.com", "accounts.dowjones.com", "api-secure.wsj.net"),
             body_parameters={
                 "body_xpath": [
@@ -131,6 +155,9 @@ def seed_specs() -> list[SiteStrategySpec]:
             egresses=("us-standard-5", "jp-standard-6"),
             auth="required",
             login_url="https://accounts.wsj.com/login",
+            verification_url=(
+                "https://www.wsj.com/business/retail/cvs-small-store-openings-b0e196a2"
+            ),
             support=("accounts.wsj.com", "accounts.dowjones.com", "api-secure.wsj.net"),
             body_parameters={
                 "body_xpath": [
@@ -145,6 +172,10 @@ def seed_specs() -> list[SiteStrategySpec]:
             egresses=("us-standard-5", "jp-standard-6"),
             auth="required",
             login_url="https://seekingalpha.com/account/login",
+            verification_url=(
+                "https://seekingalpha.com/article/"
+                "4765976-prologis-buying-the-data-center-story"
+            ),
             support=("static.seekingalpha.com",),
             body_parameters={"body_xpath": ['//*[@data-test-id="content-container"]']},
         ),
@@ -155,6 +186,10 @@ def seed_specs() -> list[SiteStrategySpec]:
             egresses=("us-standard-5", "jp-standard-6"),
             auth="required",
             login_url="https://accounts.marketwatch.com/login",
+            verification_url=(
+                "https://www.marketwatch.com/story/"
+                "orion-properties-says-director-nomination-notice-from-kawa-is-invalid-67812229"
+            ),
             support=("accounts.marketwatch.com", "accounts.dowjones.com", "api-secure.wsj.net"),
             body_parameters={
                 "body_xpath": [
@@ -188,6 +223,7 @@ def _site(
     support: tuple[str, ...] = (),
     auth: AuthRequirement = "none",
     login_url: str | None = None,
+    verification_url: str | None = None,
     access_order: list[AccessOrderItem] | None = None,
     body_parameters: dict[str, object] | None = None,
 ) -> SiteStrategySpec:
@@ -224,7 +260,11 @@ def _site(
             access_order=access_order
             or (["browser"] if auth == "required" else ["http_public", "browser", "reader"]),
         ),
-        auth=AuthPolicy(requirement=auth, login_url=login_url),
+        auth=AuthPolicy(
+            requirement=auth,
+            login_url=login_url,
+            verification_url=verification_url,
+        ),
     )
 
 
