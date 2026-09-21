@@ -27,7 +27,9 @@ from .service import SiteStrategyService
 EGRESSES = (
     ("jp-standard-6", "🇯🇵 日本标准 IEPL 专线 6", 18080),
     ("us-standard-5", "🇺🇸 美国标准 IEPL 专线 5", 18081),
-    ("nl-standard-2", "🇳🇱 荷兰标准 IEPL 专线 2", 18082),
+    # Keep the stable egress id/port because existing Profiles are immutably
+    # bound to it; the subscribed node behind that slot is replaceable.
+    ("nl-standard-2", "🇳🇱 荷兰标准 IEPL 专线 1", 18082),
     ("de-standard-1", "🇩🇪 德国标准 IEPL 专线 1", 18083),
     ("server-direct", "DIRECT", 18084),
 )
