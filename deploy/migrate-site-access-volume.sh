@@ -14,9 +14,11 @@ if docker ps --format '{{.Names}}' | grep -Eq '(^|-)v2-site-access(-|$)'; then
   exit 1
 fi
 
-install -d -o 10001 -g 10001 -m 0700 \
+mkdir -p \
   "$resolved/registry" "$resolved/profiles" "$resolved/credentials" "$resolved/snapshots"
 chown -R 10001:10001 "$resolved/registry" "$resolved/profiles" \
+  "$resolved/credentials" "$resolved/snapshots"
+chmod 0700 "$resolved/registry" "$resolved/profiles" \
   "$resolved/credentials" "$resolved/snapshots"
 find "$resolved/credentials" -type d -exec chmod 0700 {} +
 find "$resolved/credentials" -type f -exec chmod 0600 {} +
