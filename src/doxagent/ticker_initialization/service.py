@@ -111,7 +111,7 @@ class InitializationWorker:
                 if n.status == "FAILED"
                 and (n.ordinal >= 2 or n.receipt.get("failure", {}).get("manual_resume_required"))
             ]
-            recovering = [n for n in nodes if n.status == "RUNNING"]
+            recovering = [n for n in nodes if n.status in {"RUNNING", "INTERRUPTED"}]
             if exhausted and not recovering:
                 for completed_node in nodes:
                     if (
@@ -151,7 +151,7 @@ class InitializationWorker:
                 self.repository.complete(lease, node.key, recovered)
                 await self._after_complete(lease, node, recovered, adapter=adapter)
                 return
-            if previous.status == "RUNNING":
+            if previous.status in {"RUNNING", "INTERRUPTED"}:
                 # Unknown completion after a crash is charged before a replacement dispatch.
                 self.repository.fail(
                     lease, node.key, "interrupted execution has no recoverable output"
@@ -188,6 +188,12 @@ class InitializationWorker:
                     visited_failures.update(retryable)
             self.repository.complete(lease, node.key, result)
             await self._after_complete(lease, node, result, adapter=adapter)
+        except asyncio.CancelledError:
+            try:
+                self.repository.interrupt(lease, node.key, "initialization worker cancelled")
+            except LeaseLost:
+                pass
+            raise
         except LeaseLost:
             raise
         except ExecutionDeferred:

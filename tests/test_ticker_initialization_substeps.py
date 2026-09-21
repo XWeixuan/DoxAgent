@@ -1,3 +1,4 @@
+import asyncio
 from datetime import UTC, datetime
 from enum import StrEnum
 
@@ -73,3 +74,30 @@ async def test_each_internal_node_has_own_retry_not_shared_parent_budget(tmp_pat
     result = await InitializationWorker(repo, lambda _: stages).run_once()
     assert result.status == "SUCCEEDED"
     assert all(stages.calls.count(step) == 2 for step in Step)
+
+
+@pytest.mark.asyncio
+async def test_cancellation_marks_parent_and_durable_child_interrupted(tmp_path):
+    class CancelledStages:
+        @durable("d3")
+        async def turn(self, *, node, output_model, max_attempts=2):
+            raise asyncio.CancelledError()
+
+        async def reconcile(self, _context):
+            return None
+
+        async def execute(self, _context):
+            await self.turn(node=Step.CALIBRATE, output_model=Output)
+            return NodeResult()
+
+    repo = InitializationRepository(tmp_path / "control.db")
+    run = repo.submit("MU", datetime.now(UTC), [NodeSpec(key="d3", block="D3")])
+
+    with pytest.raises(asyncio.CancelledError):
+        await InitializationWorker(repo, lambda _: CancelledStages()).run_once()
+
+    nodes = {node.key: node for node in repo.nodes(run.initialization_id)}
+    assert nodes["d3"].status == "INTERRUPTED"
+    assert nodes["d3.calibrate"].status == "INTERRUPTED"
+    assert nodes["d3"].ordinal == 1
+    assert nodes["d3.calibrate"].ordinal == 1

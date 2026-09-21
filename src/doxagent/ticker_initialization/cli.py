@@ -250,6 +250,7 @@ def main(argv: list[str] | None = None) -> int:
                     {
                         **run.model_dump(mode="json"),
                         "current_nodes": [n.key for n in nodes if n.status == "RUNNING"],
+                        "interrupted_nodes": [n.key for n in nodes if n.status == "INTERRUPTED"],
                         "failed_nodes": [n.key for n in nodes if n.status == "FAILED"],
                         "attempt_count": sum(
                             len(repo.attempts(run.initialization_id, n.key)) for n in nodes

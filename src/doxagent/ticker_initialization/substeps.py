@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import functools
 import hashlib
 import inspect
@@ -118,6 +119,15 @@ def checkpointed_json(key: str, call: Callable[[], Any], *, max_retries: int = 1
             result = call()
             repo.complete(lease, key, NodeResult(artifacts={"return": result}))
             return result
+        except asyncio.CancelledError:
+            try:
+                repo.interrupt(lease, key, "initialization JSON substep cancelled")
+            except Exception as exc:
+                from .schema import LeaseLost
+
+                if not isinstance(exc, LeaseLost):
+                    raise
+            raise
         except Exception as exc:
             from .schema import LeaseLost
 
@@ -278,6 +288,15 @@ def durable(kind: str) -> Callable[[Callable[P, Awaitable[T]]], Callable[P, Awai
                             NodeResult(artifacts={"return": payload, "codec_version": 1}),
                         )
                     return result
+                except asyncio.CancelledError:
+                    try:
+                        repo.interrupt(lease, key, "initialization durable substep cancelled")
+                    except Exception as exc:
+                        from .schema import LeaseLost
+
+                        if not isinstance(exc, LeaseLost):
+                            raise
+                    raise
                 except Exception as exc:
                     from .schema import LeaseLost
 
@@ -295,8 +314,6 @@ def durable(kind: str) -> Callable[[Callable[P, Awaitable[T]]], Callable[P, Awai
                     if record.ordinal >= 2:
                         raise
                     if details["retryable"]:
-                        import asyncio
-
                         await asyncio.sleep(1)
                 finally:
                     _step.reset(token)

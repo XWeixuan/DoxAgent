@@ -54,7 +54,7 @@ async def test_every_default_stage_recovers_completed_side_effect_without_redisp
     tmp_path, crash_key
 ):
     repo = InitializationRepository(tmp_path / "control.db")
-    repo.submit("MU", datetime.now(UTC), default_plan())
+    run = repo.submit("MU", datetime.now(UTC), default_plan())
     calls = Counter()
 
     class Adapter:
@@ -70,9 +70,16 @@ async def test_every_default_stage_recovers_completed_side_effect_without_redisp
 
     with pytest.raises(asyncio.CancelledError):
         await InitializationWorker(repo, lambda _: Adapter()).run_once()
+    interrupted = next(node for node in repo.nodes(run.initialization_id) if node.key == crash_key)
+    interrupted_execution = interrupted.execution_id
+    assert interrupted.status == "INTERRUPTED"
+    assert interrupted.ordinal == 1
+    assert interrupted.receipt["external_committed"] is True
     with sqlite3.connect(repo.path) as db:
         db.execute("UPDATE ticker_operations SET lease_until=0")
     result = await InitializationWorker(repo, lambda _: Adapter()).run_once()
     assert result.status == "SUCCEEDED", result.error
     assert set(calls) == {n.key for n in default_plan()}
     assert all(count == 1 for count in calls.values())
+    recovered = next(node for node in repo.nodes(result.initialization_id) if node.key == crash_key)
+    assert recovered.execution_id == interrupted_execution

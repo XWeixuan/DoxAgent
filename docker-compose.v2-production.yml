@@ -50,7 +50,12 @@ x-environment: &environment
 
 x-backend: &backend
   image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:production}
-  build: {context: ., dockerfile: Dockerfile.v2}
+  build:
+    context: .
+    dockerfile: Dockerfile.v2
+    args:
+      DOXAGENT_BUILD_COMMIT: ${DOXAGENT_BUILD_COMMIT:-unversioned}
+      DOXAGENT_SOURCE_SHA256: ${DOXAGENT_SOURCE_SHA256:-}
   env_file: ["${DOXAGENT_V2_ENV_FILE:-.env.v2}"]
   environment: *environment
   volumes: ["v2-data:/data"]

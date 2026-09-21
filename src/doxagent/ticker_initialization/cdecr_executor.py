@@ -5,13 +5,13 @@ from __future__ import annotations
 import argparse
 import asyncio
 import os
+import signal
 import time
 from pathlib import Path
 from uuid import uuid4
 
 from doxagent.settings import DoxAgentSettings
 
-from .provenance import execution_version
 from .repository import InitializationRepository
 from .schema import Lease, LeaseLost, NodeResult
 from .service import NodeContext
@@ -43,7 +43,6 @@ class CDECRExecutionWorker:
         claimed = self.repository.claim_cdecr_dispatch(
             self.owner,
             self.identity,
-            execution_version=execution_version(),
             lease_seconds=self.lease_seconds,
         )
         if claimed is None:
@@ -57,6 +56,17 @@ class CDECRExecutionWorker:
         )
         try:
             await self._execute(dispatch, lease, generation)
+        except asyncio.CancelledError:
+            try:
+                self.repository.release_cdecr_dispatch(
+                    lease,
+                    dispatch_id,
+                    generation,
+                    reason="CDECR executor cancelled",
+                )
+            except LeaseLost:
+                pass
+            raise
         finally:
             heartbeat.cancel()
             await asyncio.gather(heartbeat, return_exceptions=True)
@@ -79,9 +89,7 @@ class CDECRExecutionWorker:
         dispatch_id = str(dispatch["dispatch_id"])
         node_key = str(dispatch["node_key"])
         node = next(
-            item
-            for item in self.repository.nodes(owned.initialization_id)
-            if item.key == node_key
+            item for item in self.repository.nodes(owned.initialization_id) if item.key == node_key
         )
         if node.status == "SUCCEEDED":
             self.repository.settle_cdecr_dispatch(
@@ -174,14 +182,28 @@ async def run(
         identity=identity or settings.cdecr_dispatch_identity,
     )
     deadline = time.monotonic() + max(0, wait_seconds)
-    while True:
-        if await worker.run_once():
-            if once:
+    current = asyncio.current_task()
+    previous_signal = signal.getsignal(signal.SIGTERM)
+    loop = asyncio.get_running_loop()
+
+    def terminate(_number: int, _frame: object) -> None:
+        if current is not None:
+            loop.call_soon_threadsafe(current.cancel)
+
+    signal.signal(signal.SIGTERM, terminate)
+    try:
+        while True:
+            if await worker.run_once():
+                if once:
+                    return 0
+                continue
+            if once and time.monotonic() >= deadline:
                 return 0
-            continue
-        if once and time.monotonic() >= deadline:
-            return 0
-        await asyncio.sleep(0.5)
+            await asyncio.sleep(0.5)
+    except asyncio.CancelledError:
+        return 130
+    finally:
+        signal.signal(signal.SIGTERM, previous_signal)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -198,9 +220,7 @@ def main(argv: list[str] | None = None) -> int:
             or Path(".tmp/ticker_initialization/control.sqlite3")
         )
         return 0
-    return asyncio.run(
-        run(once=args.once, wait_seconds=args.wait_seconds, identity=args.identity)
-    )
+    return asyncio.run(run(once=args.once, wait_seconds=args.wait_seconds, identity=args.identity))
 
 
 if __name__ == "__main__":
