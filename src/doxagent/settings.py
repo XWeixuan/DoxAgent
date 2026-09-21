@@ -668,7 +668,7 @@ class DoxAgentSettings(BaseSettings):
         validation_alias="DOXAGENT_SITE_ACCESS_BROWSER_MAX_PAGES",
     )
     site_access_browser_idle_seconds: float = Field(
-        default=300,
+        default=43200,
         ge=1,
         validation_alias="DOXAGENT_SITE_ACCESS_BROWSER_IDLE_SECONDS",
     )

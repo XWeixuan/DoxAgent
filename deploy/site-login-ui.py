@@ -130,7 +130,9 @@ class SiteLoginApp:
 
         actions = ttk.Frame(outer)
         actions.pack(fill=tk.X)
-        self.open_button = ttk.Button(actions, text="Open Login Page", command=self.open_selected)
+        self.open_button = ttk.Button(
+            actions, text="Open Browser", command=self.open_selected
+        )
         self.open_button.pack(side=tk.LEFT)
         self.verify_button = ttk.Button(
             actions, text="Finish Login and Verify", command=self.verify_selected
@@ -215,6 +217,12 @@ class SiteLoginApp:
                 continue
             role = "Primary" if row["profile_role"] == "primary" else "Backup"
             state = STATE_TEXT.get(row["auth_state"], row["auth_state"])
+            if row.get("verification_kind") == "public_access" and row["auth_state"] == "UNKNOWN":
+                state = "Public access only"
+            if row.get("manual_attention_required"):
+                state = "Needs manual challenge"
+            if row.get("operational_state") != "AVAILABLE":
+                state = "Maintenance active"
             if row["profile_role"] == "primary" and row["auth_state"] == "VALID":
                 state = "Primary login ready"
             if row["profile_role"] == "backup" and row["auth_state"] == "UNKNOWN":
@@ -227,7 +235,8 @@ class SiteLoginApp:
                     row["site_name"],
                     row["profile_id"],
                     role,
-                    region_label(row["egress_id"], row["egress_node"]),
+                    region_label(row["egress_id"], row["egress_node"])
+                    + (f" / {row['observed_ip']}" if row.get("observed_ip") else ""),
                     state,
                 ),
             )

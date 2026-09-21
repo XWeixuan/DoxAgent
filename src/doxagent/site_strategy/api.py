@@ -44,6 +44,19 @@ class EnableRequest(BaseModel):
 
 class ProfileAuthRequest(BaseModel):
     article_url: str = Field(min_length=1)
+    login_token: str = Field(min_length=1)
+
+
+class ProfileSnapshotRequest(BaseModel):
+    browser_version: str = Field(min_length=1, max_length=64)
+
+
+class ProfileRestoreRequest(BaseModel):
+    snapshot_id: str = Field(min_length=1, max_length=256)
+
+
+class ProfileProbeRequest(BaseModel):
+    url: str = Field(min_length=1)
 
 
 class LoginSessionRequest(BaseModel):
@@ -106,10 +119,15 @@ def create_app(
     async def ready() -> dict[str, object]:
         generic = service.repository.get_head("generic")
         browser_driver = service.browser_driver_ready
-        ready_value = generic is not None and browser_driver
+        ready_value = generic is not None and browser_driver and service.accepting
         if not ready_value:
             raise HTTPException(status_code=503, detail="registry or browser driver unavailable")
-        return {"status": "ready", "registry": True, "browser_driver": browser_driver}
+        return {
+            "status": "ready",
+            "registry": True,
+            "browser_driver": browser_driver,
+            "accepting": service.accepting,
+        }
 
     @app.get(
         "/v1/resolve",
@@ -262,12 +280,53 @@ def create_app(
     @app.post("/v1/profiles/{profile_id}:verify", dependencies=[Depends(admin)])
     async def verify_profile(profile_id: str, request: ProfileAuthRequest) -> dict[str, object]:
         try:
-            updated, reason = await service.verify_profile(profile_id, request.article_url)
+            updated, reason = await service.verify_profile(
+                profile_id, request.article_url, request.login_token
+            )
         except KeyError as exc:
             raise HTTPException(status_code=404, detail="profile not found") from exc
         except (ValueError, RuntimeError) as exc:
             raise HTTPException(status_code=422, detail=str(exc)) from exc
         return {"profile": updated.model_dump(mode="json"), "reason": reason}
+
+    @app.post("/v1/profiles/{profile_id}:probe", dependencies=[Depends(admin)])
+    async def probe_profile(
+        profile_id: str, request: ProfileProbeRequest
+    ) -> dict[str, object]:
+        """Probe one exact Profile+egress without changing its authentication state."""
+        try:
+            result = await service.probe_profile(profile_id, request.url)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="profile not found") from exc
+        except (ValueError, RuntimeError) as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+        return result.model_dump(
+            mode="json", exclude={"body", "headers", "recipe_result"}
+        )
+
+    @app.post("/v1/profiles/{profile_id}:snapshot", dependencies=[Depends(admin)])
+    async def snapshot_profile(
+        profile_id: str, request: ProfileSnapshotRequest
+    ) -> dict[str, str]:
+        try:
+            return await service.snapshot_profile(
+                profile_id, browser_version=request.browser_version
+            )
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="profile not found") from exc
+        except (ValueError, RuntimeError) as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+    @app.post("/v1/profiles/{profile_id}:restore", dependencies=[Depends(admin)])
+    async def restore_profile(
+        profile_id: str, request: ProfileRestoreRequest
+    ) -> dict[str, str]:
+        try:
+            return await service.restore_profile(profile_id, request.snapshot_id)
+        except (KeyError, FileNotFoundError) as exc:
+            raise HTTPException(status_code=404, detail="profile or snapshot not found") from exc
+        except (ValueError, RuntimeError) as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
 
     @app.post("/v1/profiles/{profile_id}/login:open", dependencies=[Depends(admin)])
     async def login_open(profile_id: str) -> dict[str, str]:

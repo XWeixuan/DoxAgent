@@ -85,6 +85,10 @@ services:
       DOXAGENT_SITE_ACCESS_WORKER_TOKEN_FILE: /run/secrets/site_access_worker_token
       DOXAGENT_SITE_ACCESS_ADMIN_TOKEN_FILE: /run/secrets/site_access_admin_token
       DOXAGENT_SAFETY_STATE_PATH: /run/doxagent-resources/safety.json
+      DOXAGENT_SITE_ACCESS_BROWSER_HEADLESS: "false"
+      DOXAGENT_SITE_ACCESS_BROWSER_IDLE_SECONDS: "43200"
+      LANG: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
     volumes:
       - v2-site-strategy:/site-data
       - /run/doxagent-resources:/run/doxagent-resources:ro
@@ -94,7 +98,11 @@ services:
     restart: unless-stopped
     shm_size: 1g
     pids_limit: 1024
-    security_opt: ["no-new-privileges:true"]
+    security_opt:
+      - no-new-privileges:true
+      - seccomp=/etc/doxagent/site-access-seccomp.json
+      - apparmor=doxagent-site-access
+    stop_grace_period: 120s
     healthcheck:
       test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8011/readyz',timeout=3).read()"]
       interval: 15s

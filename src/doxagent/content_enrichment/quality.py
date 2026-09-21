@@ -78,7 +78,10 @@ class Inspection:
 CHALLENGE = re.compile(
     r"verify (?:that )?you are human|press\s*(?:&|and)\s*hold|checking your browser|"
     r"access to this page has been denied|datadome device check|px-captcha|"
-    r"this page maybe requiring captcha|prove you are not a robot|人工验证挑战",
+    r"this page maybe requiring captcha|prove you are not a robot|人工验证挑战|"
+    r"access is temporarily restricted|unusual activity from your (?:device|network)|"
+    r"automated \(bot\) activity|use of developer or inspection tools|"
+    r"enable javascript and cookies to continue",
     re.I,
 )
 WALL = re.compile(

@@ -1,6 +1,30 @@
 #!/bin/sh
 set -eu
 
+service_uid=10001
+service_gid=10001
+runtime_dir=/run/doxagent-site-access
+
+if [ "$(id -u)" = 0 ]; then
+  install -d -o "$service_uid" -g "$service_gid" -m 0700 "$runtime_dir"
+  install -d -o "$service_uid" -g "$service_gid" -m 0700 \
+    /site-data /site-data/registry /site-data/profiles /site-data/credentials
+  worker_source=${DOXAGENT_SITE_ACCESS_WORKER_TOKEN_FILE:-/run/secrets/site_access_worker_token}
+  admin_source=${DOXAGENT_SITE_ACCESS_ADMIN_TOKEN_FILE:-/run/secrets/site_access_admin_token}
+  install -o "$service_uid" -g "$service_gid" -m 0400 "$worker_source" "$runtime_dir/worker-token"
+  install -o "$service_uid" -g "$service_gid" -m 0400 "$admin_source" "$runtime_dir/admin-token"
+  exec setpriv --reuid="$service_uid" --regid="$service_gid" --init-groups \
+    env DOXAGENT_SITE_ACCESS_WORKER_TOKEN_FILE="$runtime_dir/worker-token" \
+        DOXAGENT_SITE_ACCESS_ADMIN_TOKEN_FILE="$runtime_dir/admin-token" \
+        HOME=/home/siteaccess LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
+        /usr/local/bin/site-access-entrypoint "$@"
+fi
+
+if [ "$(id -u)" != "$service_uid" ]; then
+  echo "Site Access must run as uid ${service_uid}" >&2
+  exit 1
+fi
+
 if [ "${DOXAGENT_SITE_ACCESS_BROWSER_HEADLESS:-true}" = "false" ]; then
   export DISPLAY="${DISPLAY:-:99}"
   display_number=${DISPLAY#:}
@@ -20,8 +44,6 @@ if [ "${DOXAGENT_SITE_ACCESS_BROWSER_HEADLESS:-true}" = "false" ]; then
     fi
     sleep 0.1
   done
-  # Docker publishes this port on host loopback only; listen on the container
-  # interface so an operator can reach it through an SSH tunnel.
   x11vnc -display "$DISPLAY" -forever -shared -listen 0.0.0.0 -rfbport 5900 -nopw &
 fi
 

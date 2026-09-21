@@ -232,11 +232,6 @@ class ArticlePipeline:
                         rendered, auth = await self.browser.read(
                             url, expand=info.expansion_required
                         )
-                if rendered.status == 429 and not getattr(self.browser, "site_managed", False):
-                    delay = auth.get("retry_after_seconds", 30)
-                    self.transport.cooldowns[urlparse(url).hostname or ""] = time.monotonic() + max(
-                        0, float(delay)
-                    )
                 diagnostics.update(auth)
                 status = rendered.status
                 attempts.append(

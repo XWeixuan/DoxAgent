@@ -16,6 +16,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 JsonObject = dict[str, Any]
 AccessOrderItem = Literal["http_public", "browser", "browser_fetch", "reader"]
 AuthRequirement = Literal["none", "optional", "required"]
+VerificationKind = Literal["public_access", "subscription_article"]
 
 
 def default_access_order() -> list[AccessOrderItem]:
@@ -151,9 +152,11 @@ class AuthPolicy(SiteModel):
     crawler_requirement: Literal["inherit", "none", "optional", "required"] = "inherit"
     body_requirement: Literal["inherit", "none", "optional", "required"] = "inherit"
     login_url: str | None = None
+    maintenance_url: str | None = None
     verification_url: str | None = None
+    verification_kind: VerificationKind = "subscription_article"
 
-    @field_validator("login_url", "verification_url")
+    @field_validator("login_url", "maintenance_url", "verification_url")
     @classmethod
     def _absolute_url(cls, value: str | None) -> str | None:
         if value is None:
@@ -246,6 +249,23 @@ class AuthState(StrEnum):
     ENTITLEMENT_MISSING = "ENTITLEMENT_MISSING"
 
 
+class ProfileOperationalState(StrEnum):
+    AVAILABLE = "AVAILABLE"
+    DRAINING_FOR_MAINTENANCE = "DRAINING_FOR_MAINTENANCE"
+    MAINTENANCE = "MAINTENANCE"
+    DRAINING_FOR_SHUTDOWN = "DRAINING_FOR_SHUTDOWN"
+
+
+class BrowserEnvironment(SiteModel):
+    """Stable, non-randomized browser environment bound to a Profile."""
+
+    locale: str = Field(default="en-US", pattern=r"^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$")
+    timezone_id: str = Field(default="Asia/Singapore", min_length=1, max_length=64)
+    window_width: int = Field(default=1440, ge=800, le=3840)
+    window_height: int = Field(default=1000, ge=600, le=2160)
+    revision: int = Field(default=1, ge=1)
+
+
 class BrowserProfile(SiteModel):
     profile_id: str
     site_id: str
@@ -254,6 +274,10 @@ class BrowserProfile(SiteModel):
     credential_ref: str | None = None
     login_url: str | None = None
     auth_state: AuthState = AuthState.UNKNOWN
+    operational_state: ProfileOperationalState = ProfileOperationalState.AVAILABLE
+    operational_revision: int = Field(default=0, ge=0)
+    maintenance_session_id: str | None = Field(default=None, max_length=128)
+    environment: BrowserEnvironment = Field(default_factory=BrowserEnvironment)
     session_revision: int = Field(default=0, ge=0)
     created_at: datetime = Field(default_factory=utc_now)
     updated_at: datetime = Field(default_factory=utc_now)
@@ -268,6 +292,7 @@ class BrowserProfile(SiteModel):
 
 
 class CombinationRuntime(SiteModel):
+    # The legacy fields are the browser lane state and remain wire-compatible.
     state: Literal["READY", "COOLDOWN", "HALF_OPEN"] = "READY"
     risk_strikes: int = Field(default=0, ge=0)
     cooldown_until: datetime | None = None
@@ -275,6 +300,14 @@ class CombinationRuntime(SiteModel):
     last_failure_at: datetime | None = None
     last_success_at: datetime | None = None
     probe_in_flight: bool = False
+    manual_attention_required: bool = False
+    last_browser_result: str | None = None
+    last_browser_at: datetime | None = None
+    http_state: Literal["READY", "COOLDOWN"] = "READY"
+    http_risk_strikes: int = Field(default=0, ge=0)
+    http_cooldown_until: datetime | None = None
+    last_http_result: str | None = None
+    last_http_at: datetime | None = None
 
 
 class SiteRuntimeState(SiteModel):

@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 from .repository import SiteStrategyRepository
 from .schema import (
     AccessCombination,
+    AccessMode,
     CombinationRuntime,
     FailureCategory,
     SiteRuntimeState,
@@ -33,6 +34,7 @@ class CombinationHealthManager:
         combinations: list[AccessCombination],
         *,
         excluded: set[str],
+        transport: AccessMode = AccessMode.BROWSER,
         now: datetime | None = None,
     ) -> tuple[SiteRuntimeState, list[AccessCombination], datetime | None]:
         instant = now or utc_now()
@@ -55,14 +57,32 @@ class CombinationHealthManager:
             next_retry: datetime | None = None
             for item in ordered:
                 runtime = state.combinations[item.combination_id]
-                if runtime.state == "COOLDOWN":
-                    if runtime.cooldown_until and (
-                        next_retry is None or runtime.cooldown_until < next_retry
-                    ):
-                        next_retry = runtime.cooldown_until
-                    continue
-                if runtime.state == "HALF_OPEN":
-                    continue
+                if transport is AccessMode.HTTP_PUBLIC:
+                    if runtime.http_state == "COOLDOWN":
+                        if (
+                            runtime.http_cooldown_until is not None
+                            and runtime.http_cooldown_until <= instant
+                        ):
+                            runtime.http_state = "READY"
+                            runtime.http_cooldown_until = None
+                            changed = True
+                        else:
+                            if runtime.http_cooldown_until and (
+                                next_retry is None or runtime.http_cooldown_until < next_retry
+                            ):
+                                next_retry = runtime.http_cooldown_until
+                            continue
+                else:
+                    if runtime.manual_attention_required:
+                        continue
+                    if runtime.state == "COOLDOWN":
+                        if runtime.cooldown_until and (
+                            next_retry is None or runtime.cooldown_until < next_retry
+                        ):
+                            next_retry = runtime.cooldown_until
+                        continue
+                    if runtime.state == "HALF_OPEN":
+                        continue
                 ready.append(item)
             if changed:
                 prior = state.generation
@@ -92,6 +112,7 @@ class CombinationHealthManager:
                     and runtime.cooldown_until is not None
                     and runtime.cooldown_until <= instant
                     and not runtime.probe_in_flight
+                    and not runtime.manual_attention_required
                 ):
                     prior = state.generation
                     runtime.state = "HALF_OPEN"
@@ -120,16 +141,37 @@ class CombinationHealthManager:
             return state
 
     async def mark_success(
-        self, runtime_key: str, combination_id: str, *, assigned_generation: int
+        self,
+        runtime_key: str,
+        combination_id: str,
+        *,
+        assigned_generation: int,
+        transport: AccessMode | None = None,
     ) -> SiteRuntimeState:
         async with self._locks[runtime_key]:
             state = self.repository.get_runtime(runtime_key)
             runtime = state.combinations.setdefault(combination_id, CombinationRuntime())
             runtime.last_success_at = utc_now()
-            runtime.probe_in_flight = False
-            runtime.state = "READY"
-            runtime.risk_strikes = 0
-            runtime.cooldown_until = None
+            if transport in {AccessMode.BROWSER, AccessMode.BROWSER_FETCH}:
+                runtime.probe_in_flight = False
+                runtime.state = "READY"
+                runtime.risk_strikes = 0
+                runtime.cooldown_until = None
+                runtime.manual_attention_required = False
+                runtime.last_browser_result = "SUCCESS"
+                runtime.last_browser_at = utc_now()
+            elif transport is AccessMode.HTTP_PUBLIC:
+                runtime.http_state = "READY"
+                runtime.http_risk_strikes = 0
+                runtime.http_cooldown_until = None
+                runtime.last_http_result = "SUCCESS"
+                runtime.last_http_at = utc_now()
+            else:
+                runtime.probe_in_flight = False
+                runtime.state = "READY"
+                runtime.risk_strikes = 0
+                runtime.cooldown_until = None
+                runtime.manual_attention_required = False
             prior = state.generation
             if assigned_generation == state.generation and state.active_combination_id is None:
                 state.active_combination_id = combination_id
@@ -146,20 +188,39 @@ class CombinationHealthManager:
         *,
         assigned_generation: int,
         retry_after_seconds: float | None = None,
+        transport: AccessMode | None = None,
     ) -> SiteRuntimeState:
         async with self._locks[runtime_key]:
             state = self.repository.get_runtime(runtime_key)
             runtime = state.combinations.setdefault(combination_id, CombinationRuntime())
             runtime.last_failure = reason
             runtime.last_failure_at = utc_now()
-            runtime.probe_in_flight = False
+            if transport in {AccessMode.BROWSER, AccessMode.BROWSER_FETCH}:
+                runtime.probe_in_flight = False
+                runtime.last_browser_result = category.value
+                runtime.last_browser_at = utc_now()
+            elif transport is AccessMode.HTTP_PUBLIC:
+                runtime.last_http_result = category.value
+                runtime.last_http_at = utc_now()
             prior = state.generation
             if category in RISK_FAILURES:
-                runtime.risk_strikes += 1
-                base = (60, 300, 900)[min(runtime.risk_strikes - 1, 2)]
-                delay = max(float(base), retry_after_seconds or 0)
-                runtime.state = "COOLDOWN"
-                runtime.cooldown_until = utc_now() + timedelta(seconds=delay)
+                if transport is AccessMode.HTTP_PUBLIC:
+                    runtime.http_risk_strikes += 1
+                    base = (60, 300, 900)[min(runtime.http_risk_strikes - 1, 2)]
+                    delay = max(float(base), retry_after_seconds or 0)
+                    runtime.http_state = "COOLDOWN"
+                    runtime.http_cooldown_until = utc_now() + timedelta(seconds=delay)
+                else:
+                    runtime.risk_strikes += 1
+                    base = (60, 300, 900)[min(runtime.risk_strikes - 1, 2)]
+                    delay = max(float(base), retry_after_seconds or 0)
+                    runtime.state = "COOLDOWN"
+                    runtime.cooldown_until = utc_now() + timedelta(seconds=delay)
+                    if category in {
+                        FailureCategory.ACCESS_CHALLENGE,
+                        FailureCategory.ACCESS_BLOCK,
+                    }:
+                        runtime.manual_attention_required = runtime.risk_strikes >= 2
                 if (
                     assigned_generation == state.generation
                     and state.active_combination_id == combination_id
@@ -179,6 +240,21 @@ class CombinationHealthManager:
             state.combinations.setdefault(combination_id, CombinationRuntime())
             prior = state.generation
             state.active_combination_id = combination_id
+            state.generation += 1
+            self.repository.save_runtime(state, expected_generation=prior)
+            return state
+
+    async def clear_manual_attention(
+        self, runtime_key: str, combination_id: str
+    ) -> SiteRuntimeState:
+        async with self._locks[runtime_key]:
+            state = self.repository.get_runtime(runtime_key)
+            runtime = state.combinations.setdefault(combination_id, CombinationRuntime())
+            prior = state.generation
+            runtime.manual_attention_required = False
+            runtime.risk_strikes = 0
+            runtime.state = "READY"
+            runtime.cooldown_until = None
             state.generation += 1
             self.repository.save_runtime(state, expected_generation=prior)
             return state

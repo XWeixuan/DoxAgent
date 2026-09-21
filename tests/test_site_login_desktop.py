@@ -85,6 +85,8 @@ def _inventory_responses(method: str, path: str, payload=None, *, timeout: int =
                 "enabled": True,
             },
         ]
+    if path == "/v1/combinations/barrons":
+        return {"combinations": {}}
     raise AssertionError(path)
 
 
@@ -139,7 +141,10 @@ def test_verify_uses_registry_url_closes_session_and_reports_entitlement(
     def request(method: str, path: str, payload=None, *, timeout: int = 45):
         calls.append((method, path, payload))
         if path == "/v1/profiles/barrons-1:verify":
-            assert payload == {"article_url": "https://www.barrons.com/articles/example"}
+            assert payload == {
+                "article_url": "https://www.barrons.com/articles/example",
+                "login_token": "b" * 32,
+            }
             return {
                 "profile": {"auth_state": "ENTITLEMENT_MISSING"},
                 "reason": "subscription_required",

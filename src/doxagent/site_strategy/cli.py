@@ -118,6 +118,7 @@ def _parser() -> argparse.ArgumentParser:
     verify = profile_commands.add_parser("verify")
     verify.add_argument("profile_id")
     verify.add_argument("--article-url", required=True)
+    verify.add_argument("--login-token", required=True)
     login_close = profile_commands.add_parser("login-close")
     login_close.add_argument("login_token")
 
@@ -324,7 +325,7 @@ def _run_remote(args: argparse.Namespace) -> Any:
             return client.request(
                 "POST",
                 f"/v1/profiles/{args.profile_id}:verify",
-                json={"article_url": args.article_url},
+                json={"article_url": args.article_url, "login_token": args.login_token},
             )
         return client.request(
             "POST", "/v1/profiles/login:close", json={"login_token": args.login_token}

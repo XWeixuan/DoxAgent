@@ -73,7 +73,7 @@ def test_seed_adds_verification_urls_and_idempotently_upgrades_missing_value(
     assert upgraded.auth.verification_url
     assert (
         site_service.repository.list_revisions("barrons")[0]["actor"]
-        == "seed:auth-verification-url"
+        == "seed:browser-environment-v2"
     )
 
     bootstrap_seed(site_service.repository, site_service)
@@ -125,7 +125,7 @@ def test_strategy_apply_is_revision_cas_and_profile_binding_is_immutable(
 
 
 @pytest.mark.asyncio
-async def test_single_429_switches_whole_combination_without_global_freeze(
+async def test_single_http_429_switches_candidate_without_freezing_browser_identity(
     site_service: SiteStrategyService,
 ) -> None:
     calls: list[str] = []
@@ -156,7 +156,8 @@ async def test_single_429_switches_whole_combination_without_global_freeze(
     assert calls == ["yahoo_finance-1", "yahoo_finance-2"]
     state = site_service.repository.get_runtime("yahoo_finance")
     assert state.active_combination_id == "yahoo_finance-2"
-    assert state.combinations["yahoo_finance-1"].state == "COOLDOWN"
+    assert state.combinations["yahoo_finance-1"].state == "READY"
+    assert state.combinations["yahoo_finance-1"].http_state == "COOLDOWN"
 
 
 @pytest.mark.asyncio
@@ -182,6 +183,34 @@ async def test_content_404_does_not_switch_egress(site_service: SiteStrategyServ
     assert calls == ["yahoo_finance-1"]
     state = site_service.repository.get_runtime("yahoo_finance")
     assert state.combinations["yahoo_finance-1"].state == "READY"
+
+
+@pytest.mark.asyncio
+async def test_admin_profile_probe_targets_exact_profile_without_auth_mutation(
+    site_service: SiteStrategyService,
+) -> None:
+    calls: list[tuple[str, str]] = []
+
+    async def execute_runtime(request, resolved, combination, profile, egress):
+        del request, resolved, combination
+        calls.append((profile.profile_id, egress.egress_id))
+        return RuntimeResponse(
+            200,
+            "https://www.barrons.com/",
+            {"content-type": "text/html"},
+            "<html><title>Barron's</title><main>Public home page.</main></html>",
+        )
+
+    before = site_service.repository.get_profile("barrons-1")
+    assert before is not None
+    site_service.runtime.execute = execute_runtime  # type: ignore[method-assign]
+    result = await site_service.probe_profile("barrons-1", "https://www.barrons.com/")
+
+    assert result.disposition is AccessDisposition.SUCCESS
+    assert calls == [("barrons-1", "us-standard-5")]
+    after = site_service.repository.get_profile("barrons-1")
+    assert after is not None
+    assert after.auth_state is before.auth_state
 
 
 def test_api_separates_worker_and_admin_tokens(site_service: SiteStrategyService) -> None:
@@ -251,10 +280,14 @@ async def test_expired_cooldown_requires_half_open_probe_and_does_not_steal_acti
 async def test_profile_verification_uses_bound_browser_and_real_article(
     site_service: SiteStrategyService,
 ) -> None:
-    async def execute_runtime(request, resolved, combination, profile, egress):
-        assert request.purpose is SitePurpose.LOGIN
-        assert combination.profile_id == "barrons-1"
+    async def open_login(profile, egress, url, *, token=None):
         assert profile.bound_egress_id == egress.egress_id
+        assert url
+        return {"login_token": token, "url": url}
+
+    async def verify_login(token, article_url):
+        assert token
+        assert article_url.endswith("/example")
         return RuntimeResponse(
             200,
             "https://www.barrons.com/articles/example",
@@ -262,9 +295,13 @@ async def test_profile_verification_uses_bound_browser_and_real_article(
             "<html><h1>Example</h1><article><p>Subscriber article text.</p></article></html>",
         )
 
-    site_service.runtime.execute = execute_runtime  # type: ignore[method-assign]
+    site_service.runtime.open_login = open_login  # type: ignore[method-assign]
+    site_service.runtime.verify_login = verify_login  # type: ignore[method-assign]
+    session = await site_service.open_profile_login("barrons-1")
     profile, reason = await site_service.verify_profile(
-        "barrons-1", "https://www.barrons.com/articles/example"
+        "barrons-1",
+        "https://www.barrons.com/articles/example",
+        session["login_token"],
     )
 
     assert profile.auth_state.value == "VALID"
@@ -307,7 +344,9 @@ def test_mihomo_render_replaces_only_managed_fixed_listener() -> None:
     }
     managed = next(item for item in config["listeners"] if item["name"] == "doxagent-jp-standard-6")
     assert managed["port"] == 18080
-    assert managed["proxy"] == "node-new"
+    assert "proxy" not in managed
+    assert managed["rule"] == "doxagent-egress-jp-standard-6"
+    assert config["sub-rules"][managed["rule"]][-1] == "MATCH,node-new"
 
 
 def test_registry_strategy_parameters_select_precise_marketwatch_body() -> None:

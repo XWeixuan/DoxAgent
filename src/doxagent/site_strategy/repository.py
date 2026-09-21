@@ -53,6 +53,18 @@ class SiteStrategyRepository:
         with self._lock:
             self._connection.close()
 
+    def backup_to(self, destination: str | Path) -> Path:
+        """Create a transactionally consistent SQLite backup."""
+        target = Path(destination)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        with self._lock:
+            output = sqlite3.connect(target)
+            try:
+                self._connection.backup(output)
+            finally:
+                output.close()
+        return target
+
     def ensure_schema(self) -> None:
         with self.transaction() as connection:
             connection.executescript(

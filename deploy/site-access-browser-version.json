@@ -1,0 +1,6 @@
+{
+  "playwright": "1.63.0",
+  "chromium_revision": "1243",
+  "chrome_for_testing": "153.0.8010.12",
+  "environment_revision": 1
+}

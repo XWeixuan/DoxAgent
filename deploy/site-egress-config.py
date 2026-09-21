@@ -36,11 +36,46 @@ def main() -> None:
             "type": "http",
             "port": int(value["listener_port"]),
             "listen": "0.0.0.0",
-            "proxy": str(value["node_ref"]),
+            "rule": f"doxagent-egress-{value['egress_id']}",
         }
         for value in manifest
         if value.get("enabled", True)
     ]
+    sub_rules = config.get("sub-rules") or {}
+    if not isinstance(sub_rules, dict):
+        raise SystemExit("Mihomo sub-rules must be a mapping")
+    for name in list(sub_rules):
+        if str(name).startswith("doxagent-egress-"):
+            sub_rules.pop(name)
+    private_rules = [
+        "IP-CIDR,0.0.0.0/8,REJECT",
+        "IP-CIDR,10.0.0.0/8,REJECT",
+        "IP-CIDR,100.64.0.0/10,REJECT",
+        "IP-CIDR,127.0.0.0/8,REJECT",
+        "IP-CIDR,169.254.0.0/16,REJECT",
+        "IP-CIDR,172.16.0.0/12,REJECT",
+        "IP-CIDR,192.0.0.0/24,REJECT",
+        "IP-CIDR,192.0.2.0/24,REJECT",
+        "IP-CIDR,192.168.0.0/16,REJECT",
+        "IP-CIDR,198.51.100.0/24,REJECT",
+        "IP-CIDR,203.0.113.0/24,REJECT",
+        "IP-CIDR,224.0.0.0/4,REJECT",
+        "IP-CIDR,240.0.0.0/4,REJECT",
+        "IP-CIDR6,::/128,REJECT",
+        "IP-CIDR6,::1/128,REJECT",
+        "IP-CIDR6,::ffff:0:0/96,REJECT",
+        "IP-CIDR6,2001:db8::/32,REJECT",
+        "IP-CIDR6,fc00::/7,REJECT",
+        "IP-CIDR6,fe80::/10,REJECT",
+        "IP-CIDR6,ff00::/8,REJECT",
+    ]
+    for value in manifest:
+        if value.get("enabled", True):
+            sub_rules[f"doxagent-egress-{value['egress_id']}"] = [
+                *private_rules,
+                f"MATCH,{value['node_ref']}",
+            ]
+    config["sub-rules"] = sub_rules
     rendered = yaml.safe_dump(config, allow_unicode=True, sort_keys=False)
     yaml.safe_load(rendered)
     output_path.parent.mkdir(parents=True, exist_ok=True)

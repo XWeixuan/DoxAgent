@@ -115,10 +115,10 @@ def _locked() -> Any:
     descriptor = os.open(LOCK_FILE, os.O_CREAT | os.O_RDWR, 0o600)
     try:
         os.chmod(LOCK_FILE, 0o600)
-        fcntl.flock(descriptor, fcntl.LOCK_EX)
+        fcntl.flock(descriptor, fcntl.LOCK_EX)  # type: ignore[attr-defined]
         yield
     finally:
-        fcntl.flock(descriptor, fcntl.LOCK_UN)
+        fcntl.flock(descriptor, fcntl.LOCK_UN)  # type: ignore[attr-defined]
         os.close(descriptor)
 
 
@@ -310,9 +310,14 @@ def _inventory() -> dict[str, Any]:
         head = site_entry["head"]
         spec = site_entry["spec"]
         auth = spec.get("auth") or {}
-        if auth.get("requirement") != "required" or not auth.get("login_url"):
+        if not (auth.get("maintenance_url") or auth.get("login_url")):
             continue
-        combinations = sorted(spec["access"]["combinations"], key=lambda item: item["priority"])
+        combinations = sorted(
+            (item for item in spec["access"]["combinations"] if item.get("enabled", True)),
+            key=lambda item: item["priority"],
+        )
+        runtime = _request("GET", f"/v1/combinations/{spec['site_id']}")
+        combination_runtime = runtime.get("combinations") or {}
         for index, combination in enumerate(combinations):
             profile = profile_by_id.get(combination["profile_id"])
             egress = egress_by_id.get(combination["egress_id"])
@@ -327,12 +332,24 @@ def _inventory() -> dict[str, Any]:
                     "profile_id": profile["profile_id"],
                     "profile_role": "primary" if index == 0 else "backup",
                     "priority": combination["priority"],
+                    "combination_id": combination.get("id"),
                     "egress_id": egress["egress_id"],
                     "egress_node": egress["node_ref"],
                     "egress_enabled": bool(egress["enabled"]),
                     "auth_state": profile["auth_state"],
+                    "operational_state": profile.get("operational_state", "AVAILABLE"),
                     "session_revision": profile["session_revision"],
                     "verification_configured": bool(auth.get("verification_url")),
+                    "verification_kind": auth.get(
+                        "verification_kind", "subscription_article"
+                    ),
+                    "observed_ip": egress.get("observed_ip"),
+                    "observed_at": egress.get("observed_at"),
+                    "manual_attention_required": bool(
+                        (combination_runtime.get(combination.get("id")) or {}).get(
+                            "manual_attention_required"
+                        )
+                    ),
                 }
             )
     return {"profiles": rows, "vnc_ready": _vnc_ready()}
@@ -439,7 +456,7 @@ def command_verify(profile_id: str, override_url: str | None) -> dict[str, Any]:
             result = _request(
                 "POST",
                 f"/v1/profiles/{profile_id}:verify",
-                {"article_url": article_url},
+                {"article_url": article_url, "login_token": session["login_token"]},
                 timeout=45,
             )
         except AdminError as exc:
@@ -461,6 +478,7 @@ def command_verify(profile_id: str, override_url: str | None) -> dict[str, Any]:
             )
         profile = result.get("profile", {})
         state = profile.get("auth_state", "UNKNOWN")
+        reason = result.get("reason")
         messages = {
             "VALID": "Signed in with access to subscription articles.",
             "REAUTH_REQUIRED": "The login is still invalid. Sign in again.",
@@ -469,12 +487,17 @@ def command_verify(profile_id: str, override_url: str | None) -> dict[str, Any]:
             ),
             "UNKNOWN": "Verification failed. The article may have expired or was not recognized.",
         }
+        message = (
+            "Public access is ready. This check does not assert a subscription login."
+            if reason == "public_access_ready"
+            else messages.get(state, "The verification result is unknown.")
+        )
         return {
             "ok": True,
             "profile_id": profile_id,
             "auth_state": state,
-            "message": messages.get(state, "The verification result is unknown."),
-            "reason": result.get("reason"),
+            "message": message,
+            "reason": reason,
             "closed": True,
         }
 

@@ -22,5 +22,11 @@
     "node_ref": "🇩🇪 德国标准 IEPL 专线 1",
     "listener_port": 18083,
     "enabled": true
+  },
+  {
+    "egress_id": "server-direct",
+    "node_ref": "DIRECT",
+    "listener_port": 18084,
+    "enabled": true
   }
 ]

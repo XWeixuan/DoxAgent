@@ -45,4 +45,5 @@ systemctl daemon-reload
 systemctl enable --now doxagent-broker-firewall doxagent-ibkr-paper-relay
 DOXAGENT_REPO_ROOT=/home/ubuntu/doxagent \
   bash /home/ubuntu/doxagent/deploy/install-site-login-desktop.sh
+bash /home/ubuntu/doxagent/deploy/install-site-access-sandbox.sh
 systemctl restart xrdp

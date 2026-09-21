@@ -290,7 +290,7 @@ async def test_configured_identity_does_not_issue_anonymous_http_requests(reason
     assert result.diagnostics["access_path"] == "publisher_identity_browser"
 
 
-async def test_identity_browser_429_observes_shared_cooldown_without_reader():
+async def test_identity_browser_single_429_does_not_freeze_the_domain():
     url = "https://www.reuters.com/world/news/"
     session = Session({})
     browser = AsyncMock()
@@ -302,8 +302,9 @@ async def test_identity_browser_429_observes_shared_cooldown_without_reader():
     )
     record = MediaEnrichmentRecord("id", "id", "source", "MU", TITLE, "", url)
     assert (await pipeline.extract(record)).reason == "http_429"
-    assert (await pipeline.extract(record)).reason == "domain_cooldown"
-    browser.read.assert_awaited_once()
+    assert (await pipeline.extract(record)).reason == "http_429"
+    assert browser.read.await_count == 2
+    assert pipeline.transport.cooldowns == {}
     assert session.calls == []
 
 

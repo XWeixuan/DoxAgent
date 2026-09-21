@@ -22,6 +22,13 @@ _MODULE_CACHE: dict[tuple[str, str], ModuleType] = {}
 sys.dont_write_bytecode = True
 
 
+class CrawlerHTTPError(RuntimeError):
+    def __init__(self, status_code: int, url: str) -> None:
+        super().__init__(f"crawler transport returned HTTP {status_code}")
+        self.status_code = status_code
+        self.url = url
+
+
 class CrawlerResponse:
     def __init__(self, value: dict[str, Any]) -> None:
         self.status_code = int(value["status_code"])
@@ -34,7 +41,7 @@ class CrawlerResponse:
 
     def raise_for_status(self) -> None:
         if self.status_code >= 400:
-            raise RuntimeError(f"crawler transport returned HTTP {self.status_code}")
+            raise CrawlerHTTPError(self.status_code, self.url)
 
 
 class _BrokerClient:

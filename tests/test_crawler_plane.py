@@ -105,10 +105,14 @@ def _service(
     return service
 
 
-async def _install_company_live_transport(service: CrawlerPlaneService) -> None:
+async def _install_company_live_transport(
+    service: CrawlerPlaneService,
+    *,
+    published_at: str = "2026-09-01T12:00:00Z",
+) -> None:
     async def respond(request: httpx.Request) -> httpx.Response:
         body = (
-            '<a data-id="A" data-published="2026-09-01T12:00:00Z" href="/news/a">Release A</a>'
+            f'<a data-id="A" data-published="{published_at}" href="/news/a">Release A</a>'
             if request.url.path == "/news"
             else "<article>Release A body</article>"
         )
@@ -342,6 +346,10 @@ async def test_crawler_poll_lineage_and_checkpoint_ownership(tmp_path: Path) -> 
         certification = await crawler_plane.certify_version("company_ir_reference", 1)
         assert certification.overall is CheckStatus.PASS
         crawler_plane.promote_version("company_ir_reference", 1)
+        await _install_company_live_transport(
+            crawler_plane,
+            published_at=utc_now().replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+        )
         source = crawler_plane.register_crawler_source(
             CrawlerSourceRegistration(
                 source_id="example_ir",
