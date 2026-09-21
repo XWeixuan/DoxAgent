@@ -11,6 +11,7 @@ import time
 from collections import Counter, defaultdict
 from collections.abc import Mapping, Sequence
 from datetime import UTC, date, datetime, timedelta
+from email.utils import parsedate_to_datetime
 from functools import partial
 from pathlib import Path
 from typing import Protocol
@@ -792,7 +793,12 @@ def _parse_datetime(value: object) -> datetime | None:
         return None
     if text.isdigit():
         return datetime.fromtimestamp(float(text), tz=UTC)
-    parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
+    try:
+        parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError:
+        # RSS/Atom providers commonly return RFC 2822 dates rather than ISO 8601.
+        # Keep the parser bounded to the two wire formats we actually ingest.
+        parsed = parsedate_to_datetime(text)
     if parsed.tzinfo is None:
         parsed = parsed.replace(tzinfo=UTC)
     return parsed.astimezone(UTC)

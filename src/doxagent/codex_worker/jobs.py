@@ -273,7 +273,9 @@ class WorkerJobManager:
             effective_thread = (
                 job.thread_id if job.infra_recovery_count and job.thread_id else request.thread_id
             )
-            identity = effective_thread or request.run_id
+            # Only an existing Codex thread is thread-affine. Independent attempts in
+            # one workflow run use isolated attempt workspaces and may execute together.
+            identity = effective_thread or f"{request.run_id}:{request.attempt_id}"
             if identity in set(self._active.values()):
                 continue
             self._active[job_id] = identity

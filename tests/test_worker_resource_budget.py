@@ -162,6 +162,23 @@ async def test_same_thread_serial_and_queue_full_no_dispatch(tmp_path):
 
 
 @pytest.mark.asyncio
+async def test_distinct_attempts_in_same_run_launch_concurrently(tmp_path):
+    runtime = Runtime()
+    manager = WorkerJobManager(runtime, LocalWorkspaceStore(tmp_path))
+    try:
+        await manager.submit(request(1).model_copy(update={"run_id": "shared-run"}))
+        await manager.submit(request(2).model_copy(update={"run_id": "shared-run"}))
+        await settle()
+        manager._next_launch_at = 0
+        manager._schedule()
+        await settle()
+        assert len(runtime.started) == 2
+        assert {item.attempt_id for item in runtime.started} == {"attempt-1", "attempt-2"}
+    finally:
+        await manager.close()
+
+
+@pytest.mark.asyncio
 async def test_native_subagent_does_not_reserve_global_weight(tmp_path):
     runtime = Runtime()
     manager = WorkerJobManager(runtime, LocalWorkspaceStore(tmp_path), subagents=1)

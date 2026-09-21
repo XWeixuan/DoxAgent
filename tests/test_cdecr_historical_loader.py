@@ -12,6 +12,7 @@ from doxagent.cdecr_integration.contracts import HistoricalLoadReport
 from doxagent.cdecr_integration.historical_loader import (
     HistoricalNewsLoader,
     HistoricalStagingRepository,
+    _parse_datetime,
 )
 from doxagent.monitoring.schema import (
     FetchedExternalMessage,
@@ -60,6 +61,12 @@ def _row(index: int, *, as_of: datetime, url: str | None = None) -> FetchedExter
         provider_message_id=str(index),
         source_url=url or f"https://example.com/news/{index}?utm_source=test",
         source_published_at=published,
+    )
+
+
+def test_historical_datetime_accepts_rfc2822_provider_timestamp() -> None:
+    assert _parse_datetime("Tue, 08 Sep 2026 16:11:57 -0400") == datetime(
+        2026, 9, 8, 20, 11, 57, tzinfo=UTC
     )
 
 

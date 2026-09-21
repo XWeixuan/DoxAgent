@@ -1140,3 +1140,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-21 · xRDP 登录维护界面字体兼容修复：因现有 XFCE/Tk 字体缺少中文字形，将 GUI、对话框、桥接错误和桌面入口的用户可见文案统一为英文；出口列改用英文地区加稳定 egress ID，不再渲染含中文/emoji 的 Registry 节点名。安装器幂等移除旧中文快捷方式并创建 `Site Login Maintenance.desktop`，安全边界和业务流程不变。
 
 2026-09-21 · CDECR 跨版本 dispatch 与初始化取消恢复修复：删除 CDECR dispatch 领取时的 execution_version 严格相等门槛，版本指纹仅保留审计；production/repair executor 按执行 lane、execution_id、input hash 与 lease generation 接管，并取消不再匹配当前节点/repair round 的孤儿 dispatch，避免其与普通 Initialization Worker 形成双向领取死锁。Initialization 父节点与 durable 子步骤在 CancelledError 时持久化为 INTERRUPTED，保留原 execution_id、ordinal 和 receipt，恢复后先 reconcile；CDECR executor 支持 SIGTERM 优雅取消并将同一 dispatch 重新排队，硬退出仍由 lease expiry 接管。生产 Compose 补充可显式传入 build commit/source hash 的 build args；未修改服务部署边界或 Site Access 运维流程。Ticker Initialization/Guardian 定向集合 141 passed，变更文件 Ruff、compileall、Compose config 与 diff check 通过。
+
+2026-09-21 · BE 强制初始化实测补修：CDECR 历史消息时间解析在 ISO 8601 之外兼容 RSS/Atom 常见 RFC 2822 格式，避免合法 `Tue, 08 Sep 2026 16:11:57 -0400` 时间令整条 dispatch 失败；Codex Worker 仅对已有 thread_id 保持串行亲和，同一 workflow run 的不同 attempt 使用隔离工作区并允许按既有弹性启动波并行，移除 C1/C3 被 run_id 误串行的问题。新增两项离线回归覆盖。
