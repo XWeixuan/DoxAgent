@@ -1,5 +1,7 @@
 # changelog
 
+- 2026-09-22: 修复远端 rollout 暴露的 Site Access 组合字段契约偏差：直连候选编排与 xRDP 维护库存统一使用 Registry 的 `combination_id`，不再读写不存在的 `id`；增加桌面安全输出回归断言。
+
 - 2026-09-22: 远端上线前节点实测发现订阅中“荷兰标准 IEPL 专线 2”已失活，保留已被 Profile 不可变绑定的 `nl-standard-2` egress ID 与 18082 端口，将该稳定出口槽的底层订阅节点更换为存活的“荷兰标准 IEPL 专线 1”，同步 Registry 种子与 Clash manifest。
 
 - 2026-09-22: 修复 Site Access 数据卷迁移脚本在宿主机不存在名为 `10001` 的用户时，GNU `install -o 10001` 无法按容器数值 UID 创建目录的问题；改为创建目录后显式 `chown 10001:10001`，并统一收紧 Registry、Profile、凭据与快照目录权限。

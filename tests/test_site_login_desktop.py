@@ -45,11 +45,13 @@ def _inventory_responses(method: str, path: str, payload=None, *, timeout: int =
                     "access": {
                         "combinations": [
                             {
+                                "combination_id": "barrons-1",
                                 "profile_id": "barrons-1",
                                 "egress_id": "us-standard-5",
                                 "priority": 10,
                             },
                             {
+                                "combination_id": "barrons-2",
                                 "profile_id": "barrons-2",
                                 "egress_id": "jp-standard-6",
                                 "priority": 20,
@@ -97,6 +99,7 @@ def test_inventory_exposes_safe_profile_status_without_secrets(admin, monkeypatc
 
     assert [row["profile_role"] for row in result["profiles"]] == ["primary", "backup"]
     assert result["profiles"][0]["auth_state"] == "VALID"
+    assert result["profiles"][0]["combination_id"] == "barrons-1"
     assert result["profiles"][1]["auth_state"] == "UNKNOWN"
     assert "login_token" not in repr(result)
 

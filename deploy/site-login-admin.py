@@ -332,7 +332,7 @@ def _inventory() -> dict[str, Any]:
                     "profile_id": profile["profile_id"],
                     "profile_role": "primary" if index == 0 else "backup",
                     "priority": combination["priority"],
-                    "combination_id": combination.get("id"),
+                    "combination_id": combination.get("combination_id"),
                     "egress_id": egress["egress_id"],
                     "egress_node": egress["node_ref"],
                     "egress_enabled": bool(egress["enabled"]),
@@ -346,7 +346,10 @@ def _inventory() -> dict[str, Any]:
                     "observed_ip": egress.get("observed_ip"),
                     "observed_at": egress.get("observed_at"),
                     "manual_attention_required": bool(
-                        (combination_runtime.get(combination.get("id")) or {}).get(
+                        (
+                            combination_runtime.get(combination.get("combination_id"))
+                            or {}
+                        ).get(
                             "manual_attention_required"
                         )
                     ),

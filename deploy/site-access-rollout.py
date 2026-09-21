@@ -99,11 +99,11 @@ def prepare_direct(admin: SiteAccessAdmin) -> None:
             )
         combination_id = f"{site_id}-direct-1"[:128]
         combinations = spec["access"]["combinations"]
-        if any(value["id"] == combination_id for value in combinations):
+        if any(value["combination_id"] == combination_id for value in combinations):
             continue
         combinations.append(
             {
-                "id": combination_id,
+                "combination_id": combination_id,
                 "profile_id": profile["profile_id"],
                 "egress_id": "server-direct",
                 "priority": 900,
