@@ -14,17 +14,17 @@ from typing import Any
 ADMIN = "/usr/local/sbin/doxagent-site-login-admin"
 VNC_VIEWER = "/usr/bin/vncviewer"
 STATE_TEXT = {
-    "VALID": "已登录",
-    "REAUTH_REQUIRED": "需要重新登录",
-    "ENTITLEMENT_MISSING": "无订阅权限",
-    "MAINTENANCE": "维护中",
-    "UNKNOWN": "未验证",
+    "VALID": "Signed in",
+    "REAUTH_REQUIRED": "Sign-in required",
+    "ENTITLEMENT_MISSING": "No subscription access",
+    "MAINTENANCE": "Maintenance in progress",
+    "UNKNOWN": "Not verified",
 }
 REGION_TEXT = {
-    "jp": "日本",
-    "us": "美国",
-    "nl": "荷兰",
-    "de": "德国",
+    "jp": "Japan",
+    "us": "United States",
+    "nl": "Netherlands",
+    "de": "Germany",
 }
 
 
@@ -40,42 +40,42 @@ def call_admin(arguments: list[str]) -> dict[str, Any]:
     except (OSError, subprocess.TimeoutExpired):
         return {
             "ok": False,
-            "message": "登录维护服务没有响应。",
-            "suggestion": "请稍后重试，或联系管理员。",
+            "message": "The login maintenance service did not respond.",
+            "suggestion": "Try again later or contact the administrator.",
         }
     try:
         payload = json.loads(completed.stdout)
     except json.JSONDecodeError:
         return {
             "ok": False,
-            "message": "登录维护服务返回异常。",
-            "suggestion": "请联系管理员检查桌面工具安装。",
+            "message": "The login maintenance service returned an invalid response.",
+            "suggestion": "Contact the administrator to check the desktop installation.",
         }
     return (
         payload
         if isinstance(payload, dict)
-        else {"ok": False, "message": "登录维护服务返回了无法识别的结果。"}
+        else {"ok": False, "message": "The login maintenance result was not recognized."}
     )
 
 
-def region_label(egress_id: str, node: str) -> str:
+def region_label(egress_id: str, _node: str) -> str:
     prefix = egress_id.split("-", 1)[0].lower()
-    return f"{REGION_TEXT.get(prefix, prefix.upper())} · {node}"
+    return f"{REGION_TEXT.get(prefix, prefix.upper())} ({egress_id})"
 
 
 class SiteLoginApp:
     def __init__(self, root: tk.Tk) -> None:
         self.root = root
-        self.root.title("消息源登录维护")
+        self.root.title("Site Login Maintenance")
         self.root.geometry("980x560")
         self.root.minsize(820, 480)
         self.rows: dict[str, dict[str, Any]] = {}
         self.session: dict[str, Any] | None = None
         self.viewer: subprocess.Popen[bytes] | None = None
         self.busy = False
-        self.filter_value = tk.StringVar(value="全部网站")
-        self.status_value = tk.StringVar(value="正在读取消息源状态……")
-        self.session_value = tk.StringVar(value="当前没有登录维护会话。")
+        self.filter_value = tk.StringVar(value="All sites")
+        self.status_value = tk.StringVar(value="Loading profile status...")
+        self.session_value = tk.StringVar(value="No login maintenance session is active.")
         self._build()
         self.root.protocol("WM_DELETE_WINDOW", self._on_window_close)
         self.refresh()
@@ -83,32 +83,35 @@ class SiteLoginApp:
     def _build(self) -> None:
         outer = ttk.Frame(self.root, padding=14)
         outer.pack(fill=tk.BOTH, expand=True)
-        title = ttk.Label(outer, text="消息源登录维护", font=("Sans", 18, "bold"))
+        title = ttk.Label(outer, text="Site Login Maintenance", font=("Sans", 18, "bold"))
         title.pack(anchor=tk.W)
         ttk.Label(
             outer,
-            text="选择一个 Profile 打开独立的持久浏览器；账号、密码和验证码只输入网站页面。",
+            text=(
+                "Select a profile to open its persistent browser. Enter credentials and MFA "
+                "only on the website."
+            ),
         ).pack(anchor=tk.W, pady=(3, 12))
 
         controls = ttk.Frame(outer)
         controls.pack(fill=tk.X, pady=(0, 8))
-        ttk.Label(controls, text="网站筛选：").pack(side=tk.LEFT)
+        ttk.Label(controls, text="Site filter:").pack(side=tk.LEFT)
         self.filter_box = ttk.Combobox(
             controls, textvariable=self.filter_value, state="readonly", width=24
         )
         self.filter_box.pack(side=tk.LEFT, padx=(4, 12))
         self.filter_box.bind("<<ComboboxSelected>>", lambda _event: self._render_rows())
-        self.refresh_button = ttk.Button(controls, text="刷新状态", command=self.refresh)
+        self.refresh_button = ttk.Button(controls, text="Refresh", command=self.refresh)
         self.refresh_button.pack(side=tk.RIGHT)
 
         columns = ("site", "profile", "role", "egress", "state")
         self.tree = ttk.Treeview(outer, columns=columns, show="headings", height=13)
         labels = {
-            "site": "网站",
+            "site": "Site",
             "profile": "Profile",
-            "role": "用途",
-            "egress": "出口节点 / 地区",
-            "state": "登录状态",
+            "role": "Role",
+            "egress": "Egress / Region",
+            "state": "Login status",
         }
         widths = {"site": 145, "profile": 155, "role": 110, "egress": 360, "state": 135}
         for column in columns:
@@ -117,28 +120,30 @@ class SiteLoginApp:
         self.tree.pack(fill=tk.BOTH, expand=True)
         self.tree.bind("<<TreeviewSelect>>", lambda _event: self._update_buttons())
 
-        session_frame = ttk.LabelFrame(outer, text="维护会话", padding=8)
+        session_frame = ttk.LabelFrame(outer, text="Maintenance session", padding=8)
         session_frame.pack(fill=tk.X, pady=(10, 8))
         ttk.Label(session_frame, textvariable=self.session_value).pack(side=tk.LEFT, fill=tk.X)
         self.continue_button = ttk.Button(
-            session_frame, text="继续维护 / 打开查看器", command=self._continue_viewer
+            session_frame, text="Continue / Open Viewer", command=self._continue_viewer
         )
         self.continue_button.pack(side=tk.RIGHT)
 
         actions = ttk.Frame(outer)
         actions.pack(fill=tk.X)
-        self.open_button = ttk.Button(actions, text="打开登录页面", command=self.open_selected)
+        self.open_button = ttk.Button(actions, text="Open Login Page", command=self.open_selected)
         self.open_button.pack(side=tk.LEFT)
         self.verify_button = ttk.Button(
-            actions, text="登录完成并验证", command=self.verify_selected
+            actions, text="Finish Login and Verify", command=self.verify_selected
         )
         self.verify_button.pack(side=tk.LEFT, padx=8)
         self.cancel_button = ttk.Button(
-            actions, text="取消并退出维护", command=self.cancel_session
+            actions, text="Cancel Maintenance", command=self.cancel_session
         )
         self.cancel_button.pack(side=tk.LEFT)
         self.advanced_button = ttk.Button(
-            actions, text="更换验证文章（高级）", command=self.verify_with_custom_url
+            actions,
+            text="Change Verification Article (Advanced)",
+            command=self.verify_with_custom_url,
         )
         self.advanced_button.pack(side=tk.LEFT, padx=8)
         ttk.Label(actions, textvariable=self.status_value).pack(side=tk.RIGHT)
@@ -156,7 +161,7 @@ class SiteLoginApp:
         if self.busy:
             return
         self.busy = True
-        self.status_value.set("正在处理，请稍候……")
+        self.status_value.set("Working...")
         self._update_buttons()
 
         def worker() -> None:
@@ -168,10 +173,10 @@ class SiteLoginApp:
     def _finish(self, result: dict[str, Any], done: Callable[[dict[str, Any]], None]) -> None:
         self.busy = False
         if not result.get("ok"):
-            message = str(result.get("message") or "操作失败。")
+            message = str(result.get("message") or "The operation failed.")
             suggestion = str(result.get("suggestion") or "")
-            messagebox.showerror("消息源登录维护", f"{message}\n\n{suggestion}".strip())
-            self.status_value.set("操作失败")
+            messagebox.showerror("Site Login Maintenance", f"{message}\n\n{suggestion}".strip())
+            self.status_value.set("Operation failed")
             self._update_buttons()
             return
         done(result)
@@ -184,16 +189,16 @@ class SiteLoginApp:
         profiles = payload.get("profiles") or []
         self.rows = {item["profile_id"]: item for item in profiles}
         sites = sorted({item["site_name"] for item in profiles})
-        self.filter_box["values"] = ["全部网站", *sites]
+        self.filter_box["values"] = ["All sites", *sites]
         if self.filter_value.get() not in self.filter_box["values"]:
-            self.filter_value.set("全部网站")
+            self.filter_value.set("All sites")
         self.session = payload.get("session")
         self._render_rows()
         self._render_session()
         if not payload.get("vnc_ready", False):
-            self.status_value.set("VNC 服务未就绪")
+            self.status_value.set("VNC service is not ready")
         else:
-            self.status_value.set(f"已读取 {len(profiles)} 个 Profile")
+            self.status_value.set(f"Loaded {len(profiles)} profiles")
         if self.session:
             self.root.after(50, self._recover)
 
@@ -206,14 +211,14 @@ class SiteLoginApp:
             key=lambda row: (row["site_name"].casefold(), row["priority"]),
         )
         for row in ordered:
-            if selected_site != "全部网站" and row["site_name"] != selected_site:
+            if selected_site != "All sites" and row["site_name"] != selected_site:
                 continue
-            role = "主 Profile" if row["profile_role"] == "primary" else "备用 Profile"
+            role = "Primary" if row["profile_role"] == "primary" else "Backup"
             state = STATE_TEXT.get(row["auth_state"], row["auth_state"])
             if row["profile_role"] == "primary" and row["auth_state"] == "VALID":
-                state = "主登录身份可用"
+                state = "Primary login ready"
             if row["profile_role"] == "backup" and row["auth_state"] == "UNKNOWN":
-                state = "备用身份，尚未配置"
+                state = "Backup not configured"
             self.tree.insert(
                 "",
                 tk.END,
@@ -241,17 +246,17 @@ class SiteLoginApp:
 
     def _render_session(self) -> None:
         if self.session:
-            viewer = "查看器已打开" if self.session.get("viewer_running") else "查看器未打开"
+            viewer = "viewer open" if self.session.get("viewer_running") else "viewer closed"
             self.session_value.set(
-                f"存在未完成的 {self.session.get('site_name')} / "
-                f"{self.session.get('profile_id')} 登录维护（{viewer}）。"
+                f"Unfinished maintenance: {self.session.get('site_name')} / "
+                f"{self.session.get('profile_id')} ({viewer})."
             )
             profile_id = self.session.get("profile_id")
             if profile_id and self.tree.exists(profile_id):
                 self.tree.selection_set(profile_id)
                 self.tree.see(profile_id)
         else:
-            self.session_value.set("当前没有登录维护会话。")
+            self.session_value.set("No login maintenance session is active.")
 
     def _update_buttons(self) -> None:
         selected = self._selected()
@@ -278,9 +283,9 @@ class SiteLoginApp:
         if selected["profile_role"] == "backup":
             region = region_label(selected["egress_id"], selected["egress_node"])
             if not messagebox.askokcancel(
-                "打开备用 Profile",
-                f"即将打开备用身份 {selected['profile_id']}，出口为 {region}。\n\n"
-                "同一网站账号可能限制跨地区并发登录。是否继续？",
+                "Open Backup Profile",
+                f"You are opening backup profile {selected['profile_id']} via {region}.\n\n"
+                "The website may restrict simultaneous logins from different regions. Continue?",
             ):
                 return
         self._run(
@@ -289,12 +294,12 @@ class SiteLoginApp:
         )
 
     def _opened(self, payload: dict[str, Any]) -> None:
-        self.status_value.set(f"浏览器已启动（{payload.get('opened_in_seconds')} 秒）")
+        self.status_value.set(f"Browser opened in {payload.get('opened_in_seconds')} seconds")
         self._launch_viewer()
         messagebox.showinfo(
-            "请完成网站登录",
-            "浏览器查看器已打开。请在网站页面完成账号登录或 MFA。\n\n"
-            "完成后回到本窗口，点击“登录完成并验证”。",
+            "Complete Website Login",
+            "The browser viewer is open. Complete the website login or MFA.\n\n"
+            "Then return here and click Finish Login and Verify.",
         )
         self.root.after(1000, self._recover)
 
@@ -309,8 +314,9 @@ class SiteLoginApp:
             )
         except OSError:
             messagebox.showerror(
-                "无法打开浏览器查看器",
-                "VNC Viewer 未安装或无法启动。维护会话仍然保留，请联系管理员后继续维护或取消。",
+                "Cannot Open Browser Viewer",
+                "VNC Viewer could not start. The maintenance session is still active. "
+                "Contact the administrator, then continue or cancel it.",
             )
             return
         self.root.after(1500, self._watch_viewer)
@@ -319,7 +325,7 @@ class SiteLoginApp:
         if not self.session:
             return
         if self.viewer and self.viewer.poll() is not None:
-            self.status_value.set("VNC Viewer 已关闭；仍可验证或取消维护")
+            self.status_value.set("VNC Viewer closed; you can still verify or cancel")
         else:
             self.root.after(1500, self._watch_viewer)
 
@@ -329,7 +335,7 @@ class SiteLoginApp:
     def _recovered(self, payload: dict[str, Any]) -> None:
         self.session = payload.get("session")
         self._render_session()
-        self.status_value.set(str(payload.get("message") or "维护会话已恢复"))
+        self.status_value.set(str(payload.get("message") or "Maintenance session recovered"))
 
     def _continue_viewer(self) -> None:
         self._launch_viewer()
@@ -345,8 +351,9 @@ class SiteLoginApp:
         if not selected:
             return
         value = simpledialog.askstring(
-            "更换验证文章（高级）",
-            "仅在默认文章失效时使用。请输入当前网站的一条订阅文章 HTTPS 地址：",
+            "Change Verification Article (Advanced)",
+            "Use only if the default article has expired. Enter a subscription article "
+            "HTTPS URL from the current site:",
             parent=self.root,
         )
         if value:
@@ -361,32 +368,34 @@ class SiteLoginApp:
     def _verified(self, payload: dict[str, Any]) -> None:
         self.session = None
         self._render_session()
-        message = str(payload.get("message") or "验证完成。")
+        message = str(payload.get("message") or "Verification completed.")
         state = str(payload.get("auth_state") or "UNKNOWN")
         if state == "VALID":
-            messagebox.showinfo("登录验证成功", message)
+            messagebox.showinfo("Login Verified", message)
         elif state == "ENTITLEMENT_MISSING":
-            messagebox.showwarning("没有订阅权限", message)
+            messagebox.showwarning("No Subscription Access", message)
         else:
-            messagebox.showwarning("登录验证未通过", message)
+            messagebox.showwarning("Login Verification Failed", message)
         self.refresh()
 
     def cancel_session(self) -> None:
-        if not messagebox.askyesno("取消维护", "确认关闭当前登录浏览器并取消维护吗？"):
+        if not messagebox.askyesno(
+            "Cancel Maintenance", "Close the current login browser and cancel maintenance?"
+        ):
             return
         self._run(lambda: call_admin(["close"]), self._cancelled)
 
     def _cancelled(self, payload: dict[str, Any]) -> None:
         self.session = None
         self._render_session()
-        self.status_value.set(str(payload.get("message") or "维护已取消"))
+        self.status_value.set(str(payload.get("message") or "Maintenance cancelled"))
         self.refresh()
 
     def _on_window_close(self) -> None:
         if self.session and not messagebox.askyesno(
-            "维护仍在进行",
-            "当前登录维护尚未完成。关闭工具不会关闭浏览器会话，稍后可重新打开继续。\n\n"
-            "确定关闭窗口吗？",
+            "Maintenance Is Still Active",
+            "Closing this tool will leave the browser session active. You can reopen the tool "
+            "later to continue.\n\nClose this window?",
         ):
             return
         self.root.destroy()

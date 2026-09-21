@@ -117,7 +117,7 @@ def test_open_persists_root_session_but_never_returns_token(admin, monkeypatch) 
     assert stored["login_token"] == "a" * 32
     if os.name == "posix":
         assert admin.SESSION_FILE.stat().st_mode & 0o777 == 0o600
-    with pytest.raises(admin.AdminError, match="已在登录维护中"):
+    with pytest.raises(admin.AdminError, match="already under login maintenance"):
         admin.command_open("barrons-2")
 
 

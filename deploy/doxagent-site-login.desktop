@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
-Name=消息源登录维护
-Comment=维护消息网站 Browser Profile 登录状态
+Name=Site Login Maintenance
+Comment=Maintain persistent login state for news-site browser profiles
 Exec=/usr/local/bin/doxagent-site-login-ui
 Icon=web-browser
 Terminal=false

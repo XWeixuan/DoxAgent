@@ -35,9 +35,10 @@ install -o root -g root -m 0440 "$sudoers_temp" "$sudoers_target"
 visudo -cf "$sudoers_target"
 
 install -d -o "$desktop_user" -g "$desktop_user" -m 0700 "$desktop_home/Desktop"
+rm -f "$desktop_home/Desktop/消息源登录维护.desktop"
 install -o "$desktop_user" -g "$desktop_user" -m 0755 \
   "$repo_root/deploy/doxagent-site-login.desktop" \
-  "$desktop_home/Desktop/消息源登录维护.desktop"
+  "$desktop_home/Desktop/Site Login Maintenance.desktop"
 
 python3 -m py_compile /usr/local/sbin/doxagent-site-login-admin \
   /usr/local/bin/doxagent-site-login-ui

@@ -1136,3 +1136,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-21 · Site Access 服务器重建修复：服务器 Compose 覆盖显式将 Site Access 的 BASE_IMAGE 绑定到同轮 `doxagent-v2:server`，避免并行构建时错误继承旧 `production` 镜像而缺少新模块；入口在启动 Xvfb 前仅清理自身 display 编号的陈旧锁/socket，使主进程异常退出后的容器 restart 可恢复 VNC，不触碰宿主 xRDP display。
 
 2026-09-21 · xRDP 消息源登录维护远端验收：生产全量镜像/服务重建完成，14 个常驻服务运行、Migration exit 0、restart=0、OOM=false；桌面入口已在真实 xRDP DISPLAY=:10 启动，TigerVNC 完成 RFB 3.8 连接，8 个订阅 Profile/出口/状态可读，登录页实测 3.02–5.05 秒。sudo -n 固定桥接、管理令牌/Docker 拒绝、root 0600 会话、单会话排他、验证自动关闭、Owner 重启后的 stale session 恢复、VNC loopback、Barron's 双 Profile 独立持久目录均通过；真实账号 VALID、订阅权限及登录 Cookie 续存需操作员完成网站登录后确认。详见 `dev_plan/workflow_v2/site_login_desktop_remote_acceptance_20260921.md`。
+
+2026-09-21 · xRDP 登录维护界面字体兼容修复：因现有 XFCE/Tk 字体缺少中文字形，将 GUI、对话框、桥接错误和桌面入口的用户可见文案统一为英文；出口列改用英文地区加稳定 egress ID，不再渲染含中文/emoji 的 Registry 节点名。安装器幂等移除旧中文快捷方式并创建 `Site Login Maintenance.desktop`，安全边界和业务流程不变。

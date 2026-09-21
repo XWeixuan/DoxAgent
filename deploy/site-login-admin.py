@@ -96,16 +96,20 @@ def _fail(error: AdminError) -> None:
 
 def _ensure_root() -> None:
     if not hasattr(os, "geteuid") or os.geteuid() != 0:
-        raise AdminError("ROOT_REQUIRED", "维护程序没有管理员权限。", "请从桌面快捷方式启动。")
+        raise AdminError(
+            "ROOT_REQUIRED",
+            "The maintenance tool does not have administrator access.",
+            "Start it from the desktop shortcut.",
+        )
     caller = os.environ.get("SUDO_USER")
     if caller not in {None, "root", DESKTOP_USER}:
-        raise AdminError("CALLER_DENIED", "当前用户无权运行消息源登录维护。")
+        raise AdminError("CALLER_DENIED", "This user cannot run site login maintenance.")
 
 
 @contextlib.contextmanager
 def _locked() -> Any:
     if fcntl is None:
-        raise AdminError("UNSUPPORTED_HOST", "登录维护桥接程序只能在 Linux 服务器运行。")
+        raise AdminError("UNSUPPORTED_HOST", "The maintenance bridge requires a Linux host.")
     STATE_DIR.mkdir(mode=0o700, parents=True, exist_ok=True)
     os.chmod(STATE_DIR, 0o700)
     descriptor = os.open(LOCK_FILE, os.O_CREAT | os.O_RDWR, 0o600)
@@ -126,13 +130,13 @@ def _read_session() -> dict[str, Any] | None:
     except (OSError, json.JSONDecodeError) as exc:
         raise AdminError(
             "SESSION_CORRUPT",
-            "上一次维护会话记录已损坏。",
-            "请联系管理员检查 /run/doxagent-site-login。",
+            "The previous maintenance session record is corrupted.",
+            "Ask the administrator to check /run/doxagent-site-login.",
         ) from exc
     if not isinstance(payload, dict) or not payload.get("profile_id") or not payload.get(
         "login_token"
     ):
-        raise AdminError("SESSION_CORRUPT", "上一次维护会话记录不完整。")
+        raise AdminError("SESSION_CORRUPT", "The previous maintenance session is incomplete.")
     return payload
 
 
@@ -164,12 +168,16 @@ def _container_id() -> str:
         completed = subprocess.run(command, check=False, capture_output=True, text=True, timeout=5)
     except (OSError, subprocess.TimeoutExpired) as exc:
         raise AdminError(
-            "SERVICE_UNAVAILABLE", "Site Access 服务不可用。", "请联系管理员检查容器服务。"
+            "SERVICE_UNAVAILABLE",
+            "The Site Access service is unavailable.",
+            "Ask the administrator to check the container service.",
         ) from exc
     ids = [value for value in completed.stdout.splitlines() if value]
     if completed.returncode or len(ids) != 1 or not re.fullmatch(r"[a-f0-9]{12,64}", ids[0]):
         raise AdminError(
-            "SERVICE_UNAVAILABLE", "Site Access 服务未正常运行。", "请联系管理员重启服务。"
+            "SERVICE_UNAVAILABLE",
+            "The Site Access service is not running.",
+            "Ask the administrator to restart the service.",
         )
     return ids[0]
 
@@ -178,7 +186,9 @@ def _request(
     method: str, path: str, payload: dict[str, Any] | None = None, *, timeout: int = 45
 ) -> Any:
     if method not in {"GET", "POST"} or not re.fullmatch(r"/[A-Za-z0-9_./:-]+", path):
-        raise AdminError("INTERNAL_POLICY", "维护程序拒绝了未授权的服务请求。")
+        raise AdminError(
+            "INTERNAL_POLICY", "The maintenance tool rejected an unauthorized request."
+        )
     request = json.dumps(
         {"method": method, "path": path, "payload": payload, "timeout": timeout},
         separators=(",", ":"),
@@ -195,13 +205,17 @@ def _request(
         )
     except (OSError, subprocess.TimeoutExpired) as exc:
         raise AdminError(
-            "SERVICE_UNAVAILABLE", "Site Access 服务响应超时。", "请稍后刷新，或联系管理员。"
+            "SERVICE_UNAVAILABLE",
+            "The Site Access service timed out.",
+            "Refresh later or contact the administrator.",
         ) from exc
     try:
         envelope = json.loads(completed.stdout)
     except json.JSONDecodeError as exc:
         raise AdminError(
-            "SERVICE_UNAVAILABLE", "Site Access 服务返回异常。", "请联系管理员查看服务日志。"
+            "SERVICE_UNAVAILABLE",
+            "The Site Access service returned an invalid response.",
+            "Ask the administrator to inspect the service logs.",
         ) from exc
     status = int(envelope.get("status", 0))
     body = envelope.get("body")
@@ -209,19 +223,19 @@ def _request(
         detail = body.get("detail") if isinstance(body, dict) else None
         if status == 404:
             code = "NOT_FOUND"
-            message = "Profile 或维护会话不存在。"
+            message = "The profile or maintenance session was not found."
         elif status == 409:
             code = "PROFILE_BUSY"
-            message = "Profile 当前正在使用或无法进入维护状态。"
+            message = "The profile is busy or cannot enter maintenance mode."
         elif status == 422:
             code = "VERIFY_REJECTED"
-            message = "验证文章无效或不属于当前网站。"
+            message = "The verification article is invalid or belongs to another site."
         else:
             code = "SERVICE_UNAVAILABLE"
-            message = "Site Access 服务暂时不可用。"
-        suggestion = "请刷新状态后重试。"
+            message = "The Site Access service is temporarily unavailable."
+        suggestion = "Refresh the status and try again."
         if isinstance(detail, str) and "subscription" in detail.lower():
-            suggestion = "账号可能没有该网站的订阅权限。"
+            suggestion = "The account may not have the required subscription."
         raise AdminError(code, message, suggestion)
     return body
 
@@ -236,7 +250,7 @@ def _vnc_ready() -> bool:
 
 def _validate_profile_id(value: str) -> str:
     if not PROFILE_ID.fullmatch(value):
-        raise AdminError("INVALID_PROFILE", "Profile ID 格式无效。")
+        raise AdminError("INVALID_PROFILE", "The profile ID is invalid.")
     return value
 
 
@@ -244,10 +258,10 @@ def _validate_override_url(value: str | None) -> str | None:
     if value is None:
         return None
     if len(value) > 2048:
-        raise AdminError("INVALID_URL", "验证文章地址过长。")
+        raise AdminError("INVALID_URL", "The verification article URL is too long.")
     parsed = urlsplit(value.strip())
     if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password:
-        raise AdminError("INVALID_URL", "验证文章必须使用完整的 HTTPS 地址。")
+        raise AdminError("INVALID_URL", "The verification article must use a complete HTTPS URL.")
     return value.strip()
 
 
@@ -338,8 +352,8 @@ def command_open(profile_id: str) -> dict[str, Any]:
         if existing:
             raise AdminError(
                 "SESSION_ACTIVE",
-                f"{existing['profile_id']} 已在登录维护中。",
-                "请继续或取消当前维护后再打开其他 Profile。",
+                f"{existing['profile_id']} is already under login maintenance.",
+                "Continue or cancel the current session before opening another profile.",
             )
         inventory = _inventory()
         selected = next(
@@ -347,17 +361,20 @@ def command_open(profile_id: str) -> dict[str, Any]:
         )
         if selected is None or not selected["site_enabled"] or not selected["egress_enabled"]:
             raise AdminError(
-                "PROFILE_DISABLED", "Profile 不存在、站点已停用或出口节点不可用。"
+                "PROFILE_DISABLED",
+                "The profile is missing, the site is disabled, or the egress is unavailable.",
             )
         if not inventory["vnc_ready"]:
             raise AdminError(
-                "VNC_UNAVAILABLE", "浏览器查看服务未启动。", "请联系管理员检查本机 5900 端口。"
+                "VNC_UNAVAILABLE",
+                "The browser viewer service is not running.",
+                "Ask the administrator to check local port 5900.",
             )
         started = time.monotonic()
         response = _request("POST", f"/v1/profiles/{profile_id}/login:open", {}, timeout=40)
         token = response.get("login_token") if isinstance(response, dict) else None
         if not isinstance(token, str) or not re.fullmatch(r"[a-f0-9]{32}", token):
-            raise AdminError("BROWSER_START_FAILED", "登录浏览器启动失败。")
+            raise AdminError("BROWSER_START_FAILED", "The login browser failed to start.")
         session = {
             "profile_id": profile_id,
             "site_id": selected["site_id"],
@@ -393,15 +410,15 @@ def command_verify(profile_id: str, override_url: str | None) -> dict[str, Any]:
     with _locked():
         session = _read_session()
         if session is None:
-            raise AdminError("NO_SESSION", "没有正在进行的登录维护。")
+            raise AdminError("NO_SESSION", "No login maintenance session is active.")
         if session["profile_id"] != profile_id:
-            raise AdminError("PROFILE_MISMATCH", "当前维护会话属于另一个 Profile。")
+            raise AdminError("PROFILE_MISMATCH", "The active session belongs to another profile.")
         inventory = _inventory()
         selected = next(
             (item for item in inventory["profiles"] if item["profile_id"] == profile_id), None
         )
         if selected is None:
-            raise AdminError("PROFILE_DISABLED", "当前 Profile 已被停用或删除。")
+            raise AdminError("PROFILE_DISABLED", "The current profile was disabled or deleted.")
         article_url = override_url
         if article_url is None:
             site = next(
@@ -412,7 +429,9 @@ def command_verify(profile_id: str, override_url: str | None) -> dict[str, Any]:
             article_url = (site.get("auth") or {}).get("verification_url")
         if not article_url:
             raise AdminError(
-                "VERIFY_URL_MISSING", "此网站尚未配置验证文章。", "请使用高级入口更换验证文章。"
+                "VERIFY_URL_MISSING",
+                "This site has no verification article configured.",
+                "Use the advanced option to provide another article.",
             )
         result: Any = None
         failure: AdminError | None = None
@@ -430,25 +449,31 @@ def command_verify(profile_id: str, override_url: str | None) -> dict[str, Any]:
             _delete_session()
         if failure is not None:
             if not closed:
-                failure.suggestion = "验证失败且会话未能关闭，请刷新后选择取消维护。"
+                failure.suggestion = (
+                    "Verification failed and the session could not close. Refresh, then cancel it."
+                )
             raise failure
         if not closed:
             raise AdminError(
-                "CLOSE_FAILED", "验证已完成，但维护浏览器未能安全关闭。", "请刷新并取消维护。"
+                "CLOSE_FAILED",
+                "Verification finished, but the maintenance browser did not close safely.",
+                "Refresh and cancel the maintenance session.",
             )
         profile = result.get("profile", {})
         state = profile.get("auth_state", "UNKNOWN")
         messages = {
-            "VALID": "已登录，可访问订阅正文。",
-            "REAUTH_REQUIRED": "登录仍然无效，需要重新登录。",
-            "ENTITLEMENT_MISSING": "账号有效，但没有该文章所需的订阅权限。",
-            "UNKNOWN": "验证失败，文章可能失效或页面未被正确识别。",
+            "VALID": "Signed in with access to subscription articles.",
+            "REAUTH_REQUIRED": "The login is still invalid. Sign in again.",
+            "ENTITLEMENT_MISSING": (
+                "The account is valid but lacks the subscription required for this article."
+            ),
+            "UNKNOWN": "Verification failed. The article may have expired or was not recognized.",
         }
         return {
             "ok": True,
             "profile_id": profile_id,
             "auth_state": state,
-            "message": messages.get(state, "验证结果未知。"),
+            "message": messages.get(state, "The verification result is unknown."),
             "reason": result.get("reason"),
             "closed": True,
         }
@@ -458,13 +483,15 @@ def command_close() -> dict[str, Any]:
     with _locked():
         session = _read_session()
         if session is None:
-            return {"ok": True, "closed": False, "message": "当前没有维护会话。"}
+            return {"ok": True, "closed": False, "message": "No maintenance session is active."}
         if not _close_token(session):
             raise AdminError(
-                "CLOSE_FAILED", "维护会话暂时无法关闭。", "请勿重复打开 Profile，稍后再试。"
+                "CLOSE_FAILED",
+                "The maintenance session cannot be closed right now.",
+                "Do not reopen the profile. Try again later.",
             )
         _delete_session()
-        return {"ok": True, "closed": True, "message": "维护会话已安全关闭。"}
+        return {"ok": True, "closed": True, "message": "The maintenance session was closed."}
 
 
 def command_recover() -> dict[str, Any]:
@@ -487,7 +514,7 @@ def command_recover() -> dict[str, Any]:
                 "ok": True,
                 "session": None,
                 "recovered": "stale_session_removed",
-                "message": "已清理服务重启后遗留的维护会话。",
+                "message": "The stale maintenance session was removed after the service restart.",
             }
         if not _viewer_running(session.get("viewer_pid")):
             viewer_pid = _find_viewer_pid()
@@ -540,7 +567,9 @@ def main(argv: list[str] | None = None) -> None:
     except Exception:
         _fail(
             AdminError(
-                "INTERNAL_ERROR", "登录维护工具发生内部错误。", "请联系管理员查看系统日志。"
+                "INTERNAL_ERROR",
+                "The login maintenance tool encountered an internal error.",
+                "Ask the administrator to inspect the system logs.",
             )
         )
 
