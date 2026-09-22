@@ -48,3 +48,25 @@ after only this experiment container is restarted.
   Playwright-driven page behavior remains a plausible trigger. A later ablation
   would still be needed to distinguish CDP-listening Chrome without attachment
   from actual Playwright attachment/control.
+
+## Remote preflight (2026-09-22)
+
+- Deployed revision: `dcd3d952`.
+- Browser/runtime: official Google Chrome `153.0.8010.52`, Playwright `1.63.0`.
+- The observed main Chrome command contained only the direct-control arguments
+  plus `--remote-debugging-address=127.0.0.1`,
+  `--remote-debugging-port=9222`, and initial `about:blank`. It did not contain
+  Playwright launch defaults, `--enable-automation`, `--no-sandbox`, headless or
+  identity override arguments.
+- The internal CDP target showed Playwright navigation had reached the Dow Jones
+  SSO authorization page and its challenge iframe. Host port inspection exposed
+  only VNC at `127.0.0.1:5903`; CDP port 9222 was not published.
+- Browser process: UID/GID 10001, `NoNewPrivs=1`, seccomp mode 2, AppArmor
+  `doxagent-site-access (enforce)`.
+- Route probe: fixed US slot 18081 returned `38.181.82.188`.
+- New experiment, successful direct-Chrome control, failed Playwright-launch
+  control, and production Site Access containers were all healthy with restart
+  count 0.
+
+Manual challenge, credential, entitlement, and restart-persistence acceptance
+is pending operator interaction.
