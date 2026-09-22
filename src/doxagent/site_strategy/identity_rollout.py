@@ -122,7 +122,8 @@ def rollout_plan(repository: SiteStrategyRepository) -> dict[str, object]:
                 "action": "update"
                 if spec
                 and any(
-                    item.identity_id != mapping.get(item.combination_id)
+                    item.combination_id in mapping
+                    and item.identity_id != mapping[item.combination_id]
                     for item in spec.access.combinations
                 )
                 else "keep",

@@ -1168,3 +1168,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-22 · 双轨 Browser Runtime 与 Browser Identity 完整开发：Registry 新增版本化 Browser Identity、逐站认证与 Identity 运行态，旧组合幂等迁移且不覆盖人工 Site revision；Site Access 统一 Managed Playwright 与普通 Google Chrome 153 Supervisor+CDP attach，External Chrome 独立生命周期、持久 Profile/出口/环境、单 writer、优雅退出、断线重连、常驻/按需回收及全局 Page 上限。正文、Yahoo/Reuters recipe、导航安全门和跨站重派复用同一执行器，结果/正文 trace 增加 Runtime 溯源；Site+Identity 原子预算含 crawler 30 秒防饥饿。桌面登录维护支持共享 Identity、逐站验证、VNC relay 和 API 重启后 External 页面恢复；快照安全剔除 Chrome singleton 链接。新增首批 Dow Jones/Seeking Alpha/Yahoo 显式 dry-run/备份迁移工具、官方 Chrome Supervisor 镜像与 Compose 服务；Reuters/generic 保持 Managed。39 项核心测试、173 项正文/爬虫/消息源相关回归、Ruff、mypy 和 Compose 合并校验通过；生产冷迁移、人工登录及 24 小时观察按实际验收记录执行。
 
 2026-09-22 · Chrome Supervisor 构建校验修正：生产构建已安装锁定的 `google-chrome-stable=153.0.8010.52-1`，但 Chrome 展示版本字符串的平台格式差异造成误报；改为使用 dpkg 元数据对安装包版本做精确等值验证，不放宽版本锁定。
+
+2026-09-22 · Browser Identity 迁移报告幂等性修正：二次 dry-run 仅检查首批明确映射的 Browser 组合，不再把未参与迁移的 direct/HTTP 组合误报为待更新；新增 apply 后 identities/sites 全部返回 `keep` 的回归断言。

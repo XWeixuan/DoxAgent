@@ -9,7 +9,7 @@ import pytest
 from doxagent.site_strategy.browser_runtime import BrowserRuntimeManager
 from doxagent.site_strategy.budget import JointBudget
 from doxagent.site_strategy.identity_migration import with_identity_bindings
-from doxagent.site_strategy.identity_rollout import apply_first_wave
+from doxagent.site_strategy.identity_rollout import apply_first_wave, rollout_plan
 from doxagent.site_strategy.repository import SiteStrategyRepository
 from doxagent.site_strategy.schema import (
     AuthState,
@@ -47,6 +47,9 @@ def test_first_wave_shares_dowjones_identity_but_not_auth_state(
     seeded: SiteStrategyService,
 ) -> None:
     apply_first_wave(seeded.repository)
+    second_plan = rollout_plan(seeded.repository)
+    assert all(item["action"] == "keep" for item in second_plan["identities"])
+    assert all(item["action"] == "keep" for item in second_plan["sites"])
     for site_id in ("barrons", "wsj", "marketwatch"):
         spec = seeded.repository.get_strategy(site_id)
         assert spec is not None
