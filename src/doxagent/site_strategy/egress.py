@@ -109,13 +109,29 @@ async def probe_egress(
                 observed_ip = None
             except (httpx.HTTPError, ValueError):
                 continue
-    changed = observed_ip is not None and observed_ip != egress.observed_ip
+    observed_at = datetime.now(UTC)
+    probe_succeeded = status == "READY"
+    failure_count = 0 if probe_succeeded else egress.consecutive_probe_failures + 1
+    if not probe_succeeded:
+        # One failed probe round is not proof that a previously verified proxy
+        # is down. Keep routing through it and let the real request/fallback path
+        # decide; only two consecutive full probe failures withdraw the egress.
+        status = (
+            "READY"
+            if egress.status == "READY" and failure_count < 2
+            else "UNAVAILABLE"
+        )
+        observed_ip = egress.observed_ip
+        probe_endpoint = egress.probe_endpoint
+    changed = probe_succeeded and observed_ip != egress.observed_ip
     updated = egress.model_copy(
         update={
             "status": status,
             "observed_ip": observed_ip,
-            "observed_at": datetime.now(UTC),
+            "observed_at": observed_at if probe_succeeded else egress.observed_at,
             "probe_endpoint": probe_endpoint,
+            "consecutive_probe_failures": failure_count,
+            "last_probe_error_at": None if probe_succeeded else observed_at,
             "generation": egress.generation + int(changed),
             "node_fingerprint": hashlib.sha256(egress.node_ref.encode()).hexdigest(),
         }

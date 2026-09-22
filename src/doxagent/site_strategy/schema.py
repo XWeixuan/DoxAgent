@@ -231,6 +231,8 @@ class ProxyEgress(SiteModel):
     observed_ip: str | None = None
     observed_at: datetime | None = None
     probe_endpoint: str | None = None
+    consecutive_probe_failures: int = Field(default=0, ge=0)
+    last_probe_error_at: datetime | None = None
     generation: int = Field(default=1, ge=1)
     status: Literal["READY", "UNVERIFIED", "CONFIG_MISSING", "UNAVAILABLE"] = "UNVERIFIED"
 

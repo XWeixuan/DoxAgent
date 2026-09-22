@@ -75,7 +75,7 @@ WSJ、MarketWatch、Seeking Alpha 仍需操作员分别完成 challenge/login/�
 - Content Enrichment 浏览器/原生/Hub/Pipeline/Publisher：`101 passed`。
 - Message Bus 新闻源：`12 passed`。
 - Message Bus 去重：`20 passed`。
-- 合计：`181 passed, 1 skipped`；唯一 skip 是当前 Windows 账户无创建符号链接权限，非链接同名文件拒绝测试实际通过。
+- 合计：`182 passed, 1 skipped`；唯一 skip 是当前 Windows 账户无创建符号链接权限，非链接同名文件拒绝测试实际通过。
 - Ruff、mypy、Compose config 均通过。
 
 ## 7. 资源与短时运行记录
@@ -87,7 +87,9 @@ WSJ、MarketWatch、Seeking Alpha 仍需操作员分别完成 challenge/login/�
 - 三个 Chrome 主进程 RSS 观测值约 `328/309/337 MiB`；该值包含共享页，资源判断以容器工作集为主。
 - 两个服务均为 `healthy`；最终 Site Access 日志没有 External prewarm 失败。Xvfb 有非 root `/tmp/.X11-unix` owner 提示，但三个 Display、Chrome、CDP 和业务请求均正常，不构成当前失败。
 
-30 分钟重复窗口和 24 小时自然运行不能在本次同步部署回合内伪造完成。生产事件/统计接口已保留 identity/runtime provenance，后续窗口应按站点记录正文成功率、challenge/auth/内容失败、crawler freshness/DEFERRED、启动/重连、资源和维护中断；未取得窗口数据前不宣称长期成功率提升。
+30 分钟重复窗口已完成：Barron's 保持 `VALID`，正文页面再次为 External `200` 且 instance/generation 未变化；Yahoo External recipe 再次返回 10 条；Reuters 首次复测因 NL 出口被一次瞬时 IP 探测误记为 `UNAVAILABLE` 而失败，但该代理同时进行的真实 IP/Reuters 请求分别返回既有 IP 和 `200`，显式重探后恢复 `READY`，Reuters Managed recipe 再次返回 20 条。针对该现场证据，探测治理改为已验证 READY 节点连续两次全探测失败才撤出，首次失败保留最后成功观测并继续让真实请求/fallback 判定。30 分钟资源快照为 Site Access `356.2 MiB / 0.12% CPU`、Supervisor `820.3 MiB / 0.78% CPU`。
+
+24 小时自然运行不能在本次同步部署回合内伪造完成。生产事件/统计接口已保留 identity/runtime provenance，后续窗口应按站点记录正文成功率、challenge/auth/内容失败、crawler freshness/DEFERRED、启动/重连、资源和维护中断；未取得窗口数据前不宣称长期成功率提升。
 
 ## 8. 回滚边界与命令
 

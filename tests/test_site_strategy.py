@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
+import httpx
 import pytest
 import yaml
 from fastapi.testclient import TestClient
@@ -12,7 +13,7 @@ from doxagent.content_enrichment.quality import choose_candidate, inspect_html
 from doxagent.monitoring.media_enrichment import MediaEnrichmentRecord
 from doxagent.site_strategy.api import create_app
 from doxagent.site_strategy.client import SiteAccessClient
-from doxagent.site_strategy.egress import render_fixed_listeners
+from doxagent.site_strategy.egress import probe_egress, render_fixed_listeners
 from doxagent.site_strategy.repository import SiteStrategyRepository
 from doxagent.site_strategy.runtime import RuntimeResponse
 from doxagent.site_strategy.schema import (
@@ -34,6 +35,73 @@ def site_service(tmp_path: Path) -> SiteStrategyService:
     bootstrap_seed(repository, service)
     yield service
     repository.close()
+
+
+@pytest.mark.asyncio
+async def test_egress_probe_requires_two_failures_before_withdrawing_ready_node(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repository = SiteStrategyRepository(tmp_path / "egress.sqlite3")
+    repository.upsert_egress(
+        ProxyEgress(
+            egress_id="stable-node",
+            node_ref="node-a",
+            node_fingerprint="digest",
+            listener_port=18080,
+            endpoint="http://clash:18080",
+            status="READY",
+            observed_ip="203.0.113.8",
+            observed_at=datetime(2026, 9, 22, tzinfo=UTC),
+            probe_endpoint="https://probe.test/ip",
+        )
+    )
+
+    class FailingClient:
+        def __init__(self, **_kwargs: object) -> None:
+            pass
+
+        async def __aenter__(self) -> FailingClient:
+            return self
+
+        async def __aexit__(self, *_args: object) -> None:
+            pass
+
+        async def get(self, _url: str) -> object:
+            raise httpx.ConnectError("transient probe failure")
+
+    monkeypatch.setattr("doxagent.site_strategy.egress.httpx.AsyncClient", FailingClient)
+    try:
+        first = await probe_egress(repository, "stable-node")
+        assert first.status == "READY"
+        assert first.observed_ip == "203.0.113.8"
+        assert first.consecutive_probe_failures == 1
+        assert first.last_probe_error_at is not None
+
+        second = await probe_egress(repository, "stable-node")
+        assert second.status == "UNAVAILABLE"
+        assert second.observed_ip == "203.0.113.8"
+        assert second.consecutive_probe_failures == 2
+
+        class SuccessfulResponse:
+            def raise_for_status(self) -> None:
+                pass
+
+            def json(self) -> dict[str, str]:
+                return {"ip": "203.0.113.8"}
+
+        class SuccessfulClient(FailingClient):
+            async def get(self, _url: str) -> SuccessfulResponse:
+                return SuccessfulResponse()
+
+        monkeypatch.setattr(
+            "doxagent.site_strategy.egress.httpx.AsyncClient", SuccessfulClient
+        )
+        recovered = await probe_egress(repository, "stable-node")
+        assert recovered.status == "READY"
+        assert recovered.consecutive_probe_failures == 0
+        assert recovered.last_probe_error_at is None
+    finally:
+        repository.close()
 
 
 def test_seed_resolver_uses_exact_ownership_and_isolated_generic_runtime(
