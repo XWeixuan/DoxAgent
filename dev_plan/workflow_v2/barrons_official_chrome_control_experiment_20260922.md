@@ -45,3 +45,24 @@ alone are not acceptance.
 
 The experiment must not close or alter any active Site Access login-maintenance
 session.
+
+## Remote preflight (2026-09-22)
+
+The control was deployed from commit `5306ba3c` without rebuilding or restarting
+the production Site Access service.
+
+- Container health: healthy, restart count 0.
+- Browser: `Google Chrome 153.0.8010.52` from the Google stable repository.
+- Browser owner: UID/GID 10001; `NoNewPrivs=1`, seccomp mode 2, AppArmor
+  `doxagent-site-access (enforce)`.
+- Main launch contained the isolated Profile, fixed US proxy, 1440x1000 window,
+  and Barron's login URL. It contained no remote-debugging, enable-automation,
+  headless, no-sandbox, UA override, or Playwright argument.
+- Route probe from the same container through port 18081 returned
+  `38.181.82.188`.
+- VNC answered RFB 3.8 at host loopback `127.0.0.1:5901`.
+- The existing production Site Access container remained healthy with restart
+  count 0. Its active `marketwatch-1` maintenance session was left untouched.
+
+Manual challenge, credential, entitlement, and restart-persistence acceptance is
+pending operator interaction and must not be inferred from this preflight.
