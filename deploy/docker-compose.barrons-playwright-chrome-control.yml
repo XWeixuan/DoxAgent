@@ -1,3 +1,5 @@
+name: barrons-playwright-chrome-control
+
 services:
   barrons-playwright-chrome-control:
     build:
