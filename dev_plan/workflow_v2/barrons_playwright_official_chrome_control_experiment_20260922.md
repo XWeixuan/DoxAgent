@@ -57,3 +57,24 @@ cookies is not acceptance.
 - Failure, paired with the successful direct-Chrome control, strongly implicates
   Playwright's launch/transport/browser-visible automation surface. It still
   does not identify one specific default argument without a later ablation.
+
+## Remote preflight (2026-09-22)
+
+- Deployed revision: `0bef15d8`.
+- Browser/runtime: official Google Chrome `153.0.8010.52`, Playwright `1.63.0`.
+- Browser process: UID/GID 10001, `NoNewPrivs=1`, seccomp mode 2, AppArmor
+  `doxagent-site-access (enforce)`, Chrome sandbox retained.
+- Route probe: fixed US slot 18081 returned `38.181.82.188`.
+- VNC: host loopback `127.0.0.1:5902`; container healthy, restart count 0.
+- Profile: dedicated volume owned by UID/GID 10001 with a single-writer lock.
+- The successful direct-Chrome control and production Site Access containers
+  both remained healthy with restart count 0.
+
+The observed Playwright launch retained `--remote-debugging-pipe` and its normal
+default switches, including disabled background networking, extensions,
+back-forward cache, component update, and sync. It did not contain
+`--no-sandbox` after explicitly setting `chromium_sandbox=True`. These retained
+defaults are part of the experimental variable, not evidence of login success.
+
+Manual challenge, credential, entitlement, and restart-persistence acceptance
+is pending operator interaction.
