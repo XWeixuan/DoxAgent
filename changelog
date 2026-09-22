@@ -1172,3 +1172,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-22 · Browser Identity 迁移报告幂等性修正：二次 dry-run 仅检查首批明确映射的 Browser 组合，不再把未参与迁移的 direct/HTTP 组合误报为待更新；新增 apply 后 identities/sites 全部返回 `keep` 的回归断言。
 
 2026-09-22 · External Chrome 预热运行态修正：always-on Identity 预热完成后立即将 `AVAILABLE`、Supervisor instance ID 和新 generation 持久化到 Registry，避免 Chrome 已运行但桌面维护列表误显示 `STOPPED`；新增三个首批常驻 Identity 预热投影回归测试。
+
+2026-09-22 · External Chrome 启动竞态修正：针对 Compose 共享 network namespace 要求 Site Access 先启动、Supervisor 后启动的固定时序，Unix socket 首次连接增加 15 秒有界等待，维护循环每 60 秒重试缺失的 always-on Identity；保持单 Identity 失败不影响整体 ready。

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -30,7 +31,15 @@ class ChromeSupervisorClient:
     async def _request(self, command: str, payload: dict[str, object]) -> dict[str, object]:
         unix_connector_name = "open_unix_connection"
         open_unix_connection: Any = getattr(asyncio, unix_connector_name)
-        reader, writer = await open_unix_connection(self.socket_path)
+        deadline = time.monotonic() + 15
+        while True:
+            try:
+                reader, writer = await open_unix_connection(self.socket_path)
+                break
+            except (FileNotFoundError, ConnectionRefusedError) as exc:
+                if time.monotonic() >= deadline:
+                    raise RuntimeError("chrome_supervisor_unavailable") from exc
+                await asyncio.sleep(0.2)
         try:
             writer.write(
                 (

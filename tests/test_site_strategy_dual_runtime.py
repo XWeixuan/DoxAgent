@@ -21,6 +21,7 @@ from doxagent.site_strategy.schema import (
 )
 from doxagent.site_strategy.seeds import bootstrap_seed
 from doxagent.site_strategy.service import SiteStrategyService
+from doxagent.site_strategy.supervisor_client import ChromeSupervisorClient
 
 
 @pytest.fixture
@@ -101,6 +102,46 @@ async def test_external_prewarm_projects_available_runtime_state(
         runtime = seeded.repository.get_identity_runtime(identity_id)
         assert runtime.operational_state is IdentityOperationalState.AVAILABLE
         assert runtime.instance_id == f"instance-{identity_id}"
+
+
+@pytest.mark.asyncio
+async def test_supervisor_client_waits_for_late_socket(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    attempts = 0
+
+    async def connect(_path):
+        nonlocal attempts
+        attempts += 1
+        if attempts < 3:
+            raise FileNotFoundError
+        reader = asyncio.StreamReader()
+        reader.feed_data(b'{"ok":true,"stopped":false}\n')
+        reader.feed_eof()
+
+        class Writer:
+            def write(self, _value):
+                return None
+
+            async def drain(self):
+                return None
+
+            def close(self):
+                return None
+
+            async def wait_closed(self):
+                return None
+
+        return reader, Writer()
+
+    async def no_sleep(_seconds):
+        return None
+
+    monkeypatch.setattr(asyncio, "open_unix_connection", connect, raising=False)
+    monkeypatch.setattr("doxagent.site_strategy.supervisor_client.asyncio.sleep", no_sleep)
+    client = ChromeSupervisorClient(tmp_path / "late.sock", owner_id="test")
+    assert await client.stop("identity", reason="test") is False
+    assert attempts == 3
 
 
 def test_identity_revision_cas_and_profile_single_owner(seeded: SiteStrategyService) -> None:

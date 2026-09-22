@@ -372,6 +372,7 @@ class SiteStrategyService:
     async def _maintenance_loop(self) -> None:
         while True:
             try:
+                await self._prewarm_identities()
                 await self.runtime.browser_runtimes.close_idle()
                 await self._run_due_probes()
             except asyncio.CancelledError:
