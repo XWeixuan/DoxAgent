@@ -20,6 +20,7 @@ async def main() -> None:
             user_data_dir="/chrome-profile",
             executable_path="/usr/bin/google-chrome-stable",
             headless=False,
+            chromium_sandbox=True,
             proxy={
                 "server": os.environ.get(
                     "CHROME_PROXY_SERVER", "http://doxagent-egress-clash:18081"

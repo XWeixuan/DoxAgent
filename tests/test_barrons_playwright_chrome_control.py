@@ -19,6 +19,7 @@ def test_playwright_control_uses_official_chrome_with_expected_variable() -> Non
     assert '"playwright==${PLAYWRIGHT_VERSION}"' in dockerfile
     assert 'executable_path="/usr/bin/google-chrome-stable"' in launcher
     assert "launch_persistent_context" in launcher
+    assert "chromium_sandbox=True" in launcher
     assert "no_viewport=True" in launcher
     assert "ignore_default_args" not in launcher
     assert "stealth" not in launcher.lower()
