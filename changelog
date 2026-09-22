@@ -1186,3 +1186,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-22 · 出口探测抖动治理：30 分钟复验发现 Reuters 的 NL 代理真实 IP/站点请求正常，但一次 IP 探测全失败即被写成 `UNAVAILABLE` 并跳过主组合。ProxyEgress 新增连续探测失败计数和最近错误时间；已验证 READY 节点首次失败保留最后成功 IP/endpoint 并继续服务，连续第二次失败才撤出，成功探测立即清零。现场重探恢复后 Reuters Managed recipe 再次 200/20 条。
 
 2026-09-23 · Message Bus 双轨 Site Access 生产开关修正：移除 Compose 公共 `environment` 对 `env_file` 中 `DOXAGENT_SITE_ACCESS_ENABLED` 的错误插值覆盖，避免未传 `--env-file` 时默认 `false` 使 Message Bus/正文补全退回旧 Playwright/CDP 路径；生产 `.env.v2` 继续作为唯一开关来源，并增加 Message Bus、Content Enrichment 的 token、健康依赖和开关优先级回归断言。
+
+2026-09-23 · 双轨 Site Access 的 O4 生产依赖补全：生产开关生效后 O4 同样会构建 Crawler Plane，现为 `v2-o4` 精确挂载受限 worker token 并等待 Site Access 健康，消除因令牌缺失导致的重启循环；回归测试同步覆盖三个实际消费 Site Access 的服务。

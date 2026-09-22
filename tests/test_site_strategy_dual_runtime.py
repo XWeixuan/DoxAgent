@@ -44,7 +44,7 @@ def test_supervisor_owns_stable_network_namespace() -> None:
     # defaulted value in the explicit environment mapping would therefore
     # overwrite DOXAGENT_SITE_ACCESS_ENABLED=true from production .env.v2.
     assert "DOXAGENT_SITE_ACCESS_ENABLED" not in compose["x-environment"]
-    for service_name in ("v2-message-bus", "v2-content-enrichment"):
+    for service_name in ("v2-message-bus", "v2-content-enrichment", "v2-o4"):
         assert "site_access_worker_token" in services[service_name]["secrets"]
         assert services[service_name]["depends_on"]["v2-site-access"] == {
             "condition": "service_healthy"

@@ -230,9 +230,11 @@ services:
   v2-o4:
     <<: *backend
     command: [python, -m, doxagent.workflows.codex_monitoring_o4.worker]
+    secrets: [site_access_worker_token]
     depends_on:
       v2-migrate: {condition: service_completed_successfully}
       codex-worker: {condition: service_healthy}
+      v2-site-access: {condition: service_healthy}
   v2-scheduler:
     <<: *backend
     command: [python, -m, doxagent.runtime_scheduler.v2]
