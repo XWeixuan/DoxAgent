@@ -6,7 +6,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from doxagent.site_strategy.browser_runtime import BrowserRuntimeManager
+from doxagent.site_strategy.browser_runtime import BrowserRuntimeManager, RuntimeProvenance
 from doxagent.site_strategy.budget import JointBudget
 from doxagent.site_strategy.identity_migration import with_identity_bindings
 from doxagent.site_strategy.identity_rollout import apply_first_wave, rollout_plan
@@ -15,6 +15,7 @@ from doxagent.site_strategy.schema import (
     AuthState,
     BrowserIdentitySpec,
     BrowserRuntimeKind,
+    IdentityOperationalState,
     SiteIdentityAuth,
     SitePurpose,
 )
@@ -71,6 +72,35 @@ def test_first_wave_shares_dowjones_identity_but_not_auth_state(
         seeded.repository.get_site_identity_auth("wsj", "dowjones-main").auth_state
         is AuthState.UNKNOWN
     )
+
+
+@pytest.mark.asyncio
+async def test_external_prewarm_projects_available_runtime_state(
+    seeded: SiteStrategyService, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    apply_first_wave(seeded.repository)
+
+    async def prewarm(identity, egress):
+        del egress
+        return RuntimeProvenance(
+            identity_id=identity.identity_id,
+            identity_revision=identity.revision,
+            runtime_kind=BrowserRuntimeKind.EXTERNAL_CHROME,
+            instance_id=f"instance-{identity.identity_id}",
+            generation=1,
+        )
+
+    async def no_sleep(_seconds):
+        return None
+
+    monkeypatch.setattr(seeded.runtime.browser_runtimes, "prewarm", prewarm)
+    monkeypatch.setattr("doxagent.site_strategy.service.asyncio.sleep", no_sleep)
+    await seeded._prewarm_identities()
+
+    for identity_id in ("dowjones-main", "seeking-alpha-main", "yahoo-main"):
+        runtime = seeded.repository.get_identity_runtime(identity_id)
+        assert runtime.operational_state is IdentityOperationalState.AVAILABLE
+        assert runtime.instance_id == f"instance-{identity_id}"
 
 
 def test_identity_revision_cas_and_profile_single_owner(seeded: SiteStrategyService) -> None:

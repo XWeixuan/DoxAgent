@@ -316,7 +316,20 @@ class SiteStrategyService:
             if egress is None or not egress.enabled:
                 continue
             try:
-                await self.runtime.browser_runtimes.prewarm(identity, egress)
+                provenance = await self.runtime.browser_runtimes.prewarm(identity, egress)
+                if provenance is not None:
+                    current = self.repository.get_identity_runtime(identity.identity_id)
+                    self.repository.save_identity_runtime(
+                        current.model_copy(
+                            update={
+                                "operational_state": IdentityOperationalState.AVAILABLE,
+                                "instance_id": provenance.instance_id,
+                                "generation": current.generation + 1,
+                                "diagnostic": None,
+                            }
+                        ),
+                        expected_generation=current.generation,
+                    )
             except Exception as exc:
                 logger.error(
                     "external identity prewarm failed identity=%s error=%s",

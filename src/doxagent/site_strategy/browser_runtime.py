@@ -114,11 +114,14 @@ class BrowserRuntimeManager:
     async def status(self, identity: BrowserIdentitySpec) -> dict[str, object]:
         return await self.adapter(identity).status(identity.identity_id)
 
-    async def prewarm(self, identity: BrowserIdentitySpec, egress: ProxyEgress) -> None:
+    async def prewarm(
+        self, identity: BrowserIdentitySpec, egress: ProxyEgress
+    ) -> RuntimeProvenance | None:
         adapter = self.adapter(identity)
         prewarm = getattr(adapter, "prewarm", None)
         if prewarm is not None:
-            await prewarm(identity, egress)
+            return cast(RuntimeProvenance, await prewarm(identity, egress))
+        return None
 
     async def select_maintenance(self, identity: BrowserIdentitySpec) -> None:
         if identity.runtime_kind is BrowserRuntimeKind.EXTERNAL_CHROME:

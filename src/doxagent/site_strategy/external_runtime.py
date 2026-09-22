@@ -191,8 +191,17 @@ class ExternalChromeRuntime:
             self._page_slots.release()
             raise
 
-    async def prewarm(self, identity: BrowserIdentitySpec, egress: ProxyEgress) -> None:
-        await self._entry(identity, egress)
+    async def prewarm(
+        self, identity: BrowserIdentitySpec, egress: ProxyEgress
+    ) -> RuntimeProvenance:
+        entry = await self._entry(identity, egress)
+        return RuntimeProvenance(
+            identity_id=identity.identity_id,
+            identity_revision=identity.revision,
+            runtime_kind=BrowserRuntimeKind.EXTERNAL_CHROME,
+            instance_id=entry.instance.instance_id,
+            generation=entry.instance.generation,
+        )
 
     async def existing_page(
         self, identity: BrowserIdentitySpec, egress: ProxyEgress

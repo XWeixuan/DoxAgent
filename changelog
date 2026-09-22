@@ -1170,3 +1170,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-22 · Chrome Supervisor 构建校验修正：生产构建已安装锁定的 `google-chrome-stable=153.0.8010.52-1`，但 Chrome 展示版本字符串的平台格式差异造成误报；改为使用 dpkg 元数据对安装包版本做精确等值验证，不放宽版本锁定。
 
 2026-09-22 · Browser Identity 迁移报告幂等性修正：二次 dry-run 仅检查首批明确映射的 Browser 组合，不再把未参与迁移的 direct/HTTP 组合误报为待更新；新增 apply 后 identities/sites 全部返回 `keep` 的回归断言。
+
+2026-09-22 · External Chrome 预热运行态修正：always-on Identity 预热完成后立即将 `AVAILABLE`、Supervisor instance ID 和新 generation 持久化到 Registry，避免 Chrome 已运行但桌面维护列表误显示 `STOPPED`；新增三个首批常驻 Identity 预热投影回归测试。
