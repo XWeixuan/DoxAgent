@@ -1,0 +1,21 @@
+FROM doxagent-barrons-chrome-control:153
+
+ARG PLAYWRIGHT_VERSION=1.63.0
+
+USER root
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends python3 python3-pip python3-venv \
+    && python3 -m venv /opt/playwright-venv \
+    && /opt/playwright-venv/bin/pip install --no-cache-dir \
+       "playwright==${PLAYWRIGHT_VERSION}" \
+    && /opt/playwright-venv/bin/python -c \
+       'import importlib.metadata; assert importlib.metadata.version("playwright") == "1.63.0"' \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY deploy/barrons-playwright-chrome-control.py /usr/local/bin/barrons-playwright-chrome-control.py
+COPY deploy/barrons-playwright-chrome-entrypoint.sh /usr/local/bin/barrons-playwright-chrome-entrypoint
+RUN chmod 0755 \
+    /usr/local/bin/barrons-playwright-chrome-control.py \
+    /usr/local/bin/barrons-playwright-chrome-entrypoint
+
+ENTRYPOINT ["/usr/local/bin/barrons-playwright-chrome-entrypoint"]

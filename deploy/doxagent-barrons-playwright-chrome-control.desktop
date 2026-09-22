@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Barrons Playwright Chrome Test
+Comment=Open the isolated Playwright plus official Chrome 153 test browser
+Exec=/usr/bin/vncviewer 127.0.0.1:5902
+Icon=google-chrome
+Terminal=false
+Categories=Network;

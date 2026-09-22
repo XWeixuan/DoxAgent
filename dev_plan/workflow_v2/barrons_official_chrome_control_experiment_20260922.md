@@ -66,3 +66,10 @@ the production Site Access service.
 
 Manual challenge, credential, entitlement, and restart-persistence acceptance is
 pending operator interaction and must not be inferred from this preflight.
+
+## Operator result (2026-09-22)
+
+The operator reported that Barron's presented two challenges. Both were
+completed successfully, login completed, and subscriber article content was
+readable. The direct official-Chrome control therefore passed its real business
+acceptance criterion. Restart-persistence remains a separate check.
