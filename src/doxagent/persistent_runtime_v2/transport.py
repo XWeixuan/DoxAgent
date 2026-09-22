@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass, field
 from hashlib import sha256
 from time import perf_counter
@@ -14,6 +15,13 @@ from pydantic import BaseModel, ValidationError
 from cdecr.model_boundary import bailian_strict_wire_schema
 
 T = TypeVar("T", bound=BaseModel)
+
+
+_REPAIRABLE_STRING_FIELDS: dict[str, frozenset[str]] = {
+    "w1_novelty_result": frozenset({"reason"}),
+    "w2_round1_recall_result": frozenset({"reason"}),
+    "w2_policy_result": frozenset({"reason"}),
+}
 
 
 class RuntimeResponsesError(RuntimeError):
@@ -140,7 +148,7 @@ class BailianRuntimeResponsesClient:
         latency_ms = round((perf_counter() - started) * 1000)
         response_id = str(getattr(response, "id", "") or "")
         observed = getattr(response, "usage", None)
-        receipt = {
+        receipt: dict[str, Any] = {
             "response_id": response_id or None,
             "input_tokens": _usage_int(observed, "input_tokens"),
             "output_tokens": _usage_int(observed, "output_tokens"),
@@ -165,10 +173,25 @@ class BailianRuntimeResponsesClient:
                 retryable=True,
                 usage=receipt,
             )
+        validation_text = text
+        warnings: list[str] = []
         try:
-            validation_text, warnings = normalize_w1_attributions(text, request)
+            json.loads(text)
+        except json.JSONDecodeError as exc:
+            receipt["parse_error"] = _json_parse_error_details(exc)
+            validation_text, repair_warnings = repair_known_json_string_quotes(
+                text, request.schema_name
+            )
+            warnings.extend(repair_warnings)
+        try:
+            validation_text, normalization_warnings = normalize_w1_attributions(
+                validation_text, request
+            )
+            warnings.extend(normalization_warnings)
             value = request.output_model.model_validate_json(validation_text)
         except (ValidationError, ValueError, json.JSONDecodeError) as exc:
+            if warnings:
+                receipt["validation_warnings"] = list(warnings)
             raise RuntimeResponsesError(
                 "structured_output_validation_failed",
                 f"Strict structured output validation failed: {_validation_error_summary(exc)}",
@@ -193,7 +216,86 @@ class BailianRuntimeResponsesClient:
         )
 
 
-def normalize_w1_attributions(text: str, request: RuntimeResponsesRequest) -> tuple[str, list[str]]:
+def repair_known_json_string_quotes(text: str, schema_name: str) -> tuple[str, list[str]]:
+    """Escape bare quotes only inside allowlisted scalar natural-language fields.
+
+    The repair is deliberately narrow: it only inserts backslashes, and a candidate
+    is accepted only when the resulting document parses as standard JSON. Full model
+    and business validation still run after this syntax repair.
+    """
+
+    fields = _REPAIRABLE_STRING_FIELDS.get(schema_name, frozenset())
+    if not fields:
+        return text, []
+    try:
+        json.loads(text)
+    except json.JSONDecodeError:
+        pass
+    else:
+        return text, []
+
+    for field_name in sorted(fields):
+        repaired, count = _repair_scalar_string_field(text, field_name)
+        if count:
+            return repaired, [f"JSON_BARE_QUOTES_ESCAPED:{field_name}:{count}"]
+    return text, []
+
+
+def _repair_scalar_string_field(text: str, field_name: str) -> tuple[str, int]:
+    key = re.compile(rf'"{re.escape(field_name)}"\s*:\s*"')
+    for match in key.finditer(text):
+        opening_quote = match.end() - 1
+        quotes = [
+            index
+            for index in range(opening_quote + 1, len(text))
+            if text[index] == '"' and not _is_escaped(text, index)
+        ]
+        for closing_quote in quotes:
+            suffix = closing_quote + 1
+            while suffix < len(text) and text[suffix].isspace():
+                suffix += 1
+            if suffix >= len(text) or text[suffix] not in ",}":
+                continue
+            to_escape = [index for index in quotes if index < closing_quote]
+            if not to_escape:
+                continue
+            candidate = _insert_backslashes(text, to_escape)
+            try:
+                json.loads(candidate)
+            except json.JSONDecodeError:
+                continue
+            return candidate, len(to_escape)
+    return text, 0
+
+
+def _is_escaped(text: str, index: int) -> bool:
+    backslashes = 0
+    cursor = index - 1
+    while cursor >= 0 and text[cursor] == "\\":
+        backslashes += 1
+        cursor -= 1
+    return backslashes % 2 == 1
+
+
+def _insert_backslashes(text: str, positions: list[int]) -> str:
+    positions_set = set(positions)
+    return "".join(
+        ("\\" if index in positions_set else "") + char for index, char in enumerate(text)
+    )
+
+
+def _json_parse_error_details(exc: json.JSONDecodeError) -> dict[str, int | str]:
+    return {
+        "line": exc.lineno,
+        "column": exc.colno,
+        "position": exc.pos,
+        "message": exc.msg,
+    }
+
+
+def normalize_w1_attributions(
+    text: str, request: RuntimeResponsesRequest[Any]
+) -> tuple[str, list[str]]:
     """Isolate invented canonical Fact labels only for loaded provisional Events."""
     if request.schema_name != "w1_novelty_result":
         return text, []
