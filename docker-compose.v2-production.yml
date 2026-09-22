@@ -77,6 +77,15 @@ services:
       dockerfile: deploy/Dockerfile.site-access
       args: {BASE_IMAGE: "${DOXAGENT_V2_IMAGE:-doxagent-v2:production}"}
     env_file: ["${DOXAGENT_V2_ENV_FILE:-.env.v2}"]
+    # The supervisor owns the stable network namespace so a Site Access
+    # process/container restart cannot strand the long-lived Chrome CDP ports
+    # in an old namespace.  The supervisor also carries the v2-site-access DNS
+    # alias used by workers.
+    network_mode: service:v2-chrome-supervisor
+    depends_on:
+      v2-chrome-supervisor:
+        condition: service_healthy
+        restart: true
     environment:
       <<: *environment
       DOXAGENT_SITE_ACCESS_SQLITE_PATH: /site-data/registry/site_strategy.sqlite3
@@ -95,7 +104,6 @@ services:
       - v2-site-strategy:/site-data
       - /run/doxagent-resources:/run/doxagent-resources:ro
       - v2-chrome-control:/run/doxagent-chrome
-    ports: ["127.0.0.1:5900:5900"]
     secrets: [site_access_worker_token, site_access_admin_token]
     init: true
     restart: unless-stopped
@@ -125,7 +133,10 @@ services:
         BASE_IMAGE: ${DOXAGENT_V2_IMAGE:-doxagent-v2:production}
         GOOGLE_CHROME_VERSION: ${DOXAGENT_GOOGLE_CHROME_VERSION:-153.0.8010.52-1}
     env_file: ["${DOXAGENT_V2_ENV_FILE:-.env.v2}"]
-    network_mode: service:v2-site-access
+    networks:
+      default:
+        aliases: [v2-site-access]
+    ports: ["127.0.0.1:5900:5900"]
     volumes:
       - v2-site-strategy:/site-data
       - v2-chrome-control:/run/doxagent-chrome

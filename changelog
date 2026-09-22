@@ -1176,3 +1176,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-22 · External Chrome 启动竞态修正：针对 Compose 共享 network namespace 要求 Site Access 先启动、Supervisor 后启动的固定时序，Unix socket 首次连接增加 15 秒有界等待，维护循环每 60 秒重试缺失的 always-on Identity；保持单 Identity 失败不影响整体 ready。
 
 2026-09-22 · External Chrome 容器重建恢复修正：Supervisor 在取得 Identity OS writer lock 后、启动 Chrome 前及已确认 Chrome 退出后，仅清理 `SingletonLock`、`SingletonSocket`、`SingletonCookie` 三个已知短命符号链接；同名普通文件直接拒绝启动，避免未知 Profile 与双 writer 风险。
+
+2026-09-22 · 双轨 Runtime 网络命名空间续存修正：生产 Compose 改由长期 Chrome Supervisor 持有稳定 network namespace，Site Access 作为可重启控制端加入该 namespace；VNC loopback 发布及 `v2-site-access` 服务别名随之迁至 Supervisor，并以健康依赖和 Compose restart propagation 约束启动/升级顺序。修复仅重启 Site Access 后 Chrome 进程仍在但 9222-9224 CDP 已落入旧 namespace、External 正文与爬虫均无法重连的问题。

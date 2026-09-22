@@ -5,6 +5,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+import yaml
 
 from doxagent.site_strategy.browser_runtime import BrowserRuntimeManager, RuntimeProvenance
 from doxagent.site_strategy.budget import JointBudget
@@ -23,6 +24,20 @@ from doxagent.site_strategy.schema import (
 from doxagent.site_strategy.seeds import bootstrap_seed
 from doxagent.site_strategy.service import SiteStrategyService
 from doxagent.site_strategy.supervisor_client import ChromeSupervisorClient
+
+
+def test_supervisor_owns_stable_network_namespace() -> None:
+    compose_path = Path(__file__).resolve().parents[1] / "docker-compose.v2-production.yml"
+    services = yaml.safe_load(compose_path.read_text(encoding="utf-8"))["services"]
+    site_access = services["v2-site-access"]
+    supervisor = services["v2-chrome-supervisor"]
+
+    assert site_access["network_mode"] == "service:v2-chrome-supervisor"
+    dependency = site_access["depends_on"]["v2-chrome-supervisor"]
+    assert dependency == {"condition": "service_healthy", "restart": True}
+    assert "ports" not in site_access
+    assert supervisor["ports"] == ["127.0.0.1:5900:5900"]
+    assert "v2-site-access" in supervisor["networks"]["default"]["aliases"]
 
 
 @pytest.fixture
