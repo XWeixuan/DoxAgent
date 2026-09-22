@@ -19,7 +19,7 @@ RUN apt-get update \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
        "google-chrome-stable=${GOOGLE_CHROME_VERSION}" \
-    && google-chrome-stable --version | grep -Fx 'Google Chrome 153.0.8010.52' \
+    && test "$(dpkg-query -W -f='${Version}' google-chrome-stable)" = "${GOOGLE_CHROME_VERSION}" \
     && rm -rf /var/lib/apt/lists/*
 
 COPY deploy/chrome-supervisor-entrypoint.sh /usr/local/bin/chrome-supervisor-entrypoint
