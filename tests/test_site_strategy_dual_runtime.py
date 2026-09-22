@@ -28,7 +28,8 @@ from doxagent.site_strategy.supervisor_client import ChromeSupervisorClient
 
 def test_supervisor_owns_stable_network_namespace() -> None:
     compose_path = Path(__file__).resolve().parents[1] / "docker-compose.v2-production.yml"
-    services = yaml.safe_load(compose_path.read_text(encoding="utf-8"))["services"]
+    compose = yaml.safe_load(compose_path.read_text(encoding="utf-8"))
+    services = compose["services"]
     site_access = services["v2-site-access"]
     supervisor = services["v2-chrome-supervisor"]
 
@@ -38,6 +39,16 @@ def test_supervisor_owns_stable_network_namespace() -> None:
     assert "ports" not in site_access
     assert supervisor["ports"] == ["127.0.0.1:5900:5900"]
     assert "v2-site-access" in supervisor["networks"]["default"]["aliases"]
+
+    # env_file values do not participate in Compose ${...} interpolation.  A
+    # defaulted value in the explicit environment mapping would therefore
+    # overwrite DOXAGENT_SITE_ACCESS_ENABLED=true from production .env.v2.
+    assert "DOXAGENT_SITE_ACCESS_ENABLED" not in compose["x-environment"]
+    for service_name in ("v2-message-bus", "v2-content-enrichment"):
+        assert "site_access_worker_token" in services[service_name]["secrets"]
+        assert services[service_name]["depends_on"]["v2-site-access"] == {
+            "condition": "service_healthy"
+        }
 
 
 @pytest.fixture

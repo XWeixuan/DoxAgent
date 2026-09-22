@@ -26,7 +26,9 @@ x-environment: &environment
   DOXAGENT_CODEX_CONTAINER_ISOLATION: "true"
   DOXAGENT_CRAWLER_PLANE_ROOT: /data/crawler-plane
   DOXAGENT_CRAWLER_PLANE_SQLITE_PATH: /data/crawler-plane/crawler_plane.sqlite3
-  DOXAGENT_SITE_ACCESS_ENABLED: ${DOXAGENT_SITE_ACCESS_ENABLED:-false}
+  # This switch is intentionally supplied only by the service env_file.
+  # Mirroring it here with Compose interpolation would ignore .env.v2 and the
+  # default would override the production value inside every backend container.
   DOXAGENT_SITE_ACCESS_URL: http://v2-site-access:8011
   DOXAGENT_SITE_ACCESS_WORKER_TOKEN_FILE: /run/secrets/site_access_worker_token
   DOXAGENT_MODEL_USAGE_STORAGE_MODE: sqlite

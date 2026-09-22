@@ -1184,3 +1184,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-22 · 双轨 Browser Runtime 生产验收：首批 Registry 迁移与 Profile 冷迁移完成；Barron's 共享 Identity 登录/订阅验证、External 页面 200、`body_v2.2` 正文抽取 FULL（7554 字符）、容器重建续存及 Site Access 单独重启原 PID 重连通过，Yahoo External 与 Reuters Managed 真实新消息 recipe 分别返回 10/20 条。三个常驻正式 Chrome 153 以 UID 10001+sandbox 运行，CDP 不发布宿主，VNC 仅 loopback；182 项相关测试通过、1 项 Windows symlink 权限 skip。WSJ/MarketWatch/Seeking Alpha 保持 UNKNOWN 待逐站人工验证，30 分钟完成、24 小时自然运行结论不提前宣称；详见 `dev_plan/workflow_v2/site_access_dual_runtime_identity_remote_acceptance_20260922.md`。
 
 2026-09-22 · 出口探测抖动治理：30 分钟复验发现 Reuters 的 NL 代理真实 IP/站点请求正常，但一次 IP 探测全失败即被写成 `UNAVAILABLE` 并跳过主组合。ProxyEgress 新增连续探测失败计数和最近错误时间；已验证 READY 节点首次失败保留最后成功 IP/endpoint 并继续服务，连续第二次失败才撤出，成功探测立即清零。现场重探恢复后 Reuters Managed recipe 再次 200/20 条。
+
+2026-09-23 · Message Bus 双轨 Site Access 生产开关修正：移除 Compose 公共 `environment` 对 `env_file` 中 `DOXAGENT_SITE_ACCESS_ENABLED` 的错误插值覆盖，避免未传 `--env-file` 时默认 `false` 使 Message Bus/正文补全退回旧 Playwright/CDP 路径；生产 `.env.v2` 继续作为唯一开关来源，并增加 Message Bus、Content Enrichment 的 token、健康依赖和开关优先级回归断言。
