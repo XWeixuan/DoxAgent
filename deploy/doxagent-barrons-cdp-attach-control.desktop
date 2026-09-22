@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Barrons CDP Attach Test
+Comment=Open ordinary Chrome 153 controlled through a Playwright CDP attach
+Exec=/usr/bin/vncviewer 127.0.0.1:5903
+Icon=google-chrome
+Terminal=false
+Categories=Network;

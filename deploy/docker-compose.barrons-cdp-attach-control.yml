@@ -1,0 +1,42 @@
+name: barrons-cdp-attach-control
+
+services:
+  barrons-cdp-attach-control:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.barrons-cdp-attach-control
+    image: doxagent-barrons-cdp-attach-control:153
+    container_name: doxagent-barrons-cdp-attach-control
+    restart: unless-stopped
+    environment:
+      CHROME_PROXY_SERVER: http://doxagent-egress-clash:18081
+      CHROME_START_URL: https://www.barrons.com/login
+    networks:
+      - doxagent-v2
+    ports:
+      - "127.0.0.1:5903:5900"
+    volumes:
+      - barrons-cdp-attach-control-profile:/chrome-profile
+    shm_size: 1g
+    mem_limit: 3g
+    memswap_limit: 4g
+    pids_limit: 512
+    security_opt:
+      - no-new-privileges:true
+      - seccomp=/etc/doxagent/site-access-seccomp.json
+      - apparmor=doxagent-site-access
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f barrons-cdp-attach-control.py >/dev/null && pgrep -x chrome >/dev/null && pgrep -x x11vnc >/dev/null && curl -fsS --max-time 1 http://127.0.0.1:9222/json/version >/dev/null"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+
+networks:
+  doxagent-v2:
+    external: true
+    name: doxagent-v2_default
+
+volumes:
+  barrons-cdp-attach-control-profile:
+    name: doxagent-barrons-cdp-attach-control-profile

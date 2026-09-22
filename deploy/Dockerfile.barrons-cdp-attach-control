@@ -1,0 +1,9 @@
+FROM doxagent-barrons-playwright-chrome-control:153
+
+COPY deploy/barrons-cdp-attach-control.py /usr/local/bin/barrons-cdp-attach-control.py
+COPY deploy/barrons-cdp-attach-entrypoint.sh /usr/local/bin/barrons-cdp-attach-entrypoint
+RUN chmod 0755 \
+    /usr/local/bin/barrons-cdp-attach-control.py \
+    /usr/local/bin/barrons-cdp-attach-entrypoint
+
+ENTRYPOINT ["/usr/local/bin/barrons-cdp-attach-entrypoint"]

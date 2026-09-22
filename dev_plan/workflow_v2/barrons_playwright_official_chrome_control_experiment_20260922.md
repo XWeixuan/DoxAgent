@@ -78,3 +78,10 @@ defaults are part of the experimental variable, not evidence of login success.
 
 Manual challenge, credential, entitlement, and restart-persistence acceptance
 is pending operator interaction.
+
+## Operator result (2026-09-22)
+
+The initial challenge was completed, after which Barron's immediately displayed
+`Access is temporarily restricted`. Login did not complete and subscriber body
+access was therefore unavailable. This experiment failed its real login
+acceptance criterion.
