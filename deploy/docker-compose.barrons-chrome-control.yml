@@ -1,0 +1,42 @@
+services:
+  barrons-chrome-control:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.barrons-chrome-control
+      args:
+        GOOGLE_CHROME_VERSION: ${GOOGLE_CHROME_VERSION:-153.0.8010.52-1}
+    image: doxagent-barrons-chrome-control:153
+    container_name: doxagent-barrons-chrome-control
+    restart: unless-stopped
+    environment:
+      CHROME_PROXY_SERVER: http://doxagent-egress-clash:18081
+      CHROME_START_URL: https://www.barrons.com/login
+    networks:
+      - doxagent-v2
+    ports:
+      - "127.0.0.1:5901:5900"
+    volumes:
+      - barrons-chrome-control-profile:/chrome-profile
+    shm_size: 1g
+    mem_limit: 3g
+    memswap_limit: 4g
+    pids_limit: 512
+    security_opt:
+      - no-new-privileges:true
+      - seccomp=/etc/doxagent/site-access-seccomp.json
+      - apparmor=doxagent-site-access
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -x chrome >/dev/null && pgrep -x x11vnc >/dev/null"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+
+networks:
+  doxagent-v2:
+    external: true
+    name: doxagent-v2_default
+
+volumes:
+  barrons-chrome-control-profile:
+    name: doxagent-barrons-chrome-control-profile
