@@ -1178,3 +1178,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-22 · External Chrome 容器重建恢复修正：Supervisor 在取得 Identity OS writer lock 后、启动 Chrome 前及已确认 Chrome 退出后，仅清理 `SingletonLock`、`SingletonSocket`、`SingletonCookie` 三个已知短命符号链接；同名普通文件直接拒绝启动，避免未知 Profile 与双 writer 风险。
 
 2026-09-22 · 双轨 Runtime 网络命名空间续存修正：生产 Compose 改由长期 Chrome Supervisor 持有稳定 network namespace，Site Access 作为可重启控制端加入该 namespace；VNC loopback 发布及 `v2-site-access` 服务别名随之迁至 Supervisor，并以健康依赖和 Compose restart propagation 约束启动/升级顺序。修复仅重启 Site Access 后 Chrome 进程仍在但 9222-9224 CDP 已落入旧 namespace、External 正文与爬虫均无法重连的问题。
+
+2026-09-22 · 双轨 Browser Runtime 生产验收：首批 Registry 迁移与 Profile 冷迁移完成；Barron's 共享 Identity 登录/订阅验证、External 页面 200、`body_v2.2` 正文抽取 FULL（7554 字符）、容器重建续存及 Site Access 单独重启原 PID 重连通过，Yahoo External 与 Reuters Managed 真实新消息 recipe 分别返回 10/20 条。三个常驻正式 Chrome 153 以 UID 10001+sandbox 运行，CDP 不发布宿主，VNC 仅 loopback；181 项相关测试通过、1 项 Windows symlink 权限 skip。WSJ/MarketWatch/Seeking Alpha 保持 UNKNOWN 待逐站人工验证，30 分钟/24 小时自然运行结论不提前宣称；详见 `dev_plan/workflow_v2/site_access_dual_runtime_identity_remote_acceptance_20260922.md`。
