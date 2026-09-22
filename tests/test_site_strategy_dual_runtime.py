@@ -8,6 +8,7 @@ import pytest
 
 from doxagent.site_strategy.browser_runtime import BrowserRuntimeManager, RuntimeProvenance
 from doxagent.site_strategy.budget import JointBudget
+from doxagent.site_strategy.chrome_supervisor import ChromeSupervisor
 from doxagent.site_strategy.identity_migration import with_identity_bindings
 from doxagent.site_strategy.identity_rollout import apply_first_wave, rollout_plan
 from doxagent.site_strategy.repository import SiteStrategyRepository
@@ -142,6 +143,24 @@ async def test_supervisor_client_waits_for_late_socket(
     client = ChromeSupervisorClient(tmp_path / "late.sock", owner_id="test")
     assert await client.stop("identity", reason="test") is False
     assert attempts == 3
+
+
+def test_supervisor_removes_only_known_singleton_links(tmp_path: Path) -> None:
+    try:
+        for name in ("SingletonLock", "SingletonSocket", "SingletonCookie"):
+            (tmp_path / name).symlink_to(f"stale-{name}")
+    except OSError:
+        pytest.skip("this Windows account cannot create symbolic links")
+    ChromeSupervisor._clear_runtime_singletons(tmp_path)
+    assert not any(tmp_path.iterdir())
+
+
+def test_supervisor_rejects_non_link_singleton(tmp_path: Path) -> None:
+    unknown = tmp_path / "SingletonLock"
+    unknown.write_text("not a runtime link", encoding="utf-8")
+    with pytest.raises(RuntimeError, match="profile_busy_unknown_singleton"):
+        ChromeSupervisor._clear_runtime_singletons(tmp_path)
+    assert unknown.read_text(encoding="utf-8") == "not a runtime link"
 
 
 def test_identity_revision_cas_and_profile_single_owner(seeded: SiteStrategyService) -> None:

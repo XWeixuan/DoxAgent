@@ -26,6 +26,7 @@ from .schema import BrowserIdentitySpec, BrowserRuntimeKind, ProxyEgress
 APPROVED_RELEASES = {
     "google-chrome-153.0.8010.52": "/usr/bin/google-chrome-stable",
 }
+_RUNTIME_SINGLETONS = ("SingletonLock", "SingletonSocket", "SingletonCookie")
 
 
 @dataclass
@@ -213,6 +214,7 @@ class ChromeSupervisor:
                 profile_lock.acquire()
             except RuntimeError as exc:
                 raise RuntimeError("profile_busy") from exc
+            self._clear_runtime_singletons(directory)
             xvfb: asyncio.subprocess.Process | None = None
             chrome: asyncio.subprocess.Process | None = None
             vnc: asyncio.subprocess.Process | None = None
@@ -330,7 +332,18 @@ class ChromeSupervisor:
             instance.xvfb.terminate()
             with contextlib.suppress(Exception):
                 await asyncio.wait_for(instance.xvfb.wait(), timeout=5)
+        self._clear_runtime_singletons(self.profile_root / instance.identity.profile_id)
         instance.profile_lock.release()
+
+    @staticmethod
+    def _clear_runtime_singletons(directory: Path) -> None:
+        """Remove only Chrome's known ephemeral links while the writer lock is held."""
+        for name in _RUNTIME_SINGLETONS:
+            path = directory / name
+            if path.is_symlink():
+                path.unlink()
+            elif path.exists():
+                raise RuntimeError("profile_busy_unknown_singleton")
 
     def _reserve_port(self) -> int:
         used = {item.port for item in self._instances.values()}
