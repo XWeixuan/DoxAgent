@@ -70,3 +70,27 @@ after only this experiment container is restarted.
 
 Manual challenge, credential, entitlement, and restart-persistence acceptance
 is pending operator interaction.
+
+## Operator and persistence result (2026-09-22)
+
+The operator completed two challenges, logged in successfully and read Barron's
+article content. The experiment container was then restarted with a 45-second
+grace period. Its start timestamp changed from `2026-09-22T05:36:25Z` to
+`2026-09-22T07:14:59Z`, while the dedicated Cookie and Preferences files
+remained present with UID/GID 10001 and mode 0600.
+
+After restart:
+
+- the configured login navigation resolved to `https://www.barrons.com/`
+  instead of Dow Jones SSO or a restriction page;
+- only authentication-cookie names and presence were inspected, never values;
+  `sso`, `session`, `connect.sid`, `djcs_route`, and `datadome` markers remained;
+- the Registry verification article returned HTTP 200 at its expected Barron's
+  path, with no challenge or temporary-restriction marker;
+- the rendered `article` element contained 45 paragraphs and 8,145 characters.
+
+The CDP-attach Profile therefore retained a usable authenticated Barron's
+session across container restart. The result supports the hypothesis that the
+failed paired control is caused by Playwright's browser-launch path/default
+launch environment rather than Playwright control over an already normally
+started Chrome process.
