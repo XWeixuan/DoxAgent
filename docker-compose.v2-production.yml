@@ -87,11 +87,14 @@ services:
       DOXAGENT_SAFETY_STATE_PATH: /run/doxagent-resources/safety.json
       DOXAGENT_SITE_ACCESS_BROWSER_HEADLESS: "false"
       DOXAGENT_SITE_ACCESS_BROWSER_IDLE_SECONDS: "43200"
+      DOXAGENT_SITE_ACCESS_CHROME_SUPERVISOR_SOCKET: /run/doxagent-chrome/supervisor.sock
+      DOXAGENT_SITE_ACCESS_CONTROLLER_ID: v2-site-access
       LANG: en_US.UTF-8
       LC_ALL: en_US.UTF-8
     volumes:
       - v2-site-strategy:/site-data
       - /run/doxagent-resources:/run/doxagent-resources:ro
+      - v2-chrome-control:/run/doxagent-chrome
     ports: ["127.0.0.1:5900:5900"]
     secrets: [site_access_worker_token, site_access_admin_token]
     init: true
@@ -105,6 +108,38 @@ services:
     stop_grace_period: 120s
     healthcheck:
       test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8011/readyz',timeout=3).read()"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    logging:
+      driver: json-file
+      options: {max-size: "20m", max-file: "3"}
+
+  v2-chrome-supervisor:
+    image: ${DOXAGENT_CHROME_SUPERVISOR_IMAGE:-doxagent-chrome-supervisor:production}
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.chrome-supervisor
+      args:
+        BASE_IMAGE: ${DOXAGENT_V2_IMAGE:-doxagent-v2:production}
+        GOOGLE_CHROME_VERSION: ${DOXAGENT_GOOGLE_CHROME_VERSION:-153.0.8010.52-1}
+    env_file: ["${DOXAGENT_V2_ENV_FILE:-.env.v2}"]
+    network_mode: service:v2-site-access
+    volumes:
+      - v2-site-strategy:/site-data
+      - v2-chrome-control:/run/doxagent-chrome
+    init: true
+    restart: unless-stopped
+    shm_size: 1g
+    pids_limit: 1536
+    security_opt:
+      - no-new-privileges:true
+      - seccomp=/etc/doxagent/site-access-seccomp.json
+      - apparmor=doxagent-site-access
+    stop_grace_period: 120s
+    healthcheck:
+      test: [CMD, python, -c, "import os; assert os.path.exists('/run/doxagent-chrome/supervisor.sock')"]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -220,6 +255,7 @@ services:
 volumes:
   v2-enrichment-identities:
   v2-site-strategy:
+  v2-chrome-control:
   v2-data:
 
 secrets:

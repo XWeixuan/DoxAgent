@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
+import inspect
 import logging
 import time
 from collections import OrderedDict
@@ -34,13 +35,19 @@ from .schema import (
     AccessResult,
     AuthState,
     BodyOutcome,
+    BrowserIdentitySpec,
     BrowserProfile,
+    BrowserResidency,
+    BrowserRuntimeKind,
     FailureCategory,
+    IdentityOperationalState,
     ProfileOperationalState,
     ProxyEgress,
     ResolvedSite,
+    SiteIdentityAuth,
     SitePurpose,
     SiteStrategySpec,
+    digest_json,
     utc_now,
 )
 
@@ -69,7 +76,20 @@ class ProfileUseCoordinator:
         async with self._condition:
             self._accepting = True
             self._maintenance_profile = None
+            external_profiles = {
+                identity.profile_id
+                for _, identity in self.repository.list_active_identities()
+                if identity.runtime_kind is BrowserRuntimeKind.EXTERNAL_CHROME
+            }
             for profile in self.repository.list_profiles():
+                if (
+                    profile.profile_id in external_profiles
+                    and profile.operational_state is ProfileOperationalState.MAINTENANCE
+                    and profile.maintenance_session_id
+                    and self._maintenance_profile is None
+                ):
+                    self._maintenance_profile = profile.profile_id
+                    continue
                 auth_state = (
                     AuthState.UNKNOWN
                     if profile.auth_state is AuthState.MAINTENANCE
@@ -157,6 +177,33 @@ class ProfileUseCoordinator:
             )
             return session_id
 
+    async def recover_maintenance(self, profile_id: str, session_id: str) -> BrowserProfile:
+        async with self._condition:
+            if self._maintenance_profile not in {None, profile_id}:
+                raise ProfileUnavailableError("another_profile_is_in_maintenance")
+            if self._active.get(profile_id, 0):
+                raise ProfileUnavailableError("profile_is_busy")
+            profile = self.repository.get_profile(profile_id)
+            if profile is None:
+                raise KeyError(profile_id)
+            if (
+                profile.operational_state is ProfileOperationalState.MAINTENANCE
+                and profile.maintenance_session_id == session_id
+                and self._maintenance_profile == profile_id
+            ):
+                return profile
+            self._maintenance_profile = profile_id
+            updated = profile.model_copy(
+                update={
+                    "operational_state": ProfileOperationalState.MAINTENANCE,
+                    "operational_revision": profile.operational_revision + 1,
+                    "maintenance_session_id": session_id,
+                    "updated_at": utc_now(),
+                }
+            )
+            self.repository.save_profile(updated)
+            return updated
+
     async def assert_session(self, profile_id: str, session_id: str) -> BrowserProfile:
         async with self._condition:
             profile = self.repository.get_profile(profile_id)
@@ -220,6 +267,8 @@ class SiteStrategyService:
         browser_max_pages: int = 4,
         browser_idle_seconds: float = 43_200,
         safety_path: str | Path | None = None,
+        supervisor_socket: str | Path | None = None,
+        controller_id: str = "site-access",
     ) -> None:
         self.repository = repository
         self.resolver = SiteResolver(repository)
@@ -237,6 +286,8 @@ class SiteStrategyService:
             browser_max_pages=browser_max_pages,
             browser_idle_seconds=browser_idle_seconds,
             safety_path=safety_path,
+            supervisor_socket=supervisor_socket,
+            controller_id=controller_id,
         )
         self._inflight: dict[str, asyncio.Task[AccessResult]] = {}
         self._cache: OrderedDict[str, tuple[float, int, AccessResult]] = OrderedDict()
@@ -246,10 +297,33 @@ class SiteStrategyService:
 
     async def start(self) -> None:
         """Acquire the single-owner profile lock and start the browser driver."""
-        await self.runtime.browser_pool.start()
+        await self.runtime.browser_runtimes.start()
         await self.profile_use.recover()
+        await self._prewarm_identities()
         if self._maintenance_task is None:
             self._maintenance_task = asyncio.create_task(self._maintenance_loop())
+
+    async def _prewarm_identities(self) -> None:
+        for head, identity in self.repository.list_active_identities():
+            if (
+                not head.enabled
+                or not identity.enabled
+                or identity.runtime_kind is not BrowserRuntimeKind.EXTERNAL_CHROME
+                or identity.lifecycle.residency is not BrowserResidency.ALWAYS_ON
+            ):
+                continue
+            egress = self.repository.get_egress(identity.egress_id)
+            if egress is None or not egress.enabled:
+                continue
+            try:
+                await self.runtime.browser_runtimes.prewarm(identity, egress)
+            except Exception as exc:
+                logger.error(
+                    "external identity prewarm failed identity=%s error=%s",
+                    identity.identity_id,
+                    type(exc).__name__,
+                )
+            await asyncio.sleep(0.5)
 
     @property
     def browser_driver_ready(self) -> bool:
@@ -285,7 +359,7 @@ class SiteStrategyService:
     async def _maintenance_loop(self) -> None:
         while True:
             try:
-                await self.runtime.browser_pool.close_idle()
+                await self.runtime.browser_runtimes.close_idle()
                 await self._run_due_probes()
             except asyncio.CancelledError:
                 raise
@@ -357,7 +431,13 @@ class SiteStrategyService:
     ) -> None:
         assert spec.access.probe_url is not None
         resolved = self.resolve(spec.access.probe_url, revision=spec.revision)
+        materialized = self._materialize_combination(combination)
+        if materialized is None:
+            await self.health.mark_probe_uncertain(spec.site_id, combination.combination_id)
+            return
+        combination = materialized
         profile = self._profile(resolved, combination)
+        assert combination.egress_id is not None
         egress = self.repository.get_egress(combination.egress_id)
         if profile is None or egress is None or not egress.enabled:
             await self.health.mark_probe_uncertain(spec.site_id, combination.combination_id)
@@ -429,13 +509,22 @@ class SiteStrategyService:
             if combination.combination_id in known_combinations:
                 raise ValueError("duplicate access combination")
             known_combinations.add(combination.combination_id)
+            materialized = self._materialize_combination(combination)
+            if materialized is None:
+                raise ValueError(f"unknown browser identity: {combination.identity_id}")
+            combination = materialized
+            assert combination.profile_id and combination.egress_id
             egress = self.repository.get_egress(combination.egress_id)
             if egress is None:
                 raise ValueError(f"unknown egress: {combination.egress_id}")
             profile = self.repository.get_profile(combination.profile_id)
             if profile is None:
                 raise ValueError(f"unknown browser profile: {combination.profile_id}")
-            if spec.site_id != "generic" and profile.site_id != spec.site_id:
+            if (
+                combination.identity_id is None
+                and spec.site_id != "generic"
+                and profile.site_id != spec.site_id
+            ):
                 raise ValueError(
                     f"profile {profile.profile_id} belongs to {profile.site_id}, not {spec.site_id}"
                 )
@@ -471,6 +560,38 @@ class SiteStrategyService:
         )
         return stored
 
+    def validate_identity(self, identity: BrowserIdentitySpec) -> None:
+        profile = self.repository.get_profile(identity.profile_id)
+        if profile is None:
+            raise ValueError(f"unknown browser profile: {identity.profile_id}")
+        egress = self.repository.get_egress(identity.egress_id)
+        if egress is None:
+            raise ValueError(f"unknown egress: {identity.egress_id}")
+        if profile.bound_egress_id != identity.egress_id:
+            raise ValueError("profile and identity egress binding differ")
+        allowed = {
+            BrowserRuntimeKind.MANAGED_PLAYWRIGHT: {"playwright-cft-153"},
+            BrowserRuntimeKind.EXTERNAL_CHROME: {"google-chrome-153.0.8010.52"},
+        }
+        if identity.browser_release not in allowed[identity.runtime_kind]:
+            raise ValueError("browser release is not approved for runtime kind")
+
+    def apply_identity(
+        self,
+        identity: BrowserIdentitySpec,
+        *,
+        expected_revision: int | None,
+        actor: str,
+        enabled: bool | None = None,
+    ) -> BrowserIdentitySpec:
+        self.validate_identity(identity)
+        return self.repository.apply_identity(
+            identity,
+            expected_revision=expected_revision,
+            actor=actor,
+            enabled=enabled,
+        )
+
     async def execute(self, request: AccessRequest) -> AccessResult:
         if not self.profile_use.accepting:
             resolved = self.resolve(request.url, revision=request.strategy_revision)
@@ -483,25 +604,26 @@ class SiteStrategyService:
                 started=time.monotonic(),
             )
         created = False
+        cache_key = self._cache_key(request)
         async with self._cache_lock:
             self._expire_cache()
-            cached = self._cache.get(request.request_id)
+            cached = self._cache.get(cache_key)
             if cached is not None:
-                self._cache.move_to_end(request.request_id)
+                self._cache.move_to_end(cache_key)
                 return cached[2]
-            task = self._inflight.get(request.request_id)
+            task = self._inflight.get(cache_key)
             if task is None:
                 task = asyncio.create_task(self._execute_uncached(request))
-                self._inflight[request.request_id] = task
+                self._inflight[cache_key] = task
                 created = True
         try:
             result = await asyncio.shield(task)
         finally:
             if task.done():
                 async with self._cache_lock:
-                    self._inflight.pop(request.request_id, None)
+                    self._inflight.pop(cache_key, None)
         if task.done() and not task.cancelled() and task.exception() is None:
-            await self._put_cache(result)
+            await self._put_cache(result, cache_key=cache_key)
             if created:
                 event_strategy_ref = request.recipe_ref
                 if event_strategy_ref is None and request.purpose is SitePurpose.CRAWLER:
@@ -530,6 +652,31 @@ class SiteStrategyService:
                     )
                 )
         return result
+
+    def _cache_key(self, request: AccessRequest) -> str:
+        resolved = self.resolve(request.url, revision=request.strategy_revision)
+        identities: list[tuple[str, int, int]] = []
+        for combination in resolved.access.combinations:
+            identity_id = combination.identity_id or combination.profile_id
+            if not identity_id:
+                continue
+            identity = self.repository.get_identity(identity_id)
+            runtime = self.repository.get_identity_runtime(identity_id)
+            identities.append(
+                (
+                    identity_id,
+                    identity.revision if identity else 0,
+                    runtime.session_revision,
+                )
+            )
+        fingerprint = digest_json(
+            {
+                "request": request.model_dump(mode="json"),
+                "site_revision": resolved.strategy_revision,
+                "identities": sorted(identities),
+            }
+        )
+        return f"{request.request_id}:{fingerprint}"
 
     async def _execute_uncached(self, request: AccessRequest) -> AccessResult:
         started = time.monotonic()
@@ -564,6 +711,11 @@ class SiteStrategyService:
         unavailable = 0
         auth_missing = 0
         for combination in candidates:
+            materialized = self._materialize_combination(combination)
+            if materialized is None:
+                unavailable += 1
+                continue
+            combination = materialized
             remaining = request.remaining_budget_ms / 1000 - (time.monotonic() - started)
             if remaining <= 0.003:
                 return self._result(
@@ -576,6 +728,7 @@ class SiteStrategyService:
                     started=started,
                 )
             profile = self._profile(resolved, combination)
+            assert combination.egress_id is not None
             egress = self.repository.get_egress(combination.egress_id)
             if (
                 profile is None
@@ -600,7 +753,7 @@ class SiteStrategyService:
                 continue
             if (
                 self._auth_required(resolved, request.purpose)
-                and profile.auth_state is not AuthState.VALID
+                and self._auth_state(resolved, combination, profile) is not AuthState.VALID
             ):
                 auth_missing += 1
                 continue
@@ -609,20 +762,34 @@ class SiteStrategyService:
                 max_concurrency=resolved.access.max_concurrency,
                 min_interval_ms=resolved.access.min_interval_ms,
             )
+            identity = self._identity_for(combination, profile)
             queue_cap = (
                 resolved.access.body_queue_timeout_ms
                 if request.purpose is SitePurpose.BODY
                 else resolved.access.crawler_queue_timeout_ms
             ) / 1000
+            permit = (
+                budget.permit(request.purpose, timeout_seconds=min(remaining, queue_cap))
+                if request.mode is AccessMode.HTTP_PUBLIC
+                else self.budgets.joint.permit(
+                    request.purpose,
+                    site_key=resolved.runtime_key,
+                    identity_id=identity.identity_id,
+                    site_max_concurrency=resolved.access.max_concurrency,
+                    site_min_interval_ms=resolved.access.min_interval_ms,
+                    identity_max_concurrency=identity.access.max_concurrency,
+                    identity_min_interval_ms=identity.access.min_interval_ms,
+                    timeout_seconds=min(remaining, queue_cap),
+                )
+            )
             try:
-                async with budget.permit(
-                    request.purpose, timeout_seconds=min(remaining, queue_cap)
-                ) as queue_wait_ms:
+                async with permit as queue_wait_ms:
                     current = self.repository.get_runtime(resolved.runtime_key)
                     async with self.profile_use.business(profile.profile_id) as current_profile:
                         if (
                             self._auth_required(resolved, request.purpose)
-                            and current_profile.auth_state is not AuthState.VALID
+                            and self._auth_state(resolved, combination, current_profile)
+                            is not AuthState.VALID
                         ):
                             auth_missing += 1
                             continue
@@ -641,6 +808,20 @@ class SiteStrategyService:
                         queue_wait_ms=queue_wait_ms,
                         network_ms=network_ms,
                         exit_ip=egress.observed_ip,
+                        identity_id=(
+                            response.provenance.identity_id
+                            if response.provenance
+                            else combination.identity_id
+                        ),
+                        runtime_kind=(
+                            response.provenance.runtime_kind if response.provenance else None
+                        ),
+                        runtime_instance_id=(
+                            response.provenance.instance_id if response.provenance else None
+                        ),
+                        runtime_generation=(
+                            response.provenance.generation if response.provenance else None
+                        ),
                     )
                     attempts.append(attempt)
             except ProfileUnavailableError:
@@ -676,7 +857,7 @@ class SiteStrategyService:
                 FailureCategory.AUTH_REQUIRED,
                 FailureCategory.ENTITLEMENT_MISSING,
             }:
-                self._mark_profile_auth(profile, category)
+                self._mark_identity_auth(resolved, combination, profile, category)
                 return self._result_from_response(
                     request,
                     resolved,
@@ -852,6 +1033,22 @@ class SiteStrategyService:
                     retry_after_seconds=float(getattr(exc, "retry_after_seconds", 0) or 0),
                 )
                 category, reason = classify_exception(exc)
+                if category is FailureCategory.RUNTIME_UNAVAILABLE:
+                    identity_id = combination.identity_id or profile.profile_id
+                    identity_runtime = self.repository.get_identity_runtime(identity_id)
+                    try:
+                        self.repository.save_identity_runtime(
+                            identity_runtime.model_copy(
+                                update={
+                                    "operational_state": IdentityOperationalState.UNHEALTHY,
+                                    "generation": identity_runtime.generation + 1,
+                                    "diagnostic": type(exc).__name__,
+                                }
+                            ),
+                            expected_generation=identity_runtime.generation,
+                        )
+                    except RuntimeError:
+                        pass
             elapsed = int((time.monotonic() - started) * 1000)
             last = response, category, reason, elapsed
             if category is not FailureCategory.TRANSIENT_TRANSPORT or retry == 1:
@@ -862,29 +1059,77 @@ class SiteStrategyService:
     def _profile(
         self, resolved: ResolvedSite, combination: AccessCombination
     ) -> BrowserProfile | None:
-        profile = self.repository.get_profile(combination.profile_id)
+        combination = self._materialize_combination(combination) or combination
+        profile = self.repository.get_profile(combination.profile_id or "")
         if resolved.site_id != "generic":
             return profile
-        egress = self.repository.get_egress(combination.egress_id)
+        egress = self.repository.get_egress(combination.egress_id or "")
         if egress is None:
             return None
         suffix = hashlib.sha256(resolved.runtime_key.encode()).hexdigest()[:12]
-        profile_id = f"generic-{suffix}-{combination.egress_id}"[:128]
+        assert combination.egress_id is not None
+        egress_id = combination.egress_id
+        profile_id = f"generic-{suffix}-{egress_id}"[:128]
         derived = self.repository.get_profile(profile_id)
         if derived is not None:
             return derived
         derived = BrowserProfile(
             profile_id=profile_id,
             site_id="generic",
-            bound_egress_id=combination.egress_id,
-            directory_key=f"generic-{suffix}-{combination.egress_id}"[:128],
+            bound_egress_id=egress_id,
+            directory_key=f"generic-{suffix}-{egress_id}"[:128],
         )
         self.repository.save_profile(derived)
         return derived
 
-    @staticmethod
+    def _materialize_combination(self, combination: AccessCombination) -> AccessCombination | None:
+        if combination.identity_id is None:
+            return combination
+        identity = self.repository.get_identity(combination.identity_id)
+        head = self.repository.get_identity_head(combination.identity_id)
+        if identity is None or head is None or not head.enabled or not identity.enabled:
+            return None
+        if combination.profile_id and combination.profile_id != identity.profile_id:
+            raise ValueError("combination profile conflicts with Browser Identity")
+        if combination.egress_id and combination.egress_id != identity.egress_id:
+            raise ValueError("combination egress conflicts with Browser Identity")
+        return combination.model_copy(
+            update={"profile_id": identity.profile_id, "egress_id": identity.egress_id}
+        )
+
+    def _identity_for(
+        self, combination: AccessCombination, profile: BrowserProfile
+    ) -> BrowserIdentitySpec:
+        identity_id = combination.identity_id or profile.profile_id
+        identity = self.repository.get_identity(identity_id)
+        if identity is not None:
+            return identity
+        return BrowserIdentitySpec(
+            identity_id=identity_id,
+            revision=1,
+            runtime_kind=BrowserRuntimeKind.MANAGED_PLAYWRIGHT,
+            profile_id=profile.profile_id,
+            egress_id=profile.bound_egress_id,
+            environment=profile.environment,
+        )
+
+    def _auth_state(
+        self,
+        resolved: ResolvedSite,
+        combination: AccessCombination,
+        profile: BrowserProfile,
+    ) -> AuthState:
+        identity = self._identity_for(combination, profile)
+        auth = self.repository.get_site_identity_auth(resolved.runtime_key, identity.identity_id)
+        if auth.auth_state is AuthState.UNKNOWN and combination.identity_id is None:
+            return profile.auth_state
+        runtime = self.repository.get_identity_runtime(identity.identity_id)
+        if auth.observed_session_revision < runtime.session_revision:
+            return AuthState.UNKNOWN
+        return auth.auth_state
+
     def _purpose_combinations(
-        resolved: ResolvedSite, purpose: SitePurpose
+        self, resolved: ResolvedSite, purpose: SitePurpose
     ) -> list[AccessCombination]:
         override = (
             resolved.access.overrides.get("body")
@@ -892,9 +1137,13 @@ class SiteStrategyService:
             else resolved.access.overrides.get("crawler")
         )
         if not override:
-            return list(resolved.access.combinations)
-        allowed = set(override)
-        return [item for item in resolved.access.combinations if item.combination_id in allowed]
+            values = list(resolved.access.combinations)
+        else:
+            allowed = set(override)
+            values = [
+                item for item in resolved.access.combinations if item.combination_id in allowed
+            ]
+        return [self._materialize_combination(item) or item for item in values]
 
     @staticmethod
     def _auth_required(resolved: ResolvedSite, purpose: SitePurpose) -> bool:
@@ -906,7 +1155,13 @@ class SiteStrategyService:
         requirement = resolved.auth.requirement if override == "inherit" else override
         return requirement == "required"
 
-    def _mark_profile_auth(self, profile: BrowserProfile, category: FailureCategory) -> None:
+    def _mark_identity_auth(
+        self,
+        resolved: ResolvedSite,
+        combination: AccessCombination,
+        profile: BrowserProfile,
+        category: FailureCategory,
+    ) -> None:
         state = (
             AuthState.ENTITLEMENT_MISSING
             if category is FailureCategory.ENTITLEMENT_MISSING
@@ -914,6 +1169,17 @@ class SiteStrategyService:
         )
         self.repository.save_profile(
             profile.model_copy(update={"auth_state": state, "updated_at": utc_now()})
+        )
+        identity = self._identity_for(combination, profile)
+        runtime = self.repository.get_identity_runtime(identity.identity_id)
+        self.repository.save_site_identity_auth(
+            SiteIdentityAuth(
+                site_id=resolved.runtime_key,
+                identity_id=identity.identity_id,
+                auth_state=state,
+                reason_code=category.value,
+                observed_session_revision=runtime.session_revision,
+            )
         )
 
     def save_outcomes(self, values: list[BodyOutcome]) -> int:
@@ -935,8 +1201,7 @@ class SiteStrategyService:
             (
                 item
                 for item in resolved.access.combinations
-                if item.profile_id == profile_id
-                and item.egress_id == profile.bound_egress_id
+                if item.profile_id == profile_id and item.egress_id == profile.bound_egress_id
             ),
             None,
         )
@@ -1021,15 +1286,28 @@ class SiteStrategyService:
             generation=self.repository.get_runtime(resolved.runtime_key).generation,
         )
 
-    async def snapshot_profile(
-        self, profile_id: str, *, browser_version: str
-    ) -> dict[str, str]:
+    async def snapshot_profile(self, profile_id: str, *, browser_version: str) -> dict[str, str]:
         session_id = await self.profile_use.begin_maintenance(profile_id)
         try:
             profile = await self.profile_use.assert_session(profile_id, session_id)
-            if not await self.runtime.browser_pool.close_profile_if_idle(
-                profile_id, reason="profile_snapshot"
-            ):
+            identity = next(
+                (
+                    value
+                    for _, value in self.repository.list_active_identities()
+                    if value.profile_id == profile_id
+                ),
+                None,
+            )
+            stopped = (
+                await self.runtime.browser_runtimes.stop_identity(
+                    identity, reason="profile_snapshot"
+                )
+                if identity
+                else await self.runtime.browser_pool.close_profile_if_idle(
+                    profile_id, reason="profile_snapshot"
+                )
+            )
+            if not stopped:
                 raise ProfileUnavailableError("profile_is_busy")
             return await asyncio.to_thread(
                 self.profile_storage.create, profile, browser_version=browser_version
@@ -1041,9 +1319,24 @@ class SiteStrategyService:
         session_id = await self.profile_use.begin_maintenance(profile_id)
         try:
             profile = await self.profile_use.assert_session(profile_id, session_id)
-            if not await self.runtime.browser_pool.close_profile_if_idle(
-                profile_id, reason="profile_restore"
-            ):
+            identity = next(
+                (
+                    value
+                    for _, value in self.repository.list_active_identities()
+                    if value.profile_id == profile_id
+                ),
+                None,
+            )
+            stopped = (
+                await self.runtime.browser_runtimes.stop_identity(
+                    identity, reason="profile_restore"
+                )
+                if identity
+                else await self.runtime.browser_pool.close_profile_if_idle(
+                    profile_id, reason="profile_restore"
+                )
+            )
+            if not stopped:
                 raise ProfileUnavailableError("profile_is_busy")
             return await asyncio.to_thread(self.profile_storage.restore, profile, snapshot_id)
         finally:
@@ -1053,51 +1346,176 @@ class SiteStrategyService:
         profile = self.repository.get_profile(profile_id)
         if profile is None:
             raise KeyError(profile_id)
-        egress = self.repository.get_egress(profile.bound_egress_id)
-        if egress is None or not egress.enabled:
-            raise RuntimeError("bound egress is unavailable")
-        spec = self.repository.get_strategy(profile.site_id)
-        url = profile.login_url or (
-            (spec.auth.maintenance_url or spec.auth.login_url) if spec else None
+        identities = [
+            value
+            for _, value in self.repository.list_active_identities()
+            if value.profile_id == profile_id
+        ]
+        if len(identities) > 1:
+            raise ValueError("shared profile requires explicit site and identity")
+        identity = (
+            identities[0]
+            if identities
+            else self._identity_for(
+                AccessCombination(
+                    id=profile_id,
+                    profile_id=profile.profile_id,
+                    egress_id=profile.bound_egress_id,
+                ),
+                profile,
+            )
         )
+        return await self.open_identity_login(profile.site_id, identity.identity_id)
+
+    async def open_identity_login(self, site_id: str, identity_id: str) -> dict[str, str]:
+        identity = self.repository.get_identity(identity_id)
+        if identity is None or not identity.enabled:
+            raise KeyError(identity_id)
+        profile = self.repository.get_profile(identity.profile_id)
+        egress = self.repository.get_egress(identity.egress_id)
+        if profile is None or egress is None or not egress.enabled:
+            raise RuntimeError("bound identity resources are unavailable")
+        spec = self.repository.get_strategy(site_id)
+        if spec is None or not any(
+            item.identity_id == identity_id
+            or (
+                item.identity_id is None
+                and item.profile_id == identity.profile_id
+                and item.egress_id == identity.egress_id
+            )
+            for item in spec.access.combinations
+        ):
+            raise ValueError("identity is not referenced by the selected site")
+        url = (spec.auth.maintenance_url or spec.auth.login_url) or profile.login_url
         if not url:
             raise ValueError("profile has no maintenance URL")
-        session_id = await self.profile_use.begin_maintenance(profile_id)
+        session_id = await self.profile_use.begin_maintenance(profile.profile_id)
         try:
-            current = await self.profile_use.assert_session(profile_id, session_id)
-            return await self.runtime.open_login(current, egress, url, token=session_id)
+            current = await self.profile_use.assert_session(profile.profile_id, session_id)
+            if "identity" not in inspect.signature(self.runtime.open_login).parameters:
+                return await self.runtime.open_login(current, egress, url, token=session_id)
+            return await self.runtime.open_login(
+                current,
+                egress,
+                url,
+                token=session_id,
+                identity=identity,
+                site_id=site_id,
+            )
         except Exception:
-            await self.profile_use.end_maintenance(profile_id, session_id)
+            await self.profile_use.end_maintenance(profile.profile_id, session_id)
             raise
 
     async def inspect_profile_login(self, token: str) -> dict[str, str]:
         return await self.runtime.inspect_login(token)
 
+    async def recover_identity_login(
+        self, site_id: str, identity_id: str, login_token: str
+    ) -> dict[str, str]:
+        identity = self.repository.get_identity(identity_id)
+        if identity is None or identity.runtime_kind is not BrowserRuntimeKind.EXTERNAL_CHROME:
+            raise KeyError(identity_id)
+        egress = self.repository.get_egress(identity.egress_id)
+        if egress is None or not egress.enabled:
+            raise RuntimeError("bound egress is unavailable")
+        profile = await self.profile_use.recover_maintenance(identity.profile_id, login_token)
+        try:
+            return await self.runtime.recover_login(
+                profile,
+                egress,
+                identity=identity,
+                site_id=site_id,
+                token=login_token,
+            )
+        except Exception:
+            await self.profile_use.end_maintenance(identity.profile_id, login_token)
+            raise
+
     async def close_profile_login(self, token: str) -> None:
-        profile_id = await self.runtime.close_login(token)
+        try:
+            profile_id = await self.runtime.close_login(token)
+        except KeyError:
+            profile = next(
+                (
+                    item
+                    for item in self.repository.list_profiles()
+                    if item.maintenance_session_id == token
+                ),
+                None,
+            )
+            if profile is None:
+                raise
+            identity = next(
+                (
+                    value
+                    for _, value in self.repository.list_active_identities()
+                    if value.profile_id == profile.profile_id
+                ),
+                None,
+            )
+            if identity is not None:
+                egress = self.repository.get_egress(identity.egress_id)
+                if egress is not None:
+                    await self.runtime.browser_runtimes.close_stale_maintenance_page(
+                        identity, egress
+                    )
+            profile_id = profile.profile_id
         await self.profile_use.end_maintenance(profile_id, token)
 
     async def verify_profile(
         self, profile_id: str, article_url: str, login_token: str
     ) -> tuple[BrowserProfile, str]:
-        profile = await self.profile_use.assert_session(profile_id, login_token)
-        egress = self.repository.get_egress(profile.bound_egress_id)
+        await self.profile_use.assert_session(profile_id, login_token)
+        resolved = self.resolve(article_url)
+        identities = [
+            value
+            for _, value in self.repository.list_active_identities()
+            if value.profile_id == profile_id
+            and any(
+                item.identity_id == value.identity_id
+                or (
+                    item.identity_id is None
+                    and item.profile_id == profile_id
+                    and item.egress_id == value.egress_id
+                )
+                for item in resolved.access.combinations
+            )
+        ]
+        if len(identities) != 1:
+            raise ValueError("verification requires an unambiguous site identity")
+        return await self.verify_identity(
+            resolved.site_id, identities[0].identity_id, article_url, login_token
+        )
+
+    async def verify_identity(
+        self, site_id: str, identity_id: str, article_url: str, login_token: str
+    ) -> tuple[BrowserProfile, str]:
+        identity = self.repository.get_identity(identity_id)
+        if identity is None:
+            raise KeyError(identity_id)
+        profile = await self.profile_use.assert_session(identity.profile_id, login_token)
+        egress = self.repository.get_egress(identity.egress_id)
         if egress is None or not egress.enabled:
             raise RuntimeError("bound egress is unavailable")
         resolved = self.resolve(article_url)
-        if resolved.site_id != profile.site_id:
-            raise ValueError("verification article does not belong to the profile site")
+        if resolved.site_id != site_id:
+            raise ValueError("verification article does not belong to the selected site")
         combination = next(
             (
-                item
+                self._materialize_combination(item)
                 for item in resolved.access.combinations
-                if item.profile_id == profile_id and item.egress_id == profile.bound_egress_id
+                if item.identity_id == identity_id
+                or (
+                    item.identity_id is None
+                    and item.profile_id == identity.profile_id
+                    and item.egress_id == identity.egress_id
+                )
             ),
             None,
         )
         if combination is None:
             raise ValueError("profile is not referenced by the active site strategy")
-        operation_id = f"profile-verify:{profile_id}:{int(time.time())}"
+        operation_id = f"identity-verify:{site_id}:{identity_id}:{int(time.time())}"
         response = await self.runtime.verify_login(login_token, article_url)
         category, reason = classify_response(response)
         inspection = inspect_html(
@@ -1141,6 +1559,29 @@ class SiteStrategyService:
             }
         )
         self.repository.save_profile(updated)
+        identity_runtime = self.repository.get_identity_runtime(identity_id)
+        next_session_revision = identity_runtime.session_revision + 1
+        self.repository.save_identity_runtime(
+            identity_runtime.model_copy(
+                update={
+                    "session_revision": next_session_revision,
+                    "generation": identity_runtime.generation + 1,
+                    "updated_at": utc_now(),
+                }
+            ),
+            expected_generation=identity_runtime.generation,
+        )
+        self.repository.save_site_identity_auth(
+            SiteIdentityAuth(
+                site_id=resolved.runtime_key,
+                identity_id=identity_id,
+                auth_state=state,
+                verified_at=utc_now(),
+                verification_url=article_url,
+                reason_code=reason,
+                observed_session_revision=next_session_revision,
+            )
+        )
         self.repository.append_event(
             AccessEvent(
                 operation_id=operation_id,
@@ -1148,7 +1589,8 @@ class SiteStrategyService:
                 combination_id=combination.combination_id,
                 category="PROFILE_VERIFIED",
                 payload={
-                    "profile_id": profile_id,
+                    "profile_id": profile.profile_id,
+                    "identity_id": identity_id,
                     "state": state.value,
                     "reason": reason,
                     "verification_kind": verification_kind,
@@ -1175,15 +1617,15 @@ class SiteStrategyService:
             )
         )
 
-    async def _put_cache(self, result: AccessResult) -> None:
+    async def _put_cache(self, result: AccessResult, *, cache_key: str) -> None:
         size = len(result.body.encode("utf-8")) + len(str(result.recipe_result).encode("utf-8"))
         if size > 32 * 1024 * 1024:
             return
         async with self._cache_lock:
-            prior = self._cache.pop(result.request_id, None)
+            prior = self._cache.pop(cache_key, None)
             if prior:
                 self._cache_bytes -= prior[1]
-            self._cache[result.request_id] = (time.monotonic() + 60, size, result)
+            self._cache[cache_key] = (time.monotonic() + 60, size, result)
             self._cache_bytes += size
             while self._cache_bytes > 32 * 1024 * 1024 and self._cache:
                 _, (_, removed_size, _) = self._cache.popitem(last=False)
@@ -1262,6 +1704,17 @@ class SiteStrategyService:
             generation=result_generation,
             profile_id=profile.profile_id,
             egress_id=egress.egress_id,
+            identity_id=(
+                response.provenance.identity_id
+                if response.provenance
+                else combination.identity_id or profile.profile_id
+            ),
+            runtime_kind=(response.provenance.runtime_kind if response.provenance else None),
+            identity_revision=(
+                response.provenance.identity_revision if response.provenance else None
+            ),
+            runtime_instance_id=(response.provenance.instance_id if response.provenance else None),
+            runtime_generation=(response.provenance.generation if response.provenance else None),
             exit_ip_observation=egress.observed_ip,
             attempts=attempts,
             queue_wait_ms=sum(item.queue_wait_ms for item in attempts),
@@ -1308,14 +1761,19 @@ def classify_response(response: RuntimeResponse) -> tuple[FailureCategory | None
 def classify_exception(exc: Exception) -> tuple[FailureCategory, str]:
     status = int(getattr(exc, "status_code", 0) or 0)
     if status:
-        return classify_response(
-            RuntimeResponse(status, "https://invalid.example/", {}, str(exc))
-        )[0] or FailureCategory.UNKNOWN, f"http_{status}"
+        return classify_response(RuntimeResponse(status, "https://invalid.example/", {}, str(exc)))[
+            0
+        ] or FailureCategory.UNKNOWN, f"http_{status}"
     name = type(exc).__name__.casefold()
     message = str(exc).casefold()
     if any(marker in name or marker in message for marker in ("timeout", "connect", "dns", "tls")):
         return FailureCategory.TRANSIENT_TRANSPORT, type(exc).__name__
-    if "capacity" in message or "browser" in name or "playwright" in name:
+    if (
+        "capacity" in message
+        or "browser" in name
+        or "playwright" in name
+        or message.startswith(("external_", "chrome_", "supervisor_", "profile_busy"))
+    ):
         return FailureCategory.RUNTIME_UNAVAILABLE, type(exc).__name__
     return FailureCategory.TRANSIENT_TRANSPORT, type(exc).__name__
 

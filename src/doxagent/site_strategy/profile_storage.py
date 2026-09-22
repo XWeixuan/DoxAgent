@@ -18,6 +18,8 @@ from .schema import BrowserProfile
 
 
 class ProfileSnapshotManager:
+    _RUNTIME_SINGLETONS = {"SingletonLock", "SingletonSocket", "SingletonCookie"}
+
     def __init__(self, profile_root: str | Path, repository: SiteStrategyRepository) -> None:
         self.profile_root = Path(profile_root).resolve()
         self.repository = repository
@@ -47,7 +49,20 @@ class ProfileSnapshotManager:
                     json.dumps(metadata, sort_keys=True), encoding="utf-8"
                 )
                 with tarfile.open(archive, "w:gz") as bundle:
-                    bundle.add(source, arcname="profile", recursive=True)
+
+                    def profile_filter(info: tarfile.TarInfo) -> tarfile.TarInfo | None:
+                        if Path(info.name).name in self._RUNTIME_SINGLETONS:
+                            return None
+                        if info.issym() or info.islnk() or not (info.isfile() or info.isdir()):
+                            raise ValueError(f"unsupported special file in profile: {info.name}")
+                        return info
+
+                    bundle.add(
+                        source,
+                        arcname="profile",
+                        recursive=True,
+                        filter=profile_filter,
+                    )
                     bundle.add(temporary / "site_strategy.sqlite3", arcname="registry.sqlite3")
                     bundle.add(temporary / "snapshot.json", arcname="snapshot.json")
             os.chmod(archive, 0o600)
@@ -64,9 +79,7 @@ class ProfileSnapshotManager:
                 current_manifest = json.loads(profile_manifest.read_text(encoding="utf-8"))
             temporary_manifest = profile_manifest.with_suffix(".json.tmp")
             temporary_manifest.write_text(
-                json.dumps(
-                    {**current_manifest, "last_snapshot_id": snapshot_id}, sort_keys=True
-                ),
+                json.dumps({**current_manifest, "last_snapshot_id": snapshot_id}, sort_keys=True),
                 encoding="utf-8",
             )
             os.replace(temporary_manifest, profile_manifest)

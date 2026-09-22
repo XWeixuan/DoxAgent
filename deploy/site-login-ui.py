@@ -104,16 +104,24 @@ class SiteLoginApp:
         self.refresh_button = ttk.Button(controls, text="Refresh", command=self.refresh)
         self.refresh_button.pack(side=tk.RIGHT)
 
-        columns = ("site", "profile", "role", "egress", "state")
+        columns = ("site", "identity", "runtime", "role", "egress", "state")
         self.tree = ttk.Treeview(outer, columns=columns, show="headings", height=13)
         labels = {
             "site": "Site",
-            "profile": "Profile",
+            "identity": "Browser Identity",
+            "runtime": "Runtime",
             "role": "Role",
             "egress": "Egress / Region",
             "state": "Login status",
         }
-        widths = {"site": 145, "profile": 155, "role": 110, "egress": 360, "state": 135}
+        widths = {
+            "site": 130,
+            "identity": 155,
+            "runtime": 110,
+            "role": 80,
+            "egress": 280,
+            "state": 130,
+        }
         for column in columns:
             self.tree.heading(column, text=labels[column])
             self.tree.column(column, width=widths[column], minwidth=80)
@@ -130,9 +138,7 @@ class SiteLoginApp:
 
         actions = ttk.Frame(outer)
         actions.pack(fill=tk.X)
-        self.open_button = ttk.Button(
-            actions, text="Open Browser", command=self.open_selected
-        )
+        self.open_button = ttk.Button(actions, text="Open Browser", command=self.open_selected)
         self.open_button.pack(side=tk.LEFT)
         self.verify_button = ttk.Button(
             actions, text="Finish Login and Verify", command=self.verify_selected
@@ -189,7 +195,7 @@ class SiteLoginApp:
 
     def _apply_inventory(self, payload: dict[str, Any]) -> None:
         profiles = payload.get("profiles") or []
-        self.rows = {item["profile_id"]: item for item in profiles}
+        self.rows = {item.get("row_id", item["profile_id"]): item for item in profiles}
         sites = sorted({item["site_name"] for item in profiles})
         self.filter_box["values"] = ["All sites", *sites]
         if self.filter_value.get() not in self.filter_box["values"]:
@@ -221,7 +227,11 @@ class SiteLoginApp:
                 state = "Public access only"
             if row.get("manual_attention_required"):
                 state = "Needs manual challenge"
-            if row.get("operational_state") != "AVAILABLE":
+            if row.get("operational_state") in {
+                "DRAINING",
+                "DRAINING_FOR_MAINTENANCE",
+                "MAINTENANCE",
+            }:
                 state = "Maintenance active"
             if row["profile_role"] == "primary" and row["auth_state"] == "VALID":
                 state = "Primary login ready"
@@ -230,10 +240,13 @@ class SiteLoginApp:
             self.tree.insert(
                 "",
                 tk.END,
-                iid=row["profile_id"],
+                iid=row.get("row_id", row["profile_id"]),
                 values=(
                     row["site_name"],
-                    row["profile_id"],
+                    row.get("identity_id", row["profile_id"]),
+                    "External Chrome"
+                    if row.get("runtime_kind") == "external_chrome"
+                    else "Managed",
                     role,
                     region_label(row["egress_id"], row["egress_node"])
                     + (f" / {row['observed_ip']}" if row.get("observed_ip") else ""),
@@ -260,10 +273,10 @@ class SiteLoginApp:
                 f"Unfinished maintenance: {self.session.get('site_name')} / "
                 f"{self.session.get('profile_id')} ({viewer})."
             )
-            profile_id = self.session.get("profile_id")
-            if profile_id and self.tree.exists(profile_id):
-                self.tree.selection_set(profile_id)
-                self.tree.see(profile_id)
+            row_id = f"{self.session.get('site_id')}:{self.session.get('identity_id')}"
+            if self.tree.exists(row_id):
+                self.tree.selection_set(row_id)
+                self.tree.see(row_id)
         else:
             self.session_value.set("No login maintenance session is active.")
 
@@ -273,7 +286,9 @@ class SiteLoginApp:
         matching = bool(
             selected
             and self.session
-            and selected["profile_id"] == self.session.get("profile_id")
+            and selected.get("identity_id", selected["profile_id"])
+            == self.session.get("identity_id", self.session.get("profile_id"))
+            and selected["site_id"] == self.session.get("site_id")
         )
         disabled = self.busy
         open_state = tk.NORMAL if selected and not active and not disabled else tk.DISABLED
@@ -298,7 +313,14 @@ class SiteLoginApp:
             ):
                 return
         self._run(
-            lambda: call_admin(["open", selected["profile_id"]]),
+            lambda: call_admin(
+                [
+                    "open",
+                    selected.get("identity_id", selected["profile_id"]),
+                    "--site-id",
+                    selected["site_id"],
+                ]
+            ),
             self._opened,
         )
 
@@ -353,7 +375,11 @@ class SiteLoginApp:
     def verify_selected(self) -> None:
         selected = self._selected()
         if selected:
-            self._verify(selected["profile_id"], None)
+            self._verify(
+                selected.get("identity_id", selected["profile_id"]),
+                selected["site_id"],
+                None,
+            )
 
     def verify_with_custom_url(self) -> None:
         selected = self._selected()
@@ -366,10 +392,14 @@ class SiteLoginApp:
             parent=self.root,
         )
         if value:
-            self._verify(selected["profile_id"], value.strip())
+            self._verify(
+                selected.get("identity_id", selected["profile_id"]),
+                selected["site_id"],
+                value.strip(),
+            )
 
-    def _verify(self, profile_id: str, url: str | None) -> None:
-        arguments = ["verify", profile_id]
+    def _verify(self, profile_id: str, site_id: str, url: str | None) -> None:
+        arguments = ["verify", profile_id, "--site-id", site_id]
         if url:
             arguments.extend(["--url", url])
         self._run(lambda: call_admin(arguments), self._verified)

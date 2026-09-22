@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 
+from .identity_migration import migrate_legacy_identities
 from .repository import SiteStrategyRepository
 from .schema import (
     AccessCombination,
@@ -58,6 +59,8 @@ def bootstrap_seed(repository: SiteStrategyRepository, service: SiteStrategyServ
     specs = seed_specs()
     for spec in specs:
         for combination in spec.access.combinations:
+            assert combination.profile_id is not None
+            assert combination.egress_id is not None
             profile = repository.get_profile(combination.profile_id)
             if profile is None:
                 repository.save_profile(
@@ -145,6 +148,7 @@ def bootstrap_seed(repository: SiteStrategyRepository, service: SiteStrategyServ
                     expected_revision=current.revision,
                     actor="seed:browser-environment-v2",
                 )
+    migrate_legacy_identities(repository)
     return [item.site_id for item in specs]
 
 
@@ -257,8 +261,7 @@ def seed_specs() -> list[SiteStrategySpec]:
             auth="required",
             login_url="https://seekingalpha.com/account/login",
             verification_url=(
-                "https://seekingalpha.com/article/"
-                "4765976-prologis-buying-the-data-center-story"
+                "https://seekingalpha.com/article/4765976-prologis-buying-the-data-center-story"
             ),
             support=("static.seekingalpha.com",),
             body_parameters={"body_xpath": ['//*[@data-test-id="content-container"]']},
@@ -343,12 +346,18 @@ def _site(
         access=AccessPolicy(
             combinations=combinations,
             probe_url=(f"https://{domains[0]}/" if domains else None),
-            max_concurrency=(1 if site_id in {
-                "yahoo_finance", "reuters", "barrons", "wsj", "seeking_alpha", "marketwatch"
-            } else 2),
-            min_interval_ms=(3000 if site_id in {
-                "yahoo_finance", "reuters", "barrons", "wsj", "seeking_alpha", "marketwatch"
-            } else 500),
+            max_concurrency=(
+                1
+                if site_id
+                in {"yahoo_finance", "reuters", "barrons", "wsj", "seeking_alpha", "marketwatch"}
+                else 2
+            ),
+            min_interval_ms=(
+                3000
+                if site_id
+                in {"yahoo_finance", "reuters", "barrons", "wsj", "seeking_alpha", "marketwatch"}
+                else 500
+            ),
         ),
         crawler=StrategyPointer(ref=crawler) if crawler else None,
         body=BodyStrategyPointer(

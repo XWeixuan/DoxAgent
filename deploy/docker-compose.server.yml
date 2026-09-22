@@ -14,6 +14,16 @@ services:
     image: ${DOXAGENT_SITE_ACCESS_IMAGE:-doxagent-site-access:server}
     environment:
       DOXAGENT_SAFETY_STATE_PATH: /run/doxagent-resources/safety.json
+  v2-chrome-supervisor:
+    <<: *cgroup-boundary
+    build:
+      args:
+        BASE_IMAGE: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
+        GOOGLE_CHROME_VERSION: ${DOXAGENT_GOOGLE_CHROME_VERSION:-153.0.8010.52-1}
+    image: ${DOXAGENT_CHROME_SUPERVISOR_IMAGE:-doxagent-chrome-supervisor:server}
+    mem_limit: 5g
+    memswap_limit: 6g
+    pids_limit: 1536
   v2-migrate:
     <<: *cgroup-boundary
     mem_limit: 4g

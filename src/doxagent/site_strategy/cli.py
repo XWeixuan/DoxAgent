@@ -24,6 +24,7 @@ from .schema import (
     AccessCombination,
     AccessMode,
     AccessRequest,
+    BrowserIdentitySpec,
     BrowserProfile,
     ProxyEgress,
     SitePurpose,
@@ -121,6 +122,28 @@ def _parser() -> argparse.ArgumentParser:
     verify.add_argument("--login-token", required=True)
     login_close = profile_commands.add_parser("login-close")
     login_close.add_argument("login_token")
+
+    identity = commands.add_parser("identity")
+    identity_commands = identity.add_subparsers(dest="action", required=True)
+    identity_commands.add_parser("list")
+    identity_show = identity_commands.add_parser("show")
+    identity_show.add_argument("identity_id")
+    identity_apply = identity_commands.add_parser("apply")
+    identity_apply.add_argument("file")
+    identity_apply.add_argument("--expected-revision", type=int)
+    identity_apply.add_argument("--actor", default="cli")
+    identity_validate = identity_commands.add_parser("validate")
+    identity_validate.add_argument("file")
+    identity_drain = identity_commands.add_parser("drain")
+    identity_drain.add_argument("identity_id")
+    identity_login = identity_commands.add_parser("login-open")
+    identity_login.add_argument("identity_id")
+    identity_login.add_argument("site_id")
+    identity_verify = identity_commands.add_parser("verify")
+    identity_verify.add_argument("identity_id")
+    identity_verify.add_argument("site_id")
+    identity_verify.add_argument("--article-url", required=True)
+    identity_verify.add_argument("--login-token", required=True)
 
     credential = commands.add_parser("credential")
     credential_commands = credential.add_subparsers(dest="action", required=True)
@@ -330,6 +353,43 @@ def _run_remote(args: argparse.Namespace) -> Any:
         return client.request(
             "POST", "/v1/profiles/login:close", json={"login_token": args.login_token}
         )
+    if args.command == "identity":
+        if args.action == "list":
+            return client.request("GET", "/v1/identities")
+        if args.action == "show":
+            return client.request("GET", f"/v1/identities/{args.identity_id}")
+        if args.action in {"apply", "validate"}:
+            value = BrowserIdentitySpec.model_validate(_load(args.file))
+            if args.action == "validate":
+                return client.request(
+                    "POST", "/v1/identities:validate", json=value.model_dump(mode="json")
+                )
+            return client.request(
+                "POST",
+                "/v1/identities:apply",
+                json={
+                    "spec": value.model_dump(mode="json"),
+                    "expected_revision": args.expected_revision,
+                    "actor": args.actor,
+                },
+            )
+        if args.action == "drain":
+            return client.request("POST", f"/v1/identities/{args.identity_id}:drain")
+        if args.action == "login-open":
+            return client.request(
+                "POST",
+                f"/v1/identities/{args.identity_id}/login:open",
+                json={"site_id": args.site_id},
+            )
+        return client.request(
+            "POST",
+            f"/v1/identities/{args.identity_id}:verify",
+            json={
+                "site_id": args.site_id,
+                "article_url": args.article_url,
+                "login_token": args.login_token,
+            },
+        )
     if args.command == "credential":
         if args.action == "status":
             return client.request("GET", f"/v1/credentials/{args.credential_id}")
@@ -367,9 +427,11 @@ def _run_remote(args: argparse.Namespace) -> Any:
         errors: list[str] = []
         for item in sites:
             for combo in item["spec"]["access"]["combinations"]:
-                if combo["egress_id"] not in egress_ids:
+                if combo.get("identity_id"):
+                    continue
+                if combo.get("egress_id") not in egress_ids:
                     errors.append(f"{item['head']['site_id']}: missing egress {combo['egress_id']}")
-                if combo["profile_id"] not in profile_ids:
+                if combo.get("profile_id") not in profile_ids:
                     errors.append(
                         f"{item['head']['site_id']}: missing profile {combo['profile_id']}"
                     )

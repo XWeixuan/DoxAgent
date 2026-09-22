@@ -13,8 +13,12 @@ from pathlib import Path
 from .schema import (
     AccessEvent,
     BodyOutcome,
+    BrowserIdentityHead,
+    BrowserIdentityRuntime,
+    BrowserIdentitySpec,
     BrowserProfile,
     ProxyEgress,
+    SiteIdentityAuth,
     SiteRuntimeState,
     SiteStrategyHead,
     SiteStrategySpec,
@@ -102,6 +106,36 @@ class SiteStrategyRepository:
                 );
                 create unique index if not exists browser_profiles_directory_key
                     on browser_profiles(directory_key);
+                create table if not exists browser_identity_revisions (
+                    identity_id text not null,
+                    revision integer not null,
+                    spec_json text not null,
+                    digest text not null,
+                    created_at text not null,
+                    actor text not null,
+                    primary key(identity_id, revision)
+                );
+                create table if not exists browser_identity_heads (
+                    identity_id text primary key,
+                    active_revision integer not null,
+                    enabled integer not null,
+                    updated_at text not null,
+                    foreign key(identity_id, active_revision)
+                        references browser_identity_revisions(identity_id, revision)
+                );
+                create table if not exists identity_runtime (
+                    identity_id text primary key,
+                    data_json text not null,
+                    generation integer not null,
+                    updated_at text not null
+                );
+                create table if not exists site_identity_auth (
+                    site_id text not null,
+                    identity_id text not null,
+                    data_json text not null,
+                    updated_at text not null,
+                    primary key(site_id, identity_id)
+                );
                 create table if not exists site_runtime (
                     runtime_key text primary key,
                     data_json text not null,
@@ -135,6 +169,219 @@ class SiteStrategyRepository:
                     on body_outcomes(final_site_id, completed_at);
                 """
             )
+
+    def apply_identity(
+        self,
+        spec: BrowserIdentitySpec,
+        *,
+        expected_revision: int | None,
+        actor: str,
+        enabled: bool | None = None,
+    ) -> BrowserIdentitySpec:
+        """CAS apply for a Browser Identity, including immutable binding checks."""
+        now = utc_now()
+        with self.transaction() as connection:
+            row = connection.execute(
+                "select active_revision from browser_identity_heads where identity_id=?",
+                (spec.identity_id,),
+            ).fetchone()
+            current = int(row["active_revision"]) if row else None
+            if current != expected_revision:
+                raise RuntimeError(
+                    "browser identity revision conflict: "
+                    f"expected {expected_revision}, current {current}"
+                )
+            duplicate = connection.execute(
+                """select r.spec_json from browser_identity_heads h
+                   join browser_identity_revisions r on r.identity_id=h.identity_id
+                    and r.revision=h.active_revision
+                   where h.identity_id<>? and h.enabled=1""",
+                (spec.identity_id,),
+            ).fetchall()
+            for item in duplicate:
+                other = BrowserIdentitySpec.model_validate_json(item["spec_json"])
+                if other.profile_id == spec.profile_id:
+                    raise ValueError(
+                        f"profile {spec.profile_id} is already owned by identity "
+                        f"{other.identity_id}"
+                    )
+            revision = (current or 0) + 1
+            stored = spec.with_revision(revision)
+            payload = stored.model_dump(mode="json")
+            connection.execute(
+                """insert into browser_identity_revisions(
+                       identity_id,revision,spec_json,digest,created_at,actor
+                   ) values(?,?,?,?,?,?)""",
+                (
+                    stored.identity_id,
+                    revision,
+                    canonical_json(payload),
+                    digest_json(payload),
+                    now.isoformat(),
+                    actor,
+                ),
+            )
+            connection.execute(
+                """insert into browser_identity_heads(
+                       identity_id,active_revision,enabled,updated_at)
+                   values(?,?,?,?) on conflict(identity_id) do update set
+                   active_revision=excluded.active_revision,enabled=excluded.enabled,
+                   updated_at=excluded.updated_at""",
+                (
+                    stored.identity_id,
+                    revision,
+                    int(stored.enabled if enabled is None else enabled),
+                    now.isoformat(),
+                ),
+            )
+        return stored
+
+    def get_identity(
+        self, identity_id: str, revision: int | None = None
+    ) -> BrowserIdentitySpec | None:
+        with self._lock:
+            if revision is None:
+                row = self._connection.execute(
+                    """select r.spec_json from browser_identity_revisions r
+                       join browser_identity_heads h on h.identity_id=r.identity_id
+                        and h.active_revision=r.revision where r.identity_id=?""",
+                    (identity_id,),
+                ).fetchone()
+            else:
+                row = self._connection.execute(
+                    """select spec_json from browser_identity_revisions
+                       where identity_id=? and revision=?""",
+                    (identity_id, revision),
+                ).fetchone()
+        return BrowserIdentitySpec.model_validate_json(row["spec_json"]) if row else None
+
+    def get_identity_head(self, identity_id: str) -> BrowserIdentityHead | None:
+        with self._lock:
+            row = self._connection.execute(
+                "select * from browser_identity_heads where identity_id=?", (identity_id,)
+            ).fetchone()
+        return (
+            BrowserIdentityHead(
+                identity_id=row["identity_id"],
+                active_revision=row["active_revision"],
+                enabled=bool(row["enabled"]),
+                updated_at=row["updated_at"],
+            )
+            if row
+            else None
+        )
+
+    def list_active_identities(self) -> list[tuple[BrowserIdentityHead, BrowserIdentitySpec]]:
+        with self._lock:
+            rows = self._connection.execute(
+                """select h.identity_id,h.active_revision,h.enabled,h.updated_at,r.spec_json
+                   from browser_identity_heads h join browser_identity_revisions r
+                    on r.identity_id=h.identity_id and r.revision=h.active_revision
+                   order by h.identity_id"""
+            ).fetchall()
+        return [
+            (
+                BrowserIdentityHead(
+                    identity_id=row["identity_id"],
+                    active_revision=row["active_revision"],
+                    enabled=bool(row["enabled"]),
+                    updated_at=row["updated_at"],
+                ),
+                BrowserIdentitySpec.model_validate_json(row["spec_json"]),
+            )
+            for row in rows
+        ]
+
+    def list_identity_revisions(self, identity_id: str) -> list[dict[str, object]]:
+        with self._lock:
+            rows = self._connection.execute(
+                """select revision,digest,created_at,actor from browser_identity_revisions
+                   where identity_id=? order by revision desc""",
+                (identity_id,),
+            ).fetchall()
+        return [dict(row) for row in rows]
+
+    def get_identity_runtime(self, identity_id: str) -> BrowserIdentityRuntime:
+        with self._lock:
+            row = self._connection.execute(
+                "select data_json from identity_runtime where identity_id=?", (identity_id,)
+            ).fetchone()
+        return (
+            BrowserIdentityRuntime.model_validate_json(row["data_json"])
+            if row
+            else BrowserIdentityRuntime(identity_id=identity_id)
+        )
+
+    def save_identity_runtime(
+        self, value: BrowserIdentityRuntime, *, expected_generation: int
+    ) -> BrowserIdentityRuntime:
+        stored = value.model_copy(update={"updated_at": utc_now()})
+        with self.transaction() as connection:
+            row = connection.execute(
+                "select generation from identity_runtime where identity_id=?",
+                (value.identity_id,),
+            ).fetchone()
+            current = int(row["generation"]) if row else 0
+            if current != expected_generation:
+                raise RuntimeError("identity runtime generation conflict")
+            connection.execute(
+                """insert into identity_runtime(identity_id,data_json,generation,updated_at)
+                   values(?,?,?,?) on conflict(identity_id) do update set
+                   data_json=excluded.data_json,generation=excluded.generation,
+                   updated_at=excluded.updated_at""",
+                (
+                    stored.identity_id,
+                    stored.model_dump_json(),
+                    stored.generation,
+                    stored.updated_at.isoformat(),
+                ),
+            )
+        return stored
+
+    def get_site_identity_auth(self, site_id: str, identity_id: str) -> SiteIdentityAuth:
+        with self._lock:
+            row = self._connection.execute(
+                "select data_json from site_identity_auth where site_id=? and identity_id=?",
+                (site_id, identity_id),
+            ).fetchone()
+        return (
+            SiteIdentityAuth.model_validate_json(row["data_json"])
+            if row
+            else SiteIdentityAuth(site_id=site_id, identity_id=identity_id)
+        )
+
+    def save_site_identity_auth(self, value: SiteIdentityAuth) -> None:
+        with self.transaction() as connection:
+            connection.execute(
+                """insert into site_identity_auth(site_id,identity_id,data_json,updated_at)
+                   values(?,?,?,?) on conflict(site_id,identity_id) do update set
+                   data_json=excluded.data_json,updated_at=excluded.updated_at""",
+                (
+                    value.site_id,
+                    value.identity_id,
+                    value.model_dump_json(),
+                    utc_now().isoformat(),
+                ),
+            )
+
+    def list_site_identity_auth(
+        self, *, site_id: str | None = None, identity_id: str | None = None
+    ) -> list[SiteIdentityAuth]:
+        clauses: list[str] = []
+        params: list[object] = []
+        if site_id:
+            clauses.append("site_id=?")
+            params.append(site_id)
+        if identity_id:
+            clauses.append("identity_id=?")
+            params.append(identity_id)
+        sql = "select data_json from site_identity_auth"
+        if clauses:
+            sql += " where " + " and ".join(clauses)
+        sql += " order by site_id,identity_id"
+        with self._lock:
+            rows = self._connection.execute(sql, tuple(params)).fetchall()
+        return [SiteIdentityAuth.model_validate_json(row["data_json"]) for row in rows]
 
     def apply_strategy(
         self,

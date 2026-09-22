@@ -133,8 +133,10 @@ def _read_session() -> dict[str, Any] | None:
             "The previous maintenance session record is corrupted.",
             "Ask the administrator to check /run/doxagent-site-login.",
         ) from exc
-    if not isinstance(payload, dict) or not payload.get("profile_id") or not payload.get(
-        "login_token"
+    if (
+        not isinstance(payload, dict)
+        or not payload.get("profile_id")
+        or not payload.get("login_token")
     ):
         raise AdminError("SESSION_CORRUPT", "The previous maintenance session is incomplete.")
     return payload
@@ -162,8 +164,16 @@ def _delete_session() -> None:
 
 
 def _container_id() -> str:
-    command = [DOCKER, "ps", "--filter", CONTAINER_LABELS[0], "--filter", CONTAINER_LABELS[1],
-               "--format", "{{.ID}}"]
+    command = [
+        DOCKER,
+        "ps",
+        "--filter",
+        CONTAINER_LABELS[0],
+        "--filter",
+        CONTAINER_LABELS[1],
+        "--format",
+        "{{.ID}}",
+    ]
     try:
         completed = subprocess.run(command, check=False, capture_output=True, text=True, timeout=5)
     except (OSError, subprocess.TimeoutExpired) as exc:
@@ -270,6 +280,8 @@ def _public_session(session: dict[str, Any] | None) -> dict[str, Any] | None:
         return None
     return {
         "profile_id": session["profile_id"],
+        "identity_id": session.get("identity_id"),
+        "runtime_kind": session.get("runtime_kind"),
         "site_id": session.get("site_id"),
         "site_name": session.get("site_name"),
         "opened_at": session.get("opened_at"),
@@ -303,6 +315,13 @@ def _inventory() -> dict[str, Any]:
     sites = _request("GET", "/v1/sites")
     profiles = _request("GET", "/v1/profiles")
     egresses = _request("GET", "/v1/egresses")
+    has_identity_bindings = any(
+        combination.get("identity_id")
+        for entry in sites
+        for combination in entry["spec"]["access"]["combinations"]
+    )
+    identities = _request("GET", "/v1/identities") if has_identity_bindings else []
+    identity_by_id = {item["spec"]["identity_id"]: item for item in identities}
     egress_by_id = {item["egress_id"]: item for item in egresses}
     profile_by_id = {item["profile_id"]: item for item in profiles}
     rows: list[dict[str, Any]] = []
@@ -319,37 +338,55 @@ def _inventory() -> dict[str, Any]:
         runtime = _request("GET", f"/v1/combinations/{spec['site_id']}")
         combination_runtime = runtime.get("combinations") or {}
         for index, combination in enumerate(combinations):
-            profile = profile_by_id.get(combination["profile_id"])
-            egress = egress_by_id.get(combination["egress_id"])
+            identity_entry = identity_by_id.get(combination.get("identity_id"))
+            identity = identity_entry.get("spec", {}) if identity_entry else {}
+            profile_id = identity.get("profile_id") or combination.get("profile_id")
+            egress_id = identity.get("egress_id") or combination.get("egress_id")
+            profile = profile_by_id.get(profile_id)
+            egress = egress_by_id.get(egress_id)
             if profile is None or egress is None:
                 continue
+            identity_id = identity.get("identity_id") or profile["profile_id"]
+            site_auth = next(
+                (
+                    item
+                    for item in (identity_entry or {}).get("site_auth", [])
+                    if item.get("site_id") in {spec["site_id"], runtime.get("runtime_key")}
+                ),
+                None,
+            )
+            auth_state = (
+                site_auth.get("auth_state") if site_auth else profile.get("auth_state", "UNKNOWN")
+            )
             rows.append(
                 {
+                    "row_id": f"{spec['site_id']}:{identity_id}",
                     "site_id": spec["site_id"],
                     "site_name": spec.get("display_name")
                     or DISPLAY_NAMES.get(spec["site_id"], spec["site_id"]),
                     "site_enabled": bool(head["enabled"]),
                     "profile_id": profile["profile_id"],
+                    "identity_id": identity_id,
+                    "runtime_kind": identity.get("runtime_kind", "managed_playwright"),
                     "profile_role": "primary" if index == 0 else "backup",
                     "priority": combination["priority"],
                     "combination_id": combination.get("combination_id"),
                     "egress_id": egress["egress_id"],
                     "egress_node": egress["node_ref"],
                     "egress_enabled": bool(egress["enabled"]),
-                    "auth_state": profile["auth_state"],
-                    "operational_state": profile.get("operational_state", "AVAILABLE"),
-                    "session_revision": profile["session_revision"],
-                    "verification_configured": bool(auth.get("verification_url")),
-                    "verification_kind": auth.get(
-                        "verification_kind", "subscription_article"
+                    "auth_state": auth_state,
+                    "operational_state": (identity_entry or {})
+                    .get("runtime", {})
+                    .get("operational_state", profile.get("operational_state", "AVAILABLE")),
+                    "session_revision": (site_auth or {}).get(
+                        "observed_session_revision", profile.get("session_revision", 0)
                     ),
+                    "verification_configured": bool(auth.get("verification_url")),
+                    "verification_kind": auth.get("verification_kind", "subscription_article"),
                     "observed_ip": egress.get("observed_ip"),
                     "observed_at": egress.get("observed_at"),
                     "manual_attention_required": bool(
-                        (
-                            combination_runtime.get(combination.get("combination_id"))
-                            or {}
-                        ).get(
+                        (combination_runtime.get(combination.get("combination_id")) or {}).get(
                             "manual_attention_required"
                         )
                     ),
@@ -365,7 +402,7 @@ def command_list() -> dict[str, Any]:
         return inventory
 
 
-def command_open(profile_id: str) -> dict[str, Any]:
+def command_open(profile_id: str, site_id: str | None = None) -> dict[str, Any]:
     profile_id = _validate_profile_id(profile_id)
     with _locked():
         existing = _read_session()
@@ -377,7 +414,17 @@ def command_open(profile_id: str) -> dict[str, Any]:
             )
         inventory = _inventory()
         selected = next(
-            (item for item in inventory["profiles"] if item["profile_id"] == profile_id), None
+            (
+                item
+                for item in inventory["profiles"]
+                if (
+                    item["profile_id"] == profile_id
+                    or item["identity_id"] == profile_id
+                    or item["row_id"] == profile_id
+                )
+                and (site_id is None or item["site_id"] == site_id)
+            ),
+            None,
         )
         if selected is None or not selected["site_enabled"] or not selected["egress_enabled"]:
             raise AdminError(
@@ -391,12 +438,23 @@ def command_open(profile_id: str) -> dict[str, Any]:
                 "Ask the administrator to check local port 5900.",
             )
         started = time.monotonic()
-        response = _request("POST", f"/v1/profiles/{profile_id}/login:open", {}, timeout=40)
+        if (
+            selected["runtime_kind"] == "managed_playwright"
+            and selected["identity_id"] == selected["profile_id"]
+        ):
+            path = f"/v1/profiles/{selected['profile_id']}/login:open"
+            payload: dict[str, Any] = {}
+        else:
+            path = f"/v1/identities/{selected['identity_id']}/login:open"
+            payload = {"site_id": selected["site_id"]}
+        response = _request("POST", path, payload, timeout=40)
         token = response.get("login_token") if isinstance(response, dict) else None
         if not isinstance(token, str) or not re.fullmatch(r"[a-f0-9]{32}", token):
             raise AdminError("BROWSER_START_FAILED", "The login browser failed to start.")
         session = {
-            "profile_id": profile_id,
+            "profile_id": selected["profile_id"],
+            "identity_id": selected["identity_id"],
+            "runtime_kind": selected["runtime_kind"],
             "site_id": selected["site_id"],
             "site_name": selected["site_name"],
             "login_token": token,
@@ -406,7 +464,8 @@ def command_open(profile_id: str) -> dict[str, Any]:
         _write_session(session)
         return {
             "ok": True,
-            "profile_id": profile_id,
+            "profile_id": selected["profile_id"],
+            "identity_id": selected["identity_id"],
             "site_name": selected["site_name"],
             "egress_node": selected["egress_node"],
             "browser_host": urlsplit(str(response.get("url") or "")).hostname,
@@ -424,18 +483,28 @@ def _close_token(session: dict[str, Any]) -> bool:
         return False
 
 
-def command_verify(profile_id: str, override_url: str | None) -> dict[str, Any]:
+def command_verify(
+    profile_id: str, override_url: str | None, site_id: str | None = None
+) -> dict[str, Any]:
     profile_id = _validate_profile_id(profile_id)
     override_url = _validate_override_url(override_url)
     with _locked():
         session = _read_session()
         if session is None:
             raise AdminError("NO_SESSION", "No login maintenance session is active.")
-        if session["profile_id"] != profile_id:
+        if profile_id not in {session["profile_id"], session.get("identity_id")}:
             raise AdminError("PROFILE_MISMATCH", "The active session belongs to another profile.")
+        if site_id is not None and session.get("site_id") != site_id:
+            raise AdminError("PROFILE_MISMATCH", "The active session belongs to another site.")
         inventory = _inventory()
         selected = next(
-            (item for item in inventory["profiles"] if item["profile_id"] == profile_id), None
+            (
+                item
+                for item in inventory["profiles"]
+                if item["profile_id"] == session["profile_id"]
+                and item["site_id"] == session.get("site_id")
+            ),
+            None,
         )
         if selected is None:
             raise AdminError("PROFILE_DISABLED", "The current profile was disabled or deleted.")
@@ -456,12 +525,17 @@ def command_verify(profile_id: str, override_url: str | None) -> dict[str, Any]:
         result: Any = None
         failure: AdminError | None = None
         try:
-            result = _request(
-                "POST",
-                f"/v1/profiles/{profile_id}:verify",
-                {"article_url": article_url, "login_token": session["login_token"]},
-                timeout=45,
-            )
+            if session.get("identity_id") and session["identity_id"] != session["profile_id"]:
+                path = f"/v1/identities/{session['identity_id']}:verify"
+                payload = {
+                    "site_id": session["site_id"],
+                    "article_url": article_url,
+                    "login_token": session["login_token"],
+                }
+            else:
+                path = f"/v1/profiles/{profile_id}:verify"
+                payload = {"article_url": article_url, "login_token": session["login_token"]}
+            result = _request("POST", path, payload, timeout=45)
         except AdminError as exc:
             failure = exc
         closed = _close_token(session)
@@ -480,7 +554,7 @@ def command_verify(profile_id: str, override_url: str | None) -> dict[str, Any]:
                 "Refresh and cancel the maintenance session.",
             )
         profile = result.get("profile", {})
-        state = profile.get("auth_state", "UNKNOWN")
+        state = (result.get("auth") or {}).get("auth_state") or profile.get("auth_state", "UNKNOWN")
         reason = result.get("reason")
         messages = {
             "VALID": "Signed in with access to subscription articles.",
@@ -535,6 +609,34 @@ def command_recover() -> dict[str, Any]:
         except AdminError as exc:
             if exc.code != "NOT_FOUND":
                 raise
+            if (
+                session.get("runtime_kind") == "external_chrome"
+                and session.get("identity_id")
+                and session.get("site_id")
+            ):
+                try:
+                    inspection = _request(
+                        "POST",
+                        f"/v1/identities/{session['identity_id']}/login:recover",
+                        {
+                            "site_id": session["site_id"],
+                            "login_token": session["login_token"],
+                        },
+                        timeout=20,
+                    )
+                except AdminError:
+                    pass
+                else:
+                    return {
+                        "ok": True,
+                        "session": _public_session(session),
+                        "browser": {
+                            "host": urlsplit(str(inspection.get("url") or "")).hostname,
+                            "title": None,
+                        },
+                        "recovered": "external_chrome_reattached",
+                        "message": "The long-running Chrome maintenance page was reattached.",
+                    }
             _delete_session()
             return {
                 "ok": True,
@@ -563,9 +665,11 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("list", add_help=False)
     open_parser = subparsers.add_parser("open", add_help=False)
     open_parser.add_argument("profile_id")
+    open_parser.add_argument("--site-id")
     verify_parser = subparsers.add_parser("verify", add_help=False)
     verify_parser.add_argument("profile_id")
     verify_parser.add_argument("--url", dest="verification_url")
+    verify_parser.add_argument("--site-id")
     subparsers.add_parser("close", add_help=False)
     subparsers.add_parser("recover", add_help=False)
     return parser
@@ -578,9 +682,11 @@ def main(argv: list[str] | None = None) -> None:
         if arguments.command == "list":
             result = command_list()
         elif arguments.command == "open":
-            result = command_open(arguments.profile_id)
+            result = command_open(arguments.profile_id, arguments.site_id)
         elif arguments.command == "verify":
-            result = command_verify(arguments.profile_id, arguments.verification_url)
+            result = command_verify(
+                arguments.profile_id, arguments.verification_url, arguments.site_id
+            )
         elif arguments.command == "close":
             result = command_close()
         else:

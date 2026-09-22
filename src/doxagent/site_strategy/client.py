@@ -199,6 +199,11 @@ def _provenance(result: AccessResult) -> dict[str, object]:
         "combination_id": result.combination_id,
         "profile_id": result.profile_id,
         "egress_id": result.egress_id,
+        "identity_id": result.identity_id,
+        "runtime_kind": result.runtime_kind.value if result.runtime_kind else None,
+        "identity_revision": result.identity_revision,
+        "runtime_instance_id": result.runtime_instance_id,
+        "runtime_generation": result.runtime_generation,
         "exit_ip": result.exit_ip_observation,
         "generation": result.generation,
     }

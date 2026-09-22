@@ -91,20 +91,32 @@ class DomainRule(SiteModel):
 
 class AccessCombination(SiteModel):
     combination_id: str = Field(alias="id", min_length=1, max_length=128)
-    profile_id: str = Field(min_length=1, max_length=128)
-    egress_id: str = Field(min_length=1, max_length=128)
+    identity_id: str | None = Field(default=None, min_length=1, max_length=128)
+    # Legacy one-to-one bindings remain readable while Registry rows are migrated.
+    profile_id: str | None = Field(default=None, min_length=1, max_length=128)
+    egress_id: str | None = Field(default=None, min_length=1, max_length=128)
     priority: int = Field(default=100, ge=0, le=10_000)
     enabled: bool = True
 
     model_config = ConfigDict(extra="forbid", populate_by_name=True)
 
-    @field_validator("combination_id", "profile_id", "egress_id")
+    @field_validator("combination_id", "identity_id", "profile_id", "egress_id")
     @classmethod
-    def _identifier(cls, value: str) -> str:
+    def _identifier(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
         result = value.strip().lower()
         if not re.fullmatch(r"[a-z0-9][a-z0-9_.-]*", result):
             raise ValueError("invalid resource identifier")
         return result
+
+    @model_validator(mode="after")
+    def _binding(self) -> AccessCombination:
+        if self.identity_id is None and not (self.profile_id and self.egress_id):
+            raise ValueError("combination requires identity_id or legacy profile_id+egress_id")
+        if (self.profile_id is None) != (self.egress_id is None):
+            raise ValueError("legacy profile_id and egress_id must be provided together")
+        return self
 
 
 class AccessPolicy(SiteModel):
@@ -266,6 +278,98 @@ class BrowserEnvironment(SiteModel):
     revision: int = Field(default=1, ge=1)
 
 
+class BrowserRuntimeKind(StrEnum):
+    MANAGED_PLAYWRIGHT = "managed_playwright"
+    EXTERNAL_CHROME = "external_chrome"
+
+
+class BrowserResidency(StrEnum):
+    ALWAYS_ON = "always_on"
+    ON_DEMAND = "on_demand"
+
+
+class BrowserIdentityLifecycle(SiteModel):
+    residency: BrowserResidency = BrowserResidency.ON_DEMAND
+    idle_seconds: int = Field(default=43_200, ge=60, le=604_800)
+
+
+class BrowserIdentityAccess(SiteModel):
+    max_concurrency: int = Field(default=1, ge=1, le=8)
+    min_interval_ms: int = Field(default=3_000, ge=0, le=60_000)
+
+
+class BrowserIdentitySpec(SiteModel):
+    identity_id: str
+    revision: int = Field(default=0, ge=0)
+    enabled: bool = True
+    runtime_kind: BrowserRuntimeKind = BrowserRuntimeKind.MANAGED_PLAYWRIGHT
+    profile_id: str
+    egress_id: str
+    environment: BrowserEnvironment = Field(default_factory=BrowserEnvironment)
+    browser_release: str = Field(default="playwright-cft-153", min_length=1, max_length=128)
+    lifecycle: BrowserIdentityLifecycle = Field(default_factory=BrowserIdentityLifecycle)
+    access: BrowserIdentityAccess = Field(default_factory=BrowserIdentityAccess)
+    credential_ref: str | None = None
+
+    @field_validator("identity_id", "profile_id", "egress_id")
+    @classmethod
+    def _identity_resource_id(cls, value: str) -> str:
+        result = value.strip().lower()
+        if not re.fullmatch(r"[a-z0-9][a-z0-9_.-]*", result):
+            raise ValueError("invalid browser identity resource identifier")
+        return result
+
+    def with_revision(self, revision: int) -> BrowserIdentitySpec:
+        return self.model_copy(update={"revision": revision})
+
+
+class BrowserIdentityHead(SiteModel):
+    identity_id: str
+    active_revision: int
+    enabled: bool = True
+    updated_at: datetime = Field(default_factory=utc_now)
+
+
+class IdentityOperationalState(StrEnum):
+    STOPPED = "STOPPED"
+    STARTING = "STARTING"
+    AVAILABLE = "AVAILABLE"
+    DRAINING = "DRAINING"
+    MAINTENANCE = "MAINTENANCE"
+    UNHEALTHY = "UNHEALTHY"
+    PROFILE_BUSY = "PROFILE_BUSY"
+
+
+class BrowserIdentityRuntime(SiteModel):
+    identity_id: str
+    operational_state: IdentityOperationalState = IdentityOperationalState.STOPPED
+    session_revision: int = Field(default=0, ge=0)
+    generation: int = Field(default=0, ge=0)
+    instance_id: str | None = None
+    diagnostic: str | None = None
+    updated_at: datetime = Field(default_factory=utc_now)
+
+
+class SiteIdentityAuth(SiteModel):
+    site_id: str
+    identity_id: str
+    auth_state: AuthState = AuthState.UNKNOWN
+    verified_at: datetime | None = None
+    verification_url: str | None = None
+    reason_code: str | None = None
+    observed_session_revision: int = Field(default=0, ge=0)
+
+    @field_validator("verification_url")
+    @classmethod
+    def _verification_url(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        parsed = urlsplit(value.strip())
+        if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+            raise ValueError("verification_url must be absolute HTTP(S)")
+        return value.strip()
+
+
 class BrowserProfile(SiteModel):
     profile_id: str
     site_id: str
@@ -418,6 +522,10 @@ class AccessAttempt(SiteModel):
     queue_wait_ms: int = 0
     network_ms: int = 0
     exit_ip: str | None = None
+    identity_id: str | None = None
+    runtime_kind: BrowserRuntimeKind | None = None
+    runtime_instance_id: str | None = None
+    runtime_generation: int | None = None
     observed_at: datetime = Field(default_factory=utc_now)
 
 
@@ -442,6 +550,11 @@ class AccessResult(SiteModel):
     generation: int = 0
     profile_id: str | None = None
     egress_id: str | None = None
+    identity_id: str | None = None
+    runtime_kind: BrowserRuntimeKind | None = None
+    identity_revision: int | None = None
+    runtime_instance_id: str | None = None
+    runtime_generation: int | None = None
     exit_ip_observation: str | None = None
     attempts: list[AccessAttempt] = Field(default_factory=list)
     queue_wait_ms: int = 0

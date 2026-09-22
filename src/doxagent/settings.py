@@ -672,6 +672,16 @@ class DoxAgentSettings(BaseSettings):
         ge=1,
         validation_alias="DOXAGENT_SITE_ACCESS_BROWSER_IDLE_SECONDS",
     )
+    site_access_chrome_supervisor_socket: str | None = Field(
+        default=None,
+        validation_alias="DOXAGENT_SITE_ACCESS_CHROME_SUPERVISOR_SOCKET",
+    )
+    site_access_controller_id: str = Field(
+        default="site-access",
+        min_length=1,
+        max_length=128,
+        validation_alias="DOXAGENT_SITE_ACCESS_CONTROLLER_ID",
+    )
     content_enrichment_enabled: bool = Field(
         default=True,
         validation_alias="DOXAGENT_CONTENT_ENRICHMENT_ENABLED",

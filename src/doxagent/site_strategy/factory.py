@@ -20,6 +20,8 @@ def build_site_strategy_service(settings: DoxAgentSettings) -> SiteStrategyServi
         browser_max_pages=settings.site_access_browser_max_pages,
         browser_idle_seconds=settings.site_access_browser_idle_seconds,
         safety_path=settings.safety_state_path,
+        supervisor_socket=settings.site_access_chrome_supervisor_socket,
+        controller_id=settings.site_access_controller_id,
     )
     bootstrap_seed(repository, service)
     return service

@@ -16,6 +16,7 @@ from .schema import (
     AccessRequest,
     AccessResult,
     BodyOutcome,
+    BrowserIdentitySpec,
     BrowserProfile,
     ProxyEgress,
     ResolvedSite,
@@ -29,6 +30,13 @@ class ApplyStrategyRequest(BaseModel):
     expected_revision: int | None = None
     actor: str = Field(default="admin", min_length=1, max_length=128)
     enabled: bool = True
+
+
+class ApplyIdentityRequest(BaseModel):
+    spec: BrowserIdentitySpec
+    expected_revision: int | None = None
+    actor: str = Field(default="admin", min_length=1, max_length=128)
+    enabled: bool | None = None
 
 
 class RollbackRequest(BaseModel):
@@ -45,6 +53,18 @@ class EnableRequest(BaseModel):
 class ProfileAuthRequest(BaseModel):
     article_url: str = Field(min_length=1)
     login_token: str = Field(min_length=1)
+
+
+class IdentityLoginRequest(BaseModel):
+    site_id: str = Field(min_length=1, max_length=128)
+
+
+class IdentityRecoverRequest(IdentityLoginRequest):
+    login_token: str = Field(min_length=1, max_length=128)
+
+
+class IdentityAuthRequest(ProfileAuthRequest):
+    site_id: str = Field(min_length=1, max_length=128)
 
 
 class ProfileSnapshotRequest(BaseModel):
@@ -241,6 +261,116 @@ def create_app(
             raise HTTPException(status_code=409, detail=str(exc)) from exc
         return state.model_dump(mode="json")
 
+    @app.get("/v1/identities", dependencies=[Depends(admin)])
+    async def identities() -> list[dict[str, object]]:
+        values: list[dict[str, object]] = []
+        for head, spec in service.repository.list_active_identities():
+            runtime = service.repository.get_identity_runtime(spec.identity_id)
+            auth = service.repository.list_site_identity_auth(identity_id=spec.identity_id)
+            values.append(
+                {
+                    "head": head.model_dump(mode="json"),
+                    "spec": spec.model_dump(mode="json"),
+                    "runtime": runtime.model_dump(mode="json"),
+                    "site_auth": [item.model_dump(mode="json") for item in auth],
+                }
+            )
+        return values
+
+    @app.get("/v1/identities/{identity_id}", dependencies=[Depends(admin)])
+    async def identity(identity_id: str) -> dict[str, object]:
+        value = service.repository.get_identity(identity_id)
+        if value is None:
+            raise HTTPException(status_code=404, detail="browser identity not found")
+        runtime_status: dict[str, object]
+        try:
+            runtime_status = await service.runtime.browser_runtimes.status(value)
+        except Exception as exc:
+            runtime_status = {"running": False, "diagnostic": type(exc).__name__}
+        return {
+            "spec": value.model_dump(mode="json"),
+            "runtime": service.repository.get_identity_runtime(identity_id).model_dump(mode="json"),
+            "live": runtime_status,
+            "site_auth": [
+                item.model_dump(mode="json")
+                for item in service.repository.list_site_identity_auth(identity_id=identity_id)
+            ],
+        }
+
+    @app.get("/v1/identities/{identity_id}/history", dependencies=[Depends(admin)])
+    async def identity_history(identity_id: str) -> list[dict[str, object]]:
+        return service.repository.list_identity_revisions(identity_id)
+
+    @app.post("/v1/identities:validate", dependencies=[Depends(admin)])
+    async def validate_identity(value: BrowserIdentitySpec) -> dict[str, object]:
+        try:
+            service.validate_identity(value)
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        return {"valid": True, "identity_id": value.identity_id}
+
+    @app.post("/v1/identities:apply", dependencies=[Depends(admin)])
+    async def apply_identity(request: ApplyIdentityRequest) -> dict[str, object]:
+        try:
+            value = service.apply_identity(
+                request.spec,
+                expected_revision=request.expected_revision,
+                actor=request.actor,
+                enabled=request.enabled,
+            )
+        except (ValueError, RuntimeError) as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+        return value.model_dump(mode="json")
+
+    @app.post("/v1/identities/{identity_id}:drain", dependencies=[Depends(admin)])
+    async def drain_identity(identity_id: str) -> dict[str, object]:
+        value = service.repository.get_identity(identity_id)
+        if value is None:
+            raise HTTPException(status_code=404, detail="browser identity not found")
+        stopped = await service.runtime.browser_runtimes.stop_identity(value, reason="admin_drain")
+        return {"identity_id": identity_id, "stopped": stopped}
+
+    @app.post("/v1/identities/{identity_id}/login:open", dependencies=[Depends(admin)])
+    async def identity_login_open(
+        identity_id: str, request: IdentityLoginRequest
+    ) -> dict[str, str]:
+        try:
+            return await service.open_identity_login(request.site_id, identity_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="browser identity not found") from exc
+        except (ValueError, RuntimeError) as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+    @app.post("/v1/identities/{identity_id}/login:recover", dependencies=[Depends(admin)])
+    async def identity_login_recover(
+        identity_id: str, request: IdentityRecoverRequest
+    ) -> dict[str, str]:
+        try:
+            return await service.recover_identity_login(
+                request.site_id, identity_id, request.login_token
+            )
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="external identity not found") from exc
+        except (ValueError, RuntimeError) as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+    @app.post("/v1/identities/{identity_id}:verify", dependencies=[Depends(admin)])
+    async def identity_verify(identity_id: str, request: IdentityAuthRequest) -> dict[str, object]:
+        try:
+            profile, reason = await service.verify_identity(
+                request.site_id, identity_id, request.article_url, request.login_token
+            )
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="browser identity not found") from exc
+        except (ValueError, RuntimeError) as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        auth = service.repository.get_site_identity_auth(request.site_id, identity_id)
+        return {
+            "profile": profile.model_dump(mode="json"),
+            "auth": auth.model_dump(mode="json"),
+            "reason": reason,
+        }
+
     @app.get("/v1/egresses", dependencies=[Depends(admin)])
     async def egresses() -> list[dict[str, object]]:
         return [item.model_dump(mode="json") for item in service.repository.list_egresses()]
@@ -290,9 +420,7 @@ def create_app(
         return {"profile": updated.model_dump(mode="json"), "reason": reason}
 
     @app.post("/v1/profiles/{profile_id}:probe", dependencies=[Depends(admin)])
-    async def probe_profile(
-        profile_id: str, request: ProfileProbeRequest
-    ) -> dict[str, object]:
+    async def probe_profile(profile_id: str, request: ProfileProbeRequest) -> dict[str, object]:
         """Probe one exact Profile+egress without changing its authentication state."""
         try:
             result = await service.probe_profile(profile_id, request.url)
@@ -300,14 +428,10 @@ def create_app(
             raise HTTPException(status_code=404, detail="profile not found") from exc
         except (ValueError, RuntimeError) as exc:
             raise HTTPException(status_code=409, detail=str(exc)) from exc
-        return result.model_dump(
-            mode="json", exclude={"body", "headers", "recipe_result"}
-        )
+        return result.model_dump(mode="json", exclude={"body", "headers", "recipe_result"})
 
     @app.post("/v1/profiles/{profile_id}:snapshot", dependencies=[Depends(admin)])
-    async def snapshot_profile(
-        profile_id: str, request: ProfileSnapshotRequest
-    ) -> dict[str, str]:
+    async def snapshot_profile(profile_id: str, request: ProfileSnapshotRequest) -> dict[str, str]:
         try:
             return await service.snapshot_profile(
                 profile_id, browser_version=request.browser_version
@@ -318,9 +442,7 @@ def create_app(
             raise HTTPException(status_code=409, detail=str(exc)) from exc
 
     @app.post("/v1/profiles/{profile_id}:restore", dependencies=[Depends(admin)])
-    async def restore_profile(
-        profile_id: str, request: ProfileRestoreRequest
-    ) -> dict[str, str]:
+    async def restore_profile(profile_id: str, request: ProfileRestoreRequest) -> dict[str, str]:
         try:
             return await service.restore_profile(profile_id, request.snapshot_id)
         except (KeyError, FileNotFoundError) as exc:

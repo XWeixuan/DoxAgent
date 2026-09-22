@@ -12,6 +12,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 ENV LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 HOME=/home/siteaccess
 COPY deploy/site-access-entrypoint.sh /usr/local/bin/site-access-entrypoint
-RUN chmod 0755 /usr/local/bin/site-access-entrypoint
+COPY deploy/site-login-vnc-relay.py /usr/local/bin/site-login-vnc-relay.py
+RUN chmod 0755 /usr/local/bin/site-access-entrypoint /usr/local/bin/site-login-vnc-relay.py
 ENTRYPOINT ["/usr/local/bin/site-access-entrypoint"]
 CMD ["python", "-m", "doxagent.site_strategy.cli", "run-server", "--host", "0.0.0.0", "--port", "8011"]

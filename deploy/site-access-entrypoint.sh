@@ -9,6 +9,7 @@ if [ "$(id -u)" = 0 ]; then
   install -d -o "$service_uid" -g "$service_gid" -m 0700 "$runtime_dir"
   install -d -o "$service_uid" -g "$service_gid" -m 0700 \
     /site-data /site-data/registry /site-data/profiles /site-data/credentials
+  install -d -o "$service_uid" -g "$service_gid" -m 0770 /run/doxagent-chrome
   worker_source=${DOXAGENT_SITE_ACCESS_WORKER_TOKEN_FILE:-/run/secrets/site_access_worker_token}
   admin_source=${DOXAGENT_SITE_ACCESS_ADMIN_TOKEN_FILE:-/run/secrets/site_access_admin_token}
   install -o "$service_uid" -g "$service_gid" -m 0400 "$worker_source" "$runtime_dir/worker-token"
@@ -44,7 +45,10 @@ if [ "${DOXAGENT_SITE_ACCESS_BROWSER_HEADLESS:-true}" = "false" ]; then
     fi
     sleep 0.1
   done
-  x11vnc -display "$DISPLAY" -forever -shared -listen 0.0.0.0 -rfbport 5900 -nopw &
+  x11vnc -display "$DISPLAY" -forever -shared -listen 127.0.0.1 -rfbport 5910 -nopw &
+  printf '%s\n' 5910 > /run/doxagent-chrome/vnc-target
+  python /usr/local/bin/site-login-vnc-relay.py \
+    --target-file /run/doxagent-chrome/vnc-target --port 5900 &
 fi
 
 exec "$@"

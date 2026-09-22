@@ -21,13 +21,17 @@ from doxagent.message_bus_v2.reuters_sources import capture_reuters_search
 from doxagent.message_bus_v2.yahoo_sources import capture_latest_news
 from doxagent.resource_safety import SafetyLevel, SafetyStateReader
 
+from .browser_runtime import BrowserRuntimeManager, RuntimeProvenance
 from .repository import SiteStrategyRepository
 from .resolver import SiteResolver
 from .schema import (
     AccessCombination,
     AccessMode,
     AccessRequest,
+    BrowserIdentitySpec,
     BrowserProfile,
+    BrowserRuntimeKind,
+    IdentityOperationalState,
     ProxyEgress,
     ResolvedSite,
 )
@@ -47,6 +51,7 @@ class RuntimeResponse:
     redirect_url: str | None = None
     reason: str | None = None
     retry_after_seconds: float | None = None
+    provenance: RuntimeProvenance | None = None
 
 
 class OwnerFileLock:
@@ -98,7 +103,8 @@ class OwnerFileLock:
                 import fcntl
 
                 fcntl.flock(  # type: ignore[attr-defined]
-                    self._stream.fileno(), fcntl.LOCK_UN  # type: ignore[attr-defined]
+                    self._stream.fileno(),
+                    fcntl.LOCK_UN,  # type: ignore[attr-defined]
                 )
         finally:
             self._stream.close()
@@ -232,9 +238,7 @@ class _RawBrowserCDP:
                     self._track(self._attached(dict(payload.get("params") or {})))
                 elif method == "Fetch.requestPaused":
                     session_id = str(payload.get("sessionId") or "")
-                    self._track(
-                        self._paused(session_id, dict(payload.get("params") or {}))
-                    )
+                    self._track(self._paused(session_id, dict(payload.get("params") or {})))
         except Exception as exc:
             for future in self._pending.values():
                 if not future.done():
@@ -394,9 +398,9 @@ class PersistentBrowserPool:
             finally:
                 self._playwright = None
         if errors:
-            raise RuntimeError(
-                f"{len(errors)} browser contexts failed graceful close"
-            ) from errors[0]
+            raise RuntimeError(f"{len(errors)} browser contexts failed graceful close") from errors[
+                0
+            ]
         self._owner_lock.release()
 
     async def close_idle(self) -> int:
@@ -586,9 +590,7 @@ class PersistentBrowserPool:
                     and lines[0].isdigit()
                     and lines[1].startswith("/devtools/browser/")
                 ):
-                    connection = _RawBrowserCDP(
-                        f"ws://127.0.0.1:{lines[0]}{lines[1]}"
-                    )
+                    connection = _RawBrowserCDP(f"ws://127.0.0.1:{lines[0]}{lines[1]}")
                     await connection.start()
                     return connection
             await asyncio.sleep(0.05)
@@ -746,9 +748,12 @@ class _DocumentNavigationGate:
 
 @dataclass
 class _MaintenancePage:
-    lease: _PageLease
+    lease: Any
     page: Any
     gate: _DocumentNavigationGate
+    profile_id: str
+    identity_id: str
+    site_id: str
 
 
 class SiteAccessRuntime:
@@ -764,6 +769,8 @@ class SiteAccessRuntime:
         browser_max_pages: int = 4,
         browser_idle_seconds: float = 43_200,
         safety_path: str | Path | None = None,
+        supervisor_socket: str | Path | None = None,
+        controller_id: str = "site-access",
     ) -> None:
         self.repository = repository
         self.resolver = resolver
@@ -776,19 +783,46 @@ class SiteAccessRuntime:
             idle_seconds=browser_idle_seconds,
             safety_path=Path(safety_path) if safety_path else None,
         )
+        from .external_runtime import ExternalChromeRuntime
+        from .managed_runtime import ManagedPlaywrightRuntime
+        from .supervisor_client import ChromeSupervisorClient
+
+        managed = ManagedPlaywrightRuntime(self.browser_pool, repository)
+        external = (
+            ExternalChromeRuntime(
+                ChromeSupervisorClient(supervisor_socket, owner_id=controller_id),
+                max_pages=browser_max_pages,
+                safety_path=str(safety_path) if safety_path else None,
+            )
+            if supervisor_socket
+            else None
+        )
+        relay_target = Path(supervisor_socket).parent / "vnc-target" if supervisor_socket else None
+        self.browser_runtimes = BrowserRuntimeManager(
+            managed,
+            external,
+            relay_target_path=relay_target,
+            max_pages=browser_max_pages,
+        )
         self._http_sessions: dict[tuple[str, str], Any] = {}
         self._maintenance_pages: dict[str, _MaintenancePage] = {}
 
     async def close(self) -> None:
-        for token in list(self._maintenance_pages):
-            await self.close_login(token)
+        for token, maintained in list(self._maintenance_pages.items()):
+            self._maintenance_pages.pop(token, None)
+            await maintained.gate.close()
+            abandon = getattr(maintained.lease, "abandon", None)
+            if abandon is not None:
+                await abandon()
+            else:
+                await maintained.lease.__aexit__(None, None, None)
         sessions = list(self._http_sessions.values())
         self._http_sessions.clear()
         for session in sessions:
             closed = session.close()
             if inspect.isawaitable(closed):
                 await closed
-        await self.browser_pool.close()
+        await self.browser_runtimes.close()
 
     async def execute(
         self,
@@ -800,7 +834,30 @@ class SiteAccessRuntime:
     ) -> RuntimeResponse:
         if request.mode is AccessMode.HTTP_PUBLIC:
             return await self._http(request, resolved, combination, egress)
-        return await self._browser(request, resolved, profile, egress)
+        identity = self._identity(combination, profile, egress)
+        return await self._browser(request, resolved, identity, egress)
+
+    def _identity(
+        self,
+        combination: AccessCombination,
+        profile: BrowserProfile,
+        egress: ProxyEgress,
+    ) -> BrowserIdentitySpec:
+        identity_id = combination.identity_id or profile.profile_id
+        identity = self.repository.get_identity(identity_id)
+        if identity is not None:
+            if identity.profile_id != profile.profile_id or identity.egress_id != egress.egress_id:
+                raise RuntimeError("combination_identity_binding_mismatch")
+            return identity
+        # Compatibility is read-only: the migration should normally have materialized this.
+        return BrowserIdentitySpec(
+            identity_id=identity_id,
+            revision=1,
+            runtime_kind=BrowserRuntimeKind.MANAGED_PLAYWRIGHT,
+            profile_id=profile.profile_id,
+            egress_id=egress.egress_id,
+            environment=profile.environment,
+        )
 
     async def _http(
         self,
@@ -855,13 +912,33 @@ class SiteAccessRuntime:
         self,
         request: AccessRequest,
         resolved: ResolvedSite,
-        profile: BrowserProfile,
+        identity: BrowserIdentitySpec,
         egress: ProxyEgress,
     ) -> RuntimeResponse:
         await public_url(request.url, trusted_proxy_dns=True)
-        lease = await self.browser_pool.page(profile, egress)
+        deadline = time.monotonic() + request.remaining_budget_ms / 1000
+        lease = await self.browser_runtimes.page(identity, egress, deadline=deadline)
+        current_runtime = self.repository.get_identity_runtime(identity.identity_id)
+        if (
+            current_runtime.instance_id != lease.provenance.instance_id
+            or current_runtime.operational_state is not IdentityOperationalState.AVAILABLE
+        ):
+            try:
+                self.repository.save_identity_runtime(
+                    current_runtime.model_copy(
+                        update={
+                            "operational_state": IdentityOperationalState.AVAILABLE,
+                            "instance_id": lease.provenance.instance_id,
+                            "generation": current_runtime.generation + 1,
+                            "diagnostic": None,
+                        }
+                    ),
+                    expected_generation=current_runtime.generation,
+                )
+            except RuntimeError:
+                pass
         async with lease as page:
-            gate = _DocumentNavigationGate(page, self.resolver, resolved, lease.entry.cdp)
+            gate = _DocumentNavigationGate(page, self.resolver, resolved, lease.browser_cdp)
             await gate.start()
             try:
                 if request.recipe_ref == "builtin:yahoo_latest_news@1":
@@ -877,6 +954,7 @@ class SiteAccessRuntime:
                         {},
                         body=await page.content(),
                         recipe_result={"rows": rows, "metadata": metadata},
+                        provenance=lease.provenance,
                     )
                 if request.recipe_ref == "builtin:reuters_search@1":
                     rows = await capture_reuters_search(
@@ -890,6 +968,7 @@ class SiteAccessRuntime:
                         {},
                         body=await page.content(),
                         recipe_result={"rows": rows},
+                        provenance=lease.provenance,
                     )
                 response = await page.goto(
                     request.url,
@@ -903,6 +982,7 @@ class SiteAccessRuntime:
                         {},
                         redirect_url=gate.blocked[0],
                         reason="cross_site_navigation",
+                        provenance=lease.provenance,
                     )
                 status = response.status if response is not None else 200
                 headers = await response.all_headers() if response is not None else {}
@@ -915,12 +995,19 @@ class SiteAccessRuntime:
                     )
                 html = await page.content()
                 if len(html.encode("utf-8")) > request.max_response_bytes:
-                    return RuntimeResponse(0, request.url, {}, reason="response_too_large")
+                    return RuntimeResponse(
+                        0,
+                        request.url,
+                        {},
+                        reason="response_too_large",
+                        provenance=lease.provenance,
+                    )
                 return RuntimeResponse(
                     int(status),
                     page.url,
                     _filtered_headers({str(k).lower(): str(v) for k, v in headers.items()}),
                     body=html,
+                    provenance=lease.provenance,
                 )
             finally:
                 await gate.close()
@@ -948,23 +1035,35 @@ class SiteAccessRuntime:
         url: str,
         *,
         token: str | None = None,
+        identity: BrowserIdentitySpec | None = None,
+        site_id: str | None = None,
     ) -> dict[str, str]:
         await public_url(url, trusted_proxy_dns=True)
         host = urlsplit(url).hostname or ""
+        target_site_id = site_id or profile.site_id
         initial = self.resolver.resolve(url)
-        if initial.site_id != profile.site_id and not self.resolver.supports_host(
-            profile.site_id, host
+        if initial.site_id != target_site_id and not self.resolver.supports_host(
+            target_site_id, host
         ):
             raise ValueError("maintenance URL does not belong to the profile site")
-        site_spec = self.repository.get_strategy(profile.site_id)
+        site_spec = self.repository.get_strategy(target_site_id)
         if site_spec is None:
             raise ValueError("profile site strategy is unavailable")
         resolved = self.resolver.resolve(
             next((f"https://{rule.host}/" for rule in site_spec.domains if not rule.exclude), url)
         )
-        lease = await self.browser_pool.page(profile, egress)
+        effective_identity = identity or BrowserIdentitySpec(
+            identity_id=profile.profile_id,
+            revision=1,
+            runtime_kind=BrowserRuntimeKind.MANAGED_PLAYWRIGHT,
+            profile_id=profile.profile_id,
+            egress_id=egress.egress_id,
+            environment=profile.environment,
+        )
+        lease = await self.browser_runtimes.page(effective_identity, egress)
+        await self.browser_runtimes.select_maintenance(effective_identity)
         page = await lease.__aenter__()
-        gate = _DocumentNavigationGate(page, self.resolver, resolved, lease.entry.cdp)
+        gate = _DocumentNavigationGate(page, self.resolver, resolved, lease.browser_cdp)
         try:
             await gate.start()
             await page.goto(url, wait_until="domcontentloaded", timeout=30_000)
@@ -973,14 +1072,64 @@ class SiteAccessRuntime:
             await lease.__aexit__(None, None, None)
             raise
         session_token = token or uuid4().hex
-        self._maintenance_pages[session_token] = _MaintenancePage(lease, page, gate)
-        return {"login_token": session_token, "url": page.url}
+        self._maintenance_pages[session_token] = _MaintenancePage(
+            lease,
+            page,
+            gate,
+            profile.profile_id,
+            effective_identity.identity_id,
+            target_site_id,
+        )
+        return {
+            "login_token": session_token,
+            "url": page.url,
+            "identity_id": effective_identity.identity_id,
+            "runtime_kind": effective_identity.runtime_kind.value,
+        }
 
     async def inspect_login(self, token: str) -> dict[str, str]:
         maintained = self._maintenance_pages.get(token)
         if maintained is None:
             raise KeyError(token)
         return {"url": maintained.page.url, "title": await maintained.page.title()}
+
+    async def recover_login(
+        self,
+        profile: BrowserProfile,
+        egress: ProxyEgress,
+        *,
+        identity: BrowserIdentitySpec,
+        site_id: str,
+        token: str,
+    ) -> dict[str, str]:
+        site_spec = self.repository.get_strategy(site_id)
+        if site_spec is None:
+            raise ValueError("site strategy is unavailable")
+        resolved = self.resolver.resolve(
+            next(
+                (f"https://{rule.host}/" for rule in site_spec.domains if not rule.exclude),
+                site_spec.auth.login_url or "",
+            )
+        )
+        lease = await self.browser_runtimes.recover_page(identity, egress)
+        page = await lease.__aenter__()
+        gate = _DocumentNavigationGate(page, self.resolver, resolved, lease.browser_cdp)
+        try:
+            await gate.start()
+            await self.browser_runtimes.select_maintenance(identity)
+        except Exception:
+            external_lease: Any = lease
+            await external_lease.abandon()
+            raise
+        self._maintenance_pages[token] = _MaintenancePage(
+            lease, page, gate, profile.profile_id, identity.identity_id, site_id
+        )
+        return {
+            "login_token": token,
+            "url": page.url,
+            "identity_id": identity.identity_id,
+            "runtime_kind": identity.runtime_kind.value,
+        }
 
     async def verify_login(
         self, token: str, article_url: str, *, timeout_ms: int = 30_000
@@ -1013,7 +1162,7 @@ class SiteAccessRuntime:
         maintained = self._maintenance_pages.pop(token, None)
         if maintained is None:
             raise KeyError(token)
-        profile_id = maintained.lease.entry.profile.profile_id
+        profile_id = maintained.profile_id
         await maintained.gate.close()
         await maintained.lease.__aexit__(None, None, None)
         return profile_id
