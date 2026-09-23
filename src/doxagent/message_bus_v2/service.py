@@ -815,9 +815,12 @@ class MessageBusV2Service:
     def _validate_source_adapter(source: SourceDefinition) -> None:
         is_crawler_ref = source.adapter_ref.startswith("crawler:")
         is_builtin_ref = source.adapter_ref.startswith("builtin:")
-        if source.kind is SourceKind.CRAWLER and not (is_crawler_ref or is_builtin_ref):
+        is_site_ref = source.adapter_ref == "site:auto"
+        if source.kind is SourceKind.CRAWLER and not (
+            is_crawler_ref or is_builtin_ref or is_site_ref
+        ):
             raise ValueError(
-                "crawler sources must use adapter_ref crawler:<crawler_id> or builtin:"
+                "crawler sources must use adapter_ref crawler:<crawler_id>, builtin:, or site:auto"
             )
         if source.kind is SourceKind.API and is_crawler_ref:
             raise ValueError("API sources may not use a crawler adapter_ref")

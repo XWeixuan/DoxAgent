@@ -25,6 +25,7 @@ from doxagent.crawler_plane.schema import (
 from doxagent.crawler_plane.service import CrawlerPlaneService
 from doxagent.message_bus_v2.ctee import CteeSemiconductorAdapter
 from doxagent.message_bus_v2.ibkr_news import IbkrNewsAdapter
+from doxagent.message_bus_v2.industry_sources import IndustryListingAdapter, SharedFeedAdapter
 from doxagent.message_bus_v2.news_adapters import (
     GoogleNewsSearchRssAdapter,
     ReutersSiteSearchAdapter,
@@ -36,6 +37,7 @@ from doxagent.message_bus_v2.schema import (
     PollContext,
     PollResult,
     RawMessageInput,
+    SharedPollContext,
     SourceAdapter,
     canonical_json,
     sha256_text,
@@ -96,6 +98,23 @@ class AdapterRegistry:
             "ctee_semiconductor": CteeSemiconductorAdapter(
                 crawler_plane.browser if crawler_plane is not None else None
             ),
+            "barrons_ticker_news": IndustryListingAdapter(
+                crawler_plane.browser if crawler_plane is not None else None, "barrons"
+            ),
+            "trendforce_news": IndustryListingAdapter(
+                crawler_plane.browser if crawler_plane is not None else None, "trendforce_news"
+            ),
+            "trendforce_press_releases": IndustryListingAdapter(
+                crawler_plane.browser if crawler_plane is not None else None, "trendforce_press"
+            ),
+            "digitimes_semiconductors": IndustryListingAdapter(
+                crawler_plane.browser if crawler_plane is not None else None, "digitimes"
+            ),
+            "huggingnews_rss": SharedFeedAdapter(self.client, "HuggingNews"),
+            "tomshardware_rss": SharedFeedAdapter(self.client, "Tom's Hardware"),
+            "thelec_semiconductors_rss": SharedFeedAdapter(self.client, "The Elec"),
+            "etnews_rss": SharedFeedAdapter(self.client, "ETNews"),
+            "digitimes_tw_rss": SharedFeedAdapter(self.client, "DIGITIMES Taiwan"),
         }
         self._dynamic_cache: dict[tuple[str, int], SourceAdapter] = {}
 
@@ -307,6 +326,9 @@ class SiteStrategyCrawlerAdapter:
     BUILTIN_REFS = {
         "builtin:yahoo_page@1": "yahoo_finance_news",
         "builtin:reuters_search@1": "reuters_site_search",
+        "builtin:barrons_ticker@1": "barrons_ticker_news",
+        "builtin:trendforce_listings@1": "trendforce_news",
+        "builtin:digitimes_semiconductors@1": "digitimes_semiconductors",
     }
 
     def __init__(self, registry: AdapterRegistry) -> None:
@@ -321,6 +343,8 @@ class SiteStrategyCrawlerAdapter:
             ),
             "",
         )
+        if not url and context.source.entry_url:
+            url = context.source.entry_url.replace("{ticker}", context.ticker.lower())
         if not url:
             raise AdapterLoadError("site:auto requires listing_url, url or base_url")
         assert self.registry.crawler_plane is not None
@@ -346,6 +370,37 @@ class SiteStrategyCrawlerAdapter:
                     "site_id": resolved.site_id,
                     "site_strategy_revision": resolved.strategy_revision,
                     "site_crawler_ref": reference,
+                }
+            }
+        )
+
+    async def poll_shared(self, context: SharedPollContext) -> PollResult:
+        if not context.source.entry_url:
+            raise AdapterLoadError("site:auto shared source requires entry_url")
+        assert self.registry.crawler_plane is not None
+        assert self.registry.crawler_plane.site_access_client is not None
+        resolved = await self.registry.crawler_plane.site_access_client.resolve(
+            context.source.entry_url
+        )
+        if resolved.crawler is None:
+            raise AdapterLoadError(f"site {resolved.site_id} has no crawler strategy")
+        builtin = self.BUILTIN_REFS.get(resolved.crawler.ref)
+        if builtin is None:
+            raise AdapterLoadError(
+                f"unsupported shared builtin crawler strategy: {resolved.crawler.ref}"
+            )
+        adapter = self.registry._builtins[builtin]
+        shared_poll = getattr(adapter, "poll_shared", None)
+        if not callable(shared_poll):
+            raise AdapterLoadError(f"crawler strategy is not shared: {resolved.crawler.ref}")
+        result: PollResult = await shared_poll(context)
+        return result.model_copy(
+            update={
+                "acquisition_metadata": {
+                    **result.acquisition_metadata,
+                    "site_id": resolved.site_id,
+                    "site_strategy_revision": resolved.strategy_revision,
+                    "site_crawler_ref": resolved.crawler.ref,
                 }
             }
         )

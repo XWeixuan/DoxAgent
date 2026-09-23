@@ -511,6 +511,9 @@ class SiteStrategyService:
             schemas: dict[str, set[str]] = {
                 "builtin:yahoo_page@1": set(),
                 "builtin:reuters_search@1": set(),
+                "builtin:barrons_ticker@1": set(),
+                "builtin:trendforce_listings@1": set(),
+                "builtin:digitimes_semiconductors@1": set(),
             }
             allowed = schemas.get(spec.crawler.ref)
             if allowed is None:

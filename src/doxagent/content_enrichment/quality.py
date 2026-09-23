@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 from typing import Any
 from urllib.parse import urljoin, urlparse
 
-from lxml import html as html_parser
+from lxml import html as html_parser  # type: ignore[import-untyped]
 
 from doxagent.content_enrichment.strategies import legacy_strategy_ref
 from doxagent.content_enrichment.strategies.adapters import (
@@ -27,7 +27,7 @@ def clean(text: str) -> str:
 
 
 def tokens(text: str) -> set[str]:
-    return set(re.findall(r"[a-z0-9]{3,}", text.lower())) - {
+    latin = set(re.findall(r"[a-z0-9]{3,}", text.lower())) - {
         "the",
         "and",
         "for",
@@ -38,6 +38,14 @@ def tokens(text: str) -> set[str]:
         "stock",
         "stocks",
     }
+    # Korean and Chinese feed/page headlines often differ by a short editorial
+    # prefix. Latin-only tokens make unrelated CJK headlines indistinguishable.
+    cjk = {
+        run[index : index + 2]
+        for run in re.findall(r"[\u3400-\u9fff\uac00-\ud7a3]+", text.casefold())
+        for index in range(max(1, len(run) - 1))
+    }
+    return latin | cjk
 
 
 def title_match(left: str, right: str) -> bool:

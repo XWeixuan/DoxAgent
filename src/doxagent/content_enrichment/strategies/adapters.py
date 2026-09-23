@@ -99,6 +99,15 @@ def apply_candidate_overrides(
             result.candidates = [
                 candidate_type(text, "reuters_article_body", True, result.headline, 30)
             ]
+    if strategy == "builtin:etnews@1":
+        bodies = root.xpath('//*[@itemprop="articleBody"]')
+        if bodies:
+            text = node_text(bodies[0])
+            text = re.sub(r"\n\n[^\n]{1,80}\s기자(?:\s+\S+@\S+)?$", "", text).strip()
+            if text:
+                result.candidates = [
+                    candidate_type(text, "etnews_article_body", True, result.headline, 30)
+                ]
     if strategy == "builtin:barrons@1" and "/livecoverage/" in path and "/card/" in path:
         cards = root.xpath('//*[@data-id="LiveCoverageCard_index_CardWrapper"][.//h1]')
         result.candidates = []

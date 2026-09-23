@@ -23,12 +23,14 @@ def _terms(ticker: str, literal: str) -> TickerMonitoringTerms:
                     "expressions": {
                         "en": literal,
                         "zh-Hant": literal,
+                        "ko": literal,
                     },
                 }
             ],
             "l2": {
                 "en": {"groups": [{"id": "direct", "any": [{"literal": literal}]}]},
                 "zh-Hant": {"groups": [{"id": "direct", "any": [{"literal": literal}]}]},
+                "ko": {"groups": [{"id": "direct", "any": [{"literal": literal}]}]},
             },
             "definition": {"relevant": literal, "irrelevant": "unrelated"},
         }

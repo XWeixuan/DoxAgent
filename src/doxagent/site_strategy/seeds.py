@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+from typing import Literal
 
 from .identity_migration import migrate_legacy_identities
 from .repository import SiteStrategyRepository
@@ -109,6 +110,11 @@ def bootstrap_seed(repository: SiteStrategyRepository, service: SiteStrategyServ
                     auth_updates["maintenance_url"] = spec.auth.maintenance_url
                 if current.auth.login_url is None and spec.auth.login_url is not None:
                     auth_updates["login_url"] = spec.auth.login_url
+                if (
+                    current.auth.crawler_requirement == "inherit"
+                    and spec.auth.crawler_requirement == "none"
+                ):
+                    auth_updates["crawler_requirement"] = "none"
                 support = list(current.support_hosts)
                 known_support = {(item.match, item.host, item.role) for item in support}
                 for rule in spec.support_hosts:
@@ -122,6 +128,7 @@ def bootstrap_seed(repository: SiteStrategyRepository, service: SiteStrategyServ
                 ):
                     access_updates.update(max_concurrency=1, min_interval_ms=3000)
                 body = current.body
+                crawler = current.crawler or spec.crawler
                 if (
                     spec.body.access_order
                     and spec.body.access_order[0] == "browser"
@@ -133,6 +140,7 @@ def bootstrap_seed(repository: SiteStrategyRepository, service: SiteStrategyServ
                     and len(support) == len(current.support_hosts)
                     and not access_updates
                     and body is current.body
+                    and crawler is current.crawler
                 ):
                     continue
                 upgraded = current.model_copy(
@@ -141,6 +149,7 @@ def bootstrap_seed(repository: SiteStrategyRepository, service: SiteStrategyServ
                         "support_hosts": support,
                         "access": current.access.model_copy(update=access_updates),
                         "body": body,
+                        "crawler": crawler,
                     }
                 )
                 service.apply_strategy(
@@ -210,8 +219,10 @@ def seed_specs() -> list[SiteStrategySpec]:
             "barrons",
             ["barrons.com", "www.barrons.com"],
             "builtin:barrons@1",
+            crawler="builtin:barrons_ticker@1",
             egresses=("us-standard-5", "jp-standard-6"),
             auth="required",
+            crawler_auth="none",
             login_url="https://www.barrons.com/login",
             verification_url=(
                 "https://www.barrons.com/articles/"
@@ -307,6 +318,80 @@ def seed_specs() -> list[SiteStrategySpec]:
             "builtin:generic@1",
             egresses=("jp-standard-6",),
         ),
+        _site(
+            "trendforce",
+            ["trendforce.com", "www.trendforce.com"],
+            "builtin:generic@1",
+            crawler="builtin:trendforce_listings@1",
+            egresses=("server-direct",),
+            support=("img.trendforce.com",),
+            body_parameters={"body_xpath": ["//article"]},
+            default_content_language="en",
+        ),
+        _site(
+            "digitimes",
+            ["digitimes.com", "www.digitimes.com"],
+            "builtin:generic@1",
+            crawler="builtin:digitimes_semiconductors@1",
+            egresses=("server-direct",),
+            support=("img.digitimes.com", "accounts.digitimes.com"),
+            auth="required",
+            crawler_auth="none",
+            login_url="https://www.digitimes.com/register/signin.php",
+            maintenance_url="https://www.digitimes.com/topic/semiconductors/",
+            verification_url=(
+                "https://www.digitimes.com/news/"
+                "a20260923VL216/absolics-testing-investment-glass-substrate-subsidiary.html"
+            ),
+            body_parameters={
+                "body_xpath": [
+                    '//*[@itemprop="articleBody"]',
+                    '//article',
+                    '//*[contains(@class,"article-body")]',
+                ]
+            },
+            default_content_language="en",
+        ),
+        _site(
+            "huggingnews",
+            ["huggingnews.com", "www.huggingnews.com"],
+            "builtin:generic@1",
+            egresses=("de-standard-1",),
+            body_parameters={"body_xpath": ["//article"]},
+            default_content_language="en",
+        ),
+        _site(
+            "tomshardware",
+            ["tomshardware.com", "www.tomshardware.com"],
+            "builtin:generic@1",
+            egresses=("server-direct",),
+            body_parameters={"body_xpath": ["//article"]},
+            default_content_language="en",
+        ),
+        _site(
+            "thelec",
+            ["thelec.kr", "www.thelec.kr"],
+            "builtin:generic@1",
+            egresses=("server-direct",),
+            body_parameters={"body_xpath": ['//*[@itemprop="articleBody"]']},
+            default_content_language="ko",
+        ),
+        _site(
+            "etnews",
+            ["etnews.com", "www.etnews.com"],
+            "builtin:etnews@1",
+            egresses=("server-direct",),
+            body_parameters={"body_xpath": ['//*[@itemprop="articleBody"]']},
+            default_content_language="ko",
+        ),
+        _site(
+            "digitimes_tw",
+            ["digitimes.com.tw", "www.digitimes.com.tw"],
+            "builtin:generic@1",
+            egresses=("server-direct",),
+            support=("img.digitimes.com",),
+            default_content_language="zh-Hant",
+        ),
     ]
     return specs
 
@@ -320,6 +405,7 @@ def _site(
     egresses: tuple[str, ...] = ("jp-standard-6",),
     support: tuple[str, ...] = (),
     auth: AuthRequirement = "none",
+    crawler_auth: Literal["inherit", "none", "optional", "required"] = "inherit",
     login_url: str | None = None,
     maintenance_url: str | None = None,
     verification_url: str | None = None,
@@ -377,6 +463,7 @@ def _site(
         ),
         auth=AuthPolicy(
             requirement=auth,
+            crawler_requirement=crawler_auth,
             login_url=login_url,
             maintenance_url=maintenance_url,
             verification_url=verification_url,

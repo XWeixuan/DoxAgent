@@ -16,7 +16,11 @@ def _terms(
     concepts = [
         {
             "concept_id": f"concept-{number}",
-            "expressions": {"en": value, **({"zh-Hant": value} if traditional else {})},
+            "expressions": {
+                "en": value,
+                "ko": value,
+                **({"zh-Hant": value} if traditional else {}),
+            },
         }
         for number, value in enumerate(["Micron", "memory", "HBM", "NAND"][:count])
     ]
@@ -28,6 +32,7 @@ def _terms(
             "l2": {
                 "en": {"groups": [{"id": "en", "any": [{"literal": "Micron"}]}]},
                 "zh-Hant": {"groups": [{"id": "zh", "any": [{"literal": "美光"}]}]},
+                "ko": {"groups": [{"id": "ko", "any": [{"literal": "마이크론"}]}]},
             },
             "definition": {"relevant": "Memory chips", "irrelevant": "Unrelated products"},
         }
@@ -38,7 +43,7 @@ def test_terms_revision_language_and_search_plans(tmp_path) -> None:
     repository = MessageBusV2Repository(tmp_path / "bus.sqlite3")
     MessageBusV2Service(repository).bootstrap()
     service = MonitoringTermsService(repository)
-    assert service.required_languages() == {"en", "zh-Hant"}
+    assert service.required_languages() == {"en", "zh-Hant", "ko"}
     with pytest.raises(ValueError, match="missing L1 language"):
         service.apply(_terms(traditional=False), actor="test")
     with pytest.raises(ValidationError):
