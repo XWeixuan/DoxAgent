@@ -1460,6 +1460,55 @@ class SiteStrategyService:
             generation=self.repository.get_runtime(resolved.runtime_key).generation,
         )
 
+    async def certify_profile_probe(
+        self, profile_id: str, article_url: str, result: AccessResult
+    ) -> None:
+        """Record site auth after the admin probe proves a full titled article."""
+        resolved = self.resolve(article_url)
+        if (
+            result.disposition is not AccessDisposition.SUCCESS
+            or result.site_id != resolved.site_id
+            or result.profile_id != profile_id
+            or not result.identity_id
+        ):
+            raise ValueError("probe result does not match the requested site profile")
+        identity = self.repository.get_identity(result.identity_id)
+        if identity is None or identity.profile_id != profile_id:
+            raise ValueError("probe identity binding is unavailable")
+        async with self.profile_use.business(profile_id):
+            runtime = self.repository.get_identity_runtime(identity.identity_id)
+            if (
+                result.runtime_instance_id
+                and runtime.instance_id
+                and result.runtime_instance_id != runtime.instance_id
+            ):
+                raise RuntimeError("browser instance changed after article probe")
+            self.repository.save_site_identity_auth(
+                SiteIdentityAuth(
+                    site_id=resolved.runtime_key,
+                    identity_id=identity.identity_id,
+                    auth_state=AuthState.VALID,
+                    verified_at=utc_now(),
+                    verification_url=article_url,
+                    reason_code="full_article_probe",
+                    observed_session_revision=runtime.session_revision,
+                )
+            )
+            self.repository.append_event(
+                AccessEvent(
+                    operation_id=result.operation_id,
+                    site_id=resolved.site_id,
+                    combination_id=result.combination_id,
+                    category="PROFILE_VERIFIED",
+                    payload={
+                        "profile_id": profile_id,
+                        "identity_id": identity.identity_id,
+                        "state": AuthState.VALID.value,
+                        "reason": "full_article_probe",
+                    },
+                )
+            )
+
     async def snapshot_profile(self, profile_id: str, *, browser_version: str) -> dict[str, str]:
         session_id = await self.profile_use.begin_maintenance(profile_id)
         try:

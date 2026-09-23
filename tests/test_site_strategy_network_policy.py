@@ -74,13 +74,24 @@ def test_profile_probe_reports_extraction_quality_without_returning_body(
             site_id="barrons",
             runtime_key="barrons",
             strategy_revision=1,
+            identity_id="barrons-1",
+            profile_id="barrons-1",
         )
 
     service.probe_profile = probe  # type: ignore[method-assign]
     client = TestClient(create_app(service, worker_token="worker", admin_token="admin"))
+    mismatched = client.post(
+        "/v1/profiles/barrons-1:probe",
+        json={"url": url, "expected_title": "An unrelated article", "certify_site_auth": True},
+        headers={"Authorization": "Bearer admin"},
+    )
+    assert mismatched.status_code == 200
+    assert mismatched.json()["content_diagnostic"]["auth_certified"] is False
+    prior_auth = repository.get_site_identity_auth("barrons", "barrons-1")
+    assert prior_auth is None or prior_auth.auth_state.value != "VALID"
     response = client.post(
         "/v1/profiles/barrons-1:probe",
-        json={"url": url, "expected_title": title},
+        json={"url": url, "expected_title": title, "certify_site_auth": True},
         headers={"Authorization": "Bearer admin"},
     )
     assert response.status_code == 200, response.text
@@ -88,6 +99,9 @@ def test_profile_probe_reports_extraction_quality_without_returning_body(
     assert "body" not in payload
     assert payload["content_diagnostic"]["html_bytes"] == len(html.encode())
     assert payload["content_diagnostic"]["outcome"] == "FULL"
+    assert payload["content_diagnostic"]["auth_certified"] is True
+    auth = repository.get_site_identity_auth("barrons", "barrons-1")
+    assert auth is not None and auth.auth_state.value == "VALID"
     repository.close()
 
 

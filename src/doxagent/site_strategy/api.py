@@ -80,6 +80,7 @@ class ProfileRestoreRequest(BaseModel):
 class ProfileProbeRequest(BaseModel):
     url: str = Field(min_length=1)
     expected_title: str | None = Field(default=None, max_length=500)
+    certify_site_auth: bool = False
 
 
 class LoginSessionRequest(BaseModel):
@@ -450,6 +451,17 @@ def create_app(
             "reason": reason,
             "candidate_chars": len(candidate.text) if candidate else 0,
         }
+        if request.certify_site_auth:
+            if not request.expected_title:
+                raise HTTPException(status_code=422, detail="expected_title is required")
+            if result.disposition.value == "SUCCESS" and outcome == "FULL" and candidate:
+                try:
+                    await service.certify_profile_probe(profile_id, request.url, result)
+                except (ValueError, RuntimeError) as exc:
+                    raise HTTPException(status_code=409, detail=str(exc)) from exc
+                payload["content_diagnostic"]["auth_certified"] = True
+            else:
+                payload["content_diagnostic"]["auth_certified"] = False
         return payload
 
     @app.post("/v1/profiles/{profile_id}:snapshot", dependencies=[Depends(admin)])
