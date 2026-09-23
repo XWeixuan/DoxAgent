@@ -128,6 +128,30 @@ async def test_challenge_pauses_its_identity_while_another_profile_is_maintained
 
 
 @pytest.mark.asyncio
+async def test_exact_profile_probe_also_hands_off_a_challenge(
+    service: SiteStrategyService,
+) -> None:
+    async def challenge(*_args):
+        return RuntimeResponse(
+            200,
+            "https://www.barrons.com/articles/example",
+            {},
+            "<html><title>Access is temporarily restricted</title></html>",
+            challenge_token="c" * 32,
+            challenge_target_id="target-3",
+        )
+
+    service.runtime.execute = challenge  # type: ignore[method-assign]
+    result = await service.probe_profile("barrons-1", "https://www.barrons.com/articles/example")
+    assert result.failure_category is not None
+    assert result.failure_category.value == "ACCESS_CHALLENGE"
+    profile = service.repository.get_profile("barrons-1")
+    assert profile is not None
+    assert profile.operational_state is ProfileOperationalState.MAINTENANCE
+    assert profile.challenge_target_id == "target-3"
+
+
+@pytest.mark.asyncio
 async def test_challenge_keeps_original_article_and_blocks_identity_until_verified(
     service: SiteStrategyService,
     monkeypatch: pytest.MonkeyPatch,

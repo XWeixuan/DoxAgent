@@ -1351,9 +1351,11 @@ class SiteStrategyService:
             raise ValueError("probe URL does not belong to the profile site")
         combination = next(
             (
-                item
+                materialized
                 for item in resolved.access.combinations
-                if item.profile_id == profile_id and item.egress_id == profile.bound_egress_id
+                if (materialized := self._materialize_combination(item)) is not None
+                and materialized.profile_id == profile_id
+                and materialized.egress_id == profile.bound_egress_id
             ),
             None,
         )
@@ -1379,6 +1381,17 @@ class SiteStrategyService:
                 response, category, reason, network_ms = await self._attempt(
                     request, resolved, combination, current_profile, egress
                 )
+                if response.challenge_token is not None:
+                    identity = self._identity_for(combination, current_profile)
+                    await self.profile_use.begin_challenge(
+                        profile_id,
+                        token=response.challenge_token,
+                        site_id=resolved.site_id,
+                        identity_id=identity.identity_id,
+                        combination_id=combination.combination_id,
+                        article_url=url,
+                        target_id=response.challenge_target_id,
+                    )
         runtime = self.repository.get_runtime(resolved.runtime_key)
         attempt = AccessAttempt(
             combination_id=combination.combination_id,
@@ -1409,6 +1422,8 @@ class SiteStrategyService:
                 transport=AccessMode.BROWSER,
             )
         self._event(request, resolved, combination, "PROFILE_PROBE", attempt)
+        if response.challenge_token is not None:
+            await self.profile_use.finish_challenge(profile_id, response.challenge_token)
         if category is None and 200 <= response.status_code < 300:
             disposition = AccessDisposition.SUCCESS
         elif category in {FailureCategory.AUTH_REQUIRED, FailureCategory.ENTITLEMENT_MISSING}:
