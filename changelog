@@ -1190,3 +1190,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-23 · 双轨 Site Access 的 O4 生产依赖补全：生产开关生效后 O4 同样会构建 Crawler Plane，现为 `v2-o4` 精确挂载受限 worker token 并等待 Site Access 健康，消除因令牌缺失导致的重启循环；回归测试同步覆盖三个实际消费 Site Access 的服务。
 
 2026-09-23 · 预期研究补充 Shell 概况：在当前 Shell 的 Unit 内容上方紧凑展示核心问题与边界规则，随 Shell 选择切换；不添加执行状态、Unit 数量或失败字段。
+
+2026-09-23 · Barron's 正文失败定位留痕：Site Access 在 Runtime 尝试捕获异常时记录完整内部堆栈、operation/site/combination/Identity 与重试序号；保持对外错误分类和正文重试行为不变，用于生产受控复测 MU、INTC 两条消息。
