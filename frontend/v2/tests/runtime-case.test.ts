@@ -122,7 +122,8 @@ describe("Runtime Case presentation", () => {
     );
     expect(html).toContain('target="_blank"');
     expect(html).toContain(
-      "filter=HIT&amp;policy=pol-1&amp;policy_set_version=3&amp;activation=run-17",
+      "policy=pol-1&amp;policy_set_version=3&amp;activation=run-17",
     );
+    expect(html).not.toContain("period=ALL");
   });
 });

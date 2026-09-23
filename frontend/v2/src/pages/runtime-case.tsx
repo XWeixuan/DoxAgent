@@ -565,12 +565,11 @@ function policyHref(
   activationId?: string,
 ) {
   return `/ticker/${id(ticker)}/strategy?${new URLSearchParams({
-    period: "ALL",
-    shell: "ALL",
-    filter,
     policy: policy.policy_id,
     policy_set_version: String(policy.policy_set_version),
-    ...(activationId ? { activation: activationId } : {}),
+    ...(activationId
+      ? { activation: activationId }
+      : { shell: "ALL", filter }),
   })}`;
 }
 function CaseMessage({
