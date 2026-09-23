@@ -105,6 +105,29 @@ async def test_only_one_profile_can_be_maintained(service: SiteStrategyService) 
 
 
 @pytest.mark.asyncio
+async def test_challenge_pauses_its_identity_while_another_profile_is_maintained(
+    service: SiteStrategyService,
+) -> None:
+    manual_token = await service.profile_use.begin_maintenance("wsj-1")
+    challenge_token = "b" * 32
+    async with service.profile_use.business("barrons-1"):
+        await service.profile_use.begin_challenge(
+            "barrons-1",
+            token=challenge_token,
+            site_id="barrons",
+            identity_id="barrons-1",
+            combination_id="barrons-1",
+            article_url="https://www.barrons.com/articles/example",
+            target_id="target-2",
+        )
+    await service.profile_use.finish_challenge("barrons-1", challenge_token)
+    await service.profile_use.assert_session("barrons-1", challenge_token)
+    await service.profile_use.end_maintenance("wsj-1", manual_token)
+    await service.profile_use.assert_session("barrons-1", challenge_token)
+    await service.profile_use.end_maintenance("barrons-1", challenge_token)
+
+
+@pytest.mark.asyncio
 async def test_challenge_keeps_original_article_and_blocks_identity_until_verified(
     service: SiteStrategyService,
     monkeypatch: pytest.MonkeyPatch,
