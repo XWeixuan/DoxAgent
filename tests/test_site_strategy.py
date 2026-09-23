@@ -20,12 +20,32 @@ from doxagent.site_strategy.schema import (
     AccessDisposition,
     AccessMode,
     AccessRequest,
+    BrowserProfile,
     FailureCategory,
     ProxyEgress,
     SitePurpose,
 )
 from doxagent.site_strategy.seeds import bootstrap_seed
 from doxagent.site_strategy.service import SiteStrategyService
+
+
+def test_browser_profile_preserves_legacy_challenge_markers() -> None:
+    profile = BrowserProfile.model_validate(
+        {
+            "profile_id": "dowjones-main",
+            "site_id": "barrons",
+            "bound_egress_id": "us-standard-5",
+            "directory_key": "dowjones-main",
+            "challenge_url": None,
+            "challenge_site_id": None,
+            "challenge_identity_id": None,
+            "challenge_combination_id": None,
+            "challenge_target_id": None,
+            "challenge_verified": False,
+        }
+    )
+    assert "challenge_verified" in profile.model_dump()
+    assert BrowserProfile.model_validate_json(profile.model_dump_json()) == profile
 
 
 @pytest.fixture
