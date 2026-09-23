@@ -1,5 +1,7 @@
 # changelog
 
+- 2026-09-24: 修复 Yahoo Finance 托管文章改标题后正文补全误判为 `publisher_identity_mismatch`：仅在同一 canonical 文章 URL、完整文章页与原提供方摘要和正文开头充分重合时接受新标题，并记录标题修订证据；保留对错文及不相关正文的拒绝。
+
 - 2026-09-22: 完成 Site Access 浏览器修复远端发布与首轮生产验收：冷备份、CfT 153/Playwright 1.63 镜像、UID 10001 + Chrome sandbox/seccomp/AppArmor、Profile 快照/优雅重启、5 出口 READY、14 项站点矩阵、Yahoo/Reuters 真实 crawler recipe、generic SSRF 拒绝、xRDP 受限维护工具与两个消费者切换均完成。订阅登录和 24 小时业务观察明确保留为独立验收，不预先报成功。
 
 - 2026-09-22: 修复远端 rollout 暴露的 Site Access 组合字段契约偏差：直连候选编排与 xRDP 维护库存统一使用 Registry 的 `combination_id`，不再读写不存在的 `id`；增加桌面安全输出回归断言。

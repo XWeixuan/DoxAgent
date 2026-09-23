@@ -45,6 +45,40 @@ def title_match(left: str, right: str) -> bool:
     return bool(a and b and len(a & b) / min(len(a), len(b)) >= 0.45)
 
 
+def yahoo_revised_title_verified(
+    info: Inspection, url: str, provider_summary: str | None, strategy_ref: str | None
+) -> bool:
+    """Accept a revised Yahoo headline only with same-article and body evidence."""
+    if (
+        (strategy_ref or legacy_strategy_ref(url)) != "builtin:yahoo@1"
+        or info.page_kind != "article"
+        or info.access_reason
+        or info.publisher_links
+        or info.expansion_required
+        or not info.headline
+        or not provider_summary
+        or len(provider_summary) < 120
+    ):
+        return False
+    requested, canonical = urlparse(url), urlparse(info.canonical)
+    if (
+        requested.hostname != "finance.yahoo.com"
+        or canonical.hostname != requested.hostname
+        or canonical.path.rstrip("/") != requested.path.rstrip("/")
+        or "/articles/" not in requested.path
+    ):
+        return False
+    summary_tokens = tokens(provider_summary)
+    if len(summary_tokens) < 14:
+        return False
+    return any(
+        candidate.structured
+        and len(candidate.text) >= 800
+        and len(summary_tokens & tokens(candidate.text[:900])) / len(summary_tokens) >= 0.6
+        for candidate in info.candidates
+    )
+
+
 @dataclass(frozen=True)
 class Candidate:
     text: str

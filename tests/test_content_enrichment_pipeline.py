@@ -156,6 +156,61 @@ def test_mismatched_article_and_app_shell():
     )
 
 
+@pytest.mark.parametrize("canonical_matches,summary_matches,accepted", [
+    (True, True, True),
+    (False, True, False),
+    (True, False, False),
+])
+async def test_yahoo_revised_headline_requires_same_article_and_summary(
+    canonical_matches, summary_matches, accepted
+):
+    from doxagent.monitoring.media_enrichment import MediaEnrichmentRecord
+
+    url = "https://finance.yahoo.com/markets/stocks/articles/wall-st-futures-muted-mideast-114116425.html"
+    old_title = "Wall St falls as oil ticks up, yields rise ahead of US-China summit"
+    new_title = "Wall Street falls as oil rebounds, Middle East tensions simmer"
+    summary = (
+        "By Johann M Cherian and Avinash P Sept 23 (Reuters) - Wall Street's main indexes "
+        "fell on Wednesday, as crude oil prices resumed their uptrend and bond yields gained, "
+        "while investors awaited a"
+    )
+    opening = (
+        "By Avinash P and Shashwat Chauhan Sept 23 (Reuters) - Wall Street's main indexes "
+        "fell on Wednesday as crude oil prices and bond yields climbed, while investors "
+        "assessed the latest developments from the US-Iran talks to end the Middle East "
+        "conflict ahead of the high-stakes Washington-Beijing summit."
+    )
+    canonical = url if canonical_matches else url.replace("114116425", "unrelated")
+    html = (
+        f'<link rel="canonical" href="{canonical}">'
+        f"<article><h1>{new_title}</h1><p>{opening}</p>"
+        + "".join(f"<p>{paragraph}</p>" for paragraph in PARAGRAPHS)
+        + "</article>"
+    )
+    session = Session({url: response(url, html)})
+    pipeline = ArticlePipeline(
+        PublicTransport(session, DomainFetchController(), validate_urls=False),
+        reader_enabled=False,
+    )
+    record = MediaEnrichmentRecord(
+        "id", "id", "yahoo_finance_news", "INTC", old_title,
+        summary if summary_matches else (
+            "A separate technology company announced a factory expansion and a new product "
+            "line after reporting quarterly earnings. Executives discussed capital spending, "
+            "customer shipments, software features, and manufacturing schedules."
+        ),
+        url,
+    )
+    result = await pipeline.extract(record)
+    assert result.succeeded is accepted
+    if accepted:
+        assert result.diagnostics["title_revision"]["article_title"] == new_title
+        assert result.diagnostics["identity_match"] == "supported"
+        assert len(result.content or "") >= 800
+    else:
+        assert result.reason == "publisher_identity_mismatch"
+
+
 class Session:
     def __init__(self, responses):
         self.responses = responses

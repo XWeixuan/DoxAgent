@@ -14,6 +14,7 @@ from doxagent.content_enrichment.quality import (
     choose_candidate,
     inspect_html,
     inspect_reader,
+    yahoo_revised_title_verified,
 )
 from doxagent.content_enrichment.transport import Observation, PublicTransport
 from doxagent.monitoring.media_enrichment import (
@@ -140,7 +141,9 @@ class ArticlePipeline:
                     strategy_ref=strategy_ref,
                     strategy_parameters=strategy_parameters,
                 )
-                candidate, outcome, reason = choose_candidate(info, record.title)
+                candidate, outcome, reason = self._choose_article(
+                    info, record, url, strategy_ref, diagnostics
+                )
                 if candidate:
                     content, method = candidate.text, candidate.method
                     break
@@ -260,7 +263,9 @@ class ArticlePipeline:
                         strategy_ref=strategy_ref,
                         strategy_parameters=strategy_parameters,
                     )
-                    candidate, outcome, reason = choose_candidate(info, record.title)
+                    candidate, outcome, reason = self._choose_article(
+                        info, record, rendered.url, strategy_ref, diagnostics
+                    )
                     status = rendered.status
                     if candidate:
                         content, method = candidate.text, "browser_" + candidate.method
@@ -371,6 +376,30 @@ class ArticlePipeline:
             existing_quality=assess_media_body(record.body, record.title),
             extracted_quality=assess_media_body(content, record.title) if content else None,
         )
+
+    @staticmethod
+    def _choose_article(
+        info: Inspection,
+        record: MediaEnrichmentRecord,
+        url: str,
+        strategy_ref: str | None,
+        diagnostics: dict[str, Any],
+    ) -> tuple[Candidate | None, str, str]:
+        selected = choose_candidate(info, record.title)
+        if selected[2] != "publisher_identity_mismatch" or not yahoo_revised_title_verified(
+            info, url, record.body, strategy_ref
+        ):
+            return selected
+        revised = choose_candidate(info, info.headline)
+        if revised[0]:
+            diagnostics["title_revision"] = {
+                "provider_title": record.title,
+                "article_title": info.headline,
+                "canonical_url": info.canonical,
+                "evidence": "same_yahoo_article_and_provider_summary_overlap",
+            }
+            return revised
+        return selected
 
     @staticmethod
     def _stage(reason: str) -> str:
