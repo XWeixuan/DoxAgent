@@ -1190,3 +1190,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-23 · 双轨 Site Access 的 O4 生产依赖补全：生产开关生效后 O4 同样会构建 Crawler Plane，现为 `v2-o4` 精确挂载受限 worker token 并等待 Site Access 健康，消除因令牌缺失导致的重启循环；回归测试同步覆盖三个实际消费 Site Access 的服务。
 
 2026-09-23 · 预期研究补充 Shell 概况：在当前 Shell 的 Unit 内容上方紧凑展示核心问题与边界规则，随 Shell 选择切换；不添加执行状态、Unit 数量或失败字段。
+
+2026-09-23 · V2 前端周期与研判引用：Overview 及各业务页默认切换为本交易日，时间控件将当天置于前一天之前；Runtime Case 的可解析 Event/Fact、R1 召回及最终命中 Policy 增加新标签页深链，事件定位至固定快照及 Fact，Policy 从 Case 绑定的 Policy Set 原文读取并定位。前端类型检查、定向测试与生产构建通过。

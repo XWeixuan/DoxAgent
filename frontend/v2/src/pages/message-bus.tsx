@@ -56,7 +56,7 @@ export default function MessageBus() {
   const [p, setP] = useSearchParams();
   const config = p.get("mode") === "CONFIG";
   const period = (periods.find((x) => x[0] === p.get("period"))?.[0] ??
-    "PREVIOUS_TRADING_DAY") as Period;
+    "CURRENT_TRADING_DAY") as Period;
   const ctx = usePageContext(ticker, "MESSAGE_BUS", period);
   const feed = usePageContext(ticker, "MESSAGE_BUS", "ALL");
   return (

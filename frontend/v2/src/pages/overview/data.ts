@@ -4,8 +4,8 @@ import { useRuntime } from "@/core/runtime";
 import { queryString, type Endpoints } from "@/core/api";
 import type { PendingCommand } from "@/core/operations";
 export const periods = [
-  ["PREVIOUS_TRADING_DAY", "前一交易日"],
   ["CURRENT_TRADING_DAY", "本交易日"],
+  ["PREVIOUS_TRADING_DAY", "前一交易日"],
   ["TRADING_DAYS_7", "7 天"],
   ["TRADING_DAYS_30", "30 天"],
 ] as const;

@@ -75,8 +75,7 @@ export default function Overview() {
   const [params, setParams] = useSearchParams();
   const selected = params.get("period");
   const period: Period =
-    periods.find(([value]) => value === selected)?.[0] ??
-    "PREVIOUS_TRADING_DAY";
+    periods.find(([value]) => value === selected)?.[0] ?? "CURRENT_TRADING_DAY";
   const run =
     filtersSupported &&
     ["RUNNING", "INITIALIZING", "PAUSED", "STOPPED"].includes(

@@ -18,8 +18,8 @@ import { Comparison, MetricNote } from "@/pages/overview/metrics";
 import { metricText, valueText, decimal } from "@/core/format";
 import Decimal from "decimal.js";
 export const periods = [
-  ["PREVIOUS_TRADING_DAY", "前一天"],
   ["CURRENT_TRADING_DAY", "当天"],
+  ["PREVIOUS_TRADING_DAY", "前一天"],
   ["TRADING_DAYS_7", "7天"],
   ["TRADING_DAYS_30", "30天"],
   ["ALL", "全部"],

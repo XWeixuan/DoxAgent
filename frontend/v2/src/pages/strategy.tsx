@@ -6,6 +6,7 @@ import {
   History as HistoryIcon,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useParams, useSearchParams, Link } from "react-router-dom";
 import type {
   Period,
@@ -14,7 +15,10 @@ import type {
   PolicyFilter,
   ChangeEvent,
   PolicyShellSummary,
+  Policy,
+  PolicySetDownload,
 } from "@contract";
+import { useRuntime } from "@/core/runtime";
 import { usePageContext, useRead, tickerPath, id } from "@/core/page-query";
 import { usePages } from "@/core/paged-query";
 import { queryString } from "@/core/api";
@@ -40,7 +44,7 @@ export default function Strategy() {
   const { ticker = "" } = useParams();
   const [p, setP] = useSearchParams();
   const period = (periods.find((x) => x[0] === p.get("period"))?.[0] ??
-    "PREVIOUS_TRADING_DAY") as Period;
+    "CURRENT_TRADING_DAY") as Period;
   const [timeline, setTimeline] = useState(false);
   const context = usePageContext(ticker, "POLICIES", period);
   const view = context.data?.data.view_id;
@@ -86,6 +90,16 @@ export default function Strategy() {
         <ChangeTimeline ticker={ticker} close={() => setTimeline(false)} />
       )}
       {context.error && <Notice danger>{context.error.message}</Notice>}
+      {p.get("activation") &&
+        p.get("policy") &&
+        p.get("policy_set_version") && (
+          <PinnedPolicy
+            ticker={ticker}
+            policyId={p.get("policy")!}
+            version={p.get("policy_set_version")!}
+            activationId={p.get("activation")!}
+          />
+        )}
       <Module query={data} label="策略目录">
         {(d) => (
           <Policies ticker={ticker} data={d} view={view!} period={period} />
@@ -142,6 +156,43 @@ function Policies({
     view,
   );
   const list = policies.data?.data.data?.items ?? [];
+  const {
+    data: policyPages,
+    hasNextPage,
+    isFetchingNextPage,
+    error: policyError,
+    fetchNextPage,
+  } = policies;
+  const targetPolicy = p.get("policy");
+  const pinned = Boolean(p.get("activation") && targetPolicy);
+  const targetVersion = p.get("policy_set_version");
+  const versionMatches =
+    !targetVersion ||
+    targetVersion === String(data.policy_set.policy_set_version);
+  const targetListed = list.some((item) => item.policy_id === targetPolicy);
+  useEffect(() => {
+    if (
+      targetPolicy &&
+      !pinned &&
+      versionMatches &&
+      policyPages &&
+      !targetListed &&
+      hasNextPage &&
+      !isFetchingNextPage &&
+      !policyError
+    )
+      void fetchNextPage();
+  }, [
+    targetPolicy,
+    pinned,
+    versionMatches,
+    targetListed,
+    policyPages,
+    hasNextPage,
+    isFetchingNextPage,
+    policyError,
+    fetchNextPage,
+  ]);
   const set = (key: string, value: string) => {
     const n = new URLSearchParams(p);
     n.set(key, value);
@@ -171,9 +222,12 @@ function Policies({
       </Module>
       {data.maintenance?.status === "MAINTAIN_COMPLETED" && (
         <Notice>
-          最新维护已完成 · {data.maintenance.policy_disposition === "CONTENT_CHANGED"
+          最新维护已完成 ·{" "}
+          {data.maintenance.policy_disposition === "CONTENT_CHANGED"
             ? `Policy 内容已变更（v${data.maintenance.from_policy_version} → v${data.maintenance.to_policy_version}）`
-            : ["NO_CHANGE", "INHERITED"].includes(data.maintenance.policy_disposition)
+            : ["NO_CHANGE", "INHERITED"].includes(
+                  data.maintenance.policy_disposition,
+                )
               ? `Policy 无内容变化（v${data.maintenance.to_policy_version}）`
               : "Policy 内容变化未记录"}
         </Notice>
@@ -230,29 +284,54 @@ function Policies({
             策略引用的 D2 与现行 D2 不同，无法关联的策略保留在全部 Shell。
           </Notice>
         )}
+      {targetPolicy && !pinned && !versionMatches && (
+        <Notice>
+          此 Case 引用 Policy Set v{targetVersion}，当前页面为 v
+          {data.policy_set.policy_set_version}；无法将当前版本当作原研判依据。
+        </Notice>
+      )}
+      {targetPolicy &&
+        !pinned &&
+        versionMatches &&
+        policies.data &&
+        !targetListed &&
+        !policies.hasNextPage && (
+          <Notice>当前策略集合中未找到 {targetPolicy}。</Notice>
+        )}
       <Module query={policies} label="策略列表">
         {() =>
           list.length ? (
             <div className="policy-reading-layout">
               <div className="policy-document-list">
-                {list.map((selected) => (
-                  <PolicyBody
-                    key={selected.policy_revision_id}
-                    ticker={ticker}
-                    selected={selected}
-                    focus={p.get("policy") === selected.policy_id}
-                    view={view}
-                  />
-                ))}
+                {list
+                  .filter(
+                    (selected) =>
+                      !pinned || selected.policy_id !== targetPolicy,
+                  )
+                  .map((selected) => (
+                    <PolicyBody
+                      key={selected.policy_revision_id}
+                      ticker={ticker}
+                      selected={selected}
+                      focus={
+                        !pinned &&
+                        versionMatches &&
+                        targetPolicy === selected.policy_id
+                      }
+                      view={view}
+                    />
+                  ))}
               </div>
               <EventRail
                 label="策略索引"
-                items={list.map((s) => ({
-                  key: s.policy_id,
-                  target: "policy-" + s.policy_id,
-                  id: s.decision,
-                  title: s.title,
-                }))}
+                items={list
+                  .filter((s) => !pinned || s.policy_id !== targetPolicy)
+                  .map((s) => ({
+                    key: s.policy_id,
+                    target: "policy-" + s.policy_id,
+                    id: s.decision,
+                    title: s.title,
+                  }))}
                 onSelect={(key) => set("policy", key)}
               />
               {policies.hasNextPage && (
@@ -265,7 +344,7 @@ function Policies({
                 </LoadMore>
               )}
             </div>
-          ) : (
+          ) : pinned ? null : (
             <Notice>当前筛选没有匹配的 Policy</Notice>
           )
         }
@@ -304,61 +383,144 @@ function PolicyBody({
     <div id={"policy-" + selected.policy_id} className="policy-anchor">
       <Module query={detail} label="策略正文">
         {(d) => (
-          <article className="policy-document">
-            <header>
-              <span
-                className={`decision decision-${d.policy.decision.toLowerCase()}`}
-              >
-                {d.policy.decision}
-              </span>
-              <h2>{d.policy.title}</h2>
-            </header>
-            <section>
-              <h3>
-                <Crosshair aria-hidden="true" />
-                匹配范围
-              </h3>
-              <p>{d.policy.match_scope}</p>
-            </section>
-            <section>
-              <h3>
-                <GitPullRequestArrow aria-hidden="true" />
-                激活条件 <span className="domain-tag">任一满足 · OR</span>
-              </h3>
-              {d.policy.activation_conditions.map((c, i) => (
-                <article className="condition" key={c.condition_id}>
-                  <span className="condition-number">{i + 1}</span>
-                  <div>
-                    <h4>{c.criterion}</h4>
-                    <dl>
-                      <dt>参考状态</dt>
-                      <dd>{c.calibration.reference_state}</dd>
-                      <dt>触发边界</dt>
-                      <dd>{c.calibration.trigger_boundary}</dd>
-                    </dl>
-                  </div>
-                </article>
-              ))}
-            </section>
-            <section>
-              <h3>
-                <Link2 aria-hidden="true" />
-                关联预期
-              </h3>
-              <div className="source-links">
-                {d.policy.source_refs.map((s, i) => (
-                  <Link
-                    key={i}
-                    to={`/ticker/${id(ticker)}/expectations?run=${id(d.source_document2.run_id)}&shell=${id(s.shell_id)}&unit=${id(s.expectation_id)}&content=GAPS&item=${id(s.gap_id)}`}
-                  >
-                    {s.shell_id} / {s.expectation_id} / {s.gap_id}
-                  </Link>
-                ))}
-              </div>
-            </section>
-          </article>
+          <PolicyDocument
+            ticker={ticker}
+            policy={d.policy}
+            sourceRun={d.source_document2.run_id}
+          />
         )}
       </Module>
+    </div>
+  );
+}
+function PolicyDocument({
+  ticker,
+  policy,
+  sourceRun,
+}: {
+  ticker: string;
+  policy: Policy;
+  sourceRun: string;
+}) {
+  return (
+    <article className="policy-document">
+      <header>
+        <span className={`decision decision-${policy.decision.toLowerCase()}`}>
+          {policy.decision}
+        </span>
+        <h2>{policy.title}</h2>
+      </header>
+      <section>
+        <h3>
+          <Crosshair aria-hidden="true" />
+          匹配范围
+        </h3>
+        <p>{policy.match_scope}</p>
+      </section>
+      <section>
+        <h3>
+          <GitPullRequestArrow aria-hidden="true" />
+          激活条件 <span className="domain-tag">任一满足 · OR</span>
+        </h3>
+        {policy.activation_conditions.map((c, i) => (
+          <article className="condition" key={c.condition_id}>
+            <span className="condition-number">{i + 1}</span>
+            <div>
+              <h4>{c.criterion}</h4>
+              <dl>
+                <dt>参考状态</dt>
+                <dd>{c.calibration.reference_state}</dd>
+                <dt>触发边界</dt>
+                <dd>{c.calibration.trigger_boundary}</dd>
+              </dl>
+            </div>
+          </article>
+        ))}
+      </section>
+      <section>
+        <h3>
+          <Link2 aria-hidden="true" />
+          关联预期
+        </h3>
+        <div className="source-links">
+          {policy.source_refs.map((s, i) => (
+            <Link
+              key={i}
+              to={`/ticker/${id(ticker)}/expectations?run=${id(sourceRun)}&shell=${id(s.shell_id)}&unit=${id(s.expectation_id)}&content=GAPS&item=${id(s.gap_id)}`}
+            >
+              {s.shell_id} / {s.expectation_id} / {s.gap_id}
+            </Link>
+          ))}
+        </div>
+      </section>
+    </article>
+  );
+}
+function PinnedPolicy({
+  ticker,
+  policyId,
+  version,
+  activationId,
+}: {
+  ticker: string;
+  policyId: string;
+  version: string;
+  activationId: string;
+}) {
+  const { api, scope } = useRuntime();
+  const pinned = useQuery({
+    queryKey: [scope, "pinned-policy", ticker, policyId, version, activationId],
+    queryFn: async ({ signal }) => {
+      const { blob } = await api.download(
+        tickerPath(ticker) +
+          `/policy-sets/${id(version)}/download` +
+          queryString({ runtime_activation_id: activationId }),
+        signal,
+      );
+      const artifact: unknown = JSON.parse(await blob.text());
+      if (
+        !artifact ||
+        typeof artifact !== "object" ||
+        !("ticker" in artifact) ||
+        artifact.ticker !== ticker ||
+        !("policy_set_version" in artifact) ||
+        String(artifact.policy_set_version) !== version ||
+        !("policies" in artifact) ||
+        !Array.isArray(artifact.policies)
+      )
+        throw new Error("引用的 Policy Set 内容不匹配");
+      const data = artifact as PolicySetDownload;
+      const policy = data.policies.find((item) => item.policy_id === policyId);
+      if (!policy) throw new Error("引用的 Policy 不在该版本中");
+      return { policy, sourceRun: data.document2_ref.run_id };
+    },
+  });
+  useEffect(() => {
+    if (pinned.data)
+      document
+        .getElementById("policy-" + policyId)
+        ?.scrollIntoView({ block: "start" });
+  }, [pinned.data, policyId]);
+  return (
+    <div id={"policy-" + policyId} className="policy-anchor">
+      {pinned.isPending ? (
+        <div className="module-loading" role="status">
+          正在读取引用 Policy
+        </div>
+      ) : pinned.error ? (
+        <Notice danger>
+          {pinned.error.message}{" "}
+          <Button variant="link" onClick={() => void pinned.refetch()}>
+            重试
+          </Button>
+        </Notice>
+      ) : pinned.data ? (
+        <PolicyDocument
+          ticker={ticker}
+          policy={pinned.data.policy}
+          sourceRun={pinned.data.sourceRun}
+        />
+      ) : null}
     </div>
   );
 }

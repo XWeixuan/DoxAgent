@@ -33,6 +33,7 @@ describe("Runtime Case presentation", () => {
   it("shows exact attributed fact text, not an entire event's facts", () => {
     const html = renderToStaticMarkup(
       createElement(EventEvidence, {
+        ticker: "MU",
         references: [
           {
             kind: "CANONICAL",
@@ -55,10 +56,13 @@ describe("Runtime Case presentation", () => {
     expect(html).toContain("Union dispute");
     expect(html).toContain("Strike threatened");
     expect(html).not.toContain("Unrelated fact");
+    expect(html).toContain('target="_blank"');
+    expect(html).toContain("snapshot=snapshot&amp;event=E14&amp;fact=F281");
   });
   it("keeps provisional and unresolved identities honest", () => {
     const html = renderToStaticMarkup(
       createElement(EventEvidence, {
+        ticker: "MU",
         references: [
           {
             kind: "PROVISIONAL",
@@ -79,19 +83,46 @@ describe("Runtime Case presentation", () => {
     expect(html).toContain("Provisional supply news");
     expect(html).toContain("F7");
     expect(html).not.toContain("F81");
+    expect(html).not.toContain('target="_blank"');
   });
   it("distinguishes unknown recall and unresolved policy names", () => {
     expect(
-      renderToStaticMarkup(createElement(PolicyEvidence, { label: "R1 召回" })),
+      renderToStaticMarkup(
+        createElement(PolicyEvidence, { ticker: "MU", label: "R1 召回" }),
+      ),
     ).toContain("候选信息未记录");
     expect(
       renderToStaticMarkup(
         createElement(PolicyEvidence, {
+          ticker: "MU",
           label: "R2 命中",
           policies: [],
           unresolved: ["P7"],
         }),
       ),
     ).toContain("固定快照名称未解析");
+  });
+  it("opens a case-pinned policy in a new tab", () => {
+    const html = renderToStaticMarkup(
+      createElement(PolicyEvidence, {
+        ticker: "MU",
+        label: "最终命中 Policy",
+        filter: "HIT",
+        activationId: "run-17",
+        policies: [
+          {
+            policy_id: "pol-1",
+            policy_set_version: 3,
+            policy_activation_revision: "rev",
+            condition_ids: ["cond-1"],
+            title: value("HBM delivery"),
+          },
+        ],
+      }),
+    );
+    expect(html).toContain('target="_blank"');
+    expect(html).toContain(
+      "filter=HIT&amp;policy=pol-1&amp;policy_set_version=3&amp;activation=run-17",
+    );
   });
 });

@@ -37,7 +37,7 @@ export default function Events() {
   const { ticker = "" } = useParams();
   const [p, setP] = useSearchParams();
   const period = (periods.find((x) => x[0] === p.get("period"))?.[0] ??
-    "PREVIOUS_TRADING_DAY") as Period;
+    "CURRENT_TRADING_DAY") as Period;
   const mode = p.get("mode") === "DELTA" ? "DELTA" : "FULL";
   const context = usePageContext(ticker, "EVENTS", period),
     view = context.data?.data.view_id;
@@ -163,6 +163,12 @@ function FullEvents({
     view,
   );
   const list = q.data?.data.data?.items ?? [];
+  const linkedEvent = p.get("event");
+  const linkedSnapshot = p.get("snapshot");
+  const visible = list.filter(
+    (s) =>
+      s.event_id !== linkedEvent || s.library_snapshot_id !== linkedSnapshot,
+  );
   return (
     <>
       <div className="filter-bar event-filter-bar">
@@ -180,11 +186,19 @@ function FullEvents({
           />
         </div>
       </div>
+      {linkedEvent && linkedSnapshot && (
+        <LinkedEvent
+          ticker={ticker}
+          eventId={linkedEvent}
+          snapshot={linkedSnapshot}
+          factId={p.get("fact")}
+        />
+      )}
       <Module query={q} label="事件列表">
         {() =>
-          list.length ? (
+          visible.length ? (
             <div className="event-list">
-              {list.map((s) => (
+              {visible.map((s) => (
                 <EventCard
                   key={s.event_key + ":" + s.event_revision_id}
                   ticker={ticker}
@@ -201,7 +215,7 @@ function FullEvents({
                 />
               ))}
             </div>
-          ) : (
+          ) : linkedEvent ? null : (
             <Notice>当前筛选没有匹配事件</Notice>
           )
         }
@@ -216,7 +230,7 @@ function FullEvents({
         </LoadMore>
       )}
       <EventRail
-        items={list.map((s) => ({
+        items={visible.map((s) => ({
           key: s.event_key,
           target: "event-" + s.event_key,
           id: s.event_id,
@@ -225,6 +239,55 @@ function FullEvents({
         onSelect={(key) => setOpened(new Set([...opened, key]))}
       />
     </>
+  );
+}
+function LinkedEvent({
+  ticker,
+  eventId,
+  snapshot,
+  factId,
+}: {
+  ticker: string;
+  eventId: string;
+  snapshot: string;
+  factId: string | null;
+}) {
+  const path =
+    tickerPath(ticker) +
+    `/event-library/snapshots/${id(snapshot)}/events/${id(eventId)}?limit=20`;
+  const detail = useRead("Event", path);
+  const eventKey = detail.data?.data.data?.event_key;
+  useEffect(() => {
+    if (eventKey && !factId)
+      document
+        .getElementById("event-" + eventKey)
+        ?.scrollIntoView({ block: "start" });
+  }, [eventKey, factId]);
+  return (
+    <Module query={detail} label="引用事件">
+      {(data) => (
+        <article className="event-card" id={"event-" + data.event_key}>
+          <div className="event-card-heading">
+            <span className="event-id">{data.event.event_id}</span>
+            <h2>
+              {data.event.title}
+              {data.event.is_important && (
+                <span className="event-important">重要</span>
+              )}
+            </h2>
+            <span>{data.event.occurred_at}</span>
+          </div>
+          <EventContent
+            ticker={ticker}
+            data={data}
+            path={path}
+            delta={false}
+            loadFully
+            focusFactId={factId}
+          />
+        </article>
+      )}
+    </Module>
   );
 }
 export function EventCard({
@@ -308,12 +371,14 @@ function EventContent({
   path,
   delta,
   loadFully = false,
+  focusFactId,
 }: {
   ticker: string;
   data: EventDetail;
   path: string;
   delta: boolean;
   loadFully?: boolean;
+  focusFactId?: string | null;
 }) {
   const [more, setMore] = useState(false);
   const q = usePages<FactRow, "Facts">(
@@ -340,12 +405,21 @@ function EventContent({
   }, [loadFully, hasNextPage, isFetching, error, fetchNextPage]);
   const facts = pages.data?.data.data?.items ?? data.facts.items,
     e = data.event;
+  useEffect(() => {
+    if (focusFactId && facts.some(({ fact }) => fact.fact_id === focusFactId))
+      document
+        .getElementById(`event-${data.event_key}-fact-${focusFactId}`)
+        ?.scrollIntoView({ block: "center" });
+  }, [data.event_key, facts, focusFactId]);
   return (
     <div className="event-content">
       <p className="event-summary">{e.canonical_summary}</p>
       <div className="fact-list">
         {facts.map(({ fact: f, ...row }) => (
-          <article key={row.fact_key}>
+          <article
+            key={row.fact_key}
+            id={`event-${data.event_key}-fact-${f.fact_id}`}
+          >
             <header>
               <strong>{f.fact_id}</strong>
               <span className="domain-tag">{f.assertion_state}</span>

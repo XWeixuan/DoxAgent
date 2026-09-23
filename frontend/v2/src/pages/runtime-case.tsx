@@ -88,6 +88,7 @@ export default function CaseDetails({
                   )}
                 <Reason ticker={ticker} content={d.w1.data.reasoning}>
                   <EventEvidence
+                    ticker={ticker}
                     references={d.w1.data.references}
                     unresolved={d.w1.data.unresolved_reference_ids}
                     attributions={d.w1.data.fact_attributions}
@@ -142,12 +143,25 @@ export default function CaseDetails({
                   )}
                 <Reason ticker={ticker} content={d.w2.data.reasoning}>
                   <PolicyEvidence
+                    ticker={ticker}
+                    activationId={
+                      d.runtime_activation_id.state === "AVAILABLE"
+                        ? d.runtime_activation_id.value
+                        : undefined
+                    }
                     label="R1 召回候选 Policy"
                     policies={d.w2.data.candidate_policies}
                     unresolved={d.w2.data.unresolved_candidate_policy_ids}
                   />
                   <PolicyEvidence
+                    ticker={ticker}
+                    activationId={
+                      d.runtime_activation_id.state === "AVAILABLE"
+                        ? d.runtime_activation_id.value
+                        : undefined
+                    }
                     label="最终命中 Policy"
+                    filter="HIT"
                     policies={d.w2.data.policies}
                     unresolved={d.w2.data.unresolved_policy_ids}
                     recorded={d.w2.data.policy_hit.state === "AVAILABLE"}
@@ -407,10 +421,12 @@ export function RoundRows({
   );
 }
 export function EventEvidence({
+  ticker,
   references,
   unresolved,
   attributions,
 }: {
+  ticker: string;
   references: EventLink[];
   unresolved?: string[];
   attributions?: FactAttribution[] | null;
@@ -423,7 +439,20 @@ export function EventEvidence({
         <div className="grid gap-1" key={r.event_id}>
           <p>
             {r.kind === "PROVISIONAL" ? "临时事件" : "事件"} {r.event_id} ·{" "}
-            {r.title ? valueText(r.title) : "名称未记录"}
+            {r.kind === "CANONICAL" && r.event_key ? (
+              <a
+                className="case-reference-link"
+                href={eventHref(ticker, r)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {r.title ? valueText(r.title) : r.event_id}
+              </a>
+            ) : r.title ? (
+              valueText(r.title)
+            ) : (
+              "名称未记录"
+            )}
           </p>
           {r.kind === "PROVISIONAL" ? (
             <p>
@@ -437,7 +466,20 @@ export function EventEvidence({
               return (
                 <p key={factId}>
                   事实 {factId} ·{" "}
-                  {fact ? valueText(fact.proposition) : "事实内容未解析"}
+                  {r.kind === "CANONICAL" && r.event_key ? (
+                    <a
+                      className="case-reference-link"
+                      href={eventHref(ticker, r, factId)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {fact ? valueText(fact.proposition) : factId}
+                    </a>
+                  ) : fact ? (
+                    valueText(fact.proposition)
+                  ) : (
+                    "事实内容未解析"
+                  )}
                 </p>
               );
             })
@@ -460,15 +502,21 @@ export function EventEvidence({
   );
 }
 export function PolicyEvidence({
+  ticker,
+  activationId,
   label,
   policies,
   unresolved,
   recorded = true,
+  filter = "ACTIVE",
 }: {
+  ticker: string;
+  activationId?: string;
   label: string;
   policies?: PolicyLink[];
   unresolved?: string[];
   recorded?: boolean;
+  filter?: "ACTIVE" | "HIT";
 }) {
   return (
     <div className="grid gap-2">
@@ -482,7 +530,15 @@ export function PolicyEvidence({
       ) : null}
       {policies?.map((p) => (
         <p key={p.policy_id}>
-          策略 {p.policy_id} · {p.title ? valueText(p.title) : "名称未记录"}
+          策略 {p.policy_id} ·{" "}
+          <a
+            className="case-reference-link"
+            href={policyHref(ticker, p, filter, activationId)}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {p.title ? valueText(p.title) : p.policy_id}
+          </a>
           {p.condition_ids.length
             ? ` · 命中条件 ${p.condition_ids.join("、")}`
             : ""}
@@ -493,6 +549,29 @@ export function PolicyEvidence({
       ))}
     </div>
   );
+}
+function eventHref(ticker: string, event: EventLink, factId?: string) {
+  return `/ticker/${id(ticker)}/events?${new URLSearchParams({
+    mode: "FULL",
+    snapshot: event.library_snapshot_id,
+    event: event.event_id,
+    ...(factId ? { fact: factId } : {}),
+  })}`;
+}
+function policyHref(
+  ticker: string,
+  policy: PolicyLink,
+  filter: "ACTIVE" | "HIT",
+  activationId?: string,
+) {
+  return `/ticker/${id(ticker)}/strategy?${new URLSearchParams({
+    period: "ALL",
+    shell: "ALL",
+    filter,
+    policy: policy.policy_id,
+    policy_set_version: String(policy.policy_set_version),
+    ...(activationId ? { activation: activationId } : {}),
+  })}`;
 }
 function CaseMessage({
   ticker,

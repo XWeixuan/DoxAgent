@@ -74,7 +74,7 @@ function CostAudit({ ticker }: { ticker: string }) {
   const scope = p.get("scope") === "CODEX" ? "CODEX" : "API",
     dimension = p.get("dimension") === "MODEL" ? "MODEL" : "NODE";
   const period = (periods.find((x) => x[0] === p.get("period"))?.[0] ??
-    "PREVIOUS_TRADING_DAY") as Period;
+    "CURRENT_TRADING_DAY") as Period;
   const c = usePageContext(ticker, "COST", period),
     view = c.data?.data.view_id;
   const set = (key: string, v: string) => {

@@ -2648,3 +2648,7 @@
 .shell-overview dl { display: grid; grid-template-columns: 5em minmax(0, 1fr); gap: 8px 16px; margin: 0; font-size: 14px; line-height: 1.7; }
 .shell-overview dt { font-weight: 600; color: var(--muted-foreground); }
 .shell-overview dd { min-width: 0; margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.case-reference-link { color: var(--primary); text-decoration: underline; text-decoration-color: var(--border); text-underline-offset: 3px; }
+.case-reference-link:hover, .case-reference-link:focus-visible { text-decoration-color: currentColor; }
+.event-card [id*="-fact-"] { scroll-margin-top: 100px; }
+.policy-anchor, .event-card { scroll-margin-top: 100px; }
