@@ -60,6 +60,14 @@ python -m doxagent.site_strategy.cli --token "$SITE_ADMIN_TOKEN" \
 
 ## 观测与故障处理
 
+### Yahoo 页面爬虫的独立备用出口（2026-09-24）
+
+生产 Yahoo 主、备身份分别固定在 `jp-standard-6`、`us-standard-5`。两条上游代理同时超时期间，Message Bus 的 Yahoo adapter 会成功回退到 NCP，因此 `PollState=succeeded` 不能证明页面爬虫仍在运行。先核对 Site Access 的 `ACCESS_RESULT`、出口 IP 探测及 Yahoo `query_mode`，再判断故障段。不要修改原有 Profile 的出口绑定。
+
+`deploy/site-egress.manifest.example.json` 提供独立的 `tr-standard-1:18085` 监听槽。上线时先确认订阅中该节点存在，从 Site Access 所在网络验证出口 IP 和 Yahoo 真实列表页面；备份 Mihomo 配置及 Site Strategy SQLite，检查新配置后应用。在 Registry 中登记并 probe 新 Egress，创建专属 Yahoo Profile 和 Managed Identity，最后以当前 revision 的 CAS 为 `yahoo_finance` 增加优先级 30 的组合。旧主、备保持优先级 10、20，以便出口恢复后按原顺序使用。验收需看自动 `ACCESS_RESULT` 选中该组合且返回 `SUCCESS`，并在有新文章时确认 Raw 的 `query_mode=page_network_ncp`、stream 发布时间及正文处理；单次 HTTP 200 不构成消息时效性验收。
+
+Yahoo 页面 recipe 与直接 NCP 均读取 `/xhr/ncp?queryRef=latestNews`。2026-09-24 的事故窗口中，页面路径已成功时，文章 `published_at → Raw.collected_at` 中位数仍为 7.4 分钟（20 条）；NCP 回退路径为 10.2 分钟（48 条）。恢复页面爬虫能修复访问层退化，但不能把第三方文章的 `published_at` 保证为 Yahoo 列表首次可见时间，也不能保证所有消息 1–2 分钟内入站。
+
 - `stats --since ...`：正文按 site/strategy/combination/outcome/reason 聚合。
 - `events`：访问结果、风险失败、组合切换和策略 revision。
 - `combination status <runtime_key>`：active combination、generation、cooldown 和半开状态。

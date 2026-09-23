@@ -1202,3 +1202,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-24 · Barron's 正文诊断补强：管理员单 Profile 探针可接收预期标题并返回 HTML 字节数、页面类型、访问原因、正文候选长度及质量结果，不回传正文；Site Access 的运行异常留下组合、Identity、重试次数和堆栈，避免再次仅剩 `RuntimeError` 类名无法定位。原站点访问策略及业务认证门保持不变。
 
 2026-09-24 · 共享 Identity 逐站认证观测恢复：管理员可显式要求单 Profile 探针在“同站点、同 Identity、标题匹配且完整正文”时记录该 Site 的 `VALID` 观测，并绑定当前 Identity session revision；未通过质量门或 Profile 已进入维护时不写入认证。用于 WSJ 维护会话推进共享 Chrome 修订后，凭 Barron's 实际订阅正文重新确认 Barron's 访问，而不复用兄弟站点认证结论。
+
+2026-09-24 · Yahoo 页面爬虫出口恢复：固定出口清单增加独立土耳其节点 `tr-standard-1:18085`，避免主/备 JP、US 上游同时超时时把 NCP 回退误认作页面爬虫正常。远端在备份并验证配置后新增专属 Yahoo Managed Identity 和第三访问组合，自动页面 recipe 已重新返回成功；补充出口故障诊断与发布时间口径说明。
