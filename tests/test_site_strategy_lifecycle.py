@@ -7,7 +7,7 @@ import pytest
 
 from doxagent.site_strategy.repository import SiteStrategyRepository
 from doxagent.site_strategy.runtime import OwnerFileLock, PersistentBrowserPool, RuntimeResponse
-from doxagent.site_strategy.schema import ProfileOperationalState
+from doxagent.site_strategy.schema import BrowserRuntimeKind, ProfileOperationalState
 from doxagent.site_strategy.seeds import bootstrap_seed
 from doxagent.site_strategy.service import ProfileUnavailableError, SiteStrategyService
 
@@ -102,6 +102,84 @@ async def test_only_one_profile_can_be_maintained(service: SiteStrategyService) 
     with pytest.raises(ProfileUnavailableError, match="another_profile"):
         await service.profile_use.begin_maintenance("wsj-1")
     await service.profile_use.end_maintenance("barrons-1", first)
+
+
+@pytest.mark.asyncio
+async def test_challenge_keeps_original_article_and_blocks_identity_until_verified(
+    service: SiteStrategyService,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    article = "https://www.barrons.com/articles/example"
+    token = "a" * 32
+    combination = "barrons-1"
+    async with service.profile_use.business("barrons-1"):
+        await service.profile_use.begin_challenge(
+            "barrons-1",
+            token=token,
+            site_id="barrons",
+            identity_id="barrons-1",
+            combination_id=combination,
+            article_url=article,
+            target_id="chrome-target-1",
+        )
+        with pytest.raises(ProfileUnavailableError, match="maintenance"):
+            async with service.profile_use.business("barrons-1"):
+                pass
+    await service.profile_use.finish_challenge("barrons-1", token)
+    profile = service.repository.get_profile("barrons-1")
+    assert profile is not None
+    assert profile.operational_state is ProfileOperationalState.MAINTENANCE
+    assert profile.challenge_target_id == "chrome-target-1"
+    identity = service.repository.get_identity("barrons-1")
+    assert identity is not None
+    external = identity.model_copy(update={"runtime_kind": BrowserRuntimeKind.EXTERNAL_CHROME})
+    original_list = service.repository.list_active_identities
+    monkeypatch.setattr(
+        service.repository,
+        "list_active_identities",
+        lambda: [
+            (head, external if item.identity_id == "barrons-1" else item)
+            for head, item in original_list()
+        ],
+    )
+    await service.profile_use.recover()
+    recovered = service.repository.get_profile("barrons-1")
+    assert recovered is not None
+    assert recovered.operational_state is ProfileOperationalState.MAINTENANCE
+    assert recovered.challenge_target_id == "chrome-target-1"
+
+    async def adopt_challenge(profile, egress, *, identity, site_id, token):
+        return {"login_token": token, "url": article, "challenge_url": article}
+
+    async def verify_login(token, article_url):
+        return RuntimeResponse(
+            200,
+            article_url,
+            {},
+            "<html><h1>Article</h1><article><p>Subscriber body text.</p></article></html>",
+        )
+
+    async def close_login(token):
+        return "barrons-1"
+
+    service.runtime.adopt_challenge = adopt_challenge  # type: ignore[method-assign]
+    service.runtime.verify_login = verify_login  # type: ignore[method-assign]
+    service.runtime.close_login = close_login  # type: ignore[method-assign]
+    opened = await service.open_identity_login("barrons", "barrons-1")
+    assert opened["login_token"] == token
+    with pytest.raises(RuntimeError, match="not been verified"):
+        await service.close_profile_login(token)
+    with pytest.raises(ValueError, match="triggering article"):
+        await service.verify_identity(
+            "barrons", "barrons-1", "https://www.barrons.com/articles/other", token
+        )
+    updated, _ = await service.verify_identity("barrons", "barrons-1", article, token)
+    assert updated.challenge_verified is True
+    await service.close_profile_login(token)
+    resumed = service.repository.get_profile("barrons-1")
+    assert resumed is not None
+    assert resumed.operational_state is ProfileOperationalState.AVAILABLE
+    assert resumed.challenge_url is None
 
 
 @pytest.mark.asyncio
@@ -209,9 +287,7 @@ async def test_failed_context_close_keeps_profile_writer_lock(
 
     with pytest.raises(RuntimeError, match="close failed"):
         await pool.close_profile_if_idle(profile.profile_id, reason="test_failure")
-    contender = OwnerFileLock(
-        pool.root / ".profile-locks" / f"{profile.directory_key}.lock"
-    )
+    contender = OwnerFileLock(pool.root / ".profile-locks" / f"{profile.directory_key}.lock")
     with pytest.raises(RuntimeError, match="already held"):
         contender.acquire()
     assert len(pool._unclean_entries) == 1

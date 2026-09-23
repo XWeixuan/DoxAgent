@@ -137,7 +137,13 @@ class BrowserRuntimeManager:
             temporary.write_text("5910\n", encoding="ascii")
             os.replace(temporary, self.relay_target_path)
 
-    async def recover_page(self, identity: BrowserIdentitySpec, egress: ProxyEgress) -> PageLease:
+    async def recover_page(
+        self,
+        identity: BrowserIdentitySpec,
+        egress: ProxyEgress,
+        *,
+        target_id: str | None = None,
+    ) -> PageLease:
         if identity.runtime_kind is not BrowserRuntimeKind.EXTERNAL_CHROME:
             raise RuntimeError("managed_maintenance_session_cannot_be_recovered")
         adapter = self.adapter(identity)
@@ -146,7 +152,12 @@ class BrowserRuntimeManager:
             raise RuntimeError("external_maintenance_recovery_unavailable")
         await self._page_slots.acquire()
         try:
-            return cast(PageLease, _ManagerLease(await recover(identity, egress), self._page_slots))
+            return cast(
+                PageLease,
+                _ManagerLease(
+                    await recover(identity, egress, target_id=target_id), self._page_slots
+                ),
+            )
         except Exception:
             self._page_slots.release()
             raise

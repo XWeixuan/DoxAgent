@@ -204,12 +204,27 @@ class ExternalChromeRuntime:
         )
 
     async def existing_page(
-        self, identity: BrowserIdentitySpec, egress: ProxyEgress
+        self,
+        identity: BrowserIdentitySpec,
+        egress: ProxyEgress,
+        *,
+        target_id: str | None = None,
     ) -> _ExternalLease:
         await self._page_slots.acquire()
         try:
             entry = await self._entry(identity, egress)
             candidates = [page for page in entry.context.pages if page.url != "about:blank"]
+            if target_id is not None:
+                matched = []
+                for candidate in candidates:
+                    session = await entry.context.new_cdp_session(candidate)
+                    try:
+                        info = await session.send("Target.getTargetInfo")
+                        if str(info["targetInfo"]["targetId"]) == target_id:
+                            matched.append(candidate)
+                    finally:
+                        await session.detach()
+                candidates = matched
             if not candidates:
                 raise RuntimeError("external_maintenance_page_not_found")
             async with self._lock:

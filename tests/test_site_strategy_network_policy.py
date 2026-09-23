@@ -15,7 +15,14 @@ from doxagent.site_strategy.runtime import (
     SiteAccessRuntime,
     _DocumentNavigationGate,
 )
-from doxagent.site_strategy.schema import AccessMode, FailureCategory, ProxyEgress
+from doxagent.site_strategy.schema import (
+    AccessMode,
+    AccessRequest,
+    BrowserRuntimeKind,
+    FailureCategory,
+    ProxyEgress,
+    SitePurpose,
+)
 from doxagent.site_strategy.seeds import bootstrap_seed, seed_specs
 from doxagent.site_strategy.service import SiteStrategyService, classify_response
 
@@ -39,6 +46,87 @@ def test_challenge_is_detected_on_200_and_412() -> None:
         )
         assert category is FailureCategory.ACCESS_CHALLENGE
         assert reason == "challenge_required"
+
+
+@pytest.mark.asyncio
+async def test_external_challenge_retains_triggering_page_without_extra_clicks(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repository = SiteStrategyRepository(tmp_path / "site.sqlite3")
+    service = SiteStrategyService(repository, profile_root=tmp_path / "profiles")
+    bootstrap_seed(repository, service)
+    url = "https://www.barrons.com/articles/example"
+    identity = repository.get_identity("barrons-1")
+    egress = repository.get_egress("us-standard-5")
+    assert identity is not None and egress is not None
+    identity = identity.model_copy(update={"runtime_kind": BrowserRuntimeKind.EXTERNAL_CHROME})
+    calls: list[str] = []
+
+    class Page:
+        def __init__(self):
+            self.url = url
+
+        async def goto(self, target, **_kwargs):
+            calls.append(f"goto:{target}")
+            return self
+
+        status = 200
+
+        async def all_headers(self):
+            return {}
+
+        async def content(self):
+            return "<html><title>Access is temporarily restricted</title></html>"
+
+    class Lease:
+        browser_cdp = object()
+        provenance = type("Provenance", (), {"instance_id": "chrome-1"})()
+
+        async def __aenter__(self):
+            return Page()
+
+        async def __aexit__(self, *_args):
+            calls.append("close")
+
+    class Gate:
+        root_target_id = "target-1"
+        blocked = []
+
+        def __init__(self, *_args):
+            pass
+
+        async def start(self):
+            calls.append("gate-start")
+
+        async def close(self):
+            calls.append("gate-close")
+
+    async def page(*_args, **_kwargs):
+        return Lease()
+
+    async def public_url(*_args, **_kwargs):
+        return None
+
+    monkeypatch.setattr("doxagent.site_strategy.runtime._DocumentNavigationGate", Gate)
+    monkeypatch.setattr("doxagent.site_strategy.runtime.public_url", public_url)
+    service.runtime.browser_runtimes.page = page  # type: ignore[method-assign]
+    result = await service.runtime._browser(
+        AccessRequest(
+            operation_id="challenge-1",
+            purpose=SitePurpose.BODY,
+            url=url,
+            mode=AccessMode.BROWSER,
+            recipe_parameters={"expand": True},
+        ),
+        service.resolve(url),
+        identity,
+        egress,
+    )
+    assert result.challenge_token in service.runtime._maintenance_pages
+    assert result.challenge_target_id == "target-1"
+    assert calls == ["gate-start", f"goto:{url}", "gate-close"]
+    repository.close()
 
 
 def test_fixed_listener_uses_private_range_rejections_and_fixed_terminal() -> None:

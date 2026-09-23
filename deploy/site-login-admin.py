@@ -383,6 +383,12 @@ def _inventory() -> dict[str, Any]:
                     ),
                     "verification_configured": bool(auth.get("verification_url")),
                     "verification_kind": auth.get("verification_kind", "subscription_article"),
+                    "challenge_url": (
+                        profile.get("challenge_url")
+                        if profile.get("challenge_site_id") == spec["site_id"]
+                        and profile.get("challenge_identity_id") == identity_id
+                        else None
+                    ),
                     "observed_ip": egress.get("observed_ip"),
                     "observed_at": egress.get("observed_at"),
                     "manual_attention_required": bool(
@@ -460,6 +466,7 @@ def command_open(profile_id: str, site_id: str | None = None) -> dict[str, Any]:
             "login_token": token,
             "opened_at": dt.datetime.now(dt.UTC).isoformat(),
             "viewer_pid": None,
+            "challenge_url": selected.get("challenge_url"),
         }
         _write_session(session)
         return {
@@ -508,7 +515,12 @@ def command_verify(
         )
         if selected is None:
             raise AdminError("PROFILE_DISABLED", "The current profile was disabled or deleted.")
-        article_url = override_url
+        article_url = session.get("challenge_url") or override_url
+        if session.get("challenge_url") and override_url not in {None, article_url}:
+            raise AdminError(
+                "CHALLENGE_ARTICLE_MISMATCH",
+                "Verify the article that triggered the challenge in the preserved tab.",
+            )
         if article_url is None:
             site = next(
                 item["spec"]
@@ -538,6 +550,23 @@ def command_verify(
             result = _request("POST", path, payload, timeout=45)
         except AdminError as exc:
             failure = exc
+        if session.get("challenge_url"):
+            if failure is not None:
+                raise failure
+            profile = result.get("profile", {})
+            state = (result.get("auth") or {}).get("auth_state") or profile.get("auth_state")
+            if state != "VALID" or not profile.get("challenge_verified"):
+                return {
+                    "ok": True,
+                    "profile_id": profile_id,
+                    "auth_state": state or "UNKNOWN",
+                    "message": (
+                        "The original article is not verified yet. Keep this tab open "
+                        "and retry after resolving the challenge."
+                    ),
+                    "reason": result.get("reason"),
+                    "closed": False,
+                }
         closed = _close_token(session)
         if closed:
             _delete_session()

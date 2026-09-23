@@ -220,7 +220,10 @@ class CombinationHealthManager:
                         FailureCategory.ACCESS_CHALLENGE,
                         FailureCategory.ACCESS_BLOCK,
                     }:
-                        runtime.manual_attention_required = runtime.risk_strikes >= 2
+                        runtime.manual_attention_required = (
+                            category is FailureCategory.ACCESS_CHALLENGE
+                            or runtime.risk_strikes >= 2
+                        )
                 if (
                     assigned_generation == state.generation
                     and state.active_combination_id == combination_id

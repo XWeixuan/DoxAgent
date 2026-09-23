@@ -16,6 +16,7 @@ from typing import Any
 from urllib.parse import urljoin, urlsplit
 from uuid import uuid4
 
+from doxagent.content_enrichment.quality import inspect_html
 from doxagent.content_enrichment.transport import public_url
 from doxagent.message_bus_v2.reuters_sources import capture_reuters_search
 from doxagent.message_bus_v2.yahoo_sources import capture_latest_news
@@ -52,6 +53,8 @@ class RuntimeResponse:
     reason: str | None = None
     retry_after_seconds: float | None = None
     provenance: RuntimeProvenance | None = None
+    challenge_token: str | None = None
+    challenge_target_id: str | None = None
 
 
 class OwnerFileLock:
@@ -754,6 +757,7 @@ class _MaintenancePage:
     profile_id: str
     identity_id: str
     site_id: str
+    challenge_url: str | None = None
 
 
 class SiteAccessRuntime:
@@ -937,8 +941,10 @@ class SiteAccessRuntime:
                 )
             except RuntimeError:
                 pass
-        async with lease as page:
-            gate = _DocumentNavigationGate(page, self.resolver, resolved, lease.browser_cdp)
+        page = await lease.__aenter__()
+        gate = _DocumentNavigationGate(page, self.resolver, resolved, lease.browser_cdp)
+        retained = False
+        try:
             await gate.start()
             try:
                 if request.recipe_ref == "builtin:yahoo_latest_news@1":
@@ -986,10 +992,16 @@ class SiteAccessRuntime:
                     )
                 status = response.status if response is not None else 200
                 headers = await response.all_headers() if response is not None else {}
-                if request.recipe_parameters.get("expand"):
+                initial_html = await page.content()
+                initial_challenge = (
+                    identity.runtime_kind is BrowserRuntimeKind.EXTERNAL_CHROME
+                    and inspect_html(initial_html, page.url, "").access_reason
+                    == "challenge_required"
+                )
+                if request.recipe_parameters.get("expand") and not initial_challenge:
                     await _expand_article(page)
                 wait_selector = request.recipe_parameters.get("wait_selector")
-                if isinstance(wait_selector, str) and wait_selector:
+                if isinstance(wait_selector, str) and wait_selector and not initial_challenge:
                     await page.locator(wait_selector).first.wait_for(
                         state="visible", timeout=min(request.remaining_budget_ms, 10_000)
                     )
@@ -1002,15 +1014,40 @@ class SiteAccessRuntime:
                         reason="response_too_large",
                         provenance=lease.provenance,
                     )
+                challenge = (
+                    identity.runtime_kind is BrowserRuntimeKind.EXTERNAL_CHROME
+                    and inspect_html(html, page.url, "").access_reason == "challenge_required"
+                )
+                token = uuid4().hex if challenge else None
+                if token is not None:
+                    # The user now owns this tab. Drop document interception and
+                    # popup instrumentation while they resolve the challenge.
+                    await gate.close()
+                    self._maintenance_pages[token] = _MaintenancePage(
+                        lease,
+                        page,
+                        gate,
+                        identity.profile_id,
+                        identity.identity_id,
+                        resolved.site_id,
+                        request.url,
+                    )
+                    retained = True
                 return RuntimeResponse(
                     int(status),
                     page.url,
                     _filtered_headers({str(k).lower(): str(v) for k, v in headers.items()}),
                     body=html,
                     provenance=lease.provenance,
+                    challenge_token=token,
+                    challenge_target_id=gate.root_target_id if challenge else None,
                 )
             finally:
-                await gate.close()
+                if not retained:
+                    await gate.close()
+        finally:
+            if not retained:
+                await lease.__aexit__(None, None, None)
 
     async def reset_egress(self, egress_id: str) -> None:
         stale = [key for key in self._http_sessions if key[1] == egress_id]
@@ -1093,6 +1130,35 @@ class SiteAccessRuntime:
             raise KeyError(token)
         return {"url": maintained.page.url, "title": await maintained.page.title()}
 
+    async def adopt_challenge(
+        self,
+        profile: BrowserProfile,
+        egress: ProxyEgress,
+        *,
+        identity: BrowserIdentitySpec,
+        site_id: str,
+        token: str,
+    ) -> dict[str, str]:
+        maintained = self._maintenance_pages.get(token)
+        if maintained is None:
+            return await self.recover_login(
+                profile, egress, identity=identity, site_id=site_id, token=token
+            )
+        if (
+            maintained.profile_id != profile.profile_id
+            or maintained.identity_id != identity.identity_id
+            or maintained.site_id != site_id
+        ):
+            raise ValueError("challenge session binding mismatch")
+        await self.browser_runtimes.select_maintenance(identity)
+        return {
+            "login_token": token,
+            "url": maintained.page.url,
+            "identity_id": identity.identity_id,
+            "runtime_kind": identity.runtime_kind.value,
+            "challenge_url": maintained.challenge_url or "",
+        }
+
     async def recover_login(
         self,
         profile: BrowserProfile,
@@ -1111,18 +1177,27 @@ class SiteAccessRuntime:
                 site_spec.auth.login_url or "",
             )
         )
-        lease = await self.browser_runtimes.recover_page(identity, egress)
+        lease = await self.browser_runtimes.recover_page(
+            identity, egress, target_id=profile.challenge_target_id
+        )
         page = await lease.__aenter__()
         gate = _DocumentNavigationGate(page, self.resolver, resolved, lease.browser_cdp)
         try:
-            await gate.start()
+            if profile.challenge_url is None:
+                await gate.start()
             await self.browser_runtimes.select_maintenance(identity)
         except Exception:
             external_lease: Any = lease
             await external_lease.abandon()
             raise
         self._maintenance_pages[token] = _MaintenancePage(
-            lease, page, gate, profile.profile_id, identity.identity_id, site_id
+            lease,
+            page,
+            gate,
+            profile.profile_id,
+            identity.identity_id,
+            site_id,
+            profile.challenge_url,
         )
         return {
             "login_token": token,
@@ -1138,9 +1213,25 @@ class SiteAccessRuntime:
         if maintained is None:
             raise KeyError(token)
         await public_url(article_url, trusted_proxy_dns=True)
-        response = await maintained.page.goto(
-            article_url, wait_until="domcontentloaded", timeout=timeout_ms
-        )
+        if maintained.challenge_url and article_url != maintained.challenge_url:
+            raise ValueError("challenge verification must use the triggering article")
+        if maintained.challenge_url and (
+            urlsplit(maintained.page.url).path != urlsplit(article_url).path
+        ):
+            return RuntimeResponse(
+                0,
+                maintained.page.url,
+                {},
+                body=await maintained.page.content(),
+                reason="challenge_article_not_open",
+            )
+        # Human challenge resolution often leaves the original article in this tab.
+        # Inspect it in place; a second programmatic navigation can retrigger WAF.
+        response = None
+        if not maintained.challenge_url:
+            response = await maintained.page.goto(
+                article_url, wait_until="domcontentloaded", timeout=timeout_ms
+            )
         if maintained.gate.blocked:
             return RuntimeResponse(
                 0,
