@@ -221,6 +221,15 @@ function ShellBody({
   return (
     <div className="document-layout">
       <div>
+        <section className="shell-overview" aria-label="Shell 概况">
+          <h2>Shell 概况</h2>
+          <dl>
+            <dt>核心问题</dt>
+            <dd>{shell.core_question || "未提供"}</dd>
+            <dt>边界规则</dt>
+            <dd>{shell.boundary_rule || "未提供"}</dd>
+          </dl>
+        </section>
         {shell.status === "FAILED" && (
           <Notice danger>
             {shell.failure?.message ?? "Shell 研究失败"} · {shell.failed_stage}

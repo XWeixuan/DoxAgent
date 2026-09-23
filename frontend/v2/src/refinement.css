@@ -2642,3 +2642,9 @@
 .ticker-gateway-content .ticker-totals { font-size: 22px; gap: 5px; white-space: nowrap; }
 .ticker-gateway-content .gateway-status { margin-top: 14px; font-size: 14px; white-space: nowrap; }
 .gateway-skeleton { display: grid; gap: 16px; padding-top: 5px; }
+
+.shell-overview { margin-bottom: 16px; padding: 16px 20px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); }
+.shell-overview h2 { margin: 0 0 12px; font-size: 15px; font-weight: 600; }
+.shell-overview dl { display: grid; grid-template-columns: 5em minmax(0, 1fr); gap: 8px 16px; margin: 0; font-size: 14px; line-height: 1.7; }
+.shell-overview dt { font-weight: 600; color: var(--muted-foreground); }
+.shell-overview dd { min-width: 0; margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }

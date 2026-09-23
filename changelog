@@ -1188,3 +1188,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-23 · Message Bus 双轨 Site Access 生产开关修正：移除 Compose 公共 `environment` 对 `env_file` 中 `DOXAGENT_SITE_ACCESS_ENABLED` 的错误插值覆盖，避免未传 `--env-file` 时默认 `false` 使 Message Bus/正文补全退回旧 Playwright/CDP 路径；生产 `.env.v2` 继续作为唯一开关来源，并增加 Message Bus、Content Enrichment 的 token、健康依赖和开关优先级回归断言。
 
 2026-09-23 · 双轨 Site Access 的 O4 生产依赖补全：生产开关生效后 O4 同样会构建 Crawler Plane，现为 `v2-o4` 精确挂载受限 worker token 并等待 Site Access 健康，消除因令牌缺失导致的重启循环；回归测试同步覆盖三个实际消费 Site Access 的服务。
+
+2026-09-23 · 预期研究补充 Shell 概况：在当前 Shell 的 Unit 内容上方紧凑展示核心问题与边界规则，随 Shell 选择切换；不添加执行状态、Unit 数量或失败字段。
