@@ -23,6 +23,7 @@ from doxagent.crawler_plane.schema import (
     NetworkMode,
 )
 from doxagent.crawler_plane.service import CrawlerPlaneService
+from doxagent.message_bus_v2.ctee import CteeSemiconductorAdapter
 from doxagent.message_bus_v2.ibkr_news import IbkrNewsAdapter
 from doxagent.message_bus_v2.news_adapters import (
     GoogleNewsSearchRssAdapter,
@@ -92,6 +93,9 @@ class AdapterRegistry:
                 self.client,
             ),
             "google_news_search_rss": GoogleNewsSearchRssAdapter(settings, self.client),
+            "ctee_semiconductor": CteeSemiconductorAdapter(
+                crawler_plane.browser if crawler_plane is not None else None
+            ),
         }
         self._dynamic_cache: dict[tuple[str, int], SourceAdapter] = {}
 

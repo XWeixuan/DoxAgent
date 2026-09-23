@@ -207,6 +207,9 @@ async def test_configure_without_new_crawler_starts_default_monitoring(tmp_path:
     assert {item.source_id for item in bus_repository.list_bindings(ticker="MU")} == {
         "benzinga_news",
         "finnhub_company_news",
+        "yahoo_finance_news",
+        "ibkr_news",
+        "reuters_site_search",
     }
     assert [item.node for item in runner.requests] == [CodexMonitoringO4Node.CONFIGURE]
     repository.close()
@@ -505,7 +508,7 @@ async def test_runner_reuses_one_ticker_thread_and_enables_only_o4_operations(
     assert all(item.o4_operations_enabled for item in worker.requests)
     assert all(item.data_mcp_enabled is False for item in worker.requests)
     assert all(item.allow_subagents is False for item in worker.requests)
-    assert all(item.model == "gpt-5.6-sol" and item.effort == "high" for item in worker.requests)
+    assert all(item.model == "gpt-6-sol" and item.effort == "high" for item in worker.requests)
     repository.close()
 
 

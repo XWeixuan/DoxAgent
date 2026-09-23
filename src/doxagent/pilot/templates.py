@@ -23,7 +23,7 @@ def render_config(
 ) -> str:
     control_root = case_root / ".control" / run_id / attempt_id
     lines = [
-        'model = "gpt-5.6-sol"',
+        'model = "gpt-6-sol"',
         'model_reasoning_effort = "high"',
         'approval_policy = "never"',
         'sandbox_mode = "workspace-write"',

@@ -23,7 +23,7 @@ from doxagent.workflows.codex_document1.schema import NODE_OUTPUT_SCHEMA, NodeOu
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--run-id", default=None)
-    parser.add_argument("--model", default="gpt-5.6-luna")
+    parser.add_argument("--model", default="gpt-6-luna")
     parser.add_argument("--effort", default="low", choices=("low", "medium", "high"))
     return parser
 

@@ -13,6 +13,7 @@ from typing import Any
 
 ADMIN = "/usr/local/sbin/doxagent-site-login-admin"
 VNC_VIEWER = "/usr/bin/vncviewer"
+CLIPBOARD_BRIDGE = "/usr/local/bin/doxagent-site-login-clipboard-bridge"
 STATE_TEXT = {
     "VALID": "Signed in",
     "REAUTH_REQUIRED": "Sign-in required",
@@ -350,6 +351,17 @@ class SiteLoginApp:
                 "Contact the administrator, then continue or cancel it.",
             )
             return
+        try:
+            subprocess.Popen(
+                ["/usr/bin/python3", CLIPBOARD_BRIDGE, "--viewer-pid", str(self.viewer.pid)],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+        except OSError:
+            messagebox.showwarning(
+                "Clipboard Unavailable",
+                "The browser viewer is open, but clipboard forwarding could not start.",
+            )
         self.root.after(1500, self._watch_viewer)
 
     def _watch_viewer(self) -> None:

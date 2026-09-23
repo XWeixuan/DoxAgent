@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 from typing import Any
 
-from doxagent.message_bus_v2.schema import SourceDefinition, TickerSourceBinding
+from doxagent.message_bus_v2.schema import AcquisitionMode, SourceDefinition, TickerSourceBinding
 from doxagent.semantic_clock import semantic_day
 
 from .calendar import MarketCalendar
@@ -28,12 +28,13 @@ class BusOrchestration:
             if running.done():
                 try:
                     result = running.result()
-                    if result is not None:
+                    if result is not None and key != "distribution-worker":
                         results.append(result)
                 except Exception as exc:
                     self.journal.gap("source:" + key, "", type(exc).__name__, str(exc)[:1000])
                 del self._inflight[key]
         roster_eligible = scheduler._eligible_bindings(now, include_inactive_hours=True)
+        shared_realtime: dict[str, tuple[SourceDefinition, list[TickerSourceBinding]]] = {}
         for source, binding in eligible:
             if self.journal.get("pause", binding.ticker) == "all":
                 continue
@@ -58,12 +59,23 @@ class BusOrchestration:
                     self.journal.get("schedule", binding.ticker, {}).get("mode") == "REALTIME"
                 )
             if realtime:
+                if source.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION:
+                    shared_realtime.setdefault(source.source_id, (source, []))[1].append(binding)
+                    continue
                 state = scheduler.repository.get_poll_state(binding)
                 if state.next_dispatch_at is None or state.next_dispatch_at <= now:
                     if binding.binding_id not in self._inflight:
                         self._inflight[binding.binding_id] = asyncio.create_task(
                             asyncio.wait_for(scheduler._poll(source, binding, now), timeout=600)
                         )
+        for source, bindings in shared_realtime.values():
+            key = f"shared:{source.source_id}"
+            if key not in self._inflight:
+                self._inflight[key] = asyncio.create_task(
+                    asyncio.wait_for(
+                        scheduler._poll_distribution(source, bindings, now), timeout=600
+                    )
+                )
         for sweep in self.journal.tasks(kind="SWEEP"):
             if sweep["status"] in {"SUCCEEDED", "FAILED"}:
                 continue
@@ -101,6 +113,13 @@ class BusOrchestration:
                 if task:
                     self._inflight[key] = asyncio.create_task(self._source(scheduler, task))
         # Let newly scheduled I/O start, without waiting for a source or model.
+        if (
+            scheduler.distribution_worker is not None
+            and "distribution-worker" not in self._inflight
+        ):
+            self._inflight["distribution-worker"] = asyncio.create_task(
+                scheduler.distribution_worker.run_once()
+            )
         await asyncio.sleep(0)
         return results
 
@@ -120,15 +139,28 @@ class BusOrchestration:
         try:
             binding = TickerSourceBinding.model_validate(task["inputs"]["binding"])
             source = SourceDefinition.model_validate(task["inputs"]["source"])
+            if source.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION:
+                return await self._distribution_source(scheduler, task, source, binding)
             cursor_key = f"{binding.binding_id}:{source.version}:{binding.version}"
             receipt = task["receipt"]
             cutoff = datetime.fromisoformat(task["inputs"]["cutoff"])
             if "window_start" not in receipt:
+                from doxagent.message_bus_v2.search_plan import build_query_plan
                 from doxagent.semantic_clock import boundary
 
                 start = (
                     task["inputs"].get("window_start")
                     or boundary(semantic_day(cutoff) - timedelta(days=1)).isoformat()
+                )
+                found = (
+                    scheduler.terms.get(binding.ticker)
+                    if source.acquisition_mode is AcquisitionMode.BY_SEARCH
+                    else None
+                )
+                frozen_query_plan = (
+                    build_query_plan(source, found[1], found[0]).model_dump(mode="json")
+                    if found is not None
+                    else None
                 )
                 self.journal.checkpoint(
                     task,
@@ -138,6 +170,7 @@ class BusOrchestration:
                     job_ids=[],
                     page_coverages=[],
                     poll_done=False,
+                    query_plan=frozen_query_plan,
                 )
             receipt = task["receipt"]
             result = None
@@ -165,6 +198,8 @@ class BusOrchestration:
                         window_cutoff=cutoff,
                         checkpoint=receipt["page_cursor"],
                         admission_context=context,
+                        query_plan_override=receipt.get("query_plan"),
+                        freeze_query_plan=True,
                     ),
                     timeout=600,
                 )
@@ -231,3 +266,86 @@ class BusOrchestration:
             else:
                 self.journal.fail(task, exc)
             return None
+
+    async def _distribution_source(
+        self,
+        scheduler: Any,
+        task: dict[str, Any],
+        source: SourceDefinition,
+        binding: TickerSourceBinding,
+    ) -> Any:
+        from datetime import datetime, timedelta
+
+        from doxagent.message_bus_v2.admission import AdmissionContext
+        from doxagent.semantic_clock import boundary
+
+        cutoff = datetime.fromisoformat(task["inputs"]["cutoff"])
+        start = datetime.fromisoformat(
+            task["inputs"].get("window_start")
+            or boundary(semantic_day(cutoff) - timedelta(days=1)).isoformat()
+        )
+        context = AdmissionContext(
+            mode="CLOSED_SWEEP",
+            sweep_id=task["inputs"].get("sweep_id", task["id"]),
+            source_task_id=task["id"],
+            window_start=start,
+            cutoff=cutoff,
+        )
+        receipt = task["receipt"]
+        if not receipt.get("poll_done"):
+            result = await asyncio.wait_for(
+                scheduler._poll_distribution(
+                    source,
+                    [binding],
+                    self.journal.clock(),
+                    window_start=start,
+                    window_cutoff=cutoff,
+                    admission_context=context,
+                ),
+                timeout=600,
+            )
+            if result.error_code:
+                self.journal.gap(
+                    "coverage:" + task["id"],
+                    binding.ticker,
+                    "SOURCE_WINDOW_PARTIAL",
+                    result.error_code,
+                )
+            self.journal.checkpoint(
+                task,
+                distribution_run_id=result.poll_run_id,
+                pending_distribution_delivery_ids=[],
+                poll_done=result.window_done or bool(result.error_code),
+                coverage="PARTIAL" if result.error_code else result.window_coverage,
+            )
+            if not result.window_done and not result.error_code:
+                self._yield_source(task)
+                return result
+        else:
+            result = None
+        run_id = task["receipt"].get("distribution_run_id")
+        pending = scheduler.distribution.pending_for_run(run_id, binding.ticker) if run_id else []
+        if pending:
+            self.journal.checkpoint(task, pending_distribution_delivery_ids=pending)
+            self._yield_source(task)
+            return result
+        failures = (
+            scheduler.distribution.failures_for_run(run_id, binding.ticker) if run_id else []
+        )
+        coverage = task["receipt"].get("coverage", "UNKNOWN")
+        if failures:
+            coverage = "PARTIAL"
+            self.journal.gap(
+                "distribution:" + task["id"], binding.ticker,
+                "DISTRIBUTION_DELIVERY_FAILED", f"{len(failures)} terminal delivery failures",
+            )
+        scheduler.service.flush_binding(binding.binding_id, force=True)
+        self.journal.finish(
+            task,
+            pending_distribution_delivery_ids=[],
+            coverage=coverage,
+            settlement="INTAKE_TERMINAL",
+            attempted_cutoff=cutoff.isoformat(),
+            stream_highwater=scheduler.repository.latest_stream_offset(task["ticker"]),
+        )
+        return result

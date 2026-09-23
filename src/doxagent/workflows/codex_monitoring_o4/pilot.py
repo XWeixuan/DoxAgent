@@ -874,7 +874,7 @@ class MonitoringO4PilotCoordinator:
             return json.dumps(str(value), ensure_ascii=False)
 
         tool_array = ", ".join(quote(item) for item in tools)
-        return f"""model = "gpt-5.6-sol"
+        return f"""model = "gpt-6-sol"
 model_reasoning_effort = "high"
 approval_policy = "never"
 sandbox_mode = "danger-full-access"

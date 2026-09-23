@@ -1,0 +1,26 @@
+# Format example only. Review investment relevance and translations before production use.
+ticker: MU
+expected_revision: 0
+l1_concepts:
+  - concept_id: company
+    expressions: {en: Micron, zh-Hant: 美光}
+  - concept_id: memory
+    expressions: {en: memory, zh-Hant: 記憶體}
+  - concept_id: hbm
+    expressions: {en: HBM, zh-Hant: HBM}
+l2:
+  en:
+    groups:
+      - id: company
+        any: [{literal: Micron}]
+      - id: memory_market
+        all: [{literal: memory}, {literal: chip}]
+  zh-Hant:
+    groups:
+      - id: company
+        any: [{literal: 美光}]
+      - id: memory_market
+        all: [{literal: 記憶體}, {literal: 晶片}]
+definition:
+  relevant: Micron, memory semiconductors, capacity, pricing, supply, demand or policy affecting this market.
+  irrelevant: Consumer reviews, unrelated electronics or stock-price lists without memory-industry substance.

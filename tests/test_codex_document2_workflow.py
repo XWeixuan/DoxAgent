@@ -623,7 +623,7 @@ async def _global_fixture(
                 run_id=run_id,
                 agent_role=CodexAgentRole(role + "_researcher"),
                 thread_id=f"original-{role}-thread",
-                model="gpt-5.6-sol",
+                model="gpt-6-sol",
             )
         )
     horizontal_meta = await workspace.write_text(

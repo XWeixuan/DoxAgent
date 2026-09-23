@@ -104,6 +104,7 @@ def test_bootstrap_registry_profile_and_ticker_materialization(tmp_path: Path) -
         "ibkr_news",
         "reuters_site_search",
         "google_news_search_rss",
+        "ctee_semiconductor",
     }
     profile = repository.get_default_profile("default")
     assert profile is not None

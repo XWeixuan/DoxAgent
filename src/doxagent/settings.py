@@ -3,7 +3,7 @@
 import os
 from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -88,7 +88,7 @@ class DoxAgentSettings(BaseSettings):
         validation_alias="DOXAGENT_CODEX_MONITORING_O4_SQLITE_PATH",
     )
     codex_monitoring_o4_model: str = Field(
-        default="gpt-5.6-sol",
+        default="gpt-6-sol",
         validation_alias="DOXAGENT_CODEX_MONITORING_O4_MODEL",
     )
     codex_monitoring_o4_timeout_seconds: int = Field(
@@ -162,7 +162,7 @@ class DoxAgentSettings(BaseSettings):
         validation_alias="DOXAGENT_CODEX_PUBLISHED_STORAGE_BUCKET",
     )
     codex_model: str = Field(
-        default="gpt-5.6-luna",
+        default="gpt-6-luna",
         validation_alias="DOXAGENT_CODEX_MODEL",
     )
     codex_model_provider: str | None = Field(
@@ -179,7 +179,7 @@ class DoxAgentSettings(BaseSettings):
         validation_alias="DOXAGENT_CODEX_NODE_TIMEOUT_SECONDS",
     )
     codex_d3_initialize_model: str = Field(
-        default="gpt-5.6-sol",
+        default="gpt-6-sol",
         validation_alias="DOXAGENT_CODEX_D3_INITIALIZE_MODEL",
     )
     codex_d3_initialize_effort: Literal["low", "medium", "high", "xhigh", "max"] = Field(
@@ -401,6 +401,24 @@ class DoxAgentSettings(BaseSettings):
     benzinga_news_base_url: str = Field(
         default="https://api.benzinga.com",
         validation_alias="BENZINGA_NEWS_BASE_URL",
+    )
+    silicon_analysts_api_key: str | None = Field(
+        default=None,
+        validation_alias="SILICON_ANALYSTS_API_KEY",
+    )
+    silicon_analysts_base_url: str = Field(
+        default="https://siliconanalysts.com/api/v1",
+        validation_alias="SILICON_ANALYSTS_BASE_URL",
+    )
+    silicon_analysts_cache_ttl_seconds: int = Field(
+        default=3600,
+        ge=0,
+        validation_alias="SILICON_ANALYSTS_CACHE_TTL_SECONDS",
+    )
+    silicon_analysts_min_request_interval_seconds: float = Field(
+        default=1.0,
+        ge=0,
+        validation_alias="SILICON_ANALYSTS_MIN_REQUEST_INTERVAL_SECONDS",
     )
     ibkr_tws_enabled: bool = Field(default=False, validation_alias="IBKR_TWS_ENABLED")
     ibkr_tws_host: str = Field(default="127.0.0.1", validation_alias="IBKR_TWS_HOST")
@@ -672,6 +690,16 @@ class DoxAgentSettings(BaseSettings):
         ge=1,
         validation_alias="DOXAGENT_SITE_ACCESS_BROWSER_IDLE_SECONDS",
     )
+    openrouter_api_key: SecretStr | None = Field(
+        default=None, validation_alias="OPENROUTER_API_KEY"
+    )
+    message_bus_jev_enabled: bool = Field(
+        default=False, validation_alias="DOXAGENT_MESSAGE_BUS_JEV_ENABLED"
+    )
+    message_bus_jev_timeout_seconds: float = Field(
+        default=15.0, ge=1, le=60,
+        validation_alias="DOXAGENT_MESSAGE_BUS_JEV_TIMEOUT_SECONDS",
+    )
     site_access_chrome_supervisor_socket: str | None = Field(
         default=None,
         validation_alias="DOXAGENT_SITE_ACCESS_CHROME_SUPERVISOR_SOCKET",
@@ -940,7 +968,7 @@ class DoxAgentSettings(BaseSettings):
         validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_W3_ENABLED",
     )
     persistent_runtime_v2_w3_model: str = Field(
-        default="gpt-5.6-luna",
+        default="gpt-6-luna",
         validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_W3_MODEL",
     )
     persistent_runtime_v2_w3_reasoning_effort: Literal["low", "medium", "high", "xhigh", "max"] = (

@@ -117,7 +117,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--ticker", default="NVDA")
     parser.add_argument("--company-name", default="NVIDIA Corporation")
     parser.add_argument("--run-id", default=None)
-    parser.add_argument("--model", default="gpt-5.6-luna")
+    parser.add_argument("--model", default="gpt-6-luna")
     parser.add_argument(
         "--effort",
         choices=("low", "medium", "high", "xhigh", "max"),

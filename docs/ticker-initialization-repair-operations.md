@@ -21,7 +21,7 @@ into or executed from the production checkout.
 5. Provision the Repair Agent login only as
    `/var/lib/doxagent/initialization-repair/auth.json` with mode `0600` (or set the explicit auth-file
    option). Guardian copies this template once into each Incident's isolated `CODEX_HOME`; it never
-   copies production Worker MCP configuration. Confirm `gpt-5.6-sol` is available and perform a
+    copies production Worker MCP configuration. Confirm `gpt-6-sol` is available and perform a
    start, process-exit, resume smoke test.
 6. Start the overlay with the normal V2 production/server compose files. Verify Guardian can inspect
    the production initialization container, read both SQLite databases, clone the source commit, and

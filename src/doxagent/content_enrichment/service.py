@@ -77,7 +77,7 @@ class ContentEnrichmentHub:
             logger.exception(
                 "content enrichment infrastructure failure job_id=%s ticker=%s source_id=%s",
                 job.job_id,
-                job.binding.ticker,
+                job.binding.ticker if job.binding else None,
                 job.source.source_id,
             )
             raise
@@ -133,13 +133,11 @@ class ContentEnrichmentHub:
     async def _process(self, job: EnrichmentJob, now: datetime) -> None:
         from doxagent.message_bus_v2.admission import evaluate_admission
 
-        reason = evaluate_admission(
-            job.message.published_at,
-            job.message.admission_context,
-            now,
+        reason = None if job.owner_kind == "distribution_article" else evaluate_admission(
+            job.message.published_at, job.message.admission_context, now,
             job.message.publication_time_basis,
         )
-        if reason:
+        if reason and job.binding:
             self.repository.record_admission(
                 job.message, reason, "ENRICHMENT_DEQUEUE", job.binding.binding_id
             )
@@ -166,7 +164,7 @@ class ContentEnrichmentHub:
             standard_message_id=job.job_id,
             raw_message_id=job.job_id,
             source_id=job.source.source_id,
-            ticker=job.binding.ticker,
+            ticker=job.binding.ticker if job.binding else None,
             title=job.message.title,
             body=fallback,
             url=job.message.url,
@@ -281,6 +279,14 @@ class ContentEnrichmentHub:
         await self._finalize(job, message)
 
     async def _finalize(self, job: EnrichmentJob, message: RawMessageInput) -> None:
+        if job.owner_kind == "distribution_article":
+            from doxagent.message_bus_v2.distribution_repository import DistributionRepository
+
+            DistributionRepository(self.repository).finalize_article(
+                job, message, self._outcome_payload(job, message)
+            )
+            return
+        assert job.binding is not None
         await self.bus.accept_message(
             source=job.source,
             binding=job.binding,
@@ -316,7 +322,8 @@ class ContentEnrichmentHub:
             "completed_at": utc_now().isoformat(),
             "payload": {
                 "source_id": job.source.source_id,
-                "ticker": job.binding.ticker,
+                "ticker": job.binding.ticker if job.binding else None,
+                "article_id": job.article_id,
                 "url": message.url,
                 "access_trace": trace,
             },

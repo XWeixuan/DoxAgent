@@ -282,7 +282,7 @@ class CodexW3AgentRunner:
         workspace: WorkspaceClient,
         context_provider: W3ContextProvider,
         prompt_root: str | Path,
-        model: str = "gpt-5.6-luna",
+        model: str = "gpt-6-luna",
         model_provider: str | None = None,
         effort: Literal["low", "medium", "high", "xhigh", "max"] = "max",
         timeout_seconds: int = 600,

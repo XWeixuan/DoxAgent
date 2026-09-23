@@ -181,6 +181,7 @@ class AuthPolicy(SiteModel):
 
 class SiteStrategySpec(SiteModel):
     site_id: str
+    default_content_language: str | None = None
     revision: int = Field(default=0, ge=0)
     display_name: str | None = None
     domains: list[DomainRule] = Field(default_factory=list)

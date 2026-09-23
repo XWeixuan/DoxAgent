@@ -160,7 +160,7 @@ class MediaEnrichmentRecord:
     standard_message_id: str
     raw_message_id: str
     source_id: str
-    ticker: str
+    ticker: str | None
     title: str | None
     body: str | None
     url: str | None

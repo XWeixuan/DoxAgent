@@ -61,6 +61,21 @@ class SourceKind(StrEnum):
     CRAWLER = "crawler"
 
 
+class AcquisitionMode(StrEnum):
+    BY_TICKER = "by_ticker"
+    BY_SEARCH = "by_search"
+    BY_DISTRIBUTION = "by_distribution"
+
+
+class SearchPolicy(BusModel):
+    mode: Literal["separate", "or"] = "separate"
+    renderer_ref: str = "builtin:quoted"
+
+
+class DistributionPolicy(BusModel):
+    jev_enabled: bool = False
+
+
 class ContentEnrichmentMode(StrEnum):
     ENRICH = "enrich"
     SKIP = "skip"
@@ -180,6 +195,12 @@ class SourceDefinition(BusModel):
     display_name: str
     kind: SourceKind = Field(validation_alias=AliasChoices("kind", "source_kind"))
     adapter_ref: str
+    acquisition_mode: AcquisitionMode = AcquisitionMode.BY_TICKER
+    entry_url: str | None = None
+    content_language: str | None = None
+    site_id: str | None = None
+    search_policy: SearchPolicy | None = None
+    distribution_policy: DistributionPolicy | None = None
     parameter_schema: JsonObject = Field(default_factory=lambda: {"type": "object"})
     default_parameters: JsonObject = Field(default_factory=dict)
     default_polling_config: PollingConfig = Field(default_factory=PollingConfig)
@@ -643,6 +664,19 @@ class PollContext(BusModel):
     source: SourceDefinition
     binding: TickerSourceBinding
     checkpoint: JsonObject = Field(default_factory=dict)
+    query_plan: JsonObject | None = None
+    requested_at: datetime = Field(default_factory=utc_now)
+    request_permit: RequestPermitFactory = Field(exclude=True)
+
+    model_config = ConfigDict(extra="forbid", arbitrary_types_allowed=True)
+
+
+class SharedPollContext(BusModel):
+    run_id: str
+    source: SourceDefinition
+    checkpoint: JsonObject = Field(default_factory=dict)
+    window_start: datetime | None = None
+    window_cutoff: datetime | None = None
     requested_at: datetime = Field(default_factory=utc_now)
     request_permit: RequestPermitFactory = Field(exclude=True)
 

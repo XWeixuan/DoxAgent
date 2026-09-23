@@ -461,19 +461,32 @@ class GoogleNewsSearchRssAdapter:
         self._resolved_urls: dict[str, str] = {}
 
     async def poll(self, context: PollContext) -> PollResult:
-        terms = [str(item).strip() for item in context.binding.source_parameters["search_terms"]]
+        plan = context.query_plan
+        terms = (
+            [str(item).strip() for item in context.binding.source_parameters["search_terms"]]
+            if plan is None
+            else []
+        )
         domains = [
             str(item).strip().casefold().removeprefix("www.")
             for item in context.binding.source_parameters.get("domains", [])
         ]
-        query = " OR ".join(f'"{term}"' if " " in term else term for term in terms)
-        if len(terms) > 1:
+        query = (
+            str(plan["queries"][0]["query"])
+            if plan
+            else " OR ".join(f'"{term}"' if " " in term else term for term in terms)
+        )
+        if not plan and len(terms) > 1:
             query = f"({query})"
         if domains:
             query += " (" + " OR ".join(f"site:{item}" for item in domains) + ")"
         query += " when:1d"
+        language = str(plan["language"]) if plan else "en"
+        region = (
+            ("zh-TW", "TW", "TW:zh-Hant") if language == "zh-Hant" else ("en-US", "US", "US:en")
+        )
         url = "https://news.google.com/rss/search?" + urlencode(
-            {"q": query, "hl": "en-US", "gl": "US", "ceid": "US:en"}
+            {"q": query, "hl": region[0], "gl": region[1], "ceid": region[2]}
         )
         async with context.request_permit():
             response = await self.client.get(
@@ -567,7 +580,13 @@ class GoogleNewsSearchRssAdapter:
             messages=messages,
             failures=failures,
             window_coverage="PARTIAL" if failures else "COMPLETE",
-            acquisition_metadata={"provider": "google_news", "query": query, "window_hours": 24},
+            acquisition_metadata={
+                "provider": "google_news",
+                "query": query,
+                "window_hours": 24,
+                "terms_revision": plan["terms_revision"] if plan else None,
+                "query_source": "monitoring_terms" if plan else "LEGACY_TERMS",
+            },
         )
 
 
@@ -641,7 +660,93 @@ class ReutersSiteSearchAdapter:
     async def poll(self, context: PollContext) -> PollResult:
         if self.browser is None:
             raise RuntimeError("Reuters source requires the shared Playwright browser runtime")
-        query, query_source = await self._query(context)
+        plan = context.query_plan
+        if plan:
+            queries = [
+                (str(item["query"]), str(item["query_key"]), "monitoring_terms")
+                for item in plan["queries"]
+            ]
+        else:
+            query, legacy_source = await self._query(context)
+            queries = [(query, sha256_text(query)[:24], legacy_source)]
+        results: list[PollResult] = []
+        checkpoints: dict[str, JsonObject] = {}
+        prior = context.checkpoint.get("queries", {}) if context.is_gap_recovery else {}
+        for query, query_key, query_source in queries:
+            saved = prior.get(query_key, {}) if isinstance(prior, dict) else {}
+            if saved.get("done"):
+                checkpoints[query_key] = dict(saved)
+                continue
+            try:
+                result = await self._poll_query(context, query, query_key, query_source)
+                results.append(result)
+                checkpoints[query_key] = dict(result.next_checkpoint)
+            except SiteAccessError as exc:
+                failures = int(saved.get("failures", 0)) + 1
+                checkpoints[query_key] = {**saved, "failures": failures,
+                                          "done": failures >= 2, "coverage": "PARTIAL"}
+                results.append(
+                    PollResult(
+                        window_coverage="PARTIAL",
+                        window_done=failures >= 2,
+                        failures=[
+                            _failure(
+                                context,
+                                "search_query_failed",
+                                type(exc).__name__,
+                                {"query_key": query_key},
+                            )
+                        ],
+                    )
+                )
+            except Exception as exc:
+                failures = int(saved.get("failures", 0)) + 1
+                checkpoints[query_key] = {**saved, "failures": failures,
+                                          "done": failures >= 2, "coverage": "PARTIAL"}
+                results.append(
+                    PollResult(
+                        window_coverage="PARTIAL",
+                        window_done=failures >= 2,
+                        failures=[
+                            _failure(
+                                context,
+                                "search_query_failed",
+                                type(exc).__name__,
+                                {"query_key": query_key},
+                            )
+                        ],
+                    )
+                )
+        messages: dict[str, RawMessageInput] = {}
+        for result in results:
+            for message in result.messages:
+                messages[message.external_id or message.url] = message
+        return PollResult(
+            messages=list(messages.values()),
+            failures=[failure for result in results for failure in result.failures],
+            window_coverage="COMPLETE"
+            if all(item.get("coverage") == "COMPLETE" for item in checkpoints.values())
+            else "PARTIAL",
+            window_done=all(item.get("done") for item in checkpoints.values()),
+            next_checkpoint={"queries": checkpoints},
+            optional_next_poll_hint=max(
+                (item.optional_next_poll_hint for item in results if item.optional_next_poll_hint),
+                default=None,
+            ),
+            acquisition_metadata={
+                "provider": "reuters",
+                "query_count": len(queries),
+                "terms_revision": plan["terms_revision"] if plan else None,
+                "terms_mode": "monitoring_terms" if plan else "LEGACY_TERMS",
+                "queries": [result.acquisition_metadata for result in results],
+                **(results[0].acquisition_metadata if len(results) == 1 else {}),
+            },
+        )
+
+    async def _poll_query(
+        self, context: PollContext, query: str, query_key: str, query_source: str
+    ) -> PollResult:
+        assert self.browser is not None
         max_pages = int(context.binding.source_parameters.get("max_pages", 2))
         cutoff = (context.window_cutoff or context.requested_at).astimezone(
             ZoneInfo("America/New_York")
@@ -653,23 +758,35 @@ class ReutersSiteSearchAdapter:
         exhausted = False
         search_result_count = 0
         pages_fetched = 0
-        for page in range(max_pages):
+        prior = (
+            context.checkpoint.get("queries", {}).get(query_key, {})
+            if context.is_gap_recovery
+            else {}
+        )
+        start_page = int(prior.get("page", 0))
+        last_page = start_page
+        for page in range(start_page, max_pages):
+            last_page = page
             try:
                 async with context.request_permit():
                     if getattr(self.browser, "site_managed", False):
                         rows = await self.browser.reuters_search(
                             query,
                             page * 20,
-                            operation_id=f"{context.poll_run_id}:{page}",
+                            operation_id=f"{context.poll_run_id}:{query_key}:{page}",
                         )
                     else:
                         rows = await self.browser.reuters_search(query, page * 20)
             except SiteAccessError as exc:
                 if exc.site_access_deferred:
                     return PollResult(
+                        messages=messages,
+                        failures=failures,
+                        window_coverage="PARTIAL",
                         window_done=False,
-                        site_access_deferred=True,
-                        site_access_retry_not_before=exc.result.retry_not_before,
+                        next_checkpoint={"page": page, "done": False,
+                                         "coverage": "PARTIAL"},
+                        optional_next_poll_hint=exc.result.retry_not_before,
                     )
                 raise
             pages_fetched += 1
@@ -763,13 +880,21 @@ class ReutersSiteSearchAdapter:
         return PollResult(
             messages=messages,
             failures=failures,
+            next_checkpoint={
+                "page": last_page + 1,
+                "done": True,
+                "coverage": (
+                    "PARTIAL" if failures or not (stopped_on_old or exhausted) else "COMPLETE"
+                ),
+            },
             window_coverage=(
-                "PARTIAL" if failures else "COMPLETE" if stopped_on_old or exhausted else "UNKNOWN"
+                "PARTIAL" if failures or not (stopped_on_old or exhausted) else "COMPLETE"
             ),
             acquisition_metadata={
                 "provider": "reuters",
                 "query": query,
                 "query_source": query_source,
+                "query_key": query_key,
                 "date_cutoff": cutoff.isoformat(),
                 "date_window": "today_and_previous_day",
                 "pages_fetched": pages_fetched,

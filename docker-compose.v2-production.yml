@@ -210,6 +210,10 @@ services:
     depends_on:
       v2-migrate: {condition: service_completed_successfully}
   v2-message-bus:
+    environment:
+      <<: *environment
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      DOXAGENT_MESSAGE_BUS_JEV_ENABLED: ${DOXAGENT_MESSAGE_BUS_JEV_ENABLED:-false}
     <<: *backend
     command: [python, -m, doxagent.message_bus_v2.cli, run-worker]
     secrets: [site_access_worker_token]

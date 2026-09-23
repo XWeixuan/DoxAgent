@@ -1405,7 +1405,7 @@ async def test_input_preparation_accepts_partial_d2_and_excludes_failed_shells()
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("initialize_model", [None, "gpt-5.6-sol"])
+@pytest.mark.parametrize("initialize_model", [None, "gpt-6-sol"])
 async def test_initialize_runs_single_o3_thread_and_publishes_canonical_artifacts(
     tmp_path: Path,
     initialize_model: str | None,
@@ -1787,7 +1787,7 @@ async def test_maintenance_is_delta_driven_noop_degraded_and_atomic(
             workspace=workspace,
             model="test-model",
             model_provider=None,
-            initialize_model="gpt-5.6-sol",
+            initialize_model="gpt-6-sol",
             initialize_effort="medium",
         ),
         policy_repository=policy_repository,

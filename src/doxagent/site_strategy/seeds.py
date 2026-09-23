@@ -301,6 +301,12 @@ def seed_specs() -> list[SiteStrategySpec]:
         _site("fool", ["fool.com", "www.fool.com"], "builtin:fool@1"),
         _site("chartmill", ["chartmill.com", "www.chartmill.com"], "builtin:chartmill@1"),
         _site("benzinga", ["benzinga.com", "www.benzinga.com"], "builtin:benzinga@1"),
+        _site(
+            "ctee",
+            ["ctee.com.tw", "www.ctee.com.tw"],
+            "builtin:generic@1",
+            egresses=("jp-standard-6",),
+        ),
     ]
     return specs
 
@@ -320,6 +326,7 @@ def _site(
     verification_kind: VerificationKind = "subscription_article",
     access_order: list[AccessOrderItem] | None = None,
     body_parameters: dict[str, object] | None = None,
+    default_content_language: str | None = None,
 ) -> SiteStrategySpec:
     combinations = [
         AccessCombination(
@@ -332,6 +339,8 @@ def _site(
     ]
     return SiteStrategySpec(
         site_id=site_id,
+        default_content_language=default_content_language
+        or ("zh-Hant" if site_id == "ctee" else None),
         domains=[DomainRule(host=host) for host in domains],
         support_hosts=[
             DomainRule(

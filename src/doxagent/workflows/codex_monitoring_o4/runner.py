@@ -53,7 +53,7 @@ class MonitoringO4AgentRunner:
         worker: CodexWorkerClient,
         workspace: WorkspaceClient,
         repository: MonitoringO4Repository,
-        model: str = "gpt-5.6-sol",
+        model: str = "gpt-6-sol",
         model_provider: str | None = None,
         timeout_seconds: int = 7_200,
         prompt_root: str | Path | None = None,

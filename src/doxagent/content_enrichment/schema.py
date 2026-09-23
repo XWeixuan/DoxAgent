@@ -4,8 +4,9 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import StrEnum
+from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from doxagent.message_bus_v2.schema import (
     BusModel,
@@ -27,7 +28,9 @@ class EnrichmentJob(BusModel):
     intake_key: str
     poll_run_id: str
     source: SourceDefinition
-    binding: TickerSourceBinding
+    binding: TickerSourceBinding | None = None
+    owner_kind: Literal["ticker_binding", "distribution_article"] = "ticker_binding"
+    article_id: str | None = None
     message: RawMessageInput
     provider_raw_hash: str | None = None
     bootstrap: bool = False
@@ -42,6 +45,16 @@ class EnrichmentJob(BusModel):
     lease_expires_at: datetime | None = None
     claim_token: str | None = None
     pipeline_version: str | None = None
+
+    @model_validator(mode="after")
+    def _owner(self) -> EnrichmentJob:
+        if self.owner_kind == "ticker_binding" and self.binding is None:
+            raise ValueError("ticker enrichment requires binding")
+        if self.owner_kind == "distribution_article" and (
+            self.binding is not None or not self.article_id
+        ):
+            raise ValueError("shared enrichment requires article_id and no binding")
+        return self
 
 
 __all__ = ["EnrichmentJob", "EnrichmentJobStatus"]

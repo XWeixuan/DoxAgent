@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from datetime import UTC, datetime, timedelta
 from urllib.parse import urlparse
 
@@ -14,6 +14,7 @@ from doxagent.message_bus_v2.news_policy import HiddenNewsIngressPolicy
 from doxagent.message_bus_v2.repository import MessageBusV2Repository
 from doxagent.message_bus_v2.schema import (
     AcquisitionFailure,
+    AcquisitionMode,
     AlertSeverity,
     AuditRecord,
     DefaultMonitoringProfile,
@@ -65,12 +66,14 @@ class MessageBusV2Service:
         enrichment_retry_deadline_seconds: int = 180,
         enrichment_pipeline_version: str | None = "body_v2.1",
         hidden_news_policy: HiddenNewsIngressPolicy | None = None,
+        site_language_resolver: Callable[[str], str | None] | None = None,
     ) -> None:
         self.repository = repository
         self.enrichment_queue_enabled = enrichment_queue_enabled
         self.enrichment_retry_deadline_seconds = max(1, enrichment_retry_deadline_seconds)
         self.enrichment_pipeline_version = enrichment_pipeline_version
         self.hidden_news_policy = hidden_news_policy or HiddenNewsIngressPolicy()
+        self.site_language_resolver = site_language_resolver
 
     def bootstrap(self) -> None:
         for source in initial_sources():
@@ -81,6 +84,30 @@ class MessageBusV2Service:
         else:
             self._append_missing_default_sources()
         self._migrate_legacy_default_news_windows()
+
+    def _migrate_acquisition_modes(self) -> None:
+        """Apply only the two frozen search-mode migrations; keep custom sources intact."""
+        desired = {item.source_id: item for item in initial_sources()}
+        for source_id in ("reuters_site_search", "google_news_search_rss"):
+            current = self.repository.get_source(source_id)
+            if current is None or current.acquisition_mode is not AcquisitionMode.BY_TICKER:
+                continue
+            target = desired[source_id]
+            self.update_source(
+                source_id,
+                {
+                    "acquisition_mode": target.acquisition_mode,
+                    "content_language": target.content_language,
+                    "search_policy": (
+                        target.search_policy.model_dump(mode="json")
+                        if target.search_policy
+                        else None
+                    ),
+                    "parameter_schema": target.parameter_schema,
+                },
+                actor=UpdateActor.SYSTEM,
+                reason="migrate Reuters/Google to unified by-search monitoring terms",
+            )
 
     def _append_missing_default_sources(self) -> None:
         current = self.repository.get_default_profile("default")
@@ -178,8 +205,14 @@ class MessageBusV2Service:
         self._validate_source_adapter(source)
         if source.default_parameters:
             validate_parameter_schema(source.parameter_schema, source.default_parameters)
+        language = self._resolved_source_language(source)
         created = source.model_copy(
-            update={"version": 1, "created_at": utc_now(), "updated_at": utc_now()}
+            update={
+                "content_language": language,
+                "version": 1,
+                "created_at": utc_now(),
+                "updated_at": utc_now(),
+            }
         )
         self.repository.save_source(created)
         self._audit(
@@ -224,6 +257,9 @@ class MessageBusV2Service:
                 "updated_reason": reason,
             }
         )
+        updated = updated.model_copy(
+            update={"content_language": self._resolved_source_language(updated)}
+        )
         self._validate_source_adapter(updated)
         if updated.default_parameters:
             validate_parameter_schema(updated.parameter_schema, updated.default_parameters)
@@ -257,6 +293,13 @@ class MessageBusV2Service:
         self.repository.save_source_with_bindings(updated, prepared)
         self._audit("source", updated.source_id, "update", actor, reason, updated.version, updated)
         return updated
+
+    def _resolved_source_language(self, source: SourceDefinition) -> str | None:
+        if source.content_language:
+            return source.content_language
+        if source.site_id and self.site_language_resolver is not None:
+            return self.site_language_resolver(source.site_id)
+        return None
 
     def disable_source(
         self, source_id: str, *, actor: UpdateActor, reason: str | None = None
@@ -407,6 +450,7 @@ class MessageBusV2Service:
                 actor=actor,
                 reason=f"materialized from {profile.profile_id}@{profile.version}",
                 source_version=source.version,
+                legacy_default_profile=True,
             )
         return profile
 
@@ -440,14 +484,34 @@ class MessageBusV2Service:
         actor: UpdateActor,
         reason: str | None = None,
         source_version: int | None = None,
+        legacy_default_profile: bool = False,
     ) -> TickerSourceBinding:
         source = self.require_source(source_id)
+        binding_id = binding_id_for(ticker, source.source_id)
+        current = self.repository.get_binding(binding_id, include_tombstoned=True)
+        if (
+            current is None
+            and actor is not UpdateActor.SYSTEM
+            and not legacy_default_profile
+            and source.acquisition_mode
+            in {AcquisitionMode.BY_SEARCH, AcquisitionMode.BY_DISTRIBUTION}
+        ):
+            from .monitoring_terms import MonitoringTermsService
+
+            if MonitoringTermsService(self.repository).get(ticker) is None:
+                raise ValueError("monitoring terms required before new search/distribution binding")
+        if source.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION:
+            if source_parameters not in (None, {}, source.default_parameters):
+                raise ValueError("distribution entry parameters belong to SourceDefinition")
+            if polling is not None and any(
+                key != "enabled" and value != getattr(source.default_polling_config, key, None)
+                for key, value in polling.items()
+            ):
+                raise ValueError("distribution polling interval belongs to SourceDefinition")
         parameters = dict(
             source.default_parameters if source_parameters is None else source_parameters
         )
         validate_parameter_schema(source.parameter_schema, parameters)
-        binding_id = binding_id_for(ticker, source.source_id)
-        current = self.repository.get_binding(binding_id, include_tombstoned=True)
         data = {
             "binding_id": binding_id,
             "ticker": ticker,
@@ -490,6 +554,11 @@ class MessageBusV2Service:
             raise KeyError(f"binding not found: {binding_id}")
         updated = self._patched_binding(current, patch, actor=actor, reason=reason)
         source = self.require_source(updated.source_id)
+        if source.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION:
+            if updated.source_parameters != current.source_parameters:
+                raise ValueError("distribution entry parameters belong to SourceDefinition")
+            if updated.polling.target_interval_seconds != current.polling.target_interval_seconds:
+                raise ValueError("distribution polling interval belongs to SourceDefinition")
         validate_parameter_schema(source.parameter_schema, updated.source_parameters)
         self.repository.save_binding(updated)
         self._audit(

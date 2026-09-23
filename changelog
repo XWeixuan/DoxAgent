@@ -1185,12 +1185,29 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-09-22 · 出口探测抖动治理：30 分钟复验发现 Reuters 的 NL 代理真实 IP/站点请求正常，但一次 IP 探测全失败即被写成 `UNAVAILABLE` 并跳过主组合。ProxyEgress 新增连续探测失败计数和最近错误时间；已验证 READY 节点首次失败保留最后成功 IP/endpoint 并继续服务，连续第二次失败才撤出，成功探测立即清零。现场重探恢复后 Reuters Managed recipe 再次 200/20 条。
 
+2026-09-23 · 消息管线 Site Strategy 架构速查：新增面向后续 Codex 的精炼说明文档，统一梳理正文 `body_v2.2`、新消息 crawler、Registry、Site→Browser Identity→Profile/Egress/Runtime 资源模型、Managed/External 双轨、逐站认证、组合 fallback/cooldown、xRDP 登录维护和新增/修复消息源的最短实施路径；明确该治理不替代 Message Bus 来源优先级/NCP/RSS 配置，在线 Registry 与实测状态高于静态文档。
+
 2026-09-23 · Message Bus 双轨 Site Access 生产开关修正：移除 Compose 公共 `environment` 对 `env_file` 中 `DOXAGENT_SITE_ACCESS_ENABLED` 的错误插值覆盖，避免未传 `--env-file` 时默认 `false` 使 Message Bus/正文补全退回旧 Playwright/CDP 路径；生产 `.env.v2` 继续作为唯一开关来源，并增加 Message Bus、Content Enrichment 的 token、健康依赖和开关优先级回归断言。
 
 2026-09-23 · 双轨 Site Access 的 O4 生产依赖补全：生产开关生效后 O4 同样会构建 Crawler Plane，现为 `v2-o4` 精确挂载受限 worker token 并等待 Site Access 健康，消除因令牌缺失导致的重启循环；回归测试同步覆盖三个实际消费 Site Access 的服务。
+
+2026-09-23 · Silicon Analysts 数据源接入：新增 7 个带严格输入契约、缓存、可选 Bearer Key、来源坐标、置信度/时效保留及匿名历史截断 `PARTIAL` 语义的 Data MCP 半导体工具，并向 C1/C3 授权；真实匿名 Data MCP 探测通过。
+
+2026-09-23 · Codex 模型默认值迁移：将运行节点、初始化修复、W3、O4、Pilot 模板及相关本地验收入口中的 `gpt-5.6-sol`/`gpt-5.6-luna` 分别替换为 `gpt-6-sol`/`gpt-6-luna`，保留各节点既有推理强度；同步更新 Compose 与环境配置示例，不改历史运行记录。定向回归 4 passed。
+
+2026-09-23 · 消息总线采集分类与共享分发需求勘察：核实 ticker binding 调度、补全队列及 ticker 内去重边界，梳理 Reuters/Google News 查询差异和实时 30 分钟准入约束；结合 OpenRouter/TypeSafe Jev 官方资料，形成 by ticker/search/distribution、多语言 L1/L2、共享正文和正则+Jev 独立 OR 判定的初步需求稿与六项待确认问题。仅新增 `dev_plan/workflow_v2/message_bus_acquisition_distribution_requirements_20260923.md`，未修改业务实现或生产状态。
+
+2026-09-23 · 消息总线分类与共享分发实施方案：冻结工商时报半导体栏目首批 distribution、Reuters/Google by search、三概念多语言 L1、订阅内分发、标题摘要降级、Jev 一次重试耗尽按不相关及既有实时/sweep 时效；明确入口共享任务、正文 owner 扩展、独立 ticker 决策/投递、生产 sweep 等待、迁移回滚与测试边界。新增 `dev_plan/workflow_v2/message_bus_acquisition_distribution_implementation_plan_20260923.md`；按用户要求将 OpenRouter key 存入本地 Git 忽略的 .env，未调用付费接口或修改生产。
+
+2026-09-23 · Silicon Analysts 接入范围纠正：撤回误加的 Message Bus v2 适配器、源注册与对应测试，仅保留 Data MCP 的 7 个只读工具及其配置、授权和测试。
 
 2026-09-23 · 预期研究补充 Shell 概况：在当前 Shell 的 Unit 内容上方紧凑展示核心问题与边界规则，随 Shell 选择切换；不添加执行状态、Unit 数量或失败字段。
 
 2026-09-23 · V2 前端周期与研判引用：Overview 及各业务页默认切换为本交易日，时间控件将当天置于前一天之前；Runtime Case 的可解析 Event/Fact、R1 召回及最终命中 Policy 增加新标签页深链，事件定位至固定快照及 Fact，Policy 从 Case 绑定的 Policy Set 原文读取并定位。前端类型检查、定向测试与生产构建通过。
 
 2026-09-23 · Runtime Policy 深链现场修正：真实浏览器验收确认 Case 固定版策略可直接读取，移除深链附带的全部周期参数，避免当前策略列表的 ALL 统计读取报错；保留当天默认周期并完成定向回归。
+
+2026-09-24 · Site Login Maintenance 剪贴板排查：xRDP 桌面普通文本框可粘贴，TigerVNC 与 GTK-VNC 都未把复制文本传入 Chrome 显示器；更换 GTK-VNC 的尝试未解决问题，已恢复 TigerVNC。
+2026-09-24 · Site Login Maintenance 剪贴板转发：新增临时随查看器运行的桌面剪贴板到 VNC ClientCutText 桥接，避免依赖查看器的剪贴板同步；桥接只在内存处理文本、不记录正文，查看器退出后停止。现场直接 VNC 注入和两端剪贴板一致性已验证，待人工确认 Chrome 粘贴动作。
+
+2026-09-24 · Message Bus 采集模式与共享分发：新增版本化多语言 ticker 监测词、Reuters 多查询/Google OR 搜索计划、显式迁移预览与 SQLite 在线备份、工商时报半导体入口共享采集、共享正文 owner 和每 ticker 独立决策/投递；正则与可关闭的 OpenRouter Jev 实验轨并行，CLOSED_SWEEP 保留原窗口和逐 ticker 结算。新增操作文档和定向回归；工商时报默认关闭、无自动 ticker 订阅，远端业务验收另记。

@@ -100,6 +100,10 @@ from doxagent.tools.providers.sec import (
     SecManagementDisclosuresClient,
     SecMaterialContractsProjectsClient,
 )
+from doxagent.tools.providers.silicon_analysts import (
+    SILICON_ANALYSTS_TOOL_SPECS,
+    SiliconAnalystsToolClient,
+)
 from doxagent.tools.providers.tavily import TavilyExtractClient, TavilySearchClient
 from doxagent.tools.providers.twelvedata import (
     TwelveDataDailyOhlcvClient,
@@ -413,6 +417,41 @@ _DOXATLAS_DESCRIPTORS: dict[str, ToolDescriptor] = {
 }
 
 _HORIZONTAL_TOOL_SPECS: dict[str, tuple[str, list[str], str]] = {
+    "silicon_analysts.accelerator_costs": (
+        "Read sourced AI accelerator specifications and modelled manufacturing-cost breakdowns.",
+        ["vendor", "chip", "fields"],
+        "Compare semiconductor accelerator architecture, BOM, packaging, and estimated margins.",
+    ),
+    "silicon_analysts.market_dataset": (
+        "Read one named semiconductor market dataset with per-point provenance and confidence.",
+        ["dataset_id"],
+        "Collect wafer, HBM, CoWoS, utilization, lead-time, or related market-series evidence.",
+    ),
+    "silicon_analysts.hbm_qualification": (
+        "Read the sourced HBM vendor/customer qualification matrix and optional timelines.",
+        ["vendor", "customer", "generation", "include_timelines"],
+        "Track memory qualification, volume-shipping status, and public evidence by platform.",
+    ),
+    "silicon_analysts.wafer_pricing": (
+        "Read modelled foundry wafer-price ranges by process node.",
+        ["node"],
+        "Support semiconductor cost and foundry-economics research with labelled estimates.",
+    ),
+    "silicon_analysts.packaging_costs": (
+        "Read advanced-packaging cost and capability benchmarks.",
+        ["type"],
+        "Compare CoWoS, EMIB, SoIC, FC-BGA, and HBM packaging economics.",
+    ),
+    "silicon_analysts.market_intelligence": (
+        "Read recent sourced semiconductor market-intelligence briefs.",
+        ["severity", "category", "since", "publishedOnly", "limit"],
+        "Collect recent semiconductor supply-chain, memory, packaging, and policy signals.",
+    ),
+    "silicon_analysts.recent_changes": (
+        "Read significant recent changes in the Silicon Analysts data ledger.",
+        ["window", "since", "datasetId", "minDelta", "limit"],
+        "Detect recent semiconductor cost, capacity, pricing, and allocation movements.",
+    ),
     "sec.issuer_filings": (
         "List filtered SEC issuer filings without fetching filing bodies.",
         ["ticker", "cik", "forms", "limit", "limit_per_form", "include_exhibits"],
@@ -685,6 +724,22 @@ for _sec_tool_id in (
 ):
     _HORIZONTAL_DESCRIPTORS[_sec_tool_id] = _HORIZONTAL_DESCRIPTORS[_sec_tool_id].model_copy(
         update={"point_in_time_safe": True}
+    )
+for _silicon_tool_id in SILICON_ANALYSTS_TOOL_SPECS:
+    _HORIZONTAL_DESCRIPTORS[_silicon_tool_id] = _HORIZONTAL_DESCRIPTORS[
+        _silicon_tool_id
+    ].model_copy(
+        update={
+            "source_name": "Silicon Analysts",
+            "business_categories": ["semiconductors", "industry_data"],
+            "availability": "degraded",
+            "availability_reason": (
+                "secondary source mixing confirmed observations and modelled estimates; "
+                "anonymous access is rate-limited and historical depth may be truncated"
+            ),
+            "freshness": "provider_declared_per_response",
+            "point_in_time_safe": False,
+        }
     )
 
 
@@ -1359,6 +1414,9 @@ def default_real_tool_registry(settings: DoxAgentSettings | None = None) -> Tool
         "ir.official_feed_discovery": IrOfficialFeedDiscoveryClient(resolved, cache),
         "ir.official_updates": IrOfficialUpdatesClient(resolved, cache),
     }
+    silicon_analysts = SiliconAnalystsToolClient(resolved, cache)
+    for name in SILICON_ANALYSTS_TOOL_SPECS:
+        horizontal_clients[name] = silicon_analysts
     for name, client in horizontal_clients.items():
         register(name, client)
     ibkr_snapshot = IbkrMarketSnapshotClient(resolved, cache)

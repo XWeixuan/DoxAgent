@@ -13,12 +13,16 @@ from typing import TYPE_CHECKING
 from .admission import AdmissionContext
 
 if TYPE_CHECKING:
+    from doxagent.message_bus_v2.distribution import DistributionWorker
     from doxagent.persistent_runtime_v2.bus_orchestration import BusOrchestration
     from doxagent.ticker_initialization.repository import InitializationRepository
 
 from doxagent.message_bus_v2.adapters import AdapterRegistry
+from doxagent.message_bus_v2.distribution_repository import DistributionRepository
+from doxagent.message_bus_v2.monitoring_terms import MonitoringTermsService
 from doxagent.message_bus_v2.repository import MessageBusV2Repository
 from doxagent.message_bus_v2.schema import (
+    AcquisitionMode,
     AlertSeverity,
     JsonObject,
     OperationalAlert,
@@ -26,6 +30,7 @@ from doxagent.message_bus_v2.schema import (
     PollExecutionResult,
     PollStatus,
     SchedulerConstraints,
+    SharedPollContext,
     SourceDefinition,
     TickerMonitoringStatus,
     TickerSourceBinding,
@@ -34,6 +39,7 @@ from doxagent.message_bus_v2.schema import (
     sha256_text,
     utc_now,
 )
+from doxagent.message_bus_v2.search_plan import build_query_plan
 from doxagent.message_bus_v2.service import MessageBusV2Service
 
 MonotonicClock = Callable[[], float]
@@ -94,6 +100,10 @@ class GlobalPollScheduler:
         self.runtime_orchestration: BusOrchestration | None = None
         self.activation_admission: Callable[[], None] | None = None
         self.initialization_control: InitializationRepository | None = None
+        self.terms = MonitoringTermsService(repository)
+        self.distribution = DistributionRepository(repository)
+        self.distribution_worker: DistributionWorker | None = None
+        self._distribution_task: asyncio.Task[int] | None = None
 
     async def run_once(self) -> list[PollExecutionResult]:
         admission = getattr(self, "activation_admission", None)
@@ -121,8 +131,25 @@ class GlobalPollScheduler:
             state = self.repository.get_poll_state(binding)
             if state.next_dispatch_at is None or state.next_dispatch_at <= now:
                 due.append((source, binding))
-        tasks = [asyncio.create_task(self._poll(source, binding, now)) for source, binding in due]
+        shared: dict[str, tuple[SourceDefinition, list[TickerSourceBinding]]] = {}
+        tasks = []
+        for source, binding in due:
+            if source.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION:
+                continue
+            else:
+                tasks.append(asyncio.create_task(self._poll(source, binding, now)))
+        for source, binding in eligible:
+            if source.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION:
+                shared.setdefault(source.source_id, (source, []))[1].append(binding)
+        for source, bindings in shared.values():
+            tasks.append(asyncio.create_task(self._poll_distribution(source, bindings, now)))
         results = await asyncio.gather(*tasks) if tasks else []
+        if self.distribution_worker is not None and (
+            self._distribution_task is None or self._distribution_task.done()
+        ):
+            if self._distribution_task is not None:
+                self._distribution_task.result()
+            self._distribution_task = asyncio.create_task(self.distribution_worker.run_once())
         self.service.flush_due_buffers(now=now)
         self.service.retry_pending_raw()
         return list(results)
@@ -134,6 +161,11 @@ class GlobalPollScheduler:
                 await asyncio.wait_for(stop.wait(), timeout=loop_sleep_seconds)
             except TimeoutError:
                 pass
+
+    async def close(self) -> None:
+        if self._distribution_task is not None:
+            self._distribution_task.cancel()
+            await asyncio.gather(self._distribution_task, return_exceptions=True)
 
     def _eligible_bindings(
         self, now: datetime, *, include_inactive_hours: bool = False
@@ -165,6 +197,8 @@ class GlobalPollScheduler:
     ) -> None:
         grouped: dict[str, list[tuple[SourceDefinition, TickerSourceBinding]]] = defaultdict(list)
         for pair in bindings:
+            if pair[0].acquisition_mode is AcquisitionMode.BY_DISTRIBUTION:
+                continue
             grouped[pair[0].scheduler_group].append(pair)
         for group, pairs in grouped.items():
             ordered = sorted(pairs, key=lambda pair: pair[1].binding_id)
@@ -204,6 +238,113 @@ class GlobalPollScheduler:
                     )
                 )
 
+    async def _poll_distribution(
+        self,
+        source: SourceDefinition,
+        bindings: list[TickerSourceBinding],
+        attempted_at: datetime,
+        *,
+        window_start: datetime | None = None,
+        window_cutoff: datetime | None = None,
+        admission_context: AdmissionContext | None = None,
+    ) -> PollExecutionResult:
+        if not bindings:
+            return PollExecutionResult(binding_id=f"shared:{source.source_id}")
+        mode = "CLOSED_SWEEP" if window_cutoff else "REALTIME"
+        if mode == "REALTIME":
+            interval = source.default_polling_config.target_interval_seconds
+            slot = int(attempted_at.timestamp()) // interval
+            work_key = f"{source.source_id}:{source.version}:REALTIME:{slot}"
+        else:
+            assert window_start is not None and window_cutoff is not None
+            work_key = (
+                f"{source.source_id}:{source.version}:CLOSED_SWEEP:"
+                f"{window_start.isoformat()}:{window_cutoff.isoformat()}"
+            )
+        roster = []
+        for binding in bindings:
+            found = self.terms.get(binding.ticker)
+            if found is None:
+                continue
+            admission = admission_context or AdmissionContext()
+            roster.append((binding, found[0], admission.model_dump(mode="json")))
+        if not roster:
+            return PollExecutionResult(
+                binding_id=f"shared:{source.source_id}", error_code="CONFIG_INCOMPLETE"
+            )
+        run = self.distribution.get_or_create_run(
+            work_key=work_key,
+            source=source,
+            mode=mode,
+            window_start=window_start,
+            cutoff=window_cutoff,
+            roster=roster,
+        )
+        for binding, revision, admission_payload in roster:
+            self.distribution.attach_target(run["run_id"], binding, revision, admission_payload)
+        if run["status"] == "DONE":
+            return PollExecutionResult(
+                binding_id=f"shared:{source.source_id}",
+                poll_run_id=run["run_id"],
+                window_done=True,
+                window_coverage=run["coverage"],
+            )
+        token = self.distribution.claim_run(run["run_id"])
+        if token is None:
+            return PollExecutionResult(
+                binding_id=f"shared:{source.source_id}",
+                poll_run_id=run["run_id"],
+                window_done=False,
+            )
+        try:
+            adapter = self.adapters.resolve(source.adapter_ref, source_version=source.version)
+            shared_poll = getattr(adapter, "poll_shared", None)
+            if shared_poll is None:
+                raise TypeError(f"distribution adapter lacks poll_shared: {source.adapter_ref}")
+            context = SharedPollContext(
+                run_id=run["run_id"],
+                source=source,
+                checkpoint=__import__("json").loads(run["checkpoint_json"]),
+                window_start=window_start,
+                window_cutoff=window_cutoff,
+                requested_at=attempted_at,
+                request_permit=self._limiter(source).permit,
+            )
+            result = await shared_poll(context)
+            if result.site_access_deferred:
+                self.distribution.release_run(run["run_id"], token)
+                return PollExecutionResult(
+                    binding_id=f"shared:{source.source_id}",
+                    poll_run_id=run["run_id"],
+                    window_done=False,
+                    site_access_deferred=True,
+                    site_access_retry_not_before=result.site_access_retry_not_before,
+                )
+            job_ids = self.distribution.ingest(
+                run["run_id"],
+                token,
+                source,
+                result.messages,
+                checkpoint=result.next_checkpoint,
+                coverage=result.window_coverage,
+                done=result.window_done,
+                deadline_seconds=self.service.enrichment_retry_deadline_seconds,
+                pipeline_version=self.service.enrichment_pipeline_version,
+            )
+            return PollExecutionResult(
+                binding_id=f"shared:{source.source_id}",
+                poll_run_id=run["run_id"],
+                collected_count=len(result.messages),
+                queued_count=len(job_ids),
+                enrichment_job_ids=job_ids,
+                next_checkpoint=result.next_checkpoint,
+                window_done=result.window_done,
+                window_coverage=result.window_coverage,
+            )
+        except Exception:
+            self.distribution.release_run(run["run_id"], token)
+            raise
+
     async def _poll(
         self,
         source: SourceDefinition,
@@ -214,12 +355,34 @@ class GlobalPollScheduler:
         window_cutoff: datetime | None = None,
         checkpoint: JsonObject | None = None,
         admission_context: AdmissionContext | None = None,
+        query_plan_override: JsonObject | None = None,
+        freeze_query_plan: bool = False,
     ) -> PollExecutionResult:
         # Snapshot source and binding for this poll. Updates become visible on the next poll.
         state = self.repository.get_poll_state(binding)
         started_at = self._clock()
         limiter = self._limiter(source)
         poll_run_id = new_id("poll")
+        try:
+            query_plan = (
+                query_plan_override
+                if freeze_query_plan
+                else (
+                    build_query_plan(source, found[1], found[0]).model_dump(mode="json")
+                    if source.acquisition_mode is AcquisitionMode.BY_SEARCH
+                    and (found := self.terms.get(binding.ticker)) is not None
+                    else None
+                )
+            )
+        except ValueError as exc:
+            if str(exc).startswith("CONFIG_INCOMPLETE"):
+                return PollExecutionResult(
+                    poll_run_id=poll_run_id,
+                    binding_id=binding.binding_id,
+                    error_code="CONFIG_INCOMPLETE",
+                    window_coverage="PARTIAL",
+                )
+            raise
         context = PollContext(
             is_bootstrap=not state.bootstrap_complete,
             is_gap_recovery=window_start is not None or window_cutoff is not None,
@@ -228,6 +391,7 @@ class GlobalPollScheduler:
             source=source,
             binding=binding,
             checkpoint=state.checkpoint if checkpoint is None else checkpoint,
+            query_plan=query_plan,
             window_start=window_start,
             window_cutoff=window_cutoff,
             requested_at=attempted_at,

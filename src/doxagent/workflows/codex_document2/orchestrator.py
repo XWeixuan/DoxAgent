@@ -84,7 +84,7 @@ class CodexDocument2Orchestrator:
         repository: CodexRuntimeRepository,
         narrative_provider: NarrativeReportProvider,
         event_library_provider: EventLibraryProvider | None = None,
-        model: str = "gpt-5.6-luna",
+        model: str = "gpt-6-luna",
         model_provider: str | None = None,
         effort: Literal["low", "medium", "high", "xhigh", "max"] = "max",
         timeout_seconds: int = 1800,
