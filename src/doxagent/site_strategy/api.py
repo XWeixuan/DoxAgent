@@ -11,6 +11,8 @@ from typing import Annotated, Literal
 from fastapi import Depends, FastAPI, Header, HTTPException, Query
 from pydantic import BaseModel, Field
 
+from doxagent.content_enrichment.quality import choose_candidate, inspect_html
+
 from .credentials import CredentialStore
 from .schema import (
     AccessRequest,
@@ -77,6 +79,7 @@ class ProfileRestoreRequest(BaseModel):
 
 class ProfileProbeRequest(BaseModel):
     url: str = Field(min_length=1)
+    expected_title: str | None = Field(default=None, max_length=500)
 
 
 class LoginSessionRequest(BaseModel):
@@ -428,7 +431,26 @@ def create_app(
             raise HTTPException(status_code=404, detail="profile not found") from exc
         except (ValueError, RuntimeError) as exc:
             raise HTTPException(status_code=409, detail=str(exc)) from exc
-        return result.model_dump(mode="json", exclude={"body", "headers", "recipe_result"})
+        payload = result.model_dump(mode="json", exclude={"body", "headers", "recipe_result"})
+        resolved = service.resolve(request.url)
+        inspection = inspect_html(
+            result.body,
+            result.final_url or request.url,
+            request.expected_title,
+            strategy_ref=resolved.body.ref,
+            strategy_parameters=resolved.body.parameters,
+        )
+        candidate, outcome, reason = choose_candidate(inspection, request.expected_title)
+        payload["content_diagnostic"] = {
+            "html_bytes": len(result.body.encode("utf-8")),
+            "page_kind": inspection.page_kind,
+            "access_reason": inspection.access_reason,
+            "headline": inspection.headline,
+            "outcome": outcome,
+            "reason": reason,
+            "candidate_chars": len(candidate.text) if candidate else 0,
+        }
+        return payload
 
     @app.post("/v1/profiles/{profile_id}:snapshot", dependencies=[Depends(admin)])
     async def snapshot_profile(profile_id: str, request: ProfileSnapshotRequest) -> dict[str, str]:

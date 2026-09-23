@@ -1176,6 +1176,13 @@ class SiteStrategyService:
                 )
                 category, reason = classify_response(response)
             except Exception as exc:
+                logger.exception(
+                    "runtime attempt failed: site=%s combination=%s identity=%s retry=%s",
+                    resolved.site_id,
+                    combination.combination_id,
+                    combination.identity_id or profile.profile_id,
+                    retry + 1,
+                )
                 status = int(getattr(exc, "status_code", 0) or 0)
                 response = RuntimeResponse(
                     status,

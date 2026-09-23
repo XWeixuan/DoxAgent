@@ -6,7 +6,9 @@ from pathlib import Path
 
 import pytest
 import yaml
+from fastapi.testclient import TestClient
 
+from doxagent.site_strategy.api import create_app
 from doxagent.site_strategy.egress import render_fixed_listeners
 from doxagent.site_strategy.repository import SiteStrategyRepository
 from doxagent.site_strategy.runtime import (
@@ -16,8 +18,10 @@ from doxagent.site_strategy.runtime import (
     _DocumentNavigationGate,
 )
 from doxagent.site_strategy.schema import (
+    AccessDisposition,
     AccessMode,
     AccessRequest,
+    AccessResult,
     BrowserRuntimeKind,
     FailureCategory,
     ProxyEgress,
@@ -46,6 +50,45 @@ def test_challenge_is_detected_on_200_and_412() -> None:
         )
         assert category is FailureCategory.ACCESS_CHALLENGE
         assert reason == "challenge_required"
+
+
+def test_profile_probe_reports_extraction_quality_without_returning_body(
+    tmp_path: Path,
+) -> None:
+    repository = SiteStrategyRepository(tmp_path / "site.sqlite3")
+    service = SiteStrategyService(repository, profile_root=tmp_path / "profiles")
+    bootstrap_seed(repository, service)
+    title = "Memory Prices Could Peak Early. What That Means for Micron Stock."
+    url = "https://www.barrons.com/articles/micron-stock-price-rise-8033b63a"
+    body = "This is a full article sentence. " * 45
+    html = f"<html><h1>{title}</h1><article><p>{body}</p></article></html>"
+
+    async def probe(*_args):
+        return AccessResult(
+            request_id="probe-test",
+            operation_id="probe-test",
+            disposition=AccessDisposition.SUCCESS,
+            status_code=200,
+            final_url=url,
+            body=html,
+            site_id="barrons",
+            runtime_key="barrons",
+            strategy_revision=1,
+        )
+
+    service.probe_profile = probe  # type: ignore[method-assign]
+    client = TestClient(create_app(service, worker_token="worker", admin_token="admin"))
+    response = client.post(
+        "/v1/profiles/barrons-1:probe",
+        json={"url": url, "expected_title": title},
+        headers={"Authorization": "Bearer admin"},
+    )
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert "body" not in payload
+    assert payload["content_diagnostic"]["html_bytes"] == len(html.encode())
+    assert payload["content_diagnostic"]["outcome"] == "FULL"
+    repository.close()
 
 
 @pytest.mark.asyncio
