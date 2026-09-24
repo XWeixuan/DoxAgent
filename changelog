@@ -1204,3 +1204,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-24 · 共享 Identity 逐站认证观测恢复：管理员可显式要求单 Profile 探针在“同站点、同 Identity、标题匹配且完整正文”时记录该 Site 的 `VALID` 观测，并绑定当前 Identity session revision；未通过质量门或 Profile 已进入维护时不写入认证。用于 WSJ 维护会话推进共享 Chrome 修订后，凭 Barron's 实际订阅正文重新确认 Barron's 访问，而不复用兄弟站点认证结论。
 
 2026-09-24 · Yahoo 页面爬虫出口恢复：固定出口清单增加独立土耳其节点 `tr-standard-1:18085`，避免主/备 JP、US 上游同时超时时把 NCP 回退误认作页面爬虫正常。远端在备份并验证配置后新增专属 Yahoo Managed Identity 和第三访问组合，自动页面 recipe 已重新返回成功；补充出口故障诊断与发布时间口径说明。
+
+2026-09-24 · Yahoo Playwright 驱动内存故障处理：生产现场确认 Node 驱动约 2 GiB 堆耗尽后持续静默回退 NCP，且健康检查误报就绪。Yahoo recipe 不再读取并回传业务不用的整页 HTML；检查真实驱动子进程退出状态，死亡时 readiness 转为失败，维护循环发出明确日志并终止 Site Access 进程交由容器重启。隔离循环测试未证明 HTML 本身导致泄漏，故暂不扩大 Node 堆上限，新增对应回归。

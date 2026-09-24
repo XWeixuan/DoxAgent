@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -10,6 +11,30 @@ from doxagent.site_strategy.runtime import OwnerFileLock, PersistentBrowserPool,
 from doxagent.site_strategy.schema import BrowserRuntimeKind, ProfileOperationalState
 from doxagent.site_strategy.seeds import bootstrap_seed
 from doxagent.site_strategy.service import ProfileUnavailableError, SiteStrategyService
+
+
+@pytest.mark.asyncio
+async def test_dead_playwright_driver_is_not_ready_and_triggers_restart(
+    service: SiteStrategyService, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    pool = service.runtime.browser_pool
+    process = SimpleNamespace(returncode=None)
+    pool._playwright = SimpleNamespace(
+        _impl_obj=SimpleNamespace(
+            _connection=SimpleNamespace(_transport=SimpleNamespace(_proc=process))
+        )
+    )
+    assert pool.driver_ready
+    process.returncode = 134
+    assert not pool.driver_ready
+    with pytest.raises(RuntimeError, match="playwright_driver_exited:134"):
+        await pool.start()
+    signals: list[tuple[int, int]] = []
+    monkeypatch.setattr(
+        "doxagent.site_strategy.service.os.kill", lambda pid, sig: signals.append((pid, sig))
+    )
+    await service._maintenance_loop()
+    assert len(signals) == 1
 
 
 @pytest.fixture

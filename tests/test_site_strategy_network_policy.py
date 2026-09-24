@@ -52,6 +52,78 @@ def test_challenge_is_detected_on_200_and_412() -> None:
         assert reason == "challenge_required"
 
 
+@pytest.mark.asyncio
+async def test_yahoo_recipe_returns_rows_without_serializing_page_html(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repository = SiteStrategyRepository(tmp_path / "site.sqlite3")
+    service = SiteStrategyService(repository, profile_root=tmp_path / "profiles")
+    bootstrap_seed(repository, service)
+    url = "https://finance.yahoo.com/quote/MU/latest-news/"
+    page = type("Page", (), {"url": url})()
+
+    async def content():
+        raise AssertionError("Yahoo recipe must not read the full page")
+
+    page.content = content
+
+    class Lease:
+        browser_cdp = object()
+        provenance = type("Provenance", (), {"instance_id": "yahoo-test"})()
+
+        async def __aenter__(self):
+            return page
+
+        async def __aexit__(self, *_args):
+            pass
+
+    class Gate:
+        blocked = []
+
+        def __init__(self, *_args):
+            pass
+
+        async def start(self):
+            pass
+
+        async def close(self):
+            pass
+
+    async def acquire(*_args, **_kwargs):
+        return Lease()
+
+    async def capture(*_args, **_kwargs):
+        return [{"id": "news-1"}], {"page_url": url}
+
+    async def validate(*_args, **_kwargs):
+        pass
+
+    monkeypatch.setattr("doxagent.site_strategy.runtime._DocumentNavigationGate", Gate)
+    monkeypatch.setattr("doxagent.site_strategy.runtime.capture_latest_news", capture)
+    monkeypatch.setattr("doxagent.site_strategy.runtime.public_url", validate)
+    service.runtime.browser_runtimes.page = acquire  # type: ignore[method-assign]
+    identity = repository.get_identity("barrons-1")
+    egress = repository.get_egress("us-standard-5")
+    assert identity is not None and egress is not None
+    result = await service.runtime._browser(
+        AccessRequest(
+            operation_id="yahoo-rows",
+            purpose=SitePurpose.CRAWLER,
+            url=url,
+            mode=AccessMode.BROWSER,
+            recipe_ref="builtin:yahoo_latest_news@1",
+            recipe_parameters={"ticker": "MU"},
+        ),
+        service.resolve(url),
+        identity,
+        egress,
+    )
+    assert result.status_code == 200
+    assert result.body == ""
+    assert result.recipe_result == {"rows": [{"id": "news-1"}], "metadata": {"page_url": url}}
+    repository.close()
+
+
 def test_profile_probe_reports_extraction_quality_without_returning_body(
     tmp_path: Path,
 ) -> None:

@@ -6,6 +6,8 @@ import asyncio
 import hashlib
 import inspect
 import logging
+import os
+import signal
 import time
 from collections import OrderedDict
 from collections.abc import AsyncIterator
@@ -482,6 +484,16 @@ class SiteStrategyService:
 
     async def _maintenance_loop(self) -> None:
         while True:
+            exit_code = self.runtime.browser_pool.driver_exit_code
+            if exit_code is not None:
+                # A dead Node driver cannot be replaced safely while Chrome
+                # contexts and profile writer locks still belong to this process.
+                # Let the container restart the entire Site Access owner.
+                logger.critical(
+                    "Playwright driver exited code=%s; restarting Site Access", exit_code
+                )
+                os.kill(os.getpid(), signal.SIGTERM)
+                return
             try:
                 await self._prewarm_identities()
                 await self.runtime.browser_runtimes.close_idle()
