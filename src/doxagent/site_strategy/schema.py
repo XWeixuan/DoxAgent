@@ -294,6 +294,8 @@ class BrowserResidency(StrEnum):
 class BrowserIdentityLifecycle(SiteModel):
     residency: BrowserResidency = BrowserResidency.ON_DEMAND
     idle_seconds: int = Field(default=43_200, ge=60, le=604_800)
+    # Retain a historical persisted setting even though current runtime does not use it.
+    max_context_pages: int | None = Field(default=None, ge=1)
 
 
 class BrowserIdentityAccess(SiteModel):

@@ -22,6 +22,7 @@ from doxagent.site_strategy.schema import (
     AccessMode,
     AccessRequest,
     BrowserProfile,
+    BrowserIdentityLifecycle,
     FailureCategory,
     ProxyEgress,
     SitePurpose,
@@ -47,6 +48,14 @@ def test_browser_profile_preserves_legacy_challenge_markers() -> None:
     )
     assert "challenge_verified" in profile.model_dump()
     assert BrowserProfile.model_validate_json(profile.model_dump_json()) == profile
+
+
+def test_browser_identity_lifecycle_preserves_legacy_context_page_limit() -> None:
+    lifecycle = BrowserIdentityLifecycle.model_validate(
+        {"residency": "on_demand", "idle_seconds": 43_200, "max_context_pages": 200}
+    )
+    assert lifecycle.max_context_pages == 200
+    assert BrowserIdentityLifecycle.model_validate_json(lifecycle.model_dump_json()) == lifecycle
 
 
 @pytest.fixture
