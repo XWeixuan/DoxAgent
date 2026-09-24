@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from datetime import timedelta
 
 from doxagent.message_bus_v2.admission import AdmissionContext
 from doxagent.message_bus_v2.distribution import DistributionWorker
@@ -98,6 +99,62 @@ async def test_shared_article_one_body_job_independent_ticker_decisions(tmp_path
     assert distribution.pending_for_run(run["run_id"], "NVDA") == []
     decisions = distribution.decisions("MU") + distribution.decisions("NVDA")
     assert {item["final_result"] for item in decisions} == {"RELEVANT", "NOT_RELEVANT"}
+
+
+async def test_expired_shared_article_skips_regex_and_jev_before_delivery(tmp_path) -> None:
+    repository = MessageBusV2Repository(tmp_path / "bus.sqlite3")
+    bus = MessageBusV2Service(repository, enrichment_queue_enabled=True)
+    bus.bootstrap()
+    source = bus.update_source("ctee_semiconductor", {"enabled": True}, actor=UpdateActor.SYSTEM)
+    bus.start_ticker("MU")
+    binding = bus.configure_binding(
+        ticker="MU", source_id=source.source_id, actor=UpdateActor.SYSTEM
+    )
+    terms = MonitoringTermsService(repository)
+    terms.apply(_terms("MU", "Micron"), actor="test")
+    distribution = DistributionRepository(repository)
+    run = distribution.get_or_create_run(
+        work_key="expired-realtime",
+        source=source,
+        mode="REALTIME",
+        window_start=None,
+        cutoff=None,
+        roster=[(binding, 1, AdmissionContext().model_dump(mode="json"))],
+    )
+    token = distribution.claim_run(run["run_id"])
+    assert token
+    message = RawMessageInput(
+        external_id="old-1",
+        title="Micron memory expands",
+        body="Micron memory production rose.",
+        source="CTEE",
+        publisher_name="CTEE",
+        url="https://www.ctee.com.tw/news/old-1",
+        published_at=utc_now() - timedelta(hours=2),
+        raw_payload={},
+    )
+    distribution.ingest(
+        run["run_id"], token, source, [message], checkpoint={}, coverage="COMPLETE",
+        done=True, deadline_seconds=180, pipeline_version="body_v2.2",
+    )
+    job = repository.claim_enrichment_jobs(limit=1)[0]
+    distribution.finalize_article(job, message, None)
+
+    class FakeJev:
+        calls = 0
+
+        async def classify(self, message, definitions):
+            self.calls += 1
+            return {"MU": 1.0}
+
+    fake_jev = FakeJev()
+    worker = DistributionWorker(distribution, bus, terms, jev=fake_jev)
+    assert await worker.run_once() == 1
+    assert fake_jev.calls == 0
+    assert distribution.decisions("MU") == []
+    assert distribution.summary(source.source_id)["delivery_states"] == {
+        "ADMISSION_REJECTED": 1
+    }
 
 
 async def test_late_target_attached_before_next_page_receives_new_observations(tmp_path) -> None:

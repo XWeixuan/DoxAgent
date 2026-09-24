@@ -66,10 +66,27 @@ class DistributionWorker:
     async def _article(self, rows: list[dict[str, Any]]) -> None:
         message = RawMessageInput.model_validate_json(rows[0]["enriched_json"])
         source = SourceDefinition.model_validate_json(rows[0]["source_json"])
+        eligible_rows: list[dict[str, Any]] = []
+        for row in rows:
+            context = AdmissionContext.model_validate(json.loads(row["admission_json"]))
+            reason = evaluate_admission(
+                message.published_at, context, utc_now(), message.publication_time_basis
+            )
+            if reason:
+                self.repository.finish_delivery(
+                    row["delivery_id"],
+                    row["claim_token"],
+                    "ADMISSION_REJECTED",
+                    {"reason": reason},
+                )
+            else:
+                eligible_rows.append(row)
+        if not eligible_rows:
+            return
         language = source.content_language or "en"
         definitions: dict[str, TickerMonitoringTerms] = {}
         relevant: dict[str, bool] = {}
-        for row in rows:
+        for row in eligible_rows:
             found = self.terms.get(row["ticker"], int(row["terms_revision"]))
             if found is None:
                 self.repository.finish_delivery(
@@ -88,7 +105,7 @@ class DistributionWorker:
             if definitions and source.distribution_policy and source.distribution_policy.jev_enabled
             else None
         )
-        for row in rows:
+        for row in eligible_rows:
             if relevant.get(row["ticker"]):
                 await self._deliver(
                     row,
@@ -104,7 +121,7 @@ class DistributionWorker:
         errors: dict[str, str] = {}
         if jev_task:
             scores, attempts, errors = await jev_task
-            for row in rows:
+            for row in eligible_rows:
                 if relevant.get(row["ticker"]):
                     self.repository.update_jev_decision(
                         row,
@@ -112,7 +129,7 @@ class DistributionWorker:
                         attempts.get(row["ticker"], 0),
                         errors.get(row["ticker"]),
                     )
-        for row in rows:
+        for row in eligible_rows:
             if row["ticker"] in definitions and not relevant[row["ticker"]]:
                 await self._deliver(
                     row,
