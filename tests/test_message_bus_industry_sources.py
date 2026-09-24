@@ -134,6 +134,9 @@ def test_cjk_article_identity_and_source_language_registry() -> None:
     assert sources["barrons_ticker_news"].acquisition_mode is AcquisitionMode.BY_TICKER
     assert sources["thelec_semiconductors_rss"].content_language == "ko"
     assert sources["digitimes_tw_rss"].content_language == "zh-Hant"
+    assert sources["digitimes_tw_rss"].default_parameters == {
+        "feed_proxy_url": "http://doxagent-egress-clash:18083"
+    }
     assert sources["trendforce_press_releases"].acquisition_mode is AcquisitionMode.BY_DISTRIBUTION
     sites = {site.site_id: site for site in seed_specs()}
     assert sites["barrons"].auth.crawler_requirement == "required"

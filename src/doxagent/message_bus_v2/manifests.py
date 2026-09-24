@@ -261,6 +261,8 @@ def initial_sources() -> list[SourceDefinition]:
             entry_url="https://www.digitimes.com.tw/tech/rss/xml/xmlrss_10_40.xml",
             site_id="digitimes_tw",
             distribution_policy=DistributionPolicy(jev_enabled=True),
+            properties={"feed_proxy_url": {"type": "string", "minLength": 1}},
+            default_parameters={"feed_proxy_url": "http://doxagent-egress-clash:18083"},
             default_polling=PollingConfig(target_interval_seconds=300),
         ),
     ]
