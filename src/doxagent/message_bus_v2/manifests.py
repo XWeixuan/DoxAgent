@@ -152,7 +152,7 @@ def initial_sources() -> list[SourceDefinition]:
             distribution_policy=DistributionPolicy(jev_enabled=True),
             properties={"max_pages": {"type": "integer", "minimum": 1, "maximum": 20}},
             default_parameters={"max_pages": 8},
-            default_polling=PollingConfig(target_interval_seconds=300),
+            default_polling=PollingConfig(target_interval_seconds=60),
             minimum_request_gap_seconds=3,
         ),
         _source(
@@ -163,7 +163,7 @@ def initial_sources() -> list[SourceDefinition]:
             site_id="barrons",
             entry_url="https://www.barrons.com/market-data/stocks/{ticker}",
             adapter_ref="site:auto",
-            default_polling=PollingConfig(target_interval_seconds=300),
+            default_polling=PollingConfig(target_interval_seconds=60),
             minimum_request_gap_seconds=5,
         ),
         _source(
@@ -178,7 +178,7 @@ def initial_sources() -> list[SourceDefinition]:
             distribution_policy=DistributionPolicy(jev_enabled=True),
             properties={"max_pages": {"type": "integer", "minimum": 1, "maximum": 8}},
             default_parameters={"max_pages": 5},
-            default_polling=PollingConfig(target_interval_seconds=300),
+            default_polling=PollingConfig(target_interval_seconds=60),
             minimum_request_gap_seconds=3,
         ),
         _source(
@@ -193,7 +193,7 @@ def initial_sources() -> list[SourceDefinition]:
             distribution_policy=DistributionPolicy(jev_enabled=True),
             properties={"max_pages": {"type": "integer", "minimum": 1, "maximum": 8}},
             default_parameters={"max_pages": 5},
-            default_polling=PollingConfig(target_interval_seconds=300),
+            default_polling=PollingConfig(target_interval_seconds=60),
             minimum_request_gap_seconds=3,
             scheduler_group="trendforce_news",
         ),
@@ -207,7 +207,7 @@ def initial_sources() -> list[SourceDefinition]:
             site_id="digitimes",
             adapter_ref="site:auto",
             distribution_policy=DistributionPolicy(jev_enabled=True),
-            default_polling=PollingConfig(target_interval_seconds=300),
+            default_polling=PollingConfig(target_interval_seconds=60),
             minimum_request_gap_seconds=5,
         ),
         _source(
@@ -220,7 +220,7 @@ def initial_sources() -> list[SourceDefinition]:
             distribution_policy=DistributionPolicy(jev_enabled=True),
             properties={"feed_proxy_url": {"type": "string", "minLength": 1}},
             default_parameters={"feed_proxy_url": "http://doxagent-egress-clash:18083"},
-            default_polling=PollingConfig(target_interval_seconds=300),
+            default_polling=PollingConfig(target_interval_seconds=60),
             minimum_request_gap_seconds=3,
         ),
         _source(
@@ -231,7 +231,7 @@ def initial_sources() -> list[SourceDefinition]:
             entry_url="https://www.tomshardware.com/feeds.xml",
             site_id="tomshardware",
             distribution_policy=DistributionPolicy(jev_enabled=True),
-            default_polling=PollingConfig(target_interval_seconds=300),
+            default_polling=PollingConfig(target_interval_seconds=60),
         ),
         _source(
             "thelec_semiconductors_rss",
@@ -241,7 +241,7 @@ def initial_sources() -> list[SourceDefinition]:
             entry_url="https://www.thelec.kr/rss/S1N2.xml",
             site_id="thelec",
             distribution_policy=DistributionPolicy(jev_enabled=True),
-            default_polling=PollingConfig(target_interval_seconds=300),
+            default_polling=PollingConfig(target_interval_seconds=60),
         ),
         _source(
             "etnews_rss",
@@ -251,7 +251,7 @@ def initial_sources() -> list[SourceDefinition]:
             entry_url="https://rss.etnews.com/06.xml",
             site_id="etnews",
             distribution_policy=DistributionPolicy(jev_enabled=True),
-            default_polling=PollingConfig(target_interval_seconds=300),
+            default_polling=PollingConfig(target_interval_seconds=60),
         ),
         _source(
             "digitimes_tw_rss",
@@ -263,7 +263,7 @@ def initial_sources() -> list[SourceDefinition]:
             distribution_policy=DistributionPolicy(jev_enabled=True),
             properties={"feed_proxy_url": {"type": "string", "minLength": 1}},
             default_parameters={"feed_proxy_url": "http://doxagent-egress-clash:18083"},
-            default_polling=PollingConfig(target_interval_seconds=300),
+            default_polling=PollingConfig(target_interval_seconds=60),
         ),
     ]
 
@@ -305,7 +305,7 @@ def initial_default_profile() -> DefaultMonitoringProfile:
             ),
             DefaultProfileEntry(
                 source_id="barrons_ticker_news",
-                polling=PollingConfig(target_interval_seconds=300),
+                polling=PollingConfig(target_interval_seconds=60),
                 streaming=StreamingConfig(),
             ),
         ],

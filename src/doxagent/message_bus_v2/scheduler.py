@@ -7,7 +7,7 @@ import time
 from collections import defaultdict
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 
 from .admission import AdmissionContext
@@ -283,6 +283,8 @@ class GlobalPollScheduler:
         for binding, revision, admission_payload in roster:
             self.distribution.attach_target(run["run_id"], binding, revision, admission_payload)
         if run["status"] == "DONE":
+            if mode == "REALTIME":
+                self._record_distribution_poll(source, roster, run)
             return PollExecutionResult(
                 binding_id=f"shared:{source.source_id}",
                 poll_run_id=run["run_id"],
@@ -331,6 +333,9 @@ class GlobalPollScheduler:
                 deadline_seconds=self.service.enrichment_retry_deadline_seconds,
                 pipeline_version=self.service.enrichment_pipeline_version,
             )
+            if mode == "REALTIME" and result.window_done:
+                self._record_distribution_poll(source, roster, run,
+                                               coverage=result.window_coverage)
             return PollExecutionResult(
                 binding_id=f"shared:{source.source_id}",
                 poll_run_id=run["run_id"],
@@ -341,9 +346,48 @@ class GlobalPollScheduler:
                 window_done=result.window_done,
                 window_coverage=result.window_coverage,
             )
-        except Exception:
+        except Exception as exc:
             self.distribution.release_run(run["run_id"], token)
+            if mode == "REALTIME":
+                for binding, _, _ in roster:
+                    self.service.record_poll_failure(
+                        binding, code=type(exc).__name__, message=str(exc),
+                        attempted_at=attempted_at,
+                    )
             raise
+
+    def _record_distribution_poll(
+        self,
+        source: SourceDefinition,
+        roster: list[tuple[TickerSourceBinding, int, JsonObject]],
+        run: JsonObject,
+        *,
+        coverage: str | None = None,
+    ) -> None:
+        """Project one shared acquisition onto its subscribed ticker poll states."""
+        observed_at = datetime.fromisoformat(str(run["created_at"]))
+        interval = source.default_polling_config.target_interval_seconds
+        next_due = datetime.fromtimestamp(
+            (int(utc_now().timestamp()) // interval + 1) * interval, UTC
+        )
+        partial = (coverage or str(run["coverage"])) != "COMPLETE"
+        for binding, _, _ in roster:
+            previous = self.repository.get_poll_state(binding)
+            if previous.last_attempt_at and previous.last_attempt_at >= observed_at:
+                continue
+            self.repository.save_poll_state(previous.model_copy(update={
+                "status": PollStatus.PARTIAL if partial else PollStatus.SUCCEEDED,
+                "last_attempt_at": observed_at,
+                "last_success_at": observed_at,
+                "last_failure_at": observed_at if partial else None,
+                "failure_since": observed_at if partial else None,
+                "last_error_code": "SOURCE_WINDOW_PARTIAL" if partial else None,
+                "last_error_message": "Shared source coverage is partial" if partial else None,
+                "consecutive_failures": 0,
+                "target_due_at": next_due,
+                "next_dispatch_at": next_due,
+                "updated_at": utc_now(),
+            }))
 
     async def _poll(
         self,

@@ -91,6 +91,9 @@ def apply_candidate_overrides(
     if strategy == "builtin:reuters@1":
         paragraphs = root.xpath(
             '//*[@data-testid="ArticleBody"]//*[starts-with(@data-testid,"paragraph-")]'
+            ' | //*[@data-testid="ArticleBody"]'
+            '//*[starts-with(@data-testid,"unordered-") or '
+            'starts-with(@data-testid,"ordered-")]/li'
         )
         if paragraphs:
             text = "\n\n".join(

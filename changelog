@@ -1233,3 +1233,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-24 · W3 Codex 账户模型兼容：远端 10 个 MU W3 Effect 均因 ChatGPT 账户拒绝 `gpt-6-luna` 而耗尽重试；同容器 `gpt-5.6-luna/max` 最小真实 turn 成功。新增仅作用于 W3 出站请求的显式执行模型覆盖，保留冻结模型与推理强度；新加坡 server Compose 暂设 `gpt-5.6-luna`，待该 Codex 账户实际支持 GPT-6 后撤销。首个 Effect 恢复验证发现 durable Worker receipt 仍冻结旧模型；后续修复只在显式覆盖且旧 receipt 确认失败时更新实际派发模型与 attempt/thread，并使调用记录保存真实派发模型，不改冻结 Case 内容。W3/receipt 定向回归 13 passed，Ruff 与 Compose 合并配置检查通过；失败 Effect 须按原 ID 恢复。
 
 2026-09-24 · W3 远端恢复验收：新加坡 Scheduler 部署 `f1dcbe66` 后，先单例验证实际 Worker 请求使用 `gpt-5.6-luna/max` 且 W3 进入 RESOLVED，再按原 Effect ID 恢复其余 9 条；SSH 中断后只读对账确认 10/10 Effect 为 COMPLETED、W3 为 RESOLVED，MU 当前无 FAILED W3，另有 2 条新 W3 正在 RUNNING。只重建并重启 Scheduler，Codex Worker 未重启。
+
+2026-09-25 · 消息源轮询与 Reuters 正文修复：首批新增源的默认轮询由 300 秒改为 60 秒，启动时仅迁移原 300 秒源/绑定/默认模板，保留 TikHub 节奏；共享 distribution 采集现在向各订阅 ticker 写入真实轮询结果和下次目标时间，修正前端“未轮询/未调度”。Reuters 专用正文抽取加入 ArticleBody 的列表项，且仅在 Reuters canonical URL 与请求 URL 完全对应时容许文章改题，保留跨页/跨站身份校验。生产 MU 监测词修订 1→2，仅删除 L1 的 AI 概念，L2 不变。Barron's 的现有主备出口全不可达，保留 Profile/出口绑定，待代理服务恢复后复验。

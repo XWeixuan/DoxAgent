@@ -81,6 +81,7 @@ class Inspection:
     interactive_challenge: bool = False
     expansion_required: bool = False
     subscription_article: bool = False
+    canonical_article_match: bool = False
 
 
 CHALLENGE = re.compile(
@@ -196,6 +197,13 @@ def inspect_html(
     if not result.headline:
         result.headline = next(iter(root.xpath('//meta[@property="og:title"]/@content')), "")
     result.canonical = next(iter(root.xpath('//link[@rel="canonical"]/@href')), "")
+    if strategy == "builtin:reuters@1" and result.canonical:
+        requested, canonical = urlparse(url), urlparse(result.canonical)
+        result.canonical_article_match = (
+            requested.hostname in {"reuters.com", "www.reuters.com"}
+            and canonical.hostname in {"reuters.com", "www.reuters.com"}
+            and requested.path.rstrip("/") == canonical.path.rstrip("/")
+        )
     visible = clean(" ".join(root.xpath("//text()[not(ancestor::script or ancestor::style)]")))
     title = clean(" ".join(root.xpath("//title/text()")))
     alternatives = [result.headline, *root.xpath('//meta[@property="og:title"]/@content'), title]
@@ -465,7 +473,8 @@ def choose_candidate(
         return None, "UNAVAILABLE", info.access_reason
     if info.page_kind in {"quote", "listing"}:
         return None, "UNAVAILABLE", "non_article_target"
-    if expected_title and info.headline and not title_match(info.headline, expected_title):
+    if (expected_title and info.headline and not title_match(info.headline, expected_title)
+            and not (info.canonical_article_match and info.page_kind == "article")):
         return None, "UNAVAILABLE", "publisher_identity_mismatch"
     if expected_title and not info.headline and info.candidates:
         if not any(title_match(c.headline, expected_title) for c in info.candidates):

@@ -137,11 +137,7 @@ def test_bootstrap_registry_profile_and_ticker_materialization(tmp_path: Path) -
         "reuters_site_search",
         "barrons_ticker_news",
     }
-    assert all(
-        binding.polling.target_interval_seconds
-        == (300 if binding.source_id == "barrons_ticker_news" else 60)
-        for binding in bindings
-    )
+    assert all(binding.polling.target_interval_seconds == 60 for binding in bindings)
 
     # Profiles are materialized templates, not live parents.
     service.save_default_profile(profile.model_copy(update={"entries": []}))
@@ -168,6 +164,75 @@ def test_existing_default_profile_adds_barrons_once(tmp_path: Path) -> None:
     assert [entry.source_id for entry in migrated.entries].count("barrons_ticker_news") == 1
     service.bootstrap()
     assert repository.get_default_profile("default").version == migrated.version
+
+
+def test_bootstrap_migrates_new_source_300s_intervals_once(tmp_path: Path) -> None:
+    repository, service = _bus(tmp_path / "bus.sqlite3")
+    service.start_ticker("MU")
+    service.configure_binding(
+        ticker="MU", source_id="trendforce_news", actor=UpdateActor.SYSTEM
+    )
+    for source_id in ("barrons_ticker_news", "trendforce_news"):
+        source = repository.get_source(source_id)
+        assert source is not None
+        bindings = repository.list_bindings(source_id=source_id)
+        service.update_source(
+            source_id,
+            {
+                "default_polling_config": source.default_polling_config.model_copy(
+                    update={"target_interval_seconds": 300}
+                ).model_dump(mode="json")
+            },
+            binding_patches={
+                binding.binding_id: {
+                    "polling": binding.polling.model_copy(
+                        update={"target_interval_seconds": 300}
+                    ).model_dump(mode="json")
+                }
+                for binding in bindings
+            },
+            actor=UpdateActor.SYSTEM,
+        )
+    profile = repository.get_default_profile("default")
+    assert profile is not None
+    service.save_default_profile(
+        profile.model_copy(
+            update={
+                "entries": [
+                    entry.model_copy(
+                        update={"polling": entry.polling.model_copy(
+                            update={"target_interval_seconds": 300}
+                        )}
+                    ) if entry.source_id == "barrons_ticker_news" else entry
+                    for entry in profile.entries
+                ]
+            }
+        )
+    )
+
+    service.bootstrap()
+    for source_id in ("barrons_ticker_news", "trendforce_news"):
+        assert repository.get_source(source_id).default_polling_config.target_interval_seconds == 60
+        assert all(
+            binding.polling.target_interval_seconds == 60
+            for binding in repository.list_bindings(source_id=source_id)
+        )
+    profile = repository.get_default_profile("default")
+    assert next(
+        entry.polling.target_interval_seconds
+        for entry in profile.entries if entry.source_id == "barrons_ticker_news"
+    ) == 60
+    versions = (
+        repository.get_source("barrons_ticker_news").version,
+        repository.get_source("trendforce_news").version,
+        profile.version,
+    )
+    service.bootstrap()
+    assert (
+        repository.get_source("barrons_ticker_news").version,
+        repository.get_source("trendforce_news").version,
+        repository.get_default_profile("default").version,
+    ) == versions
 
 
 def test_disabled_flag_has_no_v1_fallback_and_does_not_bootstrap_v2_db(

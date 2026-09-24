@@ -110,6 +110,52 @@ def test_reuters_div_paragraphs_exclude_recommendations_and_newsletter():
     assert c and c.text == BODY and c.method == 'reuters_article_body'
 
 
+def test_reuters_article_includes_structured_bullet_details():
+    from doxagent.content_enrichment.quality import choose_candidate, inspect_html
+
+    url = 'https://www.reuters.com/world/uk/raspberry-pi-results-2026-09-24/'
+    lead = 'Sept 24 (Reuters) - Raspberry Pi reported strong results. ' * 8
+    details = ['Memory supplies remain adequate for production. ' * 5 for _ in range(4)]
+    page = (
+        f'<link rel="canonical" href="{url}"><h1>Raspberry Pi reports results</h1>'
+        '<script type="application/ld+json">'
+        '{"@type":"NewsArticle","isAccessibleForFree":false}</script>'
+        '<article><div data-testid="ArticleBody">'
+        f'<div data-testid="paragraph-0">{lead}Here are some details:</div>'
+        '<ul data-testid="unordered-0">'
+        + ''.join(f'<li>{item}</li>' for item in details)
+        + '</ul><p data-testid="promo-box">Subscribe to a newsletter.</p></div></article>'
+    )
+    candidate, status, reason = choose_candidate(
+        inspect_html(page, url, 'Raspberry Pi reports results'),
+        'Raspberry Pi reports results',
+    )
+    assert status == 'FULL' and reason == 'complete_article'
+    assert candidate and all(item.strip() in candidate.text for item in details)
+    assert 'Subscribe to a newsletter' not in candidate.text
+
+
+def test_reuters_updated_title_uses_matching_canonical_url_only():
+    from doxagent.content_enrichment.quality import choose_candidate, inspect_html
+
+    url = 'https://www.reuters.com/markets/econ-world/5-threshold-2026-09-24/'
+    page = (
+        f'<link rel="canonical" href="{url}"><h1>US bond yields barrel past 5%</h1>'
+        '<article><div data-testid="ArticleBody">'
+        + ''.join(f'<div data-testid="paragraph-{i}">{BODY}</div>' for i in range(2))
+        + '</div></article>'
+    )
+    assert (
+        choose_candidate(inspect_html(page, url, 'The 5% threshold'), 'The 5% threshold')[1]
+        == 'FULL'
+    )
+    other = url.replace('5-threshold', 'other-story')
+    assert (
+        choose_candidate(inspect_html(page, other, 'The 5% threshold'), 'The 5% threshold')[2]
+        == 'publisher_identity_mismatch'
+    )
+
+
 def test_wsj_author_biography_cannot_outrank_the_actual_body():
     from doxagent.content_enrichment.quality import choose_candidate, inspect_html
     body = ''.join(f'<p data-type="paragraph">{p}</p>' for p in BODY.split('\n\n'))

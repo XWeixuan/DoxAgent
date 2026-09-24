@@ -83,7 +83,66 @@ class MessageBusV2Service:
             self.save_default_profile(initial_default_profile())
         else:
             self._append_missing_default_sources()
+        self._migrate_new_source_intervals()
         self._migrate_legacy_default_news_windows()
+
+    def _migrate_new_source_intervals(self) -> None:
+        """Replace only the 300-second defaults introduced with the new sources."""
+        source_ids = {
+            "ctee_semiconductor",
+            "barrons_ticker_news",
+            "trendforce_news",
+            "trendforce_press_releases",
+            "digitimes_semiconductors",
+            "huggingnews_rss",
+            "tomshardware_rss",
+            "thelec_semiconductors_rss",
+            "etnews_rss",
+            "digitimes_tw_rss",
+        }
+        reason = "migrate new message sources from 300s to 60s polling"
+        for source_id in sorted(source_ids):
+            source = self.repository.get_source(source_id)
+            if source is None or source.default_polling_config.target_interval_seconds != 300:
+                continue
+            binding_patches = {
+                binding.binding_id: {
+                    "polling": binding.polling.model_copy(
+                        update={"target_interval_seconds": 60}
+                    ).model_dump(mode="json")
+                }
+                for binding in self.repository.list_bindings(source_id=source_id)
+                if binding.polling.target_interval_seconds == 300
+            }
+            self.update_source(
+                source_id,
+                {
+                    "default_polling_config": source.default_polling_config.model_copy(
+                        update={"target_interval_seconds": 60}
+                    ).model_dump(mode="json")
+                },
+                binding_patches=binding_patches,
+                actor=UpdateActor.SYSTEM,
+                reason=reason,
+            )
+        profile = self.repository.get_default_profile("default")
+        if profile is None:
+            return
+        entries = [
+            entry.model_copy(
+                update={"polling": entry.polling.model_copy(update={"target_interval_seconds": 60})}
+            )
+            if entry.source_id in source_ids and entry.polling.target_interval_seconds == 300
+            else entry
+            for entry in profile.entries
+        ]
+        if entries != profile.entries:
+            self.save_default_profile(
+                profile.model_copy(
+                    update={"entries": entries, "updated_by": UpdateActor.SYSTEM,
+                            "updated_reason": reason}
+                )
+            )
 
     def _migrate_acquisition_modes(self) -> None:
         """Apply only the two frozen search-mode migrations; keep custom sources intact."""

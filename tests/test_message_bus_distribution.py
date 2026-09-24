@@ -266,3 +266,8 @@ async def test_one_and_many_subscribers_use_one_shared_network_poll(tmp_path) ->
     assert adapter.calls == 1
     run = scheduler.distribution.status(source.source_id)[0]
     assert run["status"] == "DONE"
+    states = [repository.get_poll_state(binding) for binding in bindings]
+    assert all(state.status.value == "succeeded" for state in states)
+    assert all(state.last_success_at is not None for state in states)
+    assert all(state.target_due_at is not None for state in states)
+    assert len({state.last_attempt_at for state in states}) == 1
