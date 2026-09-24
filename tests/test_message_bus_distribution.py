@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from datetime import timedelta
 
+import pytest
+
 from doxagent.message_bus_v2.admission import AdmissionContext
 from doxagent.message_bus_v2.distribution import DistributionWorker
 from doxagent.message_bus_v2.distribution_repository import DistributionRepository
@@ -271,3 +273,31 @@ async def test_one_and_many_subscribers_use_one_shared_network_poll(tmp_path) ->
     assert all(state.last_success_at is not None for state in states)
     assert all(state.target_due_at is not None for state in states)
     assert len({state.last_attempt_at for state in states}) == 1
+
+
+async def test_shared_poll_failure_has_visible_status_and_next_target(tmp_path) -> None:
+    repository = MessageBusV2Repository(tmp_path / "bus.sqlite3")
+    bus = MessageBusV2Service(repository)
+    bus.bootstrap()
+    source = bus.update_source("ctee_semiconductor", {"enabled": True}, actor=UpdateActor.SYSTEM)
+    bus.start_ticker("MU")
+    binding = bus.configure_binding(
+        ticker="MU", source_id=source.source_id, actor=UpdateActor.SYSTEM
+    )
+
+    class Registry:
+        def resolve(self, adapter_ref, *, source_version):
+            class Adapter:
+                async def poll_shared(self, context):
+                    raise RuntimeError("publisher unavailable")
+
+            return Adapter()
+
+    scheduler = GlobalPollScheduler(repository, bus, Registry())
+    scheduler.terms.apply(_terms("MU", "Micron"), actor="test")
+    with pytest.raises(RuntimeError, match="publisher unavailable"):
+        await scheduler._poll_distribution(source, [binding], utc_now())
+    state = repository.get_poll_state(binding)
+    assert state.status.value == "failed"
+    assert state.last_error_code == "RuntimeError"
+    assert state.target_due_at is not None

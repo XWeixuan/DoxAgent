@@ -1234,4 +1234,4 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-09-24 · W3 远端恢复验收：新加坡 Scheduler 部署 `f1dcbe66` 后，先单例验证实际 Worker 请求使用 `gpt-5.6-luna/max` 且 W3 进入 RESOLVED，再按原 Effect ID 恢复其余 9 条；SSH 中断后只读对账确认 10/10 Effect 为 COMPLETED、W3 为 RESOLVED，MU 当前无 FAILED W3，另有 2 条新 W3 正在 RUNNING。只重建并重启 Scheduler，Codex Worker 未重启。
 
-2026-09-25 · 消息源轮询与 Reuters 正文修复：首批新增源的默认轮询由 300 秒改为 60 秒，启动时仅迁移原 300 秒源/绑定/默认模板，保留 TikHub 节奏；共享 distribution 采集现在向各订阅 ticker 写入真实轮询结果和下次目标时间，修正前端“未轮询/未调度”。Reuters 专用正文抽取加入 ArticleBody 的列表项，且仅在 Reuters canonical URL 与请求 URL 完全对应时容许文章改题，保留跨页/跨站身份校验。生产 MU 监测词修订 1→2，仅删除 L1 的 AI 概念，L2 不变。Barron's 的现有主备出口全不可达，保留 Profile/出口绑定，待代理服务恢复后复验。
+2026-09-25 · 消息源轮询与 Reuters 正文修复：首批新增源的默认轮询由 300 秒改为 60 秒，启动时仅迁移原 300 秒源/绑定/默认模板，保留 TikHub 节奏；共享 distribution 采集现在向各订阅 ticker 写入真实成功/失败轮询状态和下次目标时间，修正前端“未轮询/未调度”。Reuters 专用正文抽取加入 ArticleBody 的列表项，且仅在 Reuters canonical URL 与请求 URL 完全对应时容许文章改题，保留跨页/跨站身份校验。生产 MU 监测词修订 1→2，仅删除 L1 的 AI 概念，L2 不变。Barron's 的现有主备出口全不可达，保留 Profile/出口绑定，待代理服务恢复后复验。

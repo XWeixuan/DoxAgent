@@ -350,11 +350,24 @@ class GlobalPollScheduler:
             self.distribution.release_run(run["run_id"], token)
             if mode == "REALTIME":
                 for binding, _, _ in roster:
-                    self.service.record_poll_failure(
+                    failed = self.service.record_poll_failure(
                         binding, code=type(exc).__name__, message=str(exc),
                         attempted_at=attempted_at,
                     )
+                    next_due = self._next_distribution_due(source)
+                    self.repository.save_poll_state(failed.model_copy(update={
+                        "target_due_at": next_due,
+                        "next_dispatch_at": next_due,
+                        "updated_at": utc_now(),
+                    }))
             raise
+
+    @staticmethod
+    def _next_distribution_due(source: SourceDefinition) -> datetime:
+        interval = source.default_polling_config.target_interval_seconds
+        return datetime.fromtimestamp(
+            (int(utc_now().timestamp()) // interval + 1) * interval, UTC
+        )
 
     def _record_distribution_poll(
         self,
@@ -366,10 +379,7 @@ class GlobalPollScheduler:
     ) -> None:
         """Project one shared acquisition onto its subscribed ticker poll states."""
         observed_at = datetime.fromisoformat(str(run["created_at"]))
-        interval = source.default_polling_config.target_interval_seconds
-        next_due = datetime.fromtimestamp(
-            (int(utc_now().timestamp()) // interval + 1) * interval, UTC
-        )
+        next_due = self._next_distribution_due(source)
         partial = (coverage or str(run["coverage"])) != "COMPLETE"
         for binding, _, _ in roster:
             previous = self.repository.get_poll_state(binding)
