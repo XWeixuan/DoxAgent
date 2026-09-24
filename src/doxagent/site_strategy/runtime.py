@@ -346,11 +346,24 @@ class PersistentBrowserPool:
 
     @property
     def driver_ready(self) -> bool:
-        return self._playwright is not None and not self._stopping
+        return self._playwright is not None and not self._stopping and self.driver_exit_code is None
+
+    @property
+    def driver_exit_code(self) -> int | None:
+        """Report a dead Playwright driver even when its Python wrapper remains set."""
+        if self._playwright is None:
+            return None
+        impl = getattr(self._playwright, "_impl_obj", None)
+        connection = getattr(impl, "_connection", None)
+        transport = getattr(connection, "_transport", None)
+        process = getattr(transport, "_proc", None)
+        return None if process is None else process.returncode
 
     async def start(self) -> None:
         async with self._start_lock:
             if self._playwright is not None:
+                if self.driver_exit_code is not None:
+                    raise RuntimeError(f"playwright_driver_exited:{self.driver_exit_code}")
                 return
             if self._stopping:
                 raise RuntimeError("browser_pool_stopping")
@@ -952,7 +965,9 @@ class SiteAccessRuntime:
                         200,
                         str(metadata.get("page_url") or page.url or request.url),
                         {},
-                        body=await page.content(),
+                        # The caller consumes only the parsed rows. Returning the
+                        # whole Yahoo page needlessly serializes megabytes per poll.
+                        body="",
                         recipe_result={"rows": rows, "metadata": metadata},
                         provenance=lease.provenance,
                     )

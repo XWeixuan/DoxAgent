@@ -1217,3 +1217,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-24 · Message Bus 采集模式与共享分发：新增版本化多语言 ticker 监测词、Reuters 多查询/Google OR 搜索计划、显式迁移预览与 SQLite 在线备份、工商时报半导体入口共享采集、共享正文 owner 和每 ticker 独立决策/投递；正则与可关闭的 OpenRouter Jev 实验轨并行，CLOSED_SWEEP 保留原窗口和逐 ticker 结算。新增操作文档和定向回归；工商时报默认关闭、无自动 ticker 订阅，远端业务验收另记。
 
 2026-09-24 · Message Bus 生产部署与边界修正：`main` 推送并远端拉取 `a7889a34`，完成 Bus SQLite 备份、显式采集模式迁移及 V2 业务后端/Web/Guardian 镜像切换；Reuters、Google 为 by_search，工商时报繁中 by_distribution 保持禁用，Jev 保持关闭。迁移先于旧 Bus/正文容器切换造成短暂旧模型字段校验重启，立即切换新 server 镜像恢复；API 较慢启动后自行转 healthy。依用户明确要求未重建/重启 Site Access 与 Chrome Supervisor，容器 ID 前后相同。验收及后续启用边界见 `dev_plan/workflow_v2/message_bus_acquisition_distribution_remote_acceptance_20260924.md`。
+
+2026-09-24 · Yahoo Playwright 驱动内存故障处理：线上 Node 驱动约 2 GiB 堆耗尽后持续静默回退 NCP，健康检查误报就绪。Yahoo recipe 不再读取并回传业务不用的整页 HTML；检查驱动子进程退出状态，死亡时 readiness 转为失败，维护循环发出明确日志并终止 Site Access 进程交由容器重启。隔离循环测试未证明 HTML 本身导致泄漏，暂不提高 Node 堆上限。修复基于当前生产 Site Access 镜像提交 `2fd67922`，保留现存 Registry 字段兼容性。
