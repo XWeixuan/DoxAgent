@@ -301,10 +301,16 @@ def initial_default_profile() -> DefaultMonitoringProfile:
                 polling=polling,
                 streaming=StreamingConfig(),
             ),
+            DefaultProfileEntry(
+                source_id="barrons_ticker_news",
+                polling=PollingConfig(target_interval_seconds=300),
+                streaming=StreamingConfig(),
+            ),
         ],
         updated_by=UpdateActor.SYSTEM,
         updated_reason=(
-            "initial profile: Benzinga, Finnhub, Yahoo, IBKR and Reuters; shared calendar owns "
+            "initial profile: Benzinga, Finnhub, Yahoo, IBKR, Reuters and Barron's; "
+            "shared calendar owns "
             "continuous-session "
             "polling and the 02:00 ET closed-day sweep"
         ),

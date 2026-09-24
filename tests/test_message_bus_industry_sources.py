@@ -136,7 +136,11 @@ def test_cjk_article_identity_and_source_language_registry() -> None:
     assert sources["digitimes_tw_rss"].content_language == "zh-Hant"
     assert sources["trendforce_press_releases"].acquisition_mode is AcquisitionMode.BY_DISTRIBUTION
     sites = {site.site_id: site for site in seed_specs()}
-    assert sites["barrons"].auth.crawler_requirement == "none"
+    assert sites["barrons"].auth.crawler_requirement == "required"
+    assert sites["barrons"].access.overrides == {
+        "body": ["barrons-1", "barrons-2"],
+        "crawler": ["barrons-1", "barrons-2"],
+    }
     assert sites["digitimes"].auth.body_requirement == "inherit"
     assert sites["digitimes"].auth.crawler_requirement == "none"
     assert sites["huggingnews"].access.combinations[0].egress_id == "de-standard-1"

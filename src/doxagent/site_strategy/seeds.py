@@ -115,6 +115,11 @@ def bootstrap_seed(repository: SiteStrategyRepository, service: SiteStrategyServ
                     and spec.auth.crawler_requirement == "none"
                 ):
                     auth_updates["crawler_requirement"] = "none"
+                if (
+                    spec.site_id == "barrons"
+                    and current.auth.crawler_requirement != "required"
+                ):
+                    auth_updates["crawler_requirement"] = "required"
                 support = list(current.support_hosts)
                 known_support = {(item.match, item.host, item.role) for item in support}
                 for rule in spec.support_hosts:
@@ -127,6 +132,11 @@ def bootstrap_seed(repository: SiteStrategyRepository, service: SiteStrategyServ
                     and current.access.min_interval_ms == 500
                 ):
                     access_updates.update(max_concurrency=1, min_interval_ms=3000)
+                if (
+                    spec.site_id == "barrons"
+                    and current.access.overrides != spec.access.overrides
+                ):
+                    access_updates["overrides"] = spec.access.overrides
                 body = current.body
                 crawler = current.crawler or spec.crawler
                 if (
@@ -222,7 +232,11 @@ def seed_specs() -> list[SiteStrategySpec]:
             crawler="builtin:barrons_ticker@1",
             egresses=("us-standard-5", "jp-standard-6"),
             auth="required",
-            crawler_auth="none",
+            crawler_auth="required",
+            access_overrides={
+                "body": ["barrons-1", "barrons-2"],
+                "crawler": ["barrons-1", "barrons-2"],
+            },
             login_url="https://www.barrons.com/login",
             verification_url=(
                 "https://www.barrons.com/articles/"
@@ -406,6 +420,7 @@ def _site(
     support: tuple[str, ...] = (),
     auth: AuthRequirement = "none",
     crawler_auth: Literal["inherit", "none", "optional", "required"] = "inherit",
+    access_overrides: dict[Literal["body", "crawler"], list[str]] | None = None,
     login_url: str | None = None,
     maintenance_url: str | None = None,
     verification_url: str | None = None,
@@ -440,6 +455,7 @@ def _site(
         ],
         access=AccessPolicy(
             combinations=combinations,
+            overrides=access_overrides or {},
             probe_url=(f"https://{domains[0]}/" if domains else None),
             max_concurrency=(
                 1

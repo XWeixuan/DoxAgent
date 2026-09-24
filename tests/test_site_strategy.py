@@ -14,6 +14,7 @@ from doxagent.monitoring.media_enrichment import MediaEnrichmentRecord
 from doxagent.site_strategy.api import create_app
 from doxagent.site_strategy.client import SiteAccessClient
 from doxagent.site_strategy.egress import probe_egress, render_fixed_listeners
+from doxagent.site_strategy.identity_rollout import apply_first_wave
 from doxagent.site_strategy.repository import SiteStrategyRepository
 from doxagent.site_strategy.runtime import RuntimeResponse
 from doxagent.site_strategy.schema import (
@@ -168,6 +169,45 @@ def test_seed_adds_verification_urls_and_idempotently_upgrades_missing_value(
     unchanged = site_service.repository.get_strategy("barrons")
     assert unchanged is not None
     assert unchanged.revision == upgraded.revision
+
+
+def test_barrons_crawler_and_body_share_dow_jones_identity_policy(
+    site_service: SiteStrategyService,
+) -> None:
+    repository = site_service.repository
+    current = repository.get_strategy("barrons")
+    assert current is not None
+    old = site_service.apply_strategy(
+        current.model_copy(
+            update={
+                "auth": current.auth.model_copy(update={"crawler_requirement": "none"}),
+                "access": current.access.model_copy(update={"overrides": {}}),
+            }
+        ),
+        expected_revision=current.revision,
+        actor="test:legacy-crawler-policy",
+    )
+    bootstrap_seed(repository, site_service)
+    upgraded = repository.get_strategy("barrons")
+    assert upgraded is not None and upgraded.revision == old.revision + 1
+    assert upgraded.auth.crawler_requirement == "required"
+    assert upgraded.access.overrides["crawler"] == upgraded.access.overrides["body"]
+    assert upgraded.access.overrides["body"] == ["barrons-1", "barrons-2"]
+    apply_first_wave(repository)
+    shared = site_service.resolve("https://www.barrons.com/articles/example")
+    assert [item.identity_id for item in shared.access.combinations[:2]] == [
+        "dowjones-main",
+        "dowjones-backup",
+    ]
+    assert repository.get_identity("dowjones-main").profile_id == "dowjones-main"
+    rolled_out_revision = repository.get_strategy("barrons").revision
+    assert [c.combination_id for c in site_service._purpose_combinations(
+        shared, SitePurpose.CRAWLER
+    )] == [c.combination_id for c in site_service._purpose_combinations(
+        shared, SitePurpose.BODY
+    )]
+    bootstrap_seed(repository, site_service)
+    assert repository.get_strategy("barrons").revision == rolled_out_revision
 
 
 def test_seed_does_not_override_registered_verification_url(

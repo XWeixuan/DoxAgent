@@ -1,5 +1,9 @@
 # changelog
 
+- 2026-09-24: Barron's ticker 新消息源加入全部 ticker 默认监测模板，既有标准模板在启动时幂等补入；当前生产 ticker 绑定、三语监测词与八个共享入口的订阅由本轮受控上线脚本单独应用。Jev 上线前实测 OpenRouter Decisions API 返回有效分数；保留已有主备 Chrome 身份与原始 Profile/Cookie。
+
+- 2026-09-24: 本地收紧 Barron's Site Strategy 的正文/新消息爬虫身份路由：两种用途统一限制到 `barrons-1`/`barrons-2`（生产既有映射分别为 `dowjones-main`/`dowjones-backup`），爬虫与正文一致要求已验证认证，排除独立 direct Profile；保留 Profile/Cookie 与主备身份数据不变。补种子升级及回归测试，并新增 ticker L1/L2/Jev 监测词编写说明。未在本项记录中宣称远端已应用。
+
 - 2026-09-24: 修复半导体来源上线触发的生产 BrowserProfile 兼容性：已有长期 Chrome 身份的记录包含 6 个历史 challenge 标记，新种子读取这些记录时原严格模型拒绝解析；模型显式保留并往返这些字段，不删除 Profile、Cookie 或身份绑定，补回归测试。
 
 - 2026-09-24: 增加 AI 硬件/半导体消息入口：Barron's ticker（含明确标记的 Other Dow Jones，排除 IBD）、TrendForce 两个共享列表、DIGITIMES 英文 More News、HuggingNews/Tom's Hardware/The Elec/ETNews/DIGITIMES 台湾官方 RSS/Atom；接入既有 Site Access、正文补全和共享分发，补韩文标题识别、ETNews 短文策略、站点语言与出口种子及列表/feed 回归测试。直接/代理和 Managed/CDP 对照结论及付费登录、失活 US/JP 节点、未订阅 ticker 的验收边界记录于 rollout 文档；未重建已有 Chrome 身份。

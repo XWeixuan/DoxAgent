@@ -127,7 +127,7 @@ class MessageBusV2Service:
                         "entries": [*current.entries, *additions],
                         "updated_by": UpdateActor.SYSTEM,
                         "updated_reason": (
-                            "register Message Bus v2 default Yahoo, IBKR and Reuters sources"
+                            "register missing Message Bus v2 default news sources"
                         ),
                     }
                 )

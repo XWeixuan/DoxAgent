@@ -123,6 +123,7 @@ def test_bootstrap_registry_profile_and_ticker_materialization(tmp_path: Path) -
         "yahoo_finance_news",
         "ibkr_news",
         "reuters_site_search",
+        "barrons_ticker_news",
     ]
 
     state = service.start_ticker("mu", actor=UpdateActor.AGENT)
@@ -134,12 +135,39 @@ def test_bootstrap_registry_profile_and_ticker_materialization(tmp_path: Path) -
         "yahoo_finance_news",
         "ibkr_news",
         "reuters_site_search",
+        "barrons_ticker_news",
     }
-    assert all(binding.polling.target_interval_seconds == 60 for binding in bindings)
+    assert all(
+        binding.polling.target_interval_seconds
+        == (300 if binding.source_id == "barrons_ticker_news" else 60)
+        for binding in bindings
+    )
 
     # Profiles are materialized templates, not live parents.
     service.save_default_profile(profile.model_copy(update={"entries": []}))
-    assert len(repository.list_bindings(ticker="MU")) == 5
+    assert len(repository.list_bindings(ticker="MU")) == 6
+
+
+def test_existing_default_profile_adds_barrons_once(tmp_path: Path) -> None:
+    repository, service = _bus(tmp_path / "bus.sqlite3")
+    profile = repository.get_default_profile("default")
+    assert profile is not None
+    service.save_default_profile(
+        profile.model_copy(
+            update={
+                "entries": [
+                    entry for entry in profile.entries
+                    if entry.source_id != "barrons_ticker_news"
+                ]
+            }
+        )
+    )
+    service.bootstrap()
+    migrated = repository.get_default_profile("default")
+    assert migrated is not None
+    assert [entry.source_id for entry in migrated.entries].count("barrons_ticker_news") == 1
+    service.bootstrap()
+    assert repository.get_default_profile("default").version == migrated.version
 
 
 def test_disabled_flag_has_no_v1_fallback_and_does_not_bootstrap_v2_db(
@@ -391,7 +419,15 @@ def test_bootstrap_migrates_only_legacy_default_news_windows(tmp_path: Path) -> 
 
     migrated_profile = repository.get_default_profile("default")
     assert migrated_profile is not None
-    assert all(not entry.polling.active_windows for entry in migrated_profile.entries)
+    assert all(
+        not entry.polling.active_windows
+        for entry in migrated_profile.entries
+        if entry.source_id != "barrons_ticker_news"
+    )
+    assert next(
+        entry for entry in migrated_profile.entries
+        if entry.source_id == "barrons_ticker_news"
+    ).polling.active_windows == [legacy]
     for source_id in ("benzinga_news", "finnhub_company_news"):
         migrated = repository.get_binding(f"MU:{source_id}")
         assert migrated is not None
