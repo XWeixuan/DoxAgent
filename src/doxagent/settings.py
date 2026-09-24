@@ -971,6 +971,10 @@ class DoxAgentSettings(BaseSettings):
         default="gpt-6-luna",
         validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_W3_MODEL",
     )
+    persistent_runtime_v2_w3_execution_model_override: str | None = Field(
+        default=None,
+        validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_W3_EXECUTION_MODEL_OVERRIDE",
+    )
     persistent_runtime_v2_w3_reasoning_effort: Literal["low", "medium", "high", "xhigh", "max"] = (
         Field(
             default="max",

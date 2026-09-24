@@ -283,6 +283,7 @@ class CodexW3AgentRunner:
         context_provider: W3ContextProvider,
         prompt_root: str | Path,
         model: str = "gpt-6-luna",
+        execution_model_override: str | None = None,
         model_provider: str | None = None,
         effort: Literal["low", "medium", "high", "xhigh", "max"] = "max",
         timeout_seconds: int = 600,
@@ -295,6 +296,7 @@ class CodexW3AgentRunner:
         self._context = context_provider
         self._prompt_root = Path(prompt_root)
         self._model = model
+        self._execution_model_override = execution_model_override
         self._model_provider = model_provider
         self._effort = effort
         self._timeout_seconds = timeout_seconds
@@ -455,7 +457,8 @@ class CodexW3AgentRunner:
                 prompt=prompt,
                 output_schema=schema,
                 thread_id=slot.thread_id,
-                model=case.frozen_inputs.get("models", {}).get("w3_model", self._model),
+                model=self._execution_model_override
+                or case.frozen_inputs.get("models", {}).get("w3_model", self._model),
                 model_provider=self._model_provider,
                 effort=case.frozen_inputs.get("models", {}).get("w3_effort", self._effort),
                 read_only=True,

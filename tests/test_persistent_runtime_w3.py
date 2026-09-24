@@ -710,8 +710,12 @@ class _Context:
         )
 
 
+@pytest.mark.parametrize(
+    ("execution_model_override", "expected_model"),
+    [(None, "gpt-6-luna"), ("gpt-5.6-luna", "gpt-5.6-luna")],
+)
 def test_codex_w3_runner_uses_main_thread_and_strict_isolated_request(
-    tmp_path: Path,
+    tmp_path: Path, execution_model_override: str | None, expected_model: str,
 ) -> None:
     prompt_root = tmp_path / "prompts"
     (prompt_root / "skills").mkdir(parents=True)
@@ -724,9 +728,11 @@ def test_codex_w3_runner_uses_main_thread_and_strict_isolated_request(
         workspace=cast(Any, workspace),
         context_provider=_Context(),
         prompt_root=prompt_root,
+        execution_model_override=execution_model_override,
         timeout_seconds=30,
     )
     case = _runtime_case()
+    case.frozen_inputs["models"] = {"w3_model": "gpt-6-luna", "w3_effort": "max"}
     w3_case = W3RouteCase(
         w3_case_id="w3-case",
         case_id=case.case_id,
@@ -757,6 +763,9 @@ def test_codex_w3_runner_uses_main_thread_and_strict_isolated_request(
     assert request.workflow_version == "persistent_runtime_w3_v1"
     assert request.research_lane == "persistent_runtime"
     assert request.thread_id == "thread-main-existing"
+    assert request.model == expected_model
+    assert request.effort == "max"
+    assert case.frozen_inputs["models"]["w3_model"] == "gpt-6-luna"
     assert request.read_only is True
     assert request.data_mcp_enabled is False
     assert request.allow_subagents is False and request.max_subagents == 0

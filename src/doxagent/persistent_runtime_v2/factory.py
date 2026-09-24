@@ -188,6 +188,7 @@ def build_persistent_runtime_v2_service(
             ),
             prompt_root=Path(settings.persistent_runtime_v2_w3_prompt_root),
             model=settings.persistent_runtime_v2_w3_model,
+            execution_model_override=settings.persistent_runtime_v2_w3_execution_model_override,
             model_provider=settings.codex_model_provider,
             effort=settings.persistent_runtime_v2_w3_reasoning_effort,
             timeout_seconds=settings.persistent_runtime_v2_w3_timeout_seconds,
