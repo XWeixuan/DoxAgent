@@ -51,7 +51,9 @@ class ManagedPlaywrightRuntime:
         if profile is None:
             raise RuntimeError(f"browser_profile_missing:{identity.profile_id}")
         effective = profile.model_copy(update={"environment": identity.environment})
-        inner = await self.pool.page(effective, egress)
+        inner = await self.pool.page(
+            effective, egress, max_context_pages=identity.lifecycle.max_context_pages
+        )
         return _ManagedLease(inner, identity)
 
     async def stop_identity(self, identity_id: str, *, reason: str) -> bool:
@@ -69,6 +71,7 @@ class ManagedPlaywrightRuntime:
                 "runtime_kind": BrowserRuntimeKind.MANAGED_PLAYWRIGHT.value,
                 "running": entry is not None,
                 "active_pages": entry.active_pages if entry else 0,
+                "pages_opened": entry.pages_opened if entry else 0,
             }
 
 

@@ -37,6 +37,69 @@ async def test_dead_playwright_driver_is_not_ready_and_triggers_restart(
     assert len(signals) == 1
 
 
+@pytest.mark.asyncio
+async def test_page_use_limit_recycles_only_idle_profile(
+    tmp_path: Path, service: SiteStrategyService
+) -> None:
+    launches = 0
+    closes = 0
+
+    class Page:
+        async def close(self):
+            pass
+
+    class Context:
+        async def new_page(self):
+            return Page()
+
+        async def close(self, **_kwargs):
+            nonlocal closes
+            closes += 1
+
+    class Chromium:
+        async def launch_persistent_context(self, *_args, **_kwargs):
+            nonlocal launches
+            launches += 1
+            return Context()
+
+    class Playwright:
+        chromium = Chromium()
+
+        async def stop(self):
+            pass
+
+    class CDP:
+        async def close(self):
+            pass
+
+    pool = PersistentBrowserPool(
+        tmp_path / "recycle-profiles",
+        headless=True,
+        channel=None,
+        max_processes=1,
+        max_pages=4,
+        idle_seconds=60,
+    )
+    pool._playwright = Playwright()
+
+    async def connect_cdp(_directory):
+        return CDP()
+
+    pool._connect_profile_cdp = connect_cdp  # type: ignore[method-assign]
+    profile = service.repository.get_profile("barrons-1")
+    egress = service.repository.get_egress("us-standard-5")
+    assert profile is not None and egress is not None
+    leases = [await pool.page(profile, egress, max_context_pages=2) for _ in range(3)]
+    assert launches == 1 and closes == 0
+    for lease in leases:
+        await lease.__aexit__(None, None, None)
+    next_lease = await pool.page(profile, egress, max_context_pages=2)
+    assert launches == 2 and closes == 1
+    assert next_lease.entry.pages_opened == 1
+    await next_lease.__aexit__(None, None, None)
+    await pool.close()
+
+
 @pytest.fixture
 def service(tmp_path: Path) -> SiteStrategyService:
     repository = SiteStrategyRepository(tmp_path / "registry.sqlite3")

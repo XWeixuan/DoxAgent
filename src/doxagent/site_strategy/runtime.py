@@ -120,6 +120,7 @@ class _BrowserEntry:
     owner_lock: OwnerFileLock
     last_used: float
     active_pages: int = 0
+    pages_opened: int = 0
     closing: bool = False
 
 
@@ -431,11 +432,17 @@ class PersistentBrowserPool:
             await self._close_entry(entry, reason="idle_timeout")
         return len(entries)
 
-    async def page(self, profile: BrowserProfile, egress: ProxyEgress) -> _PageLease:
+    async def page(
+        self,
+        profile: BrowserProfile,
+        egress: ProxyEgress,
+        *,
+        max_context_pages: int | None = None,
+    ) -> _PageLease:
         await self.start()
         await self._page_slots.acquire()
         try:
-            entry = await self._entry(profile, egress)
+            entry = await self._entry(profile, egress, max_context_pages=max_context_pages)
             async with self._lock:
                 if self._entries.get(profile.profile_id) is not entry or entry.closing:
                     raise RuntimeError("browser_profile_closing")
@@ -447,21 +454,36 @@ class PersistentBrowserPool:
                 async with self._lock:
                     entry.active_pages -= 1
                 raise
+            async with self._lock:
+                entry.pages_opened += 1
             return _PageLease(page, entry, self)
         except Exception:
             self._page_slots.release()
             raise
 
-    async def _entry(self, profile: BrowserProfile, egress: ProxyEgress) -> _BrowserEntry:
+    async def _entry(
+        self,
+        profile: BrowserProfile,
+        egress: ProxyEgress,
+        *,
+        max_context_pages: int | None = None,
+    ) -> _BrowserEntry:
         start_lock = self._profile_start_locks.setdefault(profile.profile_id, asyncio.Lock())
         async with start_lock:
-            return await self._entry_serialized(profile, egress)
+            return await self._entry_serialized(
+                profile, egress, max_context_pages=max_context_pages
+            )
 
     async def _entry_serialized(
-        self, profile: BrowserProfile, egress: ProxyEgress
+        self,
+        profile: BrowserProfile,
+        egress: ProxyEgress,
+        *,
+        max_context_pages: int | None = None,
     ) -> _BrowserEntry:
         while True:
             retire: _BrowserEntry | None = None
+            retire_reason = "capacity_or_egress_change"
             wait_for_capacity = False
             async with self._lock:
                 if self._stopping:
@@ -474,6 +496,16 @@ class PersistentBrowserPool:
                         raise RuntimeError("egress_changed_while_profile_busy")
                     retire = self._entries.pop(profile.profile_id)
                     retire.closing = True
+                    entry = None
+                if (
+                    entry is not None
+                    and max_context_pages is not None
+                    and entry.pages_opened >= max_context_pages
+                    and entry.active_pages == 0
+                ):
+                    retire = self._entries.pop(profile.profile_id)
+                    retire.closing = True
+                    retire_reason = "page_use_limit"
                     entry = None
                 if entry is not None:
                     self._entries.move_to_end(profile.profile_id)
@@ -498,7 +530,13 @@ class PersistentBrowserPool:
                 await asyncio.sleep(0.05)
                 continue
             if retire is not None:
-                await self._close_entry(retire, reason="capacity_or_egress_change")
+                if retire_reason == "page_use_limit":
+                    logger.info(
+                        "recycling profile %s after %s pages",
+                        retire.profile.profile_id,
+                        retire.pages_opened,
+                    )
+                await self._close_entry(retire, reason=retire_reason)
                 continue
             break
         try:
