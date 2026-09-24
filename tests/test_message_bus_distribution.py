@@ -137,8 +137,28 @@ async def test_expired_shared_article_skips_regex_and_jev_before_delivery(tmp_pa
         run["run_id"], token, source, [message], checkpoint={}, coverage="COMPLETE",
         done=True, deadline_seconds=180, pipeline_version="body_v2.2",
     )
+    assert distribution.summary(source.source_id)["delivery_states"] == {
+        "ADMISSION_REJECTED": 1
+    }
     job = repository.claim_enrichment_jobs(limit=1)[0]
     distribution.finalize_article(job, message, None)
+    bus.start_ticker("NVDA")
+    late_binding = bus.configure_binding(
+        ticker="NVDA", source_id=source.source_id, actor=UpdateActor.SYSTEM
+    )
+    distribution.attach_target(
+        run["run_id"], late_binding, 1, AdmissionContext().model_dump(mode="json")
+    )
+    assert distribution.summary(source.source_id)["delivery_states"] == {
+        "ADMISSION_REJECTED": 2
+    }
+    # A delivery queued by an older release must also be rejected before classification.
+    with repository.transaction() as db:
+        db.execute(
+            "UPDATE distribution_deliveries SET state='PENDING' "
+            "WHERE run_id=? AND ticker='MU'",
+            (run["run_id"],),
+        )
 
     class FakeJev:
         calls = 0
@@ -153,7 +173,7 @@ async def test_expired_shared_article_skips_regex_and_jev_before_delivery(tmp_pa
     assert fake_jev.calls == 0
     assert distribution.decisions("MU") == []
     assert distribution.summary(source.source_id)["delivery_states"] == {
-        "ADMISSION_REJECTED": 1
+        "ADMISSION_REJECTED": 2
     }
 
 

@@ -1,5 +1,7 @@
 # changelog
 
+- 2026-09-24: 共享来源入库与迟到订阅目标挂接时即按各 ticker 的原有实时/闭市 admission 窗口记录过期拒收，避免旧 RSS 条目每次轮询重新生成 Jev 待判队列；旧版本已排队条目仍由分发 Worker 的提前拒收兼容处理。补首轮及迟到目标回归测试。
+
 - 2026-09-24: 生产共享来源实测发现历史 RSS 文章先进入 Jev 队列再被实时/闭市窗口拒收，造成千余条无效分类积压；共享分发改为正文就绪后先按各 ticker 固定 admission 上下文判定窗口，过期条目直接记为 `ADMISSION_REJECTED`，仅合格文章进入正则与 Jev，保留发布前的原有再次校验。补过期文章不调用 Jev 的回归测试。
 
 - 2026-09-24: 修复生产 Site Access 冷启动读取历史 Browser Identity revision 时的兼容问题：保留 `lifecycle.max_context_pages` 既有持久化字段并增加往返测试，避免删除身份记录或重建长期 Profile。

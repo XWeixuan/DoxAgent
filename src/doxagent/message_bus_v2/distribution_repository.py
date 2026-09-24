@@ -8,6 +8,7 @@ from typing import Any
 
 from doxagent.content_enrichment.schema import EnrichmentJob
 
+from .admission import AdmissionContext, evaluate_admission
 from .repository import MessageBusV2Repository
 from .schema import (
     RawMessageInput,
@@ -18,6 +19,15 @@ from .schema import (
     sha256_text,
     utc_now,
 )
+
+
+def _admission_reason(message: RawMessageInput, admission: dict[str, Any]) -> str | None:
+    return evaluate_admission(
+        message.published_at,
+        AdmissionContext.model_validate(admission),
+        utc_now(),
+        message.publication_time_basis,
+    )
 
 
 class DistributionRepository:
@@ -166,7 +176,7 @@ class DistributionRepository:
                     (canonical_json(roster), run_id),
                 )
             articles = db.execute(
-                "SELECT o.article_id,a.body_state FROM distribution_observations o "
+                "SELECT o.article_id,a.body_state,a.original_json FROM distribution_observations o "
                 "JOIN distribution_articles a USING(article_id) WHERE o.run_id=?",
                 (run_id,),
             ).fetchall()
@@ -183,11 +193,15 @@ class DistributionRepository:
                     if article["body_state"] == "READY"
                     else "EMPTY_CONTENT"
                 )
+                original = RawMessageInput.model_validate_json(article["original_json"])
+                reason = _admission_reason(original, admission)
+                if reason:
+                    state = "ADMISSION_REJECTED"
                 db.execute(
                     "INSERT OR IGNORE INTO distribution_deliveries "
                     "(delivery_id,run_id,article_id,ticker,binding_json,"
-                    "terms_revision,admission_json,state,created_at) "
-                    "VALUES(?,?,?,?,?,?,?,?,?)",
+                    "terms_revision,admission_json,state,result_json,created_at) "
+                    "VALUES(?,?,?,?,?,?,?,?,?,?)",
                     (
                         delivery_id,
                         run_id,
@@ -197,6 +211,7 @@ class DistributionRepository:
                         revision,
                         canonical_json(admission),
                         state,
+                        canonical_json({"reason": reason}) if reason else None,
                         utc_now().isoformat(),
                     ),
                 )
@@ -286,11 +301,12 @@ class DistributionRepository:
                     delivery_id = (
                         "delivery-" + sha256_text(canonical_json([run_id, article_id, ticker]))[:32]
                     )
+                    reason = _admission_reason(message, target["admission"])
                     db.execute(
                         "INSERT OR IGNORE INTO distribution_deliveries "
                         "(delivery_id,run_id,article_id,ticker,binding_json,"
-                        "terms_revision,admission_json,state,created_at) "
-                        "VALUES(?,?,?,?,?,?,?,?,?)",
+                        "terms_revision,admission_json,state,result_json,created_at) "
+                        "VALUES(?,?,?,?,?,?,?,?,?,?)",
                         (
                             delivery_id,
                             run_id,
@@ -299,7 +315,8 @@ class DistributionRepository:
                             canonical_json(binding),
                             target["terms_revision"],
                             canonical_json(target["admission"]),
-                            delivery_state,
+                            "ADMISSION_REJECTED" if reason else delivery_state,
+                            canonical_json({"reason": reason}) if reason else None,
                             now,
                         ),
                     )
