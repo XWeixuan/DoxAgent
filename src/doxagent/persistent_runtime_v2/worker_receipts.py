@@ -16,10 +16,12 @@ class ReceiptWorker:
         *,
         case_id: str | None = None,
         control_epoch: int | None = None,
+        replace_failed_model: bool = False,
     ) -> None:
         self.worker, self.journal, self.scope = worker, journal, scope
         self.case_id = case_id
         self.control_epoch = control_epoch
+        self.replace_failed_model = replace_failed_model
 
     def __getattr__(self, name: str) -> Any:
         return getattr(self.worker, name)
@@ -51,6 +53,17 @@ class ReceiptWorker:
             # Only a confirmed terminal failure may mint a new remote dispatch key.
             generation = self.journal.get("worker_generation", identity, 0) + 1
             self.journal.set("worker_generation", identity, generation)
+            if (
+                self.replace_failed_model
+                and receipt is not None
+                and str(job.status) == "failed"
+                and frozen.get("model") != request.model
+            ):
+                # Explicit recovery may change the dispatch model, not the frozen
+                # Case context, prompt, output schema, or reasoning effort.
+                frozen["model"] = request.model
+                frozen["attempt_id"] = request.attempt_id
+                frozen["thread_id"] = request.thread_id
             frozen["idempotency_key"] = digest([identity, generation])
             self.journal.set("worker_requests", identity, frozen)
             self.journal.set("worker_receipts", identity, None)
@@ -58,7 +71,8 @@ class ReceiptWorker:
         from doxagent.v2_control.repository import ControlRepository
 
         ControlRepository(self.journal).dispatch(frozen["idempotency_key"], request.ticker)
-        job = await self.worker.run(WorkerRunRequest.model_validate(frozen))
+        dispatched_request = WorkerRunRequest.model_validate(frozen)
+        job = await self.worker.run(dispatched_request)
         self.journal.set(
             "worker_invocations",
             job.job_id,
@@ -66,8 +80,8 @@ class ReceiptWorker:
                 "job": job.model_dump(mode="json"),
                 "ticker": request.ticker,
                 "node": str(request.node),
-                "model": request.model,
-                "provider": request.model_provider,
+                "model": dispatched_request.model,
+                "provider": dispatched_request.model_provider,
                 "case_id": self.case_id,
                 "control_epoch": self.control_epoch,
                 "run_id": request.run_id,
