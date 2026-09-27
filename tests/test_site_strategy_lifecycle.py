@@ -165,6 +165,16 @@ async def test_concurrent_profile_start_creates_one_browser(tmp_path: Path, serv
     )
     assert first is second
     assert launches == 1
+    # A crashed managed browser must not remain cached forever; relaunch only
+    # after a graceful context close releases its single-writer lock.
+    class Disconnected:
+        def is_connected(self):
+            return False
+
+    first.context.browser = Disconnected()
+    third = await pool._entry(profile, egress)
+    assert third is not first
+    assert launches == 2
     assert await pool.close_profile_if_idle(profile.profile_id, reason="test")
 
 

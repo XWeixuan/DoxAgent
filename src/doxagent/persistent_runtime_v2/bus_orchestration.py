@@ -70,7 +70,7 @@ class BusOrchestration:
                         )
         for source, bindings in shared_realtime.values():
             key = f"shared:{source.source_id}"
-            if key not in self._inflight:
+            if key not in self._inflight and scheduler.distribution_due(bindings, now):
                 self._inflight[key] = asyncio.create_task(
                     asyncio.wait_for(
                         scheduler._poll_distribution(source, bindings, now), timeout=600

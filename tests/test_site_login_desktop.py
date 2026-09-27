@@ -126,6 +126,21 @@ def test_open_persists_root_session_but_never_returns_token(admin, monkeypatch) 
         admin.command_open("barrons-2")
 
 
+def test_open_selects_browser_before_checking_stale_viewer(admin, monkeypatch) -> None:
+    opened = False
+
+    def request(method, path, payload=None, *, timeout=45):
+        nonlocal opened
+        if path == "/v1/profiles/barrons-1/login:open":
+            opened = True
+            return {"login_token": "a" * 32, "url": "https://www.barrons.com/login"}
+        return _inventory_responses(method, path, payload, timeout=timeout)
+
+    monkeypatch.setattr(admin, "_request", request)
+    monkeypatch.setattr(admin, "_vnc_ready", lambda: opened)
+    assert admin.command_open("barrons-1")["ok"]
+
+
 def test_verify_uses_registry_url_closes_session_and_reports_entitlement(
     admin, monkeypatch
 ) -> None:

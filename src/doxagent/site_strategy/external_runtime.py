@@ -142,6 +142,7 @@ class ExternalChromeRuntime:
                     entry.identity.revision == identity.revision
                     and entry.egress.generation == egress.generation
                     and entry.browser.is_connected()
+                    and getattr(entry.cdp, "connected", True)
                 ):
                     return entry
                 if entry.active_pages:

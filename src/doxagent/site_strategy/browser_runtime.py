@@ -102,7 +102,7 @@ class BrowserRuntimeManager:
             async with lock:
                 inner = await self.adapter(identity).page(identity, egress, deadline=deadline)
             return _ManagerLease(inner, self._page_slots)
-        except Exception:
+        except BaseException:
             self._page_slots.release()
             raise
 
@@ -147,7 +147,7 @@ class BrowserRuntimeManager:
         await self._page_slots.acquire()
         try:
             return cast(PageLease, _ManagerLease(await recover(identity, egress), self._page_slots))
-        except Exception:
+        except BaseException:
             self._page_slots.release()
             raise
 

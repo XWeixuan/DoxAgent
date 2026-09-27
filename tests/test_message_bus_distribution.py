@@ -15,6 +15,22 @@ from doxagent.message_bus_v2.schema import PollResult, RawMessageInput, UpdateAc
 from doxagent.message_bus_v2.service import MessageBusV2Service
 
 
+def test_shared_scheduler_respects_next_dispatch_after_failure(tmp_path):
+    repository = MessageBusV2Repository(tmp_path / "bus.sqlite3")
+    bus = MessageBusV2Service(repository)
+    bus.bootstrap()
+    bus.start_ticker("MU")
+    binding = bus.configure_binding(ticker="MU", source_id="ctee_semiconductor", actor=UpdateActor.SYSTEM)
+    scheduler = GlobalPollScheduler.__new__(GlobalPollScheduler)
+    scheduler.repository = repository
+    now = utc_now()
+    assert scheduler.distribution_due([binding], now)
+    state = repository.get_poll_state(binding)
+    repository.save_poll_state(state.model_copy(update={"next_dispatch_at": now + timedelta(seconds=60)}))
+    assert not scheduler.distribution_due([binding], now)
+    assert scheduler.distribution_due([binding], now + timedelta(seconds=60))
+
+
 def _terms(ticker: str, literal: str) -> TickerMonitoringTerms:
     return TickerMonitoringTerms.model_validate(
         {

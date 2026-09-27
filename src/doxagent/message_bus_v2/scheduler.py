@@ -142,7 +142,8 @@ class GlobalPollScheduler:
             if source.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION:
                 shared.setdefault(source.source_id, (source, []))[1].append(binding)
         for source, bindings in shared.values():
-            tasks.append(asyncio.create_task(self._poll_distribution(source, bindings, now)))
+            if self.distribution_due(bindings, now):
+                tasks.append(asyncio.create_task(self._poll_distribution(source, bindings, now)))
         results = await asyncio.gather(*tasks) if tasks else []
         if self.distribution_worker is not None and (
             self._distribution_task is None or self._distribution_task.done()
@@ -238,6 +239,13 @@ class GlobalPollScheduler:
                     )
                 )
 
+    def distribution_due(self, bindings: list[TickerSourceBinding], now: datetime) -> bool:
+        return any(
+            (state := self.repository.get_poll_state(binding)).next_dispatch_at is None
+            or state.next_dispatch_at <= now
+            for binding in bindings
+        )
+
     async def _poll_distribution(
         self,
         source: SourceDefinition,
@@ -315,6 +323,14 @@ class GlobalPollScheduler:
             result = await shared_poll(context)
             if result.site_access_deferred:
                 self.distribution.release_run(run["run_id"], token)
+                if mode == "REALTIME":
+                    retry_at = result.site_access_retry_not_before or self._next_distribution_due(source)
+                    for binding, _, _ in roster:
+                        state = self.repository.get_poll_state(binding)
+                        self.repository.save_poll_state(state.model_copy(update={
+                            "next_dispatch_at": retry_at,
+                            "updated_at": utc_now(),
+                        }))
                 return PollExecutionResult(
                     binding_id=f"shared:{source.source_id}",
                     poll_run_id=run["run_id"],

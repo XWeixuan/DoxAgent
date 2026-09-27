@@ -431,12 +431,6 @@ def command_open(profile_id: str, site_id: str | None = None) -> dict[str, Any]:
                 "PROFILE_DISABLED",
                 "The profile is missing, the site is disabled, or the egress is unavailable.",
             )
-        if not inventory["vnc_ready"]:
-            raise AdminError(
-                "VNC_UNAVAILABLE",
-                "The browser viewer service is not running.",
-                "Ask the administrator to check local port 5900.",
-            )
         started = time.monotonic()
         if (
             selected["runtime_kind"] == "managed_playwright"
@@ -462,6 +456,19 @@ def command_open(profile_id: str, site_id: str | None = None) -> dict[str, Any]:
             "viewer_pid": None,
         }
         _write_session(session)
+        viewer_deadline = time.monotonic() + 5
+        while not _vnc_ready():
+            if time.monotonic() >= viewer_deadline:
+                closed = _close_token(session)
+                if closed:
+                    _delete_session()
+                raise AdminError(
+                    "VNC_UNAVAILABLE",
+                    "The browser started, but the viewer is unavailable.",
+                    "Refresh and retry. If this persists, ask the administrator to check port 5900."
+                    if closed else "The maintenance session is retained; cancel it or retry recovery.",
+                )
+            time.sleep(0.1)
         return {
             "ok": True,
             "profile_id": selected["profile_id"],

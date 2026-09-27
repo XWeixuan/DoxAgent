@@ -142,6 +142,10 @@ class _RawBrowserCDP:
         self._children: dict[str, tuple[str, str, _PopupPolicy]] = {}
         self._tasks: set[asyncio.Task[None]] = set()
 
+    @property
+    def connected(self) -> bool:
+        return self._socket is not None and self._reader is not None and not self._reader.done()
+
     async def start(self) -> None:
         from websockets.asyncio.client import connect
 
@@ -181,7 +185,7 @@ class _RawBrowserCDP:
         *,
         session_id: str | None = None,
     ) -> dict[str, Any]:
-        if self._socket is None:
+        if not self.connected:
             raise RuntimeError("raw CDP connection is closed")
         self._counter += 1
         command_id = self._counter
@@ -430,12 +434,12 @@ class PersistentBrowserPool:
                 entry.last_used = time.monotonic()
             try:
                 page = await entry.context.new_page()
-            except Exception:
+            except BaseException:
                 async with self._lock:
                     entry.active_pages -= 1
                 raise
             return _PageLease(page, entry, self)
-        except Exception:
+        except BaseException:
             self._page_slots.release()
             raise
 
@@ -456,6 +460,16 @@ class PersistentBrowserPool:
                 entry = self._entries.get(profile.profile_id)
                 if entry is not None and entry.egress.egress_id != egress.egress_id:
                     raise RuntimeError("profile attempted to change bound egress")
+                browser = getattr(entry.context, "browser", None) if entry is not None else None
+                if entry is not None and (
+                    (browser is not None and not browser.is_connected())
+                    or not getattr(entry.cdp, "connected", True)
+                ):
+                    if entry.active_pages:
+                        raise RuntimeError("browser_disconnected_while_profile_busy")
+                    retire = self._entries.pop(profile.profile_id)
+                    retire.closing = True
+                    entry = None
                 if entry is not None and entry.egress.generation != egress.generation:
                     if entry.active_pages:
                         raise RuntimeError("egress_changed_while_profile_busy")
