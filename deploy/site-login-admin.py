@@ -42,6 +42,8 @@ DISPLAY_NAMES = {
     "wsj": "WSJ",
     "seeking_alpha": "Seeking Alpha",
     "marketwatch": "MarketWatch",
+    "digitimes": "DIGITIMES English",
+    "digitimes_tw": "DIGITIMES Taiwan",
 }
 
 # Executed inside the trusted Site Access container. The request comes on stdin and
@@ -567,7 +569,7 @@ def command_verify(
             "VALID": "Signed in with access to subscription articles.",
             "REAUTH_REQUIRED": "The login is still invalid. Sign in again.",
             "ENTITLEMENT_MISSING": (
-                "The account is valid but lacks the subscription required for this article."
+                "Subscription access is unavailable. Sign in with an entitled account and verify again."
             ),
             "UNKNOWN": "Verification failed. The article may have expired or was not recognized.",
         }

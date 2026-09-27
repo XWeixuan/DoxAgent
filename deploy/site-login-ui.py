@@ -59,7 +59,15 @@ def call_admin(arguments: list[str]) -> dict[str, Any]:
     )
 
 
-def region_label(egress_id: str, _node: str) -> str:
+def region_label(egress_id: str, node: str) -> str:
+    # Egress IDs are stable slots, not a guarantee of the currently selected
+    # country. Prefer the real subscription node's country marker.
+    for marker, country in {
+        "🇳🇱": "Netherlands", "🇩🇪": "Germany", "🇺🇸": "United States",
+        "🇯🇵": "Japan", "🇹🇼": "Taiwan", "🇸🇬": "Singapore",
+    }.items():
+        if marker in node:
+            return f"{country} ({egress_id})"
     prefix = egress_id.split("-", 1)[0].lower()
     return f"{REGION_TEXT.get(prefix, prefix.upper())} ({egress_id})"
 

@@ -176,9 +176,21 @@ def test_verify_uses_registry_url_closes_session_and_reports_entitlement(
     result = admin.command_verify("barrons-1", None)
 
     assert result["auth_state"] == "ENTITLEMENT_MISSING"
+    assert "account is valid" not in result["message"]
     assert result["closed"] is True
     assert not admin.SESSION_FILE.exists()
     assert calls[-1][1] == "/v1/profiles/login:close"
+
+
+def test_region_label_prefers_actual_node_country_over_stable_slot_name():
+    path = Path(__file__).parents[1] / "deploy" / "site-login-ui.py"
+    spec = importlib.util.spec_from_file_location("site_login_ui", path)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    assert module.region_label('us-standard-5', '🇳🇱 荷兰标准 IEPL 专线 2') == 'Netherlands (us-standard-5)'
+    assert module.region_label('jp-standard-6', '🇩🇪 德国标准 IEPL 专线 2') == 'Germany (jp-standard-6)'
+    assert module.region_label('de-standard-1', 'Legacy node') == 'Germany (de-standard-1)'
 
 
 @pytest.mark.parametrize(
