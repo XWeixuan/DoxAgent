@@ -21,6 +21,31 @@ from .schema import (
 )
 
 
+def _complete_body_required(source: SourceDefinition) -> bool:
+    return bool(source.distribution_policy and source.distribution_policy.require_complete_body)
+
+
+def _complete_body_verified(message: RawMessageInput) -> bool:
+    metadata = message.metadata
+    completion = metadata.get("v2_body_completion", {})
+    enrichment = metadata.get("media_enrichment", {})
+    return bool(
+        (message.body or "").strip()
+        and isinstance(completion, dict)
+        and completion.get("succeeded") is True
+        and isinstance(enrichment, dict)
+        and enrichment.get("outcome") in {"FULL", "SHORT_FULL"}
+    )
+
+
+def _delivery_state(body_state: str) -> str:
+    if body_state == "WAIT_BODY":
+        return "WAIT_BODY"
+    if body_state == "READY":
+        return "PENDING"
+    return body_state
+
+
 def _admission_reason(message: RawMessageInput, admission: dict[str, Any]) -> str | None:
     return evaluate_admission(
         message.published_at,
@@ -186,13 +211,7 @@ class DistributionRepository:
                     "delivery-"
                     + sha256_text(canonical_json([run_id, article_id, binding.ticker]))[:32]
                 )
-                state = (
-                    "WAIT_BODY"
-                    if article["body_state"] == "WAIT_BODY"
-                    else "PENDING"
-                    if article["body_state"] == "READY"
-                    else "EMPTY_CONTENT"
-                )
+                state = _delivery_state(article["body_state"])
                 original = RawMessageInput.model_validate_json(article["original_json"])
                 reason = _admission_reason(original, admission)
                 if reason:
@@ -284,13 +303,7 @@ class DistributionRepository:
                     "SELECT body_state FROM distribution_articles WHERE article_id=?",
                     (article_id,),
                 ).fetchone()
-                delivery_state = (
-                    "WAIT_BODY"
-                    if article[0] == "WAIT_BODY"
-                    else "PENDING"
-                    if article[0] == "READY"
-                    else "EMPTY_CONTENT"
-                )
+                delivery_state = _delivery_state(article[0])
                 db.execute(
                     "INSERT OR IGNORE INTO distribution_observations VALUES(?,?,?)",
                     (run_id, article_id, now),
@@ -376,7 +389,13 @@ class DistributionRepository:
             )
         )
         valid = bool((message.title or "").strip() or (message.summary or "").strip())
-        state = "READY" if valid else "EMPTY_CONTENT"
+        current_source = self.bus.get_source(job.source.source_id)
+        complete_body_required = _complete_body_required(current_source or job.source)
+        state = (
+            "NO_PUBLIC_BODY"
+            if complete_body_required and not _complete_body_verified(message)
+            else "READY" if valid else "EMPTY_CONTENT"
+        )
         with self.bus.transaction() as db:
             if job.claim_token:
                 self.bus._assert_enrichment_claim(db, job.job_id, job.claim_token)
@@ -393,7 +412,7 @@ class DistributionRepository:
             db.execute(
                 "UPDATE distribution_deliveries SET state=? WHERE article_id=? "
                 "AND state='WAIT_BODY'",
-                ("PENDING" if valid else "EMPTY_CONTENT", job.article_id),
+                ("PENDING" if state == "READY" else state, job.article_id),
             )
             if outcome_payload:
                 now = utc_now().isoformat()

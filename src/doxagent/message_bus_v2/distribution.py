@@ -12,7 +12,11 @@ from typing import Any
 import httpx
 
 from .admission import AdmissionContext, evaluate_admission
-from .distribution_repository import DistributionRepository
+from .distribution_repository import (
+    DistributionRepository,
+    _complete_body_required,
+    _complete_body_verified,
+)
 from .jev import JevClient
 from .monitoring_terms import MonitoringTermsService, TickerMonitoringTerms
 from .relevance import regex_relevant
@@ -66,6 +70,17 @@ class DistributionWorker:
     async def _article(self, rows: list[dict[str, Any]]) -> None:
         message = RawMessageInput.model_validate_json(rows[0]["enriched_json"])
         source = SourceDefinition.model_validate_json(rows[0]["source_json"])
+        current_source = self.bus.repository.get_source(source.source_id)
+        if (
+            _complete_body_required(current_source or source)
+            and not _complete_body_verified(message)
+        ):
+            for row in rows:
+                self.repository.finish_delivery(
+                    row["delivery_id"], row["claim_token"], "NO_PUBLIC_BODY",
+                    {"reason": "complete_public_body_required"},
+                )
+            return
         eligible_rows: list[dict[str, Any]] = []
         for row in rows:
             context = AdmissionContext.model_validate(json.loads(row["admission_json"]))

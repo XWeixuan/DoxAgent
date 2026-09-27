@@ -128,6 +128,75 @@ async def test_shared_article_one_body_job_independent_ticker_decisions(tmp_path
     assert {item["final_result"] for item in decisions} == {"RELEVANT", "NOT_RELEVANT"}
 
 
+@pytest.mark.parametrize("public_body", [False, True])
+async def test_digitimes_taiwan_only_distributes_verified_public_body(
+    tmp_path, public_body: bool
+) -> None:
+    repository = MessageBusV2Repository(tmp_path / "bus.sqlite3")
+    bus = MessageBusV2Service(repository, enrichment_queue_enabled=True)
+    bus.bootstrap()
+    source = bus.update_source(
+        "digitimes_tw_rss",
+        {"enabled": True, "distribution_policy": {
+            "jev_enabled": True, "require_complete_body": True,
+        }},
+        actor=UpdateActor.SYSTEM,
+    )
+    bus.start_ticker("MU")
+    binding = bus.configure_binding(
+        ticker="MU", source_id=source.source_id, actor=UpdateActor.SYSTEM
+    )
+    terms = MonitoringTermsService(repository)
+    terms.apply(_terms("MU", "Micron"), actor="test")
+    distribution = DistributionRepository(repository)
+    run = distribution.get_or_create_run(
+        work_key=f"taiwan-public-{public_body}", source=source, mode="REALTIME",
+        window_start=None, cutoff=None,
+        roster=[(binding, 1, AdmissionContext().model_dump(mode="json"))],
+    )
+    token = distribution.claim_run(run["run_id"])
+    assert token
+    message = RawMessageInput(
+        external_id=f"taiwan-{public_body}", title="Micron memory news",
+        summary="Micron chip investments", body=None, source="DIGITIMES Taiwan",
+        url=f"https://www.digitimes.com.tw/tech/dt/n/shwnws.asp?id={public_body}",
+        published_at=utc_now(), raw_payload={},
+    )
+    distribution.ingest(
+        run["run_id"], token, source, [message], checkpoint={}, coverage="COMPLETE",
+        done=True, deadline_seconds=180, pipeline_version="body_v2.2",
+    )
+    job = repository.claim_enrichment_jobs(limit=1)[0]
+    enriched = message.model_copy(update={
+        "body": "Micron memory production rose. " * 35 if public_body else None,
+        "metadata": {
+            "v2_body_completion": {"succeeded": public_body},
+            "media_enrichment": {"outcome": "FULL" if public_body else "UNAVAILABLE"},
+        },
+    })
+    distribution.finalize_article(job, enriched, None)
+
+    class FakeJev:
+        calls = 0
+
+        async def classify(self, message, definitions):
+            self.calls += 1
+            return {"MU": 1.0}
+
+    jev = FakeJev()
+    worker = DistributionWorker(distribution, bus, terms, jev=jev)
+    await worker.run_once()
+    states = distribution.summary(source.source_id)["delivery_states"]
+    if public_body:
+        assert states == {"PUBLISHED": 1}
+        assert len(repository.list_standard(ticker="MU")) == 1
+    else:
+        assert states == {"NO_PUBLIC_BODY": 1}
+        assert repository.list_standard(ticker="MU") == []
+        assert distribution.decisions("MU") == []
+        assert jev.calls == 0
+
+
 async def test_expired_shared_article_skips_regex_and_jev_before_delivery(tmp_path) -> None:
     repository = MessageBusV2Repository(tmp_path / "bus.sqlite3")
     bus = MessageBusV2Service(repository, enrichment_queue_enabled=True)

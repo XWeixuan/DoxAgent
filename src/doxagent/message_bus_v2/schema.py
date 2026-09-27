@@ -74,6 +74,7 @@ class SearchPolicy(BusModel):
 
 class DistributionPolicy(BusModel):
     jev_enabled: bool = False
+    require_complete_body: bool = False
 
 
 class ContentEnrichmentMode(StrEnum):
