@@ -401,9 +401,19 @@ def seed_specs() -> list[SiteStrategySpec]:
         _site(
             "digitimes_tw",
             ["digitimes.com.tw", "www.digitimes.com.tw"],
-            "builtin:generic@1",
+            "builtin:digitimes_tw@1",
             egresses=("server-direct",),
             support=("img.digitimes.com",),
+            auth="optional",
+            login_url=(
+                "https://www.digitimes.com.tw/tech/dt/n/shwnws.asp"
+                "?id=0000769530_FJQ6EWDK21NANN1N332D5"
+            ),
+            verification_url=(
+                "https://www.digitimes.com.tw/tech/dt/n/shwnws.asp"
+                "?id=0000769530_FJQ6EWDK21NANN1N332D5"
+            ),
+            access_order=["http_public", "browser"],
             default_content_language="zh-Hant",
         ),
     ]

@@ -30,6 +30,12 @@ def prepare_document(
         original = seeking_alpha_original_title(root.xpath("//script/text()"), url)
         if original and expected_title and title_match(original, expected_title):
             result.headline = original
+    if strategy == "builtin:digitimes_tw@1":
+        # The member form is inside the article, unlike the ordinary navigation
+        # login link. Never classify its truncated teaser as a complete body.
+        if root.xpath('//*[@id="newsText"]//form[@id="Login"]//input[@type="password"]'):
+            result.access_reason = "login_required"
+            result.subscription_article = True
     if strategy != "builtin:finnhub_redirect@1":
         return False
     targets: list[str] = []
@@ -52,6 +58,8 @@ def select_article_nodes(
     configured_nodes: list[Any],
 ) -> StrategyDocument:
     article_nodes = configured_nodes or generic_nodes
+    if strategy == "builtin:digitimes_tw@1":
+        article_nodes = root.xpath('//*[@id="newsText"]') or article_nodes
     seeking_alpha = (
         root.xpath('//*[@data-test-id="content-container"]')
         if strategy == "builtin:seeking_alpha@1" and "/article/" in path

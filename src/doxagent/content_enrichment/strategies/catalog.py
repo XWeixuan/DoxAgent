@@ -19,6 +19,7 @@ HOST_REFS = {
     "chartmill.com": "builtin:chartmill@1",
     "benzinga.com": "builtin:benzinga@1",
     "etnews.com": "builtin:etnews@1",
+    "digitimes.com.tw": "builtin:digitimes_tw@1",
 }
 BODY_STRATEGY_REFS = frozenset({"builtin:generic@1", *HOST_REFS.values()})
 

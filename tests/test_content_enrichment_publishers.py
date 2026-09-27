@@ -14,6 +14,42 @@ from tests.test_content_enrichment_pipeline import BODY, TITLE, Session, respons
 URL = 'https://247wallst.com/investing/2026/09/01/micron-memory-production/'
 
 
+def test_digitimes_tw_member_form_is_not_full_article():
+    from doxagent.content_enrichment.quality import choose_candidate, inspect_html
+
+    url = 'https://www.digitimes.com.tw/tech/dt/n/shwnws.asp?id=test'
+    page = (f'<h1>{TITLE}</h1><div id="newsText"><p>Only a teaser...</p>'
+            '<h3>會員登入</h3><form id="Login"><input type="password"></form>'
+            f'<p>{BODY}</p></div>')
+    info = inspect_html(page, url, TITLE)
+    assert info.page_kind == 'article'
+    assert info.access_reason == 'login_required'
+    assert choose_candidate(info, TITLE) == (None, 'UNAVAILABLE', 'login_required')
+
+
+def test_digitimes_tw_public_body_is_scoped_and_navigation_login_is_ignored():
+    from doxagent.content_enrichment.quality import choose_candidate, inspect_html
+
+    url = 'https://www.digitimes.com.tw/tech/dt/n/shwnws.asp?id=test'
+    page = (f'<h1>{TITLE}</h1><div id="newsText"><p>{BODY}</p></div>'
+            '<aside>Unrelated recommendations</aside>'
+            '<form id="Login"><input type="password"></form>')
+    info = inspect_html(page, url, TITLE)
+    candidate, quality, _ = choose_candidate(info, TITLE)
+    assert info.access_reason is None
+    assert quality == 'FULL' and candidate and candidate.text == BODY
+
+
+def test_digitimes_tw_complete_short_public_article():
+    from doxagent.content_enrichment.quality import choose_candidate, inspect_html
+
+    url = 'https://www.digitimes.com.tw/tech/dt/n/shwnws.asp?id=test'
+    text = '記憶體業者宣布擴充產能，市場需求持續成長，供應鏈正在調整投資計畫。' * 5
+    info = inspect_html(f'<h1>{TITLE}</h1><div id="newsText"><p>{text}</p></div>', url, TITLE)
+    candidate, quality, _ = choose_candidate(info, TITLE)
+    assert quality == 'SHORT_FULL' and candidate and candidate.text == text
+
+
 def wp_post(**changes):
     return dict({'link': URL, 'status': 'publish', 'title': {'rendered': TITLE},
                  'content': {'protected': False, 'rendered': '<p>' + BODY + '</p>'}}, **changes)
