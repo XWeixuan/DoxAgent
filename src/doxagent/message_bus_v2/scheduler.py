@@ -538,13 +538,13 @@ class GlobalPollScheduler:
             return execution
         except Exception as exc:
             crawler_execution_id = getattr(exc, "crawler_execution_id", None)
+            self.service.record_poll_failure(
+                binding,
+                code=type(exc).__name__,
+                message=str(exc),
+                attempted_at=attempted_at,
+            )
             if window_cutoff is None:
-                self.service.record_poll_failure(
-                    binding,
-                    code=type(exc).__name__,
-                    message=str(exc),
-                    attempted_at=attempted_at,
-                )
                 refreshed = self.repository.get_poll_state(binding)
                 self.repository.save_poll_state(
                     refreshed.model_copy(

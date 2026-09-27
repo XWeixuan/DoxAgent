@@ -55,6 +55,31 @@ def test_raw_input_allows_empty_body_and_summary() -> None:
     assert _message(59).fallback_body == ""
 
 
+async def test_closed_poll_updates_health_but_preserves_realtime_cursor(tmp_path):
+    from doxagent.message_bus_v2.admission import AdmissionContext
+
+    repository, bus, source, binding = _setup(tmp_path)
+    now = datetime.now(UTC)
+    old = repository.get_poll_state(binding).model_copy(update={
+        "checkpoint": {"live_cursor": "unchanged"},
+        "bootstrap_complete": False,
+        "next_dispatch_at": now + timedelta(seconds=60),
+    })
+    repository.save_poll_state(old)
+    bus.record_poll_failure(binding, code="OLD_FAILURE", message="old", attempted_at=now - timedelta(days=1))
+    await bus.accept_poll_result(source=source, binding=binding,
+        result=PollResult(messages=[], next_checkpoint={"sweep_cursor": "separate"}),
+        attempted_at=now,
+        admission_context=AdmissionContext(mode="CLOSED_SWEEP", sweep_id="sweep", source_task_id="source", window_start=now - timedelta(days=1), cutoff=now),
+    )
+    current = repository.get_poll_state(binding)
+    assert current.status.value == "succeeded" and current.last_error_code is None
+    assert current.last_success_at == now
+    assert current.checkpoint == old.checkpoint
+    assert current.bootstrap_complete is False
+    assert current.next_dispatch_at == old.next_dispatch_at
+
+
 def test_closed_batch_queue_wait_does_not_spend_first_fetch_budget(tmp_path):
     from doxagent.content_enrichment.schema import EnrichmentJob, EnrichmentJobStatus
     from doxagent.message_bus_v2.admission import AdmissionContext

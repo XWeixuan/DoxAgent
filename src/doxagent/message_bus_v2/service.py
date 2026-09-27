@@ -797,8 +797,14 @@ class MessageBusV2Service:
                 "updated_at": now,
             }
         )
-        if not admission_context or admission_context.mode == "REALTIME":
-            self.repository.save_poll_state(saved_state)
+        if admission_context and admission_context.mode == "CLOSED_SWEEP":
+            # Sweep cursors belong to the durable sweep receipt, not the
+            # realtime cursor. Health observations still describe actual I/O.
+            saved_state = saved_state.model_copy(update={
+                "checkpoint": state.checkpoint,
+                "bootstrap_complete": state.bootstrap_complete,
+            })
+        self.repository.save_poll_state(saved_state)
         self.repository.resolve_alert(f"poll_failure:{binding.binding_id}")
         self._refresh_source_failure_alert(source.source_id, now=now)
         return output
