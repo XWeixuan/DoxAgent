@@ -291,8 +291,7 @@ class GlobalPollScheduler:
         for binding, revision, admission_payload in roster:
             self.distribution.attach_target(run["run_id"], binding, revision, admission_payload)
         if run["status"] == "DONE":
-            if mode == "REALTIME":
-                self._record_distribution_poll(source, roster, run)
+            self._record_distribution_poll(source, roster, run)
             return PollExecutionResult(
                 binding_id=f"shared:{source.source_id}",
                 poll_run_id=run["run_id"],
@@ -349,9 +348,10 @@ class GlobalPollScheduler:
                 deadline_seconds=self.service.enrichment_retry_deadline_seconds,
                 pipeline_version=self.service.enrichment_pipeline_version,
             )
-            if mode == "REALTIME" and result.window_done:
+            if result.window_done:
                 self._record_distribution_poll(source, roster, run,
-                                               coverage=result.window_coverage)
+                                               coverage=result.window_coverage,
+                                               observed_at=attempted_at)
             return PollExecutionResult(
                 binding_id=f"shared:{source.source_id}",
                 poll_run_id=run["run_id"],
@@ -364,12 +364,12 @@ class GlobalPollScheduler:
             )
         except Exception as exc:
             self.distribution.release_run(run["run_id"], token)
-            if mode == "REALTIME":
-                for binding, _, _ in roster:
-                    failed = self.service.record_poll_failure(
-                        binding, code=type(exc).__name__, message=str(exc),
-                        attempted_at=attempted_at,
-                    )
+            for binding, _, _ in roster:
+                failed = self.service.record_poll_failure(
+                    binding, code=type(exc).__name__, message=str(exc),
+                    attempted_at=attempted_at,
+                )
+                if mode == "REALTIME":
                     next_due = self._next_distribution_due(source)
                     self.repository.save_poll_state(failed.model_copy(update={
                         "target_due_at": next_due,
@@ -392,9 +392,10 @@ class GlobalPollScheduler:
         run: JsonObject,
         *,
         coverage: str | None = None,
+        observed_at: datetime | None = None,
     ) -> None:
         """Project one shared acquisition onto its subscribed ticker poll states."""
-        observed_at = datetime.fromisoformat(str(run["created_at"]))
+        observed_at = observed_at or datetime.fromisoformat(str(run["created_at"]))
         next_due = self._next_distribution_due(source)
         partial = (coverage or str(run["coverage"])) != "COMPLETE"
         for binding, _, _ in roster:

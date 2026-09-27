@@ -29,6 +29,15 @@ def test_shared_scheduler_respects_next_dispatch_after_failure(tmp_path):
     repository.save_poll_state(state.model_copy(update={"next_dispatch_at": now + timedelta(seconds=60)}))
     assert not scheduler.distribution_due([binding], now)
     assert scheduler.distribution_due([binding], now + timedelta(seconds=60))
+    # A retried durable run can predate its most recent failure. Project the
+    # actual network attempt, not the original run creation timestamp.
+    bus.record_poll_failure(binding, code="OLD_FAILURE", message="failed", attempted_at=now)
+    scheduler._record_distribution_poll(
+        repository.get_source(binding.source_id), [(binding, 1, {})],
+        {"created_at": (now - timedelta(days=1)).isoformat(), "coverage": "COMPLETE"},
+        observed_at=now + timedelta(seconds=61),
+    )
+    assert repository.get_poll_state(binding).status.value == "succeeded"
 
 
 def _terms(ticker: str, literal: str) -> TickerMonitoringTerms:

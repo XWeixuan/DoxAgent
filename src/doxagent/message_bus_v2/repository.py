@@ -1423,6 +1423,18 @@ class MessageBusV2Repository:
                 host_counts[host] = host_counts.get(host, 0) + 1
             claimed = []
             for existing in selected:
+                # Closed sweeps can enqueue a large batch. Queue waiting must
+                # not consume the entire finite fetch/retry budget before the
+                # first claim. Reclaims/retries never renew this deadline;
+                # original publication-window admission remains unchanged.
+                closed_work = existing.owner_kind == "distribution_article" or (
+                    existing.message.admission_context is not None
+                    and existing.message.admission_context.mode == "CLOSED_SWEEP"
+                )
+                deadline_at = existing.deadline_at
+                if closed_work and existing.attempt_count == 0:
+                    retry_budget = max(timedelta(seconds=1), existing.deadline_at - existing.created_at)
+                    deadline_at = current + retry_budget
                 job = existing.model_copy(
                     update={
                         "status": EnrichmentJobStatus.RUNNING,
@@ -1430,6 +1442,7 @@ class MessageBusV2Repository:
                         "claim_token": new_id("claim"),
                         "lease_expires_at": lease_until,
                         "updated_at": current,
+                        "deadline_at": deadline_at,
                     }
                 )
                 connection.execute(

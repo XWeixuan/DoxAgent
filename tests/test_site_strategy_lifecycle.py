@@ -175,6 +175,14 @@ async def test_concurrent_profile_start_creates_one_browser(tmp_path: Path, serv
     third = await pool._entry(profile, egress)
     assert third is not first
     assert launches == 2
+    async def cancelled_page():
+        raise asyncio.CancelledError()
+
+    third.context.new_page = cancelled_page
+    with pytest.raises(asyncio.CancelledError):
+        await pool.page(profile, egress)
+    assert third.active_pages == 0
+    assert pool._page_slots._value == 4
     assert await pool.close_profile_if_idle(profile.profile_id, reason="test")
 
 

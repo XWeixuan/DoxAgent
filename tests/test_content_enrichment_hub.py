@@ -55,6 +55,28 @@ def test_raw_input_allows_empty_body_and_summary() -> None:
     assert _message(59).fallback_body == ""
 
 
+def test_closed_batch_queue_wait_does_not_spend_first_fetch_budget(tmp_path):
+    from doxagent.content_enrichment.schema import EnrichmentJob, EnrichmentJobStatus
+    from doxagent.message_bus_v2.admission import AdmissionContext
+
+    repository, _, source, binding = _setup(tmp_path)
+    now = datetime.now(UTC)
+    created = now - timedelta(minutes=8)
+    message = _message(600).model_copy(update={
+        "published_at": created,
+        "admission_context": AdmissionContext(mode="CLOSED_SWEEP", sweep_id="test-sweep", source_task_id="test-source", window_start=created - timedelta(hours=1), cutoff=created + timedelta(minutes=1)),
+    })
+    job = EnrichmentJob(job_id="closed-budget", intake_key="closed-budget", poll_run_id="test", source=source, binding=binding, message=message, created_at=created, not_before=created, deadline_at=created + timedelta(seconds=180))
+    repository.enqueue_enrichment_job(job)
+    claimed = repository.claim_enrichment_jobs(limit=1, now=now)[0]
+    assert claimed.deadline_at == now + timedelta(seconds=180)
+    assert claimed.created_at == created
+    assert claimed.message.admission_context == message.admission_context
+    repository.requeue_enrichment_job(claimed.model_copy(update={"status": EnrichmentJobStatus.RETRY_WAIT, "not_before": now}))
+    retried = repository.claim_enrichment_jobs(limit=1, now=now + timedelta(seconds=60))[0]
+    assert retried.deadline_at == claimed.deadline_at
+
+
 def test_legacy_short_source_without_mode_defaults_to_blacklist() -> None:
     source = SourceDefinition.model_validate(
         {
