@@ -50,6 +50,19 @@ def test_digitimes_tw_complete_short_public_article():
     assert quality == 'SHORT_FULL' and candidate and candidate.text == text
 
 
+def test_digitimes_english_paid_body_does_not_verify_as_full_article():
+    from doxagent.content_enrichment.quality import choose_candidate, inspect_html
+
+    url = 'https://www.digitimes.com/news/a20260923VL216/test.html'
+    page = (f'<h1>{TITLE}</h1><div id="content"><p>Only a teaser...</p>'
+            '<p>The article requires paid subscription. Subscribe Now</p></div>')
+    info = inspect_html(page, url, TITLE,
+                        strategy_parameters={'body_xpath': ['//*[@id="content"]']})
+    assert info.page_kind == 'article'
+    assert info.access_reason == 'subscription_required'
+    assert choose_candidate(info, TITLE) == (None, 'UNAVAILABLE', 'subscription_required')
+
+
 def wp_post(**changes):
     return dict({'link': URL, 'status': 'publish', 'title': {'rendered': TITLE},
                  'content': {'protected': False, 'rendered': '<p>' + BODY + '</p>'}}, **changes)

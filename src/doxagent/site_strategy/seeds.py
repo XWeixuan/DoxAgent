@@ -359,6 +359,7 @@ def seed_specs() -> list[SiteStrategySpec]:
             ),
             body_parameters={
                 "body_xpath": [
+                    '//*[@id="content"]',
                     '//*[@itemprop="articleBody"]',
                     '//article',
                     '//*[contains(@class,"article-body")]',

@@ -98,6 +98,7 @@ WALL = re.compile(
     r"upgrade to read|sign in to (?:continue|read)|log in to (?:continue|read)|"
     r"(?:silver or gold|premium) subscription.{0,50}(?:required|access)|"
     r"unlock (?:this|the full) article|already a subscriber\??\s*(?:sign|log) in|"
+    r"the article requires paid subscription|"
     r"create (?:a )?free account to (?:read|continue)|创建免费账号以阅读全文",
     re.I,
 )
