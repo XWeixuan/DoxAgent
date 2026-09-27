@@ -63,6 +63,16 @@ def test_digitimes_english_paid_body_does_not_verify_as_full_article():
     assert choose_candidate(info, TITLE) == (None, 'UNAVAILABLE', 'subscription_required')
 
 
+def test_digitimes_tw_seed_keeps_public_access_and_authenticated_browser_lane():
+    from doxagent.site_strategy.seeds import seed_specs
+
+    spec = next(s for s in seed_specs() if s.site_id == 'digitimes_tw')
+    assert spec.auth.requirement == 'optional'
+    assert spec.auth.login_url and spec.auth.verification_url
+    assert spec.body.access_order == ['browser']
+    assert spec.access.max_concurrency == 1 and spec.access.min_interval_ms == 3000
+
+
 def wp_post(**changes):
     return dict({'link': URL, 'status': 'publish', 'title': {'rendered': TITLE},
                  'content': {'protected': False, 'rendered': '<p>' + BODY + '</p>'}}, **changes)

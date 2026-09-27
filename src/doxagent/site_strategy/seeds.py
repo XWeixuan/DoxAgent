@@ -414,7 +414,7 @@ def seed_specs() -> list[SiteStrategySpec]:
                 "https://www.digitimes.com.tw/tech/dt/n/shwnws.asp"
                 "?id=0000769530_FJQ6EWDK21NANN1N332D5"
             ),
-            access_order=["http_public", "browser"],
+            access_order=["browser"],
             default_content_language="zh-Hant",
         ),
     ]
@@ -471,13 +471,19 @@ def _site(
             max_concurrency=(
                 1
                 if site_id
-                in {"yahoo_finance", "reuters", "barrons", "wsj", "seeking_alpha", "marketwatch"}
+                in {
+                    "yahoo_finance", "reuters", "barrons", "wsj", "seeking_alpha",
+                    "marketwatch", "digitimes", "digitimes_tw",
+                }
                 else 2
             ),
             min_interval_ms=(
                 3000
                 if site_id
-                in {"yahoo_finance", "reuters", "barrons", "wsj", "seeking_alpha", "marketwatch"}
+                in {
+                    "yahoo_finance", "reuters", "barrons", "wsj", "seeking_alpha",
+                    "marketwatch", "digitimes", "digitimes_tw",
+                }
                 else 500
             ),
         ),
