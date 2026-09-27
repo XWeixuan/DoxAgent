@@ -12,6 +12,27 @@ from doxagent.monitoring.media_enrichment import DomainFetchController, MediaEnr
 from tests.test_content_enrichment_pipeline import BODY, TITLE, Session, article, response
 
 
+async def test_optional_auth_browser_only_policy_actually_opens_browser():
+    url = 'https://www.digitimes.com.tw/tech/dt/n/shwnws.asp?id=test'
+    session = Session({})
+    browser = SimpleNamespace(read=AsyncMock(return_value=(
+        Observation(url, article(), 200, None), {})))
+    resolved = SimpleNamespace(
+        body=SimpleNamespace(ref='builtin:digitimes_tw@1', parameters={}, access_order=['browser']),
+        auth=SimpleNamespace(body_requirement='inherit', requirement='optional'),
+        site_id='digitimes_tw', strategy_revision=1, runtime_key='digitimes_tw',
+    )
+    client = SimpleNamespace(resolve=AsyncMock(return_value=resolved))
+    pipeline = ArticlePipeline(
+        PublicTransport(session, DomainFetchController(), validate_urls=False),
+        browser=browser, site_client=client,
+    )
+    result = await pipeline.extract(MediaEnrichmentRecord('id', 'id', 's', 'MU', TITLE, '', url))
+    assert result.succeeded and result.content == BODY
+    browser.read.assert_awaited_once()
+    assert session.calls == []
+
+
 async def test_cdp_public_context_uses_proxy_but_identity_keeps_operator_context(monkeypatch):
     default_context = SimpleNamespace()
     proxy_context = SimpleNamespace(close=AsyncMock())

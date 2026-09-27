@@ -216,6 +216,7 @@ class ArticlePipeline:
                     "http_401",
                     "http_403",
                     "identity_required",
+                    "browser_required",
                     "empty_extract",
                     "incomplete_extract",
                     "article_identity_unknown",
