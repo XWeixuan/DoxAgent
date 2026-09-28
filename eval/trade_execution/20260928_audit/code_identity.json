@@ -1,0 +1,32 @@
+{
+  "trade_execution/executor.py": {
+    "local_normalized_sha256": "d12dddb086a51fe25dabe5268b338e6007fd7c7730bd11f6f986944830853572",
+    "deployed_normalized_sha256": "d12dddb086a51fe25dabe5268b338e6007fd7c7730bd11f6f986944830853572",
+    "matches": true
+  },
+  "trade_execution/repository.py": {
+    "local_normalized_sha256": "404cd55dc5d6aa740732131575a69b7aab1481a963db7d031b33c629149fd68e",
+    "deployed_normalized_sha256": "404cd55dc5d6aa740732131575a69b7aab1481a963db7d031b33c629149fd68e",
+    "matches": true
+  },
+  "trade_execution/ibkr_session.py": {
+    "local_normalized_sha256": "41c4d997b6ad6ccedeb227fbdf30c43ba624aca38327bcb8b07b0ffb45c99684",
+    "deployed_normalized_sha256": "41c4d997b6ad6ccedeb227fbdf30c43ba624aca38327bcb8b07b0ffb45c99684",
+    "matches": true
+  },
+  "trade_execution/schema.py": {
+    "local_normalized_sha256": "0be4398c4efaebc5c377f47cecd7e80dd698d17e20a1b098580efbac493c6ccb",
+    "deployed_normalized_sha256": "0be4398c4efaebc5c377f47cecd7e80dd698d17e20a1b098580efbac493c6ccb",
+    "matches": true
+  },
+  "persistent_runtime_v2/trade_output.py": {
+    "local_normalized_sha256": "eef2c035988ba241eb397147499e1f4baf84e14b9f3dcf12efe53b91c63bfae7",
+    "deployed_normalized_sha256": "eef2c035988ba241eb397147499e1f4baf84e14b9f3dcf12efe53b91c63bfae7",
+    "matches": true
+  },
+  "v2_read/pnl.py": {
+    "local_normalized_sha256": "200615875fb15f08e5a8f5305448a2f1057c17c1f7f1fb3266a2d0bf07dc1e0b",
+    "deployed_normalized_sha256": "200615875fb15f08e5a8f5305448a2f1057c17c1f7f1fb3266a2d0bf07dc1e0b",
+    "matches": true
+  }
+}

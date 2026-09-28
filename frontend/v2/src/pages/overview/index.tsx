@@ -1,5 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Clock3, RefreshCw, ScanLine } from "lucide-react";
 import type { Period } from "@contract";
@@ -90,7 +90,19 @@ export default function Overview() {
     )
       ? params.get("health")!
       : "ALL";
-  const model = useOverview(period, run, health);
+  const model = useOverview(period, run, health, !selected);
+  const resolvedPeriod = model.context.data?.data.period?.selected;
+  useEffect(() => {
+    if (
+      !selected &&
+      period === "CURRENT_TRADING_DAY" &&
+      resolvedPeriod === "PREVIOUS_TRADING_DAY"
+    ) {
+      const next = new URLSearchParams(params);
+      next.set("period", resolvedPeriod);
+      setParams(next, { replace: true });
+    }
+  }, [selected, period, resolvedPeriod, params, setParams]);
   const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState("");
@@ -99,7 +111,9 @@ export default function Overview() {
       ? "7日"
       : period === "TRADING_DAYS_30"
         ? "30日"
-        : "当日";
+        : period === "PREVIOUS_TRADING_DAY"
+          ? "前一交易日"
+          : "当日";
   const set = (key: string, value: string) => {
     const next = new URLSearchParams(params);
     next.set(key, value);

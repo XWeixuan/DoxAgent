@@ -1,0 +1,21 @@
+﻿execution_id,ticker,released_et,direction,origin,entry_result,entry_reason,entry_order_count,entry_fill_count,entry_quantity,entry_notional_usd,closed_net_pnl_usd,broker_error_codes,title
+trade:case_114549dc5d784bb39f820180d268b810,MU,2026-09-17T11:44:17.427525-04:00,LONG,W3,FILLED,ORDER_FILLED,1,1,20,19580.0,-61.406153,,Micron Jumps 5% as Intel CEO Says Memory Prices Have Surged Over 500%
+trade:case_548ab03e097848de9e8b45ec4c59968e,RKLB,2026-09-17T14:16:24.626745-04:00,SHORT,POLICY,FAILED,RETRY_BUDGET_EXHAUSTED,2,0,0,0,,201,"Rocket Lab Is Playing a Much Bigger Game Than Rocket Launches, Eyes 90% Upside"
+trade:case_beda2537c04f4035a6d52a05e9d7929c,RKLB,2026-09-17T21:27:24.013797-04:00,LONG,W3,FAILED,BROKER_REJECTED,1,0,0,0,,201,RKLB Stock Eyes Best Week In Over A Month: Rocket Lab Tests Key Neutron Hardware To Take On SpaceX
+trade:case_5a7956936b8745c7b1c49d3d8abaec16,MU,2026-09-22T05:13:50.716883-04:00,SHORT,W3,FILLED,ORDER_FILLED,1,1,19,19600.4,-1156.467587,,"Samsung Reportedly Ramps 4nm Capacity For Memory Chips, Stepping Up Competition With SK Hynix, Micron"
+trade:case_be54a8b3078048dba6f49560cf9d9629,INTC,2026-09-22T11:42:10.422027-04:00,LONG,W3,FILLED,ORDER_FILLED,1,2,162,19767.24,119.057730,,Can Intel's Core Ultra Expansion With Googlebook Benefit the Stock?
+trade:case_9ac52592e7744107bd0cb7c6cd015c38,RKLB,2026-09-22T13:09:54.368526-04:00,LONG,W3,FAILED,RETRY_BUDGET_EXHAUSTED,2,0,0,0,,201,Rocket Lab Stock Breaks Above Key Trendline
+trade:case_d352e02e723b459486242d142db27af3,BE,2026-09-24T10:43:36.499608-04:00,SHORT,W3,FILLED,ORDER_FILLED,1,1,78,20061.6,-842.488947,,ORCL Stock Slides To Early August Levels – $165B New Mexico Project In Focus After Company Reportedly Cites ‘Force Majeure’
+trade:case_3ea75c51070f43cfbf3f95b2180433dc,BE,2026-09-24T11:54:57.710005-04:00,SHORT,W3,FILLED,ORDER_FILLED,1,1,78,20196.54,-695.071727,,Bloom Energy’s Single Largest Fuel Cell Deployment Is In Trouble
+trade:case_8b8bc2ed291848838b96309a3ad5d5f5,MU,2026-09-24T13:06:05.357799-04:00,LONG,W3,FAILED,RETRY_BUDGET_EXHAUSTED,2,0,0,0,,201,Trump and Xi Reject AI Slowdowns to Preserve Development Pace
+trade:case_32cf1d11b688492ebbe870f62b1e0be4,MU,2026-09-24T15:41:53.786553-04:00,LONG,W3,FILLED,ORDER_FILLED,1,1,18,19390.14,119.994424,,How Micron Stock Could Rise Another 50% -- Barrons.com
+trade:case_193e9c52c1204471aac4e1b597a9bd3c,RKLB,2026-09-24T16:35:51.521509-04:00,LONG,W3,FAILED,FRESH_QUOTE_UNAVAILABLE,1,0,0,0,,201,Press Release: Iridium Stockholders Approve Acquisition by Rocket Lab
+trade:case_a62010dd77c5428486b77e527ecbadf6,RKLB,2026-09-24T16:37:56.983624-04:00,LONG,W3,FAILED,FRESH_QUOTE_UNAVAILABLE,0,0,0,0,,,Press Release: Iridium Stockholders Approve -2-
+trade:case_91adbdf5ecaa4827b0ca5262574fb9dc,RKLB,2026-09-24T16:38:48.425408-04:00,LONG,W3,FAILED,FRESH_QUOTE_UNAVAILABLE,1,0,0,0,,201,Press Release: Iridium Stockholders Approve -2-
+trade:case_403144dc6a504d0582477529846097d8,BE,2026-09-24T16:53:05.624032-04:00,SHORT,W3,FAILED,FRESH_QUOTE_UNAVAILABLE,0,0,0,0,,,Oracle Invokes Force Majeure on New Mexico AI Site to Defer Payments
+trade:case_c86c75f6556a499a8960974922aae41b,BE,2026-09-24T16:53:31.163706-04:00,SHORT,W3,FAILED,FRESH_QUOTE_UNAVAILABLE,0,0,0,0,,,"Oracle, Qualcomm, Meta, Everpure, BlackBerry, MGM, Nebius, and More Stocks That Explain Today’s Market"
+trade:case_2889fbb92ed94d4a85cc07264be4bb87,BE,2026-09-24T17:11:59.801735-04:00,SHORT,W3,FAILED,FRESH_QUOTE_UNAVAILABLE,0,0,0,0,,,TRADING DAY Rout of control
+trade:case_8a9bf47799544318b931894cd955c109,BE,2026-09-24T19:07:39.192949-04:00,SHORT,W3,FAILED,FRESH_QUOTE_UNAVAILABLE,0,0,0,0,,,"Oracle, Blue Owl project delay sends ripples through AI financing, sources say"
+trade:case_ec8be0fbcbab4a8c94ce970700b962b1,MU,2026-09-25T01:54:57.101642-04:00,LONG,W3,FAILED,BROKER_REJECTED,1,0,0,0,,201,"Elon Musk Deploys 660,000 Nvidia GB300 GPUs for Colossus in Q4"
+trade:case_9207bf5c695042d286fc85b05efd72e1,BE,2026-09-25T08:53:01.835570-04:00,LONG,W3,FAILED,RETRY_BUDGET_EXHAUSTED,3,0,0,0,,201,Goldman Forecasts $1.2T AI Spend for US Hyperscalers to Beat Consensus
+trade:case_e5399f98a9d5475ca306f77cbf76a7a9,BE,2026-09-25T11:08:56.321047-04:00,SHORT,W3,FAILED,RETRY_BUDGET_EXHAUSTED,2,0,0,0,,201,Oracle Invokes Force Majeure on $165B AI Center as Bonds Hit First Ever 8% Yield

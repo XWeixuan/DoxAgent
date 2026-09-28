@@ -1,0 +1,32 @@
+{
+  "overlap": {
+    "owned_lot_quantities": [
+      198,
+      198
+    ],
+    "position_including_manual_50": "446"
+  },
+  "loss_does_not_change_budget": {
+    "gross_loss_usd": 3960,
+    "next_entry_quantity": 247,
+    "next_entry_limit": "80.80",
+    "configured_target_usd": "20000"
+  },
+  "rejected_then_cancelled": {
+    "sent_order_types": [
+      "LMT",
+      "MKT"
+    ],
+    "result_reason": "RETRY_BUDGET_EXHAUSTED",
+    "persisted_broker_errors": [
+      {
+        "code": 201,
+        "message": "Insufficient margin"
+      },
+      {
+        "code": 201,
+        "message": "Insufficient margin"
+      }
+    ]
+  }
+}

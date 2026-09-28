@@ -1,0 +1,17 @@
+{
+  "captured_at": "2026-09-27T17:41:23.112997+00:00",
+  "intent_count": 20,
+  "entry_results": {
+    "FILLED": 6,
+    "FAILED": 14
+  },
+  "entry_reasons": {
+    "ORDER_FILLED": 6,
+    "RETRY_BUDGET_EXHAUSTED": 5,
+    "BROKER_REJECTED": 2,
+    "FRESH_QUOTE_UNAVAILABLE": 7
+  },
+  "effective_fill_count": 14,
+  "closed_net_pnl_usd": "-2516.382260",
+  "open_owned_lots": []
+}

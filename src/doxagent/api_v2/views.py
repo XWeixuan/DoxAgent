@@ -92,6 +92,12 @@ class Views:
                 "ALL",
             }:
                 raise ApiFailure("VALIDATION_FAILED", 422)
+            if (
+                not semantic
+                and selected == "CURRENT_TRADING_DAY"
+                and not clock["is_trading_day"]["value"]
+            ):
+                raise ApiFailure("VALIDATION_FAILED", 422)
             window = (
                 None
                 if page in {"RESEARCH", "EXPECTATIONS"}

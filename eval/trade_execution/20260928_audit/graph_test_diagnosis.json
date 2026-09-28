@@ -1,0 +1,28 @@
+[
+  {
+    "revision": 25,
+    "trade_nodes": [
+      {
+        "average_seconds": {
+          "reason": "NOT_RECORDED",
+          "state": "NOT_RECORDED",
+          "value": null
+        },
+        "case_count": 0,
+        "failed_case_count": 0,
+        "latest_processed_at": {
+          "reason": "NOT_RECORDED",
+          "state": "NOT_RECORDED",
+          "value": null
+        },
+        "low_confidence_case_count": null,
+        "node_id": "TRADE_EXECUTION",
+        "result_counts": []
+      }
+    ]
+  },
+  {
+    "revision": 28,
+    "trade_nodes": []
+  }
+]

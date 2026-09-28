@@ -29,6 +29,39 @@ class OfflineAuth:
         return Principal("developer", "DEVELOPER", time.time() + 3600)
 
 
+@pytest.mark.parametrize("day", ["2026-09-27", "2026-12-25"])
+def test_overview_closed_day_current_period_is_validation_not_store_failure(tmp_path, day):
+    from doxagent.api_v2.views import Views
+    from doxagent.v2_read.calendar import PageCalendar
+
+    store = ReadStore(tmp_path / "read.db")
+    store.migrate()
+    views = Views(store, PageCalendar())
+    now = datetime.fromisoformat(day + "T17:00:00+00:00")
+    with pytest.raises(ApiFailure) as error:
+        views.create("developer", "OVERVIEW", None, "CURRENT_TRADING_DAY", now=now)
+    assert (error.value.code, error.value.status) == ("VALIDATION_FAILED", 422)
+    previous = views.create("developer", "OVERVIEW", None, "PREVIOUS_TRADING_DAY", now=now)
+    assert previous["period"]["selected"] == "PREVIOUS_TRADING_DAY"
+    assert previous["clock"]["is_trading_day"]["value"] is False
+
+
+def test_semantic_current_day_stays_available_on_weekends(tmp_path):
+    from doxagent.api_v2.views import Views
+    from doxagent.v2_read.calendar import PageCalendar
+
+    store = ReadStore(tmp_path / "read.db")
+    store.migrate()
+    store.ingest("fixture", "ticker", [
+        {"kind": "ticker", "ticker": "MU", "id": "MU", "data": {"removed": False}},
+    ])
+    view = Views(store, PageCalendar()).create(
+        "developer", "MESSAGE_BUS", "MU", "CURRENT_TRADING_DAY",
+        now=datetime(2026, 9, 27, 17, tzinfo=UTC),
+    )
+    assert view["period"]["current"]["trading_days"] == ["2026-09-27"]
+
+
 def test_api_control_is_durable_and_auth_has_no_open_fallback(tmp_path):
     store = ReadStore(tmp_path / "read.db")
     store.migrate()

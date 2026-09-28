@@ -1,5 +1,7 @@
 # changelog
 
+- 2026-09-28: 修复 TrendForce News 间歇性 `ReadError`：生产轮询失败时 Site Access 页面访问实际成功，定位为消息总线读取内部 Site Access HTTP 响应的瞬断。只读解析/抓取遇到 `ReadError` 或 `RemoteProtocolError` 时以原 request ID 限次重试一次；有副作用的 POST 不重试。补传输回归测试，不改站点代理、Browser Profile 或抓取节奏。
+
 - 2026-09-25: 生产复测 DIGITIMES 繁中 RSS 直连 403，经既有德国代理出口返回有效 XML 且可解析 40 条；将该 feed 采集入口的默认代理固定到 `de-standard-1` listener（18083），不改变站点 Browser Profile/正文身份。DIGITIMES 英文爬虫的代理 200 实为 `Access denied`，仍需人工挑战/登录，不误判为恢复。
 
 - 2026-09-24: 共享来源入库与迟到订阅目标挂接时即按各 ticker 的原有实时/闭市 admission 窗口记录过期拒收，避免旧 RSS 条目每次轮询重新生成 Jev 待判队列；旧版本已排队条目仍由分发 Worker 的提前拒收兼容处理。补首轮及迟到目标回归测试。
@@ -1235,3 +1237,25 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-24 · W3 远端恢复验收：新加坡 Scheduler 部署 `f1dcbe66` 后，先单例验证实际 Worker 请求使用 `gpt-5.6-luna/max` 且 W3 进入 RESOLVED，再按原 Effect ID 恢复其余 9 条；SSH 中断后只读对账确认 10/10 Effect 为 COMPLETED、W3 为 RESOLVED，MU 当前无 FAILED W3，另有 2 条新 W3 正在 RUNNING。只重建并重启 Scheduler，Codex Worker 未重启。
 
 2026-09-25 · 消息源轮询与 Reuters 正文修复：首批新增源的默认轮询由 300 秒改为 60 秒，启动时仅迁移原 300 秒源/绑定/默认模板，保留 TikHub 节奏；共享 distribution 采集现在向各订阅 ticker 写入真实成功/失败轮询状态和下次目标时间，修正前端“未轮询/未调度”。Reuters 专用正文抽取加入 ArticleBody 的列表项，且仅在 Reuters canonical URL 与请求 URL 完全对应时容许文章改题，保留跨页/跨站身份校验。生产 MU 监测词修订 1→2，仅删除 L1 的 AI 概念，L2 不变。Barron's 的现有主备出口全不可达，保留 Profile/出口绑定，待代理服务恢复后复验。
+
+2026-09-28 · Overview 休市读取修复：首次默认周期先读取可用交易日历，休市时明确选择前一交易日并同步 URL；显式选择休市“本交易日”保留契约语义并提示改选，不伪装成前一天。后端将不可选周期映射为 VALIDATION_FAILED/422，避免 NON_TRADING_DAY 被泛化为 STORE_UNAVAILABLE/503；依赖 context 失败的模块结束加载并显示错误。周末/节假日/连续语义日后端定向测试、前端 5 项读取测试、类型检查及 lint 通过。部署仅 API/Web，未修改 ticker/workflow 业务数据。
+
+2026-09-28 · 交易执行两周只读审计：核验新加坡 PAPER 20 笔正式意图、6 笔建仓成交/完整退出与净损益 -2516.382260 USD；确认同向完整预算叠加、亏损后固定金额、BE 9/25 保证金拒单被 Cancelled 覆盖后重试，以及 RKLB 同事件多 Case、夜盘路由限制与报价诊断缺口。新增 docs/trade-execution-audit-20260928.md、脱敏取证及三个离线复现；定向基线 24 passed/2 skipped/1 failed，失败已定位为 graph delta 测试只检查末条。未修改交易业务实现、生产配置或账本，未提交交易。
+
+2026-09-28 · 新加坡磁盘清理：新增一次性白名单运维脚本及 6 项防误删测试，按已批准方案删除 42 个旧镜像、4 个停止的测试/迁移容器、未使用构建缓存和旧恢复副本，实际释放 81.15 GiB；17 个运行容器 ID/镜像和全部数据卷不变，保留 Guardian 动态代理/模板及浏览器 Profile。新增当前备份脚本，复用生产 backup/manifest API，在临时进程固定只读事务以避免 WAL 写入导致重读，并校验备份库 SHA256/quick_check，不做在线 VACUUM 或业务重启。创建本对话每 15 分钟根盘可用低于 15 GiB 紧急告警（依赖本机应用运行），按用户要求写入临时镜像登记/清理记忆注记。清理审计日志保存在 /var/lib/doxagent/ops/cleanup-20260927T183919Z；备份验收结果另记运维执行报告。
+
+2026-09-28 · 按用户后续指令移除根盘 15 GiB 应用定时告警，应用返回 deleteStatus=deleted；不另建替代告警，继续当前备份校验与运维验收。
+
+2026-09-28 · 新加坡清理最终验收：当前恢复集 13 个数据库 SHA256/SQLite quick_check 与 33,692 个文件校验全部通过，临时备份容器完成后自动删除；新增备份后根盘可用 71.94 GiB、使用率 58%。再次确认 17 个原运行容器及 10 个数据卷不变、API healthz/readyz 正常，登录页面刷新无 STORE_UNAVAILABLE。备份仍为服务器本地恢复集，未宣称异地灾备或完整应用恢复演练。
+
+2026-09-28 · 消息源恢复（进行中）：共享 distribution 实时调度遵守持久化 next_dispatch_at，失败/访问延期不再秒级热循环；Managed 浏览器与 CDP 断连时安全退役后按同一 Profile 重启，External 仅重新 attach，取消任务归还页面并发额度。登录维护先启动并选择目标 Runtime 再等待 VNC，失败保留或安全关闭维护会话。定向回归 58 passed/1 skipped；远端 Flower_SS 确已配置，补入 SSRDOG 做对照，美国/日本节点均不可达，故障出口槽位切换到已验证德国/荷兰节点并同步固定时区，Profile 数据不删除。
+
+2026-09-28 · 消息源恢复续修：闭市共享采集也投影真实成功/失败状态，恢复重试使用本次实际 attempt 时间而非旧 run.created_at，避免成功后保留旧失败。闭市正文批量入队的有限抓取/重试预算从第一次领取开始，重试/租约恢复不续期，实时期限与原发布时间/sweep admission 不变；修复 Google 118 条记录首轮在未发请求前 deadline_exceeded 的队列饥饿路径。新增回归后 134 passed/1 skipped。远端验证 TrendForce 两入口、Reuters 搜索/正文、Google 发布者正文、DIGITIMES 英文列表/繁中正文；Barron's challenge 与 DIGITIMES 英文订阅权限留待人工维护。
+
+2026-09-28 · 消息源恢复最终补修：所有采集模式均更新真实轮询健康，闭市成功不再保留 Reuters/Google 旧错误且不推进实时 checkpoint。Google 历史 118 条正文通过正常队列恢复 96 条 FULL/SHORT_FULL，剩余发布者风控/订阅等限制不冒充成功。DIGITIMES 繁中 RSS 最新仍为 9/24；新增繁中 newsText 正文适配，识别文章内会员密码表单为 login_required，公开短篇正常判完整，英文 content 正文与 paid subscription 墙同步识别；补充繁中人工维护配置，保留旧 Profile。综合回归 211 passed/1 skipped，新增 DIGITIMES 适配后定向 77 passed。相关生产代码、代理/Registry 配置及原 sweep 窗口恢复均留证；未打包既存 Overview/交易/清理等其它未提交变更。
+
+2026-09-28 · 消息源恢复验收：最终综合回归 253 passed/1 skipped，桌面追加回归 9 passed。修复 optional auth + browser-only 未实际进入浏览器的路径，DIGITIMES 台湾 40 篇缓存重新核验为 10 篇有正文、30 篇明确 login_required；RSS 德国出口后续 403，版本化切到荷兰 18082 后 BE/INTC/MU 实抓 40 条且成功。英文主身份改为 digitimes-nl-1，禁用受阻直连组合但保留旧 Profile；维护 GUI 显示实际出口地区，订阅墙不误宣称账号有效。仅部署 Site Access/Bus/Enrichment 与宿主机维护脚本，Supervisor 未重启、Cookie 不删除；新增 docs/message-source-recovery-20260928.md 记录完整证据与三项人工登录待办。
+
+2026-09-28 · 消息源登录收尾与免费正文门槛：Barron's、DIGITIMES English 的生产登录身份均通过真实文章 `body_v2.2` 完整正文抽取，ticker/栏目爬虫分别实抓 1/11 条；DIGITIMES Taiwan 新增仅当正文补全成功且为 FULL/SHORT_FULL 时才执行分发，付费/无完整公开正文的文章终止于 NO_PUBLIC_BODY，不触发 Jev 或发布。定向回归 45 passed；代码 `5a7f9c28` 已推送并仅重建/重启生产 Bus 与 Enrichment，生产源版本 4→5、保留 18082 出口和旧 Profile。Google News 9/26 发布、9/27 采入的 130 条记录均属于 9/26–9/27 的 CLOSED_SWEEP，未发现实时 30 分钟入库越窗。
+
+2026-09-28 · DIGITIMES English 正文补全连锁失效修复：生产 30 篇近期缓存中 29 篇失败于 no_authenticated_profile_available，根因是一篇 subscription_required 文章将整个有效身份降级为 ENTITLEMENT_MISSING；将文章级订阅权限缺失限制在该次访问，不再撤销站点 Profile/Identity 登录态，真正 login_required 仍可标记重登。新增传统 Profile 与共享 Identity 回归，定向 28 passed；`ad81c2e7` 已推送并仅重建/重启 Site Access（先顺序构建基础镜像再构建 Site Access），Supervisor 与旧 Chrome 身份不重启。通过现有维护工具重验旧 Profile 为 VALID，生产复测一篇付费墙文章失败后另一篇可读文章仍成功且身份保持 VALID。付费墙仍须账号具备相应订阅权限，不通过抓取代码绕过。

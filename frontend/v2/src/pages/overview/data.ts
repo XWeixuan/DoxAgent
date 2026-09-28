@@ -3,6 +3,7 @@ import type { Period } from "@contract";
 import { useRuntime } from "@/core/runtime";
 import { queryString, type Endpoints } from "@/core/api";
 import type { PendingCommand } from "@/core/operations";
+import { readOverviewContext } from "./context";
 export const periods = [
   ["CURRENT_TRADING_DAY", "本交易日"],
   ["PREVIOUS_TRADING_DAY", "前一交易日"],
@@ -10,27 +11,19 @@ export const periods = [
   ["TRADING_DAYS_30", "30 天"],
 ] as const;
 export const filtersSupported = true;
-export function useOverview(period: Period, run: string, health: string) {
+export function useOverview(
+  period: Period,
+  run: string,
+  health: string,
+  calendarDefault = false,
+) {
   const runtime = useRuntime();
   const { query, api, scope } = runtime;
-  const contextKey = [scope, "context", "OVERVIEW", period];
+  const contextKey = [scope, "context", "OVERVIEW", period, calendarDefault];
   const readContext = async (
     refresh: "OPEN" | "MANUAL",
     signal?: AbortSignal,
-  ) => {
-    const response = await api.request(
-      "ReadContext",
-      "/read-context" + queryString({ page: "OVERVIEW", period, refresh }),
-      { signal },
-    );
-    if (
-      response.data.page !== "OVERVIEW" ||
-      response.data.ticker !== null ||
-      response.data.period?.selected !== period
-    )
-      throw new Error("读取范围不一致，请刷新页面。");
-    return response;
-  };
+  ) => readOverviewContext(api, period, refresh, signal, calendarDefault);
   const context = useQuery({
     queryKey: contextKey,
     queryFn: ({ signal }) => readContext("OPEN", signal),
@@ -151,12 +144,25 @@ export function useOverview(period: Period, run: string, health: string) {
       },
     });
   }
+  const contextBlocked = !context.data && context.isError;
   return {
     context,
-    status,
+    status: {
+      ...status,
+      isPending: status.isPending && !contextBlocked,
+      error: contextBlocked ? context.error : status.error,
+    },
     gateway,
-    metrics,
-    list,
+    metrics: {
+      ...metrics,
+      isPending: metrics.isPending && !contextBlocked,
+      error: contextBlocked ? context.error : metrics.error,
+    },
+    list: {
+      ...list,
+      isPending: list.isPending && !contextBlocked,
+      error: contextBlocked ? context.error : list.error,
+    },
     capabilities,
     principal,
     operations,
