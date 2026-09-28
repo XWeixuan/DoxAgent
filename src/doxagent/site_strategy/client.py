@@ -61,7 +61,11 @@ class SiteAccessClient:
         params: dict[str, str | int] = {"url": url}
         if revision is not None:
             params["revision"] = revision
-        response = await self._client.get("/v1/resolve", params=params)
+        try:
+            response = await self._client.get("/v1/resolve", params=params)
+        except (httpx.ReadError, httpx.RemoteProtocolError):
+            # A stale pooled connection can close before this read-only request returns.
+            response = await self._client.get("/v1/resolve", params=params)
         response.raise_for_status()
         return ResolvedSite.model_validate(response.json())
 
@@ -69,9 +73,15 @@ class SiteAccessClient:
         if self.service is not None:
             return await self.service.execute(request)
         assert self._client is not None
-        response = await self._client.post(
-            "/v1/access/execute", json=request.model_dump(mode="json")
-        )
+        payload = request.model_dump(mode="json")
+        try:
+            response = await self._client.post("/v1/access/execute", json=payload)
+        except (httpx.ReadError, httpx.RemoteProtocolError):
+            if request.method != "GET":
+                raise
+            # Reuse the request ID: Site Access deduplicates an in-flight or
+            # recently completed read if only its HTTP response was lost.
+            response = await self._client.post("/v1/access/execute", json=payload)
         response.raise_for_status()
         return AccessResult.model_validate(response.json())
 
