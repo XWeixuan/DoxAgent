@@ -874,7 +874,10 @@ class SiteStrategyService:
                 FailureCategory.AUTH_REQUIRED,
                 FailureCategory.ENTITLEMENT_MISSING,
             }:
-                self._mark_identity_auth(resolved, combination, profile, category)
+                # Entitlement is article-specific: one premium article must not
+                # invalidate a Profile that can still read other articles.
+                if category is FailureCategory.AUTH_REQUIRED:
+                    self._mark_identity_auth(resolved, combination, profile)
                 return self._result_from_response(
                     request,
                     resolved,
@@ -1177,13 +1180,8 @@ class SiteStrategyService:
         resolved: ResolvedSite,
         combination: AccessCombination,
         profile: BrowserProfile,
-        category: FailureCategory,
     ) -> None:
-        state = (
-            AuthState.ENTITLEMENT_MISSING
-            if category is FailureCategory.ENTITLEMENT_MISSING
-            else AuthState.REAUTH_REQUIRED
-        )
+        state = AuthState.REAUTH_REQUIRED
         self.repository.save_profile(
             profile.model_copy(update={"auth_state": state, "updated_at": utc_now()})
         )
@@ -1194,7 +1192,7 @@ class SiteStrategyService:
                 site_id=resolved.runtime_key,
                 identity_id=identity.identity_id,
                 auth_state=state,
-                reason_code=category.value,
+                reason_code=FailureCategory.AUTH_REQUIRED.value,
                 observed_session_revision=runtime.session_revision,
             )
         )

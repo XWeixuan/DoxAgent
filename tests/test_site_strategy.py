@@ -21,10 +21,12 @@ from doxagent.site_strategy.schema import (
     AccessDisposition,
     AccessMode,
     AccessRequest,
-    BrowserProfile,
+    AuthState,
     BrowserIdentityLifecycle,
+    BrowserProfile,
     FailureCategory,
     ProxyEgress,
+    SiteIdentityAuth,
     SitePurpose,
 )
 from doxagent.site_strategy.seeds import bootstrap_seed
@@ -320,6 +322,91 @@ async def test_content_404_does_not_switch_egress(site_service: SiteStrategyServ
     assert calls == ["yahoo_finance-1"]
     state = site_service.repository.get_runtime("yahoo_finance")
     assert state.combinations["yahoo_finance-1"].state == "READY"
+
+
+@pytest.mark.asyncio
+async def test_single_digitimes_article_entitlement_does_not_revoke_valid_profile(
+    site_service: SiteStrategyService,
+) -> None:
+    profile = site_service.repository.get_profile("digitimes-1")
+    assert profile is not None
+    site_service.repository.save_profile(
+        profile.model_copy(update={"auth_state": AuthState.VALID})
+    )
+    calls = 0
+
+    async def execute_runtime(request, resolved, combination, profile, egress):
+        nonlocal calls
+        calls += 1
+        return RuntimeResponse(
+            200,
+            request.url,
+            {"content-type": "text/html"},
+            (
+                "<html><article><h1>Premium story</h1>"
+                "<p>Subscribe to continue</p></article></html>"
+                if calls == 1
+                else "<html><article><h1>Accessible story</h1>"
+                "<p>Subscriber article text remains available.</p></article></html>"
+            ),
+        )
+
+    site_service.runtime.execute = execute_runtime  # type: ignore[method-assign]
+    for index, expected in enumerate(
+        (AccessDisposition.AUTH_REQUIRED, AccessDisposition.SUCCESS)
+    ):
+        result = await site_service.execute(
+            AccessRequest(
+                operation_id=f"digitimes-entitlement-{index}",
+                purpose=SitePurpose.BODY,
+                url=f"https://www.digitimes.com/news/article-{index}.html",
+                mode=AccessMode.BROWSER,
+            )
+        )
+        assert result.disposition is expected
+    assert calls == 2
+    assert site_service.repository.get_profile("digitimes-1").auth_state is AuthState.VALID
+
+
+@pytest.mark.asyncio
+async def test_article_entitlement_does_not_revoke_shared_identity_auth(
+    site_service: SiteStrategyService,
+) -> None:
+    repository = site_service.repository
+    apply_first_wave(repository)
+    runtime = repository.get_identity_runtime("dowjones-main")
+    repository.save_site_identity_auth(
+        SiteIdentityAuth(
+            site_id="barrons",
+            identity_id="dowjones-main",
+            auth_state=AuthState.VALID,
+            observed_session_revision=runtime.session_revision,
+        )
+    )
+
+    async def execute_runtime(request, resolved, combination, profile, egress):
+        return RuntimeResponse(
+            200,
+            request.url,
+            {"content-type": "text/html"},
+            "<html><article><h1>Premium story</h1>"
+            "<p>Subscribe to continue</p></article></html>",
+        )
+
+    site_service.runtime.execute = execute_runtime  # type: ignore[method-assign]
+    result = await site_service.execute(
+        AccessRequest(
+            operation_id="identity-article-entitlement",
+            purpose=SitePurpose.BODY,
+            url="https://www.barrons.com/articles/premium-story",
+            mode=AccessMode.BROWSER,
+        )
+    )
+    assert result.failure_category is FailureCategory.ENTITLEMENT_MISSING
+    assert (
+        repository.get_site_identity_auth("barrons", "dowjones-main").auth_state
+        is AuthState.VALID
+    )
 
 
 @pytest.mark.asyncio
