@@ -323,7 +323,7 @@ def parse_barrons_ticker_listing(
                     published = local.replace(tzinfo=_NEW_YORK).astimezone(UTC)
                     basis = "EXACT"
                     break
-        if wrapped and basis != "EXACT":
+        if basis != "EXACT":
             # A newly discovered historical card is not a newly published article.
             continue
         summary = next((_text(p) for p in card.xpath('.//p') if _text(p) != title), "")
@@ -342,7 +342,7 @@ def parse_barrons_ticker_listing(
             },
         )
     if not rows:
-        if wrapped and candidate_count:
+        if candidate_count:
             return []
         raise RuntimeError("barrons_ticker_news_empty_or_changed")
     return list(rows.values())
