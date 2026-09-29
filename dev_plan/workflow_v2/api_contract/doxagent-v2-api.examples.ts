@@ -44,5 +44,5 @@ export const staleBinding = {
 export const graphFillCorrection = {
   previous_graph_revision: 10, graph_revision: 11,
   upsert_cases: [], remove_case_ids: [], replace_nodes: [],
-  replace_edges: [{ edge_id: "W3:TRADE_EXECUTION", from: "W3", to: "TRADE_EXECUTION", case_count: 2 }],
+  replace_edges: [{ edge_id: "TRADE_INTENT:TRADE_EXECUTION", from: "TRADE_INTENT", to: "TRADE_EXECUTION", case_count: 2 }],
 } satisfies GraphDelta;

@@ -439,7 +439,6 @@ class DomainProjectors:
                 if disposition == "UNKNOWN":
                     disposition = "READY"
                 prior = {**prior, "trade_disposition": disposition, "revision": event["seq"]}
-                validate("CaseSummary", prior)
                 records.append(
                     {
                         "kind": "case",
@@ -486,8 +485,26 @@ class DomainProjectors:
                         },
                     }
                 )
+        from .trade_outcomes import project_case_trade
+
+        affected = {
+            (r["ticker"], r["id"]): r["data"]
+            for r in records if r["kind"] == "case" and r.get("data")
+        }
+        for item in records:
+            if item["kind"] == "execution" and item.get("parent"):
+                key = (item["ticker"], item["parent"])
+                if key not in affected:
+                    affected[key] = self.store.get("case", *key)
+        records = [r for r in records if r["kind"] != "case"]
+        for (case_ticker, _), summary in affected.items():
+            if summary:
+                case_record, count = project_case_trade(self.store, case_ticker, summary, records)
+                records.append(case_record)
+                metrics.append(count)
         changed_cases = {
-            r["id"]: (r["ticker"], r["data"]) for r in records if r["kind"] == "case" and r["data"]
+            r["id"]: (r["ticker"], r["data"])
+            for r in records if r["kind"] == "case" and r["data"]
         }
         for item in records:
             if item["kind"] == "attempt" and item.get("parent") not in changed_cases:
@@ -523,14 +540,6 @@ class DomainProjectors:
         pending = initial == "W3" and not resolved
         old = self.store.get("case", ticker, value["case_id"])
         settled = value["status"] in {"COMPLETED", "FAILED", "UNAVAILABLE"}
-        if settled:
-            with self.store.connect() as db:
-                pending_execution = db.execute(
-                    "SELECT 1 FROM objects WHERE kind='execution' AND ticker=? AND parent=? "
-                    "AND valid_to IS NULL AND json_extract(payload,'$.entry_result') IS NULL LIMIT 1",
-                    (ticker, value["case_id"]),
-                ).fetchone()
-            settled = not pending_execution
         completed = value.get("completed_at")
         created = value["created_at"]
         summary = {
@@ -568,6 +577,7 @@ class DomainProjectors:
             if w2 and not pending
             else missing(),
             "results": [result for result in old["results"] if result != "FAILURE"] if old else [],
+            "trade": old.get("trade", {"intent_count": 0, "state": "NOT_APPLICABLE", "reason_codes": []}) if old else {"intent_count": 0, "state": "NOT_APPLICABLE", "reason_codes": []},
             "result_settled": settled,
             "trade_disposition": old["trade_disposition"] if old else "NOT_EVALUATED",
             "stream_item_id": source["stream_item_id"],

@@ -14,7 +14,12 @@ from urllib.parse import parse_qsl, urlsplit
 from doxagent.api_v2.dto import validate
 from doxagent.api_v2.errors import ApiFailure
 from doxagent.message_bus_v2.repository import MessageBusV2Repository
-from doxagent.message_bus_v2.schema import SourceDefinition, TickerSourceBinding, UpdateActor
+from doxagent.message_bus_v2.schema import (
+    AcquisitionMode,
+    SourceDefinition,
+    TickerSourceBinding,
+    UpdateActor,
+)
 from doxagent.message_bus_v2.service import MessageBusV2Service
 from doxagent.v2_read.repository import encode, instant
 
@@ -23,6 +28,12 @@ def migrate(db):
     db.execute(
         "CREATE TABLE IF NOT EXISTS v2_binding_commands (scope TEXT,key_hash TEXT,"
         "body_hash TEXT,receipt TEXT,PRIMARY KEY(scope,key_hash))"
+    )
+    from doxagent.message_bus_v2.monitoring_terms import migrate as migrate_terms
+    migrate_terms(db)
+    db.execute(
+        "CREATE TABLE IF NOT EXISTS v2_monitoring_terms_commands "
+        "(scope TEXT,key_hash TEXT,body_hash TEXT,receipt TEXT,PRIMARY KEY(scope,key_hash))"
     )
 
 
@@ -129,7 +140,17 @@ def merge_parameters(current, replacement, schema):
     return result
 
 
-def configuration(source, binding):
+def managed_paths(source, *, terms_present: bool):
+    # These two adapters explicitly prefer QueryPlan over legacy search_terms.
+    if terms_present and source.acquisition_mode is AcquisitionMode.BY_SEARCH:
+        if source.source_id == "reuters_site_search":
+            return ["/source_parameters/company_short_name"]
+        if source.source_id == "google_news_search_rss":
+            return ["/source_parameters/search_terms"]
+    return []
+
+
+def configuration(source, binding, *, terms_present: bool = False):
     source = (
         source if isinstance(source, SourceDefinition) else SourceDefinition.model_validate(source)
     )
@@ -170,6 +191,16 @@ def configuration(source, binding):
             },
             "writable_parameter_paths": sorted(writable),
             "redacted_parameter_paths": sorted(hidden),
+            "monitoring_terms_usage": {
+                "acquisition_mode": source.acquisition_mode.value,
+                "terms_mode": (
+                    "UNIFIED" if terms_present and source.acquisition_mode in {
+                        AcquisitionMode.BY_SEARCH, AcquisitionMode.BY_DISTRIBUTION
+                    } else "LEGACY" if source.acquisition_mode is AcquisitionMode.BY_SEARCH
+                    else "UNCONFIGURED"
+                ),
+                "managed_parameter_paths": managed_paths(source, terms_present=terms_present),
+            },
         },
     )
 
@@ -218,7 +249,18 @@ class Bindings:
             source = repository.get_source(binding.source_id)
             if source is None:
                 raise ApiFailure("RESOURCE_NOT_FOUND", 404)
-            return configuration(source, binding)
+            return configuration(source, binding, terms_present=self._has_terms(db, ticker))
+
+    @staticmethod
+    def _has_terms(db, ticker):
+        try:
+            return db.execute(
+                "SELECT 1 FROM ticker_monitoring_terms WHERE ticker=?", (ticker,)
+            ).fetchone() is not None
+        except sqlite3.OperationalError as exc:
+            if "no such table: ticker_monitoring_terms" not in str(exc):
+                raise
+            return False
 
     def available(self, ticker, identity):
         with self.connect() as db:
@@ -298,7 +340,9 @@ class Bindings:
                     raise ApiFailure("RESOURCE_NOT_FOUND", 404)
                 if not expected:
                     raise ApiFailure("PRECONDITION_REQUIRED", 428)
-                if expected != configuration(source, binding)["control_etag"]:
+                if expected != configuration(
+                    source, binding, terms_present=self._has_terms(db, ticker)
+                )["control_etag"]:
                     raise ApiFailure("REVISION_CONFLICT", 412)
                 if method == "DELETE":
                     binding = service.delete_binding(
@@ -307,6 +351,15 @@ class Bindings:
                 else:
                     patch = copy.deepcopy(body)
                     if "source_parameters" in patch:
+                        protected = managed_paths(source, terms_present=self._has_terms(db, ticker))
+                        for path in protected:
+                            key = path.removeprefix("/source_parameters/")
+                            if (
+                                key in patch["source_parameters"]
+                                and patch["source_parameters"][key]
+                                != binding.source_parameters.get(key)
+                            ):
+                                raise ApiFailure("PARAMETER_NOT_WRITABLE", 422)
                         patch["source_parameters"] = merge_parameters(
                             binding.source_parameters,
                             patch["source_parameters"],
@@ -339,7 +392,7 @@ class Bindings:
                     "updated_at": instant(saved.updated_at),
                 }
                 if method == "DELETE"
-                else configuration(source, saved)
+                else configuration(source, saved, terms_present=self._has_terms(db, ticker))
             )
             db.execute(
                 "INSERT INTO v2_binding_commands VALUES(?,?,?,?)",

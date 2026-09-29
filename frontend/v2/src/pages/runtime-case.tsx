@@ -234,11 +234,11 @@ export default function CaseDetails({
           )}
           {d.candidate_count.state === "AVAILABLE" &&
             d.candidate_count.value > 0 && (
-              <Candidates ticker={ticker} caseId={caseId} />
+              <Candidates ticker={ticker} caseId={caseId} view={view} />
             )}
           {d.execution_count.state === "AVAILABLE" &&
             d.execution_count.value > 0 && (
-              <Executions ticker={ticker} caseId={caseId} />
+              <Executions ticker={ticker} caseId={caseId} view={view} />
             )}
           <section>
             <h3>消息正文</h3>
@@ -567,9 +567,7 @@ function policyHref(
   return `/ticker/${id(ticker)}/strategy?${new URLSearchParams({
     policy: policy.policy_id,
     policy_set_version: String(policy.policy_set_version),
-    ...(activationId
-      ? { activation: activationId }
-      : { shell: "ALL", filter }),
+    ...(activationId ? { activation: activationId } : { shell: "ALL", filter }),
   })}`;
 }
 function CaseMessage({
@@ -637,11 +635,22 @@ function MoreMessages({
     </>
   );
 }
-function Candidates({ ticker, caseId }: { ticker: string; caseId: string }) {
+function Candidates({
+  ticker,
+  caseId,
+  view,
+}: {
+  ticker: string;
+  caseId: string;
+  view: string;
+}) {
   const q = usePages<Candidate, "Candidates">(
     "Candidates",
-    tickerPath(ticker) + `/runtime/cases/${id(caseId)}/candidates?limit=20`,
+    tickerPath(ticker) +
+      `/runtime/cases/${id(caseId)}/candidates` +
+      queryString({ view_id: view, limit: "20" }),
     (r) => r.data,
+    view,
   );
   return (
     <section>
@@ -666,11 +675,22 @@ function Candidates({ ticker, caseId }: { ticker: string; caseId: string }) {
     </section>
   );
 }
-function Executions({ ticker, caseId }: { ticker: string; caseId: string }) {
+function Executions({
+  ticker,
+  caseId,
+  view,
+}: {
+  ticker: string;
+  caseId: string;
+  view: string;
+}) {
   const q = usePages<ExecutionSummary, "Executions">(
     "Executions",
-    tickerPath(ticker) + `/runtime/cases/${id(caseId)}/executions?limit=20`,
+    tickerPath(ticker) +
+      `/runtime/cases/${id(caseId)}/executions` +
+      queryString({ view_id: view, limit: "20" }),
     (r) => r.data,
+    view,
   );
   return (
     <section>
@@ -681,7 +701,16 @@ function Executions({ ticker, caseId }: { ticker: string; caseId: string }) {
             <article className="execution-card" key={e.execution_id}>
               <header>
                 <strong>{e.direction}</strong>
-                <span>{e.has_actual_fill ? "已实际成交" : "未成交"}</span>
+                <span>
+                  {
+                    {
+                      EXECUTED: "交易执行",
+                      NOT_EXECUTED: "交易未执行",
+                      PENDING: "等待执行",
+                      UNKNOWN: "执行结果未知",
+                    }[e.execution_state]
+                  }
+                </span>
                 <span>{e.entry_result ?? e.intake_status}</span>
               </header>
               <dl>
@@ -695,6 +724,9 @@ function Executions({ ticker, caseId }: { ticker: string; caseId: string }) {
                 <dd>{valueText(e.first_fill_at, formatInstant)}</dd>
               </dl>
               {e.entry_reason && <p>{e.entry_reason}</p>}
+              {e.execution_reason_codes.length > 0 && (
+                <p>原因码：{e.execution_reason_codes.join("、")}</p>
+              )}
             </article>
           ))
         }

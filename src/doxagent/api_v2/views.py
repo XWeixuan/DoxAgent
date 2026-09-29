@@ -219,6 +219,9 @@ class Views:
                 break
             bounded.append(row)
         rows = bounded
+        if kind == "case":
+            from doxagent.v2_read.trade_outcomes import legacy_case_summary
+            rows = [{**row, "data": legacy_case_summary(self.store, ticker, row["data"], seq)} for row in rows]
         next_cursor = (
             self.store.save_token(
                 owner, scope, {"seq": seq, "view_id": view_id, "after": [rows[-1]["sort"], rows[-1]["id"]]}

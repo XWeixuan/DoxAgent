@@ -1,6 +1,6 @@
 import { LoadMore } from "@/components/load-more";
 import { Network, X, ArrowUpRight } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useSearchParams } from "react-router-dom";
 import type {
@@ -30,6 +30,10 @@ import {
 import { Module, Notice } from "@/components/state";
 import { Button } from "@/components/ui/button";
 import CaseDetails from "./runtime-case";
+import {
+  collectRuntimeCases,
+  downloadRuntimeCases,
+} from "@/core/runtime-case-export";
 export const nodeNames: Record<NodeId, string> = {
   SOURCE: "接收消息",
   W1: "W1 · 新旧判定",
@@ -38,7 +42,9 @@ export const nodeNames: Record<NodeId, string> = {
   ARCHIVE: "归档",
   EVENT_DISCOVERY: "事件发现",
   BADCASE: "Badcase",
+  TRADE_INTENT: "交易意图产生",
   TRADE_EXECUTION: "交易执行",
+  TRADE_NOT_EXECUTED: "交易未执行",
   FAILURE: "失败",
 };
 export default function RuntimePage() {
@@ -95,7 +101,37 @@ function RuntimeBody({
   const [p, setP] = useSearchParams(),
     [node, setNode] = useState<NodeId>(),
     [selected, setSelected] = useState<{ id: string; view: string }>();
+  const [exportSession, setExportSession] = useState<{
+    viewId: string;
+    period: Period;
+    result: string | null;
+    source: string | null;
+    selectedIds: Set<string>;
+  } | null>(null);
+  const [exportBusy, setExportBusy] = useState(false);
+  const [exportProgress, setExportProgress] = useState(0);
+  const [exportError, setExportError] = useState("");
+  const exportAbort = useRef<AbortController | null>(null);
+  const completedExportCases = useRef(new Map<string, unknown>());
+  const stopExport = () => {
+    exportAbort.current?.abort();
+    exportAbort.current = null;
+    completedExportCases.current.clear();
+    setExportBusy(false);
+    setExportError("");
+    setExportSession(null);
+  };
+  useEffect(() => () => exportAbort.current?.abort(), []);
+  useEffect(() => {
+    exportAbort.current?.abort();
+    exportAbort.current = null;
+    completedExportCases.current.clear();
+    setExportBusy(false);
+    setExportSession(null);
+  }, [ticker, period, scope, view]);
+  const listView = exportSession?.viewId ?? readView;
   const selectCase = (id: string) => setSelected({ id, view: readView });
+  const selectListedCase = (id: string) => setSelected({ id, view: listView });
   const metrics = useRead(
     "RuntimeMetrics",
     tickerPath(ticker) +
@@ -115,13 +151,13 @@ function RuntimeBody({
     tickerPath(ticker) +
       "/runtime/cases" +
       queryString({
-        view_id: readView,
+        view_id: listView,
         result,
         source_id: source,
         limit: "20",
       }),
     (r) => r.data,
-    readView,
+    listView,
   );
   const detail = useRead(
     "Node",
@@ -146,10 +182,10 @@ function RuntimeBody({
       tickerPath(ticker) +
       "/runtime/cases" +
       queryString({ view_id: v, result, source_id: source, limit: "20" });
-    const [m, c] = await Promise.all([
-      api.request("RuntimeMetrics", metricPath, { view: v }),
-      api.request("Cases", casePath, { view: v }),
-    ]);
+    const m = await api.request("RuntimeMetrics", metricPath, { view: v });
+    const c = exportSession
+      ? null
+      : await api.request("Cases", casePath, { view: v });
     if (node) {
       const path =
         tickerPath(ticker) +
@@ -159,10 +195,11 @@ function RuntimeBody({
       query.setQueryData([scope, "read", "Node", path, v], n);
     }
     query.setQueryData([scope, "read", "RuntimeMetrics", metricPath, v], m);
-    query.setQueryData([scope, "pages", "Cases", casePath, v], {
-      pages: [c],
-      pageParams: [undefined],
-    });
+    if (c)
+      query.setQueryData([scope, "pages", "Cases", casePath, v], {
+        pages: [c],
+        pageParams: [undefined],
+      });
     query.setQueryData(minuteKey, next);
   });
   const streamError = useLive<GraphDelta>(
@@ -208,10 +245,83 @@ function RuntimeBody({
     reset,
   );
   const set = (key: string, v: string) => {
+    stopExport();
     const n = new URLSearchParams(p);
     if (v) n.set(key, v);
     else n.delete(key);
     setP(n);
+  };
+  const loadedCases = cases.data?.data.data?.items ?? [];
+  const selectedCount = exportSession?.selectedIds.size ?? 0;
+  const toggleSelected = (caseId: string) =>
+    setExportSession((current) => {
+      if (!current) return current;
+      const ids = new Set(current.selectedIds);
+      if (ids.has(caseId)) ids.delete(caseId);
+      else ids.add(caseId);
+      return { ...current, selectedIds: ids };
+    });
+  const toggleAll = () =>
+    setExportSession((current) => {
+      if (!current) return current;
+      const ids = new Set(current.selectedIds);
+      const all = loadedCases.every((row) => ids.has(row.case_id));
+      for (const row of loadedCases) {
+        if (all) ids.delete(row.case_id);
+        else ids.add(row.case_id);
+      }
+      return { ...current, selectedIds: ids };
+    });
+  const confirmExport = async () => {
+    if (!exportSession || exportBusy || !selectedCount) return;
+    const controller = new AbortController();
+    exportAbort.current = controller;
+    setExportBusy(true);
+    setExportProgress(0);
+    setExportError("");
+    try {
+      const selectedIds = loadedCases
+        .filter((row) => exportSession.selectedIds.has(row.case_id))
+        .map((row) => row.case_id);
+      if (selectedIds.length !== selectedCount)
+        throw new Error("所选记录不在当前快照中，请重新选择。");
+      const result = await collectRuntimeCases(
+        api,
+        {
+          ticker,
+          viewId: exportSession.viewId,
+          period: exportSession.period,
+          tradingDays:
+            period === "ALL"
+              ? null
+              : (context.data.period?.current.trading_days ?? null),
+          result: exportSession.result,
+          sourceId: exportSession.source,
+          caseIds: selectedIds,
+        },
+        controller.signal,
+        (count) => setExportProgress(count),
+        completedExportCases.current,
+      );
+      if (controller.signal.aborted) return;
+      downloadRuntimeCases(result);
+      completedExportCases.current.clear();
+      setExportSession(null);
+    } catch (error) {
+      if (!controller.signal.aborted)
+        setExportError(
+          ["VIEW_EXPIRED", "CURSOR_EXPIRED"].includes(
+            (error as { code?: string }).code ?? "",
+          )
+            ? "快照已过期，请取消并重新进入导出模式。"
+            : (error as Error).message,
+        );
+    } finally {
+      if (exportAbort.current === controller) {
+        exportAbort.current = null;
+        setExportBusy(false);
+      }
+    }
   };
   return (
     <>
@@ -318,6 +428,46 @@ function RuntimeBody({
         <div className="filter-bar">
           <h2>最近处理记录</h2>
           <div className="business-filters">
+            {!exportSession ? (
+              <Button
+                variant="outline"
+                disabled={!loadedCases.length}
+                onClick={() => {
+                  setExportError("");
+                  setExportSession({
+                    viewId: readView,
+                    period,
+                    result: result ?? null,
+                    source: source ?? null,
+                    selectedIds: new Set(),
+                  });
+                }}
+              >
+                导出
+              </Button>
+            ) : (
+              <>
+                <Button
+                  variant="outline"
+                  disabled={exportBusy || !selectedCount}
+                  onClick={() => void confirmExport()}
+                >
+                  {exportBusy
+                    ? `正在导出 ${exportProgress}/${selectedCount}`
+                    : `确认导出（${selectedCount}）`}
+                </Button>
+                <Button variant="ghost" onClick={stopExport}>
+                  取消
+                </Button>
+                <Button
+                  variant="ghost"
+                  disabled={exportBusy || !loadedCases.length}
+                  onClick={toggleAll}
+                >
+                  全选已加载 {loadedCases.length} 条
+                </Button>
+              </>
+            )}
             <label>
               结果
               <select
@@ -330,7 +480,9 @@ function RuntimeBody({
                     "ARCHIVE",
                     "EVENT_DISCOVERY",
                     "BADCASE",
+                    "TRADE_INTENT",
                     "TRADE_EXECUTION",
+                    "TRADE_NOT_EXECUTED",
                     "FAILURE",
                   ] as const
                 ).map((r) => (
@@ -363,8 +515,17 @@ function RuntimeBody({
             </label>
           </div>
         </div>
+        {exportError && <Notice danger>{exportError}</Notice>}
         <Module query={cases} label="最近处理记录">
-          {(d) => <CaseRows rows={d.items} select={selectCase} />}
+          {(d) => (
+            <CaseRows
+              rows={d.items}
+              select={selectListedCase}
+              selectedIds={exportSession?.selectedIds}
+              toggleSelected={toggleSelected}
+              toggleAll={toggleAll}
+            />
+          )}
         </Module>
         {cases.hasNextPage && (
           <LoadMore
@@ -403,10 +564,12 @@ const positions: Record<NodeId, [number, number]> = {
   W2: [234, 256],
   W3: [464, 172],
   ARCHIVE: [702, 24],
-  EVENT_DISCOVERY: [702, 98],
-  BADCASE: [702, 172],
-  TRADE_EXECUTION: [702, 246],
-  FAILURE: [702, 320],
+  EVENT_DISCOVERY: [702, 92],
+  BADCASE: [702, 160],
+  TRADE_INTENT: [702, 228],
+  FAILURE: [702, 296],
+  TRADE_EXECUTION: [918, 190],
+  TRADE_NOT_EXECUTED: [918, 270],
 };
 const nodeColors: Record<NodeId, string> = {
   SOURCE: "#68616f",
@@ -416,10 +579,12 @@ const nodeColors: Record<NodeId, string> = {
   ARCHIVE: "#68616f",
   EVENT_DISCOVERY: "#42668b",
   BADCASE: "#94631b",
+  TRADE_INTENT: "#8d4e79",
   TRADE_EXECUTION: "#317357",
+  TRADE_NOT_EXECUTED: "#8a6572",
   FAILURE: "#b13a35",
 };
-function FlowGraph({
+export function FlowGraph({
   graph,
   selected,
   pathEdges,
@@ -456,141 +621,149 @@ function FlowGraph({
           </div>
         )}
       </header>
-      <svg
-        className="runtime-graph"
-        viewBox="0 0 880 400"
-        role="group"
-        aria-label="Runtime Case 流向"
-        onClick={() => select(undefined)}
-      >
-        <defs>
-          <marker
-            id="flow-arrow-v2"
-            viewBox="0 0 10 10"
-            refX="9"
-            refY="5"
-            markerWidth="5"
-            markerHeight="5"
-            orient="auto"
-          >
-            <path d="M0 0L10 5L0 10z" fill="context-stroke" />
-          </marker>
-        </defs>
-        <g className="stage-labels">
-          <text x="18" y="16">
-            接收
-          </text>
-          <text x="234" y="16">
-            一轮并行判定
-          </text>
-          <text x="464" y="16">
-            二轮研判
-          </text>
-          <text x="702" y="16">
-            最终结果
-          </text>
-        </g>
-        {graph.edges.map((e) => {
-          const [ax, ay] = positions[e.from],
-            [bx, by] = positions[e.to];
-          const sx = ax + 156,
-            sy = ay + 27,
-            ty = by + 27;
-          const bypass = bx === 702 && e.from !== "W3";
-          let d: string, lx: number, ly: number;
-          if (bypass) {
-            const upper = by < 172;
-            const lane = upper ? 38 : 389;
-            const junction = sx + 22,
-              arrival = 666;
-            d = `M${sx} ${sy} H${junction - 8} Q${junction} ${sy} ${junction} ${sy + (upper ? -8 : 8)} V${lane + (upper ? 8 : -8)} Q${junction} ${lane} ${junction + 8} ${lane} H${arrival - 8} Q${arrival} ${lane} ${arrival} ${lane + (upper ? 8 : -8)} V${ty + (upper ? -8 : 8)} Q${arrival} ${ty} ${arrival + 8} ${ty} H${bx}`;
-            const peers = graph.edges.filter(
-              (edge) =>
-                positions[edge.to][0] === 702 &&
-                edge.from !== "W3" &&
-                positions[edge.to][1] < 172 === upper,
+      <div className="runtime-graph-scroll">
+        <svg
+          className="runtime-graph"
+          viewBox="0 0 1090 400"
+          role="group"
+          aria-label="Runtime Case 流向"
+          onClick={() => select(undefined)}
+        >
+          <defs>
+            <marker
+              id="flow-arrow-v2"
+              viewBox="0 0 10 10"
+              refX="9"
+              refY="5"
+              markerWidth="5"
+              markerHeight="5"
+              orient="auto"
+            >
+              <path d="M0 0L10 5L0 10z" fill="context-stroke" />
+            </marker>
+          </defs>
+          <g className="stage-labels">
+            <text x="18" y="16">
+              接收
+            </text>
+            <text x="234" y="16">
+              一轮并行判定
+            </text>
+            <text x="464" y="16">
+              二轮研判
+            </text>
+            <text x="702" y="16">
+              研判结果
+            </text>
+            <text x="918" y="16">
+              交易执行
+            </text>
+          </g>
+          {graph.edges.map((e) => {
+            const [ax, ay] = positions[e.from],
+              [bx, by] = positions[e.to];
+            const sx = ax + 156,
+              sy = ay + 27,
+              ty = by + 27;
+            const bypass = bx === positions.TRADE_INTENT[0] && e.from !== "W3";
+            let d: string, lx: number, ly: number;
+            if (bypass) {
+              const upper = by < 172;
+              const lane = upper ? 38 : 389;
+              const junction = sx + 22,
+                arrival = 666;
+              d = `M${sx} ${sy} H${junction - 8} Q${junction} ${sy} ${junction} ${sy + (upper ? -8 : 8)} V${lane + (upper ? 8 : -8)} Q${junction} ${lane} ${junction + 8} ${lane} H${arrival - 8} Q${arrival} ${lane} ${arrival} ${lane + (upper ? 8 : -8)} V${ty + (upper ? -8 : 8)} Q${arrival} ${ty} ${arrival + 8} ${ty} H${bx}`;
+              const peers = graph.edges.filter(
+                (edge) =>
+                  positions[edge.to][0] === positions.TRADE_INTENT[0] &&
+                  edge.from !== "W3" &&
+                  positions[edge.to][1] < 172 === upper,
+              );
+              lx =
+                430 +
+                ((peers.findIndex((edge) => edge.edge_id === e.edge_id) + 0.5) *
+                  180) /
+                  peers.length;
+              ly = lane;
+            } else {
+              const bend = (bx - sx) / 2;
+              d = `M${sx} ${sy} C${sx + bend} ${sy},${bx - bend} ${ty},${bx} ${ty}`;
+              lx = (sx + bx) / 2;
+              ly = (sy + ty) / 2;
+            }
+            const count =
+              selected && paths.has(e.edge_id)
+                ? paths.get(e.edge_id)!.case_count
+                : e.case_count;
+            const visible = !selected || paths.has(e.edge_id);
+            return (
+              <g key={e.edge_id} opacity={visible ? 1 : 0} pointerEvents="none">
+                <path
+                  d={d}
+                  fill="none"
+                  stroke={selected ? nodeColors[selected] : "#ad98aa"}
+                  strokeWidth={1.5 + Math.min(1.5, Math.log2(count + 1) / 4)}
+                  markerEnd="url(#flow-arrow-v2)"
+                />
+                <g
+                  className="edge-counter"
+                  transform={`translate(${lx},${ly})`}
+                >
+                  <rect x="-16" y="-11" width="32" height="22" rx="7" />
+                  <text textAnchor="middle" y="4">
+                    {count}
+                  </text>
+                </g>
+              </g>
             );
-            lx =
-              430 +
-              ((peers.findIndex((edge) => edge.edge_id === e.edge_id) + 0.5) *
-                180) /
-                peers.length;
-            ly = lane;
-          } else {
-            const bend = (bx - sx) / 2;
-            d = `M${sx} ${sy} C${sx + bend} ${sy},${bx - bend} ${ty},${bx} ${ty}`;
-            lx = (sx + bx) / 2;
-            ly = (sy + ty) / 2;
-          }
-          const count =
-            selected && paths.has(e.edge_id)
-              ? paths.get(e.edge_id)!.case_count
-              : e.case_count;
-          const visible = !selected || paths.has(e.edge_id);
-          return (
-            <g key={e.edge_id} opacity={visible ? 1 : 0} pointerEvents="none">
-              <path
-                d={d}
-                fill="none"
-                stroke={selected ? nodeColors[selected] : "#ad98aa"}
-                strokeWidth={1.5 + Math.min(1.5, Math.log2(count + 1) / 4)}
-                markerEnd="url(#flow-arrow-v2)"
-              />
-              <g className="edge-counter" transform={`translate(${lx},${ly})`}>
-                <rect x="-16" y="-11" width="32" height="22" rx="7" />
-                <text textAnchor="middle" y="4">
-                  {count}
+          })}
+          {graph.nodes.map((n) => {
+            const [x, y] = positions[n.node_id];
+            const color = nodeColors[n.node_id];
+            return (
+              <g
+                key={n.node_id}
+                className="graph-node"
+                role="button"
+                tabIndex={0}
+                aria-label={nodeNames[n.node_id]}
+                aria-pressed={selected === n.node_id}
+                transform={`translate(${x},${y})`}
+                opacity={!selected || keep.has(n.node_id) ? 1 : 0.25}
+                style={{ "--node-color": color } as React.CSSProperties}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  select(n.node_id);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    select(n.node_id);
+                  }
+                }}
+              >
+                <rect className="node-surface" width="156" height="54" rx="7" />
+                <rect
+                  className="node-accent"
+                  width="3"
+                  height="30"
+                  y="12"
+                  rx="1.5"
+                />
+                <text className="node-title" x="15" y="21">
+                  {nodeNames[n.node_id]}
+                </text>
+                <text className="node-count" x="15" y="45">
+                  {n.case_count}
+                </text>
+                <text className="node-open" x="132" y="43">
+                  ↗
                 </text>
               </g>
-            </g>
-          );
-        })}
-        {graph.nodes.map((n) => {
-          const [x, y] = positions[n.node_id];
-          const color = nodeColors[n.node_id];
-          return (
-            <g
-              key={n.node_id}
-              className="graph-node"
-              role="button"
-              tabIndex={0}
-              aria-label={nodeNames[n.node_id]}
-              aria-pressed={selected === n.node_id}
-              transform={`translate(${x},${y})`}
-              opacity={!selected || keep.has(n.node_id) ? 1 : 0.25}
-              style={{ "--node-color": color } as React.CSSProperties}
-              onClick={(e) => {
-                e.stopPropagation();
-                select(n.node_id);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  select(n.node_id);
-                }
-              }}
-            >
-              <rect className="node-surface" width="156" height="54" rx="7" />
-              <rect
-                className="node-accent"
-                width="3"
-                height="30"
-                y="12"
-                rx="1.5"
-              />
-              <text className="node-title" x="15" y="21">
-                {nodeNames[n.node_id]}
-              </text>
-              <text className="node-count" x="15" y="45">
-                {n.case_count}
-              </text>
-              <text className="node-open" x="132" y="43">
-                ↗
-              </text>
-            </g>
-          );
-        })}
-      </svg>
+            );
+          })}
+        </svg>
+      </div>
     </section>
   );
 }
@@ -659,37 +832,56 @@ function CaseState({ row: c }: { row: CaseSummary }) {
     </span>
   );
 }
-function CaseResults({
-  row: c,
-  showState = true,
-}: {
-  row: CaseSummary;
-  showState?: boolean;
-}) {
+function CaseResults({ row: c }: { row: CaseSummary }) {
+  const judgements = c.results.filter(
+    (r) => r !== "TRADE_EXECUTION" && r !== "TRADE_NOT_EXECUTED",
+  );
   return (
     <div className="case-results">
-      {!c.results.length && (
+      {!judgements.length && (
         <span className="case-source">
           {c.result_settled ? "结果未记录" : "尚未形成结果"}
         </span>
       )}
-      {c.results.map((r) => (
+      {judgements.map((r) => (
         <span className={"domain-tag result-" + r} key={r}>
           {nodeNames[r]}
         </span>
       ))}
-      {showState && <CaseState row={c} />}
     </div>
+  );
+}
+function CaseTrade({ row: c }: { row: CaseSummary }) {
+  const label = {
+    EXECUTED: "交易执行",
+    NOT_EXECUTED: "交易未执行",
+    PENDING: "等待执行",
+    UNKNOWN: "执行结果未知",
+    NOT_APPLICABLE: "—",
+  }[c.trade.state];
+  return (
+    <span
+      className={"case-trade state-" + c.trade.state}
+      title={c.trade.reason_codes.join("、")}
+    >
+      {label}
+    </span>
   );
 }
 export function CaseRows({
   rows,
   select,
   compact = false,
+  selectedIds,
+  toggleSelected,
+  toggleAll,
 }: {
   rows: CaseSummary[];
   select: (id: string) => void;
   compact?: boolean;
+  selectedIds?: Set<string>;
+  toggleSelected?: (id: string) => void;
+  toggleAll?: () => void;
 }) {
   if (!rows.length) return <Notice>当前范围没有处理记录</Notice>;
   if (compact)
@@ -703,6 +895,8 @@ export function CaseRows({
               <span>{valueText(c.duration_seconds, duration)}</span>
             </div>
             <CaseResults row={c} />
+            <CaseTrade row={c} />
+            <CaseState row={c} />
             <div className="node-case-times">
               <span>接收 {formatInstant(c.received_at)}</span>
               <span>完成 {valueText(c.completed_at, formatInstant)}</span>
@@ -715,8 +909,10 @@ export function CaseRows({
     <div className="case-table-wrap">
       <table className="case-table">
         <colgroup>
+          {selectedIds && <col className="case-check-col" />}
           <col className="case-title-col" />
           <col className="case-result-col" />
+          <col className="case-trade-col" />
           <col className="case-status-col" />
           <col />
           <col />
@@ -725,8 +921,25 @@ export function CaseRows({
         </colgroup>
         <thead>
           <tr>
+            {selectedIds && (
+              <th scope="col">
+                <input
+                  type="checkbox"
+                  aria-label="全选已加载记录"
+                  checked={rows.every((c) => selectedIds.has(c.case_id))}
+                  ref={(input) => {
+                    if (input)
+                      input.indeterminate =
+                        rows.some((c) => selectedIds.has(c.case_id)) &&
+                        !rows.every((c) => selectedIds.has(c.case_id));
+                  }}
+                  onChange={toggleAll}
+                />
+              </th>
+            )}
             <th scope="col">消息 / 来源</th>
-            <th scope="col">最终结果</th>
+            <th scope="col">研判结果</th>
+            <th scope="col">交易执行</th>
             <th scope="col">状态</th>
             <th scope="col">接收时间</th>
             <th scope="col">完成时间</th>
@@ -739,6 +952,17 @@ export function CaseRows({
         <tbody>
           {rows.map((c) => (
             <tr key={c.case_id} onClick={() => select(c.case_id)}>
+              {selectedIds && (
+                <td>
+                  <input
+                    type="checkbox"
+                    aria-label={`选择${valueText(c.title)}`}
+                    checked={selectedIds.has(c.case_id)}
+                    onClick={(e) => e.stopPropagation()}
+                    onChange={() => toggleSelected?.(c.case_id)}
+                  />
+                </td>
+              )}
               <td>
                 <button
                   onClick={(e) => {
@@ -752,7 +976,10 @@ export function CaseRows({
                 <span className="case-source">{c.source.name}</span>
               </td>
               <td>
-                <CaseResults row={c} showState={false} />
+                <CaseResults row={c} />
+              </td>
+              <td>
+                <CaseTrade row={c} />
               </td>
               <td>
                 <CaseState row={c} />

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "source_sha256": "0422f4f98aa3ac3587bede7a261fcf88c09d687b463d1233fba19625256b5178",
+  "source_sha256": "7779a460a74306f3475e34cfea42873d973138b372e96510f79e1fe866056fb9",
   "$defs": {
     "Id": {
       "type": "string"
@@ -5149,10 +5149,42 @@
           "const": "BADCASE"
         },
         {
+          "const": "TRADE_INTENT"
+        },
+        {
           "const": "TRADE_EXECUTION"
         },
         {
+          "const": "TRADE_NOT_EXECUTED"
+        },
+        {
           "const": "FAILURE"
+        }
+      ]
+    },
+    "ExecutionState": {
+      "anyOf": [
+        {
+          "const": "PENDING"
+        },
+        {
+          "const": "UNKNOWN"
+        },
+        {
+          "const": "EXECUTED"
+        },
+        {
+          "const": "NOT_EXECUTED"
+        }
+      ]
+    },
+    "CaseTradeState": {
+      "anyOf": [
+        {
+          "const": "NOT_APPLICABLE"
+        },
+        {
+          "$ref": "#/$defs/ExecutionState"
         }
       ]
     },
@@ -5888,6 +5920,49 @@
           "items": {
             "type": "string"
           }
+        },
+        "monitoring_terms_usage": {
+          "type": "object",
+          "properties": {
+            "acquisition_mode": {
+              "anyOf": [
+                {
+                  "const": "by_ticker"
+                },
+                {
+                  "const": "by_search"
+                },
+                {
+                  "const": "by_distribution"
+                }
+              ]
+            },
+            "terms_mode": {
+              "anyOf": [
+                {
+                  "const": "UNIFIED"
+                },
+                {
+                  "const": "LEGACY"
+                },
+                {
+                  "const": "UNCONFIGURED"
+                }
+              ]
+            },
+            "managed_parameter_paths": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "acquisition_mode",
+            "terms_mode",
+            "managed_parameter_paths"
+          ],
+          "additionalProperties": false
         }
       },
       "required": [
@@ -5901,7 +5976,430 @@
         "parameter_schema",
         "editor",
         "writable_parameter_paths",
-        "redacted_parameter_paths"
+        "redacted_parameter_paths",
+        "monitoring_terms_usage"
+      ],
+      "additionalProperties": false
+    },
+    "MonitoringL1Concept": {
+      "type": "object",
+      "properties": {
+        "concept_id": {
+          "type": "string"
+        },
+        "expressions": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "concept_id",
+        "expressions"
+      ],
+      "additionalProperties": false
+    },
+    "MonitoringL2Term": {
+      "type": "object",
+      "properties": {
+        "literal": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "regex": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "field": {
+          "anyOf": [
+            {
+              "const": "all"
+            },
+            {
+              "const": "title"
+            },
+            {
+              "const": "summary"
+            },
+            {
+              "const": "body"
+            }
+          ]
+        },
+        "case_sensitive": {
+          "type": "boolean"
+        },
+        "whole_word": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "literal",
+        "regex",
+        "field",
+        "case_sensitive",
+        "whole_word"
+      ],
+      "additionalProperties": false
+    },
+    "MonitoringL2Group": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "any": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MonitoringL2Term"
+          }
+        },
+        "all": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MonitoringL2Term"
+          }
+        },
+        "none": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MonitoringL2Term"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "any",
+        "all",
+        "none"
+      ],
+      "additionalProperties": false
+    },
+    "MonitoringL2Language": {
+      "type": "object",
+      "properties": {
+        "groups": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MonitoringL2Group"
+          }
+        }
+      },
+      "required": [
+        "groups"
+      ],
+      "additionalProperties": false
+    },
+    "MonitoringTermsValue": {
+      "type": "object",
+      "properties": {
+        "l1_concepts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MonitoringL1Concept"
+          }
+        },
+        "l2": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/MonitoringL2Language"
+          }
+        },
+        "definition": {
+          "type": "object",
+          "properties": {
+            "relevant": {
+              "type": "string"
+            },
+            "irrelevant": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "relevant",
+            "irrelevant"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "l1_concepts",
+        "l2",
+        "definition"
+      ],
+      "additionalProperties": false
+    },
+    "MonitoringTermsRequest": {
+      "type": "object",
+      "properties": {
+        "configuration": {
+          "$ref": "#/$defs/MonitoringTermsValue"
+        }
+      },
+      "required": [
+        "configuration"
+      ],
+      "additionalProperties": false
+    },
+    "MonitoringTermsConsumer": {
+      "type": "object",
+      "properties": {
+        "source_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "binding_id": {
+          "type": "string"
+        },
+        "acquisition_mode": {
+          "anyOf": [
+            {
+              "const": "by_search"
+            },
+            {
+              "const": "by_distribution"
+            }
+          ]
+        },
+        "content_language": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source_enabled": {
+          "type": "boolean"
+        },
+        "binding_enabled": {
+          "type": "boolean"
+        },
+        "search_policy_mode": {
+          "anyOf": [
+            {
+              "const": "or"
+            },
+            {
+              "const": "separate"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "jev_source_enabled": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "terms_mode": {
+          "anyOf": [
+            {
+              "const": "UNIFIED"
+            },
+            {
+              "const": "LEGACY"
+            },
+            {
+              "const": "UNCONFIGURED"
+            }
+          ]
+        },
+        "queries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "concept_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "query": {
+                "type": "string"
+              },
+              "query_key": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "concept_ids",
+              "query",
+              "query_key"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "preview_issue": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "source_id",
+        "name",
+        "binding_id",
+        "acquisition_mode",
+        "content_language",
+        "source_enabled",
+        "binding_enabled",
+        "search_policy_mode",
+        "jev_source_enabled",
+        "terms_mode",
+        "queries",
+        "preview_issue"
+      ],
+      "additionalProperties": false
+    },
+    "MonitoringTermsConfig": {
+      "type": "object",
+      "properties": {
+        "ticker": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "number"
+        },
+        "control_etag": {
+          "type": "string"
+        },
+        "updated_at": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "configuration": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MonitoringTermsValue"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "required_languages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "language_requirements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "language": {
+                "type": "string"
+              },
+              "source_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "language",
+              "source_ids"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "consumers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MonitoringTermsConsumer"
+          }
+        }
+      },
+      "required": [
+        "ticker",
+        "revision",
+        "control_etag",
+        "updated_at",
+        "configuration",
+        "required_languages",
+        "language_requirements",
+        "consumers"
+      ],
+      "additionalProperties": false
+    },
+    "MonitoringTermsValidation": {
+      "type": "object",
+      "properties": {
+        "valid": {
+          "type": "boolean"
+        },
+        "issues": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path",
+              "code",
+              "message"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "search_previews": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MonitoringTermsConsumer"
+          }
+        }
+      },
+      "required": [
+        "valid",
+        "issues",
+        "search_previews"
       ],
       "additionalProperties": false
     },
@@ -6248,6 +6746,29 @@
             "$ref": "#/$defs/ResultKind"
           }
         },
+        "trade": {
+          "type": "object",
+          "properties": {
+            "intent_count": {
+              "$ref": "#/$defs/Count"
+            },
+            "state": {
+              "$ref": "#/$defs/CaseTradeState"
+            },
+            "reason_codes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "intent_count",
+            "state",
+            "reason_codes"
+          ],
+          "additionalProperties": false
+        },
         "result_settled": {
           "type": "boolean"
         },
@@ -6314,6 +6835,7 @@
         "final_novelty",
         "final_policy_hit",
         "results",
+        "trade",
         "result_settled",
         "trade_disposition",
         "stream_item_id",
@@ -6415,7 +6937,13 @@
           "const": "BADCASE"
         },
         {
+          "const": "TRADE_INTENT"
+        },
+        {
           "const": "TRADE_EXECUTION"
+        },
+        {
+          "const": "TRADE_NOT_EXECUTED"
         },
         {
           "const": "FAILURE"
@@ -7882,6 +8410,15 @@
             }
           ]
         },
+        "execution_state": {
+          "$ref": "#/$defs/ExecutionState"
+        },
+        "execution_reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "entry_result": {
           "anyOf": [
             {
@@ -7939,6 +8476,8 @@
         "direction",
         "intent_status",
         "intake_status",
+        "execution_state",
+        "execution_reason_codes",
         "entry_result",
         "entry_reason",
         "has_actual_fill",
@@ -16948,6 +17487,190 @@
       ],
       "additionalProperties": false
     },
+    "ExecutionStateResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/ExecutionState"
+        },
+        "meta": {
+          "$ref": "#/$defs/Meta"
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ],
+      "additionalProperties": false
+    },
+    "Page__49f681c72ae0": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ExecutionState"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "snapshot_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "limit": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor",
+        "has_more",
+        "snapshot_id",
+        "limit"
+      ],
+      "additionalProperties": false
+    },
+    "ExecutionStatePage": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ExecutionState"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "snapshot_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "limit": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor",
+        "has_more",
+        "snapshot_id",
+        "limit"
+      ],
+      "additionalProperties": false
+    },
+    "CaseTradeStateResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/CaseTradeState"
+        },
+        "meta": {
+          "$ref": "#/$defs/Meta"
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ],
+      "additionalProperties": false
+    },
+    "Page__7e4305487362": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CaseTradeState"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "snapshot_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "limit": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor",
+        "has_more",
+        "snapshot_id",
+        "limit"
+      ],
+      "additionalProperties": false
+    },
+    "CaseTradeStatePage": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CaseTradeState"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "snapshot_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "limit": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor",
+        "has_more",
+        "snapshot_id",
+        "limit"
+      ],
+      "additionalProperties": false
+    },
     "MessageKeyResponse": {
       "type": "object",
       "properties": {
@@ -18167,6 +18890,834 @@
           "type": "array",
           "items": {
             "$ref": "#/$defs/BindingConfig"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "snapshot_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "limit": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor",
+        "has_more",
+        "snapshot_id",
+        "limit"
+      ],
+      "additionalProperties": false
+    },
+    "MonitoringL1ConceptResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/MonitoringL1Concept"
+        },
+        "meta": {
+          "$ref": "#/$defs/Meta"
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ],
+      "additionalProperties": false
+    },
+    "Page__ceb00902224b": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MonitoringL1Concept"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "snapshot_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "limit": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor",
+        "has_more",
+        "snapshot_id",
+        "limit"
+      ],
+      "additionalProperties": false
+    },
+    "MonitoringL1ConceptPage": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MonitoringL1Concept"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "snapshot_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "limit": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor",
+        "has_more",
+        "snapshot_id",
+        "limit"
+      ],
+      "additionalProperties": false
+    },
+    "MonitoringL2TermResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/MonitoringL2Term"
+        },
+        "meta": {
+          "$ref": "#/$defs/Meta"
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ],
+      "additionalProperties": false
+    },
+    "Page__5e3ed01a191d": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MonitoringL2Term"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "snapshot_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "limit": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor",
+        "has_more",
+        "snapshot_id",
+        "limit"
+      ],
+      "additionalProperties": false
+    },
+    "MonitoringL2TermPage": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MonitoringL2Term"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "snapshot_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "limit": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor",
+        "has_more",
+        "snapshot_id",
+        "limit"
+      ],
+      "additionalProperties": false
+    },
+    "MonitoringL2GroupResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/MonitoringL2Group"
+        },
+        "meta": {
+          "$ref": "#/$defs/Meta"
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ],
+      "additionalProperties": false
+    },
+    "Page__666cea98ac2a": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MonitoringL2Group"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "snapshot_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "limit": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor",
+        "has_more",
+        "snapshot_id",
+        "limit"
+      ],
+      "additionalProperties": false
+    },
+    "MonitoringL2GroupPage": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MonitoringL2Group"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "snapshot_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "limit": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor",
+        "has_more",
+        "snapshot_id",
+        "limit"
+      ],
+      "additionalProperties": false
+    },
+    "MonitoringL2LanguageResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/MonitoringL2Language"
+        },
+        "meta": {
+          "$ref": "#/$defs/Meta"
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ],
+      "additionalProperties": false
+    },
+    "Page__b42137d1c26c": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MonitoringL2Language"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "snapshot_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "limit": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor",
+        "has_more",
+        "snapshot_id",
+        "limit"
+      ],
+      "additionalProperties": false
+    },
+    "MonitoringL2LanguagePage": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MonitoringL2Language"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "snapshot_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "limit": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor",
+        "has_more",
+        "snapshot_id",
+        "limit"
+      ],
+      "additionalProperties": false
+    },
+    "MonitoringTermsValueResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/MonitoringTermsValue"
+        },
+        "meta": {
+          "$ref": "#/$defs/Meta"
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ],
+      "additionalProperties": false
+    },
+    "Page__66734eb3838b": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MonitoringTermsValue"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "snapshot_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "limit": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor",
+        "has_more",
+        "snapshot_id",
+        "limit"
+      ],
+      "additionalProperties": false
+    },
+    "MonitoringTermsValuePage": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MonitoringTermsValue"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "snapshot_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "limit": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor",
+        "has_more",
+        "snapshot_id",
+        "limit"
+      ],
+      "additionalProperties": false
+    },
+    "MonitoringTermsRequestResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/MonitoringTermsRequest"
+        },
+        "meta": {
+          "$ref": "#/$defs/Meta"
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ],
+      "additionalProperties": false
+    },
+    "Page__0e3dadfa71b1": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MonitoringTermsRequest"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "snapshot_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "limit": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor",
+        "has_more",
+        "snapshot_id",
+        "limit"
+      ],
+      "additionalProperties": false
+    },
+    "MonitoringTermsRequestPage": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MonitoringTermsRequest"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "snapshot_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "limit": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor",
+        "has_more",
+        "snapshot_id",
+        "limit"
+      ],
+      "additionalProperties": false
+    },
+    "MonitoringTermsConsumerResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/MonitoringTermsConsumer"
+        },
+        "meta": {
+          "$ref": "#/$defs/Meta"
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ],
+      "additionalProperties": false
+    },
+    "Page__37813aa3d7f5": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MonitoringTermsConsumer"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "snapshot_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "limit": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor",
+        "has_more",
+        "snapshot_id",
+        "limit"
+      ],
+      "additionalProperties": false
+    },
+    "MonitoringTermsConsumerPage": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MonitoringTermsConsumer"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "snapshot_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "limit": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor",
+        "has_more",
+        "snapshot_id",
+        "limit"
+      ],
+      "additionalProperties": false
+    },
+    "MonitoringTermsConfigResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/MonitoringTermsConfig"
+        },
+        "meta": {
+          "$ref": "#/$defs/Meta"
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ],
+      "additionalProperties": false
+    },
+    "Page__dcd2e845bcbb": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MonitoringTermsConfig"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "snapshot_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "limit": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor",
+        "has_more",
+        "snapshot_id",
+        "limit"
+      ],
+      "additionalProperties": false
+    },
+    "MonitoringTermsConfigPage": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MonitoringTermsConfig"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "snapshot_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "limit": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor",
+        "has_more",
+        "snapshot_id",
+        "limit"
+      ],
+      "additionalProperties": false
+    },
+    "MonitoringTermsValidationResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/MonitoringTermsValidation"
+        },
+        "meta": {
+          "$ref": "#/$defs/Meta"
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ],
+      "additionalProperties": false
+    },
+    "Page__d61e1b52df7e": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MonitoringTermsValidation"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "snapshot_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "limit": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor",
+        "has_more",
+        "snapshot_id",
+        "limit"
+      ],
+      "additionalProperties": false
+    },
+    "MonitoringTermsValidationPage": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MonitoringTermsValidation"
           }
         },
         "next_cursor": {

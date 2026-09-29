@@ -11,9 +11,11 @@ class ApiFailure(Exception):
         *,
         retryable: bool = False,
         content_id: str | None = None,
+        fields: list[dict[str, str]] | None = None,
     ) -> None:
         self.code, self.status, self.retryable = code, status, retryable
         self.content_id = content_id
+        self.fields = fields or []
 
     def payload(self, request_id: str) -> dict[str, Any]:
         return {
@@ -22,7 +24,7 @@ class ApiFailure(Exception):
                 "message": self.code,
                 "retryable": self.retryable,
                 "request_id": request_id,
-                "fields": [],
+                "fields": self.fields,
                 "content_id": self.content_id,
             }
         }

@@ -409,6 +409,9 @@ KPI 规则：active 统计 current 库中唯一 ACTIVE Event 与仍有效成员�
 | GET | `/tickers/{ticker}/message-bus/status` | V | BusStatus |
 | GET | `/tickers/{ticker}/message-bus/metrics` | V，F | BusMetrics |
 | GET | `/tickers/{ticker}/message-bus/sources` | V，P | Page<SourceStatus> |
+| GET | `/tickers/{ticker}/message-bus/monitoring-terms` | 无 | MonitoringTermsConfig；原生 Bus 当前 head，ETag |
+| POST | `/tickers/{ticker}/message-bus/monitoring-terms/validate` | MonitoringTermsRequest | MonitoringTermsValidation；不写库 |
+| PUT | `/tickers/{ticker}/message-bus/monitoring-terms` | MonitoringTermsRequest、If-Match、Idempotency-Key | MonitoringTermsConfig；三个模块同一 revision 原子提交 |
 | GET | `/tickers/{ticker}/messages` | V，F，`q?`，P | MessageBaseline |
 | GET | `/tickers/{ticker}/messages/{standard_message_id}/revisions/{revision}` | V，`stream_cursor?` | MessageSummary |
 | GET | `/tickers/{ticker}/messages/{standard_message_id}/revisions/{revision}/body` | `cursor?` | ContentChunk |
@@ -470,11 +473,11 @@ StandardMessage 本身没有进入流时间，必须通过 StreamMember/StreamIt
 | GET | `/tickers/{ticker}/runtime/cases/{case_id}` | V，`stream_cursor?` | CaseDetail |
 | GET | `/tickers/{ticker}/runtime/cases/{case_id}/attempts` | `node=W1|W2|W3`，可选 `view_id`（RUNTIME 固定水位），P | Page<ModelAttempt> |
 | GET | `/tickers/{ticker}/runtime/cases/{case_id}/messages` | V，P | Page<MessageSummary> |
-| GET | `/tickers/{ticker}/runtime/cases/{case_id}/candidates` | P | Page<Candidate> |
-| GET | `/tickers/{ticker}/runtime/cases/{case_id}/executions` | P | Page<ExecutionSummary> |
-| GET | `/tickers/{ticker}/executions/{execution_id}` | `limit?` | ExecutionDetail |
-| GET | `/tickers/{ticker}/executions/{execution_id}/orders` | P | Page<OrderSummary> |
-| GET | `/tickers/{ticker}/executions/{execution_id}/fills` | P | Page<Fill> |
+| GET | `/tickers/{ticker}/runtime/cases/{case_id}/candidates` | P，可选 `view_id`（RUNTIME 固定水位） | Page<Candidate> |
+| GET | `/tickers/{ticker}/runtime/cases/{case_id}/executions` | P，可选 `view_id`（RUNTIME 固定水位） | Page<ExecutionSummary> |
+| GET | `/tickers/{ticker}/executions/{execution_id}` | `limit?`，可选 `view_id`（RUNTIME 固定水位） | ExecutionDetail |
+| GET | `/tickers/{ticker}/executions/{execution_id}/orders` | P，可选 `view_id`（RUNTIME 固定水位） | Page<OrderSummary> |
+| GET | `/tickers/{ticker}/executions/{execution_id}/fills` | P，可选 `view_id`（RUNTIME 固定水位） | Page<Fill> |
 
 result 值域为 ResultKind，不指定表示全部；source_id 限制消息来源。它们只影响最近记录列表，不改变全页 Runtime KPI/图；节点记录自动加 node_id 的 Case membership 条件。排序为 received_at DESC、case_id DESC。
 
@@ -489,8 +492,14 @@ CaseSummary.results 是已发生的业务结果集合，可为空或多项：
 | ARCHIVE | 已完成 archive record/effect |
 | EVENT_DISCOVERY | 至少一个成功持久化且去重后的新 RuntimeFactCandidate |
 | BADCASE | 正式 BadcaseRecord |
+| TRADE_INTENT | 已持久化的正式交易意图，包含重复、过期及仅记录输出的意图 |
 | TRADE_EXECUTION | 关联执行至少一个有效 ENTRY Fill |
+| TRADE_NOT_EXECUTED | 所有正式意图明确终结且均无有效 ENTRY Fill |
 | FAILURE | 不可继续/已终态失败的 Case、W1/W2/W3、effect 或交易阶段；阶段与错误可回溯 |
+
+`CaseSummary.trade` 提供 `intent_count`、`state`（NOT_APPLICABLE / PENDING / UNKNOWN / EXECUTED / NOT_EXECUTED）和 `reason_codes`。同一 Case 可同时命中事件发现、交易意图和交易执行；未决/未知意图只命中意图。`ExecutionSummary.execution_state` 与 `execution_reason_codes` 用相同的单意图分类：有效 ENTRY 成交优先；零成交且有明确失败/禁用/重复/过期/OUTPUT_RECORDED 时为 NOT_EXECUTED；READY/已接收但未终结为 PENDING；成交证据矛盾或投递未知为 UNKNOWN。EXIT 成交不算 ENTRY 执行。`result_settled` 需 Case 研判终结且意图结果均确定。
+
+运行链路中的“研判结果”列包括归档、事件发现、Badcase、交易意图产生及失败；交易意图后接“交易执行”列，只有意图节点可通向交易执行或交易未执行。图和筛选按 Case semantic_day 计数，执行更正须撤销原边和结果贡献。
 
 PENDING_RETRY、W3 等待不提前算最终失败。失败与已发生结果允许共存，例如 R3 候选成功后交易失败。`result_settled` 仅当相关 Runtime 与 ENTRY 执行已结算、没有等待中的结果分支时为 true；真实成交修正可在后续提高 revision 后修正结果。EXIT 失败属于阶段失败，可与已有交易执行共存。
 

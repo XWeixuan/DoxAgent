@@ -178,6 +178,64 @@ def rebuild(sources, target, *, event_root=None, max_batches=10000):
     raise ValueError("shadow catch-up batch budget exhausted; resume projection on the shadow")
 
 
+def reproject_trade_outcomes(store, *, ticker=None, limit=100):
+    """Resume a bounded, idempotent derived-read update without touching source ledgers.
+
+    The projector lock is shared with the live read writer. Each Case is re-read
+    after taking it, so an arriving execution cannot be replaced by stale evidence.
+    """
+    if not 1 <= limit <= 500:
+        raise ValueError("limit must be 1..500")
+    from uuid import uuid4
+    from doxagent.trade_execution.worker import WriterLock
+    from .graph import project as project_graph
+    from .trade_outcomes import project_case_trade, with_execution_state
+
+    key = "trade_outcomes_v1:" + (ticker or "*")
+    total = 0
+    with WriterLock(Path(str(store.path) + ".projector")):
+        while True:
+            with store.connect() as db:
+                row = db.execute("SELECT value FROM read_meta WHERE key=?", (key,)).fetchone()
+                cursor = json.loads(row[0]) if row else ["", ""]
+                if cursor == ["DONE"]:
+                    return {"ticker": ticker, "processed": total, "complete": True}
+                rows = db.execute(
+                    "SELECT ticker,id FROM object_current WHERE kind='case' AND valid_to IS NULL "
+                    "AND (? IS NULL OR ticker=?) AND (ticker>? OR (ticker=? AND id>?)) "
+                    "ORDER BY ticker,id LIMIT ?",
+                    (ticker, ticker, cursor[0], cursor[0], cursor[1], limit),
+                ).fetchall()
+            if not rows:
+                with store.connect(write=True) as db:
+                    db.execute("INSERT INTO read_meta(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value", (key, encode(["DONE"])))
+                return {"ticker": ticker, "processed": total, "complete": True}
+            for case_ticker, case_id in rows:
+                summary = store.get("case", case_ticker, case_id)
+                if summary:
+                    with store.connect() as db:
+                        siblings = [json.loads(row[0]) for row in db.execute(
+                            "SELECT payload FROM object_current WHERE kind='execution' AND ticker=? AND parent=? AND valid_to IS NULL",
+                            (case_ticker, case_id),
+                        )]
+                    executions = [with_execution_state(item) for item in siblings]
+                    incoming = [
+                        {"kind": "execution", "ticker": case_ticker, "id": item["execution_id"],
+                         "parent": case_id, "sort": item["triggered_at"].get("value") or summary["received_at"], "data": item}
+                        for item in executions
+                    ]
+                    case_record, count = project_case_trade(store, case_ticker, summary, incoming)
+                    graph_records, graph_counts = project_graph(store, case_ticker, case_record["data"], incoming)
+                    store.ingest(
+                        "trade_outcomes_v1", f"{case_ticker}:{case_id}:{uuid4().hex}",
+                        [*incoming, case_record, *graph_records],
+                        contributions=[count, *graph_counts],
+                    )
+                    total += 1
+                with store.connect(write=True) as db:
+                    db.execute("INSERT INTO read_meta(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value", (key, encode([case_ticker, case_id])))
+
+
 def activate_alias(alias, target, sources):
     """Switch at a verified source watermark; restart API/projector to adopt this generation."""
     store = ReadStore(target)

@@ -119,19 +119,26 @@ def test_owned_fill_and_late_commission_are_projected_without_order_status_infer
     for _ in range(5):
         worker.tick(limit=500)
     corrected = store.get("case", "MU", "case-a")
-    assert corrected["results"] == ["EVENT_DISCOVERY"]
+    assert corrected["results"] == ["EVENT_DISCOVERY", "TRADE_INTENT"]
+    assert corrected["trade"]["state"] == "UNKNOWN"
     with store.connect() as db:
         latest = store.highwater(db)
         assert db.execute("SELECT count(*) FROM gaps").fetchone()[0] == 0
     assert Metrics(store).value("executed_cases", ["MU"], latest, days=None) == 0
     assert Metrics(store).value("executed_cases", ["MU"], seq, days=None) == 1
+    deltas = []
     while update := graphs.next("developer", state, {"wire": wire}):
         text, state = update
         payload = json.loads(
             next(line[6:] for line in text.splitlines() if line.startswith("data: "))
         )["payload"]
+        deltas.append(payload)
     assert (
-        next(n for n in payload["replace_nodes"] if n["node_id"] == "TRADE_EXECUTION")["case_count"]
+        next(n for delta in reversed(deltas) for n in delta["replace_nodes"] if n["node_id"] == "TRADE_EXECUTION")["case_count"]
         == 0
+    )
+    assert any(
+        case["trade"]["state"] == "UNKNOWN" and "TRADE_EXECUTION" not in case["results"]
+        for delta in deltas for case in delta["upsert_cases"] if case["case_id"] == "case-a"
     )
     assert state["seq"] > seq

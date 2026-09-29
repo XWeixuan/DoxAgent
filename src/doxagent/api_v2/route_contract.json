@@ -57,13 +57,6 @@
   },
   {
     "method": "GET",
-    "path": "/overview/gateway-status",
-    "parameters": "V",
-    "response_schema": "OverviewStatus",
-    "transport": "JSON"
-  },
-  {
-    "method": "GET",
     "path": "/overview/metrics",
     "parameters": "V",
     "response_schema": "OverviewMetrics",
@@ -358,6 +351,27 @@
   },
   {
     "method": "GET",
+    "path": "/tickers/{ticker}/message-bus/monitoring-terms",
+    "parameters": "无",
+    "response_schema": "MonitoringTermsConfig",
+    "transport": "JSON"
+  },
+  {
+    "method": "POST",
+    "path": "/tickers/{ticker}/message-bus/monitoring-terms/validate",
+    "parameters": "MonitoringTermsRequest",
+    "response_schema": "MonitoringTermsValidation",
+    "transport": "JSON"
+  },
+  {
+    "method": "PUT",
+    "path": "/tickers/{ticker}/message-bus/monitoring-terms",
+    "parameters": "MonitoringTermsRequest、If-Match、Idempotency-Key",
+    "response_schema": "MonitoringTermsConfig",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
     "path": "/tickers/{ticker}/messages",
     "parameters": "V，F，`q?`，P",
     "response_schema": "MessageBaseline",
@@ -492,35 +506,35 @@
   {
     "method": "GET",
     "path": "/tickers/{ticker}/runtime/cases/{case_id}/candidates",
-    "parameters": "P",
+    "parameters": "P，可选 `view_id`（RUNTIME 固定水位）",
     "response_schema": "CandidatePage",
     "transport": "JSON"
   },
   {
     "method": "GET",
     "path": "/tickers/{ticker}/runtime/cases/{case_id}/executions",
-    "parameters": "P",
+    "parameters": "P，可选 `view_id`（RUNTIME 固定水位）",
     "response_schema": "ExecutionSummaryPage",
     "transport": "JSON"
   },
   {
     "method": "GET",
     "path": "/tickers/{ticker}/executions/{execution_id}",
-    "parameters": "`limit?`",
+    "parameters": "`limit?`，可选 `view_id`（RUNTIME 固定水位）",
     "response_schema": "ExecutionDetail",
     "transport": "JSON"
   },
   {
     "method": "GET",
     "path": "/tickers/{ticker}/executions/{execution_id}/orders",
-    "parameters": "P",
+    "parameters": "P，可选 `view_id`（RUNTIME 固定水位）",
     "response_schema": "OrderSummaryPage",
     "transport": "JSON"
   },
   {
     "method": "GET",
     "path": "/tickers/{ticker}/executions/{execution_id}/fills",
-    "parameters": "P",
+    "parameters": "P，可选 `view_id`（RUNTIME 固定水位）",
     "response_schema": "FillPage",
     "transport": "JSON"
   },
@@ -557,13 +571,6 @@
     "path": "/tickers/{ticker}/audit/cost/nodes",
     "parameters": "V，C，P",
     "response_schema": "CostNodeRowPage",
-    "transport": "JSON"
-  },
-  {
-    "method": "GET",
-    "path": "/queries/{query_id}",
-    "parameters": "query_id (owner-scoped, 5 minute expiry)",
-    "response_schema": null,
     "transport": "JSON"
   }
 ]

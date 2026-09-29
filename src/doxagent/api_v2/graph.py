@@ -12,7 +12,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
 
 from doxagent.semantic_clock import semantic_day
-from doxagent.v2_read.graph import NODES
+from doxagent.v2_read.graph import NODES, RESULTS
 from doxagent.v2_read.repository import encode, instant
 
 from .dto import available, missing, validate
@@ -115,7 +115,7 @@ class Graphs:
                                     value("graph_results", {"node": node, "result": result})
                                 ),
                             }
-                            for result in NODES[4:]
+                            for result in RESULTS
                         ]
                         if node == "W3"
                         else [],
@@ -208,6 +208,8 @@ class Graphs:
         rows = self.store.page(
             "case", state["ticker"], seq, days=self.days(view), limit=state["limit"]
         )
+        from doxagent.v2_read.trade_outcomes import legacy_case_summary
+        rows = [{**row, "data": legacy_case_summary(self.store, state["ticker"], row["data"], seq)} for row in rows]
         old = {key: value.get("revision") if isinstance(value, dict) else value for key, value in state["head"]}
         current = {row["id"]: row["data"]["revision"] for row in rows}
         nodes, edges = self.counts(state["ticker"], seq, self.days(view))

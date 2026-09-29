@@ -19,22 +19,23 @@ import { Input } from "@/components/ui/input";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Choices } from "@/components/page-kit";
 import { formatInstant, valueText } from "@/core/format";
+import MonitoringTermsSettings from "./monitoring-terms-settings";
 export default function BindingSettings({
   ticker,
   view,
   refresh,
 }: {
   ticker: string;
-  view: string;
+  view?: string;
   refresh: () => Promise<unknown>;
 }) {
   const [selected, setSelected] = useState<string>(),
     [available, setAvailable] = useState<string>();
   const sources = usePages<SourceStatus, "Sources">(
     "Sources",
-    tickerPath(ticker) +
+    view ? tickerPath(ticker) +
       "/message-bus/sources" +
-      queryString({ view_id: view, limit: "20" }),
+      queryString({ view_id: view, limit: "20" }) : null,
     (r) => r.data,
     view,
   );
@@ -45,7 +46,8 @@ export default function BindingSettings({
   );
   return (
     <>
-      <Module query={sources} label="消息渠道">
+      <MonitoringTermsSettings key={ticker} ticker={ticker} />
+      {view ? <Module query={sources} label="消息渠道">
         {(d) => {
           const current =
             d.items.find((s) => s.source.binding_id === selected) ?? d.items[0];
@@ -133,8 +135,8 @@ export default function BindingSettings({
             <Notice>没有已绑定消息源</Notice>
           );
         }}
-      </Module>
-      {sources.hasNextPage && (
+      </Module> : <Notice>消息源运行视图暂不可用；统一监测词仍可配置。</Notice>}
+      {view && sources.hasNextPage && (
         <Button variant="outline" onClick={() => void sources.fetchNextPage()}>
           更多渠道
         </Button>
@@ -267,6 +269,7 @@ function Editor({
       ...Object.keys((schema.properties ?? {}) as object),
     ]),
   ].filter((k) => parameterLabels[k]);
+  const managed = config?.monitoring_terms_usage.managed_parameter_paths ?? [];
   const [mode, setMode] = useState(
     config?.source.kind === "crawler" || !known.length ? "JSON" : "FORM",
   );
@@ -443,9 +446,10 @@ function Editor({
         ) : mode === "FORM" ? (
           known.map((key) => (
             <Field key={key}>
-              <FieldLabel>{parameterLabels[key]}</FieldLabel>
+              <FieldLabel>{parameterLabels[key]}{managed.includes(`/source_parameters/${key}`) ? " · 由上方统一监测词控制" : ""}</FieldLabel>
               <textarea
                 aria-label={parameterLabels[key]}
+                readOnly={managed.includes(`/source_parameters/${key}`)}
                 rows={4}
                 value={
                   Array.isArray(parameters[key])
@@ -459,6 +463,7 @@ function Editor({
         ) : (
           <Field>
             <FieldLabel>消息源参数</FieldLabel>
+            {managed.length > 0 && <p>搜索词由上方统一监测词控制；此处保留旧值，修改会被拒绝。</p>}
             <textarea
               aria-label="Source parameters JSON"
               spellCheck={false}

@@ -13,8 +13,14 @@ NODES = (
     "ARCHIVE",
     "EVENT_DISCOVERY",
     "BADCASE",
-    "TRADE_EXECUTION",
+    "TRADE_INTENT",
     "FAILURE",
+    "TRADE_EXECUTION",
+    "TRADE_NOT_EXECUTED",
+)
+RESULTS = (
+    "ARCHIVE", "EVENT_DISCOVERY", "BADCASE", "TRADE_INTENT",
+    "FAILURE", "TRADE_EXECUTION", "TRADE_NOT_EXECUTED",
 )
 
 
@@ -34,6 +40,19 @@ def project(
     for item in incoming:
         if item["kind"] == "attempt" and item.get("parent") == identity:
             turns[item["id"]] = item["data"]
+    with store.connect() as db:
+        executions = {
+            row[0]: json.loads(row[1]) for row in db.execute(
+                "SELECT id,payload FROM object_current WHERE kind='execution' AND ticker=? "
+                "AND parent=? AND valid_to IS NULL", (ticker, identity),
+            )
+        }
+    for item in incoming:
+        if item["kind"] == "execution" and item["ticker"] == ticker and item.get("parent") == identity:
+            if item.get("data") is None:
+                executions.pop(item["id"], None)
+            else:
+                executions[item["id"]] = item["data"]
     prior = store.get("graph_case", ticker, identity) or {"nodes": [], "edges": []}
     nodes = {"SOURCE", *summary["results"]}
     nodes.update(turn["node_id"] for turn in turns.values())
@@ -52,6 +71,11 @@ def project(
     if "W3" in nodes:
         edges.update((node, "W3") for node in ("W1", "W2") if node in nodes)
     for result in summary["results"]:
+        if result in {"TRADE_EXECUTION", "TRADE_NOT_EXECUTED"}:
+            # Execution is downstream of a durable formal intent, not W2/W3.
+            if "TRADE_INTENT" in nodes:
+                edges.add(("TRADE_INTENT", result))
+            continue
         if summary["w3_status"] == "RESOLVED" and "W3" in nodes:
             origin = "W3"
         elif result == "EVENT_DISCOVERY" and "W1" in nodes:
@@ -100,6 +124,19 @@ def project(
         }
         records.append(record)
         latest = max((value for value in completed if value), default=None)
+        if node in {"TRADE_INTENT", "TRADE_EXECUTION"}:
+            field = "first_fill_at" if node == "TRADE_EXECUTION" else "triggered_at"
+            evidence = [
+                item.get(field, {}).get("value")
+                for item in executions.values()
+                if node == "TRADE_INTENT" or item.get("execution_state") == (
+                    "EXECUTED" if node == "TRADE_EXECUTION" else "NOT_EXECUTED"
+                )
+            ]
+            # A terminal unsent intent may have no durable terminal timestamp.
+            latest = max((value for value in evidence if value), default=None)
+        elif node == "TRADE_NOT_EXECUTED":
+            latest = None
         records.append(
             {
                 "kind": "graph_observation",
@@ -128,7 +165,7 @@ def project(
                     "value": amount,
                 }
             )
-        for result in NODES[4:]:
+        for result in RESULTS:
             counts.append(
                 {
                     "metric": "graph_results",

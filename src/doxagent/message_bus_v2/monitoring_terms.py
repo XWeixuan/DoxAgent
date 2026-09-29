@@ -6,6 +6,7 @@ import json
 import re
 from typing import Literal
 
+import regex
 from pydantic import Field, field_validator, model_validator
 
 from .repository import MessageBusV2Repository
@@ -90,21 +91,37 @@ class TickerMonitoringTerms(BusModel):
                 raise ValueError(f"missing L2 language: {language}")
 
 
+def validate_terms(terms: TickerMonitoringTerms, languages: set[str]) -> None:
+    """The CLI and HTTP control path share the same admission rules."""
+    terms.validate_languages(languages)
+    if not terms.definition.relevant.strip() or not terms.definition.irrelevant.strip():
+        raise ValueError("/definition: relevant and irrelevant must not be blank")
+    for language, rules in terms.l2.items():
+        ids: set[str] = set()
+        for index, group in enumerate(rules.groups):
+            path = f"/l2/{language}/groups/{index}"
+            if not group.id.strip() or group.id in ids:
+                raise ValueError(f"{path}/id: group id must be nonempty and unique")
+            ids.add(group.id)
+            for bucket in ("any", "all", "none"):
+                for number, item in enumerate(getattr(group, bucket)):
+                    term_path = f"{path}/{bucket}/{number}"
+                    if item.literal is not None and not item.literal.strip():
+                        raise ValueError(f"{term_path}/literal: value must not be blank")
+                    if item.regex is not None:
+                        try:
+                            regex.compile(
+                                item.regex, 0 if item.case_sensitive else regex.IGNORECASE
+                            )
+                        except regex.error as exc:
+                            raise ValueError(f"{term_path}/regex: invalid regex: {exc}") from None
+
+
 class MonitoringTermsService:
     def __init__(self, repository: MessageBusV2Repository) -> None:
         self.repository = repository
         with repository.transaction() as db:
-            db.execute(
-                "CREATE TABLE IF NOT EXISTS ticker_monitoring_terms "
-                "(ticker TEXT PRIMARY KEY, current_revision INTEGER NOT NULL, "
-                "updated_at TEXT NOT NULL)"
-            )
-            db.execute(
-                "CREATE TABLE IF NOT EXISTS ticker_monitoring_term_revisions "
-                "(ticker TEXT NOT NULL, revision INTEGER NOT NULL, config_json TEXT NOT NULL, "
-                "config_hash TEXT NOT NULL, actor TEXT NOT NULL, created_at TEXT NOT NULL, "
-                "PRIMARY KEY(ticker,revision))"
-            )
+            migrate(db)
 
     def required_languages(self) -> set[str]:
         from .schema import AcquisitionMode
@@ -118,11 +135,11 @@ class MonitoringTermsService:
         }
 
     def apply(self, terms: TickerMonitoringTerms, *, actor: str) -> int:
-        if len(canonical_json(terms.model_dump(mode="json"))) > 65536:
-            raise ValueError("monitoring terms exceed 64 KiB")
-        terms.validate_languages(self.required_languages())
-        created_at = utc_now().isoformat()
         payload = canonical_json(terms.model_dump(mode="json"))
+        if len(payload.encode("utf-8")) > 65536:
+            raise ValueError("monitoring terms exceed 64 KiB")
+        validate_terms(terms, self.required_languages())
+        created_at = utc_now().isoformat()
         with self.repository.transaction() as db:
             row = db.execute(
                 "SELECT current_revision FROM ticker_monitoring_terms WHERE ticker=?",
@@ -172,3 +189,16 @@ class MonitoringTermsService:
                 (ticker.upper(),),
             ).fetchall()
         return [dict(row) for row in rows]
+
+
+def migrate(db) -> None:
+    db.execute(
+        "CREATE TABLE IF NOT EXISTS ticker_monitoring_terms "
+        "(ticker TEXT PRIMARY KEY, current_revision INTEGER NOT NULL, updated_at TEXT NOT NULL)"
+    )
+    db.execute(
+        "CREATE TABLE IF NOT EXISTS ticker_monitoring_term_revisions "
+        "(ticker TEXT NOT NULL, revision INTEGER NOT NULL, config_json TEXT NOT NULL, "
+        "config_hash TEXT NOT NULL, actor TEXT NOT NULL, created_at TEXT NOT NULL, "
+        "PRIMARY KEY(ticker,revision))"
+    )

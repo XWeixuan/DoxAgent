@@ -52,6 +52,9 @@ export type Endpoints = {
   CostNodes: S.WireCostNodes;
   BindingWrite: S.WireBindingWrite;
   BindingReceipt: S.WireBindingReceipt;
+  MonitoringTerms: S.WireMonitoringTerms;
+  MonitoringTermsWrite: S.WireMonitoringTermsWrite;
+  MonitoringTermsValidation: S.WireMonitoringTermsValidation;
   AuthConfig: S.WireAuthConfig;
   Principal: S.WirePrincipal;
   Capabilities: S.WireCapabilities;
@@ -81,6 +84,7 @@ export class ApiFailure extends Error {
     message: string,
     public status = 0,
     public requestId?: string,
+    public fields: { path: string; code: string; message: string }[] = [],
   ) {
     super(message);
   }
@@ -260,6 +264,7 @@ export class ApiClient {
           body?.error?.message || `读取失败（${res.status}），请稍后重试。`,
           res.status,
           body?.error?.request_id,
+          body?.error?.fields ?? [],
         );
       }
       const result = validateWire(name, body);

@@ -56,6 +56,8 @@ def install(app: FastAPI) -> None:
         )
         if not case or not summary:
             raise ApiFailure("RESOURCE_NOT_FOUND", 404)
+        from doxagent.v2_read.trade_outcomes import legacy_case_summary
+        summary = legacy_case_summary(store, ticker, summary, seq)
         pin = case["version_pin"]
         if not pin:
             raise ApiFailure("PINNED_ARTIFACT_MISSING", 404)

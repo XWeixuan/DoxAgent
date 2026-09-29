@@ -1,4 +1,5 @@
 import asyncio
+from datetime import UTC, datetime
 
 import pytest
 
@@ -78,7 +79,10 @@ def test_binding_cas_secret_preservation_and_atomic_buffer_delete(tmp_path, monk
     current = repo.get_binding(binding.binding_id)
     asyncio.run(
         bus.accept_message(
-            source=source, binding=current, message=_input("buffered"), bootstrap=False
+            source=source,
+            binding=current,
+            message=_input("buffered", published_at=datetime.now(UTC)),
+            bootstrap=False,
         )
     )
     assert len(repo.list_buffer(binding.binding_id)) == 1

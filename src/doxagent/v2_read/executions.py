@@ -13,6 +13,7 @@ from doxagent.semantic_clock import semantic_day
 
 from .projector import native
 from .repository import ReadStore, encode, instant
+from .trade_outcomes import with_execution_state
 
 
 def opaque(*parts: Any) -> str:
@@ -36,6 +37,7 @@ def pending_intent(store, ticker, intent):
         "accepted_at": missing(), "first_fill_at": missing(),
         "filled_quantity": available("0"), "filled_notional_usd": available("0"),
     }
+    summary = with_execution_state(summary)
     return [{"kind": "execution", "ticker": ticker, "id": identity, "parent": intent["case_id"],
              "sort": intent["released_at"], "data": validate("ExecutionSummary", summary)}]
 
@@ -200,7 +202,7 @@ class ExecutionProjector:
         first_fill = min((f["time"] for f in entry), default=None)
         summary = validate(
             "ExecutionSummary",
-            {
+            with_execution_state({
                 "execution_id": identity,
                 "intent_id": intent["intent_id"],
                 "case_id": case_id,
@@ -231,7 +233,7 @@ class ExecutionProjector:
                         "f",
                     )
                 ),
-            },
+            }),
         )
         records.append(
             {
@@ -267,47 +269,6 @@ class ExecutionProjector:
                         "policy_id": policy_id,
                         "ar": ar,
                     },
-                }
-            )
-        case = self.store.get("case", ticker, case_id)
-        if case:
-            siblings = self.rows("execution", ticker, case_id)
-            siblings[identity] = summary
-            has_fill = any(
-                Decimal(item["filled_quantity"].get("value") or "0") > 0
-                for item in siblings.values()
-            )
-            results = set(case["results"])
-            if has_fill:
-                results.add("TRADE_EXECUTION")
-            else:
-                results.discard("TRADE_EXECUTION")
-            case.update(results=sorted(results), trade_disposition="EXECUTION_ACCEPTED")
-            case["result_settled"] = case["status"] in {
-                "COMPLETED",
-                "FAILED",
-                "UNAVAILABLE",
-            } and all(item["entry_result"] is not None for item in siblings.values())
-            records.append(
-                {
-                    "kind": "case",
-                    "ticker": ticker,
-                    "id": case_id,
-                    "data": validate("CaseSummary", case),
-                    "sort": case["received_at"],
-                    "day": case["semantic_day"],
-                    "parent": case["stream_item_id"],
-                    "source_id": case["source"]["source_id"],
-                    "route": case["resolved_route"] or case["initial_route"],
-                }
-            )
-            contributions.append(
-                {
-                    "metric": "executed_cases",
-                    "ticker": ticker,
-                    "entity": case_id,
-                    "day": case["semantic_day"],
-                    "value": "1" if has_fill else "0",
                 }
             )
         return records, contributions

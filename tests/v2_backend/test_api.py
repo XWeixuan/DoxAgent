@@ -138,10 +138,15 @@ def test_api_startup_does_not_create_missing_read_database(tmp_path):
 
 @pytest.mark.parametrize("repair_count", [0, 2])
 def test_overview_nonroutine_repairs_uses_projected_round_count(tmp_path, repair_count):
+    from doxagent.v2_read.calendar import PageCalendar
+
     store = ReadStore(tmp_path / "read.db")
     store.migrate()
-    now = datetime(2026, 9, 21, 16, tzinfo=UTC)
-    day = "2026-09-21"
+    # The view must still be live when the HTTP request reads it.
+    now = datetime.now(UTC).replace(hour=16, minute=0, second=0, microsecond=0)
+    while not PageCalendar().clock(now)["is_trading_day"]["value"]:
+        now += timedelta(days=1)
+    day = PageCalendar().clock(now)["semantic_day"]
     store.ingest(
         "fixture",
         "ticker",

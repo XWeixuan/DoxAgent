@@ -12,7 +12,11 @@ from typing import Any
 import yaml
 
 from doxagent.message_bus_v2.factory import build_message_bus_v2_runtime
-from doxagent.message_bus_v2.monitoring_terms import MonitoringTermsService, TickerMonitoringTerms
+from doxagent.message_bus_v2.monitoring_terms import (
+    MonitoringTermsService,
+    TickerMonitoringTerms,
+    validate_terms,
+)
 from doxagent.message_bus_v2.repository import MessageBusV2Repository
 from doxagent.message_bus_v2.schema import AcquisitionMode, RawMessageInput
 from doxagent.message_bus_v2.search_plan import build_query_plan
@@ -93,7 +97,7 @@ def main() -> None:
                 parser.error("--file is required")
             data = yaml.safe_load(Path(args.file).read_text(encoding="utf-8"))
             terms = TickerMonitoringTerms.model_validate(data)
-            terms.validate_languages(service.required_languages())
+            validate_terms(terms, service.required_languages())
             revision = (
                 service.apply(terms, actor=args.actor)
                 if args.action == "apply"

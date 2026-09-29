@@ -499,7 +499,9 @@ export type Route = "ARCHIVE" | "TRADE" | "ADD_TO_DELTA" | "W3";
 export type Confidence = "normal" | "low";
 export type CaseStatus = "CREATED" | "RUNNING" | "ADJUDICATED" | "COMPLETED" | "PENDING_W3" | "PENDING_RETRY" | "UNAVAILABLE" | "FAILED";
 export type TechnicalStatus = "OK" | "PENDING_RETRY" | "UNAVAILABLE" | "FAILED";
-export type ResultKind = "ARCHIVE" | "EVENT_DISCOVERY" | "BADCASE" | "TRADE_EXECUTION" | "FAILURE";
+export type ResultKind = "ARCHIVE" | "EVENT_DISCOVERY" | "BADCASE" | "TRADE_INTENT" | "TRADE_EXECUTION" | "TRADE_NOT_EXECUTED" | "FAILURE";
+export type ExecutionState = "PENDING" | "UNKNOWN" | "EXECUTED" | "NOT_EXECUTED";
+export type CaseTradeState = "NOT_APPLICABLE" | ExecutionState;
 export interface MessageKey { standard_message_id: Id; revision: Count }
 export interface SourceLabel { source_id: Id; binding_id: Id; name: string; kind: "api" | "crawler" }
 export interface CaseLink {
@@ -558,6 +560,41 @@ export interface BindingConfig {
   editor: { parameter_form: boolean; parameter_form_id: string | null; json: true; polling_interval_form: true };
   writable_parameter_paths: string[];
   redacted_parameter_paths: string[];
+  monitoring_terms_usage: { acquisition_mode: "by_ticker" | "by_search" | "by_distribution"; terms_mode: "UNIFIED" | "LEGACY" | "UNCONFIGURED"; managed_parameter_paths: string[] };
+}
+export interface MonitoringL1Concept { concept_id: string; expressions: Record<string, string> }
+export interface MonitoringL2Term {
+  literal: string | null; regex: string | null;
+  field: "all" | "title" | "summary" | "body";
+  case_sensitive: boolean; whole_word: boolean;
+}
+export interface MonitoringL2Group { id: string; any: MonitoringL2Term[]; all: MonitoringL2Term[]; none: MonitoringL2Term[] }
+export interface MonitoringL2Language { groups: MonitoringL2Group[] }
+export interface MonitoringTermsValue {
+  l1_concepts: MonitoringL1Concept[];
+  l2: Record<string, MonitoringL2Language>;
+  definition: { relevant: string; irrelevant: string };
+}
+export interface MonitoringTermsRequest { configuration: MonitoringTermsValue }
+export interface MonitoringTermsConsumer {
+  source_id: string; name: string; binding_id: string;
+  acquisition_mode: "by_search" | "by_distribution";
+  content_language: string | null; source_enabled: boolean; binding_enabled: boolean;
+  search_policy_mode: "or" | "separate" | null; jev_source_enabled: boolean | null;
+  terms_mode: "UNIFIED" | "LEGACY" | "UNCONFIGURED";
+  queries: { concept_ids: string[]; query: string; query_key: string }[];
+  preview_issue: string | null;
+}
+export interface MonitoringTermsConfig {
+  ticker: string; revision: number; control_etag: string; updated_at: string | null;
+  configuration: MonitoringTermsValue | null;
+  required_languages: string[];
+  language_requirements: { language: string; source_ids: string[] }[];
+  consumers: MonitoringTermsConsumer[];
+}
+export interface MonitoringTermsValidation {
+  valid: boolean; issues: { path: string; code: string; message: string }[];
+  search_previews: MonitoringTermsConsumer[];
 }
 export interface BindingPatch {
   enabled?: boolean;
@@ -585,11 +622,12 @@ export interface CaseSummary {
   final_novelty: Value<"NEW" | "OLD">;
   final_policy_hit: Value<boolean>;
   results: ResultKind[];
+  trade: { intent_count: Count; state: CaseTradeState; reason_codes: string[] };
   result_settled: boolean;
   trade_disposition: "NOT_EVALUATED" | "ANALYSIS_ONLY" | "SUPPRESSED_BY_CONTROL" | "MODE_UNAVAILABLE" | "CANDIDATE" | "READY" | "DUPLICATE_POLICY" | "DUPLICATE_REALTIME_OUTPUT" | "EXPIRED_SEMANTIC_DAY" | "EXECUTION_ACCEPTED" | "OUTPUT_RECORDED";
   stream_item_id: Id; member_count: Count;
 }
-export type NodeId = "SOURCE" | "W1" | "W2" | "W3" | "ARCHIVE" | "EVENT_DISCOVERY" | "BADCASE" | "TRADE_EXECUTION" | "FAILURE";
+export type NodeId = "SOURCE" | "W1" | "W2" | "W3" | "ARCHIVE" | "EVENT_DISCOVERY" | "BADCASE" | "TRADE_INTENT" | "TRADE_EXECUTION" | "TRADE_NOT_EXECUTED" | "FAILURE";
 export interface NodeCounts {
   node_id: NodeId; case_count: Count; failed_case_count: Count;
   low_confidence_case_count: Count | null;
@@ -684,6 +722,7 @@ export interface ExecutionSummary {
   environment: Value<"PAPER" | "LIVE">; profile_revision: Value<Id>;
   direction: "LONG" | "SHORT";
   intent_status: string; intake_status: "NOT_RECEIVED" | "EXECUTION_ACCEPTED" | "REJECTED" | "UNKNOWN";
+  execution_state: ExecutionState; execution_reason_codes: string[];
   entry_result: "FILLED" | "PARTIAL_FILLED" | "FAILED" | "DIRECTION_DISABLED" | null;
   entry_reason: string | null;
   has_actual_fill: boolean;

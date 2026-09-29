@@ -1262,3 +1262,7 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-09-29 · 持久 Runtime Luna 模型恢复：将 D1/D2、Event Library、W3 与共享 Codex 默认模型切为 gpt-5.6-luna；生产 Compose 固定新调用模型。维护任务新增仅对冻结 gpt-6-luna 且失败的调用生效的执行模型覆盖，保留原业务 frame/提示词/effort，Worker 仍逐次记录实际派发模型；新增定向恢复回归。
 2026-09-29 · 同步 D1 的 3 个手工评测入口默认模型为 gpt-5.6-luna，防止操作时沿用失效的 gpt-6-luna。
+2026-09-29 · 新加坡 SSH 路由修复：当前 Clash Flower_SS 订阅的规则扩展前置 `43.163.67.97:22` 精确直连规则，同时更新运行时配置；在新加坡高级 3、高级 1、标准 1 节点下均验证 `doxagent-sg` 密钥登录，活动连接显示规则命中及 DIRECT 链路。更新 `docs/ssh-connection-guide.md` 说明适用范围；未更改服务器 SSH 配置、其他端口路由或代理节点本身。
+2026-09-29 · 运行状态功能方案：勘察 Runtime/TradeOutput/Executor 与 V2 Read 实现，新增 runtime_trade_outcomes_and_case_export_plan_20260929.md，明确交易意图→实际执行/确定未执行的五列图、筛选和历史投影更新，以及固定快照的多选 Case 完整业务 JSON 导出。仅交付方案，未修改业务代码或部署。
+2026-09-29 · 运行状态交易结果与 Case JSON 导出：按正式意图及有效 ENTRY 成交统一投影 PENDING/UNKNOWN/EXECUTED/NOT_EXECUTED，新增意图与未执行图节点、五列链路、结果筛选、独立执行状态列及固定快照的完整业务 JSON 多选导出；补齐候选/执行/订单/成交 view_id 读取和历史派生读模型幂等回填命令。更新 V2 契约与 PRD；定向后端 18 项、前端 7 项及 1262/1559px 浏览器组件验收通过，生产构建通过。尚未运行生产回填或部署。
+2026-09-29 · 消息总线统一监测词人工管理：配置页新增按 Ticker 共用的 L1 搜索概念、L2 分发规则（规则/原始 JSON）及 Jev 相关性定义，单次原子应用生成不可变 revision；新增原生 Bus 配置 GET/校验/PUT、CAS 与幂等回执、正则语法校验、实际搜索预览，并阻止已由统一词表接管的 Google/Reuters 旧搜索参数误改。后端定向 20 项、前端浏览器 1262/1559px 与隔离原生 Bus API 读改保存读回通过，前端构建通过；未应用生产词表或部署。

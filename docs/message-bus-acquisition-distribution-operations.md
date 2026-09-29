@@ -47,3 +47,8 @@ OpenRouter 使用当前官方 Decisions API `POST /api/alpha/decisions`，`types
 ## 回滚与验收
 
 优先关闭 Jev，再视需要关闭 `ctee_semiconductor`；不要删除新增表或已发布消息。完整代码回滚前先 drain `distribution_article` 正文任务及 delivery。验收要分别看入口采集、正文 FULL/降级、L2 命中、Jev 命中/失败、时效拒绝、去重、发布与窗口覆盖；HTTP 200 或搜索固定返回量均不能证明业务覆盖。工商时报栏目达到分页上限报告 PARTIAL，不能伪称完整。生产 Jev 尚须远端 key 和用户选择的正式监测词/订阅才能验收实际增益。
+# V2 页面管理统一监测词（2026-09-29）
+
+消息总线“配置”页的统一监测词区域按 ticker 编辑 L1 搜索概念、L2 分发规则与 Jev 相关性定义。三个区域共用一次应用，形成同一个不可变 revision。规则视图与原始 JSON 编辑同一份 L2 数据；保存前可通过“检查并预览”读取后端生成的搜索语句。遇到 revision 冲突，应读取新版本并核对草稿后重试。页面不管理 Jev Worker 总开关或密钥，也不回放已冻结窗口及旧分发目标。
+
+API：`GET /api/doxagent/v2/tickers/{ticker}/message-bus/monitoring-terms` 获取 ETag；`POST .../validate` 只校验；`PUT ...` 带 `If-Match`、`Idempotency-Key` 提交完整词表。CLI `terms show/history/preview/test` 继续作为审计和离线检查入口。在线应用前应核对当前 ticker、源绑定及语言要求；保存成功后检查新 poll 的 query plan revision 或新 distribution target 的 terms revision，不能以 HTTP 200 认定召回效果。

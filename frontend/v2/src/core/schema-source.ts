@@ -71,5 +71,8 @@ export type WireCostBreakdown = W.Response<W.Resource<W.CostBreakdown>>;
 export type WireCostNodes = W.Response<W.Resource<W.Page<W.CostNodeRow>>>;
 export type WireBindingWrite = W.Response<W.BindingConfig>;
 export type WireBindingReceipt = W.Response<W.MutationReceipt>;
+export type WireMonitoringTerms = W.Response<W.Resource<W.MonitoringTermsConfig>>;
+export type WireMonitoringTermsWrite = W.Response<W.MonitoringTermsConfig>;
+export type WireMonitoringTermsValidation = W.Response<W.MonitoringTermsValidation>;
 
 export type WireDeferredQueryTicket = W.DeferredQueryTicket;

@@ -156,6 +156,11 @@ def create_app(
 
         bindings = Bindings(os.environ["DOXAGENT_MESSAGE_BUS_V2_SQLITE_PATH"])
     app.state.bindings = bindings
+    if os.environ.get("DOXAGENT_MESSAGE_BUS_V2_SQLITE_PATH"):
+        from doxagent.v2_control.monitoring_terms import MonitoringTermsControl
+        app.state.monitoring_terms = MonitoringTermsControl(os.environ["DOXAGENT_MESSAGE_BUS_V2_SQLITE_PATH"])
+    else:
+        app.state.monitoring_terms = None
 
     @app.middleware("http")
     async def boundary(request: Request, call_next: Any) -> Any:
@@ -491,6 +496,9 @@ def create_app(
     from .bindings import install as install_bindings
 
     install_bindings(app)
+    from .monitoring_terms import install as install_monitoring_terms
+
+    install_monitoring_terms(app)
     from .bus import install as install_bus
 
     install_bus(app)

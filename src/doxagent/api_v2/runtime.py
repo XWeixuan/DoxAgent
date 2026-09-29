@@ -79,7 +79,9 @@ def install(app: FastAPI) -> None:
             "ARCHIVE",
             "EVENT_DISCOVERY",
             "BADCASE",
+            "TRADE_INTENT",
             "TRADE_EXECUTION",
+            "TRADE_NOT_EXECUTED",
             "FAILURE",
         }:
             raise ApiFailure("VALIDATION_FAILED", 422)
@@ -141,15 +143,19 @@ def install(app: FastAPI) -> None:
 
     @app.get(prefix + "/cases/{case_id}/candidates")
     async def candidates(ticker: str, case_id: str, request: Request) -> Any:
-        args = query(request, {"limit", "cursor"})
-        require_case(ticker, case_id)
+        args = query(request, {"limit", "cursor", "view_id"})
+        view = views.get(request.state.principal.user_id, args["view_id"], ticker) if args.get("view_id") else None
+        if view and view["wire"]["page"] != "RUNTIME":
+            raise ApiFailure("SCOPE_MISMATCH", 400)
+        require_case(ticker, case_id, view["seq"] if view else None)
         value = views.page(
             request.state.principal.user_id,
             "candidate",
             ticker,
-            view=None,
+            view=view,
+            view_id=args.get("view_id"),
             parent=case_id,
             limit=int(args.get("limit", 20)),
             cursor=args.get("cursor"),
         )
-        return respond(request, "CandidatePage", value)
+        return respond(request, "CandidatePage", value, view_id=args.get("view_id"))

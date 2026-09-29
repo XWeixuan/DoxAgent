@@ -69,6 +69,7 @@ def main() -> None:
             "archive",
             "import-history",
             "verify",
+            "reproject-trade-outcomes",
         ),
     )
     parser.add_argument("--read-db", type=Path, default=Path(".tmp/v2_read.sqlite3"))
@@ -79,6 +80,7 @@ def main() -> None:
     parser.add_argument("--once", action="store_true")
     parser.add_argument("--limit", type=int, default=100)
     parser.add_argument("--table")
+    parser.add_argument("--ticker")
     parser.add_argument("--backup-dir", type=Path)
     parser.add_argument("--artifact-root", type=Path, action="append", default=[])
     parser.add_argument("--alias", type=Path)
@@ -145,6 +147,9 @@ def main() -> None:
         from .maintenance import verify_shadow
 
         print(json.dumps(verify_shadow(store, sources)))
+    elif args.command == "reproject-trade-outcomes":
+        from .maintenance import reproject_trade_outcomes
+        print(json.dumps(reproject_trade_outcomes(store, ticker=args.ticker, limit=args.limit)))
     elif args.command == "compact":
         if not args.target:
             parser.error("compact requires --target with a new shadow database path")

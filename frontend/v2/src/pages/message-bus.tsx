@@ -89,21 +89,20 @@ export default function MessageBus() {
         />
       </PageTitle>
       {ctx.error && <Notice danger>{ctx.error.message}</Notice>}
-      {ctx.data &&
-        (config ? (
+      {config ? (
           <BindingSettings
             refresh={ctx.refetch}
             ticker={ticker}
-            view={ctx.data.data.view_id}
+            view={ctx.data?.data.view_id}
           />
-        ) : feed.data ? (
+        ) : ctx.data && feed.data ? (
           <MessageStream
             ticker={ticker}
             period={period}
             context={feed.data}
             reset={() => void feed.refetch()}
           />
-        ) : null)}
+        ) : null}
     </>
   );
 }
