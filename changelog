@@ -1261,3 +1261,4 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-28 · DIGITIMES English 正文补全连锁失效修复：生产 30 篇近期缓存中 29 篇失败于 no_authenticated_profile_available，根因是一篇 subscription_required 文章将整个有效身份降级为 ENTITLEMENT_MISSING；将文章级订阅权限缺失限制在该次访问，不再撤销站点 Profile/Identity 登录态，真正 login_required 仍可标记重登。新增传统 Profile 与共享 Identity 回归，定向 28 passed；`ad81c2e7` 已推送并仅重建/重启 Site Access（先顺序构建基础镜像再构建 Site Access），Supervisor 与旧 Chrome 身份不重启。通过现有维护工具重验旧 Profile 为 VALID，生产复测一篇付费墙文章失败后另一篇可读文章仍成功且身份保持 VALID。付费墙仍须账号具备相应订阅权限，不通过抓取代码绕过。
 
 2026-09-29 · 持久 Runtime Luna 模型恢复：将 D1/D2、Event Library、W3 与共享 Codex 默认模型切为 gpt-5.6-luna；生产 Compose 固定新调用模型。维护任务新增仅对冻结 gpt-6-luna 且失败的调用生效的执行模型覆盖，保留原业务 frame/提示词/effort，Worker 仍逐次记录实际派发模型；新增定向恢复回归。
+2026-09-29 · 同步 D1 的 3 个手工评测入口默认模型为 gpt-5.6-luna，防止操作时沿用失效的 gpt-6-luna。
