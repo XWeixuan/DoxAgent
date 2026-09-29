@@ -116,6 +116,30 @@ def test_barrons_ticker_wrapped_tabs_and_et_publication_time() -> None:
     assert {row.published_at.hour for row in rows} == {14, 15}
 
 
+def test_barrons_ticker_wrapped_cards_without_time_are_not_new() -> None:
+    html = """
+    <html><title>MU Stock News</title><main>
+      <section data-dj-section="barrons"><div>
+        <a href="https://www.barrons.com/articles/old-micron-123">
+        Historical Micron article without a publication time</a>
+      </div><div><span>Sep 23, 2026 11:15 a.m. ET</span>
+        <a href="https://www.barrons.com/articles/new-micron-123">
+        Micron reports stronger memory revenue</a></div></section>
+    </main></html>"""
+    rows = parse_barrons_ticker_listing(html, ticker="MU", now=NOW)
+    assert [row.title for row in rows] == ["Micron reports stronger memory revenue"]
+    assert rows[0].publication_time_basis == "EXACT"
+
+
+def test_barrons_ticker_all_undated_cards_are_empty_not_broken() -> None:
+    html = """
+    <html><title>MU Stock News</title><main><section data-dj-section="barrons">
+      <a href="https://www.barrons.com/articles/old-micron-123">
+      Historical Micron article without a publication time</a>
+    </section></main></html>"""
+    assert parse_barrons_ticker_listing(html, ticker="MU", now=NOW) == []
+
+
 def test_feed_atom_korean_timezone_and_digitimes_query_identity() -> None:
     atom = """
     <feed xmlns="http://www.w3.org/2005/Atom"><entry>

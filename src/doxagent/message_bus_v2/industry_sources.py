@@ -235,6 +235,7 @@ def parse_barrons_ticker_listing(
     if scope is None:
         raise RuntimeError("barrons_ticker_news_not_rendered")
     rows: dict[str, RawMessageInput] = {}
+    candidate_count = 0
     other_heading = scope.xpath(
         '//*[self::h2 or self::h3 or self::h4 or self::div or self::span]'
         '[translate(normalize-space(.),"abcdefghijklmnopqrstuvwxyz",'
@@ -278,6 +279,7 @@ def parse_barrons_ticker_listing(
         title = _text(link)
         if len(title) < 15:
             continue
+        candidate_count += 1
         card = link
         for _ in range(4):
             if card.getparent() is None:
@@ -299,6 +301,11 @@ def parse_barrons_ticker_listing(
             for ancestor in link.iterancestors():
                 if ancestor is scope:
                     break
+                card_links = ancestor.xpath(
+                    './/a[contains(@href,"/articles/") or contains(@href,"/story/")]'
+                )
+                if len(card_links) > 1:
+                    break
                 candidate = _text(ancestor)
                 if len(candidate) > 500:
                     break
@@ -312,6 +319,9 @@ def parse_barrons_ticker_listing(
                     published = local.replace(tzinfo=_NEW_YORK).astimezone(UTC)
                     basis = "EXACT"
                     break
+        if wrapped and basis != "EXACT":
+            # A newly discovered historical card is not a newly published article.
+            continue
         summary = next((_text(p) for p in card.xpath('.//p') if _text(p) != title), "")
         rows[_canonical(url)] = _message(
             source=_DJ_PUBLISHERS.get(host, host),
@@ -328,6 +338,8 @@ def parse_barrons_ticker_listing(
             },
         )
     if not rows:
+        if wrapped and candidate_count:
+            return []
         raise RuntimeError("barrons_ticker_news_empty_or_changed")
     return list(rows.values())
 
