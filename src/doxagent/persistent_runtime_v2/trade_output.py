@@ -15,6 +15,28 @@ from .journal import RuntimeJournal, encode
 from .schema import PolicyActivationRecord, RuntimeCase, TradeRecord
 
 
+def event_trade_key(trade: TradeRecord) -> str | None:
+    """Claim only an unambiguous known-fact state transition, not text similarity."""
+    if trade.decision_origin.value != "W3" or not trade.w3_result:
+        return None
+    attributions = trade.w1_result.fact_attributions or []
+    deltas = trade.w3_result.delta_candidates
+    if len(attributions) != 1 or len(attributions[0].fact_ids) != 1 or len(deltas) != 1:
+        return None
+    delta = deltas[0]
+    if delta.occurrence_date is None:
+        return None
+    return ":".join(
+        (
+            trade.ticker,
+            attributions[0].event_id,
+            attributions[0].fact_ids[0],
+            delta.assertion_state.value,
+            delta.occurrence_date.isoformat(),
+        )
+    )
+
+
 class TradeExecutionAdapter(Protocol):
     async def readiness(self) -> dict[str, Any]: ...
     async def submit(self, intent: dict[str, Any]) -> dict[str, Any]: ...
@@ -128,11 +150,13 @@ class TradeOutputService:
                     "AND json_extract(payload,'$.release_semantic_day')=? "
                     "AND json_extract(payload,'$.trade.decision')=? "
                     "AND json_extract(payload,'$.status') NOT IN "
-                    "('EXPIRED_SEMANTIC_DAY','DUPLICATE_POLICY','DUPLICATE_REALTIME_OUTPUT') LIMIT 1",
+                    "('EXPIRED_SEMANTIC_DAY','DUPLICATE_POLICY',"
+                    "'DUPLICATE_REALTIME_OUTPUT','DUPLICATE_EVENT_TRADE') LIMIT 1",
                     (case.ticker, day.isoformat(), trade.decision.value),
                 ).fetchone()
                 if prior:
                     status = "DUPLICATE_REALTIME_OUTPUT"
+            policy_claim = None
             if status == "READY" and trade.executed_policy_id:
                 claim = PolicyActivationRecord(
                     case_id=case.case_id,
@@ -151,20 +175,39 @@ class TradeOutputService:
                 if row and row[0] != case.case_id:
                     status = "DUPLICATE_POLICY"
                 else:
-                    db.execute(
-                        "INSERT OR IGNORE INTO runtime_v2_policy_activations VALUES"
-                        "(?,?,?,?,?,?,?,?)",
+                    policy_claim = claim
+            if status == "READY":
+                claim_key = event_trade_key(trade)
+                if claim_key:
+                    inserted = db.execute(
+                        "INSERT OR IGNORE INTO runtime_values VALUES('event_trade_claims',?,?)",
                         (
-                            case.ticker,
-                            claim.policy_id,
-                            claim.activation_revision,
-                            case.case_id,
-                            claim.source_message_id,
-                            claim.policy_set_version,
-                            claim.model_dump_json(),
-                            self.journal.clock().isoformat(),
+                            claim_key,
+                            encode(
+                                {
+                                    "case_id": case.case_id,
+                                    "intent_id": identity,
+                                    "claimed_at": self.journal.clock().isoformat(),
+                                }
+                            ),
                         ),
-                    )
+                    ).rowcount
+                    if not inserted:
+                        status = "DUPLICATE_EVENT_TRADE"
+            if status == "READY" and policy_claim:
+                db.execute(
+                    "INSERT OR IGNORE INTO runtime_v2_policy_activations VALUES(?,?,?,?,?,?,?,?)",
+                    (
+                        case.ticker,
+                        policy_claim.policy_id,
+                        policy_claim.activation_revision,
+                        case.case_id,
+                        policy_claim.source_message_id,
+                        policy_claim.policy_set_version,
+                        policy_claim.model_dump_json(),
+                        self.journal.clock().isoformat(),
+                    ),
+                )
             if status == "READY":
                 db.execute(
                     "INSERT OR IGNORE INTO runtime_v2_trade_records VALUES(?,?,?,?,?,?)",
@@ -190,7 +233,8 @@ class TradeOutputService:
                 "released_at": self.journal.clock().isoformat(),
             }
             profile = db.execute(
-                "SELECT payload FROM runtime_values WHERE namespace='trade_execution' AND key='active'"
+                "SELECT payload FROM runtime_values "
+                "WHERE namespace='trade_execution' AND key='active'"
             ).fetchone()
             if execution_pin and status == "READY":
                 intent["execution_pin"] = execution_pin

@@ -60,3 +60,10 @@ class Sessions:
         bounds = self.bounds(self.calendar.next_session(day))
         assert bounds is not None
         return bounds[1] - timedelta(minutes=offset)
+
+    def cycle_id(self, now: datetime, offset: int = 30) -> str:
+        day = now.astimezone(ET).date()
+        bounds = self.bounds(day)
+        if bounds and now < bounds[1] - timedelta(minutes=offset):
+            return day.isoformat()
+        return self.calendar.next_session(day).isoformat()

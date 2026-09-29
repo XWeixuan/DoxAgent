@@ -55,11 +55,17 @@ class IbkrSession:
         self.quote_ids: dict[int, tuple[Any, ...]] = {}
         self.contracts: dict[tuple[Any, ...], dict[str, Any]] = {}
         self.positions: dict[int, str] = {}
+        self.account_values: dict[str, Any] = {}
+        self.portfolio: dict[int, dict[str, Any]] = {}
+        self.account_event = threading.Event()
         self.position_event = threading.Event()
         self.open_event = threading.Event()
         self.completed_event = threading.Event()
         self.last_sync = 0.0
         self.healthy = False
+        self.connection_generation = 0
+        self.retry_after = 0.0
+        self.connection_failures = 0
 
     def _emit(self, kind: Any, value: Any) -> Any:
         self.event_sink(kind, value)
@@ -68,24 +74,48 @@ class IbkrSession:
         with self.connect_lock:
             if self.app and self.app.isConnected() and self.healthy:
                 return
+            if time.monotonic() < self.retry_after:
+                raise ConnectionError("IBKR_RECONNECT_BACKOFF")
             self.close()
+            if self.thread and self.thread.is_alive():
+                raise ConnectionError("IBKR_PREVIOUS_SOCKET_STILL_RUNNING")
             self.ready.clear()
             self.accounts_ready.clear()
             self.accounts = []
             self.quotes.clear()
             self.quote_ids.clear()
             self.orders.clear()
+            self.account_values.clear()
+            self.portfolio.clear()
             self.last_sync = 0
             self.app = self._make_app()
-            self.app.connect(self.profile.host, self.profile.port, self.profile.client_id)
+            try:
+                self.app.connect(self.profile.host, self.profile.port, self.profile.client_id)
+            except Exception:
+                self.connection_failures += 1
+                self.retry_after = time.monotonic() + min(30, 2**self.connection_failures)
+                raise
             self.thread = threading.Thread(target=self.app.run, daemon=True, name="doxagent-ibkr")
             self.thread.start()
             timeout = self.profile.strategy.request_timeout_seconds
             if not self.ready.wait(timeout) or not self.accounts_ready.wait(timeout):
                 self.close()
+                self.connection_failures += 1
+                self.retry_after = time.monotonic() + min(30, 2**self.connection_failures)
                 raise ConnectionError("IBKR_HANDSHAKE_TIMEOUT")
             account_fuse(self.profile, self.accounts)
             self.healthy = True
+            self.connection_generation += 1
+            self.connection_failures = 0
+            self.retry_after = 0.0
+            self._emit(
+                "connection",
+                {
+                    "generation": self.connection_generation,
+                    "status": "CONNECTED",
+                    "client_id": self.profile.client_id,
+                },
+            )
 
     def close(self) -> Any:
         self.healthy = False
@@ -93,6 +123,8 @@ class IbkrSession:
             self.app.disconnect()
         if self.thread and self.thread is not threading.current_thread():
             self.thread.join(timeout=2)
+            if not self.thread.is_alive():
+                self.thread = None
         self.app = None
 
     def _request(self) -> Any:
@@ -174,6 +206,7 @@ class IbkrSession:
                 self.serial += 1
                 request = self.serial
                 self.quotes[key] = {"market_data_type": None, "venue": contract["exchange"]}
+                self.quotes[key]["request_id"] = request
                 self.quote_ids[request] = key
                 self.app.reqMarketDataType(1)
                 self.app.reqMktData(request, self._contract_object(contract), "", False, False, [])
@@ -182,6 +215,19 @@ class IbkrSession:
         while time.monotonic() < deadline:
             value = dict(self.quotes[key])
             if value.get("error"):
+                self._emit(
+                    "quote_gap",
+                    {
+                        "con_id": contract["con_id"],
+                        "side": side,
+                        **value,
+                    },
+                )
+                request = value.get("request_id")
+                if request is not None:
+                    self.app.cancelMktData(request)
+                    self.quote_ids.pop(request, None)
+                self.quotes.pop(key, None)
                 raise RuntimeError(value["error"])
             stamp = value.get(required + "_at", 0)
             if (
@@ -191,6 +237,23 @@ class IbkrSession:
             ):
                 return {**value, "captured_at": datetime.now(UTC).isoformat()}
             time.sleep(0.02)
+        value = dict(self.quotes.get(key, {}))
+        value["bid_age_seconds"] = time.time() - value["bid_at"] if value.get("bid_at") else None
+        value["ask_age_seconds"] = time.time() - value["ask_at"] if value.get("ask_at") else None
+        self._emit(
+            "quote_gap",
+            {
+                "con_id": contract["con_id"],
+                "side": side,
+                **value,
+                "reason": "FRESH_QUOTE_UNAVAILABLE",
+            },
+        )
+        request = value.get("request_id")
+        if request is not None:
+            self.app.cancelMktData(request)
+            self.quote_ids.pop(request, None)
+        self.quotes.pop(key, None)
         raise TimeoutError("FRESH_QUOTE_UNAVAILABLE")
 
     def positions_snapshot(self) -> dict[str, Any]:
@@ -234,10 +297,21 @@ class IbkrSession:
                 if not self.position_event.wait(timeout):
                     raise TimeoutError("BROKER_POSITION_SYNC_INCOMPLETE")
                 self.app.cancelPositions()
+                self.account_event.clear()
+                self.account_values = {}
+                self.portfolio = {}
+                self.app.reqAccountUpdates(True, self.profile.expected_account_id)
+                try:
+                    if not self.account_event.wait(timeout):
+                        raise TimeoutError("BROKER_ACCOUNT_SYNC_INCOMPLETE")
+                finally:
+                    self.app.reqAccountUpdates(False, self.profile.expected_account_id)
                 self.last_sync = time.monotonic()
                 return {
                     "complete": True,
                     "positions": dict(self.positions),
+                    "account_values": dict(self.account_values),
+                    "portfolio": list(self.portfolio.values()),
                     "at": datetime.now(UTC).isoformat(),
                     "history_scope": "BROKER_SESSION_WINDOW",
                 }
@@ -274,11 +348,17 @@ class IbkrSession:
         self.app.cancelOrder(attempt["order_id"], OrderCancel())
 
     def what_if(
-        self, contract: dict[str, Any], order_id: int, *, side: Any = "BUY", price: Any = 1.0
+        self,
+        contract: dict[str, Any],
+        order_id: int,
+        *,
+        side: Any = "BUY",
+        price: Any = 1.0,
+        quantity: int = 1,
+        order_type: str = "LMT",
+        session: str = "RTH",
     ) -> dict[str, Any]:
         # Broker validation only: whatIf=True cannot place a transmitted trading order.
-        if self.profile.environment != "PAPER":
-            raise ValueError("PAPER_ONLY_DIAGNOSTIC")
         self._fuse()
         from decimal import Decimal
 
@@ -287,9 +367,11 @@ class IbkrSession:
         order = Order()
         order.account = self.profile.expected_account_id
         order.orderRef = f"DA-WHATIF-{order_id}"
-        order.action, order.orderType, order.lmtPrice = side, "LMT", price
-        order.totalQuantity, order.whatIf = Decimal(1), True
-        order.tif = "DAY"
+        order.action, order.orderType = side, order_type
+        if order_type == "LMT":
+            order.lmtPrice = float(price)
+        order.totalQuantity, order.whatIf = Decimal(quantity), True
+        order.tif, order.outsideRth = "DAY", session != "RTH"
         request = {"event": threading.Event(), "rows": [], "error": None}
         self.requests[order_id] = request
         try:
@@ -338,10 +420,18 @@ class IbkrSession:
                 errorString: Any,
                 advancedOrderRejectJson: Any = "",
             ) -> Any:
-                value = {"request_id": reqId, "code": errorCode, "message": errorString}
+                value = {
+                    "request_id": reqId,
+                    "code": errorCode,
+                    "message": errorString,
+                    "advanced_order_reject_json": advancedOrderRejectJson,
+                    "connection_generation": session.connection_generation,
+                }
                 session.errors.append(value)
-                if errorCode in {1100, 1300, 504}:
+                if errorCode in {1100, 1300, 504, 326}:
                     session.healthy = False
+                    session.connection_failures += 1
+                    session.retry_after = time.monotonic() + min(30, 2**session.connection_failures)
                 if errorCode in INFO_CODES:
                     return
                 request = session.requests.get(reqId)
@@ -419,6 +509,7 @@ class IbkrSession:
                             "initial_margin_change": orderState.initMarginChange,
                             "maintenance_margin_change": orderState.maintMarginChange,
                             "warning": orderState.warningText,
+                            "reject_reason": getattr(orderState, "rejectReason", ""),
                         }
                     )
                     session.requests[orderId]["event"].set()
@@ -512,5 +603,42 @@ class IbkrSession:
 
             def positionEnd(self) -> Any:
                 session.position_event.set()
+
+            def updateAccountValue(
+                self, key: Any, value: Any, currency: Any, accountName: Any
+            ) -> Any:
+                if accountName != session.profile.expected_account_id:
+                    return
+                if str(key).lower() == "accountready":
+                    session.account_values["AccountReady"] = value
+                elif key in {"NetLiquidation", "AvailableFunds", "LookAheadAvailableFunds"}:
+                    session.account_values[key] = {"value": value, "currency": currency}
+
+            def updatePortfolio(
+                self,
+                contract: Any,
+                position: Any,
+                marketPrice: Any,
+                marketValue: Any,
+                averageCost: Any,
+                unrealizedPNL: Any,
+                realizedPNL: Any,
+                accountName: Any,
+            ) -> Any:
+                if accountName != session.profile.expected_account_id:
+                    return
+                session.portfolio[contract.conId] = {
+                    "con_id": contract.conId,
+                    "symbol": contract.symbol,
+                    "security_type": contract.secType,
+                    "currency": contract.currency,
+                    "quantity": str(position),
+                    "market_value": str(marketValue),
+                    "market_price": str(marketPrice),
+                }
+
+            def accountDownloadEnd(self, accountName: Any) -> Any:
+                if accountName == session.profile.expected_account_id:
+                    session.account_event.set()
 
         return App()

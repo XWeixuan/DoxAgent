@@ -29,6 +29,15 @@ class Clock:
 
 
 def profile(**changes):
+    changes.setdefault(
+        "strategy",
+        Strategy(
+            capital_model="LEGACY_PER_INTENT",
+            target_notional_usd=Decimal("20000"),
+            initial_tolerance=Decimal("0.01"),
+            non_rth_retry_tolerance=Decimal("0.02"),
+        ),
+    )
     return ExecutionProfile(
         profile_id="paper",
         environment="PAPER",
@@ -193,12 +202,12 @@ def test_price_rules_retry_matrix_and_sizing():
         retry=True,
         quote={"ask": 104},
         rules=rules[:1],
-        strategy=Strategy(),
+        strategy=profile().strategy,
         remaining_notional=Decimal("10020"),
     )
     assert result["limit_price"] == "106.08" and result["quantity"] == 94
     assert order_type([], "RTH") == "LMT"
-    assert order_type([{"order_type": "LMT"}], "RTH") == "MKT"
+    assert order_type([{"order_type": "LMT"}], "RTH", legacy=True) == "MKT"
     assert order_type([{"order_type": "LMT"}] * 2, "RTH") is None
     assert order_type([{"order_type": "LMT"}] * 2, "EXTENDED") == "LMT"
     assert order_type([{"order_type": "LMT"}] * 3, "EXTENDED") is None
@@ -260,7 +269,7 @@ def test_no_quote_does_not_block_another_job_or_create_orders(setup):
     broker.mode = "no_quote"
     admit(repo, revision)
     asyncio.run(run_job(executor, repo, clock, "trade:A:entry"))
-    assert repo.get("executions", "trade:A")["entry_result"] == "FAILED"
+    assert repo.get("jobs", "trade:A:entry")["state"] == "WAIT_QUOTE"
     assert not broker.sent
     broker.mode = "fill"
     admit(repo, revision, "trade:B")

@@ -1,5 +1,7 @@
 """Versioned execution configuration; no model or research dependencies."""
 
+from __future__ import annotations
+
 from decimal import Decimal
 from typing import Any, Literal
 
@@ -8,9 +10,11 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 class Strategy(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
-    target_notional_usd: Decimal = Field(default=Decimal("20000"), gt=0)
-    initial_tolerance: Decimal = Field(default=Decimal("0.01"), ge=0, lt=1)
-    non_rth_retry_tolerance: Decimal = Field(default=Decimal("0.02"), ge=0, lt=1)
+    capital_model: Literal["LEGACY_PER_INTENT", "SHARED_CYCLE"] = "SHARED_CYCLE"
+    target_notional_usd: Decimal | None = Field(default=None, gt=0)
+    min_entry_notional_ratio: Decimal = Field(default=Decimal("0.25"), gt=0, le=1)
+    initial_tolerance: Decimal = Field(default=Decimal("0.005"), ge=0, lt=1)
+    non_rth_retry_tolerance: Decimal = Field(default=Decimal("0.01"), ge=0, lt=1)
     order_wait_seconds: float = Field(default=5, gt=0, le=60)
     rth_max_retries: Literal[1] = 1
     non_rth_max_retries: Literal[2] = 2
@@ -18,6 +22,25 @@ class Strategy(BaseModel):
     fractional_shares: Literal[False] = False
     quote_max_age_seconds: float = Field(default=5, gt=0, le=60)
     request_timeout_seconds: float = Field(default=5, gt=0, le=30)
+
+    @model_validator(mode="before")
+    @classmethod
+    def recognize_historical_profile(cls, value: Any) -> Any:
+        if (
+            isinstance(value, dict)
+            and "capital_model" not in value
+            and value.get("target_notional_usd")
+        ):
+            return {**value, "capital_model": "LEGACY_PER_INTENT"}
+        return value
+
+    @model_validator(mode="after")
+    def validate_capital_model(self) -> Strategy:
+        if self.capital_model == "LEGACY_PER_INTENT" and self.target_notional_usd is None:
+            raise ValueError("legacy capital model requires target_notional_usd")
+        if self.capital_model == "SHARED_CYCLE" and self.target_notional_usd is not None:
+            raise ValueError("shared cycle must not set target_notional_usd")
+        return self
 
 
 class ExecutionProfile(BaseModel):

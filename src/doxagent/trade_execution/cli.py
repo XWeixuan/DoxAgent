@@ -138,7 +138,7 @@ def status(repo: Any) -> Any:
 
 def probe(repo: Any, profile: Any, *, symbol: Any, what_if: Any = False) -> Any:
     output = {
-        "mode": "PAPER_WHATIF" if what_if else "READ_ONLY",
+        "mode": "WHATIF" if what_if else "READ_ONLY",
         "profile_id": profile.profile_id,
         "environment": profile.environment,
         "port": profile.port,
@@ -196,7 +196,7 @@ def main() -> Any:
         if args.dry_run:
             print(
                 json.dumps(
-                    {"database_exists": path.exists(), "execution_schema": 1, "writes": False}
+                    {"database_exists": path.exists(), "execution_schema": 2, "writes": False}
                 )
             )
             return

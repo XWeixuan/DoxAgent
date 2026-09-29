@@ -9,7 +9,7 @@ from doxagent.semantic_clock import semantic_day
 from .executions import ExecutionProjector, opaque
 
 
-def project(store, event, records):
+def project(store, event, records, *, _offset_reproject=True):
     table = event["table_name"]
     if table not in {"te_allocations", "te_lots", "te_fills", "te_events"}:
         return [], []
@@ -74,7 +74,8 @@ def project(store, event, records):
     metric = environment.lower() + "_realized_net_pnl"
 
     def fee_share(fill):
-        fee = fees.get(opaque(fill["account"], fill["exec_id"]))
+        fee_id = opaque(fill["account"], fill["exec_id"])
+        fee = fees.get(fee_id) or store.get("commission", ticker, fee_id)
         if not fee:
             return Decimal(0), True, False
         if fee.get("currency") != "USD":
@@ -102,8 +103,8 @@ def project(store, event, records):
             item[0] -= used
             if item[0] == 0:
                 queue.popleft()
-        if allocation["kind"] != "EXIT":
-            continue  # FIFO offsets consume cost shares, not product realized PNL.
+        if allocation["kind"] not in {"EXIT", "FIFO_OFFSET"}:
+            continue
         identity = opaque(fill["account"], fill["family"], lot_id)
         amount = (price * qty - cost) * (1 if intent["trade"]["decision"] == "LONG" else -1)
         amount -= entry_fee + commission * qty
@@ -145,4 +146,25 @@ def project(store, event, records):
             contributions.append(
                 {"metric": name, "ticker": ticker, "entity": identity, "day": day, "value": amount}
             )
+    if table == "te_events" and _offset_reproject:
+        fee_fill_id = value["exec_id"]
+        with store.connect() as db:
+            related = {
+                row[0]
+                for row in db.execute(
+                    "SELECT DISTINCT parent FROM object_current "
+                    "WHERE kind='native:te_allocations' AND ticker=? "
+                    "AND json_extract(payload,'$.fill_id')=?",
+                    (ticker, fee_fill_id),
+                )
+            }
+        for other_lot in related - {lot_id}:
+            extra, metrics = project(
+                store,
+                event,
+                [{**record, "parent": other_lot}, *records[1:]],
+                _offset_reproject=False,
+            )
+            output.extend(extra)
+            contributions.extend(metrics)
     return output, contributions

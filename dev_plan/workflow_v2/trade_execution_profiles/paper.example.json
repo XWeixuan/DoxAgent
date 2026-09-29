@@ -10,9 +10,10 @@
   "short_enabled": true,
   "quote_profile_revision": null,
   "strategy": {
-    "target_notional_usd": "20000",
-    "initial_tolerance": "0.01",
-    "non_rth_retry_tolerance": "0.02",
+    "capital_model": "SHARED_CYCLE",
+    "min_entry_notional_ratio": "0.25",
+    "initial_tolerance": "0.005",
+    "non_rth_retry_tolerance": "0.01",
     "order_wait_seconds": 5.0,
     "rth_max_retries": 1,
     "non_rth_max_retries": 2,

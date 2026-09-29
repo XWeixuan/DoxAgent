@@ -6,11 +6,11 @@ from decimal import Decimal, InvalidOperation
 
 from doxagent.api_v2.dto import validate
 
-
 TRADE_RESULTS = {"TRADE_INTENT", "TRADE_EXECUTION", "TRADE_NOT_EXECUTED"}
 TERMINAL_UNSENT = {
     "DUPLICATE_POLICY",
     "DUPLICATE_REALTIME_OUTPUT",
+    "DUPLICATE_EVENT_TRADE",
     "EXPIRED_SEMANTIC_DAY",
     "OUTPUT_RECORDED",
 }
@@ -70,18 +70,22 @@ def rollup_case_trade(case: dict, executions: list[dict]) -> dict:
     elif state == "NOT_EXECUTED":
         results.add("TRADE_NOT_EXECUTED")
     settled = case["status"] in {"COMPLETED", "FAILED", "UNAVAILABLE"} and state not in {
-        "PENDING", "UNKNOWN"
+        "PENDING",
+        "UNKNOWN",
     }
     disposition = case.get("trade_disposition", "NOT_EVALUATED")
     if any(item.get("intake_status") == "EXECUTION_ACCEPTED" for item in by_intent.values()):
         disposition = "EXECUTION_ACCEPTED"
-    return validate("CaseSummary", {
-        **case,
-        "results": sorted(results),
-        "trade": {"intent_count": len(by_intent), "state": state, "reason_codes": reasons},
-        "trade_disposition": disposition,
-        "result_settled": settled,
-    })
+    return validate(
+        "CaseSummary",
+        {
+            **case,
+            "results": sorted(results),
+            "trade": {"intent_count": len(by_intent), "state": state, "reason_codes": reasons},
+            "trade_disposition": disposition,
+            "result_settled": settled,
+        },
+    )
 
 
 def project_case_trade(store, ticker: str, case: dict, incoming: list[dict]):
@@ -98,8 +102,11 @@ def project_case_trade(store, ticker: str, case: dict, incoming: list[dict]):
             )
         }
     for record in incoming:
-        if (record["kind"] == "execution" and record["ticker"] == ticker
-                and record.get("parent") == case["case_id"]):
+        if (
+            record["kind"] == "execution"
+            and record["ticker"] == ticker
+            and record.get("parent") == case["case_id"]
+        ):
             if record.get("data") is None:
                 siblings.pop(record["id"], None)
             else:
@@ -107,15 +114,21 @@ def project_case_trade(store, ticker: str, case: dict, incoming: list[dict]):
     updated = rollup_case_trade(case, list(siblings.values()))
     return (
         {
-            "kind": "case", "ticker": ticker, "id": case["case_id"],
-            "data": updated, "sort": updated["received_at"],
-            "day": updated["semantic_day"], "parent": updated["stream_item_id"],
+            "kind": "case",
+            "ticker": ticker,
+            "id": case["case_id"],
+            "data": updated,
+            "sort": updated["received_at"],
+            "day": updated["semantic_day"],
+            "parent": updated["stream_item_id"],
             "source_id": updated["source"]["source_id"],
             "route": updated["resolved_route"] or updated["initial_route"],
         },
         {
-            "metric": "executed_cases", "ticker": ticker,
-            "entity": case["case_id"], "day": case["semantic_day"],
+            "metric": "executed_cases",
+            "ticker": ticker,
+            "entity": case["case_id"],
+            "day": case["semantic_day"],
             "value": "1" if updated["trade"]["state"] == "EXECUTED" else "0",
         },
     )
@@ -129,6 +142,7 @@ def legacy_case_summary(store, ticker: str, case: dict, seq: int) -> dict:
     if "trade" in case:
         return case
     import json
+
     with store.connect() as db:
         rows = db.execute(
             "SELECT payload FROM objects WHERE kind='execution' AND ticker=? AND parent=? "

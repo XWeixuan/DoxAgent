@@ -36,14 +36,16 @@ def round_price(price: Decimal, side: str, rules: list[dict[str, Any]]) -> Decim
     raise ValueError("unstable price rule")
 
 
-def order_type(attempts: list[dict[str, Any]], session: str) -> str | None:
+def order_type(
+    attempts: list[dict[str, Any]], session: str, leg: str = "ENTRY", *, legacy: bool = False
+) -> str | None:
     if session == "CLOSED":
         return None
     if any(item["order_type"] == "MKT" for item in attempts):
         return None
     if len(attempts) >= (2 if session == "RTH" else 3):
         return None
-    return "MKT" if attempts and session == "RTH" else "LMT"
+    return "MKT" if attempts and session == "RTH" and (leg == "EXIT" or legacy) else "LMT"
 
 
 def price_and_quantity(
@@ -51,6 +53,7 @@ def price_and_quantity(
     side: str,
     kind: str,
     retry: bool,
+    session: str = "EXTENDED",
     quote: dict[str, Any],
     rules: list[dict[str, Any]],
     strategy: Strategy,
@@ -60,7 +63,11 @@ def price_and_quantity(
     reference = decimal(quote["ask" if side == "BUY" else "bid"])
     if reference <= 0:
         raise ValueError("QUOTE_UNAVAILABLE")
-    tolerance = strategy.non_rth_retry_tolerance if retry else strategy.initial_tolerance
+    tolerance = (
+        strategy.non_rth_retry_tolerance
+        if retry and session != "RTH"
+        else strategy.initial_tolerance
+    )
     cap = reference * (1 + tolerance if side == "BUY" else 1 - tolerance)
     limit = round_price(cap, side, rules) if kind == "LMT" else None
     sizing = limit if limit is not None else reference

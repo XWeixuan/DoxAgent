@@ -9,6 +9,7 @@ from typing import Any
 
 from doxagent.persistent_runtime_v2.journal import RuntimeJournal, digest, encode
 
+from .portfolio import account_funds, gross_exposure
 from .schema import ExecutionProfile
 from .strategy import decimal
 
@@ -21,9 +22,9 @@ class ExecutionRepository:
         with journal.transaction() as db:
             db.execute("CREATE TABLE IF NOT EXISTS te_meta (key TEXT PRIMARY KEY,value TEXT)")
             version = db.execute("SELECT value FROM te_meta WHERE key='version'").fetchone()
-            if version and version[0] != "1":
+            if version and version[0] not in {"1", "2"}:
                 raise ValueError("unsupported Trade Executor database version")
-            db.execute("INSERT OR IGNORE INTO te_meta VALUES('version','1')")
+            db.execute("INSERT OR IGNORE INTO te_meta VALUES('version','2')")
             db.executescript("""
                 CREATE TABLE IF NOT EXISTS te_profiles (
                     revision TEXT PRIMARY KEY, profile_id TEXT, account TEXT, environment TEXT,
@@ -59,7 +60,15 @@ class ExecutionRepository:
                     account TEXT PRIMARY KEY, payload TEXT);
                 CREATE TABLE IF NOT EXISTS te_acceptance_runs (
                     id TEXT PRIMARY KEY, state TEXT, due_at TEXT, payload TEXT);
+                CREATE TABLE IF NOT EXISTS te_account_cycles (
+                    account TEXT NOT NULL, environment TEXT NOT NULL, cycle_id TEXT NOT NULL,
+                    status TEXT NOT NULL, equity TEXT NOT NULL, captured_at TEXT NOT NULL,
+                    payload TEXT NOT NULL, PRIMARY KEY(account,environment,cycle_id));
+                CREATE UNIQUE INDEX IF NOT EXISTS te_account_cycles_active
+                    ON te_account_cycles(account,environment) WHERE status='ACTIVE';
             """)
+            if version and version[0] == "1":
+                db.execute("UPDATE te_meta SET value='2' WHERE key='version'")
 
     def import_profile(self, profile: ExecutionProfile) -> str:
         payload = profile.model_dump(mode="json")
@@ -105,8 +114,17 @@ class ExecutionRepository:
             raise ValueError("unknown execution profile revision")
         return ExecutionProfile.model_validate_json(row[0])
 
+    def profile_payload(self, revision: str) -> dict[str, Any]:
+        with self.journal.transaction() as db:
+            row = db.execute(
+                "SELECT payload FROM te_profiles WHERE revision=?", (revision,)
+            ).fetchone()
+        if row is None:
+            raise ValueError("unknown execution profile revision")
+        return json.loads(row[0])
+
     def activate(self, revision: str, reason: str) -> None:
-        profile = self.profile(revision)
+        self.profile(revision)
         if not reason.strip():
             raise ValueError("reason required")
         # Same runtime_values table and transaction boundary used by TradeOutputService.record.
@@ -115,7 +133,7 @@ class ExecutionRepository:
             "active",
             {
                 "revision": revision,
-                "profile": profile.model_dump(mode="json"),
+                "profile": self.profile_payload(revision),
                 "reason": reason,
                 "activated_at": self.journal.clock().isoformat(),
             },
@@ -130,7 +148,7 @@ class ExecutionRepository:
         if not pin or intent["status"] not in {"READY", "UNKNOWN", "EXECUTION_ACCEPTED"}:
             raise ValueError("intent not eligible for broker execution")
         profile = self.profile(pin["revision"])
-        if profile.model_dump(mode="json") != pin["profile"]:
+        if self.profile_payload(pin["revision"]) != pin["profile"]:
             raise ValueError("profile pin mismatch")
         identity = intent["intent_id"]
         account = profile.expected_account_id
@@ -238,43 +256,339 @@ class ExecutionRepository:
         self, job: Any, data: dict[str, Any], broker_next_id: int, client_id: int
     ) -> dict[str, Any]:
         with self.journal.transaction() as db:
-            maximum = (
-                db.execute(
-                    "SELECT MAX(order_id) FROM te_attempts WHERE account=? AND client_id=?",
-                    (job["account"], client_id),
-                ).fetchone()[0]
-                or 0
-            )
-            number = max(broker_next_id, maximum + 1)
-            serial = db.execute(
-                "SELECT COUNT(*) FROM te_attempts WHERE job_id=?", (job["id"],)
+            return self._prepare_attempt_in(db, job, data, broker_next_id, client_id)
+
+    def _prepare_attempt_in(
+        self, db: Any, job: Any, data: dict[str, Any], broker_next_id: int, client_id: int
+    ) -> dict[str, Any]:
+        maximum = (
+            db.execute(
+                "SELECT MAX(order_id) FROM te_attempts WHERE account=? AND client_id=?",
+                (job["account"], client_id),
             ).fetchone()[0]
-            identity = f"{job['id']}:{serial:08d}"
+            or 0
+        )
+        number = max(broker_next_id, maximum + 1)
+        serial = db.execute(
+            "SELECT COUNT(*) FROM te_attempts WHERE job_id=?", (job["id"],)
+        ).fetchone()[0]
+        identity = f"{job['id']}:{serial:08d}"
+        value = {
+            **data,
+            "id": identity,
+            "job_id": job["id"],
+            "account": job["account"],
+            "client_id": client_id,
+            "order_id": number,
+            "order_ref": "DA-" + digest(identity)[:28],
+            "state": "PREPARED",
+            "prepared_at": self.journal.clock().isoformat(),
+        }
+        db.execute(
+            "INSERT INTO te_attempts VALUES(?,?,?,?,?,?,?,?)",
+            (
+                identity,
+                job["id"],
+                job["account"],
+                value["order_ref"],
+                number,
+                client_id,
+                value["state"],
+                encode(value),
+            ),
+        )
+        return value
+
+    def cycle_for_entry(
+        self,
+        account: str,
+        environment: str,
+        cycle_id: str,
+        snapshot: dict[str, Any],
+        min_ratio: Decimal,
+    ) -> dict[str, Any] | None:
+        equity = account_funds(snapshot)["NetLiquidation"]
+        with self.journal.transaction() as db:
+            existing = db.execute(
+                "SELECT payload FROM te_account_cycles WHERE account=? AND environment=? "
+                "AND cycle_id=? AND status='ACTIVE'",
+                (account, environment, cycle_id),
+            ).fetchone()
+            if existing:
+                return json.loads(existing[0])
+            active_attempt = db.execute(
+                "SELECT 1 FROM te_attempts WHERE account=? AND state NOT IN ('SETTLED','NOT_SENT') "
+                "LIMIT 1",
+                (account,),
+            ).fetchone()
+            open_lot = any(
+                decimal(json.loads(row[0]).get("remaining_qty", 0)) > 0
+                for row in db.execute("SELECT payload FROM te_lots WHERE account=?", (account,))
+            )
+            old_entry = False
+            for row in db.execute(
+                "SELECT payload FROM te_jobs WHERE account=? AND leg='ENTRY' "
+                "AND state NOT IN ('DONE','FAILED')",
+                (account,),
+            ):
+                item = json.loads(row[0])
+                if item.get("cycle_id"):
+                    old_entry |= (
+                        item["cycle_id"] != cycle_id
+                        and decimal(item.get("reserved_open_usd", 0)) > 0
+                    )
+                    continue
+                execution = json.loads(
+                    db.execute(
+                        "SELECT payload FROM te_executions WHERE id=?",
+                        (item["execution_id"],),
+                    ).fetchone()[0]
+                )
+                pinned = json.loads(
+                    db.execute(
+                        "SELECT payload FROM te_profiles WHERE revision=?",
+                        (execution["profile_revision"],),
+                    ).fetchone()[0]
+                )
+                old_entry |= pinned["strategy"].get("capital_model", "LEGACY_PER_INTENT") == (
+                    "LEGACY_PER_INTENT"
+                )
+            if active_attempt or open_lot or old_entry:
+                return None
+            db.execute(
+                "UPDATE te_account_cycles SET status='CLOSED' WHERE account=? AND environment=? "
+                "AND status='ACTIVE'",
+                (account, environment),
+            )
             value = {
-                **data,
-                "id": identity,
-                "job_id": job["id"],
-                "account": job["account"],
-                "client_id": client_id,
-                "order_id": number,
-                "order_ref": "DA-" + digest(identity)[:28],
-                "state": "PREPARED",
-                "prepared_at": self.journal.clock().isoformat(),
+                "account": account,
+                "environment": environment,
+                "cycle_id": cycle_id,
+                "equity": str(equity),
+                "min_entry_notional_ratio": str(min_ratio),
+                "captured_at": self.journal.clock().isoformat(),
+                "broker_snapshot_at": snapshot["at"],
+                "status": "ACTIVE",
             }
             db.execute(
-                "INSERT INTO te_attempts VALUES(?,?,?,?,?,?,?,?)",
+                "INSERT INTO te_account_cycles VALUES(?,?,?,?,?,?,?)",
                 (
-                    identity,
-                    job["id"],
-                    job["account"],
-                    value["order_ref"],
-                    number,
-                    client_id,
-                    value["state"],
+                    account,
+                    environment,
+                    cycle_id,
+                    "ACTIVE",
+                    str(equity),
+                    value["captured_at"],
                     encode(value),
                 ),
             )
-        return value
+            return value
+
+    def reserve_attempt(
+        self,
+        job: dict[str, Any],
+        data: dict[str, Any],
+        cycle: dict[str, Any],
+        broker_next_id: int,
+        client_id: int,
+        snapshot_at: str,
+    ) -> tuple[dict[str, Any] | None, str | None]:
+        """Reserve the shared pool and create the durable pre-send attempt atomically."""
+        with self.journal.transaction() as db:
+            row = db.execute("SELECT payload FROM te_jobs WHERE id=?", (job["id"],)).fetchone()
+            current = json.loads(row[0])
+            active = db.execute(
+                "SELECT 1 FROM te_account_cycles WHERE account=? AND environment=? "
+                "AND cycle_id=? AND status='ACTIVE'",
+                (job["account"], cycle["environment"], cycle["cycle_id"]),
+            ).fetchone()
+            if not active:
+                return None, "WAIT_CYCLE_EQUITY"
+            snapshot_row = db.execute(
+                "SELECT payload FROM te_sync_state WHERE account=?", (job["account"],)
+            ).fetchone()
+            if not snapshot_row:
+                return None, "BROKER_PORTFOLIO_UNAVAILABLE"
+            snapshot = json.loads(snapshot_row[0])
+            if snapshot["at"] != snapshot_at:
+                return None, "BROKER_PORTFOLIO_STALE"
+            account_gross, ticker_gross = gross_exposure(snapshot)
+            contract_id = str(data["contract"]["con_id"])
+            position = decimal(snapshot.get("positions", {}).get(contract_id, 0))
+            entry_sign = 1 if data["side"] == "BUY" else -1
+            owned_opposite = sum(
+                (
+                    decimal(lot["remaining_qty"])
+                    for (payload,) in db.execute(
+                        "SELECT payload FROM te_lots WHERE account=? AND con_id=?",
+                        (job["account"], int(contract_id)),
+                    )
+                    if (lot := json.loads(payload))["sign"] == -entry_sign
+                ),
+                Decimal(0),
+            )
+            offset_qty = int(min(abs(position), owned_opposite)) if position * entry_sign < 0 else 0
+            other_account = Decimal(0)
+            other_ticker = Decimal(0)
+            for reserved_row in db.execute(
+                "SELECT payload FROM te_jobs WHERE account=? AND leg='ENTRY' AND id!=?",
+                (job["account"], job["id"]),
+            ):
+                reserved_job = json.loads(reserved_row[0])
+                amount = decimal(reserved_job.get("reserved_open_usd", "0"))
+                other_account += amount
+                if reserved_job["ticker"] == job["ticker"]:
+                    other_ticker += amount
+            equity = decimal(cycle["equity"])
+            minimum = equity * decimal(cycle["min_entry_notional_ratio"])
+            capacity = min(
+                equity,
+                max(Decimal(0), equity * Decimal("1.5") - account_gross - other_account),
+                max(
+                    Decimal(0), equity - ticker_gross.get(job["ticker"], Decimal(0)) - other_ticker
+                ),
+            )
+            filled = self._job_open_notional(db, job)
+            grant = decimal(current["grant_usd"]) if current.get("grant_usd") else None
+            if grant is not None:
+                capacity = min(capacity, max(Decimal(0), grant - filled))
+            sizing = decimal(data["sizing_price"])
+            open_qty = int(capacity // sizing) if sizing > 0 else 0
+            if (grant is None and capacity < minimum) or filled + open_qty * sizing < minimum:
+                open_qty = 0
+            quantity = offset_qty + open_qty
+            if quantity < 1:
+                db.execute(
+                    "INSERT INTO te_events(account,kind,payload,created_at) VALUES(?,?,?,?)",
+                    (
+                        job["account"],
+                        "portfolio_decision",
+                        encode(
+                            {
+                                "job_id": job["id"],
+                                "cycle_id": cycle["cycle_id"],
+                                "reason": "PORTFOLIO_CAPACITY_EXHAUSTED",
+                                "detail": "BELOW_MIN_EFFECTIVE_NOTIONAL",
+                                "equity": str(equity),
+                                "account_gross": str(account_gross),
+                                "ticker_gross": str(ticker_gross.get(job["ticker"], Decimal(0))),
+                                "other_reserved": str(other_account),
+                                "available_target": str(capacity),
+                                "minimum": str(minimum),
+                                "quantity": quantity,
+                                "sizing_price": str(sizing),
+                            }
+                        ),
+                        self.journal.clock().isoformat(),
+                    ),
+                )
+                return None, "PORTFOLIO_CAPACITY_EXHAUSTED"
+            if grant is None:
+                grant = capacity if open_qty else Decimal(0)
+            current.update(
+                grant_usd=str(grant),
+                reserved_open_usd=str(max(Decimal(0), grant - filled)),
+                cycle_id=cycle["cycle_id"],
+            )
+            db.execute("UPDATE te_jobs SET payload=? WHERE id=?", (encode(current), job["id"]))
+            attempt = self._prepare_attempt_in(
+                db,
+                current,
+                {
+                    **data,
+                    "quantity": quantity,
+                    "cycle_id": cycle["cycle_id"],
+                },
+                broker_next_id,
+                client_id,
+            )
+            db.execute(
+                "INSERT INTO te_events(account,kind,payload,created_at) VALUES(?,?,?,?)",
+                (
+                    job["account"],
+                    "portfolio_decision",
+                    encode(
+                        {
+                            "job_id": job["id"],
+                            "cycle_id": cycle["cycle_id"],
+                            "equity": str(equity),
+                            "account_gross": str(account_gross),
+                            "ticker_gross": str(ticker_gross.get(job["ticker"], Decimal(0))),
+                            "other_reserved": str(other_account),
+                            "grant": str(grant),
+                            "quantity": quantity,
+                            "offset_quantity": offset_qty,
+                            "open_quantity": open_qty,
+                            "sizing_price": str(sizing),
+                        }
+                    ),
+                    self.journal.clock().isoformat(),
+                ),
+            )
+            return attempt, None
+
+    def _job_open_notional(self, db: Any, job: dict[str, Any]) -> Decimal:
+        fill_prices = {
+            fill["exec_id"]: decimal(fill["price"])
+            for fill in self._effective_fills(db, job["account"])
+        }
+        return sum(
+            (
+                decimal(quantity) * fill_prices[fill_id]
+                for fill_id, quantity in db.execute(
+                    "SELECT fill_id,qty FROM te_allocations WHERE lot_id=? AND kind='ENTRY'",
+                    (job["execution_id"],),
+                )
+                if fill_id in fill_prices
+            ),
+            Decimal(0),
+        )
+
+    def _entry_position_notional(self, db: Any, job: dict[str, Any]) -> Decimal:
+        row = db.execute(
+            "SELECT payload FROM te_lots WHERE id=?", (job["execution_id"],)
+        ).fetchone()
+        if not row:
+            return Decimal(0)
+        lot = json.loads(row[0])
+        if not lot["remaining_qty"]:
+            return Decimal(0)
+        entry_qty = sum(
+            (
+                decimal(qty)
+                for (qty,) in db.execute(
+                    "SELECT qty FROM te_allocations WHERE lot_id=? AND kind='ENTRY'",
+                    (job["execution_id"],),
+                )
+            ),
+            Decimal(0),
+        )
+        return (
+            self._job_open_notional(db, job) * decimal(lot["remaining_qty"]) / entry_qty
+            if entry_qty
+            else Decimal(0)
+        )
+
+    def void_prepared_attempt(self, attempt: dict[str, Any]) -> None:
+        with self.journal.transaction() as db:
+            row = db.execute(
+                "SELECT payload FROM te_attempts WHERE id=?", (attempt["id"],)
+            ).fetchone()
+            current = json.loads(row[0])
+            if current["state"] != "PREPARED":
+                raise ValueError("attempt is not safe to release")
+            current["state"] = "NOT_SENT"
+            db.execute(
+                "UPDATE te_attempts SET state='NOT_SENT',payload=? WHERE id=?",
+                (encode(current), current["id"]),
+            )
+            job = json.loads(
+                db.execute(
+                    "SELECT payload FROM te_jobs WHERE id=?", (current["job_id"],)
+                ).fetchone()[0]
+            )
+            job["reserved_open_usd"] = "0"
+            db.execute("UPDATE te_jobs SET payload=? WHERE id=?", (encode(job), job["id"]))
 
     def update_attempt(self, attempt: dict[str, Any], **updates: Any) -> dict[str, Any]:
         with self.journal.transaction() as db:
@@ -321,6 +635,25 @@ class ExecutionRepository:
             value["broker_seen"] = True
             if event.get("error"):
                 value["broker_error"] = event["error"]
+            if status == "Rejected" or (status == "Inactive" and event.get("error")):
+                value["rejection"] = value.get("rejection") or {
+                    "status": status,
+                    "error": event.get("error") or value.get("broker_error"),
+                }
+            db.execute("UPDATE te_attempts SET payload=? WHERE id=?", (encode(value), value["id"]))
+
+    def apply_error(self, account: str, event: dict[str, Any]) -> None:
+        with self.journal.transaction() as db:
+            row = db.execute(
+                "SELECT payload FROM te_attempts WHERE account=? AND client_id=? AND order_id=?",
+                (account, event.get("client_id"), event.get("order_id")),
+            ).fetchone()
+            if not row:
+                return
+            value = json.loads(row[0])
+            value.setdefault("broker_errors", []).append(event)
+            if event.get("code") == 10329:
+                value["precaution_rejection"] = event
             db.execute("UPDATE te_attempts SET payload=? WHERE id=?", (encode(value), value["id"]))
 
     def apply_fill(self, fill: dict[str, Any], exit_at: str) -> bool:
@@ -374,6 +707,14 @@ class ExecutionRepository:
                         "SELECT payload FROM te_jobs WHERE id=?", (attempt["job_id"],)
                     ).fetchone()[0]
                 )
+                if job["leg"] == "ENTRY" and job.get("grant_usd"):
+                    used = self._job_open_notional(db, job)
+                    job["reserved_open_usd"] = (
+                        "0"
+                        if job["state"] == "DONE"
+                        else str(max(Decimal(0), decimal(job["grant_usd"]) - used))
+                    )
+                    db.execute("UPDATE te_jobs SET payload=? WHERE id=?", (encode(job), job["id"]))
                 if job["leg"] == "ENTRY" and job["state"] == "DONE":
                     entry_ids = {
                         r[0]
@@ -398,7 +739,28 @@ class ExecutionRepository:
                             Decimal(0),
                         )
                     )
-                    if execution["filled_qty"] and execution.get("entry_result") == "FAILED":
+                    if execution["filled_qty"] and job.get("cycle_id"):
+                        cycle_row = db.execute(
+                            "SELECT equity,payload FROM te_account_cycles "
+                            "WHERE account=? AND cycle_id=?",
+                            (job["account"], job["cycle_id"]),
+                        ).fetchone()
+                        if cycle_row:
+                            minimum = decimal(cycle_row[0]) * decimal(
+                                json.loads(cycle_row[1])["min_entry_notional_ratio"]
+                            )
+                            opened = self._entry_position_notional(db, job)
+                            execution["entry_result"] = (
+                                "FILLED" if opened >= minimum else "PARTIAL_FILLED"
+                            )
+                            execution["entry_reason"] = (
+                                "LATE_FILL_RECONCILED"
+                                if opened >= minimum
+                                else "BELOW_MIN_AFTER_FILL"
+                                if opened
+                                else "OFFSET_ONLY"
+                            )
+                    elif execution["filled_qty"] and execution.get("entry_result") == "FAILED":
                         execution["entry_result"] = "PARTIAL_FILLED"
                         execution["entry_reason"] = "LATE_FILL_RECONCILED"
                     db.execute(
@@ -611,11 +973,48 @@ class ExecutionRepository:
         fills = self.fills(job["id"])
         quantity = sum(int(decimal(f["quantity"])) for f in fills)
         if job["leg"] == "ENTRY":
+            profile = self.profile(
+                self.require("executions", job["execution_id"])["profile_revision"]
+            )
+            with self.journal.transaction() as db:
+                new_position_notional = self._entry_position_notional(db, job)
+            minimum = Decimal(0)
+            if profile.strategy.capital_model == "SHARED_CYCLE" and job.get("cycle_id"):
+                with self.journal.transaction() as db:
+                    row = db.execute(
+                        "SELECT equity,payload FROM te_account_cycles WHERE account=? "
+                        "AND environment=? AND cycle_id=?",
+                        (job["account"], profile.environment, job["cycle_id"]),
+                    ).fetchone()
+                if row:
+                    minimum = decimal(row[0]) * decimal(
+                        json.loads(row[1])["min_entry_notional_ratio"]
+                    )
+            effective_complete = bool(
+                quantity
+                and (
+                    complete
+                    if profile.strategy.capital_model == "LEGACY_PER_INTENT"
+                    else new_position_notional >= minimum
+                )
+            )
+            if (
+                quantity
+                and not new_position_notional
+                and profile.strategy.capital_model == "SHARED_CYCLE"
+            ):
+                reason = "OFFSET_ONLY"
+            elif (
+                quantity
+                and not effective_complete
+                and profile.strategy.capital_model == "SHARED_CYCLE"
+            ):
+                reason = "BELOW_MIN_AFTER_FILL"
             result = (
                 "DIRECTION_DISABLED"
                 if disabled
                 else "FILLED"
-                if complete and quantity
+                if effective_complete
                 else "PARTIAL_FILLED"
                 if quantity
                 else "FAILED"
@@ -640,7 +1039,11 @@ class ExecutionRepository:
                 db.execute(
                     "UPDATE te_executions SET payload=? WHERE id=?", (encode(value), value["id"])
                 )
-            return self.update_job(job, state="DONE", result=result, reason=reason)
+                row = db.execute("SELECT payload FROM te_jobs WHERE id=?", (job["id"],)).fetchone()
+                current = json.loads(row[0])
+                current["reserved_open_usd"] = "0"
+                db.execute("UPDATE te_jobs SET payload=? WHERE id=?", (encode(current), job["id"]))
+            return self.update_job(current, state="DONE", result=result, reason=reason)
         lot = self.get("lots", job["execution_id"])
         remaining = lot["remaining_qty"] if lot else 0
         result = "EXIT_FILLED" if remaining == 0 else "EXIT_PARTIAL" if quantity else "EXIT_FAILED"
