@@ -123,7 +123,6 @@ async def probe_egress(
         )
         observed_ip = egress.observed_ip
         probe_endpoint = egress.probe_endpoint
-    changed = probe_succeeded and observed_ip != egress.observed_ip
     updated = egress.model_copy(
         update={
             "status": status,
@@ -132,7 +131,10 @@ async def probe_egress(
             "probe_endpoint": probe_endpoint,
             "consecutive_probe_failures": failure_count,
             "last_probe_error_at": None if probe_succeeded else observed_at,
-            "generation": egress.generation + int(changed),
+            # A provider may rotate the observed exit IP behind the same fixed
+            # listener and node. This is telemetry, not a binding/configuration
+            # change: bumping generation strands an attached External Chrome.
+            "generation": egress.generation,
             "node_fingerprint": hashlib.sha256(egress.node_ref.encode()).hexdigest(),
         }
     )

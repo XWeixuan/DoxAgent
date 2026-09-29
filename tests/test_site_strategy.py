@@ -136,6 +136,54 @@ async def test_egress_probe_requires_two_failures_before_withdrawing_ready_node(
         repository.close()
 
 
+@pytest.mark.asyncio
+async def test_egress_probe_ip_rotation_keeps_browser_binding_generation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repository = SiteStrategyRepository(tmp_path / "egress.sqlite3")
+    original = ProxyEgress(
+        egress_id="fixed-listener",
+        node_ref="node-a",
+        node_fingerprint="digest",
+        listener_port=18080,
+        endpoint="http://clash:18080",
+        status="READY",
+        observed_ip="203.0.113.8",
+        generation=6,
+    )
+    repository.upsert_egress(original)
+
+    class Response:
+        def raise_for_status(self) -> None:
+            pass
+
+        def json(self) -> dict[str, str]:
+            return {"ip": "203.0.113.9"}
+
+    class Client:
+        def __init__(self, **_kwargs: object) -> None:
+            pass
+
+        async def __aenter__(self) -> Client:
+            return self
+
+        async def __aexit__(self, *_args: object) -> None:
+            pass
+
+        async def get(self, _url: str) -> Response:
+            return Response()
+
+    monkeypatch.setattr("doxagent.site_strategy.egress.httpx.AsyncClient", Client)
+    try:
+        updated = await probe_egress(repository, original.egress_id)
+        assert updated.status == "READY"
+        assert updated.observed_ip == "203.0.113.9"
+        assert updated.generation == original.generation
+        assert repository.get_egress(original.egress_id) == updated
+    finally:
+        repository.close()
+
+
 def test_seed_resolver_uses_exact_ownership_and_isolated_generic_runtime(
     site_service: SiteStrategyService,
 ) -> None:
