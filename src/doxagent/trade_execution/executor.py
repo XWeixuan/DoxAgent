@@ -164,6 +164,60 @@ class Executor:
             )
         return value
 
+    async def capture_ready_cycles(self, revisions: list[str]) -> None:
+        """Record the next equity as soon as all old owned positions and orders settle."""
+        accounts: set[str] = set()
+        for revision in revisions:
+            profile = self.repository.profile(revision)
+            if profile.strategy.capital_model != "SHARED_CYCLE":
+                continue
+            account = profile.expected_account_id
+            if account in accounts:
+                continue
+            accounts.add(account)
+            cycle_id = self.sessions.cycle_id(
+                self.journal.clock(), profile.strategy.exit_offset_minutes
+            )
+            with self.journal.transaction() as db:
+                existing = db.execute(
+                    "SELECT 1 FROM te_account_cycles WHERE account=? AND environment=? "
+                    "AND cycle_id=? AND status='ACTIVE'",
+                    (account, profile.environment, cycle_id),
+                ).fetchone()
+                outstanding = db.execute(
+                    "SELECT 1 FROM te_attempts WHERE account=? AND state NOT IN "
+                    "('SETTLED','NOT_SENT') LIMIT 1",
+                    (account,),
+                ).fetchone()
+                open_lot = any(
+                    decimal(json.loads(row[0]).get("remaining_qty", 0)) > 0
+                    for row in db.execute("SELECT payload FROM te_lots WHERE account=?", (account,))
+                )
+            if existing or outstanding or open_lot:
+                continue
+            async with self.account_locks.setdefault(account, asyncio.Lock()):
+                try:
+                    broker = self.broker(revision)
+                    await asyncio.to_thread(broker.connect)
+                    sync = await self._sync(broker, account)
+                    if cycle_id != self.sessions.cycle_id(
+                        self.journal.clock(), profile.strategy.exit_offset_minutes
+                    ):
+                        continue
+                    self.repository.cycle_for_entry(
+                        account,
+                        profile.environment,
+                        cycle_id,
+                        sync,
+                        profile.strategy.min_entry_notional_ratio,
+                    )
+                except Exception as exc:
+                    self.journal.set(
+                        "execution_cycle_capture",
+                        account,
+                        {"cycle_id": cycle_id, "error": str(exc)},
+                    )
+
     async def _step(self, job: Any) -> Any:
         repo = self.repository
         execution = repo.require("executions", job["execution_id"])

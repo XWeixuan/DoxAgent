@@ -312,6 +312,26 @@ def test_loss_reduces_next_cycle_equity_after_confirmed_exit(tmp_path):
     assert repo.require("jobs", "trade:BE:entry")["cycle_id"] == "2026-09-09"
 
 
+def test_cycle_equity_is_captured_after_exit_without_waiting_for_next_intent(tmp_path):
+    clock, repo, revision, executor, broker = setup_shared(tmp_path)
+    admit_ticker(repo, revision, "MU")
+    asyncio.run(run_job(executor, repo, clock, "trade:MU:entry"))
+    clock.value = datetime.fromisoformat(repo.require("lots", "trade:MU")["scheduled_exit"])
+    broker.equity = Decimal("18500")
+    asyncio.run(executor.capture_ready_cycles([revision]))
+    with repo.journal.transaction() as db:
+        assert not db.execute(
+            "SELECT 1 FROM te_account_cycles WHERE cycle_id='2026-09-09'"
+        ).fetchone()
+    asyncio.run(run_job(executor, repo, clock, "trade:MU:exit"))
+    asyncio.run(executor.capture_ready_cycles([revision]))
+    with repo.journal.transaction() as db:
+        row = db.execute(
+            "SELECT equity FROM te_account_cycles WHERE cycle_id='2026-09-09'"
+        ).fetchone()
+    assert row[0] == "18500"
+
+
 def test_old_cycle_unfilled_entry_is_cancelled_at_exit_cutoff(tmp_path):
     clock, repo, revision, executor, broker = setup_shared(tmp_path)
     broker.mode = "unfilled"
@@ -358,7 +378,6 @@ def test_rklb_three_cases_share_one_structured_event_claim():
     evidence = (
         Path(__file__).parents[1] / "eval/trade_execution/20260928_audit/ledger_redacted.json"
     )
-
 
     rows = json.loads(evidence.read_text(encoding="utf-8"))["runtime_values"]
     suffixes = ("bd3c", "adf6", "b9dc")

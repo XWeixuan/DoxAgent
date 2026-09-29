@@ -107,6 +107,8 @@ async def run_worker(executor: Any, *, once: Any = False) -> Any:
     next_acceptance = 0.0
     next_heartbeat = 0.0
     next_connection_check = 0.0
+    next_cycle_check = 0.0
+    cycle_capture = None
     try:
         while True:
             if time.monotonic() >= next_heartbeat:
@@ -121,6 +123,15 @@ async def run_worker(executor: Any, *, once: Any = False) -> Any:
             if time.monotonic() >= next_connection_check:
                 maintain_connections(executor)
                 next_connection_check = time.monotonic() + 10
+            if (
+                cycle_capture is None or cycle_capture.done()
+            ) and time.monotonic() >= next_cycle_check:
+                if cycle_capture is not None:
+                    await cycle_capture
+                cycle_capture = asyncio.create_task(
+                    executor.capture_ready_cycles(active_profile_revisions(executor))
+                )
+                next_cycle_check = time.monotonic() + 30
             executor.drain_events()
             if (acceptance is None or acceptance.done()) and time.monotonic() >= next_acceptance:
                 if acceptance is not None:
@@ -137,6 +148,8 @@ async def run_worker(executor: Any, *, once: Any = False) -> Any:
                     pending[key] = asyncio.create_task(executor.step(job["id"]))
             if once:
                 await asyncio.gather(*pending.values())
+                if cycle_capture:
+                    await cycle_capture
                 if acceptance:
                     await acceptance
                 return
@@ -144,6 +157,8 @@ async def run_worker(executor: Any, *, once: Any = False) -> Any:
     finally:
         # Let bounded socket requests finish before releasing the OS writer lock.
         await asyncio.gather(*pending.values(), return_exceptions=True)
+        if cycle_capture:
+            await asyncio.gather(cycle_capture, return_exceptions=True)
         if acceptance:
             await asyncio.gather(acceptance, return_exceptions=True)
         executor.close()
