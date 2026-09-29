@@ -114,7 +114,7 @@ services:
     mem_limit: 15g
     memswap_limit: 16g
     pids_limit: 384
-    # ChatGPT-account Codex currently rejects gpt-6-luna; keep frozen W3 inputs unchanged.
+    # Existing W3 Cases retain their frozen model; failed calls use the supported model.
     environment:
       DOXAGENT_PERSISTENT_RUNTIME_V2_W3_EXECUTION_MODEL_OVERRIDE: gpt-5.6-luna
     image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}

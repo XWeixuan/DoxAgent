@@ -111,6 +111,55 @@ def test_o2_receipt_survives_o3_failure_and_activation_crash(tmp_path):
         runtime.close()
 
 
+def test_maintenance_recovery_changes_only_failed_luna_execution_model(tmp_path):
+    runtime, journal, settings, _control = maintenance_fixture(tmp_path)
+    settings = settings.model_copy(
+        update={
+            "codex_model": "gpt-5.6-luna",
+            "persistent_runtime_v2_maintenance_execution_model_override": "gpt-5.6-luna",
+        }
+    )
+    observed = {}
+
+    class O2:
+        async def run(self, **kwargs):
+            return None, None, None, {}
+
+    class O3:
+        async def maintain(self, **kwargs):
+            return SimpleNamespace(status="NOOP", policy_set_version=1)
+
+    def o2_factory(_repository, durable):
+        observed["replace_failed_model"] = durable.replace_failed_model
+        return O2()
+
+    def o3_factory(config, _durable):
+        observed["o3_model"] = config.codex_model
+        return O3()
+
+    maintenance = RuntimeMaintenance(
+        settings,
+        runtime,
+        journal,
+        worker_factory=lambda: SimpleNamespace(),
+        o2_factory=o2_factory,
+        o3_factory=o3_factory,
+    )
+    task = journal.claim("maintain")
+    try:
+        frame = maintenance._frame(task)
+        frame["models"]["model"] = "gpt-6-luna"
+        journal.checkpoint(task, frame=frame)
+        asyncio.run(maintenance(task))
+        assert observed == {
+            "replace_failed_model": True,
+            "o3_model": "gpt-5.6-luna",
+        }
+        assert task["receipt"]["frame"]["models"]["model"] == "gpt-6-luna"
+    finally:
+        runtime.close()
+
+
 def test_candidate_selection_claims_only_winner_and_closes_others(tmp_path):
     now = [datetime(2026, 9, 6, 12, tzinfo=UTC)]
     runtime, journal = runtime_at(tmp_path, now)

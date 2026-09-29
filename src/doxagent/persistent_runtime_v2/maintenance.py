@@ -109,6 +109,9 @@ class RuntimeMaintenance:
             return {"revision_id": existing["revision_id"], "reconciled": True}
         frame = self._frame(task)
         run_id, base = frame["run_id"], frame["base"]
+        frozen_model = frame["models"]["model"]
+        override = self.settings.persistent_runtime_v2_maintenance_execution_model_override
+        execution_model = override if frozen_model == "gpt-6-luna" and override else frozen_model
         cutoff = datetime.fromisoformat(task["inputs"]["cutoff"])
         day = date.fromisoformat(task["inputs"]["day"])
         root = (
@@ -139,7 +142,11 @@ class RuntimeMaintenance:
             )
         )
         durable = ReceiptWorker(
-            worker, self.journal, run_id, control_epoch=task["inputs"].get("control_epoch")
+            worker,
+            self.journal,
+            run_id,
+            control_epoch=task["inputs"].get("control_epoch"),
+            replace_failed_model=execution_model != frozen_model,
         )
         reference_task = {**task, "id": run_id}
         # Freeze O2/O3 assets before dispatch and materialize only immutable snapshots.
@@ -193,7 +200,7 @@ class RuntimeMaintenance:
                         service=EventLibraryService(repository),
                         local_workspace_root=self.settings.codex_workspace_root,
                         prompt_root=prompt_root / "event_library",
-                        model=frame["models"]["model"],
+                        model=execution_model,
                         model_provider=frame["models"]["provider"],
                         effort=frame["models"]["effort"],
                         timeout_seconds=self.settings.codex_node_timeout_seconds,
@@ -314,7 +321,7 @@ class RuntimeMaintenance:
                     update={
                         "event_library_root": str(candidate_root),
                         "codex_runtime_storage_mode": "sqlite",
-                        "codex_model": frame["models"]["model"],
+                        "codex_model": execution_model,
                         "codex_model_provider": frame["models"]["provider"],
                         "codex_reasoning_effort": frame["models"]["effort"],
                         "codex_published_storage_url": None,

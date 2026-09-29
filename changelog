@@ -1259,3 +1259,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-28 · 消息源登录收尾与免费正文门槛：Barron's、DIGITIMES English 的生产登录身份均通过真实文章 `body_v2.2` 完整正文抽取，ticker/栏目爬虫分别实抓 1/11 条；DIGITIMES Taiwan 新增仅当正文补全成功且为 FULL/SHORT_FULL 时才执行分发，付费/无完整公开正文的文章终止于 NO_PUBLIC_BODY，不触发 Jev 或发布。定向回归 45 passed；代码 `5a7f9c28` 已推送并仅重建/重启生产 Bus 与 Enrichment，生产源版本 4→5、保留 18082 出口和旧 Profile。Google News 9/26 发布、9/27 采入的 130 条记录均属于 9/26–9/27 的 CLOSED_SWEEP，未发现实时 30 分钟入库越窗。
 
 2026-09-28 · DIGITIMES English 正文补全连锁失效修复：生产 30 篇近期缓存中 29 篇失败于 no_authenticated_profile_available，根因是一篇 subscription_required 文章将整个有效身份降级为 ENTITLEMENT_MISSING；将文章级订阅权限缺失限制在该次访问，不再撤销站点 Profile/Identity 登录态，真正 login_required 仍可标记重登。新增传统 Profile 与共享 Identity 回归，定向 28 passed；`ad81c2e7` 已推送并仅重建/重启 Site Access（先顺序构建基础镜像再构建 Site Access），Supervisor 与旧 Chrome 身份不重启。通过现有维护工具重验旧 Profile 为 VALID，生产复测一篇付费墙文章失败后另一篇可读文章仍成功且身份保持 VALID。付费墙仍须账号具备相应订阅权限，不通过抓取代码绕过。
+
+2026-09-29 · 持久 Runtime Luna 模型恢复：将 D1/D2、Event Library、W3 与共享 Codex 默认模型切为 gpt-5.6-luna；生产 Compose 固定新调用模型。维护任务新增仅对冻结 gpt-6-luna 且失败的调用生效的执行模型覆盖，保留原业务 frame/提示词/effort，Worker 仍逐次记录实际派发模型；新增定向恢复回归。

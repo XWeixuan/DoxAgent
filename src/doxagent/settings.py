@@ -162,7 +162,7 @@ class DoxAgentSettings(BaseSettings):
         validation_alias="DOXAGENT_CODEX_PUBLISHED_STORAGE_BUCKET",
     )
     codex_model: str = Field(
-        default="gpt-6-luna",
+        default="gpt-5.6-luna",
         validation_alias="DOXAGENT_CODEX_MODEL",
     )
     codex_model_provider: str | None = Field(
@@ -968,12 +968,16 @@ class DoxAgentSettings(BaseSettings):
         validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_W3_ENABLED",
     )
     persistent_runtime_v2_w3_model: str = Field(
-        default="gpt-6-luna",
+        default="gpt-5.6-luna",
         validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_W3_MODEL",
     )
     persistent_runtime_v2_w3_execution_model_override: str | None = Field(
         default=None,
         validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_W3_EXECUTION_MODEL_OVERRIDE",
+    )
+    persistent_runtime_v2_maintenance_execution_model_override: str | None = Field(
+        default=None,
+        validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_MAINTENANCE_EXECUTION_MODEL_OVERRIDE",
     )
     persistent_runtime_v2_w3_reasoning_effort: Literal["low", "medium", "high", "xhigh", "max"] = (
         Field(
