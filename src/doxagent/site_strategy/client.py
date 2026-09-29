@@ -113,6 +113,7 @@ class SiteManagedBrowser:
         *,
         operation_id: str | None = None,
         remaining_budget_ms: int = 30_000,
+        recipe_ref: str | None = None,
     ) -> tuple[int, str, dict[str, str], str]:
         result = await self.client.execute(
             AccessRequest(
@@ -120,6 +121,7 @@ class SiteManagedBrowser:
                 purpose=SitePurpose.CRAWLER,
                 url=url,
                 mode=AccessMode.BROWSER,
+                recipe_ref=recipe_ref,
                 remaining_budget_ms=remaining_budget_ms,
             )
         )

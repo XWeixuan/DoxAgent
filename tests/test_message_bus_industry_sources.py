@@ -75,6 +75,27 @@ def test_barrons_ticker_excludes_ibd_and_unscoped_other_publishers() -> None:
     assert rows[0].publication_time_basis == "EXACT"
 
 
+def test_barrons_ticker_does_not_admit_footer_as_news() -> None:
+    html = """
+    <html><title>MU Stock News</title><div id="__next"></div>
+      <footer><a href="https://www.barrons.com/articles/barrons-investor-circle-introduction-stock-picks-af5a365b">
+      Investor Circle</a></footer></html>"""
+    with pytest.raises(RuntimeError, match="barrons_ticker_news_not_rendered"):
+        parse_barrons_ticker_listing(html, ticker="MU", now=NOW)
+
+
+def test_barrons_ticker_uses_rendered_news_card_without_main() -> None:
+    html = """
+    <html><title>MU Stock News</title><div id="__next">
+      <div class="news-card"><h2>Recent News</h2><div>
+        <a href="https://www.barrons.com/articles/micron-results-123">
+        Micron reports stronger memory revenue</a></div></div>
+      <footer><a href="https://www.barrons.com/articles/barrons-investor-circle-introduction-stock-picks-af5a365b">
+      Investor Circle</a></footer></div></html>"""
+    rows = parse_barrons_ticker_listing(html, ticker="MU", now=NOW)
+    assert [row.title for row in rows] == ["Micron reports stronger memory revenue"]
+
+
 def test_feed_atom_korean_timezone_and_digitimes_query_identity() -> None:
     atom = """
     <feed xmlns="http://www.w3.org/2005/Atom"><entry>

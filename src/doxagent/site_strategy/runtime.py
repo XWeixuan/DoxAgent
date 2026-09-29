@@ -1000,6 +1000,19 @@ class SiteAccessRuntime:
                     )
                 status = response.status if response is not None else 200
                 headers = await response.all_headers() if response is not None else {}
+                if request.recipe_ref == "builtin:barrons_ticker@1":
+                    # The stock page's news card is client-loaded below the initial viewport.
+                    for _ in range(10):
+                        if await page.get_by_text("Recent News", exact=True).count():
+                            break
+                        await page.mouse.wheel(0, 650)
+                        await asyncio.sleep(0.5)
+                    try:
+                        await page.get_by_text("Recent News", exact=True).first.wait_for(
+                            state="visible", timeout=5_000
+                        )
+                    except Exception:
+                        pass
                 if request.recipe_parameters.get("expand"):
                     await _expand_article(page)
                 wait_selector = request.recipe_parameters.get("wait_selector")

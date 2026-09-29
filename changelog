@@ -1,5 +1,7 @@
 # changelog
 
+- 2026-09-30: Barron's ticker 页额外发现 `Recent News` 为客户端延迟加载，原列表解析会把页脚 `Investor Circle` 固定链接当作新消息，导致轮询假成功但没有真实发布。为该站点的既有 Site Access 浏览器请求增加有限滚动加载，并要求解析范围确为新闻主内容；栏目未渲染时明确失败而不再虚报成功。补页脚误识别回归测试，生产加载结果另作实测验收。
+
 - 2026-09-30: Barron's ticker news 长期 `SiteAccessError` 根因修复：同一固定代理节点的探测出口 IP 轮换误增 egress generation，使长期 Chrome 与 Registry 代际不一致，Supervisor 拒绝复用现有 Profile，四个 ticker 同时进入 `SERVICE_UNAVAILABLE / TRANSIENT_TRANSPORT`。出口 IP 变化保留观测与事件，但不再作为节点配置代际变化；新增定向回归。生产恢复与验收另核对，避免删除 Cookie 或无必要重启 Chrome。
 
 - 2026-09-28: 修复 TrendForce News 间歇性 `ReadError`：生产轮询失败时 Site Access 页面访问实际成功，定位为消息总线读取内部 Site Access HTTP 响应的瞬断。只读解析/抓取遇到 `ReadError` 或 `RemoteProtocolError` 时以原 request ID 限次重试一次；有副作用的 POST 不重试。补传输回归测试，不改站点代理、Browser Profile 或抓取节奏。

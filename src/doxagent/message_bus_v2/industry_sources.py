@@ -223,7 +223,23 @@ def parse_barrons_ticker_listing(
     root = lxml_html.fromstring(html)
     _listing_guard(root, html)
     main = root.xpath("//main")
-    scope = main[0] if main else root
+    scope = main[0] if main else None
+    if scope is None:
+        headings = root.xpath(
+            '//*[normalize-space(text())="Recent News" and not(ancestor::script)]'
+        )
+        for heading in headings:
+            for parent in heading.iterancestors():
+                if parent.tag in {"body", "html"} or parent.get("id") == "__next":
+                    break
+                if parent.xpath('.//a[contains(@href,"/articles/")]'):
+                    scope = parent
+                    break
+            if scope is not None:
+                break
+    # The bare stock-page shell contains a footer article, but no rendered news card.
+    if scope is None:
+        raise RuntimeError("barrons_ticker_news_not_rendered")
     rows: dict[str, RawMessageInput] = {}
     other_heading = scope.xpath(
         '//*[self::h2 or self::h3 or self::h4 or self::div or self::span]'
@@ -305,10 +321,16 @@ class IndustryListingAdapter:
         try:
             run_id = context.poll_run_id if isinstance(context, PollContext) else context.run_id
             async with context.request_permit():
+                recipe_options = (
+                    {"recipe_ref": "builtin:barrons_ticker@1"}
+                    if self.variant == "barrons"
+                    else {}
+                )
                 status, final_url, _headers, html = await self.browser.get(
                     url,
                     operation_id=f"{run_id}:{self.variant}",
                     remaining_budget_ms=45_000,
+                    **recipe_options,
                 )
         except SiteAccessError as exc:
             if exc.site_access_deferred:
