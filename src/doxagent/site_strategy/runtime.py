@@ -1202,6 +1202,10 @@ async def _capture_barrons_ticker_cards(page: Any) -> str:
         await asyncio.sleep(0.5)
     if not await articles.count():
         return await page.content()
+    for _ in range(8):
+        if (await news.inner_text()).count(". ET") >= min(3, await articles.count()):
+            break
+        await asyncio.sleep(0.5)
     barrons_html = await news.inner_html()
     barrons_urls = await articles.evaluate_all("links => links.map(link => link.href)")
     other_html = ""
@@ -1212,6 +1216,10 @@ async def _capture_barrons_ticker_cards(page: Any) -> str:
             await asyncio.sleep(0.5)
             urls = await articles.evaluate_all("links => links.map(link => link.href)")
             if urls != barrons_urls and await other_tab.get_attribute("aria-selected") == "true":
+                for _ in range(8):
+                    if (await news.inner_text()).count(". ET") >= min(3, len(urls)):
+                        break
+                    await asyncio.sleep(0.5)
                 other_html = await news.inner_html()
                 break
     except Exception:
