@@ -140,6 +140,20 @@ def test_barrons_ticker_all_undated_cards_are_empty_not_broken() -> None:
     assert parse_barrons_ticker_listing(html, ticker="MU", now=NOW) == []
 
 
+def test_barrons_ticker_duplicate_image_and_title_links_share_one_card_time() -> None:
+    html = """
+    <html><title>MU Stock News</title><main><section data-dj-section="barrons">
+      <div><span>Sep 23, 2026 11:15 a.m. ET</span>
+        <a href="https://www.barrons.com/articles/micron-results-123?mod=image">Image</a>
+        <h3><a href="https://www.barrons.com/articles/micron-results-123?mod=stockoverview">
+        Micron reports stronger memory revenue</a></h3>
+      </div>
+    </section></main></html>"""
+    rows = parse_barrons_ticker_listing(html, ticker="MU", now=NOW)
+    assert len(rows) == 1
+    assert rows[0].publication_time_basis == "EXACT"
+
+
 def test_feed_atom_korean_timezone_and_digitimes_query_identity() -> None:
     atom = """
     <feed xmlns="http://www.w3.org/2005/Atom"><entry>

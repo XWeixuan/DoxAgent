@@ -304,7 +304,11 @@ def parse_barrons_ticker_listing(
                 card_links = ancestor.xpath(
                     './/a[contains(@href,"/articles/") or contains(@href,"/story/")]'
                 )
-                if len(card_links) > 1:
+                article_urls = {
+                    _canonical(urljoin("https://www.barrons.com", item.get("href", "")))
+                    for item in card_links
+                }
+                if len(article_urls) > 1:
                     break
                 candidate = _text(ancestor)
                 if len(candidate) > 500:
