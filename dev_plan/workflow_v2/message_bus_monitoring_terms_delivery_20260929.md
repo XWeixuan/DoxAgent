@@ -16,3 +16,7 @@ API新增当前配置GET、无写校验POST和带 If-Match / Idempotency-Key 的
 尚未把词表应用到生产Bus、提交代码或部署服务。生产部署时先备份Bus SQLite并迁移 `v2_monitoring_terms_commands`；升级API及前端后，在指定Ticker核对当前revision和语言需求，再人工编辑应用。保存成功只证明配置提交，召回效果需要新poll与distribution target证据确认。
 
 本地隔离浏览器复现：先启动 `pnpm --dir frontend/v2 dev --host 127.0.0.1 --port 5174`，再启动 `uv run uvicorn tests.v2_backend.monitoring_terms_browser_app:app --host 127.0.0.1 --port 8099`，然后设置 `DOXAGENT_TERMS_BACKEND=1` 运行 `pnpm --dir frontend/v2 exec playwright test tests/browser/monitoring-terms-integration.spec.ts`。每次后端进程启动使用新的临时Bus数据库。
+
+## 2026-09-29 发布进度
+
+代码已以 f3da669b 推送至 main，新加坡服务器独立发布检出构建的新 API、Web、Read projector、Message Bus 镜像已逐个启动。API 启动时在原生 Bus SQLite 中创建了 v2_monitoring_terms_commands 表；Web/API 健康，未向生产 Ticker 应用任何新词表。原生产检出未提交改动及 Luna 恢复任务保持原状。正式词表操作仍应以用户在前端核对当前 revision 后的人工作业为准。

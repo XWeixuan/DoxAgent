@@ -19,3 +19,9 @@
 本轮未提交/推送、未改生产服务、未运行生产回填。发布时先备份 Read 数据库，在离线副本运行上述命令并核对三类结果筛选集合、图节点/旧边撤销和已成交 Case；随后在停止当前 Read projector 持锁进程的窗口运行正式回填。命令使用与 projector 相同的 OS 锁，无法并发执行；完成后把后端 API 与前端同批切换、重建 read context，再通过真实已授权浏览器验证下载。回滚须恢复同版 API/Web 和 Read 备份或重投影。
 
 旧的本地真实数据联调说明 `backend_delivery/REAL_DATA_INTEGRATION.md` 所列 `scripts/start_v2_integration.ps1` 与 `src/doxagent/integration_v2` 当前检出中不存在，不能把该说明当作可启动环境。本轮用真实 API 路由的 TestClient 和浏览器组件夹具覆盖开发路径，生产数据联调仍需部署环境执行。
+
+## 2026-09-29 发布进度
+
+代码已以 f3da669b 推送至 main；新加坡服务器从独立、干净的 /home/ubuntu/doxagent-release-f3da669b 检出构建并逐个切换 V2 API、Web、Read projector 与 Message Bus。原生产检出的未提交改动保留，Luna 恢复队列的 initialization、O4、scheduler 容器和恢复脚本均未重启。API/Web 健康，生产前端与 /healthz 返回 200。
+
+正式 Read 历史回填及其前置备份尚未执行：生产 Read SQLite 约 17 GB、当前 Case 约 2,803 个，Luna 恢复队列正在处理历史任务；此时停投影器并对同盘数据库进行全量备份/回填会增加队列争用。待恢复队列结束或取得独立维护窗口后，按上文顺序备份、离线验证，再运行 reproject-trade-outcomes 并验收历史图与筛选。新 Case 已由新版 projector 实时投影；旧 Case 的完整历史交易结果在回填前不视为验收完成。
