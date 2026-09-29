@@ -160,6 +160,37 @@ def test_maintenance_recovery_changes_only_failed_luna_execution_model(tmp_path)
         runtime.close()
 
 
+def test_historical_maintenance_does_not_rewind_visibility_day(tmp_path):
+    runtime, journal, settings, control = maintenance_fixture(tmp_path)
+    journal.set("visibility", "MU", {"day": "2026-09-29"})
+
+    class O2:
+        async def run(self, **kwargs):
+            return None, None, None, {}
+
+    class O3:
+        async def maintain(self, **kwargs):
+            return SimpleNamespace(status="NOOP", policy_set_version=1)
+
+    maintenance = RuntimeMaintenance(
+        settings,
+        runtime,
+        journal,
+        worker_factory=lambda: SimpleNamespace(),
+        o2_factory=lambda *_: O2(),
+        o3_factory=lambda *_: O3(),
+    )
+    task = journal.claim("maintain")
+    try:
+        asyncio.run(maintenance(task))
+        assert control.active_revision("MU")["runtime_metadata"]["visibility_day"] == (
+            "2026-09-29"
+        )
+        assert journal.get("visibility", "MU") == {"day": "2026-09-29"}
+    finally:
+        runtime.close()
+
+
 def test_candidate_selection_claims_only_winner_and_closes_others(tmp_path):
     now = [datetime(2026, 9, 6, 12, tzinfo=UTC)]
     runtime, journal = runtime_at(tmp_path, now)

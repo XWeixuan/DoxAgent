@@ -353,10 +353,16 @@ class RuntimeMaintenance:
                 if str(result.status) != "NOOP":
                     policy_ref["run_id"] = run_id + "-o3"
                 self.journal.checkpoint(task, o3=policy_ref)
+            current_visibility = self.journal.get("visibility", task["ticker"], {}) or {}
+            visibility_day = max(
+                semantic_day(cutoff).isoformat(),
+                current_visibility.get("day") or "",
+                (base.get("runtime_metadata") or {}).get("visibility_day") or "",
+            )
             metadata = {
                 "maintenance_id": task["id"],
                 "control_epoch": task["inputs"].get("control_epoch"),
-                "visibility_day": semantic_day(cutoff).isoformat(),
+                "visibility_day": visibility_day,
                 "frame_hash": digest(frame),
             }
             with self.journal.transaction() as db:

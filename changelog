@@ -1267,3 +1267,4 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-09-29 · 运行状态交易结果与 Case JSON 导出：按正式意图及有效 ENTRY 成交统一投影 PENDING/UNKNOWN/EXECUTED/NOT_EXECUTED，新增意图与未执行图节点、五列链路、结果筛选、独立执行状态列及固定快照的完整业务 JSON 多选导出；补齐候选/执行/订单/成交 view_id 读取和历史派生读模型幂等回填命令。更新 V2 契约与 PRD；定向后端 18 项、前端 7 项及 1262/1559px 浏览器组件验收通过，生产构建通过。尚未运行生产回填或部署。
 2026-09-29 · 消息总线统一监测词人工管理：配置页新增按 Ticker 共用的 L1 搜索概念、L2 分发规则（规则/原始 JSON）及 Jev 相关性定义，单次原子应用生成不可变 revision；新增原生 Bus 配置 GET/校验/PUT、CAS 与幂等回执、正则语法校验、实际搜索预览，并阻止已由统一词表接管的 Google/Reuters 旧搜索参数误改。后端定向 20 项、前端浏览器 1262/1559px 与隔离原生 Bus API 读改保存读回通过，前端构建通过；未应用生产词表或部署。
 2026-09-29 · V2 Runtime 交易结果与消息总线统一监测词功能整体提交并发布到新加坡：从独立 release 检出构建，依次切换 API、Web、Read projector、Message Bus，验证服务健康与 Bus 幂等命令表存在；未重启正在执行 Luna 恢复队列的 initialization/O4/scheduler。17 GB Read 历史回填因恢复任务仍运行而延后，新 Case 使用新版实时投影，旧 Case 验收须待备份和回填完成。
+2026-09-29 · 历史维护回放修复：激活旧日期的 O2/O3 结果时保留更晚的 Runtime visibility_day，防止回放把生产可见日倒退并重新把旧 PENDING facts 带入 W1；增加针对历史维护的回归测试。
