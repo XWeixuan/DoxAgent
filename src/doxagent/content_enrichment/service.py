@@ -368,6 +368,8 @@ class ContentEnrichmentHub:
             "publisher_identity_mismatch",
         }:
             return False
+        if reason == "site_budget_deferred":
+            return True
         status = result.http_status
         if status is None and result.attempts and result.attempts[-1].reason == result.reason:
             status = result.attempts[-1].status_code

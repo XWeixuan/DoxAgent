@@ -381,6 +381,43 @@ class _RetryExtractor:
         )
 
 
+class _SiteBudgetDeferredExtractor:
+    def __init__(self) -> None:
+        self.calls = 0
+
+    async def extract(self, record: MediaEnrichmentRecord) -> MediaExtractionResult:
+        self.calls += 1
+        if self.calls == 1:
+            return MediaExtractionResult(record=record, reason="site_budget_deferred")
+        return MediaExtractionResult(
+            record=record,
+            content="Recovered after the site queue cleared",
+            final_url=record.url,
+        )
+
+
+async def test_site_budget_deferral_retries_within_existing_deadline(tmp_path: Path) -> None:
+    repository, bus, source, binding = _setup(tmp_path)
+    bus.enqueue_enrichment(
+        source=source,
+        binding=binding,
+        message=_message(61, summary="provider summary"),
+        bootstrap=False,
+        poll_run_id=new_id("poll"),
+    )
+    extractor = _SiteBudgetDeferredExtractor()
+    hub = ContentEnrichmentHub(
+        repository, bus, extractor=extractor, retry_delay_seconds=0
+    )
+
+    assert await hub.run_once() == 1
+    assert len(repository.list_enrichment_jobs()) == 1
+    assert repository.list_raw(ticker="MU") == []
+    assert await hub.run_once() == 1
+    assert extractor.calls == 2
+    assert repository.list_raw(ticker="MU")[0].body == "Recovered after the site queue cleared"
+
+
 async def test_retry_once_then_identity_and_raw_use_enriched_body(tmp_path: Path) -> None:
     repository, bus, source, binding = _setup(tmp_path)
     bus.enqueue_enrichment(
