@@ -1,5 +1,7 @@
 # changelog
 
+- 2026-09-30: IBKR News API 生产 `RuntimeError` 并非官方接口故障：四个 ticker 连续约 206–207 次报 `ibapi is required for IBKR news`，实际 Message Bus 镜像误用仓库根目录开发 `Dockerfile` 构建，缺少官方 `ibapi`；专用 `Dockerfile.v2` 原已安装并校验 TWS API。由干净的 `3fc53c72` 检出按 `Dockerfile.v2` 重建生产镜像，镜像和运行中容器均验证可导入 `ibapi 10.49.2`、`protobuf 5.29.5`；只替换 Compose override 的 Message Bus 镜像并重建该服务，保留正文补全独立镜像及其它服务，同时把已验收镜像标记为默认 `doxagent-v2:server` 供未来重建。BE、INTC、MU、RKLB 自然轮询均恢复 `succeeded`、连续失败归零，BE 有新 Raw 消息入库。未变更 IBKR API 逻辑、账号或交易服务。
+
 - 2026-09-30: Barron's ticker 页额外发现新闻卡片为客户端延迟加载，原列表解析会把页脚 `Investor Circle` 固定链接当作新消息，导致轮询假成功但没有真实发布。为该站点的既有 Site Access 浏览器请求增加有限滚动加载，分别采集 Barron's 与 Other Dow Jones 两个标签，并将解析范围限定到真实新闻卡片、提取美东发布时间；栏目未渲染时明确失败而不再虚报成功。生产验收发现无明确发布时间的存量卡片会被首次发现语义误发布，现仅让可解析精确时间的卡片进入该实时来源。补页脚误识别、双标签与日期/无日期回归测试。
 
 - 2026-09-30: Barron's 实页验收继续修正日期卡片边界：同一文章的图片与标题双链接按规范化文章 URL 去重，既防止把相邻文章的日期串用，也不误丢弃有精确日期的文章。补重复链接回归测试。
