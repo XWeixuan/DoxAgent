@@ -87,13 +87,33 @@ def test_barrons_ticker_does_not_admit_footer_as_news() -> None:
 def test_barrons_ticker_uses_rendered_news_card_without_main() -> None:
     html = """
     <html><title>MU Stock News</title><div id="__next">
-      <div class="news-card"><h2>Recent News</h2><div>
+      <div data-id="News_index"><h2>news</h2><div>
         <a href="https://www.barrons.com/articles/micron-results-123">
         Micron reports stronger memory revenue</a></div></div>
       <footer><a href="https://www.barrons.com/articles/barrons-investor-circle-introduction-stock-picks-af5a365b">
       Investor Circle</a></footer></div></html>"""
     rows = parse_barrons_ticker_listing(html, ticker="MU", now=NOW)
     assert [row.title for row in rows] == ["Micron reports stronger memory revenue"]
+
+
+def test_barrons_ticker_wrapped_tabs_and_et_publication_time() -> None:
+    html = """
+    <html><title>MU Stock News</title><main>
+      <section data-dj-section="barrons"><div class="card">
+        <span>Sep 23, 2026 11:15 a.m. ET</span><h3>
+        <a href="https://www.barrons.com/articles/micron-results-123">
+        Micron reports stronger memory revenue</a></h3></div></section>
+      <section data-dj-section="other"><div class="card">
+        <span>Sep 23, 2026 10:10 a.m. ET</span><h3>
+        <a href="https://www.wsj.com/articles/memory-chip-news-123">
+        Memory chip production news</a></h3></div></section>
+      <footer><a href="https://www.barrons.com/articles/barrons-investor-circle-introduction-stock-picks-af5a365b">
+      Investor Circle</a></footer>
+    </main></html>"""
+    rows = parse_barrons_ticker_listing(html, ticker="MU", now=NOW)
+    assert {row.publisher_name for row in rows} == {"Barron's", "The Wall Street Journal"}
+    assert {row.publication_time_basis for row in rows} == {"EXACT"}
+    assert {row.published_at.hour for row in rows} == {14, 15}
 
 
 def test_feed_atom_korean_timezone_and_digitimes_query_identity() -> None:

@@ -20,6 +20,10 @@ from .schema import PollContext, PollResult, RawMessageInput, SharedPollContext
 
 _TAIPEI = ZoneInfo("Asia/Taipei")
 _SEOUL = ZoneInfo("Asia/Seoul")
+_NEW_YORK = ZoneInfo("America/New_York")
+_BARRONS_ET_DATE = re.compile(
+    r"\b([A-Z][a-z]{2}) (\d{1,2}), (\d{4}) (\d{1,2}):(\d{2}) ([ap])\.m\. ET"
+)
 _DJ_PUBLISHERS = {
     "barrons.com": "Barron's",
     "wsj.com": "The Wall Street Journal",
@@ -225,18 +229,8 @@ def parse_barrons_ticker_listing(
     main = root.xpath("//main")
     scope = main[0] if main else None
     if scope is None:
-        headings = root.xpath(
-            '//*[normalize-space(text())="Recent News" and not(ancestor::script)]'
-        )
-        for heading in headings:
-            for parent in heading.iterancestors():
-                if parent.tag in {"body", "html"} or parent.get("id") == "__next":
-                    break
-                if parent.xpath('.//a[contains(@href,"/articles/")]'):
-                    scope = parent
-                    break
-            if scope is not None:
-                break
+        cards = root.xpath('//*[@data-id="News_index"]')
+        scope = cards[0] if cards else None
     # The bare stock-page shell contains a footer article, but no rendered news card.
     if scope is None:
         raise RuntimeError("barrons_ticker_news_not_rendered")
@@ -247,6 +241,7 @@ def parse_barrons_ticker_listing(
         '"ABCDEFGHIJKLMNOPQRSTUVWXYZ")="OTHER DOW JONES"]'
     )
     ordered = {node: index for index, node in enumerate(scope.iter())}
+    wrapped = scope.xpath('.//section[@data-dj-section]')
     other_starts = sorted(ordered[node] for node in other_heading)
     section_ends = sorted(
         ordered[node]
@@ -262,13 +257,23 @@ def parse_barrons_ticker_listing(
         if not re.search(r"/(?:articles|story|news)/[^/]+", parsed.path):
             continue
         is_barrons = host == "barrons.com"
+        if wrapped:
+            section = next(
+                (node.get("data-dj-section") for node in link.iterancestors()
+                 if node.get("data-dj-section")),
+                None,
+            )
+            if section not in {"barrons", "other"}:
+                continue
+            if is_barrons != (section == "barrons"):
+                continue
         # Other publishers are admitted only under the explicitly labelled Dow Jones section.
         under_other = any(
             start < ordered[link]
             and not any(start < end < ordered[link] for end in section_ends)
             for start in other_starts
         )
-        if not is_barrons and not under_other:
+        if not wrapped and not is_barrons and not under_other:
             continue
         title = _text(link)
         if len(title) < 15:
@@ -290,6 +295,23 @@ def parse_barrons_ticker_listing(
                 basis = "EXACT"
             except ValueError:
                 pass
+        if basis != "EXACT":
+            for ancestor in link.iterancestors():
+                if ancestor is scope:
+                    break
+                candidate = _text(ancestor)
+                if len(candidate) > 500:
+                    break
+                date_match = _BARRONS_ET_DATE.search(candidate)
+                if date_match:
+                    month, day, year, hour, minute, meridiem = date_match.groups()
+                    local = datetime.strptime(
+                        f"{month} {day} {year} {hour}:{minute} {meridiem.upper()}M",
+                        "%b %d %Y %I:%M %p",
+                    )
+                    published = local.replace(tzinfo=_NEW_YORK).astimezone(UTC)
+                    basis = "EXACT"
+                    break
         summary = next((_text(p) for p in card.xpath('.//p') if _text(p) != title), "")
         rows[_canonical(url)] = _message(
             source=_DJ_PUBLISHERS.get(host, host),

@@ -1001,18 +1001,14 @@ class SiteAccessRuntime:
                 status = response.status if response is not None else 200
                 headers = await response.all_headers() if response is not None else {}
                 if request.recipe_ref == "builtin:barrons_ticker@1":
-                    # The stock page's news card is client-loaded below the initial viewport.
-                    for _ in range(10):
-                        if await page.get_by_text("Recent News", exact=True).count():
-                            break
-                        await page.mouse.wheel(0, 650)
-                        await asyncio.sleep(0.5)
-                    try:
-                        await page.get_by_text("Recent News", exact=True).first.wait_for(
-                            state="visible", timeout=5_000
-                        )
-                    except Exception:
-                        pass
+                    html = await _capture_barrons_ticker_cards(page)
+                    return RuntimeResponse(
+                        int(status),
+                        page.url,
+                        _filtered_headers({str(k).lower(): str(v) for k, v in headers.items()}),
+                        body=html,
+                        provenance=lease.provenance,
+                    )
                 if request.recipe_parameters.get("expand"):
                     await _expand_article(page)
                 wait_selector = request.recipe_parameters.get("wait_selector")
@@ -1193,6 +1189,39 @@ class SiteAccessRuntime:
         await maintained.gate.close()
         await maintained.lease.__aexit__(None, None, None)
         return profile_id
+
+
+async def _capture_barrons_ticker_cards(page: Any) -> str:
+    """Read the two client-loaded stock-news tabs without the page's footer links."""
+    news = page.locator('[data-id="News_index"]').first
+    articles = news.locator('a[href*="/articles/"]')
+    for _ in range(12):
+        if await articles.count():
+            break
+        await page.mouse.wheel(0, 650)
+        await asyncio.sleep(0.5)
+    if not await articles.count():
+        return await page.content()
+    barrons_html = await news.inner_html()
+    barrons_urls = await articles.evaluate_all("links => links.map(link => link.href)")
+    other_html = ""
+    try:
+        other_tab = news.get_by_role("tab", name="OTHER DOW JONES")
+        await other_tab.click(timeout=3_000)
+        for _ in range(10):
+            await asyncio.sleep(0.5)
+            urls = await articles.evaluate_all("links => links.map(link => link.href)")
+            if urls != barrons_urls and await other_tab.get_attribute("aria-selected") == "true":
+                other_html = await news.inner_html()
+                break
+    except Exception:
+        pass
+    return (
+        "<html><title>Barron's ticker news</title><main>"
+        f'<section data-dj-section="barrons">{barrons_html}</section>'
+        f'<section data-dj-section="other">{other_html}</section>'
+        "</main></html>"
+    )
 
 
 async def _expand_article(page: Any) -> None:
