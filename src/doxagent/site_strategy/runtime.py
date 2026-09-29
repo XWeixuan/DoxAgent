@@ -1195,10 +1195,15 @@ async def _capture_barrons_ticker_cards(page: Any) -> str:
     """Read the two client-loaded stock-news tabs without the page's footer links."""
     news = page.locator('[data-id="News_index"]').first
     articles = news.locator('a[href*="/articles/"]')
-    for _ in range(12):
+    try:
+        await news.scroll_into_view_if_needed(timeout=5_000)
+    except Exception:
+        pass
+    for _ in range(24):
         if await articles.count():
             break
-        await page.mouse.wheel(0, 650)
+        if not await news.count():
+            await page.mouse.wheel(0, 650)
         await asyncio.sleep(0.5)
     if not await articles.count():
         return await page.content()
