@@ -619,6 +619,17 @@ class ReadStore:
             params.append(source_kind)
         if result == "POLICY_HIT" and kind == "case":
             where.append("json_extract(objects.payload,'$.final_policy_hit.value')=1")
+        elif result == "POLICY_RECALLED" and kind == "case":
+            # Read the admitted Case's R1 evidence at the same view watermark.
+            # A large reasoning field may externalize the entire round1 object.
+            where.append(
+                "EXISTS (SELECT 1 FROM objects recalled "
+                "WHERE recalled.kind='native:runtime_v2_cases' "
+                "AND recalled.ticker=objects.ticker AND recalled.id=objects.id "
+                "AND recalled.valid_from<=? AND (recalled.valid_to IS NULL OR recalled.valid_to>?) "
+                "AND policy_recalled(json_extract(recalled.payload,'$.w2_round1'))=1)"
+            )
+            params.extend([seq, seq])
         elif result:
             where.append(
                 "EXISTS (SELECT 1 FROM json_each(objects.payload,'$.results') WHERE value=?)"
@@ -628,6 +639,15 @@ class ReadStore:
             where.append("(sort_key,id)<(?,?)")
             params.extend(after)
         with self.connect() as db:
+            if result == "POLICY_RECALLED" and kind == "case":
+                def policy_recalled(raw):
+                    if raw is None:
+                        return False
+                    recall = self.content_codec.decode(json.loads(raw))
+                    ids = recall.get("candidate_policy_ids") if isinstance(recall, dict) else None
+                    return isinstance(ids, list) and bool(ids)
+
+                db.create_function("policy_recalled", 1, policy_recalled, deterministic=True)
             # Disjoint branches apply predicates and keyset before their own LIMIT.
             branches = ["object_current"] if seq == self.highwater(db) else ["object_current", "objects"]
             rows = []

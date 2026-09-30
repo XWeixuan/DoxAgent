@@ -797,3 +797,4 @@ OverviewStatus 增加可选 ib_gateway_status（CONNECTED / DISCONNECTED），�
 - 正文与大字段可使用不可变、SHA-256 校验的外部压缩块；公开 content_id、业务版本、正文 hash、UTF-8 byte offset、鉴权不变。缺失文件返回不可用，不能伪造空正文。
 
 补充正文尝试时间语义：历史 audit 若只证明 attempt_id/结果而没有实际 started_at，保留尝试事实与未知时间，不以 audit.created_at 伪造开始时间，不计入任意指定日窗口；ALL 仍可包含该已证明的尝试，coverage 保持不完整。新正文补全写入实际 started_at/completed_at。
+`result=POLICY_RECALLED` 为最近处理记录的独立筛选：固定 view 水位下原生 Case 的 W2R1 `candidate_policy_ids` 非空即匹配，与最终 Policy 命中无关；支持来源、时间与分页组合，不加入 results 或运行图节点。

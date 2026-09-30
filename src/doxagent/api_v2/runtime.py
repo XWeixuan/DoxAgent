@@ -83,6 +83,7 @@ def install(app: FastAPI) -> None:
             "TRADE_EXECUTION",
             "TRADE_NOT_EXECUTED",
             "POLICY_HIT",
+            "POLICY_RECALLED",
             "FAILURE",
         }:
             raise ApiFailure("VALIDATION_FAILED", 422)

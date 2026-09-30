@@ -257,3 +257,57 @@ def test_policy_hit_filter_uses_final_decision_and_frozen_pagination(tmp_path):
                               headers={"Authorization": "Bearer offline"})
         assert [item["case_id"] for item in filtered.json()["data"]["data"]["items"]] == ["case-1"]
         assert all("POLICY_HIT" not in row["data"]["results"] for row in records[1:])
+
+
+def test_policy_recalled_filter_uses_r1_evidence_and_frozen_view(tmp_path):
+    from fastapi.testclient import TestClient
+    from doxagent.api_v2.app import PREFIX, create_app
+    from doxagent.v2_control.repository import ControlRepository
+    from doxagent.persistent_runtime_v2.journal import RuntimeJournal
+    from tests.v2_backend.test_api import OfflineAuth
+
+    store = ReadStore(tmp_path / 'read.db')
+    store.migrate()
+    records = [{'kind': 'ticker', 'ticker': 'MU', 'id': 'MU', 'data': {'removed': False}}]
+    # Recalled but missed, recalled while pending, no recall, missing R1,
+    # final hit without recorded recall, and a different source.
+    for index, (ids, hit, source) in enumerate([
+        (['policy-1'], False, 'news'), (['policy-2'], None, 'news'),
+        ([], False, 'news'), (None, None, 'news'), ([], True, 'news'),
+        (['policy-3'], True, 'other'),
+    ]):
+        identity = f'case-{index}'
+        summary = rollup_case_trade(case(), [])
+        summary.update(case_id=identity, final_policy_hit=value(hit))
+        records.append({'kind': 'case', 'ticker': 'MU', 'id': identity,
+                        'sort': f'2026-09-29T09:0{index}:00Z', 'day': '2026-09-29',
+                        'source_id': source, 'data': summary})
+        records.append({'kind': 'native:runtime_v2_cases', 'ticker': 'MU', 'id': identity,
+                        'data': {'w2_round1': None if ids is None else {
+                            'candidate_policy_ids': ids, 'reason': 'x' * 17000}}})
+    store.ingest('test', 'seed-recalls', records)
+    control = ControlRepository(RuntimeJournal(tmp_path / 'runtime.db'))
+    control.migrate()
+    app = create_app(store=store, control=control, auth=OfflineAuth())
+    with TestClient(app) as client:
+        view = app.state.views.create('developer', 'RUNTIME', 'MU', 'ALL')['view_id']
+        params = {'view_id': view, 'result': 'POLICY_RECALLED', 'source_id': 'news', 'limit': 1}
+        url = PREFIX + '/tickers/MU/runtime/cases'
+        headers = {'Authorization': 'Bearer offline'}
+        first = client.get(url, params=params, headers=headers)
+        assert first.status_code == 200, first.text
+        page = first.json()['data']['data']
+        assert [item['case_id'] for item in page['items']] == ['case-1']
+        store.ingest('test', 'recall-changed', [{
+            'kind': 'native:runtime_v2_cases', 'ticker': 'MU', 'id': 'case-0',
+            'data': {'w2_round1': {'candidate_policy_ids': []}},
+        }])
+        second = client.get(url, params={**params, 'cursor': page['next_cursor']}, headers=headers)
+        assert second.status_code == 200, second.text
+        page = second.json()['data']['data']
+        assert [item['case_id'] for item in page['items']] == ['case-0']
+        assert not page['has_more']
+        newest = app.state.views.create('developer', 'RUNTIME', 'MU', 'ALL')['view_id']
+        fresh = client.get(url, params={**params, 'view_id': newest, 'limit': 20}, headers=headers)
+        assert [item['case_id'] for item in fresh.json()['data']['data']['items']] == ['case-1']
+        assert all('POLICY_RECALLED' not in r['data']['results'] for r in records if r['kind'] == 'case')

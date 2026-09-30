@@ -476,6 +476,7 @@ function RuntimeBody({
               >
                 <option value="">全部结果</option>
                 <option value="POLICY_HIT">Policy 命中</option>
+                <option value="POLICY_RECALLED">Policy 召回</option>
                 {(
                   [
                     "ARCHIVE",
