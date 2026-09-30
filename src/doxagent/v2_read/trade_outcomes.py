@@ -33,8 +33,10 @@ def classify_execution(summary: dict) -> tuple[str, list[str]]:
         return "UNKNOWN", ["ENTRY_FILL_EVIDENCE_MISSING"]
     if result in {"FAILED", "DIRECTION_DISABLED"}:
         return "NOT_EXECUTED", [reason or result]
+    if intent_status == "DELIVERY_FAILED" and intake == "REJECTED":
+        return "NOT_EXECUTED", ["DELIVERY_FAILED"]
     if intent_status == "UNKNOWN" or intake == "UNKNOWN":
-        return "UNKNOWN", ["DELIVERY_UNKNOWN"]
+        return "UNKNOWN", ["DELIVERY_FAILED_EXECUTION_UNKNOWN"] if reason else ["DELIVERY_UNKNOWN"]
     if intake == "NOT_RECEIVED" and intent_status in TERMINAL_UNSENT:
         return "NOT_EXECUTED", [intent_status]
     if intent_status in {"READY", "EXECUTION_ACCEPTED"} or intake == "EXECUTION_ACCEPTED":

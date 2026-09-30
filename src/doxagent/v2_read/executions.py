@@ -26,13 +26,21 @@ def pending_intent(store, ticker, intent):
     if existing and existing["intake_status"] == "EXECUTION_ACCEPTED":
         return []
     pin = intent.get("execution_pin") or {}
+    failure = intent.get("delivery_failure") or {}
+    failure_detail = failure.get("detail")
+    failure_reason = (
+        f"{failure['code']}: {failure_detail}" if failure_detail else failure.get("code")
+    )
     summary = {
         "execution_id": identity, "intent_id": identity, "case_id": intent["case_id"],
         "environment": available(pin["profile"]["environment"]) if pin else missing(),
         "profile_revision": available(pin["revision"]) if pin else missing(),
         "direction": intent["trade"]["decision"], "intent_status": intent["status"],
-        "intake_status": "UNKNOWN" if intent["status"] == "UNKNOWN" else "NOT_RECEIVED",
-        "entry_result": None, "entry_reason": None, "has_actual_fill": False,
+        "intake_status": (
+            "REJECTED" if intent["status"] == "DELIVERY_FAILED"
+            else "UNKNOWN" if intent["status"] == "UNKNOWN" else "NOT_RECEIVED"
+        ),
+        "entry_result": None, "entry_reason": failure_reason, "has_actual_fill": False,
         "triggered_at": available(instant(datetime.fromisoformat(intent["released_at"]))),
         "accepted_at": missing(), "first_fill_at": missing(),
         "filled_quantity": available("0"), "filled_notional_usd": available("0"),

@@ -7,6 +7,8 @@ import json
 from datetime import date
 from typing import Any, Protocol
 
+from pydantic import ValidationError
+
 from doxagent.semantic_clock import expires_at, semantic_day
 from doxagent.v2_control.repository import control_in, output_permission
 
@@ -294,5 +296,37 @@ class TradeOutputService:
                 self.journal.finish(task, receipt=receipt)
                 count += 1
             except Exception as exc:
+                # An exception after durable intake may have lost only its receipt.
+                # Reconcile before declaring a delivery failure or admitting again.
+                try:
+                    recovered = await asyncio.wait_for(adapter.reconcile(identity), timeout=30)
+                except Exception:
+                    recovered = {"status": "UNKNOWN"}
+                if recovered["status"] not in {"NOT_FOUND", "UNKNOWN"}:
+                    self.journal.set("trade_receipts", identity, recovered)
+                    intent["status"] = recovered["status"]
+                    self.journal.set("trade_intents", identity, intent)
+                    self.journal.finish(task, receipt=recovered)
+                    count += 1
+                    continue
                 self.journal.fail(task, exc)
+                failed = self.journal.get_task(task_id)
+                if failed and failed["status"] == "FAILED":
+                    if isinstance(exc, ValidationError):
+                        detail = "; ".join(
+                            f"{'.'.join(map(str, error['loc']))}: {error['msg']}"
+                            for error in exc.errors()
+                        )[:1000]
+                        code = "PROFILE_VALIDATION_FAILED"
+                    else:
+                        detail = None
+                        code = type(exc).__name__
+                    intent["delivery_failure"] = {
+                        "status": "FAILED",
+                        "code": code,
+                        "detail": detail,
+                    }
+                    if recovered["status"] == "NOT_FOUND":
+                        intent["status"] = "DELIVERY_FAILED"
+                    self.journal.set("trade_intents", identity, intent)
         return count

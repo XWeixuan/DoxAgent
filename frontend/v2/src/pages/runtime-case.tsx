@@ -702,14 +702,18 @@ function Executions({
               <header>
                 <strong>{e.direction}</strong>
                 <span>
-                  {
-                    {
-                      EXECUTED: "交易执行",
-                      NOT_EXECUTED: "交易未执行",
-                      PENDING: "等待执行",
-                      UNKNOWN: "执行结果未知",
-                    }[e.execution_state]
-                  }
+                  {e.intent_status === "DELIVERY_FAILED"
+                    ? "意图投递失败"
+                    : e.execution_reason_codes.includes(
+                          "DELIVERY_FAILED_EXECUTION_UNKNOWN",
+                        )
+                      ? "投递失败，执行待核对"
+                      : {
+                          EXECUTED: "交易执行",
+                          NOT_EXECUTED: "交易未执行",
+                          PENDING: "等待执行",
+                          UNKNOWN: "执行结果未知",
+                        }[e.execution_state]}
                 </span>
                 <span>{e.entry_result ?? e.intake_status}</span>
               </header>
