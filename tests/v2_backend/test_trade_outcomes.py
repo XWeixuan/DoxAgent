@@ -1,8 +1,11 @@
 """Formal intent and effective ENTRY fill determine distinct graph outcomes."""
 
+import json
+
 from doxagent.v2_read.graph import project as graph_project
 from doxagent.v2_read.maintenance import reproject_trade_outcomes
 from doxagent.v2_read.repository import ReadStore
+from doxagent.v2_read.projectors import DomainProjectors
 from doxagent.v2_read.trade_outcomes import classify_execution, rollup_case_trade
 
 
@@ -56,6 +59,35 @@ def test_trade_state_priority_and_distinct_results():
     assert "TRADE_NOT_EXECUTED" not in executed["results"]
     assert rollup_case_trade(case(), [execution(status="OUTPUT_RECORDED")])["result_settled"] is True
     assert rollup_case_trade(case(), [])["trade"]["state"] == "NOT_APPLICABLE"
+
+
+def test_delivery_failure_updates_case_without_invalid_trade_disposition(tmp_path):
+    store = ReadStore(tmp_path / "read.db")
+    store.migrate()
+    store.ingest("test", "seed", [
+        {"kind": "business_provenance", "ticker": "MU", "id": "case-1",
+         "data": {"basis": "TEST_FIXTURE"}},
+        {"kind": "case", "ticker": "MU", "id": "case-1", "data": case()},
+    ])
+    intent = {
+        "intent_id": "trade:case-1", "case_id": "case-1", "ticker": "MU",
+        "status": "DELIVERY_FAILED", "trade": {"decision": "LONG"},
+        "released_at": "2026-09-30T08:00:25+00:00",
+        "delivery_failure": {"status": "FAILED", "code": "PROFILE_VALIDATION_FAILED",
+                             "detail": "SHARED_CYCLE profile rejected by old delivery"},
+    }
+    records, _ = DomainProjectors(store)({
+        "table_name": "runtime_values", "entity_id": "trade:case-1",
+        "operation": "UPDATE", "seq": 12,
+        "row": {"namespace": "trade_intents", "key": "trade:case-1",
+                "payload": json.dumps(intent)},
+    })
+    summary = next(row["data"] for row in records if row["kind"] == "execution")
+    updated_case = next(row["data"] for row in records if row["kind"] == "case")
+    assert summary["execution_state"] == "NOT_EXECUTED"
+    assert summary["entry_reason"].startswith("PROFILE_VALIDATION_FAILED")
+    assert updated_case["trade_disposition"] == "READY"
+    assert updated_case["trade"]["reason_codes"] == ["DELIVERY_FAILED"]
 
 
 def test_graph_trade_execution_only_follows_intent_and_retracts(tmp_path):

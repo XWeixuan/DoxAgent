@@ -436,7 +436,7 @@ class DomainProjectors:
                     if row["namespace"] == "candidates"
                     else value.get("status", "NOT_EVALUATED")
                 )
-                if disposition == "UNKNOWN":
+                if disposition in {"UNKNOWN", "DELIVERY_FAILED"}:
                     disposition = "READY"
                 prior = {**prior, "trade_disposition": disposition, "revision": event["seq"]}
                 records.append(
