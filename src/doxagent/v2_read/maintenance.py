@@ -191,7 +191,7 @@ def reproject_trade_outcomes(store, *, ticker=None, limit=100):
     from .graph import project as project_graph
     from .trade_outcomes import project_case_trade, with_execution_state
 
-    key = "trade_outcomes_v1:" + (ticker or "*")
+    key = "trade_outcomes_v2:" + (ticker or "*")
     total = 0
     with WriterLock(Path(str(store.path) + ".projector")):
         while True:

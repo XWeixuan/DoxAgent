@@ -487,6 +487,8 @@ CaseStatus、TechnicalStatus、W3 status 保留当前 V2 枚举，不能套用�
 
 CaseSummary.results 是已发生的业务结果集合，可为空或多项：
 
+最近处理记录的 `result=POLICY_HIT` 是独立筛选语义，按固定 view 中 `final_policy_hit.value=true` 选择 Case，可与来源、时间及分页组合；不写入 results、不新增图节点。明确零成交的 Executor FAILED/DIRECTION_DISABLED 终结结果优先于旧投递 UNKNOWN，重试耗尽或资金不足在终结时立即计为交易未执行，无需等到语义交易日结束；尚未终结或成交对账不确定仍保留待定/未知。
+
 | ResultKind | 必须存在的事实 |
 |---|---|
 | ARCHIVE | 已完成 archive record/effect |

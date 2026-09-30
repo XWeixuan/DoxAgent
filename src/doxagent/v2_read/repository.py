@@ -617,7 +617,9 @@ class ReadStore:
         if source_kind:
             where.append("json_extract(payload,'$.source.kind')=?")
             params.append(source_kind)
-        if result:
+        if result == "POLICY_HIT" and kind == "case":
+            where.append("json_extract(objects.payload,'$.final_policy_hit.value')=1")
+        elif result:
             where.append(
                 "EXISTS (SELECT 1 FROM json_each(objects.payload,'$.results') WHERE value=?)"
             )

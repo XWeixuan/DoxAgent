@@ -475,6 +475,7 @@ function RuntimeBody({
                 onChange={(e) => set("result", e.target.value)}
               >
                 <option value="">全部结果</option>
+                <option value="POLICY_HIT">Policy 命中</option>
                 {(
                   [
                     "ARCHIVE",

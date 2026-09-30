@@ -39,6 +39,12 @@ def test_trade_state_priority_and_distinct_results():
     assert classify_execution(execution(status="UNKNOWN", intake="UNKNOWN"))[0] == "UNKNOWN"
     assert classify_execution(execution(status="DUPLICATE_POLICY"))[0] == "NOT_EXECUTED"
     assert classify_execution(execution(result="FAILED"))[0] == "NOT_EXECUTED"
+    for reason in ("RETRY_BUDGET_EXHAUSTED", "PORTFOLIO_CAPACITY_EXHAUSTED", "INSUFFICIENT_MARGIN"):
+        terminal = execution(status="UNKNOWN", intake="EXECUTION_ACCEPTED", result="FAILED")
+        terminal["entry_reason"] = reason
+        assert classify_execution(terminal) == ("NOT_EXECUTED", [reason])
+        rolled = rollup_case_trade(case(), [terminal])
+        assert "TRADE_NOT_EXECUTED" in rolled["results"]
     assert classify_execution(execution(result="FILLED", quantity="0"))[0] == "UNKNOWN"
     assert classify_execution(execution(result="FAILED", quantity="2"))[0] == "EXECUTED"
     pending = rollup_case_trade(case(), [execution()])
@@ -161,3 +167,61 @@ def test_runtime_export_reads_one_frozen_view_for_candidates_and_executions(tmp_
             else:
                 assert old.json()["data"]["data"]["orders"]["items"] == []
                 assert len(current.json()["data"]["data"]["orders"]["items"]) == 1
+
+
+def test_terminal_failure_backfill_routes_without_waiting_for_day_end(tmp_path):
+    store = ReadStore(tmp_path / "read.db")
+    store.migrate()
+    failed = execution(status="UNKNOWN", intake="EXECUTION_ACCEPTED", result="FAILED")
+    failed["entry_reason"] = "RETRY_BUDGET_EXHAUSTED"
+    store.ingest("test", "failed", [
+        {"kind": "case", "ticker": "MU", "id": "case-1", "data": case()},
+        {"kind": "execution", "ticker": "MU", "id": "intent-1", "parent": "case-1", "data": failed},
+    ])
+    assert reproject_trade_outcomes(store, ticker="MU")["processed"] == 1
+    assert store.get("case", "MU", "case-1")["trade"]["state"] == "NOT_EXECUTED"
+    assert ["TRADE_INTENT", "TRADE_NOT_EXECUTED"] in store.get("graph_case", "MU", "case-1")["edges"]
+    assert store.get("execution", "MU", "intent-1")["execution_state"] == "NOT_EXECUTED"
+
+
+def test_policy_hit_filter_uses_final_decision_and_frozen_pagination(tmp_path):
+    from fastapi.testclient import TestClient
+    from doxagent.api_v2.app import PREFIX, create_app
+    from doxagent.v2_control.repository import ControlRepository
+    from doxagent.persistent_runtime_v2.journal import RuntimeJournal
+    from tests.v2_backend.test_api import OfflineAuth
+
+    store = ReadStore(tmp_path / "read.db")
+    store.migrate()
+    records = [{"kind": "ticker", "ticker": "MU", "id": "MU", "data": {"removed": False}}]
+    for index, hit in enumerate((True, True, False, None)):
+        summary = rollup_case_trade(case(), [])
+        summary.update(case_id=f"case-{index}", final_policy_hit=value(hit))
+        records.append({"kind": "case", "ticker": "MU", "id": summary["case_id"],
+                        "sort": f"2026-09-29T09:0{index}:00Z", "day": "2026-09-29",
+                        "source_id": "news", "data": summary})
+    store.ingest("test", "seed-hits", records)
+    control = ControlRepository(RuntimeJournal(tmp_path / "runtime.db"))
+    control.migrate()
+    app = create_app(store=store, control=control, auth=OfflineAuth())
+    with TestClient(app) as client:
+        view = app.state.views.create("developer", "RUNTIME", "MU", "ALL")["view_id"]
+        params = {"view_id": view, "result": "POLICY_HIT", "source_id": "news", "limit": 1}
+        url = PREFIX + "/tickers/MU/runtime/cases"
+        first = client.get(url, params=params, headers={"Authorization": "Bearer offline"})
+        assert first.status_code == 200, first.text
+        page = first.json()["data"]["data"]
+        assert [item["case_id"] for item in page["items"]] == ["case-1"]
+        changed = {**records[1], "data": {**records[1]["data"], "final_policy_hit": value(False)}}
+        store.ingest("test", "hit-changed", [changed])
+        second = client.get(url, params={**params, "cursor": page["next_cursor"]},
+                            headers={"Authorization": "Bearer offline"})
+        assert second.status_code == 200, second.text
+        page = second.json()["data"]["data"]
+        assert [item["case_id"] for item in page["items"]] == ["case-0"]
+        assert not page["has_more"]
+        newest = app.state.views.create("developer", "RUNTIME", "MU", "ALL")["view_id"]
+        filtered = client.get(url, params={**params, "view_id": newest, "limit": 20},
+                              headers={"Authorization": "Bearer offline"})
+        assert [item["case_id"] for item in filtered.json()["data"]["data"]["items"]] == ["case-1"]
+        assert all("POLICY_HIT" not in row["data"]["results"] for row in records[1:])
