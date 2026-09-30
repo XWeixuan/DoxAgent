@@ -4,10 +4,6 @@ import type {
   ContentChunk,
   ContentRef,
   ExecutionSummary,
-  Fill,
-  MessageSummary,
-  ModelAttempt,
-  OrderSummary,
   Page,
   Period,
   Resource,
@@ -61,32 +57,6 @@ function limiter(max: number) {
 function required<T>(resource: Resource<T>, label: string): T {
   if (!resource.data) throw new Error(`${label}读取不完整，请重试。`);
   return resource.data;
-}
-
-function businessError(error: ModelAttempt["error"]) {
-  return error ? { code: error.code, message: error.message } : null;
-}
-
-function businessAttempt(attempt: ModelAttempt) {
-  const {
-    attempt_id,
-    node_id,
-    round,
-    ordinal,
-    attempt_number,
-    status,
-    timing,
-  } = attempt;
-  return {
-    attempt_id,
-    node_id,
-    round,
-    ordinal,
-    attempt_number,
-    status,
-    timing,
-    error: businessError(attempt.error),
-  };
 }
 
 function dedupeBusinessItems<T>(items: T[]): T[] {
@@ -146,86 +116,38 @@ async function fullPage<T, K extends keyof Endpoints>(
   return dedupeBusinessItems(items);
 }
 
-function summaryFields(detail: CaseDetail) {
-  const s = detail.summary;
-  return {
-    case_id: s.case_id,
-    title: s.title,
-    source: s.source,
-    semantic_day: s.semantic_day,
-    runtime_mode: s.runtime_mode,
-    status: s.status,
-    technical_status: s.technical_status,
-    received_at: s.received_at,
-    completed_at: s.completed_at,
-    duration_seconds: s.duration_seconds,
-    initial_route: s.initial_route,
-    resolved_route: s.resolved_route,
-    final_novelty: s.final_novelty,
-    final_policy_hit: s.final_policy_hit,
-    results: s.results,
-    trade: s.trade,
-    trade_disposition: s.trade_disposition,
-  };
-}
-
-function businessMessage(message: MessageSummary, body: unknown) {
-  return {
-    standard_message_id: message.standard_message_id,
-    title: message.title,
-    source: message.source,
-    url: message.url,
-    source_published_at: message.source_published_at,
-    collected_at: message.collected_at,
-    normalized_at: message.normalized_at,
-    stream_published_at: message.stream_published_at,
-    body,
-  };
-}
-
-function businessExecution(
-  summary: ExecutionSummary,
-  orders: OrderSummary[],
-  fills: Fill[],
+const resultLabels: Record<string, string> = {
+  ARCHIVE: "归档",
+  EVENT_DISCOVERY: "事件发现",
+  BADCASE: "Badcase",
+  TRADE_INTENT: "交易意图产生",
+  TRADE_EXECUTION: "交易执行",
+  TRADE_NOT_EXECUTED: "交易未执行",
+  FAILURE: "失败",
+};
+function references(
+  items: NonNullable<CaseDetail["w1"]["data"]>["references"],
 ) {
-  const {
-    execution_id,
-    intent_id,
-    direction,
-    environment,
-    profile_revision,
-    intent_status,
-    intake_status,
-    execution_state,
-    execution_reason_codes,
-    entry_result,
-    entry_reason,
-    triggered_at,
-    accepted_at,
-    first_fill_at,
-    filled_quantity,
-    filled_notional_usd,
-  } = summary;
-  return {
-    execution_id,
-    intent_id,
-    direction,
-    environment,
-    profile_revision,
-    intent_status,
-    intake_status,
-    execution_state,
-    execution_reason_codes,
-    entry_result,
-    entry_reason,
-    triggered_at,
-    accepted_at,
-    first_fill_at,
-    filled_quantity,
-    filled_notional_usd,
-    orders,
-    fills,
-  };
+  return items.map((r) =>
+    r.kind === "PROVISIONAL"
+      ? {
+          事件编号: r.event_id,
+          类型: "临时事实",
+          事实内容: r.provisional_proposition?.value ?? null,
+        }
+      : {
+          事件编号: r.event_id,
+          事件名称: r.title?.value ?? null,
+          ...(r.facts?.length
+            ? {
+                引用事实: r.facts.map((f) => ({
+                  编号: f.fact_id,
+                  内容: f.proposition.value ?? null,
+                })),
+              }
+            : {}),
+        },
+  );
 }
 
 export async function collectRuntimeCases(
@@ -310,77 +232,94 @@ export async function collectRuntimeCases(
       }),
     );
     const detail = required(response.data, "研判明细");
-    const attempts = async (
-      node: "W1" | "W2" | "W3",
-      first: Page<ModelAttempt>,
-    ) =>
-      (
-        await fullPage(
-          api,
-          limited,
-          "Attempts",
-          casePath +
-            "/attempts" +
-            queryString({ node, view_id: view, limit: "20" }),
-          view,
-          first,
-          signal,
-        )
-      ).map(businessAttempt);
-    const w1 = detail.w1.data
-      ? {
-          novelty: detail.w1.data.novelty,
-          confidence: detail.w1.data.confidence,
-          rounds: detail.w1.data.rounds,
-          references: detail.w1.data.references,
-          fact_attributions: detail.w1.data.fact_attributions,
-          unresolved_reference_ids: detail.w1.data.unresolved_reference_ids,
-          timing: detail.w1.data.timing,
-          attempts: await attempts("W1", detail.w1.data.attempts),
-          reasoning: await content(detail.w1.data.reasoning),
-        }
-      : { state: detail.w1.state, reason: detail.w1.reason };
-    const w2 = detail.w2.data
-      ? {
-          skipped: detail.w2.data.skipped,
-          reasoning_stage: detail.w2.data.reasoning_stage,
-          policy_hit: detail.w2.data.policy_hit,
-          confidence: detail.w2.data.confidence,
-          rounds: detail.w2.data.rounds,
-          policies: detail.w2.data.policies,
-          candidate_policies: detail.w2.data.candidate_policies,
-          unresolved_policy_ids: detail.w2.data.unresolved_policy_ids,
-          unresolved_candidate_policy_ids:
-            detail.w2.data.unresolved_candidate_policy_ids,
-          timing: detail.w2.data.timing,
-          attempts: await attempts("W2", detail.w2.data.attempts),
-          reasoning: await content(detail.w2.data.reasoning),
-        }
-      : { state: detail.w2.state, reason: detail.w2.reason };
-    const w3 = detail.w3.data
-      ? {
-          status: detail.w3.data.status,
-          mode: detail.w3.data.mode,
-          novelty: detail.w3.data.novelty,
-          policy_hit: detail.w3.data.policy_hit,
-          expert_trade_evaluated: detail.w3.data.expert_trade_evaluated,
-          expert_trade: detail.w3.data.expert_trade,
-          direction: detail.w3.data.direction,
-          prior_expectation: detail.w3.data.prior_expectation,
-          expectation_delta: detail.w3.data.expectation_delta,
-          references: detail.w3.data.references,
-          policies: detail.w3.data.policies,
-          unresolved_reference_ids: detail.w3.data.unresolved_reference_ids,
-          unresolved_policy_ids: detail.w3.data.unresolved_policy_ids,
-          timing: detail.w3.data.timing,
-          attempts: await attempts("W3", detail.w3.data.attempts),
-          reasoning: {
-            novelty: await content(detail.w3.data.reasoning.novelty),
-            policy: await content(detail.w3.data.reasoning.policy),
-            expert_trade: await content(detail.w3.data.reasoning.expert_trade),
-          },
-        }
-      : { state: detail.w3.state, reason: detail.w3.reason };
+    const policyCache = new Map<string, Promise<unknown>>();
+    const policy = (policyId: string) => {
+      if (!policyCache.has(policyId))
+        policyCache.set(
+          policyId,
+          (async () => {
+            const response = await limited(() =>
+              api.request(
+                "Policy",
+                casePath +
+                  `/policies/${id(policyId)}` +
+                  queryString({ view_id: view }),
+                { signal, view },
+              ),
+            );
+            const p = required(response.data, "固定版本策略").policy;
+            return {
+              "Policy ID": p.policy_id,
+              名称: p.title,
+              方向: p.decision,
+              匹配范围: p.match_scope,
+              激活条件: p.activation_conditions.map((c) => ({
+                编号: c.condition_id,
+                条件内容: c.criterion,
+                参考状态: c.calibration.reference_state,
+                触发边界: c.calibration.trigger_boundary,
+              })),
+              关联预期: p.source_refs.map((r) => ({
+                Shell: r.shell_id,
+                Unit: r.expectation_id,
+                Gap: r.gap_id,
+              })),
+            };
+          })(),
+        );
+      return policyCache.get(policyId)!;
+    };
+    const policyList = (links: Array<{ policy_id: string }> = []) =>
+      Promise.all(links.map((p) => policy(p.policy_id)));
+    const text = async (ref: Resource<ContentRef>) => (await content(ref)).text;
+    const first = detail.w1.data,
+      second = detail.w2.data,
+      third = detail.w3.data;
+    if (
+      second?.unresolved_candidate_policy_ids?.length ||
+      second?.unresolved_policy_ids?.length
+    )
+      throw new Error("Case 固定版本的 Policy 缺失，导出已停止。");
+    const w1 = {
+      结论: first?.novelty.value ?? null,
+      置信度: first?.confidence.value ?? null,
+      判断理由: first ? await text(first.reasoning) : null,
+      引用依据: [
+        ...references(first?.references ?? []),
+        ...(first?.unresolved_reference_ids ?? []).map((eventId) => ({
+          事件编号: eventId,
+          事件名称: null,
+        })),
+      ],
+    };
+    const w2 = {
+      是否跳过: second?.skipped ?? null,
+      是否命中: second?.policy_hit.value ?? null,
+      置信度: second?.confidence.value ?? null,
+      召回策略: await policyList(second?.candidate_policies),
+      命中策略: await policyList(second?.policies),
+      判断理由: second ? await text(second.reasoning) : null,
+    };
+    const w3 = {
+      研判模式: third?.mode ?? null,
+      新旧复判: {
+        结论: third?.novelty.value ?? null,
+        判断理由: third ? await text(third.reasoning.novelty) : null,
+      },
+      "Policy 复判": {
+        是否命中: third?.policy_hit.value ?? null,
+        判断理由: third ? await text(third.reasoning.policy) : null,
+      },
+      专家交易判断: {
+        建议交易: third?.expert_trade.value ?? null,
+        方向: third?.direction.value ?? null,
+        原有预期: third?.prior_expectation.value ?? null,
+        预期变化: third?.expectation_delta.value ?? null,
+        判断理由: third ? await text(third.reasoning.expert_trade) : null,
+      },
+      引用依据: references(third?.references ?? []),
+      未能解析的事件引用: third?.unresolved_reference_ids ?? [],
+    };
     const messages = await fullPage(
       api,
       limited,
@@ -408,16 +347,12 @@ export async function collectRuntimeCases(
         signal,
       )
     ).map((c) => ({
-      candidate_id: c.candidate_id,
-      dedupe_key: c.dedupe_key,
-      originating_node: c.originating_node,
-      proposition: c.proposition,
-      assertion_state: c.assertion_state,
-      subject_time: c.subject_time,
-      occurrence_date: c.occurrence_date,
-      entities: c.entities,
-      provisional_event_id: c.provisional_event_id,
-      created_at: c.created_at,
+      内容: c.proposition,
+      断言状态: c.assertion_state,
+      所属时期: c.subject_time,
+      发生日期: c.occurrence_date,
+      产生节点: c.originating_node.split("_")[0],
+      临时事件编号: c.provisional_event_id,
     }));
     const executionsResponse = await limited(() =>
       api.request("Executions", casePath + "/executions" + params, {
@@ -435,126 +370,44 @@ export async function collectRuntimeCases(
       executionPage,
       signal,
     );
-    const executionDetails = [];
-    for (const execution of executions) {
-      const executionPath = `${root}/executions/${id(execution.execution_id)}`;
-      const response = await limited(() =>
-        api.request("Execution", executionPath + params, { signal, view }),
-      );
-      const data = required(response.data, "交易详情");
-      const orders = await fullPage<OrderSummary, "Orders">(
-        api,
-        limited,
-        "Orders",
-        executionPath + "/orders" + params,
-        view,
-        data.orders,
-        signal,
-      );
-      const fills = await fullPage<Fill, "Fills">(
-        api,
-        limited,
-        "Fills",
-        executionPath + "/fills" + params,
-        view,
-        data.fills,
-        signal,
-      );
-      executionDetails.push(
-        businessExecution(
-          data.execution,
-          orders.map((o) => ({
-            order_attempt_id: o.order_attempt_id,
-            execution_id: o.execution_id,
-            leg: o.leg,
-            side: o.side,
-            order_type: o.order_type,
-            quantity: o.quantity,
-            limit_price: o.limit_price,
-            state: o.state,
-            broker_status: o.broker_status,
-            sent_at: o.sent_at,
-            settled_at: o.settled_at,
-          })),
-          fills.map((f) => ({
-            fill_id: f.fill_id,
-            execution_id: f.execution_id,
-            order_attempt_id: f.order_attempt_id,
-            correction_revision: f.correction_revision,
-            leg: f.leg,
-            side: f.side,
-            executed_at: f.executed_at,
-            quantity: f.quantity,
-            price: f.price,
-            commission_usd: f.commission_usd,
-          })),
-        ),
-      );
-    }
-    const messageDetails = [];
-    for (const message of messages) {
-      messageDetails.push(
-        businessMessage(
-          message,
-          await content({
-            state: "AVAILABLE",
-            data: message.body,
-            reason: null,
-            coverage: detail.w1.coverage,
-          }),
-        ),
-      );
-    }
-    const failures: Array<{
-      stage: string;
-      status: string;
-      error: ReturnType<typeof businessError>;
-      occurred_at: string | null;
-    }> = detail.failures.map((failure) => ({
-      stage: failure.stage,
-      status: failure.status,
-      error: businessError(failure.error),
-      occurred_at: failure.occurred_at,
+    const executionDetails = executions.map((e) => ({
+      方向: e.direction,
+      环境: e.environment.value ?? null,
+      意图产生时间: e.triggered_at.value ?? null,
+      执行结果: e.execution_state,
+      原因: e.entry_reason ?? (e.execution_reason_codes.join(", ") || null),
+      成交数量: e.filled_quantity.value ?? null,
+      成交金额USD: e.filled_notional_usd.value ?? null,
     }));
-    for (const attempt of [
-      ...(w1 && "attempts" in w1 ? (w1.attempts ?? []) : []),
-      ...(w2 && "attempts" in w2 ? (w2.attempts ?? []) : []),
-      ...(w3 && "attempts" in w3 ? (w3.attempts ?? []) : []),
-    ]) {
-      if (!attempt.error) continue;
-      if (
-        failures.some(
-          (failure) =>
-            failure.stage === attempt.node_id &&
-            failure.occurred_at === attempt.timing.completed_at.value &&
-            failure.error?.code === attempt.error?.code,
-        )
-      )
-        continue;
-      failures.push({
-        stage: attempt.node_id,
-        status: attempt.status,
-        error: attempt.error,
-        occurred_at: attempt.timing.completed_at.value ?? null,
+    const messageDetails = [];
+    for (const message of messages)
+      messageDetails.push({
+        发布时间: message.source_published_at,
+        正文: await text({
+          state: "AVAILABLE",
+          data: message.body,
+          reason: null,
+          coverage: detail.w1.coverage,
+        }),
       });
-    }
+    const s = detail.summary;
     return {
-      summary: summaryFields(detail),
-      w1,
-      w2,
-      w3,
-      messages: messageDetails,
-      candidates,
-      executions: executionDetails,
-      failures,
-      references: {
-        runtime_activation_id: detail.runtime_activation_id,
-        library_snapshot_id: detail.library.library_snapshot_id,
-        library_version: detail.library.library_version,
-        policy_set_version: detail.policy_set.policy_set_version,
-        provisional_snapshot_version: detail.provisional_snapshot_version,
+      基本信息: {
+        "Case ID": s.case_id,
+        标题: s.title.value ?? null,
+        来源: s.source.name,
+        语义交易日: s.semantic_day,
+        接收时间: s.received_at,
+        完成时间: s.completed_at.value ?? null,
+        处理状态: s.status,
+        处理结果: s.results.map((r) => resultLabels[r] ?? r),
       },
-      hot_path: detail.hot_path,
+      消息原文: messageDetails,
+      "W1 新旧判断": w1,
+      "W2 Policy 判断": w2,
+      "W3 二轮研判": w3,
+      发现的新事实: candidates,
+      交易意图与执行: executionDetails,
     };
   };
 
@@ -587,9 +440,18 @@ export async function collectRuntimeCases(
 
 export function downloadRuntimeCases(result: RuntimeCasesExport) {
   const filename = `doxagent-${result.ticker.replace(/[^a-zA-Z0-9_-]/g, "_")}-runtime-cases-${result.exported_at.replace(/[-:]/g, "").replace(/\.\d+Z$/, "Z")}.json`;
-  const blob = new Blob([JSON.stringify(result, null, 2) + "\n"], {
-    type: "application/json;charset=utf-8",
-  });
+  const blob = new Blob(
+    [
+      JSON.stringify(
+        result.cases.length === 1 ? result.cases[0] : result.cases,
+        null,
+        2,
+      ) + "\n",
+    ],
+    {
+      type: "application/json;charset=utf-8",
+    },
+  );
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;

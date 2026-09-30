@@ -24,6 +24,39 @@ def resource(data: Any, reason: str = "NOT_RECORDED") -> dict:
 def install(app: FastAPI) -> None:
     store, views = app.state.store, app.state.views
 
+    @app.get("/api/doxagent/v2/tickers/{ticker}/runtime/cases/{case_id}/policies/{policy_id}")
+    async def export_policy(ticker: str, case_id: str, policy_id: str, request: Request) -> Any:
+        args = app.state.query(request, {"view_id"})
+        view = views.get(request.state.principal.user_id, args.get("view_id", ""), ticker)
+        if view["wire"]["page"] != "RUNTIME":
+            raise ApiFailure("SCOPE_MISMATCH", 400)
+        evidence = CaseEvidence(store, ticker, case_id, view["seq"])
+        case = evidence.fields("native:runtime_v2_cases", case_id,
+                               ["version_pin", "w2_round1", "w2_final", "w3_result"])
+        if not case or not store.get("case", ticker, case_id, view["seq"]):
+            raise ApiFailure("RESOURCE_NOT_FOUND", 404)
+        recall = case.get("w2_round1") or (evidence.latest_success("W2", "R1") or {}).get("output") or {}
+        referenced = set(recall.get("candidate_policy_ids", []))
+        referenced.update((case.get("w2_final") or {}).get("policy_ids", []))
+        referenced.update(((case.get("w3_result") or {}).get("policy") or {}).get("policy_ids", []))
+        if policy_id not in referenced:
+            raise ApiFailure("RESOURCE_NOT_FOUND", 404)
+        pin = case.get("version_pin") or {}
+        activation = store.get("activation_revision", ticker, pin.get("activation_revision_id", ""), view["seq"])
+        if not activation or activation["policy_set"]["policy_set_version"] != pin.get("policy_set_version"):
+            raise ApiFailure("PINNED_ARTIFACT_MISSING", 404)
+        with store.connect() as db:
+            row = db.execute(
+                "SELECT payload FROM objects WHERE kind='policy_detail' AND ticker=? AND parent=? "
+                "AND json_extract(payload,'$.summary.policy_id')=? AND valid_from<=? "
+                "AND (valid_to IS NULL OR valid_to>?) LIMIT 1",
+                (ticker, activation["policy_set"]["artifact_id"], policy_id, view["seq"], view["seq"]),
+            ).fetchone()
+        if not row:
+            raise ApiFailure("PINNED_ARTIFACT_MISSING", 404)
+        return app.state.respond(request, "PolicyDetail", json.loads(row[0]),
+                                 view_id=args["view_id"], read_seq=view["seq"])
+
     @app.get("/api/doxagent/v2/tickers/{ticker}/runtime/cases/{case_id}")
     async def detail(ticker: str, case_id: str, request: Request) -> Any:
         args = app.state.query(request, {"view_id", "stream_cursor"})

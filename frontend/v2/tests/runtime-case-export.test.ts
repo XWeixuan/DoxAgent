@@ -1,6 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { ApiClient } from "../src/core/api";
-import { collectRuntimeCases } from "../src/core/runtime-case-export";
+import {
+  collectRuntimeCases,
+  downloadRuntimeCases,
+} from "../src/core/runtime-case-export";
 
 const coverage = {
   state: "COMPLETE",
@@ -193,6 +196,29 @@ async function fixture(failContent = false) {
     async request(name: string, path: string) {
       calls.push(`${name}:${path}`);
       if (name === "Case") return { data: resource(detail) };
+      if (name === "Policy")
+        return {
+          data: resource({
+            policy: {
+              policy_id: "policy-1",
+              title: "Pinned policy",
+              decision: "SHORT",
+              match_scope: "full scope".repeat(200),
+              activation_conditions: ["C1", "C3", "C9"].map((condition_id) => ({
+                condition_id,
+                criterion: "criterion".repeat(200),
+                calibration: {
+                  reference_state: "reference".repeat(200),
+                  trigger_boundary: "boundary".repeat(200),
+                },
+              })),
+              source_refs: [
+                { shell_id: "S1", expectation_id: "U2", gap_id: "G3" },
+              ],
+            },
+          }),
+        };
+
       if (name === "Attempts")
         return {
           data: resource(
@@ -273,7 +299,26 @@ async function fixture(failContent = false) {
       throw new Error(`unexpected ${name}`);
     },
   } as unknown as ApiClient;
-  return { client, calls, bodyText };
+  return { client, calls, bodyText, detail };
+}
+
+interface ExportedCase {
+  基本信息: { 处理结果: string[] };
+  消息原文: Array<{ 正文: string }>;
+  "W1 新旧判断": { 判断理由: string | null };
+  "W2 Policy 判断": {
+    判断理由: string | null;
+    召回策略: Array<{
+      方向: string;
+      匹配范围: string;
+      激活条件: Array<{ 编号: string; 触发边界: string }>;
+    }>;
+  };
+  "W3 二轮研判": {
+    专家交易判断: { 判断理由: string | null; 建议交易: boolean | null };
+  };
+  发现的新事实: unknown[];
+  交易意图与执行: Array<{ 成交数量: string }>;
 }
 
 const selection = {
@@ -295,41 +340,54 @@ describe("Runtime Case JSON export", () => {
       new AbortController().signal,
     );
     expect(result.selection.case_count).toBe(1);
-    const entry = result.cases[0] as {
-      w1: { attempts: unknown[]; reasoning: { text: string } };
-      w2: {
-        reasoning: { text: string };
-        policies: Array<{ policy_id: string }>;
-      };
-      w3: { reasoning: { expert_trade: { text: string } } };
-      messages: Array<{ body: { text: string } }>;
-      candidates: unknown[];
-      executions: Array<{
-        orders: unknown[];
-        fills: unknown[];
-        filled_quantity: { value: string };
-      }>;
-    };
-    expect(entry.w1.attempts).toHaveLength(21);
-    expect(entry.messages).toHaveLength(21);
-    expect(entry.candidates).toHaveLength(21);
-    expect(entry.executions[0].orders).toHaveLength(21);
-    expect(entry.executions[0].fills).toHaveLength(21);
-    expect(entry.w1.reasoning.text).toBe(bodyText);
-    expect(entry.w2.reasoning.text).toBe(bodyText);
-    expect(entry.w3.reasoning.expert_trade.text).toBe(bodyText);
-    expect(entry.w2.policies[0].policy_id).toBe("policy-1");
-    expect(entry.executions[0].filled_quantity.value).toBe(
-      "1.000000000000000001",
-    );
-    expect(entry.messages[20].body.text).toBe(bodyText);
+    const entry = result.cases[0] as ExportedCase;
+    expect(Object.keys(entry)).toEqual([
+      "基本信息",
+      "消息原文",
+      "W1 新旧判断",
+      "W2 Policy 判断",
+      "W3 二轮研判",
+      "发现的新事实",
+      "交易意图与执行",
+    ]);
+    expect(entry["消息原文"]).toHaveLength(21);
+    expect(entry["发现的新事实"]).toHaveLength(21);
+    expect(entry["W1 新旧判断"]["判断理由"]).toBe(bodyText);
+    expect(entry["W2 Policy 判断"]["判断理由"]).toBe(bodyText);
+    expect(entry["W3 二轮研判"]["专家交易判断"]["判断理由"]).toBe(bodyText);
+    const policy = entry["W2 Policy 判断"]["召回策略"][0];
+    expect(policy["方向"]).toBe("SHORT");
+    expect(policy["匹配范围"]).toBe("full scope".repeat(200));
+    expect(policy["激活条件"]).toHaveLength(3);
+    expect(policy["激活条件"][2]["编号"]).toBe("C9");
+    expect(policy["激活条件"][2]["触发边界"]).toBe("boundary".repeat(200));
+    expect(entry["交易意图与执行"][0]["成交数量"]).toBe("1.000000000000000001");
+    expect(entry["消息原文"][20]["正文"]).toBe(bodyText);
+    expect(entry["基本信息"]["处理结果"]).toEqual(["事件发现"]);
     expect(calls.filter((call) => call.startsWith("Content:"))).toHaveLength(2);
+    expect(calls.filter((call) => call.startsWith("Policy:"))).toHaveLength(1);
+    expect(calls.find((call) => call.startsWith("Policy:"))).toContain(
+      "/cases/case-1/policies/policy-1?view_id=view-1",
+    );
     expect(
-      calls
-        .filter((call) => call.startsWith("Attempts:"))
-        .every((call) => call.includes("view_id=view-1")),
-    ).toBe(true);
-    expect(JSON.stringify(result)).not.toContain("view_id");
+      calls.some((call) => /^(Attempts|Execution|Orders|Fills):/.test(call)),
+    ).toBe(false);
+    const json = JSON.stringify(entry);
+    for (const field of [
+      "attempt_id",
+      "revision",
+      "coverage",
+      "profile_revision",
+      "hot_path",
+      "content_id",
+      "sha256",
+      "view_id",
+      "selection",
+      "state",
+      "orders",
+      "fills",
+    ])
+      expect(json).not.toContain(`"${field}"`);
   });
 
   it("rejects a failed content read instead of producing partial JSON", async () => {
@@ -337,5 +395,76 @@ describe("Runtime Case JSON export", () => {
     await expect(
       collectRuntimeCases(client, selection, new AbortController().signal),
     ).rejects.toThrow("network failed");
+  });
+  it("exports absent stages as null values and empty lists", async () => {
+    const { client, detail } = await fixture();
+    Object.assign(detail, {
+      w1: resource(null),
+      w2: resource(null),
+      w3: resource(null),
+    });
+    const result = await collectRuntimeCases(
+      client,
+      selection,
+      new AbortController().signal,
+    );
+    const entry = result.cases[0] as ExportedCase;
+    expect(entry["W1 新旧判断"]).toEqual({
+      结论: null,
+      置信度: null,
+      判断理由: null,
+      引用依据: [],
+    });
+    expect(entry["W2 Policy 判断"]["召回策略"]).toEqual([]);
+    expect(entry["W3 二轮研判"]["专家交易判断"]["建议交易"]).toBeNull();
+  });
+
+  it("stops when a pinned policy definition cannot be resolved", async () => {
+    const { client, detail } = await fixture();
+    Object.assign(detail.w2.data as object, {
+      unresolved_candidate_policy_ids: ["missing-policy"],
+    });
+    await expect(
+      collectRuntimeCases(client, selection, new AbortController().signal),
+    ).rejects.toThrow("固定版本的 Policy 缺失");
+  });
+
+  it("downloads one template object or an array without export metadata", async () => {
+    const { client } = await fixture();
+    const result = await collectRuntimeCases(
+      client,
+      selection,
+      new AbortController().signal,
+    );
+    let blob: Blob | undefined;
+    const link = { click: vi.fn(), remove: vi.fn(), href: "", download: "" };
+    vi.stubGlobal("document", {
+      createElement: () => link,
+      body: { appendChild: vi.fn() },
+    });
+    vi.spyOn(URL, "createObjectURL").mockImplementation((value) => {
+      blob = value as Blob;
+      return "blob:export";
+    });
+    vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+    vi.useFakeTimers();
+    try {
+      downloadRuntimeCases(result);
+      expect(JSON.parse(await blob!.text())).toEqual(result.cases[0]);
+      downloadRuntimeCases({
+        ...result,
+        cases: [result.cases[0], result.cases[0]],
+      });
+      expect(JSON.parse(await blob!.text())).toEqual([
+        result.cases[0],
+        result.cases[0],
+      ]);
+      expect(link.click).toHaveBeenCalledTimes(2);
+      vi.runAllTimers();
+    } finally {
+      vi.useRealTimers();
+      vi.restoreAllMocks();
+      vi.unstubAllGlobals();
+    }
   });
 });

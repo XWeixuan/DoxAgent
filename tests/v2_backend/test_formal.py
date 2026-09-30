@@ -428,6 +428,14 @@ def test_formal_activation_indexes_exact_documents_policy_and_library(
                         "data": case,
                     },
                     *mapper.case(case, 2),
+                    {
+                        **policy_record, "id": "different-policy-version",
+                        "parent": "different-policy-artifact",
+                        "data": {
+                            **policy_record["data"],
+                            "policy": {**policy_record["data"]["policy"], "match_scope": "Different current definition"},
+                        },
+                    },
                     attempt_record("r1-turn", "R1", "SUCCEEDED"),
                     attempt_record("r2-turn", "R2", "FAILED"),
                     {
@@ -461,6 +469,17 @@ def test_formal_activation_indexes_exact_documents_policy_and_library(
                 second["candidate_policies"][0]["title"]["value"]
                 == policy_record["data"]["summary"]["title"]
             )
+            exported = client.get(
+                PREFIX + f"/tickers/MU/runtime/cases/{case['case_id']}/policies/{policy_id}",
+                params={"view_id": current_view}, headers={"Authorization": "Bearer offline"},
+            )
+            assert exported.status_code == 200, exported.text
+            assert exported.json()["data"]["data"]["policy"] == policy_record["data"]["policy"]
+            unrelated = client.get(
+                PREFIX + f"/tickers/MU/runtime/cases/{case['case_id']}/policies/not-recalled",
+                params={"view_id": current_view}, headers={"Authorization": "Bearer offline"},
+            )
+            assert unrelated.status_code == 404
             assert second["policies"] == []
             assert second["policy_hit"]["value"] is None
             assert second["rounds"][1]["attempt_count"] == 1
