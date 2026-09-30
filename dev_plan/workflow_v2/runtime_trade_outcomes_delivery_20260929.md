@@ -25,3 +25,7 @@
 代码已以 f3da669b 推送至 main；新加坡服务器从独立、干净的 /home/ubuntu/doxagent-release-f3da669b 检出构建并逐个切换 V2 API、Web、Read projector 与 Message Bus。原生产检出的未提交改动保留，Luna 恢复队列的 initialization、O4、scheduler 容器和恢复脚本均未重启。API/Web 健康，生产前端与 /healthz 返回 200。
 
 正式 Read 历史回填及其前置备份尚未执行：生产 Read SQLite 约 17 GB、当前 Case 约 2,803 个，Luna 恢复队列正在处理历史任务；此时停投影器并对同盘数据库进行全量备份/回填会增加队列争用。待恢复队列结束或取得独立维护窗口后，按上文顺序备份、离线验证，再运行 reproject-trade-outcomes 并验收历史图与筛选。新 Case 已由新版 projector 实时投影；旧 Case 的完整历史交易结果在回填前不视为验收完成。
+
+## 2026-10-01 历史回填完成
+
+Luna 恢复完成后，完整备份、离线核验及生产 3,243 条 Case 回填均已完成；8 条已执行、30 条未执行的图节点和边一致，projector 已恢复。新增 Policy 命中筛选，按最终命中布尔值筛出 6 条 Case。详见 [交付与验收记录](runtime_case_backfill_delivery_20261001.md)，本节取代上文历史回填待执行状态。
