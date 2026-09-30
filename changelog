@@ -1291,3 +1291,4 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-01 · 最近处理记录新增 Policy 召回筛选，按同一 view 水位的 W2R1 候选 Policy 列表非空选择 Case，不依赖最终命中；兼容外置召回证据、来源与分页，无需新增路由节点或历史回填。
 2026-10-01 · Policy 召回筛选 0271a18b 已推送并部署 API/Web；真实 Read 核验 BE 34/INTC 28/MU 54/RKLB 18 条与 W2R1 证据一致。定向后端 8 passed，前端类型检查、Runtime ESLint 与构建通过；本次仅增加原生筛选选项，未开展全页面浏览器回归。
 2026-10-01 · 按用户 JSON 模板收敛 Runtime Case 导出为基本信息、消息原文、W1/W2/W3、发现事实和交易意图执行七组中文字段，去除审计包装、逐次尝试、订单/成交流水与版本元数据；单 Case 为对象、多 Case 为数组。新增按 Case 固定 Policy artifact/view 读取完整策略定义接口，保留全部条件原文与精确金额；前端 5 项/后端 6 项定向测试通过，类型检查、ESLint 与构建通过。
+2026-10-01 · 导出模板改造 6e2e2dd4 已推送并部署 API/Web，模板示例真实 Case 的固定 Policy 经隔离 API 校验定义完整一致、实际条件数 1；生产页面/healthz 200，未重启投影器或交易服务。

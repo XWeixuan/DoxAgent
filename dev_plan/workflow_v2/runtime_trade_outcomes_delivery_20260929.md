@@ -29,3 +29,11 @@
 ## 2026-10-01 历史回填完成
 
 Luna 恢复完成后，完整备份、离线核验及生产 3,243 条 Case 回填均已完成；8 条已执行、30 条未执行的图节点和边一致，projector 已恢复。新增 Policy 命中筛选，按最终命中布尔值筛出 6 条 Case。详见 [交付与验收记录](runtime_case_backfill_delivery_20261001.md)，本节取代上文历史回填待执行状态。
+
+## 2026-10-01 导出结构修订
+
+按用户 runtime_case_export_redesign_template.json 修订下载 JSON：基本信息、消息原文、W1 新旧判断、W2 Policy 判断、W3 二轮研判、发现的新事实、交易意图与执行七组中文业务字段；单条为对象、多条为数组。下载中不包含 selection/format 元数据、Resource/Value 包装、逐次尝试、订单/成交流水或版本引用；本修订取代上文旧导出字段范围。缺失值为 null、列表为空数组，未解析的 W3 引用保留原编号。W2 固定策略定义不完整时停止导出而不静默遗漏。
+
+新增 Case 固定 Policy 读取路由，使用该 Case activation 的 Policy artifact 和当前导出固定 view；完整输出方向、匹配范围、所有原 condition_id/criterion/calibration 及 source_refs，金额与数量不转浮点。前端 5 项、后端 6 项定向检查通过，类型检查、ESLint 与构建通过。模板示例真实 Case 的 Policy 在隔离临时 Read 中经新 API 核验，完整定义相同，实际条件数 1；模板 C2 仅为示意，未生成不存在的条件。
+
+实现 6e2e2dd4 已推送并部署 API/Web，生产页面与 healthz 返回 200。API 因查询池启动耗时短暂超出 Compose 等待时限，待健康后启动已创建 Web；未重启投影器和交易服务。本次未开展全页面浏览器回归。
