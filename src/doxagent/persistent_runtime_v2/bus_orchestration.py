@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import asyncio
+from datetime import timedelta
 from typing import Any
 
 from doxagent.message_bus_v2.schema import AcquisitionMode, SourceDefinition, TickerSourceBinding
-from doxagent.semantic_clock import semantic_day
+from doxagent.semantic_clock import boundary, semantic_day
 
 from .calendar import MarketCalendar
 from .journal import RuntimeJournal
@@ -35,29 +36,35 @@ class BusOrchestration:
                 del self._inflight[key]
         roster_eligible = scheduler._eligible_bindings(now, include_inactive_hours=True)
         shared_realtime: dict[str, tuple[SourceDefinition, list[TickerSourceBinding]]] = {}
+        # All bindings use the same semantic day. Do not perform two synchronous
+        # calendar/SQLite lookups per binding on the network event loop.
+        calendar_error = None
+        try:
+            day = semantic_day(now)
+            realtime_mode = self.calendar.is_session(day)
+            if not self.calendar.is_session(day - timedelta(days=1)) and now < boundary(
+                day, minute=1
+            ):
+                realtime_mode = False
+        except Exception as exc:
+            realtime_mode = None
+            calendar_error = str(exc)
+        calendar_failed_tickers: set[str] = set()
         for source, binding in eligible:
             if self.journal.get("pause", binding.ticker) == "all":
                 continue
-            try:
-                realtime = self.calendar.is_session(semantic_day(now))
-                from datetime import timedelta
-
-                from doxagent.semantic_clock import boundary
-
-                if not self.calendar.is_session(
-                    semantic_day(now) - timedelta(days=1)
-                ) and now < boundary(semantic_day(now), minute=1):
-                    realtime = False
-            except Exception as exc:
-                self.journal.gap(
-                    f"bus-calendar:{binding.ticker}",
-                    binding.ticker,
-                    "CALENDAR_UNAVAILABLE",
-                    str(exc),
-                )
+            if realtime_mode is None:
+                if binding.ticker not in calendar_failed_tickers:
+                    self.journal.gap(
+                        f"bus-calendar:{binding.ticker}", binding.ticker,
+                        "CALENDAR_UNAVAILABLE", calendar_error or "calendar unavailable",
+                    )
+                    calendar_failed_tickers.add(binding.ticker)
                 realtime = (
                     self.journal.get("schedule", binding.ticker, {}).get("mode") == "REALTIME"
                 )
+            else:
+                realtime = realtime_mode
             if realtime:
                 if source.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION:
                     shared_realtime.setdefault(source.source_id, (source, []))[1].append(binding)

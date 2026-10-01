@@ -559,7 +559,9 @@ class SharedFeedAdapter:
                 for attempt in range(2):
                     try:
                         if proxy:
-                            async with httpx.AsyncClient(proxy=str(proxy), timeout=25) as client:
+                            async with httpx.AsyncClient(
+                                proxy=str(proxy), timeout=httpx.Timeout(25, connect=5, pool=5)
+                            ) as client:
                                 response = await client.get(source.entry_url)
                         else:
                             response = await self.client.get(

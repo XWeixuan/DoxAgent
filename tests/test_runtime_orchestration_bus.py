@@ -39,6 +39,7 @@ def test_closed_poll_once_and_slow_source_never_blocks_loop(tmp_path):
             _eligible_bindings=lambda *args, **kwargs: [(source, binding)],
             _initialize_due_slots=lambda *args: None,
             _update_capacity_alerts=lambda *args: None,
+            distribution_worker=None,
         )
         owner = BusOrchestration(journal)
         await owner.run_once(scheduler)
@@ -79,6 +80,7 @@ def test_pending_sweep_does_not_block_realtime_poll(tmp_path):
             _eligible_bindings=lambda *args, **kwargs: [(source, binding)],
             _initialize_due_slots=lambda *args: None,
             _update_capacity_alerts=lambda *args: None,
+            distribution_worker=None,
         )
         journal.put_task(
             "sweep",

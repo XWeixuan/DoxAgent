@@ -173,10 +173,11 @@ class GlobalPollScheduler:
     ) -> list[tuple[SourceDefinition, TickerSourceBinding]]:
         instant = now
         states = {state.ticker: state for state in self.repository.list_ticker_states()}
+        sources = {source.source_id: source for source in self.repository.list_sources()}
         result: list[tuple[SourceDefinition, TickerSourceBinding]] = []
         for binding in self.repository.list_bindings(active_only=True):
             ticker_state = states.get(binding.ticker)
-            source = self.repository.get_source(binding.source_id)
+            source = sources.get(binding.source_id)
             if (
                 ticker_state is None
                 or ticker_state.status is not TickerMonitoringStatus.RUNNING
@@ -323,7 +324,9 @@ class GlobalPollScheduler:
             if result.site_access_deferred:
                 self.distribution.release_run(run["run_id"], token)
                 if mode == "REALTIME":
-                    retry_at = result.site_access_retry_not_before or self._next_distribution_due(source)
+                    retry_at = (
+                        result.site_access_retry_not_before or self._next_distribution_due(source)
+                    )
                     for binding, _, _ in roster:
                         state = self.repository.get_poll_state(binding)
                         self.repository.save_poll_state(state.model_copy(update={
