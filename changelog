@@ -1,5 +1,7 @@
 # changelog
 
+- 2026-10-01: 逐源恢复后继续定位 Reuters 偶发 ConnectTimeout：消息总线主线程性能采样显示大量同步 SQLite/交易日日历访问，部分失败发生在内部 RPC 建连阶段、尚未进入 Site Access，并非 Reuters 拒绝访问。将同一次调度的交易日判断从按 binding 重复执行改为一次共享，保留每轮重新读取 override 与各 ticker 的降级决策；源定义按轮批量读取，避免每个 binding 单独打开 SQLite。补交易日查询次数与故障降级回归；现有编排测试补齐 distribution_worker 空值夹具。生产热路径验收与六源结果详见本轮修复记录。
+
 - 2026-10-01: 多源浏览器采集超时修复：生产 TrendForce 两入口、DIGITIMES 英文、Barron's 与 Reuters 在同一时段停止完成浏览器请求，而 resolve/readyz 与 Chrome CDP 仍可响应；排除 OOM/进程额度耗尽。隔离复现 JointBudget 全局队头使独立空闲 Identity 也无法执行，改为仅在当前可执行任务中按优先级调度；Condition 等待不再另建 wait_for 子任务。修复 External page 创建取消时未归还页面额度，给导航 gate/页面关闭独立有限清理时间，关闭超时只处理自有 target；访问总预算覆盖排队前工作，RPC 读取使用预算+15 秒且重试不刷新总时限，区分排队与浏览器执行超时。新增只读访问诊断，超预算滞留请求使 readyz 降级。共享 RSS 对 ConnectError/连接超时/读取断连仅重试一次、共用 30 秒时限；HuggingNews 已核验既有代理返回有效 Atom，直连 403 不作为替代。定向回归 67 passed/1 skipped，扩充取消回归后相关集合 53 passed/1 skipped；生产逐源复验另记，不宣称已捕获旧进程挂起任务的具体栈。
 
 - 2026-09-30: IBKR News API 生产 `RuntimeError` 并非官方接口故障：四个 ticker 连续约 206–207 次报 `ibapi is required for IBKR news`，实际 Message Bus 镜像误用仓库根目录开发 `Dockerfile` 构建，缺少官方 `ibapi`；专用 `Dockerfile.v2` 原已安装并校验 TWS API。由干净的 `3fc53c72` 检出按 `Dockerfile.v2` 重建生产镜像，镜像和运行中容器均验证可导入 `ibapi 10.49.2`、`protobuf 5.29.5`；只替换 Compose override 的 Message Bus 镜像并重建该服务，保留正文补全独立镜像及其它服务，同时把已验收镜像标记为默认 `doxagent-v2:server` 供未来重建。BE、INTC、MU、RKLB 自然轮询均恢复 `succeeded`、连续失败归零，BE 有新 Raw 消息入库。未变更 IBKR API 逻辑、账号或交易服务。
@@ -1295,3 +1297,4 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-01 · 按用户 JSON 模板收敛 Runtime Case 导出为基本信息、消息原文、W1/W2/W3、发现事实和交易意图执行七组中文字段，去除审计包装、逐次尝试、订单/成交流水与版本元数据；单 Case 为对象、多 Case 为数组。新增按 Case 固定 Policy artifact/view 读取完整策略定义接口，保留全部条件原文与精确金额；前端 5 项/后端 6 项定向测试通过，类型检查、ESLint 与构建通过。
 2026-10-01 · 导出模板改造 6e2e2dd4 已推送并部署 API/Web，模板示例真实 Case 的固定 Policy 经隔离 API 校验定义完整一致、实际条件数 1；生产页面/healthz 200，未重启投影器或交易服务。
 2026-10-01 · 修复策略页因历史恢复的消费/生效证据 UNKNOWN 而将全部当前正式 Policy 排除的问题：当前筛选允许正式 ACTIVE 且没有明确失效/已消费证据的未知项，原 Value/覆盖状态及 KPI 仍保留未知；不恢复 RETIRED、明确无效或已消费策略，不改变周期筛选。11 项定向回归通过；内置浏览器工具初始化报 kernel assets 路径错误，本次不冒称浏览器验收。
+2026-10-01 · 策略可读性修复 baee8818 已推送并部署 API；真实 policy_catalog 在隔离 API 分页验证 MU 44/BE 138/INTC 100/RKLB 95 条当前正式定义可读，未知字段不改写，明确失效/已消费不恢复，Web/投影器/交易服务未重启。
