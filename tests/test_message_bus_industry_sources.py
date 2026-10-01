@@ -18,6 +18,49 @@ from doxagent.site_strategy.seeds import seed_specs
 NOW = datetime(2026, 9, 24, tzinfo=UTC)
 
 
+@pytest.mark.asyncio
+@pytest.mark.parametrize("persistent", [False, True])
+async def test_feed_connection_loss_has_one_bounded_retry(persistent: bool) -> None:
+    from contextlib import asynccontextmanager
+    from types import SimpleNamespace
+
+    import httpx
+
+    from doxagent.message_bus_v2.industry_sources import SharedFeedAdapter
+
+    attempts = []
+    def respond(request):
+        attempts.append(request)
+        if persistent or len(attempts) == 1:
+            raise httpx.ConnectError("temporary connection loss", request=request)
+        return httpx.Response(200, text="""
+            <feed xmlns="http://www.w3.org/2005/Atom"><entry>
+              <id>https://huggingnews.com/ai/chip-story</id><title>AI chip story</title>
+              <link rel="alternate" href="https://huggingnews.com/ai/chip-story"/>
+              <published>2026-09-23T18:49:35Z</published>
+            </entry></feed>""")
+
+    @asynccontextmanager
+    async def permit():
+        yield
+
+    context = SimpleNamespace(
+        source=SimpleNamespace(entry_url="https://huggingnews.com/feed.xml",
+                               content_language="en", default_parameters={}),
+        request_permit=permit, requested_at=NOW, window_start=None,
+    )
+    async with httpx.AsyncClient(transport=httpx.MockTransport(respond)) as client:
+        adapter = SharedFeedAdapter(client, "HuggingNews")
+        if persistent:
+            with pytest.raises(httpx.ConnectError):
+                await adapter.poll_shared(context)
+        else:
+            result = await adapter.poll_shared(context)
+            assert len(result.messages) == 1
+    assert len(attempts) == 2
+    assert attempts[0].extensions["timeout"]["connect"] == 5
+
+
 def test_trendforce_news_and_press_are_separate_shared_entries() -> None:
     news = """
     <html><title>News | TrendForce</title><div class="insight-list-item">

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 from datetime import datetime
 from typing import Protocol
@@ -39,6 +40,7 @@ class SiteAccessClient:
             raise ValueError("Site Access client requires a base_url or in-process service")
         self.base_url = base_url.rstrip("/") if base_url else None
         self.token = token
+        self.timeout_seconds = timeout_seconds
         self.service = service
         self._client = (
             httpx.AsyncClient(
@@ -62,10 +64,10 @@ class SiteAccessClient:
         if revision is not None:
             params["revision"] = revision
         try:
-            response = await self._client.get("/v1/resolve", params=params)
+            response = await self._client.get("/v1/resolve", params=params, timeout=15)
         except (httpx.ReadError, httpx.RemoteProtocolError):
             # A stale pooled connection can close before this read-only request returns.
-            response = await self._client.get("/v1/resolve", params=params)
+            response = await self._client.get("/v1/resolve", params=params, timeout=15)
         response.raise_for_status()
         return ResolvedSite.model_validate(response.json())
 
@@ -74,14 +76,26 @@ class SiteAccessClient:
             return await self.service.execute(request)
         assert self._client is not None
         payload = request.model_dump(mode="json")
+        # The RPC owns a request budget, not a fresh multi-minute timeout per retry.
+        seconds = min(self.timeout_seconds, request.remaining_budget_ms / 1000 + 15)
+        timeout = httpx.Timeout(seconds, connect=min(5, seconds), pool=min(5, seconds))
         try:
-            response = await self._client.post("/v1/access/execute", json=payload)
-        except (httpx.ReadError, httpx.RemoteProtocolError):
-            if request.method != "GET":
-                raise
-            # Reuse the request ID: Site Access deduplicates an in-flight or
-            # recently completed read if only its HTTP response was lost.
-            response = await self._client.post("/v1/access/execute", json=payload)
+            async with asyncio.timeout(seconds):
+                try:
+                    response = await self._client.post(
+                        "/v1/access/execute", json=payload, timeout=timeout
+                    )
+                except (httpx.ReadError, httpx.RemoteProtocolError):
+                    if request.method != "GET":
+                        raise
+                    # Same ID preserves server-side deduplication if the response was lost.
+                    response = await self._client.post(
+                        "/v1/access/execute", json=payload, timeout=timeout
+                    )
+        except TimeoutError as exc:
+            raise httpx.ReadTimeout(
+                f"Site Access RPC exceeded {seconds:g}s including cleanup"
+            ) from exc
         response.raise_for_status()
         return AccessResult.model_validate(response.json())
 

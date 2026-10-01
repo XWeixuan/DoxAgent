@@ -62,7 +62,8 @@ class SiteBudget:
                                 acquired = True
                                 break
                             try:
-                                await asyncio.wait_for(self._condition.wait(), timeout=delay)
+                                async with asyncio.timeout(delay):
+                                    await self._condition.wait()
                             except TimeoutError:
                                 pass
                         else:
@@ -102,6 +103,8 @@ class _JointWaiter:
     purpose: SitePurpose
     sequence: int
     enqueued_at: float
+    site_limit: int
+    identity_limit: int
 
     def rank(self, now: float) -> tuple[int, int]:
         # A crawler waiting 30 seconds joins the BODY FIFO without outranking
@@ -157,11 +160,22 @@ class JointBudget:
                         purpose,
                         self._sequence,
                         time.monotonic(),
+                        site_max_concurrency,
+                        identity_max_concurrency,
                     )
                     self._waiters.append(waiter)
                     while True:
                         now = time.monotonic()
-                        best = min(self._waiters, key=lambda item: item.rank(now))
+                        # Only ready work competes for priority. A busy Identity must
+                        # not block unrelated sites with their own free browser.
+                        eligible = [
+                            item for item in self._waiters
+                            if self._site_active.get(item.site_key, 0) < item.site_limit
+                            and self._identity_active.get(item.identity_id, 0) < item.identity_limit
+                            and self._site_next.get(item.site_key, 0.0) <= now
+                            and self._identity_next.get(item.identity_id, 0.0) <= now
+                        ]
+                        best = min(eligible, key=lambda item: item.rank(now)) if eligible else None
                         capacity = (
                             self._site_active.get(site_key, 0) < site_max_concurrency
                             and self._identity_active.get(identity_id, 0) < identity_max_concurrency
@@ -184,10 +198,12 @@ class JointBudget:
                             acquired = True
                             break
                         try:
-                            await asyncio.wait_for(
-                                self._condition.wait(),
-                                timeout=max(0.01, min(delay, 1.0)) if delay > 0 else 1.0,
-                            )
+                            # Keep the condition wait and cancellation in this task;
+                            # wait_for creates a child that also reacquires the lock.
+                            async with asyncio.timeout(
+                                max(0.01, min(delay, 1.0)) if delay > 0 else 1.0
+                            ):
+                                await self._condition.wait()
                         except TimeoutError:
                             pass
             yield max(0, int((time.monotonic() - started) * 1000))

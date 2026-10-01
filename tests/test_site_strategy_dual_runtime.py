@@ -314,3 +314,59 @@ async def test_joint_budget_never_holds_one_dimension_while_waiting_for_other() 
     release.set()
     await asyncio.gather(first, second)
     assert entered == ["a", "b"]
+
+
+@pytest.mark.asyncio
+async def test_joint_budget_busy_identity_does_not_block_independent_site() -> None:
+    budget = JointBudget()
+    held = asyncio.Event()
+    release = asyncio.Event()
+    entered: list[str] = []
+
+    async def run(site: str, first: bool = False) -> None:
+        async with budget.permit(
+            SitePurpose.BODY, site_key=site, identity_id=site,
+            site_max_concurrency=1, site_min_interval_ms=0,
+            identity_max_concurrency=1, identity_min_interval_ms=0,
+            timeout_seconds=1,
+        ):
+            entered.append(site)
+            if first:
+                held.set()
+                await release.wait()
+
+    active = asyncio.create_task(run("busy", True))
+    await held.wait()
+    queued = asyncio.create_task(run("busy"))
+    while not budget._waiters:
+        await asyncio.sleep(0)
+    independent = asyncio.create_task(run("free"))
+    try:
+        await asyncio.wait_for(asyncio.shield(independent), timeout=0.2)
+        assert entered == ["busy", "free"]
+    finally:
+        release.set()
+        await asyncio.gather(active, queued, independent, return_exceptions=True)
+
+
+@pytest.mark.asyncio
+async def test_joint_budget_timeout_and_cancellation_release_waiters() -> None:
+    budget = JointBudget()
+    kwargs = dict(site_key="a", identity_id="a", site_max_concurrency=1,
+                  site_min_interval_ms=50, identity_max_concurrency=1,
+                  identity_min_interval_ms=50)
+    async with budget.permit(SitePurpose.BODY, timeout_seconds=1, **kwargs):
+        async def queued() -> None:
+            async with budget.permit(SitePurpose.CRAWLER, timeout_seconds=0.01, **kwargs):
+                pytest.fail("capacity is already occupied")
+        with pytest.raises(TimeoutError):
+            await queued()
+        task = asyncio.create_task(queued())
+        await asyncio.sleep(0)
+        task.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await task
+    async with budget.permit(SitePurpose.CRAWLER, timeout_seconds=1, **kwargs):
+        pass
+    assert not budget._waiters
+    assert budget._identity_active["a"] == 0

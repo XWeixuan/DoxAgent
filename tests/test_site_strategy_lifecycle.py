@@ -6,10 +6,77 @@ from pathlib import Path
 import pytest
 
 from doxagent.site_strategy.repository import SiteStrategyRepository
-from doxagent.site_strategy.runtime import OwnerFileLock, PersistentBrowserPool, RuntimeResponse
+from doxagent.site_strategy.runtime import (
+    OwnerFileLock,
+    PersistentBrowserPool,
+    RuntimeResponse,
+    _close_owned_page,
+)
 from doxagent.site_strategy.schema import ProfileOperationalState
 from doxagent.site_strategy.seeds import bootstrap_seed
 from doxagent.site_strategy.service import ProfileUnavailableError, SiteStrategyService
+
+
+@pytest.mark.asyncio
+async def test_page_cleanup_timeout_closes_only_the_owned_target() -> None:
+    closed = []
+
+    class Page:
+        _doxagent_target_id = "owned-target"
+        async def close(self):
+            await asyncio.Event().wait()
+
+    class CDP:
+        async def send(self, method, params):
+            closed.append((method, params))
+            return {"success": True}
+
+    await _close_owned_page(Page(), CDP(), timeout_seconds=0.01)
+    assert closed == [("Target.closeTarget", {"targetId": "owned-target"})]
+
+
+@pytest.mark.asyncio
+async def test_access_deadline_includes_pre_admission_work(service, monkeypatch) -> None:
+    from doxagent.site_strategy.schema import AccessMode, AccessRequest, SitePurpose
+
+    async def stalled(_request):
+        await asyncio.Event().wait()
+
+    monkeypatch.setattr(service, "_execute_uncached", stalled)
+    result = await service.execute(AccessRequest(
+        operation_id="bounded-access", purpose=SitePurpose.CRAWLER,
+        url="https://www.reuters.com/site-search/?query=Micron",
+        mode=AccessMode.BROWSER, remaining_budget_ms=10,
+    ))
+    assert result.reason_code == "access_budget_exhausted"
+    assert not service._inflight
+    assert not service.access_diagnostics()["stalled"]
+
+
+@pytest.mark.asyncio
+async def test_cancelled_external_page_creation_returns_capacity(service, monkeypatch) -> None:
+    from types import SimpleNamespace
+
+    from doxagent.site_strategy.external_runtime import ExternalChromeRuntime
+
+    started = asyncio.Event()
+    class Context:
+        async def new_page(self):
+            started.set()
+            await asyncio.Event().wait()
+
+    adapter = ExternalChromeRuntime(None, max_pages=1)
+    async def entry(_identity, _egress):
+        return SimpleNamespace(context=Context())
+    monkeypatch.setattr(adapter, "_entry", entry)
+    task = asyncio.create_task(adapter.page(None, None))
+    await started.wait()
+    task.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await task
+    async with asyncio.timeout(0.1):
+        await adapter._page_slots.acquire()
+    adapter._page_slots.release()
 
 
 @pytest.fixture

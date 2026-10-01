@@ -149,6 +149,10 @@ def create_app(
             "accepting": service.accepting,
         }
 
+    @app.get("/v1/diagnostics/access", dependencies=[Depends(admin)])
+    async def access_diagnostics() -> dict[str, object]:
+        return service.access_diagnostics()
+
     @app.get(
         "/v1/resolve",
         response_model=ResolvedSite,

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import re
 from datetime import UTC, datetime, timedelta
 from email.utils import parsedate_to_datetime
@@ -552,11 +553,24 @@ class SharedFeedAdapter:
             raise RuntimeError("shared publisher feed URL/language is missing")
         proxy = source.default_parameters.get("feed_proxy_url")
         async with context.request_permit():
-            if proxy:
-                async with httpx.AsyncClient(proxy=str(proxy), timeout=25) as client:
-                    response = await client.get(source.entry_url)
-            else:
-                response = await self.client.get(source.entry_url)
+            # One retry for read-only connection loss; all attempts share a short
+            # deadline so an RSS failure cannot occupy the shared collector for minutes.
+            async with asyncio.timeout(30):
+                for attempt in range(2):
+                    try:
+                        if proxy:
+                            async with httpx.AsyncClient(proxy=str(proxy), timeout=25) as client:
+                                response = await client.get(source.entry_url)
+                        else:
+                            response = await self.client.get(
+                                source.entry_url, timeout=httpx.Timeout(25, connect=5, pool=5)
+                            )
+                        break
+                    except (httpx.ConnectError, httpx.ConnectTimeout,
+                            httpx.ReadError, httpx.RemoteProtocolError):
+                        if attempt:
+                            raise
+                        await asyncio.sleep(0.2)
         response.raise_for_status()
         if len(response.content) > 2_000_000:
             raise RuntimeError("publisher_feed_exceeds_size_limit")

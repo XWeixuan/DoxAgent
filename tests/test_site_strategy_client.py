@@ -122,3 +122,23 @@ async def test_resolve_retries_read_error_once() -> None:
         await client.close()
     assert resolved.site_id == "trendforce"
     assert calls == 2
+
+
+@pytest.mark.asyncio
+async def test_access_http_timeout_follows_request_budget_not_global_default() -> None:
+    request = _access_request().model_copy(update={"remaining_budget_ms": 45_000})
+    observed = []
+    def respond(http_request: httpx.Request) -> httpx.Response:
+        observed.append(http_request.extensions["timeout"])
+        return httpx.Response(200, json={
+            "request_id": request.request_id, "operation_id": request.operation_id,
+            "disposition": "SUCCESS", "site_id": "trendforce", "runtime_key": "trendforce",
+            "strategy_revision": 1,
+        })
+    client = await _client_with_transport(httpx.MockTransport(respond))
+    try:
+        await client.execute(request)
+    finally:
+        await client.close()
+    assert observed[0]["read"] == 60
+    assert observed[0]["connect"] == 5

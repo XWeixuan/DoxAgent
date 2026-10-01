@@ -290,6 +290,7 @@ class SiteStrategyService:
             controller_id=controller_id,
         )
         self._inflight: dict[str, asyncio.Task[AccessResult]] = {}
+        self._inflight_started: dict[str, tuple[float, float]] = {}
         self._cache: OrderedDict[str, tuple[float, int, AccessResult]] = OrderedDict()
         self._cache_bytes = 0
         self._cache_lock = asyncio.Lock()
@@ -340,7 +341,36 @@ class SiteStrategyService:
 
     @property
     def browser_driver_ready(self) -> bool:
-        return self.runtime.browser_pool.driver_ready
+        return self.runtime.browser_pool.driver_ready and not self.access_diagnostics()["stalled"]
+
+    def access_diagnostics(self) -> dict[str, object]:
+        now = time.monotonic()
+        operations = []
+        for key, task in tuple(self._inflight.items()):
+            started, budget = self._inflight_started.get(key, (now, 0))
+            age = now - started
+            awaiting = []
+            coroutine = task.get_coro()
+            while coroutine is not None and len(awaiting) < 12:
+                frame = getattr(coroutine, "cr_frame", None)
+                if frame is not None:
+                    awaiting.append(f"{frame.f_code.co_name}:{frame.f_lineno}")
+                coroutine = getattr(coroutine, "cr_await", None)
+            operations.append({
+                "task": task.get_name(), "age_ms": int(age * 1000),
+                "budget_ms": int(budget * 1000), "done": task.done(),
+                "stalled": not task.done() and age > budget + 15,
+                "awaiting": awaiting,
+            })
+        joint = self.budgets.joint
+        return {
+            "stalled": any(item["stalled"] for item in operations),
+            "operations": operations,
+            "queue_waiters": len(joint._waiters),
+            "queue_locked": joint._condition.locked(),
+            "site_active": dict(joint._site_active),
+            "identity_active": dict(joint._identity_active),
+        }
 
     @property
     def accepting(self) -> bool:
@@ -630,15 +660,26 @@ class SiteStrategyService:
                 return cached[2]
             task = self._inflight.get(cache_key)
             if task is None:
-                task = asyncio.create_task(self._execute_uncached(request))
+                task = asyncio.create_task(
+                    self._execute_deadlined(request),
+                    name=f"site-access:{self.resolve(request.url).site_id}:{request.request_id}",
+                )
                 self._inflight[cache_key] = task
+                self._inflight_started[cache_key] = (
+                    time.monotonic(), request.remaining_budget_ms / 1000,
+                )
+                task.add_done_callback(
+                    lambda finished, key=cache_key: self._forget_access_task(key, finished)
+                )
                 created = True
         try:
             result = await asyncio.shield(task)
         finally:
             if task.done():
                 async with self._cache_lock:
-                    self._inflight.pop(cache_key, None)
+                    if self._inflight.get(cache_key) is task:
+                        self._inflight.pop(cache_key, None)
+                        self._inflight_started.pop(cache_key, None)
         if task.done() and not task.cancelled() and task.exception() is None:
             await self._put_cache(result, cache_key=cache_key)
             if created:
@@ -670,6 +711,11 @@ class SiteStrategyService:
                 )
         return result
 
+    def _forget_access_task(self, key: str, task: asyncio.Task[AccessResult]) -> None:
+        if self._inflight.get(key) is task:
+            self._inflight.pop(key, None)
+            self._inflight_started.pop(key, None)
+
     def _cache_key(self, request: AccessRequest) -> str:
         resolved = self.resolve(request.url, revision=request.strategy_revision)
         identities: list[tuple[str, int, int]] = []
@@ -694,6 +740,19 @@ class SiteStrategyService:
             }
         )
         return f"{request.request_id}:{fingerprint}"
+
+    async def _execute_deadlined(self, request: AccessRequest) -> AccessResult:
+        started = time.monotonic()
+        try:
+            async with asyncio.timeout(request.remaining_budget_ms / 1000):
+                return await self._execute_uncached(request)
+        except TimeoutError:
+            resolved = self.resolve(request.url, revision=request.strategy_revision)
+            return self._result(
+                request, resolved, AccessDisposition.BUDGET_DEFERRED,
+                category=FailureCategory.BUDGET_DEFERRED,
+                reason="access_budget_exhausted", started=started,
+            )
 
     async def _execute_uncached(self, request: AccessRequest) -> AccessResult:
         started = time.monotonic()
@@ -799,6 +858,7 @@ class SiteStrategyService:
                     timeout_seconds=min(remaining, queue_cap),
                 )
             )
+            attempting = False
             try:
                 async with permit as queue_wait_ms:
                     current = self.repository.get_runtime(resolved.runtime_key)
@@ -811,9 +871,17 @@ class SiteStrategyService:
                             auth_missing += 1
                             continue
                         profile = current_profile
+                        attempting = True
+                        remaining = max(
+                            0.001,
+                            request.remaining_budget_ms / 1000 - (time.monotonic() - started),
+                        )
                         async with asyncio.timeout(remaining):
                             response, category, reason, network_ms = await self._attempt(
-                                request, resolved, combination, profile, egress
+                                request.model_copy(
+                                    update={"remaining_budget_ms": int(remaining * 1000)}
+                                ),
+                                resolved, combination, profile, egress
                             )
                     attempt = AccessAttempt(
                         combination_id=combination.combination_id,
@@ -850,7 +918,7 @@ class SiteStrategyService:
                     resolved,
                     AccessDisposition.BUDGET_DEFERRED,
                     category=FailureCategory.BUDGET_DEFERRED,
-                    reason="site_queue_timeout",
+                    reason="browser_attempt_timeout" if attempting else "site_queue_timeout",
                     attempts=attempts,
                     started=started,
                 )

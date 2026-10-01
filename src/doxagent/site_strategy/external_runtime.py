@@ -12,7 +12,7 @@ from typing import Any
 from doxagent.resource_safety import SafetyLevel, SafetyStateReader
 
 from .browser_runtime import RuntimeProvenance
-from .runtime import EXPECTED_PLAYWRIGHT_VERSION, _RawBrowserCDP
+from .runtime import EXPECTED_PLAYWRIGHT_VERSION, _close_owned_page, _RawBrowserCDP
 from .schema import BrowserIdentitySpec, BrowserResidency, BrowserRuntimeKind, ProxyEgress
 from .supervisor_client import ChromeSupervisorClient, SupervisorInstance
 
@@ -52,7 +52,7 @@ class _ExternalLease:
             return
         self._closed = True
         try:
-            await self.page.close()
+            await _close_owned_page(self.page, self.entry.cdp)
         finally:
             async with self.adapter._lock:
                 self.entry.active_pages -= 1
@@ -188,7 +188,7 @@ class ExternalChromeRuntime:
                 entry.active_pages += 1
                 entry.last_used = time.monotonic()
             return _ExternalLease(self, entry, page)
-        except Exception:
+        except BaseException:
             self._page_slots.release()
             raise
 
@@ -217,7 +217,7 @@ class ExternalChromeRuntime:
                 entry.active_pages += 1
                 entry.last_used = time.monotonic()
             return _ExternalLease(self, entry, candidates[-1])
-        except Exception:
+        except BaseException:
             self._page_slots.release()
             raise
 

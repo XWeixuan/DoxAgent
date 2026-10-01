@@ -636,6 +636,24 @@ class PersistentBrowserPool:
         os.replace(temporary, manifest)
 
 
+async def _close_owned_page(
+    page: Any, cdp: _RawBrowserCDP, *, timeout_seconds: float = 5
+) -> None:
+    """Bound cleanup separately: cancellation does not bound awaited finally blocks."""
+    try:
+        async with asyncio.timeout(timeout_seconds):
+            await page.close()
+    except TimeoutError:
+        target_id = getattr(page, "_doxagent_target_id", None)
+        if not target_id:
+            raise RuntimeError("browser_page_cleanup_timeout") from None
+        logger.warning("page close timed out; closing owned CDP target %s", target_id)
+        async with asyncio.timeout(5):
+            result = await cdp.send("Target.closeTarget", {"targetId": target_id})
+        if not result.get("success"):
+            raise RuntimeError("browser_page_cleanup_failed") from None
+
+
 class _PageLease:
     def __init__(self, page: Any, entry: _BrowserEntry, pool: PersistentBrowserPool) -> None:
         self.page = page
@@ -651,7 +669,7 @@ class _PageLease:
             return
         self._closed = True
         try:
-            await self.page.close()
+            await _close_owned_page(self.page, self.entry.cdp)
         finally:
             async with self.pool._lock:
                 self.entry.active_pages -= 1
@@ -685,6 +703,7 @@ class _DocumentNavigationGate:
         self.root_frame_id = str(tree["frameTree"]["frame"]["id"])
         target = await self.session.send("Target.getTargetInfo")
         self.root_target_id = str(target["targetInfo"]["targetId"])
+        self.page._doxagent_target_id = self.root_target_id
         self.session.on("Fetch.requestPaused", self._dispatch)
         await self.session.send(
             "Fetch.enable",
@@ -746,6 +765,15 @@ class _DocumentNavigationGate:
     async def close(self) -> None:
         if self.session is None:
             return
+        for task in tuple(self._tasks):
+            task.cancel()
+        try:
+            async with asyncio.timeout(3):
+                await self._close_session()
+        except TimeoutError:
+            logger.warning("document gate cleanup timed out target=%s", self.root_target_id)
+
+    async def _close_session(self) -> None:
         try:
             await self.session.send("Fetch.disable")
         except Exception:
@@ -953,8 +981,8 @@ class SiteAccessRuntime:
                 pass
         async with lease as page:
             gate = _DocumentNavigationGate(page, self.resolver, resolved, lease.browser_cdp)
-            await gate.start()
             try:
+                await gate.start()
                 if request.recipe_ref == "builtin:yahoo_latest_news@1":
                     rows, metadata = await capture_latest_news(
                         page,
