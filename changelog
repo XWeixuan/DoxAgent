@@ -1,5 +1,7 @@
 # changelog
 
+- 2026-10-01: 六源修复生产验收：仅更新 Site Access 与 Message Bus，Chrome Supervisor 和现有 Dow Jones/DIGITIMES 实例 ID 均保留。TrendForce 两入口、DIGITIMES 英文、Barron's、Reuters、HuggingNews 自然轮询全部刷新成功、连续失败归零；真实解析取得 8/5/11 条列表、Reuters Micron 20 条、Atom 50 条，Barron's MU 有新正文消息入库。追加调度热路径优化后 Reuters 四 ticker 约 9–34 秒、CPU 短时采样由约一核满载降至 21%，45 项调度/消息总线回归通过。DIGITIMES 英文订阅正文仍返回 subscription_required，仅短预览，明确留作人工登录/会员权限核验，不以 READY 或列表 200 冒充全文恢复。详细根因、证据限制及验收见 docs/message-source-reliability-repair-20261001.md。
+
 - 2026-10-01: 逐源恢复后继续定位 Reuters 偶发 ConnectTimeout：消息总线主线程性能采样显示大量同步 SQLite/交易日日历访问，部分失败发生在内部 RPC 建连阶段、尚未进入 Site Access，并非 Reuters 拒绝访问。将同一次调度的交易日判断从按 binding 重复执行改为一次共享，保留每轮重新读取 override 与各 ticker 的降级决策；源定义按轮批量读取，避免每个 binding 单独打开 SQLite。补交易日查询次数与故障降级回归；现有编排测试补齐 distribution_worker 空值夹具。生产热路径验收与六源结果详见本轮修复记录。
 
 - 2026-10-01: 多源浏览器采集超时修复：生产 TrendForce 两入口、DIGITIMES 英文、Barron's 与 Reuters 在同一时段停止完成浏览器请求，而 resolve/readyz 与 Chrome CDP 仍可响应；排除 OOM/进程额度耗尽。隔离复现 JointBudget 全局队头使独立空闲 Identity 也无法执行，改为仅在当前可执行任务中按优先级调度；Condition 等待不再另建 wait_for 子任务。修复 External page 创建取消时未归还页面额度，给导航 gate/页面关闭独立有限清理时间，关闭超时只处理自有 target；访问总预算覆盖排队前工作，RPC 读取使用预算+15 秒且重试不刷新总时限，区分排队与浏览器执行超时。新增只读访问诊断，超预算滞留请求使 readyz 降级。共享 RSS 对 ConnectError/连接超时/读取断连仅重试一次、共用 30 秒时限；HuggingNews 已核验既有代理返回有效 Atom，直连 403 不作为替代。定向回归 67 passed/1 skipped，扩充取消回归后相关集合 53 passed/1 skipped；生产逐源复验另记，不宣称已捕获旧进程挂起任务的具体栈。
