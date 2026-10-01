@@ -104,3 +104,28 @@ def test_policy_cross_day_hits_pending_withdrawal_and_shell_queries(tmp_path):
         Metrics(store).value("policy_hits", ["MU"], latest, days=["2026-09-09"], distinct=True) == 0
     )
     assert Metrics(store).value("policy_hits", ["MU"], latest, days=None, distinct=True) == 1
+
+
+def test_current_formal_policies_remain_readable_with_unknown_consumption(tmp_path):
+    import json
+    from doxagent.api_v2.policies import selection
+    store = ReadStore(tmp_path / 'read.db')
+    store.migrate()
+    records=[]
+    for identity,lifecycle,effective,consumed in [
+        ('known','ACTIVE',True,False), ('unknown','ACTIVE',None,None),
+        ('consumed','ACTIVE',None,True), ('ineffective','ACTIVE',False,None),
+        ('retired','RETIRED',None,None), ('other-shell','ACTIVE',None,None),
+    ]:
+        records.append({'kind':'policy_catalog','ticker':'MU','id':identity,'data':{
+            'lifecycle':lifecycle,'effective':available(effective) if effective is not None else missing(),
+            'consumed':available(consumed) if consumed is not None else missing(),
+            'shell_ids':['S2' if identity=='other-shell' else 'S1'],
+        }})
+    seq=store.ingest('test','seed',records)
+    sql,args=selection('MU',seq,'S1',['2026-10-01'])
+    with store.connect() as db:
+        found=db.execute('SELECT id,payload FROM ('+sql+') WHERE (ACTIVE OR ACTIVE_UNKNOWN) ORDER BY id',args).fetchall()
+        assert [r[0] for r in found]==['known','unknown']
+        assert json.loads(found[1][1])['effective']['value'] is None
+        assert db.execute('SELECT sum(ACTIVE) FROM ('+sql+')',args).fetchone()[0]==1

@@ -37,7 +37,12 @@ def selection(ticker, seq, shell, days):
         "SELECT p.id,p.payload,"
         + ",".join(clauses)
         + (
-            ",json_extract(p.payload,'$.lifecycle')='ACTIVE' AND json_extract(p.payload,'$.effective.value')=1 AND json_extract(p.payload,'$.consumed.value')=0 AS ACTIVE FROM objects p "
+            ",json_extract(p.payload,'$.lifecycle')='ACTIVE' AND json_extract(p.payload,'$.effective.value')=1 AND json_extract(p.payload,'$.consumed.value')=0 AS ACTIVE,"
+            "json_extract(p.payload,'$.lifecycle')='ACTIVE' "
+            "AND coalesce(json_extract(p.payload,'$.effective.value'),1)=1 "
+            "AND coalesce(json_extract(p.payload,'$.consumed.value'),0)=0 "
+            "AND (json_extract(p.payload,'$.effective.value') IS NULL "
+            "OR json_extract(p.payload,'$.consumed.value') IS NULL) AS ACTIVE_UNKNOWN FROM objects p "
             "WHERE p.kind='policy_catalog' AND p.ticker=? AND "
             + validity
             + " AND (?='ALL' OR EXISTS (SELECT 1 FROM json_each(p.payload,'$.shell_ids') WHERE value=?))"
@@ -104,9 +109,13 @@ def install(app):
         sql, parameters = selection(ticker, view["seq"], shell, days)
         sql = sql.replace("FROM objects ", "FROM " + store.snapshot_table(view["seq"]) + " ")
         unknown = uncertain(sql, parameters) if selected == "ACTIVE" else 0
+        # Formal current definitions must remain readable when historical
+        # consumption coverage is unknown. Keep metrics and evidence unknown;
+        # never restore a positively retired/consumed/ineffective policy.
+        predicate = "(ACTIVE OR ACTIVE_UNKNOWN)" if selected == "ACTIVE" else selected
         with store.connect() as db:
             rows = db.execute(
-                "SELECT * FROM (" + sql + ") WHERE " + selected + " AND id>? ORDER BY id LIMIT ?",
+                "SELECT * FROM (" + sql + ") WHERE " + predicate + " AND id>? ORDER BY id LIMIT ?",
                 [*parameters, after, limit + 1],
             ).fetchall()
         items = []
@@ -115,7 +124,7 @@ def install(app):
             value["matched_filters"] = [
                 name
                 for name in ("ACTIVE", "ADDED", "HIT", "MODIFIED", "RETIRED", "EXECUTED")
-                if row[name]
+                if row[name] or (name == "ACTIVE" and row["ACTIVE_UNKNOWN"])
             ]
             items.append(value)
         more = len(rows) > limit
