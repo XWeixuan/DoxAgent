@@ -1300,3 +1300,4 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-01 · 导出模板改造 6e2e2dd4 已推送并部署 API/Web，模板示例真实 Case 的固定 Policy 经隔离 API 校验定义完整一致、实际条件数 1；生产页面/healthz 200，未重启投影器或交易服务。
 2026-10-01 · 修复策略页因历史恢复的消费/生效证据 UNKNOWN 而将全部当前正式 Policy 排除的问题：当前筛选允许正式 ACTIVE 且没有明确失效/已消费证据的未知项，原 Value/覆盖状态及 KPI 仍保留未知；不恢复 RETIRED、明确无效或已消费策略，不改变周期筛选。11 项定向回归通过；内置浏览器工具初始化报 kernel assets 路径错误，本次不冒称浏览器验收。
 2026-10-01 · 策略可读性修复 baee8818 已推送并部署 API；真实 policy_catalog 在隔离 API 分页验证 MU 44/BE 138/INTC 100/RKLB 95 条当前正式定义可读，未知字段不改写，明确失效/已消费不恢复，Web/投影器/交易服务未重启。
+2026-10-01 · 策略 KPI 与当前列表统一范围：当前数量和 LONG/SHORT 占比计入可读的正式未知项，保留 PARTIAL/provisional 状态但不清空数值；周期计数实际为零时显示 0，不再冒称未记录。11 项定向回归通过，未改前端布局或交易业务。

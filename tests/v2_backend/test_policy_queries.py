@@ -120,7 +120,7 @@ def test_current_formal_policies_remain_readable_with_unknown_consumption(tmp_pa
         records.append({'kind':'policy_catalog','ticker':'MU','id':identity,'data':{
             'lifecycle':lifecycle,'effective':available(effective) if effective is not None else missing(),
             'consumed':available(consumed) if consumed is not None else missing(),
-            'shell_ids':['S2' if identity=='other-shell' else 'S1'],
+            'shell_ids':['S2' if identity=='other-shell' else 'S1'], 'decision':'LONG',
         }})
     seq=store.ingest('test','seed',records)
     sql,args=selection('MU',seq,'S1',['2026-10-01'])
@@ -129,3 +129,22 @@ def test_current_formal_policies_remain_readable_with_unknown_consumption(tmp_pa
         assert [r[0] for r in found]==['known','unknown']
         assert json.loads(found[1][1])['effective']['value'] is None
         assert db.execute('SELECT sum(ACTIVE) FROM ('+sql+')',args).fetchone()[0]==1
+
+    control = ControlRepository(RuntimeJournal(tmp_path / 'runtime.db'))
+    control.migrate()
+    seq = store.ingest('test','shell',[{'kind':'shell','ticker':'MU','id':'d2:S1','data':{'shell_id':'S1'}}])
+    view = store.save_token('developer','fixture',{
+        'seq':seq,'as_of':'2026-10-01T00:00:00Z','wire':{
+            'ticker':'MU','page':'POLICIES','activation':{'data':{'document2':{'run_id':'d2'}}},
+            'period':{'selected':'ALL','previous':None},
+        }},view=True)
+    with TestClient(create_app(store=store,control=control,auth=OfflineAuth())) as client:
+        response = client.get(PREFIX+'/tickers/MU/policies/metrics',params={'view_id':view,'shell_id':'S1'},headers={'Authorization':'Bearer offline'})
+        assert response.status_code == 200,response.text
+        metrics = response.json()['data']['data']
+        assert metrics['active']['current']['value'] == '2'
+        assert metrics['long_ratio']['current']['value'] == '1'
+        assert metrics['short_ratio']['current']['value'] == '0'
+        assert metrics['active']['provisional'] is True
+        assert metrics['active']['current_coverage']['state'] == 'PARTIAL'
+        assert metrics['added']['current']['value'] == '0'

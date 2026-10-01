@@ -58,10 +58,7 @@ def install(app):
     def uncertain(sql, parameters):
         with store.connect() as db:
             return db.execute(
-                "SELECT count(*) FROM (" + sql + ") WHERE "
-                "json_extract(payload,'$.lifecycle')='ACTIVE' AND "
-                "(json_extract(payload,'$.effective.value') IS NULL OR "
-                "json_extract(payload,'$.consumed.value') IS NULL)", parameters,
+                "SELECT count(*) FROM (" + sql + ") WHERE ACTIVE_UNKNOWN", parameters,
             ).fetchone()[0]
 
     def context(request, ticker, args):
@@ -170,10 +167,10 @@ def install(app):
         sql = sql.replace("FROM objects ", "FROM " + store.snapshot_table(view["seq"]) + " ")
         with store.connect() as db:
             result = db.execute(
-                "SELECT coalesce(sum(ACTIVE),0) AS active, "
-                "coalesce(sum(ACTIVE AND json_extract(payload,'$.decision')='LONG'),0) "
+                "SELECT coalesce(sum(ACTIVE OR ACTIVE_UNKNOWN),0) AS active, "
+                "coalesce(sum((ACTIVE OR ACTIVE_UNKNOWN) AND json_extract(payload,'$.decision')='LONG'),0) "
                 "AS long_active, "
-                "coalesce(sum(ACTIVE AND json_extract(payload,'$.decision')='SHORT'),0) "
+                "coalesce(sum((ACTIVE OR ACTIVE_UNKNOWN) AND json_extract(payload,'$.decision')='SHORT'),0) "
                 "AS short_active, "
                 "coalesce(sum(ADDED),0) AS added, coalesce(sum(HIT),0) AS hit, "
                 "coalesce(sum(MODIFIED),0) AS modified, coalesce(sum(RETIRED),0) AS retired, "
@@ -203,7 +200,7 @@ def install(app):
                 "metric_id": "policy_" + name,
                 "unit": "RATIO" if name.endswith("ratio") else "COUNT",
                 "current": available(decimal_text(Decimal(value)))
-                if value is not None and (state_metric or value)
+                if value is not None
                 else missing("NO_SAMPLES" if state_metric else "NOT_RECORDED"),
                 "previous": missing("WINDOW_INCOMPLETE", "NOT_APPLICABLE"),
                 "change_pct": missing("WINDOW_INCOMPLETE", "NOT_APPLICABLE"),
@@ -212,6 +209,8 @@ def install(app):
                 "provisional": False,
             }
             if state_metric and unknown:
-                data[name].update(current=missing("POLICY_EFFECTIVENESS_UNKNOWN", "UNAVAILABLE"),
-                    current_coverage=coverage(count=0, reasons=["POLICY_EFFECTIVENESS_UNKNOWN"]))
+                data[name].update(
+                    current_coverage=coverage(count=values["active"], reasons=["POLICY_EFFECTIVENESS_UNKNOWN"]),
+                    provisional=True,
+                )
         return app.state.respond(request, "PolicyMetrics", data, view_id=args["view_id"])
