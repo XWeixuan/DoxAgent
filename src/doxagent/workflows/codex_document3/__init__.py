@@ -1,37 +1,29 @@
-"""DoxAgent V2 D3/O3 monitoring execution policy workflow."""
+"""D3 exports load on demand; read-only schema imports do not start agent tooling."""
+from importlib import import_module
 
-from .assembler import apply_patch, assemble_initial_policy_set, build_coverage_map
-from .identity import allocate_stable_policy_ids
-from .inputs import Document3InputPreparer, PreparedDocument3Inputs
-from .orchestrator import Document3Orchestrator
-from .repository import (
-    Document3PolicyRepository,
-    HybridDocument3PolicyRepository,
-    InMemoryDocument3PolicyRepository,
-    PostgresDocument3PolicyRepository,
-    SQLiteDocument3PolicyRepository,
-    StalePolicySetBaseError,
-)
-from .runtime_projection import Document3RuntimeProjectionConsumer, project_policy_set
-
-__all__ = [
-    "Document3AgentRunner",
-    "Document3InputPreparer",
-    "Document3Orchestrator",
-    "Document3PolicyRepository",
-    "Document3RuntimeProjectionConsumer",
-    "HybridDocument3PolicyRepository",
-    "InMemoryDocument3PolicyRepository",
-    "PostgresDocument3PolicyRepository",
-    "PreparedDocument3Inputs",
-    "SQLiteDocument3PolicyRepository",
-    "StalePolicySetBaseError",
-    "allocate_stable_policy_ids",
-    "apply_patch",
-    "assemble_initial_policy_set",
-    "build_coverage_map",
-    "project_policy_set",
-]
+_EXPORTS = {
+    'Document3AgentRunner': 'runner',
+    'Document3InputPreparer': 'inputs',
+    'PreparedDocument3Inputs': 'inputs',
+    'Document3Orchestrator': 'orchestrator',
+    'Document3RuntimeProjectionConsumer': 'runtime_projection',
+    'project_policy_set': 'runtime_projection',
+    'allocate_stable_policy_ids': 'identity',
+    'apply_patch': 'assembler',
+    'assemble_initial_policy_set': 'assembler',
+    'build_coverage_map': 'assembler',
+    **dict.fromkeys([
+        'Document3PolicyRepository', 'HybridDocument3PolicyRepository',
+        'InMemoryDocument3PolicyRepository', 'PostgresDocument3PolicyRepository',
+        'SQLiteDocument3PolicyRepository', 'StalePolicySetBaseError',
+    ], 'repository'),
+}
+__all__ = list(_EXPORTS)
 
 
-from .runner import Document3AgentRunner
+def __getattr__(name):
+    if name not in _EXPORTS:
+        raise AttributeError(name)
+    value = getattr(import_module('.' + _EXPORTS[name], __name__), name)
+    globals()[name] = value
+    return value

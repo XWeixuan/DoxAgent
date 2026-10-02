@@ -1,0 +1,7 @@
+{"iteration": 0, "seq": 2859940, "existing_ms": 9.0, "candidate_ms": 8.33, "counts_and_latency_equal": true}
+{"iteration": 1, "seq": 2859940, "existing_ms": 10.66, "candidate_ms": 11.53, "counts_and_latency_equal": true}
+{"iteration": 2, "seq": 2859940, "existing_ms": 8.3, "candidate_ms": 8.05, "counts_and_latency_equal": true}
+{"ticker": "BE", "latest_message_existing_ms": 11.24, "latest_message_candidate_ms": 2.87, "timestamp_equal": true}
+{"ticker": "INTC", "latest_message_existing_ms": 19.5, "latest_message_candidate_ms": 2.92, "timestamp_equal": true}
+{"ticker": "MU", "latest_message_existing_ms": 396.22, "latest_message_candidate_ms": 2.32, "timestamp_equal": true}
+{"ticker": "RKLB", "latest_message_existing_ms": 93.77, "latest_message_candidate_ms": 5.31, "timestamp_equal": true}

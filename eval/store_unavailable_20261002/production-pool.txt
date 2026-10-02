@@ -1,0 +1,13 @@
+2026-10-02T07:28:19.196626907Z query_pool=read slot=1 state=ready pid=23
+2026-10-02T07:28:30.831300381Z query_pool=read slot=2 state=ready pid=39
+2026-10-02T07:28:45.355115362Z query_pool=stream slot=1 state=ready pid=49
+2026-10-02T07:28:58.020313651Z query_pool=control slot=1 state=ready pid=59
+2026-10-02T08:51:27.826249800Z query_pool=read kind=http elapsed_ms=2101.6 broken=True failure=hard_timeout queued=0
+2026-10-02T08:51:27.826674941Z query_pool=read slot=2 state=terminating reason=hard_timeout pid=39
+2026-10-02T08:51:27.927477876Z query_pool=read slot=2 state=dead reap_ms=100.2
+2026-10-02T08:51:31.883338042Z query_pool=read kind=http elapsed_ms=2005.3 broken=True failure=hard_timeout queued=0
+2026-10-02T08:51:31.883508033Z query_pool=read slot=1 state=terminating reason=hard_timeout pid=23
+2026-10-02T08:51:31.991767584Z query_pool=read slot=1 state=dead reap_ms=107.6
+2026-10-02T08:51:35.873261195Z query_pool=read kind=http elapsed_ms=1999.9 broken=False failure=capacity_timeout queued=0
+2026-10-02T08:51:47.728724336Z query_pool=read slot=3 state=ready pid=1935
+2026-10-02T08:52:05.329437755Z query_pool=read slot=4 state=ready pid=1945

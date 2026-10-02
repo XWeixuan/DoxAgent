@@ -1,0 +1,11 @@
+# Upgrade only Codex and project metadata on an existing backend/repair image.
+ARG DOXAGENT_BASE_IMAGE=doxagent-v2:server
+FROM ${DOXAGENT_BASE_IMAGE}
+ARG CODEX_SDK_VERSION=0.159.3
+USER root
+COPY pyproject.toml uv.lock /app/
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install --no-deps --python /app/.venv/bin/python \
+        "openai-codex==${CODEX_SDK_VERSION}" \
+        "openai-codex-cli-bin==${CODEX_SDK_VERSION}" -e /app \
+    && uv pip check --python /app/.venv/bin/python

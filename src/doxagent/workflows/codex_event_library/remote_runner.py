@@ -76,7 +76,7 @@ class RemoteEventLibraryInitializer:
         service: EventLibraryService,
         local_workspace_root: str | Path,
         prompt_root: str | Path = "prompts/codex_v2/event_library",
-        model: str = "gpt-5.6-luna",
+        model: str = "gpt-6-luna",
         model_provider: str | None = None,
         effort: Literal["low", "medium", "high", "xhigh", "max"] = "max",
         timeout_seconds: int = 3600,

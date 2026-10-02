@@ -1302,8 +1302,20 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-01 · 策略可读性修复 baee8818 已推送并部署 API；真实 policy_catalog 在隔离 API 分页验证 MU 44/BE 138/INTC 100/RKLB 95 条当前正式定义可读，未知字段不改写，明确失效/已消费不恢复，Web/投影器/交易服务未重启。
 2026-10-01 · 策略 KPI 与当前列表统一范围：当前数量和 LONG/SHORT 占比计入可读的正式未知项，保留 PARTIAL/provisional 状态但不清空数值；周期计数实际为零时显示 0，不再冒称未记录。11 项定向回归通过，未改前端布局或交易业务。
 2026-10-01 · 策略 KPI 254de9c6 已推送并部署 API；真实策略数据经隔离 API 核验 MU 44/BE 138/INTC 100/RKLB 95，与当前列表一致，LONG/SHORT 数量及比例返回正确数值。
+2026-10-02 · BE W2R1 缺消息理由根因诊断：生产只读核对 21 个异常冻结输入、实际 adapter 与 328 个真实调用样本；完成 93 次当前 provider 隔离对照，记录原格式/末尾提示/消息前置、回读及低缓存结果，补齐评估脚本、去重输入、回执与 SHA-256 清单。确认当前消息识别/事实绑定异常及空候选语义校验缺口；仅交付审计材料，未修改或部署生产业务逻辑。
+
+2026-10-02 · Codex Python SDK/内置 CLI 升至 0.159.3；本地与生产登录状态的隔离真实请求验证 6-luna/max 和 6.1-sol/medium、high、max 全部成功。v2 所有 Codex 节点默认迁至对应 GPT-6 层级，实际执行兼容旧冻结模型并保留推理强度、输入和幂等身份，新增模型选择审计。回归 215 passed；2 项原有失败在未修改 HEAD 源码下复现，生产部署另行记录。
+2026-10-02 · Codex GPT-6 升级已部署至 Singapore Worker/初始化/O4/调度器/Guardian，并升级修复代理和初始化模板；全部 SDK/CLI 0.159.3。实际 Worker 两次旧名请求成功转换为 6-luna/max、6.1-sol/medium，修复代理 6.1-sol/medium 真实调用成功；同账户独立旧凭据备份后同步。五服务运行、重启次数零、Worker healthy。完整节点/源码镜像/调用证据见 docs/codex-sdk-gpt6-migration-20261002.md；未做真实业务测试。
 2026-10-02 · 预期研究标题区新增 Document2 下载按钮；现行/历史均按所选 run 的已索引文档 ID 和 SHA256 从只读发布库导出完整原始 JSON，不受 Shell/Unit 当前选择或分页影响。部分发布内容原样保留，错标的/缺失版本拒绝下载。定向后端 2 passed，前端类型检查、ESLint 与构建通过。
 2026-10-02 · Document2 下载 47f6515f 已推送；生产 MU/BE/INTC/RKLB 的当前原文分别约 198/437/343/430 KB，完整 JSON 的 run、ticker 和发布 SHA256 核验一致，API/Web 定向部署，不重启投影器或交易服务。
 
 2026-10-02 · 新增 InvestorsHub / Investing.com ticker 爬虫、GlobeNewswire L1 搜索和半导体共享 RSS，全部 60s；前三者进入全局默认，行业 RSS 接入现有正文后正则 + Jev 分发。iHub / Investing 采用经实测的 External Chrome + CDP 共享身份与纯浏览器正文，不重建旧 Profile；匹配正文首次发布时间后重新校验实时窗口，避免列表更新回灌旧新闻。补齐定向测试、分权幂等启用脚本和窄镜像部署，保留生产正文预算重试补丁；验收记录见 docs/market-news-sources-20261002.md。
 2026-10-02 · 四个市场新源已推送并部署，15 个 60s 订阅绑定真实轮询成功，公开正文验收通过；五个既有 Chrome instance/pid/generation 不变，Supervisor 未重启。补齐 InvestingPro 付费模板识别，正确报 login_required 而非超时；生产 .env.v2 同步已有 OpenRouter/Jev 配置并通过三 ticker 真实相关性判定。定向 130 passed / 1 skipped；镜像固定、回滚备份与权限边界见 docs/market-news-sources-20261002.md，未人为发布旧样本。
+
+2026-10-02 · 新加坡 STORE_UNAVAILABLE 紧急清理：根盘可用空间跌至 8.4 GiB（96% 使用）；数据卷备份约 47 GiB，镜像 53 个且 Read 查询出现 2 秒硬超时。确认 9 月 28 日完整恢复集已通过 13 库和 33,692 文件校验且旧目录无容器/进程引用后，退役 9 月 20 日约 9 GiB 历史快照；另删除 3 个零容器引用的旧临时标签及 4 个悬空镜像 ID，不触碰 Guardian 动态代理、Created 模板、运行容器或数据卷。根盘回升至约 29 GiB 可用（84% 使用）；API readyz 正常，已登录 Overview 刷新后四标的与区间统计恢复，MU 基础投研页可读。旧快照与旧镜像不可在服务器直接恢复；磁盘紧张与 Read 超时同时存在，尚未证实前者是唯一诱因。
+
+2026-10-02 · STORE_UNAVAILABLE 只读排查：确认 Overview 七次连续 503、read-context 两 worker 硬超时及串行重建空窗；复核历史快照 JOIN/排序与全 payload 解码放大，生产隔离标量查询对照约 280–300 ms 降至 8–9 ms 且计数/延迟一致，最新消息时间对照一致。交付 dev_plan/workflow_v2/store_unavailable_diagnosis_and_repair_plan_20261002.md，覆盖错误分类、精确查询、分离队列预算、协作取消、有限 GET 恢复及验收；旧 SQLite 日志不足以逐条定因，网页当前恢复不等于机制修复。本轮未修改部署业务代码。
+
+2026-10-02 · 按 STORE_UNAVAILABLE 修复方案完成标量 MVCC 查询、最新消息时间薄读取与分页前筛选；分离 1 秒排队/3 秒普通执行/1 秒硬截止宽限，软失败复用 worker、并行有界恢复，修复取消和流式 deadline 归属。补齐安全错误分类/请求关联、有限 GET 重试、中文折叠诊断、迟到 view 拦截与 readyz；API/Web 窄覆盖部署，其余业务容器不变。定向后端/兼容 72 passed、前端 55 passed，额外 HTTP 故障与流式测试通过；四项扩大回归旧失败已在 HEAD 复现。五次生产隔离 ticker p95 209 ms、源聚合最大 10.3 ms。详见 docs/store-unavailable-repair-20261002.md。
+2026-10-03 · 完成 Document2 v2.1 重构前代码勘察，交付 dev_plan/workflow_v2.1/d2_v2.1_code_reconnaissance_20261003.md；核对 O0/O1、研究契约、Discovery 冻结与恢复、引用发布、Pilot 及 O3/W3/Read/API/前端消费边界，记录方案差异与待明确契约。现有 D2 主流程/Pilot 协调器离线基线 31 passed；未修改业务实现、调用真实模型或部署。
+2026-10-03 · 补充 Document2 v2.1 O0 Research Topology 勘察，核对 Candidate/Synthesis/Review/Finalization、fallback、引用与 Pilot 接边；按一轮问答确认，仅制定 D2 局部编排/schema 重构方案，prompt/skill、消费者与真实启用另轮。交付 dev_plan/workflow_v2.1/d2_v2.1_orchestration_implementation_plan_20261003.md，细化六轮调度、版本兼容、冻结/sidecar/恢复、发布及离线验收；本轮未修改业务代码或部署。

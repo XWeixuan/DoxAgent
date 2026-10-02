@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useRef } from "react";
 import type { Period } from "@contract";
 import { useRuntime } from "@/core/runtime";
 import { queryString, type Endpoints } from "@/core/api";
@@ -19,6 +20,14 @@ export function useOverview(
 ) {
   const runtime = useRuntime();
   const { query, api, scope } = runtime;
+  const activeScope = useRef("");
+  activeScope.current = JSON.stringify([
+    scope,
+    period,
+    run,
+    health,
+    calendarDefault,
+  ]);
   const contextKey = [scope, "context", "OVERVIEW", period, calendarDefault];
   const readContext = async (
     refresh: "OPEN" | "MANUAL",
@@ -34,6 +43,7 @@ export function useOverview(
     signal?: AbortSignal,
     cursor?: string,
   ) => {
+    const requestedScope = activeScope.current;
     const current = query.getQueryData<Endpoints["ReadContext"]>(contextKey);
     if (!current) throw new Error("请先重试页面读取范围。");
     const view = current.data.view_id;
@@ -54,6 +64,12 @@ export function useOverview(
         }),
       { signal, view },
     );
+    if (
+      activeScope.current !== requestedScope ||
+      query.getQueryData<Endpoints["ReadContext"]>(contextKey)?.data.view_id !==
+        view
+    )
+      throw new DOMException("View changed", "AbortError");
     if (response.data.state === "ERROR")
       throw new Error("该模块暂时无法读取，请重试。");
     return response;
@@ -100,9 +116,22 @@ export function useOverview(
     enabled: false,
   });
   async function refresh() {
+    const requestedScope = activeScope.current;
     await query.cancelQueries({ queryKey: contextKey });
+    await Promise.all([
+      query.cancelQueries({ queryKey: [scope, "overview-status"] }),
+      query.cancelQueries({ queryKey: [scope, "overview-gateway"] }),
+      query.cancelQueries({ queryKey: [scope, "overview-metrics", period] }),
+      query.cancelQueries({ queryKey: listKey }),
+    ]);
+    const before = query.getQueryData(contextKey);
     const fresh = await readContext("MANUAL");
-    if (scope !== runtime.scope) return;
+    if (
+      activeScope.current !== requestedScope ||
+      scope !== runtime.scope ||
+      query.getQueryData(contextKey) !== before
+    )
+      return;
     query.setQueryData(contextKey, fresh);
     await Promise.allSettled([
       status.refetch(),

@@ -235,8 +235,10 @@ def install(app: FastAPI) -> None:
     async def events(ticker: str, request: Request) -> Any:
         args = query(request, {"view_id", "source_kind", "source_id", "route", "q", "cursor"})
         view_id, owner = args.get("view_id", ""), request.state.principal.user_id
+        diagnostic = {"request_id": request.state.request_id,
+                      "route": PREFIX + "/tickers/{ticker}/messages/events"}
         runner = app.state.stream_runner or app.state.query_runner
-        prepared = (await runner.run({"kind": "message_prepare", "owner": owner, "ticker": ticker,
+        prepared = (await runner.run({**diagnostic, "kind": "message_prepare", "owner": owner, "ticker": ticker,
                                       "view_id": view_id, "args": args, "header": request.headers.get("last-event-id")})
                     if runner else streams.prepare(owner, ticker, view_id, args, request.headers.get("last-event-id")))
         view, state, filters, cursor = prepared
@@ -280,7 +282,7 @@ def install(app: FastAPI) -> None:
                     return
                 runner = app.state.stream_runner or app.state.query_runner
                 try:
-                    result = (await runner.run({"kind": "message", "owner": owner, "state": current})
+                    result = (await runner.run({**diagnostic, "kind": "message", "owner": owner, "state": current})
                               if runner else streams.next(owner, current))
                 except ApiFailure as exc:
                     if exc.status != 410:

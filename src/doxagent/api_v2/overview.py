@@ -110,29 +110,15 @@ def install(app: FastAPI) -> None:
                 raise ApiFailure("CURSOR_EXPIRED", 410) from None
             except ValueError:
                 raise ApiFailure("INVALID_CURSOR", 400) from None
-        # Filter the frozen candidate set before pagination; never filter a returned page.
+        # Push frozen identity and filters into both branches before sorting/paging.
+        where = "kind='ticker' AND id=ticker AND ticker IN (SELECT value FROM json_each(?)) AND ticker>? AND valid_from<=? AND (? IS NULL OR json_extract(payload,'$.run_state')=?) AND (? IS NULL OR json_extract(payload,'$.health')=?)"
+        parameters = (json.dumps(view["tickers"]), after, view["seq"], run_state, run_state, health, health)
         with store.connect() as db:
-            selected = [
-                row[0]
-                for row in db.execute(
-                    "SELECT ticker FROM " + store.snapshot_table(view["seq"]) + " WHERE kind='ticker' AND id=ticker "
-                    "AND ticker IN (SELECT value FROM json_each(?)) AND ticker>? "
-                    "AND valid_from<=? AND (valid_to IS NULL OR valid_to>?) "
-                    "AND (? IS NULL OR json_extract(payload,'$.run_state')=?) "
-                    "AND (? IS NULL OR json_extract(payload,'$.health')=?) ORDER BY ticker LIMIT ?",
-                    (
-                        json.dumps(view["tickers"]),
-                        after,
-                        view["seq"],
-                        view["seq"],
-                        run_state,
-                        run_state,
-                        health,
-                        health,
-                        limit + 1,
-                    ),
-                )
-            ]
+            selected = [row[0] for row in db.execute(
+                "SELECT ticker FROM (SELECT ticker FROM object_current WHERE " + where +
+                " UNION ALL SELECT ticker FROM objects INDEXED BY history_recent WHERE " + where + " AND valid_to>?) ORDER BY ticker LIMIT ?",
+                (*parameters, *parameters, view["seq"], limit + 1),
+            )]
         from doxagent.v2_read.metrics import Metrics
         service = Metrics(store)
         period = view["wire"]["period"]
@@ -141,12 +127,7 @@ def install(app: FastAPI) -> None:
         source_counts = aggregates_many(store, selected[:limit], view["seq"])
         states = store.batch_get([("ticker",ticker,ticker) for ticker in selected[:limit]],view["seq"])
         initializations = store.batch_get([("initialization",ticker,states[("ticker",ticker,ticker)]["initialization_id"]) for ticker in selected[:limit] if states[("ticker",ticker,ticker)]["initialization_id"]],view["seq"])
-        latest_by_ticker = {}
-        table = store.snapshot_table(view["seq"])
-        if selected[:limit]:
-            sql = " UNION ALL ".join("SELECT * FROM (SELECT ticker,payload FROM " + table + " WHERE kind='message' AND ticker=? AND valid_from<=? AND (valid_to IS NULL OR valid_to>?) ORDER BY sort_key DESC,id DESC LIMIT 1)" for ticker in selected[:limit])
-            with store.connect() as db:
-                latest_by_ticker = {row[0]:json.loads(row[1]) for row in db.execute(sql,[value for ticker in selected[:limit] for value in (ticker,view["seq"],view["seq"])])}
+        latest_by_ticker = {ticker: store.latest_message_at(ticker, view["seq"]) for ticker in selected[:limit]}
         items = []
         for ticker in selected[:limit]:
             state = states[("ticker",ticker,ticker)]
@@ -159,7 +140,7 @@ def install(app: FastAPI) -> None:
             items.append(
                 {
                     "state": state,
-                    "last_standard_message_at": available(latest["stream_published_at"])
+                    "last_standard_message_at": available(latest)
                     if latest
                     else missing(),
                     "source_counts": source_counts[ticker][0],

@@ -1,0 +1,125 @@
+{
+  "pilot": {
+    "probe": {
+      "requests": 6,
+      "valid_results": 6,
+      "missing_source": 0,
+      "errors": {},
+      "probe_seen": 6,
+      "cache_ratio_median": 0.633,
+      "latency_median": 8.256
+    },
+    "original": {
+      "requests": 6,
+      "valid_results": 5,
+      "missing_source": 4,
+      "errors": {
+        "JSONDecodeError": 1
+      },
+      "probe_seen": 0,
+      "cache_ratio_median": 0.9891,
+      "latency_median": 15.24
+    },
+    "two_messages": {
+      "requests": 6,
+      "valid_results": 6,
+      "missing_source": 3,
+      "errors": {},
+      "probe_seen": 0,
+      "cache_ratio_median": 0.9882,
+      "latency_median": 22.98
+    }
+  },
+  "full": {
+    "reminder": {
+      "requests": 21,
+      "valid_results": 18,
+      "missing_source": 4,
+      "errors": {
+        "JSONDecodeError": 3
+      },
+      "probe_seen": 0,
+      "cache_ratio_median": 0.9877,
+      "latency_median": 22.743
+    },
+    "original": {
+      "requests": 21,
+      "valid_results": 19,
+      "missing_source": 10,
+      "errors": {
+        "JSONDecodeError": 2
+      },
+      "probe_seen": 0,
+      "cache_ratio_median": 0.9895,
+      "latency_median": 18.679
+    },
+    "source_first": {
+      "requests": 21,
+      "valid_results": 20,
+      "missing_source": 0,
+      "errors": {
+        "APITimeoutError": 1
+      },
+      "probe_seen": 0,
+      "cache_ratio_median": 0.0582,
+      "latency_median": 28.64
+    }
+  },
+  "retry": {
+    "reminder": {
+      "requests": 3,
+      "valid_results": 3,
+      "missing_source": 0,
+      "errors": {},
+      "probe_seen": 0,
+      "cache_ratio_median": 0.9882,
+      "latency_median": 20.382
+    },
+    "original": {
+      "requests": 2,
+      "valid_results": 2,
+      "missing_source": 2,
+      "errors": {},
+      "probe_seen": 0,
+      "cache_ratio_median": 0.9894,
+      "latency_median": 9.96
+    },
+    "source_first": {
+      "requests": 1,
+      "valid_results": 1,
+      "missing_source": 0,
+      "errors": {},
+      "probe_seen": 0,
+      "cache_ratio_median": 0.9168,
+      "latency_median": 84.306
+    }
+  },
+  "cold": {
+    "nonce_prefix": {
+      "requests": 6,
+      "valid_results": 6,
+      "missing_source": 1,
+      "errors": {},
+      "probe_seen": 0,
+      "cache_ratio_median": 0.0581,
+      "latency_median": 45.005
+    }
+  },
+  "merged": {
+    "original": {
+      "cases": 21,
+      "valid_results": 21,
+      "missing_source": 12
+    },
+    "reminder": {
+      "cases": 21,
+      "valid_results": 21,
+      "missing_source": 4
+    },
+    "source_first": {
+      "cases": 21,
+      "valid_results": 21,
+      "missing_source": 0
+    }
+  }
+}

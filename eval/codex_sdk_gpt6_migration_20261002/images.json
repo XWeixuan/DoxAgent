@@ -1,0 +1,82 @@
+{
+  "worker": {
+    "tag": "doxagent-v2:codex-gpt6-worker-0.159.3",
+    "image_id": "sha256:1c738df3eefa195bdc881144977c940bf95ef19079f92f0b85acfe21590016b6",
+    "revision": "b70c54e1769d8f875f48754bfae52858d2fcb1f5",
+    "source_sha256": "de7cac88fe30bc91ee96ba030dd9b7bc8eb20ccef81556442146561943fc8fa5",
+    "defaults_changed": [],
+    "verified": {
+      "sdk": "0.159.3",
+      "cli": "0.159.3",
+      "source": "/app/src/doxagent/__init__.py",
+      "model": "gpt-6-luna",
+      "o4": "gpt-6.1-sol",
+      "d3_init": "gpt-6.1-sol",
+      "w3": "gpt-6-luna"
+    }
+  },
+  "research": {
+    "tag": "doxagent-v2:codex-gpt6-research-0.159.3",
+    "image_id": "sha256:37a10a578d8819579d486835002041e38a097ffcf6137302e03e9fe17452b06e",
+    "revision": "bd94b34ab0a2f53620389051304f857b69bab15c",
+    "source_sha256": "020c61ab58bdf72ad4e49cd7a1230869eaccc8788cd198b872f7e8515a379814",
+    "defaults_changed": [],
+    "verified": {
+      "sdk": "0.159.3",
+      "cli": "0.159.3",
+      "source": "/app/src/doxagent/__init__.py",
+      "model": "gpt-6-luna",
+      "o4": "gpt-6.1-sol",
+      "d3_init": "gpt-6.1-sol",
+      "w3": "gpt-6-luna"
+    }
+  },
+  "scheduler": {
+    "tag": "doxagent-v2:codex-gpt6-scheduler-0.159.3",
+    "image_id": "sha256:a3e36eb6c06ec212b36ebf94ebedff0585e661061d76cb63d1f45973c7f473f6",
+    "revision": "481af01b397134ab8f689e431d040511b9b74484",
+    "source_sha256": "90e7949a0589d283e4ee78edde257d44f58f4eaa7d1f63bddb4f2d69d4cb79bb",
+    "defaults_changed": [],
+    "verified": {
+      "sdk": "0.159.3",
+      "cli": "0.159.3",
+      "source": "/app/src/doxagent/__init__.py",
+      "model": "gpt-6-luna",
+      "o4": "gpt-6.1-sol",
+      "d3_init": "gpt-6.1-sol",
+      "w3": "gpt-6-luna"
+    }
+  },
+  "guardian": {
+    "tag": "doxagent-v2:codex-gpt6-guardian-0.159.3",
+    "image_id": "sha256:2a0dba949b6327a4773e00c78a80ad5d7f07060ef42404d7135110b91285c20b",
+    "revision": "2b67dcc8d0a9e4a4e517266625357c05310d19ae",
+    "source_sha256": "e50559f75b20168d30486210f20b0f36749a661350cf0b58f8678af3277c90bf",
+    "defaults_changed": [],
+    "verified": {
+      "sdk": "0.159.3",
+      "cli": "0.159.3",
+      "source": "/app/src/doxagent/__init__.py",
+      "model": "gpt-6-luna",
+      "o4": "gpt-6.1-sol",
+      "d3_init": "gpt-6.1-sol",
+      "w3": "gpt-6-luna"
+    }
+  },
+  "agent": {
+    "tag": "doxagent-initialization-repair-agent:codex-gpt6-0.159.3",
+    "image_id": "sha256:ed36f1dc65092385a1c8c8b56c0f3469f59df1855303ae8ba9f34dc4aa70bfdc",
+    "revision": "415cd623ba8e9438c2f02b3c196d62eb276f0d31",
+    "source_sha256": "a6284c233c877cf9ac6a0d5ebd58ca9dae1ededcd7f449925a8a350f0201d810",
+    "defaults_changed": [],
+    "verified": {
+      "sdk": "0.159.3",
+      "cli": "0.159.3",
+      "source": "/app/src/doxagent/__init__.py",
+      "model": "gpt-6-luna",
+      "o4": "gpt-6.1-sol",
+      "d3_init": "gpt-6.1-sol",
+      "w3": "gpt-6-luna"
+    }
+  }
+}

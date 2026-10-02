@@ -1,0 +1,12 @@
+services:
+  v2-api:
+    image: doxagent-v2:store-recovery-20261002
+    environment:
+      DOXAGENT_V2_DB_QUERY_SECONDS: "3"
+      DOXAGENT_V2_DB_QUEUE_SECONDS: "1"
+      DOXAGENT_V2_DB_CANCEL_GRACE_SECONDS: "1"
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/readyz',timeout=3).read()"]
+      start_period: 60s
+  v2-web:
+    image: doxagent-v2-web:store-recovery-20261002

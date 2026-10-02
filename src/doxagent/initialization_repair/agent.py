@@ -11,7 +11,7 @@ from openai_codex.types import ReasoningEffort
 
 from .schema import RepairAgentReport
 
-MODEL = "gpt-6-sol"
+MODEL = "gpt-6.1-sol"
 EFFORT = ReasoningEffort("medium")
 
 

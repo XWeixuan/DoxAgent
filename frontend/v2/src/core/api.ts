@@ -85,9 +85,41 @@ export class ApiFailure extends Error {
     public status = 0,
     public requestId?: string,
     public fields: { path: string; code: string; message: string }[] = [],
+    public retryable = false,
+    public retryAfterMs?: number,
   ) {
-    super(message);
+    super(errorMessages[code] || message);
   }
+}
+const errorMessages: Record<string, string> = {
+  SERVICE_BUSY: "读取服务繁忙，请稍后重试。",
+  QUERY_TIMEOUT: "读取超时，请重试该模块。",
+  STORE_BUSY: "数据正在更新，请稍后重试。",
+  STORE_UNAVAILABLE: "暂时无法读取数据，请稍后重试。",
+  CONTENT_UNAVAILABLE: "内容文件缺失或损坏，请检查服务端记录。",
+  INTERNAL_ERROR: "数据处理失败，请根据请求编号检查服务端记录。",
+};
+export function retryAfterMs(value: string | null): number | undefined {
+  if (!value) return undefined;
+  const parsed = /^\d+(\.\d+)?$/.test(value)
+    ? Number(value) * 1000
+    : Date.parse(value) - Date.now();
+  return Number.isFinite(parsed) ? Math.max(0, parsed) : undefined;
+}
+function pause(ms: number, signal: AbortSignal) {
+  return new Promise<void>((resolve, reject) => {
+    const cancel = () => {
+      clearTimeout(timer);
+      signal.removeEventListener("abort", cancel);
+      reject(new DOMException("Session changed", "AbortError"));
+    };
+    const timer = setTimeout(() => {
+      signal.removeEventListener("abort", cancel);
+      resolve();
+    }, ms);
+    if (signal.aborted) cancel();
+    else signal.addEventListener("abort", cancel, { once: true });
+  });
 }
 export function validateWire<K extends keyof Endpoints>(
   name: K,
@@ -215,7 +247,11 @@ export class ApiClient {
         redirect: "error",
       });
     };
+    let recoveryTimer: ReturnType<typeof setTimeout> | undefined;
+    let recoveryExpired = false;
+    let lastFailure: ApiFailure | undefined;
     try {
+      const recoveryDeadline = Date.now() + 20_000;
       let res = await send();
       if (res.status === 401 && !options.public) {
         this.refreshPromise ??= this.auth.refresh().finally(() => {
@@ -225,16 +261,78 @@ export class ApiClient {
           res = await send();
         else this.auth.invalidate();
       }
+      // Only explicitly transient ordinary GETs recover here. No query-library
+      // retry, control-write replay, new view, or deferred-job resubmission.
+      for (
+        let attempt = 0;
+        attempt < 2 &&
+        (!options.method || options.method === "GET") &&
+        !path.split("?")[0].endsWith("/overview/gateway-status") &&
+        [503, 504].includes(res.status);
+        attempt++
+      ) {
+        const failed = await res
+          .clone()
+          .json()
+          .catch(() => null);
+        const code = failed?.error?.code;
+        if (
+          failed?.error?.retryable !== true ||
+          ![
+            "SERVICE_BUSY",
+            "QUERY_TIMEOUT",
+            "STORE_BUSY",
+            "STORE_UNAVAILABLE",
+          ].includes(code)
+        )
+          break;
+        const delay =
+          retryAfterMs(res.headers.get("Retry-After")) ?? 2000 * (attempt + 1);
+        const wait = delay + Math.random() * 200;
+        if (Date.now() + wait >= recoveryDeadline) break;
+        lastFailure = new ApiFailure(
+          code,
+          failed.error.message || code,
+          res.status,
+          failed.error.request_id,
+          failed.error.fields ?? [],
+          true,
+          delay,
+        );
+        recoveryTimer ??= setTimeout(
+          () => {
+            recoveryExpired = true;
+            controller.abort();
+          },
+          Math.max(0, recoveryDeadline - Date.now()),
+        );
+        await pause(wait, controller.signal);
+        if (epoch !== this.epoch)
+          throw new DOMException("Session changed", "AbortError");
+        res = await send();
+      }
+      clearTimeout(recoveryTimer);
+      recoveryTimer = undefined;
       // Deferred exact aggregates keep this query pending and preserve cached data.
       // Poll only the owner-scoped relative endpoint; never forward auth to a URL.
       const computationDeadline = Date.now() + 100_000;
-      while (res.status === 202 && (!options.method || options.method === "GET")) {
+      while (
+        res.status === 202 &&
+        (!options.method || options.method === "GET")
+      ) {
         const ticket = await res.json();
-        if (!["QUEUED", "RUNNING"].includes(ticket?.state) || !/^[a-f0-9]{32}$/.test(ticket.query_id) ||
-            ticket.result_path !== `/queries/${ticket.query_id}`)
+        if (
+          !["QUEUED", "RUNNING"].includes(ticket?.state) ||
+          !/^[a-f0-9]{32}$/.test(ticket.query_id) ||
+          ticket.result_path !== `/queries/${ticket.query_id}`
+        )
           throw new ApiFailure("INVALID_RESPONSE", "计算任务不符合 V2 契约。");
         if (Date.now() >= computationDeadline)
-          throw new ApiFailure("QUERY_TIMEOUT", "计算尚未完成，请稍后重试。", 503);
+          throw new ApiFailure(
+            "QUERY_TIMEOUT",
+            "计算尚未完成，请稍后重试。",
+            503,
+          );
         await new Promise<void>((resolve, reject) => {
           const canceled = () => {
             clearTimeout(timer);
@@ -245,13 +343,18 @@ export class ApiClient {
             resolve();
           }, 2000);
           if (controller.signal.aborted) canceled();
-          else controller.signal.addEventListener("abort", canceled, { once: true });
+          else
+            controller.signal.addEventListener("abort", canceled, {
+              once: true,
+            });
         });
         if (epoch !== this.epoch || controller.signal.aborted)
           throw new DOMException("Session changed", "AbortError");
         res = await this.fetcher(API_PREFIX + ticket.result_path, {
           headers: { Authorization: `Bearer ${this.auth.token() ?? ""}` },
-          signal: controller.signal, cache: "no-store", redirect: "error",
+          signal: controller.signal,
+          cache: "no-store",
+          redirect: "error",
         });
       }
       if (epoch !== this.epoch || controller.signal.aborted)
@@ -265,6 +368,8 @@ export class ApiClient {
           res.status,
           body?.error?.request_id,
           body?.error?.fields ?? [],
+          body?.error?.retryable === true,
+          retryAfterMs(res.headers.get("Retry-After")),
         );
       }
       const result = validateWire(name, body);
@@ -276,7 +381,11 @@ export class ApiClient {
       if (epoch !== this.epoch)
         throw new DOMException("Session changed", "AbortError");
       return result;
+    } catch (cause) {
+      if (recoveryExpired && lastFailure) throw lastFailure;
+      throw cause;
     } finally {
+      clearTimeout(recoveryTimer);
       options.signal?.removeEventListener("abort", abort);
       this.controllers.delete(controller);
     }

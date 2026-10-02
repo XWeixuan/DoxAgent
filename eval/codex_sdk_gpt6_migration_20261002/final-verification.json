@@ -1,0 +1,39 @@
+{
+  "codex-worker": {
+    "status": "running",
+    "restarts": 0,
+    "health": "healthy",
+    "image": "doxagent-v2:codex-gpt6-worker-0.159.3"
+  },
+  "v2-initialization": {
+    "status": "running",
+    "restarts": 0,
+    "health": null,
+    "image": "doxagent-v2:codex-gpt6-research-0.159.3"
+  },
+  "v2-o4": {
+    "status": "running",
+    "restarts": 0,
+    "health": null,
+    "image": "doxagent-v2:codex-gpt6-research-0.159.3"
+  },
+  "v2-scheduler": {
+    "status": "running",
+    "restarts": 0,
+    "health": null,
+    "image": "doxagent-v2:codex-gpt6-scheduler-0.159.3"
+  },
+  "initialization-guardian": {
+    "status": "running",
+    "restarts": 0,
+    "health": null,
+    "image": "doxagent-v2:codex-gpt6-guardian-0.159.3"
+  },
+  "repair_template": {
+    "sdk": "0.159.3",
+    "model": "gpt-6-luna",
+    "repair_model": "gpt-6.1-sol",
+    "repair_effort": "medium"
+  },
+  "active_source_scan": "all six source snapshots have migrated defaults; old names only in execution compatibility map"
+}

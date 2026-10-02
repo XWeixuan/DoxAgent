@@ -6,7 +6,7 @@ content is business evidence and is never eligible for diagnostic age deletion.
 import json
 import sqlite3
 from pathlib import Path
-from .content_files import ContentFiles, CHUNK
+from .content_files import ContentFiles, ContentUnavailable, CHUNK
 
 MARKER = "$doxagent_content_v1"
 
@@ -30,17 +30,23 @@ class NativeContent:
         return json.dumps(pack(value, root=isinstance(value, dict)), ensure_ascii=False, separators=(",", ":"), sort_keys=True)
 
     def decode(self, value):
+        from .query_budget import check_deadline
+        check_deadline()
         if isinstance(value, dict):
             if MARKER in value:
                 if set(value) != {MARKER, "bytes"} or not isinstance(value["bytes"], int) or value["bytes"] < 0:
-                    raise ValueError("invalid native content reference")
+                    raise ContentUnavailable()
                 raw = b"".join(self.files.read(value[MARKER], offset, CHUNK) for offset in range(0, value["bytes"], CHUNK))
                 if len(raw) != value["bytes"]:
-                    raise ValueError("native content size mismatch")
+                    raise ContentUnavailable()
                 import hashlib
                 if hashlib.sha256(raw).hexdigest() != value[MARKER]:
-                    raise ValueError("native content hash mismatch")
-                return json.loads(raw)
+                    raise ContentUnavailable()
+                check_deadline()
+                try:
+                    return json.loads(raw)
+                except ValueError as exc:
+                    raise ContentUnavailable() from exc
             return {key: self.decode(child) for key, child in value.items()}
         if isinstance(value, list):
             return [self.decode(child) for child in value]

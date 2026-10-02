@@ -1,0 +1,73 @@
+{
+  "codex-worker": {
+    "variant": "worker",
+    "image": "doxagent-v2:server",
+    "image_id": "sha256:4b4d862f193c460d895e89172a45f6aff95c47a0da532bc894e4aaf7d39fd102",
+    "revision": "unversioned",
+    "compose_files": [
+      "/home/ubuntu/doxagent/docker-compose.v2-production.yml",
+      "/home/ubuntu/doxagent/deploy/docker-compose.server.yml"
+    ],
+    "working_dir": "/home/ubuntu/doxagent",
+    "model_config": {}
+  },
+  "v2-initialization": {
+    "variant": "research",
+    "image": "doxagent-v2:server",
+    "image_id": "sha256:804b96235e20f7236b4892e2cdb8f903d53328480ec3a630bdd941415c9a663b",
+    "revision": "6974a95d6f637105c2a5af38beb792e15ce2538a",
+    "compose_files": [
+      "/home/ubuntu/doxagent-luna-recovery/docker-compose.v2-production.yml",
+      "/home/ubuntu/doxagent-luna-recovery/deploy/docker-compose.server.yml"
+    ],
+    "working_dir": "/home/ubuntu/doxagent-luna-recovery",
+    "model_config": {
+      "DOXAGENT_CODEX_MODEL": "gpt-5.6-luna",
+      "DOXAGENT_PERSISTENT_RUNTIME_V2_W3_MODEL": "gpt-5.6-luna"
+    }
+  },
+  "v2-o4": {
+    "variant": "research",
+    "image": "doxagent-v2:server",
+    "image_id": "sha256:804b96235e20f7236b4892e2cdb8f903d53328480ec3a630bdd941415c9a663b",
+    "revision": "6974a95d6f637105c2a5af38beb792e15ce2538a",
+    "compose_files": [
+      "/home/ubuntu/doxagent-luna-recovery/docker-compose.v2-production.yml",
+      "/home/ubuntu/doxagent-luna-recovery/deploy/docker-compose.server.yml"
+    ],
+    "working_dir": "/home/ubuntu/doxagent-luna-recovery",
+    "model_config": {
+      "DOXAGENT_PERSISTENT_RUNTIME_V2_W3_MODEL": "gpt-5.6-luna",
+      "DOXAGENT_CODEX_MODEL": "gpt-5.6-luna"
+    }
+  },
+  "v2-scheduler": {
+    "variant": "scheduler",
+    "image": "doxagent-v2:trade-1d6234f5",
+    "image_id": "sha256:d9db0092a771532e641a03ecb378e0dbb773586e7cfdec20e2edf53284fa42b6",
+    "revision": "1d6234f5",
+    "compose_files": [
+      "/home/ubuntu/doxagent-release-f3da669b/docker-compose.v2-production.yml",
+      "/home/ubuntu/doxagent-release-f3da669b/deploy/docker-compose.server.yml"
+    ],
+    "working_dir": "/home/ubuntu/doxagent-release-f3da669b",
+    "model_config": {
+      "DOXAGENT_PERSISTENT_RUNTIME_V2_W3_EXECUTION_MODEL_OVERRIDE": "gpt-5.6-luna",
+      "DOXAGENT_CODEX_MODEL": "gpt-5.6-luna",
+      "DOXAGENT_PERSISTENT_RUNTIME_V2_W3_MODEL": "gpt-5.6-luna"
+    }
+  },
+  "initialization-guardian": {
+    "variant": "guardian",
+    "image": "doxagent-v2:production",
+    "image_id": "sha256:c09e5647fa35f3d76b3e3c9ed4876858618dc183688eded0d9b468e5c485a140",
+    "revision": "unversioned",
+    "compose_files": [
+      "/home/ubuntu/doxagent/docker-compose.v2-production.yml",
+      "/home/ubuntu/doxagent/deploy/docker-compose.server.yml",
+      "/home/ubuntu/doxagent/deploy/docker-compose.initialization-repair.yml"
+    ],
+    "working_dir": "/home/ubuntu/doxagent",
+    "model_config": {}
+  }
+}

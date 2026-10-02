@@ -297,8 +297,10 @@ def install(app: FastAPI):
     async def events(ticker: str, request: Request):
         args = app.state.query(request, {"view_id", "cursor"})
         owner, view_id = request.state.principal.user_id, args.get("view_id", "")
+        diagnostic = {"request_id": request.state.request_id,
+                      "route": prefix + "/graph/events"}
         runner = app.state.stream_runner or app.state.query_runner
-        prepared = (await runner.run({"kind": "graph_prepare", "owner": owner, "ticker": ticker,
+        prepared = (await runner.run({**diagnostic, "kind": "graph_prepare", "owner": owner, "ticker": ticker,
                                       "view_id": view_id, "args": args, "header": request.headers.get("last-event-id")})
                     if runner else graphs.prepare(owner, ticker, view_id, args, request.headers.get("last-event-id")))
         view, state, cursor = prepared
@@ -322,7 +324,7 @@ def install(app: FastAPI):
                     reason = "SCOPE_MISMATCH"
                 try:
                     runner = app.state.stream_runner or app.state.query_runner
-                    result = ((await runner.run({"kind": "graph", "owner": owner, "state": current, "view": view})
+                    result = ((await runner.run({**diagnostic, "kind": "graph", "owner": owner, "state": current, "view": view})
                                if runner else graphs.next(owner, current, view)) if reason is None else None)
                 except ApiFailure as exc:
                     if exc.status != 410:

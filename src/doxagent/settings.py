@@ -88,7 +88,7 @@ class DoxAgentSettings(BaseSettings):
         validation_alias="DOXAGENT_CODEX_MONITORING_O4_SQLITE_PATH",
     )
     codex_monitoring_o4_model: str = Field(
-        default="gpt-6-sol",
+        default="gpt-6.1-sol",
         validation_alias="DOXAGENT_CODEX_MONITORING_O4_MODEL",
     )
     codex_monitoring_o4_timeout_seconds: int = Field(
@@ -162,7 +162,7 @@ class DoxAgentSettings(BaseSettings):
         validation_alias="DOXAGENT_CODEX_PUBLISHED_STORAGE_BUCKET",
     )
     codex_model: str = Field(
-        default="gpt-5.6-luna",
+        default="gpt-6-luna",
         validation_alias="DOXAGENT_CODEX_MODEL",
     )
     codex_model_provider: str | None = Field(
@@ -179,7 +179,7 @@ class DoxAgentSettings(BaseSettings):
         validation_alias="DOXAGENT_CODEX_NODE_TIMEOUT_SECONDS",
     )
     codex_d3_initialize_model: str = Field(
-        default="gpt-6-sol",
+        default="gpt-6.1-sol",
         validation_alias="DOXAGENT_CODEX_D3_INITIALIZE_MODEL",
     )
     codex_d3_initialize_effort: Literal["low", "medium", "high", "xhigh", "max"] = Field(
@@ -968,7 +968,7 @@ class DoxAgentSettings(BaseSettings):
         validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_W3_ENABLED",
     )
     persistent_runtime_v2_w3_model: str = Field(
-        default="gpt-5.6-luna",
+        default="gpt-6-luna",
         validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_W3_MODEL",
     )
     persistent_runtime_v2_w3_execution_model_override: str | None = Field(

@@ -1,0 +1,34 @@
+[
+  {
+    "requested_model": "gpt-5.6-luna",
+    "effort": "max",
+    "status": "succeeded",
+    "response": "{\"marker\":\"OK\"}",
+    "error": null,
+    "model_selection": {
+      "requested_model": "gpt-5.6-luna",
+      "execution_model": "gpt-6-luna",
+      "provider": null,
+      "effort": "max"
+    },
+    "job_id": "ac051b89d11340ba83a7e07b17b1ed25",
+    "run_id": "sdk-smoke-f3226a4e312b4f87baf2aca8f817ad04",
+    "passed": true
+  },
+  {
+    "requested_model": "gpt-5.6-sol",
+    "effort": "medium",
+    "status": "succeeded",
+    "response": "{\"marker\":\"OK\"}",
+    "error": null,
+    "model_selection": {
+      "requested_model": "gpt-5.6-sol",
+      "execution_model": "gpt-6.1-sol",
+      "provider": null,
+      "effort": "medium"
+    },
+    "job_id": "d3401b5b75b84ca4bde22343b3dba730",
+    "run_id": "sdk-smoke-34525a40cf5b440e89775dc4c2c2c019",
+    "passed": true
+  }
+]

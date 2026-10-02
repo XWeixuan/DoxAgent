@@ -14,6 +14,7 @@ from uuid import uuid4
 from openai_codex import ApprovalMode, AsyncCodex, CodexConfig, Sandbox
 from openai_codex.types import ReasoningEffort
 
+from doxagent.codex_runtime.models import codex_execution_model
 from doxagent.codex_runtime.schema import CodexMonitoringO4Node
 from doxagent.codex_worker.schema import WorkerRunRequest, WorkerTurnTelemetry
 from doxagent.codex_worker.telemetry import project_turn_telemetry
@@ -196,6 +197,7 @@ class OpenAICodexRuntime:
         account_response = await self._client.account()
         model_response = await self._client.models(include_hidden=False)
         account = getattr(account_response, "account", None)
+        account = getattr(account, "root", account)
         models = getattr(model_response, "data", [])
         return {
             "authenticated": account is not None,
@@ -208,6 +210,25 @@ class OpenAICodexRuntime:
         await self._client.close()
 
     async def start(self, request: WorkerRunRequest, cwd: Path) -> TurnHandle:
+        requested_model = request.model
+        execution_model = codex_execution_model(
+            request.model or self._settings.codex_model, request.model_provider
+        )
+        # Resolve at execution, keeping the original request hash and durable
+        # idempotency key valid for already frozen or queued requests.
+        _write_atomic_text(
+            cwd / "attempts" / request.attempt_id / "audit" / "model_selection.json",
+            json.dumps(
+                {
+                    "requested_model": requested_model,
+                    "execution_model": execution_model,
+                    "provider": request.model_provider,
+                    "effort": request.effort,
+                },
+                indent=2,
+            ),
+        )
+        request = request.model_copy(update={"model": execution_model})
         if request.o4_operations_enabled and not self._container_isolated:
             raise ValueError("O4 operational turns require DOXAGENT_CODEX_CONTAINER_ISOLATION=true")
         # Docker supplies the outer isolation boundary. Nested bubblewrap cannot create

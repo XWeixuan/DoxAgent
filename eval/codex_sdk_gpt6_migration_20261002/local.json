@@ -1,0 +1,56 @@
+{
+  "checked_at": "2026-10-01T20:25:59.692821+00:00",
+  "sdk": "0.159.3",
+  "cli": "0.159.3",
+  "calls": [
+    {
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "status": "completed",
+      "thread_id": "01a0f925-35fc-7b90-a0b4-acb83d11dda7",
+      "turn_id": "01a0f925-3679-7270-909b-4c9808066b70",
+      "response": "{\"marker\":\"OK\"}",
+      "passed": true
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium",
+      "status": "completed",
+      "thread_id": "01a0f925-4a23-76e0-a088-fa1f98a8afa4",
+      "turn_id": "01a0f925-4a87-7072-a68f-b97cb1e5db62",
+      "response": "{\"marker\":\"OK\"}",
+      "passed": true
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "high",
+      "status": "completed",
+      "thread_id": "01a0f925-63ec-7a13-ae86-21f1dacc8d3f",
+      "turn_id": "01a0f925-645f-7552-8083-643f0fd03043",
+      "response": "{\"marker\":\"OK\"}",
+      "passed": true
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "max",
+      "status": "completed",
+      "thread_id": "01a0f925-7ae4-73e2-a5a6-d5a10bfa9f7c",
+      "turn_id": "01a0f925-7b52-74a0-8f82-6f1b32884774",
+      "response": "{\"marker\":\"OK\"}",
+      "passed": true
+    }
+  ],
+  "authenticated": true,
+  "account_type": "ChatgptAccount",
+  "models": [
+    "gpt-6.1-sol",
+    "gpt-6-astra",
+    "gpt-6-sol",
+    "gpt-6-luna",
+    "gpt-5.6-sol",
+    "gpt-5.6-terra",
+    "gpt-5.6-luna",
+    "gpt-5.5"
+  ],
+  "passed": true
+}

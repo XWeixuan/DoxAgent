@@ -1,0 +1,883 @@
+{
+  "configuration": {
+    "kind": "configuration",
+    "model": "qwen3.8-flash",
+    "session_cache": false,
+    "provider_host": "dashscope.aliyuncs.com",
+    "start": "2026-09-24T16:35:00+00:00",
+    "end": "2026-10-01T16:35:00+00:00"
+  },
+  "cohort_stats": {
+    "kind": "cohort_stats",
+    "length_buckets": {
+      ">1000": [
+        225,
+        0
+      ],
+      "351-1000": [
+        44,
+        0
+      ],
+      "1-350": [
+        49,
+        19
+      ],
+      "0": [
+        10,
+        2
+      ]
+    },
+    "count": 328
+  },
+  "cases": [
+    {
+      "case_id": "case_c86c75f6556a499a8960974922aae41b",
+      "message_id": "std_b86f8559d1a14f0197241a18d09c85c7",
+      "created_at": "2026-09-24T20:45:21.411352+00:00",
+      "title": "Oracle, Qualcomm, Meta, Everpure, BlackBerry, MGM, Nebius, and More Stocks That Explain Today’s Market",
+      "body_length": 137,
+      "policy_version": 1,
+      "historical_result": {
+        "candidate_policy_ids": [],
+        "reason": "本轮未提供任何需要评估的 source_message 具体事实内容，仅有 Policy 参考数据。无事实可匹配任何 criterion，因此无 Candidate Policy 可召回。"
+      },
+      "historical_usage": {
+        "input_tokens": 17592,
+        "cached_input_tokens": 17408,
+        "output_tokens": 563,
+        "reasoning_tokens": 517,
+        "latency_ms": 10716,
+        "response_id": "resp_ced98ec0-4216-9673-b294-1accdc679aab",
+        "prefix_fingerprint": "167022ffe43d784feb3fa4faeb373923978deefa876370cae8e4413c6535fab1"
+      },
+      "missing_source": true,
+      "wire_hash": "ea0647304a637c62385bafb78965cf1a87879f8a8845bbaea6ced6ad9ab4eefc",
+      "source_serialized_in_wire": true,
+      "context_sha256": "5d9558ae9c00a818c32e70a6e1cc42f42766d19f9cb59b55c0d19ba8c13ecb70",
+      "source_message": {
+        "body": "Oracle is tumbling. It sent a force majeure notice to the developer of the Project Jupiter campus, its data center project in New Mexico.",
+        "ticker": "BE",
+        "title": "Oracle, Qualcomm, Meta, Everpure, BlackBerry, MGM, Nebius, and More Stocks That Explain Today’s Market"
+      },
+      "original_input_characters": 48040
+    },
+    {
+      "case_id": "case_460f793603784db3ad88bc477b1cbfc9",
+      "message_id": "std_98891397e196499a9b70d1e0460c5cf8",
+      "created_at": "2026-09-25T22:15:41.182277+00:00",
+      "title": "Is Bloom Energy Stock's Drop A Chance To Buy?",
+      "body_length": 309,
+      "policy_version": 1,
+      "historical_result": {
+        "candidate_policy_ids": [],
+        "reason": "本轮未提供具体的source_message业务事实内容，无法将任何具体观察与Policy criterion建立直接触发关系，因此无可召回的Candidate Policy。"
+      },
+      "historical_usage": {
+        "input_tokens": 17629,
+        "cached_input_tokens": 1024,
+        "output_tokens": 552,
+        "reasoning_tokens": 510,
+        "latency_ms": 13559,
+        "response_id": "resp_fc7c1a49-6cd9-9235-8362-5f776b6094d8",
+        "prefix_fingerprint": "167022ffe43d784feb3fa4faeb373923978deefa876370cae8e4413c6535fab1"
+      },
+      "missing_source": true,
+      "wire_hash": "b4eb2182001a4141a3def420312aa48e40a34bc5e3e4140697d9a98d006fc9f5",
+      "source_serialized_in_wire": true,
+      "context_sha256": "5d9558ae9c00a818c32e70a6e1cc42f42766d19f9cb59b55c0d19ba8c13ecb70",
+      "source_message": {
+        "body": "Most of Bloom Energy's customers never own the power equipment they use. You probably expect the story to be AI data center demand, which is real. But demand is not what investors have missed. The shares fell 13.8% in three months as the S&P 500 rose 5.0%. So who does pay Bloom Energy (BE) for its equipment.",
+        "ticker": "BE",
+        "title": "Is Bloom Energy Stock's Drop A Chance To Buy?"
+      },
+      "original_input_characters": 48155
+    },
+    {
+      "case_id": "case_3bf39296fc23411aaa5f488e7d86afd3",
+      "message_id": "std_8690e41ce4d3402b861b53c98da51dc8",
+      "created_at": "2026-09-27T06:00:39.511009+00:00",
+      "title": "Stock Market Week Ahead: Rockets, Roadsters And Talking Heads",
+      "body_length": 139,
+      "policy_version": 1,
+      "historical_result": {
+        "candidate_policy_ids": [],
+        "reason": "当前轮次未注入任何source_message，无具体事实可供与Policy criterion进行触发关系比对，因此不存在可召回的Candidate Policy。"
+      },
+      "historical_usage": {
+        "input_tokens": 17582,
+        "cached_input_tokens": 17408,
+        "output_tokens": 772,
+        "reasoning_tokens": 731,
+        "latency_ms": 19530,
+        "response_id": "resp_58694c49-bf47-9991-a4fd-9fee67703b75",
+        "prefix_fingerprint": "167022ffe43d784feb3fa4faeb373923978deefa876370cae8e4413c6535fab1"
+      },
+      "missing_source": true,
+      "wire_hash": "18472a5c6a7f5196251581ae1abf63d7b29f56058057964f72092666187ef308",
+      "source_serialized_in_wire": true,
+      "context_sha256": "5d9558ae9c00a818c32e70a6e1cc42f42766d19f9cb59b55c0d19ba8c13ecb70",
+      "source_message": {
+        "body": "The stock market faces a week of Fed speeches, September jobs and Micron earnings, as well as special events from SpaceX, Tesla and OpenAI.",
+        "ticker": "BE",
+        "title": "Stock Market Week Ahead: Rockets, Roadsters And Talking Heads"
+      },
+      "original_input_characters": 48001
+    },
+    {
+      "case_id": "case_fe333efd85bf4a8aac56da177516634f",
+      "message_id": "std_323293b41335445f8ee1236156b73251",
+      "created_at": "2026-09-27T06:08:53.327915+00:00",
+      "title": "Global Data Center Power Demand Capacity to Hit 161 GW in 2026 - tokenpost.com",
+      "body_length": 76,
+      "policy_version": 1,
+      "historical_result": {
+        "candidate_policy_ids": [],
+        "reason": "本轮输入中未包含任何具体的 source_message（业务事件、声明或事实陈述），仅有系统指令与 Policy 定义数据。没有可评估的现实事实，因此无法识别任何与 Policy criterion 存在具体触发关系的 Candidate。"
+      },
+      "historical_usage": {
+        "input_tokens": 17586,
+        "cached_input_tokens": 17408,
+        "output_tokens": 385,
+        "reasoning_tokens": 326,
+        "latency_ms": 13781,
+        "response_id": "resp_f20ca06b-8259-9ccc-b46e-54cf7ff70bf3",
+        "prefix_fingerprint": "167022ffe43d784feb3fa4faeb373923978deefa876370cae8e4413c6535fab1"
+      },
+      "missing_source": true,
+      "wire_hash": "648dc9339318b9a66ad6c3327c465008218d995789f0ef3faa239a6e0ee7c727",
+      "source_serialized_in_wire": true,
+      "context_sha256": "5d9558ae9c00a818c32e70a6e1cc42f42766d19f9cb59b55c0d19ba8c13ecb70",
+      "source_message": {
+        "body": "Global Data Center Power Demand Capacity to Hit 161 GW in 2026 tokenpost.com",
+        "ticker": "BE",
+        "title": "Global Data Center Power Demand Capacity to Hit 161 GW in 2026 - tokenpost.com"
+      },
+      "original_input_characters": 47955
+    },
+    {
+      "case_id": "case_086f14417ee04c9f9bb0d8ba7073cc39",
+      "message_id": "std_81bf65ce3ec1439bb76b3402a2624749",
+      "created_at": "2026-09-27T06:08:53.653342+00:00",
+      "title": "Atlas Energy Signs Major AI Data Center Power Deal, Stock Soars Nearly 14% in a Single Day - NAI500",
+      "body_length": 97,
+      "policy_version": 1,
+      "historical_result": {
+        "candidate_policy_ids": [],
+        "reason": "本轮输入仅包含 Policy 参考数据（runtime_policy_projection），未注入任何 source_message 或具体业务事实。没有可评估的现实状态、变化或事件，因此无法将任何消息事实与 Policy criterion 建立直接触发关系，候选列表为空。"
+      },
+      "historical_usage": {
+        "input_tokens": 17596,
+        "cached_input_tokens": 17408,
+        "output_tokens": 1176,
+        "reasoning_tokens": 1111,
+        "latency_ms": 22850,
+        "response_id": "resp_27d64d08-b830-9de4-bdbe-dd25f85e9572",
+        "prefix_fingerprint": "167022ffe43d784feb3fa4faeb373923978deefa876370cae8e4413c6535fab1"
+      },
+      "missing_source": true,
+      "wire_hash": "6dcf7481f3d27ce8a590b937bcd7f2a4162277a159681889df56c36133ada9fc",
+      "source_serialized_in_wire": true,
+      "context_sha256": "5d9558ae9c00a818c32e70a6e1cc42f42766d19f9cb59b55c0d19ba8c13ecb70",
+      "source_message": {
+        "body": "Atlas Energy Signs Major AI Data Center Power Deal, Stock Soars Nearly 14% in a Single Day NAI500",
+        "ticker": "BE",
+        "title": "Atlas Energy Signs Major AI Data Center Power Deal, Stock Soars Nearly 14% in a Single Day - NAI500"
+      },
+      "original_input_characters": 47997
+    },
+    {
+      "case_id": "case_9c8fe2d03e004bc9906d009fee761a7c",
+      "message_id": "std_de46b9da4af2475d87fb0516b424a4fc",
+      "created_at": "2026-09-27T06:08:53.928490+00:00",
+      "title": "BE Stock Soars To Best Day This Year — Mizuho Upgrades Bloom Energy To 'Outperform,' Sees 48% Upside On Cheap Valuation - Stocktwits",
+      "body_length": 130,
+      "policy_version": 1,
+      "historical_result": {
+        "candidate_policy_ids": [],
+        "reason": "当前输入中未包含任何具体业务消息或事件事实（无source_message），无法与任何Policy的criterion进行事实对应判断，因此没有可召回的Candidate Policy。"
+      },
+      "historical_usage": {
+        "input_tokens": 17616,
+        "cached_input_tokens": 1024,
+        "output_tokens": 436,
+        "reasoning_tokens": 387,
+        "latency_ms": 13451,
+        "response_id": "resp_1cc08855-079a-9c9a-8990-a3b91b7016e9",
+        "prefix_fingerprint": "167022ffe43d784feb3fa4faeb373923978deefa876370cae8e4413c6535fab1"
+      },
+      "missing_source": true,
+      "wire_hash": "1712fbb9f550936a21a6be02f8ccaffab0df29a1cb57adca2a76fb0e93c735fb",
+      "source_serialized_in_wire": true,
+      "context_sha256": "5d9558ae9c00a818c32e70a6e1cc42f42766d19f9cb59b55c0d19ba8c13ecb70",
+      "source_message": {
+        "body": "BE Stock Soars To Best Day This Year — Mizuho Upgrades Bloom Energy To 'Outperform,' Sees 48% Upside On Cheap Valuation Stocktwits",
+        "ticker": "BE",
+        "title": "BE Stock Soars To Best Day This Year — Mizuho Upgrades Bloom Energy To 'Outperform,' Sees 48% Upside On Cheap Valuation - Stocktwits"
+      },
+      "original_input_characters": 48063
+    },
+    {
+      "case_id": "case_a255361c827741e29a70c21436764f6a",
+      "message_id": "std_7aec0c967b5344eb99ca5ff4d4591d4c",
+      "created_at": "2026-09-27T06:08:54.436042+00:00",
+      "title": "Caterpillar (NYSE:CAT) Rides Record Backlog And Data Center Power Demand In AI-Fueled Run - Kalkine Media",
+      "body_length": 103,
+      "policy_version": 1,
+      "historical_result": {
+        "candidate_policy_ids": [],
+        "reason": "本轮未注入任何source_message业务事实内容，仅有Policy参考数据。没有可评估的现实观察，无法与任何criterion建立具体触发关系，因此不召回任何Candidate Policy。"
+      },
+      "historical_usage": {
+        "input_tokens": 17598,
+        "cached_input_tokens": 17408,
+        "output_tokens": 447,
+        "reasoning_tokens": 397,
+        "latency_ms": 13245,
+        "response_id": "resp_6527093b-c472-9e5c-915f-c8c57bea0767",
+        "prefix_fingerprint": "167022ffe43d784feb3fa4faeb373923978deefa876370cae8e4413c6535fab1"
+      },
+      "missing_source": true,
+      "wire_hash": "92b58b28e58897852091585452e52773821c6aa2a62ae95b8fc8dafa1c822705",
+      "source_serialized_in_wire": true,
+      "context_sha256": "5d9558ae9c00a818c32e70a6e1cc42f42766d19f9cb59b55c0d19ba8c13ecb70",
+      "source_message": {
+        "body": "Caterpillar (NYSE:CAT) Rides Record Backlog And Data Center Power Demand In AI-Fueled Run Kalkine Media",
+        "ticker": "BE",
+        "title": "Caterpillar (NYSE:CAT) Rides Record Backlog And Data Center Power Demand In AI-Fueled Run - Kalkine Media"
+      },
+      "original_input_characters": 48009
+    },
+    {
+      "case_id": "case_f0c86ca181244d329472b917c2334145",
+      "message_id": "std_64f2dbc6d3b7488484bfc829f35eb0ff",
+      "created_at": "2026-09-27T06:08:57.821504+00:00",
+      "title": "BE, P, ILMN Join S&P 500; LNG Misses Out — Bloom Energy Stock Gains While Cheniere Energy Slips - Stocktwits",
+      "body_length": 106,
+      "policy_version": 1,
+      "historical_result": {
+        "candidate_policy_ids": [],
+        "reason": "当前轮次未注入任何 source_message 业务消息，无具体事实可供与任何 Policy criterion 建立触发关系，因此无法召回 Candidate Policies。"
+      },
+      "historical_usage": {
+        "input_tokens": 17610,
+        "cached_input_tokens": 17408,
+        "output_tokens": 309,
+        "reasoning_tokens": 266,
+        "latency_ms": 11310,
+        "response_id": "resp_5bfd53da-f27e-9d0a-8f95-ed6e92f8244a",
+        "prefix_fingerprint": "167022ffe43d784feb3fa4faeb373923978deefa876370cae8e4413c6535fab1"
+      },
+      "missing_source": true,
+      "wire_hash": "cf680f94c73a376e83329b05888a679c06b85fd70d0b01a24d61735402663b8d",
+      "source_serialized_in_wire": true,
+      "context_sha256": "5d9558ae9c00a818c32e70a6e1cc42f42766d19f9cb59b55c0d19ba8c13ecb70",
+      "source_message": {
+        "body": "BE, P, ILMN Join S&P 500; LNG Misses Out — Bloom Energy Stock Gains While Cheniere Energy Slips Stocktwits",
+        "ticker": "BE",
+        "title": "BE, P, ILMN Join S&P 500; LNG Misses Out — Bloom Energy Stock Gains While Cheniere Energy Slips - Stocktwits"
+      },
+      "original_input_characters": 48015
+    },
+    {
+      "case_id": "case_33489b2db92b4552b9dd28305172ac41",
+      "message_id": "std_96cf4b4e59064a91a051d001bdeba1d5",
+      "created_at": "2026-09-27T06:08:57.964326+00:00",
+      "title": "Constellation Energy (NASDAQ:CEG) Advances Crane Nuclear Restart As Data Center Power Deals Sharpen Focus - Kalkine Media",
+      "body_length": 119,
+      "policy_version": 1,
+      "historical_result": {
+        "candidate_policy_ids": [],
+        "reason": "当前输入未包含任何具体的业务事实或事件消息（无 source_message 内容），仅提供了 Policy 参考数据。没有可匹配的事实陈述，因此无法召回任何 Candidate Policy。"
+      },
+      "historical_usage": {
+        "input_tokens": 17592,
+        "cached_input_tokens": 17408,
+        "output_tokens": 494,
+        "reasoning_tokens": 444,
+        "latency_ms": 14219,
+        "response_id": "resp_f881cff0-cf06-9a23-b74f-3b3a6349d755",
+        "prefix_fingerprint": "167022ffe43d784feb3fa4faeb373923978deefa876370cae8e4413c6535fab1"
+      },
+      "missing_source": true,
+      "wire_hash": "a3fb36eaa0e6139e722ba785c2a5129dec72c017e5426b3e74f6640014305fd0",
+      "source_serialized_in_wire": true,
+      "context_sha256": "5d9558ae9c00a818c32e70a6e1cc42f42766d19f9cb59b55c0d19ba8c13ecb70",
+      "source_message": {
+        "body": "Constellation Energy (NASDAQ:CEG) Advances Crane Nuclear Restart As Data Center Power Deals Sharpen Focus Kalkine Media",
+        "ticker": "BE",
+        "title": "Constellation Energy (NASDAQ:CEG) Advances Crane Nuclear Restart As Data Center Power Deals Sharpen Focus - Kalkine Media"
+      },
+      "original_input_characters": 48041
+    },
+    {
+      "case_id": "case_296e914f357d4fe8804177142615d6c3",
+      "message_id": "std_d26223f14ada4a0fa6b9e8c79c64f1c3",
+      "created_at": "2026-09-27T06:08:58.490529+00:00",
+      "title": "Three Potential Stocks Still Draw Long-Term Investor Attention Under the September Curse of U.S. Equities - NAI500",
+      "body_length": 112,
+      "policy_version": 1,
+      "historical_result": {
+        "candidate_policy_ids": [],
+        "reason": "当前消息未包含任何具体业务事实、事件陈述或状态变化描述，仅有Policy参考数据本身。没有可供与任何criterion进行触发性匹配的实际observation，因此无法召回任何Candidate Policy。"
+      },
+      "historical_usage": {
+        "input_tokens": 17592,
+        "cached_input_tokens": 0,
+        "output_tokens": 250,
+        "reasoning_tokens": 196,
+        "latency_ms": 10596,
+        "response_id": "resp_dae6745a-b9b2-9bbd-92c2-47c08ae8d94a",
+        "prefix_fingerprint": "167022ffe43d784feb3fa4faeb373923978deefa876370cae8e4413c6535fab1"
+      },
+      "missing_source": true,
+      "wire_hash": "5ab51b8edbedc07ab3ecb03741100ce34e47526d9e3ef1523f675089225ced78",
+      "source_serialized_in_wire": true,
+      "context_sha256": "5d9558ae9c00a818c32e70a6e1cc42f42766d19f9cb59b55c0d19ba8c13ecb70",
+      "source_message": {
+        "body": "Three Potential Stocks Still Draw Long-Term Investor Attention Under the September Curse of U.S. Equities NAI500",
+        "ticker": "BE",
+        "title": "Three Potential Stocks Still Draw Long-Term Investor Attention Under the September Curse of U.S. Equities - NAI500"
+      },
+      "original_input_characters": 48027
+    },
+    {
+      "case_id": "case_d64c312f423a46129766b3cb5b03b518",
+      "message_id": "std_11ac01e5fcd046d1b4238c2446dff3e5",
+      "created_at": "2026-09-27T06:08:59.208332+00:00",
+      "title": "Czechia's First Green Hydrogen Electrolyser Opens in Napajedla - News and Statistics - IndexBox",
+      "body_length": 93,
+      "policy_version": 1,
+      "historical_result": {
+        "candidate_policy_ids": [],
+        "reason": "当前输入未包含任何 source_message 或具体业务事实，仅有 Policy 投影参考数据。在缺乏可评估的消息事实的情况下，无法为任何 Policy 的 criterion 找到具体、实质性的潜在触发关系，因此无 Candidate 可召回。"
+      },
+      "historical_usage": {
+        "input_tokens": 17588,
+        "cached_input_tokens": 17408,
+        "output_tokens": 403,
+        "reasoning_tokens": 339,
+        "latency_ms": 17636,
+        "response_id": "resp_26259449-1ea2-9217-b682-39e164c756c1",
+        "prefix_fingerprint": "167022ffe43d784feb3fa4faeb373923978deefa876370cae8e4413c6535fab1"
+      },
+      "missing_source": true,
+      "wire_hash": "2c1ac4bb6bd00d6d2bc201c17b3d25bea008b90ce1d42a646b7a1d1eff986be4",
+      "source_serialized_in_wire": true,
+      "context_sha256": "5d9558ae9c00a818c32e70a6e1cc42f42766d19f9cb59b55c0d19ba8c13ecb70",
+      "source_message": {
+        "body": "Czechia's First Green Hydrogen Electrolyser Opens in Napajedla - News and Statistics IndexBox",
+        "ticker": "BE",
+        "title": "Czechia's First Green Hydrogen Electrolyser Opens in Napajedla - News and Statistics - IndexBox"
+      },
+      "original_input_characters": 47989
+    },
+    {
+      "case_id": "case_6a04dbf924cd4bad854034eaae5e2df3",
+      "message_id": "std_50b1409718a447228cd11a0f313522b5",
+      "created_at": "2026-09-27T06:08:59.607296+00:00",
+      "title": "US Hybrid Locates Headquarters and Manufacturing in Lancaster in Partnership with First Public Hydrogen Authority and City of Lancaster - Hydrogen Central",
+      "body_length": 152,
+      "policy_version": 1,
+      "historical_result": {
+        "candidate_policy_ids": [],
+        "reason": "本轮输入仅包含Policy参考数据，未提供具体的source_message或业务新闻内容，无法识别任何与Policy trigger存在具体事实对应关系的Candidate。"
+      },
+      "historical_usage": {
+        "input_tokens": 17590,
+        "cached_input_tokens": 17408,
+        "output_tokens": 352,
+        "reasoning_tokens": 309,
+        "latency_ms": 10084,
+        "response_id": "resp_12f9630d-7fb1-9d54-8173-41452a18ee8c",
+        "prefix_fingerprint": "167022ffe43d784feb3fa4faeb373923978deefa876370cae8e4413c6535fab1"
+      },
+      "missing_source": true,
+      "wire_hash": "ff9b292361ae7f89a98f37dd9f1a2ef4fe0b0467bc4a070ec91b7c35306ffcd5",
+      "source_serialized_in_wire": true,
+      "context_sha256": "5d9558ae9c00a818c32e70a6e1cc42f42766d19f9cb59b55c0d19ba8c13ecb70",
+      "source_message": {
+        "body": "US Hybrid Locates Headquarters and Manufacturing in Lancaster in Partnership with First Public Hydrogen Authority and City of Lancaster Hydrogen Central",
+        "ticker": "BE",
+        "title": "US Hybrid Locates Headquarters and Manufacturing in Lancaster in Partnership with First Public Hydrogen Authority and City of Lancaster - Hydrogen Central"
+      },
+      "original_input_characters": 48107
+    },
+    {
+      "case_id": "case_2b41946ac8854b789a6e434f47d03f54",
+      "message_id": "std_8fb00b543f8146dba7d4a570930bf220",
+      "created_at": "2026-09-27T06:09:01.099781+00:00",
+      "title": "Google tests direct purchases from Flipkart through Gemini in India - Crypto Briefing",
+      "body_length": 83,
+      "policy_version": 1,
+      "historical_result": {
+        "candidate_policy_ids": [],
+        "reason": "当前消息仅包含只读Policy参考数据（policy projection），未提供任何实际业务事件、公告、文件披露或具体事实陈述。没有source_message中的具体observation可与任何Policy的criterion建立直接、实质性的触发关系，因此不召回任何Candidate Policy。"
+      },
+      "historical_usage": {
+        "input_tokens": 17570,
+        "cached_input_tokens": 17408,
+        "output_tokens": 521,
+        "reasoning_tokens": 454,
+        "latency_ms": 14984,
+        "response_id": "resp_afeaca0b-df8e-9e30-8ba2-65c58ab8631c",
+        "prefix_fingerprint": "167022ffe43d784feb3fa4faeb373923978deefa876370cae8e4413c6535fab1"
+      },
+      "missing_source": true,
+      "wire_hash": "bb9d8e6bc94f65c201c60949bfe494f1de039bf2bacedc226631a6e3b609ccfd",
+      "source_serialized_in_wire": true,
+      "context_sha256": "5d9558ae9c00a818c32e70a6e1cc42f42766d19f9cb59b55c0d19ba8c13ecb70",
+      "source_message": {
+        "body": "Google tests direct purchases from Flipkart through Gemini in India Crypto Briefing",
+        "ticker": "BE",
+        "title": "Google tests direct purchases from Flipkart through Gemini in India - Crypto Briefing"
+      },
+      "original_input_characters": 47969
+    },
+    {
+      "case_id": "case_86078f61c5c24b40bf243f7e731fffcd",
+      "message_id": "std_dd92f2e1a66d4028b4c38a1498b027fe",
+      "created_at": "2026-09-28T20:55:46.812276+00:00",
+      "title": "Can the AI Power Boom Justify Bloom Energy’s (BE) $85 Billion Valuation?",
+      "body_length": 350,
+      "policy_version": 1,
+      "historical_result": {
+        "candidate_policy_ids": [],
+        "reason": "当前轮次未注入 source_message，无具体业务事实可供与任何 Policy criterion 进行触发关系比对，因此无法召回任何 Candidate Policy。"
+      },
+      "historical_usage": {
+        "input_tokens": 17634,
+        "cached_input_tokens": 17408,
+        "output_tokens": 226,
+        "reasoning_tokens": 184,
+        "latency_ms": 9971,
+        "response_id": "resp_5cd70bb5-84c9-9874-8ed6-9c63148386cd",
+        "prefix_fingerprint": "167022ffe43d784feb3fa4faeb373923978deefa876370cae8e4413c6535fab1"
+      },
+      "missing_source": true,
+      "wire_hash": "1de67eaa454f3460805a6c287f122895c4805b9df40cce7932ad525025f61730",
+      "source_serialized_in_wire": true,
+      "context_sha256": "5d9558ae9c00a818c32e70a6e1cc42f42766d19f9cb59b55c0d19ba8c13ecb70",
+      "source_message": {
+        "body": "Bloom Energy Corporation (NYSE:BE) has become one of the market’s hottest AI infrastructure stocks, increasing in value by an astronomical 9 times since July 2025. However, the story is no longer simply about fuel cells. Investors are betting that the company’s technology can solve one of the biggest shortages in the AI industry: getting enough […]",
+        "ticker": "BE",
+        "title": "Can the AI Power Boom Justify Bloom Energy’s (BE) $85 Billion Valuation?"
+      },
+      "original_input_characters": 48223
+    },
+    {
+      "case_id": "case_09630c2be55a43c1bbad25d48348bb39",
+      "message_id": "std_dde064bad26b45e8b2b36edd1d668f11",
+      "created_at": "2026-09-29T00:10:45.258224+00:00",
+      "title": "Why Bloom Energy (BE) Shares Are Sliding Today",
+      "body_length": 299,
+      "policy_version": 1,
+      "historical_result": {
+        "candidate_policy_ids": [],
+        "reason": "当前轮次未提供具体的source_message业务消息，没有可评估的现实事实。无消息事实可供与任何Policy criterion建立触发关系，因此不召回任何Candidate Policy。"
+      },
+      "historical_usage": {
+        "input_tokens": 17604,
+        "cached_input_tokens": 16128,
+        "output_tokens": 285,
+        "reasoning_tokens": 237,
+        "latency_ms": 9023,
+        "response_id": "resp_ecd7a6d0-de33-9eaa-aecf-74f6ac36afb2",
+        "prefix_fingerprint": "167022ffe43d784feb3fa4faeb373923978deefa876370cae8e4413c6535fab1"
+      },
+      "missing_source": true,
+      "wire_hash": "c8e11a57257c87ca0f244f7e754b8a1f23c7ddb688728eaf0db269bcbc1984c7",
+      "source_serialized_in_wire": true,
+      "context_sha256": "5d9558ae9c00a818c32e70a6e1cc42f42766d19f9cb59b55c0d19ba8c13ecb70",
+      "source_message": {
+        "body": "Shares of electricity generation and hydrogen production company Bloom Energy (NYSE:BE) fell 8.7% in the afternoon session as Oracle’s force majeure notice on Project Jupiter revived concentration and financing concerns, with tech and growth names already under pressure from rising Treasury yields.",
+        "ticker": "BE",
+        "title": "Why Bloom Energy (BE) Shares Are Sliding Today"
+      },
+      "original_input_characters": 48146
+    },
+    {
+      "case_id": "case_46b66498bfb34f2697bc6e8a3b8482a7",
+      "message_id": "std_7a1001d799a1410facc9a47d69309133",
+      "created_at": "2026-09-29T01:50:26.125080+00:00",
+      "title": "BE Stock Slumps Most In Over A Month: This Analyst Says New Fremont Facility Is An Indicator Of Strong Demand",
+      "body_length": 148,
+      "policy_version": 1,
+      "historical_result": {
+        "candidate_policy_ids": [],
+        "reason": "本轮未注入可评估的source_message，无法识别任何与Policy criterion存在具体触发关系的事实，因此不召回Candidate。"
+      },
+      "historical_usage": {
+        "input_tokens": 17600,
+        "cached_input_tokens": 16128,
+        "output_tokens": 948,
+        "reasoning_tokens": 910,
+        "latency_ms": 21539,
+        "response_id": "resp_2adb4570-45fb-9b89-92e0-76b922a4afaf",
+        "prefix_fingerprint": "167022ffe43d784feb3fa4faeb373923978deefa876370cae8e4413c6535fab1"
+      },
+      "missing_source": true,
+      "wire_hash": "b6e5274c3a7b2ab3ca84b1a08a6beb3af8a49cca7b9ad31c677c6df84eff1503",
+      "source_serialized_in_wire": true,
+      "context_sha256": "5d9558ae9c00a818c32e70a6e1cc42f42766d19f9cb59b55c0d19ba8c13ecb70",
+      "source_message": {
+        "body": "RBC Capital reiterated an ‘Outperform’ rating and $335 price target on Bloom Energy on Monday, implying an upside of nearly 28% from the last close.",
+        "ticker": "BE",
+        "title": "BE Stock Slumps Most In Over A Month: This Analyst Says New Fremont Facility Is An Indicator Of Strong Demand"
+      },
+      "original_input_characters": 48058
+    },
+    {
+      "case_id": "case_b5f270c91926447a8021fed78a5e4a61",
+      "message_id": "std_415c1a606ba449ecafad472319780ba4",
+      "created_at": "2026-09-29T18:35:42.008875+00:00",
+      "title": "A spot is opening up in the S&P 500, and these stocks are top candidates to fill the void",
+      "body_length": 0,
+      "policy_version": 4,
+      "historical_result": {
+        "candidate_policy_ids": [],
+        "reason": "当前输入未提供可评估的source_message业务事实，无法与任何Policy criterion建立具体触发关系，故无Candidate可召回。"
+      },
+      "historical_usage": {
+        "input_tokens": 17566,
+        "cached_input_tokens": 17408,
+        "output_tokens": 544,
+        "reasoning_tokens": 504,
+        "latency_ms": 11960,
+        "response_id": "resp_beea0e53-191c-931d-98c2-44ee6e26c664",
+        "prefix_fingerprint": "7a6c2eb6db7f4a2e5cb2b5bf8ca06015ac5200da7558cda4b340d326195aa89b"
+      },
+      "missing_source": true,
+      "wire_hash": "6d317c493a001d1c5bb13a3e9dba82f969d0b5e84800598d16695dcac62654e8",
+      "source_serialized_in_wire": true,
+      "context_sha256": "33a1fc7200a7aeb4fedf38845cf81b060ac7641998fe433cbd91c098da15e01e",
+      "source_message": {
+        "body": "",
+        "ticker": "BE",
+        "title": "A spot is opening up in the S&P 500, and these stocks are top candidates to fill the void"
+      },
+      "original_input_characters": 47860
+    },
+    {
+      "case_id": "case_0331f3e9c33449e6b36e3ecbbbbbf06c",
+      "message_id": "std_430ca9a1f0aa410f928a217c5871b8d1",
+      "created_at": "2026-09-29T18:35:42.318639+00:00",
+      "title": "Meet the Nvidias of power — 5 stocks winning Big Tech’s $700 billion AI energy grab",
+      "body_length": 0,
+      "policy_version": 4,
+      "historical_result": {
+        "candidate_policy_ids": [],
+        "reason": "本轮未提供包含实际业务事实或事件的source_message，仅有Policy投影数据结构。没有任何具体现实陈述可与任何criterion产生直接触发关系，因此无法召回Candidate。"
+      },
+      "historical_usage": {
+        "input_tokens": 17565,
+        "cached_input_tokens": 17408,
+        "output_tokens": 353,
+        "reasoning_tokens": 306,
+        "latency_ms": 23259,
+        "response_id": "resp_f22c1fd7-9d5b-9317-abe2-5267e8fed41a",
+        "prefix_fingerprint": "7a6c2eb6db7f4a2e5cb2b5bf8ca06015ac5200da7558cda4b340d326195aa89b"
+      },
+      "missing_source": true,
+      "wire_hash": "c2dd2dcb4439bd246f1e369a2271fa5110e79b654a1e75f409e109b495d2cf02",
+      "source_serialized_in_wire": true,
+      "context_sha256": "33a1fc7200a7aeb4fedf38845cf81b060ac7641998fe433cbd91c098da15e01e",
+      "source_message": {
+        "body": "",
+        "ticker": "BE",
+        "title": "Meet the Nvidias of power — 5 stocks winning Big Tech’s $700 billion AI energy grab"
+      },
+      "original_input_characters": 47854
+    },
+    {
+      "case_id": "case_bcb99095217c4003ad1cc393e0a261c6",
+      "message_id": "std_a8cbb41933d0464bb3459c452597719a",
+      "created_at": "2026-09-29T22:12:56.293559+00:00",
+      "title": "Dow Jones Futures Rise With Micron, Inflation Data Due; Yields Pressure Stocks But Bloom Energy Soars",
+      "body_length": 124,
+      "policy_version": 4,
+      "historical_result": {
+        "candidate_policy_ids": [],
+        "reason": "当前输入仅包含系统指令与Policy精简定义，未提供任何实际业务消息（source_message）作为判断对象。没有具体事实可供与任何criterion进行触发关系比对，因此无Candidate可召回。"
+      },
+      "historical_usage": {
+        "input_tokens": 17592,
+        "cached_input_tokens": 17408,
+        "output_tokens": 486,
+        "reasoning_tokens": 431,
+        "latency_ms": 8907,
+        "response_id": "resp_ed007fa2-528d-9685-8991-cc9e28c67f17",
+        "prefix_fingerprint": "7a6c2eb6db7f4a2e5cb2b5bf8ca06015ac5200da7558cda4b340d326195aa89b"
+      },
+      "missing_source": true,
+      "wire_hash": "d7e0cf00433538bb1cbf5abf0f7443fc6eb3ff75d881937b71997154bb695543",
+      "source_serialized_in_wire": true,
+      "context_sha256": "33a1fc7200a7aeb4fedf38845cf81b060ac7641998fe433cbd91c098da15e01e",
+      "source_message": {
+        "body": "Stocks are resilient as Treasury yields rise but aren't thriving. Bloom Energy surged. Inflation data, Micron earnings loom.",
+        "ticker": "BE",
+        "title": "Dow Jones Futures Rise With Micron, Inflation Data Due; Yields Pressure Stocks But Bloom Energy Soars"
+      },
+      "original_input_characters": 47996
+    },
+    {
+      "case_id": "case_4c1026eae1734b35be13b6fdd177fe5c",
+      "message_id": "std_0005247407144e5fa8753053edd0a88a",
+      "created_at": "2026-09-30T03:29:57.205149+00:00",
+      "title": "Bloom Energy Stock Rose 16-Fold in 5 Years. All of the Gain Came in the Last 2.",
+      "body_length": 98,
+      "policy_version": 4,
+      "historical_result": {
+        "candidate_policy_ids": [],
+        "reason": "本轮未提供需要判定的source_message（业务消息），仅有Policy参考数据。无具体消息事实可与之匹配，无法识别任何Candidate Policy。"
+      },
+      "historical_usage": {
+        "input_tokens": 17590,
+        "cached_input_tokens": 0,
+        "output_tokens": 383,
+        "reasoning_tokens": 340,
+        "latency_ms": 10521,
+        "response_id": "resp_1ae9c4e3-bfa6-9144-8440-9bdf303462b3",
+        "prefix_fingerprint": "7a6c2eb6db7f4a2e5cb2b5bf8ca06015ac5200da7558cda4b340d326195aa89b"
+      },
+      "missing_source": true,
+      "wire_hash": "44c0f00f4e830b1885fb375135c4a5be8e318778d2459ac3f9111f48d5333b85",
+      "source_serialized_in_wire": true,
+      "context_sha256": "33a1fc7200a7aeb4fedf38845cf81b060ac7641998fe433cbd91c098da15e01e",
+      "source_message": {
+        "body": "The payoff took three money-losing years to show up. Can the next five years bring anything close?",
+        "ticker": "BE",
+        "title": "Bloom Energy Stock Rose 16-Fold in 5 Years. All of the Gain Came in the Last 2."
+      },
+      "original_input_characters": 47948
+    },
+    {
+      "case_id": "case_75fa4f33954446b1b779fb712a34b0d6",
+      "message_id": "std_2bd2241f649847d98c59e3e15a407ff1",
+      "created_at": "2026-10-01T16:12:43.604584+00:00",
+      "title": "Enerflex Stock Rockets 15% After Landing 450-Megawatt Data Center Power Contract and Closing Asia Pacific Sale (TSX:EFX) - kalkine.ca",
+      "body_length": 131,
+      "policy_version": 6,
+      "historical_result": {
+        "candidate_policy_ids": [],
+        "reason": "当前用户输入仅包含 Policy 参考数据 JSON，未注入任何包含具体事实陈述的 source_message（如某事件的实际发生、公告、裁定或变更）。在没有具体业务消息事实的情况下，无法建立任何消息事实与 Policy criterion 之间的直接触发关系，因此不产生候选。"
+      },
+      "historical_usage": {
+        "input_tokens": 17919,
+        "cached_input_tokens": 16128,
+        "output_tokens": 2577,
+        "reasoning_tokens": 2505,
+        "latency_ms": 67492,
+        "response_id": "resp_09aead9a-40a0-9660-9b89-18ceb2f1d16f",
+        "prefix_fingerprint": "d86fb6a120ccd3b55335df6297a7a084ef5a5b88e483ab0c82728914f68560f5"
+      },
+      "missing_source": true,
+      "wire_hash": "bb0ece580f18f577bf73dcce0670d383c59b27ee14fbbaf581664c5bada50bc3",
+      "source_serialized_in_wire": true,
+      "context_sha256": "a934811fbc3da73f12f933b9fc63875f63030ba024e6f73021530db93ca64800",
+      "source_message": {
+        "body": "Enerflex Stock Rockets 15% After Landing 450-Megawatt Data Center Power Contract and Closing Asia Pacific Sale (TSX:EFX) kalkine.ca",
+        "ticker": "BE",
+        "title": "Enerflex Stock Rockets 15% After Landing 450-Megawatt Data Center Power Contract and Closing Asia Pacific Sale (TSX:EFX) - kalkine.ca"
+      },
+      "original_input_characters": 48654
+    },
+    {
+      "case_id": "case_11b644f8d0ec4f568037fe3f184c215b",
+      "message_id": "std_49cbc3f7d5c4425e855650eeed9095d6",
+      "created_at": "2026-09-25T07:32:40.134920+00:00",
+      "title": "BE Stock Eyes Best Month Since April: Oracle Reaffirms 2.4 GW Fuel Cell Deal Amid Project Jupiter Jitters",
+      "body_length": 95,
+      "policy_version": 1,
+      "historical_result": {
+        "candidate_policy_ids": [
+          "pol_d165605147f93e18782d",
+          "pol_b737f591c416ec2b6b0f"
+        ],
+        "reason": "消息披露Oracle、BorderPlex与Bloom联合发布了Project Jupiter正式设计文件，涵盖燃料、grid/storage hybrid、微电网phasing、容量、许可路径、Bloom角色及新里程碑等全部关键要素，并出现\"新里程碑\"表述。这与pol_d165605147f93e18782d的触发路径直接对应（设计文件是否构成实质方案变更使原2.45GW/时间表/Bloom角色不再适用），也与pol_b737f591c416ec2b6b0f的触发路径存在合理关联（全部主要门槛的综合确认及已绑定建设/送电范围与日期可能包含于此类正式文件中）。现有信息不足以确认最终边界是否达到，故召回进入完整判定。"
+      },
+      "historical_usage": {
+        "input_tokens": 17587,
+        "cached_input_tokens": 1024,
+        "output_tokens": 5330,
+        "reasoning_tokens": 5107,
+        "latency_ms": 91192,
+        "response_id": "resp_65df9299-27ce-9014-8715-7d301f189c57",
+        "prefix_fingerprint": "167022ffe43d784feb3fa4faeb373923978deefa876370cae8e4413c6535fab1"
+      },
+      "missing_source": false,
+      "wire_hash": "51d7976e5d6ff4e40ae19847088fa6792dc293fccab97f3bb243af7f0b1ef968",
+      "source_serialized_in_wire": true,
+      "context_sha256": "5d9558ae9c00a818c32e70a6e1cc42f42766d19f9cb59b55c0d19ba8c13ecb70",
+      "source_message": {
+        "body": "Project Jupiter is part of a broader Oracle agreement to procure up to 2.8 GW of Bloom systems.",
+        "ticker": "BE",
+        "title": "BE Stock Eyes Best Month Since April: Oracle Reaffirms 2.4 GW Fuel Cell Deal Amid Project Jupiter Jitters"
+      },
+      "original_input_characters": 48001
+    },
+    {
+      "case_id": "case_a122b56513d24876840feedff741190b",
+      "message_id": "std_16c8cb66b0d449628c3212e5f6205343",
+      "created_at": "2026-09-25T21:25:43.284352+00:00",
+      "title": "Bloom Energy Stock Is Today’s Top S&P 500 Performer. It Has a Lot to Do With Oracle.",
+      "body_length": 130,
+      "policy_version": 1,
+      "historical_result": {
+        "candidate_policy_ids": [
+          "pol_d165605147f93e18782d",
+          "pol_9795c572511e9fcc514e",
+          "pol_278d77371f8c7f651782"
+        ],
+        "reason": "消息核心事实为Oracle发出force majeure notice（不可抗力通知）。Oracle在多条Project Jupiter policy的match_scope中作为项目sponsor具名出现；sponsor发出不可抗力通知属于具体、可触及多条触发路径的实质性事件（可能涉及燃料/设计/容量/排期变化、许可或互联失败导致停工、或scope handoff未闭合），不应因分析师\"不影响Bloom\"的主观判断而排除完整判定的必要性。"
+      },
+      "historical_usage": {
+        "input_tokens": 17591,
+        "cached_input_tokens": 1024,
+        "output_tokens": 5136,
+        "reasoning_tokens": 4970,
+        "latency_ms": 69197,
+        "response_id": "resp_7ff57f3b-ce5e-9055-ab2e-ceb6f48d9a97",
+        "prefix_fingerprint": "167022ffe43d784feb3fa4faeb373923978deefa876370cae8e4413c6535fab1"
+      },
+      "missing_source": false,
+      "wire_hash": "ea479dbb9b8c271f317c6d953fc43aebf387e618cf58116cb0ff90954f526f43",
+      "source_serialized_in_wire": true,
+      "context_sha256": "5d9558ae9c00a818c32e70a6e1cc42f42766d19f9cb59b55c0d19ba8c13ecb70",
+      "source_message": {
+        "body": "Bloom Energy jumps after a Wall Street analyst reassures investors the company won’t be affected by Oracle’s force majeure notice.",
+        "ticker": "BE",
+        "title": "Bloom Energy Stock Is Today’s Top S&P 500 Performer. It Has a Lot to Do With Oracle."
+      },
+      "original_input_characters": 48015
+    },
+    {
+      "case_id": "case_af34eecb743f4b2ea8765c6bdbd5f13f",
+      "message_id": "std_d200a9761d3d4d8cbd8d401aabf7bed2",
+      "created_at": "2026-09-29T01:40:51.353560+00:00",
+      "title": "Samsung invests US$1 billion in ex-AWS chief's AI data center venture, joining Nvidia as a founding investor",
+      "body_length": 346,
+      "policy_version": 1,
+      "historical_result": {
+        "candidate_policy_ids": [
+          "pol_1ab64bb336f6624cd158",
+          "pol_b2475a5727c6b73f0d18",
+          "pol_d70cf7e8afa3fb1542aa"
+        ],
+        "reason": "消息明确陈述Fremont和Delmarva在至少两个连续可比周期披露Energy Server合格释放量，且最新周期达到设施生产计划并可供出货。这直接触及pol_1ab64bb336f6624cd158（合格释放量跨两周期且达到生产计划可供出货）的触发条件；同时与pol_b2475a5727c6b73f0d18（Fremont/Delmarva扩产达到合格有效吞吐量接近计划目标）及pol_d70cf7e8afa3fb1542aa（连续周期合格释放率未恶化、产量上升时质量指标稳定）的核心事实高度对应，值得进入完整判定。"
+      },
+      "historical_usage": {
+        "input_tokens": 17631,
+        "cached_input_tokens": 17408,
+        "output_tokens": 1938,
+        "reasoning_tokens": 1710,
+        "latency_ms": 37166,
+        "response_id": "resp_749539b2-2635-9b9e-8778-e26b963c360f",
+        "prefix_fingerprint": "167022ffe43d784feb3fa4faeb373923978deefa876370cae8e4413c6535fab1"
+      },
+      "missing_source": false,
+      "wire_hash": "bacbf39b74fdb81d8f81b8ced18f3f55702d14f55990c52167cbbd804193c583",
+      "source_serialized_in_wire": true,
+      "context_sha256": "5d9558ae9c00a818c32e70a6e1cc42f42766d19f9cb59b55c0d19ba8c13ecb70",
+      "source_message": {
+        "body": "Six Samsung companies will invest a combined US$1 billion in Helix Digital Infrastructure, a company set up by investment firm KKR to build data centers and the power supply they need for AI. The investment gives the Korean group a stake in a builder that could become a buyer of its chips, cooling equipment, batteries and construction services.",
+        "ticker": "BE",
+        "title": "Samsung invests US$1 billion in ex-AWS chief's AI data center venture, joining Nvidia as a founding investor"
+      },
+      "original_input_characters": 48255
+    },
+    {
+      "case_id": "case_570af379198e4c9d84465c839a6173ec",
+      "message_id": "std_d07a09033e924b06b5e1e91ead3c5d06",
+      "created_at": "2026-09-24T21:18:50.613193+00:00",
+      "title": "Dow Jones Futures: Market Rally Resilient As Yields, Oil Prices Keep Rising; Tesla Event On Deck",
+      "body_length": 134,
+      "policy_version": 1,
+      "historical_result": {
+        "candidate_policy_ids": [],
+        "reason": "该消息为一般性市场综述（道指期货、油价、台积电、Tesla Semi活动），虽标注BE ticker，但内容不包含任何与Bloom Energy项目、产品、许可、制造、客户、财务或服务相关的具名事实，无法与任何criterion构成具体触发关系。"
+      },
+      "historical_usage": {
+        "input_tokens": 17593,
+        "cached_input_tokens": 0,
+        "output_tokens": 529,
+        "reasoning_tokens": 457,
+        "latency_ms": 11984,
+        "response_id": "resp_a9846c1a-554d-9248-bc30-5066a1bc17b4",
+        "prefix_fingerprint": "167022ffe43d784feb3fa4faeb373923978deefa876370cae8e4413c6535fab1"
+      },
+      "missing_source": false,
+      "wire_hash": "ce6fad15d0980934eddcc23e8c7161242a59c0ccc0f40514d3ad44fe28258fdf",
+      "source_serialized_in_wire": true,
+      "context_sha256": "5d9558ae9c00a818c32e70a6e1cc42f42766d19f9cb59b55c0d19ba8c13ecb70",
+      "source_message": {
+        "body": "The stock market rallied to close mixed even as yields and oil prices kept rising. Taiwan Semi is a buy. A Tesla Semi event is on tap.",
+        "ticker": "BE",
+        "title": "Dow Jones Futures: Market Rally Resilient As Yields, Oil Prices Keep Rising; Tesla Event On Deck"
+      },
+      "original_input_characters": 48031
+    },
+    {
+      "case_id": "case_44e29de98c3e4c008c1a74d8171d94d7",
+      "message_id": "std_9bb57a6967bb4d21ba9f702fee1a4939",
+      "created_at": "2026-09-24T22:12:55.585087+00:00",
+      "title": "Dow Jones Futures: Market Rally Resilient As Yields, Oil Prices Keep Rising; Tesla Event On Deck",
+      "body_length": 134,
+      "policy_version": 1,
+      "historical_result": {
+        "candidate_policy_ids": [],
+        "reason": "本轮未包含任何来源消息或具体事实陈述，无法识别与任何 Policy criterion 存在直接触发关系的 observation，因此无 Candidate 可召回。"
+      },
+      "historical_usage": {
+        "input_tokens": 17593,
+        "cached_input_tokens": 0,
+        "output_tokens": 475,
+        "reasoning_tokens": 432,
+        "latency_ms": 12057,
+        "response_id": "resp_992cb07e-49bd-9193-9ecd-20d413ecddba",
+        "prefix_fingerprint": "167022ffe43d784feb3fa4faeb373923978deefa876370cae8e4413c6535fab1"
+      },
+      "missing_source": false,
+      "wire_hash": "ce6fad15d0980934eddcc23e8c7161242a59c0ccc0f40514d3ad44fe28258fdf",
+      "source_serialized_in_wire": true,
+      "context_sha256": "5d9558ae9c00a818c32e70a6e1cc42f42766d19f9cb59b55c0d19ba8c13ecb70",
+      "source_message": {
+        "body": "The stock market rallied to close mixed even as yields and oil prices kept rising. Taiwan Semi is a buy. A Tesla Semi event is on tap.",
+        "ticker": "BE",
+        "title": "Dow Jones Futures: Market Rally Resilient As Yields, Oil Prices Keep Rising; Tesla Event On Deck"
+      },
+      "original_input_characters": 48031
+    },
+    {
+      "case_id": "case_0f17ca20d4f2414f84a1fc2518934b3a",
+      "message_id": "std_e52bb4e65e8c4b009021c77ec9fa0922",
+      "created_at": "2026-09-25T17:01:39.695481+00:00",
+      "title": "Bloom Energy Jumps 8% as Oracle Reaffirms 2.4 GW Fuel Cell Contract After Force Majeure Notice",
+      "body_length": 336,
+      "policy_version": 1,
+      "historical_result": {
+        "candidate_policy_ids": [],
+        "reason": "当前消息核心事实为：Oracle确认（reaffirms）其2.4GW燃料电池合同，Bloom股价因此上涨；虽提及Oracle据称对数据中心园区发布不可抗力通知，但消息明确强调Oracle仍支持合同，且该通知针对数据中心园区而非Bloom Energy Server部署本身。消息不涉及任何Policy criterion所关注的许可拒绝、互联条件变更、燃料路线变化、设计变更、容量削减、验收推迟、项目暂停、EPC交付问题或财务/监管事件等具体触发事实。仅有股价变动与宽泛的公司/行业主题相关性，不构成与任何criterion的直接实质性触发关系。"
+      },
+      "historical_usage": {
+        "input_tokens": 17649,
+        "cached_input_tokens": 0,
+        "output_tokens": 5849,
+        "reasoning_tokens": 5709,
+        "latency_ms": 95421,
+        "response_id": "resp_44f3f5b3-79eb-9b60-8215-0f3ae7e47a4b",
+        "prefix_fingerprint": "167022ffe43d784feb3fa4faeb373923978deefa876370cae8e4413c6535fab1"
+      },
+      "missing_source": false,
+      "wire_hash": "b9d356bf2251dc24b4386170dbc501d2e28357935138531b1cbfd3c9d9ecd1b0",
+      "source_serialized_in_wire": true,
+      "context_sha256": "5d9558ae9c00a818c32e70a6e1cc42f42766d19f9cb59b55c0d19ba8c13ecb70",
+      "source_message": {
+        "body": "Oracle (NYSE:ORCL) still stands behind its fuel cell contract. That news is lifting Bloom Energy (NYSE:BE), even after Oracle reportedly issued a force majeure notice on the data center campus that contract supports. Bloom Energy stock is at $288.77 in afternoon trading, up 8% and carrying a 232% gain year to date. Oracle stock is […]",
+        "ticker": "BE",
+        "title": "Bloom Energy Jumps 8% as Oracle Reaffirms 2.4 GW Fuel Cell Contract After Force Majeure Notice"
+      },
+      "original_input_characters": 48231
+    }
+  ],
+  "contexts_file": "frozen-contexts.json"
+}

@@ -532,6 +532,44 @@ class ReadStore:
         with self.connect() as db:
             return {(row[0],row[1],row[2]):json.loads(row[3]) for row in db.execute(sql,(encode(requests),seq,seq))}
 
+    def source_scalars(self, kind, identities, seq):
+        """Fixed safe scalar projections; exact identities in both MVCC branches."""
+        fields = {
+            "native:source_definitions": ("enabled",),
+            "native:poll_states": ("status", "last_latency_ms"),
+        }
+        if kind not in fields or len(identities) > 500:
+            raise ValueError("invalid scalar scope")
+        if not identities:
+            return []
+        columns = "ticker,id," + ",".join("json_extract(payload,'$." + field + "')" for field in fields[kind])
+        where = "kind=? AND (ticker,id) IN (SELECT json_extract(value,'$[0]'),json_extract(value,'$[1]') FROM json_each(?)) AND valid_from<=?"
+        params = (kind, encode(identities), seq)
+        with self.connect() as db:
+            return db.execute("SELECT " + columns + " FROM object_current WHERE " + where +
+                              " UNION ALL SELECT " + columns + " FROM objects WHERE " + where + " AND valid_to>?",
+                              (*params, *params, seq)).fetchall()
+
+    def latest_message_at(self, ticker, seq):
+        """Choose thin sort candidates before reading one timestamp, never the body."""
+        with self.connect() as db:
+            candidates = []
+            for table, extra, parameters in (
+                ("object_current", "", (ticker, seq)),
+                ("objects INDEXED BY history_recent", " AND valid_to>?", (ticker, seq, seq)),
+            ):
+                row = db.execute("SELECT id,sort_key,valid_from FROM " + table +
+                                 " WHERE kind='message' AND ticker=? AND valid_from<=?" + extra +
+                                 " ORDER BY sort_key DESC,id DESC LIMIT 1", parameters).fetchone()
+                if row:
+                    candidates.append(tuple(row))
+            if not candidates:
+                return None
+            identity, _, revision = max(candidates, key=lambda row: (row[1], row[0]))
+            return db.execute("SELECT json_extract(payload,'$.stream_published_at') FROM objects "
+                              "WHERE kind='message' AND ticker=? AND id=? AND valid_from=?",
+                              (ticker, identity, revision)).fetchone()[0]
+
     def get(
         self, kind: str, ticker: str, identity: str, seq: int | None = None
     ) -> dict[str, Any] | None:

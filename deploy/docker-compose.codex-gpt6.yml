@@ -1,0 +1,28 @@
+# Apply after building the per-service images from their current production sources.
+# Existing reasoning-effort settings remain supplied by the service environment.
+x-codex-models: &codex-models
+  DOXAGENT_CODEX_MODEL: gpt-6-luna
+  DOXAGENT_PERSISTENT_RUNTIME_V2_W3_MODEL: gpt-6-luna
+  DOXAGENT_PERSISTENT_RUNTIME_V2_MAINTENANCE_EXECUTION_MODEL_OVERRIDE: gpt-6-luna
+  DOXAGENT_CODEX_MONITORING_O4_MODEL: gpt-6.1-sol
+  DOXAGENT_CODEX_D3_INITIALIZE_MODEL: gpt-6.1-sol
+
+services:
+  codex-worker:
+    image: doxagent-v2:codex-gpt6-worker-0.159.3
+    environment: *codex-models
+  v2-initialization:
+    image: doxagent-v2:codex-gpt6-research-0.159.3
+    environment: *codex-models
+  v2-o4:
+    image: doxagent-v2:codex-gpt6-research-0.159.3
+    environment: *codex-models
+  v2-scheduler:
+    image: doxagent-v2:codex-gpt6-scheduler-0.159.3
+    environment:
+      <<: *codex-models
+      DOXAGENT_PERSISTENT_RUNTIME_V2_W3_EXECUTION_MODEL_OVERRIDE: gpt-6-luna
+  initialization-guardian:
+    image: doxagent-v2:codex-gpt6-guardian-0.159.3
+    environment:
+      DOXAGENT_INITIALIZATION_REPAIR_AGENT_IMAGE: doxagent-initialization-repair-agent:codex-gpt6-0.159.3

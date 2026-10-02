@@ -1,0 +1,21 @@
+{
+  "tag": "doxagent-v2:codex-gpt6-template-0.159.3",
+  "image_id": "sha256:090b53b6bcb74b057d26e935754f32a23fe7ae3fe830600a29b91688407578c4",
+  "revision": "5f9e4a9e63792897b7ef0306cf70365fa8a4994b",
+  "source_sha256": "2034cc7d561269e586b7167967af4520c837f00e6b5d35d502956cef01134661",
+  "defaults_changed": [
+    "src/doxagent/settings.py",
+    "src/doxagent/persistent_runtime_v2/w3.py",
+    "src/doxagent/initialization_repair/agent.py",
+    "src/doxagent/pilot/templates.py",
+    "src/doxagent/workflows/codex_event_library/remote_runner.py",
+    "src/doxagent/workflows/codex_event_library/runner.py",
+    "src/doxagent/workflows/codex_document2/orchestrator.py",
+    "src/doxagent/workflows/codex_document1/node_runner.py",
+    "src/doxagent/workflows/codex_document1/orchestrator.py",
+    "src/doxagent/workflows/codex_monitoring_o4/runner.py",
+    "src/doxagent/workflows/codex_monitoring_o4/pilot.py"
+  ],
+  "state": "created",
+  "old_image": "sha256:0522bf4e87bd9abc766fa3785f96e6cd317eb42dd32a0b96b974ee77fae693fb"
+}

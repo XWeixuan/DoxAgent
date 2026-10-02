@@ -1,0 +1,8 @@
+0a1,2
+> doxagent-v2-v2-api-1 doxagent-v2:store-recovery-20261002 58b145c04a6b
+> doxagent-v2-v2-web-1 doxagent-v2-web:store-recovery-20261002 20793be863ca
+4,5d5
+< doxagent-v2-v2-web-1 doxagent-v2-web:d2-download-47f6515f 2a424eee568f
+< doxagent-v2-v2-api-1 doxagent-v2:d2-download-47f6515f 531c0711e4c5
+/doxagent-v2-v2-api-1 sha256:cf19a05b0112e0b09577428661cb5b5013d3a332d600e88859946b621b121c0e healthy
+/doxagent-v2-v2-web-1 sha256:b62dad69724e82f49e023a09a026b5a49edb26059b4ee999d2af3b9fa8a807cf healthy

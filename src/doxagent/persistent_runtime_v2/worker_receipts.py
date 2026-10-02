@@ -2,6 +2,7 @@
 
 from typing import Any
 
+from doxagent.codex_runtime.models import codex_execution_model
 from doxagent.codex_worker.schema import WorkerJob, WorkerRunRequest
 
 from .journal import RuntimeJournal, digest
@@ -80,7 +81,10 @@ class ReceiptWorker:
                 "job": job.model_dump(mode="json"),
                 "ticker": request.ticker,
                 "node": str(request.node),
-                "model": dispatched_request.model,
+                "model": codex_execution_model(
+                    dispatched_request.model, dispatched_request.model_provider
+                ),
+                "requested_model": dispatched_request.model,
                 "provider": dispatched_request.model_provider,
                 "case_id": self.case_id,
                 "control_epoch": self.control_epoch,

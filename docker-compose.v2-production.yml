@@ -7,9 +7,9 @@ x-environment: &environment
   DOXAGENT_PERSISTENT_RUNTIME_V2_STORAGE_MODE: sqlite
   DOXAGENT_PERSISTENT_RUNTIME_V2_SQLITE_PATH: /data/runtime/runtime.sqlite3
   DOXAGENT_PERSISTENT_RUNTIME_V2_W3_ENABLED: "true"
-  DOXAGENT_CODEX_MODEL: gpt-5.6-luna
-  DOXAGENT_PERSISTENT_RUNTIME_V2_W3_MODEL: gpt-5.6-luna
-  DOXAGENT_PERSISTENT_RUNTIME_V2_MAINTENANCE_EXECUTION_MODEL_OVERRIDE: gpt-5.6-luna
+  DOXAGENT_CODEX_MODEL: gpt-6-luna
+  DOXAGENT_PERSISTENT_RUNTIME_V2_W3_MODEL: gpt-6-luna
+  DOXAGENT_PERSISTENT_RUNTIME_V2_MAINTENANCE_EXECUTION_MODEL_OVERRIDE: gpt-6-luna
   DOXAGENT_MESSAGE_BUS_V2_ENABLED: "true"
   DOXAGENT_MESSAGE_BUS_V2_SQLITE_PATH: /data/bus/bus.sqlite3
   DOXAGENT_MESSAGE_BUS_V2_ADAPTER_ROOT: /data/bus/adapters
@@ -47,7 +47,9 @@ x-environment: &environment
   DOXAGENT_V2_DB_QUERY_WORKERS: ${DOXAGENT_V2_DB_QUERY_WORKERS:-2}
   DOXAGENT_V2_DB_QUERY_QUEUE: ${DOXAGENT_V2_DB_QUERY_QUEUE:-16}
   DOXAGENT_V2_DB_STREAM_WORKERS: ${DOXAGENT_V2_DB_STREAM_WORKERS:-1}
-  DOXAGENT_V2_DB_QUERY_SECONDS: ${DOXAGENT_V2_DB_QUERY_SECONDS:-2}
+  DOXAGENT_V2_DB_QUERY_SECONDS: ${DOXAGENT_V2_DB_QUERY_SECONDS:-3}
+  DOXAGENT_V2_DB_QUEUE_SECONDS: ${DOXAGENT_V2_DB_QUEUE_SECONDS:-1}
+  DOXAGENT_V2_DB_CANCEL_GRACE_SECONDS: ${DOXAGENT_V2_DB_CANCEL_GRACE_SECONDS:-1}
   DOXAGENT_V2_DB_DETAIL_SECONDS: ${DOXAGENT_V2_DB_DETAIL_SECONDS:-5}
   DOXAGENT_V2_DB_MVCC_HOURS: ${DOXAGENT_V2_DB_MVCC_HOURS:-24}
   DOXAGENT_V2_DB_DIAGNOSTIC_DAYS: ${DOXAGENT_V2_DB_DIAGNOSTIC_DAYS:-30}
@@ -172,7 +174,7 @@ services:
     <<: *backend
     command: [sh, -c, "python -m doxagent.production_v2 check && exec python -m doxagent.api_v2.cli --host 0.0.0.0 --port 8000"]
     healthcheck:
-      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz',timeout=3).read()"]
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/readyz',timeout=3).read()"]
       interval: 15s
       timeout: 5s
       retries: 3

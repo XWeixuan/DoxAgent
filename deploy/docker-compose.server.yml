@@ -114,9 +114,9 @@ services:
     mem_limit: 15g
     memswap_limit: 16g
     pids_limit: 384
-    # Existing W3 Cases retain their frozen model; failed calls use the supported model.
+    # Existing W3 Cases retain provenance; execution uses the approved GPT-6 tier.
     environment:
-      DOXAGENT_PERSISTENT_RUNTIME_V2_W3_EXECUTION_MODEL_OVERRIDE: gpt-5.6-luna
+      DOXAGENT_PERSISTENT_RUNTIME_V2_W3_EXECUTION_MODEL_OVERRIDE: gpt-6-luna
     image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
     extra_hosts: ["host.docker.internal:host-gateway"]
   v2-projector:

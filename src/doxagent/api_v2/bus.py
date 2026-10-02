@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+import json
 
 from fastapi import FastAPI, Request
 
@@ -81,45 +82,37 @@ def source_status(store, binding, seq, view):
 
 
 def aggregates_many(store, tickers, seq):
-    import json
-    table = store.snapshot_table(seq)
+    """Bounded scalar reads avoid materializing all poll histories for a JOIN."""
+    columns = "ticker,id,source_id,json_extract(payload,'$.enabled'),json_extract(payload,'$.polling.enabled')"
+    where = "kind='native:ticker_source_bindings' AND ticker IN (SELECT value FROM json_each(?)) AND valid_from<=? AND json_extract(payload,'$.tombstoned_at') IS NULL"
     with store.connect() as db:
-        rows = db.execute(
-            """
-            WITH scoped AS (
-                SELECT b.ticker,s.payload AS source,
-                    json_extract(b.payload,'$.enabled')
-                        AND json_extract(b.payload,'$.polling.enabled')
-                        AND json_extract(s.payload,'$.enabled') AS enabled,
-                    coalesce(json_extract(p.payload,'$.status'),'never_polled') AS status,
-                    json_extract(p.payload,'$.last_latency_ms') AS latency
-                FROM objects b LEFT JOIN objects s
-                    ON s.kind='native:source_definitions' AND s.ticker='' AND s.id=b.source_id
-                    AND s.valid_from<=? AND (s.valid_to IS NULL OR s.valid_to>?)
-                LEFT JOIN objects p ON p.kind='native:poll_states'
-                    AND p.ticker=b.ticker AND p.id=b.id
-                    AND p.valid_from<=? AND (p.valid_to IS NULL OR p.valid_to>?)
-                WHERE b.kind='native:ticker_source_bindings' AND b.ticker IN (SELECT value FROM json_each(?))
-                    AND b.valid_from<=? AND (b.valid_to IS NULL OR b.valid_to>?)
-                    AND json_extract(b.payload,'$.tombstoned_at') IS NULL
-            ) SELECT ticker,coalesce(sum(source IS NULL),0),
-                coalesce(sum(enabled AND status='succeeded'),0),
-                coalesce(sum(enabled AND status IN ('partial','failed')),0),
-                avg(CASE WHEN enabled AND status IN ('succeeded','partial','failed')
-                    THEN latency END),
-                count(CASE WHEN enabled AND status IN ('succeeded','partial','failed')
-                    THEN latency END)
-            FROM scoped GROUP BY ticker
-        """.replace("objects", table),
-            (seq, seq, seq, seq, json.dumps(tickers), seq, seq),
-        ).fetchall()
-    values = {ticker: ({"normal":available(0),"abnormal":available(0)},missing(),0) for ticker in tickers}
-    for entry in rows:
-        ticker, row = entry[0], entry[1:]
-        counts = {"normal": available(row[1]) if not row[0] else missing("SOURCE_GAP"),
-                  "abnormal": available(row[2]) if not row[0] else missing("SOURCE_GAP")}
-        values[ticker] = counts, available(row[3] / 1000) if row[3] is not None else missing(), row[4]
-    return values
+        bindings = db.execute("SELECT " + columns + " FROM object_current WHERE " + where +
+                              " UNION ALL SELECT " + columns + " FROM objects WHERE " + where + " AND valid_to>?",
+                              (json.dumps(tickers), seq, json.dumps(tickers), seq, seq)).fetchall()
+    source_ids = sorted({("", row[2]) for row in bindings})
+    poll_ids = [(row[0], row[1]) for row in bindings]
+    sources, polls = {}, {}
+    for offset in range(0, len(source_ids), 500):
+        sources.update({row[1]: row[2] for row in store.source_scalars("native:source_definitions", source_ids[offset:offset + 500], seq)})
+    for offset in range(0, len(poll_ids), 500):
+        polls.update({(row[0], row[1]): (row[2], row[3]) for row in store.source_scalars("native:poll_states", poll_ids[offset:offset + 500], seq)})
+    totals = {ticker: [0, 0, 0, []] for ticker in tickers}
+    for ticker, identity, source, enabled, poll_enabled in bindings:
+        value = totals[ticker]
+        value[0] += source not in sources
+        if not (enabled and poll_enabled and sources.get(source)):
+            continue
+        status, latency = polls.get((ticker, identity), ("never_polled", None))
+        value[1] += status == "succeeded"
+        value[2] += status in {"partial", "failed"}
+        if status in {"succeeded", "partial", "failed"} and latency is not None:
+            value[3].append(latency)
+    return {ticker: (
+        {"normal": missing("SOURCE_GAP") if gaps else available(normal),
+         "abnormal": missing("SOURCE_GAP") if gaps else available(abnormal)},
+        available(sum(latencies) / len(latencies) / 1000) if latencies else missing(),
+        len(latencies),
+    ) for ticker, (gaps, normal, abnormal, latencies) in totals.items()}
 
 
 def aggregates(store, ticker, seq):

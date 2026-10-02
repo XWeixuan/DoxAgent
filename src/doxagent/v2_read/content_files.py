@@ -12,6 +12,9 @@ from uuid import uuid4
 
 CHUNK = 131072
 
+class ContentUnavailable(ValueError):
+    """Missing or corrupt immutable business content; retry cannot repair it."""
+
 
 class ContentFiles:
     CHUNK = CHUNK
@@ -62,6 +65,15 @@ class ContentFiles:
                 shutil.rmtree(temporary)
 
     def read(self, identity: str, offset: int, size: int) -> bytes:
+        from .query_budget import check_deadline
+        check_deadline()
+        try:
+            return self._read(identity, offset, size)
+        except (OSError, ValueError, KeyError, IndexError, TypeError) as exc:
+            raise ContentUnavailable() from exc
+
+    def _read(self, identity: str, offset: int, size: int) -> bytes:
+        from .query_budget import check_deadline
         if offset < 0 or not 0 < size <= CHUNK:
             raise ValueError("invalid content range")
         path = self._path(identity)
@@ -73,6 +85,7 @@ class ContentFiles:
             return b""
         chunks = []
         for index in range(offset // CHUNK, (end - 1) // CHUNK + 1):
+            check_deadline()
             chunk = gzip.decompress((path / str(index)).read_bytes())
             if hashlib.sha256(chunk).hexdigest() != manifest["chunks"][index]:
                 raise ValueError("content checksum mismatch")

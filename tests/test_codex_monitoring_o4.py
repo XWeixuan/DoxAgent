@@ -508,7 +508,7 @@ async def test_runner_reuses_one_ticker_thread_and_enables_only_o4_operations(
     assert all(item.o4_operations_enabled for item in worker.requests)
     assert all(item.data_mcp_enabled is False for item in worker.requests)
     assert all(item.allow_subagents is False for item in worker.requests)
-    assert all(item.model == "gpt-6-sol" and item.effort == "high" for item in worker.requests)
+    assert all(item.model == "gpt-6.1-sol" and item.effort == "high" for item in worker.requests)
     repository.close()
 
 

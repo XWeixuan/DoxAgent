@@ -1,0 +1,16 @@
+{
+  "purpose": "BE W2R1 missing-source reason root cause audit; no production mutation",
+  "provider_requests": 93,
+  "historical_bad_cases": 21,
+  "files": {
+    "cohort.json": "c2507c2c76c29f107c7fc68028d4a5a59fb763685cd703a3ad3917209f311128",
+    "denominator.json": "d006f9c0ba63aff4677d147381861fbb4ee7356fa0975b8906902cda4d43c97c",
+    "frozen-contexts.json": "694b1ac74baca52404b94457c6f2dcd9a2385163db6bba3cd0683277fa792788",
+    "production_probe.py": "2271143dc8603b35e6f74555ab5fcdcc01cda88cf9018ff67f0fb4444f8ffd28",
+    "replays-cold.jsonl": "3d9c13e15d3786e285bd4c52758c49a04a880561e2988034aaee9fd6f433b2aa",
+    "replays-full.jsonl": "d00a6dd03d9692101e643692641c11e25d5115bf514665937a1e63e10ed61b0d",
+    "replays-pilot.jsonl": "57203ba1950e4b138557cd4f88a0a19ba05d47cfdc069371034fc3d9a9c8d63f",
+    "replays-retry.jsonl": "a557a1fa915abfe2fababd322fb5040b53363b7cf47de11790f897e061fb05c6",
+    "summary.json": "46481a7b4a3374744f3f57addb6a611b157bde0205fc463d23226a4837cc1373"
+  }
+}

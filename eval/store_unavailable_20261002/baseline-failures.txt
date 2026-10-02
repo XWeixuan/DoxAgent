@@ -1,0 +1,181 @@
+FFFF                                                                     [100%]
+================================== FAILURES ===================================
+_______________ test_overview_status_does_not_wait_for_gateway ________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001FEA3EC6C50>
+
+    def test_overview_status_does_not_wait_for_gateway(monkeypatch):
+        from doxagent.api_v2.overview import install
+        status = AsyncMock(return_value="DISCONNECTED")
+        monkeypatch.setattr(GatewayMonitor, "status", status)
+        app = FastAPI()
+        app.state.store = SimpleNamespace(get=lambda *args: None)
+        app.state.control = None
+        app.state.views = SimpleNamespace(get=lambda *args: {
+            "wire": {"page": "OVERVIEW", "clock": {}}, "tickers": [], "seq": 1,
+        })
+        app.state.query = lambda *args: {"view_id": "view"}
+        app.state.respond = lambda request, name, payload, **kwargs: payload
+        install(app)
+    
+        async def check(path):
+            route = next(r for r in app.routes if r.path == path)
+            request = Request({"type": "http", "path": path, "headers": [],
+                               "state": {"principal": SimpleNamespace(user_id="owner")}})
+            return await route.endpoint(request)
+    
+>       fast = asyncio.run(check("/api/doxagent/v2/overview/status"))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+C:\Users\WEIXUA~1\AppData\Local\Temp\ds-base-6hi4q5ke\tests\v2_backend\test_gateway_status.py:89: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+.uv-python\cpython-3.11-windows-x86_64-none\Lib\asyncio\runners.py:190: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+.uv-python\cpython-3.11-windows-x86_64-none\Lib\asyncio\runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.uv-python\cpython-3.11-windows-x86_64-none\Lib\asyncio\base_events.py:654: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+C:\Users\WEIXUA~1\AppData\Local\Temp\ds-base-6hi4q5ke\tests\v2_backend\test_gateway_status.py:87: in check
+    return await route.endpoint(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+request = <starlette.requests.Request object at 0x000001FED1013750>
+
+    @app.get(prefix + "/overview/gateway-status")
+    @app.get(prefix + "/overview/status")
+    async def overview_status(request: Request) -> Any:
+        args = query(request, {"view_id"})
+        view = views.get(request.state.principal.user_id, args.get("view_id", ""))
+        if view["wire"]["page"] != "OVERVIEW":
+            raise ApiFailure("SCOPE_MISMATCH", 400)
+>       states = list(store.batch_get([("ticker",ticker,ticker) for ticker in view["tickers"]],view["seq"]).values())
+                      ^^^^^^^^^^^^^^^
+E       AttributeError: 'types.SimpleNamespace' object has no attribute 'batch_get'
+
+C:\Users\WEIXUA~1\AppData\Local\Temp\ds-base-6hi4q5ke\src\doxagent\api_v2\overview.py:355: AttributeError
+________ test_ingestion_origin_is_immutable_across_delayed_duplicates _________
+
+tmp_path = WindowsPath('C:/Users/WEIXUANXIE/AppData/Local/Temp/pytest-of-WEIXUANXIE/pytest-1500/test_ingestion_origin_is_immut0')
+
+    def test_ingestion_origin_is_immutable_across_delayed_duplicates(tmp_path):
+        repo, bus = _bus(tmp_path / "bus.db")
+        bus.start_ticker("MU")
+        source = repo.get_source("benzinga_news")
+        binding = repo.get_binding("MU:benzinga_news")
+    
+        def accept(message):
+            return asyncio.run(
+                bus.accept_message(source=source, binding=binding, message=message, bootstrap=False)
+            )
+    
+        old = accept(_input("legacy"))
+>       assert "v2_control_origin" not in repo.get_raw(old.raw_message_id).metadata
+                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'NoneType' object has no attribute 'metadata'
+
+C:\Users\WEIXUA~1\AppData\Local\Temp\ds-base-6hi4q5ke\tests\v2_backend\test_message_origin.py:19: AttributeError
+____ test_actual_reference_input_and_equal_version_no_change_are_immutable ____
+
+tmp_path = WindowsPath('C:/Users/WEIXUANXIE/AppData/Local/Temp/pytest-of-WEIXUANXIE/pytest-1500/test_actual_reference_input_an0')
+
+    def test_actual_reference_input_and_equal_version_no_change_are_immutable(tmp_path):
+        root = tmp_path / "events"
+        native = EventLibraryRepository(root / "US" / "MU" / "event_library.sqlite3")
+        with native._write() as db:
+            migrate(db)
+        _publish_v1(native, root)
+        compiler = EventLibraryViewCompiler(native)
+        journal = RuntimeJournal(tmp_path / "runtime.db")
+        control = ControlRepository(journal)
+        control.migrate()
+        task = {"id": "daily-a", "ticker": "MU", "inputs": {"control_epoch": 1}}
+        prepare(
+            journal,
+            task,
+            compiler,
+            root,
+            "2026-09-08",
+            compiler.reference_view_delta("MU", from_version=0, to_version=1),
+        )
+        settle(journal, "daily-a", "SUCCEEDED")
+        store = ReadStore(tmp_path / "read.db")
+        store.migrate()
+        records = project(store, journal.get("reference_deliveries", "daily-a"))
+        seq = store.ingest("runtime", "reference", records)
+        ref, indexed = LibraryIndexer(root).index("MU", 1)
+        store.ingest("library", "v1", indexed)
+        event_rows, counts = activate(store, "MU", {"event_library": ref}, "2026-09-08T14:00:00Z")
+        seq = store.ingest("library", "active", event_rows, contributions=counts)
+        view = store.save_token(
+            "developer",
+            "test",
+            {
+                "seq": seq,
+                "as_of": "2026-09-08T15:00:00Z",
+                "wire": {
+                    "page": "EVENTS",
+                    "ticker": "MU",
+                    "activation": {"data": {"event_library": ref}},
+                    "period": {"selected": "ALL", "previous": None},
+                },
+            },
+            view=True,
+            now=datetime.now(UTC),
+        )
+        with TestClient(create_app(store=store, control=control, auth=OfflineAuth())) as client:
+            headers = {"Authorization": "Bearer offline"}
+            for suffix in (
+                "event-library/events",
+                "event-library/index",
+                "event-library/metrics",
+                "reference-deltas/days",
+            ):
+                response = client.get(
+                    PREFIX + "/tickers/MU/" + suffix, headers=headers, params={"view_id": view}
+                )
+                assert response.status_code == 200, response.text
+            response = client.get(
+                PREFIX + "/tickers/MU/reference-deltas/days/2026-09-08",
+                headers=headers,
+                params={"view_id": view, "limit": 1},
+            )
+            assert response.status_code == 200, response.text
+            data = response.json()["data"]
+>           change = data["changes"]["items"][0]
+                     ^^^^^^^^^^^^^^^
+E           KeyError: 'changes'
+
+C:\Users\WEIXUA~1\AppData\Local\Temp\ds-base-6hi4q5ke\tests\v2_backend\test_reference.py:84: KeyError
+_________________ test_generated_schema_is_current_and_closed _________________
+
+    def test_generated_schema_is_current_and_closed():
+        source = Path("dev_plan/workflow_v2/api_contract/doxagent-v2-api.types.ts").read_bytes()
+>       assert hashlib.sha256(source).hexdigest() == SCHEMA["source_sha256"]
+E       AssertionError: assert 'a95df1b2e299...fada14d24b3bc' == '7779a460a743...e1fe866056fb9'
+E         
+E         - 7779a460a74306f3475e34cfea42873d973138b372e96510f79e1fe866056fb9
+E         + a95df1b2e299ac831141a840dd9c79aad3d42ffd65deb79ba23fada14d24b3bc
+
+C:\Users\WEIXUA~1\AppData\Local\Temp\ds-base-6hi4q5ke\tests\v2_backend\test_wire.py:12: AssertionError
+============================== warnings summary ===============================
+.venv\Lib\site-packages\opentelemetry\util\_importlib_metadata.py:32
+  C:\Users\WEIXUANXIE\Desktop\DoxAgent\.venv\Lib\site-packages\opentelemetry\util\_importlib_metadata.py:32: DeprecationWarning: SelectableGroups dict interface is deprecated. Use select.
+    return EntryPoints(ep for group_eps in eps.values() for ep in group_eps)
+
+.venv\Lib\site-packages\agent_framework\_skills.py:116
+  C:\Users\WEIXUANXIE\Desktop\DoxAgent\.venv\Lib\site-packages\agent_framework\_skills.py:116: ExperimentalWarning: [SKILLS] SkillResource is experimental and may change or be removed in future versions without notice.
+
+.venv\Lib\site-packages\agent_framework\_harness\_memory.py:651
+  C:\Users\WEIXUANXIE\Desktop\DoxAgent\.venv\Lib\site-packages\agent_framework\_harness\_memory.py:651: ExperimentalWarning: [HARNESS] MemoryStore is experimental and may change or be removed in future versions without notice.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED ..\..\..\WEIXUA~1\AppData\Local\Temp\ds-base-6hi4q5ke\tests\v2_backend\test_gateway_status.py::test_overview_status_does_not_wait_for_gateway
+FAILED ..\..\..\WEIXUA~1\AppData\Local\Temp\ds-base-6hi4q5ke\tests\v2_backend\test_message_origin.py::test_ingestion_origin_is_immutable_across_delayed_duplicates
+FAILED ..\..\..\WEIXUA~1\AppData\Local\Temp\ds-base-6hi4q5ke\tests\v2_backend\test_reference.py::test_actual_reference_input_and_equal_version_no_change_are_immutable
+FAILED ..\..\..\WEIXUA~1\AppData\Local\Temp\ds-base-6hi4q5ke\tests\v2_backend\test_wire.py::test_generated_schema_is_current_and_closed
+4 failed, 3 warnings in 13.51s

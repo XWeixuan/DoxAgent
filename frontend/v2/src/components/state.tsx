@@ -21,7 +21,7 @@ import { Alert, AlertDescription } from "./ui/alert";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "./ui/empty";
 import { Skeleton } from "./ui/skeleton";
 import { Button } from "./ui/button";
-import { staleMessage } from "@/core/api";
+import { ApiFailure, staleMessage } from "@/core/api";
 type Tone = "neutral" | "info" | "success" | "warning" | "danger";
 export const ModuleFreshness = createContext(true);
 const lifecycle: Record<RunState, [string, Tone, typeof Circle]> = {
@@ -117,10 +117,17 @@ export function Module<T>({
     <>
       {warning && (
         <Notice danger>
+          {resource?.data ? "刷新失败，显示已保存的内容：" : ""}
           {warning}{" "}
           <Button variant="link" size="sm" onClick={() => void query.refetch()}>
             重试
           </Button>
+          {query.error instanceof ApiFailure && query.error.requestId && (
+            <details>
+              <summary>诊断信息</summary>
+              请求编号：{query.error.requestId} · {query.error.code}
+            </details>
+          )}
         </Notice>
       )}
       {resource?.data != null ? (

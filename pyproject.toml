@@ -28,7 +28,7 @@ dependencies = [
     "cryptography>=50,<51",
     "fastapi>=0.115,<1",
     "uvicorn[standard]>=0.32,<1",
-    "openai-codex==0.144.4",
+    "openai-codex==0.159.3",
     "mcp==2.0.0",
     "pypdf>=6,<7",
     "playwright==1.63.0",

@@ -5,6 +5,8 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import logging
+import time
 import re
 import sqlite3
 from contextlib import asynccontextmanager
@@ -24,7 +26,7 @@ from doxagent.v2_read.repository import ReadStore, encode, instant
 
 from .auth import SupabaseAuth
 from .dto import VERSION, validate, coverage
-from .errors import ApiFailure
+from .errors import ApiFailure, classify_failure
 from .views import Views
 
 PREFIX = "/api/doxagent/v2"
@@ -95,15 +97,19 @@ def create_app(
                     workers=limits.query_workers,
                     queue_limit=limits.query_queue,
                     name="read",
+                    queue_seconds=limits.queue_seconds,
+                    cancel_grace=limits.cancel_grace_seconds,
                 )
                 await app.state.query_runner.start()
                 app.state.stream_runner = QueryRunner(
                     workers=limits.stream_workers,
                     queue_limit=8,
                     name="stream",
+                    queue_seconds=limits.queue_seconds,
+                    cancel_grace=limits.cancel_grace_seconds,
                 )
                 await app.state.stream_runner.start()
-                app.state.control_runner = QueryRunner(workers=1, queue_limit=8, name="control")
+                app.state.control_runner = QueryRunner(workers=1, queue_limit=8, name="control", queue_seconds=limits.queue_seconds, cancel_grace=limits.cancel_grace_seconds)
                 await app.state.control_runner.start()
             yield
         finally:
@@ -167,7 +173,18 @@ def create_app(
         from doxagent.v2_read.query_budget import frozen_proofs, request_views
         frozen_proofs.set(None)
         request_views.set({})
-        request.state.request_id = uuid4().hex
+        request.state.request_id = getattr(app.state, "parent_request_id", None) if query_worker else None
+        request.state.request_id = request.state.request_id or uuid4().hex
+        started = time.monotonic()
+        route = next((r.path for r in app.routes if getattr(r, "path_regex", None) and r.path_regex.fullmatch(request.url.path)), "/unknown")
+
+        def failure_response(exc, original=None):
+            detail = {"code": exc.code, "sqlite_errorcode": getattr(original, "sqlite_errorcode", None), "sqlite_errorname": getattr(original, "sqlite_errorname", None)}
+            if query_worker:
+                app.state.query_failure = detail
+            elif not getattr(request.state, "query_submitted", False):
+                logging.getLogger("doxagent.v2.queries").warning("request_id=%s route=%s phase=boundary total_ms=%.1f failure=%s sqlite_errorcode=%s sqlite_errorname=%s", request.state.request_id, route, (time.monotonic() - started) * 1000, exc.code, detail["sqlite_errorcode"], detail["sqlite_errorname"])
+            return JSONResponse(exc.payload(request.state.request_id), status_code=exc.status, headers=exc.headers)
         try:
             if not request.url.path.startswith(PREFIX):
                 return await call_next(request)
@@ -197,6 +214,7 @@ def create_app(
                 job = {
                     "kind": "http", "url": str(request.url.path) + ("?" + request.url.query if request.url.query else ""),
                     "principal": request.state.principal, "method": request.method,
+                    "request_id": request.state.request_id, "route": route,
                     "gateway_status": await app.state.gateway_monitor.status() if path.endswith("/overview/gateway-status") else None,
                     "body": request._body if request.method != "GET" else None,
                     "headers": {k: v for k, v in request.headers.items() if k in {"if-none-match", "if-match", "idempotency-key", "accept", "content-type"}},
@@ -207,28 +225,26 @@ def create_app(
                     if existing is not None:
                         return existing
                 try:
+                    request.state.query_submitted = True
                     status, headers, content = await runner.run(job, timeout=limits.detail_seconds if "/body" in path or "/download" in path else limits.query_seconds)
                 except ApiFailure as exc:
-                    if deferred and exc.status == 503:
+                    if deferred and exc.retryable and exc.status in {503, 504}:
                         return await app.state.deferred_queries.submit(job)
                     raise
-                if deferred and status == 503:
+                if deferred and status in {503, 504} and json.loads(content).get("error", {}).get("retryable") is True:
                     return await app.state.deferred_queries.submit(job)
                 return Response(content, status_code=status, headers=headers)
             return await call_next(request)
         except ApiFailure as exc:
-            return JSONResponse(exc.payload(request.state.request_id), status_code=exc.status, headers={"Retry-After": "2"} if exc.status == 503 else None)
-        except sqlite3.OperationalError:
-            return JSONResponse(
-                ApiFailure("STORE_UNAVAILABLE", 503, retryable=True).payload(
-                    request.state.request_id
-                ),
-                status_code=503,
-            )
+            return failure_response(exc)
+        except Exception as exc:
+            return failure_response(classify_failure(exc), exc)
 
     @app.exception_handler(ApiFailure)
     async def api_error(request: Request, exc: ApiFailure) -> JSONResponse:
-        return JSONResponse(exc.payload(request.state.request_id), status_code=exc.status, headers={"Retry-After": "2"} if exc.status == 503 else None)
+        if query_worker:
+            app.state.query_failure = {"code": exc.code}
+        return JSONResponse(exc.payload(request.state.request_id), status_code=exc.status, headers=exc.headers)
 
     @app.exception_handler(ControlError)
     async def control_error(request: Request, exc: ControlError) -> JSONResponse:

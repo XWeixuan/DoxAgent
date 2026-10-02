@@ -193,7 +193,7 @@ async def test_query_pool_gives_cooperative_interrupt_a_grace_window():
     started = time.monotonic()
     try:
         assert await runner.run({"kind": "test"}, timeout=1) == "ok"
-        assert started + .85 <= pipe.sent["deadline"] <= started + .95
+        assert started + 1 <= pipe.sent["deadline"] <= started + 1.1
     finally:
         await runner.close()
 

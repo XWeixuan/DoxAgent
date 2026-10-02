@@ -396,6 +396,58 @@ async def test_sdk_runtime_awaits_async_thread_turn(
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("resumed", [False, True])
+@pytest.mark.parametrize("effort", ["low", "medium", "high", "xhigh", "max"])
+@pytest.mark.parametrize(
+    ("requested", "provider", "expected"),
+    [
+        ("gpt-5.6-luna", None, "gpt-6-luna"),
+        ("gpt-5.6-sol", "openai", "gpt-6.1-sol"),
+        ("gpt-6-sol", None, "gpt-6.1-sol"),
+        ("gpt-5.6-sol", "custom", "gpt-5.6-sol"),
+    ],
+)
+async def test_sdk_gpt6_execution_keeps_frozen_request_identity_and_effort(
+    tmp_path, monkeypatch, resumed, effort, requested, provider, expected
+) -> None:
+    sdk = _AsyncSdkClient()
+    monkeypatch.setattr(
+        "doxagent.codex_worker.sdk_runtime.AsyncCodex", lambda *args, **kwargs: sdk
+    )
+    runtime = OpenAICodexRuntime(capability_secret="s" * 32, container_isolated=True)
+    request = WorkerRunRequest(
+        run_id="model-migration",
+        ticker="MU",
+        node=CodexEventLibraryNode.O2_MAINTAIN,
+        agent_role=CodexEventLibraryAgentRole.O2,
+        attempt_id="o2-01",
+        prompt="Frozen prompt",
+        output_schema={"type": "object"},
+        model=requested,
+        model_provider=provider,
+        effort=effort,
+        thread_id="historical-thread" if resumed else None,
+        idempotency_key="frozen-key",
+    )
+    frozen = request.model_dump_json()
+    await runtime.start(request, tmp_path)
+    configuration = sdk.thread_resume_kwargs if resumed else sdk.thread_start_kwargs
+    assert configuration["model"] == expected
+    assert sdk.thread.turn_kwargs["model"] == expected
+    assert sdk.thread.turn_kwargs["effort"].value == effort
+    assert request.model_dump_json() == frozen
+    audit = json.loads(
+        (tmp_path / "attempts/o2-01/audit/model_selection.json").read_text(encoding="utf-8")
+    )
+    assert audit == {
+        "requested_model": requested,
+        "execution_model": expected,
+        "provider": provider,
+        "effort": effort,
+    }
+
+
+@pytest.mark.asyncio
 async def test_worker_device_login_uses_python_sdk(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
