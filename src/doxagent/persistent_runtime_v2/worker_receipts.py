@@ -1,5 +1,6 @@
 """Reuse Codex worker idempotency and durable completed receipts for runtime nodes."""
 
+import re
 from typing import Any
 
 from doxagent.codex_runtime.models import codex_execution_model
@@ -18,11 +19,13 @@ class ReceiptWorker:
         case_id: str | None = None,
         control_epoch: int | None = None,
         replace_failed_model: bool = False,
+        recover_timeouts: bool = False,
     ) -> None:
         self.worker, self.journal, self.scope = worker, journal, scope
         self.case_id = case_id
         self.control_epoch = control_epoch
         self.replace_failed_model = replace_failed_model
+        self.recover_timeouts = recover_timeouts
 
     def __getattr__(self, name: str) -> Any:
         return getattr(self.worker, name)
@@ -41,6 +44,17 @@ class ReceiptWorker:
         rejected = self.journal.get("worker_rejected", identity, False)
         frozen = self.journal.get("worker_requests", identity)
         if frozen is None:
+            match = re.fullmatch(r"(.+)-retry-(\d+)", phase)
+            if match:
+                base, ordinal = match.group(1), int(match.group(2))
+                previous = base if ordinal == 1 else f"{base}-retry-{ordinal - 1:03d}"
+                prior_identity = (
+                    f"runtime-worker:{self.scope}:{request.run_id}:{request.node}:{previous}"
+                )
+                timeout = self._recovery_timeout(
+                    request.timeout_seconds, self.journal.get("worker_receipts", prior_identity),
+                )
+                request = request.model_copy(update={"timeout_seconds": timeout})
             frozen = request.model_copy(update={"idempotency_key": digest(identity)}).model_dump(
                 mode="json"
             )
@@ -66,6 +80,7 @@ class ReceiptWorker:
                 frozen["attempt_id"] = request.attempt_id
                 frozen["thread_id"] = request.thread_id
             frozen["idempotency_key"] = digest([identity, generation])
+            frozen["timeout_seconds"] = self._recovery_timeout(frozen["timeout_seconds"], receipt)
             self.journal.set("worker_requests", identity, frozen)
             self.journal.set("worker_receipts", identity, None)
             self.journal.set("worker_rejected", identity, False)
@@ -97,3 +112,14 @@ class ReceiptWorker:
 
     def reject_output(self, reason: str) -> None:
         self.journal.set("worker_rejected", self.last_identity, reason)
+
+    def _recovery_timeout(self, seconds: int, receipt: dict[str, Any] | None) -> int:
+        if (
+            self.recover_timeouts and receipt and receipt.get("status") == "failed"
+            and receipt.get("error_code") == "CODEX_TURN_TIMEOUT"
+            and not receipt.get("cleanup_error")
+        ):
+            # A settled timeout can resume its work with more time; running or
+            # uncertain jobs retain their original dispatch and deadline.
+            return max(seconds, min(seconds * 2, 3600))
+        return seconds

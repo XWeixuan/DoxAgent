@@ -122,3 +122,55 @@ async def test_data_mcp_cold_start_budget_applies_to_actual_sdk_config(tmp_path,
     ), root)
     assert sdk.thread_start_kwargs["config"]["mcp_servers.data.required"] is True
     assert sdk.thread_start_kwargs["config"]["mcp_servers.data.startup_timeout_sec"] == 60
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(("recover", "code", "expected"), [
+    (True, "CODEX_TURN_TIMEOUT", 3600),
+    (False, "CODEX_TURN_TIMEOUT", 1800),
+    (True, "CODEX_TURN_FAILED", 1800),
+])
+async def test_confirmed_timeout_recovers_native_o2_phase_with_bounded_deadline(
+    tmp_path, recover, code, expected,
+):
+    from doxagent.codex_runtime.schema import (
+        CODEX_EVENT_LIBRARY_WORKFLOW_VERSION,
+        CodexEventLibraryAgentRole,
+        CodexEventLibraryNode,
+        ResearchLane,
+    )
+    from doxagent.codex_worker.schema import WorkerJob, WorkerRunRequest
+    from doxagent.persistent_runtime_v2.worker_receipts import ReceiptWorker
+
+    class Worker:
+        def __init__(self):
+            self.requests = []
+
+        async def run(self, request):
+            self.requests.append(request)
+            return WorkerJob(
+                job_id=f"job-{len(self.requests)}", run_id=request.run_id,
+                attempt_id=request.attempt_id, status="failed",
+                error_code=code,
+            )
+
+    journal = RuntimeJournal(tmp_path / "runtime.db")
+    worker = Worker()
+    durable = ReceiptWorker(worker, journal, "maintenance", recover_timeouts=recover)
+    request = WorkerRunRequest(
+        workflow_version=CODEX_EVENT_LIBRARY_WORKFLOW_VERSION,
+        research_lane=ResearchLane.EVENT_LIBRARY, run_id="maintain-mu-o2", ticker="MU",
+        node=CodexEventLibraryNode.O2_MAINTAIN, agent_role=CodexEventLibraryAgentRole.O2,
+        attempt_id="o2-incremental-edit", cutoff_at=datetime.now(UTC),
+        prompt="Immutable editing context", output_schema={"type": "object"}, effort="max",
+    )
+    await durable.run(request)
+    await durable.run(request.model_copy(update={"attempt_id": "o2-incremental-edit-retry-001"}))
+    retry = worker.requests[1]
+    assert retry.timeout_seconds == expected
+    assert retry.prompt == request.prompt and retry.effort == request.effort
+    assert retry.output_schema == request.output_schema
+    assert retry.idempotency_key != worker.requests[0].idempotency_key
+    # Same failed dispatch also gets a fresh key, with a 60-minute upper bound.
+    await durable.run(request.model_copy(update={"attempt_id": "o2-incremental-edit-retry-001"}))
+    assert worker.requests[2].timeout_seconds == expected

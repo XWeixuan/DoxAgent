@@ -4,4 +4,5 @@ FROM ${DOXAGENT_BASE_IMAGE}
 USER root
 COPY src/doxagent/persistent_runtime_v2/journal.py /app/src/doxagent/persistent_runtime_v2/journal.py
 COPY src/doxagent/persistent_runtime_v2/maintenance.py /app/src/doxagent/persistent_runtime_v2/maintenance.py
+COPY src/doxagent/persistent_runtime_v2/worker_receipts.py /app/src/doxagent/persistent_runtime_v2/worker_receipts.py
 RUN /app/.venv/bin/python -c "from pathlib import Path; p=Path('/app/src/doxagent/codex_worker/sdk_runtime.py'); s=p.read_text(); old='\"mcp_servers.data.startup_timeout_sec\": 20,'; new='\"mcp_servers.data.startup_timeout_sec\": 60,'; assert s.count(old)==1 or s.count(new)==1, 'unexpected Data MCP startup configuration'; p.write_text(s.replace(old,new))"

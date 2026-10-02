@@ -149,6 +149,7 @@ class RuntimeMaintenance:
             run_id,
             control_epoch=task["inputs"].get("control_epoch"),
             replace_failed_model=execution_model != frozen_model,
+            recover_timeouts=True,
         )
         reference_task = {**task, "id": run_id}
         # Freeze O2/O3 assets before dispatch and materialize only immutable snapshots.
