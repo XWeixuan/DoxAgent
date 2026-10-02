@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from datetime import date, datetime
 from pathlib import Path
 from typing import Any
@@ -12,13 +13,14 @@ from doxagent.event_library.service import EventLibraryService
 from doxagent.semantic_clock import semantic_day
 from doxagent.settings import DoxAgentSettings
 from doxagent.ticker_initialization.repository import InitializationRepository
+from doxagent.v2_control.repository import ControlError
 from doxagent.workflows.codex_document3.service import build_document3_orchestrator
 from doxagent.workflows.codex_event_library.remote_runner import RemoteEventLibraryInitializer
 
 from .bounded_inputs import case_values
 from .daily import RuntimeDeltaBatchAdapter
 from .event_branch import branch_library
-from .journal import RuntimeJournal, digest
+from .journal import LeaseLost, MaintenancePhaseFailure, RuntimeJournal, digest
 from .schema import (
     BadcaseRecord,
     O3MaintenanceFeed,
@@ -378,7 +380,9 @@ class RuntimeMaintenance:
             self.journal.set("visibility", task["ticker"], {"day": metadata["visibility_day"]})
             self._consume(task, frame)
             return {"revision_id": revision["revision_id"]}
-        except Exception:
+        except Exception as exc:
+            if isinstance(exc, (LeaseLost, ControlError)):
+                raise
             from .reference_capture import settle
 
             settle(self.journal, run_id, "FAILED")
@@ -392,6 +396,27 @@ class RuntimeMaintenance:
                 and ("d3_o3_maintain" in str(identity) or not task["receipt"].get("o2"))
             ):
                 durable.reject_output("maintenance artifacts did not validate")
+            if identity:
+                request = self.journal.get("worker_requests", identity, {})
+                phase = re.sub(r"-retry-\d+$", "", request.get("attempt_id", "unknown"))
+                if "d3_o3_maintain" in identity:
+                    phase = "o3-maintain"
+                code = (receipt or {}).get("error_code")
+                cause: BaseException | None = exc
+                while cause is not None:
+                    if getattr(cause, "code", None) == "WORKER_INFRA_RECOVERY_EXHAUSTED":
+                        code = "WORKER_INFRA_RECOVERY_EXHAUSTED"
+                        break
+                    cause = cause.__cause__
+                # Only a confirmed MCP startup failure is safe to redispatch.
+                # Uncertain jobs and quarantined cleanup still require reconciliation.
+                exhausted = code == "WORKER_INFRA_RECOVERY_EXHAUSTED"
+                mcp_startup = exhausted and "required MCP servers failed to initialize" in str(exc)
+                raise MaintenancePhaseFailure(
+                    str(exc), phase=phase, code=code or type(exc).__name__,
+                    scope="infrastructure" if mcp_startup else "phase",
+                    retryable=not exhausted or mcp_startup,
+                ) from exc
             raise
         finally:
             if hasattr(worker, "aclose"):

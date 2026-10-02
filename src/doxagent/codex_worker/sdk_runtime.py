@@ -307,7 +307,9 @@ class OpenAICodexRuntime:
                     ),
                     "mcp_servers.data.enabled_tools": enabled_mcp_tools,
                     "mcp_servers.data.required": True,
-                    "mcp_servers.data.startup_timeout_sec": 20,
+                    # Four production maintenance cold starts need 25-27 seconds;
+                    # allow initialization to finish before infrastructure retries.
+                    "mcp_servers.data.startup_timeout_sec": 60,
                     "mcp_servers.data.tool_timeout_sec": 120,
                 }
             )

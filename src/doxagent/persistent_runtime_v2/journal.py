@@ -29,6 +29,15 @@ class LeaseLost(RuntimeError):
     pass
 
 
+class MaintenancePhaseFailure(RuntimeError):
+    """A confirmed maintenance phase failure with a bounded recovery scope."""
+
+    def __init__(self, message: str, *, phase: str, code: str,
+                 scope: str = "phase", retryable: bool = True) -> None:
+        super().__init__(message)
+        self.phase, self.code, self.scope, self.retryable = phase, code, scope, retryable
+
+
 class RuntimeJournal:
     VERSION = 1
 
@@ -277,14 +286,32 @@ class RuntimeJournal:
         with self.transaction() as db:
             row = self.fence(db, task)
             count = row["failures"] + 1
-            status = "PENDING" if retryable and count < row["max_failures"] else "FAILED"
+            failures, maximum, delay = count, row["max_failures"], 5
+            receipt = json.loads(row["receipt"])
+            if row["kind"] == "MAINTENANCE" and isinstance(error, MaintenancePhaseFailure):
+                # O2 map/edit/review and O3 each get their own bounded budget.
+                # Startup outages must not spend the later semantic phase's retries.
+                key = f"{error.scope}:{error.phase}"
+                counters = dict(receipt.get("phase_failures", {}))
+                failures = counters.get(key, 0) + 1
+                counters[key] = failures
+                maximum = 3 if error.scope == "infrastructure" else row["max_failures"]
+                delay = (60, 300, 900)[min(failures - 1, 2)]
+                retryable = retryable and error.retryable
+                receipt.update(phase_failures=counters, last_phase_failure={
+                    "phase": error.phase, "scope": error.scope, "code": error.code,
+                    "count": failures, "maximum": maximum,
+                })
+            status = "PENDING" if retryable and failures < maximum else "FAILED"
             db.execute(
-                "UPDATE runtime_tasks SET status=?,failures=?,due_at=?,updated_at=? WHERE id=?",
+                "UPDATE runtime_tasks SET status=?,failures=?,due_at=?,updated_at=?,receipt=? "
+                "WHERE id=?",
                 (
                     status,
                     count,
-                    (self.clock() + timedelta(seconds=5)).isoformat(),
+                    (self.clock() + timedelta(seconds=delay)).isoformat(),
                     self.clock().isoformat(),
+                    self.content.encode(receipt),
                     task["id"],
                 ),
             )
@@ -320,6 +347,8 @@ class RuntimeJournal:
             if not row or row["status"] != "FAILED":
                 raise ValueError("only failed tasks may be resumed")
             receipt = {**json.loads(row["receipt"]), "resume_reason": reason}
+            receipt.pop("phase_failures", None)
+            receipt.pop("last_phase_failure", None)
             db.execute(
                 "UPDATE runtime_tasks SET status='PENDING',generation=generation+1,"
                 "failures=0,receipt=?,due_at=? WHERE id=?",
