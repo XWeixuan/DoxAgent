@@ -114,6 +114,10 @@ def test_bootstrap_registry_profile_and_ticker_materialization(tmp_path: Path) -
         "thelec_semiconductors_rss",
         "etnews_rss",
         "digitimes_tw_rss",
+        "investorshub_ticker_news",
+        "globenewswire_search",
+        "investing_ticker_news",
+        "globenewswire_semiconductors_rss",
     }
     profile = repository.get_default_profile("default")
     assert profile is not None
@@ -124,6 +128,9 @@ def test_bootstrap_registry_profile_and_ticker_materialization(tmp_path: Path) -
         "ibkr_news",
         "reuters_site_search",
         "barrons_ticker_news",
+        "investorshub_ticker_news",
+        "globenewswire_search",
+        "investing_ticker_news",
     ]
 
     state = service.start_ticker("mu", actor=UpdateActor.AGENT)
@@ -136,12 +143,15 @@ def test_bootstrap_registry_profile_and_ticker_materialization(tmp_path: Path) -
         "ibkr_news",
         "reuters_site_search",
         "barrons_ticker_news",
+        "investorshub_ticker_news",
+        "globenewswire_search",
+        "investing_ticker_news",
     }
     assert all(binding.polling.target_interval_seconds == 60 for binding in bindings)
 
     # Profiles are materialized templates, not live parents.
     service.save_default_profile(profile.model_copy(update={"entries": []}))
-    assert len(repository.list_bindings(ticker="MU")) == 6
+    assert len(repository.list_bindings(ticker="MU")) == 9
 
 
 def test_existing_default_profile_adds_barrons_once(tmp_path: Path) -> None:
@@ -152,8 +162,7 @@ def test_existing_default_profile_adds_barrons_once(tmp_path: Path) -> None:
         profile.model_copy(
             update={
                 "entries": [
-                    entry for entry in profile.entries
-                    if entry.source_id != "barrons_ticker_news"
+                    entry for entry in profile.entries if entry.source_id != "barrons_ticker_news"
                 ]
             }
         )
@@ -169,9 +178,7 @@ def test_existing_default_profile_adds_barrons_once(tmp_path: Path) -> None:
 def test_bootstrap_migrates_new_source_300s_intervals_once(tmp_path: Path) -> None:
     repository, service = _bus(tmp_path / "bus.sqlite3")
     service.start_ticker("MU")
-    service.configure_binding(
-        ticker="MU", source_id="trendforce_news", actor=UpdateActor.SYSTEM
-    )
+    service.configure_binding(ticker="MU", source_id="trendforce_news", actor=UpdateActor.SYSTEM)
     for source_id in ("barrons_ticker_news", "trendforce_news"):
         source = repository.get_source(source_id)
         assert source is not None
@@ -200,10 +207,14 @@ def test_bootstrap_migrates_new_source_300s_intervals_once(tmp_path: Path) -> No
             update={
                 "entries": [
                     entry.model_copy(
-                        update={"polling": entry.polling.model_copy(
-                            update={"target_interval_seconds": 300}
-                        )}
-                    ) if entry.source_id == "barrons_ticker_news" else entry
+                        update={
+                            "polling": entry.polling.model_copy(
+                                update={"target_interval_seconds": 300}
+                            )
+                        }
+                    )
+                    if entry.source_id == "barrons_ticker_news"
+                    else entry
                     for entry in profile.entries
                 ]
             }
@@ -218,10 +229,14 @@ def test_bootstrap_migrates_new_source_300s_intervals_once(tmp_path: Path) -> No
             for binding in repository.list_bindings(source_id=source_id)
         )
     profile = repository.get_default_profile("default")
-    assert next(
-        entry.polling.target_interval_seconds
-        for entry in profile.entries if entry.source_id == "barrons_ticker_news"
-    ) == 60
+    assert (
+        next(
+            entry.polling.target_interval_seconds
+            for entry in profile.entries
+            if entry.source_id == "barrons_ticker_news"
+        )
+        == 60
+    )
     versions = (
         repository.get_source("barrons_ticker_news").version,
         repository.get_source("trendforce_news").version,
@@ -487,12 +502,30 @@ def test_bootstrap_migrates_only_legacy_default_news_windows(tmp_path: Path) -> 
     assert all(
         not entry.polling.active_windows
         for entry in migrated_profile.entries
-        if entry.source_id != "barrons_ticker_news"
+        if entry.source_id
+        in {
+            "benzinga_news",
+            "finnhub_company_news",
+            "yahoo_finance_news",
+            "ibkr_news",
+            "reuters_site_search",
+        }
     )
     assert next(
-        entry for entry in migrated_profile.entries
-        if entry.source_id == "barrons_ticker_news"
+        entry for entry in migrated_profile.entries if entry.source_id == "barrons_ticker_news"
     ).polling.active_windows == [legacy]
+    # Newly introduced sources never had the legacy window. Preserve explicitly
+    # configured windows rather than extending a historical migration to them.
+    assert all(
+        entry.polling.active_windows == [legacy]
+        for entry in migrated_profile.entries
+        if entry.source_id
+        in {
+            "investorshub_ticker_news",
+            "globenewswire_search",
+            "investing_ticker_news",
+        }
+    )
     for source_id in ("benzinga_news", "finnhub_company_news"):
         migrated = repository.get_binding(f"MU:{source_id}")
         assert migrated is not None

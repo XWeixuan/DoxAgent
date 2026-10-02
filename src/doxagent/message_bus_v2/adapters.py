@@ -26,6 +26,7 @@ from doxagent.crawler_plane.service import CrawlerPlaneService
 from doxagent.message_bus_v2.ctee import CteeSemiconductorAdapter
 from doxagent.message_bus_v2.ibkr_news import IbkrNewsAdapter
 from doxagent.message_bus_v2.industry_sources import IndustryListingAdapter, SharedFeedAdapter
+from doxagent.message_bus_v2.market_sources import GlobeNewswireSearchAdapter, MarketTickerAdapter
 from doxagent.message_bus_v2.news_adapters import (
     GoogleNewsSearchRssAdapter,
     ReutersSiteSearchAdapter,
@@ -115,6 +116,16 @@ class AdapterRegistry:
             "thelec_semiconductors_rss": SharedFeedAdapter(self.client, "The Elec"),
             "etnews_rss": SharedFeedAdapter(self.client, "ETNews"),
             "digitimes_tw_rss": SharedFeedAdapter(self.client, "DIGITIMES Taiwan"),
+            "investorshub_ticker_news": MarketTickerAdapter(
+                crawler_plane.browser if crawler_plane is not None else None, "investorshub"
+            ),
+            "investing_ticker_news": MarketTickerAdapter(
+                crawler_plane.browser if crawler_plane is not None else None, "investing"
+            ),
+            "globenewswire_search": GlobeNewswireSearchAdapter(
+                crawler_plane.browser if crawler_plane is not None else None
+            ),
+            "globenewswire_semiconductors_rss": SharedFeedAdapter(self.client, "GlobeNewswire"),
         }
         self._dynamic_cache: dict[tuple[str, int], SourceAdapter] = {}
 
@@ -329,6 +340,9 @@ class SiteStrategyCrawlerAdapter:
         "builtin:barrons_ticker@1": "barrons_ticker_news",
         "builtin:trendforce_listings@1": "trendforce_news",
         "builtin:digitimes_semiconductors@1": "digitimes_semiconductors",
+        "builtin:investorshub_ticker@1": "investorshub_ticker_news",
+        "builtin:investing_ticker@1": "investing_ticker_news",
+        "builtin:globenewswire_search@1": "globenewswire_search",
     }
 
     def __init__(self, registry: AdapterRegistry) -> None:

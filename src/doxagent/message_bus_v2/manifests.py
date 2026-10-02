@@ -72,6 +72,11 @@ def _source(
 
 def initial_sources() -> list[SourceDefinition]:
     string_array = {"type": "array", "items": {"type": "string", "minLength": 1}}
+    ticker_locator = {
+        "listing_url": {"type": "string", "minLength": 1},
+        "ticker_pages": {"type": "object", "additionalProperties": {"type": "string"}},
+        "exchange": {"type": "string", "enum": ["NASDAQ", "NYSE", "AMEX"]},
+    }
     return [
         _source(
             "benzinga_news",
@@ -265,6 +270,74 @@ def initial_sources() -> list[SourceDefinition]:
             default_parameters={"feed_proxy_url": "http://doxagent-egress-clash:18083"},
             default_polling=PollingConfig(target_interval_seconds=60),
         ),
+        _source(
+            "investorshub_ticker_news",
+            "InvestorsHub ticker news",
+            kind=SourceKind.CRAWLER,
+            content_language="en",
+            site_id="investorshub",
+            entry_url="https://investorshub.advfn.com/stock-market/NASDAQ/{ticker}/news",
+            adapter_ref="site:auto",
+            properties=ticker_locator,
+            default_parameters={
+                "ticker_pages": {
+                    ticker: f"https://investorshub.advfn.com/stock-market/{market}/{ticker}/news"
+                    for ticker, market in [
+                        ("MU", "NASDAQ"),
+                        ("INTC", "NASDAQ"),
+                        ("BE", "NYSE"),
+                        ("RKLB", "NASDAQ"),
+                    ]
+                }
+            },
+            minimum_request_gap_seconds=3,
+        ),
+        _source(
+            "globenewswire_search",
+            "GlobeNewswire Search",
+            kind=SourceKind.CRAWLER,
+            acquisition_mode=AcquisitionMode.BY_SEARCH,
+            content_language="en",
+            site_id="globenewswire",
+            entry_url="https://www.globenewswire.com/en/search/",
+            adapter_ref="site:auto",
+            search_policy=SearchPolicy(mode="separate"),
+            properties={"max_pages": {"type": "integer", "minimum": 1, "maximum": 10}},
+            default_parameters={"max_pages": 3},
+            minimum_request_gap_seconds=0,
+        ),
+        _source(
+            "investing_ticker_news",
+            "Investing.com ticker news",
+            kind=SourceKind.CRAWLER,
+            content_language="en",
+            site_id="investing",
+            entry_url="https://www.investing.com/equities/",
+            adapter_ref="site:auto",
+            properties=ticker_locator,
+            default_parameters={
+                "ticker_pages": {
+                    ticker: f"https://www.investing.com/equities/{slug}-news"
+                    for ticker, slug in [
+                        ("MU", "micron-tech"),
+                        ("INTC", "intel-corp"),
+                        ("BE", "bloom-energy-corp"),
+                        ("RKLB", "vector-acquisition"),
+                    ]
+                }
+            },
+            minimum_request_gap_seconds=3,
+        ),
+        _source(
+            "globenewswire_semiconductors_rss",
+            "GlobeNewswire Semiconductors RSS",
+            acquisition_mode=AcquisitionMode.BY_DISTRIBUTION,
+            content_language="en",
+            site_id="globenewswire",
+            entry_url="https://www.globenewswire.com/RssFeed/industry/9576-Semiconductors/feedTitle/GlobeNewswire%20-%20Industry%20News%20on%20Semiconductors",
+            distribution_policy=DistributionPolicy(jev_enabled=True),
+            minimum_request_gap_seconds=0,
+        ),
     ]
 
 
@@ -308,10 +381,21 @@ def initial_default_profile() -> DefaultMonitoringProfile:
                 polling=PollingConfig(target_interval_seconds=60),
                 streaming=StreamingConfig(),
             ),
+            *[
+                DefaultProfileEntry(
+                    source_id=source_id, polling=polling, streaming=StreamingConfig()
+                )
+                for source_id in [
+                    "investorshub_ticker_news",
+                    "globenewswire_search",
+                    "investing_ticker_news",
+                ]
+            ],
         ],
         updated_by=UpdateActor.SYSTEM,
         updated_reason=(
-            "initial profile: Benzinga, Finnhub, Yahoo, IBKR, Reuters and Barron's; "
+            "initial profile: Benzinga, Finnhub, Yahoo, IBKR, Reuters, Barron's, "
+            "InvestorsHub, GlobeNewswire Search and Investing.com; "
             "shared calendar owns "
             "continuous-session "
             "polling and the 02:00 ET closed-day sweep"

@@ -6,6 +6,7 @@ import hashlib
 import json
 import re
 from dataclasses import dataclass, field
+from datetime import datetime
 from typing import Any
 from urllib.parse import urljoin, urlparse
 
@@ -82,6 +83,7 @@ class Inspection:
     expansion_required: bool = False
     subscription_article: bool = False
     canonical_article_match: bool = False
+    publisher_published_at: str | None = None
 
 
 CHALLENGE = re.compile(
@@ -293,6 +295,19 @@ def inspect_html(
             headline = str(article.get("headline") or article.get("name") or "")
             if headline and expected_title and not title_match(headline, expected_title):
                 continue
+            published = article.get("datePublished")
+            if (
+                isinstance(published, str)
+                and headline
+                and expected_title
+                and title_match(headline, expected_title)
+            ):
+                try:
+                    stamp = datetime.fromisoformat(published.replace("Z", "+00:00"))
+                    if stamp.tzinfo is not None:
+                        result.publisher_published_at = stamp.isoformat()
+                except ValueError:
+                    pass
             body = article.get("articleBody")
             result.subscription_article |= article.get("isAccessibleForFree") in (
                 False,

@@ -544,6 +544,9 @@ class SiteStrategyService:
                 "builtin:barrons_ticker@1": set(),
                 "builtin:trendforce_listings@1": set(),
                 "builtin:digitimes_semiconductors@1": set(),
+                "builtin:investorshub_ticker@1": set(),
+                "builtin:investing_ticker@1": set(),
+                "builtin:globenewswire_search@1": set(),
             }
             allowed = schemas.get(spec.crawler.ref)
             if allowed is None:

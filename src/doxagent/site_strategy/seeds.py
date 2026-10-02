@@ -115,10 +115,7 @@ def bootstrap_seed(repository: SiteStrategyRepository, service: SiteStrategyServ
                     and spec.auth.crawler_requirement == "none"
                 ):
                     auth_updates["crawler_requirement"] = "none"
-                if (
-                    spec.site_id == "barrons"
-                    and current.auth.crawler_requirement != "required"
-                ):
+                if spec.site_id == "barrons" and current.auth.crawler_requirement != "required":
                     auth_updates["crawler_requirement"] = "required"
                 support = list(current.support_hosts)
                 known_support = {(item.match, item.host, item.role) for item in support}
@@ -132,10 +129,7 @@ def bootstrap_seed(repository: SiteStrategyRepository, service: SiteStrategyServ
                     and current.access.min_interval_ms == 500
                 ):
                     access_updates.update(max_concurrency=1, min_interval_ms=3000)
-                if (
-                    spec.site_id == "barrons"
-                    and current.access.overrides != spec.access.overrides
-                ):
+                if spec.site_id == "barrons" and current.access.overrides != spec.access.overrides:
                     access_updates["overrides"] = spec.access.overrides
                 body = current.body
                 crawler = current.crawler or spec.crawler
@@ -361,7 +355,7 @@ def seed_specs() -> list[SiteStrategySpec]:
                 "body_xpath": [
                     '//*[@id="content"]',
                     '//*[@itemprop="articleBody"]',
-                    '//article',
+                    "//article",
                     '//*[contains(@class,"article-body")]',
                 ]
             },
@@ -416,6 +410,70 @@ def seed_specs() -> list[SiteStrategySpec]:
             ),
             access_order=["browser"],
             default_content_language="zh-Hant",
+        ),
+        _site(
+            "investorshub",
+            ["investorshub.advfn.com", "ih.advfn.com", "uk.advfn.com"],
+            "builtin:generic@1",
+            crawler="builtin:investorshub_ticker@1",
+            egresses=("server-direct", "jp-standard-6"),
+            support=("www.advfn.com", "advfn.com", "secure.advfn.com"),
+            auth="optional",
+            login_url="https://investorshub.advfn.com/",
+            maintenance_url="https://investorshub.advfn.com/stock-market/NYSE/BE/news",
+            verification_url="https://investorshub.advfn.com/stock-market/NYSE/BE/news",
+            verification_kind="public_access",
+            access_order=["browser"],
+            body_parameters={
+                "body_xpath": [
+                    '//*[@id="news-content"]',
+                    '//*[@id="articleBody"]',
+                    '//*[@itemprop="articleBody"]',
+                    '//*[contains(concat(" ",normalize-space(@class)," ")," news-body ")]',
+                    '//*[contains(concat(" ",normalize-space(@class)," ")," entry-content ")]',
+                    '//*[contains(concat(" ",normalize-space(@class)," "),'
+                    '" news-details-post-02 ")]',
+                ]
+            },
+            default_content_language="en",
+        ),
+        _site(
+            "globenewswire",
+            ["www.globenewswire.com", "globenewswire.com"],
+            "builtin:generic@1",
+            crawler="builtin:globenewswire_search@1",
+            egresses=("server-direct",),
+            body_parameters={
+                "body_xpath": ['//*[@itemprop="articleBody"]', '//*[@id="main-body-container"]']
+            },
+            default_content_language="en",
+        ),
+        _site(
+            "investing",
+            ["www.investing.com", "investing.com"],
+            "builtin:generic@1",
+            crawler="builtin:investing_ticker@1",
+            egresses=("server-direct", "de-standard-1"),
+            support=(
+                "api.investing.com",
+                "endpoints.investing.com",
+                "cdn.investing.com",
+                "content-media.investing.com",
+            ),
+            auth="optional",
+            login_url="https://www.investing.com/",
+            maintenance_url="https://www.investing.com/equities/intel-corp-news",
+            verification_url="https://www.investing.com/equities/intel-corp-news",
+            verification_kind="public_access",
+            access_order=["browser"],
+            body_parameters={
+                "body_xpath": [
+                    '//*[@id="article"]',
+                    '//*[@data-test="article-content"]',
+                    '//*[@itemprop="articleBody"]',
+                ]
+            },
+            default_content_language="en",
         ),
     ]
     return specs
@@ -472,17 +530,37 @@ def _site(
                 1
                 if site_id
                 in {
-                    "yahoo_finance", "reuters", "barrons", "wsj", "seeking_alpha",
-                    "marketwatch", "digitimes", "digitimes_tw",
+                    "yahoo_finance",
+                    "reuters",
+                    "barrons",
+                    "wsj",
+                    "seeking_alpha",
+                    "marketwatch",
+                    "digitimes",
+                    "digitimes_tw",
+                    "investorshub",
+                    "investing",
+                    "globenewswire",
                 }
                 else 2
             ),
             min_interval_ms=(
-                3000
+                0
+                if site_id == "globenewswire"
+                else 3000
                 if site_id
                 in {
-                    "yahoo_finance", "reuters", "barrons", "wsj", "seeking_alpha",
-                    "marketwatch", "digitimes", "digitimes_tw",
+                    "yahoo_finance",
+                    "reuters",
+                    "barrons",
+                    "wsj",
+                    "seeking_alpha",
+                    "marketwatch",
+                    "digitimes",
+                    "digitimes_tw",
+                    "investorshub",
+                    "investing",
+                    "globenewswire",
                 }
                 else 500
             ),

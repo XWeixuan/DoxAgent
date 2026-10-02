@@ -636,9 +636,7 @@ class PersistentBrowserPool:
         os.replace(temporary, manifest)
 
 
-async def _close_owned_page(
-    page: Any, cdp: _RawBrowserCDP, *, timeout_seconds: float = 5
-) -> None:
+async def _close_owned_page(page: Any, cdp: _RawBrowserCDP, *, timeout_seconds: float = 5) -> None:
     """Bound cleanup separately: cancellation does not bound awaited finally blocks."""
     try:
         async with asyncio.timeout(timeout_seconds):
@@ -1014,7 +1012,14 @@ class SiteAccessRuntime:
                     )
                 response = await page.goto(
                     request.url,
-                    wait_until="domcontentloaded",
+                    # These ad-heavy publishers can keep DOMContentLoaded pending
+                    # after the actual news document has arrived. Wait for the
+                    # content we consume instead, without aborting any resources.
+                    wait_until=(
+                        "commit"
+                        if resolved.site_id in {"investorshub", "investing"}
+                        else "domcontentloaded"
+                    ),
                     timeout=min(request.remaining_budget_ms, 20_000),
                 )
                 if gate.blocked:
@@ -1028,6 +1033,31 @@ class SiteAccessRuntime:
                     )
                 status = response.status if response is not None else 200
                 headers = await response.all_headers() if response is not None else {}
+                if status == 200 and resolved.site_id in {"investorshub", "investing"}:
+                    if request.purpose.value == "CRAWLER":
+                        selector = (
+                            ".quote-news-item"
+                            if resolved.site_id == "investorshub"
+                            else '[data-test="article-item"]'
+                        )
+                    else:
+                        selector = (
+                            "#news-content, #articleBody, .news-body, .news-content, "
+                            ".entry-content, .news-details-post-02, "
+                            "article, [itemprop=articleBody], "
+                            'script[type="application/ld+json"]:has-text("articleBody")'
+                            if resolved.site_id == "investorshub"
+                            else '#article, [data-test="article-content"]'
+                        )
+                    await page.locator(selector).first.wait_for(
+                        state=(
+                            "attached"
+                            if resolved.site_id == "investorshub"
+                            and request.purpose.value != "CRAWLER"
+                            else "visible"
+                        ),
+                        timeout=min(request.remaining_budget_ms, 15_000),
+                    )
                 if request.recipe_ref == "builtin:barrons_ticker@1":
                     html = await _capture_barrons_ticker_cards(page)
                     return RuntimeResponse(

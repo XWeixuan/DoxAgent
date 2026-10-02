@@ -1,0 +1,8 @@
+# Apply after the server and existing source-repair overlays. No Supervisor change.
+services:
+  v2-message-bus:
+    image: ${MARKET_NEWS_BUS_IMAGE:?Set the tested source-only Message Bus image}
+  v2-site-access:
+    image: ${MARKET_NEWS_SITE_IMAGE:?Set the tested source-only Site Access image}
+  v2-content-enrichment:
+    image: ${MARKET_NEWS_ENRICH_IMAGE:?Set the tested source-only enrichment image}

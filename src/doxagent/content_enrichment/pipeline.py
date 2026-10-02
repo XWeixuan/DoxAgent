@@ -352,6 +352,7 @@ class ArticlePipeline:
                 "failure_attempt_id": None if content or not attempts else len(attempts) - 1,
                 "next_action": None if content else self._next(reason),
                 "budget_exhausted": reason == "deadline_exceeded",
+                "publisher_published_at": info.publisher_published_at if content else None,
             }
         )
         access_trace = getattr(self.transport, "access_trace", None)

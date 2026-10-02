@@ -1,0 +1,14 @@
+# Scoped source-only overlay. Preserve each running service's dependency baseline.
+ARG BASE_IMAGE=doxagent-v2:production
+FROM ${BASE_IMAGE}
+ARG SOURCE_COMMIT=unknown
+LABEL io.doxagent.news-source-commit=${SOURCE_COMMIT}
+COPY src/doxagent/message_bus_v2/market_sources.py /app/src/doxagent/message_bus_v2/market_sources.py
+COPY src/doxagent/message_bus_v2/manifests.py /app/src/doxagent/message_bus_v2/manifests.py
+COPY src/doxagent/message_bus_v2/adapters.py /app/src/doxagent/message_bus_v2/adapters.py
+COPY src/doxagent/site_strategy/seeds.py /app/src/doxagent/site_strategy/seeds.py
+COPY src/doxagent/site_strategy/service.py /app/src/doxagent/site_strategy/service.py
+COPY src/doxagent/site_strategy/runtime.py /app/src/doxagent/site_strategy/runtime.py
+COPY src/doxagent/content_enrichment/quality.py /app/src/doxagent/content_enrichment/quality.py
+COPY src/doxagent/content_enrichment/pipeline.py /app/src/doxagent/content_enrichment/pipeline.py
+COPY src/doxagent/content_enrichment/service.py /app/src/doxagent/content_enrichment/service.py

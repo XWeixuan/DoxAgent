@@ -267,6 +267,26 @@ class ContentEnrichmentHub:
         }
         final_url = result.final_url or job.message.url
         publisher = job.message.publisher_name or job.message.source or job.source.display_name
+        publication_updates: dict[str, object] = {}
+        stamp = result.diagnostics.get("publisher_published_at")
+        if (
+            job.source.source_id in {"investorshub_ticker_news", "investing_ticker_news"}
+            and (
+                job.message.publication_time_basis == "DATE"
+                or job.source.source_id == "investing_ticker_news"
+            )
+            and result.succeeded
+            and isinstance(stamp, str)
+        ):
+            try:
+                exact = datetime.fromisoformat(stamp.replace("Z", "+00:00"))
+                if exact.tzinfo is not None:
+                    publication_updates = {
+                        "published_at": exact.astimezone(UTC),
+                        "publication_time_basis": "EXACT",
+                    }
+            except ValueError:
+                pass
         message = job.message.model_copy(
             update={
                 "body": result.content if result.succeeded else job.message.body,
@@ -274,6 +294,7 @@ class ContentEnrichmentHub:
                 "publisher_name": publisher,
                 "url": final_url,
                 "metadata": metadata,
+                **publication_updates,
             }
         )
         await self._finalize(job, message)
@@ -368,6 +389,9 @@ class ContentEnrichmentHub:
             "publisher_identity_mismatch",
         }:
             return False
+        # Preserve the already deployed finite retry for budget deferrals.
+        if reason == "site_budget_deferred":
+            return True
         status = result.http_status
         if status is None and result.attempts and result.attempts[-1].reason == result.reason:
             status = result.attempts[-1].status_code

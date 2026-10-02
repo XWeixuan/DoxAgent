@@ -1304,3 +1304,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-01 · 策略 KPI 254de9c6 已推送并部署 API；真实策略数据经隔离 API 核验 MU 44/BE 138/INTC 100/RKLB 95，与当前列表一致，LONG/SHORT 数量及比例返回正确数值。
 2026-10-02 · 预期研究标题区新增 Document2 下载按钮；现行/历史均按所选 run 的已索引文档 ID 和 SHA256 从只读发布库导出完整原始 JSON，不受 Shell/Unit 当前选择或分页影响。部分发布内容原样保留，错标的/缺失版本拒绝下载。定向后端 2 passed，前端类型检查、ESLint 与构建通过。
 2026-10-02 · Document2 下载 47f6515f 已推送；生产 MU/BE/INTC/RKLB 的当前原文分别约 198/437/343/430 KB，完整 JSON 的 run、ticker 和发布 SHA256 核验一致，API/Web 定向部署，不重启投影器或交易服务。
+
+2026-10-02 · 新增 InvestorsHub / Investing.com ticker 爬虫、GlobeNewswire L1 搜索和半导体共享 RSS，全部 60s；前三者进入全局默认，行业 RSS 接入现有正文后正则 + Jev 分发。iHub / Investing 采用经实测的 External Chrome + CDP 共享身份与纯浏览器正文，不重建旧 Profile；匹配正文首次发布时间后重新校验实时窗口，避免列表更新回灌旧新闻。补齐定向测试、分权幂等启用脚本和窄镜像部署，保留生产正文预算重试补丁；验收记录见 docs/market-news-sources-20261002.md。
