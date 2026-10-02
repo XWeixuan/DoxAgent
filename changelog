@@ -1302,3 +1302,4 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-01 · 策略可读性修复 baee8818 已推送并部署 API；真实 policy_catalog 在隔离 API 分页验证 MU 44/BE 138/INTC 100/RKLB 95 条当前正式定义可读，未知字段不改写，明确失效/已消费不恢复，Web/投影器/交易服务未重启。
 2026-10-01 · 策略 KPI 与当前列表统一范围：当前数量和 LONG/SHORT 占比计入可读的正式未知项，保留 PARTIAL/provisional 状态但不清空数值；周期计数实际为零时显示 0，不再冒称未记录。11 项定向回归通过，未改前端布局或交易业务。
 2026-10-01 · 策略 KPI 254de9c6 已推送并部署 API；真实策略数据经隔离 API 核验 MU 44/BE 138/INTC 100/RKLB 95，与当前列表一致，LONG/SHORT 数量及比例返回正确数值。
+2026-10-02 · 预期研究标题区新增 Document2 下载按钮；现行/历史均按所选 run 的已索引文档 ID 和 SHA256 从只读发布库导出完整原始 JSON，不受 Shell/Unit 当前选择或分页影响。部分发布内容原样保留，错标的/缺失版本拒绝下载。定向后端 2 passed，前端类型检查、ESLint 与构建通过。

@@ -800,3 +800,4 @@ OverviewStatus 增加可选 ib_gateway_status（CONNECTED / DISCONNECTED），�
 `result=POLICY_RECALLED` 为最近处理记录的独立筛选：固定 view 水位下原生 Case 的 W2R1 `candidate_policy_ids` 非空即匹配，与最终 Policy 命中无关；支持来源、时间与分页组合，不加入 results 或运行图节点。
 `GET /tickers/{ticker}/runtime/cases/{case_id}/policies/{policy_id}?view_id=...` 返回 PolicyDetail，仅允许该 Case 的 W2R1 召回/W2 或 W3 命中策略，从 Case 固定 activation 的 Policy artifact 和同一 RUNTIME view 水位读取；无匹配/版本缺失分别为 RESOURCE_NOT_FOUND/PINNED_ARTIFACT_MISSING，不用当前策略替代。运行记录 JSON 下载以用户模板的七组中文业务字段为准：单 Case 对象、多 Case 对象数组，不下载响应包装或尝试/订单/成交流水。
 策略列表 ACTIVE 筛选保留正式 lifecycle=ACTIVE 且没有明确 effective=false/consumed=true 证据的未知状态项，以保证当前正式定义可读；这些项继续保留原始未知 Value 和 PARTIAL 覆盖，KPI 当前数量及方向占比与列表使用同一范围，覆盖未确认时保留 PARTIAL/provisional 标记。RETIRED、明确失效与已消费项仍排除；周期筛选语义不变。
+Document2 支持 `GET /tickers/{ticker}/expectations/runs/{run_id}/download`：仅接受已索引且属于该 ticker 的 run，按 document_ref 固定 artifact_id/content_sha256 从只读发布库返回完整原始 JSON，文件名 document2.json；支持历史/部分发布版本，不由当前页面的 Shell 或 Unit 筛选截取，不触发生成或激活。

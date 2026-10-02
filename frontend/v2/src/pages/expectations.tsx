@@ -23,7 +23,7 @@ import { usePages } from "@/core/paged-query";
 import { queryString } from "@/core/api";
 import { formatInstant, valueText } from "@/core/format";
 import { Button } from "@/components/ui/button";
-import { PageTitle, History } from "@/components/page-kit";
+import { PageTitle, History, DownloadButton } from "@/components/page-kit";
 import { Module, Notice } from "@/components/state";
 import { Citations } from "@/components/citations";
 const modeIcons = {
@@ -65,6 +65,15 @@ export default function Expectations() {
   return (
     <>
       <PageTitle title={`${ticker} 预期研究`} refresh={context.refetch}>
+        {summary.data?.data.data?.document && (
+          <DownloadButton
+            key={summary.data.data.data.run.run_id}
+            path={
+              tickerPath(ticker) +
+              `/expectations/runs/${id(summary.data.data.data.run.run_id)}/download`
+            }
+          />
+        )}
         <Button variant="outline" onClick={() => setHistory(!history)}>
           <HistoryIcon aria-hidden="true" />
           历史文档
@@ -563,3 +572,4 @@ function Unit({
     </article>
   );
 }
+

@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import hashlib
+import os
 import tempfile
 import zipfile
 from typing import Any
 
 from fastapi import FastAPI, Request
-from fastapi.responses import StreamingResponse
+from fastapi.responses import Response, StreamingResponse
 
 from doxagent.v2_read.repository import encode
 
@@ -16,6 +17,30 @@ from .errors import ApiFailure
 
 
 def install(app: FastAPI) -> None:
+    @app.get("/api/doxagent/v2/tickers/{ticker}/expectations/runs/{run_id}/download")
+    async def expectations_download(ticker: str, run_id: str, request: Request) -> Any:
+        app.state.query(request, set())
+        store = app.state.store
+        reference = store.get("document_ref", ticker, run_id)
+        if not reference or not store.get("expectations_index", ticker, run_id):
+            raise ApiFailure("RESOURCE_NOT_FOUND", 404)
+        from doxagent.v2_read.artifacts import PublishedArtifacts
+        source = os.environ.get("DOXAGENT_CODEX_RUNTIME_SQLITE_PATH")
+        if not source:
+            raise ApiFailure("PINNED_ARTIFACT_MISSING", 503)
+        try:
+            document, text = PublishedArtifacts(source).body(run_id, reference["artifact_id"])
+        except (KeyError, ValueError, OSError):
+            raise ApiFailure("PINNED_ARTIFACT_MISSING", 503) from None
+        if document["sha256"] != reference["content_sha256"]:
+            raise ApiFailure("CONTENT_CORRUPT", 503)
+        return Response(
+            content=text.encode("utf-8"), media_type="application/json",
+            headers={"Content-Disposition": 'attachment; filename="document2.json"',
+                     "ETag": '"' + reference["content_sha256"] + '"',
+                     "Cache-Control": "private, no-store"},
+        )
+
     @app.get("/api/doxagent/v2/tickers/{ticker}/research/runs/{run_id}/download")
     async def download(ticker: str, run_id: str, request: Request) -> Any:
         app.state.query(request, set())
