@@ -1306,3 +1306,4 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-02 · Document2 下载 47f6515f 已推送；生产 MU/BE/INTC/RKLB 的当前原文分别约 198/437/343/430 KB，完整 JSON 的 run、ticker 和发布 SHA256 核验一致，API/Web 定向部署，不重启投影器或交易服务。
 
 2026-10-02 · 新增 InvestorsHub / Investing.com ticker 爬虫、GlobeNewswire L1 搜索和半导体共享 RSS，全部 60s；前三者进入全局默认，行业 RSS 接入现有正文后正则 + Jev 分发。iHub / Investing 采用经实测的 External Chrome + CDP 共享身份与纯浏览器正文，不重建旧 Profile；匹配正文首次发布时间后重新校验实时窗口，避免列表更新回灌旧新闻。补齐定向测试、分权幂等启用脚本和窄镜像部署，保留生产正文预算重试补丁；验收记录见 docs/market-news-sources-20261002.md。
+2026-10-02 · 四个市场新源已推送并部署，15 个 60s 订阅绑定真实轮询成功，公开正文验收通过；五个既有 Chrome instance/pid/generation 不变，Supervisor 未重启。补齐 InvestingPro 付费模板识别，正确报 login_required 而非超时；生产 .env.v2 同步已有 OpenRouter/Jev 配置并通过三 ticker 真实相关性判定。定向 130 passed / 1 skipped；镜像固定、回滚备份与权限边界见 docs/market-news-sources-20261002.md，未人为发布旧样本。

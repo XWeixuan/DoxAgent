@@ -4,4 +4,4 @@ services:
   v2-content-enrichment:
     image: doxagent-v2:market-news-enrich-3ef317a4
   v2-site-access:
-    image: doxagent-site-access:market-news-3ef317a4
+    image: doxagent-site-access:market-news-1f0ad0db

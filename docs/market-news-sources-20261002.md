@@ -54,4 +54,22 @@ Managed Playwright 首先完成尝试。GlobeNewswire 正常；iHub / Investing 
 
 ### 生产最终验收
 
-本节在本轮实际部署、订阅确认和复测后补充；开发阶段的只读样本不代表已在实时消息流发布，也不等于长时间可用性承诺。
+2026-10-02 08:51 UTC / 16:51 北京时间最终核验：
+
+- 生产 Message Bus 镜像 `doxagent-v2:market-news-bus-3ef317a4`；正文补全镜像 `doxagent-v2:market-news-enrich-3ef317a4`；Site Access 镜像 `doxagent-site-access:market-news-1f0ad0db`。三者 running、重启计数 0，Site Access 健康。Chrome Supervisor 原镜像不变且未重启。
+- 当前 MU / INTC / BE / RKLB 均启用三个全局新源；MU / INTC / BE 额外订阅半导体 RSS，共 15 个绑定，全部 enabled / 60s。15 个绑定已由真实生产 scheduler 轮询成功，最终 `last_error_code` 全为空。RKLB GlobeNewswire 曾出现 ConnectTimeout，后续真实轮询恢复，不伪造健康状态。
+- 既有五个运行中的 Identity：`digitimes-1`、`digitimes-nl-1`、`dowjones-main`、`seeking-alpha-main`、`yahoo-main`，部署前后的 instance_id / pid / generation 完全一致。没有复制登录态或重建 Profile。
+- InvestorsHub：MU 实际抓到 8 条；两篇 ADVFN 市场新闻正文 3,574 / 4,253 字符，包含对应首次发表时间。BE 抓到 13 条，Form 144 正文 488 字符，含精确发表时间。原生 iHub 与 UK ADVFN 两种页面均通过浏览器正文验收。
+- Investing：BE 抓到 9 条，公开文章最终正文 3,841 字符，浏览器 DOM 提取；INTC 开发阶段两篇完整正文已通过。RKLB 列表抓到 10 条，其中 `/news/pro/` 是另一付费模板，已补专用等待与主文档 scope，正确返回 `login_required`，不再误报 TimeoutError，不将侧栏推荐当成正文；一次 Pro 权限失败不使公开正文失效。
+- GlobeNewswire Search：Bloom Energy 真实搜索 10 条，样本正文 5,678 字符，公开正文 HTTP 200；micron 浏览器搜索与正文另有开发阶段样本。单次 micron 浏览器请求测得 1.23 秒、实际 HTML 132,458 字符。
+- 半导体 RSS：真实返回 20 条；Applied Materials / Besi 正文 12,412 字符。用生产现行三个订阅者定义和 OpenRouter Jev 做只读真实判定，正则 BE=false / INTC=true / MU=true；Jev BE=0.09 / INTC=0.80 / MU=0.83。未向未订阅 ticker 发问。
+- 部署发现原 `.env.v2` 缺失 OpenRouter 密钥与 Jev 开关，而 `.env` 已有有效配置；已独立备份 `.env.v2` 后同步这两个配置，权限 0600，并确认生产 `jev_enabled=true`、密钥已配置以及真实请求成功。未在日志、文档或 Git 提交保存密钥。
+- 最终完整定向测试 **130 passed / 1 skipped**，Ruff 检查通过。生产启用脚本按现行 JSON `combination_id` 兼容 `id`，Site 配置重复应用已实际通过；Message Bus 脚本不接收管理员令牌。
+- 为防后续普通 Compose 操作退回旧镜像，原 `/home/ubuntu/barrons_ticker_fix_20260930/compose.override.yml` 已备份并更新为本轮固定镜像；可复现内容在 `eval/market_news_sources_20261002/production.override.yml`。远端主 checkout 只同步本轮文件，未 pull/reset 或覆盖并行 SDK 修改。
+- 构建前根分区近满，只清理未使用 Docker build cache，未删除镜像、数据卷、SQLite 或 Profile；约恢复 9 GB 可用空间。
+
+边界：60s 是配置的轮询目标，不承诺网络或共享 Identity 排队总耗时始终小于 60s。本轮保留原有串行浏览器治理、有限预算延期和闭市/实时窗口，不用放宽发表时间或伪造轮询来掩盖耗时。真实样本多数早于实时窗口，因此只读验收没有人为发布这些旧文章；生产自动发布仍受现行 admission 和相关性判定约束。本轮未宣称每篇正文或长时间可用率为 100%。
+
+## 用户需处理的权限事项
+
+当前公开新源无需人工解 challenge。若要读取 InvestingPro 付费文章，需使用有效 Investing.com / InvestingPro 账号及对应订阅权限，人工登录该站绑定的 External Identity `digitimes-nl-1`；普通登录不保证 Pro 权限。无订阅时正文准确标记为不可访问，不绕过付费墙。公开新闻无需为此登录。
