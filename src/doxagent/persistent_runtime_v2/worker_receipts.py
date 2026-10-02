@@ -1,5 +1,6 @@
 """Reuse Codex worker idempotency and durable completed receipts for runtime nodes."""
 
+import hashlib
 import re
 from typing import Any
 
@@ -20,12 +21,14 @@ class ReceiptWorker:
         control_epoch: int | None = None,
         replace_failed_model: bool = False,
         recover_timeouts: bool = False,
+        recover_artifacts: bool = False,
     ) -> None:
         self.worker, self.journal, self.scope = worker, journal, scope
         self.case_id = case_id
         self.control_epoch = control_epoch
         self.replace_failed_model = replace_failed_model
         self.recover_timeouts = recover_timeouts
+        self.recover_artifacts = recover_artifacts
 
     def __getattr__(self, name: str) -> Any:
         return getattr(self.worker, name)
@@ -63,6 +66,7 @@ class ReceiptWorker:
         if receipt is not None:
             job = WorkerJob.model_validate(receipt)
             if not rejected and str(job.status) in {"SUCCEEDED", "completed", "succeeded"}:
+                await self._recover_o3_patch(identity, frozen, job)
                 return WorkerJob.model_validate(job)
         if rejected or (receipt is not None and str(job.status) in {"failed", "cancelled"}):
             # Only a confirmed terminal failure may mint a new remote dispatch key.
@@ -108,7 +112,46 @@ class ReceiptWorker:
             },
         )
         self.journal.set("worker_receipts", identity, job.model_dump(mode="json"))
+        await self._recover_o3_patch(identity, frozen, job)
         return WorkerJob.model_validate(job)
+
+    async def _recover_o3_patch(
+        self, identity: str, request: dict[str, Any], job: WorkerJob,
+    ) -> None:
+        if (
+            not self.recover_artifacts or request["node"] != "d3_o3_maintain"
+            or str(job.status) != "succeeded"
+            or job.run_id != request["run_id"] or job.attempt_id != request["attempt_id"]
+        ):
+            return
+        target = "output/work/policy_patch.json"
+        try:
+            await self.worker.read_text(request["run_id"], target)
+            return
+        except FileNotFoundError:
+            pass
+        # Recover only this settled dispatch's schema-valid patch. The O3
+        # orchestrator still validates versions, semantics and write boundaries.
+        source = f"attempts/{request['attempt_id']}/{target}"
+        try:
+            response = await self.worker.read_text(request["run_id"], source)
+        except FileNotFoundError:
+            return
+        from pydantic import ValidationError
+
+        from doxagent.workflows.codex_document3.schema import PolicyPatchSet
+
+        try:
+            patch = PolicyPatchSet.model_validate_json(response.content or "")
+        except ValidationError:
+            return
+        content = patch.model_dump_json(indent=2)
+        await self.worker.write_text(request["run_id"], target, content)
+        self.journal.set("worker_artifact_recovery", identity, {
+            "job_id": job.job_id, "source": source, "target": target,
+            "source_sha256": hashlib.sha256((response.content or "").encode()).hexdigest(),
+            "target_sha256": hashlib.sha256(content.encode()).hexdigest(),
+        })
 
     def reject_output(self, reason: str) -> None:
         self.journal.set("worker_rejected", self.last_identity, reason)

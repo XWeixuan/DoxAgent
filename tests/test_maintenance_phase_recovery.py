@@ -174,3 +174,84 @@ async def test_confirmed_timeout_recovers_native_o2_phase_with_bounded_deadline(
     # Same failed dispatch also gets a fresh key, with a 60-minute upper bound.
     await durable.run(request.model_copy(update={"attempt_id": "o2-incremental-edit-retry-001"}))
     assert worker.requests[2].timeout_seconds == expected
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(("cached", "valid", "canonical", "status", "enabled", "copied"), [
+    (False, True, False, "succeeded", True, True),
+    (True, True, False, "succeeded", True, True),
+    (False, False, False, "succeeded", True, False),
+    (False, True, True, "succeeded", True, False),
+    (False, True, False, "failed", True, False),
+    (False, True, False, "succeeded", False, False),
+])
+async def test_o3_recovers_only_settled_schema_valid_attempt_patch(
+    tmp_path, cached, valid, canonical, status, enabled, copied,
+):
+    import json
+
+    from doxagent.codex_runtime.schema import (
+        CODEX_DOCUMENT3_WORKFLOW_VERSION,
+        CodexD3AgentRole,
+        CodexD3Node,
+        ResearchLane,
+    )
+    from doxagent.codex_worker.schema import WorkerJob, WorkerRunRequest
+    from doxagent.persistent_runtime_v2.worker_receipts import ReceiptWorker
+
+    request = WorkerRunRequest(
+        workflow_version=CODEX_DOCUMENT3_WORKFLOW_VERSION, research_lane=ResearchLane.DOCUMENT3,
+        run_id="mu-o3", ticker="MU", node=CodexD3Node.O3_MAINTAIN,
+        agent_role=CodexD3AgentRole.O3, attempt_id="d3_o3_maintain-01",
+        cutoff_at=datetime.now(UTC), prompt="frozen maintenance", output_schema={"type": "object"},
+    )
+    patch = json.dumps({
+        "base_policy_set_version": 7,
+        "event_library_ref": {
+            "contract_version": "v1", "ticker": "MU", "version": 26,
+            "sha256": "a" * 64, "published_at": datetime.now(UTC).isoformat(),
+        },
+    }) if valid else "{}"
+    target = "output/work/policy_patch.json"
+    source = "attempts/d3_o3_maintain-01/" + target
+    job = WorkerJob(
+        job_id="settled-job", run_id=request.run_id, attempt_id=request.attempt_id, status=status,
+    )
+
+    class Worker:
+        def __init__(self):
+            self.files = {source: patch, **({target: "existing canonical"} if canonical else {})}
+            self.reads, self.writes, self.calls = [], [], 0
+
+        async def read_text(self, run_id, path):
+            self.reads.append(path)
+            if path not in self.files:
+                raise FileNotFoundError(path)
+            return SimpleNamespace(content=self.files[path])
+
+        async def write_text(self, run_id, path, content):
+            self.writes.append(path)
+            self.files[path] = content
+
+        async def run(self, request):
+            self.calls += 1
+            return job
+
+    worker = Worker()
+    journal = RuntimeJournal(tmp_path / "runtime.db")
+    durable = ReceiptWorker(worker, journal, "maintenance", recover_artifacts=enabled)
+    identity = f"runtime-worker:maintenance:{request.run_id}:{request.node}:maintain"
+    if cached:
+        journal.set("worker_requests", identity, request.model_dump(mode="json"))
+        journal.set("worker_receipts", identity, job.model_dump(mode="json"))
+        request = request.model_copy(update={"attempt_id": "d3_o3_maintain-02"})
+    await durable.run(request)
+    assert worker.writes == ([target] if copied else [])
+    assert worker.calls == (0 if cached else 1)
+    audit = journal.get("worker_artifact_recovery", identity)
+    if copied:
+        assert audit["job_id"] == job.job_id and audit["source"] == source
+        assert len(audit["source_sha256"]) == 64
+        assert json.loads(worker.files[target])["base_policy_set_version"] == 7
+    else:
+        assert audit is None
