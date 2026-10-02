@@ -1049,6 +1049,13 @@ class SiteAccessRuntime:
                             if resolved.site_id == "investorshub"
                             else '#article, [data-test="article-content"]'
                         )
+                        if resolved.site_id == "investing" and urlsplit(
+                            request.url
+                        ).path.startswith("/news/pro/"):
+                            # Pro uses a different template. Capture its actual
+                            # document so quality/auth checks report a paywall,
+                            # not a misleading normal-template selector timeout.
+                            selector = "#articleTitle, #article-paywall"
                     await page.locator(selector).first.wait_for(
                         state=(
                             "attached"

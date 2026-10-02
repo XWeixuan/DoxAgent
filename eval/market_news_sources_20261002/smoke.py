@@ -79,6 +79,8 @@ async def run(source_id: str, ticker: str, query: str, body_samples: int) -> Non
                     "ticker": ticker,
                     "captured": len(result.messages),
                     "coverage": result.window_coverage,
+                    "site_access_deferred": result.site_access_deferred,
+                    "retry_not_before": str(result.site_access_retry_not_before),
                     "failures": [
                         {"code": f.error_code, "message": f.error_message} for f in result.failures
                     ],

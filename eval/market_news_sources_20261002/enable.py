@@ -48,11 +48,18 @@ def configure_sites(settings: DoxAgentSettings, external_identity: str) -> None:
             spec["body"] = desired[site_id].body.model_dump(mode="json")
             if site_id in {"investorshub", "investing"}:
                 combo = f"{site_id}-external-nl"
-                if not any(c["id"] == combo for c in spec["access"]["combinations"]):
+                if not any(
+                    c.get("combination_id", c.get("id")) == combo
+                    for c in spec["access"]["combinations"]
+                ):
                     spec["access"]["combinations"].append(
                         {"id": combo, "identity_id": external_identity, "priority": 1}
                     )
-                current = next(c for c in spec["access"]["combinations"] if c["id"] == combo)
+                current = next(
+                    c
+                    for c in spec["access"]["combinations"]
+                    if c.get("combination_id", c.get("id")) == combo
+                )
                 if current["identity_id"] != external_identity or not current.get("enabled", True):
                     raise ValueError(
                         "existing shared combination differs; operator review required"

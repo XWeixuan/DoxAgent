@@ -471,6 +471,7 @@ def seed_specs() -> list[SiteStrategySpec]:
                     '//*[@id="article"]',
                     '//*[@data-test="article-content"]',
                     '//*[@itemprop="articleBody"]',
+                    '//*[@id="articleTitle"]/../..',
                 ]
             },
             default_content_language="en",

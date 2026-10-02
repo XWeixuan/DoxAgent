@@ -203,6 +203,21 @@ def test_article_publication_requires_matching_headline_and_timezone(stamp, expe
     assert inspected.publisher_published_at is None
 
 
+def test_investing_pro_paywall_is_not_a_full_article():
+    inspected = inspect_html(
+        '<div><header><h1 id="articleTitle">Micron analyst rating update</h1></header>'
+        '<div id="article-paywall">Already a subscriber? Sign In</div></div>'
+        '<article><p>Unrelated sidebar recommendations.</p></article>',
+        "https://www.investing.com/news/pro/micron-123",
+        "Micron analyst rating update",
+        strategy_parameters={"body_xpath": ['//*[@id="articleTitle"]/../..']},
+    )
+    from doxagent.content_enrichment.quality import choose_candidate
+
+    assert inspected.access_reason == "login_required"
+    assert choose_candidate(inspected, inspected.headline)[0] is None
+
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize("age,published", [(5, True), (90, False)])
 @pytest.mark.parametrize("source_id", ["investorshub_ticker_news", "investing_ticker_news"])
