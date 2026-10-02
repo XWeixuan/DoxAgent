@@ -65,9 +65,12 @@ class ReceiptWorker:
         receipt = self.journal.get("worker_receipts", identity)
         if receipt is not None:
             job = WorkerJob.model_validate(receipt)
-            if not rejected and str(job.status) in {"SUCCEEDED", "completed", "succeeded"}:
-                await self._recover_o3_patch(identity, frozen, job)
-                return WorkerJob.model_validate(job)
+            if str(job.status) in {"SUCCEEDED", "completed", "succeeded"}:
+                recovered = await self._recover_o3_patch(identity, frozen, job)
+                if not rejected or recovered:
+                    if recovered:
+                        self.journal.set("worker_rejected", identity, False)
+                    return WorkerJob.model_validate(job)
         if rejected or (receipt is not None and str(job.status) in {"failed", "cancelled"}):
             # Only a confirmed terminal failure may mint a new remote dispatch key.
             generation = self.journal.get("worker_generation", identity, 0) + 1
@@ -117,17 +120,17 @@ class ReceiptWorker:
 
     async def _recover_o3_patch(
         self, identity: str, request: dict[str, Any], job: WorkerJob,
-    ) -> None:
+    ) -> bool:
         if (
             not self.recover_artifacts or request["node"] != "d3_o3_maintain"
             or str(job.status) != "succeeded"
             or job.run_id != request["run_id"] or job.attempt_id != request["attempt_id"]
         ):
-            return
+            return False
         target = "output/work/policy_patch.json"
         try:
             await self.worker.read_text(request["run_id"], target)
-            return
+            return False
         except FileNotFoundError:
             pass
         # Recover only this settled dispatch's schema-valid patch. The O3
@@ -136,7 +139,7 @@ class ReceiptWorker:
         try:
             response = await self.worker.read_text(request["run_id"], source)
         except FileNotFoundError:
-            return
+            return False
         from pydantic import ValidationError
 
         from doxagent.workflows.codex_document3.schema import PolicyPatchSet
@@ -144,7 +147,7 @@ class ReceiptWorker:
         try:
             patch = PolicyPatchSet.model_validate_json(response.content or "")
         except ValidationError:
-            return
+            return False
         content = patch.model_dump_json(indent=2)
         await self.worker.write_text(request["run_id"], target, content)
         self.journal.set("worker_artifact_recovery", identity, {
@@ -152,6 +155,7 @@ class ReceiptWorker:
             "source_sha256": hashlib.sha256((response.content or "").encode()).hexdigest(),
             "target_sha256": hashlib.sha256(content.encode()).hexdigest(),
         })
+        return True
 
     def reject_output(self, reason: str) -> None:
         self.journal.set("worker_rejected", self.last_identity, reason)

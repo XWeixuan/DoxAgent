@@ -180,6 +180,7 @@ async def test_confirmed_timeout_recovers_native_o2_phase_with_bounded_deadline(
 @pytest.mark.parametrize(("cached", "valid", "canonical", "status", "enabled", "copied"), [
     (False, True, False, "succeeded", True, True),
     (True, True, False, "succeeded", True, True),
+    ("rejected", True, False, "succeeded", True, True),
     (False, False, False, "succeeded", True, False),
     (False, True, True, "succeeded", True, False),
     (False, True, False, "failed", True, False),
@@ -244,6 +245,7 @@ async def test_o3_recovers_only_settled_schema_valid_attempt_patch(
     if cached:
         journal.set("worker_requests", identity, request.model_dump(mode="json"))
         journal.set("worker_receipts", identity, job.model_dump(mode="json"))
+        journal.set("worker_rejected", identity, cached == "rejected")
         request = request.model_copy(update={"attempt_id": "d3_o3_maintain-02"})
     await durable.run(request)
     assert worker.writes == ([target] if copied else [])
@@ -252,6 +254,7 @@ async def test_o3_recovers_only_settled_schema_valid_attempt_patch(
     if copied:
         assert audit["job_id"] == job.job_id and audit["source"] == source
         assert len(audit["source_sha256"]) == 64
+        assert not journal.get("worker_rejected", identity)
         assert json.loads(worker.files[target])["base_policy_set_version"] == 7
     else:
         assert audit is None
