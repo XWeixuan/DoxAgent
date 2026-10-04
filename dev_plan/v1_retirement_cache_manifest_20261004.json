@@ -1,0 +1,146 @@
+{
+  "batch": "rebuildable caches and exported junction",
+  "deleted_file_count": 18944,
+  "removed_bytes": 2346484188,
+  "junction_removed": [
+    "exports/mu_enrichment_20260915_support/node_modules"
+  ],
+  "targets": [
+    ".tmp-uv",
+    ".uv-cache",
+    ".mypy_cache",
+    ".ruff_cache",
+    ".pytest_cache",
+    "dist",
+    "%SystemDrive%",
+    ".tmp/mypy_freshness_final",
+    ".tmp-uv-cache",
+    ".tmp-media-enrichment",
+    ".tmp-smoke",
+    ".tmp-stocktwits-test",
+    ".tmp-test",
+    ".tmp_pytest"
+  ],
+  "issues": [
+    {
+      "result": "unreadable",
+      "path": ".tmp-uv\\pytest-cdecr-prebuilt",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp-uv\\pytest-cdecr-prebuilt' is denied."
+    },
+    {
+      "result": "unreadable",
+      "path": ".tmp-uv\\pytest-d2-agents-recovery-full",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp-uv\\pytest-d2-agents-recovery-full' is denied."
+    },
+    {
+      "result": "unreadable",
+      "path": ".tmp-uv\\pytest-d2-agents-recovery-retry",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp-uv\\pytest-d2-agents-recovery-retry' is denied."
+    },
+    {
+      "result": "unreadable",
+      "path": ".tmp-uv\\pytest-d2-pilot-fix-full",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp-uv\\pytest-d2-pilot-fix-full' is denied."
+    },
+    {
+      "result": "unreadable",
+      "path": ".tmp-uv\\pytest-d2-pilot-warning-fix-escalated",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp-uv\\pytest-d2-pilot-warning-fix-escalated' is denied."
+    },
+    {
+      "result": "unreadable",
+      "path": ".tmp-uv\\pytest-local-hint-market-examples",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp-uv\\pytest-local-hint-market-examples' is denied."
+    },
+    {
+      "result": "unreadable",
+      "path": ".tmp-uv\\pytest-of-WEIXUANXIE",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp-uv\\pytest-of-WEIXUANXIE' is denied."
+    },
+    {
+      "result": "unreadable",
+      "path": ".tmp-uv\\tmp\\cdecr-rel-enforce-20260812",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp-uv\\tmp\\cdecr-rel-enforce-20260812' is denied."
+    },
+    {
+      "result": "unreadable",
+      "path": ".tmp-uv\\tmp\\cdecr-rel-enforce-final-20260812",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp-uv\\tmp\\cdecr-rel-enforce-final-20260812' is denied."
+    },
+    {
+      "result": "unreadable",
+      "path": ".tmp-uv\\tmp\\cdecr-rel-v1-retest-pre-20260812",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp-uv\\tmp\\cdecr-rel-v1-retest-pre-20260812' is denied."
+    },
+    {
+      "result": "unreadable",
+      "path": ".tmp-uv\\tmp\\cdecr-rel-v2-retest-final-20260812",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp-uv\\tmp\\cdecr-rel-v2-retest-final-20260812' is denied."
+    },
+    {
+      "result": "unreadable",
+      "path": ".tmp-uv\\tmp\\cdecr-rel-v2-retest-pre-20260812",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp-uv\\tmp\\cdecr-rel-v2-retest-pre-20260812' is denied."
+    },
+    {
+      "result": "unreadable",
+      "path": ".tmp-uv\\tmp\\cdecr-rel-v21-pre-20260812",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp-uv\\tmp\\cdecr-rel-v21-pre-20260812' is denied."
+    },
+    {
+      "result": "unreadable",
+      "path": ".tmp-uv\\tmp\\pytest-of-WEIXUANXIE",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp-uv\\tmp\\pytest-of-WEIXUANXIE' is denied."
+    },
+    {
+      "result": "failed",
+      "path": ".tmp-uv\\tmp",
+      "error": "Object reference not set to an instance of an object."
+    },
+    {
+      "result": "failed",
+      "path": ".tmp-uv",
+      "error": "Object reference not set to an instance of an object."
+    },
+    {
+      "result": "unreadable",
+      "path": ".pytest_cache",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.pytest_cache' is denied."
+    },
+    {
+      "result": "unreadable",
+      "path": ".tmp-media-enrichment\\tmp\\pytest-of-WEIXUANXIE",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp-media-enrichment\\tmp\\pytest-of-WEIXUANXIE' is denied."
+    },
+    {
+      "result": "failed",
+      "path": ".tmp-media-enrichment\\tmp",
+      "error": "Object reference not set to an instance of an object."
+    },
+    {
+      "result": "failed",
+      "path": ".tmp-media-enrichment",
+      "error": "Object reference not set to an instance of an object."
+    },
+    {
+      "result": "unreadable",
+      "path": ".tmp-test\\pytest-of-WEIXUANXIE",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp-test\\pytest-of-WEIXUANXIE' is denied."
+    },
+    {
+      "result": "failed",
+      "path": ".tmp-test",
+      "error": "Object reference not set to an instance of an object."
+    },
+    {
+      "result": "unreadable",
+      "path": ".tmp_pytest\\pytest-of-WEIXUANXIE",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp_pytest\\pytest-of-WEIXUANXIE' is denied."
+    },
+    {
+      "result": "failed",
+      "path": ".tmp_pytest",
+      "error": "Object reference not set to an instance of an object."
+    }
+  ]
+}

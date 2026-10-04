@@ -15,12 +15,18 @@ htmlcov/
 # uv / virtualenv
 .venv/
 .uv-cache/
+.uv-python/
+**/node_modules/
+/.test-tmp/
+/.pytest-codex*/
+/%SystemDrive%/
 
 # Local environment
 /supabase/.temp/
 .env
 .env.*
 !.env.example
+!.env.v2.example
 # Deployment credentials are provisioned out of band and must never enter Git.
 /deploy/secrets/
 
