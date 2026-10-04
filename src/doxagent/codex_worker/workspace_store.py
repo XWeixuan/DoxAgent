@@ -139,7 +139,9 @@ class LocalWorkspaceStore:
         if not target.is_file():
             raise FileNotFoundError(relative_path)
         result = self._metadata(run_id, target, include_content=False)
-        return result.model_copy(update={"content": target.read_text(encoding="utf-8")})
+        # Preserve original bytes represented by sha256; universal-newline decoding
+        # would otherwise make a valid CRLF source disagree with its frozen content.
+        return result.model_copy(update={"content": target.read_bytes().decode("utf-8")})
 
     def inventory(self, run_id: str) -> WorkspaceInventory:
         run_root = self.ensure_run(run_id)

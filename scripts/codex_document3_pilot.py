@@ -12,7 +12,7 @@ from doxagent.settings import DoxAgentSettings
 from doxagent.workflows.codex_document3.pilot import Document3PilotEvaluator
 
 
-async def _run(run_id: str, output: Path | None) -> int:
+async def _run(run_id: str, output: Path | None, orchestration_version: str = "v2") -> int:
     config = CodexRuntimeConfig.from_settings(DoxAgentSettings())
     if not config.worker_bearer_token or not config.capability_secret:
         raise ValueError("Codex worker credentials are required")
@@ -22,7 +22,9 @@ async def _run(run_id: str, output: Path | None) -> int:
         capability_secret=config.capability_secret,
     )
     try:
-        report = await Document3PilotEvaluator(client).evaluate(run_id)
+        report = await Document3PilotEvaluator(client).evaluate(
+            run_id, orchestration_version=orchestration_version
+        )
     finally:
         await client.aclose()
     payload = report.model_dump_json(indent=2) + "\n"
@@ -37,8 +39,9 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--run-id", required=True)
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--orchestration-version", choices=["v2", "v2.1"], default="v2")
     args = parser.parse_args()
-    return asyncio.run(_run(args.run_id, args.output))
+    return asyncio.run(_run(args.run_id, args.output, args.orchestration_version))
 
 
 if __name__ == "__main__":

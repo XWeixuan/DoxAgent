@@ -8,6 +8,7 @@ import json
 from collections.abc import Awaitable, Callable
 from datetime import datetime
 from functools import partial
+from pathlib import Path
 from typing import Any, Literal, TypeVar, cast
 from uuid import uuid4
 
@@ -66,7 +67,13 @@ from doxagent.workflows.codex_document2.schema import (
     ShellSynthesisResult,
 )
 
+from . import schema as v21
+
 ModelT = TypeVar("ModelT", bound=BaseModel)
+
+
+class Document2VersionMismatch(RuntimeError):
+    """A request cannot mutate a run bound to another document contract."""
 
 
 class CodexDocument2Orchestrator:
@@ -93,6 +100,7 @@ class CodexDocument2Orchestrator:
         max_shell_concurrency: int = 2,
         published_storage: PublishedDocumentStorage | None = None,
         usage_repository: ModelUsageRepository | None = None,
+        asset_root: str | Path | None = None,
     ) -> None:
         self._workspace = workspace
         self._repository = repository
@@ -112,6 +120,7 @@ class CodexDocument2Orchestrator:
             timeout_seconds=timeout_seconds,
             max_subagents=max_subagents,
             usage_repository=usage_repository,
+            asset_root=asset_root,
         )
         self._max_attempts = max_attempts
         self._shell_semaphore = asyncio.Semaphore(max_shell_concurrency)
@@ -125,12 +134,48 @@ class CodexDocument2Orchestrator:
             return await self._run(request)
         except asyncio.CancelledError:
             raise
+        except Document2VersionMismatch:
+            raise
         except Exception as exc:
             self._record_run_failure(request, prior, exc)
             raise
 
     async def _run(self, request: Document2RunRequest) -> Document2Bundle:
         existing = self._repository.get_bundle(request.run_id)
+        if isinstance(existing, Document2Bundle):
+            version = existing.checkpoint.document_schema_version if existing.checkpoint else None
+            if version is None and "document2" in existing.artifacts:
+                ref = existing.artifacts["document2"]
+                published = self._repository.get_published_document(request.run_id, ref.artifact_id)
+                if published is not None and published.content_text is not None:
+                    content = published.content_text
+                elif published is not None and published.storage_path and self._published_storage:
+                    content = (await self._published_storage.get(published.storage_path)).decode(
+                        "utf-8"
+                    )
+                else:
+                    body = await self._workspace.read_text(request.run_id, ref.relative_path)
+                    content = body.content
+                if content is None or hashlib.sha256(content.encode()).hexdigest() != ref.sha256:
+                    raise RuntimeError("Document2 published version artifact integrity failure")
+                version = json.loads(content)["schema_version"]
+            if version is None:
+                version = "document2.v2"
+            if version != request.document_schema_version:
+                raise Document2VersionMismatch(
+                    "Document2 run_id schema version mismatch; use a new run_id"
+                )
+        if (
+            isinstance(existing, Document2Bundle)
+            and request.document_schema_version == "document2.v2.1"
+            and (
+                existing.checkpoint is None
+                or existing.checkpoint.discovery_contract_version != "single-v1"
+            )
+        ):
+            raise Document2VersionMismatch(
+                "Document2 Discovery contract mismatch (split-v1); use a new run_id"
+            )
         if (
             isinstance(existing, Document2Bundle)
             and existing.status == "published"
@@ -161,6 +206,12 @@ class CodexDocument2Orchestrator:
             else Document2Checkpoint(
                 run_id=request.run_id,
                 source_global_run_id=request.source_global_run_id,
+                document_schema_version=request.document_schema_version,
+                discovery_contract_version=(
+                    "single-v1"
+                    if request.document_schema_version == "document2.v2.1"
+                    else "split-v1"
+                ),
                 o0_workspace_run_id=logical_workspace_id(request.run_id, "o0-synthesis"),
             )
         )
@@ -222,7 +273,7 @@ class CodexDocument2Orchestrator:
                     raise result
                 outcomes.append(
                     ShellOutcome(
-                        shell_id=seed.shell_id,
+                        shell_id=_shell_name(seed),
                         status="failed",
                         failed_stage=_failed_stage(result),
                         failure_kind=(
@@ -241,13 +292,13 @@ class CodexDocument2Orchestrator:
             shell_artifacts.append(artifact)
             outcomes.append(
                 ShellOutcome(
-                    shell_id=shell.shell_id,
+                    shell_id=_shell_name(shell),
                     status="completed",
                     artifact_id=artifact.artifact_id,
                     seed=seed,
                 )
             )
-            bundle.artifacts[f"shell:{seed.shell_id}"] = artifact
+            bundle.artifacts[f"shell:{_shell_name(seed)}"] = artifact
         bundle.shell_outcomes = outcomes
         all_shells_completed = bool(outcomes) and all(
             item.status == "completed" for item in outcomes
@@ -292,6 +343,7 @@ class CodexDocument2Orchestrator:
             d1_manifest=d1_manifest,
             local_manifests=local_manifests,
             narrative_run_id=prepared.narrative_research.source_run_id,
+            document_schema_version=request.document_schema_version,
         )
         document_ref = await self._write_artifact(
             run_id=request.run_id,
@@ -358,7 +410,8 @@ class CodexDocument2Orchestrator:
                 "publication_state": publication_state,
                 "citation_status": assembled.citation_status,
                 "handoff": handoff,
-                "current": publication_state == "COMPLETE",
+                "current": publication_state == "COMPLETE"
+                and request.document_schema_version == "document2.v2",
                 "checkpoint": checkpoint,
                 "published_at": published_at,
             }
@@ -425,12 +478,23 @@ class CodexDocument2Orchestrator:
                 request.run_id,
                 checkpoint,
                 "o0:final",
-                ShellFinalizationResult,
+                _contract_model(request, ShellFinalizationResult),
             )
             if restored_final is not None:
                 finalized, reference = restored_final
                 return finalized, {"final_shell_seeds": reference}
         common = self._common_context(prepared)
+        if request.document_schema_version == "document2.v2.1":
+            common.update(
+                document_schema_version=request.document_schema_version,
+                discovery_contract_version=(
+                    "single-v1"
+                    if request.document_schema_version == "document2.v2.1"
+                    else "split-v1"
+                ),
+                entity_relations=prepared.global_research.entity_relations,
+                event_library=prepared.event_library.model_dump(mode="json"),
+            )
         specs: list[tuple[str, CodexD2Node, str, object]] = [
             ("c1", CodexD2Node.O0_CANDIDATE_C1, prepared.global_research.reports["c1"], None),
             ("c3", CodexD2Node.O0_CANDIDATE_C3, prepared.global_research.reports["c3"], None),
@@ -457,7 +521,7 @@ class CodexDocument2Orchestrator:
                 request.run_id,
                 checkpoint,
                 f"o0:candidate:{key}",
-                CandidateDiscoveryResult,
+                _contract_model(request, CandidateDiscoveryResult),
             )
             if restored_candidate is None:
                 missing_specs.append(spec)
@@ -513,7 +577,10 @@ class CodexDocument2Orchestrator:
             await self._save_progress(bundle, checkpoint)
 
         restored_synthesis = await self._restore_stage(
-            request.run_id, checkpoint, "o0:synthesis", ShellSynthesisResult
+            request.run_id,
+            checkpoint,
+            "o0:synthesis",
+            _contract_model(request, ShellSynthesisResult),
         )
         if restored_synthesis is None:
             synthesis = await self._run_with_retry(
@@ -527,7 +594,7 @@ class CodexDocument2Orchestrator:
                     "candidate_sets": _candidate_sets_context(candidates),
                     **common,
                 },
-                output_model=ShellSynthesisResult,
+                output_model=_contract_model(request, ShellSynthesisResult),
                 agent_asset="agents/o0.md",
                 skill_asset="skills/shell-synthesis.md",
                 thread_id=checkpoint.o0_thread_ids.get("synthesis") or None,
@@ -557,7 +624,7 @@ class CodexDocument2Orchestrator:
                 request.run_id,
                 checkpoint,
                 f"o0:review:{label.lower()}",
-                DomainReviewResult,
+                _contract_model(request, DomainReviewResult),
             )
             if restored_review is None:
                 missing_reviews.append(spec)
@@ -624,7 +691,7 @@ class CodexDocument2Orchestrator:
                 "domain_reviews": review_payload,
                 **common,
             },
-            output_model=ShellFinalizationResult,
+            output_model=_contract_model(request, ShellFinalizationResult),
             agent_asset="agents/o0.md",
             skill_asset="skills/shell-finalization.md",
             thread_id=checkpoint.o0_thread_ids.get("synthesis") or None,
@@ -679,7 +746,7 @@ class CodexDocument2Orchestrator:
                 "narrative_run_id": narrative_run_id,
                 **common,
             },
-            output_model=CandidateDiscoveryResult,
+            output_model=_contract_model(request, CandidateDiscoveryResult),
             agent_asset="agents/o0.md",
             skill_asset="skills/candidate-discovery.md",
             thread_id=checkpoint.o0_thread_ids.get(f"candidate:{key}") or None,
@@ -715,7 +782,7 @@ class CodexDocument2Orchestrator:
                 "provisional_shells": provisional.model_dump(mode="json"),
                 **common,
             },
-            output_model=DomainReviewResult,
+            output_model=_contract_model(request, DomainReviewResult),
             agent_asset=f"agents/{report_key}-review.md",
             skill_asset="skills/domain-review.md",
             thread_id=original.thread_id if original else None,
@@ -734,11 +801,20 @@ class CodexDocument2Orchestrator:
         checkpoint: Document2Checkpoint,
         bundle: Document2Bundle,
     ) -> tuple[ExpectationShell, ArtifactRef] | Exception:
+        if request.document_schema_version == "document2.v2.1":
+            return await self._research_shell_v21(
+                request=request,
+                prepared=prepared,
+                seed=seed,
+                o0_finalization=o0_finalization,
+                checkpoint=checkpoint,
+                bundle=bundle,
+            )
         async with self._shell_semaphore:
             try:
-                key = _shell_key(seed.shell_id)
+                key = _shell_key(_shell_name(seed))
                 state = checkpoint.shell_runs.get(key) or ShellRunState(
-                    shell_id=seed.shell_id,
+                    shell_id=_shell_name(seed),
                     workspace_run_id=logical_workspace_id(request.run_id, f"shell-{key}"),
                 )
                 shell = await self._restore_or_initialize_shell(state, seed)
@@ -844,6 +920,327 @@ class CodexDocument2Orchestrator:
                     await self._save_progress(bundle, checkpoint)
                 return exc
 
+    async def _read_verified_output(self, run_id, reference, model):
+        try:
+            body = await self._workspace.read_text(run_id, reference.relative_path)
+            if body.content is None or body.sha256 != reference.sha256:
+                raise RuntimeError("hash mismatch")
+            return model.model_validate_json(body.content)
+        except (OSError, ValueError, RuntimeError) as exc:
+            raise RuntimeError(
+                f"D2 successful output integrity failure: {reference.relative_path}"
+            ) from exc
+
+    async def _research_shell_v21(
+        self,
+        *,
+        request,
+        prepared,
+        seed,
+        o0_finalization,
+        checkpoint,
+        bundle,
+    ):
+        stages = [
+            (
+                ShellResearchStage.OPEN_DISCOVERY,
+                CodexD2Node.O1_OPEN_DISCOVERY,
+                "skills/open-discovery.md",
+                v21.OpenDiscoveryResultV21,
+            ),
+            (
+                ShellResearchStage.STATE,
+                CodexD2Node.O1_STATE,
+                "skills/state-research.md",
+                v21.ShellResearchTurnResultV21,
+            ),
+            (
+                ShellResearchStage.REALIZATION,
+                CodexD2Node.O1_REALIZATION,
+                "skills/realization-research.md",
+                v21.ShellResearchTurnResultV21,
+            ),
+            (
+                ShellResearchStage.GAPS,
+                CodexD2Node.O1_GAPS,
+                "skills/gap-research.md",
+                v21.ShellResearchTurnResultV21,
+            ),
+            (
+                ShellResearchStage.FINALIZATION,
+                CodexD2Node.O1_FINALIZATION,
+                "skills/research-finalization.md",
+                v21.ShellResearchTurnResultV21,
+            ),
+        ]
+        async with self._shell_semaphore:
+            key = _shell_key(seed.name)
+            state = checkpoint.shell_runs.get(key) or ShellRunState(
+                shell_id=seed.name,
+                workspace_run_id=logical_workspace_id(request.run_id, f"shell-{key}"),
+            )
+            checkpoint.shell_runs[key] = state
+            restored_stage = state.stage
+            shell = v21.ExpectationShellV21.model_validate(seed.model_dump())
+            scan = selection = None
+            additions = {}
+            resolution = []
+            # A bounded, shell-specific recovery lookup once on entry, rather
+            # than a history scan before each healthy turn.
+            recovered_outputs = {}
+            prefix = f"artifacts/document2/turns/v21/shells/{key}/"
+            for ref in self._repository.list_artifacts(request.run_id):
+                if ref.relative_path.startswith(prefix):
+                    recovered_outputs[ref.relative_path[len(prefix) :].split("/", 1)[0].upper()] = (
+                        ref
+                    )
+            try:
+                for stage, node, skill, model in stages:
+                    context = {
+                        "ticker": prepared.ticker,
+                        "document_schema_version": request.document_schema_version,
+                        "canonical_shell": shell.model_dump(mode="json"),
+                        "o0_finalization": o0_finalization.model_dump(mode="json"),
+                        "research_cutoff_at": prepared.as_of.isoformat(),
+                        "source_global_research_published_at": (
+                            prepared.global_research.published_at.isoformat()
+                        ),
+                        "global_research": prepared.global_research.model_dump(mode="json"),
+                        "narrative_research": prepared.narrative_research.model_dump(mode="json"),
+                        "event_library": self._event_library_turn_context(prepared, state),
+                        "turn": stage.value,
+                        "workspace_run_id": state.workspace_run_id,
+                        "discovery_contract_version": "single-v1",
+                    }
+                    if scan is not None:
+                        context["open_discovery_scan"] = scan.model_dump(mode="json")
+                    if selection is not None:
+                        context["open_discovery_selection"] = selection.model_dump(mode="json")
+                        context["open_discovery_late_additions"] = list(additions.values())
+                    if resolution:
+                        context["open_discovery_resolution"] = resolution
+                    ref = state.stage_outputs.get(stage.value)
+                    if ref is None:
+                        # Runner success is durable before applying canonical/sidecars. Recover
+                        # that output even if applying it failed before checkpoint persistence.
+                        ref = recovered_outputs.get(stage.value)
+                    if ref is not None:
+                        output = await self._read_verified_output(request.run_id, ref, model)
+                        from .validation import validate_output
+
+                        try:
+                            validate_output(output, context)
+                        except ValueError as exc:
+                            raise RuntimeError(
+                                "D2 saved successful output violates its frozen context"
+                            ) from exc
+                    else:
+                        completed = [item[0] for item in stages]
+                        if restored_stage == ShellResearchStage.COMPLETED or (
+                            restored_stage in completed
+                            and completed.index(restored_stage) >= completed.index(stage)
+                        ):
+                            raise RuntimeError(f"D2 completed stage output missing: {stage.value}")
+                        try:
+                            turn = await self._run_with_retry(
+                                persistence_run_id=request.run_id,
+                                workspace_run_id=state.workspace_run_id,
+                                ticker=prepared.ticker,
+                                cutoff_at=prepared.as_of,
+                                node=node,
+                                role=CodexD2AgentRole.O1,
+                                context=context,
+                                output_model=model,
+                                agent_asset="agents/o1.md",
+                                skill_asset=skill,
+                                thread_id=state.thread_id,
+                                artifact_key=f"v21/shells/{key}/{stage.value.lower()}",
+                                initialization_id=request.initialization_id,
+                            )
+                        finally:
+                            if stage == ShellResearchStage.OPEN_DISCOVERY:
+                                await self._sync_discovery_scan(
+                                    request, state, checkpoint, bundle, seed, context
+                                )
+                        output, ref = turn.output, turn.artifact
+                        state.thread_id = turn.thread_id
+                        self._remember_attempt(checkpoint, turn)
+                    checkpoint.attempt_workspaces[ref.attempt_id] = state.workspace_run_id
+                    state.stage_outputs[stage.value] = ref
+                    # Persist the success pointer before effects; a restart can replay effects.
+                    await self._save_progress(bundle, checkpoint)
+                    root = f"artifacts/document2/shells/{key}"
+                    sidecars = []
+                    if stage == ShellResearchStage.OPEN_DISCOVERY:
+                        scan, selection = output.checkpoint.scan, output.selection
+                        await self._sync_discovery_scan(
+                            request, state, checkpoint, bundle, seed, context, output.checkpoint
+                        )
+                        sidecars.append(
+                            (
+                                "selection",
+                                "discovery_selection_ref",
+                                f"{root}/open_discovery_selection.json",
+                                selection.model_dump_json(indent=2),
+                            )
+                        )
+                    else:
+                        shell = output.canonical_shell
+                        for item in output.late_additions:
+                            additions[(item.unit, item.name)] = item.model_dump(mode="json")
+                        authored_resolution = [
+                            r.model_dump(mode="json") for r in output.open_discovery_resolution
+                        ]
+                        if stage == ShellResearchStage.FINALIZATION:
+                            resolution = authored_resolution
+                        else:
+                            accumulated_resolution = {
+                                (item["unit"], item["candidate"]): item for item in resolution
+                            }
+                            accumulated_resolution.update(
+                                {
+                                    (item["unit"], item["candidate"]): item
+                                    for item in authored_resolution
+                                }
+                            )
+                            resolution = list(accumulated_resolution.values())
+                        sidecars.extend(
+                            [
+                                (
+                                    "late_additions",
+                                    "late_additions_ref",
+                                    f"{root}/open_discovery_late_additions.json",
+                                    json.dumps(
+                                        list(additions.values()), ensure_ascii=False, indent=2
+                                    ),
+                                ),
+                                (
+                                    "resolution",
+                                    "discovery_resolution_ref",
+                                    f"{root}/open_discovery_resolution.json",
+                                    json.dumps(resolution, ensure_ascii=False, indent=2),
+                                ),
+                            ]
+                        )
+                    for label, field, path, content in sidecars:
+                        prior = getattr(state, field)
+                        # Immutable scan is rewritten only with identical content; mutable
+                        # accumulated sidecars are deterministically rebuilt in stage order.
+                        if prior is not None:
+                            try:
+                                body = await self._workspace.read_text(request.run_id, path)
+                            except FileNotFoundError:
+                                body = None
+                        else:
+                            body = None
+                        if body is not None and body.content == content:
+                            artifact = prior
+                        else:
+                            artifact = await self._write_artifact(
+                                run_id=request.run_id,
+                                node=node,
+                                attempt_id=ref.attempt_id,
+                                relative_path=path,
+                                content=content,
+                                kind=ArtifactKind.CONTEXT,
+                                content_type="application/json",
+                            )
+                        setattr(state, field, artifact)
+                        bundle.artifacts[f"discovery:{seed.name}:{label}"] = artifact
+                    canonical = await self._workspace.write_text(
+                        state.workspace_run_id,
+                        "artifacts/shell.json",
+                        shell.model_dump_json(indent=2),
+                    )
+                    state.canonical_path, state.canonical_sha256 = (
+                        canonical.relative_path,
+                        canonical.sha256,
+                    )
+                    state.stage, state.error = stage, None
+                    state.event_library_injected = (
+                        prepared.event_library.status is InputAvailability.AVAILABLE
+                    )
+                    if ref.relative_path not in state.snapshot_paths:
+                        state.snapshot_paths.append(ref.relative_path)
+                    await self._save_progress(bundle, checkpoint)
+                final_ref = await self._write_artifact(
+                    run_id=request.run_id,
+                    node=CodexD2Node.O1_FINALIZATION,
+                    attempt_id=state.stage_outputs[
+                        ShellResearchStage.FINALIZATION.value
+                    ].attempt_id,
+                    relative_path=f"artifacts/document2/shells/{key}/shell.json",
+                    content=shell.model_dump_json(indent=2),
+                    kind=ArtifactKind.BUNDLE,
+                    content_type="application/json",
+                )
+                state.stage = ShellResearchStage.COMPLETED
+                await self._save_progress(bundle, checkpoint)
+                return shell, final_ref
+            except Document2ExecutionError as exc:
+                if not exc.allows_partial:
+                    raise
+                state.error = _bounded(str(exc))
+                await self._save_progress(bundle, checkpoint)
+                return exc
+
+    async def _sync_discovery_scan(
+        self, request, state, checkpoint, bundle, seed, context, committed=None
+    ):
+        from .discovery_checkpoint import (
+            CHECKPOINT_PATH,
+            SCAN_PATH,
+            checkpoint_error,
+            read_checkpoint,
+            sha,
+            stable_json,
+            validate_checkpoint,
+        )
+
+        frozen = await read_checkpoint(self._workspace, state.workspace_run_id, context)
+        if committed is not None:
+            validate_checkpoint(committed, context, state.workspace_run_id)
+            if frozen is not None and frozen != committed:
+                raise checkpoint_error("saved success differs from the frozen Scan checkpoint")
+            if frozen is None:
+                await self._workspace.write_text(
+                    state.workspace_run_id, CHECKPOINT_PATH, stable_json(committed)
+                )
+                await self._workspace.write_text(
+                    state.workspace_run_id, SCAN_PATH, stable_json(committed.scan)
+                )
+            frozen = committed
+        if frozen is None:
+            return
+        checkpoint.attempt_workspaces[frozen.producer_attempt_id] = state.workspace_run_id
+        path = f"context/document2/discovery/{_shell_key(seed.name)}/open_discovery_scan.json"
+        content = stable_json(frozen.scan)
+        prior = state.discovery_scan_ref
+        if prior is not None:
+            if prior.sha256 != sha(content) or prior.attempt_id != frozen.producer_attempt_id:
+                raise checkpoint_error("parent Scan artifact binding differs from checkpoint")
+            try:
+                body = await self._workspace.read_text(request.run_id, path)
+            except FileNotFoundError:
+                body = None
+            if body is not None and body.content != content:
+                raise checkpoint_error("parent frozen Scan differs from checkpoint")
+        else:
+            body = None
+        if body is None:
+            prior = await self._write_artifact(
+                run_id=request.run_id,
+                node=CodexD2Node.O1_OPEN_DISCOVERY,
+                attempt_id=frozen.producer_attempt_id,
+                relative_path=path,
+                content=content,
+                kind=ArtifactKind.CONTEXT,
+                content_type="application/json",
+            )
+        state.discovery_scan_ref = prior
+        bundle.artifacts[f"discovery:{seed.name}:scan"] = prior
+        await self._save_progress(bundle, checkpoint)
+
     async def _restore_or_initialize_shell(
         self, state: ShellRunState, seed: ExpectationShellSeed
     ) -> ExpectationShell:
@@ -855,7 +1252,7 @@ class CodexDocument2Orchestrator:
             except (OSError, ValueError):
                 pass
         shell = ExpectationShell(
-            shell_id=seed.shell_id,
+            shell_id=_shell_name(seed),
             core_question=seed.core_question,
             boundary_rule=seed.boundary_rule,
             units=[
@@ -896,6 +1293,18 @@ class CodexDocument2Orchestrator:
         previous_failure: str | None = None
         active_thread = thread_id
         for attempt_index in range(self._max_attempts):
+            if node == CodexD2Node.O1_OPEN_DISCOVERY:
+                from .discovery_checkpoint import read_checkpoint
+
+                frozen = await read_checkpoint(self._workspace, workspace_run_id, context)
+                if frozen is not None:
+                    context = {
+                        **context,
+                        "resume_from": "SELECTION",
+                        "open_discovery_scan": frozen.scan.model_dump(mode="json"),
+                        "scan_sha256": frozen.scan_sha256,
+                        "scan_producer_attempt_id": frozen.producer_attempt_id,
+                    }
             try:
                 return await self._runner.run(
                     persistence_run_id=persistence_run_id,
@@ -969,13 +1378,19 @@ class CodexDocument2Orchestrator:
             return None
         reference = self._repository.get_artifact_by_path(run_id, relative_path)
         if reference is None:
+            if checkpoint.document_schema_version == "document2.v2.1":
+                raise RuntimeError(f"D2 stage artifact reference missing: {relative_path}")
             return None
         try:
             file = await self._workspace.read_text(run_id, relative_path)
             if file.content is None or file.sha256 != reference.sha256:
+                if checkpoint.document_schema_version == "document2.v2.1":
+                    raise RuntimeError(f"D2 stage artifact integrity failure: {relative_path}")
                 return None
             return model.model_validate_json(file.content), reference
-        except (OSError, ValueError):
+        except (OSError, ValueError) as exc:
+            if checkpoint.document_schema_version == "document2.v2.1":
+                raise RuntimeError(f"D2 stage artifact integrity failure: {relative_path}") from exc
             return None
 
     @staticmethod
@@ -1124,6 +1539,17 @@ class CodexDocument2Orchestrator:
                 ticker=(request.ticker or "UNKNOWN").upper(),
                 source_global_run_id=request.source_global_run_id,
                 status="failed",
+                checkpoint=Document2Checkpoint(
+                    run_id=request.run_id,
+                    source_global_run_id=request.source_global_run_id,
+                    document_schema_version=request.document_schema_version,
+                    discovery_contract_version=(
+                        "single-v1"
+                        if request.document_schema_version == "document2.v2.1"
+                        else "split-v1"
+                    ),
+                    o0_workspace_run_id=logical_workspace_id(request.run_id, "o0-synthesis"),
+                ),
             )
         self._repository.save_bundle(failed)
 
@@ -1157,7 +1583,13 @@ def _candidate_sets_context(
         payload["candidates"] = [
             {
                 **candidate.model_dump(mode="json"),
-                "candidate_ref": f"{source_role.upper()}:{candidate.candidate_id}",
+                "candidate_ref": source_role.upper()
+                + ":"
+                + (
+                    candidate.name
+                    if isinstance(candidate, v21.CandidateUnitV21)
+                    else candidate.candidate_id
+                ),
             }
             for candidate in result.candidates
         ]
@@ -1201,7 +1633,18 @@ def _failed_stage(error: Exception) -> ShellResearchStage | None:
         return None
     return {
         CodexD2Node.O1_STATE: ShellResearchStage.STATE,
+        CodexD2Node.O1_OPEN_DISCOVERY: ShellResearchStage.OPEN_DISCOVERY,
         CodexD2Node.O1_REALIZATION: ShellResearchStage.REALIZATION,
         CodexD2Node.O1_GAPS: ShellResearchStage.GAPS,
         CodexD2Node.O1_FINALIZATION: ShellResearchStage.FINALIZATION,
     }.get(error.node)
+
+
+def _contract_model(request, legacy):
+    if request.document_schema_version == "document2.v2.1":
+        return getattr(v21, legacy.__name__ + "V21")
+    return legacy
+
+
+def _shell_name(shell):
+    return shell.name if isinstance(shell, v21.ExpectationShellSeedV21) else shell.shell_id

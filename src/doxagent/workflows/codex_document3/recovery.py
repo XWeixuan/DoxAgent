@@ -241,10 +241,7 @@ def _policy(payload: dict[str, Any]) -> dict[str, Any]:
         "match_scope": _text(payload.get("match_scope")),
         "activation_conditions": conditions,
     }
-    if (
-        _text(payload.get("activation_mode")).upper() == "ALL"
-        and len(conditions) > 1
-    ):
+    if _text(payload.get("activation_mode")).upper() == "ALL" and len(conditions) > 1:
         # Preserve the incompatible marker so Policy's migration guard can
         # quarantine this row instead of silently changing ALL into fixed OR.
         normalized["activation_mode"] = "ALL"
@@ -411,3 +408,33 @@ def parse_json(content: str, *, path: str, model: type[ModelT]) -> RecoveryResul
             )
         )
     return RecoveryResult(values=[value], findings=findings, changed=changed)
+
+
+async def resume_v21(orchestrator, run_id):
+    """Replay the frozen identity; preparation/provider loading is never repeated."""
+    from datetime import datetime
+
+    run = orchestrator.state.run(run_id)
+    if run is None:
+        raise ValueError("V21 run not found")
+    identity = run["identity"]
+    common = dict(
+        run_id=run_id,
+        ticker=identity["ticker"],
+        as_of=datetime.fromisoformat(identity["as_of"]),
+        event_library_version=identity.get("event_library_version"),
+        additional_materials=identity.get("additional_materials", []),
+    )
+    if identity["mode"] == "initialize":
+        return await orchestrator.initialize(
+            **common,
+            document2_run_id=identity.get("document2_run_id"),
+            source_global_run_id=identity.get("source_global_run_id"),
+        )
+    return await orchestrator.maintain(
+        **common,
+        base_policy_version=identity["base_policy_version"],
+        maintenance_feed=identity.get("feed"),
+        delta=identity.get("delta"),
+        explicit_maintenance=identity.get("explicit", False),
+    )

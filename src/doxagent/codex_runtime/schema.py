@@ -75,6 +75,10 @@ class CodexD2Node(StrEnum):
     O0_REVIEW_C5 = "d2_o0_review_c5"
     O0_FINALIZATION = "d2_o0_finalization"
     O1_STATE = "d2_o1_state"
+    O1_OPEN_DISCOVERY = "d2_o1_open_discovery"
+    # Historical split-v1 identities: decode only, never scheduled by new D2 runs.
+    O1_DISCOVERY_SCAN = "d2_o1_discovery_scan"
+    O1_DISCOVERY_SELECTION = "d2_o1_discovery_selection"
     O1_REALIZATION = "d2_o1_realization"
     O1_GAPS = "d2_o1_gaps"
     O1_FINALIZATION = "d2_o1_finalization"
@@ -87,6 +91,10 @@ class CodexEventLibraryNode(StrEnum):
 
 
 class CodexD3Node(StrEnum):
+    O3_DISCOVERY = "d3_o3_discovery"
+    O3_PLANNING = "d3_o3_planning"
+    O3_BUILD = "d3_o3_build"
+    O3_INTEGRATION = "d3_o3_integration"
     INPUT_PREPARATION = "d3_input_preparation"
     # Retained only so historical attempt/checkpoint rows remain decodable.
     O3_INITIALIZE = "d3_o3_initialize"

@@ -18,6 +18,8 @@ from doxagent.workflows.codex_document2.schema import (
     ShellOutcome,
 )
 
+from .schema import Document2DocumentV21, ExpectationShellV21, ShellOutcomeV21
+
 _D2_REF = re.compile(r"^D2REF:([^:]+):(O[1-9]\d*)$")
 _D1_REF = re.compile(r"^(?:【cite:)?D1-(O[1-9]\d*)(?:】)?$")
 _BRACKET = re.compile(r"^【cite:([^】]+)】$")
@@ -25,7 +27,7 @@ _BRACKET = re.compile(r"^【cite:([^】]+)】$")
 
 @dataclass(frozen=True)
 class AssembledDocument2:
-    document: Document2Document
+    document: Document2Document | Document2DocumentV21
     citation_manifest: Document2CitationManifest
     citation_status: CitationStatus
 
@@ -37,12 +39,13 @@ def assemble_document2(
     as_of: datetime,
     source_global_run_id: str,
     input_manifest: Document2InputManifest,
-    shells: list[ExpectationShell],
+    shells: list[ExpectationShell | ExpectationShellV21],
     shell_outcomes: list[ShellOutcome],
     document_artifact_id: str,
     d1_manifest: CitationManifest | None,
     local_manifests: dict[str, CitationManifest],
     narrative_run_id: str | None,
+    document_schema_version: str = "document2.v2",
 ) -> AssembledDocument2:
     remapper = _CitationRemapper(
         source_global_run_id=source_global_run_id,
@@ -51,7 +54,20 @@ def assemble_document2(
         narrative_run_id=narrative_run_id,
     )
     rewritten = [remapper.rewrite_shell(shell) for shell in shells]
-    document = Document2Document(
+    model = (
+        Document2DocumentV21 if document_schema_version == "document2.v2.1" else Document2Document
+    )
+    if model is Document2DocumentV21:
+        shell_outcomes = [
+            ShellOutcomeV21.model_validate(
+                {
+                    **item.model_dump(mode="json", exclude={"shell_id"}),
+                    "shell": item.shell_id,
+                }
+            )
+            for item in shell_outcomes
+        ]
+    document = model(
         document2_run_id=run_id,
         ticker=ticker,
         as_of=as_of,
@@ -75,7 +91,7 @@ def assemble_document2(
     return AssembledDocument2(document, manifest, status)
 
 
-def render_document2_markdown(document: Document2Document) -> str:
+def render_document2_markdown(document: Document2Document | Document2DocumentV21) -> str:
     lines = [
         f"# Document2 — {document.ticker}",
         "",
@@ -85,22 +101,27 @@ def render_document2_markdown(document: Document2Document) -> str:
         "",
     ]
     for shell in document.shells:
+        is_v21 = isinstance(shell, ExpectationShellV21)
+        boundary = shell.boundary if is_v21 else shell.boundary_rule
         lines.extend(
             [
-                f"## {shell.shell_id}",
+                f"## {shell.name if isinstance(shell, ExpectationShellV21) else shell.shell_id}",
                 "",
-                f"**Core question:** {shell.core_question}",
+                f"**Scope:** {shell.scope}"
+                if isinstance(shell, ExpectationShellV21)
+                else f"**Core question:** {shell.core_question}",
                 "",
-                f"**Boundary:** {shell.boundary_rule}",
+                f"**Boundary:** {boundary}",
                 "",
             ]
         )
         for unit in shell.units:
+            unit_name = unit.name if is_v21 else unit.expectation_id
             lines.extend(
                 [
-                    f"### {unit.expectation_id}",
+                    f"### {unit_name}",
                     "",
-                    unit.proposition,
+                    unit.scope if isinstance(shell, ExpectationShellV21) else unit.proposition,
                     "",
                     f"Horizon: {unit.horizon}",
                     "",
@@ -110,7 +131,12 @@ def render_document2_markdown(document: Document2Document) -> str:
                     ),
                     "",
                     (
-                        f"Realization factors: {len(unit.realization_factors)}; "
+                        (
+                            f"Baselines: {len(unit.expectation_baseline)}; "
+                            if isinstance(shell, ExpectationShellV21)
+                            else ""
+                        )
+                        + f"Realization factors: {len(unit.realization_factors)}; "
                         f"potential gaps: {len(unit.potential_gaps)}"
                     ),
                     "",
@@ -121,10 +147,10 @@ def render_document2_markdown(document: Document2Document) -> str:
         lines.extend(["## Incomplete shells", ""])
         for outcome in failed:
             stage = outcome.failed_stage.value if outcome.failed_stage else "UNKNOWN"
+            shell_name = outcome.shell if isinstance(outcome, ShellOutcomeV21) else outcome.shell_id
             lines.extend(
                 [
-                    f"- `{outcome.shell_id}` stopped at `{stage}`: "
-                    f"{outcome.error or 'no error detail'}",
+                    f"- `{shell_name}` stopped at `{stage}`: {outcome.error or 'no error detail'}",
                 ]
             )
         lines.append("")
@@ -153,6 +179,20 @@ class _CitationRemapper:
 
     def rewrite_shell(self, shell: ExpectationShell) -> ExpectationShell:
         payload = shell.model_dump(mode="json")
+        if isinstance(shell, ExpectationShellV21):
+            payload["ref"] = self._rewrite_list(payload["ref"])
+            for unit in payload["units"]:
+                unit["ref"] = self._rewrite_list(unit["ref"])
+                for group in (
+                    unit["state"]["parameters"],
+                    unit["state"]["values"],
+                    unit["expectation_baseline"],
+                    unit["realization_factors"],
+                    unit["potential_gaps"],
+                ):
+                    for item in group:
+                        item["ref"] = self._rewrite_list(item["ref"])
+            return ExpectationShellV21.model_validate(payload)
         for unit in payload.get("units", []):
             state = unit.get("state", {})
             for value in state.get("values", []):
@@ -227,8 +267,7 @@ class _CitationRemapper:
             status=CitationResolutionState.INVALID,
             origin_alias=raw,
             warning=(
-                "citation string does not identify a known D1, D2 attempt, "
-                "DoxAtlas, or URL source"
+                "citation string does not identify a known D1, D2 attempt, DoxAtlas, or URL source"
             ),
         )
 

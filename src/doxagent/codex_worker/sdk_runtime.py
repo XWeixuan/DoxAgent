@@ -15,7 +15,7 @@ from openai_codex import ApprovalMode, AsyncCodex, CodexConfig, Sandbox
 from openai_codex.types import ReasoningEffort
 
 from doxagent.codex_runtime.models import codex_execution_model
-from doxagent.codex_runtime.schema import CodexMonitoringO4Node
+from doxagent.codex_runtime.schema import CodexD2Node, CodexD3Node, CodexMonitoringO4Node
 from doxagent.codex_worker.schema import WorkerRunRequest, WorkerTurnTelemetry
 from doxagent.codex_worker.telemetry import project_turn_telemetry
 from doxagent.data_runtime.contracts import build_data_tool_contracts
@@ -240,7 +240,11 @@ class OpenAICodexRuntime:
         )
         control_root = (cwd.parent / ".control" / request.run_id / request.attempt_id).resolve()
         control_root.mkdir(parents=True, exist_ok=True)
-        multi_agent_enabled = request.allow_subagents and request.max_subagents > 0
+        multi_agent_enabled = (
+            request.allow_subagents
+            and request.max_subagents > 0
+            and request.node != CodexD2Node.O1_OPEN_DISCOVERY
+        )
         sdk_config: dict[str, Any] = {
             "features.multi_agent": multi_agent_enabled,
             "agents.max_threads": max(1, request.max_subagents),
@@ -260,6 +264,32 @@ class OpenAICodexRuntime:
             "mcp_servers.source_capture.startup_timeout_sec": 10,
             "mcp_servers.source_capture.tool_timeout_sec": 30,
         }
+        if request.node in {
+            CodexD3Node.O3_DISCOVERY, CodexD3Node.O3_PLANNING,
+            CodexD3Node.O3_BUILD, CodexD3Node.O3_INTEGRATION,
+        }:
+            # GLOBAL resumes the same session across phases. Explicitly replace
+            # this switch so Planning cannot inherit Discovery's provider grant,
+            # and subsequent Build/Integration can re-enable their own capability.
+            sdk_config["mcp_servers.data.enabled"] = request.data_mcp_enabled
+
+        if request.node == CodexD2Node.O1_OPEN_DISCOVERY:
+            sdk_config.update(
+                {
+                    "mcp_servers.d2_discovery.command": sys.executable,
+                    "mcp_servers.d2_discovery.args": [
+                        "-m",
+                        "doxagent.workflows.codex_document2.discovery_checkpoint",
+                    ],
+                    "mcp_servers.d2_discovery.cwd": str(cwd),
+                    "mcp_servers.d2_discovery.env.DOXAGENT_CODEX_RUN_ID": request.run_id,
+                    "mcp_servers.d2_discovery.env.DOXAGENT_CODEX_ATTEMPT_ID": request.attempt_id,
+                    "mcp_servers.d2_discovery.enabled_tools": ["commit_open_discovery_scan"],
+                    "mcp_servers.d2_discovery.required": True,
+                    "mcp_servers.d2_discovery.startup_timeout_sec": 10,
+                    "mcp_servers.d2_discovery.tool_timeout_sec": 30,
+                }
+            )
 
         if request.data_mcp_enabled:
             allowed_data_tools = self._data_policy.allowed_tools(request.node, request.agent_role)
@@ -370,7 +400,7 @@ class OpenAICodexRuntime:
                     "mcp_servers.o4_operations.tool_timeout_sec": 7_200,
                 }
             )
-        for server in ("data", "source_capture", "o4_operations"):
+        for server in ("data", "source_capture", "o4_operations", "d2_discovery"):
             if f"mcp_servers.{server}.command" in sdk_config:
                 for name in ("DOXAGENT_CAPSULE_ID", "DOXAGENT_MCP_BUDGET_ROOT"):
                     if os.environ.get(name):

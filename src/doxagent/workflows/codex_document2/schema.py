@@ -225,6 +225,222 @@ class ShellFinalizationResult(AgentModel):
     warnings: list[str] = Field(default_factory=list)
 
 
+class CandidateUnitV21(AgentModel):
+    name: str
+    scope: str
+    why_material: str
+    ref: list[str] = Field(default_factory=list)
+
+
+class CandidateDiscoveryResultV21(AgentModel):
+    candidates: list[CandidateUnitV21] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+
+
+class ProvisionalCandidateUnitV21(CandidateUnitV21):
+    candidate_ref: str
+
+
+class ProvisionalShellDraftV21(AgentModel):
+    shell_temp_id: str
+    name: str
+    scope: str
+    boundary: str
+    ref: list[str] = Field(default_factory=list)
+    candidate_units: list[ProvisionalCandidateUnitV21] = Field(default_factory=list)
+
+
+class UnassignedCandidateV21(ProvisionalCandidateUnitV21):
+    reason: str
+
+
+class ShellSynthesisResultV21(AgentModel):
+    provisional_shells: list[ProvisionalShellDraftV21] = Field(default_factory=list)
+    unassigned_candidates: list[UnassignedCandidateV21] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+
+
+class DomainReviewFeedbackV21(AgentModel):
+    feedback_id: str
+    target: str
+    issue: str
+    reasoning: str
+    recommendation: str
+    ref: list[str] = Field(default_factory=list)
+
+
+class DomainReviewResultV21(AgentModel):
+    reviewer_role: Literal["C1", "C3", "C5"]
+    overall_assessment: str
+    targeted_feedback: list[DomainReviewFeedbackV21] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+
+
+class ExpectationUnitSeedV21(AgentModel):
+    name: str
+    scope: str
+    horizon: str
+    ref: list[str] = Field(default_factory=list)
+
+
+class ExpectationShellSeedV21(AgentModel):
+    name: str
+    scope: str
+    boundary: str
+    ref: list[str] = Field(default_factory=list)
+    units: list[ExpectationUnitSeedV21] = Field(default_factory=list)
+
+
+class ShellFinalizationResultV21(AgentModel):
+    shells: list[ExpectationShellSeedV21] = Field(default_factory=list)
+    finalization_note: list[str] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+
+
+class StateParameterV21(AgentModel):
+    name: str
+    definition: str
+    value_type: ParameterValueType
+    ref: list[str] = Field(default_factory=list)
+
+
+class StateValueV21(AgentModel):
+    name: str
+    parameter: str
+    source_role: SourceRole
+    value: StateValueData
+    previous_value: StateValueData | None = None
+    time_scope: str
+    as_of: str
+    validity_state: ValidityState = ValidityState.CURRENT
+    ref: list[str] = Field(default_factory=list)
+
+
+class ExpectationStateV21(AgentModel):
+    parameters: list[StateParameterV21] = Field(default_factory=list)
+    values: list[StateValueV21] = Field(default_factory=list)
+
+
+class ExpectationBaselineV21(AgentModel):
+    name: str
+    baseline: str
+    ordinary_progress: str
+    open_frontier: str
+    time_scope: str
+    ref: list[str] = Field(default_factory=list)
+
+
+class RealizationFactorV21(AgentModel):
+    name: str
+    mechanism: str
+    current_status: str
+    materiality_context: str
+    scope_boundary: str
+    ref: list[str] = Field(default_factory=list)
+
+
+class PossibilityV21(AgentModel):
+    name: str
+    implication: str
+
+
+class PotentialGapV21(AgentModel):
+    name: str
+    why_live: str
+    revision_logic: str
+    possibility_space: list[PossibilityV21] = Field(default_factory=list)
+    ref: list[str] = Field(default_factory=list)
+
+
+class ExpectationUnitV21(ExpectationUnitSeedV21):
+    state: ExpectationStateV21 = Field(default_factory=ExpectationStateV21)
+    expectation_baseline: list[ExpectationBaselineV21] = Field(default_factory=list)
+    realization_factors: list[RealizationFactorV21] = Field(default_factory=list)
+    potential_gaps: list[PotentialGapV21] = Field(default_factory=list)
+
+
+class ExpectationShellV21(ExpectationShellSeedV21):
+    units: list[ExpectationUnitV21] = Field(default_factory=list)
+
+
+class DiscoveryCandidateV21(AgentModel):
+    name: str
+    change_hypothesis: str
+    relevance: str
+    live_basis: str
+    ref: list[str] = Field(default_factory=list)
+
+
+class DiscoveryUnitV21(AgentModel):
+    name: str
+    candidates: list[DiscoveryCandidateV21] = Field(default_factory=list)
+
+
+class OpenDiscoveryScanV21(AgentModel):
+    shell: str
+    units: list[DiscoveryUnitV21] = Field(default_factory=list)
+
+
+class DiscoverySelectionV21(AgentModel):
+    unit: str
+    candidate: str
+    decision: Literal["DEEPEN", "MERGE", "PARK"]
+    merge_into: str | None = None
+    reason: str
+    research_focus: str
+    ref: list[str] = Field(default_factory=list)
+
+
+class OpenDiscoverySelectionV21(AgentModel):
+    shell: str
+    selections: list[DiscoverySelectionV21] = Field(default_factory=list)
+
+
+class OpenDiscoveryCompletionV21(AgentModel):
+    scan_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    selection: OpenDiscoverySelectionV21
+
+
+class OpenDiscoveryCheckpointV21(ContractModel):
+    schema_version: Literal["d2-open-discovery-checkpoint-v1"] = "d2-open-discovery-checkpoint-v1"
+    discovery_contract_version: Literal["single-v1"] = "single-v1"
+    workspace_run_id: str = Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$")
+    shell: str
+    research_cutoff_at: datetime
+    seed_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    producer_attempt_id: str = Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$")
+    scan_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    scan: OpenDiscoveryScanV21
+
+
+class OpenDiscoveryResultV21(ContractModel):
+    checkpoint: OpenDiscoveryCheckpointV21
+    selection: OpenDiscoverySelectionV21
+
+
+class LateAdditionV21(AgentModel):
+    unit: str
+    name: str
+    discovered_during: str
+    change_hypothesis: str
+    reason: str
+    ref: list[str] = Field(default_factory=list)
+
+
+class DiscoveryResolutionV21(AgentModel):
+    unit: str
+    candidate: str
+    resolution: str
+    destination: str | None = None
+    reason: str
+
+
+class ShellResearchTurnResultV21(AgentModel):
+    canonical_shell: ExpectationShellV21
+    late_additions: list[LateAdditionV21] = Field(default_factory=list)
+    open_discovery_resolution: list[DiscoveryResolutionV21] = Field(default_factory=list)
+
+
 class InputAvailability(StrEnum):
     AVAILABLE = "AVAILABLE"
     ABSENT = "ABSENT"
@@ -250,6 +466,10 @@ class Document2InputManifest(ContractModel):
 
 class ShellResearchStage(StrEnum):
     PENDING = "PENDING"
+    OPEN_DISCOVERY = "OPEN_DISCOVERY"
+    # Historical split-v1 checkpoint values, never active stages for new runs.
+    DISCOVERY_SCAN = "DISCOVERY_SCAN"
+    DISCOVERY_SELECTION = "DISCOVERY_SELECTION"
     STATE = "STATE"
     REALIZATION = "REALIZATION"
     GAPS = "GAPS"
@@ -266,7 +486,18 @@ class ShellOutcome(ContractModel):
     failure_kind: Literal["SYSTEM", "TRANSIENT", "FORMAT", "SHELL"] | None = None
     error_code: str | None = None
     error: str | None = None
-    seed: ExpectationShellSeed | None = None
+    seed: ExpectationShellSeed | ExpectationShellSeedV21 | None = None
+
+
+class ShellOutcomeV21(ContractModel):
+    shell: str
+    status: Literal["completed", "failed"]
+    artifact_id: str | None = None
+    failed_stage: ShellResearchStage | None = None
+    failure_kind: Literal["SYSTEM", "TRANSIENT", "FORMAT", "SHELL"] | None = None
+    error_code: str | None = None
+    error: str | None = None
+    seed: ExpectationShellSeedV21 | None = None
 
 
 class Document2Document(ContractModel):
@@ -279,6 +510,18 @@ class Document2Document(ContractModel):
     input_manifest: Document2InputManifest
     shells: list[ExpectationShell] = Field(default_factory=list)
     shell_outcomes: list[ShellOutcome] = Field(default_factory=list)
+
+
+class Document2DocumentV21(ContractModel):
+    schema_version: Literal["document2.v2.1"] = "document2.v2.1"
+    workflow_version: Literal["codex_document2_v1"] = CODEX_DOCUMENT2_WORKFLOW_VERSION
+    document2_run_id: str
+    ticker: str
+    as_of: datetime
+    source_global_run_id: str
+    input_manifest: Document2InputManifest
+    shells: list[ExpectationShellV21] = Field(default_factory=list)
+    shell_outcomes: list[ShellOutcomeV21] = Field(default_factory=list)
 
 
 class CitationResolutionState(StrEnum):
@@ -300,9 +543,7 @@ class Document2CitationEntry(ContractModel):
 
 
 class Document2CitationManifest(ContractModel):
-    schema_version: Literal["document2-citation-manifest-v1"] = (
-        "document2-citation-manifest-v1"
-    )
+    schema_version: Literal["document2-citation-manifest-v1"] = "document2-citation-manifest-v1"
     run_id: str
     artifact_id: str
     entries: list[Document2CitationEntry] = Field(default_factory=list)
@@ -322,12 +563,20 @@ class ShellRunState(ContractModel):
     thread_id: str | None = None
     stage: ShellResearchStage = ShellResearchStage.PENDING
     canonical_path: str | None = None
+    canonical_sha256: str | None = None
+    stage_outputs: dict[str, ArtifactRef] = Field(default_factory=dict)
+    discovery_scan_ref: ArtifactRef | None = None
+    discovery_selection_ref: ArtifactRef | None = None
+    late_additions_ref: ArtifactRef | None = None
+    discovery_resolution_ref: ArtifactRef | None = None
     snapshot_paths: list[str] = Field(default_factory=list)
     event_library_injected: bool = False
     error: str | None = None
 
 
 class Document2Checkpoint(ContractModel):
+    discovery_contract_version: Literal["split-v1", "single-v1"] = "split-v1"
+    document_schema_version: Literal["document2.v2", "document2.v2.1"] = "document2.v2"
     schema_version: Literal["document2-checkpoint-v1"] = "document2-checkpoint-v1"
     run_id: str
     source_global_run_id: str
@@ -373,6 +622,7 @@ class Document2Bundle(ContractModel):
 
 
 class Document2RunRequest(ContractModel):
+    document_schema_version: Literal["document2.v2", "document2.v2.1"] = "document2.v2"
     workflow_version: Literal["codex_document2_v1"] = CODEX_DOCUMENT2_WORKFLOW_VERSION
     research_lane: Literal[ResearchLane.DOCUMENT2] = ResearchLane.DOCUMENT2
     run_id: str
@@ -398,11 +648,7 @@ def strict_json_schema(value: Any) -> Any:
         return [strict_json_schema(item) for item in value]
     if not isinstance(value, dict):
         return value
-    strict = {
-        key: strict_json_schema(item)
-        for key, item in value.items()
-        if key != "default"
-    }
+    strict = {key: strict_json_schema(item) for key, item in value.items() if key != "default"}
     properties = strict.get("properties")
     if isinstance(properties, dict):
         strict["additionalProperties"] = False

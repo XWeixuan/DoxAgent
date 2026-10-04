@@ -1,9 +1,54 @@
 """Fallbacks retain existing candidate text; no investment claim is generated."""
 
-from .schema import ShellFinalizationResult, ShellSynthesisResult
+from .schema import (
+    ShellFinalizationResult,
+    ShellFinalizationResultV21,
+    ShellSynthesisResult,
+    ShellSynthesisResultV21,
+)
 
 
 def fallback(model, context):
+    if model is ShellSynthesisResultV21:
+        sets = context.get("candidate_sets", {})
+        return model(
+            provisional_shells=[
+                dict(
+                    shell_temp_id=item["candidate_ref"],
+                    name=item["name"],
+                    scope=item["scope"],
+                    boundary="",
+                    ref=item["ref"],
+                    candidate_units=[item],
+                )
+                for values in sets.values()
+                for item in values.get("candidates", [])
+            ],
+            warnings=["SYNTHESIS_UNAVAILABLE: candidates retained separately"],
+        )
+    if model is ShellFinalizationResultV21:
+        provisional = context.get("provisional_shells")
+        if isinstance(provisional, dict):
+            return model(
+                shells=[
+                    dict(
+                        name=item["name"],
+                        scope=item["scope"],
+                        boundary=item["boundary"],
+                        ref=item["ref"],
+                        units=[
+                            dict(
+                                name=u["name"], scope=u["scope"], ref=u["ref"], horizon="UNRESOLVED"
+                            )
+                            for u in item["candidate_units"]
+                        ],
+                    )
+                    for item in provisional.get("provisional_shells", [])
+                ],
+                warnings=[
+                    "FINALIZATION_UNAVAILABLE: provisional seeds retained; horizon unresolved"
+                ],
+            )
     if model is ShellSynthesisResult:
         sets = context.get("candidate_sets", {})
         shells = []

@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 from collections.abc import Callable
 from datetime import datetime
+from typing import Literal
 
 from doxagent.event_library.provider import PublishedEventLibraryReader
 from doxagent.workflows.codex_document2.inputs import PublishedEventLibraryProvider
@@ -17,9 +18,7 @@ class PinnedDocument2Runner:
         self,
         *,
         reader: PublishedEventLibraryReader,
-        orchestrator_factory: Callable[
-            [PublishedEventLibraryProvider], CodexDocument2Orchestrator
-        ],
+        orchestrator_factory: Callable[[PublishedEventLibraryProvider], CodexDocument2Orchestrator],
     ) -> None:
         self._reader = reader
         self._factory = orchestrator_factory
@@ -33,6 +32,7 @@ class PinnedDocument2Runner:
         event_library_version: int,
         event_library_sha256: str,
         event_library_published_at: datetime | None,
+        document_schema_version: Literal["document2.v2", "document2.v2.1"] = "document2.v2",
     ) -> str:
         identity = "|".join(
             (
@@ -42,6 +42,8 @@ class PinnedDocument2Runner:
                 event_library_sha256,
             )
         )
+        if document_schema_version == "document2.v2.1":
+            identity += f"|{document_schema_version}|{as_of.isoformat()}|single-v1"
         run_id = f"document2-pinned-{hashlib.sha256(identity.encode()).hexdigest()[:20]}"
         provider = PublishedEventLibraryProvider(
             self._reader,
@@ -53,6 +55,7 @@ class PinnedDocument2Runner:
         bundle = await orchestrator.run(
             Document2RunRequest(
                 run_id=run_id,
+                document_schema_version=document_schema_version,
                 source_global_run_id=source_global_run_id,
                 ticker=ticker,
                 as_of=as_of,

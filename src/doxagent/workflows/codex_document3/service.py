@@ -36,7 +36,11 @@ def build_document3_orchestrator(
     settings: DoxAgentSettings,
     *,
     worker: Any = None,
-) -> Document3Orchestrator:
+    orchestration_version: str = "v2",
+    node_assets: dict[str, str] | None = None,
+) -> Any:
+    if orchestration_version not in {"v2", "v2.1"}:
+        raise ValueError("unsupported D3 orchestration_version")
     config = CodexRuntimeConfig.from_settings(settings)
     if not settings.codex_document3_enabled:
         raise ValueError("D3 is disabled; set DOXAGENT_CODEX_DOCUMENT3_ENABLED=true")
@@ -110,6 +114,17 @@ def build_document3_orchestrator(
         runtime_repository=runtime_repository,
     )
     monitoring_o4_trigger = None
+    if orchestration_version == "v2.1":
+        from .orchestrator_v21 import Document3OrchestratorV21
+        from .state_v21 import StateV21
+
+        return Document3OrchestratorV21(
+            input_preparer=input_preparer,
+            agent_runner=runner,
+            state=StateV21(config.sqlite_path),
+            node_assets=node_assets,
+            policy_repository=policy_repository,
+        )
     return Document3Orchestrator(
         input_preparer=input_preparer,
         agent_runner=runner,

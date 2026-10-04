@@ -12,6 +12,30 @@ export const periods = [
   ["TRADING_DAYS_30", "30 天"],
 ] as const;
 export const filtersSupported = true;
+export function overviewSummaryKey(
+  scope: string,
+  kind: "status" | "gateway",
+  period: Period,
+  calendarDefault: boolean,
+  viewId?: string,
+) {
+  return [
+    scope,
+    `overview-${kind}`,
+    period,
+    calendarDefault,
+    viewId ?? null,
+  ] as const;
+}
+export function overviewGatewayReady(
+  requestedPeriod: Period,
+  resolvedPeriod: Period | undefined,
+  calendarDefault: boolean,
+) {
+  return (
+    !!resolvedPeriod && (!calendarDefault || resolvedPeriod === requestedPeriod)
+  );
+}
 export function useOverview(
   period: Period,
   run: string,
@@ -75,7 +99,13 @@ export function useOverview(
     return response;
   };
   const status = useQuery({
-    queryKey: [scope, "overview-status"],
+    queryKey: overviewSummaryKey(
+      scope,
+      "status",
+      period,
+      calendarDefault,
+      context.data?.data.view_id,
+    ),
     staleTime: 0,
     refetchOnMount: "always",
     refetchOnWindowFocus: false,
@@ -83,11 +113,23 @@ export function useOverview(
     queryFn: ({ signal }) => load("Status", "/overview/status", signal),
   });
   const gateway = useQuery({
-    queryKey: [scope, "overview-gateway"],
+    queryKey: overviewSummaryKey(
+      scope,
+      "gateway",
+      period,
+      calendarDefault,
+      context.data?.data.view_id,
+    ),
     staleTime: 0,
     refetchOnMount: "always",
     refetchOnWindowFocus: false,
-    enabled: !!context.data,
+    enabled:
+      !!context.data &&
+      overviewGatewayReady(
+        period,
+        context.data.data.period?.selected,
+        calendarDefault,
+      ),
     queryFn: ({ signal }) => load("Status", "/overview/gateway-status", signal),
   });
   const metrics = useQuery({

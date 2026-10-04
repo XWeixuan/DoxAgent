@@ -58,6 +58,10 @@ class DataCapabilityClaims(DataRuntimeModel):
 
 
 _ROLE_BY_NODE = {
+    CodexD3Node.O3_DISCOVERY: CodexD3AgentRole.O3,
+    CodexD3Node.O3_PLANNING: CodexD3AgentRole.O3,
+    CodexD3Node.O3_BUILD: CodexD3AgentRole.O3,
+    CodexD3Node.O3_INTEGRATION: CodexD3AgentRole.O3,
     CodexD1Node.C1: CodexAgentRole.C1,
     CodexD1Node.C2: CodexAgentRole.C2,
     CodexD1Node.C3: CodexAgentRole.C3,
@@ -78,6 +82,7 @@ _ROLE_BY_NODE = {
     CodexD2Node.O0_REVIEW_C5: CodexAgentRole.C5,
     CodexD2Node.O0_FINALIZATION: CodexD2AgentRole.O0,
     CodexD2Node.O1_STATE: CodexD2AgentRole.O1,
+    CodexD2Node.O1_OPEN_DISCOVERY: CodexD2AgentRole.O1,
     CodexD2Node.O1_REALIZATION: CodexD2AgentRole.O1,
     CodexD2Node.O1_GAPS: CodexD2AgentRole.O1,
     CodexD2Node.O1_FINALIZATION: CodexD2AgentRole.O1,
@@ -180,7 +185,19 @@ class DataToolPolicyRegistry:
             # Compile consumes the frozen Stage-A trigger surface. It does not
             # receive a routine Data MCP research budget.
             CodexD3Node.O3_POLICY_COMPILE: frozenset(),
+            CodexD3Node.O3_PLANNING: frozenset(),
         }
+        # Metadata only: no provider calls or runtime clients are constructed.
+        from doxagent.tools.factory import _DESCRIPTORS
+
+        v21_tools = frozenset(
+            name for name, descriptor in _DESCRIPTORS.items()
+            if descriptor.read_only and descriptor.availability != "unavailable"
+            and not is_data_mcp_excluded_tool(name)
+            and not name.startswith(("message_bus.", "monitoring.", "crawler_plane."))
+        )
+        for node in (CodexD3Node.O3_DISCOVERY, CodexD3Node.O3_BUILD, CodexD3Node.O3_INTEGRATION):
+            self._by_node[node] = v21_tools
 
     def allowed_tools(
         self, node: CodexResearchNode, role: CodexResearchAgentRole

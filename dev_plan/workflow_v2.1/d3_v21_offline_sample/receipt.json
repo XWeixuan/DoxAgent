@@ -1,0 +1,27 @@
+{
+  "orchestration_version": "v2.1",
+  "run_id": "d3v21-offline-sample",
+  "ticker": "MU",
+  "mode": "initialize",
+  "status": "COMPLETE",
+  "staged": true,
+  "handoff": {
+    "staged": true,
+    "policy_set_version": 2,
+    "files": {
+      "document3.json": "artifacts/document3/releases/2/document3.json",
+      "runtime_projection.json": "artifacts/document3/releases/2/runtime_projection.json",
+      "coverage_map.json": "artifacts/document3/releases/2/coverage_map.json",
+      "document3.md": "artifacts/document3/releases/2/document3.md"
+    },
+    "hashes": {
+      "document3.json": "884f017a2dbb83a67ee325113d4c96783b299fd46d3c8abc36a26cf62670973a",
+      "runtime_projection.json": "1d66b9ba70da989d5fdc2fe4bc0a32d8289d4dee975e3757f6cdfabed9d85427",
+      "coverage_map.json": "d6cf204cd486e6d0d589b390fd2b2ca71471862d29deafc18540b1915f2e7aa7",
+      "document3.md": "e7390c1c7b9e7989359786dcdcb5f1b17a74f95ef49e1c4ef45ef90e35fb94df"
+    },
+    "release_manifest_path": "published/990897ec51f717a539dd/manifest.json"
+  },
+  "policy_set_version": 2,
+  "missing": []
+}

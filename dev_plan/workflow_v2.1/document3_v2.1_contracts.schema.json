@@ -1,0 +1,518 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Document3 workflow v2.1 contracts",
+  "description": "Published data contract document3.v3 and minimal workflow handoff shapes. Validate records locally; structural failures never become global workflow gates.",
+  "$ref": "#/$defs/PolicySet",
+  "$defs": {
+    "RefList": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "default": []
+    },
+    "Lead": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lead": {
+          "type": "string",
+          "minLength": 1
+        },
+        "ref": {
+          "$ref": "#/$defs/RefList"
+        }
+      },
+      "required": [
+        "name",
+        "lead"
+      ]
+    },
+    "Topic": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "owner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "brief": {
+          "type": "string",
+          "minLength": 1
+        },
+        "ref": {
+          "$ref": "#/$defs/RefList"
+        }
+      },
+      "required": [
+        "name",
+        "owner",
+        "brief"
+      ]
+    },
+    "NotSelected": {
+      "type": "object",
+      "properties": {
+        "ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "ref",
+        "reason"
+      ]
+    },
+    "Agenda": {
+      "type": "object",
+      "properties": {
+        "topics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Topic"
+          }
+        },
+        "waves": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          }
+        },
+        "not_selected": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/NotSelected"
+          },
+          "default": []
+        }
+      },
+      "required": [
+        "topics",
+        "waves"
+      ]
+    },
+    "ResearchResult": {
+      "type": "object",
+      "properties": {
+        "topic": {
+          "type": "string",
+          "minLength": 1
+        },
+        "policies": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "notes": {
+          "type": "string"
+        },
+        "ref": {
+          "$ref": "#/$defs/RefList"
+        }
+      },
+      "required": [
+        "topic",
+        "policies",
+        "notes"
+      ]
+    },
+    "Relation": {
+      "type": "object",
+      "properties": {
+        "policies": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "proposal": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "policies",
+        "proposal"
+      ]
+    },
+    "Review": {
+      "type": "object",
+      "properties": {
+        "relations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Relation"
+          }
+        },
+        "research_requests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Topic"
+          }
+        },
+        "coverage_notes": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "relations",
+        "research_requests",
+        "coverage_notes"
+      ]
+    },
+    "Replacement": {
+      "type": "object",
+      "properties": {
+        "before": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "after": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "before",
+        "after",
+        "reason"
+      ]
+    },
+    "Coverage": {
+      "type": "object",
+      "properties": {
+        "topic": {
+          "type": "string",
+          "minLength": 1
+        },
+        "policies": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "note": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "topic",
+        "policies",
+        "note"
+      ]
+    },
+    "RemainingGap": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "name",
+        "reason"
+      ]
+    },
+    "Consolidation": {
+      "type": "object",
+      "properties": {
+        "replacements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Replacement"
+          }
+        },
+        "coverage": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Coverage"
+          }
+        },
+        "remaining_gaps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RemainingGap"
+          }
+        },
+        "summary": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "replacements",
+        "coverage",
+        "remaining_gaps",
+        "summary"
+      ]
+    },
+    "Calibration": {
+      "type": "object",
+      "properties": {
+        "reference_state": {
+          "type": "string",
+          "minLength": 1
+        },
+        "trigger_boundary": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "reference_state",
+        "trigger_boundary"
+      ]
+    },
+    "Condition": {
+      "type": "object",
+      "properties": {
+        "condition_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "decision": {
+          "type": "string",
+          "enum": [
+            "LONG",
+            "SHORT"
+          ]
+        },
+        "trigger_layer": {
+          "type": "string",
+          "enum": [
+            "OUTER",
+            "MIDDLE",
+            "INNER"
+          ]
+        },
+        "criterion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "calibration": {
+          "$ref": "#/$defs/Calibration"
+        }
+      },
+      "required": [
+        "condition_id",
+        "decision",
+        "trigger_layer",
+        "criterion",
+        "calibration"
+      ]
+    },
+    "ConditionDraft": {
+      "type": "object",
+      "properties": {
+        "condition_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "decision": {
+          "type": "string",
+          "enum": [
+            "LONG",
+            "SHORT"
+          ]
+        },
+        "trigger_layer": {
+          "type": "string",
+          "enum": [
+            "OUTER",
+            "MIDDLE",
+            "INNER"
+          ]
+        },
+        "criterion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "calibration": {
+          "$ref": "#/$defs/Calibration"
+        }
+      },
+      "required": [
+        "decision",
+        "trigger_layer",
+        "criterion",
+        "calibration"
+      ]
+    },
+    "Policy": {
+      "type": "object",
+      "properties": {
+        "policy_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "ref": {
+          "$ref": "#/$defs/RefList"
+        },
+        "transmission": {
+          "type": "string",
+          "minLength": 1
+        },
+        "match_scope": {
+          "type": "string",
+          "minLength": 1
+        },
+        "activation_conditions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Condition"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "policy_id",
+        "title",
+        "transmission",
+        "match_scope",
+        "activation_conditions"
+      ]
+    },
+    "PolicyDraft": {
+      "type": "object",
+      "properties": {
+        "policy_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "ref": {
+          "$ref": "#/$defs/RefList"
+        },
+        "transmission": {
+          "type": "string",
+          "minLength": 1
+        },
+        "match_scope": {
+          "type": "string",
+          "minLength": 1
+        },
+        "activation_conditions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ConditionDraft"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "title",
+        "transmission",
+        "match_scope",
+        "activation_conditions"
+      ]
+    },
+    "PolicySet": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "document3.v3"
+        },
+        "workflow_version": {
+          "const": "document3.v2.1"
+        },
+        "ticker": {
+          "type": "string",
+          "minLength": 1
+        },
+        "policy_set_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "as_of": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "publication_state": {
+          "type": "string",
+          "enum": [
+            "COMPLETE",
+            "PARTIAL"
+          ]
+        },
+        "document2_ref": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "Use the existing D2 snapshot-reference contract; null when no snapshot is available."
+        },
+        "event_library_ref": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "Use the existing event-library snapshot-reference contract; null when unavailable."
+        },
+        "policies": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Policy"
+          }
+        },
+        "published_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "schema_version",
+        "workflow_version",
+        "ticker",
+        "policy_set_version",
+        "as_of",
+        "publication_state",
+        "document2_ref",
+        "event_library_ref",
+        "policies",
+        "published_at"
+      ]
+    }
+  }
+}

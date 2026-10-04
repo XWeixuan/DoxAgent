@@ -24,6 +24,7 @@ from doxagent.workflows.codex_document2.runner import logical_workspace_id
 from doxagent.workflows.codex_document2.schema import (
     Document2Checkpoint,
     ShellFinalizationResult,
+    ShellFinalizationResultV21,
 )
 
 _STATE_SCHEMA = "d2-pilot-coordinator-v1"
@@ -38,6 +39,7 @@ class Document2PilotCoordinatorRequest:
     source_global_run_id: str | None = None
     shell_key: str | None = None
     capability_hours: int = 24 * 365 * 10
+    document_schema_version: Literal["document2.v2", "document2.v2.1"] = "document2.v2"
 
 
 @dataclass(frozen=True)
@@ -86,6 +88,10 @@ class Document2PilotCoordinator:
         stages = _build_stages(request)
         state: dict[str, object] = {
             "schema_version": _STATE_SCHEMA,
+            "document_schema_version": request.document_schema_version,
+            "discovery_contract_version": (
+                "single-v1" if request.document_schema_version == "document2.v2.1" else "split-v1"
+            ),
             "coordinator_id": request.coordinator_id,
             "source_d2_run_id": request.source_d2_run_id,
             "source_global_run_id": (
@@ -118,13 +124,20 @@ class Document2PilotCoordinator:
             if (
                 active is not None
                 or pending is None
-                or pending["node"] != CodexD2Node.O1_STATE.value
+                or pending["node"]
+                != (
+                    CodexD2Node.O1_OPEN_DISCOVERY.value
+                    if state.get("document_schema_version") == "document2.v2.1"
+                    else CodexD2Node.O1_STATE.value
+                )
             ):
                 raise ValueError(
                     "finalized_shells_path may only replace the O0 handoff before O1 State starts"
                 )
             state["o0_finalization_override"] = _materialize_finalization_override(
-                root, Path(finalized_shells_path)
+                root,
+                Path(finalized_shells_path),
+                str(state.get("document_schema_version", "document2.v2")),
             )
         if shell_key is not None:
             _identifier(shell_key, "shell_key")
@@ -137,6 +150,10 @@ class Document2PilotCoordinator:
         if active is not None:
             if not _completion_ready(active):
                 return _event("waiting", root, active)
+            if active["node"] == CodexD2Node.O1_OPEN_DISCOVERY.value:
+                from doxagent.workflows.codex_document2.discovery_checkpoint import finalize_pilot
+
+                finalize_pilot(Path(str(active["case_root"])), str(active["attempt_id"]))
             active["status"] = "completed"
             active["output_sha256"] = _tree_hash(_output_root(active))
             active["completed_at"] = _now()
@@ -160,6 +177,7 @@ class Document2PilotCoordinator:
                 node=CodexD2Node(str(pending["node"])),
                 case_id=str(pending["case_id"]),
                 capability_hours=int(str(state["capability_hours"])),
+                document_schema_version=state.get("document_schema_version", "document2.v2"),
                 upstream_cases=dependencies,
                 source_global_run_id=(
                     str(state["source_global_run_id"])
@@ -235,6 +253,11 @@ class Document2PilotCoordinator:
             raise ValueError(f"invalid Pilot coordinator state: {root}") from exc
         if not isinstance(state, dict) or state.get("schema_version") != _STATE_SCHEMA:
             raise ValueError(f"unsupported Pilot coordinator state: {root}")
+        if (
+            state.get("document_schema_version") == "document2.v2.1"
+            and state.get("discovery_contract_version", "split-v1") != "single-v1"
+        ):
+            raise ValueError("Pilot Discovery contract mismatch; create a single-v1 coordinator")
         return root, state
 
 
@@ -242,6 +265,13 @@ def _build_stages(request: Document2PilotCoordinatorRequest) -> list[dict[str, o
     checkpoint = request.checkpoint
     if checkpoint is None:
         return _build_bootstrap_stages(request)
+    if checkpoint.document_schema_version != request.document_schema_version:
+        raise ValueError("Pilot checkpoint document schema version mismatch")
+    if (
+        request.document_schema_version == "document2.v2.1"
+        and checkpoint.discovery_contract_version != "single-v1"
+    ):
+        raise ValueError("Pilot checkpoint Discovery contract mismatch; use a new run")
     if checkpoint.run_id != request.source_d2_run_id:
         raise ValueError("Document2 checkpoint run_id does not match source_d2_run_id")
     shell_items = list(checkpoint.shell_runs.items())
@@ -258,7 +288,7 @@ def _build_stages(request: Document2PilotCoordinatorRequest) -> list[dict[str, o
             f"{key}={state.shell_id}" for key, state in checkpoint.shell_runs.items()
         )
         raise ValueError(
-            "exactly one Document2 shell must be selected for a 13-node Pilot; "
+            "exactly one Document2 shell must be selected for a single-shell Pilot; "
             f"available shells: {available or 'none'}"
         )
     o1_workspace = shell_items[0][1].workspace_run_id
@@ -355,7 +385,7 @@ def _build_stages(request: Document2PilotCoordinatorRequest) -> list[dict[str, o
             False,
         ),
     ]
-    return _stage_records(request.coordinator_id, specs)
+    return _stage_records(request.coordinator_id, _versioned_specs(request, specs))
 
 
 def _build_bootstrap_stages(
@@ -454,7 +484,7 @@ def _build_bootstrap_stages(
             False,
         ),
     ]
-    return _stage_records(request.coordinator_id, specs)
+    return _stage_records(request.coordinator_id, _versioned_specs(request, specs))
 
 
 def _stage_records(
@@ -526,11 +556,18 @@ def _dependency_cases(
     return tuple(dependencies)
 
 
-def _materialize_finalization_override(root: Path, source_path: Path) -> dict[str, object]:
+def _materialize_finalization_override(
+    root: Path, source_path: Path, document_schema_version: str = "document2.v2"
+) -> dict[str, object]:
     source = source_path.resolve()
     try:
         raw = source.read_bytes()
-        result = ShellFinalizationResult.model_validate_json(raw)
+        model = (
+            ShellFinalizationResultV21
+            if document_schema_version == "document2.v2.1"
+            else ShellFinalizationResult
+        )
+        result = model.model_validate_json(raw)
     except (OSError, ValueError) as exc:
         raise ValueError(f"invalid replacement O0 Finalization result: {source}") from exc
     if not result.shells:
@@ -542,11 +579,15 @@ def _materialize_finalization_override(root: Path, source_path: Path) -> dict[st
     case_root = root / "overrides" / CodexD2Node.O0_FINALIZATION.value / source_sha256[:16]
     manifest = {
         "case_id": case_id,
+        "document_schema_version": document_schema_version,
         "node": CodexD2Node.O0_FINALIZATION.value,
         "node_attempt_id": attempt_id,
         "override_source_path": str(source),
         "override_source_sha256": source_sha256,
-        "shell_ids": [item.shell_id for item in result.shells],
+        "shell_ids": [
+            item.name if isinstance(result, ShellFinalizationResultV21) else item.shell_id
+            for item in result.shells
+        ],
     }
     if case_root.exists():
         existing = json.loads((case_root / "case_manifest.json").read_text(encoding="utf-8"))
@@ -567,7 +608,10 @@ def _materialize_finalization_override(root: Path, source_path: Path) -> dict[st
         "case_root": str(case_root),
         "source_path": str(source),
         "source_sha256": source_sha256,
-        "shell_ids": [item.shell_id for item in result.shells],
+        "shell_ids": [
+            item.name if isinstance(result, ShellFinalizationResultV21) else item.shell_id
+            for item in result.shells
+        ],
         "configured_at": _now(),
     }
 
@@ -659,3 +703,28 @@ def _now() -> str:
 def _identifier(value: str, label: str) -> None:
     if not value or len(value) > 80 or not all(char.isalnum() or char in "._-" for char in value):
         raise ValueError(f"invalid {label}")
+
+
+def _versioned_specs(request, specs):
+    if request.document_schema_version == "document2.v2":
+        return specs
+    result = []
+    discovery = CodexD2Node.O1_OPEN_DISCOVERY
+    previous = []
+    for node, workspace, dependencies, optional in specs:
+        if node == CodexD2Node.O1_STATE:
+            result.extend(
+                [
+                    (discovery, workspace, (CodexD2Node.O0_FINALIZATION,), False),
+                ]
+            )
+        if node in {
+            CodexD2Node.O1_STATE,
+            CodexD2Node.O1_REALIZATION,
+            CodexD2Node.O1_GAPS,
+            CodexD2Node.O1_FINALIZATION,
+        }:
+            dependencies = tuple(dict.fromkeys((*dependencies, discovery, *previous)))
+            previous.append(node)
+        result.append((node, workspace, dependencies, optional))
+    return result

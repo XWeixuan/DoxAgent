@@ -264,3 +264,38 @@ class Document3RuntimeProjectionConsumer:
         self._version_cache.move_to_end(cache_key)
         while len(self._version_cache) > self._version_cache_size:
             self._version_cache.popitem(last=False)
+
+
+def project_policy_set_v3(policy_set):
+    """Pure staged V5 construction; active projection consumers remain V4."""
+    from .state_v21 import digest
+
+    policies = []
+    for policy in policy_set.policies:
+        conditions = []
+        for condition in policy.activation_conditions:
+            value = condition.model_dump(mode="json")
+            execution = {
+                k: value[k] for k in ("decision", "trigger_layer", "criterion", "calibration")
+            }
+            conditions.append({**value, "condition_revision": digest(execution)})
+        policies.append(
+            {
+                "policy_id": policy.policy_id,
+                "title": policy.title,
+                "ref": policy.ref,
+                "transmission": policy.transmission,
+                "match_scope": policy.match_scope,
+                "activation_conditions": conditions,
+            }
+        )
+    return {
+        "schema_version": "document3.runtime_projection.v5",
+        "consumer_contract": "persistent-runtime.v2.condition-policy.v1",
+        "ticker": policy_set.ticker,
+        "policy_set_version": policy_set.policy_set_version,
+        "as_of": policy_set.as_of.isoformat(),
+        "published_at": policy_set.published_at.isoformat(),
+        "publication_state": policy_set.publication_state,
+        "policies": policies,
+    }

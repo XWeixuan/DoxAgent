@@ -125,6 +125,52 @@ class InMemoryDocument3PolicyRepository:
         self._items: dict[str, dict[int, PolicySet]] = {}
         self._current: dict[str, int] = {}
         self._lock = threading.RLock()
+        self._staged_v3: dict[str, tuple[Any, dict[str, Any]]] = {}
+
+    def save_staged_v3(self, run_id, policy_set, projection, release_manifest):
+        import json
+
+        from .state_v21 import canonical
+
+        value = (
+            policy_set.model_copy(deep=True),
+            json.loads(
+                canonical(
+                    {
+                        **release_manifest,
+                        "projection": projection,
+                    }
+                )
+            ),
+        )
+        with self._lock:
+            old = self._staged_v3.get(run_id)
+            if old and old != value:
+                raise ValueError("immutable staged commit mismatch")
+            for key, row in self._staged_v3.items():
+                if (
+                    key != run_id
+                    and row[0].ticker == policy_set.ticker
+                    and row[0].policy_set_version == policy_set.policy_set_version
+                ):
+                    raise ValueError("duplicate staged version")
+            self._staged_v3[run_id] = value
+
+    def get_staged_v3(self, ticker, version):
+        with self._lock:
+            return next(
+                (
+                    row[0].model_copy(deep=True)
+                    for row in self._staged_v3.values()
+                    if row[0].ticker == ticker.upper() and row[0].policy_set_version == version
+                ),
+                None,
+            )
+
+    def get_staged_v3_by_run(self, run_id):
+        with self._lock:
+            row = self._staged_v3.get(run_id)
+            return row[0].model_copy(deep=True) if row else None
 
     def get_current(self, ticker: str) -> PolicySet | None:
         with self._lock:
@@ -188,6 +234,25 @@ class InMemoryDocument3PolicyRepository:
 
 
 class SQLiteDocument3PolicyRepository:
+    def save_staged_v3(self, run_id, policy_set, projection, release_manifest):
+        from .state_v21 import StateV21
+
+        StateV21(self.path).save_staged_v3(
+            run_id, policy_set, {**release_manifest, "projection": projection}
+        )
+
+    def get_staged_v3(self, ticker, version):
+        from .state_v21 import StateV21
+
+        return StateV21(self.path).get_staged_v3(ticker, version)
+
+    def get_staged_v3_by_run(self, run_id):
+        from .schema_v21 import PolicySetV3
+        from .state_v21 import StateV21
+
+        row = StateV21(self.path).get_staged_by_run(run_id)
+        return PolicySetV3.model_validate(row[0]) if row else None
+
     def __init__(self, path: str | Path) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)

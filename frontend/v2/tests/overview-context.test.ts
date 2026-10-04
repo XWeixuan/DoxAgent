@@ -2,6 +2,10 @@ import { describe, expect, it, vi } from "vitest";
 import type { Period } from "@contract";
 import type { ApiClient, Endpoints } from "../src/core/api";
 import { readOverviewContext } from "../src/pages/overview/context";
+import {
+  overviewGatewayReady,
+  overviewSummaryKey,
+} from "../src/pages/overview/data";
 import { context } from "./fixtures/wire";
 
 function reply(period: Period, trading: boolean): Endpoints["ReadContext"] {
@@ -37,6 +41,61 @@ function reply(period: Period, trading: boolean): Endpoints["ReadContext"] {
 }
 
 describe("Overview calendar bootstrap", () => {
+  it("waits for the selected period before starting a Gateway probe", () => {
+    expect(
+      overviewGatewayReady("CURRENT_TRADING_DAY", "PREVIOUS_TRADING_DAY", true),
+    ).toBe(false);
+    expect(
+      overviewGatewayReady(
+        "PREVIOUS_TRADING_DAY",
+        "PREVIOUS_TRADING_DAY",
+        false,
+      ),
+    ).toBe(true);
+    expect(
+      overviewGatewayReady("CURRENT_TRADING_DAY", "CURRENT_TRADING_DAY", true),
+    ).toBe(true);
+  });
+
+  it("starts a new Gateway/status query when the calendar default resolves to another view", () => {
+    for (const kind of ["gateway", "status"] as const) {
+      expect(
+        overviewSummaryKey(
+          "owner",
+          kind,
+          "CURRENT_TRADING_DAY",
+          true,
+          "view-before",
+        ),
+      ).not.toEqual(
+        overviewSummaryKey(
+          "owner",
+          kind,
+          "PREVIOUS_TRADING_DAY",
+          false,
+          "view-after",
+        ),
+      );
+      expect(
+        overviewSummaryKey(
+          "owner",
+          kind,
+          "PREVIOUS_TRADING_DAY",
+          false,
+          "view-before",
+        ),
+      ).not.toEqual(
+        overviewSummaryKey(
+          "owner",
+          kind,
+          "PREVIOUS_TRADING_DAY",
+          false,
+          "view-after",
+        ),
+      );
+    }
+  });
+
   it.each(["OPEN", "MANUAL"] as const)(
     "uses previous session on closed days for %s",
     async (refresh) => {

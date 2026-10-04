@@ -1,0 +1,32 @@
+{
+  "schema_version": "document3.v3",
+  "workflow_version": "document3.v2.1",
+  "ticker": "MU",
+  "policy_set_version": 2,
+  "as_of": "2026-10-04T00:00:00Z",
+  "publication_state": "COMPLETE",
+  "document2_ref": null,
+  "event_library_ref": null,
+  "policies": [
+    {
+      "policy_id": "pol_16b82d851da44b87aec1e66ff2ec8ade",
+      "title": "fixture policy",
+      "ref": [],
+      "transmission": "fixture transmission",
+      "match_scope": "fixture news",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "decision": "LONG",
+          "trigger_layer": "OUTER",
+          "criterion": "fixture event",
+          "calibration": {
+            "reference_state": "fixture state",
+            "trigger_boundary": "fixture boundary"
+          }
+        }
+      ]
+    }
+  ],
+  "published_at": "2026-10-04T04:53:10.564253+08:00"
+}

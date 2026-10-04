@@ -32,7 +32,16 @@ from doxagent.model_usage.repository import ModelUsageRepository
 from doxagent.model_usage.schema import ModelUsageEvent
 from doxagent.observations.promotion import CitationPromotionService
 from doxagent.ticker_initialization.substeps import attempt_identity, durable
+from doxagent.workflows.codex_document2 import schema as v21
+from doxagent.workflows.codex_document2.discovery_checkpoint import (
+    assemble_result,
+    qualify_refs,
+    read_checkpoint,
+    task_contract,
+)
 from doxagent.workflows.codex_document2.errors import (
+    Document2ExecutionError,
+    Document2FailureKind,
     format_execution_error,
     raised_worker_error,
     worker_execution_error,
@@ -107,8 +116,60 @@ class Document2TurnRunner:
         artifact_key: str | None = None,
         initialization_id: str | None = None,
     ) -> Document2TurnResult:
+        if node in {CodexD2Node.O1_DISCOVERY_SCAN, CodexD2Node.O1_DISCOVERY_SELECTION}:
+            raise ValueError("split-v1 Discovery nodes are historical; use O1_OPEN_DISCOVERY")
+        discovery = node == CodexD2Node.O1_OPEN_DISCOVERY
+        wire_model = v21.OpenDiscoveryCompletionV21 if discovery else output_model
         attempt_number = self._next_attempt_number(persistence_run_id, node)
         attempt_id = attempt_identity(self._attempt_id(node, attempt_number))
+        resume_request = None
+        if discovery:
+            # Reattach a still-live/successful Worker after coordinator interruption.
+            # A failed Selection attempt is intentionally excluded from this lookup.
+            for prior in self._repository.list_attempts(persistence_run_id):
+                if prior.node != node or prior.status != AttemptStatus.RUNNING:
+                    continue
+                try:
+                    saved = await self._workspace.read_text(
+                        workspace_run_id, f"attempts/{prior.attempt_id}/input/worker_request.json"
+                    )
+                except FileNotFoundError:
+                    continue
+                candidate = WorkerRunRequest.model_validate_json(saved.content)
+                if (
+                    candidate.run_id != workspace_run_id
+                    or candidate.node != node
+                    or candidate.attempt_id != prior.attempt_id
+                ):
+                    raise ValueError("saved Discovery Worker request identity mismatch")
+                attempt_id, attempt_number = prior.attempt_id, prior.attempt_number
+                resume_request = candidate
+                break
+            # Durable initialization may recover the same attempt without a RUNNING
+            # model record; in both cases preserve the original immutable context.
+            try:
+                original = await self._workspace.read_text(
+                    workspace_run_id, f"attempts/{attempt_id}/input/context.json"
+                )
+            except FileNotFoundError:
+                original = None
+            if original is not None:
+                context = json.loads(original.content)
+                if resume_request is None:
+                    try:
+                        saved = await self._workspace.read_text(
+                            workspace_run_id, f"attempts/{attempt_id}/input/worker_request.json"
+                        )
+                    except FileNotFoundError:
+                        pass
+                    else:
+                        resume_request = WorkerRunRequest.model_validate_json(saved.content)
+                        if (
+                            resume_request.run_id != workspace_run_id
+                            or resume_request.attempt_id != attempt_id
+                            or resume_request.node != node
+                        ):
+                            raise ValueError("saved Discovery Worker request identity mismatch")
         context_text = json.dumps(context, ensure_ascii=False, indent=2, default=str)
         input_hash = hashlib.sha256(context_text.encode("utf-8")).hexdigest()
         attempt = NodeAttempt(
@@ -128,17 +189,18 @@ class Document2TurnRunner:
         self._repository.save_attempt(attempt)
         job: WorkerJob | None = None
         try:
-            output_schema = strict_json_schema(output_model.model_json_schema())
-            await self._seed_attempt(
-                workspace_run_id=workspace_run_id,
-                attempt_id=attempt_id,
-                node=node,
-                context_text=context_text,
-                agent_asset=agent_asset,
-                skill_asset=skill_asset,
-                output_schema=output_schema,
-                previous_failure=previous_failure,
-            )
+            output_schema = strict_json_schema(wire_model.model_json_schema())
+            if not discovery or original is None:
+                await self._seed_attempt(
+                    workspace_run_id=workspace_run_id,
+                    attempt_id=attempt_id,
+                    node=node,
+                    context_text=context_text,
+                    agent_asset=agent_asset,
+                    skill_asset=skill_asset,
+                    output_schema=output_schema,
+                    previous_failure=previous_failure,
+                )
             prompt = (
                 f"Document2 node: {node.value}. Attempt: {attempt_id}. "
                 f"Read attempts/{attempt_id}/input/AGENTS.md, agent.md, skill.md, task.json, "
@@ -164,7 +226,21 @@ class Document2TurnRunner:
                 allow_subagents=allow_subagents,
                 max_subagents=self._max_subagents if allow_subagents else 0,
                 initialization_id=initialization_id,
+                idempotency_key=(
+                    hashlib.sha256(f"{workspace_run_id}:{attempt_id}".encode()).hexdigest()
+                    if discovery
+                    else None
+                ),
             )
+            if discovery:
+                if resume_request is not None:
+                    request = resume_request
+                else:
+                    await self._workspace.write_text(
+                        workspace_run_id,
+                        f"attempts/{attempt_id}/input/worker_request.json",
+                        request.model_dump_json(indent=2),
+                    )
             execution_error = None
             try:
                 job = await self._worker.run(request)
@@ -181,31 +257,70 @@ class Document2TurnRunner:
                 ):
                     raise
                 execution_error = raised_worker_error(exc, node)
+            frozen = None
+            if discovery:
+                frozen = await read_checkpoint(self._workspace, workspace_run_id, context)
+                if frozen is not None:
+                    await self._promote_scan(workspace_run_id, frozen)
             try:
                 from doxagent.codex_runtime.recovery import ingest_model, json_value
 
                 parsed = ingest_model(
-                    output_model, json_value(job.final_response or "" if job else "")
+                    wire_model, json_value(job.final_response or "" if job else "")
                 )
             except (ValueError, TypeError) as exc:
                 from .recovery import fallback
 
-                parsed = fallback(output_model, context)
+                if context.get("document_schema_version") == "document2.v2.1":
+                    if execution_error is not None and not execution_error.allows_partial:
+                        raise execution_error from exc
+                    if job and job.status != "succeeded":
+                        error = worker_execution_error(job, node)
+                        if not error.allows_partial:
+                            raise error from exc
+                parsed = None if discovery else fallback(output_model, context)
                 if parsed is None:
                     if execution_error is not None:
                         raise execution_error from exc
                     if job and job.status != "succeeded":
                         raise worker_execution_error(job, node) from exc
                     raise format_execution_error(exc, node) from exc
+            from .validation import validate_output
+
+            try:
+                if discovery:
+                    if frozen is None:
+                        raise ValueError(
+                            "Open Discovery returned Selection without a Scan checkpoint"
+                        )
+                    parsed = assemble_result(parsed, frozen, context, workspace_run_id)
+                else:
+                    validate_output(parsed, context)
+            except ValueError as exc:
+                raise format_execution_error(exc, node) from exc
             output_json = parsed.model_dump_json(indent=2)
             local_manifest = await self._promote_citations(
                 workspace_run_id=workspace_run_id,
                 attempt_id=attempt_id,
-                output_json=output_json,
+                output_json=(
+                    self._citation_text(parsed.selection.model_dump(mode="json"), attempt_id)
+                    + (
+                        "\n"
+                        + self._citation_text(
+                            parsed.checkpoint.scan.model_dump(mode="json"), attempt_id
+                        )
+                        if parsed.checkpoint.producer_attempt_id == attempt_id
+                        else ""
+                    )
+                    if discovery
+                    else output_json
+                ),
             )
             try:
                 qualified = output_model.model_validate(
-                    _qualify_local_aliases(parsed.model_dump(mode="json"), attempt_id)
+                    qualify_refs(parsed.model_dump(mode="json"), attempt_id)
+                    if discovery
+                    else _qualify_local_aliases(parsed.model_dump(mode="json"), attempt_id)
                 )
             except ValidationError as exc:
                 raise format_execution_error(exc, node) from exc
@@ -298,10 +413,12 @@ class Document2TurnRunner:
             ],
             "previous_failure": previous_failure,
         }
+        if node == CodexD2Node.O1_OPEN_DISCOVERY:
+            task["open_discovery"] = task_contract(json.loads(context_text))
         files = {
-            "AGENTS.md": self._read_asset("AGENTS.md"),
-            "agent.md": self._read_asset(agent_asset),
-            "skill.md": self._read_asset(skill_asset),
+            "AGENTS.md": self._read_asset("AGENTS.md", node=node),
+            "agent.md": self._read_asset(agent_asset, node=node),
+            "skill.md": self._read_asset(skill_asset, node=node),
             "context.json": context_text,
             "output_schema.json": json.dumps(output_schema, ensure_ascii=False, indent=2),
             "task.json": json.dumps(task, ensure_ascii=False, indent=2),
@@ -337,11 +454,54 @@ class Document2TurnRunner:
                 pass
             return manifest
 
-    def _read_asset(self, relative_path: str) -> str:
+    @staticmethod
+    def _citation_text(value, attempt_id):
+        refs = []
+
+        def visit(item):
+            if isinstance(item, dict):
+                for key, child in item.items():
+                    if key == "ref":
+                        for ref in child:
+                            prefix = f"D2REF:{attempt_id}:"
+                            alias = ref[len(prefix) :] if ref.startswith(prefix) else ref
+                            match = _BARE_ALIAS.fullmatch(alias)
+                            if match:
+                                refs.append(f"【cite:{match.group(1)}】")
+                    else:
+                        visit(child)
+            elif isinstance(item, list):
+                for child in item:
+                    visit(child)
+
+        visit(value)
+        return "\n".join(refs)
+
+    async def _promote_scan(self, workspace_run_id, checkpoint):
+        return await self._promote_citations(
+            workspace_run_id=workspace_run_id,
+            attempt_id=checkpoint.producer_attempt_id,
+            output_json=self._citation_text(
+                checkpoint.scan.model_dump(mode="json"), checkpoint.producer_attempt_id
+            ),
+        )
+
+    def _read_asset(self, relative_path: str, *, node: CodexD2Node | None = None) -> str:
         path = (self._assets / relative_path).resolve()
         if self._assets.resolve() not in path.parents and path != self._assets.resolve():
             raise ValueError("Document2 asset path escaped its root")
-        return path.read_text(encoding="utf-8")
+        try:
+            return path.read_text(encoding="utf-8")
+        except FileNotFoundError as exc:
+            if node == CodexD2Node.O1_OPEN_DISCOVERY:
+                raise Document2ExecutionError(
+                    f"Document2 discovery asset missing: {path}",
+                    code="D2_DISCOVERY_ASSET_MISSING",
+                    kind=Document2FailureKind.SYSTEM,
+                    node=node,
+                    retryable=False,
+                ) from exc
+            raise
 
     def _next_attempt_number(self, run_id: str, node: CodexD2Node) -> int:
         return self._repository.next_attempt_number(run_id, node)

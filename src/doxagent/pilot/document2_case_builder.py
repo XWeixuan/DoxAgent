@@ -12,7 +12,7 @@ import zipfile
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path, PurePosixPath
-from typing import cast
+from typing import Literal, cast
 from uuid import uuid4
 
 from pydantic import BaseModel
@@ -52,12 +52,17 @@ from doxagent.pilot.case_builder import DEFAULT_PILOT_CAPABILITY_HOURS
 from doxagent.pilot.templates import render_config, render_document2_task
 from doxagent.settings import DoxAgentSettings
 from doxagent.tools.factory import default_real_tool_registry
+from doxagent.workflows.codex_document2 import schema as v21
 from doxagent.workflows.codex_document2.inputs import (
     DoxAtlasNarrativeReportProvider,
+    EventLibraryProvider,
     OptionalInput,
+    UnconfiguredEventLibraryProvider,
     _qualify_d1_aliases,
     _qualify_d1_context,
+    _safe_optional_load,
 )
+from doxagent.workflows.codex_document2.orchestrator import _candidate_sets_context
 from doxagent.workflows.codex_document2.schema import (
     CandidateDiscoveryResult,
     DomainReviewResult,
@@ -79,6 +84,7 @@ _PILOT_NODES = frozenset(
         CodexD2Node.O0_REVIEW_C3,
         CodexD2Node.O0_REVIEW_C5,
         CodexD2Node.O0_FINALIZATION,
+        CodexD2Node.O1_OPEN_DISCOVERY,
         CodexD2Node.O1_STATE,
         CodexD2Node.O1_REALIZATION,
         CodexD2Node.O1_GAPS,
@@ -110,6 +116,7 @@ class Document2PilotCaseRequest:
     upstream_cases: tuple[Document2PilotUpstreamCase, ...] = ()
     source_global_run_id: str | None = None
     shell_key: str | None = None
+    document_schema_version: Literal["document2.v2", "document2.v2.1"] = "document2.v2"
 
 
 @dataclass(frozen=True)
@@ -139,6 +146,8 @@ class Document2PilotCaseBuilder:
         settings: DoxAgentSettings | None = None,
         repository: CodexRuntimeRepository | None = None,
         published_storage: PublishedDocumentStorage | None = None,
+        event_library_provider: EventLibraryProvider | None = None,
+        asset_root: str | Path | None = None,
     ) -> None:
         self.repo_root = Path(repo_root).resolve()
         self.cases_root = Path(cases_root).resolve()
@@ -147,6 +156,12 @@ class Document2PilotCaseBuilder:
         self.settings = settings or DoxAgentSettings()
         self._repository = repository
         self._published_storage = published_storage
+        self._event_library_provider = event_library_provider or UnconfiguredEventLibraryProvider()
+        self._asset_root = (
+            Path(asset_root)
+            if asset_root
+            else self.repo_root / "prompts" / "codex_v2" / "document2"
+        )
         self._source_cache_root = self.cases_root / "document2" / "_sources"
         if not self.settings.codex_worker_bearer_token:
             raise ValueError("DOXAGENT_CODEX_WORKER_BEARER_TOKEN is required")
@@ -370,14 +385,20 @@ class Document2PilotCaseBuilder:
     ) -> dict[str, object]:
         as_of = cast(datetime, bundle.published_at)
         horizontal, horizontal_artifact_id = await self._bootstrap_horizontal(bundle)
-        event_library = OptionalInput(
-            status=InputAvailability.NOT_CONFIGURED,
-            warning="Event Library integration is reserved but not configured.",
-            metadata={
-                "interface_version": "event-library-read-v2",
-                "read_only": True,
-            },
-        )
+        cache_path = self._source_cache_root / bundle.run_id / "event_library.json"
+        if cache_path.is_file():
+            event_library = OptionalInput.model_validate_json(
+                cache_path.read_text(encoding="utf-8")
+            )
+        else:
+            event_library = await _safe_optional_load(
+                self._event_library_provider,
+                ticker=bundle.ticker,
+                as_of=as_of,
+                label="Event Library",
+            )
+            cache_path.parent.mkdir(parents=True, exist_ok=True)
+            cache_path.write_text(event_library.model_dump_json(indent=2), encoding="utf-8")
         common: dict[str, object] = {
             "ticker": bundle.ticker,
             "as_of": as_of.isoformat(),
@@ -391,6 +412,15 @@ class Document2PilotCaseBuilder:
             "event_library": event_library.model_dump(mode="json"),
             "horizontal_indicators": horizontal,
         }
+        if request.document_schema_version == "document2.v2.1":
+            common.update(
+                document_schema_version=request.document_schema_version,
+                discovery_contract_version="single-v1",
+                entity_relations=[
+                    _qualify_d1_context(item.model_dump(mode="json", by_alias=True))
+                    for item in bundle.entity_relations
+                ],
+            )
         node = request.node
         candidate_roles = {
             CodexD2Node.O0_CANDIDATE_C1: "c1",
@@ -427,7 +457,9 @@ class Document2PilotCaseBuilder:
                 CodexD2Node.O0_CANDIDATE_NARRATIVE: "narrative",
             }
             return {
-                "candidate_sets": _pilot_candidate_sets_context(upstream, labels),
+                "candidate_sets": _pilot_candidate_sets_context(
+                    upstream, labels, request.document_schema_version
+                ),
                 **common,
             }
         review_roles = {
@@ -483,10 +515,18 @@ class Document2PilotCaseBuilder:
             "citation_manifest_artifact_id": handoff.citation_manifest_artifact_id,
         }
         o0_finalization = upstream.get(CodexD2Node.O0_FINALIZATION, {})
-        if node is CodexD2Node.O1_STATE:
-            canonical_shell = _select_bootstrap_shell(
-                o0_finalization, request.shell_key
+        if request.document_schema_version == "document2.v2.1":
+            research_nodes = (CodexD2Node.O1_STATE, CodexD2Node.O1_REALIZATION, CodexD2Node.O1_GAPS)
+            prior = next((upstream[n] for n in reversed(research_nodes) if n in upstream), None)
+            canonical_shell = (
+                prior["canonical_shell"]
+                if prior
+                else v21.ExpectationShellV21.model_validate(
+                    _select_bootstrap_shell(o0_finalization, request.shell_key)
+                ).model_dump(mode="json")
             )
+        elif node is CodexD2Node.O1_STATE:
+            canonical_shell = _select_bootstrap_shell(o0_finalization, request.shell_key)
         else:
             previous_o1_nodes = {
                 CodexD2Node.O1_REALIZATION: CodexD2Node.O1_STATE,
@@ -495,6 +535,7 @@ class Document2PilotCaseBuilder:
             }
             canonical_shell = upstream.get(previous_o1_nodes[node], {})
         turns = {
+            CodexD2Node.O1_OPEN_DISCOVERY: "OPEN_DISCOVERY",
             CodexD2Node.O1_STATE: "STATE",
             CodexD2Node.O1_REALIZATION: "REALIZATION",
             CodexD2Node.O1_GAPS: "GAPS",
@@ -502,13 +543,38 @@ class Document2PilotCaseBuilder:
         }
         if node not in turns:
             raise ValueError(f"unsupported Document2 Pilot bootstrap node: {node.value}")
+        sidecars = {}
+        if request.document_schema_version == "document2.v2.1":
+            if CodexD2Node.O1_OPEN_DISCOVERY in upstream:
+                discovery = upstream[CodexD2Node.O1_OPEN_DISCOVERY]
+                sidecars["open_discovery_scan"] = discovery["checkpoint"]["scan"]
+                sidecars["open_discovery_selection"] = discovery["selection"]
+            additions = {}
+            resolutions = {}
+            for source in (CodexD2Node.O1_STATE, CodexD2Node.O1_REALIZATION, CodexD2Node.O1_GAPS):
+                for item in upstream.get(source, {}).get("late_additions", []):
+                    additions[(item["unit"], item["name"])] = item
+                for item in upstream.get(source, {}).get("open_discovery_resolution", []):
+                    resolutions[(item["unit"], item["candidate"])] = item
+            sidecars["open_discovery_late_additions"] = list(additions.values())
+            sidecars["open_discovery_resolution"] = list(resolutions.values())
         return {
+            **sidecars,
+            "ticker": bundle.ticker,
+            "document_schema_version": request.document_schema_version,
+            "research_cutoff_at": as_of.isoformat(),
+            "source_global_research_published_at": as_of.isoformat(),
             "canonical_shell": canonical_shell,
             "o0_finalization": o0_finalization,
             "global_research": global_research,
             "narrative_research": narrative.model_dump(mode="json"),
             "event_library": event_library.model_dump(mode="json"),
             "turn": turns[node],
+            **(
+                {"discovery_contract_version": "single-v1"}
+                if request.document_schema_version == "document2.v2.1"
+                else {}
+            ),
         }
 
     def _seed_bootstrap_attempt(
@@ -518,7 +584,9 @@ class Document2PilotCaseBuilder:
         attempt_id: str,
         context: dict[str, object],
     ) -> None:
-        agent_asset, skill_asset, output_model = _bootstrap_contract(node)
+        agent_asset, skill_asset, output_model = _bootstrap_contract(
+            node, str(context.get("document_schema_version", "document2.v2"))
+        )
         input_root = staging / "attempts" / attempt_id / "input"
         input_root.mkdir(parents=True)
         relative_root = f"attempts/{attempt_id}/input"
@@ -534,7 +602,11 @@ class Document2PilotCaseBuilder:
             ],
             "previous_failure": None,
         }
-        asset_root = self.repo_root / "prompts" / "codex_v2" / "document2"
+        if node == CodexD2Node.O1_OPEN_DISCOVERY:
+            from doxagent.workflows.codex_document2.discovery_checkpoint import task_contract
+
+            task["open_discovery"] = task_contract(context)
+        asset_root = self._asset_root
         files = {
             "AGENTS.md": _read_asset(asset_root, "AGENTS.md"),
             "agent.md": _read_asset(asset_root, agent_asset),
@@ -577,11 +649,37 @@ class Document2PilotCaseBuilder:
         context = json.loads((input_root / "context.json").read_text(encoding="utf-8"))
         if not isinstance(context, dict):
             raise ValueError("Document2 context.json must be an object")
+        if (
+            context.get("document_schema_version") == "document2.v2.1"
+            and context.get("discovery_contract_version") != "single-v1"
+        ):
+            raise ValueError("Pilot source Discovery contract is split-v1; create a new run")
         ticker = str(_find(context, "ticker") or "").upper()
         if not ticker:
             raise ValueError("Document2 context does not contain ticker")
-        cutoff = _parse_datetime(_find(context, "as_of")) or utc_now()
+        cutoff = (
+            _parse_datetime(context.get("research_cutoff_at"))
+            or _parse_datetime(_find(context, "as_of"))
+            or utc_now()
+        )
+        scan_producer = None
+        checkpoint_path = staging / "context/document2/open_discovery_checkpoint.json"
+        if checkpoint_path.is_file():
+            frozen = v21.OpenDiscoveryCheckpointV21.model_validate_json(
+                checkpoint_path.read_text(encoding="utf-8")
+            )
+            if frozen.producer_attempt_id != attempt_id:
+                scan_producer = frozen.producer_attempt_id
+                original_attempt = staging / "attempts" / scan_producer
+                if original_attempt.is_dir():
+                    producer_copy = staging / ".discovery-producer"
+                    shutil.copytree(original_attempt, producer_copy)
         _keep_only_attempt(staging, attempt_id)
+        if scan_producer and (staging / ".discovery-producer").is_dir():
+            shutil.move(
+                str(staging / ".discovery-producer"), str(staging / "attempts" / scan_producer)
+            )
+
         shutil.rmtree(attempt_root / "output", ignore_errors=True)
         (attempt_root / "output").mkdir(parents=True)
         (attempt_root / "audit").mkdir(parents=True, exist_ok=True)
@@ -625,6 +723,8 @@ class Document2PilotCaseBuilder:
         )
         manifest = {
             "schema_version": "codex-research-pilot-case-v2",
+            "document_schema_version": context.get("document_schema_version", "document2.v2"),
+            "discovery_contract_version": context.get("discovery_contract_version", "split-v1"),
             "case_id": request.case_id,
             "profile": "quality",
             "source_run_id": request.source_workspace_run,
@@ -672,6 +772,7 @@ class Document2PilotCaseBuilder:
                     "market_data_type": str(self.settings.ibkr_tws_market_data_type),
                 },
                 runtime_env_file=self.runtime_env_file,
+                d2_discovery=request.node == CodexD2Node.O1_OPEN_DISCOVERY,
             ),
             encoding="utf-8",
         )
@@ -682,6 +783,7 @@ class Document2PilotCaseBuilder:
                 run_id=request.source_workspace_run,
                 attempt_id=attempt_id,
                 has_pilot_upstream=bool(upstream_manifest),
+                document_schema_version=str(context.get("document_schema_version", "document2.v2")),
             ),
             encoding="utf-8",
         )
@@ -696,7 +798,7 @@ class Document2PilotCaseBuilder:
         )
 
 
-def _bootstrap_contract(node: CodexD2Node) -> tuple[str, str, type[BaseModel]]:
+def _legacy_bootstrap_contract(node: CodexD2Node) -> tuple[str, str, type[BaseModel]]:
     if node in {
         CodexD2Node.O0_CANDIDATE_C1,
         CodexD2Node.O0_CANDIDATE_C3,
@@ -753,6 +855,10 @@ def _upstream_completions(
             raise ValueError(
                 f"Pilot upstream completion must be a JSON object: {upstream.case_root}"
             )
+        if upstream.node == CodexD2Node.O1_OPEN_DISCOVERY:
+            from doxagent.workflows.codex_document2.discovery_checkpoint import finalize_pilot
+
+            raw = finalize_pilot(upstream.case_root, attempt_id).model_dump(mode="json")
         completions[upstream.node] = cast(dict[str, object], raw)
     return completions
 
@@ -760,27 +866,39 @@ def _upstream_completions(
 def _pilot_candidate_sets_context(
     upstream: dict[CodexD2Node, dict[str, object]],
     labels: dict[CodexD2Node, str],
+    document_schema_version: str = "document2.v2",
 ) -> dict[str, dict[str, object]]:
-    contextualized: dict[str, dict[str, object]] = {}
-    for source, payload in upstream.items():
-        source_role = labels.get(source)
-        if source_role is None:
-            continue
-        copied = dict(payload)
-        raw_candidates = payload.get("candidates")
-        if isinstance(raw_candidates, list):
-            copied["candidates"] = [
-                {
-                    **candidate,
-                    "candidate_ref": (
-                        f"{source_role.upper()}:{candidate.get('candidate_id')}"
-                    ),
-                }
-                for candidate in raw_candidates
-                if isinstance(candidate, dict)
-            ]
-        contextualized[source_role] = copied
-    return contextualized
+    if document_schema_version == "document2.v2":
+        contextualized: dict[str, dict[str, object]] = {}
+        for source, payload in upstream.items():
+            source_role = labels.get(source)
+            if source_role is None:
+                continue
+            copied = dict(payload)
+            raw_candidates = payload.get("candidates")
+            if isinstance(raw_candidates, list):
+                copied["candidates"] = [
+                    {
+                        **candidate,
+                        "candidate_ref": (f"{source_role.upper()}:{candidate.get('candidate_id')}"),
+                    }
+                    for candidate in raw_candidates
+                    if isinstance(candidate, dict)
+                ]
+            contextualized[source_role] = copied
+        return contextualized
+    model = (
+        v21.CandidateDiscoveryResultV21
+        if document_schema_version == "document2.v2.1"
+        else CandidateDiscoveryResult
+    )
+    return _candidate_sets_context(
+        {
+            labels[node]: model.model_validate(payload)
+            for node, payload in upstream.items()
+            if node in labels
+        }
+    )
 
 
 def _select_bootstrap_shell(
@@ -798,17 +916,19 @@ def _select_bootstrap_shell(
         return finalization
     if shell_key is not None:
         for shell in shells:
-            shell_id = str(shell.get("shell_id") or "")
+            shell_id = str(shell.get("name", shell.get("shell_id")) or "")
             hashed = hashlib.sha256(shell_id.encode("utf-8")).hexdigest()[:16]
             if shell_key in {shell_id, hashed}:
                 return shell
-        available = ", ".join(str(item.get("shell_id") or "") for item in shells)
+        available = ", ".join(str(item.get("name", item.get("shell_id")) or "") for item in shells)
         raise ValueError(
             f"Document2 Pilot shell is unavailable: {shell_key}; available: {available}"
         )
     if len(shells) == 1:
         return shells[0]
-    raise Document2PilotShellSelectionRequired([str(item.get("shell_id") or "") for item in shells])
+    raise Document2PilotShellSelectionRequired(
+        [str(item.get("name", item.get("shell_id")) or "") for item in shells]
+    )
 
 
 def _role_for_node(node: CodexD2Node) -> CodexResearchAgentRole:
@@ -819,6 +939,7 @@ def _role_for_node(node: CodexD2Node) -> CodexResearchAgentRole:
     if node is CodexD2Node.O0_REVIEW_C5:
         return CodexAgentRole.C5
     if node in {
+        CodexD2Node.O1_OPEN_DISCOVERY,
         CodexD2Node.O1_STATE,
         CodexD2Node.O1_REALIZATION,
         CodexD2Node.O1_GAPS,
@@ -984,3 +1105,20 @@ def _parse_datetime(value: object) -> datetime | None:
 def _identifier(value: str, label: str) -> None:
     if not value or len(value) > 128 or not all(char.isalnum() or char in "._-" for char in value):
         raise ValueError(f"invalid {label}")
+
+
+def _bootstrap_contract(node, document_schema_version="document2.v2"):
+    if document_schema_version == "document2.v2.1":
+        if node == CodexD2Node.O1_OPEN_DISCOVERY:
+            return "agents/o1.md", "skills/open-discovery.md", v21.OpenDiscoveryCompletionV21
+        agent, skill, model = _legacy_bootstrap_contract(node)
+        return (
+            agent,
+            skill,
+            (
+                v21.ShellResearchTurnResultV21
+                if model is ExpectationShell
+                else getattr(v21, model.__name__ + "V21")
+            ),
+        )
+    return _legacy_bootstrap_contract(node)

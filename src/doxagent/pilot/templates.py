@@ -20,6 +20,7 @@ def render_config(
     enabled_data_tools: list[str],
     ibkr: dict[str, str],
     runtime_env_file: Path,
+    d2_discovery: bool = False,
 ) -> str:
     control_root = case_root / ".control" / run_id / attempt_id
     lines = [
@@ -29,7 +30,7 @@ def render_config(
         'sandbox_mode = "workspace-write"',
         "",
         "[features]",
-        "multi_agent = true",
+        "multi_agent = false" if d2_discovery else "multi_agent = true",
         "",
         "[mcp_servers.data]",
         f"command = {_toml(str(python))}",
@@ -69,6 +70,26 @@ def render_config(
         f"DOXAGENT_PILOT_ENV_FILE = {_toml(str(runtime_env_file))}",
         "",
     ]
+    if d2_discovery:
+        lines.extend(
+            [
+                "[mcp_servers.d2_discovery]",
+                f"command = {_toml(str(python))}",
+                "args = "
+                + _toml_array(["-m", "doxagent.workflows.codex_document2.discovery_checkpoint"]),
+                f"cwd = {_toml(str(case_root))}",
+                'enabled_tools = ["commit_open_discovery_scan"]',
+                "required = true",
+                "startup_timeout_sec = 10",
+                "tool_timeout_sec = 30",
+                "",
+                "[mcp_servers.d2_discovery.env]",
+                f"DOXAGENT_CODEX_RUN_ID = {_toml(run_id)}",
+                f"DOXAGENT_CODEX_ATTEMPT_ID = {_toml(attempt_id)}",
+                f"DOXAGENT_PILOT_CASE_ID = {_toml(case_id)}",
+                "",
+            ]
+        )
     return "\n".join(lines)
 
 
@@ -259,7 +280,18 @@ def render_document2_task(
     run_id: str,
     attempt_id: str,
     has_pilot_upstream: bool = False,
+    document_schema_version: str = "document2.v2",
 ) -> str:
+    discovery_contract = ""
+    if node == "d2_o1_open_discovery":
+        discovery_contract = (
+            "本 case 内先调用 commit_open_discovery_scan 提交完整 Scan，收到冻结 Scan/SHA 后"
+            "继续 Selection，最终 completion 只含 scan_sha256 和 selection。不得自行写入或"
+            "覆盖 checkpoint/Scan 文件。若 context 指定 resume_from=SELECTION，直接使用"
+            "注入的冻结 Scan/SHA，不重新扫描。若 source-attempt 导出的 case 已有冻结 checkpoint，"
+            "也直接读取该 Scan/SHA 继续 Selection，不改写源 input。工具是唯一允许写入"
+            "这两份 context 文件的入口。"
+        )
     upstream_contract = ""
     if has_pilot_upstream:
         upstream_contract = """
@@ -271,7 +303,14 @@ Pilot 直接依赖节点的完整 `output/`，对 `context.json` 中同类的 so
 具有优先权。它们是只读上下文，不得修改，也不得把其中旧 attempt 的 O# 当作当前 attempt
 引用；需要引用的事实仍按当前节点合同重新核验。
 """
-    return f"""# Document2 v2 Formal Pilot Task
+        if document_schema_version == "document2.v2.1":
+            upstream_contract += """
+v2.1 的 Open Discovery 是单个 case，包含冻结 Scan/checkpoint 和 Selection；后续四轮是 envelope，
+其中 `canonical_shell` 才是下一轮 Shell。`late_additions` 按 `(unit, name)` 顺序累积，
+相同键以较新轮次的完整记录替换；`open_discovery_resolution` 单独保留。
+不得把完整研究 envelope 当成 canonical Shell。以当前 output_schema 为输出结构依据。
+"""
+    return f"""# {document_schema_version} Formal Pilot Task
 
 ## 项目根硬检查
 
@@ -292,8 +331,9 @@ Pilot 直接依赖节点的完整 `output/`，对 `context.json` 中同类的 so
 6. `attempts/{attempt_id}/input/output_schema.json`
 
 {upstream_contract}
+{discovery_contract}
 
-严格遵循 attempt-local prompt/skill 与三份 Document2 v2 方案所形成的节点合同。允许 Agent
+严格遵循 attempt-local prompt/skill 与当前 `output_schema.json` 所形成的节点合同。允许 Agent
 按当前节点合同使用已签名 Data MCP；引用失败或未解析只能作为 warning，不得阻止正式产物。
 
 将唯一完整 JSON 结果写入：

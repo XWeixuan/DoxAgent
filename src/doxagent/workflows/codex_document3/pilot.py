@@ -49,7 +49,49 @@ class Document3PilotEvaluator:
     def __init__(self, workspace: WorkspaceClient) -> None:
         self._workspace = workspace
 
-    async def evaluate(self, run_id: str) -> Document3PilotReport:
+    async def evaluate(self, run_id: str, *, orchestration_version: str = "v2") -> BaseModel:
+        if orchestration_version == "v2.1":
+            import json
+
+            from .schema_v21 import WorkModel
+
+            file = await self._workspace.read_text(run_id, "artifacts/document3/v21_state.json")
+            run = json.loads(file.content)
+
+            class V21Report(WorkModel):
+                run_id: str
+                mode: str
+                phase: str
+                status: str
+                selected_topic_count: int
+                result_topic_count: int
+                coverage_topic_count: int
+                missing: list[str]
+                diagnostics: list
+                supplement_dispatched: bool
+                policy_set_version: int | None
+                hashes: dict
+                replacements: dict
+                task_metrics: dict
+
+            return V21Report(
+                run_id=run_id,
+                mode=run["mode"],
+                phase=run["phase"],
+                status=run.get("status", "RUNNING"),
+                selected_topic_count=len(run.get("agenda", {}).get("topics", []))
+                + len(run.get("supplement_agenda", {}).get("topics", [])),
+                result_topic_count=len(run.get("main_results", {}))
+                + len(run.get("supplement_results", {})),
+                coverage_topic_count=len(run.get("coverage", {}).get("coverage", [])),
+                missing=run.get("missing", []),
+                diagnostics=run.get("diagnostics", []),
+                supplement_dispatched=run.get("supplement_dispatched", False),
+                policy_set_version=run.get("commit", {}).get("version"),
+                hashes=run.get("handoff", {}).get("hashes", {}),
+                replacements=run.get("replacement_receipt", {}),
+                task_metrics=run.get("task_metrics", {}),
+            )
         inventory = await self._workspace.inventory(run_id)
         paths = {item.relative_path for item in inventory.files}
         if "output/work/worklist.jsonl" in paths:
