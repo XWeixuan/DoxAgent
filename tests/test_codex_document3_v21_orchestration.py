@@ -31,7 +31,7 @@ from doxagent.workflows.codex_document3.validation_v21 import (
     records,
     replace_structurally,
 )
-from tests.test_codex_document3_workflow import _AsyncWorkspace, _policy_set
+from tests.fixtures.codex_document3 import _AsyncWorkspace, _policy_set
 
 NOW = datetime(2026, 10, 4, tzinfo=UTC)
 

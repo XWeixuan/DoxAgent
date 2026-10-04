@@ -5,11 +5,9 @@ import json
 import shutil
 import stat
 from pathlib import Path
-from typing import Any, cast
 
 import httpx
 import pytest
-from fastapi.testclient import TestClient
 
 from doxagent.crawler_plane.factory import build_crawler_plane_service
 from doxagent.crawler_plane.schema import (
@@ -26,18 +24,12 @@ from doxagent.crawler_plane.schema import (
     new_id,
 )
 from doxagent.crawler_plane.service import CrawlerPlaneService
-from doxagent.dashboard_api import create_app
 from doxagent.message_bus_v2.adapters import AdapterRegistry
 from doxagent.message_bus_v2.factory import build_message_bus_v2_service
 from doxagent.message_bus_v2.scheduler import GlobalPollScheduler
 from doxagent.message_bus_v2.schema import UpdateActor, utc_now
 from doxagent.message_bus_v2.service import MessageBusV2Service
 from doxagent.models import AgentName, ResultStatus
-from doxagent.persistent_runtime.repository import InMemoryPersistentRuntimeRepository
-from doxagent.persistent_runtime.service import PersistentRuntimeExecutionService
-from doxagent.runtime_scheduler.api import DashboardStateAPI
-from doxagent.runtime_scheduler.repository import InMemoryRuntimeSchedulerRepository
-from doxagent.runtime_scheduler.service import UnifiedRuntimeSchedulerService
 from doxagent.settings import DoxAgentSettings
 from doxagent.tools.providers.crawler_plane import CrawlerPlaneToolClient
 from doxagent.tools.schema import ToolRequest
@@ -643,44 +635,3 @@ async def test_o4_tools_use_the_crawler_plane_application_service(tmp_path: Path
         assert promoted.output["status"] == "ACTIVE"
     finally:
         await service.close()
-
-
-@pytest.mark.asyncio
-async def test_human_api_uses_the_same_crawler_plane_service(tmp_path: Path) -> None:
-    settings = _settings(tmp_path)
-    _, message_bus = build_message_bus_v2_service(settings)
-    crawler_plane = _service(settings, message_bus=message_bus)
-    legacy_runtime = PersistentRuntimeExecutionService.from_settings(settings)
-    legacy_runtime.repository = InMemoryPersistentRuntimeRepository()
-    scheduler = UnifiedRuntimeSchedulerService(
-        InMemoryRuntimeSchedulerRepository(),
-        document_provider=cast(Any, object()),
-        monitoring_service=None,
-        runtime_service=legacy_runtime,
-        message_bus_v2_service=message_bus,
-        crawler_plane_service=crawler_plane,
-        message_bus_v2_enabled=True,
-    )
-    try:
-        client = TestClient(
-            create_app(
-                mode="real",
-                auth_mode="mock-open",
-                dashboard_api=DashboardStateAPI(scheduler),
-            )
-        )
-        listed = client.get("/api/dashboard/v1/crawler-plane/crawlers")
-        assert listed.status_code == 200
-        assert len(listed.json()["data"]["crawlers"]) == 2
-        fetched = client.get("/api/dashboard/v1/crawler-plane/crawlers/company_ir_reference")
-        assert fetched.status_code == 200
-        fetched_path = Path(fetched.json()["data"]["versions"][0]["working_path"])
-        assert fetched_path.parts[-2:] == ("company_ir_reference", "v1")
-        retries = client.get("/api/dashboard/v1/crawler-plane/retries")
-        assert retries.status_code == 200
-        assert retries.json()["data"]["retries"] == []
-        invalid_status = client.get("/api/dashboard/v1/crawler-plane/retries?status=UNKNOWN")
-        assert invalid_status.status_code == 422
-    finally:
-        await crawler_plane.close()
-        message_bus.repository.close()

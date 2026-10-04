@@ -19,14 +19,6 @@ from doxagent.event_library.provider import PublishedEventLibraryReader
 from doxagent.event_library.quality import compile_quality_report
 from doxagent.event_library.repository import EventLibraryRepository
 from doxagent.event_library.service import EventLibraryService
-from doxagent.monitoring.schema import SourceType as RuntimeSourceType
-from doxagent.persistent_runtime.schema import (
-    RuntimeSourceMessage,
-    W1Confidence,
-    W1NoveltyLabel,
-    W1Result,
-)
-from doxagent.persistent_runtime.workers import EventLibraryAwareW1Worker
 from doxagent.workflows.codex_document2.inputs import OptionalInput, PublishedEventLibraryProvider
 from doxagent.workflows.codex_document2.orchestrator import CodexDocument2Orchestrator
 from doxagent.workflows.codex_document2.schema import InputAvailability, ShellRunState
@@ -122,52 +114,6 @@ def test_published_reader_w1_index_to_detail_and_quality_metrics(tmp_path: Path)
     assert details is not None and details.events[0].event_id == "E1"
     assert len(details.events[0].facts) == 4
 
-    class Delegate:
-        def __init__(self) -> None:
-            self.contexts: list[dict[str, object]] = []
-
-        def classify(
-            self, message: RuntimeSourceMessage, context: dict[str, object]
-        ) -> W1Result:
-            del message
-            self.contexts.append(context)
-            if len(self.contexts) == 1:
-                return W1Result(
-                    is_new=False,
-                    novelty_label=W1NoveltyLabel.KNOWN_EVENT_RECAP,
-                    matched_known_event_ids=["E1"],
-                    confidence=W1Confidence.LOW,
-                    reasoning="Need full detail.",
-                )
-            return W1Result(
-                is_new=True,
-                novelty_label=W1NoveltyLabel.MATERIAL_UPDATE,
-                matched_known_event_ids=["E1"],
-                confidence=W1Confidence.HIGH,
-                reasoning="Detail confirms a material update.",
-            )
-
-    delegate = Delegate()
-    worker = EventLibraryAwareW1Worker(delegate, reader)
-    result = worker.classify(
-        RuntimeSourceMessage(
-            source_message_id="runtime-m1",
-            ticker="MU",
-            source_type=RuntimeSourceType.MEDIA,
-            source_id="fixture",
-            title="Update",
-            body="New detail",
-        ),
-        {},
-    )
-    assert result.novelty_label is W1NoveltyLabel.MATERIAL_UPDATE
-    first = delegate.contexts[0]["canonical_event_library"]
-    second = delegate.contexts[1]["canonical_event_library"]
-    assert isinstance(first, dict) and first["mode"] == "KNOWN_INDEX"
-    assert isinstance(second, dict) and second["mode"] == "EVENT_DETAILS"
-    assert "known_event_index" not in second
-    assert len(second["events"][0]["facts"]) == 4  # type: ignore[index]
-
     report = compile_quality_report(repository, ticker="MU")
     assert report.known_index_event_coverage == 1
     assert report.event_detail_fact_coverage == 1
@@ -182,12 +128,8 @@ async def test_document2_provider_is_published_read_only_and_cutoff_safe(
     tmp_path: Path,
 ) -> None:
     _publish_mu(tmp_path / "library")
-    provider = PublishedEventLibraryProvider(
-        PublishedEventLibraryReader(tmp_path / "library")
-    )
-    available = await provider.load(
-        ticker="MU", as_of=datetime(2030, 1, 1, tzinfo=UTC)
-    )
+    provider = PublishedEventLibraryProvider(PublishedEventLibraryReader(tmp_path / "library"))
+    available = await provider.load(ticker="MU", as_of=datetime(2030, 1, 1, tzinfo=UTC))
     assert available.status is InputAvailability.AVAILABLE
     assert available.metadata["read_only"] is True
     assert isinstance(available.payload, str)
@@ -260,12 +202,8 @@ async def test_empty_update_is_idempotent_noop_without_cdecr_or_o2(tmp_path: Pat
         new_non_social_message_refs=[],
         source_snapshot_or_lookup_ref="fixture:empty",
     )
-    first = await coordinator.update(
-        batch=batch, export_dir=tmp_path / "exports", run_o2=True
-    )
-    second = await coordinator.update(
-        batch=batch, export_dir=tmp_path / "exports", run_o2=True
-    )
+    first = await coordinator.update(batch=batch, export_dir=tmp_path / "exports", run_o2=True)
+    second = await coordinator.update(batch=batch, export_dir=tmp_path / "exports", run_o2=True)
     assert first.job.stage.value == "FINALIZED_NOOP"
     assert second.job.job_id == first.job.job_id
     assert coordinator.status(market="US", ticker="MU") == second.job

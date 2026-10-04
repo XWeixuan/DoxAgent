@@ -7,7 +7,7 @@ from doxagent.api_v2.errors import ApiFailure
 from doxagent.message_bus_v2.service import MessageBusV2Service
 from doxagent.v2_control.bindings import Bindings
 from doxagent.v2_read.outbox import SourceOutbox
-from tests.test_message_bus_v2 import _bus, _input
+from tests.fixtures.message_bus_v2 import _bus, _input
 
 
 def test_binding_cas_secret_preservation_and_atomic_buffer_delete(tmp_path, monkeypatch):

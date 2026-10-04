@@ -1,8 +1,8 @@
 import hashlib
 import json
-import pytest
 from datetime import UTC, datetime
 
+import pytest
 from fastapi.testclient import TestClient
 
 from doxagent.api_v2.app import PREFIX, create_app
@@ -22,7 +22,7 @@ from doxagent.v2_read.formal import FormalProjectors
 from doxagent.v2_read.graph import project as project_graph
 from doxagent.v2_read.repository import ReadStore
 from doxagent.workflows.codex_document3.schema import Document3Bundle, Document3Handoff
-from tests.test_codex_document3_workflow import NOW, _policy_set, _seed_published_d2
+from tests.fixtures.codex_document3 import NOW, _policy_set, _seed_published_d2
 from tests.test_codex_event_library_incremental import _publish_v1
 from tests.test_persistent_runtime_v2 import _source
 from tests.v2_backend.test_api import OfflineAuth
@@ -429,11 +429,15 @@ def test_formal_activation_indexes_exact_documents_policy_and_library(
                     },
                     *mapper.case(case, 2),
                     {
-                        **policy_record, "id": "different-policy-version",
+                        **policy_record,
+                        "id": "different-policy-version",
                         "parent": "different-policy-artifact",
                         "data": {
                             **policy_record["data"],
-                            "policy": {**policy_record["data"]["policy"], "match_scope": "Different current definition"},
+                            "policy": {
+                                **policy_record["data"]["policy"],
+                                "match_scope": "Different current definition",
+                            },
                         },
                     },
                     attempt_record("r1-turn", "R1", "SUCCEEDED"),
@@ -471,13 +475,15 @@ def test_formal_activation_indexes_exact_documents_policy_and_library(
             )
             exported = client.get(
                 PREFIX + f"/tickers/MU/runtime/cases/{case['case_id']}/policies/{policy_id}",
-                params={"view_id": current_view}, headers={"Authorization": "Bearer offline"},
+                params={"view_id": current_view},
+                headers={"Authorization": "Bearer offline"},
             )
             assert exported.status_code == 200, exported.text
             assert exported.json()["data"]["data"]["policy"] == policy_record["data"]["policy"]
             unrelated = client.get(
                 PREFIX + f"/tickers/MU/runtime/cases/{case['case_id']}/policies/not-recalled",
-                params={"view_id": current_view}, headers={"Authorization": "Bearer offline"},
+                params={"view_id": current_view},
+                headers={"Authorization": "Bearer offline"},
             )
             assert unrelated.status_code == 404
             assert second["policies"] == []

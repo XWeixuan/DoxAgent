@@ -39,7 +39,7 @@ from doxagent.workflows.codex_document3.runner import Document3AgentRunner
 from doxagent.workflows.codex_document3.schema import Policy
 from doxagent.workflows.codex_event_library.remote_runner import WavePlan
 from doxagent.workflows.codex_event_library.schema import EventLibraryRunStage
-from tests.test_codex_document3_workflow import (
+from tests.fixtures.codex_document3 import (
     NOW,
     _O3WorkerStub,
     _refactored_prompt_root,

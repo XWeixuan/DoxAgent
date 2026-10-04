@@ -1,5 +1,5 @@
 // Compile the public TypeScript wire contract into closed JSON Schema.
-// No network or package installation; uses the dashboard's pinned TypeScript compiler.
+// No network or package installation; uses the V2 frontend's pinned TypeScript compiler.
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');

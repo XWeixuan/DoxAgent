@@ -184,7 +184,7 @@ async def test_managed_d1_publication_failure_reuses_research_and_assembly(tmp_p
         NodeResult,
         NodeSpec,
     )
-    from tests.test_codex_document1_workflow import (
+    from tests.fixtures.codex_document1 import (
         CodexGlobalResearchOrchestrator,
         GlobalResearchRunRequest,
         InMemoryCodexRuntimeRepository,
@@ -260,7 +260,7 @@ def test_unresolved_citation_keeps_identity_in_aggregate():
 
 @pytest.mark.asyncio
 async def test_d3_failed_worker_recovers_written_compile_and_review(tmp_path):
-    from tests.test_codex_document3_workflow import (
+    from tests.fixtures.codex_document3 import (
         NOW,
         CodexD3Node,
         Document3AgentRunner,

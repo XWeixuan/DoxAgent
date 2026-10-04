@@ -5,7 +5,7 @@ import pytest
 
 from doxagent.message_bus_v2.admission import AdmissionContext, evaluate_admission
 from doxagent.message_bus_v2.schema import PollResult, utc_now
-from tests.test_message_bus_v2 import _bus, _input
+from tests.fixtures.message_bus_v2 import _bus, _input
 
 
 @pytest.mark.parametrize(

@@ -11,20 +11,16 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-from cdecr.contracts import Language, SourceMessage, SourceType
+from cdecr.contracts import Language, SourceMessage
 from cdecr.data import document_fingerprint
 from cdecr.preprocessing import preprocess_source
 from cdecr.single_document_contracts import PreprocessedDocument
-from doxagent.monitoring.collectors import MonitoringCollectorRegistry
-from doxagent.monitoring.media_enrichment import assess_media_body
-from doxagent.monitoring.repository import InMemoryMonitoringRepository
-from doxagent.monitoring.schema import (
-    FetchedExternalMessage,
-    MonitoringParameters,
-    MonitoringSourceConfig,
-    TickerSourceBinding,
+from doxagent.cdecr_integration.historical_loader import (
+    BenzingaHistoricalNewsProvider,
+    FinnhubHistoricalNewsProvider,
+    HistoricalNewsLoader,
+    HistoricalStagingRepository,
 )
-from doxagent.monitoring.service import MonitoringBusService
 from doxagent.settings import DoxAgentSettings
 
 TICKER = "MU"
@@ -73,35 +69,6 @@ def _length_bucket(length: int) -> str:
     return "long"
 
 
-def _ingest_historical(
-    service: MonitoringBusService,
-    collectors: MonitoringCollectorRegistry,
-    *,
-    source: MonitoringSourceConfig,
-    binding: TickerSourceBinding,
-) -> dict[str, Any]:
-    """Use the bus while preserving the original time beyond its live watermark."""
-
-    fetched = collectors.collector_for(source).collect(source=source, binding=binding)
-    collected_at = datetime.now(UTC)
-    prepared: list[FetchedExternalMessage] = []
-    for item in fetched:
-        metadata = dict(item.metadata)
-        if item.source_published_at is not None:
-            metadata["historical_source_published_at"] = item.source_published_at.isoformat()
-        prepared.append(
-            item.model_copy(
-                update={
-                    "source_published_at": collected_at,
-                    "metadata": metadata,
-                },
-                deep=True,
-            )
-        )
-    result = service.ingest_fetched(source=source, fetched=prepared)
-    return result.model_dump(mode="json")
-
-
 def build(output_dir: Path, *, limit: int, enrichment_concurrency: int) -> dict[str, Any]:
     if limit <= 0:
         raise ValueError("limit must be positive")
@@ -109,110 +76,30 @@ def build(output_dir: Path, *, limit: int, enrichment_concurrency: int) -> dict[
     if not settings.finnhub_api_key and not settings.benzinga_api_key:
         raise RuntimeError("Neither FINNHUB_API_KEY nor BENZINGA_API_KEY is configured")
 
-    repository = InMemoryMonitoringRepository()
-    collectors = MonitoringCollectorRegistry(settings)
-    service = MonitoringBusService(repository, collectors=collectors)
-    sources = {item.source_id: item for item in repository.list_sources()}
+    import asyncio
 
-    fetch_stats: dict[str, Any] = {}
+    providers = []
     if settings.finnhub_api_key:
-        finnhub = sources["finnhub_company_news"]
-        repository.upsert_source(
-            finnhub.model_copy(
-                update={"config": {**finnhub.config, "lookback_days": EXTENDED_DAYS}},
-                deep=True,
-            )
-        )
-        binding = service.configure_ticker_source(TICKER, finnhub.source_id)
-        fetch_stats[finnhub.source_id] = _ingest_historical(
-            service,
-            collectors,
-            source=repository.get_source(finnhub.source_id) or finnhub,
-            binding=binding,
-        )
-
+        providers.append(FinnhubHistoricalNewsProvider(settings))
     if settings.benzinga_api_key:
-        benzinga = sources["benzinga_news"]
-        binding = service.configure_ticker_source(
-            TICKER,
-            benzinga.source_id,
-            parameters=MonitoringParameters(
-                search_terms=["Micron", "memory", "semiconductors"]
-            ),
-        )
-        fetch_stats[benzinga.source_id] = _ingest_historical(
-            service,
-            collectors,
-            source=benzinga,
-            binding=binding,
-        )
-
-    raw_messages = repository.recent_raw_messages(ticker=TICKER, limit=10_000)
-    raw_by_id = {item.raw_message_id: item for item in raw_messages}
-    enrichment = service.enrich_recent_media(
-        ticker=TICKER,
-        limit=10_000,
-        concurrency=enrichment_concurrency,
-        incomplete_only=True,
-        reader_fallback=True,
-    )
-    media_records = repository.list_media_enrichment_records(
-        ticker=TICKER,
-        limit=10_000,
-        incomplete_only=False,
-    )
-
+        providers.append(BenzingaHistoricalNewsProvider(settings))
     now = datetime.now(UTC)
     recent_start = now - timedelta(days=RECENT_DAYS)
-    extended_start = now - timedelta(days=EXTENDED_DAYS)
-    candidates: list[SourceMessage] = []
-    rejected: Counter[str] = Counter()
-    for record in media_records:
-        raw = raw_by_id.get(record.raw_message_id)
-        historical_published_at = (
-            raw.metadata.get("historical_source_published_at") if raw is not None else None
-        )
-        published_at = (
-            datetime.fromisoformat(str(historical_published_at))
-            if historical_published_at
-            else None
-        )
-        if published_at is None:
-            rejected["missing_published_at"] += 1
-            continue
-        if published_at < extended_start or published_at > now + timedelta(hours=6):
-            rejected["outside_14_day_window"] += 1
-            continue
-        quality = assess_media_body(record.body, record.title)
-        if not quality.complete_like:
-            rejected[f"body_{quality.reason}"] += 1
-            continue
-        title = (record.title or "").strip()
-        text = (record.body or "").strip()[:MAX_TEXT_CHARS]
-        url = record.url
-        if not title or not text or not url:
-            rejected["missing_required_source_field"] += 1
-            continue
-        provider_key = (
-            raw.provider_message_id
-            if raw is not None and raw.provider_message_id
-            else url
-        )
-        candidates.append(
-            SourceMessage(
-                message_id=_stable_id(record.source_id, provider_key),
-                source_type=SourceType.NEWS,
-                title=title,
-                text=text,
-                published_at=published_at,
-                source_name=_source_name(record.source_name, url),
-                url=url,
-                ticker_hints=[TICKER],
-                parent_message_id=None,
-                language=LANGUAGE,
-            )
-        )
-
+    output_dir.mkdir(parents=True, exist_ok=True)
+    loader = HistoricalNewsLoader(
+        staging=HistoricalStagingRepository(output_dir / "historical-staging.sqlite3"),
+        providers=providers,
+        max_sources=500,
+        enrichment_concurrency=enrichment_concurrency,
+    )
+    try:
+        candidates, historical = asyncio.run(loader.load(market=MARKET, ticker=TICKER, as_of=now))
+    finally:
+        for provider in providers:
+            provider.close()
+    fetch_stats = historical.model_dump(mode="json")
+    rejected = Counter(historical.rejected_counts)
+    enrichment = {"qualified_count": historical.qualified_count}
     candidates.sort(key=lambda item: (item.published_at, item.message_id), reverse=True)
     accepted: list[SourceMessage] = []
     known_documents: list[PreprocessedDocument] = []
@@ -268,9 +155,7 @@ def build(output_dir: Path, *, limit: int, enrichment_concurrency: int) -> dict[
     snapshot_path = output_dir / "mu_recent_news_snapshot.jsonl"
     manifest_path = output_dir / "mu_recent_news_manifest.json"
     report_path = output_dir / "mu_recent_news_build_report.json"
-    snapshot_path.write_text(
-        "".join(_json(row) + "\n" for row in snapshot_rows), encoding="utf-8"
-    )
+    snapshot_path.write_text("".join(_json(row) + "\n" for row in snapshot_rows), encoding="utf-8")
     manifest = {
         "manifest_version": f"cdecr-mu-recent-news-v1-{now:%Y%m%d}",
         "query": {
@@ -286,10 +171,9 @@ def build(output_dir: Path, *, limit: int, enrichment_concurrency: int) -> dict[
         },
         "selection": {
             "policy": (
-                "message_bus_provider_dedup+full_text_enrichment+"
-                "cdecr_url_text_minhash_dedup"
+                "message_bus_provider_dedup+full_text_enrichment+cdecr_url_text_minhash_dedup"
             ),
-            "raw_bus_count": len(raw_messages),
+            "raw_bus_count": historical.staged_count,
             "body_qualified_14d": len(candidates),
             "deduplicated_14d": len(accepted),
             "deduplicated_7d": len(recent),

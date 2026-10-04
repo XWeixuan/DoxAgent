@@ -15,13 +15,6 @@ from .repository import SQLiteRuntimeSchedulerRepository
 from .service import UnifiedRuntimeSchedulerService
 
 
-class ManagedDocuments:
-    def __getattr__(self, name):
-        raise RuntimeError(
-            "V2 requires an admitted immutable activation; legacy documents disabled"
-        )
-
-
 class V2Scheduler(UnifiedRuntimeSchedulerService):
     def _run_admitted_once(self, admitted, *, now, event_limit):
         from doxagent.v2_control.repository import ControlRepository
@@ -56,13 +49,9 @@ def build(settings=None):
     runtime = build_persistent_runtime_v2_service(settings)
     service = V2Scheduler(
         SQLiteRuntimeSchedulerRepository(settings.runtime_scheduler_sqlite_path),
-        document_provider=ManagedDocuments(),
-        monitoring_service=None,
-        runtime_service=None,
         runtime_v2_service=runtime,
         message_bus_v2_service=bus,
         message_bus_v2_enabled=True,
-        auto_media_enrichment_enabled=False,
     )
     service.initialization_control_path = settings.ticker_initialization_control_path
     return service

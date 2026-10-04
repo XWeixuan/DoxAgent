@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import httpx
 
-from doxagent.agents.config import default_agent_registry
 from doxagent.data_runtime.contracts import build_data_tool_contracts
+from doxagent.data_runtime.tool_ceiling import ROLE_TOOL_CEILINGS
 from doxagent.models import AgentName, ResultStatus
 from doxagent.settings import DoxAgentSettings
 from doxagent.tools.factory import default_real_tool_registry
@@ -98,12 +98,8 @@ def test_silicon_analysts_market_dataset_reports_truncated_history_as_partial() 
         TTLCache(),
         client=httpx.Client(transport=httpx.MockTransport(handler)),
     )
-    first = client.call(
-        _request("silicon_analysts.market_dataset", {"dataset_id": "hbm-pricing"})
-    )
-    second = client.call(
-        _request("silicon_analysts.market_dataset", {"dataset_id": "hbm-pricing"})
-    )
+    first = client.call(_request("silicon_analysts.market_dataset", {"dataset_id": "hbm-pricing"}))
+    second = client.call(_request("silicon_analysts.market_dataset", {"dataset_id": "hbm-pricing"}))
 
     assert first.status is ResultStatus.PARTIAL
     assert first.error is not None and first.error.code == "history_truncated"
@@ -144,7 +140,7 @@ def test_silicon_analysts_tools_are_visible_to_c3_data_mcp_with_strict_contracts
     settings = _settings()
     registry = default_real_tool_registry(settings)
     contracts = build_data_tool_contracts(registry)
-    c3 = default_agent_registry().get(AgentName.C3_INDUSTRY_RESEARCH)
+    c3_tools = ROLE_TOOL_CEILINGS[AgentName.C3_INDUSTRY_RESEARCH]
 
     expected = {
         "silicon_analysts.accelerator_costs",
@@ -156,7 +152,7 @@ def test_silicon_analysts_tools_are_visible_to_c3_data_mcp_with_strict_contracts
         "silicon_analysts.recent_changes",
     }
     assert expected <= set(registry.names())
-    assert expected <= set(c3.runtime.allowed_tools)
+    assert expected <= set(c3_tools)
     for tool_id in expected:
         contract = contracts.get(tool_id)
         assert contract is not None

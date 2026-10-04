@@ -7,154 +7,16 @@ from typing import Any
 
 import pytest
 
-from doxagent.agents.runtime.runner import ModelGatewayAgentRunner
-from doxagent.gateway import (
-    GatewayError,
-    MessageRole,
-    MockModelClient,
-    ModelGateway,
-    ModelMessage,
-    ModelRequest,
-    ModelUsage,
-    ProviderName,
-)
 from doxagent.model_usage import (
     InMemoryModelUsageRepository,
     ModelPricingCatalog,
     ModelUsageCostService,
     ModelUsageEvent,
-    ModelUsageRecorder,
     PostgresModelUsageRepository,
     model_usage_repository_from_settings,
 )
 from doxagent.model_usage.pricing import DEFAULT_PRICING_PATH
-from doxagent.models import (
-    AgentName,
-    AgentPermissions,
-    AgentTask,
-    RunMetadata,
-    TaskType,
-)
 from doxagent.settings import DoxAgentSettings
-
-
-def _request() -> ModelRequest:
-    return ModelRequest(
-        provider=ProviderName.BAILIAN,
-        model="qwen3.7-max",
-        messages=[ModelMessage(role=MessageRole.USER, content="hello")],
-        metadata={
-            "ticker": "MU",
-            "run_id": "run_usage_001",
-            "workflow_node": "persistent_runtime_execution",
-            "runtime_node": "W1",
-            "agent_name": "W1",
-            "task_type": "runtime_w1_novelty",
-            "source_message_id": "std_mu_001",
-        },
-    )
-
-
-@pytest.mark.asyncio
-async def test_gateway_success_writes_model_usage_event() -> None:
-    repository = InMemoryModelUsageRepository()
-    gateway = ModelGateway(
-        MockModelClient(usage=ModelUsage(input_tokens=100, output_tokens=20, total_tokens=120)),
-        usage_recorder=ModelUsageRecorder(repository),
-    )
-
-    response = await gateway.complete(_request())
-
-    assert response.succeeded
-    events = repository.list_events(ticker="MU")
-    assert len(events) == 1
-    event = events[0]
-    assert event.provider == "mock"
-    assert event.model == "qwen3.7-max"
-    assert event.status == "succeeded"
-    assert event.input_tokens == 100
-    assert event.output_tokens == 20
-    assert event.total_tokens == 120
-    assert event.ticker == "MU"
-    assert event.run_id == "run_usage_001"
-    assert event.workflow_node == "persistent_runtime_execution"
-    assert event.runtime_node == "W1"
-    assert event.source_message_id == "std_mu_001"
-
-
-@pytest.mark.asyncio
-async def test_gateway_recorder_failure_does_not_break_model_response() -> None:
-    class FailingRecorder:
-        def record_response(self, request: ModelRequest, response: object) -> None:
-            raise RuntimeError("sqlite locked")
-
-    gateway = ModelGateway(
-        MockModelClient(usage=ModelUsage(input_tokens=1, output_tokens=2, total_tokens=3)),
-        usage_recorder=FailingRecorder(),
-    )
-
-    response = await gateway.complete(_request())
-
-    assert response.succeeded
-    assert response.usage is not None
-    assert response.usage.total_tokens == 3
-
-
-@pytest.mark.asyncio
-async def test_gateway_failed_response_is_recorded_without_usage() -> None:
-    repository = InMemoryModelUsageRepository()
-    gateway = ModelGateway(
-        MockModelClient(
-            failures=[
-                GatewayError(
-                    code="invalid_request",
-                    message="bad request",
-                    retryable=False,
-                    provider=ProviderName.BAILIAN,
-                )
-            ]
-        ),
-        usage_recorder=ModelUsageRecorder(repository),
-    )
-
-    response = await gateway.complete(_request())
-
-    assert response.error is not None
-    event = repository.list_events(ticker="MU")[0]
-    assert event.status == "failed"
-    assert event.error_code == "invalid_request"
-    assert event.total_tokens == 0
-
-
-def test_agent_runner_metadata_includes_runtime_usage_dimensions() -> None:
-    runner = ModelGatewayAgentRunner()
-    task = AgentTask(
-        task_id="task_usage_001",
-        ticker="MU",
-        agent_name=AgentName.W1_RUNTIME_NOVELTY,
-        task_type=TaskType.RUNTIME_W1_NOVELTY,
-        input_context={
-            "source_message": {
-                "source_message_id": "std_mu_runtime_001",
-                "ticker": "MU",
-            }
-        },
-        required_output_schema="W1Result",
-        permissions=AgentPermissions(),
-        run_metadata=RunMetadata(
-            run_id="run_usage_runtime",
-            ticker="MU",
-            workflow_node="persistent_runtime_execution",
-            created_at=datetime.now(UTC),
-        ),
-    )
-
-    metadata = runner._metadata(task)
-
-    assert metadata["ticker"] == "MU"
-    assert metadata["runtime_node"] == "W1"
-    assert metadata["source_message_id"] == "std_mu_runtime_001"
-    assert metadata["workflow_node"] == "persistent_runtime_execution"
 
 
 def test_bailian_pricing_applies_discount_and_cny_usd_rate() -> None:

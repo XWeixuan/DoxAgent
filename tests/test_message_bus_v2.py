@@ -8,9 +8,7 @@ from pathlib import Path
 
 import httpx
 import pytest
-from fastapi.testclient import TestClient
 
-from doxagent.dashboard_api import create_app
 from doxagent.message_bus_v2.adapters import AdapterLoadError, AdapterRegistry
 from doxagent.message_bus_v2.compiler import compile_stream_item
 from doxagent.message_bus_v2.manifests import initial_sources
@@ -22,7 +20,6 @@ from doxagent.message_bus_v2.schema import (
     PollResult,
     PublicationMode,
     RawMessage,
-    RawMessageInput,
     RawProcessingStatus,
     SchedulerConstraints,
     SourceDefinition,
@@ -39,24 +36,20 @@ from doxagent.message_bus_v2.schema import (
 )
 from doxagent.message_bus_v2.service import MessageBusV2Service
 from doxagent.models import AgentName, ResultStatus
-from doxagent.persistent_runtime import (
-    InMemoryPersistentRuntimeRepository,
-    PersistentRuntimeExecutionService,
-)
-from doxagent.persistent_runtime_v2.schema import RuntimeCaseStatus, SourceMessageEnvelope
+from doxagent.persistent_runtime_v2.schema import SourceMessageEnvelope
 from doxagent.runtime_scheduler import (
-    DashboardStateAPI,
-    DocumentBundle,
-    DocumentSetStatus,
     InMemoryRuntimeSchedulerRepository,
-    MonitorMode,
     UnifiedRuntimeSchedulerService,
 )
 from doxagent.settings import DoxAgentSettings
 from doxagent.tools.providers.monitoring import MonitoringToolClient
 from doxagent.tools.schema import ToolRequest
-
-NOW = datetime(2026, 9, 1, 12, tzinfo=UTC)
+from tests.fixtures.message_bus_v2 import (
+    NOW,
+    _AcceptingRuntimeV2,
+    _bus,
+    _input,
+)
 
 
 @pytest.fixture(autouse=True)
@@ -64,30 +57,6 @@ def _publication_clock(monkeypatch):
     monkeypatch.setattr("doxagent.message_bus_v2.service.utc_now", lambda: NOW)
     monkeypatch.setattr("doxagent.message_bus_v2.schema.utc_now", lambda: NOW)
     monkeypatch.setattr("doxagent.message_bus_v2.repository.utc_now", lambda: NOW)
-
-
-def _bus(path: Path) -> tuple[MessageBusV2Repository, MessageBusV2Service]:
-    repository = MessageBusV2Repository(path)
-    service = MessageBusV2Service(repository)
-    service.bootstrap()
-    return repository, service
-
-
-def _input(
-    external_id: str,
-    *,
-    body: str | None = None,
-    published_at: datetime = NOW,
-) -> RawMessageInput:
-    return RawMessageInput(
-        external_id=external_id,
-        title=f"Title {external_id}",
-        body=body or f"Body {external_id}",
-        source="Reuters",
-        url=f"https://example.test/messages/{external_id}",
-        published_at=published_at,
-        raw_payload={"id": external_id, "body": body or f"Body {external_id}"},
-    )
 
 
 def test_bootstrap_registry_profile_and_ticker_materialization(tmp_path: Path) -> None:
@@ -254,20 +223,17 @@ def test_disabled_flag_has_no_v1_fallback_and_does_not_bootstrap_v2_db(
     tmp_path: Path,
 ) -> None:
     database = tmp_path / "disabled.sqlite3"
-    scheduler = UnifiedRuntimeSchedulerService.from_settings(
-        DoxAgentSettings(
-            _env_file=None,
-            runtime_scheduler_storage_mode="memory",
-            message_bus_v2_enabled=False,
-            message_bus_v2_sqlite_path=str(database),
-            persistent_runtime_v2_enabled=False,
-            dashscope_api_key="test-only-no-call",
+    with pytest.raises(ValueError, match="managed initialization and Message Bus V2"):
+        UnifiedRuntimeSchedulerService.from_settings(
+            DoxAgentSettings(
+                _env_file=None,
+                runtime_scheduler_storage_mode="memory",
+                message_bus_v2_enabled=False,
+                message_bus_v2_sqlite_path=str(database),
+                persistent_runtime_v2_enabled=False,
+                dashscope_api_key="test-only-no-call",
+            )
         )
-    )
-    assert scheduler.message_bus_v2_enabled is False
-    assert scheduler.message_bus_v2_service is None
-    assert scheduler._legacy_monitoring_service_enabled is False
-    assert scheduler.monitoring_service is None
     assert not database.exists()
 
 
@@ -394,16 +360,13 @@ def test_managed_v2_scheduler_detail_does_not_require_legacy_runtime(tmp_path: P
     _repository, bus = _bus(tmp_path / "managed-v2.sqlite3")
     scheduler = UnifiedRuntimeSchedulerService(
         InMemoryRuntimeSchedulerRepository(),
-        document_provider=_UsableDocuments(),  # type: ignore[arg-type]
-        monitoring_service=None,
-        runtime_service=None,
         message_bus_v2_service=bus,
         message_bus_v2_enabled=True,
     )
-    scheduler.start_ticker("MU", now=NOW)
-
-    assert scheduler.trade_intents("MU") == []
-    assert scheduler.detail("MU", now=NOW).trade_intents == []
+    bus.start_ticker("MU")
+    assert scheduler.detail("MU", now=NOW).runtime_status.pending_event_count == 0
+    assert not hasattr(scheduler, "runtime_service")
+    assert not hasattr(scheduler, "monitoring_service")
 
 
 async def test_poll_isolates_one_ingest_exception_and_completes_bootstrap(
@@ -1270,81 +1233,18 @@ def test_agent_tools_mutate_full_control_plane_through_shared_service(
     assert repository.get_source("micron_ir") is None
 
 
-class _UsableDocuments:
-    def __init__(self) -> None:
-        self.bundle = DocumentBundle(
-            status=DocumentSetStatus(
-                ticker="MU",
-                blackboard_run_id="run-mu",
-                usable=True,
-            )
-        )
-
-    def latest(self, ticker: str, *, now: datetime | None = None) -> DocumentBundle:
-        return self.bundle
-
-    def initialize(self, ticker: str, *, now: datetime | None = None) -> DocumentBundle:
-        return self.bundle
-
-
-class _AcceptingRuntimeV2:
-    def __init__(self) -> None:
-        from doxagent.persistent_runtime_v2.repository import InMemoryPersistentRuntimeV2Repository
-
-        self.repository = InMemoryPersistentRuntimeV2Repository()
-        self.envelopes: list[SourceMessageEnvelope] = []
-
-    def process_pending_effects(self, *, limit: int) -> list[object]:
-        return []
-
-    def execute_message(self, value: SourceMessageEnvelope) -> object:
-        self.envelopes.append(value)
-        return type(
-            "AcceptedCase",
-            (),
-            {
-                "case_id": f"case-{len(self.envelopes)}",
-                "status": RuntimeCaseStatus.COMPLETED,
-                "route": None,
-            },
-        )()
-
-
-class _DashboardRuntimeV2:
-    def __init__(self, source_message_id: str) -> None:
-        self.repository = type("Repository", (), {"list_cases": lambda _self, _ticker: []})()
-        self.journal = type(
-            "Journal",
-            (),
-            {
-                "tasks": lambda _self, **_kwargs: [
-                    {
-                        "id": f"inbox:MU:{source_message_id}",
-                        "status": "PENDING",
-                        "inputs": {"source": {"source_message_id": source_message_id}},
-                    }
-                ]
-            },
-        )()
-
-
 async def test_scheduler_runtime_v2_handoff_skips_history_then_commits_new_stream(
     tmp_path: Path,
 ) -> None:
     repository, bus = _bus(tmp_path / "handoff-bus.sqlite3")
-    legacy_runtime = PersistentRuntimeExecutionService.from_settings()
-    legacy_runtime.repository = InMemoryPersistentRuntimeRepository()
     runtime_v2 = _AcceptingRuntimeV2()
     scheduler = UnifiedRuntimeSchedulerService(
         InMemoryRuntimeSchedulerRepository(),
-        document_provider=_UsableDocuments(),  # type: ignore[arg-type]
-        monitoring_service=None,
-        runtime_service=legacy_runtime,
         runtime_v2_service=runtime_v2,  # type: ignore[arg-type]
         message_bus_v2_service=bus,
         message_bus_v2_enabled=True,
     )
-    scheduler.start_ticker("MU", now=NOW, monitor_mode=MonitorMode.MESSAGE_MONITORING)
+    bus.start_ticker("MU", actor=UpdateActor.SYSTEM)
     source = bus.require_source("benzinga_news")
     binding = repository.get_binding("MU:benzinga_news")
     assert binding is not None
@@ -1355,7 +1255,12 @@ async def test_scheduler_runtime_v2_handoff_skips_history_then_commits_new_strea
         bootstrap=False,
     )
 
-    scheduler.set_monitor_mode("MU", "trading", now=NOW + timedelta(seconds=1))
+    from types import SimpleNamespace
+
+    runtime_v2.input_snapshot_loader = lambda ticker: SimpleNamespace(
+        activation_revision_id="revision-1", index=object(), projection=object()
+    )
+    scheduler.admit_activation("MU", "revision-1", now=NOW + timedelta(seconds=1))
     assert runtime_v2.envelopes == []
     assert repository.get_consumer_offset("persistent_runtime_v2", "MU").stream_offset == 1
 
@@ -1372,115 +1277,6 @@ async def test_scheduler_runtime_v2_handoff_skips_history_then_commits_new_strea
     )
     assert repository.get_consumer_offset("persistent_runtime_v2", "MU").stream_offset == 2
     assert detail.event_processing_status.pending_event_count == 0
-
-
-def test_dashboard_v2_api_uses_native_contract_without_legacy_fields(tmp_path: Path) -> None:
-    repository, bus = _bus(tmp_path / "dashboard-bus.sqlite3")
-    legacy_runtime = PersistentRuntimeExecutionService.from_settings()
-    legacy_runtime.repository = InMemoryPersistentRuntimeRepository()
-    scheduler = UnifiedRuntimeSchedulerService(
-        InMemoryRuntimeSchedulerRepository(),
-        document_provider=_UsableDocuments(),  # type: ignore[arg-type]
-        monitoring_service=None,
-        runtime_service=legacy_runtime,
-        message_bus_v2_service=bus,
-        message_bus_v2_enabled=True,
-    )
-    scheduler.start_ticker("MU", now=NOW)
-    client = TestClient(
-        create_app(
-            mode="real",
-            auth_mode="mock-open",
-            dashboard_api=DashboardStateAPI(scheduler),
-        )
-    )
-
-    config = client.get("/api/dashboard/v1/tickers/MU/message-bus/config")
-    assert config.status_code == 200
-    benzinga = next(
-        source
-        for source in config.json()["data"]["sources"]
-        if source["source_id"] == "benzinga_news"
-    )
-    assert benzinga["source_kind"] == "api"
-    assert "source_type" not in benzinga
-    assert "user_only_fields" not in benzinga
-
-    patched = client.patch(
-        "/api/dashboard/v1/tickers/MU/message-bus/config/benzinga_news",
-        json={
-            "polling": {"target_interval_seconds": 90, "tolerance_ratio": 0.2},
-            "streaming": {"publication_mode": "buffered"},
-        },
-    )
-    assert patched.status_code == 200
-    binding = repository.get_binding("MU:benzinga_news")
-    assert binding is not None
-    assert binding.polling.target_interval_seconds == 90
-    assert binding.streaming.publication_mode is PublicationMode.BUFFERED
-
-    created = client.post(
-        "/api/dashboard/v1/message-bus/sources",
-        json={
-            "source_id": "micron_ir",
-            "display_name": "Micron IR",
-            "kind": "crawler",
-            "adapter_ref": "crawler:micron_ir",
-            "parameter_schema": {"type": "object"},
-            "scheduler_group": "ir.micron.com",
-        },
-    )
-    assert created.status_code == 200
-    assert created.json()["data"]["kind"] == "crawler"
-
-    deleted = client.request(
-        "DELETE",
-        "/api/dashboard/v1/message-bus/sources/micron_ir",
-        json={"reason": "test cleanup"},
-    )
-    assert deleted.status_code == 200
-    assert deleted.json()["data"]["historical_messages_preserved"] is True
-
-
-async def test_dashboard_v2_messages_expose_runtime_v2_task_state(tmp_path: Path) -> None:
-    repository, bus = _bus(tmp_path / "dashboard-runtime-bus.sqlite3")
-    source = bus.require_source("finnhub_company_news")
-    bus.start_ticker("MU")
-    binding = repository.get_binding("MU:finnhub_company_news")
-    assert binding is not None
-    accepted = await bus.accept_message(
-        source=source,
-        binding=binding,
-        message=_input("runtime-linked"),
-        bootstrap=False,
-    )
-    assert accepted.standard_message_id is not None
-    legacy_runtime = PersistentRuntimeExecutionService.from_settings()
-    legacy_runtime.repository = InMemoryPersistentRuntimeRepository()
-    scheduler = UnifiedRuntimeSchedulerService(
-        InMemoryRuntimeSchedulerRepository(),
-        document_provider=_UsableDocuments(),  # type: ignore[arg-type]
-        monitoring_service=None,
-        runtime_service=legacy_runtime,
-        runtime_v2_service=_DashboardRuntimeV2(accepted.standard_message_id),  # type: ignore[arg-type]
-        message_bus_v2_service=bus,
-        message_bus_v2_enabled=True,
-    )
-    scheduler.start_ticker("MU", now=NOW)
-    client = TestClient(
-        create_app(
-            mode="real",
-            auth_mode="mock-open",
-            dashboard_api=DashboardStateAPI(scheduler),
-        )
-    )
-
-    response = client.get("/api/dashboard/v1/tickers/MU/message-bus/messages")
-
-    assert response.status_code == 200
-    item = response.json()["data"]["items"][0]
-    assert item["processing_status"] == "pending"
-    assert item["runtime_execution_id"] == f"inbox:MU:{accepted.standard_message_id}"
 
 
 async def test_site_access_deferral_preserves_checkpoint_and_skips_acceptance(

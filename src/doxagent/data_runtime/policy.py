@@ -15,7 +15,6 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey,
 from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 from pydantic import Field
 
-from doxagent.agents.config import default_agent_registry
 from doxagent.codex_runtime.errors import CapabilityDenied
 from doxagent.codex_runtime.schema import (
     CODEX_D1_WORKFLOW_VERSION,
@@ -36,6 +35,7 @@ from doxagent.codex_runtime.schema import (
     lane_for_workflow,
 )
 from doxagent.data_runtime.contracts import DataRuntimeModel, is_data_mcp_excluded_tool
+from doxagent.data_runtime.tool_ceiling import ROLE_TOOL_CEILINGS
 from doxagent.models import AgentName
 
 
@@ -148,11 +148,10 @@ class DataToolPolicyRegistry:
     """Server-side maximum allowlist keyed by workflow node and role."""
 
     def __init__(self) -> None:
-        agents = default_agent_registry()
         self._by_role: dict[CodexResearchAgentRole, frozenset[str]] = {
             role: frozenset(
                 tool_id
-                for tool_id in agents.get(agent_name).runtime.allowed_tools
+                for tool_id in ROLE_TOOL_CEILINGS[agent_name]
                 if not is_data_mcp_excluded_tool(tool_id)
             )
             for role, agent_name in _LEGACY_AGENT_BY_ROLE.items()
@@ -191,8 +190,10 @@ class DataToolPolicyRegistry:
         from doxagent.tools.factory import _DESCRIPTORS
 
         v21_tools = frozenset(
-            name for name, descriptor in _DESCRIPTORS.items()
-            if descriptor.read_only and descriptor.availability != "unavailable"
+            name
+            for name, descriptor in _DESCRIPTORS.items()
+            if descriptor.read_only
+            and descriptor.availability != "unavailable"
             and not is_data_mcp_excluded_tool(name)
             and not name.startswith(("message_bus.", "monitoring.", "crawler_plane."))
         )

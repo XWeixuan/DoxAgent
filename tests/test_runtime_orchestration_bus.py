@@ -5,7 +5,7 @@ from types import SimpleNamespace
 from doxagent.persistent_runtime_v2.bus_orchestration import BusOrchestration
 from doxagent.persistent_runtime_v2.coordinator import RuntimeCoordinator
 from doxagent.persistent_runtime_v2.journal import RuntimeJournal
-from tests.test_message_bus_v2 import _bus
+from tests.fixtures.message_bus_v2 import _bus
 from tests.test_persistent_runtime_v2 import _source
 from tests.test_runtime_orchestration_execution import runtime_at
 

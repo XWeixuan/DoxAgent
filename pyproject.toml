@@ -5,17 +5,14 @@ build-backend = "hatchling.build"
 [project]
 name = "doxagent"
 version = "0.1.0"
-description = "Blackboard-centered agent infrastructure for US equity message-side research."
+description = "Codex SDK workflows, Message Bus V2, and governed equity research runtime."
 readme = "README.md"
 requires-python = ">=3.11,<3.14"
 license = "MIT"
 dependencies = [
     "exchange-calendars>=4.11,<5",
-    "agent-framework-core>=1.6,<2",
-    "anthropic>=0.71,<1",
     "httpx>=0.28,<1",
     "jsonschema>=4.23,<5",
-    "langsmith>=0.8,<1",
     "openai>=2,<3",
     "pydantic>=2,<3",
     "pydantic-settings>=2,<3",
@@ -69,6 +66,7 @@ packages = ["src/doxagent", "src/cdecr"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+addopts = "--import-mode=importlib"
 markers = [
     "real_api: tests that call real external free-tier APIs and consume quota",
     "real_db: tests that connect to real Supabase/Postgres persistence",

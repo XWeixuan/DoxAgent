@@ -29,7 +29,7 @@ from doxagent.workflows.codex_document2.orchestrator import (
 )
 from doxagent.workflows.codex_document2.recovery import fallback
 from doxagent.workflows.codex_document2.validation import validate_output
-from tests.test_codex_document2_workflow import (
+from tests.fixtures.codex_document2 import (
     AS_OF,
     _Document2Worker,
     _global_fixture,

@@ -7,12 +7,10 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from doxagent.blackboard import BlackboardService
 from doxagent.horizontal_collection import (
     CollectionMode,
     CollectionTargetStatus,
     HorizontalCollectionManifest,
-    HorizontalCollectionManifestRepository,
     HorizontalCollectionTargetResult,
     ObjectRef,
     ObjectType,
@@ -25,7 +23,6 @@ from doxagent.horizontal_collection import (
     default_metric_registry,
 )
 from doxagent.horizontal_collection.generated_metric_catalog import GENERATED_METRIC_IDS
-from doxagent.models import AgentName
 from doxagent.settings import DoxAgentSettings
 from doxagent.tools.factory import default_real_tool_registry
 
@@ -69,10 +66,7 @@ def test_metric_and_target_registries_cover_every_fixed_required_metric() -> Non
         SourceRole.MANAGEMENT,
         SourceRole.SELL_SIDE,
     }
-    assert (
-        targets.get("c2_macro_implied_policy_rate_12m").collection_mode
-        is CollectionMode.PROGRAM
-    )
+    assert targets.get("c2_macro_implied_policy_rate_12m").collection_mode is CollectionMode.PROGRAM
     assert (
         targets.get("c2_macro_implied_policy_rate_12m").capability_status
         is ProviderCapabilityStatus.IMPLEMENTED
@@ -147,25 +141,6 @@ def test_parameter_and_current_value_identity_are_explicit() -> None:
         "source_role": SourceRole.SELL_SIDE,
         "time_scope": "NEXT_QUARTER",
     }
-
-
-def test_manifest_persists_as_separate_run_audit_artifact() -> None:
-    blackboard = BlackboardService()
-    run = blackboard.start_run("MU", AgentName.SYSTEM)
-    manifest = HorizontalCollectionManifest(
-        run_id=run.run_id,
-        ticker="MU",
-        metric_registry_version="metrics-v1",
-        target_registry_version="targets-v1",
-        target_results=(),
-    )
-    repository = HorizontalCollectionManifestRepository(blackboard)
-
-    entry = repository.save(manifest)
-
-    assert entry.content_type == "horizontal_collection_manifest"
-    assert repository.list_for_run(run.run_id) == (manifest,)
-    assert blackboard.get_run(run.run_id).belief_state.documents == {}
 
 
 def test_factory_registers_every_non_derived_horizontal_tool_with_descriptors() -> None:

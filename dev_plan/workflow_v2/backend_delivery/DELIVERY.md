@@ -13,7 +13,7 @@
 | 执行读取 | `v2_read/executions.py`、`pnl.py` | 正式 intent/执行接纳分离、有效 Fill correction、owned EXIT 成本分摊、迟到佣金归回原日 |
 | 运行入口 | `runtime_scheduler/v2.py`、`persistent_runtime_v2/delivery_worker.py` | V2 调度不构造 V1 服务；全部 ticker 暂停后旧 intent 仍独立交付 |
 | 运维 | `v2_read/cli.py`、`maintenance.py`、`history.py` | 显式迁移、SQLite 一致性备份、历史归属清单、有界回填、影子 generation 重建/验证/alias 切换、24h 快照保留清理 |
-| 部署资料 | `docker-compose.v2-backend.yml`、[RUNBOOK.md](RUNBOOK.md) | 进程职责、路径与权限、上线次序、恢复和回退规则 |
+| 部署资料 | `docker-compose.v2-production.yml`、[PRODUCTION_RUNBOOK.md](PRODUCTION_RUNBOOK.md) | 进程职责、路径与权限、上线次序、恢复和回退规则 |
 
 修改已追加到仓库 `changelog`。未覆盖并行工作的前端文件；未创建提交、执行生产迁移、部署服务、启动研究或发送 broker 订单。
 
@@ -37,4 +37,4 @@
 5. 后续收尾加入的历史导入、部署 overlay、V2 scheduler 实际组合及部分 intent/Case 详情改动尚未重新进行端到端运行验证。现有 OpenAPI 导出是此前审计快照，新加入的参数描述可从当前 app 重新生成。
 6. 真实前端联调、部署探针、真实模型研究、Paper 成交、Live 运行均未执行；不宣称已部署或交易可用。
 
-本记录区分已实现、已验证与仍需收口内容。运行与恢复命令见 [RUNBOOK.md](RUNBOOK.md)，契约以 `../DOXAGENT_V2_API_CONTRACT.md` 及其配套类型为准。
+本记录区分已实现、已验证与仍需收口内容。运行与恢复命令见 [PRODUCTION_RUNBOOK.md](PRODUCTION_RUNBOOK.md)，契约以 `../DOXAGENT_V2_API_CONTRACT.md` 及其配套类型为准。

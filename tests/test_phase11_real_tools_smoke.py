@@ -7,7 +7,6 @@ from typing import Any
 
 import pytest
 
-from doxagent.agents import default_agent_registry
 from doxagent.models import AgentName, AgentPermissions, ResultStatus
 from doxagent.settings import DoxAgentSettings
 from doxagent.tools import ToolRequest, default_real_tool_registry
@@ -25,8 +24,6 @@ _SETTINGS_ENV = {
     "ANYSEARCH_API_KEY": "anysearch_api_key",
 }
 
-_ = default_agent_registry
-
 
 def _real_api_enabled() -> None:
     if os.getenv("DOXAGENT_RUN_REAL_API_TESTS") != "1":
@@ -37,9 +34,7 @@ def _env_required(*names: str) -> None:
     _real_api_enabled()
     settings = DoxAgentSettings()
     missing = [
-        name
-        for name in names
-        if not os.getenv(name) and not getattr(settings, _SETTINGS_ENV[name])
+        name for name in names if not os.getenv(name) and not getattr(settings, _SETTINGS_ENV[name])
     ]
     if missing:
         pytest.skip(f"Missing real API environment variables: {', '.join(missing)}")

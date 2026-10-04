@@ -1,7 +1,7 @@
 import asyncio
 
 from doxagent.v2_control.mirror import apply
-from tests.test_message_bus_v2 import _bus, _input
+from tests.fixtures.message_bus_v2 import _bus, _input
 
 
 def test_ingestion_origin_is_immutable_across_delayed_duplicates(tmp_path):

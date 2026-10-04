@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from fastapi.testclient import TestClient
 from pydantic import ValidationError
 
 from doxagent.codex_runtime.errors import CapabilityDenied
@@ -24,7 +23,6 @@ from doxagent.codex_runtime.schema import (
     ResearchLane,
     ThreadRecord,
 )
-from doxagent.dashboard_api import create_app
 from doxagent.data_runtime.policy import DataCapabilityCodec
 from doxagent.horizontal_collection.registry import collection_target_registry_for_lane
 from doxagent.observations.promotion import CitationPromotionService
@@ -114,12 +112,8 @@ def test_aggregate_citations_are_unique_across_node_attempts() -> None:
 
     plan = service.plan_aggregate(manifests)
 
-    assert plan.rewrite(attempt_id="c1-attempt", markdown="A【cite:O1】") == (
-        "A【cite:O1】"
-    )
-    assert plan.rewrite(attempt_id="c3-attempt", markdown="B【cite:O1】") == (
-        "B【cite:O2】"
-    )
+    assert plan.rewrite(attempt_id="c1-attempt", markdown="A【cite:O1】") == ("A【cite:O1】")
+    assert plan.rewrite(attempt_id="c3-attempt", markdown="B【cite:O1】") == ("B【cite:O2】")
     assert [entry.alias for entry in plan.entries] == ["O1", "O2"]
     assert [entry.attempt_id for entry in plan.entries] == [
         "c1-attempt",
@@ -211,10 +205,14 @@ def test_horizontal_target_registries_are_lane_local() -> None:
 def test_new_bundle_manifests_have_exact_lane_nodes_and_canonical_resources() -> None:
     root = Path(__file__).resolve().parents[1]
     global_manifest = json.loads(
-        (root / "prompts/codex_v2/document1/global_research/bundle_manifest.json").read_text(encoding="utf-8")
+        (root / "prompts/codex_v2/document1/global_research/bundle_manifest.json").read_text(
+            encoding="utf-8"
+        )
     )
     market_manifest = json.loads(
-        (root / "prompts/codex_v2/document1/market_situation/bundle_manifest.json").read_text(encoding="utf-8")
+        (root / "prompts/codex_v2/document1/market_situation/bundle_manifest.json").read_text(
+            encoding="utf-8"
+        )
     )
     assert list(global_manifest["nodes"]) == [
         "c4_pre_scan",
@@ -277,55 +275,3 @@ def test_data_capability_rejects_cross_lane_and_cross_role_claims() -> None:
     )
     with pytest.raises(CapabilityDenied, match="node and role"):
         DataCapabilityCodec.verify(role_token, public_key=codec.public_key)
-
-
-def test_research_lane_api_has_independent_authenticated_start_routes() -> None:
-    service = _FakeResearchLaneService()
-    client = TestClient(
-        create_app(
-            auth_mode="mock-required",
-            codex_research_lane_service=service,  # type: ignore[arg-type]
-        )
-    )
-    headers = {"Authorization": "Bearer local-test"}
-    global_payload = {
-        "run_id": "global-api",
-        "ticker": "NVDA",
-        "research_brief": "test",
-    }
-    market_payload = {
-        "run_id": "market-api",
-        "ticker": "NVDA",
-        "research_brief": "test",
-    }
-
-    assert (
-        client.post("/api/dashboard/v1/research-runs/global", json=global_payload).status_code
-        == 401
-    )
-    global_started = client.post(
-        "/api/dashboard/v1/research-runs/global", headers=headers, json=global_payload
-    )
-    market_started = client.post(
-        "/api/dashboard/v1/research-runs/market-situation",
-        headers=headers,
-        json=market_payload,
-    )
-    document2_started = client.post(
-        "/api/dashboard/v1/research-runs/document2",
-        headers=headers,
-        json={"source_global_run_id": "global-api"},
-    )
-    assert global_started.json()["data"]["research_lane"] == "global_research"
-    assert market_started.json()["data"]["research_lane"] == "market_situation_research"
-    assert document2_started.json()["data"]["research_lane"] == "document2"
-    assert document2_started.json()["data"]["source_global_run_id"] == "global-api"
-    assert len(service.requests) == 3
-    assert (
-        client.post(
-            "/api/dashboard/v1/research-runs/global-api/retry",
-            headers=headers,
-            json={**global_payload, "run_id": "wrong-run"},
-        ).status_code
-        == 422
-    )

@@ -1,8 +1,8 @@
 // Isolated PostgreSQL/WASM check. No network, server, Supabase credentials or data.
-// Install the pinned test-only engine under .tmp as documented in the runbook.
+// Install the pinned test-only engine under tests/tools/ticker_initialization_sql.
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { PGlite } from '../.tmp/ticker-init-sql-check/node_modules/@electric-sql/pglite/dist/index.js';
+import { PGlite } from '../tests/tools/ticker_initialization_sql/node_modules/@electric-sql/pglite/dist/index.js';
 
 const db = new PGlite();
 try {

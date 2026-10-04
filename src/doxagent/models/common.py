@@ -1,13 +1,6 @@
-"""Shared enums and type aliases for DoxAgent contracts."""
+"""Shared V2 identities, including persisted document type values."""
 
 from enum import StrEnum
-
-
-class AgentRole(StrEnum):
-    OPERATOR = "operator"
-    CONSULTANT = "consultant"
-    AUDIT = "audit"
-    SYSTEM = "system"
 
 
 class AgentName(StrEnum):
@@ -35,80 +28,9 @@ class DocumentType(StrEnum):
     MONITORING_POLICY = "monitoring_policy"
 
 
-class TaskType(StrEnum):
-    GENERATE_GLOBAL_RESEARCH = "generate_global_research"
-    GENERATE_MARKET_SITUATION_RESEARCH = "generate_market_situation_research"
-    GENERATE_GLOBAL_NARRATIVE_REPORT = "generate_global_narrative_report"
-    GENERATE_EXPECTATION_UNIT = "generate_expectation_unit"
-    GENERATE_EXPECTATION_DETAIL = "generate_expectation_detail"
-    REVIEW_EXPECTATION_FIELD = "review_expectation_field"
-    FACT_CHECK = "fact_check"
-    DELEGATED_RETRIEVAL = "delegated_retrieval"
-    GENERATE_KNOWN_EVENTS = "generate_known_events"
-    GENERATE_MONITORING_CONFIG = "generate_monitoring_config"
-    REVIEW_MONITORING_CONFIG = "review_monitoring_config"
-    RESOLVE_MONITORING_CONFIG = "resolve_monitoring_config"
-    GENERATE_MONITORING_POLICY = "generate_monitoring_policy"
-    REVIEW_MONITORING_POLICY = "review_monitoring_policy"
-    RESOLVE_MONITORING_POLICY = "resolve_monitoring_policy"
-    RUNTIME_W1_NOVELTY = "runtime_w1_novelty"
-    RUNTIME_W2_POLICY = "runtime_w2_policy"
-    RUNTIME_O3_JUDGMENT = "runtime_o3_judgment"
-
-
-class PatchOperation(StrEnum):
-    CREATE = "create"
-    UPDATE = "update"
-    DELETE = "delete"
-    PROMOTE = "promote"
-
-
 class ResultStatus(StrEnum):
     SUCCEEDED = "succeeded"
     FAILED = "failed"
     PARTIAL = "partial"
     EMPTY = "empty"
     NOT_APPLICABLE = "not_applicable"
-
-
-class ValidationStatus(StrEnum):
-    PENDING = "pending"
-    VALID = "valid"
-    INVALID = "invalid"
-
-
-class ObjectionSeverity(StrEnum):
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
-    BLOCKING = "blocking"
-
-
-class ObjectionStatus(StrEnum):
-    OPEN = "open"
-    ACCEPTED = "accepted"
-    PARTIALLY_ACCEPTED = "partially_accepted"
-    REJECTED = "rejected"
-    RESOLVED = "resolved"
-    UNRESOLVED = "unresolved"
-
-
-class DelegationStatus(StrEnum):
-    OPEN = "open"
-    ASSIGNED = "assigned"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    CANCELLED = "cancelled"
-
-
-class ExpectationDirection(StrEnum):
-    BULLISH = "bullish"
-    BEARISH = "bearish"
-    NEUTRAL = "neutral"
-    RISK = "risk"
-
-
-class PolicyActionType(StrEnum):
-    DIRECT_TRADE = "direct_trade"
-    PUSH_TO_AGENT = "push_to_agent"
-    CACHE = "cache"

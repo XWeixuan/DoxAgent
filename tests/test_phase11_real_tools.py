@@ -8,8 +8,6 @@ import httpx
 import pytest
 
 import doxagent.tools.providers.finnhub as finnhub_provider
-from doxagent.agents import default_agent_registry
-from doxagent.agents.runtime.memory.observations import ObservationService
 from doxagent.models import AgentName, AgentPermissions, ResultStatus
 from doxagent.settings import DoxAgentSettings
 from doxagent.tools import ToolRequest, default_real_tool_registry
@@ -173,115 +171,6 @@ def test_sec_company_facts_returns_failed_when_upstream_unavailable() -> None:
     assert result.error.code == "not_found"
 
 
-def test_sec_company_facts_keeps_full_raw_but_exposes_compact_paged_output() -> None:
-    submissions = {
-        "name": "Meta Platforms, Inc.",
-        "tickers": ["META"],
-        "exchanges": ["Nasdaq"],
-        "sic": "7370",
-        "sicDescription": "Services-Computer Programming",
-        "filings": {
-            "recent": {
-                "form": ["4", "10-K", "10-Q"],
-                "accessionNumber": ["a", "b", "c"],
-                "filingDate": ["2026-01-03", "2026-02-01", "2026-05-01"],
-                "reportDate": ["", "2025-12-31", "2026-03-31"],
-                "primaryDocument": ["form4.htm", "meta-20251231.htm", "meta-20260331.htm"],
-            }
-        },
-    }
-    fact_rows = [
-        {
-            "start": "2025-01-01",
-            "end": f"2025-{month:02d}-28",
-            "val": month,
-            "accn": f"accn-{month}",
-            "form": "10-Q",
-            "filed": f"2026-{month:02d}-01",
-        }
-        for month in range(1, 11)
-    ]
-    companyfacts = {
-        "facts": {
-            "us-gaap": {
-                "RevenueFromContractWithCustomerExcludingAssessedTax": {
-                    "label": "Revenue",
-                    "description": "Revenue from contracts with customers.",
-                    "units": {"USD": fact_rows},
-                },
-                "Assets": {
-                    "label": "Assets",
-                    "description": "Total assets.",
-                    "units": {"USD": fact_rows},
-                },
-            }
-        }
-    }
-
-    def handler(request: httpx.Request) -> httpx.Response:
-        if "/submissions/" in request.url.path:
-            return httpx.Response(200, json=submissions)
-        return httpx.Response(200, json=companyfacts)
-
-    client = SecCompanyFactsAndFilingsClient(
-        _settings(), client=httpx.Client(transport=httpx.MockTransport(handler))
-    )
-    result = client.call(
-        _request("sec.company_facts_and_filings", {"ticker": "META", "cik": "1326801"})
-    )
-
-    assert result.status is ResultStatus.SUCCEEDED
-    assert "companyfacts" not in result.output
-    assert result.output["recent_filings"][0]["form"] == "10-K"
-    assert result.output["fact_directory"]["page_count"] == 2
-    assert len(result.output["fact_pages"]["page_0001"]["latest_observations"]) == 1
-    assert len(result.raw["companyfacts"]["facts"]["us-gaap"]["Assets"]["units"]["USD"]) == 10
-
-    observations = ObservationService()
-    index = observations.ingest(
-        tool_call_id="sec",
-        step=1,
-        input_payload={"ticker": "META"},
-        result=result,
-        declared_policy="indexed",
-        adapter="auto",
-    )
-    page_ref = "obs_sec::/fact_pages/page_0001"
-    assert page_ref in index.block_refs
-    page_block = observations.block_store.get_by_ref(page_ref)
-    assert page_block is not None
-    page_alias = observations.aliases.alias_for(page_block.block_id)
-    assert page_alias is not None
-    assert observations.read(page_alias)[0].content == result.output["fact_pages"]["page_0001"]
-    assert (
-        max(
-            len(
-                json.dumps(
-                    block.content,
-                    ensure_ascii=False,
-                    sort_keys=True,
-                    separators=(",", ":"),
-                )
-            )
-            for block in observations.block_store.blocks_for_call("sec")
-        )
-        <= 1_200
-    )
-    assert index.delivery_mode == "full"
-    selected_paths = set(index.selected_refs)
-    assert "obs_sec::/fact_directory" in selected_paths
-    assert any(ref.startswith("obs_sec::/key_facts/") for ref in selected_paths)
-    outline = index.outline(observations.block_store, observations.aliases)
-    assert "group_catalog" not in outline
-    catalog_refs = {ref for group in index.catalog_groups for ref in group.member_refs}
-    content_refs = {
-        block.ref
-        for block in observations.block_store.blocks_for_call("sec")
-        if block.block_type != "outline"
-    }
-    assert content_refs == selected_paths | catalog_refs | set(index.indexed_refs)
-
-
 def test_source_tool_descriptors_match_public_provider_parameters() -> None:
     registry = default_real_tool_registry(_settings())
 
@@ -297,18 +186,6 @@ def test_source_tool_descriptors_match_public_provider_parameters() -> None:
     assert "start_year" in registry.describe("bls.timeseries").input_fields
     assert "material_type" not in registry.describe("fed.fomc_calendar_materials").input_fields
     assert "market_slug" in registry.describe("polymarket.market_probability").input_fields
-
-
-def test_agent_permissions_include_real_tools_without_duplicate_commodity_tool() -> None:
-    registry = default_agent_registry()
-    c2 = registry.get(AgentName.C2_MACRO_RESEARCH)
-
-    allowed = set(c2.runtime.allowed_tools)
-
-    assert "fred.series_observations" in allowed
-    assert "fred.commodity_series" not in allowed
-    assert "fed.fomc_calendar_materials" in allowed
-    assert "polymarket.market_probability" in allowed
 
 
 def test_http_errors_are_mapped_to_tool_error() -> None:
@@ -629,36 +506,6 @@ def test_doxatlas_error_envelope_maps_provider_details() -> None:
     assert result.error.details["provider_code"] == "TOOL_SERVER_NOT_CONFIGURED"
     assert result.error.details["status_code"] == 500
     assert result.error.details["provider_details"] == {"env": "missing"}
-
-
-def test_doxatlas_run_tools_are_registered_but_not_default_authorized() -> None:
-    registry = default_agent_registry()
-    allowed_tools = {
-        tool
-        for name in registry.names()
-        for tool in registry.get(name).runtime.allowed_tools
-        if tool.startswith("doxa_run_")
-    }
-
-    assert allowed_tools == set()
-
-
-def test_a1_uses_low_level_doxatlas_read_tools_only() -> None:
-    definition = default_agent_registry().get(AgentName.A1_DOXATLAS_AUDIT)
-
-    assert set(definition.runtime.allowed_tools) == {
-        "doxa_query_analysis",
-        "doxa_get_analysis",
-        "doxa_query_propositions",
-        "doxa_get_event_source",
-        "doxa_get_social_result",
-        "doxa_get_social_result_detail",
-        "doxa_get_media_result",
-        "doxa_get_media_result_detail",
-        "doxa_get_ignored_propositions",
-    }
-    assert "doxa_get_narrative_report" not in definition.runtime.allowed_tools
-    assert all(not tool.startswith("doxa_run_") for tool in definition.runtime.allowed_tools)
 
 
 def test_sec_section_parser_extracts_known_item_text() -> None:
@@ -1341,3 +1188,68 @@ def test_yfinance_tool_is_hk_only_for_us_tickers() -> None:
     assert result.status is ResultStatus.FAILED
     assert result.error is not None
     assert result.error.code == "market_not_allowed"
+
+
+def test_sec_company_facts_keeps_full_raw_but_exposes_compact_paged_output() -> None:
+    submissions = {
+        "name": "Meta Platforms, Inc.",
+        "tickers": ["META"],
+        "exchanges": ["Nasdaq"],
+        "sic": "7370",
+        "sicDescription": "Services-Computer Programming",
+        "filings": {
+            "recent": {
+                "form": ["4", "10-K", "10-Q"],
+                "accessionNumber": ["a", "b", "c"],
+                "filingDate": ["2026-01-03", "2026-02-01", "2026-05-01"],
+                "reportDate": ["", "2025-12-31", "2026-03-31"],
+                "primaryDocument": ["form4.htm", "meta-20251231.htm", "meta-20260331.htm"],
+            }
+        },
+    }
+    fact_rows = [
+        {
+            "start": "2025-01-01",
+            "end": f"2025-{month:02d}-28",
+            "val": month,
+            "accn": f"accn-{month}",
+            "form": "10-Q",
+            "filed": f"2026-{month:02d}-01",
+        }
+        for month in range(1, 11)
+    ]
+    companyfacts = {
+        "facts": {
+            "us-gaap": {
+                "RevenueFromContractWithCustomerExcludingAssessedTax": {
+                    "label": "Revenue",
+                    "description": "Revenue from contracts with customers.",
+                    "units": {"USD": fact_rows},
+                },
+                "Assets": {
+                    "label": "Assets",
+                    "description": "Total assets.",
+                    "units": {"USD": fact_rows},
+                },
+            }
+        }
+    }
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if "/submissions/" in request.url.path:
+            return httpx.Response(200, json=submissions)
+        return httpx.Response(200, json=companyfacts)
+
+    client = SecCompanyFactsAndFilingsClient(
+        _settings(), client=httpx.Client(transport=httpx.MockTransport(handler))
+    )
+    result = client.call(
+        _request("sec.company_facts_and_filings", {"ticker": "META", "cik": "1326801"})
+    )
+
+    assert result.status is ResultStatus.SUCCEEDED
+    assert "companyfacts" not in result.output
+    assert result.output["recent_filings"][0]["form"] == "10-K"
+    assert result.output["fact_directory"]["page_count"] == 2
+    assert len(result.output["fact_pages"]["page_0001"]["latest_observations"]) == 1
+    assert len(result.raw["companyfacts"]["facts"]["us-gaap"]["Assets"]["units"]["USD"]) == 10

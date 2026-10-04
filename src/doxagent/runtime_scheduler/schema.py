@@ -14,18 +14,6 @@ from doxagent.message_bus_v2.schema import (
     TickerSourceBinding as MessageBusV2TickerSourceBinding,
 )
 from doxagent.models import DocumentType
-from doxagent.models.documents import (
-    KnownEventsDocument,
-    MonitoringConfigDocument,
-    MonitoringPolicyDocument,
-)
-from doxagent.monitoring.schema import PollState as LegacyPollState
-from doxagent.monitoring.schema import TickerSourceBinding as LegacyTickerSourceBinding
-from doxagent.persistent_runtime.schema import (
-    ExecutionExceptionLog,
-    RuntimeExecutionObservation,
-    TradingRecord,
-)
 
 JsonObject = dict[str, Any]
 
@@ -118,13 +106,6 @@ class DocumentSetStatus(RuntimeSchedulerModel):
         return normalized
 
 
-class DocumentBundle(RuntimeSchedulerModel):
-    status: DocumentSetStatus
-    known_events: KnownEventsDocument | None = None
-    monitoring_config: MonitoringConfigDocument | None = None
-    monitoring_policy: MonitoringPolicyDocument | None = None
-
-
 class TickerRunCounters(RuntimeSchedulerModel):
     poll_cycles: int = 0
     messages_collected: int = 0
@@ -206,8 +187,8 @@ class DocumentRefreshRequest(RuntimeSchedulerModel):
 
 
 class MonitoringBindingStatus(RuntimeSchedulerModel):
-    binding: MessageBusV2TickerSourceBinding | LegacyTickerSourceBinding
-    poll_state: MessageBusV2PollState | LegacyPollState | None = None
+    binding: MessageBusV2TickerSourceBinding
+    poll_state: MessageBusV2PollState | None = None
 
 
 class MonitoringRunStatus(RuntimeSchedulerModel):
@@ -227,39 +208,8 @@ class EventProcessingStatus(RuntimeSchedulerModel):
     pending_event_count: int = 0
     consumed_event_count: int = 0
     runtime_execution_count: int = 0
-    recent_observations: list[RuntimeExecutionObservation] = Field(default_factory=list)
     exception_count: int = 0
     last_execution_at: datetime | None = None
-
-
-class TradeIntentView(RuntimeSchedulerModel):
-    record_id: str
-    source_message_id: str
-    ticker: str
-    status: str
-    side: str
-    conviction: str
-    size_bucket: str
-    reasoning: str
-    route: str | None = None
-    exception_type: str | None = None
-    created_at: datetime
-
-    @classmethod
-    def from_record(cls, record: TradingRecord) -> TradeIntentView:
-        return cls(
-            record_id=record.record_id,
-            source_message_id=record.source_message_id,
-            ticker=record.ticker,
-            status=record.status.value,
-            side=record.trade_intent.side.value,
-            conviction=record.trade_intent.conviction.value,
-            size_bucket=record.trade_intent.size_bucket.value,
-            reasoning=record.trade_intent.reasoning,
-            route=record.route,
-            exception_type=record.exception_type,
-            created_at=record.created_at,
-        )
 
 
 class DashboardOverview(RuntimeSchedulerModel):
@@ -272,8 +222,6 @@ class TickerRunDetail(RuntimeSchedulerModel):
     document_status: DocumentSetStatus
     message_bus_status: MonitoringRunStatus
     runtime_status: EventProcessingStatus
-    trade_intents: list[TradeIntentView] = Field(default_factory=list)
-    exceptions: list[ExecutionExceptionLog] = Field(default_factory=list)
     refresh_requests: list[DocumentRefreshRequest] = Field(default_factory=list)
     audit_events: list[RuntimeAuditEvent] = Field(default_factory=list)
 

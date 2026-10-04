@@ -1,6 +1,5 @@
 """Runtime settings for DoxAgent."""
 
-import os
 from typing import Literal
 
 from pydantic import Field, SecretStr
@@ -235,11 +234,6 @@ class DoxAgentSettings(BaseSettings):
         validation_alias="DASHSCOPE_THINKING_BUDGET",
     )
 
-    langsmith_tracing: bool = Field(default=False, validation_alias="LANGSMITH_TRACING")
-    langsmith_endpoint: str | None = Field(default=None, validation_alias="LANGSMITH_ENDPOINT")
-    langsmith_api_key: str | None = Field(default=None, validation_alias="LANGSMITH_API_KEY")
-    langsmith_project: str | None = Field(default=None, validation_alias="LANGSMITH_PROJECT")
-
     tool_http_timeout_seconds: float = Field(
         default=15.0,
         validation_alias="DOXAGENT_TOOL_HTTP_TIMEOUT_SECONDS",
@@ -270,16 +264,6 @@ class DoxAgentSettings(BaseSettings):
         default=6.8,
         gt=0,
         validation_alias="DOXAGENT_MODEL_PRICING_CNY_USD_RATE",
-    )
-    react_tool_call_timeout_seconds: float = Field(
-        default=180.0,
-        gt=0,
-        validation_alias="DOXAGENT_REACT_TOOL_CALL_TIMEOUT_SECONDS",
-    )
-    workflow_agent_stale_after_seconds: int = Field(
-        default=1_800,
-        ge=1,
-        validation_alias="DOXAGENT_WORKFLOW_AGENT_STALE_AFTER_SECONDS",
     )
 
     doxatlas_tool_base_url: str | None = Field(
@@ -371,26 +355,6 @@ class DoxAgentSettings(BaseSettings):
         default=21_600, validation_alias="ANYSEARCH_CACHE_TTL_SECONDS"
     )
 
-    monitoring_storage_mode: Literal["memory", "sqlite"] = Field(
-        default="sqlite",
-        validation_alias="DOXAGENT_MONITORING_STORAGE_MODE",
-    )
-    monitoring_sqlite_path: str = Field(
-        default=".tmp/monitoring_message_bus.sqlite3",
-        validation_alias="DOXAGENT_MONITORING_SQLITE_PATH",
-    )
-    monitoring_auto_media_enrichment_enabled: bool = Field(
-        default=True,
-        validation_alias="DOXAGENT_MONITORING_AUTO_MEDIA_ENRICHMENT_ENABLED",
-    )
-    monitoring_auto_media_enrichment_limit: int = Field(
-        default=5,
-        validation_alias="DOXAGENT_MONITORING_AUTO_MEDIA_ENRICHMENT_LIMIT",
-    )
-    monitoring_auto_media_enrichment_concurrency: int = Field(
-        default=2,
-        validation_alias="DOXAGENT_MONITORING_AUTO_MEDIA_ENRICHMENT_CONCURRENCY",
-    )
     benzinga_api_key: str | None = Field(default=None, validation_alias="BENZINGA_API_KEY")
     benzinga_base_url: str = Field(
         default="https://api.benzinga.com", validation_alias="BENZINGA_BASE_URL"
@@ -461,10 +425,6 @@ class DoxAgentSettings(BaseSettings):
         default=None,
         validation_alias="STOCKTWITS_RAPIDAPI_KEY",
     )
-    stocktwits_rapidapi_fallback_key: str | None = Field(
-        default=None,
-        validation_alias="STOCKTWITS_RAPIDAPI_FALLBACK_KEY",
-    )
     stocktwits_rapidapi_base_url: str = Field(
         default="https://stocktwits-sentiment-message-analytics-api.p.rapidapi.com",
         validation_alias="STOCKTWITS_RAPIDAPI_BASE_URL",
@@ -492,77 +452,6 @@ class DoxAgentSettings(BaseSettings):
     stocktwits_accept_language: str = Field(
         default="en-US,en;q=0.9",
         validation_alias="STOCKTWITS_ACCEPT_LANGUAGE",
-    )
-    stocktwits_storage_mode: Literal["memory", "sqlite", "postgres"] = Field(
-        default="sqlite",
-        validation_alias="DOXAGENT_STOCKTWITS_STORAGE_MODE",
-    )
-    stocktwits_sqlite_path: str = Field(
-        default=".tmp/stocktwits_polling.sqlite3",
-        validation_alias="DOXAGENT_STOCKTWITS_SQLITE_PATH",
-    )
-    stocktwits_allow_postgres: bool = Field(
-        default=False,
-        validation_alias="DOXAGENT_STOCKTWITS_ALLOW_POSTGRES",
-    )
-    stocktwits_default_symbols: str = Field(
-        default="AAPL,MSFT,NVDA,TSLA,AMZN,META,GOOGL,AMD,PLTR,MU",
-        validation_alias="DOXAGENT_STOCKTWITS_SYMBOLS",
-    )
-    stocktwits_target_cadence_seconds: int = Field(
-        default=300,
-        ge=30,
-        validation_alias="DOXAGENT_STOCKTWITS_TARGET_CADENCE_SECONDS",
-    )
-    stocktwits_hot_cadence_seconds: int = Field(
-        default=90,
-        ge=30,
-        validation_alias="DOXAGENT_STOCKTWITS_HOT_CADENCE_SECONDS",
-    )
-    stocktwits_scheduler_tick_seconds: int = Field(
-        default=30,
-        ge=1,
-        validation_alias="DOXAGENT_STOCKTWITS_SCHEDULER_TICK_SECONDS",
-    )
-    stocktwits_page_size: int = Field(
-        default=30,
-        ge=1,
-        validation_alias="DOXAGENT_STOCKTWITS_PAGE_SIZE",
-    )
-    stocktwits_max_pages_per_crawl: int = Field(
-        default=10,
-        ge=1,
-        validation_alias="DOXAGENT_STOCKTWITS_MAX_PAGES_PER_CRAWL",
-    )
-    stocktwits_hot_message_threshold: int = Field(
-        default=80,
-        ge=1,
-        validation_alias="DOXAGENT_STOCKTWITS_HOT_MESSAGE_THRESHOLD",
-    )
-    stocktwits_hot_cooldown_successes: int = Field(
-        default=3,
-        ge=1,
-        validation_alias="DOXAGENT_STOCKTWITS_HOT_COOLDOWN_SUCCESSES",
-    )
-    stocktwits_min_request_interval_seconds: float = Field(
-        default=1.0,
-        ge=0,
-        validation_alias="DOXAGENT_STOCKTWITS_MIN_REQUEST_INTERVAL_SECONDS",
-    )
-    stocktwits_request_timeout_seconds: float = Field(
-        default=15.0,
-        gt=0,
-        validation_alias="DOXAGENT_STOCKTWITS_REQUEST_TIMEOUT_SECONDS",
-    )
-    stocktwits_max_retries: int = Field(
-        default=3,
-        ge=1,
-        validation_alias="DOXAGENT_STOCKTWITS_MAX_RETRIES",
-    )
-    stocktwits_retry_base_delay_seconds: float = Field(
-        default=1.0,
-        ge=0,
-        validation_alias="DOXAGENT_STOCKTWITS_RETRY_BASE_DELAY_SECONDS",
     )
     tikhub_api_key: str | None = Field(default=None, validation_alias="TIKHUB_API_KEY")
     tikhub_base_url: str = Field(
@@ -697,7 +586,9 @@ class DoxAgentSettings(BaseSettings):
         default=False, validation_alias="DOXAGENT_MESSAGE_BUS_JEV_ENABLED"
     )
     message_bus_jev_timeout_seconds: float = Field(
-        default=15.0, ge=1, le=60,
+        default=15.0,
+        ge=1,
+        le=60,
         validation_alias="DOXAGENT_MESSAGE_BUS_JEV_TIMEOUT_SECONDS",
     )
     site_access_chrome_supervisor_socket: str | None = Field(
@@ -1000,63 +891,6 @@ class DoxAgentSettings(BaseSettings):
         default="prompts/persistent_runtime_v2/w3",
         validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_W3_PROMPT_ROOT",
     )
-    revenue_audit_storage_mode: Literal["memory", "sqlite"] = Field(
-        default="sqlite",
-        validation_alias="DOXAGENT_REVENUE_AUDIT_STORAGE_MODE",
-    )
-    revenue_audit_sqlite_path: str = Field(
-        default=".tmp/revenue_audit.sqlite3",
-        validation_alias="DOXAGENT_REVENUE_AUDIT_SQLITE_PATH",
-    )
-    revenue_audit_market_data_provider: Literal["benzinga", "twelvedata"] = Field(
-        default="twelvedata",
-        validation_alias="DOXAGENT_REVENUE_AUDIT_MARKET_DATA_PROVIDER",
-    )
-    revenue_audit_method_version: str = Field(
-        default="paper-trade-v1",
-        validation_alias="DOXAGENT_REVENUE_AUDIT_METHOD_VERSION",
-    )
-    revenue_audit_slippage_bps: float = Field(
-        default=5.0,
-        ge=0,
-        validation_alias="DOXAGENT_REVENUE_AUDIT_SLIPPAGE_BPS",
-    )
-    revenue_audit_base_notional_usd: float = Field(
-        default=10_000.0,
-        gt=0,
-        validation_alias="DOXAGENT_REVENUE_AUDIT_BASE_NOTIONAL_USD",
-    )
-    revenue_audit_small_multiplier: float = Field(
-        default=0.5,
-        gt=0,
-        validation_alias="DOXAGENT_REVENUE_AUDIT_SMALL_MULTIPLIER",
-    )
-    revenue_audit_normal_multiplier: float = Field(
-        default=1.0,
-        gt=0,
-        validation_alias="DOXAGENT_REVENUE_AUDIT_NORMAL_MULTIPLIER",
-    )
-    revenue_audit_aggressive_multiplier: float = Field(
-        default=2.0,
-        gt=0,
-        validation_alias="DOXAGENT_REVENUE_AUDIT_AGGRESSIVE_MULTIPLIER",
-    )
-    revenue_audit_auto_trigger_hour_et: int = Field(
-        default=18,
-        ge=0,
-        le=23,
-        validation_alias="DOXAGENT_REVENUE_AUDIT_AUTO_TRIGGER_HOUR_ET",
-    )
-    revenue_audit_loop_sleep_seconds: int = Field(
-        default=60,
-        ge=15,
-        validation_alias="DOXAGENT_REVENUE_AUDIT_LOOP_SLEEP_SECONDS",
-    )
-    revenue_audit_market_data_timeout_seconds: float = Field(
-        default=30.0,
-        gt=0,
-        validation_alias="DOXAGENT_REVENUE_AUDIT_MARKET_DATA_TIMEOUT_SECONDS",
-    )
     runtime_scheduler_storage_mode: Literal["memory", "sqlite"] = Field(
         default="sqlite",
         validation_alias="DOXAGENT_RUNTIME_SCHEDULER_STORAGE_MODE",
@@ -1129,20 +963,3 @@ class DoxAgentSettings(BaseSettings):
                 seen.add(key)
                 keys.append(key)
         return keys
-
-    @property
-    def langsmith_enabled(self) -> bool:
-        return bool(self.langsmith_tracing and self.langsmith_api_key)
-
-    def apply_langsmith_environment(self) -> None:
-        """Expose .env-backed LangSmith settings to the SDK wrappers."""
-
-        os.environ["LANGSMITH_TRACING"] = "true" if self.langsmith_tracing else "false"
-        optional_values = {
-            "LANGSMITH_ENDPOINT": self.langsmith_endpoint,
-            "LANGSMITH_API_KEY": self.langsmith_api_key,
-            "LANGSMITH_PROJECT": self.langsmith_project,
-        }
-        for key, value in optional_values.items():
-            if value:
-                os.environ[key] = value

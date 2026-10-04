@@ -1,7 +1,6 @@
 from datetime import UTC, datetime
 from decimal import Decimal
 
-from doxagent.gateway.providers import _usage_from_mapping
 from doxagent.v2_read.usage import cost
 
 
@@ -18,7 +17,3 @@ def test_cost_preserves_missing_cache_zero_and_fixed_day_night_prices():
     assert cost(model, after, {**usage, "cached_input_tokens": True})["reason"] == "INVALID_USAGE"
     assert cost(model, after, {**usage, "total_tokens": 9})["reason"] == "INVALID_USAGE"
     assert cost(model, after, usage, channel="CODEX")["reason"] == "CODEX_SUBSCRIPTION_NOT_PRICED"
-    result = _usage_from_mapping(
-        {"input_tokens": 0, "output_tokens": 0, "input_tokens_details": {"cached_tokens": 0}}
-    )
-    assert result.input_tokens == result.output_tokens == result.cached_input_tokens == 0

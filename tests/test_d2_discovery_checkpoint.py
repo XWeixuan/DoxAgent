@@ -38,8 +38,8 @@ from doxagent.workflows.codex_document2.discovery_checkpoint import (
     stable_json,
 )
 from doxagent.workflows.codex_document2.errors import Document2ExecutionError
+from tests.fixtures.codex_document2 import AS_OF
 from tests.test_codex_document2_v21_orchestration import scan, seed, selection, setup
-from tests.test_codex_document2_workflow import AS_OF
 from tests.test_codex_runtime_v2 import _AsyncSdkClient
 
 

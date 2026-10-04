@@ -1,6 +1,5 @@
 """Document 1 horizontal indicator collection domain."""
 
-from doxagent.horizontal_collection.artifacts import HorizontalCollectionManifestRepository
 from doxagent.horizontal_collection.registry import (
     METRIC_REGISTRY_VERSION,
     REQUIRED_METRIC_IDS,
@@ -41,7 +40,6 @@ __all__ = [
     "EntityScope",
     "HorizontalCollectionArtifactEnvelope",
     "HorizontalCollectionManifest",
-    "HorizontalCollectionManifestRepository",
     "HorizontalCollectionTargetResult",
     "MetricDefinition",
     "MetricRegistry",

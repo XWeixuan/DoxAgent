@@ -42,9 +42,9 @@ def test_scheduler_admission_and_tick_do_not_initialize_legacy_documents(tmp_pat
     from doxagent.message_bus_v2.repository import MessageBusV2Repository
     from doxagent.message_bus_v2.service import MessageBusV2Service
     from doxagent.runtime_scheduler import TickerRunStatus
-    from tests.test_phase25_runtime_scheduler import _missing_bundle, _scheduler
+    from tests.fixtures.runtime_scheduler import scheduler_fixture
 
-    scheduler, provider, _, _ = _scheduler(_missing_bundle())
+    scheduler, provider, _, _ = scheduler_fixture()
     bus = MessageBusV2Service(MessageBusV2Repository(tmp_path / "bus.db"))
     bus.bootstrap()
     bus.start_ticker("MU")
@@ -64,4 +64,3 @@ def test_scheduler_admission_and_tick_do_not_initialize_legacy_documents(tmp_pat
     scheduler.tick_ticker("MU")
     assert provider.latest_calls == 0
     assert provider.initialize_calls == 0
-    assert not scheduler._weekly_update_jobs

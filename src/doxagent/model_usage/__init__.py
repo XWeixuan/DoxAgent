@@ -1,7 +1,6 @@
 """Unified model usage persistence, pricing, and dashboard aggregation."""
 
 from doxagent.model_usage.pricing import ModelPricingCatalog, ModelPricingResult
-from doxagent.model_usage.recorder import ModelUsageRecorder
 from doxagent.model_usage.repository import (
     InMemoryModelUsageRepository,
     ModelUsageRepository,
@@ -19,7 +18,6 @@ __all__ = [
     "ModelPricingResult",
     "ModelUsageCostService",
     "ModelUsageEvent",
-    "ModelUsageRecorder",
     "ModelUsageRepository",
     "PostgresModelUsageRepository",
     "SQLiteModelUsageRepository",

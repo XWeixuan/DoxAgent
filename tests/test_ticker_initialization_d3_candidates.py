@@ -1,7 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
 
 from doxagent.workflows.codex_document3.repository import SQLiteDocument3PolicyRepository
-from tests.test_codex_document3_workflow import _policy_set
+from tests.fixtures.codex_document3 import _policy_set
 
 
 def test_candidate_publication_does_not_move_live_head_and_normal_publish_skips_reserved(tmp_path):

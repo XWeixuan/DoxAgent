@@ -26,8 +26,8 @@ from doxagent.ticker_initialization.consumers import admit_bus_revisions, admit_
 from doxagent.ticker_initialization.operations import replace_artifact, submit_activation
 from doxagent.ticker_initialization.runtime_inputs import ActivatedRuntimeInputs
 from doxagent.workflows.codex_document3.repository import SQLiteDocument3PolicyRepository
-from tests.test_codex_document3_workflow import NOW, _policy_set, _seed_published_d2
-from tests.test_phase25_runtime_scheduler import _missing_bundle, _scheduler
+from tests.fixtures.codex_document3 import NOW, _policy_set, _seed_published_d2
+from tests.fixtures.runtime_scheduler import scheduler_fixture
 
 
 @pytest.mark.asyncio
@@ -47,13 +47,22 @@ async def test_real_startup_handshake_replacement_rollback_and_exact_resume(tmp_
             ),
         )
     )
-    repository.save_artifact(ArtifactRef(
-        workflow_version="codex_global_research_v1", research_lane=ResearchLane.GLOBAL_RESEARCH,
-        run_id="d1-new", artifact_id="d1-body", node=CodexD1Node.ASSEMBLE,
-        attempt_id="offline-assemble", kind=ArtifactKind.BUNDLE, relative_path="artifacts/d1.json",
-        sha256=hashlib.sha256(b"{}").hexdigest(), size_bytes=2, content_type="application/json",
-        published=True,
-    ))
+    repository.save_artifact(
+        ArtifactRef(
+            workflow_version="codex_global_research_v1",
+            research_lane=ResearchLane.GLOBAL_RESEARCH,
+            run_id="d1-new",
+            artifact_id="d1-body",
+            node=CodexD1Node.ASSEMBLE,
+            attempt_id="offline-assemble",
+            kind=ArtifactKind.BUNDLE,
+            relative_path="artifacts/d1.json",
+            sha256=hashlib.sha256(b"{}").hexdigest(),
+            size_bytes=2,
+            content_type="application/json",
+            published=True,
+        )
+    )
     repository.save_published_document(
         PublishedDocument(
             run_id="d1-new",
@@ -75,7 +84,7 @@ async def test_real_startup_handshake_replacement_rollback_and_exact_resume(tmp_
     bus = MessageBusV2Service(MessageBusV2Repository(bus_path))
     bus.bootstrap()
     CandidateConfiguration(bus_path, "offline-source", "MU").prepare()
-    scheduler, provider, _, legacy_runtime = _scheduler(_missing_bundle())
+    scheduler, provider, _, legacy_runtime = scheduler_fixture()
     scheduler.runtime_v2_service = Mock(
         input_snapshot_loader=ActivatedRuntimeInputs(
             control, PublishedEventLibraryReader(tmp_path / "events"), policies

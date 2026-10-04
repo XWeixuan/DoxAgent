@@ -10,17 +10,17 @@ def test_package_import_exposes_version() -> None:
     assert doxagent.__version__ == "0.1.0"
 
 
-def test_phase0_baseline_files_exist() -> None:
+def test_v2_baseline_files_exist() -> None:
     expected_paths = [
         ROOT / ".env.example",
         ROOT / ".python-version",
         ROOT / "README.md",
-        ROOT / "dev_plan" / "PHASE0_BASELINE.md",
+        ROOT / "dev_plan" / "workflow_v2" / "DOXAGENT_V2_API_CONTRACT.md",
         ROOT / "pyproject.toml",
     ]
 
     for path in expected_paths:
-        assert path.exists(), f"Missing Phase 0 baseline file: {path}"
+        assert path.exists(), f"Missing V2 baseline file: {path}"
 
 
 def test_pyproject_keeps_external_agent_projects_out_of_dependencies() -> None:

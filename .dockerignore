@@ -15,7 +15,7 @@ __pycache__/
 .env
 .env.*
 !.env.example
-!.env.dashboard.example
+!.env.v2.example
 
 build/
 dist/
@@ -36,3 +36,7 @@ htmlcov/
 
 eval/brief_state_exports/
 references/
+
+/.test-tmp/
+/.pytest-codex*/
+/%SystemDrive%/

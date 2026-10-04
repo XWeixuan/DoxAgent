@@ -6,7 +6,7 @@
 
 初始化 Worker、Message Bus Worker、Runtime Scheduler 必须共享同一个 `DOXAGENT_TICKER_INITIALIZATION_CONTROL_PATH`。同时共享 Codex runtime SQLite、Event Library、Message Bus SQLite 和 crawler-plane volume。独立进程各自读取同一 active revision；初始化进程不能代写消费者 ACK。
 
-可选部署叠加文件：`docker-compose.ticker-init.yml`。实际部署由运维显式执行，本次开发不运行部署命令。使用时同时加载原 compose 与此 overlay，并启用既有 `codex-v2` profile。必须先配置 Codex Worker、CDECR 历史数据与模型供应商凭证；凭证不写命令行或本文件。
+当前部署使用 `docker-compose.v2-production.yml` 中的 `v2-initialization`，配置和上线顺序见 [PRODUCTION_RUNBOOK.md](backend_delivery/PRODUCTION_RUNBOOK.md)。原 ticker-init overlay 已随 V1 退役，不再叠加旧 Compose。运行凭证由 `.env.v2` 提供。
 
 Bus 在真实调度循环接纳候选配置并启动 ticker，Runtime 在 Bus ACK 后加载同 revision 的 Index/Projection。首次 cursor 只初始化一次。暂停同一 revision 的 ticker 不会因周期性 admission 自动恢复。
 
@@ -67,7 +67,7 @@ uv run doxagent-ticker-init reinitialize --ticker MU --research-cutoff-at <times
 SQL 离线检查覆盖重复 DDL、service_role 写入、乱序/重复摘要、非法状态、anon/authenticated 访问拒绝、RLS 与 SECURITY INVOKER。测试依赖只安装在忽略目录，不加入产品依赖：
 
 ```text
-npm install --prefix .tmp/ticker-init-sql-check --no-audit --no-fund --ignore-scripts @electric-sql/pglite@0.5.8
+npm ci --prefix tests/tools/ticker_initialization_sql --no-audit --no-fund --ignore-scripts
 node scripts/check_ticker_initialization_migration.mjs
 ```
 

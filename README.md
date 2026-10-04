@@ -1,379 +1,57 @@
 # DoxAgent
 
-DoxAgent is a message-side equity research agent system. The first development
-phase builds only the project baseline and the scaffolding needed for the later
-Blackboard initialization workflow.
+DoxAgent 使用 Codex SDK 编排独立的 Global Research、Market Situation、Document2、Event Library、Document3 与 Monitoring O4 工作流，并通过 Message Bus V2、持久化 Runtime V2、控制服务和交易执行服务运行。前端位于 `frontend/v2`，API 前缀为 `/api/doxagent/v2`。
 
-## V2 生产部署
+自建 ReAct／Blackboard V1 编排、旧 Dashboard 和专用入口已经退役。`v1` 或 `legacy_document1` 仍可出现在当前 Codex 资源版本、兼容研究 lane、CDECR 知识库和历史身份中，这些名称不代表旧引擎仍可启动。
 
-当前生产部署使用 `docker-compose.v2-production.yml` 与 `deploy/docker-compose.server.yml`。
-连接方式见 [SSH 指南](docs/ssh-connection-guide.md)，新加坡部署与迁移记录见
-[新加坡运行手册](dev_plan/workflow_v2/backend_delivery/SG_DEPLOYMENT.md)。
-旧 V1 dashboard/runtime-scheduler Compose 不再作为上线入口。
+## 本地开发
 
-## Phase 0 Scope
-
-Phase 0 establishes the Python project structure, dependency configuration,
-baseline documentation, and empty validation tests. It does not implement
-Blackboard state management, agent execution, workflow orchestration, external
-GitHub agent adapters, DoxAtlas integration, market data calls, fact-checking
-search, monitoring, or trading.
-
-## Local Setup
-
-This project uses Python 3.11 managed by `uv`. A system Python installation is
-not required.
-
-On PowerShell, use a workspace-local uv cache if the global uv cache is broken:
+Python 3.11–3.13，使用 `uv.lock`：
 
 ```powershell
-$env:UV_CACHE_DIR = "$PWD\.uv-cache"
+uv sync --locked --group dev
 ```
 
-Install Python and sync dependencies:
+共享供应商配置参考 `.env.example`，V2 进程配置参考 `.env.v2.example`。真实环境文件、凭据、状态库和浏览器身份不纳入 Git。`.uv-python` 是本地 `.venv` 的解释器基础，不能当作垃圾缓存删除。
+
+先按运行手册配置隔离开发数据目录、完成所需迁移，再按需要运行 `uv run doxagent-v2-api`、`uv run doxagent-v2-control`、`uv run doxagent-v2-scheduler`、`uv run doxagent-ticker-init`。所有入口见 `pyproject.toml` 的 `[project.scripts]`，参数见各 CLI 的 `--help`。
+
+完整容器装配使用 `Dockerfile.v2`、`docker-compose.v2-production.yml` 和 `deploy/docker-compose.server.yml`。旧默认 Compose／Dockerfile 已退出。上线与回退步骤见[生产运行手册](dev_plan/workflow_v2/backend_delivery/PRODUCTION_RUNBOOK.md)，连接见 [SSH 指南](docs/ssh-connection-guide.md)。本地开发也使用当前 V2 服务入口，不通过旧 API 代理。
+
+V2 前端有独立 pnpm 锁文件：
 
 ```powershell
-uv python install 3.11
-uv sync --group dev
+Set-Location frontend/v2
+pnpm install --frozen-lockfile
+pnpm dev
 ```
 
-Run the baseline checks:
+## 验证
+
+离线测试拒绝真实 HTTP、外部 socket 和真实 Codex app-server 启动。pytest 使用 importlib 模式避免不同子目录同名测试模块冲突。
 
 ```powershell
-uv run pytest
-uv run ruff check .
-uv run mypy src
+uv run pytest --collect-only --offline -q -m "not real_api and not real_db and not cdecr_real_models and not cdecr_real_db and not cdecr_real_step2"
+uv run pytest --offline -q -m "not real_api and not real_db and not cdecr_real_models and not cdecr_real_db and not cdecr_real_step2"
+uv run python scripts/check_v1_retirement.py
 ```
 
-## Architecture Boundaries
-
-- Microsoft Agent Framework is the future runtime and workflow shell, not the
-  model gateway or business state owner.
-- Phase 0 uses the `agent-framework-core` package instead of the all-in-one
-  `agent-framework` meta package to avoid optional Azure integrations.
-- Model Gateway will own provider routing, retries, structured output, and
-  LangSmith wrapping.
-- Blackboard Service will own Working Memory, Belief State, Objection,
-  Delegation, Evidence, and Commit Log.
-- External GitHub agent projects remain references only until the adapter phase.
-- DoxAtlas, market data, and fact-checking are mock/fixture based in Phase 0.
-
-## Phase 1 Contracts
-
-Core domain contracts live under `src/doxagent/models`. Phase 1 defines
-Pydantic schemas for `AgentTask`, `AgentResult`, `BlackboardPatch`,
-`EvidenceRef`, `Objection`, `Delegation`, and the five Blackboard work
-documents from the PRD. These contracts are serialization-friendly and do not
-import Microsoft Agent Framework types.
-
-Phase 1 still does not implement Blackboard persistence, MAF runners, workflows,
-tools, model calls, or external adapters.
-
-## Phase 2 Model Gateway
-
-Model Gateway code lives under `src/doxagent/gateway`. It provides an async
-`ModelClient` boundary, mock client, OpenAI and Anthropic SDK adapters,
-centralized LangSmith wrapping, normalized errors, fallback handling, and audit
-summaries. Phase 2 tests use fake SDK clients only and do not call real model
-providers.
-
-## Phase 3 Blackboard Service
-
-Blackboard Service code lives under `src/doxagent/blackboard`. Phase 3 provides
-an in-memory repository, run initialization, Working Memory writes, Belief State
-patch submission, obstruction checks for unresolved objections and active
-delegations, lifecycle helpers, and Commit Log entries. It does not add
-database persistence, workflow execution, agent runtime behavior, or tool calls.
-
-## Phase 4 Agent Runtime Boundary
-
-Agent runtime code lives under `src/doxagent/agents`, context snapshots live
-under `src/doxagent/context`, and controlled mock tools live under
-`src/doxagent/tools`. Phase 4 establishes the `AgentTask -> AgentResult`
-boundary, default agent registry, permission-bounded Context Builder, mock tool
-registry, and `ToolResult` to `EvidenceRef` conversion. It does not run real MAF
-agents, real model calls, external DoxAtlas calls, market-data calls, or
-workflow orchestration.
-
-## Phase 5 Initialization Workflow
-
-Initialization workflow code lives under `src/doxagent/workflows`. Phase 5 adds
-a deterministic Blackboard initialization runner, in-memory checkpoint/resume,
-mock agent result factory, document dependency checks, obstruction handling, and
-five-document Belief State promotion through `BlackboardService.submit_patch`.
-It still does not call real MAF workflows, model providers, DoxAtlas, market
-data, fact-check services, or external GitHub agent projects.
-
-## Phase 6 Mock Ticker Sample
-
-Phase 6 sample inputs and generated output live under
-`examples/phase6_mock_ticker`. The runnable module
-`doxagent.examples.phase6_mock_run` executes the Phase 5 workflow for the mock
-fixture and exports a review JSON containing five documents, evidence, Working
-Memory, Commit Log, objection/delegation lifecycle summaries, and residual risk
-notes.
-
-Generate the review artifact:
-
-```powershell
-uv run python -m doxagent.examples.phase6_mock_run --output examples/phase6_mock_ticker/generated_run.json
-```
-
-Run without `--output` to print a compact summary. The sample is fixture-only:
-it does not call real services, execute trades, expose broker behavior, or start
-real-time monitoring.
-
-## Phase 7 Audit and Recovery
-
-Audit helpers live under `src/doxagent/audit`. Phase 7 adds a read-only
-`AuditQueryService` for Commit Log queries, field traceability, unresolved
-objection reports, and blocking delegation reports. It also adds
-`build_run_debug_report` for workflow/debug summaries and same-process recovery
-tests around blocked checkpoints, dependency violations, failed agent results,
-and missing evidence.
-
-The Phase 7 audit layer is in-memory and read-only. It does not replace
-Blackboard Commit Log, does not persist runs to disk or a database, and does not
-turn LangSmith/model traces into business audit records.
-
-## Phase 8 Vibe-Trading Adapters
-
-Vibe-Trading adapter modules live under `src/doxagent/adapters/vibe_trading`.
-Phase 8 starts with two read-only reference migrations:
-`MacroContextAgentModule` wraps `macro_rates_fx_desk`, and
-`FundamentalBriefAgentModule` wraps `fundamental_research_team`.
-
-Both modules preserve the original multi-agent role split, task dependencies,
-tool/skill metadata, and synthesis shape, then return standard `AgentResult`
-objects with dedicated structured payload schemas and short Markdown summaries.
-They do not import the Vibe-Trading runtime, read ignored reference sources at
-runtime, execute Vibe tools, call real model/data services, or write Blackboard
-state directly.
-
-Example:
-
-```python
-from doxagent.adapters import FundamentalBriefAgentModule, MacroContextAgentModule
-
-macro = MacroContextAgentModule().run(
-    goal="US equity allocation",
-    timeframe="tactical 1-3 months",
-)
-fundamental = FundamentalBriefAgentModule().run(
-    target="AAPL",
-    market="US equities",
-)
-```
-
-Financial-services adapter modules live under
-`src/doxagent/adapters/financial_services`. `IndustryResearchAgentModule`
-adapts the `anthropics/financial-services` Market Researcher into a DoxAgent
-industry research capability. It preserves the source workflow shape: scope,
-sector overview, competitive analysis, comps analysis, idea generation, and
-note synthesis.
-
-The Phase 8 industry module uses a DoxAgent-owned mock data provider. It returns
-JSON plus concise Markdown, with source refs, confidence, and unknowns preserved
-for market-size, growth, peer comps, idea shortlist, risks, catalysts, and
-downstream hints. It does not run Anthropic Managed Agent, Claude plugin,
-CapIQ/FactSet MCP, real DoxAtlas, real market data, or Blackboard writes.
-
-Example:
-
-```python
-from doxagent.adapters import IndustryResearchAgentModule
-
-industry = IndustryResearchAgentModule().run(
-    sector_or_theme="US data-center power",
-    angle="supply gap",
-    universe=["VST", "CEG", "ETR", "NRG"],
-)
-```
-
-## Phase 8 O4 Market Trace
-
-The native O4 market trace module lives under `src/doxagent/agents/market_trace`.
-`MarketTraceAgentModule` adapts the useful OHLCV and quote orchestration ideas
-from `hermes-finance` without importing Hermes runtime, LlamaIndex tools, or
-Hermes cache/rate limiter code.
-
-The module returns a standard `AgentResult` for `O4` with a `MarketTraceResult`
-payload covering quote context, OHLCV summary, benchmark/peer relative
-performance, volume analysis, technical signals, valuation context, data
-quality, source refs, unknowns, and concise Markdown. It does not write
-Blackboard state, execute trades, start monitoring, or provide trading advice.
-
-Example:
-
-```python
-from doxagent.agents import MarketTraceAgentModule
-
-trace = MarketTraceAgentModule().run(
-    ticker="AAPL",
-    period="3mo",
-    interval="1d",
-    benchmarks=["SPY"],
-    peers=["MSFT", "GOOGL"],
-)
-```
-
-## Post-MVP 3.1 Persistence
-
-Blackboard persistence adds a Supabase/Postgres path while keeping the default
-local mode in memory. Business state and workflow recovery state are stored
-separately: `BlackboardService` owns runs, Working Memory, Belief State,
-Commit Log, objections, delegations, and evidence, while workflow checkpoint
-repositories own checkpoint history and latest-resume state.
-
-The migration is available at
-`supabase/migrations/202605300001_blackboard_workflow_persistence.sql`. It
-creates a dedicated `doxagent` schema and does not include Supabase project
-URLs, passwords, keys, or access tokens.
-
-Configuration stays environment-only:
-
-```powershell
-$env:DOXAGENT_STORAGE_MODE = "postgres"
-$env:DOXAGENT_DATABASE_URL = "postgresql://..."
-```
-
-Use URL encoding for special characters in database passwords. Tests do not
-connect to Supabase unless a future explicit integration-test flag is provided.
-
-## Local Dashboard
-
-Debug Viewer has been removed. Use the dashboard API and frontend for normal
-document/status inspection; one-off eval exports can be produced with
-`uv run python eval\export_brief_state.py <run_id>` when needed.
-
-## Post-MVP 3.3 Skills
-
-Skill management lives under `src/doxagent/skills`. The code-first
-`SkillRegistry` registers DoxAgent-owned and migrated external skills, including
-Vibe-Trading macro/fundamental skills, financial-services Market Researcher
-skills, and Hermes/O4 market trace skills. `SkillInjector` attaches a
-versioned `SkillBundle` to `AgentTask` without mutating Blackboard state.
-
-Current skill injection is a contract boundary for future real AgentRunner work:
-it does not run external runtimes, read ignored reference repositories, persist
-skills to Supabase, or call real LLM providers. Adapter outputs now include
-skill version metadata while preserving their existing `skills` fields.
-
-## Post-MVP 3.4 MAF Agent Runtime
-
-The first real Agent Runtime lives under `src/doxagent/agents/runtime`.
-`ModelGatewayAgentRunner` uses Microsoft Agent Framework as the execution shell
-while keeping DoxAgent boundaries intact: tasks enter as `AgentTask`, model calls
-go through `ModelGateway`, skills are injected by `SkillInjector`, tools go
-through `ToolRegistry`, and output returns as `AgentResult`.
-
-`MafAgentAdapter` now delegates to the real runner instead of returning a
-placeholder error. Runtime tool mode can be `disabled`, `mock`, or `real`.
-Because the Phase 3.2 real tools are still under debugging, normal tests use
-fake gateway responses and mock tools while preserving the same tool names,
-permissions, and `ToolResult` contract expected by the real tool layer.
-
-The runtime does not replace workflow orchestration, call model providers
-directly, write Blackboard state, stream responses, execute trades, or treat
-LangSmith/model tracing as Commit Log audit.
-
-## Post-MVP 3.5 Real Workflow Execution
-
-Initialization workflow real-execution support lives in
-`src/doxagent/workflows`. `BlackboardInitializationWorkflow` now supports
-`execution_mode="mock"` for existing deterministic tests and
-`execution_mode="agent_runner"` for the real `AgentTask -> AgentResult`
-boundary. The workflow runner remains DoxAgent-owned; MAF is only used through
-the 3.4 agent runner.
-
-In `agent_runner` mode, workflow nodes build richer task context, normalize
-structured runner output through `WorkflowAgentResultNormalizer`, write agent
-results to Working Memory, submit valid patches through `BlackboardService`,
-and save checkpoint metadata for runtime/tool mode, agent result summaries, and
-blocking errors.
-
-This phase does not call real providers by default, does not replace the
-workflow with MAF workflow runtime, and does not implement O3.
-
-## Post-MVP 3.6 Global Research Integration
-
-Global Research module integration lives in `src/doxagent/workflows`.
-`GlobalResearchModuleRunner` calls the migrated Phase 8 C1/C2/C3 modules and
-native O4 market trace module. `GlobalResearchAssembler` maps those outputs into
-the five-section `GlobalResearchDocument` used by the Blackboard.
-
-`BlackboardInitializationWorkflow.run()` accepts optional `research_inputs` for
-market, geography, timeframe, industry scope, universe, benchmark/peer, and O4
-market trace settings. In `execution_mode="agent_runner"`, the
-`BuildGlobalResearch` node now stores C1/C2/C3/O4 raw outputs in Working Memory,
-assembles a stable Global Research patch, and submits it through
-`BlackboardService`.
-
-The `market_narrative_report` section is deliberately marked as pending
-O1/DoxAtlas narrative integration in this phase. It is not a completed narrative
-conclusion. C3 downstream hints, C2 monitoring dashboard, C1 risks/catalysts,
-and O4 price/technical context are preserved for later O1/O2 work.
-
-## Post-MVP 3.7/3.8 O1/A1/A2 Realization
-
-O1/A1/A2 realization adds structured contracts for expectation construction,
-DoxAtlas audit, and delegated retrieval. O1 now owns sourced expectation-unit
-and known-event outputs, A1 audits expectation fields against DoxAtlas evidence,
-and A2 has been repositioned as a Tavily-only retrieval and fact-check delegate.
-
-A2 keeps the internal `A2` agent id for compatibility, but its default tool
-permissions are limited to `tavily.search` and `tavily.extract`. Other agents
-route external information gaps to A2 through `DelegatedRetrievalRequest` and
-`create_a2_retrieval_delegation(...)`; A2 never writes Blackboard state
-directly. `ResolveObjectionsAndDelegations` can now call A2 in
-`agent_runner` mode, complete delegations when Tavily evidence is sufficient,
-and leave the workflow blocked when evidence is missing.
-
-Normal tests still use fake gateway/mock tools and do not call real Tavily,
-DoxAtlas, LLM providers, Supabase, or broker services.
-
-## Prompt And Skill Separation
-
-Prompt resources are isolated by workflow runtime:
-
-- `prompts/v1/` contains the legacy self-built ReAct framework resources loaded
-  through `PromptRegistry`, including its agents, internal task skills, external
-  skill packages, runtime, system, and workflow prompts.
-- `prompts/codex_v2/document1/` contains only the Codex SDK Document1 agents,
-  skills, schemas, common instructions, lane manifests, and compatibility bundle.
-- `prompts/codex_v2/document2/` contains only the Codex SDK Document2 common
-  instructions, agents, and skills.
-
-Codex SDK v2 does not use the legacy PromptRegistry or external skill packages.
-
-`PromptRegistry` and `PromptInjector` select these resources into
-`AgentTask.prompt_bundle`. `PromptAssembler` builds the final runtime prompt.
-The legacy `SkillRegistry` now acts as a compatibility layer for external skill
-packages only, so system prompts and internal SOPs are no longer mixed with
-external skills.
-
-## Project Layout
-
-```text
-prompts/
-  codex_v2/
-    document1/
-    document2/
-  v1/
-src/doxagent/
-  adapters/
-  audit/
-  agents/
-  blackboard/
-  context/
-  core/
-  gateway/
-  models/
-  skills/
-  tools/
-  workflows/
-tests/
-dev_plan/
-examples/
-references/
-```
+前端运行 `pnpm schema`、`pnpm typecheck`、`pnpm test`、`pnpm lint`、`pnpm build`。真实模型、生产数据、broker、部署及浏览器业务验收分别执行，不由离线通过替代。
+
+## 代码与资源
+
+| 路径 | 内容 |
+| --- | --- |
+| `src/doxagent/workflows/codex_*` | 当前 SDK 工作流与恢复逻辑 |
+| `codex_runtime`、`codex_worker`、`data_runtime`、`observations` | 协议、Worker、受限工具与观测 |
+| `message_bus_v2`、`content_enrichment`、`crawler_plane`、`site_strategy` | 消息、正文、爬虫与浏览器身份 |
+| `ticker_initialization`、`initialization_repair`、`event_library`、`persistent_runtime_v2` | 初始化、事件和持久化运行 |
+| `api_v2`、`v2_control`、`v2_read`、`runtime_scheduler`、`trade_execution` | API、控制、投影、调度和交易 |
+| `model_usage`、`horizontal_collection`、`monitoring`、`models` | 当前计费、采集、共享规范与轻量权限类型 |
+| `src/cdecr`、`prompts/codex_v2`、`prompts/persistent_runtime_v2` | 当前代码与版本化工程资源 |
+| `dev_plan/workflow_v2`、`dev_plan/workflow_v2.1` | V2 契约、运行手册与 staged v2.1 方案 |
+| `tests/fixtures`、`eval`、`pilot_runtime` | 当前夹具、冻结评估和 Pilot |
+
+V2 视觉与交互依据见[设计说明](dev_plan/v2_design.md)、[前端 PRD](dev_plan/workflow_v2/DOXAGENT_V2_FRONTEND_PRD_PART1.md)和 `frontend/v2/AGENTS.md`。批准的旧参考截图保留于 `dev_plan/v1_frontend_reference`。
+
+退役范围见[批准方案](dev_plan/v1_retirement_cleanup_final_20261004.md)。项目外档案位于 `C:\Users\WEIXUANXIE\Desktop\DoxAgentArchive\v1-retirement-20261004`，清单与 SHA-256 记录于 `dev_plan/v1_retirement_archive_manifest_20261004.json`。Git 基线、未提交补丁和旧设计原稿可从该档案或退役前提交恢复。
