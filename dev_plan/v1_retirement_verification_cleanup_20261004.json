@@ -1,0 +1,366 @@
+{
+  "targets": [
+    ".tmp/v1-retirement-baseline-src",
+    ".tmp/v1-retirement-baseline-verification",
+    ".tmp/v1-retirement-work/baseline-source.zip",
+    ".tmp/v1-retirement-work/baseline-failed-2",
+    ".tmp/v1-retirement-work/baseline-pytest-cache",
+    ".tmp/v1-retirement-work/final-affected",
+    ".tmp/v1-retirement-work/pytest-bus",
+    ".tmp/v1-retirement-work/pytest-cache",
+    ".tmp/v1-retirement-work/pytest-current-smoke",
+    ".tmp/v1-retirement-work/pytest-focused",
+    ".tmp/v1-retirement-work/pytest-full",
+    ".tmp/v1-retirement-work/pytest-state"
+  ],
+  "removed_files": 37998,
+  "issues": [
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-current-smoke\\test_certification_and_promoti0\\crawler-plane\\releases\\company_ir_reference\\v1\\tests' is denied.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-current-smoke\\test_certification_and_promoti0\\crawler-plane\\releases\\company_ir_reference\\v1\\tests",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-current-smoke\\test_certification_and_promoti0\\crawler-plane\\releases\\company_ir_reference\\v1' is denied.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-current-smoke\\test_certification_and_promoti0\\crawler-plane\\releases\\company_ir_reference\\v1",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-current-smoke\\test_certification_and_promoti0\\crawler-plane\\releases\\company_ir_reference'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-current-smoke\\test_certification_and_promoti0\\crawler-plane\\releases\\company_ir_reference",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-current-smoke\\test_certification_and_promoti0\\crawler-plane\\releases'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-current-smoke\\test_certification_and_promoti0\\crawler-plane\\releases",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-current-smoke\\test_certification_and_promoti0\\crawler-plane'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-current-smoke\\test_certification_and_promoti0\\crawler-plane",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-current-smoke\\test_certification_and_promoti0'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-current-smoke\\test_certification_and_promoti0",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-current-smoke\\test_crawler_poll_lineage_and_0\\crawler-plane\\releases\\company_ir_reference\\v1\\tests' is denied.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-current-smoke\\test_crawler_poll_lineage_and_0\\crawler-plane\\releases\\company_ir_reference\\v1\\tests",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-current-smoke\\test_crawler_poll_lineage_and_0\\crawler-plane\\releases\\company_ir_reference\\v1' is denied.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-current-smoke\\test_crawler_poll_lineage_and_0\\crawler-plane\\releases\\company_ir_reference\\v1",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-current-smoke\\test_crawler_poll_lineage_and_0\\crawler-plane\\releases\\company_ir_reference'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-current-smoke\\test_crawler_poll_lineage_and_0\\crawler-plane\\releases\\company_ir_reference",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-current-smoke\\test_crawler_poll_lineage_and_0\\crawler-plane\\releases'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-current-smoke\\test_crawler_poll_lineage_and_0\\crawler-plane\\releases",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-current-smoke\\test_crawler_poll_lineage_and_0\\crawler-plane'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-current-smoke\\test_crawler_poll_lineage_and_0\\crawler-plane",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-current-smoke\\test_crawler_poll_lineage_and_0'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-current-smoke\\test_crawler_poll_lineage_and_0",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-current-smoke\\test_o4_tools_use_the_crawler_0\\crawler-plane\\releases\\company_ir_reference\\v1\\tests' is denied.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-current-smoke\\test_o4_tools_use_the_crawler_0\\crawler-plane\\releases\\company_ir_reference\\v1\\tests",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-current-smoke\\test_o4_tools_use_the_crawler_0\\crawler-plane\\releases\\company_ir_reference\\v1' is denied.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-current-smoke\\test_o4_tools_use_the_crawler_0\\crawler-plane\\releases\\company_ir_reference\\v1",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-current-smoke\\test_o4_tools_use_the_crawler_0\\crawler-plane\\releases\\company_ir_reference'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-current-smoke\\test_o4_tools_use_the_crawler_0\\crawler-plane\\releases\\company_ir_reference",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-current-smoke\\test_o4_tools_use_the_crawler_0\\crawler-plane\\releases'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-current-smoke\\test_o4_tools_use_the_crawler_0\\crawler-plane\\releases",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-current-smoke\\test_o4_tools_use_the_crawler_0\\crawler-plane'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-current-smoke\\test_o4_tools_use_the_crawler_0\\crawler-plane",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-current-smoke\\test_o4_tools_use_the_crawler_0'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-current-smoke\\test_o4_tools_use_the_crawler_0",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-current-smoke\\test_partial_poll_retries_item0\\crawler-plane\\releases\\company_ir_reference\\v1\\tests' is denied.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-current-smoke\\test_partial_poll_retries_item0\\crawler-plane\\releases\\company_ir_reference\\v1\\tests",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-current-smoke\\test_partial_poll_retries_item0\\crawler-plane\\releases\\company_ir_reference\\v1' is denied.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-current-smoke\\test_partial_poll_retries_item0\\crawler-plane\\releases\\company_ir_reference\\v1",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-current-smoke\\test_partial_poll_retries_item0\\crawler-plane\\releases\\company_ir_reference'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-current-smoke\\test_partial_poll_retries_item0\\crawler-plane\\releases\\company_ir_reference",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-current-smoke\\test_partial_poll_retries_item0\\crawler-plane\\releases'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-current-smoke\\test_partial_poll_retries_item0\\crawler-plane\\releases",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-current-smoke\\test_partial_poll_retries_item0\\crawler-plane'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-current-smoke\\test_partial_poll_retries_item0\\crawler-plane",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-current-smoke\\test_partial_poll_retries_item0'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-current-smoke\\test_partial_poll_retries_item0",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-current-smoke\\test_reference_certification_a0\\crawler-plane\\releases\\company_ir_reference\\v1\\tests' is denied.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-current-smoke\\test_reference_certification_a0\\crawler-plane\\releases\\company_ir_reference\\v1\\tests",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-current-smoke\\test_reference_certification_a0\\crawler-plane\\releases\\company_ir_reference\\v1' is denied.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-current-smoke\\test_reference_certification_a0\\crawler-plane\\releases\\company_ir_reference\\v1",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-current-smoke\\test_reference_certification_a0\\crawler-plane\\releases\\company_ir_reference'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-current-smoke\\test_reference_certification_a0\\crawler-plane\\releases\\company_ir_reference",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-current-smoke\\test_reference_certification_a0\\crawler-plane\\releases'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-current-smoke\\test_reference_certification_a0\\crawler-plane\\releases",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-current-smoke\\test_reference_certification_a0\\crawler-plane'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-current-smoke\\test_reference_certification_a0\\crawler-plane",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-current-smoke\\test_reference_certification_a0'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-current-smoke\\test_reference_certification_a0",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-current-smoke'.\"",
+      "path": ".tmp/v1-retirement-work/pytest-current-smoke",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-full\\test_certification_and_promoti0\\crawler-plane\\releases\\company_ir_reference\\v1\\tests' is denied.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-full\\test_certification_and_promoti0\\crawler-plane\\releases\\company_ir_reference\\v1\\tests",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-full\\test_certification_and_promoti0\\crawler-plane\\releases\\company_ir_reference\\v1' is denied.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-full\\test_certification_and_promoti0\\crawler-plane\\releases\\company_ir_reference\\v1",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-full\\test_certification_and_promoti0\\crawler-plane\\releases\\company_ir_reference'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-full\\test_certification_and_promoti0\\crawler-plane\\releases\\company_ir_reference",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-full\\test_certification_and_promoti0\\crawler-plane\\releases'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-full\\test_certification_and_promoti0\\crawler-plane\\releases",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-full\\test_certification_and_promoti0\\crawler-plane'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-full\\test_certification_and_promoti0\\crawler-plane",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-full\\test_certification_and_promoti0'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-full\\test_certification_and_promoti0",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-full\\test_crawler_poll_lineage_and_0\\crawler-plane\\releases\\company_ir_reference\\v1\\tests' is denied.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-full\\test_crawler_poll_lineage_and_0\\crawler-plane\\releases\\company_ir_reference\\v1\\tests",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-full\\test_crawler_poll_lineage_and_0\\crawler-plane\\releases\\company_ir_reference\\v1' is denied.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-full\\test_crawler_poll_lineage_and_0\\crawler-plane\\releases\\company_ir_reference\\v1",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-full\\test_crawler_poll_lineage_and_0\\crawler-plane\\releases\\company_ir_reference'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-full\\test_crawler_poll_lineage_and_0\\crawler-plane\\releases\\company_ir_reference",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-full\\test_crawler_poll_lineage_and_0\\crawler-plane\\releases'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-full\\test_crawler_poll_lineage_and_0\\crawler-plane\\releases",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-full\\test_crawler_poll_lineage_and_0\\crawler-plane'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-full\\test_crawler_poll_lineage_and_0\\crawler-plane",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-full\\test_crawler_poll_lineage_and_0'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-full\\test_crawler_poll_lineage_and_0",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-full\\test_large_results_materialize0\\run-1\\context\\mcp_data\\c1-1\\call-large\\blocks' is denied.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-full\\test_large_results_materialize0\\run-1\\context\\mcp_data\\c1-1\\call-large\\blocks",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-full\\test_large_results_materialize0\\run-1\\context\\mcp_data\\c1-1\\call-large' is denied.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-full\\test_large_results_materialize0\\run-1\\context\\mcp_data\\c1-1\\call-large",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-full\\test_large_results_materialize0\\run-1\\context\\mcp_data\\c1-1'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-full\\test_large_results_materialize0\\run-1\\context\\mcp_data\\c1-1",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-full\\test_large_results_materialize0\\run-1\\context\\mcp_data'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-full\\test_large_results_materialize0\\run-1\\context\\mcp_data",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-full\\test_large_results_materialize0\\run-1\\context'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-full\\test_large_results_materialize0\\run-1\\context",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-full\\test_large_results_materialize0\\run-1'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-full\\test_large_results_materialize0\\run-1",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-full\\test_large_results_materialize0'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-full\\test_large_results_materialize0",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-full\\test_o4_tools_use_the_crawler_0\\crawler-plane\\releases\\company_ir_reference\\v1\\tests' is denied.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-full\\test_o4_tools_use_the_crawler_0\\crawler-plane\\releases\\company_ir_reference\\v1\\tests",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-full\\test_o4_tools_use_the_crawler_0\\crawler-plane\\releases\\company_ir_reference\\v1' is denied.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-full\\test_o4_tools_use_the_crawler_0\\crawler-plane\\releases\\company_ir_reference\\v1",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-full\\test_o4_tools_use_the_crawler_0\\crawler-plane\\releases\\company_ir_reference'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-full\\test_o4_tools_use_the_crawler_0\\crawler-plane\\releases\\company_ir_reference",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-full\\test_o4_tools_use_the_crawler_0\\crawler-plane\\releases'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-full\\test_o4_tools_use_the_crawler_0\\crawler-plane\\releases",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-full\\test_o4_tools_use_the_crawler_0\\crawler-plane'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-full\\test_o4_tools_use_the_crawler_0\\crawler-plane",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-full\\test_o4_tools_use_the_crawler_0'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-full\\test_o4_tools_use_the_crawler_0",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-full\\test_partial_poll_retries_item0\\crawler-plane\\releases\\company_ir_reference\\v1\\tests' is denied.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-full\\test_partial_poll_retries_item0\\crawler-plane\\releases\\company_ir_reference\\v1\\tests",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-full\\test_partial_poll_retries_item0\\crawler-plane\\releases\\company_ir_reference\\v1' is denied.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-full\\test_partial_poll_retries_item0\\crawler-plane\\releases\\company_ir_reference\\v1",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-full\\test_partial_poll_retries_item0\\crawler-plane\\releases\\company_ir_reference'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-full\\test_partial_poll_retries_item0\\crawler-plane\\releases\\company_ir_reference",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-full\\test_partial_poll_retries_item0\\crawler-plane\\releases'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-full\\test_partial_poll_retries_item0\\crawler-plane\\releases",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-full\\test_partial_poll_retries_item0\\crawler-plane'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-full\\test_partial_poll_retries_item0\\crawler-plane",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-full\\test_partial_poll_retries_item0'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-full\\test_partial_poll_retries_item0",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-full\\test_reference_certification_a0\\crawler-plane\\releases\\company_ir_reference\\v1\\tests' is denied.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-full\\test_reference_certification_a0\\crawler-plane\\releases\\company_ir_reference\\v1\\tests",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-full\\test_reference_certification_a0\\crawler-plane\\releases\\company_ir_reference\\v1' is denied.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-full\\test_reference_certification_a0\\crawler-plane\\releases\\company_ir_reference\\v1",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-full\\test_reference_certification_a0\\crawler-plane\\releases\\company_ir_reference'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-full\\test_reference_certification_a0\\crawler-plane\\releases\\company_ir_reference",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-full\\test_reference_certification_a0\\crawler-plane\\releases'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-full\\test_reference_certification_a0\\crawler-plane\\releases",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-full\\test_reference_certification_a0\\crawler-plane'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-full\\test_reference_certification_a0\\crawler-plane",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-full\\test_reference_certification_a0'.\"",
+      "path": ".tmp\\v1-retirement-work\\pytest-full\\test_reference_certification_a0",
+      "result": "failed"
+    },
+    {
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\v1-retirement-work\\pytest-full'.\"",
+      "path": ".tmp/v1-retirement-work/pytest-full",
+      "result": "failed"
+    }
+  ],
+  "removed_bytes": 1615592979.0,
+  "note": "Execution-generated baseline and fake test artifacts only; excluded from historical cleanup byte total. Current verification environment retained."
+}

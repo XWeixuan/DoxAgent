@@ -13,6 +13,8 @@ from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
 
+from frozen_inputs import resolved_manifest
+
 from doxagent.event_library.contracts import CanonicalAssertionState
 from doxagent.event_library.provider import PublishedEventLibraryReader
 from doxagent.persistent_runtime_v2.prompts import RuntimeV2PromptSet
@@ -55,9 +57,7 @@ def _sha256(path: Path) -> str:
 def _atomic_json(path: Path, value: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_suffix(path.suffix + ".writing")
-    temporary.write_text(
-        json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-    )
+    temporary.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     temporary.replace(path)
 
 
@@ -163,6 +163,7 @@ def _run_case(
     repository = InMemoryPersistentRuntimeV2Repository()
     source = _make_source(message)
     from doxagent.semantic_clock import semantic_day
+
     trading_date = semantic_day(source.message_bus_event_time)
     seeded_ids: list[str] = []
     dependency = gold["w1"]["r1"]["provisional_dependency"]
@@ -219,9 +220,7 @@ def _run_case(
         turns = []
         saved: RuntimeCase | None = repository.get_case_by_source(source.source_message_id)
         if saved is not None:
-            turns = [
-                item.model_dump(mode="json") for item in repository.list_turns(saved.case_id)
-            ]
+            turns = [item.model_dump(mode="json") for item in repository.list_turns(saved.case_id)]
         result = {
             "case_id": case_id,
             "status": "FAILED",
@@ -352,10 +351,8 @@ def _score(result: dict[str, Any], gold: dict[str, Any]) -> dict[str, Any]:
     actual_conditions = prediction["w2_final"]["matched_condition_ids"]
     w2_final = {
         "policies": w2_final_policies,
-        "confidence_pass": prediction["w2_final"]["confidence"]
-        == w2_final_expected["confidence"],
-        "conditions_pass": actual_conditions
-        == w2_final_expected["matched_condition_ids"],
+        "confidence_pass": prediction["w2_final"]["confidence"] == w2_final_expected["confidence"],
+        "conditions_pass": actual_conditions == w2_final_expected["matched_condition_ids"],
         "order_pass": (
             prediction["w2_final"]["policy_ids"] == w2_final_expected["policy_ids"]
             if gold["w2"]["final"]["policy_order_is_significant"]
@@ -422,10 +419,8 @@ def _score(result: dict[str, Any], gold: dict[str, Any]) -> dict[str, Any]:
 
     expected_route = gold["diagnostic_route"]
     route = {
-        "primary_pass": prediction["route"]["primary_route"]
-        == expected_route["primary_route"],
-        "side_effects_pass": prediction["route"]["side_effects"]
-        == expected_route["side_effects"],
+        "primary_pass": prediction["route"]["primary_route"] == expected_route["primary_route"],
+        "side_effects_pass": prediction["route"]["side_effects"] == expected_route["side_effects"],
     }
     route["pass"] = route["primary_pass"] and route["side_effects_pass"]
     return {
@@ -462,15 +457,12 @@ def _sum_set_counts(scored: list[dict[str, Any]], path: tuple[str, ...]) -> dict
 
 
 def _aggregate(records: list[dict[str, Any]]) -> dict[str, Any]:
-    runtime_completed = [
-        item for item in records if item["result"]["status"] == "COMPLETED"
-    ]
+    runtime_completed = [item for item in records if item["result"]["status"] == "COMPLETED"]
     completed = [item for item in records if item["score"]["technical_pass"]]
     scored = [item["score"] for item in completed]
     turns = [turn for item in records for turn in item["result"]["turns"]]
     novelty_pairs = [
-        (item["w1_r2"]["expected_result"], item["w1_r2"]["predicted_result"])
-        for item in scored
+        (item["w1_r2"]["expected_result"], item["w1_r2"]["predicted_result"]) for item in scored
     ]
 
     def novelty_class(label: str) -> dict[str, Any]:
@@ -507,9 +499,7 @@ def _aggregate(records: list[dict[str, Any]]) -> dict[str, Any]:
             "w1_r3": {
                 "expected_invocations": sum(item["w1_r3"]["expected"] for item in scored),
                 "actual_invocations": sum(item["w1_r3"]["invoked"] for item in scored),
-                "invocation_exact_cases": sum(
-                    item["w1_r3"]["invocation_pass"] for item in scored
-                ),
+                "invocation_exact_cases": sum(item["w1_r3"]["invocation_pass"] for item in scored),
                 "semantic_review_pending": sum(
                     item["w1_r3"]["semantic_review_required"] for item in scored
                 ),
@@ -521,19 +511,14 @@ def _aggregate(records: list[dict[str, Any]]) -> dict[str, Any]:
             "w2_r2": {
                 "expected_invocations": sum(item["w2_r2"]["expected"] for item in scored),
                 "actual_invocations": sum(item["w2_r2"]["invoked"] for item in scored),
-                "invocation_exact_cases": sum(
-                    item["w2_r2"]["invocation_pass"] for item in scored
-                ),
+                "invocation_exact_cases": sum(item["w2_r2"]["invocation_pass"] for item in scored),
                 "output_exact_expected_cases": sum(
-                    item["w2_r2"]["expected"] and item["w2_r2"]["output_pass"]
-                    for item in scored
+                    item["w2_r2"]["expected"] and item["w2_r2"]["output_pass"] for item in scored
                 ),
             },
             "w2_final": {
                 "candidate_policy": _sum_set_counts(scored, ("w2_final", "policies")),
-                "activation_policy": _sum_set_counts(
-                    scored, ("w2_final", "activations")
-                ),
+                "activation_policy": _sum_set_counts(scored, ("w2_final", "activations")),
                 "confidence_accuracy": _ratio(
                     sum(item["w2_final"]["confidence_pass"] for item in scored), len(scored)
                 ),
@@ -575,6 +560,7 @@ def main() -> int:
 
     manifest_path = ROOT / "manifest.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest = resolved_manifest(ROOT, manifest)
     messages = _jsonl(ROOT / "messages.jsonl")
     gold_rows = {item["case_id"]: item for item in _jsonl(ROOT / "gold.jsonl")}
     if args.case_id:
@@ -694,8 +680,7 @@ def main() -> int:
     predictions_path = run_dir / "predictions.jsonl"
     predictions_path.write_text(
         "".join(
-            json.dumps(item, ensure_ascii=False, separators=(",", ":")) + "\n"
-            for item in records
+            json.dumps(item, ensure_ascii=False, separators=(",", ":")) + "\n" for item in records
         ),
         encoding="utf-8",
     )

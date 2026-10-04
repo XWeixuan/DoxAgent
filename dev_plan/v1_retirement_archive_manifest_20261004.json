@@ -1,0 +1,866 @@
+[
+  {
+    "target": "eval/brief_state_exports",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\000_brief_state_exports.zip",
+    "files": 42,
+    "bytes": 441345572,
+    "archive_sha256": "4e8c4256a14880ee3b938a0a961e8ea85d4cd6da3b8baea5b48eaa6bd466e121",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/langsmith_audit",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\001_langsmith_audit.zip",
+    "files": 8,
+    "bytes": 85018570,
+    "archive_sha256": "b08926921561713f00b0b78f2889ff63019cc92c858e20144e18378dfbce1bd2",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": "references/external_agent_sources",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\002_external_agent_sources.zip",
+    "files": 1955,
+    "bytes": 53951072,
+    "archive_sha256": "139860dbf06cb151cd6c826132590c0af81068324512c6fb094a996297413998",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": "recovery/codex_ephemeral_20260725",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\003_codex_ephemeral_20260725.zip",
+    "files": 38,
+    "bytes": 1690968,
+    "archive_sha256": "e58d5b3ad712d9a86422e88faa3b13a37f6005b239bacb54636ce972ffd35ff2",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": "recovery/codex_ephemeral_20260728",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\004_codex_ephemeral_20260728.zip",
+    "files": 0,
+    "bytes": 0,
+    "archive_sha256": "1fed0234d691492f2831f5818a31c0d69b5aadc06f856f4c7859ee7624b4c407",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp-remote-wip-snapshot-20260708-010624",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\005_.tmp-remote-wip-snapshot-20260708-010624.zip",
+    "files": 7,
+    "bytes": 1946873,
+    "archive_sha256": "a6bdc0e8b13681743434d97d46be9f5005ac313ffa54c3cad0841b975fe8f45c",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp-deploy-latest.tgz",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\006_.tmp-deploy-latest.tgz.zip",
+    "files": 1,
+    "bytes": 625166,
+    "archive_sha256": "5d7ec3743ae7be50d58eeb65467ea0b04d33dc7d096805d995997cd5801a89a2",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp-remote-compare",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\007_.tmp-remote-compare.zip",
+    "files": 4,
+    "bytes": 91935,
+    "archive_sha256": "ea95b937582a06cf1942150035de054b8a7971cdc443aa0fc808cc9133b90a07",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": "eval/document2_eval",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\008_document2_eval.zip",
+    "files": 5,
+    "bytes": 422462,
+    "archive_sha256": "84077338dbb572dee2bbeea132bba6b13b4bb2383296bf1ddb224257a7f405c4",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": "eval/runtime_replay_datasets",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\009_runtime_replay_datasets.zip",
+    "files": 6,
+    "bytes": 437598,
+    "archive_sha256": "9220148d41635c35f8c89977a0aa2313655c4ea6d59ada5e692bf8c005172924",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": "eval/trajectory_eval",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\010_trajectory_eval.zip",
+    "files": 13,
+    "bytes": 532164,
+    "archive_sha256": "88b83ab9d127b5b76ee256a56a250bebd39ac922de5871408e5a9e28fc2c2584",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": "dev_plan/ReAct_Memory_Restructuring.md",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\011_ReAct_Memory_Restructuring.md.zip",
+    "files": 1,
+    "bytes": 32578,
+    "archive_sha256": "68a5a540d53b7610b29ba81afde0af3749066b7445357cf565984d35f292fab6",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": "dev_plan/ReAct_Node_Config_Matrix.md",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\012_ReAct_Node_Config_Matrix.md.zip",
+    "files": 1,
+    "bytes": 1963,
+    "archive_sha256": "c063f5526bd48508dc2b5b6db0338875a265dc827977018bbb6e98199dad9160",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": "dev_plan/workflow_memory_restructuring.md",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\013_workflow_memory_restructuring.md.zip",
+    "files": 1,
+    "bytes": 24196,
+    "archive_sha256": "36c350503e7e52d2366c6d4f2b0f85920087ea557cb78afac7dc25c24113ac8f",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": "dev_plan/dashboard_frontend_acceptance_report.md",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\014_dashboard_frontend_acceptance_report.md.zip",
+    "files": 1,
+    "bytes": 21182,
+    "archive_sha256": "66bb32d8c69245ff4cab4abe14370565a8262007f887aa90882217ea5431e22a",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": "dev_plan/dashboard_frontend_acceptance_assets",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\015_dashboard_frontend_acceptance_assets.zip",
+    "files": 15,
+    "bytes": 1026884,
+    "archive_sha256": "db96ca0dd887d8fe88269c2605833ab24606f2cb0bf1ac64df7302ff74f8ee22",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": "dev_plan/dashboard_frontend_redo_assets",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\016_dashboard_frontend_redo_assets.zip",
+    "files": 28,
+    "bytes": 2708406,
+    "archive_sha256": "3eb168d092292d3430f1a3c6b60c306c8fc18fb32b2f9792b5d7e82c5502512d",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": "dev_plan/FRONTEND_PRD.md",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\017_FRONTEND_PRD.md.zip",
+    "files": 1,
+    "bytes": 19181,
+    "archive_sha256": "d07b7d59f77b784732703bfab29f8ac870d656cd819a356ea1e35736589fbf5f",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": "dev_plan/Persistent_Runtime_Execution_PRD.md",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\018_Persistent_Runtime_Execution_PRD.md.zip",
+    "files": 1,
+    "bytes": 44051,
+    "archive_sha256": "65364dcbdaeb0a7c9b884635b5b6b5a303ef7d9f8c060fff404ab45ba21004d4",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": "dev_plan/PRD.md",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\019_PRD.md.zip",
+    "files": 1,
+    "bytes": 39139,
+    "archive_sha256": "3bc6c492f31896d8e6242831725d45b44c1032814f72b490db1607fa745c064a",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": "dev_plan/DOCUMENT3_PRD.md",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\020_DOCUMENT3_PRD.md.zip",
+    "files": 1,
+    "bytes": 40329,
+    "archive_sha256": "3b221b0fa7c12892b7a4902f724fa5e3ea01b7884f3a2f99e33bb41183b47571",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": "dev_plan/WORKFLOW_REVISION_PLAN.md",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\021_WORKFLOW_REVISION_PLAN.md.zip",
+    "files": 1,
+    "bytes": 15171,
+    "archive_sha256": "b51029e31cb166f86fa192d754fcd2fd45fed5d5c831171a325693bb163a3136",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": "docs/refactor",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\022_refactor.zip",
+    "files": 15,
+    "bytes": 318688,
+    "archive_sha256": "6f045b79880e92a66b0724e16c901b5a98265b86daeb501c844defd47cae3750",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": "eval/blackboard_eval_contract.md",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\023_blackboard_eval_contract.md.zip",
+    "files": 1,
+    "bytes": 10342,
+    "archive_sha256": "7fa38de198818f67ad24feabafebc4ee4ed9158c41449cf3f3b59d2d568b9e8c",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": "eval/blackboard_eval_records.md",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\024_blackboard_eval_records.md.zip",
+    "files": 1,
+    "bytes": 237985,
+    "archive_sha256": "9bd1bd275bc2993f40baddb770d36a274beb20731535cf396a3ea6d307f1b036",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": "eval/blackboard_hard_gates.yaml",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\025_blackboard_hard_gates.yaml.zip",
+    "files": 1,
+    "bytes": 10580,
+    "archive_sha256": "3a1299204e600bdd464646cf52781595baaff6576c05455cc11777c2685c9e97",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": "eval/blackboard_rubrics.yaml",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\026_blackboard_rubrics.yaml.zip",
+    "files": 1,
+    "bytes": 16495,
+    "archive_sha256": "1b77613f0c027e5f65f366c198f88d4230167122260281f653bc23ba6b9769c5",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/blackboard-status-run_ae8d9955a2e341eca09ff3ba31b38bdc.json",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\027_blackboard-status-run_ae8d9955a2e341eca09ff3ba31b38bdc.json.zip",
+    "files": 1,
+    "bytes": 6293967,
+    "archive_sha256": "4b08327e84897ebaeb5a280ad29f73a85164f7afdcb6f66c596804fbc82a0c52",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/blackboard-status-run_c86f5f1a8b3b47dcb72ea94119d2dcfa.json",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\028_blackboard-status-run_c86f5f1a8b3b47dcb72ea94119d2dcfa.json.zip",
+    "files": 1,
+    "bytes": 5231158,
+    "archive_sha256": "142c40007f717ea15e9764c15071362e80c0705e577fb42cb33387decfc4f73d",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/blackboard-status-run_d07fb2f07aa1437ea03fdbeacef199aa.json",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\029_blackboard-status-run_d07fb2f07aa1437ea03fdbeacef199aa.json.zip",
+    "files": 1,
+    "bytes": 9183406,
+    "archive_sha256": "a2bba5971a9fd3082878888d8ffdf0e1e34f849faa84081137b8b9e502c37db4",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/blackboard-status-run_f026e119865847628172c560be5e2102.json",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\030_blackboard-status-run_f026e119865847628172c560be5e2102.json.zip",
+    "files": 1,
+    "bytes": 14898477,
+    "archive_sha256": "6e362cbcf836c320b1d6b5c8da93f7aa75f81db48b6358b4131d6bf40a687130",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/blackboard-status-run_fd2c6aa654c2402fb651e4943d9ae402.json",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\031_blackboard-status-run_fd2c6aa654c2402fb651e4943d9ae402.json.zip",
+    "files": 1,
+    "bytes": 14902580,
+    "archive_sha256": "21a3b328170f42b455ae39ea385ddbcbcfec9648ccc08aef79c1cc43c9e4c0dc",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/blackboard-status-run_ffccf052c28946e5af85b8faf34789ad.json",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\032_blackboard-status-run_ffccf052c28946e5af85b8faf34789ad.json.zip",
+    "files": 1,
+    "bytes": 9050875,
+    "archive_sha256": "aef2e8fa5dac9e8c2ef20a19f83db9fc89606fb0f4251152a191ffaa84b58bd4",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/run_12dd797c24ea4d1db7ba8bce45e2932f.remote.json",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\033_run_12dd797c24ea4d1db7ba8bce45e2932f.remote.json.zip",
+    "files": 1,
+    "bytes": 14696332,
+    "archive_sha256": "30afaee82579e81095f884a586207206723022ad3da89a703e4d8e52c71b28bb",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/run_30e5f3fd4337475987033429e4b8c6e7.remote.json",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\034_run_30e5f3fd4337475987033429e4b8c6e7.remote.json.zip",
+    "files": 1,
+    "bytes": 14703242,
+    "archive_sha256": "38538e4999b572bdd70e397adaaf8e743c6d3ee27523c9b91a1f37de332a314d",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/run_35ea283f8abf4578a8330514f6e7eb54.remote.json",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\035_run_35ea283f8abf4578a8330514f6e7eb54.remote.json.zip",
+    "files": 1,
+    "bytes": 10883622,
+    "archive_sha256": "d51ccadb657a624edfda62e7d97ac4ea099b0391bcde4e9700b2cf55e233c6ab",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/run_6f01e1b08a764af7b8a4e293ea57c82c.remote.json",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\036_run_6f01e1b08a764af7b8a4e293ea57c82c.remote.json.zip",
+    "files": 1,
+    "bytes": 11192862,
+    "archive_sha256": "4d0804b9a5d411c48a75a92809ca84eabb7c2d792890b953330e88f875816bb3",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp-cdecr-relevance-v2-full",
+    "status": "failed",
+    "error": "[WinError 5] 拒绝访问。: 'C:\\\\Users\\\\WEIXUANXIE\\\\Desktop\\\\DoxAgent\\\\.tmp-cdecr-relevance-v2-full'"
+  },
+  {
+    "target": ".tmp-cdecr-relevance-v21-full",
+    "status": "failed",
+    "error": "[WinError 5] 拒绝访问。: 'C:\\\\Users\\\\WEIXUANXIE\\\\Desktop\\\\DoxAgent\\\\.tmp-cdecr-relevance-v21-full'"
+  },
+  {
+    "target": ".tmp-cdecr-v5",
+    "status": "failed",
+    "error": "[WinError 5] 拒绝访问。: 'C:\\\\Users\\\\WEIXUANXIE\\\\Desktop\\\\DoxAgent\\\\.tmp-cdecr-v5\\\\pytest-of-WEIXUANXIE'"
+  },
+  {
+    "target": ".tmp-parent-v2",
+    "status": "failed",
+    "error": "[WinError 5] 拒绝访问。: 'C:\\\\Users\\\\WEIXUANXIE\\\\Desktop\\\\DoxAgent\\\\.tmp-parent-v2\\\\pytest-of-WEIXUANXIE'"
+  },
+  {
+    "target": ".tmp-verify-o3",
+    "status": "failed",
+    "error": "[WinError 5] 拒绝访问。: 'C:\\\\Users\\\\WEIXUANXIE\\\\Desktop\\\\DoxAgent\\\\.tmp-verify-o3\\\\pytest'"
+  },
+  {
+    "target": ".tmp/c1-data-mcp-final-live-20260812",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\042_c1-data-mcp-final-live-20260812.zip",
+    "files": 1,
+    "bytes": 2423,
+    "archive_sha256": "75f8c40f0fc1705be883a52531a39cc3eef066ae0a284e9109e12bc14c068507",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/c1-data-mcp-fix-live-20260812",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\043_c1-data-mcp-fix-live-20260812.zip",
+    "files": 29,
+    "bytes": 311105,
+    "archive_sha256": "ed9384ec269d0061be42d3f1ca801de1746072db67fdb7090f8de35f5c876789",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/c1-data-mcp-fix-live2-20260812",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\044_c1-data-mcp-fix-live2-20260812.zip",
+    "files": 7,
+    "bytes": 18911,
+    "archive_sha256": "cc083a561b53848115ff0180560d55769ac45a08bae90b76798fb62da285c205",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/c1-data-mcp-fix-live3-20260812",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\045_c1-data-mcp-fix-live3-20260812.zip",
+    "files": 87,
+    "bytes": 281942,
+    "archive_sha256": "d3dbc75d79b7ec7be0454cf48af39b0dad70c141e6e85d247aa62db12ad54e3c",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/c1-final-live-20260812",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\046_c1-final-live-20260812.zip",
+    "files": 108,
+    "bytes": 421822,
+    "archive_sha256": "9b3788ded490606556f6ea90c75d29ba2f37143855679ba6c05fb15683524c0c",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/c1-pilot-data-mcp-acceptance-20260812",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\047_c1-pilot-data-mcp-acceptance-20260812.zip",
+    "files": 19,
+    "bytes": 171511,
+    "archive_sha256": "4285cda61169d4a9803048f24c8098c87d3abd276b9f3cbd9f728d95f8e829c3",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/c1-pilot-data-mcp-acceptance-v2-20260812",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\048_c1-pilot-data-mcp-acceptance-v2-20260812.zip",
+    "files": 230,
+    "bytes": 774360,
+    "archive_sha256": "98cabebdb88732a9876a6cd108f11ee1ea2b48d725a14a2766710160c206f96a",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/c1-pilot-repair-live-20260812",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\049_c1-pilot-repair-live-20260812.zip",
+    "files": 424,
+    "bytes": 1023671,
+    "archive_sha256": "8b0cd851f7c3ccaecb21de57131a21b76700561576ea455467ee0e67eb106ccc",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/cdecr-export-stage-v1",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\050_cdecr-export-stage-v1.zip",
+    "files": 5,
+    "bytes": 140271,
+    "archive_sha256": "c201d93fead19dc9eaead88a4c65aeca9ec8e2292598ce5f4538182db8acfed7",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/cdecr-resource-monitor",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\051_cdecr-resource-monitor.zip",
+    "files": 14,
+    "bytes": 4050967,
+    "archive_sha256": "32eed99f1d006bce62587f68d7de4f252f110408edd5fb0db69e845cde947f8b",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/cdecr-step2-acceptance-20260824",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\052_cdecr-step2-acceptance-20260824.zip",
+    "files": 66,
+    "bytes": 41489926,
+    "archive_sha256": "4e39deac8cfa68ef38f4ec92152f7a801a963054c6f65dbdc7ef7cf349dbda03",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/dashboard-document-smoke",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\053_dashboard-document-smoke.zip",
+    "files": 4,
+    "bytes": 45951,
+    "archive_sha256": "a7b834a5c466a38de440dded86aa800c8e423bf1866f9f3ad2cf14c362237680",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/dashboard_backtests",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\054_dashboard_backtests.zip",
+    "files": 2,
+    "bytes": 40960,
+    "archive_sha256": "de70921c220aabc7ae6a2082dd9b50ae735aa0d1f6c066c0d07327a920b38ac0",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/data-mcp-final",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\055_data-mcp-final.zip",
+    "files": 6,
+    "bytes": 260982,
+    "archive_sha256": "669d9aecdd9241057fee1528753108b74d3b2212bd20c8de1a2b277067cf36ed",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/data-mcp-pack-final",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\056_data-mcp-pack-final.zip",
+    "files": 47,
+    "bytes": 424387,
+    "archive_sha256": "efdb9a8e6f71a0e39a2d16cadf4f36bcd1dcdf824a6e3b41ffade47d753ea9b4",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/data-mcp-smoke",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\057_data-mcp-smoke.zip",
+    "files": 160,
+    "bytes": 1840215,
+    "archive_sha256": "5d74649ff627e9b531f653f4736bfac35d268b8b7688ac8022fcd23c264a5eea",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/doc-smoke",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\058_doc-smoke.zip",
+    "files": 19,
+    "bytes": 8516,
+    "archive_sha256": "dd0cb480a5ffd1d7bba6edcb3c3b26d24cb4dc98507e5f71df7cd571b40d77de",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/eval-tmp",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\059_eval-tmp.zip",
+    "files": 6,
+    "bytes": 81920,
+    "archive_sha256": "933383b82a4fb106ad235a99d450f342f6743ac66ecff159c4df8f8e661d5701",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/langsmith_audit",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\060_langsmith_audit.zip",
+    "files": 8,
+    "bytes": 85018570,
+    "archive_sha256": "79af1cab6825cac9ec327625c54ca8eaca5f8b5297331dc0ba798224dda9626f",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/o2-mu-r2-current-prompts-20260826-preflight",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\061_o2-mu-r2-current-prompts-20260826-preflight.zip",
+    "files": 3,
+    "bytes": 111124480,
+    "archive_sha256": "04d40e86622d8ab793949a4569f2847dd7ce636e6f7004a2c52a7d4e9f8d2fe3",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/o2-mu-r2-current-prompts-20260826-preflight-03",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\062_o2-mu-r2-current-prompts-20260826-preflight-03.zip",
+    "files": 8,
+    "bytes": 112657693,
+    "archive_sha256": "e0bf534e7d9ceb53b6329cb60758f735baa741cb66c27b0c602f68a619979ab3",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/o2-mu-r2-current-prompts-20260826-real-01",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\063_o2-mu-r2-current-prompts-20260826-real-01.zip",
+    "files": 385,
+    "bytes": 115103089,
+    "archive_sha256": "11f9855c65ce924e41b0452b22469c17c3328e4fab42429b45bfd28f55c66fa8",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/o2-mu-r2-deterministic-alignment-20260827-preflight-01",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\064_o2-mu-r2-deterministic-alignment-20260827-preflight-01.zip",
+    "files": 8,
+    "bytes": 112657693,
+    "archive_sha256": "94c08859ae59bb36a3c4b02b454620bcb3d68a8ba0f8b73a32901863a3b36fe9",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/o3-acceptance",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\065_o3-acceptance.zip",
+    "files": 24,
+    "bytes": 1193032,
+    "archive_sha256": "7310b08f44e6d46ea9d9eeb3700237943bcf4bc159ea0ece4334f09becdb20d4",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/o4a-data-mcp-acceptance",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\066_o4a-data-mcp-acceptance.zip",
+    "files": 629,
+    "bytes": 7930989,
+    "archive_sha256": "348bfcd2dc0dcd7bb6805c77e7a1c21171d68d5af923d3d91ea34a29db1b2ae7",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/persistent-runtime-w3-pilot",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\067_persistent-runtime-w3-pilot.zip",
+    "files": 1,
+    "bytes": 27884,
+    "archive_sha256": "c87c2ad3afa6a8b82aa33e85cd6aa0f97eb1b73051acc81ac847bf5ca259457a",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/phase26_runtime_mu_e2e",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\068_phase26_runtime_mu_e2e.zip",
+    "files": 10,
+    "bytes": 481404,
+    "archive_sha256": "eac510407d9f6daed8178be60435317751add006951008dea8daaa2d5a93708c",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/projection-acceptance-20260820",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\069_projection-acceptance-20260820.zip",
+    "files": 239,
+    "bytes": 1666926,
+    "archive_sha256": "f8c340175aca2f377309c675527541d8dc51d0263005ce7a475ed6732a652dd2",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/projection-recheck-20260820",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\070_projection-recheck-20260820.zip",
+    "files": 37,
+    "bytes": 758471,
+    "archive_sha256": "06cf5f671f6110f2d60bef830f2242bbc2c2156052454df7e0596668d69c6aef",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/projection-stdio-20260820",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\071_projection-stdio-20260820.zip",
+    "files": 6,
+    "bytes": 16787,
+    "archive_sha256": "e953d7200ded1bdcb4ab44009613989b1f8461b51019bda90c7eea50666cbd43",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/remote-p0-compare",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\072_remote-p0-compare.zip",
+    "files": 2,
+    "bytes": 99520,
+    "archive_sha256": "735fc53a357b468c81d99e0cefb79fdff2f732b3fd7ce95e2e3228d56c41e210",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/retired-v2-entrypoints-20260909",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\073_retired-v2-entrypoints-20260909.zip",
+    "files": 39,
+    "bytes": 306617,
+    "archive_sha256": "f84fe2d7cb7bb638ef7975ea8a542b5f330c45bf552caf63e08b39c2e5f36432",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/runtime_smoke",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\074_runtime_smoke.zip",
+    "files": 48,
+    "bytes": 3674779,
+    "archive_sha256": "8f9731e16a6ace72a1c4a6f3b91209cf9cf2e9b8284ca6effbdc1810750feefb",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/trade-execution-gateway",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\075_trade-execution-gateway.zip",
+    "files": 1,
+    "bytes": 127654,
+    "archive_sha256": "16f98f143ff5e20775bb7ac483158658555a6b4271262a6839d497be616a227d",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/trajectory_eval",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\076_trajectory_eval.zip",
+    "files": 3,
+    "bytes": 7315403,
+    "archive_sha256": "4cc652441e0801bb5671a442689f213ec21f217dd0fd8edf1d3a18e4e4b5f327",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/v2-production-acceptance",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\077_v2-production-acceptance.zip",
+    "files": 15,
+    "bytes": 278149,
+    "archive_sha256": "59f7b7293eaecf42c6ecfa610a07800dec1eda56246219e8e3bbaa32a2fe906f",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/v2_backend_dist",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\078_v2_backend_dist.zip",
+    "files": 2,
+    "bytes": 24775790,
+    "archive_sha256": "d5a869a49a1035b99444c20857a67978ddcdb78aeb8dd851d00801534b766dcd",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp/w1w2_mu_dataset_drafts",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\079_w1w2_mu_dataset_drafts.zip",
+    "files": 3,
+    "bytes": 131803,
+    "archive_sha256": "9a6458741cf3d7946ed830bdf962aefcc855c694c59d03ad26af7d4fa896303a",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": "exports/body_delivery_20260915",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\080_body_delivery_20260915.zip",
+    "files": 88,
+    "bytes": 6138380,
+    "archive_sha256": "3757dd38b54896ceb8533848adfdc9317a7a28b94c2b72a0a3543101b8dcd958",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": "exports/body_enrichment_audit_20260912",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\081_body_enrichment_audit_20260912.zip",
+    "files": 94,
+    "bytes": 37760825,
+    "archive_sha256": "588068d2909a515b8bf0902ee7dca80be4bc82164e56296d1e0c78e105849b8e",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": "exports/body_enrichment_implementation_20260912",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\082_body_enrichment_implementation_20260912.zip",
+    "files": 1792,
+    "bytes": 157806276,
+    "archive_sha256": "5ad2db08ae8c06bfe4ae1ff866ac78ec4a5eddc7c2dd481285551e14e64d1420",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": "exports/body_trial_20260915",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\083_body_trial_20260915.zip",
+    "files": 122,
+    "bytes": 6070457,
+    "archive_sha256": "7fe801f1eaadc2e8d826c3bba92b2605b5e7a2872576f9c18ff8062baedabde8",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": "exports/free_publishers_20260913",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\084_free_publishers_20260913.zip",
+    "files": 16,
+    "bytes": 95772,
+    "archive_sha256": "bc9483b8856793ff4caa3cf35bfc76fd4db7f989c19aafa3dd765b4dc01ab31c",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": "exports/free_publishers_chrome_20260913",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\085_free_publishers_chrome_20260913.zip",
+    "files": 9,
+    "bytes": 584794,
+    "archive_sha256": "f7937728e8f4e4204c7fa7be51523aaf0aefe34d558b354eb7007050194ae36a",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": "exports/mu_enrichment_20260915_support",
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\086_mu_enrichment_20260915_support.zip",
+    "files": 8,
+    "bytes": 22084174,
+    "archive_sha256": "d9a94f6950507583842bd9fb9cf618cbd6590f51374e449f093307d20087938d",
+    "status": "verified",
+    "skipped": []
+  },
+  {
+    "target": ".tmp explicit V1 root-file set",
+    "targets": [
+      ".tmp/blackboard-eval-20260614-164131.err.log",
+      ".tmp/blackboard-eval-20260614-164131.out.log",
+      ".tmp/blackboard-eval-20260614-164403.err.log",
+      ".tmp/blackboard-eval-20260614-164403.out.log",
+      ".tmp/blackboard-eval-20260614-175653.err.log",
+      ".tmp/blackboard-eval-20260614-175653.out.log",
+      ".tmp/blackboard-eval-20260614-185131.err.log",
+      ".tmp/blackboard-eval-20260614-185131.out.log",
+      ".tmp/blackboard-eval-20260614-200911.err.log",
+      ".tmp/blackboard-eval-20260614-200911.out.log",
+      ".tmp/blackboard-eval-20260614-210804.err.log",
+      ".tmp/blackboard-eval-20260614-210804.out.log",
+      ".tmp/blackboard-eval-20260614-215719.err.log",
+      ".tmp/blackboard-eval-20260614-215719.out.log",
+      ".tmp/blackboard-eval-20260614-223852.err.log",
+      ".tmp/blackboard-eval-20260614-223852.out.log",
+      ".tmp/blackboard-eval-20260615-160455.err.log",
+      ".tmp/blackboard-eval-20260615-160455.out.log",
+      ".tmp/blackboard-eval-20260615-180537.err.log",
+      ".tmp/blackboard-eval-20260615-180537.out.log",
+      ".tmp/blackboard-eval-20260615-183114.err.log",
+      ".tmp/blackboard-eval-20260615-183114.out.log",
+      ".tmp/blackboard-eval-20260615-190926.err.log",
+      ".tmp/blackboard-eval-20260615-190926.out.log",
+      ".tmp/blackboard-eval-20260615-194432.err.log",
+      ".tmp/blackboard-eval-20260615-194432.out.log",
+      ".tmp/blackboard-eval-20260615-202454.err.log",
+      ".tmp/blackboard-eval-20260615-202454.out.log",
+      ".tmp/blackboard-eval-20260615-212046.err.log",
+      ".tmp/blackboard-eval-20260615-212046.out.log",
+      ".tmp/blackboard-eval-20260615-235730.err.log",
+      ".tmp/blackboard-eval-20260615-235730.out.log",
+      ".tmp/blackboard-eval-additional1-20260616-191554.err.log",
+      ".tmp/blackboard-eval-additional1-20260616-191554.out.log",
+      ".tmp/blackboard-eval-additional2-20260616-202211.err.log",
+      ".tmp/blackboard-eval-additional2-20260616-202211.out.log",
+      ".tmp/blackboard-eval-additional3-20260616-224152.err.log",
+      ".tmp/blackboard-eval-additional3-20260616-224152.out.log",
+      ".tmp/blackboard-eval-extra5-loop1-20260617-140657.err.log",
+      ".tmp/blackboard-eval-extra5-loop1-20260617-140657.out.log",
+      ".tmp/blackboard-eval-goal-cont-20260619-201324.err.log",
+      ".tmp/blackboard-eval-goal-cont-20260619-201324.out.log",
+      ".tmp/blackboard-eval-goal5-loop1-20260617-173624.err.log",
+      ".tmp/blackboard-eval-goal5-loop1-20260617-173624.out.log",
+      ".tmp/blackboard-eval-goal5-loop2-20260617-185245.err.log",
+      ".tmp/blackboard-eval-goal5-loop2-20260617-185245.out.log",
+      ".tmp/blackboard-eval-goal5-loop3-20260617-204046.err.log",
+      ".tmp/blackboard-eval-goal5-loop3-20260617-204046.out.log",
+      ".tmp/blackboard-eval-goal5-loop4-20260617-220834.err.log",
+      ".tmp/blackboard-eval-goal5-loop4-20260617-220834.out.log",
+      ".tmp/blackboard-eval-newextra3-loop2-20260617-145308.err.log",
+      ".tmp/blackboard-eval-newextra3-loop2-20260617-145308.out.log",
+      ".tmp/blackboard-eval-newextra3-loop3-20260617-155150.err.log",
+      ".tmp/blackboard-eval-newextra3-loop3-20260617-155150.out.log",
+      ".tmp/blackboard-resume-20260616-003233.err.log",
+      ".tmp/blackboard-resume-20260616-003233.out.log",
+      ".tmp/blackboard-resume-additional2-20260616-205430.err.log",
+      ".tmp/blackboard-resume-additional2-20260616-205430.out.log",
+      ".tmp/blackboard-resume-additional2-postpk-20260616-214637.err.log",
+      ".tmp/blackboard-resume-additional2-postpk-20260616-214637.out.log",
+      ".tmp/blackboard-resume-run_6bf7637a7b124c7db54845859b4e3706-20260615-213718.err.log",
+      ".tmp/blackboard-resume-run_6bf7637a7b124c7db54845859b4e3706-20260615-213718.out.log",
+      ".tmp/blackboard-resume-run_6bf7637a7b124c7db54845859b4e3706-20260615-223007.err.log",
+      ".tmp/blackboard-resume-run_6bf7637a7b124c7db54845859b4e3706-20260615-223007.out.log",
+      ".tmp/blackboard-resume-run_6bf7637a7b124c7db54845859b4e3706-20260615-224723.err.log",
+      ".tmp/blackboard-resume-run_6bf7637a7b124c7db54845859b4e3706-20260615-224723.out.log",
+      ".tmp/blackboard-resume-run_6bf7637a7b124c7db54845859b4e3706-20260615-231957.err.log",
+      ".tmp/blackboard-resume-run_6bf7637a7b124c7db54845859b4e3706-20260615-231957.out.log",
+      ".tmp/dashboard-audit-real-smoke.png",
+      ".tmp/dashboard-cost-audit-backend.err.log",
+      ".tmp/dashboard-cost-audit-backend.log",
+      ".tmp/dashboard-frontend-vite.err.log",
+      ".tmp/dashboard-frontend-vite.out.log",
+      ".tmp/dashboard-frontend.err.log",
+      ".tmp/dashboard-frontend.out.log",
+      ".tmp/dashboard-real-8781.err.log",
+      ".tmp/dashboard-real-8781.out.log",
+      ".tmp/dashboard-real-api-8781.err.log",
+      ".tmp/dashboard-real-api-8781.out.log",
+      ".tmp/dashboard-real-api.err.log",
+      ".tmp/dashboard-real-api.out.log",
+      ".tmp/debug-viewer.err",
+      ".tmp/debug-viewer.out",
+      ".tmp/extract_failures.py",
+      ".tmp/fetch_loops.py",
+      ".tmp/inspect_loops.py",
+      ".tmp/intc_document123_smoke_wakeup_20260714_2015.txt",
+      ".tmp/intc_document123_smoke_wakeup_20260714_2026.txt",
+      ".tmp/intc_document123_smoke_wakeup_20260714_2036.txt",
+      ".tmp/latest_loops.json"
+    ],
+    "archive": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgentArchive\\v1-retirement-20261004\\087_v1-root-files.zip",
+    "files": 90,
+    "bytes": 644789,
+    "archive_sha256": "4f7afc74f5f7e647bca841e13ff60006c405ca75d952bca2c774de183097a735",
+    "status": "verified",
+    "skipped": []
+  }
+]

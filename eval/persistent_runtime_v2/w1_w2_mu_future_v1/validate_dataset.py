@@ -10,6 +10,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from frozen_inputs import resolved_manifest
 
 ROOT = Path(__file__).resolve().parent
 MESSAGES = ROOT / "messages.jsonl"
@@ -37,6 +38,7 @@ def main() -> None:
     messages = _load_jsonl(MESSAGES)
     gold = _load_jsonl(GOLD)
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    manifest = resolved_manifest(ROOT, manifest)
 
     assert len(messages) == 25
     assert len(gold) == 25
@@ -79,7 +81,7 @@ def main() -> None:
         assert word_counts[case_id] >= 500, (case_id, word_counts[case_id])
         assert "hypothetical" not in body.lower()
         assert "synthetic test" not in body.lower()
-        title_and_body = f'{row["source_message"]["title"]} {body}'.lower()
+        title_and_body = f"{row['source_message']['title']} {body}".lower()
         assert not any(term in title_and_body for term in forbidden_financial_story_terms), case_id
         published_at = datetime.fromisoformat(row["published_at"].replace("Z", "+00:00"))
         assert published_at > cutoff, case_id
@@ -93,23 +95,17 @@ def main() -> None:
     assert messages_by_id["MU-W12-019"]["depends_on_case_ids"] == ["MU-W12-018"]
     assert messages_by_id["MU-W12-024"]["depends_on_case_ids"] == ["MU-W12-013"]
 
-    novelty = Counter(
-        row["w1"]["final"]["expected_output"]["result"] for row in gold
-    )
+    novelty = Counter(row["w1"]["final"]["expected_output"]["result"] for row in gold)
     assert novelty == Counter({"NEW": 13, "OLD": 12}), novelty
     policy_cases = sorted(
-        row["case_id"]
-        for row in gold
-        if row["w2"]["final"]["expected_output"]["policy_ids"]
+        row["case_id"] for row in gold if row["w2"]["final"]["expected_output"]["policy_ids"]
     )
     assert policy_cases == ["MU-W12-018", "MU-W12-019", "MU-W12-021", "MU-W12-022"]
 
     r2_shapes = {
         row["case_id"]: (
             row["w2"]["r1"]["expected_output"]["confidence"],
-            None
-            if row["w2"]["r2"] is None
-            else row["w2"]["r2"]["expected_output"]["confidence"],
+            None if row["w2"]["r2"] is None else row["w2"]["r2"]["expected_output"]["confidence"],
             None
             if row["w2"]["r2"] is None
             else bool(row["w2"]["r2"]["expected_output"]["policy_ids"]),
@@ -123,9 +119,7 @@ def main() -> None:
         "MU-W12-022": ("low", "low", True),
     }, r2_shapes
 
-    r3_cases = sorted(
-        row["case_id"] for row in gold if row["w1"]["r3"]["expected_execution"]
-    )
+    r3_cases = sorted(row["case_id"] for row in gold if row["w1"]["r3"]["expected_execution"])
     assert r3_cases == ["MU-W12-018", "MU-W12-021"]
 
     gold_by_id = {row["case_id"]: row for row in gold}
@@ -180,9 +174,7 @@ def main() -> None:
         assert expected == {
             "policy_ids": [interruption_policy],
             "confidence": "normal",
-            "matched_condition_ids": [
-                {"policy_id": interruption_policy, "condition_ids": ["C1"]}
-            ],
+            "matched_condition_ids": [{"policy_id": interruption_policy, "condition_ids": ["C1"]}],
         }
 
     restriction_policy = "pol_e28a1b1e8eedc9bf53f5"
@@ -207,9 +199,7 @@ def main() -> None:
         assert path.is_file(), path
         assert _sha256(path) == item["sha256"], path
 
-    inputs_by_purpose = {
-        item["purpose"]: Path(item["path"]) for item in manifest["frozen_inputs"]
-    }
+    inputs_by_purpose = {item["purpose"]: Path(item["path"]) for item in manifest["frozen_inputs"]}
     expected_event_ids: set[str] = set()
     expected_policy_ids: set[str] = set()
     for row in gold:
@@ -223,9 +213,7 @@ def main() -> None:
         expected_policy_ids.update(row["w2"]["final"]["expected_output"]["policy_ids"])
         expected_policy_ids.update(row["w2"]["near_miss_policy_ids"])
         if row["w2"]["r2"] is not None:
-            expected_policy_ids.update(
-                row["w2"]["r2"]["expected_output"]["policy_ids"]
-            )
+            expected_policy_ids.update(row["w2"]["r2"]["expected_output"]["policy_ids"])
 
     with sqlite3.connect(inputs_by_purpose["W1 canonical Event Detail store"]) as connection:
         available_event_ids = {
@@ -235,8 +223,7 @@ def main() -> None:
             )
         }
         active_event_count = connection.execute(
-            "SELECT count(1) FROM canonical_event_states "
-            "WHERE ticker='MU' AND status='ACTIVE'"
+            "SELECT count(1) FROM canonical_event_states WHERE ticker='MU' AND status='ACTIVE'"
         ).fetchone()[0]
     assert expected_event_ids.issubset(available_event_ids), (
         expected_event_ids - available_event_ids

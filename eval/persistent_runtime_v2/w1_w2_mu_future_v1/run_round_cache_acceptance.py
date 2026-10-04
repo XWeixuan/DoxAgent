@@ -8,6 +8,8 @@ import shutil
 from pathlib import Path
 from typing import Any
 
+from frozen_inputs import resolved_manifest
+
 from doxagent.event_library.provider import PublishedEventLibraryReader
 from doxagent.persistent_runtime_v2.prompts import RuntimeV2PromptSet
 from doxagent.persistent_runtime_v2.providers import (
@@ -41,6 +43,7 @@ def _jsonl(path: Path) -> list[dict[str, Any]]:
 
 def _inputs() -> dict[str, dict[str, Any]]:
     manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
+    manifest = resolved_manifest(ROOT, manifest)
     return {item["purpose"]: item for item in manifest["frozen_inputs"]}
 
 

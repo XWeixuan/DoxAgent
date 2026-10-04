@@ -1,0 +1,503 @@
+{
+  "removed_files": 6184,
+  "removed_bytes": 2015485487,
+  "links_removed": 0,
+  "issues": [
+    {
+      "path": "recovery\\codex_ephemeral_20260725\\tools\\pythonlibs\\__pycache__",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\recovery\\codex_ephemeral_20260725\\tools\\pythonlibs\\__pycache__' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": "recovery\\codex_ephemeral_20260725\\tools\\pythonlibs\\ccl_simplesnappy",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\recovery\\codex_ephemeral_20260725\\tools\\pythonlibs\\ccl_simplesnappy' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": "recovery\\codex_ephemeral_20260725\\tools\\pythonlibs\\_brotli.cp313-win_amd64.pyd",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\recovery\\codex_ephemeral_20260725\\tools\\pythonlibs\\_brotli.cp313-win_amd64.pyd' is denied.",
+      "result": "failed"
+    },
+    {
+      "path": "recovery\\codex_ephemeral_20260725\\tools\\pythonlibs\\zstd.cp313-win_amd64.pyd",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\recovery\\codex_ephemeral_20260725\\tools\\pythonlibs\\zstd.cp313-win_amd64.pyd' is denied.",
+      "result": "failed"
+    },
+    {
+      "path": "recovery\\codex_ephemeral_20260725\\tools\\pythonlibs",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\recovery\\codex_ephemeral_20260725\\tools\\pythonlibs'.\"",
+      "result": "failed"
+    },
+    {
+      "path": "recovery\\codex_ephemeral_20260725\\tools",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\recovery\\codex_ephemeral_20260725\\tools'.\"",
+      "result": "failed"
+    },
+    {
+      "path": "recovery/codex_ephemeral_20260725",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\recovery\\codex_ephemeral_20260725'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp\\c1-data-mcp-fix-live-20260812\\context\\mcp_data\\c1-fix-1\\call_01e28dd600614e2896f75c33d502f537",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\c1-data-mcp-fix-live-20260812\\context\\mcp_data\\c1-fix-1\\call_01e28dd600614e2896f75c33d502f537' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": ".tmp\\c1-data-mcp-fix-live-20260812\\context\\mcp_data\\c1-fix-1",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\c1-data-mcp-fix-live-20260812\\context\\mcp_data\\c1-fix-1'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp\\c1-data-mcp-fix-live-20260812\\context\\mcp_data",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\c1-data-mcp-fix-live-20260812\\context\\mcp_data'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp\\c1-data-mcp-fix-live-20260812\\context",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\c1-data-mcp-fix-live-20260812\\context'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp/c1-data-mcp-fix-live-20260812",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\c1-data-mcp-fix-live-20260812'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp\\c1-data-mcp-fix-live3-20260812\\context\\mcp_data\\c1-fix-3\\call_0cb6b33cd2d944598db5c32c7f90f9ea",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\c1-data-mcp-fix-live3-20260812\\context\\mcp_data\\c1-fix-3\\call_0cb6b33cd2d944598db5c32c7f90f9ea' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": ".tmp\\c1-data-mcp-fix-live3-20260812\\context\\mcp_data\\c1-fix-3\\call_f341d36bc8a645b8b5e10ceda99ed481",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\c1-data-mcp-fix-live3-20260812\\context\\mcp_data\\c1-fix-3\\call_f341d36bc8a645b8b5e10ceda99ed481' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": ".tmp\\c1-data-mcp-fix-live3-20260812\\context\\mcp_data\\c1-fix-3",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\c1-data-mcp-fix-live3-20260812\\context\\mcp_data\\c1-fix-3'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp\\c1-data-mcp-fix-live3-20260812\\context\\mcp_data",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\c1-data-mcp-fix-live3-20260812\\context\\mcp_data'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp\\c1-data-mcp-fix-live3-20260812\\context",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\c1-data-mcp-fix-live3-20260812\\context'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp/c1-data-mcp-fix-live3-20260812",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\c1-data-mcp-fix-live3-20260812'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp\\c1-final-live-20260812\\context\\mcp_data\\c1-final-1\\call_15c88be18a374674815156014adc112e",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\c1-final-live-20260812\\context\\mcp_data\\c1-final-1\\call_15c88be18a374674815156014adc112e' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": ".tmp\\c1-final-live-20260812\\context\\mcp_data\\c1-final-1\\call_ce8560c953604d52aaa848e308e594b4",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\c1-final-live-20260812\\context\\mcp_data\\c1-final-1\\call_ce8560c953604d52aaa848e308e594b4' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": ".tmp\\c1-final-live-20260812\\context\\mcp_data\\c1-final-1\\call_f44da97dffdc4bb8bc3c05f91ffbd29c",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\c1-final-live-20260812\\context\\mcp_data\\c1-final-1\\call_f44da97dffdc4bb8bc3c05f91ffbd29c' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": ".tmp\\c1-final-live-20260812\\context\\mcp_data\\c1-final-1",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\c1-final-live-20260812\\context\\mcp_data\\c1-final-1'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp\\c1-final-live-20260812\\context\\mcp_data",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\c1-final-live-20260812\\context\\mcp_data'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp\\c1-final-live-20260812\\context",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\c1-final-live-20260812\\context'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp/c1-final-live-20260812",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\c1-final-live-20260812'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp\\c1-pilot-data-mcp-acceptance-v2-20260812\\context\\mcp_data\\c1-accept-2\\4bfc0cf0c8134ae88d1362738b497d06",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\c1-pilot-data-mcp-acceptance-v2-20260812\\context\\mcp_data\\c1-accept-2\\4bfc0cf0c8134ae88d1362738b497d06' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": ".tmp\\c1-pilot-data-mcp-acceptance-v2-20260812\\context\\mcp_data\\c1-accept-2\\ab86edf44d0d4afca4e2dbb392904fd7",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\c1-pilot-data-mcp-acceptance-v2-20260812\\context\\mcp_data\\c1-accept-2\\ab86edf44d0d4afca4e2dbb392904fd7' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": ".tmp\\c1-pilot-data-mcp-acceptance-v2-20260812\\context\\mcp_data\\c1-accept-2\\call_6351985377194741ab42c1c97f4123a0",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\c1-pilot-data-mcp-acceptance-v2-20260812\\context\\mcp_data\\c1-accept-2\\call_6351985377194741ab42c1c97f4123a0' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": ".tmp\\c1-pilot-data-mcp-acceptance-v2-20260812\\context\\mcp_data\\c1-accept-2\\call_c82e0574d2224d79b4a52073bb240dc8",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\c1-pilot-data-mcp-acceptance-v2-20260812\\context\\mcp_data\\c1-accept-2\\call_c82e0574d2224d79b4a52073bb240dc8' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": ".tmp\\c1-pilot-data-mcp-acceptance-v2-20260812\\context\\mcp_data\\c1-accept-2",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\c1-pilot-data-mcp-acceptance-v2-20260812\\context\\mcp_data\\c1-accept-2'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp\\c1-pilot-data-mcp-acceptance-v2-20260812\\context\\mcp_data",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\c1-pilot-data-mcp-acceptance-v2-20260812\\context\\mcp_data'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp\\c1-pilot-data-mcp-acceptance-v2-20260812\\context",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\c1-pilot-data-mcp-acceptance-v2-20260812\\context'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp/c1-pilot-data-mcp-acceptance-v2-20260812",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\c1-pilot-data-mcp-acceptance-v2-20260812'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp\\c1-pilot-repair-live-20260812\\context\\mcp_data\\c1-live-1\\13ad3c30b2d647958bfdbb14f9131fc7",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\c1-pilot-repair-live-20260812\\context\\mcp_data\\c1-live-1\\13ad3c30b2d647958bfdbb14f9131fc7' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": ".tmp\\c1-pilot-repair-live-20260812\\context\\mcp_data\\c1-live-1\\call_08fbc81e0bd74935b7209ae053eeb289",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\c1-pilot-repair-live-20260812\\context\\mcp_data\\c1-live-1\\call_08fbc81e0bd74935b7209ae053eeb289' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": ".tmp\\c1-pilot-repair-live-20260812\\context\\mcp_data\\c1-live-1\\call_31cb179c9f984212bddfd39e89d4facc",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\c1-pilot-repair-live-20260812\\context\\mcp_data\\c1-live-1\\call_31cb179c9f984212bddfd39e89d4facc' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": ".tmp\\c1-pilot-repair-live-20260812\\context\\mcp_data\\c1-live-1",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\c1-pilot-repair-live-20260812\\context\\mcp_data\\c1-live-1'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp\\c1-pilot-repair-live-20260812\\context\\mcp_data",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\c1-pilot-repair-live-20260812\\context\\mcp_data'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp\\c1-pilot-repair-live-20260812\\context",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\c1-pilot-repair-live-20260812\\context'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp/c1-pilot-repair-live-20260812",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\c1-pilot-repair-live-20260812'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp\\data-mcp-pack-final\\data-mcp-pack-final\\context\\mcp_data\\c3-pack\\call_30fb1313d8684ae1a043251464267559",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\data-mcp-pack-final\\data-mcp-pack-final\\context\\mcp_data\\c3-pack\\call_30fb1313d8684ae1a043251464267559' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": ".tmp\\data-mcp-pack-final\\data-mcp-pack-final\\context\\mcp_data\\c3-pack",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\data-mcp-pack-final\\data-mcp-pack-final\\context\\mcp_data\\c3-pack'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp\\data-mcp-pack-final\\data-mcp-pack-final\\context\\mcp_data",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\data-mcp-pack-final\\data-mcp-pack-final\\context\\mcp_data'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp\\data-mcp-pack-final\\data-mcp-pack-final\\context",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\data-mcp-pack-final\\data-mcp-pack-final\\context'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp\\data-mcp-pack-final\\data-mcp-pack-final",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\data-mcp-pack-final\\data-mcp-pack-final'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp/data-mcp-pack-final",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\data-mcp-pack-final'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp\\data-mcp-smoke\\data-mcp-smoke\\context\\mcp_data\\c3-quality\\call_f39937262dac46cb8aa16a2290c642b6",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\data-mcp-smoke\\data-mcp-smoke\\context\\mcp_data\\c3-quality\\call_f39937262dac46cb8aa16a2290c642b6' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": ".tmp\\data-mcp-smoke\\data-mcp-smoke\\context\\mcp_data\\c3-quality",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\data-mcp-smoke\\data-mcp-smoke\\context\\mcp_data\\c3-quality'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp\\data-mcp-smoke\\data-mcp-smoke\\context\\mcp_data",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\data-mcp-smoke\\data-mcp-smoke\\context\\mcp_data'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp\\data-mcp-smoke\\data-mcp-smoke\\context",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\data-mcp-smoke\\data-mcp-smoke\\context'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp\\data-mcp-smoke\\data-mcp-smoke",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\data-mcp-smoke\\data-mcp-smoke'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp/data-mcp-smoke",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\data-mcp-smoke'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp/langsmith_audit",
+      "error": "Cannot find path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\langsmith_audit' because it does not exist.",
+      "result": "unreadable_or_absent"
+    },
+    {
+      "path": ".tmp\\o4a-data-mcp-acceptance\\nvda-o4a-data-mcp-20260820\\context\\mcp_data\\o4_a-acceptance-20260820\\call_490bbe0aa2ed465d9a00605de7aa5eaf",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\o4a-data-mcp-acceptance\\nvda-o4a-data-mcp-20260820\\context\\mcp_data\\o4_a-acceptance-20260820\\call_490bbe0aa2ed465d9a00605de7aa5eaf' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": ".tmp\\o4a-data-mcp-acceptance\\nvda-o4a-data-mcp-20260820\\context\\mcp_data\\o4_a-acceptance-20260820\\call_768ae80e727a44419c4bd670031aff44",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\o4a-data-mcp-acceptance\\nvda-o4a-data-mcp-20260820\\context\\mcp_data\\o4_a-acceptance-20260820\\call_768ae80e727a44419c4bd670031aff44' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": ".tmp\\o4a-data-mcp-acceptance\\nvda-o4a-data-mcp-20260820\\context\\mcp_data\\o4_a-acceptance-20260820\\call_9dad7ec735bc4867b792e13daa5ce4a8",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\o4a-data-mcp-acceptance\\nvda-o4a-data-mcp-20260820\\context\\mcp_data\\o4_a-acceptance-20260820\\call_9dad7ec735bc4867b792e13daa5ce4a8' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": ".tmp\\o4a-data-mcp-acceptance\\nvda-o4a-data-mcp-20260820\\context\\mcp_data\\o4_a-acceptance-20260820\\call_ca11aeb125af496492103b4cddf97552",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\o4a-data-mcp-acceptance\\nvda-o4a-data-mcp-20260820\\context\\mcp_data\\o4_a-acceptance-20260820\\call_ca11aeb125af496492103b4cddf97552' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": ".tmp\\o4a-data-mcp-acceptance\\nvda-o4a-data-mcp-20260820\\context\\mcp_data\\o4_a-acceptance-20260820\\call_fd2d3b58b5b44041b3a675ab2f637ff3",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\o4a-data-mcp-acceptance\\nvda-o4a-data-mcp-20260820\\context\\mcp_data\\o4_a-acceptance-20260820\\call_fd2d3b58b5b44041b3a675ab2f637ff3' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": ".tmp\\o4a-data-mcp-acceptance\\nvda-o4a-data-mcp-20260820\\context\\mcp_data\\o4_a-acceptance-20260820",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\o4a-data-mcp-acceptance\\nvda-o4a-data-mcp-20260820\\context\\mcp_data\\o4_a-acceptance-20260820'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp\\o4a-data-mcp-acceptance\\nvda-o4a-data-mcp-20260820\\context\\mcp_data\\o4_a-acceptance-20260820-v2\\call_7f027dc31f354a28a51c2cd9ea5bac3e",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\o4a-data-mcp-acceptance\\nvda-o4a-data-mcp-20260820\\context\\mcp_data\\o4_a-acceptance-20260820-v2\\call_7f027dc31f354a28a51c2cd9ea5bac3e' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": ".tmp\\o4a-data-mcp-acceptance\\nvda-o4a-data-mcp-20260820\\context\\mcp_data\\o4_a-acceptance-20260820-v2\\e33419b719d44803a9d3deb8923235b7",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\o4a-data-mcp-acceptance\\nvda-o4a-data-mcp-20260820\\context\\mcp_data\\o4_a-acceptance-20260820-v2\\e33419b719d44803a9d3deb8923235b7' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": ".tmp\\o4a-data-mcp-acceptance\\nvda-o4a-data-mcp-20260820\\context\\mcp_data\\o4_a-acceptance-20260820-v2",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\o4a-data-mcp-acceptance\\nvda-o4a-data-mcp-20260820\\context\\mcp_data\\o4_a-acceptance-20260820-v2'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp\\o4a-data-mcp-acceptance\\nvda-o4a-data-mcp-20260820\\context\\mcp_data",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\o4a-data-mcp-acceptance\\nvda-o4a-data-mcp-20260820\\context\\mcp_data'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp\\o4a-data-mcp-acceptance\\nvda-o4a-data-mcp-20260820\\context",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\o4a-data-mcp-acceptance\\nvda-o4a-data-mcp-20260820\\context'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp\\o4a-data-mcp-acceptance\\nvda-o4a-data-mcp-20260820",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\o4a-data-mcp-acceptance\\nvda-o4a-data-mcp-20260820'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp/o4a-data-mcp-acceptance",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\o4a-data-mcp-acceptance'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp\\projection-acceptance-20260820\\context\\mcp_data\\all-data-tools-1\\call_00f5313c260e43cc804e28b817a1f535",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\projection-acceptance-20260820\\context\\mcp_data\\all-data-tools-1\\call_00f5313c260e43cc804e28b817a1f535' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": ".tmp\\projection-acceptance-20260820\\context\\mcp_data\\all-data-tools-1\\call_30523c5f0eb6439596fb8fae02b71b28",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\projection-acceptance-20260820\\context\\mcp_data\\all-data-tools-1\\call_30523c5f0eb6439596fb8fae02b71b28' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": ".tmp\\projection-acceptance-20260820\\context\\mcp_data\\all-data-tools-1\\call_5a51a9626e574c5c90315238e3b894fe",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\projection-acceptance-20260820\\context\\mcp_data\\all-data-tools-1\\call_5a51a9626e574c5c90315238e3b894fe' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": ".tmp\\projection-acceptance-20260820\\context\\mcp_data\\all-data-tools-1\\call_74bcf06cef6346f29037c2b71f81792a",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\projection-acceptance-20260820\\context\\mcp_data\\all-data-tools-1\\call_74bcf06cef6346f29037c2b71f81792a' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": ".tmp\\projection-acceptance-20260820\\context\\mcp_data\\all-data-tools-1\\call_7cb1ba511a6c4ee1bcea91456568e9f2",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\projection-acceptance-20260820\\context\\mcp_data\\all-data-tools-1\\call_7cb1ba511a6c4ee1bcea91456568e9f2' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": ".tmp\\projection-acceptance-20260820\\context\\mcp_data\\all-data-tools-1\\call_d69df682a06d4495ace5fed80a729684",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\projection-acceptance-20260820\\context\\mcp_data\\all-data-tools-1\\call_d69df682a06d4495ace5fed80a729684' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": ".tmp\\projection-acceptance-20260820\\context\\mcp_data\\all-data-tools-1",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\projection-acceptance-20260820\\context\\mcp_data\\all-data-tools-1'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp\\projection-acceptance-20260820\\context\\mcp_data",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\projection-acceptance-20260820\\context\\mcp_data'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp\\projection-acceptance-20260820\\context",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\projection-acceptance-20260820\\context'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp/projection-acceptance-20260820",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\projection-acceptance-20260820'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp\\projection-recheck-20260820\\context\\mcp_data\\corrected-inputs-1\\call_50dccb7f41b5479b9e301f03c9a24160",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\projection-recheck-20260820\\context\\mcp_data\\corrected-inputs-1\\call_50dccb7f41b5479b9e301f03c9a24160' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": ".tmp\\projection-recheck-20260820\\context\\mcp_data\\corrected-inputs-1\\call_914c3ab5e34c402f850aae116125fcaa",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\projection-recheck-20260820\\context\\mcp_data\\corrected-inputs-1\\call_914c3ab5e34c402f850aae116125fcaa' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": ".tmp\\projection-recheck-20260820\\context\\mcp_data\\corrected-inputs-1",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\projection-recheck-20260820\\context\\mcp_data\\corrected-inputs-1'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp\\projection-recheck-20260820\\context\\mcp_data",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\projection-recheck-20260820\\context\\mcp_data'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp\\projection-recheck-20260820\\context",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\projection-recheck-20260820\\context'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp/projection-recheck-20260820",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\projection-recheck-20260820'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp-codex\\baseline\\pytest-of-WEIXUANXIE",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp-codex\\baseline\\pytest-of-WEIXUANXIE' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": ".tmp-codex\\baseline",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp-codex\\baseline'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp-codex\\mock-api\\pytest-of-WEIXUANXIE",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp-codex\\mock-api\\pytest-of-WEIXUANXIE' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": ".tmp-codex\\mock-api",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp-codex\\mock-api'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp-codex\\pytest-tmp2\\pytest-of-WEIXUANXIE",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp-codex\\pytest-tmp2\\pytest-of-WEIXUANXIE' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": ".tmp-codex\\pytest-tmp2",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp-codex\\pytest-tmp2'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp-codex\\revenue-tests\\pytest-of-WEIXUANXIE",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp-codex\\revenue-tests\\pytest-of-WEIXUANXIE' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": ".tmp-codex\\revenue-tests",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp-codex\\revenue-tests'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp-codex",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp-codex'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp\\pytest-audit\\pytest-of-WEIXUANXIE",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\pytest-audit\\pytest-of-WEIXUANXIE' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": ".tmp/pytest-audit",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\pytest-audit'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp\\pytest-audit-full\\pytest-of-WEIXUANXIE",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\pytest-audit-full\\pytest-of-WEIXUANXIE' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": ".tmp/pytest-audit-full",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\pytest-audit-full'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp\\pytest-audit-scoped\\pytest-of-WEIXUANXIE",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\pytest-audit-scoped\\pytest-of-WEIXUANXIE' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": ".tmp/pytest-audit-scoped",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\pytest-audit-scoped'.\"",
+      "result": "failed"
+    },
+    {
+      "path": ".tmp\\pytest-revenue-audit\\pytest-of-WEIXUANXIE",
+      "error": "Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\pytest-revenue-audit\\pytest-of-WEIXUANXIE' is denied.",
+      "result": "unreadable"
+    },
+    {
+      "path": ".tmp/pytest-revenue-audit",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\pytest-revenue-audit'.\"",
+      "result": "failed"
+    }
+  ],
+  "full_detail_external": "full-v1_retirement_archive_cleanup_results_20261004.json"
+}

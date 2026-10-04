@@ -15,6 +15,7 @@ from pathlib import Path
 from time import perf_counter
 from typing import Any
 
+from frozen_inputs import resolved_manifest
 from openai import OpenAI
 
 from cdecr.model_boundary import bailian_strict_wire_schema
@@ -71,6 +72,7 @@ def _output_contract(output_model: type[Any], schema_name: str) -> tuple[dict[st
 
 def _reference_inputs(lane: str) -> tuple[str, Any, type[Any], str]:
     manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
+    manifest = resolved_manifest(ROOT, manifest)
     inputs = {item["purpose"]: item for item in manifest["frozen_inputs"]}
     if lane == "W1":
         index_path = Path(inputs["W1 candidate-recall index"]["path"])
@@ -133,11 +135,7 @@ def main() -> int:
     base_instructions = prompts.instructions(round_prompt)
     reference_block = _readonly_reference_block(reference_key, reference_value)
     if args.variant == "stable_instructions":
-        instructions = (
-            base_instructions
-            + reference_block
-            + contract
-        )
+        instructions = base_instructions + reference_block + contract
     else:
         instructions = base_instructions + contract
 
@@ -182,9 +180,7 @@ def main() -> int:
                 },
             ]
         elif args.variant == "flat_prefix":
-            request_input = (
-                f"{reference_block.strip()}\n\n# Current Message\n{_json_text(dynamic)}"
-            )
+            request_input = f"{reference_block.strip()}\n\n# Current Message\n{_json_text(dynamic)}"
         started = perf_counter()
         response = client.responses.create(
             model=settings.persistent_runtime_v2_model,
@@ -214,9 +210,7 @@ def main() -> int:
             "latency_ms": round((perf_counter() - started) * 1000),
             "input_tokens": _usage_int(usage, "input_tokens"),
             "cached_tokens": _usage_int(details, "cached_tokens"),
-            "cache_creation_input_tokens": _usage_int(
-                details, "cache_creation_input_tokens"
-            ),
+            "cache_creation_input_tokens": _usage_int(details, "cache_creation_input_tokens"),
             "output_validation_error": validation_error,
         }
         records.append(record)

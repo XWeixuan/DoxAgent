@@ -1,0 +1,1023 @@
+{
+  "schema_version": "document3.v2.2",
+  "ticker": "MU",
+  "policy_set_version": 1,
+  "publication_state": "PARTIAL",
+  "document2_ref": {
+    "run_id": "mu-document2-minimal-20260824-01",
+    "artifact_id": "d2b023d6c3c243b8b2586850c962dee9",
+    "sha256": "6f7db1c39f330283d34ff324f4e927a07568636cdf676ba91dcb7006fe7ded0f",
+    "published_at": "2026-08-23T19:37:01.602260Z",
+    "publication_state": "COMPLETE"
+  },
+  "event_library_ref": {
+    "contract_version": "reference-view-md-v3",
+    "ticker": "MU",
+    "version": 1,
+    "sha256": "5f8da26d09f9436c4ee0d284aff675c84f7e93d22d63b1337bb08732bde463da",
+    "published_at": "2026-08-26T21:25:03.856206Z"
+  },
+  "policies": [
+    {
+      "policy_id": "pol_b5f4a190b15fbc22d2fe",
+      "title": "下一季盈利基线再上移",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "micron-cross-cycle-earnings-path",
+          "gap_id": "FQ4兑现后下一季盈利基线继续上移"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "Micron季度业绩、下一财季收入/GAAP EPS/毛利率指引、发布前同口径卖方共识及会计口径说明。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Micron在FQ4 FY2026达到或超过既有指引的同一业绩公告中，给出的下一财季收入与同口径EPS指引中点均高于公告前可比卖方共识，且GAAP毛利率指引不低于86%。",
+          "calibration": {
+            "reference_state": "FQ3收入414.56亿美元、GAAP EPS 24.67美元；FQ4收入指引490亿至510亿美元、GAAP EPS 29.73至31.73美元、GAAP毛利率约86%，市场对FQ4收入和EPS已接近指引中点定价。",
+            "trigger_boundary": "最低偏离不是FQ4单季兑现，而是下一财季收入和EPS区间中点同时上穿公告前同口径共识，并维持至少86%的GAAP毛利率；口径变化不得制造表面上修。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_9f726827c3fe37bc2ac6",
+      "title": "DRAM与NAND同步进入周期反转",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "micron-cross-cycle-earnings-path",
+          "gap_id": "DRAM与NAND价格数量同步反转"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Micron财报中的DRAM/NAND实现ASP、bit shipments、合并毛利率、收入/EPS指引及产品桥接。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Micron在同一季度确认DRAM与NAND实现ASP均环比下降、两类产品bit shipments也均环比转弱，并同步下调合并GAAP毛利率或下一财季收入/EPS指引。",
+          "calibration": {
+            "reference_state": "FQ3 DRAM和NAND ASP大幅环比上升而bit shipments仅小幅增长；当前行业仍供不应求，市场基线是涨幅放缓而非两类产品价格与数量同时反转。",
+            "trigger_boundary": "两类产品的价格和数量四项指标必须同向恶化，并至少穿透至合并毛利率或下一季盈利指引；单一产品或单一指标回落不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_aa7a5be0213e21347434",
+      "title": "战略协议进入重复履约",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "micron-cross-cycle-earnings-path",
+          "gap_id": "战略客户协议转为重复交付与现金回收"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "Micron战略客户协议、take-or-pay履约、重复出货、合同收入、客户订金和资产负债表现金承诺。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Micron首次把一组重要战略客户协议明确连接到至少两个连续季度的重复产品交付，并在同一正式财报中确认对应收入认列或客户现金订金已实际入账。",
+          "calibration": {
+            "reference_state": "至少16份长期协议、约1000亿美元累计收入安排及约220亿美元订金/现金类承诺已披露，价格带和take-or-pay条款已进入基线，但实际到账与重复履约未清楚分解。",
+            "trigger_boundary": "必须从名义签约跨到两个连续季度的实际交付，并至少出现已认列收入或已入账现金；新增协议、送样或单批交付不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_5a365e8f9461c155bfd8",
+      "title": "长期协议减损下调收入与现金可见性",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "micron-cross-cycle-earnings-path",
+          "gap_id": "大客户重谈或退出长期协议"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Micron或客户对长期协议延期、削量、降价、取消、违约争议及合同收入/现金承诺余额的正式披露。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Micron或协议客户正式确认一份长期协议的延期、采购削减、价格边界下调、取消或履约争议已经生效，并使Micron下调该协议计入的合同覆盖收入、现金承诺余额或采购预期。",
+          "calibration": {
+            "reference_state": "长期协议被描述为不可取消、覆盖约半数收入并大多延续至2030，当前没有协议减损导致公司下调合同收入或现金承诺。",
+            "trigger_boundary": "协议变更须已生效，且Micron在同一披露中下调该协议计入的合同收入、现金承诺或采购预期；谈判传闻和无公司数字变动的合同变化不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_99664428e2bd31afe8bc",
+      "title": "客户信用事件破坏现金转换",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "micron-cross-cycle-earnings-path",
+          "gap_id": "应收信用事件打断利润现金转换"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Micron应收账款、信用损失准备、客户逾期/重组、合同订金退款、经营现金流指引及相关财务附注。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Micron确认一名或一类客户因逾期、重组或偿付能力恶化产生信用事件，并因此确认信用损失费用、退还已收战略订金或下调经营现金流指引。",
+          "calibration": {
+            "reference_state": "FQ3创纪录利润和经营现金流伴随应收增加，但尚无客户信用事件造成坏账、订金退款或现金流指引下调；一般营运资本波动仍属基线。",
+            "trigger_boundary": "必须确认客户信用原因，并在同一披露中出现信用损失费用、订金退款或经营现金流指引下调；应收随收入增长本身不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_83c565b3ca305ee04c41",
+      "title": "主要竞争者提前释放DRAM供给",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "micron-cross-cycle-earnings-path",
+          "gap_id": "竞争者成本突破提前释放有效供给"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "三星、SK海力士等主要DRAM供应商的新节点/先进封装量产良率、客户资格、重复DRAM出货、行业交期及合同价格。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "一家主要DRAM供应商在2028年前确认一项新节点或先进封装产能达到量产良率并向多个重要客户重复交付合格DRAM，同时DRAM市场交期缩短或合同价开始下降。",
+          "calibration": {
+            "reference_state": "前三大DRAM供应商约占九成市场，行业仍紧张且有意义供给缓解被普遍推迟至2028最早；资本开支、厂房、首片和采样均未构成有效供给。",
+            "trigger_boundary": "重要DRAM供应商必须跨过量产良率和多客户重复交付，并伴随交期缩短或合同价下降；仅投资、首片、样品或资格不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_24beda52c9f742e3f61a",
+      "title": "服务器成本压缩内存实际需求",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "micron-cross-cycle-earnings-path",
+          "gap_id": "AI服务器成本传导推迟终端部署"
+        },
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "conventional-dram-demand-price-volume-absorption",
+          "gap_id": "服务器内存涨价反噬整机部署"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "主要CSP/服务器OEM的AI服务器TCO、内存成本、已批准部署数量、每机内存配置、上线时点和DRAM/内存采购。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "一个主要CSP或服务器OEM明确因内存或整机成本越过预算边界，削减已批准的AI服务器数量、每机内存配置或上线节奏，并同步减少或延期相关内存采购。",
+          "calibration": {
+            "reference_state": "主要CSP资本开支、AI backlog和部署仍强，内存供应只能满足部分需求；DRAM占服务器成本已低于10%，尚无内存成本导致重大部署削减。",
+            "trigger_boundary": "重要买方必须明确成本因果、改变已批准部署或配置，并产生内存采购减少/延期；报价上涨、融资担忧或无采购后果的工期变化不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_a2fb4594422ae0c078a2",
+      "title": "Micron制造中断削弱交付",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "micron-cross-cycle-earnings-path",
+          "gap_id": "制造中断造成价格上行但出货受损"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Micron晶圆厂、先进封装、物流、不可抗力、非计划停产、可售bit产量、客户交付和恢复时间。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Micron确认关键晶圆、先进封装或物流节点发生非计划中断，并下调可售bit产量或客户交付，且恢复期跨越正常维护窗口。",
+          "calibration": {
+            "reference_state": "行业供给已紧且Micron只能满足部分需求，但截至cutoff没有公司重大非计划停产或交付损失；行业涨价不能自动抵消自身可售量损失。",
+            "trigger_boundary": "公司必须确认产量/交付下调并给出具有商业实质的恢复窗口；短时停机或无客户交付后果不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_ff3a0a91823cdc8ed4eb",
+      "title": "竞争者中断转化为Micron份额",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "micron-cross-cycle-earnings-path",
+          "gap_id": "制造中断造成价格上行但出货受损"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "三星电子、SK海力士的DRAM/NAND制造或封装中断、产量与预计恢复日期，以及Micron替代交付能力、客户分配与新增订单。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "三星电子或SK海力士正式确认关键DRAM或NAND合格产出下调及预计恢复日期，同时Micron确认自身交付未受损并获得对应的新增客户分配、订单或交付份额。",
+          "calibration": {
+            "reference_state": "DRAM供给高度集中且Micron无法满足全部客户需求；尚无三星电子或SK海力士的供给中断被Micron实际转化为新增份额。",
+            "trigger_boundary": "指定竞争者的合格产出下调、预计恢复日期、Micron未受损及实际新增订单或分配必须在一条消息中可确认；短暂停机或只有行业涨价不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_91de6c49a351d4c52d90",
+      "title": "FY2027盈利共识向高位收敛",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "micron-cross-cycle-earnings-path",
+          "gap_id": "FY2027共识分布快速收敛或分裂"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "同口径FY2027收入/EPS卖方估计分布、财报后连续快照、中位数、上下分位和样本口径。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Micron发布新的经营信息后，至少连续两个同口径共识快照显示FY2027收入与EPS中位数共同上修，且上下分位区间整体向高位收窄。",
+          "calibration": {
+            "reference_state": "FY2027已被普遍预期收入和EPS高增长，但估计分布宽、机构预测差异大，当前快照不能充当历史vintage。",
+            "trigger_boundary": "收入与EPS必须在连续两个可比快照共同上修且分布整体高位收窄；单家上调、一次均值变动或样本/口径改变不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_18375c047cd41dcb080f",
+      "title": "FY2027盈利共识广泛下修",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "micron-cross-cycle-earnings-path",
+          "gap_id": "FY2027共识分布快速收敛或分裂"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "同口径FY2027收入/EPS估计时间序列、覆盖分析师上/下调广度、中位数和分布迁移。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Micron出现新的经营证据后，至少连续两个同口径共识快照显示FY2027收入与EPS中位数共同下调，且超过半数覆盖分析师下修、分布整体向低位迁移。",
+          "calibration": {
+            "reference_state": "市场仍预计FY2027收入与EPS大幅增长，部分评论认为共识低估持续性；尚无广泛连续下调。",
+            "trigger_boundary": "收入和EPS共同下调、覆盖广度过半并连续两个快照整体低移才触发；单家或单项估计调整不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_44f6f2f6aef8fe3247f8",
+      "title": "消费终端集中削减DRAM需求",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "conventional-dram-demand-price-volume-absorption",
+          "gap_id": "客户端与手机集中降配并取消订单"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "主要PC/手机OEM的量产基础DRAM配置、采购延期/取消、库存目标、渠道库存与终端sell-through。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "至少两个具有全球销量影响的PC或手机OEM在同一产品周期降低量产机型的基础DRAM配置并削减或延期采购，且库存升至各自主张的正常目标以上。",
+          "calibration": {
+            "reference_state": "消费端已承受内存涨价和需求疲弱，Micron客户端/移动改善主要来自ASP，已有零散降配压力但没有多家主要OEM同步订单反转。",
+            "trigger_boundary": "两个重要OEM、基础配置下降、采购削减/延期和超过自身库存目标必须同时成立；单一机型或可选高配变化不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_e8c333d452eb6a5674eb",
+      "title": "AI PC提高基础DRAM容量",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "conventional-dram-demand-price-volume-absorption",
+          "gap_id": "终端AI换机拉动每机DRAM容量跃升"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "AI PC量产平台、主流机型基础DRAM容量、零售sell-through、OEM采购和Micron客户端bit shipments。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "覆盖多个主流量产PC机型的新AI平台把基础DRAM容量提高至少一个商业配置档位，并在首个完整销售期实现终端sell-through与OEM DRAM采购同步同比增长。",
+          "calibration": {
+            "reference_state": "PC端面临高价承受力和配置下调压力，尚无基础内存升级且由终端销量吸收的量产证据。",
+            "trigger_boundary": "必须是多个主流机型的基础档位而非可选高配，并同时出现完整销售期的真实销售与采购增长。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_89acbb844ab129e28c32",
+      "title": "AI手机提高基础DRAM容量",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "conventional-dram-demand-price-volume-absorption",
+          "gap_id": "终端AI换机拉动每机DRAM容量跃升"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "苹果、三星等头部手机的主销量机型、基础DRAM容量、激活/零售、移动DRAM采购与Micron移动bit shipments。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "苹果或三星等全球主要手机平台把主销量量产机型的基础DRAM容量提高至少一个商业配置档位，并在首个完整销售期实现激活或零售与移动DRAM采购同步增长。",
+          "calibration": {
+            "reference_state": "主要市场手机需求受成本通胀拖累，头部品牌承受力较强，但尚未确认基础DRAM配置升级转化为真实需求。",
+            "trigger_boundary": "头部平台主销量机型的基础档位、真实激活/零售和采购增长均需确认；顶配SKU或渠道首批装货不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_6cc7553c86a52b4d1466",
+      "title": "HBM失利释放传统DRAM供给",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "conventional-dram-demand-price-volume-absorption",
+          "gap_id": "HBM资格受阻促使晶圆回流传统DRAM"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Micron HBM客户资格、封装良率、订单计划、DRAM晶圆分配、传统DRAM合格bit出货与订单满足率。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Micron下调已披露的HBM量产与履约基线，把原HBM晶圆资源转回传统DRAM，并确认传统DRAM可交付合格bit增加。",
+          "calibration": {
+            "reference_state": "Micron已向NVIDIA量产交付HBM4且HBM产能售罄至2027；HBM约消耗传统DRAM三倍wafer starts并持续挤占非HBM供给。",
+            "trigger_boundary": "相对已披露基线的HBM量产履约下调、实际晶圆重分配及传统DRAM可交付合格bit增加必须完整出现；只有资格或良率消息不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_4fbb78816d7863893f09",
+      "title": "HBM增量需求继续挤占传统DRAM",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "conventional-dram-demand-price-volume-absorption",
+          "gap_id": "HBM需求再加速延长传统DRAM挤占"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "主要AI平台最终量产BOM、HBM容量/层数、系统部署量、Micron绑定订单及HBM晶圆/先进封装分配。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "主要AI平台最终量产BOM把每加速器HBM容量提高到已知计划之上，并使Micron获得新增绑定订单且进一步提高HBM晶圆或封装分配。",
+          "calibration": {
+            "reference_state": "Micron HBM产能已售罄至2027，NVIDIA Rubin使用HBM4；已知VR300 HBM4E规划由768GB降至512GB，一般AI资本开支增长已进入基线。",
+            "trigger_boundary": "容量必须越过当前具体BOM；VR300需高于512GB，并同时形成Micron新增订单和资源分配，路线图不触发。"
+          }
+        },
+        {
+          "condition_id": "C2",
+          "criterion": "主要AI平台把已批准的量产系统部署量上调，并使Micron获得超出当前合同基线的新增绑定HBM订单且进一步提高HBM晶圆或封装分配。",
+          "calibration": {
+            "reference_state": "主要平台AI资本开支增长和Micron HBM售罄至2027已经进入基线，但现有合同未包含未来额外批准的系统部署增量。",
+            "trigger_boundary": "必须是已批准量产系统数量相对当前计划的上调，并直接形成Micron新增绑定订单和资源分配；一般capex意向不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_9173828b029d26dab73d",
+      "title": "中国DRAM进入海外主流量产",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "conventional-dram-demand-price-volume-absorption",
+          "gap_id": "中国供应商完成主流DDR资格并扩大出口"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "CXMT等中国DRAM供应商、非中国主要OEM、主流DDR/LPDDR量产资格、采购许可、出口与重复出货。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "CXMT等中国DRAM供应商取得至少一家非中国全球主要OEM的主流DDR或LPDDR量产资格和适用采购许可，并连续两个交付期商业出货。",
+          "calibration": {
+            "reference_state": "CXMT约占全球DRAM收入7%，产能主要被中国客户长期协议锁定；美国限制技术转移并反对本国企业采用，海外可售资格尚未建立。",
+            "trigger_boundary": "非中国重要OEM量产资格、法律准入和连续两个交付期缺一不可；国内样品、产能公告或一次试单不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_dc8910e0a47064ba8786",
+      "title": "DRAM提前采购转为去库存",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "conventional-dram-demand-price-volume-absorption",
+          "gap_id": "紧张期提前采购转为库存踩踏"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "PC/手机OEM与渠道的DRAM库存目标、库存天数、订单削减/延期、book-to-bill及终端sell-through。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "至少两个主要OEM或渠道主体确认DRAM库存高于各自正常目标并同步削减或延期订单，且同期终端sell-through低于采购、无法解释库存上升。",
+          "calibration": {
+            "reference_state": "当前服务器需求强、PC补库和消费承受力分化，缺少统一库存序列，尚无多主体同步去库存。",
+            "trigger_boundary": "两个重要主体超过自身库存目标、订单削减和终端消耗不足必须共现；孤立库存变化或单家调整不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_ba44e8df4267758d9039",
+      "title": "CXL扩大服务器DRAM净容量",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "conventional-dram-demand-price-volume-absorption",
+          "gap_id": "CXL与内存池化改变单位需求和受益者"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "主要CSP/OEM的CXL量产部署、主机DRAM与池容量、可比工作负载总DRAM采购、供应商资格和Micron份额。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "主要CSP量产部署CXL内存池后，新增池容量超过被替代的主机DRAM、可比工作负载总DRAM采购上升，并确认Micron为量产合格供应商。",
+          "calibration": {
+            "reference_state": "CXL仅是潜在架构入口，现有材料没有生产部署后的净总容量、采购或Micron供应份额。",
+            "trigger_boundary": "量产部署、净总容量增加、实际采购增长和Micron资格必须同时确认；标准支持、样机或只有池容量增加不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_3b1b86a10edc1c1b864b",
+      "title": "CXL池化降低DRAM净采购",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "conventional-dram-demand-price-volume-absorption",
+          "gap_id": "CXL与内存池化改变单位需求和受益者"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "CXL池化/分层的生产部署、可比工作负载总DRAM容量、主机与池采购、供应商份额和Micron订单。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "主要CSP量产CXL池化或分层后，可比工作负载总DRAM容量和采购低于旧架构，并披露Micron池化产品新增量不足以抵消其主机DRAM订单下降。",
+          "calibration": {
+            "reference_state": "CXL可能减少闲置冗余也可能增加可访问容量，当前没有量产架构的净bit效果或Micron份额。",
+            "trigger_boundary": "必须以量产可比工作负载证明总容量和采购下降，并用实际供应商分配确认Micron净订单减少；benchmark或单机主内存下降不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_6f1d62d831892cfa91db",
+      "title": "中国恢复Micron采购准入",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "conventional-dram-demand-price-volume-absorption",
+          "gap_id": "区域监管改变需求可实现范围"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "中国网络安全/关键基础设施对Micron的采购限制、正式许可、生效范围、受限客户恢复采购和区域出货。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "中国监管正式缩小或取消对Micron的现有限制并生效，且至少一家此前受限的重要客户恢复Micron产品的量产采购或区域出货。",
+          "calibration": {
+            "reference_state": "既有中国网络安全限制影响大陆和香港相关客户，全球需求不能自动转成Micron区域需求；尚无正式放松和恢复采购。",
+            "trigger_boundary": "生效规则必须覆盖此前受限的重要客户/产品并产生量产采购；政策讨论或只有规则放松不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_e28a1b1e8eedc9bf53f5",
+      "title": "中国扩大Micron采购限制",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "conventional-dram-demand-price-volume-absorption",
+          "gap_id": "区域监管改变需求可实现范围"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "中国对Micron的新增采购禁限、关键客户/产品范围、生效日、订单取消、区域库存重分配和市场份额。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "中国正式把Micron采购限制扩大至此前可服务的重要客户或产品类别并生效，导致可识别订单取消、区域库存转移或份额流失。",
+          "calibration": {
+            "reference_state": "Micron已承受既有CAC相关限制，新增限制必须相对当前受限范围判断；当前无进一步扩张。",
+            "trigger_boundary": "规则需新增重要客户/产品范围并生效，且出现订单、库存或份额后果；重复既有禁令或政策讨论不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_57a710424ce10ddd34db",
+      "title": "限制中国内存转化为Micron订单",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "conventional-dram-demand-price-volume-absorption",
+          "gap_id": "区域监管改变需求可实现范围"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "美国/盟友对CXMT/YMTC采购的约束性规则、适用OEM、产品范围、生效许可及订单转向Micron。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "美国或关键盟友实施对主要OEM具有约束力的CXMT或YMTC主流内存采购限制，并由受影响OEM把可识别量产订单转向Micron。",
+          "calibration": {
+            "reference_state": "美国已反对Apple采用CXMT/YMTC并限制向CXMT转移技术规格，但没有广泛约束OEM的采购禁令或已转向Micron的订单。",
+            "trigger_boundary": "具约束力且生效的规则、重要OEM适用和Micron量产订单迁移必须同时出现；政策反对或名单本身不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_7bda98ed38ceabd5d415",
+      "title": "新节点形成持续非价格降本",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "micron-margin-quality-and-cost-support",
+          "gap_id": "新节点良率提前成熟并形成可比成本下降"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "Micron新DRAM/NAND节点量产良率、可比每bit成本、ASP变化和毛利率成本桥接。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Micron确认新DRAM或NAND节点达到稳定量产良率，并在ASP环比涨幅放缓或转平的至少两个连续季度实现可比每bit成本下降且成本或mix继续正向贡献毛利。",
+          "calibration": {
+            "reference_state": "Micron已确认制程技术支持降本，但FQ3毛利改善主要由ASP推动，尚无独立可比每bit成本序列。",
+            "trigger_boundary": "稳定量产良率、两个可比季度降本和ASP动力放缓必须同时出现；节点命名、首片或ASP暴涨期单季改善不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_7a415b51d22b5270ab7f",
+      "title": "制程或封装良率损害经济性",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "micron-margin-quality-and-cost-support",
+          "gap_id": "制程或封装良率失速造成成本反弹"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Micron新节点、HBM堆叠/先进封装良率、量产计划、报废重工、单位成本、高端产出与毛利指引。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Micron确认新节点或HBM先进封装良率低于量产计划，并因报废或重工上调单位成本、下调高端产出或下调毛利率指引。",
+          "calibration": {
+            "reference_state": "HBM4量产爬坡快且制程降本获得管理层支持，当前没有长期良率失速；常规学习曲线属于基线。",
+            "trigger_boundary": "相对公司量产计划的良率缺口必须穿透至成本、产出或毛利至少一项；一般爬坡噪声或样品延期不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_82f070e721f50f0bd599",
+      "title": "多产品多客户扩大高端利润组合",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "micron-margin-quality-and-cost-support",
+          "gap_id": "多客户高端资格重塑产品组合"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "Micron HBM、服务器内存、企业SSD的客户量产资格、重复出货、CMBU/CDBU收入利润率及同期ASP。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Micron至少两个高端产品家族分别在多个独立客户平台完成量产资格并进入重复出货，且在同期ASP涨幅放缓时CMBU或CDBU收入/利润率继续提高。",
+          "calibration": {
+            "reference_state": "HBM4已有NVIDIA量产，Gen6 SSD已高量生产且数据中心SSD收入高，但跨产品、多客户及持续经济贡献未确认。",
+            "trigger_boundary": "两个产品家族、多个独立客户、重复量产出货和业务单元利润支持必须共现；单一设计赢、送样或无利润后果不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_9858f29d38daac1ac509",
+      "title": "HBM内容再次下调削弱高端组合",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "micron-margin-quality-and-cost-support",
+          "gap_id": "平台降低HBM层数或容量削弱高端组合"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "NVIDIA VR300及其他主要AI平台最终BOM、HBM4E层数/容量、Micron订单分配和高端收入。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "NVIDIA VR300最终量产BOM把每GPU HBM4E容量进一步降至512GB以下，并使Micron下调对应已规划HBM订单、分配或高端收入。",
+          "calibration": {
+            "reference_state": "VR300每GPU HBM4E规划已从768GB降至512GB并进入当前基线；Micron HBM仍售罄至2027。",
+            "trigger_boundary": "必须相对512GB当前基线进一步降配并穿透Micron订单/收入；重复既有512GB报道或无供应商后果不触发。"
+          }
+        },
+        {
+          "condition_id": "C2",
+          "criterion": "除NVIDIA VR300外的另一主要量产AI平台降低每加速器HBM层数或容量，并使Micron下调对应已规划HBM订单、分配或高端收入。",
+          "calibration": {
+            "reference_state": "当前已知的具体平台降配集中于VR300，其他主要平台没有被确认以降配削减Micron已规划量。",
+            "trigger_boundary": "必须是另一主要平台的最终量产BOM降配并产生Micron订单/收入下调；设计研究或无采购后果不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_ae6303d518afce4bd609",
+      "title": "战略协议下限保护周期毛利",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "micron-margin-quality-and-cost-support",
+          "gap_id": "合同价格边界改变周期利润弹性"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "Micron战略协议价格下限、覆盖产品/数量、市场DRAM/NAND价格、实现ASP、合同毛利和履约量。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "可比DRAM或NAND市场价格跌破战略协议下限后，Micron确认受覆盖产品实现ASP高于市场、合同毛利仍高于历史周期峰值且履约量未明显下降。",
+          "calibration": {
+            "reference_state": "最大协议以CQ2市场价设上下限，未来约40%至50%收入可能受覆盖，管理层称下限毛利高于历史周期峰值，但尚未经过市场跌破下限的实际验证。",
+            "trigger_boundary": "市场价须穿越适用下限，并同时确认实现价/毛利保护和正常履约量；合同声明或市场下跌单独不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_cb41fb89c61bd57d0545",
+      "title": "战略协议上限压缩盈利弹性",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "micron-margin-quality-and-cost-support",
+          "gap_id": "合同价格边界改变周期利润弹性"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "战略协议价格上限、覆盖产品、市场价格、Micron实现ASP及收入/毛利桥接。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "可比DRAM或NAND市场价格升至战略协议上限以上后，Micron确认受覆盖产品实现ASP明显落后市场，并因价格上限下调增量收入或毛利预期。",
+          "calibration": {
+            "reference_state": "战略协议价格带和未来高覆盖率已进入基线，但尚无公司桥接确认市场上行时的实际封顶效应。",
+            "trigger_boundary": "价格穿越适用上限、公司归因的实现ASP差及收入/毛利后果必须同时出现；市场上涨或合同存在本身不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_c8b3001cc1fac69def5e",
+      "title": "关键投入冲击推高制造成本",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "micron-margin-quality-and-cost-support",
+          "gap_id": "原硅晶圆能源或材料冲击抬高单位成本"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "300mm晶圆、化学品、能源、水、关键设备的供应中断/配给/涨价及Micron单位成本、产量、利用率和毛利率。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "关键投入供应商或Micron确认300mm晶圆、化学品、能源、水或关键设备发生配给、中断或不可转嫁涨价，并使Micron下调产量/利用率、上调可比单位成本或下调毛利率指引。",
+          "calibration": {
+            "reference_state": "Micron已用长期安排和供应链投资加强保障，当前没有投入冲击穿透保障造成停工或毛利下调。",
+            "trigger_boundary": "供应约束必须实际暴露于Micron并出现成本、产量、利用率或毛利后果；一般价格波动或供应商扩产不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_1090d9ad1d4a1e31e622",
+      "title": "新增产能错配形成低利用率",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "micron-margin-quality-and-cost-support",
+          "gap_id": "新增产能错过需求窗口形成低利用率"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Micron Tongluo、新加坡、美国新厂的合格产出、已披露爬坡计划、实际利用率、订单、折旧、减值、单位成本与现金回报。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Micron在Tongluo、新加坡或美国任一新厂形成客户合格产出后，因订单不足把利用率下调至该项目已披露爬坡计划以下，并确认由该厂折旧、减值或单位成本造成毛利或现金回报下调。",
+          "calibration": {
+            "reference_state": "Tongluo、新加坡和美国项目仍多处处于建设或计划阶段，首片和正常早期爬坡不等于低利用率；当前高需求也未证明远期项目回报。",
+            "trigger_boundary": "须在指定项目形成合格产出后发生订单不足导致的已披露计划下调，并确认该厂造成的毛利或现金回报下调；正常早期爬坡不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_2759d37860e386284043",
+      "title": "HBM或服务器内存质量事故",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "micron-margin-quality-and-cost-support",
+          "gap_id": "系统级质量事故侵蚀高端利润"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Micron HBM/服务器内存量产产品的可靠性、兼容性、客户停供/资格、返修保修、高端出货与利润。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Micron量产HBM或服务器内存发生公司或量产客户确认的可靠性或兼容性事故，导致该客户停止接收相关量产产品，并使Micron下调相应高端出货或利润。",
+          "calibration": {
+            "reference_state": "Micron HBM4已量产并取得NVIDIA设计赢，服务器高端产品支撑高毛利；当前没有量产客户因HBM或服务器内存质量事故停止接收产品。",
+            "trigger_boundary": "量产产品、客户停止接收及相应高端出货或利润下调必须在一条消息中可确认；样品测试、一般更新或无经济后果的问题不触发。"
+          }
+        },
+        {
+          "condition_id": "C2",
+          "criterion": "Micron确认量产HBM或服务器内存的可靠性或兼容性事故，在财务报表中确认相关退货、返修或保修费用，并下调相应高端产品利润。",
+          "calibration": {
+            "reference_state": "当前没有Micron量产HBM或服务器内存事故形成已确认的退货、返修或保修费用；SSD故障另由NAND条件监测。",
+            "trigger_boundary": "事故归因、财务报表确认的相关费用及高端产品利润下调必须共现；一般保修准备或无利润修订的个别问题不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_17b9ee999d1e3ca3ab45",
+      "title": "企业SSD进入多客户重复部署",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "nand-supply-demand-and-enterprise-absorption",
+          "gap_id": "企业级SSD形成多客户重复部署"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "Micron Gen6/245TB QLC企业SSD、主要客户量产资格、重复采购、生产部署、出货与CDBU结果。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Micron确认Gen6或245TB QLC企业SSD在至少两个独立主要客户平台完成量产系统资格，并在至少两个交付期进入重复采购或生产部署。",
+          "calibration": {
+            "reference_state": "Gen6 SSD已高量生产、245TB QLC已初始出货，数据中心SSD收入已超50亿美元，但多客户重复部署尚未披露。",
+            "trigger_boundary": "至少两个重要客户、量产资格和两个交付期/明确重复采购必须出现；样品、单一资格或单批交付不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_07c01cd6da0c52f29fe6",
+      "title": "企业SSD故障撤回量产资格",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "nand-supply-demand-and-enterprise-absorption",
+          "gap_id": "控制器固件故障导致资格撤回"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Micron Gen6/高容量QLC SSD控制器、固件、耐久性/兼容性、主要客户量产资格、部署、订单和出货。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Micron量产Gen6或高容量QLC SSD出现经公司或主要客户确认的控制器、固件、耐久性或兼容性缺陷，导致客户暂停生产部署或撤回资格并削减订单/出货。",
+          "calibration": {
+            "reference_state": "产品已进入高量生产或初始出货，具体故障率和客户资格节奏未公开，当前没有重大部署暂停。",
+            "trigger_boundary": "量产产品、主要客户资格/部署行动和订单/出货削减须同时出现；常规固件升级或样品问题不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_df1332e7ce712ae0dc0c",
+      "title": "超高容量QLC成为标准AI数据层",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "nand-supply-demand-and-enterprise-absorption",
+          "gap_id": "AI推理数据层推动超高容量QLC加速采用"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "主要CSP/OEM的AI数据层、122TB/245TB QLC SSD标准架构、每集群容量、Micron量产资格和重复采购。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "一家主要CSP或OEM把122TB/245TB级QLC SSD纳入量产标准数据层并提高每集群部署容量，且确认Micron为合格供应商并进入重复采购。",
+          "calibration": {
+            "reference_state": "AI推理已是NAND需求核心，企业SSD占行业NAND出货近半；Micron 245TB QLC仅开始出货，尚未成为主要客户标准配置。",
+            "trigger_boundary": "量产标准架构、每集群容量增量、Micron资格和重复采购缺一不可；路线图、合作或样品不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_220988f8255d00da9ea3",
+      "title": "软件效率降低AI工作负载SSD强度",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "nand-supply-demand-and-enterprise-absorption",
+          "gap_id": "软件压缩与分层降低每工作负载SSD容量"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "主要CSP的生产AI工作负载、压缩/KV cache/去重、优化前后本地SSD容量、部署规模与企业SSD采购。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "主要CSP把压缩、KV cache管理或去重应用于一个已上线的生产AI工作负载，披露该工作负载优化前后的本地SSD容量下降，并同步下调对应企业SSD采购或部署量。",
+          "calibration": {
+            "reference_state": "当前市场基线是AI推理继续提高企业SSD需求，尚无生产环境单位工作负载SSD和采购下降。",
+            "trigger_boundary": "已上线生产工作负载、同一工作负载优化前后的本地SSD容量下降及对应采购或部署减少必须同时确认；软件发布或实验benchmark不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_0e87268a0a6c902e6295",
+      "title": "NAND有效供给提前反转紧张",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "micron-cross-cycle-earnings-path",
+          "gap_id": "竞争者成本突破提前释放有效供给"
+        },
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "nand-supply-demand-and-enterprise-absorption",
+          "gap_id": "NAND有效供给早于2H27集中释放"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "三星、SK海力士/铠侠等主要NAND供应商、2H27前合格bit shipments、库存、lead time与合同价格。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "在2H27前，一家占全球NAND出货约20%或以上的供应商确认合格bit shipments高于原计划，并伴随行业/渠道库存上升、交期缩短和合同价转跌。",
+          "calibration": {
+            "reference_state": "NAND当前需求强且供给受限，Micron预计紧张延续至2027以后，有意义供给缓解被普遍放到2028最早。",
+            "trigger_boundary": "约20%以上份额供应商须在2H27前释放计划外合格bit，且库存、交期和合同价三项同时转松；资本开支或单一价格波动不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_8ae20cddcbcd95e5df29",
+      "title": "主要NAND项目延期延长短缺",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "nand-supply-demand-and-enterprise-absorption",
+          "gap_id": "新增NAND供给延期延长紧张周期"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "主要NAND供应商原定2027的量产良率/客户资格里程碑、延期幅度、行业库存、lead time和分配。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "一家重要NAND供应商把原定2027年的量产良率或客户合格产出里程碑正式推迟至少两个季度，且同期行业库存仍低、交期或分配仍紧。",
+          "calibration": {
+            "reference_state": "行业已预期新产能建设缓慢、2027仍紧且有意义缓解可能到2028；普通施工波动已被部分吸收。",
+            "trigger_boundary": "重要供应商的合格产出里程碑须至少延后两个季度，并由持续低库存和紧交期/分配确认；设备安装或不影响合格产出的延期不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_45eb7e1c000d1b922426",
+      "title": "中国NAND进入海外高价值市场",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "nand-supply-demand-and-enterprise-absorption",
+          "gap_id": "中国NAND供应商扩大可售合格产量"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "YMTC等中国NAND供应商、非中国企业/终端客户、量产资格、准入许可、重复shipment和收入/高价值mix。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "YMTC等中国NAND供应商在至少一家非中国重要企业或终端客户取得量产资格与适用准入，并连续两个交付期重复出货，使其高价值产品收入份额提高。",
+          "calibration": {
+            "reference_state": "YMTC约占全球NAND出货14%但收入排名仅第五，已有数量集中于较低价值或区域市场；海外高价值可售范围仍受限。",
+            "trigger_boundary": "非中国重要客户、法律准入、两个交付期和高价值收入mix提升必须共现；国内出货、样品或单位shipment份额不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_83b41a8f6712532b7514",
+      "title": "PC换机提高基础NAND容量",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "nand-supply-demand-and-enterprise-absorption",
+          "gap_id": "消费电子换机提高NAND配置并吸收供给"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "主流PC量产机型基础NAND容量、零售sell-through、客户端NAND/SSD采购、Micron出货和渠道库存。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "覆盖多个主流量产PC机型的平台把基础NAND容量提高至少一个商业档位，并在首个完整销售期实现sell-through与客户端NAND采购同步增长且渠道库存保持正常。",
+          "calibration": {
+            "reference_state": "消费电子需求偏弱且高价造成配置压力，企业SSD是主要增长引擎；尚无PC基础NAND升级被真实销量吸收。",
+            "trigger_boundary": "多个主流机型基础档位、完整销售期、真实销售与采购增长及正常库存均需确认；高配SKU或渠道备货不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_89cd5e7a7c9bc8de372e",
+      "title": "手机换机提高基础NAND容量",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "nand-supply-demand-and-enterprise-absorption",
+          "gap_id": "消费电子换机提高NAND配置并吸收供给"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "苹果、三星等头部手机主销量机型、基础NAND容量、激活/零售、移动NAND采购、Micron出货和渠道库存。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "苹果或三星等头部手机平台把主销量量产机型的基础NAND容量提高至少一个商业档位，并在首个完整销售期实现激活/零售与移动NAND采购同步增长且渠道库存正常。",
+          "calibration": {
+            "reference_state": "主要市场手机需求受内存通胀拖累，头部品牌较能承受成本，但尚无基础NAND升级形成净bit吸收。",
+            "trigger_boundary": "头部平台主销量基础配置、真实销售、采购增长和正常库存必须共现；顶配SKU或首批装货不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_184c5d854921bdc64aec",
+      "title": "替代存储减少本地企业SSD",
+      "source_refs": [
+        {
+          "shell_id": "micron-memory-cycle-earnings-durability",
+          "expectation_id": "nand-supply-demand-and-enterprise-absorption",
+          "gap_id": "替代存储架构夺走企业工作负载"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "主要CSP/OEM的AI数据层介质mix、本地企业SSD与HDD/网络分层、量产部署、可比容量、采购和shipment。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "主要CSP或OEM把一类量产AI数据集或缓存从本地高容量SSD迁移到HDD或网络化分层，并确认可比部署的本地SSD容量及企业SSD采购或shipment下降。",
+          "calibration": {
+            "reference_state": "企业SSD需求强且服务器可能消耗超过一半NAND bits，但当前没有头部客户量产迁移并削减本地SSD。",
+            "trigger_boundary": "量产工作负载迁移、可比本地SSD容量下降及采购/出货减少必须同时出现；技术白皮书或只增加冷存储层不触发。"
+          }
+        }
+      ]
+    }
+  ],
+  "published_at": "2026-09-03T15:18:39.758709Z"
+}

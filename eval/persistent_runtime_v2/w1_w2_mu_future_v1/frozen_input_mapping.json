@@ -1,0 +1,70 @@
+{
+  "manifest_unchanged": true,
+  "inputs": [
+    {
+      "path": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\codex-workspaces-o3-acceptance\\d3-mu-real-acceptance-2026090301-sol-high-or-v2\\output\\final\\document3.json",
+      "sha256": "0189c52a9dcf7a7173f29163cf9be0de16e48421d61c9783f10aab2ed0604a09",
+      "purpose": "PolicySet source",
+      "local_path": "frozen_inputs/00_document3.json"
+    },
+    {
+      "path": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\codex-workspaces-o3-acceptance\\d3-mu-real-acceptance-2026090301-sol-high-or-v2\\output\\final\\document3.md",
+      "sha256": "c2d3244896009d32fa91e1f8cc07294da4553fc9fa2d6f397c0d1606bba9ba4c",
+      "purpose": "human-readable D3 companion",
+      "local_path": "frozen_inputs/01_document3.md"
+    },
+    {
+      "path": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\o2-mu-r2-deterministic-alignment-20260827-real-01\\published\\reference_view_agent_v1.md",
+      "sha256": "5f8da26d09f9436c4ee0d284aff675c84f7e93d22d63b1337bb08732bde463da",
+      "purpose": "latest MU Event Library Reference View",
+      "local_path": "frozen_inputs/02_reference_view_agent_v1.md"
+    },
+    {
+      "path": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\o2-mu-r2-deterministic-alignment-20260827-real-01\\published\\known_event_index_v1.md",
+      "sha256": "4aa9ec8dfc722696ca2ac4013a0da232ed74d6c1d13384d25694af5a5a07ba94",
+      "purpose": "W1 candidate-recall index",
+      "local_path": "frozen_inputs/03_known_event_index_v1.md"
+    },
+    {
+      "path": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\o2-mu-r2-deterministic-alignment-20260827-real-01\\event-library.sqlite3",
+      "sha256": "87d1f6004d60603182f32ebffb16d929cb4bfbe76e761cc8b85d477bb494c60c",
+      "purpose": "W1 canonical Event Detail store",
+      "local_path": "frozen_inputs/04_event-library.sqlite3"
+    },
+    {
+      "path": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\prompts\\persistent_runtime_v2\\w1_r1.md",
+      "sha256": "c4025db076c25495c53bf3f889392fdd05826c35208c331f20402e246629463b",
+      "purpose": "prompt w1_r1.md",
+      "local_path": "frozen_inputs/05_w1_r1.md",
+      "git_blob": "8978eb8fbae9b344bfdf3d1014e483a5f81cad23"
+    },
+    {
+      "path": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\prompts\\persistent_runtime_v2\\w1_r2.md",
+      "sha256": "d35947fa9e5eff1734dbada549c503309f582f73b20f3cd00b8bc17e9576f8d3",
+      "purpose": "prompt w1_r2.md",
+      "local_path": "frozen_inputs/06_w1_r2.md",
+      "git_blob": "a887dee2511475826f55ee7f95e4b9d1cbcf1a11"
+    },
+    {
+      "path": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\prompts\\persistent_runtime_v2\\w1_r3.md",
+      "sha256": "7e7bffb6240f0c819d3dd57c45b30990ef3bb6a332188cac2b4df77991bfbaa2",
+      "purpose": "prompt w1_r3.md",
+      "local_path": "frozen_inputs/07_w1_r3.md",
+      "git_blob": "34c2a898b5f5b3b7e746e90e9540872ac3a28016"
+    },
+    {
+      "path": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\prompts\\persistent_runtime_v2\\w2_r1.md",
+      "sha256": "53b9993af253c07696f356de241bcb05f43223083516a9721a6c5ed4e870a3d2",
+      "purpose": "prompt w2_r1.md",
+      "local_path": "frozen_inputs/08_w2_r1.md",
+      "git_blob": "c2021e715539f1ae84d2f689640f90cb2f4c7eb4"
+    },
+    {
+      "path": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\prompts\\persistent_runtime_v2\\w2_r2.md",
+      "sha256": "4a0e63a246461b16d709a1f892762a5204d4a13653234789f7352e3302a118b2",
+      "purpose": "prompt w2_r2.md",
+      "local_path": "frozen_inputs/09_w2_r2.md",
+      "git_blob": "970eb29e50ff1fe67f25850cddaa36761b090ba7"
+    }
+  ]
+}

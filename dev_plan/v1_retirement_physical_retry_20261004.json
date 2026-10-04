@@ -1,0 +1,168 @@
+{
+  "removed_files": 26330,
+  "removed_bytes": 261070309,
+  "links_removed": 0,
+  "issues": [
+    {
+      "result": "failed",
+      "path": ".pytest-codex-live-20260809-a\\test_large_results_materialize0\\run-1\\context\\mcp_data\\c1-1\\call-large\\blocks",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.pytest-codex-live-20260809-a\\test_large_results_materialize0\\run-1\\context\\mcp_data\\c1-1\\call-large\\blocks' is denied.\""
+    },
+    {
+      "result": "failed",
+      "path": ".pytest-codex-live-20260809-a\\test_large_results_materialize0\\run-1\\context\\mcp_data\\c1-1\\call-large",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.pytest-codex-live-20260809-a\\test_large_results_materialize0\\run-1\\context\\mcp_data\\c1-1\\call-large' is denied.\""
+    },
+    {
+      "result": "failed",
+      "path": ".pytest-codex-live-20260809-a\\test_large_results_materialize0\\run-1\\context\\mcp_data\\c1-1",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.pytest-codex-live-20260809-a\\test_large_results_materialize0\\run-1\\context\\mcp_data\\c1-1'.\""
+    },
+    {
+      "result": "failed",
+      "path": ".pytest-codex-live-20260809-a\\test_large_results_materialize0\\run-1\\context\\mcp_data",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.pytest-codex-live-20260809-a\\test_large_results_materialize0\\run-1\\context\\mcp_data'.\""
+    },
+    {
+      "result": "failed",
+      "path": ".pytest-codex-live-20260809-a\\test_large_results_materialize0\\run-1\\context",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.pytest-codex-live-20260809-a\\test_large_results_materialize0\\run-1\\context'.\""
+    },
+    {
+      "result": "failed",
+      "path": ".pytest-codex-live-20260809-a\\test_large_results_materialize0\\run-1",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.pytest-codex-live-20260809-a\\test_large_results_materialize0\\run-1'.\""
+    },
+    {
+      "result": "failed",
+      "path": ".pytest-codex-live-20260809-a\\test_large_results_materialize0",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.pytest-codex-live-20260809-a\\test_large_results_materialize0'.\""
+    },
+    {
+      "result": "failed",
+      "path": ".pytest-codex-live-20260809-a",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.pytest-codex-live-20260809-a'.\""
+    },
+    {
+      "result": "failed",
+      "path": ".pytest-codex-live-20260809-b\\test_large_results_materialize0\\run-1\\context\\mcp_data\\c1-1\\call-large\\blocks",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.pytest-codex-live-20260809-b\\test_large_results_materialize0\\run-1\\context\\mcp_data\\c1-1\\call-large\\blocks' is denied.\""
+    },
+    {
+      "result": "failed",
+      "path": ".pytest-codex-live-20260809-b\\test_large_results_materialize0\\run-1\\context\\mcp_data\\c1-1\\call-large",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.pytest-codex-live-20260809-b\\test_large_results_materialize0\\run-1\\context\\mcp_data\\c1-1\\call-large' is denied.\""
+    },
+    {
+      "result": "failed",
+      "path": ".pytest-codex-live-20260809-b\\test_large_results_materialize0\\run-1\\context\\mcp_data\\c1-1",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.pytest-codex-live-20260809-b\\test_large_results_materialize0\\run-1\\context\\mcp_data\\c1-1'.\""
+    },
+    {
+      "result": "failed",
+      "path": ".pytest-codex-live-20260809-b\\test_large_results_materialize0\\run-1\\context\\mcp_data",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.pytest-codex-live-20260809-b\\test_large_results_materialize0\\run-1\\context\\mcp_data'.\""
+    },
+    {
+      "result": "failed",
+      "path": ".pytest-codex-live-20260809-b\\test_large_results_materialize0\\run-1\\context",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.pytest-codex-live-20260809-b\\test_large_results_materialize0\\run-1\\context'.\""
+    },
+    {
+      "result": "failed",
+      "path": ".pytest-codex-live-20260809-b\\test_large_results_materialize0\\run-1",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.pytest-codex-live-20260809-b\\test_large_results_materialize0\\run-1'.\""
+    },
+    {
+      "result": "failed",
+      "path": ".pytest-codex-live-20260809-b\\test_large_results_materialize0",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.pytest-codex-live-20260809-b\\test_large_results_materialize0'.\""
+    },
+    {
+      "result": "failed",
+      "path": ".pytest-codex-live-20260809-b",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.pytest-codex-live-20260809-b'.\""
+    },
+    {
+      "result": "failed",
+      "path": ".pytest-codex-live-20260809-c\\test_large_results_materialize0\\run-1\\context\\mcp_data\\c1-1\\call-large\\blocks",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.pytest-codex-live-20260809-c\\test_large_results_materialize0\\run-1\\context\\mcp_data\\c1-1\\call-large\\blocks' is denied.\""
+    },
+    {
+      "result": "failed",
+      "path": ".pytest-codex-live-20260809-c\\test_large_results_materialize0\\run-1\\context\\mcp_data\\c1-1\\call-large",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.pytest-codex-live-20260809-c\\test_large_results_materialize0\\run-1\\context\\mcp_data\\c1-1\\call-large' is denied.\""
+    },
+    {
+      "result": "failed",
+      "path": ".pytest-codex-live-20260809-c\\test_large_results_materialize0\\run-1\\context\\mcp_data\\c1-1",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.pytest-codex-live-20260809-c\\test_large_results_materialize0\\run-1\\context\\mcp_data\\c1-1'.\""
+    },
+    {
+      "result": "failed",
+      "path": ".pytest-codex-live-20260809-c\\test_large_results_materialize0\\run-1\\context\\mcp_data",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.pytest-codex-live-20260809-c\\test_large_results_materialize0\\run-1\\context\\mcp_data'.\""
+    },
+    {
+      "result": "failed",
+      "path": ".pytest-codex-live-20260809-c\\test_large_results_materialize0\\run-1\\context",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.pytest-codex-live-20260809-c\\test_large_results_materialize0\\run-1\\context'.\""
+    },
+    {
+      "result": "failed",
+      "path": ".pytest-codex-live-20260809-c\\test_large_results_materialize0\\run-1",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.pytest-codex-live-20260809-c\\test_large_results_materialize0\\run-1'.\""
+    },
+    {
+      "result": "failed",
+      "path": ".pytest-codex-live-20260809-c\\test_large_results_materialize0",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.pytest-codex-live-20260809-c\\test_large_results_materialize0'.\""
+    },
+    {
+      "result": "failed",
+      "path": ".pytest-codex-live-20260809-c",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.pytest-codex-live-20260809-c'.\""
+    },
+    {
+      "result": "failed",
+      "path": ".pytest-codex-live-20260810-a\\test_large_results_materialize0\\run-1\\context\\mcp_data\\c1-1\\call-large\\blocks",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.pytest-codex-live-20260810-a\\test_large_results_materialize0\\run-1\\context\\mcp_data\\c1-1\\call-large\\blocks' is denied.\""
+    },
+    {
+      "result": "failed",
+      "path": ".pytest-codex-live-20260810-a\\test_large_results_materialize0\\run-1\\context\\mcp_data\\c1-1\\call-large",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"Access to the path 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.pytest-codex-live-20260810-a\\test_large_results_materialize0\\run-1\\context\\mcp_data\\c1-1\\call-large' is denied.\""
+    },
+    {
+      "result": "failed",
+      "path": ".pytest-codex-live-20260810-a\\test_large_results_materialize0\\run-1\\context\\mcp_data\\c1-1",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.pytest-codex-live-20260810-a\\test_large_results_materialize0\\run-1\\context\\mcp_data\\c1-1'.\""
+    },
+    {
+      "result": "failed",
+      "path": ".pytest-codex-live-20260810-a\\test_large_results_materialize0\\run-1\\context\\mcp_data",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.pytest-codex-live-20260810-a\\test_large_results_materialize0\\run-1\\context\\mcp_data'.\""
+    },
+    {
+      "result": "failed",
+      "path": ".pytest-codex-live-20260810-a\\test_large_results_materialize0\\run-1\\context",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.pytest-codex-live-20260810-a\\test_large_results_materialize0\\run-1\\context'.\""
+    },
+    {
+      "result": "failed",
+      "path": ".pytest-codex-live-20260810-a\\test_large_results_materialize0\\run-1",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.pytest-codex-live-20260810-a\\test_large_results_materialize0\\run-1'.\""
+    },
+    {
+      "result": "failed",
+      "path": ".pytest-codex-live-20260810-a\\test_large_results_materialize0",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.pytest-codex-live-20260810-a\\test_large_results_materialize0'.\""
+    },
+    {
+      "result": "failed",
+      "path": ".pytest-codex-live-20260810-a",
+      "error": "Exception calling \"Delete\" with \"0\" argument(s): \"目录不是空的。 : 'C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.pytest-codex-live-20260810-a'.\""
+    }
+  ],
+  "full_detail_external": "full-v1_retirement_physical_retry_20261004.json"
+}
