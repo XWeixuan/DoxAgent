@@ -1,7 +1,7 @@
 # Event Library 漏维护、SWEEP 饥饿与历史 provisional 回流：代码审查及修复方案
 
 日期：2026-10-06（Asia/Shanghai）  
-状态：本方案已获批准，代码修复与生产部署已完成，必要补跑进行中；结果见 [实施与验收记录](event-library-maintenance-repair-acceptance-20261006.md)。  
+状态：本方案已获批准并实施，代码、生产部署、必要补跑及验收均已完成；结果见 [实施与验收记录](event-library-maintenance-repair-acceptance-20261006.md)。
 范围：MU 语义日 2026-10-02 的 O2 失败链、SOURCE_SWEEP 优先级、W1 provisional 日范围。
 
 ## 1. 决策摘要

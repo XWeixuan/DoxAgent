@@ -2,7 +2,7 @@
 
 日期：2026-10-06（Asia/Shanghai）  
 依据：[批准的修复方案](event-library-maintenance-local-degradation-plan-20261006.md)  
-状态：代码、测试和生产部署已完成；必要补跑正在运行，最终收据待补充。
+状态：代码、测试、生产部署与必要补跑均已完成。最终只读验收时间：2026-10-06 07:26（Asia/Shanghai）。
 
 ## 1. 已实施的修复
 
@@ -58,7 +58,7 @@ uv run pytest -q tests/test_maintenance_local_degradation.py tests/test_maintena
 | scheduler | `doxagent-v2:maintenance-scheduler-20261003-r3` | `doxagent-v2:event-maintenance-20261006` |
 | Message Bus | `doxagent-v2:recurring-repair-bus-20261004-r4` | `doxagent-v2:sweep-priority-20261006` |
 
-仅重建上述两个容器；Worker、API、Site Access、Chrome 及其余容器未重建。部署后的 9 个源文件 SHA256 与本地 manifest 一致。
+本轮仅重建上述两个容器；本轮未重建 Worker、API、Site Access、Chrome 及其余容器。部署后的 9 个源文件 SHA256 与本地 manifest 一致。最终检查全部 17 个生产容器运行，配置健康检查的 Worker/API/Web/Site Access/Chrome/CDECR 均 healthy。
 
 服务器部署目录：`/home/ubuntu/event-maintenance-20261006`。部署前数据库备份：`/data/backups/event-maintenance-20261006/{runtime,control}.sqlite3`；旧源码归档：`/home/ubuntu/event-maintenance-20261006-before.zip`。
 
@@ -80,13 +80,37 @@ python3 -c 'import json,subprocess; args=json.load(open("/home/ubuntu/event-main
 
 MU 对比故障样本 240,526，INTC 对比 143,600，当前样本分别下降约 85% / 76%。这是具体输入对照，不是整日总成本承诺。已证实修复后未回流其他语义日的 provisional。
 
-## 6. 必要补跑（最终收据待补充）
+## 6. 必要补跑与最终收据
 
-- 明确恢复 `daily:MU:2026-10-02` 一次；generation=2，使用冻结的 119 个候选，经 rebase 生成 `runtime-maintain-67301a112997628c278fbcac`。
-- 四个 10/5 Yahoo SOURCE_SWEEP 均已 SUCCEEDED（MU/INTC/RKLB 20:50:23 UTC，BE 20:53:29 UTC），pending_job_count=0，原先的 binding 饥饿已解除；coverage 仍为原收据的 PARTIAL，不伪称完整覆盖。
-- RKLB 的 10/5 SWEEP 已 SUCCEEDED 并进入其维护；BE/INTC/MU 的 SWEEP 从原 checkpoint 继续，已产生新 W1 成功收据。
-- 等待 O2/O3/activation 及其维护收据完成后，补充各任务终态、Event Library/Policy 版本、visibility 与 pending 结果。
+明确恢复 `daily:MU:2026-10-02` 一次；generation=2，保留冻结的 119 个候选，沿用 rebase。四个 10/5 SWEEP 从原 checkpoint 继续。以下 **5 个维护均已 SUCCEEDED，O2 发布、O3 和 activation 均有最终收据**；相关 Worker 无仍运行尝试。
 
-已完成收据：`maintain:sweep:RKLB:2026-10-05` 在 **2026-10-05 21:24:54 UTC** SUCCEEDED；O2 为 PARTIAL（日期候选差异提示，健康内容正常发布），Event Library **V18**，O3 NOOP、Policy **V10**，activation 为 `runtime-maintain-f876f92af96999682094f7ab-activation`。visibility 已到 **2026-10-05**。该日 PENDING 从 9 到 6，旧 10/4 的 2 条 PENDING 保留；不是通过清空未解决候选获得成功。
+| 维护任务 | 完成时间（2026-10-05 UTC） | 本轮候选 | 明确 resolved | Event Library | Policy | run_id |
+| --- | --- | ---: | ---: | --- | --- | --- |
+| daily:MU:2026-10-02 | 22:06:30 | 119 | 41 | V31 | V15 | runtime-maintain-67301a112997628c278fbcac |
+| maintain:sweep:RKLB:2026-10-05 | 21:24:54 | 7 | 3 | V18 | V10 | runtime-maintain-f876f92af96999682094f7ab |
+| maintain:sweep:MU:2026-10-05 | 23:09:40 | 82 | 31 | V32 | V15 | runtime-maintain-f2f03831cdf4bf7ed65c86e3 |
+| maintain:sweep:INTC:2026-10-05 | 23:12:00 | 61 | 8 | V22 | V12 | runtime-maintain-cb49d4e9cb13302c5a5ea768 |
+| maintain:sweep:BE:2026-10-05 | 23:25:26 | 40 | 21 | V16 | V10 | runtime-maintain-c072da5d5a68e87d2fd50802 |
 
-已有其他消息源的失败不在本轮修复范围，不能将本轮 SWEEP 完成等同于所有新闻源覆盖完整。成功维护只消费本轮明确 RESOLVED 的候选，未解决 PENDING 可以保留，且不再因维护跨日进入新日 W1。
+各 activation identity 为表中 run_id 加 `-activation`。MU 10/2 PENDING **119 → 78**；历史发布后 visibility 保持 10/4，没有倒退到 10/2；其后最新维护将 visibility 推进到 10/5。
+
+四个 10/5 父 SWEEP 均 SUCCEEDED：BE 21:50:44、INTC 21:51:16、MU 22:03:13、RKLB 20:55:29 UTC；各自 W1/W2 settled 数为 11/11、14/14、18/18、2/2，失败数均为 0。四个 Yahoo SOURCE_SWEEP 均 SUCCEEDED（MU/INTC/RKLB 20:50:23，BE 20:53:29 UTC），pending_job_count=0，原 binding 饥饿解除。coverage 仍为收据记录的 PARTIAL，不代表所有新闻源覆盖完整。
+
+五个 O2 导入均 PARTIAL，提示为日期候选差异及 wire 规范化（RKLB 仅前者），健康内容正常发布。BE 出现两次真实阶段失败：`o2-known-index-map` 的 `CODEX_START_TIMEOUT`（120 秒 START_THREAD），以及 `o2-incremental-edit` 的 `CODEX_TURN_TIMEOUT`（1800 秒 RUN_TURN）。各自使用既有有限阶段预算恢复一次，均 count=1/maximum=2；编辑重试按既有确认超时机制使用 3600 秒预算。成功阶段未被整体重跑，未改 Worker/调度容量或增设无限重试；最后 O3 成功、Policy V10 激活。原失败尝试留在持久收据中，不能把历史失败行误判成当前任务失败。
+
+## 7. 最终业务验收
+
+最终只读检查时间 **2026-10-05 23:26:16 UTC**。控制库 active Event Library/Policy 与维护结果一致，runtime visibility 和 activation metadata 均为 **2026-10-05**。MU/INTC/RKLB 后续正常 supplement 激活复用相同已发布版本，BE active 为本次维护 activation；没有历史维护引起的可见日回退。
+
+| ticker | active Event Library / Policy | 10/5 剩余 PENDING | 10/5 以前剩余 PENDING | visibility.day |
+| --- | --- | ---: | ---: | --- |
+| MU | V32 / V15 | 151 | 1,841 | 2026-10-05 |
+| INTC | V22 / V12 | 129 | 967 | 2026-10-05 |
+| BE | V16 / V10 | 64 | 858 | 2026-10-05 |
+| RKLB | V18 / V10 | 6 | 155 | 2026-10-05 |
+
+当前日数量还受持续新闻输入影响，不能用全天总数差值代替维护本轮 resolved 数。RKLB 10/5 的 PENDING 从 9 到 6；其余三标的边维护边入流，表中为验收时快照。未解决候选原样保留，不通过批量标记 PROCESSED 获得成功。旧 PENDING 不会因为 visibility 滞后自动回流新日 W1。
+
+再次抽查最新冻结 W1-R1：MU 21:48:52 的 173 条、INTC 22:46:05 的 134 条、BE 23:01:26 的 82 条、RKLB 20:52:44 的 2 条，semantic_day **全部为 2026-10-05**；对应 input tokens 为 45,146 / 41,825 / 17,281 / 9,596。该结果与第 5 节不同时间的样本均证明历史全量回流已阻断；当日新增输入及缓存变化仍可改变成本。
+
+按用户要求收尾采用约 5 分钟间隔检查，未新增高频轮询或定时任务。必要补跑和本轮验收已结束；其他消息源的既有失败及第 3 节三个旧测试失败未扩展修改。
