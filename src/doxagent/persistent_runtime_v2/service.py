@@ -385,9 +385,7 @@ class PersistentRuntimeV2Service:
             ),
             status=RuntimeCaseStatus.RUNNING,
         )
-        provisional = self._visible_provisional(
-            case, visibility_day=snapshot.visibility_day if snapshot else None
-        )
+        provisional = self._visible_provisional(case)
         case.frozen_inputs = {
             "index": index.model_dump(mode="json"),
             "projection": projection.model_dump(mode="json"),
@@ -421,14 +419,12 @@ class PersistentRuntimeV2Service:
         return self._resume_hot(case, phase=phase)
 
     def _visible_provisional(
-        self, case: RuntimeCase, *, visibility_day: str | None = None
+        self, case: RuntimeCase
     ) -> list[ProvisionalFactDetail]:
         reader = getattr(self.repository, "visible_provisional", None)
         if reader is None:
             return self.repository.list_provisional(case.ticker, case.trading_date)
-        visibility = self.journal.get("visibility", case.ticker, {}) if self.journal else {}
-        current_only = (visibility_day or visibility.get("day")) == case.trading_date.isoformat()
-        values = reader(case.ticker, case.trading_date, current_only=current_only)
+        values = reader(case.ticker, case.trading_date)
         maximum = (
             self._known_for_case(case).max_event_numeric_id(
                 case.ticker, case.version_pin.event_library_version

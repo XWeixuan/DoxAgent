@@ -388,7 +388,6 @@ class RevisionBundleIO:
             fact_id = RevisionBundleIO._text(fact_wire.fact_id)
             if (
                 not re.fullmatch(r"(?:F|TF)[1-9]\d*", fact_id)
-                or fact_id in used_fact_ids
                 or fact_id in local_fact_ids
             ):
                 replacement = next_fact_id()

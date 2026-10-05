@@ -508,16 +508,16 @@ class InMemoryPersistentRuntimeV2Repository:
 
 class SQLitePersistentRuntimeV2Repository:
     def visible_provisional(
-        self, ticker: str, trading_date: date, *, current_only: bool = False
+        self, ticker: str, trading_date: date
     ) -> list[ProvisionalFactDetail]:
         items = self._read_models(
             ProvisionalFactDetail,
             "SELECT payload_json FROM runtime_v2_candidates WHERE ticker=? "
             "AND NOT EXISTS (SELECT 1 FROM runtime_v2_admission_exclusions e WHERE "
             "e.source_message_id=runtime_v2_candidates.source_message_id) "
-            "AND (trading_date=? OR (?=0 AND trading_date<? AND daily_status!='PROCESSED')) "
+            "AND trading_date=? "
             "ORDER BY trading_date,created_at,candidate_identity",
-            (ticker.upper(), trading_date.isoformat(), int(current_only), trading_date.isoformat()),
+            (ticker.upper(), trading_date.isoformat()),
         )
         maximum = max((int(item.provisional_event_id[1:]) for item in items), default=0)
         seen: set[str] = set()

@@ -870,7 +870,7 @@ class RuntimeCoordinator:
             case_id = dirty["case_id"]
             owner = self.journal.get("case_maintenance_owner", case_id)
             parent = self.journal.get_task(owner) if owner else None
-            if parent and parent["status"] in {"PENDING", "RUNNING"}:
+            if parent and parent["status"] in {"PENDING", "RUNNING", "FAILED", "HELD"}:
                 continue
             if parent and parent["status"] == "SUCCEEDED":
                 current = [

@@ -249,6 +249,7 @@ class RemoteEventLibraryInitializer:
             )
             allowed_detail_ids = sorted(set(candidate_detail_ids) | set(review_ids))
             expected_final = phase is phases[-1]
+            self.operation = "o2-execute"
             try:
                 result, thread_id = await self._execute_phase(
                     run_id=run_id,
@@ -1143,6 +1144,7 @@ class RemoteEventLibraryInitializer:
         mode: Literal["INITIALIZE", "INCREMENTAL"],
         reported_result: O2RunResult | None,
     ) -> tuple[Path, BundleValidationOutcome, str | None]:
+        self.operation = "o2-bundle-validate"
         del reported_result
         load_error: Exception | None = None
         try:
@@ -1309,6 +1311,7 @@ class RemoteEventLibraryInitializer:
         BundleValidationOutcome,
         dict[str, Path],
     ]:
+        self.operation = "o2-publish"
         loaded = RevisionBundleIO.load_tolerant(bundle_dir)
         self._save_run(
             run_id=run_id,

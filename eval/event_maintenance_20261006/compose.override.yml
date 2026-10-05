@@ -1,0 +1,5 @@
+services:
+  v2-scheduler:
+    image: doxagent-v2:event-maintenance-20261006
+  v2-message-bus:
+    image: doxagent-v2:sweep-priority-20261006

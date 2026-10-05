@@ -6,7 +6,7 @@ import pytest
 
 from doxagent.event_library.repository import EventLibraryRepository
 from doxagent.persistent_runtime_v2.fencing import write_scope
-from doxagent.persistent_runtime_v2.journal import LeaseLost
+from doxagent.persistent_runtime_v2.journal import LeaseLost, MaintenancePhaseFailure
 from doxagent.persistent_runtime_v2.maintenance import RuntimeMaintenance
 from doxagent.persistent_runtime_v2.providers import RuntimeInputSnapshot
 from doxagent.persistent_runtime_v2.selection import SelectionResult, WeekendSelection
@@ -94,7 +94,7 @@ def test_o2_receipt_survives_o3_failure_and_activation_crash(tmp_path):
     )
     task = journal.claim("maintain")
     try:
-        with pytest.raises(ValueError, match="isolated"):
+        with pytest.raises(MaintenancePhaseFailure, match="isolated"):
             asyncio.run(maintenance(task))
         assert control.active_revision("MU")["revision_id"] == "base"
         assert task["receipt"]["o2"]["version"] == 1
@@ -183,9 +183,7 @@ def test_historical_maintenance_does_not_rewind_visibility_day(tmp_path):
     task = journal.claim("maintain")
     try:
         asyncio.run(maintenance(task))
-        assert control.active_revision("MU")["runtime_metadata"]["visibility_day"] == (
-            "2026-09-29"
-        )
+        assert control.active_revision("MU")["runtime_metadata"]["visibility_day"] == ("2026-09-29")
         assert journal.get("visibility", "MU") == {"day": "2026-09-29"}
     finally:
         runtime.close()

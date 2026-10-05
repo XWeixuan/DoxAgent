@@ -1,0 +1,11 @@
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
+USER root
+COPY src/doxagent/event_library/validator.py /app/src/doxagent/event_library/validator.py
+COPY src/doxagent/event_library/bundle_io.py /app/src/doxagent/event_library/bundle_io.py
+COPY src/doxagent/event_library/importer.py /app/src/doxagent/event_library/importer.py
+COPY src/doxagent/workflows/codex_event_library/remote_runner.py /app/src/doxagent/workflows/codex_event_library/remote_runner.py
+COPY src/doxagent/persistent_runtime_v2/service.py /app/src/doxagent/persistent_runtime_v2/service.py
+COPY src/doxagent/persistent_runtime_v2/repository.py /app/src/doxagent/persistent_runtime_v2/repository.py
+COPY src/doxagent/persistent_runtime_v2/maintenance.py /app/src/doxagent/persistent_runtime_v2/maintenance.py
+COPY src/doxagent/persistent_runtime_v2/coordinator.py /app/src/doxagent/persistent_runtime_v2/coordinator.py

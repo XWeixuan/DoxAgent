@@ -225,7 +225,7 @@ def test_closed_sweep_wave_isolates_w1_failure_and_resumes_from_w2_checkpoint(
         runtime.close()
 
 
-def test_new_case_uses_new_prompt_but_old_case_and_cross_day_facts_keep_their_pin(tmp_path):
+def test_new_case_keeps_same_day_facts_and_old_case_keeps_prompt_pin(tmp_path):
     from dataclasses import replace
 
     now = [datetime(2026, 9, 6, 12, tzinfo=UTC)]
@@ -240,7 +240,7 @@ def test_new_case_uses_new_prompt_but_old_case_and_cross_day_facts_keep_their_pi
             source.model_copy(update={"source_message_id": "new"}), mode="CLOSED", phase="W1"
         )
         assert new.frozen_inputs["prompts"]["core"] == "NEW PROMPT REVISION"
-        assert any(
+        assert not any(
             item["trading_date"] == old.trading_date.isoformat()
             for item in new.frozen_inputs["provisional"]
         )

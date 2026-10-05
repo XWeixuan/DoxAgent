@@ -1,0 +1,5 @@
+services:
+  v2-scheduler:
+    image: doxagent-v2:maintenance-scheduler-20261003-r3
+  v2-message-bus:
+    image: doxagent-v2:recurring-repair-bus-20261004-r4

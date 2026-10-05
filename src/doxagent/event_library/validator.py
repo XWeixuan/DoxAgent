@@ -134,19 +134,6 @@ class RevisionBundleValidator:
         if any(issue.severity is ValidationSeverity.ERROR for issue in issues):
             return self._failed(issues)
         prior = self._repository.prior_publication(bundle)
-        if prior is not None:
-            total = sum(
-                len(batch.items)
-                for batch_id in bundle.delta_batch_ids
-                if (batch := self._repository.get_delta_batch(batch_id)) is not None
-            )
-            return BundleValidationOutcome(
-                status=ValidationStatus.PASS,
-                normalized_bundle=bundle,
-                total_delta_count=total,
-                resolved_delta_count=total - prior.pending_delta_count,
-                pending_delta_count=prior.pending_delta_count,
-            )
         batches: list[DeltaBatch] = []
         for batch_id in bundle.delta_batch_ids:
             batch = self._repository.get_delta_batch(batch_id)
@@ -159,7 +146,7 @@ class RevisionBundleValidator:
         if len(batches) != len(bundle.delta_batch_ids):
             return self._failed(issues)
         head = self._repository.published_version(bundle.ticker)
-        if bundle.base_library_version != head:
+        if prior is None and bundle.base_library_version != head:
             issues.append(
                 self._error(
                     "STALE_BASE",
@@ -191,13 +178,36 @@ class RevisionBundleValidator:
             )
             return self._failed(issues, total=len(expected_delta_ids))
 
-        identity_issues = self._identity_integrity_issues(bundle)
-        if identity_issues:
-            issues.extend(identity_issues)
-            return self._failed(issues, total=len(expected_delta_ids))
-
-        normalized = self._normalize_persistence_shape(bundle, issues)
+        normalized, rejected_deltas = self._degrade_identity_errors(bundle, issues)
+        normalized = self._normalize_persistence_shape(normalized, issues)
+        force_pending_delta_ids = sorted(
+            (set(force_pending_delta_ids or []) | rejected_deltas) & set(expected_delta_ids)
+        )
         if force_pending_delta_ids:
+            forced = set(force_pending_delta_ids)
+            normalized = normalized.model_copy(
+                update={
+                    "event_revisions": [
+                        event.model_copy(
+                            update={
+                                "facts": [
+                                    fact.model_copy(
+                                        update={
+                                            "consumes_delta_ids": [
+                                                d
+                                                for d in fact.consumes_delta_ids
+                                                if d not in forced
+                                            ]
+                                        }
+                                    )
+                                    for fact in event.facts
+                                ]
+                            }
+                        )
+                        for event in normalized.event_revisions
+                    ]
+                }
+            )
             normalized = self._force_pending(normalized, force_pending_delta_ids)
         normalized = self._normalize_delta_coverage(normalized, expected_delta_ids, issues)
         normalized = self._filter_invalid_duplicate_targets(normalized, issues)
@@ -218,68 +228,87 @@ class RevisionBundleValidator:
             pending_delta_count=pending_count,
         )
 
-    def _identity_integrity_issues(
-        self, bundle: CanonicalRevisionBundle
-    ) -> list[ValidationIssue]:
-        """Reject IDs that would create or move stable identities implicitly."""
-
+    def _degrade_identity_errors(
+        self, bundle: CanonicalRevisionBundle, issues: list[ValidationIssue]
+    ) -> tuple[CanonicalRevisionBundle, set[str]]:
+        """Cancel erroneous whole-Event edits; never delete their Published base."""
         existing = {
             event.event_id: event
             for event in self._repository.published_events(
                 bundle.ticker, bundle.base_library_version
             )
         }
-        fact_owner = {
-            fact.fact_id: event.event_id for event in existing.values() for fact in event.facts
-        }
-        issues: list[ValidationIssue] = []
-        seen_events: set[str] = set()
-        seen_facts: set[str] = set()
+        fact_owner = {f.fact_id: e.event_id for e in existing.values() for f in e.facts}
+        base_facts = {f.fact_id: f for e in existing.values() for f in e.facts}
+        event_counts = Counter(e.event_id for e in bundle.event_revisions)
+        fact_counts = Counter(f.fact_id for e in bundle.event_revisions for f in e.facts)
+        cancelled: set[str] = set()
+        conflicting_facts: set[str] = set()
+
+        def cancel(event_id: str, code: str, message: str) -> None:
+            cancelled.add(event_id)
+            issues.append(self._warning(code, "Cancelled this Event edit: " + message, event_id))
+
         for event in bundle.event_revisions:
-            if event.event_id in seen_events:
-                issues.append(
-                    self._error(
-                        "DUPLICATE_EVENT_IDENTITY",
-                        "An Event identity appears more than once in the Bundle",
-                        event.event_id,
-                    )
-                )
-            seen_events.add(event.event_id)
+            if event_counts[event.event_id] > 1:
+                cancel(event.event_id, "DUPLICATE_EVENT_IDENTITY", "Repeated Event ID")
             if event.event_id.startswith("E") and event.event_id not in existing:
-                issues.append(
-                    self._error(
-                        "UNKNOWN_STABLE_EVENT",
-                        "A stable Event ID does not exist at the base version",
-                        event.event_id,
-                    )
-                )
+                cancel(event.event_id, "UNKNOWN_STABLE_EVENT", "Event absent at frozen base")
             for fact in event.facts:
-                if fact.fact_id in seen_facts:
-                    issues.append(
-                        self._error(
-                            "DUPLICATE_FACT_IDENTITY",
-                            "A Fact identity appears more than once in the Bundle",
-                            fact.fact_id,
-                        )
-                    )
-                seen_facts.add(fact.fact_id)
+                if fact_counts[fact.fact_id] > 1:
+                    conflicting_facts.add(fact.fact_id)
+                    cancel(event.event_id, "DUPLICATE_FACT_IDENTITY", fact.fact_id)
                 if fact.fact_id.startswith("F") and fact.fact_id not in fact_owner:
-                    issues.append(
-                        self._error(
-                            "UNKNOWN_STABLE_FACT",
-                            "A stable Fact ID does not exist at the base version",
-                            fact.fact_id,
-                        )
-                    )
+                    cancel(event.event_id, "UNKNOWN_STABLE_FACT", fact.fact_id)
                 elif fact.fact_id.startswith("F") and fact_owner[fact.fact_id] != event.event_id:
-                    issues.append(
-                        self._error(
-                            "FACT_IDENTITY_MOVED",
-                            f"Stable Fact belongs to {fact_owner[fact.fact_id]}",
-                            fact.fact_id,
-                        )
+                    conflicting_facts.add(fact.fact_id)
+                    cancel(
+                        event.event_id,
+                        "FACT_IDENTITY_MOVED",
+                        f"{fact.fact_id} belongs to {fact_owner[fact.fact_id]}",
                     )
-        return issues
+        for fact_id in sorted(conflicting_facts & fact_owner.keys()):
+            owner = fact_owner[fact_id]
+            for event in bundle.event_revisions:
+                if event.event_id == owner:
+                    incoming = next((f for f in event.facts if f.fact_id == fact_id), None)
+                    if incoming is None or incoming.published() != base_facts[fact_id]:
+                        cancel(owner, "FACT_OWNER_EDIT_CANCELLED", f"Preserve original {fact_id}")
+        if not cancelled:
+            return bundle, set()
+        cancelled_facts = {
+            f.fact_id for e in bundle.event_revisions if e.event_id in cancelled for f in e.facts
+        }
+        pending = {
+            d
+            for e in bundle.event_revisions
+            if e.event_id in cancelled
+            for f in e.facts
+            for d in f.consumes_delta_ids
+        }
+        pending.update(
+            r.delta_id
+            for r in bundle.residual_delta_resolutions
+            if r.target_event_id in cancelled or r.target_fact_id in cancelled_facts
+        )
+        return bundle.model_copy(
+            update={
+                "event_revisions": [
+                    e for e in bundle.event_revisions if e.event_id not in cancelled
+                ],
+                "event_retirements": [
+                    r
+                    for r in bundle.event_retirements
+                    if r.event_id not in cancelled and r.redirect_to_event_id not in cancelled
+                ],
+                "reference_review_decisions": [
+                    r for r in bundle.reference_review_decisions if r.event_id not in cancelled
+                ],
+                "reference_view_decision_ledger": [
+                    r for r in bundle.reference_view_decision_ledger if r.event_id not in cancelled
+                ],
+            }
+        ), pending
 
     def _normalize_persistence_shape(
         self,
