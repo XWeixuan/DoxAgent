@@ -235,26 +235,54 @@ async def test_sweep_takes_next_slot_then_realtime_resumes(tmp_path, shared):
 
 
 @pytest.mark.asyncio
-async def test_validation_replay_without_worker_identity_has_explicit_phase(tmp_path):
+@pytest.mark.parametrize(
+    ("operation", "error", "with_receipt", "retryable"),
+    [
+        ("o2-bundle-validate", ValueError("Bundle frozen identity mismatch"), False, False),
+        ("o2-publish", OSError("publication storage unavailable"), False, True),
+        ("o2-publish", OSError("publication storage unavailable"), True, True),
+    ],
+)
+async def test_replay_and_publish_errors_have_actual_phase(
+    tmp_path, monkeypatch, operation, error, with_receipt, retryable
+):
     runtime, journal, settings, _ = maintenance_fixture(tmp_path)
 
     class O2:
-        operation = "o2-bundle-validate"
+        def __init__(self, durable):
+            self.operation, self.durable = operation, durable
 
         async def run(self, **kwargs):
-            raise ValueError("Bundle frozen identity mismatch")
+            if with_receipt:
+                self.durable.last_identity = "successful-o2-worker"
+                journal.set(
+                    "worker_receipts",
+                    self.durable.last_identity,
+                    {"status": "succeeded", "error_code": "STALE_WORKER_CODE"},
+                )
+            raise error
+
+    def reject_output(*args):
+        pytest.fail("Validation/publication must not reject successful model output")
+
+    monkeypatch.setattr(
+        "doxagent.persistent_runtime_v2.worker_receipts.ReceiptWorker.reject_output",
+        reject_output,
+    )
 
     maintain = RuntimeMaintenance(
         settings,
         runtime,
         journal,
         worker_factory=lambda: SimpleNamespace(),
-        o2_factory=lambda *args: O2(),
+        o2_factory=lambda _repository, durable: O2(durable),
     )
     try:
         with pytest.raises(MaintenancePhaseFailure) as caught:
             await maintain(journal.claim("maintain"))
-        assert caught.value.phase == "o2-bundle-validate"
-        assert not caught.value.retryable
+        assert caught.value.phase == operation
+        assert caught.value.retryable is retryable
+        assert caught.value.code == type(error).__name__
+        assert caught.value.__cause__ is error
     finally:
         runtime.close()
