@@ -2703,3 +2703,19 @@
 .terms-json { display: block; width: 100%; min-height: 360px; font-family: monospace; resize: vertical; }
 .terms-previews code { display: block; white-space: pre-wrap; overflow-wrap: anywhere; padding: 5px 0; }
 @media (max-width: 1262px) { .terms-jev { grid-template-columns: 1fr; } }
+
+/* Runtime title search shares the compact Message Bus interaction. */
+.case-list .business-filters {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.runtime-case-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.runtime-case-search input {
+  flex: 1;
+  min-width: 0;
+}

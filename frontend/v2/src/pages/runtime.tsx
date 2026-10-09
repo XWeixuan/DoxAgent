@@ -1,5 +1,5 @@
 import { LoadMore } from "@/components/load-more";
-import { Network, X, ArrowUpRight } from "lucide-react";
+import { Network, X, ArrowUpRight, Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useSearchParams } from "react-router-dom";
@@ -29,6 +29,7 @@ import {
 } from "@/components/business-metrics";
 import { Module, Notice } from "@/components/state";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import CaseDetails from "./runtime-case";
 import {
   collectRuntimeCases,
@@ -108,6 +109,13 @@ function RuntimeBody({
     source: string | null;
     selectedIds: Set<string>;
   } | null>(null);
+  const searchQuery = p.get("q") ?? "";
+  const [search, setSearch] = useState(searchQuery);
+  const [searchOpen, setSearchOpen] = useState(!!searchQuery);
+  useEffect(() => {
+    setSearch(searchQuery);
+    if (searchQuery) setSearchOpen(true);
+  }, [searchQuery]);
   const [exportBusy, setExportBusy] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
   const [exportError, setExportError] = useState("");
@@ -128,7 +136,7 @@ function RuntimeBody({
     completedExportCases.current.clear();
     setExportBusy(false);
     setExportSession(null);
-  }, [ticker, period, scope, view]);
+  }, [ticker, period, scope, view, searchQuery]);
   const listView = exportSession?.viewId ?? readView;
   const selectCase = (id: string) => setSelected({ id, view: readView });
   const selectListedCase = (id: string) => setSelected({ id, view: listView });
@@ -154,6 +162,7 @@ function RuntimeBody({
         view_id: listView,
         result,
         source_id: source,
+        q: searchQuery || undefined,
         limit: "20",
       }),
     (r) => r.data,
@@ -181,7 +190,13 @@ function RuntimeBody({
     const casePath =
       tickerPath(ticker) +
       "/runtime/cases" +
-      queryString({ view_id: v, result, source_id: source, limit: "20" });
+      queryString({
+        view_id: v,
+        result,
+        source_id: source,
+        q: searchQuery || undefined,
+        limit: "20",
+      });
     const m = await api.request("RuntimeMetrics", metricPath, { view: v });
     const c = exportSession
       ? null
@@ -252,6 +267,26 @@ function RuntimeBody({
     setP(n);
   };
   const loadedCases = cases.data?.data.data?.items ?? [];
+  const [caseSources, setCaseSources] = useState<{
+    ticker: string;
+    names: Map<string, string>;
+  }>({ ticker, names: new Map() });
+  useEffect(() => {
+    const rows = cases.data?.data.data?.items;
+    if (!rows) return;
+    setCaseSources((current) => {
+      const names = new Map(current.ticker === ticker ? current.names : []);
+      for (const row of rows) names.set(row.source.source_id, row.source.name);
+      if (source && !names.has(source)) names.set(source, source);
+      if (
+        current.ticker === ticker &&
+        names.size === current.names.size &&
+        [...names].every(([key, name]) => current.names.get(key) === name)
+      )
+        return current;
+      return { ticker, names };
+    });
+  }, [cases.data, ticker, source]);
   const selectedCount = exportSession?.selectedIds.size ?? 0;
   const toggleSelected = (caseId: string) =>
     setExportSession((current) => {
@@ -428,46 +463,16 @@ function RuntimeBody({
         <div className="filter-bar">
           <h2>最近处理记录</h2>
           <div className="business-filters">
-            {!exportSession ? (
-              <Button
-                variant="outline"
-                disabled={!loadedCases.length}
-                onClick={() => {
-                  setExportError("");
-                  setExportSession({
-                    viewId: readView,
-                    period,
-                    result: result ?? null,
-                    source: source ?? null,
-                    selectedIds: new Set(),
-                  });
-                }}
-              >
-                导出
-              </Button>
-            ) : (
-              <>
-                <Button
-                  variant="outline"
-                  disabled={exportBusy || !selectedCount}
-                  onClick={() => void confirmExport()}
-                >
-                  {exportBusy
-                    ? `正在导出 ${exportProgress}/${selectedCount}`
-                    : `确认导出（${selectedCount}）`}
-                </Button>
-                <Button variant="ghost" onClick={stopExport}>
-                  取消
-                </Button>
-                <Button
-                  variant="ghost"
-                  disabled={exportBusy || !loadedCases.length}
-                  onClick={toggleAll}
-                >
-                  全选已加载 {loadedCases.length} 条
-                </Button>
-              </>
-            )}
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label="搜索处理记录"
+              aria-expanded={searchOpen}
+              aria-controls="runtime-case-search"
+              onClick={() => setSearchOpen(!searchOpen)}
+            >
+              <Search />
+            </Button>
             <label>
               结果
               <select
@@ -502,12 +507,7 @@ function RuntimeBody({
               >
                 <option value="">全部消息源</option>
                 {Array.from(
-                  new Map(
-                    (cases.data?.data.data?.items ?? []).map((c) => [
-                      c.source.source_id,
-                      c.source.name,
-                    ]),
-                  ),
+                  caseSources.ticker === ticker ? caseSources.names : [],
                 ).map(([v, l]) => (
                   <option key={v} value={v}>
                     {l}
@@ -515,8 +515,84 @@ function RuntimeBody({
                 ))}
               </select>
             </label>
+            {!exportSession ? (
+              <Button
+                variant="outline"
+                disabled={!loadedCases.length}
+                onClick={() => {
+                  setExportError("");
+                  setExportSession({
+                    viewId: readView,
+                    period,
+                    result: result ?? null,
+                    source: source ?? null,
+                    selectedIds: new Set(),
+                  });
+                }}
+              >
+                导出
+              </Button>
+            ) : (
+              <>
+                <Button variant="ghost" onClick={stopExport}>
+                  取消
+                </Button>
+                <Button
+                  variant="ghost"
+                  disabled={exportBusy || !loadedCases.length}
+                  onClick={toggleAll}
+                >
+                  全选已加载 {loadedCases.length} 条
+                </Button>
+                <Button
+                  variant="outline"
+                  disabled={exportBusy || !selectedCount}
+                  onClick={() => void confirmExport()}
+                >
+                  {exportBusy
+                    ? `正在导出 ${exportProgress}/${selectedCount}`
+                    : `确认导出（${selectedCount}）`}
+                </Button>
+              </>
+            )}
           </div>
         </div>
+        {searchOpen && (
+          <form
+            id="runtime-case-search"
+            className="runtime-case-search"
+            onSubmit={(e) => {
+              e.preventDefault();
+              set("q", search.trim());
+            }}
+          >
+            <Input
+              aria-label="搜索消息标题"
+              placeholder="搜索消息标题"
+              value={search}
+              maxLength={200}
+              onChange={(e) => setSearch(e.target.value)}
+              autoFocus
+            />
+            <Button
+              variant="ghost"
+              type="submit"
+              size="icon-sm"
+              aria-label="执行搜索"
+            >
+              <Search />
+            </Button>
+            {searchQuery && (
+              <Button
+                variant="ghost"
+                type="button"
+                onClick={() => set("q", "")}
+              >
+                清除
+              </Button>
+            )}
+          </form>
+        )}
         {exportError && <Notice danger>{exportError}</Notice>}
         <Module query={cases} label="最近处理记录">
           {(d) => (

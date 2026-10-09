@@ -69,7 +69,7 @@ def install(app: FastAPI) -> None:
 
     @app.get(prefix + "/cases")
     async def cases(ticker: str, request: Request) -> Any:
-        args = query(request, {"view_id", "limit", "cursor", "result", "source_id"})
+        args = query(request, {"view_id", "limit", "cursor", "result", "source_id", "q"})
         owner = request.state.principal.user_id
         view = views.get(owner, args.get("view_id", ""), ticker)
         if view["wire"]["page"] != "RUNTIME":
@@ -89,6 +89,9 @@ def install(app: FastAPI) -> None:
             raise ApiFailure("VALIDATION_FAILED", 422)
         period = view["wire"]["period"]
         days = period["current"]["trading_days"] if period and period["selected"] != "ALL" else None
+        search = args.get("q", "").strip()
+        if len(search) > 200:
+            raise ApiFailure("VALIDATION_FAILED", 422)
         value = views.page(
             owner,
             "case",
@@ -100,6 +103,7 @@ def install(app: FastAPI) -> None:
             cursor=args.get("cursor"),
             result=result,
             source_id=args.get("source_id"),
+            **({"q": search} if search else {}),
         )
         return respond(request, "CaseSummaryPage", value, view_id=args["view_id"])
 

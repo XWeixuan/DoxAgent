@@ -650,7 +650,12 @@ class ReadStore:
             where.append("day IN (" + ",".join("?" for _ in days) + ")" if days else "0")
             params.extend(days)
         if q:
-            where.append("instr(search_text,?)>0")
+            # Historical Case summaries have no search_text. Search their title
+            # directly, without requiring a backfill or including message bodies.
+            where.append(
+                "instr(casefold(json_extract(payload,'$.title.value')),?)>0"
+                if kind == "case" else "instr(search_text,?)>0"
+            )
             params.append(q.casefold())
         if source_kind:
             where.append("json_extract(payload,'$.source.kind')=?")
@@ -677,6 +682,8 @@ class ReadStore:
             where.append("(sort_key,id)<(?,?)")
             params.extend(after)
         with self.connect() as db:
+            if q and kind == "case":
+                db.create_function("casefold", 1, lambda text: (text or "").casefold(), deterministic=True)
             if result == "POLICY_RECALLED" and kind == "case":
                 def policy_recalled(raw):
                     if raw is None:

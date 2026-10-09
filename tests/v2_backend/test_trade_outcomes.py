@@ -311,3 +311,58 @@ def test_policy_recalled_filter_uses_r1_evidence_and_frozen_view(tmp_path):
         fresh = client.get(url, params={**params, 'view_id': newest, 'limit': 20}, headers=headers)
         assert [item['case_id'] for item in fresh.json()['data']['data']['items']] == ['case-1']
         assert all('POLICY_RECALLED' not in r['data']['results'] for r in records if r['kind'] == 'case')
+
+
+def test_case_title_search_filters_before_pagination_and_keeps_frozen_scope(tmp_path):
+    from fastapi.testclient import TestClient
+    from doxagent.api_v2.app import PREFIX, create_app
+    from doxagent.v2_control.repository import ControlRepository
+    from doxagent.persistent_runtime_v2.journal import RuntimeJournal
+    from tests.v2_backend.test_api import OfflineAuth
+
+    store = ReadStore(tmp_path / "read.db")
+    store.migrate()
+    records = [{"kind": "ticker", "ticker": "MU", "id": "MU", "data": {"removed": False}}]
+    for index, (title, source, hit) in enumerate([
+        ("HBM Straße 100%_ 产能", "news", True),
+        ("hbm STRASSE 100%_ 产能", "news", True),
+        ("HBM other source", "other", True),
+        ("HBM no hit", "news", False),
+        ("Unrelated title", "news", True),
+    ]):
+        summary = rollup_case_trade(case(), [])
+        summary.update(case_id=f"search-{index}", title=value(title), final_policy_hit=value(hit))
+        records.append({"kind": "case", "ticker": "MU", "id": summary["case_id"],
+                        "sort": f"2026-09-29T09:0{index}:00Z", "day": "2026-09-29",
+                        "source_id": source, "search": "HBM body-only text", "data": summary})
+    store.ingest("test", "seed-search", records)
+    control = ControlRepository(RuntimeJournal(tmp_path / "runtime.db"))
+    control.migrate()
+    app = create_app(store=store, control=control, auth=OfflineAuth())
+    with TestClient(app) as client:
+        view = app.state.views.create("developer", "RUNTIME", "MU", "ALL")["view_id"]
+        url = PREFIX + "/tickers/MU/runtime/cases"
+        headers = {"Authorization": "Bearer offline"}
+        params = {"view_id": view, "q": "  HBM  ", "result": "POLICY_HIT", "source_id": "news", "limit": 1}
+        first = client.get(url, params=params, headers=headers)
+        assert first.status_code == 200, first.text
+        page = first.json()["data"]["data"]
+        assert [row["case_id"] for row in page["items"]] == ["search-1"]
+        cursor = page["next_cursor"]
+        assert cursor
+        changed = client.get(url, params={**params, "q": "other", "cursor": cursor}, headers=headers)
+        assert changed.status_code == 400
+        assert changed.json()["error"]["code"] == "INVALID_CURSOR"
+        original = records[1]
+        store.ingest("test", "rename-title", [{**original, "data": {**original["data"], "title": value("Renamed")}}])
+        second = client.get(url, params={**params, "cursor": cursor}, headers=headers)
+        assert second.status_code == 200, second.text
+        assert [row["case_id"] for row in second.json()["data"]["data"]["items"]] == ["search-0"]
+        for term, expected in [("strasse", ["search-1", "search-0"]), ("100%_", ["search-1", "search-0"]),
+                               ("产能", ["search-1", "search-0"]), ("body-only", [])]:
+            response = client.get(url, params={"view_id": view, "q": term}, headers=headers)
+            assert response.status_code == 200, response.text
+            assert [row["case_id"] for row in response.json()["data"]["data"]["items"]] == expected
+        empty = client.get(url, params={"view_id": view, "q": "   "}, headers=headers)
+        assert len(empty.json()["data"]["data"]["items"]) == 5
+        assert client.get(url, params={"view_id": view, "q": "x" * 201}, headers=headers).status_code == 422

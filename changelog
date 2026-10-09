@@ -1329,3 +1329,9 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-04 · 按 D3 v2.1 实施方案完成 T1–T9：四节点 owner 编排、完整来源冻结与局部接纳、耐久任务预算/首次身份、唯一补研、集合替换、v3 Policy/多方向 Condition/Projection v5、四文件同版 staged 发布与恢复、单 MAINTAIN 全量 patch、CLI/Pinned/Pilot 接边。原 prompt/skill 字节不变、缺省 V2 与旧 current 保留；新增原字节 Workspace 读取及新四节点 SDK Data MCP 显式启停。D3 组合66项加 CLI 1项、外围134项，共201项不同测试通过；SDK 重点56项重叠检查通过，Ruff/diff check通过。验收与四文件离线样例见 dev_plan/workflow_v2.1/d3_v2.1_orchestration_implementation_acceptance_20261004.md；保留并行 D2/原前端改动，未调用真实模型、改消费者或生产启用。
 
 - 2026-10-04: 按批准的 V1 退役方案拆除自建 ReAct/Blackboard 编排、旧 Dashboard、旧运行入口与专用测试；提取 V2 工具权限上限并解耦共享 models/monitoring/model_usage/horizontal_collection，调度器仅保留受准入激活的 V2 stream 路径。迁移 Codex/Message Bus 测试夹具，保留 current/staged v2.1、CDECR 和历史读取资源；旧证据项目外归档、冻结评估新增原哈希副本与映射，移出误跟踪的 node_modules/pytest 产物与重建缓存。恢复档案、实际清单、离线基线比对及未处理权限项见 dev_plan/v1_retirement_execution_20261004.md。本轮不推送、不部署、不维护生产数据。
+
+## 2026-10-09 Runtime 最近处理记录标题搜索
+- 最近处理记录新增默认收起的标题搜索，支持大小写无关的字面子串匹配，与周期、结果、来源和分页组合；变更搜索取消旧导出选择，分钟更新保留搜索。
+- 搜索入口置于筛选栏最左，导出/确认导出置于最右；后端直接搜索历史 Case 标题，无需数据回填，不改变图和 KPI。
+- 必要验证：trade_outcomes 后端 9 项通过，前端 57 项通过，运行页 ESLint 与生产构建通过。
+- 生产验收：BE 真实标题、组合筛选、清除、空结果、搜索后导出选择重置及两种桌面宽度通过；保留空结果时的来源显示。仅更新 API/Web，均 healthy，其余容器 ID 未变。
