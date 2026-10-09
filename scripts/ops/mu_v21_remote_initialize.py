@@ -10,6 +10,7 @@ import argparse
 import asyncio
 import json
 from datetime import datetime
+from pathlib import Path
 
 from doxagent.codex_runtime.client import HttpCodexWorkerClient
 from doxagent.codex_runtime.repository import SQLiteCodexRuntimeRepository
@@ -36,6 +37,27 @@ from doxagent.workflows.codex_global_research import (
 )
 
 
+class TestPublishedDocumentStorage:
+    """Keep oversized test publications inside the isolated MU test volume."""
+
+    def __init__(self, root: Path) -> None:
+        self.root = root.resolve()
+
+    def _path(self, path: str) -> Path:
+        target = (self.root / path).resolve()
+        if not target.is_relative_to(self.root):
+            raise ValueError("published document path escapes the MU test root")
+        return target
+
+    async def put(self, path: str, content: bytes, content_type: str) -> None:
+        target = self._path(path)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(content)
+
+    async def get(self, path: str) -> bytes:
+        return self._path(path).read_bytes()
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("stage", choices=["d1", "d2", "d3"])
@@ -56,6 +78,7 @@ async def run(args: argparse.Namespace) -> dict:
     if not settings.codex_worker_bearer_token or not settings.codex_capability_secret:
         raise ValueError("Codex Worker credentials are missing")
     repository = SQLiteCodexRuntimeRepository(settings.codex_runtime_sqlite_path)
+    published_storage = TestPublishedDocumentStorage(Path("/data/mu-v21-test/published"))
     run_ids = {stage: f"{args.run_prefix}-{stage}" for stage in ("d1", "d2", "d3")}
     reader = PublishedEventLibraryReader(settings.event_library_root or "", market="US")
     event = reader.reference_view("MU", version=args.event_library_version)
@@ -112,6 +135,7 @@ async def run(args: argparse.Namespace) -> dict:
                     pinned_sha256=event.sha256,
                     pinned_published_at=event.published_at,
                 ),
+                published_storage=published_storage,
                 model=settings.codex_model,
                 model_provider=settings.codex_model_provider,
                 effort=settings.codex_reasoning_effort,
@@ -140,7 +164,10 @@ async def run(args: argparse.Namespace) -> dict:
         if d2 is None or d2.status != "published" or not d2.handoff:
             raise ValueError("published D2 handoff is required")
         orchestrator = build_document3_orchestrator(
-            settings, worker=worker, orchestration_version="v2.1"
+            settings,
+            worker=worker,
+            orchestration_version="v2.1",
+            published_storage=published_storage,
         )
         result = await orchestrator.initialize(
             ticker="MU",

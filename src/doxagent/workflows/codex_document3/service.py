@@ -38,6 +38,7 @@ def build_document3_orchestrator(
     worker: Any = None,
     orchestration_version: str = "v2",
     node_assets: dict[str, str] | None = None,
+    published_storage: PublishedDocumentStorage | None = None,
 ) -> Any:
     if orchestration_version not in {"v2", "v2.1"}:
         raise ValueError("unsupported D3 orchestration_version")
@@ -81,8 +82,11 @@ def build_document3_orchestrator(
         config.worker_bearer_token,
         capability_secret=config.capability_secret,
     )
-    published_storage: PublishedDocumentStorage | None = None
-    if config.published_storage_url and config.published_storage_secret_key:
+    if (
+        published_storage is None
+        and config.published_storage_url
+        and config.published_storage_secret_key
+    ):
         published_storage = SupabasePublishedDocumentStorage(
             str(config.published_storage_url),
             config.published_storage_secret_key,
