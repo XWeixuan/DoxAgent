@@ -14,7 +14,7 @@ from mcp.client.stdio import StdioServerParameters, stdio_client
 
 from doxagent.codex_runtime.errors import CapabilityDenied
 from doxagent.codex_runtime.repository import InMemoryCodexRuntimeRepository
-from doxagent.codex_runtime.schema import CodexAgentRole, CodexD1Node
+from doxagent.codex_runtime.schema import CodexAgentRole, CodexD1Node, CodexD3AgentRole, CodexD3Node
 from doxagent.codex_worker.workspace_store import LocalWorkspaceStore
 from doxagent.data_runtime.contracts import (
     DataAvailability,
@@ -28,7 +28,7 @@ from doxagent.data_runtime.guidance import DataToolGuide
 from doxagent.data_runtime.policy import DataCapabilityCodec, DataToolPolicyRegistry
 from doxagent.mcp.data_server import _agent_result_payload
 from doxagent.mcp.source_capture_server import ObservationSourceRepository
-from doxagent.models import ResultStatus
+from doxagent.models import AgentName, ResultStatus
 from doxagent.observations.kernel import ObservationKernel
 from doxagent.observations.models import PersistedObservation
 from doxagent.observations.pack import _publish_directory
@@ -396,6 +396,41 @@ def test_execution_injects_scope_and_returns_clean_inline_observations(tmp_path:
         "delivery",
         "source",
     }
+
+
+def test_d3_o3_data_mcp_execution_uses_o3_agent_identity(tmp_path: Path) -> None:
+    client = _RecordingClient({"rows": [{"value": 42}]})
+    tools = ToolRegistry()
+    tools.register(
+        "test.lookup",
+        client,
+        descriptor=ToolDescriptor(
+            name="test.lookup",
+            description="Test lookup.",
+            input_fields=["symbol"],
+            source_name="Test provider",
+            business_categories=["company_financials"],
+            observation_adapter="json",
+        ),
+    )
+    run_root, store = _store(tmp_path)
+    result = DataExecutionCore(
+        tools=tools,
+        contracts=build_data_tool_contracts(tools),
+        context=DataExecutionContext(
+            run_id="d3-run",
+            node_id=CodexD3Node.O3_BUILD,
+            node_attempt_id="build-1",
+            agent_role=CodexD3AgentRole.O3,
+            ticker="MU",
+            cutoff_at=datetime(2026, 10, 6, tzinfo=UTC),
+            enabled_tool_ids=frozenset({"test.lookup"}),
+        ),
+        observations=ObservationKernel(store=store, run_root=run_root),
+    ).execute("test.lookup", {})
+    assert result.execution_status is ResultStatus.SUCCEEDED
+    assert client.requests[0].agent_name is AgentName.O3_TRADING_STRATEGY
+    assert client.requests[0].input["symbol"] == "MU"
 
 
 def test_workspace_mirror_is_compact_but_private_record_remains_complete(tmp_path: Path) -> None:

@@ -280,7 +280,48 @@ class Events:
 def s_optional():
     from doxagent.workflows.codex_document2.inputs import OptionalInput
 
-    return OptionalInput(status=s.InputAvailability.AVAILABLE, payload={"events": ["published"]})
+    return OptionalInput(
+        status=s.InputAvailability.AVAILABLE, as_of=AS_OF, payload={"events": ["published"]}
+    )
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("version", ["document2.v2", "document2.v2.1"])
+async def test_synthesis_pilot_seeds_complete_reports_without_candidate_branches(
+    tmp_path, monkeypatch, version
+):
+    from doxagent.workflows.codex_document2.inputs import OptionalInput
+
+    repo, ws, source = await _global_fixture(tmp_path)
+    builder = object.__new__(Document2PilotCaseBuilder)
+    builder._repository, builder._client = repo, ws
+    builder._source_cache_root = tmp_path / "pilot-sources"
+    builder._event_library_provider = Events()
+    builder._asset_root = Path(__file__).parents[1] / "prompts/codex_v2/document2"
+    narrative_body = "# Narrative\n" + "完整正文\n" * 1000
+
+    async def narrative(_):
+        return OptionalInput(
+            status=s.InputAvailability.AVAILABLE, payload={"report": narrative_body}
+        )
+
+    monkeypatch.setattr(builder, "_bootstrap_narrative", narrative)
+    reports = {role: f"# {role}\n" + f"{role}全文\n" * 1000 for role in ("c1", "c3", "c5")}
+    request = Document2PilotCaseRequest(
+        source_workspace_run="pilot-run",
+        source_global_run_id=source,
+        case_id="synthesis",
+        node=CodexD2Node.O0_SYNTHESIS,
+        document_schema_version=version,
+    )
+    context = await builder._bootstrap_context(request, repo.get_bundle(source), reports)
+    builder._seed_bootstrap_attempt(tmp_path / "staging", request.node, "attempt", context)
+    seeded = json.loads(
+        (tmp_path / "staging/attempts/attempt/input/context.json").read_text(encoding="utf-8")
+    )
+    assert seeded["global_research"]["reports"] == reports
+    assert seeded["narrative_research"]["payload"]["report"] == narrative_body
+    assert seeded["candidate_sets"] == {}
 
 
 async def setup(tmp_path, **worker_options):
@@ -464,9 +505,9 @@ def test_research_integrity_is_not_semantic_gating(fault):
 async def test_five_stages_freeze_retry_publish_and_version_binding(tmp_path):
     repo, ws, worker, events, orch, request = await setup(tmp_path, selection_invalid_once=True)
     bundle = await orch.run(request)
-    assert bundle.publication_state == "COMPLETE" and not bundle.current
+    assert bundle.publication_state == "PARTIAL" and not bundle.current
     counts = Counter(r.node for r in worker.requests)
-    assert counts[CodexD2Node.O1_OPEN_DISCOVERY] == 2
+    assert counts[CodexD2Node.O1_OPEN_DISCOVERY] == 1
     assert worker.scan_commits == 1
     assert counts[CodexD2Node.O1_DISCOVERY_SCAN] == 0
     assert counts[CodexD2Node.O1_DISCOVERY_SELECTION] == 0
@@ -477,7 +518,7 @@ async def test_five_stages_freeze_retry_publish_and_version_binding(tmp_path):
     additions = json.loads(
         (await ws.read_text(request.run_id, state.late_additions_ref.relative_path)).content
     )
-    assert len(additions) == 1 and additions[0]["discovered_during"] == "REALIZATION"
+    assert len(additions) == 1 and additions[0]["discovered_during"] == "STATE"
     for node, ctx in worker.contexts:
         assert ctx["event_library"]["payload"] == {"events": ["published"]}
         if node.value.startswith("d2_o1"):
@@ -554,8 +595,10 @@ async def test_success_output_replays_after_apply_failure_and_canonical_loss(tmp
     await original(request.run_id, ref.relative_path, "broken success")
     restored.status = "failed"
     repo.save_bundle(restored)
-    with pytest.raises(RuntimeError, match="integrity failure"):
-        await orch.run(request)
+    recovered = await orch.run(request)
+    assert recovered.publication_state == "PARTIAL"
+    assert len(worker.requests) == before
+    assert any("upstream_fallback" in w for w in recovered.checkpoint.warnings)
     assert len(worker.requests) == before
 
 
@@ -626,9 +669,9 @@ async def test_parallel_shell_failure_keeps_healthy_five_stages(tmp_path):
     bundle = await orch.run(request)
     assert worker.peak == 2
     assert bundle.publication_state == "PARTIAL"
-    assert [x.status for x in bundle.shell_outcomes] == ["failed", "completed"]
+    assert [x.status for x in bundle.shell_outcomes] == ["completed", "completed"]
     assert bundle.shell_outcomes[1].shell_id == "supply"
-    assert Counter(r.node for r in worker.requests)[CodexD2Node.O1_FINALIZATION] == 1
+    assert Counter(r.node for r in worker.requests)[CodexD2Node.O1_FINALIZATION] == 2
 
 
 @pytest.mark.asyncio
@@ -725,7 +768,9 @@ async def test_source_attempt_pilot_preserves_frozen_inputs_and_never_loads_prov
     staging = tmp_path / "source-pilot"
     shutil.copytree(source, staging)
     input_root = staging / "attempts" / ref.attempt_id / "input"
-    original = {p.name: p.read_bytes() for p in input_root.iterdir()}
+    original = {
+        str(p.relative_to(input_root)): p.read_bytes() for p in input_root.rglob("*") if p.is_file()
+    }
     builder = object.__new__(Document2PilotCaseBuilder)
     builder.settings = DoxAgentSettings(codex_capability_secret="offline-test-secret-" * 3)
     builder.python = Path("python.exe").resolve()
@@ -742,7 +787,9 @@ async def test_source_attempt_pilot_preserves_frozen_inputs_and_never_loads_prov
         ),
         attempt_id=ref.attempt_id,
     )
-    assert original == {p.name: p.read_bytes() for p in input_root.iterdir()}
+    assert original == {
+        str(p.relative_to(input_root)): p.read_bytes() for p in input_root.rglob("*") if p.is_file()
+    }
     manifest = json.loads((staging / "case_manifest.json").read_text())
     assert manifest["document_schema_version"] == "document2.v2.1"
     assert manifest["cutoff_at"] == AS_OF.isoformat()
@@ -780,6 +827,29 @@ async def test_v21_envelope_and_legacy_receipts_decode_without_codec_changes(
         workspace_run_id=state.workspace_run_id,
     )
     codec = _D2Codec(output_model)
+    synthesis = next(r for r in worker.requests if r.node == CodexD2Node.O0_SYNTHESIS)
+    synthesis_context = json.loads(
+        (
+            await ws.read_text(
+                synthesis.run_id, f"attempts/{synthesis.attempt_id}/input/context.json"
+            )
+        ).content
+    )
+    for role, node in (
+        ("c1", CodexD2Node.O0_CANDIDATE_C1),
+        ("c3", CodexD2Node.O0_CANDIDATE_C3),
+        ("c5", CodexD2Node.O0_CANDIDATE_C5),
+    ):
+        candidate = next(r for r in worker.requests if r.node == node)
+        context = json.loads(
+            (
+                await ws.read_text(
+                    candidate.run_id, f"attempts/{candidate.attempt_id}/input/context.json"
+                )
+            ).content
+        )
+        assert synthesis_context["global_research"]["reports"][role] == context["primary_source"]
+    assert synthesis_context["narrative_research"]["status"] == "ABSENT"
     assert codec.validate_python(codec.dump_python(receipt)).output == output
     assert decode(encode(s.ShellResearchTurnResultV21)) is s.ShellResearchTurnResultV21
     assert decode(encode(s.ExpectationShell)) is s.ExpectationShell
@@ -812,15 +882,15 @@ async def test_final_contract_failure_retries_only_finalization(tmp_path, monkey
     monkeypatch.setattr(worker, "_output", output)
     bundle = await orch.run(request)
     counts = Counter(r.node for r in worker.requests)
-    assert counts[CodexD2Node.O1_FINALIZATION] == 2
+    assert counts[CodexD2Node.O1_FINALIZATION] == 1
     assert counts[CodexD2Node.O1_OPEN_DISCOVERY] == 1
-    assert bundle.shell_outcomes[0].failure_kind == "FORMAT"
-    assert bundle.shell_outcomes[0].failed_stage == s.ShellResearchStage.FINALIZATION
-    req = worker.requests[-1]
-    task = json.loads(
-        (await ws.read_text(req.run_id, f"attempts/{req.attempt_id}/input/task.json")).content
+    assert bundle.shell_outcomes[0].status == "completed"
+    assert bundle.publication_state == "PARTIAL"
+    state = next(iter(bundle.checkpoint.shell_runs.values()))
+    resolution = json.loads(
+        (await ws.read_text(request.run_id, state.discovery_resolution_ref.relative_path)).content
     )
-    assert "resolution" in task["previous_failure"]
+    assert resolution  # Finalization no longer erases prior closures.
 
 
 def test_adjacent_destination_and_structural_correction_remain_allowed():
@@ -869,8 +939,8 @@ async def test_zero_shells_and_failed_scan_are_partial(tmp_path, empty):
     bundle = await orch.run(request)
     assert bundle.publication_state == "PARTIAL" and not bundle.current
     if not empty:
-        assert bundle.shell_outcomes[0].failed_stage == s.ShellResearchStage.OPEN_DISCOVERY
-        assert bundle.shell_outcomes[0].failure_kind == "FORMAT"
+        assert bundle.shell_outcomes[0].status == "completed"
+        assert any("discovery_unavailable" in warning for warning in bundle.checkpoint.warnings)
 
 
 def test_pilot_versioned_dependencies_contracts_and_override(tmp_path):

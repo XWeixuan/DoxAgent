@@ -6,15 +6,55 @@ from typing import Any, cast
 from urllib.parse import quote
 
 
+async def wait_for_native_document_redirect(page: Any, response: Any) -> Any:
+    """Allow a JS verification document to finish its own navigation.
+
+    This neither reloads nor interacts with a challenge. A human challenge or
+    static denial stays a failure; only an observed successful main-document
+    response can replace the initial HTTP status.
+    """
+    if response is None or response.status not in {401, 403}:
+        return response
+    html = (await page.content()).casefold()
+    if "captcha-delivery.com" not in html and "please enable js" not in html:
+        return response
+    try:
+        return await page.wait_for_event(
+            "response",
+            predicate=lambda item: (
+                item.request.is_navigation_request()
+                and item.frame == page.main_frame
+                and 200 <= item.status < 300
+            ),
+            timeout=8_000,
+        )
+    except TimeoutError:
+        return response
+    except Exception as exc:
+        # Playwright's timeout type is not Python's builtin TimeoutError.
+        if type(exc).__name__ == "TimeoutError":
+            return response
+        raise
+
+
 async def capture_reuters_search(page: Any, query: str, offset: int) -> list[dict[str, object]]:
     response = await page.goto(
         f"https://www.reuters.com/site-search/?query={quote(query)}&offset={offset}",
         wait_until="domcontentloaded",
     )
+    response = await wait_for_native_document_redirect(page, response)
     status = response.status if response is not None else 200
     if status >= 400:
         error = RuntimeError(f"Reuters search returned HTTP {status}")
         error.status_code = status
+        error.response_body = await page.content()
+        headers = await response.all_headers() if response else {}
+        error.response_headers = {
+            key: value
+            for key, value in headers.items()
+            if key.casefold() in {"content-type", "retry-after", "location", "server"}
+        }
+        error.response_url = page.url
         raise error
     await page.wait_for_function(
         r"""() => {
@@ -70,4 +110,4 @@ async def capture_reuters_search(page: Any, query: str, offset: int) -> list[dic
     return cast(list[dict[str, object]], rows)
 
 
-__all__ = ["capture_reuters_search"]
+__all__ = ["capture_reuters_search", "wait_for_native_document_redirect"]

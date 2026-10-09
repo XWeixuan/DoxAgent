@@ -1,4 +1,4 @@
-"""Pilot-only sequential coordinator for Document2 Codex App cases."""
+"""Pilot-only sequential coordinator for Document2 frozen cases."""
 
 from __future__ import annotations
 
@@ -150,10 +150,6 @@ class Document2PilotCoordinator:
         if active is not None:
             if not _completion_ready(active):
                 return _event("waiting", root, active)
-            if active["node"] == CodexD2Node.O1_OPEN_DISCOVERY.value:
-                from doxagent.workflows.codex_document2.discovery_checkpoint import finalize_pilot
-
-                finalize_pilot(Path(str(active["case_root"])), str(active["attempt_id"]))
             active["status"] = "completed"
             active["output_sha256"] = _tree_hash(_output_root(active))
             active["completed_at"] = _now()
@@ -516,10 +512,21 @@ def _stages(state: dict[str, object]) -> list[dict[str, object]]:
 
 
 def _completion_ready(stage: dict[str, object]) -> bool:
-    completion = _output_root(stage) / "completion.json"
+    completion = _output_root(stage) / "accepted.json"
     try:
-        json.loads(completion.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+        raw = json.loads(completion.read_text(encoding="utf-8"))
+        from doxagent.pilot.document2_case_builder import _bootstrap_contract
+        from doxagent.workflows.codex_document2.schema import OpenDiscoveryResultV21
+
+        manifest = json.loads(
+            (Path(str(stage["case_root"])) / "case_manifest.json").read_text(encoding="utf-8")
+        )
+        node = CodexD2Node(stage["node"])
+        _, _, model = _bootstrap_contract(node, manifest["document_schema_version"])
+        (OpenDiscoveryResultV21 if node is CodexD2Node.O1_OPEN_DISCOVERY else model).model_validate(
+            raw
+        )
+    except (OSError, ValueError, KeyError):
         return False
     return True
 

@@ -72,7 +72,8 @@ services:
       DOXAGENT_SAFETY_STATE_PATH: /run/doxagent-resources/safety.json
       DOXAGENT_CDECR_EXECUTION_MODE: REMOTE_EXECUTOR
       DOXAGENT_TICKER_INITIALIZATION_CONCURRENCY: "16"
-      DOXAGENT_CODEX_D2_MAX_CONCURRENCY: "8"
+      DOXAGENT_CODEX_D2_MAX_CONCURRENCY: "4"
+      DOXAGENT_CODEX_D3_MAX_CONCURRENCY: "4"
     extra_hosts: ["host.docker.internal:host-gateway"]
   v2-cdecr-executor:
     <<: *cgroup-boundary

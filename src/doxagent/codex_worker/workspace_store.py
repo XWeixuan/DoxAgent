@@ -143,12 +143,22 @@ class LocalWorkspaceStore:
         # would otherwise make a valid CRLF source disagree with its frozen content.
         return result.model_copy(update={"content": target.read_bytes().decode("utf-8")})
 
-    def inventory(self, run_id: str) -> WorkspaceInventory:
+    def inventory(self, run_id: str, *, prefixes=None) -> WorkspaceInventory:
         run_root = self.ensure_run(run_id)
+        if prefixes is None:
+            targets = [run_root]
+        else:
+            targets = [self._resolve(run_id, p.rstrip("/")) for p in prefixes]
+        paths = set()
+        for target in targets:
+            if target.is_file():
+                paths.add(target)
+            elif target.is_dir():
+                paths.update(p for p in target.rglob("*") if p.is_file())
         files = [
-            self._metadata(run_id, path, include_content=False)
-            for path in sorted(run_root.rglob("*"))
-            if path.is_file() and self._is_contained(path, run_root)
+            self._metadata(run_id, p, include_content=False)
+            for p in sorted(paths)
+            if self._is_contained(p, run_root)
         ]
         return WorkspaceInventory(run_id=run_id, files=files)
 

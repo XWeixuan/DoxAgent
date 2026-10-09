@@ -6,6 +6,7 @@ import asyncio
 import hashlib
 import inspect
 import logging
+import sqlite3
 import time
 from collections import OrderedDict
 from collections.abc import AsyncIterator
@@ -50,6 +51,7 @@ from .schema import (
     digest_json,
     utc_now,
 )
+from .storage import storage_failure
 
 logger = logging.getLogger(__name__)
 
@@ -300,6 +302,14 @@ class SiteStrategyService:
         """Acquire the single-owner profile lock and start the browser driver."""
         await self.runtime.browser_runtimes.start()
         await self.profile_use.recover()
+        # A persisted HALF_OPEN claim belonged to the previous owner process.
+        # Return it to a bounded cooldown; do not clear genuine manual attention.
+        for head, spec in self.repository.list_active_strategies():
+            if head.enabled:
+                state = self.repository.get_runtime(spec.site_id)
+                for combination_id, value in state.combinations.items():
+                    if value.probe_in_flight or value.state == "HALF_OPEN":
+                        await self.health.mark_probe_uncertain(spec.site_id, combination_id)
         await self._prewarm_identities()
         if self._maintenance_task is None:
             self._maintenance_task = asyncio.create_task(self._maintenance_loop())
@@ -320,6 +330,12 @@ class SiteStrategyService:
                 provenance = await self.runtime.browser_runtimes.prewarm(identity, egress)
                 if provenance is not None:
                     current = self.repository.get_identity_runtime(identity.identity_id)
+                    if (
+                        current.instance_id == provenance.instance_id
+                        and current.operational_state is IdentityOperationalState.AVAILABLE
+                        and current.diagnostic is None
+                    ):
+                        continue
                     self.repository.save_identity_runtime(
                         current.model_copy(
                             update={
@@ -356,16 +372,27 @@ class SiteStrategyService:
                 if frame is not None:
                     awaiting.append(f"{frame.f_code.co_name}:{frame.f_lineno}")
                 coroutine = getattr(coroutine, "cr_await", None)
-            operations.append({
-                "task": task.get_name(), "age_ms": int(age * 1000),
-                "budget_ms": int(budget * 1000), "done": task.done(),
-                "stalled": not task.done() and age > budget + 15,
-                "awaiting": awaiting,
-            })
+            operations.append(
+                {
+                    "task": task.get_name(),
+                    "age_ms": int(age * 1000),
+                    "budget_ms": int(budget * 1000),
+                    "done": task.done(),
+                    "stalled": not task.done() and age > budget + 15,
+                    "awaiting": awaiting,
+                }
+            )
         joint = self.budgets.joint
         return {
+            "external_driver": (
+                self.runtime.browser_runtimes.external.diagnostics()
+                if self.runtime.browser_runtimes.external is not None
+                and hasattr(self.runtime.browser_runtimes.external, "diagnostics")
+                else None
+            ),
             "stalled": any(item["stalled"] for item in operations),
             "operations": operations,
+            "storage": self.repository.storage.diagnostics(),
             "queue_waiters": len(joint._waiters),
             "queue_locked": joint._condition.locked(),
             "site_active": dict(joint._site_active),
@@ -400,14 +427,43 @@ class SiteStrategyService:
             self.repository.close()
 
     async def _maintenance_loop(self) -> None:
+        last_diagnostic_prune = 0.0
         while True:
+            if self.repository.storage.diagnostics()["unavailable"]:
+                await asyncio.sleep(60)
+                continue
+            external = self.runtime.browser_runtimes.external
+            from doxagent.source_maintenance.settings import enabled as maintenance_enabled
+
+            driver_before = external.diagnostics() if maintenance_enabled() and external else None
             try:
                 await self._prewarm_identities()
+                external = self.runtime.browser_runtimes.external
+                if external is not None:
+                    external.rotation_paused = any(
+                        profile.maintenance_session_id
+                        for profile in self.repository.list_profiles()
+                    )
                 await self.runtime.browser_runtimes.close_idle()
-                await self._run_due_probes()
+                from doxagent.source_maintenance.runtime_signals import observe
+
+                observe(self, driver_before, external.diagnostics() if driver_before else None)
+                if not self.repository.storage.diagnostics()["unavailable"]:
+                    await self._run_due_probes()
+                    if time.monotonic() - last_diagnostic_prune >= 3600:
+                        self.repository.prune_diagnostics()
+                        last_diagnostic_prune = time.monotonic()
             except asyncio.CancelledError:
                 raise
             except Exception:
+                from doxagent.source_maintenance.runtime_signals import observe
+
+                observe(
+                    self,
+                    driver_before,
+                    external.diagnostics() if driver_before else None,
+                    failed=bool(driver_before and not external.driver_ready),
+                )
                 logger.exception("site access maintenance probe failed")
             await asyncio.sleep(60)
 
@@ -418,15 +474,45 @@ class SiteStrategyService:
                 egress.observed_at is not None and now - egress.observed_at < timedelta(minutes=30)
             ):
                 continue
-            await self.probe_egress(egress.egress_id)
+            try:
+                await self.probe_egress(egress.egress_id)
+            except Exception:
+                logger.exception("egress maintenance probe failed: %s", egress.egress_id)
         for head, spec in self.repository.list_active_strategies():
-            if not head.enabled or spec.site_id == "generic" or not spec.access.probe_url:
+            if not head.enabled or spec.site_id == "generic" or not self._recovery_probe_url(spec):
                 continue
             claimed = await self.health.claim_due_probe(spec.site_id, spec.access.combinations)
             if claimed is None:
                 continue
             combination, assigned_generation = claimed
-            await self._probe_combination(spec, combination, assigned_generation)
+            try:
+                await self._probe_combination(spec, combination, assigned_generation)
+            except asyncio.CancelledError:
+                await self.health.mark_probe_uncertain(spec.site_id, combination.combination_id)
+                raise
+            except Exception:
+                await self.health.mark_probe_uncertain(spec.site_id, combination.combination_id)
+                logger.exception(
+                    "combination maintenance probe failed: %s/%s",
+                    spec.site_id,
+                    combination.combination_id,
+                )
+
+    def _recovery_probe_url(self, spec: SiteStrategySpec) -> str | None:
+        # Older strategies sometimes omitted probe_url. Reuse only an existing
+        # same-publisher public maintenance endpoint, never a login/paywall URL.
+        candidates = [spec.access.probe_url]
+        if spec.auth.verification_kind == "public_access":
+            candidates.extend([spec.auth.verification_url, spec.auth.maintenance_url])
+        for url in candidates:
+            if not url:
+                continue
+            try:
+                if self.resolve(url).site_id == spec.site_id:
+                    return url
+            except (ValueError, RuntimeError):
+                continue
+        return None
 
     async def probe_egress(self, egress_id: str) -> ProxyEgress:
         prior = self.repository.get_egress(egress_id)
@@ -473,8 +559,11 @@ class SiteStrategyService:
         combination: AccessCombination,
         assigned_generation: int,
     ) -> None:
-        assert spec.access.probe_url is not None
-        resolved = self.resolve(spec.access.probe_url, revision=spec.revision)
+        probe_url = self._recovery_probe_url(spec)
+        if probe_url is None:
+            await self.health.mark_probe_uncertain(spec.site_id, combination.combination_id)
+            return
+        resolved = self.resolve(probe_url, revision=spec.revision)
         materialized = self._materialize_combination(combination)
         if materialized is None:
             await self.health.mark_probe_uncertain(spec.site_id, combination.combination_id)
@@ -489,26 +578,48 @@ class SiteStrategyService:
         request = AccessRequest(
             operation_id=f"probe:{spec.site_id}:{combination.combination_id}:{assigned_generation}",
             purpose=SitePurpose.PROBE,
-            url=spec.access.probe_url,
+            url=probe_url,
             mode=AccessMode.BROWSER,
             strategy_revision=spec.revision,
             remaining_budget_ms=15_000,
             max_response_bytes=2_000_000,
         )
-        budget = self.budgets.get(
-            resolved.runtime_key,
-            max_concurrency=resolved.access.max_concurrency,
-            min_interval_ms=resolved.access.min_interval_ms,
-        )
+        identity = self._identity_for(combination, profile)
         try:
-            async with budget.permit(SitePurpose.PROBE, timeout_seconds=10):
+            async with self.budgets.joint.permit(
+                SitePurpose.PROBE,
+                site_key=resolved.runtime_key,
+                identity_id=identity.identity_id,
+                site_max_concurrency=resolved.access.max_concurrency,
+                site_min_interval_ms=resolved.access.min_interval_ms,
+                identity_max_concurrency=identity.access.max_concurrency,
+                identity_min_interval_ms=identity.access.min_interval_ms,
+                timeout_seconds=10,
+            ):
                 async with self.profile_use.business(profile.profile_id) as current_profile:
-                    response, category, reason, _ = await self._attempt(
+                    response, category, reason, network_ms = await self._attempt(
                         request, resolved, combination, current_profile, egress
                     )
         except (TimeoutError, ProfileUnavailableError):
             await self.health.mark_probe_uncertain(spec.site_id, combination.combination_id)
             return
+        self._event(
+            request,
+            resolved,
+            combination,
+            "COMBINATION_RECOVERY_PROBE",
+            AccessAttempt(
+                combination_id=combination.combination_id,
+                generation=assigned_generation,
+                transport=AccessMode.BROWSER,
+                status_code=response.status_code or None,
+                failure_category=category,
+                reason_code=reason,
+                network_ms=network_ms,
+                exit_ip=egress.observed_ip,
+                identity_id=identity.identity_id,
+            ),
+        )
         if category is None or category is FailureCategory.EMPTY_SUCCESS:
             await self.health.mark_success(
                 spec.site_id,
@@ -643,6 +754,8 @@ class SiteStrategyService:
         )
 
     async def execute(self, request: AccessRequest) -> AccessResult:
+        if self.repository.storage.diagnostics()["unavailable"]:
+            return self._storage_deferred(request)
         if not self.profile_use.accepting:
             resolved = self.resolve(request.url, revision=request.strategy_revision)
             return self._result(
@@ -669,7 +782,8 @@ class SiteStrategyService:
                 )
                 self._inflight[cache_key] = task
                 self._inflight_started[cache_key] = (
-                    time.monotonic(), request.remaining_budget_ms / 1000,
+                    time.monotonic(),
+                    request.remaining_budget_ms / 1000,
                 )
                 task.add_done_callback(
                     lambda finished, key=cache_key: self._forget_access_task(key, finished)
@@ -677,6 +791,10 @@ class SiteStrategyService:
                 created = True
         try:
             result = await asyncio.shield(task)
+        except sqlite3.Error as exc:
+            if not storage_failure(exc):
+                raise
+            return self._storage_deferred(request)
         finally:
             if task.done():
                 async with self._cache_lock:
@@ -713,6 +831,17 @@ class SiteStrategyService:
                     )
                 )
         return result
+
+    def _storage_deferred(self, request: AccessRequest) -> AccessResult:
+        return self._result(
+            request,
+            self.resolve(request.url, revision=request.strategy_revision),
+            AccessDisposition.SERVICE_UNAVAILABLE,
+            category=FailureCategory.RUNTIME_UNAVAILABLE,
+            reason="storage_unavailable",
+            retry_not_before=utc_now() + timedelta(seconds=60),
+            started=time.monotonic(),
+        )
 
     def _forget_access_task(self, key: str, task: asyncio.Task[AccessResult]) -> None:
         if self._inflight.get(key) is task:
@@ -752,9 +881,12 @@ class SiteStrategyService:
         except TimeoutError:
             resolved = self.resolve(request.url, revision=request.strategy_revision)
             return self._result(
-                request, resolved, AccessDisposition.BUDGET_DEFERRED,
+                request,
+                resolved,
+                AccessDisposition.BUDGET_DEFERRED,
                 category=FailureCategory.BUDGET_DEFERRED,
-                reason="access_budget_exhausted", started=started,
+                reason="access_budget_exhausted",
+                started=started,
             )
 
     async def _execute_uncached(self, request: AccessRequest) -> AccessResult:
@@ -774,6 +906,7 @@ class SiteStrategyService:
             combinations,
             excluded=set(request.excluded_combinations),
             transport=request.mode,
+            purpose=request.purpose,
         )
         if not candidates:
             return self._result(
@@ -884,7 +1017,10 @@ class SiteStrategyService:
                                 request.model_copy(
                                     update={"remaining_budget_ms": int(remaining * 1000)}
                                 ),
-                                resolved, combination, profile, egress
+                                resolved,
+                                combination,
+                                profile,
+                                egress,
                             )
                     attempt = AccessAttempt(
                         combination_id=combination.combination_id,
@@ -963,6 +1099,16 @@ class SiteStrategyService:
                     started,
                 )
             if category is FailureCategory.AUTH_OR_ACCESS_UNKNOWN:
+                if request.purpose is SitePurpose.CRAWLER and response.status_code == 403:
+                    await self.health.mark_unknown_denial(
+                        resolved.runtime_key,
+                        combination.combination_id,
+                        request.purpose,
+                        request.operation_id,
+                    )
+                    unavailable += 1
+                    self._event(request, resolved, combination, "PURPOSE_ACCESS_DENIED", attempt)
+                    continue
                 return self._result_from_response(
                     request,
                     resolved,
@@ -1052,6 +1198,11 @@ class SiteStrategyService:
                 assigned_generation=attempt.generation,
                 transport=request.mode,
             )
+            await self.health.clear_purpose_denial(
+                resolved.runtime_key,
+                combination.combination_id,
+                request.purpose,
+            )
             self._event(request, resolved, combination, "ACCESS_SUCCEEDED", attempt)
             current_generation = self.repository.get_runtime(resolved.runtime_key).generation
             return self._result_from_response(
@@ -1073,6 +1224,7 @@ class SiteStrategyService:
             combinations,
             excluded=set(request.excluded_combinations),
             transport=request.mode,
+            purpose=request.purpose,
         )
         if auth_missing and auth_missing == len(candidates):
             disposition = AccessDisposition.AUTH_REQUIRED
@@ -1115,15 +1267,20 @@ class SiteStrategyService:
                 )
                 category, reason = classify_response(response)
             except Exception as exc:
+                if isinstance(exc, sqlite3.Error) and storage_failure(exc):
+                    raise
                 status = int(getattr(exc, "status_code", 0) or 0)
                 response = RuntimeResponse(
                     status,
-                    request.url,
-                    {},
+                    getattr(exc, "response_url", request.url),
+                    getattr(exc, "response_headers", {}),
+                    body=getattr(exc, "response_body", ""),
                     reason=type(exc).__name__,
                     retry_after_seconds=float(getattr(exc, "retry_after_seconds", 0) or 0),
                 )
-                category, reason = classify_exception(exc)
+                category, reason = (
+                    classify_response(response) if status else classify_exception(exc)
+                )
                 if category is FailureCategory.RUNTIME_UNAVAILABLE:
                     identity_id = combination.identity_id or profile.profile_id
                     identity_runtime = self.repository.get_identity_runtime(identity_id)
@@ -1271,7 +1428,6 @@ class SiteStrategyService:
     def save_outcomes(self, values: list[BodyOutcome]) -> int:
         for value in values:
             self.repository.save_body_outcome(value)
-        self.repository.prune_diagnostics()
         return len(values)
 
     async def probe_profile(self, profile_id: str, url: str) -> AccessResult:
@@ -1281,13 +1437,15 @@ class SiteStrategyService:
         if profile is None:
             raise KeyError(profile_id)
         resolved = self.resolve(url)
-        if resolved.site_id != profile.site_id:
-            raise ValueError("probe URL does not belong to the profile site")
+        # A shared Identity can serve several sites. The active combination
+        # below, rather than the legacy Profile owner, establishes ownership.
         combination = next(
             (
-                item
+                materialized
                 for item in resolved.access.combinations
-                if item.profile_id == profile_id and item.egress_id == profile.bound_egress_id
+                if (materialized := self._materialize_combination(item)) is not None
+                and materialized.profile_id == profile_id
+                and materialized.egress_id == profile.bound_egress_id
             ),
             None,
         )
@@ -1303,12 +1461,17 @@ class SiteStrategyService:
             mode=AccessMode.BROWSER,
             remaining_budget_ms=30_000,
         )
-        budget = self.budgets.get(
-            resolved.runtime_key,
-            max_concurrency=resolved.access.max_concurrency,
-            min_interval_ms=resolved.access.min_interval_ms,
-        )
-        async with budget.permit(SitePurpose.PROBE, timeout_seconds=30) as queue_wait_ms:
+        identity = self._identity_for(combination, profile)
+        async with self.budgets.joint.permit(
+            SitePurpose.PROBE,
+            site_key=resolved.runtime_key,
+            identity_id=identity.identity_id,
+            site_max_concurrency=resolved.access.max_concurrency,
+            site_min_interval_ms=resolved.access.min_interval_ms,
+            identity_max_concurrency=identity.access.max_concurrency,
+            identity_min_interval_ms=identity.access.min_interval_ms,
+            timeout_seconds=30,
+        ) as queue_wait_ms:
             async with self.profile_use.business(profile_id) as current_profile:
                 response, category, reason, network_ms = await self._attempt(
                     request, resolved, combination, current_profile, egress
@@ -1476,6 +1639,9 @@ class SiteStrategyService:
         if not url:
             raise ValueError("profile has no maintenance URL")
         session_id = await self.profile_use.begin_maintenance(profile.profile_id)
+        external = self.runtime.browser_runtimes.external
+        if external is not None:
+            external.rotation_paused = True
         try:
             current = await self.profile_use.assert_session(profile.profile_id, session_id)
             if "identity" not in inspect.signature(self.runtime.open_login).parameters:
@@ -1505,6 +1671,9 @@ class SiteStrategyService:
         if egress is None or not egress.enabled:
             raise RuntimeError("bound egress is unavailable")
         profile = await self.profile_use.recover_maintenance(identity.profile_id, login_token)
+        external = self.runtime.browser_runtimes.external
+        if external is not None:
+            external.rotation_paused = True
         try:
             return await self.runtime.recover_login(
                 profile,
@@ -1683,6 +1852,23 @@ class SiteStrategyService:
                 },
             )
         )
+        if reason == "public_access_ready" or state is AuthState.VALID:
+            # Authentication and access-health are separate records. A real
+            # successful human verification must release the browser circuit,
+            # otherwise manual_attention would suppress all subsequent traffic.
+            access_state = self.repository.get_runtime(resolved.runtime_key)
+            await self.health.mark_success(
+                resolved.runtime_key,
+                combination.combination_id,
+                assigned_generation=access_state.generation,
+                transport=AccessMode.BROWSER,
+            )
+            if reason == "public_access_ready" and article_url == (
+                self.repository.get_strategy(resolved.site_id).auth.maintenance_url
+            ):
+                await self.health.clear_purpose_denial(
+                    resolved.runtime_key, combination.combination_id, SitePurpose.CRAWLER
+                )
         return updated, reason
 
     def _event(
@@ -1749,7 +1935,7 @@ class SiteStrategyService:
             body_strategy_ref=resolved.body.ref,
             generation=generation,
             attempts=attempts or [],
-            network_ms=max(0, int((time.monotonic() - started) * 1000)),
+            network_ms=sum(item.network_ms for item in (attempts or [])),
         )
 
     @staticmethod
@@ -1804,7 +1990,7 @@ class SiteStrategyService:
             exit_ip_observation=egress.observed_ip,
             attempts=attempts,
             queue_wait_ms=sum(item.queue_wait_ms for item in attempts),
-            network_ms=max(0, int((time.monotonic() - started) * 1000)),
+            network_ms=sum(item.network_ms for item in attempts),
         )
 
 
@@ -1852,6 +2038,17 @@ def classify_exception(exc: Exception) -> tuple[FailureCategory, str]:
         ] or FailureCategory.UNKNOWN, f"http_{status}"
     name = type(exc).__name__.casefold()
     message = str(exc).casefold()
+    if any(
+        marker in message
+        for marker in (
+            "connection closed while reading from the driver",
+            "target page, context or browser has been closed",
+            "external_",
+            "browser has been closed",
+            "playwright connection closed",
+        )
+    ):
+        return FailureCategory.RUNTIME_UNAVAILABLE, "browser_driver_unavailable"
     if any(marker in name or marker in message for marker in ("timeout", "connect", "dns", "tls")):
         return FailureCategory.TRANSIENT_TRANSPORT, type(exc).__name__
     if (

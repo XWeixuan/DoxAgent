@@ -1,221 +1,87 @@
-# Turn 1: Expectation State — Convergent Anchoring
+# State Research — Understand the Subject and Its Expected Path
 
-## Purpose
+## Purpose: build the present reference for expectations
 
-Research the current maintainable expectation State for every Unit in the canonical Shell. State
-answers two connected questions: what stable variables must remain observable for this proposition,
-and where do the relevant source roles currently place those variables? The result should let a
-future event update a Value without redefining the underlying Parameter.
+Treat each Unit as an expectation subject: something whose future we want to understand, not a financial indicator or a conclusion to prove. Establish its current reality and the default future path that can reasonably be inferred from today's information. State supplies Unit-linked indicator anchors; Expectation Baseline supplies the working forward interpretation. Together they give later mechanism research and O3 a meaningful starting point for interpreting new information. This is a reusable research base, not an executive summary. For those anchors, retain the concrete state, magnitude, period and comparison that later researchers would otherwise have to recover from the sources again; use as many distinct Parameters and Values as the Unit's relevant reality requires.
 
-Work across the complete Shell before finalizing any Unit. The Units share a research system, so
-common evidence and economic variables should be understood consistently; each Unit retains only
-the State that materially informs its own proposition and horizon.
+Use State for indicators that directly locate the Unit or have a strong, interpretable connection to its key variables. These may be numerical or qualitative: a substantive adoption, supply or competitive position can be an anchor without a time series. Industry or macro indicators can qualify when their scope and relationship to the Unit are clear. An event, general trend or piece of business background is not an anchor merely because it is true and relevant. Current plans and published forecasts of qualifying indicators retain their source identity; your own synthesis of the expected path belongs in Baseline.
 
-## Working inputs
+## Reconstruct the current picture before choosing its representation
 
-The attempt workspace contains six injected files:
+Continue from Open Discovery using this task's refreshed `canonical_shell`, discovery records, and output schema. Use the shared thread's research understanding while checking the latest inputs. Discovery selections identify areas worth deepening, not a State inventory: maintain anchors for the Unit's core reality, and research external leads for both qualifying indicators and useful explanatory context.
 
-- `AGENTS.md`: workflow-wide execution and citation rules;
-- `agent.md`: O1's stable role across all Shell research turns;
-- `skill.md`: this turn's State Research method;
-- `task.json`: the active node, required files, and any previous failure context;
-- `context.json`: the current business object and available research inputs; and
-- `output_schema.json`: the exact `ExpectationShell` contract to return.
+Start with the whole subject. What is being used, built, chosen, supplied, or arranged? Which actors and surrounding systems shape its current situation? Read the relevant C1/C3/C5 bodies and supporting materials to understand these realities, then extend them where needed. Investigate the external environment in its own terms rather than only the parts visible in the target company's accounts; reading that context does not automatically make it a State anchor. Optional material that is absent leaves a research opportunity, not a finding about the world. Describe the current business and user position as well as product specifications: how the offering is used and paid for, which participants drive activity or investment, and how the relevant customer or market situations differ. A technically detailed product description alone does not locate that wider reality.
 
-In `context.json`, `canonical_shell` is the object to update. Although they are technically nested
-inside `global_research`, treat its C1 report, C3 report, C5 report, and `future_nodes` as four
-parallel primary Document1 research assets. C1 supplies company facts, management and sell-side
-expectations, financial change, drivers, constraints, and transmission. C3 supplies industry and
-value-chain conditions, external actors, allocation, competition, and commercialization evidence.
-C5 supplies the market-implied baseline, repricing drivers, and priced business or financial
-assumptions. Future Nodes identify known future variables, milestones, time windows, affected
-entities, and evidence interfaces that the expectation system will later need to observe.
+Choose Parameters after understanding what needs to be anchored. A Parameter identifies a Unit variable or a closely linked operating indicator; a Value records its observed level or substantive state. Ask: if this indicator changes, which important Unit variable should be revised, in what direction or business sense, and through what already-understood relationship? The mapping should support a reasonably confident reading over the Unit's horizon without needing a new speculative chain. It may be inverse or conditional on the operating setting; it need not establish the whole Unit outcome, an exact coefficient or a trading decision.
 
-Entity relations and horizontal indicators help connect and compare those primary assets.
-`narrative_research` is an optional view of current market attention and debate; `event_library` is
-optional recent-event context. Read each optional input's availability before using its payload.
-`turn` identifies the active research stage.
+Keep the indicator's identity clear as its state changes. Missing repeated measurements, a numerical value or cross-source comparability do not disqualify an otherwise suitable anchor. A one-time decision may update a defined adoption or operating position; record the resulting Unit-linked state, not the announcement as a substitute for it. Define the business scope, not a desired result or evidence hurdle. One Parameter can have several Values for distinct sources, periods or snapshots, or none while its measurement is unavailable. A numerical Parameter measures one quantity: revenue and gross profit, or customer count and purchase volume, are different quantities. A qualitative operating state may still describe a natural arrangement as a whole.
 
-## Reconstruct Document1 research before defining State
+## Find missing information where it is produced
 
-Read the four primary Document1 assets for the complete Shell before designing Parameters. Form a
-working research map of current company and financial reality, management and sell-side baselines,
-industry and value-chain conditions, market-implied assumptions, and the known future variables or
-milestones that will produce new evidence. Reconcile how the same issue appears across the four
-assets and retain conflicts that may require separate source-role Values.
+Reuse useful upstream observations and their sources. For information missing from C1/C3/C5, use Web Search first. Treat the omission as a likely coverage gap in the existing structured-data route, not evidence that the information is unavailable publicly. Search the original reporting entity, relevant disclosures, customer or supplier materials, product documentation, and industry reporting. Only when Web Search has not resolved an important data gap should you use a suitable Data MCP capability available in the current task. An upstream failed endpoint is not a reason to repeat the same request without a different retrieval basis.
 
-Only after this upstream research is understood should `proposition`, `horizon`, and adjacent Unit
-boundaries determine which findings belong to each Unit and which stable observation targets are
-needed. For each Unit, work backward from its proposition and horizon: which stable dimensions show
-where that expectation stands today—what has been realized, where relevant actors place the future,
-what can repeatedly change the judgment, and which major dimension remains unresolved? Use this
-coverage reasoning to guide Parameter selection, then use upstream findings and focused research to
-populate it. The Unit Seed organizes the research; it does not supply the State by itself. A Future
-Node may reveal a Parameter, time scope, or future Value source, but it is a research lead rather
-than an automatic State object. A data point becomes a Value only after its stable Parameter is
-clear.
+Search for the actual missing information. A numerical question may need the metric's original wording, reporting period, and publisher; a qualitative question may need an operating model, technical configuration, customer decision, or contractual arrangement. External subjects can be searched without adding the ticker to every query. Read the underlying material that supplies the answer, retaining who observed, announced, or inferred it. Research follows useful questions, not a Parameter-by-source-role completion grid.
 
-A Parameter is a continuing observation dimension that locates the proposition's current
-realization state, expectation position, or stable premise. It may maintain an actual result,
-management or sell-side expectation, industry condition, timing, stage, or market-implied underlying
-expectation. Its role is to show where the proposition currently stands, rather than compress the
-overall credibility of the proposition into one second-order judgment.
+Bring the picture up to `research_cutoff_at` using information available by that cutoff. A forecast may concern a later business period while having been published before the cutoff. Distinguish that forecast period from the date of the observation and the publication date of the upstream report. Continue searching when the missing answer would change the current description or baseline; move on when additional retrieval mainly repeats known limitations or adds detail without improving that understanding.
 
-A candidate Parameter is suitable when:
+## Preserve observations without filtering out qualitative reality
 
-- its identity remains the same as its Values change;
-- later periods or source roles can provide new Values for the same defined object;
-- Values can be compared under a stable economic and measurement basis; and
-- movement in the Parameter would materially change understanding of the Unit.
+Use the supported representation that preserves the information's actual meaning:
 
-Use these as object tests rather than a scoring exercise. Select Parameters for explanatory and
-update value, not for a preferred count. A topical fact, one-time event, source-specific sentence,
-or generic background item does not become a Parameter merely because it is important.
+| Value type | Meaning and subfield use |
+| --- | --- |
+| `NUMBER` | `number` is the stated or measured quantity or ratio; `unit` gives its unit and scale. Preserve the supported numerical precision. |
+| `RANGE` | `lower` and `upper` are the supported bounds of the same quantity; `unit` gives their shared unit and scale. |
+| `TIME` | `point` gives a single time; `start` and `end` describe a window, with unused nullable components set to null. `precision` describes the time resolution or approximation, such as day, month, quarter or approximate window, not confidence in the source. |
+| `STAGE` | `stage` places a qualifying Unit-linked Parameter in a substantive business or technical state, such as adoption position or supply availability. It is not a general event summary and need not be an ordinal maturity ladder. |
+| `DIRECTION` | `direction` briefly describes movement in the defined phenomenon, such as increasing, decreasing or broadly stable, not ticker sentiment. Use ordinary text rather than packing period and magnitude into a code-like label. |
+| `EVIDENCE` | `stance` describes how the evidence relates to the particular assertion, such as supporting, opposing or mixed. `strength` describes how directly and consistently that assertion is supported, such as weak, moderate or strong; it is not the event's economic importance or investment conviction. |
 
-## Define a comparable Parameter
+`precision`, `direction`, `stance` and `strength` are string fields; these examples explain their meaning rather than add schema enums. Use consistent, short expressions for the same meaning. Preserve available magnitudes in an appropriate supported representation. A phrase such as more than doubled can preserve a bounded change. A one-sided absolute amount is a scale state, not a direction: where the schema lacks that numerical form, retain its explicit bound in a `STAGE` Value whose Parameter is defined for that representation, rather than inventing a point value or a second bound. Put the applicable period in `time_scope`.
 
-`parameter_id` names the continuing observation target. `definition` fixes the meaning required to
-keep later Values comparable; it describes the variable, not its current result. Set only the scope
-that prevents a real ambiguity, such as company or product perimeter, geography, fiscal or product
-cycle, financial layer, measurement basis, or relevant unit convention.
+For example, a key customer's production selection may update the adoption stage of the Unit's own product even without a disclosed order amount or time series. A general application trend, an organizational description or an isolated financing announcement is instead context unless it supplies such a Unit-linked indicator. Use that context in relevant Baseline reasoning, Factor explanations or Gap premises, with its source; it need not receive its own Parameter or a new standalone object. The distinction is anchoring value, not qualitative versus numerical form.
 
-Resolve distinctions that would otherwise create false comparisons. Depending on the object, these
-may include gross versus net, spot versus contract, order versus backlog versus shipment versus
-recognized revenue, reported versus adjusted results, or fiscal versus calendar periods. When two
-items cannot share one stable definition, they are different Parameters or one is unsuitable for
-the current State.
+Keep an otherwise suitable Unit-linked Parameter when its current measurement is unavailable, with no Value for that Parameter until an observation can be supplied. Preserve qualifying qualitative observations under their appropriate aspects. Each Value must match its Parameter's `value_type`; preserve an existing numerical object's meaning rather than inserting narrative into its number field or substituting a fabricated zero. Absence of a current measurement and absence of a useful subject are different situations.
 
-The source role belongs to the State Value, not the Parameter. For example, management and sell-side
-views of the same forecast object are different Values of one Parameter when their scope is genuinely
-comparable; they are not separate Parameters simply because different actors supplied them.
+`source_role` identifies the meaning of an observation. `ACTUAL` records an accomplished state, including one reported by the target company; `MANAGEMENT` records the target company's forward plan or expectation. `SELL_SIDE` records an analyst or consensus view, and `INDUSTRY_CHAIN` preserves external actors' views, plans or behavior, keeping their identity explicit. Use `MARKET_IMPLIED` for an expectation inferred from an identifiable market observable with a meaningful inference connecting the two. A broader operating-evidence synthesis belongs in Baseline. Use the roles that contribute real information rather than seeking a Value from every role for every Parameter.
 
-## Choose the Value Type by the information's true form
+Make comparisons when they add understanding, keeping definition, perimeter, units, source role, and time basis aligned. For a rolling actual, the previous business period may be appropriate; for a fixed forecast target, compare an earlier forecast of that same target. Keep `previous_value` null when a useful comparison is unavailable. Incompatible observations can still be worth retaining under clearly defined objects; incompatibility prevents a claimed like-for-like change, not preservation of the facts. Keep genuine disagreement visible rather than averaging different meanings into a synthetic value.
 
-Use the narrowest supported representation that preserves the source meaning:
+Use `time_scope` for the period described and `as_of` for the dated observation or forecast snapshot. Give Values concise, interpretable names and link `parameter` to the exact Parameter name. Use `validity_state` for current records, meaningful disputes, superseded statements, or retractions according to the schema. Retain provenance for both sides of a comparison in `ref`, preserving qualified upstream references and the identity of new observations.
 
-- `NUMBER` for a defined point estimate with a reliable unit;
-- `RANGE` when the maintained state is genuinely bounded by lower and upper values;
-- `TIME` when the state is a point or window in time;
-- `STAGE` when the real process has a recognizable business, technical, regulatory, or commercial
-  stage;
-- `DIRECTION` when a maintainable direction is more truthful than an unavailable level; and
-- `EVIDENCE` when the stable observation target is an evidence stance whose support can be updated
-  over time.
+State observations directly and preserve source detail that changes their interpretation. If a report gives both a configuration reduction and its size, or a supply shortfall and the period and coverage ratio, retain those details instead of only the direction. Add a qualification where it changes that particular observation; a recurring disclaimer about unobserved downstream results adds no current-state information. For a changed Unit-linked operating state, describe the new position; retain event details where they identify or explain that update. Its broader causal influence is research to perform, not a standard caution to append to the fact.
 
-`STAGE` should reflect a real progression rather than an invented maturity scale. `DIRECTION` does
-not substitute for an obtainable number. `EVIDENCE` fits a stable observation target whose support
-state can be updated directly when new information arrives. If each update instead requires renewed
-interpretation of how a mechanism is progressing, which dependencies hold, and why the condition
-changes the Unit, maintain that richer reality in a Realization Factor's `current_status`.
-`EVIDENCE` is a Value representation, not a general compression of complex mechanisms.
+## Infer the Expectation Baseline from the surrounding world
 
-Express `DIRECTION` as `IMPROVING`, `STABLE`, or `WEAKENING`. For `EVIDENCE`, use `SUPPORTING`,
-`OPPOSING`, or `MIXED` as stance and `WEAK`, `MODERATE`, or `STRONG` as strength. These labels
-normalize an already valid Parameter; they do not replace the underlying research judgment.
+Choose the future judgments that most help interpret this Unit. A Baseline may connect several observations or mechanisms; it is not a mandatory companion to each Parameter. Ask what the current information makes reasonable to expect over the relevant horizon, including qualitative development, operating behavior, and institutional arrangements as well as numerical forecasts.
 
-## Research Values by source role
+Use Web Search to investigate the surrounding evidence rather than relying on queries for "the market's expectation." Examine what participants are preparing, adopting, committing resources to, changing in their products, or doing in response to each other. Project schedules, resource reservations, actual usage, supply lead times, complementary investments, and customer or competitor behavior can jointly support an expected path. Search those subjects directly. The inference may be useful even when no source states the final baseline in your words.
 
-For each Parameter, determine which source roles can provide a meaningful current Value. The roles
-represent different layers of reality and expectation rather than a completeness checklist:
+Explain how the evidence supports the forward judgment. Actions that commit resources can make a continuation more credible than a statement of intent; an already operating downstream arrangement can reveal something about its prerequisites; observed responses can indicate how participants are planning. Connect these implications to the actual subject and horizon. Keep an observed plan's source identity while explaining what surrounding evidence adds to the working interpretation.
 
-- `ACTUAL`: an already realized operating, financial, technical, or commercial state, regardless
-  of which document reports it;
-- `MANAGEMENT`: the company's forward guidance, plan, target, or stated expectation;
-- `SELL_SIDE`: an analyst or consensus forecast for the defined object;
-- `INDUSTRY_CHAIN`: a customer, supplier, competitor, channel, or other industry actor's view or
-  behavior that states the Parameter; and
-- `MARKET_IMPLIED`: a specific state that can be reasonably inferred from an observable price,
-  valuation, options, positioning, or other market anchor.
+State the best-supported default path and its rationale in `baseline`. Where market commentary or behavior establishes that participants already use a particular assumption, retain that information. Where the inference is company-side or your own synthesis of operating evidence, identify it that way. A valuation's required success condition and an expectation that success will occur are different claims. If the evidence supports materially different current readings, express the relevant conditional interpretation and the variable separating them, rather than forcing consensus or abandoning the topic as simply unknown. The result should tell the next researcher which forward interpretation you currently adopt and why, not merely what variables deserve study. Where the evidence favors a path, state it; where the difference genuinely remains unresolved, identify the specific competing paths and the basis for using them. A generic identity such as profit depends on volume, price and cost is mechanism context, not a Baseline.
 
-Keep distinct source-role Values when their difference reveals the current expectation structure.
-An issuer's report of an accomplished result is `ACTUAL`, while its claim about the future is
-`MANAGEMENT`; classification follows the economic meaning, not the publisher. A broad share-price
-move alone does not define a `MARKET_IMPLIED` Value for a specific Parameter.
+Use the fields as a connected comparison frame:
 
-For `MARKET_IMPLIED`, first infer the underlying expectation the market anchor is pricing, then use
-that expectation's natural Value Type: for example, `NUMBER` or `RANGE` for an earnings level,
-`TIME` for normalization timing, `STAGE` for a commercial state, or `DIRECTION` for a maintainable
-direction. Limited inference precision should first widen the range, coarsen the time window, or
-reduce numerical precision rather than automatically turn the object into a generic `EVIDENCE`
-stance. Leave the role absent when focused research still cannot support an interpretable Value.
+| Field | Contribution |
+| --- | --- |
+| `name` | The expectation topic being maintained. |
+| `baseline` | The supported default future path, with the reasoning and material assumptions that make it a useful working view. |
+| `ordinary_progress` | Developments that naturally extend that particular path. |
+| `open_frontier` | The consequential extent, timing, choice, or outcome that the current path leaves open. |
+| `time_scope` | The horizon over which the baseline is useful. |
+| `ref` | The sources behind its observations and reasoning. |
 
-Use all four primary Document1 assets and their citations to discover and support the Parameters and
-Values implied by the upstream research, then identify what remains unresolved at the Unit's
-required granularity. For every admitted Parameter, actively examine all five source roles and try
-to complete each Value that can genuinely express the same defined object. Use focused data or web
-research for an applicable role that still lacks a current anchor, comparable earlier Value, clear
-scope, resolution of a material conflict, or relevant later information. State the missing research
-question first and seek evidence closest to that role and object.
+As a hypothetical example, rising paid use, an operating service and funded expansion preparations can support a working view that service capacity will continue expanding over the next few quarters on the disclosed project timetable. Identify which observations make that path preferable to flat capacity or retrenchment. Routine additions within those plans are ordinary progress; a different adoption pace or a change in funding could alter the path. Keep any useful disclosed scale and timing in the explanation instead of reducing the conclusion to "capacity needs further verification." This is a forward interpretation, not a consensus number.
 
-When an important current Value has a readily obtainable prior observation that is economically
-comparable under the Parameter's update logic, actively retrieve it. Prior actuals, guidance,
-sell-side or industry snapshots, and market-implied snapshots are useful when they reveal change;
-historical backfill follows comparison value rather than a requirement that every Value have a
-previous observation.
+Write the useful forward judgment first. Use `open_frontier` to locate the specific remaining uncertainty, not to collect everything the research has not proved. Ordinary progress can still carry new information through unexpected scale, timing, or reliability; the baseline is a comparison frame, not a permanent no-trade classification. Give a supported working interpretation even without a precise consensus series. If research yields no meaningful forward interpretation for a particular topic, retain its State without manufacturing an empty Baseline.
 
-Source roles remain different evidence layers rather than mandatory cells. When a focused,
-reasonable attempt does not find a reliable and comparable Value for a role, leave that role absent
-and continue with the other Parameters instead of repeatedly searching the same gap. This produces
-the fullest supportable State without turning upstream research into an audit queue.
+## Consolidate the model and hand off
 
-## Preserve time, basis, and provenance
+Read each Unit's State and Baseline together. State should locate the Unit through its core variables and strongly related operating indicators, retaining useful unmeasured anchors rather than replacing them with background facts. Compare the retained set with the Unit's own scope: have external leads displaced a core demand, supply, adoption or economic dimension? Extend the relevant anchors where needed without setting a smaller target count. Baseline supplies the forward reference. Harmonize shared meanings while retaining genuine Unit-specific scope. Research is sufficient when these anchors and forward judgments are intelligible and remaining work mainly refines them. Obtain useful numbers and comparisons where available; qualifying qualitative coverage complements that work.
 
-For every State Value:
+Return the complete updated Shell within the required envelope: `canonical_shell`, `late_additions`, and `open_discovery_resolution`. Preserve valid earlier research and `ref` because the complete Shell replaces its predecessor. Make useful local corrections when the research requires them, while keeping the O0 research subjects intact. Follow the current schema for all explicit fields, value shapes, arrays, and permitted nulls, and the current task for any completion-file instruction.
 
-- `value` must match the Parameter's `value_type` and preserve the source's supported precision;
-- `time_scope` identifies the business, forecast, or operating period the Value describes;
-- `as_of` identifies when that Value was current or observed;
-- `citation` provides the principal evidence for the stated Value; and
-- `state_value_id` gives the Value a natural-language semantic identity that remains interpretable
-  within its Parameter and source role.
+Treat the three output containers separately. `canonical_shell` carries the full valid model. `late_additions` contains only directions first discovered in this turn, with `discovered_during: "STATE"`; earlier discoveries remain available in the input history maintained by orchestration. `open_discovery_resolution` contains dispositions newly made or substantively revised in this turn, not unchanged historical records. Empty process arrays mean no new contribution, not deletion of the accumulated history. Leave the frozen Scan unchanged and retain a direction's first-discovery identity when using its research.
 
-Time scope and `as_of` are different. A forecast for FY2028 uses FY2028 as its time scope and the
-dated forecast snapshot as its `as_of`. A source that does not support an exact number should
-produce a supported range, direction, stage, or no Value rather than borrowed precision.
-
-Use `previous_value` for a comparable prior observation under the Parameter's own update semantics,
-with the same Parameter meaning, source role, and measurement basis. For a rolling realized
-Parameter, the preceding business period may be the correct comparison; for a fixed forecast target,
-use an earlier snapshot of that same target; for an explicitly rolling forward Parameter, compare
-the prior rolling snapshot when the definition makes that economically meaningful. Ask how this
-Parameter normally updates and which earlier state is its true comparison. A changed perimeter,
-accounting basis, or operating concept still breaks comparability. Include evidence sufficient to
-support both sides of a claimed change.
-
-`CURRENT` is the normal validity state for a presently usable Value. `DISPUTED` preserves a live
-conflict that the available evidence does not resolve. `RETRACTED` reflects an explicit withdrawal,
-and `SUPERSEDED` applies when retaining a record that a newer comparable statement has replaced.
-`previous_value` remains the compact way to express an ordinary comparable change.
-
-## Handle absence and disagreement without compression
-
-A missing source role is represented by its absence. If no reliable current Value exists from any
-role, retain the Parameter only when its stable monitoring identity is essential to the Unit and a
-credible future update path exists; otherwise it is not yet part of the maintainable State.
-
-When Values disagree, first test whether scope, horizon, basis, or source role explains the
-difference. Comparable Values from different roles should coexist because the disagreement may be
-the most important description of current expectations. A real unresolved conflict within the same
-defined object should remain explicit through the available Value and validity semantics rather
-than being averaged into a synthetic baseline.
-
-## Reconcile the Shell and complete the turn
-
-Before returning the Shell, reconcile equivalent Parameters across Units so their names,
-definitions, Value types, and shared evidence remain semantically consistent. Retain a Parameter in
-each Unit only where its movement has actual relevance to that proposition. Confirm that every Value
-references a defined Parameter and that similar wording has not created duplicate observation
-targets inside a Unit.
-
-State Research is complete when each Unit has enough maintainable State to locate its current
-expectation; retained Parameters have stable identities and update paths; every Parameter has been
-considered across all source roles, with focused research attempted for applicable missing Values;
-unsupported roles have been deliberately left absent; and retained Values preserve role, scope,
-time, evidence, and supported precision. Review whether the complete State Set locates the
-proposition across its major realization and expectation dimensions, and whether meaningful,
-readily obtainable prior observations were considered for key current Values. Important reality
-mechanisms that resist stable parameterization remain available for the next turn.
-
-Return the complete `ExpectationShell`. Update each Unit's `state` and carry the other canonical
-fields and existing later-stage objects through unchanged, apart from justified semantic refinement
-of the existing Shell or Unit definition.
+In a Resolution, `resolution` states the research disposition and contribution; `reason` explains why the findings justify it. For contributions solely to State or Baseline, use `destination: null`; other destinations must be names allowed by the current contract. A new measurement is not automatically a new research direction. Finalization will reconcile the complete outcome history. The formal deliverable is this JSON envelope, not a separate report or a bare Shell.

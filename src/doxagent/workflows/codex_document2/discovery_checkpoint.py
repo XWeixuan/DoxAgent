@@ -71,8 +71,6 @@ def checkpoint_error(message):
 
 
 def validate_checkpoint(checkpoint, context, workspace_run_id):
-    from .validation import validate_output
-
     if (
         checkpoint.workspace_run_id != workspace_run_id
         or checkpoint.shell != context["canonical_shell"]["name"]
@@ -83,7 +81,6 @@ def validate_checkpoint(checkpoint, context, workspace_run_id):
         or not checkpoint.producer_attempt_id
     ):
         raise ValueError("Open Discovery checkpoint identity or SHA mismatch")
-    validate_output(checkpoint.scan, context)
 
 
 def assemble_result(completion, checkpoint, context, workspace_run_id):
@@ -121,17 +118,84 @@ async def read_checkpoint(workspace, workspace_run_id, context):
     return checkpoint
 
 
+async def recover_checkpoint(workspace, workspace_run_id, attempt_id, context):
+    """Reuse a trusted freeze, or actually freeze recovered Scan without false Selection."""
+    from .acceptance import diagnostic, normalize
+
+    diagnostics = []
+    invalid = False
+    try:
+        checkpoint = await read_checkpoint(workspace, workspace_run_id, context)
+    except Document2ExecutionError as exc:
+        checkpoint = None
+        invalid = True
+        diagnostic(diagnostics, "checkpoint_unusable", reason=str(exc))
+    if checkpoint is not None:
+        return checkpoint, True, diagnostics
+    raw = None
+    paths = [
+        f"attempts/{attempt_id}/output/scan.json",
+        f"attempts/{attempt_id}/output/open_discovery_scan.json",
+    ]
+    if not invalid:
+        paths.append(SCAN_PATH)
+    for path in paths:
+        try:
+            text = await workspace.read_text(workspace_run_id, path)
+            candidate = OpenDiscoveryScanV21.model_validate_json(text.content or "")
+            raw = normalize(candidate, context, diagnostics)
+            break
+        except (FileNotFoundError, ValueError, TypeError, KeyError):
+            continue
+    if raw is None:
+        raw = normalize(
+            OpenDiscoveryScanV21(shell=context["canonical_shell"]["name"]), context, diagnostics
+        )
+        diagnostic(diagnostics, "discovery_unavailable")
+    qualified = OpenDiscoveryScanV21.model_validate(
+        qualify_refs(raw.model_dump(mode="json"), attempt_id)
+    )
+    checkpoint = OpenDiscoveryCheckpointV21(
+        workspace_run_id=workspace_run_id,
+        shell=qualified.shell,
+        research_cutoff_at=context["research_cutoff_at"],
+        seed_sha256=sha(stable_json(context["canonical_shell"])),
+        producer_attempt_id=attempt_id,
+        scan_sha256=sha(stable_json(qualified)),
+        scan=qualified,
+    )
+    # A corrupt immutable original is retained. This attempt's derived result is authoritative.
+    for path, value in ((CHECKPOINT_PATH, checkpoint), (SCAN_PATH, qualified)):
+        content = stable_json(value)
+        try:
+            previous = await workspace.read_text(workspace_run_id, path)
+        except FileNotFoundError:
+            await workspace.write_text(workspace_run_id, path, content)
+        else:
+            if previous.content != content:
+                diagnostic(diagnostics, "original_freeze_retained", path)
+    diagnostic(diagnostics, "scan_recovered_after_turn")
+    return checkpoint, False, diagnostics
+
+
 def task_contract(context):
     return {
         "tool": TOOL_NAME,
         "checkpoint_path": CHECKPOINT_PATH,
         "scan_path": SCAN_PATH,
         "resume_from": context.get("resume_from", "FULL_SCAN"),
+        "cli": (
+            "python -m doxagent.workflows.codex_document2.discovery_checkpoint commit "
+            "--scan-file <scan.json> --run-id <workspace_run_id> "
+            "--attempt-id <attempt_id> [--pilot-case-id <case_id>]"
+        ),
         "protocol": (
             "Within this single turn, submit the full Scan through commit_open_discovery_scan, "
             "wait for its successful frozen Scan and SHA, then produce Selection over that Scan. "
-            "Return selection and scan_sha256 only. Never write or overwrite checkpoint files "
-            "using shell tools. If resume_from is SELECTION, use the injected frozen Scan/SHA "
+            "The equivalent local commit CLI may be used if MCP is unavailable. It binds the "
+            "same task and atomically freezes real Scan bytes. Write selection and scan_sha256 "
+            "to output/completion.json; do not hand-write checkpoint files. "
+            "If resume_from is SELECTION, use the injected frozen Scan/SHA "
             "without rescanning or replacing candidates. If the checkpoint file already exists "
             "in an exported source Pilot case, read that frozen Scan/SHA and continue Selection "
             "even when the original immutable context predates the checkpoint."
@@ -222,10 +286,10 @@ class DiscoveryCheckpointService:
         return checkpoint
 
     def commit(self, scan):
-        from .validation import validate_output
+        from .acceptance import normalize
 
         scan = OpenDiscoveryScanV21.model_validate(scan)
-        validate_output(scan, self.context)
+        scan = normalize(scan, self.context)
         qualified = OpenDiscoveryScanV21.model_validate(
             qualify_refs(scan.model_dump(mode="json"), self.attempt_id)
         )
@@ -280,7 +344,86 @@ def finalize_pilot(case_root, attempt_id):
     return result
 
 
+def accept_pilot_discovery(case_root, attempt_id, context, file_text, sdk_reply):
+    from .acceptance import accept_discovery, diagnostic
+
+    manifest = json.loads((case_root / "case_manifest.json").read_text(encoding="utf-8"))
+    service = DiscoveryCheckpointService(
+        case_root, manifest["run_id"], attempt_id, manifest["case_id"]
+    )
+    ds, checkpoint = [], None
+    try:
+        checkpoint = service.load()
+    except (ValueError, OSError) as exc:
+        diagnostic(ds, "checkpoint_unusable", reason=str(exc))
+    bound = checkpoint is not None
+    if checkpoint is None:
+        scan = None
+        for path in (
+            f"attempts/{attempt_id}/output/scan.json",
+            f"attempts/{attempt_id}/output/open_discovery_scan.json",
+        ):
+            try:
+                scan = OpenDiscoveryScanV21.model_validate_json(
+                    service.store.read_text(service.physical_id, path).content
+                )
+                service.commit(scan)
+                checkpoint = service.load()
+                break
+            except (ValueError, FileNotFoundError):
+                continue
+        if checkpoint is None:
+            scan = OpenDiscoveryScanV21(
+                shell=context["canonical_shell"]["name"],
+                units=[dict(name=u["name"]) for u in context["canonical_shell"]["units"]],
+            )
+            checkpoint = OpenDiscoveryCheckpointV21(
+                workspace_run_id=service.run_id,
+                shell=scan.shell,
+                research_cutoff_at=context["research_cutoff_at"],
+                seed_sha256=sha(stable_json(context["canonical_shell"])),
+                producer_attempt_id=attempt_id,
+                scan_sha256=sha(stable_json(scan)),
+                scan=scan,
+            )
+            for path, value in ((CHECKPOINT_PATH, checkpoint), (SCAN_PATH, scan)):
+                try:
+                    service.store.read_text(service.physical_id, path)
+                except FileNotFoundError:
+                    service.store.write_text(service.physical_id, path, stable_json(value))
+            diagnostic(ds, "discovery_unavailable")
+        diagnostic(ds, "scan_recovered_after_turn")
+    accepted = accept_discovery(
+        checkpoint, context, file_text=file_text, sdk_reply=sdk_reply, selection_bound=bound
+    )
+    accepted.output.selection = type(accepted.output.selection).model_validate(
+        qualify_refs(accepted.output.selection.model_dump(mode="json"), attempt_id)
+    )
+    accepted.diagnostics.extend(ds)
+    return accepted
+
+
 def main():
+    import argparse
+    import sys
+
+    if len(sys.argv) > 1 and sys.argv[1] == "commit":
+        parser = argparse.ArgumentParser(
+            description="Freeze a Scan using the same bound commit as MCP"
+        )
+        parser.add_argument("command", choices=["commit"])
+        parser.add_argument("--scan-file", type=Path, required=True)
+        parser.add_argument("--run-id", required=True)
+        parser.add_argument("--attempt-id", required=True)
+        parser.add_argument("--pilot-case-id")
+        args = parser.parse_args()
+        service = DiscoveryCheckpointService(
+            Path.cwd(), args.run_id, args.attempt_id, args.pilot_case_id
+        )
+        result = service.commit(json.loads(args.scan_file.read_text(encoding="utf-8")))
+        sys.stdout.reconfigure(encoding="utf-8")
+        print(json.dumps(result, ensure_ascii=False))
+        return
     from mcp.server.mcpserver import MCPServer
 
     service = DiscoveryCheckpointService(

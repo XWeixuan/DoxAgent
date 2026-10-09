@@ -1,194 +1,70 @@
-# Turn 2: Realization Model — Mechanism Decomposition
+# Realization Research — Map the Causal System Before Deepening It
 
-## Purpose
+## Purpose: causal coverage before local precision
 
-Research the reality mechanisms that determine whether each Unit can be realized, when and how
-strongly it can be realized, who captures the result, and how the business outcome converts into
-financial value. The researched State describes what can be maintained as stable variables and
-Values; Realization Factors preserve material conditions whose current meaning requires richer
-business context.
+Prioritize causal coverage over local precision. Explain the relevant routes through which each expectation subject is affected, and the variables that carry those effects. A broad, intelligible model is more useful than a finely documented fragment of one familiar route. Cover the system before spending most of the research effort on a particular customer, implementation detail, or financial bridge.
 
-A Factor maintains the reality status of a material mechanism, condition, or execution gate. That
-gate may be continuous or realized through discrete milestones; future information should be able
-to update its status through a concrete observation interface. Work across the complete Shell so
-shared actors, dependencies, and value-transmission paths remain consistent, then attach each
-Factor to the Unit whose realization it materially changes.
+A Realization Factor is a reusable causal explanation, together with its current operation and the importance of its variables. It is not a verdict on whether a desired outcome has been fully realized. The model should help Gaps and O3 understand why a new fact could matter, including effects that change expected opportunity, competitive position, or timing before appearing in reported results.
 
-## Working inputs
+## Build the causal map across the whole subject
 
-Continue in the same O1 thread from the completed State turn. In `context.json`, `canonical_shell`
-is the refreshed State-complete object to update. Retain the integrated understanding of C1, C3,
-C5, and Future Nodes established in Turn 1; revisit a primary asset, horizontal or entity context,
-optional Narrative Research, or Event Library only where mechanism analysis needs its specific
-detail or later evidence.
+Continue with this task's refreshed `canonical_shell`, State, Expectation Baselines, and discovery records. Recover the shared research understanding from the thread and revisit the relevant upstream material or search outward as needed. The Unit's `scope` and `horizon` identify the subject to explain; the existing Parameters are observations within that subject, not a complete list of its causal variables.
 
-## Research the realization model before selecting Factors
+First map the different ways the subject can develop. Work outward from its uses, participants, resources, and business arrangements, and work backward from changes in its outcomes to alternative causes. Include company actions and external influences on equal explanatory terms. For a demand subject, understand how demand is created and allocated; for a technology subject, understand capability and adoption; for a financial subject, continue through the relevant business-to-financial relationships. These are examples of choosing the right explanatory endpoint, not a pipeline that every Unit must follow to earnings. When task volume, customer budgets or data growth appear as starting inputs, also explain the activities and decisions that generate them where these can change the outlook. Application usefulness, paid adoption, investment returns and access to funding can be causal drivers, not merely background to a technical demand model.
 
-Start from the integrated Shell understanding and researched State developed in Turn 1. Use the
-retained C1, C3, C5, and Future Node understanding as trusted prior research; revisit the relevant
-asset or conduct focused research when a mechanism needs a specific actor, process, contract,
-conflict, or additional evidence.
+Within each route, identify the variables that actually connect one change to the next. Explain who controls them, how they interact, and where substitutions, allocation choices, delays, or feedback change the result. Follow the connection far enough to make the Unit-level effect intelligible. A causal chain explains how an influence travels; it is not a list of facts that must all be confirmed together. Several variables within the same chain may each change the outlook in their own way.
 
-Before decomposing mechanisms, use the current `boundary_rule` and supplied final Shell map to
-understand which expectation systems adjacent Shells model in depth. Dependencies may cross Shells.
-Use that map to represent the transmission needed for the current Unit's realization while treating
-the dependency's full State, mechanism, and event system as the adjacent Shell's depth scope.
+Look across the map before grouping it into Factors. Does an important external source of demand or constraint still appear only as a vague label while familiar company processes receive detailed treatment? Have alternative routes or a different beneficiary disappeared merely because the supplied State has little data about them? Extend those parts of the model. Also examine the Unit-facing variables themselves: how could their level, allocation or economics change while the newly explored external drivers stay broadly constant? Develop any missing core or middle-layer route alongside those outer drivers. This is research within the current turn, not an additional checkpoint, prescribed graph artifact, or fixed Factor count.
 
-Then use each Unit's `proposition` and `horizon` to define the outcome whose realization is being
-studied, and use the current State to locate the measurable anchors already established. These
-objects locate and organize the research; they are not sufficient sources of mechanism insight.
-Trace the reality path from the integrated upstream research and current State to the Unit outcome,
-then examine where the path can be enabled, delayed, redirected, weakened, or broken. Relevant
-layers may include:
+## Develop the relationships and their present operation
 
-- demand and external conditions;
-- qualification, adoption, or commercial access;
-- order, resource, or market-share allocation;
-- technical, production, operational, or regulatory execution;
-- delivery and revenue recognition;
-- competitive and bargaining-power distribution; and
-- margin, working-capital, cash-flow, or terminal-value conversion.
+Use technical arrangements, actor incentives, contracts, resource economics, observed behavior, and relevant analogues to explain the links. Develop useful causal working models for emerging technologies and business arrangements as well as familiar operations. Make their premises explicit: explain how the relationship would operate under the relevant conditions, and what the available observations say about its current application. A directly reported end-to-end company outcome is one source of understanding, not the admission requirement for a causal relationship.
 
-This is a reasoning map rather than a fixed pipeline. Use the layers the Unit actually requires.
-Follow the chain forward to understand realization and backward from the terminal outcome to find
-indispensable dependencies, major failure points, and mechanisms that change timing, magnitude,
-beneficiary, or conversion efficiency.
+Build `current_status` as a synthesis of how the mechanism is operating now. Locate the actors, resource allocation, competitive choices, and constraints that matter to its current effect. Draw on State without simply copying its Values. Where a component is unmeasured, describe the useful qualitative position or the specific assumption used in the working model. Information availability and the physical or economic constraint in the system are separate matters.
 
-For each material link, ask:
+Research breadth first, then deepen the gaps that could change the model's connections, direction, scale, or relative variable importance. Reuse sound upstream work, and actively use Web Search for missing technical, industry, or actor-specific understanding. For data absent upstream, search the web before retrying structured-data routes; only after an important data gap remains should you use a suitable Data MCP capability exposed in the task. Search the actors and processes that produce the information, not only the target company's disclosures.
 
-- What must be true for value to pass through this link?
-- Which company, customer, supplier, competitor, regulator, or technical system controls it?
-- What evidence shows the difference between stated intent and actual execution?
-- Is success one-off, repeatable, scalable, and economically productive?
-- What lag separates progress at this link from the Unit's business or financial outcome?
-- Can an alternative route, substitute, or competing actor redirect the value?
+## Assess materiality throughout each chain
 
-Then study the dependency structure rather than treating answers as isolated risks. Identify
-sequences in which one condition is useful only after another holds, bottlenecks that dominate the
-rest of the chain, feedback or learning effects created by repeated execution, and trade-offs where
-improving one mechanism weakens another. The final Factor Set should preserve the few mechanisms
-that explain how the system works together, while the State remains the set of current measurable
-anchors inside that system.
+Give every causal variable you introduce in `mechanism` a materiality assessment in `materiality_context`, as far as the research allows. Explain each variable's role in the result, its economic reach, and its relative influence alongside the others. Variables with genuinely similar effects can share an explanation; identifying one dominant bottleneck is not a substitute for assessing the rest of the chain.
 
-## Admit a Realization Factor
+Use concrete counterfactual reasoning. If this variable moved while the others initially stayed the same, what would change for the Unit, by how much or over what scope, and how quickly? Then consider the responses and dependencies that would alter that first effect. Compare variables within the actual operating setting: one may determine the size of the opportunity, another the resource intensity, another the pace of delivery, and another who captures the value. A downstream result may summarize several upstream changes rather than act as an additional independent driver. Express these distinctions in business language rather than assigning a score or filling role categories. Then locate these effects at the research cutoff: use the observed operating position and available scales to judge which variables presently have greater leverage and why. A proportional example such as a variable doubling is a starting illustration, not a substitute for assessing its current range, constraint or likely influence relative to the other variables.
 
-A candidate belongs in the Realization Model when:
+Use available quantities to establish scale with matching units, periods, and economic scope. When precise coefficients are unavailable, still make an assessment through useful benchmarks, transparent estimates, relative magnitudes, or conditional sensitivity. State the basis of an estimate and distinguish it from an observed amount. The absence of a precise number changes the resolution of the assessment, not the need to explain the variable's influence.
 
-- it is an identifiable reality condition, constraint, or execution gate whose status matters to
-  realization; it may be continuing or embodied in a discrete milestone when the business advances
-  through such gates;
-- its development materially changes realization, failure, timing, strength, beneficiary, or
-  financial conversion for the Unit;
-- the current State cannot express it faithfully through one stable Parameter and comparable
-  Values;
-- existing evidence can explain why it matters and what is currently known; and
-- future information can confirm, challenge, or update its status.
+Separate current operating contribution from the amount by which new information could change the future view. A mature business may contribute more revenue while an earlier development at an important customer changes a larger previously open opportunity. Compare current exposure, the working expectation and the new economic implication, rather than ranking importance automatically by qualification or shipment stage. Neither an early nor a late stage is inherently more revisionary.
 
-Use these as object tests rather than a score or count target. A generic operating risk, broad
-industry truth, or isolated metric becomes useful only when it exposes a material causal mechanism
-for this Unit. Temporal shape alone does not decide the object. A launch, trial, qualification,
-approval, or contract award can be central to a Realization Factor when it is the actual execution
-gate through which the business progresses. A valid Factor may be widely known by the market
-because its purpose is to model reality, not surprise.
+Consider both current marginal effects and how they change with the system's state. Spare capacity can absorb new activity before procurement increases; approaching that capacity limit can make the same activity change much more consequential. A supply constraint can shift additional demand into allocation, price, or future expansion decisions. Explain those effects and horizons rather than treating an unchanged near-term output as the end of the analysis. Interactions matter: efficiency can reduce resource use per task while lowering cost and encouraging more use.
 
-## Assign the structural role by causal function
+For a hypothetical persistent-cloud-workload chain, task volume sets the activity scale, and task duration increases the work required at a given task count. Resource intensity determines computing needs per active task; scheduling efficiency changes how much work the existing fleet can carry. Spare capacity determines how soon additional workload calls for new infrastructure. Architecture compatibility defines which equipment can serve it, and supplier allocation divides the resulting opportunity. Assess all of these variables: the demand variables may dominate the opportunity's extent, utilisation and headroom its near-term procurement sensitivity, and compatibility and allocation the target supplier's participation. Apply these roles to the actual Unit's current usage, paid adoption, funding, headroom and allocation. If rapid take-up meets little available headroom, explain why activity and expansion timing currently dominate; where unused capacity is substantial, explain which effects remain important for later opportunity or supplier participation. Use the current material to state the working reading or the precise condition separating the remaining cases, rather than leaving an undifferentiated pair of possibilities. This is an analytical illustration, not a universal chain.
 
-Choose `structural_role` from the Factor's place in the realization chain:
+Lead with the best-supported economic judgment and explain it. When a conclusion depends on a particular condition, name that condition and give the effect on either side where useful. This produces usable analysis even with incomplete data. Repeated generic cautions about what remains unconfirmed do not replace a judgment about relative importance. Strong, weak, favorable, adverse, and offsetting effects should all be stated plainly when the analysis supports them.
 
-- `REQUIRED`: an important condition that must materially hold for the core realization path;
-- `BLOCKER`: a mechanism whose presence or persistence can substantially interrupt that path; or
-- `MODIFIER`: a mechanism that mainly changes timing, magnitude, beneficiary, product mix, margin,
-  or conversion efficiency without alone deciding the entire proposition.
+## Organize the explanation into Factors
 
-The role describes causal function, not positive or negative sentiment. Classify the Factor that
-actually exists rather than filling all three roles for coverage. A condition can matter without
-being strictly necessary, and an adverse influence can be a Modifier rather than a Blocker.
+Group variables around coherent causal explanations. Keep independently meaningful routes visible when they require different understanding; combine closely linked variables when that preserves a clear explanation. Neither each metric nor each named customer needs its own Factor. Conversely, a broad heading such as "industry conditions" is insufficient if it hides economically different relationships. Coverage is carried by the explanation, not by the number or size of the containers. When a specific application or event illustrates a broader relationship, preserve the rest of that relationship's scope instead of letting the example replace it. Shared sources or a mention in a sibling Unit do not supply this Unit's distinct causal consequence.
 
-## Research the mechanism with reality evidence
+Use the six Factor fields for distinct contributions:
 
-For each candidate mechanism, compare the state required for the Unit to realize with the state
-that the integrated C1, C3, C5, Future Node, and current State evidence supports. Identify the
-controlling actors, their incentives and actual commitments, the operational dependency, and the
-evidence that would distinguish capability from execution. Where those primary assets leave the
-mechanism incomplete, define the missing question before new research. Prefer realized results and
-actor behavior, then direct customer, supplier, competitor, or regulatory evidence, specific
-operating and financial data, and broader commentary when it adds necessary context.
+| Field | Research contribution |
+| --- | --- |
+| `name` | A concise name for the causal relationship, not a question or a required endpoint. |
+| `mechanism` | The variables, their connections, and the logic of how they affect the Unit; state material premises within the explanation. |
+| `current_status` | How this mechanism is operating at the research cutoff, synthesizing current observations and useful working assumptions. |
+| `materiality_context` | The economic scale and relative influence of the causal variables throughout the chain, including current sensitivities and interactions. |
+| `scope_boundary` | What this explanation covers and where it connects to adjacent research; scope organizes depth without excluding relevant external influences. |
+| `ref` | Sources for the current facts, causal premises, and benchmarks or estimates used in the research. |
 
-Discrete milestones deserve the same depth as continuous conditions when they carry the business
-forward. For a launch, test, approval, qualification, or award, research what the event was designed
-to prove, what it actually proved, which dependency remains, and whether the outcome is repeatable,
-scalable, and economically relevant. A single success may remove one technical gate while leaving
-cadence, reliability, customer adoption, or unit economics unresolved; a single failure may reveal
-a blocker without proving the whole proposition impossible.
+The same subject can contribute to State, Baseline, and Factor for different reasons. State preserves its observed properties, Baseline describes the current forward view, and Factor explains how it works and why changes matter. Make useful local State or Baseline additions when mechanism research improves them; a State addition must meet the Unit-anchoring purpose, while other new facts can support the causal explanation or `current_status`. Future changes to these relationships can be explored as Gaps without turning the current Factor into a recognition rule or a trading threshold.
 
-Once the model is clear, encode its material mechanisms concisely:
+Keep shared relationships semantically consistent across Units while explaining their Unit-specific effects. Preserve the connections between Factors, including interactions that cross Shell ownership. The neighboring Shell's depth scope does not remove the current Unit's need for an intelligible explanation of that influence.
 
-- `factor_id` names the mechanism or execution gate, and `condition` defines the one reality
-  question whose status can change coherently;
-- `current_status` states what is established at the task cutoff, the operational progress, and the
-  material evidence boundary; absence of public confirmation remains distinct from an evidenced
-  negative;
-- `impact` locates the Factor in the chain and states whether it changes realization, timing,
-  magnitude, beneficiary, or financial conversion, together with the limiting step that remains;
-- `citation` supplies the principal evidence for the mechanism's relevance and current status; and
-- `observability.match_condition` identifies future information or actor behavior that would
-  confirm, challenge, or materially update the Factor.
+## Finish for coverage and hand off
 
-In `impact`, keep adjacent economic steps distinct: demand is not target-company capture;
-capability is not adoption; qualification is not allocation; capacity is not qualified output;
-revenue is not margin or cash conversion; regulatory permission is not scaled commercialization.
-Use only the distinctions that matter to the Unit.
+The research is ready when the relevant causal routes are explained, their influential variables are visible, and materiality has been assessed across those variables rather than only at the Factor level. Continue while an important path is missing or a relationship remains too vague to interpret, including a core variable whose external drivers have been explored but whose own operation or other change routes remain unexplained. Fill that gap without withdrawing useful outer-layer research. Once the model is broadly usable, deepen the details most likely to change understanding; additional precision on one path should not displace coverage elsewhere. Remaining uncertainty should identify a specific sensitivity or assumption, not erase the analysis already achieved.
 
-A Factor can remain valid when its outcome is unconfirmed if its materiality is grounded and
-`current_status` accurately records the evidence boundary. If focused research cannot support the
-mechanism's materiality, current relevance, or future observability, move to the next mechanism
-rather than repeatedly searching the same unsupported possibility.
+Return the required envelope containing `canonical_shell`, `late_additions`, and `open_discovery_resolution`. The complete Shell replaces the previous one: preserve valid State, Baselines, Gaps, and references alongside the new or revised Factors. Follow the current task and `output_schema.json` for exact fields and delivery, including any completion-file instruction. Preserve qualified upstream source references and the identity of new observations in `ref`.
 
-## Reconcile State, Factor, and Gap boundaries
+The complete-model requirement applies to `canonical_shell`, not automatically to the two process arrays. Submit only genuinely new directions in `late_additions`, with `discovered_during: "REALIZATION"`; the supplied cumulative discoveries are context, retained by orchestration. Further research on a State-stage discovery does not make it a new Realization discovery or change its first-discovery identity. A new variable within an existing investigation is not automatically a new direction.
 
-Turn 2 may make a local State correction when mechanism research reveals an object-level error. If
-future information normally updates or replaces the Value of one stable observation target without
-reinterpreting the target, represent the object in State. If each update requires explaining how a
-mechanism has progressed, what has been validated, which dependency remains, why reality changed,
-and how that status affects the Unit, maintain it as a Realization Factor. Value Type describes
-representation form; update behavior distinguishes State from Factor, so an `EVIDENCE` stance does
-not by itself turn a complex mechanism into State. Preserve valid State work and revise only the
-objects whose boundary has become clear.
-
-Factor and Gap classification depends on the research function, not solely on whether the real-world
-item is discrete. A launch or other milestone can appear in the Realization Model as a critical
-execution gate with a maintained current status and observation interface. The same future event can
-also support a Potential Gap when the object being modeled is the occurrence itself and the
-meaningful revision it could force in the Unit. Keep the two cognitive jobs distinct without forcing
-a one-to-one Gap for every Factor.
-
-## Review realization coverage across the Shell
-
-Before completing the turn, actively review every Unit through the relevant mechanism lenses:
-
-- Is the main realization path explained beyond the current State?
-- Are the principal failure or blocking mechanisms represented?
-- Are the decisive dependencies, bottlenecks, and interactions between mechanisms understood?
-- Can competition, substitution, allocation, or bargaining power redirect the benefit?
-- Does a milestone demonstrate a one-off success, or repeatable and scalable execution?
-- What can materially change timing or result magnitude?
-- What determines whether the business outcome converts into profit, cash flow, or terminal value?
-- Has an important contextual mechanism been forced into State or left as generic background?
-
-This review seeks coverage of the major causal paths, not a fixed number of Factors. Reconcile the
-same mechanism across adjacent Units so its identity and current status remain consistent; retain
-it in each Unit only where its `impact` is materially relevant to that proposition.
-
-## Completion
-
-Realization Research is complete when every Unit's main realization path, principal failure path,
-and important result modifiers have been actively considered; State/Factor boundaries are coherent;
-and each retained Factor has a specific condition, causally correct role, evidence-based current
-status, bounded impact, principal citation, and usable observation interface. Further research
-should mainly produce duplicate, low-impact, or unobservable mechanisms rather than change this
-model materially. The Factor Set should explain the current Unit's reality mechanisms while keeping
-its research depth consistent with the dependency systems assigned to adjacent Shells.
-
-Return the complete `ExpectationShell`. Preserve the researched State, update each Unit's
-`realization_factors`, carry existing `potential_gaps` and other canonical fields through unchanged,
-and include only justified local State or semantic refinements discovered during this turn.
+Submit only dispositions newly made or substantively revised this turn in `open_discovery_resolution`. Write the resulting research contribution in `resolution` and why the findings justify that disposition in `reason`. Use permitted Unit/Factor/Gap names for a non-null `destination`; explain State/Baseline-only contributions with null destination. Empty process arrays mean there is no new contribution, not that previous discoveries or dispositions are discarded. Leave the frozen Scan unchanged; Finalization reconciles the complete outcome history. The formal deliverable remains the JSON envelope, not a separate report or bare Shell.

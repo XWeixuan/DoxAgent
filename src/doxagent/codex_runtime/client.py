@@ -32,7 +32,7 @@ class WorkspaceClient(Protocol):
         self, run_id: str, relative_path: str, content: str
     ) -> WorkspaceFileResponse: ...
     async def read_text(self, run_id: str, relative_path: str) -> WorkspaceFileResponse: ...
-    async def inventory(self, run_id: str) -> WorkspaceInventory: ...
+    async def inventory(self, run_id: str, *, prefixes=None) -> WorkspaceInventory: ...
     async def read_attempt_observations(
         self, run_id: str, attempt_id: str
     ) -> list[PersistedObservation]: ...
@@ -151,9 +151,13 @@ class HttpCodexWorkerClient:
         )
         return WorkspaceFileResponse.model_validate(response.json())
 
-    async def inventory(self, run_id: str) -> WorkspaceInventory:
+    async def inventory(self, run_id: str, *, prefixes=None) -> WorkspaceInventory:
         response = await self._request(
-            "GET", f"/v1/workspaces/{run_id}", run_id=run_id, operation="inventory"
+            "GET",
+            f"/v1/workspaces/{run_id}",
+            run_id=run_id,
+            operation="inventory",
+            params=[("prefixes", p) for p in prefixes] if prefixes is not None else None,
         )
         return WorkspaceInventory.model_validate(response.json())
 

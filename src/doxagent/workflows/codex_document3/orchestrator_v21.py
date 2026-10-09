@@ -4,12 +4,21 @@ from __future__ import annotations
 
 import asyncio
 import json
+import re
 from collections import Counter, defaultdict
 from datetime import datetime
 from uuid import uuid4
 
+from .assets_v21 import ATLAS_NAMES, ATLAS_ROOT
 from .inputs_v21 import InputPreparerV21, utc
-from .runner_v21 import RunnerV21
+from .integration_v21 import (
+    directory_batches,
+    edit_batches,
+    edit_inheritance,
+    parse_review,
+    source_directory,
+)
+from .runner_v21 import RunnerV21, reference_path
 from .schema_v21 import (
     Agenda,
     Consolidation,
@@ -23,12 +32,14 @@ from .schema_v21 import (
     StagedHandoffV21,
 )
 from .state_v21 import canonical, digest
+from .timing_v21 import HostTiming
 from .validation_v21 import (
     accept_policy,
     final_identities,
     normalize_agenda,
     records,
     replace_structurally,
+    safe_path,
     structured,
 )
 
@@ -47,10 +58,60 @@ def batches(items, *, count=20, size=128 * 1024):
 
 
 def policy_batches(items):
-    groups = defaultdict(list)
-    for item in items:
-        groups[item["path"].rsplit("/policies/", 1)[0]].append(item)
-    return [batch for group in groups.values() for batch in batches(group)] or [[]]
+    return directory_batches(items)
+
+
+def build_policy_output(path, prefix):
+    if not path.startswith(prefix) or not path.endswith(".json"):
+        return False
+    relative = path[len(prefix) :]
+    return relative.startswith("policies/") or (
+        "/" not in relative and relative.startswith("policy")
+    )
+
+
+def build_result_records(files, prefix):
+    parsed, bad, seen, alternatives = [], [], set(), []
+    standard = ("results.jsonl", "result.jsonl", "result.json", "results.json")
+    extra = sorted(
+        path[len(prefix) :]
+        for path in files
+        if path.startswith(prefix)
+        and path[len(prefix) :] not in standard
+        and re.fullmatch(r"results?(?:[_-][^/]+)?\.jsonl?", path[len(prefix) :], re.IGNORECASE)
+    )
+    for name in (*standard, *extra):
+        path = prefix + name
+        if path not in files:
+            continue
+        if name != "results.jsonl":
+            alternatives.append(path)
+        raw = files[path]
+        if name.lower().endswith(".json"):
+            try:
+                value = json.loads(raw)
+                raw = "\n".join(
+                    canonical(item) for item in (value if isinstance(value, list) else [value])
+                )
+            except (ValueError, TypeError):
+                bad.append({"path": path, "line": 1, "error": "invalid result JSON"})
+                continue
+        values, errors = records(raw, ResearchResult)
+        bad.extend({"path": path, **error} for error in errors)
+        for line, result in values:
+            normalized = []
+            for ref in result.policies:
+                try:
+                    ref = safe_path(ref)
+                    normalized.append(ref if ref.startswith("output/") else prefix + ref)
+                except ValueError:
+                    normalized.append(ref)
+            result = result.model_copy(update={"policies": normalized})
+            identity = canonical(result.model_dump(mode="json"))
+            if identity not in seen:
+                parsed.append((line, result))
+                seen.add(identity)
+    return parsed, bad, ";".join(alternatives) or None
 
 
 def delta_has_work(value):
@@ -71,8 +132,22 @@ def feed_has_work(value):
     return bool(value)
 
 
+class PilotPhasePaused(RuntimeError):
+    """Pilot-only boundary after a durable phase checkpoint."""
+
+    def __init__(self, phase: str, run_id: str):
+        self.phase = phase
+        self.run_id = run_id
+        super().__init__(f"Pilot paused after {phase}: {run_id}")
+
+
 class Document3OrchestratorV21:
     orchestration_version = "v2.1"
+    orchestration_revision = 3
+
+    def _pilot_boundary(self, phase, run_id):
+        if getattr(self, "pilot_stop_after_phase", None) == phase:
+            raise PilotPhasePaused(phase, run_id)
 
     def __init__(self, *, input_preparer, agent_runner, state, node_assets, policy_repository=None):
         self.state = state
@@ -85,10 +160,31 @@ class Document3OrchestratorV21:
         existing = self.state.run(run_id)
         if existing:
             result = self.state.start(run_id, identity, existing)
+            if (
+                not result.get("commit")
+                and result.get("orchestration_revision") != self.orchestration_revision
+            ):
+                raise ValueError(
+                    "Active legacy D3 run requires a new run; frozen old tasks are preserved"
+                )
             await self._verify_frozen(run_id, result)
             return result
         assets = self.runner.frozen_assets(mode)  # fail before providers or Worker dispatch
         prepared = await prepare()
+        for material in (
+            prepared["topology"]
+            .get("owner_profiles", {})
+            .get("OPEN_EVENT", {})
+            .get("primary_materials", [])
+        ):
+            for name, filename in ATLAS_NAMES.items():
+                if material["ref"] == f"{ATLAS_ROOT}/{filename}" and name in assets:
+                    material.update(availability="available", sha256=assets[name]["sha256"])
+        prepared["files"]["context/document3/v21/topology.json"] = canonical(prepared["topology"])
+        for entry in prepared["manifest"]:
+            if entry["path"] == "context/document3/v21/topology.json":
+                content = prepared["files"][entry["path"]]
+                entry.update(sha256=digest(content), size_bytes=len(content.encode()))
         manifest_path = "context/document3/v21/input_manifest.json"
         prepared["files"][manifest_path] = canonical(prepared["manifest"])
         observed = (
@@ -98,6 +194,8 @@ class Document3OrchestratorV21:
         )
         payload = {
             "mode": mode,
+            "orchestration_revision": self.orchestration_revision,
+            "review_schema_hash": digest(Review.model_json_schema()),
             "phase": "PREPARE",
             "prepared": prepared,
             "assets": assets,
@@ -121,6 +219,9 @@ class Document3OrchestratorV21:
         return frozen
 
     async def _verify_frozen(self, run_id, run):
+        shell_input = run.get("shell_discovery_input")
+        if shell_input and digest(shell_input["files"]) != shell_input["sha256"]:
+            raise ValueError("frozen Shell Discovery input integrity mismatch")
         for path, text in run.get("prepared", {}).get("files", {}).items():
             try:
                 current = await self.workspace.read_text(run_id, path)
@@ -155,6 +256,8 @@ class Document3OrchestratorV21:
                     raise ValueError(f"accepted task snapshot integrity mismatch:{snapshot}")
 
     async def _turn(self, run_id, owner, phase, key, outputs, task, extra=None):
+        material_timing = HostTiming()
+        material_timing.step("material_resolve")
         run = self.state.run(run_id)
         inputs = dict(run["prepared"]["files"])
         current_shell = next(
@@ -168,15 +271,50 @@ class Document3OrchestratorV21:
         for entry in run["prepared"]["manifest"]:
             if entry["availability"] != "available":
                 inputs.pop(entry["path"], None)
+        if phase in {"build", "integration"}:
+            for previous_key, record in self.state.tasks(run_id).items():
+                if previous_key.startswith("discovery:") and record.get("status") in {
+                    "COMPLETED",
+                    "PARTIAL",
+                }:
+                    inputs.update(
+                        (path, content)
+                        for path, content in record.get("files", {}).items()
+                        if path.startswith("output/work/v21/discovery/")
+                    )
         inputs.update(extra or {})
-        task = {**task, "input_diagnostics": run["prepared"]["warnings"]}
+        if phase == "integration" or (phase == "build" and task.get("round") == "supplement"):
+            inputs.update(self.policy_reference_context(run_id))
+            task = {**task, "policy_catalog": "context/document3/v21/policy_catalog.json"}
+        task = {
+            **task,
+            "owner_profile": run["prepared"]["topology"].get("owner_profiles", {}).get(owner, {}),
+            "owner_profiles": run["prepared"]["topology"].get("owner_profiles", {}),
+            "shared_research_root": "context/document3/v21/shared/",
+            "input_diagnostics": run["prepared"]["warnings"],
+            "allowed_research_owners": run["prepared"]["topology"]["research_owners"],
+            "route_aliases": run["prepared"]["topology"].get("route_aliases", {}),
+            "review_contract": {
+                "cumulative": True,
+                "edit_requests": "Explicit pending full-policy edits; [] means no edits",
+                "research_requests": (
+                    "Only source of supplement topics; refs and relations are read-only references"
+                ),
+            },
+        }
         late_files, late_leads = self._late_materials(run_id)
         if phase == "integration":
             inputs.update(late_files)
-            task = {**task, "late_leads": late_leads}
+            research_context = {}
+            for name in ("agenda", "main_results", "supplement_agenda", "supplement_results"):
+                if name in run:
+                    ref = f"context/document3/v21/research_context/{name}.json"
+                    inputs[ref] = canonical(run[name])
+                    research_context[name] = ref
+            task = {**task, "late_leads": late_leads, "research_context": research_context}
         if phase in {"build", "integration"}:
             outputs = [*outputs, f"output/work/v21/late/{digest(key)[:24]}.jsonl"]
-        await self._write_view(run_id)
+        material_spans = material_timing.finish()
         result = await self.runner.turn(
             run_id=run_id,
             ticker=run["identity"]["ticker"],
@@ -188,7 +326,11 @@ class Document3OrchestratorV21:
             outputs=outputs,
             task=task,
         )
+        view_timing = HostTiming()
+        view_timing.step("view_write")
         await self._write_view(run_id)
+        result.setdefault("host_spans", []).extend([*material_spans, *view_timing.finish()])
+        self.state.save_task(run_id, key, result)
         return result
 
     def _late_materials(self, run_id):
@@ -204,12 +346,62 @@ class Document3OrchestratorV21:
                     )
         return files, leads
 
+    def collect_discovery_materials(self, run_id, owner_ids):
+        files, leads, diagnostics, missing, producers = {}, [], [], [], []
+        for owner in owner_ids:
+            task = self.state.task(run_id, f"discovery:{owner}")
+            main = f"output/work/v21/discovery/{owner}.jsonl"
+            accepted = task.get("files", {})
+            if main not in accepted or task["status"] == "FAILED":
+                missing.append(f"Discovery unavailable:{owner}")
+            producers.append(
+                {
+                    "owner": owner,
+                    "task_key": f"discovery:{owner}",
+                    "status": task["status"],
+                    "files": [],
+                }
+            )
+            for path in (main, f"output/work/v21/discovery/{owner}.late.jsonl"):
+                if path not in accepted:
+                    continue
+                text = accepted[path]
+                files[path] = text
+                parsed, bad = records(text, Lead)
+                leads.extend(
+                    {"owner": owner, "ref": f"{path}#L{line}", "lead": lead.model_dump(mode="json")}
+                    for line, lead in parsed
+                )
+                diagnostics.extend({"path": path, **item} for item in bad)
+                producers[-1]["files"].append(
+                    {
+                        "ref": path,
+                        "sha256": digest(text),
+                        "snapshot": task.get("snapshots", {}).get(path),
+                    }
+                )
+        return {
+            "files": files,
+            "leads": leads,
+            "diagnostics": diagnostics,
+            "missing": missing,
+            "producers": producers,
+        }
+
     async def _write_view(self, run_id):
         run = self.state.run(run_id)
         tasks = self.state.tasks(run_id)
         drafts = self.state.drafts(run_id)
         view = {
-            **run,
+            **{
+                k: v
+                for k, v in run.items()
+                if k not in {"prepared", "assets", "basis", "final_candidates", "scan_inputs"}
+            },
+            "input_manifest": run.get("prepared", {}).get("manifest", []),
+            "material_refs": list(run.get("prepared", {}).get("files", {})),
+            "basis_paths": list(run.get("basis", {})),
+            "candidate_paths": list(run.get("final_candidates", {})),
             "task_metrics": {
                 "total": len(tasks),
                 "by_status": dict(Counter(t["status"] for t in tasks.values())),
@@ -258,144 +450,251 @@ class Document3OrchestratorV21:
         except (ValueError, FileNotFoundError):
             return None
 
+    def policy_reference_context(self, run_id):
+        run = self.state.run(run_id)
+        drafts = self.state.drafts(run_id)
+        policies = dict(run.get("basis", {}))
+        for path in run.get("supplement_paths", []):
+            if path in drafts:
+                policies[path] = drafts[path]["policy"]
+        # Completed final batches are available immediately to subsequent editors.
+        for key, record in self.state.tasks(run_id).items():
+            if key.startswith("integration:final:"):
+                for path in record.get("candidate_paths", []):
+                    if path in drafts:
+                        policies[path] = drafts[path]["policy"]
+        files = {path: canonical(policy) for path, policy in policies.items()}
+        files["context/document3/v21/policy_catalog.json"] = canonical(
+            [
+                {
+                    "ref": path,
+                    "local_path": reference_path(path, files[path]),
+                    "policy_id": policy["policy_id"],
+                    "title": policy["title"],
+                    "sha256": digest(files[path]),
+                    "source_directory": source_directory(path),
+                    "source_round": "main"
+                    if path in run.get("basis", {})
+                    else "supplement"
+                    if path in run.get("supplement_paths", [])
+                    else "final",
+                }
+                for path, policy in policies.items()
+            ]
+        )
+        for name in (
+            "agenda",
+            "main_results",
+            "supplement_agenda",
+            "supplement_results",
+            "review",
+            "post_supplement_review",
+        ):
+            if name in run:
+                files[f"context/document3/v21/research_context/{name}.json"] = canonical(run[name])
+        return files
+
+    def _task_json(self, record, path, model, previous=None):
+        content = record.get("files", {}).get(path)
+        if content is None:
+            return None
+        try:
+            if model is Review:
+                raw = json.loads(content)
+                if not isinstance(raw, dict):
+                    return None
+                edits = raw.get("edit_requests", (previous or {}).get("edit_requests", []))
+                base, diagnostics = structured(canonical({**raw, "edit_requests": []}), Review)
+                parsed, edit_errors = parse_review(
+                    {**base.model_dump(mode="json"), "edit_requests": edits}, previous
+                )
+                diagnostics.extend(edit_errors)
+            else:
+                parsed, diagnostics = structured(content, model)
+            run_id = record.get("persistence_run_id")
+            if run_id:
+                latest = self.state.run(run_id)
+                parse_issues = dict(latest.get("parse_issues", {}))
+                parse_issues[path] = diagnostics
+                updates = {"parse_issues": parse_issues}
+                if diagnostics:
+                    record.setdefault("parse_diagnostics", []).extend(diagnostics)
+                    updates["diagnostics"] = [*latest["diagnostics"], *diagnostics]
+                    if model is Review:
+                        updates["missing"] = [
+                            *latest["missing"],
+                            *[d["error"] for d in diagnostics if d.get("error")],
+                        ]
+                    self.state.save_task(run_id, record["task_key"], record)
+                self.state.update(run_id, **updates)
+            return parsed
+        except (ValueError, TypeError):
+            return None
+
+    def _inheritance(self, run, run_id):
+        policies = {}
+        text = run["prepared"]["files"].get("context/document3/v21/shared/previous_policy_set.json")
+        if text:
+            policies.update((p["policy_id"], p) for p in json.loads(text).get("policies", []))
+        policies.update((p["policy_id"], p) for p in run.get("basis", {}).values())
+        for path in run.get("supplement_paths", []):
+            value = self.state.get_draft(run_id, path)
+            if value:
+                policies[value["policy"]["policy_id"]] = value["policy"]
+        return policies
+
+    async def _accept_build_wave(self, run_id, key, record, prefix, names, inheritance):
+        cached = record.get("acceptance")
+        if cached and cached.get("result_parser_revision") == 2:
+            return record["acceptance"]
+        acceptance_timing = HostTiming()
+        acceptance_timing.step("result_reacceptance" if cached else "policy_acceptance")
+        values, errors, alternative = build_result_records(record.get("files", {}), prefix)
+        results, declared = {}, set()
+        diagnostics = [{"task": key, **error} for error in errors]
+        if alternative:
+            diagnostics.append({"task": key, "warning": f"noncanonical result path:{alternative}"})
+        for line, result in values:
+            if result.topic in names:
+                results.setdefault(result.topic, []).append(result.model_dump(mode="json"))
+                declared.update(result.policies)
+            else:
+                diagnostics.append({"task": key, "line": line, "warning": "unknown topic result"})
+        if cached:
+            # Repair derived Result recognition without accepting Policy bodies twice.
+            combined = {canonical(d): d for d in [*cached["diagnostics"], *diagnostics]}
+            cached.update(
+                results=results, diagnostics=list(combined.values()), result_parser_revision=2
+            )
+            record.setdefault("host_spans", []).extend(acceptance_timing.finish())
+            self.state.save_task(run_id, key, record)
+            return cached
+        paths = []
+        acceptance_calls = 0
+        for path, text in record.get("files", {}).items():
+            try:
+                safe_path(path)
+                if not path.startswith(prefix) or not path.endswith(".json"):
+                    continue
+                if path not in declared and not build_policy_output(path, prefix):
+                    continue
+                raw = json.loads(text)
+                if not isinstance(raw, dict):
+                    raise ValueError("Policy is not an object")
+                inherited = inheritance.get(raw.get("policy_id"))
+                if not inherited:
+                    raw.pop("policy_id", None)
+                acceptance_calls += 1
+                policy, errors = accept_policy(
+                    raw, state=self.state, run_id=run_id, path=path, inherited=inherited
+                )
+                diagnostics.extend({"path": path, "error": e} for e in errors)
+                accepted_draft = self.state.get_draft(run_id, path)
+                if policy and accepted_draft and accepted_draft.get("raw_hash") == digest(raw):
+                    paths.append(path)
+                    await self.workspace.write_text(run_id, path, policy.model_dump_json(indent=2))
+                    await self.workspace.write_text(
+                        record["workspace_run_id"], path, policy.model_dump_json(indent=2)
+                    )
+            except (ValueError, TypeError) as exc:
+                diagnostics.append({"path": path, "error": str(exc)[:300]})
+        accepted = {
+            "results": results,
+            "paths": paths,
+            "diagnostics": diagnostics,
+            "result_parser_revision": 2,
+        }
+        record["acceptance"] = accepted
+        record.setdefault("host_metrics", {}).update(
+            policy_candidates=len(paths),
+            policy_acceptance_calls=acceptance_calls,
+        )
+        record.setdefault("host_spans", []).extend(acceptance_timing.finish())
+        self.state.save_task(run_id, key, record)
+        return accepted
+
     async def _build(self, run_id, agenda, *, supplement=False):
+        run = self.state.run(run_id)
+        owners = run["prepared"]["topology"]["research_owners"]
+        agenda, route_errors = normalize_agenda(
+            agenda.model_dump(mode="json"),
+            owners,
+            run["prepared"]["topology"].get("route_aliases"),
+            fallback_owner=run["prepared"]["topology"].get("fallback_owner"),
+        )
         by_name = {t.name: t for t in agenda.topics}
         queues = defaultdict(list)
-        owners = self.state.run(run_id)["prepared"]["topology"]["owners"]
         for ordinal, names in enumerate(agenda.waves):
-            public_owner = by_name[names[0]].owner
-            targets = [slot for slot, name in owners.items() if name == public_owner]
-            alias = (
-                self.state.run(run_id)["prepared"]["topology"]
-                .get("route_aliases", {})
-                .get(public_owner)
-            )
-            slot = (
-                alias or public_owner
-                if public_owner in {"OPEN", "GLOBAL"}
-                else alias or targets[0]
-                if len(targets) == 1
-                else alias or "OPEN"
-            )
-            queues[slot].append((ordinal, names))
+            owner = by_name[names[0]].owner
+            queues[owner].append((ordinal, names))
         phase = "supplement" if supplement else "research"
+        inheritance = self._inheritance(run, run_id)
+        accepted = {}
 
         async def owner_queue(owner, waves):
             for ordinal, names in waves:
                 prefix = f"output/work/v21/{phase}/{owner}/{ordinal:04d}/"
-                task = {
-                    "topics": [by_name[n].model_dump(mode="json") for n in names],
-                    "round": phase,
-                    "ordinal": ordinal,
-                    "owner_shell": next(
-                        (
-                            s
-                            for s in self.state.run(run_id)["prepared"]["topology"]["shells"]
-                            if s["slot"] == owner
+                key = f"{phase}:{owner}:{ordinal}"
+                record = await self._turn(
+                    run_id,
+                    owner,
+                    "build",
+                    key,
+                    [prefix],
+                    {
+                        "topics": [by_name[n].model_dump(mode="json") for n in names],
+                        "round": phase,
+                        "ordinal": ordinal,
+                        "result_delivery": {
+                            "preferred_path": prefix + "results.jsonl",
+                            "accepted_names": [
+                                "results.jsonl",
+                                "result.jsonl",
+                                "result.json",
+                                "results.json",
+                                "result_<slug>.json",
+                                "result-<slug>.json",
+                                "results_<slug>.jsonl",
+                                "results-<slug>.jsonl",
+                            ],
+                            "scope": (
+                                "Wave root only; named result/results files accept JSON or JSONL. "
+                                "Use exact task Topic names and actual wave-local Policy paths."
+                            ),
+                        },
+                        "owner_shell": next(
+                            (
+                                s
+                                for s in run["prepared"]["topology"]["shells"]
+                                if s["slot"] == owner
+                            ),
+                            None,
                         ),
-                        None,
-                    ),
-                }
-                accepted_task = await self._turn(
-                    run_id, owner, "build", f"{phase}:{owner}:{ordinal}", [prefix], task
+                    },
                 )
-                for path, text in accepted_task.get("files", {}).items():
-                    if path.startswith(prefix + "policies/") and path.endswith(".json"):
-                        try:
-                            raw = json.loads(text)
-                            basis = self.state.run(run_id).get("basis", {})
-                            inherited = next(
-                                (
-                                    p
-                                    for p in basis.values()
-                                    if p["policy_id"] == raw.get("policy_id")
-                                ),
-                                None,
-                            )
-                            if not inherited and raw.get("policy_id") not in self.state.run(run_id)[
-                                "prepared"
-                            ].get("previous_policy_ids", []):
-                                raw.pop("policy_id", None)
-                            policy, _ = accept_policy(
-                                raw, state=self.state, run_id=run_id, path=path, inherited=inherited
-                            )
-                            if policy:
-                                await self.workspace.write_text(
-                                    run_id, path, policy.model_dump_json(indent=2)
-                                )
-                                await self.workspace.write_text(
-                                    accepted_task["workspace_run_id"],
-                                    path,
-                                    policy.model_dump_json(indent=2),
-                                )
-                        except (ValueError, TypeError):
-                            continue
+                accepted[key] = await self._accept_build_wave(
+                    run_id, key, record, prefix, names, inheritance
+                )
 
         await asyncio.gather(*(owner_queue(owner, waves) for owner, waves in queues.items()))
-        results, candidate_paths, diagnostics = {}, [], []
-        drafts = self.state.drafts(run_id)
-        for owner, waves in queues.items():
-            for ordinal, names in waves:
-                key = f"{phase}:{owner}:{ordinal}"
-                task = self.state.task(run_id, key)
-                prefix = f"output/work/v21/{phase}/{owner}/{ordinal:04d}/"
-                raw = task.get("files", {}).get(prefix + "results.jsonl", "")
-                parsed, bad = records(raw, ResearchResult)
-                diagnostics.extend({"task": key, **b} for b in bad)
-                for line, result in parsed:
-                    if result.topic in names:
-                        results.setdefault(result.topic, []).append(result.model_dump(mode="json"))
-                    else:
-                        diagnostics.append(
-                            {"task": key, "line": line, "warning": "unknown topic result"}
-                        )
-                for path, text in task.get("files", {}).items():
-                    if path.startswith(prefix + "policies/") and path.endswith(".json"):
-                        try:
-                            raw_policy = json.loads(text)
-                            # Only a basis identity is eligible for explicit inheritance.
-                            basis = self.state.run(run_id).get("basis", {})
-                            allowed = {p["policy_id"] for p in basis.values()} | set(
-                                self.state.run(run_id)["prepared"].get("previous_policy_ids", [])
-                            )
-                            if path not in drafts and raw_policy.get("policy_id") not in allowed:
-                                raw_policy.pop("policy_id", None)
-                            inherited = next(
-                                (
-                                    p
-                                    for p in basis.values()
-                                    if p["policy_id"] == raw_policy.get("policy_id")
-                                ),
-                                None,
-                            )
-                            policy, errors = accept_policy(
-                                raw_policy,
-                                state=self.state,
-                                run_id=run_id,
-                                path=path,
-                                inherited=inherited,
-                            )
-                            diagnostics.extend({"path": path, "error": e} for e in errors)
-                            if policy:
-                                candidate_paths.append(path)
-                                await self.workspace.write_text(
-                                    run_id, path, policy.model_dump_json(indent=2)
-                                )
-                                await self.workspace.write_text(
-                                    task["workspace_run_id"], path, policy.model_dump_json(indent=2)
-                                )
-                        except (ValueError, TypeError) as exc:
-                            diagnostics.append({"path": path, "error": str(exc)[:300]})
+        results, paths, diagnostics = {}, [], [{"warning": e} for e in route_errors]
+        for key in sorted(accepted):
+            value = accepted[key]
+            paths.extend(value["paths"])
+            diagnostics.extend(value["diagnostics"])
+            for topic, entries in value["results"].items():
+                results.setdefault(topic, []).extend(entries)
+        paths = list(dict.fromkeys(paths))
         missing = []
         for topic in agenda.topics:
-            values = results.get(topic.name, [])
-            if len({canonical(v) for v in values}) != 1:
+            entries = results.get(topic.name, [])
+            if len({canonical(value) for value in entries}) != 1:
                 missing.append(f"{phase} result missing/conflicting:{topic.name}")
             else:
-                for path in values[0]["policies"]:
-                    if path not in candidate_paths:
+                for path in entries[0]["policies"]:
+                    if path not in paths:
                         missing.append(f"{phase} result Policy unavailable:{topic.name}:{path}")
-        return results, list(dict.fromkeys(candidate_paths)), missing, diagnostics
+        return results, paths, missing, diagnostics
 
     async def initialize(
         self,
@@ -440,49 +739,79 @@ class Document3OrchestratorV21:
         )
         if run.get("commit"):
             return await self._publish(run_id)
-        owners = run["prepared"]["topology"]["owners"]
-        if "agenda" not in run:
-            self.state.update(run_id, phase="DISCOVERY")
-            await asyncio.gather(
-                *(
-                    self._turn(
-                        run_id,
-                        owner,
-                        "discovery",
-                        f"discovery:{owner}",
-                        [
-                            f"output/work/v21/discovery/{owner}.jsonl",
-                            f"output/work/v21/discovery/{owner}.late.jsonl",
-                        ],
-                        {
-                            "owner_shell": next(
-                                (
-                                    s
-                                    for s in run["prepared"]["topology"]["shells"]
-                                    if s["slot"] == owner
+        owners = run["prepared"]["topology"]["research_owners"]
+        if "scan" not in run:
+            topology = run["prepared"]["topology"]
+            open_owners = topology.get("open_owners", [o for o in owners if o == "OPEN"])
+            shell_owners = topology.get("shell_owners", [o for o in owners if o not in open_owners])
+
+            async def discovery(owner, *, shell_input=None):
+                return await self._turn(
+                    run_id,
+                    owner,
+                    "discovery",
+                    f"discovery:{owner}",
+                    [
+                        f"output/work/v21/discovery/{owner}.jsonl",
+                        f"output/work/v21/discovery/{owner}.late.jsonl",
+                    ],
+                    {
+                        "owner_shell": next(
+                            (s for s in topology["shells"] if s["slot"] == owner), None
+                        ),
+                        "discovery_stage": "open_after_shells" if shell_input else "shell",
+                        **(
+                            {
+                                "prior_shell_discovery": shell_input["index_ref"],
+                                "objective": (
+                                    "Find substantive additional Leads using your primary "
+                                    "materials and completed Shell Leads"
                                 ),
-                                None,
-                            )
-                        },
-                    )
-                    for owner in owners
+                                "shell_discovery_sha256": shell_input["sha256"],
+                            }
+                            if shell_input
+                            else {}
+                        ),
+                    },
+                    shell_input["files"] if shell_input else None,
                 )
+
+            if "shell_discovery_input" not in run:
+                self.state.update(run_id, phase="SHELL_DISCOVERY")
+                await asyncio.gather(*(discovery(owner) for owner in shell_owners))
+                collected = self.collect_discovery_materials(run_id, shell_owners)
+                index_ref = "context/document3/v21/discovery_inputs/shells/index.json"
+                index = {
+                    "source_kind": "accepted_discovery_snapshot",
+                    "stage": "discovery",
+                    "shells": topology["shells"],
+                    **{k: v for k, v in collected.items() if k != "files"},
+                }
+                files = {**collected["files"], index_ref: canonical(index)}
+                shell_input = {"files": files, "index_ref": index_ref, "sha256": digest(files)}
+                self.state.update(run_id, shell_discovery_input=shell_input, phase="OPEN_DISCOVERY")
+            else:
+                shell_input = run["shell_discovery_input"]
+            await asyncio.gather(
+                *(discovery(owner, shell_input=shell_input) for owner in open_owners)
             )
-            leads, raw_inputs, diagnostics, discovery_missing = [], {}, [], []
-            for owner in owners:
-                task = self.state.task(run_id, f"discovery:{owner}")
-                path = f"output/work/v21/discovery/{owner}.jsonl"
-                raw = task.get("files", {}).get(path, "")
-                if path not in task.get("files", {}) or task["status"] == "FAILED":
-                    discovery_missing.append(f"Discovery unavailable:{owner}")
-                raw_inputs[path] = raw
-                parsed, bad = records(raw, Lead)
-                leads.extend(
-                    {"owner": owner, "ref": f"{path}#L{line}", "lead": lead.model_dump(mode="json")}
-                    for line, lead in parsed
-                )
-                diagnostics.extend({"path": path, **b} for b in bad)
-            self.state.update(run_id, phase="PLANNING", scan=leads, scan_inputs=raw_inputs)
+            collected = self.collect_discovery_materials(run_id, owners)
+            self.state.update(
+                run_id,
+                phase="PLANNING",
+                scan=collected["leads"],
+                scan_inputs=collected["files"],
+                discovery_missing=collected["missing"],
+                diagnostics=[*run["diagnostics"], *collected["diagnostics"]],
+            )
+        await self._write_view(run_id)
+        self._pilot_boundary("discovery", run_id)
+        run = self.state.run(run_id)
+        if "agenda" not in run:
+            leads = run["scan"]
+            raw_inputs = run["scan_inputs"]
+            discovery_missing = run["discovery_missing"]
+            diagnostics = list(run["diagnostics"])
             cumulative = None
             planning_batches = list(batches(leads)) or [[]]
             for i, batch in enumerate(planning_batches):
@@ -491,7 +820,7 @@ class Document3OrchestratorV21:
                     extra["context/document3/v21/planning_previous.json"] = canonical(
                         cumulative.model_dump(mode="json")
                     )
-                await self._turn(
+                planning_task = await self._turn(
                     run_id,
                     "GLOBAL",
                     "planning",
@@ -500,22 +829,25 @@ class Document3OrchestratorV21:
                     {"leads": batch, "ordinal": i, "final_batch": i == len(planning_batches) - 1},
                     extra,
                 )
-                candidate = await self._json(run_id, "output/work/v21/agenda.json", Agenda)
+                candidate = self._task_json(planning_task, "output/work/v21/agenda.json", Agenda)
                 if candidate:
                     cumulative = candidate
             agenda, warnings = normalize_agenda(
                 cumulative.model_dump(mode="json") if cumulative else {"topics": [], "waves": []},
                 owners,
                 run["prepared"]["topology"].get("route_aliases"),
+                fallback_owner=run["prepared"]["topology"].get("fallback_owner"),
             )
             missing = [*discovery_missing, *([] if cumulative else ["Planning agenda unavailable"])]
             self.state.update(
                 run_id,
                 agenda=agenda.model_dump(mode="json"),
                 missing=missing,
-                diagnostics=[*diagnostics, *warnings],
+                diagnostics=[*diagnostics, *({"warning": w} for w in warnings)],
                 phase="BUILD",
             )
+        await self._write_view(run_id)
+        self._pilot_boundary("planning", run_id)
         run = self.state.run(run_id)
         agenda = Agenda.model_validate(run["agenda"])
         if "basis" not in run:
@@ -534,11 +866,13 @@ class Document3OrchestratorV21:
                 run_id,
                 basis=basis,
                 main_results=results,
-                integration_schedule=schedule,
+                integration_schedule=schedule or [[]],
                 missing=[*run["missing"], *missing],
                 diagnostics=[*run["diagnostics"], *diagnostics],
                 phase="INTEGRATION",
             )
+        await self._write_view(run_id)
+        self._pilot_boundary("build", run_id)
         run = self.state.run(run_id)
         if "review" not in run:
             review = None
@@ -565,22 +899,36 @@ class Document3OrchestratorV21:
                     {
                         "stage": "review",
                         "batch": [x["path"] for x in batch],
+                        "focus_directories": list(
+                            dict.fromkeys(source_directory(x["path"]) for x in batch)
+                        ),
                         "final_batch": i == len(run["integration_schedule"]) - 1,
                     },
                     extra,
                 )
-                parsed = await self._json(run_id, "output/work/v21/review.json", Review)
+                parsed = self._task_json(
+                    batch_task,
+                    "output/work/v21/review.json",
+                    Review,
+                    review.model_dump(mode="json") if review else None,
+                )
                 if parsed:
                     review = parsed
                 if parsed is None or batch_task["status"] == "FAILED":
                     integration_missing.append(f"Integration main batch unavailable:{i}")
-            supplement = await self._json(run_id, "output/work/v21/supplement_agenda.json", Agenda)
-            if supplement is None and review:
-                supplement = Agenda(topics=review.research_requests, waves=[])
+            wave_source = self._task_json(
+                batch_task, "output/work/v21/supplement_agenda.json", Agenda
+            )
             supplement, diagnostics = normalize_agenda(
-                supplement.model_dump(mode="json") if supplement else {"topics": [], "waves": []},
+                {
+                    "topics": [t.model_dump(mode="json") for t in review.research_requests]
+                    if review
+                    else [],
+                    "waves": wave_source.waves if wave_source else [],
+                },
                 owners,
                 run["prepared"]["topology"].get("route_aliases"),
+                fallback_owner=run["prepared"]["topology"].get("fallback_owner"),
             )
             frozen = canonical(supplement.model_dump(mode="json"))
             await self.workspace.write_text(
@@ -593,8 +941,11 @@ class Document3OrchestratorV21:
                 supplement_agenda=supplement.model_dump(mode="json"),
                 supplement_hash=digest(frozen),
                 supplement_dispatched=True,
-                diagnostics=[*run["diagnostics"], *diagnostics],
-                missing=[*run["missing"], *integration_missing],
+                diagnostics=[
+                    *self.state.run(run_id)["diagnostics"],
+                    *({"warning": d} for d in diagnostics),
+                ],
+                missing=[*self.state.run(run_id)["missing"], *integration_missing],
                 phase="SUPPLEMENT",
             )
         run = self.state.run(run_id)
@@ -613,17 +964,7 @@ class Document3OrchestratorV21:
             )
         run = self.state.run(run_id)
         if "post_supplement_review" not in run:
-            affected = set()
-            for relation in (run.get("review") or {}).get("relations", []):
-                affected.update(relation["policies"])
-            for topic in run["supplement_agenda"]["topics"]:
-                affected.update(topic.get("ref", []))
-            basis_paths = [
-                p
-                for p, policy in run["basis"].items()
-                if p in affected or policy["policy_id"] in affected
-            ]
-            refs = list(dict.fromkeys([*run["supplement_paths"], *basis_paths]))
+            refs = list(run["supplement_paths"])
             drafts = self.state.drafts(run_id)
             schedule = run.get("post_supplement_schedule") or policy_batches(
                 [{"path": p, "policy": drafts[p]["policy"]} for p in refs]
@@ -647,34 +988,64 @@ class Document3OrchestratorV21:
                         "integration",
                         f"integration:supplement:{i}",
                         ["output/work/v21/post_supplement_review.json"],
-                        {"stage": "post_supplement_review", "batch": [x["path"] for x in batch]},
+                        {
+                            "stage": "post_supplement_review",
+                            "batch": [x["path"] for x in batch],
+                            "focus_directories": list(
+                                dict.fromkeys(source_directory(x["path"]) for x in batch)
+                            ),
+                        },
                         extra,
                     )
-                    parsed = await self._json(
-                        run_id, "output/work/v21/post_supplement_review.json", Review
+                    parsed = self._task_json(
+                        item, "output/work/v21/post_supplement_review.json", Review, review
                     )
                     if parsed:
                         review = parsed.model_dump(mode="json")
                     if parsed is None or item["status"] == "FAILED":
                         missing.append(f"Integration supplement batch unavailable:{i}")
             self.state.update(
-                run_id, post_supplement_review=review, affected_paths=refs, missing=missing
+                run_id,
+                post_supplement_review=review,
+                affected_paths=refs,
+                post_review_focus=refs,
+                missing=list(dict.fromkeys([*self.state.run(run_id)["missing"], *missing])),
             )
             run = self.state.run(run_id)
         if "final_candidates" not in run:
             drafts = self.state.drafts(run_id)
-            refs = run["affected_paths"] if run["supplement_paths"] else list(run["basis"])
-            # Final writes are finite file batches; only structural application follows.
-            schedule = run.get("final_schedule") or policy_batches(
-                [{"path": p, "policy": drafts[p]["policy"]} for p in refs]
+            effective_review = run.get("post_supplement_review") or run.get("review")
+            editable = dict(run["basis"])
+            editable.update((p, drafts[p]["policy"]) for p in run["supplement_paths"])
+            schedule, edit_errors = edit_batches(effective_review, editable)
+            schedule = run.get("final_schedule", schedule)
+            self.state.update(
+                run_id,
+                final_schedule=schedule,
+                diagnostics=[*run["diagnostics"], *edit_errors],
+                missing=[*run["missing"], *[e["error"] for e in edit_errors]],
             )
-            self.state.update(run_id, final_schedule=schedule)
+            self.state.update(
+                run_id,
+                pending_edit_targets=list(
+                    dict.fromkeys(p for batch in schedule for p in batch["related_targets"])
+                ),
+                reference_count=len(editable),
+                pending_research_topics=[
+                    t["name"] for t in (effective_review or {}).get("research_requests", [])
+                ],
+            )
             final_candidates = {}
+            unfinished_edit_targets = []
+            inheritable = self._inheritance(run, run_id)
+            inheritable.update(
+                (drafts[path]["policy"]["policy_id"], drafts[path]["policy"])
+                for path in run["supplement_paths"]
+            )
             for i, batch in enumerate(schedule):
-                extra = {x["path"]: canonical(x["policy"]) for x in batch}
-                extra["context/document3/v21/review_frozen.json"] = canonical(
-                    run.get("post_supplement_review")
-                )
+                incomplete = False
+                extra = {}
+                extra["context/document3/v21/review_frozen.json"] = canonical(effective_review)
                 prefix = f"output/work/v21/final/policies/{i:04d}/"
                 task = await self._turn(
                     run_id,
@@ -682,31 +1053,93 @@ class Document3OrchestratorV21:
                     "integration",
                     f"integration:final:{i}",
                     [prefix],
-                    {"stage": "final_write", "ordinal": i, "batch": [x["path"] for x in batch]},
+                    {
+                        "stage": "final_write",
+                        "ordinal": i,
+                        **batch,
+                        "edit_task_contract": {
+                            "batch": "Scheduling anchors for the five-directory grouping",
+                            "related_targets": (
+                                "All resolved Policy targets in assigned edit_requests"
+                            ),
+                            "edit_requests": (
+                                "Authoritative instructions and complete explicit target lists"
+                            ),
+                            "policy_catalog": (
+                                "Full read-only reference pool; reading does not expand edit scope"
+                            ),
+                        },
+                    },
                     extra,
                 )
                 for path, text in task.get("files", {}).items():
                     if path.endswith(".json"):
                         try:
                             raw = json.loads(text)
-                            inherited = next(
-                                (
-                                    v
-                                    for v in run["basis"].values()
-                                    if v["policy_id"] == raw.get("policy_id")
-                                ),
-                                None,
+                            if not isinstance(raw, dict):
+                                raise ValueError("Policy is not an object")
+                            inherited = edit_inheritance(
+                                raw.get("policy_id"),
+                                batch["related_targets"],
+                                editable,
+                                inheritable,
                             )
                             if not inherited:
                                 raw.pop("policy_id", None)
-                            policy, _ = accept_policy(
+                            policy, errors = accept_policy(
                                 raw, state=self.state, run_id=run_id, path=path, inherited=inherited
                             )
-                            if policy:
+                            if errors:
+                                incomplete = True
+                                latest = self.state.run(run_id)
+                                self.state.update(
+                                    run_id,
+                                    diagnostics=[
+                                        *latest["diagnostics"],
+                                        *[{"path": path, "error": e} for e in errors],
+                                    ],
+                                    missing=[*latest["missing"], f"final edit incomplete:{path}"],
+                                )
+                            accepted_draft = self.state.get_draft(run_id, path)
+                            if (
+                                policy
+                                and accepted_draft
+                                and accepted_draft.get("raw_hash") == digest(raw)
+                            ):
                                 final_candidates[path] = policy.model_dump(mode="json")
-                        except (ValueError, TypeError):
-                            continue
-            self.state.update(run_id, final_candidates=final_candidates)
+                                await self.workspace.write_text(
+                                    run_id, path, canonical(final_candidates[path])
+                                )
+                                await self.workspace.write_text(
+                                    task["workspace_run_id"],
+                                    path,
+                                    canonical(final_candidates[path]),
+                                )
+                        except (ValueError, TypeError) as exc:
+                            incomplete = True
+                            latest = self.state.run(run_id)
+                            self.state.update(
+                                run_id,
+                                missing=[*latest["missing"], f"final candidate invalid:{path}"],
+                                diagnostics=[
+                                    *latest["diagnostics"],
+                                    {"path": path, "error": str(exc)},
+                                ],
+                            )
+                task["candidate_paths"] = [p for p in final_candidates if p.startswith(prefix)]
+                if not task["candidate_paths"]:
+                    latest = self.state.run(run_id)
+                    self.state.update(
+                        run_id, missing=[*latest["missing"], f"final edit unavailable:{i}"]
+                    )
+                if incomplete or not task["candidate_paths"] or task["status"] != "COMPLETED":
+                    unfinished_edit_targets.extend(batch["related_targets"])
+                self.state.save_task(run_id, f"integration:final:{i}", task)
+            self.state.update(
+                run_id,
+                final_candidates=final_candidates,
+                pending_edit_targets=list(dict.fromkeys(unfinished_edit_targets)),
+            )
         run = self.state.run(run_id)
         candidates = {p: PolicyV3.model_validate(v) for p, v in run["final_candidates"].items()}
         drafts = self.state.drafts(run_id)
@@ -715,8 +1148,10 @@ class Document3OrchestratorV21:
         )
         extra = {p: policy.model_dump_json(indent=2) for p, policy in candidates.items()}
         extra["context/document3/v21/basis.json"] = canonical(run["basis"])
-        extra["context/document3/v21/review_frozen.json"] = canonical(run.get("review"))
-        await self._turn(
+        extra["context/document3/v21/review_frozen.json"] = canonical(
+            run.get("post_supplement_review") or run.get("review")
+        )
+        consolidation_task = await self._turn(
             run_id,
             "GLOBAL",
             "integration",
@@ -730,8 +1165,8 @@ class Document3OrchestratorV21:
             },
             extra,
         )
-        consolidation = await self._json(
-            run_id, "output/work/v21/consolidation.json", Consolidation
+        consolidation = self._task_json(
+            consolidation_task, "output/work/v21/consolidation.json", Consolidation
         )
         basis = [PolicyV3.model_validate(v) for v in run["basis"].values()]
         missing = list(run["missing"])
@@ -830,6 +1265,7 @@ class Document3OrchestratorV21:
             final=[p.model_dump(mode="json") for p in final],
             coverage=coverage,
             replacement_receipt=replacement_receipt,
+            pending_research_topics=[g["name"] for g in coverage["remaining_gaps"]],
             missing=list(dict.fromkeys(missing)),
             status=status,
         )

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import sys
 from pathlib import Path
 
 from doxagent.codex_runtime.client import HttpCodexWorkerClient
@@ -36,6 +37,11 @@ async def _run(run_id: str, output: Path | None, orchestration_version: str = "v
 
 
 def main() -> int:
+    if len(sys.argv) > 1 and sys.argv[1] in {"start", "continue", "report"}:
+        from doxagent.pilot.document3_driver import main as drive_sdk
+
+        drive_sdk()
+        return 0
     parser = argparse.ArgumentParser()
     parser.add_argument("--run-id", required=True)
     parser.add_argument("--output", type=Path)

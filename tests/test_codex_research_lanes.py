@@ -161,6 +161,8 @@ def test_sqlite_repository_round_trips_and_filters_both_new_bundle_types(
         run_id="global-run",
         ticker="NVDA",
         status="draft",
+        entity_network_report="# network\nresearch",
+        c4_product_status={"future_nodes": "empty", "entity_network_report": "available"},
     )
     market_bundle = MarketSituationBundle(
         run_id="market-run",
@@ -219,7 +221,9 @@ def test_new_bundle_manifests_have_exact_lane_nodes_and_canonical_resources() ->
         "c1",
         "c3",
         "c5",
-        "c4_enrichment",
+        "c4f_future_nodes",
+        "c4e_formal_scan",
+        "c4e_network_build",
     ]
     assert list(market_manifest["nodes"]) == ["c2", "o4"]
     assert "c4_finalization" not in global_manifest["nodes"]

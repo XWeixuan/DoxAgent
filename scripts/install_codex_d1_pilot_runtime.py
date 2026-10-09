@@ -11,7 +11,7 @@ from dotenv import dotenv_values, set_key
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Install DoxAgent Codex App Pilot runtime")
+    parser = argparse.ArgumentParser(description="Install DoxAgent local Pilot runtime")
     parser.add_argument("--target", default=r"D:\DoxAgentPilot")
     args = parser.parse_args()
     repo_root = Path(__file__).resolve().parents[1]
@@ -30,6 +30,7 @@ def main() -> int:
         ".env.local.example",
         "UPSTREAM_SETS.md",
         "document2_coordinator.py",
+        "document2_sdk.py",
         "DOCUMENT2_COORDINATOR.md",
     ):
         shutil.copy2(repo_root / "pilot_runtime" / name, runtime / name)

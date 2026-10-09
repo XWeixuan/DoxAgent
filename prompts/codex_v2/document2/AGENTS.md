@@ -1,31 +1,54 @@
-# Document2 v2 agent contract
+# Document2 workspace contract
 
-Read every file named by the task before reasoning. Treat `shell.json` and the pinned input
-artifacts as the only durable business state. Return exactly one JSON object matching the supplied
-schema. Research may use Data MCP and native web search when the task permits it.
+## Current attempt
 
-Use natural-language semantic identifiers. Preserve source roles, time scope, `as_of`, evidence
-boundaries, and uncertainty. Never invent a value merely to fill a field. Citation failures are
-non-blocking: retain the citation text or record an empty citation list instead of refusing the
-business output.
+Read `agent.md`, the active `skill.md`, `task.json`, `context.json`, and `output_schema.json`
+before reasoning. Read research artifacts required by the task or active skill; consult other
+supplied materials as that skill directs.
 
-When `research_cutoff_at` is present, treat it as the information-availability boundary for the
-turn. Do not use a later observation as cutoff evidence. Retrieval-time data that cannot establish
-the requested historical vintage may still be inspected, but must be excluded from the dated claim
-or described only as unavailable/non-equivalent. Temporal mismatch remains non-blocking and must
-not prevent the best supported Shell from being returned.
+Treat the inputs explicitly supplied to this attempt as its working state. Do not assume hidden
+state or memory from earlier model calls.
 
-Recoverable operational mistakes are not workflow blockers. If a PowerShell, shell, Python,
-validation, or file-inspection command fails because of syntax, quoting, piping, parsing, path, or
-invocation mistakes, correct the command or use an equivalent safe method and continue. Do not
-stop the workflow or request user assistance solely because such a command failed. Report a real
-blocker only when required input or authority remains unavailable after reasonable safe recovery.
+## Input and version authority
 
-O1 should normally preserve the Shell/Unit structure supplied by O0. This is a prompt-level
-research discipline, not an orchestration restriction: when the research genuinely requires a
-structural correction, return the best complete Shell object directly.
+Use the contract and version declared by the current task and context, rather than inferring them
+from asset filenames or an earlier attempt. `output_schema.json` defines the returned object shape.
+The active agent prompt defines the role; the active internal skill defines the current stage's
+reasoning and use of materials.
 
-For citation lineage, retain upstream `D1-O#` references, use current-attempt `O#` aliases for new
-Data MCP observations, retain public source URLs when appropriate, and identify the injected legacy
-Narrative Research report as `DoxAtlas:<source_run_id>`. Do not invent an alias when lineage is
-unknown; unresolved citation strings remain non-blocking.
+Optional inputs may be absent or unavailable. Use what is actually present without inventing missing
+content. Absence alone does not prevent a valid output unless the active task requires that input.
+
+## Output contract
+
+Return exactly one JSON object matching the supplied schema. Emit required fields, using `[]` for
+empty lists. Keep undeclared fields out of the response and preserve the schema's field names and
+types. Never invent a value merely to fill required structure.
+
+## Time, evidence, and provenance
+
+Respect the information-availability boundary supplied by the task or context, such as `as_of` or
+`research_cutoff_at`. Keep the time of an observation distinct from retrieval time. Later retrieval
+does not make later observations valid evidence for an earlier dated claim; use it only as permitted
+by the active task and preserve the temporal distinction. Temporal mismatch remains non-blocking:
+exclude non-equivalent observations from dated claims and continue with usable evidence.
+
+Preserve source provenance, temporal scope, stated uncertainty, and important evidence boundaries.
+Keep observations, management statements, forecasts, and inferences distinguishable.
+
+Preserve upstream reference strings when carrying evidence forward, including `D1-O#` lineage.
+Follow the current task's convention for new material: current-attempt `O#` aliases for Data MCP
+observations, public source URLs where appropriate, and `DoxAtlas:<source_run_id>` for supplied
+Narrative provenance. Preserve received source-qualified references without renumbering them or
+inventing unknown lineage. Citation-resolution failure alone is non-blocking unless the active task
+states otherwise.
+
+## Tool use and recovery
+
+Use tools permitted by the active task when they materially improve the result.
+
+Recoverable operational mistakes are not workflow blockers. For command, parsing, quoting, path,
+validation, or file-inspection errors, correct the command or use an equivalent safe method and
+continue. Do not stop the workflow or request user assistance solely because such an operation
+failed. Report a real blocker only when required input, tool authority, or execution capability
+remains unavailable after reasonable recovery.

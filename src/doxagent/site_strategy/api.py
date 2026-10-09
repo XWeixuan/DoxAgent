@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hmac
+import sqlite3
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime, timedelta
@@ -23,6 +24,7 @@ from .schema import (
     SiteStrategySpec,
 )
 from .service import SiteStrategyService
+from .storage import storage_failure
 
 
 class ApplyStrategyRequest(BaseModel):
@@ -103,6 +105,8 @@ def create_app(
     admin_token: str,
     credential_store: CredentialStore | None = None,
     close_service: bool = True,
+    maintenance_token: str | None = None,
+    maintenance_sites: list[str] | None = None,
 ) -> FastAPI:
     if not worker_token or not admin_token:
         raise ValueError("worker and admin tokens are required")
@@ -117,6 +121,10 @@ def create_app(
                 await service.close()
 
     app = FastAPI(title="DoxAgent Site Access", version="1", lifespan=lifespan)
+    if maintenance_token:
+        from doxagent.source_maintenance.site_api import router
+
+        app.include_router(router(service, maintenance_token, maintenance_sites or []))
 
     def authorize(expected: str) -> Callable[..., Awaitable[None]]:
         async def dependency(authorization: Annotated[str | None, Header()] = None) -> None:
@@ -137,14 +145,22 @@ def create_app(
 
     @app.get("/readyz")
     async def ready() -> dict[str, object]:
+        storage = service.repository.storage.diagnostics()
+        if storage["unavailable"]:
+            raise HTTPException(
+                status_code=503, detail={"reason": "storage_unavailable", "storage": storage}
+            )
         generic = service.repository.get_head("generic")
         browser_driver = service.browser_driver_ready
         ready_value = generic is not None and browser_driver and service.accepting
         if not ready_value:
             raise HTTPException(status_code=503, detail="registry or browser driver unavailable")
+        external = service.access_diagnostics().get("external_driver")
         return {
-            "status": "ready",
+            "status": "degraded" if external and not external["ready"] else "ready",
+            "external_driver": external,
             "registry": True,
+            "storage": storage,
             "browser_driver": browser_driver,
             "accepting": service.accepting,
         }
@@ -174,7 +190,14 @@ def create_app(
 
     @app.post("/v1/outcomes:batch", dependencies=[Depends(worker)])
     async def outcomes(request: OutcomesRequest) -> dict[str, int]:
-        return {"accepted": service.save_outcomes(request.body)}
+        if service.repository.storage.diagnostics()["unavailable"]:
+            raise HTTPException(status_code=503, detail={"reason": "storage_unavailable"})
+        try:
+            return {"accepted": service.save_outcomes(request.body)}
+        except sqlite3.Error as exc:
+            if not storage_failure(exc):
+                raise
+            raise HTTPException(status_code=503, detail={"reason": "storage_unavailable"}) from exc
 
     @app.get("/v1/sites", dependencies=[Depends(admin)])
     async def sites() -> list[dict[str, object]]:

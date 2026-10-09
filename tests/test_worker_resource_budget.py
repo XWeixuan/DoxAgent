@@ -515,7 +515,8 @@ def test_server_resource_envelope():
     assert mib(services["v2-cdecr-executor"]["memswap_limit"]) == 7 * 1024
     assert "DOXAGENT_CODEX_WORKER_CAPACITY" not in services["codex-worker"]["environment"]
     assert services["codex-worker"]["environment"]["DOXAGENT_CODEX_LAUNCH_WAVE_SIZE"] == "3"
-    assert services["v2-initialization"]["environment"]["DOXAGENT_CODEX_D2_MAX_CONCURRENCY"] == "8"
+    assert services["v2-initialization"]["environment"]["DOXAGENT_CODEX_D2_MAX_CONCURRENCY"] == "4"
+    assert services["v2-initialization"]["environment"]["DOXAGENT_CODEX_D3_MAX_CONCURRENCY"] == "4"
     assert services["v2-initialization"]["environment"]["DOXAGENT_CDECR_EXECUTION_MODE"] == (
         "REMOTE_EXECUTOR"
     )

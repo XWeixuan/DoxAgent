@@ -12,6 +12,8 @@ from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
+from doxagent.codex_runtime.schema import CodexAgentRole, ResearchLane
+
 from .process_tree import owned_processes, signal_owned, terminate_owned
 from .result_receipt import receipt_path
 from .schema import WorkerRunRequest, WorkerTurnTelemetry
@@ -203,7 +205,13 @@ class CapsuleRuntime:
         capsule = self.active.get(self.key(request))
         if capsule is None:
             return
-        if not capsule.healthy or request.max_subagents:
+        # C4 retains its persisted conversation, but must reload attempt-scoped
+        # MCP credentials and observation destinations on the next turn.
+        shared_c4 = (
+            request.research_lane is ResearchLane.GLOBAL_RESEARCH
+            and request.agent_role is CodexAgentRole.C4
+        )
+        if not capsule.healthy or request.max_subagents or shared_c4:
             await capsule.close()
             self.pool.remove(capsule)
         else:

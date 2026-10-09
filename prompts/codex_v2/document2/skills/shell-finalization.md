@@ -1,146 +1,171 @@
 # O0 Shell Finalization internal skill
 
-## Purpose
+## Purpose and finalization stance
 
-Resume the O0 Synthesis thread and turn the provisional draft plus the C1, C3, and C5 Domain
-Reviews into the final Shell and Unit seeds handed to O1. The provisional draft is the working
-structure, not a presumption that it is correct. Reviews contribute domain-specific challenges;
-O0 resolves them through the global Candidate relationships and Shell boundaries already developed
-in Synthesis.
+Choose the final research topology that gives O1 useful durable economic objects and coherent
+shared research contexts. The provisional draft and Domain Reviews are evidence for this decision,
+not a structure to preserve by default or edits to apply mechanically.
 
-Finalization is structural convergence. It settles which continuing expectation propositions
-remain, how they are grouped for research, and how the final objects are expressed. Detailed
-expectation evidence, State, Realization Factors, and Potential Gaps belong to O1's later research.
+A Unit is a durable economic subject worth forming and revising expectations about. A Shell is a
+bounded shared research context. Finalization decides their identity, scope, grouping, and research
+ownership; O1 later develops State, Expectation Baseline, Realization Factors, materiality, and
+Potential Gaps.
 
-## Integrate the reviews as one decision
+There is no preferred direction toward preservation, contraction, expansion, splitting, or merging.
+Choose by business meaning and future research usefulness. A sound object can be retained before
+its outcome is known; greater proof or fewer changes do not inherently improve the architecture.
 
-Read the complete provisional result, including `unassigned_candidates`, together with all three
-Domain Reviews before changing the structure. Organize feedback by the
-Shell, Unit, or missing question it concerns rather than by reviewer order. Reviewers neither vote
-nor own separate parts of the architecture; agreement can strengthen a concern, while one
-well-founded review can still identify a decisive structural problem.
+## Reconstruct the structural decision space
 
-For each material concern, identify the underlying issue and its consequence for O1:
+Work from `context.json` in this attempt. `provisional_shells` is the complete Synthesis result
+object, containing its `provisional_shells` array, `unassigned_candidates`, and `warnings`.
+`domain_reviews` contains the full reviews actually received, keyed by `C1/C3/C5`. Use the supplied
+Future Nodes, entity relations, horizontal indicators, and available Event Library content where
+relevant, within `as_of`.
 
-- **Unit integrity:** whether the object is one material middle-level proposition with its own
-  future update path, or instead combines distinct questions, duplicates another Unit, or belongs
-  inside later Unit Detail.
-- **Shell context:** whether the affected Units need the same business and industry background,
-  expectation state, realization mechanisms, event space, and value-transmission system to be
-  researched correctly.
-- **Coverage:** whether a retained or unassigned Candidate leaves out a material continuing
-  expectation question, or promotes an item that does not warrant independent Unit management.
+This is a fresh call. Full original C1/C3/C5 and Narrative reports are not directly supplied to this
+stage; reconstruct business meaning from candidate `name/scope/why_material/ref`, review reasoning,
+and common context. A missing review is unavailable perspective, not agreement or a clean review.
 
-Translate that issue into the best global action: retain, rephrase, split, merge, move, add, or
-remove. A review recommendation is one proposed implementation. Accept it, adapt it, combine it
-with another review, or reject it according to the resulting whole structure and the downstream
-research consequence.
+Before deciding changes, understand:
 
-## Preserve useful research objects
+- the economic subjects the provisional draft is trying to maintain;
+- which candidate records describe the same eventual object;
+- what valuable scope or subjects were left unassigned and why;
+- the research context each Shell is trying to create;
+- where reviews offer compatible insights or different business interpretations.
 
-Judge a Unit by whether it is a material proposition that can support continuing expectation
-research and independent updates. It need not already have a proven answer or complete evidence.
-Review references establish why a domain fact changes the structural judgment; they are not an
-evidence-completeness gate for the future Unit.
+Use full `candidate_ref` and `shell_temp_id` values to connect feedback with the draft. These are
+process locators, not final economic identities. This stage closes and improves the available
+topology; it does not repeat broad Candidate Discovery or require every sound choice to be
+re-researched.
 
-Direct effort toward issues that change Unit integrity, Shell context, or material coverage.
-Ordinary uncertainty, missing Detail, and finer evidence qualification can be resolved by O1
-inside a sound Unit. When more than one structure is plausible, choose the one that gives O1 the
-clearest questions and the right shared context, then resolve the structural choice.
+## Integrate domain perspectives
 
-Use each provisional Candidate's source-qualified `candidate_ref` when reconciling reviews and
-dispositions. Branch-local `U#` values are not globally unique and must never be used alone to join
-Candidate Sets, provisional Units, or targeted feedback.
+Group related feedback by economic object or research-context decision, rather than reviewer order.
+Evaluate each recommendation's business reasoning and the research consequence it identifies.
+Agreement can strengthen confidence, but reviews do not vote or own separate architecture partitions.
+One reviewer can reveal a decisive distinction the others were not positioned to see.
 
-## Apply local decisions globally
+Resolve conflicts by comparing the resulting topologies: which preserves meaningful economic
+objects, permits useful independent revisions, and gives O1 the better research environment?
+Accept, adapt, combine, or reject recommendations on that basis. A proposed rename may point to a
+scope problem that also changes adjacent Units; a proposed split may be better addressed by retaining
+separate Units in one shared Shell.
 
-After resolving the targeted feedback, rebuild the affected parts as one coherent final structure.
-A split, merge, move, addition, or removal may require corresponding changes to another Shell's
-membership, `core_question`, or `boundary_rule`. Reconsider unassigned Candidates when a review
-changes their relationship to the retained Units. Account for each provisional Unit and material
-missing Candidate through the final structure or a deliberate disposition; Finalization should not
-silently lose an object because its temporary handle disappeared.
+Consider recovery and expansion as fully as removal and contraction. Reviews may reveal missing
+subjects, artificial fragmentation, or overly narrow scope as well as over-promotion and duplication.
+An absence of proof about the future is not itself a structural defect. Carry actual material input
+limitations forward without treating ordinary disagreement as a warning or requiring every expected
+review to arrive before making the best supported decision.
 
-This pass closes the structure produced by Discovery and Synthesis. It does not repeat broad
-Candidate Discovery or require every unaffected choice to be re-justified.
+## Resolve Units and Shells globally
 
-## Final research-context boundary review
+First settle the maintained objects:
 
-After applying the domain reviews, read the resulting topology as the future O1/O3 research
-architecture. Each Shell should represent one bounded research context with a recognizable common
-core. Ask whether every Unit is placed where its detailed State, realization mechanisms, evidence,
-and future-event research can be maintained most coherently. Economic dependencies may cross Shell
-boundaries and do not need to be absorbed into one end-to-end context.
+1. **Identify the durable subject.** Combine candidate scope, economic materiality, unassigned
+   reasons, and review insights. Separate the subject from current conclusions, mechanisms, and
+   proof conditions.
+2. **Decide independent maintenance.** Would absorbing it into another Unit lose a worthwhile
+   economic judgment? Would keeping it separate merely divide one object by customer, product,
+   stage, or evidence interface? Future evidence should be able to materially change its
+   maintained view without mechanically requiring all adjacent objects to change together.
+3. **Set useful scope.** Preserve one coherent subject with room for multiple drivers, mechanisms,
+   and revision paths. Correct both overly narrow realization steps and broad company-wide themes.
 
-- **Shell context coherence:** identify the common context core the Units repeatedly reuse. Context
-  sharing is not automatically transitive: A/B and B/C overlap does not establish an A/B/C core.
-  The Shell should remain a recognizable research system rather than a chain-connected collection.
-- **Adjacent context boundaries:** related Shells may exchange important dependencies while
-  maintaining different research centers. Check whether each side has its own actors, State
-  families, mechanisms, evidence cadence, horizons, or event space deserving persistent treatment
-  as a separate context.
-- **Shell breadth:** examine whether adding later Units mainly reuses the common context or adds
-  new research domains connected only through value transmission. In the latter case, reconsider
-  the internal boundary.
-- **Single-Unit Shell necessity:** confirm that no natural adjacent Shell supplies useful shared
-  context while preserving the Unit's independence.
-- **Shell and Unit distinctness:** a `core_question` should not be almost fully answered by one Unit;
-  normally it requires the combined propositions in that Shell.
-- **Object-level integrity:** confirm that State-like variables, Realization Factors, occurred
-  events, Future Nodes, and market measurement or inference tasks have not survived as Units.
+Candidate records are evidence for architecture; final Units need not map one-to-one to them. When
+combining records, preserve their distinct useful dimensions and principal references, including
+those of unassigned duplicates. The representative selected in Synthesis does not supersede other
+sources' business insight. Restore an unassigned subject or incorporate a review-identified missing
+object when the available material supports its economic significance and independent maintenance.
 
-For each final Shell, state internally in one clear sentence what type of long-lived Research Owner
-its O1 would be: what it must keep knowing, researching, and updating. An end-to-end company thesis
-is too diffuse an identity; multiple nearly identical identities may indicate a fragmented common
-core. Use this execution test to revisit grouping in either direction.
+Then organize Units around durable research reuse. For each Shell, imagine its O1 owner over several
+months: what business or market system will it keep understanding, updating, and reusing across
+Units? A recognizable common background supports depth. "The company's full investment thesis"
+usually spans several research systems; adjacent owners rebuilding essentially the same context
+suggest artificial fragmentation.
 
-A final Shell with 6 or more Units triggers a Boundary Challenge: check for multiple bounded research
-centers across actors, State families, evidence interfaces, realization mechanisms, future-event
-spaces, and horizons. Six is a review trigger, not a limit; a broad Shell may retain a dominant common
-core. Reverse-validate any proposed partition: do the new Shells have distinct research identities,
-or would O1 repeatedly rebuild the same actors, State, mechanisms and event context merely to cover
-different local outcomes? Adjust fragmented partitions without treating re-merging as the preferred
-answer. Judge the final boundary by shared-core coherence and research depth, not Unit count.
+Judge grouping as a whole. Pairwise context overlap is not transitive, and economic transmission
+can cross Shell boundaries. Distinct outcomes or update events can coexist in one shared research
+context; causal connection alone does not require one Shell. A single-Unit Shell is valid when its
+subject warrants a distinct context.
 
-Apply any correction through the existing Shell and Unit fields; this review adds no output field.
+Apply consequential changes globally. A split, merger, move, recovery, or removal can change
+neighboring membership, scope, and boundaries. Recheck those relationships and relevant unassigned
+records. Reverse-test proposed separation for duplicated background and proposed combination for
+unrelated systems. Neither cleaner taxonomy nor object count determines the decision.
 
-## Write the final seeds
+## Write stable final seeds
 
-Replace every temporary `S#` and `U#` handle with stable natural-language semantic IDs suitable for
-future event updates. IDs should name the continuing subject rather than a current value, dated
-event, or directional conclusion. Agent-facing IDs are human-readable natural-language names, not
-kebab-case, snake_case, coded IDs, or machine-style slugs; runtime UUIDs belong to the storage layer.
+Final names and scopes are the research frame O1 receives. Express economic subjects and research
+domains that remain meaningful through good or bad news, new mechanisms, and new participants.
 
-Each final Shell contains:
+Each `shells` item contains:
 
-- `shell_id`: the stable semantic identity of the shared research system;
-- `core_question`: the common research question that defines why the included Units belong in one
-  shared context;
-- `boundary_rule`: why these Units require full shared context, why they remain separate
-  propositions, and what distinguishes this Shell from adjacent Shells;
+- `name`: a stable, natural, noun-based business research domain, unique in the final result.
+- `scope`: what this owner researches in depth: the business or market system, economic subjects,
+  and activities. Its Units need not jointly prove one success condition.
+- `boundary`: the division of deep research ownership with adjacent domains. Shared evidence and
+  cross-Shell economic influence remain available.
+- `ref`: principal references supporting the domain and its boundary.
 - `units`: the final Unit seeds.
 
-Each Unit seed contains only:
+Each Unit contains:
 
-- `expectation_id`: the stable semantic identity of the proposition;
-- `proposition`: one middle-level proposition that the market can form, revise, and trade as
-  evidence develops;
-- `horizon`: the business or time horizon over which the proposition is researched and can be
-  tested, without inventing a forecast value or false precision.
+- `name`: the stable economic subject, unique within its Shell.
+- `scope`: the economic aspects whose expectations will be maintained. Describe the subject
+  without encoding today's direction, a preferred realization chain, or success requirements.
+- `horizon`: the natural business observation cycle, such as the next earnings window, several
+  quarters, a product cycle, or a multi-year project cycle. It describes when the subject evolves,
+  not when orders-to-shipments-to-revenue will prove a thesis. Avoid fabricated timing precision.
+- `ref`: the principal sources establishing the object's origin and economic significance.
+  Combine relevant references across merged records while preserving their lineage.
 
-Candidate Discovery may phrase its object as a question. The final `proposition` is a declarative
-expectation for the Blackboard to maintain; `core_question` remains the question jointly researched
-by the Shell.
+For example, `计算产品市场` can contain `AI基础设施与DCAI需求`, whose scope identifies demand and
+company business exposure across relevant customers, platforms, and workloads. Customer qualification
+and repeat orders can then be researched inside that object rather than define its permanent identity.
+Set the exact scope in relation to neighboring demand objects.
 
-Use `finalization_note` only for major structural decisions that help explain the final result,
-such as an important split, merge, addition, removal, or rejection of a consequential review
-recommendation. Keep each note brief and outcome-focused.
+Read the language semantically: descriptive scope should remain open to different future
+explanations. Merely removing conditional words does not fix a seed that still preselects one path.
+Final seeds contain no `shell_temp_id`, `candidate_ref`, `why_material`, or old proposition/ID fields.
 
-## Completion
+## Run the final topology pass
 
-Finalization is complete when all three reviews have informed one unified decision, material
-feedback and unassigned Candidates have a deliberate disposition, retained Units have distinct
-update paths, each Shell corresponds to a coherent, bounded long-lived O1/O3 research context with a
-clear common context core and understandable dependencies on adjacent Shells, and no temporary
-handles remain. Return one `ShellFinalizationResult` with the final
-`shells` and brief `finalization_note`.
+Read the rebuilt topology as O1's future research frame, using five connected tests:
+
+1. **Business coverage:** Do the material continuing economic subjects supported by available
+   research have useful homes? Every important driver need not be a separate Unit.
+2. **Reversal and openness:** Would the objects remain meaningful after outlook reversal, and could
+   an unforeseen material catalyst enter without redesigning their identities?
+3. **Multi-path researchability:** Can each Unit accommodate several States, mechanisms, and
+   revision paths rather than one preselected realization chain?
+4. **Granularity balance:** Are internal details and external business changes treated at levels
+   appropriate to their economic significance and independent revisions? Look for both unnecessary
+   micro-Units and large objects that bury distinct maintained judgments.
+5. **Shell research coherence:** Can one O1 deeply maintain each shared research system, with clear
+   adjacent ownership and room for cross-Shell transmission? Check broad Shells for distinct systems
+   and nearby Shells for duplicated context.
+
+Use these tests to resolve substantive structural choices. They do not require O1's research to be
+completed in advance.
+
+## Output discipline and completion
+
+Return exactly `shells`, `finalization_note`, and `warnings` according to
+`output_schema.json`. Emit every declared field, using `[]` for empty lists.
+
+Internally account for provisional and unassigned objects and material review proposals. The final
+contract has no per-candidate disposition ledger. Use `finalization_note`, a string array, for brief
+decisions that help explain the resulting topology: a consequential merge, split, recovery, removal,
+or departure from a review recommendation. No note is needed for every candidate.
+
+Warnings identify actual input or execution problems that materially weaken the final architecture,
+such as missing source coverage or an unavailable review, or an important structural choice the
+available material cannot settle adequately. Ordinary business uncertainty, incomplete future
+realization evidence, and differences between domain perspectives are not warnings.
+
+Finish when the topology gives O1 stable material subjects and coherent research contexts, reflects
+the strongest structural insights actually available, and no longer depends on temporary handles or
+today's thesis. Further changes should materially improve future research; alternate taxonomies
+alone are not a reason to continue.

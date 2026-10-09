@@ -1,144 +1,186 @@
 # Shell Synthesis internal skill
 
-## Purpose
+## Purpose and mental model
 
-Read all independent Candidate Sets together and produce the first precision convergence of the
-Shell/Unit structure. Candidate sources are research perspectives, not votes or architecture
-boundaries. Use the supplied candidates and common context to make structural decisions; O1 later
-performs detailed expectation research.
+Turn independently discovered economic subjects into a provisional research topology for Domain
+Review. Make two separate decisions: which subjects deserve independent Unit-level maintenance,
+and which retained subjects should share one bounded O1 research context.
 
-The output is a provisional draft for Domain Review. Resolve clear duplication and object-level
-errors now while retaining material, independently updateable questions whose exact boundary still
-benefits from review.
+A Unit is a durable economic subject worth forming and revising expectations about. A Shell is a
+bounded shared research context. This stage establishes objects and research ownership; O1 later
+develops their current State, Expectation Baseline, Realization Factors, materiality, and Potential
+Gaps. A provisional object can be structurally sound while its future outcome remains uncertain.
 
-## Separate Unit and Shell decisions
+## Use the available evidence
 
-Ask two different questions:
+Start with `context.json.candidate_sets`, grouped by source perspective. Each record supplies
+`name/scope/why_material/ref` plus a runtime-added `candidate_ref`. Read the sets together with
+`future_nodes`, `entity_relations`, `horizontal_indicators`, and available `event_library.payload`.
+Use `as_of` as the information boundary. Source perspectives inform judgment rather than define
+separate architecture partitions.
 
-1. **Unit:** Is this a material middle-level proposition that can be updated independently?
-2. **Shell:** Which Units depend on the same bounded body of research strongly enough that one
-   long-lived O1 context should maintain them together?
+The current context also supplies original reports in `global_research.reports` under `c1/c3/c5`
+and an optional `narrative_research` object with status and payload. Consult relevant passages when
+a consequential structural choice needs more context:
 
-Independent updateability keeps propositions as separate Units. Shell grouping asks a different
-question: whether those Units repeatedly reuse the same core research context.
+- similar candidates may identify different objects, or different framings may identify one;
+- compressed scope or materiality obscures the proper object granularity;
+- placement depends on a business system or actor network absent from the summary;
+- a candidate appears to abstract its source too narrowly or too broadly.
 
-A Shell's shared context is not the union of every upstream and downstream dependency along one
-value chain. Look for the common context core that most included Units directly need: actors,
-business or industry mechanisms, State families, evidence interfaces, realization logic, horizons,
-and future-event space.
+When candidate records already support the choice, proceed. Original reports resolve topology
+questions; do not rerun broad Candidate Discovery from them to ensure nothing was missed. If they
+reveal a material omitted object, record it in `warnings` for Domain Review or Finalization rather
+than inventing an input candidate or reference.
 
-Value transmission may cross Shell boundaries. Two Units can be economically connected, and one
-can materially affect the other, while still belonging to different research contexts when each
-requires a substantially different body of persistent knowledge to be researched deeply.
+A missing source set does not mean that source found no relevant objects. Use present material and
+carry forward source limitations when they materially affect the topology. Optional context absence
+alone does not invalidate the draft.
 
-## Analyze candidate relationships
+## Interpret Candidate objects
 
-Use relation analysis as a thinking method rather than a pairwise labeling exercise.
+Compare the economic subjects being maintained, rather than their wording, current direction, or
+preferred validation events. Ask: if today's explanation or outlook changed, what would each record
+still be asking the system to study?
 
-- **Same question:** Candidates are duplicates when their core judgment, future validation events,
-  and economic meaning substantially overlap. Retain one handle with normalized wording for the
-  provisional Unit and account for the others in `unassigned_candidates` as merged duplicates;
-  their sources support the same question.
-- **Causal relationship:** Causal proximity alone does not merge propositions. Different horizons,
-  event spaces, validation paths, or economic outcomes can justify separate Units.
-- **Shared research context:** Consider whether the Units repeatedly rely on the same core actors,
-  mechanisms, State families, evidence sources or interfaces, realization questions, and future
-  event space. Shared context is strongest when this common core is directly useful across the
-  cluster, not merely when different Units can be connected through an end-to-end causal chain.
-- **Context boundary:** A new Shell becomes useful when a group of Units has its own coherent
-  research center of gravity. The group may still transmit value to or receive dependencies from
-  another Shell; separation means its detailed research can be maintained as a distinct context,
-  not that the two systems are economically unrelated.
+One source may describe an object through demand, another through profitability, and another through
+market pricing. Those framings can identify the same object, but their source roles do not establish
+either sameness or difference. Compare their actual economic scope and company relevance.
 
-## Keep shared context bounded
+Conversely, a shared causal chain or evidence source can support distinct objects. Important future
+evidence can materially change the maintained view of one without mechanically requiring every
+adjacent object to change together. Unique news feeds and entirely separate catalysts are not
+necessary for independent maintenance.
 
-Context overlap is not automatically transitive. Unit A may share important context with B, and B
-with C, without A and C needing the same persistent research context.
-
-When a provisional Shell grows, look at the cluster as a whole. Ask what context remains common
-across the included Units and what new context each additional Unit introduces. A Shell is coherent
-when its shared core remains the main research context; it becomes diffuse when its apparent
-coherence depends mainly on chaining adjacent relationships across different research systems.
-
-Test the boundary as an execution choice. Imagine the persistent context that O1 must carry while
-researching every Unit in the proposed Shell. Repeatedly reusing the same core actors, mechanisms,
-State families, evidence interfaces, and event space creates research depth and consistency.
-If adding a group mainly introduces another set of actors, data, mechanisms, horizons, and future
-events, while its connection is primarily upstream/downstream transmission, that group has the
-shape of another research context. Aim for a context complete for its research system and bounded
-enough for one O1 to maintain depth across all included Units.
-
-A single-Unit Shell is valid but exceptional. Before creating one, examine the natural adjacent
-Shells, whether the Unit remains independently maintainable inside one of them, whether shared
-context improves its research, and whether the Unit has its own coherent research center rather
-than only making the taxonomy neater. If its `core_question` nearly repeats its sole Unit, reconsider
-whether a distinct Shell boundary exists.
-
-Before accepting each Shell, describe internally in one clear sentence what kind of long-lived
-Research Owner its O1 would be: what it must keep knowing, researching, and updating. An identity
-that merely spans the company's end-to-end investment thesis signals a diffuse boundary; several
-nearly identical owner descriptions signal possible fragmentation of one common context core.
-
-For any provisional Shell with 6 or more Units, perform a Boundary Challenge: look for two or more
-bounded research centers differentiated by core actors, State families, evidence interfaces,
-realization mechanisms, future-event spaces, or horizons. Determine whether one common context core
-still dominates. If a partition emerges, reverse-test it: would the new O1 contexts repeatedly
-rebuild the same core research, merely dividing local value-chain outcomes? Adjust the partition if
-it fragments one research system without creating distinct research identities. Six Units triggers
-review, not a capacity limit; retain a broad Shell when its shared core remains coherent. Reverse
-validation tests fragmentation rather than favoring re-merging. These are reasoning checks, not new
-output fields.
+For example, "AI基础设施需求", "数据中心现场电力市场", and "AI数据中心增长持续期" call for a comparison
+of the actual demand base, business exposure, and scope behind those names. They could overlap,
+describe a wider and narrower object, or warrant separate maintained views. Matching today's
+validation path would not resolve that choice.
 
 ## Decide provisional Unit status
 
-Judge whether a Candidate deserves independent, continuing management as a research question, not
-whether its proposition is already proven or its future Detail is complete. Current uncertainty is
-compatible with a valid Unit.
+Retain a candidate when it identifies one coherent, durable subject whose future materially matters
+to the company and whose outlook deserves separate maintenance. Judge four connected properties:
+persistence beyond today's issue, material economic relevance, independent revisions, and a
+granularity that accommodates several future drivers without absorbing the whole company thesis.
 
-Retain a Candidate provisionally when it has a material outcome and a credible independent update
-path, even if reviewers may refine its wording or boundary. Place it in `unassigned_candidates`
-when it is clearly a duplicate, too broad to be one proposition, or better understood as a lower-
-level State or Realization Factor, an already occurred event or Future Node, shared context, or an
-unresolved item that does not yet form an independent question. A task whose object is measuring or
-inferring another expectation through price, valuation, multiples, relative performance, or other
-market observations belongs to `MARKET_IMPLIED` State, market evidence, or later runtime absorption
-logic rather than an independent Unit. These are disposition reasons, not new objects produced
-during Synthesis.
+Make that structural judgment separately from current measurability. Whether a subject is a
+distinct economic object worth maintaining is not the same question as whether current disclosures
+provide standalone revenue, margin, volume, or other directly separable State data for it. Limited
+measurement can constrain O1's current precision without making a broader aggregate object the
+better identity. The subject must still have a distinguishable economic meaning and enough material
+independent variation to justify separate maintenance.
 
-## Build the provisional draft
+Place a candidate in `unassigned_candidates` when it is better understood as a reported event,
+State-like variable, realization mechanism, narrow occurrence, measurement task, or umbrella theme
+too broad for one maintained object. Explain the actual mismatch with independent maintenance;
+uncertainty or incomplete measurement alone is not that mismatch.
 
-Use `S1`, `S2`, ... as temporary Shell review handles. Each Candidate input includes a
-runtime-derived `candidate_ref` in the form `<SOURCE_ROLE>:<candidate_id>`, such as `C3:U2`;
-preserve that reference so candidates with the same branch-local `U#` never collide. Each
-`provisional_shells` item contains:
+When records appear to describe the same eventual Unit, first distinguish their shared economic
+subject from any materially different research responsibility carried by one record. Then retain
+the strongest representative in the provisional topology: the record that most clearly captures
+the durable subject, its scope, and economic importance.
 
-- `shell_temp_id`;
-- `core_question`: the common research question that makes these Units worth maintaining inside one
-  shared context; express the research system they jointly illuminate rather than the company's
-  full upstream-to-terminal value chain;
-- `boundary_reasoning`: the common context core the Units share, why it improves joint research,
-  why the Units remain separately updateable, how important dependencies connect to adjacent
-  Shells, and where this research context stops;
-- `candidate_units`: each retained `candidate_ref`, original branch-local Candidate ID, and its
-  normalized wording.
+Representative selection disposes of overlapping records; it does not by itself establish that
+the representative's scope is semantically complete. Before placing an overlapping record in
+`unassigned_candidates`, ask whether any material, non-duplicate part of what it says should remain
+inside the eventual Unit or elsewhere in the topology. If that responsibility has no clear home,
+retain the distinction provisionally or surface the specific scope gap for Review or Finalization.
 
-The `core_question` should normally require the combined Units to answer. If one Unit already
-answers nearly the whole question, reconsider whether that Unit summarizes its siblings, needs a
-narrower boundary, belongs with an adjacent Shell, or lacks a genuinely separate Shell context.
+Put genuinely overlapping records in `unassigned_candidates` with a reason naming the retained
+object's full `candidate_ref` and explaining the overlap. Finalization can consolidate wording and
+provenance into the final Unit. This check preserves material research responsibility, not every
+detail or phrasing difference in the source records.
 
-Every input Candidate must appear in a provisional Shell or in `unassigned_candidates`. For each
-unassigned Candidate, preserve its `candidate_ref`, original ID, and wording and state the concrete
-reason it is not retained as an independent Unit. Use `warnings` only for material input
-limitations that affect the structural synthesis.
+Keep every candidate's `candidate_ref/name/scope/why_material/ref` exactly as received in either
+destination. Structural judgment does not authorize silently rewriting the branch's evidence.
+If a candidate needs reframing that cannot be expressed by placement or disposition, describe the
+specific issue in a warning for the next stages.
 
-## Completion
+## Build shared research contexts
 
-Synthesis is complete when all Candidates are accounted for, duplicates are normalized, retained
-Units have distinct update paths, and every Shell explains both its shared context and separation
-boundary. Before returning, inspect the topology in both directions: adjacent Shells should not
-duplicate a naturally shared research context, and a large Shell should not depend on transitive
-value-chain connections to hold together distinct research systems. Each provisional Shell should
-have a recognizable common core that lets one O1 research all its Units deeply. Complete the Research
-Identity Test and any 6+ Unit Boundary Challenge, including reverse validation of proposed partitions.
-The draft should be clear enough for Domain Review to challenge without pre-empting O1's later Detail
-research.
+After identifying provisional Units, ask what persistent research they repeatedly reuse: business
+and market background, core actors and counterparties, operating or industry knowledge, recurring
+datasets and evidence sources, competitive or regulatory environments, and relationships needed
+to interpret their economic significance.
+
+Imagine O1 researching the proposed group over several months. Which background would repeatedly
+be reconstructed if the Units were researched separately? Keeping that body of knowledge together
+should improve depth and consistency. If adding a group mainly introduces another business system,
+actor network, and evidence base, while the connection is chiefly upstream or downstream value
+transmission, a separate Shell is likely useful.
+
+Assess the group as a whole. A Shell's coherence comes from a shared body of research directly useful
+across its Units, not a chain of pairwise overlaps:
+
+- **Causal connection can cross Shells.** Product demand, profitability, and financing can affect
+  each other without needing the same detailed research owner.
+- **Context overlap is not transitive.** A and B sharing important background, and B and C sharing
+  other background, does not establish one common research context for A, B, and C.
+- **Independent Units can share a Shell.** Separate updates do not require separate research owners.
+  A single-Unit Shell is appropriate when its subject warrants a distinct persistent context,
+  not merely when a cleaner taxonomy would result.
+
+Test a plausible partition in both directions. Would separation let each O1 deepen a distinct
+research system, or make both rebuild essentially the same background? Would combination reuse
+that background, or burden one owner with largely separate systems? Choose by research usefulness,
+not by a preferred Shell count or Unit count.
+
+## Express provisional Shells
+
+For each nonempty `provisional_shells` item, use the supplied schema's fields:
+
+- `shell_temp_id`: a distinct temporary handle, such as `S1`, for review to locate this draft.
+- `name`: a stable, noun-based business research domain, such as "计算产品市场" or
+  "数据中心电力市场". Identify the research domain rather than summarize a common outcome.
+- `scope`: the economic subjects, activities, and market system covered by this context. Describe
+  the shared research domain; the Units need not jointly answer a single overarching question.
+- `boundary`: the division of research ownership with adjacent domains. For example, product and
+  end-market research may sit here while external Foundry manufacturing and company financing sit
+  elsewhere. This is not a restriction on cross-Shell influence, evidence use, or future mechanisms.
+- `ref`: principal references supporting the domain and boundary.
+- `candidate_units`: the retained input candidate records, including their full `candidate_ref`.
+
+Names, scope, and boundaries identify what economic subjects are maintained and where research depth
+belongs. They leave direction, success conditions, complete transmission chains, evidence
+interpretation, confirmation standards, and modeling procedures to downstream research. A useful
+evidence caveat or anti-double-counting rule can inform the structural choice without becoming part
+of the Shell or Unit definition.
+
+A domain such as "数据中心电力市场" need not become a question about demand, qualification,
+financing, and delivery jointly converting into accepted capacity.
+
+## Output discipline and completion
+
+Return exactly `provisional_shells`, `unassigned_candidates`, and `warnings` as defined in
+`output_schema.json`. Every unassigned record preserves the same five candidate fields and adds
+`reason`.
+
+Each input `candidate_ref` must appear exactly once, either in one Shell's `candidate_units` or in
+`unassigned_candidates`. The handle is `<UPPERCASE_SOURCE>:<name>`, such as
+`C1:AI基础设施需求`; preserve the supplied value even when another source has the same name.
+Semantic consolidation does not create a merged handle or allow provenance to disappear.
+This stage adds no final Unit IDs, horizons, research detail, or extra disposition fields.
+
+Warnings carry material unresolved context, source coverage failures, important omitted objects, or
+specific reframing needs that the next stages should examine. Ordinary cross-source overlap,
+optional-input absence, unresolved citations, and a narration of the analysis are not warnings.
+
+Finish with four checks:
+
+1. **Candidate and semantic accounting:** Every input record has one destination, with its text and
+   references preserved and concrete reasons for unassigned records. For overlap dispositions,
+   confirm that any materially distinct research responsibility in the unassigned record is either
+   represented in the retained topology or explicitly surfaced for the next stage.
+2. **Unit quality:** Retained subjects are durable, material, independently maintainable objects
+   at useful granularity, rather than events, mechanisms, or company-wide themes.
+3. **Shell coherence:** Each Shell gives one O1 a recognizable shared body of persistent research
+   in which all included subjects can be studied deeply.
+4. **Boundary quality:** Research ownership is clear despite economic connections; value chains
+   have not forced unrelated systems together, and independent updates have not fragmented shared
+   research.
+
+The draft is ready when these structural choices are defensible from available material and clear
+enough for Domain Review to challenge. Further work is useful when it could change object identity,
+retention, or research ownership, rather than merely increase confidence in an already resolved
+choice.

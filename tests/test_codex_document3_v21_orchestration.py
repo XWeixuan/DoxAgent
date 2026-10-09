@@ -14,7 +14,14 @@ from doxagent.codex_runtime.schema import CodexD3AgentRole, CodexD3Node
 from doxagent.codex_worker.schema import WorkerJob
 from doxagent.data_runtime.policy import DataToolPolicyRegistry
 from doxagent.workflows.codex_document3.inputs import Document3InputPreparer
-from doxagent.workflows.codex_document3.orchestrator_v21 import Document3OrchestratorV21, batches
+from doxagent.workflows.codex_document3.orchestrator_v21 import (
+    Document3OrchestratorV21,
+    PilotPhasePaused,
+    batches,
+    build_policy_output,
+    build_result_records,
+    policy_batches,
+)
 from doxagent.workflows.codex_document3.recovery import resume_v21
 from doxagent.workflows.codex_document3.repository import (
     InMemoryDocument3PolicyRepository,
@@ -121,7 +128,15 @@ class Worker:
         elif request.node == CodexD3Node.O3_INTEGRATION:
             if task["stage"] == "review":
                 await write(
-                    outputs[0], {"relations": [], "research_requests": [], "coverage_notes": ""}
+                    outputs[0],
+                    {
+                        "relations": [],
+                        "research_requests": [{"name": "T2", "owner": "OPEN", "brief": "fixture"}]
+                        if self.supplement
+                        else [],
+                        "edit_requests": [],
+                        "coverage_notes": "",
+                    },
                 )
                 await write(
                     outputs[1],
@@ -187,7 +202,10 @@ def rig(tmp_path):
         runtime_repository=runtime,
     )
     assets = {}
-    for name in ["role", "common", "discovery", "planning", "build", "integration", "maintain"]:
+    for name in [
+        "role", "common", "discovery", "discovery_open", "planning", "build",
+        "integration", "maintain", "open_atlas_general", "open_atlas_l1_01",
+    ]:
         path = tmp_path / f"{name}.md"
         path.write_text("fixture external asset", encoding="utf8")
         assets[name] = str(path)
@@ -209,6 +227,75 @@ def rig(tmp_path):
         policy=policy,
         assets=assets,
     )
+
+
+@pytest.mark.asyncio
+async def test_pilot_phase_boundaries_resume_without_repeating_business_turns(rig):
+    run_id = "d3v21-pilot-phase-test"
+    previous = {}
+    for phase, current_node in [
+        ("discovery", CodexD3Node.O3_DISCOVERY),
+        ("planning", CodexD3Node.O3_PLANNING),
+        ("build", CodexD3Node.O3_BUILD),
+    ]:
+        rig.orchestrator.pilot_stop_after_phase = phase
+        with pytest.raises(PilotPhasePaused) as paused:
+            await rig.orchestrator.initialize(ticker="MU", as_of=NOW, run_id=run_id)
+        assert paused.value.phase == phase
+        assert any(request.node == current_node for request in rig.worker.requests)
+        counts = {
+            node: sum(request.node == node for request in rig.worker.requests)
+            for node in (CodexD3Node.O3_DISCOVERY, CodexD3Node.O3_PLANNING, CodexD3Node.O3_BUILD)
+        }
+        if phase == "discovery":
+            assert counts[CodexD3Node.O3_PLANNING] == 0
+        if phase == "planning":
+            assert counts[CodexD3Node.O3_DISCOVERY] == previous[CodexD3Node.O3_DISCOVERY]
+        if phase == "build":
+            assert counts[CodexD3Node.O3_PLANNING] == previous[CodexD3Node.O3_PLANNING]
+        previous = counts
+    rig.orchestrator.pilot_stop_after_phase = None
+    result = await rig.orchestrator.initialize(ticker="MU", as_of=NOW, run_id=run_id)
+    assert result.status == "COMPLETE"
+    assert (
+        sum(request.node == CodexD3Node.O3_BUILD for request in rig.worker.requests)
+        == previous[CodexD3Node.O3_BUILD]
+    )
+
+
+@pytest.mark.asyncio
+async def test_discovery_open_skill_is_owner_scoped(rig, monkeypatch):
+    async def prepare(**_):
+        return {
+            "files": {}, "manifest": [],
+            "topology": {
+                "shells": [],
+                "research_owners": {"S0001": "Shell A", "OPEN": "OPEN"},
+                "owners": {"S0001": "Shell A", "OPEN": "OPEN", "GLOBAL": "GLOBAL"},
+            },
+            "document2_ref": None, "event_library_ref": None,
+            "warnings": [], "as_of": NOW.isoformat(),
+        }
+
+    monkeypatch.setattr(rig.orchestrator.preparer, "prepare", prepare)
+    rig.orchestrator.pilot_stop_after_phase = "discovery"
+    with pytest.raises(PilotPhasePaused):
+        await rig.orchestrator.initialize(ticker="MU", as_of=NOW, run_id="d3v21-open-skill")
+    discovery = [
+        request for request in rig.worker.requests if request.node == CodexD3Node.O3_DISCOVERY
+    ]
+    assert {request.run_id for request in discovery} == {
+        "d3v21-open-skill-open", "d3v21-open-skill-s0001"
+    }
+    for request in discovery:
+        files = {
+            entry.relative_path
+            for entry in (await rig.workspace.inventory(request.run_id)).files
+        }
+        assert "context/document3/v21/assets/initialize_discovery.md" in files
+        is_open = request.run_id.endswith("-open")
+        assert ("context/document3/v21/assets/initialize_discovery_open.md" in files) == is_open
+        assert ("also read initialize_discovery_open.md" in request.prompt) == is_open
 
 
 @pytest.mark.asyncio
@@ -236,7 +323,43 @@ async def test_open_global_four_files_staged_replay_and_contract(rig):
     assert all(r.run_id != result.run_id for r in rig.worker.requests)
     planning = next(r for r in rig.worker.requests if r.node == CodexD3Node.O3_PLANNING)
     integration = next(r for r in rig.worker.requests if r.node == CodexD3Node.O3_INTEGRATION)
-    assert planning.thread_id == integration.thread_id == "thread-d3v21-test-global"
+    assert planning.thread_id is None
+    assert integration.thread_id == "thread-d3v21-test-global"
+    discovery_refs = {
+        path: content
+        for key, record in rig.state.tasks(result.run_id).items()
+        if key.startswith("discovery:") and record["status"] == "COMPLETED"
+        for path, content in record["files"].items()
+        if path.startswith("output/work/v21/discovery/")
+    }
+    for request in rig.worker.requests:
+        if request.node not in {CodexD3Node.O3_BUILD, CodexD3Node.O3_INTEGRATION}:
+            continue
+        task_path = re.search(r"Read task file (\S+),", request.prompt)[1]
+        task = json.loads((await rig.workspace.read_text(request.run_id, task_path)).content)
+        mapping = {item["ref"]: item["local_path"] for item in task["read_mapping"]}
+        for ref, content in discovery_refs.items():
+            assert (await rig.workspace.read_text(request.run_id, mapping[ref])).content == content
+    for request in rig.worker.requests:
+        task_path = re.search(r"Read task file (\S+),", request.prompt)[1]
+        task = json.loads((await rig.workspace.read_text(request.run_id, task_path)).content)
+        navigation = task["context_reading"]
+        index = json.loads(
+            (await rig.workspace.read_text(request.run_id, navigation["index_path"])).content
+        )
+        assert index["schema_version"] == "context-index-refs-v1"
+        for mapped in task["read_mapping"]:
+            source = next(x for x in index["sources"] if x["ref"] == mapped["ref"])
+            directory = source["index_path"].rsplit("/", 1)[0]
+            assert (
+                await rig.workspace.read_text(request.run_id, directory + "/read_context.py")
+            ).content
+            pointer = "/" + mapped["local_path"].replace("~", "~0").replace("/", "~1")
+            entry_path = directory + "/pointers/" + digest(pointer)[:20] + ".json"
+            entry = json.loads((await rig.workspace.read_text(request.run_id, entry_path)).content)
+            assert (
+                await rig.workspace.read_text(request.run_id, directory + "/" + entry["pages"][0])
+            ).content
 
 
 @pytest.mark.asyncio
@@ -254,7 +377,7 @@ async def test_local_failure_and_zero_policy_dispositions(rig, zero, no_agenda, 
     assert result.status == status
     assert rig.policy.get_current_version("MU") == 1
     if failed:
-        task = rig.state.task(result.run_id, "research:OPEN:0")
+        task = rig.state.task(result.run_id, "research:OPEN_RESEARCH:0")
         assert task["attempt_count"] == 2 and task["status"] == "FAILED"
         assert len([r for r in rig.worker.requests if r.node == CodexD3Node.O3_BUILD]) == 2
 
@@ -268,7 +391,7 @@ async def test_supplement_crash_persists_budget_and_dispatch_flag(rig):
     assert run["supplement_dispatched"] is True
     result = await resume_v21(rig.orchestrator, "d3v21-supp")
     assert result.status == "COMPLETE"
-    assert rig.state.task(result.run_id, "supplement:OPEN:0")["attempt_count"] == 1
+    assert rig.state.task(result.run_id, "supplement:OPEN_RESEARCH:0")["attempt_count"] == 1
     supp = [
         r
         for r in rig.worker.requests
@@ -276,6 +399,52 @@ async def test_supplement_crash_persists_budget_and_dispatch_flag(rig):
     ]
     assert len(supp) == 2 and supp[0] == supp[1]
     assert len(rig.state.get_staged_v3("MU", result.handoff.policy_set_version).policies) == 1
+
+
+@pytest.mark.asyncio
+async def test_final_write_inherits_accepted_supplement_identity(rig, monkeypatch):
+    rig.worker.supplement = True
+    original = rig.worker.run
+
+    async def write_supplement_candidate(request):
+        task_path = re.search(r"Read task file (\S+),", request.prompt)[1]
+        task = json.loads((await rig.workspace.read_text(request.run_id, task_path)).content)
+        if request.node == CodexD3Node.O3_INTEGRATION and task.get("stage") == "final_write":
+            source = next(path for path in task["batch"] if "/supplement/" in path)
+            mapped = next(
+                item["local_path"] for item in task["read_mapping"] if item["ref"] == source
+            )
+            policy = (await rig.workspace.read_text(request.run_id, mapped)).content
+            await rig.workspace.write_text(
+                request.run_id, task["output_paths"][0] + "one.json", policy
+            )
+        result = await original(request)
+        if task.get("stage") == "post_supplement_review":
+            await rig.workspace.write_text(
+                request.run_id,
+                task["output_paths"][0],
+                canonical(
+                    {
+                        "relations": [],
+                        "research_requests": [],
+                        "coverage_notes": "",
+                        "edit_requests": [
+                            {"policies": task["batch"], "instruction": "fixture edit"}
+                        ],
+                    }
+                ),
+            )
+        return result
+
+    monkeypatch.setattr(rig.worker, "run", write_supplement_candidate)
+    result = await rig.orchestrator.initialize(ticker="MU", as_of=NOW, run_id="supplement-final-id")
+    run = rig.state.run(result.run_id)
+    source = rig.state.drafts(result.run_id)[run["supplement_paths"][0]]["policy"]
+    candidate = next(iter(run["final_candidates"].values()))
+    assert candidate["policy_id"] == source["policy_id"]
+    assert [c["condition_id"] for c in candidate["activation_conditions"]] == [
+        c["condition_id"] for c in source["activation_conditions"]
+    ]
 
 
 @pytest.mark.asyncio
@@ -308,7 +477,7 @@ async def test_dependency_and_frozen_identity_integrity(rig):
         await rig.orchestrator.initialize(
             ticker="MU", as_of=NOW.replace(day=5), run_id=result.run_id
         )
-    task = rig.state.task(result.run_id, "discovery:OPEN")
+    task = rig.state.task(result.run_id, "discovery:OPEN_RESEARCH")
     snapshot = next(iter(task["snapshots"].values()))
     await rig.workspace.write_text(result.run_id, snapshot, "corrupt")
     with pytest.raises(ValueError, match="integrity"):
@@ -328,10 +497,51 @@ def test_agenda_global_normalization_conflicts_and_original_line_numbers():
         },
         {"S1": "same", "S2": "same", "OPEN": "OPEN", "GLOBAL": "GLOBAL"},
     )
-    assert a.waves == [["T1"], ["T2"]] and a.topics[0].owner == "OPEN"
-    assert len(issues) == 2
+    assert a.waves == [["T1", "T2"]] and all(t.owner == "OPEN" for t in a.topics)
+    assert len(issues) == 3
     valid, bad = records('\n{"name":"x","lead":"y"}\nbad\n', Lead)
     assert valid[0][0] == 2 and bad[0]["line"] == 3
+
+
+def test_build_accepts_bounded_wave_local_policy_and_singular_result_names():
+    prefix = "output/work/v21/research/OPEN/0006/"
+    one = prefix + "policy-one.json"
+    two = prefix + "policy-two.json"
+    assert build_policy_output(one, prefix)
+    assert build_policy_output(prefix + "policies/three.json", prefix)
+    assert not build_policy_output(prefix + "result.json", prefix)
+    assert policy_batches([{"path": one}, {"path": two}]) == [[{"path": one}, {"path": two}]]
+    parsed, bad, alternate = build_result_records(
+        {
+            prefix + "result.json": canonical(
+                {
+                    "topic": "T",
+                    "policies": [one],
+                    "notes": "researched",
+                    "ref": [],
+                }
+            )
+        },
+        prefix,
+    )
+    assert not bad and alternate == prefix + "result.json"
+    assert parsed[0][1].topic == "T" and parsed[0][1].policies == [one]
+
+
+@pytest.mark.asyncio
+async def test_new_build_policy_with_null_ids_is_not_reported_as_lost_rewrite(rig):
+    rig.worker.policy = {
+        **draft(),
+        "policy_id": None,
+        "activation_conditions": [{**draft()["activation_conditions"][0], "condition_id": None}],
+    }
+    result = await rig.orchestrator.initialize(ticker="MU", as_of=NOW, run_id="null-new-id")
+    run = rig.state.run(result.run_id)
+    assert len(run["basis"]) == 1
+    assert not any(
+        item.get("error") == "accepted rewrite lost all Condition IDs"
+        for item in run["diagnostics"]
+    )
 
 
 def test_durable_ids_salvage_revision_and_no_business_guessing(tmp_path):
@@ -458,11 +668,13 @@ async def test_d2_local_salvage_shared_originals_and_optional_global_reports(rig
         ),
     )
     global_bundle = SimpleNamespace(
+        run_id="g1",
         status="published",
         ticker="MU",
         reports={
             "c1": SimpleNamespace(
-                relative_path="artifacts/c1.md", sha256=digest("complete C1 original")
+                relative_path="artifacts/c1.md", sha256=digest("complete C1 original"),
+                artifact_id="c1-a", attempt_id="c1-1",
             )
         },
         published_at=NOW,
@@ -489,7 +701,8 @@ async def test_d2_local_salvage_shared_originals_and_optional_global_reports(rig
     assert len(shell["units"]) == 1 and shell["units"][0]["potential_gaps"] == []
     assert "complete C1 original" in prepared["files"].values()
     assert "original\r\nmaterial" in prepared["files"].values()
-    assert len(prepared["warnings"]) == 2
+    assert len([w for w in prepared["warnings"] if w.startswith("D2 malformed")]) == 2
+    assert any("entity_network_report:unavailable" in w for w in prepared["warnings"])
     original["schema_version"] = "document2.v2"
     text = canonical(original)
     published = published.model_copy(
@@ -511,7 +724,7 @@ async def test_cutoff_nullable_event_and_all_additional_files_frozen_on_resume(r
         contract_version="event-library-reference-view-v1",
         ticker="MU",
         version=9,
-        sha256="a" * 64,
+        sha256=digest("complete view"),
         reference_view="complete view",
     )
     rig.orchestrator.preparer.legacy._event_library_reader = SimpleNamespace(
@@ -551,7 +764,11 @@ async def test_owner_concurrency_no_global_wave_barrier_and_session_reuse(rig, m
         return {
             "files": {},
             "manifest": [],
-            "topology": {"shells": [], "owners": {"OPEN": "OPEN", "GLOBAL": "GLOBAL"}},
+            "topology": {
+                "shells": [],
+                "research_owners": {"S0001": "Shell A", "OPEN": "OPEN"},
+                "owners": {"S0001": "Shell A", "OPEN": "OPEN", "GLOBAL": "GLOBAL"},
+            },
             "document2_ref": None,
             "event_library_ref": None,
             "warnings": [],
@@ -563,7 +780,7 @@ async def test_owner_concurrency_no_global_wave_barrier_and_session_reuse(rig, m
         "topics": [
             {"name": "T1", "owner": "OPEN", "brief": "first"},
             {"name": "T2", "owner": "OPEN", "brief": "second"},
-            {"name": "G1", "owner": "GLOBAL", "brief": "slow"},
+            {"name": "G1", "owner": "S0001", "brief": "slow"},
         ],
         "waves": [["T1"], ["G1"], ["T2"]],
     }
@@ -579,7 +796,7 @@ async def test_owner_concurrency_no_global_wave_barrier_and_session_reuse(rig, m
             active.add(request.run_id)
             maximum = max(maximum, len(active))
             key = request.idempotency_key
-            if ":GLOBAL:" in key:
+            if ":S0001:" in key:
                 global_started.set()
                 await asyncio.wait_for(second_wave.wait(), timeout=5)
             if ":OPEN:0:" in key:
@@ -807,8 +1024,21 @@ def test_public_owner_names_alias_routes_and_local_structured_salvage():
         {"S1": "Shell A", "S2": "same", "S3": "same", "OPEN": "OPEN", "GLOBAL": "GLOBAL"},
         {"same::shell-0002": "S2"},
     )
-    assert [t.owner for t in agenda.topics] == ["Shell A", "same::shell-0002"]
+    assert [t.owner for t in agenda.topics] == ["S1", "S2"]
     assert agenda.waves == [["one"], ["two"]]
+    slotted, slotted_issues = normalize_agenda(
+        {
+            "topics": [
+                {"name": "shell one", "owner": "S1", "brief": "fixture"},
+                {"name": "shell two", "owner": "S2", "brief": "fixture"},
+            ],
+            "waves": [["shell one", "shell two"]],
+        },
+        {"S1": "same", "S2": "same", "OPEN": "OPEN", "GLOBAL": "GLOBAL"},
+    )
+    assert [t.owner for t in slotted.topics] == ["S1", "S2"]
+    assert slotted.waves == [["shell one"], ["shell two"]]
+    assert not slotted_issues
     conso, issues = structured(
         canonical(
             {
@@ -845,8 +1075,8 @@ async def test_partial_worker_files_are_accepted_without_business_retry(rig, mon
     monkeypatch.setattr(rig.worker, "run", partial)
     result = await rig.orchestrator.initialize(ticker="MU", as_of=NOW, run_id="d3v21-partial-files")
     assert result.status == "COMPLETE"
-    assert rig.state.task(result.run_id, "research:OPEN:0")["status"] == "PARTIAL"
-    assert rig.state.task(result.run_id, "research:OPEN:0")["attempt_count"] == 1
+    assert rig.state.task(result.run_id, "research:OPEN_RESEARCH:0")["status"] == "PARTIAL"
+    assert rig.state.task(result.run_id, "research:OPEN_RESEARCH:0")["attempt_count"] == 1
 
 
 @pytest.mark.asyncio
@@ -863,7 +1093,7 @@ async def test_read_only_input_tampering_is_local_terminal_failure(rig, monkeypa
     monkeypatch.setattr(rig.worker, "run", tamper)
     result = await rig.orchestrator.initialize(ticker="MU", as_of=NOW, run_id="d3v21-tamper")
     assert result.status == "PARTIAL"
-    task = rig.state.task(result.run_id, "research:OPEN:0")
+    task = rig.state.task(result.run_id, "research:OPEN_RESEARCH:0")
     assert task["status"] == "FAILED" and task["attempt_count"] == 1 and not task["files"]
     assert rig.policy.get_current_version("MU") == 1
 
@@ -908,7 +1138,7 @@ def test_cli_plan_manifest_names_and_material_descriptors(tmp_path):
 
 
 @pytest.mark.asyncio
-async def test_sdk_global_resume_planning_disables_then_build_reenables_data(tmp_path, monkeypatch):
+async def test_sdk_global_planning_then_integration_refreshes_data(tmp_path, monkeypatch):
     from doxagent.codex_runtime.schema import CODEX_DOCUMENT3_WORKFLOW_VERSION, ResearchLane
     from doxagent.codex_worker.schema import WorkerRunRequest
     from doxagent.codex_worker.sdk_runtime import OpenAICodexRuntime
@@ -919,9 +1149,7 @@ async def test_sdk_global_resume_planning_disables_then_build_reenables_data(tmp
     runtime = OpenAICodexRuntime(capability_secret="s" * 32, container_isolated=True)
     root = tmp_path / "owner"
     root.mkdir()
-    for ordinal, node in enumerate(
-        [CodexD3Node.O3_DISCOVERY, CodexD3Node.O3_PLANNING, CodexD3Node.O3_BUILD]
-    ):
+    for ordinal, node in enumerate([CodexD3Node.O3_PLANNING, CodexD3Node.O3_INTEGRATION]):
         await runtime.start(
             WorkerRunRequest(
                 workflow_version=CODEX_DOCUMENT3_WORKFLOW_VERSION,
@@ -942,3 +1170,7 @@ async def test_sdk_global_resume_planning_disables_then_build_reenables_data(tmp
         assert sdk.thread_resume_kwargs["config"]["mcp_servers.data.enabled"] is (
             node != CodexD3Node.O3_PLANNING
         )
+        if node == CodexD3Node.O3_PLANNING:
+            config = sdk.thread_resume_kwargs["config"]
+            assert config["mcp_servers.data.command"]
+            assert config["mcp_servers.data.args"] == ["-m", "doxagent.mcp.data_server"]

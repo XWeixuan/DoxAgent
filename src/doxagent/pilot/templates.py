@@ -1,4 +1,4 @@
-"""Stable Pilot config and one-shot Codex App task templates."""
+"""Stable Pilot config and task templates for local execution."""
 
 from __future__ import annotations
 
@@ -37,7 +37,7 @@ def render_config(
         f"args = {_toml_array(['-m', 'doxagent.mcp.data_server'])}",
         f"cwd = {_toml(str(case_root))}",
         f"enabled_tools = {_toml_array(enabled_data_tools)}",
-        "required = true",
+        "required = false",
         "startup_timeout_sec = 20",
         "tool_timeout_sec = 120",
         "",
@@ -79,9 +79,12 @@ def render_config(
                 + _toml_array(["-m", "doxagent.workflows.codex_document2.discovery_checkpoint"]),
                 f"cwd = {_toml(str(case_root))}",
                 'enabled_tools = ["commit_open_discovery_scan"]',
-                "required = true",
+                "required = false",
                 "startup_timeout_sec = 10",
                 "tool_timeout_sec = 30",
+                "",
+                "[mcp_servers.d2_discovery.tools.commit_open_discovery_scan]",
+                'approval_mode = "approve"',
                 "",
                 "[mcp_servers.d2_discovery.env]",
                 f"DOXAGENT_CODEX_RUN_ID = {_toml(run_id)}",
@@ -105,7 +108,7 @@ def render_task(
     research_lane: str = "legacy_document1",
 ) -> str:
     current_est_date = as_of_est or datetime.now(ZoneInfo("America/New_York")).date()
-    structured_c4 = node.startswith("c4_")
+    structured_c4 = node.startswith("c4")
     if manual_upstream_paths:
         rendered_paths = "\n".join(f"- `{path}`" for path in manual_upstream_paths)
         manual_upstream_contract = f"""## 人工上游输入
@@ -139,7 +142,12 @@ def render_task(
             "o4": "完整执行独立 Market Situation O4 价格研究合同",
             "c4_pre_scan": "完整执行 C4 前置实体地图与未来节点扫描合同",
             "c4_enrichment": "完整执行 C4 研究后未来节点补充合同",
+            "c4f_future_nodes": "独立研究并交付 Future Nodes",
+            "c4e_formal_scan": "开放关系扫描并交付完整 Entity Map 快照",
+            "c4e_network_build": "深入网络研究并交付独立 Markdown Network Research Report",
         }.get(node, f"完整执行 attempt-local {node} skill")
+        if node == "c4_pre_scan" and research_lane == "global_research":
+            quality_focus = "只交付初步 Entity Map，不生成 Future Nodes"
         objective = (
             f"本次正式产物质量是唯一主目标。{quality_focus}，"
             "不得沿用 functional smoke 的简短输出标准。\n\n"
@@ -152,7 +160,18 @@ def render_task(
 
 1. 完成该节点真实研究任务，按生产文件合同生成正式节点报告。
 2. 作为 Pilot tester，持续发现并记录妨碍 workflow 成功、证据闭环或报告质量的问题。"""
-    if structured_c4:
+    if node == "c4e_network_build":
+        execution_contract = """严格按当前 attempt 的 C4e prompt、network-build skill
+和 task.json 工作。
+
+- 读取 formal-scan 完整关系快照与所有提供的上游研究资产，继续深度网络研究和 web search。
+- 将完整 Markdown 网络研究正文写入 task.json 的 markdown_output_path。
+- 最终 structured response 使用 output_schema_path 指定的非空 JSON 字符串；
+  字符串内容与 Markdown 文件一致。
+- 不生成 Entity Relation / Future Node JSON，也不使用 progressive draft/progress 合同。
+- 只使用当前 attempt 可追溯的来源和引用；不改只读输入，
+  不把 Pilot 元分析写入正式正文。"""
+    elif structured_c4:
         execution_contract = """严格按 attempt-local 指令、task.json、required skill
 和 schema 工作：
 
@@ -164,7 +183,7 @@ def render_task(
   可靠性、重要性、影响、Gap 或 priced-in 字段。
 - C4 没有 progressive Markdown 合同；不要创建或寻找 report_draft.md、progress.json
   或 observation_candidates.json。
-- 将完整 NodeOutput JSON 写入 task.json 的 `structured_output_path`；该文件是唯一正式
+- 将当前阶段 schema 对应的完整 JSON 写入 task.json 的 `structured_output_path`；该文件是唯一正式
   C4 输出落点。最终回复中的 structured completion 必须与文件内容一致并通过 output schema。
 
 完成前检查 structured output、全部 citation、五字段边界和阶段边界，并确认未误改只读输入。"""
@@ -290,7 +309,7 @@ def render_document2_task(
             "覆盖 checkpoint/Scan 文件。若 context 指定 resume_from=SELECTION，直接使用"
             "注入的冻结 Scan/SHA，不重新扫描。若 source-attempt 导出的 case 已有冻结 checkpoint，"
             "也直接读取该 Scan/SHA 继续 Selection，不改写源 input。工具是唯一允许写入"
-            "这两份 context 文件的入口。"
+            "这两份 context 文件的入口；MCP 不可用时可使用 task.json 中同等绑定的本地 commit CLI。"
         )
     upstream_contract = ""
     if has_pilot_upstream:
@@ -306,18 +325,20 @@ Pilot 直接依赖节点的完整 `output/`，对 `context.json` 中同类的 so
         if document_schema_version == "document2.v2.1":
             upstream_contract += """
 v2.1 的 Open Discovery 是单个 case，包含冻结 Scan/checkpoint 和 Selection；后续四轮是 envelope，
-其中 `canonical_shell` 才是下一轮 Shell。`late_additions` 按 `(unit, name)` 顺序累积，
-相同键以较新轮次的完整记录替换；`open_discovery_resolution` 单独保留。
+其中 `canonical_shell` 才是下一轮 Shell。下轮 `context` 中的 `late_additions` 按
+`(unit, name)` 顺序累积，相同键以较新轮次的完整记录替换；当前 `completion.json` 的
+`late_additions` 只提交本轮新发现，不回填此前轮次的记录；`open_discovery_resolution` 单独保留。
 不得把完整研究 envelope 当成 canonical Shell。以当前 output_schema 为输出结构依据。
 """
     return f"""# {document_schema_version} Formal Pilot Task
 
-## 项目根硬检查
+## 执行目录检查
 
-开始任何读取或写入前，确认当前 Codex 项目根和工作目录**恰好是**：
+本任务由本地 Codex SDK 驱动，不需要在 Codex App 打开项目。
+开始任何读取或写入前，确认工作目录**恰好是**：
 `{case_root}`
 
-如果不完全一致，立即停止并要求用户以该 case 目录重新打开可信项目。
+如果不完全一致，立即停止并报告执行目录错误。
 
 ## 正式目标
 
@@ -339,9 +360,21 @@ v2.1 的 Open Discovery 是单个 case，包含冻结 Scan/checkpoint 和 Select
 将唯一完整 JSON 结果写入：
 `attempts/{attempt_id}/output/completion.json`
 
-该 JSON 必须匹配 `output_schema.json`。最终回复必须与文件内容一致。Pilot 过程中发现的问题
+该文件按 `output_schema.json` 构造。文件是正式交付权威；v2.1 的 SDK 最终回复只返回
+completion_path 和 status 技术回执，不重复正文；旧版完整回复也可兼容。
+完整正文始终可读；UTF-8 分段入口见 input/context_index/overview.md，可使用 read_context.py，
+或以 Get-Content -LiteralPath <页文件> -Encoding utf8 读取。Pilot 过程中发现的问题
 仅追加记录到：
 `attempts/{attempt_id}/audit/pilot_issues.md`
+
+研究时遇到值得反馈的困难，及时在该文件留下简短笔记，不必为记录而中断研究。
+进入或结束主要子任务时，可在普通 commentary 中用一句话报告动作、读取材料或工具进展，
+让 Pilot 能按可观察时间线分析阶段耗时；不要输出隐藏推理，也不需逐步复述所有思考。
+除 bug、阻塞和质量风险外，也记录：理解不清晰或多种解释的要求、不太会写或难以组织的
+产物字段、难执行的步骤、证据不足及工具能力限制。说明具体位置、表现、影响、采取的
+处理方式和仍未解决的疑问；区分实际经历与推测，不编造问题，不把合理的研究不确定性
+直接认定为程序 bug。完成正式产物后，驱动器会在同一 thread 发起单独的 Pilot 复盘任务。
+复盘属于 audit，不能修改正式产物，也不能混入 completion.json。
 
 不得修改 input、context、上游 artifact 或其他 attempt。当前 workspace run id 为 `{run_id}`。
 """

@@ -1,0 +1,76 @@
+{
+  "$defs": {
+    "EntityRelation": {
+      "additionalProperties": false,
+      "properties": {
+        "关系主体": {
+          "title": "关系主体",
+          "type": "string"
+        },
+        "关系对象": {
+          "title": "关系对象",
+          "type": "string"
+        },
+        "关系类型": {
+          "title": "关系类型",
+          "type": "string"
+        },
+        "关系说明": {
+          "title": "关系说明",
+          "type": "string"
+        },
+        "关联业务或产品": {
+          "title": "关联业务或产品",
+          "type": "string"
+        }
+      },
+      "required": [
+        "关系主体",
+        "关系对象",
+        "关系类型",
+        "关系说明",
+        "关联业务或产品"
+      ],
+      "title": "EntityRelation",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "type": "object",
+  "properties": {
+    "status": {
+      "title": "Status",
+      "type": "string"
+    },
+    "summary": {
+      "default": "",
+      "title": "Summary",
+      "type": "string"
+    },
+    "report_markdown": {
+      "type": "string",
+      "const": ""
+    },
+    "warnings": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+    },
+    "entity_relations": {
+      "items": {
+        "$ref": "#/$defs/EntityRelation"
+      },
+      "title": "Entity Relations",
+      "type": "array"
+    }
+  },
+  "required": [
+    "status",
+    "summary",
+    "report_markdown",
+    "warnings",
+    "entity_relations"
+  ]
+}

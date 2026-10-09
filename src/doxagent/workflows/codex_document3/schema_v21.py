@@ -52,9 +52,15 @@ class Relation(WorkModel):
     proposal: Text
 
 
+class EditRequest(WorkModel):
+    policies: list[Text] = Field(min_length=1)
+    instruction: Text
+
+
 class Review(WorkModel):
     relations: list[Relation]
     research_requests: list[Topic]
+    edit_requests: list[EditRequest] = Field(default_factory=list)
     coverage_notes: str
 
 

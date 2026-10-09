@@ -1,4 +1,4 @@
-"""C4 pre-scan -> C1/C3 -> C5 -> C4 enrichment Global Research DAG."""
+"""Global Research with a shared C4 thread and independent C4 products."""
 
 from __future__ import annotations
 
@@ -67,7 +67,7 @@ class CodexGlobalResearchOrchestrator(CodexDocument1Orchestrator):
         c4_pre, c4_pre_ref = await self._execute_or_partial(
             request,
             CodexD1Node.C4_PRE_SCAN,
-            {**base_context, "task": "pre-scan entity relations and preliminary future nodes"},
+            {**base_context, "task": "pre-scan initial entity relations only"},
             checkpoint,
         )
         outputs[CodexD1Node.C4_PRE_SCAN] = c4_pre
@@ -129,40 +129,91 @@ class CodexGlobalResearchOrchestrator(CodexDocument1Orchestrator):
         if c5_ref:
             reports[CodexD1Node.C5.value] = c5_ref
 
-        c4_enriched, c4_enriched_ref = await self._execute_or_partial(
-            request,
-            CodexD1Node.C4_ENRICHMENT,
-            {
-                **base_context,
-                "c4_pre_scan": self._handoff_output(c4_pre, c4_pre_ref),
-                "c1_report": self._handoff_output(outputs[CodexD1Node.C1], reports.get("c1")),
-                "c3_report": self._handoff_output(outputs[CodexD1Node.C3], reports.get("c3")),
-                "c5_report": self._handoff_output(c5, c5_ref),
-                "agent_observations": self._observation_handoffs(normalized),
-                "output_contract": "return the complete merged C4 snapshot",
-            },
-            checkpoint,
-        )
-        outputs[CodexD1Node.C4_ENRICHMENT] = c4_enriched
-        if c4_enriched_ref:
-            reports[CodexD1Node.C4_ENRICHMENT.value] = c4_enriched_ref
-
         missing = [
             node.value
             for node in (CodexD1Node.C1, CodexD1Node.C3, CodexD1Node.C5)
             if node.value not in reports or not outputs[node].report_markdown.strip()
         ]
         if missing:
-            failed = missing
-            await self._event(request.run_id, "workflow.failed", {"failed_nodes": failed})
-            raise RuntimeError("Global Research publish blocked by: " + ", ".join(failed))
-        if not (c4_enriched.entity_relations or c4_enriched.future_nodes):
-            c4_enriched = c4_pre.model_copy(deep=True)
-        if checkpoint.failed_nodes:
+            await self._event(request.run_id, "workflow.failed", {"failed_nodes": missing})
+            raise RuntimeError("Global Research publish blocked by: " + ", ".join(missing))
+
+        research_context = {
+            **base_context,
+            "c4_pre_scan": self._handoff_output(c4_pre, c4_pre_ref),
+            "c1_report": self._handoff_output(outputs[CodexD1Node.C1], reports.get("c1")),
+            "c3_report": self._handoff_output(outputs[CodexD1Node.C3], reports.get("c3")),
+            "c5_report": self._handoff_output(c5, c5_ref),
+            "horizontal_collection": horizontal.model_dump(mode="json"),
+            "agent_observations": self._observation_handoffs(normalized),
+            "upstream_artifacts": [
+                item.model_dump(mode="json")
+                for item in self._repository.list_artifacts(request.run_id)
+                if item.attempt_id in {reference.attempt_id for reference in reports.values()}
+            ],
+        }
+        c4_future, c4_future_ref = await self._execute_or_partial(
+            request,
+            CodexD1Node.C4F_FUTURE_NODES,
+            {
+                **research_context,
+                "output_contract": "return Future Nodes only; do not modify Entity Map",
+            },
+            checkpoint,
+        )
+        if c4_future_ref:
+            reports[CodexD1Node.C4F_FUTURE_NODES.value] = c4_future_ref
+        c4_formal, c4_formal_ref = await self._execute_after_c4_stage(
+            request,
+            CodexD1Node.C4E_FORMAL_SCAN,
+            {
+                **research_context,
+                "future_nodes": self._handoff_output(c4_future, c4_future_ref),
+                "output_contract": (
+                    "return a complete Entity Map snapshot, not a delta; no Future Nodes"
+                ),
+            },
+            checkpoint,
+            predecessor=c4_future_ref,
+        )
+        if c4_formal_ref:
+            reports[CodexD1Node.C4E_FORMAL_SCAN.value] = c4_formal_ref
+        c4_network, c4_network_ref = await self._execute_after_c4_stage(
+            request,
+            CodexD1Node.C4E_NETWORK_BUILD,
+            {
+                **research_context,
+                "future_nodes": self._handoff_output(c4_future, c4_future_ref),
+                "c4e_formal_scan": self._handoff_output(c4_formal, c4_formal_ref),
+                "output_contract": (
+                    "continue deep network research, including web search and new discoveries; "
+                    "return the complete Markdown Network Research Report as a JSON string"
+                ),
+            },
+            checkpoint,
+            predecessor=c4_formal_ref,
+        )
+        if c4_network_ref:
+            reports[CodexD1Node.C4E_NETWORK_BUILD.value] = c4_network_ref
+        c4_product_status = {
+            name: ("failed" if reference is None else "available" if content else "empty")
+            for name, reference, content in (
+                ("future_nodes", c4_future_ref, c4_future.future_nodes),
+                ("entity_relations", c4_formal_ref, c4_formal.entity_relations),
+                ("entity_network_report", c4_network_ref, c4_network.report_markdown.strip()),
+            )
+        }
+
+        if checkpoint.failed_nodes or any(
+            value != "available" for value in c4_product_status.values()
+        ):
             await self._event(
                 request.run_id,
                 "workflow.partial",
-                {"optional_failed_nodes": [n.value for n in checkpoint.failed_nodes]},
+                {
+                    "optional_failed_nodes": [n.value for n in checkpoint.failed_nodes],
+                    "c4_product_status": c4_product_status,
+                },
             )
 
         citation_nodes = (CodexD1Node.C1, CodexD1Node.C3, CodexD1Node.C5)
@@ -233,8 +284,10 @@ class CodexGlobalResearchOrchestrator(CodexDocument1Orchestrator):
             ticker=request.ticker,
             status="published",
             reports=reports,
-            entity_relations=c4_enriched.entity_relations,
-            future_nodes=c4_enriched.future_nodes,
+            entity_relations=c4_formal.entity_relations,
+            future_nodes=c4_future.future_nodes,
+            entity_network_report=c4_network.report_markdown,
+            c4_product_status=c4_product_status,
             citation_manifest=citation_manifest,
             handoff=handoff,
             published_at=published_at,
@@ -248,3 +301,21 @@ class CodexGlobalResearchOrchestrator(CodexDocument1Orchestrator):
             {"artifact_id": final_ref.artifact_id, "research_lane": request.research_lane.value},
         )
         return bundle
+
+    async def _execute_after_c4_stage(
+        self,
+        request: GlobalResearchRunRequest,
+        node: CodexD1Node,
+        payload: dict[str, object],
+        checkpoint: WorkflowCheckpoint,
+        *,
+        predecessor: ArtifactRef | None,
+    ) -> tuple[NodeOutput, ArtifactRef | None]:
+        if predecessor is not None:
+            return await self._execute_or_partial(request, node, payload, checkpoint)
+        # An empty validated snapshot is complete; a failed predecessor is not.
+        # Do not run a stage whose required upstream product was never accepted.
+        self._fail_checkpoint(checkpoint, node)
+        warning = "preceding C4 stage failed; required upstream product unavailable"
+        await self._event(request.run_id, "node.skipped", {"node": node.value, "reason": warning})
+        return NodeOutput(status="failed", warnings=[warning]), None

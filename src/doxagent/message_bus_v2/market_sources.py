@@ -258,6 +258,8 @@ class GlobeNewswireSearchAdapter:
         lower = context.window_start or context.requested_at - timedelta(minutes=30)
         max_pages = int(context.binding.source_parameters.get("max_pages", 3))
         deferred, retry_at = False, None
+        outcomes = []
+        storage_unavailable = False
         for query in queries:
             key = str(query["query_key"])
             saved = dict(prior.get(key, {}))
@@ -265,6 +267,19 @@ class GlobeNewswireSearchAdapter:
                 checkpoints[key] = saved
                 continue
             page = int(saved.get("page", 1))
+            if storage_unavailable:
+                saved.update(page=page, done=False, coverage="PARTIAL")
+                checkpoints[key] = saved
+                outcomes.append(
+                    {
+                        "query_key": key,
+                        "status": "DEFERRED",
+                        "reason": "storage_unavailable",
+                        "attempted": False,
+                    }
+                )
+                continue
+            outcome = {"query_key": key, "status": "SUCCESS", "attempted": True}
             try:
                 for _ in range(max_pages):
                     url = (
@@ -300,22 +315,34 @@ class GlobeNewswireSearchAdapter:
                         True  # Finite recovery; never block healthy sources indefinitely.
                     )
             except SiteAccessError as exc:
+                outcome.update(
+                    disposition=exc.result.disposition.value,
+                    category=exc.result.failure_category.value
+                    if exc.result.failure_category
+                    else None,
+                    reason=exc.result.reason_code,
+                )
                 if exc.site_access_deferred:
+                    outcome["status"] = "DEFERRED"
+                    storage_unavailable = exc.result.reason_code == "storage_unavailable"
                     deferred, retry_at = True, exc.result.retry_not_before
                     saved.update(page=page, done=False, coverage="PARTIAL")
                 else:
+                    outcome["status"] = "FAILED"
                     count = int(saved.get("failures", 0)) + 1
                     saved.update(page=page, failures=count, done=count >= 2, coverage="PARTIAL")
                     failures.append(
                         _failure(context, "search_query_failed", str(exc), {"query_key": key})
                     )
             except Exception as exc:
+                outcome.update(status="FAILED", reason=type(exc).__name__)
                 count = int(saved.get("failures", 0)) + 1
                 saved.update(page=page, failures=count, done=count >= 2, coverage="PARTIAL")
                 failures.append(
                     _failure(context, "search_query_failed", type(exc).__name__, {"query_key": key})
                 )
             checkpoints[key] = saved
+            outcomes.append(outcome)
         return PollResult(
             messages=list(rows.values()),
             failures=failures,
@@ -330,5 +357,10 @@ class GlobeNewswireSearchAdapter:
                 "provider": "globenewswire",
                 "terms_revision": (context.query_plan or {}).get("terms_revision"),
                 "queries": queries,
+                "query_attempt_count": sum(bool(o["attempted"]) for o in outcomes),
+                "query_success_count": sum(o["status"] == "SUCCESS" for o in outcomes),
+                "query_failure_count": sum(o["status"] == "FAILED" for o in outcomes),
+                "query_deferred_count": sum(o["status"] == "DEFERRED" for o in outcomes),
+                "query_outcomes": outcomes,
             },
         )

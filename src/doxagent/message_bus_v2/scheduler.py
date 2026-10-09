@@ -321,6 +321,9 @@ class GlobalPollScheduler:
                 request_permit=self._limiter(source).permit,
             )
             result = await shared_poll(context)
+            from doxagent.source_maintenance.signals import shared
+
+            shared(source, [b for b, _, _ in roster], run["run_id"], attempted_at, mode, result)
             if result.site_access_deferred:
                 self.distribution.release_run(run["run_id"], token)
                 if mode == "REALTIME":
@@ -367,6 +370,10 @@ class GlobalPollScheduler:
             )
         except Exception as exc:
             self.distribution.release_run(run["run_id"], token)
+            from doxagent.source_maintenance.signals import shared
+
+            shared(source, [b for b, _, _ in roster], run["run_id"], attempted_at,
+                   mode, error=type(exc).__name__)
             for binding, _, _ in roster:
                 failed = self.service.record_poll_failure(
                     binding, code=type(exc).__name__, message=str(exc),

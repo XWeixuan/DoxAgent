@@ -1,9 +1,48 @@
 """Recover research text independently of optional agent-authored records."""
 
+from doxagent.codex_runtime.errors import StructuredOutputInvalid
 from doxagent.codex_runtime.recovery import bounded_text, ingest_model, json_value
-from doxagent.codex_runtime.schema import AgentObservationCandidate, EntityRelation, FutureNode
+from doxagent.codex_runtime.schema import (
+    AgentObservationCandidate,
+    CodexD1Node,
+    EntityRelation,
+    FutureNode,
+)
 
 from .schema import NodeOutput
+
+
+def recover_node_output(
+    node: CodexD1Node,
+    text: str,
+    *,
+    output_schema: dict | None = None,
+) -> tuple[NodeOutput, list[dict]]:
+    if node is not CodexD1Node.C4E_NETWORK_BUILD:
+        if output_schema is not None:
+            _validate_wire_value(json_value(text), output_schema)
+        return recover_output(text)
+    try:
+        value = json_value(text)
+    except (ValueError, TypeError):
+        # SDK transports may return the Markdown text itself rather than its JSON encoding.
+        value = text
+    if not isinstance(value, str):
+        raise StructuredOutputInvalid("C4e network-build requires a Markdown string")
+    if output_schema is not None:
+        _validate_wire_value(value, output_schema)
+    return NodeOutput(status="completed", report_markdown=value), []
+
+
+def _validate_wire_value(value: object, schema: dict) -> None:
+    from jsonschema import ValidationError, validate
+
+    try:
+        validate(value, schema)
+    except ValidationError as exc:
+        raise StructuredOutputInvalid(
+            f"C4 stage output violates its schema: {exc.message}"
+        ) from exc
 
 
 def recover_output(text: str) -> tuple[NodeOutput, list[dict]]:

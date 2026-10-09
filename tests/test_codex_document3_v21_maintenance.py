@@ -6,6 +6,7 @@ import pytest
 
 from doxagent.codex_runtime.schema import CodexD3Node
 from doxagent.workflows.codex_document3.recovery import resume_v21
+from doxagent.workflows.codex_document3.state_v21 import digest
 from tests.test_codex_document3_v21_orchestration import NOW, draft
 from tests.test_codex_document3_v21_orchestration import rig as v21_rig
 
@@ -174,7 +175,7 @@ async def test_metadata_only_event_change_and_empty_formal_feed_noop(rig):
         contract_version="event-library-reference-view-v1",
         ticker="MU",
         version=9,
-        sha256="a" * 64,
+        sha256=digest("full Event view"),
         reference_view="full Event view",
     )
     rig.orchestrator.preparer.legacy._event_library_reader = SimpleNamespace(

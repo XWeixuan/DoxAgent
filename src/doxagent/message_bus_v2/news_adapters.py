@@ -672,19 +672,41 @@ class ReutersSiteSearchAdapter:
         results: list[PollResult] = []
         checkpoints: dict[str, JsonObject] = {}
         prior = context.checkpoint.get("queries", {}) if context.is_gap_recovery else {}
+        storage_unavailable = False
         for query, query_key, query_source in queries:
             saved = prior.get(query_key, {}) if isinstance(prior, dict) else {}
             if saved.get("done"):
                 checkpoints[query_key] = dict(saved)
                 continue
+            if storage_unavailable:
+                checkpoints[query_key] = {**saved, "done": False, "coverage": "PARTIAL"}
+                results.append(
+                    PollResult(
+                        site_access_deferred=True,
+                        window_done=False,
+                        acquisition_metadata={
+                            "query_key": query_key,
+                            "reason": "storage_unavailable",
+                            "attempted": False,
+                        },
+                    )
+                )
+                continue
             try:
                 result = await self._poll_query(context, query, query_key, query_source)
+                storage_unavailable = (
+                    result.acquisition_metadata.get("reason") == "storage_unavailable"
+                )
                 results.append(result)
                 checkpoints[query_key] = dict(result.next_checkpoint)
             except SiteAccessError as exc:
                 failures = int(saved.get("failures", 0)) + 1
-                checkpoints[query_key] = {**saved, "failures": failures,
-                                          "done": failures >= 2, "coverage": "PARTIAL"}
+                checkpoints[query_key] = {
+                    **saved,
+                    "failures": failures,
+                    "done": failures >= 2,
+                    "coverage": "PARTIAL",
+                }
                 results.append(
                     PollResult(
                         window_coverage="PARTIAL",
@@ -693,16 +715,28 @@ class ReutersSiteSearchAdapter:
                             _failure(
                                 context,
                                 "search_query_failed",
-                                type(exc).__name__,
-                                {"query_key": query_key},
+                                exc.result.reason_code or type(exc).__name__,
+                                {
+                                    "query_key": query_key,
+                                    "operation_id": exc.result.operation_id,
+                                    "disposition": exc.result.disposition.value,
+                                    "category": exc.result.failure_category.value
+                                    if exc.result.failure_category
+                                    else None,
+                                    "reason": exc.result.reason_code,
+                                },
                             )
                         ],
                     )
                 )
             except Exception as exc:
                 failures = int(saved.get("failures", 0)) + 1
-                checkpoints[query_key] = {**saved, "failures": failures,
-                                          "done": failures >= 2, "coverage": "PARTIAL"}
+                checkpoints[query_key] = {
+                    **saved,
+                    "failures": failures,
+                    "done": failures >= 2,
+                    "coverage": "PARTIAL",
+                }
                 results.append(
                     PollResult(
                         window_coverage="PARTIAL",
@@ -723,6 +757,7 @@ class ReutersSiteSearchAdapter:
                 messages[message.external_id or message.url] = message
         return PollResult(
             messages=list(messages.values()),
+            site_access_deferred=bool(results) and all(r.site_access_deferred for r in results),
             failures=[failure for result in results for failure in result.failures],
             window_coverage="COMPLETE"
             if all(item.get("coverage") == "COMPLETE" for item in checkpoints.values())
@@ -736,6 +771,14 @@ class ReutersSiteSearchAdapter:
             acquisition_metadata={
                 "provider": "reuters",
                 "query_count": len(queries),
+                "query_attempt_count": sum(
+                    r.acquisition_metadata.get("attempted", True) for r in results
+                ),
+                "query_success_count": sum(
+                    not r.site_access_deferred and not r.failures for r in results
+                ),
+                "query_failure_count": sum(bool(r.failures) for r in results),
+                "query_deferred_count": sum(r.site_access_deferred for r in results),
                 "terms_revision": plan["terms_revision"] if plan else None,
                 "terms_mode": "monitoring_terms" if plan else "LEGACY_TERMS",
                 "queries": [result.acquisition_metadata for result in results],
@@ -782,11 +825,17 @@ class ReutersSiteSearchAdapter:
                     return PollResult(
                         messages=messages,
                         failures=failures,
+                        site_access_deferred=pages_fetched == 0,
                         window_coverage="PARTIAL",
                         window_done=False,
-                        next_checkpoint={"page": page, "done": False,
-                                         "coverage": "PARTIAL"},
+                        next_checkpoint={"page": page, "done": False, "coverage": "PARTIAL"},
                         optional_next_poll_hint=exc.result.retry_not_before,
+                        acquisition_metadata={
+                            "query_key": query_key,
+                            "attempted": True,
+                            "reason": exc.result.reason_code,
+                            "disposition": exc.result.disposition.value,
+                        },
                     )
                 raise
             pages_fetched += 1

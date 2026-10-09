@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import re
+import time
 from datetime import UTC, datetime, timedelta
 from typing import Any, Protocol, cast
 
@@ -11,6 +12,11 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from doxagent.codex_runtime.client import WorkspaceClient
 from doxagent.codex_runtime.repository import CodexRuntimeRepository
+from doxagent.codex_runtime.research_products import (
+    PRODUCT_ROLES,
+    d1_products_context,
+    load_d1_products,
+)
 from doxagent.codex_runtime.schema import (
     ArtifactKind,
     CodexD1Node,
@@ -85,7 +91,9 @@ class PublishedEventLibraryProvider:
         self._pinned_published_at = pinned_published_at
 
     async def load(self, *, ticker: str, as_of: datetime) -> OptionalInput:
-        snapshot = self._reader.reference_view(ticker, version=self._pinned_version)
+        snapshot = await asyncio.to_thread(
+            self._reader.reference_view, ticker, version=self._pinned_version
+        )
         if snapshot is None:
             return OptionalInput(
                 status=InputAvailability.ABSENT,
@@ -143,13 +151,19 @@ class DoxAtlasNarrativeReportProvider:
     def __init__(self, tools: ToolRegistry) -> None:
         self._tools = tools
 
-    async def load(self, *, ticker: str, as_of: datetime) -> OptionalInput:
+    async def load(
+        self, *, ticker: str, as_of: datetime, timeout_seconds: float = 15
+    ) -> OptionalInput:
         request = ToolRequest(
             tool_name="doxa_get_narrative_report",
             ticker=ticker,
             agent_name=AgentName.O1_EXPECTATION_OWNER,
             input={"ticker": ticker, "view": "agent_provenance"},
-            metadata={"workflow_version": "codex_document2_v1", "prefetch": True},
+            metadata={
+                "workflow_version": "codex_document2_v1",
+                "prefetch": True,
+                "http_timeout_seconds": max(0.05, timeout_seconds / 4),
+            },
         )
         try:
             result = await asyncio.to_thread(
@@ -161,6 +175,7 @@ class DoxAtlasNarrativeReportProvider:
             return OptionalInput(
                 status=InputAvailability.UNAVAILABLE,
                 warning=f"DoxAtlas narrative lookup failed: {_bounded(str(exc))}",
+                metadata={"error_type": type(exc).__name__, "phase": "provider_request"},
             )
         if not result.succeeded:
             message = result.error.message if result.error is not None else "unknown error"
@@ -170,7 +185,14 @@ class DoxAtlasNarrativeReportProvider:
                 if "not found" in lowered or "no narrative" in lowered
                 else InputAvailability.UNAVAILABLE
             )
-            return OptionalInput(status=status, warning=message)
+            return OptionalInput(
+                status=status,
+                warning=message,
+                metadata={
+                    "phase": "provider_request",
+                    "error_code": str(result.error.code) if result.error else None,
+                },
+            )
         output = result.output if isinstance(result.output, dict) else {}
         nested = output.get("data")
         raw: dict[str, Any] = nested if isinstance(nested, dict) else output
@@ -217,6 +239,9 @@ class GlobalResearchInput(PreparedModel):
     report_artifact_ids: dict[str, str]
     entity_relations: list[dict[str, Any]] = Field(default_factory=list)
     future_nodes: list[dict[str, Any]] = Field(default_factory=list)
+    entity_network_report: str = ""
+    d1_product_status: dict[str, str] = Field(default_factory=dict)
+    d1_product_sources: dict[str, dict[str, Any]] = Field(default_factory=dict)
     horizontal_collection: dict[str, Any] = Field(default_factory=dict)
     horizontal_artifact_id: str | None = None
     document_artifact_id: str
@@ -276,13 +301,21 @@ class Document2InputLoader:
         reports: dict[str, str] = {}
         report_ids: dict[str, str] = {}
         paths: list[str] = []
+        report_warnings = []
         for role in ("c1", "c3", "c5"):
             reference = bundle.reports.get(role)
-            if reference is None:
-                raise ValueError(f"Global Research bundle is missing required {role} report")
-            file = await self._workspace.read_text(source_global_run_id, reference.relative_path)
-            if file.content is None or file.sha256 != reference.sha256:
-                raise ValueError(f"Global Research {role} artifact failed checksum verification")
+            try:
+                if reference is None:
+                    raise ValueError("report reference missing")
+                file = await self._workspace.read_text(
+                    source_global_run_id, reference.relative_path
+                )
+                if file.content is None or file.sha256 != reference.sha256:
+                    raise ValueError("report checksum mismatch")
+            except (FileNotFoundError, OSError, ValueError) as exc:
+                reports[role] = ""
+                report_warnings.append(f"D2_ACCEPTANCE:{role}:report_unavailable:{exc}")
+                continue
             reports[role] = _qualify_d1_aliases(file.content)
             report_ids[role] = reference.artifact_id
             paths.append(reference.relative_path)
@@ -324,26 +357,19 @@ class Document2InputLoader:
                 label="Event Library",
             ),
         )
+
+        async def read_product(ref):
+            return (await self._workspace.read_text(bundle.run_id, ref.relative_path)).content
+
+        products = await load_d1_products(bundle, self._repository, read_product)
+        product_context = qualify_product_context(products)
         global_input = GlobalResearchInput(
             run_id=bundle.run_id,
             ticker=bundle.ticker,
             published_at=bundle.published_at,
             reports=reports,
             report_artifact_ids=report_ids,
-            entity_relations=[
-                cast(
-                    dict[str, Any],
-                    _qualify_d1_context(item.model_dump(mode="json", by_alias=True)),
-                )
-                for item in bundle.entity_relations
-            ],
-            future_nodes=[
-                cast(
-                    dict[str, Any],
-                    _qualify_d1_context(item.model_dump(mode="json", by_alias=True)),
-                )
-                for item in bundle.future_nodes
-            ],
+            **product_context,
             horizontal_collection=cast(dict[str, Any], _qualify_d1_context(horizontal)),
             horizontal_artifact_id=horizontal_id,
             document_artifact_id=bundle.handoff.document_artifact_id,
@@ -353,18 +379,40 @@ class Document2InputLoader:
             status=InputAvailability.AVAILABLE,
             artifact_ids=[
                 *report_ids.values(),
+                *[p["source_artifact_id"] for p in products.values() if p["source_artifact_id"]],
+                *[
+                    p["completion_ref"]["source_artifact_id"]
+                    for p in products.values()
+                    if p.get("completion_ref")
+                ],
                 *([horizontal_id] if horizontal_id else []),
                 bundle.handoff.document_artifact_id,
             ],
-            workspace_paths=[*paths, *horizontal_paths],
+            workspace_paths=[
+                *paths,
+                *horizontal_paths,
+                *[path for product in products.values() for path in product["source_files"]],
+            ],
             source_run_id=bundle.run_id,
             as_of=bundle.published_at,
-            warning=cutoff_warning,
+            warning="; ".join(
+                ([cutoff_warning] if cutoff_warning else [])
+                + report_warnings
+                + [
+                    f"D1_PRODUCT:{key}:{p['state']}:{warning}"
+                    for key, p in products.items()
+                    for warning in (
+                        p["source_warnings"] or ([p["state"]] if p["state"] != "available" else [])
+                    )
+                ]
+            )
+            or None,
             metadata={
                 "requested_as_of": (
                     requested_cutoff.isoformat() if requested_cutoff is not None else None
                 ),
                 "effective_research_cutoff_at": as_of.isoformat(),
+                "products": product_context["d1_product_sources"],
             },
         )
         return PreparedDocument2Inputs(
@@ -393,6 +441,13 @@ def _manifest_entry(value: OptionalInput) -> InputManifestEntry:
 
 def _qualify_d1_aliases(value: str) -> str:
     return re.sub(r"【cite:(O[1-9]\d*)】", r"【cite:D1-\1】", value)
+
+
+def qualify_product_context(products):
+    context = d1_products_context(products)
+    for key in PRODUCT_ROLES:
+        context[key] = _qualify_d1_context(context[key])
+    return context
 
 
 def _qualify_d1_context(value: Any) -> Any:
@@ -426,14 +481,44 @@ async def _safe_optional_load(
     ticker: str,
     as_of: datetime,
     label: str,
+    budget_seconds: float = 15,
 ) -> OptionalInput:
-    try:
-        return await provider.load(ticker=ticker, as_of=as_of)
-    except Exception as exc:
-        return OptionalInput(
-            status=InputAvailability.UNAVAILABLE,
-            warning=f"{label} provider failed: {_bounded(str(exc))}",
+    deadline = time.monotonic() + budget_seconds
+    result = None
+    for attempt in range(1, 3):
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            break
+        try:
+            async with asyncio.timeout(remaining):
+                if isinstance(provider, DoxAtlasNarrativeReportProvider):
+                    result = await provider.load(
+                        ticker=ticker, as_of=as_of, timeout_seconds=remaining
+                    )
+                else:
+                    result = await provider.load(ticker=ticker, as_of=as_of)
+        except Exception as exc:
+            result = OptionalInput(
+                status=InputAvailability.UNAVAILABLE,
+                warning=f"{label} provider failed: {_bounded(str(exc) or type(exc).__name__)}",
+                metadata={"error_type": type(exc).__name__},
+            )
+        result.metadata.update(attempts=attempt, budget_seconds=budget_seconds)
+        transient = any(
+            word in (result.warning or "").lower()
+            for word in ("timeout", "eof", "connect", "reset", "temporar", "429", "502", "503")
         )
+        if (
+            result.status != InputAvailability.UNAVAILABLE
+            or not transient
+            or deadline - time.monotonic() < 0.1
+        ):
+            return result
+    return result or OptionalInput(
+        status=InputAvailability.UNAVAILABLE,
+        warning=f"{label} read budget exhausted",
+        metadata={"budget_seconds": budget_seconds},
+    )
 
 
 def _bounded(value: str, limit: int = 1_000) -> str:

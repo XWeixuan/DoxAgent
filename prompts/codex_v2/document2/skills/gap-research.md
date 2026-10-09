@@ -1,274 +1,97 @@
-# Turn 3: Potential Gap Discovery — Open Future Event Forecasting
+# Gap Research — Develop the Model's Revision Space
 
-## Purpose
+## Purpose: extend understanding into future possibilities
 
-Build a broad future occurrence map for every Unit in the canonical Shell. A Potential Gap is a
-specific future occurrence that, if observed, would force a meaningful revision of the Unit's
-current expectation. Future runtime agents will compare events with this map and reassess the
-affected Unit when a recognition point is reached.
+Extend the researched expectation model into ways the future could change it. A Gap is a revision theme with economically different possible developments, not an event-matching rule. Use the understanding gained through State and Realization to reveal routes to expectation change that the initial discovery could not yet see. O3 uses this revision space to investigate concrete scenarios and calibrate trading boundaries; your contribution is the range of possibilities and their economic meaning.
 
-This is an open event-possibility forecasting task, not a forecast of the single most likely future.
-Its value depends on whether the Gap Set covers materially different ways in which an uncertain
-future may surprise the current expectation model. State and Realization Factors explain the world
-as currently understood; Potential Gaps deliberately look beyond that model for future events that
-could change it.
+Build breadth with explanatory substance. A consequential external change can deserve more attention than a fully documented company detail. Develop promising possibilities into useful accounts of what could change and why it matters, rather than favoring only the easiest conclusions to defend. Company-specific developments remain valuable on the same economic basis. The aim is an informative future map, not the most probable forecast or a larger collection of narrow milestones. Writing a possibility is not a commitment that it will happen: this part prepares the model for plausible futures, including unfamiliar and low-probability ones. Its value here comes from useful revision coverage, not from reaching forecast or trading-decision confidence.
 
-The dominant error in this turn is omission. During possibility generation, optimize for breadth,
-novelty, and coverage. A conservative preference for only obvious, directly evidenced, or highly
-probable events defeats the purpose of Gap Discovery.
+## Read the model for openings, not only selected directions
 
-## Continue the same Shell research
+Continue with this task's refreshed `canonical_shell`, research records, and output schema. Recover the shared thread's understanding while using the latest inputs as the working model. Start from each Unit's `scope` and `horizon`: what are we forming expectations about, and which surrounding systems shape it? Read the Shell as a connected system before settling the themes within individual Units.
 
-Continue in the same O1 thread from the completed State and Realization turns. In `context.json`,
-`canonical_shell` is the refreshed object to update. Carry forward the integrated understanding of
-C1, C3, C5, Future Nodes, State, Factors, actors, mechanisms, and unresolved questions already built
-in the thread. Revisit the pinned research, optional Narrative Research, Event Library, or new
-research sources whenever they help develop or test a future possibility.
+Read Baselines for their underlying assumptions as well as their conclusions. What continuation is built into `baseline` and `ordinary_progress`? Which relationships and surrounding conditions does that continuation take for granted? What extent, timing, choice, or interpretation remains open in `open_frontier`? Background assumptions can generate themes even when they are not listed as unresolved questions. A familiar path may develop at a different scale, acquire new uses, or change through an unexpected response; ordinary progress supplies a comparison frame rather than excluding its whole subject from future revision.
 
-C1, C3, C5, State, Factors, and Future Nodes are powerful discovery inputs, but they are not the
-boundary of the event space. They describe what upstream research already knew to look for. This
-turn must also imagine events that are not named, implied, scheduled, or currently emphasized by
-any upstream object.
+Read the full Factor chains, especially their external and intermediate nodes. Use `mechanism` to see how influences travel, `current_status` to locate their present operation, and `materiality_context` to understand the relative importance of the variables. Look for the actors, resources, allocation decisions, substitutes, and shared dependencies behind those nodes. A variable with a small marginal effect today may become influential when an adjacent constraint, usage pattern, or competitive relationship changes. The current dominant bottleneck is not the entire future research agenda.
 
-Before diverging, use the current `boundary_rule` and supplied final Shell map to understand adjacent
-expectation systems. A future event centered in another Shell can still matter here; develop the
-revision specific to the current Unit while treating the adjacent Shell's full event system as its
-own depth scope.
+Read State for the Unit's quantitative anchors and substantive operating positions. An important unmeasured anchor can expose a direction worth exploring. Read the surrounding evidence and Factor context for other configurations, actor decisions and events: material need not qualify as a State anchor to help discover or explain a Gap.
 
-## Establish the current world, then move beyond it
+Use the complete Discovery Scan, Selection, and accumulated Late Additions as the record of earlier thinking. Follow through on directions selected for deeper research, recover useful distinctions inside merged candidates, and revisit parked directions when the later research changes their significance. These decisions organize earlier research investment; they do not fix the final theme list or require one Gap per candidate.
 
-Before generating events, recall the Shell's current world model:
+The assumptions in Baselines and the external and intermediate nodes in Factor chains can be equally or more valuable sources of themes than Selection. Read for implications connecting the materials, including possibilities that none names explicitly. Revisit the relevant C1/C3/C5 text, entity relationships, Future Nodes, and available event or narrative material when their detail helps develop a lead. The combined model is a launch point for discovery, not a closed description of everything that can matter.
 
-- the Unit propositions and horizons that may be revised;
-- the current company, industry, financial, and market-implied baselines;
-- the actors, incentives, capabilities, commitments, and dependencies in the economic system;
-- the main realization, failure, allocation, timing, and financial-conversion mechanisms; and
-- known future variables, milestones, evidence windows, conflicts, and missing information.
+## Follow important nodes outward, then connect changes back
 
-Use this model as a reality anchor, not as a candidate list. Then temporarily set aside its surface
-wording and ask a wider question:
+Treat a consequential node as a window into its own operating world. Ask who or what could change the forces acting on it: the uses creating demand, the actors controlling access, the way resources are supplied, or the arrangements through which they are allocated. Explore that surrounding activity, then bring the change back to the Unit through the relationship it would alter. This discovers more than a node's next value or the next step in a company's execution sequence.
 
-> What could happen in the future world—whether or not current research anticipates it—that would
-> make us form this Unit differently?
+Investigate changes to relationships as well as changes to levels. A new operating method can alter resource use per task; a different commercial arrangement can alter who chooses the equipment; a substitute can change bargaining power without eliminating demand. Look across Factors for shared nodes and interactions whose combined effect is absent from their separate summaries. The objective is to understand a different future configuration, not to create a Gap for every variable.
 
-Gap Discovery should explore both changes arising inside the known causal system and events that
-enter from outside its present ontology.
+Also work backward from a substantially changed view of the whole Unit, and independently imagine the wider news world. Temporarily put the Factor and product vocabulary aside: what might an application provider, a major employer, a financier or a public authority actually do that changes this outlook? A new use can create demand; a commercial decision can remove it; a public incident can change willingness or ability to deploy. Describe the possible development first, then connect it to the model. Existing relationships help explain the consequence but need not have named the original event. Future Nodes provide useful windows; equally important developments can arrive outside them. News that changes the interpretation of an existing condition can also revise expectations.
 
-## Run two independent discovery engines
+Follow responses beyond the initial effect. Cheaper access can encourage more use; efficiency can shift the scarce resource; extra capacity can change customer behavior or the allocation of business among suppliers. Explore amplification, absorption, substitution, and delayed effects where the Unit makes them relevant. These are analytical moves, not categories to fill. A change at an influential link can revise the outlook before the downstream outcome appears; the chain explains transmission rather than requiring every link to be confirmed together.
 
-Use two complementary modes. Neither is sufficient alone.
+Let potential economic reach determine where to spend research effort and how finely to distinguish possibilities. A broad external development should receive substantive exploration rather than a generic heading while ordinary customer details consume the space. Conversely, a single actor can warrant a distinct theme when its role makes the change consequential. Use the actual economic difference, not an internal/external quota, a customer count, or proximity to reported revenue.
 
-### 1. Evidence-led expansion
+## Research promising ideas into useful working explanations
 
-Extend the current research in multiple directions:
+Actively use Web Search when reading the model suggests a meaningful but undeveloped theme. Search the external subject in its own terms before narrowing to its connection with the ticker. Investigate product behavior, technical arrangements, participant incentives, resource economics, alternative routes, and useful analogues. Search can discover the missing relationship as well as supply a fact; it need not find an article that already predicts the exact future scenario. Explore general business and technology news, user adoption, purchasing behavior, financing and public decisions as the lead requires. A technical node such as task volume or storage demand is an invitation to investigate what people will do, not the outer edge of the search.
 
-- a known trend continues much further, accelerates, stalls, or reverses;
-- a required condition receives decisive validation or fails;
-- a blocker appears, disappears, or proves less important than expected;
-- a Future Node produces materially different possible outcomes;
-- realization moves earlier or later, reaches scale, or remains a one-off result;
-- orders, resources, share, bargaining power, or economic benefit move to another actor;
-- an upstream thesis succeeds but company capture, delivery, margin, cash flow, or terminal-value
-  conversion fails; or
-- several State changes or Factors interact to create a result that none implies independently.
+Use an incomplete formulation to identify the next research step. A thin `why_live` calls for a better understanding of current capabilities, incentives, conditions, or emerging behavior. A missing link in `revision_logic` calls for research into the intermediate relationship or another route. A vague `implication` calls for comparing how the Unit would be understood under different developments. These are reasons to improve a theme, not reasons to ignore it or leave it out.
 
-This mode uses known facts to project forward, including nonlinear and second-order consequences.
-It should produce more than a mechanical next step for each State, Factor, or Future Node.
+Develop the idea at the most useful level the research supports. Reframe its scope, find an adjacent mechanism, or express alternative paths when a crucial relationship remains open. Preserve the useful possibility and the understanding already gained instead of replacing them with a generic statement that more evidence is needed. If research changes the original interpretation, let the theme evolve and explain how the original direction was absorbed or resolved.
 
-### 2. Possibility-led invention
+Write current premises from the material actually used and make the proposed extension explicit as a possible development. Sources anchor those premises; the economic inference belongs in your explanation. Lead with how the outlook would change. When the consequence depends on a particular condition, explain that dependency and the different result it could produce. This is more informative than attaching the same list of unconfirmed downstream outcomes to every theme.
 
-Independently construct future worlds without requiring an existing clue for every event. Use the
-current reality only after imagination has opened the search space.
+Reuse sound prior research and put additional effort where it can change the theme, its core connection, or the distinction between possibilities. For an important numerical gap left by upstream research, use Web Search before a suitable Data MCP capability exposed in the task. Apply `research_cutoff_at` to the information used; future scenarios can concern later periods. Research has done its job here when it makes the current premise, possible change, and economic consequences intelligible. An exact company-level coefficient or fully disclosed outcome is not the completion standard for revision-space research.
 
-**Backcast from a changed Unit.** Assume the proposition later proves materially stronger, weaker,
-earlier, later, larger, smaller, captured by another beneficiary, or unable to convert into financial
-value. Work backward: what observable event could have caused or revealed that change?
+## Organize themes by the judgment they could revise
 
-**Exercise actor agency.** Let each consequential customer, supplier, competitor, management team,
-regulator, financier, partner, or platform owner take a materially different action from the one
-currently expected. Consider entry, exit, internalization, cancellation, commitment, alliance,
-acquisition, divestiture, repricing, capital reallocation, standards adoption, and strategic
-redirection. Ask which resulting events would revise the Unit.
+Form themes after opening and developing the relevant directions. For each, identify the class of change being explored and the current understanding it could modify. A theme may draw on several Factors, several discovery candidates, or a connection newly inferred from the model. Where there is no separately named Baseline for the topic, explain the useful working reference within `revision_logic`; make a local model addition when that adds reusable understanding.
 
-**Introduce discontinuities.** Imagine technical breakthroughs or failures, new products and
-substitutes, business-model changes, regulatory or court decisions, policy shifts, financing
-changes, supply disruptions, geopolitical actions, new standards, demand discontinuities, or
-industry consolidation. Translate only the consequential possibilities into observable events.
+Combine manifestations that share a meaningful research question and economic explanation, retaining their distinctive developments inside `possibility_space`. A new customer name or another report of the same change does not necessarily create a new theme. Equally, a broad phrase such as "industry conditions" should not hide changes that require different understanding. Merge or split to make the economic explanations clearer, not to optimize a count. Two developments that both reduce profit may still change demand, costs or supplier allocation differently; a shared sign alone does not make their explanations interchangeable. Preserve those differences within the theme rather than compressing them into an unexplained "A or B."
 
-**Explore interactions and cascades.** Combine developments that are individually familiar but may
-produce an unfamiliar result together. Follow feedback loops, bottleneck migration, learning curves,
-reflexive capital spending, competitive responses, customer reactions, and second-order effects.
+Keep a theme broad enough to host different developments but focused enough to explain their common revision significance. Possibilities can occur independently and still belong together when they illuminate the same theme. The grouping is not a Policy's shared activation boundary or OR contract. Several different effects of one development can also be represented in the appropriate Units, with consistent premises and Unit-specific implications.
 
-**Challenge the model itself.** Ask what future event would reveal that the current causal model has
-the wrong bottleneck, wrong beneficiary, wrong time scale, missing actor, missing technology, or
-missing transmission step. These model-breaking possibilities are especially valuable because the
-existing State and Factors are least likely to reveal them directly.
-
-These are imagination prompts, not Gap types or quotas. Move between them freely and invent other
-routes when the Unit's domain suggests them.
-
-## Expand before judging
-
-Create a broad temporary candidate pool before applying admission standards. Continue beyond the
-first obvious and scheduled possibilities through three conceptual passes:
-
-1. events directly visible from current facts and known future nodes;
-2. adjacent events created by actor responses, mechanism interactions, or alternative paths; and
-3. outside-model events discovered through backcasting, discontinuities, and causal-model challenge.
+A Factor explains how a relationship operates; a Gap explores how future conditions, behavior, or relationships could change the model. Reuse the Factor's causal and materiality research rather than reproducing its full analysis in every Gap. Keep `revision_logic` to the essential research connection and what it changes about this expectation subject. The transition from an existing state into a different future should remain understandable without turning the theme into a complete realization sequence.
 
-During these passes, retain a candidate even when it lacks direct event-specific evidence, is not
-mentioned upstream, has no close precedent, appears unlikely, or does not yet have a citation. Those
-questions belong to the later reality test. If nearly every candidate is a paraphrase of a State,
-Factor, or Future Node, the event space has not been explored far enough.
-
-## Evaluate and develop the expanded event space
-
-After broad generation, identify the future revision space each candidate is trying to cover, then
-test and improve its current occurrence expression. For each candidate, ask:
-
-- Is the event physically, economically, institutionally, and temporally possible in the relevant
-  system?
-- Can an actor, mechanism, interaction, or external shock provide a coherent route to it?
-- Which current expectation judgment would be formed differently if it occurred?
-- Does it add a distinct revision path rather than another story for an existing one?
-- Is this the most useful recognizable occurrence for that revision space?
-
-When a revision space is valuable but the occurrence is abstract, implausibly framed, or weakly
-recognizable, research the actors and mechanisms, then refine, reframe, or replace it with a better
-adjacent occurrence. A candidate loses value only when reasonable development still leaves it
-already realized, impossible, incoherent, immaterial, unrecognizable, or duplicative. Low estimated
-probability, novelty, lack of upstream support, and weak direct evidence do not disqualify an
-otherwise possible and consequential event.
-
-Reality evaluation improves the future map rather than ranking candidates by probability. The final
-Gap Set may include unlikely events when they are possible, recognizable, materially revisionary,
-and distinct.
-
-## Research and improve promising possibilities
-
-Use targeted research to turn imaginative candidates into usable event objects. Research should
-clarify:
-
-- the actors, capabilities, incentives, or external forces that make the event possible;
-- the causal route and any necessary precursor or timing window;
-- analogous events, technical feasibility, institutional process, or business mechanism where
-  useful;
-- the information source or real-world evidence that would reveal occurrence; and
-- why the event would change this Unit's proposition, horizon, magnitude, beneficiary, or financial
-  conversion.
-
-For a novel candidate, research the enabling conditions and causal mechanism rather than demanding
-a source that predicts the exact event. Direct precedents are helpful but not required. A new event
-can be derived from established capabilities, incentives, dependencies, industry structure, or
-historical patterns combined in a new way.
+## Develop possibilities with different economic consequences
 
-Research may confirm the original candidate or reveal a more realistic occurrence that expresses
-the same revision space. Use that discovery to improve the Gap rather than treating a weak initial
-formulation as evidence that the underlying possibility lacks value.
-
-`citation` anchors the current premises used in that derivation. It does not certify that the future
-event is likely or already anticipated. The inferential step from those premises to the possible
-occurrence belongs explicitly in `derivation`.
-
-## Use Future Nodes without inheriting their boundaries
-
-A Future Node identifies a known variable, milestone, time window, or evidence interface. It may
-yield several Gap candidates when different outcomes would create different revisions. The date or
-milestone alone is usually only an observation window; the decision, result, failure, surprise, or
-strategic response around it may be a Gap.
-
-Also explore what could occur between, before, after, or entirely outside known Future Nodes.
-Unknown future events do not announce themselves through the existing calendar, and the Gap Set
-should remain useful when the decisive event was absent from upstream planning.
-
-## Define one coherent recognizable development
-
-A Potential Gap represents one coherent recognition thesis and one coherent revision thesis. It may
-be a decision, result, development, or meaningful bounded sequence. Keep a sequence together when
-its elements jointly form one recognizable future cognition change; split components that can occur
-independently and imply materially different revisions. Executable event decomposition belongs to
-later monitoring design.
-
-An occurrence may be instantaneous or bounded over time. For trend-like events, make the actor,
-scope, window, threshold, stage, or evidence source precise enough for recognition without inventing
-false numerical precision. When one occurrence revises several Units, keep its semantics consistent,
-retain it only where material, and write each Unit's distinct `expected_revision`.
-
-## Build derivation and expected revision
-
-`derivation` explains why this future event remains possible and worth preparing for. It may begin
-from direct evidence, broader system properties, actor incentives, technical capability, an
-analogue, a counterfactual path, or an interaction among several facts. State the reasoning chain
-from current reality to the imagined occurrence. Do not disguise an imaginative inference as a
-reported forecast.
-
-`expected_revision` assumes the occurrence has been observed and explains how the Unit would need
-to change. Identify whether the proposition becomes more or less supportable, its horizon moves,
-its expected magnitude or beneficiary changes, or business-to-financial conversion must be revised.
-Include the limiting boundary: qualification may establish access without proving final share; a
-contract may support revenue visibility without proving margin or cash conversion.
-
-Expected revision concerns the Unit's expectation model. The Gap does not need an occurrence
-probability, price target, or trading action.
-
-## Encode the Gap precisely
-
-Use only the supplied `PotentialGap` fields:
-
-- `gap_id` gives the occurrence a concise natural-language semantic identity;
-- `possible_occurrence` states the future occurrence or bounded development without embedding its
-  impact story;
-- `derivation` records why the occurrence is possible and worth monitoring from today's reality;
-- `citation` provides the principal evidence for the derivation's current premises;
-- `expected_revision` states the Unit-level revision and its boundary; and
-- `recognition_criteria` resolves terms such as material, scaled, delayed, or above expectations.
-
-Set `recognition_criteria` to `null` when the occurrence is already unambiguous. Otherwise describe
-the minimum observable evidence that distinguishes a match from ordinary variation, using a
-supported threshold, duration, actor commitment, operating stage, or evidence combination.
-
-## Synthesize for future coverage
-
-Review the whole candidate pool after expansion and reality testing. Merge alternate wording for
-the same recognition event, split compound events with independent revision logic, and reconcile
-shared occurrences across Units. Retain materially distinct paths even when one is less likely or
-less directly evidenced than the others.
-
-Judge the set by revision-space coverage rather than count. Ask whether it spans the consequential
-ways the Unit could be revised: continuation and reversal, success and failure, earlier and later,
-scale and non-scalability, beneficiary reallocation, competitive or substitute action, policy or
-regulatory change, external discontinuity, transmission failure, interaction effects, and events
-that challenge the current model itself. These lenses open exploration beyond the first reaction;
-they do not define required categories for the final Gap Set.
-
-The best Gap Set combines recognizable events near the current research frontier with less obvious
-but plausible events beyond it. A narrow set of obvious milestones may be precise yet still fail its
-main purpose when the future arrives through another path.
-
-## Reconcile State, Factor, and Gap boundaries
-
-Turn 3 may correct an essential omission locally. A stable current observation target with
-comparable Values belongs in State; a material current mechanism requiring context belongs in the
-Realization Model; a Potential Gap is a future occurrence and the revision it would cause.
-
-A milestone may inform both a Factor and a Gap when the jobs differ: the Factor maintains the
-execution gate's current status, while the Gap records a future outcome and revision. Preserve
-valid earlier work and backfill only what makes the complete model coherent.
-
-## Completion
-
-Gap Discovery is incomplete when it merely restates State, Factors, Future Nodes, scheduled events,
-or the most visible narrative. It is also incomplete when candidates were rejected during
-generation because they lacked direct support or appeared unlikely.
-
-Complete the turn after the Shell has received deliberate evidence-led, adjacent, and outside-model
-exploration and the major known-system, adjacent, and model-breaking revision spaces are represented
-by researched, improved Gaps that explain both a realistic occurrence path and the Unit revision.
-Keep developing the map while new exploration reveals a distinct revision path or a promising space
-still has only a weak expression. It is mature when further work mainly supplies alternate stories
-for revision paths already understood rather than new ways the expectation could change.
-
-Return the complete `ExpectationShell`. Preserve the researched State and Realization Factors,
-update each Unit's `potential_gaps`, carry all canonical fields through unchanged, and include only
-justified local State, Factor, or semantic refinements discovered during this turn. Return no
-wrapper or fields beyond the supplied schema.
+Build `possibility_space` from plausible real-world occurrences, then derive their economic implications—not the reverse. For each branch, identify who or what could bring about a concrete change through the relevant capabilities, incentives, choices or constraints. A gradual development can qualify as well as a discrete decision; a formula's inputs increasing or decreasing are not by themselves an account of what could happen. Each possibility's `name` describes that development, and `implication` explains how it changes the current understanding. Use the specificity useful for the theme, without requiring an exact date, named actor, matching rule or confirmation of the downstream chain.
+
+Look for different ways something could actually happen, including several events with similar directional effects when their causes, reach or beneficiaries differ. Expansion, contraction and offsetting effects describe outcomes; they are not slots to fill. Let the subject's distinct developments determine the number of branches, without setting a count before research or padding the result afterward. A known trend can accelerate, spread, stall or be reinterpreted through different actions and constraints. Each branch should add a real change to the picture, not merely reverse a sign or change a name.
+
+Possibilities need not be mutually exclusive. Some can coexist, compound, offset, or follow one another; explain the relationship in `implication` when it matters. Several variables may legitimately describe one future configuration. Retain the combination when it explains a different economic outcome, rather than appending later observations simply to make the same interpretation feel more certain. Earlier and partial changes can have their own revision meaning.
+
+Make conditional effects useful. For example, a change in resource efficiency may reduce demand at a fixed activity level while encouraging more activity through lower costs. Explain how those effects change the outlook under the relevant conditions instead of ending with an undifferentiated "impact is uncertain." Apply the chain-wide materiality understanding to identify what determines the effect; further local research can refine that comparison.
+
+For a hypothetical cloud-compute Unit, try a news-reader's view before returning to capacity and scheduling. A large consumer platform could bundle persistent agents into an existing subscription, opening use by people who would not buy a separate tool. An enterprise buyer could instead halt a planned rollout after a widely publicized data-loss incident, shifting demand or deployment toward controlled environments. A financing partner could withdraw support from infrastructure operators, moving investment plans even while end-user interest remains strong. These are different possible developments, not reports that any of them has happened.
+
+Now use the model to explain each: how does distribution change active use; how does a trust event change participation or deployment location; how does funding alter the ability to build? Existing workload, headroom and procurement relationships connect those events to the Unit. Their differences may justify separate themes or different branches, depending on the research. This illustrates moving from an open-world event to economic meaning, alongside the existing method of following a node outward; it is not a required set of events or a branch-count template.
+
+## Write the research into the Gap fields
+
+Use the supplied fields for distinct contributions:
+
+| Field | Research contribution |
+| --- | --- |
+| `name` | A concise name for the revision theme, broad enough for its meaningful developments and specific enough to identify the economic change. |
+| `why_live` | The current conditions, arrangements, capabilities, incentives, or emerging clues that make the theme worth exploring. A structural basis is useful even without a new announcement. |
+| `revision_logic` | What current understanding could change and the compact economic connection from that change to the Unit. Include the relevant working reference or conditional relationship in the explanation. |
+| `possibility_space` | Developments with different economic meanings. Each uses only `name` for the future development and `implication` for its consequence. |
+| `ref` | Sources for the premises and research used to develop the theme, preserving their existing provenance. |
+
+Keep relationships to State, Baselines, and Factors intelligible in the prose rather than adding relation fields. Materiality Context remains in Factors; use its conclusions where they explain a theme or branch. Keep the current premise, overall revision logic, and branch-specific consequence distinct rather than repeating the same summary three times. Required fields should contain your best useful research expression, including an informative conditional account where appropriate; uneven maturity across them is an opportunity for development, not an exclusion test.
+
+O3 will research the concrete trading boundary and message comparison. Deliver the theme and its economic possibilities here, without adding recognition criteria, evidence combinations, progression maps, or trigger thresholds. A useful implication explains the change in understanding; it does not need to predict a trade action or a price move.
+
+## Finish for coverage and pass on the complete model
+
+Read the revision space against the whole Unit, not only against Selection. Have important Baseline assumptions and peripheral or intermediate causal nodes produced their relevant implications? With those external conditions broadly unchanged, what important changes could still arise in the Unit's own business or middle-layer relationships, and where are they explained? A narrower application theme should not silently replace the general relationship it illustrates. Develop missing core paths alongside the outer ones, without requiring one Gap per variable. Also consider consequential real-world news that the existing map still fails to accommodate. Finish when further exploration mainly repeats or refines already represented occurrence paths, not when an expansion, contraction and offsetting case—or any familiar branch count—has been filled.
+
+Preserve useful themes with their specific open dependencies. When a direction has become part of another theme or of the current model, preserve its contribution there and explain the disposition. Make useful local State, Baseline, or Factor corrections when this research exposes them; only Unit-linked indicator anchors belong in State, while other relevant facts can remain premises for the analysis. Retain the separate research functions and the existing O0 subjects.
+
+Return the required JSON envelope containing `canonical_shell`, `late_additions`, and `open_discovery_resolution`. The complete Shell replaces its predecessor: carry forward valid State, Baselines, Factors, Gaps, and references alongside this turn's work. Use the exact current task and `output_schema.json` for fields and delivery, including any completion-file instruction. Preserve qualified upstream references and current-attempt source identity in `ref`.
+
+The full-model carry-forward applies to `canonical_shell`. In `late_additions`, record only directions first discovered in this turn, using `discovered_during: "GAPS"`; include useful new directions inferred from the model even when Selection did not name them. A renamed topic or ordinary variant of an existing investigation is not automatically a new direction. Cumulative discoveries remain in the orchestration history: developing them does not require repeating their records or changing their first-discovery stage. Leave the frozen Scan and Selection unchanged.
+
+In `open_discovery_resolution`, submit dispositions newly made or substantively revised this turn, rather than unchanged accumulated records. `resolution` states the contribution and disposition; `reason` explains the research basis for it. Use permitted current Unit/Factor/Gap names or an O0 sibling Shell's Unit name for a non-null `destination`; State/Baseline-only contributions use null. Empty process arrays mean no new contribution, not deletion of history. Finalization reconciles the complete final view. The formal deliverable remains the complete envelope, not a separate report, bare Shell or new Discovery checkpoint.

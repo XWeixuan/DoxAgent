@@ -50,6 +50,7 @@ class _FakeBuilder:
             json.dumps(
                 {
                     "case_id": request.case_id,
+                    "document_schema_version": request.document_schema_version,
                     "node": request.node.value,
                     "node_attempt_id": attempt_id,
                 }
@@ -110,7 +111,20 @@ def _finish(event: Document2PilotCoordinatorEvent) -> None:
     completion = (
         event.case_root / "attempts" / f"attempt-{event.node.value}" / "output" / "completion.json"
     )
-    completion.write_text(json.dumps({"node": event.node.value}), encoding="utf-8")
+    from doxagent.pilot.document2_case_builder import _bootstrap_contract
+
+    _, _, model = _bootstrap_contract(event.node, "document2.v2")
+    if event.node.value.startswith("d2_o1_"):
+        value = dict(shell_id="shell-a", core_question="question", boundary_rule="scope", units=[])
+    elif "review" in event.node.value:
+        value = dict(
+            reviewer_role=event.node.value.rsplit("_", 1)[-1].upper(), overall_assessment="valid"
+        )
+    else:
+        value = {}
+    accepted = model.model_validate(value).model_dump(mode="json")
+    completion.write_text(json.dumps(accepted), encoding="utf-8")
+    (completion.parent / "accepted.json").write_text(json.dumps(accepted), encoding="utf-8")
 
 
 @pytest.mark.asyncio
@@ -355,9 +369,9 @@ def test_recompiled_finalization_replaces_only_the_o1_dependency(tmp_path: Path)
     completion = (
         override_case.case_root
         / "attempts"
-        / json.loads(
-            (override_case.case_root / "case_manifest.json").read_text(encoding="utf-8")
-        )["node_attempt_id"]
+        / json.loads((override_case.case_root / "case_manifest.json").read_text(encoding="utf-8"))[
+            "node_attempt_id"
+        ]
         / "output"
         / "completion.json"
     )

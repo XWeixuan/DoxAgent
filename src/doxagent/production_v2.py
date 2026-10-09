@@ -3,6 +3,7 @@
 import argparse
 import json
 import os
+import shutil
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -124,6 +125,13 @@ def migrate(*, resume_backup=None):
     backup_root = Path(resume_backup).resolve(strict=True) if resume_backup else backup_parent / stamp
     if resume_backup and (backup_root.parent != backup_parent.resolve() or not backup_root.is_dir()):
         raise ValueError("resume backup must be an existing production backup directory")
+    if not resume_backup:
+        estimated = sum(path.stat().st_size for name, path in locations.items()
+                        if name in {"research", "initialization", "bus", "runtime", "read"}
+                        and path.exists())
+        reserve = int(os.environ.get("DOXAGENT_BACKUP_RESERVE_BYTES", str(20 * 1024**3)))
+        if shutil.disk_usage(locations["read"].parent).free < estimated + reserve:
+            raise RuntimeError("insufficient storage for migration backup plus reserve; archive backups or expand disk")
     # Refuse migrations while managed writers still own these databases.
     with (
         WriterLock(locations["runtime"].with_suffix(".migration")),

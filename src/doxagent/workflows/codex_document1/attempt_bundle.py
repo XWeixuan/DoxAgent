@@ -18,6 +18,7 @@ SUPPORTED_BUNDLE_VERSIONS = frozenset(
     {
         BUNDLE_VERSION,
         "codex-global-research-agent-bundle-v1",
+        "codex-global-research-agent-bundle-v2",
         "codex-market-situation-agent-bundle-v1",
     }
 )
@@ -48,6 +49,7 @@ class SeededAttemptBundle:
     manual_upstream_paths: tuple[str, ...]
     required_sections: tuple[str, ...]
     required_skills: tuple[str, ...]
+    markdown_output_path: str | None = None
 
 
 class AttemptBundleSeeder:
@@ -95,6 +97,13 @@ class AttemptBundleSeeder:
         }
         return _sha256(_json(canonical, compact=True))
 
+    def output_schema(self, node: CodexD1Node) -> dict[str, Any]:
+        definition = self.node_definition(node)
+        return json.loads(self._resource_contents(definition)[self._schema_path(definition)])
+
+    def _schema_path(self, definition: dict[str, Any]) -> str:
+        return str(definition.get("schema", self._manifest["schema"]))
+
     async def seed(
         self,
         *,
@@ -116,11 +125,16 @@ class AttemptBundleSeeder:
         skills = tuple(definition.get("required_skills", ()))
         sections = tuple(definition.get("required_sections", ()))
         progressive = node in PROGRESSIVE_NODES
+        markdown_only = definition.get("output_format") == "markdown"
+        schema_path = self._schema_path(definition)
+        markdown_output_path = f"{output_base}/entity_network_report.md" if markdown_only else None
         horizontal_path = f"{input_base}/horizontal.json" if horizontal is not None else None
         report_path = f"{output_base}/report_draft.md" if progressive else None
         progress_path = f"{output_base}/progress.json" if progressive else None
         candidates_path = f"{output_base}/observation_candidates.json" if progressive else None
-        structured_output_path = None if progressive else f"{output_base}/completion.json"
+        structured_output_path = (
+            None if progressive or markdown_only else f"{output_base}/completion.json"
+        )
         required_skill_paths = tuple(f"{input_base}/{item}" for item in skills)
         manual_upstream_paths = tuple(
             f"{input_base}/manual_upstream/{name}" for name in sorted(manual_upstream or {})
@@ -140,7 +154,7 @@ class AttemptBundleSeeder:
             "observation_candidates_path": candidates_path,
             "structured_output_path": structured_output_path,
             "output_language": "zh-CN",
-            "output_schema_path": f"{input_base}/{self._manifest['schema']}",
+            "output_schema_path": f"{input_base}/{schema_path}",
             "previous_attempt_failure": previous_failure,
             "manual_upstream": (
                 {
@@ -161,6 +175,9 @@ class AttemptBundleSeeder:
                 else None
             ),
         }
+        if markdown_only:
+            task["markdown_output_path"] = markdown_output_path
+            task["response_format"] = "json_string"
         context = {
             "schema_version": "codex-research-node-context-v1",
             "workflow_version": workflow_version,
@@ -183,7 +200,7 @@ class AttemptBundleSeeder:
             f"{input_base}/task.json": _json(task),
             f"{input_base}/context.json": _json(context),
             f"{input_base}/bundle_manifest.json": self._manifest_text,
-            f"{input_base}/{self._manifest['schema']}": resources[self._manifest["schema"]],
+            f"{input_base}/{schema_path}": resources[schema_path],
         }
         for skill in skills:
             writes[f"{input_base}/{skill}"] = resources[skill]
@@ -215,6 +232,8 @@ class AttemptBundleSeeder:
             await self._workspace.write_text(run_id, candidates_path or "", "[]")
         elif structured_output_path is not None:
             await self._workspace.write_text(run_id, structured_output_path, "{}")
+        elif markdown_output_path is not None:
+            await self._workspace.write_text(run_id, markdown_output_path, "")
         return SeededAttemptBundle(
             input_sha256=input_hash,
             task_path=f"{input_base}/task.json",
@@ -227,12 +246,13 @@ class AttemptBundleSeeder:
             manual_upstream_paths=manual_upstream_paths,
             required_sections=sections,
             required_skills=required_skill_paths,
+            markdown_output_path=markdown_output_path,
         )
 
     def _resource_contents(self, definition: dict[str, Any]) -> dict[str, str]:
         paths = [
             "AGENTS.md",
-            self._manifest["schema"],
+            self._schema_path(definition),
             definition["agent"],
             *definition.get("required_skills", ()),
         ]

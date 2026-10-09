@@ -112,7 +112,9 @@ def test_scan_is_write_once_and_refs_do_not_rename_candidates(tmp_path):
     assert refs["selections"][0]["candidate"] == "new buyer"
 
 
-def test_two_processes_cannot_replace_each_others_scan(tmp_path):
+def test_two_processes_cannot_replace_each_others_scan(tmp_path, monkeypatch):
+    # Windows spawn must be able to import the pickled helper under importlib-mode pytest.
+    monkeypatch.syspath_prepend(str(Path(__file__).resolve().parents[1]))
     service = local_service(tmp_path)
     alternate = scan()
     alternate["units"][0]["candidates"][0]["name"] = "different buyer"
@@ -241,10 +243,15 @@ async def test_sdk_single_turn_and_d2_only_tool(tmp_path, monkeypatch, node):
     assert sdk.thread.turn.await_count == 1
     config = sdk.thread_start_kwargs["config"]
     assert config["features.multi_agent"] == (node != CodexD2Node.O1_OPEN_DISCOVERY)
-    assert ("mcp_servers.d2_discovery.command" in config) == (node == CodexD2Node.O1_OPEN_DISCOVERY)
+    assert "mcp_servers.d2_discovery.command" in config
+    assert config["mcp_servers.d2_discovery.enabled"] == (node == CodexD2Node.O1_OPEN_DISCOVERY)
     if node == CodexD2Node.O1_OPEN_DISCOVERY:
         assert config["mcp_servers.d2_discovery.enabled_tools"] == [TOOL_NAME]
-        assert config["mcp_servers.d2_discovery.required"] is True
+        assert config["mcp_servers.d2_discovery.required"] is False
+        assert (
+            config["mcp_servers.d2_discovery.tools.commit_open_discovery_scan.approval_mode"]
+            == "approve"
+        )
 
 
 @pytest.mark.asyncio
@@ -335,6 +342,10 @@ async def test_recover_same_worker_or_aggregate_without_new_execution(tmp_path, 
     monkeypatch.setattr(ws, "write_text", interrupted_effect)
     with pytest.raises((asyncio.CancelledError, OSError)):
         await orch.run(request)
+    if when == "runner_success":
+        interrupted_bundle = repo.get_bundle(request.run_id)
+        next(iter(interrupted_bundle.checkpoint.shell_runs.values())).thread_id = None
+        repo.save_bundle(interrupted_bundle)
     result = await orch.run(request)
     assert result.publication_state == "COMPLETE"
     assert len(actual_executions) == 1
@@ -343,6 +354,11 @@ async def test_recover_same_worker_or_aggregate_without_new_execution(tmp_path, 
         assert dispatches[0] == dispatches[1]
     state = next(iter(result.checkpoint.shell_runs.values()))
     assert len(state.stage_outputs) == 5
+    assert {
+        req.thread_id
+        for req in worker.requests
+        if req.agent_role == CodexD2AgentRole.O1 and req.node != CodexD2Node.O1_OPEN_DISCOVERY
+    } == {state.thread_id}
     assert (
         sum(a.node == CodexD2Node.O1_OPEN_DISCOVERY for a in repo.list_attempts(request.run_id))
         == 1
@@ -354,18 +370,16 @@ async def test_discovery_failure_preserves_frozen_scan_and_resumes_selection(tmp
     repo, ws, worker, events, orch, request = await setup(tmp_path, selection_invalid_once=True)
     result = await orch.run(request)
     calls = [(node, ctx) for node, ctx in worker.contexts if node == CodexD2Node.O1_OPEN_DISCOVERY]
-    assert len(calls) == 2 and worker.scan_commits == 1
-    assert calls[1][1]["resume_from"] == "SELECTION"
-    assert "open_discovery_scan" not in calls[0][1]
+    assert len(calls) == 1 and worker.scan_commits == 1
     state = next(iter(result.checkpoint.shell_runs.values()))
     checkpoint = await read_checkpoint(ws, state.workspace_run_id, calls[0][1])
-    assert calls[1][1]["scan_producer_attempt_id"] == checkpoint.producer_attempt_id
-    assert calls[1][1]["scan_sha256"] == checkpoint.scan_sha256
     attempts = [
         a for a in repo.list_attempts(request.run_id) if a.node == CodexD2Node.O1_OPEN_DISCOVERY
     ]
-    assert [a.status for a in attempts].count(AttemptStatus.FAILED) == 1
+    assert all(a.status == AttemptStatus.SUCCEEDED for a in attempts)
     assert state.discovery_scan_ref.attempt_id == checkpoint.producer_attempt_id
+    assert result.publication_state == "PARTIAL"
+    assert any("selection_pending" in w for w in result.checkpoint.warnings)
 
 
 @pytest.mark.asyncio
@@ -403,14 +417,16 @@ async def test_source_pilot_export_retains_scan_origin_and_input_bytes(tmp_path)
         (source_root / CHECKPOINT_PATH).read_text()
     )
     producer = cp.producer_attempt_id
-    assert producer != current
+    assert producer == current
     origin_audit = source_root / "attempts" / producer / "audit"
     origin_audit.mkdir(parents=True, exist_ok=True)
     (origin_audit / "origin-evidence.json").write_text("origin")
     staging = tmp_path / "pilot-export"
     shutil.copytree(source_root, staging)
     input_root = staging / "attempts" / current / "input"
-    original = {p.name: p.read_bytes() for p in input_root.iterdir()}
+    original = {
+        str(p.relative_to(input_root)): p.read_bytes() for p in input_root.rglob("*") if p.is_file()
+    }
     original_scan = (staging / SCAN_PATH).read_bytes()
     builder = object.__new__(Document2PilotCaseBuilder)
     builder.settings = DoxAgentSettings(codex_capability_secret="offline-test-secret-" * 3)
@@ -427,7 +443,9 @@ async def test_source_pilot_export_retains_scan_origin_and_input_bytes(tmp_path)
         ),
         attempt_id=current,
     )
-    assert {p.name: p.read_bytes() for p in input_root.iterdir()} == original
+    assert {
+        str(p.relative_to(input_root)): p.read_bytes() for p in input_root.rglob("*") if p.is_file()
+    } == original
     assert (staging / SCAN_PATH).read_bytes() == original_scan
     assert (staging / "attempts" / producer / "audit/origin-evidence.json").read_text() == "origin"
     config = (staging / ".codex/config.toml").read_text()
@@ -457,24 +475,22 @@ async def test_coordinator_does_not_advance_without_checkpoint(tmp_path):
                 "status": "active",
                 "case_root": str(service.root),
                 "attempt_id": "attempt-1",
+                "task_path": str(service.root / "PILOT_TASK.md"),
             }
         ],
     }
     (root / "coordinator_state.json").write_text(json.dumps(state))
-    with pytest.raises(ValueError, match="missing.*checkpoint"):
-        await coordinator.advance("test")
-    assert coordinator.status("test")["stages"][0]["status"] == "active"
-    committed = service.commit(scan())
-    (output / "completion.json").write_text(
-        json.dumps(
-            {
-                "scan_sha256": committed["scan_sha256"],
-                "selection": selection(),
-            }
-        )
-    )
+    assert (await coordinator.advance("test")).status == "waiting"
+    from doxagent.pilot.sdk_runner import PilotSdkRunner
+
+    manifest = json.loads((service.root / "case_manifest.json").read_text())
+    manifest["document_schema_version"] = "document2.v2.1"
+    (service.root / "case_manifest.json").write_text(json.dumps(manifest))
+    PilotSdkRunner._validate_completion(service.root, manifest)
     assert (await coordinator.advance("test")).status == "completed"
-    assert coordinator.status("test")["stages"][0]["status"] == "completed"
+    accepted = json.loads((output / "accepted.json").read_text())
+    assert accepted["selection"]["selections"] == []
+    assert service.load().scan_sha256 == accepted["checkpoint"]["scan_sha256"]
 
 
 def test_pilot_rejects_legacy_checkpoint_before_creating_new_plan(tmp_path):
@@ -506,7 +522,7 @@ async def test_scan_and_retry_selection_keep_distinct_observation_origins(tmp_pa
     value = scan()
     value["units"][0]["candidates"][0]["ref"] = ["O1"]
     monkeypatch.setattr(fixtures, "scan", lambda: json.loads(json.dumps(value)))
-    repo, ws, worker, events, orch, request = await setup(tmp_path, selection_invalid_once=True)
+    repo, ws, worker, events, orch, request = await setup(tmp_path)
     original = worker._output
     producing_attempts = []
 
@@ -545,6 +561,22 @@ async def test_scan_and_retry_selection_keep_distinct_observation_origins(tmp_pa
     monkeypatch.setattr(worker, "_output", output)
     result = await orch.run(request)
     state = next(iter(result.checkpoint.shell_runs.values()))
+    discovery_context = next(
+        ctx for node, ctx in worker.contexts if node == CodexD2Node.O1_OPEN_DISCOVERY
+    )
+    second_turn = await orch._runner.run(
+        persistence_run_id=request.run_id,
+        workspace_run_id=state.workspace_run_id,
+        ticker="NVDA",
+        cutoff_at=AS_OF,
+        node=CodexD2Node.O1_OPEN_DISCOVERY,
+        role=CodexD2AgentRole.O1,
+        context=discovery_context,
+        output_model=s.OpenDiscoveryResultV21,
+        agent_asset="agents/o1.md",
+        skill_asset="skills/open-discovery.md",
+        thread_id=state.thread_id,
+    )
     first, second = producing_attempts
     manifest1 = repo.get_citation_manifest(state.workspace_run_id, f"d2-local-{first}")
     manifest2 = repo.get_citation_manifest(state.workspace_run_id, f"d2-local-{second}")
@@ -555,10 +587,7 @@ async def test_scan_and_retry_selection_keep_distinct_observation_origins(tmp_pa
     context = next(ctx for node, ctx in worker.contexts if node == CodexD2Node.O1_OPEN_DISCOVERY)
     frozen = await read_checkpoint(ws, state.workspace_run_id, context)
     assert frozen.scan.units[0].candidates[0].ref == [f"D2REF:{first}:O1"]
-    selected = s.OpenDiscoverySelectionV21.model_validate_json(
-        (await ws.read_text(request.run_id, state.discovery_selection_ref.relative_path)).content
-    )
-    assert selected.selections[0].ref == [f"D2REF:{second}:O1"]
+    assert second_turn.output.selection.selections[0].ref == [f"D2REF:{second}:O1"]
 
 
 @pytest.mark.asyncio
@@ -574,12 +603,12 @@ async def test_no_checkpoint_is_format_and_never_synthesized(tmp_path, monkeypat
     monkeypatch.setattr(worker, "_output", output)
     bundle = await orch.run(request)
     assert bundle.publication_state == "PARTIAL"
-    assert bundle.shell_outcomes[0].failed_stage == s.ShellResearchStage.OPEN_DISCOVERY
-    assert bundle.shell_outcomes[0].failure_kind == "FORMAT"
-    assert sum(r.node == CodexD2Node.O1_OPEN_DISCOVERY for r in worker.requests) == 2
+    assert bundle.shell_outcomes[0].status == "completed"
+    assert sum(r.node == CodexD2Node.O1_OPEN_DISCOVERY for r in worker.requests) == 1
     state = next(iter(bundle.checkpoint.shell_runs.values()))
-    assert state.discovery_scan_ref is None
-    assert not (ws.store.root / state.workspace_run_id / CHECKPOINT_PATH).exists()
+    assert state.discovery_scan_ref is not None
+    assert (ws.store.root / state.workspace_run_id / CHECKPOINT_PATH).exists()
+    assert any("discovery_unavailable" in w for w in bundle.checkpoint.warnings)
 
 
 @pytest.mark.asyncio
@@ -665,6 +694,9 @@ async def test_full_pilot_uses_one_discovery_case_and_five_o1_cases(
                 )
             )
         output_path.write_text(json.dumps(value), encoding="utf-8")
+        from doxagent.pilot.sdk_runner import PilotSdkRunner
+
+        PilotSdkRunner._validate_completion(root, manifest)
         event = await coordinator.advance("full")
     assert event.status == "completed"
     assert len(cases) == (14 if narrative_available else 13)

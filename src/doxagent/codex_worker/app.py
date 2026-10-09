@@ -8,6 +8,7 @@ import tempfile
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
+from typing import Annotated
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
 from fastapi.responses import JSONResponse, StreamingResponse
@@ -288,10 +289,11 @@ def create_worker_app(
     )
     async def inventory(
         run_id: str,
+        prefixes: Annotated[list[str] | None, Query()] = None,
         x_workspace_capability: str | None = Header(default=None),
     ) -> WorkspaceInventory:
         require_capability(run_id, "inventory", x_workspace_capability)
-        return await disk.run(workspaces.inventory, run_id)
+        return await disk.run(workspaces.inventory, run_id, prefixes=prefixes)
 
     @app.get(
         "/v1/workspaces/{run_id}/attempts/{attempt_id}/observations",

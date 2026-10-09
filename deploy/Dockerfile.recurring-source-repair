@@ -1,0 +1,16 @@
+# Immutable, narrowly scoped overlay of the actual running service image.
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
+ARG REPAIR_REVISION
+LABEL io.doxagent.recurring-source-repair=${REPAIR_REVISION}
+COPY src/doxagent/site_strategy/external_runtime.py /app/src/doxagent/site_strategy/external_runtime.py
+COPY src/doxagent/site_strategy/runtime.py /app/src/doxagent/site_strategy/runtime.py
+COPY src/doxagent/site_strategy/budget.py /app/src/doxagent/site_strategy/budget.py
+COPY src/doxagent/site_strategy/health.py /app/src/doxagent/site_strategy/health.py
+COPY src/doxagent/site_strategy/schema.py /app/src/doxagent/site_strategy/schema.py
+COPY src/doxagent/site_strategy/service.py /app/src/doxagent/site_strategy/service.py
+COPY src/doxagent/site_strategy/api.py /app/src/doxagent/site_strategy/api.py
+COPY src/doxagent/message_bus_v2/reuters_sources.py /app/src/doxagent/message_bus_v2/reuters_sources.py
+COPY src/doxagent/message_bus_v2/news_adapters.py /app/src/doxagent/message_bus_v2/news_adapters.py
+COPY src/doxagent/message_bus_v2/schema.py /app/src/doxagent/message_bus_v2/schema.py
+COPY src/doxagent/message_bus_v2/service.py /app/src/doxagent/message_bus_v2/service.py

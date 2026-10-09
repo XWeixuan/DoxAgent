@@ -1,0 +1,4 @@
+# Keep strict persisted-state schema compatible when rolling back runtime logic.
+ARG BASE_IMAGE=doxagent-site-access:repair-baseline-20261004
+FROM ${BASE_IMAGE}
+COPY src/doxagent/site_strategy/schema.py /app/src/doxagent/site_strategy/schema.py

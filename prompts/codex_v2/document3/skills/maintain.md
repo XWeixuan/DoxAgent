@@ -1,71 +1,89 @@
-# O3_MAINTAIN
+# O3 Maintain — 随现实与预期变化更新可用规则
 
-MAINTAIN 的目标是保持现有 Policy 的交易含义与 D2-provenanced Tradable Path，只把其现实坐标推进到最新状态。维护后的 Active Policy 应继续表达同一路径中仍面向未来、可直接交易的边界；优化对象是现实一致性与逻辑连续性，而不是发现更多变化或改写更多 Policy。
+## 1. 维护的是当前仍有效的未来判断
 
-以 Current Published Policy Set 为已经成立的业务基线，通过最新 Reference View 发现可能改变 Policy 适用性的现实变化，只确认这些变化，并用最小业务 Patch 将 Policy 推进到新的现实状态。MAINTAIN 不重新建立完整 D2 Policy Surface。
+你的工作是让给定 PolicySet 随现实、市场预期和运行反馈继续保持可用：把已经知道的事情放回基线，把仍有意义的新变化留在条件里，并修补本轮材料真实暴露的覆盖缺口。不是给旧稿换日期、保护原结论不受挑战，也不是每次重新初始化整个 ticker。
 
-## 1. Working Baseline
+Policy 是中性的观察与决策范围，Condition 各自承担 LONG 或 SHORT 的现实边界。一项条件已经发生、这一侧的旧信息增量已经进入基线、整个观察范围再无未来价值，是三件不同的事。维护应判断哪些事实、预期和条件受到影响；另一方向既不能被机械删除，也不能因为未触发就永远沿用旧校准。
 
-读取 `task.json`、`current_policy_set.json`、`reference_event_view.md` 和已有 `maintenance_candidates.jsonl`；如果存在 `runtime_maintenance_feed.json`，必须完整读取其中的 Reference View Delta、Trade Records、BADCASE Records 与 W3 Coverage Gaps；retry 时同时读取已经存在的 `policy_patch.json`。Current Policy Set 提供当前 Policy 逻辑、Calibration、稳定身份和 D2 provenance，workspace 中的候选与 Patch 表示本次运行已经完成的工作。
+按“确认本次 base 与输入 → 识别实际变化及影响 → 必要研究并建立更新后的比较面 → 完整修改、补建或退役 → 交代剩余问题并提交 Patch”的顺序推进。一次处理一个或少数共享事实与背景的问题，先决定现实含义，再改字段。只改有业务理由的对象，但该改的要改到真正有效，不能把改动最少当成研究质量最高。
 
-Runtime feedback 仅用于维护现有 D2-provenanced Policy：Trade Record 表示当日实际命中的完整消息与判定上下文，BADCASE 表示事实已知但 Policy 仍命中的漏维护信号，W3 Coverage Gap 表示 W3 最终确认 NEW 且当前 PolicySet 未覆盖的现实，包括直接交易与 NO_TRADE。不得把 Runtime feedback 直接解释为成交订单，也不得脱离现有 D2 Path 新造经济逻辑；W3 Gap 如果暴露了当前 D2 Path 的持续监测缺口，可用于补建或修改 Policy，若需要全新的经济传导逻辑则留给下一次 D2/D3 INITIALIZE。Reference View Delta 为空时，仍须处理这些 Runtime feedback；全部为空时才可 NOOP。
+## 2. 从指定 base 与完整维护材料开始
 
-Reference View 是现实变化入口，而不是全部世界状态。结合 Policy Set 的 `published_at`、既有 `event_library_ref`、事件时间和当前 Calibration，区分本轮可能的新进展与视图中原本存在的历史事实；较早事实如果明确与当前 Policy 状态冲突，同样构成需要处理的变化线索。
+以本次 `base_policy_set.json` 及其版本为修改底座，结合 `base_coverage.json`、完整 `maintenance_feed.json`、`delta.json` 和共享材料。base 可能是 staged v3，不假定它就是线上 current，也不改用会话中记得的另一版本。已有 Patch 或恢复文件要与本次 base 对应，以当前任务和已接纳成果为准。
 
-## 2. Possible Change Gate
+完整理解维护 feed，不能只看 Event delta。Trade、BADCASE、覆盖 gap 或既有未完成研究，都可能使本轮需要维护；没有新 Event 不等于没有问题。delta 帮助定位变化，但不代替上下文。既有 gap 没在本轮新增材料中出现，也不意味着已经解决。
 
-先轻量扫描全部 Active Policies。对每条 Policy，联合查看 `title`、`match_scope`、`activation_conditions` 及其 `reference_state`，只问：
+区分信息发布时间、事实发生时间、当时可知内容与本次 cutoff。较早的事实若在 base 中遗漏或被错写，仍然可以成为这次修正依据；已知计划不当成已经完成。预定日期经过只说明需要确认当前状态，不自行推定成功、取消或延期。事件视图没有记录某事，不证明现实没有发生，也不证明其他资料不再有效。
 
-> Reference View 或明确的时间推进，是否提供了理由相信这条 Policy 的现实起点、待满足条件、Calibration 或适用状态可能已经变化？
+## 3. 先还原事实，再判断需要维护什么
 
-没有变化信号即视为 `NO_CHANGE`，继续下一条，无需记录或研究。存在合理变化信号时，将其作为 `POSSIBLE_CHANGE` 写入 `output/work/maintenance_candidates.jsonl`，每行只含现有字段 `policy_id` 与 `reason`。
+把涉及同一事件的材料合起来理解，分清旧事实重复报道、新披露的状态变化，以及真正改变重要结果可信程度的新确认。报送时间更新不自动产生新事件；同一事实在多条 feed 中出现，也不需要多次改写同一 Policy。判断最终应基于本次已知的完整信息，而不是按 feed 行数连续覆盖草稿。
 
-`reason` 说明可能需要维护的 Policy 状态，而不是复述相关消息。例如，“客户 qualification 已完成，C1 可能已成为持续现实，当前 `reference_state` 可能过时”比“出现客户相关新闻”更能指导后续判断。
+从变化本身查找可能受影响的范围，再结合现有覆盖识别没有被接住的入口。阅读相关 Policy 的完整观察范围、经济联系和 calibration，不只依赖 feed 附带的一个 Policy ID 或标题。一项行业事实可能影响多份规则；没有变化理由的无关对象则继续利用原研究，不为每条 Policy 重新外搜最新数据。
 
-重点识别五类变化：现实沿既有路径推进；某个 Condition 可能已经成立；比较基准或 Calibration 已经移动；原 Path 可能已经走完或失去适用性；当前 market expectation 或 Runtime comparator 已显著移动，即使 trigger-bearing 现实尚未发生。完成全部 Policy 的候选扫描后，再进入研究与 Patch 判断。
+Runtime 的标签与结论是研究线索，不是修改命令。Trade Record 不自动证明订单已经成交或规则正确，BADCASE 不自动证明需要加严，W3 的 gap 或 NO_TRADE 也不自动等于应新增或没有研究价值。使用实际提供的消息、证据和判断上下文，先理解发生了什么，再判断问题位于哪里。
 
-跨过具有业务意义的时间节点可以形成 `POSSIBLE_CHANGE`，但时间流逝本身不证明 Condition 已满足；预定窗口已经过去只意味着需要确认实际结果。
+已有合适 Policy 却没被召回，与召回后因不合理的终局条件而拒绝，是不同问题；新旧事实混淆、维度比较错误、参考状态过时和真实影响不足，也需要不同处理。Policy 表达确有歧义就澄清，边界或覆盖确有缺陷就研究修正；若主要是 Runtime 错用一个本来清楚的标准，说明实际问题，不复制同义 Policy，也不靠无关的额外门槛遮住错误。
 
-## 3. Resolve Candidates
+区分历史归因与当前维护。评估过去 case 时使用当时可用的事实和实际规则版本；缺少这些材料就说明归因限制，不把当前 base 当作当时已经知道的全部内容。当前 Patch 则使用本次 base 和 cutoff 构造仍有未来意义的规则。单次盈利、亏损或股价涨跌可以提示需要研究，但不独立证明边界正确或错误，更不能为了让历史 case 命中而倒造预期。
 
-逐个 Candidate 检查 Reference View 是否能在不补充关键事实假设的情况下，确定 **Keep / Absorb / Recalibrate / Advance / Retire**，并完成该动作所需的判断或完整 Policy 修改。可以则直接处理；否则先明确仍缺失、且可能改变 disposition 的事实，再开展定向研究。
+## 4. 吸收现实后，重新建立预期比较
 
-商业阶段、合同、监管、客户采用或生产状态通常适合 Web Search。Data MCP 仅在当前问题天然需要结构化、provider-specific 或高频数据，该数据自 Current Policy Set 发布后确有可能变化，且它对 Candidate disposition 必要时调用。Research 在已经足以确定 disposition，并完成该动作所需的判断或完整 Policy 修改时结束，服务于现有 Candidate，而不是逐 Policy 重做最新性检查。
+先查明实际发生了什么，再判断当前对下一步的默认预期是否改变。现实尚未兑现，预期也可能已经因新计划、可信披露或其他研究发生变化；反过来，某项实际进展可能只是预期内延续。管理层计划、行业预测与实际状态分别保留身份，价格表现不能替代具体预期锚。可以采用有依据的默认判断，不需要伪造一致的精确共识。
 
-每个 Candidate 收敛为以下一种业务结果：
+某个未来条件已成为已知事实，就把这项事实纳入相应背景，去掉旧 surprise，重新看剩余条件相对于新基线还意味着什么。不能只改 reference_state 的日期，也不能删除 C1 后继续用旧预期等 C2。同一事实的另一篇报道不应再次构成该次增量；后来若有规模、范围、概率或其他新变化，则应按新的比较面单独理解。
 
-- **Keep**：进一步确认后，现实没有改变 Policy；不产生 Patch。
-- **Absorb established reality**：某个 Condition 已成为持续现实，而同一 Path 仍有剩余交易意义。将该现实吸收到剩余 Condition 的 `reference_state`，移除已经成为历史的 Condition，并重新表达剩余未来边界。这样未来同一条消息只需满足仍待发生的 Conditions。
-  Absorb 后，剩余 Condition 不因前一状态已成立而自动升级为更晚的高确认节点；新 baseline 下较早的下一状态若已足以产生新的 expectation delta，就停在该边界。
-- **Recalibrate**：Trigger 尚未发生，但现实起点、时间基准、阶段、market expectation 或 comparator 已经推进。联动检查 `reference_state`、`trigger_boundary` 与 `criterion`，并在召回范围实际变化时更新 `match_scope`。重新确认 W2 comparison contract：消息 variable、最新 comparison anchor 与 boundary 仍可直接比较；过时的值、窗口和 expectation 应更新，研究说明不替代可执行的 comparator。
-- **Advance or Retire**：原 Trigger 已经成为历史时，判断同一 Tradable Path 是否仍存在自然延续且具有直接交易意义。现实对象、原 expectation transmission 和 `decision` 不变，只是沿既有状态链继续推进，才属于同一路径；存在时推进到下一现实状态，路径已经走完或失效时 retire。
-  Advance 时，重新判断新 current reality 与 market expectation 下，下一项最早仍具有独立交易意义的状态，而非直接选取原 realization chain 的下一个完整确认节点。
+下一项边界不是原确认链的下一站。完成选型不意味着只能等出货，出货以后也不自动改成连续季度收入。重新问：在已经知道这些事情以后，什么新的现实状态会第一次改变当前判断？它可能涉及采用范围、路线、时点、经济性、风险或相反方向，也可能暂时没有值得保留的新边界。
 
-缺少完美数值不妨碍依据清晰的商业阶段或法律状态维护 Policy；变化结论应来自现实含义，而不是措辞优化。
+例如，在一个假设场景中，base 的 LONG 关注客户首次选定，SHORT 关注客户结束评估而不采用。本轮已确认选定公开，旧 LONG 应吸收；旧 SHORT 也不能仅因没有触发而原样有效。需要理解选定以后撤回、替代或范围改变的含义是否成立，而不是继续把“尚未获选”当作未来事实。这是在新现实上研究条件，不是自动生成反向规则。
 
-## 4. Policy Continuity
+对自然存在不同结果的范围，分别考虑现实比当前预期更好时何处首先值得 LONG、更差时何处首先值得 SHORT。能够自然发生并建立独立有意义边界的两侧都应保留或补齐；总体多空观点不决定哪侧应更多。已确认仍有效的一侧不用为对称而改写，受影响的一侧也不能靠复制相同文字完成校准；未研究清楚与经济上不值得构建要分别交代。
 
-同一 Tradable Path、同一 `decision`，仅现实基线、Condition 或 Calibration 推进时，保持原 `policy_id`；语义未改变的 Condition 保持原 `condition_id`。一旦修改 Policy，使 Condition、Calibration、`title` 和必要的 `match_scope` 重新保持一致。
+维度和口径不能随更新漂移。短缺更严重不等于持续更久；设计上限不等于实际平均配置，行业总量不等于目标公司捕获份额。价格、库存或需求等重复观测可以有新一期增量，但必须对齐对象、期间与比较锚。不要因过了一天或处理过一条消息就重置百分比门槛，也不假定 W2 会从旧消息中累计未交付的序列。
 
-Daily Maintenance 围绕现有 Policies 的同一现实路径推进。只有当现有 Policy 必须被重新拆分才能准确表达同一 D2-provenanced Path 时，才建立新 Policy，并沿用现有 Policy 中精确的 `shell_id + expectation_id + gap_id`；需要新的经济传导逻辑时留给下一次 D2/D3 INITIALIZE。
+## 5. 研究必要变化，保留最早充分与真实可见
 
-修改现有 Policy 时原样保留 stable `policy_id`。重新拆分产生的新 Policy 使用 `tmp_pol_...` 一类 temporary draft identity，后续确定性 ID 阶段负责分配稳定身份；Agent 不设计永久 ID。
+已经清楚且仍适用的研究直接使用。继续查的是会改变当前编辑决定的事实：哪项联系成立、默认预期到哪里、变量分量有无改变、消息能否披露到需要的粒度。依本次实际权限使用工具，现有材料与 Web Search 优先；只有它们不能提供所需数据且明确获授 Data MCP 可提供时才调用。研究结束以能够作出当前判断为准，不以搜集更多同义证据为准。
 
-## 5. Patch Gate
+保留更新后的现实和已经建立的经济联系，只加入拟定的一项未来事实，判断它是否已首次产生足够重要的方向性变化。其他未来结果未知，不意味着背景全部不存在，也不要求所有未来情形都永远同向。若外部事件已通过明确暴露影响当前预期，不继续追加目标公司的订单、份额或收入兑现；若缺的就是联系本身，则先研究这项联系。
 
-全部 Candidates 得到结论后，统一写入 `output/work/policy_patch.json`。严格使用现有字段：
+边界可以前移、后移或改变观察入口，但理由应来自实际研究。不要为防御错误统一加严，也不要为历史漏单统一放宽。同一自然决定的主体、范围和状态可以共同定义事件；不同主体或阶段才能确认的独立事项，不因都支持同一观点就拼成一个条件。多个客户、多个期间或持续性只在其本身改变经济意义时使用，不作为普遍的安心要求。
 
-```text
-base_policy_set_version
-event_library_ref
-upsert_policies
-retire_policy_ids
-```
+更新后的 `criterion` 应说清未来消息判断什么，`reference_state` 应给出直接相关的现实与预期起点，`trigger_boundary` 应交代什么新增变化达到最低有意义边界。新值、锚和边界属于同一对象、范围、期间及计量或状态维度。可靠数值与清楚的业务状态都可以使用；“高于正常”“明显改善”没有对应比较仍不是交付。关键依据写进实际 Policy，不只留在 Patch summary、ref 或“Runtime 自行查询”中。
 
-`base_policy_set_version` 与 Current Policy Set 一致，`event_library_ref` 使用 `task.json` 提供的最新引用。Keep 不进入 Patch；Absorb、Recalibrate、Advance 或重新拆分在 `upsert_policies` 中写入完整 Policy；Retire 写入 `retire_policy_ids`。同一 Policy 只采取一种动作。
+正常公开报道能够披露的事实才适合作观察入口。来源不统一限定为目标公司公告，但其知识范围应与所说明事实相称。需要内部 allocation 或工作负载采购量等通常不公开细节时，研究更现实、仍有依据的观察方式，而不是让字段越来越精密、实际越来越难命中。财报可以更新研究基线，不因此新增财报交易条件。
 
-最小 Patch 指只包含实际发生业务变化的 Policies。被修改的 Policy 仍是完整、内部一致的对象。没有实质变化时输出两个操作数组均为空的合法 Patch，由确定性流程保持 `NOOP`。
+没有新资料不等于原规则失效，一般信息不完整也不意味着所有条件都要退役。已经证实错误、陈旧或不再有独立增量的部分应实际修正；关键方向或比较无法建立时，不能把旧门槛伪装成当前仍有效的答案。研究后合理保留、替换或移除具体受影响条件，并说明尚未解决的部分；其他仍有依据的范围继续保留，不用更晚的确认包掩盖研究缺口。
 
-## 6. Completion
+## 6. 补齐本轮暴露的入口，保持合理范围
 
-当全部 Active Policies 已完成轻量扫描、所有 Candidates 已收敛、未变化 Policy 未进入 Patch，且 `policy_patch.json` 符合现有 schema 时，本轮维护完成。返回节点 output schema 要求的小型 `O3RunResult`。
+本轮事实、反馈或既有 gap 若暴露了新的重要观察入口，可以在该问题范围内研究并补建 Policy，不要求先有一个 D2 Gap，也不因经济机制新就一律推迟到下一次 INITIALIZE。D1/D2 和其他实际材料可以支持它；需要的是有依据的联系、当前预期、正常可见的新事实和完整边界，而不是借用一个相近 Gap 取得形式归属。
+
+维护的扩展仍由本轮问题牵引，不重新发现整个 ticker 的所有可能性。过去已发生的事件进入基线，从其暴露的问题研究未来还能出现哪些有意义变化；不能把历史报道改写成一条待首次触发的规则，也不能为每个 case 复制一个点名白名单。尚无足够依据建立未来入口时，保留具体 gap，不用扩大标题和 match_scope 冒充已经补齐。
+
+先比较现有完整对象，再决定新增。相同中性观察范围可以补充或调整 Conditions；真正不同的问题或后续独立信息增量可以另立 Policy。同一事件的不同报道不重复建规则，同类主体的相容变化不必逐个拆分，比较锚和经济意义确有差异时也不能混用。需要合并或拆分时在本次 Patch 中形成清楚结果，不自动派发新的 Build 或 Integration 节点。
+
+改写后让字段联动：`transmission` 更新经济联系与所观察变量的分量，但不追加隐藏的 A+B+C 门槛；`match_scope` 保留适合的事件类型及研究过的代表性情景，明确例子非穷举、命中仍以 Conditions 为准。新主体可进入相关判断，却不能因此套用另一主体的 baseline。`decision`、`trigger_layer` 跟随实际条件结论，不为层级齐全或方向对称制造规则。
+
+## 7. 用完整 Patch 表达必要业务变化
+
+本次只交任务指定的 `maintenance_patch.json`。最小 Patch 是只包含实际需要改变的对象，不是对被修改的对象只写几项字段。`upsert_policies` 内放完整 Policy 对象，而非文件路径或字段差异；仍需保留的所有方向、Conditions、calibration 和必要内容必须写回。没有变化的 Policy 不进入 upsert，宿主继续保留 base。
+
+同一观察对象的真实延续保留既有 `policy_id`，仍属同一条件的对象保留 `condition_id`；不能因标题优化、边界更新或补齐另一侧而全部重新编号。真正新增的 Policy/Condition 按 supplied schema 省略或置空 ID，交宿主分配；本质不同的新对象不借旧 ID。恢复时沿用实际接纳的身份，不按标题猜测。
+
+只移除一部分条件，通过完整 upsert 中明确不再保留它表达；整条 Policy 没有应继续保留的有效条件，或已有明确替代对象时，才使用 `retire_policy_ids`。不要交一个空 Conditions 的 Policy 代替退役。合并若沿用一份旧 Policy，应完整 upsert 它并明确 retire 被替代的其他旧对象；同一个 Policy ID 不同时 upsert 和 retire。同一对象有多条反馈时，提交一次综合后的最终修改，不堆入相互冲突的操作。
+
+Patch 使用现有的 `base_policy_set_version`、`event_library_ref`、`upsert_policies`、`retire_policy_ids`、`remaining_gaps`、`summary`。版本精确对应本次 base；Event 引用只采用本次冻结材料或 base 中实际可用的快照，没有则为 null。不要以查询时间或新 URL 自造 Event 版本，也不要使用初始化的 replacement 结构代替维护 Patch。
+
+`remaining_gaps` 表达维护后的实际缺口集合，不是仅本轮新增问题的 delta。根据 base coverage 和本次研究，保留仍开放的旧问题，加入新问题，对已经解决或明确不再需要的事项说明处置；没处理到的旧 gap 不能默默消失。未提供该字段表示继承 base，明确 `[]` 表示全部关闭。填写列表时应包含所有仍需保留的项，不因操作已完成就输出默认空数组。
+
+`summary` 简要说明本轮事实、修改或不修改的依据、重要覆盖变化和必要限制，给后续读取者一个可理解的维护结论。它不是逐字思考过程，也不是缺失 comparator 的藏身处。提交 Patch 不等于已经发布新版本，接纳与发布由宿主完成。
+
+## 8. 以真实可用结果结束维护
+
+在当前修改组上做一次前后对照：已经吸收的同一事实被重复报道，还会不会被当成新的 surprise？真正新的重要变化是否仍能进入合适范围，并根据明确锚和边界判断？相关性有没有被误写成命中，反方向有没有被无理由丢掉？这个消费者视角用于收束当前修改，不新增审计表、回测任务或审批节点。
+
+有依据确认没有实质变化时，两个操作数组可以为空，并准确保留或交代 gaps；不为体现工作量改写措辞或生成版本。研究仍无法完成的具体问题写入剩余缺口，其他已完成修改照常交付；不能把“零操作”写成“全部问题解决”，也不能把任何未知都变成继续循环的理由。
+
+随着当前问题得到结论，在允许的 Patch 中保存完整成果并保留先前仍有效的操作；恢复同一次任务时接着实际文件继续，不重复生成已完成对象。若本次 base 已变化，按当前任务重新确认修改是否适用，不盲目重用针对另一版本的 Patch。完成本轮可作出的判断与真实缺口说明后结束，文件交付和技术回执遵循共同执行说明，不重放历史交易、不自行开补研轮次。

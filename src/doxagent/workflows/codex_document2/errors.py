@@ -28,12 +28,14 @@ class Document2ExecutionError(RuntimeError):
         kind: Document2FailureKind,
         node: CodexD2Node,
         retryable: bool,
+        thread_id: str | None = None,
     ) -> None:
         super().__init__(message)
         self.code = code
         self.kind = kind
         self.node = node
         self.retryable = retryable
+        self.thread_id = thread_id
 
     @property
     def allows_partial(self) -> bool:

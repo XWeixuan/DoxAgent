@@ -112,9 +112,11 @@ def build_document3_orchestrator(
         initialize_effort=settings.codex_d3_initialize_effort,
         timeout_seconds=config.node_timeout_seconds,
         runtime_repository=runtime_repository,
+        max_shell_concurrency=settings.codex_d3_max_concurrency,
     )
     monitoring_o4_trigger = None
     if orchestration_version == "v2.1":
+        from .assets_v21 import default_node_assets
         from .orchestrator_v21 import Document3OrchestratorV21
         from .state_v21 import StateV21
 
@@ -122,7 +124,7 @@ def build_document3_orchestrator(
             input_preparer=input_preparer,
             agent_runner=runner,
             state=StateV21(config.sqlite_path),
-            node_assets=node_assets,
+            node_assets=default_node_assets() if node_assets is None else node_assets,
             policy_repository=policy_repository,
         )
     return Document3Orchestrator(

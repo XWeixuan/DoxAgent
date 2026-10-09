@@ -53,7 +53,10 @@ class DoxAgentSettings(BaseSettings):
         default=0, ge=0, le=1, validation_alias="DOXAGENT_CODEX_WORKER_SUBAGENTS"
     )
     codex_d2_max_concurrency: int = Field(
-        default=2, ge=1, le=16, validation_alias="DOXAGENT_CODEX_D2_MAX_CONCURRENCY"
+        default=4, ge=1, le=16, validation_alias="DOXAGENT_CODEX_D2_MAX_CONCURRENCY"
+    )
+    codex_d3_max_concurrency: int = Field(
+        default=4, ge=1, le=16, validation_alias="DOXAGENT_CODEX_D3_MAX_CONCURRENCY"
     )
 
     storage_mode: Literal["memory", "postgres"] = Field(

@@ -11,6 +11,7 @@ from typing import Any, Literal, Protocol, cast
 from pydantic import BaseModel, ValidationError
 
 from doxagent.codex_runtime.client import CodexWorkerClient, WorkspaceClient
+from doxagent.codex_runtime.concurrency import TickerConcurrency
 from doxagent.codex_runtime.schema import (
     CODEX_DOCUMENT3_WORKFLOW_VERSION,
     AttemptStatus,
@@ -95,15 +96,25 @@ class Document3AgentRunner:
         initialize_effort: Literal["low", "medium", "high", "xhigh", "max"] | None = None,
         timeout_seconds: int = 1800,
         runtime_repository: O3ExecutionStateRepository | None = None,
+        max_shell_concurrency: int | None = None,
     ) -> None:
         from doxagent.ticker_initialization.substeps import DurableWorker
 
         self._worker = DurableWorker(worker)
+        if max_shell_concurrency is None:
+            from doxagent.settings import DoxAgentSettings
+
+            max_shell_concurrency = DoxAgentSettings().codex_d3_max_concurrency
+        self.shell_concurrency = TickerConcurrency(max_shell_concurrency)
         self.workspace = workspace
         self._prompt_root = (
             Path(prompt_root)
             if prompt_root is not None
-            else Path(__file__).resolve().parents[4] / "prompts" / "codex_v2" / "document3"
+            else Path(__file__).resolve().parents[4]
+            / "prompts"
+            / "codex_v2"
+            / "document3"
+            / "v2.0_legacy"
         )
         self._model = model
         self._model_provider = model_provider
@@ -197,8 +208,19 @@ class Document3AgentRunner:
             files[document2_shell_path(ordinal=ordinal, shell_id=shell.shell_id)] = (
                 shell_document.model_dump_json(indent=2)
             )
+        from doxagent.codex_runtime.context_index import attach_index
+
+        task_path = "context/document3/task.json"
+        navigation = attach_index(files, root="context/document3/context_index")
+        transport_task = json.loads(files[task_path])
+        transport_task["context_reading"] = navigation
+        files[task_path] = json.dumps(transport_task, ensure_ascii=False, indent=2)
         for path, content in files.items():
-            await self.workspace.write_text(run_id, path, content)
+            try:
+                await self.workspace.write_text(run_id, path, content)
+            except (OSError, ValueError):
+                if not path.startswith("context/document3/context_index/"):
+                    raise
 
     async def seed_maintenance(
         self,
@@ -230,8 +252,19 @@ class Document3AgentRunner:
         )
         if maintenance_feed_json is not None:
             files["context/document3/runtime_maintenance_feed.json"] = maintenance_feed_json
+        from doxagent.codex_runtime.context_index import attach_index
+
+        task_path = "context/document3/task.json"
+        navigation = attach_index(files, root="context/document3/context_index")
+        transport_task = json.loads(files[task_path])
+        transport_task["context_reading"] = navigation
+        files[task_path] = json.dumps(transport_task, ensure_ascii=False, indent=2)
         for path, content in files.items():
-            await self.workspace.write_text(run_id, path, content)
+            try:
+                await self.workspace.write_text(run_id, path, content)
+            except (OSError, ValueError):
+                if not path.startswith("context/document3/context_index/"):
+                    raise
 
     def _load_prompt_assets(self, assets: dict[str, str]) -> dict[str, str]:
         loaded: dict[str, str] = {}
@@ -461,6 +494,10 @@ class Document3AgentRunner:
                     " This is a resume attempt: preserve completed waves and continue from "
                     "the existing node checkpoint without clearing workspace artifacts."
                 )
+            prompt += (
+                " Full UTF-8 inputs remain available; optional bounded reading uses "
+                "context/document3/context_index/overview.md and read_context.py."
+            )
             attempt = NodeAttempt(
                 attempt_id=attempt_id,
                 workflow_version=CODEX_DOCUMENT3_WORKFLOW_VERSION,
@@ -497,7 +534,8 @@ class Document3AgentRunner:
                 max_subagents=0,
             )
             try:
-                last_job = await self._worker.run(request)
+                async with self.shell_concurrency.slot(ticker):
+                    last_job = await self._worker.run(request)
             except Exception as exc:
                 from doxagent.codex_runtime.errors import (
                     CapabilityDenied,

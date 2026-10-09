@@ -454,11 +454,18 @@ def main() -> None:
         if not worker_token or not admin_token:
             raise SystemExit("Site Access worker/admin tokens are required")
         service = build_site_strategy_service(settings)
+        from doxagent.source_maintenance.settings import MaintenanceSettings
+
+        maintenance = MaintenanceSettings()
         app = create_app(
             service,
             worker_token=worker_token,
             admin_token=admin_token,
             credential_store=CredentialStore(settings.site_access_credential_root),
+            maintenance_token=read_token(None, str(maintenance.site_token_file))
+            if maintenance.enabled and maintenance.site_token_file
+            else None,
+            maintenance_sites=maintenance.sites,
         )
         uvicorn.run(app, host=args.host, port=args.port)
         return

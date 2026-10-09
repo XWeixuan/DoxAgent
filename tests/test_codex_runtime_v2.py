@@ -396,6 +396,61 @@ async def test_sdk_runtime_awaits_async_thread_turn(
 
 
 @pytest.mark.asyncio
+async def test_network_markdown_string_schema_is_not_sent_as_sdk_structured_format(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    sdk = _AsyncSdkClient()
+    monkeypatch.setattr("doxagent.codex_worker.sdk_runtime.AsyncCodex", lambda *a, **k: sdk)
+    runtime = OpenAICodexRuntime(capability_secret="s" * 32, container_isolated=True)
+    await runtime.start(
+        WorkerRunRequest(
+            workflow_version="codex_global_research_v1",
+            research_lane=ResearchLane.GLOBAL_RESEARCH,
+            run_id="network-format",
+            ticker="MU",
+            node=CodexD1Node.C4E_NETWORK_BUILD,
+            agent_role=CodexAgentRole.C4,
+            attempt_id="attempt-1",
+            prompt="Return Markdown as a JSON string.",
+            output_schema={"type": "string", "pattern": "\\S"},
+            model="gpt-6-sol",
+            effort="high",
+        ),
+        tmp_path,
+    )
+    assert sdk.thread.turn_kwargs is not None
+    assert "output_schema" not in sdk.thread.turn_kwargs
+
+
+@pytest.mark.asyncio
+async def test_sdk_pilot_preserves_explicit_gpt6_sol_high(tmp_path, monkeypatch) -> None:
+    sdk = _AsyncSdkClient()
+    monkeypatch.setattr("doxagent.codex_worker.sdk_runtime.AsyncCodex", lambda *a, **k: sdk)
+    runtime = OpenAICodexRuntime(
+        capability_secret="s" * 32,
+        container_isolated=True,
+        preserve_requested_model=True,
+    )
+    request = WorkerRunRequest(
+        run_id="pilot-model-exact",
+        ticker="MU",
+        node=CodexD1Node.C1,
+        agent_role=CodexAgentRole.C1,
+        attempt_id="attempt-1",
+        prompt="Pilot",
+        output_schema={"type": "object"},
+        model="gpt-6-sol",
+        effort="high",
+    )
+    await runtime.start(request, tmp_path)
+    assert sdk.thread_start_kwargs["model"] == "gpt-6-sol"
+    assert sdk.thread.turn_kwargs["model"] == "gpt-6-sol"
+    assert sdk.thread.turn_kwargs["effort"].value == "high"
+    selection = json.loads((tmp_path / "attempts/attempt-1/audit/model_selection.json").read_text())
+    assert selection["execution_model"] == "gpt-6-sol"
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize("resumed", [False, True])
 @pytest.mark.parametrize("effort", ["low", "medium", "high", "xhigh", "max"])
 @pytest.mark.parametrize(
@@ -411,9 +466,7 @@ async def test_sdk_gpt6_execution_keeps_frozen_request_identity_and_effort(
     tmp_path, monkeypatch, resumed, effort, requested, provider, expected
 ) -> None:
     sdk = _AsyncSdkClient()
-    monkeypatch.setattr(
-        "doxagent.codex_worker.sdk_runtime.AsyncCodex", lambda *args, **kwargs: sdk
-    )
+    monkeypatch.setattr("doxagent.codex_worker.sdk_runtime.AsyncCodex", lambda *args, **kwargs: sdk)
     runtime = OpenAICodexRuntime(capability_secret="s" * 32, container_isolated=True)
     request = WorkerRunRequest(
         run_id="model-migration",
@@ -510,6 +563,21 @@ def test_worker_api_requires_bearer_and_workspace_capability(tmp_path: Path) -> 
             CodexAgentRole.C4,
             "live",
         ),
+        *[
+            (
+                "codex_global_research_v1",
+                ResearchLane.GLOBAL_RESEARCH,
+                node,
+                CodexAgentRole.C4,
+                "live",
+            )
+            for node in (
+                CodexD1Node.C4_PRE_SCAN,
+                CodexD1Node.C4F_FUTURE_NODES,
+                CodexD1Node.C4E_FORMAL_SCAN,
+                CodexD1Node.C4E_NETWORK_BUILD,
+            )
+        ],
         ("codex_d1_v2", ResearchLane.LEGACY_DOCUMENT1, CodexD1Node.C5, CodexAgentRole.C5, "live"),
         (
             CODEX_DOCUMENT2_WORKFLOW_VERSION,
@@ -585,6 +653,7 @@ async def test_sdk_runtime_explicitly_enables_native_web_search_for_all_roles(
     sdk_config = sdk.thread_start_kwargs["config"]
     assert isinstance(sdk_config, dict)
     assert sdk_config["web_search"] == expected_mode
+    assert sdk_config["mcp_servers.source_capture.tools.capture_source.approval_mode"] == "approve"
 
 
 @pytest.mark.asyncio
@@ -666,9 +735,7 @@ async def test_sdk_runtime_refreshes_o4_deliver_capability_on_same_ticker_thread
     configure_config = sdk.thread_start_kwargs["config"]
     assert isinstance(configure_config, dict)
     configure_mcp_tools = configure_config["mcp_servers.o4_operations.enabled_tools"]
-    assert set(configure_mcp_tools) == {
-        tool_id.replace(".", "_") for tool_id in ALL_O4_TOOLS
-    }
+    assert set(configure_mcp_tools) == {tool_id.replace(".", "_") for tool_id in ALL_O4_TOOLS}
     capability_file = Path(
         configure_config["mcp_servers.o4_operations.env.DOXAGENT_O4_OPERATIONS_CAPABILITY_FILE"]
     )
@@ -698,9 +765,10 @@ async def test_sdk_runtime_refreshes_o4_deliver_capability_on_same_ticker_thread
     )
     assert deliver_claims.node is CodexMonitoringO4Node.DELIVER
     assert set(deliver_claims.enabled_tool_ids) == TOOLS_BY_NODE[CodexMonitoringO4Node.DELIVER]
-    assert Path(
-        deliver_config["mcp_servers.o4_operations.env.DOXAGENT_O4_OPERATIONS_CAPABILITY_FILE"]
-    ) == capability_file
+    assert (
+        Path(deliver_config["mcp_servers.o4_operations.env.DOXAGENT_O4_OPERATIONS_CAPABILITY_FILE"])
+        == capability_file
+    )
     refreshed_claims = codec.verify(
         capability_file.read_text(encoding="utf-8"),
         public_key=codec.public_key,

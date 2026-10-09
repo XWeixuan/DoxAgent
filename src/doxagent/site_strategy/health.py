@@ -12,6 +12,7 @@ from .schema import (
     AccessMode,
     CombinationRuntime,
     FailureCategory,
+    SitePurpose,
     SiteRuntimeState,
     utc_now,
 )
@@ -36,6 +37,7 @@ class CombinationHealthManager:
         excluded: set[str],
         transport: AccessMode = AccessMode.BROWSER,
         now: datetime | None = None,
+        purpose: SitePurpose | None = None,
     ) -> tuple[SiteRuntimeState, list[AccessCombination], datetime | None]:
         instant = now or utc_now()
         async with self._locks[runtime_key]:
@@ -57,6 +59,13 @@ class CombinationHealthManager:
             next_retry: datetime | None = None
             for item in ordered:
                 runtime = state.combinations[item.combination_id]
+                rejected_until = (
+                    runtime.purpose_rejected_until.get(purpose.value) if purpose else None
+                )
+                if rejected_until and rejected_until > instant:
+                    if next_retry is None or rejected_until < next_retry:
+                        next_retry = rejected_until
+                    continue
                 if transport is AccessMode.HTTP_PUBLIC:
                     if runtime.http_state == "COOLDOWN":
                         if (
@@ -89,6 +98,49 @@ class CombinationHealthManager:
                 state.generation += 1
                 self.repository.save_runtime(state, expected_generation=prior)
             return state, ready, next_retry
+
+    async def mark_unknown_denial(
+        self,
+        runtime_key: str,
+        combination_id: str,
+        purpose: SitePurpose,
+        operation_id: str,
+        *,
+        now: datetime | None = None,
+    ) -> None:
+        instant = now or utc_now()
+        async with self._locks[runtime_key]:
+            state = self.repository.get_runtime(runtime_key)
+            runtime = state.combinations.setdefault(combination_id, CombinationRuntime())
+            # Retain distinct operations only, not retry attempts. This evidence
+            # is purpose-specific: a homepage probe cannot clear search denial.
+            cutoff = instant - timedelta(minutes=15)
+            records = [
+                item
+                for item in runtime.purpose_denials.get(purpose.value, [])
+                if datetime.fromisoformat(item.split("|", 1)[0]) >= cutoff
+            ]
+            if not any(item.split("|", 1)[1] == operation_id for item in records):
+                records.append(f"{instant.isoformat()}|{operation_id}")
+            runtime.purpose_denials[purpose.value] = records[-3:]
+            if len(records) >= 3:
+                runtime.purpose_rejected_until[purpose.value] = instant + timedelta(minutes=5)
+            runtime.last_failure = "http_403_unclassified"
+            runtime.last_failure_at = instant
+            self.repository.save_runtime(state, expected_generation=state.generation)
+
+    async def clear_purpose_denial(
+        self,
+        runtime_key: str,
+        combination_id: str,
+        purpose: SitePurpose,
+    ) -> None:
+        async with self._locks[runtime_key]:
+            state = self.repository.get_runtime(runtime_key)
+            runtime = state.combinations.setdefault(combination_id, CombinationRuntime())
+            runtime.purpose_denials.pop(purpose.value, None)
+            runtime.purpose_rejected_until.pop(purpose.value, None)
+            self.repository.save_runtime(state, expected_generation=state.generation)
 
     async def claim_due_probe(
         self,

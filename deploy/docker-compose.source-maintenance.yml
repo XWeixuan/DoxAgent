@@ -1,0 +1,86 @@
+# Separate, opt-in topology. NOT included by any production deployment entrypoint.
+# A profile alone does not enable the Controller: the explicit flag still defaults false.
+services:
+  source-maintenance-controller:
+    profiles: [source-maintenance]
+    image: ${DOXAGENT_SOURCE_MAINTENANCE_IMAGE:-doxagent-source-maintenance-agent:local}
+    restart: "no"
+    init: true
+    user: "0:0" # Trusted Docker Controller, NOT the non-root Coding Worker.
+    mem_limit: 512m
+    cpus: 0.5
+    pids_limit: 128
+    environment:
+      DOXAGENT_SOURCE_MAINTENANCE_ENABLED: ${DOXAGENT_SOURCE_MAINTENANCE_ENABLED:-false}
+      DOXAGENT_SOURCE_MAINTENANCE_MODE: ${DOXAGENT_SOURCE_MAINTENANCE_MODE:-shadow}
+      DOXAGENT_SOURCE_MAINTENANCE_ROOT: /var/lib/doxagent/source-maintenance
+      DOXAGENT_SOURCE_MAINTENANCE_WORKER_HOST_ROOT: ${DOXAGENT_SOURCE_MAINTENANCE_HOST_ROOT:-/var/lib/doxagent/source-maintenance}
+      DOXAGENT_SOURCE_MAINTENANCE_SOURCE_REPOSITORY: /repair-source
+      DOXAGENT_SOURCE_MAINTENANCE_POLICY_PATH: /config/policy.json
+      DOXAGENT_SOURCE_MAINTENANCE_MANIFEST_PATH: /config/deployment-manifest.json
+      DOXAGENT_SOURCE_MAINTENANCE_SOURCES: ${DOXAGENT_SOURCE_MAINTENANCE_SOURCES:-[]}
+      DOXAGENT_SOURCE_MAINTENANCE_SITES: ${DOXAGENT_SOURCE_MAINTENANCE_SITES:-[]}
+      DOXAGENT_SOURCE_MAINTENANCE_MODEL: ${DOXAGENT_SOURCE_MAINTENANCE_MODEL:-gpt-6.1-sol}
+      DOXAGENT_SOURCE_MAINTENANCE_EFFORT: ${DOXAGENT_SOURCE_MAINTENANCE_EFFORT:-medium}
+      DOXAGENT_SOURCE_MAINTENANCE_AUTH_FILE: /config/codex-auth.json
+      DOXAGENT_SOURCE_MAINTENANCE_SITE_TOKEN_FILE: /config/maintenance-token
+      DOXAGENT_SOURCE_MAINTENANCE_WORKER_PROXY: http://source-maintenance-model-proxy:8030
+      DOXAGENT_SOURCE_MAINTENANCE_WORKER_NETWORK: doxagent-source-maintenance-isolated
+      DOXAGENT_SOURCE_MAINTENANCE_SITE_ACCESS_URL: ${DOXAGENT_SOURCE_MAINTENANCE_SITE_ACCESS_URL:-http://v2-site-access:8011}
+      DOXAGENT_SOURCE_MAINTENANCE_COMPOSE_FILES: ${DOXAGENT_SOURCE_MAINTENANCE_COMPOSE_FILES:-[]}
+      DOXAGENT_SOURCE_MAINTENANCE_COMPOSE_ENV_FILE: ${DOXAGENT_SOURCE_MAINTENANCE_COMPOSE_ENV_FILE:-}
+      DOXAGENT_SOURCE_MAINTENANCE_COMPOSE_PROJECT_DIRECTORY: ${DOXAGENT_SOURCE_MAINTENANCE_COMPOSE_PROJECT_DIRECTORY:-/opt/doxagent}
+    command: [python, -m, doxagent.source_maintenance.cli, guardian]
+    volumes:
+      - ${DOXAGENT_SOURCE_MAINTENANCE_HOST_ROOT:-/var/lib/doxagent/source-maintenance}:/var/lib/doxagent/source-maintenance
+      - ${DOXAGENT_SOURCE_MAINTENANCE_REPOSITORY:-.}:/repair-source:ro
+      - ${DOXAGENT_SOURCE_MAINTENANCE_CONFIG:-./source-maintenance-config}:/config:ro
+      # Future deployment: preserve absolute production paths for Compose host mounts.
+      # This trusted-only mount is NOT passed into Worker or verification containers.
+      - ${DOXAGENT_SOURCE_MAINTENANCE_DEPLOY_ROOT:-/opt/doxagent}:${DOXAGENT_SOURCE_MAINTENANCE_DEPLOY_ROOT:-/opt/doxagent}:ro
+      # Trusted Controller only; NEVER inherited by single-shot Coding Worker.
+      - /var/run/docker.sock:/var/run/docker.sock
+    security_opt: [no-new-privileges:true]
+    networks: [default, production]
+
+  source-maintenance-model-proxy:
+    profiles: [source-maintenance]
+    image: ${DOXAGENT_SOURCE_MAINTENANCE_IMAGE:-doxagent-source-maintenance-agent:local}
+    command: [python, -m, doxagent.source_maintenance.proxy]
+    restart: "no"
+    user: "1000:1000"
+    read_only: true
+    mem_limit: 128m
+    cpus: 0.2
+    pids_limit: 64
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    networks: [source-maintenance-isolated, default]
+    # No published port, production volume or Docker socket. Exact hosts only.
+    environment:
+      SOURCE_MAINTENANCE_MODEL_HOSTS: chatgpt.com,api.openai.com,auth.openai.com
+
+  source-maintenance-evidence:
+    profiles: [source-maintenance]
+    image: ${DOXAGENT_SOURCE_MAINTENANCE_IMAGE:-doxagent-source-maintenance-agent:local}
+    command: [python, -m, doxagent.source_maintenance.cli, evidence-server]
+    restart: "no"
+    user: "1000:1000"
+    environment:
+      DOXAGENT_SOURCE_MAINTENANCE_ENABLED: ${DOXAGENT_SOURCE_MAINTENANCE_ENABLED:-false}
+      DOXAGENT_SOURCE_MAINTENANCE_ROOT: /var/lib/doxagent/source-maintenance
+      DOXAGENT_SOURCE_MAINTENANCE_EVIDENCE_TOKEN_FILE: /config/evidence-token
+    volumes:
+      - ${DOXAGENT_SOURCE_MAINTENANCE_HOST_ROOT:-/var/lib/doxagent/source-maintenance}:/var/lib/doxagent/source-maintenance:ro
+      - ${DOXAGENT_SOURCE_MAINTENANCE_CONFIG:-./source-maintenance-config}:/config:ro
+    networks: [source-maintenance-isolated]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+
+networks:
+  production:
+    external: true
+    name: ${DOXAGENT_SOURCE_MAINTENANCE_PRODUCTION_NETWORK:-doxagent_default}
+  source-maintenance-isolated:
+    name: doxagent-source-maintenance-isolated
+    internal: true

@@ -7,6 +7,7 @@ from uuid import uuid4
 
 from doxagent.codex_runtime.schema import (
     CodexD1Node,
+    ResearchLane,
 )
 from doxagent.codex_worker.local_client import LocalWorkspaceClient
 from doxagent.codex_worker.schema import WorkerJob, WorkerRunRequest
@@ -91,6 +92,8 @@ class _FakeWorker:
             CodexD1Node.C4_PRE_SCAN,
             CodexD1Node.C4_ENRICHMENT,
             CodexD1Node.C4_FINALIZATION,
+            CodexD1Node.C4F_FUTURE_NODES,
+            CodexD1Node.C4E_FORMAL_SCAN,
         }:
             output["entity_relations"] = [
                 {
@@ -110,6 +113,16 @@ class _FakeWorker:
                     "来源发布日期": "2026-07-01",
                 }
             ]
+            if request.research_lane is ResearchLane.GLOBAL_RESEARCH:
+                output["report_markdown"] = ""
+                output.pop("observation_candidates")
+                output.pop("metadata")
+                if request.node is CodexD1Node.C4F_FUTURE_NODES:
+                    output.pop("entity_relations")
+                else:
+                    output.pop("future_nodes")
+        if request.node is CodexD1Node.C4E_NETWORK_BUILD:
+            output = "# 网络研究\n独立的行动者网络与经济传导研究。"
         if self.workspace is not None and request.node in {
             CodexD1Node.C1,
             CodexD1Node.C2,

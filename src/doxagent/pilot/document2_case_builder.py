@@ -1,7 +1,8 @@
-"""Formal Codex App Pilot case export for a real Document2 attempt."""
+"""Formal Pilot case export for a real Document2 attempt."""
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import json
 import os
@@ -10,7 +11,7 @@ import stat
 import tempfile
 import zipfile
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path, PurePosixPath
 from typing import Literal, cast
 from uuid import uuid4
@@ -27,6 +28,7 @@ from doxagent.codex_runtime.repository import (
     CodexRuntimeRepository,
     PostgresCodexRuntimeRepository,
 )
+from doxagent.codex_runtime.research_products import load_d1_products
 from doxagent.codex_runtime.schema import (
     CODEX_DOCUMENT2_WORKFLOW_VERSION,
     ArtifactKind,
@@ -57,10 +59,12 @@ from doxagent.workflows.codex_document2.inputs import (
     DoxAtlasNarrativeReportProvider,
     EventLibraryProvider,
     OptionalInput,
+    PublishedEventLibraryProvider,
     UnconfiguredEventLibraryProvider,
     _qualify_d1_aliases,
     _qualify_d1_context,
     _safe_optional_load,
+    qualify_product_context,
 )
 from doxagent.workflows.codex_document2.orchestrator import _candidate_sets_context
 from doxagent.workflows.codex_document2.schema import (
@@ -147,6 +151,7 @@ class Document2PilotCaseBuilder:
         repository: CodexRuntimeRepository | None = None,
         published_storage: PublishedDocumentStorage | None = None,
         event_library_provider: EventLibraryProvider | None = None,
+        event_library_version: int | None = None,
         asset_root: str | Path | None = None,
     ) -> None:
         self.repo_root = Path(repo_root).resolve()
@@ -156,7 +161,17 @@ class Document2PilotCaseBuilder:
         self.settings = settings or DoxAgentSettings()
         self._repository = repository
         self._published_storage = published_storage
-        self._event_library_provider = event_library_provider or UnconfiguredEventLibraryProvider()
+        if event_library_provider is not None:
+            self._event_library_provider = event_library_provider
+        elif self.settings.event_library_root:
+            from doxagent.event_library.provider import PublishedEventLibraryReader
+
+            self._event_library_provider = PublishedEventLibraryProvider(
+                PublishedEventLibraryReader(self.settings.event_library_root, market="US"),
+                pinned_version=event_library_version,
+            )
+        else:
+            self._event_library_provider = UnconfiguredEventLibraryProvider()
         self._asset_root = (
             Path(asset_root)
             if asset_root
@@ -188,10 +203,8 @@ class Document2PilotCaseBuilder:
         if request.source_global_run_id is not None:
             return await self._prepare_bootstrap(request, case_root)
         case_root.parent.mkdir(parents=True, exist_ok=True)
-        with tempfile.TemporaryDirectory(
-            prefix=f".{request.case_id}-", dir=case_root.parent
-        ) as tmp:
-            staging = Path(tmp) / request.case_id
+        with tempfile.TemporaryDirectory(prefix=".p-", dir=case_root.parent) as tmp:
+            staging = Path(tmp) / "case"
             staging.mkdir()
             initial = await self._client.export_workspace(request.source_workspace_run)
             _safe_extract(initial, staging)
@@ -228,10 +241,8 @@ class Document2PilotCaseBuilder:
         context = await self._bootstrap_context(request, bundle, reports)
         attempt_id = f"d2-pilot-{request.node.value.removeprefix('d2_')[:36]}-{uuid4().hex[:10]}"
         case_root.parent.mkdir(parents=True, exist_ok=True)
-        with tempfile.TemporaryDirectory(
-            prefix=f".{request.case_id}-", dir=case_root.parent
-        ) as tmp:
-            staging = Path(tmp) / request.case_id
+        with tempfile.TemporaryDirectory(prefix=".p-", dir=case_root.parent) as tmp:
+            staging = Path(tmp) / "case"
             staging.mkdir()
             self._seed_bootstrap_attempt(staging, request.node, attempt_id, context)
             prepared = self._materialize(staging, case_root, request, attempt_id=attempt_id)
@@ -281,54 +292,134 @@ class Document2PilotCaseBuilder:
         cache_root = self._source_cache_root / bundle.run_id
         cache_root.mkdir(parents=True, exist_ok=True)
         repository = self._bootstrap_repository()
+        warnings = []
         for role in ("c1", "c3", "c5"):
-            reference = bundle.reports.get(role)
-            if reference is None:
-                raise ValueError(f"Global Research bundle is missing required {role} report")
-            cache_path = cache_root / f"{role}.md"
-            if cache_path.is_file():
-                raw = cache_path.read_bytes()
-                if hashlib.sha256(raw).hexdigest() == reference.sha256:
-                    reports[role] = _qualify_d1_aliases(raw.decode("utf-8"))
-                    continue
-            published = repository.get_published_document(bundle.run_id, reference.artifact_id)
-            if published is None:
-                raise ValueError(f"published Global Research {role} report is unavailable")
-            if published.content_text is not None:
-                raw = published.content_text.encode("utf-8")
-            else:
-                if published.storage_path is None:
+            try:
+                reference = bundle.reports.get(role)
+                if reference is None:
+                    raise ValueError(f"Global Research bundle is missing required {role} report")
+                cache_path = cache_root / f"{role}.md"
+                if cache_path.is_file():
+                    raw = cache_path.read_bytes()
+                    if hashlib.sha256(raw).hexdigest() == reference.sha256:
+                        reports[role] = _qualify_d1_aliases(raw.decode("utf-8"))
+                        continue
+                published = repository.get_published_document(bundle.run_id, reference.artifact_id)
+                if published is None:
+                    raise ValueError(f"published Global Research {role} report is unavailable")
+                if published.content_text is not None:
+                    raw = published.content_text.encode("utf-8")
+                else:
+                    if published.storage_path is None:
+                        raise ValueError(
+                            f"published Global Research {role} report has no content location"
+                        )
+                    raw = await self._bootstrap_storage().get(published.storage_path)
+                digest = hashlib.sha256(raw).hexdigest()
+                if (
+                    len(raw) != published.size_bytes
+                    or digest != published.sha256
+                    or digest != reference.sha256
+                ):
                     raise ValueError(
-                        f"published Global Research {role} report has no content location"
+                        f"published Global Research {role} report failed integrity checks"
                     )
-                raw = await self._bootstrap_storage().get(published.storage_path)
-            digest = hashlib.sha256(raw).hexdigest()
-            if (
-                len(raw) != published.size_bytes
-                or digest != published.sha256
-                or digest != reference.sha256
-            ):
-                raise ValueError(f"published Global Research {role} report failed integrity checks")
-            cache_path.write_bytes(raw)
-            reports[role] = _qualify_d1_aliases(raw.decode("utf-8"))
+                cache_path.write_bytes(raw)
+                reports[role] = _qualify_d1_aliases(raw.decode("utf-8"))
+            except (OSError, ValueError, WorkerUnavailable) as exc:
+                reports[role] = ""
+                warnings.append(f"D2_ACCEPTANCE:{role}:report_unavailable:{exc}")
+        self._report_warnings = getattr(self, "_report_warnings", {})
+        self._report_warnings[bundle.run_id] = warnings
         return reports
 
-    async def _bootstrap_narrative(self, bundle: GlobalResearchBundle) -> OptionalInput:
+    async def _bootstrap_product_text(self, bundle, reference):
+        cache = self._source_cache_root / bundle.run_id / "d1-products" / reference.sha256
+        if cache.is_file():
+            raw = cache.read_bytes()
+            if hashlib.sha256(raw).hexdigest() == reference.sha256:
+                return raw.decode("utf-8")
+        published = self._bootstrap_repository().get_published_document(
+            bundle.run_id, reference.artifact_id
+        )
+        try:
+            if published and published.content_text is not None:
+                text = published.content_text
+            elif published and published.storage_path:
+                text = (await self._bootstrap_storage().get(published.storage_path)).decode("utf-8")
+            else:
+                text = (
+                    await self._client.read_text(bundle.run_id, reference.relative_path)
+                ).content
+        except WorkerUnavailable as exc:
+            raise OSError(str(exc)) from exc
+        if text is None or hashlib.sha256(text.encode("utf-8")).hexdigest() != reference.sha256:
+            raise ValueError("D1 product source checksum mismatch")
+        cache.parent.mkdir(parents=True, exist_ok=True)
+        cache.write_bytes(text.encode("utf-8"))
+        return text
+
+    def _optional_cache_key(self, bundle, label, provider):
+        identity = (
+            f"{type(provider).__module__}.{type(provider).__name__}:"
+            f"{getattr(provider, '_pinned_version', '')}"
+        )
+        if label == "narrative":
+            identity += ":" + str(
+                getattr(getattr(self, "settings", None), "doxatlas_tool_base_url", "")
+            )
+        else:
+            identity += ":" + str(
+                getattr(getattr(self, "settings", None), "event_library_root", "")
+            )
+        return hashlib.sha256(
+            f"{bundle.ticker}:{bundle.run_id}:{bundle.published_at}:{label}:{identity}".encode()
+        ).hexdigest()
+
+    async def _cached_optional(self, bundle, label, provider):
         cache_root = self._source_cache_root / bundle.run_id
         cache_root.mkdir(parents=True, exist_ok=True)
-        cache_path = cache_root / "narrative.json"
-        if cache_path.is_file():
+        path = cache_root / f"{label}.json"
+        key = self._optional_cache_key(bundle, label, provider)
+        cached = None
+        if path.is_file():
             try:
-                return OptionalInput.model_validate_json(cache_path.read_text(encoding="utf-8"))
-            except ValueError:
+                candidate = OptionalInput.model_validate_json(path.read_text(encoding="utf-8"))
+                cutoff = cast(datetime, bundle.published_at).astimezone(UTC)
+                age = cutoff - candidate.as_of.astimezone(UTC) if candidate.as_of else None
+                payload_sha = hashlib.sha256(
+                    json.dumps(candidate.payload, ensure_ascii=False, sort_keys=True).encode()
+                ).hexdigest()
+                if (
+                    candidate.status is v21.InputAvailability.AVAILABLE
+                    and candidate.metadata.get("cache_key") == key
+                    and candidate.metadata.get("payload_sha256") == payload_sha
+                    and age is not None
+                    and age >= timedelta(0)
+                    and (label != "narrative" or age <= timedelta(days=7))
+                ):
+                    cached = candidate
+            except (ValueError, TypeError):
                 pass
-        provider = DoxAtlasNarrativeReportProvider(default_real_tool_registry(self.settings))
-        narrative = await provider.load(
-            ticker=bundle.ticker,
-            as_of=cast(datetime, bundle.published_at),
+        if cached is not None:
+            cached.metadata["reused_from"] = str(path)
+            return cached
+        result = await _safe_optional_load(
+            provider, ticker=bundle.ticker, as_of=cast(datetime, bundle.published_at), label=label
         )
-        cache_path.write_text(narrative.model_dump_json(indent=2), encoding="utf-8")
-        return narrative
+        if result.status is v21.InputAvailability.AVAILABLE:
+            result.metadata.update(
+                cache_key=key,
+                payload_sha256=hashlib.sha256(
+                    json.dumps(result.payload, ensure_ascii=False, sort_keys=True).encode()
+                ).hexdigest(),
+            )
+            path.write_text(result.model_dump_json(indent=2), encoding="utf-8")
+        return result
+
+    async def _bootstrap_narrative(self, bundle: GlobalResearchBundle) -> OptionalInput:
+        provider = DoxAtlasNarrativeReportProvider(default_real_tool_registry(self.settings))
+        return await self._cached_optional(bundle, "narrative", provider)
 
     async def _bootstrap_horizontal(
         self, bundle: GlobalResearchBundle
@@ -384,42 +475,60 @@ class Document2PilotCaseBuilder:
         reports: dict[str, str],
     ) -> dict[str, object]:
         as_of = cast(datetime, bundle.published_at)
+        products = await load_d1_products(
+            bundle,
+            self._bootstrap_repository(),
+            lambda ref: self._bootstrap_product_text(bundle, ref),
+        )
+        product_context = qualify_product_context(products)
         horizontal, horizontal_artifact_id = await self._bootstrap_horizontal(bundle)
-        cache_path = self._source_cache_root / bundle.run_id / "event_library.json"
-        if cache_path.is_file():
-            event_library = OptionalInput.model_validate_json(
-                cache_path.read_text(encoding="utf-8")
+        needs_narrative = request.node in {
+            CodexD2Node.O0_CANDIDATE_NARRATIVE,
+            CodexD2Node.O0_SYNTHESIS,
+        } or request.node.value.startswith("d2_o1_")
+        if needs_narrative:
+            event_library, narrative = await asyncio.gather(
+                self._cached_optional(bundle, "event_library", self._event_library_provider),
+                self._bootstrap_narrative(bundle),
             )
         else:
-            event_library = await _safe_optional_load(
-                self._event_library_provider,
-                ticker=bundle.ticker,
-                as_of=as_of,
-                label="Event Library",
+            event_library = await self._cached_optional(
+                bundle, "event_library", self._event_library_provider
             )
-            cache_path.parent.mkdir(parents=True, exist_ok=True)
-            cache_path.write_text(event_library.model_dump_json(indent=2), encoding="utf-8")
         common: dict[str, object] = {
             "ticker": bundle.ticker,
             "as_of": as_of.isoformat(),
-            "future_nodes": [
-                cast(
-                    dict[str, object],
-                    _qualify_d1_context(item.model_dump(mode="json", by_alias=True)),
-                )
-                for item in bundle.future_nodes
-            ],
+            **product_context,
             "event_library": event_library.model_dump(mode="json"),
             "horizontal_indicators": horizontal,
+            "orchestration_diagnostics": [
+                {"code": "report_unavailable", "reason": warning}
+                for warning in getattr(self, "_report_warnings", {}).get(bundle.run_id, [])
+            ],
+            "research_asset_sources": {
+                **{
+                    key: {
+                        k: v
+                        for k, v in value.items()
+                        if k not in {"source_files", "citation_manifest"}
+                    }
+                    for key, value in product_context["d1_product_sources"].items()
+                },
+                **{
+                    role: {
+                        "role": role,
+                        "source_run_id": bundle.run_id,
+                        "original_ref": ref.relative_path,
+                        "source_sha256": ref.sha256,
+                    }
+                    for role, ref in bundle.reports.items()
+                },
+            },
         }
         if request.document_schema_version == "document2.v2.1":
             common.update(
                 document_schema_version=request.document_schema_version,
                 discovery_contract_version="single-v1",
-                entity_relations=[
-                    _qualify_d1_context(item.model_dump(mode="json", by_alias=True))
-                    for item in bundle.entity_relations
-                ],
             )
         node = request.node
         candidate_roles = {
@@ -436,7 +545,6 @@ class Document2PilotCaseBuilder:
                 **common,
             }
         if node is CodexD2Node.O0_CANDIDATE_NARRATIVE:
-            narrative = await self._bootstrap_narrative(bundle)
             if narrative.status is not InputAvailability.AVAILABLE:
                 raise Document2PilotSourceAttemptUnavailable(
                     narrative.warning or "source has no recent Narrative report"
@@ -449,6 +557,11 @@ class Document2PilotCaseBuilder:
             }
 
         upstream = _upstream_completions(request.upstream_cases)
+        common["orchestration_diagnostics"] = [
+            item
+            for value in upstream.values()
+            for item in value.get("_orchestration_diagnostics", [])
+        ]
         if node is CodexD2Node.O0_SYNTHESIS:
             labels = {
                 CodexD2Node.O0_CANDIDATE_C1: "c1",
@@ -460,6 +573,8 @@ class Document2PilotCaseBuilder:
                 "candidate_sets": _pilot_candidate_sets_context(
                     upstream, labels, request.document_schema_version
                 ),
+                "global_research": {"reports": reports},
+                "narrative_research": narrative.model_dump(mode="json"),
                 **common,
             }
         review_roles = {
@@ -491,7 +606,6 @@ class Document2PilotCaseBuilder:
                 **common,
             }
 
-        narrative = await self._bootstrap_narrative(bundle)
         handoff = cast(GlobalResearchHandoffV1, bundle.handoff)
         global_research = {
             "run_id": bundle.run_id,
@@ -501,14 +615,7 @@ class Document2PilotCaseBuilder:
             "report_artifact_ids": {
                 role: bundle.reports[role].artifact_id for role in ("c1", "c3", "c5")
             },
-            "entity_relations": [
-                cast(
-                    dict[str, object],
-                    _qualify_d1_context(item.model_dump(mode="json", by_alias=True)),
-                )
-                for item in bundle.entity_relations
-            ],
-            "future_nodes": common["future_nodes"],
+            **product_context,
             "horizontal_collection": horizontal,
             "horizontal_artifact_id": horizontal_artifact_id,
             "document_artifact_id": handoff.document_artifact_id,
@@ -549,15 +656,13 @@ class Document2PilotCaseBuilder:
                 discovery = upstream[CodexD2Node.O1_OPEN_DISCOVERY]
                 sidecars["open_discovery_scan"] = discovery["checkpoint"]["scan"]
                 sidecars["open_discovery_selection"] = discovery["selection"]
-            additions = {}
-            resolutions = {}
+            from doxagent.workflows.codex_document2.acceptance import merge_discovery_records
+
+            cumulative = {"late_additions": [], "open_discovery_resolution": []}
             for source in (CodexD2Node.O1_STATE, CodexD2Node.O1_REALIZATION, CodexD2Node.O1_GAPS):
-                for item in upstream.get(source, {}).get("late_additions", []):
-                    additions[(item["unit"], item["name"])] = item
-                for item in upstream.get(source, {}).get("open_discovery_resolution", []):
-                    resolutions[(item["unit"], item["candidate"])] = item
-            sidecars["open_discovery_late_additions"] = list(additions.values())
-            sidecars["open_discovery_resolution"] = list(resolutions.values())
+                cumulative = merge_discovery_records(cumulative, upstream.get(source, {}))
+            sidecars["open_discovery_late_additions"] = cumulative["late_additions"]
+            sidecars["open_discovery_resolution"] = cumulative["open_discovery_resolution"]
         return {
             **sidecars,
             "ticker": bundle.ticker,
@@ -711,6 +816,39 @@ class Document2PilotCaseBuilder:
             ttl_seconds=request.capability_hours * 3600,
             pilot_case_id=request.case_id,
         )
+        from doxagent.codex_runtime.context_index import attach_index
+
+        derived = {}
+        relative_root = (
+            f"attempts/{attempt_id}/input"
+            if request.source_global_run_id
+            else f"attempts/{attempt_id}/audit"
+        )
+        navigation = attach_index(derived, root=f"{relative_root}/context_index", context=context)
+        task = json.loads((input_root / "task.json").read_text(encoding="utf-8"))
+        if request.source_global_run_id is not None:
+            task.update(
+                context_reading=navigation,
+                completion_path=f"attempts/{attempt_id}/output/completion.json",
+            )
+        if request.source_global_run_id is not None:
+            if request.node is CodexD2Node.O1_OPEN_DISCOVERY:
+                from doxagent.workflows.codex_document2.discovery_checkpoint import task_contract
+
+                task["open_discovery"] = task_contract(context)
+            (input_root / "task.json").write_text(
+                json.dumps(task, ensure_ascii=False, indent=2), encoding="utf-8"
+            )
+        for path, content in derived.items():
+            target = staging / path
+            try:
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text(content, encoding="utf-8", newline="")
+            except OSError as exc:
+                (attempt_root / "audit/context_index_warning.json").write_text(
+                    json.dumps({"warning": f"context_index_unavailable: {exc}"}), encoding="utf-8"
+                )
+                break
         source_input_sha = _tree_hash(input_root)
         pilot_upstream_root = staging / "context" / "pilot_upstream"
         pilot_upstream_sha = (
@@ -746,6 +884,7 @@ class Document2PilotCaseBuilder:
             "enabled_data_tools": enabled_tools,
             "capability_expires_after_hours": request.capability_hours,
             "pilot_upstream": upstream_manifest,
+            "event_library_source": context.get("event_library"),
             "created_at": utc_now().isoformat(),
         }
         (staging / "case_manifest.json").write_text(
@@ -846,8 +985,10 @@ def _upstream_completions(
         )
         attempt_id = str(manifest.get("node_attempt_id") or "")
         _identifier(attempt_id, "upstream attempt_id")
+        output_dir = upstream.case_root / "attempts" / attempt_id / "output"
+        accepted = output_dir / "accepted.json"
         raw = json.loads(
-            (upstream.case_root / "attempts" / attempt_id / "output" / "completion.json").read_text(
+            (accepted if accepted.exists() else output_dir / "completion.json").read_text(
                 encoding="utf-8"
             )
         )
@@ -855,10 +996,15 @@ def _upstream_completions(
             raise ValueError(
                 f"Pilot upstream completion must be a JSON object: {upstream.case_root}"
             )
-        if upstream.node == CodexD2Node.O1_OPEN_DISCOVERY:
+        if upstream.node == CodexD2Node.O1_OPEN_DISCOVERY and not accepted.exists():
             from doxagent.workflows.codex_document2.discovery_checkpoint import finalize_pilot
 
             raw = finalize_pilot(upstream.case_root, attempt_id).model_dump(mode="json")
+        diagnostics_path = output_dir / "orchestration_diagnostics.json"
+        if diagnostics_path.exists():
+            raw["_orchestration_diagnostics"] = json.loads(
+                diagnostics_path.read_text(encoding="utf-8")
+            )
         completions[upstream.node] = cast(dict[str, object], raw)
     return completions
 
@@ -994,7 +1140,11 @@ def _materialize_pilot_upstream(
         attempt_id = str(manifest.get("node_attempt_id") or "")
         _identifier(attempt_id, "upstream attempt_id")
         output_root = case_root / "attempts" / attempt_id / "output"
-        completion = output_root / "completion.json"
+        completion = (
+            output_root / "accepted.json"
+            if (output_root / "accepted.json").exists()
+            else output_root / "completion.json"
+        )
         try:
             json.loads(completion.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:

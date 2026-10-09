@@ -27,8 +27,8 @@ class LocalWorkspaceClient:
     async def read_text(self, run_id: str, relative_path: str) -> WorkspaceFileResponse:
         return self.store.read_text(run_id, relative_path)
 
-    async def inventory(self, run_id: str) -> WorkspaceInventory:
-        return self.store.inventory(run_id)
+    async def inventory(self, run_id: str, *, prefixes=None) -> WorkspaceInventory:
+        return self.store.inventory(run_id, prefixes=prefixes)
 
     async def snapshot(self, run_id: str, snapshot_id: str) -> None:
         self.store.snapshot(run_id, snapshot_id)

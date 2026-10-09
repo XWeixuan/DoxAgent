@@ -1,161 +1,50 @@
-# Turn 4: Shell Research Finalization — Curation and Schema Closure
+# Research Finalization — Integrate the Model and Preserve Its Reach
 
-## Purpose
+## Purpose: make the research usable without narrowing it
 
-Turn the research-complete canonical Shell into a durable expectation model. The preceding turns
-optimized State, Realization Factors, and Potential Gaps separately; Finalization makes them one
-system with aligned meanings, resolved references, usable evidence and time semantics, and a
-complete structure under the supplied `ExpectationShell` schema.
+Make the accumulated Shell research usable as one dynamic expectation model. Preserve the reality, forward interpretation, causal understanding, and future possibilities that O3 needs to investigate new information. Finalization improves clarity, consistency, and continuity; it is not a second selection pass favoring the most fully confirmed themes.
 
-Continue in the same O1 thread on the refreshed `canonical_shell`. This is curation, not a fourth
-research turn. Resolve new factual ambiguity only where it prevents a material object from being
-interpreted or repaired.
+Continue in the same O1 thread using this task's latest `canonical_shell`, schema, and complete discovery records. Integrate and repair the research rather than repeat the earlier stages. Use focused Web Search when a specific ambiguity or missing connection materially affects interpretation. Keep the O0 expectation subjects and neighboring research ownership intact while preserving the current Units' exposure to external influences.
 
-## Recover the model's intent
+## Read one model, preserving the work of each layer
 
-Read the Shell as an expectation system before editing fields. `core_question` defines the shared
-research question, `boundary_rule` defines which propositions belong in that context, and each
-Unit's `proposition` and `horizon` define one expectation and its update period.
+Read each Unit through its `scope` and `horizon`, then consider how its research works together. The layers may concern the same subjects while contributing different understanding:
 
-For every object, ask what future update it helps interpret and which Unit that update would revise.
-A shared object may appear in several Units when it materially informs each proposition; keep its
-core meaning consistent and its consequence Unit-specific.
+| Layer | Preserve and align |
+| --- | --- |
+| State | Current observations, including qualitative arrangements, first observations, and stated plans with their source identity. Keep useful Parameters even when a current Value is unavailable, and keep current observations without requiring a comparable predecessor. |
+| Expectation Baseline | The current working future path, its reasoning, ordinary continuation, and open extent. Preserve the distinction between observation and inference, including whose expectation a reported view represents. Ordinary progress is a comparison frame, not a permanent exclusion of related future information. |
+| Realization Factors | Causal relationships, their current operation, and the relative materiality of variables throughout the chains. Preserve the explanatory reach of external and intermediate variables, not just the currently largest constraint. |
+| Potential Gaps | Future revision themes and economically different possibilities, including themes inferred from the model beyond the initial Selection. Keep their compact revision logic distinct from full Factor research and from trading conditions. |
 
-Prefer repair to loss of research: normalize wording, correct references or time bases, reclassify,
-improve object formulation, and reconcile true duplicates. Remove an item only when it has no
-distinct function after repair, is unsupported as an object, or genuinely duplicates a retained
-item.
+Resolve actual inconsistencies in object, time, scope, or reasoning. Different source views and alternative future configurations can legitimately coexist; a hypothetical future differing from current State is not itself a contradiction. Repetition across layers warrants editing when it repeats the same research contribution, not merely when it mentions the same actor or variable.
 
-## Close State, Factor, and Gap boundaries
+## Repair connections and consolidate by research meaning
 
-Classify each object by its update function:
+Identify what an item helps the reader understand, then improve its expression, connection, placement, or overlap. Preserve useful substance when a formulation is immature. A theme with a partly conditional explanation needs an intelligible account of that dependency, not automatic removal. Let editing clarify the model rather than increase its confirmation requirements or append generic cautions to every conclusion.
 
-- **State** is a stable observation target and its current source-role Values. New evidence updates
-  a Value while the Parameter keeps the same meaning.
-- **Realization Factor** is a material current condition, mechanism, constraint, or execution gate
-  whose contextual status changes whether, when, how strongly, or for whom a Unit can be realized.
-- **Potential Gap** is a recognizable future occurrence or bounded development that the model can
-  use to revise the Unit if it happens.
+Merge genuine duplicates while retaining their distinct economic content and Unit-specific effects. Split or reorganize only where it makes different explanations clearer. A theme can contain possibilities that occur separately, together, or in sequence; it does not need one common event-recognition boundary. Reconcile shared meanings across Units without turning their scopes into a single preferred thesis. When research changes or absorbs an earlier direction, explain its contribution and disposition.
 
-The same subject may validly appear in different classes when it performs different jobs: a current
-qualification stage may be State, qualification dependence a Factor, and an unexpected failure a
-Gap. Repair cross-class repetition only when two objects perform the same job. Reclassify misplaced
-content by its update behavior while preserving its researched substance.
+Check names, observation links, and sources where editing affects them. Keep `value` and `previous_value` consistent with their Parameter type and compare observations only on a suitable scope, role, unit, and time basis. Use a null `previous_value` where no appropriate comparison exists. Preserve the meaning of `time_scope`, `as_of`, and `validity_state`, and use information within `research_cutoff_at`. A planned future date can remain later than that cutoff when the plan was already available.
 
-## Finalize the State graph
+Keep source lineage attached to the premise it supports after edits. Retain qualified upstream `ref` and the original identity of observations rather than renumbering them into the current attempt. An unresolved reference is a lineage issue to clarify, not by itself a reason to discard useful research. Investigate material source or time mismatches locally. Keep business names stable; if a necessary correction changes a name, reconcile affected Parameter links and resolution destinations while preserving the original discovery candidate names.
 
-Read each Unit's Parameters and Values together as a maintainable observation graph.
+## Close the complete discovery history
 
-Each `parameter_id` names one stable object; `definition` fixes the scope needed for comparability.
-Merge Parameters only when meaning, perimeter, basis, and update path are the same. Similar topics
-remain separate where different scopes or bases would create false comparisons.
+Build the final `open_discovery_resolution` from the complete history, not only this turn's edits. This array replaces all accumulated resolutions. Carry forward and reconcile earlier outcomes, then ensure exactly one final record for every required `(unit, candidate)` key:
 
-Every `StateValue.parameter_id` resolves within its Unit, and `value` and `previous_value` match the
-Parameter's `value_type`. `source_role` identifies the evidence layer, `time_scope` the period
-described, and `as_of` when the Value was current. A missing role remains absent.
+- every candidate whose original Selection decision is `DEEPEN`;
+- every accumulated Late Addition from earlier stages, using its `(unit, name)` as the resolution key;
+- every Late Addition discovered in this Finalization turn.
 
-Keep `previous_value` when the earlier observation is comparable under the Parameter's update
-semantics, with the same Parameter meaning, source role, and measurement basis. The prior business
-period may fit a rolling realized Parameter; an earlier snapshot of the same target fits a fixed
-forecast; a prior rolling snapshot may fit an explicitly rolling expectation. Use `validity_state`
-for meaningful disputes, withdrawals, or supersession.
+Deduplicate overlapping keys and describe the actual research outcome in the nonempty free-text `resolution` and `reason`. A direction may inform an existing mechanism, one or several Gaps, another Unit, or a conclusion that it no longer needs a separate future theme. Explain that contribution rather than merely saying it is covered. Multiple candidates may resolve into one object, and one candidate may contribute to several objects. MERGE and PARK candidates do not require new individual closure records merely because Finalization is running; retain useful existing dispositions as appropriate.
 
-Normalize shared IDs and definitions without erasing Unit-specific scope. Retained Parameters need
-a credible update identity; Values need interpretable role, scope, date, precision, and evidence.
-Then read the State as a whole: it should locate the proposition across its major current
-realization and expectation dimensions. When accumulated research has clearly exposed an important,
-maintainable dimension omitted in Turn 1, backfill that local State object.
+Use a non-null `destination` only for an exact Unit, Factor, or Gap name in the final current Shell, or a Unit name in another Shell from `o0_finalization`. State Parameters, Baselines, and Shell names are not valid destinations. For contributions solely to those layers, use null and describe the contribution in `resolution/reason`. Where several objects share the outcome, name an appropriate permitted destination or use null and explain the full disposition in the text; the field remains a single string or null. A cross-Shell destination records ownership without modifying the sibling Shell.
 
-## Finalize the Realization Model
+Record only this turn's genuinely new research directions in `late_additions`, with `discovered_during: "FINALIZATION"` and the supplied fields. Include these new directions in the complete final resolution set as well. Preserve the frozen Scan and Selection unchanged. Closing the history accounts for research decisions; it does not require every uncertainty to disappear or every candidate to become a Gap.
 
-Read Factors as a causal system explaining how the proposition is enabled, blocked, delayed,
-strengthened, redirected among actors, or converted into business and financial outcomes.
+## Deliver the final research envelope
 
-Align each Factor around one mechanism:
+Finish with an interpretable model whose useful observations, working assumptions, causal breadth, variable-level materiality, and future revision space remain visible. Check the exact current schema for names, required fields, Value shapes, arrays, permitted nulls, and valid destinations. Keep the business explanations substantive without adding fields or forcing equal object counts. Research and schema consistency are separate responsibilities; a well-formed object still needs a useful meaning.
 
-- `condition` identifies the maintained reality condition or gate;
-- `structural_role` states whether it is REQUIRED, a BLOCKER, or a MODIFIER;
-- `current_status` states its presently researched status;
-- `impact` explains how it changes this Unit's realization; and
-- `observability.match_condition` identifies future evidence that would update its status.
-
-Merge Factors only when mechanism, causal position, and observation interface match. Keep related
-mechanisms separate when they can change independently or act through different paths. Shared
-Factors keep a consistent identity while `impact` remains Unit-specific.
-
-Uncertain status is compatible with a material Factor when stated honestly; improve its causal
-boundary and observation interface rather than manufacturing certainty.
-
-## Finalize Potential Gaps without losing future coverage
-
-Preserve the open event coverage developed in Gap Research rather than reducing it to Document1
-events, obvious reversals of current Factors, or only the most probable scenarios.
-
-For each Gap:
-
-- `possible_occurrence` describes one recognizable future occurrence or bounded development;
-- `derivation` explains why it belongs in the plausible possibility space;
-- `expected_revision` states how occurrence would change the Unit's proposition, path, timing,
-  magnitude, allocation, or financial interpretation; and
-- `recognition_criteria` resolves the event boundary when ordinary wording is materially ambiguous.
-
-Keep a bounded sequence when its elements jointly form one recognition thesis and one revision
-thesis. Split components that can occur independently and cause different revisions. Merge only
-when both occurrence boundary and expected revision match. A cross-Unit occurrence keeps one
-semantic identity and Unit-specific revisions.
-
-When a Gap is immature, recover the future revision function it was meant to cover and improve its
-occurrence, derivation, expected-revision boundary, or overlap with adjacent Gaps. Low probability,
-no direct upstream clue, baseline conflict, or an empty event-level citation does not make it
-redundant. It loses independent value only when reasonable repair leaves no distinct, possible,
-material, and recognizable revision function.
-
-## Reconcile the complete Shell
-
-Compare adjacent Units and the full Shell. Units remain distinct when outcome, horizon, beneficiary,
-financial layer, or revision path differs. Repair overlap where two Units now express the same
-expectation and would be updated identically.
-
-Use interpretable natural-language semantic IDs. Keep shared definitions consistent without erasing
-Unit-specific scope; follow semantic identity and update behavior rather than keyword similarity.
-
-Within each Unit, align proposition and horizon, current State, realization mechanisms, and future
-revision events. They need not map one-to-one, but must describe the same expectation without an
-unexplained shift in perimeter, product, geography, horizon, actor, beneficiary, or financial end.
-
-## Close evidence and time semantics
-
-Keep citations attached to the supported premise after edits: State citations support Value and
-scope; Factor citations support condition, mechanism, or status; Gap citations support its known
-derivation rather than imply that the future event occurred.
-
-Retain citation lineage according to the workspace contract and prefer evidence material to the
-final wording. Unresolved citations or empty lists are non-blocking; they do not justify invented
-aliases or automatic removal. Investigate only a visible, material citation mismatch, temporal
-conflict, or unsupported precision.
-
-## Refine the Shell Seed where research requires it
-
-O0's Shell membership, Unit identities, and core semantic boundaries are the canonical research
-structure. Refine `core_question`, `boundary_rule`, `proposition`, or `horizon` where wording can
-express the same object more accurately, while maintaining that Shell and Unit identity.
-
-## Schema closure and completion
-
-Return exactly one complete `ExpectationShell` matching `output_schema.json`, not edits or partial
-Units. Use only supplied fields, enums, and value shapes. Confirm that:
-
-- Shell, Unit, Parameter, Value, Factor, and Gap IDs are stable natural-language semantic names and
-  unique within their reference scope;
-- every internal reference resolves and every typed Value matches its Parameter;
-- required strings contain finished business meaning rather than placeholders;
-- no object exists merely for apparent completeness;
-- no obvious object-boundary, time-basis, duplication, or Unit-semantic conflict remains; and
-- useful disagreement, mechanism detail, uncertainty, and future-event breadth remain represented.
-
-Completion requires a coherent, updateable model, not equal object counts, complete source-role
-coverage, certain Factors, or directly evidenced high-probability Gaps. Preserve remaining
-uncertainty through the schema rather than hide it with artificial completion.
-
-Output the final Shell JSON without a narrative conclusion, market view, probability assessment,
-trading bias, or an additional wrapper.
+Return `canonical_shell`, `late_additions`, and `open_discovery_resolution` in the required JSON envelope, following the current task's delivery instruction. The complete Shell replaces the prior Shell, so include all still-valid research and references, not only the objects edited here. `late_additions` contains only this turn's additions and is `[]` when there are none; `open_discovery_resolution` contains the complete final reconciled set, not an incremental patch. Return no separate narrative report, market verdict, or trading recommendation.

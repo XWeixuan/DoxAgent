@@ -133,9 +133,15 @@ class ContentEnrichmentHub:
     async def _process(self, job: EnrichmentJob, now: datetime) -> None:
         from doxagent.message_bus_v2.admission import evaluate_admission
 
-        reason = None if job.owner_kind == "distribution_article" else evaluate_admission(
-            job.message.published_at, job.message.admission_context, now,
-            job.message.publication_time_basis,
+        reason = (
+            None
+            if job.owner_kind == "distribution_article"
+            else evaluate_admission(
+                job.message.published_at,
+                job.message.admission_context,
+                now,
+                job.message.publication_time_basis,
+            )
         )
         if reason and job.binding:
             self.repository.record_admission(
@@ -222,6 +228,22 @@ class ContentEnrichmentHub:
 
         finished_at = utc_now()
         attempts = [*job.prior_attempts, *(item.to_payload() for item in result.attempts)]
+        if not result.succeeded and result.reason == "storage_unavailable":
+            not_before = finished_at + timedelta(seconds=60)
+            if not_before < job.deadline_at:
+                self.repository.requeue_enrichment_job(
+                    job.model_copy(
+                        update={
+                            "status": EnrichmentJobStatus.RETRY_WAIT,
+                            "attempt_count": max(0, job.attempt_count - 1),
+                            "prior_attempts": attempts,
+                            "not_before": not_before,
+                            "lease_expires_at": None,
+                            "updated_at": finished_at,
+                        }
+                    )
+                )
+                return
         if (
             not result.succeeded
             and job.attempt_count == 1
@@ -300,12 +322,15 @@ class ContentEnrichmentHub:
         await self._finalize(job, message)
 
     async def _finalize(self, job: EnrichmentJob, message: RawMessageInput) -> None:
+        from doxagent.source_maintenance.signals import body
+
         if job.owner_kind == "distribution_article":
             from doxagent.message_bus_v2.distribution_repository import DistributionRepository
 
             DistributionRepository(self.repository).finalize_article(
                 job, message, self._outcome_payload(job, message)
             )
+            body(job, message)
             return
         assert job.binding is not None
         await self.bus.accept_message(
@@ -323,6 +348,7 @@ class ContentEnrichmentHub:
             job.claim_token,
             self._outcome_payload(job, message),
         )
+        body(job, message)
 
     @staticmethod
     def _outcome_payload(job: EnrichmentJob, message: RawMessageInput) -> dict[str, object] | None:

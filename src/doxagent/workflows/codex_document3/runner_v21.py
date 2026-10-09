@@ -18,9 +18,12 @@ from doxagent.codex_runtime.schema import (
 )
 from doxagent.codex_worker.schema import WorkerRunRequest
 
+from .assets_v21 import ATLAS_NAMES, ATLAS_ROOT
+from .materials_v21 import attach_material_indexes, reference_path
 from .schema import strict_json_schema
-from .schema_v21 import WORK_SCHEMAS, TechnicalReceipt
+from .schema_v21 import WORK_SCHEMAS, PolicySetV3, TechnicalReceipt
 from .state_v21 import canonical, digest
+from .timing_v21 import HostTiming
 from .validation_v21 import safe_path
 
 NODES = {
@@ -43,14 +46,15 @@ class RunnerV21:
         self.workspace = legacy.workspace
         self.assets = dict(node_assets or {})
         self.locks = {}
-        self.semaphore = asyncio.Semaphore(3)
+        self.shell_concurrency = legacy.shell_concurrency
+        self.index_cache = {}
 
     def frozen_assets(self, mode):
         required = [
             "role",
             "common",
             *(
-                ["discovery", "planning", "build", "integration"]
+                ["discovery", "discovery_open", "planning", "build", "integration", *ATLAS_NAMES]
                 if mode == "initialize"
                 else ["maintain"]
             ),
@@ -69,29 +73,50 @@ class RunnerV21:
 
     async def turn(self, *, run_id, ticker, owner, phase, key, as_of, inputs, outputs, task):
         lock = self.locks.setdefault((run_id, owner), asyncio.Lock())
-        async with lock, self.semaphore:
+        async with lock, self.shell_concurrency.slot(ticker):
+            timing = HostTiming()
+            timing.step("state_load")
             record = self.state.task(run_id, key)
+            run = self.state.run(run_id)
+            research_owners = run["prepared"]["topology"].get("research_owners", {})
+            profile = run["prepared"]["topology"].get("owner_profiles", {}).get(owner, {})
+            is_open = profile.get("kind") == "open" or owner == "OPEN"
+            permitted = (
+                (owner == "GLOBAL" and phase in {"planning", "integration"})
+                or (owner in research_owners and phase in {"discovery", "build"})
+                or (owner == "MAINTAIN" and phase == "maintain")
+            )
+            if not permitted:
+                record.update(
+                    status="FAILED",
+                    error=f"owner/phase routing error:{owner}:{phase}",
+                    files={},
+                    snapshots={},
+                )
+                self.state.save_task(run_id, key, record)
+                return record
             if record["status"] in TERMINAL:
                 for path, content in record.get("files", {}).items():
                     snapshot = record["snapshots"][path]
                     accepted = (await self.workspace.read_text(run_id, snapshot)).content
                     if accepted != content:
                         raise ValueError(f"accepted task snapshot integrity error:{key}:{path}")
-                    await self.workspace.write_text(run_id, path, accepted)
+                    draft = self.state.get_draft(run_id, path)
+                    await self.workspace.write_text(
+                        run_id, path, canonical(draft["policy"]) if draft else accepted
+                    )
                 return record
             owner_id = f"{run_id}-{owner.lower()}"
-            run = self.state.run(run_id)
+            timing.step("material_resolve")
             frozen = {}
             mapping = []
             original = run["prepared"]["files"]
             for ref, content in inputs.items():
-                path = (
-                    ref
-                    if ref in original
-                    else f"context/document3/v21/borrowed/{digest(key)[:24]}/{digest(ref)[:24]}.txt"
-                )
+                path = ref if ref in original else reference_path(ref, content)
                 frozen[path] = content
                 mapping.append({"ref": ref, "local_path": path})
+            timing.step("history_restore")
+            drafts = self.state.drafts(run_id)
             # Rebuild owner history from host authority when a physical session is lost.
             # Previous accepted outputs are protected unless this turn declares that path.
             for previous in self.state.tasks(run_id).values():
@@ -100,37 +125,123 @@ class RunnerV21:
                 for path, content in previous.get("files", {}).items():
                     if any(path == p or (p.endswith("/") and path.startswith(p)) for p in outputs):
                         continue
-                    accepted = self.state.drafts(run_id).get(path)
+                    accepted = drafts.get(path)
                     if accepted:
                         content = canonical(accepted["policy"])
                     frozen[path] = content
             for name, asset in run["assets"].items():
-                if name in {"role", "common", phase}:
+                if name in ATLAS_NAMES:
+                    if owner == "OPEN_EVENT" and phase in {"discovery", "build"}:
+                        path = f"{ATLAS_ROOT}/{ATLAS_NAMES[name]}"
+                        frozen[path] = asset["content"]
+                        mapping.append({"ref": path, "local_path": path})
+                    continue
+                if name in {"role", "common", phase} or (
+                    name == "discovery_open" and phase == "discovery" and is_open
+                ):
+                    filename = {
+                        "discovery": "initialize_discovery.md",
+                        "discovery_open": "initialize_discovery_open.md",
+                    }.get(name, f"{name}.md")
                     path = (
-                        "AGENTS.md" if name == "role" else f"context/document3/v21/assets/{name}.md"
+                        "AGENTS.md"
+                        if name == "role"
+                        else f"context/document3/v21/assets/{filename}"
                     )
                     frozen[path] = asset["content"]
             for name, model in WORK_SCHEMAS.items():
                 frozen[f"context/document3/v21/schemas/{name}.json"] = canonical(
                     model.model_json_schema()
                 )
-            task_path = f"context/document3/v21/tasks/{digest(key)[:24]}.json"
+            frozen["context/document3/v21/schemas/policy_set.json"] = canonical(
+                PolicySetV3.model_json_schema()
+            )
+            frozen["context/document3/v21/schemas/receipt.json"] = canonical(
+                strict_json_schema(TechnicalReceipt.model_json_schema())
+            )
+            timing.step("context_index")
+            metadata = {entry["path"]: entry for entry in run["prepared"]["manifest"]}
+            atlas_profile = None
+            if owner == "OPEN_EVENT" and phase in {"discovery", "build"}:
+                atlas_profile = {"sector_code": "L1-01", "materials": []}
+                for name, filename in ATLAS_NAMES.items():
+                    path = f"{ATLAS_ROOT}/{filename}"
+                    metadata[path] = {
+                        "source_kind": "static_reference",
+                        "sha256": run["assets"][name]["sha256"],
+                    }
+                    atlas_profile["materials"].append({"ref": path, **metadata[path]})
+            generation = record.setdefault(
+                "context_generation",
+                record.get("attempt_count", 0) + (record["status"] != "RUNNING"),
+            )
+            task_identity = digest(f"r{run.get('orchestration_revision', 2)}:{key}:{generation}")[
+                :24
+            ]
+            navigation = attach_material_indexes(
+                frozen,
+                mapping,
+                metadata,
+                task_root=f"context/document3/v21/context_index/tasks/{task_identity}",
+                cache=self.index_cache,
+            )
+            task_path = f"context/document3/v21/tasks/{task_identity}.json"
+            record["task_path"] = task_path
             frozen[task_path] = canonical(
                 {
                     **task,
+                    **({"atlas_profile": atlas_profile} if atlas_profile else {}),
+                    "ticker": ticker,
+                    "as_of": as_of.isoformat(),
                     "node": phase,
                     "owner": owner,
                     "output_paths": outputs,
+                    "schemas": {
+                        name: f"context/document3/v21/schemas/{name}.json"
+                        for name in [*WORK_SCHEMAS, "policy_set", "receipt"]
+                    },
                     "read_mapping": mapping,
+                    "context_reading": navigation,
                 }
             )
-            known = {
-                f.relative_path: f.sha256 for f in (await self.workspace.inventory(owner_id)).files
+            timing.step("input_inventory")
+            history_prefixes = list(
+                dict.fromkeys(
+                    path.rsplit("/", 1)[0] + "/" for path in frozen if path.startswith("output/")
+                )
+            )
+            inventory_prefixes = list(
+                dict.fromkeys(["context/", "AGENTS.md", *history_prefixes, *outputs])
+            )
+            inventory = await self.workspace.inventory(owner_id, prefixes=inventory_prefixes)
+            known = {f.relative_path: f.sha256 for f in inventory.files}
+            metrics = {
+                "input_refs": len(mapping),
+                "input_files": len(frozen),
+                "context_index_pages": sum("/context_index/" in p for p in frozen),
+                "draft_ledger_queries": 1,
+                "inventory_files_before": len(inventory.files),
+                "hash_bytes_before": sum(f.size_bytes for f in inventory.files),
+                "materialized_files": 0,
+                "reused_files": 0,
             }
+            timing.step("materialize")
+            missing_index = []
             try:
                 for path, content in frozen.items():
                     if known.get(path) != digest(content):
-                        await self.workspace.write_text(owner_id, path, content)
+                        metrics["materialized_files"] += 1
+                        try:
+                            await self.workspace.write_text(owner_id, path, content)
+                        except (ValueError, OSError):
+                            if "/context_index/" not in path:
+                                raise
+                            record.setdefault("warnings", []).append("context_index_unavailable")
+                            missing_index.append(path)
+                    else:
+                        metrics["reused_files"] += 1
+                for path in missing_index:
+                    frozen.pop(path, None)
             except (ValueError, OSError, ImmutableWorkspacePath) as exc:
                 record.update(
                     status="FAILED",
@@ -142,10 +253,11 @@ class RunnerV21:
                 )
                 self.state.save_task(run_id, key, record)
                 return record
-            while record.get("attempt_count", 0) < 2 or record["status"] == "RUNNING":
+            max_attempts = record.get("max_attempts", 2)
+            while record.get("attempt_count", 0) < max_attempts or record["status"] == "RUNNING":
                 # A crash retries the same durable request, not another task-budget unit.
                 if record["status"] != "RUNNING":
-                    record = self.state.claim(run_id, key)
+                    record = self.state.claim(run_id, key, max_attempts=max_attempts)
                     if record is None:
                         return self.state.task(run_id, key)
                 attempt = record["attempt_count"]
@@ -164,9 +276,16 @@ class RunnerV21:
                     idempotency_key=f"{run_id}:{key}:{attempt}",
                     cutoff_at=as_of,
                     prompt=(
-                        f"Read task file {task_path}, role AGENTS.md, common and {phase} assets "
+                        f"Read task file {task_path}, role AGENTS.md, common and "
+                        f"{'initialize_discovery' if phase == 'discovery' else phase} assets "
                         "under context/document3/v21/assets/. Write only the declared output "
                         "paths. Use read_mapping to read canonical refs. "
+                        + (
+                            "For OPEN Discovery, also read initialize_discovery_open.md. "
+                            if phase == "discovery" and is_open
+                            else ""
+                        )
+                        + f"Optional UTF-8 navigation: {navigation.get('overview_path', '')}. "
                         "Return the technical receipt."
                     ),
                     output_schema=strict_json_schema(TechnicalReceipt.model_json_schema()),
@@ -191,6 +310,7 @@ class RunnerV21:
                     workspace_run_id=owner_id,
                     persistence_run_id=run_id,
                     phase=phase,
+                    task_key=key,
                     round=task.get("round", "main"),
                     owner_slot=owner,
                     ordinal=task.get("ordinal", 0),
@@ -214,6 +334,7 @@ class RunnerV21:
                     runtime.save_attempt(audit)
                 error = ""
                 job = None
+                timing.step("worker_wait")
                 try:
                     # V21 owns the budget; avoid outer DurableWorker multiplication.
                     worker = getattr(self.legacy._worker, "worker", self.legacy._worker)
@@ -261,11 +382,18 @@ class RunnerV21:
                             }
                         )
                     )
-                inventory = await self.workspace.inventory(owner_id)
+                timing.step("output_inventory")
+                inventory = await self.workspace.inventory(
+                    owner_id, prefixes=list(dict.fromkeys([*inventory_prefixes, *outputs]))
+                )
+                metrics["inventory_files_after"] = len(inventory.files)
+                metrics["hash_bytes_after"] = sum(f.size_bytes for f in inventory.files)
                 actual = {f.relative_path: f.sha256 for f in inventory.files}
+                timing.step("protected_check")
                 protected = all(
                     actual.get(path) == digest(content) for path, content in frozen.items()
                 )
+                timing.step("acceptance")
                 files = {}
                 if protected:
                     for item in inventory.files:
@@ -273,12 +401,19 @@ class RunnerV21:
                         if any(
                             path == p or (p.endswith("/") and path.startswith(p)) for p in outputs
                         ):
+                            if error and known.get(path) == item.sha256:
+                                continue
                             text = (await self.workspace.read_text(owner_id, path)).content
                             if text is not None:
                                 files[path] = text
                 else:
                     error = "read-only task input modified"
-                if files or (job and job.status == "succeeded") or attempt >= 2 or not protected:
+                if (
+                    files
+                    or (job and job.status == "succeeded")
+                    or attempt >= max_attempts
+                    or not protected
+                ):
                     snapshots = {}
                     for path, content in files.items():
                         snapshot = (
@@ -293,6 +428,9 @@ class RunnerV21:
                         snapshots=snapshots,
                         status="PARTIAL" if error and files else "FAILED" if error else "COMPLETED",
                         error=error,
+                        host_spans=timing.finish(),
+                        host_metrics=metrics,
+                        task_path=task_path,
                     )
                     self.state.save_task(run_id, key, record)
                     return record

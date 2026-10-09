@@ -58,6 +58,9 @@ _ROLE_BY_NODE = {
     CodexD1Node.C2: CodexAgentRole.C2,
     CodexD1Node.C3: CodexAgentRole.C3,
     CodexD1Node.C4_PRE_SCAN: CodexAgentRole.C4,
+    CodexD1Node.C4F_FUTURE_NODES: CodexAgentRole.C4,
+    CodexD1Node.C4E_FORMAL_SCAN: CodexAgentRole.C4,
+    CodexD1Node.C4E_NETWORK_BUILD: CodexAgentRole.C4,
     CodexD1Node.C4_ENRICHMENT: CodexAgentRole.C4,
     CodexD1Node.C4_FINALIZATION: CodexAgentRole.C4,
     CodexD1Node.O4_B: CodexAgentRole.O4,
@@ -219,7 +222,7 @@ class CodexD1NodeRunner:
             if previous_failure:
                 prompt += (
                     "\nPrevious attempt failed validation: "
-                    f"{previous_failure}. Start fresh, read the new input file, and correct this "
+                    f"{previous_failure}. Read the new attempt's input file and correct this "
                     "exact failure."
                 )
             worker_request = WorkerRunRequest(
@@ -232,7 +235,7 @@ class CodexD1NodeRunner:
                 attempt_id=attempt_id,
                 cutoff_at=cutoff_at,
                 prompt=prompt,
-                output_schema=NODE_OUTPUT_SCHEMA,
+                output_schema=self._attempt_bundles.output_schema(node),
                 thread_id=selected_thread_id,
                 model=self._model,
                 model_provider=self._model_provider,
@@ -271,22 +274,36 @@ class CodexD1NodeRunner:
                         model_provider=self._model_provider,
                     )
                 )
-            from .recovery import recover_output
+            from .recovery import recover_node_output
 
-            output, quarantined = recover_output(job.final_response or "" if job else "")
+            stage_schema = (
+                worker_request.output_schema
+                if "schema" in self._attempt_bundles.node_definition(node)
+                else None
+            )
+            try:
+                output, quarantined = recover_node_output(
+                    node, job.final_response or "" if job else "", output_schema=stage_schema
+                )
+            except (StructuredOutputInvalid, ValueError, TypeError) as exc:
+                output = NodeOutput(status="failed")
+                quarantined = [{"scope": "response", "reason": str(exc)}]
             if job is None or job.status != "succeeded":
                 reason = (job.error_code or job.status) if job else type(execution_error).__name__
                 output.warnings.append(f"WORKER_RECOVERY: {reason}")
-            if seeded.structured_output_path and not (
-                output.entity_relations or output.future_nodes
-            ):
+            output_path = seeded.markdown_output_path or seeded.structured_output_path
+            if output_path and not has_stage_content(node, output, self._research_lane):
                 try:
-                    saved = await self._workspace.read_text(run_id, seeded.structured_output_path)
-                    recovered, issues = recover_output(saved.content or "")
-                    if recovered.entity_relations or recovered.future_nodes:
+                    saved = await self._workspace.read_text(run_id, output_path)
+                    recovered, issues = recover_node_output(
+                        node,
+                        saved.content or "",
+                        output_schema=stage_schema,
+                    )
+                    if has_stage_content(node, recovered, self._research_lane):
                         output = recovered
                         quarantined.extend(issues)
-                except FileNotFoundError:
+                except (FileNotFoundError, StructuredOutputInvalid, ValueError, TypeError):
                     pass
             try:
                 await self._attempt_outputs.validate(
@@ -302,7 +319,24 @@ class CodexD1NodeRunner:
                     error.code = job.error_code or "WORKER_TURN_FAILED"
                     raise error from None
                 raise
-            validate_node_output(node, output)
+            try:
+                validate_node_output(node, output, research_lane=self._research_lane)
+            except StructuredOutputInvalid:
+                if execution_error is not None:
+                    raise execution_error from None
+                if job and job.status != "succeeded":
+                    from doxagent.codex_runtime.errors import WorkerUnavailable
+
+                    error = WorkerUnavailable(job.error_message or job.status)
+                    error.code = job.error_code or "WORKER_TURN_FAILED"
+                    raise error from None
+                if quarantined:
+                    raise StructuredOutputInvalid(str(quarantined[0]["reason"])) from None
+                raise
+            if seeded.markdown_output_path:
+                await self._workspace.write_text(
+                    run_id, seeded.markdown_output_path, output.report_markdown
+                )
             await self._write_diagnostic(
                 run_id,
                 f"attempts/{attempt_id}/audit/ingestion.json",
@@ -431,7 +465,11 @@ class CodexD1NodeRunner:
                 )
                 if block_path in inventory_paths:
                     block = await self._workspace.read_text(run_id, block_path)
-                    if block.content != expected_block:
+                    # Pack writers may use CRLF on Windows. Compare logical text
+                    # while the observation projection and content hash remain exact.
+                    if (block.content or "").replace("\r\n", "\n") != expected_block.replace(
+                        "\r\n", "\n"
+                    ):
                         warnings.append(f"Observation Pack checksum mismatch: {observation.alias}")
                         continue
                 observations.append(observation)
@@ -575,7 +613,30 @@ def validate_node_output(
     output: NodeOutput,
     *,
     require_complete_c4_enrichment: bool = False,
+    research_lane: ResearchLane = ResearchLane.LEGACY_DOCUMENT1,
 ) -> None:
+    entity_stage = node is CodexD1Node.C4E_FORMAL_SCAN or (
+        node is CodexD1Node.C4_PRE_SCAN and research_lane is ResearchLane.GLOBAL_RESEARCH
+    )
+    if (
+        entity_stage or node in {CodexD1Node.C4F_FUTURE_NODES, CodexD1Node.C4E_NETWORK_BUILD}
+    ) and output.status.lower() in {
+        "failed",
+        "error",
+        "cancelled",
+        "aborted",
+    }:
+        raise StructuredOutputInvalid(f"{node.value} did not complete successfully")
+    if entity_stage and (output.future_nodes or output.report_markdown.strip()):
+        raise StructuredOutputInvalid(f"{node.value} produces entity relations only")
+    if node is CodexD1Node.C4F_FUTURE_NODES and (
+        output.entity_relations or output.report_markdown.strip()
+    ):
+        raise StructuredOutputInvalid("C4f produces Future Nodes only")
+    if node is CodexD1Node.C4E_NETWORK_BUILD and (
+        not output.report_markdown.strip() or output.entity_relations or output.future_nodes
+    ):
+        raise StructuredOutputInvalid("C4e network-build requires an independent Markdown report")
     if node is CodexD1Node.C4_FINALIZATION and not (output.entity_relations or output.future_nodes):
         raise StructuredOutputInvalid("C4 finalization returned neither relation nor future nodes")
     if node is CodexD1Node.O4_A and not output.report_markdown.strip():
@@ -590,6 +651,18 @@ def validate_node_output(
         raise StructuredOutputInvalid(
             "C4 enrichment requires the complete relation/future-node snapshot"
         )
+
+
+def has_stage_content(node: CodexD1Node, output: NodeOutput, lane: ResearchLane) -> bool:
+    if node is CodexD1Node.C4E_NETWORK_BUILD:
+        return bool(output.report_markdown.strip())
+    if node is CodexD1Node.C4F_FUTURE_NODES:
+        return bool(output.future_nodes)
+    if node is CodexD1Node.C4E_FORMAL_SCAN or (
+        node is CodexD1Node.C4_PRE_SCAN and lane is ResearchLane.GLOBAL_RESEARCH
+    ):
+        return bool(output.entity_relations)
+    return bool(output.entity_relations or output.future_nodes)
 
 
 def bounded_error_message(exc: BaseException) -> str:

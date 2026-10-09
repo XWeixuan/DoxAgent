@@ -139,7 +139,9 @@ async def test_global_research_runs_exact_new_dag_and_publishes_only_c1_c3_c5(
         CodexD1Node.C1,
         CodexD1Node.C3,
         CodexD1Node.C5,
-        CodexD1Node.C4_ENRICHMENT,
+        CodexD1Node.C4F_FUTURE_NODES,
+        CodexD1Node.C4E_FORMAL_SCAN,
+        CodexD1Node.C4E_NETWORK_BUILD,
     ]
     assert not {CodexD1Node.C2, CodexD1Node.O4, CodexD1Node.C4_FINALIZATION}.intersection(
         item.node for item in worker.requests
@@ -147,13 +149,21 @@ async def test_global_research_runs_exact_new_dag_and_publishes_only_c1_c3_c5(
     c4_threads = [
         item.thread_id
         for item in repository.list_attempts("global-run")
-        if item.node in {CodexD1Node.C4_PRE_SCAN, CodexD1Node.C4_ENRICHMENT}
+        if item.node
+        in {
+            CodexD1Node.C4_PRE_SCAN,
+            CodexD1Node.C4F_FUTURE_NODES,
+            CodexD1Node.C4E_FORMAL_SCAN,
+            CodexD1Node.C4E_NETWORK_BUILD,
+        }
     ]
     assert len(set(c4_threads)) == 1
     c5_thread = repository.get_thread("global-run", CodexAgentRole.C5.value)
     assert c5_thread is not None and c5_thread.thread_id not in set(c4_threads)
     assert bundle.entity_relations[0].relation_object == "TSMC"
     assert bundle.future_nodes[0].time == "2026-Q4"
+    assert bundle.entity_network_report.startswith("# 网络研究")
+    assert set(bundle.c4_product_status.values()) == {"available"}
     assert bundle.handoff is not None
     final_ref = bundle.reports["global_research"]
     document = await workspace.read_text("global-run", final_ref.relative_path)

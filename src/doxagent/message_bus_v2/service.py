@@ -139,8 +139,11 @@ class MessageBusV2Service:
         if entries != profile.entries:
             self.save_default_profile(
                 profile.model_copy(
-                    update={"entries": entries, "updated_by": UpdateActor.SYSTEM,
-                            "updated_reason": reason}
+                    update={
+                        "entries": entries,
+                        "updated_by": UpdateActor.SYSTEM,
+                        "updated_reason": reason,
+                    }
                 )
             )
 
@@ -185,9 +188,7 @@ class MessageBusV2Service:
                     update={
                         "entries": [*current.entries, *additions],
                         "updated_by": UpdateActor.SYSTEM,
-                        "updated_reason": (
-                            "register missing Message Bus v2 default news sources"
-                        ),
+                        "updated_reason": ("register missing Message Bus v2 default news sources"),
                     }
                 )
             )
@@ -778,18 +779,55 @@ class MessageBusV2Service:
             output = output.model_copy(update=updates)
         if poll_errors:
             output.window_coverage = "PARTIAL"
+        all_queries_failed = (
+            result.acquisition_metadata.get("query_failure_count", 0) > 0
+            and result.acquisition_metadata.get("query_success_count", 0) == 0
+            and not result.messages
+        )
+        deferred_only = result.site_access_deferred and not poll_errors and not result.messages
+        deferred_only = deferred_only or (
+            result.acquisition_metadata.get("query_attempt_count") == 0
+            and not poll_errors
+            and not result.messages
+        )
+        checkpoint = {} if source.kind is SourceKind.CRAWLER else dict(result.next_checkpoint)
+        checkpoint["_health_consecutive_degraded"] = (
+            int(state.checkpoint.get("_health_consecutive_degraded", 0))
+            if deferred_only
+            else int(state.checkpoint.get("_health_consecutive_degraded", 0)) + 1
+            if poll_errors
+            else 0
+        )
+        if not checkpoint["_health_consecutive_degraded"]:
+            checkpoint.pop("_health_consecutive_degraded")
         saved_state = state.model_copy(
             update={
-                "status": (PollStatus.PARTIAL if poll_errors else PollStatus.SUCCEEDED),
-                "checkpoint": ({} if source.kind is SourceKind.CRAWLER else result.next_checkpoint),
+                "status": (
+                    state.status
+                    if deferred_only
+                    else PollStatus.FAILED
+                    if all_queries_failed
+                    else PollStatus.PARTIAL
+                    if poll_errors
+                    else PollStatus.SUCCEEDED
+                ),
+                "checkpoint": checkpoint,
                 "bootstrap_complete": True,
                 "last_attempt_at": now,
-                "last_success_at": now,
+                "last_success_at": state.last_success_at
+                if all_queries_failed or deferred_only
+                else now,
                 "last_failure_at": now if poll_errors else None,
                 "failure_since": (state.failure_since or now) if poll_errors else None,
                 "last_error_code": poll_errors[0][0] if poll_errors else None,
                 "last_error_message": poll_errors[0][1][:1000] if poll_errors else None,
-                "consecutive_failures": 0,
+                "consecutive_failures": (
+                    state.consecutive_failures
+                    if deferred_only
+                    else state.consecutive_failures + 1
+                    if all_queries_failed
+                    else 0
+                ),
                 "collected_count": state.collected_count + output.collected_count,
                 "filtered_count": state.filtered_count + output.filtered_count,
                 "published_count": state.published_count + output.published_count,
@@ -797,16 +835,39 @@ class MessageBusV2Service:
                 "updated_at": now,
             }
         )
+        if deferred_only:
+            saved_state = saved_state.model_copy(
+                update={
+                    "last_failure_at": state.last_failure_at,
+                    "failure_since": state.failure_since,
+                    "last_error_code": state.last_error_code,
+                    "last_error_message": state.last_error_message,
+                    "bootstrap_complete": state.bootstrap_complete,
+                }
+            )
         if admission_context and admission_context.mode == "CLOSED_SWEEP":
             # Sweep cursors belong to the durable sweep receipt, not the
             # realtime cursor. Health observations still describe actual I/O.
-            saved_state = saved_state.model_copy(update={
-                "checkpoint": state.checkpoint,
-                "bootstrap_complete": state.bootstrap_complete,
-            })
+            sweep_health_checkpoint = dict(state.checkpoint)
+            if checkpoint.get("_health_consecutive_degraded"):
+                sweep_health_checkpoint["_health_consecutive_degraded"] = checkpoint[
+                    "_health_consecutive_degraded"
+                ]
+            else:
+                sweep_health_checkpoint.pop("_health_consecutive_degraded", None)
+            saved_state = saved_state.model_copy(
+                update={
+                    "checkpoint": sweep_health_checkpoint,
+                    "bootstrap_complete": state.bootstrap_complete,
+                }
+            )
         self.repository.save_poll_state(saved_state)
-        self.repository.resolve_alert(f"poll_failure:{binding.binding_id}")
+        if not all_queries_failed and not deferred_only:
+            self.repository.resolve_alert(f"poll_failure:{binding.binding_id}")
         self._refresh_source_failure_alert(source.source_id, now=now)
+        from doxagent.source_maintenance.signals import poll
+
+        poll(source, binding, result, output, now, admission_context)
         return output
 
     def enqueue_enrichment(
@@ -1396,6 +1457,9 @@ class MessageBusV2Service:
             }
         )
         self.repository.save_poll_state(updated)
+        from doxagent.source_maintenance.signals import poll_failure
+
+        poll_failure(binding, code, message, now)
         if (
             updated.failure_since is not None
             and (now - updated.failure_since).total_seconds() >= binding.polling.alert_after_seconds

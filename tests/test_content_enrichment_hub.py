@@ -408,6 +408,26 @@ async def test_retry_once_then_identity_and_raw_use_enriched_body(tmp_path: Path
     assert extractor.calls == 2
 
 
+async def test_storage_deferral_preserves_content_retry_budget_and_deadline(tmp_path):
+    repository, bus, source, binding = _setup(tmp_path)
+    bus.enqueue_enrichment(source=source, binding=binding,
+        message=_message(901, summary="provider summary"), bootstrap=False,
+        poll_run_id=new_id("poll"))
+
+    class Extractor:
+        async def extract(self, record):
+            return MediaExtractionResult(record=record, reason="storage_unavailable")
+
+    hub = ContentEnrichmentHub(repository, bus, extractor=Extractor())
+    initial = repository.list_enrichment_jobs()[0]
+    assert await hub.run_once() == 1
+    queued = repository.list_enrichment_jobs()[0]
+    assert queued.attempt_count == 0
+    assert queued.deadline_at == initial.deadline_at
+    assert queued.not_before > initial.not_before
+    assert repository.list_raw(ticker="MU") == []
+
+
 class _RedirectRateLimitedSession:
     async def get(self, *_args, **_kwargs):
         class Response:

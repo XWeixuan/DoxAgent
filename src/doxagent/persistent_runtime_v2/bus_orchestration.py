@@ -66,6 +66,14 @@ class BusOrchestration:
             else:
                 realtime = realtime_mode
             if realtime:
+                from doxagent.source_maintenance.settings import enabled as maintenance_enabled
+                from doxagent.source_maintenance.signals import scheduler as maintenance_scheduler
+
+                if maintenance_enabled():
+                    maintenance_scheduler(
+                        binding, scheduler.repository.get_poll_state(binding),
+                        now, binding.binding_id in self._inflight,
+                    )
                 if source.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION:
                     shared_realtime.setdefault(source.source_id, (source, []))[1].append(binding)
                     continue

@@ -409,6 +409,8 @@ class BrowserProfile(SiteModel):
 
 
 class CombinationRuntime(SiteModel):
+    purpose_denials: dict[str, list[str]] = Field(default_factory=dict)
+    purpose_rejected_until: dict[str, datetime] = Field(default_factory=dict)
     # The legacy fields are the browser lane state and remain wire-compatible.
     state: Literal["READY", "COOLDOWN", "HALF_OPEN"] = "READY"
     risk_strikes: int = Field(default=0, ge=0)

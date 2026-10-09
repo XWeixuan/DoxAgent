@@ -191,8 +191,8 @@ class _AsyncWorkspace:
     async def read_text(self, run_id: str, relative_path: str):
         return self.local.read_text(run_id, relative_path)
 
-    async def inventory(self, run_id: str):
-        return self.local.inventory(run_id)
+    async def inventory(self, run_id: str, *, prefixes=None):
+        return self.local.inventory(run_id, prefixes=prefixes)
 
     async def publish(self, run_id: str, paths: list[str]):
         return self.local.publish(run_id, paths)
@@ -610,7 +610,9 @@ class _FinalReviewRemovesSecondShellPolicyWorker(_MultiShellO3WorkerStub):
 
 
 def _refactored_prompt_root(tmp_path: Path) -> Path:
-    source = Path(__file__).resolve().parents[2] / "prompts" / "codex_v2" / "document3"
+    source = (
+        Path(__file__).resolve().parents[2] / "prompts" / "codex_v2" / "document3" / "v2.0_legacy"
+    )
     target = tmp_path / "document3-prompts"
     shutil.copytree(source, target)
     for name in ("initialize_trigger_calibration.md", "initialize_policy_compile.md"):

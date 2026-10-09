@@ -2,6 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Document3 workflow v2.1 contracts",
   "description": "Published data contract document3.v3 and minimal workflow handoff shapes. Validate records locally; structural failures never become global workflow gates.",
+  "$comment": "Initialization uses Shell Discovery then OPEN_RESEARCH and OPEN_EVENT Discovery, followed by GLOBAL Planning and Integration. OPEN is a legacy alias for OPEN_RESEARCH; no third OPEN thread. Build uses all research owners with normal concurrency.",
   "$ref": "#/$defs/PolicySet",
   "$defs": {
     "RefList": {
@@ -41,6 +42,7 @@
         },
         "owner": {
           "type": "string",
+          "description": "Use a task-allowed research owner: Shell slot/name/alias, OPEN_RESEARCH, or OPEN_EVENT. Host normalizes to stable IDs. GLOBAL only coordinates Planning/Integration.",
           "minLength": 1
         },
         "brief": {
@@ -172,6 +174,13 @@
         },
         "coverage_notes": {
           "type": "string"
+        },
+        "edit_requests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EditRequest"
+          },
+          "default": []
         }
       },
       "required": [
@@ -512,6 +521,27 @@
         "event_library_ref",
         "policies",
         "published_at"
+      ]
+    },
+    "EditRequest": {
+      "type": "object",
+      "properties": {
+        "policies": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "instruction": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "policies",
+        "instruction"
       ]
     }
   }

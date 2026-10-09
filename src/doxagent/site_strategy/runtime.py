@@ -17,7 +17,10 @@ from urllib.parse import urljoin, urlsplit
 from uuid import uuid4
 
 from doxagent.content_enrichment.transport import public_url
-from doxagent.message_bus_v2.reuters_sources import capture_reuters_search
+from doxagent.message_bus_v2.reuters_sources import (
+    capture_reuters_search,
+    wait_for_native_document_redirect,
+)
 from doxagent.message_bus_v2.yahoo_sources import capture_latest_news
 from doxagent.resource_safety import SafetyLevel, SafetyStateReader
 
@@ -1031,10 +1034,30 @@ class SiteAccessRuntime:
                         reason="cross_site_navigation",
                         provenance=lease.provenance,
                     )
+                if resolved.site_id in {"reuters", "investing"}:
+                    # commit may precede the challenge document's DOM. Capture
+                    # a complete error document before classifying it.
+                    if response is not None and response.status in {401, 403}:
+                        await page.wait_for_load_state("domcontentloaded", timeout=8_000)
+                    response = await wait_for_native_document_redirect(page, response)
                 status = response.status if response is not None else 200
                 headers = await response.all_headers() if response is not None else {}
                 if status == 200 and resolved.site_id in {"investorshub", "investing"}:
-                    if request.purpose.value == "CRAWLER":
+                    path = urlsplit(request.url).path.rstrip("/")
+                    listing = (
+                        request.purpose.value == "CRAWLER"
+                        or (
+                            resolved.site_id == "investing"
+                            and path.startswith("/equities/")
+                            and path.endswith("-news")
+                        )
+                        or (
+                            resolved.site_id == "investorshub"
+                            and path.startswith("/stock-market/")
+                            and path.endswith("/news")
+                        )
+                    )
+                    if listing:
                         selector = (
                             ".quote-news-item"
                             if resolved.site_id == "investorshub"
@@ -1190,6 +1213,16 @@ class SiteAccessRuntime:
         site_id: str,
         token: str,
     ) -> dict[str, str]:
+        previous = self._maintenance_pages.pop(token, None)
+        if previous is not None:
+            # A driver death invalidates Python handles, not the native login
+            # window. Release the old controller permits without closing it.
+            try:
+                async with asyncio.timeout(3):
+                    await previous.gate.close()
+            except Exception:
+                pass
+            await previous.lease.abandon()
         site_spec = self.repository.get_strategy(site_id)
         if site_spec is None:
             raise ValueError("site strategy is unavailable")

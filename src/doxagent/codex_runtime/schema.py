@@ -49,6 +49,9 @@ class StrictModel(BaseModel):
 class CodexD1Node(StrEnum):
     PROGRAM_COLLECTION = "program_collection"
     C4_PRE_SCAN = "c4_pre_scan"
+    C4F_FUTURE_NODES = "c4f_future_nodes"
+    C4E_FORMAL_SCAN = "c4e_formal_scan"
+    C4E_NETWORK_BUILD = "c4e_network_build"
     C1 = "c1"
     C2 = "c2"
     C3 = "c3"
@@ -557,6 +560,10 @@ class GlobalResearchBundle(StrictModel):
     reports: dict[str, ArtifactRef] = Field(default_factory=dict)
     entity_relations: list[EntityRelation] = Field(default_factory=list)
     future_nodes: list[FutureNode] = Field(default_factory=list)
+    entity_network_report: str = ""
+    c4_product_status: dict[str, Literal["available", "empty", "failed"]] = Field(
+        default_factory=dict
+    )
     citation_manifest: CitationManifest | None = None
     handoff: GlobalResearchHandoffV1 | None = None
     created_at: datetime = Field(default_factory=utc_now)

@@ -21,6 +21,7 @@ from doxagent.codex_runtime.schema import (
     ArtifactRef,
     AttemptStatus,
     CitationManifest,
+    CodexD2AgentRole,
     CodexD2Node,
     CodexResearchAgentRole,
     NodeAttempt,
@@ -34,9 +35,7 @@ from doxagent.observations.promotion import CitationPromotionService
 from doxagent.ticker_initialization.substeps import attempt_identity, durable
 from doxagent.workflows.codex_document2 import schema as v21
 from doxagent.workflows.codex_document2.discovery_checkpoint import (
-    assemble_result,
     qualify_refs,
-    read_checkpoint,
     task_contract,
 )
 from doxagent.workflows.codex_document2.errors import (
@@ -44,7 +43,6 @@ from doxagent.workflows.codex_document2.errors import (
     Document2FailureKind,
     format_execution_error,
     raised_worker_error,
-    worker_execution_error,
 )
 from doxagent.workflows.codex_document2.schema import strict_json_schema
 
@@ -61,6 +59,7 @@ class Document2TurnResult:
     thread_id: str | None
     citation_manifest: CitationManifest
     workspace_run_id: str
+    diagnostics: tuple[dict, ...] = ()
 
 
 class Document2TurnRunner:
@@ -120,6 +119,20 @@ class Document2TurnRunner:
             raise ValueError("split-v1 Discovery nodes are historical; use O1_OPEN_DISCOVERY")
         discovery = node == CodexD2Node.O1_OPEN_DISCOVERY
         wire_model = v21.OpenDiscoveryCompletionV21 if discovery else output_model
+        if role == CodexD2AgentRole.O1 and not thread_id:
+            # Initialization may retry internally with the original thread=None
+            # arguments. Recover only a thread bound to this Shell workspace.
+            for prior in reversed(self._repository.list_attempts(persistence_run_id)):
+                if not prior.thread_id or not prior.node.value.startswith("d2_o1_"):
+                    continue
+                try:
+                    await self._workspace.read_text(
+                        workspace_run_id, f"attempts/{prior.attempt_id}/input/context.json"
+                    )
+                except FileNotFoundError:
+                    continue
+                thread_id = prior.thread_id
+                break
         attempt_number = self._next_attempt_number(persistence_run_id, node)
         attempt_id = attempt_identity(self._attempt_id(node, attempt_number))
         resume_request = None
@@ -204,8 +217,29 @@ class Document2TurnRunner:
             prompt = (
                 f"Document2 node: {node.value}. Attempt: {attempt_id}. "
                 f"Read attempts/{attempt_id}/input/AGENTS.md, agent.md, skill.md, task.json, "
-                "and context.json in that order. Follow those files exactly. Return one JSON "
-                "object matching output_schema.json."
+                "and context.json in that order. Follow the business contract in "
+                "output_schema.json for the full result file."
+            )
+            from .acceptance import DeliveryReceipt
+
+            if context.get("document_schema_version") == "document2.v2.1":
+                prompt += (
+                    " Write the full business result to "
+                    f"attempts/{attempt_id}/output/completion.json "
+                    "matching input/output_schema.json. The file is authoritative. "
+                    "For SDK transport return only completion_path and optional status, "
+                    "rather than repeating business JSON."
+                )
+                transport_schema = strict_json_schema(DeliveryReceipt.model_json_schema())
+            else:
+                prompt += (
+                    f" Write the result to attempts/{attempt_id}/output/completion.json "
+                    "and return the matching business JSON."
+                )
+                transport_schema = output_schema
+            prompt += (
+                " UTF-8 full inputs and optional navigation: "
+                f"attempts/{attempt_id}/input/context_index/overview.md."
             )
             request = WorkerRunRequest(
                 workflow_version=CODEX_DOCUMENT2_WORKFLOW_VERSION,
@@ -217,8 +251,8 @@ class Document2TurnRunner:
                 attempt_id=attempt_id,
                 cutoff_at=cutoff_at,
                 prompt=prompt,
-                output_schema=output_schema,
-                thread_id=None,
+                output_schema=transport_schema,
+                thread_id=thread_id if role == CodexD2AgentRole.O1 else None,
                 model=self._model,
                 model_provider=self._model_provider,
                 effort=self._effort,
@@ -257,47 +291,56 @@ class Document2TurnRunner:
                 ):
                     raise
                 execution_error = raised_worker_error(exc, node)
-            frozen = None
+            from .acceptance import accept, accept_discovery, diagnostic, metadata_path
+
+            completion_path = f"attempts/{attempt_id}/output/completion.json"
+            try:
+                completion = await self._workspace.read_text(workspace_run_id, completion_path)
+                file_text = completion.content
+            except FileNotFoundError:
+                file_text = None
+            reply = job.final_response if job else None
             if discovery:
-                frozen = await read_checkpoint(self._workspace, workspace_run_id, context)
-                if frozen is not None:
-                    await self._promote_scan(workspace_run_id, frozen)
-            try:
-                from doxagent.codex_runtime.recovery import ingest_model, json_value
+                from .discovery_checkpoint import recover_checkpoint
 
-                parsed = ingest_model(
-                    wire_model, json_value(job.final_response or "" if job else "")
+                frozen, bound, ds = await recover_checkpoint(
+                    self._workspace, workspace_run_id, attempt_id, context
                 )
-            except (ValueError, TypeError) as exc:
-                from .recovery import fallback
-
-                if context.get("document_schema_version") == "document2.v2.1":
-                    if execution_error is not None and not execution_error.allows_partial:
-                        raise execution_error from exc
-                    if job and job.status != "succeeded":
-                        error = worker_execution_error(job, node)
-                        if not error.allows_partial:
-                            raise error from exc
-                parsed = None if discovery else fallback(output_model, context)
-                if parsed is None:
-                    if execution_error is not None:
-                        raise execution_error from exc
-                    if job and job.status != "succeeded":
-                        raise worker_execution_error(job, node) from exc
-                    raise format_execution_error(exc, node) from exc
-            from .validation import validate_output
-
-            try:
+                accepted = accept_discovery(
+                    frozen, context, file_text=file_text, sdk_reply=reply, selection_bound=bound
+                )
+                accepted.diagnostics.extend(ds)
+                await self._promote_scan(workspace_run_id, frozen)
+            else:
+                accepted = accept(wire_model, context, file_text=file_text, sdk_reply=reply)
+            if execution_error or (job and job.status != "succeeded"):
+                diagnostic(
+                    accepted.diagnostics,
+                    "worker_delivery_error",
+                    reason=str(execution_error or job.error_message or job.status)[:1000],
+                )
+            parsed = accepted.output
+            await self._workspace.write_text(
+                workspace_run_id,
+                f"attempts/{attempt_id}/audit/acceptance.json",
+                json.dumps(accepted.metadata(), ensure_ascii=False, indent=2),
+            )
+            if reply is not None:
+                await self._workspace.write_text(
+                    workspace_run_id, f"attempts/{attempt_id}/audit/sdk_reply.txt", reply
+                )
+            if file_text is None:
+                authored = parsed.model_dump(mode="json")
                 if discovery:
-                    if frozen is None:
-                        raise ValueError(
-                            "Open Discovery returned Selection without a Scan checkpoint"
-                        )
-                    parsed = assemble_result(parsed, frozen, context, workspace_run_id)
-                else:
-                    validate_output(parsed, context)
-            except ValueError as exc:
-                raise format_execution_error(exc, node) from exc
+                    authored = {
+                        "scan_sha256": parsed.checkpoint.scan_sha256,
+                        "selection": authored["selection"],
+                    }
+                await self._workspace.write_text(
+                    workspace_run_id,
+                    completion_path,
+                    json.dumps(authored, ensure_ascii=False, indent=2),
+                )
             output_json = parsed.model_dump_json(indent=2)
             local_manifest = await self._promote_citations(
                 workspace_run_id=workspace_run_id,
@@ -345,11 +388,16 @@ class Document2TurnRunner:
                 size_bytes=metadata.size_bytes,
                 content_type="application/json",
             )
+            await self._workspace.write_text(
+                persistence_run_id,
+                metadata_path(parent_path),
+                json.dumps(accepted.metadata(), ensure_ascii=False, indent=2),
+            )
             self._repository.save_artifact(artifact)
             attempt = attempt.model_copy(
                 update={
                     "status": AttemptStatus.SUCCEEDED,
-                    "thread_id": job.thread_id if job else None,
+                    "thread_id": (job.thread_id if job else None) or thread_id,
                     "completed_at": utc_now(),
                 }
             )
@@ -363,9 +411,10 @@ class Document2TurnRunner:
                 artifact=artifact,
                 attempt=attempt,
                 job=job,
-                thread_id=job.thread_id if job else None,
+                thread_id=(job.thread_id if job else None) or thread_id,
                 citation_manifest=local_manifest,
                 workspace_run_id=workspace_run_id,
+                diagnostics=tuple(accepted.diagnostics),
             )
         except Exception as exc:
             attempt = attempt.model_copy(
@@ -378,6 +427,8 @@ class Document2TurnRunner:
                 }
             )
             self._repository.save_attempt(attempt)
+            if role == CodexD2AgentRole.O1 and isinstance(exc, Document2ExecutionError):
+                exc.thread_id = attempt.thread_id
             if job is not None:
                 self._record_usage(
                     request,
@@ -423,8 +474,28 @@ class Document2TurnRunner:
             "output_schema.json": json.dumps(output_schema, ensure_ascii=False, indent=2),
             "task.json": json.dumps(task, ensure_ascii=False, indent=2),
         }
+        from doxagent.codex_runtime.context_index import attach_index
+
+        indexed = {}
+        task["context_reading"] = attach_index(
+            indexed, root=f"{root}/context_index", context=json.loads(context_text)
+        )
+        task["completion_path"] = f"attempts/{attempt_id}/output/completion.json"
+        task["sdk_delivery"] = (
+            "Business file is authoritative; v2.1 SDK returns completion_path/status only."
+        )
+        files["task.json"] = json.dumps(task, ensure_ascii=False, indent=2)
         for name, content in files.items():
             await self._workspace.write_text(workspace_run_id, f"{root}/{name}", content)
+        try:
+            for path, content in indexed.items():
+                await self._workspace.write_text(workspace_run_id, path, content)
+        except (OSError, ValueError) as exc:
+            await self._workspace.write_text(
+                workspace_run_id,
+                f"attempts/{attempt_id}/audit/context_index_warning.json",
+                json.dumps({"warning": f"context_index_unavailable: {exc}"}),
+            )
 
     async def _promote_citations(
         self, *, workspace_run_id: str, attempt_id: str, output_json: str

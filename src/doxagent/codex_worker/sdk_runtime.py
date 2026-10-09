@@ -12,7 +12,7 @@ from typing import Any, Protocol
 from uuid import uuid4
 
 from openai_codex import ApprovalMode, AsyncCodex, CodexConfig, Sandbox
-from openai_codex.types import ReasoningEffort
+from openai_codex.types import ReasoningEffort, ReasoningSummary
 
 from doxagent.codex_runtime.models import codex_execution_model
 from doxagent.codex_runtime.schema import CodexD2Node, CodexD3Node, CodexMonitoringO4Node
@@ -173,10 +173,14 @@ class OpenAICodexRuntime:
         capability_secret: str | None = None,
         container_isolated: bool | None = None,
         settings: DoxAgentSettings | None = None,
+        reasoning_summary: str | None = None,
+        preserve_requested_model: bool = False,
     ) -> None:
         self._settings = settings or DoxAgentSettings()
         self._client = AsyncCodex(config or CodexConfig(client_name="doxagent-codex-worker"))
         self.receipt_callback: Any = None
+        self._reasoning_summary = reasoning_summary
+        self._preserve_requested_model = preserve_requested_model
 
         secret = capability_secret or self._settings.codex_capability_secret
         if not secret:
@@ -211,8 +215,12 @@ class OpenAICodexRuntime:
 
     async def start(self, request: WorkerRunRequest, cwd: Path) -> TurnHandle:
         requested_model = request.model
-        execution_model = codex_execution_model(
-            request.model or self._settings.codex_model, request.model_provider
+        execution_model = (
+            request.model or self._settings.codex_model
+            if self._preserve_requested_model
+            else codex_execution_model(
+                request.model or self._settings.codex_model, request.model_provider
+            )
         )
         # Resolve at execution, keeping the original request hash and durable
         # idempotency key valid for already frozen or queued requests.
@@ -260,20 +268,33 @@ class OpenAICodexRuntime:
             "mcp_servers.source_capture.env.DOXAGENT_CODEX_ATTEMPT_ID": request.attempt_id,
             "mcp_servers.source_capture.env.DOXAGENT_OBSERVATION_CONTROL_ROOT": str(control_root),
             "mcp_servers.source_capture.enabled_tools": ["capture_source"],
+            "mcp_servers.source_capture.tools.capture_source.approval_mode": "approve",
             "mcp_servers.source_capture.required": False,
+            "mcp_servers.source_capture.enabled": True,
             "mcp_servers.source_capture.startup_timeout_sec": 10,
             "mcp_servers.source_capture.tool_timeout_sec": 30,
         }
         if request.node in {
-            CodexD3Node.O3_DISCOVERY, CodexD3Node.O3_PLANNING,
-            CodexD3Node.O3_BUILD, CodexD3Node.O3_INTEGRATION,
+            CodexD3Node.O3_DISCOVERY,
+            CodexD3Node.O3_PLANNING,
+            CodexD3Node.O3_BUILD,
+            CodexD3Node.O3_INTEGRATION,
+            CodexD3Node.O3_MAINTAIN,
         }:
-            # GLOBAL resumes the same session across phases. Explicitly replace
-            # this switch so Planning cannot inherit Discovery's provider grant,
-            # and subsequent Build/Integration can re-enable their own capability.
-            sdk_config["mcp_servers.data.enabled"] = request.data_mcp_enabled
+            # Refresh each D3 request, including maintenance and read-only audits.
+            # GLOBAL coordinates Planning/Integration; research owners keep their
+            # own grants, and an audit must never inherit a preceding grant.
+            sdk_config.update(
+                {
+                    "mcp_servers.data.command": sys.executable,
+                    "mcp_servers.data.args": ["-m", "doxagent.mcp.data_server"],
+                    "mcp_servers.data.cwd": str(cwd),
+                    "mcp_servers.data.required": False,
+                    "mcp_servers.data.enabled": request.data_mcp_enabled,
+                }
+            )
 
-        if request.node == CodexD2Node.O1_OPEN_DISCOVERY:
+        if isinstance(request.node, CodexD2Node):
             sdk_config.update(
                 {
                     "mcp_servers.d2_discovery.command": sys.executable,
@@ -285,13 +306,19 @@ class OpenAICodexRuntime:
                     "mcp_servers.d2_discovery.env.DOXAGENT_CODEX_RUN_ID": request.run_id,
                     "mcp_servers.d2_discovery.env.DOXAGENT_CODEX_ATTEMPT_ID": request.attempt_id,
                     "mcp_servers.d2_discovery.enabled_tools": ["commit_open_discovery_scan"],
-                    "mcp_servers.d2_discovery.required": True,
+                    "mcp_servers.d2_discovery.tools."
+                    "commit_open_discovery_scan.approval_mode": "approve",
+                    "mcp_servers.d2_discovery.required": False,
+                    "mcp_servers.d2_discovery.enabled": (
+                        request.node == CodexD2Node.O1_OPEN_DISCOVERY
+                    ),
                     "mcp_servers.d2_discovery.startup_timeout_sec": 10,
                     "mcp_servers.d2_discovery.tool_timeout_sec": 30,
                 }
             )
 
         if request.data_mcp_enabled:
+            sdk_config["mcp_servers.data.enabled"] = True
             allowed_data_tools = self._data_policy.allowed_tools(request.node, request.agent_role)
             capability = self._data_capabilities.issue(
                 workflow_version=request.workflow_version,
@@ -336,12 +363,13 @@ class OpenAICodexRuntime:
                         self._settings.ibkr_tws_market_data_type
                     ),
                     "mcp_servers.data.enabled_tools": enabled_mcp_tools,
-                    "mcp_servers.data.required": True,
+                    "mcp_servers.data.required": not isinstance(request.node, CodexD2Node),
                     "mcp_servers.data.startup_timeout_sec": 20,
                     "mcp_servers.data.tool_timeout_sec": 120,
                 }
             )
         if request.o4_operations_enabled:
+            sdk_config["mcp_servers.o4_operations.enabled"] = True
             if not isinstance(request.node, CodexMonitoringO4Node):
                 raise ValueError("O4 operations are available only to O4 workflow nodes")
             allowed_o4_tools = TOOLS_BY_NODE.get(request.node)
@@ -401,10 +429,18 @@ class OpenAICodexRuntime:
                 }
             )
         for server in ("data", "source_capture", "o4_operations", "d2_discovery"):
+            if (
+                request.read_only
+                and not request.data_mcp_enabled
+                and f"mcp_servers.{server}.command" in sdk_config
+            ):
+                sdk_config[f"mcp_servers.{server}.enabled"] = False
             if f"mcp_servers.{server}.command" in sdk_config:
                 for name in ("DOXAGENT_CAPSULE_ID", "DOXAGENT_MCP_BUDGET_ROOT"):
                     if os.environ.get(name):
                         sdk_config[f"mcp_servers.{server}.env.{name}"] = os.environ[name]
+        if request.read_only and not request.data_mcp_enabled:
+            sdk_config["web_search"] = "disabled"
         if request.thread_id:
             thread = await self._client.thread_resume(
                 request.thread_id,
@@ -446,9 +482,21 @@ class OpenAICodexRuntime:
             cwd=str(cwd),
             effort=ReasoningEffort(request.effort),
             model=request.model,
-            output_schema=request.output_schema,
             sandbox=sandbox,
             approval_mode=ApprovalMode.deny_all,
+            # The Codex structured-output API requires a top-level object.
+            # Markdown-only C4 network-build keeps its string contract in the
+            # workspace and validates the returned text in NodeRunner instead.
+            **(
+                {"output_schema": request.output_schema}
+                if request.output_schema.get("type") == "object"
+                else {}
+            ),
+            **(
+                {"summary": ReasoningSummary(self._reasoning_summary)}
+                if self._reasoning_summary
+                else {}
+            ),
         )
         await asyncio.sleep(0)
         if self.receipt_callback is not None:

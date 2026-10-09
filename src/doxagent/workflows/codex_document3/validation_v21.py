@@ -70,8 +70,12 @@ def structured(text, model):
     return model.model_validate(raw), issues
 
 
-def normalize_agenda(raw, owners, route_aliases=None):
-    """Route ambiguity to OPEN; conflicting names cannot acquire a first winner."""
+def normalize_agenda(raw, owners, route_aliases=None, *, fallback_owner=None):
+    """Resolve all Topics to real owner IDs with one explicit open fallback."""
+    owners = {slot: name for slot, name in owners.items() if slot != "GLOBAL"}
+    fallback_owner = fallback_owner or ("OPEN_RESEARCH" if "OPEN_RESEARCH" in owners else "OPEN")
+    if fallback_owner not in owners:
+        raise ValueError("Agenda fallback must be a real research owner")
     agenda = Agenda.model_validate(raw)
     groups = defaultdict(list)
     for topic in agenda.topics:
@@ -86,18 +90,22 @@ def normalize_agenda(raw, owners, route_aliases=None):
             continue
         topic = group[0]
         targets = (
-            [route_aliases[topic.owner]]
+            [topic.owner]
+            if topic.owner in owners
+            else [route_aliases[topic.owner]]
             if route_aliases and topic.owner in route_aliases
             else aliases[topic.owner]
         )
-        slot = targets[0] if len(targets) == 1 else "OPEN"
-        if slot == "OPEN" and topic.owner != "OPEN":
-            issues.append(f"owner routed to OPEN:{name}")
+        if topic.owner == "OPEN" and "OPEN" not in owners:
+            targets = [fallback_owner]
+            issues.append(f"legacy OPEN routed to {fallback_owner}:{name}")
+        if topic.owner == "GLOBAL":
+            targets = []
+        slot = targets[0] if len(targets) == 1 and targets[0] in owners else fallback_owner
+        if not targets or len(targets) != 1 or targets[0] not in owners:
+            issues.append(f"owner routed to {fallback_owner}:{name}")
         routes[name] = slot
-        public_owner = (
-            topic.owner if route_aliases and topic.owner in route_aliases else owners[slot]
-        )
-        topics.append(topic.model_copy(update={"owner": public_owner}))
+        topics.append(topic.model_copy(update={"owner": slot}))
     by_name = {t.name: t for t in topics}
     seen, waves = set(), []
     for wave in agenda.waves:
@@ -121,7 +129,7 @@ def normalize_agenda(raw, owners, route_aliases=None):
 def accept_policy(raw, *, state, run_id, path, inherited=None):
     """IDs come from the accepted path ledger, never economic-content hashes."""
     path = safe_path(path)
-    previous = state.drafts(run_id).get(path)
+    previous = state.get_draft(run_id, path)
     original_hash = digest(raw)
     if previous and previous.get("raw_hash") == original_hash:
         return PolicyV3.model_validate(previous["policy"]), previous.get("errors", [])

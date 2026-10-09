@@ -1335,6 +1335,8 @@ class PostgresCodexRuntimeRepository:
                 "report_index": report_index,
                 "entity_relations": relations,
                 "future_nodes": future,
+                "entity_network_report": bundle.entity_network_report,
+                "c4_product_status": bundle.c4_product_status,
             }
         else:
             table = "codex_market_situation_bundles"
@@ -1349,13 +1351,17 @@ class PostgresCodexRuntimeRepository:
                     """INSERT INTO doxagent.codex_global_research_bundles
                        (run_id,ticker,workflow_version,research_lane,status,report_index,
                         entity_relations,future_nodes,citation_manifest_artifact_id,
-                        document_artifact_id,created_at,published_at)
-                       VALUES (%s,%s,%s,%s,%s,%s::jsonb,%s::jsonb,%s::jsonb,%s,%s,%s,%s)
+                        document_artifact_id,created_at,published_at,
+                        entity_network_report,c4_product_status)
+                       VALUES (%s,%s,%s,%s,%s,%s::jsonb,%s::jsonb,%s::jsonb,
+                               %s,%s,%s,%s,%s,%s::jsonb)
                        ON CONFLICT (run_id) DO UPDATE SET
                          ticker=excluded.ticker,status=excluded.status,
                          report_index=excluded.report_index,
                          entity_relations=excluded.entity_relations,
                          future_nodes=excluded.future_nodes,
+                         entity_network_report=excluded.entity_network_report,
+                         c4_product_status=excluded.c4_product_status,
                          citation_manifest_artifact_id=excluded.citation_manifest_artifact_id,
                          document_artifact_id=excluded.document_artifact_id,
                          published_at=excluded.published_at""",
@@ -1372,6 +1378,8 @@ class PostgresCodexRuntimeRepository:
                         document_id,
                         bundle.created_at,
                         bundle.published_at,
+                        bundle.entity_network_report,
+                        json.dumps(bundle.c4_product_status, ensure_ascii=False),
                     ),
                 )
             else:
@@ -1619,7 +1627,8 @@ class PostgresCodexRuntimeRepository:
                 cursor.execute(
                     """SELECT run_id,ticker,workflow_version,research_lane,status,report_index,
                               entity_relations,future_nodes,citation_manifest_artifact_id,
-                              document_artifact_id,created_at,published_at
+                              document_artifact_id,created_at,published_at,
+                              entity_network_report,c4_product_status
                        FROM doxagent.codex_global_research_bundles WHERE run_id=%s""",
                     (run_id,),
                 )
@@ -1656,6 +1665,8 @@ class PostgresCodexRuntimeRepository:
                 reports={key: ArtifactRef.model_validate(value) for key, value in row[5].items()},
                 entity_relations=row[6],
                 future_nodes=row[7],
+                entity_network_report=row[12],
+                c4_product_status=row[13],
                 handoff=global_handoff,
                 created_at=row[10],
                 published_at=row[11],

@@ -116,7 +116,7 @@ class StateV21:
                 )
             }
 
-    def claim(self, run_id, key):
+    def claim(self, run_id, key, *, max_attempts=2):
         with self.lock, self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
             row = db.execute(
@@ -126,7 +126,7 @@ class StateV21:
             item = json.loads(row[0]) if row else {"attempt_count": 0, "status": "PENDING"}
             if (
                 item["status"] in {"COMPLETED", "PARTIAL", "FAILED", "CANCELLED"}
-                or item["attempt_count"] >= 2
+                or item["attempt_count"] >= max_attempts
             ):
                 return None
             item.update(status="RUNNING", attempt_count=item["attempt_count"] + 1)
@@ -153,15 +153,23 @@ class StateV21:
                 (run_id, path, canonical(value)),
             )
 
+    def get_draft(self, run_id, path):
+        with self.connect() as db:
+            row = db.execute(
+                "SELECT payload FROM codex_document3_v21_draft_ids WHERE run_id=? AND path=?",
+                (run_id, path),
+            ).fetchone()
+            return json.loads(row[0]) if row else None
+
     def maximum_condition(self, policy_id):
         with self.connect() as db:
-            values = [
-                json.loads(row[0])
-                for row in db.execute("SELECT payload FROM codex_document3_v21_draft_ids")
-            ]
-        return max(
-            [0, *[v["max_condition"] for v in values if v["policy"]["policy_id"] == policy_id]]
-        )
+            row = db.execute(
+                "SELECT MAX(CAST(json_extract(payload, '$.max_condition') AS INTEGER)) "
+                "FROM codex_document3_v21_draft_ids "
+                "WHERE json_extract(payload, '$.policy.policy_id')=?",
+                (policy_id,),
+            ).fetchone()
+            return row[0] or 0
 
     def reserve(self, run_id, ticker, floor=0):
         with self.lock, self.connect() as db:

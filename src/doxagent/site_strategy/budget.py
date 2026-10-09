@@ -105,15 +105,16 @@ class _JointWaiter:
     enqueued_at: float
     site_limit: int
     identity_limit: int
+    aging_seconds: float = 5.0
 
     def rank(self, now: float) -> tuple[int, int]:
-        # A crawler waiting 30 seconds joins the BODY FIFO without outranking
+        # Aging must be reachable before the crawler queue deadline.
         # earlier BODY work. LOGIN remains interactive priority.
         if self.purpose is SitePurpose.LOGIN:
             priority = 0
         elif self.purpose is SitePurpose.BODY:
             priority = 1
-        elif self.purpose is SitePurpose.CRAWLER and now - self.enqueued_at >= 30:
+        elif self.purpose is SitePurpose.CRAWLER and now - self.enqueued_at >= self.aging_seconds:
             priority = 1
         elif self.purpose is SitePurpose.CRAWLER:
             priority = 2
@@ -162,6 +163,7 @@ class JointBudget:
                         time.monotonic(),
                         site_max_concurrency,
                         identity_max_concurrency,
+                        min(5.0, timeout_seconds / 2),
                     )
                     self._waiters.append(waiter)
                     while True:
@@ -169,7 +171,8 @@ class JointBudget:
                         # Only ready work competes for priority. A busy Identity must
                         # not block unrelated sites with their own free browser.
                         eligible = [
-                            item for item in self._waiters
+                            item
+                            for item in self._waiters
                             if self._site_active.get(item.site_key, 0) < item.site_limit
                             and self._identity_active.get(item.identity_id, 0) < item.identity_limit
                             and self._site_next.get(item.site_key, 0.0) <= now

@@ -15,6 +15,7 @@ from uuid import uuid4
 from pydantic import BaseModel
 
 from doxagent.codex_runtime.client import CodexWorkerClient, WorkspaceClient
+from doxagent.codex_runtime.concurrency import TickerConcurrency
 from doxagent.codex_runtime.published_storage import PublishedDocumentStorage
 from doxagent.codex_runtime.repository import CodexRuntimeRepository
 from doxagent.codex_runtime.schema import (
@@ -32,6 +33,7 @@ from doxagent.codex_runtime.schema import (
     utc_now,
 )
 from doxagent.model_usage.repository import ModelUsageRepository
+from doxagent.workflows.codex_document2.acceptance import metadata_path
 from doxagent.workflows.codex_document2.assembler import (
     assemble_document2,
     render_document2_markdown,
@@ -78,9 +80,9 @@ class Document2VersionMismatch(RuntimeError):
 
 class CodexDocument2Orchestrator:
     async def _bounded_o0(
-        self, turn: Callable[[], Awaitable[Document2TurnResult]]
+        self, ticker: str, turn: Callable[[], Awaitable[Document2TurnResult]]
     ) -> Document2TurnResult:
-        async with self._o0_semaphore:
+        async with self._shell_concurrency.slot(ticker):
             return await turn()
 
     def __init__(
@@ -97,7 +99,7 @@ class CodexDocument2Orchestrator:
         timeout_seconds: int = 1800,
         max_attempts: int = 2,
         max_subagents: int = 2,
-        max_shell_concurrency: int = 2,
+        max_shell_concurrency: int | None = None,
         published_storage: PublishedDocumentStorage | None = None,
         usage_repository: ModelUsageRepository | None = None,
         asset_root: str | Path | None = None,
@@ -123,8 +125,11 @@ class CodexDocument2Orchestrator:
             asset_root=asset_root,
         )
         self._max_attempts = max_attempts
-        self._shell_semaphore = asyncio.Semaphore(max_shell_concurrency)
-        self._o0_semaphore = asyncio.Semaphore(max_shell_concurrency)
+        if max_shell_concurrency is None:
+            from doxagent.settings import DoxAgentSettings
+
+            max_shell_concurrency = DoxAgentSettings().codex_d2_max_concurrency
+        self._shell_concurrency = TickerConcurrency(max_shell_concurrency)
         self._published_storage = published_storage
         self._checkpoint_lock = asyncio.Lock()
 
@@ -379,7 +384,10 @@ class CodexDocument2Orchestrator:
         self._complete_workflow_node(workflow_checkpoint, CodexD2Node.ASSEMBLE)
 
         publication_state: Literal["COMPLETE", "PARTIAL"] = (
-            "COMPLETE" if all_shells_completed else "PARTIAL"
+            "COMPLETE"
+            if all_shells_completed
+            and not any(w.startswith("D2_ACCEPTANCE:") for w in checkpoint.warnings)
+            else "PARTIAL"
         )
         publish_refs = [
             document_ref,
@@ -484,6 +492,8 @@ class CodexDocument2Orchestrator:
                 finalized, reference = restored_final
                 return finalized, {"final_shell_seeds": reference}
         common = self._common_context(prepared)
+        if (prepared.manifest.global_research.warning or "").startswith("D2_ACCEPTANCE:"):
+            _warn_checkpoint(checkpoint, prepared.manifest.global_research.warning)
         if request.document_schema_version == "document2.v2.1":
             common.update(
                 document_schema_version=request.document_schema_version,
@@ -492,7 +502,6 @@ class CodexDocument2Orchestrator:
                     if request.document_schema_version == "document2.v2.1"
                     else "split-v1"
                 ),
-                entity_relations=prepared.global_research.entity_relations,
                 event_library=prepared.event_library.model_dump(mode="json"),
             )
         specs: list[tuple[str, CodexD2Node, str, object]] = [
@@ -517,6 +526,12 @@ class CodexDocument2Orchestrator:
         missing_specs: list[tuple[str, CodexD2Node, str, object]] = []
         for spec in specs:
             key = spec[0]
+            if not spec[2].strip():
+                candidates[key] = _contract_model(request, CandidateDiscoveryResult)(
+                    warnings=["REPORT_UNAVAILABLE: domain not researched"]
+                )
+                _warn_checkpoint(checkpoint, f"D2_ACCEPTANCE:{key}:report_unavailable")
+                continue
             restored_candidate = await self._restore_stage(
                 request.run_id,
                 checkpoint,
@@ -550,7 +565,9 @@ class CodexDocument2Orchestrator:
 
         missing_results = await asyncio.gather(
             *(
-                self._bounded_o0(partial(candidate_checkpointed, key, node, primary, source_id))
+                self._bounded_o0(
+                    prepared.ticker, partial(candidate_checkpointed, key, node, primary, source_id)
+                )
                 for key, node, primary, source_id in missing_specs
             ),
             return_exceptions=True,
@@ -592,6 +609,8 @@ class CodexDocument2Orchestrator:
                 role=CodexD2AgentRole.O0,
                 context={
                     "candidate_sets": _candidate_sets_context(candidates),
+                    "global_research": {"reports": prepared.global_research.reports},
+                    "narrative_research": prepared.narrative_research.model_dump(mode="json"),
                     **common,
                 },
                 output_model=_contract_model(request, ShellSynthesisResult),
@@ -654,7 +673,9 @@ class CodexDocument2Orchestrator:
 
         review_results = await asyncio.gather(
             *(
-                self._bounded_o0(partial(review_checkpointed, label, node, role, report_key))
+                self._bounded_o0(
+                    prepared.ticker, partial(review_checkpointed, label, node, role, report_key)
+                )
                 for label, node, role, report_key in missing_reviews
             ),
             return_exceptions=True,
@@ -810,7 +831,7 @@ class CodexDocument2Orchestrator:
                 checkpoint=checkpoint,
                 bundle=bundle,
             )
-        async with self._shell_semaphore:
+        async with self._shell_concurrency.slot(prepared.ticker):
             try:
                 key = _shell_key(_shell_name(seed))
                 state = checkpoint.shell_runs.get(key) or ShellRunState(
@@ -867,6 +888,7 @@ class CodexDocument2Orchestrator:
                                 prepared.global_research.published_at.isoformat()
                             ),
                             "global_research": prepared.global_research.model_dump(mode="json"),
+                            **self._common_context(prepared),
                             "narrative_research": prepared.narrative_research.model_dump(
                                 mode="json"
                             ),
@@ -878,6 +900,7 @@ class CodexDocument2Orchestrator:
                         skill_asset=skill,
                         thread_id=state.thread_id,
                         allow_subagents=False,
+                        fresh_on_retry=False,
                         artifact_key=f"shells/{key}/{stage.value.lower()}",
                         initialization_id=request.initialization_id,
                     )
@@ -912,6 +935,9 @@ class CodexDocument2Orchestrator:
                 await self._save_progress(bundle, checkpoint)
                 return shell, final_ref
             except (Document2ExecutionError, ValueError) as exc:
+                if getattr(exc, "thread_id", None) and "state" in locals():
+                    state.thread_id = exc.thread_id
+                    await self._save_progress(bundle, checkpoint)
                 if not _allows_branch_degradation(exc):
                     raise
                 if "state" in locals():
@@ -973,7 +999,7 @@ class CodexDocument2Orchestrator:
                 v21.ShellResearchTurnResultV21,
             ),
         ]
-        async with self._shell_semaphore:
+        async with self._shell_concurrency.slot(prepared.ticker):
             key = _shell_key(seed.name)
             state = checkpoint.shell_runs.get(key) or ShellRunState(
                 shell_id=seed.name,
@@ -985,9 +1011,14 @@ class CodexDocument2Orchestrator:
             scan = selection = None
             additions = {}
             resolution = []
+            orchestration_diagnostics = []
             # A bounded, shell-specific recovery lookup once on entry, rather
             # than a history scan before each healthy turn.
             recovered_outputs = {}
+            recovered_threads = {
+                attempt.attempt_id: attempt.thread_id
+                for attempt in self._repository.list_attempts(request.run_id)
+            }
             prefix = f"artifacts/document2/turns/v21/shells/{key}/"
             for ref in self._repository.list_artifacts(request.run_id):
                 if ref.relative_path.startswith(prefix):
@@ -1006,9 +1037,11 @@ class CodexDocument2Orchestrator:
                             prepared.global_research.published_at.isoformat()
                         ),
                         "global_research": prepared.global_research.model_dump(mode="json"),
+                        **self._common_context(prepared),
                         "narrative_research": prepared.narrative_research.model_dump(mode="json"),
                         "event_library": self._event_library_turn_context(prepared, state),
                         "turn": stage.value,
+                        "orchestration_diagnostics": orchestration_diagnostics,
                         "workspace_run_id": state.workspace_run_id,
                         "discovery_contract_version": "single-v1",
                     }
@@ -1024,23 +1057,123 @@ class CodexDocument2Orchestrator:
                         # Runner success is durable before applying canonical/sidecars. Recover
                         # that output even if applying it failed before checkpoint persistence.
                         ref = recovered_outputs.get(stage.value)
+                    completed_stages = [item[0] for item in stages]
+                    if ref is None and (
+                        restored_stage == ShellResearchStage.COMPLETED
+                        or (
+                            restored_stage in completed_stages
+                            and completed_stages.index(restored_stage)
+                            >= completed_stages.index(stage)
+                        )
+                    ):
+                        from .acceptance import accept, accept_discovery, diagnostic
+                        from .discovery_checkpoint import recover_checkpoint
+
+                        recovered_attempt = (
+                            "d2-recovered-"
+                            + hashlib.sha256(
+                                f"{state.workspace_run_id}:{stage.value}".encode()
+                            ).hexdigest()[:20]
+                        )
+                        if stage == ShellResearchStage.OPEN_DISCOVERY:
+                            frozen, bound, ds = await recover_checkpoint(
+                                self._workspace, state.workspace_run_id, recovered_attempt, context
+                            )
+                            recovered = accept_discovery(frozen, context, selection_bound=bound)
+                            recovered.diagnostics.extend(ds)
+                        else:
+                            recovered = accept(model, context)
+                        diagnostic(recovered.diagnostics, "missing_snapshot", stage.value)
+                        ref = await self._write_artifact(
+                            run_id=request.run_id,
+                            node=node,
+                            attempt_id=recovered_attempt,
+                            relative_path=f"artifacts/document2/accepted/{recovered_attempt}.json",
+                            content=recovered.output.model_dump_json(indent=2),
+                            kind=ArtifactKind.STRUCTURED_COMPLETION,
+                            content_type="application/json",
+                        )
+                        await self._workspace.write_text(
+                            request.run_id,
+                            metadata_path(ref.relative_path),
+                            json.dumps(recovered.metadata(), ensure_ascii=False, indent=2),
+                        )
                     if ref is not None:
-                        output = await self._read_verified_output(request.run_id, ref, model)
-                        from .validation import validate_output
+                        from .acceptance import accept, accept_discovery
+                        from .discovery_checkpoint import recover_checkpoint, validate_checkpoint
 
                         try:
-                            validate_output(output, context)
-                        except ValueError as exc:
-                            raise RuntimeError(
-                                "D2 saved successful output violates its frozen context"
-                            ) from exc
+                            restored = await self._read_verified_output(request.run_id, ref, model)
+                        except (FileNotFoundError, ValueError, RuntimeError, OSError):
+                            restored = None
+                        if stage == ShellResearchStage.OPEN_DISCOVERY:
+                            if restored is not None:
+                                try:
+                                    validate_checkpoint(
+                                        restored.checkpoint, context, state.workspace_run_id
+                                    )
+                                except ValueError:
+                                    restored = None
+                            if restored is None:
+                                frozen, bound, ds = await recover_checkpoint(
+                                    self._workspace, state.workspace_run_id, ref.attempt_id, context
+                                )
+                                accepted = accept_discovery(frozen, context, selection_bound=bound)
+                                accepted.diagnostics.extend(ds)
+                            else:
+                                accepted = accept_discovery(
+                                    restored.checkpoint,
+                                    context,
+                                    file_text=restored.model_dump_json(),
+                                )
+                        else:
+                            accepted = accept(
+                                model,
+                                context,
+                                file_text=restored.model_dump_json() if restored else None,
+                            )
+                        output = accepted.output
+                        if restored is None or output != restored:
+                            ref = await self._write_artifact(
+                                run_id=request.run_id,
+                                node=node,
+                                attempt_id=ref.attempt_id,
+                                relative_path=f"artifacts/document2/accepted/{hashlib.sha256(ref.relative_path.encode()).hexdigest()[:20]}.json",
+                                content=output.model_dump_json(indent=2),
+                                kind=ArtifactKind.STRUCTURED_COMPLETION,
+                                content_type="application/json",
+                            )
+                            await self._workspace.write_text(
+                                request.run_id,
+                                metadata_path(ref.relative_path),
+                                json.dumps(accepted.metadata(), ensure_ascii=False, indent=2),
+                            )
+                        for item in accepted.diagnostics:
+                            _warn_checkpoint(
+                                checkpoint,
+                                f"D2_ACCEPTANCE:{seed.name}:{stage.value}:{item['code']}",
+                            )
+                        try:
+                            metadata = await self._workspace.read_text(
+                                request.run_id, metadata_path(ref.relative_path)
+                            )
+                            inherited = json.loads(metadata.content or "{}").get("diagnostics", [])
+                        except (FileNotFoundError, ValueError):
+                            inherited = []
+                        for item in inherited:
+                            if item not in orchestration_diagnostics:
+                                orchestration_diagnostics.append(item)
+                        state.thread_id = recovered_threads.get(ref.attempt_id) or state.thread_id
                     else:
                         completed = [item[0] for item in stages]
                         if restored_stage == ShellResearchStage.COMPLETED or (
                             restored_stage in completed
                             and completed.index(restored_stage) >= completed.index(stage)
                         ):
-                            raise RuntimeError(f"D2 completed stage output missing: {stage.value}")
+                            _warn_checkpoint(
+                                checkpoint,
+                                f"D2_ACCEPTANCE:{seed.name}:{stage.value}:missing_snapshot",
+                            )
                         try:
                             turn = await self._run_with_retry(
                                 persistence_run_id=request.run_id,
@@ -1054,6 +1187,7 @@ class CodexDocument2Orchestrator:
                                 agent_asset="agents/o1.md",
                                 skill_asset=skill,
                                 thread_id=state.thread_id,
+                                fresh_on_retry=False,
                                 artifact_key=f"v21/shells/{key}/{stage.value.lower()}",
                                 initialization_id=request.initialization_id,
                             )
@@ -1065,6 +1199,19 @@ class CodexDocument2Orchestrator:
                         output, ref = turn.output, turn.artifact
                         state.thread_id = turn.thread_id
                         self._remember_attempt(checkpoint, turn)
+                    try:
+                        meta = await self._workspace.read_text(
+                            request.run_id, metadata_path(ref.relative_path)
+                        )
+                        for item in json.loads(meta.content or "{}").get("diagnostics", []):
+                            if item not in orchestration_diagnostics:
+                                orchestration_diagnostics.append(item)
+                            _warn_checkpoint(
+                                checkpoint,
+                                f"D2_ACCEPTANCE:{seed.name}:{stage.value}:{item['code']}",
+                            )
+                    except (FileNotFoundError, ValueError):
+                        pass
                     checkpoint.attempt_workspaces[ref.attempt_id] = state.workspace_run_id
                     state.stage_outputs[stage.value] = ref
                     # Persist the success pointer before effects; a restart can replay effects.
@@ -1086,24 +1233,19 @@ class CodexDocument2Orchestrator:
                         )
                     else:
                         shell = output.canonical_shell
-                        for item in output.late_additions:
-                            additions[(item.unit, item.name)] = item.model_dump(mode="json")
-                        authored_resolution = [
-                            r.model_dump(mode="json") for r in output.open_discovery_resolution
-                        ]
-                        if stage == ShellResearchStage.FINALIZATION:
-                            resolution = authored_resolution
-                        else:
-                            accumulated_resolution = {
-                                (item["unit"], item["candidate"]): item for item in resolution
-                            }
-                            accumulated_resolution.update(
-                                {
-                                    (item["unit"], item["candidate"]): item
-                                    for item in authored_resolution
-                                }
-                            )
-                            resolution = list(accumulated_resolution.values())
+                        from .acceptance import merge_discovery_records
+
+                        merged = merge_discovery_records(
+                            {
+                                "late_additions": list(additions.values()),
+                                "open_discovery_resolution": resolution,
+                            },
+                            output.model_dump(mode="json"),
+                        )
+                        additions = {
+                            (item["unit"], item["name"]): item for item in merged["late_additions"]
+                        }
+                        resolution = merged["open_discovery_resolution"]
                         sidecars.extend(
                             [
                                 (
@@ -1178,6 +1320,9 @@ class CodexDocument2Orchestrator:
                 await self._save_progress(bundle, checkpoint)
                 return shell, final_ref
             except Document2ExecutionError as exc:
+                if exc.thread_id:
+                    state.thread_id = exc.thread_id
+                    await self._save_progress(bundle, checkpoint)
                 if not exc.allows_partial:
                     raise
                 state.error = _bounded(str(exc))
@@ -1197,18 +1342,32 @@ class CodexDocument2Orchestrator:
             validate_checkpoint,
         )
 
-        frozen = await read_checkpoint(self._workspace, state.workspace_run_id, context)
+        try:
+            frozen = await read_checkpoint(self._workspace, state.workspace_run_id, context)
+        except Document2ExecutionError:
+            frozen = None
+            if committed is None:
+                return
         if committed is not None:
             validate_checkpoint(committed, context, state.workspace_run_id)
             if frozen is not None and frozen != committed:
                 raise checkpoint_error("saved success differs from the frozen Scan checkpoint")
             if frozen is None:
-                await self._workspace.write_text(
-                    state.workspace_run_id, CHECKPOINT_PATH, stable_json(committed)
-                )
-                await self._workspace.write_text(
-                    state.workspace_run_id, SCAN_PATH, stable_json(committed.scan)
-                )
+                for frozen_path, content in (
+                    (CHECKPOINT_PATH, stable_json(committed)),
+                    (SCAN_PATH, stable_json(committed.scan)),
+                ):
+                    try:
+                        existing = await self._workspace.read_text(
+                            state.workspace_run_id, frozen_path
+                        )
+                    except FileNotFoundError:
+                        await self._workspace.write_text(
+                            state.workspace_run_id, frozen_path, content
+                        )
+                    else:
+                        if existing.content != content:
+                            _warn_checkpoint(checkpoint, "D2_ACCEPTANCE:original_freeze_retained")
             frozen = committed
         if frozen is None:
             return
@@ -1216,17 +1375,25 @@ class CodexDocument2Orchestrator:
         path = f"context/document2/discovery/{_shell_key(seed.name)}/open_discovery_scan.json"
         content = stable_json(frozen.scan)
         prior = state.discovery_scan_ref
+        body = None
+        invalid_parent = False
         if prior is not None:
-            if prior.sha256 != sha(content) or prior.attempt_id != frozen.producer_attempt_id:
-                raise checkpoint_error("parent Scan artifact binding differs from checkpoint")
+            invalid_parent = (
+                prior.sha256 != sha(content) or prior.attempt_id != frozen.producer_attempt_id
+            )
             try:
-                body = await self._workspace.read_text(request.run_id, path)
+                body = await self._workspace.read_text(request.run_id, prior.relative_path)
             except FileNotFoundError:
-                body = None
-            if body is not None and body.content != content:
-                raise checkpoint_error("parent frozen Scan differs from checkpoint")
-        else:
-            body = None
+                invalid_parent = True
+            else:
+                invalid_parent = invalid_parent or body.content != content
+        if invalid_parent:
+            _warn_checkpoint(checkpoint, f"D2_ACCEPTANCE:{seed.name}:parent_scan_recovered")
+            path = (
+                f"context/document2/discovery/{_shell_key(seed.name)}/"
+                f"recovered-{sha(content)[:16]}.json"
+            )
+            prior, body = None, None
         if body is None:
             prior = await self._write_artifact(
                 run_id=request.run_id,
@@ -1296,7 +1463,10 @@ class CodexDocument2Orchestrator:
             if node == CodexD2Node.O1_OPEN_DISCOVERY:
                 from .discovery_checkpoint import read_checkpoint
 
-                frozen = await read_checkpoint(self._workspace, workspace_run_id, context)
+                try:
+                    frozen = await read_checkpoint(self._workspace, workspace_run_id, context)
+                except Document2ExecutionError:
+                    frozen = None
                 if frozen is not None:
                     context = {
                         **context,
@@ -1325,20 +1495,46 @@ class CodexDocument2Orchestrator:
                 )
             except Document2ExecutionError as exc:
                 previous_failure = _bounded(str(exc))
+                if role == CodexD2AgentRole.O1:
+                    active_thread = exc.thread_id or active_thread
                 if not exc.retryable:
                     raise
                 if attempt_index + 1 >= self._max_attempts:
                     raise
-                if fresh_on_retry:
+                if fresh_on_retry and role != CodexD2AgentRole.O1:
                     active_thread = None
         raise RuntimeError("unreachable Document2 retry state")
 
     def _common_context(self, prepared: PreparedDocument2Inputs) -> dict[str, object]:
+        source = self._repository.get_bundle(prepared.global_research.run_id)
         return {
             "ticker": prepared.ticker,
             "as_of": prepared.as_of.isoformat(),
             "future_nodes": prepared.global_research.future_nodes,
+            "entity_relations": prepared.global_research.entity_relations,
+            "entity_network_report": prepared.global_research.entity_network_report,
+            "d1_product_status": prepared.global_research.d1_product_status,
+            "d1_product_sources": prepared.global_research.d1_product_sources,
             "horizontal_indicators": prepared.global_research.horizontal_collection,
+            "research_asset_sources": {
+                **{
+                    key: {
+                        k: v
+                        for k, v in value.items()
+                        if k not in {"source_files", "citation_manifest"}
+                    }
+                    for key, value in prepared.global_research.d1_product_sources.items()
+                },
+                **{
+                    role: {
+                        "role": role,
+                        "source_run_id": prepared.global_research.run_id,
+                        "original_ref": ref.relative_path,
+                        "source_sha256": ref.sha256,
+                    }
+                    for role, ref in getattr(source, "reports", {}).items()
+                },
+            },
         }
 
     def _event_library_turn_context(
@@ -1378,24 +1574,25 @@ class CodexDocument2Orchestrator:
             return None
         reference = self._repository.get_artifact_by_path(run_id, relative_path)
         if reference is None:
-            if checkpoint.document_schema_version == "document2.v2.1":
-                raise RuntimeError(f"D2 stage artifact reference missing: {relative_path}")
+            _warn_checkpoint(checkpoint, f"D2_ACCEPTANCE:{stage_key}:missing_snapshot")
             return None
         try:
             file = await self._workspace.read_text(run_id, relative_path)
             if file.content is None or file.sha256 != reference.sha256:
-                if checkpoint.document_schema_version == "document2.v2.1":
-                    raise RuntimeError(f"D2 stage artifact integrity failure: {relative_path}")
+                _warn_checkpoint(checkpoint, f"D2_ACCEPTANCE:{stage_key}:snapshot_unusable")
                 return None
             return model.model_validate_json(file.content), reference
-        except (OSError, ValueError) as exc:
-            if checkpoint.document_schema_version == "document2.v2.1":
-                raise RuntimeError(f"D2 stage artifact integrity failure: {relative_path}") from exc
+        except (OSError, ValueError):
+            _warn_checkpoint(checkpoint, f"D2_ACCEPTANCE:{stage_key}:snapshot_unusable")
             return None
 
     @staticmethod
     def _remember_attempt(checkpoint: Document2Checkpoint, result: Document2TurnResult) -> None:
         checkpoint.attempt_workspaces[result.attempt.attempt_id] = result.workspace_run_id
+        for item in getattr(result, "diagnostics", ()):
+            _warn_checkpoint(
+                checkpoint, f"D2_ACCEPTANCE:{result.attempt.node.value}:{item['code']}"
+            )
 
     async def _write_artifact(
         self,
@@ -1648,3 +1845,8 @@ def _contract_model(request, legacy):
 
 def _shell_name(shell):
     return shell.name if isinstance(shell, v21.ExpectationShellSeedV21) else shell.shell_id
+
+
+def _warn_checkpoint(checkpoint, warning):
+    if warning not in checkpoint.warnings:
+        checkpoint.warnings.append(warning)

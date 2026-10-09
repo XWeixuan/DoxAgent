@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import json
+import logging
 import sqlite3
 import threading
+import time
 from collections.abc import Iterator
 from contextlib import contextmanager
 from datetime import UTC, datetime, timedelta
@@ -26,12 +28,15 @@ from .schema import (
     digest_json,
     utc_now,
 )
+from .storage import StorageMonitor, storage_failure
 
 
 class SiteStrategyRepository:
     def __init__(self, path: str | Path) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
+        self.storage = StorageMonitor(self.path)
+        self._diagnostic_warning_at = float("-inf")
         self._connection = sqlite3.connect(self.path, check_same_thread=False, timeout=5)
         self._connection.row_factory = sqlite3.Row
         self._lock = threading.RLock()
@@ -45,12 +50,16 @@ class SiteStrategyRepository:
     def transaction(self) -> Iterator[sqlite3.Connection]:
         with self._lock:
             connection = self._connection
-            connection.execute("begin immediate")
             try:
+                connection.execute("begin immediate")
                 yield connection
                 connection.commit()
-            except Exception:
-                connection.rollback()
+                self.storage.committed()
+            except Exception as exc:
+                if isinstance(exc, sqlite3.Error):
+                    self.storage.failed(exc)
+                if connection.in_transaction:
+                    connection.rollback()
                 raise
 
     def close(self) -> None:
@@ -610,6 +619,20 @@ class SiteStrategyRepository:
             )
 
     def append_event(self, event: AccessEvent) -> None:
+        try:
+            self._append_event(event)
+        except sqlite3.Error as exc:
+            if not storage_failure(exc):
+                raise
+            now = time.monotonic()
+            if now - self._diagnostic_warning_at >= 60:
+                self._diagnostic_warning_at = now
+                logging.getLogger(__name__).warning(
+                    "site diagnostic write deferred: sqlite_code=%s",
+                    getattr(exc, "sqlite_errorcode", None),
+                )
+
+    def _append_event(self, event: AccessEvent) -> None:
         with self.transaction() as connection:
             connection.execute(
                 """insert or ignore into access_events(
@@ -725,11 +748,13 @@ class SiteStrategyRepository:
         instant = now or utc_now()
         with self.transaction() as connection:
             events = connection.execute(
-                "delete from access_events where occurred_at<?",
+                "delete from access_events where event_id in "
+                "(select event_id from access_events where occurred_at<? limit 1000)",
                 ((instant - timedelta(days=30)).isoformat(),),
             ).rowcount
             outcomes = connection.execute(
-                "delete from body_outcomes where completed_at<?",
+                "delete from body_outcomes where rowid in "
+                "(select rowid from body_outcomes where completed_at<? limit 1000)",
                 ((instant - timedelta(days=90)).isoformat(),),
             ).rowcount
         return events, outcomes

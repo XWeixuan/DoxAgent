@@ -22,5 +22,6 @@ class CodexD1PromptLoader:
             f"Attempt id: {attempt_id}. Read attempts/{attempt_id}/input/AGENTS.md and "
             f"{task_path}. Then read every file named by task.json before doing research. "
             "Do not continue until those file reads succeed. Follow the output paths and return "
-            "one JSON object matching the supplied schema."
+            "the JSON value matching task.json's output_schema_path. For a string schema, "
+            "return a JSON string containing the complete Markdown, not a NodeOutput object."
         )

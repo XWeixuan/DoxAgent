@@ -59,6 +59,9 @@ _ROLE_BY_NODE = {
     CodexD1Node.C2: CodexAgentRole.C2,
     CodexD1Node.C3: CodexAgentRole.C3,
     CodexD1Node.C4_PRE_SCAN: CodexAgentRole.C4,
+    CodexD1Node.C4F_FUTURE_NODES: CodexAgentRole.C4,
+    CodexD1Node.C4E_FORMAL_SCAN: CodexAgentRole.C4,
+    CodexD1Node.C4E_NETWORK_BUILD: CodexAgentRole.C4,
     CodexD1Node.C4_ENRICHMENT: CodexAgentRole.C4,
     CodexD1Node.C4_FINALIZATION: CodexAgentRole.C4,
     CodexD1Node.O4_B: CodexAgentRole.O4,
@@ -441,15 +444,19 @@ class CodexDocument1Orchestrator:
         for attempt_offset in range(1 if managed() else self._max_attempts):
             attempt_number = first_attempt_number + attempt_offset
             attempt_id = attempt_identity(f"{node.value}-{attempt_number}-{uuid4().hex[:10]}")
-            # Data MCP and Source Capture are attempt-scoped. A resumed Codex
-            # thread can keep their stdio subprocesses (and their old env) alive,
-            # which would write/read evidence under the previous attempt. Start a
-            # fresh thread whenever this node already has attempt history; normal
-            # first-run cross-node thread continuity remains unchanged.
-            request_thread_id = (
-                thread.thread_id if thread is not None and attempt_offset == 0 else None
+            # Global C4 keeps one research conversation across stages/retries.
+            # Production capsules recreate the SDK runtime and attempt-scoped MCP
+            # processes for each request while resuming the persisted thread.
+            # Other roles retain the existing fresh-thread retry isolation.
+            shared_c4 = (
+                role is CodexAgentRole.C4 and self._research_lane is ResearchLane.GLOBAL_RESEARCH
             )
-            if previous_attempts:
+            request_thread_id = (
+                thread.thread_id
+                if thread is not None and (attempt_offset == 0 or shared_c4)
+                else None
+            )
+            if previous_attempts and not shared_c4:
                 request_thread_id = None
             self._start_checkpoint(checkpoint, node)
             try:
@@ -533,7 +540,7 @@ class CodexDocument1Orchestrator:
                 ):
                     continue
                 output = NodeOutput.model_validate_json(completion_file.content or "")
-                validate_node_output(node, output)
+                validate_node_output(node, output, research_lane=self._research_lane)
                 if _normalize_newlines(report_file.content or "") != _normalize_newlines(
                     output.report_markdown
                 ):

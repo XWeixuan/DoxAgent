@@ -64,8 +64,15 @@ GLOBAL_RESEARCH_MANUAL_UPSTREAM_FILES: dict[CodexD1Node, tuple[str, ...]] = {
     CodexD1Node.C1: (C4_PRE_SCAN_UPSTREAM_FILE,),
     CodexD1Node.C3: (C4_PRE_SCAN_UPSTREAM_FILE,),
     CodexD1Node.C5: ("c1.md", "c3.md"),
-    CodexD1Node.C4_ENRICHMENT: (
+    CodexD1Node.C4F_FUTURE_NODES: (
         C4_PRE_SCAN_UPSTREAM_FILE,
+        "c1.md",
+        "c3.md",
+        "c5.md",
+    ),
+    CodexD1Node.C4E_FORMAL_SCAN: (C4_PRE_SCAN_UPSTREAM_FILE, "c1.md", "c3.md", "c5.md"),
+    CodexD1Node.C4E_NETWORK_BUILD: (
+        "c4e_formal_scan.json",
         "c1.md",
         "c3.md",
         "c5.md",
@@ -392,7 +399,9 @@ def _pilot_identity(
             CodexD1Node.C1,
             CodexD1Node.C3,
             CodexD1Node.C5,
-            CodexD1Node.C4_ENRICHMENT,
+            CodexD1Node.C4F_FUTURE_NODES,
+            CodexD1Node.C4E_FORMAL_SCAN,
+            CodexD1Node.C4E_NETWORK_BUILD,
         }
         if request.node not in allowed:
             raise ValueError("node does not belong to the Global Research lane")
@@ -556,6 +565,9 @@ QUALITY_PILOT_NODES = frozenset(
         CodexD1Node.O4,
         CodexD1Node.C4_PRE_SCAN,
         CodexD1Node.C4_ENRICHMENT,
+        CodexD1Node.C4F_FUTURE_NODES,
+        CodexD1Node.C4E_FORMAL_SCAN,
+        CodexD1Node.C4E_NETWORK_BUILD,
         # Historical profiles remain callable only with lane=legacy_document1.
         CodexD1Node.O4_A,
         CodexD1Node.O4_B,
@@ -610,6 +622,20 @@ def _quality_payload(
             "observable future matters under the injected skill and five-field contract. "
             "Return the complete merged C4 snapshot; no later finalization turn exists."
         ),
+        CodexD1Node.C4F_FUTURE_NODES: (
+            "C4f quality Pilot. Research and return Future Nodes only under future_node.md; "
+            "do not produce or modify entity relations."
+        ),
+        CodexD1Node.C4E_FORMAL_SCAN: (
+            "C4e formal-scan quality Pilot. Conduct open, search-intensive relation research "
+            "using pre-scan and full upstream assets; return the complete relation snapshot, "
+            "not a delta."
+        ),
+        CodexD1Node.C4E_NETWORK_BUILD: (
+            "C4e network-build quality Pilot. Continue deep network research with web search, "
+            "new actors and connections; return an independent Markdown research report "
+            "as a JSON string."
+        ),
         CodexD1Node.C4_FINALIZATION: (
             "C4 legacy quality Pilot, finalization turn. Validate and return the complete "
             "five-field entity-relation and future-node snapshot required by the injected "
@@ -631,6 +657,10 @@ def _quality_payload(
             "C4 legacy quality Pilot, enrichment turn. Use the frozen pre-scan and C1/C3 "
             "research to add supported future matters under the injected legacy contract; "
             "return the structured enrichment expected by its later legacy merge turn."
+        )
+    if node is CodexD1Node.C4_PRE_SCAN and research_lane is ResearchLane.GLOBAL_RESEARCH:
+        briefs[node] = (
+            "C4e pre-scan quality Pilot. Produce only initial five-field entity relations."
         )
     payload["research_brief"] = briefs[node]
     base = payload.get("base_context")
@@ -740,7 +770,14 @@ def _apply_manual_upstream(
         if node in {CodexD1Node.C1, CodexD1Node.C3}:
             c4_output["future_nodes"] = []
         payload["c4_pre_scan"] = c4_output
-    if node is CodexD1Node.C4_ENRICHMENT:
+    if "c4e_formal_scan.json" in files:
+        payload["c4e_formal_scan"] = structured("c4e_formal_scan.json")
+    if node in {
+        CodexD1Node.C4_ENRICHMENT,
+        CodexD1Node.C4F_FUTURE_NODES,
+        CodexD1Node.C4E_FORMAL_SCAN,
+        CodexD1Node.C4E_NETWORK_BUILD,
+    }:
         if "c1.md" in files:
             payload["c1_report"] = report("c1.md")
         if "c3.md" in files:
@@ -835,6 +872,9 @@ def _probe_for_node(node: CodexD1Node, enabled: list[str]) -> tuple[str, dict[st
         CodexD1Node.C3: ("sec_issuer_filings", {"forms": ["10-K"], "limit": 1}),
         CodexD1Node.C4_PRE_SCAN: ("sec_issuer_filings", {"forms": ["10-K"], "limit": 1}),
         CodexD1Node.C4_ENRICHMENT: ("sec_issuer_filings", {"forms": ["10-K"], "limit": 1}),
+        CodexD1Node.C4F_FUTURE_NODES: ("sec_issuer_filings", {"forms": ["10-K"], "limit": 1}),
+        CodexD1Node.C4E_FORMAL_SCAN: ("sec_issuer_filings", {"forms": ["10-K"], "limit": 1}),
+        CodexD1Node.C4E_NETWORK_BUILD: ("sec_issuer_filings", {"forms": ["10-K"], "limit": 1}),
         CodexD1Node.O4_B: ("market_quote_snapshot", {}),
         CodexD1Node.O4_A: ("market_quote_snapshot", {}),
         CodexD1Node.C5: ("market_quote_snapshot", {}),

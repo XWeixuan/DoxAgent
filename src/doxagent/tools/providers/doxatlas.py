@@ -276,6 +276,9 @@ class DoxAtlasToolClient(BaseRealToolClient):
             raw = self._post_doxatlas_json(
                 url,
                 json_body=payload,
+                timeout_seconds=float(request.metadata["http_timeout_seconds"])
+                if "http_timeout_seconds" in request.metadata
+                else None,
                 headers={"Authorization": f"Bearer {self.settings.doxatlas_tool_server_token}"},
                 cache_ttl=self.settings.doxatlas_cache_ttl_seconds if spec.cacheable else None,
             )
@@ -343,6 +346,7 @@ class DoxAtlasToolClient(BaseRealToolClient):
         json_body: JsonObject,
         headers: dict[str, str],
         cache_ttl: int | None,
+        timeout_seconds: float | None = None,
     ) -> JsonObject:
         cached = None
         cache_key = ""
@@ -352,7 +356,12 @@ class DoxAtlasToolClient(BaseRealToolClient):
         if cached is not None:
             return cached if isinstance(cached, dict) else {"value": cached}
 
-        response = self.client.post(url, json=json_body, headers=headers)
+        response = self.client.post(
+            url,
+            json=json_body,
+            headers=headers,
+            **({"timeout": timeout_seconds} if timeout_seconds is not None else {}),
+        )
         try:
             data: Any = response.json()
         except ValueError:

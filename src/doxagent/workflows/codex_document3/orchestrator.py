@@ -1063,7 +1063,14 @@ class Document3Orchestrator:
             "context/document3/document2.json",
             Document2Document,
         )
-        return (*INITIALIZE_BUSINESS_INPUT_PATHS, *document2_shell_paths(document2))
+        derived = tuple(
+            sorted(
+                item.relative_path
+                for item in (await self._agent.workspace.inventory(run_id)).files
+                if item.relative_path.startswith("context/document3/context_index/")
+            )
+        )
+        return (*INITIALIZE_BUSINESS_INPUT_PATHS, *document2_shell_paths(document2), *derived)
 
     async def _load_frozen_initialize_inputs(
         self,
@@ -1074,7 +1081,10 @@ class Document3Orchestrator:
         requested_event_library_version: int | None,
     ) -> tuple[PreparedDocument3Inputs, Document3InitializeTask]:
         await self._verify_input_manifest(run_id)
-        task = await self._read_json(run_id, "context/document3/task.json", Document3InitializeTask)
+        task_file = await self._agent.workspace.read_text(run_id, "context/document3/task.json")
+        task_data = json.loads(task_file.content)
+        task_data.pop("context_reading", None)  # Derived transport navigation, not business state.
+        task = Document3InitializeTask.model_validate(task_data)
         if task.run_id != run_id or task.ticker.upper() != ticker.upper():
             raise ValueError("Frozen D3 task does not match the requested run/ticker")
         if task.document2_ref.run_id != document2_run_id:
@@ -1705,6 +1715,7 @@ class Document3Orchestrator:
             # the SDK turn starts. It is runtime-owned context, not an agent
             # business output, but it must remain visible to boundary checks.
             and not item.relative_path.startswith("context/data_tool_catalog/")
+            and not item.relative_path.startswith("context/document3/context_index/")
             and item.relative_path not in deterministic_release_paths
             and not item.relative_path.startswith("published/")
             and not (initialize and item.relative_path in allowed_initialize_context)

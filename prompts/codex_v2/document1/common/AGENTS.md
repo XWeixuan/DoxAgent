@@ -15,6 +15,10 @@ only observations available in this attempt with `【cite:O#】`; never invent a
 For progressive nodes, complete required sections in order and atomically refresh
 `report_draft.md`, `progress.json`, and `observation_candidates.json`. The final
 `report_markdown` must exactly mirror the completed draft after newline normalization.
-Structured C4 nodes write only their governed completion JSON and keep
-`report_markdown` empty. Do not create Document 2 objects, formal gap objects, trading
+Structured C4e relation and C4f Future Node stages write only their respective
+completion JSON and keep `report_markdown` empty. C4e network-build instead follows
+its string schema: write the full Markdown to `markdown_output_path` and return that
+body as a JSON string. Do not return the relation/Future Node envelope in this stage.
+Shared C4 thread history does not override the current stage's prompt, skill or schema.
+Do not create Document 2 objects, formal gap objects, trading
 recommendations, or monitoring rules.
