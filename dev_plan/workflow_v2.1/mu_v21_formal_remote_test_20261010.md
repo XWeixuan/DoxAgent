@@ -51,6 +51,10 @@
 
 只读预检通过：原 C4 pre/C1/C3/C5 四个完成产物、6 个横向状态、17 条归一化观察均可经独立 Worker 按 SHA 读取；恢复模型/effort 为 `gpt-6-sol / high`。执行前对测试 SQLite 另做 `/data/mu-v21-test/research-before-c4-resume.sqlite3` 快照。随后启动 `doxagent-mu-v21-02-c4-resume`，原 run ID 不变；自动跟进已改为只检查此容器及同一 run 的 C4 checkpoint，不再发起新 D1。
 
+首次 C4F 恢复 attempt `c4f_future_nodes-2-93f7bd8825` 的真实 Worker 请求为 `gpt-6-sol / high`，但在 START_THREAD 因 Data MCP 握手失败，Worker 经过内部基础设施恢复仍失败。确认新 Worker 主进程通过 `PYTHONPATH` 读取新源码，而 Codex SDK 启动的 MCP 子进程没有继承该路径：在隔离 Worker 内取消 `PYTHONPATH` 后，Python 实际加载 `/app/src/doxagent` 旧版，节点枚举不含 C4F。此错误没有触发已完成节点重跑。
+
+修复仅针对隔离测试 Worker：用测试专用 Dockerfile 从现有 Worker 镜像叠加当前 `src/` 到 `/app/src/`，构建 `doxagent-v2:mu-v21-worker-20261010`；验证无 `PYTHONPATH` 的 Python 仍识别 C4F、健康检查 Data MCP 启用。停掉旧隔离 Worker 并以新镜像在同一测试 workspace/job store 位置启动，生产 Worker 未动。原 run ID 上的新恢复容器为 `doxagent-mu-v21-02-c4-retry2`，只重试 C4F 起的缺失节点。
+
 2026-10-10 01:58 CST 首次约 15 分钟检查：D1 容器 RUNNING；checkpoint 完成 `program_collection`、`c4_pre_scan`，当前 `c1`、`c3`，失败节点为空。无修复动作。
 
 已设置本线程 15 分钟 heartbeat `mu-v2-1`，只在阶段完成、错误或需要处理时通知，继续串行启动 D2/D3 并在完成后停止跟进。

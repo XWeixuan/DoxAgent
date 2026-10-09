@@ -1,0 +1,6 @@
+FROM doxagent-v2:maintenance-worker-20261003
+
+# The SDK launches Data MCP in a child Python process without the Worker's
+# PYTHONPATH override. Install the same v2.1 source at the image import path so
+# the Worker and its MCP children validate the same node contracts.
+COPY src/ /app/src/
