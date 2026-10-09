@@ -1419,3 +1419,8 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 - 2026-10-10: 双 OPEN 本轮验收完成：D2/D1/Pilot/索引回归 89 passed，D3/维护/SDK Pilot 回归 78 passed，新增双 OPEN/产品执行与索引组合 16 passed；完整 typed D1 fixture 末轮复验 5 passed。Ruff、compileall、合同 JSON 解析及定向 diff check 通过；仅离线编排验收，Atlas 增量价值仍待另行实模验证。
 - 2026-10-10: 增加 MU D1→D2 v2.1→D3 v2.1 正式编排的逐阶段远端手工初始化入口。它固定使用独立 SQLite 测试库和现有 Published Event Library 版本，稳定 run ID 可按原生 checkpoint 恢复；不触发 CDECR、O2、O4，也不修改生产 v2.0 默认编排。
 - 2026-10-10: 远端 MU 正式初始化前的本地回归发现双 ticker D3 Build 并发 fixture 没有提供新版 Agenda 必需的真实 fallback owner，导致测试在并发测量之前失败；补足 S0000 fallback，保持正式编排逻辑不变。
+- 2026-10-10: 增加 D1 已发布部分结果的 C4 产品定点恢复入口：只校验并读取同一 run 已完成的横向采集、归一化及 C4 pre/C1/C3/C5 产物，沿原 checkpoint 补跑 C4F→C4E formal→C4E network，发布新增产品并更新原 Global Research bundle；保留原 run ID、文档 handoff 和已完成节点。用于远端 MU 测试中旧 Worker 不识别新 C4 节点导致的部分发布恢复，未修改生产默认服务。
+
+- 2026-10-10: 新增 Persistent Runtime W1 NEW 与 provisional 一致性的只读远端抽样审查：按 MU/INTC/BE/RKLB 和时间分层抽取 20 条有正文 Case，保存可复核原始快照、读取脚本与逐条结论于 eval/persistent_runtime_v2/new_provisional_audit_20261010/。确认 provision 不能等同消息全部 NEW fact，记录 W1/W3 错位与常规 TRADE 先于 R3 落库的时序边界；未修改生产逻辑或远端状态。
+- 2026-10-10: 对同一 20 条 NEW Case 补做 W1 reason 的事实级可用性审查；只读导出冻结 W1-R2 比较上下文，逐案区分可定位核心新增、部分定位及无充分事实级依据。确认唯一 W2 Policy 命中 Case 的直接 C3 机架功率修订未在 W1 reason 中点名；审查记录见 eval/persistent_runtime_v2/new_provisional_audit_20261010/w1_reason_reassessment.md。未修改生产逻辑或远端状态。
+- 2026-10-10: 增加近 21 天 Policy 命中只读导出与复盘工件 `eval/policy_hit_review_20261010/`：跨当前对象和历史修订去重，按 ticker 每 5 条分片，附固定 Policy/消息/研判证据及意图、真实买卖成交和已实现盈亏；13 条命中、12 个 Case、5 个 JSON 文件，未修改远端状态。
