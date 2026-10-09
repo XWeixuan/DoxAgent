@@ -74,6 +74,7 @@ async def test_d3_two_tickers_each_reach_four_without_exceeding_limit(
             "files": {}, "manifest": [],
             "topology": {
                 "shells": [], "research_owners": owners,
+                "fallback_owner": "S0000",
                 "owners": {**owners, "GLOBAL": "GLOBAL"},
             },
             "document2_ref": None, "event_library_ref": None,
