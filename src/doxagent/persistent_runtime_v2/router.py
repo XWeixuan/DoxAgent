@@ -3,33 +3,93 @@
 from __future__ import annotations
 
 from .schema import (
+    FirstRoundTag,
     RuntimeConfidence,
     RuntimePrimaryRoute,
     RuntimeRouteDecision,
     RuntimeSideEffect,
     W1NoveltyResult,
     W1NoveltyVerdict,
+    W2NovelFactAlignmentResult,
+    W2PolicyAssessmentResult,
     W2PolicyResult,
     W3CaseResult,
+    normalize_w2_result,
 )
+
+
+def condition_ref(policy_id: str, condition_id: str) -> str:
+    def escape(value: str) -> str:
+        return value.replace("~", "~0").replace("/", "~1")
+
+    return f"{escape(policy_id)}/{escape(condition_id)}"
+
+
+def decode_condition_ref(value: str) -> tuple[str, str] | None:
+    parts = value.split("/")
+    if len(parts) != 2:
+        return None
+    return tuple(part.replace("~1", "/").replace("~0", "~") for part in parts)
+
+
+def alignment_flags(w2, alignment: W2NovelFactAlignmentResult | None) -> tuple[bool, bool]:
+    w2 = W2PolicyAssessmentResult.model_validate(normalize_w2_result(w2))
+    true_refs = {
+        ref
+        for item in (alignment.condition_results if alignment else [])
+        if item.is_new
+        for ref in item.condition_ids
+    }
+
+    def passed(groups):
+        return any(
+            condition_ref(g.policy_id, c) in true_refs for g in groups for c in g.condition_ids
+        )
+
+    return w2.policy_hit and passed(w2.hit_condition_ids), w2.policy_related and passed(
+        w2.matched_condition_ids
+    )
+
+
+def first_round_tags(w1, w2, alignment=None) -> list[FirstRoundTag]:
+    w2 = W2PolicyAssessmentResult.model_validate(normalize_w2_result(w2))
+    hit_new, related_new = alignment_flags(w2, alignment)
+    tags = []
+    low = w1.confidence is RuntimeConfidence.LOW or w2.confidence is RuntimeConfidence.LOW
+    if w1.result is W1NoveltyVerdict.OLD:
+        return [FirstRoundTag.SUSPECTED_DUPLICATE_HIT] if w2.policy_hit else []
+    if hit_new and not low:
+        tags.append(FirstRoundTag.FIRST_ROUND_TRADE)
+    if related_new:
+        tags.append(FirstRoundTag.POLICY_RELATED_EVENT)
+    if w2.policy_hit and not hit_new and not related_new:
+        tags.append(FirstRoundTag.SUSPECTED_DUPLICATE_HIT)
+    return tags
 
 
 def route_runtime_case(
     w1: W1NoveltyResult,
-    w2: W2PolicyResult,
+    w2: W2PolicyResult | W2PolicyAssessmentResult,
+    alignment: W2NovelFactAlignmentResult | None = None,
 ) -> RuntimeRouteDecision:
     w1_low = w1.confidence is RuntimeConfidence.LOW
     w2_low = w2.confidence is RuntimeConfidence.LOW
-    policy_hit = bool(w2.policy_ids)
+    w2 = W2PolicyAssessmentResult.model_validate(normalize_w2_result(w2))
+    policy_hit = w2.policy_hit
+    _, related_new = alignment_flags(w2, alignment)
 
     # W3 owns every low-confidence Case. With normal confidence, NEW Cases
     # without a Policy hit still require W3's independent trade evaluation.
     if w1_low or w2_low:
         primary = RuntimePrimaryRoute.W3
     elif w1.result is W1NoveltyVerdict.NEW:
-        primary = RuntimePrimaryRoute.TRADE if policy_hit else RuntimePrimaryRoute.W3
+        primary = (
+            RuntimePrimaryRoute.ARCHIVE
+            if w2.policy_related and not policy_hit and not related_new
+            else RuntimePrimaryRoute.W3
+        )
     else:
-        primary = RuntimePrimaryRoute.ARCHIVE
+        primary = RuntimePrimaryRoute.W3 if policy_hit else RuntimePrimaryRoute.ARCHIVE
 
     effects: list[RuntimeSideEffect] = []
     if primary is RuntimePrimaryRoute.ARCHIVE:
@@ -44,17 +104,6 @@ def route_runtime_case(
         w1.result is W1NoveltyVerdict.NEW or primary is RuntimePrimaryRoute.ADD_TO_DELTA
     ):
         effects.append(RuntimeSideEffect.EMIT_DELTA)
-
-    # BADCASE is not a primary route: it is the OLD/normal + policy-hit side effect.
-    if (
-        primary is RuntimePrimaryRoute.ARCHIVE
-        and w1.result is W1NoveltyVerdict.OLD
-        and not w1_low
-        and policy_hit
-    ):
-        if RuntimeSideEffect.ARCHIVE_MESSAGE not in effects:
-            effects.insert(0, RuntimeSideEffect.ARCHIVE_MESSAGE)
-        effects.append(RuntimeSideEffect.MARK_BADCASE)
 
     reason = (
         f"w1={w1.result.value}/{w1.confidence.value};"
@@ -72,10 +121,8 @@ def route_w3_result(result: W3CaseResult) -> RuntimeRouteDecision:
 
     if result.novelty.result is W1NoveltyVerdict.OLD:
         effects = [RuntimeSideEffect.ARCHIVE_MESSAGE]
-        if result.policy.policy_ids:
-            effects.append(RuntimeSideEffect.MARK_BADCASE)
         primary = RuntimePrimaryRoute.ARCHIVE
-    elif result.policy.policy_ids:
+    elif result.policy.policy_ids and (not hasattr(result, "policy_execution") or (result.policy_execution and result.policy_execution.selected_condition)):
         primary = RuntimePrimaryRoute.TRADE
         effects = [RuntimeSideEffect.CREATE_TRADE_RECORD, RuntimeSideEffect.EMIT_DELTA]
     elif result.expert_trade.trade:

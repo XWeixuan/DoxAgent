@@ -6,6 +6,7 @@ import asyncio
 from pathlib import Path
 
 from doxagent.codex_runtime.errors import ImmutableWorkspacePath
+from doxagent.codex_runtime.node_models import Effort, node_model_config
 from doxagent.codex_runtime.schema import (
     CODEX_DOCUMENT3_WORKFLOW_VERSION,
     AttemptStatus,
@@ -17,6 +18,7 @@ from doxagent.codex_runtime.schema import (
     utc_now,
 )
 from doxagent.codex_worker.schema import WorkerRunRequest
+from doxagent.ticker_initialization.substeps import durable
 
 from .assets_v21 import ATLAS_NAMES, ATLAS_ROOT
 from .materials_v21 import attach_material_indexes, reference_path
@@ -52,6 +54,9 @@ class RunnerV21:
         self.locks = {}
         self.shell_concurrency = legacy.shell_concurrency
         self.index_cache = {}
+        # Explicit Pilot CLI overrides apply only to newly constructed requests.
+        self.model_override: str | None = None
+        self.effort_override: Effort | None = None
 
     def frozen_assets(self, mode):
         required = [
@@ -75,6 +80,7 @@ class RunnerV21:
             result[key] = {"source": str(value), "sha256": digest(text), "content": text}
         return result
 
+    @durable("d3_v21")
     async def turn(self, *, run_id, ticker, owner, phase, key, as_of, inputs, outputs, task):
         lock = self.locks.setdefault((run_id, owner), asyncio.Lock())
         async with lock, self.shell_concurrency.slot(ticker):
@@ -296,13 +302,17 @@ class RunnerV21:
                     thread_id=None
                     if record.get("fresh_session")
                     else (thread.thread_id if thread else None),
-                    model=self.legacy._model
-                    if phase == "maintain"
-                    else self.legacy._initialize_model,
+                    **node_model_config(
+                        NODES[phase],
+                        model=self.legacy._model
+                        if phase == "maintain"
+                        else self.legacy._initialize_model,
+                        effort=self.legacy._effort
+                        if phase == "maintain"
+                        else self.legacy._initialize_effort,
+                        provider=self.legacy._model_provider,
+                    ),
                     model_provider=self.legacy._model_provider,
-                    effort=self.legacy._effort
-                    if phase == "maintain"
-                    else self.legacy._initialize_effort,
                     timeout_seconds=self.legacy._timeout_seconds,
                     allow_subagents=False,
                     max_subagents=0,
@@ -310,6 +320,13 @@ class RunnerV21:
                 )
                 if record.get("request"):
                     request = WorkerRunRequest.model_validate(record["request"])
+                else:
+                    request = request.model_copy(
+                        update={
+                            "model": self.model_override or request.model,
+                            "effort": self.effort_override or request.effort,
+                        }
+                    )
                 record.update(
                     workspace_run_id=owner_id,
                     persistence_run_id=run_id,

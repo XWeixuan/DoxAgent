@@ -14,6 +14,26 @@ from doxagent.persistent_runtime_v2.trade_output import (
 from tests.test_persistent_runtime_v2 import _AnyPolicies, _AnyResponses, _FakeKnownEvents, _source
 
 
+class _PolicyHitW3:
+    def run(self, *, case, w3_case, slot):
+        from tests.test_persistent_runtime_w3 import _w3_result
+        from doxagent.persistent_runtime_v2.schema import W3PolicyResult, W3ExpertTradeResult
+
+        result = _w3_result().model_copy(
+            update={
+                "w3_case_id": w3_case.w3_case_id,
+                "policy": W3PolicyResult(policy_ids=["pol_any"], reason="confirmed"),
+                "expert_trade": W3ExpertTradeResult(
+                    evaluated=False, trade=False, reason="Policy direction"
+                ),
+            }
+        )
+        return result, "test-w3", None
+
+    def close(self):
+        pass
+
+
 def runtime_at(tmp_path, now):
     journal = RuntimeJournal(tmp_path / "runtime.db", clock=lambda: now[0])
     repository = SQLitePersistentRuntimeV2Repository(journal.path)
@@ -21,6 +41,7 @@ def runtime_at(tmp_path, now):
         repository=repository,
         journal=journal,
         responses=_AnyResponses(),
+        w3_agent=_PolicyHitW3(),
         known_events=_FakeKnownEvents(),
         policies=_AnyPolicies(),
         dispatch_effects=False,
@@ -61,9 +82,30 @@ def test_closed_candidates_do_not_consume_policy_and_w1_replays_receipts(tmp_pat
             _source(), mode="CLOSED", phase="W1", sweep_id="sweep", closed_cycle_id="2026-09-05"
         )
         successful = len(runtime.repository.list_turns(case.case_id))
+        from doxagent.persistent_runtime_v2.schema import (
+            W1FactExtractionResult,
+            W2NovelFactAlignmentResult,
+        )
+
+        extraction = next(
+            r for r in runtime.responses.calls if r.output_model is W1FactExtractionResult
+        )
+        parent = next(
+            t
+            for t in runtime.repository.list_turns(case.case_id)
+            if t.lane == "W1" and t.round_name == "R2"
+        )
+        assert extraction.payload == {} and extraction.inherit_context
+        from doxagent.persistent_runtime_v2.transport import _cache_optimized_input
+
+        assert _cache_optimized_input(extraction.payload, extraction.cache_context_keys)[0] == "{}"
+        assert extraction.previous_response_id == parent.response_id
+        assert all(
+            r.output_model is not W2NovelFactAlignmentResult for r in runtime.responses.calls
+        )
         assert runtime.repository.list_provisional("MU", case.trading_date)
         runtime.execute_message(_source(), phase="ALL")
-        assert len(runtime.repository.list_turns(case.case_id)) == successful + 1
+        assert len(runtime.repository.list_turns(case.case_id)) == successful + 3
         runtime.process_pending_effects()
         assert len(journal.values("candidates")) == 1
         assert not journal.values("trade_intents")

@@ -123,11 +123,11 @@ def delta_has_work(value):
 def feed_has_work(value):
     if (
         isinstance(value, dict)
-        and value.get("contract_version") == "persistent-runtime.o3-maintenance-feed.v1"
+        and value.get("contract_version") in {"persistent-runtime.o3-maintenance-feed.v1", "persistent-runtime.o3-maintenance-feed.v2"}
     ):
         return any(
             value.get(k)
-            for k in ("trade_candidates", "trade_records", "badcase_records", "w3_coverage_gaps")
+            for k in ("trade_candidates", "trade_records", "badcase_records", "w3_coverage_gaps", "policy_consumption")
         ) or delta_has_work(value.get("reference_view_delta"))
     return bool(value)
 
@@ -149,12 +149,13 @@ class Document3OrchestratorV21:
         if getattr(self, "pilot_stop_after_phase", None) == phase:
             raise PilotPhasePaused(phase, run_id)
 
-    def __init__(self, *, input_preparer, agent_runner, state, node_assets, policy_repository=None):
+    def __init__(self, *, input_preparer, agent_runner, state, node_assets, policy_repository=None, published_storage=None):
         self.state = state
         self.runner = RunnerV21(agent_runner, state, node_assets)
         self.workspace = self.runner.workspace
         self.preparer = InputPreparerV21(input_preparer, self.workspace)
         self.policy_repository = policy_repository
+        self.published_storage = published_storage
 
     async def _freeze(self, run_id, identity, mode, prepare):
         existing = self.state.run(run_id)
@@ -613,7 +614,9 @@ class Document3OrchestratorV21:
         self.state.save_task(run_id, key, record)
         return accepted
 
-    async def _build(self, run_id, agenda, *, supplement=False):
+    async def _build(
+        self, run_id, agenda, *, supplement=False, wave_ordinals=None, stop_on_failed_wave=False
+    ):
         run = self.state.run(run_id)
         owners = run["prepared"]["topology"]["research_owners"]
         agenda, route_errors = normalize_agenda(
@@ -625,6 +628,8 @@ class Document3OrchestratorV21:
         by_name = {t.name: t for t in agenda.topics}
         queues = defaultdict(list)
         for ordinal, names in enumerate(agenda.waves):
+            if wave_ordinals is not None and ordinal not in wave_ordinals:
+                continue
             owner = by_name[names[0]].owner
             queues[owner].append((ordinal, names))
         phase = "supplement" if supplement else "research"
@@ -675,6 +680,11 @@ class Document3OrchestratorV21:
                 accepted[key] = await self._accept_build_wave(
                     run_id, key, record, prefix, names, inheritance
                 )
+                if stop_on_failed_wave and record["status"] != "COMPLETED":
+                    raise RuntimeError(
+                        f"Build recovery wave stopped:{key}:{record['status']}:"
+                        f"{record.get('error', '')}"
+                    )
 
         await asyncio.gather(*(owner_queue(owner, waves) for owner, waves in queues.items()))
         results, paths, diagnostics = {}, [], [{"warning": e} for e in route_errors]
@@ -1286,6 +1296,8 @@ class Document3OrchestratorV21:
                     "final_hash": digest(run["final"]),
                     "coverage_hash": digest(run["coverage"]),
                     "publish_empty": run["coverage"].get("publish_empty", False),
+                    "accepted_rearm": run.get("accepted_rearm", []),
+                    "rearm_hash": digest(run.get("accepted_rearm", [])),
                 },
                 phase="PUBLISH",
             )
@@ -1294,6 +1306,7 @@ class Document3OrchestratorV21:
         if (
             digest(run["final"]) != commit["final_hash"]
             or digest(run["coverage"]) != commit["coverage_hash"]
+            or digest(run.get("accepted_rearm", [])) != commit.get("rearm_hash", digest([]))
         ):
             raise ValueError("publication checkpoint integrity mismatch")
         policy_set = PolicySetV3(
@@ -1317,7 +1330,7 @@ class Document3OrchestratorV21:
         }
         markdown = (
             f"# {policy_set.ticker} Document3 V3\n\n"
-            f"Version: {commit['version']} · {run['status']} · staged\n\n"
+            f"Version: {commit['version']} · {run['status']} · publication candidate\n\n"
             f"As of: {policy_set.as_of.isoformat()}\n\n"
             f"Coverage: {canonical(run['coverage'])}\n\n"
         )
@@ -1591,6 +1604,7 @@ class Document3OrchestratorV21:
             for i in patch_issues
             if i.get("error")
         )
+        accepted_upserts = set()
         retire = set(patch.retire_policy_ids)
         for pid, group in grouped.items():
             if pid in retire or len({canonical(raw) for _, raw in group}) > 1:
@@ -1612,6 +1626,8 @@ class Document3OrchestratorV21:
                 missing.extend(f"maintenance structural:{e}" for e in errors)
             if policy:
                 final[policy.policy_id] = policy
+                if not errors and set(PolicyV3.model_fields).issubset(raw):
+                    accepted_upserts.add(policy.policy_id)
         for pid in retire:
             if pid in final:
                 del final[pid]
@@ -1647,10 +1663,18 @@ class Document3OrchestratorV21:
         ):
             missing.append("maintenance Event snapshot binding mismatch")
             event = run["prepared"].get("event_library_ref") or actual_refs[0]
+        from doxagent.persistent_runtime_v2.policy_consumption import accept_rearm_requests
+        accepted_rearm, rearm_issues = accept_rearm_requests(patch.rearm_requests,
+            feed=run["identity"].get("feed"), upsert_ids=accepted_upserts, retire_ids=set(patch.retire_policy_ids),
+            base_ids={p.policy_id for p in base.policies}, run_id=run_id,
+            base_release={"version": base.policy_set_version, "hash": digest(run["base"])})
+        missing.extend("rearm rejected:" + issue["policy_id"] for issue in rearm_issues)
+        self.state.update(run_id, accepted_rearm=accepted_rearm, rearm_issues=rearm_issues)
         values = [p.model_dump(mode="json") for p in final.values()]
         same = canonical(values) == canonical([p.model_dump(mode="json") for p in base.policies])
         if (
             same
+            and not accepted_rearm
             and event
             == (base.event_library_ref.model_dump(mode="json") if base.event_library_ref else None)
             and gaps == run["base_coverage"].get("remaining_gaps", [])

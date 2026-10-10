@@ -35,9 +35,13 @@ class CaseEvidence:
                     in {
                         "version_pin",
                         "w1_final",
+                        "w1_extraction",
+                        "w2_alignment",
+                        "first_round_tags",
                         "w2_final",
                         "w2_round1",
                         "w3_result",
+                        "frozen_inputs.policy_watch_followup",
                         "output",
                         "candidate",
                     }
@@ -80,7 +84,12 @@ class CaseEvidence:
         selected = (
             [g for g in groups if g["node"] == node]
             if node
-            else [g for g in groups if g["node"] in {"W1", "W2"} and g["round"] in {"R1", "R2"}]
+            else [
+                g
+                for g in groups
+                if g["node"] in {"W1", "W2"}
+                and (g["round"] in {"R1", "R2"} or (g["node"] == "W2" and g["round"] == "R3"))
+            ]
         )
         if not selected or any(
             g["starts"] != g["count"] or g["ends"] != g["count"] for g in selected

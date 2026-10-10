@@ -125,7 +125,7 @@ def test_reprojection_updates_old_edges_idempotently(tmp_path):
         seq = store.highwater(db)
     paths = {edge["edge_id"] for edge in Graphs(store, None).paths("MU", seq, None, "TRADE_INTENT")}
     assert "TRADE_INTENT:TRADE_EXECUTION" in paths
-    assert "SOURCE:TRADE_INTENT" in paths
+    assert "SOURCE:TRADE_INTENT" not in paths
     assert "W2:TRADE_EXECUTION" not in paths
     assert reproject_trade_outcomes(store, ticker="MU", limit=1)["processed"] == 0
 

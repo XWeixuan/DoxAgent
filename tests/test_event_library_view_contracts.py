@@ -7,7 +7,6 @@ from doxagent.event_library.compiler import (
     EventLibraryViewCompiler,
     _display_occurrence_time,
     _reference_fact_lines,
-    _summary_duplicates_title,
 )
 from doxagent.event_library.contracts import (
     CanonicalEvent,
@@ -24,19 +23,23 @@ def test_occurrence_timestamp_uses_eastern_calendar_date_and_dst() -> None:
     assert _display_occurrence_time("Q3") == "Q3"
 
 
-def test_known_summary_omission_is_conservative() -> None:
-    assert _summary_duplicates_title(
-        title="Analog Devices executive appointment",
-        summary="Analog Devices executive appointment occurrence.",
+@pytest.mark.parametrize(
+    "summary",
+    ["Analog Devices disclosed an update.", "Analog Devices corporate update"],
+)
+def test_known_index_has_summary_without_title_and_keeps_duplicate_summary(summary: str) -> None:
+    event = _event(event_id="E1", facts=[
+        CanonicalFact(fact_id="F1", proposition="Analog Devices disclosed an update.", assertion_state="ACTUAL")
+    ]).model_copy(
+        update={"known_event_summary": summary}
     )
-    assert _summary_duplicates_title(
-        title="Analog Devices executive appointment",
-        summary="ANALOG DEVICES — executive appointment!",
-    )
-    assert not _summary_duplicates_title(
-        title="Analog Devices Q3 earnings release",
-        summary="Analog Devices Q3 earnings release raised Q4 revenue guidance to $4.3B.",
-    )
+
+    class Repository:
+        def published_events(self, ticker: str, version: int | None = None) -> list[CanonicalEvent]:
+            return [event]
+
+    index = EventLibraryViewCompiler(Repository()).known_event_index("ADI")  # type: ignore[arg-type]
+    assert index == f"E1 | 2026-08-19 | {summary}\n"
 
 
 def test_canonical_fact_contract_rejects_retired_entities_field() -> None:

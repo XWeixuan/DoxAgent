@@ -107,7 +107,15 @@ class WeekendSelection:
                         for item in self.journal.values("trade_intents")
                         if item["ticker"] == task["ticker"]
                         and item["release_semantic_day"] == day.isoformat()
-                        and item["status"] not in {"EXPIRED_SEMANTIC_DAY", "DUPLICATE_POLICY"}
+                        and item["status"]
+                        not in {
+                            "EXPIRED_SEMANTIC_DAY",
+                            "DUPLICATE_POLICY",
+                            "DUPLICATE_REALTIME_OUTPUT",
+                            "DUPLICATE_EVENT_TRADE",
+                            "SELECTED_CONDITION_INVALID",
+                            "POLICY_MIGRATION_UNRESOLVED",
+                        }
                     ],
                 }
                 self.journal.checkpoint(task, judgment_inputs=payload)
@@ -146,7 +154,11 @@ class WeekendSelection:
             trade = TradeRecord.model_validate(candidate["trade"])
             active = self.runtime.input_snapshot_loader(task["ticker"])
             valid = active and active.projection
-            if trade.executed_policy_id and valid:
+            if trade.executed_condition_id and valid:
+                from .policy_consumption import prepare_output_guard
+
+                valid = prepare_output_guard(case, trade, active)
+            elif trade.executed_policy_id and valid:
                 valid = any(
                     policy.policy_id == trade.executed_policy_id
                     and policy.activation_revision == trade.activation_revision
@@ -159,6 +171,18 @@ class WeekendSelection:
                     outcome = TradeOutputService(self.journal).record(
                         case, trade, release_day=day, selection_id=task["id"]
                     )
+                    if outcome == "POLICY_AUTHORIZATION_NOT_ADMITTED":
+                        active = self.runtime.input_snapshot_loader(task["ticker"])
+                        if prepare_output_guard(case, trade, active):
+                            outcome = TradeOutputService(self.journal).record(
+                                case, trade, release_day=day, selection_id=task["id"]
+                            )
+                        else:
+                            outcome = "RELEASE_REJECTED"
+                        if outcome == "POLICY_AUTHORIZATION_NOT_ADMITTED":
+                            raise RuntimeError(
+                                "Policy authorization pending; retry frozen selection"
+                            )
             else:
                 outcome = "RELEASE_REJECTED"
             candidate["status"] = "RELEASED" if outcome in {"READY", "OUTPUT_RECORDED"} else outcome

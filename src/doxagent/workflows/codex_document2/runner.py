@@ -14,6 +14,7 @@ from uuid import uuid4
 from pydantic import BaseModel, ValidationError
 
 from doxagent.codex_runtime.client import CodexWorkerClient, WorkspaceClient
+from doxagent.codex_runtime.node_models import node_model_config
 from doxagent.codex_runtime.repository import CodexRuntimeRepository
 from doxagent.codex_runtime.schema import (
     CODEX_DOCUMENT2_WORKFLOW_VERSION,
@@ -253,9 +254,13 @@ class Document2TurnRunner:
                 prompt=prompt,
                 output_schema=transport_schema,
                 thread_id=thread_id if role == CodexD2AgentRole.O1 else None,
-                model=self._model,
+                **node_model_config(
+                    node if context.get("document_schema_version") == "document2.v2.1" else "",
+                    model=self._model,
+                    effort=self._effort,
+                    provider=self._model_provider,
+                ),
                 model_provider=self._model_provider,
-                effort=self._effort,
                 timeout_seconds=self._timeout,
                 allow_subagents=allow_subagents,
                 max_subagents=self._max_subagents if allow_subagents else 0,

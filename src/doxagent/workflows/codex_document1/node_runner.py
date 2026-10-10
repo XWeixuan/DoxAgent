@@ -17,6 +17,7 @@ import httpx
 
 from doxagent.codex_runtime.client import CodexWorkerClient, WorkspaceClient
 from doxagent.codex_runtime.errors import StructuredOutputInvalid
+from doxagent.codex_runtime.node_models import node_model_config
 from doxagent.codex_runtime.repository import CodexRuntimeRepository
 from doxagent.codex_runtime.schema import (
     CODEX_D1_WORKFLOW_VERSION,
@@ -237,9 +238,10 @@ class CodexD1NodeRunner:
                 prompt=prompt,
                 output_schema=self._attempt_bundles.output_schema(node),
                 thread_id=selected_thread_id,
-                model=self._model,
+                **node_model_config(
+                    node, model=self._model, effort=self._effort, provider=self._model_provider
+                ),
                 model_provider=self._model_provider,
-                effort=self._effort,
                 timeout_seconds=self._timeout_seconds,
                 allow_subagents=node
                 in {CodexD1Node.C1, CodexD1Node.C3, CodexD1Node.O4_A, CodexD1Node.C5},
@@ -270,7 +272,7 @@ class CodexD1NodeRunner:
                         run_id=run_id,
                         agent_role=role,
                         thread_id=job.thread_id,
-                        model=self._model,
+                        model=worker_request.model or self._model,
                         model_provider=self._model_provider,
                     )
                 )

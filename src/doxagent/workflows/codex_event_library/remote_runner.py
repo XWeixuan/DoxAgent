@@ -13,6 +13,7 @@ from typing import Any, Literal, NotRequired, TypedDict
 
 from doxagent.codex_runtime.client import CodexWorkerClient, WorkspaceClient
 from doxagent.codex_runtime.errors import StructuredOutputInvalid
+from doxagent.codex_runtime.node_models import node_model_config
 from doxagent.codex_runtime.schema import (
     CODEX_EVENT_LIBRARY_WORKFLOW_VERSION,
     CodexEventLibraryAgentRole,
@@ -91,9 +92,12 @@ class RemoteEventLibraryInitializer:
         self.service = service
         self.local_workspace_root = Path(local_workspace_root).resolve()
         self.prompt_root = Path(prompt_root)
-        self.model = model
+        profile = node_model_config(
+            CodexEventLibraryNode.O2_MAINTAIN, model=model, effort=effort, provider=model_provider
+        )
+        self.model = profile["model"]
         self.model_provider = model_provider
-        self.effort = effort
+        self.effort = profile["effort"]
         self.timeout_seconds = timeout_seconds
         self.wave_size = wave_size
         self.wave_token_budget = wave_token_budget

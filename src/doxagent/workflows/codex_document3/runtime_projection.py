@@ -123,6 +123,9 @@ def upgrade_runtime_projection(payload: dict[str, Any]) -> RuntimePolicyProjecti
     """Decode only legacy projections whose semantics are safely equivalent to fixed OR."""
 
     version = payload.get("schema_version")
+    if version == "document3.runtime_projection.v5":
+        from .consumer_contracts import RuntimePolicyProjectionV5
+        return RuntimePolicyProjectionV5.model_validate(payload)
     if version == RUNTIME_POLICY_PROJECTION_VERSION:
         return RuntimePolicyProjection.model_validate(payload)
     if version in {"document3.runtime_projection.v2", "document3.runtime_projection.v3"}:
@@ -177,6 +180,10 @@ def upgrade_runtime_projection(payload: dict[str, Any]) -> RuntimePolicyProjecti
 
 
 def assert_runtime_projection_compatible(projection: RuntimePolicyProjection) -> None:
+    if projection.schema_version == "document3.runtime_projection.v5":
+        from .consumer_contracts import RuntimePolicyProjectionV5
+        RuntimePolicyProjectionV5.model_validate(projection)
+        return
     if (
         projection.schema_version != RUNTIME_POLICY_PROJECTION_VERSION
         or projection.consumer_contract != RUNTIME_POLICY_CONSUMER_CONTRACT
@@ -267,7 +274,7 @@ class Document3RuntimeProjectionConsumer:
 
 
 def project_policy_set_v3(policy_set):
-    """Pure staged V5 construction; active projection consumers remain V4."""
+    """Canonical V5 projection shared by staged publication and native consumers."""
     from .state_v21 import digest
 
     policies = []

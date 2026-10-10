@@ -324,7 +324,7 @@ async def test_synthesis_pilot_seeds_complete_reports_without_candidate_branches
     assert seeded["candidate_sets"] == {}
 
 
-async def setup(tmp_path, **worker_options):
+async def setup(tmp_path, *, narrative_status=s.InputAvailability.ABSENT, **worker_options):
     repository, workspace, source = await _global_fixture(tmp_path)
     assets = tmp_path / "assets"
     shutil.copytree(Path(__file__).parents[1] / "prompts/codex_v2/document2", assets)
@@ -336,7 +336,7 @@ async def setup(tmp_path, **worker_options):
         worker=worker,
         workspace=workspace,
         repository=repository,
-        narrative_provider=_NarrativeProvider(s.InputAvailability.ABSENT),
+        narrative_provider=_NarrativeProvider(narrative_status),
         event_library_provider=events,
         asset_root=assets,
     )
@@ -503,10 +503,23 @@ def test_research_integrity_is_not_semantic_gating(fault):
 
 @pytest.mark.asyncio
 async def test_five_stages_freeze_retry_publish_and_version_binding(tmp_path):
-    repo, ws, worker, events, orch, request = await setup(tmp_path, selection_invalid_once=True)
+    repo, ws, worker, events, orch, request = await setup(
+        tmp_path, selection_invalid_once=True, narrative_status=s.InputAvailability.AVAILABLE
+    )
     bundle = await orch.run(request)
     assert bundle.publication_state == "PARTIAL" and not bundle.current
     counts = Counter(r.node for r in worker.requests)
+    luna_nodes = {
+        CodexD2Node.O0_CANDIDATE_C1, CodexD2Node.O0_CANDIDATE_C3,
+        CodexD2Node.O0_CANDIDATE_C5, CodexD2Node.O0_CANDIDATE_NARRATIVE,
+        CodexD2Node.O0_REVIEW_C1, CodexD2Node.O0_REVIEW_C3, CodexD2Node.O0_REVIEW_C5,
+    }
+    assert luna_nodes <= set(counts)
+    for item in worker.requests:
+        expected = ("gpt-6-luna", "max") if item.node in luna_nodes else (
+            "gpt-6.1-sol", "medium"
+        )
+        assert (item.model, item.effort) == expected
     assert counts[CodexD2Node.O1_OPEN_DISCOVERY] == 1
     assert worker.scan_commits == 1
     assert counts[CodexD2Node.O1_DISCOVERY_SCAN] == 0

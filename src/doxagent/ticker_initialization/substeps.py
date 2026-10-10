@@ -157,6 +157,8 @@ def _codec(kind: str, arguments: dict[str, Any]) -> Any:
         from doxagent.workflows.codex_document1.schema import NodeOutput
 
         return TypeAdapter(tuple[NodeOutput, ArtifactRef])
+    if kind == "d3_v21":
+        return TypeAdapter(dict[str, Any])
     if kind == "d2":
         return _D2Codec(arguments["output_model"])
     if kind in {"o2", "o2_repair"}:
@@ -208,7 +210,9 @@ def durable(kind: str) -> Callable[[Callable[P, Awaitable[T]]], Callable[P, Awai
             bound = signature.bind(*args, **kwargs)
             bound.apply_defaults()
             arguments = bound.arguments
-            if kind in {"d1_assemble", "d1_publish"}:
+            if kind == "d3_v21":
+                logical = arguments["phase"] + ":" + arguments["owner"] + ":" + arguments["key"]
+            elif kind in {"d1_assemble", "d1_publish"}:
                 logical = kind.removeprefix("d1_")
             elif kind == "o2_repair":
                 logical = arguments["attempt_id"]

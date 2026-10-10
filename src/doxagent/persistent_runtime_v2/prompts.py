@@ -14,6 +14,7 @@ class RuntimeV2PromptSet:
     w1_r3: str
     w2_r1: str
     w2_r2: str
+    w2_r3: str | None = None
 
     @classmethod
     def load(cls, root: Path | None = None) -> RuntimeV2PromptSet:
@@ -32,6 +33,7 @@ class RuntimeV2PromptSet:
             w1_r3=read("w1_r3.md"),
             w2_r1=read("w2_r1.md"),
             w2_r2=read("w2_r2.md"),
+            w2_r3=read("w2_r3.md"),
         )
 
     def instructions(self, round_prompt: str) -> str:

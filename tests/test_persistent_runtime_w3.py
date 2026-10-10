@@ -325,7 +325,7 @@ def test_w3_uses_explicit_activation_d1_d2_without_following_current_or_lineage(
     assert runtime.current_document2_reads == 0
 
 
-def test_published_w3_context_filters_consumed_policy_even_when_heavy_context_is_cached() -> None:
+def test_published_w3_context_filters_legacy_consumption_with_shared_freeze_enabled() -> None:
     runtime = _PublishedContextRuntime()
     policies = _PublishedContextPolicies()
     policy = Policy(

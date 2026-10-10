@@ -47,6 +47,8 @@ from doxagent.persistent_runtime_v2.schema import (
     W1Round1Result,
     W2MatchedConditions,
     W2PolicyResult,
+    W2PolicyAssessmentResult,
+    W2NovelFactAlignmentResult,
     W2Round1RecallResult,
     W3CaseResult,
     W3ContextVersionPin,
@@ -85,7 +87,7 @@ from doxagent.workflows.codex_document3.schema import (
         ("NEW", True, False, True, "W3"),
         ("NEW", False, False, True, "W3"),
         ("NEW", True, True, False, "W3"),
-        ("NEW", False, True, False, "TRADE"),
+        ("NEW", False, True, False, "W3"),
         ("NEW", True, False, False, "W3"),
         ("NEW", False, False, False, "W3"),
         ("OLD", True, True, True, "W3"),
@@ -93,7 +95,7 @@ from doxagent.workflows.codex_document3.schema import (
         ("OLD", True, False, True, "W3"),
         ("OLD", False, False, True, "W3"),
         ("OLD", True, True, False, "W3"),
-        ("OLD", False, True, False, "ARCHIVE"),
+        ("OLD", False, True, False, "W3"),
         ("OLD", True, False, False, "W3"),
         ("OLD", False, False, False, "ARCHIVE"),
     ],
@@ -587,7 +589,7 @@ class _AnyResponses(_FakeResponses):
                 self.calls.append(request)
             policies = request.payload["runtime_policy_projection"]["policies"]
             value: Any = W2Round1RecallResult(candidate_policy_ids=["pol_any"] if policies else [])
-        elif request.output_model is W2PolicyResult:
+        elif request.output_model in {W2PolicyResult, W2PolicyAssessmentResult}:
             with self._lock:
                 self.calls.append(request)
             policies = request.payload["policy_details"]["policies"]
@@ -601,6 +603,18 @@ class _AnyResponses(_FakeResponses):
                 confidence="normal",
                 reason="one ANY condition confirmed" if policies else "policy already consumed",
             )
+            if request.output_model is W2PolicyAssessmentResult:
+                value = W2PolicyAssessmentResult(
+                    policy_hit=bool(value.policy_ids), policy_related=False,
+                    policy_ids=value.policy_ids, hit_condition_ids=value.matched_condition_ids,
+                    confidence=value.confidence, reason=value.reason,
+                )
+        elif request.output_model is W2NovelFactAlignmentResult:
+            with self._lock:
+                self.calls.append(request)
+            value = W2NovelFactAlignmentResult(condition_results=[
+                {"condition_ids": ["pol_any/C1", "pol_any/C2"], "is_new": True}
+            ])
         else:
             return super().complete(request)
         return RuntimeResponsesResult(
@@ -851,58 +865,27 @@ def test_w1_model_views_exclude_runtime_and_event_library_audit_fields() -> None
     }
 
 
-def test_any_policy_is_consumed_once_and_removed_from_next_w2_input(tmp_path: Path) -> None:
+def test_policy_hits_route_to_w3_without_freezing_next_w2_input(tmp_path: Path) -> None:
     repository = SQLitePersistentRuntimeV2Repository(tmp_path / "runtime-v2-consumption.sqlite3")
     responses = _AnyResponses()
     service = PersistentRuntimeV2Service(
-        repository=repository,
-        responses=responses,
-        known_events=_FakeKnownEvents(),
-        policies=_AnyPolicies(),
-        retry_delays_seconds=(0, 0),
-        sleep=lambda _seconds: None,
-        dispatch_effects=False,
+        repository=repository, responses=responses, known_events=_FakeKnownEvents(),
+        policies=_AnyPolicies(), retry_delays_seconds=(0, 0),
+        sleep=lambda _seconds: None, dispatch_effects=False,
     )
-
-    first = service.execute_message(_source())
-    assert first.route is not None and first.route.primary_route is RuntimePrimaryRoute.TRADE
-    first_w2_calls = [
-        request
-        for request in responses.calls
-        if request.output_model in {W2Round1RecallResult, W2PolicyResult}
-    ]
-    assert [request.output_model for request in first_w2_calls] == [
-        W2Round1RecallResult,
-        W2PolicyResult,
-    ]
-    assert first.w2_round1 == W2Round1RecallResult(candidate_policy_ids=["pol_any"])
-    assert first_w2_calls[1].cache_context_keys == ("policy_details",)
-    assert set(first_w2_calls[1].payload) == {"source_message", "policy_details"}
-    assert service.process_pending_effects() == 2
-    trades = repository.list_daily_trades("MU", first.trading_date)
-    assert len(trades) == 1
-    assert trades[0].activation_revision == _AnyPolicies.record.activation_revision
-    assert trades[0].matched_condition_ids == ["C1", "C2"]
-    r3_request = next(
-        request for request in responses.calls if request.output_model is W1FactExtractionResult
-    )
-    assert set(r3_request.payload) == {"source_message", "w1_final"}
-    assert r3_request.payload["w1_final"] == {
-        "result": "NEW",
-        "reference_ids": [],
-        "reason": "new qualification fact",
-    }
-    assert "Current Capture Mode" in r3_request.instructions
-    assert "`NEW_CAPTURE`" in r3_request.instructions
-
-    second_source = _source().model_copy(
-        update={"source_message_id": "msg-2", "stream_item_id": "stream-msg-2"}
-    )
-    second = service.execute_message(second_source)
-    assert second.w2_final is not None and second.w2_final.policy_ids == []
-    assert second.route is not None and second.route.primary_route is RuntimePrimaryRoute.W3
-    assert len(repository.list_daily_trades("MU", first.trading_date)) == 1
-    service.close()
+    try:
+        first = service.execute_message(_source())
+        assert first.route.primary_route is RuntimePrimaryRoute.W3
+        assert first.first_round_tags == ["FIRST_ROUND_TRADE"]
+        assert repository.list_daily_trades("MU", first.trading_date) == []
+        r3 = next(r for r in responses.calls if r.output_model is W2NovelFactAlignmentResult)
+        assert r3.payload == {"w1_r2_reason": first.w1_final.reason}
+        assert r3.inherit_context and r3.previous_response_id == "resp-w2"
+        second = service.execute_message(_source().model_copy(update={"source_message_id": "msg-2"}))
+        assert second.w2_final.policy_hit and second.w2_final.policy_ids == ["pol_any"]
+        assert repository.list_consumed_policy_revisions("MU") == set()
+    finally:
+        service.close()
 
 
 @pytest.mark.parametrize("repository_kind", ["memory", "sqlite"])

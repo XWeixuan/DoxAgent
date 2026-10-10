@@ -46,6 +46,8 @@ class NodeResult(Model):
 
 
 class RunRecord(Model):
+    document2_schema_version: str = "document2.v2"
+    document3_orchestration_version: str = "v2"
     schema_version: str = "ticker-initialization-v2"
     initialization_id: str
     ticker: str

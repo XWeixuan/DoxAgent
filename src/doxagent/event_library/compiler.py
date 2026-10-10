@@ -5,7 +5,6 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-import unicodedata
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Literal, cast
@@ -35,10 +34,9 @@ from doxagent.event_library.reference_review import occurrence_anchor, occurrenc
 from doxagent.event_library.repository import EventLibraryRepository
 
 REFERENCE_VIEW_CONTRACT_VERSION = "reference-view-md-v4"
-KNOWN_EVENT_INDEX_CONTRACT_VERSION = "known-event-index-v2"
+KNOWN_EVENT_INDEX_CONTRACT_VERSION = "known-event-index-v3"
 _EASTERN = ZoneInfo("America/New_York")
 _ISO_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
-_TRAILING_SUMMARY_BOILERPLATE = {"event", "occurrence"}
 
 
 def _json_text(value: object) -> str:
@@ -74,21 +72,6 @@ def _display_occurrence_time(value: str | None) -> str:
     if parsed.tzinfo is None:
         return parsed.date().isoformat() if parsed.time().isoformat() == "00:00:00" else cleaned
     return parsed.astimezone(_EASTERN).date().isoformat()
-
-
-def _summary_key(value: str) -> list[str]:
-    normalized = unicodedata.normalize("NFKC", value).casefold()
-    return re.findall(r"[a-z0-9]+", normalized)
-
-
-def _summary_duplicates_title(*, title: str, summary: str) -> bool:
-    title_tokens = _summary_key(title)
-    summary_tokens = _summary_key(summary)
-    if summary_tokens == title_tokens:
-        return True
-    while summary_tokens and summary_tokens[-1] in _TRAILING_SUMMARY_BOILERPLATE:
-        summary_tokens.pop()
-    return summary_tokens == title_tokens
 
 
 def _event_order(events: list[CanonicalEvent]) -> list[CanonicalEvent]:
@@ -176,10 +159,8 @@ class EventLibraryViewCompiler:
             cells = [
                 event.event_id,
                 _wire_cell(_display_occurrence_time(event.occurred_at)),
-                _wire_cell(event.title),
+                _wire_cell(event.known_event_summary),
             ]
-            if not _summary_duplicates_title(title=event.title, summary=event.known_event_summary):
-                cells.append(_wire_cell(event.known_event_summary))
             lines.append(" | ".join(cells))
         return "" if not lines else "\n".join(lines) + "\n"
 

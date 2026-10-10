@@ -12,14 +12,34 @@ class ExecutionBundles:
     def __init__(self, journal: RuntimeJournal) -> None:
         self.journal = journal
 
-    def publish(self, prompts: RuntimeV2PromptSet, *, assets: dict[str, str] | None = None) -> str:
+    def publish(
+        self,
+        prompts: RuntimeV2PromptSet,
+        *,
+        assets: dict[str, str] | None = None,
+        orchestration_revision: int | None = None,
+    ) -> str:
         value: dict[str, Any] = {
             "compatibility": 1,
+            "orchestration_revision": orchestration_revision or (2 if prompts.w2_r3 else 1),
             "prompts": asdict(prompts),
             "assets": assets or {},
         }
-        if any(not item.strip() for item in value["prompts"].values()):
+        if any(item is not None and not item.strip() for item in value["prompts"].values()):
             raise ValueError("empty runtime prompt")
+        if value["orchestration_revision"] >= 3:
+            from .schema import W3CaseResultV3
+            from doxagent.workflows.codex_document3.schema import strict_json_schema
+
+            schema = strict_json_schema(W3CaseResultV3.model_json_schema())
+            value["contracts"] = dict(
+                policy_schema="document3.v3",
+                projection_schema="document3.runtime_projection.v5",
+                maintenance_feed="persistent-runtime.o3-maintenance-feed.v2",
+                w3_result="persistent-runtime.w3-result.v3",
+                w3_output_schema=schema,
+                w3_output_schema_hash=digest(schema),
+            )
         identity = self.journal.freeze(value)
         self.journal.set("execution", "active", identity)
         return identity
@@ -46,15 +66,24 @@ class ExecutionBundles:
             assets[name] = content.decode("utf-8")
         if manifest_path.read_bytes() != raw:
             raise ValueError("execution manifest changed during load")
+        revision = manifest.get("orchestration_revision", 1)
         prompts = RuntimeV2PromptSet(
             **{
                 name: assets[f"{name}.md"].strip()
-                for name in ("core", "w1_r1", "w1_r2", "w1_r3", "w2_r1", "w2_r2")
+                for name in (
+                    "core",
+                    "w1_r1",
+                    "w1_r2",
+                    "w1_r3",
+                    "w2_r1",
+                    "w2_r2",
+                    *(["w2_r3"] if revision >= 2 else []),
+                )
             }
         )
         active = self.journal.get("execution", "active")
         previous = self.get(active)["assets"] if active else {}
-        return self.publish(prompts, assets={**previous, **assets})
+        return self.publish(prompts, assets={**previous, **assets}, orchestration_revision=revision)
 
     def get(self, identity: str) -> dict[str, Any]:
         value = self.journal.snapshot(identity)

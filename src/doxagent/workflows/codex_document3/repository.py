@@ -11,6 +11,8 @@ from typing import Any, Protocol
 
 from doxagent.postgres import connect_postgres, record_postgres_failure
 
+from .consumer_contracts import parse_policy_set, policy_details
+
 from .schema import (
     RUNTIME_POLICY_PROJECTION_VERSION,
     PolicyDetailSnapshot,
@@ -66,6 +68,10 @@ def _project(policy_set: PolicySet) -> RuntimePolicyProjection:
     # Kept lazy to avoid a repository/runtime-consumer import cycle.
     from .runtime_projection import project_policy_set
 
+    if policy_set.schema_version == "document3.v3":
+        from .runtime_projection import project_policy_set_v3
+        from .consumer_contracts import RuntimePolicyProjectionV5
+        return RuntimePolicyProjectionV5.model_validate(project_policy_set_v3(policy_set))
     return project_policy_set(policy_set)
 
 
@@ -87,15 +93,8 @@ def _policy_details(
     version: int,
     policy_ids: list[str],
 ) -> PolicyDetailSnapshot:
-    requested = list(dict.fromkeys(item.strip() for item in policy_ids if item.strip()))
-    by_id = {policy.policy_id: policy for policy in policy_set.policies} if policy_set else {}
-    return PolicyDetailSnapshot(
-        ticker=ticker.upper(),
-        policy_set_version=version,
-        requested_policy_ids=requested,
-        policies=[by_id[item] for item in requested if item in by_id],
-        missing_policy_ids=[item for item in requested if item not in by_id],
-    )
+    return policy_details(policy_set, ticker=ticker, version=version, policy_ids=policy_ids)
+
 
 
 def _decode_projection(policy_set_payload: Any, projection_payload: Any) -> RuntimePolicyProjection:
@@ -111,6 +110,7 @@ def _decode_projection(policy_set_payload: Any, projection_payload: Any) -> Runt
         "document3.runtime_projection.v2",
         "document3.runtime_projection.v3",
         RUNTIME_POLICY_PROJECTION_VERSION,
+        "document3.runtime_projection.v5",
     }:
         return upgrade_runtime_projection(raw_projection)
     from .runtime_projection import RuntimeProjectionCompatibilityError
@@ -301,7 +301,7 @@ class SQLiteDocument3PolicyRepository:
                 "WHERE policy_count IS NULL OR runtime_projection_json IS NULL"
             ).fetchall()
             for row in rows:
-                policy_set = PolicySet.model_validate_json(row["policy_set_json"])
+                policy_set = parse_policy_set(row["policy_set_json"])
                 connection.execute(
                     "UPDATE codex_document3_policy_sets "
                     "SET policy_count = ?, runtime_projection_json = ? "
@@ -322,7 +322,7 @@ class SQLiteDocument3PolicyRepository:
     def _read_one(self, query: str, args: tuple[Any, ...]) -> PolicySet | None:
         with self._connect() as connection:
             row = connection.execute(query, args).fetchone()
-        return PolicySet.model_validate_json(row["policy_set_json"]) if row else None
+        return parse_policy_set(row["policy_set_json"]) if row else None
 
     def get_current(self, ticker: str) -> PolicySet | None:
         return self._read_one(
@@ -435,7 +435,7 @@ class SQLiteDocument3PolicyRepository:
                 (policy_set.ticker.upper(), version),
             ).fetchone()
             if existing:
-                if PolicySet.model_validate_json(existing[0]) != policy_set:
+                if parse_policy_set(existing[0]) != policy_set:
                     raise ValueError("immutable candidate Policy Set conflict")
                 return
             connection.execute(
@@ -445,7 +445,7 @@ class SQLiteDocument3PolicyRepository:
                 (
                     policy_set.ticker.upper(),
                     version,
-                    policy_set.publication_state.value,
+                    getattr(policy_set.publication_state, "value", policy_set.publication_state),
                     len(policy_set.policies),
                     policy_set.model_dump_json(),
                     _project(policy_set).model_dump_json(),
@@ -492,7 +492,7 @@ class SQLiteDocument3PolicyRepository:
                 (
                     key,
                     policy_set.policy_set_version,
-                    policy_set.publication_state.value,
+                    getattr(policy_set.publication_state, "value", policy_set.publication_state),
                     len(policy_set.policies),
                     policy_set.model_dump_json(),
                     _project(policy_set).model_dump_json(),
@@ -527,7 +527,7 @@ class PostgresDocument3PolicyRepository:
         if row is None:
             return None
         payload = row[0]
-        return PolicySet.model_validate(payload)
+        return parse_policy_set(payload)
 
     def get_current(self, ticker: str) -> PolicySet | None:
         with self._connect() as connection, connection.cursor() as cursor:
@@ -647,7 +647,7 @@ class PostgresDocument3PolicyRepository:
                 (
                     key,
                     policy_set.policy_set_version,
-                    policy_set.publication_state.value,
+                    getattr(policy_set.publication_state, "value", policy_set.publication_state),
                     policy_set.document2_ref.run_id,
                     (
                         policy_set.event_library_ref.version

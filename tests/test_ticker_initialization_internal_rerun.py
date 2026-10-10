@@ -198,6 +198,9 @@ def _durable_invocation_cases() -> dict[tuple[str, str, str], dict[str, object]]
             "artifact_key": None,
             "initialization_id": "init-mu-1",
         },
+        ("workflows/codex_document3/runner_v21.py", "turn", "d3_v21"): {
+            "run_id": "d3-run", "ticker": "MU", "owner": "s001", "phase": "build", "key": "research:0", "as_of": now, "inputs": {"ref": "context/input.json"}, "outputs": ["output/work/result.json"], "task": {"topics": []},
+        },
         ("workflows/codex_document3/runner.py", "_run_with_resume", "d3"): {
             "run_id": "d3-run",
             "ticker": "MU",
@@ -338,7 +341,7 @@ async def test_real_d3_shell_compile_rerun_only_invokes_selected_wave_in_pre_nod
     )
     monkeypatch.setattr(adapter, "_runner", lambda *a: (orchestrator, runner._run_with_resume))
     result = await InitializationWorker(control, lambda _: adapter).run_once()
-    assert result.status == "SUCCEEDED", result.error
+    assert result.status == "SUCCEEDED", (result.error, [(n.key,n.error) for n in control.nodes(rerun.initialization_id)])
     assert [r.node for r in model.requests[count:]] == [CodexD3Node.O3_POLICY_COMPILE]
     assert all(r.run_id != "original" for r in model.requests[count:])
     assert store.inventory("original") == before

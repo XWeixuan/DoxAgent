@@ -109,6 +109,10 @@ class UnifiedRuntimeSchedulerService:
             raise ValueError("Activated Runtime Index/Projection is unavailable")
         if bus.repository.get_ticker_state(normalized) is None:
             raise ValueError("Message Bus must admit the ticker before Runtime")
+        if isinstance(runtime.journal, RuntimeJournal) and isinstance(loader, ActivatedRuntimeInputs):
+            from doxagent.persistent_runtime_v2.policy_consumption import admit_revision
+            admit_revision(runtime.journal, revision=loader.control.revision(revision_id),
+                           policy_repository=loader.policies._policy_sets)
         initial_offset = bus.initialize_runtime_cursor(RUNTIME_V2_CONSUMER_ID, normalized)
         current_time = _utc(now)
         state = self.repository.get_state(normalized) or TickerRunState(

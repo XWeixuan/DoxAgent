@@ -137,7 +137,7 @@ function Policies({
     p.get("shell") === "ALL"
       ? "ALL"
       : (items.find((s) => s.shell_id === p.get("shell"))?.shell_id ??
-        items[0]?.shell_id ??
+        data.default_shell_id ??
         "ALL");
   const filter = (filters.find((x) => x[0] === p.get("filter"))?.[0] ??
     "ACTIVE") as PolicyFilter;
@@ -252,11 +252,11 @@ function Policies({
             {items.map((s) => (
               <button
                 key={s.shell_id}
-                title={s.core_question}
+                title={"name" in s ? s.name : s.core_question}
                 aria-pressed={shell === s.shell_id}
                 onClick={() => set("shell", s.shell_id)}
               >
-                {s.core_question}
+                {"name" in s ? s.name : s.core_question}
               </button>
             ))}
             {(shells.hasNextPage || (!allShells && data.shells.has_more)) && (
@@ -329,7 +329,7 @@ function Policies({
                   .map((s) => ({
                     key: s.policy_id,
                     target: "policy-" + s.policy_id,
-                    id: s.decision,
+                    id: "decision" in s ? s.decision : s.directions.join(" / "),
                     title: s.title,
                   }))}
                 onSelect={(key) => set("policy", key)}
@@ -386,30 +386,50 @@ function PolicyBody({
           <PolicyDocument
             ticker={ticker}
             policy={d.policy}
-            sourceRun={d.source_document2.run_id}
+            sourceRun={d.source_document2?.run_id ?? ""}
+            eligibility={
+              "directions" in d.summary
+                ? {
+                    executable: d.summary.executable_directions,
+                    consumed: d.summary.consumed_directions,
+                  }
+                : undefined
+            }
           />
         )}
       </Module>
     </div>
   );
 }
-function PolicyDocument({
+export function PolicyDocument({
   ticker,
   policy,
   sourceRun,
+  eligibility,
 }: {
   ticker: string;
   policy: Policy;
   sourceRun: string;
+  eligibility?: { executable: string[]; consumed: string[] };
 }) {
   return (
     <article className="policy-document">
       <header>
-        <span className={`decision decision-${policy.decision.toLowerCase()}`}>
-          {policy.decision}
-        </span>
+        {"decision" in policy && (
+          <span
+            className={`decision decision-${policy.decision.toLowerCase()}`}
+          >
+            {policy.decision}
+          </span>
+        )}
         <h2>{policy.title}</h2>
       </header>
+      {"transmission" in policy && (
+        <section>
+          <h3>经济传导</h3>
+          <p>{policy.transmission}</p>
+        </section>
+      )}
       <section>
         <h3>
           <Crosshair aria-hidden="true" />
@@ -426,6 +446,25 @@ function PolicyDocument({
           <article className="condition" key={c.condition_id}>
             <span className="condition-number">{i + 1}</span>
             <div>
+              {"decision" in c && (
+                <p>
+                  <span
+                    className={`decision decision-${c.decision.toLowerCase()}`}
+                  >
+                    {c.decision}
+                  </span>{" "}
+                  · {c.trigger_layer}
+                  {eligibility && (
+                    <span className="domain-tag">
+                      {eligibility.consumed.includes(c.decision)
+                        ? "该方向已消费"
+                        : eligibility.executable.includes(c.decision)
+                          ? "该方向可执行"
+                          : "方向资格未确认"}
+                    </span>
+                  )}
+                </p>
+              )}
               <h4>{c.criterion}</h4>
               <dl>
                 <dt>参考状态</dt>
@@ -443,14 +482,16 @@ function PolicyDocument({
           关联预期
         </h3>
         <div className="source-links">
-          {policy.source_refs.map((s, i) => (
-            <Link
-              key={i}
-              to={`/ticker/${id(ticker)}/expectations?run=${id(sourceRun)}&shell=${id(s.shell_id)}&unit=${id(s.expectation_id)}&content=GAPS&item=${id(s.gap_id)}`}
-            >
-              {s.shell_id} / {s.expectation_id} / {s.gap_id}
-            </Link>
-          ))}
+          {"source_refs" in policy
+            ? policy.source_refs.map((s, i) => (
+                <Link
+                  key={i}
+                  to={`/ticker/${id(ticker)}/expectations?run=${id(sourceRun)}&shell=${id(s.shell_id)}&unit=${id(s.expectation_id)}&content=GAPS&item=${id(s.gap_id)}`}
+                >
+                  {s.shell_id} / {s.expectation_id} / {s.gap_id}
+                </Link>
+              ))
+            : policy.ref.map((ref, i) => <span key={i}>{ref}</span>)}
         </div>
       </section>
     </article>
@@ -492,7 +533,7 @@ function PinnedPolicy({
       const data = artifact as PolicySetDownload;
       const policy = data.policies.find((item) => item.policy_id === policyId);
       if (!policy) throw new Error("引用的 Policy 不在该版本中");
-      return { policy, sourceRun: data.document2_ref.run_id };
+      return { policy, sourceRun: data.document2_ref?.run_id ?? "" };
     },
   });
   useEffect(() => {

@@ -15,7 +15,7 @@ from .usage import cost, observations
 
 
 def hot_path_contributions(store: Any, case: dict[str, Any]) -> list[dict]:
-    """Recovered R1/R2 intervals determine wall time, excluding W1 R3 extraction."""
+    """R1/R2 plus W2 R3 determine wall time; W1 extraction runs outside this interval."""
     ticker, identity = case["source"]["snapshot"]["ticker"], case["case_id"]
     value = None
     if case["runtime_mode"] == "REALTIME" and case.get("w1_final") and case.get("w2_final"):
@@ -28,7 +28,7 @@ def hot_path_contributions(store: Any, case: dict[str, Any]) -> list[dict]:
                     (ticker, identity),
                 )
             ]
-        turns = [turn for turn in turns if turn["round"] in {"R1", "R2"}]
+        turns = [turn for turn in turns if turn["round"] in {"R1", "R2"} or (turn["node_id"] == "W2" and turn["round"] == "R3")]
         if (
             turns
             and {turn["node_id"] for turn in turns} == {"W1", "W2"}
@@ -82,6 +82,7 @@ def turn_records(turn: dict[str, Any], case: dict[str, Any]) -> tuple[list[dict]
         "round": turn["round_name"],
         "ordinal": turn["attempt_number"],
         "attempt_number": turn["attempt_number"],
+        "context_mode": turn.get("context_mode", "EXPLICIT"),
         "status": "SUCCEEDED" if turn["status"] == "OK" else "FAILED",
         "timing": timing(turn.get("started_at"), turn.get("finished_at")),
         "error": ApiFailure(turn["error_code"]).payload(turn["turn_id"])["error"]

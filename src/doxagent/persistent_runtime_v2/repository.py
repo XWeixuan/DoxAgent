@@ -108,6 +108,8 @@ class PersistentRuntimeV2Repository(Protocol):
 
     def save_archive(self, value: ArchiveRecord) -> ArchiveRecord: ...
 
+    def has_trade_for_case(self, case_id: str) -> bool: ...
+
     def save_trade(self, value: TradeRecord) -> TradeRecord: ...
 
     def claim_policy_activation(self, value: PolicyActivationRecord) -> bool: ...
@@ -178,6 +180,7 @@ class InMemoryPersistentRuntimeV2Repository:
         self._archives: dict[str, ArchiveRecord] = {}
         self._trades: dict[str, TradeRecord] = {}
         self._policy_activations: dict[tuple[str, str, str], PolicyActivationRecord] = {}
+        self._direction_usage: dict[tuple[str, str, str], dict] = {}
         self._badcases: dict[str, BadcaseRecord] = {}
         self._w3_cases: dict[str, W3RouteCase] = {}
         self._w3_main_threads: dict[str, str] = {}
@@ -335,9 +338,37 @@ class InMemoryPersistentRuntimeV2Repository:
         with self._lock:
             return self._archives.setdefault(value.case_id, value)
 
+    def has_trade_for_case(self, case_id: str) -> bool:
+        return case_id in self._trades
+
     def save_trade(self, value: TradeRecord) -> TradeRecord:
         with self._lock:
             return self._trades.setdefault(value.case_id, value)
+
+    def direction_usage(self, ticker, policy_id, direction):
+        with self._lock:
+            return dict(
+                self._direction_usage.get(
+                    (ticker, policy_id, direction),
+                    dict(
+                        direction=direction, usage_generation=1, consumed=False, consumption_id=None
+                    ),
+                )
+            )
+
+    def save_direction_trade(self, value):
+        key = (value.ticker, value.executed_policy_id, value.decision.value)
+        with self._lock:
+            if value.case_id in self._trades:
+                return True
+            state = self.direction_usage(*key)
+            if state["consumed"] or state["usage_generation"] != value.usage_generation:
+                return False
+            self._direction_usage[key] = dict(
+                state, consumed=True, consumption_id=value.trade_record_id
+            )
+            self._trades[value.case_id] = value
+            return True
 
     def claim_policy_activation(self, value: PolicyActivationRecord) -> bool:
         key = (value.ticker.upper(), value.policy_id, value.activation_revision)
@@ -541,6 +572,7 @@ class SQLitePersistentRuntimeV2Repository:
     def __init__(self, path: str | Path) -> None:
         self.path = Path(path)
         from doxagent.v2_read.native_content import NativeContent
+
         self.content = NativeContent(self.path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self._lock = threading.RLock()
@@ -984,7 +1016,11 @@ class SQLitePersistentRuntimeV2Repository:
             current.updated_at = utc_now()
             db.execute(
                 "UPDATE runtime_v2_effects SET payload_json=?,updated_at=? WHERE effect_id=?",
-                (self.content.encode(current.model_dump(mode="json")), current.updated_at.isoformat(), effect.effect_id),
+                (
+                    self.content.encode(current.model_dump(mode="json")),
+                    current.updated_at.isoformat(),
+                    effect.effect_id,
+                ),
             )
 
     def save_effect(self, effect: RuntimeEffect) -> RuntimeEffect:
@@ -1158,6 +1194,15 @@ class SQLitePersistentRuntimeV2Repository:
 
     def save_archive(self, value: ArchiveRecord) -> ArchiveRecord:
         return self._insert_case_record("runtime_v2_archives", value, value.case_id)
+
+    def has_trade_for_case(self, case_id: str) -> bool:
+        with self._connect() as connection:
+            return (
+                connection.execute(
+                    "SELECT 1 FROM runtime_v2_trade_records WHERE case_id=? LIMIT 1", (case_id,)
+                ).fetchone()
+                is not None
+            )
 
     def save_trade(self, value: TradeRecord) -> TradeRecord:
         return self._insert_daily_record("runtime_v2_trade_records", value)
@@ -1466,11 +1511,13 @@ class SQLitePersistentRuntimeV2Repository:
             return
         ordered = sorted(wanted)
         for offset in range(0, len(ordered), 100):
-            ids = ordered[offset:offset+100]
+            ids = ordered[offset : offset + 100]
             rows = connection.execute(
                 f"SELECT case_id,payload_json FROM {table} WHERE daily_status='PENDING' "
-                f"AND json_extract(payload_json,'$.{id_field}') IN (" +
-                ",".join("?" for _ in ids) + ")", ids
+                f"AND json_extract(payload_json,'$.{id_field}') IN ("
+                + ",".join("?" for _ in ids)
+                + ")",
+                ids,
             ).fetchall()
             for row in rows:
                 value = model.model_validate_json(row["payload_json"])
@@ -1489,7 +1536,11 @@ class SQLitePersistentRuntimeV2Repository:
                 return type(value).model_validate_json(row[0])
             connection.execute(
                 f"INSERT INTO {table} (case_id, payload_json, created_at) VALUES (?, ?, ?)",
-                (case_id, self.content.encode(value.model_dump(mode="json")), _created_at(value).isoformat()),
+                (
+                    case_id,
+                    self.content.encode(value.model_dump(mode="json")),
+                    _created_at(value).isoformat(),
+                ),
             )
         return value
 

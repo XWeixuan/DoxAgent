@@ -144,7 +144,7 @@ def test_runtime_noop_activation_inherits_base_policy_run(tmp_path):
     )
 
 
-@pytest.mark.parametrize("attribution_recorded", [False, True, "resolved"])
+@pytest.mark.parametrize("attribution_recorded", [False, True, "resolved", "r3", "native"])
 def test_formal_activation_indexes_exact_documents_policy_and_library(
     tmp_path, attribution_recorded, monkeypatch
 ):
@@ -204,6 +204,20 @@ def test_formal_activation_indexes_exact_documents_policy_and_library(
     policy_set = _policy_set()
     d2 = source.get_published_document("d2-mu", "d2-artifact")
     policy_set.document2_ref.sha256 = d2.sha256
+    if attribution_recorded == "native":
+        from doxagent.workflows.codex_document2.schema import Document2DocumentV21
+        from tests.test_codex_document2_v21_orchestration import seed
+        from tests.test_runtime_policy_direction_usage import policy
+        from doxagent.workflows.codex_document3.schema_v21 import PolicySetV3
+        old_document=source.get_published_document("d2-mu","d2-artifact")
+        payload=json.loads(old_document.content_text)
+        payload.update(schema_version="document2.v2.1",shells=[seed()],shell_outcomes=[])
+        body=Document2DocumentV21.model_validate(payload).model_dump_json()
+        publish("d2-mu","d2-artifact",body,"document2","codex_document2_v1","d2_publish")
+        d2=source.get_published_document("d2-mu","d2-artifact")
+        d2ref=policy_set.document2_ref.model_copy(update={"sha256":d2.sha256})
+        policy_set=PolicySetV3(ticker="MU",policy_set_version=1,as_of=NOW,published_at=NOW,
+            publication_state="COMPLETE",document2_ref=d2ref,policies=[policy()])
     policy_ref = publish(
         "d3-mu",
         "policy",
@@ -256,6 +270,20 @@ def test_formal_activation_indexes_exact_documents_policy_and_library(
     assert store.get("research_download", "MU", "d1-mu")
     assert len([r for r in records if r["kind"] == "policy_detail"]) == 1
     assert store.get("activation", "MU", "active") is None
+    if attribution_recorded == "native":
+        detail=next(r["data"] for r in records if r["kind"]=="policy_detail")
+        assert detail["policy"]["transmission"]==policy_set.policies[0].transmission
+        assert detail["summary"]["directions"]==["LONG","SHORT"]
+        assert detail["summary"]["shell_ids"]==[]
+        shell=next(r["data"] for r in records if r["kind"]=="shell")
+        unit=next(r["data"] for r in records if r["kind"]=="unit")
+        assert shell["shell_id"]=="shell-0000" and shell["name"]=="demand"
+        assert unit["view_id"]=="d2-mu#/shells/0/units/0"
+        assert "expectation_id" not in unit and "expectation_baseline" in unit
+        from doxagent.v2_read.lifecycle import activate
+        changes,_=activate(store,"MU",active,"2026-10-10T12:00:00Z")
+        assert any(r["kind"]=="policy_change" and r["parent"]=="ALL" for r in changes)
+        return
     message = _source()
     store.ingest(
         "fixture",
@@ -294,7 +322,7 @@ def test_formal_activation_indexes_exact_documents_policy_and_library(
         "matched_condition_ids": [],
         "reason": "No hit",
     }
-    if attribution_recorded:
+    if attribution_recorded is True or attribution_recorded == "resolved":
         case["w1_final"]["fact_attributions"] = [{"event_id": "E99", "fact_ids": ["F7"]}]
         case["w1_final"]["reference_ids"] = ["E99"]
         case["w2_round1"] = {
@@ -314,6 +342,18 @@ def test_formal_activation_indexes_exact_documents_policy_and_library(
             reference_ids=[event_id],
             fact_attributions=[{"event_id": event_id, "fact_ids": [expected_fact]}],
         )
+    if attribution_recorded == "r3":
+        policy_record = next(r for r in records if r["kind"] == "policy_detail")
+        policy_id = policy_record["data"]["summary"]["policy_id"]
+        condition_id = policy_record["data"]["policy"]["activation_conditions"][0]["condition_id"]
+        case.update(orchestration_revision=2, first_round_tags=["POLICY_RELATED_EVENT"],
+                    w1_extraction={"candidates": [{"proposition": "New qualification"}]},
+                    w2_final={"policy_hit": False, "policy_related": True, "policy_ids": [],
+                              "hit_condition_ids": [], "matched_condition_ids": [
+                                  {"policy_id": policy_id, "condition_ids": [condition_id]}],
+                              "reason": "Related fact", "confidence": "normal"},
+                    w2_alignment={"condition_results": [
+                        {"condition_ids": [f"{policy_id}/{condition_id}"], "is_new": True}]})
     # Detail must never open the native Case's unrelated historical inputs.
     case["frozen_inputs"] = {"unrelated_history": "irrelevant" * 100000}
     seq = store.ingest(
@@ -364,6 +404,13 @@ def test_formal_activation_indexes_exact_documents_policy_and_library(
         assert data["document2"]["value"]["content_sha256"] == d2.sha256
         assert data["w1"]["data"]["reasoning"]["data"]["content_id"]
         assert "New facts" not in response.text
+        if attribution_recorded == "r3":
+            assert data["w1"]["data"]["extraction"]["data"] == {"capture_mode": "NEW_CAPTURE", "candidate_count": 1}
+            assert data["w2"]["data"]["policy_related"]["value"] is True
+            assert data["w2"]["data"]["novel_fact_alignment"]["status"] == "SUCCEEDED"
+            assert data["w2"]["data"]["novel_fact_alignment"]["policy_fact_novelty"]["value"] == "NEW"
+            assert data["w2"]["data"]["related_policies"][0]["condition_ids"] == [condition_id]
+            assert data["summary"]["first_round_tags"] == ["POLICY_RELATED_EVENT"]
         if attribution_recorded == "resolved":
             reference = data["w1"]["data"]["references"][0]
             assert reference["fact_ids"] == [expected_fact]
@@ -376,7 +423,7 @@ def test_formal_activation_indexes_exact_documents_policy_and_library(
                 reference["facts"][0]["proposition"]["value"]
                 == fact_record["data"]["fact"]["proposition"]
             )
-        elif attribution_recorded:
+        elif attribution_recorded is True:
             assert data["w1"]["state"] == "PARTIAL"
             assert data["w1"]["data"]["unresolved_reference_ids"] == ["E99"]
             assert data["w1"]["data"]["fact_attributions"] == [

@@ -44,6 +44,8 @@ class RuntimeResponsesRequest(Generic[T]):
     reasoning_effort: str | None = None
     cache_context_keys: tuple[str, ...] = ()
     previous_response_id: str | None = None
+    inherit_context: bool = False
+    replay_parent: tuple[str, str] | None = None
     metadata: dict[str, str] = field(default_factory=dict)
 
 
@@ -135,9 +137,15 @@ class BailianRuntimeResponsesClient:
             "store": True,
             "metadata": request.metadata,
         }
-        # previous_response_id remains part of local turn lineage, but is not sent.
-        # Every round receives its complete business context directly; inheriting a
-        # changing remote conversation prevents cross-Case prefix reuse.
+        if request.replay_parent is not None:
+            parent_input, parent_output = request.replay_parent
+            kwargs["input"] = [
+                {"role": "user", "content": parent_input},
+                {"role": "assistant", "content": parent_output},
+                {"role": "user", "content": input_text},
+            ]
+        elif request.inherit_context and request.previous_response_id:
+            kwargs["previous_response_id"] = request.previous_response_id
         if self.session_cache:
             kwargs["extra_headers"] = {"x-dashscope-session-cache": "enable"}
         try:
@@ -374,6 +382,28 @@ def _validation_error_summary(exc: Exception) -> str:
 def _safe_transport_error(exc: Exception) -> RuntimeResponsesError:
     message = str(exc).lower()
     name = type(exc).__name__.lower()
+    body = getattr(exc, "body", None)
+    detail = json.dumps(body, default=str).lower() if body is not None else message
+    if (
+        getattr(exc, "status_code", None) in (400, 404)
+        and ("previous_response_id" in detail or "previous response" in detail)
+        and any(
+            term in detail
+            for term in (
+                "not found",
+                "not_found",
+                "expired",
+                "does not exist",
+                "inaccessible",
+                "cannot be found",
+            )
+        )
+    ):
+        return RuntimeResponsesError(
+            "provider_previous_response_unavailable",
+            "Bailian previous response is unavailable",
+            retryable=True,
+        )
     if "401" in message or "unauthorized" in message or "authentication" in name:
         return RuntimeResponsesError(
             "provider_auth_failed",

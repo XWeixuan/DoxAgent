@@ -12,6 +12,7 @@ from pydantic import ValidationError
 from doxagent.semantic_clock import expires_at, semantic_day
 from doxagent.v2_control.repository import control_in, output_permission
 
+from . import policy_consumption
 from .fencing import assert_write_lease
 from .journal import RuntimeJournal, encode
 from .schema import PolicyActivationRecord, RuntimeCase, TradeRecord
@@ -153,13 +154,19 @@ class TradeOutputService:
                     "AND json_extract(payload,'$.trade.decision')=? "
                     "AND json_extract(payload,'$.status') NOT IN "
                     "('EXPIRED_SEMANTIC_DAY','DUPLICATE_POLICY',"
-                    "'DUPLICATE_REALTIME_OUTPUT','DUPLICATE_EVENT_TRADE') LIMIT 1",
+                    "'DUPLICATE_REALTIME_OUTPUT','DUPLICATE_EVENT_TRADE',"
+                    "'SELECTED_CONDITION_INVALID','POLICY_MIGRATION_UNRESOLVED') LIMIT 1",
                     (case.ticker, day.isoformat(), trade.decision.value),
                 ).fetchone()
                 if prior:
                     status = "DUPLICATE_REALTIME_OUTPUT"
             policy_claim = None
-            if status == "READY" and trade.executed_policy_id:
+            if (
+                policy_consumption.POLICY_AUTO_FREEZE_ENABLED
+                and status == "READY"
+                and trade.executed_policy_id
+                and trade.executed_condition_id is None
+            ):
                 claim = PolicyActivationRecord(
                     case_id=case.case_id,
                     source_message_id=case.source.source_message_id,
@@ -196,6 +203,17 @@ class TradeOutputService:
                     ).rowcount
                     if not inserted:
                         status = "DUPLICATE_EVENT_TRADE"
+            if status == "READY" and trade.executed_policy_id and trade.executed_condition_id:
+                if not trade.executed_condition_revision or trade.usage_generation is None:
+                    raise ValueError(
+                        "Condition output requires revision and frozen usage generation"
+                    )
+                status = policy_consumption.claim_ready_in_transaction(
+                    db, case=case, trade=trade, intent_id=identity, now=self.journal.clock()
+                )
+                if status == "POLICY_AUTHORIZATION_NOT_ADMITTED":
+                    # Retry against the admitted head without persisting a transient intent.
+                    return status
             if status == "READY" and policy_claim:
                 db.execute(
                     "INSERT OR IGNORE INTO runtime_v2_policy_activations VALUES(?,?,?,?,?,?,?,?)",
@@ -233,6 +251,9 @@ class TradeOutputService:
                 "trade": trade.model_dump(mode="json"),
                 "submitted": False,
                 "released_at": self.journal.clock().isoformat(),
+                "ready_accepted_at": self.journal.clock().isoformat()
+                if status == "READY"
+                else None,
             }
             profile = db.execute(
                 "SELECT payload FROM runtime_values "

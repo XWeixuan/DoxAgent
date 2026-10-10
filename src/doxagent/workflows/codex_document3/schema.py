@@ -651,6 +651,9 @@ class PolicySetVersionMetadata(ContractModel):
 
 
 class Document3Handoff(ContractModel):
+    document_schema_version: str | None = None
+    projection_schema_version: str | None = None
+    release_receipt: dict[str, Any] | None = None
     workflow_version: Literal["codex_document3_v1"] = CODEX_DOCUMENT3_WORKFLOW_VERSION
     ticker: str
     run_id: str

@@ -473,7 +473,7 @@ StandardMessage 本身没有进入流时间，必须通过 StreamMember/StreamIt
 | GET | `/tickers/{ticker}/runtime/cases/{case_id}` | V，`stream_cursor?` | CaseDetail |
 | GET | `/tickers/{ticker}/runtime/cases/{case_id}/attempts` | `node=W1|W2|W3`，可选 `view_id`（RUNTIME 固定水位），P | Page<ModelAttempt> |
 | GET | `/tickers/{ticker}/runtime/cases/{case_id}/messages` | V，P | Page<MessageSummary> |
-| GET | `/tickers/{ticker}/runtime/cases/{case_id}/candidates` | P，可选 `view_id`（RUNTIME 固定水位） | Page<Candidate> |
+| GET | `/tickers/{ticker}/runtime/cases/{case_id}/candidates` | P，可选 `view_id`（RUNTIME 固定水位）、`originating_node=W1_R3或W3`（过滤进入游标作用域） | Page<Candidate> |
 | GET | `/tickers/{ticker}/runtime/cases/{case_id}/executions` | P，可选 `view_id`（RUNTIME 固定水位） | Page<ExecutionSummary> |
 | GET | `/tickers/{ticker}/executions/{execution_id}` | `limit?`，可选 `view_id`（RUNTIME 固定水位） | ExecutionDetail |
 | GET | `/tickers/{ticker}/executions/{execution_id}/orders` | P，可选 `view_id`（RUNTIME 固定水位） | Page<OrderSummary> |

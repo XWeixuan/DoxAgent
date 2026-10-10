@@ -7,6 +7,8 @@ from datetime import date, datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+from doxagent.codex_runtime.node_models import node_model_config
+
 
 def render_config(
     *,
@@ -21,11 +23,13 @@ def render_config(
     ibkr: dict[str, str],
     runtime_env_file: Path,
     d2_discovery: bool = False,
+    node: str = "",
 ) -> str:
     control_root = case_root / ".control" / run_id / attempt_id
+    profile = node_model_config(node, model="gpt-6.1-sol", effort="high")
     lines = [
-        'model = "gpt-6.1-sol"',
-        'model_reasoning_effort = "high"',
+        f'model = "{profile["model"]}"',
+        f'model_reasoning_effort = "{profile["effort"]}"',
         'approval_policy = "never"',
         'sandbox_mode = "workspace-write"',
         "",

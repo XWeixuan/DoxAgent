@@ -36,7 +36,25 @@ def install(app: FastAPI) -> None:
         days = None if period["selected"] == "ALL" else period["current"]["trading_days"]
         previous = period["previous"]["trading_days"] if period["previous"] else None
         service = Metrics(store)
-        service.prime(("processed_cases","new_cases","old_cases","hit_cases","w3_cases","new_fact_candidates","executed_cases","policy_decided_cases","hot_path_seconds","hot_path_samples","w3_seconds","w3_samples"), [ticker], view["seq"], [days,previous or []])
+        service.prime(
+            (
+                "processed_cases",
+                "new_cases",
+                "old_cases",
+                "hit_cases",
+                "w3_cases",
+                "new_fact_candidates",
+                "executed_cases",
+                "policy_decided_cases",
+                "hot_path_seconds",
+                "hot_path_samples",
+                "w3_seconds",
+                "w3_samples",
+            ),
+            [ticker],
+            view["seq"],
+            [days, previous or []],
+        )
         values = {
             name: service.metric(name, [ticker], view["seq"], days=days, previous_days=previous)
             for name in (
@@ -82,6 +100,9 @@ def install(app: FastAPI) -> None:
             "TRADE_INTENT",
             "TRADE_EXECUTION",
             "TRADE_NOT_EXECUTED",
+            "FIRST_ROUND_TRADE",
+            "POLICY_RELATED_EVENT",
+            "SUSPECTED_DUPLICATE_HIT",
             "POLICY_HIT",
             "POLICY_RECALLED",
             "FAILURE",
@@ -149,8 +170,14 @@ def install(app: FastAPI) -> None:
 
     @app.get(prefix + "/cases/{case_id}/candidates")
     async def candidates(ticker: str, case_id: str, request: Request) -> Any:
-        args = query(request, {"limit", "cursor", "view_id"})
-        view = views.get(request.state.principal.user_id, args["view_id"], ticker) if args.get("view_id") else None
+        args = query(request, {"limit", "cursor", "view_id", "originating_node"})
+        if args.get("originating_node") not in (None, "W1_R3", "W3"):
+            raise ApiFailure("VALIDATION_FAILED", 422)
+        view = (
+            views.get(request.state.principal.user_id, args["view_id"], ticker)
+            if args.get("view_id")
+            else None
+        )
         if view and view["wire"]["page"] != "RUNTIME":
             raise ApiFailure("SCOPE_MISMATCH", 400)
         require_case(ticker, case_id, view["seq"] if view else None)
@@ -161,6 +188,7 @@ def install(app: FastAPI) -> None:
             view=view,
             view_id=args.get("view_id"),
             parent=case_id,
+            originating_node=args.get("originating_node"),
             limit=int(args.get("limit", 20)),
             cursor=args.get("cursor"),
         )

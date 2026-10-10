@@ -143,7 +143,13 @@ class FakeRuntime:
 
 
 @pytest.mark.asyncio
-async def test_full_four_node_sdk_pilot_reviews_each_call_and_exports_only_artifacts(rig, tmp_path):
+@pytest.mark.parametrize("explicit_override", [False, True])
+async def test_full_four_node_sdk_pilot_reviews_each_call_and_exports_only_artifacts(
+    rig, tmp_path, explicit_override
+):
+    if explicit_override:
+        rig.orchestrator.runner.model_override = "gpt-6.1-sol"
+        rig.orchestrator.runner.effort_override = "high"
     runtime = FakeRuntime(rig.worker)
     worker = Document3PilotWorker(rig.workspace.local, runtime)
     rig.orchestrator.runner.legacy._worker = worker
@@ -156,6 +162,13 @@ async def test_full_four_node_sdk_pilot_reviews_each_call_and_exports_only_artif
     business = [r for r in runtime.requests if r.output_schema != ISSUE_SCHEMA]
     audits = [r for r in runtime.requests if r.output_schema == ISSUE_SCHEMA]
     assert len(business) == len(audits) >= 4
+    for call, audit in zip(business, audits, strict=True):
+        expected = ("gpt-6.1-sol", "high") if explicit_override else (
+            ("gpt-6-luna", "max") if call.node.value == "d3_o3_build"
+            else ("gpt-6.1-sol", "medium")
+        )
+        assert (call.model, call.effort) == expected
+        assert (audit.model, audit.effort) == expected
     assert all(r.read_only and not r.data_mcp_enabled for r in audits)
     for call in business:
         if call.node.value != "d3_o3_integration":

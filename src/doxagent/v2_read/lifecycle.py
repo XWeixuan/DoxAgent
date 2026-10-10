@@ -5,6 +5,7 @@ from datetime import datetime
 from hashlib import sha256
 
 from doxagent.api_v2.dto import available, missing, validate
+from doxagent.persistent_runtime_v2 import policy_consumption
 from doxagent.semantic_clock import semantic_day
 
 from .repository import encode
@@ -48,7 +49,9 @@ def activate(store, ticker, active, at):
     version = active["policy_set"]["policy_set_version"]
     details = rows(store, "policy_detail", ticker, active["policy_set"]["artifact_id"])
     incoming = {
-        d["summary"]["policy_id"] + ":" + d["summary"]["policy_activation_revision"]: d
+        d["summary"]["policy_id"]
+        + ":"
+        + d["summary"].get("policy_activation_revision", d["summary"]["policy_revision_id"]): d
         for d in details.values()
     }
     catalog = rows(store, "policy_catalog", ticker)
@@ -83,13 +86,19 @@ def activate(store, ticker, active, at):
             )
         if not current:
             summary["effective"] = available(False)
-        consumed = store.get("policy_consumption", ticker, key)
+        if "directions" in summary:
+            summary = direction_summary(store, ticker, summary)
+        consumed = None if "directions" in summary else store.get("policy_consumption", ticker, key)
         if consumed:
             summary.update(
                 consumed=available(True),
                 consumed_at=available(consumed["activated_at"]),
-                effective=available(False),
+                effective=available(False)
+                if policy_consumption.POLICY_AUTO_FREEZE_ENABLED
+                else available(summary["lifecycle"] == "ACTIVE"),
             )
+        if not policy_consumption.POLICY_AUTO_FREEZE_ENABLED:
+            summary["effective"] = available(summary["lifecycle"] == "ACTIVE")
         records.append(
             {
                 "kind": "policy_catalog",
@@ -115,7 +124,7 @@ def activate(store, ticker, active, at):
             else ("RESTORE" if previous["lifecycle"] == "RETIRED" else "MODIFY" if paths else None)
         )
         if replaced:
-            change_type = "MODIFY"
+            change_type = "MODIFY" if paths else None
         if current is None and summary["policy_id"] in current_ids:
             change_type = None  # Superseded activation revision, not retired business Policy.
         if not at or change_type is None:
@@ -148,7 +157,9 @@ def activate(store, ticker, active, at):
             },
         )
         day = semantic_day(datetime.fromisoformat(at)).isoformat()
-        for shell in set(summary["shell_ids"]) | set(previous["shell_ids"] if previous else []):
+        for shell in (
+            set(summary["shell_ids"]) | set(previous["shell_ids"] if previous else [])
+        ) or {"ALL"}:
             records.append(
                 {
                     "kind": "policy_change",
@@ -193,6 +204,8 @@ def consumption_projection(store, capture):
     for ticker, key, payload in catalog:
         summary = json.loads(payload)
         before = dict(summary)
+        if "directions" in summary:
+            continue
         consumed = store.get("policy_consumption", ticker, key)
         admission = store.get("policy_admission", ticker, key) or {}
         first = admission.get("first_activated_at")
@@ -200,7 +213,9 @@ def consumption_projection(store, capture):
             summary.update(
                 consumed=available(True),
                 consumed_at=available(consumed["activated_at"]),
-                effective=available(False),
+                effective=available(False)
+                if policy_consumption.POLICY_AUTO_FREEZE_ENABLED
+                else available(summary["lifecycle"] == "ACTIVE"),
             )
         elif (
             covered
@@ -222,6 +237,8 @@ def consumption_projection(store, capture):
                 consumed_at=missing(),
                 effective=available(False) if summary["lifecycle"] == "RETIRED" else missing(),
             )
+        if not policy_consumption.POLICY_AUTO_FREEZE_ENABLED:
+            summary["effective"] = available(summary["lifecycle"] == "ACTIVE")
         if summary != before:
             records.append(
                 {
@@ -232,3 +249,55 @@ def consumption_projection(store, capture):
                 }
             )
     return records
+
+
+def direction_summary(store, ticker, summary, *, pending_state=None, admitted=False):
+    summary = dict(summary)
+    states = [
+        store.get(
+            "policy_direction_usage", ticker, encode([ticker, summary["policy_id"], direction])
+        )
+        for direction in summary["directions"]
+    ]
+    if pending_state:
+        states = [
+            pending_state if direction == pending_state["direction"] else state
+            for direction, state in zip(summary["directions"], states, strict=True)
+        ]
+    head = store.get("native:runtime_values", ticker, "policy_authorization_head:" + ticker)
+    known = admitted or head is not None or all(state is not None for state in states)
+    consumed = [
+        direction
+        for direction, state in zip(summary["directions"], states, strict=True)
+        if state and state["consumed"]
+    ]
+    with store.connect() as db:
+        unresolved = (
+            db.execute(
+                "SELECT 1 FROM object_current WHERE kind='native:runtime_values' "
+                "AND ticker=? AND id LIKE 'policy_consumption_migration:%' "
+                "AND json_extract(payload,'$.policy_id')=? AND json_extract(payload,'$.status')='UNRESOLVED' LIMIT 1",
+                (ticker, summary["policy_id"]),
+            ).fetchone()
+            is not None
+        )
+    executable = (
+        []
+        if unresolved
+        else [
+            direction
+            for direction, state in zip(summary["directions"], states, strict=True)
+            if direction not in consumed and (known or state is not None)
+        ]
+    )
+    summary.update(
+        consumed_directions=consumed,
+        executable_directions=executable,
+        consumed=available(len(consumed) == len(states)) if known else missing(),
+        effective=available(False)
+        if summary["lifecycle"] != "ACTIVE" or unresolved
+        else available(bool(executable))
+        if known or executable
+        else missing(),
+    )
+    return summary

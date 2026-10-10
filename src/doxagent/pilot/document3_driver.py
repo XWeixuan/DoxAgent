@@ -404,6 +404,9 @@ async def execute(args):
                 orchestration_version=request.get("orchestration_version", "v2.1"),
                 node_assets=request.get("node_assets"),
             )
+            if request.get("orchestration_version", "v2.1") == "v2.1":
+                orchestrator.runner.model_override = model
+                orchestrator.runner.effort_override = effort
             if hasattr(orchestrator, "_published_storage"):
                 orchestrator._published_storage = PilotPublishedCapture(root / "published")
             if (

@@ -21,7 +21,7 @@ from .event_branch import branch_library
 from .journal import RuntimeJournal, digest
 from .schema import (
     BadcaseRecord,
-    O3MaintenanceFeed,
+    O3MaintenanceFeedV2,
     ProvisionalFactDetail,
     TradeRecord,
     W3CoverageGapRecord,
@@ -65,11 +65,20 @@ class RuntimeMaintenance:
                 "Rebase maintenance records onto manual/current activation",
             )
         from .bounded_inputs import members, records
+
         membership = members(self.runtime.repository, self.journal, task)
         selected = {item["case_id"] for item in membership}
-        inputs = ({key: prior[key] for key in ("candidates", "trades", "badcases", "gaps")}
-                  if prior else records(self.runtime.repository, membership, ticker=task["ticker"]))
+        inputs = (
+            {key: prior[key] for key in ("candidates", "trades", "badcases", "gaps")}
+            if prior
+            else records(self.runtime.repository, membership, ticker=task["ticker"])
+        )
+        from .policy_consumption import consumption_feed
+
+        with self.journal.transaction(write=False) as db:
+            policy_consumption = consumption_feed(db, task["ticker"])
         frame = {
+            "policy_consumption": policy_consumption,
             "base": current,
             "run_id": "runtime-maintain-" + digest([task["id"], current["revision_id"]])[:24],
             **inputs,
@@ -105,6 +114,7 @@ class RuntimeMaintenance:
             except (KeyError, ValueError):
                 pass
         if existing and existing.get("runtime_metadata", {}).get("maintenance_id") == task["id"]:
+            self._admit(existing)
             self._consume(task, task["receipt"]["frame"])
             return {"revision_id": existing["revision_id"], "reconciled": True}
         frame = self._frame(task)
@@ -161,9 +171,9 @@ class RuntimeMaintenance:
             assets = {
                 key: value
                 for key, value in published_assets.items()
-                if key.startswith(("event_library/", "document3/"))
+                if key.startswith(("event_library/", "document3/", "open_event_atlas/"))
             }
-            for component in ("event_library", "document3"):
+            for component in ("event_library", "document3", "open_event_atlas"):
                 source = Path("prompts/codex_v2") / component
                 for path in source.rglob("*"):
                     if (
@@ -302,7 +312,8 @@ class RuntimeMaintenance:
                 int(event_ref["version"]),
                 published["version"],
             )
-            feed = O3MaintenanceFeed(
+            feed = O3MaintenanceFeedV2(
+                policy_consumption=frame.get("policy_consumption", []),
                 ticker=task["ticker"],
                 trading_date=day,
                 reference_view_delta=delta,
@@ -328,22 +339,65 @@ class RuntimeMaintenance:
                         "codex_published_storage_secret_key": None,
                     }
                 )
+                from doxagent.workflows.codex_document3.repository import (
+                    SQLiteDocument3PolicyRepository,
+                )
+
+                base_policy = SQLiteDocument3PolicyRepository(
+                    config.codex_runtime_sqlite_path
+                ).get_version(task["ticker"], int(base["artifacts"]["document3"]["version"]))
+                orchestration = (
+                    "v2.1" if base_policy and base_policy.schema_version == "document3.v3" else "v2"
+                )
                 o3 = (
                     self.o3_factory(config, durable)
                     if self.o3_factory
-                    else build_document3_orchestrator(config, worker=durable)
+                    else build_document3_orchestrator(
+                        config, worker=durable, orchestration_version=orchestration
+                    )
                 )
                 if hasattr(o3, "_agent"):
                     o3._agent._prompt_root = prompt_root / "document3"
-                result = await o3.maintain(
+                kwargs = dict(
                     ticker=task["ticker"],
                     event_library_version=published["version"],
                     base_policy_version=int(base["artifacts"]["document3"]["version"]),
                     run_id=run_id + "-o3",
-                    cutoff_at=cutoff,
                     maintenance_feed=feed,
-                    candidate_publication=True,
                 )
+                if hasattr(o3, "state"):
+                    from doxagent.workflows.codex_document3.assets_v21 import default_node_assets
+
+                    # Snapshot paths, never mutate the original prompt/skill files.
+                    o3.runner.assets = default_node_assets(
+                        prompt_root / "document3", prompt_root / "open_event_atlas"
+                    )
+                    result = await o3.maintain(**kwargs, as_of=cutoff)
+                    if str(result.status) not in {"NOOP", "DEGRADED", "FAILED"}:
+                        from doxagent.codex_runtime.repository import SQLiteCodexRuntimeRepository
+                        from doxagent.workflows.codex_document3.publication_v21 import (
+                            finalize_candidate_v21,
+                        )
+                        from doxagent.workflows.codex_document3.repository import (
+                            SQLiteDocument3PolicyRepository,
+                        )
+
+                        await finalize_candidate_v21(
+                            run_id + "-o3",
+                            published_storage=getattr(o3, "published_storage", None),
+                            state=o3.state,
+                            workspace=durable,
+                            runtime_repository=SQLiteCodexRuntimeRepository(
+                                config.codex_runtime_sqlite_path
+                            ),
+                            policy_repository=SQLiteDocument3PolicyRepository(
+                                config.codex_runtime_sqlite_path
+                            ),
+                        )
+                else:
+                    result = await o3.maintain(
+                        **kwargs, cutoff_at=cutoff, candidate_publication=True
+                    )
                 if str(result.status) in {"FAILED", "DEGRADED"}:
                     raise ValueError("O3 produced no usable maintenance output")
                 from .reference_capture import settle
@@ -375,6 +429,7 @@ class RuntimeMaintenance:
                 policy_ref=task["receipt"]["o3"],
                 metadata=metadata,
             )
+            self._admit(revision)
             self.journal.set("visibility", task["ticker"], {"day": metadata["visibility_day"]})
             self._consume(task, frame)
             return {"revision_id": revision["revision_id"]}
@@ -396,6 +451,19 @@ class RuntimeMaintenance:
         finally:
             if hasattr(worker, "aclose"):
                 await worker.aclose()
+
+    def _admit(self, revision):
+        from doxagent.workflows.codex_document3.repository import SQLiteDocument3PolicyRepository
+
+        from .policy_consumption import admit_revision
+
+        admit_revision(
+            self.journal,
+            revision=revision,
+            policy_repository=SQLiteDocument3PolicyRepository(
+                self.settings.codex_runtime_sqlite_path
+            ),
+        )
 
     def _consume(self, task: dict[str, Any], frame: dict[str, Any]) -> None:
         self.runtime.repository.mark_daily_records_processed(

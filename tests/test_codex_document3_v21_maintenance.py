@@ -40,6 +40,7 @@ async def test_maintain_single_node_feed_without_event_and_bad_condition_base_pr
     assert result.status == "PARTIAL"
     requests = rig.worker.requests[start:]
     assert len(requests) == 1 and requests[0].node == CodexD3Node.O3_MAINTAIN
+    assert (requests[0].model, requests[0].effort) == ("gpt-6-luna", "max")
     updated = rig.state.get_staged_v3("MU", result.handoff.policy_set_version)
     assert updated.policies == base.policies
     assert rig.policy.get_current_version("MU") == 1
@@ -264,3 +265,94 @@ async def test_malformed_gap_record_does_not_implicitly_close_base_gap(rig):
     )
     assert result.status == "PARTIAL"
     assert rig.state.run(result.run_id)["coverage"]["remaining_gaps"] == rig.worker.gaps
+
+
+@pytest.mark.asyncio
+async def test_rearm_requires_complete_upsert_and_only_activation_applies(rig):
+    from doxagent.persistent_runtime_v2.journal import RuntimeJournal
+    from doxagent.persistent_runtime_v2.policy_consumption import put_value, usage, admit_revision
+    from doxagent.workflows.codex_document3.publication_v21 import finalize_candidate_v21
+    from doxagent.persistent_runtime_v2.journal import encode
+
+    initial = await rig.orchestrator.initialize(ticker="MU", as_of=NOW, run_id="rearm-base")
+    version = initial.policy_set_version
+    base = rig.state.get_staged_v3("MU", version)
+    raw = base.policies[0].model_dump(mode="json")
+    pid = raw["policy_id"]
+    direction = raw["activation_conditions"][0]["decision"]
+    frozen = dict(
+        direction=direction, consumption_id="consumed-before-maintain", usage_generation=1
+    )
+    feed = dict(
+        contract_version="persistent-runtime.o3-maintenance-feed.v2",
+        policy_consumption=[dict(policy_id=pid, directions=[frozen])],
+    )
+    rig.worker.patch = dict(
+        base_policy_set_version=version,
+        upsert_policies=[raw],
+        retire_policy_ids=[],
+        rearm_requests=[
+            dict(policy_id=pid, reason="entire observation reassessed"),
+            dict(policy_id=pid, reason="illegal", direction=direction),
+        ],
+    )
+    result = await rig.orchestrator.maintain(
+        ticker="MU",
+        base_policy_version=version,
+        as_of=NOW,
+        maintenance_feed=feed,
+        run_id="rearm-grant",
+    )
+    assert result.status != "NOOP"
+    receipt = rig.state.get_staged_by_run(result.run_id)[1]
+    assert receipt["accepted_rearm"][0]["bindings"] == [frozen]
+    assert any(
+        i["field"] == "rearm_requests"
+        for i in rig.state.run(result.run_id)["parse_issues"][
+            "output/work/v21/maintenance_patch.json"
+        ]
+    )
+    journal = RuntimeJournal(rig.policy.path)
+    with journal.transaction() as db:
+        put_value(
+            db,
+            "policy_direction_usage",
+            encode(["MU", pid, direction]),
+            dict(
+                usage(db, "MU", pid, direction),
+                consumed=True,
+                consumption_id=frozen["consumption_id"],
+            ),
+        )
+    await finalize_candidate_v21(
+        result.run_id,
+        state=rig.state,
+        workspace=rig.workspace,
+        runtime_repository=rig.runtime,
+        policy_repository=rig.policy,
+    )
+    with journal.transaction(write=False) as db:
+        assert usage(db, "MU", pid, direction)["consumed"]
+    revision = dict(
+        ticker="MU",
+        revision_id="activated-rearm",
+        artifacts={"document3": dict(run_id=result.run_id, version=result.policy_set_version)},
+    )
+    admit_revision(journal, revision=revision, policy_repository=rig.policy)
+    admit_revision(journal, revision=revision, policy_repository=rig.policy)
+    with journal.transaction(write=False) as db:
+        state = usage(db, "MU", pid, direction)
+        assert not state["consumed"] and state["usage_generation"] == 2
+    rig.worker.patch = dict(
+        base_policy_set_version=version,
+        upsert_policies=[{"policy_id": pid, "title": raw["title"]}],
+        rearm_requests=[dict(policy_id=pid, reason="incomplete")],
+    )
+    rejected = await rig.orchestrator.maintain(
+        ticker="MU",
+        base_policy_version=version,
+        as_of=NOW,
+        maintenance_feed=feed,
+        run_id="rearm-incomplete",
+    )
+    assert not rig.state.run(rejected.run_id).get("accepted_rearm")

@@ -95,7 +95,7 @@ class Document3RuntimePolicyProvider:
         if policy_set is None:
             return None
         return next(
-            (policy.decision for policy in policy_set.policies if policy.policy_id == policy_id),
+            (getattr(policy, "decision", None) for policy in policy_set.policies if policy.policy_id == policy_id),
             None,
         )
 

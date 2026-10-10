@@ -26,18 +26,27 @@ from doxagent.codex_runtime.schema import (
 )
 from doxagent.codex_worker.schema import WorkerRunRequest
 from doxagent.event_library.provider import PublishedEventLibraryReader
-from doxagent.workflows.codex_document2.schema import Document2Bundle, Document2Document
+from doxagent.workflows.codex_document2.schema import (
+    Document2Bundle,
+    Document2Document,
+    Document2DocumentV21,
+)
+from doxagent.workflows.codex_document3.consumer_contracts import parse_document2
 from doxagent.workflows.codex_document3.repository import Document3PolicyRepository
 from doxagent.workflows.codex_document3.schema import PolicySet
+from doxagent.workflows.codex_document3.schema_v21 import PolicySetV3
 
+from . import policy_consumption
 from .schema import (
     RuntimeCase,
     W3CaseResult,
+    W3CaseResultV3,
     W3ContextVersionPin,
     W3Mode,
     W3RouteCase,
     W3ThreadKind,
     W3ThreadSlot,
+    parse_w3_result,
     strict_json_schema,
 )
 
@@ -56,8 +65,8 @@ class W3PreparedContext(BaseModel):
 
     version_pin: W3ContextVersionPin
     document1: str = Field(min_length=1)
-    document2: Document2Document
-    policy_set: PolicySet
+    document2: Document2DocumentV21 | Document2Document
+    policy_set: PolicySetV3 | PolicySet
     reference_view: str = Field(min_length=1)
     document2_publication_state: str
 
@@ -138,7 +147,7 @@ class PublishedW3ContextProvider:
             raise W3Error("w3_document2_unavailable", "Current Published D2 body is unavailable")
         d2_text = (await self._read_published(d2_published)).decode("utf-8")
         try:
-            document2 = Document2Document.model_validate_json(d2_text)
+            document2 = parse_document2(d2_text)
         except ValidationError as exc:
             raise W3Error("w3_document2_invalid", "Current Published D2 is invalid") from exc
         if document2.ticker.upper() != case.ticker:
@@ -203,7 +212,11 @@ class PublishedW3ContextProvider:
         return self._without_consumed_policies(prepared)
 
     def _without_consumed_policies(self, context: W3PreparedContext) -> W3PreparedContext:
-        if self._policy_consumption is None:
+        if (
+            isinstance(context.policy_set, PolicySetV3)
+            or not policy_consumption.POLICY_AUTO_FREEZE_ENABLED
+            or self._policy_consumption is None
+        ):
             return context.model_copy(deep=True)
         projection = self._policies.get_projection(
             context.policy_set.ticker,
@@ -383,7 +396,19 @@ class CodexW3AgentRunner:
         skill_files = {skill_name: read_asset("skills/" + skill_name)}
         if w3_case.mode is W3Mode.REVALIDATE_THEN_EVALUATE:
             skill_files["uncovered_new.md"] = read_asset("skills/uncovered_new.md")
-        schema = strict_json_schema(W3CaseResult.model_json_schema())
+        result_model = W3CaseResultV3 if case.orchestration_revision >= 3 else W3CaseResult
+        schema = case.frozen_inputs.get("w3_output_schema") or strict_json_schema(
+            result_model.model_json_schema()
+        )
+        if "w3_output_schema" not in case.frozen_inputs:
+            case.frozen_inputs["w3_output_schema"] = schema
+            from .journal import digest
+
+            case.frozen_inputs["w3_output_schema_hash"] = digest(schema)
+            if self._journal:
+                self._journal.set(
+                    "w3_case_contract", case.case_id, {"schema": schema, "sha256": digest(schema)}
+                )
         event_boundary = (
             case.source.published_at
             or case.source.message_bus_event_time
@@ -398,8 +423,25 @@ class CodexW3AgentRunner:
             "event_boundary_at": event_boundary.isoformat(),
             "source_message": case.source.model_dump(mode="json"),
             "original_w1": w3_case.w1_final.model_dump(mode="json"),
-            "original_w2": w3_case.w2_final.model_dump(mode="json"),
+            "original_w2": {
+                "policy_ids": w3_case.w2_final.policy_ids if w3_case.w2_final.policy_hit else [],
+                "matched_condition_ids": [
+                    g.model_dump(mode="json") for g in w3_case.w2_final.hit_condition_ids
+                ]
+                if w3_case.w2_final.policy_hit
+                else [],
+                "confidence": w3_case.w2_final.confidence.value,
+                "reason": w3_case.w2_final.reason,
+            },
+            "first_round_policy_assessment": w3_case.w2_final.model_dump(mode="json"),
+            "w2_alignment": w3_case.w2_alignment.model_dump(mode="json")
+            if w3_case.w2_alignment
+            else None,
+            "first_round_tags": [tag.value for tag in w3_case.first_round_tags],
+            "orchestration_revision": w3_case.orchestration_revision,
             "initial_route_reason": w3_case.route_reason,
+            "policy_usage": case.frozen_inputs.get("policy_usage", []),
+            "policy_watch_followup": case.frozen_inputs.get("policy_watch_followup", []),
             "context_version_pin": context.version_pin.model_dump(mode="json"),
             "document2_publication_state": context.document2_publication_state,
         }
@@ -486,7 +528,12 @@ class CodexW3AgentRunner:
                 invalid_thread=invalid_thread,
             )
         try:
-            result = W3CaseResult.model_validate_json(job.final_response)
+            result, watch_issues = parse_w3_result(
+                job.final_response, revision=case.orchestration_revision
+            )
+            if self._journal and watch_issues:
+                self._journal.set("policy_watch_validation", case.case_id,
+                    {"ticker": case.ticker, "case_id": case.case_id, "issues": watch_issues})
         except ValidationError as exc:
             if self._journal:
                 worker.reject_output("invalid structured output")
@@ -524,6 +571,21 @@ class CodexW3AgentRunner:
                 "w3_policy_reference_invalid",
                 "W3 returned a Policy ID outside the version-pinned PolicySet",
             )
+        if (
+            isinstance(result, W3CaseResultV3)
+            and result.policy_execution
+            and result.policy_execution.selected_condition
+        ):
+            selected = result.policy_execution.selected_condition
+            policies = {p.policy_id: p for p in context.policy_set.policies}
+            if not any(
+                c.condition_id == selected.condition_id
+                for c in policies[selected.policy_id].activation_conditions
+            ):
+                raise W3Error(
+                    "w3_condition_reference_invalid",
+                    "Selected Condition is outside the pinned Policy",
+                )
         event_ids = set(_EVENT_ID.findall(context.reference_view))
         if not set(result.novelty.reference_ids).issubset(event_ids):
             raise W3Error(

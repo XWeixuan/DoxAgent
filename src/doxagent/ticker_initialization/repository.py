@@ -241,6 +241,8 @@ class InitializationRepository:
             ):
                 raise InitializationError("ALREADY_INITIALIZED")
             run = RunRecord(
+                document2_schema_version="document2.v2.1",
+                document3_orchestration_version="v2.1",
                 initialization_id=f"init-{ticker.lower()}-{uuid4().hex}",
                 ticker=ticker,
                 research_cutoff_at=cutoff,

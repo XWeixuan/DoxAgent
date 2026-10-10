@@ -179,7 +179,7 @@ def _parser() -> argparse.ArgumentParser:
             command.add_argument("--capability-hours", type=int, default=24 * 365 * 10)
     for command in (case, *[commands.choices[name] for name in ("start", "continue")]):
         command.add_argument("--model")
-        command.add_argument("--effort", choices=["low", "medium", "high", "xhigh"])
+        command.add_argument("--effort", choices=["low", "medium", "high", "xhigh", "max"])
         command.add_argument("--timeout-seconds", type=float, default=7200)
         command.add_argument("--retry", action="store_true")
     report = commands.add_parser("report", help="Rebuild delivery without any model call")

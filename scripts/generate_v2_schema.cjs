@@ -89,7 +89,8 @@ for (const [name,node] of declarations) if (!node.typeParameters?.length && name
 const output = { $schema:'https://json-schema.org/draft/2020-12/schema', source_sha256:crypto.createHash('sha256').update(source).digest('hex'), $defs:defs };
 const destination = path.join(root,'src/doxagent/api_v2/wire_schema.json');
 fs.mkdirSync(path.dirname(destination),{recursive:true});
-fs.writeFileSync(destination,JSON.stringify(output,null,2)+'\n');
+fs.writeFileSync(destination+'.tmp',JSON.stringify(output,null,2)+'\n');
+fs.renameSync(destination+'.tmp',destination);
 const contract = fs.readFileSync(path.join(root,'dev_plan/workflow_v2/DOXAGENT_V2_API_CONTRACT.md'),'utf8');
 const routes = [];
 for (const line of contract.split(/\r?\n/)) {
@@ -107,5 +108,7 @@ for (const line of contract.split(/\r?\n/)) {
   routes.push({method,path:url,parameters,response_schema:schema,
     transport:description.startsWith('SSE')?'SSE':description.startsWith('ZIP')?'ZIP':'JSON'});
 }
-fs.writeFileSync(path.join(root,'src/doxagent/api_v2/route_contract.json'),JSON.stringify(routes,null,2)+'\n');
+const routesDestination = path.join(root,'src/doxagent/api_v2/route_contract.json');
+fs.writeFileSync(routesDestination+'.tmp',JSON.stringify(routes,null,2)+'\n');
+fs.renameSync(routesDestination+'.tmp',routesDestination);
 console.log(JSON.stringify({definitions:Object.keys(defs).length, output:destination}));

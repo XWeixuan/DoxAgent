@@ -41,9 +41,13 @@ def maintenance_fixture(tmp_path):
         ticker_initialization_control_path=str(tmp_path / "control.db"),
         persistent_runtime_v2_sqlite_path=str(journal.path),
         event_library_root=str(tmp_path / "events"),
+        codex_runtime_sqlite_path=str(tmp_path / "research.db"),
     )
     events = EventLibraryRepository(tmp_path / "events/US/MU/event_library.sqlite3")
     events.ensure_empty_publication("MU")
+    from doxagent.workflows.codex_document3.repository import SQLiteDocument3PolicyRepository
+    from tests.fixtures.codex_document3 import _policy_set
+    SQLiteDocument3PolicyRepository(settings.codex_runtime_sqlite_path).publish(_policy_set(), expected_base_version=None)
     control = InitializationRepository(settings.ticker_initialization_control_path)
     control.submit("MU", now[0], [NodeSpec(key="activation", block="ACTIVATION")])
     lease = control.claim("test")
@@ -191,7 +195,7 @@ def test_historical_maintenance_does_not_rewind_visibility_day(tmp_path):
         runtime.close()
 
 
-def test_candidate_selection_claims_only_winner_and_closes_others(tmp_path):
+def test_candidate_selection_releases_and_freezes_only_winner(tmp_path):
     now = [datetime(2026, 9, 6, 12, tzinfo=UTC)]
     runtime, journal = runtime_at(tmp_path, now)
     try:
@@ -230,7 +234,7 @@ def test_candidate_selection_claims_only_winner_and_closes_others(tmp_path):
             "RELEASED",
             "NOT_SELECTED",
         }
-        assert len(runtime.repository.list_consumed_policy_revisions("MU")) == 1
+        assert runtime.repository.list_consumed_policy_revisions("MU") == {("pol_any", "ar_1234567890abcdef12345678")}
         assert len(journal.values("trade_intents")) == 1
     finally:
         runtime.close()
@@ -289,5 +293,43 @@ def test_stale_maintenance_cas_preserves_newer_activation(tmp_path):
                 metadata={},
             )
         assert control.active_revision("MU")["revision_id"] == "newer"
+    finally:
+        runtime.close()
+
+
+
+def test_empty_maintenance_continues_to_include_unrearmed_direction_consumption(tmp_path):
+    from doxagent.persistent_runtime_v2.policy_consumption import put_value, usage
+    from doxagent.persistent_runtime_v2.journal import encode
+    runtime, journal, settings, _ = maintenance_fixture(tmp_path)
+    feeds = []
+    class O2:
+        async def run(self, **kwargs):
+            return None, None, None, {}
+    class O3:
+        async def maintain(self, **kwargs):
+            feeds.append(kwargs["maintenance_feed"].model_dump(mode="json"))
+            return SimpleNamespace(status="NOOP", policy_set_version=1)
+    maintenance = RuntimeMaintenance(settings, runtime, journal,
+        worker_factory=lambda: SimpleNamespace(), o2_factory=lambda *_: O2(), o3_factory=lambda *_: O3())
+    with journal.transaction() as db:
+        state = dict(usage(db, "MU", "P1", "LONG"), consumed=True, consumption_id="consumed-1")
+        put_value(db, "policy_direction_usage", encode(["MU", "P1", "LONG"]), state)
+        put_value(db, "policy_consumptions", "consumed-1", dict(state, consumed_at=journal.clock().isoformat(), case_id="old-case"))
+    try:
+        for task_id in ["maintain", "maintain-next"]:
+            if task_id != "maintain":
+                journal.put_task(task_id, "MU", "MAINTENANCE", {"day":"2026-09-08", "cutoff":journal.clock().isoformat(), "scope":"DAILY"})
+            task = journal.claim(task_id)
+            assert task is not None, journal.tasks()
+            frame = maintenance._frame(task)
+            assert frame["case_ids"] == [] and frame["candidates"] == []
+            asyncio.run(maintenance(task))
+            journal.finish(task)
+        assert len(feeds) == 2
+        for feed in feeds:
+            assert feed["contract_version"] == "persistent-runtime.o3-maintenance-feed.v2"
+            assert feed["policy_consumption"][0]["policy_id"] == "P1"
+            assert feed["policy_consumption"][0]["directions"][0]["consumption_id"] == "consumed-1"
     finally:
         runtime.close()

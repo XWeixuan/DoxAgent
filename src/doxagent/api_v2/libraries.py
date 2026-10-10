@@ -53,7 +53,14 @@ def install(app: FastAPI) -> None:
     ) -> dict:
         value = page(request, ticker, "shell", activation["document2"]["run_id"], args, view)
         value["items"] = [
-            {key: item[key] for key in ("shell_id", "ordinal", "core_question")}
+            {
+                key: item[key]
+                for key in (
+                    ("shell_id", "ordinal", "name")
+                    if "name" in item
+                    else ("shell_id", "ordinal", "core_question")
+                )
+            }
             for item in value["items"]
         ]
         return value
@@ -70,17 +77,36 @@ def install(app: FastAPI) -> None:
         shells = policy_shells(request, ticker, args, view, activation)
         maintenance = activation.get("maintenance")
         if maintenance is None:
-            native_revision = store.get("native:activation_revisions", ticker,
-                activation["runtime_activation_id"], view["seq"]) or {}
-            base = store.get("activation_revision", ticker, native_revision.get("base_revision") or "", view["seq"])
+            native_revision = (
+                store.get(
+                    "native:activation_revisions",
+                    ticker,
+                    activation["runtime_activation_id"],
+                    view["seq"],
+                )
+                or {}
+            )
+            base = store.get(
+                "activation_revision",
+                ticker,
+                native_revision.get("base_revision") or "",
+                view["seq"],
+            )
             if base:
                 before, after = base["policy_set"], activation["policy_set"]
                 maintenance = {
                     "status": "MAINTAIN_COMPLETED",
-                    "policy_disposition": "INHERITED" if before["artifact_id"] == after["artifact_id"] else
-                        "NO_CHANGE" if before["content_sha256"] == after["content_sha256"] else "CONTENT_CHANGED",
-                    "event_disposition": "NO_CHANGE" if base["event_library"]["library_snapshot_id"] == activation["event_library"]["library_snapshot_id"] else "CONTENT_CHANGED",
-                    "from_policy_version": before["policy_set_version"], "to_policy_version": after["policy_set_version"],
+                    "policy_disposition": "INHERITED"
+                    if before["artifact_id"] == after["artifact_id"]
+                    else "NO_CHANGE"
+                    if before["content_sha256"] == after["content_sha256"]
+                    else "CONTENT_CHANGED",
+                    "event_disposition": "NO_CHANGE"
+                    if base["event_library"]["library_snapshot_id"]
+                    == activation["event_library"]["library_snapshot_id"]
+                    else "CONTENT_CHANGED",
+                    "from_policy_version": before["policy_set_version"],
+                    "to_policy_version": after["policy_set_version"],
                     "from_library_version": base["event_library"]["library_version"],
                     "to_library_version": activation["event_library"]["library_version"],
                 }
@@ -94,7 +120,11 @@ def install(app: FastAPI) -> None:
                 activation["document2"] == policies["source_document2"]
             ),
             "shells": shells,
-            "default_shell_id": shells["items"][0]["shell_id"] if shells["items"] else None,
+            "default_shell_id": "ALL"
+            if activation["policy_set"]["schema_version"] == "document3.v3"
+            else shells["items"][0]["shell_id"]
+            if shells["items"]
+            else None,
         }
         return respond(request, "PolicyContext", value, view_id=args["view_id"])
 
@@ -124,12 +154,44 @@ def install(app: FastAPI) -> None:
         catalog = store.get(
             "policy_catalog",
             ticker,
-            policy_id + ":" + summary["policy_activation_revision"],
+            policy_id
+            + ":"
+            + summary.get("policy_activation_revision", summary["policy_revision_id"]),
             view["seq"] if view else None,
         )
         if catalog:
-            for name in ("consumed", "consumed_at", "effective", "lifecycle"):
+            for name in (
+                "consumed",
+                "consumed_at",
+                "effective",
+                "lifecycle",
+                *(
+                    ["directions", "executable_directions", "consumed_directions"]
+                    if "directions" in summary
+                    else []
+                ),
+            ):
                 summary[name] = catalog[name]
+        if "directions" in summary:
+            from doxagent.persistent_runtime_v2.journal import encode
+
+            value["policy_usage"] = [
+                store.get(
+                    "policy_direction_usage",
+                    ticker,
+                    encode([ticker, policy_id, direction]),
+                    view["seq"] if view else None,
+                )
+                or dict(
+                    ticker=ticker,
+                    policy_id=policy_id,
+                    direction=direction,
+                    usage_generation=1 if summary["consumed"]["value"] is not None else None,
+                    consumed=False if summary["consumed"]["value"] is not None else None,
+                    consumption_id=None,
+                )
+                for direction in summary["directions"]
+            ]
         return respond(request, "PolicyDetail", value, view_id=args.get("view_id"))
 
     @app.get(prefix + "/policy-sets/{policy_set_version}/download")

@@ -10,7 +10,7 @@ from typing import Any
 
 from doxagent.api_v2.dto import VERSION, available, coverage, missing, validate
 from doxagent.codex_runtime.schema import FutureNode
-from doxagent.workflows.codex_document2.schema import Document2Document
+from doxagent.workflows.codex_document3.consumer_contracts import parse_document2
 
 from .projectors import timestamp
 from .repository import ReadStore, encode
@@ -41,7 +41,13 @@ class PublishedArtifacts:
         document = self.record("published_documents", identity, run_id)
         text = document.get("content_text")
         if text is None:
-            raise ValueError("REMOTE_CONTENT_BACKFILL_REQUIRED")
+            digest = artifact["sha256"]
+            if len(digest) != 64 or any(c not in "0123456789abcdef" for c in digest):
+                raise ValueError("PUBLISHED_CHECKSUM_MISMATCH")
+            cached = self.path.parent / "published-contents" / digest
+            if not cached.is_file():
+                raise ValueError("REMOTE_CONTENT_BACKFILL_REQUIRED")
+            text = cached.read_text(encoding="utf-8")
         data = text.encode("utf-8")
         if (
             hashlib.sha256(data).hexdigest() != artifact["sha256"]
@@ -254,8 +260,10 @@ class ArtifactIndexer:
     def expectations(self, bundle: dict[str, Any], lineage: str) -> list[dict[str, Any]]:
         run_id, ticker = bundle["run_id"], bundle["ticker"]
         document, text = self.source.body(run_id, bundle["handoff"]["document2_artifact_id"])
-        native = Document2Document.model_validate_json(text).model_dump(mode="json")
+        native = parse_document2(text).model_dump(mode="json")
         reference = self.document(document, schema=native["schema_version"])
+        if native["schema_version"] == "document2.v2.1":
+            return self._expectations_v21(bundle, lineage, native, reference)
         shells = {shell["shell_id"]: shell for shell in native["shells"]}
         outcomes = native["shell_outcomes"] or [
             {"shell_id": identity, "status": "completed"} for identity in shells
@@ -344,6 +352,106 @@ class ArtifactIndexer:
                     "id": run_id,
                     "data": {"lineage": lineage},
                 },
+            ]
+        )
+        return records
+
+    def _expectations_v21(self, bundle, lineage, native, reference):
+        run_id, ticker = bundle["run_id"], bundle["ticker"]
+        shells = {s["name"]: (i, s) for i, s in enumerate(native["shells"])}
+        outcomes = native["shell_outcomes"] or [
+            {"shell": s["name"], "status": "completed"} for s in native["shells"]
+        ]
+        records, ids = [], []
+        for ordinal, outcome in enumerate(outcomes):
+            pair = shells.get(outcome["shell"])
+            shell = pair[1] if pair else None
+            seed = (
+                shell
+                or outcome.get("seed")
+                or {"name": outcome["shell"], "scope": "", "boundary": "", "ref": []}
+            )
+            # Pointer is scoped to this immutable run, never a research identity.
+            identity = f"shell-{ordinal:04d}"
+            ids.append(identity)
+            content = (
+                self.store.put_content(ticker, encode(shell), "application/json") if shell else None
+            )
+            summary = dict(
+                schema_version="document2.shell-view.v2.1",
+                view_id=f"{run_id}#/shells/{pair[0] if pair else ordinal}",
+                shell_id=identity,
+                ordinal=ordinal,
+                name=seed["name"],
+                scope=seed["scope"],
+                boundary=seed["boundary"],
+                ref=seed.get("ref", []),
+                status="COMPLETED" if shell else "FAILED",
+                unit_count=available(len(shell["units"]))
+                if shell
+                else missing("NOT_PRODUCED", "NOT_PRODUCED"),
+                failed_stage=outcome.get("failed_stage") if not shell else None,
+                failure_kind=outcome.get("failure_kind") if not shell else None,
+                failure=None
+                if shell
+                else dict(
+                    code=outcome.get("error_code") or "SHELL_FAILED",
+                    message=outcome.get("error") or "Shell research failed",
+                ),
+                content=resource(content),
+            )
+            records.append(
+                dict(
+                    kind="shell",
+                    ticker=ticker,
+                    id=run_id + ":" + identity,
+                    parent=run_id,
+                    sort=f"{999999999 - ordinal:09d}",
+                    data=validate("ShellSummary", summary),
+                )
+            )
+            for index, unit in enumerate(shell["units"] if shell else []):
+                unit_id = f"unit-{index:04d}"
+                value = dict(
+                    unit,
+                    schema_version="document2.unit-view.v2.1",
+                    view_id=f"{summary['view_id']}/units/{index}",
+                    ordinal=index,
+                )
+                records.append(
+                    dict(
+                        kind="unit",
+                        ticker=ticker,
+                        id=run_id + ":" + identity + ":" + unit_id,
+                        parent=run_id + ":" + identity,
+                        sort=f"{999999999 - index:09d}",
+                        data=validate("ExpectationUnit", value),
+                    )
+                )
+        records.extend(
+            [
+                dict(
+                    kind="expectations_index",
+                    ticker=ticker,
+                    id=run_id,
+                    data=dict(
+                        run=self.run(bundle),
+                        runtime_activation_id=None,
+                        document=reference,
+                        citation_status=bundle["citation_status"],
+                        default_shell_id=ids[0] if ids else None,
+                        publication_state=bundle["publication_state"],
+                    ),
+                ),
+                dict(
+                    kind="expectations_run",
+                    ticker=ticker,
+                    id=run_id,
+                    data=self.run(bundle),
+                    sort=timestamp(bundle["published_at"]),
+                ),
+                dict(kind="document_ref", ticker=ticker, id=run_id, data=reference),
+                dict(kind="artifact_lineage", ticker=ticker, id=run_id, data={"lineage": lineage}),
             ]
         )
         return records

@@ -5,6 +5,7 @@ remain queryable and are never prerequisites of unrelated future days.
 """
 
 from __future__ import annotations
+from doxagent.workflows.codex_document3.consumer_contracts import parse_runtime_projection, RuntimePolicyProjectionV5, PolicyDetailSnapshotV3
 
 import asyncio
 from collections.abc import Callable
@@ -488,7 +489,7 @@ class RuntimeCoordinator:
 
                 data = dict(frozen["inputs"])
                 data["index"] = KnownEventIndexSnapshot.model_validate(data["index"])
-                data["projection"] = RuntimePolicyProjection.model_validate(data["projection"])
+                data["projection"] = parse_runtime_projection(data["projection"])
                 snapshot = RuntimeInputSnapshot(**data)
                 bundle_id = frozen["execution"]
         result = self.runtime.execute_message(

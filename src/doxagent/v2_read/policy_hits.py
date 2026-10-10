@@ -13,7 +13,32 @@ def project(store, case, summary, event):
     policies = (case.get("frozen_inputs", {}).get("projection") or {}).get("policies", [])
     records, contributions = [], []
     for policy in policies:
-        policy_id, ar = policy["policy_id"], policy["activation_revision"]
+        policy_id = policy["policy_id"]
+        ar = policy.get("activation_revision")
+        if ar is None:
+            details = store.get(
+                "activation_revision",
+                ticker,
+                case["version_pin"].get("activation_revision_id") or "",
+            )
+            artifact_id = (details or {}).get("policy_set", {}).get("artifact_id")
+            from .lifecycle import rows
+
+            match = (
+                next(
+                    (
+                        d
+                        for d in rows(store, "policy_detail", ticker, artifact_id).values()
+                        if d["summary"]["policy_id"] == policy_id
+                    ),
+                    None,
+                )
+                if artifact_id
+                else None
+            )
+            if not match:
+                continue
+            ar = match["summary"]["policy_revision_id"]
         identity = case_id + ":" + policy_id
         old = store.get("policy_hit_observation", ticker, identity)
         hit = policy_id in hit_ids

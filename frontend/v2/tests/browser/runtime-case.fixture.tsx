@@ -39,7 +39,7 @@ const timing = {
 };
 const attempt = (
   node: "W1" | "W2",
-  round: "R1" | "R2",
+  round: "R1" | "R2" | "R3",
   status: ModelAttempt["status"],
   n = 1,
 ): ModelAttempt => ({
@@ -62,16 +62,24 @@ const policy = {
 };
 const empty = mode === "empty" || mode === "skipped" || mode === "unknown";
 const details = {
+  runtime_activation_id: value("fixture-activation"),
   summary: {
     title: value("Micron focused Runtime Case"),
     source: { name: "Synthetic News", kind: "api" },
+    first_round_tags: empty
+      ? []
+      : ["FIRST_ROUND_TRADE", "POLICY_RELATED_EVENT"],
   },
   failures: [],
   candidate_count: value(0),
   execution_count: value(0),
   messages: page([]),
   w1: resource({
-    novelty: value("OLD"),
+    novelty: value("NEW"),
+    extraction:
+      mode === "extraction"
+        ? resource({ capture_mode: "NEW_CAPTURE", candidate_count: 1 })
+        : noReason,
     confidence: value("normal"),
     references: [
       {
@@ -102,15 +110,33 @@ const details = {
     attempts: page([
       attempt("W1", "R1", "SUCCEEDED"),
       attempt("W1", "R2", "SUCCEEDED"),
+      ...(mode === "extraction" ? [attempt("W1", "R3", "SUCCEEDED")] : []),
     ]),
     rounds: [
       { round: "R1", attempt_count: 1, not_executed_reason: null },
       { round: "R2", attempt_count: 1, not_executed_reason: null },
+      {
+        round: "R3",
+        attempt_count: mode === "extraction" ? 1 : 0,
+        not_executed_reason: mode === "extraction" ? null : "DELTA_OWNED_BY_W3",
+      },
     ],
   }),
   w2: resource({
     skipped: mode === "skipped",
     policy_hit: value(!empty),
+    policy_related: value(!empty),
+    related_policies: empty ? [] : [policy],
+    novel_fact_alignment: {
+      status: empty ? "NOT_EXECUTED" : "SUCCEEDED",
+      not_executed_reason: empty ? "NO_POLICY_HIT_OR_RELATED" : null,
+      policy_fact_novelty: empty
+        ? { state: "UNAVAILABLE", value: null, reason: "NOT_APPLICABLE" }
+        : value("NEW"),
+      condition_results: empty
+        ? []
+        : [{ condition_ids: ["P8/C2"], is_new: true }],
+    },
     confidence: value("normal"),
     policies: empty ? [] : [policy],
     ...(mode === "unknown"
@@ -126,6 +152,7 @@ const details = {
             attempt("W2", "R1", "SUCCEEDED"),
             attempt("W2", "R2", "FAILED"),
             attempt("W2", "R2", "SUCCEEDED", 2),
+            attempt("W2", "R3", "SUCCEEDED"),
           ],
     ),
     rounds: [
@@ -144,23 +171,92 @@ const details = {
               ? "W2_SKIPPED"
               : null,
       },
+      {
+        round: "R3",
+        attempt_count: empty ? 0 : 1,
+        not_executed_reason: empty ? "NO_POLICY_HIT_OR_RELATED" : null,
+      },
     ],
   }),
-  w3: noReason,
+  ...(mode === "watch"
+    ? {
+        policy_watch: {
+          followup: [
+            {
+              policy_id: "P8",
+              reason: "等待客户确认",
+              expires_at: "2026-10-12T04:00:00Z",
+            },
+          ],
+          actions: [
+            { policy_id: "P8", action: "CANCEL", reason: "证据已完整" },
+          ],
+          receipt: {
+            outcomes: [
+              { policy_id: "P8", action: "CANCEL", status: "APPLIED" },
+            ],
+          },
+        },
+        policy_execution: {
+          selected_condition: null,
+          reason: "尚不满足交易条件",
+        },
+      }
+    : {}),
+  ...(mode === "selection"
+    ? {
+        policy_execution: {
+          selected_condition: { policy_id: "P8", condition_id: "C2" },
+          reason: "采用明确命中边界",
+        },
+      }
+    : {}),
+  w3:
+    mode === "selection"
+      ? resource({
+          status: "RESOLVED",
+          novelty: value("NEW"),
+          policy_hit: value(true),
+          expert_trade: value(false),
+          direction: value(null),
+          prior_expectation: value(null),
+          expectation_delta: value(null),
+          references: [],
+          policies: [policy],
+          attempts: page([]),
+          reasoning: {
+            novelty: noReason,
+            policy: noReason,
+            expert_trade: noReason,
+          },
+        })
+      : noReason,
 } as unknown as CaseDetail;
 const runtime = createRuntime(createTestAuth());
 runtime.api.request = async (name) =>
   ({
     data:
-      name === "Content"
-        ? resource({
-            content: reasonRef,
-            chunk_index: 0,
-            text: reasoningText,
-            next_cursor: null,
-            complete: true,
-          })
-        : resource(details),
+      name === "Candidates"
+        ? resource(
+            page([
+              {
+                candidate_id: "candidate-1",
+                originating_node: "W1_R3",
+                proposition: "Synthetic qualification newly completed.",
+                assertion_state: "ACTUAL",
+                occurrence_date: null,
+              },
+            ]),
+          )
+        : name === "Content"
+          ? resource({
+              content: reasonRef,
+              chunk_index: 0,
+              text: reasoningText,
+              next_cursor: null,
+              complete: true,
+            })
+          : resource(details),
     meta: { view_id: "fixture-view" },
   }) as never;
 createRoot(document.getElementById("root")!).render(

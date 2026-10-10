@@ -478,7 +478,7 @@
   {
     "method": "GET",
     "path": "/tickers/{ticker}/runtime/cases",
-    "parameters": "V，`result?,source_id?`，P",
+    "parameters": "V，`result?,source_id?,q?`，P",
     "response_schema": "CaseSummaryPage",
     "transport": "JSON"
   },
@@ -506,7 +506,7 @@
   {
     "method": "GET",
     "path": "/tickers/{ticker}/runtime/cases/{case_id}/candidates",
-    "parameters": "P，可选 `view_id`（RUNTIME 固定水位）",
+    "parameters": "P，可选 `view_id`（RUNTIME 固定水位）、`originating_node=W1_R3或W3`（过滤进入游标作用域）",
     "response_schema": "CandidatePage",
     "transport": "JSON"
   },

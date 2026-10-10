@@ -42,11 +42,17 @@ export const nodeNames: Record<NodeId, string> = {
   W3: "W3 · 二轮研判",
   ARCHIVE: "归档",
   EVENT_DISCOVERY: "事件发现",
-  BADCASE: "Badcase",
+  FIRST_ROUND_TRADE: "一轮判定交易",
+  POLICY_RELATED_EVENT: "policy相关事件",
   TRADE_INTENT: "交易意图产生",
   TRADE_EXECUTION: "交易执行",
   TRADE_NOT_EXECUTED: "交易未执行",
   FAILURE: "失败",
+};
+const resultNames = {
+  ...nodeNames,
+  BADCASE: "历史 Badcase",
+  SUSPECTED_DUPLICATE_HIT: "疑似重复命中",
 };
 export default function RuntimePage() {
   const { ticker = "" } = useParams();
@@ -441,7 +447,7 @@ function RuntimeBody({
                     </span>
                     {d.summary.result_counts.map((r) => (
                       <span key={r.result}>
-                        {nodeNames[r.result]} {r.case_count}
+                        {resultNames[r.result]} {r.case_count}
                       </span>
                     ))}
                   </div>
@@ -486,7 +492,9 @@ function RuntimeBody({
                   [
                     "ARCHIVE",
                     "EVENT_DISCOVERY",
-                    "BADCASE",
+                    "FIRST_ROUND_TRADE",
+                    "POLICY_RELATED_EVENT",
+                    "SUSPECTED_DUPLICATE_HIT",
                     "TRADE_INTENT",
                     "TRADE_EXECUTION",
                     "TRADE_NOT_EXECUTED",
@@ -494,7 +502,7 @@ function RuntimeBody({
                   ] as const
                 ).map((r) => (
                   <option key={r} value={r}>
-                    {nodeNames[r]}
+                    {resultNames[r]}
                   </option>
                 ))}
               </select>
@@ -643,7 +651,8 @@ const positions: Record<NodeId, [number, number]> = {
   W3: [464, 172],
   ARCHIVE: [702, 24],
   EVENT_DISCOVERY: [702, 92],
-  BADCASE: [702, 160],
+  FIRST_ROUND_TRADE: [464, 78],
+  POLICY_RELATED_EVENT: [464, 270],
   TRADE_INTENT: [702, 228],
   FAILURE: [702, 296],
   TRADE_EXECUTION: [918, 190],
@@ -656,7 +665,8 @@ const nodeColors: Record<NodeId, string> = {
   W3: "#a14066",
   ARCHIVE: "#68616f",
   EVENT_DISCOVERY: "#42668b",
-  BADCASE: "#94631b",
+  FIRST_ROUND_TRADE: "var(--primary)",
+  POLICY_RELATED_EVENT: "var(--muted-foreground)",
   TRADE_INTENT: "#8d4e79",
   TRADE_EXECUTION: "#317357",
   TRADE_NOT_EXECUTED: "#8a6572",
@@ -745,7 +755,14 @@ export function FlowGraph({
               ty = by + 27;
             const bypass = bx === positions.TRADE_INTENT[0] && e.from !== "W3";
             let d: string, lx: number, ly: number;
-            if (bypass) {
+            if (ax === bx) {
+              const start = ay + (ay < by ? 54 : 0);
+              const end = by + (ay < by ? 0 : 54);
+              const center = ax + 78;
+              d = `M${center} ${start} V${end}`;
+              lx = center + 18;
+              ly = (start + end) / 2;
+            } else if (bypass) {
               const upper = by < 172;
               const lane = upper ? 38 : 389;
               const junction = sx + 22,
@@ -921,9 +938,14 @@ function CaseResults({ row: c }: { row: CaseSummary }) {
           {c.result_settled ? "结果未记录" : "尚未形成结果"}
         </span>
       )}
+      {(c.first_round_tags ?? []).map((tag) => (
+        <span className="domain-tag" key={tag}>
+          {resultNames[tag]}
+        </span>
+      ))}
       {judgements.map((r) => (
         <span className={"domain-tag result-" + r} key={r}>
-          {nodeNames[r]}
+          {resultNames[r]}
         </span>
       ))}
     </div>

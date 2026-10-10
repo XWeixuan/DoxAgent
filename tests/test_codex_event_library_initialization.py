@@ -391,6 +391,7 @@ async def test_wave_initialization_reuses_thread_publishes_and_resumes_without_m
     assert len(repository.published_events("AMD")[0].facts) == 2
     assert {request.thread_id for request in worker.requests[1:]} == {"o2-thread-1"}
     assert len(worker.requests) == 4
+    assert all((r.model, r.effort) == ("gpt-6-luna", "max") for r in worker.requests)
     assert all(path.exists() for path in exports.values())
     for request in worker.requests:
         skill = workspace.store.read_text(

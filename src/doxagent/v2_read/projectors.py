@@ -7,11 +7,12 @@ from datetime import datetime
 from typing import Any
 
 from doxagent.api_v2.dto import available, missing, validate
+from doxagent.persistent_runtime_v2 import policy_consumption
 from doxagent.semantic_clock import semantic_day
 
+from .ordering import message_anchor
 from .projector import native
 from .repository import ReadStore, instant
-from .ordering import message_anchor
 
 
 def timestamp(value: str) -> str:
@@ -56,7 +57,11 @@ def state_wire(state: dict[str, Any]) -> dict[str, Any]:
             ),
             "restart": permission(
                 not running and not removed and not initializing and bool(state["activation_id"]),
-                "INITIALIZATION_IN_PROGRESS" if initializing else "ALREADY_RUNNING" if running else "NO_ACTIVE_REVISION",
+                "INITIALIZATION_IN_PROGRESS"
+                if initializing
+                else "ALREADY_RUNNING"
+                if running
+                else "NO_ACTIVE_REVISION",
             ),
             "remove": permission(not removed, "TICKER_REMOVED"),
             "retry_initialization": permission(
@@ -85,6 +90,8 @@ class DomainProjectors:
     def __call__(self, event: dict[str, Any]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
         table, row, value = event["table_name"], event["row"], native(event)
         ticker = value.get("ticker", row.get("ticker", ""))
+        if table == "runtime_values" and row["namespace"] == "policy_authorization_head":
+            ticker = row["key"]
         initialization_run = None
         if table == "initialization_repair_incidents":
             ticker = value["ticker"]
@@ -314,11 +321,36 @@ class DomainProjectors:
                 prior.update(
                     consumed=available(True),
                     consumed_at=available(timestamp(value["activated_at"])),
-                    effective=available(False),
+                    effective=available(False)
+                    if policy_consumption.POLICY_AUTO_FREEZE_ENABLED
+                    else available(prior.get("lifecycle") == "ACTIVE"),
                 )
                 records.append(
                     {"kind": "policy_catalog", "ticker": ticker, "id": key, "data": prior}
                 )
+        elif table == "runtime_values" and row["namespace"] == "policy_direction_usage":
+            records.append(
+                dict(kind="policy_direction_usage", ticker=ticker, id=row["key"], data=value)
+            )
+            from .lifecycle import direction_summary, rows
+
+            for key, summary in rows(self.store, "policy_catalog", ticker).items():
+                if summary["policy_id"] == value["policy_id"] and "directions" in summary:
+                    summary = direction_summary(self.store, ticker, summary, pending_state=value)
+                    records.append(dict(kind="policy_catalog", ticker=ticker, id=key, data=summary))
+        elif table == "runtime_values" and row["namespace"] == "policy_authorization_head":
+            from .lifecycle import direction_summary, rows
+
+            for key, summary in rows(self.store, "policy_catalog", ticker).items():
+                if "directions" in summary:
+                    records.append(
+                        dict(
+                            kind="policy_catalog",
+                            ticker=ticker,
+                            id=key,
+                            data=direction_summary(self.store, ticker, summary, admitted=True),
+                        )
+                    )
         elif table == "v2_ticker_control":
             wire = state_wire(value)
             records.append({"kind": "ticker", "ticker": ticker, "id": ticker, "data": wire})
@@ -411,9 +443,17 @@ class DomainProjectors:
                         "source_id": attempt["source_id"],
                         # Legacy receipts prove the attempt, not its start date. Keep
                         # ALL evidence; do not assign it to an invented daily cohort.
-                        "day": semantic_day(datetime.fromisoformat(attempt["started_at"])).isoformat()
-                        if attempt.get("started_at") else "",
-                        "data": {**attempt, "time_basis": "STARTED_AT" if attempt.get("started_at") else "NOT_RECORDED"},
+                        "day": semantic_day(
+                            datetime.fromisoformat(attempt["started_at"])
+                        ).isoformat()
+                        if attempt.get("started_at")
+                        else "",
+                        "data": {
+                            **attempt,
+                            "time_basis": "STARTED_AT"
+                            if attempt.get("started_at")
+                            else "NOT_RECORDED",
+                        },
                     }
                 )
         elif table == "stream_members":
@@ -455,6 +495,9 @@ class DomainProjectors:
             if value.get("released_at") and value.get("status") not in {
                 "DUPLICATE_POLICY",
                 "DUPLICATE_REALTIME_OUTPUT",
+                "DUPLICATE_EVENT_TRADE",
+                "SELECTED_CONDITION_INVALID",
+                "POLICY_MIGRATION_UNRESOLVED",
                 "EXPIRED_SEMANTIC_DAY",
             }:
                 metrics.append(
@@ -489,7 +532,8 @@ class DomainProjectors:
 
         affected = {
             (r["ticker"], r["id"]): r["data"]
-            for r in records if r["kind"] == "case" and r.get("data")
+            for r in records
+            if r["kind"] == "case" and r.get("data")
         }
         for item in records:
             if item["kind"] == "execution" and item.get("parent"):
@@ -503,8 +547,7 @@ class DomainProjectors:
                 records.append(case_record)
                 metrics.append(count)
         changed_cases = {
-            r["id"]: (r["ticker"], r["data"])
-            for r in records if r["kind"] == "case" and r["data"]
+            r["id"]: (r["ticker"], r["data"]) for r in records if r["kind"] == "case" and r["data"]
         }
         for item in records:
             if item["kind"] == "attempt" and item.get("parent") not in changed_cases:
@@ -544,6 +587,7 @@ class DomainProjectors:
         created = value["created_at"]
         summary = {
             "case_id": value["case_id"],
+            "first_round_tags": value.get("first_round_tags", []),
             "revision": revision,
             "semantic_day": value["trading_date"],
             "runtime_mode": value["runtime_mode"],
@@ -573,11 +617,15 @@ class DomainProjectors:
             "resolved_route": resolved,
             "w3_status": "RESOLVED" if final else "PENDING" if pending else None,
             "final_novelty": available(w1["result"]) if w1 and not pending else missing(),
-            "final_policy_hit": available(bool(w2["policy_ids"]))
+            "final_policy_hit": available(w2.get("policy_hit", bool(w2["policy_ids"])))
             if w2 and not pending
             else missing(),
             "results": [result for result in old["results"] if result != "FAILURE"] if old else [],
-            "trade": old.get("trade", {"intent_count": 0, "state": "NOT_APPLICABLE", "reason_codes": []}) if old else {"intent_count": 0, "state": "NOT_APPLICABLE", "reason_codes": []},
+            "trade": old.get(
+                "trade", {"intent_count": 0, "state": "NOT_APPLICABLE", "reason_codes": []}
+            )
+            if old
+            else {"intent_count": 0, "state": "NOT_APPLICABLE", "reason_codes": []},
             "result_settled": settled,
             "trade_disposition": old["trade_disposition"] if old else "NOT_EVALUATED",
             "stream_item_id": source["stream_item_id"],

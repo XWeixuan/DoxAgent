@@ -32,22 +32,40 @@ def pending_intent(store, ticker, intent):
         f"{failure['code']}: {failure_detail}" if failure_detail else failure.get("code")
     )
     summary = {
-        "execution_id": identity, "intent_id": identity, "case_id": intent["case_id"],
+        "execution_id": identity,
+        "intent_id": identity,
+        "case_id": intent["case_id"],
         "environment": available(pin["profile"]["environment"]) if pin else missing(),
         "profile_revision": available(pin["revision"]) if pin else missing(),
-        "direction": intent["trade"]["decision"], "intent_status": intent["status"],
+        "direction": intent["trade"]["decision"],
+        "intent_status": intent["status"],
         "intake_status": (
-            "REJECTED" if intent["status"] == "DELIVERY_FAILED"
-            else "UNKNOWN" if intent["status"] == "UNKNOWN" else "NOT_RECEIVED"
+            "REJECTED"
+            if intent["status"] == "DELIVERY_FAILED"
+            else "UNKNOWN"
+            if intent["status"] == "UNKNOWN"
+            else "NOT_RECEIVED"
         ),
-        "entry_result": None, "entry_reason": failure_reason, "has_actual_fill": False,
+        "entry_result": None,
+        "entry_reason": failure_reason,
+        "has_actual_fill": False,
         "triggered_at": available(instant(datetime.fromisoformat(intent["released_at"]))),
-        "accepted_at": missing(), "first_fill_at": missing(),
-        "filled_quantity": available("0"), "filled_notional_usd": available("0"),
+        "accepted_at": missing(),
+        "first_fill_at": missing(),
+        "filled_quantity": available("0"),
+        "filled_notional_usd": available("0"),
     }
     summary = with_execution_state(summary)
-    return [{"kind": "execution", "ticker": ticker, "id": identity, "parent": intent["case_id"],
-             "sort": intent["released_at"], "data": validate("ExecutionSummary", summary)}]
+    return [
+        {
+            "kind": "execution",
+            "ticker": ticker,
+            "id": identity,
+            "parent": intent["case_id"],
+            "sort": intent["released_at"],
+            "data": validate("ExecutionSummary", summary),
+        }
+    ]
 
 
 class ExecutionProjector:
@@ -210,38 +228,44 @@ class ExecutionProjector:
         first_fill = min((f["time"] for f in entry), default=None)
         summary = validate(
             "ExecutionSummary",
-            with_execution_state({
-                "execution_id": identity,
-                "intent_id": intent["intent_id"],
-                "case_id": case_id,
-                "environment": available(environment) if environment else missing(),
-                "profile_revision": available(execution["profile_revision"]),
-                "direction": intent["trade"]["decision"],
-                "intent_status": intent["status"],
-                "intake_status": "EXECUTION_ACCEPTED",
-                "entry_result": execution.get("entry_result"),
-                "entry_reason": execution.get("entry_reason"),
-                "has_actual_fill": bool(positive),
-                "triggered_at": available(instant(datetime.fromisoformat(intent["released_at"])))
-                if intent.get("released_at")
-                else missing(),
-                "accepted_at": available(instant(datetime.fromisoformat(execution["created_at"]))),
-                "first_fill_at": available(instant(datetime.fromisoformat(first_fill)))
-                if first_fill
-                else missing(),
-                "filled_quantity": available(
-                    format(sum((Decimal(f["quantity"]) for f in entry), Decimal(0)), "f")
-                ),
-                "filled_notional_usd": available(
-                    format(
-                        sum(
-                            (Decimal(f["quantity"]) * Decimal(f["price"]) for f in entry),
-                            Decimal(0),
-                        ),
-                        "f",
+            with_execution_state(
+                {
+                    "execution_id": identity,
+                    "intent_id": intent["intent_id"],
+                    "case_id": case_id,
+                    "environment": available(environment) if environment else missing(),
+                    "profile_revision": available(execution["profile_revision"]),
+                    "direction": intent["trade"]["decision"],
+                    "intent_status": intent["status"],
+                    "intake_status": "EXECUTION_ACCEPTED",
+                    "entry_result": execution.get("entry_result"),
+                    "entry_reason": execution.get("entry_reason"),
+                    "has_actual_fill": bool(positive),
+                    "triggered_at": available(
+                        instant(datetime.fromisoformat(intent["released_at"]))
                     )
-                ),
-            }),
+                    if intent.get("released_at")
+                    else missing(),
+                    "accepted_at": available(
+                        instant(datetime.fromisoformat(execution["created_at"]))
+                    ),
+                    "first_fill_at": available(instant(datetime.fromisoformat(first_fill)))
+                    if first_fill
+                    else missing(),
+                    "filled_quantity": available(
+                        format(sum((Decimal(f["quantity"]) for f in entry), Decimal(0)), "f")
+                    ),
+                    "filled_notional_usd": available(
+                        format(
+                            sum(
+                                (Decimal(f["quantity"]) * Decimal(f["price"]) for f in entry),
+                                Decimal(0),
+                            ),
+                            "f",
+                        )
+                    ),
+                }
+            ),
         )
         records.append(
             {
@@ -267,6 +291,29 @@ class ExecutionProjector:
         ]
         policy_id = intent["trade"].get("executed_policy_id")
         ar = intent["trade"].get("activation_revision")
+        if policy_id and not ar and intent["trade"].get("executed_condition_id"):
+            case = self.store.get("native:runtime_v2_cases", ticker, case_id) or {}
+            active = (
+                self.store.get(
+                    "activation_revision",
+                    ticker,
+                    case.get("version_pin", {}).get("activation_revision_id") or "",
+                )
+                or {}
+            )
+            artifact = active.get("policy_set", {}).get("artifact_id")
+            if artifact:
+                from .lifecycle import rows
+
+                detail = next(
+                    (
+                        d
+                        for d in rows(self.store, "policy_detail", ticker, artifact).values()
+                        if d["summary"]["policy_id"] == policy_id
+                    ),
+                    None,
+                )
+                ar = detail["summary"]["policy_revision_id"] if detail else None
         if policy_id and ar:
             contributions.append(
                 {

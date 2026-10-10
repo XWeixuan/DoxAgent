@@ -76,9 +76,7 @@ class ResearchInitializationAdapter:
     async def execute(self, context: NodeContext) -> NodeResult:
         settings = self.settings
         raw_prebuilt = (
-            context.node.inputs.get("_prebuilt_cdecr")
-            if context.node.key == "cdecr"
-            else None
+            context.node.inputs.get("_prebuilt_cdecr") if context.node.key == "cdecr" else None
         )
         if raw_prebuilt is not None and settings.cdecr_execution_mode not in {
             "LOCAL_OR_PREBUILT",
@@ -372,6 +370,7 @@ class ResearchInitializationAdapter:
         bundle = await orchestrator.run(
             Document2RunRequest(
                 run_id=child_id,
+                document_schema_version=context.run.document2_schema_version,
                 ticker=context.run.ticker,
                 source_global_run_id=context.dependency("d1").artifacts["document1"]["run_id"],
                 as_of=context.run.research_cutoff_at,
@@ -406,8 +405,17 @@ class ResearchInitializationAdapter:
 
         policies = SQLiteDocument3PolicyRepository(self.settings.codex_runtime_sqlite_path)
         policy = policies.reserved_policy(context.run.ticker, child_id)
+        orchestrator = build_document3_orchestrator(
+            self.settings,
+            worker=worker,
+            orchestration_version=context.run.document3_orchestration_version,
+        )
         if policy is None:
-            orchestrator = build_document3_orchestrator(self.settings, worker=worker)
+            kwargs = (
+                {}
+                if context.run.document3_orchestration_version == "v2.1"
+                else {"enqueue_o4": False, "candidate_publication": True}
+            )
             result = await orchestrator.initialize(
                 ticker=context.run.ticker,
                 run_id=child_id,
@@ -416,12 +424,35 @@ class ResearchInitializationAdapter:
                     "version"
                 ],
                 cutoff_at=context.run.research_cutoff_at,
-                enqueue_o4=False,
-                candidate_publication=True,
+                **kwargs,
             )
             if result.policy_set_version is None:
                 raise ValueError("D3 has no usable Policy Set")
+            if context.run.document3_orchestration_version == "v2.1":
+                from doxagent.workflows.codex_document3.publication_v21 import (
+                    finalize_candidate_v21,
+                )
+
+                await finalize_candidate_v21(
+                    child_id,
+                    state=orchestrator.state,
+                    workspace=worker,
+                    runtime_repository=self.repository,
+                    policy_repository=policies,
+                    published_storage=getattr(orchestrator, "published_storage", None),
+                )
             policy = policies.get_version(context.run.ticker, result.policy_set_version)
+        elif context.run.document3_orchestration_version == "v2.1":
+            from doxagent.workflows.codex_document3.publication_v21 import finalize_candidate_v21
+
+            await finalize_candidate_v21(
+                child_id,
+                state=orchestrator.state,
+                workspace=worker,
+                runtime_repository=self.repository,
+                policy_repository=policies,
+                published_storage=getattr(orchestrator, "published_storage", None),
+            )
         if policy is None:
             raise ValueError("D3 Policy Set is not available locally")
         path = self._artifact(context, "policy_set.json", policy.model_dump_json())

@@ -77,6 +77,8 @@ class InitializationWorker:
         heartbeat = asyncio.create_task(self._heartbeat(lease))
         try:
             done, _ = await asyncio.wait([work, heartbeat], return_when=asyncio.FIRST_COMPLETED)
+            if work in done:
+                return await work
             if heartbeat in done:
                 await heartbeat
                 raise LeaseLost("heartbeat stopped")

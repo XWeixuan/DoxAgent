@@ -79,6 +79,21 @@ def test_rounds_cover_full_case_and_pinned_watermark(tmp_path):
     assert reader.rounds([], "W2", skipped=True)[0]["not_executed_reason"] == "W2_SKIPPED"
 
 
+def test_hot_path_includes_w2_r3_but_not_w1_extraction(tmp_path):
+    reader = CaseEvidence(None, "MU", "case", 1)
+    groups = [
+        {"node": node, "round": round_name, "count": 1, "starts": 1, "ends": 1,
+         "first_at": "2026-10-10T00:00:00Z", "last_at": finish}
+        for node, round_name, finish in (
+            ("W1", "R2", "2026-10-10T00:00:01Z"),
+            ("W2", "R2", "2026-10-10T00:00:02Z"),
+            ("W2", "R3", "2026-10-10T00:00:04Z"),
+            ("W1", "R3", "2026-10-10T00:01:00Z"),
+        )
+    ]
+    assert reader.interval(groups)["wall_seconds"]["value"] == 4
+
+
 def test_evidence_lookup_plans_use_exact_identity_indexes(tmp_path):
     store = ReadStore(tmp_path / "read.db")
     store.migrate()

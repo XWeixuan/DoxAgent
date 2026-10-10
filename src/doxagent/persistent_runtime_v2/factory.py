@@ -238,7 +238,9 @@ def build_persistent_runtime_v2_service(
             }
         )
         ExecutionBundles(journal).publish(
-            RuntimeV2PromptSet.load(Path(settings.persistent_runtime_v2_prompt_root)), assets=assets
+            RuntimeV2PromptSet.load(Path(settings.persistent_runtime_v2_prompt_root)),
+            assets=assets,
+            orchestration_revision=3,
         )
     service = PersistentRuntimeV2Service(
         journal=journal,
@@ -271,7 +273,8 @@ def build_persistent_runtime_v2_service(
             external_delivery=bool(settings.ticker_initialization_control_path),
             prepare_case_inputs=(
                 partial(prepare_message_inputs, path=settings.message_bus_v2_sqlite_path)
-                if settings.message_bus_v2_enabled else None
+                if settings.message_bus_v2_enabled
+                else None
             ),
         )
     return service

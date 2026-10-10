@@ -242,21 +242,24 @@
       ]
     },
     "RemainingGap": {
-      "type": "object",
       "properties": {
         "name": {
-          "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
         },
         "reason": {
-          "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "title": "Reason",
+          "type": "string"
         }
       },
       "required": [
         "name",
         "reason"
-      ]
+      ],
+      "title": "RemainingGap",
+      "type": "object"
     },
     "Consolidation": {
       "type": "object",
@@ -291,21 +294,24 @@
       ]
     },
     "Calibration": {
-      "type": "object",
       "properties": {
         "reference_state": {
-          "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "title": "Reference State",
+          "type": "string"
         },
         "trigger_boundary": {
-          "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "title": "Trigger Boundary",
+          "type": "string"
         }
       },
       "required": [
         "reference_state",
         "trigger_boundary"
-      ]
+      ],
+      "title": "Calibration",
+      "type": "object"
     },
     "Condition": {
       "type": "object",
@@ -543,6 +549,233 @@
         "policies",
         "instruction"
       ]
+    },
+    "RearmRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "policy_id": {
+          "minLength": 1,
+          "title": "Policy Id",
+          "type": "string"
+        },
+        "reason": {
+          "minLength": 1,
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "policy_id",
+        "reason"
+      ],
+      "title": "RearmRequest",
+      "type": "object"
+    },
+    "ConditionDraftV3": {
+      "properties": {
+        "condition_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Condition Id"
+        },
+        "decision": {
+          "enum": [
+            "LONG",
+            "SHORT"
+          ],
+          "title": "Decision",
+          "type": "string"
+        },
+        "trigger_layer": {
+          "enum": [
+            "OUTER",
+            "MIDDLE",
+            "INNER"
+          ],
+          "title": "Trigger Layer",
+          "type": "string"
+        },
+        "criterion": {
+          "minLength": 1,
+          "title": "Criterion",
+          "type": "string"
+        },
+        "calibration": {
+          "$ref": "#/$defs/Calibration"
+        }
+      },
+      "required": [
+        "decision",
+        "trigger_layer",
+        "criterion",
+        "calibration"
+      ],
+      "title": "ConditionDraftV3",
+      "type": "object"
+    },
+    "EventLibraryRef": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "minLength": 1,
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "ticker": {
+          "minLength": 1,
+          "title": "Ticker",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "published_at": {
+          "format": "date-time",
+          "title": "Published At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "contract_version",
+        "ticker",
+        "version",
+        "sha256",
+        "published_at"
+      ],
+      "title": "EventLibraryRef",
+      "type": "object"
+    },
+    "PolicyDraftV3": {
+      "properties": {
+        "policy_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Policy Id"
+        },
+        "title": {
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "ref": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Ref",
+          "type": "array"
+        },
+        "transmission": {
+          "minLength": 1,
+          "title": "Transmission",
+          "type": "string"
+        },
+        "match_scope": {
+          "minLength": 1,
+          "title": "Match Scope",
+          "type": "string"
+        },
+        "activation_conditions": {
+          "items": {
+            "$ref": "#/$defs/ConditionDraftV3"
+          },
+          "minItems": 1,
+          "title": "Activation Conditions",
+          "type": "array"
+        }
+      },
+      "required": [
+        "title",
+        "transmission",
+        "match_scope",
+        "activation_conditions"
+      ],
+      "title": "PolicyDraftV3",
+      "type": "object"
+    },
+    "MaintenancePatchV3": {
+      "properties": {
+        "rearm_requests": {
+          "items": {
+            "$ref": "#/$defs/RearmRequest"
+          },
+          "title": "Rearm Requests",
+          "type": "array"
+        },
+        "base_policy_set_version": {
+          "minimum": 1,
+          "title": "Base Policy Set Version",
+          "type": "integer"
+        },
+        "event_library_ref": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EventLibraryRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "upsert_policies": {
+          "items": {
+            "$ref": "#/$defs/PolicyDraftV3"
+          },
+          "title": "Upsert Policies",
+          "type": "array"
+        },
+        "retire_policy_ids": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Retire Policy Ids",
+          "type": "array"
+        },
+        "remaining_gaps": {
+          "items": {
+            "$ref": "#/$defs/RemainingGap"
+          },
+          "title": "Remaining Gaps",
+          "type": "array"
+        },
+        "summary": {
+          "default": "",
+          "title": "Summary",
+          "type": "string"
+        }
+      },
+      "required": [
+        "base_policy_set_version",
+        "upsert_policies",
+        "retire_policy_ids"
+      ],
+      "title": "MaintenancePatchContractV3",
+      "type": "object"
     }
   }
 }

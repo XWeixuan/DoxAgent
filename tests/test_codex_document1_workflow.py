@@ -158,8 +158,18 @@ async def test_global_research_runs_exact_new_dag_and_publishes_only_c1_c3_c5(
         }
     ]
     assert len(set(c4_threads)) == 1
+    for item in worker.requests:
+        expected = (
+            ("gpt-6.1-sol", "high") if item.node is CodexD1Node.C4E_NETWORK_BUILD
+            else ("gpt-6.1-sol", "medium")
+            if item.node in {CodexD1Node.C1, CodexD1Node.C3, CodexD1Node.C5}
+            else ("gpt-6-luna", "max")
+        )
+        assert (item.model, item.effort) == expected
+    assert repository.get_thread("global-run", CodexAgentRole.C4.value).model == "gpt-6.1-sol"
     c5_thread = repository.get_thread("global-run", CodexAgentRole.C5.value)
     assert c5_thread is not None and c5_thread.thread_id not in set(c4_threads)
+    assert c5_thread.model == "gpt-6.1-sol"
     assert bundle.entity_relations[0].relation_object == "TSMC"
     assert bundle.future_nodes[0].time == "2026-Q4"
     assert bundle.entity_network_report.startswith("# 网络研究")

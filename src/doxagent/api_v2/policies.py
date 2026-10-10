@@ -58,7 +58,8 @@ def install(app):
     def uncertain(sql, parameters):
         with store.connect() as db:
             return db.execute(
-                "SELECT count(*) FROM (" + sql + ") WHERE ACTIVE_UNKNOWN", parameters,
+                "SELECT count(*) FROM (" + sql + ") WHERE ACTIVE_UNKNOWN",
+                parameters,
             ).fetchone()[0]
 
     def context(request, ticker, args):
@@ -69,12 +70,12 @@ def install(app):
         if not activation:
             raise ApiFailure("NO_ACTIVE_REVISION", 404)
         shell = args.get("shell_id")
-        if (
-            not shell
-            or (shell != "ALL" and store.get(
+        if not shell or (
+            shell != "ALL"
+            and store.get(
                 "shell", ticker, activation["document2"]["run_id"] + ":" + shell, view["seq"]
             )
-            is None)
+            is None
         ):
             raise ApiFailure("RESOURCE_NOT_FOUND", 404)
         period = view["wire"]["period"]
@@ -125,7 +126,15 @@ def install(app):
             ]
             items.append(value)
         more = len(rows) > limit
-        cursor = store.save_token(owner, scope, {"after": rows[limit - 1]["id"], "view_id": args["view_id"], "seq": view["seq"]}) if more else None
+        cursor = (
+            store.save_token(
+                owner,
+                scope,
+                {"after": rows[limit - 1]["id"], "view_id": args["view_id"], "seq": view["seq"]},
+            )
+            if more
+            else None
+        )
         return app.state.respond(
             request,
             "PolicySummaryPage",
@@ -137,8 +146,11 @@ def install(app):
                 "snapshot_id": args["view_id"],
             },
             view_id=args["view_id"],
-            resource_coverage=coverage(complete=not unknown, count=len(items),
-                reasons=["POLICY_EFFECTIVENESS_UNKNOWN"] if unknown else []),
+            resource_coverage=coverage(
+                complete=not unknown,
+                count=len(items),
+                reasons=["POLICY_EFFECTIVENESS_UNKNOWN"] if unknown else [],
+            ),
         )
 
     @app.get(prefix + "/changes")
@@ -168,9 +180,9 @@ def install(app):
         with store.connect() as db:
             result = db.execute(
                 "SELECT coalesce(sum(ACTIVE OR ACTIVE_UNKNOWN),0) AS active, "
-                "coalesce(sum((ACTIVE OR ACTIVE_UNKNOWN) AND json_extract(payload,'$.decision')='LONG'),0) "
+                "coalesce(sum((ACTIVE OR ACTIVE_UNKNOWN) AND (json_extract(payload,'$.decision')='LONG' OR EXISTS (SELECT 1 FROM json_each(payload,'$.executable_directions') WHERE value='LONG'))),0) "
                 "AS long_active, "
-                "coalesce(sum((ACTIVE OR ACTIVE_UNKNOWN) AND json_extract(payload,'$.decision')='SHORT'),0) "
+                "coalesce(sum((ACTIVE OR ACTIVE_UNKNOWN) AND (json_extract(payload,'$.decision')='SHORT' OR EXISTS (SELECT 1 FROM json_each(payload,'$.executable_directions') WHERE value='SHORT'))),0) "
                 "AS short_active, "
                 "coalesce(sum(ADDED),0) AS added, coalesce(sum(HIT),0) AS hit, "
                 "coalesce(sum(MODIFIED),0) AS modified, coalesce(sum(RETIRED),0) AS retired, "
@@ -210,7 +222,9 @@ def install(app):
             }
             if state_metric and unknown:
                 data[name].update(
-                    current_coverage=coverage(count=values["active"], reasons=["POLICY_EFFECTIVENESS_UNKNOWN"]),
+                    current_coverage=coverage(
+                        count=values["active"], reasons=["POLICY_EFFECTIVENESS_UNKNOWN"]
+                    ),
                     provisional=True,
                 )
         return app.state.respond(request, "PolicyMetrics", data, view_id=args["view_id"])

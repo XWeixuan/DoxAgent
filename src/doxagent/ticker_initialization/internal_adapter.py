@@ -48,9 +48,14 @@ class InternalNodeAdapter:
         snapshot = context.node.inputs["_snapshot"]
         kind = snapshot["kind"]
         run_id = "rerun-" + hashlib.sha256(context.run.initialization_id.encode()).hexdigest()[:24]
-        await worker.fork_snapshot(snapshot["run_id"], snapshot["snapshot_id"], run_id)
-        context.checkpoint(child_run_id=run_id)
         arguments = decode(context.node.inputs["_selected_invocation"])
+        fork_run_id = f"{run_id}-{arguments['owner'].lower()}" if kind == "d3_v21" else run_id
+        await worker.fork_snapshot(
+            snapshot.get("workspace_run_id", snapshot["run_id"]),
+            snapshot["snapshot_id"],
+            fork_run_id,
+        )
+        context.checkpoint(child_run_id=run_id)
         for field in ("run_id", "persistence_run_id", "workspace_run_id"):
             if field in arguments:
                 arguments[field] = run_id
@@ -65,6 +70,18 @@ class InternalNodeAdapter:
                 run_id=run_id, node=arguments["node"], output_model=arguments["output_model"]
             )
             baseline = await owner._workspace_snapshot(run_id)
+        if kind == "d3_v21":
+            import copy
+
+            source = snapshot.get("host_state")
+            if source is None:
+                raise ValueError("V21 internal rerun has no frozen host context")
+            isolated = copy.deepcopy(source)
+            isolated.pop("commit", None)
+            isolated.pop("handoff", None)
+            isolated.pop("candidate_handoff", None)
+            isolated["internal_rerun_of"] = snapshot["run_id"]
+            owner.state.start(run_id, source["identity"], isolated)
         result = await method(**arguments)
         warnings: list[str] = []
         if kind == "d3":
@@ -152,6 +169,13 @@ class InternalNodeAdapter:
                 **common, repository=repository, max_subagents=settings.codex_max_subagents
             )
             return runner, runner.run
+        if kind == "d3_v21":
+            from doxagent.workflows.codex_document3.service import build_document3_orchestrator
+
+            orchestrator = build_document3_orchestrator(
+                settings, worker=worker, orchestration_version="v2.1"
+            )
+            return orchestrator.runner, orchestrator.runner.turn
         if kind == "d3":
             from doxagent.workflows.codex_document3.service import build_document3_orchestrator
 
@@ -180,13 +204,16 @@ class InternalNodeAdapter:
 
     @staticmethod
     async def _d3_inputs(owner: Any, run_id: str) -> Any:
+        import json
+
         from doxagent.workflows.codex_document2.schema import Document2Document
         from doxagent.workflows.codex_document3.inputs import PreparedDocument3Inputs
         from doxagent.workflows.codex_document3.schema import Document3InitializeTask, PolicySet
 
-        task = await owner._read_json(
-            run_id, "context/document3/task.json", Document3InitializeTask
-        )
+        task_file = await owner._agent.workspace.read_text(run_id, "context/document3/task.json")
+        task_data = json.loads(task_file.content)
+        task_data.pop("context_reading", None)
+        task = Document3InitializeTask.model_validate(task_data)
         document = await owner._read_json(
             run_id, "context/document3/document2.json", Document2Document
         )

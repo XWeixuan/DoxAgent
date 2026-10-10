@@ -508,7 +508,30 @@ async def test_runner_reuses_one_ticker_thread_and_enables_only_o4_operations(
     assert all(item.o4_operations_enabled for item in worker.requests)
     assert all(item.data_mcp_enabled is False for item in worker.requests)
     assert all(item.allow_subagents is False for item in worker.requests)
-    assert all(item.model == "gpt-6.1-sol" and item.effort == "high" for item in worker.requests)
+    assert all(item.model == "gpt-6.1-sol" and item.effort == "medium" for item in worker.requests)
+    repository.close()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("node", list(CodexMonitoringO4Node))
+async def test_all_o4_dispatches_use_sol_medium(tmp_path, node):
+    class StopWorker:
+        async def run(self, request):
+            self.request = request
+            raise RuntimeError("captured dispatch")
+
+    worker = StopWorker()
+    repository = MonitoringO4Repository(tmp_path / "o4.sqlite3")
+    runner = MonitoringO4AgentRunner(
+        worker=worker, workspace=_Workspace(), repository=repository,
+        model="old-global-default",
+    )
+    with pytest.raises(O4TurnInterrupted, match="captured dispatch"):
+        await runner.run(O4Request(
+            ticker="MU", node=node, dedupe_key=node.value,
+            payload={"plan_json": _delivery_plan().model_dump(mode="json")},
+        ))
+    assert (worker.request.model, worker.request.effort) == ("gpt-6.1-sol", "medium")
     repository.close()
 
 

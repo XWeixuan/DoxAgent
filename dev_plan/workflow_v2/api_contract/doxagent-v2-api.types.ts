@@ -318,7 +318,7 @@ export interface ResearchDownloadManifest {
     reason: Reason | null;
   }[];
 }
-export interface ShellSummary {
+export interface ShellSummaryLegacy {
   shell_id: Id;
   ordinal: Count;
   core_question: string;
@@ -330,6 +330,13 @@ export interface ShellSummary {
   failure: ApiError | null;
   content: Resource<ContentRef>;
 }
+export interface ShellSummaryV21 {
+  schema_version: "document2.shell-view.v2.1"; view_id: Id; shell_id: Id; ordinal: Count;
+  name: string; scope: string; boundary: string; ref: string[];
+  status: "COMPLETED" | "FAILED"; unit_count: Value<Count>;
+  failed_stage: string | null; failure_kind: string | null; failure: ApiError | null; content: Resource<ContentRef>;
+}
+export type ShellSummary = ShellSummaryLegacy | ShellSummaryV21;
 export interface ExpectationsSummary {
   run: RunSummary;
   runtime_activation_id: Id | null;
@@ -365,17 +372,29 @@ export interface PotentialGap {
   gap_id: Id; possible_occurrence: string; derivation: string; citation: string[];
   expected_revision: string; recognition_criteria: string | null;
 }
-export interface ExpectationUnit {
+export interface ExpectationUnitLegacy {
   expectation_id: Id; proposition: string; horizon: string;
   state: ExpectationState; realization_factors: RealizationFactor[]; potential_gaps: PotentialGap[];
 }
+export interface ExpectationUnitV21 {
+  schema_version: "document2.unit-view.v2.1"; view_id: Id; ordinal: Count;
+  name: string; scope: string; horizon: string; ref: string[];
+  state: {
+    parameters: { name: string; definition: string; value_type: ParameterType; ref: string[] }[];
+    values: {name: string; parameter: string; source_role: string; value: StateValueData; previous_value: StateValueData | null; time_scope: string; as_of: string; validity_state: string; ref: string[]}[];
+  };
+  expectation_baseline: {name: string; baseline: string; ordinary_progress: string; open_frontier: string; time_scope: string; ref: string[]}[];
+  realization_factors: {name: string; mechanism: string; current_status: string; materiality_context: string; scope_boundary: string; ref: string[]}[];
+  potential_gaps: {name: string; why_live: string; revision_logic: string; possibility_space: {name: string; implication: string}[]; ref: string[]}[];
+}
+export type ExpectationUnit = ExpectationUnitLegacy | ExpectationUnitV21;
 export interface ShellContent {
   run_id: Id; shell_id: Id;
   content_status: "PUBLISHED_COMPLETE" | "PUBLISHED_PARTIAL";
   units: Page<ExpectationUnit>;
 }
 export type PolicyFilter = "ACTIVE" | "ADDED" | "HIT" | "MODIFIED" | "RETIRED" | "EXECUTED";
-export interface Policy {
+export interface PolicyLegacy {
   policy_id: Id; title: string;
   source_refs: { shell_id: Id; expectation_id: Id; gap_id: Id }[];
   decision: "LONG" | "SHORT"; match_scope: string;
@@ -384,8 +403,13 @@ export interface Policy {
     calibration: { reference_state: string; trigger_boundary: string };
   }[];
 }
+export interface PolicyV3 {
+  policy_id: Id; title: string; ref: string[]; transmission: string; match_scope: string;
+  activation_conditions: {condition_id: Id; decision: "LONG" | "SHORT"; trigger_layer: "OUTER" | "MIDDLE" | "INNER"; criterion: string; calibration: {reference_state: string; trigger_boundary: string}}[];
+}
+export type Policy = PolicyLegacy | PolicyV3;
 // Download is the original canonical artifact, so native ref field names are retained.
-export interface PolicySetDownload {
+export interface PolicySetDownloadLegacy {
   schema_version: "document3.v2.2";
   ticker: string;
   policy_set_version: Count;
@@ -397,10 +421,18 @@ export interface PolicySetDownload {
   event_library_ref: {
     contract_version: string; ticker: string; version: Count; sha256: string; published_at: Instant;
   } | null;
-  policies: Policy[];
+  policies: PolicyLegacy[];
   published_at: Instant;
 }
-export interface PolicySummary {
+export interface PolicySetDownloadV3 {
+  schema_version: "document3.v3"; workflow_version: "document3.v2.1"; ticker: string;
+  policy_set_version: Count; as_of: Instant; publication_state: "COMPLETE" | "PARTIAL";
+  document2_ref: PolicySetDownloadLegacy["document2_ref"] | null;
+  event_library_ref: PolicySetDownloadLegacy["event_library_ref"];
+  policies: PolicyV3[]; published_at: Instant;
+}
+export type PolicySetDownload = PolicySetDownloadLegacy | PolicySetDownloadV3;
+export interface PolicySummaryLegacy {
   policy_id: Id;
   policy_revision_id: Id;
   policy_activation_revision: string;
@@ -415,16 +447,26 @@ export interface PolicySummary {
   effective: Value<boolean>;
   matched_filters: PolicyFilter[];
 }
-export interface PolicyDetail { summary: PolicySummary; source_document2: DocumentRef; activation_semantics: "OR"; policy: Policy }
-export type PolicyShellSummary = Pick<ShellSummary, "shell_id" | "ordinal" | "core_question">;
+export interface PolicySummaryV3 {
+  schema_version: "document3.policy-summary.v3";
+  policy_id: Id; policy_revision_id: Id; policy_set_version: Count; title: string;
+  directions: ("LONG" | "SHORT")[]; executable_directions: ("LONG" | "SHORT")[]; consumed_directions: ("LONG" | "SHORT")[];
+  shell_ids: Id[]; unresolved_shell_ids: Id[]; lifecycle: "ACTIVE" | "RETIRED";
+  consumed: Value<boolean>; consumed_at: Value<Instant>; effective: Value<boolean>; matched_filters: PolicyFilter[];
+}
+export type PolicySummary = PolicySummaryLegacy | PolicySummaryV3;
+export interface PolicyDetailLegacy { summary: PolicySummaryLegacy; source_document2: DocumentRef; activation_semantics: "OR"; policy: PolicyLegacy }
+export interface PolicyDetailV3 { summary: PolicySummaryV3; source_document2: DocumentRef | null; activation_semantics: "OR"; policy: PolicyV3; policy_usage: JsonObject[] }
+export type PolicyDetail = PolicyDetailLegacy | PolicyDetailV3;
+export type PolicyShellSummary = Pick<ShellSummaryLegacy, "shell_id" | "ordinal" | "core_question"> | Pick<ShellSummaryV21, "shell_id" | "ordinal" | "name">;
 export interface PolicyContext {
   maintenance?: MaintenanceDisposition | null;
   runtime_activation_id: Id;
   document2: DocumentRef;
   policy_set: PolicySetRef;
-  source_document2: DocumentRef;
+  source_document2: DocumentRef | null;
   source_context_consistent: Value<boolean>;
-  shells: Page<Pick<ShellSummary, "shell_id" | "ordinal" | "core_question">>;
+  shells: Page<PolicyShellSummary>;
   default_shell_id: Id | null;
 }
 export interface PolicyMetrics {
@@ -499,7 +541,7 @@ export type Route = "ARCHIVE" | "TRADE" | "ADD_TO_DELTA" | "W3";
 export type Confidence = "normal" | "low";
 export type CaseStatus = "CREATED" | "RUNNING" | "ADJUDICATED" | "COMPLETED" | "PENDING_W3" | "PENDING_RETRY" | "UNAVAILABLE" | "FAILED";
 export type TechnicalStatus = "OK" | "PENDING_RETRY" | "UNAVAILABLE" | "FAILED";
-export type ResultKind = "ARCHIVE" | "EVENT_DISCOVERY" | "BADCASE" | "TRADE_INTENT" | "TRADE_EXECUTION" | "TRADE_NOT_EXECUTED" | "FAILURE";
+export type ResultKind = FirstRoundTag | "ARCHIVE" | "EVENT_DISCOVERY" | "BADCASE" | "TRADE_INTENT" | "TRADE_EXECUTION" | "TRADE_NOT_EXECUTED" | "FAILURE";
 export type ExecutionState = "PENDING" | "UNKNOWN" | "EXECUTED" | "NOT_EXECUTED";
 export type CaseTradeState = "NOT_APPLICABLE" | ExecutionState;
 export interface MessageKey { standard_message_id: Id; revision: Count }
@@ -611,7 +653,9 @@ export interface RuntimeMetrics {
   new_cases: Metric; old_cases: Metric; hit_cases: Metric; hit_case_ratio: Metric;
   w3_cases: Metric; new_fact_candidates: Metric; executed_cases: Metric;
 }
+export type FirstRoundTag = "FIRST_ROUND_TRADE" | "POLICY_RELATED_EVENT" | "SUSPECTED_DUPLICATE_HIT";
 export interface CaseSummary {
+  first_round_tags?: FirstRoundTag[];
   case_id: Id; revision: Count; semantic_day: Day; runtime_mode: "REALTIME" | "CLOSED";
   first_round_shape: "PARALLEL" | "SEQUENTIAL" | "W1_ONLY" | "UNDETERMINED";
   status: CaseStatus; technical_status: TechnicalStatus;
@@ -624,10 +668,10 @@ export interface CaseSummary {
   results: ResultKind[];
   trade: { intent_count: Count; state: CaseTradeState; reason_codes: string[] };
   result_settled: boolean;
-  trade_disposition: "NOT_EVALUATED" | "ANALYSIS_ONLY" | "SUPPRESSED_BY_CONTROL" | "MODE_UNAVAILABLE" | "CANDIDATE" | "READY" | "DUPLICATE_POLICY" | "DUPLICATE_REALTIME_OUTPUT" | "EXPIRED_SEMANTIC_DAY" | "EXECUTION_ACCEPTED" | "OUTPUT_RECORDED";
+  trade_disposition: "NOT_EVALUATED" | "ANALYSIS_ONLY" | "SUPPRESSED_BY_CONTROL" | "MODE_UNAVAILABLE" | "CANDIDATE" | "READY" | "DUPLICATE_POLICY" | "DUPLICATE_REALTIME_OUTPUT" | "EXPIRED_SEMANTIC_DAY" | "SELECTED_CONDITION_INVALID" | "POLICY_MIGRATION_UNRESOLVED" | "EXECUTION_ACCEPTED" | "OUTPUT_RECORDED";
   stream_item_id: Id; member_count: Count;
 }
-export type NodeId = "SOURCE" | "W1" | "W2" | "W3" | "ARCHIVE" | "EVENT_DISCOVERY" | "BADCASE" | "TRADE_INTENT" | "TRADE_EXECUTION" | "TRADE_NOT_EXECUTED" | "FAILURE";
+export type NodeId = "SOURCE" | "W1" | "W2" | "W3" | "ARCHIVE" | "EVENT_DISCOVERY" | "FIRST_ROUND_TRADE" | "POLICY_RELATED_EVENT" | "TRADE_INTENT" | "TRADE_EXECUTION" | "TRADE_NOT_EXECUTED" | "FAILURE";
 export interface NodeCounts {
   node_id: NodeId; case_count: Count; failed_case_count: Count;
   low_confidence_case_count: Count | null;
@@ -647,6 +691,7 @@ export interface Timing {
   basis: "RECORDED" | "DERIVED_FROM_RECORDED_INTERVALS" | "UNAVAILABLE";
 }
 export interface ModelAttempt {
+  context_mode?: "EXPLICIT" | "PREVIOUS_RESPONSE" | "REPLAY_PARENT";
   attempt_id: Id; turn_id: Id | null; node_id: "W1" | "W2" | "W3";
   round: "R1" | "R2" | "R3" | "AGENT"; ordinal: Count; attempt_number: Count;
   status: "PENDING" | "RUNNING" | "SUCCEEDED" | "FAILED" | "CANCELLED";
@@ -664,15 +709,16 @@ export interface EventLink {
   library_version: Count; provisional_snapshot_version: Count | null;
   semantic_day: Day | null;
 }
-export interface PolicyLink { title?: Value<string>; policy_id: Id; policy_set_version: Count; policy_activation_revision: string; condition_ids: Id[] }
+export interface PolicyLink { title?: Value<string>; policy_id: Id; policy_set_version: Count; policy_activation_revision: string | null; policy_revision_id?: Id; condition_ids: Id[] }
 export interface RuntimeRound {
   round: "R1" | "R2" | "R3";
   attempt_count: Count;
   /** Only set when non-execution is proven, not inferred from a truncated attempts page. */
-  not_executed_reason: "W2_SKIPPED" | "NO_POLICY_CANDIDATE" | null;
+  not_executed_reason: "W2_SKIPPED" | "NO_POLICY_CANDIDATE" | "NOVELTY_NOT_NEW" | "NO_POLICY_HIT_OR_RELATED" | "LEGACY_CONTRACT" | "DELTA_OWNED_BY_W3" | "NO_DELTA_CAPTURE_REQUIRED" | null;
 }
 export interface FactAttribution { event_id: Id; fact_ids: Id[] }
 export interface W1Detail {
+  extraction?: Resource<{ capture_mode: "NEW_CAPTURE" | "AMBIGUOUS_CAPTURE"; candidate_count: Count }>;
   rounds?: RuntimeRound[];
   /** null or absent: historical evidence not recorded; []: recorded with no canonical Fact attribution. */
   fact_attributions?: FactAttribution[] | null;
@@ -680,7 +726,18 @@ export interface W1Detail {
   novelty: Value<"NEW" | "OLD">; confidence: Value<Confidence>; references: EventLink[];
   timing: Timing; attempts: Page<ModelAttempt>; reasoning: Resource<ContentRef>;
 }
+export interface ConditionNovelty { condition_ids: Id[]; is_new: boolean }
+export interface W2NovelFactAlignmentDetail {
+  status: "PENDING" | "RUNNING" | "SUCCEEDED" | "FAILED" | "NOT_EXECUTED" | "NOT_RECORDED";
+  not_executed_reason: RuntimeRound["not_executed_reason"];
+  policy_fact_novelty: Value<"NEW" | "OLD">;
+  condition_results: ConditionNovelty[];
+}
 export interface W2Detail {
+  policy_related: Value<boolean>;
+  related_policies: PolicyLink[];
+  unresolved_related_policy_ids?: Id[];
+  novel_fact_alignment: W2NovelFactAlignmentDetail;
   rounds?: RuntimeRound[];
   candidate_policies?: PolicyLink[];
   unresolved_candidate_policy_ids?: Id[];
@@ -707,6 +764,8 @@ export interface Candidate {
   provisional_event_id: Id | null; created_at: Instant;
 }
 export interface CaseDetail {
+  policy_watch?: {followup: JsonObject[]; actions: JsonObject[]; receipt: JsonObject | null};
+  policy_execution?: JsonObject | null;
   summary: CaseSummary;
   runtime_activation_id: Value<Id>;
   document1: Value<DocumentRef>; document2: Value<DocumentRef>;

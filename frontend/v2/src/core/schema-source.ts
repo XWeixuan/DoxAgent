@@ -26,7 +26,7 @@ export type WireUnit = W.Response<W.Resource<W.ExpectationUnit>>;
 export type WirePolicyContext = W.Response<W.Resource<W.PolicyContext>>;
 export type WirePolicyShells = W.Response<
   W.Resource<
-    W.Page<Pick<W.ShellSummary, "shell_id" | "ordinal" | "core_question">>
+    W.Page<W.PolicyShellSummary>
   >
 >;
 export type WirePolicyMetrics = W.Response<W.Resource<W.PolicyMetrics>>;

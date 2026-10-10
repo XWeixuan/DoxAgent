@@ -1646,6 +1646,8 @@ class CodexDocument2Orchestrator:
             content_text: str | None = file.content
             if self._published_storage is not None:
                 storage_path = f"{run_id}/{reference.artifact_id}"
+                from doxagent.codex_runtime.published_storage import cache_local_published_content
+                cache_local_published_content(self._repository, reference.sha256, raw)
                 await self._published_storage.put(storage_path, raw, reference.content_type)
                 content_text = None
             elif len(raw) > 2 * 1024 * 1024:

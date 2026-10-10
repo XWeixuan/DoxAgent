@@ -612,6 +612,7 @@ class ReadStore:
         route: str | None = None,
         q: str | None = None,
         result: str | None = None,
+        originating_node: str | None = None,
         available_for: str | None = None,
         live_bindings: bool = False,
         identity: str | None = None,
@@ -657,10 +658,16 @@ class ReadStore:
                 if kind == "case" else "instr(search_text,?)>0"
             )
             params.append(q.casefold())
+        if originating_node is not None:
+            where.append("json_extract(payload,'$.originating_node')=?")
+            params.append(originating_node)
         if source_kind:
             where.append("json_extract(payload,'$.source.kind')=?")
             params.append(source_kind)
-        if result == "POLICY_HIT" and kind == "case":
+        if result in {"FIRST_ROUND_TRADE", "POLICY_RELATED_EVENT", "SUSPECTED_DUPLICATE_HIT"} and kind == "case":
+            where.append("EXISTS (SELECT 1 FROM json_each(objects.payload,'$.first_round_tags') WHERE value=?)")
+            params.append(result)
+        elif result == "POLICY_HIT" and kind == "case":
             where.append("json_extract(objects.payload,'$.final_policy_hit.value')=1")
         elif result == "POLICY_RECALLED" and kind == "case":
             # Read the admitted Case's R1 evidence at the same view watermark.

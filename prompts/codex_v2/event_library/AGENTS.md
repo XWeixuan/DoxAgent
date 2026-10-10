@@ -7,7 +7,7 @@
    For `LOCAL_RECONSTRUCTION`, immediately read the task's immutable `wave_runtime_context_path` after these five control files and verify its SHA-256 before using its Package → Atomic projection.
 3. Read the Frozen View manifest and the business files required by the current stage: the complete Known Event Index, assigned Atomic Delta, Runtime Package index, permitted Event Details, reference-review candidates, prior-attempt work, upstream context, and the ledger schemas referenced by the manifest when the stage writes those artifacts.
 
-Known Event Index rows contain `event_id | occurred_at | title` and an optional fourth `known_event_summary` cell; an absent fourth cell means the summary duplicated the title.
+Known Event Index rows contain exactly `event_id | occurred_at | known_event_summary`. The title is not included; the summary is always present, including when it repeats the Event Detail title.
 
 For initialization, read the locally copied C1, C3, and C5 report bodies and their hash manifest. Use D1 to understand actors, business context, relationships, forward matters, and possible boundaries.
 

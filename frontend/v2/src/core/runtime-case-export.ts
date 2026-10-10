@@ -119,7 +119,10 @@ async function fullPage<T, K extends keyof Endpoints>(
 const resultLabels: Record<string, string> = {
   ARCHIVE: "归档",
   EVENT_DISCOVERY: "事件发现",
-  BADCASE: "Badcase",
+  BADCASE: "历史 Badcase",
+  FIRST_ROUND_TRADE: "一轮判定交易",
+  POLICY_RELATED_EVENT: "policy相关事件",
+  SUSPECTED_DUPLICATE_HIT: "疑似重复命中",
   TRADE_INTENT: "交易意图产生",
   TRADE_EXECUTION: "交易执行",
   TRADE_NOT_EXECUTED: "交易未执行",
@@ -251,19 +254,35 @@ export async function collectRuntimeCases(
             return {
               "Policy ID": p.policy_id,
               名称: p.title,
-              方向: p.decision,
+              方向:
+                "decision" in p
+                  ? p.decision
+                  : [
+                      ...new Set(
+                        p.activation_conditions.map((c) => c.decision),
+                      ),
+                    ],
+              ...("transmission" in p
+                ? { 经济传导: p.transmission, 引用: p.ref }
+                : {}),
               匹配范围: p.match_scope,
               激活条件: p.activation_conditions.map((c) => ({
                 编号: c.condition_id,
+                ...("decision" in c
+                  ? { 方向: c.decision, 层级: c.trigger_layer }
+                  : {}),
                 条件内容: c.criterion,
                 参考状态: c.calibration.reference_state,
                 触发边界: c.calibration.trigger_boundary,
               })),
-              关联预期: p.source_refs.map((r) => ({
-                Shell: r.shell_id,
-                Unit: r.expectation_id,
-                Gap: r.gap_id,
-              })),
+              关联预期:
+                "source_refs" in p
+                  ? p.source_refs.map((r) => ({
+                      Shell: r.shell_id,
+                      Unit: r.expectation_id,
+                      Gap: r.gap_id,
+                    }))
+                  : [],
             };
           })(),
         );
@@ -277,10 +296,12 @@ export async function collectRuntimeCases(
       third = detail.w3.data;
     if (
       second?.unresolved_candidate_policy_ids?.length ||
-      second?.unresolved_policy_ids?.length
+      second?.unresolved_policy_ids?.length ||
+      second?.unresolved_related_policy_ids?.length
     )
       throw new Error("Case 固定版本的 Policy 缺失，导出已停止。");
     const w1 = {
+      事实抽取: first?.extraction?.data ?? null,
       结论: first?.novelty.value ?? null,
       置信度: first?.confidence.value ?? null,
       判断理由: first ? await text(first.reasoning) : null,
@@ -295,6 +316,9 @@ export async function collectRuntimeCases(
     const w2 = {
       是否跳过: second?.skipped ?? null,
       是否命中: second?.policy_hit.value ?? null,
+      是否相关: second?.policy_related?.value ?? null,
+      新事实对齐: second?.novel_fact_alignment ?? null,
+      相关策略: await policyList(second?.related_policies),
       置信度: second?.confidence.value ?? null,
       召回策略: await policyList(second?.candidate_policies),
       命中策略: await policyList(second?.policies),
@@ -400,12 +424,19 @@ export async function collectRuntimeCases(
         接收时间: s.received_at,
         完成时间: s.completed_at.value ?? null,
         处理状态: s.status,
+        一轮标签: (s.first_round_tags ?? []).map((r) => resultLabels[r] ?? r),
         处理结果: s.results.map((r) => resultLabels[r] ?? r),
       },
       消息原文: messageDetails,
       "W1 新旧判断": w1,
       "W2 Policy 判断": w2,
       "W3 二轮研判": w3,
+      ...(detail.policy_watch
+        ? {
+            "Policy WATCH": detail.policy_watch,
+            "最终 Policy 执行选择": detail.policy_execution ?? null,
+          }
+        : {}),
       发现的新事实: candidates,
       交易意图与执行: executionDetails,
     };

@@ -57,11 +57,12 @@ def test_research_activation_preserves_effective_monitoring_edits(
         repository=repository,
         lease=None,
     )
-    monkeypatch.setattr(
-        module,
-        "SQLiteDocument3PolicyRepository",
-        lambda _: SimpleNamespace(get_projection=lambda *args: object()),
-    )
+    from tests.fixtures.codex_document3 import _policy_set
+    from doxagent.workflows.codex_document3.repository import _project
+    canonical = _policy_set()
+    monkeypatch.setattr(module, "SQLiteDocument3PolicyRepository", lambda _: SimpleNamespace(
+        get_projection=lambda *args: _project(canonical), get_version=lambda *args: canonical))
+    refs["document2"]["run_id"] = canonical.document2_ref.run_id
     monkeypatch.setattr(
         module,
         "PublishedEventLibraryReader",

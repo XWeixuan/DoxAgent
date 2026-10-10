@@ -332,6 +332,31 @@ const selection = {
 };
 
 describe("Runtime Case JSON export", () => {
+  it("exports frozen WATCH evidence and the explicit final Policy selection", async () => {
+    const { client, detail } = await fixture();
+    const watch = {
+      followup: [
+        {
+          policy_id: "policy-1",
+          reason: "等待确认",
+          expires_at: "2026-10-12T04:00:00Z",
+        },
+      ],
+      actions: [],
+      receipt: { outcomes: [] },
+    };
+    const execution = { selected_condition: null, reason: "暂不交易" };
+    Object.assign(detail, { policy_watch: watch, policy_execution: execution });
+    const result = await collectRuntimeCases(
+      client,
+      selection,
+      new AbortController().signal,
+    );
+    const exported = result.cases[0] as Record<string, unknown>;
+    expect(exported["Policy WATCH"]).toEqual(watch);
+    expect(exported["最终 Policy 执行选择"]).toEqual(execution);
+  });
+
   it("collects all pages and all immutable body chunks once under the frozen view", async () => {
     const { client, calls, bodyText } = await fixture();
     const result = await collectRuntimeCases(
@@ -414,6 +439,7 @@ describe("Runtime Case JSON export", () => {
       置信度: null,
       判断理由: null,
       引用依据: [],
+      事实抽取: null,
     });
     expect(entry["W2 Policy 判断"]["召回策略"]).toEqual([]);
     expect(entry["W3 二轮研判"]["专家交易判断"]["建议交易"]).toBeNull();

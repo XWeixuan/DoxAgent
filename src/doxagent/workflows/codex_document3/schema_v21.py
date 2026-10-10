@@ -154,7 +154,14 @@ class PolicySetV3(WorkModel):
         return self
 
 
+class RearmRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    policy_id: Text
+    reason: Text
+
+
 class MaintenancePatchV3(WorkModel):
+    rearm_requests: list[RearmRequest] = Field(default_factory=list)
     base_policy_set_version: int = Field(ge=1)
     event_library_ref: EventLibraryRef | None = None
     upsert_policies: list[object]  # local validation preserves unrelated upserts

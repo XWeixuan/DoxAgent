@@ -130,6 +130,7 @@ def build_document3_orchestrator(
             state=StateV21(config.sqlite_path),
             node_assets=default_node_assets() if node_assets is None else node_assets,
             policy_repository=policy_repository,
+            published_storage=published_storage,
         )
     return Document3Orchestrator(
         input_preparer=input_preparer,

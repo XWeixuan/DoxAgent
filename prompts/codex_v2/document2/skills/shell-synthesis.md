@@ -106,9 +106,10 @@ to interpret their economic significance.
 
 Imagine O1 researching the proposed group over several months. Which background would repeatedly
 be reconstructed if the Units were researched separately? Keeping that body of knowledge together
-should improve depth and consistency. If adding a group mainly introduces another business system,
-actor network, and evidence base, while the connection is chiefly upstream or downstream value
-transmission, a separate Shell is likely useful.
+should improve depth and consistency. Different products, actors, datasets, mechanisms, or horizons
+can remain Unit-specific depth within a shared core. A separate Shell is useful when those
+differences amount to a substantially different research system, such that joint maintenance would
+materially dilute depth or mix largely independent systems.
 
 Assess the group as a whole. A Shell's coherence comes from a shared body of research directly useful
 across its Units, not a chain of pairwise overlaps:
@@ -118,13 +119,36 @@ across its Units, not a chain of pairwise overlaps:
 - **Context overlap is not transitive.** A and B sharing important background, and B and C sharing
   other background, does not establish one common research context for A, B, and C.
 - **Independent Units can share a Shell.** Separate updates do not require separate research owners.
-  A single-Unit Shell is appropriate when its subject warrants a distinct persistent context,
-  not merely when a cleaner taxonomy would result.
+
+A single-Unit Shell is valid but exceptional. First examine natural adjacent Shells: can the Unit
+remain independently maintained there while reusing their main research context? Prefer that
+placement when it preserves depth and meaningful distinctions. Keep a separate Shell when the
+Unit's main research needs warrant a distinct context that those adjacent Shells cannot provide
+without diluting research. This is a placement test, not a reason to discard the Unit or force it
+into an unrelated domain.
+
+Before accepting the topology, describe internally in one sentence the long-lived Research Owner
+implied by each Shell: what it must keep understanding, researching, and updating. Compare those
+owners across the whole set. Repeatedly rebuilding substantially the same core suggests fragmented
+ownership; one owner spanning largely unrelated business systems suggests over-merging. Compare
+the underlying research work, not merely the wording of the owner descriptions, and revisit the
+affected grouping while preserving valid Unit identities and material research responsibilities.
+
+For any proposed Shell with 6 or more Units, perform a Boundary Challenge. First identify whether
+one common research core still organizes the main work and lets O1 study the included Units deeply.
+If distinct research centers emerge, compare the existing grouping with a natural partition:
+would separation create meaningful depth and clarity, or mostly reconstruct the same core to study
+different local outcomes? Retain the larger Shell when joint research remains coherent and useful;
+separate genuinely different systems when carrying them together would weaken the research. Six
+triggers review, not a Unit ceiling, a preferred size, or a presumption that a split must be found.
 
 Test a plausible partition in both directions. Would separation let each O1 deepen a distinct
 research system, or make both rebuild essentially the same background? Would combination reuse
-that background, or burden one owner with largely separate systems? Choose by research usefulness,
-not by a preferred Shell count or Unit count.
+that background, or burden one owner with largely separate systems? Each Shell starts a full O1
+research line and shapes downstream D3 expansion, so weigh the gain in depth against duplicated
+research and fragmented downstream coverage. Choose coherent research ownership, not the fewest
+or most Shells. These are internal reasoning checks, not additional output fields or research
+instructions to place in Shell definitions.
 
 ## Express provisional Shells
 
@@ -175,10 +199,11 @@ Finish with four checks:
 2. **Unit quality:** Retained subjects are durable, material, independently maintainable objects
    at useful granularity, rather than events, mechanisms, or company-wide themes.
 3. **Shell coherence:** Each Shell gives one O1 a recognizable shared body of persistent research
-   in which all included subjects can be studied deeply.
-4. **Boundary quality:** Research ownership is clear despite economic connections; value chains
-   have not forced unrelated systems together, and independent updates have not fragmented shared
-   research.
+   in which all included subjects can be studied deeply. Complete the 6+ Unit Boundary Challenge
+   where applicable.
+4. **Boundary quality:** Compare the proposed research owners across the whole topology. Single-Unit
+   Shells have a substantive reason for separation; shared research has not been fragmented, and
+   largely independent systems have not been combined merely to reduce Shell count.
 
 The draft is ready when these structural choices are defensible from available material and clear
 enough for Domain Review to challenge. Further work is useful when it could change object identity,

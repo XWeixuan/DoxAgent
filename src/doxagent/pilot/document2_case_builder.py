@@ -894,6 +894,11 @@ class Document2PilotCaseBuilder:
         config_root.mkdir(parents=True, exist_ok=True)
         (config_root / "config.toml").write_text(
             render_config(
+                node=(
+                    request.node.value
+                    if context.get("document_schema_version") == "document2.v2.1"
+                    else ""
+                ),
                 python=self.python,
                 case_root=installed_root,
                 run_id=request.source_workspace_run,

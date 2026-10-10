@@ -66,6 +66,22 @@ class ActivationAdapter:
             index = reader.known_index(context.run.ticker, version=refs["event_library"]["version"])
             if policy is None or index is None:
                 raise ValueError("activation has no usable Index/Projection")
+            canonical = policies.get_version(context.run.ticker, refs["document3"]["version"])
+            if (
+                canonical is None
+                or canonical.ticker != context.run.ticker
+                or policy.ticker != context.run.ticker
+            ):
+                raise ValueError("activation Policy identity mismatch")
+            from doxagent.workflows.codex_document3.repository import _project
+
+            if _project(canonical) != policy:
+                raise ValueError("activation canonical Policy/Projection mismatch")
+            if (
+                canonical.document2_ref
+                and canonical.document2_ref.run_id != refs["document2"]["run_id"]
+            ):
+                raise ValueError("activation Policy source D2 pin mismatch")
             self._documents_available(context.run.ticker, refs)
             await self._wait_w3(context)
             # Only references enter the revision; bodies remain in local artifact storage.
@@ -175,6 +191,16 @@ class ActivationAdapter:
                 raise ValueError(f"{role} published body is unavailable locally")
             if hashlib.sha256(body.content_text.encode("utf-8")).hexdigest() != body.sha256:
                 raise ValueError(f"{role} published body checksum mismatch")
+            if role == "document2":
+                from doxagent.workflows.codex_document3.consumer_contracts import parse_document2
+
+                d2 = parse_document2(body.content_text)
+                if (
+                    d2.document2_run_id != run_id
+                    or d2.ticker != ticker
+                    or d2.source_global_run_id != refs["document1"]["run_id"]
+                ):
+                    raise ValueError("activation D2 provenance mismatch")
 
     async def compensate(self, context: NodeContext) -> None:
         # First initialization remains failed for exact resume. Replacement rollback

@@ -1,5 +1,5 @@
 import { createGenerator } from "ts-json-schema-generator";
-import { writeFileSync, readFileSync } from "node:fs";
+import { writeFileSync, readFileSync, renameSync } from "node:fs";
 import { createHash } from "node:crypto";
 const schema = createGenerator({
   path: "src/core/schema-source.ts",
@@ -51,12 +51,13 @@ const contract = readFileSync(
   "../../dev_plan/workflow_v2/api_contract/doxagent-v2-api.types.ts",
 );
 writeFileSync(
-  "src/core/wire-schema.json",
+  "src/core/wire-schema.json.tmp",
   JSON.stringify({
     ...schema,
     $comment: `Source SHA256 ${createHash("sha256").update(contract).digest("hex")}`,
   }) + "\n",
 );
+renameSync("src/core/wire-schema.json.tmp", "src/core/wire-schema.json");
 console.log(
   "Generated V2 validators from shared wire types (no V1 dependency).",
 );

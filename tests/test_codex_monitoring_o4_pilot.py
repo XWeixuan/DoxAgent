@@ -175,6 +175,8 @@ def test_pilot_prepares_only_configure_and_deliver_with_isolated_state(tmp_path:
     assert manifest["nodes_in_scope"] == ["o4_configure", "o4_deliver"]
     assert manifest["nodes_out_of_scope"] == ["o4_repair"]
     config = (root / ".codex" / "config.toml").read_text(encoding="utf-8")
+    profile = tomllib.loads(config)
+    assert (profile["model"], profile["model_reasoning_effort"]) == ("gpt-6.1-sol", "medium")
     assert "monitoring_hard_delete_source" in config
     # The Codex client allow-list is a stable node-transition superset.  The
     # signed token remains CONFIGURE-only and is the actual authorization.

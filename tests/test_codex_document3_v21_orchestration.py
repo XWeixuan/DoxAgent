@@ -319,6 +319,7 @@ async def test_discovery_open_skill_is_owner_scoped(rig, monkeypatch):
         "d3v21-open-skill-open", "d3v21-open-skill-s0001"
     }
     for request in discovery:
+        assert (request.model, request.effort) == ("gpt-6.1-sol", "medium")
         files = {
             entry.relative_path
             for entry in (await rig.workspace.inventory(request.run_id)).files
@@ -356,6 +357,14 @@ async def test_open_global_four_files_staged_replay_and_contract(rig):
     integration = next(r for r in rig.worker.requests if r.node == CodexD3Node.O3_INTEGRATION)
     assert planning.thread_id is None
     assert integration.thread_id == "thread-d3v21-test-global"
+    for item in rig.worker.requests:
+        expected = ("gpt-6-luna", "max") if item.node == CodexD3Node.O3_BUILD else (
+            "gpt-6.1-sol", "medium"
+        )
+        assert (item.model, item.effort) == expected
+    discovery = next(r for r in rig.worker.requests if r.node == CodexD3Node.O3_DISCOVERY)
+    build = next(r for r in rig.worker.requests if r.node == CodexD3Node.O3_BUILD)
+    assert build.thread_id == "thread-" + discovery.run_id
     discovery_refs = {
         path: content
         for key, record in rig.state.tasks(result.run_id).items()

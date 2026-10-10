@@ -8,6 +8,17 @@ for (const width of [1262, 1559]) {
     await page.goto("http://127.0.0.1:5174/tests/browser/runtime-trade.html");
     await expect(page.getByText("运行链路")).toBeVisible();
     await expect(
+      page.getByRole("button", { name: /一轮判定交易/ }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: /policy相关事件/ }),
+    ).toBeVisible();
+    await expect(page.getByText("Badcase", { exact: true })).toHaveCount(0);
+    await page.screenshot({
+      path: `test-results/w2r3-graph-${width}.png`,
+      fullPage: true,
+    });
+    await expect(
       page.getByRole("columnheader", { name: "研判结果" }),
     ).toBeVisible();
     await expect(

@@ -875,7 +875,7 @@ class MonitoringO4PilotCoordinator:
 
         tool_array = ", ".join(quote(item) for item in tools)
         return f"""model = "gpt-6.1-sol"
-model_reasoning_effort = "high"
+model_reasoning_effort = "medium"
 approval_policy = "never"
 sandbox_mode = "danger-full-access"
 

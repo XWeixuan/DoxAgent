@@ -9,7 +9,15 @@ from enum import StrEnum
 from typing import Annotated, Any, Final, Literal
 from uuid import uuid4
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    BeforeValidator,
+    ConfigDict,
+    Field,
+    StrictBool,
+    field_validator,
+    model_validator,
+)
 
 from doxagent.event_library.contracts import (
     CanonicalAssertionState,
@@ -368,6 +376,48 @@ class W2PolicyResult(RuntimeV2Model):
         return self
 
 
+class W2PolicyAssessmentResult(RuntimeV2Model):
+    policy_hit: StrictBool
+    policy_related: StrictBool
+    policy_ids: list[str] = Field(default_factory=list, max_length=3)
+    hit_condition_ids: list[W2MatchedConditions] = Field(default_factory=list)
+    matched_condition_ids: list[W2MatchedConditions] = Field(default_factory=list)
+    confidence: RuntimeConfidence
+    reason: str = Field(min_length=1, max_length=1000)
+
+
+def normalize_w2_result(value: Any) -> Any:
+    """Read v1 receipts without weakening the v2 provider output contract."""
+    if isinstance(value, W2PolicyAssessmentResult) or value is None:
+        return value
+    if isinstance(value, W2PolicyResult):
+        value = value.model_dump(mode="json")
+    if isinstance(value, dict) and "policy_hit" not in value:
+        return {
+            **value,
+            "policy_hit": bool(value.get("policy_ids")),
+            "policy_related": False,
+            "hit_condition_ids": value.get("matched_condition_ids", []),
+            "matched_condition_ids": [],
+        }
+    return value
+
+
+class W2ConditionNovelty(RuntimeV2Model):
+    condition_ids: list[str]
+    is_new: StrictBool
+
+
+class W2NovelFactAlignmentResult(RuntimeV2Model):
+    condition_results: list[W2ConditionNovelty]
+
+
+class FirstRoundTag(StrEnum):
+    FIRST_ROUND_TRADE = "FIRST_ROUND_TRADE"
+    POLICY_RELATED_EVENT = "POLICY_RELATED_EVENT"
+    SUSPECTED_DUPLICATE_HIT = "SUSPECTED_DUPLICATE_HIT"
+
+
 class ProvisionalFactDetail(RuntimeV2Model):
     case_id: str | None = None
     originating_node: Literal["W1_R3", "W3"] | None = None
@@ -402,6 +452,7 @@ class RuntimeRouteDecision(RuntimeV2Model):
 
 
 class RuntimeModelTurn(RuntimeV2Model):
+    context_mode: Literal["EXPLICIT", "PREVIOUS_RESPONSE", "REPLAY_PARENT"] = "EXPLICIT"
     turn_id: str = Field(default_factory=lambda: new_runtime_v2_id("turn"))
     case_id: str
     lane: Literal["W1", "W2"]
@@ -447,6 +498,9 @@ class RuntimeEffect(RuntimeV2Model):
 
 
 class RuntimeCase(RuntimeV2Model):
+    orchestration_revision: Literal[1, 2, 3] = 1
+    w2_alignment: W2NovelFactAlignmentResult | None = None
+    first_round_tags: list[FirstRoundTag] = Field(default_factory=list)
     completed_at: datetime | None = None
     time_semantics_version: int = 1
     runtime_mode: Literal["REALTIME", "CLOSED"] = "REALTIME"
@@ -467,10 +521,10 @@ class RuntimeCase(RuntimeV2Model):
     w1_final: W1NoveltyResult | None = None
     w1_extraction: W1FactExtractionResult | None = None
     w2_round1: W2Round1RecallResult | None = None
-    w2_final: W2PolicyResult | None = None
+    w2_final: W2PolicyAssessmentResult | None = None
     route: RuntimeRouteDecision | None = None
     resolved_route: RuntimeRouteDecision | None = None
-    w3_result: W3CaseResult | None = None
+    w3_result: W3CaseResultV3 | W3CaseResult | None = None
     hot_path_latency_ms: int | None = Field(default=None, ge=0)
     error_code: str | None = None
     error_message: str | None = None
@@ -485,6 +539,7 @@ class RuntimeCase(RuntimeV2Model):
         if not isinstance(value, dict):
             return value
         payload = dict(value)
+        payload["w2_final"] = normalize_w2_result(payload.get("w2_final"))
         round1 = payload.get("w2_round1")
         if isinstance(round1, W2PolicyResult):
             payload["w2_round1"] = {
@@ -526,6 +581,9 @@ class PolicyActivationRecord(RuntimeV2Model):
 
 
 class TradeRecord(RuntimeV2Model):
+    executed_condition_id: str | None = None
+    executed_condition_revision: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
+    usage_generation: int | None = Field(default=None, ge=1)
     trade_record_id: str = Field(default_factory=lambda: new_runtime_v2_id("trade"))
     case_id: str
     ticker: str
@@ -540,8 +598,8 @@ class TradeRecord(RuntimeV2Model):
     policy_set_version: int = Field(ge=1)
     decision: PolicyDecision
     w1_result: W1NoveltyResult
-    w2_result: W2PolicyResult
-    w3_result: W3CaseResult | None = None
+    w2_result: Annotated[W2PolicyAssessmentResult, BeforeValidator(normalize_w2_result)]
+    w3_result: W3CaseResultV3 | W3CaseResult | None = None
     daily_status: DailyRecordStatus = DailyRecordStatus.PENDING
     created_at: datetime = Field(default_factory=utc_now)
 
@@ -582,6 +640,22 @@ class O3MaintenanceFeed(RuntimeV2Model):
     trade_records: list[TradeRecord] = Field(default_factory=list)
     badcase_records: list[BadcaseRecord] = Field(default_factory=list)
     w3_coverage_gaps: list[W3CoverageGapRecord] = Field(default_factory=list)
+
+
+class O3MaintenanceFeedV2(O3MaintenanceFeed):
+    contract_version: Literal["persistent-runtime.o3-maintenance-feed.v2"] = (
+        "persistent-runtime.o3-maintenance-feed.v2"
+    )
+    policy_consumption: list[JsonObject] = Field(default_factory=list)
+
+
+def parse_maintenance_feed(value):
+    model = (
+        O3MaintenanceFeedV2
+        if value.get("contract_version") == "persistent-runtime.o3-maintenance-feed.v2"
+        else O3MaintenanceFeed
+    )
+    return model.model_validate(value)
 
 
 class DailyCloseRun(RuntimeV2Model):
@@ -691,6 +765,68 @@ class W3CaseResult(RuntimeV2Model):
         return self
 
 
+class W3SelectedCondition(RuntimeV2Model):
+    policy_id: str = Field(min_length=1)
+    condition_id: str = Field(min_length=1)
+
+
+class W3PolicyExecution(RuntimeV2Model):
+    selected_condition: W3SelectedCondition | None
+    reason: str = Field(min_length=1)
+
+
+class PolicyWatchAction(RuntimeV2Model):
+    policy_id: str = Field(min_length=1)
+    action: Literal["SET", "CANCEL"]
+    reason: str = Field(min_length=1)
+
+
+class W3CaseResultV3(W3CaseResult):
+    result_contract_version: Literal["persistent-runtime.w3-result.v3"] = (
+        "persistent-runtime.w3-result.v3"
+    )
+    policy_execution: W3PolicyExecution | None
+    watch_actions: list[PolicyWatchAction] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def explicit_execution(self):
+        if self.novelty.result is W1NoveltyVerdict.OLD or not self.policy.policy_ids:
+            if self.policy_execution is not None:
+                raise ValueError("OLD or no HIT forbids Policy execution")
+        elif self.policy_execution is None:
+            raise ValueError("NEW+HIT requires explicit Policy evaluation")
+        if self.policy_execution and self.policy_execution.selected_condition:
+            selected = self.policy_execution.selected_condition
+            hits = {g.policy_id: g.condition_ids for g in self.policy.matched_condition_ids}
+            if (
+                selected.policy_id not in self.policy.policy_ids
+                or selected.condition_id not in hits.get(selected.policy_id, [])
+            ):
+                raise ValueError("selected Condition must belong to final HIT attribution")
+        return self
+
+
+def parse_w3_result(value, *, revision):
+    """WATCH item failures are local; core contract errors remain turn failures."""
+    import json
+
+    payload = json.loads(value) if isinstance(value, str) else dict(value)
+    if revision < 3:
+        return W3CaseResult.model_validate(payload), []
+    accepted, issues = [], []
+    actions = payload.get("watch_actions", [])
+    if not isinstance(actions, list):
+        issues.append({"index": None, "error": "watch_actions must be a list"})
+        actions = []
+    for index, raw in enumerate(actions):
+        try:
+            accepted.append(PolicyWatchAction.model_validate(raw))
+        except ValueError as exc:
+            issues.append({"index": index, "error": str(exc)})
+    payload["watch_actions"] = accepted
+    return W3CaseResultV3.model_validate(payload), issues
+
+
 class W3ContextVersionPin(RuntimeV2Model):
     document1_run_id: str
     document2_run_id: str
@@ -707,19 +843,22 @@ class W3ThreadSlot(RuntimeV2Model):
 
 
 class W3RouteCase(RuntimeV2Model):
+    orchestration_revision: Literal[1, 2, 3] = 1
+    w2_alignment: W2NovelFactAlignmentResult | None = None
+    first_round_tags: list[FirstRoundTag] = Field(default_factory=list)
     w3_case_id: str = Field(default_factory=lambda: new_runtime_v2_id("w3"))
     case_id: str
     ticker: str
     source: SourceMessageEnvelope
     w1_final: W1NoveltyResult
-    w2_final: W2PolicyResult
+    w2_final: Annotated[W2PolicyAssessmentResult, BeforeValidator(normalize_w2_result)]
     event_library_version: int = Field(ge=1)
     policy_set_version: int = Field(ge=1)
     route_reason: str
     mode: W3Mode
     status: W3CaseStatus = W3CaseStatus.PENDING
     context_version_pin: W3ContextVersionPin | None = None
-    result: W3CaseResult | None = None
+    result: W3CaseResultV3 | W3CaseResult | None = None
     resolved_route: RuntimeRouteDecision | None = None
     thread_kind: W3ThreadKind | None = None
     thread_id: str | None = None
@@ -738,7 +877,7 @@ class W3CoverageGapRecord(RuntimeV2Model):
     trading_date: date
     source: SourceMessageEnvelope
     policy_set_version: int = Field(ge=1)
-    result: W3CaseResult
+    result: W3CaseResultV3 | W3CaseResult
     daily_status: DailyRecordStatus = DailyRecordStatus.PENDING
     created_at: datetime = Field(default_factory=utc_now)
 

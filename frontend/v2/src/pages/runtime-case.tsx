@@ -41,6 +41,19 @@ export default function CaseDetails({
       {(d) => (
         <div className="case-details">
           <h2>{valueText(d.summary.title)}</h2>
+          <div className="case-results">
+            {(d.summary.first_round_tags ?? []).map((tag) => (
+              <span className="domain-tag" key={tag}>
+                {
+                  {
+                    FIRST_ROUND_TRADE: "一轮判定交易",
+                    POLICY_RELATED_EVENT: "policy相关事件",
+                    SUSPECTED_DUPLICATE_HIT: "疑似重复命中",
+                  }[tag]
+                }
+              </span>
+            ))}
+          </div>
           <p className="case-source">
             {d.summary.source.name} ·{" "}
             {d.summary.source.kind === "api" ? "API" : "爬虫"}
@@ -66,6 +79,20 @@ export default function CaseDetails({
                     </span>
                   ))}
                 </div>
+                {d.w1.data.extraction?.data && (
+                  <details>
+                    <summary>
+                      W1 · R3 事实抽取 ·{" "}
+                      {d.w1.data.extraction.data.candidate_count} 条
+                    </summary>
+                    <Candidates
+                      ticker={ticker}
+                      caseId={caseId}
+                      view={view}
+                      originatingNode="W1_R3"
+                    />
+                  </details>
+                )}
                 <Attempts
                   ticker={ticker}
                   caseId={caseId}
@@ -99,6 +126,37 @@ export default function CaseDetails({
               <p>尚未形成 W1 判定</p>
             )}
           </section>
+          {d.policy_watch &&
+            (d.policy_watch.followup.length > 0 ||
+              d.policy_watch.actions.length > 0) && (
+              <section>
+                <h3>Policy WATCH</h3>
+                <dl>
+                  <dt>路由跟进</dt>
+                  <dd>
+                    {d.policy_watch.followup
+                      .map(
+                        (v) =>
+                          `${String(v.policy_id)} · ${String(v.reason)} · ${String(v.expires_at)}`,
+                      )
+                      .join("；") || "无"}
+                  </dd>
+                  <dt>本次动作</dt>
+                  <dd>
+                    {d.policy_watch.actions
+                      .map(
+                        (v) =>
+                          `${String(v.policy_id)} · ${String(v.action)} · ${String(v.reason)}`,
+                      )
+                      .join("；") || "无"}
+                  </dd>
+                </dl>
+                <details>
+                  <summary>动作接纳依据</summary>
+                  <pre>{JSON.stringify(d.policy_watch.receipt, null, 2)}</pre>
+                </details>
+              </section>
+            )}
           <section>
             <h3>W2 · Policy 判定</h3>
             {d.w2.data ? (
@@ -111,6 +169,12 @@ export default function CaseDetails({
                           v ? "命中" : "未命中",
                         )}
                   </strong>
+                  <span>
+                    Policy 相关{" "}
+                    {valueText(d.w2.data.policy_related, (v) =>
+                      v ? "TRUE" : "FALSE",
+                    )}
+                  </span>
                   <span>置信度 {valueText(d.w2.data.confidence)}</span>
                   {d.w2.data.policies.map((p) => (
                     <span key={p.policy_id}>
@@ -121,6 +185,49 @@ export default function CaseDetails({
                     </span>
                   ))}
                 </div>
+                <PolicyEvidence
+                  ticker={ticker}
+                  label="相关 Policy"
+                  conditionLabel="相关条件"
+                  activationId={
+                    d.runtime_activation_id.state === "AVAILABLE"
+                      ? d.runtime_activation_id.value
+                      : undefined
+                  }
+                  policies={d.w2.data.related_policies}
+                  unresolved={d.w2.data.unresolved_related_policy_ids}
+                />
+                {d.w2.data.novel_fact_alignment && (
+                  <section>
+                    <h4>W2 · R3 新事实对齐</h4>
+                    <p>
+                      Policy 依据新旧：
+                      {valueText(
+                        d.w2.data.novel_fact_alignment.policy_fact_novelty,
+                      )}
+                    </p>
+                    <p>
+                      {
+                        {
+                          PENDING: "待执行",
+                          RUNNING: "执行中",
+                          SUCCEEDED: "已完成",
+                          FAILED: "失败",
+                          NOT_EXECUTED: "未执行",
+                          NOT_RECORDED: "历史未记录",
+                        }[d.w2.data.novel_fact_alignment.status]
+                      }
+                    </p>
+                    {d.w2.data.novel_fact_alignment.condition_results.map(
+                      (r, i) => (
+                        <p key={i}>
+                          {r.condition_ids.join("、")} ·{" "}
+                          {r.is_new ? "TRUE" : "FALSE"}
+                        </p>
+                      ),
+                    )}
+                  </section>
+                )}
                 <Attempts
                   ticker={ticker}
                   caseId={caseId}
@@ -196,12 +303,26 @@ export default function CaseDetails({
                 </span>
               ))}
               <dl>
-                <dt>交易判定</dt>
+                <dt>
+                  {d.policy_execution ? "Policy 执行判定" : "专家交易判定"}
+                </dt>
                 <dd>
-                  {valueText(d.w3.data.expert_trade, (v) =>
-                    v ? "交易" : "不交易",
-                  )}{" "}
-                  · {valueText(d.w3.data.direction)}
+                  {d.policy_execution ? (
+                    <>
+                      {d.policy_execution.selected_condition
+                        ? `交易 · ${String((d.policy_execution.selected_condition as Record<string, unknown>).policy_id)}/${String((d.policy_execution.selected_condition as Record<string, unknown>).condition_id)}`
+                        : "不交易"}
+                      {" · "}
+                      {String(d.policy_execution.reason)}
+                    </>
+                  ) : (
+                    <>
+                      {valueText(d.w3.data.expert_trade, (v) =>
+                        v ? "交易" : "不交易",
+                      )}{" "}
+                      · {valueText(d.w3.data.direction)}
+                    </>
+                  )}
                 </dd>
                 <dt>原有预期</dt>
                 <dd>{valueText(d.w3.data.prior_expectation)}</dd>
@@ -403,7 +524,18 @@ export function RoundRows({
                 ? "未执行：未召回候选 Policy"
                 : summary?.not_executed_reason === "W2_SKIPPED"
                   ? "未执行：W2 已跳过"
-                  : "暂无执行记录"}
+                  : summary?.not_executed_reason
+                    ? "未执行：" +
+                      (
+                        {
+                          NOVELTY_NOT_NEW: "消息非 NEW",
+                          NO_POLICY_HIT_OR_RELATED: "无 Policy 命中或相关",
+                          LEGACY_CONTRACT: "旧编排",
+                          DELTA_OWNED_BY_W3: "由 W3 捕获事实",
+                          NO_DELTA_CAPTURE_REQUIRED: "无需事实抽取",
+                        } as Record<string, string>
+                      )[summary.not_executed_reason]
+                    : "暂无执行记录"}
           </td>
         </tr>
       )}
@@ -509,6 +641,7 @@ export function PolicyEvidence({
   unresolved,
   recorded = true,
   filter = "ACTIVE",
+  conditionLabel = "命中条件",
 }: {
   ticker: string;
   activationId?: string;
@@ -517,6 +650,7 @@ export function PolicyEvidence({
   unresolved?: string[];
   recorded?: boolean;
   filter?: "ACTIVE" | "HIT";
+  conditionLabel?: string;
 }) {
   return (
     <div className="grid gap-2">
@@ -540,7 +674,7 @@ export function PolicyEvidence({
             {p.title ? valueText(p.title) : p.policy_id}
           </a>
           {p.condition_ids.length
-            ? ` · 命中条件 ${p.condition_ids.join("、")}`
+            ? ` · ${conditionLabel} ${p.condition_ids.join("、")}`
             : ""}
         </p>
       ))}
@@ -639,16 +773,22 @@ function Candidates({
   ticker,
   caseId,
   view,
+  originatingNode,
 }: {
   ticker: string;
   caseId: string;
   view: string;
+  originatingNode?: "W1_R3" | "W3";
 }) {
   const q = usePages<Candidate, "Candidates">(
     "Candidates",
     tickerPath(ticker) +
       `/runtime/cases/${id(caseId)}/candidates` +
-      queryString({ view_id: view, limit: "20" }),
+      queryString({
+        view_id: view,
+        limit: "20",
+        originating_node: originatingNode,
+      }),
     (r) => r.data,
     view,
   );

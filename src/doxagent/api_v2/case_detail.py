@@ -7,6 +7,13 @@ from typing import Any
 
 from fastapi import FastAPI, Request
 
+from doxagent.persistent_runtime_v2.router import alignment_flags
+from doxagent.persistent_runtime_v2.schema import (
+    W2NovelFactAlignmentResult,
+    W2PolicyAssessmentResult,
+    normalize_w2_result,
+)
+
 from .case_evidence import CaseEvidence
 from .dto import available, coverage, missing
 from .errors import ApiFailure
@@ -31,31 +38,53 @@ def install(app: FastAPI) -> None:
         if view["wire"]["page"] != "RUNTIME":
             raise ApiFailure("SCOPE_MISMATCH", 400)
         evidence = CaseEvidence(store, ticker, case_id, view["seq"])
-        case = evidence.fields("native:runtime_v2_cases", case_id,
-                               ["version_pin", "w2_round1", "w2_final", "w3_result"])
+        case = evidence.fields(
+            "native:runtime_v2_cases",
+            case_id,
+            ["version_pin", "w2_round1", "w2_final", "w3_result"],
+        )
         if not case or not store.get("case", ticker, case_id, view["seq"]):
             raise ApiFailure("RESOURCE_NOT_FOUND", 404)
-        recall = case.get("w2_round1") or (evidence.latest_success("W2", "R1") or {}).get("output") or {}
+        recall = (
+            case.get("w2_round1") or (evidence.latest_success("W2", "R1") or {}).get("output") or {}
+        )
         referenced = set(recall.get("candidate_policy_ids", []))
         referenced.update((case.get("w2_final") or {}).get("policy_ids", []))
+        for field in ("hit_condition_ids", "matched_condition_ids"):
+            referenced.update(g["policy_id"] for g in (case.get("w2_final") or {}).get(field, []))
         referenced.update(((case.get("w3_result") or {}).get("policy") or {}).get("policy_ids", []))
         if policy_id not in referenced:
             raise ApiFailure("RESOURCE_NOT_FOUND", 404)
         pin = case.get("version_pin") or {}
-        activation = store.get("activation_revision", ticker, pin.get("activation_revision_id", ""), view["seq"])
-        if not activation or activation["policy_set"]["policy_set_version"] != pin.get("policy_set_version"):
+        activation = store.get(
+            "activation_revision", ticker, pin.get("activation_revision_id", ""), view["seq"]
+        )
+        if not activation or activation["policy_set"]["policy_set_version"] != pin.get(
+            "policy_set_version"
+        ):
             raise ApiFailure("PINNED_ARTIFACT_MISSING", 404)
         with store.connect() as db:
             row = db.execute(
                 "SELECT payload FROM objects WHERE kind='policy_detail' AND ticker=? AND parent=? "
                 "AND json_extract(payload,'$.summary.policy_id')=? AND valid_from<=? "
                 "AND (valid_to IS NULL OR valid_to>?) LIMIT 1",
-                (ticker, activation["policy_set"]["artifact_id"], policy_id, view["seq"], view["seq"]),
+                (
+                    ticker,
+                    activation["policy_set"]["artifact_id"],
+                    policy_id,
+                    view["seq"],
+                    view["seq"],
+                ),
             ).fetchone()
         if not row:
             raise ApiFailure("PINNED_ARTIFACT_MISSING", 404)
-        return app.state.respond(request, "PolicyDetail", json.loads(row[0]),
-                                 view_id=args["view_id"], read_seq=view["seq"])
+        return app.state.respond(
+            request,
+            "PolicyDetail",
+            json.loads(row[0]),
+            view_id=args["view_id"],
+            read_seq=view["seq"],
+        )
 
     @app.get("/api/doxagent/v2/tickers/{ticker}/runtime/cases/{case_id}")
     async def detail(ticker: str, case_id: str, request: Request) -> Any:
@@ -79,10 +108,15 @@ def install(app: FastAPI) -> None:
                 "version_pin",
                 "trading_date",
                 "w1_final",
+                "w1_extraction",
+                "w2_alignment",
+                "first_round_tags",
+                "orchestration_revision",
                 "w2_final",
                 "w2_round1",
                 "w2_skipped",
                 "w3_result",
+                "frozen_inputs.policy_watch_followup",
                 "error_code",
                 "status",
             ],
@@ -90,6 +124,7 @@ def install(app: FastAPI) -> None:
         if not case or not summary:
             raise ApiFailure("RESOURCE_NOT_FOUND", 404)
         from doxagent.v2_read.trade_outcomes import legacy_case_summary
+
         summary = legacy_case_summary(store, ticker, summary, seq)
         pin = case["version_pin"]
         if not pin:
@@ -125,12 +160,19 @@ def install(app: FastAPI) -> None:
 
         reference_gaps = {}
 
-        def partial(value, reference_result=None, policy_result=None, candidate_result=None):
+        def partial(
+            value,
+            reference_result=None,
+            policy_result=None,
+            candidate_result=None,
+            related_result=None,
+        ):
             result = resource(value)
             refs = reference_gaps.get(id(reference_result), [])
             policies = reference_gaps.get(id(policy_result), [])
             candidates = reference_gaps.get(id(candidate_result), [])
-            if value is not None and (refs or policies or candidates):
+            related = reference_gaps.get(id(related_result), [])
+            if value is not None and (refs or policies or candidates or related):
                 if refs:
                     value["unresolved_reference_ids"] = refs
                 if policies:
@@ -220,16 +262,16 @@ def install(app: FastAPI) -> None:
                 )
             return values
 
-        def policies(result: dict) -> list[dict]:
+        def policies(result: dict, attribution_key="matched_condition_ids") -> list[dict]:
             selected = []
             attribution = {
-                p["policy_id"]: p["condition_ids"] for p in result.get("matched_condition_ids", [])
+                p["policy_id"]: p["condition_ids"] for p in result.get(attribution_key, [])
             }
             with store.connect() as db:
                 for identity in result.get("policy_ids", []):
                     row = db.execute(
                         "SELECT json_extract(payload,'$.summary.title') AS title, "
-                        "json_extract(payload,'$.summary.policy_activation_revision') AS revision "
+                        "json_extract(payload,'$.summary.policy_activation_revision') AS revision, json_extract(payload,'$.summary.policy_revision_id') AS content_revision "
                         "FROM objects WHERE kind='policy_detail' AND ticker=? "
                         "AND parent=? AND json_extract(payload,'$.summary.policy_id')=? "
                         "AND valid_from<=? AND (valid_to IS NULL OR valid_to>?) LIMIT 1",
@@ -243,6 +285,11 @@ def install(app: FastAPI) -> None:
                             "policy_id": identity,
                             "policy_set_version": pin["policy_set_version"],
                             "policy_activation_revision": row["revision"],
+                            **(
+                                {"policy_revision_id": row["content_revision"]}
+                                if row["revision"] is None
+                                else {}
+                            ),
                             "title": available(row["title"]) if row["title"] else missing(),
                             "condition_ids": attribution.get(identity, []),
                         }
@@ -250,6 +297,79 @@ def install(app: FastAPI) -> None:
             return selected
 
         w1, w2, w3 = case.get("w1_final"), case.get("w2_final"), case.get("w3_result")
+        w1 = w1 or (evidence.latest_success("W1", "R2") or {}).get("output")
+        w2 = w2 or (evidence.latest_success("W2", "R2") or {}).get("output")
+        modern = (case.get("orchestration_revision") or 1) >= 2
+        if w2:
+            w2 = normalize_w2_result(w2)
+        alignment = case.get("w2_alignment") or (evidence.latest_success("W2", "R3") or {}).get(
+            "output"
+        )
+        eligible = bool(
+            w1 and w2 and w1["result"] == "NEW" and (w2["policy_hit"] or w2["policy_related"])
+        )
+        no_r3 = (
+            "LEGACY_CONTRACT"
+            if not modern
+            else "NOVELTY_NOT_NEW"
+            if w1 and w1["result"] != "NEW"
+            else "NO_POLICY_HIT_OR_RELATED"
+            if w2 and not eligible
+            else None
+        )
+        alignment_status = (
+            "NOT_RECORDED"
+            if not modern
+            else "SUCCEEDED"
+            if alignment is not None
+            else "NOT_EXECUTED"
+            if no_r3
+            else "FAILED"
+            if case["status"] in {"FAILED", "UNAVAILABLE"}
+            else "RUNNING"
+            if any(g["node"] == "W2" and g["round"] == "R3" for g in groups)
+            else "PENDING"
+        )
+        flags = (
+            alignment_flags(
+                W2PolicyAssessmentResult.model_validate(w2),
+                W2NovelFactAlignmentResult.model_validate(alignment),
+            )
+            if alignment is not None and w2
+            else (False, False)
+        )
+        alignment_view = {
+            "status": alignment_status,
+            "not_executed_reason": no_r3
+            if alignment_status in {"NOT_RECORDED", "NOT_EXECUTED"}
+            else None,
+            "policy_fact_novelty": available("NEW" if any(flags) else "OLD")
+            if alignment_status == "SUCCEEDED"
+            else missing(
+                "NOT_APPLICABLE"
+                if no_r3 and modern
+                else "NOT_RECORDED"
+                if not modern
+                else "NOT_PRODUCED"
+            ),
+            "condition_results": (alignment or {}).get("condition_results", []),
+        }
+
+        def rounds(node, skipped=False, empty_recall=False):
+            result = evidence.rounds(groups, node, skipped, empty_recall)
+            if not any(r["round"] == "R3" for r in result):
+                reason = (
+                    no_r3
+                    if node == "W2"
+                    else "DELTA_OWNED_BY_W3"
+                    if summary["initial_route"] == "W3" and summary["runtime_mode"] != "CLOSED"
+                    else "NO_DELTA_CAPTURE_REQUIRED"
+                    if w1 and w1["result"] == "OLD"
+                    else None
+                )
+                result.append({"round": "R3", "attempt_count": 0, "not_executed_reason": reason})
+            return result
+
         recalled = case.get("w2_round1")
         if recalled is None:
             recalled = (evidence.latest_success("W2", "R1") or {}).get("output")
@@ -265,7 +385,17 @@ def install(app: FastAPI) -> None:
                 "confidence": available(w1["confidence"]) if w1 else missing(),
                 "references": references(w1) if w1 else [],
                 "fact_attributions": (w1 or {}).get("fact_attributions"),
-                "rounds": evidence.rounds(groups, "W1"),
+                "rounds": rounds("W1"),
+                "extraction": resource(
+                    {
+                        "capture_mode": "NEW_CAPTURE"
+                        if w1 and w1["result"] == "NEW"
+                        else "AMBIGUOUS_CAPTURE",
+                        "candidate_count": len(case["w1_extraction"]["candidates"]),
+                    }
+                    if case.get("w1_extraction")
+                    else None
+                ),
                 "timing": interval("W1"),
                 "attempts": page("attempt", "W1"),
                 "reasoning": resource(reasons.get("w1")),
@@ -273,6 +403,13 @@ def install(app: FastAPI) -> None:
             if w1 or any(g["node"] == "W1" for g in groups)
             else None
         )
+        related_result = {
+            "policy_ids": list(
+                dict.fromkeys(g["policy_id"] for g in (w2 or {}).get("matched_condition_ids", []))
+            ),
+            "matched_condition_ids": (w2 or {}).get("matched_condition_ids", []),
+        }
+        related_policies = policies(related_result) if w2 and modern else []
         second = (
             {
                 "skipped": bool(case["w2_skipped"]),
@@ -281,13 +418,16 @@ def install(app: FastAPI) -> None:
                 )
                 if recalled is not None
                 else None,
-                "policy_hit": available(bool(w2["policy_ids"])) if w2 else missing(),
+                "policy_hit": available(w2["policy_hit"]) if w2 else missing(),
+                "policy_related": available(w2["policy_related"]) if w2 and modern else missing(),
+                "related_policies": related_policies,
+                "unresolved_related_policy_ids": reference_gaps.get(id(related_result), []),
+                "novel_fact_alignment": alignment_view,
                 "confidence": available(w2["confidence"]) if w2 else missing(),
-                "policies": policies(w2) if w2 else [],
+                "policies": policies(w2, "hit_condition_ids") if w2 else [],
                 **({"candidate_policies": candidate_policies} if recalled is not None else {}),
                 "unresolved_candidate_policy_ids": reference_gaps.get(id(candidates_result), []),
-                "rounds": evidence.rounds(
-                    groups,
+                "rounds": rounds(
                     "W2",
                     bool(case["w2_skipped"]),
                     recalled is not None and not recalled.get("candidate_policy_ids"),
@@ -399,7 +539,12 @@ def install(app: FastAPI) -> None:
             "provisional_snapshot_version": pin["provisional_snapshot_version"],
             "hot_path": interval(None),
             "w1": partial(first, w1),
-            "w2": partial(second, policy_result=w2, candidate_result=candidates_result),
+            "w2": partial(
+                second,
+                policy_result=w2,
+                candidate_result=candidates_result,
+                related_result=related_result,
+            ),
             "w3": partial(third, (w3 or {}).get("novelty"), (w3 or {}).get("policy")),
             "messages": page("message"),
             "failures": failures,
@@ -407,6 +552,21 @@ def install(app: FastAPI) -> None:
             "execution_count": available(counts["execution"]),
             "results": summary["results"],
         }
+        if (case.get("orchestration_revision") or 1) >= 3:
+            receipt = store.get(
+                "native:runtime_values", ticker, "policy_watch_applied:" + case_id, seq
+            )
+            invalid = store.get(
+                "native:runtime_values", ticker, "policy_watch_validation:" + case_id, seq
+            )
+            if invalid:
+                receipt = {**(receipt or {}), "validation_issues": invalid["issues"]}
+            value["policy_watch"] = dict(
+                followup=case.get("frozen_inputs.policy_watch_followup") or [],
+                actions=(w3 or {}).get("watch_actions", []),
+                receipt=receipt,
+            )
+            value["policy_execution"] = (w3 or {}).get("policy_execution")
         return app.state.respond(
             request,
             "CaseDetail",

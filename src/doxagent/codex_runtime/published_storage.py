@@ -44,3 +44,26 @@ class SupabasePublishedDocumentStorage:
             response = await client.get(self._object_url(path), headers=self._headers())
         response.raise_for_status()
         return response.content
+
+
+def cache_local_published_content(repository, sha256: str, content: bytes) -> None:
+    """Mirror external published bodies for checksum-verified offline read projection."""
+    import hashlib
+    from pathlib import Path
+    from uuid import uuid4
+
+    local = getattr(repository, "local", repository)
+    database_path = getattr(local, "path", None)
+    if database_path is None:
+        return  # Remote-only/in-memory stores have no local canonical file directory.
+    if hashlib.sha256(content).hexdigest() != sha256:
+        raise ValueError("local published content checksum mismatch")
+    cache = Path(database_path).parent / "published-contents" / sha256
+    cache.parent.mkdir(parents=True, exist_ok=True)
+    if cache.exists():
+        if hashlib.sha256(cache.read_bytes()).hexdigest() != sha256:
+            raise ValueError("local published content checksum mismatch")
+        return
+    pending = cache.with_name(sha256 + "." + uuid4().hex + ".tmp")
+    pending.write_bytes(content)
+    pending.replace(cache)

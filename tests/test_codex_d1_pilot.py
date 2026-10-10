@@ -314,6 +314,7 @@ def test_signed_pilot_case_scope_and_generated_config(tmp_path: Path) -> None:
     claims = codec.verify(token, public_key=codec.public_key)
     assert claims.pilot_case_id == "c1-case"
     config = render_config(
+        node="c1",
         python=Path(r"C:\repo\.venv\Scripts\python.exe"),
         case_root=case_root,
         run_id="run-1",
@@ -333,6 +334,7 @@ def test_signed_pilot_case_scope_and_generated_config(tmp_path: Path) -> None:
         runtime_env_file=tmp_path / "runtime" / ".env.local",
     )
     parsed = tomllib.loads(config)
+    assert (parsed["model"], parsed["model_reasoning_effort"]) == ("gpt-6.1-sol", "medium")
     assert parsed["features"]["multi_agent"] is True
     assert parsed["mcp_servers"]["data"]["enabled_tools"] == [
         "data_tool_guide",
@@ -351,6 +353,28 @@ def test_signed_pilot_case_scope_and_generated_config(tmp_path: Path) -> None:
     assert ".control/run-1/c1-1/observations.sqlite3*" in task
     assert "context/data_tool_catalog/c1-1.md" in task
     assert "Agent 文件写入" in task
+
+
+@pytest.mark.parametrize(
+    "node,model,effort",
+    [
+        ("c4_pre_scan", "gpt-6-luna", "max"),
+        ("c4e_network_build", "gpt-6.1-sol", "high"),
+        ("d2_o0_candidate_c1", "gpt-6-luna", "max"),
+        ("d2_o0_synthesis", "gpt-6.1-sol", "medium"),
+        ("d2_o1_open_discovery", "gpt-6.1-sol", "medium"),
+    ],
+)
+def test_new_pilot_configs_select_the_workflow_node_profile(tmp_path, node, model, effort):
+    config = render_config(
+        node=node, python=Path("python"), case_root=tmp_path, run_id="run",
+        attempt_id="attempt", case_id="case", capability="fixture", public_key="fixture",
+        enabled_data_tools=[], runtime_env_file=tmp_path / ".env",
+        ibkr=dict(enabled="false", host="localhost", port="1", client_id="1",
+                  timeout_seconds="1", market_data_type="3"),
+    )
+    parsed = tomllib.loads(config)
+    assert (parsed["model"], parsed["model_reasoning_effort"]) == (model, effort)
 
 
 def test_worker_export_uses_consistent_control_sqlite_snapshot(tmp_path: Path) -> None:

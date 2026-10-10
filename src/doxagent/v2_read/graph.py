@@ -12,7 +12,8 @@ NODES = (
     "W3",
     "ARCHIVE",
     "EVENT_DISCOVERY",
-    "BADCASE",
+    "FIRST_ROUND_TRADE",
+    "POLICY_RELATED_EVENT",
     "TRADE_INTENT",
     "FAILURE",
     "TRADE_EXECUTION",
@@ -54,7 +55,8 @@ def project(
             else:
                 executions[item["id"]] = item["data"]
     prior = store.get("graph_case", ticker, identity) or {"nodes": [], "edges": []}
-    nodes = {"SOURCE", *summary["results"]}
+    tag_nodes = set(summary.get("first_round_tags", [])) & {"FIRST_ROUND_TRADE", "POLICY_RELATED_EVENT"}
+    nodes = {"SOURCE", *(r for r in summary["results"] if r in NODES), *tag_nodes}
     nodes.update(turn["node_id"] for turn in turns.values())
     edges = set()
     if "W1" in nodes:
@@ -68,9 +70,15 @@ def project(
                 "W2",
             )
         )
-    if "W3" in nodes:
+    for tag in tag_nodes:
+        edges.update((node, tag) for node in ("W1", "W2") if node in nodes)
+        if "W3" in nodes:
+            edges.add((tag, "W3"))
+    if "W3" in nodes and not tag_nodes:
         edges.update((node, "W3") for node in ("W1", "W2") if node in nodes)
     for result in summary["results"]:
+        if result not in NODES:
+            continue
         if result in {"TRADE_EXECUTION", "TRADE_NOT_EXECUTED"}:
             # Execution is downstream of a durable formal intent, not W2/W3.
             if "TRADE_INTENT" in nodes:
@@ -82,7 +90,8 @@ def project(
             origin = "W1"
         else:
             origin = "W2" if "W2" in nodes else "W1" if "W1" in nodes else "SOURCE"
-        edges.add((origin, result))
+        if result != "TRADE_INTENT" or origin == "W3":
+            edges.add((origin, result))
     records, counts = [], []
     native = store.get("native:runtime_v2_cases", ticker, identity) or {}
     for item in incoming:

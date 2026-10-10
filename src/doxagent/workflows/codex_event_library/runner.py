@@ -10,6 +10,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Literal
 
+from doxagent.codex_runtime.node_models import node_model_config
 from doxagent.codex_runtime.schema import (
     CODEX_EVENT_LIBRARY_WORKFLOW_VERSION,
     CodexEventLibraryAgentRole,
@@ -52,9 +53,12 @@ class EventLibraryAgentRunner:
         self.repository = repository
         self._seeder = EventLibraryAttemptSeeder(workspace, prompt_root)
         self._validator = RevisionBundleValidator(repository)
-        self.model = model
+        profile = node_model_config(
+            CodexEventLibraryNode.O2_MAINTAIN, model=model, effort=effort, provider=model_provider
+        )
+        self.model = profile["model"]
         self.model_provider = model_provider
-        self.effort = effort
+        self.effort = profile["effort"]
         self.timeout_seconds = timeout_seconds
 
     def prepare_attempt(

@@ -10,6 +10,7 @@ from typing import Any, Protocol, cast
 from pydantic import BaseModel, ValidationError
 
 from doxagent.codex_runtime.client import CodexWorkerClient, WorkspaceClient
+from doxagent.codex_runtime.node_models import node_model_config
 from doxagent.codex_runtime.schema import (
     CODEX_MONITORING_O4_WORKFLOW_VERSION,
     CodexMonitoringO4AgentRole,
@@ -178,9 +179,10 @@ class MonitoringO4AgentRunner:
                 prompt=prompt,
                 output_schema=strict_json_schema(output_model.model_json_schema()),
                 thread_id=thread.thread_id if thread else None,
-                model=self._model,
+                **node_model_config(
+                    request.node, model=self._model, effort="medium", provider=self._model_provider
+                ),
                 model_provider=self._model_provider,
-                effort="high",
                 read_only=False,
                 data_mcp_enabled=False,
                 o4_operations_enabled=True,
@@ -217,7 +219,11 @@ class MonitoringO4AgentRunner:
         committed, commit_error = await self.commit_progressive_checkpoint(request, run_id=run_id)
         if job.thread_id:
             self._repository.save_thread(
-                O4ThreadSlot(ticker=thread_slot, thread_id=job.thread_id, model=self._model)
+                O4ThreadSlot(
+                    ticker=thread_slot,
+                    thread_id=job.thread_id,
+                    model=worker_request.model or self._model,
+                )
             )
         if job.status != "succeeded" or not job.final_response:
             detail = f"; checkpoint commit failed: {commit_error}" if commit_error else ""

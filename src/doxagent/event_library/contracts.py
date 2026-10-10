@@ -934,7 +934,7 @@ class FrozenViewManifest(StrictModel):
     delta_batch_ids: list[str]
     published_event_count: int = Field(ge=0)
     pending_delta_count: int = Field(ge=0)
-    known_event_index_contract_version: str = "known-event-index-v2"
+    known_event_index_contract_version: str = "known-event-index-v3"
     known_event_index_path: str
     event_details_path: str
     pending_atomics_path: str

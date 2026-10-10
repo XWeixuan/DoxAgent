@@ -7,8 +7,8 @@ from pathlib import Path
 from typing import Any
 
 from doxagent.api_v2.dto import available, missing, validate
+from doxagent.workflows.codex_document3.consumer_contracts import parse_policy_set
 from doxagent.workflows.codex_document3.runtime_projection import policy_activation_revision
-from doxagent.workflows.codex_document3.schema import PolicySet
 
 from .artifacts import ArtifactIndexer, PublishedArtifacts
 from .libraries import LibraryIndexer
@@ -227,63 +227,104 @@ class FormalProjectors(DomainProjectors):
             raise ValueError("PINNED_ARTIFACT_MISSING")
         artifact_id = bundle["handoff"]["published_artifact"]["artifact_id"]
         document, body = self.artifacts.source.body(run_id, artifact_id)
-        policies = PolicySet.model_validate_json(body)
+        policies = parse_policy_set(body)
         if policies.ticker != ticker or policies.policy_set_version != refs["document3"]["version"]:
             raise ValueError("POLICY_VERSION_MISMATCH")
         ref = {
             **self.artifacts.document(document, schema=policies.schema_version),
             "policy_set_version": policies.policy_set_version,
         }
-        source_run = policies.document2_ref.run_id
-        source_records = self.artifacts.index(source_run, ticker, lineage=identity)
-        source_document = next(r["data"] for r in source_records if r["kind"] == "document_ref")
-        if source_document["artifact_id"] != policies.document2_ref.artifact_id or (
-            source_document["content_sha256"] != policies.document2_ref.sha256
-        ):
-            raise ValueError("POLICY_SOURCE_DOCUMENT_MISMATCH")
-        records.extend(
-            r
-            for r in source_records
-            if r["id"] not in {x["id"] for x in records if x["kind"] == r["kind"]}
-        )
+        source_document = None
+        if policies.document2_ref:
+            source_run = policies.document2_ref.run_id
+            source_records = self.artifacts.index(source_run, ticker, lineage=identity)
+            source_document = next(r["data"] for r in source_records if r["kind"] == "document_ref")
+            if source_document["artifact_id"] != policies.document2_ref.artifact_id or (
+                source_document["content_sha256"] != policies.document2_ref.sha256
+            ):
+                raise ValueError("POLICY_SOURCE_DOCUMENT_MISMATCH")
+            records.extend(
+                r
+                for r in source_records
+                if r["id"] not in {x["id"] for x in records if x["kind"] == r["kind"]}
+            )
         shells = {
             r["data"]["shell_id"]
             for r in records
             if r["kind"] == "shell" and r.get("parent") == documents["document2"]["run_id"]
         }
         for policy in policies.policies:
-            ar = policy_activation_revision(policy)
+            modern = policies.schema_version == "document3.v3"
+            ar = None if modern else policy_activation_revision(policy)
             policy_revision = hashlib.sha256(
                 encode([artifact_id, policy.policy_id, policy.model_dump(mode="json")]).encode()
             ).hexdigest()
-            shell_ids = list(dict.fromkeys(item.shell_id for item in policy.source_refs))
-            summary = validate(
-                "PolicySummary",
-                {
-                    "policy_id": policy.policy_id,
-                    "policy_revision_id": policy_revision,
-                    "policy_activation_revision": ar,
-                    "policy_set_version": policies.policy_set_version,
-                    "title": policy.title,
-                    "decision": policy.decision.value,
-                    "shell_ids": shell_ids,
-                    "unresolved_shell_ids": [shell for shell in shell_ids if shell not in shells],
-                    "lifecycle": "ACTIVE",
-                    "consumed": missing(),
-                    "consumed_at": missing(),
-                    "effective": missing(),
-                    "matched_filters": ["ACTIVE"],
-                },
+            # Arbitrary V3 refs do not imply a D2 Gap or Shell relationship.
+            shell_ids = (
+                [] if modern else list(dict.fromkeys(item.shell_id for item in policy.source_refs))
             )
-            detail = validate(
-                "PolicyDetail",
-                {
-                    "summary": summary,
-                    "source_document2": source_document,
-                    "activation_semantics": "OR",
-                    "policy": policy.model_dump(mode="json"),
-                },
-            )
+            if modern:
+                directions = sorted({c.decision for c in policy.activation_conditions})
+                summary = validate(
+                    "PolicySummaryV3",
+                    dict(
+                        schema_version="document3.policy-summary.v3",
+                        policy_id=policy.policy_id,
+                        policy_revision_id=policy_revision,
+                        policy_set_version=policies.policy_set_version,
+                        title=policy.title,
+                        directions=directions,
+                        executable_directions=directions,
+                        consumed_directions=[],
+                        shell_ids=[],
+                        unresolved_shell_ids=[],
+                        lifecycle="ACTIVE",
+                        consumed=missing(),
+                        consumed_at=missing(),
+                        effective=missing(),
+                        matched_filters=["ACTIVE"],
+                    ),
+                )
+                detail = validate(
+                    "PolicyDetailV3",
+                    dict(
+                        summary=summary,
+                        source_document2=source_document,
+                        activation_semantics="OR",
+                        policy=policy.model_dump(mode="json"),
+                        policy_usage=[],
+                    ),
+                )
+            else:
+                summary = validate(
+                    "PolicySummary",
+                    {
+                        "policy_id": policy.policy_id,
+                        "policy_revision_id": policy_revision,
+                        "policy_activation_revision": ar,
+                        "policy_set_version": policies.policy_set_version,
+                        "title": policy.title,
+                        "decision": policy.decision.value,
+                        "shell_ids": shell_ids,
+                        "unresolved_shell_ids": [
+                            shell for shell in shell_ids if shell not in shells
+                        ],
+                        "lifecycle": "ACTIVE",
+                        "consumed": missing(),
+                        "consumed_at": missing(),
+                        "effective": missing(),
+                        "matched_filters": ["ACTIVE"],
+                    },
+                )
+                detail = validate(
+                    "PolicyDetail",
+                    {
+                        "summary": summary,
+                        "source_document2": source_document,
+                        "activation_semantics": "OR",
+                        "policy": policy.model_dump(mode="json"),
+                    },
+                )
             records.append(
                 {
                     "kind": "policy_detail",
@@ -322,13 +363,19 @@ class FormalProjectors(DomainProjectors):
         lifecycle = {
             "status": "MAINTAIN_COMPLETED" if base else "INITIALIZED",
             "policy_disposition": (
-                "UNKNOWN" if not prior_policy else
-                "INHERITED" if prior_policy["artifact_id"] == ref["artifact_id"] else
-                "NO_CHANGE" if prior_policy["content_sha256"] == ref["content_sha256"] else "CONTENT_CHANGED"
+                "UNKNOWN"
+                if not prior_policy
+                else "INHERITED"
+                if prior_policy["artifact_id"] == ref["artifact_id"]
+                else "NO_CHANGE"
+                if prior_policy["content_sha256"] == ref["content_sha256"]
+                else "CONTENT_CHANGED"
             ),
             "event_disposition": (
-                "UNKNOWN" if not prior_library else
-                "NO_CHANGE" if prior_library["library_snapshot_id"] == library["library_snapshot_id"]
+                "UNKNOWN"
+                if not prior_library
+                else "NO_CHANGE"
+                if prior_library["library_snapshot_id"] == library["library_snapshot_id"]
                 else "CONTENT_CHANGED"
             ),
             "from_policy_version": prior_policy["policy_set_version"] if prior_policy else None,
