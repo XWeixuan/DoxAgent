@@ -95,6 +95,7 @@ async def run(args: argparse.Namespace) -> dict:
     if args.as_of.tzinfo is None:
         raise ValueError("--as-of must include a timezone")
     settings = DoxAgentSettings()
+    settings.codex_model_provider = settings.codex_model_provider or None
     if settings.codex_runtime_storage_mode != "sqlite":
         raise ValueError("formal test requires isolated SQLite runtime storage")
     if not settings.codex_runtime_sqlite_path.endswith("/intc-v21-test/research.sqlite3"):

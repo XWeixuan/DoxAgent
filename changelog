@@ -1443,3 +1443,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 - 2026-10-11: 上述 V2.1 模型配置的离线节点请求、同线程切换、SDK 新建/恢复传参、Pilot 配置及显式覆盖验证通过；扩大回归另见默认新闻源列表断言过期与失败 turn_summary 审计文件缺失两项既有失败，均用修改前 Runner/模板代码内存加载复现，未扩展修改相关业务。生产修改文件 Ruff 与差异空白检查通过。
 
 2026-10-11: Add isolated INTC formal v2.1 D1/D2/D3 operator runner, checkpoint-preserving O0 boundary and 3-6 shell admission; retain current per-node model routing and workflow concurrency; skip CDECR/O2/O4.
+
+2026-10-11: INTC test launch diagnosed empty provider env serialization (SDK START_THREAD rejected before model execution). Normalize optional provider at operator entrypoint; repair isolated env and resume the same D1 run, preserving failures and input checkpoints.
