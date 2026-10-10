@@ -34,6 +34,10 @@ NODES = {
     "maintain": CodexD3Node.O3_MAINTAIN,
 }
 TERMINAL = {"COMPLETED", "PARTIAL", "FAILED", "CANCELLED"}
+TEXT_OUTPUT_SUFFIXES = {
+    ".csv", ".html", ".json", ".jsonl", ".log", ".md", ".tsv",
+    ".txt", ".xml", ".yaml", ".yml",
+}
 
 
 class AssetDependencyError(ValueError):
@@ -401,6 +405,10 @@ class RunnerV21:
                         if any(
                             path == p or (p.endswith("/") and path.startswith(p)) for p in outputs
                         ):
+                            # The output directory can contain research images or PDFs.
+                            # Only text files can enter the accepted/snapshotted contract.
+                            if Path(path).suffix.lower() not in TEXT_OUTPUT_SUFFIXES:
+                                continue
                             if error and known.get(path) == item.sha256:
                                 continue
                             text = (await self.workspace.read_text(owner_id, path)).content

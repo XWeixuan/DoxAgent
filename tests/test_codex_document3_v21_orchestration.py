@@ -230,6 +230,37 @@ def rig(tmp_path):
 
 
 @pytest.mark.asyncio
+async def test_build_accepts_text_outputs_with_binary_research_file(rig, monkeypatch):
+    original_run = rig.worker.run
+
+    async def run_with_image(request):
+        job = await original_run(request)
+        if request.node == CodexD3Node.O3_BUILD:
+            task_path = re.search(r"Read task file (\S+),", request.prompt)[1]
+            task = json.loads((await rig.workspace.read_text(request.run_id, task_path)).content)
+            image = (
+                rig.workspace.local.ensure_run(request.run_id)
+                / task["output_paths"][0]
+                / "chart.jpg"
+            )
+            image.parent.mkdir(parents=True, exist_ok=True)
+            image.write_bytes(b"\xff\xd8\xff\x00")
+        return job
+
+    monkeypatch.setattr(rig.worker, "run", run_with_image)
+    rig.orchestrator.pilot_stop_after_phase = "build"
+    with pytest.raises(PilotPhasePaused):
+        await rig.orchestrator.initialize(ticker="MU", as_of=NOW, run_id="d3v21-binary-output")
+    build = next(
+        task for key, task in rig.state.tasks("d3v21-binary-output").items()
+        if key.startswith("research:")
+    )
+    assert build["status"] == "COMPLETED"
+    assert any(path.endswith("results.jsonl") for path in build["files"])
+    assert not any(path.endswith(".jpg") for path in build["files"])
+
+
+@pytest.mark.asyncio
 async def test_pilot_phase_boundaries_resume_without_repeating_business_turns(rig):
     run_id = "d3v21-pilot-phase-test"
     previous = {}
