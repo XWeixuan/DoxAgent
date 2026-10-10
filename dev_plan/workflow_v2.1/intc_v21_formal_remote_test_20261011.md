@@ -50,3 +50,11 @@ D2 单 ticker 并发 4；D3 单 ticker 并发 4；Worker startup concurrency 3�
 - 启动后续阶段：`sudo python3 /home/ubuntu/doxagent-intc-v21-20261011/start_stage.py d2-o0|d2|d3`。脚本拒绝重复创建已存在的同名容器；失败恢复应先调查，再按原 run 显式恢复。
 
 生产未切换核对：初始化容器 ID 5086f68d262f8717e9be972877ad52c18cc0ed5c8f7fafd31a919bea8af341a6，启动时间2026-10-01T21:10:21.612946584Z；生产Worker ID f67f9dc85df2c192a1fc3017cb91827b0a436a97c3500ac66294f090ce381432，启动时间2026-10-02T19:04:44.31155304Z。两者未重启。
+
+## 2026-10-11 07:18 CST 检查及定点恢复
+
+实际请求模型配置符合当前节点策略，但初轮8个请求全部在 START_THREAD 前失败：`failed to load configuration: Model provider `` not found`。根因是测试环境导出把本地可选 provider 的 None 写成空字符串，SDK 将其视为显式空provider名称；未进入模型研究。D1因此缺C1/C3/C5，未发布。
+
+修复：未来容器env中删除该可选项；测试入口将空provider规范化为None（提交735ca238，5项边界测试通过）。只把修复后的入口复制到原已停止D1容器，再docker start原容器；原run ID、前置横向输入、失败attempt证据全部保留，没有新建run或全量初始化。Worker未重启，生产不动。恢复后实际请求已核实：C4 pre-scan gpt-6-luna/max、model_provider=null、status=running、无error。
+
+同时修正操作检查脚本的record_type过滤：数据库实际为bundles/checkpoints，原脚本误写单数，仅影响状态展示。
