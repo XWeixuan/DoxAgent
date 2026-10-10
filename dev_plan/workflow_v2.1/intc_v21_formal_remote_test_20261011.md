@@ -40,7 +40,7 @@ D2 单 ticker 并发 4；D3 单 ticker 并发 4；Worker startup concurrency 3�
 
 - 2026-10-11 约07:02 CST：正式 D1 容器 `doxagent-intc-v21-01-d1` 启动，容器 ID `70caca3a8182e129389f379a872fadf2b067c5369f835cfb04d4af8380e6e2d4`。
 - 首次启动检查：D1/Worker 均运行；研究尚处于前置输入阶段，JobStore 尚无请求，后续检查需核验实际节点 request.model/effort。
-- 新增 O0 边界测试：5 passed，Ruff 检查通过；D1/D2/D3 综合回归尚在执行，待补结果。
+- 新增 O0 边界测试：5 passed，Ruff 检查通过；含该测试的 D1/D2 v2.1/D3 v2.1 综合回归 86 passed（366.90秒，仅第三方 DeprecationWarning）。
 
 ## 操作与问题留痕
 
