@@ -1447,3 +1447,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-11: INTC test launch diagnosed empty provider env serialization (SDK START_THREAD rejected before model execution). Normalize optional provider at operator entrypoint; repair isolated env and resume the same D1 run, preserving failures and input checkpoints.
 
 2026-10-11 INTC v2.1 formal recovery: workspace GET reads retry transport disconnects/timeouts up to three attempts with short backoff; mutations and HTTP status errors are never replayed. Six focused transport boundary tests pass. Preserves original run and accepted research tasks.
+
+2026-10-11 BE formal v2.1: add isolated BE stage entrypoint reusing verified INTC O0 checkpoint gate (3–6 shells); preserves native D1/D2/D3 orchestration, excludes CDECR/O2/O4, supports same-run recovery.
