@@ -109,3 +109,29 @@ D2 单 ticker 并发 4；D3 单 ticker 并发 4；Worker startup concurrency 3�
 
 ### 2026-10-11 18:35 CST — checkpoint transport recovery
 D3 again exited during accepted snapshot GET replay (Server disconnected without sending a response). Worker remains alive; Build has 104 succeeded and 2 timeout jobs, Integration 13 succeeded. No new model requests during failed replay. Added bounded GET-only transport retries (3 attempts, 0.25/0.5s backoff), excluding writes and HTTP status errors. Six boundary tests and Ruff pass. Deploy only orchestration client into stopped original D3 container and resume same run; preserve all successful tasks. Host load and swap pressure observed; no OOM evidence, root cause of server disconnect not established.
+
+### 2026-10-11 19:05 CST — scheduled check
+Original D3 container running 25 minutes after checkpoint transport fix. Build Worker jobs: 112 succeeded, 3 running, 2 historical timeout failures; Integration 13 succeeded. New requests remain gpt-6-luna/max, Discovery/Planning/Integration gpt-6.1-sol/medium. No new container errors in last 30-minute logs. D1/D2 remain published; no restart or redispatch performed at this check. Continue 30-minute cadence.
+
+### 2026-10-11 19:35 CST — scheduled check
+Original D3 container healthy, up 55 minutes. Build: 118 succeeded (+6), 1 running, 2 historical timeout failures. Integration remains 13 succeeded. Actual requests retain configured Luna/max Build and Sol6.1/medium review models. No new container errors; D1/D2 unchanged. No restart or redispatch performed; next scheduled check in 30 minutes.
+
+### 2026-10-11 20:05 CST — scheduled check
+D3 continues normally into Integration: Build 119 succeeded, no running Build jobs, 2 historical timeout failures retained; Integration 16 succeeded (+3), 1 running. Actual Build Luna/max and Integration Sol6.1/medium match configuration. Original container remains running, no new errors in last 30-minute logs. D1/D2 unchanged. No restart/redispatch performed; continue 30-minute cadence.
+
+### 2026-10-11 20:35 CST — scheduled check
+D3 original container healthy. Integration 20 succeeded (+4), 1 running, actual gpt-6.1-sol/medium. Build unchanged at 119 succeeded and 2 historical timeout failures, no running Build jobs. No new container errors in last 30-minute logs; D1/D2 remain published. No restart/redispatch performed; continue 30-minute cadence.
+
+### 2026-10-11 21:05 CST — scheduled check
+D3 Integration 25 succeeded (+5), 1 running, actual gpt-6.1-sol/medium. Build remains 119 succeeded with 2 historical timeout failures. Original container healthy, no new errors in last 30-minute logs. D1/D2 unchanged; no restart or redispatch performed. Continue 30-minute cadence.
+
+### 2026-10-11 21:35 CST — scheduled check
+D3 Integration 30 succeeded (+5), 1 running, actual gpt-6.1-sol/medium. Build unchanged: 119 succeeded, 2 historical timeout failures. Original container healthy with no new errors in last 30-minute logs; D1/D2 remain published. No restart or redispatch performed; continue 30-minute cadence.
+
+### 2026-10-11 22:05 CST — scheduled check
+D3 Integration 33 succeeded (+3), 1 running, actual gpt-6.1-sol/medium. Build remains 119 succeeded, 2 historical timeout failures. Original container healthy, no new errors in last 30-minute logs; D1/D2 remain published. No restart/redispatch performed; continue 30-minute cadence.
+
+## 最终验收（2026-10-11 22:35 CST）
+D1 published，7研究节点成功；D2 published/PARTIAL，6 shells全部完成，JSON 1,199,642 bytes，SHA256 54cbb1aa9567525ca7a80057bda7a8bea5fdd7ebcefe2fc23d1ba970590f1c0c。D3于22:25:52 CST退出0，STAGED/PARTIAL，version17，173 policies；document3.json 1,238,507 bytes，SHA256 8e280dfa1a3fc7cc1d1027b674110a592a5c338d259fab356721e0aac45ddc07，runtime_projection/coverage_map/md哈希与handoff一致。D3全部Worker统计：Discovery8成功、Planning7成功、Build119成功及2历史超时、Integration37成功。D3总墙钟约12小时22分（含断点恢复），D1有效恢复运行55分21秒，D2 O0 14分4秒+后续62分15秒。
+D3缺口保留：4份final edit incomplete（chiplet采购、制造税抵现金口径、股权融资每股口径、Secure Enclave公共资本条款），remaining research gaps及3条未研究late lead；不宣称质量完整，不重跑成功任务。最终产物已下载至artifacts/intc-v21-20261011-01。
+生产HEAD仍b0f1caf50060b34483f13020a9d173ef57933afa，生产Worker ID及启动时间未变。生产初始化容器ID未变但StartedAt变为2026-10-11T10:27:55Z，与初始基线不同；本线程未操作该生产容器，不能声称整个测试期间生产完全未重启。测试始终独立库/源码/Worker，未迁移生产至v2.1。已删除intc-v2-1 heartbeat。
