@@ -1,379 +1,106 @@
+<div align="center">
+
 # DoxAgent
 
-DoxAgent is a message-side equity research agent system. The first development
-phase builds only the project baseline and the scaffolding needed for the later
-Blackboard initialization workflow.
+**AI equity research and trading, built around changes in market expectations.**
 
-## V2 生产部署
+Research companies. Understand expectations. Follow new facts. Act on meaningful change.
 
-当前生产部署使用 `docker-compose.v2-production.yml` 与 `deploy/docker-compose.server.yml`。
-连接方式见 [SSH 指南](docs/ssh-connection-guide.md)，新加坡部署与迁移记录见
-[新加坡运行手册](dev_plan/workflow_v2/backend_delivery/SG_DEPLOYMENT.md)。
-旧 V1 dashboard/runtime-scheduler Compose 不再作为上线入口。
+**English** | [简体中文](README.zh-CN.md)
 
-## Phase 0 Scope
+[Overview](#overview) · [Capabilities](#capabilities) · [How it works](#how-it-works) · [Architecture](#architecture) · [Explore](#explore)
 
-Phase 0 establishes the Python project structure, dependency configuration,
-baseline documentation, and empty validation tests. It does not implement
-Blackboard state management, agent execution, workflow orchestration, external
-GitHub agent adapters, DoxAtlas integration, market data calls, fact-checking
-search, monitoring, or trading.
+</div>
 
-## Local Setup
+## Overview
 
-This project uses Python 3.11 managed by `uv`. A system Python installation is
-not required.
+DoxAgent is an AI agent system for equity research, continuous information monitoring, and event-driven trading. It connects company and industry research with a structured view of market expectations, then evaluates incoming information against that research to support trading decisions and execution.
 
-On PowerShell, use a workspace-local uv cache if the global uv cache is broken:
+Its central question is:
 
-```powershell
-$env:UV_CACHE_DIR = "$PWD\.uv-cache"
+> **Does this new fact materially change what the market expected of this company?**
+
+To answer it, DoxAgent studies the company's economics, identifies the assumptions behind current expectations, and researches the future developments that could change them. As news arrives, it checks what is new, whether a researched trading condition has been met, and whether further analysis is needed.
+
+The result is a continuing loop between **research, observation, decision, execution, and review**. It is intended for people building and operating an ongoing research process around individual stocks.
+
+## Capabilities
+
+| Capability | What it provides |
+| --- | --- |
+| **Company and industry research** | A research foundation covering business economics, industry dynamics, value chains, key drivers, and market expectations. Broader market conditions are studied in a separate research track. |
+| **Expectation modeling** | An explicit view of current expectations, what their realization depends on, and the developments that could revise them. |
+| **Monitoring policies** | Researched conditions that connect observable future facts to a meaningful expectation change and a predefined trading direction. |
+| **Continuous information intake** | Collection, article-content enrichment, relevance filtering, and deduplication of public information for the stocks being followed. |
+| **Event assessment** | Comparison with known facts, evaluation against monitoring policies, and expert research for uncertain or uncovered developments. |
+| **Trading execution** | A separate execution process for eligible trade intents, including account constraints, orders, fills, positions, and exits. |
+| **Control and review** | A console for inspecting research, events, policies, message flows, decisions, execution outcomes, and operating costs. |
+
+## How it works
+
+### 1. Establish the research foundation
+
+Study the company, its industry, and the economic relationships that shape its prospects. Independent market research provides a view of the broader trading environment.
+
+### 2. Make expectations explicit
+
+Organize the research into an expectation model: what is currently expected, which real-world mechanisms support it, and how future developments could change its scale, timing, probability, or economics.
+
+### 3. Define what to watch
+
+Research possible developments and turn those with a sufficiently clear economic effect into monitoring policies. Each policy states the observable conditions and the trading direction they support.
+
+### 4. Assess incoming information
+
+Compare each relevant message with the event memory and active policies. Fact novelty and policy satisfaction are assessed separately. Cases that need deeper judgment enter expert research. The outcome may be a trade decision, no trade, or further investigation.
+
+### 5. Execute eligible decisions
+
+Pass eligible trade intents to the execution process, which applies the configured account and trading constraints and tracks orders through fills and exits. Decisions, submitted orders, and actual fills remain separately visible.
+
+### 6. Maintain the knowledge
+
+Feed new facts into the event library and return policy coverage gaps to research and maintenance. Subsequent assessments use the updated knowledge and published policies, while earlier decisions remain traceable to their original context.
+
+**Example:** A manufacturer announces a capacity expansion. DoxAgent compares the announcement with known plans and prior expectations, evaluates its effect on supply, timing, and business economics, and checks the relevant policy conditions. That assessment determines whether it supports a trading direction or needs more research.
+
+## Architecture
+
+DoxAgent separates deep research, continuously maintained knowledge, incoming information, live assessment, and trading execution. The control console brings their outputs together for inspection and review.
+
+```mermaid
+flowchart TB
+    subgraph Research["Research"]
+        Company["Company & industry research"]
+        Market["Independent market context"]
+    end
+
+    Company --> Knowledge["Research state<br/>Expectations · known events · policies"]
+    Sources["Public information"] --> Intake["Information intake"]
+    Intake --> Assessment["Continuous assessment<br/>Fact novelty · policy match · expert review"]
+    Knowledge --> Assessment
+    Assessment -->|Eligible trade intents| Execution["Trading execution"]
+    Assessment -. "New facts & coverage gaps" .-> Knowledge
+
+    Company -.-> Console["Control & audit"]
+    Market -.-> Console
+    Assessment -.-> Console
+    Execution -.-> Console
 ```
 
-Install Python and sync dependencies:
+Four design choices shape the system:
 
-```powershell
-uv python install 3.11
-uv sync --group dev
-```
+- **Research before the event.** Build the expectation model and actionable conditions ahead of incoming news.
+- **Distinct responsibilities.** Company research, market context, fact memory, policy assessment, and order execution have separate roles.
+- **Continuity over time.** Retain research, event history, and processing progress so the system can continue across messages and interruptions.
+- **Traceable decisions.** Preserve the evidence and research context behind a decision, alongside its actual execution outcome.
 
-Run the baseline checks:
+## Explore
 
-```powershell
-uv run pytest
-uv run ruff check .
-uv run mypy src
-```
+- [Product overview](dev_plan/workflow_v2/DOXAGENT_V2_FRONTEND_PRD_PART1.md) — the research, expectations, strategy, and event-library experience.
+- [Monitoring and operations](dev_plan/workflow_v2/DOXAGENT_V2_FRONTEND_PRD_PART2.md) — message flows, runtime visibility, and outcome review.
+- [Operating guide](dev_plan/workflow_v2/backend_delivery/PRODUCTION_RUNBOOK.md) — configuration and operation.
+- [Changelog](changelog) — project history.
+- [Issues](https://github.com/XWeixuan/DoxAgent/issues) — questions, bug reports, and proposals.
 
-## Architecture Boundaries
-
-- Microsoft Agent Framework is the future runtime and workflow shell, not the
-  model gateway or business state owner.
-- Phase 0 uses the `agent-framework-core` package instead of the all-in-one
-  `agent-framework` meta package to avoid optional Azure integrations.
-- Model Gateway will own provider routing, retries, structured output, and
-  LangSmith wrapping.
-- Blackboard Service will own Working Memory, Belief State, Objection,
-  Delegation, Evidence, and Commit Log.
-- External GitHub agent projects remain references only until the adapter phase.
-- DoxAtlas, market data, and fact-checking are mock/fixture based in Phase 0.
-
-## Phase 1 Contracts
-
-Core domain contracts live under `src/doxagent/models`. Phase 1 defines
-Pydantic schemas for `AgentTask`, `AgentResult`, `BlackboardPatch`,
-`EvidenceRef`, `Objection`, `Delegation`, and the five Blackboard work
-documents from the PRD. These contracts are serialization-friendly and do not
-import Microsoft Agent Framework types.
-
-Phase 1 still does not implement Blackboard persistence, MAF runners, workflows,
-tools, model calls, or external adapters.
-
-## Phase 2 Model Gateway
-
-Model Gateway code lives under `src/doxagent/gateway`. It provides an async
-`ModelClient` boundary, mock client, OpenAI and Anthropic SDK adapters,
-centralized LangSmith wrapping, normalized errors, fallback handling, and audit
-summaries. Phase 2 tests use fake SDK clients only and do not call real model
-providers.
-
-## Phase 3 Blackboard Service
-
-Blackboard Service code lives under `src/doxagent/blackboard`. Phase 3 provides
-an in-memory repository, run initialization, Working Memory writes, Belief State
-patch submission, obstruction checks for unresolved objections and active
-delegations, lifecycle helpers, and Commit Log entries. It does not add
-database persistence, workflow execution, agent runtime behavior, or tool calls.
-
-## Phase 4 Agent Runtime Boundary
-
-Agent runtime code lives under `src/doxagent/agents`, context snapshots live
-under `src/doxagent/context`, and controlled mock tools live under
-`src/doxagent/tools`. Phase 4 establishes the `AgentTask -> AgentResult`
-boundary, default agent registry, permission-bounded Context Builder, mock tool
-registry, and `ToolResult` to `EvidenceRef` conversion. It does not run real MAF
-agents, real model calls, external DoxAtlas calls, market-data calls, or
-workflow orchestration.
-
-## Phase 5 Initialization Workflow
-
-Initialization workflow code lives under `src/doxagent/workflows`. Phase 5 adds
-a deterministic Blackboard initialization runner, in-memory checkpoint/resume,
-mock agent result factory, document dependency checks, obstruction handling, and
-five-document Belief State promotion through `BlackboardService.submit_patch`.
-It still does not call real MAF workflows, model providers, DoxAtlas, market
-data, fact-check services, or external GitHub agent projects.
-
-## Phase 6 Mock Ticker Sample
-
-Phase 6 sample inputs and generated output live under
-`examples/phase6_mock_ticker`. The runnable module
-`doxagent.examples.phase6_mock_run` executes the Phase 5 workflow for the mock
-fixture and exports a review JSON containing five documents, evidence, Working
-Memory, Commit Log, objection/delegation lifecycle summaries, and residual risk
-notes.
-
-Generate the review artifact:
-
-```powershell
-uv run python -m doxagent.examples.phase6_mock_run --output examples/phase6_mock_ticker/generated_run.json
-```
-
-Run without `--output` to print a compact summary. The sample is fixture-only:
-it does not call real services, execute trades, expose broker behavior, or start
-real-time monitoring.
-
-## Phase 7 Audit and Recovery
-
-Audit helpers live under `src/doxagent/audit`. Phase 7 adds a read-only
-`AuditQueryService` for Commit Log queries, field traceability, unresolved
-objection reports, and blocking delegation reports. It also adds
-`build_run_debug_report` for workflow/debug summaries and same-process recovery
-tests around blocked checkpoints, dependency violations, failed agent results,
-and missing evidence.
-
-The Phase 7 audit layer is in-memory and read-only. It does not replace
-Blackboard Commit Log, does not persist runs to disk or a database, and does not
-turn LangSmith/model traces into business audit records.
-
-## Phase 8 Vibe-Trading Adapters
-
-Vibe-Trading adapter modules live under `src/doxagent/adapters/vibe_trading`.
-Phase 8 starts with two read-only reference migrations:
-`MacroContextAgentModule` wraps `macro_rates_fx_desk`, and
-`FundamentalBriefAgentModule` wraps `fundamental_research_team`.
-
-Both modules preserve the original multi-agent role split, task dependencies,
-tool/skill metadata, and synthesis shape, then return standard `AgentResult`
-objects with dedicated structured payload schemas and short Markdown summaries.
-They do not import the Vibe-Trading runtime, read ignored reference sources at
-runtime, execute Vibe tools, call real model/data services, or write Blackboard
-state directly.
-
-Example:
-
-```python
-from doxagent.adapters import FundamentalBriefAgentModule, MacroContextAgentModule
-
-macro = MacroContextAgentModule().run(
-    goal="US equity allocation",
-    timeframe="tactical 1-3 months",
-)
-fundamental = FundamentalBriefAgentModule().run(
-    target="AAPL",
-    market="US equities",
-)
-```
-
-Financial-services adapter modules live under
-`src/doxagent/adapters/financial_services`. `IndustryResearchAgentModule`
-adapts the `anthropics/financial-services` Market Researcher into a DoxAgent
-industry research capability. It preserves the source workflow shape: scope,
-sector overview, competitive analysis, comps analysis, idea generation, and
-note synthesis.
-
-The Phase 8 industry module uses a DoxAgent-owned mock data provider. It returns
-JSON plus concise Markdown, with source refs, confidence, and unknowns preserved
-for market-size, growth, peer comps, idea shortlist, risks, catalysts, and
-downstream hints. It does not run Anthropic Managed Agent, Claude plugin,
-CapIQ/FactSet MCP, real DoxAtlas, real market data, or Blackboard writes.
-
-Example:
-
-```python
-from doxagent.adapters import IndustryResearchAgentModule
-
-industry = IndustryResearchAgentModule().run(
-    sector_or_theme="US data-center power",
-    angle="supply gap",
-    universe=["VST", "CEG", "ETR", "NRG"],
-)
-```
-
-## Phase 8 O4 Market Trace
-
-The native O4 market trace module lives under `src/doxagent/agents/market_trace`.
-`MarketTraceAgentModule` adapts the useful OHLCV and quote orchestration ideas
-from `hermes-finance` without importing Hermes runtime, LlamaIndex tools, or
-Hermes cache/rate limiter code.
-
-The module returns a standard `AgentResult` for `O4` with a `MarketTraceResult`
-payload covering quote context, OHLCV summary, benchmark/peer relative
-performance, volume analysis, technical signals, valuation context, data
-quality, source refs, unknowns, and concise Markdown. It does not write
-Blackboard state, execute trades, start monitoring, or provide trading advice.
-
-Example:
-
-```python
-from doxagent.agents import MarketTraceAgentModule
-
-trace = MarketTraceAgentModule().run(
-    ticker="AAPL",
-    period="3mo",
-    interval="1d",
-    benchmarks=["SPY"],
-    peers=["MSFT", "GOOGL"],
-)
-```
-
-## Post-MVP 3.1 Persistence
-
-Blackboard persistence adds a Supabase/Postgres path while keeping the default
-local mode in memory. Business state and workflow recovery state are stored
-separately: `BlackboardService` owns runs, Working Memory, Belief State,
-Commit Log, objections, delegations, and evidence, while workflow checkpoint
-repositories own checkpoint history and latest-resume state.
-
-The migration is available at
-`supabase/migrations/202605300001_blackboard_workflow_persistence.sql`. It
-creates a dedicated `doxagent` schema and does not include Supabase project
-URLs, passwords, keys, or access tokens.
-
-Configuration stays environment-only:
-
-```powershell
-$env:DOXAGENT_STORAGE_MODE = "postgres"
-$env:DOXAGENT_DATABASE_URL = "postgresql://..."
-```
-
-Use URL encoding for special characters in database passwords. Tests do not
-connect to Supabase unless a future explicit integration-test flag is provided.
-
-## Local Dashboard
-
-Debug Viewer has been removed. Use the dashboard API and frontend for normal
-document/status inspection; one-off eval exports can be produced with
-`uv run python eval\export_brief_state.py <run_id>` when needed.
-
-## Post-MVP 3.3 Skills
-
-Skill management lives under `src/doxagent/skills`. The code-first
-`SkillRegistry` registers DoxAgent-owned and migrated external skills, including
-Vibe-Trading macro/fundamental skills, financial-services Market Researcher
-skills, and Hermes/O4 market trace skills. `SkillInjector` attaches a
-versioned `SkillBundle` to `AgentTask` without mutating Blackboard state.
-
-Current skill injection is a contract boundary for future real AgentRunner work:
-it does not run external runtimes, read ignored reference repositories, persist
-skills to Supabase, or call real LLM providers. Adapter outputs now include
-skill version metadata while preserving their existing `skills` fields.
-
-## Post-MVP 3.4 MAF Agent Runtime
-
-The first real Agent Runtime lives under `src/doxagent/agents/runtime`.
-`ModelGatewayAgentRunner` uses Microsoft Agent Framework as the execution shell
-while keeping DoxAgent boundaries intact: tasks enter as `AgentTask`, model calls
-go through `ModelGateway`, skills are injected by `SkillInjector`, tools go
-through `ToolRegistry`, and output returns as `AgentResult`.
-
-`MafAgentAdapter` now delegates to the real runner instead of returning a
-placeholder error. Runtime tool mode can be `disabled`, `mock`, or `real`.
-Because the Phase 3.2 real tools are still under debugging, normal tests use
-fake gateway responses and mock tools while preserving the same tool names,
-permissions, and `ToolResult` contract expected by the real tool layer.
-
-The runtime does not replace workflow orchestration, call model providers
-directly, write Blackboard state, stream responses, execute trades, or treat
-LangSmith/model tracing as Commit Log audit.
-
-## Post-MVP 3.5 Real Workflow Execution
-
-Initialization workflow real-execution support lives in
-`src/doxagent/workflows`. `BlackboardInitializationWorkflow` now supports
-`execution_mode="mock"` for existing deterministic tests and
-`execution_mode="agent_runner"` for the real `AgentTask -> AgentResult`
-boundary. The workflow runner remains DoxAgent-owned; MAF is only used through
-the 3.4 agent runner.
-
-In `agent_runner` mode, workflow nodes build richer task context, normalize
-structured runner output through `WorkflowAgentResultNormalizer`, write agent
-results to Working Memory, submit valid patches through `BlackboardService`,
-and save checkpoint metadata for runtime/tool mode, agent result summaries, and
-blocking errors.
-
-This phase does not call real providers by default, does not replace the
-workflow with MAF workflow runtime, and does not implement O3.
-
-## Post-MVP 3.6 Global Research Integration
-
-Global Research module integration lives in `src/doxagent/workflows`.
-`GlobalResearchModuleRunner` calls the migrated Phase 8 C1/C2/C3 modules and
-native O4 market trace module. `GlobalResearchAssembler` maps those outputs into
-the five-section `GlobalResearchDocument` used by the Blackboard.
-
-`BlackboardInitializationWorkflow.run()` accepts optional `research_inputs` for
-market, geography, timeframe, industry scope, universe, benchmark/peer, and O4
-market trace settings. In `execution_mode="agent_runner"`, the
-`BuildGlobalResearch` node now stores C1/C2/C3/O4 raw outputs in Working Memory,
-assembles a stable Global Research patch, and submits it through
-`BlackboardService`.
-
-The `market_narrative_report` section is deliberately marked as pending
-O1/DoxAtlas narrative integration in this phase. It is not a completed narrative
-conclusion. C3 downstream hints, C2 monitoring dashboard, C1 risks/catalysts,
-and O4 price/technical context are preserved for later O1/O2 work.
-
-## Post-MVP 3.7/3.8 O1/A1/A2 Realization
-
-O1/A1/A2 realization adds structured contracts for expectation construction,
-DoxAtlas audit, and delegated retrieval. O1 now owns sourced expectation-unit
-and known-event outputs, A1 audits expectation fields against DoxAtlas evidence,
-and A2 has been repositioned as a Tavily-only retrieval and fact-check delegate.
-
-A2 keeps the internal `A2` agent id for compatibility, but its default tool
-permissions are limited to `tavily.search` and `tavily.extract`. Other agents
-route external information gaps to A2 through `DelegatedRetrievalRequest` and
-`create_a2_retrieval_delegation(...)`; A2 never writes Blackboard state
-directly. `ResolveObjectionsAndDelegations` can now call A2 in
-`agent_runner` mode, complete delegations when Tavily evidence is sufficient,
-and leave the workflow blocked when evidence is missing.
-
-Normal tests still use fake gateway/mock tools and do not call real Tavily,
-DoxAtlas, LLM providers, Supabase, or broker services.
-
-## Prompt And Skill Separation
-
-Prompt resources are isolated by workflow runtime:
-
-- `prompts/v1/` contains the legacy self-built ReAct framework resources loaded
-  through `PromptRegistry`, including its agents, internal task skills, external
-  skill packages, runtime, system, and workflow prompts.
-- `prompts/codex_v2/document1/` contains only the Codex SDK Document1 agents,
-  skills, schemas, common instructions, lane manifests, and compatibility bundle.
-- `prompts/codex_v2/document2/` contains only the Codex SDK Document2 common
-  instructions, agents, and skills.
-
-Codex SDK v2 does not use the legacy PromptRegistry or external skill packages.
-
-`PromptRegistry` and `PromptInjector` select these resources into
-`AgentTask.prompt_bundle`. `PromptAssembler` builds the final runtime prompt.
-The legacy `SkillRegistry` now acts as a compatibility layer for external skill
-packages only, so system prompts and internal SOPs are no longer mixed with
-external skills.
-
-## Project Layout
-
-```text
-prompts/
-  codex_v2/
-    document1/
-    document2/
-  v1/
-src/doxagent/
-  adapters/
-  audit/
-  agents/
-  blackboard/
-  context/
-  core/
-  gateway/
-  models/
-  skills/
-  tools/
-  workflows/
-tests/
-dev_plan/
-examples/
-references/
-```
+The project is under active development. Data coverage and available execution capabilities depend on the configured sources, services, and account settings.
