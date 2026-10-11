@@ -58,3 +58,54 @@ D2 单 ticker 并发 4；D3 单 ticker 并发 4；Worker startup concurrency 3�
 修复：未来容器env中删除该可选项；测试入口将空provider规范化为None（提交735ca238，5项边界测试通过）。只把修复后的入口复制到原已停止D1容器，再docker start原容器；原run ID、前置横向输入、失败attempt证据全部保留，没有新建run或全量初始化。Worker未重启，生产不动。恢复后实际请求已核实：C4 pre-scan gpt-6-luna/max、model_provider=null、status=running、无error。
 
 同时修正操作检查脚本的record_type过滤：数据库实际为bundles/checkpoints，原脚本误写单数，仅影响状态展示。
+
+2026-10-11 07:33 CST：原D1续跑正常。C4 pre-scan已成功；C1/C3同时运行，实际请求均gpt-6.1-sol/medium，C4为gpt-6-luna/max。2次/节点的旧failed记录均属此前provider启动故障；日志尾部旧publish blocked堆栈不是本次新故障（容器当前Up 13分钟）。尚未发布，不启动D2。
+
+2026-10-11 07:48 CST：C1/C3/C5均已成功，C4F Future Nodes运行中。实际节点模型符合策略：C1/C3/C5 gpt-6.1-sol/medium；C4F gpt-6-luna/max。未出现新增失败，D1尚未发布，继续原run等待C4产品完成。
+
+2026-10-11 08:03 CST：C4F Future Nodes已成功，C4E formal scan正在同一run内运行，实际gpt-6-luna/max。C1/C3/C5及pre-scan成功状态保留，无新增失败；待formal与network完成后再推进D2 O0。
+
+2026-10-11 08:18 CST：D1已published，所有7个研究节点成功，C4三产品均完成；network实际gpt-6.1-sol/high，其余请求符合节点配置，无新增失败。原D1容器exit0（约08:15完成）。现启动正式D2的d2-o0容器，run仍为intc-v21-20261011-01-d2；仅O0，未放行O1。继续15分钟检查，待最终shell实物数量3-6才续跑。
+
+2026-10-11 08:33 CST：O0全部8个研究请求成功且模型符合策略，停点容器exit0。已对final_shell_seeds.json实物核验6个shell，SHA256 c33b2b5e00e648c36761e85d6f4a5692f010442735522f8b88d07272d4776439：客户端计算产品市场、数据中心计算产品市场、半导体制造与Foundry服务、关键组件供应市场、企业成本与资本财务、汽车智能计算业务。数量符合3-6，已放行同D2 run的O1后续容器doxagent-intc-v21-01-d2（8bc529325e377417cd5aa466f22d07ff1ce9360885a6bcf9d6ce907913ca1398），保留已完成O0，4并发。heartbeat已更新为每30分钟检查。
+
+2026-10-11 09:04 CST：D2正常推进，3次shell finalization已成功，其余shell在state/open_discovery/gaps等阶段运行；所有O1实际模型均gpt-6.1-sol/medium，无新增failed Worker Job。数据中心计算产品市场OPEN_DISCOVERY出现5类验收告警（selection_not_bound_at_freeze、upstream_fallback、scan_unit_not_researched、discovery_unavailable、scan_recovered_after_turn；含阶段及shell维度共10条），当前按既有checkpoint恢复/降级机制继续，保留质量告警，不为此重做已完成研究。待最终产物检查其实际影响与PARTIAL状态。
+
+2026-10-11 09:34 CST：6个shell的state/open_discovery/realization/gaps均成功；5个finalization成功，最后1个finalization运行中。所有O1请求实际gpt-6.1-sol/medium，无新增failed，验收告警仍为此前数据中心shell的10条，无扩大。D2未发布，保持原run继续，不提前启动D3。
+
+2026-10-11 10:04 CST：D2已published/PARTIAL，约09:36完成，6个shell全部5阶段研究成功（30个O1请求均gpt-6.1-sol/medium）。PARTIAL源于数据中心shell OPEN_DISCOVERY 5类10条验收告警，没有failed shell/新增failed Worker Job；保留告警而不全量重跑。已启动正式D3容器doxagent-intc-v21-01-d3，run intc-v21-20261011-01-d3，采用同一冻结D1/D2及Event Library v1，继续30分钟跟进。
+
+2026-10-11 10:34 CST：D3的8个Discovery请求全部成功（6个普通shell owner及2个OPEN owner），Planning已成功3个请求、另1个运行中；实际均gpt-6.1-sol/medium。D3无failed请求，容器正常，尚未进入Build；继续同一run等待Planning。
+
+2026-10-11 11:04 CST：D3 Planning的7个请求全部成功（gpt-6.1-sol/medium），已进入Build；4个Build请求成功，另4个同时running，实际全部gpt-6-luna/max，确认原工作流4并发生效。D3无failed请求，继续同run执行。
+
+2026-10-11 11:34 CST：D3 Build成功请求由4增至17，4个请求同时运行，实际均gpt-6-luna/max；Discovery 8、Planning 7成功保留。D3无failed请求，日志无新增异常，保持同一run和4并发继续。
+
+2026-10-11 12:04 CST：D3 Build成功请求由17增至28，仍4个并行运行，实际均gpt-6-luna/max；D3无failed请求、日志无新异常，继续原run。
+
+2026-10-11 12:34 CST：D3 Build成功请求由28增至38，当前3个running（并发配置仍4，按owner/wave可调度工作推进），实际均gpt-6-luna/max。无D3 failed、无新错误，继续原run。
+
+2026-10-11 13:04 CST：D3 Build成功请求由38增至48，4个并行运行，实际均gpt-6-luna/max；无新增failed、日志无新错误，继续原run。
+
+2026-10-11 13:34 CST：D3 Build成功请求由48增至59，当前1个running（配置仍4并发），实际gpt-6-luna/max；尚无Integration请求。无D3 failed或新日志错误，继续同run执行。
+
+2026-10-11 14:04 CST：D3 Build成功请求由59增至63，当前1个running，实际gpt-6-luna/max；尚未出现Integration请求。持续有新成功请求，无D3 failed及新日志错误，保持原run等待。
+
+2026-10-11 14:34 CST：D3初始Build的64个请求全部成功（gpt-6-luna/max），已进入Integration；Integration 4个请求成功、1个运行中，实际gpt-6.1-sol/medium。D3无failed请求、日志无新增异常，沿原run继续复核/补研/最终写入和发布。
+
+2026-10-11 15:04 CST：D3 Integration成功请求由4增至7，1个运行中，实际均gpt-6.1-sol/medium；Build 64个成功保留，无新增Build补研请求、无D3 failed或日志错误，继续原run。
+
+2026-10-11 15:34 CST：D3 Integration成功请求由7增至11，1个运行中，实际gpt-6.1-sol/medium；初始Build 64成功保留，无D3 failed或日志新错误，继续原run。
+
+2026-10-11 16:04 CST：Integration成功请求由11增至13（gpt-6.1-sol/medium），进入补研Build；Build累计成功由64增至68，4个补研请求并行running，实际gpt-6-luna/max。无D3 failed或新日志错误，继续同run补研与后续复核。
+
+2026-10-11 16:34 CST：D3 Build累计成功由68增至78，4个补研请求并行运行，实际均gpt-6-luna/max；Integration累计13成功（gpt-6.1-sol/medium），无D3 failed或新日志错误，继续原run补研。
+
+2026-10-11 17:04 CST：D3 Build累计成功由78增至90，3个补研请求运行中，实际均gpt-6-luna/max；Integration仍13成功。无D3 failed及日志新错误，继续原run。
+
+2026-10-11 17:35 CST：D3 Build累计成功由90增至101，3个补研请求运行中，实际均gpt-6-luna/max；Integration仍13成功。无D3 failed及日志新错误，继续原run。
+
+2026-10-11 18:05 CST：D3主编排在runner_v21输出inventory读取处出现WorkerUnavailable并退出（约17:48）；Worker保持运行，Build累计104成功，存在CODEX_TURN_TIMEOUT补研请求（RUN_TURN超1800秒预算）。SSH本轮一度响应延迟后恢复；主机可用内存约3.2GB、swap已用满、磁盘剩22GB，尚不能据此认定通信超时根因。代码复核：runner会复用record中已终态Worker Job，按原task/checkpoint验收输出。现仅docker start原D3容器、沿原run断点恢复，未重启Worker、未新建run、未全量重做成功节点。后续核对超时任务的实际输出验收与重试结果。
+
+### 2026-10-11 18:35 CST — checkpoint transport recovery
+D3 again exited during accepted snapshot GET replay (Server disconnected without sending a response). Worker remains alive; Build has 104 succeeded and 2 timeout jobs, Integration 13 succeeded. No new model requests during failed replay. Added bounded GET-only transport retries (3 attempts, 0.25/0.5s backoff), excluding writes and HTTP status errors. Six boundary tests and Ruff pass. Deploy only orchestration client into stopped original D3 container and resume same run; preserve all successful tasks. Host load and swap pressure observed; no OOM evidence, root cause of server disconnect not established.

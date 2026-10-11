@@ -253,20 +253,29 @@ class HttpCodexWorkerClient:
     ) -> httpx.Response:
         if self._capabilities is None:
             raise WorkerUnavailable("workspace capability secret is not configured")
-        token = self._capabilities.issue(run_id=run_id, operations={operation})
-        try:
-            response = await self._client.request(
-                method,
-                path,
-                headers={"X-Workspace-Capability": token},
-                **kwargs,
-            )
-            if response.status_code == 404 and missing_path is not None:
-                raise FileNotFoundError(missing_path)
-            response.raise_for_status()
-            return response
-        except httpx.HTTPError as exc:
-            raise WorkerUnavailable(str(exc)) from exc
+        # Workspace reads can safely retry a dropped pooled connection. Mutations
+        # must surface ambiguous transport failures instead of being replayed.
+        attempts = 3 if method.upper() == "GET" else 1
+        for attempt in range(attempts):
+            token = self._capabilities.issue(run_id=run_id, operations={operation})
+            try:
+                response = await self._client.request(
+                    method,
+                    path,
+                    headers={"X-Workspace-Capability": token},
+                    **kwargs,
+                )
+                if response.status_code == 404 and missing_path is not None:
+                    raise FileNotFoundError(missing_path)
+                response.raise_for_status()
+                return response
+            except httpx.TransportError as exc:
+                if attempt + 1 == attempts:
+                    raise WorkerUnavailable(str(exc)) from exc
+                await asyncio.sleep(0.25 * (attempt + 1))
+            except httpx.HTTPError as exc:
+                raise WorkerUnavailable(str(exc)) from exc
+        raise AssertionError("workspace request exhausted without a result")
 
     async def aclose(self) -> None:
         await self._client.aclose()
