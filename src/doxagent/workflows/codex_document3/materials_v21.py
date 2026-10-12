@@ -12,7 +12,7 @@ def reference_path(ref, content):
     return f"context/document3/v21/references/{digest(ref)[:20]}-{digest(content)[:20]}.{extension}"
 
 
-def attach_material_indexes(files, mapping, metadata, *, task_root, cache):
+def attach_material_indexes(files, mapping, metadata, *, task_root, cache, profile="legacy-full"):
     sources = []
     for item in mapping:
         path, ref = item["local_path"], item["ref"]
@@ -22,7 +22,10 @@ def attach_material_indexes(files, mapping, metadata, *, task_root, cache):
             "local_path": path,
             "projection_status": "available",
         }
-        identity = digest({"ref": ref, "sha256": digest(files[path]), "source": info})[:24]
+        identity_data = {"ref": ref, "sha256": digest(files[path]), "source": info}
+        if profile != "legacy-full":
+            identity_data["profile"] = profile
+        identity = digest(identity_data)[:24]
         if identity not in cache:
             derived = {}
             try:
@@ -36,6 +39,7 @@ def attach_material_indexes(files, mapping, metadata, *, task_root, cache):
                 root=f"context/document3/v21/context_index/materials/{identity}",
                 context=context,
                 sources={path: info},
+                detail="full" if profile == "legacy-full" else "source",
             )
             cache[identity] = (derived, navigation)
         derived, navigation = cache[identity]

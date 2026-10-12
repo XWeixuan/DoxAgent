@@ -22,6 +22,7 @@ from doxagent.codex_worker.schema import (
     WorkerRunRequest,
     WorkspaceFileResponse,
     WorkspaceInventory,
+    WorkspaceInventoryQuery,
     WorkspaceWriteRequest,
 )
 from doxagent.codex_worker.sdk_runtime import CodexExecutionRuntime
@@ -295,6 +296,21 @@ def create_worker_app(
         require_capability(run_id, "inventory", x_workspace_capability)
         return await disk.run(workspaces.inventory, run_id, prefixes=prefixes)
 
+    @app.post(
+        "/v1/workspaces/{run_id}/inventory-query",
+        response_model=WorkspaceInventory,
+        dependencies=[Depends(require_service_auth)],
+    )
+    async def inventory_query(
+        run_id: str,
+        query: WorkspaceInventoryQuery,
+        x_workspace_capability: str | None = Header(default=None),
+    ) -> WorkspaceInventory:
+        require_capability(run_id, "inventory", x_workspace_capability)
+        return await disk.run(
+            workspaces.inventory_query, run_id, paths=query.paths, prefixes=query.prefixes
+        )
+
     @app.get(
         "/v1/workspaces/{run_id}/attempts/{attempt_id}/observations",
         response_model=list[PersistedObservation],
@@ -332,10 +348,11 @@ def create_worker_app(
     async def publish(
         run_id: str,
         paths: list[str],
+        release_only: bool = False,
         x_workspace_capability: str | None = Header(default=None),
     ) -> WorkspaceInventory:
         require_capability(run_id, "publish", x_workspace_capability)
-        return await disk.run(workspaces.publish, run_id, paths)
+        return await disk.run(workspaces.publish, run_id, paths, release_only=release_only)
 
     @app.delete(
         "/v1/workspaces/{run_id}/attempts/{attempt_id}",

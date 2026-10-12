@@ -411,7 +411,7 @@ def parse_json(content: str, *, path: str, model: type[ModelT]) -> RecoveryResul
 
 
 async def resume_v21(orchestrator, run_id):
-    """Replay the frozen identity; preparation/provider loading is never repeated."""
+    """Replay the frozen identity and completed preparation; resume unfinished input I/O."""
     from datetime import datetime
 
     run = orchestrator.state.run(run_id)

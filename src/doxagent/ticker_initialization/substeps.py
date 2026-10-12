@@ -315,6 +315,10 @@ def durable(kind: str) -> Callable[[Callable[P, Awaitable[T]]], Callable[P, Awai
                         from doxagent.codex_runtime.errors import InfrastructureRecoveryExhausted
 
                         raise InfrastructureRecoveryExhausted(str(exc)) from exc
+                    if kind == "d3_v21":
+                        # V21 already owns research attempts and bounded workspace recovery.
+                        # Re-entry would multiply budgets or retry auth/integrity errors.
+                        raise
                     if record.ordinal >= 2:
                         raise
                     if details["retryable"]:

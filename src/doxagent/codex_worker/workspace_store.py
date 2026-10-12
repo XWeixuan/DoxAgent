@@ -162,7 +162,34 @@ class LocalWorkspaceStore:
         ]
         return WorkspaceInventory(run_id=run_id, files=files)
 
-    def publish(self, run_id: str, artifact_paths: list[str]) -> WorkspaceInventory:
+    def inventory_query(self, run_id: str, *, paths=(), prefixes=()) -> WorkspaceInventory:
+        """Hash exactly the selected files and declared output directories."""
+        run_root = self.ensure_run(run_id)
+        selected = set()
+        for name in paths:
+            target = self._resolve(run_id, name)
+            if target.is_dir():
+                raise InvalidWorkspacePath("exact inventory paths must be files")
+            if target.is_file():
+                selected.add(target)
+        for name in prefixes:
+            target = self._resolve(run_id, name.rstrip("/"))
+            if target.is_file():
+                raise InvalidWorkspacePath("inventory prefixes must be directories")
+            if target.is_dir():
+                for child in target.rglob("*"):
+                    # Validate nested links too, before opening or hashing any file.
+                    checked = self._resolve(run_id, child.relative_to(run_root).as_posix())
+                    if checked.is_file():
+                        selected.add(checked)
+        return WorkspaceInventory(
+            run_id=run_id,
+            files=[self._metadata(run_id, p, include_content=False) for p in sorted(selected)],
+        )
+
+    def publish(
+        self, run_id: str, artifact_paths: list[str], *, release_only=False
+    ) -> WorkspaceInventory:
         """Copy selected artifacts into an immutable checksum-addressed release."""
 
         run_root = self.ensure_run(run_id)
@@ -204,7 +231,9 @@ class LocalWorkspaceStore:
                 finally:
                     if staging.exists():
                         shutil.rmtree(staging)
-        return self.inventory(run_id)
+        return self.inventory(
+            run_id, prefixes=[f"published/{release_id}/"] if release_only else None
+        )
 
     def export_zip(
         self,

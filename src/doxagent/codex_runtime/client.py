@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import ipaddress
 import time
+from contextvars import ContextVar
 from typing import Any, Protocol
 from urllib.parse import urlsplit
 from uuid import uuid4
@@ -33,13 +34,18 @@ class WorkspaceClient(Protocol):
     ) -> WorkspaceFileResponse: ...
     async def read_text(self, run_id: str, relative_path: str) -> WorkspaceFileResponse: ...
     async def inventory(self, run_id: str, *, prefixes=None) -> WorkspaceInventory: ...
+    async def inventory_query(
+        self, run_id: str, *, paths=(), prefixes=()
+    ) -> WorkspaceInventory: ...
     async def read_attempt_observations(
         self, run_id: str, attempt_id: str
     ) -> list[PersistedObservation]: ...
     async def import_attempt_observations(
         self, run_id: str, attempt_id: str, observations: list[PersistedObservation]
     ) -> list[PersistedObservation]: ...
-    async def publish(self, run_id: str, paths: list[str]) -> WorkspaceInventory: ...
+    async def publish(
+        self, run_id: str, paths: list[str], *, release_only=False
+    ) -> WorkspaceInventory: ...
 
 
 class HttpCodexWorkerClient:
@@ -61,6 +67,10 @@ class HttpCodexWorkerClient:
         )
         self._capabilities = CapabilityTokenCodec(capability_secret) if capability_secret else None
         self._poll_seconds = poll_seconds
+        self._workspace_options = ContextVar("workspace_request_options", default=(None, None))
+
+    def workspace_view(self, *, transport_attempts=1):
+        return WorkspaceHttpView(self, transport_attempts)
 
     async def run(self, request: WorkerRunRequest) -> WorkerJob:
         job: WorkerJob | None = None
@@ -161,6 +171,23 @@ class HttpCodexWorkerClient:
         )
         return WorkspaceInventory.model_validate(response.json())
 
+    async def inventory_query(self, run_id: str, *, paths=(), prefixes=()) -> WorkspaceInventory:
+        paths, prefixes = sorted(set(paths)), sorted(set(prefixes))
+        files = {}
+        chunks = [(paths[i : i + 512], []) for i in range(0, len(paths), 512)]
+        chunks += [([], prefixes[i : i + 32]) for i in range(0, len(prefixes), 32)]
+        for selected, directories in chunks:
+            response = await self._request(
+                "POST",
+                f"/v1/workspaces/{run_id}/inventory-query",
+                run_id=run_id,
+                operation="inventory",
+                json={"paths": selected, "prefixes": directories},
+            )
+            for item in WorkspaceInventory.model_validate(response.json()).files:
+                files[item.relative_path] = item
+        return WorkspaceInventory(run_id=run_id, files=[files[p] for p in sorted(files)])
+
     async def snapshot(self, run_id: str, snapshot_id: str) -> None:
         await self._request(
             "POST",
@@ -172,18 +199,17 @@ class HttpCodexWorkerClient:
     async def fork_snapshot(self, run_id: str, snapshot_id: str, destination_run_id: str) -> None:
         if self._capabilities is None:
             raise WorkerUnavailable("workspace capability secret is not configured")
-        response = await self._client.post(
+        await self._request(
+            "POST",
             f"/v1/workspaces/{run_id}/snapshots/{snapshot_id}/fork/{destination_run_id}",
+            run_id=run_id,
+            operation="snapshot",
             headers={
-                "X-Workspace-Capability": self._capabilities.issue(
-                    run_id=run_id, operations={"snapshot"}
-                ),
                 "X-Destination-Capability": self._capabilities.issue(
                     run_id=destination_run_id, operations={"write"}
                 ),
             },
         )
-        response.raise_for_status()
 
     async def read_attempt_observations(
         self,
@@ -213,13 +239,16 @@ class HttpCodexWorkerClient:
         )
         return [PersistedObservation.model_validate(item) for item in response.json()]
 
-    async def publish(self, run_id: str, paths: list[str]) -> WorkspaceInventory:
+    async def publish(
+        self, run_id: str, paths: list[str], *, release_only=False
+    ) -> WorkspaceInventory:
         response = await self._request(
             "POST",
             f"/v1/workspaces/{run_id}/publish",
             run_id=run_id,
             operation="publish",
             json=paths,
+            params={"release_only": "true"} if release_only else None,
         )
         return WorkspaceInventory.model_validate(response.json())
 
@@ -255,14 +284,19 @@ class HttpCodexWorkerClient:
             raise WorkerUnavailable("workspace capability secret is not configured")
         # Workspace reads can safely retry a dropped pooled connection. Mutations
         # must surface ambiguous transport failures instead of being replayed.
-        attempts = 3 if method.upper() == "GET" else 1
+        override_attempts, timeout_limit = self._workspace_options.get()
+        attempts = override_attempts or (3 if method.upper() == "GET" else 1)
+        if timeout_limit is not None:
+            # Cap every HTTP phase by the remaining recovery window.
+            kwargs["timeout"] = httpx.Timeout(min(30, timeout_limit), read=min(60, timeout_limit))
+        extra_headers = kwargs.pop("headers", {})
         for attempt in range(attempts):
             token = self._capabilities.issue(run_id=run_id, operations={operation})
             try:
                 response = await self._client.request(
                     method,
                     path,
-                    headers={"X-Workspace-Capability": token},
+                    headers={**extra_headers, "X-Workspace-Capability": token},
                     **kwargs,
                 )
                 if response.status_code == 404 and missing_path is not None:
@@ -279,6 +313,41 @@ class HttpCodexWorkerClient:
 
     async def aclose(self) -> None:
         await self._client.aclose()
+
+
+class WorkspaceHttpView:
+    """Workspace-only view; shares transport, never owns or closes the client."""
+
+    def __init__(self, client, attempts):
+        self.client, self.attempts = client, attempts
+
+    async def _call(self, method, *args, timeout_limit=None, **kwargs):
+        token = self.client._workspace_options.set((self.attempts, timeout_limit))
+        try:
+            return await method(*args, **kwargs)
+        finally:
+            self.client._workspace_options.reset(token)
+
+    async def read_text(self, *args, **kwargs):
+        return await self._call(self.client.read_text, *args, **kwargs)
+
+    async def write_text(self, *args, **kwargs):
+        return await self._call(self.client.write_text, *args, **kwargs)
+
+    async def inventory(self, *args, **kwargs):
+        return await self._call(self.client.inventory, *args, **kwargs)
+
+    async def inventory_query(self, *args, **kwargs):
+        return await self._call(self.client.inventory_query, *args, **kwargs)
+
+    async def publish(self, *args, **kwargs):
+        return await self._call(self.client.publish, *args, **kwargs)
+
+    async def snapshot(self, *args, **kwargs):
+        return await self._call(self.client.snapshot, *args, **kwargs)
+
+    async def fork_snapshot(self, *args, **kwargs):
+        return await self._call(self.client.fork_snapshot, *args, **kwargs)
 
 
 def _is_loopback_url(value: str) -> bool:

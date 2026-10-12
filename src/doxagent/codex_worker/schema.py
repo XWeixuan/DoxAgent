@@ -40,6 +40,11 @@ class WorkspaceInventory(WorkerModel):
     files: list[WorkspaceFileResponse]
 
 
+class WorkspaceInventoryQuery(WorkerModel):
+    paths: list[str] = Field(default_factory=list, max_length=512)
+    prefixes: list[str] = Field(default_factory=list, max_length=32)
+
+
 class WorkerRunRequest(WorkerModel):
     workflow_version: CodexWorkflowVersion = CODEX_D1_WORKFLOW_VERSION
     research_lane: ResearchLane = ResearchLane.LEGACY_DOCUMENT1

@@ -158,8 +158,9 @@ class Document3OrchestratorV21:
         self.published_storage = published_storage
 
     async def _freeze(self, run_id, identity, mode, prepare):
+        self.workspace.bind(run_id)
         existing = self.state.run(run_id)
-        if existing:
+        if existing and existing.get("prepared"):
             result = self.state.start(run_id, identity, existing)
             if (
                 not result.get("commit")
@@ -171,6 +172,9 @@ class Document3OrchestratorV21:
             await self._verify_frozen(run_id, result)
             return result
         assets = self.runner.frozen_assets(mode)  # fail before providers or Worker dispatch
+        self.state.start(
+            run_id, identity, {"phase": "INPUT_PREPARE", "mode": mode, "identity": identity}
+        )
         prepared = await prepare()
         for material in (
             prepared["topology"]
@@ -214,7 +218,7 @@ class Document3OrchestratorV21:
             payload["version_floor"] = max(
                 payload["version_floor"], prepared["base"]["policy_set_version"]
             )
-        frozen = self.state.start(run_id, identity, payload)
+        frozen = self.state.update(run_id, **payload)
         for path, content in frozen["prepared"]["files"].items():
             await self.workspace.write_text(run_id, path, content)
         return frozen
@@ -1359,7 +1363,7 @@ class Document3OrchestratorV21:
             if file.content != text or digest(file.content) != digest(text):
                 raise ValueError("release four-file checksum mismatch")
             paths[name], hashes[name] = path, digest(text)
-        published = await self.workspace.publish(run_id, list(paths.values()))
+        published = await self.workspace.publish(run_id, list(paths.values()), release_only=True)
         release_manifest = None
         for item in published.files:
             if item.relative_path.startswith("published/") and item.relative_path.endswith(
@@ -1442,14 +1446,20 @@ class Document3OrchestratorV21:
                 str(x) if not isinstance(x, dict) else x for x in additional_materials
             ],
         }
+        self.workspace.bind(run_id)
         existing = self.state.run(run_id)
-        if existing:
+        if existing and (existing.get("prepared") or existing.get("status") == "NOOP"):
             run = self.state.start(run_id, identity, existing)
             await self._verify_frozen(run_id, run)
         else:
             base = self.state.get_staged_v3(ticker, base_policy_version)
             if base is None:
                 raise ValueError("V21 MAINTAIN requires an explicit staged document3.v3 base")
+            self.state.start(
+                run_id,
+                identity,
+                {"phase": "INPUT_PREPARE", "mode": "maintain", "identity": identity},
+            )
             base_row = self.state.get_staged_by_run(self._base_run_id(ticker, base_policy_version))
             base_file = await self.workspace.read_text(
                 self._base_run_id(ticker, base_policy_version),
@@ -1489,7 +1499,7 @@ class Document3OrchestratorV21:
                     "phase": "NOOP",
                     "status": "NOOP",
                 }
-                self.state.start(run_id, identity, payload)
+                self.state.update(run_id, **payload)
                 await self._write_view(run_id)
                 return RunResultV21(
                     run_id=run_id,

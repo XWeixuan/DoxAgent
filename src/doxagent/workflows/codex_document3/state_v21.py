@@ -99,6 +99,58 @@ class StateV21:
             ).fetchone()
             return json.loads(row[0]) if row else {"status": "PENDING", "attempt_count": 0}
 
+    def io_recovery(self, run_id, key, value=None, *, success=False):
+        """Merge a single operation under a short write transaction, across owners."""
+        if value is None and not success:
+            payload = self.run(run_id)
+            return (payload or {}).get("workspace_io_recovery", {}).get("active", {}).get(key)
+        with self.lock, self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            row = db.execute(
+                "SELECT payload FROM codex_document3_v21_runs WHERE run_id=?", (run_id,)
+            ).fetchone()
+            if not row:
+                raise ValueError("workspace recovery requires a persisted D3 run")
+            payload = json.loads(row[0])
+            recovery = payload.setdefault("workspace_io_recovery", {"active": {}, "recovered": 0})
+            active = recovery["active"]
+            if success:
+                previous = active.pop(key, None)
+                if previous is not None:
+                    recovery["recovered"] += 1
+                    recovery["wait_seconds"] = recovery.get("wait_seconds", 0) + max(
+                        0, (value or previous).get("elapsed", 0) - previous.get("elapsed", 0)
+                    )
+            elif value is not None:
+                previous = active.get(key, {})
+                recovery["retry_attempts"] = recovery.get("retry_attempts", 0) + max(
+                    0, value["attempts"] - previous.get("attempts", 0)
+                )
+                recovery["wait_seconds"] = recovery.get("wait_seconds", 0) + max(
+                    0, value.get("elapsed", 0) - previous.get("elapsed", 0)
+                )
+                active[key] = value
+                recovery["last_failure"] = {"key": key, **value}
+            db.execute(
+                "UPDATE codex_document3_v21_runs SET payload=? WHERE run_id=?",
+                (canonical(payload), run_id),
+            )
+            return active.get(key)
+
+    def reset_io_recovery(self, run_id):
+        """Explicit manual recovery only; does not alter task/job/attempt identity."""
+        with self.lock, self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            row = db.execute(
+                "SELECT payload FROM codex_document3_v21_runs WHERE run_id=?", (run_id,)
+            ).fetchone()
+            payload = json.loads(row[0])
+            payload.setdefault("workspace_io_recovery", {})["active"] = {}
+            db.execute(
+                "UPDATE codex_document3_v21_runs SET payload=? WHERE run_id=?",
+                (canonical(payload), run_id),
+            )
+
     def save_task(self, run_id, key, payload):
         with self.lock, self.connect() as db:
             db.execute(

@@ -194,8 +194,11 @@ class _AsyncWorkspace:
     async def inventory(self, run_id: str, *, prefixes=None):
         return self.local.inventory(run_id, prefixes=prefixes)
 
-    async def publish(self, run_id: str, paths: list[str]):
-        return self.local.publish(run_id, paths)
+    async def inventory_query(self, run_id: str, *, paths=(), prefixes=()):
+        return self.local.inventory_query(run_id, paths=paths, prefixes=prefixes)
+
+    async def publish(self, run_id: str, paths: list[str], *, release_only=False):
+        return self.local.publish(run_id, paths, release_only=release_only)
 
 
 class _O3WorkerStub:

@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 from pathlib import Path
 
-from doxagent.codex_runtime.errors import ImmutableWorkspacePath
+from doxagent.codex_runtime.errors import ImmutableWorkspacePath, InfrastructureRecoveryExhausted
 from doxagent.codex_runtime.node_models import Effort, node_model_config
 from doxagent.codex_runtime.schema import (
     CODEX_DOCUMENT3_WORKFLOW_VERSION,
@@ -27,6 +27,7 @@ from .schema_v21 import WORK_SCHEMAS, PolicySetV3, TechnicalReceipt
 from .state_v21 import canonical, digest
 from .timing_v21 import HostTiming
 from .validation_v21 import safe_path
+from .workspace_io_v21 import D3WorkspaceIO
 
 NODES = {
     "discovery": CodexD3Node.O3_DISCOVERY,
@@ -37,8 +38,17 @@ NODES = {
 }
 TERMINAL = {"COMPLETED", "PARTIAL", "FAILED", "CANCELLED"}
 TEXT_OUTPUT_SUFFIXES = {
-    ".csv", ".html", ".json", ".jsonl", ".log", ".md", ".tsv",
-    ".txt", ".xml", ".yaml", ".yml",
+    ".csv",
+    ".html",
+    ".json",
+    ".jsonl",
+    ".log",
+    ".md",
+    ".tsv",
+    ".txt",
+    ".xml",
+    ".yaml",
+    ".yml",
 }
 
 
@@ -49,7 +59,7 @@ class AssetDependencyError(ValueError):
 class RunnerV21:
     def __init__(self, legacy, state, node_assets):
         self.legacy, self.state = legacy, state
-        self.workspace = legacy.workspace
+        self.workspace = D3WorkspaceIO(legacy.workspace, state)
         self.assets = dict(node_assets or {})
         self.locks = {}
         self.shell_concurrency = legacy.shell_concurrency
@@ -82,6 +92,7 @@ class RunnerV21:
 
     @durable("d3_v21")
     async def turn(self, *, run_id, ticker, owner, phase, key, as_of, inputs, outputs, task):
+        self.workspace.bind(run_id)
         lock = self.locks.setdefault((run_id, owner), asyncio.Lock())
         async with lock, self.shell_concurrency.slot(ticker):
             timing = HostTiming()
@@ -105,6 +116,12 @@ class RunnerV21:
                 )
                 self.state.save_task(run_id, key, record)
                 return record
+            if record.get("pending_acceptance") is not None:
+                return await self._commit(run_id, key, record)
+            if record.get("io_phase") == "COLLECT_OUTPUTS" and record.get("io_inputs"):
+                accepted = await self._collect(run_id, key, record, outputs, timing)
+                if accepted is not None:
+                    return accepted
             if record["status"] in TERMINAL:
                 for path, content in record.get("files", {}).items():
                     snapshot = record["snapshots"][path]
@@ -170,6 +187,11 @@ class RunnerV21:
                 strict_json_schema(TechnicalReceipt.model_json_schema())
             )
             timing.step("context_index")
+            profile = record.setdefault(
+                "index_profile", "legacy-full" if record.get("request") else "d3-source-v1"
+            )
+            record.setdefault("io_phase", "PREPARE")
+            self.state.save_task(run_id, key, record)
             metadata = {entry["path"]: entry for entry in run["prepared"]["manifest"]}
             atlas_profile = None
             if owner == "OPEN_EVENT" and phase in {"discovery", "build"}:
@@ -185,15 +207,17 @@ class RunnerV21:
                 "context_generation",
                 record.get("attempt_count", 0) + (record["status"] != "RUNNING"),
             )
-            task_identity = digest(f"r{run.get('orchestration_revision', 2)}:{key}:{generation}")[
-                :24
-            ]
+            profile_identity = "" if profile == "legacy-full" else f":{profile}"
+            task_identity = digest(
+                f"r{run.get('orchestration_revision', 2)}:{key}:{generation}{profile_identity}"
+            )[:24]
             navigation = attach_material_indexes(
                 frozen,
                 mapping,
                 metadata,
                 task_root=f"context/document3/v21/context_index/tasks/{task_identity}",
                 cache=self.index_cache,
+                profile=profile,
             )
             task_path = f"context/document3/v21/tasks/{task_identity}.json"
             record["task_path"] = task_path
@@ -215,15 +239,11 @@ class RunnerV21:
                 }
             )
             timing.step("input_inventory")
-            history_prefixes = list(
-                dict.fromkeys(
-                    path.rsplit("/", 1)[0] + "/" for path in frozen if path.startswith("output/")
-                )
+            inventory = await self.workspace.inventory_query(
+                owner_id,
+                paths=[*frozen, *(p for p in outputs if not p.endswith("/"))],
+                prefixes=[p for p in outputs if p.endswith("/")],
             )
-            inventory_prefixes = list(
-                dict.fromkeys(["context/", "AGENTS.md", *history_prefixes, *outputs])
-            )
-            inventory = await self.workspace.inventory(owner_id, prefixes=inventory_prefixes)
             known = {f.relative_path: f.sha256 for f in inventory.files}
             metrics = {
                 "input_refs": len(mapping),
@@ -242,12 +262,15 @@ class RunnerV21:
                     if known.get(path) != digest(content):
                         metrics["materialized_files"] += 1
                         try:
-                            await self.workspace.write_text(owner_id, path, content)
+                            written = await self.workspace.write_text(owner_id, path, content)
                         except (ValueError, OSError):
                             if "/context_index/" not in path:
                                 raise
                             record.setdefault("warnings", []).append("context_index_unavailable")
                             missing_index.append(path)
+                        else:
+                            if written.sha256 != digest(content):
+                                raise ValueError(f"materialized input checksum mismatch:{path}")
                     else:
                         metrics["reused_files"] += 1
                 for path in missing_index:
@@ -264,6 +287,7 @@ class RunnerV21:
                 self.state.save_task(run_id, key, record)
                 return record
             max_attempts = record.get("max_attempts", 2)
+            self.state.save_task(run_id, key, record)
             while record.get("attempt_count", 0) < max_attempts or record["status"] == "RUNNING":
                 # A crash retries the same durable request, not another task-budget unit.
                 if record["status"] != "RUNNING":
@@ -336,6 +360,24 @@ class RunnerV21:
                     owner_slot=owner,
                     ordinal=task.get("ordinal", 0),
                     request=request.model_dump(mode="json"),
+                    io_phase="WAIT_WORKER",
+                    task_path=task_path,
+                    io_outputs=outputs,
+                    io_inputs=record.get(
+                        "io_inputs", {path: digest(content) for path, content in frozen.items()}
+                    ),
+                    baseline_outputs=record.get(
+                        "baseline_outputs",
+                        {
+                            path: sha
+                            for path, sha in known.items()
+                            if any(
+                                path == p or (p.endswith("/") and path.startswith(p))
+                                for p in outputs
+                            )
+                        },
+                    ),
+                    host_metrics=metrics,
                 )
                 self.state.save_task(run_id, key, record)
                 audit = NodeAttempt(
@@ -366,6 +408,8 @@ class RunnerV21:
                     else:
                         job = await worker.run(request)
                     record["job"] = job.model_dump(mode="json")
+                    record["io_phase"] = "COLLECT_OUTPUTS"
+                    self.state.save_task(run_id, key, record)
                     if job.thread_id and runtime:
                         runtime.save_thread(
                             ThreadRecord(
@@ -388,6 +432,8 @@ class RunnerV21:
                 except asyncio.CancelledError:
                     self.state.save_task(run_id, key, record)
                     raise
+                except InfrastructureRecoveryExhausted:
+                    raise
                 except Exception as exc:
                     error = str(exc)[:1000]
                 if runtime:
@@ -403,66 +449,100 @@ class RunnerV21:
                             }
                         )
                     )
-                timing.step("output_inventory")
-                inventory = await self.workspace.inventory(
-                    owner_id, prefixes=list(dict.fromkeys([*inventory_prefixes, *outputs]))
-                )
-                metrics["inventory_files_after"] = len(inventory.files)
-                metrics["hash_bytes_after"] = sum(f.size_bytes for f in inventory.files)
-                actual = {f.relative_path: f.sha256 for f in inventory.files}
-                timing.step("protected_check")
-                protected = all(
-                    actual.get(path) == digest(content) for path, content in frozen.items()
-                )
-                timing.step("acceptance")
-                files = {}
-                if protected:
-                    for item in inventory.files:
-                        path = safe_path(item.relative_path)
-                        if any(
-                            path == p or (p.endswith("/") and path.startswith(p)) for p in outputs
-                        ):
-                            # The output directory can contain research images or PDFs.
-                            # Only text files can enter the accepted/snapshotted contract.
-                            if Path(path).suffix.lower() not in TEXT_OUTPUT_SUFFIXES:
-                                continue
-                            if error and known.get(path) == item.sha256:
-                                continue
-                            text = (await self.workspace.read_text(owner_id, path)).content
-                            if text is not None:
-                                files[path] = text
-                else:
-                    error = "read-only task input modified"
-                if (
-                    files
-                    or (job and job.status == "succeeded")
-                    or attempt >= max_attempts
-                    or not protected
-                ):
-                    snapshots = {}
-                    for path, content in files.items():
-                        snapshot = (
-                            f"artifacts/document3/checkpoints/{digest(key)[:24]}/"
-                            f"{digest(path)[:24]}.txt"
-                        )
-                        await self.workspace.write_text(run_id, snapshot, content)
-                        await self.workspace.write_text(run_id, path, content)
-                        snapshots[path] = snapshot
-                    record.update(
-                        files=files,
-                        snapshots=snapshots,
-                        status="PARTIAL" if error and files else "FAILED" if error else "COMPLETED",
-                        error=error,
-                        host_spans=timing.finish(),
-                        host_metrics=metrics,
-                        task_path=task_path,
-                    )
-                    self.state.save_task(run_id, key, record)
-                    return record
-                record.update(status="PENDING", error=error, fresh_session=True)
-                record.pop("request", None)
-                record.pop("job", None)
+                record.update(io_phase="COLLECT_OUTPUTS", worker_error=error)
                 self.state.save_task(run_id, key, record)
+                accepted = await self._collect(run_id, key, record, outputs, timing)
+                if accepted is not None:
+                    return accepted
             record.update(status="FAILED", error="technical budget exhausted")
             self.state.save_task(run_id, key, record)
             return record
+
+    async def _collect(self, run_id, key, record, outputs, timing):
+        outputs = record.get("io_outputs", outputs)
+        owner_id = record["workspace_run_id"]
+        frozen = record["io_inputs"]
+        error = record.get("worker_error", "")
+        job = record.get("job")
+        if job and job["status"] != "succeeded":
+            error = job.get("error_message") or job.get("error_code") or job["status"]
+        timing.step("output_inventory")
+        inventory = await self.workspace.inventory_query(
+            owner_id,
+            paths=[*frozen, *(p for p in outputs if not p.endswith("/"))],
+            prefixes=[p for p in outputs if p.endswith("/")],
+        )
+        metrics = record["host_metrics"]
+        metrics.update(
+            inventory_files_after=len(inventory.files),
+            hash_bytes_after=sum(f.size_bytes for f in inventory.files),
+        )
+        actual = {f.relative_path: f.sha256 for f in inventory.files}
+        timing.step("protected_check")
+        protected = all(actual.get(path) == sha for path, sha in frozen.items())
+        timing.step("acceptance")
+        files = {}
+        if protected:
+            for item in inventory.files:
+                path = safe_path(item.relative_path)
+                if not any(path == p or (p.endswith("/") and path.startswith(p)) for p in outputs):
+                    continue
+                if Path(path).suffix.lower() not in TEXT_OUTPUT_SUFFIXES:
+                    continue
+                if error and record["baseline_outputs"].get(path) == item.sha256:
+                    continue
+                text = (await self.workspace.read_text(owner_id, path)).content
+                if text is not None:
+                    if digest(text) != item.sha256:
+                        raise ValueError(f"output changed during collection:{path}")
+                    files[path] = text
+        else:
+            error = "read-only task input modified"
+        if (
+            files
+            or (job and job["status"] == "succeeded")
+            or record["attempt_count"] >= record.get("max_attempts", 2)
+            or not protected
+        ):
+            snapshots = {
+                path: f"artifacts/document3/checkpoints/{digest(key)[:24]}/{digest(path)[:24]}.txt"
+                for path in files
+            }
+            record.update(
+                io_phase="COMMIT_OUTPUTS",
+                pending_acceptance={
+                    "files": files,
+                    "snapshots": snapshots,
+                    "error": error,
+                    "host_spans": timing.finish(),
+                },
+            )
+            self.state.save_task(run_id, key, record)
+            return await self._commit(run_id, key, record)
+        record.update(status="PENDING", error=error, fresh_session=True, io_phase="PREPARE")
+        record.pop("request", None)
+        record.pop("job", None)
+        record.pop("io_inputs", None)
+        record.pop("baseline_outputs", None)
+        self.state.save_task(run_id, key, record)
+        return None
+
+    async def _commit(self, run_id, key, record):
+        pending = record["pending_acceptance"]
+        for path, content in pending["files"].items():
+            await self.workspace.write_text(run_id, pending["snapshots"][path], content)
+            await self.workspace.write_text(run_id, path, content)
+        error, files = pending["error"], pending["files"]
+        record.update(
+            files=files,
+            snapshots=pending["snapshots"],
+            error=error,
+            status="PARTIAL" if error and files else "FAILED" if error else "COMPLETED",
+            host_spans=pending["host_spans"],
+            io_phase="COMPLETE",
+        )
+        record.pop("pending_acceptance", None)
+        record.pop("io_inputs", None)
+        record.pop("baseline_outputs", None)
+        self.state.save_task(run_id, key, record)
+        return record

@@ -1,0 +1,23 @@
+{
+  "fixture": "250 units x 4 nested values, complete UTF-8 bodies; offline comparable fixture, not INTC rerun",
+  "results": {
+    "full": {
+      "derived_files": 11354,
+      "protected_files": 11354,
+      "hash_bytes": 49104958,
+      "build_ms": 431.18,
+      "inventory_ms": 111073.74,
+      "inventory_batches_512": 23
+    },
+    "source": {
+      "derived_files": 257,
+      "protected_files": 257,
+      "hash_bytes": 7817740,
+      "build_ms": 74.38,
+      "inventory_ms": 3739.51,
+      "inventory_batches_512": 1
+    }
+  },
+  "file_reduction_percent": 97.74,
+  "limits": "Local same-machine one-sample timings, no production wall-clock promise."
+}

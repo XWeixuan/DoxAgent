@@ -50,8 +50,10 @@ def sections(text):
     return headings
 
 
-def build_index(context, *, root, sources=None):
+def build_index(context, *, root, sources=None, detail="full"):
     """Return workspace-relative files. Sources optionally provide original ref/role/SHA."""
+    if detail not in {"full", "source"}:
+        raise ValueError("unknown context index detail")
     files, groups = {}, dict(fields=[], reports=[], units=[], records=[])
     emitted = set()
     aliases = {}
@@ -174,7 +176,8 @@ def build_index(context, *, root, sources=None):
                     and pointer
                 ):
                     add(child, item, "records", role="/".join(route))
-                walk(item, child, route)
+                if detail == "full":
+                    walk(item, child, route)
         elif isinstance(value, list):
             for i, item in enumerate(value):
                 child = pointer + "/" + str(i)
@@ -249,8 +252,13 @@ def build_index(context, *, root, sources=None):
         "",
         "Use read_context.py list --group reports (or fields/units/records), "
         "then read --asset ID --page 1.",
-        "Use read --pointer '/canonical_shell/units/0' --page 1; "
-        "--section s1 selects a report heading.",
+        (
+            "Source mode indexes complete materials; units/records catalogs are empty. "
+            "Use a fields pointer or asset ID; --section s1 selects a report heading."
+            if detail == "source"
+            else "Use read --pointer '/canonical_shell/units/0' --page 1; "
+            "--section s1 selects a report heading."
+        ),
         "",
         "PowerShell fallback: Get-Content -LiteralPath "
         "'<index directory>/pages/<id>/1.txt' -Encoding utf8",
@@ -267,7 +275,7 @@ def build_index(context, *, root, sources=None):
     return files
 
 
-def attach_index(files, *, root, context=None, sources=None):
+def attach_index(files, *, root, context=None, sources=None, detail="full"):
     """Best effort; callers always retain their original inputs on index failure."""
     try:
         if context is None:
@@ -284,7 +292,7 @@ def attach_index(files, *, root, context=None, sources=None):
                     context[path] = json.loads(content)
                 except (ValueError, TypeError):
                     context[path] = content
-        derived = build_index(context, root=root, sources=sources)
+        derived = build_index(context, root=root, sources=sources, detail=detail)
         files.update(derived)
         return dict(
             index_path=f"{root}/index.json",

@@ -82,6 +82,8 @@ async def freeze_invocation(child: Any, kind: str, arguments: dict[str, Any]) ->
         run_id = arguments["request"].run_id
     invocation = encode({k: v for k, v in arguments.items() if k != "self"})
     workspace_run_id = f"{run_id}-{arguments['owner'].lower()}" if kind == "d3_v21" else run_id
+    if kind == "d3_v21":
+        workspace.bind(run_id)
     await snapshot(workspace_run_id, child.node.execution_id)
     child.checkpoint(
         invocation=invocation,
@@ -89,6 +91,9 @@ async def freeze_invocation(child: Any, kind: str, arguments: dict[str, Any]) ->
             "run_id": run_id,
             "snapshot_id": child.node.execution_id,
             "kind": kind,
-            **({"host_state": owner.state.run(run_id), "workspace_run_id": workspace_run_id} if kind == "d3_v21" else {}),
+            **(
+                {"host_state": owner.state.run(run_id), "workspace_run_id": workspace_run_id}
+                if kind == "d3_v21" else {}
+            ),
         },
     )
