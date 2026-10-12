@@ -1,0 +1,13 @@
+...........F
+================================== FAILURES ===================================
+_____ test_d2_local_salvage_shared_originals_and_optional_global_reports ______
+tests\test_codex_document3_v21_orchestration.py:480: in test_d2_local_salvage_shared_originals_and_optional_global_reports
+    prepared = await rig.orchestrator.preparer.prepare(
+src\doxagent\workflows\codex_document3\inputs_v21.py:152: in prepare
+    getattr(reference.node, "value", str(reference.node)),
+            ^^^^^^^^^^^^^^
+E   AttributeError: 'types.SimpleNamespace' object has no attribute 'node'
+=========================== short test summary info ===========================
+FAILED tests/test_codex_document3_v21_orchestration.py::test_d2_local_salvage_shared_originals_and_optional_global_reports
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed, 11 passed in 51.21s

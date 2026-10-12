@@ -1,0 +1,913 @@
+{
+  "format": "doxagent.policy-hit-review.v1",
+  "ticker": "RKLB",
+  "window": {
+    "since_utc": "2026-09-18T18:59:35.983285+00:00",
+    "as_of_utc": "2026-10-09T18:59:35.983285+00:00"
+  },
+  "part": 1,
+  "record_count": 3,
+  "records": [
+    {
+      "policy_hit_id": "case_2495e1de4cd14795bf02736bdf457a30:pol_e7c92d65451c1d4519a5",
+      "ticker": "RKLB",
+      "case_id": "case_2495e1de4cd14795bf02736bdf457a30",
+      "hit_observed_at_utc": "2026-09-23T03:39:37.755Z",
+      "hit_current": true,
+      "policy_id": "pol_e7c92d65451c1d4519a5",
+      "activation_revision": "ar_70b675c36bcef2ecb9e95881",
+      "policy": {
+        "frozen_match": {
+          "activation_revision": "ar_70b675c36bcef2ecb9e95881",
+          "condition_ids": [
+            "C1"
+          ],
+          "criterion": [
+            "交易相关实际稀释股数明显高于约半数股票对价所隐含的基线。"
+          ],
+          "match_scope": "最终股票对价、融资发行及实际稀释股数。",
+          "policy_id": "pol_e7c92d65451c1d4519a5"
+        },
+        "pinned_detail": {
+          "activation_semantics": "OR",
+          "policy": {
+            "activation_conditions": [
+              {
+                "calibration": {
+                  "reference_state": "当前对价大致一半为股票，最终发行股数尚未确定。",
+                  "trigger_boundary": "最终交割或融资披露的实际稀释股数超出该基线，并非仅由常规股价波动换算造成。"
+                },
+                "condition_id": "C1",
+                "criterion": "交易相关实际稀释股数明显高于约半数股票对价所隐含的基线。"
+              }
+            ],
+            "decision": "SHORT",
+            "match_scope": "最终股票对价、融资发行及实际稀释股数。",
+            "policy_id": "pol_e7c92d65451c1d4519a5",
+            "source_refs": [
+              {
+                "expectation_id": "Iridium交易后资本结构与每股经济",
+                "gap_id": "股票对价与融资发行造成超预期稀释",
+                "shell_id": "Iridium交易交割整合与每股经济性"
+              }
+            ],
+            "title": "交易股权发行造成超预期稀释"
+          },
+          "source_document2": {
+            "artifact_id": "54d0b03deaa44275809f6bca706d9229",
+            "content_sha256": "18afbde898390f292913ef14e27109a967915c80fd345a6721709c53e19c4efc",
+            "published_at": "2026-09-16T18:54:52.445381Z",
+            "run_id": "init-rklb-9631e4071e75470a97313eafbbdc51aa-d2",
+            "schema_version": "document2.v2"
+          },
+          "summary": {
+            "consumed": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "consumed_at": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "decision": "SHORT",
+            "effective": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "lifecycle": "ACTIVE",
+            "matched_filters": [
+              "ACTIVE"
+            ],
+            "policy_activation_revision": "ar_70b675c36bcef2ecb9e95881",
+            "policy_id": "pol_e7c92d65451c1d4519a5",
+            "policy_revision_id": "c1da2cf0b66b02a5ed1286602dcb0061dce02d7ccfa65a7b76bb673d98f61600",
+            "policy_set_version": 5,
+            "shell_ids": [
+              "Iridium交易交割整合与每股经济性"
+            ],
+            "title": "交易股权发行造成超预期稀释",
+            "unresolved_shell_ids": []
+          }
+        },
+        "policy_set_version": 5,
+        "activation_revision_id": "runtime-maintain-e5b5800ef57abbf9ef47b751-activation"
+      },
+      "hit_policy_released_for_trade": false,
+      "case_summary": {
+        "case_id": "case_2495e1de4cd14795bf02736bdf457a30",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-23T03:39:38.062418Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 134.562514
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "OLD"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": true
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "ARCHIVE",
+        "member_count": 1,
+        "received_at": "2026-09-23T03:37:23.499904Z",
+        "resolved_route": null,
+        "result_settled": true,
+        "results": [
+          "ARCHIVE",
+          "BADCASE"
+        ],
+        "revision": 2608924,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-22",
+        "source": {
+          "binding_id": "RKLB:yahoo_finance_news",
+          "kind": "api",
+          "name": "Yahoo Finance News",
+          "source_id": "yahoo_finance_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_f049cb1119d148ab85c1380e6c845945",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Rocket Lab (RKLB) Stock Could Be A Bargain Despite Its Big Run"
+        },
+        "trade": {
+          "intent_count": 0,
+          "reason_codes": [],
+          "state": "NOT_APPLICABLE"
+        },
+        "trade_disposition": "NOT_EVALUATED",
+        "w3_status": null
+      },
+      "case_process": {
+        "created_at": "2026-09-23T03:37:23.499904Z",
+        "completed_at": "2026-09-23T03:39:38.062418Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "ARCHIVE",
+          "reason": "w1=OLD/normal;policy_hit=true;w2=normal",
+          "side_effects": [
+            "archive_message",
+            "mark_badcase"
+          ]
+        },
+        "resolved_route": null,
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E72",
+            "E83",
+            "E25",
+            "E106",
+            "E27"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [
+            {
+              "event_id": "E72",
+              "fact_ids": [
+                "F252"
+              ]
+            }
+          ],
+          "reason": "当前消息为 Simply Wall St 的 DCF 估值评论文章，其核心事实（$1.94B 股权融资完成、$3.6B bridge facility 终止、股价约 $71.98）已被 E72/F252 及 provisional E106 覆盖。文中 1,600% 三年涨幅、-$370.5M TTM FCF、12.3x P/B 均为已有历史数据作为估值分析背景引用，不构成新的现实进展或状态变化。",
+          "reference_ids": [
+            "E72"
+          ],
+          "result": "OLD"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [
+            "pol_e7c92d65451c1d4519a5"
+          ],
+          "reason": "消息陈述了一个具体事实：Rocket Lab为资助Iridium收购已完成一笔19.4亿美元股权融资，并明确指出该融资增加了股份数量。该事实直接触及Iridium交易相关股权稀释这一criterion——$1.94b股权发行对实际稀释股数的影响是否明显高于约半数股票对价所隐含的基线，在当前精简信息下无法判定，值得进入完整Policy评估。消息中关于bridge贷款不再需要的表述与桥接资金可用性、S-4时间框架等其他criterion方向相反或无具体对应，不构成召回依据。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [
+            {
+              "condition_ids": [
+                "C1"
+              ],
+              "policy_id": "pol_e7c92d65451c1d4519a5"
+            }
+          ],
+          "policy_ids": [
+            "pol_e7c92d65451c1d4519a5"
+          ],
+          "reason": "消息明确陈述：US$1.94b股权融资已完成以'funding the Iridium acquisition'，且该融资'removes the need for a large bridge loan'。股票对价本身不产生外部借款需求（发行自有股份无需桥贷），因此'移除桥贷'表明此$1.94b股权覆盖了原本计划以债务/现金方式支付的交易部分，实际稀释股数超出'约半数股票对价'基线，满足C1触发边界。"
+        },
+        "w2_skipped": false,
+        "w3_result": null
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "e415ba2d6382b06649647d4ac42a5d8c34b6d2f099ed6a60a3b500583dcc41e0",
+            "content_type": "text/plain",
+            "sha256": "79dd646fb14bdcac925d88c43180bd58ee96879d2255ea8eff5e97fe9da34783",
+            "size_bytes": 4517
+          },
+          "case": {
+            "case_id": "case_2495e1de4cd14795bf02736bdf457a30",
+            "initial_route": "ARCHIVE",
+            "resolved_route": null,
+            "route_group": "ARCHIVE",
+            "status": "COMPLETED",
+            "w3_status": null
+          },
+          "collected_at": "2026-09-23T03:37:15.579034Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-23T03:37:23.305367Z",
+          "revision": 1,
+          "row_revision": 1438694,
+          "source": {
+            "binding_id": "RKLB:yahoo_finance_news",
+            "kind": "api",
+            "name": "Yahoo Finance News",
+            "source_id": "yahoo_finance_news"
+          },
+          "source_published_at": "2026-09-23T03:21:42Z",
+          "standard_message_id": "std_ea989bf6cbec4064adc3e8c84e4b8898",
+          "stream_item_id": "stream_f049cb1119d148ab85c1380e6c845945",
+          "stream_offset": 50,
+          "stream_published_at": "2026-09-23T03:37:23.308725Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Rocket Lab (RKLB) Stock Could Be A Bargain Despite Its Big Run"
+          },
+          "url": "https://finance.yahoo.com/markets/stocks/articles/rocket-lab-rklb-stock-could-032142836.html",
+          "body_text": "Rocket Lab has ridden a powerful three year run in its share price, while also pushing ahead with big moves in launch, satellites and now communications. That kind of shift in scale leaves a clear question for investors who own or follow Rocket Lab stock: Is today's valuation really grounded in the cash the business can generate over time?\n\nOver the past three years the share price has delivered a very large gain of about 1,600%, which puts real pressure on whether the current market value is fully supported by the company's underlying cash flows.\n\nThe recently completed US$1.94b equity raise to fund the Iridium acquisition removes the need for a large bridge loan and may support more predictable cash generation, but it also increases the share count that those future cash flows have to cover.\n\nIf you'd rather focus on book value, this one's for you. See why Rocket Lab's 12.3x P/B tells a different valuation story.\n\nThe issue now is whether Rocket Lab's current share price around US$71.98 is adequately explained by its cash flows when viewed through a Discounted Cash Flow (DCF) lens.\n\nIf you are weighing Rocket Lab against other potential opportunities on this theme, it can help to compare it with 29 high quality undervalued stocks that also screen well on quality.\n\nDoes Rocket Lab Look Undervalued on Cash Flow?\n\nThe Discounted Cash Flow (DCF) model here focuses on the cash Rocket Lab can return to shareholders over time rather than short term earnings. Latest twelve month free cash flow sits at a loss of about $370.5 million, so the starting point in the calculation is still deeply negative even before any growth is layered in.\n\nAnalysts feeding into this DCF expect free cash flow to move from losses toward positive territory, with projections that reach into the hundreds of millions of dollars and then several billions in later years. That path assumes Rocket Lab converts its launch track record and the planned Iridium acquisition into much stronger cash generation. The recent US$1.94b equity raise cuts financing risk for that deal, but the higher share count means any future free cash flow is now spread more thinly across each share at a trading price of US$71.98. Find out what Rocket Lab could be worth using our Discounted Cash Flow (DCF) estimate.\n\nThe Rocket Lab Narrative: What Would Justify Today's Price?\n\nNarratives pick up where the Rocket Lab valuation puzzle leaves off by spelling out which paths for growth, margins and earnings would need to hold for the stock to be worth materially more or less than today's price. Each scenario ties a specific fair value to a clear storyline about Rocket Lab's potential catalysts and key risks, so you can track over time which version of events appears closest to reality on Simply Wall St's Community page.\n\nRocket Lab has sparked sharply different views on Simply Wall St, with the community split between a big upside story and a stretched valuation.\n\nBull case: 26% undervalued\n\n\"Rocket Lab USA seeks to vertically integrate itself throughout the $800 billion space 'backbone' in order to attract the customers operating within that $1 trillion top component of the 'space economy'…\"\n\nDiscover why this Narrative puts Rocket Lab at 26% undervalued.\n\nBear case: 343% overvalued\n\n\"The entire valuation is 'priced for perfection,' which means any delay causes volatility…\"\n\nExplore why this Narrative puts Rocket Lab at 343% overvalued.\n\nOne more Rocket Lab check that belongs beside the valuation work\n\nPrice, cash flows and storylines give you part of Rocket Lab, but the recent trading activity by people inside the business can reveal a very different signal. See the recent insider selling flagged for Rocket Lab.\n\nThis article by Simply Wall St is general in nature. We provide commentary based on historical data and analyst forecasts only using an unbiased methodology and our articles are not intended to be financial advice. It does not constitute a recommendation to buy or sell any stock, and does not take account of your objectives, or your financial situation. We aim to bring you long-term focused analysis driven by fundamental data. Note that our analysis may not factor in the latest price-sensitive company announcements or qualitative material. Simply Wall St has no position in any stocks mentioned.\n\nCompanies discussed in this article include RKLB.\n\nHave feedback on this article? Concerned about the content? Get in touch with us directly. Alternatively, email editorial-team@simplywallst.com"
+        }
+      ],
+      "discovered_facts": [],
+      "trade": {
+        "intents": [],
+        "closed_candidates": [],
+        "executions": []
+      }
+    },
+    {
+      "policy_hit_id": "case_cb774ab16f154c5c9535f8453b99ff86:pol_6db9f073b136875b7be9",
+      "ticker": "RKLB",
+      "case_id": "case_cb774ab16f154c5c9535f8453b99ff86",
+      "hit_observed_at_utc": "2026-09-30T23:02:01.397Z",
+      "hit_current": true,
+      "policy_id": "pol_6db9f073b136875b7be9",
+      "activation_revision": "ar_9cfac872558cc5a70a4fb047",
+      "policy": {
+        "frozen_match": {
+          "activation_revision": "ar_9cfac872558cc5a70a4fb047",
+          "condition_ids": [
+            "C2"
+          ],
+          "criterion": [
+            "重要客户的一批此前未锁定Launch Services任务取得正式option行权、具有约束力的任务合同或任务级工作授权，并排入明确发射窗口。"
+          ],
+          "match_scope": "发射合同、Neutron专属任务预订、option行权、task order、工作授权及明确发射窗口。",
+          "policy_id": "pol_6db9f073b136875b7be9"
+        },
+        "pinned_detail": {
+          "activation_semantics": "OR",
+          "policy": {
+            "activation_conditions": [
+              {
+                "calibration": {
+                  "reference_state": "Launch Services backlog为9.402亿美元且manifest超过90项；截至cutoff另有客户已签署五项Neutron专属任务、排期延续至2029年，但该批次的逐项发射窗口及更广泛任务锁定度仍未完全确认。",
+                  "trigger_boundary": "已知五项Neutron任务及仅给出多年期限的预订不触发；须确认其之外的重要客户多任务批次，同时具备有约束力的授权或合同和明确发射窗口；新增框架合同不触发。"
+                },
+                "condition_id": "C2",
+                "criterion": "重要客户的一批此前未锁定Launch Services任务取得正式option行权、具有约束力的任务合同或任务级工作授权，并排入明确发射窗口。"
+              }
+            ],
+            "decision": "LONG",
+            "match_scope": "发射合同、Neutron专属任务预订、option行权、task order、工作授权及明确发射窗口。",
+            "policy_id": "pol_6db9f073b136875b7be9",
+            "source_refs": [
+              {
+                "expectation_id": "Launch Services订单与发射清单兑现",
+                "gap_id": "Launch Services任务级授权与已行权options显著增加",
+                "shell_id": "Launch Services订单兑现与发射运营"
+              }
+            ],
+            "title": "任务批次由潜在需求转为正式授权"
+          },
+          "source_document2": {
+            "artifact_id": "54d0b03deaa44275809f6bca706d9229",
+            "content_sha256": "18afbde898390f292913ef14e27109a967915c80fd345a6721709c53e19c4efc",
+            "published_at": "2026-09-16T18:54:52.445381Z",
+            "run_id": "init-rklb-9631e4071e75470a97313eafbbdc51aa-d2",
+            "schema_version": "document2.v2"
+          },
+          "summary": {
+            "consumed": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "consumed_at": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "decision": "LONG",
+            "effective": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "lifecycle": "ACTIVE",
+            "matched_filters": [
+              "ACTIVE"
+            ],
+            "policy_activation_revision": "ar_9cfac872558cc5a70a4fb047",
+            "policy_id": "pol_6db9f073b136875b7be9",
+            "policy_revision_id": "5cc1591c50f712b13bc81904ea156da3b9bf15d98dda3fc4ad4a40cf9c193165",
+            "policy_set_version": 8,
+            "shell_ids": [
+              "Launch Services订单兑现与发射运营"
+            ],
+            "title": "任务批次由潜在需求转为正式授权",
+            "unresolved_shell_ids": []
+          }
+        },
+        "policy_set_version": 8,
+        "activation_revision_id": "runtime-maintain-12110a77f913bd1583e03515-activation"
+      },
+      "hit_policy_released_for_trade": true,
+      "case_summary": {
+        "case_id": "case_cb774ab16f154c5c9535f8453b99ff86",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-30T23:02:43.099696Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 129.290347
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": true
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "TRADE",
+        "member_count": 1,
+        "received_at": "2026-09-30T23:00:33.809349Z",
+        "resolved_route": null,
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2651552,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-30",
+        "source": {
+          "binding_id": "RKLB:ibkr_news",
+          "kind": "api",
+          "name": "IBKR News API",
+          "source_id": "ibkr_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_6e8ac5cb11e747e6bbe000d68e1b23c5",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Press Release: Rocket Lab Secures Largest-Ever Electron Commercial Deal: 20-Launch Contract for Synspective"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "INSUFFICIENT_MARGIN"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": null
+      },
+      "case_process": {
+        "created_at": "2026-09-30T23:00:33.809349Z",
+        "completed_at": "2026-09-30T23:02:43.099696Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "TRADE",
+          "reason": "w1=NEW/normal;policy_hit=true;w2=normal",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "resolved_route": null,
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E10",
+            "E7",
+            "E36"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [
+            {
+              "event_id": "E10",
+              "fact_ids": [
+                "F22",
+                "F23"
+              ]
+            }
+          ],
+          "reason": "当前消息核心事实为：2026年9月30日签署20次全新Electron发射合同，累计Synspective任务达47次，发射窗口2028–2031年，backlog突破100。已加载事实仅覆盖6月17次合同(F23)、16次至2030年的预订(F22)及backlog\"超过90\"(F18)，均未涉及本次20次新签约、47次总量及>100 backlog，构成未覆盖的新核心进展。",
+          "reference_ids": [
+            "E10"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [
+            "pol_6db9f073b136875b7be9"
+          ],
+          "reason": "消息披露Rocket Lab与重要客户Synspective（累计47个Electron任务、最大客户）签署20个新Electron任务多年期约束性合同，属\"此前未锁定的一批Launch Services任务取得正式任务合同\"。任务排期为2028至2031年每年执行、SSO轨道、LC1发射场，但\"明确发射窗口\"的具体程度（年度 vs 日期窗口）尚需完整判定确认。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [
+            {
+              "condition_ids": [
+                "C2"
+              ],
+              "policy_id": "pol_6db9f073b136875b7be9"
+            }
+          ],
+          "policy_ids": [
+            "pol_6db9f073b136875b7be9"
+          ],
+          "reason": "消息明确陈述Rocket Lab已与Synspective签署20次全新Electron任务的正式合同（\"the largest commercial launch contract for Electron in Rocket Lab's history\"），且具备明确发射窗口：每年2028至2031年、太阳同步轨道、从Launch Complex 1发射20颗StriX SAR卫星。Synspective为重要客户（最早期Electron客户、累计47次任务为所有客户最多），该批次为全新此前未锁定任务，合同具有约束力，非Neutron任务也非框架合同，完整满足C2全部要素。"
+        },
+        "w2_skipped": false,
+        "w3_result": null
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "afdbf8ecbaa55e253d9c88508ebab47b0f1cd4e1864079f5e64bd08828c47f47",
+            "content_type": "text/plain",
+            "sha256": "e2253a7c450442b5a1d836663cf2c01e8d198bcdf6186a09004c8d0d3462cc10",
+            "size_bytes": 6198
+          },
+          "case": {
+            "case_id": "case_cb774ab16f154c5c9535f8453b99ff86",
+            "initial_route": "TRADE",
+            "resolved_route": null,
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": null
+          },
+          "collected_at": "2026-09-30T23:00:22.584781Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-30T23:00:32.553553Z",
+          "revision": 1,
+          "row_revision": 2651552,
+          "source": {
+            "binding_id": "RKLB:ibkr_news",
+            "kind": "api",
+            "name": "IBKR News API",
+            "source_id": "ibkr_news"
+          },
+          "source_published_at": "2026-09-30T23:00:00Z",
+          "standard_message_id": "std_724c3d23695c45ba87397ea760058711",
+          "stream_item_id": "stream_6e8ac5cb11e747e6bbe000d68e1b23c5",
+          "stream_offset": 129,
+          "stream_published_at": "2026-09-30T23:00:32.565915Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Press Release: Rocket Lab Secures Largest-Ever Electron Commercial Deal: 20-Launch Contract for Synspective"
+          },
+          "url": "https://investors.rocketlabcorp.com/",
+          "body_text": "LONG BEACH, Calif., Sept. 30, 2026 (GLOBE NEWSWIRE) -- Rocket Lab Corporation (Nasdaq: RKLB) (\"Rocket Lab\" or the \"Company\"), a global leader in launch services and space systems, today announced it has signed a multi-year launch agreement for 20 new Electron missions with Tokyo-based Earth observation company Synspective. The contract is the largest commercial launch contract for Electron in Rocket Lab's history and brings the total number of Electron missions for Synspective to 47 -- the most of any Rocket Lab launch customer. The remaining terms of the deal are undisclosed. Rocket Lab will launch 20 StriX synthetic aperture radar (SAR) satellites to sun-synchronous orbit (SSO) from Rocket Lab Launch Complex 1. The missions are scheduled to take place annually from 2028 through 2031, accelerating Synspective's goal to build a comprehensive satellite constellation capable of imaging any location on Earth within hours, day or night, and through any weather conditions. Sir Peter Beck, Rocket Lab founder and CEO, says: \"When constellation builders want control over their destiny, they come to Rocket Lab. Synspective was one of Electron's earliest customers and together we have proven that tailored, dedicated launch is the fastest and most reliable path to scaling small satellite constellations. Signing twenty launches in a single deal is a massive vote of confidence not just in Electron, but in the launch cadence, mission reliability, and orbital precision that Rocket Lab consistently delivers.\" Dr. Motoyuki Arai, Synspective founder and CEO, says: \"Electron's precision and reliability have played a central role in steadily scaling our StriX constellation. Through this process, our partnership has grown into something built not only on technical progress but on a deep, team-level trust between us. On behalf of Synspective, I would like to once again express our gratitude for the quality of service, the flexibility, and the truly excellent team behind it. Securing another 20 dedicated launches now gives us long-term certainty for our constellation expansion - a powerful booster toward building the infrastructure needed for a resilient future. We look forward to continuing this journey together.\" Today's launch agreement is the latest in a wave of multi-launch contracts awarded to Rocket Lab this year, pushing the Company's launch backlog beyond 100 missions. At a time when global launch capacity is bottlenecked and constellation operators face mounting pressure on tight timelines to deploy and replenish their constellations, Rocket Lab stands apart as the proven alternative delivering unmatched reliability and rapid operational cadence. Rocket Lab Media Murielle Baker media@rocketlabusa.com About Rocket Lab Rocket Lab (Nasdaq: RKLB) is an end-to-end space company delivering rockets, satellites, and spacecraft components for commercial, government, and defense missions. Driven by its industry-leading small-lift rockets Electron and HASTE and its upcoming reusable Neutron medium-lift rocket, Rocket Lab delivers reliable and responsive launch for the world's most important missions from constellation deployment to missile defense. Rocket Lab's satellites and components have powered more than 1,700 missions in Earth orbit, as well as deep-space exploration of the Moon, Mars, and beyond. Learn more at www.rocketlabcorp.com. Forward Looking Statements This press release contains forward-looking statements within the meaning of the Private Securities Litigation Reform Act of 1995. We intend such forward-looking statements to be covered by the safe harbor provisions for forward-looking statements contained in Section 27A of the Securities Act of 1933, as amended (the \"Securities Act\") and Section 21E of the Securities Exchange Act of 1934, as amended (the \"Exchange Act\"). All statements contained in this press release other than statements of historical fact, including, without limitation, statements regarding our launch and space systems operations, launch schedule and window, safe and repeatable access to space, Neutron development, operational expansion and business strategy, backlog, expected revenue, and anticipated mission execution, are forward-looking statements. The words \"believe,\" \"may,\" \"will,\" \"estimate,\" \"potential,\" \"continue,\" \"anticipate,\" \"intend,\" \"expect,\" \"strategy,\" \"future,\" \"could,\" \"would,\" \"project,\" \"plan,\" \"target,\" and similar expressions are intended to identify forward-looking statements, though not all forward-looking statements use these words or expressions. These statements are neither promises nor guarantees, but involve known and unknown risks, uncertainties and other important factors that may cause our actual results, performance or achievements to be materially different from any future results, performance or achievements expressed or implied by the forward-looking statements, including but not limited to the factors, risks and uncertainties included in our Annual Report on Form 10-K for the fiscal year ended December 31, 2025, as such factors may be updated from time to time in our other filings with the Securities and Exchange Commission (the \"SEC\"), accessible on the SEC's website at www.sec.gov and the Investor Relations section of our website at https://investors.rocketlabcorp.com which could cause our actual results to differ materially from those indicated by the forward-looking statements made in this press release. Any such forward-looking statements represent management's estimates as of the date of this press release. While we may elect to update such forward-looking statements at some point in the future, we disclaim any obligation to do so, even if subsequent events cause our views to change. (END) Dow Jones Newswires September 30, 2026 19:00 ET (23:00 GMT) The statements in this document shall not be considered as an objective or independent explanation of the matters. Please note that this document (a) has not been prepared in accordance with legal requirements designed to promote the independence of investment research, and (b) is not subject to any prohibition on dealing ahead of the dissemination or publication of investment research."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_724c3d23695c45ba87397ea760058711:0\"]",
+          "created_at": "2026-09-30T23:02:42.977278Z",
+          "dedupe_key": "9f21bcc17032af3332da8a6e97c89fd2dae845b50f471ca738eb9055d2595400",
+          "entities": [
+            "Rocket Lab",
+            "Synspective",
+            "Electron"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W1_R3",
+          "proposition": "Rocket Lab与东京地球观测公司Synspective签署多年期发射合同，包含20次Electron发射任务，为Rocket Lab Electron史上最大商业发射合同",
+          "provisional_event_id": "E102",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "SCHEDULED",
+          "candidate_id": "[\"runtime-v2-msg:std_724c3d23695c45ba87397ea760058711:1\"]",
+          "created_at": "2026-09-30T23:02:42.985445Z",
+          "dedupe_key": "f82d831e20c134dcb9d3eb375b70dea81d573bdcab7a38ad5c2de72dce1a7915",
+          "entities": [
+            "Synspective",
+            "Electron",
+            "Rocket Lab",
+            "StriX"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "该合同项下20次StriX合成孔径雷达卫星至太阳同步轨道的Electron发射任务从Rocket Lab Launch Complex 1执行，计划2028至2031年每年发射",
+          "provisional_event_id": "E103",
+          "subject_time": "2028–2031，每年一次"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_cb774ab16f154c5c9535f8453b99ff86",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-09-30T23:02:01.539206+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "direction": "LONG",
+            "executed_policy_id": "pol_6db9f073b136875b7be9",
+            "candidate_policy_ids": [
+              "pol_6db9f073b136875b7be9"
+            ],
+            "matched_condition_ids": [
+              "C2"
+            ]
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T23:02:02.335068Z"
+              },
+              "case_id": "case_cb774ab16f154c5c9535f8453b99ff86",
+              "direction": "LONG",
+              "entry_reason": "INSUFFICIENT_MARGIN",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_cb774ab16f154c5c9535f8453b99ff86",
+              "execution_reason_codes": [
+                "INSUFFICIENT_MARGIN"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_cb774ab16f154c5c9535f8453b99ff86",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T23:02:01.539206Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      }
+    },
+    {
+      "policy_hit_id": "case_00a8f064566c45b1a20255db95f021c6:pol_6db9f073b136875b7be9",
+      "ticker": "RKLB",
+      "case_id": "case_00a8f064566c45b1a20255db95f021c6",
+      "hit_observed_at_utc": "2026-10-01T16:47:41.905Z",
+      "hit_current": true,
+      "policy_id": "pol_6db9f073b136875b7be9",
+      "activation_revision": "ar_bf92cc94b71d925c8754086d",
+      "policy": {
+        "frozen_match": {
+          "activation_revision": "ar_bf92cc94b71d925c8754086d",
+          "condition_ids": [
+            "C2"
+          ],
+          "criterion": [
+            "重要客户的一批此前未锁定Launch Services任务取得正式option行权、具有约束力的任务合同或任务级工作授权，并排入明确发射窗口。"
+          ],
+          "match_scope": "发射合同、Neutron专属任务预订、option行权、task order、工作授权及明确发射窗口。",
+          "policy_id": "pol_6db9f073b136875b7be9"
+        },
+        "pinned_detail": {
+          "activation_semantics": "OR",
+          "policy": {
+            "activation_conditions": [
+              {
+                "calibration": {
+                  "reference_state": "2026-09-30 Rocket Lab与Synspective签署20项新的Electron发射任务合同，任务安排在2028至2031年，Synspective累计任务达47项，Rocket Lab公开称发射backlog已超过100项；该多任务批次已正式锁定，但其之外其他重要客户多任务批次的逐项授权与明确发射窗口仍未完全确认。",
+                  "trigger_boundary": "Synspective这20项新任务及已知五项Neutron专属任务已进入基线，不触发；须确认其之外的另一重要客户多任务批次，同时具备有约束力的授权或合同和明确发射窗口；新增框架合同或仅给出多年期限的预订不触发。"
+                },
+                "condition_id": "C2",
+                "criterion": "重要客户的一批此前未锁定Launch Services任务取得正式option行权、具有约束力的任务合同或任务级工作授权，并排入明确发射窗口。"
+              }
+            ],
+            "decision": "LONG",
+            "match_scope": "发射合同、Neutron专属任务预订、option行权、task order、工作授权及明确发射窗口。",
+            "policy_id": "pol_6db9f073b136875b7be9",
+            "source_refs": [
+              {
+                "expectation_id": "Launch Services订单与发射清单兑现",
+                "gap_id": "Launch Services任务级授权与已行权options显著增加",
+                "shell_id": "Launch Services订单兑现与发射运营"
+              }
+            ],
+            "title": "任务批次由潜在需求转为正式授权"
+          },
+          "source_document2": {
+            "artifact_id": "54d0b03deaa44275809f6bca706d9229",
+            "content_sha256": "18afbde898390f292913ef14e27109a967915c80fd345a6721709c53e19c4efc",
+            "published_at": "2026-09-16T18:54:52.445381Z",
+            "run_id": "init-rklb-9631e4071e75470a97313eafbbdc51aa-d2",
+            "schema_version": "document2.v2"
+          },
+          "summary": {
+            "consumed": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "consumed_at": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "decision": "LONG",
+            "effective": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "lifecycle": "ACTIVE",
+            "matched_filters": [
+              "ACTIVE"
+            ],
+            "policy_activation_revision": "ar_bf92cc94b71d925c8754086d",
+            "policy_id": "pol_6db9f073b136875b7be9",
+            "policy_revision_id": "70ecd2c11e5991182345bf6e2a85b7dc5147a49b4b921509799d56df83b249a9",
+            "policy_set_version": 9,
+            "shell_ids": [
+              "Launch Services订单兑现与发射运营"
+            ],
+            "title": "任务批次由潜在需求转为正式授权",
+            "unresolved_shell_ids": []
+          }
+        },
+        "policy_set_version": 9,
+        "activation_revision_id": "runtime-maintain-911fcf244ad6478d60795350-activation"
+      },
+      "hit_policy_released_for_trade": false,
+      "case_summary": {
+        "case_id": "case_00a8f064566c45b1a20255db95f021c6",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-10-01T16:47:42.147289Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 80.211359
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "OLD"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": true
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "ARCHIVE",
+        "member_count": 1,
+        "received_at": "2026-10-01T16:46:21.935930Z",
+        "resolved_route": null,
+        "result_settled": true,
+        "results": [
+          "ARCHIVE",
+          "BADCASE"
+        ],
+        "revision": 2745393,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-10-01",
+        "source": {
+          "binding_id": "RKLB:ibkr_news",
+          "kind": "api",
+          "name": "IBKR News API",
+          "source_id": "ibkr_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_df4ff8e914d548b392c85d17166dc73a",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Rocket Lab Stock Rises on Record Electron Launch Deal and Citi Buy Rating -- Barrons.com"
+        },
+        "trade": {
+          "intent_count": 0,
+          "reason_codes": [],
+          "state": "NOT_APPLICABLE"
+        },
+        "trade_disposition": "NOT_EVALUATED",
+        "w3_status": null
+      },
+      "case_process": {
+        "created_at": "2026-10-01T16:46:21.935930Z",
+        "completed_at": "2026-10-01T16:47:42.147289Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "ARCHIVE",
+          "reason": "w1=OLD/normal;policy_hit=true;w2=normal",
+          "side_effects": [
+            "archive_message",
+            "mark_badcase"
+          ]
+        },
+        "resolved_route": null,
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E96",
+            "E10",
+            "E97",
+            "E98",
+            "E99"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [
+            {
+              "event_id": "E96",
+              "fact_ids": [
+                "F298",
+                "F299"
+              ]
+            }
+          ],
+          "reason": "消息核心事实——Rocket Lab与Synspective签署20次Electron发射合同（公司史上最大商业发射合同），2028至2031年每年各一次发射——已被E96的F298、F299完全覆盖；Citi首次覆盖给予Buy评级及$105目标价已被本轮provisional events E97/E98/E99覆盖；股价涨幅、总合同47次及backlog超100等均为同一签约事件的附带计算或市场反应评论，未改变主要新闻进展。",
+          "reference_ids": [
+            "E96"
+          ],
+          "result": "OLD"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [
+            "pol_6db9f073b136875b7be9"
+          ],
+          "reason": "消息核心事实为Rocket Lab与Synspective新签一项具有约束力的多年度合同，包含20次Electron专属发射任务（2028–2031年度窗口），为Rocket Lab历史上最大商业发射合同、单一客户最多任务数，且将总backlog推过100次。该事实直接触及pol_6db9f073b136875b7be9 criterion中\"重要客户的一批此前未锁定Launch Services任务取得具有约束力的任务合同并排入明确发射窗口\"的触发路径。消息其余部分（Citi评级、股价波动、行业背景）与各Policy criterion无具体触发关系。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [
+            "pol_6db9f073b136875b7be9"
+          ],
+          "reason": "当前消息描述的正是Rocket Lab与Synspective的20项新Electron发射合同，而C2的trigger_boundary明确将\"Synspective这20项新任务及已知五项Neutron专属任务\"列为已进入基线、不触发。消息未涉及另一重要客户的多任务批次，不满足\"须确认其之外的另一重要客户多任务批次，同时具备有约束力的授权或合同和明确发射窗口\"的触发要求。因此C2未命中，Policy NO HIT。"
+        },
+        "w2_skipped": false,
+        "w3_result": null
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "b221ee4b11bf6d7f3e6be1af5df3fbfa3ca02974b207369721f3663d65277081",
+            "content_type": "text/plain",
+            "sha256": "0749153c7b738d8f0f9e73cbb9d3bfb8b395325f17eb4676aee9e717a7418149",
+            "size_bytes": 3324
+          },
+          "case": {
+            "case_id": "case_00a8f064566c45b1a20255db95f021c6",
+            "initial_route": "ARCHIVE",
+            "resolved_route": null,
+            "route_group": "ARCHIVE",
+            "status": "COMPLETED",
+            "w3_status": null
+          },
+          "collected_at": "2026-10-01T16:46:19.227096Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-10-01T16:46:21.327976Z",
+          "revision": 1,
+          "row_revision": 2745393,
+          "source": {
+            "binding_id": "RKLB:ibkr_news",
+            "kind": "api",
+            "name": "IBKR News API",
+            "source_id": "ibkr_news"
+          },
+          "source_published_at": "2026-10-01T16:45:00Z",
+          "standard_message_id": "std_ee9b21eef7ad402e952c963c4406b3a7",
+          "stream_item_id": "stream_df4ff8e914d548b392c85d17166dc73a",
+          "stream_offset": 145,
+          "stream_published_at": "2026-10-01T16:46:21.341144Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Rocket Lab Stock Rises on Record Electron Launch Deal and Citi Buy Rating -- Barrons.com"
+          },
+          "url": "https://www.interactivebrokers.com/en/trading/providers.php",
+          "body_text": "By Mariapaula Gonzalez and Al Root Rocket Lab has launched small satellites for years, gradually emerging as a potential competitor to SpaceX. Now, Rocket Lab just scored its largest commercial launch contract in its history, signaling strong demand for small-satellite constellation deployments. Rocket Lab secured a multiyear deal with Tokyo-based Synspective for 20 new Electron launches to deploy the company's radar satellites, the company announced Wednesday. The agreement marks the largest commercial launch contract in Rocket Lab's history, as well as the most missions ordered by a single customer. Specific financial terms of the deal were undisclosed. The agreement brings Synspective's total contracted Electron launches to 47, the most of any Rocket Lab customer. Shares of Rocket Lab rose 1.3% in midday trading to $70.56, while the S&P 500 was down 0.2%. Also helping was a new bullish rating from Citi. Analyst John Godyn called Rocket Lab stock a \"core holding\" in a new report. He sees Rocket Lab as an industry leader and started with a $105 price target for shares. Overall, Rocket Lab is popular on Wall Street, with 83% of analysts covering the company rating shares Buy, according to FactSet. The average Buy-rating ratio for S&P 500 stocks typically ranges from 55% to 60%. The average analyst price target for Rocket Lab stock is about $112. Rocket Lab will launch 20 radar satellites for Synspective to expand a satellite network designed to image any location on Earth within hours, day or night and in any weather. The missions are expected to take place over four years, with launches scheduled annually from 2028 to 2031. Rocket Lab said the agreement pushes its total launch backlog past 100 missions. It comes at a time when the space sector has faced a global rocket shortage and growing launch delays. Thursday's gains left Rocket Lab stock up 1% year to date. Up just 1% in 2026, however, belies the path shares took. Rocket Lab stock traded as high as $151 in May, just ahead of the trillion-dollar SpaceX IPO. SpaceX essentially created the modern space economy, and investors bid up many space-related shares in anticipation of the record-setting IPO. Then, Rocket Lab shares traded below $60 in July as SpaceX shares, and other space stocks, slid after some of the initial euphoria wore off. Through the volatility, Rocket Lab has continued to perform well. The company reported better-than-expected second-quarter sales in August and offered above-Street guidance for the third quarter. The space business is booming as the cost to reach orbit has fallen. Write to Mariapaula Gonzalez at mariapaula.gonzalez@barrons.com This content was created by Barron's, which is operated by Dow Jones & Co. Barron's is published independently from Dow Jones Newswires and The Wall Street Journal. (END) Dow Jones Newswires October 01, 2026 12:45 ET (16:45 GMT) Copyright (c) 2026 Dow Jones & Company, Inc. The statements in this document shall not be considered as an objective or independent explanation of the matters. Please note that this document (a) has not been prepared in accordance with legal requirements designed to promote the independence of investment research, and (b) is not subject to any prohibition on dealing ahead of the dissemination or publication of investment research."
+        }
+      ],
+      "discovered_facts": [],
+      "trade": {
+        "intents": [],
+        "closed_candidates": [],
+        "executions": []
+      }
+    }
+  ]
+}

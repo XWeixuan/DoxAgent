@@ -1,0 +1,9 @@
+{
+  "alias": "O203",
+  "title": "text paragraphs 115",
+  "content": "| Financial swaps |  | Operating revenues |  | $ | — |  |  | $ | 243 |  |  | $ | 871 |  |  | $ | 289 |  |\n\n| Financial swaps |  | Purchased power |  | (991) |  |  | 50 |  |  | (3,555) |  |  | (980) |  |\n\n| Financial swaps |  | Fuel expense |  | (1,078) |  |  | (536) |  |  | (27,590) |  |  | (12,736) |  |\n\n|  |  |  |  |  |  |  |  |  |  |  |\n\n| Forward contracts |  | Operating revenues |  | 23 |  |  | 25 |  |  | 58 |  |  | 391 |  |\n\n| Forward contracts |  | Purchased power |  | (23) |  |  | (25) |  |  | (58) |  |  | (470) |  |\n\n| Forward contracts |  | Fuel expense |  | (2,053) |  |  | (228) |  |  | (2,392) |  |  | (831) |  |\n\n|  |  |  |  |  |  |  |  |  |  |  |",
+  "source": {
+    "provider": "Public web source",
+    "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+  }
+}

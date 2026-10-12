@@ -1,0 +1,1427 @@
+diff --git a/src/doxagent/message_bus_v2/distribution.py b/src/doxagent/message_bus_v2/distribution.py
+index 0ad6f75c..2c8fcc33 100644
+--- a/src/doxagent/message_bus_v2/distribution.py
++++ b/src/doxagent/message_bus_v2/distribution.py
+@@ -47,8 +47,16 @@ class DistributionWorker:
+         self.terms = terms
+         self.jev = jev
+         self.concurrency = max(1, min(concurrency, 8))
++        self._jev_retry_at = 0.0
++        self._jev_half_open = False
++        self._retirement_at = 0.0
+ 
+     async def run_once(self) -> int:
++        if time.monotonic() >= self._retirement_at:
++            self._retirement_at = time.monotonic() + 60
++            retired = await asyncio.to_thread(self.repository.expire_runs)
++            if retired:
++                logger.info("retired expired realtime distribution runs count=%s", retired)
+         rows = self.repository.claim_deliveries(limit=16)
+         groups: dict[tuple[str, int], list[dict[str, Any]]] = defaultdict(list)
+         for row in rows:
+@@ -71,13 +79,14 @@ class DistributionWorker:
+         message = RawMessageInput.model_validate_json(rows[0]["enriched_json"])
+         source = SourceDefinition.model_validate_json(rows[0]["source_json"])
+         current_source = self.bus.repository.get_source(source.source_id)
+-        if (
+-            _complete_body_required(current_source or source)
+-            and not _complete_body_verified(message)
++        if _complete_body_required(current_source or source) and not _complete_body_verified(
++            message
+         ):
+             for row in rows:
+                 self.repository.finish_delivery(
+-                    row["delivery_id"], row["claim_token"], "NO_PUBLIC_BODY",
++                    row["delivery_id"],
++                    row["claim_token"],
++                    "NO_PUBLIC_BODY",
+                     {"reason": "complete_public_body_required"},
+                 )
+             return
+@@ -161,6 +170,20 @@ class DistributionWorker:
+     ) -> tuple[dict[str, float], dict[str, int], dict[str, str]]:
+         if self.jev is None:
+             return {}, {}, {ticker: "JEV_DISABLED" for ticker in definitions}
++        if time.monotonic() < self._jev_retry_at or self._jev_half_open:
++            return {}, {}, {ticker: "JEV_PROVIDER_UNAVAILABLE" for ticker in definitions}
++        half_open = bool(self._jev_retry_at)
++        if half_open:
++            self._jev_half_open = True
++        try:
++            return await self._jev_attempts(message, definitions)
++        finally:
++            if half_open:
++                self._jev_half_open = False
++
++    async def _jev_attempts(
++        self, message: RawMessageInput, definitions: dict[str, TickerMonitoringTerms]
++    ) -> tuple[dict[str, float], dict[str, int], dict[str, str]]:
+         states = _article_states(message)
+         if states is None:
+             return {}, {}, {ticker: "JEV_INPUT_LIMIT" for ticker in definitions}
+@@ -190,9 +213,20 @@ class DistributionWorker:
+                 try:
+                     async with asyncio.timeout(min(15.0, remaining)):
+                         result = await self.jev.classify(state, target)
++                    self._jev_retry_at = 0.0
+                 except httpx.HTTPStatusError as exc:
+                     status = exc.response.status_code
+                     logger.warning("Jev decision HTTP failure: %s", status)
++                    if status == 402:
++                        self._jev_retry_at = time.monotonic() + 300
++                        errors.update(
++                            {
++                                ticker: "JEV_PROVIDER_UNAVAILABLE"
++                                for ticker in definitions
++                                if ticker not in positive
++                            }
++                        )
++                        break
+                     if status in {400, 401, 403, 404, 422}:
+                         errors.update({ticker: f"JEV_HTTP_{status}" for ticker in target})
+                     elif status == 429:
+diff --git a/src/doxagent/message_bus_v2/distribution_repository.py b/src/doxagent/message_bus_v2/distribution_repository.py
+index c2837381..88baffac 100644
+--- a/src/doxagent/message_bus_v2/distribution_repository.py
++++ b/src/doxagent/message_bus_v2/distribution_repository.py
+@@ -100,6 +100,12 @@ class DistributionRepository:
+                 );
+                 CREATE INDEX IF NOT EXISTS idx_distribution_delivery_state
+                     ON distribution_deliveries(state,lease_until);
++                CREATE INDEX IF NOT EXISTS idx_distribution_runs_status_time
++                    ON distribution_runs(status,created_at);
++                CREATE INDEX IF NOT EXISTS idx_distribution_runs_source_time
++                    ON distribution_runs(source_id,created_at DESC);
++                CREATE INDEX IF NOT EXISTS idx_distribution_deliveries_run_state
++                    ON distribution_deliveries(run_id,state);
+             """)
+ 
+     def get_or_create_run(
+@@ -153,7 +159,7 @@ class DistributionRepository:
+         with self.bus.transaction() as db:
+             changed = db.execute(
+                 "UPDATE distribution_runs SET claim_token=?,lease_until=?,status='RUNNING' "
+-                "WHERE run_id=? AND status NOT IN ('DONE','PARTIAL') "
++                "WHERE run_id=? AND status NOT IN ('DONE','PARTIAL','EXPIRED','ABANDONED') "
+                 "AND (claim_token IS NULL OR lease_until<=?)",
+                 (
+                     token,
+@@ -394,7 +400,9 @@ class DistributionRepository:
+         state = (
+             "NO_PUBLIC_BODY"
+             if complete_body_required and not _complete_body_verified(message)
+-            else "READY" if valid else "EMPTY_CONTENT"
++            else "READY"
++            if valid
++            else "EMPTY_CONTENT"
+         )
+         with self.bus.transaction() as db:
+             if job.claim_token:
+@@ -437,7 +445,8 @@ class DistributionRepository:
+                 "SELECT d.*,a.enriched_json,a.original_json,a.content_version,r.source_json "
+                 "FROM distribution_deliveries d JOIN distribution_articles a USING(article_id) "
+                 "JOIN distribution_runs r USING(run_id) "
+-                "WHERE d.state='PENDING' OR (d.state='RUNNING' AND d.lease_until<=?) "
++                "WHERE r.status NOT IN ('EXPIRED','ABANDONED') AND "
++                "(d.state='PENDING' OR (d.state='RUNNING' AND d.lease_until<=?)) "
+                 "ORDER BY d.created_at LIMIT ?",
+                 (now.isoformat(), limit),
+             ).fetchall()
+@@ -452,6 +461,67 @@ class DistributionRepository:
+                 claimed.append({**dict(row), "claim_token": token})
+         return claimed
+ 
++    def expire_runs(self, *, limit: int = 200) -> int:
++        """Retain audit rows; never retire an owned claim or a durable closed sweep."""
++        now = utc_now()
++        # Three days also covers DATE/UNKNOWN inputs' today+yesterday admission.
++        before = (now - timedelta(days=3)).isoformat()
++        count = 0
++        with self.bus.transaction() as db:
++            runs = db.execute(
++                "SELECT run_id,checkpoint_json FROM distribution_runs "
++                "WHERE status IN ('PENDING','RUNNING') AND mode='REALTIME' "
++                "AND created_at<? AND (claim_token IS NULL OR lease_until<=?) "
++                "ORDER BY created_at LIMIT ?",
++                (before, now.isoformat(), limit),
++            ).fetchall()
++            for run in runs:
++                pending = db.execute(
++                    "SELECT d.delivery_id,d.state,d.lease_until,d.admission_json,a.original_json "
++                    "FROM distribution_deliveries d JOIN distribution_articles a USING(article_id) "
++                    "WHERE d.run_id=? AND d.state IN ('WAIT_BODY','PENDING','RUNNING')",
++                    (run["run_id"],),
++                ).fetchall()
++                expired = []
++                for row in pending:
++                    if (
++                        row["state"] == "RUNNING"
++                        and row["lease_until"]
++                        and datetime.fromisoformat(row["lease_until"]) > now
++                    ):
++                        break
++                    admission = AdmissionContext.model_validate_json(row["admission_json"])
++                    message = RawMessageInput.model_validate_json(row["original_json"])
++                    if (
++                        admission.mode != "REALTIME"
++                        or evaluate_admission(
++                            message.published_at, admission, now, message.publication_time_basis
++                        )
++                        is None
++                    ):
++                        break
++                    expired.append(row["delivery_id"])
++                else:
++                    audit = {
++                        **json.loads(run["checkpoint_json"]),
++                        "retired_at": now.isoformat(),
++                        "retirement_reason": "ORIGINAL_REALTIME_WINDOW_EXPIRED",
++                    }
++                    db.execute(
++                        "UPDATE distribution_runs SET status='EXPIRED',claim_token=NULL,lease_until=NULL,checkpoint_json=? WHERE run_id=?",
++                        (canonical_json(audit), run["run_id"]),
++                    )
++                    for delivery_id in expired:
++                        db.execute(
++                            "UPDATE distribution_deliveries SET state='EXPIRED',claim_token=NULL,lease_until=NULL,result_json=? WHERE delivery_id=?",
++                            (
++                                canonical_json({"reason": "ORIGINAL_REALTIME_WINDOW_EXPIRED"}),
++                                delivery_id,
++                            ),
++                        )
++                    count += 1
++        return count
++
+     def finish_delivery(
+         self, delivery_id: str, claim_token: str, state: str, result: dict[str, Any]
+     ) -> None:
+diff --git a/src/doxagent/message_bus_v2/factory.py b/src/doxagent/message_bus_v2/factory.py
+index 7b2da435..898f179f 100644
+--- a/src/doxagent/message_bus_v2/factory.py
++++ b/src/doxagent/message_bus_v2/factory.py
+@@ -56,7 +56,7 @@ def build_message_bus_v2_runtime(settings: DoxAgentSettings) -> MessageBusV2Runt
+         from doxagent.persistent_runtime_v2.journal import RuntimeJournal
+ 
+         scheduler.runtime_orchestration = BusOrchestration(
+-            RuntimeJournal(settings.persistent_runtime_v2_sqlite_path)
++            RuntimeJournal(settings.persistent_runtime_v2_sqlite_path, busy_timeout_seconds=0.05)
+         )
+     if settings.ticker_initialization_control_path:
+         from doxagent.ticker_initialization.consumers import admit_bus_revisions
+diff --git a/src/doxagent/message_bus_v2/industry_sources.py b/src/doxagent/message_bus_v2/industry_sources.py
+index f3619679..a0af303b 100644
+--- a/src/doxagent/message_bus_v2/industry_sources.py
++++ b/src/doxagent/message_bus_v2/industry_sources.py
+@@ -22,6 +22,16 @@ from .schema import PollContext, PollResult, RawMessageInput, SharedPollContext
+ _TAIPEI = ZoneInfo("Asia/Taipei")
+ _SEOUL = ZoneInfo("Asia/Seoul")
+ _NEW_YORK = ZoneInfo("America/New_York")
++# Fixed deployment listeners, never arbitrary caller-provided proxy destinations.
++FEED_HTTP_EGRESSES = {
++    "direct": None,
++    "jp-standard-6": "http://doxagent-egress-clash:18080",
++    "us-standard-5": "http://doxagent-egress-clash:18081",
++    "nl-standard-2": "http://doxagent-egress-clash:18082",
++    "de-standard-1": "http://doxagent-egress-clash:18083",
++    "server-direct": "http://doxagent-egress-clash:18084",
++    "tr-standard-1": "http://doxagent-egress-clash:18085",
++}
+ _BARRONS_ET_DATE = re.compile(
+     r"\b([A-Z][a-z]{2}) (\d{1,2}), (\d{4}) (\d{1,2}):(\d{2}) ([ap])\.m\. ET"
+ )
+@@ -44,9 +54,7 @@ def _canonical(url: str) -> str:
+     parsed = urlparse(url)
+     # DIGITIMES Taiwan and The Elec identify distinct articles through query IDs.
+     query = (
+-        parsed.query
+-        if parsed.path.lower().endswith(("/shwnws.asp", "/articleview.html"))
+-        else ""
++        parsed.query if parsed.path.lower().endswith(("/shwnws.asp", "/articleview.html")) else ""
+     )
+     return urlunparse((parsed.scheme, parsed.netloc.lower(), parsed.path, "", query, ""))
+ 
+@@ -137,9 +145,13 @@ def parse_trendforce_listing(html: str, *, press: bool, now: datetime) -> list[R
+             published = _date_only(date, _TAIPEI)
+         except ValueError:
+             continue
+-        card = link.getparent().getparent() if press else link.xpath(
+-            'ancestor::div[contains(concat(" ",normalize-space(@class)," "),'
+-            '" insight-list-item ")][1]'
++        card = (
++            link.getparent().getparent()
++            if press
++            else link.xpath(
++                'ancestor::div[contains(concat(" ",normalize-space(@class)," "),'
++                '" insight-list-item ")][1]'
++            )
+         )
+         if isinstance(card, list):
+             card = card[0] if card else None
+@@ -177,8 +189,7 @@ def parse_digitimes_listing(html: str, *, now: datetime) -> list[RawMessageInput
+         if not match or len(title) < 15:
+             continue
+         card = link.xpath(
+-            'ancestor::div[contains(concat(" ",normalize-space(@class)," "),'
+-            '" more-news ")][1]'
++            'ancestor::div[contains(concat(" ",normalize-space(@class)," ")," more-news ")][1]'
+         )
+         card = card[0] if card else None
+         date_node = card.xpath('.//div[contains(@class,"date")][1]') if card is not None else []
+@@ -222,9 +233,7 @@ def parse_digitimes_listing(html: str, *, now: datetime) -> list[RawMessageInput
+     return list(rows.values())
+ 
+ 
+-def parse_barrons_ticker_listing(
+-    html: str, *, ticker: str, now: datetime
+-) -> list[RawMessageInput]:
++def parse_barrons_ticker_listing(html: str, *, ticker: str, now: datetime) -> list[RawMessageInput]:
+     root = lxml_html.fromstring(html)
+     _listing_guard(root, html)
+     main = root.xpath("//main")
+@@ -238,19 +247,19 @@ def parse_barrons_ticker_listing(
+     rows: dict[str, RawMessageInput] = {}
+     candidate_count = 0
+     other_heading = scope.xpath(
+-        '//*[self::h2 or self::h3 or self::h4 or self::div or self::span]'
++        "//*[self::h2 or self::h3 or self::h4 or self::div or self::span]"
+         '[translate(normalize-space(.),"abcdefghijklmnopqrstuvwxyz",'
+         '"ABCDEFGHIJKLMNOPQRSTUVWXYZ")="OTHER DOW JONES"]'
+     )
+     ordered = {node: index for index, node in enumerate(scope.iter())}
+-    wrapped = scope.xpath('.//section[@data-dj-section]')
++    wrapped = scope.xpath(".//section[@data-dj-section]")
+     other_starts = sorted(ordered[node] for node in other_heading)
+     section_ends = sorted(
+         ordered[node]
+         for node in scope.xpath(".//h2|.//h3|.//h4")
+         if ordered[node] not in other_starts
+     )
+-    for link in scope.xpath('.//a[@href]'):
++    for link in scope.xpath(".//a[@href]"):
+         url = urljoin("https://www.barrons.com", link.get("href", ""))
+         parsed = urlparse(url)
+         host = (parsed.hostname or "").removeprefix("www.")
+@@ -261,8 +270,11 @@ def parse_barrons_ticker_listing(
+         is_barrons = host == "barrons.com"
+         if wrapped:
+             section = next(
+-                (node.get("data-dj-section") for node in link.iterancestors()
+-                 if node.get("data-dj-section")),
++                (
++                    node.get("data-dj-section")
++                    for node in link.iterancestors()
++                    if node.get("data-dj-section")
++                ),
+                 None,
+             )
+             if section not in {"barrons", "other"}:
+@@ -271,8 +283,7 @@ def parse_barrons_ticker_listing(
+                 continue
+         # Other publishers are admitted only under the explicitly labelled Dow Jones section.
+         under_other = any(
+-            start < ordered[link]
+-            and not any(start < end < ordered[link] for end in section_ends)
++            start < ordered[link] and not any(start < end < ordered[link] for end in section_ends)
+             for start in other_starts
+         )
+         if not wrapped and not is_barrons and not under_other:
+@@ -288,7 +299,7 @@ def parse_barrons_ticker_listing(
+             card = card.getparent()
+             if card.tag in {"article", "li"}:
+                 break
+-        times = card.xpath('.//time[@datetime]/@datetime')
++        times = card.xpath(".//time[@datetime]/@datetime")
+         basis = "UNKNOWN_FIRST_SEEN"
+         published = now
+         if times:
+@@ -327,7 +338,7 @@ def parse_barrons_ticker_listing(
+         if wrapped and basis != "EXACT":
+             # A newly discovered historical card is not a newly published article.
+             continue
+-        summary = next((_text(p) for p in card.xpath('.//p') if _text(p) != title), "")
++        summary = next((_text(p) for p in card.xpath(".//p") if _text(p) != title), "")
+         rows[_canonical(url)] = _message(
+             source=_DJ_PUBLISHERS.get(host, host),
+             url=_canonical(url),
+@@ -361,9 +372,7 @@ class IndustryListingAdapter:
+             run_id = context.poll_run_id if isinstance(context, PollContext) else context.run_id
+             async with context.request_permit():
+                 recipe_options = (
+-                    {"recipe_ref": "builtin:barrons_ticker@1"}
+-                    if self.variant == "barrons"
+-                    else {}
++                    {"recipe_ref": "builtin:barrons_ticker@1"} if self.variant == "barrons" else {}
+                 )
+                 status, final_url, _headers, html = await self.browser.get(
+                     url,
+@@ -389,9 +398,7 @@ class IndustryListingAdapter:
+             messages = parse_digitimes_listing(html, now=now)
+         else:
+             press = "/presscenter/news" in urlparse(url).path
+-            messages = parse_trendforce_listing(
+-                html, press=press, now=now
+-            )
++            messages = parse_trendforce_listing(html, press=press, now=now)
+         return PollResult(
+             messages=messages,
+             window_done=True,
+@@ -552,12 +559,25 @@ class SharedFeedAdapter:
+         if not source.entry_url or not source.content_language:
+             raise RuntimeError("shared publisher feed URL/language is missing")
+         proxy = source.default_parameters.get("feed_proxy_url")
++        routes = source.default_parameters.get("feed_http_routes")
++        if routes is not None and (
++            not isinstance(routes, list)
++            or not 1 <= len(routes) <= 2
++            or any(route not in FEED_HTTP_EGRESSES for route in routes)
++        ):
++            raise ValueError(
++                "feed_http_routes requires one primary and at most one approved fallback"
++            )
++        route_used = routes[0] if routes else "legacy"
+         async with context.request_permit():
+             # One retry for read-only connection loss; all attempts share a short
+             # deadline so an RSS failure cannot occupy the shared collector for minutes.
+             async with asyncio.timeout(30):
+                 for attempt in range(2):
+                     try:
++                        if routes:
++                            route_used = routes[min(attempt, len(routes) - 1)]
++                            proxy = FEED_HTTP_EGRESSES[route_used]
+                         if proxy:
+                             async with httpx.AsyncClient(
+                                 proxy=str(proxy), timeout=httpx.Timeout(25, connect=5, pool=5)
+@@ -568,8 +588,13 @@ class SharedFeedAdapter:
+                                 source.entry_url, timeout=httpx.Timeout(25, connect=5, pool=5)
+                             )
+                         break
+-                    except (httpx.ConnectError, httpx.ConnectTimeout,
+-                            httpx.ReadError, httpx.RemoteProtocolError):
++                    except (
++                        httpx.ConnectError,
++                        httpx.ConnectTimeout,
++                        httpx.ReadError,
++                        httpx.ReadTimeout,
++                        httpx.RemoteProtocolError,
++                    ):
+                         if attempt:
+                             raise
+                         await asyncio.sleep(0.2)
+@@ -584,12 +609,18 @@ class SharedFeedAdapter:
+             now=context.requested_at,
+         )
+         lower = context.window_start or context.requested_at - timedelta(minutes=30)
+-        complete = min(message.published_at for message in messages) <= lower
++        complete = bool(messages) and min(message.published_at for message in messages) <= lower
+         return PollResult(
+             messages=messages,
+             window_done=True,
+             window_coverage="COMPLETE" if complete else "PARTIAL",
+-            acquisition_metadata={"feed_url": source.entry_url, "item_count": len(messages)},
++            acquisition_metadata={
++                "feed_url": source.entry_url,
++                "item_count": len(messages),
++                "http_route": route_used,
++                "http_status": response.status_code,
++                "xml_valid": True,
++            },
+         )
+ 
+ 
+diff --git a/src/doxagent/message_bus_v2/manifests.py b/src/doxagent/message_bus_v2/manifests.py
+index 54e52cf9..6b0fbb40 100644
+--- a/src/doxagent/message_bus_v2/manifests.py
++++ b/src/doxagent/message_bus_v2/manifests.py
+@@ -39,6 +39,18 @@ def _source(
+     search_policy: SearchPolicy | None = None,
+     distribution_policy: DistributionPolicy | None = None,
+ ) -> SourceDefinition:
++    if acquisition_mode is AcquisitionMode.BY_DISTRIBUTION and kind is not SourceKind.CRAWLER:
++        from .industry_sources import FEED_HTTP_EGRESSES
++
++        properties = {
++            **(properties or {}),
++            "feed_http_routes": {
++                "type": "array",
++                "minItems": 1,
++                "maxItems": 2,
++                "items": {"type": "string", "enum": list(FEED_HTTP_EGRESSES)},
++            },
++        }
+     return SourceDefinition(
+         source_id=source_id,
+         display_name=display_name,
+diff --git a/src/doxagent/message_bus_v2/news_adapters.py b/src/doxagent/message_bus_v2/news_adapters.py
+index 2e49d3a5..66cea731 100644
+--- a/src/doxagent/message_bus_v2/news_adapters.py
++++ b/src/doxagent/message_bus_v2/news_adapters.py
+@@ -160,7 +160,9 @@ class YahooFinanceNewsAdapter:
+ 
+         self.settings = settings
+         # The registry's httpx client remains for other providers; Yahoo owns no session.
+-        self.transport = transport or shared_yahoo_transport(settings.crawler_egress_proxy_url)
++        self.transport = transport or shared_yahoo_transport(
++            settings.message_bus_v2_yahoo_http_proxy_url or settings.crawler_egress_proxy_url
++        )
+         self.browser = browser
+         self._browser_retry_at = 0.0
+         self._page_api_retry_at = 0.0
+@@ -221,7 +223,17 @@ class YahooFinanceNewsAdapter:
+                     )
+                     self._browser_retry_at = monotonic_time.monotonic() + delay
+                     self._page_api_retry_at = self._browser_retry_at
+-                attempts.append({"route": "page_network_ncp", "error": type(exc).__name__})
++                attempts.append(
++                    {
++                        "route": "page_network_ncp",
++                        "error": type(exc).__name__,
++                        "status": getattr(exc, "status_code", None),
++                        "reason": exc.result.reason_code
++                        if isinstance(exc, SiteAccessError)
++                        else None,
++                        "diagnostics": getattr(exc, "diagnostics", {}),
++                    }
++                )
+         try:
+             if not managed_browser and monotonic_time.monotonic() < self._page_api_retry_at:
+                 raise YahooRateLimited(self._page_api_retry_at - monotonic_time.monotonic())
+@@ -249,12 +261,19 @@ class YahooFinanceNewsAdapter:
+             attempts.append({"route": "ncp_latest_news", "error": type(exc).__name__})
+         # RSS is a separate endpoint family, not another Query API retry.
+         # Its success must not clear the NCP/API rate-limit circuit.
+-        async with context.request_permit():
+-            rows, metadata = await acquire_yahoo_rss(
+-                self.transport,
+-                context.ticker,
+-                timeout_seconds=self.settings.tool_http_timeout_seconds,
+-            )
++        try:
++            async with context.request_permit():
++                rows, metadata = await acquire_yahoo_rss(
++                    self.transport,
++                    context.ticker,
++                    timeout_seconds=self.settings.tool_http_timeout_seconds,
++                )
++        except Exception as exc:
++            attempts.append({"route": "legacy_headline_rss", "error": type(exc).__name__})
++            # Preserve the transport exception contract, including status/retry fields.
++            exc.acquisition_attempts = attempts
++            exc.args = ("Yahoo acquisition failed: " + json.dumps(attempts, separators=(",", ":")),)
++            raise
+         return self._map_result(
+             context, rows, "legacy_headline_rss", count, {**metadata, "attempts": attempts}
+         )
+diff --git a/src/doxagent/message_bus_v2/scheduler.py b/src/doxagent/message_bus_v2/scheduler.py
+index 5b703953..f6648a2d 100644
+--- a/src/doxagent/message_bus_v2/scheduler.py
++++ b/src/doxagent/message_bus_v2/scheduler.py
+@@ -3,6 +3,7 @@
+ from __future__ import annotations
+ 
+ import asyncio
++import logging
+ import time
+ from collections import defaultdict
+ from collections.abc import AsyncIterator, Awaitable, Callable
+@@ -157,7 +158,13 @@ class GlobalPollScheduler:
+ 
+     async def run_forever(self, *, loop_sleep_seconds: float, stop: asyncio.Event) -> None:
+         while not stop.is_set():
+-            await self.run_once()
++            try:
++                await self.run_once()
++            except Exception as exc:
++                from doxagent.persistent_runtime_v2.journal import is_sqlite_contention
++                if not is_sqlite_contention(exc):
++                    raise
++                logging.getLogger(__name__).warning("bus runtime lock contention; preserving durable leases and retrying next loop")
+             try:
+                 await asyncio.wait_for(stop.wait(), timeout=loop_sleep_seconds)
+             except TimeoutError:
+diff --git a/src/doxagent/message_bus_v2/yahoo_sources.py b/src/doxagent/message_bus_v2/yahoo_sources.py
+index b0f9574b..c5c414ee 100644
+--- a/src/doxagent/message_bus_v2/yahoo_sources.py
++++ b/src/doxagent/message_bus_v2/yahoo_sources.py
+@@ -17,13 +17,20 @@ from xml.etree import ElementTree
+ 
+ 
+ class YahooPageUnavailable(RuntimeError):
+-    def __init__(self, message: str, *, status_code=None, retry_after_seconds=0):
++    def __init__(
++        self, message: str, *, status_code=None, retry_after_seconds=0, phase=None, url=None
++    ):
+         self.status_code = status_code
+         self.retry_after_seconds = retry_after_seconds
++        self.diagnostics = {
++            "phase": phase,
++            "url": (url or "").split("?", 1)[0],
++            "status": status_code,
++        }
+         super().__init__(message)
+ 
+ 
+-def page_http_failure(status: int, headers: dict) -> YahooPageUnavailable:
++def page_http_failure(status: int, headers: dict, *, phase=None, url=None) -> YahooPageUnavailable:
+     retry = headers.get("retry-after") or headers.get("Retry-After")
+     try:
+         seconds = float(retry)
+@@ -35,6 +42,8 @@ def page_http_failure(status: int, headers: dict) -> YahooPageUnavailable:
+     return YahooPageUnavailable(
+         f"Yahoo browser HTTP {status}",
+         status_code=status,
++        phase=phase,
++        url=url,
+         retry_after_seconds=max(0, seconds) if seconds < float("inf") else 0,
+     )
+ 
+@@ -93,7 +102,11 @@ async def capture_latest_news(page, ticker: str, *, timeout_seconds=20, snippet_
+         if not latest_news_response(response, ticker) or captured.done():
+             return
+         if response.status != 200:
+-            captured.set_exception(page_http_failure(response.status, response.headers))
++            captured.set_exception(
++                page_http_failure(
++                    response.status, response.headers, phase=capture_method, url=response.url
++                )
++            )
+             return
+         try:
+             payload = await response.json()
+@@ -134,7 +147,12 @@ async def capture_latest_news(page, ticker: str, *, timeout_seconds=20, snippet_
+                 timeout=int(timeout_seconds * 1000),
+             )
+             if response is not None and response.status >= 400:
+-                raise page_http_failure(response.status, response.headers)
++                raise page_http_failure(
++                    response.status,
++                    response.headers,
++                    phase="navigation",
++                    url=getattr(response, "url", page.url),
++                )
+             location = urlparse(page.url)
+             if location.hostname != "finance.yahoo.com" or not location.path.startswith(
+                 f"/quote/{quote(ticker, safe='')}/"
+@@ -192,7 +210,10 @@ async def capture_latest_news(page, ticker: str, *, timeout_seconds=20, snippet_
+                     )
+                     if result["status"] != 200:
+                         raise page_http_failure(
+-                            result["status"], {"Retry-After": result["retryAfter"]}
++                            result["status"],
++                            {"Retry-After": result["retryAfter"]},
++                            phase="page_js_fetch",
++                            url="https://finance.yahoo.com/xhr/ncp",
+                         )
+                     payload = json.loads(result["text"])
+                     rows = _yahoo_contents(payload)
+diff --git a/src/doxagent/persistent_runtime_v2/bus_orchestration.py b/src/doxagent/persistent_runtime_v2/bus_orchestration.py
+index 0a717bed..e4f13f1a 100644
+--- a/src/doxagent/persistent_runtime_v2/bus_orchestration.py
++++ b/src/doxagent/persistent_runtime_v2/bus_orchestration.py
+@@ -3,6 +3,7 @@
+ from __future__ import annotations
+ 
+ import asyncio
++import logging
+ from datetime import timedelta
+ from typing import Any
+ 
+@@ -10,7 +11,7 @@ from doxagent.message_bus_v2.schema import AcquisitionMode, SourceDefinition, Ti
+ from doxagent.semantic_clock import boundary, semantic_day
+ 
+ from .calendar import MarketCalendar
+-from .journal import RuntimeJournal
++from .journal import RuntimeJournal, is_sqlite_contention
+ 
+ 
+ class BusOrchestration:
+@@ -32,8 +33,15 @@ class BusOrchestration:
+                     if result is not None and key != "distribution-worker":
+                         results.append(result)
+                 except Exception as exc:
+-                    self.journal.gap("source:" + key, "", type(exc).__name__, str(exc)[:1000])
+-                del self._inflight[key]
++                    logging.getLogger(__name__).warning("bus task failed key=%s error=%s", key, type(exc).__name__)
++                    try:
++                        await self._journal_call(self.journal.gap, "source:" + key, "", type(exc).__name__, type(exc).__name__)
++                    except Exception as gap_exc:
++                        logging.getLogger(__name__).warning("bus gap persistence failed key=%s error=%s", key, type(gap_exc).__name__)
++                        if not is_sqlite_contention(gap_exc):
++                            raise
++                finally:
++                    del self._inflight[key]
+         roster_eligible = scheduler._eligible_bindings(now, include_inactive_hours=True)
+         shared_realtime: dict[str, tuple[SourceDefinition, list[TickerSourceBinding]]] = {}
+         # All bindings use the same semantic day. Do not perform two synchronous
+@@ -41,8 +49,8 @@ class BusOrchestration:
+         calendar_error = None
+         try:
+             day = semantic_day(now)
+-            realtime_mode = self.calendar.is_session(day)
+-            if not self.calendar.is_session(day - timedelta(days=1)) and now < boundary(
++            realtime_mode = await self._journal_call(self.calendar.is_session, day)
++            if not await self._journal_call(self.calendar.is_session, day - timedelta(days=1)) and now < boundary(
+                 day, minute=1
+             ):
+                 realtime_mode = False
+@@ -55,7 +63,7 @@ class BusOrchestration:
+                 continue
+             if realtime_mode is None:
+                 if binding.ticker not in calendar_failed_tickers:
+-                    self.journal.gap(
++                    await self._journal_call(self.journal.gap,
+                         f"bus-calendar:{binding.ticker}", binding.ticker,
+                         "CALENDAR_UNAVAILABLE", calendar_error or "calendar unavailable",
+                     )
+@@ -103,7 +111,7 @@ class BusOrchestration:
+                     if binding.ticker != sweep["ticker"]:
+                         continue
+                     identity = f"{sweep['id']}:source:{binding.binding_id}"
+-                    self.journal.put_task(
++                    await self._journal_call(self.journal.put_task,
+                         identity,
+                         binding.ticker,
+                         "SOURCE_SWEEP",
+@@ -117,14 +125,14 @@ class BusOrchestration:
+                     )
+                     identities.append(identity)
+                 roster = {"source_tasks": identities, "frozen_at": now.isoformat()}
+-                self.journal.set("sweep_roster", sweep["id"], roster)
++                await self._journal_call(self.journal.set, "sweep_roster", sweep["id"], roster)
+             for identity in roster["source_tasks"]:
+                 pending = self.journal.get_task(identity)
+                 assert pending is not None
+                 key = pending["inputs"]["binding"]["binding_id"]
+                 if key in self._inflight:
+                     continue
+-                task = self.journal.claim(identity, seconds=1800)
++                task = await self._journal_call(self.journal.claim, identity, seconds=1800)
+                 if task:
+                     self._inflight[key] = asyncio.create_task(self._source(scheduler, task))
+         # Let newly scheduled I/O start, without waiting for a source or model.
+@@ -138,6 +146,16 @@ class BusOrchestration:
+         await asyncio.sleep(0)
+         return results
+ 
++    async def _journal_call(self, operation: Any, *args: Any, **kwargs: Any) -> Any:
++        # Each entire transaction owns its connection inside the thread.
++        for attempt in range(3):
++            try:
++                return await asyncio.to_thread(operation, *args, **kwargs)
++            except Exception as exc:
++                if not is_sqlite_contention(exc) or attempt == 2:
++                    raise
++                await asyncio.sleep(0.1 * (attempt + 1))
++
+     def _yield_source(self, task: dict[str, Any]) -> None:
+         from datetime import timedelta
+ 
+@@ -177,7 +195,7 @@ class BusOrchestration:
+                     if found is not None
+                     else None
+                 )
+-                self.journal.checkpoint(
++                await self._journal_call(self.journal.checkpoint, 
+                     task,
+                     window_start=start,
+                     cutoff=cutoff.isoformat(),
+@@ -222,7 +240,7 @@ class BusOrchestration:
+                     raise RuntimeError(result.error_code)
+                 # A replay may re-read this page after a crash. Intake identity deduplication
+                 # returns the same live job IDs; completed provider payloads are also deduped.
+-                self.journal.checkpoint(
++                await self._journal_call(self.journal.checkpoint, 
+                     task,
+                     job_ids=sorted(set(receipt["job_ids"]) | set(result.enrichment_job_ids)),
+                     page_cursor=result.next_checkpoint,
+@@ -230,13 +248,13 @@ class BusOrchestration:
+                     poll_done=result.window_done,
+                 )
+                 if not result.window_done:
+-                    self._yield_source(task)
++                    await self._journal_call(self._yield_source, task)
+                     return result
+             receipt = task["receipt"]
+             pending = scheduler.repository.pending_enrichment_ids(receipt["job_ids"])
+             if pending:
+-                self.journal.checkpoint(task, pending_job_count=len(pending))
+-                self._yield_source(task)
++                await self._journal_call(self.journal.checkpoint, task, pending_job_count=len(pending))
++                await self._journal_call(self._yield_source, task)
+                 return result
+             scheduler.service.flush_binding(binding.binding_id, force=True)
+             coverage = (
+@@ -247,12 +265,12 @@ class BusOrchestration:
+                 else "UNKNOWN"
+             )
+             if coverage != "PARTIAL":
+-                self.journal.set(
++                await self._journal_call(self.journal.set, 
+                     "source_sweep_cursor",
+                     cursor_key,
+                     {"cutoff": cutoff.isoformat(), "source_task": task["id"], "coverage": coverage},
+                 )
+-            self.journal.finish(
++            await self._journal_call(self.journal.finish, 
+                 task,
+                 pending_job_count=0,
+                 coverage=coverage,
+@@ -262,24 +280,26 @@ class BusOrchestration:
+             )
+             return result
+         except Exception as exc:
++            if is_sqlite_contention(exc):
++                raise
+             if task.get("failures", 0) + 1 >= task.get("max_failures", 3) and task["receipt"].get(
+                 "job_ids"
+             ):
+-                self.journal.gap(
++                await self._journal_call(self.journal.gap, 
+                     "coverage:" + task["id"],
+                     task["ticker"],
+                     "SOURCE_WINDOW_PARTIAL",
+                     type(exc).__name__,
+                 )
+-                self.journal.checkpoint(
++                await self._journal_call(self.journal.checkpoint, 
+                     task,
+                     poll_done=True,
+                     page_coverages=[*task["receipt"].get("page_coverages", []), "PARTIAL"],
+                     poll_error=type(exc).__name__,
+                 )
+-                self._yield_source(task)
++                await self._journal_call(self._yield_source, task)
+             else:
+-                self.journal.fail(task, exc)
++                await self._journal_call(self.journal.fail, task, exc)
+             return None
+ 
+     async def _distribution_source(
+@@ -320,13 +340,13 @@ class BusOrchestration:
+                 timeout=600,
+             )
+             if result.error_code:
+-                self.journal.gap(
++                await self._journal_call(self.journal.gap, 
+                     "coverage:" + task["id"],
+                     binding.ticker,
+                     "SOURCE_WINDOW_PARTIAL",
+                     result.error_code,
+                 )
+-            self.journal.checkpoint(
++            await self._journal_call(self.journal.checkpoint, 
+                 task,
+                 distribution_run_id=result.poll_run_id,
+                 pending_distribution_delivery_ids=[],
+@@ -334,15 +354,15 @@ class BusOrchestration:
+                 coverage="PARTIAL" if result.error_code else result.window_coverage,
+             )
+             if not result.window_done and not result.error_code:
+-                self._yield_source(task)
++                await self._journal_call(self._yield_source, task)
+                 return result
+         else:
+             result = None
+         run_id = task["receipt"].get("distribution_run_id")
+         pending = scheduler.distribution.pending_for_run(run_id, binding.ticker) if run_id else []
+         if pending:
+-            self.journal.checkpoint(task, pending_distribution_delivery_ids=pending)
+-            self._yield_source(task)
++            await self._journal_call(self.journal.checkpoint, task, pending_distribution_delivery_ids=pending)
++            await self._journal_call(self._yield_source, task)
+             return result
+         failures = (
+             scheduler.distribution.failures_for_run(run_id, binding.ticker) if run_id else []
+@@ -350,12 +370,12 @@ class BusOrchestration:
+         coverage = task["receipt"].get("coverage", "UNKNOWN")
+         if failures:
+             coverage = "PARTIAL"
+-            self.journal.gap(
++            await self._journal_call(self.journal.gap, 
+                 "distribution:" + task["id"], binding.ticker,
+                 "DISTRIBUTION_DELIVERY_FAILED", f"{len(failures)} terminal delivery failures",
+             )
+         scheduler.service.flush_binding(binding.binding_id, force=True)
+-        self.journal.finish(
++        await self._journal_call(self.journal.finish, 
+             task,
+             pending_distribution_delivery_ids=[],
+             coverage=coverage,
+diff --git a/src/doxagent/persistent_runtime_v2/journal.py b/src/doxagent/persistent_runtime_v2/journal.py
+index 703524a5..f81fbd48 100644
+--- a/src/doxagent/persistent_runtime_v2/journal.py
++++ b/src/doxagent/persistent_runtime_v2/journal.py
+@@ -8,7 +8,10 @@ from __future__ import annotations
+ 
+ import hashlib
+ import json
++import logging
++import os
+ import sqlite3
++import time
+ from collections.abc import Callable, Iterator
+ from contextlib import contextmanager
+ from datetime import UTC, datetime, timedelta
+@@ -29,13 +32,27 @@ class LeaseLost(RuntimeError):
+     pass
+ 
+ 
++def is_sqlite_contention(exc: BaseException) -> bool:
++    return isinstance(exc, sqlite3.OperationalError) and (
++        getattr(exc, "sqlite_errorcode", 0) & 255
++    ) in {sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED}
++
++
+ class RuntimeJournal:
+     VERSION = 1
+ 
+-    def __init__(self, path: str | Path, *, clock: Callable[[], datetime] | None = None,
+-                 initialize: bool = True) -> None:
++    def __init__(
++        self,
++        path: str | Path,
++        *,
++        clock: Callable[[], datetime] | None = None,
++        initialize: bool = True,
++        busy_timeout_seconds: float = 30,
++    ) -> None:
+         self.path = Path(path)
++        self.busy_timeout_seconds = max(0, busy_timeout_seconds)
+         from doxagent.v2_read.native_content import NativeContent
++
+         self.content = NativeContent(self.path)
+         self.clock = clock or (lambda: datetime.now(UTC))
+         if not initialize:
+@@ -88,21 +105,39 @@ class RuntimeJournal:
+             )
+ 
+     @contextmanager
+-    def transaction(self, *, write: bool = True) -> Iterator[sqlite3.Connection]:
+-        db = sqlite3.connect(self.path, timeout=30)
++    def transaction(
++        self, *, write: bool = True, operation: str = "transaction"
++    ) -> Iterator[sqlite3.Connection]:
++        started = time.monotonic()
++        acquired = None
++        primary_code = None
++        db = sqlite3.connect(self.path, timeout=self.busy_timeout_seconds)
+         db.row_factory = self.content.row
+         try:
+             if write:
+                 db.execute("PRAGMA journal_mode=WAL")
+                 db.execute("PRAGMA synchronous=FULL")
+             db.execute("BEGIN IMMEDIATE" if write else "BEGIN")
++            acquired = time.monotonic()
+             yield db
+             db.commit()
+-        except BaseException:
++        except BaseException as exc:
++            primary_code = getattr(exc, "sqlite_errorcode", 0) & 255
+             db.rollback()
+             raise
+         finally:
+             db.close()
++            elapsed = time.monotonic() - started
++            if elapsed >= 0.25 or primary_code:
++                logging.getLogger(__name__).warning(
++                    "runtime_transaction pid=%s operation=%s write=%s elapsed_ms=%s wait_ms=%s sqlite_code=%s",
++                    os.getpid(),
++                    operation,
++                    write,
++                    round(elapsed * 1000),
++                    round(((acquired or time.monotonic()) - started) * 1000),
++                    primary_code,
++                )
+ 
+     @staticmethod
+     def _task(row: sqlite3.Row) -> dict[str, Any]:
+diff --git a/src/doxagent/settings.py b/src/doxagent/settings.py
+index 4f790a01..f8949f9a 100644
+--- a/src/doxagent/settings.py
++++ b/src/doxagent/settings.py
+@@ -628,6 +628,9 @@ class DoxAgentSettings(BaseSettings):
+         default=None,
+         validation_alias="DOXAGENT_CRAWLER_EGRESS_PROXY_URL",
+     )
++    message_bus_v2_yahoo_http_proxy_url: str | None = Field(
++        default=None, validation_alias="DOXAGENT_MESSAGE_BUS_V2_YAHOO_HTTP_PROXY_URL",
++    )
+     content_enrichment_browser_cdp_url: str | None = Field(
+         default=None,
+         validation_alias="DOXAGENT_CONTENT_ENRICHMENT_BROWSER_CDP_URL",
+diff --git a/src/doxagent/site_strategy/api.py b/src/doxagent/site_strategy/api.py
+index 3e30bdf4..4c022c1a 100644
+--- a/src/doxagent/site_strategy/api.py
++++ b/src/doxagent/site_strategy/api.py
+@@ -22,6 +22,7 @@ from .schema import (
+     ProxyEgress,
+     ResolvedSite,
+     SiteStrategySpec,
++    SitePurpose,
+ )
+ from .service import SiteStrategyService
+ from .storage import storage_failure
+@@ -169,6 +170,12 @@ def create_app(
+     async def access_diagnostics() -> dict[str, object]:
+         return service.access_diagnostics()
+ 
++    @app.get("/v1/diagnostics/candidates", dependencies=[Depends(admin)])
++    async def effective_candidates(
++        url: str, purpose: SitePurpose = SitePurpose.CRAWLER
++    ) -> list[dict[str, object]]:
++        return await service.effective_candidates(service.resolve(url), purpose)
++
+     @app.get(
+         "/v1/resolve",
+         response_model=ResolvedSite,
+diff --git a/src/doxagent/site_strategy/client.py b/src/doxagent/site_strategy/client.py
+index 1a21d095..b0dbca06 100644
+--- a/src/doxagent/site_strategy/client.py
++++ b/src/doxagent/site_strategy/client.py
+@@ -215,10 +215,15 @@ class SiteAccessError(RuntimeError):
+             if result.retry_not_before
+             else 0.0
+         )
+-        self.site_access_deferred = (
+-            result.disposition.value == "BUDGET_DEFERRED"
+-            or (result.disposition.value == "SERVICE_UNAVAILABLE"
+-                and result.reason_code == "storage_unavailable")
++        self.site_access_deferred = result.disposition.value == "BUDGET_DEFERRED" or (
++            result.disposition.value == "SERVICE_UNAVAILABLE"
++            and (
++                result.reason_code == "storage_unavailable"
++                or (
++                    result.reason_code == "egress_unavailable"
++                    and result.retry_not_before is not None
++                )
++            )
+         )
+ 
+ 
+diff --git a/src/doxagent/site_strategy/egress.py b/src/doxagent/site_strategy/egress.py
+index 93c1a2cf..ca185fd4 100644
+--- a/src/doxagent/site_strategy/egress.py
++++ b/src/doxagent/site_strategy/egress.py
+@@ -3,7 +3,8 @@
+ from __future__ import annotations
+ 
+ import hashlib
+-from datetime import UTC, datetime
++import time
++from datetime import UTC, datetime, timedelta
+ from ipaddress import ip_address
+ from typing import Any
+ 
+@@ -93,6 +94,9 @@ async def probe_egress(
+     if egress is None:
+         raise KeyError(egress_id)
+     status = "UNAVAILABLE"
++    started = time.monotonic()
++    attempted_at = datetime.now(UTC)
++    last_error = None
+     observed_ip: str | None = None
+     probe_endpoint: str | None = None
+     async with httpx.AsyncClient(proxy=egress.endpoint, timeout=timeout_seconds) as client:
+@@ -107,7 +111,8 @@ async def probe_egress(
+                     probe_endpoint = ip_url
+                     break
+                 observed_ip = None
+-            except (httpx.HTTPError, ValueError):
++            except (httpx.HTTPError, ValueError) as exc:
++                last_error = type(exc).__name__
+                 continue
+     observed_at = datetime.now(UTC)
+     probe_succeeded = status == "READY"
+@@ -116,11 +121,7 @@ async def probe_egress(
+         # One failed probe round is not proof that a previously verified proxy
+         # is down. Keep routing through it and let the real request/fallback path
+         # decide; only two consecutive full probe failures withdraw the egress.
+-        status = (
+-            "READY"
+-            if egress.status == "READY" and failure_count < 2
+-            else "UNAVAILABLE"
+-        )
++        status = "READY" if egress.status == "READY" and failure_count < 2 else "UNAVAILABLE"
+         observed_ip = egress.observed_ip
+         probe_endpoint = egress.probe_endpoint
+     updated = egress.model_copy(
+@@ -131,6 +132,13 @@ async def probe_egress(
+             "probe_endpoint": probe_endpoint,
+             "consecutive_probe_failures": failure_count,
+             "last_probe_error_at": None if probe_succeeded else observed_at,
++            "last_probe_attempt": attempted_at,
++            "next_probe_at": observed_at
++            + timedelta(
++                seconds=1800 if probe_succeeded else min(900, 60 * 2 ** min(failure_count, 4))
++            ),
++            "last_probe_error": None if probe_succeeded else last_error or "invalid_ip_response",
++            "last_probe_seconds": round(time.monotonic() - started, 3),
+             # A provider may rotate the observed exit IP behind the same fixed
+             # listener and node. This is telemetry, not a binding/configuration
+             # change: bumping generation strands an attached External Chrome.
+diff --git a/src/doxagent/site_strategy/external_runtime.py b/src/doxagent/site_strategy/external_runtime.py
+index 1884b2f8..4fd45578 100644
+--- a/src/doxagent/site_strategy/external_runtime.py
++++ b/src/doxagent/site_strategy/external_runtime.py
+@@ -98,6 +98,7 @@ class ExternalChromeRuntime:
+         self.driver_state = "STARTING"
+         self._driver_started = 0.0
+         self._high_rss_samples = 0
++        self._probe_failures = 0
+         self._acquiring = 0
+         self._retry_at = 0.0
+         self._recovery_failures = 0
+@@ -226,8 +227,17 @@ class ExternalChromeRuntime:
+                 async with asyncio.timeout(5):
+                     session = await entry.browser.new_browser_cdp_session()
+                     await session.send("Browser.getVersion")
+-            except Exception:
+-                self.driver_state = "FAILED"
++            except Exception as exc:
++                self._probe_failures += 1
++                logger.warning(
++                    "external control probe degraded failures=%s error=%s",
++                    self._probe_failures,
++                    type(exc).__name__,
++                )
++                if not entry.browser.is_connected() or self._probe_failures >= 2:
++                    self.driver_state = "FAILED"
++            else:
++                self._probe_failures = 0
+             finally:
+                 if session is not None:
+                     try:
+@@ -238,6 +248,8 @@ class ExternalChromeRuntime:
+             if self.driver_state == "FAILED":
+                 await self.start()
+                 return
++            if self._probe_failures:
++                return
+         diagnostic = self.diagnostics()
+         self._high_rss_samples = (
+             self._high_rss_samples + 1 if diagnostic["rss_bytes"] > 1_200 * 1024**2 else 0
+diff --git a/src/doxagent/site_strategy/health.py b/src/doxagent/site_strategy/health.py
+index f42f2ff1..26dac650 100644
+--- a/src/doxagent/site_strategy/health.py
++++ b/src/doxagent/site_strategy/health.py
+@@ -38,6 +38,7 @@ class CombinationHealthManager:
+         transport: AccessMode = AccessMode.BROWSER,
+         now: datetime | None = None,
+         purpose: SitePurpose | None = None,
++        read_only: bool = False,
+     ) -> tuple[SiteRuntimeState, list[AccessCombination], datetime | None]:
+         instant = now or utc_now()
+         async with self._locks[runtime_key]:
+@@ -93,7 +94,7 @@ class CombinationHealthManager:
+                     if runtime.state == "HALF_OPEN":
+                         continue
+                 ready.append(item)
+-            if changed:
++            if changed and not read_only:
+                 prior = state.generation
+                 state.generation += 1
+                 self.repository.save_runtime(state, expected_generation=prior)
+diff --git a/src/doxagent/site_strategy/runtime.py b/src/doxagent/site_strategy/runtime.py
+index 067628c6..7c2c35de 100644
+--- a/src/doxagent/site_strategy/runtime.py
++++ b/src/doxagent/site_strategy/runtime.py
+@@ -220,6 +220,8 @@ class _RawBrowserCDP:
+             await asyncio.gather(self._reader, return_exceptions=True)
+             self._reader = None
+         if self._tasks:
++            for task in tuple(self._tasks):
++                task.cancel()
+             await asyncio.gather(*tuple(self._tasks), return_exceptions=True)
+         for future in self._pending.values():
+             if not future.done():
+@@ -254,7 +256,17 @@ class _RawBrowserCDP:
+     def _track(self, coroutine: Any) -> None:
+         task = asyncio.create_task(coroutine)
+         self._tasks.add(task)
+-        task.add_done_callback(self._tasks.discard)
++        task.add_done_callback(self._task_done)
++
++    def _task_done(self, task: asyncio.Task[None]) -> None:
++        self._tasks.discard(task)
++        if not task.cancelled() and (error := task.exception()) is not None:
++            count = getattr(self, "_task_errors", 0) + 1
++            self._task_errors = count
++            if count <= 3 or count % 100 == 0:
++                logger.warning(
++                    "raw CDP task failure count=%s error=%s", count, type(error).__name__
++                )
+ 
+     async def _attached(self, event: dict[str, Any]) -> None:
+         session_id = str(event.get("sessionId") or "")
+@@ -265,7 +277,17 @@ class _RawBrowserCDP:
+         if not session_id:
+             return
+         if target.get("type") != "page" or policy is None:
+-            await self.send("Runtime.runIfWaitingForDebugger", session_id=session_id)
++            for attempt in range(2):
++                try:
++                    await self.send("Runtime.runIfWaitingForDebugger", session_id=session_id)
++                    break
++                except Exception:
++                    if attempt:
++                        logger.warning(
++                            "raw CDP unmanaged target resume failed target=%s session=%s",
++                            target_id,
++                            session_id,
++                        )
+             return
+         try:
+             await self.send(
+diff --git a/src/doxagent/site_strategy/schema.py b/src/doxagent/site_strategy/schema.py
+index ff2a9b03..542dd5c3 100644
+--- a/src/doxagent/site_strategy/schema.py
++++ b/src/doxagent/site_strategy/schema.py
+@@ -234,6 +234,10 @@ class ProxyEgress(SiteModel):
+     probe_endpoint: str | None = None
+     consecutive_probe_failures: int = Field(default=0, ge=0)
+     last_probe_error_at: datetime | None = None
++    last_probe_attempt: datetime | None = None
++    next_probe_at: datetime | None = None
++    last_probe_error: str | None = None
++    last_probe_seconds: float | None = None
+     generation: int = Field(default=1, ge=1)
+     status: Literal["READY", "UNVERIFIED", "CONFIG_MISSING", "UNAVAILABLE"] = "UNVERIFIED"
+ 
+@@ -572,6 +576,7 @@ class AccessResult(SiteModel):
+     runtime_generation: int | None = None
+     exit_ip_observation: str | None = None
+     attempts: list[AccessAttempt] = Field(default_factory=list)
++    combination_skips: list[JsonObject] = Field(default_factory=list)
+     queue_wait_ms: int = 0
+     network_ms: int = 0
+ 
+diff --git a/src/doxagent/site_strategy/service.py b/src/doxagent/site_strategy/service.py
+index ff9157ec..a3685256 100644
+--- a/src/doxagent/site_strategy/service.py
++++ b/src/doxagent/site_strategy/service.py
+@@ -469,15 +469,25 @@ class SiteStrategyService:
+ 
+     async def _run_due_probes(self) -> None:
+         now = utc_now()
+-        for egress in self.repository.list_egresses():
++        slots = asyncio.Semaphore(2)
++
++        async def check_egress(egress: ProxyEgress) -> None:
+             if not egress.enabled or (
+-                egress.observed_at is not None and now - egress.observed_at < timedelta(minutes=30)
++                (egress.next_probe_at is not None and now < egress.next_probe_at)
++                or (
++                    egress.next_probe_at is None
++                    and egress.observed_at is not None
++                    and now - egress.observed_at < timedelta(minutes=30)
++                )
+             ):
+-                continue
++                return
+             try:
+-                await self.probe_egress(egress.egress_id)
++                async with slots:
++                    await self.probe_egress(egress.egress_id)
+             except Exception:
+                 logger.exception("egress maintenance probe failed: %s", egress.egress_id)
++
++        await asyncio.gather(*(check_egress(e) for e in self.repository.list_egresses()))
+         for head, spec in self.repository.list_active_strategies():
+             if not head.enabled or spec.site_id == "generic" or not self._recovery_probe_url(spec):
+                 continue
+@@ -519,6 +529,21 @@ class SiteStrategyService:
+         if prior is None:
+             raise KeyError(egress_id)
+         updated = await probe_egress(self.repository, egress_id)
++        if updated.status != prior.status:
++            self.repository.append_event(
++                AccessEvent(
++                    operation_id=f"egress-state:{egress_id}:{utc_now().isoformat()}",
++                    site_id="_egress",
++                    category="EGRESS_STATE_CHANGED",
++                    payload={
++                        "egress_id": egress_id,
++                        "before": prior.status,
++                        "after": updated.status,
++                        "error": updated.last_probe_error,
++                        "seconds": updated.last_probe_seconds,
++                    },
++                )
++            )
+         if updated.generation != prior.generation:
+             await self.runtime.reset_egress(egress_id)
+             self.repository.append_event(
+@@ -889,6 +914,86 @@ class SiteStrategyService:
+                 started=started,
+             )
+ 
++    async def effective_candidates(
++        self,
++        resolved: ResolvedSite,
++        purpose: SitePurpose,
++        mode: AccessMode = AccessMode.BROWSER,
++        excluded: set[str] | None = None,
++    ) -> list[dict[str, object]]:
++        """Read-only explanation of the real purpose/health/resource selection."""
++        combinations = self._purpose_combinations(resolved, purpose)
++        state, ready, _ = await self.health.candidates(
++            resolved.runtime_key,
++            combinations,
++            excluded=excluded or set(),
++            transport=mode,
++            purpose=purpose,
++            read_only=True,
++        )
++        eligible_ids = {c.combination_id for c in ready}
++        purpose_ids = {c.combination_id for c in combinations}
++        rows = []
++        for original in resolved.access.combinations:
++            combo = self._materialize_combination(original)
++            runtime = state.combinations.get(original.combination_id)
++            profile = self.repository.get_profile(combo.profile_id or "") if combo else None
++            egress = self.repository.get_egress(combo.egress_id or "") if combo else None
++            reasons = []
++            if not original.enabled:
++                reasons.append("disabled")
++            if original.combination_id not in purpose_ids:
++                reasons.append("purpose_override")
++            if original.combination_id in (excluded or set()):
++                reasons.append("request_excluded")
++            if combo is None:
++                reasons.append("identity_disabled")
++            if profile is None:
++                reasons.append("profile_missing")
++            if (
++                egress is None
++                or not egress.enabled
++                or egress.status in {"CONFIG_MISSING", "UNAVAILABLE"}
++            ):
++                reasons.append("egress_unavailable")
++            auth_state = (
++                self._auth_state(resolved, combo, profile)
++                if combo and profile
++                else AuthState.UNKNOWN
++            )
++            if self._auth_required(resolved, purpose) and auth_state is not AuthState.VALID:
++                reasons.append("auth_required")
++            if runtime and original.combination_id not in eligible_ids:
++                if mode is not AccessMode.HTTP_PUBLIC and runtime.manual_attention_required:
++                    reasons.append("manual_attention")
++                elif runtime.purpose_rejected_until.get(purpose.value, utc_now()) > utc_now():
++                    reasons.append("purpose_cooldown")
++                elif original.enabled and original.combination_id in purpose_ids:
++                    reasons.append("cooldown")
++            identity = self._identity_for(combo, profile) if combo and profile else None
++            external = getattr(getattr(self.runtime, "browser_runtimes", None), "external", None)
++            entries = getattr(external, "_entries", {})
++            attached = bool(identity and identity.identity_id in entries)
++            rows.append(
++                {
++                    "combination_id": original.combination_id,
++                    "enabled": original.enabled,
++                    "identity_id": original.identity_id,
++                    "profile_id": combo.profile_id if combo else None,
++                    "egress_id": combo.egress_id if combo else None,
++                    "egress_status": egress.status if egress else None,
++                    "auth_state": auth_state.value,
++                    "runtime_kind": identity.runtime_kind.value if identity else None,
++                    "runtime_attached": attached,
++                    "cold_start_capacity": "not_required"
++                    if attached
++                    else "requires_supervisor_check",
++                    "skip_reasons": reasons,
++                    "selectable": not reasons,
++                }
++            )
++        return rows
++
+     async def _execute_uncached(self, request: AccessRequest) -> AccessResult:
+         started = time.monotonic()
+         resolved = self.resolve(request.url, revision=request.strategy_revision)
+@@ -901,6 +1006,10 @@ class SiteStrategyService:
+                 started=started,
+             )
+         combinations = self._purpose_combinations(resolved, request.purpose)
++        view = await self.effective_candidates(
++            resolved, request.purpose, request.mode, set(request.excluded_combinations)
++        )
++        skips = [row for row in view if row["skip_reasons"]]
+         _, candidates, next_retry = await self.health.candidates(
+             resolved.runtime_key,
+             combinations,
+@@ -909,12 +1018,16 @@ class SiteStrategyService:
+             purpose=request.purpose,
+         )
+         if not candidates:
++            manual = any("manual_attention" in row["skip_reasons"] for row in skips)
+             return self._result(
+                 request,
+                 resolved,
+                 AccessDisposition.ACCESS_EXHAUSTED,
+-                category=FailureCategory.ACCESS_RATE_LIMIT,
+-                reason="access_combinations_unavailable",
++                category=FailureCategory.ACCESS_CHALLENGE
++                if manual
++                else FailureCategory.ACCESS_RATE_LIMIT,
++                reason="manual_attention_required" if manual else "access_combinations_unavailable",
++                combination_skips=skips,
+                 retry_not_before=next_retry,
+                 started=started,
+             )
+@@ -1238,6 +1351,9 @@ class SiteStrategyService:
+             disposition = AccessDisposition.SERVICE_UNAVAILABLE
+             category = FailureCategory.EGRESS_UNAVAILABLE
+             reason = "access_resources_unavailable"
++        if attempts and all(a.reason_code == "egress_or_profile_unavailable" for a in attempts):
++            reason = "egress_unavailable"
++            next_retry = max(next_retry or utc_now(), utc_now() + timedelta(seconds=120))
+         return self._result(
+             request,
+             resolved,
+@@ -1246,6 +1362,7 @@ class SiteStrategyService:
+             reason=reason,
+             attempts=attempts,
+             retry_not_before=next_retry,
++            combination_skips=skips,
+             generation=refreshed.generation,
+             started=started,
+         )
+@@ -1279,7 +1396,9 @@ class SiteStrategyService:
+                     retry_after_seconds=float(getattr(exc, "retry_after_seconds", 0) or 0),
+                 )
+                 category, reason = (
+-                    classify_response(response) if status else classify_exception(exc)
++                    classify_response(response)
++                    if status and not getattr(exc, "diagnostics", None)
++                    else classify_exception(exc)
+                 )
+                 if category is FailureCategory.RUNTIME_UNAVAILABLE:
+                     identity_id = combination.identity_id or profile.profile_id
+@@ -1919,6 +2038,7 @@ class SiteStrategyService:
+         reason: str | None = None,
+         attempts: list[AccessAttempt] | None = None,
+         retry_not_before: datetime | None = None,
++        combination_skips: list[dict[str, object]] | None = None,
+         generation: int = 0,
+         started: float,
+     ) -> AccessResult:
+@@ -1929,6 +2049,7 @@ class SiteStrategyService:
+             failure_category=category,
+             reason_code=reason,
+             retry_not_before=retry_not_before,
++            combination_skips=combination_skips or [],
+             site_id=resolved.site_id,
+             runtime_key=resolved.runtime_key,
+             strategy_revision=resolved.strategy_revision,
+@@ -2035,7 +2156,11 @@ def classify_exception(exc: Exception) -> tuple[FailureCategory, str]:
+     if status:
+         return classify_response(RuntimeResponse(status, "https://invalid.example/", {}, str(exc)))[
+             0
+-        ] or FailureCategory.UNKNOWN, f"http_{status}"
++        ] or FailureCategory.UNKNOWN, (
++            f"http_{status}:phase={exc.diagnostics.get('phase')}:url={exc.diagnostics.get('url')}"
++            if getattr(exc, "diagnostics", None)
++            else f"http_{status}"
++        )
+     name = type(exc).__name__.casefold()
+     message = str(exc).casefold()
+     if any(

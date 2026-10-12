@@ -1,0 +1,9 @@
+{
+  "alias": "O5",
+  "title": "limit_semantics",
+  "content": "per_form",
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "sec:issuer:0000723125"
+  }
+}

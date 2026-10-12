@@ -1,0 +1,2588 @@
+{
+  "name": "移动与客户端内存存储市场",
+  "scope": "美光手机及其他移动设备、PC与工作站、客户端OEM和组件渠道的内存存储业务。共同背景为端侧计算的低功耗内存、模组和闪存产品、设备更新与配置、OEM设计采用、消费电子库存和采购渠道；手机与PC保留不同的终端和采购基础。",
+  "boundary": "移动和客户端终端周期、产品采用与商业渠道由本域深化；相同技术在服务器的商业采用归数据中心计算平台与内存，汽车和工业嵌入式平台归汽车与工业嵌入式存储市场。行业价格供给归DRAM行业市场和NAND行业市场，自身生产工序归对应制造域，地域采购资格归地域市场准入。",
+  "ref": [
+    "D1-O103",
+    "D1-O31",
+    "D1-O74",
+    "D1-O3",
+    "D1-O57",
+    "D1-O79",
+    "D1-O44",
+    "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+    "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx",
+    "https://www.idc.com/promo/smartphone-market-share/",
+    "https://www.idc.com/resource-center/blog/smartphone-shipments-set-for-record-16-7-drop-in-2026-as-the-memory-crisis-hits-full-force/",
+    "https://www.idc.com/resource-center/blog/worldwide-smartphone-market-to-decline-13-9-in-2026-as-memory-crisis-and-us-iran-war-constrain-growth/",
+    "https://www.idc.com/resource-center/blog/the-tablet-market-hits-a-wall/",
+    "https://www.cxmt.com/en/news/info_21.html",
+    "https://www.apple.com/newsroom/2026/07/apple-upgrade-launches-in-the-united-states/",
+    "https://www.mofcom.gov.cn/cms_files/filemanager/policySummary/viewcore_ed4904de32ff4d029dad4524473ce619.html",
+    "https://machinelearning.apple.com/research/introducing-third-generation-of-apple-foundation-models",
+    "https://www.research.google/blog/accelerating-gemini-nano-models-on-pixel-with-frozen-multi-token-prediction/",
+    "https://www.apple.com/newsroom/2026/09/apple-unveils-iphone-duo/",
+    "https://investors.micron.com/news/press-release/2025/Micron-Announces-Exit-from-Crucial-Consumer-Business-12-03-2025/default.aspx",
+    "https://frame.work/blog/updates-on-memory-pricing-and-navigating-the-volatile-memory-market",
+    "https://www.idc.com/resource-center/press-releases/2q26-pc-top5/",
+    "https://www.idc.com/resource-center/blog/pc-market-enters-volatile-territory-as-memory-shortage-persists-through-2027/",
+    "https://www.apple.com/newsroom/2026/03/say-hello-to-macbook-neo/",
+    "https://blogs.windows.com/windowsexperience/2026/02/26/announcing-new-cloud-pc-devices-designed-for-windows-365/",
+    "https://single-market-economy.ec.europa.eu/news/new-eu-rules-durable-energy-efficient-and-repairable-smartphones-and-tablets-start-applying-2025-06-20_en",
+    "https://eur-lex.europa.eu/eli/reg/2023/1670/oj/eng",
+    "https://counterpointresearch.com/en/insights/global-refurbished-smartphone-market-h1-2025",
+    "https://support.apple.com/en-gb/108782",
+    "D1-O88",
+    "https://www.microsoft.com/en-us/research/publication/early-impacts-of-m365-copilot/",
+    "https://www.microsoft.com/en-us/windows/business/knowledge-center/ai-pcs-and-roi",
+    "https://nvidianews.nvidia.com/news/nvidia-dgx-spark-arrives-for-worlds-ai-developers",
+    "https://learn.microsoft.com/en-us/windows/client-management/manage-recall",
+    "https://blogs.windows.com/windowsexperience/2025/04/02/maximize-productivity-and-roi-with-windows-365-new-innovations-now-generally-available/",
+    "https://www.microsoft.com/en-us/windows-365/link",
+    "https://news.lenovo.com/pressroom/press-releases/lenovo-unveils-its-new-ai-ready-thinkpad-p1-gen-7-mobile-workstation/",
+    "https://www.micron.com/about/blog/storage/ssd/how-a-few-trapped-electrons-changed-the-world",
+    "https://tw.micron.com/content/dam/micron/global/public/products/data-sheet/ssd/2650-nvme-ssd-tech-prod-spec.pdf",
+    "https://nvmexpress.org/wp-content/uploads/NVM-Express-Base-Specification-2.0d-2024.01.11-Ratified.pdf",
+    "D1-O4",
+    "https://blog.google/products-and-platforms/platforms/android/android-xr-io-2026/",
+    "https://android-developers.googleblog.com/2026/05/android-xr-sdk-developer-preview-4-updates.html"
+  ],
+  "units": [
+    {
+      "name": "美光移动内存与存储业务",
+      "scope": "面向智能手机及其他移动设备的LPDDR、托管NAND及相关内存存储产品，涵盖终端销量、单机配置、产品代际、OEM平台采用、客户采购、渠道库存、供给分配、出货、定价和业务组合。",
+      "horizon": "季度终端与库存周期及移动设备产品更新周期。",
+      "ref": [
+        "D1-O103",
+        "D1-O31",
+        "D1-O74",
+        "D1-O57",
+        "D1-O3",
+        "D1-O44",
+        "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+        "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx",
+        "https://www.idc.com/promo/smartphone-market-share/",
+        "https://www.idc.com/resource-center/blog/smartphone-shipments-set-for-record-16-7-drop-in-2026-as-the-memory-crisis-hits-full-force/",
+        "https://www.idc.com/resource-center/blog/worldwide-smartphone-market-to-decline-13-9-in-2026-as-memory-crisis-and-us-iran-war-constrain-growth/",
+        "https://www.idc.com/resource-center/blog/the-tablet-market-hits-a-wall/",
+        "https://www.cxmt.com/en/news/info_21.html",
+        "https://www.apple.com/newsroom/2026/07/apple-upgrade-launches-in-the-united-states/",
+        "https://www.mofcom.gov.cn/cms_files/filemanager/policySummary/viewcore_ed4904de32ff4d029dad4524473ce619.html",
+        "https://machinelearning.apple.com/research/introducing-third-generation-of-apple-foundation-models",
+        "https://www.research.google/blog/accelerating-gemini-nano-models-on-pixel-with-frozen-multi-token-prediction/",
+        "https://www.apple.com/newsroom/2026/09/apple-unveils-iphone-duo/",
+        "https://single-market-economy.ec.europa.eu/news/new-eu-rules-durable-energy-efficient-and-repairable-smartphones-and-tablets-start-applying-2025-06-20_en",
+        "https://eur-lex.europa.eu/eli/reg/2023/1670/oj/eng",
+        "https://counterpointresearch.com/en/insights/global-refurbished-smartphone-market-h1-2025",
+        "https://support.apple.com/en-gb/108782",
+        "D1-O88",
+        "https://blog.google/products-and-platforms/platforms/android/android-xr-io-2026/",
+        "https://android-developers.googleblog.com/2026/05/android-xr-sdk-developer-preview-4-updates.html"
+      ],
+      "state": {
+        "parameters": [
+          {
+            "name": "移动业务独立收入",
+            "definition": "美光向智能手机及其他移动设备销售本Unit产品确认的收入，美元；不等于手机与PC合计MCBU收入。公开分部没有独立拆分，保留参数而不填估算。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O3",
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "移动DRAM比特出货量",
+            "definition": "本Unit向智能手机及其他移动设备客户实际交付的DRAM容量，Gb；不以全公司DRAM增长或终端台数代替。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "移动NAND比特出货量",
+            "definition": "本Unit实际交付的NAND容量，Gb；区分闪存容量、芯片件数和整机销量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O3",
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "移动DRAM实现ASP",
+            "definition": "本Unit DRAM确认销售额除以对应销售Gb，美元/Gb；含产品组合，不能用行业现货报价或公司整体ASP替代。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "移动NAND实现ASP",
+            "definition": "本Unit NAND确认销售额除以对应销售Gb，美元/Gb；不混入整机售价或全公司NAND ASP。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "移动业务独立毛利率",
+            "definition": "本Unit销售毛利占收入的百分比；MCBU合计利润率只作共同背景，未取得本Unit可分离毛利率。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O57",
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "移动OEM库存覆盖周数",
+            "definition": "本Unit客户持有、用于智能手机及其他移动设备生产的内存存储库存相对其消耗量的覆盖周数；不是美光公司库存天数或整机出货量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O3",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "移动单机DRAM装载量",
+            "definition": "本Unit对应智能手机及其他移动设备新机的销量加权DRAM容量，GB/台；晶粒16Gb、选定高端SKU及AI模型参数量均不能代替全市场平均。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O3",
+              "D1-O103"
+            ]
+          },
+          {
+            "name": "移动单机NAND装载量",
+            "definition": "本Unit对应智能手机及其他移动设备新机的销量加权NAND容量，GB/台；区分容量提升与接口提速，未取得同口径市场平均。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O3"
+            ]
+          },
+          {
+            "name": "移动OEM采购中的美光DRAM份额",
+            "definition": "对应智能手机及其他移动设备OEM所采购DRAM比特中来自美光的比例，%；获选、认证和客户市场份额不等于实际采购份额。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O3",
+              "D1-O103"
+            ]
+          },
+          {
+            "name": "共同MCBU收入",
+            "definition": "手机、其他移动设备和客户端合计报告分部收入，百万美元；两个Unit引用同一共同代理，不可相加或视为任一Unit独立收入。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O57",
+              "D1-O44",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+            ]
+          },
+          {
+            "name": "共同MCBU毛利率",
+            "definition": "报告分部毛利率，%；属于合计分部业绩，不是移动或客户端独立毛利率，也不直接等于合并GAAP毛利率。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O44",
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+            ]
+          },
+          {
+            "name": "共同MCBU营业利润率",
+            "definition": "报告分部营业利润占其收入的比例，%；不与全公司费用及未分配项目混为一谈。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O57",
+              "D1-O44",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+            ]
+          },
+          {
+            "name": "共同MCBU比特出货方向",
+            "definition": "移动与客户端合计分部的已售比特数量变化，未拆分终端与DRAM/NAND；保留公司明确披露方向，不推断本Unit数量跌幅。",
+            "value_type": "DIRECTION",
+            "ref": [
+              "D1-O57",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "共同MCBU实现售价方向",
+            "definition": "合计分部销售产品的实现平均售价变动；公开说明未给本分部精确幅度，全公司DRAM约180%和NAND约200%的涨幅不能移入。",
+            "value_type": "DIRECTION",
+            "ref": [
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "共同MCBU供给配置位置",
+            "definition": "美光在手机、PC与其他业务间分配可售供给的实际位置；影响本Unit可交付量而非单纯终端需求。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O57",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "移动LPDDR5X商业采用位置",
+            "definition": "美光移动LPDDR5X进入客户生产采购和交付的状态；位元密度是晶粒规格，不等于整机DRAM容量。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O3",
+              "D1-O103"
+            ]
+          },
+          {
+            "name": "24Gb移动LPDDR5X采用阶段",
+            "definition": "高密度24Gb晶粒的美光移动LPDDR5X从送样到客户量产采用的位置。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O3",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "移动LPDDR6采用阶段",
+            "definition": "美光LPDDR6在手机客户的资格验证及商业交付阶段；不以汽车或physical AI送样替代手机采用。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O3",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "移动业务客户与产品组合位置",
+            "definition": "美光移动产品所覆盖的客户/价位及DRAM、托管NAND的商业组合，用于解释终端平均变化与自身需求的差异。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O3"
+            ]
+          },
+          {
+            "name": "全球新智能手机出货量",
+            "definition": "IDC品牌新机出货统计，百万台，排除翻新机；是本Unit终端数量背景，不是美光出货或终端活跃用户数。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.idc.com/promo/smartphone-market-share/"
+            ]
+          },
+          {
+            "name": "Samsung全球新手机出货份额",
+            "definition": "IDC统计Samsung品牌占全球新智能手机出货的比例，%；连接高端客户组合与采购集中度，不确认其是美光具名客户。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.idc.com/promo/smartphone-market-share/"
+            ]
+          },
+          {
+            "name": "Apple全球新手机出货份额",
+            "definition": "IDC统计Apple品牌占全球新智能手机出货的比例，%；连接高端客户组合与采购集中度，不确认其是美光具名客户。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.idc.com/promo/smartphone-market-share/"
+            ]
+          },
+          {
+            "name": "全球智能手机全年出货增长率",
+            "definition": "IDC对指定自然年全球新智能手机出货同比的预测，%；外部终端需求情景，不是美光增长指引。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.idc.com/resource-center/blog/smartphone-shipments-set-for-record-16-7-drop-in-2026-as-the-memory-crisis-hits-full-force/",
+              "https://www.idc.com/resource-center/blog/worldwide-smartphone-market-to-decline-13-9-in-2026-as-memory-crisis-and-us-iran-war-constrain-growth/"
+            ]
+          },
+          {
+            "name": "全球智能手机下半年出货增长率",
+            "definition": "IDC对全球新智能手机下半年出货同比的预测，%；定位临近季度的需求斜率。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.idc.com/resource-center/blog/smartphone-shipments-set-for-record-16-7-drop-in-2026-as-the-memory-crisis-hits-full-force/"
+            ]
+          },
+          {
+            "name": "全球智能手机平均整机售价",
+            "definition": "IDC全球智能手机整机ASP预测，美元/台；代表消费者价格与组合环境，不是内存ASP。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.idc.com/resource-center/blog/smartphone-shipments-set-for-record-16-7-drop-in-2026-as-the-memory-crisis-hits-full-force/",
+              "https://www.idc.com/resource-center/blog/worldwide-smartphone-market-to-decline-13-9-in-2026-as-memory-crisis-and-us-iran-war-constrain-growth/"
+            ]
+          },
+          {
+            "name": "全球折叠手机出货量",
+            "definition": "IDC折叠手机市场出货预测，百万台；是高端多任务设备规模，不是美光订单或确定的配置增量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.idc.com/resource-center/blog/smartphone-shipments-set-for-record-16-7-drop-in-2026-as-the-memory-crisis-hits-full-force/"
+            ]
+          },
+          {
+            "name": "全球平板设备出货量",
+            "definition": "IDC平板出货统计，百万台；补充其他移动设备的终端数量，不混入传统PC统计，不能假定全部由美光供货。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.idc.com/resource-center/blog/the-tablet-market-hits-a-wall/"
+            ]
+          },
+          {
+            "name": "全球平板出货同比增长率",
+            "definition": "IDC全球平板出货同季度同比变化，%；与绝对量分别保留。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.idc.com/resource-center/blog/the-tablet-market-hits-a-wall/"
+            ]
+          },
+          {
+            "name": "竞争者移动LPDDR6商业位置",
+            "definition": "竞争供应者LPDDR6在具名手机平台的实际/自报采用位置，影响OEM多源选择；供应商自述与独立市场份额分开。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.cxmt.com/en/news/info_21.html"
+            ]
+          }
+        ],
+        "values": [
+          {
+            "name": "FY2026合计收入36601百万美元",
+            "parameter": "共同MCBU收入",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 36601.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 11859.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026截至2026-09-03；previous_value为FY2025截至2025-08-28的11859；两财年分别53/52周，未标准化",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O57",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "FY2026 Q4合计收入13114百万美元",
+            "parameter": "共同MCBU收入",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 13114.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 11521.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026 Q4截至2026-09-03；previous_value为FY2026 Q3截至2026-05-28的11521",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O44",
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+            ]
+          },
+          {
+            "name": "Q4分部毛利率90%",
+            "parameter": "共同MCBU毛利率",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 90.0,
+              "unit": "%"
+            },
+            "previous_value": {
+              "number": 87.0,
+              "unit": "%"
+            },
+            "time_scope": "FY2026 Q4；previous_value为FY2026 Q3的87%；同季上年FY2025 Q4为36%",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O44",
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+            ]
+          },
+          {
+            "name": "FY2026分部营业利润率80%",
+            "parameter": "共同MCBU营业利润率",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 80.0,
+              "unit": "%"
+            },
+            "previous_value": {
+              "number": 17.0,
+              "unit": "%"
+            },
+            "time_scope": "FY2026；previous_value为FY2025的17%；使用报告四舍五入百分比",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O57",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "Q4分部营业利润率88%",
+            "parameter": "共同MCBU营业利润率",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 88.0,
+              "unit": "%"
+            },
+            "previous_value": {
+              "number": 86.0,
+              "unit": "%"
+            },
+            "time_scope": "FY2026 Q4；previous_value为FY2026 Q3的86%；FY2025 Q4为29%",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O44",
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+            ]
+          },
+          {
+            "name": "FY2026合计比特减少",
+            "parameter": "共同MCBU比特出货方向",
+            "source_role": "ACTUAL",
+            "value": {
+              "direction": "减少"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026较FY2025",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O57",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "FY2026合计实现售价上升",
+            "parameter": "共同MCBU实现售价方向",
+            "source_role": "ACTUAL",
+            "value": {
+              "direction": "上升"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026较FY2025；为合计收入增长209%的公司主要解释",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "供给转配其他分部",
+            "parameter": "共同MCBU供给配置位置",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "FY2026部分MCBU产品供给已转向其他业务单元；合计数量下降与收入上升并存。未公开移动与PC各自配额。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026截至2026-09-03",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O57",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "1γ LPDDR5X已有量产交付",
+            "parameter": "移动LPDDR5X商业采用位置",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "FY2026已向领先手机OEM批量交付1γ 16Gb LPDDR5X；9月30日披露6-channel 1γ LPDDR5X正向旗舰移动设备出货。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026及9月30日披露的交付状态；16Gb细节来自10月9日年报",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O3",
+              "D1-O103"
+            ]
+          },
+          {
+            "name": "24Gb产品送样",
+            "parameter": "24Gb移动LPDDR5X采用阶段",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "1γ 24Gb LPDDR5X已送样；与16Gb产品量产交付分开。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026截至2026-09-03",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O3",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "16Gb LPDDR6认证送样",
+            "parameter": "移动LPDDR6采用阶段",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "1γ 16Gb LPDDR6已提供手机OEM资格认证样品；本期不是手机量产销售的披露。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026截至2026-09-03",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O3",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "旗舰与高端手机为重点",
+            "parameter": "移动业务客户与产品组合位置",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "业务向手机及其他移动OEM提供低功耗DRAM与托管NAND，手机重点为旗舰和高端；没有公开逐OEM采购量或独立移动NAND收入。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026业务组合",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O3"
+            ]
+          },
+          {
+            "name": "IDC Q2最终历史出货276.3百万台",
+            "parameter": "全球新智能手机出货量",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 276.3,
+              "unit": "百万台"
+            },
+            "previous_value": {
+              "number": 298.3,
+              "unit": "百万台"
+            },
+            "time_scope": "2026自然年Q2；previous_value为2025 Q2的298.3；同比-7.4%。最终历史结果，不沿用7月初步277.5",
+            "as_of": "2026-08-28",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.idc.com/promo/smartphone-market-share/"
+            ]
+          },
+          {
+            "name": "Samsung Q2份额22.7%",
+            "parameter": "Samsung全球新手机出货份额",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 22.7,
+              "unit": "%"
+            },
+            "previous_value": {
+              "number": 19.4,
+              "unit": "%"
+            },
+            "time_scope": "2026 Q2；previous_value为2025 Q2同口径份额",
+            "as_of": "2026-08-28",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.idc.com/promo/smartphone-market-share/"
+            ]
+          },
+          {
+            "name": "Apple Q2份额20.2%",
+            "parameter": "Apple全球新手机出货份额",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 20.2,
+              "unit": "%"
+            },
+            "previous_value": {
+              "number": 16.3,
+              "unit": "%"
+            },
+            "time_scope": "2026 Q2；previous_value为2025 Q2同口径份额",
+            "as_of": "2026-08-28",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.idc.com/promo/smartphone-market-share/"
+            ]
+          },
+          {
+            "name": "IDC将2026预测下调至-16.7%",
+            "parameter": "全球智能手机全年出货增长率",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": -16.7,
+              "unit": "%同比"
+            },
+            "previous_value": {
+              "number": -13.9,
+              "unit": "%同比"
+            },
+            "time_scope": "2026自然年；previous_value为2026-05-26对同一2026年的-13.9%预测",
+            "as_of": "2026-08-26",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.idc.com/resource-center/blog/smartphone-shipments-set-for-record-16-7-drop-in-2026-as-the-memory-crisis-hits-full-force/",
+              "https://www.idc.com/resource-center/blog/worldwide-smartphone-market-to-decline-13-9-in-2026-as-memory-crisis-and-us-iran-war-constrain-growth/"
+            ]
+          },
+          {
+            "name": "IDC预测H2下降27.2%",
+            "parameter": "全球智能手机下半年出货增长率",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": -27.2,
+              "unit": "%同比"
+            },
+            "previous_value": null,
+            "time_scope": "2026自然年下半年对2025下半年",
+            "as_of": "2026-08-26",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.idc.com/resource-center/blog/smartphone-shipments-set-for-record-16-7-drop-in-2026-as-the-memory-crisis-hits-full-force/"
+            ]
+          },
+          {
+            "name": "IDC全年整机ASP预测581美元",
+            "parameter": "全球智能手机平均整机售价",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 581.0,
+              "unit": "美元/台"
+            },
+            "previous_value": {
+              "number": 550.0,
+              "unit": "美元/台"
+            },
+            "time_scope": "2026自然年；previous_value为2026-05-26对同一年的550美元；最新预计同比+27.6%",
+            "as_of": "2026-08-26",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.idc.com/resource-center/blog/smartphone-shipments-set-for-record-16-7-drop-in-2026-as-the-memory-crisis-hits-full-force/",
+              "https://www.idc.com/resource-center/blog/worldwide-smartphone-market-to-decline-13-9-in-2026-as-memory-crisis-and-us-iran-war-constrain-growth/"
+            ]
+          },
+          {
+            "name": "IDC 2026折叠手机预测22.9百万台",
+            "parameter": "全球折叠手机出货量",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 22.9,
+              "unit": "百万台"
+            },
+            "previous_value": null,
+            "time_scope": "2026自然年，IDC预计同比+12.6%",
+            "as_of": "2026-08-26",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.idc.com/resource-center/blog/smartphone-shipments-set-for-record-16-7-drop-in-2026-as-the-memory-crisis-hits-full-force/"
+            ]
+          },
+          {
+            "name": "IDC Q2平板出货33.6百万台",
+            "parameter": "全球平板设备出货量",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 33.6,
+              "unit": "百万台"
+            },
+            "previous_value": null,
+            "time_scope": "2026自然年Q2；IDC报告环比-5.2%、同比-12.3%；未由百分比倒算伪精确上期绝对量",
+            "as_of": "2026-08-13",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.idc.com/resource-center/blog/the-tablet-market-hits-a-wall/"
+            ]
+          },
+          {
+            "name": "Q2平板同比下降12.3%",
+            "parameter": "全球平板出货同比增长率",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": -12.3,
+              "unit": "%同比"
+            },
+            "previous_value": null,
+            "time_scope": "2026 Q2对2025 Q2",
+            "as_of": "2026-08-13",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.idc.com/resource-center/blog/the-tablet-market-hits-a-wall/"
+            ]
+          },
+          {
+            "name": "CXMT自述小米旗舰商业采用",
+            "parameter": "竞争者移动LPDDR6商业位置",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "CXMT于9月7日称LPDDR6已量产并用于Xiaomi 18 Fold，16GB封装由16Gb晶粒组成；属竞争者自报具名平台采用，不是已核验全行业份额。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-07所报当前商业位置",
+            "as_of": "2026-09-07",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.cxmt.com/en/news/info_21.html"
+            ]
+          }
+        ]
+      },
+      "expectation_baseline": [
+        {
+          "name": "数量偏弱、利润仍由实现价主导",
+          "baseline": "本研究的近端默认路径是手机终端数量承压、美光移动可交付量仍受资源分配约束，收入与利润不跟随台数同比例变化。MCBU已出现减量增收和高分部利润率，IDC最终Q2新机出货亦下降；因此采用价格与组合支持经营平台、而非手机销量全面复苏的解释。合计分部不提供移动独立增速，也没有独立卖方共识或已定价比例。",
+          "ordinary_progress": "高端新品正常采购、现有供给优先级延续，终端弱量与较高实现价并存；不外推FY2026的209%合计增长或全公司ASP涨幅。",
+          "open_frontier": "移动相对PC实际配额、非合约实现价回落速度及OEM消化涨价的能力，决定这一利润平台能否在终端继续减量时保留。",
+          "time_scope": "未来1—3个季度，结合2026下半年终端周期",
+          "ref": [
+            "D1-O57",
+            "D1-O31",
+            "D1-O44",
+            "https://www.idc.com/promo/smartphone-market-share/",
+            "https://www.idc.com/resource-center/blog/smartphone-shipments-set-for-record-16-7-drop-in-2026-as-the-memory-crisis-hits-full-force/"
+          ]
+        },
+        {
+          "name": "高端集中提供韧性但不覆盖大众机收缩",
+          "baseline": "本研究倾向于移动机会进一步集中在旗舰与高端，而非平均每个OEM均等扩张。美光自身重点高端，IDC观察到Samsung/Apple份额上升；整机涨价和融资可获得性使高端与低价机承受力不同。Apple美国升级融资和中国数字产品补贴是购买门槛缓冲，不是新增销量的测量，也不确认这些品牌的美光采购份额。",
+          "ordinary_progress": "OEM调整低价型号和配置，高端系列继续更新；付款分期、换新补贴帮助部分消费者维持升级。",
+          "open_frontier": "高端占比提升能否抵消全市场台数减少，以及预算约束会被更低配置、旧款复用还是换机延期吸收，是移动DRAM/NAND数量的不同路径。",
+          "time_scope": "2026下半年至下一轮手机更新周期",
+          "ref": [
+            "D1-O3",
+            "https://www.idc.com/promo/smartphone-market-share/",
+            "https://www.idc.com/resource-center/blog/smartphone-shipments-set-for-record-16-7-drop-in-2026-as-the-memory-crisis-hits-full-force/",
+            "https://www.apple.com/newsroom/2026/07/apple-upgrade-launches-in-the-united-states/",
+            "https://www.mofcom.gov.cn/cms_files/filemanager/policySummary/viewcore_ed4904de32ff4d029dad4524473ce619.html"
+          ]
+        },
+        {
+          "name": "LPDDR5X商业延续，LPDDR6进入竞争性验证",
+          "baseline": "本研究以已量产LPDDR5X继续承接旗舰需求为默认路径，高密度24Gb与LPDDR6逐客户验证推进，而不是LPDDR6立即替代整个手机内存市场。美光16Gb LPDDR5X与六通道产品已交付，下一代仍认证送样；CXMT自报具名旗舰采用说明竞争不再只有纸面路线图，不能推断美光技术领先必然保留份额。",
+          "ordinary_progress": "现有LPDDR5X跨新平台复用，高密度和下一代产品完成更多资格流程；阶段推进本身不等于采购放量。",
+          "open_frontier": "首批美光LPDDR6手机平台的量产时点、采购份额及竞品可靠性/能效/报价，将决定新品是增量替换机会还是OEM重新分配供应者的窗口。",
+          "time_scope": "未来手机产品更新周期",
+          "ref": [
+            "D1-O3",
+            "D1-O74",
+            "D1-O103",
+            "https://www.cxmt.com/en/news/info_21.html"
+          ]
+        },
+        {
+          "name": "端侧AI提高需求选择性而非按模型参数量放大DRAM",
+          "baseline": "本研究采用选择性提高高端容量、带宽和低功耗要求的路径，不采用所有手机DRAM随AI模型总参数等比例上升。Apple AFM3公开了闪存存完整权重、按请求选择专家装入DRAM，并把最复杂代理任务放在云端；Google在Pixel部署共享KV等效率优化。端侧体验扩大与单位任务内存效率提高可以并存，实际整机配置仍由OEM成本、功耗与应用并发决定。",
+          "ordinary_progress": "本地隐私、离线和低延迟功能增多，模型压缩、稀疏装载及端云分工同时推进；高端LPDDR升级继续，而非所有价位同步加量。",
+          "open_frontier": "多模态与常驻代理的并发/缓存是否超出效率节省、以及OEM是否为此实际加装DRAM，是从技术潜力走向比特需求的关键开放幅度。",
+          "time_scope": "当前到下一轮高端手机平台周期",
+          "ref": [
+            "https://machinelearning.apple.com/research/introducing-third-generation-of-apple-foundation-models",
+            "https://www.research.google/blog/accelerating-gemini-nano-models-on-pixel-with-frozen-multi-token-prediction/",
+            "D1-O103"
+          ]
+        },
+        {
+          "name": "移动NAND保留独立内容与成本路径",
+          "baseline": "本研究预计移动NAND随更高端产品组合、本地模型和用户数据保留扩展价值，但不能用LPDDR采用直接推出闪存比特增长。Apple的模型分层令NAND承担权重驻留，已公告iPhone Duo提供256GB至2TB选项；后者截止时尚未预订/上市，且高容量上限不是平均购买配置。托管NAND的性能、容量与终端预算共同决定可兑现采购。",
+          "ordinary_progress": "已有容量档位与接口在新机中延续，旗舰提供更多高容量选择并优化加载；AI权重存储进入现有可用空间也属于默认可行路径。",
+          "open_frontier": "用户实际容量档位选择、权重/本地数据对可用空间的占用、闪存性能溢价相对成本，决定增长来自位元、接口价值还是只发生组合替换。",
+          "time_scope": "下一轮旗舰移动设备周期",
+          "ref": [
+            "D1-O3",
+            "https://machinelearning.apple.com/research/introducing-third-generation-of-apple-foundation-models",
+            "https://www.apple.com/newsroom/2026/09/apple-unveils-iphone-duo/"
+          ]
+        },
+        {
+          "name": "其他移动设备不能充当手机之外的自动数量补偿",
+          "baseline": "本研究以平板同样受采购成本和更新必要性约束为默认路径。IDC Q2平板33.6百万台、同比-12.3%的实际统计，使其他移动设备不足以支持整体数量强劲的解释；本Unit覆盖这些设备，但尚无美光逐品类销售拆分。",
+          "ordinary_progress": "新平板继续迭代、专业应用提高个别型号配置；更新节奏和成本压力仍限制总台数。",
+          "open_frontier": "平板作为工作/AI终端的真实使用强度及采购恢复幅度，能否形成区别于手机的可持续配置或台数增量。伴随交互设备把任务交给手机宿主、独立移动模块或云端的比例，又决定新形态是增加本Unit内容、主要复用现机，还是重分跨设备预算。",
+          "time_scope": "未来季度与移动设备更新周期",
+          "ref": [
+            "https://www.idc.com/resource-center/blog/the-tablet-market-hits-a-wall/",
+            "D1-O3",
+            "https://blog.google/products-and-platforms/platforms/android/android-xr-io-2026/",
+            "https://android-developers.googleblog.com/2026/05/android-xr-sdk-developer-preview-4-updates.html"
+          ]
+        },
+        {
+          "name": "存量延寿与二手循环对新机更新的缓冲",
+          "baseline": "本研究预计高价新机环境下，维修、继续使用旧机与二手购买成为更重要的预算缓冲，而非移动服务活跃度必然转成新DRAM/NAND采购。欧盟已生效的耐用/维修制度支持这一机制，影响随相应新设备队列逐步累积；换新回收也能帮助原用户融资购买新机，因此不采用二手交易对新机一比一挤出的假设。",
+          "ordinary_progress": "更耐用设备进入存量、维修与翻新渠道继续经营，部分消费者以旧机服务替代立即更新；高端新功能仍吸引另一部分用户换机。",
+          "open_frontier": "实际维修可支付性、可信二手机来源与支持寿命能把平均替换间隔延长多少，以及新功能必须换硬件的范围，决定中期新比特需求被缓冲的比例。",
+          "time_scope": "未来季度及跨移动设备更新周期；制度影响按队列累积",
+          "ref": [
+            "https://single-market-economy.ec.europa.eu/news/new-eu-rules-durable-energy-efficient-and-repairable-smartphones-and-tablets-start-applying-2025-06-20_en",
+            "https://eur-lex.europa.eu/eli/reg/2023/1670/oj/eng",
+            "https://counterpointresearch.com/en/insights/global-refurbished-smartphone-market-h1-2025",
+            "https://www.apple.com/newsroom/2026/07/apple-upgrade-launches-in-the-united-states/",
+            "https://www.idc.com/promo/smartphone-market-share/"
+          ]
+        }
+      ],
+      "realization_factors": [
+        {
+          "name": "换机效用、可支付价格与融资形成新机需求",
+          "mechanism": "新机需求首先由存量用户的换机动机与首次购机决定：相机、游戏、通信和AI体验相对旧机的实际改善提高换机意愿，家庭可支配预算限制可支付总价。OEM/渠道的整机报价、以旧换新残值、补贴及贷款首付/月供共同改变净支付成本；融资审批和期限决定是否能提前实现购买，而不是凭空增加终生预算。由此形成各价位新机sell-through，再经OEM产量、单机DRAM/NAND配置和供应份额传到美光采购；涨价也可使用户延期或转买旧款。",
+          "current_status": "工作判断是可支付性比笼统AI宣传更直接制约近期大众机数量，高端则有更强品牌和支付缓冲。IDC最终Q2新机出货下降且Samsung/Apple份额上升；美国Apple升级融资和中国数字产品补贴提供不同地区的支付组织入口，不是已测得的全球新增订单。美光高端重点使其受影响组合与全市场不同。",
+          "materiality_context": "换机效用决定愿意更新的人群和周期，预算/净价格决定能实现多少购买，融资资格与期限主要移动季度时点并可能放大高端占比，残值/补贴降低特定人群支付门槛但不能覆盖全部地区。Q2新机同比-7.4%意味着在份额及库存不变时，平均容量约需增加8.0%才抵消手机行业比特需求的台数损失（1/0.926-1，计算基准，不是美光预测）；因此台数与配置同等有解释价值。配置和美光份额决定获得多少比特；当前有限供给会先把额外购买意愿转成价格或排队，而非等量交付。",
+          "scope_boundary": "解释手机消费者到移动OEM采购的数量和组合，不将整机ASP当内存ASP；融资/补贴的制度深度归相关外部研究，保留本Unit需求后果。",
+          "ref": [
+            "https://www.idc.com/promo/smartphone-market-share/",
+            "https://www.idc.com/resource-center/blog/smartphone-shipments-set-for-record-16-7-drop-in-2026-as-the-memory-crisis-hits-full-force/",
+            "https://www.apple.com/newsroom/2026/07/apple-upgrade-launches-in-the-united-states/",
+            "https://www.mofcom.gov.cn/cms_files/filemanager/policySummary/viewcore_ed4904de32ff4d029dad4524473ce619.html",
+            "D1-O3",
+            "D1-O57"
+          ]
+        },
+        {
+          "name": "耐用性、维修与二手机循环改变新存储器替换率",
+          "mechanism": "手机服务的活跃存量可以增长，而新内存需求不同比增长。电池/屏幕耐用性、维修价格与配件可得性、软件支持期限共同决定旧机可继续使用多久；翻新商回收、检测和保修降低二手机质量不确定性，使可用旧机成为新机替代。OEM换新回收提升旧机来源和残值，既可促进原用户购买新机，也可让下一位用户无需购买新芯片。大部分维修/转售复用整机既有DRAM/NAND，不能将二手交易台数再次计入美光新比特需求。",
+          "current_status": "这是区别于新机销量和配置的独立因果路线：欧盟相关生态设计要求自2025-06-20适用，电池耐久、配件和软件维护降低部分设备提前报废的制度障碍；Counterpoint已商业跟踪翻新市场，二手路径不是仅有概念。当前采用价格压力增加延寿/二手吸引力、规则影响随新机队列逐步累积的工作读法，不认定全球平均换机周期已经延长某个确定年数。",
+          "materiality_context": "物理耐用与软件支持延长可服务年限，维修价格/可信保修决定延寿能力能否被用户采用；旧机回收量与残值决定替代设备供给和新机融资抵扣，两方向并存。规则所述至少800次循环保留80%容量是测试要求，不是800天后必换机。稳态固定存量下，若某队列平均替换间隔由3年变4年，其年度替换需求少25%（纯情景）；真正全球幅度还乘受影响队列比例，且有多年滞后。它的中期数量杠杆可大于单款接口升级，近期尚不如已实现涨价与供给改配直接；新AI功能若旧机不能运行，会反向提高更新效用。",
+          "scope_boundary": "只研究存量复用对移动新机和比特需求的作用，不提供法律合规意见；规则覆盖欧盟相应手机/平板，卷展式主屏和高安全通信等例外按法规区分，不外推全球所有设备。",
+          "ref": [
+            "https://single-market-economy.ec.europa.eu/news/new-eu-rules-durable-energy-efficient-and-repairable-smartphones-and-tablets-start-applying-2025-06-20_en",
+            "https://eur-lex.europa.eu/eli/reg/2023/1670/oj/eng",
+            "https://counterpointresearch.com/en/insights/global-refurbished-smartphone-market-h1-2025",
+            "https://www.apple.com/newsroom/2026/07/apple-upgrade-launches-in-the-united-states/",
+            "https://www.idc.com/promo/smartphone-market-share/"
+          ]
+        },
+        {
+          "name": "OEM产品组合与BOM预算分配决定单机内容",
+          "mechanism": "OEM在总BOM、目标售价和毛利要求下，同时选择机型数量、DRAM容量/带宽及NAND容量/接口。内存价格上升可被整机提价、利润吸收、压缩其他组件或降低配置消化，不能预设唯一反应。高端份额提升抬高销量加权配置，但低价机退出也使平均值上升而总比特减少。客户采用较高密度晶粒可减少颗数或封装面积，并不必然增大整机容量；美光的高端客户权重和DRAM/NAND供货份额进一步改变本Unit所得组合。",
+          "current_status": "现状更符合组合上移与总体数量收缩并行：IDC终端平均售价预测上升、低端承压，美光重点旗舰/高端并同时推进16Gb量产和24Gb样品。缺少全市场销量加权DRAM/NAND装载量，故保留配置的独立参数，不以晶粒规格或整机提价替代。",
+          "materiality_context": "整机预算/利润目标是广泛约束，内存采购价决定其压力；可支付售价决定能否转嫁，型号/客户权重决定平均内容与美光暴露。DRAM容量和NAND容量是各自直接的比特系数，接口速度主要影响可用性能/价值而非容量。按IDC全年-16.7%的台数预测计算，约+20.0%的平均内容才让行业全年比特持平，远大于只看新旗舰容量上限的含义（条件性基准）。晶粒密度/封装主要影响工程可行性和成本，客户份额影响价值归属；当前数量下滑使配档选择比纸面最大规格更重要。",
+          "scope_boundary": "解释移动DRAM与托管NAND配置、客户组合，不重复相加平均价中已经包含的产品组合；行业内存价格形成归邻域。",
+          "ref": [
+            "D1-O3",
+            "D1-O74",
+            "https://www.idc.com/resource-center/blog/smartphone-shipments-set-for-record-16-7-drop-in-2026-as-the-memory-crisis-hits-full-force/",
+            "https://www.idc.com/promo/smartphone-market-share/"
+          ]
+        },
+        {
+          "name": "端侧AI用途、驻留与效率共同决定移动工作内存",
+          "mechanism": "本地AI是否值得使用由任务质量、隐私/离线需求及响应延迟决定，应用和OS分配任务到本机或云端。对落在本地的负载，模型量化后的权重驻留、上下文KV/中间状态、并发应用和缓存复用形成峰值DRAM工作集；稀疏装载和共享KV降低单位任务占用，较低成本/延迟又可鼓励更多使用。带宽、SoC互连、功耗与热预算决定这些容量能否成为可持续体验；达到现有配置余量边界后，OEM才更有动力为下一平台加容量或选更快低功耗LPDDR。",
+          "current_status": "采用选择性增强高端LPDDR而非所有手机随模型总参数加量的解释。Apple AFM3将完整权重放NAND并按请求装载专家，最复杂任务仍走云端；Google在Pixel部署效率优化。它们同时提高本地能力并节省工作集，因此应用增长、DRAM效率和新代际交付的净作用不能按三个独立增量相加。",
+          "materiality_context": "任务质量/隐私/离线价值决定可采用人群，本地分工比例决定本Unit而非云端得到的负载；权重、上下文和并发是峰值容量来源，量化/稀疏/缓存是反向系数，配置余量决定影响是在现机使用还是下一轮采购。Apple20B总参数与1—4B活跃参数不是DRAM字节数：精度、常驻共享权重和KV还要另算。带宽及热预算在交互体验受限时可比额外容量更有价值，SoC兼容限制可选产品；当前已有LPDDR5X交付，技术效率变化可先改变下一轮配置的必要性，重要性不因尚未形成收入而自动较低。",
+          "scope_boundary": "解释端侧移动工作集、LPDDR内容及采用；不把全部AI任务归本地、不将模型参数映射为未经计算的GB，云计算收益归数据中心邻域。",
+          "ref": [
+            "https://machinelearning.apple.com/research/introducing-third-generation-of-apple-foundation-models",
+            "https://www.research.google/blog/accelerating-gemini-nano-models-on-pixel-with-frozen-multi-token-prediction/",
+            "D1-O103",
+            "D1-O3"
+          ]
+        },
+        {
+          "name": "用户数据留存与端云分层决定移动NAND容量及性能价值",
+          "mechanism": "拍摄/视频、游戏与应用、离线媒体、本地模型及个性化资料产生存储数据；文件大小和留存时间决定本地容量压力。用户可删除/压缩、订阅云存储或保留高分辨率原件，云订阅价格、网络可靠性及隐私/离线偏好改变本地留存比例。现有可用空间先吸收数据，接近空间边界才增加更高容量新机的付费意愿；模型冷加载和稀疏专家读取另外要求托管NAND控制器/接口的吞吐与时延，性能改善也可能减轻DRAM全驻留需要。",
+          "current_status": "普通数据存储与本地模型驻留两条需求同时存在，而云优化是真实的容量缓冲：Apple截至9月21日支持文档允许本地保留省空间版本、云端保留原件。工作判断是高端容量档位及快速加载的价值提高，但不是所有用户数据增长都落入新NAND；美光移动托管NAND的独立销售量仍未拆分。",
+          "materiality_context": "内容生成量、文件大小和留存期共同决定机会规模，本地比例由云订阅/网络/隐私选择决定，免费空间余量决定采购时滞，容量档位价格决定是否付费。256GB设备增加10GB数据可能只消耗余量，而临界点上的同样增加会触发下一档配置；这是阈值效应，不是每10GB立刻新增采购。模型加载的接口/控制器效率决定性能溢价与DRAM替代边界，影响产品价值不必增加位元。当前手机弱量下，真实档位购买及本地留存比例比最高2TB选项更能解释总NAND；云端存储扩容不是本Unit可直接相加的增量。",
+          "scope_boundary": "覆盖移动NAND容量、托管控制及端侧加载，不把手机接口速度当NAND容量；云存储基础设施与NAND工艺成本由邻域深化。",
+          "ref": [
+            "https://support.apple.com/en-gb/108782",
+            "https://machinelearning.apple.com/research/introducing-third-generation-of-apple-foundation-models",
+            "D1-O3",
+            "https://www.idc.com/resource-center/blog/smartphone-shipments-set-for-record-16-7-drop-in-2026-as-the-memory-crisis-hits-full-force/"
+          ]
+        },
+        {
+          "name": "平台资格与多供应者分配决定美光捕获份额",
+          "mechanism": "手机OEM和SoC平台方按电气/接口、功耗、稳定性与封装兼容筛选供应者；美光样品、客户资格验证和设计选入扩大可争取的平台集合。合格后，报价、交期、可靠供给和风险分散偏好决定采购比特分配，量产平台台数再决定订单规模。竞争者出现合格替代品可增加OEM谈判力；为供应连续性保留多源则可使新增资格先体现为未来可选份额而非立即移走全部既有订单。",
+          "current_status": "LPDDR5X已有商业交付，24Gb LPDDR5X及LPDDR6处不同验证阶段。CXMT9月7日自述LPDDR6在小米具名旗舰量产采用，足以将竞争模型扩展到具体平台选择，但并未独立核验其广泛份额或证明美光客户流失。当前交付基础较成熟，下一代平台仍有可重分配的机会。",
+          "materiality_context": "平台兼容/资格决定能否参与，可靠性和供给承诺决定份额是否能持续，报价/多源偏好决定份额与利润的取舍，平台台数决定可争取机会的大小。资格扩大影响整个产品周期而非只当季，份额变化可在手机总量不变时直接改变本Unit数量；合格供应不足时交期比小幅报价优势更有杠杆。成熟LPDDR5X承担当前销售，LPDDR6虽小却可能改变下一代较大平台的参与机会；两者不能按阶段自动排重要性。客户名单与配额缺失限制美元估计，不否定这一采购分配机制。",
+          "scope_boundary": "覆盖移动OEM选型和供应分配；竞争者自述保留来源身份，采购地域资格的规则深度归地域准入域，不假设所有中国手机OEM均被禁止采购美光。",
+          "ref": [
+            "D1-O3",
+            "D1-O74",
+            "D1-O103",
+            "https://www.cxmt.com/en/news/info_21.html"
+          ]
+        },
+        {
+          "name": "良品供给与跨业务资源配置约束移动交付",
+          "mechanism": "美光的可售移动比特由可用晶圆、单位晶圆密度、良率及封装/测试匹配决定，转换节点也改变单位比特成本。管理层再按其他业务的订单承诺、产品价值和移动客户关系分配合格供给；部分设备/工序转换有时间成本，不能按销售价当日无摩擦切换。对手机OEM而言，有限配额既限制现机交付，也促使减产、保留高端配置或验证其他供应者；有效供给扩张若仍优先分到邻域，并不自动修复移动数量。",
+          "current_status": "资源重配已在运行：FY2026 MCBU数量下降，公司称供给转给其他业务单元，移动新品仍可出货。1γ已占公司Q4 DRAM产量多数说明技术转换进展，不给出本Unit单独良率/成本。2027新厂初产计划不能作为当前手机可用库存。",
+          "materiality_context": "晶圆、密度、良率决定有效供给及成本，封装/测试是最终产品约束，分配优先级决定本Unit可获得的份额，其他业务承诺/价值与移动客户关系决定机会成本。当前已有减量事实，分配和资格匹配比终端小幅回升更直接控制近端交付；无余量时新增手机需求先影响报价和客户选择。有余量后需求/配置重新成为数量约束。节点降本可在台数不变时提高单位利润，但若良率爬坡或封装不匹配，纸面密度收益会延后；关系成本还可使今天转配损害下一周期供应份额。",
+          "scope_boundary": "解释本Unit供给、交期及成本后果；制造节点、设备和HBM/服务器供给的详细工程由邻域负责，不能把全公司产量或新厂面积指定为移动新增出货。",
+          "ref": [
+            "D1-O57",
+            "D1-O31",
+            "D1-O88",
+            "D1-O3"
+          ]
+        },
+        {
+          "name": "多层库存与预购把终端消耗变为波动采购",
+          "mechanism": "用户sell-through、渠道整机库存变化先形成OEM生产需求；OEM内存消耗量加其组件库存变化才形成新采购，再受美光配额/交期约束。预期涨价或缺货会抬高目标库存及提前订购，资金成本/预算和旧价库存限制能囤多少；若终端购买未跟上，高价库存和需求预测下修会使后续订单落后真实消耗。整机库存、组件库存和美光自身库存不是同一层，采购前置也不等于更高最终需求。",
+          "current_status": "手机市场已被供应紧张、整机涨价和前置购买干扰；模型中尚无可比OEM组件库存周数，工作模型不把未知库存当零，也不把IDC品牌出货等同最终消费者购买。美光配额受限使排队订单既可能是有效采购，也可能包含防缺货预订。",
+          "materiality_context": "sell-through/产量决定持续需求，目标库存与实际库存之差决定短期偏离，交期/预期价决定预购诱因，资金预算限制可承受的库存，配额决定可完成订单。作为数量桥，若组件消耗恒定，目标库存增加一周对应一次性增加约一周消耗量的采购，随后不重复增加；这是库存敏感度而非已观察库存值。当前价格和缺货使预购诱因强于平稳环境，高价库存又放大后续去库风险。供给恢复能先补库存而非sell-through改善；终端弱量和库存回落同时出现时，订单可比台数下降更快。",
+          "scope_boundary": "覆盖移动渠道、OEM与美光采购的库存传导；保留不同层级和统计口径，不用全公司库存天数替代本Unit客户库存。",
+          "ref": [
+            "https://www.idc.com/promo/smartphone-market-share/",
+            "https://www.idc.com/resource-center/blog/smartphone-shipments-set-for-record-16-7-drop-in-2026-as-the-memory-crisis-hits-full-force/",
+            "D1-O3",
+            "D1-O31",
+            "D1-O57"
+          ]
+        },
+        {
+          "name": "实现价、成本与合同覆盖共同决定移动盈利和现金",
+          "mechanism": "美光移动收入来自已交付并确认的DRAM/NAND比特乘各自实现价，产品组合已在相应平均价中反映。售价减单位制造/托管封装成本形成毛利，产品开发与客户支持费用影响营业利润；客户账期、信用和未售库存决定利润转现金。固定/重谈价格及价带合同只保护被覆盖的数量和期限，成本或换代变化仍可改变利润；客户保证金是融资保障而非销售收入。高价提高当期利润，却经整机BOM预算反馈压制台数或配置。",
+          "current_status": "当前采用价格主导盈利跃迁、数量受限的解释：合计MCBU FY2026收入增209%但比特减少，Q4毛利率90%、营业利润率88%。这些是移动/客户端共同代理，不能分摊成移动利润。多年协议形式已披露但本Unit覆盖未知，所以不将公司合同底价表述移作移动永久利润下限。",
+          "materiality_context": "实现价在本期是最大已披露改善来源，交付比特决定价格能作用于多少量；单位成本决定价格收益留存，费用和账期/信用决定利润及现金的次级转换。价带覆盖比例决定周期暴露，重谈/换代改变保护有效期，保证金改善融资但有返还义务。示意以共同MCBU90%毛利率起点、量和成本固定：售价降10%时毛利率仍约88.9%，毛利金额却降约11.1%；计算说明高比例掩盖金额敏感度，不是本Unit预测。涨价对预算与库存的负反馈会改变之后数量，不能将当前价格收益无限线性外推。",
+          "scope_boundary": "到移动经营利润与现金，不虚构独立移动毛利或EPS系数；合并税率、回购、资本配置与DCF属于公司财务研究，行业报价不是本Unit成交价。",
+          "ref": [
+            "D1-O57",
+            "D1-O44",
+            "D1-O31",
+            "https://www.idc.com/resource-center/blog/smartphone-shipments-set-for-record-16-7-drop-in-2026-as-the-memory-crisis-hits-full-force/"
+          ]
+        },
+        {
+          "name": "平板等移动用途与跨设备预算分流形成不同需求周期",
+          "mechanism": "平板的学习、视频娱乐、绘画和移动办公用途，以及触控/屏幕/笔输入相对手机与PC的便利性，决定家庭或机构是否增加一台设备或替代另一终端。软件适配和生产力提升决定重复使用，采购预算与旧机使用寿命决定更新时点；多任务/本地媒体及AI再决定DRAM/NAND配置，OEM资格与可供数量决定美光份额。用途扩大不必新增设备，既有硬件或跨设备云服务可先承载活动。伴随眼镜等交互设备还可把部分任务和数据交给手机宿主、独立移动计算模块或云端：外设的使用频率、实际执行位置和本地状态/资料留存，决定它增加的是独立设备采购、宿主工作集还是远端服务。外设界面存在不证明全部推理在手机，手机活动增加也可由现机余量先吸收。",
+          "current_status": "工作判断是其他移动设备有自身用途，但不能默认补偿手机数量压力。IDC Q2平板出货33.6百万台、同比-12.3%，数量同样偏弱；美光没有逐平板/其他设备收入拆分，当前不为未量化的新形态设备设规模增长事实。Google于2026年5月公布音频/显示眼镜路线及当年秋季推出音频眼镜的计划，同日Jetpack Projected开发预览公开了连接手机应用与眼前界面的安排。这提供伴随设备与宿主关系的现实基础，不作为截止日前已核验出货、配置或美光供应关系。",
+          "materiality_context": "用途效用与软件适配决定可持续机会，家庭/机构预算决定是否从PC或手机分流，寿命和现有余量决定活动多久传为采购；配置、资格和可供量分别决定内容、捕获和兑现。平板Q2约为手机同期新机台数的12.2%（33.6/276.3，量级比较而非可相加bit），单机配置不同仍可能有经济价值，但不能凭小品类高规格抵消大市场收缩。当前弱量使预算分流和替换周期更有杠杆，专业多任务带来的高配置主要先作用于特定平台。对于伴随设备，执行位置决定内容落在哪类产品，重复使用和峰值并发决定宿主资源强度，现有余量与更换必要性决定新采购时滞；新独立平台的资格和份额不能沿用手机份额。它可以提高既有手机用途而不多买一台手机，也可以挤占平板/PC预算，因此外设台数不能按高配手机比特直接相加。",
+          "scope_boundary": "研究本Unit非手机移动设备及其与手机宿主之间的用途、计算和采购传导；传统PC/工作站归客户端Unit，云侧基础设施归数据中心域，平板不混入IDC传统PC口径，跨设备替代和同一外设/宿主工作负载不重复计需求。",
+          "ref": [
+            "https://www.idc.com/resource-center/blog/the-tablet-market-hits-a-wall/",
+            "https://www.idc.com/promo/smartphone-market-share/",
+            "D1-O3",
+            "https://machinelearning.apple.com/research/introducing-third-generation-of-apple-foundation-models",
+            "https://blog.google/products-and-platforms/platforms/android/android-xr-io-2026/",
+            "https://android-developers.googleblog.com/2026/05/android-xr-sdk-developer-preview-4-updates.html"
+          ]
+        }
+      ],
+      "potential_gaps": [
+        {
+          "name": "可支付换机与OEM配档策略重画高端韧性",
+          "why_live": "截至研究截止，IDC最终Q2手机台数下降，8月全年预测进一步转弱；美光重点旗舰/高端。美国Apple升级融资与中国特定价位数字产品补贴已提供不同的支付组织方式，但没有全球新增销量测量。整机成本、家庭现金流和OEM利润目标会共同改变谁买新机及买什么配置。",
+          "revision_logic": "“高端集中提供韧性”依赖足够买家能承受净价格，并不保证大众机缩量只发生在美光暴露之外。融资/补贴改变购买时点和人群，OEM的提价、吸收成本或降配决定台数转成多少DRAM/NAND；高端权重上升也可能只是低端消失。由此可改写数量偏弱、价格支持的默认组合，而非把终端ASP当存储器ASP。",
+          "possibility_space": [
+            {
+              "name": "融资方扩大合格人群并以回收残值支持升级",
+              "implication": "更低首付或月供可使本来延期的消费者购买高端新机，提升美光目标平台的订单池；若只是把下一季度购买提前，近期台数改善之后会留下缺口。残值承诺能否覆盖成本决定该安排可持续多久。"
+            },
+            {
+              "name": "金融机构收紧审批、补贴窗口结束或家庭预算转弱",
+              "implication": "支付缓冲撤退会让高端也延后升级，弱量不再仅是低价机问题。OEM可保高配但少生产，也可下调DRAM/NAND档位守住售价；两条路径分别减少台数和单机比特，不必等整机平均售价下降才改变内容需求。"
+            },
+            {
+              "name": "OEM把内存涨价主要吸收到利润或其他BOM项目",
+              "implication": "品牌有意保住主流售价与容量，会使已知台数压力小于全额提价路径，美光高价交付可暂时保留；代价转为OEM现金和利润压力，下一平台可能削减型号、要求降价或重新分配供应者。"
+            },
+            {
+              "name": "OEM大规模取消低价型号并把存储分成更陡的付费档位",
+              "implication": "平均配置和整机售价可能上升，但买家转旧款/二手使总新比特下降。DRAM最低档与NAND升级价的不同策略还能使两种存储方向分离，不能用旗舰最大容量覆盖大众机损失。"
+            }
+          ],
+          "ref": [
+            "D1-O3",
+            "https://www.idc.com/promo/smartphone-market-share/",
+            "https://www.idc.com/resource-center/blog/smartphone-shipments-set-for-record-16-7-drop-in-2026-as-the-memory-crisis-hits-full-force/",
+            "https://www.apple.com/newsroom/2026/07/apple-upgrade-launches-in-the-united-states/",
+            "https://www.mofcom.gov.cn/cms_files/filemanager/policySummary/viewcore_ed4904de32ff4d029dad4524473ce619.html"
+          ]
+        },
+        {
+          "name": "维修、残值与二手机供给改变新芯片替换率",
+          "why_live": "既有Baseline已纳入存量复用：欧盟相关设备耐用/维修要求自2025年6月适用，翻新市场有商业经营与跟踪，回收又能抵扣新机支付。规则改变的是进入存量的设备队列和维修条件，不是已测得全球换机间隔突变。",
+          "revision_logic": "当前弱量解释仍可被“同样移动服务需要更少新设备”进一步改变。维修和软件寿命影响原用户何时换机，回收供应及可信保修影响下一位用户能否复用旧DRAM/NAND；残值同时反向支持第一位用户换新。主题承接REALIZATION发现的替换率路线，不把二手成交重复算新比特。",
+          "possibility_space": [
+            {
+              "name": "OEM与维修商把长支持承诺变成可支付电池/屏幕维修",
+              "implication": "更耐用队列逐步累积，可用旧机替代计划中的新机，即使活跃用户和应用使用增长，新存储器采购也较慢。作用有队列与地区滞后，不能立即扣减全部年度手机台数。"
+            },
+            {
+              "name": "回收商扩大检测保修和跨渠道转售并提高旧机残值",
+              "implication": "低预算买家获得可信旧机，减少低端新机需求；原高端用户却更容易换新。美光高端组合可能受益而行业新比特更弱，具体净效应取决于被替代的新机档位和换新的新增幅度。"
+            },
+            {
+              "name": "融资回收估值失误使翻新商缩减收购和担保",
+              "implication": "旧机来源减少与残值下跌会削弱原用户换新融资，同时使二手机更难买；部分需求回到低价新机，部分直接延期。新机组合因此可能下移，不能把二手供给收缩简单解释成美光数量利好。"
+            },
+            {
+              "name": "新应用或安全支持要求排除大批仍可维修的旧平台",
+              "implication": "软件兼容而非物理报废会加快特定队列换新，并降低旧机残值；新购容量机会增加，但缺货/高价仍可让消费者减少使用而不立刻购买。技术门槛的覆盖面决定能否打破延寿缓冲。"
+            }
+          ],
+          "ref": [
+            "https://single-market-economy.ec.europa.eu/news/new-eu-rules-durable-energy-efficient-and-repairable-smartphones-and-tablets-start-applying-2025-06-20_en",
+            "https://eur-lex.europa.eu/eli/reg/2023/1670/oj/eng",
+            "https://counterpointresearch.com/en/insights/global-refurbished-smartphone-market-h1-2025",
+            "https://www.apple.com/newsroom/2026/07/apple-upgrade-launches-in-the-united-states/",
+            "https://android-developers.googleblog.com/2026/07/android-on-device-inference.html"
+          ]
+        },
+        {
+          "name": "个人代理的分发、权限与效率改变本地工作集",
+          "why_live": "Apple AFM3与Google Pixel优化已说明本地能力、闪存权重及更低工作集可以并存。Google在2026年5月公布跨应用自动化和主动辅助安排，明确用户可控制数据连接与应用权限；原公告中部分功能以将来推出表述，本轮不把公告当作截止日前已全量上线的证据。",
+          "revision_logic": "“端侧AI选择性提高需求”可以因分发方式、任务组织和权限改变而变成更广泛或更窄的机会。实际本地并发、上下文和驻留时间相对效率节约及现机余量决定LPDDR配置压力；手机上的交互界面不等于任务全部本地执行。下列为可能发展，不宣称新的采用率或美光订单。",
+          "possibility_space": [
+            {
+              "name": "OS把高频助理任务嵌入默认入口并让多个应用持续协作",
+              "implication": "免去逐个购买工具的门槛可扩大重复使用，多个活动状态、视觉上下文和缓存可能超过单次问答的节省；若峰值超出现机余量，下一代主流配置也有加容量动机。仅增加云请求或短时调用则更多提升手机效用而非本地DRAM。"
+            },
+            {
+              "name": "模型与OS通过量化、共享缓存和按需装载把能力带到旧机",
+              "implication": "固定任务量下资源强度下降，削弱必须换高内存新机的理由；但更低功耗/等待又可能诱发更长上下文和更多并发。反弹能否耗尽被释放的余量，决定结果是延寿还是新一轮高配，而不是按效率百分比机械减比特。"
+            },
+            {
+              "name": "应用提供者把高价值推理包入云订阅、本机只做轻量协调",
+              "implication": "体验普及可增强换机效用却降低每任务的本地权重与上下文需求，LPDDR增长弱于AI使用增长。网络成本、隐私和离线任务仍给一部分本地高配保留价值，不能把云侧内存算回本Unit。"
+            },
+            {
+              "name": "自动操作或私人资料暴露事件引发用户关闭跨应用权限",
+              "implication": "即使硬件合格，任务可访问的数据和运行范围缩小，常驻/并发压力与AI换机溢价会下降。平台也可能以隔离本地执行重新取得信任，转而扩大可部署的高配队列；事件改变的是参与和执行组织，不只是模型大小。"
+            }
+          ],
+          "ref": [
+            "https://machinelearning.apple.com/research/introducing-third-generation-of-apple-foundation-models",
+            "https://www.research.google/blog/accelerating-gemini-nano-models-on-pixel-with-frozen-multi-token-prediction/",
+            "https://android-developers.googleblog.com/2026/07/android-on-device-inference.html",
+            "https://blog.google/products-and-platforms/platforms/android/gemini-intelligence/",
+            "https://blog.google/security/android-gemini-intelligence-security-privacy/"
+          ]
+        },
+        {
+          "name": "个人数据的留存制度与端云经济性重分移动NAND价值",
+          "why_live": "照片、视频、游戏和本地模型已构成不同的容量来源；Apple支持资料允许云保留原件、本地保留省空间版本，AFM3又让闪存承担完整模型权重。Google公布的实时语音整理明确不保存音频，说明新AI活动并不天然积累永久资料。已公告Duo高容量选项尚未在截止日前预订/上市，不能当销售加权配置。",
+          "revision_logic": "“移动NAND保留独立内容路径”可因保存什么、保存多久、在哪里保存而变化，而不是从LPDDR升级推出同量NAND增长。现有空闲容量先吸收新增资料；接近档位边界才影响购买选择，模型读取又可单独改变接口和控制器价值。",
+          "possibility_space": [
+            {
+              "name": "平台推出用户愿意长期保留的本地个人记忆、离线资料与多模型库",
+              "implication": "经授权的长期留存可能挤占空闲空间，让更多买家选择高容量档；若只是循环覆盖的有界缓存，采购增量在稳定占用后停止。个人记忆的实用性和留存默认值可比一次性下载大小更重要。"
+            },
+            {
+              "name": "云服务把大容量备份与AI订阅低价捆绑并加强本地优化",
+              "implication": "云端原件与自动清理降低本机容量付费意愿，即使拍摄/生成量增加，移动NAND需求也可能仅维持缓存。下载等待或离线使用则给快速托管NAND留下性能价值，容量和性能销售可分离。"
+            },
+            {
+              "name": "云订阅涨价、连接不可靠或资料控制诉求使用户保存更多原件",
+              "implication": "本地留存比例上升可比文件数量增长更快推高容量档位选择；也可能先促使删除文件或减少云服务而非买新机。对现机空间紧张且重视资料的队列影响最大，不应外推为全体手机同步加量。"
+            },
+            {
+              "name": "OEM用更快闪存读取和分层缓存减少DRAM全量驻留",
+              "implication": "NAND的低时延/持续读取和固件能力成为平台价值，可能提高高性能产品份额而不提高逻辑容量；其收益与LPDDR容量节省在同一架构内相互作用。热耗、能耗或寿命约束也可能使该分层只适合少数旗舰。"
+            }
+          ],
+          "ref": [
+            "https://support.apple.com/en-gb/108782",
+            "https://machinelearning.apple.com/research/introducing-third-generation-of-apple-foundation-models",
+            "https://blog.google/products-and-platforms/platforms/android/gemini-intelligence/",
+            "https://www.apple.com/newsroom/2026/09/apple-unveils-iphone-duo/",
+            "D1-O3"
+          ]
+        },
+        {
+          "name": "新移动形态与伴随设备改变预算和计算归属",
+          "why_live": "平板实际Q2仍收缩，折叠机与其他高端移动形态不能自动补齐手机弱量。新研究补充：Google在2026年5月公告音频/显示眼镜路线和当年秋季推出音频眼镜的计划，Jetpack Projected开发预览连接手机应用与眼前界面。这是平台和开发安排，不是已核验销量、内存BOM或美光供应关系。",
+          "revision_logic": "既有跨设备预算模型之外，同一体验可由手机、独立移动设备或云服务承担计算。需求可能增加一台设备，也可能只把手机变成宿主、延长其使用或挤出平板；计算位置和重复使用决定本Unit获得哪些新比特，不能把每个外设按一部高配手机相加。",
+          "possibility_space": [
+            {
+              "name": "眼镜应用形成日常导航、翻译和感知习惯，手机承担更多伴随处理",
+              "implication": "新增交互入口会提高手机相机流、状态和数据缓存需求，可能促使宿主平台选择更高LPDDR/NAND配置。若手机只是转发到云，内容压力小得多；伴随设备销量并非同量高配手机更换。"
+            },
+            {
+              "name": "设备厂商把工作负载搬到独立计算模块或独立头戴终端",
+              "implication": "新移动产品可产生自己的内存/存储采购入口，并减少对高配手机宿主的依赖；同一家庭预算也可能少买平板或晚换手机。美光获益取决于新的平台资格和总新增内容，而不是沿用手机份额。"
+            },
+            {
+              "name": "折叠机和平板的软件把绘画、学习及多窗口工作变成重复使用",
+              "implication": "对一部分用户形成区别于传统手机的新设备或更高内容需求，可能提高移动高配权重；若主要替代原有PC/平板购买，则是本Shell内部转移，不能当双方都增长。只有窄用途消费时，高规格仍停留在小众组合。"
+            },
+            {
+              "name": "隐私争议、佩戴不适或配套应用不足让新形态停在尝鲜",
+              "implication": "样机和平台安排不再支持大规模日常负载的解释，手机/平板仍按原更新周期采购；研发可行性与市场使用率分离。退货或缩减新品计划还可能留下针对新形态的组件库存。"
+            }
+          ],
+          "ref": [
+            "https://www.idc.com/resource-center/blog/the-tablet-market-hits-a-wall/",
+            "https://www.idc.com/resource-center/blog/smartphone-shipments-set-for-record-16-7-drop-in-2026-as-the-memory-crisis-hits-full-force/",
+            "https://www.apple.com/newsroom/2026/09/apple-unveils-iphone-duo/",
+            "https://blog.google/products-and-platforms/platforms/android/android-xr-io-2026/",
+            "https://android-developers.googleblog.com/2026/05/android-xr-sdk-developer-preview-4-updates.html"
+          ]
+        },
+        {
+          "name": "移动存储代际与DRAM/NAND多源选择重分平台机会",
+          "why_live": "美光LPDDR5X已有商业交付，24Gb LPDDR5X和16Gb LPDDR6仍处送样/认证阶段。CXMT9月自报具名旗舰LPDDR6采用使竞争有了平台线索，但不是独立核验的市场份额。托管NAND又是独立产品组合，性能/固件要求与LPDDR不同；OEM既要产品价值，也要可持续供给、报价及封装兼容。",
+          "revision_logic": "“LPDDR5X延续、LPDDR6竞争验证”可以改写为更快的可服务平台扩张，也可成为供应者重配窗口，NAND采购份额不必与LPDDR同向。资格改变进入权，OEM多源与产品组合决定份额；晶粒密度提高还可能只减少颗数/板面积。这里研究移动商业采用，工艺良率及行业供给本身由邻域深化。",
+          "possibility_space": [
+            {
+              "name": "SoC与OEM为更低功耗/更高带宽推动LPDDR6进入高销量平台",
+              "implication": "新代际从小众验证变成更大的产品集合，已取得平台兼容的供应者获得跨周期机会；美光若进入这些设计可改善份额和单位价值，即使手机台数不恢复。高密度封装可让更大容量可行，但不是自动加装容量。"
+            },
+            {
+              "name": "OEM因成本、SoC进度或稳定性把下一代平台留在成熟LPDDR5X",
+              "implication": "当前成熟交付价值延长，下一代溢价与新增设计机会后移；若高密度LPDDR5X以更少晶粒完成同容量，工程优化不等于比特增长。新品样品继续推进也不改变这个商业节奏。"
+            },
+            {
+              "name": "挑战者在多个OEM完成可靠量产资格并被采购方扩大配额",
+              "implication": "合格替代源会先提高OEM议价能力，之后才可能挤出美光数量；即便只作备份也会压缩稀缺溢价。若美光以更稳定供货/功耗保住份额，其结果可以是价弱量稳而非全面丢单。"
+            },
+            {
+              "name": "OEM在托管NAND引入新源并与LPDDR采购解耦",
+              "implication": "控制器/固件、加载性能或容量报价可以让美光NAND份额独立增减，即使LPDDR继续获选。若OEM以整套封装和供货责任优先集中采购，则另一方获选也可带来关联机会；器件可进入与实际配额仍是不同环节。"
+            },
+            {
+              "name": "平台召回或供应连续性失败使OEM转向可靠的备选源",
+              "implication": "可靠性事件可使已合格的美光快速取得成熟或下一代平台份额，也可能反向损害其未来设计地位。受影响平台台数和美光实际可交付配额决定捕获程度，不能从单一客户名字外推全市场。"
+            }
+          ],
+          "ref": [
+            "D1-O3",
+            "D1-O103",
+            "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.cxmt.com/en/news/info_21.html"
+          ]
+        },
+        {
+          "name": "移动供给优先级与客户关系成本改变交付上限",
+          "why_live": "FY2026合计MCBU比特下降且公司明确供给转向其他业务；同时移动新品可交付，说明不是全产品停供。公司节点转换与2027新厂计划提供潜在效率/产出来源，但移动独立配额和良率尚未披露。",
+          "revision_logic": "数量偏弱路径既有终端约束，也有公司分配约束。相同终端需求下，配额恢复、合格产品匹配或交付中断都可改变移动收入；对其他业务的高价值转配又可能损伤下一代OEM关系。研究其移动结果，不将厂房面积或邻域需求直接计作手机供给。",
+          "possibility_space": [
+            {
+              "name": "其他终端订单节奏放缓或资源占用下降，管理层归还移动配额",
+              "implication": "移动订单可先从排队变为交付，补库存甚至先于终端复苏；较多供给又减弱稀缺报价。若OEM已验证替代源，恢复供给未必恢复原份额，数量改善与单价下降可同时发生。"
+            },
+            {
+              "name": "管理层以长期供货承诺换取移动OEM下一平台份额",
+              "implication": "保留资源可能降低当期跨业务机会收益，却强化移动设计与采购连续性，提升下一周期可争取的订单池。订单承诺只覆盖相应客户/产品，不能从公司战略协议推定全部移动受保护。"
+            },
+            {
+              "name": "节点良品效率增加，但封装/测试或移动料号转换滞后",
+              "implication": "单位成本可先受益而整机所需配置仍缺货；可交付量落后名义比特，使OEM继续找替代源。若配套及时匹配，新增良品才会成为移动数量或价格竞争能力。"
+            },
+            {
+              "name": "工厂、运输或配套组件事件集中打断旗舰采购窗口",
+              "implication": "短缺可能推高行业价格，却让美光错过当代手机量产或承担急单成本；收入不能用高报价弥补未交付数量。恢复后OEM的多源政策可延续，事件因客户关系留下跨代际影响。"
+            }
+          ],
+          "ref": [
+            "D1-O31",
+            "D1-O57",
+            "D1-O88",
+            "D1-O4",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+          ]
+        },
+        {
+          "name": "预购与多层库存转向使订单偏离新机消耗",
+          "why_live": "手机弱量、内存高价和有限配额并存，OEM有防缺货提前采购的动机，也有高价存货与资金限制。State没有可比OEM组件库存周数；IDC品牌出货不能直接当最终售出，公司自身库存也不是手机渠道库存。",
+          "revision_logic": "默认路径中的数量压力可以在采购层被放大、暂时掩盖或错配。整机卖出、OEM生产及内存库存分别改变订单，资金和配额影响兑现时点；目标库存调整通常是一次性采购差而非新的持续消耗水平。",
+          "possibility_space": [
+            {
+              "name": "OEM为防缺货提高安全库存并通过融资提前锁料",
+              "implication": "美光获配订单可能先于新机卖出增长，近期收入支持来自库存建立而非持续用户需求。借用后续订单和持有高价库存会使之后采购更脆弱；受限配额也可能使预购仅表现为未交付排队。"
+            },
+            {
+              "name": "终端销售不及新品计划，渠道与OEM同时收缩库存",
+              "implication": "整机减产与组件去库叠加，内存采购可比手机台数下降更快。即便用户消耗已企稳，高价库存清理仍可能延后美光数量恢复，并促使OEM压价或改低配。"
+            },
+            {
+              "name": "供货恢复但库存容量/封装组合不匹配",
+              "implication": "部分高容量料号继续短缺，其他料号打折，平均库存充足不能证明目标平台可交付。美光订单可向特定规格集中，组合改善与总量疲弱并行。"
+            },
+            {
+              "name": "渠道信用收缩或OEM取消重复的防缺货预约",
+              "implication": "订单骤减可以源于融资和预订去重，而非同幅度用户需求崩塌；美光收现、配额计划及客户信用风险仍会受影响。若只是去重，后续正常补货的恢复路径不同于长期换机效用下降。"
+            }
+          ],
+          "ref": [
+            "D1-O31",
+            "D1-O57",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.idc.com/promo/smartphone-market-share/",
+            "https://www.idc.com/resource-center/blog/smartphone-shipments-set-for-record-16-7-drop-in-2026-as-the-memory-crisis-hits-full-force/"
+          ]
+        },
+        {
+          "name": "移动盈利从稀缺定价转向合同、成本与客户现金承受力",
+          "why_live": "合计MCBU已减量增收、Q4毛利率90%，但移动独立ASP、利润和合同覆盖均未披露。公司多年协议有数量及价格安排，客户保证金具融资和返还性质；这些不能变成移动永久利润下限。高价又会反馈到OEM预算、库存和信用。",
+          "revision_logic": "当前价格主导的经营平台可以因不同方式正常化，且高毛利百分比掩盖利润金额对售价的敏感度。分别考虑交付数量、DRAM/NAND价格、产品成本及现金；组合已进入平均实现价，不重复计增益。此主题不对市场已定价比例作未经支持的判断。",
+          "possibility_space": [
+            {
+              "name": "OEM获得替代供给后要求成熟产品降价并重新议定价格安排",
+              "implication": "未受保护业务的实现价和毛利金额先下降，即使仍维持很高毛利率；低BOM又可缓和新机需求和配置压力，随后恢复数量。合同覆盖和重谈期限决定这两种效应的先后，不是所有收入同步按现货价变化。"
+            },
+            {
+              "name": "移动客户获得跨代际供货/价带安排并承担明确采购承诺",
+              "implication": "相应业务的量价可见性提高，弱量期利润更平滑，但上限也可能限制稀缺时收益；换代范围或重谈条款决定保护能否延续。保证金只改善融资和履约，不是可重复销售。"
+            },
+            {
+              "name": "高端组合与制造降本支撑利润，而OEM只保留较小采购量",
+              "implication": "单位盈利可以较稳，整体毛利金额却因交付分母缩小而低于高百分比给人的印象；若降本被竞价让渡，收益可能转为保住客户与容量而不是更高单位利润。"
+            },
+            {
+              "name": "高价库存与弱销售损伤客户现金，延长账期或发生信用损失",
+              "implication": "已确认盈利向现金转换变差，并可能通过采购减少和配额重排影响下一期经营。长期信用支持只缓冲符合条款的敞口，不能把客户压力等同所有合同失效或美光已经损失。"
+            }
+          ],
+          "ref": [
+            "D1-O57",
+            "D1-O31",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx",
+            "https://www.idc.com/resource-center/blog/smartphone-shipments-set-for-record-16-7-drop-in-2026-as-the-memory-crisis-hits-full-force/"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "美光客户端内存与存储业务",
+      "scope": "面向PC、工作站、客户端OEM和组件渠道的DRAM、内存模组、SSD及NAND，涵盖设备更新与配置、产品代际、设计采用、客户认证、零售与OEM及组件渠道覆盖、采购库存、供给分配、出货和定价。",
+      "horizon": "季度终端与渠道周期及PC、工作站和客户端产品更新周期。",
+      "ref": [
+        "D1-O103",
+        "D1-O31",
+        "D1-O74",
+        "D1-O3",
+        "D1-O57",
+        "D1-O79",
+        "D1-O44",
+        "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+        "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx",
+        "https://investors.micron.com/news/press-release/2025/Micron-Announces-Exit-from-Crucial-Consumer-Business-12-03-2025/default.aspx",
+        "https://frame.work/blog/updates-on-memory-pricing-and-navigating-the-volatile-memory-market",
+        "https://www.idc.com/resource-center/press-releases/2q26-pc-top5/",
+        "https://www.idc.com/resource-center/blog/pc-market-enters-volatile-territory-as-memory-shortage-persists-through-2027/",
+        "https://www.apple.com/newsroom/2026/03/say-hello-to-macbook-neo/",
+        "https://blogs.windows.com/windowsexperience/2026/02/26/announcing-new-cloud-pc-devices-designed-for-windows-365/",
+        "https://www.microsoft.com/en-us/research/publication/early-impacts-of-m365-copilot/",
+        "https://www.microsoft.com/en-us/windows/business/knowledge-center/ai-pcs-and-roi",
+        "https://nvidianews.nvidia.com/news/nvidia-dgx-spark-arrives-for-worlds-ai-developers",
+        "https://learn.microsoft.com/en-us/windows/client-management/manage-recall",
+        "https://machinelearning.apple.com/research/introducing-third-generation-of-apple-foundation-models",
+        "https://blogs.windows.com/windowsexperience/2025/04/02/maximize-productivity-and-roi-with-windows-365-new-innovations-now-generally-available/",
+        "https://www.microsoft.com/en-us/windows-365/link",
+        "https://news.lenovo.com/pressroom/press-releases/lenovo-unveils-its-new-ai-ready-thinkpad-p1-gen-7-mobile-workstation/",
+        "https://www.micron.com/about/blog/storage/ssd/how-a-few-trapped-electrons-changed-the-world",
+        "https://tw.micron.com/content/dam/micron/global/public/products/data-sheet/ssd/2650-nvme-ssd-tech-prod-spec.pdf",
+        "https://nvmexpress.org/wp-content/uploads/NVM-Express-Base-Specification-2.0d-2024.01.11-Ratified.pdf",
+        "D1-O88",
+        "D1-O4"
+      ],
+      "state": {
+        "parameters": [
+          {
+            "name": "客户端业务独立收入",
+            "definition": "美光向PC与工作站销售本Unit产品确认的收入，美元；不等于手机与PC合计MCBU收入。公开分部没有独立拆分，保留参数而不填估算。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O3",
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "客户端DRAM比特出货量",
+            "definition": "本Unit向PC与工作站客户实际交付的DRAM容量，Gb；不以全公司DRAM增长或终端台数代替。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "客户端NAND比特出货量",
+            "definition": "本Unit实际交付的NAND容量，Gb；区分闪存容量、芯片件数和整机销量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O3",
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "客户端DRAM实现ASP",
+            "definition": "本Unit DRAM确认销售额除以对应销售Gb，美元/Gb；含产品组合，不能用行业现货报价或公司整体ASP替代。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "客户端NAND实现ASP",
+            "definition": "本Unit NAND确认销售额除以对应销售Gb，美元/Gb；不混入整机售价或全公司NAND ASP。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "客户端业务独立毛利率",
+            "definition": "本Unit销售毛利占收入的百分比；MCBU合计利润率只作共同背景，未取得本Unit可分离毛利率。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O57",
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "客户端OEM库存覆盖周数",
+            "definition": "本Unit客户持有、用于PC与工作站生产的内存存储库存相对其消耗量的覆盖周数；不是美光公司库存天数或整机出货量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O3",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "客户端单机DRAM装载量",
+            "definition": "本Unit对应PC与工作站新机的销量加权DRAM容量，GB/台；晶粒16Gb、选定高端SKU及AI模型参数量均不能代替全市场平均。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O3",
+              "D1-O103"
+            ]
+          },
+          {
+            "name": "客户端单机NAND装载量",
+            "definition": "本Unit对应PC与工作站新机的销量加权NAND容量，GB/台；区分容量提升与接口提速，未取得同口径市场平均。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O3"
+            ]
+          },
+          {
+            "name": "客户端OEM采购中的美光DRAM份额",
+            "definition": "对应PC与工作站OEM所采购DRAM比特中来自美光的比例，%；获选、认证和客户市场份额不等于实际采购份额。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O3",
+              "D1-O103"
+            ]
+          },
+          {
+            "name": "共同MCBU收入",
+            "definition": "手机、其他移动设备和客户端合计报告分部收入，百万美元；两个Unit引用同一共同代理，不可相加或视为任一Unit独立收入。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O57",
+              "D1-O44",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+            ]
+          },
+          {
+            "name": "共同MCBU毛利率",
+            "definition": "报告分部毛利率，%；属于合计分部业绩，不是移动或客户端独立毛利率，也不直接等于合并GAAP毛利率。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O44",
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+            ]
+          },
+          {
+            "name": "共同MCBU营业利润率",
+            "definition": "报告分部营业利润占其收入的比例，%；不与全公司费用及未分配项目混为一谈。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O57",
+              "D1-O44",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+            ]
+          },
+          {
+            "name": "共同MCBU比特出货方向",
+            "definition": "移动与客户端合计分部的已售比特数量变化，未拆分终端与DRAM/NAND；保留公司明确披露方向，不推断本Unit数量跌幅。",
+            "value_type": "DIRECTION",
+            "ref": [
+              "D1-O57",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "共同MCBU实现售价方向",
+            "definition": "合计分部销售产品的实现平均售价变动；公开说明未给本分部精确幅度，全公司DRAM约180%和NAND约200%的涨幅不能移入。",
+            "value_type": "DIRECTION",
+            "ref": [
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "共同MCBU供给配置位置",
+            "definition": "美光在手机、PC与其他业务间分配可售供给的实际位置；影响本Unit可交付量而非单纯终端需求。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O57",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "AI工作站OEM设计采用位置",
+            "definition": "美光产品被客户端AI工作站OEM设计选入的商业状态；与平台实际产量、采购比特和供应份额区分。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O103"
+            ]
+          },
+          {
+            "name": "个人AI工作站内存配置尺度",
+            "definition": "美光对新兴个人AI工作站所用DRAM容量尺度的业务描述；用阶段保存单侧128GB+，不伪造上下界或全PC平均。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O3",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "4600 SSD客户端资格位置",
+            "definition": "美光4600 SSD进入PC OEM合格供应列表的状态，区别认证、量产供货与市场份额。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O103"
+            ]
+          },
+          {
+            "name": "G9 Gen5 QLC客户端SSD资格位置",
+            "definition": "美光G9 NAND、PCIe Gen5 QLC客户端SSD在客户资格流程的状态。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O3",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "客户端SSD与组件渠道覆盖",
+            "definition": "美光直接客户端SSD、DRAM/闪存组件与伙伴加工销售的现行商业覆盖；不等同Crucial自有零售品牌。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O3"
+            ]
+          },
+          {
+            "name": "Crucial消费者渠道经营位置",
+            "definition": "美光自有Crucial消费者零售DRAM/SSD渠道的继续、退出及售后状态；区别整个客户端业务。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O3",
+              "https://investors.micron.com/news/press-release/2025/Micron-Announces-Exit-from-Crucial-Consumer-Business-12-03-2025/default.aspx"
+            ]
+          },
+          {
+            "name": "LPCAMM2具名客户供货采用位置",
+            "definition": "美光LPDDR低功耗可更换LPCAMM2模组在具名客户端平台中的设计采用与采购供货位置；历史设计公告、实际采购批次和量产采购分别保留，不把平台规格等同订单。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O79",
+              "https://frame.work/blog/updates-on-memory-pricing-and-navigating-the-volatile-memory-market",
+              "https://news.lenovo.com/pressroom/press-releases/lenovo-unveils-its-new-ai-ready-thinkpad-p1-gen-7-mobile-workstation/"
+            ]
+          },
+          {
+            "name": "Framework LPCAMM2采购成本位置",
+            "definition": "具名客户端买方Framework所采购LPCAMM2模组成本相对其预订基线的位置；批次成本状态，不是美光统一ASP。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://frame.work/blog/updates-on-memory-pricing-and-navigating-the-volatile-memory-market"
+            ]
+          },
+          {
+            "name": "全球传统PC出货量",
+            "definition": "IDC传统PC包括桌面、笔记本和工作站，排除平板与x86服务器；统计向渠道或最终用户出货，百万台，不是美光销量或单独sell-through。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.idc.com/resource-center/press-releases/2q26-pc-top5/"
+            ]
+          },
+          {
+            "name": "Lenovo全球传统PC出货份额",
+            "definition": "IDC Lenovo在全球传统PC品牌出货的比例，%；定位采购组织及产品组合，不代表美光供货份额。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.idc.com/resource-center/press-releases/2q26-pc-top5/"
+            ]
+          },
+          {
+            "name": "Apple全球传统PC出货份额",
+            "definition": "IDC Apple在全球传统PC品牌出货的比例，%；定位采购组织及产品组合，不代表美光供货份额。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.idc.com/resource-center/press-releases/2q26-pc-top5/"
+            ]
+          },
+          {
+            "name": "全球PC全年出货增长率",
+            "definition": "IDC对指定自然年全球PC数量同比的预测，%；外部市场情景而非目标业务指引。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.idc.com/resource-center/blog/pc-market-enters-volatile-territory-as-memory-shortage-persists-through-2027/"
+            ]
+          },
+          {
+            "name": "全球PC第四季度出货增长率",
+            "definition": "IDC对自然年Q4 PC出货同比的预测，%；与全年目标分开。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.idc.com/resource-center/blog/pc-market-enters-volatile-territory-as-memory-shortage-persists-through-2027/"
+            ]
+          },
+          {
+            "name": "全球PC平均整机售价增长率",
+            "definition": "IDC全球PC整机ASP年度变化预测，%；消费者/企业采购成本背景，不是美光内存、SSD实现价。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.idc.com/resource-center/blog/pc-market-enters-volatile-territory-as-memory-shortage-persists-through-2027/"
+            ]
+          },
+          {
+            "name": "低价AI笔记本代表配置的DRAM容量",
+            "definition": "Apple公布MacBook Neo性能测试所用配置的统一内存GB；具体低价平台实例，不是全PC平均或确认美光BOM。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.apple.com/newsroom/2026/03/say-hello-to-macbook-neo/"
+            ]
+          },
+          {
+            "name": "低价AI笔记本代表配置的SSD容量",
+            "definition": "Apple公布MacBook Neo性能测试所用配置的SSD容量GB；与DRAM、整机价格分别度量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.apple.com/newsroom/2026/03/say-hello-to-macbook-neo/"
+            ]
+          },
+          {
+            "name": "客户端本地Recall部署与数据留存位置",
+            "definition": "Windows本地屏幕索引在受管理客户端设备的启用权限和本地持久化安排；定位可产生端侧存储活动的范围，不代表美光份额或实际用户数量。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://learn.microsoft.com/en-us/windows/client-management/manage-recall"
+            ]
+          },
+          {
+            "name": "客户端Recall默认快照存储配额",
+            "definition": "Microsoft未配置快照存储上限策略时，按设备总存储档位给出的默认本地快照容量，GB；是有条件启用后的空间配额，不是每日新增NAND采购。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://learn.microsoft.com/en-us/windows/client-management/manage-recall"
+            ]
+          }
+        ],
+        "values": [
+          {
+            "name": "FY2026合计收入36601百万美元",
+            "parameter": "共同MCBU收入",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 36601.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 11859.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026截至2026-09-03；previous_value为FY2025截至2025-08-28的11859；两财年分别53/52周，未标准化",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O57",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "FY2026 Q4合计收入13114百万美元",
+            "parameter": "共同MCBU收入",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 13114.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 11521.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026 Q4截至2026-09-03；previous_value为FY2026 Q3截至2026-05-28的11521",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O44",
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+            ]
+          },
+          {
+            "name": "Q4分部毛利率90%",
+            "parameter": "共同MCBU毛利率",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 90.0,
+              "unit": "%"
+            },
+            "previous_value": {
+              "number": 87.0,
+              "unit": "%"
+            },
+            "time_scope": "FY2026 Q4；previous_value为FY2026 Q3的87%；同季上年FY2025 Q4为36%",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O44",
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+            ]
+          },
+          {
+            "name": "FY2026分部营业利润率80%",
+            "parameter": "共同MCBU营业利润率",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 80.0,
+              "unit": "%"
+            },
+            "previous_value": {
+              "number": 17.0,
+              "unit": "%"
+            },
+            "time_scope": "FY2026；previous_value为FY2025的17%；使用报告四舍五入百分比",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O57",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "Q4分部营业利润率88%",
+            "parameter": "共同MCBU营业利润率",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 88.0,
+              "unit": "%"
+            },
+            "previous_value": {
+              "number": 86.0,
+              "unit": "%"
+            },
+            "time_scope": "FY2026 Q4；previous_value为FY2026 Q3的86%；FY2025 Q4为29%",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O44",
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+            ]
+          },
+          {
+            "name": "FY2026合计比特减少",
+            "parameter": "共同MCBU比特出货方向",
+            "source_role": "ACTUAL",
+            "value": {
+              "direction": "减少"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026较FY2025",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O57",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "FY2026合计实现售价上升",
+            "parameter": "共同MCBU实现售价方向",
+            "source_role": "ACTUAL",
+            "value": {
+              "direction": "上升"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026较FY2025；为合计收入增长209%的公司主要解释",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "供给转配其他分部",
+            "parameter": "共同MCBU供给配置位置",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "FY2026部分MCBU产品供给已转向其他业务单元；合计数量下降与收入上升并存。未公开移动与PC各自配额。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026截至2026-09-03",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O57",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "各Tier 1 OEM设计获选",
+            "parameter": "AI工作站OEM设计采用位置",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "9月30日公司披露AI工作站产品已获每一家Tier 1 OEM客户设计胜出；名单、逐平台采购量及交付份额未公开。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-30所披露当前设计位置",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O103"
+            ]
+          },
+          {
+            "name": "工作站常见128GB及以上尺度",
+            "parameter": "个人AI工作站内存配置尺度",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "公司描述个人AI工作站这一新兴类别常使用128GB+ DRAM；是该类别尺度描述，不是所有客户端平均、已售台数或容量保证。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026业务描述",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O3",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "4600新增领先PC OEM认证",
+            "parameter": "4600 SSD客户端资格位置",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "4600 SSD已取得领先PC OEM的更多资格认证；披露的进展是认证，未附可独立量化的出货/收入。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-30披露的当前资格位置",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O103"
+            ]
+          },
+          {
+            "name": "领先客户已完成资格验证",
+            "parameter": "G9 Gen5 QLC客户端SSD资格位置",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "FY2026完成领先客户对G9 Gen5 QLC客户端SSD的资格验证；不是据此确认所有客户量产放量。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026截至2026-09-03",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O3",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "OEM及伙伴组件渠道持续存在",
+            "parameter": "客户端SSD与组件渠道覆盖",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "客户端SSD销售主要包括2500、2600、2650系列；向组件渠道提供封装DRAM及TLC/QLC NAND，由伙伴进一步制成模组和SSD销售。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026业务结构",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O3"
+            ]
+          },
+          {
+            "name": "自有品牌退出已公告并有供货截止计划",
+            "parameter": "Crucial消费者渠道经营位置",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "2025年12月公告退出Crucial消费者业务，计划正常供货至2026财年Q2结束即2026年2月，保留既有保修。FY2026年报仍确认该退出安排；不把计划截止当作已验证尾货清零。"
+            },
+            "previous_value": null,
+            "time_scope": "2025-12公告及FY2026业务结构；供货计划截止2026-02",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O3",
+              "https://investors.micron.com/news/press-release/2025/Micron-Announces-Exit-from-Crucial-Consumer-Business-12-03-2025/default.aspx"
+            ]
+          },
+          {
+            "name": "Lenovo P1 Gen7历史采用入口",
+            "parameter": "LPCAMM2具名客户供货采用位置",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "Lenovo于2024-04-23公布ThinkPad P1 Gen7平台采用与美光合作的LPDDR5X LPCAMM2、支持至64GB，并计划2024年5月起上市。保留已公告的历史设计入口，不把公告当作当日已交付数量或2026新增整线采购。"
+            },
+            "previous_value": null,
+            "time_scope": "2024-04-23公布的P1 Gen7平台设计；上市时间为当时公布的2024-05计划，不由该公告推断实际出货规模",
+            "as_of": "2024-04-23",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O79",
+              "https://news.lenovo.com/pressroom/press-releases/lenovo-unveils-its-new-ai-ready-thinkpad-p1-gen-7-mobile-workstation/"
+            ]
+          },
+          {
+            "name": "Framework已采购Micron 32GB/64GB批次",
+            "parameter": "LPCAMM2具名客户供货采用位置",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "Framework 9月8日披露获得有限数量Micron 32GB/64GB LPCAMM2，供Laptop 13 Pro；9月29日又取得同价补货并扩大降价覆盖，仍属有限数量采购批次。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09已采购供货批次及预订履约",
+            "as_of": "2026-09-29",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://frame.work/blog/updates-on-memory-pricing-and-navigating-the-volatile-memory-market"
+            ]
+          },
+          {
+            "name": "较7月高价批次降低仍高于首发基线",
+            "parameter": "Framework LPCAMM2采购成本位置",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "Framework称9月较低成本批次仍高于原始预订启动基线；9月29日补货同价。与其普通DDR5整机耗尽低成本库存后提价并存。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09；比较原始预订及此前高价库存批次",
+            "as_of": "2026-09-29",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://frame.work/blog/updates-on-memory-pricing-and-navigating-the-volatile-memory-market"
+            ]
+          },
+          {
+            "name": "IDC Q2初步PC出货68.2百万台",
+            "parameter": "全球传统PC出货量",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 68.2,
+              "unit": "百万台"
+            },
+            "previous_value": {
+              "number": 71.7,
+              "unit": "百万台"
+            },
+            "time_scope": "2026自然年Q2；previous_value为2025 Q2的71.7；同比-4.9%，保留初步统计性质",
+            "as_of": "2026-07-08",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.idc.com/resource-center/press-releases/2q26-pc-top5/"
+            ]
+          },
+          {
+            "name": "Lenovo Q2 PC份额24.4%",
+            "parameter": "Lenovo全球传统PC出货份额",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 24.4,
+              "unit": "%"
+            },
+            "previous_value": {
+              "number": 23.7,
+              "unit": "%"
+            },
+            "time_scope": "2026 Q2初步统计；previous_value为2025 Q2",
+            "as_of": "2026-07-08",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.idc.com/resource-center/press-releases/2q26-pc-top5/"
+            ]
+          },
+          {
+            "name": "Apple Q2 PC份额9.9%",
+            "parameter": "Apple全球传统PC出货份额",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 9.9,
+              "unit": "%"
+            },
+            "previous_value": {
+              "number": 8.5,
+              "unit": "%"
+            },
+            "time_scope": "2026 Q2初步统计；previous_value为2025 Q2",
+            "as_of": "2026-07-08",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.idc.com/resource-center/press-releases/2q26-pc-top5/"
+            ]
+          },
+          {
+            "name": "IDC 2026 PC预测-11.3%",
+            "parameter": "全球PC全年出货增长率",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": -11.3,
+              "unit": "%同比"
+            },
+            "previous_value": null,
+            "time_scope": "2026自然年",
+            "as_of": "2026-06-02",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.idc.com/resource-center/blog/pc-market-enters-volatile-territory-as-memory-shortage-persists-through-2027/"
+            ]
+          },
+          {
+            "name": "IDC Q4 PC预测下降20%",
+            "parameter": "全球PC第四季度出货增长率",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": -20.0,
+              "unit": "%同比"
+            },
+            "previous_value": null,
+            "time_scope": "2026自然年Q4对2025 Q4",
+            "as_of": "2026-06-02",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.idc.com/resource-center/blog/pc-market-enters-volatile-territory-as-memory-shortage-persists-through-2027/"
+            ]
+          },
+          {
+            "name": "IDC 2026整机ASP预测增加17%",
+            "parameter": "全球PC平均整机售价增长率",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 17.0,
+              "unit": "%同比"
+            },
+            "previous_value": null,
+            "time_scope": "2026自然年对2025年",
+            "as_of": "2026-06-02",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.idc.com/resource-center/blog/pc-market-enters-volatile-territory-as-memory-shortage-persists-through-2027/"
+            ]
+          },
+          {
+            "name": "MacBook Neo发布测试配置8GB",
+            "parameter": "低价AI笔记本代表配置的DRAM容量",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 8.0,
+              "unit": "GB/台"
+            },
+            "previous_value": null,
+            "time_scope": "2026-03-04发布记录所列2026年1至2月预生产测试配置；产品3月11日计划上市",
+            "as_of": "2026-03-04",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.apple.com/newsroom/2026/03/say-hello-to-macbook-neo/"
+            ]
+          },
+          {
+            "name": "MacBook Neo发布测试配置256GB SSD",
+            "parameter": "低价AI笔记本代表配置的SSD容量",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 256.0,
+              "unit": "GB/台"
+            },
+            "previous_value": null,
+            "time_scope": "2026-03-04发布记录所列2026年1至2月预生产测试配置",
+            "as_of": "2026-03-04",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.apple.com/newsroom/2026/03/say-hello-to-macbook-neo/"
+            ]
+          },
+          {
+            "name": "受管理设备默认关闭、用户选择快照留存",
+            "parameter": "客户端本地Recall部署与数据留存位置",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "Microsoft文档：受管理设备默认禁用并移除Recall；IT可允许组件但不能代用户开启快照留存，用户需主动同意。快照和本地向量数据加密保留在设备；存储达到配额会删除最早快照。"
+            },
+            "previous_value": null,
+            "time_scope": "截至2025-12-10文档的Windows Recall preview管理安排",
+            "as_of": "2025-12-10",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://learn.microsoft.com/en-us/windows/client-management/manage-recall"
+            ]
+          },
+          {
+            "name": "256GB设备默认快照配额25GB",
+            "parameter": "客户端Recall默认快照存储配额",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 25.0,
+              "unit": "GB"
+            },
+            "previous_value": null,
+            "time_scope": "截至2025-12-10文档；总存储256GB的设备，未配置存储策略时；只比较配额，不把不同设备档位串成历史增长",
+            "as_of": "2025-12-10",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://learn.microsoft.com/en-us/windows/client-management/manage-recall"
+            ]
+          },
+          {
+            "name": "512GB设备默认快照配额75GB",
+            "parameter": "客户端Recall默认快照存储配额",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 75.0,
+              "unit": "GB"
+            },
+            "previous_value": null,
+            "time_scope": "截至2025-12-10文档；总存储512GB的设备，未配置存储策略时；只比较配额，不把不同设备档位串成历史增长",
+            "as_of": "2025-12-10",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://learn.microsoft.com/en-us/windows/client-management/manage-recall"
+            ]
+          },
+          {
+            "name": "至少1TB设备默认快照配额150GB",
+            "parameter": "客户端Recall默认快照存储配额",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 150.0,
+              "unit": "GB"
+            },
+            "previous_value": null,
+            "time_scope": "截至2025-12-10文档；总存储至少1TB的设备，未配置存储策略时；只比较配额，不把不同设备档位串成历史增长",
+            "as_of": "2025-12-10",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://learn.microsoft.com/en-us/windows/client-management/manage-recall"
+            ]
+          }
+        ]
+      },
+      "expectation_baseline": [
+        {
+          "name": "采购前置后的弱量与整机涨价",
+          "baseline": "本研究的近端默认路径是PC采购数量偏弱且配置/库存错配延续，不把更新需求视作直线增长。IDC认为Q1部分采购提前，Q2传统PC初步出货已降4.9%，并预测全年下降；客户整机成本提高与MCBU比特受限共同约束美光客户端数量。Windows更新和AI兴趣是需求动机，不足以推翻已经发生的数量压力。",
+          "ordinary_progress": "OEM按库存成本更换报价、缩减难供应配置；商业更新与消费促销继续，台数和收入走不同方向。",
+          "open_frontier": "渠道高价库存是否被真正sell-through吸收、企业采购预算是否允许维持配置，以及被提前的订单在未来季度留下多大缺口。",
+          "time_scope": "2026下半年及未来1—3个季度",
+          "ref": [
+            "https://www.idc.com/resource-center/press-releases/2q26-pc-top5/",
+            "https://www.idc.com/resource-center/blog/pc-market-enters-volatile-territory-as-memory-shortage-persists-through-2027/",
+            "D1-O57"
+          ]
+        },
+        {
+          "name": "AI客户端分层，高容量工作站不是所有PC的平均",
+          "baseline": "本研究预计高内存AI工作站构成真实但分层的产品机会：美光已有全部Tier 1 OEM设计入口，公司描述该类别常达128GB+，支持高容量产品准备延续。另一端Apple低价Neo发布测试配置仅8GB/256GB且有本地AI能力，说明AI标签不自动规定全行业容量跳升。采用高端工作站提升单位价值、低价笔记本继续严控BOM的双轨解释。",
+          "ordinary_progress": "工作站选定设计进入平台交付准备，更广泛PC继续在性能、容量和售价间区分档位。",
+          "open_frontier": "设计获选转成实际采购的台数和美光份额、128GB+类别占总体PC的比重，以及低价AI设备对主流16GB及更高档位的挤出。",
+          "time_scope": "未来工作站与PC平台更新周期",
+          "ref": [
+            "D1-O103",
+            "D1-O3",
+            "https://www.apple.com/newsroom/2026/03/say-hello-to-macbook-neo/"
+          ]
+        },
+        {
+          "name": "LPCAMM2从具名入口扩展但供货按批次组织",
+          "baseline": "本研究预计LPCAMM2继续在重视功耗和可更换性的客户端平台获得采用，而非快速覆盖全部内存模组。Lenovo历史P1入口与Framework当前采购提供了不同年份的真实平台支持；Framework较低成本批次和普通DDR5旧库存耗尽后的涨价并存，表明客户面对具体容量、批次及采购成本，而不是统一市场价格。",
+          "ordinary_progress": "现有平台追加模组批次，成本变化通过具体配置价格/退款传递；同价有限补货是普通延续，不代表供给已无限充裕。",
+          "open_frontier": "可持续补货与新平台扩张的数量、OEM从焊接LPDDR/传统模组迁移的比例，以及可更换结构是否真正扩大美光采购而非仅替换形态。",
+          "time_scope": "未来季度及客户端平台更新周期",
+          "ref": [
+            "D1-O79",
+            "https://frame.work/blog/updates-on-memory-pricing-and-navigating-the-volatile-memory-market"
+          ]
+        },
+        {
+          "name": "客户端SSD资格推进是采购入口而不是即时位元增量",
+          "baseline": "本研究以4600新增认证和G9 Gen5 QLC领先客户完成资格验证继续扩大美光客户端SSD可进入的设计范围为默认路径；现有2500/2600/2650与组件渠道仍提供销售基础。PC市场弱量下，新代际更可能先表现为客户组合和供应选择变化，不能仅由资格数推定NAND数量或毛利增量。",
+          "ordinary_progress": "OEM按既定平台完成验证及替换旧系列，TLC/QLC在成本、耐久与性能约束下继续分层。",
+          "open_frontier": "认证后量产订单份额、SSD平均容量与实际用户付费档位、QLC成本收益能否保留而不全被降价让渡。",
+          "time_scope": "下一轮PC OEM及SSD产品周期",
+          "ref": [
+            "D1-O3",
+            "D1-O103"
+          ]
+        },
+        {
+          "name": "退出自有消费者品牌、保留OEM和组件渠道",
+          "baseline": "本研究的默认商业路径是客户端渠道更聚焦OEM与伙伴组件，而不是Crucial零售继续扩张或美光整体退出PC。自有品牌退出供货窗口已按计划经过，但年报仍保留客户端产品与组件伙伴业务；这改变销售入口和最终品牌归属，不直接等于美光全部零售相关比特消失。",
+          "ordinary_progress": "既有售后继续，OEM直接供货与第三方模组/SSD伙伴销售延续；自有消费者品牌不再作为新增增长基线。",
+          "open_frontier": "渠道转换后的净采购量、伙伴能否承接原客户需求、收入结构及服务成本的变化，决定退出是资源再配置还是客户端需求流失。",
+          "time_scope": "未来季度与渠道转换周期",
+          "ref": [
+            "D1-O3",
+            "https://investors.micron.com/news/press-release/2025/Micron-Announces-Exit-from-Crucial-Consumer-Business-12-03-2025/default.aspx"
+          ]
+        },
+        {
+          "name": "利润平台与受限比特分离，更新可走本地或云端",
+          "baseline": "本研究预计客户端高价经营平台与有限可供比特仍并存，但不把它视作合同保证的永久利润下限；MCBU售价与供给改配证据更直接，战略协议未披露本Unit覆盖。PC更新也不只通向更大本地内存：Microsoft已部署Windows 365 Link并公布更多专用Cloud PC终端，支持部分企业把计算迁到远端的组织路径。该路径只影响本地终端内容判断，云侧存储增长归邻域。",
+          "ordinary_progress": "高端本地工作站、主流整机及云终端各自续采；供给优先级与产品组合继续影响实际客户端销售。",
+          "open_frontier": "客户端获分配供给是否恢复、非合约价格是否正常化，以及企业把AI/桌面工作负载留在本地的比例，决定价格、内容与台数能否同时改善。",
+          "time_scope": "未来1—3个季度及企业终端更新周期",
+          "ref": [
+            "D1-O57",
+            "D1-O31",
+            "https://blogs.windows.com/windowsexperience/2026/02/26/announcing-new-cloud-pc-devices-designed-for-windows-365/"
+          ]
+        }
+      ],
+      "realization_factors": [
+        {
+          "name": "工作价值、设备老化与预算窗口形成客户端采购",
+          "mechanism": "企业职工的办公/分析/创作活动与学生、家庭娱乐学习需求形成PC使用；工作流质量、等待时间、支持故障和安全维护成本使旧机与新机效用不同。IT和业务负责人按岗位收益、设备老化、软件支持及兼容性形成更新范围，财务预算/融资成本和部署资源决定分批时点，消费者则比较整机价与可支付预算。AI软件付费/常用可以提升效率，但若云软件在旧机已可运行，其收益不必依赖新硬件。采购台数、档位及OEM供应份额最终决定美光客户端内容机会。",
+          "current_status": "工作判断是有真实更新用途但采购更选择性，不能把软件AI采用或OS期限当全机队必须立即换新。Microsoft约6000人、56家企业的随机实验报告部分任务节时、约40%获授权者持续常用，是软件用途证据；2026年2月AI PC ROI材料则为受委托的复合组织模型，非市场已实现回报。IDC观察到采购前置后Q2弱量，预算和部署时点当前更紧。",
+          "materiality_context": "工作活动/岗位价值决定机会分母，任务节时与故障/支持/安全成本决定每台更新收益，软件兼容决定旧机是否足够，预算/融资与部署能力决定购买速度。实验的文档完成快12%不是12%更多PC或全部工时节约；ROI复合模型还混合IT及安全收益，不能全部归本地AI。当前PC全年外部预测-11.3%，若份额/库存固定，平均内容约需+12.7%才抵消台数下降（1/0.887-1，行业条件性基准）。配置与供应份额改变美光捕获；岗位先行、分批审批的节奏比全员AI兴趣更直接影响近端数量。",
+          "scope_boundary": "覆盖商业与消费客户端购买的经济动机，不给企业投资建议或将受委托ROI模型当共识；软件订阅收入、云端能力不直接计入本Unit。",
+          "ref": [
+            "https://www.microsoft.com/en-us/research/publication/early-impacts-of-m365-copilot/",
+            "https://www.microsoft.com/en-us/windows/business/knowledge-center/ai-pcs-and-roi",
+            "https://www.idc.com/resource-center/press-releases/2q26-pc-top5/",
+            "https://www.idc.com/resource-center/blog/pc-market-enters-volatile-territory-as-memory-shortage-persists-through-2027/",
+            "https://www.apple.com/newsroom/2026/03/say-hello-to-macbook-neo/"
+          ]
+        },
+        {
+          "name": "本地工作负载、内存架构与部署权限决定客户端内容强度",
+          "mechanism": "开发/微调、图像创作、分析和个人资料检索等负载的实际使用决定本地计算价值；模型精度/权重、上下文、数据集和应用并发决定工作集。CPU/GPU统一内存可减少复制并扩大可访问池，独显本地显存则改变系统DRAM与图形内存分工；带宽/算力/散热决定大容量是否可用。量化、调度和软件优化降低资源强度，现机余量先吸收活动。企业IT权限和用户隐私选择还决定本地索引是否启用及留存多久；容量临界点才推动新机高配，CPU/GPU架构兼容再决定美光料号机会。",
+          "current_status": "高容量工作站是真实准备方向，美光已有Tier 1 OEM设计入口，NVIDIA已公布128GB统一内存的DGX Spark供开发者使用，但没有据此指定美光供货。Neo的8GB实例体现低价分层。Recall文档截至2025-12-10要求本地硬件/剩余空间并在受管理设备默认禁用，说明可用功能不等于全体安装者产生持久数据。",
+          "materiality_context": "负载使用与本地比例决定机会广度，工作集来源/精度/效率决定每台容量，统一池或显存分工决定DRAM类别，带宽/算力/散热决定性能价值，兼容和权限/用户同意决定可部署范围，余量决定采购时滞。纯示意：100台中1台由16GB改128GB多112GB，等于7台16GB的容量，虽高但不是全市场台数增量；其采购份额比128GB标称本身更关键。Recall默认配额25/75/150GB随256/512/至少1TB设备变化，是占用额度而非每天新增闪存；禁用、覆盖删除和空闲空间均抑制线性增长。当前工作站机会比平均PC更高强度，权限/效率变化仍可在销售前重画其范围。",
+          "scope_boundary": "覆盖客户端DRAM与SSD工作集、本地AI采用，不把DGX产品名单当美光订单；显存相关产品边界按实际终端归属，数据中心训练归邻域。",
+          "ref": [
+            "D1-O103",
+            "D1-O3",
+            "https://nvidianews.nvidia.com/news/nvidia-dgx-spark-arrives-for-worlds-ai-developers",
+            "https://www.apple.com/newsroom/2026/03/say-hello-to-macbook-neo/",
+            "https://learn.microsoft.com/en-us/windows/client-management/manage-recall",
+            "https://machinelearning.apple.com/research/introducing-third-generation-of-apple-foundation-models"
+          ]
+        },
+        {
+          "name": "本地计算与Cloud PC组织选择重新分配终端内容",
+          "mechanism": "企业按数据保密、离线/交互延迟、应用兼容和IT管理负担，比较高配本地PC与远端Cloud PC。网络质量和按用户/并发付费的总成本决定云路径经济性；共享工位/轮班可按同时活跃会话购买服务，降低每名职工所需独立高配设备。已有PC或轻终端负责显示、输入与部分本地视频处理，应用/数据驻留远端，从而降低本地DRAM/SSD强度，但并不删除所有本地存储。",
+          "current_status": "这是已运行的替代组织方式，而非把所有工作都迁云的假设：Windows 365 Link已商业推出，2026材料仍扩展专用终端；共享模式面向临时/轮班访问。工作判断是可管理的联网桌面岗位更适配云终端，敏感离线或大带宽创作/开发仍保留高配本地路径。Link当前产品资料为8GB LPDDR5、64GB UFS的配置示例，不代表全球采购份额或美光BOM。",
+          "materiality_context": "隐私/离线/延迟和兼容决定哪些岗位能迁移，管理节省及网络/订阅总成本决定是否经济，职工数量与峰值并发决定服务和工位数，复用旧机决定新增终端台数，轻终端配置决定本地比特。固定岗位/台数下，把1TB本地SSD转成64GB轻终端会明显减少该队列端侧容量，但云端增加不能在本Unit净算回来；LPDDR/UFS还能改变产品形态。当前用途最可信在共享/桌面岗位，远不等于工作站全面替代；它能在终端数量稳定时降低内容，和高内存本地AI路径形成真实对照。",
+          "scope_boundary": "端侧产品与采购后果归本Unit，云侧DRAM/NAND收入归数据中心域；不把职工人数、Cloud PC许可证和实体新机各算一份独立需求。",
+          "ref": [
+            "https://blogs.windows.com/windowsexperience/2025/04/02/maximize-productivity-and-roi-with-windows-365-new-innovations-now-generally-available/",
+            "https://blogs.windows.com/windowsexperience/2026/02/26/announcing-new-cloud-pc-devices-designed-for-windows-365/",
+            "https://www.microsoft.com/en-us/windows-365/link",
+            "D1-O3"
+          ]
+        },
+        {
+          "name": "内存形态、可更换性与生命周期改变模组捕获",
+          "mechanism": "OEM按功耗、带宽、板面积和平台机械/电气约束，选择焊接LPDDR、传统DIMM/SODIMM或LPCAMM2。可更换结构允许维修与后装升级，焊接结构则更依赖初装选档；平台兼容和客户资格决定具体模组供应者。较低能耗/占地可增加薄型或高性能平台入口，但同容量改换形态本身不增加DRAM比特。后装升级可新增模组采购同时延缓整机更换，价格和批次可得性又决定用户实际升至多少容量。",
+          "current_status": "Lenovo于2024年公布LPCAMM2历史工作站设计入口，Framework则提供2026年已采购批次，两者的阶段和年份不同。Framework有限32GB/64GB批次和调整价格反映具体容量供货约束，不能作全行业形态迁移比例。工作判断是平台条件匹配后扩大可服务范围，而非立即取代焊接或全部传统模组。",
+          "materiality_context": "功耗/面积/带宽决定平台设计价值，机械/电气兼容与资格决定参与门槛，可更换性决定后装/维修路径，价格/批次和容量选档决定实际量及时间，供应者份额决定美光捕获。固定台数同容量换形态主要改变价值与份额；已有用户32GB升64GB会采购64GB新模组，但被换下32GB再利用不是再采购，且整机延寿可能减少其他组件需求。当前具名采用证明路径，未测得平台广度；比特影响更依赖容量档位和可持续批次，不能只按功耗宣传计新增需求。",
+          "scope_boundary": "客户端模组和LPDDR形态、后装渠道及生命周期；不把LPCAMM2与服务器SOCAMM混为同一商业采用，基础制造深度归邻域。",
+          "ref": [
+            "D1-O79",
+            "https://news.lenovo.com/pressroom/press-releases/lenovo-unveils-its-new-ai-ready-thinkpad-p1-gen-7-mobile-workstation/",
+            "https://frame.work/blog/updates-on-memory-pricing-and-navigating-the-volatile-memory-market",
+            "D1-O3"
+          ]
+        },
+        {
+          "name": "SSD介质、控制器与缓存架构在容量成本和体验间分配价值",
+          "mechanism": "客户端用户对开机/应用、游戏、媒体与模型加载的实际等待容忍，连同容量和写入寿命要求，构成OEM SSD选型。TLC/QLC密度、良率和介质时序改变单位容量成本，控制器并行度、接口、固件/ECC及缓存补偿性能和可靠性；NVMe HMB可让控制器使用主机分配的内存，DRAM-less设计减少SSD本地DRAM BOM，不等于主机所有DRAM消失。成本节约可留作利润、降价获份额或扩大容量，最终由竞争报价与OEM预算分配决定。",
+          "current_status": "工作判断是容量可支付性和用户体验共同决定采用，不以Gen5速度或QLC密度单独保证放量。当前2500/2600/2650销售基础和G9 Gen5 QLC资格推进并存；2650公开技术规格为TLC、HMB/DRAM-less，不能把所有客户端SSD视作QLC。技术标准的HMB机制已存在，固件/控制器能力是从介质技术到可售产品的中间变量。",
+          "materiality_context": "用户活动/等待和写入寿命决定可服务负载，容量/预算决定购买档位，介质密度与良率决定成本潜力，时序/并行/接口/固件和缓存决定性能收益能否兑现。按每单元TLC3比特与QLC4比特算，同样逻辑容量理论所需单元减少25%，不是总SSD成本下降25%：控制器、良率、冗余和测试仍在。HMB/DRAM-less直接影响SSD BOM和DRAM捕获，不能等同数十GB应用内存替代。当前弱量、高成本使可付容量与同规格报价更有杠杆；速度若不是使用瓶颈，价值提升可能低于介质降本，反之热/时延约束会使便宜高密度产品无法替代。",
+          "scope_boundary": "客户端SSD及其组件价值，非企业KV-cache SSD；2650资料全文访问受限，仅采用搜索返回的TLC、HMB/DRAM-less规格，不使用未读TBW/实测细节。工艺与行业供给深度归NAND制造/行业域。",
+          "ref": [
+            "D1-O3",
+            "D1-O103",
+            "https://www.micron.com/about/blog/storage/ssd/how-a-few-trapped-electrons-changed-the-world",
+            "https://tw.micron.com/content/dam/micron/global/public/products/data-sheet/ssd/2650-nvme-ssd-tech-prod-spec.pdf",
+            "https://nvmexpress.org/wp-content/uploads/NVM-Express-Base-Specification-2.0d-2024.01.11-Ratified.pdf"
+          ]
+        },
+        {
+          "name": "OEM资格、采购分配与平台销量决定客户端设计机会",
+          "mechanism": "PC/工作站OEM通过内存接口、SSD性能/可靠性、功耗与固件兼容验证形成合格供应列表；设计获选扩大美光可进入平台，但实际供货份额还由相对报价、交期、质量与多源政策决定。平台发布/产量与客户库存将份额转为订单，供给承诺再决定美光能交付多少。即使PC总量不变，新供应者资格、平台份额和采购集中度也会改变本Unit销售。",
+          "current_status": "Tier 1 AI工作站设计胜出、4600更多OEM认证以及G9 Gen5 QLC领先客户完成资格，使参与基础增强；但台数和份额未量化。IDC PC格局中大品牌具有供应链优势，当前采用资格支持未来可服务范围、供给/报价控制近期分配的读法，不以所有Tier 1获选为全份额。",
+          "materiality_context": "兼容/资格决定从零参与到可服务的平台范围，平台销量/发布时间决定市场规模与季度时点，相对价/质量/多源决定捕获比例，交期/承诺决定可交付上限，采购集中度改变谈判与风险。若本已合格的平台给美光份额增加，行业台数无需上升也能增收；若只有更多备选资格，价值先在未来选择权。当前受限供给环境令交期和持续供货比单纯认证数量更直接，下一代大型平台首次资格仍可能比成熟产品普通续单更改变开放机会。",
+          "scope_boundary": "覆盖PC DRAM/模组/SSD设计、验证和分配，不将OEM市场份额或设计获选次数等同美光采购份额，不推定具体未披露客户名单。",
+          "ref": [
+            "D1-O103",
+            "D1-O3",
+            "https://www.idc.com/resource-center/press-releases/2q26-pc-top5/",
+            "D1-O57"
+          ]
+        },
+        {
+          "name": "品牌退出与伙伴加工改变客户端销售入口和经济归属",
+          "mechanism": "美光可直接卖OEM产品、自有零售模组/SSD，或向组件伙伴销售DRAM/NAND再由伙伴加工和经营最终品牌。渠道覆盖、伙伴生产/固件和服务能力决定能触达哪些客户；库存信用、保修责任与分销/品牌费用决定承担的风险和收益。退出自有品牌使部分终端需求转向伙伴或竞争者，释放的产品/销售资源可再分配。组件出售和同一组件制成的最终SSD不是美光可重复确认的两份销售。",
+          "current_status": "Crucial消费者业务退出安排已改变基线，但OEM和组件伙伴业务仍保留。工作判断是销售控制、价值链责任和客户可达性转移，不是全部PC内存消失。退出前已有保修继续承担；公开材料尚不能量化伙伴承接了多少原有终端客户。",
+          "materiality_context": "渠道覆盖决定可服务的机会，伙伴加工/固件/服务能力决定组件能否转成终端销售，供给配置决定能提供多少，品牌/分销费用与信用/保修决定净价值。相同终端比特转给伙伴可能降低美光整品确认金额同时减少控制器/服务成本，故收入和盈利可不同方向；若原客户改购竞争者，则会直接丢失组件需求。当前退出是明确结构变化，比零售新SKU宣传更重要；净效果仍由承接比例和资源去向决定，而不是品牌名消失就按100%丢量。",
+          "scope_boundary": "客户端OEM、组件与消费者渠道经济，保留最终品牌和组件供应的区别；不把伙伴整品收入指定为美光收入，售后尾期不等于新增供货。",
+          "ref": [
+            "D1-O3",
+            "https://investors.micron.com/news/press-release/2025/Micron-Announces-Exit-from-Crucial-Consumer-Business-12-03-2025/default.aspx",
+            "D1-O57"
+          ]
+        },
+        {
+          "name": "库存成本与采购前置改变PC内容需求的季度兑现",
+          "mechanism": "PC终端购买加渠道整机库存变化决定OEM产量，产量乘配置加组件库存变化决定DRAM/SSD采购；组件伙伴还有在制模组/SSD库存。预期涨价、缺货及交期促使提前备货，预算/融资成本与旧价库存限制前置幅度；高价整机难销售时，OEM/渠道会延后补货、促销或改低配。库存配置不匹配时总量充足也可能缺某容量/平台，影响美光料号的订单而不是平均总库存。",
+          "current_status": "IDC认为Q1采购前置、Q2开始弱量且高价渠道库存令人担忧；Framework普通DDR5整机低成本库存耗尽后涨价、LPCAMM2却得到较低价有限新批次，说明库存成本和配置不能合并成单一行业标签。当前采用前置后消化压力较大、具体容量仍受供给约束的解释。",
+          "materiality_context": "sell-through决定长期消耗，整机/组件/在制库存变化决定季度采购偏离，配置匹配决定哪个料号有需求，价预期与交期推动前置，资金预算限制可持有库存，促销/低配是反馈。PC Q2台数-4.9%需平均内容约+5.2%才让行业比特持平（固定份额/库存的计算基准），去库会使美光采购比这一桥更弱。若目标库存提高一周，只形成一次性约一周消耗量采购；旧价库存耗尽则可能触发提价而非数量增长。当前前置借用未来订单，库存/配置比简单OS截止日更能解释近端偏差。",
+          "scope_boundary": "覆盖PC OEM、渠道与组件伙伴的库存传导，不以美光合并库存代表客户库存，不将IDC向渠道出货视作用户已购买。",
+          "ref": [
+            "https://www.idc.com/resource-center/press-releases/2q26-pc-top5/",
+            "https://www.idc.com/resource-center/blog/pc-market-enters-volatile-territory-as-memory-shortage-persists-through-2027/",
+            "https://frame.work/blog/updates-on-memory-pricing-and-navigating-the-volatile-memory-market",
+            "D1-O31",
+            "D1-O3"
+          ]
+        },
+        {
+          "name": "节点效率、产品配额与封装匹配决定客户端可供量和成本",
+          "mechanism": "客户端可供比特取决于晶圆投入、单位晶圆密度、良率及DRAM模组/SSD控制器/封装测试匹配；节点转换改变良品成本和可用料号。美光在客户端与服务器/其他终端之间按合同承诺、产品价值和客户连续性分配资源。主流PC需求、工作站高配和SSD代际并非必然能同时获配，配额改变也可迫使OEM转供应者或限制整机配置；新增工厂空间只有转成合格且分配到客户端的产品才改变近期可供量。",
+          "current_status": "FY2026合计MCBU比特减少与供给转配已发生，客户端资格进展并未消除这一约束。公司1γ/G8/G9转换提供效率基础，但没有本Unit成本、晶圆或配额数。2027Boise首产与铜锣有规模出货仍为计划，不提前计入当前客户端供货。",
+          "materiality_context": "晶圆/密度/良率决定有效供给，模组/控制器/封装测试决定整品匹配，节点及利用率决定单位成本，合同/价值与客户关系决定分配优先级。当前已有数量受限，比行业小幅回升更直接的近端杠杆是客户端配额和合格组合；无余量时额外需求先影响价格/设计选择。若良率改善而配额不变，成本可先改善，数量不一定增加；若资源归回客户端却不匹配所需SSD控制器或内存档位，订单仍可能递延。客户关系成本影响下轮供应份额，因而高价值转配不是免费动作。",
+          "scope_boundary": "解释客户端供给、成本与渠道后果，制造和数据中心资源需求的深度归邻域；LPDDR工艺相同不意味着手机、PC和服务器的商业配额相同。",
+          "ref": [
+            "D1-O57",
+            "D1-O31",
+            "D1-O88",
+            "D1-O4",
+            "D1-O3"
+          ]
+        },
+        {
+          "name": "价格与产品价值转换为客户端利润和现金",
+          "mechanism": "客户端已交付DRAM/模组/SSD/组件的数量与实现价决定收入；平均价内已有容量、代际和渠道组合，不能再把同一组合加一次。NAND/DRAM制造、控制器/模组加工和质量服务成本决定毛利，开发/渠道费用决定营业利润；账期、伙伴信用、保修与库存周转决定收现。长约价格和数量承诺只降低相应覆盖业务的波动，竞争降价、成本爬坡和产品换代可以改写经济性；整机成本反馈还影响下一轮采购与配置。",
+          "current_status": "目前价格主导合计MCBU减量增收，而非PC全市场复苏；合计Q4分部毛利90%、营业利润88%不能指定为客户端独立利润。退出自有品牌及QLC/模组形态变化同时改变价格与成本结构，公司战略协议未给客户端覆盖，故当前高盈利不是已证实的永久合同下限。",
+          "materiality_context": "实现价在本期的经济杠杆最大，数量/份额决定其应用规模；单比特和整品成本决定技术价值留存，开发/渠道费用决定规模杠杆，账期/信用/库存与保修决定现金时滞，合同覆盖/重谈决定周期保护。按共同MCBU90%毛利率作固定量/成本示意，价格降10%会使毛利金额下降11.1%而率仅到88.9%，表明利润金额比高百分比更敏感；不分摊为客户端预测。QLC降本或渠道节费可缓冲价格下降，但若降价全让给OEM，主要改变份额/可买容量而非单位利润。短期涨价与之后预算/库存回落相互作用，不能同时无限外推价格和数量。",
+          "scope_boundary": "止于客户端经营与现金，保持MCBU共同代理不可相加；行业价格供给、公司合并EPS/税率与资本配置由邻域负责。",
+          "ref": [
+            "D1-O57",
+            "D1-O44",
+            "D1-O31",
+            "D1-O3",
+            "https://investors.micron.com/news/press-release/2025/Micron-Announces-Exit-from-Crucial-Consumer-Business-12-03-2025/default.aspx",
+            "https://www.idc.com/resource-center/blog/pc-market-enters-volatile-territory-as-memory-shortage-persists-through-2027/"
+          ]
+        }
+      ],
+      "potential_gaps": [
+        {
+          "name": "企业岗位与家庭用途重组改变PC更新分母",
+          "why_live": "IDC观察到前置后Q2传统PC弱量，并预测全年收缩；Microsoft随机实验显示部分AI办公软件用途，不能据此推算硬件回报。其AI PC ROI材料是受委托复合组织模型，工作机队仍要通过岗位收益、老化、安全、预算及部署能力的选择。家庭/学生购买亦受价格和替代设备约束。",
+          "revision_logic": "“采购前置后的弱量”可被真实更新收益或组织方式改变，而不是由AI标签、OS期限自动翻转。需要设备的岗位数量、每岗配置和更新时点是不同杠杆；软件节时若能在旧机实现，也可支持延寿或较少新增工位。",
+          "possibility_space": [
+            {
+              "name": "大雇主把本地创作/分析收益兑现到预算并分批扩展高配岗位",
+              "implication": "从试点转为有重复任务的岗位机队可扩大高配采购分母，美光工作站入口不再只靠个别开发者。分批部署资源仍约束季度节奏，不能将软件授权人数乘128GB当全部新增需求。"
+            },
+            {
+              "name": "企业因安全支持、故障成本或关键软件兼容问题集中更新旧机",
+              "implication": "更新可在AI回报平淡时加速，推动普通商业PC的广泛数量而非只有工作站；若新配置仅维持既有需求，主要是换机台数。可远程修补或延长支持则可能减缓这一采购波。"
+            },
+            {
+              "name": "企业重整人员与工位，把节时收益变成少雇人或共享设备",
+              "implication": "相同产出不再需要同量独立PC，高配少数岗位也可能与普通机队缩减并存。美光内容强度提高能否抵消设备分母下降取决于岗位组合，而不是将劳动生产率提高当更多硬件。"
+            },
+            {
+              "name": "预算冻结、融资收紧或家庭把支出转向旧PC维修/其他设备",
+              "implication": "设备老化与使用需求仍在，但采购延期、降配或选择二手机会削弱新内存/SSD需求；日后预算释放可形成集中更新，却不是当期订单。高价叠加预算收缩使弱量更广泛，高端也不天然免疫。"
+            }
+          ],
+          "ref": [
+            "https://www.idc.com/resource-center/press-releases/2q26-pc-top5/",
+            "https://www.idc.com/resource-center/blog/pc-market-enters-volatile-territory-as-memory-shortage-persists-through-2027/",
+            "https://www.microsoft.com/en-us/research/publication/early-impacts-of-m365-copilot/",
+            "https://www.microsoft.com/en-us/windows/business/knowledge-center/ai-pcs-and-roi",
+            "D1-O103"
+          ]
+        },
+        {
+          "name": "本地AI由少数工作站走向可部署工作流的不同路径",
+          "why_live": "美光已有全部Tier 1 AI工作站设计入口，高容量个人工作站与8GB Neo仍形成明显分层。Recall当前State记录了受管理设备默认禁用、用户选择及有界快照空间；模型精度、内存架构和权限决定功能是否真正在本地运行。Microsoft已公开本地索引隔离和加密设计，不能因此认为部署没有信任阻力。",
+          "revision_logic": "“高容量工作站不是所有PC平均”可因应用分发和实际工作流扩展而改变。每台工作集相对软件效率、已有余量及CPU/GPU内存归属决定内容，IT权限与用户同意决定覆盖的机队；有界保存不能按每天数据量无限累加NAND。",
+          "possibility_space": [
+            {
+              "name": "软件商把本地检索、离线助理或开发工具纳入企业日常流程",
+              "implication": "采用从演示走向每周重复工作，可把高配需求从AI研发人群扩展到更多岗位；模型、并发应用和资料占用若超过现机余量，才增加下一轮DRAM/SSD档位。若服务仍主要云端，收益更多是使用价值而非本地内容。"
+            },
+            {
+              "name": "模型效率与统一内存调度让普通PC完成原需工作站的任务",
+              "implication": "在固定工作流下，高容量溢价和更新必要性下降；更低成本又可能诱发多任务、较大数据集或更多本地用户。CPU系统内存与独显显存之间的归属还会改变美光产品组合，不能只看总标称GB。"
+            },
+            {
+              "name": "IT允许本地记忆/索引并采用更长留存与多模型隔离环境",
+              "implication": "更多受管理设备被纳入可部署队列，资料索引、模型库和并发运行提高容量压力；但默认配额覆盖删除可使占用稳定，现有空闲空间也先吸收增长。NAND容量采购与DRAM并发不必同步。"
+            },
+            {
+              "name": "资料泄漏或自动操作事故导致雇主暂停本地助手或限制权限",
+              "implication": "已购买合格PC也可能不产生预想负载，随后高配续购和内容增长放缓；另一批组织可能反而选择可审计的隔离本地环境减少云暴露。信任事件可分化部署位置，不是所有AI需求同向消失。"
+            }
+          ],
+          "ref": [
+            "D1-O103",
+            "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx",
+            "https://nvidianews.nvidia.com/news/nvidia-dgx-spark-arrives-for-worlds-ai-developers",
+            "https://www.apple.com/newsroom/2026/03/say-hello-to-macbook-neo/",
+            "https://learn.microsoft.com/en-us/windows/client-management/manage-recall",
+            "https://blogs.windows.com/windowsexperience/2024/09/27/update-on-recall-security-and-privacy-architecture/"
+          ]
+        },
+        {
+          "name": "桌面服务商业模式与连续性重分本地和云端内容",
+          "why_live": "Windows 365 Link与共享Cloud PC已有商业组织基础，2026年2月还公布更多专用终端路线；共享/轮班可按并发而非每名雇员配置高配工位。本地工作站则仍有离线、交互和数据控制价值。这些资料没有全球迁移比例，也不指定美光BOM。",
+          "revision_logic": "默认本地工作站、普通PC和云终端分层并行，可以因服务价格、网络及IT选择重新划分。计算与数据驻留改变每台终端容量，旧终端复用和峰值并发还改变新增设备台数；云端增加的DRAM/NAND不在本Unit补回。",
+          "possibility_space": [
+            {
+              "name": "企业把共享岗位桌面和AI服务统一订阅并复用现有终端",
+              "implication": "集中管理可扩大云路径，降低本地SSD/DRAM强度，也减少为每名员工买新机；更新需求变成较轻终端或较少共享工位。服务付费增长不意味着美光客户端同比增加。"
+            },
+            {
+              "name": "云桌面订阅、网络及持续推理成本使高频岗位回到本地",
+              "implication": "本地高配的固定成本在长期高利用率下可能更可支付，企业恢复较大DRAM/SSD采购；只有满足应用兼容和维护能力的队列适合回迁，不能把云成本上涨一概当工作站销量增长。"
+            },
+            {
+              "name": "长时间服务/网络中断促使企业保留本地离线副本与混合终端",
+              "implication": "连续性由单纯云终端改为本地缓存、可离线应用或备用PC，提高端侧内容和冗余设备需求；也可能只是投资备用网络而不改终端。两种反应对本Unit不同，事故本身不是自动本地替换。"
+            },
+            {
+              "name": "数据控制或敏感任务要求改变可迁移岗位边界",
+              "implication": "组织若不允许资料驻留共享服务，部分工作流转向本地/受控部署，形成高配和SSD机会；若风险重点在终端被盗或难管理，则反向采用无持久本地资料的轻终端。安全诉求的对象决定方向，不能只用“隐私重要”推断容量增加。"
+            }
+          ],
+          "ref": [
+            "https://blogs.windows.com/windowsexperience/2025/04/02/maximize-productivity-and-roi-with-windows-365-new-innovations-now-generally-available/",
+            "https://blogs.windows.com/windowsexperience/2026/02/26/announcing-new-cloud-pc-devices-designed-for-windows-365/",
+            "https://blogs.windows.com/windowsexperience/2024/09/27/update-on-recall-security-and-privacy-architecture/",
+            "D1-O3"
+          ]
+        },
+        {
+          "name": "可更换内存从平台选择变成升级与延寿经济",
+          "why_live": "Lenovo历史LPCAMM2设计公告和Framework当前Micron采购批次证明有不同阶段的具名入口，但缺少全PC采用比例。Framework较低成本有限批次与普通DDR5旧成本库存耗尽同时发生，表明形态、容量和采购时点不同；同容量换形态不增加比特。",
+          "revision_logic": "“LPCAMM2按批次扩展”可变成更广的OEM设计选择或存量升级业务，也可能被焊接结构限制。新装、维修和后装升级是不同订单来源，可更换性既卖更多模组又延长整机寿命，价值和数量不能只取其中一面。",
+          "possibility_space": [
+            {
+              "name": "更多OEM把低功耗可更换模组用于主流薄型PC",
+              "implication": "参与范围可超出工作站/模块化小众平台，美光若取得资格可改变供应份额和产品价值。若容量保持不变，主要是焊接/传统模组向新形态迁移，而非DRAM比特自然翻倍。"
+            },
+            {
+              "name": "企业与用户用较大模组升级现机来延后整机采购",
+              "implication": "后装可直接带来模组销售，同时减少新PC及随新机销售的SSD；被换下模组复用不能再算一次采购。业务有可能量价受益却与整机出货反向，组件伙伴覆盖变得更重要。"
+            },
+            {
+              "name": "焊接集成、平台成本或批次缺货使可更换设计停在少数平台",
+              "implication": "后装入口受限，初装容量档位和OEM供应份额恢复主导；可靠批次供货的重要性高于形态宣传。用户仍能延寿但不一定购买新美光模组。"
+            },
+            {
+              "name": "维修/生命周期采购偏好促使OEM把可服务性纳入竞标",
+              "implication": "长机队寿命可减少单位时间新PC数量，却扩大维修、备用模组与可升级设计的获选范围；更耐用设计的价值可能通过整机竞标而非更高内存售价被兑现。"
+            }
+          ],
+          "ref": [
+            "https://news.lenovo.com/pressroom/press-releases/lenovo-unveils-its-new-ai-ready-thinkpad-p1-gen-7-mobile-workstation/",
+            "https://frame.work/blog/updates-on-memory-pricing-and-navigating-the-volatile-memory-market",
+            "D1-O3",
+            "https://investors.micron.com/news/press-release/2025/Micron-Announces-Exit-from-Crucial-Consumer-Business-12-03-2025/default.aspx"
+          ]
+        },
+        {
+          "name": "SSD的工作流、分层与介质经济性改变容量和溢价",
+          "why_live": "美光4600与G9 Gen5 QLC资格推进提供设计入口，现有TLC/QLC和DRAM-less/HMB路径仍不同。新研究补充非AI用途：Adobe对Premiere 24.x的2026年3月资料区分Windows HD/4K内存与高速应用/缓存/媒体盘；Microsoft已提供DirectStorage GPU解压。它们证明工作流与数据路径有不同资源需求，不测量全市场用户升级比例。",
+          "revision_logic": "“SSD认证是采购入口”可因用户工作流和软件分层变成更大的容量机会、性能溢价或低成本竞争。介质降本、控制器/固件、应用加载及写入寿命共同决定采用；容量、介质类别、独立SSD DRAM与主机应用DRAM不能互相替代计算。",
+          "possibility_space": [
+            {
+              "name": "创作、游戏和本地模型软件把大资料集与快速加载变成常用需求",
+              "implication": "用户愿意为媒体盘/缓存/模型库付费，可在总PC台数疲弱时提高SSD容量或性能档位。外置/网络介质和删除旧资料也可吸收增量；4K推荐规格不是每个PC的最低采购容量。"
+            },
+            {
+              "name": "开发者推广压缩、按需流送与GPU解压来缩小等待和驻留",
+              "implication": "同样内容可降低磁盘占用或CPU解压负担，延长现机寿命；更丰富素材又可能消耗节省的空间。数据仍有主机/GPU缓冲，并非绕过所有DRAM，最终瓶颈若转移到GPU/网络，Gen5 SSD溢价会变弱。"
+            },
+            {
+              "name": "QLC控制器和缓存改进使更多主流负载接受较低成本大容量",
+              "implication": "OEM可保价增容量、降价扩大可支付需求或要求供应者让出成本收益；分别对应比特、份额和单位利润的不同变化。QLC理论单元密度优势不能等同整品成本固定下降。"
+            },
+            {
+              "name": "持续写入、热耗或固件质量问题使OEM改回TLC/较保守设计",
+              "implication": "低成本方案可服务范围缩小，认证后的量产配额仍可能重配；可靠高性能产品的价值提高，但返工、保修和较高BOM也可能压缩利润。并非所有缓存工作流都要求同一介质。"
+            },
+            {
+              "name": "OEM扩大HMB/DRAM-less设计或以SSD缓存分担部分工作集",
+              "implication": "独立SSD DRAM用量可下降，控制器/固件与主机内存使用则随设计改变，净BOM节省不等同所有部件成本下降；这会改变美光整品/组件的捕获。较快闪存可支持模型分层，但不能等量替代需要低时延的主机RAM。价值可能落在容量、固件或客户份额，而不是全部来自更多DRAM。"
+            }
+          ],
+          "ref": [
+            "D1-O103",
+            "D1-O3",
+            "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx",
+            "https://www.micron.com/about/blog/storage/ssd/how-a-few-trapped-electrons-changed-the-world",
+            "https://nvmexpress.org/wp-content/uploads/NVM-Express-Base-Specification-2.0d-2024.01.11-Ratified.pdf",
+            "https://helpx.adobe.com/in/premiere/desktop/get-started/technical-requirements/adobe-premiere-24x-technical-requirements.html",
+            "https://devblogs.microsoft.com/directx/directstorage-1-1-now-available/",
+            "https://machinelearning.apple.com/research/introducing-third-generation-of-apple-foundation-models"
+          ]
+        },
+        {
+          "name": "平台资格与采购集中度重分美光客户端份额",
+          "why_live": "Tier 1 AI工作站设计、4600追加认证和领先客户G9 Gen5 QLC资格构成真实参与基础，尚无逐平台台数和份额。PC品牌销售权重不同，兼容、报价与供货连续性在合格列表形成后仍控制配额。",
+          "revision_logic": "默认资格延续可以变成实际平台份额扩张，也可停在备选或因平台销量/架构变化缩小。美光客户端数量不必随总PC台数同向，供应者重配与平台规模是两条独立桥；同一Tier 1名义不能被当作全份额。",
+          "possibility_space": [
+            {
+              "name": "高销量OEM统一更多平台规格并集中给可持续供货的合格源",
+              "implication": "美光若获较大配额，普通平台也能在弱市场提供显著份额机会，不只依赖128GB工作站。集中采购又增强客户压价力，使份额增长未必等比例提高单位利润。"
+            },
+            {
+              "name": "OEM把新增资格主要用作多源备份和价格谈判",
+              "implication": "认证数增加而当前交付量变化很小，稀缺溢价先被压缩；美光仍保留下一平台进入权。理解应从“所有认证即增量”改为可选择份额与议价结构。"
+            },
+            {
+              "name": "关键处理器/平台延期、架构改版或目标机型销量失利",
+              "implication": "即使美光产品合格，设计订单池和时点仍可缩小；统一池、焊接结构或不同SSD规格还改变原料号的可服务范围。技术获选不再足以维持原平台的数量解释。"
+            },
+            {
+              "name": "质量/安全或供应事件促使OEM把现有配额转到另一合格者",
+              "implication": "不需要行业复苏即可发生份额重分，美光可受益也可失去设计延续。已备份资格和合格可供量决定调整速度，短期救急还可能留下较长期客户依赖。"
+            }
+          ],
+          "ref": [
+            "D1-O103",
+            "D1-O44",
+            "D1-O3",
+            "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx",
+            "https://www.idc.com/resource-center/press-releases/2q26-pc-top5/",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+          ]
+        },
+        {
+          "name": "消费者品牌退出后伙伴承接与价值链控制发生分化",
+          "why_live": "Crucial消费者业务退出已改变销售基线，但计划供货窗口经过不等于尾货全部清空；既有保修仍存，年报保留OEM和组件伙伴业务。伙伴承担加工、固件、最终品牌和渠道关系，既可能承接原需求，也可能改变供应来源。",
+          "revision_logic": "“退出自有品牌、保留其他入口”的净经济性取决于客户可达性和责任归属，不能用品牌消失推定全PC退出。组件销售可少确认整品金额而少承担成本，渠道节费、信用和保修则影响净利润/现金；同一比特不重复确认组件与终品销售。",
+          "possibility_space": [
+            {
+              "name": "模组/SSD伙伴扩大渠道并以美光组件承接原零售客户",
+              "implication": "保留部分终端比特需求而转移品牌/控制器/服务责任，美光确认收入可能下降但净成本也下降。伙伴销量是采购入口，不是另一份可加到OEM收入的美光终品收入。"
+            },
+            {
+              "name": "竞争者用完整品牌、供货和售后体系锁住原客户",
+              "implication": "需求仍存在却离开美光组件采购，退出成为份额损失而非仅会计结构改变；现有OEM设计入口不能自动抵消零售/DIY可达性下降。"
+            },
+            {
+              "name": "大OEM或伙伴加强控制器/固件自主设计并集中采购NAND",
+              "implication": "美光从整品价值更偏向组件与制造能力，客户谈判力和接口要求改变；若低价大容量扩大终端需求，可增加比特但降低每比特价值捕获。若伙伴能力不足，组件可供仍不能完成终端销售。"
+            },
+            {
+              "name": "伙伴资金或质量问题叠加退出前售后责任",
+              "implication": "可能出现组件应收、渠道库存或遗留保修压力，销售/分销节省不能完整转成现金收益；客户转源又削弱承接比例。该路径不同于全市场PC需求减少，受影响主要在特定商业入口。"
+            }
+          ],
+          "ref": [
+            "D1-O3",
+            "D1-O79",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://investors.micron.com/news/press-release/2025/Micron-Announces-Exit-from-Crucial-Consumer-Business-12-03-2025/default.aspx"
+          ]
+        },
+        {
+          "name": "前置采购、批次成本与库存配置重画季度恢复",
+          "why_live": "IDC的Q1前置与Q2弱量提示季度采购不等于最终使用；Framework旧价DDR5库存耗尽而LPCAMM2收到较低成本有限批次，显示容量/形态各有成本与供应队列。客户端OEM组件库存周数仍未测得，不能把未知当零。",
+          "revision_logic": "“前置后消化”的默认路径可被补库存、联合去库、融资或规格错配改变。终端整机、组件及伙伴在制库存分别放大/缓冲采购，实际可售配置和历史成本决定报价，不能用单一内存涨价标签解释所有订单。",
+          "possibility_space": [
+            {
+              "name": "渠道联合促销清理高成本整机并压低OEM补货",
+              "implication": "sell-through可能改善但新的组件采购仍弱，现金回收与库存损失可以并存；库存清完后采购恢复的起点不同于终端需求仍持续收缩。促销低价也不等于美光当期ASP同比下降。"
+            },
+            {
+              "name": "企业预算窗口或供货预期触发新一轮提前备货",
+              "implication": "季度订单和配额可提前兑现而终端机队未同幅扩张，之后留下消化期。若买家只是提高安全库存，增量主要一次性；长期设备用途变化才支持持续消耗。"
+            },
+            {
+              "name": "总库存足够但容量、模组形态或SSD固件资格错配",
+              "implication": "特定美光料号仍可能紧缺并获较好组合，另一批库存需打折；对平均库存和平均ASP的读法需改为结构分化。库存转换成本还会延迟平台交付。"
+            },
+            {
+              "name": "伙伴信用收紧或高价库存折损迫使采购方缩短账期/规模",
+              "implication": "零售或组件订单可先于PC终端台数恶化，现金限制压低可持库存并加剧季度波动。融资恢复后补货可能很快，但不证明用户新增需求已永久提高。"
+            }
+          ],
+          "ref": [
+            "https://www.idc.com/resource-center/press-releases/2q26-pc-top5/",
+            "https://www.idc.com/resource-center/blog/pc-market-enters-volatile-territory-as-memory-shortage-persists-through-2027/",
+            "https://frame.work/blog/updates-on-memory-pricing-and-navigating-the-volatile-memory-market",
+            "D1-O31",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+          ]
+        },
+        {
+          "name": "客户端配额、良品成本与整品匹配解除或延续供给约束",
+          "why_live": "合计MCBU比特减少和跨业务转配已发生，设计资格仍在增加；公司1γ及G8/G9转换没有给出客户端独立良率或成本。2027新厂是后续产出计划，客户端整品还需模组、控制器及封装测试匹配。",
+          "revision_logic": "高价平台与受限比特并存并非永久关系。更多客户端配额、有效良品或整品瓶颈变化可在PC台数不变时改变美光销售；产品成本和数量可先后分离，客户转源也会使归还资源的价值低于原有关系。行业供给和制造工序由邻域研究，本Unit保留合格交付和客户结果。",
+          "possibility_space": [
+            {
+              "name": "其他业务需求/资源强度改变使客户端获得更多合格配额",
+              "implication": "排队PC/SSD订单可恢复交付和库存，但稀缺ASP可能正常化；若客户已改用竞品，增加配额先面临重新争取份额。较多比特并非等额盈利增加。"
+            },
+            {
+              "name": "节点效率使成本下降但资源仍优先分到其他业务",
+              "implication": "客户端单位利润可以改善而数量不增长，资格扩大仍受交付上限约束；成本优势也可用来报价保份额，而非全部留作利润。不能把全公司良品比特增长按同率分给本Unit。"
+            },
+            {
+              "name": "控制器、模组料件或封装组合成为较前段更紧的瓶颈",
+              "implication": "可用DRAM/NAND不等于可售SSD/模组，高密度产品或新平台交付受阻；组件渠道与整品业务的数量可分化。客户若改规格或供应者，后续配套恢复仍可能错过本周期。"
+            },
+            {
+              "name": "管理层为下一代客户连续性预留客户端供货",
+              "implication": "主动预留可能牺牲部分跨业务当期机会，却保留下一平台设计和采购关系；当前数量不再完全服从短期最高报价。若客户需求后来缩水，预留又形成机会成本，不能将关系维护视为无成本增量。"
+            },
+            {
+              "name": "制造、运输或配套事件打断关键平台交付",
+              "implication": "中断可能触发OEM多源、加急成本与丢失平台份额，恢复产出后也未必立即恢复客户采购。行业紧价可以与美光少交付并存，不能只用价格上升判断客户端获益。"
+            }
+          ],
+          "ref": [
+            "D1-O31",
+            "D1-O57",
+            "D1-O88",
+            "D1-O4",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+          ]
+        },
+        {
+          "name": "客户端盈利与现金由稀缺价格转向技术和商业组合",
+          "why_live": "合计MCBU高利润有实现价支持，不能分配为客户端独立毛利；客户端DRAM/NAND ASP、利润、合同覆盖仍未知。QLC、模组形态、OEM/组件渠道以及退出自有品牌同时改变整品收入与成本，公司战略协议不构成本Unit已知永久底价。",
+          "revision_logic": "“利润平台与比特分离”的理解可被成熟产品降价、技术降本、份额和商业责任重组改变。毛利金额比很高毛利率更敏感，现金还取决于账期/库存/保修；容量和渠道组合已包含在实际均价内，不在量价桥上重复增加。",
+          "possibility_space": [
+            {
+              "name": "成熟客户端供应竞争加剧，OEM以降价换更大数量",
+              "implication": "实现价回落可先压缩毛利金额，却降低整机BOM并支持配置/台数；数量恢复的滞后和份额决定能否抵消。合同只保护实际覆盖数量，不能把现货变动套给全部客户端。"
+            },
+            {
+              "name": "QLC/节点/加工降本与渠道节费留下更多净价值",
+              "implication": "同价同量下利润可改善，或降价争取份额而单位利润大致不变；自有品牌退出导致整品收入减少也不必同幅减利润。成本节省被客户要求全部让渡时，收益主要落在买方可支付容量。"
+            },
+            {
+              "name": "采购合同扩展到更多客户端产品但带有价带和换代条件",
+              "implication": "覆盖业务更可预测，缺货期间的价格上行也可能受限；未来换代或重谈打开新的利润暴露。履约资金支持改善现金安全，不应当作已完成销售或将全部设计资格视为合同订单。"
+            },
+            {
+              "name": "质量服务、伙伴信用或高价存货压力抵消账面经营改善",
+              "implication": "保修、减值和应收延长会让利润率与收现分化，现金收益弱于高均价/高毛利的表面读法。问题若仅集中某渠道，可促使美光改商业组合而不等于所有PC需求坍塌。"
+            }
+          ],
+          "ref": [
+            "D1-O57",
+            "D1-O31",
+            "D1-O3",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx",
+            "https://investors.micron.com/news/press-release/2025/Micron-Announces-Exit-from-Crucial-Consumer-Business-12-03-2025/default.aspx",
+            "https://www.micron.com/about/blog/storage/ssd/how-a-few-trapped-electrons-changed-the-world"
+          ]
+        }
+      ]
+    }
+  ]
+}

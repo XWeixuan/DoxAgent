@@ -1,0 +1,9 @@
+{
+  "alias": "O93",
+  "title": "text paragraphs 7",
+  "content": "| Gross margin | Approximately 86% | Approximately 86% |\n\n| Operating expenses | Approximately $1.86 billion | Approximately $1.65 billion |\n\n| Diluted earnings per share | $30.73 ± $1.00 | $31.00 ± $1.00 |\n\nFurther information regarding Micron’s business outlook is included in the prepared remarks and slides, which have been posted at investors.micron.com.\n\nProduct highlights\n\n- HBM4, built on 1-beta DRAM technology, is in high-volume shipments for our lead customer's platform, and qualification samples have been shipped to multiple end-customers.\n\n- Development of HBM4E, built on 1-gamma DRAM technology, is well underway, with volume production expected in calendar 2027.\n\n- Qualification samples of 256GB DDR5 RDIMMs, built on 1-gamma DRAM technology and advanced 3D die stacking, has shipped to key server ecosystem enablers.",
+  "source": {
+    "provider": "Public web source",
+    "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+  }
+}

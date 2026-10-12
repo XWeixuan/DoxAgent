@@ -1,0 +1,32 @@
+{
+  "observed_at": "2026-10-06T09:58:33.671028+00:00",
+  "site_access_image": "doxagent-site-access:source-recovery-20261006-r3",
+  "local_tests": {"passed": 68, "skipped": 1},
+  "exact_staging_tests": {"passed": 40},
+  "investing": {
+    "production_poll_states": {
+      "BE": {"status": "succeeded", "consecutive_failures": 0, "last_success_at": "2026-10-06T09:58:10.091070Z"},
+      "INTC": {"status": "succeeded", "consecutive_failures": 0, "last_success_at": "2026-10-06T09:57:22.641486Z"},
+      "MU": {"status": "succeeded", "consecutive_failures": 0, "last_success_at": "2026-10-06T09:57:38.930275Z"},
+      "RKLB": {"status": "succeeded", "consecutive_failures": 0, "last_success_at": "2026-10-06T09:57:53.723316Z"}
+    },
+    "canary": {
+      "ticker": "MU", "messages": 10, "coverage": "COMPLETE", "failures": [], "published_to_bus": false,
+      "body_samples": [
+        {"url": "https://www.investing.com/news/stock-market-news/micron-squeezed-at-cloud-support-with-double-top-risk-live-93CH-4932448", "succeeded": true, "characters": 2999},
+        {"url": "https://www.investing.com/news/company-news/polar-capital-technology-trust-discloses-top-holdings-93CH-4932553", "succeeded": true, "characters": 2001}
+      ]
+    }
+  },
+  "reuters": {
+    "accepted_as_restored": false,
+    "production_poll_states": {"MU": "failed", "INTC": "failed", "BE": "failed", "RKLB": "failed"},
+    "reason": "Persistent DataDome challenge on tested fallback combinations; NL static 403",
+    "native_direct_once_captured_search_cards": true,
+    "native_direct_later_challenged": true,
+    "manual_maintenance": {"site_id": "reuters", "identity_id": "digitimes-1", "profile_id": "digitimes-1", "runtime_kind": "external_chrome", "profile_role": "primary", "vnc_ready": true, "session": null}
+  },
+  "source_maintenance_worker_deployed": false,
+  "chrome_supervisor_restarted": false,
+  "existing_external_instances_preserved": 6
+}

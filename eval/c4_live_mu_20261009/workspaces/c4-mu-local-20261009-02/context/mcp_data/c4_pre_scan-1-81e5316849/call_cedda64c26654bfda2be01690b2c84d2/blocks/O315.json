@@ -1,0 +1,18 @@
+{
+  "alias": "O315",
+  "title": "sections 1 — metadata",
+  "content": {
+    "section": "We manufacture our products within our own facilities",
+    "heading_match": "We manufacture our products within our own facilities",
+    "start_offset": 59650,
+    "end_offset": 139704,
+    "full_text_chars": 79999,
+    "returned_chars": 40000,
+    "truncated": true,
+    "match_quality": "substantive_body"
+  },
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

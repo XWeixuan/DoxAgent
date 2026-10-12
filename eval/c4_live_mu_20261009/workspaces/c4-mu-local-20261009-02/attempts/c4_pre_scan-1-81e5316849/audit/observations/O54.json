@@ -1,0 +1,18 @@
+{
+  "alias": "O54",
+  "title": "sections 1 — metadata",
+  "content": {
+    "section": "Competition",
+    "heading_match": "Competition",
+    "start_offset": 168192,
+    "end_offset": 248204,
+    "full_text_chars": 80000,
+    "returned_chars": 40000,
+    "truncated": true,
+    "match_quality": "substantive_body"
+  },
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

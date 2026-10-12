@@ -1,0 +1,39 @@
+{
+  "selected_aliases": [
+    "O269",
+    "O270",
+    "O271",
+    "O272",
+    "O275"
+  ],
+  "blocks": [
+    {
+      "alias": "O269",
+      "path": "blocks/O269.md"
+    },
+    {
+      "alias": "O270",
+      "path": "blocks/O270.md"
+    },
+    {
+      "alias": "O271",
+      "path": "blocks/O271.md"
+    },
+    {
+      "alias": "O272",
+      "path": "blocks/O272.md"
+    },
+    {
+      "alias": "O273",
+      "path": "blocks/O273.md"
+    },
+    {
+      "alias": "O274",
+      "path": "blocks/O274.md"
+    },
+    {
+      "alias": "O275",
+      "path": "blocks/O275.md"
+    }
+  ]
+}

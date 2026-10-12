@@ -1,0 +1,446 @@
+[
+  {
+    "alias": "O87",
+    "title": "text paragraphs 1",
+    "block_type": "text",
+    "path": "blocks/O87.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+    },
+    "content_chars": 1160,
+    "selected": true
+  },
+  {
+    "alias": "O88",
+    "title": "text paragraphs 2",
+    "block_type": "text",
+    "path": "blocks/O88.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+    },
+    "content_chars": 650,
+    "selected": true
+  },
+  {
+    "alias": "O89",
+    "title": "text paragraphs 3",
+    "block_type": "text",
+    "path": "blocks/O89.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+    },
+    "content_chars": 1006,
+    "selected": true
+  },
+  {
+    "alias": "O90",
+    "title": "text paragraphs 4",
+    "block_type": "text",
+    "path": "blocks/O90.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+    },
+    "content_chars": 399,
+    "selected": true
+  },
+  {
+    "alias": "O91",
+    "title": "text paragraphs 5",
+    "block_type": "text",
+    "path": "blocks/O91.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+    },
+    "content_chars": 371,
+    "selected": true
+  },
+  {
+    "alias": "O92",
+    "title": "text paragraphs 6",
+    "block_type": "text",
+    "path": "blocks/O92.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+    },
+    "content_chars": 421,
+    "selected": true
+  },
+  {
+    "alias": "O93",
+    "title": "text paragraphs 7",
+    "block_type": "text",
+    "path": "blocks/O93.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+    },
+    "content_chars": 853,
+    "selected": true
+  },
+  {
+    "alias": "O94",
+    "title": "text paragraphs 8",
+    "block_type": "text",
+    "path": "blocks/O94.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+    },
+    "content_chars": 820,
+    "selected": true
+  },
+  {
+    "alias": "O95",
+    "title": "text paragraphs 9",
+    "block_type": "text",
+    "path": "blocks/O95.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+    },
+    "content_chars": 2926,
+    "selected": true
+  },
+  {
+    "alias": "O96",
+    "title": "text paragraphs 10",
+    "block_type": "text",
+    "path": "blocks/O96.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+    },
+    "content_chars": 651,
+    "selected": true
+  },
+  {
+    "alias": "O97",
+    "title": "text paragraphs 11",
+    "block_type": "text",
+    "path": "blocks/O97.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+    },
+    "content_chars": 295,
+    "selected": true
+  },
+  {
+    "alias": "O98",
+    "title": "text paragraphs 12",
+    "block_type": "text",
+    "path": "blocks/O98.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+    },
+    "content_chars": 623,
+    "selected": true
+  },
+  {
+    "alias": "O99",
+    "title": "text paragraphs 13",
+    "block_type": "text",
+    "path": "blocks/O99.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+    },
+    "content_chars": 656,
+    "selected": true
+  },
+  {
+    "alias": "O100",
+    "title": "text paragraphs 14",
+    "block_type": "text",
+    "path": "blocks/O100.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+    },
+    "content_chars": 526,
+    "selected": true
+  },
+  {
+    "alias": "O101",
+    "title": "text paragraphs 15",
+    "block_type": "text",
+    "path": "blocks/O101.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+    },
+    "content_chars": 118,
+    "selected": false
+  },
+  {
+    "alias": "O102",
+    "title": "text paragraphs 16",
+    "block_type": "text",
+    "path": "blocks/O102.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+    },
+    "content_chars": 446,
+    "selected": true
+  },
+  {
+    "alias": "O103",
+    "title": "text paragraphs 17",
+    "block_type": "text",
+    "path": "blocks/O103.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+    },
+    "content_chars": 567,
+    "selected": false
+  },
+  {
+    "alias": "O104",
+    "title": "text paragraphs 18",
+    "block_type": "text",
+    "path": "blocks/O104.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+    },
+    "content_chars": 502,
+    "selected": false
+  },
+  {
+    "alias": "O105",
+    "title": "text paragraphs 19",
+    "block_type": "text",
+    "path": "blocks/O105.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+    },
+    "content_chars": 410,
+    "selected": true
+  },
+  {
+    "alias": "O106",
+    "title": "text paragraphs 20",
+    "block_type": "text",
+    "path": "blocks/O106.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+    },
+    "content_chars": 537,
+    "selected": false
+  },
+  {
+    "alias": "O107",
+    "title": "text paragraphs 21",
+    "block_type": "text",
+    "path": "blocks/O107.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+    },
+    "content_chars": 118,
+    "selected": false
+  },
+  {
+    "alias": "O108",
+    "title": "text paragraphs 22",
+    "block_type": "text",
+    "path": "blocks/O108.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+    },
+    "content_chars": 494,
+    "selected": false
+  },
+  {
+    "alias": "O109",
+    "title": "text paragraphs 23",
+    "block_type": "text",
+    "path": "blocks/O109.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+    },
+    "content_chars": 462,
+    "selected": false
+  },
+  {
+    "alias": "O110",
+    "title": "text paragraphs 24",
+    "block_type": "text",
+    "path": "blocks/O110.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+    },
+    "content_chars": 495,
+    "selected": false
+  },
+  {
+    "alias": "O111",
+    "title": "text paragraphs 25",
+    "block_type": "text",
+    "path": "blocks/O111.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+    },
+    "content_chars": 563,
+    "selected": false
+  },
+  {
+    "alias": "O112",
+    "title": "text paragraphs 26",
+    "block_type": "text",
+    "path": "blocks/O112.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+    },
+    "content_chars": 439,
+    "selected": false
+  },
+  {
+    "alias": "O113",
+    "title": "text paragraphs 27",
+    "block_type": "text",
+    "path": "blocks/O113.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+    },
+    "content_chars": 263,
+    "selected": false
+  },
+  {
+    "alias": "O114",
+    "title": "text paragraphs 28",
+    "block_type": "text",
+    "path": "blocks/O114.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+    },
+    "content_chars": 466,
+    "selected": false
+  },
+  {
+    "alias": "O115",
+    "title": "text paragraphs 29",
+    "block_type": "text",
+    "path": "blocks/O115.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+    },
+    "content_chars": 459,
+    "selected": false
+  },
+  {
+    "alias": "O116",
+    "title": "text paragraphs 30",
+    "block_type": "text",
+    "path": "blocks/O116.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+    },
+    "content_chars": 589,
+    "selected": false
+  },
+  {
+    "alias": "O117",
+    "title": "text paragraphs 31",
+    "block_type": "text",
+    "path": "blocks/O117.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+    },
+    "content_chars": 322,
+    "selected": false
+  },
+  {
+    "alias": "O118",
+    "title": "text paragraphs 32",
+    "block_type": "text",
+    "path": "blocks/O118.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+    },
+    "content_chars": 432,
+    "selected": false
+  },
+  {
+    "alias": "O119",
+    "title": "text paragraphs 33",
+    "block_type": "text",
+    "path": "blocks/O119.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+    },
+    "content_chars": 2118,
+    "selected": false
+  },
+  {
+    "alias": "O120",
+    "title": "text paragraphs 34",
+    "block_type": "text",
+    "path": "blocks/O120.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+    },
+    "content_chars": 509,
+    "selected": false
+  },
+  {
+    "alias": "O121",
+    "title": "text paragraphs 35",
+    "block_type": "text",
+    "path": "blocks/O121.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+    },
+    "content_chars": 501,
+    "selected": false
+  },
+  {
+    "alias": "O122",
+    "title": "text paragraphs 36",
+    "block_type": "text",
+    "path": "blocks/O122.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+    },
+    "content_chars": 757,
+    "selected": false
+  },
+  {
+    "alias": "O123",
+    "title": "text paragraphs 37",
+    "block_type": "text",
+    "path": "blocks/O123.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+    },
+    "content_chars": 125,
+    "selected": false
+  }
+]

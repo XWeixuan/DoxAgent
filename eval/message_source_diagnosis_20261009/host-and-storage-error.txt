@@ -1,0 +1,113 @@
+Fri Oct  9 11:42:46 AM UTC 2026
+Filesystem        1B-blocks         Used Available Use% Mounted on
+/dev/vda3      189559676928 184054333440         0 100% /
+Filesystem       Inodes   IUsed    IFree IUse% Mounted on
+/dev/vda3      11740736 1691163 10049573   15% /
+doxagent-v2-v2-site-access-1 doxagent-site-access:source-recovery-20261006-r3 Up 3 days (healthy)
+doxagent-v2-v2-message-bus-1 doxagent-v2:sweep-priority-20261006 Up 3 days
+doxagent-v2-v2-scheduler-1 doxagent-v2:event-maintenance-20261006 Up 3 days
+doxagent-v2-v2-web-1 doxagent-v2-web:gateway-viewfix2-20261003 Up 6 days (healthy)
+doxagent-v2-codex-worker-1 doxagent-v2:maintenance-worker-20261003 Up 6 days (healthy)
+doxagent-v2-v2-api-1 doxagent-v2:store-recovery-20261002 Up 7 days (healthy)
+doxagent-v2-v2-content-enrichment-1 doxagent-v2:market-news-enrich-3ef317a4 Up 3 hours
+doxagent-v2-initialization-guardian-1 doxagent-v2:codex-gpt6-guardian-0.159.3 Up 7 days
+doxagent-v2-v2-o4-1 doxagent-v2:codex-gpt6-research-0.159.3 Up 7 days
+doxagent-v2-v2-initialization-1 doxagent-v2:codex-gpt6-research-0.159.3 Up 7 days
+doxagent-v2-v2-projector-1 doxagent-v2:trade-projector-8c55fcd3-patch Up 8 days
+doxagent-v2-v2-delivery-1 doxagent-v2:trade-delivery-9dd43b03-patch Up 3 days
+doxagent-v2-v2-executor-1 doxagent-v2:trade-427ad43d Up 3 days
+doxagent-v2-v2-chrome-supervisor-1 doxagent-chrome-supervisor:server Up 2 weeks (healthy)
+doxagent-v2-v2-cdecr-executor-1 4b4d862f193c Up 2 weeks (healthy)
+doxagent-v2-v2-control-1 4b4d862f193c Up 8 hours
+doxagent-egress-clash metacubex/mihomo:v1.19.31 Up 2 weeks
+{"Type":"json-file","Config":{"max-file":"3","max-size":"20m"}}
+2026-10-09T11:42:45.254376442Z     return await dependant.call(**values)
+2026-10-09T11:42:45.254378987Z            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-09T11:42:45.254381502Z   File "/app/src/doxagent/site_strategy/api.py", line 175, in execute
+2026-10-09T11:42:45.254384228Z     return await service.execute(request)
+2026-10-09T11:42:45.254386812Z            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-09T11:42:45.254389407Z   File "/app/src/doxagent/site_strategy/service.py", line 765, in execute
+2026-10-09T11:42:45.254392122Z     result = await asyncio.shield(task)
+2026-10-09T11:42:45.254394527Z              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-09T11:42:45.254397012Z   File "/app/src/doxagent/site_strategy/service.py", line 837, in _execute_deadlined
+2026-10-09T11:42:45.254399677Z     return await self._execute_uncached(request)
+2026-10-09T11:42:45.254402241Z            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-09T11:42:45.254404776Z   File "/app/src/doxagent/site_strategy/service.py", line 1060, in _execute_uncached
+2026-10-09T11:42:45.254407391Z     await self.health.mark_unknown_denial(
+2026-10-09T11:42:45.254409916Z   File "/app/src/doxagent/site_strategy/health.py", line 130, in mark_unknown_denial
+2026-10-09T11:42:45.254416097Z     self.repository.save_runtime(state, expected_generation=state.generation)
+2026-10-09T11:42:45.254418853Z   File "/app/src/doxagent/site_strategy/repository.py", line 592, in save_runtime
+2026-10-09T11:42:45.254421548Z     with self.transaction() as connection:
+2026-10-09T11:42:45.254424603Z   File "/usr/local/lib/python3.11/contextlib.py", line 144, in __exit__
+2026-10-09T11:42:45.254427318Z     next(self.gen)
+2026-10-09T11:42:45.254429803Z   File "/app/src/doxagent/site_strategy/repository.py", line 51, in transaction
+2026-10-09T11:42:45.254432558Z     connection.commit()
+2026-10-09T11:42:45.254435093Z sqlite3.OperationalError: database or disk is full
+2026-10-09T11:42:45.489289068Z INFO:     172.18.0.10:34794 - "POST /v1/access/execute HTTP/1.1" 500 Internal Server Error
+2026-10-09T11:42:45.492321802Z ERROR:    Exception in ASGI application
+2026-10-09T11:42:45.492342962Z Traceback (most recent call last):
+2026-10-09T11:42:45.492346298Z   File "/app/.venv/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py", line 421, in run_asgi
+2026-10-09T11:42:45.492349313Z     result = await app(  # type: ignore[func-returns-value]
+2026-10-09T11:42:45.492351978Z              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-09T11:42:45.492354764Z   File "/app/.venv/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 62, in __call__
+2026-10-09T11:42:45.492357539Z     return await self.app(scope, receive, send)
+2026-10-09T11:42:45.492360014Z            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-09T11:42:45.492362558Z   File "/app/.venv/lib/python3.11/site-packages/fastapi/applications.py", line 1163, in __call__
+2026-10-09T11:42:45.492365233Z     await super().__call__(scope, receive, send)
+2026-10-09T11:42:45.492367708Z   File "/app/.venv/lib/python3.11/site-packages/starlette/applications.py", line 90, in __call__
+2026-10-09T11:42:45.492370373Z     await self.middleware_stack(scope, receive, send)
+2026-10-09T11:42:45.492372838Z   File "/app/.venv/lib/python3.11/site-packages/starlette/middleware/errors.py", line 186, in __call__
+2026-10-09T11:42:45.492375573Z     raise exc
+2026-10-09T11:42:45.492378007Z   File "/app/.venv/lib/python3.11/site-packages/starlette/middleware/errors.py", line 164, in __call__
+2026-10-09T11:42:45.492380662Z     await self.app(scope, receive, _send)
+2026-10-09T11:42:45.492383137Z   File "/app/.venv/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+2026-10-09T11:42:45.492385892Z     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+2026-10-09T11:42:45.492388447Z   File "/app/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+2026-10-09T11:42:45.492391132Z     raise exc
+2026-10-09T11:42:45.492393456Z   File "/app/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+2026-10-09T11:42:45.492396141Z     await app(scope, receive, sender)
+2026-10-09T11:42:45.492398587Z   File "/app/.venv/lib/python3.11/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+2026-10-09T11:42:45.492401272Z     await self.app(scope, receive, send)
+2026-10-09T11:42:45.492403767Z   File "/app/.venv/lib/python3.11/site-packages/starlette/routing.py", line 660, in __call__
+2026-10-09T11:42:45.492406402Z     await self.middleware_stack(scope, receive, send)
+2026-10-09T11:42:45.492408826Z   File "/app/.venv/lib/python3.11/site-packages/fastapi/routing.py", line 2543, in app
+2026-10-09T11:42:45.492411511Z     await route.handle(scope, receive, send)
+2026-10-09T11:42:45.492413986Z   File "/app/.venv/lib/python3.11/site-packages/fastapi/routing.py", line 1241, in handle
+2026-10-09T11:42:45.492417192Z     await super().handle(scope, receive, send)
+2026-10-09T11:42:45.492423033Z   File "/app/.venv/lib/python3.11/site-packages/starlette/routing.py", line 276, in handle
+2026-10-09T11:42:45.492425708Z     await self.app(scope, receive, send)
+2026-10-09T11:42:45.492428152Z   File "/app/.venv/lib/python3.11/site-packages/fastapi/routing.py", line 150, in app
+2026-10-09T11:42:45.492430847Z     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+2026-10-09T11:42:45.492433362Z   File "/app/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+2026-10-09T11:42:45.492451556Z     raise exc
+2026-10-09T11:42:45.492454251Z   File "/app/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+2026-10-09T11:42:45.492456996Z     await app(scope, receive, sender)
+2026-10-09T11:42:45.492459441Z   File "/app/.venv/lib/python3.11/site-packages/fastapi/routing.py", line 136, in app
+2026-10-09T11:42:45.492462096Z     response = await f(request)
+2026-10-09T11:42:45.492464480Z                ^^^^^^^^^^^^^^^^
+2026-10-09T11:42:45.492466975Z   File "/app/.venv/lib/python3.11/site-packages/fastapi/routing.py", line 690, in app
+2026-10-09T11:42:45.492469590Z     raw_response = await run_endpoint_function(
+2026-10-09T11:42:45.492472085Z                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-09T11:42:45.492474559Z   File "/app/.venv/lib/python3.11/site-packages/fastapi/routing.py", line 344, in run_endpoint_function
+2026-10-09T11:42:45.492477234Z     return await dependant.call(**values)
+2026-10-09T11:42:45.492479889Z            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-09T11:42:45.492482304Z   File "/app/src/doxagent/site_strategy/api.py", line 175, in execute
+2026-10-09T11:42:45.492484890Z     return await service.execute(request)
+2026-10-09T11:42:45.492487334Z            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-09T11:42:45.492489749Z   File "/app/src/doxagent/site_strategy/service.py", line 765, in execute
+2026-10-09T11:42:45.492492314Z     result = await asyncio.shield(task)
+2026-10-09T11:42:45.492494708Z              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-09T11:42:45.492497153Z   File "/app/src/doxagent/site_strategy/service.py", line 837, in _execute_deadlined
+2026-10-09T11:42:45.492499758Z     return await self._execute_uncached(request)
+2026-10-09T11:42:45.492502192Z            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-09T11:42:45.492504647Z   File "/app/src/doxagent/site_strategy/service.py", line 1152, in _execute_uncached
+2026-10-09T11:42:45.492507222Z     await self.health.mark_success(
+2026-10-09T11:42:45.492509616Z   File "/app/src/doxagent/site_strategy/health.py", line 231, in mark_success
+2026-10-09T11:42:45.492512211Z     self.repository.save_runtime(state, expected_generation=prior)
+2026-10-09T11:42:45.492514726Z   File "/app/src/doxagent/site_strategy/repository.py", line 592, in save_runtime
+2026-10-09T11:42:45.492520577Z     with self.transaction() as connection:
+2026-10-09T11:42:45.492523442Z   File "/usr/local/lib/python3.11/contextlib.py", line 144, in __exit__
+2026-10-09T11:42:45.492526047Z     next(self.gen)
+2026-10-09T11:42:45.492528381Z   File "/app/src/doxagent/site_strategy/repository.py", line 51, in transaction
+2026-10-09T11:42:45.492530996Z     connection.commit()
+2026-10-09T11:42:45.492533381Z sqlite3.OperationalError: database or disk is full

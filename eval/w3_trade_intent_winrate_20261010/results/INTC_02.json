@@ -1,0 +1,191 @@
+{
+  "ticker": "INTC",
+  "part": 2,
+  "record_count": 4,
+  "records": [
+    {
+      "intent_id": "trade:case_eafa7ae7cba147e68fbf9e021466480d",
+      "ticker": "INTC",
+      "case_id": "case_eafa7ae7cba147e68fbf9e021466480d",
+      "direction": "SHORT",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "intent_released_at_utc": "2026-10-01T18:59:30.162569+00:00",
+      "intent_released_at_et": "2026-10-01T14:59:30.162569-04:00",
+      "entry_basis": "hypothetical_trade_tick",
+      "entry_at_utc": "2026-10-01T18:59:30.162569+00:00",
+      "cycle_end_utc": "2026-10-01T19:30:00+00:00",
+      "cycle_end_et": "2026-10-01T15:30:00-04:00",
+      "actual_entry": false,
+      "actual_exit": false,
+      "entry_evidence": {
+        "query_key": "INTC|2026-10-01T18:59:30.162569+00:00|entry",
+        "status": "ok",
+        "selected": {
+          "exchange": "DRCTEDGE",
+          "offset_seconds": 0.837431,
+          "price_usd": 120.81,
+          "special_conditions": " F  ",
+          "timestamp_utc": "2026-10-01T18:59:31+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-10-01T18:59:31+00:00",
+        "error": null
+      },
+      "entry_price_usd": "120.81",
+      "exit_evidence": {
+        "query_key": "INTC|2026-10-01T19:30:00+00:00|exit",
+        "status": "ok",
+        "selected": {
+          "exchange": "BATS",
+          "offset_seconds": 0.0,
+          "price_usd": 120.52,
+          "special_conditions": " F  ",
+          "timestamp_utc": "2026-10-01T19:30:00+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-10-01T19:30:00+00:00",
+        "error": null
+      },
+      "exit_price_usd": "120.52",
+      "return_pct": "0.2400",
+      "classification": "flat"
+    },
+    {
+      "intent_id": "trade:case_08a55f792d5c48acbf65a368fa5d81de",
+      "ticker": "INTC",
+      "case_id": "case_08a55f792d5c48acbf65a368fa5d81de",
+      "direction": "SHORT",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "intent_released_at_utc": "2026-10-05T11:25:29.306539+00:00",
+      "intent_released_at_et": "2026-10-05T07:25:29.306539-04:00",
+      "entry_basis": "actual_fill",
+      "entry_at_utc": "2026-10-05T11:25:34+00:00",
+      "cycle_end_utc": "2026-10-05T19:30:00+00:00",
+      "cycle_end_et": "2026-10-05T15:30:00-04:00",
+      "actual_entry": true,
+      "actual_exit": true,
+      "entry_price_usd": "114.5240259740259740259740260",
+      "entry_evidence": {
+        "source": "actual_broker_fill",
+        "fill": {
+          "side": "SELL",
+          "quantity": "154",
+          "average_price_usd": "114.5240259740259740259740260",
+          "first_fill_at": "2026-10-05T11:25:34+00:00",
+          "last_fill_at": "2026-10-05T11:25:36+00:00"
+        }
+      },
+      "exit_evidence": {
+        "query_key": "INTC|2026-10-05T19:30:00+00:00|exit",
+        "status": "ok",
+        "selected": {
+          "exchange": "NASDAQ",
+          "offset_seconds": 0.0,
+          "price_usd": 116.17,
+          "special_conditions": null,
+          "timestamp_utc": "2026-10-05T19:30:00+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-10-05T19:30:00+00:00",
+        "error": null
+      },
+      "exit_price_usd": "116.17",
+      "return_pct": "-1.4372",
+      "classification": "flat"
+    },
+    {
+      "intent_id": "trade:selection:INTC:2026-10-05",
+      "ticker": "INTC",
+      "case_id": "case_b39f31b559ab46bc8c81cd9f344ebb8f",
+      "direction": "SHORT",
+      "intent_status": "DUPLICATE_REALTIME_OUTPUT",
+      "intent_released_at_utc": "2026-10-05T11:49:26.626625+00:00",
+      "intent_released_at_et": "2026-10-05T07:49:26.626625-04:00",
+      "entry_basis": "hypothetical_trade_tick",
+      "entry_at_utc": "2026-10-05T11:49:26.626625+00:00",
+      "cycle_end_utc": "2026-10-05T19:30:00+00:00",
+      "cycle_end_et": "2026-10-05T15:30:00-04:00",
+      "actual_entry": false,
+      "actual_exit": false,
+      "entry_evidence": {
+        "query_key": "INTC|2026-10-05T11:49:26.626625+00:00|entry",
+        "status": "ok",
+        "selected": {
+          "exchange": "FINRA",
+          "offset_seconds": 7.373375,
+          "price_usd": 114.5621,
+          "special_conditions": "  T ",
+          "timestamp_utc": "2026-10-05T11:49:34+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-10-05T11:49:29+00:00",
+        "error": null
+      },
+      "entry_price_usd": "114.5621",
+      "exit_evidence": {
+        "query_key": "INTC|2026-10-05T19:30:00+00:00|exit",
+        "status": "ok",
+        "selected": {
+          "exchange": "NASDAQ",
+          "offset_seconds": 0.0,
+          "price_usd": 116.17,
+          "special_conditions": null,
+          "timestamp_utc": "2026-10-05T19:30:00+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-10-05T19:30:00+00:00",
+        "error": null
+      },
+      "exit_price_usd": "116.17",
+      "return_pct": "-1.4035",
+      "classification": "flat"
+    },
+    {
+      "intent_id": "trade:case_c24add34b3594b8aa8c356869a18f222",
+      "ticker": "INTC",
+      "case_id": "case_c24add34b3594b8aa8c356869a18f222",
+      "direction": "LONG",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "intent_released_at_utc": "2026-10-06T17:13:38.428968+00:00",
+      "intent_released_at_et": "2026-10-06T13:13:38.428968-04:00",
+      "entry_basis": "hypothetical_trade_tick",
+      "entry_at_utc": "2026-10-06T17:13:38.428968+00:00",
+      "cycle_end_utc": "2026-10-06T19:30:00+00:00",
+      "cycle_end_et": "2026-10-06T15:30:00-04:00",
+      "actual_entry": false,
+      "actual_exit": false,
+      "entry_evidence": {
+        "query_key": "INTC|2026-10-06T17:13:38.428968+00:00|entry",
+        "status": "ok",
+        "selected": {
+          "exchange": "FINRA",
+          "offset_seconds": 0.571032,
+          "price_usd": 114.03,
+          "special_conditions": null,
+          "timestamp_utc": "2026-10-06T17:13:39+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-10-06T17:13:39+00:00",
+        "error": null
+      },
+      "entry_price_usd": "114.03",
+      "exit_evidence": {
+        "query_key": "INTC|2026-10-06T19:30:00+00:00|exit",
+        "status": "ok",
+        "selected": {
+          "exchange": "FINRA",
+          "offset_seconds": 0.0,
+          "price_usd": 113.97,
+          "special_conditions": null,
+          "timestamp_utc": "2026-10-06T19:30:00+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-10-06T19:30:00+00:00",
+        "error": null
+      },
+      "exit_price_usd": "113.97",
+      "return_pct": "-0.0526",
+      "classification": "flat"
+    }
+  ]
+}

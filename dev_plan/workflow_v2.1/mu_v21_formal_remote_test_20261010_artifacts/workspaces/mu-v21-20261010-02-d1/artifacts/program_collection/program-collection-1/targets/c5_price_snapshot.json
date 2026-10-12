@@ -1,0 +1,83 @@
+{
+  "schema_version": "d1-horizontal-target-result-v1",
+  "result": {
+    "collection_target_id": "c5_price_snapshot",
+    "status": "PARTIAL",
+    "requested_items": 1,
+    "succeeded_items": 1,
+    "unavailable_items": 0,
+    "failed_items": 0,
+    "provider_attempts": [
+      {
+        "provider": "IBKR-first market route",
+        "tool_name": "market.quote_snapshot",
+        "status": "PARTIAL",
+        "started_at": "2026-10-09T18:11:57.147829Z",
+        "finished_at": "2026-10-09T18:12:18.311242Z",
+        "error_code": "daily_close_quote_fallback",
+        "message": "A daily close was returned because no point-in-time quote was available; it is not equivalent to bid/ask/last."
+      }
+    ],
+    "output_refs": [
+      {
+        "object_type": "METRIC",
+        "provider_specific_id": null,
+        "source_locator": "twelvedata.daily_ohlcv",
+        "canonical_object_id_candidate": "c5_price_snapshot:daily_close_fallback:2026-10-09T00:00:00+00:00",
+        "resolver_status": "CANDIDATE"
+      }
+    ],
+    "reason": null
+  },
+  "observations": [
+    {
+      "collection_target_id": "c5_price_snapshot",
+      "item_key": "market_share_price:daily_close_fallback:2026-10-09T00:00:00+00:00",
+      "value": 1034.18,
+      "as_of": "2026-10-09T00:00:00Z",
+      "source_refs": [
+        {
+          "object_type": "METRIC",
+          "provider_specific_id": null,
+          "source_locator": "twelvedata.daily_ohlcv",
+          "canonical_object_id_candidate": "c5_price_snapshot:daily_close_fallback:2026-10-09T00:00:00+00:00",
+          "resolver_status": "CANDIDATE"
+        }
+      ],
+      "unit": "TRADING_CURRENCY",
+      "source_concept": null,
+      "period_start": null,
+      "period_end": "2026-10-09T00:00:00Z",
+      "filed_at": null,
+      "accession": null,
+      "form": null,
+      "fiscal_year": null,
+      "fiscal_period": null,
+      "frame": null,
+      "published_at": null,
+      "retrieved_at": "2026-10-09T18:12:18.311242Z",
+      "quality_flags": [
+        "program_collected",
+        "stale_daily_close_fallback",
+        "provider_partial"
+      ],
+      "observation_metadata": {
+        "price_kind": "daily_close_fallback",
+        "bar_close_date": "2026-10-09",
+        "session": "daily_bar",
+        "selected_provider_tool": "twelvedata.daily_ohlcv",
+        "fallback_used": true,
+        "requested_fields": [
+          "last",
+          "close"
+        ],
+        "resolved_fields": [
+          "daily_close"
+        ]
+      },
+      "method_id": null,
+      "method_version": null,
+      "input_refs": []
+    }
+  ]
+}

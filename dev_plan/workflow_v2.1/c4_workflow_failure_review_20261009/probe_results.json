@@ -1,0 +1,38 @@
+{
+  "direct_runtime_callback_still_incompatible": "missing a required argument: 'turn'",
+  "future_failure_cascade_and_published_replay": {
+    "products": {
+      "future_nodes": "failed",
+      "entity_relations": "failed",
+      "entity_network_report": "failed"
+    },
+    "formal_called": false,
+    "network_called": false,
+    "calls_after_provider_repaired": 0,
+    "replayed_products": {
+      "future_nodes": "failed",
+      "entity_relations": "failed",
+      "entity_network_report": "failed"
+    }
+  },
+  "failed_network_ack_overrides_valid_file": {
+    "status": "available",
+    "accepted_report": "I could not complete the request."
+  },
+  "one_bad_relation_discards_good_rows": {
+    "error": "C4 stage output violates its schema: '关系对象' is a required property",
+    "good_rows": 1
+  },
+  "usage_sink_failure_reruns_valid_research": {
+    "research_calls": 2,
+    "attempt_statuses": [
+      "failed",
+      "failed"
+    ],
+    "products": {
+      "future_nodes": "failed",
+      "entity_relations": "failed",
+      "entity_network_report": "failed"
+    }
+  }
+}

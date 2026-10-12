@@ -1,0 +1,144 @@
+..........................................F................FFFF...FFF... [ 75%]
+..........F.............                                                 [100%]
+================================== FAILURES ===================================
+_ test_published_w3_context_retains_consumed_policy_while_auto_freeze_is_disabled _
+tests\test_persistent_runtime_w3.py:366: in test_published_w3_context_retains_consumed_policy_while_auto_freeze_is_disabled
+    assert [p.policy_id for p in first.policy_set.policies] == ["pol_any"]
+E   AssertionError: assert [] == ['pol_any']
+E     
+E     Right contains one more item: 'pol_any'
+E     Use -v to get more diff
+__________ test_o2_receipt_survives_o3_failure_and_activation_crash ___________
+tests\test_runtime_orchestration_recovery.py:101: in test_o2_receipt_survives_o3_failure_and_activation_crash
+    result = asyncio.run(maintenance(task))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.uv-python\cpython-3.11-windows-x86_64-none\Lib\asyncio\runners.py:190: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+.uv-python\cpython-3.11-windows-x86_64-none\Lib\asyncio\runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.uv-python\cpython-3.11-windows-x86_64-none\Lib\asyncio\base_events.py:654: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+src\doxagent\persistent_runtime_v2\maintenance.py:395: in __call__
+    self._admit(revision)
+src\doxagent\persistent_runtime_v2\maintenance.py:421: in _admit
+    admit_revision(self.journal, revision=revision,
+src\doxagent\persistent_runtime_v2\policy_consumption.py:125: in admit_revision
+    raise ValueError("Activated Policy Set unavailable")
+E   ValueError: Activated Policy Set unavailable
+_____ test_maintenance_recovery_changes_only_failed_luna_execution_model ______
+tests\test_runtime_orchestration_recovery.py:153: in test_maintenance_recovery_changes_only_failed_luna_execution_model
+    asyncio.run(maintenance(task))
+.uv-python\cpython-3.11-windows-x86_64-none\Lib\asyncio\runners.py:190: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+.uv-python\cpython-3.11-windows-x86_64-none\Lib\asyncio\runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.uv-python\cpython-3.11-windows-x86_64-none\Lib\asyncio\base_events.py:654: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+src\doxagent\persistent_runtime_v2\maintenance.py:395: in __call__
+    self._admit(revision)
+src\doxagent\persistent_runtime_v2\maintenance.py:421: in _admit
+    admit_revision(self.journal, revision=revision,
+src\doxagent\persistent_runtime_v2\policy_consumption.py:125: in admit_revision
+    raise ValueError("Activated Policy Set unavailable")
+E   ValueError: Activated Policy Set unavailable
+_________ test_historical_maintenance_does_not_rewind_visibility_day __________
+tests\test_runtime_orchestration_recovery.py:185: in test_historical_maintenance_does_not_rewind_visibility_day
+    asyncio.run(maintenance(task))
+.uv-python\cpython-3.11-windows-x86_64-none\Lib\asyncio\runners.py:190: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+.uv-python\cpython-3.11-windows-x86_64-none\Lib\asyncio\runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.uv-python\cpython-3.11-windows-x86_64-none\Lib\asyncio\base_events.py:654: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+src\doxagent\persistent_runtime_v2\maintenance.py:395: in __call__
+    self._admit(revision)
+src\doxagent\persistent_runtime_v2\maintenance.py:421: in _admit
+    admit_revision(self.journal, revision=revision,
+src\doxagent\persistent_runtime_v2\policy_consumption.py:125: in admit_revision
+    raise ValueError("Activated Policy Set unavailable")
+E   ValueError: Activated Policy Set unavailable
+____ test_candidate_selection_releases_only_winner_without_freezing_policy ____
+tests\test_runtime_orchestration_recovery.py:233: in test_candidate_selection_releases_only_winner_without_freezing_policy
+    assert runtime.repository.list_consumed_policy_revisions("MU") == set()
+E   AssertionError: assert {('pol_any', ...def12345678')} == set()
+E     
+E     Extra items in the left set:
+E     ('pol_any', 'ar_1234567890abcdef12345678')
+E     Use -v to get more diff
+_ test_research_activation_preserves_effective_monitoring_edits[REPLACE_ARTIFACT-True-True] _
+tests\test_ticker_initialization_activation.py:83: in test_research_activation_preserves_effective_monitoring_edits
+    asyncio.run(adapter.execute(context))
+.uv-python\cpython-3.11-windows-x86_64-none\Lib\asyncio\runners.py:190: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+.uv-python\cpython-3.11-windows-x86_64-none\Lib\asyncio\runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.uv-python\cpython-3.11-windows-x86_64-none\Lib\asyncio\base_events.py:654: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+src\doxagent\ticker_initialization\activation_adapter.py:69: in execute
+    canonical = policies.get_version(context.run.ticker, refs["document3"]["version"])
+                ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'types.SimpleNamespace' object has no attribute 'get_version'
+_ test_research_activation_preserves_effective_monitoring_edits[ROLLBACK-True-False] _
+tests\test_ticker_initialization_activation.py:83: in test_research_activation_preserves_effective_monitoring_edits
+    asyncio.run(adapter.execute(context))
+.uv-python\cpython-3.11-windows-x86_64-none\Lib\asyncio\runners.py:190: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+.uv-python\cpython-3.11-windows-x86_64-none\Lib\asyncio\runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.uv-python\cpython-3.11-windows-x86_64-none\Lib\asyncio\base_events.py:654: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+src\doxagent\ticker_initialization\activation_adapter.py:69: in execute
+    canonical = policies.get_version(context.run.ticker, refs["document3"]["version"])
+                ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'types.SimpleNamespace' object has no attribute 'get_version'
+_ test_research_activation_preserves_effective_monitoring_edits[ACTIVATE-False-False] _
+tests\test_ticker_initialization_activation.py:83: in test_research_activation_preserves_effective_monitoring_edits
+    asyncio.run(adapter.execute(context))
+.uv-python\cpython-3.11-windows-x86_64-none\Lib\asyncio\runners.py:190: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+.uv-python\cpython-3.11-windows-x86_64-none\Lib\asyncio\runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.uv-python\cpython-3.11-windows-x86_64-none\Lib\asyncio\base_events.py:654: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+src\doxagent\ticker_initialization\activation_adapter.py:69: in execute
+    canonical = policies.get_version(context.run.ticker, refs["document3"]["version"])
+                ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'types.SimpleNamespace' object has no attribute 'get_version'
+_________________ test_coverage_loss_and_positive_consumption _________________
+tests\v2_backend\test_policy_consumption_coverage.py:93: in test_coverage_loss_and_positive_consumption
+    assert result["effective"] == available(True)
+E   AssertionError: assert {'reason': No...value': False} == {'reason': No...'value': True}
+E     
+E     Omitting 2 identical items, use -vv to show
+E     Differing items:
+E     {'value': False} != {'value': True}
+E     Use -v to get more diff
+=========================== short test summary info ===========================
+FAILED tests/test_persistent_runtime_w3.py::test_published_w3_context_retains_consumed_policy_while_auto_freeze_is_disabled
+FAILED tests/test_runtime_orchestration_recovery.py::test_o2_receipt_survives_o3_failure_and_activation_crash
+FAILED tests/test_runtime_orchestration_recovery.py::test_maintenance_recovery_changes_only_failed_luna_execution_model
+FAILED tests/test_runtime_orchestration_recovery.py::test_historical_maintenance_does_not_rewind_visibility_day
+FAILED tests/test_runtime_orchestration_recovery.py::test_candidate_selection_releases_only_winner_without_freezing_policy
+FAILED tests/test_ticker_initialization_activation.py::test_research_activation_preserves_effective_monitoring_edits[REPLACE_ARTIFACT-True-True]
+FAILED tests/test_ticker_initialization_activation.py::test_research_activation_preserves_effective_monitoring_edits[ROLLBACK-True-False]
+FAILED tests/test_ticker_initialization_activation.py::test_research_activation_preserves_effective_monitoring_edits[ACTIVATE-False-False]
+FAILED tests/v2_backend/test_policy_consumption_coverage.py::test_coverage_loss_and_positive_consumption
+9 failed, 87 passed in 45.63s

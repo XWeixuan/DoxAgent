@@ -1,0 +1,86 @@
+# Selected Data MCP observations
+
+## O355 — form
+
+10-K
+
+Source: SEC EDGAR · 0000723125-26-000023
+
+## O358 — filing_date
+
+2026-10-09
+
+Source: SEC EDGAR · 0000723125-26-000023
+
+## O359 — report_date
+
+2026-09-03
+
+Source: SEC EDGAR · 0000723125-26-000023
+
+## O360 — published_at
+
+2026-10-09
+
+Source: SEC EDGAR · 0000723125-26-000023
+
+## O361 — applied_cutoff
+
+2026-10-09
+
+Source: SEC EDGAR · 0000723125-26-000023
+
+## O363 — section_previews 1
+
+```json
+{
+  "section": "equipment suppliers",
+  "heading_match": "equipment suppliers.",
+  "start_offset": 102950,
+  "end_offset": 182971,
+  "full_text_chars": 79999,
+  "returned_chars": 40000,
+  "truncated": true,
+  "match_quality": "substantive_body",
+  "text_preview": "A significant portion of our manufacturing costs are fixed and do not vary proportionally with changes in production output. As a result, lower utilization, lower wafer output, and corresponding increases in our per gigabit manufacturing costs could result in higher inventory carrying costs, and have had, and may in the future have, an adverse effect on our gross margins, business, results of operations, or financial condition. We operate in a dynamic and rapidly evolving industry where the timeframes for product transitions, facility expansions, production ramps, and supply chain shifts are increasingly compressed. To remain competitive, we must continuously develop and implement new products and technologies and decrease manufacturing costs in spite of inflationary pressures and regulatory uncertainty. As we streamline our production and shift capacity to leading-edge nodes and, as we endeavor to increase our capacity by expanding existing facilities and building new facilities, we face execution risks that could impact our ability to meet customer demand and maintain market coverage. 24 Table of Contents There can be no assurance we will be able to do the following: • timely identify and address technology inflections and market changes; • accurately forecast demand and inventory levels of our customers or distributors; • timely complete facility expansions and transitions of products to new fabrication facilities; • timely ramp production as we transition our operations footprint to new fabrication facilities; • maintain operational flexibility in response to unforeseen changes in customer demand; and • maintain supply scalability during downturns in the semiconductor markets in which we compete as we streamline our product portfolio to drive further fabrication efficiencies. Our ability to execute on multiple transitions simultaneously, while maintaining supply continuity, quality standards, and cost competitiveness, is critical to sustaining our market position. If we do not successfully anticipate technology inflections and respond to changes in customer requirements and market changes, our business, results of operations, or financial condition could be materially adversely affected. Any misalignment between forecasted and actual demand, or delays in ramping new technologies, could result in elevated inventory levels, underutilized capacity, and gross margin pressure. Additionally, our customers have from time to time overstated their expected demand requirements, possibly to procure additional supply, and may do so in the future. This could exacerbate the foregoing issues and could negatively impact our ability to forecast and to allocate supply appropriately among our customers. We have a broad portfolio of products to address our customers' needs, which span multiple market segments and are subject to rapid technological changes. Our manufacturing costs on a per gigabit basis vary across our portfolio as they are largely influenced by "
+}
+```
+
+Source: SEC EDGAR · 0000723125-26-000023
+
+## O356 — accession
+
+0000723125-26-000023
+
+Source: SEC EDGAR · 0000723125-26-000023
+
+## O357 — primary_document
+
+mu-20260903.htm
+
+Source: SEC EDGAR · 0000723125-26-000023
+
+## O362 — default_sections_for_form
+
+```json
+false
+```
+
+Source: SEC EDGAR · 0000723125-26-000023
+
+## O364 — sections 1 — metadata
+
+```json
+{
+  "section": "equipment suppliers",
+  "heading_match": "equipment suppliers.",
+  "start_offset": 102950,
+  "end_offset": 182971,
+  "full_text_chars": 79999,
+  "returned_chars": 40000,
+  "truncated": true,
+  "match_quality": "substantive_body"
+}
+```
+
+Source: SEC EDGAR · 0000723125-26-000023

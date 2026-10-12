@@ -1,0 +1,9 @@
+{
+  "alias": "O100",
+  "title": "text paragraphs 12",
+  "content": "|  |  |  |\n\n|  | Item 1. Legal Proceedings |  |\n\n|  | Item 1A. Risk Factors |  |\n\n|  | Item 2. Unregistered Sales of Equity Securities and Use of Proceeds |  |\n\n|  | Item 3. Defaults Upon Senior Securities |  |\n\n|  | Item 4. Mine Safety Disclosures |  |\n\n|  | Item 5. Other Information |  |\n\n|  | Item 6. Exhibits |  |",
+  "source": {
+    "provider": "Public web source",
+    "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+  }
+}

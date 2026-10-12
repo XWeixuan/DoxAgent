@@ -1,0 +1,39 @@
+{
+  "selected_aliases": [
+    "O82",
+    "O83",
+    "O84",
+    "O85",
+    "O88"
+  ],
+  "blocks": [
+    {
+      "alias": "O82",
+      "path": "blocks/O82.md"
+    },
+    {
+      "alias": "O83",
+      "path": "blocks/O83.md"
+    },
+    {
+      "alias": "O84",
+      "path": "blocks/O84.md"
+    },
+    {
+      "alias": "O85",
+      "path": "blocks/O85.md"
+    },
+    {
+      "alias": "O86",
+      "path": "blocks/O86.md"
+    },
+    {
+      "alias": "O87",
+      "path": "blocks/O87.md"
+    },
+    {
+      "alias": "O88",
+      "path": "blocks/O88.md"
+    }
+  ]
+}

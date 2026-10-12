@@ -1,0 +1,1288 @@
+{
+  "case_id": "case_a9e54dfcdd0e4e52883d1a259c602445",
+  "ticker": "RKLB",
+  "title": "TD Cowen Cut Its Rocket Lab Target. It Still Sees 32% Upside",
+  "created_at": "2026-10-12T06:16:07.546081Z",
+  "mode": "UNCOVERED_NEW",
+  "thread_kind": "FALLBACK",
+  "has_intent": false,
+  "worker_seconds": 218.205,
+  "sdk_seconds": 192.464,
+  "compactions": [],
+  "context_sizes": {
+    "output_schema.json": 5958,
+    "reference_view.md": 55431,
+    "policy_set.json": 113872,
+    "document2.json": 430149,
+    "document1.md": 82928
+  },
+  "w3": {
+    "attempt_count": 1,
+    "case_id": "case_a9e54dfcdd0e4e52883d1a259c602445",
+    "context_version_pin": {
+      "document1_run_id": "init-rklb-9631e4071e75470a97313eafbbdc51aa-d1",
+      "document2_run_id": "init-rklb-9631e4071e75470a97313eafbbdc51aa-d2",
+      "event_library_version": 23,
+      "policy_set_version": 11
+    },
+    "created_at": "2026-10-12T06:16:07.546081Z",
+    "error_code": null,
+    "error_message": null,
+    "event_library_version": 23,
+    "mode": "UNCOVERED_NEW",
+    "policy_set_version": 11,
+    "resolved_route": {
+      "primary_route": "ADD_TO_DELTA",
+      "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=false",
+      "side_effects": [
+        "emit_delta"
+      ]
+    },
+    "result": {
+      "delta_candidates": [
+        {
+          "assertion_state": "ACTUAL",
+          "entities": [
+            "TD Cowen",
+            "Gautam Khanna",
+            "Rocket Lab (RKLB)"
+          ],
+          "occurrence_date": "2026-10-09",
+          "proposition": "TD Cowen分析师Gautam Khanna于2026-10-09将Rocket Lab（RKLB）目标价从$120下调至$90，并维持Buy评级。",
+          "subject_time": null
+        }
+      ],
+      "expert_trade": {
+        "direction": null,
+        "evaluated": true,
+        "expectation_delta": "TD Cowen自身目标价下调$30（25%）至$90，但维持Buy；按报道引用的$68.44股价仍约有32%上涨空间。这修订了单家机构的估值判断，不证明市场整体盈利预期或Rocket Lab经营预期同步下修。",
+        "prior_expectation": "调整前，TD Cowen自身的RKLB目标价为$120且评级为Buy。更广泛的事件前基线是公司增长、利润率和现金转换仍需多季度兑现；Document1指出缺乏可靠的同口径季度卖方共识，不能把单家目标价视为市场共识。",
+        "reason": "目标价下调幅度对该分析师估值有意义，但消息未披露公司经营、订单、现金流或项目状态的新变化，也不足以证明市场整体预期发生重大修订。对RKLB的路径主要是间接的情绪或估值倍数传导，缺少足够的市场广度与基本面连接，不能据此形成直接方向性交易。",
+        "trade": false
+      },
+      "novelty": {
+        "reason": "TD Cowen于2026-10-09将Rocket Lab目标价从$120下调至$90，同时维持Buy评级；该具体分析师操作未见于Reference View。[The Fly via TipRanks](https://www.tipranks.com/news/the-fly/rocket-lab-price-target-lowered-to-90-from-120-at-td-cowen-thefly-news)",
+        "reference_ids": [],
+        "result": "NEW"
+      },
+      "policy": {
+        "matched_condition_ids": [],
+        "policy_ids": [],
+        "reason": "这是单家卖方目标价与估值观点调整，不满足PolicySet中针对公司运营、合同、融资、监管等现实变化的触发条件；无现行Policy覆盖。"
+      },
+      "w3_case_id": "w3_3a330a2b8b0547c2831121706b75d195"
+    },
+    "route_reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+    "source": {
+      "admission_context": {
+        "cutoff": "2026-10-12T06:00:00Z",
+        "mode": "CLOSED_SWEEP",
+        "policy_version": 1,
+        "source_task_id": "sweep:RKLB:2026-10-12:source:RKLB:finnhub_company_news",
+        "sweep_id": "sweep:RKLB:2026-10-12",
+        "window_start": "2026-10-11T06:00:00Z"
+      },
+      "binding_id": "RKLB:finnhub_company_news",
+      "business_version": 1,
+      "collected_at": "2026-10-12T06:02:17.329211Z",
+      "eligibility_at": "2026-10-12T06:02:17.323776Z",
+      "logical_message_id": "message_cfb7772400c64ee9b7a5ab1cad9c6686",
+      "member_count": 1,
+      "member_message_ids": [
+        "std_0b5aadc815944a2f9bd00d51203ba72c"
+      ],
+      "message_bus_event_time": "2026-10-12T06:02:17.329211Z",
+      "normalized_at": null,
+      "previous_raw_message_id": null,
+      "publication_time_basis": "EXACT",
+      "published_at": "2026-10-11T21:40:09Z",
+      "snapshot": {
+        "body": "Key TakeawaysTD Cowen cut its Rocket Lab price target from $120 to $90 on October 9 but maintained its Buy rating, implying approximately 32% upside from the referenced $68. 44 share price.",
+        "ticker": "RKLB",
+        "title": "TD Cowen Cut Its Rocket Lab Target. It Still Sees 32% Upside"
+      },
+      "source_id": "finnhub_company_news",
+      "source_message_id": "std_0b5aadc815944a2f9bd00d51203ba72c",
+      "stream_item_id": "stream_454ed484dc9d48b4bf9ac95bc3d9a6a6",
+      "update_kind": "NEW_MESSAGE",
+      "url": "https://www.tikr.com/blog/td-cowen-cut-its-rocket-lab-target-it-still-sees-32-upside?.tsrc=rss&ref=yahoofinance"
+    },
+    "status": "RESOLVED",
+    "thread_id": "01a12ec1-993a-7f32-af4c-e789d22d0058",
+    "thread_kind": "FALLBACK",
+    "ticker": "RKLB",
+    "updated_at": "2026-10-12T06:19:55.590746Z",
+    "w1_final": {
+      "confidence": "normal",
+      "fact_attributions": [],
+      "reason": "TD Cowen于10月9日将Rocket Lab目标价从$120下调至$90并维持Buy评级，该分析师机构及其具体操作在已加载的所有Event Facts中均未出现，构成新核心事实。",
+      "reference_ids": [],
+      "result": "NEW"
+    },
+    "w2_final": {
+      "confidence": "normal",
+      "matched_condition_ids": [],
+      "policy_ids": [],
+      "reason": "该消息为TD Cowen分析师下调Rocket Lab目标价（$120→$90）并维持买入评级，属于卖方估值观点变更，不涉及任何合同、交付、监管、融资、客户决策、任务调度、制造或运营状态等具体事实，与各Policy criterion所关注的现实触发条件无直接对应关系。"
+    },
+    "w3_case_id": "w3_3a330a2b8b0547c2831121706b75d195"
+  },
+  "case_metadata": {
+    "runtime_mode": "CLOSED",
+    "orchestration_revision": null,
+    "execution_bundle_id": "efd1a294cc929b7e7b9f09d49ffd0d3628b7ec80a7c15725a7d8e4c07831df78",
+    "version_pin": {
+      "activation_revision_id": "runtime-maintain-a03144952e2260d4f2f35b83-activation",
+      "document1_run_id": "init-rklb-9631e4071e75470a97313eafbbdc51aa-d1",
+      "document2_run_id": "init-rklb-9631e4071e75470a97313eafbbdc51aa-d2",
+      "event_library_root": "/data/runtime/runtime_artifacts/runtime-maintain-a03144952e2260d4f2f35b83/events",
+      "event_library_version": 23,
+      "policy_set_version": 11,
+      "provisional_snapshot_version": 1,
+      "runtime_projection_version": 11
+    },
+    "status": "COMPLETED",
+    "resolved_route": {
+      "primary_route": "ADD_TO_DELTA",
+      "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=false",
+      "side_effects": [
+        "emit_delta"
+      ]
+    }
+  },
+  "request": {
+    "agent_role": "w3_duty_trading_expert",
+    "allow_subagents": false,
+    "attempt_id": "w3-01",
+    "cutoff_at": "2026-10-12T06:02:17.329211Z",
+    "data_mcp_enabled": false,
+    "deadline_at": null,
+    "effort": "max",
+    "execution_lane": null,
+    "idempotency_key": "f98c898a8a63db5a5da3da6b22f2ba5c61a3e72f092b27cf7601ca5b0256d585",
+    "initialization_id": null,
+    "max_subagents": 0,
+    "model": "gpt-6-luna",
+    "model_provider": null,
+    "node": "persistent_runtime_w3",
+    "o4_operations_enabled": false,
+    "output_schema": {
+      "$defs": {
+        "CanonicalAssertionState": {
+          "enum": [
+            "ACTUAL",
+            "GUIDANCE",
+            "FORECAST",
+            "PLAN",
+            "RUMOR",
+            "DENIAL",
+            "SCHEDULED",
+            "ONGOING",
+            "PLANNED",
+            "EXPECTED",
+            "RUMORED",
+            "DENIED",
+            "HYPOTHETICAL",
+            "UNKNOWN"
+          ],
+          "title": "CanonicalAssertionState",
+          "type": "string"
+        },
+        "PolicyDecision": {
+          "enum": [
+            "LONG",
+            "SHORT"
+          ],
+          "title": "PolicyDecision",
+          "type": "string"
+        },
+        "RuntimeFactCandidate": {
+          "additionalProperties": false,
+          "properties": {
+            "assertion_state": {
+              "$ref": "#/$defs/CanonicalAssertionState"
+            },
+            "entities": {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 32,
+              "title": "Entities",
+              "type": "array"
+            },
+            "occurrence_date": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Occurrence Date"
+            },
+            "proposition": {
+              "maxLength": 4000,
+              "minLength": 1,
+              "title": "Proposition",
+              "type": "string"
+            },
+            "subject_time": {
+              "anyOf": [
+                {
+                  "maxLength": 500,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Subject Time"
+            }
+          },
+          "required": [
+            "proposition",
+            "assertion_state",
+            "subject_time",
+            "occurrence_date",
+            "entities"
+          ],
+          "title": "RuntimeFactCandidate",
+          "type": "object"
+        },
+        "W1NoveltyVerdict": {
+          "enum": [
+            "NEW",
+            "OLD"
+          ],
+          "title": "W1NoveltyVerdict",
+          "type": "string"
+        },
+        "W2MatchedConditions": {
+          "additionalProperties": false,
+          "properties": {
+            "condition_ids": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Condition Ids",
+              "type": "array"
+            },
+            "policy_id": {
+              "minLength": 1,
+              "title": "Policy Id",
+              "type": "string"
+            }
+          },
+          "required": [
+            "policy_id",
+            "condition_ids"
+          ],
+          "title": "W2MatchedConditions",
+          "type": "object"
+        },
+        "W3ExpertTradeResult": {
+          "additionalProperties": false,
+          "properties": {
+            "direction": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/PolicyDecision"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "evaluated": {
+              "title": "Evaluated",
+              "type": "boolean"
+            },
+            "expectation_delta": {
+              "anyOf": [
+                {
+                  "maxLength": 4000,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Expectation Delta"
+            },
+            "prior_expectation": {
+              "anyOf": [
+                {
+                  "maxLength": 4000,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Prior Expectation"
+            },
+            "reason": {
+              "maxLength": 4000,
+              "minLength": 1,
+              "title": "Reason",
+              "type": "string"
+            },
+            "trade": {
+              "title": "Trade",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "evaluated",
+            "trade",
+            "direction",
+            "prior_expectation",
+            "expectation_delta",
+            "reason"
+          ],
+          "title": "W3ExpertTradeResult",
+          "type": "object"
+        },
+        "W3NoveltyResult": {
+          "additionalProperties": false,
+          "properties": {
+            "reason": {
+              "maxLength": 4000,
+              "minLength": 1,
+              "title": "Reason",
+              "type": "string"
+            },
+            "reference_ids": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Reference Ids",
+              "type": "array"
+            },
+            "result": {
+              "$ref": "#/$defs/W1NoveltyVerdict"
+            }
+          },
+          "required": [
+            "result",
+            "reference_ids",
+            "reason"
+          ],
+          "title": "W3NoveltyResult",
+          "type": "object"
+        },
+        "W3PolicyResult": {
+          "additionalProperties": false,
+          "properties": {
+            "matched_condition_ids": {
+              "items": {
+                "$ref": "#/$defs/W2MatchedConditions"
+              },
+              "title": "Matched Condition Ids",
+              "type": "array"
+            },
+            "policy_ids": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Policy Ids",
+              "type": "array"
+            },
+            "reason": {
+              "maxLength": 4000,
+              "minLength": 1,
+              "title": "Reason",
+              "type": "string"
+            }
+          },
+          "required": [
+            "policy_ids",
+            "matched_condition_ids",
+            "reason"
+          ],
+          "title": "W3PolicyResult",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "delta_candidates": {
+          "items": {
+            "$ref": "#/$defs/RuntimeFactCandidate"
+          },
+          "maxItems": 12,
+          "title": "Delta Candidates",
+          "type": "array"
+        },
+        "expert_trade": {
+          "$ref": "#/$defs/W3ExpertTradeResult"
+        },
+        "novelty": {
+          "$ref": "#/$defs/W3NoveltyResult"
+        },
+        "policy": {
+          "$ref": "#/$defs/W3PolicyResult"
+        },
+        "w3_case_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "W3 Case Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "w3_case_id",
+        "novelty",
+        "policy",
+        "expert_trade",
+        "delta_candidates"
+      ],
+      "title": "W3CaseResult",
+      "type": "object"
+    },
+    "prompt": "Execute W3 Case w3_3a330a2b8b0547c2831121706b75d195 in UNCOVERED_NEW mode. Read AGENTS.md and skills/uncovered_new.md. Read cases/w3_3a330a2b8b0547c2831121706b75d195/task.json, then the four business context files and output_schema.json under cases/w3_3a330a2b8b0547c2831121706b75d195/context. Complete this Case in one turn and return only the strict JSON result. The output w3_case_id must exactly equal 'w3_3a330a2b8b0547c2831121706b75d195'. The authoritative current Case task payload is:\n{\"w3_case_id\":\"w3_3a330a2b8b0547c2831121706b75d195\",\"runtime_case_id\":\"case_a9e54dfcdd0e4e52883d1a259c602445\",\"mode\":\"UNCOVERED_NEW\",\"ticker\":\"RKLB\",\"cutoff_at\":\"2026-10-12T06:02:17.329211+00:00\",\"event_boundary_at\":\"2026-10-11T21:40:09+00:00\",\"source_message\":{\"admission_context\":{\"policy_version\":1,\"mode\":\"CLOSED_SWEEP\",\"sweep_id\":\"sweep:RKLB:2026-10-12\",\"source_task_id\":\"sweep:RKLB:2026-10-12:source:RKLB:finnhub_company_news\",\"window_start\":\"2026-10-11T06:00:00Z\",\"cutoff\":\"2026-10-12T06:00:00Z\"},\"publication_time_basis\":\"EXACT\",\"source_message_id\":\"std_0b5aadc815944a2f9bd00d51203ba72c\",\"source_id\":\"finnhub_company_news\",\"binding_id\":\"RKLB:finnhub_company_news\",\"url\":\"https://www.tikr.com/blog/td-cowen-cut-its-rocket-lab-target-it-still-sees-32-upside?.tsrc=rss&ref=yahoofinance\",\"published_at\":\"2026-10-11T21:40:09Z\",\"collected_at\":\"2026-10-12T06:02:17.329211Z\",\"normalized_at\":null,\"message_bus_event_time\":\"2026-10-12T06:02:17.329211Z\",\"stream_item_id\":\"stream_454ed484dc9d48b4bf9ac95bc3d9a6a6\",\"member_count\":1,\"member_message_ids\":[\"std_0b5aadc815944a2f9bd00d51203ba72c\"],\"logical_message_id\":\"message_cfb7772400c64ee9b7a5ab1cad9c6686\",\"business_version\":1,\"update_kind\":\"NEW_MESSAGE\",\"previous_raw_message_id\":null,\"eligibility_at\":\"2026-10-12T06:02:17.323776Z\",\"snapshot\":{\"ticker\":\"RKLB\",\"title\":\"TD Cowen Cut Its Rocket Lab Target. It Still Sees 32% Upside\",\"body\":\"Key TakeawaysTD Cowen cut its Rocket Lab price target from $120 to $90 on October 9 but maintained its Buy rating, implying approximately 32% upside from the referenced $68. 44 share price.\"}},\"original_w1\":{\"result\":\"NEW\",\"confidence\":\"normal\",\"reference_ids\":[],\"fact_attributions\":[],\"reason\":\"TD Cowen于10月9日将Rocket Lab目标价从$120下调至$90并维持Buy评级，该分析师机构及其具体操作在已加载的所有Event Facts中均未出现，构成新核心事实。\"},\"original_w2\":{\"policy_ids\":[],\"matched_condition_ids\":[],\"confidence\":\"normal\",\"reason\":\"该消息为TD Cowen分析师下调Rocket Lab目标价（$120→$90）并维持买入评级，属于卖方估值观点变更，不涉及任何合同、交付、监管、融资、客户决策、任务调度、制造或运营状态等具体事实，与各Policy criterion所关注的现实触发条件无直接对应关系。\"},\"initial_route_reason\":\"w1=NEW/normal;policy_hit=false;w2=normal\",\"context_version_pin\":{\"document1_run_id\":\"init-rklb-9631e4071e75470a97313eafbbdc51aa-d1\",\"document2_run_id\":\"init-rklb-9631e4071e75470a97313eafbbdc51aa-d2\",\"event_library_version\":23,\"policy_set_version\":11},\"document2_publication_state\":\"COMPLETE\"}",
+    "read_only": true,
+    "research_lane": "persistent_runtime",
+    "run_id": "persistent-runtime-w3-rklb-fallback-8b0547c2831121706b75d195-efd1a294cc929b7e",
+    "thread_id": null,
+    "ticker": "RKLB",
+    "timeout_seconds": 600,
+    "workflow_version": "persistent_runtime_w3_v1"
+  },
+  "receipt": {
+    "attempt_id": "w3-01",
+    "cleanup_error": null,
+    "created_at": "2026-10-12T06:16:16.803002Z",
+    "error_code": null,
+    "error_message": null,
+    "execution_phase": "SETTLED",
+    "final_response": "{\"w3_case_id\":\"w3_3a330a2b8b0547c2831121706b75d195\",\"novelty\":{\"result\":\"NEW\",\"reference_ids\":[],\"reason\":\"TD Cowen于2026-10-09将Rocket Lab目标价从$120下调至$90，同时维持Buy评级；该具体分析师操作未见于Reference View。[The Fly via TipRanks](https://www.tipranks.com/news/the-fly/rocket-lab-price-target-lowered-to-90-from-120-at-td-cowen-thefly-news)\"},\"policy\":{\"policy_ids\":[],\"matched_condition_ids\":[],\"reason\":\"这是单家卖方目标价与估值观点调整，不满足PolicySet中针对公司运营、合同、融资、监管等现实变化的触发条件；无现行Policy覆盖。\"},\"expert_trade\":{\"evaluated\":true,\"trade\":false,\"direction\":null,\"prior_expectation\":\"调整前，TD Cowen自身的RKLB目标价为$120且评级为Buy。更广泛的事件前基线是公司增长、利润率和现金转换仍需多季度兑现；Document1指出缺乏可靠的同口径季度卖方共识，不能把单家目标价视为市场共识。\",\"expectation_delta\":\"TD Cowen自身目标价下调$30（25%）至$90，但维持Buy；按报道引用的$68.44股价仍约有32%上涨空间。这修订了单家机构的估值判断，不证明市场整体盈利预期或Rocket Lab经营预期同步下修。\",\"reason\":\"目标价下调幅度对该分析师估值有意义，但消息未披露公司经营、订单、现金流或项目状态的新变化，也不足以证明市场整体预期发生重大修订。对RKLB的路径主要是间接的情绪或估值倍数传导，缺少足够的市场广度与基本面连接，不能据此形成直接方向性交易。\"},\"delta_candidates\":[{\"proposition\":\"TD Cowen分析师Gautam Khanna于2026-10-09将Rocket Lab（RKLB）目标价从$120下调至$90，并维持Buy评级。\",\"assertion_state\":\"ACTUAL\",\"subject_time\":null,\"occurrence_date\":\"2026-10-09\",\"entities\":[\"TD Cowen\",\"Gautam Khanna\",\"Rocket Lab (RKLB)\"]}]}",
+    "finished_at": "2026-10-12T06:19:55.051160Z",
+    "infra_recovery_count": 0,
+    "job_id": "801115ef3e6102eca058f8f5fbeabbce448ab0dd655d82535b48abd8d931522c",
+    "next_retry_at": 0.0,
+    "request_sha256": "757dc914f5d39fc00a7bd9e9b5eb983cc831f49a477781b30ca7edaafab036cc",
+    "resource_receipt": {
+      "capsule_id": "b6cabfe0673344ee920bfb6747e47e6b",
+      "cleanup_ms": 13,
+      "cold_start_ms": 25852,
+      "pid": 585205,
+      "queue_wait_ms": 25910
+    },
+    "run_id": "persistent-runtime-w3-rklb-fallback-8b0547c2831121706b75d195-efd1a294cc929b7e",
+    "started_at": "2026-10-12T06:16:16.845676Z",
+    "status": "succeeded",
+    "telemetry": {
+      "command_call_count": 5,
+      "events": [
+        {
+          "duration_ms": 0,
+          "event": "item.completed",
+          "item_type": "command",
+          "name": "shell",
+          "sequence": 0,
+          "status": "completed",
+          "summary": "/bin/bash -lc \"pwd && cat AGENTS.md && printf '\\\\n--- TASK ---\\\\n' && cat cases/w3_3a330a2b8b0547c2831121706b75d195/task.json && printf '\\\\n--- SKILL ---\\\\n' && cat skills/uncovered_new.md\"; exit=0"
+        },
+        {
+          "duration_ms": 0,
+          "event": "item.completed",
+          "item_type": "command",
+          "name": "shell",
+          "sequence": 1,
+          "status": "completed",
+          "summary": "/bin/bash -lc \"ls -l cases/w3_3a330a2b8b0547c2831121706b75d195/context && for f in document1.md document2.json reference_view.md policy_set.json output_schema.json; do printf '\\\\n--- %s ---\\\\n' \\\"\"'$f\"; cat \"cases/w3_3a330a2b8b0547c28311..."
+        },
+        {
+          "duration_ms": 88,
+          "event": "item.completed",
+          "item_type": "command",
+          "name": "shell",
+          "sequence": 2,
+          "status": "completed",
+          "summary": "/bin/bash -lc \"python - <<'PY' import json p='cases/w3_3a330a2b8b0547c2831121706b75d195/context/document2.json' d=json.load(open(p)) print(type(d), list(d) if isinstance(d,dict) else len(d)) print(json.dumps(d,ensure_ascii=False,indent=2..."
+        },
+        {
+          "duration_ms": 0,
+          "event": "item.completed",
+          "item_type": "command",
+          "name": "shell",
+          "sequence": 3,
+          "status": "completed",
+          "summary": "/bin/bash -lc \"grep -n '\"'^##'\"\\\\|\"'^###'\"' cases/w3_3a330a2b8b0547c2831121706b75d195/context/document1.md | head -120 && printf '\\\\n--- policy header/count/potential analyst match ---\\\\n' && python - <<'PY' import json p='cases/w3_3a330..."
+        },
+        {
+          "duration_ms": null,
+          "event": "item.completed",
+          "item_type": "web_search",
+          "name": "web_search",
+          "sequence": 4,
+          "status": "completed",
+          "summary": "site:tikr.com/blog/td-cowen-cut-its-rocket-lab-target-it-still-sees-32-upside TD Cowen Rocket Lab October 9 $90 $120 2026 ..."
+        },
+        {
+          "duration_ms": 531,
+          "event": "item.completed",
+          "item_type": "command",
+          "name": "shell",
+          "sequence": 5,
+          "status": "completed",
+          "summary": "/bin/bash -lc \"python - <<'PY' import json p='cases/w3_3a330a2b8b0547c2831121706b75d195/context/document2.json'; d=json.load(open(p)) for sh in d['shells']: print('\\\\nSHELL',sh.get('shell_id')) for u in sh.get('units',[]): text=' '.join(..."
+        }
+      ],
+      "failures": [],
+      "file_change_count": 0,
+      "mcp_call_count": 0,
+      "observed_usage": {
+        "cached_input_tokens": 51968,
+        "input_tokens": 54702,
+        "output_tokens": 5718,
+        "reasoning_output_tokens": 5178,
+        "total_tokens": 60420
+      },
+      "sdk_duration_ms": 192464,
+      "slowest_steps": [
+        {
+          "duration_ms": 531,
+          "event": "item.completed",
+          "item_type": "command",
+          "name": "shell",
+          "sequence": 5,
+          "status": "completed",
+          "summary": "/bin/bash -lc \"python - <<'PY' import json p='cases/w3_3a330a2b8b0547c2831121706b75d195/context/document2.json'; d=json.load(open(p)) for sh in d['shells']: print('\\\\nSHELL',sh.get('shell_id')) for u in sh.get('units',[]): text=' '.join(..."
+        },
+        {
+          "duration_ms": 88,
+          "event": "item.completed",
+          "item_type": "command",
+          "name": "shell",
+          "sequence": 2,
+          "status": "completed",
+          "summary": "/bin/bash -lc \"python - <<'PY' import json p='cases/w3_3a330a2b8b0547c2831121706b75d195/context/document2.json' d=json.load(open(p)) print(type(d), list(d) if isinstance(d,dict) else len(d)) print(json.dumps(d,ensure_ascii=False,indent=2..."
+        },
+        {
+          "duration_ms": 0,
+          "event": "item.completed",
+          "item_type": "command",
+          "name": "shell",
+          "sequence": 0,
+          "status": "completed",
+          "summary": "/bin/bash -lc \"pwd && cat AGENTS.md && printf '\\\\n--- TASK ---\\\\n' && cat cases/w3_3a330a2b8b0547c2831121706b75d195/task.json && printf '\\\\n--- SKILL ---\\\\n' && cat skills/uncovered_new.md\"; exit=0"
+        },
+        {
+          "duration_ms": 0,
+          "event": "item.completed",
+          "item_type": "command",
+          "name": "shell",
+          "sequence": 1,
+          "status": "completed",
+          "summary": "/bin/bash -lc \"ls -l cases/w3_3a330a2b8b0547c2831121706b75d195/context && for f in document1.md document2.json reference_view.md policy_set.json output_schema.json; do printf '\\\\n--- %s ---\\\\n' \\\"\"'$f\"; cat \"cases/w3_3a330a2b8b0547c28311..."
+        },
+        {
+          "duration_ms": 0,
+          "event": "item.completed",
+          "item_type": "command",
+          "name": "shell",
+          "sequence": 3,
+          "status": "completed",
+          "summary": "/bin/bash -lc \"grep -n '\"'^##'\"\\\\|\"'^###'\"' cases/w3_3a330a2b8b0547c2831121706b75d195/context/document1.md | head -120 && printf '\\\\n--- policy header/count/potential analyst match ---\\\\n' && python - <<'PY' import json p='cases/w3_3a330..."
+        }
+      ],
+      "subagent_call_count": 0,
+      "usage": {
+        "cached_input_tokens": 51968,
+        "input_tokens": 54702,
+        "output_tokens": 5718,
+        "reasoning_output_tokens": 5178,
+        "total_tokens": 60420
+      },
+      "worker_wall_time_ms": 218192
+    },
+    "thread_id": "01a12ec1-993a-7f32-af4c-e789d22d0058",
+    "turn_id": "01a12ec1-9b04-7960-91ab-45d25165b7b8",
+    "updated_at": "2026-10-12T06:19:55.051662Z",
+    "wait_reason": null,
+    "worker_generation": "8873825838434d80b7cabb6e3b80a3cc"
+  },
+  "intents": [],
+  "thread": {
+    "rollout_path": "/data/codex-home/sessions/2026/10/12/rollout-2026-10-12T06-16-42-01a12ec1-993a-7f32-af4c-e789d22d0058.jsonl",
+    "model": "gpt-6-luna",
+    "reasoning_effort": "max",
+    "cli_version": "0.159.3",
+    "cwd": "/data/workspaces/persistent-runtime-w3-rklb-fallback-8b0547c2831121706b75d195-efd1a294cc929b7e"
+  },
+  "trace": [
+    {
+      "timestamp": "2026-10-12T06:16:42.586Z",
+      "type": "task_started",
+      "data": {
+        "type": "task_started",
+        "turn_id": "01a12ec1-9b04-7960-91ab-45d25165b7b8",
+        "root_turn_id": "01a12ec1-9b04-7960-91ab-45d25165b7b8",
+        "started_at": 1791785802,
+        "model_context_window": 258400,
+        "collaboration_mode_kind": "default"
+      }
+    },
+    {
+      "timestamp": "2026-10-12T06:16:51.690Z",
+      "type": "custom_tool_call",
+      "name": "exec",
+      "call_id": "call_3preTXpdlZMkQ3yXjvM74uJg",
+      "arguments": "const r = await tools.exec_command({cmd:\"pwd && cat AGENTS.md && printf '\\\\n--- TASK ---\\\\n' && cat cases/w3_3a330a2b8b0547c2831121706b75d195/task.json && printf '\\\\n--- SKILL ---\\\\n' && cat skills/uncovered_new.md\",max_output_tokens:12000});\ntext(r.output);\n"
+    },
+    {
+      "timestamp": "2026-10-12T06:16:51.728Z",
+      "type": "token_usage_record",
+      "data": {
+        "thread_id": "01a12ec1-993a-7f32-af4c-e789d22d0058",
+        "turn_id": "01a12ec1-9b04-7960-91ab-45d25165b7b8",
+        "session_id": "01a12ec1-993a-7f32-af4c-e789d22d0058",
+        "root_turn_id": "01a12ec1-9b04-7960-91ab-45d25165b7b8",
+        "response_id": "resp_04f9b88c19d8e259016acc7b4e93a887d0804aed6e80d0aa9a",
+        "usage": {
+          "input_tokens": 13243,
+          "cached_input_tokens": 6912,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 222,
+          "reasoning_output_tokens": 127,
+          "total_tokens": 13465
+        },
+        "turn_token_usage": {
+          "input_tokens": 13243,
+          "cached_input_tokens": 6912,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 222,
+          "reasoning_output_tokens": 127,
+          "total_tokens": 13465
+        },
+        "thread_token_usage": {
+          "input_tokens": 13243,
+          "cached_input_tokens": 6912,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 222,
+          "reasoning_output_tokens": 127,
+          "total_tokens": 13465
+        }
+      }
+    },
+    {
+      "timestamp": "2026-10-12T06:16:52.090Z",
+      "type": "custom_tool_call_output",
+      "call_id": "call_3preTXpdlZMkQ3yXjvM74uJg",
+      "output_chars": 11401,
+      "output_preview": "[{\"type\": \"input_text\", \"text\": \"Script completed\\nWall time 0.3 seconds\\nOutput:\\n\"}, {\"type\": \"input_text\", \"text\": \"/data/workspaces/persistent-runtime-w3-rklb-fallback-8b0547c2831121706b75d195-efd1a294cc929b7e\\n# W3 — Persistent Runtime Duty Trading Expert\\n\\n你是 DoxAgent V2 Persistent Runtime 的 W3 值班交易专家。\\n\\nDoxAgent 持续把公开信息转化为针对目标 ticker 的预期差交易判断。系统交易的不是消息表面的利好或利空，而是新现实相对消息发生前市场预期造成的边际变化：\\n\\n```text\\nNew Reality\\n- Prior Expectation\\n= Potential Trading Edge\\n```\\n\\n多数消息由快速节点处理；W3 负责需要研究与专业判断的例外 Case。你的价值是恢复准确的 Case State，并在现有 Policy 未覆盖新现实时判断其直接交易含义，使 Runtime 既不漏掉真正的预期差，也不把新闻性误当成可交易性。\\n\\n## 系统位置与贡献\\n\\nDoxAgent 的研究和运行链路是：\\n\\n```text\\nDocument1\\n公司、行业与市场研究\\n        ↓\\nDocument2\\n结构化维护当前预期及其潜在变化空间\\n        ↓\\nO3 / PolicySet\\n把可预见的未来变化预编译为可由消息判定的交易边界\\n        ↓\\nPersistent Runtime\\nW1 判断事实新旧，W2 判断 Policy 覆盖，W3 处理例外 Case\\n```\\n\\nW3 承担两类长期职责：\\n\\n- **Case State Recovery**：当快速判定冲突或不充分时，重新确定核心事实相对当前现实是 `NEW` 还是 `OLD`，以及现行 Policy 是否覆盖。\\n- **Uncovered Alpha Evaluation**：当事实最终为 `NEW` 且没有 Policy 覆盖时，研究其相对既有预期的变化、传导和交易方向。\\n\\n新发现的原子事实通过 `delta_candidates` 进入 O2 Event Library；尚未被 PolicySet 表达的有效交易路径形成 Coverage Gap，供 O3 Maintenance 更新后续监测边界。因此，你的交付同时服务当前交易决策和系统知识更新。\\n\\n## 权威 Case 上下文\\n\\n每次调用只处理一个 Case。当前 Task 指定 Case、运行模式、版本和交付合同；其固定的 artifacts 共同构成判断上下文：\\n\\n- **Document1**：公司基本面、行业产业链、市场状态和未来已知变量等研究基础，用于理解现实变化为何影响目标 ticker。\\n- **Document2**：当前可维护的 expectation baseline，包括 State、Realization Factors 和 Potential Gaps，用于定位原有预期及可能被修订的变量。\\n- **Reference View**：O2 维护的当前已知事件与事实，用于判断消息内容是否已经进入系统现实基线。\\n- **PolicySet**：O3 发布的监测执行边界，用于判断消息是否满足既有 Policy 及其既定交易方向。\\n\\n当前 Task 与其 version-pinned artifacts 是本 Case 的业务事实来源。持久化 thread 提供跨 Case 的工作连续性；当历史记忆与当前输入不同，以当前输入为准。当前注入的 Internal Skill 规定本运行模式的具体研究顺序和判定方法。\\n\\n## 共同分析模型\\n\\n所有模式共享同一投资判断链：\\n\\n```text\\nObserved Reality vs. Prior Expectation\\n→ Expe"
+    },
+    {
+      "timestamp": "2026-10-12T06:16:52.093Z",
+      "type": "token_count",
+      "data": {
+        "type": "token_count",
+        "info": {
+          "total_token_usage": {
+            "input_tokens": 13243,
+            "cached_input_tokens": 6912,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 222,
+            "reasoning_output_tokens": 127,
+            "total_tokens": 13465
+          },
+          "last_token_usage": {
+            "input_tokens": 13243,
+            "cached_input_tokens": 6912,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 222,
+            "reasoning_output_tokens": 127,
+            "total_tokens": 13465
+          },
+          "model_context_window": 258400
+        },
+        "rate_limits": {
+          "limit_id": "codex",
+          "limit_name": null,
+          "primary": {
+            "used_percent": 39.0,
+            "window_minutes": 10080,
+            "resets_at": 1792295857
+          },
+          "secondary": null,
+          "credits": {
+            "has_credits": false,
+            "unlimited": false,
+            "balance": "0"
+          },
+          "individual_limit": null,
+          "spend_control_reached": null,
+          "plan_type": "prolite",
+          "rate_limit_reached_type": null
+        }
+      }
+    },
+    {
+      "timestamp": "2026-10-12T06:16:57.364Z",
+      "type": "custom_tool_call",
+      "name": "exec",
+      "call_id": "call_wYmnUdkSQMmade0MkRfnEZja",
+      "arguments": "const r = await tools.exec_command({cmd:\"ls -l cases/w3_3a330a2b8b0547c2831121706b75d195/context && for f in document1.md document2.json reference_view.md policy_set.json output_schema.json; do printf '\\\\n--- %s ---\\\\n' \\\"$f\\\"; cat \\\"cases/w3_3a330a2b8b0547c2831121706b75d195/context/$f\\\"; done\",max_output_tokens:30000});\ntext(r.output);\n"
+    },
+    {
+      "timestamp": "2026-10-12T06:16:57.426Z",
+      "type": "token_usage_record",
+      "data": {
+        "thread_id": "01a12ec1-993a-7f32-af4c-e789d22d0058",
+        "turn_id": "01a12ec1-9b04-7960-91ab-45d25165b7b8",
+        "session_id": "01a12ec1-993a-7f32-af4c-e789d22d0058",
+        "root_turn_id": "01a12ec1-9b04-7960-91ab-45d25165b7b8",
+        "response_id": "resp_04f9b88c19d8e259016acc7b547e9487d087b8561df771f7ca",
+        "usage": {
+          "input_tokens": 17851,
+          "cached_input_tokens": 13056,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 179,
+          "reasoning_output_tokens": 52,
+          "total_tokens": 18030
+        },
+        "turn_token_usage": {
+          "input_tokens": 31094,
+          "cached_input_tokens": 19968,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 401,
+          "reasoning_output_tokens": 179,
+          "total_tokens": 31495
+        },
+        "thread_token_usage": {
+          "input_tokens": 31094,
+          "cached_input_tokens": 19968,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 401,
+          "reasoning_output_tokens": 179,
+          "total_tokens": 31495
+        }
+      }
+    },
+    {
+      "timestamp": "2026-10-12T06:16:57.615Z",
+      "type": "custom_tool_call_output",
+      "call_id": "call_wYmnUdkSQMmade0MkRfnEZja",
+      "output_chars": 27100,
+      "output_preview": "[{\"type\": \"input_text\", \"text\": \"Script completed\\nWall time 0.2 seconds\\nOutput:\\n\"}, {\"type\": \"input_text\", \"text\": \"Warning: truncated output (original token count: 30028)\\nTotal output lines: 1808\\n\\nWarning: truncated output (original token count: 172193)\\nTotal output lines: 10050\\n\\ntotal 684\\n-rw------- 1 root root  82928 Oct 12 06:16 document1.md\\n-rw------- 1 root root 430149 Oct 12 06:16 document2.json\\n-rw------- 1 root root   5958 Oct 12 06:16 output_schema.json\\n-rw------- 1 root root 113872 Oct 12 06:16 policy_set.json\\n-rw------- 1 root root  55431 Oct 12 06:16 reference_view.md\\n\\n--- document1.md ---\\n# RKLB Global Research\\n\\n## C1 基本面研究\\n\\n## 一、近期基本面状态与变化\\n\\n（证据截止日：2026-09-14；最新主报告周期为截至2026-06-30的第二季度，10-Q于2026-08-10提交。）\\n\\n### 综合判断\\n\\n- 2026年第二季度收入创纪录，增长主要来自Space Systems，而不是发射次数本身；Launch Services收入受HASTE按履约进度确认影响而同比下降，业务量与当季确认收入出现背离。【cite:O1】\\n- 毛利率同比改善，但研发、销售及管理费用仍随Neutron开发、收购整合和人员投入上升；净亏损收窄部分也来自利息收入增加和利息费用下降，因此尚未形成经营性盈亏平衡。【cite:O1】\\n- 现金余额的增加主要由ATM融资支持；应收账款、合同资产和存货的增长使经营现金流恶化，经营增长与现金转换仍未同步。【cite:O2】【cite:O3】【cite:O4】【cite:O5】\\n\\n| 变化项目 | 最新状态 | 比较锚点 | 支持的变化原因 | 持续性判断 | 证据 |\\n|---|---|---|---|---|---|\\n| 收入规模与结构 | Q2收入为$234.1m；Space Systems收入$189.5m，Launch Services收入$44.6m。上半年收入$434.4m，其中Space Systems$326.2m、Launch Services$108.2m。 | Q2 2025收入$144.5m，Q2同比+62%；Q1 2026收入$200.3m，Q2环比约+16.8%；上半年同比+63%。 | Q2 Space Systems收入同比增加$91.6m，主要由卫星制造增长和收购带动；Launch Services收入同比减少$2.1m，主要是确认时点差异。【cite:O1】 | Space Systems的项目吞吐和收购并表可延续，但并购基数、固定价合同估计和确认时点使增长质量仍需跟踪；不能把Q2结构直接外推为稳定的长期组合。 | 【cite:O4】【cite:O1】 |\\n| 发射活动与变现 | Q2完成6次Electron任务，收入确认口径下Launch Services仍为$44.6m；上半年完成12次Electron任务，单次收入$9.2m、单次成本$4.9m。 | Q2 2025为5次任务；上半年为10次，单次收入$7.5m、单次成本$5.3m。 | Q2六次任务中两次为HASTE，按over-time确认且部分收入已在前期确认；上半年收入增长还受更高发射节奏、更高单次收入及其他发射收入带动。【cite:O1】 | 发射节奏和单次任务复杂度有改善迹象，但任务类型、轨道要求和poi"
+    },
+    {
+      "timestamp": "2026-10-12T06:16:57.617Z",
+      "type": "token_count",
+      "data": {
+        "type": "token_count",
+        "info": {
+          "total_token_usage": {
+            "input_tokens": 31094,
+            "cached_input_tokens": 19968,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 401,
+            "reasoning_output_tokens": 179,
+            "total_tokens": 31495
+          },
+          "last_token_usage": {
+            "input_tokens": 17851,
+            "cached_input_tokens": 13056,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 179,
+            "reasoning_output_tokens": 52,
+            "total_tokens": 18030
+          },
+          "model_context_window": 258400
+        },
+        "rate_limits": {
+          "limit_id": "codex",
+          "limit_name": null,
+          "primary": {
+            "used_percent": 39.0,
+            "window_minutes": 10080,
+            "resets_at": 1792295857
+          },
+          "secondary": null,
+          "credits": {
+            "has_credits": false,
+            "unlimited": false,
+            "balance": "0"
+          },
+          "individual_limit": null,
+          "spend_control_reached": null,
+          "plan_type": "prolite",
+          "rate_limit_reached_type": null
+        }
+      }
+    },
+    {
+      "timestamp": "2026-10-12T06:17:18.850Z",
+      "type": "custom_tool_call",
+      "name": "exec",
+      "call_id": "call_jRUzRKK835fyAmnkt4655T9q",
+      "arguments": "const r = await tools.exec_command({cmd:\"python - <<'PY'\\nimport json\\np='cases/w3_3a330a2b8b0547c2831121706b75d195/context/document2.json'\\nd=json.load(open(p))\\nprint(type(d), list(d) if isinstance(d,dict) else len(d))\\nprint(json.dumps(d,ensure_ascii=False,indent=2)[:15000])\\nPY\\nprintf '\\\\n--- D1 relevant hits ---\\\\n'\\ngrep -niE 'target|price|sell.side|卖方|分析师|共识|估值|TD Cowen' cases/w3_3a330a2b8b0547c2831121706b75d195/context/document1.md | head -100\\nprintf '\\\\n--- Reference hits ---\\\\n'\\ngrep -niE 'target|price|sell.side|卖方|分析师|共识|TD Cowen|Cowen' cases/w3_3a330a2b8b0547c2831121706b75d195/context/reference_view.md | head -100\",max_output_tokens:18000});\ntext(r.output);\n"
+    },
+    {
+      "timestamp": "2026-10-12T06:17:18.909Z",
+      "type": "token_usage_record",
+      "data": {
+        "thread_id": "01a12ec1-993a-7f32-af4c-e789d22d0058",
+        "turn_id": "01a12ec1-9b04-7960-91ab-45d25165b7b8",
+        "session_id": "01a12ec1-993a-7f32-af4c-e789d22d0058",
+        "root_turn_id": "01a12ec1-9b04-7960-91ab-45d25165b7b8",
+        "response_id": "resp_04f9b88c19d8e259016acc7b5a886087d08f587a3f42a673cf",
+        "usage": {
+          "input_tokens": 28975,
+          "cached_input_tokens": 17152,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 911,
+          "reasoning_output_tokens": 646,
+          "total_tokens": 29886
+        },
+        "turn_token_usage": {
+          "input_tokens": 60069,
+          "cached_input_tokens": 37120,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 1312,
+          "reasoning_output_tokens": 825,
+          "total_tokens": 61381
+        },
+        "thread_token_usage": {
+          "input_tokens": 60069,
+          "cached_input_tokens": 37120,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 1312,
+          "reasoning_output_tokens": 825,
+          "total_tokens": 61381
+        }
+      }
+    },
+    {
+      "timestamp": "2026-10-12T06:17:19.191Z",
+      "type": "custom_tool_call_output",
+      "call_id": "call_jRUzRKK835fyAmnkt4655T9q",
+      "output_chars": 22565,
+      "output_preview": "[{\"type\": \"input_text\", \"text\": \"Script completed\\nWall time 0.3 seconds\\nOutput:\\n\"}, {\"type\": \"input_text\", \"text\": \"<class 'dict'> ['schema_version', 'workflow_version', 'document2_run_id', 'ticker', 'as_of', 'source_global_run_id', 'input_manifest', 'shells', 'shell_outcomes']\\n{\\n  \\\"schema_version\\\": \\\"document2.v2\\\",\\n  \\\"workflow_version\\\": \\\"codex_document2_v1\\\",\\n  \\\"document2_run_id\\\": \\\"init-rklb-9631e4071e75470a97313eafbbdc51aa-d2\\\",\\n  \\\"ticker\\\": \\\"RKLB\\\",\\n  \\\"as_of\\\": \\\"2026-09-14T10:16:29Z\\\",\\n  \\\"source_global_run_id\\\": \\\"init-rklb-9631e4071e75470a97313eafbbdc51aa-d1\\\",\\n  \\\"input_manifest\\\": {\\n    \\\"global_research\\\": {\\n      \\\"status\\\": \\\"AVAILABLE\\\",\\n      \\\"artifact_ids\\\": [\\n        \\\"937299e655a74c139df34ebc0b9a61ac\\\",\\n        \\\"e1ae38d4d5be402f9b68d4454fb301d2\\\",\\n        \\\"145dccc262c044e2a8da7b0aa0f5d1ae\\\",\\n        \\\"9cf601ce369544a998d2e74a3bc50529\\\",\\n        \\\"572eb7bf59a2451c9fec89ab16095002\\\"\\n      ],\\n      \\\"workspace_paths\\\": [\\n        \\\"artifacts/c1/init-05ce9a82872949308975401649b4c329/report.md\\\",\\n        \\\"artifacts/c3/init-7cbfebaf5a2a4d968b8bf9db8135a4f1/report.md\\\",\\n        \\\"artifacts/c5/init-100015ce040a44c1b96a59a4069f4dc1/report.md\\\",\\n        \\\"context/ca/hc-9f720966dc807571b8e6c415.json\\\"\\n      ],\\n      \\\"source_run_id\\\": \\\"init-rklb-9631e4071e75470a97313eafbbdc51aa-d1\\\",\\n      \\\"as_of\\\": \\\"2026-09-16T07:00:28.354635Z\\\",\\n      \\\"warning\\\": \\\"requested Document2 as_of preceded the pinned Global Research publication; publication is not evidence time; the requested research cutoff is preserved\\\",\\n      \\\"metadata\\\": {\\n        \\\"requested_as_of\\\": \\\"2026-09-14T10:16:29+00:00\\\",\\n        \\\"effective_research_cutoff_at\\\": \\\"2026-09-14T10:16:29+00:00\\\"\\n      }\\n    },\\n    \\\"narrative_research\\\": {\\n      \\\"statu"
+    },
+    {
+      "timestamp": "2026-10-12T06:17:19.210Z",
+      "type": "token_count",
+      "data": {
+        "type": "token_count",
+        "info": {
+          "total_token_usage": {
+            "input_tokens": 60069,
+            "cached_input_tokens": 37120,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1312,
+            "reasoning_output_tokens": 825,
+            "total_tokens": 61381
+          },
+          "last_token_usage": {
+            "input_tokens": 28975,
+            "cached_input_tokens": 17152,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 911,
+            "reasoning_output_tokens": 646,
+            "total_tokens": 29886
+          },
+          "model_context_window": 258400
+        },
+        "rate_limits": {
+          "limit_id": "codex",
+          "limit_name": null,
+          "primary": {
+            "used_percent": 39.0,
+            "window_minutes": 10080,
+            "resets_at": 1792295857
+          },
+          "secondary": null,
+          "credits": {
+            "has_credits": false,
+            "unlimited": false,
+            "balance": "0"
+          },
+          "individual_limit": null,
+          "spend_control_reached": null,
+          "plan_type": "prolite",
+          "rate_limit_reached_type": null
+        }
+      }
+    },
+    {
+      "timestamp": "2026-10-12T06:17:29.789Z",
+      "type": "custom_tool_call",
+      "name": "exec",
+      "call_id": "call_9rlUM06xf8umpI41RXNctrbe",
+      "arguments": "const r = await tools.exec_command({cmd:\"grep -n '^##\\\\|^###' cases/w3_3a330a2b8b0547c2831121706b75d195/context/document1.md | head -120 && printf '\\\\n--- policy header/count/potential analyst match ---\\\\n' && python - <<'PY'\\nimport json\\np='cases/w3_3a330a2b8b0547c2831121706b75d195/context/policy_set.json'\\nd=json.load(open(p))\\nprint(type(d),d.keys())\\npol=d.get('policies',[]) if isinstance(d,dict) else []\\nprint('count',len(pol))\\nfor x in pol:\\n if any(s in json.dumps(x,ensure_ascii=False).lower() for s in ('analyst','rating','price target','target price','卖方','评级','股价')):\\n  print(json.dumps(x,ensure_ascii=False,indent=2)[:3000])\\nPY\\nprintf '\\\\n--- reference start to E25/E26 and event IDs ---\\\\n'\\nsed -n '1,220p' cases/w3_3a330a2b8b0547c2831121706b75d195/context/reference_view.md\\nprintf '\\\\n--- document1 market section ---\\\\n'\\nsed -n '390,465p' cases/w3_3a330a2b8b0547c2831121706b75d195/context/document1.md\\n\",max_output_tokens:22000});\ntext(r.output);\n"
+    },
+    {
+      "timestamp": "2026-10-12T06:17:29.876Z",
+      "type": "token_usage_record",
+      "data": {
+        "thread_id": "01a12ec1-993a-7f32-af4c-e789d22d0058",
+        "turn_id": "01a12ec1-9b04-7960-91ab-45d25165b7b8",
+        "session_id": "01a12ec1-993a-7f32-af4c-e789d22d0058",
+        "root_turn_id": "01a12ec1-9b04-7960-91ab-45d25165b7b8",
+        "response_id": "resp_04f9b88c19d8e259016acc7b6fd96487d08d5f5b57e4d5b989",
+        "usage": {
+          "input_tokens": 38367,
+          "cached_input_tokens": 28416,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 450,
+          "reasoning_output_tokens": 100,
+          "total_tokens": 38817
+        },
+        "turn_token_usage": {
+          "input_tokens": 98436,
+          "cached_input_tokens": 65536,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 1762,
+          "reasoning_output_tokens": 925,
+          "total_tokens": 100198
+        },
+        "thread_token_usage": {
+          "input_tokens": 98436,
+          "cached_input_tokens": 65536,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 1762,
+          "reasoning_output_tokens": 925,
+          "total_tokens": 100198
+        }
+      }
+    },
+    {
+      "timestamp": "2026-10-12T06:17:29.923Z",
+      "type": "custom_tool_call_output",
+      "call_id": "call_9rlUM06xf8umpI41RXNctrbe",
+      "output_chars": 23246,
+      "output_preview": "[{\"type\": \"input_text\", \"text\": \"Script completed\\nWall time 0.1 seconds\\nOutput:\\n\"}, {\"type\": \"input_text\", \"text\": \"3:## C1 基本面研究\\n5:## 一、近期基本面状态与变化\\n9:### 综合判断\\n24:## 二、管理层与卖方当前预期\\n26:### 综合判断\\n40:## 三、核心基本面驱动因子\\n42:### 核心驱动概览\\n87:## 四、关键变量传导链\\n89:### 综合判断\\n106:## 五、潜在基本面因素缺口\\n110:### 候选验证问题1：Space Systems的增长能否转化为同等质量的利润和现金？\\n117:### 候选验证问题2：发射数量增加为何没有同步转化为Q2发射收入？\\n124:### 候选验证问题3：$2.36bn backlog和90+发射manifest的近端可执行收入是多少？\\n131:### 候选验证问题4：Neutron是否能从“Q4 2026发射台交付目标”推进到首飞和可重复量产？\\n138:### 候选验证问题5：Iridium交易的现金、债务与稀释组合是否能在交割前被锁定？\\n145:### 候选验证问题6：Q3毛利率指引低于Q2实际的原因是暂时性组合/确认，还是成本结构变化？\\n152:## 六、未知项与证据边界\\n166:## C3 行业与价值链研究\\n168:### 一、目标相关行业与产业链事实基准\\n170:### 核心发现\\n185:### 二、关键外部主体判断与行为信号\\n187:### 核心发现\\n204:### 三、核心外部驱动、分配机制与传导\\n206:### 核心发现\\n211:#### 驱动一：国防任务需求与快速获取\\n229:#### 驱动二：小型/次轨道发射的响应速度与有效供给\\n247:#### 驱动三：Neutron中型运力的技术资格与客户迁移\\n265:#### 驱动四：防务卫星、受保护通信与任务级集成采购\\n283:#### 驱动五：关键组件稀缺与垂直整合\\n301:### 四、行业与商业化里程碑及证明边界\\n303:### 核心发现\\n318:### 五、潜在行业与产业链因素缺口候选\\n320:### 核心发现\\n325:#### 候选一：政府订单和快速响应需求能否转化为重复、高频且按期交付的任务？\\n343:#### 候选二：Neutron的Q4 2026发射台目标能否演变为首飞和客户认可的中型服务？\\n361:#### 候选三：任务级集成能力能否在多供应商竞争中带来后续分配？\\n379:#### 候选四：Mynaric与Motiv能否比外部约束更快地改善关键组件供给？\\n397:### 六、Unknowns 与证据边界\\n399:### 核心发现\\n415:## C5 市场隐含预期研究\\n417:## 一、当前市场定价基线\\n430:## 二、近期重定价与主要定价驱动\\n434:### 重定价阶段：2026-08-10至2026-09-15 / Q2后持续期与风险重估\\n445:## 三、市场隐含的业务、财务与持续期条件\\n447:### 定价主题一：Space Systems增长、backlog转换与现金质量\\n461:### 定价主题二：Neutron从资格测试到可重复运力的持续期\\n475:### 定价主题三：Iridium交易的融资、稀释与每股经济性\\n489:## 四、市场锚点与定价问题\\n499:### 定价问题一：Space Systems增长是否具有现金质量？\\n505:### 定价问题二：Neutron的时间表与量产证明是否足够？\\n511:### 定价问题三：Iridium融资与稀释的每股结果是什么？\\n517:## 五、关键未知项与识别边界\\n\\n--- policy header/count/potential analyst match ---\\n<class 'dict'> dict_keys(['schema_version', 'ticker', 'policy_set_version', 'publication_state', 'document2_ref', 'event_li"
+    },
+    {
+      "timestamp": "2026-10-12T06:17:29.924Z",
+      "type": "token_count",
+      "data": {
+        "type": "token_count",
+        "info": {
+          "total_token_usage": {
+            "input_tokens": 98436,
+            "cached_input_tokens": 65536,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1762,
+            "reasoning_output_tokens": 925,
+            "total_tokens": 100198
+          },
+          "last_token_usage": {
+            "input_tokens": 38367,
+            "cached_input_tokens": 28416,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 450,
+            "reasoning_output_tokens": 100,
+            "total_tokens": 38817
+          },
+          "model_context_window": 258400
+        },
+        "rate_limits": {
+          "limit_id": "codex",
+          "limit_name": null,
+          "primary": {
+            "used_percent": 39.0,
+            "window_minutes": 10080,
+            "resets_at": 1792295857
+          },
+          "secondary": null,
+          "credits": {
+            "has_credits": false,
+            "unlimited": false,
+            "balance": "0"
+          },
+          "individual_limit": null,
+          "spend_control_reached": null,
+          "plan_type": "prolite",
+          "rate_limit_reached_type": null
+        }
+      }
+    },
+    {
+      "timestamp": "2026-10-12T06:17:44.238Z",
+      "type": "custom_tool_call",
+      "name": "exec",
+      "call_id": "call_onbpMZQz3InCMipItQTVayWo",
+      "arguments": "const r = await tools.web__run({search_query:[{q:\"site:tikr.com/blog/td-cowen-cut-its-rocket-lab-target-it-still-sees-32-upside TD Cowen Rocket Lab October 9 $90 $120 2026\"},{q:\"Rocket Lab TD Cowen price target $90 $120 October 9 2026 Buy\"},{\"q\":\"Rocket Lab October 9 2026 TD Cowen target price analyst note $90\"}],response_length:\"short\"});\ntext(r);\n"
+    },
+    {
+      "timestamp": "2026-10-12T06:17:44.318Z",
+      "type": "token_usage_record",
+      "data": {
+        "thread_id": "01a12ec1-993a-7f32-af4c-e789d22d0058",
+        "turn_id": "01a12ec1-9b04-7960-91ab-45d25165b7b8",
+        "session_id": "01a12ec1-993a-7f32-af4c-e789d22d0058",
+        "root_turn_id": "01a12ec1-9b04-7960-91ab-45d25165b7b8",
+        "response_id": "resp_04f9b88c19d8e259016acc7b7a792887d0a1bd25cad0326c9f",
+        "usage": {
+          "input_tokens": 47928,
+          "cached_input_tokens": 37632,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 694,
+          "reasoning_output_tokens": 572,
+          "total_tokens": 48622
+        },
+        "turn_token_usage": {
+          "input_tokens": 146364,
+          "cached_input_tokens": 103168,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 2456,
+          "reasoning_output_tokens": 1497,
+          "total_tokens": 148820
+        },
+        "thread_token_usage": {
+          "input_tokens": 146364,
+          "cached_input_tokens": 103168,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 2456,
+          "reasoning_output_tokens": 1497,
+          "total_tokens": 148820
+        }
+      }
+    },
+    {
+      "timestamp": "2026-10-12T06:17:47.572Z",
+      "type": "custom_tool_call_output",
+      "call_id": "call_onbpMZQz3InCMipItQTVayWo",
+      "output_chars": 15366,
+      "output_preview": "[{\"type\": \"input_text\", \"text\": \"Script completed\\nWall time 3.2 seconds\\nOutput:\\n\"}, {\"type\": \"input_text\", \"text\": \"Rocket Lab price target lowered to $90 from $120 at TD Cowen - TipRanks.com (https://www.tipranks.com/news/the-fly/rocket-lab-price-target-lowered-to-90-from-120-at-td-cowen-thefly-news)\\nciteturn0search0 [wordlim: 200] Published: 3 days ago; Crawled: today; # Rocket Lab price target lowered to $90 from $120 at TD Cowen ... TD Cowen analyst Gautam Khanna lowered the firm’s price target on Rocket Lab (RKLB) to $90 from $120 and keeps a Buy rating on the shares. ... The de-rating in aerospace stocks “has been disorderly,” which creates some opportunities, the analyst tells investors in a research note.\\n--------------------------------------------------------------------------------\\nRocket Lab Corporation (RKLB) Analyst Insights, Price Targets & Recommendations - Yahoo Finance (https://finance.yahoo.com/quote/RKLB/analyst-insights/)\\nciteturn0search1 [wordlim: 200] Crawled: today; Rocket Lab Corporation ... At close: October 9 at 4:00:00 PM EDT ... Price Target 120 -> 90 ... Analyst  | Overall Score  | Direction Score  | Price Score  | Latest Rating  | Price Target  | Date ... Maintains  | TD Cowen: Buy to Buy  | 10/9/2026\\n--------------------------------------------------------------------------------\\nRocket Lab Corp (RKLB) Stock Price & News - Google Finance (https://www.google.com/finance/quote/RKLB%3ANASDAQ?window=1M)\\nciteturn0search2 [wordlim: 200] Crawled: today; Rocket Lab Corp ... Analyst  | Recommendation  | Action  | Price target  | Projected  | Date ... Gautam Khanna TD Cowen  | Buy  | Maintained  | $90.00  | +31.9%  | 10/09/2026 ... Ryan Koontz Needham  | Buy  | Maintained  | $120.00  | +75.9%  | 08/11/2026\\n----------------------"
+    },
+    {
+      "timestamp": "2026-10-12T06:17:47.576Z",
+      "type": "token_count",
+      "data": {
+        "type": "token_count",
+        "info": {
+          "total_token_usage": {
+            "input_tokens": 146364,
+            "cached_input_tokens": 103168,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 2456,
+            "reasoning_output_tokens": 1497,
+            "total_tokens": 148820
+          },
+          "last_token_usage": {
+            "input_tokens": 47928,
+            "cached_input_tokens": 37632,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 694,
+            "reasoning_output_tokens": 572,
+            "total_tokens": 48622
+          },
+          "model_context_window": 258400
+        },
+        "rate_limits": {
+          "limit_id": "codex",
+          "limit_name": null,
+          "primary": {
+            "used_percent": 39.0,
+            "window_minutes": 10080,
+            "resets_at": 1792295857
+          },
+          "secondary": null,
+          "credits": {
+            "has_credits": false,
+            "unlimited": false,
+            "balance": "0"
+          },
+          "individual_limit": null,
+          "spend_control_reached": null,
+          "plan_type": "prolite",
+          "rate_limit_reached_type": null
+        }
+      }
+    },
+    {
+      "timestamp": "2026-10-12T06:18:09.301Z",
+      "type": "custom_tool_call",
+      "name": "exec",
+      "call_id": "call_LGNaQOFSrlooAohm4DqKpSPQ",
+      "arguments": "const r = await tools.exec_command({cmd:\"python - <<'PY'\\nimport json\\np='cases/w3_3a330a2b8b0547c2831121706b75d195/context/document2.json'; d=json.load(open(p))\\nfor sh in d['shells']:\\n  print('\\\\nSHELL',sh.get('shell_id'))\\n  for u in sh.get('units',[]):\\n    text=' '.join(str(u.get(k,'')) for k in ['expectation_id','proposition','horizon'])\\n    if any(x.lower() in text.lower() for x in ['market','price','analyst','seller','估值','市场','定价','评级']):\\n      print('UNIT',u.get('expectation_id'),':',u.get('proposition'))\\n      st=u.get('state',{})\\n      print('STATE params:',[x.get('parameter_id') for x in st.get('parameters',[])])\\n      print('STATE values:')\\n      for v in st.get('values',[]):\\n        print(' ',v.get('state_value_id'),v.get('value'), 'scope=',v.get('time_scope'),'source=',v.get('source_role'),'as_of=',v.get('as_of'))\\n      print('FACTOR status:')\\n      for f in u.get('realization_factors',[]): print(' ',f.get('factor_id'),f.get('current_status','')[:500])\\nPY\",max_output_tokens:12000});\ntext(r.output);\n"
+    },
+    {
+      "timestamp": "2026-10-12T06:18:09.347Z",
+      "type": "token_usage_record",
+      "data": {
+        "thread_id": "01a12ec1-993a-7f32-af4c-e789d22d0058",
+        "turn_id": "01a12ec1-9b04-7960-91ab-45d25165b7b8",
+        "session_id": "01a12ec1-993a-7f32-af4c-e789d22d0058",
+        "root_turn_id": "01a12ec1-9b04-7960-91ab-45d25165b7b8",
+        "response_id": "resp_04f9b88c19d8e259016acc7b8c0bf487d0b259dbe850dd8322",
+        "usage": {
+          "input_tokens": 52586,
+          "cached_input_tokens": 46848,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 1071,
+          "reasoning_output_tokens": 722,
+          "total_tokens": 53657
+        },
+        "turn_token_usage": {
+          "input_tokens": 198950,
+          "cached_input_tokens": 150016,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 3527,
+          "reasoning_output_tokens": 2219,
+          "total_tokens": 202477
+        },
+        "thread_token_usage": {
+          "input_tokens": 198950,
+          "cached_input_tokens": 150016,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 3527,
+          "reasoning_output_tokens": 2219,
+          "total_tokens": 202477
+        }
+      }
+    },
+    {
+      "timestamp": "2026-10-12T06:18:10.065Z",
+      "type": "custom_tool_call_output",
+      "call_id": "call_LGNaQOFSrlooAohm4DqKpSPQ",
+      "output_chars": 2254,
+      "output_preview": "[{\"type\": \"input_text\", \"text\": \"Script completed\\nWall time 0.8 seconds\\nOutput:\\n\"}, {\"type\": \"input_text\", \"text\": \"\\nSHELL Space Systems项目执行与交付经济\\n\\nSHELL Launch Services订单兑现与发射运营\\nUNIT Launch Services任务组合与单次经济 : Electron与HASTE的任务组合、定价、履约成本和收入确认能够支持可重复的单次收入、任务毛利和现金回收，而非仅因发射次数增加造成季度经济波动。\\nSTATE params: ['发射服务报告期已完成Electron/HASTE任务数', 'HASTE报告期已完成任务数', 'Launch Services报告期分部收入', 'Launch Services每次完成任务报告收入', 'Launch Services每次完成任务报告履约成本', 'Launch Services收入确认时点模式', 'Launch Services现金回收证据']\\nSTATE values:\\n  2026年第二季度完成6项Electron/HASTE任务 {'number': 6.0, 'unit': 'missions'} scope= Q2 2026（previous: Q2 2025） source= ACTUAL as_of= 2026-08-10\\n  2026年第二季度Launch Services分部收入4446万美元 {'number': 44.6, 'unit': 'USD million'} scope= Q2 2026（previous: Q2 2025） source= ACTUAL as_of= 2026-08-10\\n  2026年上半年每次完成任务报告收入920万美元 {'number': 9.2, 'unit': 'USD million per completed mission'} scope= H1 2026（previous: H1 2025） source= ACTUAL as_of= 2026-08-10\\n  2026年上半年每次完成任务报告履约成本490万美元 {'number': 4.9, 'unit': 'USD million per completed mission'} scope= H1 2026（previous: H1 2025） source= ACTUAL as_of= 2026-08-10\\n  2026年第二季度完成2项HASTE任务 {'number': 2.0, 'unit': 'missions'} scope= Q2 2026 source= ACTUAL as_of= 2026-08-10\\n  Q2两项HASTE任务按over-time确认且部分收入已在前期确认 {'stance': 'MIXED', 'strength': 'STRONG'} scope= Q2 2026 Launch Services收入确认 source= ACTUAL as_of= 2026-08-10\\n  公司层面现金流承压但未披露Launch Services独立回款 {'stance': 'MIXED', 'strength': 'WEAK'} scope= H1 2026公司经营现金流与营运资金；Launch Services分部回款未单列 source= ACTUAL as_of= 2026-08-10\\nFACTOR status:\\n  任务组合、定价差异与收入确认模式 Q2完成6项Electron任务（其中2项为HASTE），Launch Services收入为44.6百万美元且同比下降4%，主要受HASTE over-time确认及部分收入已在前期确认影响；H1每次完成任务报告收入为9.2百万美元，高于上年7.5百万美元。公司明确每次收入会随任务复杂度、轨道/插入、载荷处理、地点、时效和确认方法变化，因此发射次数不是收入的充分代理，当前收入强度有改善但期间可比性仍混合。\\n  发射履约成本吸收与单次毛利复现 H1 2026每次完成任务报告履约成"
+    },
+    {
+      "timestamp": "2026-10-12T06:18:10.070Z",
+      "type": "token_count",
+      "data": {
+        "type": "token_count",
+        "info": {
+          "total_token_usage": {
+            "input_tokens": 198950,
+            "cached_input_tokens": 150016,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 3527,
+            "reasoning_output_tokens": 2219,
+            "total_tokens": 202477
+          },
+          "last_token_usage": {
+            "input_tokens": 52586,
+            "cached_input_tokens": 46848,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1071,
+            "reasoning_output_tokens": 722,
+            "total_tokens": 53657
+          },
+          "model_context_window": 258400
+        },
+        "rate_limits": {
+          "limit_id": "codex",
+          "limit_name": null,
+          "primary": {
+            "used_percent": 39.0,
+            "window_minutes": 10080,
+            "resets_at": 1792295857
+          },
+          "secondary": null,
+          "credits": {
+            "has_credits": false,
+            "unlimited": false,
+            "balance": "0"
+          },
+          "individual_limit": null,
+          "spend_control_reached": null,
+          "plan_type": "prolite",
+          "rate_limit_reached_type": null
+        }
+      }
+    },
+    {
+      "timestamp": "2026-10-12T06:19:55.000Z",
+      "type": "token_usage_record",
+      "data": {
+        "thread_id": "01a12ec1-993a-7f32-af4c-e789d22d0058",
+        "turn_id": "01a12ec1-9b04-7960-91ab-45d25165b7b8",
+        "session_id": "01a12ec1-993a-7f32-af4c-e789d22d0058",
+        "root_turn_id": "01a12ec1-9b04-7960-91ab-45d25165b7b8",
+        "response_id": "resp_04f9b88c19d8e259016acc7ba2855887d081cb214176c60aa4",
+        "usage": {
+          "input_tokens": 54702,
+          "cached_input_tokens": 51968,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 5718,
+          "reasoning_output_tokens": 5178,
+          "total_tokens": 60420
+        },
+        "turn_token_usage": {
+          "input_tokens": 253652,
+          "cached_input_tokens": 201984,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 9245,
+          "reasoning_output_tokens": 7397,
+          "total_tokens": 262897
+        },
+        "thread_token_usage": {
+          "input_tokens": 253652,
+          "cached_input_tokens": 201984,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 9245,
+          "reasoning_output_tokens": 7397,
+          "total_tokens": 262897
+        }
+      }
+    },
+    {
+      "timestamp": "2026-10-12T06:19:55.002Z",
+      "type": "token_count",
+      "data": {
+        "type": "token_count",
+        "info": {
+          "total_token_usage": {
+            "input_tokens": 253652,
+            "cached_input_tokens": 201984,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 9245,
+            "reasoning_output_tokens": 7397,
+            "total_tokens": 262897
+          },
+          "last_token_usage": {
+            "input_tokens": 54702,
+            "cached_input_tokens": 51968,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 5718,
+            "reasoning_output_tokens": 5178,
+            "total_tokens": 60420
+          },
+          "model_context_window": 258400
+        },
+        "rate_limits": {
+          "limit_id": "codex",
+          "limit_name": null,
+          "primary": {
+            "used_percent": 39.0,
+            "window_minutes": 10080,
+            "resets_at": 1792295857
+          },
+          "secondary": null,
+          "credits": {
+            "has_credits": false,
+            "unlimited": false,
+            "balance": "0"
+          },
+          "individual_limit": null,
+          "spend_control_reached": null,
+          "plan_type": "prolite",
+          "rate_limit_reached_type": null
+        }
+      }
+    },
+    {
+      "timestamp": "2026-10-12T06:19:55.019Z",
+      "type": "task_complete",
+      "data": {
+        "type": "task_complete",
+        "turn_id": "01a12ec1-9b04-7960-91ab-45d25165b7b8",
+        "last_agent_message": "{\"w3_case_id\":\"w3_3a330a2b8b0547c2831121706b75d195\",\"novelty\":{\"result\":\"NEW\",\"reference_ids\":[],\"reason\":\"TD Cowen于2026-10-09将Rocket Lab目标价从$120下调至$90，同时维持Buy评级；该具体分析师操作未见于Reference View。[The Fly via TipRanks](https://www.tipranks.com/news/the-fly/rocket-lab-price-target-lowered-to-90-from-120-at-td-cowen-thefly-news)\"},\"policy\":{\"policy_ids\":[],\"matched_condition_ids\":[],\"reason\":\"这是单家卖方目标价与估值观点调整，不满足PolicySet中针对公司运营、合同、融资、监管等现实变化的触发条件；无现行Policy覆盖。\"},\"expert_trade\":{\"evaluated\":true,\"trade\":false,\"direction\":null,\"prior_expectation\":\"调整前，TD Cowen自身的RKLB目标价为$120且评级为Buy。更广泛的事件前基线是公司增长、利润率和现金转换仍需多季度兑现；Document1指出缺乏可靠的同口径季度卖方共识，不能把单家目标价视为市场共识。\",\"expectation_delta\":\"TD Cowen自身目标价下调$30（25%）至$90，但维持Buy；按报道引用的$68.44股价仍约有32%上涨空间。这修订了单家机构的估值判断，不证明市场整体盈利预期或Rocket Lab经营预期同步下修。\",\"reason\":\"目标价下调幅度对该分析师估值有意义，但消息未披露公司经营、订单、现金流或项目状态的新变化，也不足以证明市场整体预期发生重大修订。对RKLB的路径主要是间接的情绪或估值倍数传导，缺少足够的市场广度与基本面连接，不能据此形成直接方向性交易。\"},\"delta_candidates\":[{\"proposition\":\"TD Cowen分析师Gautam Khanna于2026-10-09将Rocket Lab（RKLB）目标价从$120下调至$90，并维持Buy评级。\",\"assertion_state\":\"ACTUAL\",\"subject_time\":null,\"occurrence_date\":\"2026-10-09\",\"entities\":[\"TD Cowen\",\"Gautam Khanna\",\"Rocket Lab (RKLB)\"]}]}",
+        "started_at": 1791785802,
+        "completed_at": 1791785995,
+        "duration_ms": 192464,
+        "time_to_first_token_ms": 7614
+      }
+    }
+  ]
+}

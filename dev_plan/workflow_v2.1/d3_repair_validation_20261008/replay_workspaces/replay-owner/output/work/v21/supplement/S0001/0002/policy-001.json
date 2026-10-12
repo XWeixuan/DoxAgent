@@ -1,0 +1,36 @@
+{
+  "policy_id": "pol_ab80a79d7ef94756a0e1ba7b4e75535a",
+  "title": "Vera量产机群的SOCAMM总装配位数选择",
+  "ref": [
+    "output/work/v21/research/S0001/0002/policy-002.json",
+    "context/document3/v21/d2/shell-0001.json#/units/2",
+    "https://www.trendforce.com/presscenter/news/20260610-13090.html",
+    "https://www.trendforce.com/presscenter/news/20260804-13166.html",
+    "https://developer.nvidia.com/blog/inside-the-nvidia-rubin-platform-six-new-chips-one-ai-supercomputer/",
+    "https://investors.micron.com/news/press-release/2026/Micron-in-High-Volume-Production-of-HBM4-Designed-for-NVIDIA-Vera-Rubin-PCIe-Gen6-SSD-and-SOCAMM2-03-16-2026/default.aspx"
+  ],
+  "transmission": "Vera Rubin Superchip与独立Vera CPU机架使用LPDDR5X/SOCAMM承担CPU侧代理编排和数据处理；美光192GB SOCAMM2已高量生产、容量组合覆盖48–256GB，因而参与这一平台的可售机会。对一项确定的生产或采购批次，SOCAMM装配位数取决于每模块容量、每CPU实际安装模块数和该批CPU/系统数量，而不是单独的模块规格或Vera最高支持容量。TrendForce所报供给驱动的模块容量减半，伴随更多模块与CPU出货安排，并明确不代表NVIDIA总体内存需求下修；只有净装配位或相同范围的已承诺LPDRAM位采购上、下修，才分别改变这一平台的位机会。美光在三家供应商中的最终分配、实现价格及其他客户对供给的吸收仍未由平台总量证明。",
+  "match_scope": "召回NVIDIA、Vera系统厂商、大型采购方和有明确供应链来源的报道对Vera Rubin Superchip及独立Vera CPU机架的标准量产SOCAMM配置、单CPU装配、机架/CPU订购批次及LPDDR5X位采购或配额的调整。例如恢复较大模块但减少每CPU模块数、继续减小模块却增加CPU批次数量、或直接修订整批LPDRAM采购位数，均值得召回。以上为非穷举线索而非命中条件；单一模块容量、设计上限或样机照片本身不触发。",
+  "activation_conditions": [
+    {
+      "condition_id": "C1",
+      "decision": "LONG",
+      "trigger_layer": "MIDDLE",
+      "criterion": "NVIDIA、量产系统厂商、采购方或可信供应链报道确认同一Vera量产/正式采购批次的SOCAMM总装配位数计划，相对先前供给驱动的减配安排正式上修；公开的新旧整批位采购量，或可比的每模块容量、每CPU装配模块数及CPU/系统数，足以显示净增加。",
+      "calibration": {
+        "reference_state": "NVIDIA早期披露Vera每CPU最高约1.5TB内存，美光披露最高可支持2TB，均非实际标准装配。TrendForce于2026-06-10报道Vera Rubin Superchip因初步2027年LPDRAM分配仅能满足NVIDIA估计需求约60%，将每模块SOCAMM容量减半，同时增加模块和Vera CPU出货；2026-08-04仍将此视为供给妥协。报道没有给出同一量产批次的每CPU模块数和总CPU数，不能从减半一项算出整批位数；新报道须提供同口径旧、新计划或直接给出整批位采购修订。",
+        "trigger_boundary": "跨过边界的是一个标准量产配置或正式采购批次的净SOCAMM位数高于该批此前减配计划：模块容量恢复时，减少的模块数或CPU数不能抵消；模块容量维持减半时，新增CPU/模块数也可使整批位数提高。确认这一生产/采购决定即可，不等美光收入；重述1.5–2TB上限、提高单模块容量但整批位数不增，或只展示样机，不足。"
+      }
+    },
+    {
+      "condition_id": "C2",
+      "decision": "SHORT",
+      "trigger_layer": "MIDDLE",
+      "criterion": "NVIDIA、量产系统厂商、采购方或可信供应链报道确认同一Vera量产/正式采购批次在已报道的减半配置上再次实质降配或缩减CPU批次，且同口径的整批SOCAMM装配或承诺采购位数较此前计划净减少，而非把同量模块改装到更多Vera系统。",
+      "calibration": {
+        "reference_state": "截至2026-10-06，TrendForce已报道一次供给驱动的每模块容量减半，同时计划增加模块及CPU出货，并特别说明不等于NVIDIA总体内存需求下降；因此该次减半本身不是新的SHORT。当前没有公开的Vera整批模块数×每CPU装配数×CPU数，可与未来单一模块规格直接比较；需要新消息给出同范围原计划与修订计划，或直接公布总位采购下修。",
+        "trigger_boundary": "正式生产/采购批次在既有减配计划之外再次失去净SOCAMM装配位数，已足以降低Vera平台对可售LPDRAM的机会，不必等美光财报；仅再降单模块容量但由更多模块或CPU补足整批位数、将设备在Superchip与独立CPU机架间转移而不减总位、或样机低配均不命中。"
+      }
+    }
+  ]
+}

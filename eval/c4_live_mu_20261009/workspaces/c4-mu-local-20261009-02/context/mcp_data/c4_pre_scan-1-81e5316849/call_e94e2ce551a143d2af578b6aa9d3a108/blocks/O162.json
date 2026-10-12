@@ -1,0 +1,18 @@
+{
+  "alias": "O162",
+  "title": "sections 1 — metadata",
+  "content": {
+    "section": "We face intense competition",
+    "heading_match": "We face intense competition",
+    "start_offset": 114067,
+    "end_offset": 194095,
+    "full_text_chars": 80000,
+    "returned_chars": 40000,
+    "truncated": true,
+    "match_quality": "substantive_body"
+  },
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

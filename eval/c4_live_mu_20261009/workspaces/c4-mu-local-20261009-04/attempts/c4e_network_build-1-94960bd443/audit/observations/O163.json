@@ -1,0 +1,9 @@
+{
+  "alias": "O163",
+  "title": "text paragraphs 75",
+  "content": "| Change in: |  |  |  |  |\n\n| Accounts receivable and unbilled receivables |  | (97,555) |  |  | (29,285) |  |\n\n| Prepayments |  | (11,638) |  |  | 8,433 |  |\n\n| Materials, supplies, and fuel stock |  | (2,019) |  |  | (4,803) |  |\n\n| Accounts and wages payable |  | (77,044) |  |  | (39,719) |  |\n\n| Taxes accrued/receivable |  | 67,213 |  |  | 42,233 |  |\n\n| Other assets and liabilities |  | 5,602 |  |  | 7,848 |  |\n\n| Net cash provided by operating activities |  | 168,584 |  |  | 297,992 |  |",
+  "source": {
+    "provider": "Public web source",
+    "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+  }
+}

@@ -1,0 +1,2635 @@
+{
+  "format": "doxagent.w3-trade-intent-review.v1",
+  "ticker": "MU",
+  "window": {
+    "since_utc": "2026-09-19T12:53:20.738930+00:00",
+    "as_of_utc": "2026-10-10T12:53:20.738930+00:00"
+  },
+  "part": 2,
+  "record_count": 5,
+  "records": [
+    {
+      "intent_id": "trade:case_24eabfc74a7b496e80fe7e6328d7acf7",
+      "ticker": "MU",
+      "case_id": "case_24eabfc74a7b496e80fe7e6328d7acf7",
+      "intent_released_at_utc": "2026-09-29T01:15:01.109608+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_a3214747730946a09a0e1151fd79570a",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Anthropic",
+              "Initial public offering",
+              "IPO prospectus"
+            ],
+            "occurrence_date": "2026-09-28",
+            "proposition": "Anthropic released its initial public offering prospectus.",
+            "subject_time": "Initial public offering filing"
+          },
+          {
+            "assertion_state": "PLANNED",
+            "entities": [
+              "Anthropic",
+              "Cloud infrastructure",
+              "AI infrastructure",
+              "Compute infrastructure"
+            ],
+            "occurrence_date": "2026-09-28",
+            "proposition": "Anthropic's IPO prospectus described approximately $518 billion of planned cloud and infrastructure expenditure spread across multiple years.",
+            "subject_time": "Multiple years following the IPO filing"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Anthropic",
+              "Fiscal 2025 revenue"
+            ],
+            "occurrence_date": "2026-09-28",
+            "proposition": "Anthropic's fiscal 2025 revenue grew approximately 1,088% to $4.59 billion.",
+            "subject_time": "Fiscal 2025"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Anthropic",
+              "GAAP net loss",
+              "Operating loss",
+              "Financing instruments"
+            ],
+            "occurrence_date": "2026-09-28",
+            "proposition": "Anthropic reported a fiscal 2025 GAAP net loss of approximately $41.97 billion, including a $34 billion non-cash charge related to the value of financing instruments, and an operating loss of approximately $8.06 billion.",
+            "subject_time": "Fiscal 2025"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Anthropic",
+              "Compute",
+              "Infrastructure",
+              "Fiscal 2025"
+            ],
+            "occurrence_date": "2026-09-28",
+            "proposition": "Anthropic spent approximately $7.33 billion on compute and infrastructure during fiscal 2025.",
+            "subject_time": "Fiscal 2025"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Anthropic",
+              "Cash",
+              "Fiscal 2025"
+            ],
+            "occurrence_date": "2026-09-28",
+            "proposition": "Anthropic ended fiscal 2025 with approximately $20.28 billion in cash.",
+            "subject_time": "Fiscal 2025 year-end"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Anthropic",
+              "Direct customers",
+              "Customer concentration"
+            ],
+            "occurrence_date": "2026-09-28",
+            "proposition": "Anthropic reported that its two largest customers accounted for 24% of sales and were not locked into long-term contracts.",
+            "subject_time": "Fiscal 2025 customer concentration"
+          }
+        ],
+        "expert_trade": {
+          "direction": "SHORT",
+          "evaluated": true,
+          "expectation_delta": "The prospectus increases the certainty of Anthropic's total planned commitment but explicitly spreads the $518 billion across multiple years, materially reducing the near-term annualized compute deployment implied by the earlier report. The filing also reveals customer concentration and financing risks, requiring a downward revision to near-term accelerator, HBM, server-DRAM, and SSD demand expectations relative to the one-year interpretation.",
+          "prior_expectation": "Immediately before this filing, the newly circulated report implied that Anthropic would incur approximately $518 billion of cloud and compute obligations within one year. More broadly, the baseline expected strong AI infrastructure demand and an Anthropic-Micron architecture and supply relationship, but no confirmed Micron volumes or prices.",
+          "reason": "The timing correction is a material negative surprise for MU's near-term AI-memory demand assumptions. Anthropic's compute obligations transmit through accelerator deployment to HBM, server DRAM, and storage, and Anthropic is already a named Micron architecture and supply collaborator. The formal filing and large multi-year total are offsets, and no MU order is disclosed, but the immediate annualization reset supports a cautious SHORT.",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "The Reference View covers Anthropic's confidential IPO filing, the expectation of an official filing, reported contracted AI capacity above $180 billion, and a separate cloud-capacity agreement, but not the completed public prospectus, its $518 billion multi-year infrastructure plan, or the detailed FY2025 financial and customer-concentration disclosures.",
+          "reference_ids": [
+            "E180",
+            "E181",
+            "E1480",
+            "E1000"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No existing Policy criterion is met. The filing provides no Micron-specific order, product volume, price, qualification, delivery, share, capacity, or financial metric; it is an uncovered change in the timing and certainty of a broad AI-infrastructure demand signal."
+        },
+        "w3_case_id": "w3_a3214747730946a09a0e1151fd79570a"
+      },
+      "trade_direction": "SHORT",
+      "case_summary": {
+        "case_id": "case_24eabfc74a7b496e80fe7e6328d7acf7",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-29T01:15:01.598027Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 372.099996
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-29T01:08:49.498031Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2604983,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-28",
+        "source": {
+          "binding_id": "MU:huggingnews_rss",
+          "kind": "api",
+          "name": "HuggingNews Atom",
+          "source_id": "huggingnews_rss"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_2c038d8ecc3e4f25a6d16af8b417eef9",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Anthropic Files for $2T IPO with $518B Multi Year AI Spend"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "BROKER_REJECTED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-29T01:08:49.498031Z",
+        "completed_at": "2026-09-29T01:15:01.598027Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E114",
+            "E180",
+            "E181",
+            "E184",
+            "E185"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "已知事实覆盖的是机密提交(E180/E184)和预期公开提交(E181/E185)两个阶段。当前消息报告Anthropic已正式发布IPO招股书(public prospectus filing)，这是从\"预期\"到\"已实际完成\"的状态变化，属于新核心事实。此外，$518B多年期云基础设施支出（纠正此前单年报告）、2025年详细财务数据（收入$4.59B、GAAP净亏损$41.97B、现金$20.28B等）、客户集中度风险(24%)及IPO时点与中期选举关系均为全新披露。",
+          "reference_ids": [
+            "E180",
+            "E181"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "当前消息为Anthropic IPO招股书披露其$518B云/基础设施多年期支出计划（纠正此前单年表述）。消息仅涉及一家AI实验室的资本开支规模与时间分布，未提供任何与Micron产品组合、ASP、HBM/DRAM/NAND出货、战略客户合同、供给约束、项目进度或价格变动相关的具体事实。Broad AI spending signal不构成对任何criterion的直接、实质性触发关系。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "当前消息为Anthropic IPO招股书披露其$518B云/基础设施多年期支出计划（纠正此前单年表述）。消息仅涉及一家AI实验室的资本开支规模与时间分布，未提供任何与Micron产品组合、ASP、HBM/DRAM/NAND出货、战略客户合同、供给约束、项目进度或价格变动相关的具体事实。Broad AI spending signal不构成对任何criterion的直接、实质性触发关系。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Anthropic",
+                "Initial public offering",
+                "IPO prospectus"
+              ],
+              "occurrence_date": "2026-09-28",
+              "proposition": "Anthropic released its initial public offering prospectus.",
+              "subject_time": "Initial public offering filing"
+            },
+            {
+              "assertion_state": "PLANNED",
+              "entities": [
+                "Anthropic",
+                "Cloud infrastructure",
+                "AI infrastructure",
+                "Compute infrastructure"
+              ],
+              "occurrence_date": "2026-09-28",
+              "proposition": "Anthropic's IPO prospectus described approximately $518 billion of planned cloud and infrastructure expenditure spread across multiple years.",
+              "subject_time": "Multiple years following the IPO filing"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Anthropic",
+                "Fiscal 2025 revenue"
+              ],
+              "occurrence_date": "2026-09-28",
+              "proposition": "Anthropic's fiscal 2025 revenue grew approximately 1,088% to $4.59 billion.",
+              "subject_time": "Fiscal 2025"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Anthropic",
+                "GAAP net loss",
+                "Operating loss",
+                "Financing instruments"
+              ],
+              "occurrence_date": "2026-09-28",
+              "proposition": "Anthropic reported a fiscal 2025 GAAP net loss of approximately $41.97 billion, including a $34 billion non-cash charge related to the value of financing instruments, and an operating loss of approximately $8.06 billion.",
+              "subject_time": "Fiscal 2025"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Anthropic",
+                "Compute",
+                "Infrastructure",
+                "Fiscal 2025"
+              ],
+              "occurrence_date": "2026-09-28",
+              "proposition": "Anthropic spent approximately $7.33 billion on compute and infrastructure during fiscal 2025.",
+              "subject_time": "Fiscal 2025"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Anthropic",
+                "Cash",
+                "Fiscal 2025"
+              ],
+              "occurrence_date": "2026-09-28",
+              "proposition": "Anthropic ended fiscal 2025 with approximately $20.28 billion in cash.",
+              "subject_time": "Fiscal 2025 year-end"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Anthropic",
+                "Direct customers",
+                "Customer concentration"
+              ],
+              "occurrence_date": "2026-09-28",
+              "proposition": "Anthropic reported that its two largest customers accounted for 24% of sales and were not locked into long-term contracts.",
+              "subject_time": "Fiscal 2025 customer concentration"
+            }
+          ],
+          "expert_trade": {
+            "direction": "SHORT",
+            "evaluated": true,
+            "expectation_delta": "The prospectus increases the certainty of Anthropic's total planned commitment but explicitly spreads the $518 billion across multiple years, materially reducing the near-term annualized compute deployment implied by the earlier report. The filing also reveals customer concentration and financing risks, requiring a downward revision to near-term accelerator, HBM, server-DRAM, and SSD demand expectations relative to the one-year interpretation.",
+            "prior_expectation": "Immediately before this filing, the newly circulated report implied that Anthropic would incur approximately $518 billion of cloud and compute obligations within one year. More broadly, the baseline expected strong AI infrastructure demand and an Anthropic-Micron architecture and supply relationship, but no confirmed Micron volumes or prices.",
+            "reason": "The timing correction is a material negative surprise for MU's near-term AI-memory demand assumptions. Anthropic's compute obligations transmit through accelerator deployment to HBM, server DRAM, and storage, and Anthropic is already a named Micron architecture and supply collaborator. The formal filing and large multi-year total are offsets, and no MU order is disclosed, but the immediate annualization reset supports a cautious SHORT.",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "The Reference View covers Anthropic's confidential IPO filing, the expectation of an official filing, reported contracted AI capacity above $180 billion, and a separate cloud-capacity agreement, but not the completed public prospectus, its $518 billion multi-year infrastructure plan, or the detailed FY2025 financial and customer-concentration disclosures.",
+            "reference_ids": [
+              "E180",
+              "E181",
+              "E1480",
+              "E1000"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "No existing Policy criterion is met. The filing provides no Micron-specific order, product volume, price, qualification, delivery, share, capacity, or financial metric; it is an uncovered change in the timing and certainty of a broad AI-infrastructure demand signal."
+          },
+          "w3_case_id": "w3_a3214747730946a09a0e1151fd79570a"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "4b1d4948878146163505b2101a9c1ba009c0abbf3f77a99dc8fbd5f1cc564197",
+            "content_type": "text/plain",
+            "sha256": "dea333a8c9fef111f7edbc1467d2ece50afe8c11496f726e9e149ea87084a00a",
+            "size_bytes": 1278
+          },
+          "case": {
+            "case_id": "case_24eabfc74a7b496e80fe7e6328d7acf7",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-29T01:08:45.479058Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-29T01:08:45.496761Z",
+          "revision": 1,
+          "row_revision": 2379103,
+          "source": {
+            "binding_id": "MU:huggingnews_rss",
+            "kind": "api",
+            "name": "HuggingNews Atom",
+            "source_id": "huggingnews_rss"
+          },
+          "source_published_at": "2026-09-29T01:05:06.301000Z",
+          "standard_message_id": "std_2ff7dcf2261e4787aec6f2f13972a4e5",
+          "stream_item_id": "stream_2c038d8ecc3e4f25a6d16af8b417eef9",
+          "stream_offset": 2196,
+          "stream_published_at": "2026-09-29T01:08:45.500456Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Anthropic Files for $2T IPO with $518B Multi Year AI Spend"
+          },
+          "url": "https://huggingnews.com/ai/anthropic-files-for-2t-ipo-with-518b-multi-year-ai-spend-4b239929",
+          "body_text": "← Back to live feed · 1 stories across 1 day\nMonday, Sep 28, 2026\n1 story1 Anthropic Files for $2T IPO with $518B Multi Year AI Spend AI Sep 28, 7:16 PM EDT 65/42 \n Anthropic has released its initial public offering prospectus and clarified that its planned expenditure of $518 billion on cloud and infrastructure will span multiple years. This detail corrects an earlier report stating the costs would occur within a single year, as the AI lab moves toward a listing that could value the company above $2 trillion. The public filing provides a first look at the capital requirements of a frontier AI lab competing with rivals such as OpenAI, Google, Meta and xAI.\nFinancials for 2025 show revenue grew 1,088% to $4.59 billion, but the company posted a GAAP net loss of $41.97 billion. This figure includes a $34 billion non cash accounting charge for the rising value of financing instruments, while the operating loss widened to $8.06 billion. Anthropic spent $7.33 billion on compute and infrastructure and ended 2025 with $20.28 billion in cash. The company warned that 24% of sales came from its two largest customers who are not locked into long term contracts, and noted risks involving the behavior of autonomous AI. The IPO follows the November US midterm elections."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_2ff7dcf2261e4787aec6f2f13972a4e5:0\"]",
+          "created_at": "2026-09-29T01:15:00.979959Z",
+          "dedupe_key": "60094ec9d1752ad5e3061b2474a8bdd4890ce01cec1f6f13e0a8af219606f19a",
+          "entities": [
+            "Anthropic",
+            "Initial public offering",
+            "IPO prospectus"
+          ],
+          "occurrence_date": "2026-09-28",
+          "originating_node": "W3",
+          "proposition": "Anthropic released its initial public offering prospectus.",
+          "provisional_event_id": "E480",
+          "subject_time": "Initial public offering filing"
+        },
+        {
+          "assertion_state": "PLANNED",
+          "candidate_id": "[\"runtime-v2-msg:std_2ff7dcf2261e4787aec6f2f13972a4e5:1\"]",
+          "created_at": "2026-09-29T01:15:01.004187Z",
+          "dedupe_key": "b29468d4af21e57d8becaa9a08d5cd16e414c7f2e049df94d5428d9a35d90098",
+          "entities": [
+            "Anthropic",
+            "Cloud infrastructure",
+            "AI infrastructure",
+            "Compute infrastructure"
+          ],
+          "occurrence_date": "2026-09-28",
+          "originating_node": "W3",
+          "proposition": "Anthropic's IPO prospectus described approximately $518 billion of planned cloud and infrastructure expenditure spread across multiple years.",
+          "provisional_event_id": "E481",
+          "subject_time": "Multiple years following the IPO filing"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_2ff7dcf2261e4787aec6f2f13972a4e5:2\"]",
+          "created_at": "2026-09-29T01:15:01.025332Z",
+          "dedupe_key": "bf1a8cacb06c429a3c31809ecefdd7ca9803c44bd3a866c6cb0632c5b038453c",
+          "entities": [
+            "Anthropic",
+            "Fiscal 2025 revenue"
+          ],
+          "occurrence_date": "2026-09-28",
+          "originating_node": "W3",
+          "proposition": "Anthropic's fiscal 2025 revenue grew approximately 1,088% to $4.59 billion.",
+          "provisional_event_id": "E482",
+          "subject_time": "Fiscal 2025"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_2ff7dcf2261e4787aec6f2f13972a4e5:3\"]",
+          "created_at": "2026-09-29T01:15:01.037733Z",
+          "dedupe_key": "b64bfe679e0937f4b8ebcaa25b8841c9737ed21214dadae7ae7e84254e0391a5",
+          "entities": [
+            "Anthropic",
+            "GAAP net loss",
+            "Operating loss",
+            "Financing instruments"
+          ],
+          "occurrence_date": "2026-09-28",
+          "originating_node": "W3",
+          "proposition": "Anthropic reported a fiscal 2025 GAAP net loss of approximately $41.97 billion, including a $34 billion non-cash charge related to the value of financing instruments, and an operating loss of approximately $8.06 billion.",
+          "provisional_event_id": "E483",
+          "subject_time": "Fiscal 2025"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_2ff7dcf2261e4787aec6f2f13972a4e5:4\"]",
+          "created_at": "2026-09-29T01:15:01.046497Z",
+          "dedupe_key": "cba1da37062b60226b705eb0579397aaec5db59d6bd61bdd11ca3958626c80e0",
+          "entities": [
+            "Anthropic",
+            "Compute",
+            "Infrastructure",
+            "Fiscal 2025"
+          ],
+          "occurrence_date": "2026-09-28",
+          "originating_node": "W3",
+          "proposition": "Anthropic spent approximately $7.33 billion on compute and infrastructure during fiscal 2025.",
+          "provisional_event_id": "E484",
+          "subject_time": "Fiscal 2025"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_2ff7dcf2261e4787aec6f2f13972a4e5:5\"]",
+          "created_at": "2026-09-29T01:15:01.055076Z",
+          "dedupe_key": "55f399a96a73246eaf98341177bb54cb634a7f70641087f2cb6fbb78d86c7491",
+          "entities": [
+            "Anthropic",
+            "Cash",
+            "Fiscal 2025"
+          ],
+          "occurrence_date": "2026-09-28",
+          "originating_node": "W3",
+          "proposition": "Anthropic ended fiscal 2025 with approximately $20.28 billion in cash.",
+          "provisional_event_id": "E485",
+          "subject_time": "Fiscal 2025 year-end"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_2ff7dcf2261e4787aec6f2f13972a4e5:6\"]",
+          "created_at": "2026-09-29T01:15:01.074056Z",
+          "dedupe_key": "a8495179c08e649a1f0c3008b174bc450e4ff62307dc0eabff89eac7f49f4dbe",
+          "entities": [
+            "Anthropic",
+            "Direct customers",
+            "Customer concentration"
+          ],
+          "occurrence_date": "2026-09-28",
+          "originating_node": "W3",
+          "proposition": "Anthropic reported that its two largest customers accounted for 24% of sales and were not locked into long-term contracts.",
+          "provisional_event_id": "E486",
+          "subject_time": "Fiscal 2025 customer concentration"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_24eabfc74a7b496e80fe7e6328d7acf7",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-09-29T01:15:01.109608+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-28",
+            "delivery_failure": null,
+            "direction": "SHORT",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_a3214747730946a09a0e1151fd79570a",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-29T01:15:01.308236Z"
+              },
+              "case_id": "case_24eabfc74a7b496e80fe7e6328d7acf7",
+              "direction": "SHORT",
+              "entry_reason": "BROKER_REJECTED",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_24eabfc74a7b496e80fe7e6328d7acf7",
+              "execution_reason_codes": [
+                "BROKER_REJECTED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_24eabfc74a7b496e80fe7e6328d7acf7",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_e1d7c65e0656af2e6c4923b1"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-29T01:15:01.109608Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "BROKER_REJECTED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_5259ee788ee0456fb772d82297cb93c0",
+      "ticker": "MU",
+      "case_id": "case_5259ee788ee0456fb772d82297cb93c0",
+      "intent_released_at_utc": "2026-09-29T08:10:43.556490+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_2c69f9b6a82c469baf85d7dc19072736",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "TrendForce",
+              "HBM",
+              "HBM4",
+              "HBM4E",
+              "Blended ASP"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "TrendForce revised its forecast for blended HBM average selling prices in 2027 to an approximately 121% year-over-year increase, citing persistent supply constraints, a higher HBM4 mix, and the HBM4E ramp.",
+            "subject_time": "2027 HBM pricing"
+          },
+          {
+            "assertion_state": "EXPECTED",
+            "entities": [
+              "TrendForce",
+              "HBM",
+              "HBM4E",
+              "2027"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "TrendForce expects HBM supply to remain constrained through 2027, with HBM4E gradually ramping in the second half of 2027.",
+            "subject_time": "2027 HBM supply and HBM4E ramp"
+          },
+          {
+            "assertion_state": "EXPECTED",
+            "entities": [
+              "GPU vendors",
+              "ASIC vendors",
+              "HBM",
+              "8-Hi",
+              "12-Hi"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "GPU and ASIC vendors are expected to prioritize evaluating 8-Hi HBM configurations in 2027 because of limited HBM supply and rising system costs, rather than because of weaker end-market demand.",
+            "subject_time": "2027 GPU and ASIC HBM configurations"
+          },
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "TrendForce",
+              "8-Hi HBM",
+              "12-Hi HBM",
+              "DRAM dies",
+              "Base die"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "TrendForce expects 8-Hi HBM products to carry a roughly 10%–20% price premium per gigabit over 12-Hi products because base-die costs are spread over fewer DRAM layers.",
+            "subject_time": "2027 8-Hi versus 12-Hi HBM pricing"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "TrendForce's revision materially raises the expected 2027 HBM pricing and revenue opportunity, extends supply tightness through 2027, and places the HBM4E ramp in the second half of 2027. The move toward 8-Hi is attributed to supply and cost constraints rather than weaker demand; the same HBM bits can support more accelerators, while 8-Hi is forecast to command a 10%–20% per-gigabit premium over 12-Hi.",
+          "prior_expectation": "The pre-event baseline included Micron HBM4 high-volume shipments, an HBM4E production roadmap for 2027, and persistent but uncertain HBM supply tightness. It did not include a specific upward revision to a 121% 2027 HBM blended-ASP increase or a quantified 8-Hi premium.",
+          "reason": "The surprise is material because the explicit ASP revision changes the medium-term price and mix outlook for Micron's high-value HBM business. The transmission is direct: persistent HBM scarcity and higher per-gigabit pricing can raise realized ASP, HBM revenue, and margins, while Micron already has HBM4 high-volume shipments and a 2027 HBM4E path. The forecast and 8-Hi adoption remain unconfirmed, and lower capacity per accelerator is a countervailing risk, but the upward price revision and continued demand strength are sufficient for a LONG judgment.",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "No existing Reference View fact covers TrendForce's upward revision of the 2027 HBM blended-ASP forecast to 121% year over year, the expected industry-wide prioritization of 8-Hi configurations, or the projected 8-Hi per-gigabit premium.",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "The message contains forward-looking industry forecasts and vendor evaluation expectations rather than formal platform production specifications or sustained deployment evidence. It therefore does not satisfy the existing Policy boundaries, despite being directly relevant to HBM pricing and configuration."
+        },
+        "w3_case_id": "w3_2c69f9b6a82c469baf85d7dc19072736"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_5259ee788ee0456fb772d82297cb93c0",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-29T08:10:43.765717Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 361.504983
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-29T08:04:42.260734Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_EXECUTION",
+          "TRADE_INTENT"
+        ],
+        "revision": 2435368,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-29",
+        "source": {
+          "binding_id": "MU:trendforce_press_releases",
+          "kind": "crawler",
+          "name": "TrendForce Press Releases",
+          "source_id": "trendforce_press_releases"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_37a75e32f8c045afb78c11471ffc6a07",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "HBM Supply Constraints Persist, 2027 Price Outlook Revised Upward with Blended ASP Forecast to Rise 121% YoY, Says TrendForce"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "ORDER_FILLED"
+          ],
+          "state": "EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-29T08:04:42.260734Z",
+        "completed_at": "2026-09-29T08:10:43.765717Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E4",
+            "E97",
+            "E110",
+            "E75",
+            "E107"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "当前消息包含三个未被加载事实覆盖的核心进展：(1) TrendForce将2027年HBM混合ASP涨幅上调至121% YoY，并给出HBM4e在2H27逐步爬坡的定价逻辑；(2) GPU/ASIC厂商因供应和成本约束将8-Hi而非12-Hi确立为2027年优先评估配置（E97仅涉及Rubin单品的4-Hi方案，非行业性8-Hi转向）；(3) 8-Hi因base-die成本分摊于更少DRAM层，预计较12-Hi存在10–20%每Gb溢价。上述均为新量化/新方向性事实。",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [
+            "pol_6fc4c21c7434ee04a94b"
+          ],
+          "reason": "TrendForce报告明确描述GPU/ASIC厂商正在考虑将单颗加速器HBM配置从12-Hi转向8-Hi，涉及加速器容量/带宽低于当前12-Hi公开路线的具体趋势，且给出8-Hi使用更少DRAM die、影响Micron可售内存配置的直接事实。该观察与pol_6fc4c21c7434ee04a94b C2所关注的平台容量/带宽下移路径有明确事实对应，但消息层面尚为行业预期与厂商评估阶段，是否达到'公开量产规格或持续部署数据确认'及'平台出货结构持续反映'的最终边界需完整判定确认，不应在本轮排除。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息描述的是GPU和ASIC厂商\"正在考虑\"(considering)将HBM从12-Hi降至8-Hi，以及TrendForce预计8-Hi将在2027年\"被优先评估\"(priority for evaluation)和\"渗透率预计上升\"(expected to increase)。这些均为计划、预测和评估阶段的前瞻性表述，未达到C2所要求的\"正式量产或持续部署证据确认单颗容量低于36GB 12-high并在至少一个后续出货窗口持续存在\"的触发边界。C1方面，消息未涉及HBM被替代内存取代的任何事实。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "TrendForce",
+                "HBM",
+                "HBM4",
+                "HBM4E",
+                "Blended ASP"
+              ],
+              "occurrence_date": "2026-09-29",
+              "proposition": "TrendForce revised its forecast for blended HBM average selling prices in 2027 to an approximately 121% year-over-year increase, citing persistent supply constraints, a higher HBM4 mix, and the HBM4E ramp.",
+              "subject_time": "2027 HBM pricing"
+            },
+            {
+              "assertion_state": "EXPECTED",
+              "entities": [
+                "TrendForce",
+                "HBM",
+                "HBM4E",
+                "2027"
+              ],
+              "occurrence_date": "2026-09-29",
+              "proposition": "TrendForce expects HBM supply to remain constrained through 2027, with HBM4E gradually ramping in the second half of 2027.",
+              "subject_time": "2027 HBM supply and HBM4E ramp"
+            },
+            {
+              "assertion_state": "EXPECTED",
+              "entities": [
+                "GPU vendors",
+                "ASIC vendors",
+                "HBM",
+                "8-Hi",
+                "12-Hi"
+              ],
+              "occurrence_date": "2026-09-29",
+              "proposition": "GPU and ASIC vendors are expected to prioritize evaluating 8-Hi HBM configurations in 2027 because of limited HBM supply and rising system costs, rather than because of weaker end-market demand.",
+              "subject_time": "2027 GPU and ASIC HBM configurations"
+            },
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "TrendForce",
+                "8-Hi HBM",
+                "12-Hi HBM",
+                "DRAM dies",
+                "Base die"
+              ],
+              "occurrence_date": "2026-09-29",
+              "proposition": "TrendForce expects 8-Hi HBM products to carry a roughly 10%–20% price premium per gigabit over 12-Hi products because base-die costs are spread over fewer DRAM layers.",
+              "subject_time": "2027 8-Hi versus 12-Hi HBM pricing"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "TrendForce's revision materially raises the expected 2027 HBM pricing and revenue opportunity, extends supply tightness through 2027, and places the HBM4E ramp in the second half of 2027. The move toward 8-Hi is attributed to supply and cost constraints rather than weaker demand; the same HBM bits can support more accelerators, while 8-Hi is forecast to command a 10%–20% per-gigabit premium over 12-Hi.",
+            "prior_expectation": "The pre-event baseline included Micron HBM4 high-volume shipments, an HBM4E production roadmap for 2027, and persistent but uncertain HBM supply tightness. It did not include a specific upward revision to a 121% 2027 HBM blended-ASP increase or a quantified 8-Hi premium.",
+            "reason": "The surprise is material because the explicit ASP revision changes the medium-term price and mix outlook for Micron's high-value HBM business. The transmission is direct: persistent HBM scarcity and higher per-gigabit pricing can raise realized ASP, HBM revenue, and margins, while Micron already has HBM4 high-volume shipments and a 2027 HBM4E path. The forecast and 8-Hi adoption remain unconfirmed, and lower capacity per accelerator is a countervailing risk, but the upward price revision and continued demand strength are sufficient for a LONG judgment.",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "No existing Reference View fact covers TrendForce's upward revision of the 2027 HBM blended-ASP forecast to 121% year over year, the expected industry-wide prioritization of 8-Hi configurations, or the projected 8-Hi per-gigabit premium.",
+            "reference_ids": [],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "The message contains forward-looking industry forecasts and vendor evaluation expectations rather than formal platform production specifications or sustained deployment evidence. It therefore does not satisfy the existing Policy boundaries, despite being directly relevant to HBM pricing and configuration."
+          },
+          "w3_case_id": "w3_2c69f9b6a82c469baf85d7dc19072736"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "1e73d4072130235e0eb4aaadd1c88fb3e76ef7d7423ce26d8cba3c8f4a96f62a",
+            "content_type": "text/plain",
+            "sha256": "18b9a037fd31cb9a1d398a6d23838df61c8970d40e7e40acff5f88fa3837636a",
+            "size_bytes": 2425
+          },
+          "case": {
+            "case_id": "case_5259ee788ee0456fb772d82297cb93c0",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-29T08:04:41.497648Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-29T08:04:41.523537Z",
+          "revision": 1,
+          "row_revision": 2416588,
+          "source": {
+            "binding_id": "MU:trendforce_press_releases",
+            "kind": "crawler",
+            "name": "TrendForce Press Releases",
+            "source_id": "trendforce_press_releases"
+          },
+          "source_published_at": "2026-09-29T04:00:00Z",
+          "standard_message_id": "std_fd2738403b7042a6b59da34168428b16",
+          "stream_item_id": "stream_37a75e32f8c045afb78c11471ffc6a07",
+          "stream_offset": 2239,
+          "stream_published_at": "2026-09-29T08:04:41.528537Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "HBM Supply Constraints Persist, 2027 Price Outlook Revised Upward with Blended ASP Forecast to Rise 121% YoY, Says TrendForce"
+          },
+          "url": "https://www.trendforce.com/presscenter/news/20260929-13255.html",
+          "body_text": "TrendForce’s latest research reveals that continued expansion in AI server demand is keeping HBM and conventional DRAM in competition for limited advanced-process and wafer capacity. Meanwhile, yields and output for next-generation products will take time to ramp, keeping memory supply tight through 2027.\n\nAgainst a backdrop of continued memory price increases, suppliers have also taken a firmer stance on raising HBM prices in 2027. TrendForce has raised its 2027 HBM price outlook to reflect persistent supply constraints, a growing share of higher-priced HBM4, and the gradual ramp-up of HBM4e in 2H27. Blended ASP is now projected to jump 121% YoY.\n\nSupply and cost constraints drive capacity adjustments, with 8-Hi emerging as a priority option\n\nTrendForce reports that GPU and ASIC manufacturers are now considering reducing HBM capacity per device. This shift is driven not by waning end-market demand but by limited HBM supply and quickly increasing system costs.\n\nCompared to earlier plans for 12-Hi HBM modules, 8-Hi configurations use fewer DRAM dies, lowering both the cost per stack and the overall GPU bill of materials. These configurations also enable the same HBM bit output to support more GPUs. Given the ongoing tight HBM supply, 8-Hi setups are expected to be a priority for evaluation by many GPU and ASIC vendors in 2027, balancing performance, supply, and cost.\n\nHowever, reducing HBM capacity does not necessarily translate into a lower price per gigabit. Each HBM stack requires one base die, and this cost does not decline proportionally with the number of DRAM layers. An 8-Hi stack has less DRAM capacity over which to spread the base-die cost than a 12-Hi stack, making its per-Gb cost actually higher. TrendForce expects 8-Hi products to carry a roughly 10–20% price premium per Gb over 12-Hi products in 2027.\n\nOverall, TrendForce expects the HBM market to remain supply-constrained in 2027. With both availability and rising costs shaping purchasing decisions, 8-Hi penetration is expected to increase as more GPU and ASIC vendors evaluate the configuration. However, its higher per-Gb cost relative to 12-Hi will remain an important consideration in specification negotiations and supply-chain planning. As a result, while adjustments to HBM capacity may help alleviate some GPU cost pressure in 2027, they are unlikely to reverse the broader trend of substantial HBM price increases."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_fd2738403b7042a6b59da34168428b16:0\"]",
+          "created_at": "2026-09-29T08:10:43.515829Z",
+          "dedupe_key": "1d4681869ba572774c53504101331d397820723dcf389213607e8f29a1bdca6a",
+          "entities": [
+            "TrendForce",
+            "HBM",
+            "HBM4",
+            "HBM4E",
+            "Blended ASP"
+          ],
+          "occurrence_date": "2026-09-29",
+          "originating_node": "W3",
+          "proposition": "TrendForce revised its forecast for blended HBM average selling prices in 2027 to an approximately 121% year-over-year increase, citing persistent supply constraints, a higher HBM4 mix, and the HBM4E ramp.",
+          "provisional_event_id": "E135",
+          "subject_time": "2027 HBM pricing"
+        },
+        {
+          "assertion_state": "EXPECTED",
+          "candidate_id": "[\"runtime-v2-msg:std_fd2738403b7042a6b59da34168428b16:1\"]",
+          "created_at": "2026-09-29T08:10:43.523154Z",
+          "dedupe_key": "ae6bacb9a74d0d3e497041b15f36328a8c04e738bdcd68424494777f2cd790d0",
+          "entities": [
+            "TrendForce",
+            "HBM",
+            "HBM4E",
+            "2027"
+          ],
+          "occurrence_date": "2026-09-29",
+          "originating_node": "W3",
+          "proposition": "TrendForce expects HBM supply to remain constrained through 2027, with HBM4E gradually ramping in the second half of 2027.",
+          "provisional_event_id": "E136",
+          "subject_time": "2027 HBM supply and HBM4E ramp"
+        },
+        {
+          "assertion_state": "EXPECTED",
+          "candidate_id": "[\"runtime-v2-msg:std_fd2738403b7042a6b59da34168428b16:2\"]",
+          "created_at": "2026-09-29T08:10:43.530733Z",
+          "dedupe_key": "5c323d5ecf45bad5080813fd557e5a808f484521ddcefe406634fd1812dccbf4",
+          "entities": [
+            "GPU vendors",
+            "ASIC vendors",
+            "HBM",
+            "8-Hi",
+            "12-Hi"
+          ],
+          "occurrence_date": "2026-09-29",
+          "originating_node": "W3",
+          "proposition": "GPU and ASIC vendors are expected to prioritize evaluating 8-Hi HBM configurations in 2027 because of limited HBM supply and rising system costs, rather than because of weaker end-market demand.",
+          "provisional_event_id": "E137",
+          "subject_time": "2027 GPU and ASIC HBM configurations"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_fd2738403b7042a6b59da34168428b16:3\"]",
+          "created_at": "2026-09-29T08:10:43.539731Z",
+          "dedupe_key": "6b28cdc646afc3403f6abafcf3d7fbfddbf70b52d05fd1ba9eb3902a858a2c53",
+          "entities": [
+            "TrendForce",
+            "8-Hi HBM",
+            "12-Hi HBM",
+            "DRAM dies",
+            "Base die"
+          ],
+          "occurrence_date": "2026-09-29",
+          "originating_node": "W3",
+          "proposition": "TrendForce expects 8-Hi HBM products to carry a roughly 10%–20% price premium per gigabit over 12-Hi products because base-die costs are spread over fewer DRAM layers.",
+          "provisional_event_id": "E138",
+          "subject_time": "2027 8-Hi versus 12-Hi HBM pricing"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_5259ee788ee0456fb772d82297cb93c0",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-09-29T08:10:43.556490+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-29",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_2c69f9b6a82c469baf85d7dc19072736",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-29T08:10:44.536352Z"
+              },
+              "case_id": "case_5259ee788ee0456fb772d82297cb93c0",
+              "direction": "LONG",
+              "entry_reason": "ORDER_FILLED",
+              "entry_result": "FILLED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_5259ee788ee0456fb772d82297cb93c0",
+              "execution_reason_codes": [
+                "ORDER_FILLED"
+              ],
+              "execution_state": "EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "19269.0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "18"
+              },
+              "first_fill_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-29T08:10:46Z"
+              },
+              "has_actual_fill": true,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_5259ee788ee0456fb772d82297cb93c0",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_e1d7c65e0656af2e6c4923b1"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-29T08:10:43.556490Z"
+              }
+            },
+            "entry": {
+              "side": "BUY",
+              "quantity": "18",
+              "average_price_usd": "1070.5",
+              "first_fill_at": "2026-09-29T08:10:46+00:00",
+              "last_fill_at": "2026-09-29T08:10:46+00:00"
+            },
+            "exit": {
+              "side": "SELL",
+              "quantity": "18",
+              "average_price_usd": "1070.22",
+              "first_fill_at": "2026-09-29T19:30:05+00:00",
+              "last_fill_at": "2026-09-29T19:30:05+00:00"
+            },
+            "fills": [
+              {
+                "kind": "ENTRY",
+                "side": "BUY",
+                "quantity": "18",
+                "price_usd": "1070.5",
+                "filled_at": "2026-09-29T08:10:46+00:00",
+                "broker_fill_id": "00025b45.6abc0ced.01.01"
+              },
+              {
+                "kind": "EXIT",
+                "side": "SELL",
+                "quantity": "18",
+                "price_usd": "1070.22",
+                "filled_at": "2026-09-29T19:30:05+00:00",
+                "broker_fill_id": "0000dc8f.6bc3e862.01.01"
+              }
+            ],
+            "lot_remaining_quantity": 0,
+            "realized_pnl_usd": "-7.440456000000000000000000000",
+            "realized_pnl_records": [
+              {
+                "amount": "-7.440456000000000000000000000",
+                "day": "2026-09-29",
+                "environment": "PAPER",
+                "provisional": false,
+                "reason": null
+              }
+            ],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "EXECUTED",
+        "read_execution_reason_codes": [
+          "ORDER_FILLED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": {
+          "side": "BUY",
+          "quantity": "18",
+          "average_price_usd": "1070.5",
+          "first_fill_at": "2026-09-29T08:10:46+00:00",
+          "last_fill_at": "2026-09-29T08:10:46+00:00"
+        },
+        "exit": {
+          "side": "SELL",
+          "quantity": "18",
+          "average_price_usd": "1070.22",
+          "first_fill_at": "2026-09-29T19:30:05+00:00",
+          "last_fill_at": "2026-09-29T19:30:05+00:00"
+        },
+        "realized_pnl_usd": "-7.440456000000000000000000000",
+        "pnl_state": "REALIZED",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_36bc442141224337890f79ba2d52a48a",
+      "ticker": "MU",
+      "case_id": "case_36bc442141224337890f79ba2d52a48a",
+      "intent_released_at_utc": "2026-09-29T14:47:31.358303+00:00",
+      "intent_status": "DELIVERY_FAILED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_6eafa16cf6eb457198b0d69073feec1a",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "OpenAI",
+              "AI services"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "OpenAI's annual recurring revenue reached approximately $70 billion.",
+            "subject_time": "Annual recurring revenue as of September 2026"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "OpenAI",
+              "Enterprise AI"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "OpenAI's business-facing sales grew by more than 100% since July 2026.",
+            "subject_time": "July to September 2026"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "OpenAI",
+              "Consumer subscriptions"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "OpenAI generated more revenue from consumer subscriptions in the third quarter of 2026 than during all of 2025.",
+            "subject_time": "Fiscal Q3 2026 versus calendar year 2025"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "OpenAI's reported run rate near $70 billion, up more than 70% since the start of Q3, and enterprise sales more than doubling since July materially raise the expected scale and pace of AI workload adoption versus the prior $40 billion baseline. This increases expected training and inference compute demand and the duration of server-memory tightness.",
+          "prior_expectation": "The pre-event baseline included OpenAI annualized revenue of approximately $40 billion and strong but still developing AI-infrastructure demand, with Micron's CMBU/CDBU exposure dependent on continued workload growth and tight server-memory supply.",
+          "reason": "LONG: the revenue acceleration is a substantial positive surprise in a major AI demand source. The path from enterprise AI adoption to compute deployment, HBM/DRAM/NAND demand, and Micron's data-center businesses is clear enough for an actionable directional edge despite the absence of Micron-specific order disclosure.",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "E52 recorded OpenAI's annualized revenue at approximately $40 billion, but the current report adds a run rate near $70 billion, more than 100% enterprise-sales growth since July, and stronger Q3 consumer monetization.",
+          "reference_ids": [
+            "E52"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No Policy applies. The report does not disclose Micron-specific memory shipments, pricing, qualification, allocation, contracts, capacity, or financial results."
+        },
+        "w3_case_id": "w3_6eafa16cf6eb457198b0d69073feec1a"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_36bc442141224337890f79ba2d52a48a",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-29T14:47:31.489009Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 132.582058
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-29T14:45:18.906951Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2609068,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-29",
+        "source": {
+          "binding_id": "MU:huggingnews_rss",
+          "kind": "api",
+          "name": "HuggingNews Atom",
+          "source_id": "huggingnews_rss"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_965b178506254b33b70969933fe4af8c",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "OpenAI Annual Revenue Hits Nearly $70B Following Enterprise Surge"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "DELIVERY_FAILED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "READY",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-29T14:45:18.906951Z",
+        "completed_at": "2026-09-29T14:47:31.489009Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E52"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [
+            {
+              "event_id": "E52",
+              "fact_ids": [
+                "F372"
+              ]
+            }
+          ],
+          "reason": "OpenAI ARR 从已知约 $40B（F372）跃升至近 $70B，且企业端销售自 7 月以来增长超 100%、Q3 消费者订阅收入超过整个 2025 年、OpenAI 与 Anthropic 正筹备潜在 IPO——均为 E52 已加载事实未覆盖的新核心进展。",
+          "reference_ids": [
+            "E52"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "消息报道OpenAI企业收入增长推动ARR接近700亿美元，属于AI服务商业务层面的宏观需求信号。该消息未涉及Micron的任何具体指标（CMBU/CDBU占比、HBM出货、ASP、毛利率、费用结构）、产品资格或交付状态、战略合同条款、扩产项目进展，也未直接披露服务器/HBM合同价格、内存供给约束或竞争供应商份额变化。与现有Policy criteria之间仅存在\"AI行业整体需求强\"这一宽泛主题层面的间接关联，缺乏具体、直接的触发事实对应，不满足Candidate召回标准。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息报道OpenAI企业收入增长推动ARR接近700亿美元，属于AI服务商业务层面的宏观需求信号。该消息未涉及Micron的任何具体指标（CMBU/CDBU占比、HBM出货、ASP、毛利率、费用结构）、产品资格或交付状态、战略合同条款、扩产项目进展，也未直接披露服务器/HBM合同价格、内存供给约束或竞争供应商份额变化。与现有Policy criteria之间仅存在\"AI行业整体需求强\"这一宽泛主题层面的间接关联，缺乏具体、直接的触发事实对应，不满足Candidate召回标准。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "OpenAI",
+                "AI services"
+              ],
+              "occurrence_date": "2026-09-29",
+              "proposition": "OpenAI's annual recurring revenue reached approximately $70 billion.",
+              "subject_time": "Annual recurring revenue as of September 2026"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "OpenAI",
+                "Enterprise AI"
+              ],
+              "occurrence_date": "2026-09-29",
+              "proposition": "OpenAI's business-facing sales grew by more than 100% since July 2026.",
+              "subject_time": "July to September 2026"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "OpenAI",
+                "Consumer subscriptions"
+              ],
+              "occurrence_date": "2026-09-29",
+              "proposition": "OpenAI generated more revenue from consumer subscriptions in the third quarter of 2026 than during all of 2025.",
+              "subject_time": "Fiscal Q3 2026 versus calendar year 2025"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "OpenAI's reported run rate near $70 billion, up more than 70% since the start of Q3, and enterprise sales more than doubling since July materially raise the expected scale and pace of AI workload adoption versus the prior $40 billion baseline. This increases expected training and inference compute demand and the duration of server-memory tightness.",
+            "prior_expectation": "The pre-event baseline included OpenAI annualized revenue of approximately $40 billion and strong but still developing AI-infrastructure demand, with Micron's CMBU/CDBU exposure dependent on continued workload growth and tight server-memory supply.",
+            "reason": "LONG: the revenue acceleration is a substantial positive surprise in a major AI demand source. The path from enterprise AI adoption to compute deployment, HBM/DRAM/NAND demand, and Micron's data-center businesses is clear enough for an actionable directional edge despite the absence of Micron-specific order disclosure.",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "E52 recorded OpenAI's annualized revenue at approximately $40 billion, but the current report adds a run rate near $70 billion, more than 100% enterprise-sales growth since July, and stronger Q3 consumer monetization.",
+            "reference_ids": [
+              "E52"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "No Policy applies. The report does not disclose Micron-specific memory shipments, pricing, qualification, allocation, contracts, capacity, or financial results."
+          },
+          "w3_case_id": "w3_6eafa16cf6eb457198b0d69073feec1a"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "b55abc7c18944cc635017fda63106ac477e6acf16cf8c925213e8ba380151c88",
+            "content_type": "text/plain",
+            "sha256": "1316bbe01f67c525eaca9395bd24998cf2a0fbb96547d6c0ed2a23b86ff47fe6",
+            "size_bytes": 900
+          },
+          "case": {
+            "case_id": "case_36bc442141224337890f79ba2d52a48a",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-29T14:45:16.335961Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-29T14:45:16.363616Z",
+          "revision": 1,
+          "row_revision": 2455773,
+          "source": {
+            "binding_id": "MU:huggingnews_rss",
+            "kind": "api",
+            "name": "HuggingNews Atom",
+            "source_id": "huggingnews_rss"
+          },
+          "source_published_at": "2026-09-29T14:43:04.893000Z",
+          "standard_message_id": "std_592d989aa31f4fd5bb24556a8eb5a009",
+          "stream_item_id": "stream_965b178506254b33b70969933fe4af8c",
+          "stream_offset": 2294,
+          "stream_published_at": "2026-09-29T14:45:16.366995Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "OpenAI Annual Revenue Hits Nearly $70B Following Enterprise Surge"
+          },
+          "url": "https://huggingnews.com/earnings/openai-annual-revenue-hits-nearly-70b-following-enterprise-surge-0481a074",
+          "body_text": "← Back to live feed · 1 stories across 1 day\nTuesday, Sep 29, 2026\n1 story1 NEWOpenAI Annual Revenue Hits Nearly $70B Following Enterprise Surge AI Sep 29, 10:20 AM EDT 25/18 \n The creator of ChatGPT saw its business-facing sales grow by more than 100% since July to accelerate AI adoption among corporate clients. This enterprise surge helped push OpenAI's annual recurring revenue to nearly $70 billion, an increase of more than 70% since the start of the third quarter, Axios reported. The company also added more revenue from consumer subscriptions in Q3 alone than it did throughout all of 2025.\nThe revenue expansion coincides with OpenAI and rival Anthropic preparing for potential initial public offerings. Current data suggest that previous estimates of the startup's recurring revenue, including a $40 billion figure reported by Bloomberg, significantly understated its current run rate."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_592d989aa31f4fd5bb24556a8eb5a009:0\"]",
+          "created_at": "2026-09-29T14:47:31.321111Z",
+          "dedupe_key": "38ec02cfeb59e730f1da06d32e03671f1c0e771e4f84f0d85f31b7ae97b69201",
+          "entities": [
+            "OpenAI",
+            "AI services"
+          ],
+          "occurrence_date": "2026-09-29",
+          "originating_node": "W3",
+          "proposition": "OpenAI's annual recurring revenue reached approximately $70 billion.",
+          "provisional_event_id": "E230",
+          "subject_time": "Annual recurring revenue as of September 2026"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_592d989aa31f4fd5bb24556a8eb5a009:1\"]",
+          "created_at": "2026-09-29T14:47:31.333134Z",
+          "dedupe_key": "72ec8b10dcca1bdf109a9bc92755f33e4109dc7f3a1806bfbcf09f204c03e2a2",
+          "entities": [
+            "OpenAI",
+            "Enterprise AI"
+          ],
+          "occurrence_date": "2026-09-29",
+          "originating_node": "W3",
+          "proposition": "OpenAI's business-facing sales grew by more than 100% since July 2026.",
+          "provisional_event_id": "E231",
+          "subject_time": "July to September 2026"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_592d989aa31f4fd5bb24556a8eb5a009:2\"]",
+          "created_at": "2026-09-29T14:47:31.339199Z",
+          "dedupe_key": "21b08f3b2d9516c8fb28bdb44dda8136745b5e313b968b96ce72015f029ffdee",
+          "entities": [
+            "OpenAI",
+            "Consumer subscriptions"
+          ],
+          "occurrence_date": "2026-09-29",
+          "originating_node": "W3",
+          "proposition": "OpenAI generated more revenue from consumer subscriptions in the third quarter of 2026 than during all of 2025.",
+          "provisional_event_id": "E232",
+          "subject_time": "Fiscal Q3 2026 versus calendar year 2025"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_36bc442141224337890f79ba2d52a48a",
+            "status": "DELIVERY_FAILED",
+            "released_at": "2026-09-29T14:47:31.358303+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-29",
+            "delivery_failure": {
+              "code": "PROFILE_VALIDATION_FAILED",
+              "detail": "旧版 v2-delivery 的 ExecutionProfile 不支持冻结的 SHARED_CYCLE Profile：仍要求 target_notional_usd，且拒绝新增仓位参数。",
+              "status": "FAILED"
+            },
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_6eafa16cf6eb457198b0d69073feec1a",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "case_id": "case_36bc442141224337890f79ba2d52a48a",
+              "direction": "LONG",
+              "entry_reason": "PROFILE_VALIDATION_FAILED: 旧版 v2-delivery 的 ExecutionProfile 不支持冻结的 SHARED_CYCLE Profile：仍要求 target_notional_usd，且拒绝新增仓位参数。",
+              "entry_result": null,
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_36bc442141224337890f79ba2d52a48a",
+              "execution_reason_codes": [
+                "DELIVERY_FAILED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "REJECTED",
+              "intent_id": "trade:case_36bc442141224337890f79ba2d52a48a",
+              "intent_status": "DELIVERY_FAILED",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-29T14:47:31.358303Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "DELIVERY_FAILED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "DELIVERY_FAILED"
+        ],
+        "executor_execution_record_exists": false,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_6391494fb8bb448a932ec215c5611ebd",
+      "ticker": "MU",
+      "case_id": "case_6391494fb8bb448a932ec215c5611ebd",
+      "intent_released_at_utc": "2026-09-29T18:39:11.663900+00:00",
+      "intent_status": "DELIVERY_FAILED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_fe3cb0cea8d745cb993a6d76aa22e22b",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Anthropic",
+              "Cloud computing",
+              "AI infrastructure"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Anthropic's IPO filing disclosed more than $518 billion of cloud, compute, and infrastructure obligations over 10 years with six partners, with approximately 80% non-cancelable or payable regardless of usage.",
+            "subject_time": "Ten-year cloud, compute, and infrastructure commitments"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Anthropic",
+              "Microsoft",
+              "Google",
+              "Amazon"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Anthropic's commitments include approximately $252 billion of non-cancelable compute obligations across Microsoft, Google, and Amazon.",
+            "subject_time": "Anthropic multi-year cloud-compute commitments"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Anthropic",
+              "Broadcom",
+              "TPU"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Anthropic agreed to approximately $161.2 billion in Broadcom TPU leases that are largely non-cancelable.",
+            "subject_time": "Anthropic multi-year TPU leases"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Anthropic",
+              "SpaceX",
+              "Nvidia",
+              "AI compute"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Anthropic agreed to pay SpaceX up to approximately $84.5 billion through 2029 for Nvidia-based compute, nearly double SpaceX's approximately $45 billion cap disclosed in May; most of this spending can be canceled with 90 days' notice.",
+            "subject_time": "Anthropic-SpaceX Nvidia-based compute through 2029"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "The IPO filing materially increases the certainty and duration of AI-compute demand: approximately 80% of the $518 billion obligation is non-cancelable or payable regardless of usage, including $252 billion of cloud-compute commitments and $161.2 billion of largely non-cancelable Broadcom TPU leases. This reduces the probability that Anthropic usage weakness removes planned infrastructure demand and raises expected sustained server-memory, HBM, and data-center SSD demand through the deployment horizon, with potential value capture through Micron's Anthropic architecture and supply collaboration.",
+          "prior_expectation": "The pre-event MU baseline recognized Anthropic as a named AI-memory architecture and supply collaborator and supported strong external AI demand, but public information did not establish how much of Anthropic's $518 billion obligation was non-cancelable, which partners held the commitments, or how durable the resulting compute deployment would be; Micron quantities and pricing remained undisclosed.",
+          "reason": "The scale and enforceability of the commitments create a non-trivial positive surprise versus the prior aggregate-only baseline. The transmission is compute obligations to cloud/accelerator deployment, then memory content and Micron's named architecture/supply relationship. Anthropic's losses, customer concentration, and undisclosed MU share limit confidence but do not negate the directional demand signal; the result supports a LONG trade.",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "Existing references cover Anthropic's approximately $518 billion aggregate future infrastructure obligations and its separate cloud-services agreement, but not the newly disclosed non-cancelability, partner-level allocation, TPU leases, or expanded SpaceX compute commitment.",
+          "reference_ids": [
+            "E207",
+            "E214",
+            "E131"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No current Policy directly covers Anthropic's compute-contract enforceability or partner-level obligations. The message does not disclose a Micron-specific order, allocation, pricing, shipment, qualification, or capacity change."
+        },
+        "w3_case_id": "w3_fe3cb0cea8d745cb993a6d76aa22e22b"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_6391494fb8bb448a932ec215c5611ebd",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-29T18:39:11.859369Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 303.525619
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-29T18:34:08.333750Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2609069,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-29",
+        "source": {
+          "binding_id": "MU:huggingnews_rss",
+          "kind": "api",
+          "name": "HuggingNews Atom",
+          "source_id": "huggingnews_rss"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_18e7a48d02dc43539adf51fa73178f57",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Anthropic Locked Into $518B of Compute Deals, 80% Non-Cancelable"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "DELIVERY_FAILED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "READY",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-29T18:34:08.333750Z",
+        "completed_at": "2026-09-29T18:39:11.859369Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E207",
+            "E214",
+            "E204",
+            "E131",
+            "E130"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "E207/E214仅覆盖$518B总量义务。当前消息新增的核心事实包括：约80%为不可取消或无论使用与否均需支付；具体细分为$252B(Microsoft/Google/Amazon)、$161.2B(Broadcom TPU)、$84.5B(SpaceX，较五月$45B上限近翻倍)。这些义务性质和量化细分在既有事实中未被表达。",
+          "reference_ids": [
+            "E207"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "消息为Anthropic IPO文件披露的5180亿美元算力合同细节（涉及Microsoft、Google、Amazon、Broadcom TPU、SpaceX/Nvidia等），属于AI云与芯片设计商的采购承诺。虽然可佐证AI/服务器需求仍然强劲，但消息未提供任何Micron具体的财务、份额、ASP、bit shipments、HBM供货、客户合同、产能或产品资格等观察，与各条Policy criterion所要求的Micron侧触发事实无直接实质性对应。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息为Anthropic IPO文件披露的5180亿美元算力合同细节（涉及Microsoft、Google、Amazon、Broadcom TPU、SpaceX/Nvidia等），属于AI云与芯片设计商的采购承诺。虽然可佐证AI/服务器需求仍然强劲，但消息未提供任何Micron具体的财务、份额、ASP、bit shipments、HBM供货、客户合同、产能或产品资格等观察，与各条Policy criterion所要求的Micron侧触发事实无直接实质性对应。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Anthropic",
+                "Cloud computing",
+                "AI infrastructure"
+              ],
+              "occurrence_date": "2026-09-29",
+              "proposition": "Anthropic's IPO filing disclosed more than $518 billion of cloud, compute, and infrastructure obligations over 10 years with six partners, with approximately 80% non-cancelable or payable regardless of usage.",
+              "subject_time": "Ten-year cloud, compute, and infrastructure commitments"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Anthropic",
+                "Microsoft",
+                "Google",
+                "Amazon"
+              ],
+              "occurrence_date": "2026-09-29",
+              "proposition": "Anthropic's commitments include approximately $252 billion of non-cancelable compute obligations across Microsoft, Google, and Amazon.",
+              "subject_time": "Anthropic multi-year cloud-compute commitments"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Anthropic",
+                "Broadcom",
+                "TPU"
+              ],
+              "occurrence_date": "2026-09-29",
+              "proposition": "Anthropic agreed to approximately $161.2 billion in Broadcom TPU leases that are largely non-cancelable.",
+              "subject_time": "Anthropic multi-year TPU leases"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Anthropic",
+                "SpaceX",
+                "Nvidia",
+                "AI compute"
+              ],
+              "occurrence_date": "2026-09-29",
+              "proposition": "Anthropic agreed to pay SpaceX up to approximately $84.5 billion through 2029 for Nvidia-based compute, nearly double SpaceX's approximately $45 billion cap disclosed in May; most of this spending can be canceled with 90 days' notice.",
+              "subject_time": "Anthropic-SpaceX Nvidia-based compute through 2029"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "The IPO filing materially increases the certainty and duration of AI-compute demand: approximately 80% of the $518 billion obligation is non-cancelable or payable regardless of usage, including $252 billion of cloud-compute commitments and $161.2 billion of largely non-cancelable Broadcom TPU leases. This reduces the probability that Anthropic usage weakness removes planned infrastructure demand and raises expected sustained server-memory, HBM, and data-center SSD demand through the deployment horizon, with potential value capture through Micron's Anthropic architecture and supply collaboration.",
+            "prior_expectation": "The pre-event MU baseline recognized Anthropic as a named AI-memory architecture and supply collaborator and supported strong external AI demand, but public information did not establish how much of Anthropic's $518 billion obligation was non-cancelable, which partners held the commitments, or how durable the resulting compute deployment would be; Micron quantities and pricing remained undisclosed.",
+            "reason": "The scale and enforceability of the commitments create a non-trivial positive surprise versus the prior aggregate-only baseline. The transmission is compute obligations to cloud/accelerator deployment, then memory content and Micron's named architecture/supply relationship. Anthropic's losses, customer concentration, and undisclosed MU share limit confidence but do not negate the directional demand signal; the result supports a LONG trade.",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "Existing references cover Anthropic's approximately $518 billion aggregate future infrastructure obligations and its separate cloud-services agreement, but not the newly disclosed non-cancelability, partner-level allocation, TPU leases, or expanded SpaceX compute commitment.",
+            "reference_ids": [
+              "E207",
+              "E214",
+              "E131"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "No current Policy directly covers Anthropic's compute-contract enforceability or partner-level obligations. The message does not disclose a Micron-specific order, allocation, pricing, shipment, qualification, or capacity change."
+          },
+          "w3_case_id": "w3_fe3cb0cea8d745cb993a6d76aa22e22b"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "ad3b6d9fdb2cf933c7deaafb5c82c2615284a7bc09acff1620bae765342f2f14",
+            "content_type": "text/plain",
+            "sha256": "8352fd9b2e0fa03210506c22c90e60a62a05dbea55c9277b49213f1306140965",
+            "size_bytes": 1682
+          },
+          "case": {
+            "case_id": "case_6391494fb8bb448a932ec215c5611ebd",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-29T18:34:07.187963Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-29T18:34:07.219669Z",
+          "revision": 1,
+          "row_revision": 2480257,
+          "source": {
+            "binding_id": "MU:huggingnews_rss",
+            "kind": "api",
+            "name": "HuggingNews Atom",
+            "source_id": "huggingnews_rss"
+          },
+          "source_published_at": "2026-09-29T18:10:19.614000Z",
+          "standard_message_id": "std_097010ce13024c9a96cc7d584a6f3aa9",
+          "stream_item_id": "stream_18e7a48d02dc43539adf51fa73178f57",
+          "stream_offset": 2318,
+          "stream_published_at": "2026-09-29T18:34:07.224595Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Anthropic Locked Into $518B of Compute Deals, 80% Non-Cancelable"
+          },
+          "url": "https://huggingnews.com/ai/update-anthropic-locked-into-518b-of-compute-deals-80percent-non-cancela-df538fe7",
+          "body_text": "← Back to live feed · 1 stories across 1 day\nTuesday, Sep 29, 2026\n1 story1 Anthropic Locked Into $518B of Compute Deals, 80% Non-Cancelable↩︎ AI Sep 28, 7:16 PM EDT 182/87 \n Anthropic is locked into more than $518 billion of cloud, compute and infrastructure spending over 10 years with six partners, and about 80% of the total is non-cancelable or payable regardless of usage, its IPO filing shows. The commitments include $252 billion in non-cancelable compute obligations across Microsoft, Google and Amazon, and $161.2 billion in Broadcom TPU leases that are largely non-cancelable.\nThe company also agreed to pay SpaceX up to $84.5 billion through 2029 for Nvidia-based compute, nearly double the roughly $45 billion cap SpaceX disclosed in May, The Information reported. Most of the SpaceX spending can be canceled with 90 days' notice, unlike the bulk of the buildout.\nThe obligations are more than 100 times Anthropic's 2025 revenue of $4.59 billion and roughly 25 times the $20.28 billion in cash, cash equivalents and short-term investments it held at year-end. The company posted an $8.06 billion operating loss in 2025, and its $41.97 billion net loss included about $34 billion in non-cash charges tied to the rising value of financing that could convert into shares. Its two largest customers accounted for 24% of revenue, and Anthropic warned that many of its largest clients are not locked into long-term contracts and could reduce or stop spending, even as it cannot cancel most of its own compute bill. Google and Amazon, both major investors in Anthropic, supply much of the infrastructure behind Claude. The IPO could value the company above $2 trillion."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_097010ce13024c9a96cc7d584a6f3aa9:0\"]",
+          "created_at": "2026-09-29T18:39:11.562122Z",
+          "dedupe_key": "274cce385d7cd09630466dde19065698f693834d8255593b91c08c657ed8a7d6",
+          "entities": [
+            "Anthropic",
+            "Cloud computing",
+            "AI infrastructure"
+          ],
+          "occurrence_date": "2026-09-29",
+          "originating_node": "W3",
+          "proposition": "Anthropic's IPO filing disclosed more than $518 billion of cloud, compute, and infrastructure obligations over 10 years with six partners, with approximately 80% non-cancelable or payable regardless of usage.",
+          "provisional_event_id": "E269",
+          "subject_time": "Ten-year cloud, compute, and infrastructure commitments"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_097010ce13024c9a96cc7d584a6f3aa9:1\"]",
+          "created_at": "2026-09-29T18:39:11.582798Z",
+          "dedupe_key": "8ceb21bc34c92f6387b3119e52677e8da1b1c0a64b0ae3da000a216ca854222d",
+          "entities": [
+            "Anthropic",
+            "Microsoft",
+            "Google",
+            "Amazon"
+          ],
+          "occurrence_date": "2026-09-29",
+          "originating_node": "W3",
+          "proposition": "Anthropic's commitments include approximately $252 billion of non-cancelable compute obligations across Microsoft, Google, and Amazon.",
+          "provisional_event_id": "E270",
+          "subject_time": "Anthropic multi-year cloud-compute commitments"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_097010ce13024c9a96cc7d584a6f3aa9:2\"]",
+          "created_at": "2026-09-29T18:39:11.597350Z",
+          "dedupe_key": "94fee59f54d2e1f67bc664f4f913ba17fbfe6b13eff88dace10ae030978a47b9",
+          "entities": [
+            "Anthropic",
+            "Broadcom",
+            "TPU"
+          ],
+          "occurrence_date": "2026-09-29",
+          "originating_node": "W3",
+          "proposition": "Anthropic agreed to approximately $161.2 billion in Broadcom TPU leases that are largely non-cancelable.",
+          "provisional_event_id": "E271",
+          "subject_time": "Anthropic multi-year TPU leases"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_097010ce13024c9a96cc7d584a6f3aa9:3\"]",
+          "created_at": "2026-09-29T18:39:11.608793Z",
+          "dedupe_key": "80b2fac170e4c818a6b630335e7fd4853da92a6cf905b964290e625b3df5c622",
+          "entities": [
+            "Anthropic",
+            "SpaceX",
+            "Nvidia",
+            "AI compute"
+          ],
+          "occurrence_date": "2026-09-29",
+          "originating_node": "W3",
+          "proposition": "Anthropic agreed to pay SpaceX up to approximately $84.5 billion through 2029 for Nvidia-based compute, nearly double SpaceX's approximately $45 billion cap disclosed in May; most of this spending can be canceled with 90 days' notice.",
+          "provisional_event_id": "E272",
+          "subject_time": "Anthropic-SpaceX Nvidia-based compute through 2029"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_6391494fb8bb448a932ec215c5611ebd",
+            "status": "DELIVERY_FAILED",
+            "released_at": "2026-09-29T18:39:11.663900+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-29",
+            "delivery_failure": {
+              "code": "PROFILE_VALIDATION_FAILED",
+              "detail": "旧版 v2-delivery 的 ExecutionProfile 不支持冻结的 SHARED_CYCLE Profile：仍要求 target_notional_usd，且拒绝新增仓位参数。",
+              "status": "FAILED"
+            },
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_fe3cb0cea8d745cb993a6d76aa22e22b",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "case_id": "case_6391494fb8bb448a932ec215c5611ebd",
+              "direction": "LONG",
+              "entry_reason": "PROFILE_VALIDATION_FAILED: 旧版 v2-delivery 的 ExecutionProfile 不支持冻结的 SHARED_CYCLE Profile：仍要求 target_notional_usd，且拒绝新增仓位参数。",
+              "entry_result": null,
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_6391494fb8bb448a932ec215c5611ebd",
+              "execution_reason_codes": [
+                "DELIVERY_FAILED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "REJECTED",
+              "intent_id": "trade:case_6391494fb8bb448a932ec215c5611ebd",
+              "intent_status": "DELIVERY_FAILED",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-29T18:39:11.663900Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "DELIVERY_FAILED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "DELIVERY_FAILED"
+        ],
+        "executor_execution_record_exists": false,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_22bf0db78d194fa19001a9efacf4f534",
+      "ticker": "MU",
+      "case_id": "case_22bf0db78d194fa19001a9efacf4f534",
+      "intent_released_at_utc": "2026-09-29T19:47:34.510542+00:00",
+      "intent_status": "DELIVERY_FAILED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_fefefac4daae43a0933daec372db115c",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "JPMorgan",
+              "Harlan Sur",
+              "Micron Technology",
+              "MU"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "JPMorgan analyst Harlan Sur expects Micron to exceed Wall Street expectations of approximately $51.4 billion FY26 Q4 revenue, 86.2% gross margin, and $31.73 EPS.",
+            "subject_time": "Micron FY26 Q4 earnings report expected September 30, 2026"
+          },
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "JPMorgan",
+              "Harlan Sur",
+              "Micron Technology",
+              "Strategic Customer Agreements"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Harlan Sur estimates Micron's Strategic Customer Agreements may cover more than 35% of forward bit production and that contracted volumes may already exceed 50%.",
+            "subject_time": "Micron forward production and SCA coverage"
+          },
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "JPMorgan",
+              "Harlan Sur",
+              "Micron Technology",
+              "Strategic Customer Agreements"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Harlan Sur interprets Micron's moderating price increases as a strategic decision to preserve customer relationships and cement long-term SCA commitments rather than evidence of weakening demand.",
+            "subject_time": "Micron FY26 Q4 pricing outlook"
+          },
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "JPMorgan",
+              "Harlan Sur",
+              "Micron Technology",
+              "HBM4"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Harlan Sur expects Micron management to raise its November-quarter outlook, citing stronger customer requirements, tighter memory availability expected during 2027, and continued HBM4 ramp progress.",
+            "subject_time": "Micron November-quarter outlook"
+          },
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "JPMorgan",
+              "Harlan Sur",
+              "Micron Technology",
+              "HBM"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Harlan Sur expects HBM supply to remain insufficient through 2028.",
+            "subject_time": "HBM supply through calendar 2028"
+          },
+          {
+            "assertion_state": "PLAN",
+            "entities": [
+              "Micron Technology",
+              "CHIPS Act",
+              "Share buybacks"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Micron management plans to increase shareholder returns after the second anniversary of its definitive CHIPS Act agreements in December and ultimately return 100% of excess cash, primarily through buybacks.",
+            "subject_time": "After December 2026 CHIPS Act agreement anniversary"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "JPMorgan's Harlan Sur expects Micron to exceed already elevated consensus of roughly $51.4 billion revenue, 86.2% gross margin, and $31.73 EPS, while estimating SCA coverage above 35% of forward bit production and contracted volumes above 50%. He also interprets moderating price increases as relationship-preserving SCA strategy rather than weakening demand, expects a November-quarter outlook raise, and forecasts HBM undersupply through 2028. This raises the expected duration, certainty, and visibility of revenue, pricing, margin, and cash-return support.",
+          "prior_expectation": "The pre-event baseline was Micron FY26 Q4 management guidance of approximately $49-$51 billion revenue, about 86% GAAP gross margin, and $29.73-$31.73 GAAP EPS; existing SCAs covered about 20% of DRAM bits and 33% of NAND bits with at least half of eventual revenue expected when fully executed, while HBM4 progress and contract fulfillment remained only partly verified. JPMorgan was already constructive but had not established these more specific coverage estimates.",
+          "reason": "TRADE/LONG: the specific contract-coverage and multi-year HBM-tightness estimates are a positive incremental signal beyond the already bullish baseline. Greater contracted volume visibility and persistent HBM scarcity can support MU revenue, high-value mix, gross margin, and EPS durability. Analyst estimates are not formal company disclosures and SCA price caps and earnings-event risk are offsets, but the direct MU transmission is sufficiently material for a long bias.",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "The prior record already covered JPMorgan's constructive view, Overweight rating, Micron's existing SCA framework, FY26 Q4 guidance, HBM4 progress, and the post-December buyback timing. New information is the specific SCA coverage estimates, the interpretation of moderating price increases, the expected November-quarter outlook raise, and the forecast of HBM undersupply through 2028.",
+          "reference_ids": [
+            "E231",
+            "E251",
+            "E9",
+            "E1",
+            "E65",
+            "E75"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No policy criterion is met. The message contains analyst estimates and interpretations, not formal company or customer disclosures of the continuous operational, contractual, qualification, supply, or financial conditions required by the policies."
+        },
+        "w3_case_id": "w3_fefefac4daae43a0933daec372db115c"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_22bf0db78d194fa19001a9efacf4f534",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-29T19:47:34.685765Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 1426.41673
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-29T19:23:48.269035Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2609064,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-29",
+        "source": {
+          "binding_id": "MU:yahoo_finance_news",
+          "kind": "api",
+          "name": "Yahoo Finance News",
+          "source_id": "yahoo_finance_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_9fec1f28fdb447fe9a82ba3c35399bb2",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "JPMorgan Says Micron's Rally May Not Be Over"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "DELIVERY_FAILED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "READY",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-29T19:23:48.269035Z",
+        "completed_at": "2026-09-29T19:47:34.685765Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E251",
+            "E231",
+            "E115",
+            "E116",
+            "E9"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "当前消息包含多个尚未被覆盖的核心事实：Sur估计SCA覆盖超35%前瞻位生产、合约量已超50%（现有基线为F478的20% DRAM/33% NAND及F541的40%收入覆盖）；Sur对价格增速放缓的独特解读（战略选择保全SCA而非需求疲软）；HBM供应不足持续至2028；管理层计划返还100%超额现金。E231/E251仅覆盖JPMorgan构造性评价、Overweight评级和beat-and-raise预期，上述具体估计和解读均为新增进展。",
+          "reference_ids": [
+            "E231",
+            "E251"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "当前消息为JPMorgan分析师在Micron FY26 Q4财报发布前的前瞻评论，核心内容为预期beat-and-raise、SCA覆盖率的分析师估算（>35%/50%）、HBM4爬坡进展、2027–2028供给紧张预期及CHIPS Act两周年后的股东回报计划。所有陈述均为分析师预期或前瞻性判断，不包含任何已发生的公司正式披露、具体产品资格确认、实际ASP/bit shipment数据、合同价格带变动、项目延迟/交割结果、客户正式公告或连续季度财务事实。各Policy的criterion所需的触发事实（如连续两季度指标变化、正式合同附注、具体客户/AI平台资格确认、命名项目首片/良率/交付里程碑、GAAP利润桥数据等）在当前消息中均未出现，且消息整体方向（价格\"moderating\"被明确解释为战略选择而非需求走弱、HBM供给仍不足、预期上调）与各Policy触发条件所需的状态变化方向相反或不适用。因此无具体observation值得进入完整Policy判定。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "当前消息为JPMorgan分析师在Micron FY26 Q4财报发布前的前瞻评论，核心内容为预期beat-and-raise、SCA覆盖率的分析师估算（>35%/50%）、HBM4爬坡进展、2027–2028供给紧张预期及CHIPS Act两周年后的股东回报计划。所有陈述均为分析师预期或前瞻性判断，不包含任何已发生的公司正式披露、具体产品资格确认、实际ASP/bit shipment数据、合同价格带变动、项目延迟/交割结果、客户正式公告或连续季度财务事实。各Policy的criterion所需的触发事实（如连续两季度指标变化、正式合同附注、具体客户/AI平台资格确认、命名项目首片/良率/交付里程碑、GAAP利润桥数据等）在当前消息中均未出现，且消息整体方向（价格\"moderating\"被明确解释为战略选择而非需求走弱、HBM供给仍不足、预期上调）与各Policy触发条件所需的状态变化方向相反或不适用。因此无具体observation值得进入完整Policy判定。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "JPMorgan",
+                "Harlan Sur",
+                "Micron Technology",
+                "MU"
+              ],
+              "occurrence_date": "2026-09-29",
+              "proposition": "JPMorgan analyst Harlan Sur expects Micron to exceed Wall Street expectations of approximately $51.4 billion FY26 Q4 revenue, 86.2% gross margin, and $31.73 EPS.",
+              "subject_time": "Micron FY26 Q4 earnings report expected September 30, 2026"
+            },
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "JPMorgan",
+                "Harlan Sur",
+                "Micron Technology",
+                "Strategic Customer Agreements"
+              ],
+              "occurrence_date": "2026-09-29",
+              "proposition": "Harlan Sur estimates Micron's Strategic Customer Agreements may cover more than 35% of forward bit production and that contracted volumes may already exceed 50%.",
+              "subject_time": "Micron forward production and SCA coverage"
+            },
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "JPMorgan",
+                "Harlan Sur",
+                "Micron Technology",
+                "Strategic Customer Agreements"
+              ],
+              "occurrence_date": "2026-09-29",
+              "proposition": "Harlan Sur interprets Micron's moderating price increases as a strategic decision to preserve customer relationships and cement long-term SCA commitments rather than evidence of weakening demand.",
+              "subject_time": "Micron FY26 Q4 pricing outlook"
+            },
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "JPMorgan",
+                "Harlan Sur",
+                "Micron Technology",
+                "HBM4"
+              ],
+              "occurrence_date": "2026-09-29",
+              "proposition": "Harlan Sur expects Micron management to raise its November-quarter outlook, citing stronger customer requirements, tighter memory availability expected during 2027, and continued HBM4 ramp progress.",
+              "subject_time": "Micron November-quarter outlook"
+            },
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "JPMorgan",
+                "Harlan Sur",
+                "Micron Technology",
+                "HBM"
+              ],
+              "occurrence_date": "2026-09-29",
+              "proposition": "Harlan Sur expects HBM supply to remain insufficient through 2028.",
+              "subject_time": "HBM supply through calendar 2028"
+            },
+            {
+              "assertion_state": "PLAN",
+              "entities": [
+                "Micron Technology",
+                "CHIPS Act",
+                "Share buybacks"
+              ],
+              "occurrence_date": "2026-09-29",
+              "proposition": "Micron management plans to increase shareholder returns after the second anniversary of its definitive CHIPS Act agreements in December and ultimately return 100% of excess cash, primarily through buybacks.",
+              "subject_time": "After December 2026 CHIPS Act agreement anniversary"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "JPMorgan's Harlan Sur expects Micron to exceed already elevated consensus of roughly $51.4 billion revenue, 86.2% gross margin, and $31.73 EPS, while estimating SCA coverage above 35% of forward bit production and contracted volumes above 50%. He also interprets moderating price increases as relationship-preserving SCA strategy rather than weakening demand, expects a November-quarter outlook raise, and forecasts HBM undersupply through 2028. This raises the expected duration, certainty, and visibility of revenue, pricing, margin, and cash-return support.",
+            "prior_expectation": "The pre-event baseline was Micron FY26 Q4 management guidance of approximately $49-$51 billion revenue, about 86% GAAP gross margin, and $29.73-$31.73 GAAP EPS; existing SCAs covered about 20% of DRAM bits and 33% of NAND bits with at least half of eventual revenue expected when fully executed, while HBM4 progress and contract fulfillment remained only partly verified. JPMorgan was already constructive but had not established these more specific coverage estimates.",
+            "reason": "TRADE/LONG: the specific contract-coverage and multi-year HBM-tightness estimates are a positive incremental signal beyond the already bullish baseline. Greater contracted volume visibility and persistent HBM scarcity can support MU revenue, high-value mix, gross margin, and EPS durability. Analyst estimates are not formal company disclosures and SCA price caps and earnings-event risk are offsets, but the direct MU transmission is sufficiently material for a long bias.",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "The prior record already covered JPMorgan's constructive view, Overweight rating, Micron's existing SCA framework, FY26 Q4 guidance, HBM4 progress, and the post-December buyback timing. New information is the specific SCA coverage estimates, the interpretation of moderating price increases, the expected November-quarter outlook raise, and the forecast of HBM undersupply through 2028.",
+            "reference_ids": [
+              "E231",
+              "E251",
+              "E9",
+              "E1",
+              "E65",
+              "E75"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "No policy criterion is met. The message contains analyst estimates and interpretations, not formal company or customer disclosures of the continuous operational, contractual, qualification, supply, or financial conditions required by the policies."
+          },
+          "w3_case_id": "w3_fefefac4daae43a0933daec372db115c"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "cda1e5d2b2f7b84be3f54e03c37bc0db6dbf60583b84a52f75773a0bac4e79ac",
+            "content_type": "text/plain",
+            "sha256": "199dddbda8ec8c351b3d7a58f690e615766cf3ca259e455b032b5da98ce77f22",
+            "size_bytes": 2447
+          },
+          "case": {
+            "case_id": "case_22bf0db78d194fa19001a9efacf4f534",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-29T19:22:02.386261Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-29T19:23:45.643290Z",
+          "revision": 1,
+          "row_revision": 2488056,
+          "source": {
+            "binding_id": "MU:yahoo_finance_news",
+            "kind": "api",
+            "name": "Yahoo Finance News",
+            "source_id": "yahoo_finance_news"
+          },
+          "source_published_at": "2026-09-29T19:21:32Z",
+          "standard_message_id": "std_2d7b2efe18f5423ebf298a3936418832",
+          "stream_item_id": "stream_9fec1f28fdb447fe9a82ba3c35399bb2",
+          "stream_offset": 2343,
+          "stream_published_at": "2026-09-29T19:23:45.648135Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "JPMorgan Says Micron's Rally May Not Be Over"
+          },
+          "url": "https://finance.yahoo.com/markets/stocks/articles/jpmorgan-says-microns-rally-may-192132485.html?.tsrc=rss",
+          "body_text": "This article first appeared on GuruFocus.\n\nMicron Technology (NASDAQ:MU) heads into Wednesday's earnings report after a roughly 278% gain this year, but JPMorgan analyst Harlan Sur still sees room for the memory-chip maker to surprise Wall Street and raise its outlook again.\n\nMicron shares gained about 2.5% Tuesday as investors positioned for the fiscal fourth-quarter report.\n\nWe see the setup as constructive with multiple beat-and-raise levers still in play, Sur said.\n\nWall Street currently expects roughly $51.4 billion in revenue, an 86.2% gross margin and earnings of $31.73 per share. Sur expects Micron to exceed those forecasts.\n\nOne of the most important parts of his thesis is memory pricing.\n\nManagement has previously discussed moderating price increases, but Sur does not interpret that as weakening demand.\n\nIn our view, moderation here reflects a strategic decision to preserve customer relationships and cement long-term SCA commitments rather than any demandside softening, he said.\n\nThose supply commitment agreements could become increasingly important for investors.\n\nSur estimates SCAs may now cover more than 35% of Micron's forward bit production and believes contracted volumes could already exceed 50%.\n\nWe think the market underappreciates the pace at which SCA coverage is compounding, Sur said.\n\nThat could give Micron greater revenue visibility and reduce some of the cyclicality historically associated with memory markets.\n\nSur also expects management to raise its November-quarter outlook, pointing to stronger customer requirements, tighter memory availability expected during 2027 and continued progress with Micron's HBM4 ramp.\n\nHe believes HBM supply could remain insufficient through 2028.\n\nInvestor Takeaway\n\nCapital returns could provide another catalyst.\n\nMicron reaches the second anniversary of its definitive CHIPS Act agreements in December, after which management plans to increase shareholder returns and ultimately return 100% of excess cash, primarily through buybacks.\n\nSur called that a substantial value-unlock lever that has yet to be fully priced in.\n\nJPMorgan (NYSE:JPM) maintains an Overweight rating and $1,540 price target, implying roughly 43% upside from the level cited Tuesday.\n\nAfter Micron's enormous 2026 rally, Wednesday's report will need to show that stronger pricing, HBM demand and longer-term contracts can support durable earnings rather than simply another cyclical peak."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_2d7b2efe18f5423ebf298a3936418832:0\"]",
+          "created_at": "2026-09-29T19:47:34.380216Z",
+          "dedupe_key": "81404b945934f33b5551f9631705db75670c2465ee00c6bcb47fd8595399ccad",
+          "entities": [
+            "JPMorgan",
+            "Harlan Sur",
+            "Micron Technology",
+            "MU"
+          ],
+          "occurrence_date": "2026-09-29",
+          "originating_node": "W3",
+          "proposition": "JPMorgan analyst Harlan Sur expects Micron to exceed Wall Street expectations of approximately $51.4 billion FY26 Q4 revenue, 86.2% gross margin, and $31.73 EPS.",
+          "provisional_event_id": "E282",
+          "subject_time": "Micron FY26 Q4 earnings report expected September 30, 2026"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_2d7b2efe18f5423ebf298a3936418832:1\"]",
+          "created_at": "2026-09-29T19:47:34.392937Z",
+          "dedupe_key": "c5fc55150e7e8b4bd90a4d484d7d394f2c4fdfdf4e1a97225c733f6226e13356",
+          "entities": [
+            "JPMorgan",
+            "Harlan Sur",
+            "Micron Technology",
+            "Strategic Customer Agreements"
+          ],
+          "occurrence_date": "2026-09-29",
+          "originating_node": "W3",
+          "proposition": "Harlan Sur estimates Micron's Strategic Customer Agreements may cover more than 35% of forward bit production and that contracted volumes may already exceed 50%.",
+          "provisional_event_id": "E283",
+          "subject_time": "Micron forward production and SCA coverage"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_2d7b2efe18f5423ebf298a3936418832:2\"]",
+          "created_at": "2026-09-29T19:47:34.405563Z",
+          "dedupe_key": "b6c5d21300c6d65d7b0845d119e9f9a1d9848a46e72bfc092e03da0b3589f4b5",
+          "entities": [
+            "JPMorgan",
+            "Harlan Sur",
+            "Micron Technology",
+            "Strategic Customer Agreements"
+          ],
+          "occurrence_date": "2026-09-29",
+          "originating_node": "W3",
+          "proposition": "Harlan Sur interprets Micron's moderating price increases as a strategic decision to preserve customer relationships and cement long-term SCA commitments rather than evidence of weakening demand.",
+          "provisional_event_id": "E284",
+          "subject_time": "Micron FY26 Q4 pricing outlook"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_2d7b2efe18f5423ebf298a3936418832:3\"]",
+          "created_at": "2026-09-29T19:47:34.414744Z",
+          "dedupe_key": "2c214b3cf254afa5f2a4497c772c1051ca44e366b09b609cd343b6345533b04e",
+          "entities": [
+            "JPMorgan",
+            "Harlan Sur",
+            "Micron Technology",
+            "HBM4"
+          ],
+          "occurrence_date": "2026-09-29",
+          "originating_node": "W3",
+          "proposition": "Harlan Sur expects Micron management to raise its November-quarter outlook, citing stronger customer requirements, tighter memory availability expected during 2027, and continued HBM4 ramp progress.",
+          "provisional_event_id": "E285",
+          "subject_time": "Micron November-quarter outlook"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_2d7b2efe18f5423ebf298a3936418832:4\"]",
+          "created_at": "2026-09-29T19:47:34.424077Z",
+          "dedupe_key": "f91f51e57426f7f0f0871dd485f56e4cbf9b26a8fa911585153a8e301b9d8836",
+          "entities": [
+            "JPMorgan",
+            "Harlan Sur",
+            "Micron Technology",
+            "HBM"
+          ],
+          "occurrence_date": "2026-09-29",
+          "originating_node": "W3",
+          "proposition": "Harlan Sur expects HBM supply to remain insufficient through 2028.",
+          "provisional_event_id": "E286",
+          "subject_time": "HBM supply through calendar 2028"
+        },
+        {
+          "assertion_state": "PLAN",
+          "candidate_id": "[\"runtime-v2-msg:std_2d7b2efe18f5423ebf298a3936418832:5\"]",
+          "created_at": "2026-09-29T19:47:34.463077Z",
+          "dedupe_key": "2fdabe4f3e2c08dea70c9f5224da9b19fabf23b0c347c590dca79010996ea88c",
+          "entities": [
+            "Micron Technology",
+            "CHIPS Act",
+            "Share buybacks"
+          ],
+          "occurrence_date": "2026-09-29",
+          "originating_node": "W3",
+          "proposition": "Micron management plans to increase shareholder returns after the second anniversary of its definitive CHIPS Act agreements in December and ultimately return 100% of excess cash, primarily through buybacks.",
+          "provisional_event_id": "E287",
+          "subject_time": "After December 2026 CHIPS Act agreement anniversary"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_22bf0db78d194fa19001a9efacf4f534",
+            "status": "DELIVERY_FAILED",
+            "released_at": "2026-09-29T19:47:34.510542+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-29",
+            "delivery_failure": {
+              "code": "PROFILE_VALIDATION_FAILED",
+              "detail": "旧版 v2-delivery 的 ExecutionProfile 不支持冻结的 SHARED_CYCLE Profile：仍要求 target_notional_usd，且拒绝新增仓位参数。",
+              "status": "FAILED"
+            },
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_fefefac4daae43a0933daec372db115c",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "case_id": "case_22bf0db78d194fa19001a9efacf4f534",
+              "direction": "LONG",
+              "entry_reason": "PROFILE_VALIDATION_FAILED: 旧版 v2-delivery 的 ExecutionProfile 不支持冻结的 SHARED_CYCLE Profile：仍要求 target_notional_usd，且拒绝新增仓位参数。",
+              "entry_result": null,
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_22bf0db78d194fa19001a9efacf4f534",
+              "execution_reason_codes": [
+                "DELIVERY_FAILED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "REJECTED",
+              "intent_id": "trade:case_22bf0db78d194fa19001a9efacf4f534",
+              "intent_status": "DELIVERY_FAILED",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-29T19:47:34.510542Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "DELIVERY_FAILED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "DELIVERY_FAILED"
+        ],
+        "executor_execution_record_exists": false,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    }
+  ]
+}

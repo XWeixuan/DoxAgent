@@ -22,6 +22,7 @@ from .schema import (
     ProxyEgress,
     ResolvedSite,
     SiteStrategySpec,
+    SitePurpose,
 )
 from .service import SiteStrategyService
 from .storage import storage_failure
@@ -168,6 +169,12 @@ def create_app(
     @app.get("/v1/diagnostics/access", dependencies=[Depends(admin)])
     async def access_diagnostics() -> dict[str, object]:
         return service.access_diagnostics()
+
+    @app.get("/v1/diagnostics/candidates", dependencies=[Depends(admin)])
+    async def effective_candidates(
+        url: str, purpose: SitePurpose = SitePurpose.CRAWLER
+    ) -> list[dict[str, object]]:
+        return await service.effective_candidates(service.resolve(url), purpose)
 
     @app.get(
         "/v1/resolve",

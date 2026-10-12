@@ -1,0 +1,9 @@
+{
+  "alias": "O100",
+  "title": "text paragraphs 14",
+  "content": "| Earnings per share |  |  |  |  |  |\n\n| Basic | $ | 25.03 |  | $ | 12.25 |  | $ | 1.69 |  | $ | 41.97 |  | $ | 4.79 |  |\n\n| Diluted |  | 24.67 |  |  | 12.07 |  |  | 1.68 |  |  | 41.40 |  |  | 4.75 |  |\n\n|  |  |  |  |  |  |\n\n| Number of shares used in per share calculations |  |  |  |  |  |\n\n| Basic |  | 1,128 |  |  | 1,126 |  |  | 1,118 |  |  | 1,126 |  |  | 1,114 |  |\n\n| Diluted |  | 1,145 |  |  | 1,142 |  |  | 1,125 |  |  | 1,142 |  |  | 1,123 |  |\n\n| MICRON TECHNOLOGY, INC. CONSOLIDATED BALANCE SHEETS",
+  "source": {
+    "provider": "Public web source",
+    "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+  }
+}

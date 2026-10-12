@@ -1,0 +1,60 @@
+{
+  "selected_aliases": [
+    "O78",
+    "O81",
+    "O82",
+    "O83",
+    "O84",
+    "O86",
+    "O79",
+    "O80",
+    "O85",
+    "O87"
+  ],
+  "blocks": [
+    {
+      "alias": "O78",
+      "path": "blocks/O78.md"
+    },
+    {
+      "alias": "O79",
+      "path": "blocks/O79.md"
+    },
+    {
+      "alias": "O80",
+      "path": "blocks/O80.md"
+    },
+    {
+      "alias": "O81",
+      "path": "blocks/O81.md"
+    },
+    {
+      "alias": "O82",
+      "path": "blocks/O82.md"
+    },
+    {
+      "alias": "O83",
+      "path": "blocks/O83.md"
+    },
+    {
+      "alias": "O84",
+      "path": "blocks/O84.md"
+    },
+    {
+      "alias": "O85",
+      "path": "blocks/O85.json"
+    },
+    {
+      "alias": "O86",
+      "path": "blocks/O86.json"
+    },
+    {
+      "alias": "O87",
+      "path": "blocks/O87.json"
+    },
+    {
+      "alias": "O88",
+      "path": "blocks/O88.md"
+    }
+  ]
+}

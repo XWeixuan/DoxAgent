@@ -1,0 +1,9 @@
+{
+  "alias": "O247",
+  "title": "text paragraphs 159",
+  "content": "|  |  | Three months ended June 30,\n\n|  | Six months ended June 30,\n\n|\n\n|  |  | 2026 |  | 2025 |  | Normal (2) |  | 2026 |  | 2025 |  | Normal (2) |\n\n| Heating degree-days(1) |  | 531 |  |  | 566 |  |  | 685 |  |  | 2,563 |  |  | 2,982 |  |  | 3,087 |  |\n\n| Cooling degree-days(1) |  | 200 |  |  | 281 |  |  | 188 |  |  | 201 |  |  | 281 |  |  | 188 |  |\n\n| Precipitation (inches) |  | 4.7 |  |  | 1.4 |  |  | 3.4 |  |  | 7.3 |  |  | 6.5 |  |  | 7.2 |  |\n\n|  |  |  |  |  |  |  |  |  |  |  |  |  |",
+  "source": {
+    "provider": "Public web source",
+    "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+  }
+}

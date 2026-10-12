@@ -1,0 +1,19 @@
+{
+  "alias": "O31",
+  "title": "section_previews 4",
+  "content": {
+    "section": "Item 7A",
+    "heading_match": "ITEM 7A.",
+    "start_offset": 275221,
+    "end_offset": 278761,
+    "full_text_chars": 3530,
+    "returned_chars": 3530,
+    "truncated": false,
+    "match_quality": "substantive_body",
+    "text_preview": "QUANTITATIVE AND QUALITATIVE DISCLOSURES ABOUT MARKET RISK Interest Rate Risk We are exposed to interest rate risk related to our indebtedness and our investment portfolio. The fair value of our debt fluctuates with changes in market interest rates. As of September 3, 2026 and August 28, 2025, we had fixed-rate debt with an aggregate carrying value of $2.79 billion and $10.55 billion, respectively. We estimate that, as of September 3, 2026 and August 28, 2025, a hypothetical 1% decrease in market interest rates would increase the fair value of our fixed-rate debt by approximately $200 million and $660 million, respectively. Interest rate risk related to our investment portfolio is managed by primarily investing in shorter term securities. We estimate that, as of September 3, 2026 and August 28, 2025, a hypothetical 1% increase in interest rates would decrease the fair value of our portfolio by approximately $520 million and $20 million, respectively. Such impact would only be realized if investments were sold prior to maturity. Foreign Currency Exchange Rate Risk The information in this section should be read in conjunction with the information related to changes in the currency exchange rates in Part I, Item 1A. Risk Factors, \"Risks Related to Capitalization and Financial Markets-Changes in foreign currency exchange rates could materially adversely affect our business, results of operations, or financial condition.\" The functional currency for all of our operations is the U.S. dollar. The substantial majority of our sales are transacted in the U.S. dollar; however, significant amounts of our operating expenses and capital expenditures, and certain assets and liabilities, are incurred in or exposed to other currencies, primarily the Canadian dollar, Chinese yuan, euro, Indian rupee, Japanese yen, Malaysian ringgit, New Taiwan dollar, and Singapore dollar. We have established currency risk management programs for our monetary assets and liabilities, investments in debt instruments, and forecasted future cash flows denominated in foreign currencies to hedge against fluctuations in the fair value and volatility of future cash flows caused by changes in currency exchange rates. We generally utilize currency forward contracts in these hedging programs, which reduce, but do not always entirely eliminate, the impact of currency exchange rate movements. We do not use derivative financial instruments for trading or speculative purposes. Based on monetary assets and liabilities and investments in debt instruments denominated in foreign currencies, we estimate that a hypothetical 10% adverse change in exchange rates versus the U.S. dollar would result in losses of approximately $2.91 billion as of September 3, 2026, and $572 million as of August 28, 2025. We hedge our exposure to changes in currency exchange rates by utilizing a rolling hedge strategy for our primary currency exposures with currency forward contracts that generally mature within one year. T"
+  },
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

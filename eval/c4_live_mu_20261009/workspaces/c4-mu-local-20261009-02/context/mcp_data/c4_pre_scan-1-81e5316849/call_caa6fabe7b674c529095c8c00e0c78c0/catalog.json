@@ -1,0 +1,158 @@
+[
+  {
+    "alias": "O193",
+    "title": "official_domain",
+    "block_type": "text",
+    "path": "blocks/O193.md",
+    "source": {
+      "provider": "Official issuer IR",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-in-High-Volume-Production-of-HBM4-Designed-for-NVIDIA-Vera-Rubin-PCIe-Gen6-SSD-and-SOCAMM2-03-16-2026/default.aspx"
+    },
+    "content_chars": 22,
+    "selected": true
+  },
+  {
+    "alias": "O194",
+    "title": "discovery_url",
+    "block_type": "text",
+    "path": "blocks/O194.md",
+    "source": {
+      "provider": "Official issuer IR",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-in-High-Volume-Production-of-HBM4-Designed-for-NVIDIA-Vera-Rubin-PCIe-Gen6-SSD-and-SOCAMM2-03-16-2026/default.aspx"
+    },
+    "content_chars": 176,
+    "selected": true
+  },
+  {
+    "alias": "O195",
+    "title": "candidate_urls 1-9",
+    "block_type": "table",
+    "path": "blocks/O195.json",
+    "source": {
+      "provider": "Official issuer IR",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-in-High-Volume-Production-of-HBM4-Designed-for-NVIDIA-Vera-Rubin-PCIe-Gen6-SSD-and-SOCAMM2-03-16-2026/default.aspx"
+    },
+    "content_chars": 1539,
+    "selected": true
+  },
+  {
+    "alias": "O196",
+    "title": "read_only",
+    "block_type": "json",
+    "path": "blocks/O196.json",
+    "source": {
+      "provider": "Official issuer IR",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-in-High-Volume-Production-of-HBM4-Designed-for-NVIDIA-Vera-Rubin-PCIe-Gen6-SSD-and-SOCAMM2-03-16-2026/default.aspx"
+    },
+    "content_chars": 4,
+    "selected": true
+  },
+  {
+    "alias": "O197",
+    "title": "updates 1",
+    "block_type": "json",
+    "path": "blocks/O197.json",
+    "source": {
+      "provider": "Official issuer IR",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-in-High-Volume-Production-of-HBM4-Designed-for-NVIDIA-Vera-Rubin-PCIe-Gen6-SSD-and-SOCAMM2-03-16-2026/default.aspx"
+    },
+    "content_chars": 132,
+    "selected": true
+  },
+  {
+    "alias": "O198",
+    "title": "updates 2",
+    "block_type": "json",
+    "path": "blocks/O198.json",
+    "source": {
+      "provider": "Official issuer IR",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-in-High-Volume-Production-of-HBM4-Designed-for-NVIDIA-Vera-Rubin-PCIe-Gen6-SSD-and-SOCAMM2-03-16-2026/default.aspx"
+    },
+    "content_chars": 150,
+    "selected": true
+  },
+  {
+    "alias": "O199",
+    "title": "updates 3",
+    "block_type": "json",
+    "path": "blocks/O199.json",
+    "source": {
+      "provider": "Official issuer IR",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-in-High-Volume-Production-of-HBM4-Designed-for-NVIDIA-Vera-Rubin-PCIe-Gen6-SSD-and-SOCAMM2-03-16-2026/default.aspx"
+    },
+    "content_chars": 118,
+    "selected": true
+  },
+  {
+    "alias": "O200",
+    "title": "updates 4",
+    "block_type": "json",
+    "path": "blocks/O200.json",
+    "source": {
+      "provider": "Official issuer IR",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-in-High-Volume-Production-of-HBM4-Designed-for-NVIDIA-Vera-Rubin-PCIe-Gen6-SSD-and-SOCAMM2-03-16-2026/default.aspx"
+    },
+    "content_chars": 162,
+    "selected": true
+  },
+  {
+    "alias": "O201",
+    "title": "updates 5",
+    "block_type": "json",
+    "path": "blocks/O201.json",
+    "source": {
+      "provider": "Official issuer IR",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-in-High-Volume-Production-of-HBM4-Designed-for-NVIDIA-Vera-Rubin-PCIe-Gen6-SSD-and-SOCAMM2-03-16-2026/default.aspx"
+    },
+    "content_chars": 173,
+    "selected": true
+  },
+  {
+    "alias": "O202",
+    "title": "updates 6",
+    "block_type": "json",
+    "path": "blocks/O202.json",
+    "source": {
+      "provider": "Official issuer IR",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-in-High-Volume-Production-of-HBM4-Designed-for-NVIDIA-Vera-Rubin-PCIe-Gen6-SSD-and-SOCAMM2-03-16-2026/default.aspx"
+    },
+    "content_chars": 183,
+    "selected": true
+  },
+  {
+    "alias": "O203",
+    "title": "updates 7",
+    "block_type": "json",
+    "path": "blocks/O203.json",
+    "source": {
+      "provider": "Official issuer IR",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-in-High-Volume-Production-of-HBM4-Designed-for-NVIDIA-Vera-Rubin-PCIe-Gen6-SSD-and-SOCAMM2-03-16-2026/default.aspx"
+    },
+    "content_chars": 190,
+    "selected": true
+  },
+  {
+    "alias": "O204",
+    "title": "updates 8",
+    "block_type": "json",
+    "path": "blocks/O204.json",
+    "source": {
+      "provider": "Official issuer IR",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-in-High-Volume-Production-of-HBM4-Designed-for-NVIDIA-Vera-Rubin-PCIe-Gen6-SSD-and-SOCAMM2-03-16-2026/default.aspx"
+    },
+    "content_chars": 184,
+    "selected": true
+  },
+  {
+    "alias": "O205",
+    "title": "updates 9",
+    "block_type": "json",
+    "path": "blocks/O205.json",
+    "source": {
+      "provider": "Official issuer IR",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-in-High-Volume-Production-of-HBM4-Designed-for-NVIDIA-Vera-Rubin-PCIe-Gen6-SSD-and-SOCAMM2-03-16-2026/default.aspx"
+    },
+    "content_chars": 168,
+    "selected": true
+  }
+]

@@ -1,0 +1,9 @@
+{
+  "alias": "O245",
+  "title": "text paragraphs 157",
+  "content": "|  |  | 2026 |  | 2025 |  | 2026 |  | 2025 |\n\n| Retail energy sales |  | 4,227 |  |  | 4,099 |  |  | 7,852 |  |  | 7,822 |  |\n\n| Wholesale energy sales |  | 127 |  |  | 598 |  |  | 219 |  |  | 1,037 |  |\n\n| Energy sales bundled with renewable energy credits |  | 30 |  |  | 75 |  |  | 80 |  |  | 615 |  |\n\n| Total energy sales |  | 4,384 |  |  | 4,772 |  |  | 8,151 |  |  | 9,474 |  |\n\n| Hydropower generation |  | 1,594 |  |  | 2,144 |  |  | 3,154 |  |  | 4,268 |  |\n\n| Jointly-owned thermal generation(1) |  | 489 |  |  | 462 |  |  | 914 |  |  | 1,136 |  |\n\n| Natural gas and other generation |  | 611 |  |  | 753 |  |  | 1,386 |  |  | 1,527 |  |",
+  "source": {
+    "provider": "Public web source",
+    "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+  }
+}

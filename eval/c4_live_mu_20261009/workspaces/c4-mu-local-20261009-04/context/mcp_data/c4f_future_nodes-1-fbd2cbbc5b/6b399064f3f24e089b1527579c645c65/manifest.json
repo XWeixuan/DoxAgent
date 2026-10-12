@@ -1,0 +1,183 @@
+{
+  "selected_aliases": [
+    "O22",
+    "O23",
+    "O24",
+    "O25",
+    "O26",
+    "O27",
+    "O28",
+    "O29",
+    "O30",
+    "O31",
+    "O32",
+    "O33",
+    "O34",
+    "O35",
+    "O36",
+    "O37",
+    "O61"
+  ],
+  "blocks": [
+    {
+      "alias": "O22",
+      "path": "blocks/O22.md"
+    },
+    {
+      "alias": "O23",
+      "path": "blocks/O23.md"
+    },
+    {
+      "alias": "O24",
+      "path": "blocks/O24.md"
+    },
+    {
+      "alias": "O25",
+      "path": "blocks/O25.md"
+    },
+    {
+      "alias": "O26",
+      "path": "blocks/O26.md"
+    },
+    {
+      "alias": "O27",
+      "path": "blocks/O27.md"
+    },
+    {
+      "alias": "O28",
+      "path": "blocks/O28.md"
+    },
+    {
+      "alias": "O29",
+      "path": "blocks/O29.md"
+    },
+    {
+      "alias": "O30",
+      "path": "blocks/O30.md"
+    },
+    {
+      "alias": "O31",
+      "path": "blocks/O31.md"
+    },
+    {
+      "alias": "O32",
+      "path": "blocks/O32.md"
+    },
+    {
+      "alias": "O33",
+      "path": "blocks/O33.md"
+    },
+    {
+      "alias": "O34",
+      "path": "blocks/O34.md"
+    },
+    {
+      "alias": "O35",
+      "path": "blocks/O35.md"
+    },
+    {
+      "alias": "O36",
+      "path": "blocks/O36.md"
+    },
+    {
+      "alias": "O37",
+      "path": "blocks/O37.md"
+    },
+    {
+      "alias": "O38",
+      "path": "blocks/O38.md"
+    },
+    {
+      "alias": "O39",
+      "path": "blocks/O39.md"
+    },
+    {
+      "alias": "O40",
+      "path": "blocks/O40.md"
+    },
+    {
+      "alias": "O41",
+      "path": "blocks/O41.md"
+    },
+    {
+      "alias": "O42",
+      "path": "blocks/O42.md"
+    },
+    {
+      "alias": "O43",
+      "path": "blocks/O43.md"
+    },
+    {
+      "alias": "O44",
+      "path": "blocks/O44.md"
+    },
+    {
+      "alias": "O45",
+      "path": "blocks/O45.md"
+    },
+    {
+      "alias": "O46",
+      "path": "blocks/O46.md"
+    },
+    {
+      "alias": "O47",
+      "path": "blocks/O47.md"
+    },
+    {
+      "alias": "O48",
+      "path": "blocks/O48.md"
+    },
+    {
+      "alias": "O49",
+      "path": "blocks/O49.md"
+    },
+    {
+      "alias": "O50",
+      "path": "blocks/O50.md"
+    },
+    {
+      "alias": "O51",
+      "path": "blocks/O51.md"
+    },
+    {
+      "alias": "O52",
+      "path": "blocks/O52.md"
+    },
+    {
+      "alias": "O53",
+      "path": "blocks/O53.md"
+    },
+    {
+      "alias": "O54",
+      "path": "blocks/O54.md"
+    },
+    {
+      "alias": "O55",
+      "path": "blocks/O55.md"
+    },
+    {
+      "alias": "O56",
+      "path": "blocks/O56.md"
+    },
+    {
+      "alias": "O57",
+      "path": "blocks/O57.md"
+    },
+    {
+      "alias": "O58",
+      "path": "blocks/O58.md"
+    },
+    {
+      "alias": "O59",
+      "path": "blocks/O59.md"
+    },
+    {
+      "alias": "O60",
+      "path": "blocks/O60.md"
+    },
+    {
+      "alias": "O61",
+      "path": "blocks/O61.md"
+    }
+  ]
+}

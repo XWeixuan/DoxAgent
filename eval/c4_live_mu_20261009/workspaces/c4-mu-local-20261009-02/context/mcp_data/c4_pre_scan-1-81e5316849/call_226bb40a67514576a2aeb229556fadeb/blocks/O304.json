@@ -1,0 +1,18 @@
+{
+  "alias": "O304",
+  "title": "sections 1 — metadata",
+  "content": {
+    "section": "Singapore",
+    "heading_match": "Singapore",
+    "start_offset": 277100,
+    "end_offset": 357110,
+    "full_text_chars": 80000,
+    "returned_chars": 40000,
+    "truncated": true,
+    "match_quality": "substantive_body"
+  },
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

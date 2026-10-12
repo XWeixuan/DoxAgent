@@ -1,0 +1,2546 @@
+{
+  "name": "NAND与存储产品制造体系",
+  "scope": "美光NAND晶圆、闪存封装测试、托管存储、SSD及相关MCP的生产组装与外包网络，涵盖相关嵌入式闪存生产供应。共同背景为闪存节点、密度、生产设备、配套组件、工序良率、基地与服务商、人员、公用事业和资本投入。",
+  "boundary": "美光自身NAND及存储产品的生产资产、节点转换、封装测试、SSD和托管存储组装、组件供应及制造外包由本域深化；DRAM晶圆、常规内存后段和HBM专用封装测试归DRAM与HBM制造体系。含NAND的MCP整体组装归本域，其中DRAM子组件制造归内存制造域。行业NAND竞争供给与价格归NAND行业市场；SSD控制器与固件的产品设计适配、系统资格和商业选型归数据中心闪存与存储系统，其他终端采用归各产品业务域。项目投入与资助的经济性在本域，公司整体现金、融资及资助资金可用性归公司资金与股东权益。",
+  "ref": [
+    "D1-O31",
+    "D1-O74",
+    "D1-O88",
+    "D1-O4",
+    "D1-O57",
+    "D1-O3",
+    "D1-O6"
+  ],
+  "units": [
+    {
+      "name": "美光NAND与存储产品制造体系",
+      "scope": "美光NAND晶圆制造、闪存封装测试、托管NAND、SSD及相关MCP的自有和外包制造组装网络，以及相关嵌入式闪存的生产供应，涵盖制程研发、密度、产能利用、良率、合格产出、节点转换、基地扩产、控制器等配套组件与外部制造服务、设备材料、公用事业、人员、制造成本、资本投入及项目资助。",
+      "horizon": "季度运营与节点转换周期，延伸至多年设施建设、爬坡和资产使用周期。",
+      "ref": [
+        "D1-O31",
+        "D1-O74",
+        "D1-O88",
+        "D1-O57",
+        "D1-O4",
+        "D1-O3",
+        "D1-O6"
+      ],
+      "state": {
+        "parameters": [
+          {
+            "name": "NAND产品收入",
+            "definition": "公司按NAND技术归类的产品销售收入，含组件及存储产品；定位制造产出的商业吸收，不等于工厂收入、利润或实物bit产量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O57",
+              "D1-O11",
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf"
+            ]
+          },
+          {
+            "name": "NAND比特出货增长",
+            "definition": "公司NAND实际销售bit相对所述比较期间的增幅；自然语言保留约数或区间措辞，不代替晶圆投片增长。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O57",
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf"
+            ]
+          },
+          {
+            "name": "NAND实现ASP增长",
+            "definition": "公司NAND组合实现售价的增长率；含产品组合影响，与固定规格合约价指数区别。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O57",
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf"
+            ]
+          },
+          {
+            "name": "NAND销售的数据中心SSD权重",
+            "definition": "数据中心SSD收入占公司NAND收入的比例位置；价格及组合也影响该权重，不直接当作制造bit配置比例。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "数据中心SSD收入规模",
+            "definition": "美光数据中心SSD销售额，定位自有成品存储的商业吸收；不混入CDBU的DRAM及其他收入。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "高性能SSD制造交付位置",
+            "definition": "美光面向低延迟推理缓存的高性能SSD从样品到合格制造交付的状态；客户用途用于定位工厂产品配方。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O103"
+            ]
+          },
+          {
+            "name": "高容量QLC SSD制造交付位置",
+            "definition": "高容量QLC成品的制造商业化状态，区别于原始die能力与性能演示。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O103",
+              "D1-O74",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "客户端SSD制造交付位置",
+            "definition": "美光PC OEM SSD供货所处资格与交付位置；资格扩大与当期出货量分开。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O103",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "汽车托管NAND制造交付位置",
+            "definition": "车规UFS等托管NAND的量产交付位置，映射后段工艺及长期可靠性制造配置。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "NAND产品供货渠道结构",
+            "definition": "本制造网络通过自有SSD/托管产品和组件客户进入终端的渠道安排。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "美光近计算闪存制造分支",
+            "definition": "为HBF、GPU直接访问低延迟闪存等区别于常规SSD的美光专门制造路线和商业化位置。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O51",
+              "D1-O67",
+              "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf"
+            ]
+          },
+          {
+            "name": "NAND生产节点结构",
+            "definition": "美光各NAND节点在bit产出中的相对位置；多数、最大单一节点和绝对份额是不同状态。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O88",
+              "D1-O57",
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "下一代NAND节点量产时间",
+            "definition": "G9之后美光下一代NAND工艺开始volume production的公司计划窗口，不等于新厂首片时间。",
+            "value_type": "TIME",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "G9 QLC单die标称容量",
+            "definition": "G9 QLC NAND单颗die可存储的标称bit容量；定位封装容量密度，不是每晶圆良品bit。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.micron.com/products/storage/nand-flash/qlc-nand/g9-qlc-nand",
+              "https://micron.gcs-web.com/news-releases/news-release-details/meiguangtupo-pc-xingnengbianjietuichuzishiyingxierujishuyu-g9"
+            ]
+          },
+          {
+            "name": "G9 QLC架构及接口位置",
+            "definition": "已商用G9 QLC的并行架构与NAND接口配置，决定后段和SSD齐套制造的技术档位。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.micron.com/products/storage/nand-flash/qlc-nand/g9-qlc-nand",
+              "https://micron.gcs-web.com/news-releases/news-release-details/meiguangtupo-pc-xingnengbianjietuichuzishiyingxierujishuyu-g9"
+            ]
+          },
+          {
+            "name": "NAND制造成本变化方向",
+            "definition": "公司已报告的NAND相关制造降本方向；与ASP、产品组合及合并毛利率变化分开。",
+            "value_type": "DIRECTION",
+            "ref": [
+              "D1-O57",
+              "D1-O88"
+            ]
+          },
+          {
+            "name": "NAND晶圆起始量",
+            "definition": "美光NAND前段投入量，按300mm等效晶圆/月衡量；独立于每片bit密度。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "NAND前段有效利用率",
+            "definition": "已安装并合格的NAND前段能力实际使用比例，排除尚未装机的新洁净室。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "每晶圆可售NAND bit",
+            "definition": "同节点同产品配置下每片NAND晶圆最终形成的可售bit数量，综合物理密度与良率。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O88"
+            ]
+          },
+          {
+            "name": "NAND工序良率",
+            "definition": "同工艺节点及批次的NAND制造合格die比例；不能由节点名称、客户产品规格或合并毛利反推。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O88"
+            ]
+          },
+          {
+            "name": "NAND晶圆制造周期",
+            "definition": "从NAND投片到晶圆完工的时间；不含客户库存或交付运输时间。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O88"
+            ]
+          },
+          {
+            "name": "NAND单位bit制造成本",
+            "definition": "同口径NAND制造成本/可售Gb，含工序、良率、利用率及折旧，区别于ASP和SSD全BOM成本。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "NAND封装测试有效产能",
+            "definition": "本网络每期能够完成资格及可靠性要求的NAND后段bit处理能力，不用建筑面积代替。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "NAND后段单位bit测试占用",
+            "definition": "同SKU配置下每Gb所需的封装后电性、可靠性及系统测试时间，定位测试瓶颈。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O103"
+            ]
+          },
+          {
+            "name": "SSD及托管NAND齐套产出",
+            "definition": "晶圆、控制器、配套IC和后段加工均就绪后的可交付成品数量，按产品类分组。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "NAND制造资本开支",
+            "definition": "专用于本Unit的晶圆、后段及存储组装年度资本投入，区分毛额投入和补助，不采用公司总capex替代。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "NAND制造资产资本回报",
+            "definition": "本Unit制造资产的投入资本回报，需独立资本与经营收益口径，不等于公司综合利润率。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "既有制造能力使用位置",
+            "definition": "公司对现有制造能力使用的定性描述；限定为集团范围，与独立NAND利用率测量分开。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O57",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "NAND及存储制造网络安排",
+            "definition": "NAND前段、后段和存储组装的主要自有与外包生产分工及地域安排。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O31",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "SSD控制器及配套组件供应安排",
+            "definition": "SSD、托管NAND及MCP依赖的自研、采购和外部制造组件安排，定位成品齐套供给。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O74",
+              "https://investors.micron.com/news/press-release/2025/Micron-Unveils-Portfolio-of-Industry-First-SSDs-to-Power-the-AI-Revolution-07-29-2025/default.aspx",
+              "https://micron.gcs-web.com/news-releases/news-release-details/meiguangtupo-pc-xingnengbianjietuichuzishiyingxierujishuyu-g9"
+            ]
+          },
+          {
+            "name": "制造关键投入品供给位置",
+            "definition": "材料、设备零件及配套组件的合格来源、短缺和交期状态；只保留已报告的适用范围。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "新加坡NAND新厂建设位置",
+            "definition": "新增NAND前段空间与研发共址项目的实际工程位置；区别于装机和客户合格产出。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O31",
+              "https://stage-investors.micron.com/news/press-release/2026/Micron-Breaks-Ground-on-Advanced-Wafer-Fabrication-Facility-in-Singapore-01-26-2026/default.aspx"
+            ]
+          },
+          {
+            "name": "新加坡NAND新厂初始晶圆时间",
+            "definition": "新增NAND工厂开始晶圆产出的计划窗口，不等于经济满产或新增bit全部释放。",
+            "value_type": "TIME",
+            "ref": [
+              "D1-O31",
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "新加坡NAND新厂规划洁净室面积",
+            "definition": "新厂全部规划最终提供的洁净室面积，非当前装机或投片能力。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://stage-investors.micron.com/news/press-release/2026/Micron-Breaks-Ground-on-Advanced-Wafer-Fabrication-Facility-in-Singapore-01-26-2026/default.aspx"
+            ]
+          },
+          {
+            "name": "新加坡NAND项目规划投资",
+            "definition": "新增NAND设施十年期项目规划投入；非一年支出、现金已付款或公司所有NAND capex。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://stage-investors.micron.com/news/press-release/2026/Micron-Breaks-Ground-on-Advanced-Wafer-Fabrication-Facility-in-Singapore-01-26-2026/default.aspx"
+            ]
+          },
+          {
+            "name": "新加坡NAND新厂新增岗位规模",
+            "definition": "新NAND工厂项目计划新增的美光岗位数量，区别于当前员工和同园区HBM岗位。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://stage-investors.micron.com/news/press-release/2026/Micron-Breaks-Ground-on-Advanced-Wafer-Fabrication-Facility-in-Singapore-01-26-2026/default.aspx"
+            ]
+          },
+          {
+            "name": "印度Sanand后段商业位置",
+            "definition": "DRAM/NAND共享组装测试项目由建设到商业生产的实际状态及工序范围。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O31",
+              "https://micron.gcs-web.com/news-releases/news-release-details/micron-celebrates-opening-indias-first-semiconductor-assembly"
+            ]
+          },
+          {
+            "name": "印度Sanand第一阶段洁净室规模",
+            "definition": "第一阶段完全爬坡后的规划洁净室面积，用明确单侧界限表述；DRAM和NAND共用。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://micron.gcs-web.com/news-releases/news-release-details/micron-celebrates-opening-indias-first-semiconductor-assembly"
+            ]
+          },
+          {
+            "name": "印度Sanand共享芯片处理规模",
+            "definition": "Sanand全厂每年组装测试芯片计划数量，DRAM/NAND合计；不得归为NAND bit或NAND成品数。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://micron.gcs-web.com/news-releases/news-release-details/micron-celebrates-opening-indias-first-semiconductor-assembly"
+            ]
+          },
+          {
+            "name": "印度Sanand项目总投资规模",
+            "definition": "Micron与印度中央/邦政府合计项目投资计划，覆盖共享DRAM/NAND后段，不等于美光实付。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://micron.gcs-web.com/news-releases/news-release-details/micron-celebrates-opening-indias-first-semiconductor-assembly",
+              "https://investors.micron.com/news/press-release/2023/Micron-Announces-New-Semiconductor-Assembly-and-Test-Facility-in-India-06-22-2023/default.aspx"
+            ]
+          },
+          {
+            "name": "印度Sanand美光自身投资上限",
+            "definition": "美光对印度两阶段共享后段项目的宣布投入上限，不代表实际支付或仅NAND分配。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2023/Micron-Announces-New-Semiconductor-Assembly-and-Test-Facility-in-India-06-22-2023/default.aspx"
+            ]
+          },
+          {
+            "name": "印度项目中央财政支持比例",
+            "definition": "印度中央政府ATMP框架对Sanand项目总成本的财政支持比例，非到账现金。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2023/Micron-Announces-New-Semiconductor-Assembly-and-Test-Facility-in-India-06-22-2023/default.aspx"
+            ]
+          },
+          {
+            "name": "印度项目Gujarat支持比例",
+            "definition": "Gujarat邦激励占Sanand项目总成本的比例，非美光NAND年度补助收益。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2023/Micron-Announces-New-Semiconductor-Assembly-and-Test-Facility-in-India-06-22-2023/default.aspx"
+            ]
+          },
+          {
+            "name": "新加坡新增晶圆厂水回收规则",
+            "definition": "新加坡新增大用水晶圆厂的最低水回收要求，影响新NAND厂厂务设计和投资；不代表现有厂实测。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.pub.gov.sg/Resources/News-Room/Featured-Stories/2025/Singapore-Industrial-Water-Revolution"
+            ]
+          },
+          {
+            "name": "新加坡碳税法定费率",
+            "definition": "对当地达到纳税条件设施的直接应税排放适用费率；单位制造影响另受排放强度、额度及过渡安排影响。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.nea.gov.sg/media/news/news/index/singapore-sets-out-eligibility-criteria-for-international-carbon-credits-under-the-carbon-tax-regime"
+            ]
+          },
+          {
+            "name": "新加坡中央尾气减排设施运行位置",
+            "definition": "美光新加坡制造设施集中处理工艺尾气的已安装运行状态及覆盖位置；不是全网络覆盖率。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.micron.com/content/dam/micron/global/public/programs/sustainability/documents/micron-technology-2026-sustainability-report.pdf"
+            ]
+          },
+          {
+            "name": "新加坡中央减排系统尾气处理量",
+            "definition": "已运行中央系统处理工艺尾气的小时流量；用于定位改造覆盖规模，而非NAND产能。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.micron.com/content/dam/micron/global/public/programs/sustainability/documents/micron-technology-2026-sustainability-report.pdf"
+            ]
+          },
+          {
+            "name": "新加坡中央减排系统相对运行经济性",
+            "definition": "集中减排相对使用点减排的天然气及减排费用变化；限于该处理子系统，不推广至全厂总成本。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.micron.com/content/dam/micron/global/public/programs/sustainability/documents/micron-technology-2026-sustainability-report.pdf"
+            ]
+          },
+          {
+            "name": "新加坡制造AI能源效率改善",
+            "definition": "已部署AI厂务分析在新加坡fab实现的年度节能比例，限于具体应用覆盖，区别于G9物理密度收益。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.micron.com/content/dam/micron/global/public/programs/sustainability/documents/micron-technology-2026-sustainability-report.pdf"
+            ]
+          },
+          {
+            "name": "新加坡NAND用电容量保障",
+            "definition": "既有和新增NAND厂已落实的可用电力容量，按MW计；不以全国未来机组容量替代接电合同。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "NAND制造用电价格",
+            "definition": "NAND工厂适用合同的实际电价，按当地货币/kWh，区别于太阳能名义安装规模。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "NAND工厂实际内部水回收率",
+            "definition": "NAND厂内部用水被回收的比例，不混同购买NEWater比例或公司包含恢复项目的全球水保育率。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.pub.gov.sg/Resources/News-Room/Featured-Stories/2025/Singapore-Industrial-Water-Revolution"
+            ]
+          },
+          {
+            "name": "关键高纯材料库存覆盖",
+            "definition": "NAND关键合格材料能够维持连续生产的天数，按具体投入品区分；外部气源中断不直接给出本厂覆盖。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "制造激励薪酬成本确认位置",
+            "definition": "制造相关奖励薪酬进入库存并转入销售成本的位置，定位报表成本与当期工程效率之间的时间差。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "企业SSD行业bit需求增长",
+            "definition": "企业SSD行业实物bit需求同比增幅，影响本制造网络数据中心产品吸收；不是美光销量或份额。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260930-13258.html"
+            ]
+          },
+          {
+            "name": "NAND终端采购结构",
+            "definition": "外部买方在企业、客户端和托管存储间的采购安排，定位不同产品线的制造吸收差异。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260930-13258.html"
+            ]
+          },
+          {
+            "name": "行业NAND合约价预期变化",
+            "definition": "行业NAND合约价季度增幅预测，作为制造产出定价背景；不是美光ASP或公司合约的同口径预测。",
+            "value_type": "RANGE",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260930-13258.html"
+            ]
+          },
+          {
+            "name": "行业NAND供需平衡位置",
+            "definition": "行业有效bit供给相对需求的位置及预测，影响美光利用率和新厂设备投入的吸收环境；保留不同发布者的路径。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260721-13148.html",
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf"
+            ]
+          },
+          {
+            "name": "选定NAND的长生命周期兼容安排",
+            "definition": "美光对选定NAND产品的长期形态、安装和功能兼容以及变更/停产转换支持安排，定位制造迁移自由度；不代表全NAND SKU或同一工艺die持续生产。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.micron.com/products/product-lifecycle-solutions"
+            ]
+          }
+        ],
+        "values": [
+          {
+            "name": "FY2026 NAND收入317.90亿美元",
+            "parameter": "NAND产品收入",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 31.79,
+              "unit": "十亿美元"
+            },
+            "previous_value": {
+              "number": 8.5,
+              "unit": "十亿美元"
+            },
+            "time_scope": "FY2026截至2026-09-03，53周；比较FY2025截至2025-08-28，52周，未做周数标准化",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O57",
+              "D1-O11",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "FY2026 Q4 NAND收入约141亿美元",
+            "parameter": "NAND产品收入",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 14.1,
+              "unit": "十亿美元，披露精度"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026 Q4截至2026-09-03；公司披露环比增长42%",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf"
+            ]
+          },
+          {
+            "name": "FY2026出货增长20%中段",
+            "parameter": "NAND比特出货增长",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "同比增幅为20%中段（mid-20s），未披露精确百分比。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026对FY2025；53周对52周",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O57",
+              "D1-O11"
+            ]
+          },
+          {
+            "name": "Q4出货环比约增10%",
+            "parameter": "NAND比特出货增长",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "比特出货环比增加约10%。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026 Q4对Q3",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf"
+            ]
+          },
+          {
+            "name": "FY2026实现ASP同比约增200%",
+            "parameter": "NAND实现ASP增长",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 200.0,
+              "unit": "%，约数"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026对FY2025",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O57",
+              "D1-O11"
+            ]
+          },
+          {
+            "name": "Q4实现ASP环比约增30%",
+            "parameter": "NAND实现ASP增长",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 30.0,
+              "unit": "%，约数"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026 Q4对Q3",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf"
+            ]
+          },
+          {
+            "name": "Q4数据中心SSD占NAND收入超过三分之二",
+            "parameter": "NAND销售的数据中心SSD权重",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "数据中心SSD收入占公司NAND收入超过三分之二。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026 Q4",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "Q4数据中心SSD收入接近100亿美元",
+            "parameter": "数据中心SSD收入规模",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "季度收入接近100亿美元，为上年同季的10倍以上。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026 Q4对FY2025 Q4",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "7600及9650进入KV-cache客户交付",
+            "parameter": "高性能SSD制造交付位置",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "7600和9650已向领先客户出货，用于KV-cache卸载；不是仅公布规格或送样。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026 Q4披露的商业交付状态",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O103",
+              "D1-O88"
+            ]
+          },
+          {
+            "name": "6600 ION强劲放量且245TB产品已出货",
+            "parameter": "高容量QLC SSD制造交付位置",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "6600 ION在Q4强劲爬坡；FY2026已经出货使用G9 QLC的245TB 6600 ION。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026，Q4爬坡状态",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O103",
+              "D1-O74",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "客户端G9及4600资格扩展",
+            "parameter": "客户端SSD制造交付位置",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "G9 PCIe Gen5 QLC客户端SSD于FY2026取得领先客户资格；Q4 4600 SSD增加PC OEM认证。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026及Q4产品状态",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O74",
+              "D1-O103"
+            ]
+          },
+          {
+            "name": "G9 UFS 4.1汽车产品批量出货",
+            "parameter": "汽车托管NAND制造交付位置",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "采用G9 NAND的车规UFS 4.1已于FY2026批量出货。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "退出Crucial消费品牌后仍供OEM与组件客户",
+            "parameter": "NAND产品供货渠道结构",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "2025年12月退出Crucial消费业务；美光继续供应OEM客户端存储及供其他厂商组装的NAND组件。组件与自有SSD并行，不是退出全部客户端NAND。"
+            },
+            "previous_value": null,
+            "time_scope": "2025-12至FY2026末的供货结构",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O74",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "G8和G9合计覆盖FY2026多数产出",
+            "parameter": "NAND生产节点结构",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "G8与G9合计占FY2026 NAND bit生产多数，即超过50%；不等于G9单独超过50%。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O88",
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "G9已成为最大单一NAND节点",
+            "parameter": "NAND生产节点结构",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "G9是美光当前最大单一NAND生产节点；未给精确占比。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-30当时生产配置",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "下一代NAND计划2027下半年量产",
+            "parameter": "下一代NAND节点量产时间",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "point": null,
+              "start": "2027-07",
+              "end": "2027-12",
+              "precision": "半年"
+            },
+            "previous_value": null,
+            "time_scope": "日历2027下半年",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "G9 QLC单die为2Tb",
+            "parameter": "G9 QLC单die标称容量",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 2.0,
+              "unit": "Tb/die，标称"
+            },
+            "previous_value": null,
+            "time_scope": "2025-07发布时已商用的G9 QLC器件配置；不是FY2026新性能测量",
+            "as_of": "2025-07-01",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.micron.com/products/storage/nand-flash/qlc-nand/g9-qlc-nand",
+              "D1-O74",
+              "https://micron.gcs-web.com/news-releases/news-release-details/meiguangtupo-pc-xingnengbianjietuichuzishiyingxierujishuyu-g9"
+            ]
+          },
+          {
+            "name": "六平面G9 QLC支持最高3.6GB/s接口",
+            "parameter": "G9 QLC架构及接口位置",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "G9 QLC为六平面架构，NAND I/O最高3.6GB/s；是器件标称能力，不是SSD持续吞吐或工厂良率。"
+            },
+            "previous_value": null,
+            "time_scope": "2025-07发布时已商用的G9 QLC器件配置；不是FY2026新性能测量",
+            "as_of": "2025-07-01",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.micron.com/products/storage/nand-flash/qlc-nand/g9-qlc-nand",
+              "https://micron.gcs-web.com/news-releases/news-release-details/meiguangtupo-pc-xingnengbianjietuichuzishiyingxierujishuyu-g9"
+            ]
+          },
+          {
+            "name": "FY2026制造降本参与利润改善",
+            "parameter": "NAND制造成本变化方向",
+            "source_role": "ACTUAL",
+            "value": {
+              "direction": "制造成本下降；公司将全年毛利改善主要归于ASP，降本为补充因素，未拆出NAND独立降幅。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026对FY2025",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O57",
+              "D1-O88"
+            ]
+          },
+          {
+            "name": "公司通常使用全部既有制造能力",
+            "parameter": "既有制造能力使用位置",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "公司称通常使用全部现有制造能力；其涵盖DRAM/NAND网络，未提供单独NAND利用率百分比。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026经营环境的公司描述",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O57",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "新加坡前段加全球自有与外包后段",
+            "parameter": "NAND及存储制造网络安排",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "新加坡为NAND研发及晶圆制造中心，并有封装测试；全球自有后段与外包制造并用。部分封装die、模组、SSD和MCP由外部提供组装服务；印度Sanand新增DRAM/NAND后段基地，不是NAND晶圆厂。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026末制造网络",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O31",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "关键SSD采用美光控制器但网络仍有外部依赖",
+            "parameter": "SSD控制器及配套组件供应安排",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "9650、7600及6600组合采用美光控制器、NAND、DRAM和固件；集团另依赖第三方控制器、模拟IC及外部制造服务。自研设计不代表所有SKU或所有晶圆均内部制造。"
+            },
+            "previous_value": null,
+            "time_scope": "2025-07产品组合及FY2026网络安排",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2025/Micron-Unveils-Portfolio-of-Industry-First-SSDs-to-Power-the-AI-Revolution-07-29-2025/default.aspx",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "部分投入品短缺或交期延长且来源集中",
+            "parameter": "制造关键投入品供给位置",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "公司报告部分材料/组件存在短缺或交期延长，部分投入品为有限或单一合格来源；没有公开NAND受影响投入品名称或产量损失。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026末公司网络范围",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "新加坡NAND新厂已开工且在建",
+            "parameter": "新加坡NAND新厂建设位置",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "2026年1月在既有NAND园区开工，拟与研发共址；截至最新披露仍在建设，未成为已有生产能力。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-01至FY2026末",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O31",
+              "D1-O4",
+              "https://stage-investors.micron.com/news/press-release/2026/Micron-Breaks-Ground-on-Advanced-Wafer-Fabrication-Facility-in-Singapore-01-26-2026/default.aspx"
+            ]
+          },
+          {
+            "name": "新厂初始输出维持2028下半年",
+            "parameter": "新加坡NAND新厂初始晶圆时间",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "point": null,
+              "start": "2028-07",
+              "end": "2028-12",
+              "precision": "半年"
+            },
+            "previous_value": {
+              "point": null,
+              "start": "2028-07",
+              "end": "2028-12",
+              "precision": "半年"
+            },
+            "time_scope": "日历2028下半年，随后逐季度爬坡",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+              "D1-O31",
+              "https://stage-investors.micron.com/news/press-release/2026/Micron-Breaks-Ground-on-Advanced-Wafer-Fabrication-Facility-in-Singapore-01-26-2026/default.aspx"
+            ]
+          },
+          {
+            "name": "新厂最终规划70万平方英尺",
+            "parameter": "新加坡NAND新厂规划洁净室面积",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "number": 700000.0,
+              "unit": "平方英尺"
+            },
+            "previous_value": null,
+            "time_scope": "项目最终建设规模，未披露全部空间完成日期",
+            "as_of": "2026-01-27",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://stage-investors.micron.com/news/press-release/2026/Micron-Breaks-Ground-on-Advanced-Wafer-Fabrication-Facility-in-Singapore-01-26-2026/default.aspx"
+            ]
+          },
+          {
+            "name": "十年规划投入约240亿美元",
+            "parameter": "新加坡NAND项目规划投资",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "number": 24.0,
+              "unit": "十亿美元，约数"
+            },
+            "previous_value": null,
+            "time_scope": "2026年宣布的未来约十年项目计划",
+            "as_of": "2026-01-27",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://stage-investors.micron.com/news/press-release/2026/Micron-Breaks-Ground-on-Advanced-Wafer-Fabrication-Facility-in-Singapore-01-26-2026/default.aspx"
+            ]
+          },
+          {
+            "name": "NAND项目拟新增约1600岗位",
+            "parameter": "新加坡NAND新厂新增岗位规模",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "number": 1600.0,
+              "unit": "岗位，约数"
+            },
+            "previous_value": null,
+            "time_scope": "新项目建设及运营阶段",
+            "as_of": "2026-01-27",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://stage-investors.micron.com/news/press-release/2026/Micron-Breaks-Ground-on-Advanced-Wafer-Fabrication-Facility-in-Singapore-01-26-2026/default.aspx"
+            ]
+          },
+          {
+            "name": "Sanand已开始商业生产",
+            "parameter": "印度Sanand后段商业位置",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "已开始商业生产并取得ISO 9001:2015；工序将全球DRAM/NAND晶圆转成成品。首批Dell内存模组交付不证明NAND独立产量。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-02开业状态，FY2026确认商业出货",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://micron.gcs-web.com/news-releases/news-release-details/micron-celebrates-opening-indias-first-semiconductor-assembly",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "Sanand一期规划超过50万平方英尺",
+            "parameter": "印度Sanand第一阶段洁净室规模",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "stage": "完全爬坡后，第一阶段洁净室超过500,000平方英尺。"
+            },
+            "previous_value": null,
+            "time_scope": "一期完全爬坡时，非当前生产能力",
+            "as_of": "2026-02-28",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://micron.gcs-web.com/news-releases/news-release-details/micron-celebrates-opening-indias-first-semiconductor-assembly"
+            ]
+          },
+          {
+            "name": "Sanand计划2026千万级至2027亿级",
+            "parameter": "印度Sanand共享芯片处理规模",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "stage": "2026年计划组装测试数千万颗芯片，2027年数亿颗；两年均为全厂DRAM/NAND合计。"
+            },
+            "previous_value": null,
+            "time_scope": "日历2026和2027",
+            "as_of": "2026-02-28",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://micron.gcs-web.com/news-releases/news-release-details/micron-celebrates-opening-indias-first-semiconductor-assembly"
+            ]
+          },
+          {
+            "name": "Sanand共享项目合计投资约27.5亿美元",
+            "parameter": "印度Sanand项目总投资规模",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "number": 2.75,
+              "unit": "十亿美元，约数"
+            },
+            "previous_value": null,
+            "time_scope": "项目两阶段总体规模",
+            "as_of": "2026-02-28",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://micron.gcs-web.com/news-releases/news-release-details/micron-celebrates-opening-indias-first-semiconductor-assembly",
+              "https://investors.micron.com/news/press-release/2023/Micron-Announces-New-Semiconductor-Assembly-and-Test-Facility-in-India-06-22-2023/default.aspx"
+            ]
+          },
+          {
+            "name": "两阶段美光自身承诺不超过8.25亿美元",
+            "parameter": "印度Sanand美光自身投资上限",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "stage": "美光宣布两阶段投入最高825百万美元；未获得截至截点的项目累计实付拆分。"
+            },
+            "previous_value": null,
+            "time_scope": "2023年宣布的两阶段项目框架",
+            "as_of": "2023-06-22",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2023/Micron-Announces-New-Semiconductor-Assembly-and-Test-Facility-in-India-06-22-2023/default.aspx"
+            ]
+          },
+          {
+            "name": "中央支持项目成本50%",
+            "parameter": "印度项目中央财政支持比例",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 50.0,
+              "unit": "%"
+            },
+            "previous_value": null,
+            "time_scope": "Sanand两阶段项目支持框架",
+            "as_of": "2023-06-22",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2023/Micron-Announces-New-Semiconductor-Assembly-and-Test-Facility-in-India-06-22-2023/default.aspx"
+            ]
+          },
+          {
+            "name": "邦激励占项目成本20%",
+            "parameter": "印度项目Gujarat支持比例",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 20.0,
+              "unit": "%"
+            },
+            "previous_value": null,
+            "time_scope": "Sanand两阶段项目支持框架",
+            "as_of": "2023-06-22",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2023/Micron-Announces-New-Semiconductor-Assembly-and-Test-Facility-in-India-06-22-2023/default.aspx"
+            ]
+          },
+          {
+            "name": "新增大用水晶圆厂回收率至少50%",
+            "parameter": "新加坡新增晶圆厂水回收规则",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "自2024年1月起，新增大用水晶圆厂最低水回收率50%；本新建NAND项目的厂务设计需纳入相应适用要求。"
+            },
+            "previous_value": null,
+            "time_scope": "2024-01起的新建项目制度",
+            "as_of": "2025-04-15",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.pub.gov.sg/Resources/News-Room/Featured-Stories/2025/Singapore-Industrial-Water-Revolution"
+            ]
+          },
+          {
+            "name": "2026碳税费率45新元每吨",
+            "parameter": "新加坡碳税法定费率",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 45.0,
+              "unit": "新元/吨CO2e"
+            },
+            "previous_value": {
+              "number": 25.0,
+              "unit": "新元/吨CO2e"
+            },
+            "time_scope": "2026法定费率；比较2024—2025费率，非美光实付有效费率",
+            "as_of": "2023-10-04",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.nea.gov.sg/media/news/news/index/singapore-sets-out-eligibility-criteria-for-international-carbon-credits-under-the-carbon-tax-regime"
+            ]
+          },
+          {
+            "name": "FY2025新加坡一座中央减排系统上线",
+            "parameter": "新加坡中央尾气减排设施运行位置",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "FY2025在新加坡一处设施将中央GHG尾气减排系统投入运行；合并处理连接工具尾气，并非全部NAND工具已覆盖。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2025截至2025-08-28；2026报告第37页",
+            "as_of": "2026-04",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.micron.com/content/dam/micron/global/public/programs/sustainability/documents/micron-technology-2026-sustainability-report.pdf"
+            ]
+          },
+          {
+            "name": "中央系统处理量2700立方米每小时",
+            "parameter": "新加坡中央减排系统尾气处理量",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 2700.0,
+              "unit": "立方米工艺尾气/小时"
+            },
+            "previous_value": null,
+            "time_scope": "2026报告第37页所述FY2025上线系统",
+            "as_of": "2026-04",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.micron.com/content/dam/micron/global/public/programs/sustainability/documents/micron-technology-2026-sustainability-report.pdf"
+            ]
+          },
+          {
+            "name": "报告称减排子系统燃气降90%以上费用降30%以上",
+            "parameter": "新加坡中央减排系统相对运行经济性",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "报告第37页称相对使用点处理，年度天然气消耗减少90%以上，年度减排费用减少30%以上；不是单位NAND制造成本下降。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2025上线系统的相对技术/运行效果；无全厂年度成本桥",
+            "as_of": "2026-04",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.micron.com/content/dam/micron/global/public/programs/sustainability/documents/micron-technology-2026-sustainability-report.pdf"
+            ]
+          },
+          {
+            "name": "FY2025一座新加坡fab AI分析节能约2%",
+            "parameter": "新加坡制造AI能源效率改善",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 2.0,
+              "unit": "%，年度节能约数"
+            },
+            "previous_value": null,
+            "time_scope": "FY2025；2026报告第38页，一座新加坡fab，非所有NAND产线",
+            "as_of": "2026-04",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.micron.com/content/dam/micron/global/public/programs/sustainability/documents/micron-technology-2026-sustainability-report.pdf"
+            ]
+          },
+          {
+            "name": "Q4提高制造激励薪酬主要进入库存",
+            "parameter": "制造激励薪酬成本确认位置",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "FY2026 Q4上调激励薪酬，其中制造相关增加主要吸收进库存；披露为集团制造范围，NAND份额未给出。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026 Q4",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "管理层预计薪酬库存成本主要于Q1兑现",
+            "parameter": "制造激励薪酬成本确认位置",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "stage": "上调FY2026制造激励形成的较高成本库存主要影响FY2027 Q1毛利；FY2027奖励水平预计也较高。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2027 Q1及FY2027制造成本确认",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "TrendForce预计2026企业SSD bit需求增长超过80%",
+            "parameter": "企业SSD行业bit需求增长",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "TrendForce预计日历2026企业SSD bit需求同比增长超过80%，由CSP推理部署驱动。"
+            },
+            "previous_value": null,
+            "time_scope": "日历2026同比，行业预测",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260930-13258.html"
+            ]
+          },
+          {
+            "name": "企业QLC采购与客户端降配并存",
+            "parameter": "NAND终端采购结构",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "TrendForce称企业SSD增量供应多已承诺，QLC需求/供给扩张；客户端OEM依靠库存并降低主流机型SSD容量，eMMC/UFS新增采购有限。"
+            },
+            "previous_value": null,
+            "time_scope": "日历2026 Q4的产业链描述/预测",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260930-13258.html"
+            ]
+          },
+          {
+            "name": "TrendForce预计Q4 NAND合约价环比增15至20%",
+            "parameter": "行业NAND合约价预期变化",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "lower": 15.0,
+              "upper": 20.0,
+              "unit": "%"
+            },
+            "previous_value": null,
+            "time_scope": "日历2026 Q4对Q3，行业预测",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260930-13258.html"
+            ]
+          },
+          {
+            "name": "管理层预计2027和2028 NAND继续受供给约束",
+            "parameter": "行业NAND供需平衡位置",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "stage": "美光预计日历2027和2028行业NAND继续供给受限。"
+            },
+            "previous_value": null,
+            "time_scope": "日历2027及2028",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf"
+            ]
+          },
+          {
+            "name": "TrendForce预计2027下半年供给紧张缓解",
+            "parameter": "行业NAND供需平衡位置",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "TrendForce预计节点迁移与中国供给增长使行业2027下半年由短缺走向较宽松；这不是已发生的过剩。"
+            },
+            "previous_value": null,
+            "time_scope": "日历2027下半年，2026-07发布的路径",
+            "as_of": "2026-07-21",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260721-13148.html"
+            ]
+          },
+          {
+            "name": "2600客户端SSD采用Phison E29T控制器",
+            "parameter": "SSD控制器及配套组件供应安排",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "Micron 2600客户端SSD采用Phison E29T控制器，证明本网络存在具名的外部控制器路线；不将该路线推广至9650/7600/6600或全部托管NAND。"
+            },
+            "previous_value": null,
+            "time_scope": "2025-07已出货2600产品的组件配置",
+            "as_of": "2025-07-01",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://micron.gcs-web.com/news-releases/news-release-details/meiguangtupo-pc-xingnengbianjietuichuzishiyingxierujishuyu-g9"
+            ]
+          },
+          {
+            "name": "PLP支持选定NAND的兼容与转换",
+            "parameter": "选定NAND的长生命周期兼容安排",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "公开PLP覆盖选定NAND，自产品引入日起至少10年form/fit/function兼容，发生料号变更或停产时延长至2年转换窗口；页面未给具体SKU份额，不等于同一die或节点保持10年。"
+            },
+            "previous_value": null,
+            "time_scope": "既有公开生命周期政策，页面未标发布日期；2018汽车/工业SSD公告已描述正式长期支持，非2026新增承诺。",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.micron.com/products/product-lifecycle-solutions",
+              "https://investors.micron.com/news/press-release/2018/Micron-Introduces-Industrys-First-1TB-Automotive-and-Industrial-Grade-PCIe-NVMe-Flash-Storage-11-13-2018/default.aspx"
+            ]
+          }
+        ]
+      },
+      "expectation_baseline": [
+        {
+          "name": "近期以节点转换和既有空间优化扩有效bit",
+          "baseline": "工作基线是FY2027新增有效NAND bit主要来自成熟节点扩量、转换及既有线优化，而不是2028新厂立即补足。G8/G9已承担多数生产，新厂尚在建，二者使转换先行比马上依靠新厂更符合现状。G9为当前最大节点，下一代计划2027下半年量产；这些是公司经营路径，不是已证实的市场共识或固定降本率。",
+          "ordinary_progress": "G9继续扩充合格产品覆盖、下一代按计划导入，并改善每晶圆可售bit；在没有同口径工序测量前，不将节点推进百分比等同成本降幅。",
+          "open_frontier": "下一代首次量产后的良率学习、周期及转换停机能否使可售bit和单位成本按期改善；设备工艺升级和制造AI能否形成超出普通节点转换的净收益。",
+          "time_scope": "FY2027—日历2028新厂初始产出前",
+          "ref": [
+            "D1-O88",
+            "D1-O57",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://newsroom.lamresearch.com/2024-07-31-Lam-Research-Introduces-Lam-Cryo-TM-3-0-Cryogenic-Etch-Technology-to-Accelerate-Scaling-of-3D-NAND-for-the-AI-Era"
+          ]
+        },
+        {
+          "name": "数据中心成品配方延续而非所有终端同步扩量",
+          "baseline": "未来几个季度优先维持高性能推理SSD和高容量QLC成品的制造配置，是比所有NAND终端均匀扩量更支持的路径：美光已有KV-cache交付及6600 ION爬坡，产业链企业需求强而客户端和托管终端采购偏弱。该判断针对产出用途/组合，不把数据中心收入权重当作相同比特权重或单品更高制造利润。",
+          "ordinary_progress": "9650/7600和6600 ION的持续交付，PC OEM已有资格转入相应平台批次，汽车UFS按已量产生命周期供货；自有SSD与组件供货仍并存。",
+          "open_frontier": "成品容量提高后封装堆叠、烧机与系统级测试能否跟上；客户存储降配是否进一步改变客户端装配负荷。新增数据湖容量留给HDD或压缩/缓存复用的程度，决定新增bit吸收而非简单全闪存替代。",
+          "time_scope": "FY2027季度运营与产品组合",
+          "ref": [
+            "D1-O103",
+            "D1-O74",
+            "D1-O172",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+            "https://developer.nvidia.com/blog/?p=111143"
+          ]
+        },
+        {
+          "name": "前后段和组件齐套约束共同限制可交付增量",
+          "baseline": "工作路径是NAND良品增加后仍需后段及组件同步配套，不能把前段bit增幅一比一外推为SSD/MCP成品。印度已商业生产提供自有后段扩展基础，部分旗舰SSD采用美光控制器提供集成基础；2600客户端SSD使用Phison E29T，集团仍使用外包和外部IC，且已报告部分短缺/长交期。因此更合理的默认是通过既有网络爬坡和补齐供应持续交付，而非立即脱离外部约束。",
+          "ordinary_progress": "自有与外包能力持续运作、控制器/配套IC按已资格来源采购、印度扩大处理批次；不把ASE的AI封装扩建直接当美光外包受挤占。",
+          "open_frontier": "QLC容量、速度和可靠性要求使测试成为主要瓶颈的范围；特定IC/材料缺口是否使已完成NAND停留在在制品，双来源或自制转换的时间及净费用。",
+          "time_scope": "FY2027及后段爬坡周期",
+          "ref": [
+            "D1-O74",
+            "D1-O103",
+            "https://micron.gcs-web.com/news-releases/news-release-details/micron-celebrates-opening-indias-first-semiconductor-assembly",
+            "https://investors.micron.com/news/press-release/2025/Micron-Unveils-Portfolio-of-Industry-First-SSDs-to-Power-the-AI-Revolution-07-29-2025/default.aspx",
+            "https://www.aseglobal.com/press-room/ase-breaks-ground-on-new-high-tech-facility-in-kaohsiung/",
+            "https://micron.gcs-web.com/news-releases/news-release-details/meiguangtupo-pc-xingnengbianjietuichuzishiyingxierujishuyu-g9"
+          ]
+        },
+        {
+          "name": "新加坡新增空间按2028首产后分阶段释放",
+          "baseline": "新NAND厂以2028下半年初始晶圆为项目参照，其建设和研发共址支持持续扩量，但稳定商业供给应晚于首产。规划70万平方英尺、十年约240亿美元是空间/投资的最终规模而非2028当年产出。采用分阶段装机和爬坡作为工作基线，既符合管理层保留需求适配弹性，也避免把建设面积算成新增可售bit。",
+          "ordinary_progress": "厂房厂务、工具安装和资格先后推进，按计划出现初始晶圆，并在随后数季逐步放大有意义产出。",
+          "open_frontier": "实际装机强度和共址研发缩短学习周期的程度；最终洁净室利用、折旧开始与稳定合格产出间的资本产出曲线。",
+          "time_scope": "日历2026—2029及项目十年建设周期",
+          "ref": [
+            "D1-O31",
+            "D1-O4",
+            "https://stage-investors.micron.com/news/press-release/2026/Micron-Breaks-Ground-on-Advanced-Wafer-Fabrication-Facility-in-Singapore-01-26-2026/default.aspx",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+          ]
+        },
+        {
+          "name": "印度共享后段从商业开始转向规模与学习曲线",
+          "baseline": "Sanand已商业生产，后续继续爬坡而非停留建设方案是更有依据的默认。公司计划2026千万级、2027亿级芯片处理；这些是DRAM/NAND共享规模，不能用于计算NAND新增bit。原2023项目投入由政府支持较大部分，能降低自有项目资本负担；它不证明当地单位制造成本已优于其他基地。",
+          "ordinary_progress": "人员训练、工序认证、来料和全球物流扩大，并逐步利用一期空间；财政支持仍按项目条件与实际拨款区分。",
+          "open_frontier": "NAND具体SKU和合格处理份额、转移现有产量或净增产量的比例；学习期间良率、运输及重复设备成本能否抵销资助优势。",
+          "time_scope": "日历2026—2027及两阶段项目周期",
+          "ref": [
+            "D1-O31",
+            "https://micron.gcs-web.com/news-releases/news-release-details/micron-celebrates-opening-indias-first-semiconductor-assembly",
+            "https://investors.micron.com/news/press-release/2023/Micron-Announces-New-Semiconductor-Assembly-and-Test-Facility-in-India-06-22-2023/default.aspx"
+          ]
+        },
+        {
+          "name": "公用事业和减排改造进入正常厂务投入而非既成停工",
+          "baseline": "本地水回收要求与碳税上升应被作为新厂设计及既有厂成本管理的正常约束，默认路径是持续生产并通过厂务效率、回收和尾气处理适配，而不是因全国负荷增长直接判定NAND停工。FY2025中央减排上线及一座新加坡fab AI节能约2%提供了实际改造能力依据；费用改进只覆盖对应子系统，不能放大为整体NAND成本降幅。",
+          "ordinary_progress": "在适用的新厂水回收要求下完善厂务，并沿已运行系统扩展节能/减排；将相关资本和运行费用同时考虑。",
+          "open_frontier": "2028前本厂已落实接电容量、合同电价和超纯水净供给，及改造覆盖率/净回收期；2031全国新增发电计划既不是2028本厂供电承诺，也不是已证实的缺电证据。",
+          "time_scope": "FY2027运营成本至2028新厂投用",
+          "ref": [
+            "D1-O74",
+            "https://www.pub.gov.sg/Resources/News-Room/Featured-Stories/2025/Singapore-Industrial-Water-Revolution",
+            "https://www.nea.gov.sg/media/news/news/index/singapore-sets-out-eligibility-criteria-for-international-carbon-credits-under-the-carbon-tax-regime",
+            "https://www.micron.com/content/dam/micron/global/public/programs/sustainability/documents/micron-technology-2026-sustainability-report.pdf",
+            "https://www.ema.gov.sg/news-events/news/media-releases/2026/ema-awards-rfp-for-new-generation-capacity-to-tuas-power"
+          ]
+        },
+        {
+          "name": "供应集中仍是连续运营约束但不默认气体全面断供",
+          "baseline": "公司已报告部分投入品短缺/交期延长和有限合格来源，因此制造计划仍需为关键投入安排库存及资格来源；更支持的是有约束的持续生产，而非假定全部供应已顺畅或全厂停产。外部氦气历史中断只是寻找暴露的线索，不能代替美光现存合格库存和工序数据。",
+          "ordinary_progress": "既有合格来源持续供货、供应风险监控及第二来源认证推进，维持当前计划中的生产。",
+          "open_frontier": "哪种高纯材料、零件或工程人才的不可替代性会先影响停机/复产，而不只是采购费用；同园区HBM爬坡对共享工程资源的净争夺或协同。",
+          "time_scope": "FY2027连续运营及2028前扩建期",
+          "ref": [
+            "D1-O74",
+            "D1-O31",
+            "https://stage-investors.micron.com/news/press-release/2026/Micron-Breaks-Ground-on-Advanced-Wafer-Fabrication-Facility-in-Singapore-01-26-2026/default.aspx"
+          ]
+        },
+        {
+          "name": "短期吸收偏紧与2027下半年再平衡两种路径并存",
+          "baseline": "采用近期需求吸收偏紧、按需求分期扩设备的工作基线，依据已实现的NAND出货和成品爬坡及最新企业采购信号，而不沿全年ASP约200%同比上升外推。美光对2027—2028继续紧张的判断与TrendForce对2027下半年缓解的路径并不一致；对2028新空间采用可分期装机而非确定满产，能保留这项实质分歧。",
+          "ordinary_progress": "当前已资格产品继续交付，G9/下一代推动bit增长，2028新厂仍按首产进度建设而设备能力随需求配置。",
+          "open_frontier": "竞争者良品bit与成本改善能否快过需求，从而改变美光利用率、非合同实现价与新增资本回收；行业bit增长本身不能判定过剩或证明项目回报。",
+          "time_scope": "近期季度至日历2027—2029",
+          "ref": [
+            "D1-O57",
+            "D1-O103",
+            "https://www.trendforce.com/presscenter/news/20260721-13148.html",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf",
+            "https://stage-investors.micron.com/news/press-release/2026/Micron-Breaks-Ground-on-Advanced-Wafer-Fabrication-Facility-in-Singapore-01-26-2026/default.aspx"
+          ]
+        },
+        {
+          "name": "新型近计算闪存尚不构成美光默认量产分支",
+          "baseline": "目前将常规高性能/高容量SSD保持为美光实际制造主路径，而将HBF及GPU直接访问专用闪存留为制造路线开放边界。外部厂商在标准协作和功能样品上投入，说明这不是纯概念；但样品阶段和既有美光KV-cache出货是不同位置，尚不足以给本网络加入已量产的HBF分支。",
+          "ordinary_progress": "美光现有G9产品继续供货；外部GP1评估样品或HBF标准进展是该路线的普通推进参照，不代表美光已采用或建立量产分支。",
+          "open_frontier": "是否需要不同die、封装连接、热控制、测试和可靠性路线，以及美光会自建、合作或不进入；进入后占用的前后段资源与普通SSD的真实替代关系。",
+          "time_scope": "日历2026末—2028产品/制造路线周期",
+          "ref": [
+            "D1-O51",
+            "D1-O67",
+            "D1-O103",
+            "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf",
+            "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html"
+          ]
+        },
+        {
+          "name": "地域合规维持现有多路径供货而非默认全面迁厂",
+          "baseline": "当前更支持以既有网络和特定产品合规选项维持供货，不因原产地话题直接预计NAND前段从新加坡搬离。旗舰SSD已有TAA等选项，Sanand又提供后段地域分工，但合规选项不是所有SKU均适用，也不等于印度后段自动改变所有原产地认定。",
+          "ordinary_progress": "现有合规SKU、可追溯及既有生产资格继续服务对应采购；新增地域工序按项目本身爬坡。",
+          "open_frontier": "买方指定制造地域是否扩大到核心SKU并强制具体工序迁移，及随之发生的重新资格、良率、物流和重复资本代价。",
+          "time_scope": "FY2027及多年客户/地域项目周期",
+          "ref": [
+            "https://investors.micron.com/news/press-release/2025/Micron-Unveils-Portfolio-of-Industry-First-SSDs-to-Power-the-AI-Revolution-07-29-2025/default.aspx",
+            "https://micron.gcs-web.com/news-releases/news-release-details/micron-celebrates-opening-indias-first-semiconductor-assembly",
+            "D1-O74"
+          ]
+        },
+        {
+          "name": "短期报告成本含薪酬确认时差而非纯节点效率",
+          "baseline": "FY2027 Q1成本表现应允许制造激励薪酬随较高成本库存售出而上升，不能把这一时差直接解读为NAND节点降本逆转。该路径源自集团制造薪酬的实际资本化及管理层Q1确认预期；NAND独立金额未披露。结构性单位成本判断仍以节点、良率和利用率的可比变化为参照。",
+          "ordinary_progress": "相关库存进入销售成本，随后FY2027较高奖励方案影响新生产批次；报表成本与工程效率可能暂时不同步。",
+          "open_frontier": "NAND实际分摊与售出节奏，以及持续薪酬、材料、折旧上升是否超过节点/良率收益，令成本上移不再只是一次性确认。",
+          "time_scope": "FY2027 Q1—FY2027全年",
+          "ref": [
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "D1-O57"
+          ]
+        },
+        {
+          "name": "长生命周期供货以兼容迁移和选择性遗留配置并行",
+          "baseline": "对明确纳入长期支持的NAND，默认通过兼容替代、客户资格和按约供货完成节点迁移，而不是最新节点立即替换全部存量或旧die十年冻结。公开产品政策与汽车新工艺交付支持兼容迁移/遗留供货并存；尚无主力G9 SKU支持政策归属与遗留产能份额。",
+          "ordinary_progress": "按既有客户支持和变更窗口提供兼容产品，并在资格完成后释放旧配置；必要时保留小批量或合理提前库存。",
+          "open_frontier": "客户再资格延后、支持范围扩大或替代兼容失败是否增加遗留设备、工程与库存占用，从而改变下一代节点转换净收益。",
+          "time_scope": "客户多年生命周期与FY2027—2028节点转换交叉",
+          "ref": [
+            "https://www.micron.com/products/product-lifecycle-solutions",
+            "D1-O74"
+          ]
+        }
+      ],
+      "realization_factors": [
+        {
+          "name": "应用回报与付费采用创造制造需求，而效率同时释放预算",
+          "mechanism": "企业和个人只有在模型质量、完成任务的可靠性与工作流接入使节省劳动或新增收入超过服务费和实施成本时，才扩大付费采用与任务频率。企业的数据控制和监控条件另决定哪些用途可进入生产；由客户保留活动日志会改变保存位置与采购主体，而不是让数据必然不再存放。应用方选择自动化范围和代理持续时间；模型商控制服务价格、每任务计算成本和平台投入。更高有用性或更低每任务费用提高客户回报，既可降低固定任务量的资源需求，也可诱发新增任务。模型商的收入、服务毛利与外部融资共同支持基础设施预算，云商再在自建、租赁和既有容量之间分配。实际活动超过已有计算/存储余量才加速新增采购；系统配方与供应商份额把这项需求分配给美光NAND制造，而非模型融资额直接变成闪存订单。",
+          "current_status": "现时更有支持的解释是付费用途扩展叠加资源效率改善，尚非只有资本热潮而无商业吸收：Anthropic于2026-05披露商业扩张及新融资，9月新产品又以减少完成任务的token数降低用户费用。与此同时，美光已交付推理缓存SSD、企业成品迅速放量。单一模型商的披露不能代表全部AI盈利，也没有本厂客户逐项闲置容量数据；最新企业采购偏紧使额外有用任务较容易首先体现为配额、价格或排期，而非立即增加美光投片。2026-09-01公布的EFS拟在秋季分期推出客户控制存储安排，显示数据治理门槛具有可调整的技术/商业路径；这不是截点已全面部署或新增SSD订单。",
+          "materiality_context": "有用性、可靠性和接入成本控制可服务的经济任务边界：只改进演示分数而未减少返工，工厂需求可不变；若已付费工作流覆盖扩大，则扩大多年可吸收bit机会。付费采用率、任务频率与代理持续时间决定活动量，固定强度下增加10%活动约增加10%资源工作量，但其对新设备的影响取决于余量而不等于10%采购。用户服务费和每任务计算成本分别影响客户回报、模型商毛利；发布方称部分任务费用最多降低30%，这是效率与预算弹性的例证，不是SSD消耗下降30%的测量。收入和融资决定预算可持续性，前者有重复性、后者可在尚未盈利时提前扩建；二者不得与资本开支重复加总为需求。自建/租赁选择改变建设主体与时点，既有容量余量吸收近端活动；目前企业供应承诺较多，余量不足时需求增长的价格/未来装机效应大于短期产量效应。系统配方和美光份额决定参与程度，即使总机会扩大也可由其他介质或供应商取得。数据控制、监控及信任条件在敏感用途上可成为比服务费更强的进入门槛；改善条件可开放原先不能开展的任务，事故可收缩采用。客户保存日志增加或迁移容量，但冷热分层和保留期决定其中多少牵引闪存，不能把模型商零保留承诺当整个系统零存储。当前这是扩展用途的开放杠杆，而非已量化的本厂bit增量。",
+          "scope_boundary": "解释需求生成直至本制造网络的负荷与扩建回报；AI应用竞争、模型商资金及云平台采购由相邻主体深入，不将其估值或融资当本Unit收入。",
+          "ref": [
+            "https://www.anthropic.com/news/series-h",
+            "https://www.anthropic.com/claude-sonnet-5-5",
+            "D1-O103",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+            "https://developer.nvidia.com/blog/?p=111143",
+            "https://www.anthropic.com/news/enterprise-frontier-safeguards"
+          ]
+        },
+        {
+          "name": "上下文工作集、复用与分层决定闪存强度和产品配方",
+          "mechanism": "云商与应用开发者共同决定任务到达率、并发、每任务上下文/数据规模及保留时长，形成工作集；调度、缓存命中、压缩和去重降低需新增存放或搬运的净字节。重算成本与存储/读取成本的比较决定是否保留中间结果。系统设计者按访问热度、延迟和带宽在HBM/DRAM、近端SSD、共享闪存和容量HDD之间配置，网络与软件预取能力使远端介质可用或成为瓶颈，电力与机架空间限制又提高容量密度的价值。容量需求主要牵引高密度QLC，随机访问、写入耐久与低延迟要求则改变TLC/QLC、控制器、预留空间和测试配方；原始数据增长因此不是同量NAND增长。",
+          "current_status": "NVIDIA CMX把上下文存储置于分层缓存和软件搬运中，美光7600/9650已为KV-cache客户交付，6600 ION承接高容量成品爬坡。工作判断是热缓存与容量层同时扩展，而不是所有AI数据都永久留在高性能SSD；Western Digital公布HAMR客户资格与后续爬坡也支持冷容量层竞争。当前没有美光每任务净闪存系数，不能把复用性能或HDD容量增长转换为已发生的美光减产。",
+          "materiality_context": "任务到达率/并发、数据规模和保留时长控制工作集大小：在稳定到达、无重复且容量受约束的简化模型中，存放量约为到达率×每任务字节×保留时长；只将保留时长加倍可使这一部分容量翻倍，短命缓存与永久业务记录却不能共用该系数。调度提高设备复用率，命中、压缩和去重降低净容量或读取量，重算相对成本改变保存意愿；已有余量时首先降低采购紧迫性，成本降低诱发更多任务后净作用可反转。热度、延迟/带宽和写耐久决定可替代性：HDD对冷容量的价格约束大，对强时延热缓存的直接替代弱；网络/预取不足会令便宜远端闪存不能替代本地层，故兼容性是路线门槛。电力/机架上限使每盘容量和每瓦吞吐比同量字节更重要。TLC/QLC与预留空间决定每个可售TB所需原始bit，控制器和测试决定成品成本及齐套速度；当前DC成品已重要，配方改变的制造资源效应更直接，长期效率改善则主要改写新厂吸收强度。",
+          "scope_boundary": "系统架构只深化至原始bit、良品配方及后段资源后果；系统性能和商业选型归数据中心闪存与存储系统，行业HDD机会不记为美光制造收入。",
+          "ref": [
+            "https://developer.nvidia.com/blog/?p=111143",
+            "D1-O103",
+            "D1-O74",
+            "https://www.westerndigital.com/in-id/company/newsroom/press-releases/2026/2026-02-03-western-digital-accelerates-storage-innovation-for-ai-era"
+          ]
+        },
+        {
+          "name": "专用近计算闪存以带宽和封装门槛重分配制造出口",
+          "mechanism": "平台方若将模型权重或近计算数据从昂贵内存层下移，容量成本优势只有在介质访问延迟、并行度和接口带宽满足计算等待时间时才成为经济替代。HBF或GPU直接访问专用闪存可用不同介质、通道与封装连接改善这些条件；热控制、可靠性及系统资格决定能否长期运行。接口标准与软件生态影响供应商进入，介质/封装知识产权和合格产能影响价值归属。美光可选择开发、合作、仅供普通NAND或不进入；进入会占用研发、前段/后段资源，改变普通SSD的机会成本，而不只是把既有SSD产量放大。",
+          "current_status": "外部HBF规范协作与Kioxia GP1功能样品计划说明制造出口正在被探索，尚不是美光已建立的量产分支。NVIDIA的开放存储接口协作包括多家伙伴，不构成美光独享；其现有KV-cache SSD交付也不证明使用HBF或XL-FLASH。当前常规SSD是现金产出的主路径，专用分支在能力/参与权上的新信息可以先改变多年可服务市场，即使近期产量为零。",
+          "materiality_context": "容量成本决定潜在替代的吸引力，但访问延迟、并行度和接口带宽共同决定是否能替代昂贵内存：只增加容量却使GPU等待，便宜介质未必降低每任务总成本。热控制和可靠性限制封装密度与可持续性能，系统资格把技术可用转换为客户可买，时间通常跨产品周期而非当天增产。开放标准/软件可降低接入门槛，专有介质和封装权利又可把收益留给竞争者；这两组变量比目前未发生的美光专用出货量更能改写其参与前景。开发或合作选择改变投资强度及收益分成，研发与前后段资源占用在紧供给环境下会牺牲普通SSD交付。现有前段可迁移性高时新增出口只需较少增量资本，若须新die与专用测试则回报门槛显著上升。没有目标配置/成本数据，不能将专用闪存容量乘统一SSD ASP估算收入。",
+          "scope_boundary": "解释专用出口对本网络工艺、资源和投资选择的影响，不宣称技术标准、外部样品或美光量产已共同实现；DRAM/HBM制造属于相邻Shell。",
+          "ref": [
+            "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf",
+            "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html",
+            "https://blogs.nvidia.com/blog/ai-storage-fms/",
+            "D1-O103"
+          ]
+        },
+        {
+          "name": "客户融资、接电和验收把需求规模转换为制造时点",
+          "mechanism": "客户项目的可用融资与租赁/收入承诺支撑建设，接电、施工、系统交付和验收决定部署日期。SSD采购可领先上线以备料，也可因安装窗口后移而递延；客户库存和供应交期改变这段提前量。美光依据订单与交付条款安排生产，绑定数量或take-or-pay减轻随意取消，但交付弹性、价格重置与信用履约仍影响吸收。客户延期若未能同步减产，先形成工厂在制/成品库存与营运资本占用；相反，已建容量快速消耗库存可使采购增长快于部署数量。",
+          "current_status": "公开AI园区资料同时存在已交付租赁资产和未来大型新项目。Abilene DC1的既有融资/租约与2026公布的900MW新校园不是同一项目；不能把一项2027接电安排读成现有机房停用。美光集团已有长期供应协议和客户承诺，企业增量SSD供应也较多被预订；工作解释是排期/库存与履约条款调节季度吸收，而非每一次客户供电延迟都取消NAND需求。没有NAND独立合同覆盖率。",
+          "materiality_context": "融资可用性和租赁/收入承诺决定项目能否开建、融资条件决定扩建成本；对尚未开工项目影响多年总机会，对已上线园区的近期需求影响较小。接电、施工和系统验收是串行时间约束，一环延迟一季可把对应项目的安装需求后移一季而不消灭其生命周期容量；SSD提前备料会减弱同期美光出货反应。客户库存与供应交期决定采购弹性：去库存可使终端活动增而订单平，库存耗尽则使同样活动更快牵引采购。绑定数量降低取消自由度，交付弹性决定延期落在哪个期间，价格重置/信用履约决定保护的是数量还是经济收益；集团协议不能量化为所有NAND收入地板。工厂存货是这一时差的结果，持有期增加会占用资金并承受价格/规格过时风险。当前供应承诺与企业采购强支持持续生产，客户项目日程对2027—2029新厂负荷的修订空间仍大于对本周可产bit的作用。",
+          "scope_boundary": "客户园区资源与新加坡工厂资源是两条不同电力链；公司整体融资归资金Shell，此处保留其与订单、库存及工厂排期的连接。",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/1944366/000194436626000020/exhibit993-2025abelinedc1l.htm",
+            "https://www.crusoe.ai/resources/newsroom/crusoe-announces-new-900-mw-ai-factory-campus-in-abilene-texas-to-support-microsoft-ai-infrastructure",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html"
+          ]
+        },
+        {
+          "name": "终端容量、资格与渠道选择在有限资源中分配产品组合",
+          "mechanism": "PC、手机、汽车及工业客户的设备销量、单机存储容量和平台功能决定所需bit；OEM售价/物料预算约束可使销量增长与存储降配同时发生。客户设计导入、可靠性资格和平台寿命决定需求何时可由美光供给。客户可买NAND组件自行整合，也可买美光SSD/托管NAND/MCP；后者增加组装、控制器和系统测试负荷并扩大价值捕获。美光在有限良品bit与瓶颈后段小时中按可得售价、成本及履约承诺分配SKU，数据中心需求变化会挤占或改善其他组合，而不一定改变总投片。",
+          "current_status": "当前数据中心成品吸收强于普遍消费复苏：DC SSD已成为NAND收入主要部分，但客户端OEM有降配/库存消化，汽车G9 UFS已批量交付。退出Crucial消费品牌后仍有OEM和组件渠道，故制造网络不是只服务云端。合理工作判断是优先高需求成品并维持已资格其他产品；没有足够成本数据断言每颗DC NAND的制造利润均高于汽车或组件。",
+          "materiality_context": "设备销量与单机容量在同规格下相乘决定bit量；例如销量增10%、容量降10%，该终端需求约为原来的99%，仅为条件演算。功能增加抬升容量/性能要求，OEM预算及售价弹性抑制这种升级；当前客户端降配的边际作用比新增资格名单更直接牵引批量。设计导入和可靠性资格是供应商份额门槛，平台寿命决定订单重复性，短期资格完成不等于客户立即满量。组件/成品渠道改变每bit的非NAND资源需求和收入，因而DC超过三分之二收入不能推出超过三分之二bit。可得售价、制造/BOM成本与瓶颈小时共同决定每单位稀缺资源贡献，履约承诺限制随价换配方；满负荷时组合优化可改善回报而不增产，后段有余量时转自有成品才更容易同时提高价值与负荷。现在DC方向影响现有资源配置，其他终端的需求反转则可能先影响余下产品与未来设备配置，不应因现时收入较小而删除。",
+          "scope_boundary": "终端业务域深入产品采用与份额，本域解释其对晶圆配方、后段占用与制造经济性的不同影响；MCP的DRAM子组件制造归内存域。",
+          "ref": [
+            "D1-O74",
+            "D1-O103",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+          ]
+        },
+        {
+          "name": "投片、密度、良率和利用率共同形成可售bit与单位成本",
+          "mechanism": "工厂在合格设备上安排晶圆起始量，每片的有效die数和单die原始bit形成名义密度，工序良率与筛选等级再决定良品bit。层数/面积优化不自动等于经济密度提升。设备瓶颈吞吐、停机维护和转换停线控制可投片量；制造周期决定在制品和产出滞后，周期缩短只有解除瓶颈或减少占用才增加稳态吞吐。材料/能源/劳动等每片可变投入与固定厂务、折旧除以合格产出形成成本/Gb；利用率影响固定摊薄，节点转换的临时低产出和学习成本可先上升再下降。",
+          "current_status": "G9已是最大单一节点、下一代计划2027下半年量产；2028新厂之前，密度/良率及既有工具效率是主要供给增量接口。集团通常使用现有能力和NAND制造降本方向支持高资源使用的工作判断，但没有独立NAND利用率、良率、每片bit或成本/Gb测量。已售bit同时受库存与需求影响，不能把全年出货增长直接当良品生产增幅。",
+          "materiality_context": "晶圆起始量、有效die数与单diebit在其他条件固定时对名义产出近似同比例；良率/等级决定其中多少可售，持续学习比宣布层数更接近现金产出。示例：名义密度增10%而良率相对降10%，良品bit仅为原来99%；这是恒等关系演算，不是G9估计。瓶颈吞吐和停机时数在能力接近满用时影响当期可产量，转换停线会跨季度抵销新密度；若有闲置合格工具，利用率恢复先于新投资释放产量。制造周期主要影响交付时点和WIP，不能无条件把缩短20%周期当增产25%。每片可变投入随工艺步骤/资源变化，固定厂务和折旧短期较难下降；产量降10%且固定成本不变，其单位固定成本约增11.1%，但总单位成本增幅取决于固定项占比。当前转换进度、良率学习和瓶颈效率对2027有效bit更有杠杆，折旧/利用率决定转换后经济性；价格与成品组合不应被算成这一工艺降本机制。",
+          "scope_boundary": "深化自有NAND前段至良品bit和同口径单位成本；后段损失另述，ASP与集团报表不替代工艺测量。",
+          "ref": [
+            "D1-O88",
+            "D1-O57",
+            "D1-O74",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+          ]
+        },
+        {
+          "name": "刻蚀沉积和键合路线改变密度收益的工程代价",
+          "mechanism": "3D NAND增层提高孔深和高宽比，刻蚀轮廓、底部反应物输送、沉积厚度/均匀性和材料应力影响电性良率、工序时间与可变成本。设备商的低温刻蚀及兼容工具方案可提高单工序速率或降低耗能，但厂方须完成配方整合、维护和资格，整线收益受其他瓶颈限制。将CMOS与存储阵列分片制造再键合可分别优化工艺，代价是另一片晶圆、键合精度/良率和额外设备；与单片集成不同的密度/成本曲线影响竞争及美光路线选择。",
+          "current_status": "Lam 2026-04技术解释把深孔输送与轮廓控制列为扩层约束，2024 Cryo 3.0披露的是供应商工序性能而非美光已实现效果。Kioxia 2026-07 BiCS10功能样品采用CBA分片再键合，说明竞争不限于层数；样品的标称密度改善也不是竞争量产良率或美光成本差距。现有G9量产与下一代计划说明美光已有路线，外部新工艺是否改写其设备/研发投入仍是开放的工程选择。",
+          "materiality_context": "孔深/高宽比增加把轮廓、电性和时间约束变得更强，沉积均匀性与应力可使同样层数出现不同良率；这些变量控制密度收益能否保留，影响整个节点。单工序速率、耗能和维护影响工具产能与成本，兼容工具降低替换资本，配方整合/资格决定收益开始时间。Lam声称刻蚀速率2.5倍不能放大为整厂2.5倍：若该步骤仅占原串行周期30%，其余不变，周期变为0.7+0.3/2.5=0.82；18%缩短仍不保证解除稳态瓶颈，此为示例。CBA的分片优化/密度增益须与额外晶圆及工具成本、键合精度/良率相抵，任一片缺陷都可损失最终合格die；更高密度但低键合良率未必降$/Gb。当前G9学习对当期供给较直接，外部路线的重大新进展则可提前改变下一代竞争成本与投资选择，不必等竞争者满产才有经济意义。",
+          "scope_boundary": "只引入NAND适用的刻蚀、沉积及CBA机制，不把Lam文章中DRAM铜互连段套入NAND；供应商声明不是美光已购工具或兑现的收益。",
+          "ref": [
+            "https://newsroom.lamresearch.com/how-deposition-and-etch-are-reshaping-chips-for-the-ai-era",
+            "https://newsroom.lamresearch.com/2024-07-31-Lam-Research-Introduces-Lam-Cryo-TM-3-0-Cryogenic-Etch-Technology-to-Accelerate-Scaling-of-3D-NAND-for-the-AI-Era",
+            "https://apac.kioxia.com/en-apac/about/news/2026/20260703-1.html",
+            "D1-O88",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+          ]
+        },
+        {
+          "name": "QLC可用容量、耐久与测试强度决定合格成品成本",
+          "mechanism": "每cell存放bit和单die容量提高原始密度；实际可用容量还受坏块、备用空间及缓存模式影响。写入放大、擦写寿命和客户工作负载决定耐久，控制器/固件可通过纠错、管理及缓存改善可用性但占用资源。封装die数、互连/热设计和封装良率决定堆叠能否成为可靠产品；晶圆筛选、烧机、封装电性与SSD系统测试按容量、接口速度和可靠性要求占用测试时间，设备并行度/可用率决定有效测试能力。制造必须同时满足容量、性能和客户资格，而不是只把原始bit装进外壳。",
+          "current_status": "G9 QLC 2Tb/die与245TB 6600 ION已经给出真实高密度配置，高性能SSD和车规UFS又有不同可靠性配方。测试供应商说明容量/层数和接口要求改变测试负荷，Micron耐久案例表明媒体缺陷预期、缓存和客户可靠性门槛共同影响产品化。没有目标测试时数或良率，工作判断是QLC扩大后段配方差异而非已证实全网络测试瓶颈。原始die容量不能直接反推245TB产品的精确die数。",
+          "materiality_context": "cell bit数和die容量降低固定TB所需芯片/封装数，原始密度收益可能部分被备用空间、坏块和缓存占用抵销；这些项决定可售而非原始$/TB。写入放大和擦写寿命控制在给定容量下的寿命写入量，工作负载改变它们的适用性，不能将客户端平均值套KV-cache。纠错/固件管理可保留更多合格介质，却有性能和组件资源代价。die数、互连与热设计增加封装复杂度，封装良率降低会同时浪费已合格NAND；高die密度又可能减少同TB的装配次数，因此更大盘不必然更高单位TB测试负荷。测试时间、并行度和设备可用率共同决定吞吐：固定SKU、并行度和设备量下，测试时间翻倍使该工序设备产能减半，只在它是瓶颈时减半成品量。容量/速度/可靠性门槛和客户资格改变这些时间与筛选，近端比名义层数更能改变后段投资。当前已发货的大容量和车规产品使齐套/测试重要，尚未测量的全厂系数应保持为配方敏感性，不宣布统一成本惩罚。",
+          "scope_boundary": "覆盖本Unit的介质、封装测试与产品可用bit；控制器设计与SSD系统资格深度由产品Shell持有，此处保留其制造占用；Advantest资料不证明其为美光已安装设备。",
+          "ref": [
+            "https://micron.gcs-web.com/news-releases/news-release-details/meiguangtupo-pc-xingnengbianjietuichuzishiyingxierujishuyu-g9",
+            "D1-O74",
+            "D1-O103",
+            "https://www.advantest.com/document/en/investors/ir-library/briefing/E_IR_technical_briefing_231129.pdf",
+            "https://www.micron.com/about/blog/storage/ssd/tackling-ssd-endurance-made-me-a-better-product-manager"
+          ]
+        },
+        {
+          "name": "组件齐套与合格来源把良品NAND转换为可交付存储",
+          "mechanism": "SSD和托管NAND所需的控制器、配套DRAM、模拟IC、基板等构成固定配方，最终产出受各合格组件与装配能力的最小可配套数量约束。自研控制器/固件有利协同，但设计所有权不等于外部晶圆制造、封装或零件持续供货。组件供应商与代工厂控制交期、合格产能和价格，美光以库存、合同和双来源缓冲；替换需固件适配与可靠性资格，不能当天互换。组件缺口使NAND留在库存，后段利用率及成品现金回收下降；转售组件NAND可以减轻积压，但未必保持原产品收益。",
+          "current_status": "旗舰9650/7600/6600采用美光控制器等组合，2600则使用Phison E29T，体现按SKU不同的自研/外购路线。集团报告部分组件短缺/交期延长和有限来源，使齐套约束不是纯想象，但没有具名NAND产量损失。当前更合理的操作解释是配方与供应保障共同维持交付，不能宣称垂直整合已消除外部依赖，也不能指定未确认的Silicon Motion供应关系。",
+          "materiality_context": "控制器、DRAM、模拟IC、基板各自BOM数量确定配套比例：即使一个便宜IC仅占成本很小份额，缺货也可限制整盘价值，作用不按采购金额排序。合格产能和交期决定几周至数季可交付量，价格主要影响单位BOM；资源紧张时数量可比涨价更重要。库存和合同降低短期断供概率但占用资金或锁定成本，双来源减少集中风险但有重复工程费用；固件适配/可靠性资格控制替代延迟，通用名称相同不等于可直接代用。自研设计改善协同及价值捕获，外部制造仍可为独立瓶颈。装配能力是另一最小项，缺件造成低利用率并抬升单位固定成本；转售NAND改变售价/渠道而不消除原成品订单问题。当前DC成品权重较大，使组件保障对制造商业化的杠杆高于只看晶圆产量；欠缺的具体供货损失金额不削弱这一非线性关系。",
+          "scope_boundary": "覆盖含NAND成品齐套，配套DRAM制造由内存Shell持有；供应链身份按具名SKU限定，不以自研等同自制或将产业示例指定为供应商。",
+          "ref": [
+            "https://investors.micron.com/news/press-release/2025/Micron-Unveils-Portfolio-of-Industry-First-SSDs-to-Power-the-AI-Revolution-07-29-2025/default.aspx",
+            "https://micron.gcs-web.com/news-releases/news-release-details/meiguangtupo-pc-xingnengbianjietuichuzishiyingxierujishuyu-g9",
+            "D1-O74",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+          ]
+        },
+        {
+          "name": "工具交付、工程学习和辅助AI决定能力转化速度",
+          "mechanism": "新工具交付、安装与资格的串行进度决定已购设备何时可用；合格工程师、技术员及维护能力控制工艺学习、故障修复和稳定运行。节点转换与新厂并行时，公司在研发、NAND和邻近项目间配置稀缺工程资源，共享可形成协同也可拖延任务。缺陷识别、预测维护、工程助手和厂务AI分别减少报废、停机、诊断时间或能源，只有可靠数据、适用模型及人工验证把建议转为正确操作才形成净收益；模型漂移与误判可反向损害工艺。学习改善良率/可用率，再通过前段与后段瓶颈关系兑现产出。",
+          "current_status": "新加坡NAND项目仍在建，约1600新岗位是计划，邻近HBM设施2027爬坡意味着工程安排需共同管理，不表示已挤占NAND工具。旧制造AI案例及2026工程助手采用说明应用基础，FY2025一座新加坡fab AI能源分析有约2%节能实绩，但并非G9良率提升或自主工艺闭环。当前工程/工具兑现直接关系转换节奏，AI应视为分工序效率杠杆而非给全部节点密度收益贴标签。",
+          "materiality_context": "工具交付和安装资格决定新增能力开始时间；延迟一季会减少当季可用工具时间，不必改变最终空间或寿命产能。工程师数量/技能与维护覆盖影响学习速度及故障时长，人数增加只有匹配工序经验才有效；共享研发、NAND/HBM项目配置的边际重要性在同时建设时上升，但没有资源可互换或已延期证据。缺陷识别降低报废、预测维护提高可用率、工程助手缩短诊断、厂务AI降能耗，它们作用于不同成本/产量项不能相加成单一增产率。数据质量、模型适用性、人工验证及漂移/误判决定净效果；错误控制在满负荷高价值WIP下可能比节省人工更有代价。前后段瓶颈决定改善能否增加最终交付：非瓶颈诊断更快可以先降成本，瓶颈停机减少才立即放大产量。当前节点转换和2028建设时间使有经验人才与资格进度较有杠杆，已披露2%能源改善为较小且有边界的实绩，历史2016—2020收益不推成2026幅度。",
+          "scope_boundary": "制造学习与共享项目资源由本域承接，HBM专用工具不假定转换为NAND；厂务节能在能源Factor评估成本，不重复记为良率收益。共用生产数字系统停用和配方/追溯完整性的风险属于连续运营接口，另由“生产数字系统的共同失效改写分散网络的真实韧性”保留跨基地后果，不等同AI模型漂移。",
+          "ref": [
+            "https://stage-investors.micron.com/news/press-release/2026/Micron-Breaks-Ground-on-Advanced-Wafer-Fabrication-Facility-in-Singapore-01-26-2026/default.aspx",
+            "D1-O31",
+            "D1-O74",
+            "D1-O104",
+            "https://www.micron.com/about/blog/applications/ai/smart-sight-how-micron-uses-ai-to-enhance-yield-quality",
+            "https://www.micron.com/content/dam/micron/global/public/programs/sustainability/documents/micron-technology-2026-sustainability-report.pdf"
+          ]
+        },
+        {
+          "name": "高纯材料连续性以库存覆盖和再资格产生非线性损失",
+          "mechanism": "工艺所需气体/化学品的纯度和稳定性限定合格来源。来源集中、运输时间和补给中断相对于工厂可用库存覆盖天数，决定冲击只是涨价还是缺料停序。多地区采购与供应商储存可缓冲，但替代来源需纯度验证、工艺再资格与物流准备；复产还可能承担WIP报废、腔体恢复和重新稳定的损失。采购费属于直接成本，而不能及时补给的瓶颈材料控制更大范围的设备与良品产出。",
+          "current_status": "集团有限/单一合格来源及部分长交期支持连续运营约束的真实存在。外部氦气历史供应事件和供应商储存/多地区调剂解释为何同一上游扰动不必同时令全部客户停工；它们不证明美光在截点已断供，也不确认Air Products为本厂具体气体供应者。当前工作路径是靠合格来源与缓冲维持生产，暴露由具体材料及覆盖期决定，而不是把全国气体价格与NAND减产作线性等同。",
+          "materiality_context": "纯度/稳定性决定可替代性，来源集中增加同时失供风险；这两项能使小采购成本成为大产出约束。库存覆盖与运输/中断时长比较决定近端敏感性：假设可用库存30天、补给20天则短时冲击多体现物流/价格，若中断45天且无替代，约15天缺口可能损失对应工序时间；这是阐明机制的情景，不是目标库存。多地区供应与储存降低共同暴露但增加持有/运输费用，再资格时间决定能否在库存耗尽前换源。复产WIP报废与恢复时间会使总损失大于简单缺料天数，反之可调整排程降低冲击。采购价格主要影响每片可变成本，现有高能力使用环境下连续性较其成本份额更重要。没有具体纯度、库存及补给合同，不能把历史氦气事件复制为当前停产百分比，但可将合格来源/覆盖期变化作为有独立经济后果的变量。",
+          "scope_boundary": "深化NAND适用投入与停复序逻辑，不覆盖所有半导体气体的统一损失，也不假定一般工业气可直接替代电子级材料。",
+          "ref": [
+            "D1-O74",
+            "https://investors.airproducts.com/static-files/1c55c69d-3196-4a46-b646-fd85adeec0f2",
+            "https://www.lamresearch.com/velocity/resilient-operations/"
+          ]
+        },
+        {
+          "name": "工厂供电容量、可靠性与电价分别约束扩产和单位成本",
+          "mechanism": "既有及新NAND厂的可接入MW、供电可靠性和电质决定可运行的工具/厂务范围；断电或电质异常可损失设备时间与在制品。设备每片能耗、有效bit密度和厂务固定负荷决定电耗/Gb，AI分析及效率改造可降低负荷。能源合同的固定/浮动价格和最低承诺决定燃料/电价变化向制造成本的传导；备用能力降低停电损失但有资本及维护成本。新电源与电网建设只有在接入时点、地域和合同匹配本厂时才放大产能。",
+          "current_status": "新加坡新NAND厂建设要求厂务与装机匹配，现有设施已有节能实绩；FY2025一座fab AI分析约节能2%。EMA的Tuas 670MW项目计划2031年底，不能证明2028新厂已经拿到电力，也不能证明2028必然缺电。没有NAND独立MW或合同价，工作判断仍是连续运行并适配新负荷，国家扩源只作资源环境而非目标停工事实。",
+          "materiality_context": "可接入MW控制新装机规模，可靠性/电质控制既有产量和良率，两者是硬能力变量而非同一价格因素；任何工厂接电延期可推迟该阶段产能而不改变厂房面积。每片能耗、密度与厂务固定负荷共同决定$/Gb，闲置工具仍需部分厂务负荷，利用率下降可抵销节能。电价及合同浮动比例决定成本敏感性：假设电费占对应制造成本e、完全浮动，电价涨20%首先令该成本增0.2e；合同固定或最低承诺则改变幅度/时滞，e未测量不可设为全厂数值。已披露2%节能只对相应设施电费有约2%直接作用，对总制造成本更小，且不是增产2%。备用资本/维护换取停机风险降低，电源/电网匹配时点对2028装机的杠杆大于一项2031全国容量标题。当前价格管理与资源设计有现实贡献，尚无本厂运行量损失可量化。",
+          "scope_boundary": "工厂电力与客户AI园区电力严格分开；能源效率与成本在此承接，电源项目不是Micron已签供电协议。",
+          "ref": [
+            "D1-O74",
+            "https://stage-investors.micron.com/news/press-release/2026/Micron-Breaks-Ground-on-Advanced-Wafer-Fabrication-Facility-in-Singapore-01-26-2026/default.aspx",
+            "https://www.micron.com/content/dam/micron/global/public/programs/sustainability/documents/micron-technology-2026-sustainability-report.pdf",
+            "https://www.ema.gov.sg/news-events/news/media-releases/2026/ema-awards-rfp-for-new-generation-capacity-to-tuas-power"
+          ]
+        },
+        {
+          "name": "水质与回收工程在减少取水时增加新的厂务依赖",
+          "mechanism": "进水量、超纯水质量与连续供给影响清洗等NAND工序稳定性；回收率降低外部净取水，但回收处理能力、污染物控制和维护决定水能否再次用于指定工序。回收/超纯系统消耗能源、药剂与资本，节省购水和排放处理费；质量下降可引起缺陷或停序。新增厂水回收规则通过设计与投用资格影响建设时点，公司必须将法规适配与经济运行一并纳入，而非用回收率单指标替代生产可用水。",
+          "current_status": "PUB自2024年起对新增大用水晶圆厂要求至少50%回收，2026新NAND空间须据适用制度设计。当前没有本厂内部回收率、超纯水库存或违规停产观察；购买再生水占比也不能替代内部回收率。现时最有用判断是回收与超纯能力是新厂厂务投入/资格的一部分，尚不支持把水规则当作已经发生的产量缺口。",
+          "materiality_context": "进水量与连续性决定能否维持处理规模，超纯水质量直接影响良率，小幅污染也可能比购水费上涨更重要。回收率在进水定义一致且工艺用水不变时降低净取水，但处理能力、污染物控制与维护决定这种节约是否可用；将回收从较低水平提高到50%并非等于全厂水费用减半。能源/药剂成本与购水/排水费用共同决定净运营节约，资本投入增加折旧，必须比较全生命周期而非只比较水价。规则适配控制新厂投用条件，影响2028空间兑现时点，技术优化可同时减少外部资源依赖。当前规定已经明确，因此普通合规不应再算超额产能；最有杠杆的差异是质量、可用处理能力和净费用，未取得目标系数也不能推断回收不足或停工。",
+          "scope_boundary": "限于本制造网络厂务、工序稳定性与新增项目设计；不将全公司水再利用/恢复指标或国家平均回收率当NAND实测。",
+          "ref": [
+            "https://www.pub.gov.sg/Resources/News-Room/Featured-Stories/2025/Singapore-Industrial-Water-Revolution",
+            "D1-O74",
+            "https://www.micron.com/content/dam/micron/global/public/programs/sustainability/documents/micron-technology-2026-sustainability-report.pdf",
+            "https://stage-investors.micron.com/news/press-release/2026/Micron-Breaks-Ground-on-Advanced-Wafer-Fabrication-Facility-in-Singapore-01-26-2026/default.aspx"
+          ]
+        },
+        {
+          "name": "碳收费与集中减排通过子系统净费用改变成本回收",
+          "mechanism": "应税排放强度与可适用碳费率、抵免/过渡安排决定直接碳支出，购电端碳价传导另受电力合同影响。集中尾气处理的覆盖率、捕集/减排效果改变排放，燃料、维护和运行稳定性决定系统费用；改造资本增加折旧并形成回收期。更低燃气消耗可在碳税以外带来节约，反之仅减排而高耗能的方案可能提高净成本。工厂按可避免排放/能源费用和系统可靠性选择集中或分散治理，不应将减排率等同NAND单位成本降幅。",
+          "current_status": "2026法定费率45新元/吨，高于2024—2025的25；这不是美光有效税率。2026可持续报告记载FY2025一座新加坡设施集中系统已上线，子系统与原分散方案相比天然气耗用降逾90%、年度处理费用降逾30%。该实绩支持治理有运营节约而不仅合规成本，未提供NAND整体排放覆盖、资本回收期或$/Gb降幅。",
+          "materiality_context": "费率由25升45是80%的法定变化，在相同应税排放与安排下对应直接费用同比变化，而非制造总成本增80%。排放强度影响每Gb费用，抵免/过渡安排限定实际基数；购电传导只影响浮动合同部分，不能再将同一成本重复当直接税。覆盖率和减排效果决定可避免排放量，现有单设施系统不等于全网络覆盖。燃料/维护及稳定性决定净运营费用：逾30%节约仅限该治理子系统，若其费用占制造成本a，直接贡献至多在相同覆盖下约为相应节约比例×a，a未披露。资本/折旧决定回收速度，燃气节约可使项目在税率较低时仍经济，低利用率则延长回收。当前已安装系统有可观察的子系统改善；对整体NAND回报的杠杆小于售价、良率与利用率，但收费上升会提高未来扩大覆盖的边际价值。",
+          "scope_boundary": "本域计算项目与制造成本接口，不做公司碳足迹总估值；报告出版年2026与经营观察FY2025分开，电费同项在能源Factor不重复计入。",
+          "ref": [
+            "https://www.nea.gov.sg/media/news/news/index/singapore-sets-out-eligibility-criteria-for-international-carbon-credits-under-the-carbon-tax-regime",
+            "https://www.micron.com/content/dam/micron/global/public/programs/sustainability/documents/micron-technology-2026-sustainability-report.pdf",
+            "D1-O74"
+          ]
+        },
+        {
+          "name": "地域工序、外包分工和原产地资格改变网络净能力",
+          "mechanism": "美光在自有后段与服务商之间安排工序，基地设备/测试能力、当地训练和良率决定合格处理量，批量/利用率决定成本摊薄。前段晶圆跨境物流、通关和缓冲库存使各地能力衔接；转移原有批次可缓解旧基地瓶颈，但不能重复计算为净增bit。外包商的资源配置、价格和合同保障影响可获得服务，AI封装扩张只有竞争共同人员、测试或材料时才影响存储，而非所有工具可互换。买方原产地/追溯要求与具体工序的实质转化认定限制路线，迁移需再资格和重复投入。资助条件/到账降低自有项目资本负担，但不自动降低工序运行费。",
+          "current_status": "Sanand已经商业生产，其共享DRAM/NAND后段扩大网络可选路径；2026千万级、2027亿级是全厂计划而非NAND独立新增量。政府框架与美光投入分列说明资助降低项目资本负担，自有与外包仍并用。ASE的AI设施扩建是资源选择的产业例证，不是已确认美光供应商挤占；旗舰TAA选项也不意味着所有SKU或印度包装自动取得同一原产地。当前网络扩展和资格学习比全面迁厂更有支持。",
+          "materiality_context": "设备/测试能力与训练/良率决定有效后段量，商业开业与空间面积不足以替代；批量/利用率决定同一合格量的成本，低良率爬坡可先增加材料损失。物流、通关和缓冲库存主要改变交付时间与资金占用，可靠快速物流可使远端低成本基地有用，延迟则削弱优势。转移/净增的区分决定是否真的解除全球瓶颈，若前段不足，新后段不会创造bit。外包资源配置和合同保障决定能力可得性，服务价格影响自制/外包经济性；新建自有能力提供替代但需要资格时间，先进封装扩张的直接工具挤占未建立。原产地/追溯与实质转化要求决定某些客户可用路线，再资格/重复投入影响数季至多年成本，不能仅改发货地址。原项目中央50%与邦20%支持在完全满足适用条件的简单框架下使自有出资负担约为项目成本30%，并非实际全额到账或每颗芯片成本降70%。当前印度学习与NAND配置影响较直接，采购地域要求若覆盖更多主力SKU，即使总需求不变也可显著改写网络投资。",
+          "scope_boundary": "深化含NAND成品的全球工序与经济性，不把共享印度芯片数归NAND、不判断未明确SKU的法律原产地，也不将台湾DRAM劳动事件直接换算本网络损失。",
+          "ref": [
+            "D1-O74",
+            "https://micron.gcs-web.com/news-releases/news-release-details/micron-celebrates-opening-indias-first-semiconductor-assembly",
+            "https://investors.micron.com/news/press-release/2023/Micron-Announces-New-Semiconductor-Assembly-and-Test-Facility-in-India-06-22-2023/default.aspx",
+            "https://investors.micron.com/news/press-release/2025/Micron-Unveils-Portfolio-of-Industry-First-SSDs-to-Power-the-AI-Revolution-07-29-2025/default.aspx",
+            "https://www.aseglobal.com/press-room/ase-breaks-ground-on-new-high-tech-facility-in-kaohsiung/",
+            "https://rulings.cbp.gov/docs/hq/2025/h350894"
+          ]
+        },
+        {
+          "name": "新空间、分期装机与研发共址塑造资本产出曲线",
+          "mechanism": "厂房/洁净室与厂务先形成可装机空间，工具投入和资格再形成晶圆能力，良率学习及后段/客户资格把首片转成可售bit。研发共址可以缩短试验反馈和生产转移，但要求实验结果适用量产。公司按需求、竞争成本和资金约束分期装机，保留未装备空间的选择权；不可逆土建资本和可延期工具投入有不同风险。投入时点、资助条件/到账、折旧起点与稳定产出共同决定资本回收，需求和售价不足时同样空间会成为低回报资产。",
+          "current_status": "新加坡新厂在建，初始晶圆仍计划2028下半年，有意义放量在随后数季；十年约240亿美元与最终70万平方英尺是长期投入/空间而非2028产能。近期供给更多靠既有线转换，故新厂的重要作用是承接复杂节点、研发学习与之后需求，不是即时补足Q4订单。没有独立NAND资本回报或项目单位产能投入，分期装机是支持较好的工作路径，而不是假定所有空间同时满用。",
+          "materiality_context": "空间/厂务决定最终装机上限和项目可用日期，工具投入/资格决定实际能力，两者不能通过每平方英尺统一换算bit。良率学习、后段和客户资格控制首片后收入爬坡，首片推迟一季可先改变资本占用，即使最终产量不变；研发反馈/转移效率若缩短这段学习，在同样土建下可提高前期现金产出，但未有目标量化系数。需求、竞争成本和资金约束影响装机规模，未装备空间可延后工具支出，已付土建却不能撤回；选择权降低过度供给风险但有闲置空间负担。投入/资助时点改变净投入资本和融资成本，折旧起点早于稳定产出时会压低初期单位经济性；资助条款影响净成本而非自动提供合格产能。240亿美元是约十年规模，不能平均年化当实际支出。当前2028前节点变量影响近期量，建设/装机弹性与学习速度对2028—2029回报更有杠杆；同一开工日下资本产出曲线仍可大幅不同。",
+          "scope_boundary": "本域持有项目投入、资助与制造回报，公司总体融资能力由资金Shell深化；不把公司总capex或集团毛利代作该厂资本和收益。",
+          "ref": [
+            "https://stage-investors.micron.com/news/press-release/2026/Micron-Breaks-Ground-on-Advanced-Wafer-Fabrication-Facility-in-Singapore-01-26-2026/default.aspx",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "D1-O31",
+            "D1-O4",
+            "https://www.meti.gov.sg/newsroom/speech-by-deputy-prime-minister-and-minister-for-trade-and-industry-gan-kim-yong-at-the-micron-singapore-expansion-groundbreaking/"
+          ]
+        },
+        {
+          "name": "竞争良品供给与合同定价决定制造增量的收益",
+          "mechanism": "行业合格bit来自竞争者投片、节点密度、良率与客户资格，而非宣布投资额；需求吸收和库存变化相对有效供给决定紧张程度。供应商降本可扩大供给并压低同规格价格，美光的产品差异与客户份额影响实现价/组合。合同数量、价格框架/重置和履约约束缓冲波动但不取消供需作用。制造贡献约由可售量与每bit售价减成本共同形成，新增资产又增加固定成本/折旧与投入资本；公司可改配方、降利用率或延后装机，回应供给再平衡，而非销量增加就必然提高回报。",
+          "current_status": "FY2026美光ASP上升是利润改善的主要解释，制造降本补充；近端企业SSD吸收强。美光预计2027—2028持续受限，TrendForce则认为节点迁移、中国供给等可能令2027下半年缓解，二者是不同未来判断，尚非已发生过剩。Kioxia/Sandisk共享设施及附条件投资不可重复算供给，功能样品也不等于量产。集团供应协议提供稳定性，但NAND独立数量与定价覆盖未披露。",
+          "materiality_context": "竞争投片、密度、良率/资格决定真正可供bit，投入资金只影响之后潜力，合资同一产出不能按两家公司相加。需求吸收与库存决定这批bit是否稀缺；同样供给增长在扩张需求下可只缩短交期，在需求疲弱时可降价与利用率。竞争成本影响长期价格底部，美光差异/份额影响自身价与量，合同数量缓冲闲置，价格框架和重置决定何时传导，履约决定保护有效性。当前实现价变化的经济杠杆显著大于未量化降本：固定量与成本下，售价下跌损失的是全部降价额而非同比例利润；举例售价1、单位成本0.7时，售价跌10%令单位贡献由0.3降至0.2，下降三分之一，非实际NAND毛利。可售量能摊薄固定成本却不能抵销任意价跌，新增折旧/资本提高回收要求。改配方、利用率与延后装机分别保护稀缺资源收益、减少库存及降低未来投入，代价是组合约束/单位固定成本/机会损失。现在近端价格与吸收强，2027有效竞争供给路径对2028空间经济性仍有重大修订力，不外推FY2026约200%ASP增长。",
+          "scope_boundary": "行业供给/价格由NAND行业市场深入，本域承接其对自身利用率、成本要求和资本回收的影响；合同为集团口径，不制造NAND保障比例。",
+          "ref": [
+            "D1-O57",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+            "https://www.trendforce.com/presscenter/news/20260721-13148.html",
+            "https://www.kioxia.com.cn/zh-cn/about/news/2026/20260827-3.html",
+            "https://apac.kioxia.com/en-apac/about/news/2026/20260130-1.html"
+          ]
+        },
+        {
+          "name": "生产成本、库存流转和减值使报告利润滞后于工艺变化",
+          "mechanism": "工资/激励、材料能源、服务费及折旧形成生产批次成本，工程良率和利用率改变单位分摊。符合库存成本归集的支出先进入WIP和成品，随售出节奏进入销售成本；库存批次组合因此使本期报表成本与本期新生产工程成本错位。产品转换、需求/价格变化和过时风险可形成跌价/报废，进一步影响利润和资金回收；价格/产品组合收入效应须与这些成本项分开。一次性确认延后不改变最终成本，持续薪酬或投入品涨价却会抬升长期成本底部。",
+          "current_status": "集团Q4制造激励薪酬上升主要资本化于库存，管理层称其主要影响FY2027 Q1销售成本，并预计FY2027更高奖励。该披露解释成本时差，不提供NAND分摊额；当前不应因单季毛利变化判G9良率逆转。NAND全年制造降本方向与ASP主要贡献可同时成立，后续售出较高成本库存也可暂时抵销工程改善。",
+          "materiality_context": "工资/激励与材料能源、服务费、折旧各自决定成本基数，工程良率/利用率决定摊薄；只提升良率而奖励或折旧增加，净$/Gb仍可不降。库存售出节奏/批次组合决定费用进入哪个季度，资本化不是成本消失：将销售后移会暂缓确认并占用现金，不会永久提高项目回报。产品转换和需求/价格变化决定存货能否按原价值出售，过时/跌价损失可将多期成本提前压入一次利润，需与正常工艺报废区分。收入价/组合变化直接影响毛利，不能拿集团毛利倒算本厂成本。当前Q1确认时差是有披露支持的近期因素，其幅度须按NAND实际分摊判断；持续较高奖励方案比一次性库存释放更能改变下一年度成本底部。对工厂中期经济性，良率、利用率与折旧仍比记账时间本身重要，但高价值存货持有时间使会计时差也有真实营运资本后果。",
+          "scope_boundary": "解释制造成本归集、库存流转与报告利润的接口；公司总体会计、现金和激励由相邻公司研究承接，不把集团奖励数额或合并毛利分配给NAND，不讨论交易条件。",
+          "ref": [
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "D1-O57",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+          ]
+        },
+        {
+          "name": "长生命周期兼容承诺与停产转换重分配节点和库存",
+          "mechanism": "汽车/工业等长寿命平台要求供货连续和形态、接口功能兼容，客户再资格成本与时间使公司不能仅按最新$/Gb立即替换全部老产品。美光对选定产品的支持期及变更/停产转换窗口影响遗留节点保留、兼容替代开发和提前备库；兼容新die可释放老线，若必须等待资格则形成小批量生产/重复配置与机会成本。提前生产减少未来供货中断但占用资本并增加需求预测/过时风险；客户生命周期与已承诺数量决定该负担的持续时间。",
+          "current_status": "选定NAND的生命周期安排为既有公开产品政策，不是2026新宣布扩产：选定NAND可在PLP中获得至少十年形态/安装/功能兼容及较长转换窗口，2018汽车/工业SSD公告已说明正式长期支持。当前汽车G9 UFS已量产，显示更新工艺与长期供应可以并行；尚无主力G9 SKU属于PLP或必须保持某一旧die十年的证据。工作判断是兼容迁移与部分遗留供货共存，而不是所有旧线永久冻结。",
+          "materiality_context": "客户平台寿命决定重复供货期限，再资格成本/时间决定能否快速换die；即使总bit和价格不变，慢资格也可把资源留在低规模旧配方。支持期/转换窗口改变公司可调整节点的自由度，公开PLP至少十年是兼容性边界，不等于相同die、节点或产量保证；更长窗口减轻客户风险却推迟部分产线退出。兼容替代开发若成功可释放工具并保留客户，若需小批量/重复配置则提高单位固定成本和挤占工程人员。提前备库降低未来停产风险，但增加资本与预测/过时风险，订单承诺数量和生命周期决定合理库存而不是无限备货。当前DC成品份额使这条路线未必主导总bit，长生命周期却可使较小产品占用多年工程/设备；在G9与下一代转换加快时，兼容迁移速度对可释放资源的杠杆上升。没有PLP NAND份额，不能从全集团支持政策估算遗留产能比例。",
+          "scope_boundary": "只覆盖选定NAND及相关产品的制造兼容、节点迁移与库存；不把所有SSD、G9汽车UFS或DRAM套入统一十年承诺。",
+          "ref": [
+            "https://www.micron.com/products/product-lifecycle-solutions",
+            "https://investors.micron.com/news/press-release/2018/Micron-Introduces-Industrys-First-1TB-Automotive-and-Industrial-Grade-PCIe-NVMe-Flash-Storage-11-13-2018/default.aspx",
+            "D1-O74"
+          ]
+        }
+      ],
+      "potential_gaps": [
+        {
+          "name": "付费代理的分发与应用回报改写新增产能吸收强度",
+          "why_live": "当前企业SSD吸收强、推理缓存已交付，制造基线偏向数据中心成品；但这一路径依赖实际付费用途扩展，不只是资本开支。Microsoft于2026-03公布将Copilot、代理治理与办公软件打包，并描述多步骤工作流；Anthropic披露任务成本效率改善。分发、工作习惯和客户回报仍能改变活动增长速度，企业席位或注册代理不是存储任务量。",
+          "revision_logic": "当前参考是应用扩展支持转换后的bit吸收、而非所有设备终端齐涨。分发降低接入摩擦，实际任务/持续时间与服务回报决定使用；已有余量和效率先吸收一部分增量，紧供给则把需求转入配额、价格与未来装机。新的商业行为可以在本厂工艺未变时改变2027—2029可服务需求和设备投入规模。",
+          "possibility_space": [
+            {
+              "name": "办公或消费平台把持久代理纳入常用套餐和默认工作流",
+              "implication": "无需另购工具的用户开始重复委托跨日任务，扩展的不只是一次性对话。若实际使用跟上分发，活跃上下文和持久数据扩大，增强高性能/高容量存储配方与新空间吸收；只有套餐订阅增长而使用稀少时，不能作同量增产解释。"
+            },
+            {
+              "name": "大型雇主将已证明有效的代理从试点改为常规业务流程",
+              "implication": "客服、代码维护或业务运营形成重复任务与明确付费预算，制造需求持续性比演示或一次性试用更强。自动化节省的人力若用于扩大业务，任务量可进一步增长；若仅消化同量工作，存储采购先受已有容量余量约束。"
+            },
+            {
+              "name": "应用商降低任务费用后以使用量定价扩大可负担用途",
+              "implication": "单任务资源节约减弱固定任务集的闪存强度，却可能释放预算吸引更多用户和更长任务；净吸收由新增活动与架构强度共同决定。供应仍紧时先改善采购能力/配置，不自动增加美光短期可产bit。"
+            },
+            {
+              "name": "企业按实际业务回报收缩低价值自动化功能",
+              "implication": "大规模席位并未变成经济任务，买方撤销试点、限制后台代理或保留人工流程；潜在需求被削去而不是单纯部署延期。本厂先面对配方/客户排期调整，随后新设备规模与资本回收的默认增长路径变弱。"
+            }
+          ],
+          "ref": [
+            "https://www.anthropic.com/news/series-h",
+            "https://www.anthropic.com/claude-sonnet-5-5",
+            "D1-O103",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+            "https://developer.nvidia.com/blog/?p=111143",
+            "D1-O74",
+            "https://www.westerndigital.com/in-id/company/newsroom/press-releases/2026/2026-02-03-western-digital-accelerates-storage-innovation-for-ai-era",
+            "https://blogs.microsoft.com/blog/2026/03/09/introducing-the-first-frontier-suite-built-on-intelligence-trust/"
+          ]
+        },
+        {
+          "name": "隐私治理与信任事件改变保留数据和部署位置",
+          "why_live": "2026-09 Anthropic公布EFS：活动数据可留在客户控制的云账号中，计划秋季分期推出；客户选择该安排时承担存储等云费用。它表明企业数据控制权会影响采用与保存位置，不等于零保留或所有日志用SSD。付费采用Factor中的有用性、回报与数据治理共同决定生产用途，信任和保留安排可独立改写这一链；没有已发生的美光订单损失或重大客户停用观察。",
+          "revision_logic": "维持数据中心存储扩张的参考隐含客户愿意让代理接触数据并保留必要上下文。安全事故、数据控制权及保存政策可改变采用率、保留期和采购主体；任务兴趣不变也可能从集中云转到私有环境，或增加审计副本。制造后果是净bit、性能/容量配方与资格客户分配，而不是将一个云服务收入变化直接换算NAND。",
+          "possibility_space": [
+            {
+              "name": "金融或其他敏感行业接受客户控制的监控存储并扩大代理使用",
+              "implication": "此前受保密安排限制的业务进入生产使用，同时日志在客户账号保留；新增采用与客户自持数据可能扩大容量。日志可落对象存储/冷层，热上下文另需低延迟层，因此只扩大可吸收机会，不按日志字节一比一算高性能SSD。"
+            },
+            {
+              "name": "一次公开的数据泄露或代理误操作促使企业暂停持续代理",
+              "implication": "这是未来信任冲击设想，不是已发生事实。客户先限制数据连接、缩短记忆或停止自动执行，任务和工作集可以同时缩小；若补救主要为审计/备份，容量盘仍可能增加，但难完全抵销热缓存活动收缩。"
+            },
+            {
+              "name": "买方把敏感工作流迁至私有云或本地边缘环境",
+              "implication": "总用途未必减少，部署位置却分散，设备采购与资格从少数云商转为企业/OEM，可能提高冗余及本地容量、拉长配置周期。美光组件与成品渠道的分配随之变化，不能把集中云订单减少当全球NAND等量消失。"
+            },
+            {
+              "name": "企业以短保留和去标识化满足控制要求而继续扩用",
+              "implication": "采用摩擦下降支持任务增长，保留数据量却低于长期记忆假设；工厂未来容量吸收弱于原始任务增幅。审计和推理缓存仍各有用途，这一分支可与更广付费扩散同时发生。"
+            }
+          ],
+          "ref": [
+            "https://www.anthropic.com/news/series-h",
+            "https://www.anthropic.com/claude-sonnet-5-5",
+            "D1-O103",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+            "https://developer.nvidia.com/blog/?p=111143",
+            "D1-O74",
+            "https://www.westerndigital.com/in-id/company/newsroom/press-releases/2026/2026-02-03-western-digital-accelerates-storage-innovation-for-ai-era",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.anthropic.com/news/enterprise-frontier-safeguards"
+          ]
+        },
+        {
+          "name": "缓存复用与冷热分层改变AI增长的净闪存配方",
+          "why_live": "现有CMX分层、美光KV-cache交付、高容量QLC爬坡与HDD扩容可以同时成立。工作集Factor显示数据生命周期、调度、网络和重算选择决定净字节/访问负荷；当前没有每任务闪存量测量，因而已售SSD增量不是未来统一消耗系数。",
+          "revision_logic": "数据中心成品优先的Baseline仍允许配方发生大变化。系统和应用方改变保存/访问方法，会在同一活动量下修改QLC容量、TLC/高性能盘及后段测试配置；降低资源费用还可刺激更多活动。近端紧供给可表现为配额重新分配，长期则改变新厂需要多少bit而非简单是否采用闪存。",
+          "possibility_space": [
+            {
+              "name": "模型服务把跨日记忆、多人协作与长会话变为常规服务",
+              "implication": "更多独立上下文长期保留，扩大工作集与共享层访问，可能使容量QLC和高性能缓存并行增长。一次性短会话的平均耗用不再适合产能规划；复用与重叠部分仍需扣除。"
+            },
+            {
+              "name": "云平台以共享缓存、压缩和调度减少重复存放",
+              "implication": "同量活动所需容量或读写下降，短期先释放现有设备余量并减轻追加采购；若更低服务成本带来更多任务，净需求可再次增长。制造配置可能偏向更高吞吐而不是等比例扩容量，不等于全面减产。"
+            },
+            {
+              "name": "HAMR及对象存储在更多冷数据场景完成经济部署",
+              "implication": "冷容量可由低成本盘承接，削弱QLC扩容的部分吸收，却不替代强时延热缓存。本厂高性能盘可继续增长而容量配方/装机速度放缓，HDD行业增长与美光增长不是互斥事件。"
+            },
+            {
+              "name": "平台以软件预取和高速网络扩大共享闪存服务范围",
+              "implication": "原来必须放在节点本地的部分数据进入共享层，可减少冗余副本并提高设备复用；若同时开放更大上下文，又创造新容量。产品组合、盘数与总原始bit的方向可能不同，制造计划要按净用途分配。"
+            }
+          ],
+          "ref": [
+            "https://developer.nvidia.com/blog/?p=111143",
+            "D1-O103",
+            "D1-O74",
+            "https://www.westerndigital.com/in-id/company/newsroom/press-releases/2026/2026-02-03-western-digital-accelerates-storage-innovation-for-ai-era",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+          ]
+        },
+        {
+          "name": "资金与接电安排使客户安装窗口脱离制造投资窗口",
+          "why_live": "客户园区Factor区分已交付租赁资产、未来新校园、SSD备料与服务器验收。新增Abilene项目2027通电是计划，PJM大负荷申请在截点仍待裁决；长期采购承诺不能消除现场建设、资金及安装的时差。当前没有相关项目已造成美光取消订单的事实。",
+          "revision_logic": "基线中的近期持续交付与2028新厂吸收可被客户项目兑现时点重新安排，即使AI使用兴趣不变。项目资金决定能建多少，供电/验收决定何时装机，备料与库存把变化传到美光排程；同一延期既可能只是移季，也可能揭示生命周期需求缩小。",
+          "possibility_space": [
+            {
+              "name": "融资方因租户信用或回报重估收紧园区融资条件",
+              "implication": "未建阶段被缩减或推迟，减少/后移服务器与SSD安装。本厂既有合同可以维持部分交付，但积压库存、资金占用与未来设备吸收风险上升；不能把已上线资产一并视为失效。"
+            },
+            {
+              "name": "公共机构或电网提高接入条件并要求额外自备电源",
+              "implication": "客户先增加基础设施成本或等待接入，储存设备采购可因备料继续而与上线背离。若仅延后，制造回收期拉长；若新增服务成本压缩客户扩建回报，则规模预期也下降。申请方案在截点不是已经生效的新约束。"
+            },
+            {
+              "name": "园区利用既有接电、模块化建设或新增资金提前释放安装空间",
+              "implication": "订单由远期意向更快变为排期，已有库存被消耗，增强近端成品齐套及2028后空间吸收。美光前后段受限时这先改变价格、资源分配或额外投资意愿，而不是同日增加bit。"
+            },
+            {
+              "name": "租户把工作负载迁入已有余量而不建设原规划校园",
+              "implication": "服务活动可以增长而新增设备需求较弱，需求不是消失但采购时点/地点改变。本厂配方和客户库存先调整；对未来新厂吸收的影响大于对现有技术能力的影响。"
+            }
+          ],
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/1944366/000194436626000020/exhibit993-2025abelinedc1l.htm",
+            "https://www.crusoe.ai/resources/newsroom/crusoe-announces-new-900-mw-ai-factory-campus-in-abilene-texas-to-support-microsoft-ai-infrastructure",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+            "D1-O130",
+            "https://www.pjm.com/markets-and-operations/large-load"
+          ]
+        },
+        {
+          "name": "跨代际采购承诺重分配闲置、价格与履约风险",
+          "why_live": "集团已有多年take-or-pay、价带与保证金安排，但NAND覆盖未披露。制造基线不能把集团现金承诺当全NAND订单地板；新的合同范围及双方成本/规格演进可以改变稳定性，即使总行业需求不变。",
+          "revision_logic": "工作参考是合同缓冲但仍有竞争、配方和交付风险。承诺覆盖的产品/期间、改代弹性及价格形成方法决定工厂可否稳定装机和成本回收；固定数量保护与价格上限、供给义务可能同时增加。变化在签约或重谈阶段即能修订制造前景，不必等利润已确认。",
+          "possibility_space": [
+            {
+              "name": "美光与客户把更多明确NAND配方纳入跨代际数量承诺",
+              "implication": "更强需求可见性减少为一般需求建设的闲置风险，支持对应前后段资源投入；仍需按约提供合格产品。若产品升级需要额外工具/测试，稳定订单并不等于原成本的固定利润。"
+            },
+            {
+              "name": "客户允许容量或代际替换而保留原采购经济义务",
+              "implication": "通过新节点或等价值新产品履约，可减轻旧SKU积压、释放节点迁移自由度；混合产品/组件比例变化也改变后段负荷。该弹性与PLP兼容约束相互作用，不能把所有承诺理解为固定旧die数量。"
+            },
+            {
+              "name": "价带上限压制紧缺阶段涨价，成本上移又侵蚀底价贡献",
+              "implication": "数量稳定却上下两侧回报受限：上行更多由工艺/组合贡献，底价不能覆盖任意薪酬、折旧及爬坡成本。制造回报的解释从行业涨价转向履约配方和成本控制。"
+            },
+            {
+              "name": "客户延期、重谈或信用事件使承诺保护变成现金/库存争议",
+              "implication": "即使有违约保障，工厂仍可能持有专用成品或空置资源，保障变现与回款时间改变资本回收。强客户要求交付调整与真正违约是不同后果，不能一律按合同名义金额视为收入丢失。"
+            }
+          ],
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/1944366/000194436626000020/exhibit993-2025abelinedc1l.htm",
+            "https://www.crusoe.ai/resources/newsroom/crusoe-announces-new-900-mw-ai-factory-campus-in-abilene-texas-to-support-microsoft-ai-infrastructure",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+            "D1-O57",
+            "https://www.trendforce.com/presscenter/news/20260721-13148.html",
+            "https://www.kioxia.com.cn/zh-cn/about/news/2026/20260827-3.html",
+            "https://apac.kioxia.com/en-apac/about/news/2026/20260130-1.html",
+            "https://www.micron.com/products/product-lifecycle-solutions",
+            "https://investors.micron.com/news/press-release/2018/Micron-Introduces-Industrys-First-1TB-Automotive-and-Industrial-Grade-PCIe-NVMe-Flash-Storage-11-13-2018/default.aspx",
+            "D1-O74"
+          ]
+        },
+        {
+          "name": "云客户与系统商掌握整盘设计后改写制造价值归属",
+          "why_live": "组件与自有成品渠道已并存。2025-01 Micron/Pure原始合作公告显示：G8 QLC已获150TB DirectFlash模块生产资格，G9面向未来模块；AWS 2024公开自定义Nitro SSD。这些原始资料说明系统商/云商可控制整盘方案，不能据此认定AWS的NAND供应者或当前G9模块出货。",
+          "revision_logic": "优先数据中心成品不等于所有云端增长都进入美光品牌SSD。客户控制设计、软件和采购后，可令同量bit转为组件业务、减少本公司控制器/整盘组装负荷，或通过合作扩大原来难进入的容量层。修订的是制造出口与每单位稀缺资源收益，不只是总市场份额。",
+          "possibility_space": [
+            {
+              "name": "更多云商将自定义控制器和固件推广至新增存储部署",
+              "implication": "云商保留系统价值并采购指定NAND，美光可能扩组件出货而自有SSD配方放缓；控制器/系统测试投入的回报要重新分配。若本厂介质不在合格来源中，行业扩张也可由他人取得。"
+            },
+            {
+              "name": "系统商把合作模块从特定平台扩为广泛容量层方案",
+              "implication": "美光良品NAND可通过非自有整盘路线进入原由HDD或其他组件供货的空间，增强bit吸收，同时本公司新增整盘资本需求可较少。合作资格和客户份额决定收益，旧G8资格并不保证所有G9配置。"
+            },
+            {
+              "name": "统一接口和客户验证方法让多家NAND来源更易替换",
+              "implication": "市场进入成本降低，也削弱单供应商议价与专用配方黏性；销量可增而每bit贡献受压。工厂更重视良率/成本和合格交期，不能把开放标准只理解为美光份额获益。"
+            },
+            {
+              "name": "买方为更低集成风险转回供应商全栈SSD方案",
+              "implication": "控制器、介质与固件协同成为采购价值，本厂后段和组件齐套负荷提高，收入/成本范围同时扩大。自有设计能否降低总成本与提高可交付量，仍取决于组件供应，而非品牌本身保证高利润。"
+            }
+          ],
+          "ref": [
+            "D1-O74",
+            "D1-O103",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://investors.micron.com/news/press-release/2025/Micron-Unveils-Portfolio-of-Industry-First-SSDs-to-Power-the-AI-Revolution-07-29-2025/default.aspx",
+            "https://micron.gcs-web.com/news-releases/news-release-details/meiguangtupo-pc-xingnengbianjietuichuzishiyingxierujishuyu-g9",
+            "https://investors.micron.com/news/press-release/2025/Pure-Storage-and-Micron-Collaborate-to-Deliver-Scalable-Energy-Efficient-Solutions-for-Hyperscale-Data-Centers-01-07-2025/default.aspx",
+            "https://aws.amazon.com/blogs/aws/introducing-storage-optimized-amazon-ec2-i8g-instances-powered-by-aws-graviton4-processors-and-3rd-gen-aws-nitro-ssds/"
+          ]
+        },
+        {
+          "name": "消费与嵌入式用途重配被数据中心挤压的制造组合",
+          "why_live": "当前客户端降配与库存消化、汽车G9 UFS出货并存；Crucial退出不等于OEM或组件渠道退出。数据中心占收入多数，却不代表其他终端无法重获资源。新用途及OEM预算反应能在本厂工艺不变时改变配方、资格批次与后段节拍。",
+          "revision_logic": "参考不是所有终端复苏，而是数据中心优先并维持既有合格产品。OEM销量、容量决策和新平台采用可改变余下制造负荷，甚至与云端竞争同一良品；单位容量增加与出货台数、供应商份额必须分开。",
+          "possibility_space": [
+            {
+              "name": "PC和手机厂商为本地AI记忆或离线内容提高存储配置",
+              "implication": "客户端原有降配参照可转为内容升级，扩大组件、OEM SSD或托管NAND批次；若更高BOM使终端售价抑制销量，净bit增量小于单机升级，且不会自动挤出高需求DC订单。"
+            },
+            {
+              "name": "OEM因存储价格和终端销售压力继续削容量或延后机型",
+              "implication": "资格已有却批次偏弱，客户端制造负荷进一步收缩，资源可转DC或留待未来使用。降价之后OEM恢复配置可形成需求反弹，故不能由当下弱势永久削去该制造出口。"
+            },
+            {
+              "name": "自动驾驶或工业任务从试验转入重复量产部署",
+              "implication": "温度/寿命及可靠性配方的合格需求增加，车规UFS/SSD等后段资源与长期供货承诺更重要。NVIDIA/Uber等部署计划提供外部窗口，但未确认美光BOM，项目落地不等于全部份额归本厂。"
+            },
+            {
+              "name": "供给重新分配使传统客户恢复可获得的采购量",
+              "implication": "此前受配额限制的设备客户可能补库并扩大已设计产品，而不是终端突然高速增长；本厂组合和交付节奏变化先于总需求解释。长期竞争供给宽松与传统用量恢复可以部分抵销。"
+            }
+          ],
+          "ref": [
+            "D1-O74",
+            "D1-O103",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.micron.com/products/product-lifecycle-solutions",
+            "https://investors.micron.com/news/press-release/2018/Micron-Introduces-Industrys-First-1TB-Automotive-and-Industrial-Grade-PCIe-NVMe-Flash-Storage-11-13-2018/default.aspx",
+            "D1-O78",
+            "D1-O172"
+          ]
+        },
+        {
+          "name": "近计算闪存的商业出口与制造路线可迁移性分化",
+          "why_live": "HBF标准协作、GP1功能样品计划与美光常规推理SSD处于不同位置；默认仍是常规SSD制造。外部路线已有能力基础和明确参与者，潜在影响在量产之前就包含未来市场边界、介质/封装投入及谁能进入。",
+          "revision_logic": "专用出口Factor表明容量便宜只有满足等待时间、软件与封装条件才有用。新的平台选择可能令普通SSD扩张、专用NAND/封装分支或美光不参与形成不同前景；参与不是由全行业NAND增长自动保证。",
+          "possibility_space": [
+            {
+              "name": "平台将低延迟闪存真正纳入近GPU工作负载配置",
+              "implication": "专用介质、并行连接和测试需求从研究预算进入产品资源安排；若美光能迁移既有技术，增加制造出口，若需重建die/后段则提高资本门槛。此可能改变多年机会，不等到当期出货才能有修订意义。"
+            },
+            {
+              "name": "美光以合作或组件供货进入专用封装生态",
+              "implication": "降低独立开发负担、扩大介质销售，但系统和封装收益可能由合作方取得；现有普通SSD资本配置随之重估。供料路线与自有完整HBF制造不是同一受益。"
+            },
+            {
+              "name": "专用方案获采用但介质/封装权利和资格由竞争者主导",
+              "implication": "行业闪存用途扩大却可能排除本厂，美光仍须靠常规缓存盘或替代架构参与；相对技术/资产效率的解释恶化，而非只是行业总bit不足。"
+            },
+            {
+              "name": "客户以普通SSD分层和更强预取替代专用闪存投入",
+              "implication": "避免新封装或可靠性负担，常规高性能/容量配方的主路径增强，专用研发机会缩小；既有制造资产的可迁移性更有价值。"
+            },
+            {
+              "name": "设备样品暴露功耗、成本或持续性能不足而使路线留在小规模用途",
+              "implication": "不推断所有NAND增长停顿，但本厂无需为该出口抢占广泛量产资源。样品与实际工作负载之间的差距改变机会规模，不能把样品宣称指标线性当收入。"
+            }
+          ],
+          "ref": [
+            "https://developer.nvidia.com/blog/?p=111143",
+            "D1-O103",
+            "D1-O74",
+            "https://www.westerndigital.com/in-id/company/newsroom/press-releases/2026/2026-02-03-western-digital-accelerates-storage-innovation-for-ai-era",
+            "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf",
+            "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html",
+            "https://blogs.nvidia.com/blog/ai-storage-fms/"
+          ]
+        },
+        {
+          "name": "节点转换的经济密度与学习方式脱离节点排名",
+          "why_live": "G9已为最大节点、下一代计划2027下半年量产，近期扩有效bit主要依靠既有线。投片/良率/周期及成本系数未披露，却有明确恒等关系和制造AI实践支持多种工程结果；缺测量不等于该路线没有独立修订力。",
+          "revision_logic": "在需求与竞争价不变时，每片良品bit、转换停线和瓶颈可用率仍能改变2027供给与$/Gb。节点命名或份额普通推进只是比较参照；超出正常学习的经济产出、学习代价或质量稳定性才改写资产效率。",
+          "possibility_space": [
+            {
+              "name": "量产团队用成熟配方和更快反馈使新节点较快达到经济良率",
+              "implication": "转换占用减少、良品bit较早释放，既有空间能承接更多需求并摊薄成本；需求/后段受限时先改善成本或推迟新工具，而非把所有增量即刻卖出。"
+            },
+            {
+              "name": "更高密度设计引入长周期和筛选损失",
+              "implication": "节点份额照常上升，但有效die、合格等级和瓶颈时间抵销名义密度，转换净供给或降本弱于原路径。恢复既有节点可保护交付但延缓长期成本进步，不能只读节点占比。"
+            },
+            {
+              "name": "缺陷识别和预测维护进入受控生产闭环",
+              "implication": "若正确动作减少报废或瓶颈停机，同工具和投片可形成更多合格产出，工艺学习结构改变；工程助手或节能分析单独扩用则主要改变人力/能源，不应统一算成良率跃升。"
+            },
+            {
+              "name": "数据漂移或误判迫使工厂退回更保守的人工验证",
+              "implication": "AI使用规模增加却学习净收益减小，验证资源及周期上升；严控可避免更大批次损失，但密度/自动化带来的默认效率需要折价，仍不代表所有历史收益消失。"
+            }
+          ],
+          "ref": [
+            "D1-O88",
+            "D1-O57",
+            "D1-O74",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://stage-investors.micron.com/news/press-release/2026/Micron-Breaks-Ground-on-Advanced-Wafer-Fabrication-Facility-in-Singapore-01-26-2026/default.aspx",
+            "D1-O31",
+            "D1-O104",
+            "https://www.micron.com/about/blog/applications/ai/smart-sight-how-micron-uses-ai-to-enhance-yield-quality",
+            "https://www.micron.com/content/dam/micron/global/public/programs/sustainability/documents/micron-technology-2026-sustainability-report.pdf"
+          ]
+        },
+        {
+          "name": "扩层竞赛转为工序与键合架构的成本竞争",
+          "why_live": "Lam提供低温刻蚀、输送/轮廓与工具兼容的原始解释；Kioxia CBA功能样品显示分片优化路线。两类都不是美光已兑现工具收益或竞争量产成本，仍足以形成下一代工程选择与相对效率的未来分化。",
+          "revision_logic": "同样层数可由工序时间、轮廓良率、额外晶圆/键合损失形成不同$/Gb与资本强度。基线的节点转换降本若主要受工具或路线重配影响，旧的增层—密度参照须更新；竞争影响可以先表现在美光研发、资产可复用性及投资选择。",
+          "possibility_space": [
+            {
+              "name": "低温刻蚀在本厂关键瓶颈完成配方整合",
+              "implication": "高宽比控制与工序吞吐改善可能用较少工具/空间实现原计划量，降低后续资本强度；只有非瓶颈步骤改善时，主要是周期/能耗收益，不是供应商标称倍数的整线增产。"
+            },
+            {
+              "name": "设备速率提升伴随维护或其他工序瓶颈转移",
+              "implication": "一项漂亮工序性能未缩短经济爬坡，厂方需增加配套沉积/计量等投入。工具升级仍有价值，但扩容成本与交付参照不应按单步骤外推。"
+            },
+            {
+              "name": "竞争者CBA分片优化在量产中保留高密度和高键合良率",
+              "implication": "相对良品成本/性能改善，迫使美光加快自身路线优化或减少边际低效设备；不预设美光必须复制CBA。若行业吸收强，影响先是未来成本位置而非即期降价。"
+            },
+            {
+              "name": "键合路线的另一片晶圆和质量成本抵销标称密度",
+              "implication": "竞争层数领先不再代表经济成本领先，较低投入路线可能更能维持回报。美光已有资产复用和分期转换的价值提高，不能因样品密度直接判制造落后。"
+            }
+          ],
+          "ref": [
+            "https://newsroom.lamresearch.com/how-deposition-and-etch-are-reshaping-chips-for-the-ai-era",
+            "https://newsroom.lamresearch.com/2024-07-31-Lam-Research-Introduces-Lam-Cryo-TM-3-0-Cryogenic-Etch-Technology-to-Accelerate-Scaling-of-3D-NAND-for-the-AI-Era",
+            "https://apac.kioxia.com/en-apac/about/news/2026/20260703-1.html",
+            "D1-O88",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "D1-O57",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+            "https://www.trendforce.com/presscenter/news/20260721-13148.html",
+            "https://www.kioxia.com.cn/zh-cn/about/news/2026/20260827-3.html",
+            "https://apac.kioxia.com/en-apac/about/news/2026/20260130-1.html"
+          ]
+        },
+        {
+          "name": "高容量产品的测试规模与长期质量反馈改变后段回报",
+          "why_live": "245TB QLC成品和车规托管NAND已形成真实配置，容量、耐久、封装良率及接口测试各有制造作用；当前未证实统一测试瓶颈。媒体资格/缺陷预期可以影响可用产品，现时正常交付并不抹去放量后才显现的长期质量反馈。",
+          "revision_logic": "齐套交付基线假定后段跟随配方并维持可靠性。未来的并行测试、封装方法或现场使用经验可改变每可售TB所占机器小时、可用bit和保修负担；经济后果不同于仅增大die。",
+          "possibility_space": [
+            {
+              "name": "厂方推广更高并行测试和自动化处理到高容量配方",
+              "implication": "降低对应SKU单位TB机器占用，解除实际后段瓶颈时增加可交付量，否则先减少成本/投资需求。密度使同TB芯片数下降也可放大效果，不能假定大盘必然增加单位测试负荷。"
+            },
+            {
+              "name": "客户要求更强烧机、速度覆盖或长期可靠性筛选",
+              "implication": "可售容量增长却每盘测试占用更快增长，新增前段bit先积在后段，资本排序转向测试与封装。质量保障可保住产品准入，成本增加不应全部解释为工艺失败。"
+            },
+            {
+              "name": "现场高写入或温度使用暴露跨批次可靠性问题",
+              "implication": "作为未来情景，买方可追加筛选、要求替换或暂缓新配置，本厂承担重复生产/测试及可能的保修库存，部分已售高容量收益被削弱。若问题来自固件或特定工作负载，修正可局部化，不能推所有G9产品失效。"
+            },
+            {
+              "name": "封装die密度提高并改进互连/热设计",
+              "implication": "在保持资格的条件下减少装配次数或提高封装良率，同样原始bit更快形成可售TB；若堆叠热/连接问题抵销，名义容量更大并不改善后段经济性。"
+            }
+          ],
+          "ref": [
+            "https://micron.gcs-web.com/news-releases/news-release-details/meiguangtupo-pc-xingnengbianjietuichuzishiyingxierujishuyu-g9",
+            "D1-O74",
+            "D1-O103",
+            "https://www.advantest.com/document/en/investors/ir-library/briefing/E_IR_technical_briefing_231129.pdf",
+            "https://www.micron.com/about/blog/storage/ssd/tackling-ssd-endurance-made-me-a-better-product-manager",
+            "https://investors.micron.com/news/press-release/2025/Micron-Unveils-Portfolio-of-Industry-First-SSDs-to-Power-the-AI-Revolution-07-29-2025/default.aspx",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+          ]
+        },
+        {
+          "name": "配套IC与来源替换让前段富余变成交付弹性或库存",
+          "why_live": "美光控制器与Phison路线按SKU并存，有限来源/部分长交期是集团已报告状态。自研设计与外部制造可分离，组件最小项Factor解释一项低金额零件也能使高价值成品停留，当前不支持具名的NAND损失量。",
+          "revision_logic": "前后段协同基线可在晶圆产量不变时被控制器、DRAM/模拟IC、基板或代工资格改变。修订范围是可交付产品、库存资金和SKU价值捕获；缺件或替代不必然修改NAND工序良率。",
+          "possibility_space": [
+            {
+              "name": "代工或配套IC供应商优先分配资源给其他高回报项目",
+              "implication": "已完成NAND不能同步成为SSD/MCP，后段利用率和收款落后；转售组件可以减轻库存却改变成品收益。自研控制器同样可能受外部制造约束。"
+            },
+            {
+              "name": "美光完成第二来源或替代控制器的固件/可靠性适配",
+              "implication": "供应弹性提高、紧缺料库存需求减小，若此前最小项受限则释放成品量；新增工程及短期再资格成本是这项保障的代价，不能用单一采购降价衡量。"
+            },
+            {
+              "name": "更集成的控制器或无独立DRAM配方减少外部零件依赖",
+              "implication": "部分SKU可降低齐套风险与BOM/装配步骤，但性能/耐久或客户资格可能使其只适用于特定用途。制造网络不再以同一配方系数服务所有新增bit。"
+            },
+            {
+              "name": "客户愿接受NAND组件或不同已资格SKU替代缺件成品",
+              "implication": "保持本厂良品商业吸收并减少积压，但改变收入、后段和履约结构；不能既把这批bit算成原SSD交付又计组件收入。"
+            }
+          ],
+          "ref": [
+            "https://investors.micron.com/news/press-release/2025/Micron-Unveils-Portfolio-of-Industry-First-SSDs-to-Power-the-AI-Revolution-07-29-2025/default.aspx",
+            "https://micron.gcs-web.com/news-releases/news-release-details/meiguangtupo-pc-xingnengbianjietuichuzishiyingxierujishuyu-g9",
+            "D1-O74",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O103",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+            "D1-O57"
+          ]
+        },
+        {
+          "name": "AI扩产重排工具、工程和外包服务的可获得性",
+          "why_live": "工具/人才Factor和网络Factor显示，新加坡HBM与NAND并行、设备长交期及外包商AI投资可竞争共同服务，也能扩生态。岗位计划与服务商新厂不是目标可用能力，HBM工具不能任意转换为NAND。",
+          "revision_logic": "转换和新空间的默认排期依赖合格工具、安装/维护及后段服务到位。在总资本和需求不变时，资源提供者或公司改变配置即可改变能力兑现时间、良率学习与单位服务成本；共享人才和外包资源必须按具体工序保留差异。",
+          "possibility_space": [
+            {
+              "name": "设备商新增制造和当地维护能力缓解关键工具交期",
+              "implication": "已有资本承诺更早变为合格工具，故障修复更快，可先改善转换/维护而后影响新厂。若剩余瓶颈在人才或后段，新交付工具会先闲置，不能把行业扩产金额代作即时美光能力。"
+            },
+            {
+              "name": "HBM或其他项目吸引同园区工程与施工骨干",
+              "implication": "NAND安装/验证或维护任务排期变长，改变首片/稳定放量和转换恢复；作用是共享技能而非HBM直接吃掉NAND晶圆设备。若共享厂务/培训反而降低重复工程，净效果可相反。"
+            },
+            {
+              "name": "外包商将共用人员、测试或材料优先分配给AI业务",
+              "implication": "特定存储服务交期/价格恶化，促使美光自制或转包并承担资格费用；没有共同资源的专用先进封装投资不能这样读穿。印度能力若已合格可成为缓冲，否则难即刻替代。"
+            },
+            {
+              "name": "本地训练与跨基地工程协作形成可重复爬坡能力",
+              "implication": "经验由单项目扩为可复制团队，减少招聘瓶颈及重复试错，使后续节点和厂房同等投入产生更早合格量。人数增加但技能错配则不能赋予相同收益。"
+            }
+          ],
+          "ref": [
+            "https://stage-investors.micron.com/news/press-release/2026/Micron-Breaks-Ground-on-Advanced-Wafer-Fabrication-Facility-in-Singapore-01-26-2026/default.aspx",
+            "D1-O31",
+            "D1-O74",
+            "D1-O104",
+            "https://www.micron.com/about/blog/applications/ai/smart-sight-how-micron-uses-ai-to-enhance-yield-quality",
+            "https://www.micron.com/content/dam/micron/global/public/programs/sustainability/documents/micron-technology-2026-sustainability-report.pdf",
+            "https://micron.gcs-web.com/news-releases/news-release-details/micron-celebrates-opening-indias-first-semiconductor-assembly",
+            "https://investors.micron.com/news/press-release/2023/Micron-Announces-New-Semiconductor-Assembly-and-Test-Facility-in-India-06-22-2023/default.aspx",
+            "https://investors.micron.com/news/press-release/2025/Micron-Unveils-Portfolio-of-Industry-First-SSDs-to-Power-the-AI-Revolution-07-29-2025/default.aspx",
+            "https://www.aseglobal.com/press-room/ase-breaks-ground-on-new-high-tech-facility-in-kaohsiung/",
+            "https://rulings.cbp.gov/docs/hq/2025/h350894",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "D1-O4",
+            "https://www.meti.gov.sg/newsroom/speech-by-deputy-prime-minister-and-minister-for-trade-and-industry-gan-kim-yong-at-the-micron-singapore-expansion-groundbreaking/"
+          ]
+        },
+        {
+          "name": "印度从共享开业转为不同NAND网络分工",
+          "why_live": "Sanand已商业生产，计划芯片量和资助覆盖DRAM/NAND共享项目。现时默认继续规模学习，但NAND具体处理份额、转移/净增与物流成本开放；与外包变化连接后，基地可以具有超出单厂增量的替代价值。",
+          "revision_logic": "新基地改变合格后段量、地域可选路径与自有资本负担，而不创造前段bit。未来分工可能解除全球瓶颈、仅搬迁批次或主要服务DRAM；共享全厂计划不能预先决定NAND结果。",
+          "possibility_space": [
+            {
+              "name": "Sanand取得更多NAND成品资格并承接受限基地批次",
+              "implication": "扩大后段缓冲和交付弹性，若旧基地真实受限可形成净增成品，若只是转移则主要改善风险/成本。前段不足时新后段不会额外创造NANDbit。"
+            },
+            {
+              "name": "公司将共享空间主要配置到DRAM或其他配方",
+              "implication": "全厂芯片规模计划仍可兑现，NAND瓶颈却未解除，需其他基地/外包继续承接。制造前景修订来自内部配置，不是印度项目总体失败。"
+            },
+            {
+              "name": "培训、耗材或跨境物流使扩大批次持续付出重复成本",
+              "implication": "商业开业并未快速带来经济规模，良率和缓冲库存/运输吞噬部分资本资助优势；原基地可能保留备用配置，全球单位成本改善放缓。"
+            },
+            {
+              "name": "资助条件或拨付时间改变净投入和阶段安排",
+              "implication": "即使工序质量相同，自有资本占用及项目回收发生变化，可能调整二期或设备投入。已宣布支持比例不是已收现金，也不意味着NAND每颗运行费用同比例下降。"
+            }
+          ],
+          "ref": [
+            "D1-O74",
+            "https://micron.gcs-web.com/news-releases/news-release-details/micron-celebrates-opening-indias-first-semiconductor-assembly",
+            "https://investors.micron.com/news/press-release/2023/Micron-Announces-New-Semiconductor-Assembly-and-Test-Facility-in-India-06-22-2023/default.aspx",
+            "https://investors.micron.com/news/press-release/2025/Micron-Unveils-Portfolio-of-Industry-First-SSDs-to-Power-the-AI-Revolution-07-29-2025/default.aspx",
+            "https://www.aseglobal.com/press-room/ase-breaks-ground-on-new-high-tech-facility-in-kaohsiung/",
+            "https://rulings.cbp.gov/docs/hq/2025/h350894"
+          ]
+        },
+        {
+          "name": "买方资格与制造地域要求改变市场分流和工序迁移",
+          "why_live": "已有特定SSD的TAA选项、全球后段及CAC针对中国关键基础设施买方的限制提供不同政策接口。现时基线不假定全面迁NAND前段；采购资格与原产地均须按产品/买方/工序判断，发货地点不自动改认定。",
+          "revision_logic": "政策或客户决定可在全球需求未变时改变谁能买、谁能供与哪里生产。买方资格变化主要改销售分流，指定工序地域则增加迁移、再资格和重复资本；二者不可只合并为一个减量百分比。",
+          "possibility_space": [
+            {
+              "name": "政府或关键买方把更多采购限定为可追溯指定地域工序",
+              "implication": "主力SKU可能需要新增或转移后段、合格替代路径及更多小批量，资本与物流/资格成本改变。若要求只影响部分工序，可局部适配而非整体搬离新加坡。"
+            },
+            {
+              "name": "既有买方限制扩大、强化或放宽实际执行范围",
+              "implication": "潜在销量在客户与合格供应商间重新分配；美光可改配其他合法市场，净利用率取决于替代吸收与资格，不能按一个国家总需求比例直接折收入。这里是未来政策路径，不是截点已发布新增限制。"
+            },
+            {
+              "name": "客户接受多地域合格版本并以供货连续性替代单一产地偏好",
+              "implication": "网络更能在局部问题时调批次，降低重复设备和停供风险，区域化原先的成本负担可减轻；总产品需求不必变化。"
+            },
+            {
+              "name": "地域规则与客户规格叠加使现有成品不可互换",
+              "implication": "同一容量盘须分别资格和追溯，已有NAND能产却只能服务限定订单，增加库存错配与区域备用产能。全球bit看似足够也可保持局部紧缺。"
+            }
+          ],
+          "ref": [
+            "D1-O74",
+            "https://micron.gcs-web.com/news-releases/news-release-details/micron-celebrates-opening-indias-first-semiconductor-assembly",
+            "https://investors.micron.com/news/press-release/2023/Micron-Announces-New-Semiconductor-Assembly-and-Test-Facility-in-India-06-22-2023/default.aspx",
+            "https://investors.micron.com/news/press-release/2025/Micron-Unveils-Portfolio-of-Industry-First-SSDs-to-Power-the-AI-Revolution-07-29-2025/default.aspx",
+            "https://www.aseglobal.com/press-room/ase-breaks-ground-on-new-high-tech-facility-in-kaohsiung/",
+            "https://rulings.cbp.gov/docs/hq/2025/h350894",
+            "D1-O103",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+          ]
+        },
+        {
+          "name": "高纯投入和物流由采购费用转为连续生产约束",
+          "why_live": "有限合格来源/长交期真实存在，氦气历史扰动与供应商多气源储存则说明缓冲可改变结果。当前没有本厂氦气停供或库存覆盖测量；默认是有约束的连续运营，而非所有来源已经畅通或已经断供。",
+          "revision_logic": "在需求和设备不变时，中断相对合格库存/再资格时间的长度改变产出。由涨价进入缺料会产生停序、WIP损失及复产滞后，恢复供给也未必即时恢复合格bit；本厂暴露范围不能从行业标题推定。",
+          "possibility_space": [
+            {
+              "name": "关键气源、港口或高纯材料出口安排发生持久扰动",
+              "implication": "缓冲耗尽后局部工序成为生产最小项，损失可超出材料成本份额；尚有合格库存时主要先增加物流/采购费。后段地理分散不能自动替代集中前段投入。"
+            },
+            {
+              "name": "供应商调剂多地区合格储存并稳定交付",
+              "implication": "此前价格冲击没有演变停序，连续生产基线更稳，但资金/运输费用可能提高；不要求上游全面恢复才能解除本厂局部约束。"
+            },
+            {
+              "name": "厂方通过回收、减用或新来源资格降低不可替代性",
+              "implication": "缩小未来断供暴露并改变库存持有，需要工程/设备代价且须保持纯度；回收比例提高不是所有工序可以省略该材料。"
+            },
+            {
+              "name": "补给恢复后设备和WIP仍需额外稳定与筛选",
+              "implication": "名义原料恢复与可售产出分离，损失从短缺延续为报废/复产成本；若排程和保护措施限制WIP受损，影响主要为交付移季，长期能力可以保留。"
+            }
+          ],
+          "ref": [
+            "D1-O74",
+            "https://investors.airproducts.com/static-files/1c55c69d-3196-4a46-b646-fd85adeec0f2",
+            "https://www.lamresearch.com/velocity/resilient-operations/",
+            "D1-O88",
+            "D1-O57",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+          ]
+        },
+        {
+          "name": "电力和合格水成为新增可装备空间的硬边界",
+          "why_live": "新加坡2028新厂依赖厂务匹配，目标MW/合同价和内部水回收实测仍未披露；2031新增机组既不保证2028供电也不证明缺电。PUB最低回收要求是已知设计条件，现有AI节能只是对应设施实绩。",
+          "revision_logic": "连续运行并进行正常厂务适配是参考。资源价格变动主要改成本，而接入、可靠性及水质问题能改变工具运行/投用范围；回收还会把外部水依赖转为处理系统及能源依赖，解释不能只沿一个节水/节电百分比。",
+          "possibility_space": [
+            {
+              "name": "工厂取得可匹配装机的可靠接电与厂务能力",
+              "implication": "资源不再是新空间的排期约束，工具/资格或需求成为更主要瓶颈。若合同带较高最低承诺，低爬坡时仍有固定费用，供电保障不等于单位成本必降。"
+            },
+            {
+              "name": "本地接入或水处理工程晚于工具投放需求",
+              "implication": "工具已付款却可运行空间受限，资本占用和稳定bit时间推迟；这是条件性工程路径，不因一项全国2031计划就认定其发生。"
+            },
+            {
+              "name": "燃料、电价或合同重置提高既有线资源费用",
+              "implication": "在持续生产下压缩单位贡献，固定/浮动及最低需求条款决定传导；节能/密度改进可抵销部分，但不能把电价变动等同比例施加于全制造成本。"
+            },
+            {
+              "name": "回收与超纯工程减少外部取水但增加维护和能耗",
+              "implication": "资源约束可被缓解，净回报取决于处理质量、资本/药剂及电耗。若质量不稳需保守运行，名义高回收率仍可对应较低经济产量。"
+            },
+            {
+              "name": "可靠性或污染事件使局部设备/WIP失去稳定生产条件",
+              "implication": "产量/良率冲击比普通资源涨价更直接，恢复需工序稳定；若备用和质量控制隔离有效，损失可限定于局部，不能外推全新加坡网络停产。"
+            }
+          ],
+          "ref": [
+            "D1-O74",
+            "https://stage-investors.micron.com/news/press-release/2026/Micron-Breaks-Ground-on-Advanced-Wafer-Fabrication-Facility-in-Singapore-01-26-2026/default.aspx",
+            "https://www.micron.com/content/dam/micron/global/public/programs/sustainability/documents/micron-technology-2026-sustainability-report.pdf",
+            "https://www.ema.gov.sg/news-events/news/media-releases/2026/ema-awards-rfp-for-new-generation-capacity-to-tuas-power",
+            "https://www.pub.gov.sg/Resources/News-Room/Featured-Stories/2025/Singapore-Industrial-Water-Revolution",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "D1-O31",
+            "D1-O4",
+            "https://www.meti.gov.sg/newsroom/speech-by-deputy-prime-minister-and-minister-for-trade-and-industry-gan-kim-yong-at-the-micron-singapore-expansion-groundbreaking/"
+          ]
+        },
+        {
+          "name": "减排覆盖与运行费用改变碳改造的净回收",
+          "why_live": "碳费率提高已在现有制度中，FY2025单设施集中尾气系统提供子系统运行节约。默认正常治理不能把已知税率上涨再次当新意外，未来差异在覆盖、实际净费用、维护与资本回收。",
+          "revision_logic": "改变对应制造成本的不是“绿色”名称，而是避免排放/燃气费用相对新增资本、能源和维护。该项目前规模小于ASP与良率，但更广覆盖或新条件可使边际投资排序改变，且不直接等于产能增长。",
+          "possibility_space": [
+            {
+              "name": "集中治理推广到更多适用工序并保留运行节约",
+              "implication": "可降低对应燃气与处理费用并减少应税排放，增强项目经济性；单系统逾30%年度费用节约不能放大成全NAND$/Gb降幅。"
+            },
+            {
+              "name": "更严格实际执行、碳额度或抵免条件提高有效净负担",
+              "implication": "相同工艺产量对应更高费用，促使调整改造节奏与能源安排；作用要按应税范围，不把直接碳费与购电传导重复加总。该分支是未来条件变化，不说当前法定45新元为新消息。"
+            },
+            {
+              "name": "扩大处理后维护、能耗或资本负担高于原子系统经验",
+              "implication": "减排可实现却净节约/回收弱于简单复制，折旧和稳定性影响生产贡献。厂方可能继续合规但采用分阶段或不同治理配置，不宜读成NAND需求消失。"
+            }
+          ],
+          "ref": [
+            "https://www.nea.gov.sg/media/news/news/index/singapore-sets-out-eligibility-criteria-for-international-carbon-credits-under-the-carbon-tax-regime",
+            "https://www.micron.com/content/dam/micron/global/public/programs/sustainability/documents/micron-technology-2026-sustainability-report.pdf",
+            "D1-O74",
+            "https://stage-investors.micron.com/news/press-release/2026/Micron-Breaks-Ground-on-Advanced-Wafer-Fabrication-Facility-in-Singapore-01-26-2026/default.aspx",
+            "https://www.ema.gov.sg/news-events/news/media-releases/2026/ema-awards-rfp-for-new-generation-capacity-to-tuas-power"
+          ]
+        },
+        {
+          "name": "新加坡空间的学习效应和装机选择权重塑资本兑现",
+          "why_live": "新厂初始晶圆计划2028下半年、后续数季爬坡；最终空间与十年投入不是同日能力。研发共址与分期装机已进入基线，仍允许需求、学习和工程曲线出现不同经济结果，单纯按期首片属于比较参照而非完整修订。",
+          "revision_logic": "同一土建项目可以靠共址反馈加快经济良率、靠灵活装机减少过度供给，或先承受折旧/闲置负担。修订的是早期可售bit、净投入资本及多年回收，而不是机械提前/延后一个施工日期。",
+          "possibility_space": [
+            {
+              "name": "共址研发把下一代问题定位和量产迁移显著缩短",
+              "implication": "稳定合格量较首片更快释放，同空间/工具更早产生现金，并可能减少重复试验资本。需求或后段未跟上时收益先体现为成本/选择权而非即时新增销量。"
+            },
+            {
+              "name": "公司在需求明确后分批装备，并复用既有线承接近端订单",
+              "implication": "未装空间保留未来机会并延后工具现金/折旧，降低再平衡风险；已付土建仍有负担，不能把延后装机既算节资又当同量即时产能。"
+            },
+            {
+              "name": "工艺复杂度和资格使初始晶圆长期停留在低经济量",
+              "implication": "工程里程碑可按计划出现，但成本和固定摊薄弱，回收期拉长；追加工具/人员可能改善学习又增加资本，不是仅由首片日期判断。"
+            },
+            {
+              "name": "更强有用需求促使提前追加工具，而行业供给随后快速追上",
+              "implication": "短期机会驱动投入，后期同类能力竞争却压低资本回报；分期弹性被部分消耗。项目可有更多产出而较低回报，需区别物理兑现和经济兑现。"
+            }
+          ],
+          "ref": [
+            "https://stage-investors.micron.com/news/press-release/2026/Micron-Breaks-Ground-on-Advanced-Wafer-Fabrication-Facility-in-Singapore-01-26-2026/default.aspx",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "D1-O31",
+            "D1-O4",
+            "https://www.meti.gov.sg/newsroom/speech-by-deputy-prime-minister-and-minister-for-trade-and-industry-gan-kim-yong-at-the-micron-singapore-expansion-groundbreaking/",
+            "D1-O88",
+            "D1-O57",
+            "D1-O74",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+            "https://www.trendforce.com/presscenter/news/20260721-13148.html",
+            "https://www.kioxia.com.cn/zh-cn/about/news/2026/20260827-3.html",
+            "https://apac.kioxia.com/en-apac/about/news/2026/20260130-1.html"
+          ]
+        },
+        {
+          "name": "竞争有效bit、价格与客户响应改变扩产收益持续期",
+          "why_live": "近期吸收强与2027下半年再平衡路径并存，美光和TrendForce持续性判断不同；竞争功能样品、共同设施投资和已合格bit不是一件事。ASP是当期主要利润解释，因此价格/成本关系对新增资产回报有较大修订力。",
+          "revision_logic": "工作参考为近端偏紧、未来分期装机，不外推约200%历史ASP增长。合格竞争供给若快于需求，会先改变交期/价格与采购行为，继而改变本厂利用率和资本；价格下降又可刺激容量升级，故不是单向过剩叙事。",
+          "possibility_space": [
+            {
+              "name": "竞争者把节点收益和已建空间较快转为合格量",
+              "implication": "客户多来源可得性提高，价格/配额压力缓和；本厂销量或仍增，但每bit贡献与设备回收可能下降。共同JV同一产出须只计一次，宣布投资不等于此路径已实现。"
+            },
+            {
+              "name": "中国或其他新增供给取得更多相关客户资格",
+              "implication": "影响不只总bit，还改变特定市场的可买来源和美光份额；能否进入DC/车规或主要影响消费决定本厂哪种配方受压。没有资格的名义产能不能先算相同竞争。"
+            },
+            {
+              "name": "供给宽松降低系统成本并引发OEM或云客户容量升级",
+              "implication": "更低价格先减少单位贡献，随后更高内容和活动吸收量抵销部分；已有工具利用率改善可放大恢复，新厂新增资本却仍须覆盖更低贡献。"
+            },
+            {
+              "name": "供应商共同或分别延后边际设备投入",
+              "implication": "有效供给增长较原计划缓，价格/利用率持续性增强，但更高价也会抑制传统终端容量。美光分期空间的价值上升，不意味着所有同行经营同步或永无周期。"
+            }
+          ],
+          "ref": [
+            "D1-O57",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+            "https://www.trendforce.com/presscenter/news/20260721-13148.html",
+            "https://www.kioxia.com.cn/zh-cn/about/news/2026/20260827-3.html",
+            "https://apac.kioxia.com/en-apac/about/news/2026/20260130-1.html",
+            "D1-O74",
+            "D1-O103",
+            "https://newsroom.lamresearch.com/how-deposition-and-etch-are-reshaping-chips-for-the-ai-era",
+            "https://newsroom.lamresearch.com/2024-07-31-Lam-Research-Introduces-Lam-Cryo-TM-3-0-Cryogenic-Etch-Technology-to-Accelerate-Scaling-of-3D-NAND-for-the-AI-Era",
+            "https://apac.kioxia.com/en-apac/about/news/2026/20260703-1.html",
+            "D1-O88"
+          ]
+        },
+        {
+          "name": "库存释放与持续投入成本重新解释制造利润路径",
+          "why_live": "制造奖励先资本化再主要进入FY2027 Q1成本是集团已披露路径；NAND实际分摊未测量。现时制造降本与随后报告成本承压可并存，成本确认时差也连接实物库存及资金回收，而不是纯报表解释。",
+          "revision_logic": "既有成本Baseline允许奖励库存确认，不预判工程效率逆转。新的奖励/材料/服务费安排、库存售出和客户配方变化可把短期时差变为持续成本底部或实际减值；售价贡献必须与成本变化分开。",
+          "possibility_space": [
+            {
+              "name": "较高奖励成本库存按原排期售出而新批次工程效率继续改善",
+              "implication": "近期成本压力主要是批次确认，随后逐步消化；不据单季毛利下降否定节点经济密度，但最终费用仍真实发生。"
+            },
+            {
+              "name": "人才竞争使奖励和服务价格持续抬升",
+              "implication": "不是一次性库存释放，未来每批次成本底部也提高；若超过良率/密度收益，实际$/Gb路径上移并削弱合同底价回报。集团奖励安排只提供机制，不指定NAND金额。"
+            },
+            {
+              "name": "客户延期或替换规格令高成本成品长期留库",
+              "implication": "费用确认可以暂缓，现金占用与过时/价格风险却提高；若需改装或跌价，利润压力不再仅为季度移位。与客户接电延期可叠加，而非两项独立丢单。"
+            },
+            {
+              "name": "厂方用更快齐套和合理库存降低跨期滞留",
+              "implication": "资金周转改善、旧配方减值暴露下降，报表成本更接近新批次效率；减库若削弱稀缺料保护则可能增加断供风险，优化不是单纯库存越少越好。"
+            }
+          ],
+          "ref": [
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "D1-O57",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.sec.gov/Archives/edgar/data/1944366/000194436626000020/exhibit993-2025abelinedc1l.htm",
+            "https://www.crusoe.ai/resources/newsroom/crusoe-announces-new-900-mw-ai-factory-campus-in-abilene-texas-to-support-microsoft-ai-infrastructure",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+            "https://investors.micron.com/news/press-release/2025/Micron-Unveils-Portfolio-of-Industry-First-SSDs-to-Power-the-AI-Revolution-07-29-2025/default.aspx",
+            "https://micron.gcs-web.com/news-releases/news-release-details/meiguangtupo-pc-xingnengbianjietuichuzishiyingxierujishuyu-g9",
+            "D1-O74",
+            "https://www.trendforce.com/presscenter/news/20260721-13148.html",
+            "https://www.kioxia.com.cn/zh-cn/about/news/2026/20260827-3.html",
+            "https://apac.kioxia.com/en-apac/about/news/2026/20260130-1.html"
+          ]
+        },
+        {
+          "name": "长期兼容迁移改变旧节点退出和备库负担",
+          "why_live": "选定NAND的PLP是既有兼容/转换政策，不是所有SKU保持旧die十年；汽车新节点量产又说明长期供货与转换可以并存。工作基线为兼容替代与选择性遗留配置并行，未掌握主力G9覆盖和遗留产能份额。",
+          "revision_logic": "同样终端量与价格下，客户再资格速度、支持范围及停产策略仍可改变旧线能否退出、工程人员与库存占用。未来变化修订节点转换的净资源释放，而不是把长期支持本身算新增bit需求。",
+          "possibility_space": [
+            {
+              "name": "客户接受兼容新die并缩短再资格周期",
+              "implication": "旧配置更快退出且保留长期供货，释放工具/人员支持新节点，转换收益更接近名义密度；客户兼容性仍须满足，不等于供应商可以任意换料。"
+            },
+            {
+              "name": "关键客户延后替代验证或要求扩大长期支持范围",
+              "implication": "小批量旧节点和重复配置保留更久，增加单位固定成本与机会成本；在DC需求旺时被占资源的价值更高，较小收入产品也可影响多年制造效率。"
+            },
+            {
+              "name": "公司通过提前备库结束部分旧工序",
+              "implication": "释放旧线却把未来供货风险转成资金/需求预测和存货质量风险；需求稳定时可较经济地维持支持，平台停产或配置改变则可能产生过时损失。"
+            }
+          ],
+          "ref": [
+            "https://www.micron.com/products/product-lifecycle-solutions",
+            "https://investors.micron.com/news/press-release/2018/Micron-Introduces-Industrys-First-1TB-Automotive-and-Industrial-Grade-PCIe-NVMe-Flash-Storage-11-13-2018/default.aspx",
+            "D1-O74",
+            "D1-O88",
+            "D1-O57",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+          ]
+        },
+        {
+          "name": "生产数字系统的共同失效改写分散网络的真实韧性",
+          "why_live": "新加坡集中NAND前段与全球自有/外包后段使跨节点连续性重要。2018 TSMC原始事件作为历史类比表明，新工具软件安装误操作可经网络影响多个厂区工具，并导致延迟/额外成本；这是历史半导体类比，不是美光当前感染或相同漏洞证据。地理分散和材料库存无法单独排除共同数字依赖。",
+          "revision_logic": "当前参考仍是连续运行、逐工序瓶颈与正常恢复。未来生产执行、配方、测试/追溯系统或服务商软件的共同失效可同时压低设备可用率与合格交付，改变“多基地即独立缓冲”的理解；隔离、验证和恢复方式决定是季度移位还是持续成本/资格损失。",
+          "possibility_space": [
+            {
+              "name": "新工具或共用软件更新在联网后引发跨工序停机",
+              "implication": "类似历史机制的未来设想，集中前段和后段接口可能同时受影响，不能简单以其他基地面积代替可用能力。若数据/配方完整且快速隔离，多数影响可为交付移季，但复产费用仍存在。"
+            },
+            {
+              "name": "攻击或关键服务商事件使制造、测试或追溯系统需隔离",
+              "implication": "设备本身未毁也可能无法安全放行产品，在制品和合同交付被延迟；若记录/配置完整性受损，重新筛选或客户再资格扩大损失。没有指认具名供应商已经失守。"
+            },
+            {
+              "name": "厂方把联网维护、配方验证与恢复能力分段设计",
+              "implication": "共同失效被限制在局部，真实替代/恢复能力改善，多基地风险分散更有效；冗余与验证有成本，并可能牺牲部分自动化速度，回报来自避免大范围损失而非增加名义bit。"
+            }
+          ],
+          "ref": [
+            "D1-O88",
+            "D1-O57",
+            "D1-O74",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://stage-investors.micron.com/news/press-release/2026/Micron-Breaks-Ground-on-Advanced-Wafer-Fabrication-Facility-in-Singapore-01-26-2026/default.aspx",
+            "D1-O31",
+            "D1-O104",
+            "https://www.micron.com/about/blog/applications/ai/smart-sight-how-micron-uses-ai-to-enhance-yield-quality",
+            "https://www.micron.com/content/dam/micron/global/public/programs/sustainability/documents/micron-technology-2026-sustainability-report.pdf",
+            "https://micron.gcs-web.com/news-releases/news-release-details/micron-celebrates-opening-indias-first-semiconductor-assembly",
+            "https://investors.micron.com/news/press-release/2023/Micron-Announces-New-Semiconductor-Assembly-and-Test-Facility-in-India-06-22-2023/default.aspx",
+            "https://investors.micron.com/news/press-release/2025/Micron-Unveils-Portfolio-of-Industry-First-SSDs-to-Power-the-AI-Revolution-07-29-2025/default.aspx",
+            "https://www.aseglobal.com/press-room/ase-breaks-ground-on-new-high-tech-facility-in-kaohsiung/",
+            "https://rulings.cbp.gov/docs/hq/2025/h350894",
+            "https://pr.tsmc.com/english/news/1969"
+          ]
+        }
+      ]
+    }
+  ]
+}

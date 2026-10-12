@@ -1,0 +1,71 @@
+{
+  "repair_id": "message-source-recurring-repair-20261004",
+  "source_basis": "Explicit uncommitted source snapshot; unrelated V1 retirement work excluded.",
+  "baseline": {
+    "site_access": "sha256:d331d8f79b768071c5def3d30727f086568b878fce631237405a0e79bfbb2e98",
+    "message_bus": "sha256:785f4025bdceb965bef05365bac203bac486d70b7f1223443402a534a38dd3c6"
+  },
+  "deployed": {
+    "site_access": {
+      "image": "doxagent-site-access:recurring-repair-20261004-r5",
+      "digest": "sha256:5dca9377ebddc63f6ad217f7e28c1441c632f9b7d63301172cec4b63835137ab"
+    },
+    "message_bus": {
+      "image": "doxagent-v2:recurring-repair-bus-20261004-r4",
+      "digest": "sha256:a5c5d2b59c48345daec5844621f16b923d6a0c970a8966bd96f4524fe11c2a77"
+    }
+  },
+  "files": [
+    {
+      "path": "src/doxagent/site_strategy/external_runtime.py",
+      "sha256": "d1c76f0a3afbf438830a0b8a6320c68a730fd31c95bcd9e9c2aa646d5de889ea"
+    },
+    {
+      "path": "src/doxagent/site_strategy/runtime.py",
+      "sha256": "8f4bc32014d890a31ae9a978d2a2f334fa110aea762e8b1af3bf51eb29a5bfda"
+    },
+    {
+      "path": "src/doxagent/site_strategy/budget.py",
+      "sha256": "7e109983393ba83f8859dd4fd68496f6d3c6db3f5d8ec9c6bc063ea21c9b712d"
+    },
+    {
+      "path": "src/doxagent/site_strategy/health.py",
+      "sha256": "ded4292dc5e8548b5b61a6a8ea0a7258ae6c5017a34a376c5b477fc08794988b"
+    },
+    {
+      "path": "src/doxagent/site_strategy/schema.py",
+      "sha256": "d45852847adceb69c0e8e01fec730d19ef510a57fbb37c1957ed690fe38f6e12"
+    },
+    {
+      "path": "src/doxagent/site_strategy/service.py",
+      "sha256": "fb3bd2df6ce335e6ee33a4183876c8bbaa40ac8cd47b1f385f96e1726b994cbc"
+    },
+    {
+      "path": "src/doxagent/site_strategy/api.py",
+      "sha256": "48e12c2f5c083f48ad5399964175059376ece61200908da486782681d0025929"
+    },
+    {
+      "path": "src/doxagent/message_bus_v2/reuters_sources.py",
+      "sha256": "76320ed636010ce28d0f262e002ee7e39465e1449bf4178c4a5f59d9c7945b97"
+    },
+    {
+      "path": "src/doxagent/message_bus_v2/news_adapters.py",
+      "sha256": "868121934ea28dde5d54b51b099cbee746373d0d3969f19ed63078dc48e10924"
+    },
+    {
+      "path": "src/doxagent/message_bus_v2/schema.py",
+      "sha256": "9cb18f41cbc51e2c58d018e201d83265153137fcf2c9f5387f8d3791547cd002"
+    },
+    {
+      "path": "src/doxagent/message_bus_v2/service.py",
+      "sha256": "1350f4463c82657ddaa9aae81ba4ee892d2c5e9988529ddc0e932032abad37bb"
+    }
+  ],
+  "verification": "All eleven final overlay raw SHA256 hashes verified in running r5 Site Access. Seven Site Access and four Message Bus files. 70 passed / 1 skipped; twelve normal three-source/four-ticker SOURCE_SWEEP tasks succeeded. Reuters live challenge and DIGITIMES subscription wall remain explicit acceptance limits.",
+  "chrome_instances": {
+    "dowjones_main": "0854db06758b49a68cdce663ce78e922",
+    "digitimes_nl": "03259f271d684527b235137c3e6acc33",
+    "public_markets_nl": "2e256ab3aa5a4bc18c20fd370ff585ff"
+  },
+  "scope": "No Chrome Supervisor, enrichment, scheduler, API, business worker or maintenance worker changes."
+}

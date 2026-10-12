@@ -1,0 +1,14 @@
+{
+  "alias": "O200",
+  "title": "updates 4",
+  "content": {
+    "url": "https://www.micron.com/about/press/trademark-usage-guidelines",
+    "label": "Trademark and usage guidelines",
+    "kind": "official_update",
+    "confidence": 0.72
+  },
+  "source": {
+    "provider": "Official issuer IR",
+    "locator": "https://investors.micron.com/news/press-release/2026/Micron-in-High-Volume-Production-of-HBM4-Designed-for-NVIDIA-Vera-Rubin-PCIe-Gen6-SSD-and-SOCAMM2-03-16-2026/default.aspx"
+  }
+}

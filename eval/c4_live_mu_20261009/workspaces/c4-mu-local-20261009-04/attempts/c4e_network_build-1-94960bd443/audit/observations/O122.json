@@ -1,0 +1,9 @@
+{
+  "alias": "O122",
+  "title": "text paragraphs 34",
+  "content": "| Investments |  | 157,199 |  |  | 155,002 |  |\n\n| Property, Plant, and Equipment: |  |  |  |  |\n\n| Utility plant in service |  | 8,690,873 |  |  | 8,249,106 |  |\n\n| Accumulated provision for depreciation |  | (2,619,650) |  |  | (2,599,465) |  |\n\n| Utility plant in service - net |  | 6,071,223 |  |  | 5,649,641 |  |\n\n| Construction work in progress |  | 1,819,351 |  |  | 1,740,809 |  |\n\n| Finance lease right-of-use assets |  | 213,947 |  |  | 219,612 |  |\n\n| Utility plant held for future use |  | 17,399 |  |  | 19,781 |  |",
+  "source": {
+    "provider": "Public web source",
+    "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+  }
+}

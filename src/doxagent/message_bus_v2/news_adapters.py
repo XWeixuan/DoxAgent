@@ -160,7 +160,9 @@ class YahooFinanceNewsAdapter:
 
         self.settings = settings
         # The registry's httpx client remains for other providers; Yahoo owns no session.
-        self.transport = transport or shared_yahoo_transport(settings.crawler_egress_proxy_url)
+        self.transport = transport or shared_yahoo_transport(
+            settings.message_bus_v2_yahoo_http_proxy_url or settings.crawler_egress_proxy_url
+        )
         self.browser = browser
         self._browser_retry_at = 0.0
         self._page_api_retry_at = 0.0
@@ -221,7 +223,17 @@ class YahooFinanceNewsAdapter:
                     )
                     self._browser_retry_at = monotonic_time.monotonic() + delay
                     self._page_api_retry_at = self._browser_retry_at
-                attempts.append({"route": "page_network_ncp", "error": type(exc).__name__})
+                attempts.append(
+                    {
+                        "route": "page_network_ncp",
+                        "error": type(exc).__name__,
+                        "status": getattr(exc, "status_code", None),
+                        "reason": exc.result.reason_code
+                        if isinstance(exc, SiteAccessError)
+                        else None,
+                        "diagnostics": getattr(exc, "diagnostics", {}),
+                    }
+                )
         try:
             if not managed_browser and monotonic_time.monotonic() < self._page_api_retry_at:
                 raise YahooRateLimited(self._page_api_retry_at - monotonic_time.monotonic())
@@ -249,12 +261,19 @@ class YahooFinanceNewsAdapter:
             attempts.append({"route": "ncp_latest_news", "error": type(exc).__name__})
         # RSS is a separate endpoint family, not another Query API retry.
         # Its success must not clear the NCP/API rate-limit circuit.
-        async with context.request_permit():
-            rows, metadata = await acquire_yahoo_rss(
-                self.transport,
-                context.ticker,
-                timeout_seconds=self.settings.tool_http_timeout_seconds,
-            )
+        try:
+            async with context.request_permit():
+                rows, metadata = await acquire_yahoo_rss(
+                    self.transport,
+                    context.ticker,
+                    timeout_seconds=self.settings.tool_http_timeout_seconds,
+                )
+        except Exception as exc:
+            attempts.append({"route": "legacy_headline_rss", "error": type(exc).__name__})
+            # Preserve the transport exception contract, including status/retry fields.
+            exc.acquisition_attempts = attempts
+            exc.args = ("Yahoo acquisition failed: " + json.dumps(attempts, separators=(",", ":")),)
+            raise
         return self._map_result(
             context, rows, "legacy_headline_rss", count, {**metadata, "attempts": attempts}
         )

@@ -1,0 +1,86 @@
+# Selected Data MCP observations
+
+## O430 — form
+
+10-K
+
+Source: SEC EDGAR · 0000723125-26-000023
+
+## O433 — filing_date
+
+2026-10-09
+
+Source: SEC EDGAR · 0000723125-26-000023
+
+## O434 — report_date
+
+2026-09-03
+
+Source: SEC EDGAR · 0000723125-26-000023
+
+## O435 — published_at
+
+2026-10-09
+
+Source: SEC EDGAR · 0000723125-26-000023
+
+## O436 — applied_cutoff
+
+2026-10-09
+
+Source: SEC EDGAR · 0000723125-26-000023
+
+## O438 — section_previews 1
+
+```json
+{
+  "section": "EUV lithography",
+  "heading_match": "EUV lithography",
+  "start_offset": 77414,
+  "end_offset": 157430,
+  "full_text_chars": 80000,
+  "returned_chars": 40000,
+  "truncated": true,
+  "match_quality": "substantive_body",
+  "text_preview": "equipment. Because of the lead times necessary to manufacture our products, we typically begin to process wafers before completion of performance and reliability testing. Development of a product is deemed complete when it is qualified through internal reviews and tests for performance, functionality, and reliability. R&D expenses can vary significantly depending on the timing of product qualification and product specifications. Human Capital We depend on a highly educated and experienced workforce to design, develop, and manufacture high-quality, cutting-edge memory and storage solutions. As of September 3, 2026, we had approximately 61,000 employees located primarily in Asia, North America, and Europe. 16 Table of Contents Talent Acquisition, Development, and Engagement Finding and retaining the best and brightest people in an extremely competitive industry environment is a strategic imperative for our business. We partner with our communities, institutions, governments, and associations to expand the pipeline of highly skilled STEM talent globally. Our partnerships with primary, secondary, and post-secondary education systems are key to training and inspiring the next generation to consider STEM careers in the semiconductor industry. On hiring, we focus on merit and use a variety of means to find the best talent. We are committed to empowering our team members through continuous learning, developing team members at all stages of their careers, including on-the-job training, continuing education, a robust mentoring program, and numerous internal certifications and training. We equip our team members with the latest AI tools and training to unlock human potential and labor productivity. In addition, we develop and accelerate our leaders' careers through targeted learning that helps them move to higher-level positions or across functions. We use a research-based, people-centric approach to understanding and improving team member engagement. Listening to our team members is emphasized by the Micron Voice program, a survey which encompasses engagement, culture, leadership behaviors, well-being, and inclusion to learn more from our team members. Compensation and Benefits Our compensation programs are designed to support our team members' financial and personal well-being by providing a valuable return for their contributions to the Company. Our total rewards strategy includes base salary, bonuses, equity awards, a discounted stock purchase plan, and a comprehensive benefits package. We have a regular review of pay globally, including base pay, annual bonuses, and stock awards, to ensure fairness in our compensation practices. We regularly assess our global leave, medical, and financial benefits to ensure market competitiveness. Culture At Micron, we empower a culture that reflects our core values and enables the best talent to innovate and thrive. To further this mission, we have required comprehensive training for all employees on fostering a respe"
+}
+```
+
+Source: SEC EDGAR · 0000723125-26-000023
+
+## O431 — accession
+
+0000723125-26-000023
+
+Source: SEC EDGAR · 0000723125-26-000023
+
+## O432 — primary_document
+
+mu-20260903.htm
+
+Source: SEC EDGAR · 0000723125-26-000023
+
+## O437 — default_sections_for_form
+
+```json
+false
+```
+
+Source: SEC EDGAR · 0000723125-26-000023
+
+## O439 — sections 1 — metadata
+
+```json
+{
+  "section": "EUV lithography",
+  "heading_match": "EUV lithography",
+  "start_offset": 77414,
+  "end_offset": 157430,
+  "full_text_chars": 80000,
+  "returned_chars": 40000,
+  "truncated": true,
+  "match_quality": "substantive_body"
+}
+```
+
+Source: SEC EDGAR · 0000723125-26-000023

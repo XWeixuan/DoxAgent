@@ -1,0 +1,39 @@
+{
+  "schema_version": "codex-research-node-context-v1",
+  "workflow_version": "codex_global_research_v1",
+  "research_lane": "global_research",
+  "run_id": "c4-mu-local-20261009-01",
+  "node": "c4_pre_scan",
+  "payload": {
+    "ticker": "MU",
+    "company_name": "Micron Technology, Inc.",
+    "research_brief": "研究 MU 的未来事件入口、外部实体关系及深度网络；所有事实截至本轮 cutoff。",
+    "base_context": {
+      "asset_origin": "same frozen Document1 MU assets used by D2/D3 v2.1",
+      "asset_capture": "September 2026; historical citation aliases invalidated before import",
+      "source_files": {
+        "c1.md": {
+          "path": "D:\\DoxAgentPilot\\cases\\document2\\_sources\\init-mu-1f3e9130ae304b01a7fdf2991a35e028-d1\\c1.md",
+          "bytes": 23895,
+          "sha256": "0955a7c754c74f57edf14b924fd36852e698bc6fdd8b299f0b724529513114eb"
+        },
+        "c3.md": {
+          "path": "D:\\DoxAgentPilot\\cases\\document2\\_sources\\init-mu-1f3e9130ae304b01a7fdf2991a35e028-d1\\c3.md",
+          "bytes": 31660,
+          "sha256": "fa16f0b3d396830c8d22181809e7a2a9f9b9d28bf57d9b50f9261db46b105d9f"
+        },
+        "c5.md": {
+          "path": "D:\\DoxAgentPilot\\cases\\document2\\_sources\\init-mu-1f3e9130ae304b01a7fdf2991a35e028-d1\\c5.md",
+          "bytes": 19099,
+          "sha256": "75e2b0737d5ac0f115b5fa04bd840b9bb6a3e408084c5f2223d53b31946ab389"
+        },
+        "horizontal.json": {
+          "path": "D:\\DoxAgentPilot\\cases\\document2\\_sources\\init-mu-1f3e9130ae304b01a7fdf2991a35e028-d1\\horizontal.json",
+          "bytes": 32486,
+          "sha256": "14bfee7335e82fc743db5f751c171a9e2fbf6235101e44f3e6872732b8687511"
+        }
+      }
+    },
+    "task": "pre-scan initial entity relations only"
+  }
+}

@@ -1,0 +1,2492 @@
+{
+  "format": "doxagent.w3-trade-intent-review.v2",
+  "ticker": "MU",
+  "window": {
+    "since_utc": "2026-09-19T12:53:20.738930+00:00",
+    "as_of_utc": "2026-10-10T12:53:20.738930+00:00"
+  },
+  "part": 3,
+  "record_count": 5,
+  "records": [
+    {
+      "intent_id": "trade:case_263bdf4e7658437f917b5fd78fc4d57d",
+      "ticker": "MU",
+      "case_id": "case_263bdf4e7658437f917b5fd78fc4d57d",
+      "intent_released_at_utc": "2026-09-30T08:00:25.017425+00:00",
+      "intent_status": "DELIVERY_FAILED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_6839c85564324eec9659d767c98da6d1",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "TrendForce",
+              "Conventional DRAM",
+              "DRAM contract prices"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "TrendForce预计常规DRAM合同价格在4Q26环比上涨10%-15%。",
+            "subject_time": "4Q26"
+          },
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "TrendForce",
+              "NAND Flash",
+              "NAND contract prices"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "TrendForce预计NAND Flash合同价格在4Q26环比上涨15%-20%。",
+            "subject_time": "4Q26"
+          },
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Enterprise SSDs",
+              "Cloud service providers",
+              "AI inference infrastructure"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "企业级SSD预计是4Q26唯一价格涨幅加速的内存产品类别，受云服务商AI推理基础设施扩张推动。",
+            "subject_time": "4Q26"
+          },
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Enterprise SSDs",
+              "CSPs",
+              "AI inference",
+              "Agentic AI"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "企业级SSD位需求预计在2026年同比增长超过80%，需求从大语言模型训练进一步转向实际AI部署和agentic AI。",
+            "subject_time": "Calendar year 2026"
+          },
+          {
+            "assertion_state": "EXPECTED",
+            "entities": [
+              "Server DRAM",
+              "CSPs",
+              "Server OEMs",
+              "Packaging and testing capacity"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "TrendForce预计4Q26服务器DRAM仍将供不应求，CSP和服务器OEM的位采购增加，但组件、封装测试和前端DRAM产能约束仍限制供给匹配。",
+            "subject_time": "4Q26"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "4Q26行业更新显示NAND合同价涨幅上调至15%-20%，企业级SSD成为唯一价格加速品类，CSP推理基础设施使企业级SSD位需求预计同比增长逾80%；同时服务器DRAM仍供不应求。虽然常规DRAM涨幅放缓至10%-15%、消费端承压，但数据中心和SSD的价格与供给持续性较此前基线更强。",
+          "prior_expectation": "事件前基线是AI服务器需求支持内存价格，但4Q26价格涨幅将较3Q26放缓；TrendForce此前预计3Q26常规DRAM和NAND合同价分别环比上涨13%-18%和10%-15%，Micron公开FY26 Q4收入指引约500亿美元、市场公开收入基线约521亿美元。",
+          "reason": "这是对Micron高价值数据中心内存和SSD近期价格/组合预期的中等正向修订。TrendForce的行业价格与供需判断可通过Micron已处于高量生产或出货的服务器DRAM、SOCAMM2、PCIe Gen6及大容量QLC SSD传导至CDBU/CMBU收入和毛利；消费端压力、长期协议价格机制和DRAM涨幅放缓构成抵消，但不足以消除整体正向方向。",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "E4覆盖的是3Q26行业合同价预测；当前消息首次给出4Q26具体价格区间、企业级SSD价格加速及服务器DRAM持续供不应求判断。",
+          "reference_ids": [
+            "E4"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息是TrendForce的单期行业预测，未确认Micron连续报告窗口的组合、ASP、bit shipments、份额或财务变化，不满足任何Policy条件。"
+        },
+        "w3_case_id": "w3_6839c85564324eec9659d767c98da6d1"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_263bdf4e7658437f917b5fd78fc4d57d",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-30T08:00:25.163162Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 397.999676
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-30T07:53:47.163486Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2609067,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-30",
+        "source": {
+          "binding_id": "MU:trendforce_press_releases",
+          "kind": "crawler",
+          "name": "TrendForce Press Releases",
+          "source_id": "trendforce_press_releases"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_6fee6c91368742058addc7a008de5ed1",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "AI Server Demand Sustains Memory Contract Price Increases in 4Q26, While Consumer-Side Pressure Persists, Says TrendForce"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "DELIVERY_FAILED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "READY",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-30T07:53:47.163486Z",
+        "completed_at": "2026-09-30T08:00:25.163162Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E198",
+            "E4",
+            "E11"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [
+            {
+              "event_id": "E4",
+              "fact_ids": [
+                "F397",
+                "F398"
+              ]
+            }
+          ],
+          "reason": "当前消息的核心事实是TrendForce对4Q26的具体季度预测：常规DRAM合约价环比涨10%-15%、NAND合约价环比涨15%-20%、企业级SSD为唯一价格涨幅加速品类。已加载事实中F397和F398仅覆盖3Q26（DRAM 13%-18%、NAND 10%-15%），4Q26的量化预测及企业级SSD加速叙事尚未出现，属于新季度的具体数值进展。",
+          "reference_ids": [
+            "E4"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [
+            "pol_b123dd2735c71047d828",
+            "pol_000c7e1917b14969a458"
+          ],
+          "reason": "TrendForce确认4Q26 DRAM合同价涨幅moderate至10–15% QoQ、NAND至15–20%，同时server DRAM bit procurement增长、供应商增加低容量RDIMM在产品组合中的份额。前者直接触及'ASP涨幅不再达到FY26 Q3水平但bit shipments仍增长、销售额环比仍增长'的触发路径；后者在AI/服务器需求与价格仍强的前提下，暗示行业供应商（含Micron）高价值服务器内存组合占比可能下降，触及'高价值组合指标相对基线下降'路径。本轮无法确认是否已连续两个季度及Micron具体数据，存在合理命中可能。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "当前消息为TrendForce单期行业价格与供需预测（4Q26），非Micron财报或正式披露。两个Candidate Policy的核心触发均要求\"连续两期财报确认\"或\"连续两个报告窗口\"的Micron自身指标（CMBU/CDBU占比、HBM份额、产品线销售额、bit shipments等），而消息仅给出行业层面的价格涨幅放缓预期（DRAM 10–15%、NAND 15–20%），未提供任何Micron具体财务数据或市场份额变动。行业需求仍强、产能向服务器倾斜、封装测试约束等描述均为行业整体观察，未转化为Micron可核验的连续窗口指标变化。所有Activation Conditions均未达到trigger_boundary。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "TrendForce",
+                "Conventional DRAM",
+                "DRAM contract prices"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "TrendForce预计常规DRAM合同价格在4Q26环比上涨10%-15%。",
+              "subject_time": "4Q26"
+            },
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "TrendForce",
+                "NAND Flash",
+                "NAND contract prices"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "TrendForce预计NAND Flash合同价格在4Q26环比上涨15%-20%。",
+              "subject_time": "4Q26"
+            },
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "Enterprise SSDs",
+                "Cloud service providers",
+                "AI inference infrastructure"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "企业级SSD预计是4Q26唯一价格涨幅加速的内存产品类别，受云服务商AI推理基础设施扩张推动。",
+              "subject_time": "4Q26"
+            },
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "Enterprise SSDs",
+                "CSPs",
+                "AI inference",
+                "Agentic AI"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "企业级SSD位需求预计在2026年同比增长超过80%，需求从大语言模型训练进一步转向实际AI部署和agentic AI。",
+              "subject_time": "Calendar year 2026"
+            },
+            {
+              "assertion_state": "EXPECTED",
+              "entities": [
+                "Server DRAM",
+                "CSPs",
+                "Server OEMs",
+                "Packaging and testing capacity"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "TrendForce预计4Q26服务器DRAM仍将供不应求，CSP和服务器OEM的位采购增加，但组件、封装测试和前端DRAM产能约束仍限制供给匹配。",
+              "subject_time": "4Q26"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "4Q26行业更新显示NAND合同价涨幅上调至15%-20%，企业级SSD成为唯一价格加速品类，CSP推理基础设施使企业级SSD位需求预计同比增长逾80%；同时服务器DRAM仍供不应求。虽然常规DRAM涨幅放缓至10%-15%、消费端承压，但数据中心和SSD的价格与供给持续性较此前基线更强。",
+            "prior_expectation": "事件前基线是AI服务器需求支持内存价格，但4Q26价格涨幅将较3Q26放缓；TrendForce此前预计3Q26常规DRAM和NAND合同价分别环比上涨13%-18%和10%-15%，Micron公开FY26 Q4收入指引约500亿美元、市场公开收入基线约521亿美元。",
+            "reason": "这是对Micron高价值数据中心内存和SSD近期价格/组合预期的中等正向修订。TrendForce的行业价格与供需判断可通过Micron已处于高量生产或出货的服务器DRAM、SOCAMM2、PCIe Gen6及大容量QLC SSD传导至CDBU/CMBU收入和毛利；消费端压力、长期协议价格机制和DRAM涨幅放缓构成抵消，但不足以消除整体正向方向。",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "E4覆盖的是3Q26行业合同价预测；当前消息首次给出4Q26具体价格区间、企业级SSD价格加速及服务器DRAM持续供不应求判断。",
+            "reference_ids": [
+              "E4"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "消息是TrendForce的单期行业预测，未确认Micron连续报告窗口的组合、ASP、bit shipments、份额或财务变化，不满足任何Policy条件。"
+          },
+          "w3_case_id": "w3_6839c85564324eec9659d767c98da6d1"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "c47bafe301fc2ea9c36da6cf5985337c2ef5d2e31562346b22ad7578e8c2c016",
+            "content_type": "text/plain",
+            "sha256": "2035ab31f60b0d916d2357c06a2a2ad6c4d6ca823c36662aca5a19b51cff3d2a",
+            "size_bytes": 6316
+          },
+          "case": {
+            "case_id": "case_263bdf4e7658437f917b5fd78fc4d57d",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-30T07:53:45.863275Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-30T07:53:45.895086Z",
+          "revision": 1,
+          "row_revision": 2554967,
+          "source": {
+            "binding_id": "MU:trendforce_press_releases",
+            "kind": "crawler",
+            "name": "TrendForce Press Releases",
+            "source_id": "trendforce_press_releases"
+          },
+          "source_published_at": "2026-09-30T04:00:00Z",
+          "standard_message_id": "std_a5ebc5e8f331496399aae3ac64fa5884",
+          "stream_item_id": "stream_6fee6c91368742058addc7a008de5ed1",
+          "stream_offset": 2385,
+          "stream_published_at": "2026-09-30T07:53:45.900300Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "AI Server Demand Sustains Memory Contract Price Increases in 4Q26, While Consumer-Side Pressure Persists, Says TrendForce"
+          },
+          "url": "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+          "body_text": "Conventional DRAM contract prices are projected to grow 10–15% QoQ in 4Q26, while NAND Flash contract prices are expected to increase 15–20%\n\nEnterprise SSDs are the only category expected to see price growth accelerate due to strong demand from CSPs\n\nTrendForce’s latest memory industry research reveals that DRAM suppliers continue to prioritize advanced-process capacity for high-performance server products in 4Q26, keeping the overall market undersupplied. However, the pace of contract price increases is expected to moderate, with conventional DRAM prices projected to rise 10–15% QoQ.\n\nMeanwhile, the NAND Flash market is seeing a divergence between accelerating AI demand and weak consumer demand, although prices are still rising across segments. Overall NAND Flash contract prices are projected to increase 15–20% QoQ.\n\nFor PC DRAM, notebook inventories are increasingly reflecting higher component costs in the fourth quarter, weighing on end-market sales. Nevertheless, PC OEMs continue to procure aggressively amid expectations that DRAM supply will remain tight in 2027, providing continued support for prices. On the supply side, DRAM suppliers have been fulfilling agreed volumes to PC OEMs and module makers every quarter throughout 2026. However, the PC DRAM supply could decline in 2027 as more capacity shifts to server applications.\n\nIn the server DRAM market, improving server CPU availability has prompted CSPs and server OEMs to increase bit procurement from suppliers to meet growing RDIMM demand for general servers supporting agentic AI workloads. Memory suppliers have increased the share of lower-capacity RDIMMs in their product mix to better address customer demand. However, constraints in component supply, packaging and testing capacity, and front-end DRAM production flexibility continue to prevent supply from fully aligning with demand. Server DRAM is therefore expected to remain undersupplied in 4Q26. On the pricing front, increases for some suppliers are expected to lag the market average due to pricing mechanisms stipulated in long-term agreements (LTAs).\n\nFor mobile DRAM, rising costs and the depletion of low-cost inventories continue to weigh on smartphone production, suppressing overall bit demand. At the same time, strong demand and higher margins in AI-related applications are prompting suppliers to continue shifting capacity toward server products, leaving mobile DRAM allocations tight. Consequently, the upward price trend remains firmly in place. However, because substantial increases were already priced in during previous quarters, growth is expected to moderate in 4Q26.\n\nIn graphics DRAM, some PC brands are reconsidering GDDR6 as a means of reducing overall BOM costs. GDDR7 demand, meanwhile, continues to be driven primarily by AI chips, with procurement momentum outperforming the PC market.\n \nOn the supply side, suppliers continue to scale back GDDR6 production while gradually exiting the market. GDDR7 output also remains limited as advanced-process capacity is increasingly allocated to applications such as server DRAM. These constraints are expected to keep graphics DRAM prices on an upward trajectory.\n\nFor consumer DRAM, recent incremental demand has come primarily from SSD customers, supplementing existing demand from consumer networking and TV applications. In particular, the improved outlook for QLC SSD demand has increased corresponding demand for DRAM components. However, major suppliers remain committed to production cuts, leaving the market heavily reliant on Taiwanese suppliers. Prices are therefore expected to continue rising—albeit at a slower pace.\n\nTurning to client SSDs, PC OEMs can rely on finished-goods inventories and channel stock built during the first half of the year to support fourth-quarter shipments, limiting procurement largely to components in short supply. PC brands are also reducing SSD capacities in mainstream models to lower BOM costs, resulting in declines in both procurement volumes and average capacity per device. With buyers holding sufficient inventories and purchasing requirements remaining limited, NAND Flash suppliers have adopted a more flexible pricing stance, restraining the magnitude of price increases.\n\nThe enterprise SSD market presents a markedly different picture. Bit demand for enterprise SSDs is projected to grow by more than 80% YoY in 2026 as CSPs continue to expand AI inference infrastructure. Demand is also shifting from LLM training toward actual AI deployment. Additionally, the large-scale rollout of agentic AI is driving exponential growth in data volumes for real-time retrieval and caching, while QLC penetration in vector databases continues to rise.\n\nIn response, suppliers are expanding QLC capacity and the availability of high-capacity products, while PCIe 6.0 adoption is ramping alongside next-generation AI server platforms. However, most incremental supply has already been committed, leaving little available on the open market. Enterprise SSD price growth is therefore expected to accelerate in 4Q26, making it the only memory product category to see a larger increase than in the previous quarter.\n\nFor eMMC/UFS, smartphone brands—the primary source of demand—are largely relying on existing inventories to support fourth-quarter production, resulting in very limited incremental procurement from suppliers. Lower-margin products such as TVs, set-top boxes, and wearables have even less room to absorb higher prices.\n\nAlthough suppliers are seeking broader price increases on the back of strong AI-driven pricing momentum, OEMs are responding with only the minimum purchase volumes needed to maintain supplier relationships. As a result, negotiations have effectively narrowed to price confirmation for relatively small order volumes.\n\nIn the NAND Flash wafer market, prices have reached historical highs that downstream retail channels are increasingly unable to absorb. This has prompted module makers—the primary buyers—to adopt a more cautious procurement stance.\n\nOn the supply side, suppliers continue to prioritize capacity based on profitability, keeping overall wafer availability constrained. However, weak purchasing momentum among module makers is expected to limit overall price growth to a modest increase."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_a5ebc5e8f331496399aae3ac64fa5884:0\"]",
+          "created_at": "2026-09-30T08:00:24.874908Z",
+          "dedupe_key": "d2e785e73a562fcc328b19366e8db7929d0c73837343780dfc244ee167475e05",
+          "entities": [
+            "TrendForce",
+            "Conventional DRAM",
+            "DRAM contract prices"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "TrendForce预计常规DRAM合同价格在4Q26环比上涨10%-15%。",
+          "provisional_event_id": "E174",
+          "subject_time": "4Q26"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_a5ebc5e8f331496399aae3ac64fa5884:1\"]",
+          "created_at": "2026-09-30T08:00:24.889762Z",
+          "dedupe_key": "1e4134952df8ffef2baadc0cc3b0e8e227298b9afcdc0407d330f1167e50301d",
+          "entities": [
+            "TrendForce",
+            "NAND Flash",
+            "NAND contract prices"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "TrendForce预计NAND Flash合同价格在4Q26环比上涨15%-20%。",
+          "provisional_event_id": "E175",
+          "subject_time": "4Q26"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_a5ebc5e8f331496399aae3ac64fa5884:2\"]",
+          "created_at": "2026-09-30T08:00:24.911421Z",
+          "dedupe_key": "141faed04c1be85635ca14b761576eeef51b2b1c44363198f5b0f5a1554cd945",
+          "entities": [
+            "Enterprise SSDs",
+            "Cloud service providers",
+            "AI inference infrastructure"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "企业级SSD预计是4Q26唯一价格涨幅加速的内存产品类别，受云服务商AI推理基础设施扩张推动。",
+          "provisional_event_id": "E176",
+          "subject_time": "4Q26"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_a5ebc5e8f331496399aae3ac64fa5884:3\"]",
+          "created_at": "2026-09-30T08:00:24.932144Z",
+          "dedupe_key": "393d994d736cc875635565b579e05db2713c3916b637d9457db470574dce78cc",
+          "entities": [
+            "Enterprise SSDs",
+            "CSPs",
+            "AI inference",
+            "Agentic AI"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "企业级SSD位需求预计在2026年同比增长超过80%，需求从大语言模型训练进一步转向实际AI部署和agentic AI。",
+          "provisional_event_id": "E177",
+          "subject_time": "Calendar year 2026"
+        },
+        {
+          "assertion_state": "EXPECTED",
+          "candidate_id": "[\"runtime-v2-msg:std_a5ebc5e8f331496399aae3ac64fa5884:4\"]",
+          "created_at": "2026-09-30T08:00:24.953792Z",
+          "dedupe_key": "a0139f8174ac6612f78192df6c23d9048a22e22d012b175813d0f2384e715ed7",
+          "entities": [
+            "Server DRAM",
+            "CSPs",
+            "Server OEMs",
+            "Packaging and testing capacity"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "TrendForce预计4Q26服务器DRAM仍将供不应求，CSP和服务器OEM的位采购增加，但组件、封装测试和前端DRAM产能约束仍限制供给匹配。",
+          "provisional_event_id": "E178",
+          "subject_time": "4Q26"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_263bdf4e7658437f917b5fd78fc4d57d",
+            "status": "DELIVERY_FAILED",
+            "released_at": "2026-09-30T08:00:25.017425+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-30",
+            "delivery_failure": {
+              "code": "PROFILE_VALIDATION_FAILED",
+              "detail": "旧版 v2-delivery 的 ExecutionProfile 不支持冻结的 SHARED_CYCLE Profile：仍要求 target_notional_usd，且拒绝新增仓位参数。",
+              "status": "FAILED"
+            },
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_6839c85564324eec9659d767c98da6d1",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "case_id": "case_263bdf4e7658437f917b5fd78fc4d57d",
+              "direction": "LONG",
+              "entry_reason": "PROFILE_VALIDATION_FAILED: 旧版 v2-delivery 的 ExecutionProfile 不支持冻结的 SHARED_CYCLE Profile：仍要求 target_notional_usd，且拒绝新增仓位参数。",
+              "entry_result": null,
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_263bdf4e7658437f917b5fd78fc4d57d",
+              "execution_reason_codes": [
+                "DELIVERY_FAILED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "REJECTED",
+              "intent_id": "trade:case_263bdf4e7658437f917b5fd78fc4d57d",
+              "intent_status": "DELIVERY_FAILED",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T08:00:25.017425Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "DELIVERY_FAILED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "DELIVERY_FAILED"
+        ],
+        "executor_execution_record_exists": false,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      },
+      "estimated_pnl": {
+        "state": "ESTIMATED",
+        "basis": "saved IBKR historical TRADES ticks; intention-time entry and 15:30 America/New_York cycle exit",
+        "entry_reference_price_usd": "1072.7309",
+        "exit_reference_price_usd": "1069.25",
+        "entry_target_utc": "2026-09-30T08:00:25.017425+00:00",
+        "cycle_end_utc": "2026-09-30T19:30:00+00:00",
+        "cycle_end_et": "2026-09-30T15:30:00-04:00",
+        "direction": "LONG",
+        "return_pct": "-0.3245",
+        "pnl_usd_per_share": "-3.4809",
+        "classification": "flat",
+        "estimated_total_pnl_usd": null,
+        "total_pnl_unavailable_reason": "No simulated position quantity was specified; use percent return and USD per share.",
+        "entry_evidence": {
+          "query_key": "MU|2026-09-30T08:00:25.017425+00:00|entry",
+          "status": "ok",
+          "selected": {
+            "exchange": "FINRA",
+            "offset_seconds": 6.982575,
+            "price_usd": 1072.7309,
+            "special_conditions": "  T ",
+            "timestamp_utc": "2026-09-30T08:00:32+00:00",
+            "unreported": false
+          },
+          "first_event_utc": "2026-09-30T08:00:27+00:00",
+          "error": null
+        },
+        "exit_evidence": {
+          "query_key": "MU|2026-09-30T19:30:00+00:00|exit",
+          "status": "ok",
+          "selected": {
+            "exchange": "NASDAQ",
+            "offset_seconds": 0.0,
+            "price_usd": 1069.25,
+            "special_conditions": null,
+            "timestamp_utc": "2026-09-30T19:30:00+00:00",
+            "unreported": false
+          },
+          "first_event_utc": "2026-09-30T19:30:00+00:00",
+          "error": null
+        },
+        "pricing_unavailable_reason": null,
+        "cost_assumptions": "No slippage, bid-ask spread, fees or financing costs."
+      }
+    },
+    {
+      "intent_id": "trade:case_64e48b767f89452fa2ea9748616acbb3",
+      "ticker": "MU",
+      "case_id": "case_64e48b767f89452fa2ea9748616acbb3",
+      "intent_released_at_utc": "2026-09-30T19:44:49.820087+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_9abc8cbdc1b449dca712004da2d16e93",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Bank of America",
+              "Vivek Arya",
+              "AI data-center systems"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "BofA semiconductor analyst Vivek Arya raised the estimated CY2026-2030 AI data-center systems addressable market to approximately $2.2 trillion with 40% annual growth, from $1.8 trillion with 33% annual growth.",
+            "subject_time": "Calendar 2026-2030"
+          },
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Vivek Arya",
+              "AI infrastructure",
+              "Agentic AI",
+              "AI inference"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Vivek Arya forecast that agentic AI adoption, competition among AI labs, and limited chip supply would keep AI spending robust for the next several years, with inference demand growing faster than training demand.",
+            "subject_time": "Next several years"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Vivek Arya",
+              "Micron Technology"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Vivek Arya identified Micron Technology as one of his top AI semiconductor stock picks with a near-term catalyst.",
+            "subject_time": "Near term"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "Arya's revision adds $400 billion to the CY2026-2030 AI data-center systems market estimate and raises the implied annual growth rate by 7 percentage points, strengthening the expected duration and probability of server, HBM, and DRAM demand and Micron's earnings and capital-return path.",
+          "prior_expectation": "The pre-event baseline already assumed strong AI and server-memory demand, tight supply, and support for Micron's FY26 Q4-to-FY27 high-value memory earnings, but the duration and scale of AI data-center spending remained uncertain.",
+          "reason": "The revision is material relative to the existing demand-duration uncertainty and has a clear transmission from higher AI infrastructure spending and constrained chip supply to Micron's server-memory volumes, pricing, and earnings. Although it is a single analyst forecast rather than company guidance, the magnitude of the revision and explicit MU top-pick call support a LONG trade.",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "BofA analyst Vivek Arya's increase of the CY2026-2030 AI data-center systems TAM estimate from $1.8 trillion at 33% annual growth to $2.2 trillion at 40% is a new forecast revision, as is his identification of Micron as a top AI-chip pick.",
+          "reference_ids": [
+            "E115"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "The message contains analyst forecasts and a recommendation, but no confirmed Micron operating change in high-value mix, shipments, ASP, margins, contracts, capacity, qualification, delivery, or financial results matching any Policy condition."
+        },
+        "w3_case_id": "w3_9abc8cbdc1b449dca712004da2d16e93"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_64e48b767f89452fa2ea9748616acbb3",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-30T19:44:49.992383Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 183.954814
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-30T19:41:46.037569Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_EXECUTION",
+          "TRADE_INTENT"
+        ],
+        "revision": 2628428,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-30",
+        "source": {
+          "binding_id": "MU:yahoo_finance_news",
+          "kind": "api",
+          "name": "Yahoo Finance News",
+          "source_id": "yahoo_finance_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_b2c702d19e2a4931aa87c8c7011eeb26",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "AI spending will fuel wins for Micron, Nvidia, Intel, and other chip stocks: BofA analyst"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "ORDER_FILLED"
+          ],
+          "state": "EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-30T19:41:46.037569Z",
+        "completed_at": "2026-09-30T19:44:49.992383Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E115",
+            "E31",
+            "E185",
+            "E103",
+            "E4"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [
+            {
+              "event_id": "E115",
+              "fact_ids": [
+                "F554"
+              ]
+            }
+          ],
+          "reason": "BofA分析师Vivek Arya将CY26-30 AI数据中心系统可寻址市场规模上调至2.2万亿美元（年增40%，此前为1.8万亿/33%），并将Micron列为AI芯片股首选之一。该$2.2T TAM及Arya的行业级AI capex超额预测为新增核心事实，现有Event中无覆盖。Micron 12月9日起回购日期已被F554覆盖，不构成新信息。",
+          "reference_ids": [
+            "E115"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "当前消息为BofA分析师Vivek Arya的年度前瞻预测，核心事实包括上调CY26-30 AI数据中心TAM至2.2万亿美元、确认AI支出因芯片供给有限将持续旺盛、将Micron列为推荐标的并提及12月9日启动回购。消息不涉及Micron任何CMBU/CDBU/HBM收入份额、bit shipments、ASP、毛利率、合同价格、扩产项目进度、战略客户交付、产品资格或汽车平台的实际数据或公司/客户正式披露。与AI需求强势仅为主题性背景关联，未提供与任何criterion触发路径存在具体事实对应关系的observation。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "当前消息为BofA分析师Vivek Arya的年度前瞻预测，核心事实包括上调CY26-30 AI数据中心TAM至2.2万亿美元、确认AI支出因芯片供给有限将持续旺盛、将Micron列为推荐标的并提及12月9日启动回购。消息不涉及Micron任何CMBU/CDBU/HBM收入份额、bit shipments、ASP、毛利率、合同价格、扩产项目进度、战略客户交付、产品资格或汽车平台的实际数据或公司/客户正式披露。与AI需求强势仅为主题性背景关联，未提供与任何criterion触发路径存在具体事实对应关系的observation。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "Bank of America",
+                "Vivek Arya",
+                "AI data-center systems"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "BofA semiconductor analyst Vivek Arya raised the estimated CY2026-2030 AI data-center systems addressable market to approximately $2.2 trillion with 40% annual growth, from $1.8 trillion with 33% annual growth.",
+              "subject_time": "Calendar 2026-2030"
+            },
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "Vivek Arya",
+                "AI infrastructure",
+                "Agentic AI",
+                "AI inference"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Vivek Arya forecast that agentic AI adoption, competition among AI labs, and limited chip supply would keep AI spending robust for the next several years, with inference demand growing faster than training demand.",
+              "subject_time": "Next several years"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Vivek Arya",
+                "Micron Technology"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Vivek Arya identified Micron Technology as one of his top AI semiconductor stock picks with a near-term catalyst.",
+              "subject_time": "Near term"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "Arya's revision adds $400 billion to the CY2026-2030 AI data-center systems market estimate and raises the implied annual growth rate by 7 percentage points, strengthening the expected duration and probability of server, HBM, and DRAM demand and Micron's earnings and capital-return path.",
+            "prior_expectation": "The pre-event baseline already assumed strong AI and server-memory demand, tight supply, and support for Micron's FY26 Q4-to-FY27 high-value memory earnings, but the duration and scale of AI data-center spending remained uncertain.",
+            "reason": "The revision is material relative to the existing demand-duration uncertainty and has a clear transmission from higher AI infrastructure spending and constrained chip supply to Micron's server-memory volumes, pricing, and earnings. Although it is a single analyst forecast rather than company guidance, the magnitude of the revision and explicit MU top-pick call support a LONG trade.",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "BofA analyst Vivek Arya's increase of the CY2026-2030 AI data-center systems TAM estimate from $1.8 trillion at 33% annual growth to $2.2 trillion at 40% is a new forecast revision, as is his identification of Micron as a top AI-chip pick.",
+            "reference_ids": [
+              "E115"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "The message contains analyst forecasts and a recommendation, but no confirmed Micron operating change in high-value mix, shipments, ASP, margins, contracts, capacity, qualification, delivery, or financial results matching any Policy condition."
+          },
+          "w3_case_id": "w3_9abc8cbdc1b449dca712004da2d16e93"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "522e5edd620e5783d8312d4d3dad6a82e94297c2c364a1d093a4dfa31483e6fe",
+            "content_type": "text/plain",
+            "sha256": "3df6e42ac4c07c2735790bd2ac8615688897f62e5b9d064e2314b7408da19c66",
+            "size_bytes": 2802
+          },
+          "case": {
+            "case_id": "case_64e48b767f89452fa2ea9748616acbb3",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-30T19:40:07.493084Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-30T19:41:45.208089Z",
+          "revision": 1,
+          "row_revision": 2628314,
+          "source": {
+            "binding_id": "MU:yahoo_finance_news",
+            "kind": "api",
+            "name": "Yahoo Finance News",
+            "source_id": "yahoo_finance_news"
+          },
+          "source_published_at": "2026-09-30T19:39:25Z",
+          "standard_message_id": "std_c56d67802902465aafbb4544cd8cc476",
+          "stream_item_id": "stream_b2c702d19e2a4931aa87c8c7011eeb26",
+          "stream_offset": 2469,
+          "stream_published_at": "2026-09-30T19:41:45.213436Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "AI spending will fuel wins for Micron, Nvidia, Intel, and other chip stocks: BofA analyst"
+          },
+          "url": "https://finance.yahoo.com/markets/stocks/article/ai-spending-will-fuel-wins-for-micron-nvidia-intel-and-other-chip-stocks-bofa-analyst-193925832.html?.tsrc=rss",
+          "body_text": "We are down to three months left in the year, and on Wall Street, that means the start of year-ahead predictions for the economy, stocks, and sectors.\n\nIt's not unusual for analysts' big calls to drive the stocks they call out, especially if the calls are assigned to price targets and earnings estimate lifts.\n\nHere's one of the first worthwhile look-ahead calls to hit our inbox, from BofA semiconductor analyst Vivek Arya on momentum tech stocks of companies at the center of the AI boom.\n\nArya pointed out the strong potential for AI capital expenditures to come in ahead of many estimates and be a better-than-expected tailwind for a host of stocks.\n\nThe call\n\nOn the outlook for AI infrastructure, Arya said, \"We raise our CY26-30 estimate AI data center systems addressable market to $2.2 trillion at a +40% annual pace from $1.8 trillion/+33% prior. The virtuous flywheel of agentic tool adoption by consumers and enterprises, competition between public and private AI labs, and limited chip supply will likely keep AI spending robust for the next several years. Any pacing or addition of safety guardrails to frontier models is likely to increase not reduce compute requirements and shift more demand to faster growing inference from training. Meanwhile, valuations for top chip stocks remain compelling relative to their projected EPS growth, with SOX trading at a 21x forward PE, 12% below its 24x median multiple since the onset of ChatGPT and well below 40%+ projected EPS growth potential.\"\n\nThe stock winners\n\nA host of stocks have bullish setups within Arya's revised AI thesis.\n\n\"Historically, CQ4 (and CQ1) have been the two best seasonal quarters to own chip stocks, with 300-500 basis of median outperformance vs. SPX from 2010-25,\" Arya wrote. \"Our top picks with near-term catalysts include: 1) Nvidia (NVDA) (enhanced buybacks, multiple GTC tradeshow events), 2) Intel (INTC) (agentic CPU strength, foundry win anticipation), 3) Micron (MU) (start of buybacks from Dec-9), 4) Marvell (MRVL) (Analyst Day on Oct 6, XPU ramp) and 5) Lam Research (LRCX) (share gain potential across memory, logic). We also continue to like AMD (AMD), Applied Materials (AMAT), Analog Devices (ADI) and On Semiconductor (ON). Staying watchful on Broadcom (AVGO) where we are Buy-rated on compelling valuation with potential for enhanced buybacks when the company reports FQ4 in December.\"\n\n(MU )\n\nBrian Sozzi is Yahoo Finance's Executive Editor, host of the Sozzi Unleashed morning show and the Power Players with Brian Sozzi podcast, and a member of Yahoo Finance's editorial leadership team. Follow Sozzi on X @BrianSozzi, Instagram, and LinkedIn. Tips on stories? Email brian.sozzi@yahoofinance.com.\n\nClick here for in-depth analysis of the latest stock market news and events moving stock prices"
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_c56d67802902465aafbb4544cd8cc476:0\"]",
+          "created_at": "2026-09-30T19:44:49.774543Z",
+          "dedupe_key": "c3e39e630ba3f599c453bfacc9a981f25f919642f54ea5f95f607962203c9eb7",
+          "entities": [
+            "Bank of America",
+            "Vivek Arya",
+            "AI data-center systems"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "BofA semiconductor analyst Vivek Arya raised the estimated CY2026-2030 AI data-center systems addressable market to approximately $2.2 trillion with 40% annual growth, from $1.8 trillion with 33% annual growth.",
+          "provisional_event_id": "E304",
+          "subject_time": "Calendar 2026-2030"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_c56d67802902465aafbb4544cd8cc476:1\"]",
+          "created_at": "2026-09-30T19:44:49.785575Z",
+          "dedupe_key": "a01becf0a7fdbf02abd7612805d8bef6929bc7259b9697e444b26fce1cd1f6c5",
+          "entities": [
+            "Vivek Arya",
+            "AI infrastructure",
+            "Agentic AI",
+            "AI inference"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Vivek Arya forecast that agentic AI adoption, competition among AI labs, and limited chip supply would keep AI spending robust for the next several years, with inference demand growing faster than training demand.",
+          "provisional_event_id": "E305",
+          "subject_time": "Next several years"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_c56d67802902465aafbb4544cd8cc476:2\"]",
+          "created_at": "2026-09-30T19:44:49.792824Z",
+          "dedupe_key": "3c803227e21e8eaad0968041e0da84a24f476e6e359f1b0fe14136ba2b815cca",
+          "entities": [
+            "Vivek Arya",
+            "Micron Technology"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Vivek Arya identified Micron Technology as one of his top AI semiconductor stock picks with a near-term catalyst.",
+          "provisional_event_id": "E306",
+          "subject_time": "Near term"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_64e48b767f89452fa2ea9748616acbb3",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-09-30T19:44:49.820087+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-30",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_9abc8cbdc1b449dca712004da2d16e93",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T19:44:50.451398Z"
+              },
+              "case_id": "case_64e48b767f89452fa2ea9748616acbb3",
+              "direction": "LONG",
+              "entry_reason": "ORDER_FILLED",
+              "entry_result": "FILLED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_64e48b767f89452fa2ea9748616acbb3",
+              "execution_reason_codes": [
+                "ORDER_FILLED"
+              ],
+              "execution_state": "EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "17102.72"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "16"
+              },
+              "first_fill_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T19:44:55Z"
+              },
+              "has_actual_fill": true,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_64e48b767f89452fa2ea9748616acbb3",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T19:44:49.820087Z"
+              }
+            },
+            "entry": {
+              "side": "BUY",
+              "quantity": "16",
+              "average_price_usd": "1068.92",
+              "first_fill_at": "2026-09-30T19:44:55+00:00",
+              "last_fill_at": "2026-09-30T19:44:55+00:00"
+            },
+            "exit": {
+              "side": "SELL",
+              "quantity": "16",
+              "average_price_usd": "1090.4",
+              "first_fill_at": "2026-10-01T19:30:01+00:00",
+              "last_fill_at": "2026-10-01T19:30:01+00:00"
+            },
+            "fills": [
+              {
+                "kind": "ENTRY",
+                "side": "BUY",
+                "quantity": "16",
+                "price_usd": "1068.92",
+                "filled_at": "2026-09-30T19:44:55+00:00",
+                "broker_fill_id": "00025b45.6abeecba.01.01"
+              },
+              {
+                "kind": "EXIT",
+                "side": "SELL",
+                "quantity": "16",
+                "price_usd": "1090.4",
+                "filled_at": "2026-10-01T19:30:01+00:00",
+                "broker_fill_id": "0000dc8f.6bca8d4c.01.01"
+              }
+            ],
+            "lot_remaining_quantity": 0,
+            "realized_pnl_usd": "341.32050800",
+            "realized_pnl_records": [
+              {
+                "amount": "341.32050800",
+                "day": "2026-10-01",
+                "environment": "PAPER",
+                "provisional": false,
+                "reason": null
+              }
+            ],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "EXECUTED",
+        "read_execution_reason_codes": [
+          "ORDER_FILLED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": {
+          "side": "BUY",
+          "quantity": "16",
+          "average_price_usd": "1068.92",
+          "first_fill_at": "2026-09-30T19:44:55+00:00",
+          "last_fill_at": "2026-09-30T19:44:55+00:00"
+        },
+        "exit": {
+          "side": "SELL",
+          "quantity": "16",
+          "average_price_usd": "1090.4",
+          "first_fill_at": "2026-10-01T19:30:01+00:00",
+          "last_fill_at": "2026-10-01T19:30:01+00:00"
+        },
+        "realized_pnl_usd": "341.32050800",
+        "pnl_state": "REALIZED",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_4be7a686d63943aba06c2d337561135e",
+      "ticker": "MU",
+      "case_id": "case_4be7a686d63943aba06c2d337561135e",
+      "intent_released_at_utc": "2026-10-05T14:01:27.826342+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_439a0719d23f4eb2887c7ff39a210749",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "WSTS",
+              "memory",
+              "DRAM",
+              "NAND"
+            ],
+            "occurrence_date": null,
+            "proposition": "WSTS公布的2026年8月数据表明，memory销售额增长36%，DRAM价格上涨8%，NAND价格上涨5%。",
+            "subject_time": "2026年8月"
+          },
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Brad Gastwirth",
+              "Circular Technologies",
+              "DRAM",
+              "NAND"
+            ],
+            "occurrence_date": "2026-10-02",
+            "proposition": "Circular Technologies的Brad Gastwirth预测2026年第四季度DRAM价格上涨15%–20%、NAND价格上涨12%–20%。",
+            "subject_time": "2026年第四季度"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "新增的8月价格与销售数据支持涨势仍在延续；Gastwirth对Q4 DRAM价格的预测为上涨15%–20%，相较E217的10%–15%区间整体高5个百分点。NAND预测为12%–20%，并未较原区间整体上修。由此带来的正向修订主要集中于DRAM价格预期。",
+          "prior_expectation": "截至E217（2026-09-30），行业预期FY2026 Q4 DRAM合同价上涨约10%–15%、NAND上涨约15%–20%，并已预期服务器DRAM短缺及AI驱动的持续紧张。Micron近期实现的高ASP和盈利强劲，但持续性仍待验证。",
+          "reason": "Surprise为中等：供应紧张和涨价方向已在基线中，但WSTS最新实际数据及更高的DRAM预测强化了近端价格路径。Materiality较高，因为DRAM约占Micron收入四分之三，且价格变化可经实现ASP传至收入和利润。单一分析师预测并非共识，也未量化Micron自身价格实现，限制确信度；但方向性传导清楚，足以支持LONG。",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "Reference View的E217记录了FY2026 Q4 DRAM合同价涨10%–15%、NAND涨15%–20%的预期，但未覆盖WSTS报告的2026年8月memory销售增长36%、DRAM/NAND价格分别上涨8%/5%的数据，也未覆盖Gastwirth提出的不同Q4价格区间，故为NEW。",
+          "reference_ids": [
+            "E217"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "现行Policy无适用于该行业月度数据或DRAM/NAND价格上涨预测的命中条件；消息未披露Micron特定经营变化，也未提供符合FY2027调整后EPS上修Policy要求的可比新旧数值。"
+        },
+        "w3_case_id": "w3_439a0719d23f4eb2887c7ff39a210749"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_4be7a686d63943aba06c2d337561135e",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-10-05T14:01:28.161339Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 618.565291
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-10-05T13:51:09.596048Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_EXECUTION",
+          "TRADE_INTENT"
+        ],
+        "revision": 3239695,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-10-05",
+        "source": {
+          "binding_id": "MU:ibkr_news",
+          "kind": "api",
+          "name": "IBKR News API",
+          "source_id": "ibkr_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_be0d68e39cf04b128211bbf57f17df52",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Micron Stock Drops Amid Fears of Memory-Price Peak. The Data Tell a Different Story. -- Barrons.com"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "ORDER_FILLED"
+          ],
+          "state": "EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-10-05T13:51:09.596048Z",
+        "completed_at": "2026-10-05T14:01:28.161339Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E208",
+            "E4",
+            "E217",
+            "E10",
+            "E207"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [
+            {
+              "event_id": "E217",
+              "fact_ids": [
+                "F1029",
+                "F1030"
+              ]
+            }
+          ],
+          "reason": "消息包含两个尚未被覆盖的核心事实：(1) WSTS 八月数据显示 memory 销售增长 36%、DRAM 价格升 8%、NAND 价格升 5%，这一月度聚合数据点不在任何已加载 Fact 中；(2) Circular Technologies 分析师 Brad Gastwirth 给出的 Q4 预测为 DRAM 15%-20%、NAND 12%-20%，与 E217 中 F1029（DRAM 10%-15%）和 F1030（NAND 15%-20%）存在明确数值差异，且来源和发布时间不同。",
+          "reference_ids": [
+            "E217"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "当前消息为Barron's股价评论，核心事实包括：Micron股价周一微跌1.2%、上周公布强劲财报但投资者对持续性存疑、WSTS数据确认8月DRAM/NAND价格分别上涨8%/5%、分析师预测Q4 DRAM涨15-20%/NAND涨12-20%、\"定价持续走高即使消费端走弱\"、长期供货协议仍是客户沟通重点。所有criterion关注的触发路径（如高价值组合份额下降、ASP环比转跌、产能/交付瓶颈、合同延期/退款、库存增速超收入、产品召回/资格重置、汽车项目节点、竞争供应商HBM份额上升、FY27指引偏差、卖方EPS上调含新旧值等）在本消息中均无对应具体事实；消息实际呈现的价格与需求状态与多数触发条件方向相反。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "当前消息为Barron's股价评论，核心事实包括：Micron股价周一微跌1.2%、上周公布强劲财报但投资者对持续性存疑、WSTS数据确认8月DRAM/NAND价格分别上涨8%/5%、分析师预测Q4 DRAM涨15-20%/NAND涨12-20%、\"定价持续走高即使消费端走弱\"、长期供货协议仍是客户沟通重点。所有criterion关注的触发路径（如高价值组合份额下降、ASP环比转跌、产能/交付瓶颈、合同延期/退款、库存增速超收入、产品召回/资格重置、汽车项目节点、竞争供应商HBM份额上升、FY27指引偏差、卖方EPS上调含新旧值等）在本消息中均无对应具体事实；消息实际呈现的价格与需求状态与多数触发条件方向相反。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "WSTS",
+                "memory",
+                "DRAM",
+                "NAND"
+              ],
+              "occurrence_date": null,
+              "proposition": "WSTS公布的2026年8月数据表明，memory销售额增长36%，DRAM价格上涨8%，NAND价格上涨5%。",
+              "subject_time": "2026年8月"
+            },
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "Brad Gastwirth",
+                "Circular Technologies",
+                "DRAM",
+                "NAND"
+              ],
+              "occurrence_date": "2026-10-02",
+              "proposition": "Circular Technologies的Brad Gastwirth预测2026年第四季度DRAM价格上涨15%–20%、NAND价格上涨12%–20%。",
+              "subject_time": "2026年第四季度"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "新增的8月价格与销售数据支持涨势仍在延续；Gastwirth对Q4 DRAM价格的预测为上涨15%–20%，相较E217的10%–15%区间整体高5个百分点。NAND预测为12%–20%，并未较原区间整体上修。由此带来的正向修订主要集中于DRAM价格预期。",
+            "prior_expectation": "截至E217（2026-09-30），行业预期FY2026 Q4 DRAM合同价上涨约10%–15%、NAND上涨约15%–20%，并已预期服务器DRAM短缺及AI驱动的持续紧张。Micron近期实现的高ASP和盈利强劲，但持续性仍待验证。",
+            "reason": "Surprise为中等：供应紧张和涨价方向已在基线中，但WSTS最新实际数据及更高的DRAM预测强化了近端价格路径。Materiality较高，因为DRAM约占Micron收入四分之三，且价格变化可经实现ASP传至收入和利润。单一分析师预测并非共识，也未量化Micron自身价格实现，限制确信度；但方向性传导清楚，足以支持LONG。",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "Reference View的E217记录了FY2026 Q4 DRAM合同价涨10%–15%、NAND涨15%–20%的预期，但未覆盖WSTS报告的2026年8月memory销售增长36%、DRAM/NAND价格分别上涨8%/5%的数据，也未覆盖Gastwirth提出的不同Q4价格区间，故为NEW。",
+            "reference_ids": [
+              "E217"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "现行Policy无适用于该行业月度数据或DRAM/NAND价格上涨预测的命中条件；消息未披露Micron特定经营变化，也未提供符合FY2027调整后EPS上修Policy要求的可比新旧数值。"
+          },
+          "w3_case_id": "w3_439a0719d23f4eb2887c7ff39a210749"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "b24e489904f86f26bc67a000c51cdf023a3036bbb9659b9b34a8b5f8c555d245",
+            "content_type": "text/plain",
+            "sha256": "e26255fe7c40d6d5f0be8a0c60467e3736df6167e4d548b494ca1e73ac343b72",
+            "size_bytes": 2343
+          },
+          "case": {
+            "case_id": "case_4be7a686d63943aba06c2d337561135e",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-10-05T13:51:00.514904Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-10-05T13:51:08.261104Z",
+          "revision": 1,
+          "row_revision": 3239535,
+          "source": {
+            "binding_id": "MU:ibkr_news",
+            "kind": "api",
+            "name": "IBKR News API",
+            "source_id": "ibkr_news"
+          },
+          "source_published_at": "2026-10-05T13:49:00Z",
+          "standard_message_id": "std_5f1a197ec1d449309913642ca55f7680",
+          "stream_item_id": "stream_be0d68e39cf04b128211bbf57f17df52",
+          "stream_offset": 2895,
+          "stream_published_at": "2026-10-05T13:51:08.266737Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Micron Stock Drops Amid Fears of Memory-Price Peak. The Data Tell a Different Story. -- Barrons.com"
+          },
+          "url": "https://www.interactivebrokers.com/en/trading/providers.php",
+          "body_text": "By Adam Clark Micron Technology stock was flatlining early Monday. The memory-chip maker is still contending with fears of a cyclical peak in its earnings but prices tell a different story. Micron shares were down 1.2% at $1,061.81 in early trading. The stock didn't get much of a lift from blowout earnings last week, with investors seemingly still skeptical about the sustainability of soaring profits. But the numbers suggest memory prices will only keep rising. The latest set of figures from World Semiconductor Trade Statistics showed memory sales increasing 36% in August, driven by both stronger shipment volumes and pricing. The prices of DRAM and NAND rose 8% and 5%, respectively. DRAM is short-term working memory that computers and AI hardware use to manage active data and running processes. It makes up about three quarters of Micron's revenue. NAND flash memory is used for longer-term storage. Backward-looking numbers might not be much comfort for nervous investors, but analysts expect the memory-chip boom to keep going. DRAM prices are set to rise between 15% and 20% in the fourth quarter, with NAND prices poised to rise between 12% and 20%, according to Brad Gastwirth, global head of research and market intelligence at Circular Technologies. \"Memory remains the clearest quantitative signal in our October work. Pricing continues to move higher even as consumer end markets weaken, while long term supply agreements remain a major part of customer conversations,\" Gastwirth wrote in a research note Friday. As memory prices keep going up, Micron stock only looks cheaper-even if the market remains doubtful. Write to Adam Clark at adam.clark@barrons.com This content was created by Barron's, which is operated by Dow Jones & Co. Barron's is published independently from Dow Jones Newswires and The Wall Street Journal. (END) Dow Jones Newswires October 05, 2026 09:49 ET (13:49 GMT) Copyright (c) 2026 Dow Jones & Company, Inc. The statements in this document shall not be considered as an objective or independent explanation of the matters. Please note that this document (a) has not been prepared in accordance with legal requirements designed to promote the independence of investment research, and (b) is not subject to any prohibition on dealing ahead of the dissemination or publication of investment research."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_5f1a197ec1d449309913642ca55f7680:0\"]",
+          "created_at": "2026-10-05T14:01:27.793591Z",
+          "dedupe_key": "7121716a57dcf14121e4a48860e8199750869da8f713ffc49e1aa95bb065dd97",
+          "entities": [
+            "WSTS",
+            "memory",
+            "DRAM",
+            "NAND"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W3",
+          "proposition": "WSTS公布的2026年8月数据表明，memory销售额增长36%，DRAM价格上涨8%，NAND价格上涨5%。",
+          "provisional_event_id": "E337",
+          "subject_time": "2026年8月"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_5f1a197ec1d449309913642ca55f7680:1\"]",
+          "created_at": "2026-10-05T14:01:27.802320Z",
+          "dedupe_key": "21d18f3048c4922bce8b112674a90abb66134851945ed929c6d6086c93056278",
+          "entities": [
+            "Brad Gastwirth",
+            "Circular Technologies",
+            "DRAM",
+            "NAND"
+          ],
+          "occurrence_date": "2026-10-02",
+          "originating_node": "W3",
+          "proposition": "Circular Technologies的Brad Gastwirth预测2026年第四季度DRAM价格上涨15%–20%、NAND价格上涨12%–20%。",
+          "provisional_event_id": "E338",
+          "subject_time": "2026年第四季度"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_4be7a686d63943aba06c2d337561135e",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-10-05T14:01:27.826342+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-10-05",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_439a0719d23f4eb2887c7ff39a210749",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-05T14:01:28.845406Z"
+              },
+              "case_id": "case_4be7a686d63943aba06c2d337561135e",
+              "direction": "LONG",
+              "entry_reason": "ORDER_FILLED",
+              "entry_result": "FILLED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_4be7a686d63943aba06c2d337561135e",
+              "execution_reason_codes": [
+                "ORDER_FILLED"
+              ],
+              "execution_state": "EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "7407.61"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "7"
+              },
+              "first_fill_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-05T14:01:33Z"
+              },
+              "has_actual_fill": true,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_4be7a686d63943aba06c2d337561135e",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-05T14:01:27.826342Z"
+              }
+            },
+            "entry": {
+              "side": "BUY",
+              "quantity": "7",
+              "average_price_usd": "1058.23",
+              "first_fill_at": "2026-10-05T14:01:33+00:00",
+              "last_fill_at": "2026-10-05T14:01:33+00:00"
+            },
+            "exit": {
+              "side": "SELL",
+              "quantity": "7",
+              "average_price_usd": "1062.08",
+              "first_fill_at": "2026-10-05T19:30:02+00:00",
+              "last_fill_at": "2026-10-05T19:30:02+00:00"
+            },
+            "fills": [
+              {
+                "kind": "ENTRY",
+                "side": "BUY",
+                "quantity": "7",
+                "price_usd": "1058.23",
+                "filled_at": "2026-10-05T14:01:33+00:00",
+                "broker_fill_id": "0000dc8f.6bcfe4c5.01.01"
+              },
+              {
+                "kind": "EXIT",
+                "side": "SELL",
+                "quantity": "7",
+                "price_usd": "1062.08",
+                "filled_at": "2026-10-05T19:30:02+00:00",
+                "broker_fill_id": "0000dc8f.6bd365ad.01.01"
+              }
+            ],
+            "lot_remaining_quantity": 0,
+            "realized_pnl_usd": "24.79680600000000000000000000",
+            "realized_pnl_records": [
+              {
+                "amount": "24.79680600000000000000000000",
+                "day": "2026-10-05",
+                "environment": "PAPER",
+                "provisional": false,
+                "reason": null
+              }
+            ],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "EXECUTED",
+        "read_execution_reason_codes": [
+          "ORDER_FILLED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": {
+          "side": "BUY",
+          "quantity": "7",
+          "average_price_usd": "1058.23",
+          "first_fill_at": "2026-10-05T14:01:33+00:00",
+          "last_fill_at": "2026-10-05T14:01:33+00:00"
+        },
+        "exit": {
+          "side": "SELL",
+          "quantity": "7",
+          "average_price_usd": "1062.08",
+          "first_fill_at": "2026-10-05T19:30:02+00:00",
+          "last_fill_at": "2026-10-05T19:30:02+00:00"
+        },
+        "realized_pnl_usd": "24.79680600000000000000000000",
+        "pnl_state": "REALIZED",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_05e5da6081404ac08f72e26f3171fd8d",
+      "ticker": "MU",
+      "case_id": "case_05e5da6081404ac08f72e26f3171fd8d",
+      "intent_released_at_utc": "2026-10-06T12:13:16.195646+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_b223e2cc544f44cc887b882857507a55",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Netlist, Inc.",
+              "Micron Technology, Inc."
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "Netlist与Micron于2026年10月6日签订专利许可及和解协议，约定和解并相互解除双方之间所有未决法律程序。",
+            "subject_time": null
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Netlist, Inc.",
+              "Micron Technology, Inc."
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "协议向Micron授予Netlist专利组合的五年期许可，其中包括覆盖服务器DIMM和HBM技术的专利。",
+            "subject_time": "协议签署后的五年许可期"
+          },
+          {
+            "assertion_state": "SCHEDULED",
+            "entities": [
+              "Netlist, Inc.",
+              "Micron Technology, Inc."
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "协议规定Micron自2026年第四季度至2031年第三季度每季度向Netlist支付3,000万美元，五年合计6亿美元。",
+            "subject_time": "2026年第四季度至2031年第三季度"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "双方现已约定解决并相互解除所有未决法律程序，Micron取得覆盖服务器DIMM及HBM专利的五年许可；原先未定的法律风险转为许可期内较明确的经营保障和每季度3,000万美元的约定费用。核心变化是高价值内存产品的法律确定性提升，而非新增出货或需求。",
+          "prior_expectation": "消息前公开状态仍包括Netlist针对Micron的HBM ITC新案、服务器内存相关诉讼、上诉及单独的损害赔偿事项；尚无公开的全面和解或HBM/服务器DIMM许可。此前存在未解决的法律与潜在供货限制风险，但没有证据支持对禁令概率作精确估值。",
+          "reason": "这是相对近期公开状态的正向惊喜：9月29日刚出现新的HBM ITC行动，此次协议迅速解决双方未决程序并覆盖HBM和服务器DIMM。传导路径是法律不确定性和潜在供货限制风险下降，保护Micron面向AI/服务器市场的高价值产品经营；已知许可费用每年约1.2亿美元，不到FY26收入的0.1%，相对公司规模较小。由于此前没有证据表明禁令迫近，不将其视为新增收入，但净影响仍支持LONG。",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "Reference View记录了Micron与Netlist之间仍在进行的ITC、上诉及损害赔偿事项，但没有记录双方已达成和解或五年许可。此次协议带来的法律状态变化是新的。",
+          "reference_ids": [
+            "E21",
+            "E22",
+            "E23",
+            "E176"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "PolicySet v17没有覆盖专利和解或许可的触发条件。消息也未触发其中关于HBM商业出货、竞争地位、经营或财务结果的具体门槛。"
+        },
+        "w3_case_id": "w3_b223e2cc544f44cc887b882857507a55"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_05e5da6081404ac08f72e26f3171fd8d",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-10-06T12:13:16.386713Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 406.276627
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-10-06T12:06:30.110086Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_EXECUTION",
+          "TRADE_INTENT"
+        ],
+        "revision": 3440819,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-10-06",
+        "source": {
+          "binding_id": "MU:yahoo_finance_news",
+          "kind": "api",
+          "name": "Yahoo Finance News",
+          "source_id": "yahoo_finance_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_c50bd2732565460a9ca47555191dde3c",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Netlist and Micron Enter Patent License and Settlement Agreements"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "ORDER_FILLED"
+          ],
+          "state": "EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-10-06T12:06:30.110086Z",
+        "completed_at": "2026-10-06T12:13:16.386713Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E176",
+            "E21",
+            "E23",
+            "E22"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "当前消息核心事实是 Netlist 与 Micron 已签署专利许可及和解协议（相互撤回所有未决诉讼、Micron 获 5 年期许可、每季度 3000 万美元共 6 亿美元）。已知事实仅覆盖 ITC 诉讼提起、排除令请求、4.45 亿美元损害赔偿、专利无效裁决及上诉进行中，无任何事实表明双方已达成和解或许可协议。这是一个全新的状态变化。",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "该消息为Netlist与Micron之间的专利许可与诉讼和解公告（Micron每季度支付3000万美元，5年期共6亿美元，涉及服务器DIMM和HBM相关专利授权）。消息核心事实是IP许可与法律和解安排，未涉及Micron的收入组合、ASP、bit shipments、HBM市场份额变化、客户合同交付、产能爬坡、良率、库存、现金流结构、竞争供应商供货地位或平台规格替代等任何Policy criterion所关注的运营或财务状态变化。不存在与任何criterion构成具体、实质性触发关系的事实。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "该消息为Netlist与Micron之间的专利许可与诉讼和解公告（Micron每季度支付3000万美元，5年期共6亿美元，涉及服务器DIMM和HBM相关专利授权）。消息核心事实是IP许可与法律和解安排，未涉及Micron的收入组合、ASP、bit shipments、HBM市场份额变化、客户合同交付、产能爬坡、良率、库存、现金流结构、竞争供应商供货地位或平台规格替代等任何Policy criterion所关注的运营或财务状态变化。不存在与任何criterion构成具体、实质性触发关系的事实。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Netlist, Inc.",
+                "Micron Technology, Inc."
+              ],
+              "occurrence_date": "2026-10-06",
+              "proposition": "Netlist与Micron于2026年10月6日签订专利许可及和解协议，约定和解并相互解除双方之间所有未决法律程序。",
+              "subject_time": null
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Netlist, Inc.",
+                "Micron Technology, Inc."
+              ],
+              "occurrence_date": "2026-10-06",
+              "proposition": "协议向Micron授予Netlist专利组合的五年期许可，其中包括覆盖服务器DIMM和HBM技术的专利。",
+              "subject_time": "协议签署后的五年许可期"
+            },
+            {
+              "assertion_state": "SCHEDULED",
+              "entities": [
+                "Netlist, Inc.",
+                "Micron Technology, Inc."
+              ],
+              "occurrence_date": "2026-10-06",
+              "proposition": "协议规定Micron自2026年第四季度至2031年第三季度每季度向Netlist支付3,000万美元，五年合计6亿美元。",
+              "subject_time": "2026年第四季度至2031年第三季度"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "双方现已约定解决并相互解除所有未决法律程序，Micron取得覆盖服务器DIMM及HBM专利的五年许可；原先未定的法律风险转为许可期内较明确的经营保障和每季度3,000万美元的约定费用。核心变化是高价值内存产品的法律确定性提升，而非新增出货或需求。",
+            "prior_expectation": "消息前公开状态仍包括Netlist针对Micron的HBM ITC新案、服务器内存相关诉讼、上诉及单独的损害赔偿事项；尚无公开的全面和解或HBM/服务器DIMM许可。此前存在未解决的法律与潜在供货限制风险，但没有证据支持对禁令概率作精确估值。",
+            "reason": "这是相对近期公开状态的正向惊喜：9月29日刚出现新的HBM ITC行动，此次协议迅速解决双方未决程序并覆盖HBM和服务器DIMM。传导路径是法律不确定性和潜在供货限制风险下降，保护Micron面向AI/服务器市场的高价值产品经营；已知许可费用每年约1.2亿美元，不到FY26收入的0.1%，相对公司规模较小。由于此前没有证据表明禁令迫近，不将其视为新增收入，但净影响仍支持LONG。",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "Reference View记录了Micron与Netlist之间仍在进行的ITC、上诉及损害赔偿事项，但没有记录双方已达成和解或五年许可。此次协议带来的法律状态变化是新的。",
+            "reference_ids": [
+              "E21",
+              "E22",
+              "E23",
+              "E176"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "PolicySet v17没有覆盖专利和解或许可的触发条件。消息也未触发其中关于HBM商业出货、竞争地位、经营或财务结果的具体门槛。"
+          },
+          "w3_case_id": "w3_b223e2cc544f44cc887b882857507a55"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "381d5fd87dfe19ada65e9a0f87bab69a969147a72069f92bb9a36a95bbe3dabf",
+            "content_type": "text/plain",
+            "sha256": "822982c4d0e6f7773e49fdb5b748fd05a47c65d4a853101874321fc81c7004bc",
+            "size_bytes": 5404
+          },
+          "case": {
+            "case_id": "case_05e5da6081404ac08f72e26f3171fd8d",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-10-06T12:04:45.340055Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-10-06T12:06:27.206429Z",
+          "revision": 1,
+          "row_revision": 3440654,
+          "source": {
+            "binding_id": "MU:yahoo_finance_news",
+            "kind": "api",
+            "name": "Yahoo Finance News",
+            "source_id": "yahoo_finance_news"
+          },
+          "source_published_at": "2026-10-06T12:00:00Z",
+          "standard_message_id": "std_0564443dd35a4ec68c2318f7dee357ce",
+          "stream_item_id": "stream_c50bd2732565460a9ca47555191dde3c",
+          "stream_offset": 2957,
+          "stream_published_at": "2026-10-06T12:06:27.214798Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Netlist and Micron Enter Patent License and Settlement Agreements"
+          },
+          "url": "https://finance.yahoo.com/technology/ai/articles/netlist-micron-enter-patent-license-120000503.html?.tsrc=rss",
+          "body_text": "IRVINE, Calif., Oct. 6, 2026 /PRNewswire/ -- Netlist, Inc. (OTCQB: NLST) today announced that the Company and Micron Technology, Inc. (\"Micron\") have entered into Patent License and Settlement Agreements.\n\nUnder the agreements, the parties have agreed to settle and mutually release all pending legal proceedings between the companies, and Micron will receive a 5-year term license to Netlist's patent portfolio, including patents covering server DIMMs and High Bandwidth Memory technologies. Micron will pay Netlist $30 million per quarter from the fourth quarter of 2026 through the third quarter of 2031, totaling $600 million during the term.\n\n\"The agreement with Micron further validates the value of our AI memory technologies,\" said C.K. Hong, Netlist's Chief Executive Officer. \"We remain committed to protecting our IP while continuing to invest in the development of next-generation products.\"\n\nFurther details regarding the transaction are available in Netlist's Current Report on Form 8-K filed concurrently with the issuance of this release and available on the SEC filings page of the Netlist website here.\n\nAbout NetlistNetlist is a leading innovator in advanced memory and storage solutions. With a rich portfolio of patented technologies, Netlist's inventions are foundational to the advancement of AI computing. To learn more about Netlist, please visit www.netlist.com.\n\nSafe Harbor StatementThis news release contains forward-looking statements within the meaning of the Private Securities Litigation Reform Act of 1995. Forward-looking statements contained in this news release include, without limitation, statements about anticipated benefits of the agreements, the parties' ability to perform their respective obligations under, and to realize the anticipated benefits of those agreements, future exclusion and cease and desist orders, Netlist's ability to successfully enforce its intellectual property rights, and evaluations and judgments regarding Netlist's intellectual property portfolio. Forward-looking statements are statements other than historical facts and often address future events or Netlist's future performance. They reflect management's present expectations regarding future events and are subject to known and unknown risks, uncertainties and other factors that could cause actual results to differ materially from those expressed in or implied by any forward-looking statements. These risks, uncertainties and other factors include, among others, risks: Netlist may not be able to collect the substantial amount in damages previously awarded to it in its litigations (appeals in general could cause a lengthy delay in Netlist's ability to collect damages awards, could overturn the verdicts or reduce the damages awards); Netlist will suffer adverse outcomes in its litigation with Google or in its various other active proceedings to defend the validity of its patents; related to Netlist's plans for its intellectual property, including its strategies for monetizing, licensing, expanding, and defending its patent portfolio, which efforts may not be successful; other patent infringement litigation initiated by Netlist, or by others against Netlist, may not be successful or resolve favorably for Netlist, particularly given the costs and unpredictability of any such litigation; associated with Netlist's product sales, including whether and how long the current market and demand for products sold by Netlist will persist or persist as expected and whether Netlist may successfully develop and launch new products that are attractive to the market; whether Netlist will continue to acquire components or products for resale on favorable terms; that Netlist or its counterparties may fail to perform their obligations as required pursuant to applicable license and supply agreements, associated with the competitive landscape of Netlist's industry, general economic, political and market conditions, factory slowdowns and/or shutdowns, and changes in international trade and tariff policies. All forward-looking statements reflect management's present assumptions, expectations and beliefs regarding future events and are subject to known and unknown risks, uncertainties and other factors that could cause actual results to differ materially from those expressed in or implied by any forward-looking statements. These and other risks and uncertainties are described in Netlist's Annual Report on Form 10-K for the fiscal year ended December 27, 2025 filed with the SEC on March 19, 2026, and the other filings it makes with the U.S. Securities and Exchange Commission from time to time, including any subsequently filed quarterly and current reports. In light of these risks, uncertainties and other factors, these forward-looking statements should not be relied on as predictions of future events. These forward-looking statements represent Netlist's assumptions, expectations and beliefs only as of the date they are made, and except as required by law, Netlist undertakes no obligation to revise or update any forward-looking statements for any reason.\n\nFor more information, please contact:Investors / MediaMike SmargiassiThe Plunkett GroupNLST@theplunkettgroup.com(212) 739‑6729\n\nView original content to download multimedia:https://www.prnewswire.com/news-releases/netlist-and-micron-enter-patent-license-and-settlement-agreements-302899647.html"
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_0564443dd35a4ec68c2318f7dee357ce:0\"]",
+          "created_at": "2026-10-06T12:13:16.037974Z",
+          "dedupe_key": "f9435993a427647d4d991ca9c355a98045855b26250866f128fccfc38336e668",
+          "entities": [
+            "Netlist, Inc.",
+            "Micron Technology, Inc."
+          ],
+          "occurrence_date": "2026-10-06",
+          "originating_node": "W3",
+          "proposition": "Netlist与Micron于2026年10月6日签订专利许可及和解协议，约定和解并相互解除双方之间所有未决法律程序。",
+          "provisional_event_id": "E354",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_0564443dd35a4ec68c2318f7dee357ce:1\"]",
+          "created_at": "2026-10-06T12:13:16.061707Z",
+          "dedupe_key": "d1a36598ce5a22d4e699752fb04b9c563cc7ba2fccdf67915c9582b5dce2229b",
+          "entities": [
+            "Netlist, Inc.",
+            "Micron Technology, Inc."
+          ],
+          "occurrence_date": "2026-10-06",
+          "originating_node": "W3",
+          "proposition": "协议向Micron授予Netlist专利组合的五年期许可，其中包括覆盖服务器DIMM和HBM技术的专利。",
+          "provisional_event_id": "E355",
+          "subject_time": "协议签署后的五年许可期"
+        },
+        {
+          "assertion_state": "SCHEDULED",
+          "candidate_id": "[\"runtime-v2-msg:std_0564443dd35a4ec68c2318f7dee357ce:2\"]",
+          "created_at": "2026-10-06T12:13:16.094699Z",
+          "dedupe_key": "41073aaef237b9f6388af92090b485d7127f790289a7c1982ed66b638a446d32",
+          "entities": [
+            "Netlist, Inc.",
+            "Micron Technology, Inc."
+          ],
+          "occurrence_date": "2026-10-06",
+          "originating_node": "W3",
+          "proposition": "协议规定Micron自2026年第四季度至2031年第三季度每季度向Netlist支付3,000万美元，五年合计6亿美元。",
+          "provisional_event_id": "E356",
+          "subject_time": "2026年第四季度至2031年第三季度"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_05e5da6081404ac08f72e26f3171fd8d",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-10-06T12:13:16.195646+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-10-06",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_b223e2cc544f44cc887b882857507a55",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-06T12:13:16.560823Z"
+              },
+              "case_id": "case_05e5da6081404ac08f72e26f3171fd8d",
+              "direction": "LONG",
+              "entry_reason": "ORDER_FILLED",
+              "entry_result": "FILLED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_05e5da6081404ac08f72e26f3171fd8d",
+              "execution_reason_codes": [
+                "ORDER_FILLED"
+              ],
+              "execution_state": "EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "17151.68"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "16"
+              },
+              "first_fill_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-06T12:13:23Z"
+              },
+              "has_actual_fill": true,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_05e5da6081404ac08f72e26f3171fd8d",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-06T12:13:16.195646Z"
+              }
+            },
+            "entry": {
+              "side": "BUY",
+              "quantity": "16",
+              "average_price_usd": "1071.98",
+              "first_fill_at": "2026-10-06T12:13:23+00:00",
+              "last_fill_at": "2026-10-06T12:13:23+00:00"
+            },
+            "exit": {
+              "side": "SELL",
+              "quantity": "16",
+              "average_price_usd": "1052.25",
+              "first_fill_at": "2026-10-06T19:30:02+00:00",
+              "last_fill_at": "2026-10-06T19:30:02+00:00"
+            },
+            "fills": [
+              {
+                "kind": "ENTRY",
+                "side": "BUY",
+                "quantity": "16",
+                "price_usd": "1071.98",
+                "filled_at": "2026-10-06T12:13:23+00:00",
+                "broker_fill_id": "00025b45.6ac538af.01.01"
+              },
+              {
+                "kind": "EXIT",
+                "side": "SELL",
+                "quantity": "16",
+                "price_usd": "1052.25",
+                "filled_at": "2026-10-06T19:30:02+00:00",
+                "broker_fill_id": "00025b45.6ac6bf71.01.01"
+              }
+            ],
+            "lot_remaining_quantity": 0,
+            "realized_pnl_usd": "-318.026918000",
+            "realized_pnl_records": [
+              {
+                "amount": "-318.026918000",
+                "day": "2026-10-06",
+                "environment": "PAPER",
+                "provisional": false,
+                "reason": null
+              }
+            ],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "EXECUTED",
+        "read_execution_reason_codes": [
+          "ORDER_FILLED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": {
+          "side": "BUY",
+          "quantity": "16",
+          "average_price_usd": "1071.98",
+          "first_fill_at": "2026-10-06T12:13:23+00:00",
+          "last_fill_at": "2026-10-06T12:13:23+00:00"
+        },
+        "exit": {
+          "side": "SELL",
+          "quantity": "16",
+          "average_price_usd": "1052.25",
+          "first_fill_at": "2026-10-06T19:30:02+00:00",
+          "last_fill_at": "2026-10-06T19:30:02+00:00"
+        },
+        "realized_pnl_usd": "-318.026918000",
+        "pnl_state": "REALIZED",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_5e7ae91538234d3dac6b6378e599b71e",
+      "ticker": "MU",
+      "case_id": "case_5e7ae91538234d3dac6b6378e599b71e",
+      "intent_released_at_utc": "2026-10-06T12:19:43.686860+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_24095f613d3f4bef8e0b97e3ec127748",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology, Inc.",
+              "Netlist, Inc."
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "Micron与Netlist达成专利许可协议，协议授予Micron为期五年的Netlist专利组合许可，涵盖服务器DIMM与HBM技术。",
+            "subject_time": "五年许可期（2026年至2031年）"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology, Inc.",
+              "Netlist, Inc."
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "Micron与Netlist的协议约定，双方之间所有未决法律程序将予以和解并相互解除。",
+            "subject_time": null
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology, Inc.",
+              "Netlist, Inc."
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "协议约定Micron从2026年第四季度至2031年第三季度每季度向Netlist支付3000万美元，许可期内合计支付6亿美元。",
+            "subject_time": "2026年第四季度至2031年第三季度"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "法律状态从未决诉讼、赔偿与潜在排除风险，转为Micron获得覆盖服务器DIMM及HBM的五年许可、双方约定解决所有未决诉讼；相应代价是2026年Q4至2031年Q3每季度3000万美元、总计6亿美元。需要上修法律确定性及产品供货连续性预期，并将成本风险收敛为明确的许可费；这不是内存需求、销量或ASP上修。",
+          "prior_expectation": "事件前的基线是内存业务继续运营，但Netlist相关的损害赔偿与排除救济风险仍未解决，并非已有许可或和解。Reference View记录了Netlist针对HBM的ITC行动（E176）、先前ITC行动（E21）、专利上诉状态（E22）及既有4.45亿美元赔偿判决（E23）；Micron公开申报亦记载该判决及上诉。[Micron申报](https://www.sec.gov/Archives/edgar/data/723125/000072312526000006/mu-20260226.htm) Netlist于9月29日宣布新的HBM专利ITC行动并寻求排除及停止令。[Netlist公告](https://www.prnewswire.com/news-releases/netlist-files-new-itc-action-against-micron-technology-inc-involving-hbm-patents-for-ai-computing-302892194.html) 合理预期是继续出货与未决法律尾部风险并存，结果不确定，而非禁售必然。",
+          "reason": "和解及许可条款此前未公开，且Netlist在9月29日刚针对HBM寻求ITC排除救济，故相对事件前未决基线有明显惊喜。HBM和服务器内存是Micron重要业务；许可及诉讼和解降低产品销售受法律救济干扰的尾部风险，传导路径清晰。每季度3000万美元虽为新增成本，但约为FY26 Q4约500亿美元收入指引中点的0.06%；净预期变化偏正，支持LONG。[协议报道](https://www.investing.com/news/assorted/netlist-and-micron-reach-600m-patent-license-and-settlement-deal-432SI-4934250)",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "新现实是Micron与Netlist达成五年专利许可及和解，涵盖服务器DIMM与HBM，并约定每季度支付3000万美元、合计6亿美元。Reference View中的E176、E21、E22和E23只记录未决诉讼、ITC救济请求及既有赔偿判决，未记录许可或和解。 [当日消息](https://www.investing.com/news/assorted/netlist-and-micron-reach-600m-patent-license-and-settlement-deal-432SI-4934250)",
+          "reference_ids": [
+            "E176",
+            "E21",
+            "E22",
+            "E23"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "PolicySet v17没有针对Netlist诉讼、专利许可或法律风险解除的触发条件；现有经营与产品相关条件均未被该和解事实满足，因此此案仍属uncovered。"
+        },
+        "w3_case_id": "w3_24095f613d3f4bef8e0b97e3ec127748"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_5e7ae91538234d3dac6b6378e599b71e",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-10-06T12:19:44.230114Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 467.828214
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-10-06T12:11:56.401900Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 3441593,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-10-06",
+        "source": {
+          "binding_id": "MU:investing_ticker_news",
+          "kind": "crawler",
+          "name": "Investing.com ticker news",
+          "source_id": "investing_ticker_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_83a6730dd56c4cfe9da74a82d3c324ea",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Netlist and Micron reach $600M patent license and settlement deal"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "PORTFOLIO_CAPACITY_EXHAUSTED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-10-06T12:11:56.401900Z",
+        "completed_at": "2026-10-06T12:19:44.230114Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E176",
+            "E23",
+            "E21",
+            "E22"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [
+            {
+              "event_id": "E176",
+              "fact_ids": [
+                "F846"
+              ]
+            },
+            {
+              "event_id": "E21",
+              "fact_ids": [
+                "F292",
+                "F293"
+              ]
+            }
+          ],
+          "reason": "现有事实均为 Netlist 对 Micron 发起/推进 ITC 诉讼及维持 $445M 赔偿判决，没有任何事实描述双方达成专利许可与和解协议、$600M（$30M/季度）付款安排或全部诉讼互免。当前消息的核心事实——正式签署 license & settlement agreement 及具体财务条款——完全未被覆盖。",
+          "reference_ids": [
+            "E176",
+            "E21"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "该消息为Netlist与Micron之间的专利许可及和解协议公告，涉及5年期$600M许可费（自FY26 Q4起每季度$30M）。核心事实为法律和解与IP许可安排，未涉及任何Policy criterion所关注的产品组合变化、ASP/份额变动、竞争供货地位转移、产能/良率瓶颈、客户合同履约、项目进度、库存/现金流或盈利质量等具体触发条件。$600M许可费虽为新增成本，但不属于研发、预资格、折旧、爬坡、质量或重组等criterion明确列出的费用类别，也无法与任何触发路径建立直接实质对应。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "该消息为Netlist与Micron之间的专利许可及和解协议公告，涉及5年期$600M许可费（自FY26 Q4起每季度$30M）。核心事实为法律和解与IP许可安排，未涉及任何Policy criterion所关注的产品组合变化、ASP/份额变动、竞争供货地位转移、产能/良率瓶颈、客户合同履约、项目进度、库存/现金流或盈利质量等具体触发条件。$600M许可费虽为新增成本，但不属于研发、预资格、折旧、爬坡、质量或重组等criterion明确列出的费用类别，也无法与任何触发路径建立直接实质对应。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology, Inc.",
+                "Netlist, Inc."
+              ],
+              "occurrence_date": "2026-10-06",
+              "proposition": "Micron与Netlist达成专利许可协议，协议授予Micron为期五年的Netlist专利组合许可，涵盖服务器DIMM与HBM技术。",
+              "subject_time": "五年许可期（2026年至2031年）"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology, Inc.",
+                "Netlist, Inc."
+              ],
+              "occurrence_date": "2026-10-06",
+              "proposition": "Micron与Netlist的协议约定，双方之间所有未决法律程序将予以和解并相互解除。",
+              "subject_time": null
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology, Inc.",
+                "Netlist, Inc."
+              ],
+              "occurrence_date": "2026-10-06",
+              "proposition": "协议约定Micron从2026年第四季度至2031年第三季度每季度向Netlist支付3000万美元，许可期内合计支付6亿美元。",
+              "subject_time": "2026年第四季度至2031年第三季度"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "法律状态从未决诉讼、赔偿与潜在排除风险，转为Micron获得覆盖服务器DIMM及HBM的五年许可、双方约定解决所有未决诉讼；相应代价是2026年Q4至2031年Q3每季度3000万美元、总计6亿美元。需要上修法律确定性及产品供货连续性预期，并将成本风险收敛为明确的许可费；这不是内存需求、销量或ASP上修。",
+            "prior_expectation": "事件前的基线是内存业务继续运营，但Netlist相关的损害赔偿与排除救济风险仍未解决，并非已有许可或和解。Reference View记录了Netlist针对HBM的ITC行动（E176）、先前ITC行动（E21）、专利上诉状态（E22）及既有4.45亿美元赔偿判决（E23）；Micron公开申报亦记载该判决及上诉。[Micron申报](https://www.sec.gov/Archives/edgar/data/723125/000072312526000006/mu-20260226.htm) Netlist于9月29日宣布新的HBM专利ITC行动并寻求排除及停止令。[Netlist公告](https://www.prnewswire.com/news-releases/netlist-files-new-itc-action-against-micron-technology-inc-involving-hbm-patents-for-ai-computing-302892194.html) 合理预期是继续出货与未决法律尾部风险并存，结果不确定，而非禁售必然。",
+            "reason": "和解及许可条款此前未公开，且Netlist在9月29日刚针对HBM寻求ITC排除救济，故相对事件前未决基线有明显惊喜。HBM和服务器内存是Micron重要业务；许可及诉讼和解降低产品销售受法律救济干扰的尾部风险，传导路径清晰。每季度3000万美元虽为新增成本，但约为FY26 Q4约500亿美元收入指引中点的0.06%；净预期变化偏正，支持LONG。[协议报道](https://www.investing.com/news/assorted/netlist-and-micron-reach-600m-patent-license-and-settlement-deal-432SI-4934250)",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "新现实是Micron与Netlist达成五年专利许可及和解，涵盖服务器DIMM与HBM，并约定每季度支付3000万美元、合计6亿美元。Reference View中的E176、E21、E22和E23只记录未决诉讼、ITC救济请求及既有赔偿判决，未记录许可或和解。 [当日消息](https://www.investing.com/news/assorted/netlist-and-micron-reach-600m-patent-license-and-settlement-deal-432SI-4934250)",
+            "reference_ids": [
+              "E176",
+              "E21",
+              "E22",
+              "E23"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "PolicySet v17没有针对Netlist诉讼、专利许可或法律风险解除的触发条件；现有经营与产品相关条件均未被该和解事实满足，因此此案仍属uncovered。"
+          },
+          "w3_case_id": "w3_24095f613d3f4bef8e0b97e3ec127748"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "3ce620cafa934c348e19b1b6d0609b8b1e8dd0bedc7772b8ed4b761cc34fc60b",
+            "content_type": "text/plain",
+            "sha256": "6104e9b7f4b253e5e1467af648c8dc9fe65b3c5a9eb4d982d7144139af599313",
+            "size_bytes": 1597
+          },
+          "case": {
+            "case_id": "case_5e7ae91538234d3dac6b6378e599b71e",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-10-06T12:10:45.374409Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-10-06T12:11:52.362962Z",
+          "revision": 1,
+          "row_revision": 3441532,
+          "source": {
+            "binding_id": "MU:investing_ticker_news",
+            "kind": "crawler",
+            "name": "Investing.com ticker news",
+            "source_id": "investing_ticker_news"
+          },
+          "source_published_at": "2026-10-06T12:10:04Z",
+          "standard_message_id": "std_c24c5ab78f224e30874cdbbc2871a29b",
+          "stream_item_id": "stream_83a6730dd56c4cfe9da74a82d3c324ea",
+          "stream_offset": 2959,
+          "stream_published_at": "2026-10-06T12:11:52.368435Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Netlist and Micron reach $600M patent license and settlement deal"
+          },
+          "url": "https://www.investing.com/news/assorted/netlist-and-micron-reach-600m-patent-license-and-settlement-deal-432SI-4934250",
+          "body_text": "© Reuters\n\nNetlist, Inc. (NLST) and Micron Technology, Inc. have entered into patent license and settlement agreements, according to a press release from Netlist.\n\nUnder the terms of the agreements, all pending legal proceedings between the two companies will be settled and mutually released. Micron will receive a five-year license to Netlist’s patent portfolio, which includes patents covering server DIMMs and High Bandwidth Memory technologies.\n\nMicron will pay Netlist $30 million per quarter beginning in the fourth quarter of 2026 through the third quarter of 2031, totaling $600 million over the term of the license.\n\n\"The agreement with Micron further validates the value of our AI memory technologies,\" said C.K. Hong, Netlist’s Chief Executive Officer. \"We remain committed to protecting our IP while continuing to invest in the development of next-generation products.\"\n\nNetlist filed a Current Report on Form 8-K with the SEC concurrently with the announcement.\n\nShould you invest $2,000 in MU right now?\n\nProPicks AI evaluates MU alongside thousands of other companies every month using 100+ financial metrics. Using powerful AI to generate exciting stock ideas, it looks beyond popularity to assess fundamentals, momentum, and valuation. The AI has no bias—it simply identifies which stocks offer the best risk-reward based on current data with notable past winners that include Super Micro Computer (+185%) and AppLovin (+157%). Want to know if MU is currently featured in any ProPicks AI strategies, or if there are better opportunities in the same space?\n\nLatest comments"
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_c24c5ab78f224e30874cdbbc2871a29b:0\"]",
+          "created_at": "2026-10-06T12:19:43.626604Z",
+          "dedupe_key": "4bed71b0d0bfa7e7de03e83545042e31d89c4d6f6f8e44c2cbf6c03e415a3657",
+          "entities": [
+            "Micron Technology, Inc.",
+            "Netlist, Inc."
+          ],
+          "occurrence_date": "2026-10-06",
+          "originating_node": "W3",
+          "proposition": "Micron与Netlist达成专利许可协议，协议授予Micron为期五年的Netlist专利组合许可，涵盖服务器DIMM与HBM技术。",
+          "provisional_event_id": "E358",
+          "subject_time": "五年许可期（2026年至2031年）"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_c24c5ab78f224e30874cdbbc2871a29b:1\"]",
+          "created_at": "2026-10-06T12:19:43.638426Z",
+          "dedupe_key": "9dee38dd3376ae379f32e1ec7cf71443a89d0a4f84a195bef14c32825f44f902",
+          "entities": [
+            "Micron Technology, Inc.",
+            "Netlist, Inc."
+          ],
+          "occurrence_date": "2026-10-06",
+          "originating_node": "W3",
+          "proposition": "Micron与Netlist的协议约定，双方之间所有未决法律程序将予以和解并相互解除。",
+          "provisional_event_id": "E359",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_c24c5ab78f224e30874cdbbc2871a29b:2\"]",
+          "created_at": "2026-10-06T12:19:43.650241Z",
+          "dedupe_key": "92e60aa1c15a5d18664c65b777322e7ce02e808b10d05b69d73a5b847df51a6b",
+          "entities": [
+            "Micron Technology, Inc.",
+            "Netlist, Inc."
+          ],
+          "occurrence_date": "2026-10-06",
+          "originating_node": "W3",
+          "proposition": "协议约定Micron从2026年第四季度至2031年第三季度每季度向Netlist支付3000万美元，许可期内合计支付6亿美元。",
+          "provisional_event_id": "E360",
+          "subject_time": "2026年第四季度至2031年第三季度"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_5e7ae91538234d3dac6b6378e599b71e",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-10-06T12:19:43.686860+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-10-06",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_24095f613d3f4bef8e0b97e3ec127748",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-06T12:19:44.436822Z"
+              },
+              "case_id": "case_5e7ae91538234d3dac6b6378e599b71e",
+              "direction": "LONG",
+              "entry_reason": "PORTFOLIO_CAPACITY_EXHAUSTED",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_5e7ae91538234d3dac6b6378e599b71e",
+              "execution_reason_codes": [
+                "PORTFOLIO_CAPACITY_EXHAUSTED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_5e7ae91538234d3dac6b6378e599b71e",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-06T12:19:43.686860Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "PORTFOLIO_CAPACITY_EXHAUSTED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      },
+      "estimated_pnl": {
+        "state": "ESTIMATED",
+        "basis": "saved IBKR historical TRADES ticks; intention-time entry and 15:30 America/New_York cycle exit",
+        "entry_reference_price_usd": "1070.02",
+        "exit_reference_price_usd": "1052.81",
+        "entry_target_utc": "2026-10-06T12:19:43.686860+00:00",
+        "cycle_end_utc": "2026-10-06T19:30:00+00:00",
+        "cycle_end_et": "2026-10-06T15:30:00-04:00",
+        "direction": "LONG",
+        "return_pct": "-1.6084",
+        "pnl_usd_per_share": "-17.2100",
+        "classification": "flat",
+        "estimated_total_pnl_usd": null,
+        "total_pnl_unavailable_reason": "No simulated position quantity was specified; use percent return and USD per share.",
+        "entry_evidence": {
+          "query_key": "MU|2026-10-06T12:19:43.686860+00:00|entry",
+          "status": "ok",
+          "selected": {
+            "exchange": "NASDAQ",
+            "offset_seconds": 2.31314,
+            "price_usd": 1070.02,
+            "special_conditions": " FT ",
+            "timestamp_utc": "2026-10-06T12:19:46+00:00",
+            "unreported": false
+          },
+          "first_event_utc": "2026-10-06T12:19:44+00:00",
+          "error": null
+        },
+        "exit_evidence": {
+          "query_key": "MU|2026-10-06T19:30:00+00:00|exit",
+          "status": "ok",
+          "selected": {
+            "exchange": "FINRA",
+            "offset_seconds": 0.0,
+            "price_usd": 1052.81,
+            "special_conditions": null,
+            "timestamp_utc": "2026-10-06T19:30:00+00:00",
+            "unreported": false
+          },
+          "first_event_utc": "2026-10-06T19:30:00+00:00",
+          "error": null
+        },
+        "pricing_unavailable_reason": null,
+        "cost_assumptions": "No slippage, bid-ask spread, fees or financing costs."
+      }
+    }
+  ]
+}

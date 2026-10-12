@@ -1,0 +1,5 @@
+services:
+  v2-site-access:
+    image: doxagent-site-access:recurring-repair-rollback-compatible-20261004
+  v2-message-bus:
+    image: doxagent-v2:repair-baseline-20261004

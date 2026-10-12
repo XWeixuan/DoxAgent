@@ -1,0 +1,18 @@
+{
+  "alias": "O624",
+  "title": "sections 6 — metadata",
+  "content": {
+    "section": "Item 9A",
+    "heading_match": "Item 9A.",
+    "start_offset": 364253,
+    "end_offset": 389172,
+    "full_text_chars": 24909,
+    "returned_chars": 24909,
+    "truncated": false,
+    "match_quality": "substantive_body"
+  },
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "alias": "O46",
+  "title": "text paragraphs 3",
+  "content": "These digital twins can also support operational optimization, including the movement of autonomous mobile robots and other fab assets, using the open source, GPU-accelerated NVIDIA cuOpt™ decision optimization engine and the NVIDIA Metropolis platform.\n\nThe companies are also exploring ways to connect digital twins with existing legacy software and agentic AI workflows, enabling AI systems to reason over fab data, automate tasks and improve manufacturing decision-making.",
+  "source": {
+    "provider": "Public web source",
+    "locator": "https://nvidianews.nvidia.com/news/sk-hynix-ai-factory"
+  }
+}

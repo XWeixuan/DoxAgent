@@ -1,0 +1,9 @@
+{
+  "alias": "O121",
+  "title": "text paragraphs 33",
+  "content": "| Accrued unbilled receivables |  | 157,446 |  |  | 79,931 |  |\n\n| Materials and supplies (at average cost) |  | 202,809 |  |  | 201,896 |  |\n\n| Fuel stock (at average cost) |  | 25,561 |  |  | 24,455 |  |\n\n| Prepayments |  | 39,297 |  |  | 30,579 |  |\n\n| Current regulatory assets |  | 134,728 |  |  | 136,665 |  |\n\n| Assets held for sale |  | 129,667 |  |  | — |  |\n\n| Other |  | 411 |  |  | 3 |  |\n\n| Total current assets |  | 944,595 |  |  | 833,404 |  |",
+  "source": {
+    "provider": "Public web source",
+    "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+  }
+}

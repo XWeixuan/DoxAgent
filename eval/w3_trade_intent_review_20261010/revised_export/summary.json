@@ -1,0 +1,84 @@
+{
+  "created_at_utc": "2026-10-10T14:33:54.429184+00:00",
+  "original_count": 77,
+  "excluded_mu_earnings_count": 33,
+  "retained_count": 44,
+  "actual_entry_count": 12,
+  "unfilled_count": 32,
+  "estimated_pnl_count": 29,
+  "unavailable_estimate_count": 3,
+  "by_ticker": {
+    "BE": {
+      "total": 15,
+      "win": 1,
+      "flat": 3,
+      "loss": 10,
+      "unpriceable": 1,
+      "priced_win_rate_pct": 7.14,
+      "all_intent_win_rate_bounds_pct": [
+        6.67,
+        13.33
+      ]
+    },
+    "INTC": {
+      "total": 9,
+      "win": 1,
+      "flat": 7,
+      "loss": 1,
+      "unpriceable": 0,
+      "priced_win_rate_pct": 11.11,
+      "all_intent_win_rate_bounds_pct": [
+        11.11,
+        11.11
+      ]
+    },
+    "MU": {
+      "total": 16,
+      "win": 1,
+      "flat": 12,
+      "loss": 1,
+      "unpriceable": 2,
+      "priced_win_rate_pct": 7.14,
+      "all_intent_win_rate_bounds_pct": [
+        6.25,
+        18.75
+      ]
+    },
+    "RKLB": {
+      "total": 4,
+      "win": 0,
+      "flat": 4,
+      "loss": 0,
+      "unpriceable": 0,
+      "priced_win_rate_pct": 0.0,
+      "all_intent_win_rate_bounds_pct": [
+        0.0,
+        0.0
+      ]
+    }
+  },
+  "all": {
+    "total": 44,
+    "win": 3,
+    "flat": 26,
+    "loss": 12,
+    "unpriceable": 3,
+    "priced_win_rate_pct": 7.32,
+    "all_intent_win_rate_bounds_pct": [
+      6.82,
+      13.64
+    ]
+  },
+  "record_files": [
+    "BE_01.json",
+    "BE_02.json",
+    "BE_03.json",
+    "INTC_01.json",
+    "INTC_02.json",
+    "MU_01.json",
+    "MU_02.json",
+    "MU_03.json",
+    "MU_04.json",
+    "RKLB_01.json"
+  ]
+}

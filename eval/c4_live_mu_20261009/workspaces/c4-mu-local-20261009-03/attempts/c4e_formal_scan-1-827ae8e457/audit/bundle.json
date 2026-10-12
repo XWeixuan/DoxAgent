@@ -1,0 +1,14 @@
+{
+  "schema_version": "codex-d1-attempt-bundle-audit-v1",
+  "bundle_version": "codex-global-research-agent-bundle-v2",
+  "input_sha256": "d11af3dbe7fe0c6d70a0cea98404265d0485a718aba140ebdda7d1c28548e41b",
+  "files": {
+    "attempts/c4e_formal_scan-1-827ae8e457/input/AGENTS.md": "d90ca13c7f624ee2ad0d8d6d22d8edd8a1ecfbe5559f2f663e3f4357c809b8ed",
+    "attempts/c4e_formal_scan-1-827ae8e457/input/bundle_manifest.json": "d191ea1261f8fabcdd843cb97d5b92a7847687e904a1e77c0f86f5aa392b30f6",
+    "attempts/c4e_formal_scan-1-827ae8e457/input/context.json": "09331920e77a38b2dbfe56963be6cca7fb7516d720c54e14bb4a88afcab3811a",
+    "attempts/c4e_formal_scan-1-827ae8e457/input/schemas/c4e_relations.schema.json": "7e7d88c12e8aaf60b4b66af573486f735c344c0510bdf9932b780db8a1cd6b53",
+    "attempts/c4e_formal_scan-1-827ae8e457/input/skills/c4/c4e_formal-scan.md": "ef95dce59f202b1e2b644ace9514b8413dee68aff90bc205c44e4a83d5031207",
+    "attempts/c4e_formal_scan-1-827ae8e457/input/task.json": "837292a21acc588cfb1349261d4806ac5d5fed1d14d282b3ed41989ee669ba3b",
+    "attempts/c4e_formal_scan-1-827ae8e457/input/task.md": "b798eaf26c35c30191c620c36eea930691d6acdb7deda4e31a79d87ae179f9f1"
+  }
+}

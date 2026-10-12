@@ -1,0 +1,9 @@
+{
+  "alias": "O131",
+  "title": "text paragraphs 43",
+  "content": "| Depreciation and amortization |  | 136,805 |  |  | 123,556 |  |\n\n| Deferred income taxes and investment tax credits |  | (6,014) |  |  | (45,251) |  |\n\n| Changes in regulatory assets and liabilities |  | 13,180 |  |  | 100,003 |  |\n\n| Pension and postretirement benefit plan expense |  | 22,494 |  |  | 22,608 |  |\n\n| Contributions to pension and postretirement benefit plans |  | (4,135) |  |  | (2,864) |  |\n\n| Earnings of equity-method investments |  | (1,990) |  |  | (2,024) |  |\n\n| Distributions from equity-method investments |  | — |  |  | 950 |  |\n\n| Allowance for equity funds used during construction |  | (38,060) |  |  | (29,608) |  |",
+  "source": {
+    "provider": "Public web source",
+    "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+  }
+}

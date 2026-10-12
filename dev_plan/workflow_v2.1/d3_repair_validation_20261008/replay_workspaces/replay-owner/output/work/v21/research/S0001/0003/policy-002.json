@@ -1,0 +1,24 @@
+{
+  "policy_id": "pol_885342f18e714529ba3f5179faa874aa",
+  "title": "高密度 RDIMM 从样品进入通用服务器默认配置",
+  "ref": [
+    "context/document3/v21/d2/shell-0001.json#/units/2",
+    "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx",
+    "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx",
+    "https://www.trendforce.com/presscenter/news/20260703-13134.html"
+  ],
+  "transmission": "服务器台数以外，每机实际 RDIMM 装配容量决定非 HBM DRAM 位数。美光 2026 财年第三季度仅披露 256GB RDIMM 资格样品，第四季度又开始 512GB 超高密度 RDIMM 送样，并完成多客户高速 RDIMM 资格；这提高可售产品能力，但不证明大规模机群采用。若主要服务器 OEM 或大云客户把美光 512GB 模块选作标准生产机型的默认配置，变化是高密度主存从样品进入商业平台及美光可服务内容，而不需要等待其单品收入被单独披露。配置变化可能由槽位限制、CPU 工作集和单机总成本决定，不能把产品最高容量当作客户平均装机。",
+  "match_scope": "召回主要 x86 服务器 OEM、大型云客户和美光关于 256GB/512GB RDIMM 的平台资格、机型默认配置、量产部署、降配及替代供应商的消息。比如某一主力通用服务器机型选择 512GB 模块作为可订购生产配置，或只完成实验室认证；这些是非穷举召回示例，是否命中以 Condition 为准。",
+  "activation_conditions": [
+    {
+      "condition_id": "C1",
+      "decision": "LONG",
+      "trigger_layer": "MIDDLE",
+      "criterion": "一个主要服务器 OEM 或大型云客户把美光 512GB DDR5 RDIMM 列为其新一代通用 CPU 服务器商业生产机型的标准可采购配置，并确认该配置用于正式客户供货或云机群部署，而非仅为测试样品或实验室支持列表。",
+      "calibration": {
+        "reference_state": "截至 2026-10-06，美光于 2026-06 披露 256GB DDR5 RDIMM 资格样品，2026-09-30 披露开始送样 512GB 超高密度 DDR5 RDIMM，另有 1-gamma 高速 RDIMM 完成多个客户资格；这些状态尚未证明 512GB 模块在服务器生产机型的正式采用。通用 x86/RDIMM 服务器需求延续属于当前基线。",
+        "trigger_boundary": "512GB 模块首次从样品进入主要服务器平台实际可采购、可部署的标准配置，已扩展美光在槽位受限高内存服务器上的商业准入和单机内容机会；再等多季度重复收入只是兑现证明。美光自行宣布送样、平台仅列最高支持容量或没有正式机型的资格通过均不足。"
+      }
+    }
+  ]
+}

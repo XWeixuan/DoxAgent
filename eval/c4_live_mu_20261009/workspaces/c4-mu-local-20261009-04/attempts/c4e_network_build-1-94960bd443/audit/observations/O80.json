@@ -1,0 +1,9 @@
+{
+  "alias": "O80",
+  "title": "text paragraphs 3",
+  "content": "Samsung anticipates that its HBM sales will more than triple in 2026 compared to 2025, and is proactively expanding its HBM4 production capacity. Following the successful introduction of HBM4 to market, sampling for HBM4E is expected to begin in the second half of 2026, while custom HBM samples will start reaching customers in 2027, according to their respective specifications.\n\nAbout Samsung Electronics Co., Ltd.\n\nSamsung inspires the world and shapes the future with transformative ideas and technologies. The company is redefining the worlds of TVs, digital signage, smartphones, wearables, tablets, home appliances and network systems, as well as memory, system LSI and foundry. Samsung is also advancing medical imaging technologies, HVAC solutions and robotics, while creating innovative automotive and audio products through Harman. With its SmartThings ecosystem, open collaboration with partners, and integration of AI across its portfolio, Samsung delivers a seamless and intelligent connected experience. For the latest news, please visit the Samsung Newsroom at news.samsung.com.\n\nCustom range",
+  "source": {
+    "provider": "Public web source",
+    "locator": "https://news.samsungsemiconductor.com/global/samsung-ships-industry-first-commercial-hbm4-with-ultimate-performance-for-ai-computing/"
+  }
+}

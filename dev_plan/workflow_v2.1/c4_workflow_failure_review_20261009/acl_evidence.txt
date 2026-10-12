@@ -1,0 +1,5 @@
+eval/c4_live_mu_20261009/workspaces/c4-mu-local-20261009-04/context/mcp_data/c4_pre_scan-1-6287820b6f/call_0028ad8278394feda878b9d57da42773/selected.md NT AUTHORITY\SYSTEM:(I)(F)
+                                                                                                                                                        BUILTIN\Administrators:(I)(F)
+                                                                                                                                                        OWNER RIGHTS:(I)(F)
+
+Successfully processed 1 files; Failed processing 0 files

@@ -1,0 +1,12 @@
+{
+  "status": "failed",
+  "summary": "c4e_network_build failed",
+  "report_markdown": "",
+  "warnings": [
+    "c4e_network_build: additional_details=None codex_error_info=CodexErrorInfo(root=<CodexErrorInfoValue.other: 'other'>) message='{\"type\":\"error\",\"error\":{\"message\":\"Invalid schema for response_format \\'codex_output_schema\\': schema must be a JSON Schema of \\'type: \\\\\"object\\\\\"\\', got \\'type: \\\\\"string\\\\\"\\'.\",\"type\":\"invalid_request_error\",\"param\":\"text.format.schema\",\"code\":\"invalid_json_schema\"},\"status\":400}' misalignment=None"
+  ],
+  "observation_candidates": [],
+  "entity_relations": [],
+  "future_nodes": [],
+  "metadata": {}
+}

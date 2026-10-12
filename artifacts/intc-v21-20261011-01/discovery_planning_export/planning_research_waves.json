@@ -1,0 +1,1888 @@
+{
+  "ticker": "INTC",
+  "run_id": "intc-v21-20261011-01-d3",
+  "wave_count": 64,
+  "topic_count": 109,
+  "waves": [
+    {
+      "wave_index": 0,
+      "topics": [
+        {
+          "brief": "围绕Intel或OEM缩短畅销型号交期、扩大价值机型供货、延期配置及回退平台的公开安排，研究上半年供给不足之后可承接数量和下一周期设计信誉如何变化。按型号、价位和用途厘清缺口及既有竞品替代，区分交付恢复、真实增购与降低安全库存。另保留稳定性、驱动和安全问题引发停售、暂停部署、扩保及修复恢复的独立入口，研究问题范围、修复后的性能与客户资格、保修和长期标准机型后果；不假定Series 3已发生事故。两类事件共享产品资格和OEM配置资料，但不能把修复消息等同产能增加，也不以制造节点进展替代实际产品可交付性。",
+          "name": "客户端型号交付、可靠性处置与OEM平台资格",
+          "owner": "S0001",
+          "ref": [
+            "output/work/v21/discovery/S0001.jsonl#L1",
+            "context/document3/v21/d2/shell-0001.json",
+            "context/document3/v21/shared/d1/c3.md",
+            "output/work/v21/discovery/S0001.jsonl#L2",
+            "context/document3/v21/shared/document2.json"
+          ]
+        },
+        {
+          "brief": "围绕Intel精简客户端型号、退出低毛利产品、调整内外部芯粒制造或封装路线，以及OEM大幅改配令旧品失去用途的公开消息，研究即使整机需求和净价不变，产品成本、旧品库存责任和盈利结构如何变化。Q2高端组合同时增成本、期间费用同比增669百万美元主要含库存纠偏，是尺度背景而非等待财报的催化。厘清具体产品和切换时点、旧品替代、外包及内部制造约束、供货过渡和库存承担者；产品安排本身可修订判断，不要求同时披露单位成本或利润。制造域拥有工艺经济性深度，本题负责客户端组合与盈利后果，不重复加总内部Foundry利润。",
+          "name": "客户端产品组合精简、芯粒路线与库存成本重配",
+          "owner": "S0001",
+          "ref": [
+            "output/work/v21/discovery/S0001.late.jsonl#L1",
+            "context/document3/v21/d2/shell-0001.json",
+            "context/document3/v21/shared/d1/c1.md",
+            "context/document3/v21/shared/d1/c4e_formal_scan.json",
+            "context/document3/v21/shared/event_library.md",
+            "context/document3/v21/shared/document2.json"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 1,
+      "topics": [
+        {
+          "brief": "研究Intel、OEM及渠道公布具体CPU型号调价、折扣返点、价格保护或旧品停供及清库支持时，数量、同款净价和组合如何分别改变。Q2 ASP同比增27%主要来自高端组合；事件库E28混合计划、传闻和实施表述，需在截止边界内厘清秋季价格动作的实际产品、起效日期及合同覆盖，不能预设全面涨价已经兑现。比较Intel与AMD的同价位产品和客户替代成本，解释保量让价、大众供给扩张及高端降档的不同价值捕获后果。零售折扣不能自动视为Intel返点，公开交易条款也不必同时附带产品利润确认。",
+          "name": "客户端净报价、采购优惠与旧品退出条款",
+          "owner": "S0001",
+          "ref": [
+            "output/work/v21/discovery/S0001.jsonl#L3",
+            "context/document3/v21/d2/shell-0001.json",
+            "context/document3/v21/shared/event_library.md",
+            "context/document3/v21/shared/d1/c1.md",
+            "context/document3/v21/shared/document2.json"
+          ]
+        },
+        {
+          "brief": "围绕大品牌和零售渠道清库、促销、退货、恢复补货或削减排产的消息，研究前置购买后订单如何从保障供应转向真实消耗。结合IDC Q3整机出货走弱与JPR Q2 CPU补库解释，厘清CPU、零件及整机库存层次、sell-in与sell-through以及统计口径。判断库存消化后集中下单、清库失败和Intel交期稳定后降低安全库存各自影响的数量与持续期，保留畅销配置中的Intel分配及提前购买借用未来需求的问题。行业初步出货和公司存货都不替代Intel专属渠道库存，研究入口不等待新闻同时公布CPU订单和季度盈利。",
+          "name": "PC渠道清库、促销与OEM排产转折",
+          "owner": "S0001",
+          "ref": [
+            "output/work/v21/discovery/S0001.jsonl#L4",
+            "context/document3/v21/d2/shell-0001.json",
+            "context/document3/v21/shared/d1/c3.md",
+            "context/document3/v21/shared/document2.json"
+          ]
+        },
+        {
+          "brief": "研究内存和存储厂改变PC供货合约、价格或服务器与PC资源分配，及OEM对主力整机提价、降容量、CPU降档或恢复原配置的安排。已有SSD减容量和PC OEM预留DRAM是背景，Q4涨价及2027资源压力仍需保留预测身份。厘清不同品牌的合同和库存缓冲、成本吸收空间、用户支付与延购，以及CPU预算究竟承担多少压力；资源释放可能先支持旧库存清理而非立即增加CPU补货。组件供给深度留给组件域，本题以可卖整机、购买数量和Intel每台内容为核心，不能按DRAM涨幅直接推CPU或整机涨幅。 共同研究主板和模块伙伴扩大或放弃低成本内存及混搭兼容，OEM因有用本地AI恢复容量、改善交期后撤回防御性锁单，和企业提前刷新或延后机型。ASRock在2026年4月宣布Intel 600/700/800系列单子通道HUDIMM及TEAMGROUP协作是现实支持入口，不是大规模采用。比较性能取舍、每机位元、价位和用户接受度对可配套数量的作用，并追踪新配置、促销、Googlebook资格和补库如何改变内部18A与旧节点负荷、库存及调整成本。IDC Q3为渠道出货，不能视为售出；高ASP、一款新品或低成本支持都不证明全制造网满载。",
+          "name": "PC配套资源分配、整机提价与配置降档",
+          "owner": "S0001",
+          "ref": [
+            "output/work/v21/discovery/S0001.jsonl#L5",
+            "context/document3/v21/d2/shell-0001.json",
+            "context/document3/v21/shared/d1/c3.md",
+            "context/document3/v21/shared/document2.json",
+            "output/work/v21/discovery/S0003.jsonl#L25",
+            "context/document3/v21/d2/shell-0003.json#/units/1",
+            "context/document3/v21/shared/d1/c4e_network_build.md",
+            "【cite:O6】",
+            "【cite:O7】",
+            "【cite:O8】",
+            "【cite:O9】",
+            "output/work/v21/discovery/S0004.jsonl#L11",
+            "context/document3/v21/d2/shell-0004.json",
+            "https://www.asrock.com.tw/news/index.us.asp?iD=5777"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 2,
+      "topics": [
+        {
+          "brief": "围绕微软改变安全支持或适用规则、关键应用退出旧系统以及企业因安全和管理政策重排迁移批次的可能消息，研究更新池和时间分布相对错峰基线的变化。冻结材料的消费者ESU延至2027与商业ESU、LTSC及企业保修部署周期必须分开。厘清哪些旧设备失去关键用途，修补、维修或延长支持能否替代新机，集中迁移会选择哪些架构与价位；加快与延后均可修订Intel数量和商用组合。安全事故仅为未来可能，不把统一支持日期写成全市场换机悬崖；政策和客户采购安排本身可提供观察入口。",
+          "name": "Windows支持、应用规则与企业迁移波次",
+          "owner": "S0001",
+          "ref": [
+            "output/work/v21/discovery/S0001.jsonl#L6",
+            "context/document3/v21/d2/shell-0001.json",
+            "context/document3/v21/shared/document2.json"
+          ]
+        },
+        {
+          "brief": "研究OEM和渠道扩大有保修旧机到学校和小企业、企业用维修替代整批报废，以及服务商改变月付更新周期、回收残值或融资条款时的新CPU购买后果。HP认证翻新和延寿、Dell按席位融资为已有商业基础，不代表2026渗透规模。厘清新购与二次流通的设备来源、原客户反事实、保修信任、残值减翻新成本及付款融资风险，研究高端规律更新与旧机向大众流通的同时作用，以及集中选型议价。区别于ESU的软件期限及Cloud PC的计算迁移，用户可用电脑增加不必产生等量新Intel CPU，席位数不可直接换算销量。",
+          "name": "认证翻新、维修延寿与按席位设备融资",
+          "owner": "S0001",
+          "ref": [
+            "output/work/v21/discovery/S0001.jsonl#L17",
+            "context/document3/v21/d2/shell-0001.json",
+            "https://www.hp.com/us-en/newsroom/blogs/2024/hp-accelerating-circular-future.html",
+            "context/document3/v21/shared/document2.json"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 3,
+      "topics": [
+        {
+          "brief": "研究大型企业、管理软件商和OEM完成AMD标准镜像及带外维护资格、实行大范围双供或强化vPro标准时，跨采购周期的客户端分配和议价如何改变。以Intel AMT/SIPP复用与AMD PRO具名方案为基础，厘清实际使用的运维能力、重新验证成本、岗位覆盖和供应可靠性。技术合格、客户默认标准及采购配额不是同一阶段；同为x86的低迁移摩擦应与Arm生态切换区分。AMD总体销量增长不证明企业迁移，客户维护总成本和稳定交付也可能重新增强Intel位置。",
+          "name": "企业标准机型、管理资格与x86双供采购",
+          "owner": "S0001",
+          "ref": [
+            "output/work/v21/discovery/S0001.jsonl#L7",
+            "context/document3/v21/d2/shell-0001.json",
+            "context/document3/v21/shared/d1/c4e_formal_scan.json",
+            "context/document3/v21/shared/document2.json"
+          ]
+        },
+        {
+          "brief": "围绕关键软件、外设和内核驱动补齐Arm支持，Linux开发机获得正式认证，或OEM将Arm推进大众价位和默认配置的消息，研究原依赖x86用途的准入边界。保留Qualcomm 9月23日X2 Linux驱动推进、年底Debian及2027H1 Ubuntu认证目标的计划身份，由Build核对具体范围，不写成已完成。结合Prism不替代原生驱动的限制，比较任务适配、管理资格、同价位可供量、迁移成本及Intel反击空间。开发者认证与大众数量分配分别解释，性能续航宣传不充当独立实测，也不要求先看到Intel份额损失才承认兼容性事件的意义。",
+          "name": "Windows与Linux Arm客户端兼容和默认配置",
+          "owner": "S0001",
+          "ref": [
+            "output/work/v21/discovery/S0001.jsonl#L8",
+            "context/document3/v21/d2/shell-0001.json",
+            "https://www.qualcomm.com/news/onq/2026/09/snapdragon-summit-agentic-ai-pcs-linux",
+            "context/document3/v21/shared/document2.json"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 4,
+      "topics": [
+        {
+          "brief": "研究Apple、学校及教育零售渠道扩大低价Mac地区覆盖、标准采购、折扣或服务方案，及关键应用和管理限制导致范围收缩的安排。以MacBook Neo三月599美元、教育499美元发布价为历史锚，不冒充十月成交价。厘清首次获得电脑的新增用户与从Windows预算迁移的购买，实际应用、外设和机构管理切换成本，以及Intel价值产品的可负担对抗空间。这里是整套生态与渠道转换，不与Windows Arm兼容更新合成同一技术资格题；行业总量、Intel绝对数量及相对份额可以不同向。",
+          "name": "低价Mac的教育与预算敏感渠道扩展",
+          "owner": "S0001",
+          "ref": [
+            "output/work/v21/discovery/S0001.jsonl#L9",
+            "context/document3/v21/d2/shell-0001.json",
+            "context/document3/v21/shared/document2.json"
+          ]
+        },
+        {
+          "brief": "围绕Google或OEM扩大地区和教育企业部署、降价、改变关键应用支持和AI服务续期，以及调整Intel与Qualcomm主力配置的消息，研究新平台如何改变用户来源和Intel参与价值。五家OEM与跨架构路线已有基础，Google所称Intel常用应用覆盖96.6%为平台口径，不代表售出或留存。区分首次购PC、旧Chromebook更新和Windows/Mac迁移；研究关键任务、服务赠送结束后的经济性、架构配置优势及渠道持续性。推广和软件改变是直接入口，不退缩为只等CPU重复采购；平台成功也不能全部记为Intel增长。",
+          "name": "Googlebook的推广、应用留存与平台内CPU分配",
+          "owner": "S0001",
+          "ref": [
+            "output/work/v21/discovery/S0001.jsonl#L10",
+            "context/document3/v21/d2/shell-0001.json",
+            "context/document3/v21/shared/d1/c4e_network_build.md",
+            "context/document3/v21/shared/document2.json"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 5,
+      "topics": [
+        {
+          "brief": "研究系统、浏览器和专业软件把可授权跨应用智能体纳入既有席位、提供持续离线或隐私任务，模型及调度优化让旧CPU足够使用，以及企业因权限或任务可靠性收缩部署的变化。设置智能体和浏览器CPU小模型是执行基础，不是Intel设备高频使用率。厘清任务效用、付费预算、重复活动、本地比例和旧机余量，解释CPU/GPU/NPU与内存分工及Intel、AMD和Arm的配置捕获。保留采用扩大而不换机、复杂并发推动高内容更新及治理改善恢复授权的不同路径，不用安装量或TOPS代替购买动机；云端调用界面不是本地计算。",
+          "name": "本地AI工作流、治理与存量设备升级门槛",
+          "owner": "S0001",
+          "ref": [
+            "output/work/v21/discovery/S0001.jsonl#L11",
+            "context/document3/v21/d2/shell-0001.json",
+            "context/document3/v21/shared/d1/c5.md",
+            "context/document3/v21/shared/document2.json"
+          ]
+        },
+        {
+          "brief": "共同研究两条可独立发生的云迁移：OEM扩大专用轻终端及服务合同、企业把共享或原高内容员工岗位改为云桌面；软件商扩大Windows 365 for Agents独立云环境、共享池和按任务领用，企业把后台跨应用执行从员工PC迁出。Windows 365 Link保留Intel N250，二月公告的ASUS设备Q3上市为安排、当前兑现需核实；一月已披露的独立Agent云执行不能当作本地AI-PC使用证据。分别厘清迁移是否替代本地资源、新增还是替换端点、员工仍需何种配置、设备寿命、用量收费与固定IT预算挤出；网络、延迟、治理或服务成本导致回迁也应研究。以端点数量和内容值为本题边界，云侧服务器架构不预设Xeon，也不直接抵销客户端损失。",
+          "name": "Cloud PC轻终端与独立智能体云执行的端点经济",
+          "owner": "S0001",
+          "ref": [
+            "output/work/v21/discovery/S0001.jsonl#L12",
+            "context/document3/v21/d2/shell-0001.json",
+            "https://blogs.windows.com/windowsexperience/2026/02/26/announcing-new-cloud-pc-devices-designed-for-windows-365/",
+            "output/work/v21/discovery/S0001.jsonl#L13",
+            "https://blogs.windows.com/windowsexperience/2026/01/22/windows-365-for-agents-the-cloud-pcs-next-chapter/",
+            "context/document3/v21/shared/document2.json"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 6,
+      "topics": [
+        {
+          "brief": "围绕OEM推出替代原独显用途的集成轻薄、掌机及高内存配置，游戏创作软件和驱动优化，或明确任务限制使配置回归独显的消息，研究Intel集成平台和AMD统一内存路线的可争取用途。按任务比较容量、带宽、功耗散热和稳定性门槛，厘清实际设计归属与少独显后BOM在用户、OEM、内存及SoC之间的分配。相同PC台数可以改变Intel内容、成本及组合，不能把集成普及自动判为Intel溢价；掌机规模也不是传统PC净新增。与RTX合作产品课题复用整机比较资料，但本题覆盖既有集成方案本身的公开变化。",
+          "name": "集成图形、统一内存与游戏创作整机价值分配",
+          "owner": "S0001",
+          "ref": [
+            "output/work/v21/discovery/S0001.jsonl#L14",
+            "context/document3/v21/d2/shell-0001.json",
+            "context/document3/v21/shared/document2.json"
+          ]
+        },
+        {
+          "brief": "围绕双方和OEM公布首款RTX芯粒x86 SoC实际规格、设计采用、上市安排或调整推迟合作范围的消息，研究相对2025年已公布多代开发计划的新产品位置。比较既有Intel加独显、Arc集成和AMD方案的任务覆盖、性能功耗、软件与可供性，厘清客户端产品价值和经济权益如何分配、采用可能覆盖哪些高价值整机。该合作有独立产品和契约资料需求，不能只作为一般集成图形背景；开发和NVIDIA已完成股权投资不是销量保证，更不推断Foundry采购。首款日期未定，不预设交易方向或必须等收入兑现才有意义。",
+          "name": "Intel与NVIDIA RTX芯粒客户端合作的产品落地",
+          "owner": "S0001",
+          "ref": [
+            "output/work/v21/discovery/S0001.jsonl#L15",
+            "context/document3/v21/shared/d1/c4e_formal_scan.json",
+            "context/document3/v21/shared/d1/c4e_network_build.md",
+            "https://newsroom.intel.com/artificial-intelligence/intel-and-nvidia-to-jointly-develop-ai-infrastructure-and-personal-computing-products"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 7,
+      "topics": [
+        {
+          "brief": "围绕集成商推出跨客户可复制参考设备、零售工厂批量部署、项目延期或换平台的消息，研究Core需求如何形成独立于PC更新的设备项目与持续供货。Intel超过130家采用或测试是混合管线；五月Sensory AI Ella由CPU加独立加速器转单Core Ultra平台提供具名设计基础，投资回报仍属供应商主张。厘清设备任务、实时环境资格、客户资金和实施能力、软件复用、每设备计算内容及项目扩散；集成降低复杂度可以扩大采用又减少单机芯片数。不以Other CCPG或全机器人市场替代该用途收入，也不要求资格突破必须同步给出规模利润。",
+          "name": "Core非PC边缘与机器人参考平台和批量设备采用",
+          "owner": "S0001",
+          "ref": [
+            "output/work/v21/discovery/S0001.jsonl#L16",
+            "context/document3/v21/d2/shell-0001.json",
+            "https://www.intel.com/content/www/us/en/newsroom/news/client-computing/customers-choose-intel-for-edge-devices.html",
+            "context/document3/v21/shared/document2.json"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 8,
+      "topics": [
+        {
+          "brief": "围绕Intel、OEM和云客户扩大可交付Xeon配额、缩短交期、签长期锁量，或因整机组件不足延期接货与取消重复保障订单的消息，研究供给逐步释放如何改变积压、订单质量和采购持续期。服务器需求超过内部可供量为基线；公司客户存款和供应预付来自不同交易集合，不能当作Xeon专属订单或净额倒推数量。厘清覆盖型号、配额集中、合同可取消性、芯片提货与最终部署、客户库存及安全备货反转，解释供给改善增加数量、稀释组合或仅消化库存的不同后果。制造和组件深度属于相邻域，但产品交期和客户安排保有独立研究入口，不等待季度收入确认。",
+          "name": "Xeon交付配额、长期锁量与客户提货周期",
+          "owner": "S0002",
+          "ref": [
+            "output/work/v21/discovery/S0002.jsonl#L1",
+            "context/document3/v21/d2/shell-0002.json",
+            "context/document3/v21/shared/d1/c3.md",
+            "context/document3/v21/shared/d1/c4e_network_build.md",
+            "context/document3/v21/shared/event_library.md",
+            "context/document3/v21/shared/document2.json"
+          ]
+        },
+        {
+          "brief": "围绕Intel、AMD及服务器渠道公布具体CPU提价、恢复折扣、修改长约价格保护，或客户因整机成本改配的消息，研究CPU自身价格权力和单位盈利持续期。Q2服务器ASP同比增48%主要由高端组合解释，需建立同型号同配置净价、组合和输入成本的比较锚，研究供货改善后的议价、许可和运维总成本、客户替代及高端配置耐久。价格动作可能只是覆盖成本，也可能保量但漏出利润；不把云实例降价当芯片折扣、不将DCAI混合营业利润率当CPU独立利润率。报价和合同变化本身可以修订预期，即使AI应用没有新发布，也不要求报道附带独立CPU利润。",
+          "name": "服务器CPU净报价、折扣保护与配置价值捕获",
+          "owner": "S0002",
+          "ref": [
+            "output/work/v21/discovery/S0002.jsonl#L2",
+            "context/document3/v21/d2/shell-0002.json",
+            "context/document3/v21/shared/d1/c5.md",
+            "context/document3/v21/shared/event_library.md",
+            "context/document3/v21/shared/document2.json"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 9,
+      "topics": [
+        {
+          "brief": "围绕Intel、OEM和软件认证伙伴公布新代Xeon可采购系统、客户负载评测、关键认证、上市延期或客户等待新平台的消息，研究产品能力怎样改变合格负载和换代分配。Xeon 6已有商业云入口、6+已发布，Diamond Rapids的最高核心、内存通道和连接能力仍是设计而非客户交付。按工作负载比较有效工作成本、每瓦性能、许可与内存瓶颈，保留赢取高端设计和提高每插槽产出后减少固定负载插槽数的双向路径。辨别旧代采购暂停、资格延迟与永久转向竞品；产品方案与认证本身是入口，不以最终销量确认替代其信息价值。工艺硅资格由制造域深入，本题负责客户系统与产品经济性。",
+          "name": "Xeon代际系统资格、有效性能与换代时点",
+          "owner": "S0002",
+          "ref": [
+            "output/work/v21/discovery/S0002.jsonl#L3",
+            "context/document3/v21/d2/shell-0002.json",
+            "context/document3/v21/shared/d1/c3.md",
+            "context/document3/v21/shared/document2.json"
+          ]
+        },
+        {
+          "brief": "围绕SAP等软件商改变维护迁移安排、虚拟化续约及许可池化可携带规则，以及企业集中转换数据库、购买延长支持或整合迁云的消息，研究独立于最大训练集群的服务器需求。SAP维护节点和Xeon X8i认证提供实际背景，Broadcom历史按物理核订阅及云可携带说明机制，不当作所有当前新合同条款。厘清客户项目批次、预算与停机风险、高内存及每核有效性能的价值、整合减少插槽与云端集中采购的关系，避免本地少买和云多买重复计数。新的软件条款应核实具体适用范围，支持截止不是强制同年采购Xeon；续约与项目行动本身可以改变更新时间和配置预期。",
+          "name": "ERP支持、虚拟化许可与服务器更新整合",
+          "owner": "S0002",
+          "ref": [
+            "output/work/v21/discovery/S0002.jsonl#L9",
+            "context/document3/v21/d2/shell-0002.json",
+            "https://ftpdocs.broadcom.com/cadocs/0/contentimages/VCF_SPD_December2024.docx.pdf",
+            "https://blogs.vmware.com/cloud-foundation/2025/06/24/licensing-in-vmware-cloud-foundation-9-0/",
+            "context/document3/v21/shared/document2.json"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 10,
+      "topics": [
+        {
+          "brief": "研究大客户公布数据库或执行服务迁移、默认双架构开发部署、云商扩大竞争实例供给，以及因兼容或容量问题保留或回归Xeon的消息。AWS X8i、Graviton5和Google Axion已有可用服务，Azure Cobalt 200在冻结材料中仍为预览；多架构镜像和原生依赖验证说明渐进迁移可实施。分别解释Intel与AMD的x86分配、Arm准入和迁移成本变化、真实实例容量及客户总拥有成本，区分新增负载选择与存量替换。无需新闻披露全市场份额才有意义，AMD含GPU收入不能推CPU替代量，云价格也不是芯片价格。客户端Arm课题处理另一套终端应用资格，不重复其研究。",
+          "name": "云与企业CPU负载迁移及x86和Arm采购分配",
+          "owner": "S0002",
+          "ref": [
+            "output/work/v21/discovery/S0002.jsonl#L4",
+            "context/document3/v21/d2/shell-0002.json",
+            "context/document3/v21/shared/d1/c4e_formal_scan.json",
+            "context/document3/v21/shared/d1/c4e_network_build.md",
+            "context/document3/v21/shared/document2.json"
+          ]
+        },
+        {
+          "brief": "围绕NVIDIA、SambaNova、Foxconn和系统客户扩大或撤回Intel标准主机资格、公开定制x86/NVLink产品范围和商业权益，或以自有Arm、DPU及更强单主机改变默认系统的消息，研究Xeon可参与系统集合、每套配置和多代留存。明确NVL8的Xeon资格、NVL72的Vera路线和SambaNova已签主机协议是不同系统与阶段，H2可用计划需核实。比较CPU工具编排、加速器计算和卸载位置、插槽数及客户入口；定制产品设计席位可在收入前改变持续期。GPU机架增长不能按固定比例映射Xeon，股权投资不是采购保证；RTX客户端合作仍由原客户端课题处理。",
+          "name": "AI系统主机CPU标准、多代定制x86与执行分工",
+          "owner": "S0002",
+          "ref": [
+            "output/work/v21/discovery/S0002.jsonl#L5",
+            "context/document3/v21/d2/shell-0002.json",
+            "context/document3/v21/shared/d1/c4e_network_build.md",
+            "context/document3/v21/shared/d1/c4e_formal_scan.json",
+            "context/document3/v21/shared/document2.json"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 11,
+      "topics": [
+        {
+          "brief": "围绕软件商把可执行代理捆绑已有订阅、企业将客服财务代码维护改为持续机器执行、先扩数据整理连接服务，或因回报不足缩减推广的消息，研究相对渐进采用基线的工作创建。澄清成功任务收益、复核与数据治理成本、原传统工作替代及持续付费动机，分别识别CPU工具执行、数据库检索与加速器推理获得的工作，采购权落在应用商、公共API、专用云或私有环境中的何处。C5已有CPU长期用途讨论不能代表Intel独占。分发和组织流程变化本身是外部入口，不收回为只等芯片订单；运行池化效率另有聚焦课题，客户端本地功能与端点更新继续由原S0001任务负责。",
+          "name": "行动服务分发、企业流程改造与付费计算工作创建",
+          "owner": "S0002",
+          "ref": [
+            "output/work/v21/discovery/S0002.jsonl#L6",
+            "context/document3/v21/d2/shell-0002.json",
+            "context/document3/v21/shared/d1/c5.md",
+            "context/document3/v21/shared/d1/c4e_network_build.md",
+            "context/document3/v21/shared/document2.json"
+          ]
+        },
+        {
+          "brief": "围绕服务商提供长时并行任务、独立工具执行池、共享会话检索缓存，或等待模型时释放计算、进一步池化沙箱的消息，研究相同用户活动如何改变CPU占用、内存IO及采购时间。Anthropic已把推理、会话与执行分开，不支持每代理常驻CPU容器模型；受管独立Agent云PC也是采购主体与执行环境重新组织的入口。厘清执行强度、异步等待、峰值余量、隔离和资源复用、实际CPU架构以及独立执行层对固定GPU主机附着的影响。区别用量转向、提高利用率和新增采购，软件效率降成本后采用反弹亦保留。云端配置与舰队问题在本题，员工端点替代和预算挤出归既有Cloud PC课题；服务公告不必披露净核时或插槽订单才值得研究。 同时研究大型办公或模型平台把电脑关闭后的后台工作、工具连接及状态保留纳入套餐、扩大开放范围或采用用量收费，以及企业因超支限制长链任务、小模型化和延长fleet寿命。Microsoft Cowork提供现有商业入口而非已确认后续放量。把活动、持续时长、并发与保留需求同余量和缓存效率分开，追踪云端大容量模块与企业SSD的竞争，以及x86、Arm、定制芯片分流和Intel每产品内部硅含量如何影响自有节点负荷及第三方集成机会。不能把更多用户换成晶圆或位元增长，亦不将效率节省预定为净需求下降。 补充平台因企业权限风险收缩跨工具任务或客户因预算限制消费的入口，以Microsoft6月Cowork普遍可用及消耗计费为既有背景，研究后续开放、收费和使用限制。比较空余fleet、效率提升与新增硬件承接，以及Xeon、EPYC和自研Arm的分配，说明CPU经营现金源的持续性；席位不等订单，不另做泛化的现金增长确认题。",
+          "name": "托管代理持续执行、沙箱池化与服务器资源弹性",
+          "owner": "S0002",
+          "ref": [
+            "output/work/v21/discovery/S0002.jsonl#L7",
+            "context/document3/v21/d2/shell-0002.json",
+            "context/document3/v21/shared/d1/c4e_network_build.md",
+            "context/document3/v21/shared/document2.json",
+            "output/work/v21/discovery/S0001.jsonl#L13",
+            "https://blogs.windows.com/windowsexperience/2026/01/22/windows-365-for-agents-the-cloud-pcs-next-chapter/",
+            "output/work/v21/discovery/S0003.jsonl#L23",
+            "context/document3/v21/d2/shell-0003.json#/units/1",
+            "context/document3/v21/d2/shell-0003.json#/units/2",
+            "context/document3/v21/d2/shell-0003.json#/units/3",
+            "context/document3/v21/shared/d1/c5.md",
+            "【cite:O138】",
+            "【cite:O139】",
+            "output/work/v21/discovery/S0004.jsonl#L14",
+            "context/document3/v21/d2/shell-0004.json",
+            "output/work/v21/discovery/S0005.late.jsonl#L2",
+            "context/document3/v21/d2/shell-0005.json",
+            "context/document3/v21/shared/d1/c3.md",
+            "https://www.microsoft.com/en-us/copilot/blog/2026/06/16/copilot-cowork-is-now-generally-available/"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 12,
+      "topics": [
+        {
+          "brief": "研究企业因真实泄漏或破坏性动作暂停高权限代理，或借可审计沙箱、端点绑定凭据、最小权限和受控部署恢复授权，以及执行和敏感推理转入VPC或本地的安排。上游失配注入实验不是已发生客户损失；Discovery引用Intel九月工具材料展示可选OpenShell及TDX机密虚拟机路径，Build核实公开版本、日期与实际功能范围。厘清可授权任务、行动执行与推理调用的不同变化、隔离资源及运维成本、数据控制和平台资格对Xeon与非CPU产品机会的作用。私有化不保证Intel份额或消除模型风险；本题是客户治理和部署选择，TDX漏洞补丁的主机可信资格由独立安全课题负责。 补充受管Agent PC、独立云桌面、权限审计及本地私有数据路线：研究雇主暂停自主执行后是否保留本地或私有机房工作，怎样重排客户端和服务器采购主体、更新周期及Intel自有节点组合。NIST信任研究与Microsoft隔离方案是路径背景，非已发生CPU订单；治理恢复可扩大采用，隔离效率也可降低单代理开销，两条作用须分别解释，不把私有化等同制造增量。 把默认本地优先或混合路由也保留为独立正向部署入口，不只研究事故之后回迁：Intel混合展示和HPE隔离方案提供实际背景，未来事故仍是假设。明确哪些业务持续获批、任务活动和云token是否分化，执行地点如何将资源从云大容量模块转向私有服务器或高内存PC，改变LPDDR、DDR和SSD竞争。平台封装内存与OEM模块的采购责任由专门组件题研究，本题保留部署分工对这些责任的连接；不能由云用量下降推总内存减少或归Intel订单。",
+          "name": "代理权限事故、审计隔离与受控AI部署",
+          "owner": "S0002",
+          "ref": [
+            "output/work/v21/discovery/S0002.jsonl#L8",
+            "context/document3/v21/d2/shell-0002.json",
+            "https://www.intel.com/content/www/us/en/newsroom/home.html",
+            "https://www.intel.com/content/www/us/en/newsroom/news/data-center/intel-agent-toolkit-adds-nvidia-openshell-for-policy-enforced-sandboxes.html",
+            "context/document3/v21/shared/document2.json",
+            "output/work/v21/discovery/S0003.jsonl#L24",
+            "context/document3/v21/d2/shell-0003.json#/units/1",
+            "【cite:O153】",
+            "【cite:O154】",
+            "【cite:O118】",
+            "output/work/v21/discovery/S0004.jsonl#L15",
+            "context/document3/v21/d2/shell-0004.json",
+            "context/document3/v21/shared/d1/c4e_network_build.md"
+          ]
+        },
+        {
+          "brief": "围绕Intel退出出售AI或网络产品线、集中差异化推理及ASIC投入、调整开发团队，或明确继任产品和长期支持的安排，研究产品机会与费用责任的真实改变。事件库的数据中心裁员及低毛利产品削减为背景，2025年Falcon Shores转内部测试是历史例子，不能冒充当前新取消。厘清实际移除的研发服务义务、客户迁移库存处置、人才和软件支持对Xeon及加速器资格的影响，比较节省与失去设计机会的代价。集团费用和交易结构留财务域，本题保留具体产品和生态后果，不降格为通用降本。与Gaudi服务或Crescent产品单题不同，本题关注跨路线资源配置和长期产品承诺。",
+          "name": "数据中心产品退出、开发团队与长期支持重配",
+          "owner": "S0002",
+          "ref": [
+            "output/work/v21/discovery/S0002.late.jsonl#L3",
+            "context/document3/v21/shared/event_library.md",
+            "context/document3/v21/shared/d1/c1.md",
+            "context/document3/v21/d2/shell-0002.json",
+            "https://www.intc.com/filings-reports/annual-reports/content/0000050863-25-000009/0000050863-25-000009.pdf",
+            "context/document3/v21/shared/document2.json"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 13,
+      "topics": [
+        {
+          "brief": "围绕Intel及OEM公布实际送样、可采购风冷系统、配置报价、客户模型适配或延期，以及竞争方案价格改变的消息，研究差异化推理GPU如何从开发进入可服务市场。原H2 2026采样计划和八月风冷PCIe高容量LPDDR架构是比较锚，不能凭窗口到来认定已完成或已量产；160GB原方案与最高480GB支持范围不等于同卡容量翻三倍。研究具体负载、机房部署资格、软件和组件衔接、成交价及持续支持摊销，解释按期产品、扩大资格与盈利贡献的不同新信息。推理运行时和阶段内存路线课题共享任务比较，不替本题处理产品交付与价格入口；不预定新品发布方向。",
+          "name": "Crescent Island采样、可部署系统与进入经济性",
+          "owner": "S0002",
+          "ref": [
+            "output/work/v21/discovery/S0002.jsonl#L10",
+            "context/document3/v21/d2/shell-0002.json",
+            "context/document3/v21/shared/d1/c1.md",
+            "context/document3/v21/shared/event_library.md",
+            "context/document3/v21/shared/document2.json"
+          ]
+        },
+        {
+          "brief": "围绕IBM、集成商和客户交付OpenShift或watsonx集成、增加地区专用云及私有部署、重复生产使用，或换平台停供与旧品清理的消息，研究Gaudi从存量去化转向持续贡献或收缩的路径。IBM已有生产VPC入口，但公告中的后续软件和地区扩展保持计划身份，需逐项核实。厘清企业租云与自购、付费利用率、迁移和持续服务费、服务资格及重复需求。将原始成本、已减值成本下的折价售出、研发支持和库存回收分开，上年费用不重复不证明销量改善。服务和生命周期安排本身可修订判断，不等待财报减值；新GPU进入与Gaudi存续不套同一商业曲线。",
+          "name": "Gaudi企业AI云服务扩展、生产利用与产品存续",
+          "owner": "S0002",
+          "ref": [
+            "output/work/v21/discovery/S0002.jsonl#L11",
+            "context/document3/v21/d2/shell-0002.json",
+            "context/document3/v21/shared/d1/c1.md",
+            "context/document3/v21/shared/document2.json"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 14,
+      "topics": [
+        {
+          "brief": "共同研究主流模型框架加入或撤回经过测试的Intel后端、集成商承担迁移运维保证，以及服务商把预填充解码媒体处理分给不同设备、扩大长上下文开放模型或改用量化共享缓存的消息。Gaudi与llm-d/vLLM及缓存连接已有技术实践，Crescent高容量低功耗仅为产品设计，不能当作分解推理已采用。依同一运行栈和生产负载资料，分别澄清算子精度通信稳定性及服务保证如何改变软件准入、阶段路由和缓存传输如何改变Intel可获席位、容量带宽尾延迟及每任务卡数网络价值。生产支持可独立于新卡上市发生，缓存或模型缩小也可削弱大容量优势；开源接口演示不等同可生产模型，效率提高可以同时赢客户和减少卡强度。该课题合并软件与资源分工研究，不预定最终Policy合并。 补入云商、模型服务商和系统商把长上下文SSD卸载推广为生产服务，或因延迟、耐久性及隔离回退热内存的采购入口。Micron已有KV缓存SSD供货，Tutti只是特定I/O优化研究，不证明全面迁移。依同一服务目标比较热DRAM、HBM与企业SSD的替换、CPU控制和链路瓶颈，解释组件承诺和可购供给如何限制分层，以及低成本带来的任务回弹。服务安排可以先改变采购组合，不要求公告同时证明净节省；SSD增加不保证Xeon增长。CXL共享容量池另立题，不能把两条路线压成一个效率结论。",
+          "name": "推理运行时生产支持、阶段拆分与内存缓存路线",
+          "owner": "S0002",
+          "ref": [
+            "output/work/v21/discovery/S0002.jsonl#L12",
+            "context/document3/v21/d2/shell-0002.json",
+            "https://community.intel.com/t5/Blogs/Tech-Innovation/Artificial-Intelligence-AI/Optimizing-LLM-Inference-on-Intel-Gaudi-Accelerators-with-llm-d/post/1705319",
+            "output/work/v21/discovery/S0002.jsonl#L13",
+            "context/document3/v21/shared/document2.json",
+            "output/work/v21/discovery/S0004.jsonl#L16",
+            "context/document3/v21/d2/shell-0004.json"
+          ]
+        },
+        {
+          "brief": "围绕新的机密计算安全通告、云商暂停功能或收紧证明版本、修复后恢复认证及客户重新选可信主机的消息，研究Xeon在敏感计算和AI主机中的技术准入。二月Google与Intel TDX评估记录历史测试漏洞，不证明客户已有损失或当前全部未修补。厘清CPU模块版本、补丁性能和运维迁移、可替代可信平台及客户认证覆盖，将可修复成本和长期设计席位变化分开。与代理权限治理课题分别保留：前者涉及客户允许何种动作和部署场所，本题涉及主机隔离保证是否合格；安全或补丁事件不必附带采购损失统计才能改写资格预期。",
+          "name": "机密计算漏洞、补丁与Xeon可信平台资格",
+          "owner": "S0002",
+          "ref": [
+            "output/work/v21/discovery/S0002.late.jsonl#L2",
+            "context/document3/v21/d2/shell-0002.json",
+            "https://arxiv.org/abs/2602.11434",
+            "context/document3/v21/shared/document2.json"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 15,
+      "topics": [
+        {
+          "brief": "围绕云商模型商将稳定训练推理迁至自研平台、把软件网络主机和融资整机打包，或建立能承载生产的多平台采购的安排，研究Intel可争取外购加速器池及进入壁垒。Trainium3已有商业供给，系统生态绑定不能只按单卡报价比较；第二供应商可能仅用于议价而未实购。分别解释行业总支出、外购比例与Intel资格，以及专用化对Intel自有ASIC和Gaudi/GPU的不同作用。若Intel只有第三方芯片制造收费，应归Foundry；产品或设计经济权益另行识别。安排和客户平台选择可以先改变机会边界，不要求新闻给出全市场份额，也不按AI资本开支平均分给Intel。",
+          "name": "自研加速器、平台打包与多供应商采购预算",
+          "owner": "S0002",
+          "ref": [
+            "output/work/v21/discovery/S0002.jsonl#L14",
+            "context/document3/v21/d2/shell-0002.json",
+            "context/document3/v21/shared/d1/c4e_formal_scan.json",
+            "context/document3/v21/shared/event_library.md",
+            "context/document3/v21/shared/document2.json"
+          ]
+        },
+        {
+          "brief": "研究Intel和客户新增用途特定ASIC设计席位、多代重复合作、量产调整、取消项目或改设计方的消息，厘清设计机会的规模持续期和经济权属。Other DCAI Q2类别收入9.51亿美元、增量3.04亿美元主要由ASIC需求解释是现实规模锚，不是ASIC独立利润或GPU收入；Fortinet SP6仅为具名设计封装制造合作例子，不能指认为已有收入。研究IP与产品所有权、设计费芯片销售分成、研发库存责任、客户集中和复用摊销，设计权可以在当期销售前改变后续价值。与自研采购课题的外购池问题分开，本题针对Intel持有经济权益的实际项目，单纯制造封测不计作自有ASIC增长。",
+          "name": "用途特定ASIC设计权、客户换代与项目组合",
+          "owner": "S0002",
+          "ref": [
+            "output/work/v21/discovery/S0002.jsonl#L15",
+            "context/document3/v21/d2/shell-0002.json",
+            "context/document3/v21/shared/d1/c4e_formal_scan.json",
+            "context/document3/v21/shared/d1/c4e_network_build.md",
+            "context/document3/v21/shared/document2.json"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 16,
+      "topics": [
+        {
+          "brief": "围绕OEM云商扩大Intel NIC或IPU资格、修改报价供货，或采用竞争DPU和整机网络及更高速端口本地缓存的消息，研究每系统网络价值和CPU工作转移。E830/E610为现有主机及控制面背景，Discovery补充六月E835至200GbE、RDMA和驱动延续，应核实具体型号资格与适用部署，不推成800G后端份额。分别研究虚拟化、跨节点推理和卸载的产品匹配、端口强度、软件迁移及平台标准，解释流量增长、端口数和单卡价值可不同向。以太网行业扩张不等于Intel订单，公开主机采用和交易条件本身有研究价值，不以独立NIC收入披露为前置。",
+          "name": "Intel主机网络资格、报价与通信卸载分工",
+          "owner": "S0002",
+          "ref": [
+            "output/work/v21/discovery/S0002.jsonl#L16",
+            "context/document3/v21/d2/shell-0002.json",
+            "https://www.intel.com/content/www/us/en/newsroom/news/data-center/intel-introduces-ethernet-e835-controllers-network-adapters.html",
+            "context/document3/v21/shared/document2.json"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 17,
+      "topics": [
+        {
+          "brief": "研究云或企业客户签长期付费容量合同、获得融资、释放延误机房，或因回报要求和接电冷却延迟转向租云、存量高密度更新及风冷推理的安排。CoreWeave融资与电网接入改革是外部约束实例，制度行动不表示实际送电；融资和功率不等于Intel采购承诺。按项目和平台分辨订单顺延、接收设备成为库存、永久预算收缩以及采购主体转移，对Xeon、ASIC、网络和新GPU各自的机会与时间给出解释。低功耗形态须符合任务服务等级，传统CPU更新不全依赖最大AI机架。与Intel集团融资及资本支付分开，以客户购买和部署方式为核心，不重做全部产品上市研究。 补充融资者提高自筹与回报要求、客户改部署地点或更强容量保障重启建设的消息，研究其对具体第三方芯片设计、第二来源开发预算及封装项目预约质量的作用。区分效率和旧机余量带来的延期与永久替代、已锁定资源仍按约提货与通过取消或转让释放；不能因机房延期宣布开放组件或Foundry负荷同步转松。客户项目可执行性在此共同研究，Intel晶圆报价和专用扩产风险由外部晶圆契约课题处理，互不重做融资材料。 进一步研究项目开发者用微电网或其他可行桥接电源提前上线、推迟建设但继续按长约接收硬件、转售和重排已订资源的安排。DOE讨论并网制约与桥接不是具名项目已经通电；核实冷却、资金和技术边界。分别判断先消化库存、集中补货及可取消转让资源，追踪兼容模块和高端基板的采购时间与市场分配。项目延期非付费用量消失，资源锁定可与活动脱钩，融资宣传不是新增位元，不以财报作为唯一观察入口。",
+          "name": "客户容量合同、融资与上电重排硬件部署",
+          "owner": "S0002",
+          "ref": [
+            "output/work/v21/discovery/S0002.jsonl#L17",
+            "context/document3/v21/d2/shell-0002.json",
+            "context/document3/v21/shared/event_library.md",
+            "context/document3/v21/shared/document2.json",
+            "output/work/v21/discovery/S0003.jsonl#L26",
+            "context/document3/v21/d2/shell-0003.json#/units/2",
+            "context/document3/v21/shared/event_library.md#E39",
+            "【cite:O139】",
+            "【cite:O143】",
+            "【cite:O101】",
+            "output/work/v21/discovery/S0004.jsonl#L18",
+            "context/document3/v21/d2/shell-0004.json",
+            "context/document3/v21/shared/d1/c4e_network_build.md"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 18,
+      "topics": [
+        {
+          "brief": "围绕软件商云客户推出CPU原生小模型或检索推理、利用既有Xeon替代部分购卡，或将这些任务迁回GPU的消息，研究CPU从工具编排扩到直接推理的机会。SparAMX稀疏AMX内核论文与Falcon 3在Xeon和Gaudi的软件支持仅为技术可行背景，不是客户采购。比较模型质量、并发尾延迟、内存带宽、实际软件支持、存量余量和升级回报，区分扩大CPU合格用途、只提高利用率和真正形成更新需求。该路线重分配Intel内部CPU与非CPU机会，不能预设两者同时增长；它也不同于客户端旧CPU轻量AI，须以服务器服务和买方配置为边界。",
+          "name": "Xeon原生小模型推理与CPU和加速卡用途分配",
+          "owner": "S0002",
+          "ref": [
+            "output/work/v21/discovery/S0002.late.jsonl#L1",
+            "context/document3/v21/d2/shell-0002.json",
+            "https://arxiv.org/abs/2502.12444",
+            "https://www.intel.com/content/www/us/en/developer/articles/technical/intel-ai-solutions-support-falcon-3-fdn-models.html",
+            "context/document3/v21/shared/document2.json"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 19,
+      "topics": [
+        {
+          "brief": "围绕Intel或设计客户公布18A-P产品资格、大芯片流片结果、量产延期、工艺返工或单片与chiplet划分变化，研究既有18A批产学习能迁到哪些新设计。18A服务多款内部产品、18A-P风险生产并保留设计IP兼容性是起点；产出超目标或环比增长不是所有产品共同良率。按面积布局、热预算、冗余分档、周期和后段匹配解释合格产出及含折旧良品成本，区分扩大可服务设计集合与新增先进节点面积需求。硅结果和客户设计决定是独立入口，不要求同时披露绝对良率或盈利；客户端和Xeon系统采用由产品域处理，本题拥有工艺可制造性和跨设计学习的判断。",
+          "name": "18A家族新设计硅资格与制造学习迁移",
+          "owner": "S0003",
+          "ref": [
+            "output/work/v21/discovery/S0003.jsonl#L1",
+            "context/document3/v21/d2/shell-0003.json#/units/0",
+            "context/document3/v21/d2/shell-0003.json#/units/1",
+            "【cite:O113】",
+            "【cite:O114】",
+            "【cite:O133】",
+            "context/document3/v21/shared/document2.json"
+          ]
+        },
+        {
+          "brief": "研究Intel、Synopsys和IP伙伴交付稳定设计套件、硅验证存储接口模块、扩大参考流支持的设计类型，或调整风险生产与量产路线的消息。冻结公司侧基线为PDK 0.5完成、0.9计划2026年十月、内部风险生产2027H2及2028爬坡承诺；工具流程认证、真实硅验证和客户订单必须分开。厘清哪些关键块使整项目可设计签核、版本变化或验证缺口增加多少返工并错过客户定版窗口，竞争厂兼容节点的可购性如何改变迁移价值。扩大生态可先改变客户类型和可参与机会，工具公告不必同步给出投片量；研究14A设计生产准备而非在此提前推定外部客户定点或扩产规模。",
+          "name": "14A PDK、硅验证IP与风险生产设计窗口",
+          "owner": "S0003",
+          "ref": [
+            "output/work/v21/discovery/S0003.jsonl#L2",
+            "context/document3/v21/d2/shell-0003.json#/units/0",
+            "context/document3/v21/shared/d1/c3.md",
+            "【cite:O113】",
+            "【cite:O117】",
+            "【cite:O137】",
+            "context/document3/v21/shared/document2.json"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 20,
+      "topics": [
+        {
+          "brief": "围绕Intel与ASML扩大High-NA生产层、减少多重图形化、改变拼接流程，以及光罩伙伴完成6×12英寸使能或竞争厂选择传统EUV升级的消息，研究技术先行如何转为可服务设计和经济吞吐。当前限定层已应用，百万片混合累计处理不能当作商业产能；事件库的14A生产窗口与公司基线不一致，需回到原始口径核实，不据此提前改路线。比较大die限制、掩模资格、全流程周期、工具负担与每良品成本，说明竞争生态追赶对先锋价值的不同作用。本题拥有光刻与光罩路线，不重做18A新设计资格或14A客户订单。",
+          "name": "High-NA生产层扩展、光罩使能与全流程经济性",
+          "owner": "S0003",
+          "ref": [
+            "output/work/v21/discovery/S0003.jsonl#L3",
+            "context/document3/v21/d2/shell-0003.json#/units/0",
+            "context/document3/v21/shared/d1/c4e_network_build.md",
+            "context/document3/v21/shared/event_library.md#E18",
+            "context/document3/v21/shared/event_library.md#E19",
+            "【cite:O98】",
+            "【cite:O115】",
+            "context/document3/v21/shared/document2.json"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 21,
+      "topics": [
+        {
+          "brief": "研究厂区、公用事业、材料商或设备商公布事故、停电限水、氦或稀土中断、维修限制，以及恢复和第二来源资格的消息。冻结风险披露说明暴露，不证明已停线。明确工厂和工序、库存缓冲、合格替代及重启资格，研究交付损失与新节点学习中断如何不同，并保留恢复减少影响的路径。材料金额小也可能制约整线，不要求先披露财务损失；该题区别于正常扩产或产品所需内存配套，核心是制造连续性及恢复。",
+          "name": "工厂事故、关键材料与设备服务连续性",
+          "owner": "S0003",
+          "ref": [
+            "output/work/v21/discovery/S0003.jsonl#L4",
+            "context/document3/v21/d2/shell-0003.json#/units/0",
+            "context/document3/v21/d2/shell-0003.json#/units/1",
+            "context/document3/v21/shared/d1/c4e_formal_scan.json",
+            "【cite:O11】",
+            "【cite:O118】",
+            "context/document3/v21/shared/document2.json"
+          ]
+        },
+        {
+          "brief": "围绕制造团队重组、关键技师留存或流失、学徒计划、跨站技术转移、受控诊断及虚拟调试合作，研究爬坡执行能力和费用取舍。Intel学徒计划是实际路径，其他厂商培训和数字孪生仅作机制比较，不认作Intel部署。查明改变针对哪些维护、异常恢复和资格瓶颈，知识能否复制到新的工厂和后段团队，缩编是否损害学习连续性。管理任命、裁员或毕业人数本身不推成良率；与数据中心产品开发退出区分，保留制造现场人才和流程的独立入口。",
+          "name": "制造团队、熟练技能与跨站知识复制",
+          "owner": "S0003",
+          "ref": [
+            "output/work/v21/discovery/S0003.jsonl#L5",
+            "context/document3/v21/d2/shell-0003.json#/units/0",
+            "context/document3/v21/shared/event_library.md#E46",
+            "context/document3/v21/shared/event_library.md#E60",
+            "【cite:O150】",
+            "【cite:O151】",
+            "【cite:O152】",
+            "context/document3/v21/shared/document2.json"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 22,
+      "topics": [
+        {
+          "brief": "围绕下一代CPU、定制x86及RTX合作产品确定内部节点、外部晶圆和芯粒分工，或因性能交期成本改来源，研究制造网络经济性。部分tile由TSMC制造、14A内部路线有外部选项是背景；NVIDIA产品合作不保证Foundry订单。按架构和面积研究自有新旧节点负荷、外购支出、避免新增资本与留下闲置固定成本的取舍。产品销量不等于自有投片，内部转移定价也不是外部销售。本题承接产品域路线资料但拥有自制外包对制造网络的影响，不重做客户端产品竞争。",
+          "name": "内部产品自制外包tile选择与制造负荷",
+          "owner": "S0003",
+          "ref": [
+            "output/work/v21/discovery/S0003.jsonl#L6",
+            "context/document3/v21/d2/shell-0003.json#/units/1",
+            "context/document3/v21/shared/d1/c4e_network_build.md",
+            "【cite:O118】",
+            "【cite:O101】",
+            "https://download.intel.com/newsroom/2026/earnings/1Q2026-Earnings-Call.pdf",
+            "context/document3/v21/shared/document2.json"
+          ]
+        },
+        {
+          "brief": "研究Intel增加Intel 3或18A工具、洁净室和厂区资格，关闭低负荷产线、复用设备，及Costa Rica向越南或马来西亚整合进度改变的安排。当前为选择性服务器扩供和节点转换，并非全网满载；Panther Lake主力SKU降本不是制造整体盈利。明确哪项投入解除真实可交付瓶颈，哪项退出能避免费用，比较双重折旧、停线、重资格和库存缓冲。公司付款与融资交财务域，本题研究资产内容和经济供给；全链本土客户资格另由地域封装课题深化。 对Costa Rica交接、延长双轨、保留工程职能和支持团队的消息，除制造停线与资格外，明确研究重复常设支持费用何时退出、遣散培训现金时点，以及返聘、搬迁和外币支付。年底完成仍为目标，没有完成证明；制造单位成本、企业组织费用与已确认减值分开，不重复计算同一岗位节省或把过去重组科目回落再年化。该同一站点移交由本题统一研究，跨企业项目岗位和薪酬的费用基础另题处理。",
+          "name": "制造网络扩供、资产退休与后段迁站",
+          "owner": "S0003",
+          "ref": [
+            "output/work/v21/discovery/S0003.jsonl#L7",
+            "context/document3/v21/d2/shell-0003.json#/units/1",
+            "context/document3/v21/shared/d1/c1.md",
+            "【cite:O113】",
+            "【cite:O118】",
+            "【cite:O12】",
+            "context/document3/v21/shared/document2.json",
+            "output/work/v21/discovery/S0005.jsonl#L2",
+            "context/document3/v21/d2/shell-0005.json",
+            "context/document3/v21/shared/d1/c4e_network_build.md"
+          ]
+        },
+        {
+          "brief": "围绕基板或内存供货恢复、规格与排产改变、测试能力增加，或具体晶圆批次因配套不足延迟，研究成套交付约束如何变化。供应预付与客户存款是不同交易集合，WIP未全部归于等料，不用相减推利润。查明合同获取保障和需求风险、瓶颈批次与后段资格，解释解除约束是先释放库存还是支持持续新投片。该题保留独立于前段良率的现实入口，研究Intel制造调度和完成交付；组件供方市场的定价份额留组件域，不以所有库存下降证明产出改善。 进一步研究Intel或供方引入合格第二来源、把既有料号转配服务器，以及重新划分电容贴装等基板交接工序，是否在行业总产能不变时增加特定型号成套资源。2022年厂内承接工序只是可操作性历史案例，非当前已实施；核实瓶颈位于材料、板体、供方工序还是Intel承接环节，客户端改善能否扩到服务器，以及解除旧缺件后限制是否转移。不要复制历史效率或把不可互换料号任意调拨。",
+          "name": "兼容组件、测试槽位与完整产品交付",
+          "owner": "S0003",
+          "ref": [
+            "output/work/v21/discovery/S0003.jsonl#L8",
+            "context/document3/v21/d2/shell-0003.json#/units/1",
+            "context/document3/v21/shared/d1/c3.md",
+            "【cite:O121】",
+            "【cite:O42】",
+            "【cite:O12】",
+            "context/document3/v21/shared/document2.json",
+            "output/work/v21/discovery/S0004.jsonl#L1",
+            "context/document3/v21/d2/shell-0004.json",
+            "https://download.intel.com/newsroom/archive/2025/en-us-2022-05-26-intel-taps-factory-network-to-overcome-substrate-shortages.pdf"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 23,
+      "topics": [
+        {
+          "brief": "围绕Intel、SK hynix或其他伙伴确认、改约或放弃Ohio设施租赁及记忆体合作，或Intel重排逻辑建设投产，研究闲置资产的经营角色和选择权。现有讨论探索未定，厂房不是合格DRAM产线；伙伴另建和继续空置均是实际待研究路径。核实房东、资本伙伴、技术许可与生产运营分工、水电改造义务、技术转移审批及转换周期，比较替代用途净回报和未来逻辑扩供选择的代价。审批适用范围交Build核实，不作法律判断，伙伴全部芯片销售不能计为Intel加工收入。 同时研究内存伙伴与云客户落实共同建设和供货权时的产品种类、投产阶段、分配及Intel是否获得适配DDR或LPDDR的购买保障，区分仅出租空间与可得组件改善，HBM产出不能任意替代所需内存。把正式租金、前付款、改造完工资本承担、闲置等待、控制与公共资金条件纳入用途转换的净回报问题；SK hynix官方澄清仍探索无决定，不能从报道计算财务救济。制造、供货及现金安排围绕同一合作共同研究，公共条件适用范围需核实而非提供法律判断，空间租赁不计作逻辑Foundry订单。",
+          "name": "闲置厂房租赁、共营与用途转换",
+          "owner": "S0003",
+          "ref": [
+            "output/work/v21/discovery/S0003.jsonl#L9",
+            "context/document3/v21/d2/shell-0003.json#/units/1",
+            "context/document3/v21/shared/event_library.md#E45",
+            "context/document3/v21/shared/event_library.md#E36",
+            "【cite:O120】",
+            "context/document3/v21/shared/document2.json",
+            "output/work/v21/discovery/S0004.late.jsonl#L2",
+            "https://news.skhynix.com/en/fact-10/",
+            "context/document3/v21/d2/shell-0004.json",
+            "output/work/v21/discovery/S0005.jsonl#L6",
+            "context/document3/v21/shared/event_library.md",
+            "context/document3/v21/d2/shell-0005.json"
+          ]
+        },
+        {
+          "brief": "围绕先进节点客户设计定点、留在原厂、调整投片或签多代供货，以及Intel改变NRE、晶圆报价、容量保留和共同投资条款，研究客户参与及风险承担。Terafab具名合作是入口，官方确认不等于约束数量；需区分正式安排、报道及尚未披露条款。研究全流程迁移和第二来源价值，分别识别按片制造、技术许可、设施使用及客户自营；数量取消权、固定价和增量资本怎样改变回收。设计决定本身可改机会，不等待重复收入；2.93亿美元合计外部交易不能归为先进节点收入。与14A技术准备和闲置设施改用途区分。 此外把竞争代工厂自身开放合格容量、兼容升级、调价或成套晶圆封装保障列为独立研究入口，并研究客户宣布长期双来源或仅取得Intel资格作议价而不迁主生产。TSMC 2nm商业化是竞争动态基线，不把对手前沿冻结；比较迁移时间、IP封装成本及第二来源价值如何改Intel获客条款。竞争供给中断也可能影响Intel外购tile而非只带来获单机会，须保留双向暴露。上述动作无需先出现Intel赢单，竞争财报日期不是本题事件。",
+          "name": "外部晶圆客户定点、报价与容量契约",
+          "owner": "S0003",
+          "ref": [
+            "output/work/v21/discovery/S0003.jsonl#L10",
+            "context/document3/v21/d2/shell-0003.json#/units/2",
+            "context/document3/v21/shared/event_library.md#E43",
+            "context/document3/v21/shared/d1/c5.md",
+            "【cite:O81】",
+            "【cite:O101】",
+            "https://download.intel.com/newsroom/2026/earnings/1Q2026-Earnings-Call.pdf",
+            "context/document3/v21/shared/document2.json",
+            "output/work/v21/discovery/S0003.late.jsonl#L1",
+            "context/document3/v21/d2/shell-0003.json#/units/0",
+            "context/document3/v21/shared/d1/c4e_network_build.md",
+            "context/document3/v21/shared/d1/c4f_future_nodes.json",
+            "【cite:O100】",
+            "【cite:O137】"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 24,
+      "topics": [
+        {
+          "brief": "研究Fortinet等网络设备商发布新整机功能、改变SP6设计采购，以及云平台或授权商复用专用核心、转回通用芯片的安排，如何形成Intel可服务的晶圆与封装项目。SP6合作已涉及设计制造封装，但节点、量和日期未知。比较稳定用途、生命周期、项目汇聚和复用摊销对进入门槛的作用，明确采购方与Intel实际角色；新系统能力本身是入口，不要求同时公布Intel利润。产品域课题拥有Intel自有设计IP及芯片经济权益，本题拥有第三方制造来源，不将所有ASIC增长和所有自研项目重复计给Intel。",
+          "name": "用途特定ASIC与制造项目来源",
+          "owner": "S0003",
+          "ref": [
+            "output/work/v21/discovery/S0003.jsonl#L11",
+            "context/document3/v21/d2/shell-0003.json#/units/2",
+            "context/document3/v21/shared/d1/c4e_network_build.md",
+            "【cite:O122】",
+            "【cite:O142】",
+            "【cite:O133】",
+            "context/document3/v21/shared/document2.json"
+          ]
+        },
+        {
+          "brief": "围绕UMC和Intel确认Arizona 12nm资格、客户流片与美国供货产品、生产延期，或客户保留海外路线，研究成熟节点合作的独立商业路径。技术已复制，2026资格和2027生产是计划而非统一收入坡道。研究通信网络应用的地域价值、IP迁移、重复提货及既有设备复用，澄清双方客户通道、制造职责、收益归属和新增成本。取得资格可以扩大参与集合，也可能仅形成低量备份，不以14A大单或公司总收入替代该题。",
+          "name": "UMC美国12nm资格与客户迁入",
+          "owner": "S0003",
+          "ref": [
+            "output/work/v21/discovery/S0003.jsonl#L12",
+            "context/document3/v21/d2/shell-0003.json#/units/2",
+            "context/document3/v21/shared/d1/c4e_network_build.md",
+            "【cite:O123】",
+            "【cite:O109】",
+            "【cite:O110】",
+            "context/document3/v21/shared/document2.json"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 25,
+      "topics": [
+        {
+          "brief": "围绕Tower和Intel公开调解结果、修订经营分工、恢复New Mexico模拟工艺资格，或终止撤离转移设备，研究特色制造通道和资产责任。冻结状态为2025年底未资格，Tower年报披露不履约意向与调解，不认作现有放量。明确设备所有权、供货角色、客户替代路径、恢复成本及退出责任，解释重新取得负荷与释放费用可能怎样同时改变净回报。Tower采购设备不计Intel资本；UMC进展不能覆盖该独立争议，法律后果须有实际文件且不代做法律意见。",
+          "name": "Tower模拟制造争议、恢复与退出责任",
+          "owner": "S0003",
+          "ref": [
+            "output/work/v21/discovery/S0003.jsonl#L13",
+            "context/document3/v21/d2/shell-0003.json#/units/2",
+            "【cite:O127】",
+            "context/document3/v21/shared/document2.json"
+          ]
+        },
+        {
+          "brief": "围绕Altera延长旧FPGA寿命、推出替代代际、改变提货，以及双方修改美国制造、备库存、最低采购或提前停供，研究需求与履约责任如何重组。当前外部增长主要含出表分类；2035与2040、库存界限和条件补偿来自2025披露，需核对后续有效安排，不默认最新版相同。比较库存替代持续开线、质量和资金责任、实际需求及可避免费用，保留收入减少但净经济改善的退出路径。库存上限非年产能、条件金额非已发生费用，Altera股权交易留财务域。 补入出售后仍留存的尾部现金责任：研究Altera后移提货、改变生命周期以及Intel停供或转用产线时，跨年库存占款与集中结算怎样变化。2025特定提前停供最高22.5亿美元递减条款只作历史尺度，核实现行客户例外和库存用途，比较一次补偿与可避免的长期维持成本；IPO或新股东可以促成谈判但不自动免责。该现金义务在本题统一研究，不被权益变现课题替代。",
+          "name": "Altera长期供货、库存与旧节点生命周期",
+          "owner": "S0003",
+          "ref": [
+            "output/work/v21/discovery/S0003.jsonl#L14",
+            "context/document3/v21/d2/shell-0003.json#/units/2",
+            "context/document3/v21/shared/d1/c4e_network_build.md",
+            "【cite:O111】",
+            "【cite:O126】",
+            "【cite:O81】",
+            "context/document3/v21/shared/document2.json",
+            "output/work/v21/discovery/S0005.jsonl#L15",
+            "context/document3/v21/d2/shell-0005.json",
+            "https://www.sec.gov/Archives/edgar/data/50863/000005086325000063/intc-20250414.htm"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 26,
+      "topics": [
+        {
+          "brief": "研究国防系统客户、项目办公室及敏感商业客户采用可信本土芯片的产品计划、生产授予、安全追溯资格变化，或预算缩减和接受替代供给的消息。RAMP-C18A原型使能是背景，Secure Enclave支持和政府股权不等于晶圆订单。厘清原型到系统验证、生产预算和采购的不同决定，以及全链地域资格、项目寿命、低量持续服务和规模扩产的差别。低量耐久合同也值得研究，不只保留超大订单；公共研发接入由共享原型网络题处理，本题拥有合格生产需求。",
+          "name": "可信制造资格、产品项目与生产采购",
+          "owner": "S0003",
+          "ref": [
+            "output/work/v21/discovery/S0003.jsonl#L15",
+            "context/document3/v21/d2/shell-0003.json#/units/2",
+            "context/document3/v21/shared/d1/c4e_network_build.md",
+            "【cite:O105】",
+            "【cite:O144】",
+            "【cite:O145】",
+            "context/document3/v21/shared/document2.json"
+          ]
+        },
+        {
+          "brief": "围绕制造伙伴、组织分离和所有权调整、可执行IP防火墙或容量优先承诺，以及客户因排产争议或数据治理事件改合作，研究竞争客户是否愿投入多年核心设计。当前内部负荷主导，形式独立和资本投资者身份不创造采购。研究中立性、内部基础负荷、技术资本连续性及违约风险的取舍；事故为可能路径而非已发生事实。所有权交易的价格、政府经济条款交财务域，本题研究实质客户保障和参与集合，不能由组织品牌或出售意向推定获单。",
+          "name": "Foundry治理、IP隔离与持续供货保障",
+          "owner": "S0003",
+          "ref": [
+            "output/work/v21/discovery/S0003.jsonl#L16",
+            "context/document3/v21/d2/shell-0003.json#/units/2",
+            "context/document3/v21/shared/event_library.md#E53",
+            "context/document3/v21/shared/d1/c4e_network_build.md",
+            "【cite:O106】",
+            "【cite:O145】",
+            "【cite:O118】",
+            "context/document3/v21/shared/document2.json"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 27,
+      "topics": [
+        {
+          "brief": "围绕其他晶圆厂客户选择或取消EMIB、EMIB-T及Foveros、交付多代项目，以及Intel改变报价、专用扩产和昂贵客户die损失责任，研究独立封装服务的机会与回报。增长backlog、达到质量目标和2027准备是基线，未量化独立收入及约束订单。研究KGD、复合良率、ATE占用、热可靠性、材料所有权及可取消性，区别名义装配和经济合格吞吐、NRE和重复负荷。封装不须伴随晶圆迁入，客户选择可先改预期；新增复杂度既可增服务内容也可增损耗，不预设高毛利。",
+          "name": "独立先进封装定点、重复交付与服务契约",
+          "owner": "S0003",
+          "ref": [
+            "output/work/v21/discovery/S0003.jsonl#L17",
+            "context/document3/v21/d2/shell-0003.json#/units/3",
+            "context/document3/v21/shared/d1/c3.md",
+            "【cite:O113】",
+            "【cite:O112】",
+            "【cite:O147】",
+            "【cite:O148】",
+            "context/document3/v21/shared/document2.json"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 28,
+      "topics": [
+        {
+          "brief": "共同研究客户选择桥接、垂直堆叠、光学I/O或可维修模块，以及供应商推出可验证跨厂芯粒组合、共享KGD数据、许可复用和参考系统整包保障。两类入口共享系统签核、测试和集成责任资料，但分别保留：架构替代如何扩大或绕开Intel服务，开放采购如何把封装从晶圆解绑、降低小项目NRE并转移昂贵die风险。Ayar与Alchip的2025年TSMC生态CPO合作不是Intel订单；UCIe规范和Intel Chiplet Alliance成员数量也不是现货市场。比较热、功率、可靠性、维修与许可约束，开放接口可仍在闭环使用，光学路线可以与桥接组合，不预定技术替代或最终Policy合并。玻璃材料加工独立研究。",
+          "name": "封装系统路线、开放芯粒采购与整包责任",
+          "owner": "S0003",
+          "ref": [
+            "output/work/v21/discovery/S0003.jsonl#L18",
+            "context/document3/v21/d2/shell-0003.json#/units/3",
+            "【cite:O137】",
+            "【cite:O146】",
+            "https://ayarlabs.com/news/ayar-labs-and-alchip-to-scale-ai-infrastructure-with-co-packaged-optics",
+            "https://ayarlabs.com/news/alchip-and-ayar-labs-unveil-co-packaged-optics-for-ai-datacenter-scale-up/",
+            "output/work/v21/discovery/S0003.jsonl#L19",
+            "【cite:O130】",
+            "【cite:O147】",
+            "https://www.intel.com/content/www/us/en/newsroom/news/corporate/intel-foundry-gathers-customers-partners-outlines-priorities.html",
+            "context/document3/v21/shared/document2.json"
+          ]
+        },
+        {
+          "brief": "围绕Lens、Intel与客户签正式工程协议、公开超大包样品资格或选定平台，及因加工成本可靠性回到有机材料或模块化，研究玻璃路线的经济制造边界。当前MOU探索性，伙伴样品不能替Intel工程或量产资格。厘清TGV、金属化、布线、搬运脆性和报废，尺寸稳定收益是否足够覆盖专用设备及迁移；比较工程资本和损失谁承担、哪些系统确有支付理由。从探索到工程承诺可先扩大未来能力，不要求当前收入，亦不与光学集成混同。 同时核实客户样品与可制造设计、商业供货和外部供方投资路线，研究玻璃芯先进入哪些高密度产品、供应商多年承诺和爬坡责任怎样改变采购选择，以及瓶颈是否移至金属化、其他层材或工序。现有合作不能作近期解缺，低膨胀玻纤布并非玻璃芯；工程资格、供方可采购量和Intel整包交付分开。",
+          "name": "玻璃基板工程资格与大包制造经济性",
+          "owner": "S0003",
+          "ref": [
+            "output/work/v21/discovery/S0003.jsonl#L20",
+            "context/document3/v21/d2/shell-0003.json#/units/3",
+            "【cite:O132】",
+            "【cite:O149】",
+            "【cite:O128】",
+            "context/document3/v21/shared/document2.json",
+            "output/work/v21/discovery/S0004.jsonl#L9",
+            "context/document3/v21/d2/shell-0004.json"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 29,
+      "topics": [
+        {
+          "brief": "研究TSMC、GF、Amkor和客户宣布美国interposer及整包资格、实际可供路线、延迟或选择Intel，以及Intel迁站重新取得地域资格。10月8日GF与TSMC安排和Amkor扩张是未来供给，非即刻可用容量；Intel与Amkor2025合作也须保留，伙伴并非只有竞争关系。研究熟悉生态的本土选择、全链而非晶圆地点要求、本土溢价、双地点韧性及迁移成本，比较海外整合省费与合格市场收缩。正常资产整合由制造网络题研究，此题拥有客户地域准入与服务竞争，不按厂房面积推订单。",
+          "name": "美国封装生态、竞争资格与跨站服务范围",
+          "owner": "S0003",
+          "ref": [
+            "output/work/v21/discovery/S0003.jsonl#L21",
+            "context/document3/v21/d2/shell-0003.json#/units/3",
+            "context/document3/v21/shared/event_library.md#E6",
+            "【cite:O131】",
+            "【cite:O118】",
+            "https://www.intel.com/content/www/us/en/newsroom/news/corporate/intel-foundry-gathers-customers-partners-outlines-priorities.html",
+            "context/document3/v21/shared/document2.json"
+          ]
+        },
+        {
+          "brief": "围绕公共机构、DARPA、大学及商业伙伴重开共享计量试制、改收费访问或推出可移植设计测试交接，研究小客户项目形成和量产归属。NAPMP调整与NGMM低量路线并存，不能认作全部公共平台可用。查明固定验证IP负担、原型可靠性、技术移植与商业资格，哪些项目可转Intel晶圆封装，哪些中心自营或私人闭环承担。研发资金不是Intel销售，扩大设计者集合不是当期包数；该题将前段与后段共享入口共同研究，但不替代可信生产采购或14A具体工具资格。",
+          "name": "共享研发试制接入与量产项目交接",
+          "owner": "S0003",
+          "ref": [
+            "output/work/v21/discovery/S0003.jsonl#L22",
+            "context/document3/v21/d2/shell-0003.json#/units/0",
+            "context/document3/v21/d2/shell-0003.json#/units/3",
+            "【cite:O135】",
+            "【cite:O136】",
+            "【cite:O117】",
+            "context/document3/v21/shared/document2.json"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 30,
+      "topics": [
+        {
+          "brief": "围绕服务器、加速器和通信设计者把电源转换移近处理器、采用数字控制GaN功率芯粒，以及Intel或客户形成工程合作、资格或暂缓，研究制造服务是否扩到系统供电。Intel2026年4月技术博客及6月VLSI稿公开300mm GaN-on-silicon和GaN与硅逻辑集成研究，不能视作商业产线或订单。比较板级供电与近端集成的系统收益、可靠性、热与加工封装负担，明确Intel提供制造、集成或许可，以及现有基础设施复用怎样影响进入成本。该题不同于逻辑缩节点和一般开放芯粒，客户工程选择可先改变服务范围，不要求已放量收入，也不预定采用方向。",
+          "name": "处理器近端供电、GaN硅集成与客户工程路线",
+          "owner": "S0003",
+          "ref": [
+            "output/work/v21/discovery/S0003.late.jsonl#L2",
+            "context/document3/v21/d2/shell-0003.json#/units/3",
+            "https://community.intel.com/t5/Blogs/Intel-Foundry/Systems-Foundry-for-the-AI-Era/Intel-Foundry-Achieves-Breakthrough-with-World-s-Thinnest-GaN/post/1743389",
+            "https://www.intel.com/content/www/us/en/newsroom/news/corporate/intel-foundry-details-process-milestones-future-innovation-at-vlsi-symposium.html",
+            "context/document3/v21/shared/document2.json"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 31,
+      "topics": [
+        {
+          "brief": "共同研究Intel、OEM和供方新增或重谈组件保障、可替代料号、最低提货及取消转让权，以及高端基板供方涨降价、材料附加费和多年产能保留。Intel H1供应预付9.34亿美元真实发生，Micron take-or-pay及价格带只作可比，不补写Intel条款，客户17亿美元押金不能净额化。分别保留数量获取与报价两类可独立发生的安排：相同承诺能否覆盖匹配型号、需求弱时是否被价格下限与提货义务绑定，以及基板尺寸层数、材料成本和客户组合如何决定价格覆盖。Ibiden平均售价非Intel实购价，降价可能来自合格供给、组合或需求转弱；条款在库存财报之前也能改风险归属，不把预付金额换算保障数量。",
+          "name": "组件保障长约、基板报价与采购弹性",
+          "owner": "S0004",
+          "ref": [
+            "output/work/v21/discovery/S0004.jsonl#L2",
+            "context/document3/v21/d2/shell-0004.json",
+            "context/document3/v21/shared/d1/c4e_formal_scan.json",
+            "context/document3/v21/shared/d1/c4e_network_build.md",
+            "output/work/v21/discovery/S0004.jsonl#L7",
+            "context/document3/v21/shared/d1/c1.md",
+            "context/document3/v21/shared/d1/c5.md",
+            "context/document3/v21/shared/document2.json"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 32,
+      "topics": [
+        {
+          "brief": "围绕内存厂改变DDR或LPDDR报价和客户配额、恢复客户端资源，或AI客户重谈HBM及新代良率封测变化，研究共享先进DRAM资源的分配与转换时差。当前弱PC与普通DRAM涨价预测并存、后续HBM多已承诺是比较基线；供方报价和分配声明本身可修订可购集合。区分HBM紧张与Intel相关模块获配，分析代际硅强度、利润激励、合同黏性及释放资源流向。历史三倍资源强度不是当期全行业系数，供应商行业价不等于Intel成本；NAND独立供给，不据此宣布全品种解缺。",
+          "name": "普通DRAM报价、配额与HBM资源分配",
+          "owner": "S0004",
+          "ref": [
+            "output/work/v21/discovery/S0004.jsonl#L3",
+            "context/document3/v21/d2/shell-0004.json",
+            "context/document3/v21/shared/event_library.md#E14",
+            "context/document3/v21/shared/d1/c3.md",
+            "context/document3/v21/shared/document2.json"
+          ]
+        },
+        {
+          "brief": "研究NAND和SSD供方增配企业用途、重排承诺及改合同报价，PC OEM消化库存后撤回锁单或恢复容量的消息。现基线为企业SSD多数新增量已被承诺，客户端降配与NAND涨价预测并存。比较企业和PC规格资格、开放可购量、交期、单机容量与台数、合同可撤回性，解释对Intel平台预算和整机配套的作用。NAND不是HBM共用晶圆池，普通DRAM改善不代表SSD解缺；价格与供货动作不需要同步公布Intel订单，企业增量与PC库存回吐不能相互替代证明。",
+          "name": "NAND与SSD供给分配、价格及采购回吐",
+          "owner": "S0004",
+          "ref": [
+            "output/work/v21/discovery/S0004.jsonl#L4",
+            "context/document3/v21/d2/shell-0004.json",
+            "context/document3/v21/shared/d1/c3.md",
+            "context/document3/v21/shared/document2.json"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 33,
+      "topics": [
+        {
+          "brief": "围绕Micron等供方提前或延后既有厂节点设备转换、后端扩充、新厂初始晶圆和产品出货及首批用途，研究配套紧缺持续期。不同项目窗口跨2027年中及2028年末，初始晶圆不等于可购模块；近期改善可以来自既有空间、位元密度与后端而非等全新厂。核实停线转换损失、良率爬坡、模块资格与承诺客户分配，区分开放DDR或LPDDR增量和被HBM吸收。资本开支或总位元增长不能当Intel获配承诺，供方判断与事件库简化里程碑若不一致回到原始项目口径。",
+          "name": "内存产线转换、新厂爬坡与合格供给用途",
+          "owner": "S0004",
+          "ref": [
+            "output/work/v21/discovery/S0004.jsonl#L5",
+            "context/document3/v21/d2/shell-0004.json",
+            "context/document3/v21/shared/event_library.md#E10",
+            "context/document3/v21/shared/document2.json"
+          ]
+        },
+        {
+          "brief": "围绕长鑫等供方进入PC或模块资格、中国OEM扩本地LPDDR采购，以及地区准入和追溯收窄来源的安排，研究直接和间接可购量。G5量产定位手机便携消费，不认作Intel服务器模块资格。核实性能可靠性、交付范围、持续数量与Intel相关系统连接，比较减少同规格进口是否释放传统供方资源，或释放资源被转去HBM。资格扩展本身有研究价值，不须已有精确份额；地区产出不等于全球互换，准入变化须核实实际范围而非假设已生效。",
+          "name": "中国新增内存来源、OEM资格与进口替代",
+          "owner": "S0004",
+          "ref": [
+            "output/work/v21/discovery/S0004.jsonl#L12",
+            "context/document3/v21/d2/shell-0004.json",
+            "context/document3/v21/shared/document2.json"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 34,
+      "topics": [
+        {
+          "brief": "共同研究Ibiden、Nittobo等材料多源化、既有线合格大板增供和新线爬坡，以及GPU、ASIC和CPU设计者扩封装面积层数、改路线或推迟平台。主要资料共享大板材料、工序、客户资格与分配；两侧入口均保留，不把需求设计仅写成扩产条件。第三第四玻纤来源仍是量产前景，Gama有时差；AT&S Kulim于2025年取得AMD高量产认证说明客户验证层次，不证明Intel获配。查明材料、板型、低翘曲可靠性和瓶颈工序实际重叠，设计台数不变也可提高面积占用，项目收缩则可能释放兼容资源。区分多源韧性、真正新增量与转配，供方数量和投资金额不能代合格面积；玻纤、ABF和玻璃芯分别处理，报价由契约课题深化。",
+          "name": "高端基板材料资格、合格面积与架构资源竞争",
+          "owner": "S0004",
+          "ref": [
+            "output/work/v21/discovery/S0004.jsonl#L6",
+            "context/document3/v21/d2/shell-0004.json",
+            "https://ats.net/en/press/ats-starts-high-volume-manufacturing-at-new-plant-in-kulim-malaysia/",
+            "output/work/v21/discovery/S0004.jsonl#L8",
+            "context/document3/v21/shared/d1/c4e_network_build.md",
+            "context/document3/v21/shared/event_library.md#E38",
+            "context/document3/v21/shared/document2.json"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 35,
+      "topics": [
+        {
+          "brief": "研究Intel、OEM、内存与缓冲芯片供方扩大RDIMM或MRDIMM速度容量组合、512GB模块、第二来源和实际供货，或BIOS、散热、缓冲芯片错峰使整机延期。8000 RDIMM及Gen2 MRDIMM保留平台目标，512GB仍采样验证；Renesas2026年7月Gen3芯片采样、2027H2量产目标不等于Xeon支持。明确可互换集合、客户资格、实际采购溢价和低成熟规格替代，供应商多客户认证不代表Intel全部平台。目标时间经过、总位元增加或带宽提升均不能代可购模块，产品性能深入归数据中心域，本题拥有配套资格和供给时间。",
+          "name": "Xeon内存模块、缓冲芯片与平台资格同步",
+          "owner": "S0004",
+          "ref": [
+            "output/work/v21/discovery/S0004.jsonl#L10",
+            "context/document3/v21/d2/shell-0004.json",
+            "context/document3/v21/shared/event_library.md#E44",
+            "https://www.renesas.com/en/about/newsroom/renesas-gen-3-mrdimm-chipset-solutions-advance-ddr5-memory-performance-16000-mts-next-gen-ai-and-hpc",
+            "context/document3/v21/shared/document2.json"
+          ]
+        },
+        {
+          "brief": "研究DDR4或LPDDR4延产停产及客户资格时点、OEM企业延长旧机或加速换代的安排。Intel第12至14代部分桌面仍兼容DDR4是实际暴露，不代表当前份额；Micron Manassas新工艺定位长周期市场，不能作消费PC新增供给。查明真实旧料号维修整机需求、专用合同和可采购来源、延产资格与客户迁移是否错峰，以及短缺是否反推新平台。新代位元不自动替旧代，该题不同于中国新LPDDR地区替代；存量延寿的组件需求不按整机翻新件数估算。",
+          "name": "旧代DRAM供给寿命与旧平台迁移",
+          "owner": "S0004",
+          "ref": [
+            "output/work/v21/discovery/S0004.jsonl#L13",
+            "context/document3/v21/d2/shell-0004.json",
+            "context/document3/v21/shared/document2.json"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 36,
+      "topics": [
+        {
+          "brief": "围绕系统商和机架运营商推出可商用CXL池、动态软件、容量租赁或限制冷负载，研究内存采购是否从逐机配套转为集中分配。Samsung2026年6月交换池评估提供模块、BIOS及拓扑基础，非规模采用或Intel已有容量合同。查明负载峰值错开、延迟带宽和隔离能否释放闲置容量，兼容控制器交换机是否成为新缺件，集中购买及按容量经营如何重分配利用率、冗余和价格风险。池仍需物理DRAM，低成本可扩大任务，不预定采购减少；SSD冷层与CXL不是相同替代，本题保留独立系统与商业模式入口。",
+          "name": "CXL共享容量池、动态分配与容量经营",
+          "owner": "S0004",
+          "ref": [
+            "output/work/v21/discovery/S0004.jsonl#L17",
+            "context/document3/v21/d2/shell-0004.json",
+            "https://download.semiconductor.samsung.com/resources/white-paper/Optimizing_KV_Cache_Offloading_to_CMM-D_in_a_CXL_Switch-based_Memory_Pool.pdf",
+            "context/document3/v21/shared/document2.json"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 37,
+      "topics": [
+        {
+          "brief": "研究供方或采购方因治理结算、批次质量与追溯、跨境运输改变暂停验收、隔离存货、物流改道及恢复合格来源。Nexperia公开争议只作现实机制案例，无Intel具名料号暴露，不裁定当事方说法或指称已损失。核实受影响零件和产品、已合格替代、安全库存与重新认证时间，比较仓库有货但不可用、接口恢复快速释放与质量仍不合格的不同路径。低价不可替代缺件可限制整套产品，采购额不是影响上限。区别于制造厂事故和总产量扩减，本题拥有外购组件可验收和交付边界，不作法律结论。",
+          "name": "组件授权、追溯与交付资格隔离及恢复",
+          "owner": "S0004",
+          "ref": [
+            "output/work/v21/discovery/S0004.jsonl#L19",
+            "context/document3/v21/d2/shell-0004.json",
+            "context/document3/v21/shared/document2.json"
+          ]
+        },
+        {
+          "brief": "研究Intel与OEM为新平台选择封装内存、板载或可更换模块，并重谈采购和供货保障责任的安排。Lunar Lake封装内存是已发布背景，未发布平台不沿用假设。厘清产品容量选择、直接采购和OEM配套、输入成本库存责任、供应商替代与已锁资源转配，解释CPU可出货但整机仍缺件的不同暴露。更多整合可将风险集中到Intel，模块化可把风险移给整机而非消灭；OEM采购不算Intel采购、内存行业价不同幅进入每产品成本。题目聚焦责任结构，制造良率与完整产品调度由既有制造课题处理。",
+          "name": "平台内存整合方式与采购责任重配",
+          "owner": "S0004",
+          "ref": [
+            "output/work/v21/discovery/S0004.late.jsonl#L1",
+            "context/document3/v21/d2/shell-0004.json",
+            "https://newsroom.intel.com/client-computing/intel-helps-top-pc-makers-deliver-ai-pcs",
+            "context/document3/v21/shared/document2.json"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 38,
+      "topics": [
+        {
+          "brief": "围绕企业调拨闲置服务器及可认证模块、系统商扩大有支持的翻新销售延寿或以旧换新，研究不依赖新晶圆的有效供给。HPE披露2025年约430万件混合IT退役资产、约84%翻新再用是渠道背景，不能当Intel服务器或DRAM数量。比较成熟负载性能、带宽、数据清除、追溯和保修资格，辨别新基板模块采购延期、旧料号维修需求和回收所得推动新平台刷新，保留另一买方新品替代的净影响。客户端翻新融资课题已有独立范围，本题针对企业服务器和组件流转，不将无认证散件当合格原厂模块。",
+          "name": "企业服务器存量再部署、翻新保障与组件需求",
+          "owner": "S0004",
+          "ref": [
+            "output/work/v21/discovery/S0004.jsonl#L20",
+            "context/document3/v21/d2/shell-0004.json",
+            "https://www.sec.gov/Archives/edgar/data/1645590/000164559026000019/hpe-20260210.htm",
+            "context/document3/v21/shared/document2.json"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 39,
+      "topics": [
+        {
+          "brief": "围绕Intel退出项目、调整管理层级、关键团队扩招返聘及现金奖金股酬变化，研究精简后经常费用的持续性。2026调整运营费用约165亿美元是预算而非永久上限；研发下降、管理费用及激励抵销和Altera出表须区分。查明常设任务、有效技能和可退出成本，人才竞争是否把裁减转为留任、外包或返工，股酬保现金怎样改变每股权益。新具名安排可在财报之前改变费用预期，遣散确认、支付及非现金减值不能混作节省。制造技能与具体产品资格由相邻题研究，本题拥有公司同范围费用与报酬权利，不以头数直接推工程能力。",
+          "name": "企业项目岗位、薪酬与经常费用基础",
+          "owner": "S0005",
+          "ref": [
+            "output/work/v21/discovery/S0005.jsonl#L1",
+            "context/document3/v21/d2/shell-0005.json",
+            "context/document3/v21/shared/d1/c1.md",
+            "context/document3/v21/shared/event_library.md",
+            "context/document3/v21/shared/document2.json"
+          ]
+        },
+        {
+          "brief": "围绕Intel或EDA伙伴把工程代理跨团队上线、修改订阅计算收费，或因IP权限、验证责任收缩使用，研究资源节约被谁保留。Synopsys2026年编排展示及7月AMD参与的可评估自主调试实现流程是供应方入口，Intel生态参与不证明已全面部署。研究实际工作覆盖、人审返工、可退出资源及新增算力集成支出，区分降低费用、释放工时做更多客户版本和收益转成工具租金；同行采用也可改变相对开发效率与必要投入。不得将局部速度倍数套公司研发预算，实际工作安排可先改资源解释，不要求下一季费用下降。",
+          "name": "工程代理生产部署、工具收费与研发预算",
+          "owner": "S0005",
+          "ref": [
+            "output/work/v21/discovery/S0005.jsonl#L3",
+            "context/document3/v21/d2/shell-0005.json",
+            "https://news.synopsys.com/2026-07-27-Synopsys-Advances-Agentic-AI-Chip-Design-with-AMD-and-Microsoft",
+            "context/document3/v21/shared/document2.json"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 40,
+      "topics": [
+        {
+          "brief": "研究NVIDIA定制x86及RTX合作、Fortinet SP6等客户扩大或取消工程任务、投入队伍、改里程碑补偿和IP独占复用的安排。产品合作真实但研发分担未知，战略入股不等研发款。比较公司前置资源池、专用任务维护及可转通用IP的工作，补偿确认与实际收款时差、取消后的人员重配和资本回收。客户有更多机会可以同时增加费用，工具效率也可被专用需求吸收；不预设净降费。产品域深入设计权益及产品采用，本题聚焦跨项目公司净开发承担和预算弹性，不再评比每款产品。",
+          "name": "客户共同开发范围、补偿与研发资源承担",
+          "owner": "S0005",
+          "ref": [
+            "output/work/v21/discovery/S0005.jsonl#L4",
+            "context/document3/v21/d2/shell-0005.json",
+            "context/document3/v21/shared/d1/c4e_formal_scan.json",
+            "context/document3/v21/shared/d1/c4e_network_build.md",
+            "context/document3/v21/shared/document2.json"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 41,
+      "topics": [
+        {
+          "brief": "围绕Intel扩建加速分期、设备订购取消、租赁外包替代或设施复用及投用重排，研究企业付款峰值与回收等待。公司准备更多设备洁净室基板，14A规模按承诺需求；H1经营现金81.02亿美元减两类购建76.15亿美元余4.87亿美元，尚未扣租赁伙伴流量，是口径尺度非未来资金余额。核实客户承诺和设备不可撤销义务、付款条件、供电及现场就绪，比较延期省现金与已付款资本继续等待。UMC复用不同于新先进节点资本强度，制造能力归制造题，本题统一企业实际现金分类及支付时间，不以CapEx增长预定价值方向。",
+          "name": "建设分期、设备付款与资本现金等待",
+          "owner": "S0005",
+          "ref": [
+            "output/work/v21/discovery/S0005.jsonl#L5",
+            "context/document3/v21/d2/shell-0005.json",
+            "context/document3/v21/shared/d1/c4e_network_build.md",
+            "context/document3/v21/shared/d1/c5.md",
+            "context/document3/v21/shared/document2.json"
+          ]
+        },
+        {
+          "brief": "研究存续Arizona或新伙伴修改注资、生产保障、现场库存、分配及退出回购条款，比较真实风险分担与建设融资。Ireland约142亿美元回购已完成，不重演为季度烧钱；Brookfield49%仍存续且运行义务已启动。核实资本实际承担、最低生产和需求下行风险、投用后贡献向分配转换、保底和控制代价，资本方在制造电力及设备项目间比较回报。股比不等风险比例，建设收尾贡献减少不自动叫撤资；新融资少投现金也可让渡更多长期收益。具体Ohio设施用途及供货权由既有课题统一，本题研究一般共同投资契约和企业现金归属。",
+          "name": "制造伙伴资本调用、收益分享与退出代价",
+          "owner": "S0005",
+          "ref": [
+            "output/work/v21/discovery/S0005.jsonl#L7",
+            "context/document3/v21/d2/shell-0005.json",
+            "context/document3/v21/shared/d1/c4e_network_build.md",
+            "context/document3/v21/shared/document2.json"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 42,
+      "topics": [
+        {
+          "brief": "共同研究客户长期存款续补抵扣退款、供方预付交货转用和要求，以及Intel或交易对手改账期、银行应收出售和库存消化的安排，解释同样销售下现金质量与时序。客户17亿美元和供应9.34亿美元属不同合同链，不能相减为稳定融资或利润；旧存款抵扣无续补、预付变成缺配库存可使收入增长而收现走弱。H1无去年同期16亿美元无追索应收出售，重新出售会提前现金并产生折价、减少后期回款，不等新增盈利。研究匹配交付、可售库存而非减值回收、信用期和供货条件，区分自然周转与主动变现。采购权利和价格由组件题深入，本题按同一现金桥比较独立公开安排，不要求公告给出全季度结果。",
+          "name": "预收预付续补、结算周转与应收主动变现",
+          "owner": "S0005",
+          "ref": [
+            "output/work/v21/discovery/S0005.jsonl#L8",
+            "context/document3/v21/d2/shell-0005.json",
+            "context/document3/v21/shared/d1/c3.md",
+            "context/document3/v21/shared/d1/c4e_formal_scan.json",
+            "output/work/v21/discovery/S0005.jsonl#L9",
+            "context/document3/v21/shared/d1/c1.md",
+            "context/document3/v21/shared/document2.json"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 43,
+      "topics": [
+        {
+          "brief": "围绕公共机关规则解释、项目资格支付决定或条件追索，以及Intel改地点投用的安排，研究合格建设最终净负担和桥接时间。冻结研究区分符合条件35%与2026年前投用资产25%，Build核实具体适用文本和基数，不按最高率乘全球CapEx。H1抵免激励确认与资本激励到账非同一集合，区分确认、申报、退款、实际可用现金及资金条件。办理延迟可不改最终经济金额却增资金峰值，配置变更也可能同时降低资本和失去部分支持；现无Intel已被追索事实。政府股权与Secure Enclave另题处理，不重复计支持，不提供税务法律操作意见。",
+          "name": "美国制造抵免资格、项目激励与现金办理",
+          "owner": "S0005",
+          "ref": [
+            "output/work/v21/discovery/S0005.jsonl#L10",
+            "context/document3/v21/d2/shell-0005.json",
+            "context/document3/v21/shared/d1/c1.md",
+            "context/document3/v21/shared/document2.json"
+          ]
+        },
+        {
+          "brief": "研究Secure Enclave验收预算付款及政府改支持形式、Intel引入少数资本分拆或移转Foundry控制，及相关争议裁判和解对资本方案的经济作用。既有协议连接付款与托管股释放，停止至少51%持有Foundry有条件认股权，当前不认作已触发。核实现行付款及股份条件、仍或有与已非或有权利、交易保留收益和潜在稀释，比较资金更快可用与权益代价。政府被动持股非商业订单或无限兜底，托管公允价值损失非同额待付现金。制造客户中立性由治理课题研究，本题拥有公共资本和控制结构的融资后果，法律适用须有依据而不作胜败预判。",
+          "name": "Secure Enclave付款、条件股份与Foundry控制资本",
+          "owner": "S0005",
+          "ref": [
+            "output/work/v21/discovery/S0005.jsonl#L11",
+            "context/document3/v21/d2/shell-0005.json",
+            "context/document3/v21/shared/d1/c4e_formal_scan.json",
+            "context/document3/v21/shared/event_library.md",
+            "https://www.intel.com/content/www/us/en/newsroom/news/corporate/intel-and-trump-administration-reach-historic-agreement.html",
+            "context/document3/v21/shared/document2.json"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 44,
+      "topics": [
+        {
+          "brief": "围绕Intel新公开发行、战略配售、交割净款及把已筹钱改用于偿债留储备、建设或收购，研究融资缓冲和每股经济收益。8月合同约2.421亿股及约230亿美元毛额不等截止日净到账，不能拼接6月余额成10月现金。核实定价净款、实际新增权利和加权时间、资金用途对应回报及再融资需求，区分保停工选择权、真实付息节约和长期项目等待。总利润恢复可以落后于股份扩张，融资规模本身不定好坏；已发股作背景而非重复交易旧公告，公共或有股份与股酬持续权益须纳入但不重复加分母。",
+          "name": "股权融资净款、资本用途与每股占有",
+          "owner": "S0005",
+          "ref": [
+            "output/work/v21/discovery/S0005.jsonl#L12",
+            "context/document3/v21/d2/shell-0005.json",
+            "context/document3/v21/shared/d1/c5.md",
+            "https://www.intc.com/news-events/press-releases/detail/1779/intel-announces-upsize-and-pricing-of-20-billion-common",
+            "context/document3/v21/shared/document2.json"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 45,
+      "topics": [
+        {
+          "brief": "围绕新发债、提前赎回、银行额度延展收紧和评级或展望行动，研究新增及滚续融资定价、到期梯度与付款峰值缓冲。Ireland过桥已还清，既有固定票据不是全部固定净成本：核实互换、现金储备收益、信用价差和契约，区分旧债、新资金及其偿债用途。未用银行额度和商票授权不重复算成保证现金，短债快照不能代替未来一年完整到期表；投用后利息费用化属列报变化，现金付息另核，不预设评级行动方向。",
+          "name": "债务滚续、银行信用与对冲后的净融资成本",
+          "owner": "S0005",
+          "ref": [
+            "output/work/v21/discovery/S0005.jsonl#L13",
+            "context/document3/v21/d2/shell-0005.json",
+            "context/document3/v21/shared/d1/c1.md"
+          ]
+        },
+        {
+          "brief": "研究VLSI、EC的上诉裁判、执行和解及CPU客户赔偿范围变化，怎样改变义务、许可安排和实际付款峰值。6月VLSI约10亿美元、EC约3.08亿美元计提是历史余额，非10月负债、最大损失或共同到期；有利判决也非自动现金返还。分清消耗旧计提、新损失及非现金列报，查客户赔偿和授权责任是否延伸；对建设可用资金的意义可先于财报，不预测诉讼胜败，也不以CPU景气替代法律义务研究。",
+          "name": "专利、监管与客户赔偿的义务释放和现金结算",
+          "owner": "S0005",
+          "ref": [
+            "output/work/v21/discovery/S0005.jsonl#L16",
+            "context/document3/v21/d2/shell-0005.json",
+            "https://www.intc.com/filings-reports/quarterly-reports/content/0000050863-26-000157/0000050863-26-000157.pdf"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 46,
+      "topics": [
+        {
+          "brief": "围绕Altera公开招股、定价、延期撤回，以及Intel出售或增持Mobileye、IMS权益，研究资产价格发现与融资替代。9月15日Altera已公告秘密提交草案，股数价格未定；分别查清标的新股融资、Intel旧股净款和旧交易递延回款，不把IPO总额归Intel。核实税费、保留经济收益、表决控制及合并变化；Mobileye经济持股和表决权不同，控制资格还影响研发支持及其现金时间。出表不等有机降费，IPO不解除Altera制造义务；供货尾部由既有Altera课题统一。 Mobileye支持制度的合格支出、年度净研发及支付规则由“Mobileye研发支持的制度资格、净成本与现金回收”负责，本题复用其制度结论，集中权益交易净款和保留控制的资本选择，避免两题重建补助模型。",
+          "name": "附属权益上市、出售与保留控制的资本回收",
+          "owner": "S0005",
+          "ref": [
+            "output/work/v21/discovery/S0005.jsonl#L14",
+            "context/document3/v21/d2/shell-0005.json",
+            "context/document3/v21/shared/d1/c4e_formal_scan.json",
+            "https://www.altera.com/newsroom/confidential-draft-registration-statement"
+          ]
+        },
+        {
+          "brief": "围绕Intel对SambaNova等AI伙伴增资、收购、退出和治理变更，研究企业资本由偿债和制造转向生态时取得什么权利并承担哪些现金及整合责任。Intel2月融资参与及Xeon协作、SambaNova7月将Intel Capital列为投资者是背景，不证明已收购或已知出资额。Build核实出资实体、企业资金与独立基金边界、净支付、控制和利益冲突审批，比较持续资本支持与合作取得资源的替代方式。估值上涨不等收到现金，产品合作不等投资回报；研发补偿归既有共开发课题，公开股权融资归每股占有课题，本题不重复其资金总额。",
+          "name": "AI伙伴股权投资、收购退出与企业资本承担",
+          "owner": "S0005",
+          "ref": [
+            "output/work/v21/discovery/S0005.late.jsonl#L1",
+            "context/document3/v21/d2/shell-0005.json",
+            "context/document3/v21/shared/d1/c4e_network_build.md",
+            "https://newsroom.intel.com/data-center/intel-and-sambanova-planning-multi-year-collaboration-for-xeon-based-ai-inference",
+            "https://sambanova.ai/press/sambanova-completes-first-close-of-1b-financing-at-11b-valuation"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 47,
+      "topics": [
+        {
+          "brief": "围绕NVIDIA及六家资本方独立计算融资平台的募集、放款、残值保障、系统资格和绑定条款，以及Intel或OEM延长账期、提供信用支持的安排，研究谁融资、谁承担下行以及资金流向何种系统。8月超过5000亿美元目标非已落实协议或放款；比较替代客户自有预算与真实扩大可融资需求，核实Xeon保留位置，NVL8资格不泛化为Vera。查明应收、保证及回收风险和对制造伙伴资本竞争，不把第三方资金计入Intel储备。客户上电和部署时点复用既有容量合同课题，本题独立拥有融资平台的系统偏向及供方信用契约，不重做全部云项目。",
+          "name": "AI设备融资平台、系统绑定与供方信用承担",
+          "owner": "S0005",
+          "ref": [
+            "output/work/v21/discovery/S0005.jsonl#L17",
+            "context/document3/v21/d2/shell-0005.json",
+            "context/document3/v21/shared/d1/c4e_network_build.md",
+            "https://nvidianews.nvidia.com/news/nvidia-partners-with-apollo-blackrock-blackstone-brookfield-goldman-sachs-and-kkr-to-establish-ai-compute-infrastructure-financing-platforms-to-mobilize-over-500-billion-of-third-party-capital"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 48,
+      "topics": [
+        {
+          "brief": "共同研究主要OEM调整排产、低价车型、中国品牌出口及地区软件平台迁移，以及Tier1恢复重复提货、增加安全库存或削减旧代订单。H1核心客户产量下降而Mobileye收入增长、基本EyeQ约九成收入，说明配置和客户组合不能被广义车市替代；约100万颗新增EyeQ安全备货及SuperVision四万套交付对应三万辆需求又显示提货不等装车。建立客户加权可参与车辆池、配置率、地区分配与库存消耗的同一需求桥，区分前置采购、正常去库和旧产品滞销，不以公司存货代客户库存、不以补货定持续份额。通过Intel控制合并与少数权益理解集团暴露，不乘持股比例缩合并收入或推导Intel制造订单。",
+          "name": "汽车客户车辆池、区域配置与Tier1库存提货",
+          "owner": "S0006",
+          "ref": [
+            "output/work/v21/discovery/S0006.jsonl#L1",
+            "context/document3/v21/d2/shell-0006.json",
+            "【cite:O213】",
+            "【cite:O214】",
+            "【cite:O215】",
+            "【cite:O225】",
+            "【cite:O251】",
+            "output/work/v21/discovery/S0006.jsonl#L6"
+          ]
+        },
+        {
+          "brief": "围绕新平台竞标降价、净报价、存储涨价传递及多年软件支持或系统集成契约，研究同样装车数量下的贡献和责任。基础EyeQ占大部，SuperVision存储可全额转嫁，云增强ADAS单位毛利优势为管理层预测；核实相同产品净价、硬件与软件范围、谁保留BOM节省及维护成本。区分硬件收入增长稀释毛利率和真正单位毛利下降，配置替换与价格作用分开；公开交易条款可以先改变预期，不要求完整公司利润修正。",
+          "name": "汽车方案净报价、BOM传递与长期系统服务条款",
+          "owner": "S0006",
+          "ref": [
+            "output/work/v21/discovery/S0006.jsonl#L7",
+            "context/document3/v21/d2/shell-0006.json",
+            "【cite:O213】",
+            "【cite:O214】",
+            "【cite:O215】",
+            "【cite:O220】"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 49,
+      "topics": [
+        {
+          "brief": "围绕评级机构改变驾驶员状态与ADAS联动要求、OEM将DMS及乘员监测或停车改为标配，或降低评级目标节省成本，研究功能由单芯片既有平台还是独立竞争方案承接。Euro NCAP2026升级和匿名美国OEM EyeQ6L集成DMS2027量产计划提供入口；查评价范围、车型配置、验证成本、集成价值及责任。评级非强制装车法令，新增功能非Mobileye独占或自动涨价；不猜匿名客户。既有平台SOP和扩车型由新平台课题承接，本题拥有评价与功能采购门槛的变化。",
+          "name": "汽车安全评级、DMS集成与大众车型功能配置",
+          "owner": "S0006",
+          "ref": [
+            "output/work/v21/discovery/S0006.jsonl#L2",
+            "context/document3/v21/d2/shell-0006.json",
+            "【cite:O221】",
+            "【cite:O219】",
+            "https://www.mobileye.com/news/mobileye-secures-major-dms-production-program-with-leading-us-automaker/"
+          ]
+        },
+        {
+          "brief": "围绕Surround ADAS、SuperVision、云增强ADAS新增车型、标准配置、上市、延期或取消，研究共同平台复用与生命周期配置如何改变可服务规模和产品组合。美国客户、Mahindra及Stellantis是已有入口，Surround超过1900万套属多年预计，2027 DMS和Stellantis尚非实收。核实车型、地域、首次SOP及Tier1整系统范围，扣除被替换的基础方案；区别准备调整、暂时延迟及永久失去平台，不等待季度出货才理解项目变化，也不重复安全评级标准研究。",
+          "name": "Mobileye新ADAS平台的车型扩展、SOP与配置替换",
+          "owner": "S0006",
+          "ref": [
+            "output/work/v21/discovery/S0006.jsonl#L3",
+            "context/document3/v21/d2/shell-0006.json",
+            "【cite:O217】",
+            "【cite:O218】",
+            "【cite:O219】",
+            "【cite:O220】",
+            "context/document3/v21/shared/d1/c4e_network_build.md"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 50,
+      "topics": [
+        {
+          "brief": "研究OEM把下一代车型交替代驾驶栈、合并座舱驾驶中央平台或因自研成本上市压力重新外包的安排。大众自研与Mobileye既有项目并存，Stellantis多供方路线亦不是已确认失单；Wayve正式客户协议、开发展示与媒体传闻须分别标识。按品牌、地域和车型查软件权、采购与系统责任，区别删除专用ADAS控制器、保留EyeQ或模块授权、Mobileye转Tier1整系统的价值变化。集团合作不等全部车型独占；开放开发工具由相邻题研究，本题拥有实际采购分工和架构决策。",
+          "name": "汽车自研外购、中央计算与驾驶栈供应商分工",
+          "owner": "S0006",
+          "ref": [
+            "output/work/v21/discovery/S0006.jsonl#L4",
+            "context/document3/v21/d2/shell-0006.json",
+            "【cite:O222】",
+            "【cite:O223】",
+            "【cite:O224】",
+            "【cite:O231】",
+            "【cite:O232】",
+            "【cite:O236】"
+          ]
+        },
+        {
+          "brief": "围绕可商用教师模型、仿真蒸馏工具开放、车企在量产设计硬件展示能力，以及Mobileye复用工具或改变专用计算路线，研究达到客户功能的时间、数据及BOM门槛。Alpamayo商业开发路径与Wayve客户载体使入口现实化；比较技术泛化节省与安全验证、车辆集成仍保留的价值，工具也可能帮助Mobileye而非单向替代。模型下载和厂商演示非车规批准，但无需等竞争者规模出货才研究壁垒改变；不重复逐车型供应商归属研究。",
+          "name": "开放驾驶模型、开发工具与量产能力进入壁垒",
+          "owner": "S0006",
+          "ref": [
+            "output/work/v21/discovery/S0006.jsonl#L5",
+            "context/document3/v21/d2/shell-0006.json",
+            "【cite:O243】",
+            "【cite:O244】",
+            "【cite:O223】",
+            "【cite:O224】"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 51,
+      "topics": [
+        {
+          "brief": "研究ST、Quanta等调整供货交期及组件配套，未来EyeQ或成像雷达通过车规客户资格，或迁移延误影响SOP的安排。当前ST供应EyeQ，TSMC合同支持未来组件不是立即备用产能；查库存缓冲、合格来源、客户验证和迁移成本，区别短缺、涨价与资格改善的交付及议价作用。保留AI组件争用而不预设汽车普遍停产，Intel控制非迁入Intel制造证据。市场内存和基板背景复用组件题，本题负责汽车具体可替代性及客户交付资格。",
+          "name": "EyeQ与汽车ECU供应连续性、替代来源和车规资格",
+          "owner": "S0006",
+          "ref": [
+            "output/work/v21/discovery/S0006.jsonl#L8",
+            "context/document3/v21/d2/shell-0006.json",
+            "【cite:O210】",
+            "【cite:O214】",
+            "【cite:O215】",
+            "context/document3/v21/shared/d1/c4e_network_build.md"
+          ]
+        },
+        {
+          "brief": "围绕OEM增撤道路数据贡献、接受持续道路智能授权、推出自留收费权的免手持订阅，以及数据地域限制，研究网络价值由谁捕获。Stellantis云增强ADAS是采用入口，超过95%美欧道路覆盖及五家贡献方非付费规模。查数据新鲜度、功能依赖、合同收费和地理边界，比较系统价、经常授权与弱地图栈的议价；原始车辆数据分享不等派生Roadbook知识产权开放，不把独立订阅视为已确立业务。",
+          "name": "REM道路智能的数据贡献、使用权与收费归属",
+          "owner": "S0006",
+          "ref": [
+            "output/work/v21/discovery/S0006.jsonl#L9",
+            "context/document3/v21/d2/shell-0006.json",
+            "【cite:O220】",
+            "【cite:O223】",
+            "【cite:O245】",
+            "【cite:O252】"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 52,
+      "topics": [
+        {
+          "brief": "围绕MOIA等伙伴车队融资租赁、资金暂停，以及Uber等多栈平台城市接入和车辆分配，研究资本与获客怎样改变外售Drive系统的批量采购。Hamburg已是有安全员免费测试，数千辆仍属计划；融资受挫媒体线索不等项目取消。辨别平台绑定、伙伴出资和需求承诺，利用率提高可能先少购车再扩市场；平台全部资本不归Mobileye，竞争栈获资不证明既有项目停止。城市许可另题，自营资产投入另题，避免把同一车队同时算外售与自营。",
+          "name": "Drive伙伴车队融资、出行平台接入与扩车配置",
+          "owner": "S0006",
+          "ref": [
+            "output/work/v21/discovery/S0006.jsonl#L10",
+            "context/document3/v21/d2/shell-0006.json",
+            "【cite:O227】",
+            "【cite:O228】",
+            "【cite:O239】",
+            "【cite:O246】",
+            "https://www.moia.io/en/news/moia-launches-passenger-test-operation-in-hamburg?_rr=1"
+          ]
+        },
+        {
+          "brief": "围绕首城、车辆改装伙伴、自有App或TNC接入及租赁、伙伴持有、许可替代自持的安排，研究从外售系统转服务的权利与现金承担。2027约100辆、五年17000辆及单车收入费用是计划和假设，Moovit筹备非锁定付费客群；查资本、利用率、调度维护保险等持续责任与获客费用，是否反哺产品学习或造成客户冲突。内部Drive不重复认作对外销售，百辆起步不预定INTC集团收入跃升；公司整体融资复用资本域，本题保留具体车队项目资产模式与服务经济性。",
+          "name": "Mobileye自营车队的车辆资本、获客与轻重资产选择",
+          "owner": "S0006",
+          "ref": [
+            "output/work/v21/discovery/S0006.jsonl#L12",
+            "context/document3/v21/d2/shell-0006.json",
+            "【cite:O229】",
+            "【cite:O215】",
+            "【cite:O213】",
+            "【cite:O246】"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 53,
+      "topics": [
+        {
+          "brief": "围绕许可去安全员、开放收费或扩地域时段，以及事故暂停、保险和远程支持要求，研究营业小时、人工责任、融资信任与扩车回报。区分Orlando与Los Angeles管理层部署计划、MOIA平台上线、Hamburg测试和实际主管机关授权，查许可适用主体与ODD；不能混用有安全员测试、无驾驶员测试和无人收费运营，也不混L2免手持与L4。事故可能行业外溢亦可能重估成熟安全栈的相对位置，不等待年度收入兑现或预判许可必获。 同时独立研究伙伴开放雪冰、低能见度及复杂道路服务、季节停运、转回人工或调整传感配置的实际安排，而非只查监管批准。MOIA2025年3月Oslo冬季ID.Buzz AD测试仍有安全驾驶员；技术演示、许可ODD和真实用户服务分别核实。比较全年可营业小时、传感与远程支持成本、公共交通对季节可靠性的要求及适用地域扩张，许可不变时能力仍能改变车队回报；无需完整采购金额才研究天气边界。",
+          "name": "Drive城市授权、ODD扩展与无人收费运营责任",
+          "owner": "S0006",
+          "ref": [
+            "output/work/v21/discovery/S0006.jsonl#L11",
+            "context/document3/v21/d2/shell-0006.json",
+            "【cite:O215】",
+            "【cite:O227】",
+            "【cite:O228】",
+            "【cite:O240】",
+            "【cite:O247】",
+            "output/work/v21/discovery/S0006.late.jsonl#L2",
+            "https://www.moia.io/en/news/autonomous-driving-under-extreme-conditions-moia-tests-id-buzz-ad-in-winter-conditions-in-oslo?_rr=1",
+            "【cite:O233】",
+            "【cite:O234】"
+          ]
+        },
+        {
+          "brief": "围绕Ruter等公共机构多年招标、运营预算、线路和可达性标准，或项目仍留研究补贴阶段，研究公共支付怎样使低密度低票价服务获得持续采购。Ruter/Holo/MOIA2025合作为入口，春季2026部署计划及约30000辆城市愿景非截止日规模订单。查谁付钱、合同车数与服务义务、Drive经哪种车辆运营商进入及竞争栈选择；乘客票价非唯一收入来源，不把研究拨款当常态运营预算。这与零售Robotaxi平台获客需要不同客户和采购文件，独立投入。",
+          "name": "公共交通无人接驳的预算、服务招标与覆盖需求",
+          "owner": "S0006",
+          "ref": [
+            "output/work/v21/discovery/S0006.jsonl#L13",
+            "context/document3/v21/d2/shell-0006.json",
+            "【cite:O233】",
+            "【cite:O234】",
+            "https://www.moia.io/en/news/ruter-and-holo-enter-partnership-with-moia"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 54,
+      "topics": [
+        {
+          "brief": "围绕CEO继任、汽车研发组织及项目收缩、共享AI工具复用，以及关键地区工程中断后的验证资源重配，研究具体客户SOP和远期平台开发的执行能力。当前CEO继任待定，业务发展交接已发生，Mentee及自营筹备并行但未披露汽车预算削减；Build区分汽车、机器人和集团共享资源。研究集中资源加快量产、损害远期机会及客户支持承诺的不同可能，净研发下降不直接代表裁员，一般冲突新闻不等已经停工。公司费用基础复用财务题，本题负责Mobileye工程和客户交付，不将机器人收入算汽车业务。",
+          "name": "Mobileye领导继任、汽车工程连续性与项目排序",
+          "owner": "S0006",
+          "ref": [
+            "output/work/v21/discovery/S0006.jsonl#L14",
+            "context/document3/v21/d2/shell-0006.json",
+            "【cite:O214】",
+            "【cite:O215】",
+            "【cite:O230】",
+            "【cite:O248】"
+          ]
+        },
+        {
+          "brief": "研究公共机关修改研发补助资格、合格支出、支付时间及Intel控制关系变化时，Mobileye净开发负担和现金来源怎样改变。年度调整补助1.8–2亿美元相对经营利润指导重要，但预计2028开始收现；失去Intel控制时少约1亿美元只是管理层条件情景，不是既成变化。核实现行规则、税负、资格实体与现金安排，分开经济持股、表决权、合并及利润现金归属，不把会计追认正常化作为财报催化。附属权益交易的定价、出售净款及融资替代由“附属权益上市、出售与保留控制的资本回收”统一，本题独立研究研发支持制度和汽车工程经济性，不重做交易估值。",
+          "name": "Mobileye研发支持的制度资格、净成本与现金回收",
+          "owner": "S0006",
+          "ref": [
+            "output/work/v21/discovery/S0006.jsonl#L15",
+            "context/document3/v21/d2/shell-0006.json",
+            "【cite:O213】",
+            "【cite:O214】",
+            "【cite:O215】",
+            "context/document3/v21/shared/d1/c1.md"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 55,
+      "topics": [
+        {
+          "brief": "围绕OEM或保险方推出收窄辅助驾驶赔付、独立安全研究和大规模用户接管体验，研究选装、续费、下一代配置及供方责任如何改变。BYD损失保障是商业先例，不是Mobileye已有义务；较旧部分自动化研究不能套新系统，便利提升和事故减少分开。查适用功能、条件、保障承担者、可信体验和采购弹性，区别基础安全标配与高阶便利付费；无需等新闻披露整车订单损失。安全评级和DMS功能门槛复用既有题，本题拥有真实使用、信任及商业赔付入口，不重复评级协议研究。",
+          "name": "辅助驾驶使用体验、安全研究与商业保障的采用经济",
+          "owner": "S0006",
+          "ref": [
+            "output/work/v21/discovery/S0006.jsonl#L16",
+            "context/document3/v21/d2/shell-0006.json",
+            "【cite:O226】",
+            "【cite:O241】",
+            "【cite:O219】",
+            "【cite:O221】"
+          ]
+        },
+        {
+          "brief": "围绕OEM或运营商因软件更新、道路云故障、网络事件停用跨车型或车队，以及改变更新主导权和长期支持责任，研究已售车辆的可用性、营业小时、重验开支及下一代采购。R155/R156和云功能提供责任背景，未确认或假定Mobileye已被入侵；核实共用依赖、影响功能、隔离恢复及谁负担召回更新。查长期支持是新服务收费还是固定报价内隐含成本，合同定价基线复用汽车方案条款题，REM数据产权和收费复用REM题；本题负责更新执行、共享故障与持续安全支持，不被首次SOP资格或单车事故替代。",
+          "name": "汽车跨车型软件更新、共享云故障与生命周期责任",
+          "owner": "S0006",
+          "ref": [
+            "output/work/v21/discovery/S0006.jsonl#L17",
+            "context/document3/v21/d2/shell-0006.json",
+            "【cite:O249】",
+            "【cite:O250】",
+            "【cite:O214】",
+            "【cite:O220】",
+            "【cite:O246】"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 56,
+      "topics": [
+        {
+          "brief": "围绕匿名OEM成像雷达项目量产延期、其他客户独立采购，或驾驶栈改摄像头加雷达及减少激光雷达，研究Mobileye在不提供完整EyeQ栈时的经济位置。2025年5月28日官方公告为新客户2028私人车辆高速L3计划，非已出货；研究感知冗余、全天候用途、BOM、独立组件净价与责任及可服务客户集合。厂商性能声明非独立安全验证，雷达定点不推定完整Mobileye栈或Intel制造订单。制造与客户资格复用汽车供应题，但本题保有独立感知产品、传感替代和客户分工，不缩成供货恢复背景。",
+          "name": "独立成像雷达定点、感知组合与非完整栈客户入口",
+          "owner": "S0006",
+          "ref": [
+            "output/work/v21/discovery/S0006.late.jsonl#L1",
+            "https://ir.mobileye.com/news-releases/news-release-details/mobileye-imaging-radar-chosen-global-automaker-eyes-driving",
+            "context/document3/v21/d2/shell-0006.json",
+            "【cite:O210】",
+            "【cite:O214】"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 57,
+      "topics": [
+        {
+          "brief": "围绕有影响力卖方在非财报时点改变评级、目标价、长期盈利模型或重点推荐，研究代理CPU由补库转长增长、Intel实际获配及Foundry纳入剔除分部价值等论点的公开修订。C5显示用途重估与相对回吐并存，股价不能唯一倒推出订单或制造价值；7月HSBC转述报道提供实例但未取得原研报，其客户预期非已签采购。查原论点、客户调查或独立负载及资本回报新依据、时间跨度、同业同步修订和传播，分开盈利版本、倍数风险容忍、每股权益及跟随股价。单家目标价非共识，C1共识未取得非不存在卖方研究，评级样本非经营预测样本，40倍压力测试非正常估值。此为投资者判断事件而非等待新经营公告，经营资料复用Shell，不再重做综合CPU或Foundry产业报告。",
+          "name": "卖方CPU持续期、制造价值与每股回报论点修订",
+          "owner": "OPEN_RESEARCH",
+          "ref": [
+            "output/work/v21/discovery/OPEN_RESEARCH.jsonl#L1",
+            "context/document3/v21/shared/d1/c5.md",
+            "context/document3/v21/shared/d1/c1.md",
+            "https://www.investing.com/news/analyst-ratings/hsbc-raises-intel-stock-price-target-to-200-on-foundry-upside-93CH-4773494",
+            "output/work/v21/discovery/OPEN_EVENT.jsonl#L7",
+            "context/document3/v21/shared/d1/c4e_network_build.md",
+            "context/document3/v21/assets/open_event_atlas/Open_Event_Atlas_General.md",
+            "output/work/v21/discovery/S0005.late.jsonl#L2"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 58,
+      "topics": [
+        {
+          "brief": "围绕操作系统、编译器和大型应用把Intel/AMD共同能力纳入默认构建、支持承诺，或双方改变实施兼容范围，研究跨客户端服务器的软件生态控制与采购经济。2025年10月周年材料给出FRED、AVX10、ChkTag及ACE方向，规范不等所有现役CPU已支持。查真实芯片软件版本、任务覆盖、旧机可用性和更新门槛，比较降低开发维护负担、增强x86相对Arm参与权与通用路径削弱Intel独有优化、便利双供的作用；共同架构获益不等Intel份额。标准或默认支持是独立事件，不要求同时证明采购，性能安全主张须验证。现有客户端管理资格、云迁移及CPU小模型任务复用而不重复；本题拥有跨产品共同ISA与软件默认承诺。",
+          "name": "x86共同特性的软件默认路径与Intel差异化",
+          "owner": "OPEN_RESEARCH",
+          "ref": [
+            "output/work/v21/discovery/OPEN_RESEARCH.late.jsonl#L1",
+            "context/document3/v21/shared/d1/c3.md",
+            "context/document3/v21/shared/d1/c5.md",
+            "output/work/v21/discovery/S0001.jsonl#L7",
+            "output/work/v21/discovery/S0002.jsonl#L4",
+            "output/work/v21/discovery/S0002.late.jsonl#L1",
+            "https://community.intel.com/t5/Blogs/Tech-Innovation/open-intel/AMD-and-Intel-Celebrate-First-Anniversary-of-x86-Ecosystem/post/1721496",
+            "output/work/v21/discovery/OPEN_EVENT.jsonl#L4",
+            "https://www.amd.com/en/blogs/2025/amd-and-intel-celebrate-first-anniversary-of-x86-ecosys.html",
+            "context/document3/v21/shared/d1/c4e_network_build.md"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 59,
+      "topics": [
+        {
+          "brief": "共同研究美方改变特定CPU产品客户出口许可、地区采购安全审查及本地化清单，以及中国公共采购测评目录、适用买方和过渡例外的消息。两类规则独立可发生，分别建立产品、买方和地域边界：2024一家中国客户消费品许可撤销不是全部CPU禁售，2023特定机关及支持事业单位测评要求也非全中国PC服务器禁Intel。核对有效文本、采购包和实际执行，查国产替代的兼容供货、存量迁移摩擦、渠道备货和OEM转卖缓冲；开票地非最终用户，中国开票24%非一次受限金额。规则开放也可恢复用途，不能套GPU限制或由目录缺席推全市场失单。跨Core/Xeon销售准入在本题统一；客户端双供和云架构自愿迁移、组件追溯、可信制造采购有不同资料，不由其标题推定已经覆盖。",
+          "name": "CPU跨境销售许可、中国采购资格与可竞标市场",
+          "owner": "OPEN_EVENT",
+          "ref": [
+            "output/work/v21/discovery/OPEN_RESEARCH.jsonl#L2",
+            "context/document3/v21/shared/d1/c3.md",
+            "output/work/v21/discovery/S0001.jsonl#L7",
+            "output/work/v21/discovery/S0002.jsonl#L4",
+            "https://hq.mof.gov.cn/tongzhitonggao/202401/t20240104_3925069.htm",
+            "https://gks.mof.gov.cn/guizhangzhidu/202312/t20231226_3924113.htm",
+            "https://www.itsec.gov.cn/aqkkcp/cpgg/202509/t20250912_235645.html",
+            "output/work/v21/discovery/OPEN_EVENT.jsonl#L3",
+            "https://www.sec.gov/Archives/edgar/data/50863/000005086324000086/intc-20240508.htm",
+            "https://www.sec.gov/Archives/edgar/data/50863/000005086326000011/intc-20251227.htm",
+            "context/document3/v21/shared/d1/c4e_formal_scan.json",
+            "output/work/v21/discovery/S0003.jsonl#L15",
+            "output/work/v21/discovery/S0004.jsonl#L19"
+          ]
+        },
+        {
+          "brief": "围绕美国政府扩大或改变半导体进口征税技术范围、原产地用途执行和投资优惠决定，以及OEM设计者据此重排生产采购，研究Intel的进口成本、美国制造溢价和客户预算。2026年1月公告及CBP指引为狭窄技术范围25%和用途例外，更广征税及投资抵扣为后续可能，不证明所有CPU已加税或Intel专属免税。核实实际产品tile和海外后段路径、承担者、竞争厂本土投资是否同享优惠，区别前置采购和永久转单；美国公司身份不能直接判净受益。本题拥有边境价格及相对地域采购，设备材料连续性、制造抵免和资本激励另题，不重复统计支持或提供法律操作建议。",
+          "name": "半导体进口税、用途例外与本土投资优惠的采购重配",
+          "owner": "OPEN_EVENT",
+          "ref": [
+            "output/work/v21/discovery/OPEN_RESEARCH.jsonl#L3",
+            "context/document3/v21/shared/d1/c1.md",
+            "context/document3/v21/shared/d1/c3.md",
+            "output/work/v21/discovery/S0003.jsonl#L6",
+            "output/work/v21/discovery/S0005.jsonl#L10",
+            "https://www.whitehouse.gov/presidential-actions/2026/01/adjusting-imports-of-semiconductors-semiconductor-manufacturing-equipment-and-their-derivative-products-into-the-united-states/",
+            "https://content.govdelivery.com/accounts/USDHSCBP/bulletins/4047318?reqfrom=share"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 60,
+      "topics": [
+        {
+          "brief": "围绕NVIDIA、SoftBank、政府等战略持有人增减持、转售登记、协议转让及持股承诺变化，或重要机构新建影响力持仓，研究交易供给与背书认知。既有2025投资及政府持股非采购保证；建立截止边界内实际持仓、锁定和退出权，不能沿用原金额推比例。分别查出售资格与成交、卖方资本需要、买方性质及合作条款，减持不自动代表取消芯片合作，股东套现非Intel新融资现金。融资净款每股占有由财务题，指数口径与实施由指数题，本题保留即使无新发行的持有人主动行动和影响力。",
+          "name": "战略股东转售、影响力持仓与合作承诺",
+          "owner": "OPEN_EVENT",
+          "ref": [
+            "output/work/v21/discovery/OPEN_EVENT.jsonl#L5",
+            "context/document3/v21/shared/d1/c4e_formal_scan.json",
+            "context/document3/v21/shared/d1/c4e_network_build.md",
+            "https://group.softbank/en/news/press/20250819",
+            "output/work/v21/discovery/S0005.jsonl#L12",
+            "context/document3/v21/assets/open_event_atlas/Open_Event_Atlas_General.md"
+          ]
+        },
+        {
+          "brief": "围绕指数机构公告INTC股份/IWF更新、成分资格或权重调整，研究独立于经营消息的被动需求变化。政府、战略及托管股份使发行股数不等可投资流通股；S&P2026年9月方法仅是分类门槛背景，不说明已确认新的INTC调整或当前IWF。Build查真实指数归属、被认定持股、跟踪资金、预告及实施日期，区别机械已预期变化与新信息；不从融资股数直接算买入，市值上升非自动入指数。主动战略股东行动复用相邻题持仓基线，不以其出售推指数必然重配，保持指数机构本身的公开入口。",
+          "name": "INTC指数股份、流通因子与被动配置调整",
+          "owner": "OPEN_EVENT",
+          "ref": [
+            "output/work/v21/discovery/OPEN_EVENT.jsonl#L6",
+            "https://www.spglobal.com/spdji/en/documents/index-policies/methodology-sp-float-adjustment.pdf",
+            "context/document3/v21/shared/d1/c4e_formal_scan.json",
+            "context/document3/v21/shared/d1/c5.md",
+            "output/work/v21/discovery/S0005.jsonl#L11",
+            "output/work/v21/discovery/S0005.jsonl#L12",
+            "context/document3/v21/assets/open_event_atlas/Open_Event_Atlas_General.md"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 61,
+      "topics": [
+        {
+          "brief": "研究核心IP案件限制进口销售的裁判、暂缓执行、许可和解及可用绕开设计，或OEM改受影响配置时，客户整机可销售集合和持续采用Intel怎样改变。2024德国R2历史禁令已于同年8月宣布解决，非当前禁售；本批未确认新有效禁令，不预判案件胜败。查具体产品地区、执行状态、现货与替代设计、许可恢复及重验证返工责任，诉讼提起不等生效。诉讼现金题负责旧计提与支付，本题聚焦失去或恢复市场入口；许可费用可以换回供货权，不让现金赔偿研究替代客户资格，也不将法律限制混同产品质量或一般出口管制。",
+          "name": "核心IP禁令、许可绕开与客户整机销售资格",
+          "owner": "OPEN_EVENT",
+          "ref": [
+            "output/work/v21/discovery/OPEN_EVENT.late.jsonl#L1",
+            "https://www.intc.com/filings-reports/all-sec-filings/content/0000050863-24-000076/0000050863-24-000076.pdf",
+            "https://newsroom.intel.com/corporate/update-litigation-2024",
+            "output/work/v21/discovery/S0005.jsonl#L16",
+            "context/document3/v21/assets/open_event_atlas/Open_Event_Atlas_General.md"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 62,
+      "topics": [
+        {
+          "brief": "围绕SAIMEMORY公布ZAM原型、制造或系统客户、许可分工及进度调整，研究Intel技术参与如何变成有偿IP开发、许可或制造集成业务。2月合作基于Intel NGDB经验，FY2027原型与FY2029商业化是目标；4月NEDO项目列Intel共同实施并提出向内存厂许可，均非Intel已取得收入。查技术权属、验证及产业投入、客户采用门槛、谁承担量产与收费，比较只参与研发和取得持续经济权益，技术性能须保留验证状态。不同于采购DDR、Ohio厂房用途或普通封装订单，不写成Intel重返大规模DRAM生产或近期解缺；研发分担题的费用口径可复用，本题负责该具名架构与商业化权利，不重做集团研发预算。",
+          "name": "SAIMEMORY堆叠内存技术、客户设计与IP许可权益",
+          "owner": "S0003",
+          "ref": [
+            "output/work/v21/discovery/OPEN_EVENT.jsonl#L1",
+            "https://www.softbank.jp/en/corp/news/press/sbkk/2026/20260203_01/",
+            "https://www.saimemory.co.jp/news/press/20260422_01/",
+            "context/document3/v21/shared/d1/c4e_network_build.md",
+            "output/work/v21/discovery/S0004.late.jsonl#L2",
+            "output/work/v21/discovery/S0005.jsonl#L4"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_index": 63,
+      "topics": [
+        {
+          "brief": "围绕IMS及外部光罩芯片客户新机型资格、扩购延期、替代写入路线和服务变更，研究Intel控股设备业务怎样承接不迁入Intel Foundry的先进节点需求。冻结formal-scan为2025末68%持有并合并；2023官方说明全球客户与TSMC长期协作只作背景，投资非保证采购。查设备代际、客户和验收周期、替代技术、设备服务利润责任及集团分量，不以ASML交付量倒推IMS收入。High-NA课题负责Intel自身光刻光罩全流程经济性，附属权益题负责出售价格，本题独立拥有外部设备销售服务，不让两者代替。原新闻页失效时可使用已取得官方存档，仍按原2023日期理解。",
+          "name": "IMS外部光罩设备客户、产品换代与服务经济性",
+          "owner": "S0003",
+          "ref": [
+            "output/work/v21/discovery/OPEN_EVENT.jsonl#L2",
+            "context/document3/v21/shared/d1/c4e_formal_scan.json",
+            "context/document3/v21/shared/d1/c4e_network_build.md",
+            "https://newsroom.intel.com/corporate/ims-investment-sept-2023-news",
+            "output/work/v21/discovery/S0003.jsonl#L3",
+            "output/work/v21/discovery/S0005.jsonl#L14",
+            "https://download.intel.com/newsroom/archive/2025/en-us-2023-09-12-intel-to-sell-minority-stake-in-ims-nanofabrication-business-to-tsmc.pdf"
+          ]
+        }
+      ]
+    }
+  ],
+  "not_selected": [
+    {
+      "reason": "不另立重复产品资格研究：由“客户端型号交付、可靠性处置与OEM平台资格”共同承接。已明确保留停售、暂停部署、扩保、修复后性能及长期信誉的独立问题，不把可靠性降为产量背景；与交期变化共享型号、OEM验证及替代资料。",
+      "ref": "output/work/v21/discovery/S0001.jsonl#L2"
+    },
+    {
+      "reason": "与人用Cloud PC共同研究计算迁移及端点经济，归入“Cloud PC轻终端与独立智能体云执行的端点经济”。brief明确保留独立Agent云环境、共享池、按任务收费、原本地工作替代和回迁问题；不是将所有Agent使用都算作员工轻终端部署。",
+      "ref": "output/work/v21/discovery/S0001.jsonl#L13"
+    },
+    {
+      "reason": "不单列与生产推理栈重复的资料研究，归入“推理运行时生产支持、阶段拆分与内存缓存路线”。共享Gaudi llm-d/vLLM、模型服务、缓存传输及有效吞吐资料；brief明确保留预填充/解码/媒体分工、长上下文、量化共享缓存和每任务卡数网络价值，不将这些变化缩成后端兼容或Crescent上市背景。",
+      "ref": "output/work/v21/discovery/S0002.jsonl#L13"
+    },
+    {
+      "reason": "与系统集成路线共同投入“封装系统路线、开放芯粒采购与整包责任”，共享跨厂签核、KGD、测试与责任资料；brief保留可采购组合、许可复用及整包保障的独立入口，不另排重复研究，亦不预定最终Policy合并。",
+      "ref": "output/work/v21/discovery/S0003.jsonl#L19"
+    },
+    {
+      "reason": "不另立重复研究，由“托管代理持续执行、沙箱池化与服务器资源弹性”承接。与长时执行及池化共享实际服务、计费和资源资料；已把服务分发、预算收缩、组件竞争及制造负荷联系补入brief，不仅增加来源。产品制造环节技术不在此重做。",
+      "ref": "output/work/v21/discovery/S0003.jsonl#L23"
+    },
+    {
+      "reason": "不另立重复研究，由“托管代理持续执行、沙箱池化与服务器资源弹性”承接。与长时执行及池化共享实际服务、计费和资源资料；已把服务分发、预算收缩、组件竞争及制造负荷联系补入brief，不仅增加来源。产品制造环节技术不在此重做。",
+      "ref": "output/work/v21/discovery/S0004.jsonl#L14"
+    },
+    {
+      "reason": "不另立重复研究，由“代理权限事故、审计隔离与受控AI部署”承接。客户授权事故与隔离部署属同一组关键资料，新增云、本地PC与私有机房分工及制造组合已实际补入，避免另做泛化制造需求研究。",
+      "ref": "output/work/v21/discovery/S0003.jsonl#L24"
+    },
+    {
+      "reason": "不另立重复研究，由“PC配套资源分配、整机提价与配置降档”承接。既有整机预算和配置课题与本批共享OEM、渠道及平台资料；保留HUDIMM具名新配置、补库/换机动作、每机组件强度及新旧节点制造后果，不仅将这些视作内存涨价的附带条件。",
+      "ref": "output/work/v21/discovery/S0003.jsonl#L25"
+    },
+    {
+      "reason": "不另立重复研究，由“PC配套资源分配、整机提价与配置降档”承接。既有整机预算和配置课题与本批共享OEM、渠道及平台资料；保留HUDIMM具名新配置、补库/换机动作、每机组件强度及新旧节点制造后果，不仅将这些视作内存涨价的附带条件。",
+      "ref": "output/work/v21/discovery/S0004.jsonl#L11"
+    },
+    {
+      "reason": "不另立重复研究，由“客户容量合同、融资与上电重排硬件部署”承接。与客户资金、通电及采购节奏共享项目证据；已补入Foundry设计封装预约、第二来源预算与取消风险传递，保留上电之前的公开事件入口。",
+      "ref": "output/work/v21/discovery/S0003.jsonl#L26"
+    },
+    {
+      "reason": "不另立重复研究，由“外部晶圆客户定点、报价与容量契约”承接。竞争成套供给与客户选厂契约使用同一全流程竞争资料，接收题已明确竞争厂独立动作、双来源行为及外购tile暴露；不将它缩成Intel客户公告的背景。",
+      "ref": "output/work/v21/discovery/S0003.late.jsonl#L1"
+    },
+    {
+      "reason": "不另立重复研究，由“兼容组件、测试槽位与完整产品交付”承接。与已有规格排产及完整交付研究共享料号、工序责任与同步到货证据；已明确第二来源和交接工序的独立主动安排，不另排一份齐套研究。供方合格面积和合同价格另有组件课题。",
+      "ref": "output/work/v21/discovery/S0004.jsonl#L1"
+    },
+    {
+      "reason": "不另立重复研究，由“玻璃基板工程资格与大包制造经济性”承接。与Lens开发及客户工程资格共享实质安排，新增外部供方资本、多年承诺和采购替代问题已补入；保留玻璃芯与玻纤布区别，不重复由两个owner各研究同一MOU。",
+      "ref": "output/work/v21/discovery/S0004.jsonl#L9"
+    },
+    {
+      "reason": "与采购保障共同投入“组件保障长约、基板报价与采购弹性”，共享供方议价、成本转嫁与客户保留条款；brief明确保留基板独立涨降价及尺寸层数覆盖，不降格为扩产背景。",
+      "ref": "output/work/v21/discovery/S0004.jsonl#L7"
+    },
+    {
+      "reason": "与材料客户资格共同投入“高端基板材料资格、合格面积与架构资源竞争”，共享板型和瓶颈工序资料；brief保留设计者扩尺寸层数、改路线和延期的独立入口，不以全部AI增长推Intel缺料。",
+      "ref": "output/work/v21/discovery/S0004.jsonl#L8"
+    },
+    {
+      "reason": "不另排重复资料研究，由“代理权限事故、审计隔离与受控AI部署”承接。现有任务已研究本地/私有隔离，新增默认混合选择及组件品种分流实际写入brief；共享企业授权和部署资料，不将内存后果默认视为另一个owner已覆盖。",
+      "ref": "output/work/v21/discovery/S0004.jsonl#L15"
+    },
+    {
+      "reason": "不另排重复资料研究，由“推理运行时生产支持、阶段拆分与内存缓存路线”承接。与既有缓存传输和阶段路由共享实际运行栈及服务目标资料，brief新增生产SSD/回退事件、耐久性及供应采购组合；保留与CXL池的不同资格和采购模式。",
+      "ref": "output/work/v21/discovery/S0004.jsonl#L16"
+    },
+    {
+      "reason": "不另排重复资料研究，由“客户容量合同、融资与上电重排硬件部署”承接。接收题已经拥有项目上线与锁定资源联系，现明确桥接电源、继续收货、转售及组件集中采购；不让相邻制造融资研究重复整套项目资料。",
+      "ref": "output/work/v21/discovery/S0004.jsonl#L18"
+    },
+    {
+      "reason": "不另排重复资料研究，由“闲置厂房租赁、共营与用途转换”承接。三域同一Ohio/内存合作共享官方谈判和合同资料，brief保留客户供货权、资本承担与租金净款，不只承接厂房利用；已有一般制造伙伴资本题另研究存续SCIP及新融资，不重复此具体用途方案。",
+      "ref": "output/work/v21/discovery/S0004.late.jsonl#L2"
+    },
+    {
+      "reason": "不另排重复资料研究，由“闲置厂房租赁、共营与用途转换”承接。三域同一Ohio/内存合作共享官方谈判和合同资料，brief保留客户供货权、资本承担与租金净款，不只承接厂房利用；已有一般制造伙伴资本题另研究存续SCIP及新融资，不重复此具体用途方案。",
+      "ref": "output/work/v21/discovery/S0005.jsonl#L6"
+    },
+    {
+      "reason": "不另排重复资料研究，由“制造网络扩供、资产退休与后段迁站”承接。已有迁站研究核心就是这项移交，新企业支持和过渡现金问题已补全，避免制造与财务各重做同一迁移资料，保留费用与制造效果的差异。",
+      "ref": "output/work/v21/discovery/S0005.jsonl#L2"
+    },
+    {
+      "reason": "与预收预付共同投入“预收预付续补、结算周转与应收主动变现”，共享公司现金桥和交易对手结算资料；brief完整保留账期、应收出售、折价及可售库存的独立动作，不以同属CFO抹平现金来源差异。",
+      "ref": "output/work/v21/discovery/S0005.jsonl#L9"
+    },
+    {
+      "reason": "并入“Altera长期供货、库存与旧节点生命周期”：同一供货协议、库存及停供事项的制造与现金两面，共享核心资料；已补入尾部占款、集中结算及IPO不免责，而非只附引用。",
+      "ref": "output/work/v21/discovery/S0005.jsonl#L15"
+    },
+    {
+      "reason": "并入“托管代理持续执行、沙箱池化与服务器资源弹性”：同一服务开放、计费和CPU采购分配核心，已有Cowork入口；增加权限收缩及现金源持续性问题，避免财务域重复研究应用需求。",
+      "ref": "output/work/v21/discovery/S0005.late.jsonl#L2"
+    },
+    {
+      "reason": "并入“汽车客户车辆池、区域配置与Tier1库存提货”：终端车型池与直接客户安全库存共享出货需求桥，已保留提货、库存消耗及旧代削单作为独立可发生事项，不用终端景气替代库存变化。",
+      "ref": "output/work/v21/discovery/S0006.jsonl#L6"
+    },
+    {
+      "reason": "并入“Drive城市授权、ODD扩展与无人收费运营责任”：共享城市服务范围和车队回报资料，但已明确加入天气技术能力、季节停运及回人工的独立入口，不把冬季测试缩为许可背景。",
+      "ref": "output/work/v21/discovery/S0006.late.jsonl#L2"
+    },
+    {
+      "reason": "并入“卖方CPU持续期、制造价值与每股回报论点修订”：OPEN两路同一具名观点传播与模型修订核心，已保留客户调查、每股回报、同业修订及盈利和倍数区分；不是并入芯片订单验证。",
+      "ref": "output/work/v21/discovery/OPEN_EVENT.jsonl#L7"
+    },
+    {
+      "reason": "并入“x86共同特性的软件默认路径与Intel差异化”：两OPEN描述相同联盟特性及软件默认路径，共享芯片软件版本资料；接收题明确保留旧机、通用优化取代Intel专有优势及生态控制，不降格为云迁移背景。",
+      "ref": "output/work/v21/discovery/OPEN_EVENT.jsonl#L4"
+    },
+    {
+      "reason": "并入“CPU跨境销售许可、中国采购资格与可竞标市场”：与中国公共采购线索共同建立跨平台销售资格和买方范围，明确保留美方具名出口许可及恢复入口为独立分支，非只研究国产目录。",
+      "ref": "output/work/v21/discovery/OPEN_EVENT.jsonl#L3"
+    }
+  ]
+}

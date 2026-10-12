@@ -1,0 +1,128 @@
+{
+  "selected_aliases": [
+    "O121",
+    "O122",
+    "O123",
+    "O124",
+    "O125",
+    "O126",
+    "O127",
+    "O128",
+    "O129",
+    "O130",
+    "O131",
+    "O132",
+    "O133",
+    "O134",
+    "O135",
+    "O136",
+    "O137",
+    "O138",
+    "O139",
+    "O140",
+    "O141",
+    "O145"
+  ],
+  "blocks": [
+    {
+      "alias": "O121",
+      "path": "blocks/O121.md"
+    },
+    {
+      "alias": "O122",
+      "path": "blocks/O122.md"
+    },
+    {
+      "alias": "O123",
+      "path": "blocks/O123.md"
+    },
+    {
+      "alias": "O124",
+      "path": "blocks/O124.md"
+    },
+    {
+      "alias": "O125",
+      "path": "blocks/O125.md"
+    },
+    {
+      "alias": "O126",
+      "path": "blocks/O126.md"
+    },
+    {
+      "alias": "O127",
+      "path": "blocks/O127.md"
+    },
+    {
+      "alias": "O128",
+      "path": "blocks/O128.md"
+    },
+    {
+      "alias": "O129",
+      "path": "blocks/O129.md"
+    },
+    {
+      "alias": "O130",
+      "path": "blocks/O130.md"
+    },
+    {
+      "alias": "O131",
+      "path": "blocks/O131.md"
+    },
+    {
+      "alias": "O132",
+      "path": "blocks/O132.md"
+    },
+    {
+      "alias": "O133",
+      "path": "blocks/O133.md"
+    },
+    {
+      "alias": "O134",
+      "path": "blocks/O134.md"
+    },
+    {
+      "alias": "O135",
+      "path": "blocks/O135.md"
+    },
+    {
+      "alias": "O136",
+      "path": "blocks/O136.md"
+    },
+    {
+      "alias": "O137",
+      "path": "blocks/O137.md"
+    },
+    {
+      "alias": "O138",
+      "path": "blocks/O138.md"
+    },
+    {
+      "alias": "O139",
+      "path": "blocks/O139.md"
+    },
+    {
+      "alias": "O140",
+      "path": "blocks/O140.md"
+    },
+    {
+      "alias": "O141",
+      "path": "blocks/O141.md"
+    },
+    {
+      "alias": "O142",
+      "path": "blocks/O142.md"
+    },
+    {
+      "alias": "O143",
+      "path": "blocks/O143.md"
+    },
+    {
+      "alias": "O144",
+      "path": "blocks/O144.md"
+    },
+    {
+      "alias": "O145",
+      "path": "blocks/O145.md"
+    }
+  ]
+}

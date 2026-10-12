@@ -1,0 +1,19 @@
+{
+  "alias": "O640",
+  "title": "section_previews 7",
+  "content": {
+    "section": "We face intense competition",
+    "heading_match": "We face intense competition",
+    "start_offset": 114067,
+    "end_offset": 194095,
+    "full_text_chars": 80000,
+    "returned_chars": 40000,
+    "truncated": true,
+    "match_quality": "substantive_body",
+    "text_preview": "in the semiconductor memory and storage markets from a number of companies, including Samsung Electronics Co., Ltd.; SK hynix Inc.; Kioxia Holdings Corporation; Sandisk Corporation; ChangXin Memory Technologies, Inc. (\"CXMT\"); and Yangtze Memory Technologies Co., Ltd. (\"YMTC\"). Our competitors may use aggressive pricing to obtain market share. Some of our competitors are large corporations or conglomerates that may operate in jurisdictions with lower labor and compliance costs and may have a larger market share and greater resources to invest in technology, capitalize on growth opportunities, and withstand downturns in the semiconductor markets in which we compete. Consolidation of industry competitors could put us at a competitive disadvantage as our competitors may benefit from increased manufacturing scale and a stronger product portfolio. Alternatively, new entrants into the memory and storage market could have a significant adverse impact on our competitive position. We operate in different jurisdictions than our competitors and may be impacted by unfavorable changes in currency exchange rates, import/export restrictions, and other trade regulations, including tariffs. In addition, governments have provided, and may continue to provide, significant assistance, financial or otherwise, to some of our competitors or to new entrants and may intervene in support of national industries and/or competitors. As a result, we face the threat of increasing competition and DRAM and NAND oversupply due to significant investment in the semiconductor industry, including by the Chinese government and various state-owned or affiliated entities, such as CXMT and YMTC. In addition, the CAC's decision that critical information infrastructure operators in China may not purchase Micron products had an adverse impact on our ability to compete effectively in China and elsewhere. We intend to advance our process technology to maintain product leadership and increase bit output per wafer. In addition, our competitors may increase capital expenditures resulting in future increases in worldwide supply. We, and some of our competitors, have plans to construct new fabrication facilities and/or ramp production at existing fabrication facilities to increase supply in response to a significant increase in demand for memory products across the industry. If worldwide demand for semiconductor memory and storage does not increase or remain stable, average selling prices for our products could decline materially and could materially adversely affect our business, results of operations, or financial condition. Additionally, rapid technological change in markets we serve could contribute to shortened product life cycles and a decline in average selling prices of our products. If competitors are more successful at developing or implementing new product or process technology, their products could have cost or performance advantages. The competitive nature of our industry could have a"
+  },
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

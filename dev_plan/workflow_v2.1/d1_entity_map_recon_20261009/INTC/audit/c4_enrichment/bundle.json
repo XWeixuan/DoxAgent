@@ -1,0 +1,14 @@
+{
+  "schema_version": "codex-d1-attempt-bundle-audit-v1",
+  "bundle_version": "codex-global-research-agent-bundle-v1",
+  "input_sha256": "cd3b9e9548fb36db63a134fd90314e88c0d5ab2cbcd48132757a78584bbbc0de",
+  "files": {
+    "attempts/init-779e6ae62c4a4337ae79c2940b874cc9/input/AGENTS.md": "bc9a16089bdf1b65a3c1ec4c17442ab4c2a4f3ad323a3da13129a9300af0dca4",
+    "attempts/init-779e6ae62c4a4337ae79c2940b874cc9/input/bundle_manifest.json": "505f29f93fc68ac39bee6ec78e6d3e7a5c7aa9845e0dd4dac728aca74da874ee",
+    "attempts/init-779e6ae62c4a4337ae79c2940b874cc9/input/context.json": "9e92547089fdc54e3ebdda52abdf77be79141633a4cd35d17887d6238cc462e5",
+    "attempts/init-779e6ae62c4a4337ae79c2940b874cc9/input/schemas/node_output.schema.json": "fa9ebc8b806afdc76e0d992dec41b5178c8dbb602ed5c425dbd6d011099e7554",
+    "attempts/init-779e6ae62c4a4337ae79c2940b874cc9/input/skills/entity-map-and-future-nodes.md": "bc44b2daca7c9a676cdb6e843d14719d47d6785cfba3a507000773e2fb2b4084",
+    "attempts/init-779e6ae62c4a4337ae79c2940b874cc9/input/task.json": "684d97208dc08a927e73823d21dc32c4a0f134c9d7a4cb0ab9689e2f6642e1e9",
+    "attempts/init-779e6ae62c4a4337ae79c2940b874cc9/input/task.md": "745b6bfd857cf8a72a5d9a2c1f2790dfebe6cb7b896320d94ef99489b06ec610"
+  }
+}

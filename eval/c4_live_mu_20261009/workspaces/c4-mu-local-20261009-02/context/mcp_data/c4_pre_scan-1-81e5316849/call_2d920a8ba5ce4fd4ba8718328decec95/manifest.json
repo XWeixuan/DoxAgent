@@ -1,0 +1,122 @@
+{
+  "selected_aliases": [
+    "O601",
+    "O604",
+    "O605",
+    "O606",
+    "O607",
+    "O621",
+    "O609",
+    "O610",
+    "O602",
+    "O603",
+    "O608",
+    "O615",
+    "O617",
+    "O619",
+    "O622",
+    "O624"
+  ],
+  "blocks": [
+    {
+      "alias": "O601",
+      "path": "blocks/O601.md"
+    },
+    {
+      "alias": "O602",
+      "path": "blocks/O602.md"
+    },
+    {
+      "alias": "O603",
+      "path": "blocks/O603.md"
+    },
+    {
+      "alias": "O604",
+      "path": "blocks/O604.md"
+    },
+    {
+      "alias": "O605",
+      "path": "blocks/O605.md"
+    },
+    {
+      "alias": "O606",
+      "path": "blocks/O606.md"
+    },
+    {
+      "alias": "O607",
+      "path": "blocks/O607.md"
+    },
+    {
+      "alias": "O608",
+      "path": "blocks/O608.json"
+    },
+    {
+      "alias": "O609",
+      "path": "blocks/O609.json"
+    },
+    {
+      "alias": "O610",
+      "path": "blocks/O610.json"
+    },
+    {
+      "alias": "O611",
+      "path": "blocks/O611.json"
+    },
+    {
+      "alias": "O612",
+      "path": "blocks/O612.json"
+    },
+    {
+      "alias": "O613",
+      "path": "blocks/O613.json"
+    },
+    {
+      "alias": "O614",
+      "path": "blocks/O614.json"
+    },
+    {
+      "alias": "O615",
+      "path": "blocks/O615.json"
+    },
+    {
+      "alias": "O616",
+      "path": "blocks/O616.md"
+    },
+    {
+      "alias": "O617",
+      "path": "blocks/O617.json"
+    },
+    {
+      "alias": "O618",
+      "path": "blocks/O618.md"
+    },
+    {
+      "alias": "O619",
+      "path": "blocks/O619.json"
+    },
+    {
+      "alias": "O620",
+      "path": "blocks/O620.md"
+    },
+    {
+      "alias": "O621",
+      "path": "blocks/O621.json"
+    },
+    {
+      "alias": "O622",
+      "path": "blocks/O622.json"
+    },
+    {
+      "alias": "O623",
+      "path": "blocks/O623.md"
+    },
+    {
+      "alias": "O624",
+      "path": "blocks/O624.json"
+    },
+    {
+      "alias": "O625",
+      "path": "blocks/O625.md"
+    }
+  ]
+}

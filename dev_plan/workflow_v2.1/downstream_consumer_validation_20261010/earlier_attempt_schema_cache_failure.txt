@@ -1,0 +1,20 @@
+........................................................................ [ 48%]
+..........................................F............................. [ 96%]
+......                                                                   [100%]
+================================== FAILURES ===================================
+_________________ test_generated_schema_is_current_and_closed _________________
+tests\v2_backend\test_wire.py:12: in test_generated_schema_is_current_and_closed
+    assert hashlib.sha256(source).hexdigest() == SCHEMA["source_sha256"]
+E   AssertionError: assert 'e442060f45f2...005a014dbacec' == '251a71f7427e...b630c9e304c64'
+E     
+E     - 251a71f7427e30cd74473366be86337af3c18adfd81b1cee876b630c9e304c64
+E     + e442060f45f20eaffffc7e50ae91e429824e648ffc55952beab005a014dbacec
+============================== warnings summary ===============================
+.venv\Lib\site-packages\opentelemetry\util\_importlib_metadata.py:32
+  C:\Users\WEIXUANXIE\Desktop\DoxAgent\.venv\Lib\site-packages\opentelemetry\util\_importlib_metadata.py:32: DeprecationWarning: SelectableGroups dict interface is deprecated. Use select.
+    return EntryPoints(ep for group_eps in eps.values() for ep in group_eps)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/v2_backend/test_wire.py::test_generated_schema_is_current_and_closed
+1 failed, 149 passed, 1 warning in 259.69s (0:04:19)

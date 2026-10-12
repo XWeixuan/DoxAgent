@@ -1,0 +1,11 @@
+{
+  "schema_version": "codex-research-node-context-v1",
+  "workflow_version": "codex_global_research_v1",
+  "research_lane": "global_research",
+  "run_id": "c4-mu-local-20261009-02",
+  "node": "c4f_future_nodes",
+  "payload": {
+    "ticker": "MU",
+    "preflight": true
+  }
+}

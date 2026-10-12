@@ -1,0 +1,18 @@
+{
+  "alias": "O16",
+  "title": "sections 1 — metadata",
+  "content": {
+    "section": "Business",
+    "heading_match": "Business",
+    "start_offset": 244112,
+    "end_offset": 324121,
+    "full_text_chars": 80000,
+    "returned_chars": 40000,
+    "truncated": true,
+    "match_quality": "substantive_body"
+  },
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

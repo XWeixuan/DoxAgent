@@ -1,0 +1,234 @@
+{
+  "ticker": "BE",
+  "part": 1,
+  "record_count": 5,
+  "records": [
+    {
+      "intent_id": "trade:case_d352e02e723b459486242d142db27af3",
+      "ticker": "BE",
+      "case_id": "case_d352e02e723b459486242d142db27af3",
+      "direction": "SHORT",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "intent_released_at_utc": "2026-09-24T14:43:36.499608+00:00",
+      "intent_released_at_et": "2026-09-24T10:43:36.499608-04:00",
+      "entry_basis": "actual_fill",
+      "entry_at_utc": "2026-09-24T14:43:44+00:00",
+      "cycle_end_utc": "2026-09-24T19:30:00+00:00",
+      "cycle_end_et": "2026-09-24T15:30:00-04:00",
+      "actual_entry": true,
+      "actual_exit": true,
+      "entry_price_usd": "257.2",
+      "entry_evidence": {
+        "source": "actual_broker_fill",
+        "fill": {
+          "side": "SELL",
+          "quantity": "78",
+          "average_price_usd": "257.2",
+          "first_fill_at": "2026-09-24T14:43:44+00:00",
+          "last_fill_at": "2026-09-24T14:43:44+00:00"
+        }
+      },
+      "exit_evidence": {
+        "query_key": "BE|2026-09-24T19:30:00+00:00|exit",
+        "status": "ok",
+        "selected": {
+          "exchange": "FINRA",
+          "offset_seconds": 1.0,
+          "price_usd": 267.69,
+          "special_conditions": "    ",
+          "timestamp_utc": "2026-09-24T19:30:01+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-09-24T19:30:00+00:00",
+        "error": null
+      },
+      "exit_price_usd": "267.69",
+      "return_pct": "-4.0785",
+      "classification": "loss"
+    },
+    {
+      "intent_id": "trade:case_3ea75c51070f43cfbf3f95b2180433dc",
+      "ticker": "BE",
+      "case_id": "case_3ea75c51070f43cfbf3f95b2180433dc",
+      "direction": "SHORT",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "intent_released_at_utc": "2026-09-24T15:54:57.710005+00:00",
+      "intent_released_at_et": "2026-09-24T11:54:57.710005-04:00",
+      "entry_basis": "actual_fill",
+      "entry_at_utc": "2026-09-24T15:55:01+00:00",
+      "cycle_end_utc": "2026-09-24T19:30:00+00:00",
+      "cycle_end_et": "2026-09-24T15:30:00-04:00",
+      "actual_entry": true,
+      "actual_exit": true,
+      "entry_price_usd": "258.93",
+      "entry_evidence": {
+        "source": "actual_broker_fill",
+        "fill": {
+          "side": "SELL",
+          "quantity": "78",
+          "average_price_usd": "258.93",
+          "first_fill_at": "2026-09-24T15:55:01+00:00",
+          "last_fill_at": "2026-09-24T15:55:01+00:00"
+        }
+      },
+      "exit_evidence": {
+        "query_key": "BE|2026-09-24T19:30:00+00:00|exit",
+        "status": "ok",
+        "selected": {
+          "exchange": "FINRA",
+          "offset_seconds": 1.0,
+          "price_usd": 267.69,
+          "special_conditions": "    ",
+          "timestamp_utc": "2026-09-24T19:30:01+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-09-24T19:30:00+00:00",
+        "error": null
+      },
+      "exit_price_usd": "267.69",
+      "return_pct": "-3.3832",
+      "classification": "loss"
+    },
+    {
+      "intent_id": "trade:case_403144dc6a504d0582477529846097d8",
+      "ticker": "BE",
+      "case_id": "case_403144dc6a504d0582477529846097d8",
+      "direction": "SHORT",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "intent_released_at_utc": "2026-09-24T20:53:05.624032+00:00",
+      "intent_released_at_et": "2026-09-24T16:53:05.624032-04:00",
+      "entry_basis": "hypothetical_trade_tick",
+      "entry_at_utc": "2026-09-24T20:53:05.624032+00:00",
+      "cycle_end_utc": "2026-09-25T19:30:00+00:00",
+      "cycle_end_et": "2026-09-25T15:30:00-04:00",
+      "actual_entry": false,
+      "actual_exit": false,
+      "entry_evidence": {
+        "query_key": "BE|2026-09-24T20:53:05.624032+00:00|entry",
+        "status": "ok",
+        "selected": {
+          "exchange": "FINRA",
+          "offset_seconds": 20.375968,
+          "price_usd": 265.71,
+          "special_conditions": "  T ",
+          "timestamp_utc": "2026-09-24T20:53:26+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-09-24T20:53:15+00:00",
+        "error": null
+      },
+      "entry_price_usd": "265.71",
+      "exit_evidence": {
+        "query_key": "BE|2026-09-25T19:30:00+00:00|exit",
+        "status": "ok",
+        "selected": {
+          "exchange": "FINRA",
+          "offset_seconds": 1.0,
+          "price_usd": 290.33,
+          "special_conditions": "    ",
+          "timestamp_utc": "2026-09-25T19:30:01+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-09-25T19:30:00+00:00",
+        "error": null
+      },
+      "exit_price_usd": "290.33",
+      "return_pct": "-9.2657",
+      "classification": "loss"
+    },
+    {
+      "intent_id": "trade:case_c86c75f6556a499a8960974922aae41b",
+      "ticker": "BE",
+      "case_id": "case_c86c75f6556a499a8960974922aae41b",
+      "direction": "SHORT",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "intent_released_at_utc": "2026-09-24T20:53:31.163706+00:00",
+      "intent_released_at_et": "2026-09-24T16:53:31.163706-04:00",
+      "entry_basis": "hypothetical_trade_tick",
+      "entry_at_utc": "2026-09-24T20:53:31.163706+00:00",
+      "cycle_end_utc": "2026-09-25T19:30:00+00:00",
+      "cycle_end_et": "2026-09-25T15:30:00-04:00",
+      "actual_entry": false,
+      "actual_exit": false,
+      "entry_evidence": {
+        "query_key": "BE|2026-09-24T20:53:31.163706+00:00|entry",
+        "status": "ok",
+        "selected": {
+          "exchange": "FINRA",
+          "offset_seconds": 30.836294,
+          "price_usd": 265.71,
+          "special_conditions": "  T ",
+          "timestamp_utc": "2026-09-24T20:54:02+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-09-24T20:53:35+00:00",
+        "error": null
+      },
+      "entry_price_usd": "265.71",
+      "exit_evidence": {
+        "query_key": "BE|2026-09-25T19:30:00+00:00|exit",
+        "status": "ok",
+        "selected": {
+          "exchange": "FINRA",
+          "offset_seconds": 1.0,
+          "price_usd": 290.33,
+          "special_conditions": "    ",
+          "timestamp_utc": "2026-09-25T19:30:01+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-09-25T19:30:00+00:00",
+        "error": null
+      },
+      "exit_price_usd": "290.33",
+      "return_pct": "-9.2657",
+      "classification": "loss"
+    },
+    {
+      "intent_id": "trade:case_2889fbb92ed94d4a85cc07264be4bb87",
+      "ticker": "BE",
+      "case_id": "case_2889fbb92ed94d4a85cc07264be4bb87",
+      "direction": "SHORT",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "intent_released_at_utc": "2026-09-24T21:11:59.801735+00:00",
+      "intent_released_at_et": "2026-09-24T17:11:59.801735-04:00",
+      "entry_basis": "hypothetical_trade_tick",
+      "entry_at_utc": "2026-09-24T21:11:59.801735+00:00",
+      "cycle_end_utc": "2026-09-25T19:30:00+00:00",
+      "cycle_end_et": "2026-09-25T15:30:00-04:00",
+      "actual_entry": false,
+      "actual_exit": false,
+      "entry_evidence": {
+        "query_key": "BE|2026-09-24T21:11:59.801735+00:00|entry",
+        "status": "ok",
+        "selected": {
+          "exchange": "ARCA",
+          "offset_seconds": 32.198265,
+          "price_usd": 265.88,
+          "special_conditions": "  TI",
+          "timestamp_utc": "2026-09-24T21:12:32+00:00",
+          "unreported": true
+        },
+        "first_event_utc": "2026-09-24T21:12:32+00:00",
+        "error": null
+      },
+      "entry_price_usd": "265.88",
+      "exit_evidence": {
+        "query_key": "BE|2026-09-25T19:30:00+00:00|exit",
+        "status": "ok",
+        "selected": {
+          "exchange": "FINRA",
+          "offset_seconds": 1.0,
+          "price_usd": 290.33,
+          "special_conditions": "    ",
+          "timestamp_utc": "2026-09-25T19:30:01+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-09-25T19:30:00+00:00",
+        "error": null
+      },
+      "exit_price_usd": "290.33",
+      "return_pct": "-9.1959",
+      "classification": "loss"
+    }
+  ]
+}

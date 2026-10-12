@@ -1,0 +1,21 @@
+{
+  "alias": "O1",
+  "title": "MICRON TECHNOLOGY INC",
+  "content": {
+    "name": "MICRON TECHNOLOGY INC",
+    "tickers": [
+      "MU"
+    ],
+    "exchanges": [
+      "Nasdaq"
+    ],
+    "sic": "3674",
+    "sic_description": "Semiconductors & Related Devices",
+    "entity_type": "operating",
+    "fiscal_year_end": "0903"
+  },
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "sec:issuer:0000723125"
+  }
+}

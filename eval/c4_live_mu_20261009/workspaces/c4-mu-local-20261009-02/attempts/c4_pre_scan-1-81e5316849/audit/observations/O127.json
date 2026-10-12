@@ -1,0 +1,9 @@
+{
+  "alias": "O127",
+  "title": "published_at",
+  "content": "2026-10-09",
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

@@ -1,0 +1,721 @@
+{
+  "alias": "O32",
+  "title": "filings 1-20",
+  "content": {
+    "columns": [
+      "accession",
+      "exhibits",
+      "filing_date",
+      "filing_index_url",
+      "form",
+      "primary_document",
+      "report_date"
+    ],
+    "rows": [
+      {
+        "form": "10-K",
+        "accession": "0000723125-26-000023",
+        "filing_date": "2026-10-09",
+        "report_date": "2026-09-03",
+        "primary_document": "mu-20260903.htm",
+        "filing_index_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/0000723125-26-000023-index.html",
+        "exhibits": [
+          {
+            "sequence": "2",
+            "type": "EX-10.20",
+            "description": "EX-10.20",
+            "filename": "a2026q4ex10orm2025awardagr.htm",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/a2026q4ex10orm2025awardagr.htm",
+            "size_bytes": "920046"
+          },
+          {
+            "sequence": "3",
+            "type": "EX-10.22",
+            "description": "EX-10.22 FORM 2025 AWARD AGREEMENTS FOR 2025 PLAN",
+            "filename": "a2026q4ex1022-form2025awar.htm",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/a2026q4ex1022-form2025awar.htm",
+            "size_bytes": "1042906"
+          },
+          {
+            "sequence": "4",
+            "type": "EX-19.1",
+            "description": "EX-19.1 INSIDER TRADING POLICY",
+            "filename": "a2026q4ex191-insidertradin.htm",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/a2026q4ex191-insidertradin.htm",
+            "size_bytes": "74691"
+          },
+          {
+            "sequence": "5",
+            "type": "EX-21.1",
+            "description": "EX-21.1 SUBSIDIARIES OF THE REGISTRANT",
+            "filename": "a2026q4ex211-subsidiarieso.htm",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/a2026q4ex211-subsidiarieso.htm",
+            "size_bytes": "14003"
+          },
+          {
+            "sequence": "6",
+            "type": "EX-23.1",
+            "description": "EX-23.1 CONSENT OF INDEPENDENT REGISTERED PUBLIC ACCOUNTING FIRM",
+            "filename": "a2026q4ex231-consentofinde.htm",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/a2026q4ex231-consentofinde.htm",
+            "size_bytes": "2208"
+          },
+          {
+            "sequence": "7",
+            "type": "EX-31.1",
+            "description": "EX-31.1 CEO CERT",
+            "filename": "ex311-ceocertq4x26.htm",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/ex311-ceocertq4x26.htm",
+            "size_bytes": "9994"
+          },
+          {
+            "sequence": "8",
+            "type": "EX-31.2",
+            "description": "EX-31.2 CFO CERT",
+            "filename": "ex312-cfocertq4x26.htm",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/ex312-cfocertq4x26.htm",
+            "size_bytes": "9992"
+          },
+          {
+            "sequence": "9",
+            "type": "EX-32.1",
+            "description": "EX-32.1 906 CEO CERT",
+            "filename": "ex321-906ceocertq4x26.htm",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/ex321-906ceocertq4x26.htm",
+            "size_bytes": "3808"
+          },
+          {
+            "sequence": "10",
+            "type": "EX-32.2",
+            "description": "EX-32.2 906 CFO CERT",
+            "filename": "ex322-906cfocertq4x26.htm",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/ex322-906cfocertq4x26.htm",
+            "size_bytes": "3852"
+          },
+          {
+            "sequence": "11",
+            "type": "EX-101.SCH",
+            "description": "XBRL TAXONOMY EXTENSION SCHEMA DOCUMENT",
+            "filename": "mu-20260903.xsd",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.xsd",
+            "size_bytes": "64693"
+          },
+          {
+            "sequence": "12",
+            "type": "EX-101.CAL",
+            "description": "XBRL TAXONOMY EXTENSION CALCULATION LINKBASE DOCUMENT",
+            "filename": "mu-20260903_cal.xml",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903_cal.xml",
+            "size_bytes": "107516"
+          },
+          {
+            "sequence": "13",
+            "type": "EX-101.DEF",
+            "description": "XBRL TAXONOMY EXTENSION DEFINITION LINKBASE DOCUMENT",
+            "filename": "mu-20260903_def.xml",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903_def.xml",
+            "size_bytes": "372294"
+          },
+          {
+            "sequence": "14",
+            "type": "EX-101.LAB",
+            "description": "XBRL TAXONOMY EXTENSION LABEL LINKBASE DOCUMENT",
+            "filename": "mu-20260903_lab.xml",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903_lab.xml",
+            "size_bytes": "929577"
+          },
+          {
+            "sequence": "15",
+            "type": "EX-101.PRE",
+            "description": "XBRL TAXONOMY EXTENSION PRESENTATION LINKBASE DOCUMENT",
+            "filename": "mu-20260903_pre.xml",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903_pre.xml",
+            "size_bytes": "637132"
+          }
+        ]
+      },
+      {
+        "form": "8-K",
+        "accession": "0000723125-26-000018",
+        "filing_date": "2026-09-30",
+        "report_date": "2026-09-30",
+        "primary_document": "mu-20260930.htm",
+        "filing_index_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000018/0000723125-26-000018-index.html",
+        "exhibits": [
+          {
+            "sequence": "2",
+            "type": "EX-99.1",
+            "description": "EX-99.1 EARNINGS RELEASE",
+            "filename": "a2026q4ex991-pressrelease.htm",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000018/a2026q4ex991-pressrelease.htm",
+            "size_bytes": "356891"
+          },
+          {
+            "sequence": "3",
+            "type": "EX-101.SCH",
+            "description": "XBRL TAXONOMY EXTENSION SCHEMA DOCUMENT",
+            "filename": "mu-20260930.xsd",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000018/mu-20260930.xsd",
+            "size_bytes": "1773"
+          },
+          {
+            "sequence": "4",
+            "type": "EX-101.LAB",
+            "description": "XBRL TAXONOMY EXTENSION LABEL LINKBASE DOCUMENT",
+            "filename": "mu-20260930_lab.xml",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000018/mu-20260930_lab.xml",
+            "size_bytes": "21629"
+          },
+          {
+            "sequence": "5",
+            "type": "EX-101.PRE",
+            "description": "XBRL TAXONOMY EXTENSION PRESENTATION LINKBASE DOCUMENT",
+            "filename": "mu-20260930_pre.xml",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000018/mu-20260930_pre.xml",
+            "size_bytes": "12504"
+          }
+        ]
+      },
+      {
+        "form": "8-K",
+        "accession": "0001104659-26-101067",
+        "filing_date": "2026-08-26",
+        "report_date": "2026-08-24",
+        "primary_document": "tm2624017d1_8k.htm",
+        "filing_index_url": "https://www.sec.gov/Archives/edgar/data/723125/000110465926101067/0001104659-26-101067-index.html",
+        "exhibits": [
+          {
+            "sequence": "2",
+            "type": "EX-99.1",
+            "description": "EXHIBIT 99.1",
+            "filename": "tm2624017d1_ex99-1.htm",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000110465926101067/tm2624017d1_ex99-1.htm",
+            "size_bytes": "10880"
+          },
+          {
+            "sequence": "3",
+            "type": "EX-101.SCH",
+            "description": "XBRL TAXONOMY EXTENSION SCHEMA",
+            "filename": "mu-20260824.xsd",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000110465926101067/mu-20260824.xsd",
+            "size_bytes": "3002"
+          },
+          {
+            "sequence": "4",
+            "type": "EX-101.LAB",
+            "description": "XBRL TAXONOMY EXTENSION LABEL LINKBASE",
+            "filename": "mu-20260824_lab.xml",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000110465926101067/mu-20260824_lab.xml",
+            "size_bytes": "34239"
+          },
+          {
+            "sequence": "5",
+            "type": "EX-101.PRE",
+            "description": "XBRL TAXONOMY EXTENSION PRESENTATION LINKBASE",
+            "filename": "mu-20260824_pre.xml",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000110465926101067/mu-20260824_pre.xml",
+            "size_bytes": "22352"
+          }
+        ]
+      },
+      {
+        "form": "10-Q",
+        "accession": "0000723125-26-000015",
+        "filing_date": "2026-06-25",
+        "report_date": "2026-05-28",
+        "primary_document": "mu-20260528.htm",
+        "filing_index_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000015/0000723125-26-000015-index.html",
+        "exhibits": [
+          {
+            "sequence": "2",
+            "type": "EX-10.1",
+            "description": "EX-10.1 AMENDMENT NO. 3 TO THE DIRECT FUNDING AGREEMENT (IDAHO)",
+            "filename": "ex101-amendmentno3tothedir.htm",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000015/ex101-amendmentno3tothedir.htm",
+            "size_bytes": "30780"
+          },
+          {
+            "sequence": "3",
+            "type": "EX-10.2",
+            "description": "EX-10.2 AMENDMENT NO. 3 TO THE DIRECT FUNDING AGREEMENT (NEW YORK)",
+            "filename": "ex102-amendmentno3tothedir.htm",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000015/ex102-amendmentno3tothedir.htm",
+            "size_bytes": "50877"
+          },
+          {
+            "sequence": "4",
+            "type": "EX-31.1",
+            "description": "EX-31.1 CEO CERT",
+            "filename": "ex311-ceocertq3x26.htm",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000015/ex311-ceocertq3x26.htm",
+            "size_bytes": "9954"
+          },
+          {
+            "sequence": "5",
+            "type": "EX-31.2",
+            "description": "EX-31.2 CFO CERT",
+            "filename": "ex312-cfocertq3x26.htm",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000015/ex312-cfocertq3x26.htm",
+            "size_bytes": "9901"
+          },
+          {
+            "sequence": "6",
+            "type": "EX-32.1",
+            "description": "EX-32.1 906 CEO CERT",
+            "filename": "ex321-906ceocertq3x26.htm",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000015/ex321-906ceocertq3x26.htm",
+            "size_bytes": "3766"
+          },
+          {
+            "sequence": "7",
+            "type": "EX-32.2",
+            "description": "EX-32.2 906 CFO CERT",
+            "filename": "ex322-906cfocertq3x26.htm",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000015/ex322-906cfocertq3x26.htm",
+            "size_bytes": "3758"
+          },
+          {
+            "sequence": "8",
+            "type": "EX-101.SCH",
+            "description": "XBRL TAXONOMY EXTENSION SCHEMA DOCUMENT",
+            "filename": "mu-20260528.xsd",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000015/mu-20260528.xsd",
+            "size_bytes": "43279"
+          },
+          {
+            "sequence": "9",
+            "type": "EX-101.CAL",
+            "description": "XBRL TAXONOMY EXTENSION CALCULATION LINKBASE DOCUMENT",
+            "filename": "mu-20260528_cal.xml",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000015/mu-20260528_cal.xml",
+            "size_bytes": "71142"
+          },
+          {
+            "sequence": "10",
+            "type": "EX-101.DEF",
+            "description": "XBRL TAXONOMY EXTENSION DEFINITION LINKBASE DOCUMENT",
+            "filename": "mu-20260528_def.xml",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000015/mu-20260528_def.xml",
+            "size_bytes": "221148"
+          },
+          {
+            "sequence": "11",
+            "type": "EX-101.LAB",
+            "description": "XBRL TAXONOMY EXTENSION LABEL LINKBASE DOCUMENT",
+            "filename": "mu-20260528_lab.xml",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000015/mu-20260528_lab.xml",
+            "size_bytes": "633774"
+          },
+          {
+            "sequence": "12",
+            "type": "EX-101.PRE",
+            "description": "XBRL TAXONOMY EXTENSION PRESENTATION LINKBASE DOCUMENT",
+            "filename": "mu-20260528_pre.xml",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000015/mu-20260528_pre.xml",
+            "size_bytes": "423458"
+          }
+        ]
+      },
+      {
+        "form": "8-K",
+        "accession": "0000723125-26-000013",
+        "filing_date": "2026-06-24",
+        "report_date": "2026-06-24",
+        "primary_document": "mu-20260624.htm",
+        "filing_index_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000013/0000723125-26-000013-index.html",
+        "exhibits": [
+          {
+            "sequence": "2",
+            "type": "EX-99.1",
+            "description": "EX-99.1 - PRESS RELEASE",
+            "filename": "a2026q3ex991-pressrelease.htm",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000013/a2026q3ex991-pressrelease.htm",
+            "size_bytes": "291528"
+          },
+          {
+            "sequence": "3",
+            "type": "EX-101.SCH",
+            "description": "XBRL TAXONOMY EXTENSION SCHEMA DOCUMENT",
+            "filename": "mu-20260624.xsd",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000013/mu-20260624.xsd",
+            "size_bytes": "1773"
+          },
+          {
+            "sequence": "4",
+            "type": "EX-101.LAB",
+            "description": "XBRL TAXONOMY EXTENSION LABEL LINKBASE DOCUMENT",
+            "filename": "mu-20260624_lab.xml",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000013/mu-20260624_lab.xml",
+            "size_bytes": "21629"
+          },
+          {
+            "sequence": "5",
+            "type": "EX-101.PRE",
+            "description": "XBRL TAXONOMY EXTENSION PRESENTATION LINKBASE DOCUMENT",
+            "filename": "mu-20260624_pre.xml",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000013/mu-20260624_pre.xml",
+            "size_bytes": "12504"
+          }
+        ]
+      },
+      {
+        "form": "8-K",
+        "accession": "0001104659-26-071845",
+        "filing_date": "2026-06-09",
+        "report_date": "2026-06-09",
+        "primary_document": "tm2617112d1_8k.htm",
+        "filing_index_url": "https://www.sec.gov/Archives/edgar/data/723125/000110465926071845/0001104659-26-071845-index.html",
+        "exhibits": [
+          {
+            "sequence": "2",
+            "type": "EX-99.1",
+            "description": "EXHIBIT 99.1",
+            "filename": "tm2617112d1_ex99-1.htm",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000110465926071845/tm2617112d1_ex99-1.htm",
+            "size_bytes": "7756"
+          },
+          {
+            "sequence": "3",
+            "type": "EX-101.SCH",
+            "description": "XBRL TAXONOMY EXTENSION SCHEMA",
+            "filename": "mu-20260609.xsd",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000110465926071845/mu-20260609.xsd",
+            "size_bytes": "3002"
+          },
+          {
+            "sequence": "4",
+            "type": "EX-101.LAB",
+            "description": "XBRL TAXONOMY EXTENSION LABEL LINKBASE",
+            "filename": "mu-20260609_lab.xml",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000110465926071845/mu-20260609_lab.xml",
+            "size_bytes": "34239"
+          },
+          {
+            "sequence": "5",
+            "type": "EX-101.PRE",
+            "description": "XBRL TAXONOMY EXTENSION PRESENTATION LINKBASE",
+            "filename": "mu-20260609_pre.xml",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000110465926071845/mu-20260609_pre.xml",
+            "size_bytes": "22352"
+          }
+        ]
+      },
+      {
+        "form": "8-K",
+        "accession": "0001104659-26-038249",
+        "filing_date": "2026-04-01",
+        "report_date": "2026-03-31",
+        "primary_document": "tm2610810d1_8k.htm",
+        "filing_index_url": "https://www.sec.gov/Archives/edgar/data/723125/000110465926038249/0001104659-26-038249-index.html",
+        "exhibits": [
+          {
+            "sequence": "2",
+            "type": "EX-99.1",
+            "description": "EXHIBIT 99-1",
+            "filename": "tm2610810d1_ex99-1.htm",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000110465926038249/tm2610810d1_ex99-1.htm",
+            "size_bytes": "27247"
+          },
+          {
+            "sequence": "3",
+            "type": "EX-99.2",
+            "description": "EXHIBIT 99.2",
+            "filename": "tm2610810d1_ex99-2.htm",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000110465926038249/tm2610810d1_ex99-2.htm",
+            "size_bytes": "19441"
+          },
+          {
+            "sequence": "4",
+            "type": "EX-101.SCH",
+            "description": "XBRL TAXONOMY EXTENSION SCHEMA",
+            "filename": "mu-20260331.xsd",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000110465926038249/mu-20260331.xsd",
+            "size_bytes": "3002"
+          },
+          {
+            "sequence": "5",
+            "type": "EX-101.LAB",
+            "description": "XBRL TAXONOMY EXTENSION LABEL LINKBASE",
+            "filename": "mu-20260331_lab.xml",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000110465926038249/mu-20260331_lab.xml",
+            "size_bytes": "34239"
+          },
+          {
+            "sequence": "6",
+            "type": "EX-101.PRE",
+            "description": "XBRL TAXONOMY EXTENSION PRESENTATION LINKBASE",
+            "filename": "mu-20260331_pre.xml",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000110465926038249/mu-20260331_pre.xml",
+            "size_bytes": "22352"
+          }
+        ]
+      },
+      {
+        "form": "8-K",
+        "accession": "0001104659-26-034174",
+        "filing_date": "2026-03-25",
+        "report_date": "2026-03-25",
+        "primary_document": "tm269755d1_8k.htm",
+        "filing_index_url": "https://www.sec.gov/Archives/edgar/data/723125/000110465926034174/0001104659-26-034174-index.html",
+        "exhibits": [
+          {
+            "sequence": "2",
+            "type": "EX-99.1",
+            "description": "EXHIBIT 99.1",
+            "filename": "tm269755d1_ex99-1.htm",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000110465926034174/tm269755d1_ex99-1.htm",
+            "size_bytes": "19887"
+          },
+          {
+            "sequence": "3",
+            "type": "EX-101.SCH",
+            "description": "XBRL TAXONOMY EXTENSION SCHEMA",
+            "filename": "mu-20260325.xsd",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000110465926034174/mu-20260325.xsd",
+            "size_bytes": "3002"
+          },
+          {
+            "sequence": "4",
+            "type": "EX-101.LAB",
+            "description": "XBRL TAXONOMY EXTENSION LABEL LINKBASE",
+            "filename": "mu-20260325_lab.xml",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000110465926034174/mu-20260325_lab.xml",
+            "size_bytes": "34239"
+          },
+          {
+            "sequence": "5",
+            "type": "EX-101.PRE",
+            "description": "XBRL TAXONOMY EXTENSION PRESENTATION LINKBASE",
+            "filename": "mu-20260325_pre.xml",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000110465926034174/mu-20260325_pre.xml",
+            "size_bytes": "22352"
+          }
+        ]
+      },
+      {
+        "form": "10-Q",
+        "accession": "0000723125-26-000006",
+        "filing_date": "2026-03-19",
+        "report_date": "2026-02-26",
+        "primary_document": "mu-20260226.htm",
+        "filing_index_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000006/0000723125-26-000006-index.html",
+        "exhibits": [
+          {
+            "sequence": "2",
+            "type": "EX-3.1",
+            "description": "EX-3.1 RESTATED CERTIFICATE OF INCORPORATION & AMENDMENTS",
+            "filename": "ex31-restatedcertificateof.htm",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000006/ex31-restatedcertificateof.htm",
+            "size_bytes": "27155"
+          },
+          {
+            "sequence": "3",
+            "type": "EX-10.1",
+            "description": "EX-10.1 2025 EQUITY INCENTIVE PLAN FORMS OF AGREEMENT",
+            "filename": "ex101-2025equityincentivep.htm",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000006/ex101-2025equityincentivep.htm",
+            "size_bytes": "463680"
+          },
+          {
+            "sequence": "4",
+            "type": "EX-31.1",
+            "description": "EX-31.1 CEO CERT",
+            "filename": "ex311-ceocertq2x26.htm",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000006/ex311-ceocertq2x26.htm",
+            "size_bytes": "9955"
+          },
+          {
+            "sequence": "5",
+            "type": "EX-31.2",
+            "description": "EX-31.2 CFO CERT",
+            "filename": "ex312-cfocertq2x26.htm",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000006/ex312-cfocertq2x26.htm",
+            "size_bytes": "9902"
+          },
+          {
+            "sequence": "6",
+            "type": "EX-32.1",
+            "description": "EX-32.1 906 CEO CERT",
+            "filename": "ex321-906ceocertq2x26.htm",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000006/ex321-906ceocertq2x26.htm",
+            "size_bytes": "3772"
+          },
+          {
+            "sequence": "7",
+            "type": "EX-32.2",
+            "description": "EX-32.2 906 CFO CERT",
+            "filename": "ex322-906cfocertq2x26.htm",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000006/ex322-906cfocertq2x26.htm",
+            "size_bytes": "3764"
+          },
+          {
+            "sequence": "8",
+            "type": "EX-101.SCH",
+            "description": "XBRL TAXONOMY EXTENSION SCHEMA DOCUMENT",
+            "filename": "mu-20260226.xsd",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000006/mu-20260226.xsd",
+            "size_bytes": "43972"
+          },
+          {
+            "sequence": "9",
+            "type": "EX-101.CAL",
+            "description": "XBRL TAXONOMY EXTENSION CALCULATION LINKBASE DOCUMENT",
+            "filename": "mu-20260226_cal.xml",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000006/mu-20260226_cal.xml",
+            "size_bytes": "71142"
+          },
+          {
+            "sequence": "10",
+            "type": "EX-101.DEF",
+            "description": "XBRL TAXONOMY EXTENSION DEFINITION LINKBASE DOCUMENT",
+            "filename": "mu-20260226_def.xml",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000006/mu-20260226_def.xml",
+            "size_bytes": "211776"
+          },
+          {
+            "sequence": "11",
+            "type": "EX-101.LAB",
+            "description": "XBRL TAXONOMY EXTENSION LABEL LINKBASE DOCUMENT",
+            "filename": "mu-20260226_lab.xml",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000006/mu-20260226_lab.xml",
+            "size_bytes": "623421"
+          },
+          {
+            "sequence": "12",
+            "type": "EX-101.PRE",
+            "description": "XBRL TAXONOMY EXTENSION PRESENTATION LINKBASE DOCUMENT",
+            "filename": "mu-20260226_pre.xml",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000006/mu-20260226_pre.xml",
+            "size_bytes": "416270"
+          }
+        ]
+      },
+      {
+        "form": "8-K",
+        "accession": "0000723125-26-000004",
+        "filing_date": "2026-03-18",
+        "report_date": "2026-03-18",
+        "primary_document": "mu-20260318.htm",
+        "filing_index_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000004/0000723125-26-000004-index.html",
+        "exhibits": [
+          {
+            "sequence": "2",
+            "type": "EX-99.1",
+            "description": "EX-99.1 EARNINGS RELEASE",
+            "filename": "a2026q2ex991-pressrelease.htm",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000004/a2026q2ex991-pressrelease.htm",
+            "size_bytes": "288019"
+          },
+          {
+            "sequence": "3",
+            "type": "EX-101.SCH",
+            "description": "XBRL TAXONOMY EXTENSION SCHEMA DOCUMENT",
+            "filename": "mu-20260318.xsd",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000004/mu-20260318.xsd",
+            "size_bytes": "1773"
+          },
+          {
+            "sequence": "4",
+            "type": "EX-101.LAB",
+            "description": "XBRL TAXONOMY EXTENSION LABEL LINKBASE DOCUMENT",
+            "filename": "mu-20260318_lab.xml",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000004/mu-20260318_lab.xml",
+            "size_bytes": "21629"
+          },
+          {
+            "sequence": "5",
+            "type": "EX-101.PRE",
+            "description": "XBRL TAXONOMY EXTENSION PRESENTATION LINKBASE DOCUMENT",
+            "filename": "mu-20260318_pre.xml",
+            "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000004/mu-20260318_pre.xml",
+            "size_bytes": "12504"
+          }
+        ]
+      },
+      {
+        "form": "8-K",
+        "accession": "0001104659-26-005366",
+        "filing_date": "2026-01-21",
+        "report_date": "2026-01-15",
+        "primary_document": "tm263707d1_8k.htm",
+        "filing_index_url": "https://www.sec.gov/Archives/edgar/data/723125/000110465926005366/0001104659-26-005366-index.html"
+      },
+      {
+        "form": "10-Q",
+        "accession": "0000723125-25-000046",
+        "filing_date": "2025-12-18",
+        "report_date": "2025-11-27",
+        "primary_document": "mu-20251127.htm",
+        "filing_index_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312525000046/0000723125-25-000046-index.html"
+      },
+      {
+        "form": "10-K",
+        "accession": "0000723125-25-000028",
+        "filing_date": "2025-10-03",
+        "report_date": "2025-08-28",
+        "primary_document": "mu-20250828.htm",
+        "filing_index_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312525000028/0000723125-25-000028-index.html"
+      },
+      {
+        "form": "10-Q",
+        "accession": "0000723125-25-000021",
+        "filing_date": "2025-06-26",
+        "report_date": "2025-05-29",
+        "primary_document": "mu-20250529.htm",
+        "filing_index_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312525000021/0000723125-25-000021-index.html"
+      },
+      {
+        "form": "10-Q",
+        "accession": "0000723125-25-000009",
+        "filing_date": "2025-03-21",
+        "report_date": "2025-02-27",
+        "primary_document": "mu-20250227.htm",
+        "filing_index_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312525000009/0000723125-25-000009-index.html"
+      },
+      {
+        "form": "10-Q",
+        "accession": "0000723125-24-000047",
+        "filing_date": "2024-12-19",
+        "report_date": "2024-11-28",
+        "primary_document": "mu-20241128.htm",
+        "filing_index_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312524000047/0000723125-24-000047-index.html"
+      },
+      {
+        "form": "10-K",
+        "accession": "0000723125-24-000027",
+        "filing_date": "2024-10-04",
+        "report_date": "2024-08-29",
+        "primary_document": "mu-20240829.htm",
+        "filing_index_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312524000027/0000723125-24-000027-index.html"
+      },
+      {
+        "form": "10-Q",
+        "accession": "0000723125-24-000019",
+        "filing_date": "2024-06-27",
+        "report_date": "2024-05-30",
+        "primary_document": "mu-20240530.htm",
+        "filing_index_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312524000019/0000723125-24-000019-index.html"
+      },
+      {
+        "form": "10-Q",
+        "accession": "0000723125-24-000007",
+        "filing_date": "2024-03-21",
+        "report_date": "2024-02-29",
+        "primary_document": "mu-20240229.htm",
+        "filing_index_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312524000007/0000723125-24-000007-index.html"
+      },
+      {
+        "form": "10-K",
+        "accession": "0000723125-23-000054",
+        "filing_date": "2023-10-06",
+        "report_date": "2023-08-31",
+        "primary_document": "mu-20230831.htm",
+        "filing_index_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312523000054/0000723125-23-000054-index.html"
+      }
+    ]
+  },
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "sec:issuer:0000723125"
+  }
+}

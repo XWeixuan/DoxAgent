@@ -1,0 +1,9 @@
+{
+  "alias": "O237",
+  "title": "text paragraphs 149",
+  "content": "|  |  | Three months ended |  | Six months ended |\n\n| Net income attributable to IDACORP, Inc. - June 30, 2025 |  |  |  | $ | 95.8 |  |  |  |  | $ | 155.4 |  |\n\n|  Increase (decrease) in Idaho Power net income: |  |  |  |  |  |  |  |  |\n\n| Retail revenues per MWh, excluding large contract customers, net of power cost adjustment mechanisms |  | 27.5 |  |  |  |  | 44.0 |  |  |  |\n\n| Customer growth, excluding large contract customers, net of associated power supply costs and power cost adjustment mechanisms |  | 4.5 |  |  |  |  | 8.2 |  |  |  |\n\n| Usage per retail customer, excluding large contract customers, net of associated power supply costs and power cost adjustment mechanisms |  | (0.1) |  |  |  |  | (12.4) |  |  |  |\n\n|  |  |  |  |  |  |  |  |  |\n\n| Idaho fixed cost adjustment (FCA) revenues |  | 2.7 |  |  |  |  | 21.8 |  |  |  |",
+  "source": {
+    "provider": "Public web source",
+    "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+  }
+}

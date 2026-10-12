@@ -1,0 +1,35 @@
+{
+  "policy_id": "pol_0221856d49f54ae5b1104ffd97bc4de3",
+  "title": "云温数据池在高容量 QLC SSD 与 HAMR 硬盘间的选型",
+  "ref": [
+    "output/work/v21/discovery/S0001.jsonl#L9",
+    "context/document3/v21/d2/shell-0001.json#/units/3",
+    "https://investors.micron.com/news/press-release/2026/Industry-Leading-245TB-Micron-6600-ION-Data-Center-SSD-Now-Shipping/default.aspx",
+    "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx",
+    "https://investors.seagate.com/news/news-details/2026/Seagate-Delivers-Industrys-Highest-Capacity-Hard-Drives-with-Next-Generation-Mozaic-4/default.aspx"
+  ],
+  "transmission": "对象存储、数据湖及温数据池的媒体选择决定高容量 QLC SSD 能否进入原本由硬盘主导的云容量支出。对访问较频繁且受机架/电力约束的池，SSD 的密度和读取服务能力可抵消较高的每 TB 设备成本；对低访问、写入耐久或成本敏感的冷池，HAMR 仍可能更合适。美光 6600 ION 245TB 已出货并在 FY26 Q4 放量，故一项主要客户把原 HDD 温池转为常规 QLC SSD 层会扩大其已参与产品的机会；同一可替代范围若退回 HAMR，会削弱该机会。客户媒体决策不能直接等同美光获配或份额，供应商归属仍需随相关消息判断。",
+  "match_scope": "召回大型云/企业存储运营者关于温对象存储、数据湖、近线分析池的 QLC SSD 与 HAMR HDD 选型、标准层变更、迁移或撤回消息，以及美光 6600 ION 245TB 的客户部署线索。可关注云客户将原 HDD 温池改为高容量 QLC 的生产层，或因每 TB 总成本、写入耐久而把同一池转回 HAMR；这些是非穷举召回示例，不是自动命中。单盘规格、实验 TCO 模型及纯冷归档 HDD 扩容也可相关，但应按条件界定。",
+  "activation_conditions": [
+    {
+      "condition_id": "C1",
+      "decision": "LONG",
+      "trigger_layer": "MIDDLE",
+      "criterion": "主要云或企业存储运营者决定将此前以 HDD 承载、需要周期性读取的温对象存储或数据湖池，改为高容量 QLC SSD 的常规生产媒体层，用于该池的新容量或更新，而非仅为个别高性能任务采购 SSD；若同一决策明确排除美光为供应商，则不按此 LONG 条件判断。",
+      "calibration": {
+        "reference_state": "截至 2026-10-06，美光 245TB 6600 ION 已出货且 FY26 Q4 放量，Seagate 44TB HAMR 已向两家超大规模客户批量交付；D2 默认 SSD 在更温/性能敏感数据中有机会、HDD 继续服务冷成本池。现有产品出货、供应商提供的机架/电力比较和试验并未证明主要运营者已把原 HDD 温池的标准扩容媒体切换为 QLC。",
+        "trigger_boundary": "同一运营者对一个原 HDD 温数据池作出生产层级的 QLC 替换选型，已足以扩大已商业化高容量 SSD 可竞争的容量范围；无需同时披露美光新增订单或全池最终迁移量。仅推出 245TB 单盘、扩大 SSD 高性能小池、或从未适合 SSD 的冷归档继续用 HDD 均不越界。"
+      }
+    },
+    {
+      "condition_id": "C2",
+      "decision": "SHORT",
+      "trigger_layer": "MIDDLE",
+      "criterion": "主要云或企业存储运营者对原本拟以高容量 QLC SSD 承载的温对象存储或数据湖池，撤回生产层级的 QLC 迁移/扩容选择，改以 HAMR HDD 作为该同类池的常规媒体，理由涉及每 TB 总成本、写入耐久或运行约束。",
+      "calibration": {
+        "reference_state": "截至 2026-10-06，HAMR 已有云端量产，HDD 保持冷数据成本优势；QLC 高容量盘也已出货和放量，温池替代空间仍取决于实际工作负载/TCO。单独的 HAMR 出货扩张并非温池 QLC 机会被否定。",
+        "trigger_boundary": "公开 old→new 的同类温池媒体决策，即把原拟采用 QLC 的生产容量改由 HAMR 常规承载，足以缩小高容量 SSD 可替代边界；不等待美光销量下降。只是在纯冷池继续采购 HAMR，或将部分超热数据留在 SSD 之外，不越界。"
+      }
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "alias": "O81",
+  "title": "text paragraphs 20",
+  "content": "We expect memory and storage supply-demand conditions to be much tighter in calendar 2027 and 2028\n\nthan they were in 2026.\n\nIn NAND, for calendar 2026, we expect industry bit shipments to grow in the low-20s percentage range,\n\nslightly above our prior expectations. We expect Micron NAND supply to grow less than industry supply\n\ngrowth in calendar 2026. For calendar 2027 and 2028, we expect industry NAND bit shipments to grow\n\napproximately in the mid-20s percentage range and the industry to remain supply constrained in both\n\nyears.\n\nIn DRAM, for calendar 2026, we expect industry bit shipments to grow in the mid-20s percentage range.",
+  "source": {
+    "provider": "Public web source",
+    "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+  }
+}

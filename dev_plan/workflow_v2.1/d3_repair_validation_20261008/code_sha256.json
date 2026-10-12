@@ -1,0 +1,19 @@
+{
+  "src/doxagent/workflows/codex_document3/inputs_v21.py": "5b5b55dca555561a8ce7487f1d87255fa7d23604b384e157ffbb76fe2661af86",
+  "src/doxagent/workflows/codex_document3/orchestrator_v21.py": "4c21bcf496415be99bbd3bda2a05860a1c18bbe101ddde7f1fdf50b339cfb68c",
+  "src/doxagent/workflows/codex_document3/runner_v21.py": "bda2ee985f59967e7df1f0df041f9f350970061753b26feb1ade0feaa56b40d1",
+  "src/doxagent/workflows/codex_document3/schema_v21.py": "56886d6a1fff9a329c07c39be5ae5e296261a8e23e710b757b7c4e567ebd05c5",
+  "src/doxagent/workflows/codex_document3/state_v21.py": "c57f8d42f8726244824479d2066f4fec8abfc19d6f3e9ec83b7cff0e747dd65e",
+  "src/doxagent/workflows/codex_document3/validation_v21.py": "19fa7d7fcfc6e1d9824226b08a6438743df6a5fe85c58ca7597f2267012c2624",
+  "src/doxagent/workflows/codex_document3/integration_v21.py": "8bdd4191cbd2b7bede62e7f9a6b901bc318b5fb01d6ca15a3fd9082cf38347fc",
+  "src/doxagent/workflows/codex_document3/materials_v21.py": "40aae01dc51a7ab3ccf6c88da57c9580c86f75cf735e73b822c3ebffee1e7f5b",
+  "src/doxagent/workflows/codex_document3/timing_v21.py": "4493e1aa2fed3df77c4e9bd0a3453cc7cbceec1cb4bcc677e7a89255664afc99",
+  "src/doxagent/pilot/document3_sdk.py": "01542161acc383f00e3b5914e7c6ada82d259474a74a42cdfa0aaaf7d72cfc93",
+  "src/doxagent/pilot/document3_driver.py": "cbc38a979e98d24573e145b7569456acd185e559eeda4ad502e6b2e8fa219254",
+  "src/doxagent/codex_runtime/client.py": "bf6e53d47de6234e061dc31f5e5d31370e6b69fda5c94db5b271c3b01cff2f3f",
+  "src/doxagent/codex_worker/app.py": "2e9967afa6a51690a6ef0accf962091937c5d93f1e7a08df12c0c591a4e90263",
+  "src/doxagent/codex_worker/local_client.py": "7184c59a73b2f4bc46713c1a21db804ebe3f172a49d6686f21e4242abae1a214",
+  "src/doxagent/codex_worker/workspace_store.py": "aba1631778d5ba961f417b962e8b3c4da7907c77162fa87c1ce3681121697638",
+  "src/doxagent/codex_worker/sdk_runtime.py": "fda5852404f10eb7d8a900518d78ad0521d412ee7dd4bf8e1e43d1d6d6375399",
+  "dev_plan/workflow_v2.1/document3_v2.1_contracts.schema.json": "abae1ea2e891af3e1984dd39154b8411703f2efc1e0986ccd81f15dc35821ee6"
+}

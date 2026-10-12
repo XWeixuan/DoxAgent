@@ -1,0 +1,2697 @@
+"""SQLite persistence for Message Bus v2.
+
+The repository uses one fresh database and ticker-local stream offsets. Control
+plane rows are mutable and versioned; Raw, Standard, Stream and audit history are
+append-only. Every connection enables WAL and a busy timeout so the global worker,
+Runtime consumer and API can safely share the database.
+"""
+
+from __future__ import annotations
+
+import json
+import sqlite3
+from collections.abc import Iterator, Sequence
+from contextlib import contextmanager
+from datetime import UTC, datetime, timedelta
+from pathlib import Path
+from types import TracebackType
+from typing import Any, Literal, TypeVar
+from urllib.parse import urlparse
+
+from pydantic import BaseModel
+
+from doxagent.content_enrichment.schema import EnrichmentJob, EnrichmentJobStatus
+from doxagent.message_bus_v2 import deduplication as dedup
+from doxagent.message_bus_v2.schema import (
+    AcquisitionFailure,
+    AuditRecord,
+    ConsumerOffset,
+    DefaultMonitoringProfile,
+    IngestDecision,
+    MaterializedStreamItem,
+    MaterializedStreamMember,
+    OperationalAlert,
+    PollState,
+    PublicationMode,
+    RawMessage,
+    RawMessageInput,
+    RawProcessingStatus,
+    SchedulerGroupState,
+    SourceDefinition,
+    StandardMessage,
+    StreamingConfig,
+    StreamItem,
+    StreamMember,
+    TickerMonitoringState,
+    TickerSourceBinding,
+    UpdateActor,
+    new_id,
+    utc_now,
+)
+
+ModelT = TypeVar("ModelT", bound=BaseModel)
+
+
+class _ClosingConnection(sqlite3.Connection):
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> Literal[False]:
+        try:
+            super().__exit__(exc_type, exc, traceback)
+        finally:
+            self.close()
+        return False
+
+
+class MessageBusV2Repository:
+    def __init__(self, sqlite_path: str | Path) -> None:
+        self.path = Path(sqlite_path)
+        from doxagent.v2_read.native_content import NativeContent
+
+        self.content = NativeContent(self.path)
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self._initialize()
+
+    def _connect(self) -> sqlite3.Connection:
+        connection = sqlite3.connect(
+            self.path,
+            timeout=30,
+            isolation_level=None,
+            factory=_ClosingConnection,
+        )
+        connection.row_factory = self.content.row
+        connection.execute("pragma journal_mode = WAL")
+        connection.execute("pragma synchronous = NORMAL")
+        connection.execute("pragma foreign_keys = ON")
+        connection.execute("pragma busy_timeout = 30000")
+        return connection
+
+    @contextmanager
+    def transaction(self) -> Iterator[sqlite3.Connection]:
+        connection = self._connect()
+        try:
+            connection.execute("begin immediate")
+            yield connection
+            connection.commit()
+        except Exception:
+            connection.rollback()
+            raise
+        finally:
+            connection.close()
+
+    def close(self) -> None:
+        """Connections are operation-scoped; provided for lifecycle symmetry."""
+
+    def record_admission(
+        self,
+        message: Any,
+        reason: str,
+        stage: str,
+        binding_id: str = "",
+        connection: sqlite3.Connection | None = None,
+    ) -> None:
+        from .schema import identity_key_for
+
+        value = {
+            "reason": reason,
+            "stage": stage,
+            "published_at": message.published_at.isoformat(),
+            "checked_at": utc_now().isoformat(),
+            "binding_id": binding_id,
+            "context": message.admission_context.model_dump(mode="json")
+            if message.admission_context
+            else None,
+        }
+        key = (
+            getattr(message, "standard_message_id", None)
+            or getattr(message, "raw_message_id", None)
+            or identity_key_for(binding_id, message)
+        )
+        scope = (
+            message.admission_context.sweep_id if message.admission_context else None
+        ) or "REALTIME"
+        args = (f"{binding_id}:{key}:{scope}:{stage}", json.dumps(value))
+        if connection is not None:
+            connection.execute("INSERT OR REPLACE INTO message_admission_results VALUES(?,?)", args)
+        else:
+            with self.transaction() as db:
+                db.execute("INSERT OR REPLACE INTO message_admission_results VALUES(?,?)", args)
+
+    def resolve_first_seen(self, message: RawMessageInput, binding_id: str) -> RawMessageInput:
+        """Pin unknown publication dates across polls, revisions and process restarts."""
+        from .schema import identity_key_for
+
+        key = identity_key_for(binding_id, message)
+        with self.transaction() as db:
+            db.execute(
+                "INSERT INTO message_first_seen VALUES(?,?) ON CONFLICT(id) DO UPDATE SET "
+                "first_seen_at=min(first_seen_at,excluded.first_seen_at)",
+                (
+                    key,
+                    (
+                        utc_now()
+                        if message.publication_time_basis == "UNKNOWN_FIRST_SEEN"
+                        else message.published_at
+                    )
+                    .astimezone(UTC)
+                    .isoformat(),
+                ),
+            )
+            row = db.execute(
+                "SELECT first_seen_at FROM message_first_seen WHERE id=?", (key,)
+            ).fetchone()
+        if (
+            message.publication_time_basis == "UNKNOWN_FIRST_SEEN"
+            or message.metadata.get("publication_time_origin") == "UPDATED_FALLBACK"
+        ):
+            return message.model_copy(update={"published_at": datetime.fromisoformat(row[0])})
+        return message
+
+    def _initialize(self) -> None:
+        with self.transaction() as connection:
+            connection.execute(
+                "CREATE TABLE IF NOT EXISTS message_first_seen "
+                "(id TEXT PRIMARY KEY, first_seen_at TEXT NOT NULL)"
+            )
+            connection.execute(
+                "CREATE TABLE IF NOT EXISTS message_admission_results "
+                "(id TEXT PRIMARY KEY, data_json TEXT NOT NULL)"
+            )
+            connection.executescript(
+                """
+                create table if not exists source_definitions (
+                    source_id text primary key,
+                    version integer not null,
+                    enabled integer not null,
+                    scheduler_group text not null,
+                    data_json text not null
+                );
+                create table if not exists source_definition_revisions (
+                    source_id text not null,
+                    version integer not null,
+                    data_json text not null,
+                    primary key (source_id, version)
+                );
+                create table if not exists default_profiles (
+                    profile_id text primary key,
+                    version integer not null,
+                    data_json text not null
+                );
+                create table if not exists default_profile_revisions (
+                    profile_id text not null,
+                    version integer not null,
+                    data_json text not null,
+                    primary key (profile_id, version)
+                );
+                create table if not exists ticker_monitoring_states (
+                    ticker text primary key,
+                    status text not null,
+                    data_json text not null
+                );
+                create table if not exists ticker_source_bindings (
+                    binding_id text primary key,
+                    ticker text not null,
+                    source_id text not null,
+                    enabled integer not null,
+                    tombstoned_at text,
+                    version integer not null,
+                    data_json text not null
+                );
+                create index if not exists idx_mbv2_bindings_ticker
+                    on ticker_source_bindings(ticker, tombstoned_at);
+                create index if not exists idx_mbv2_bindings_source
+                    on ticker_source_bindings(source_id, tombstoned_at);
+                create table if not exists ticker_source_binding_revisions (
+                    binding_id text not null,
+                    version integer not null,
+                    data_json text not null,
+                    primary key (binding_id, version)
+                );
+                create table if not exists raw_messages (
+                    raw_message_id text primary key,
+                    ticker text not null,
+                    source_id text not null,
+                    binding_id text not null,
+                    identity_key text not null,
+                    content_hash text not null,
+                    raw_hash text not null,
+                    revision integer not null,
+                    processing_status text not null,
+                    published_at text not null,
+                    collected_at text not null,
+                    data_json text not null,
+                    unique(ticker, source_id, identity_key, content_hash)
+                );
+                create index if not exists idx_mbv2_raw_identity
+                    on raw_messages(ticker, source_id, identity_key, revision desc);
+                create index if not exists idx_mbv2_raw_processing
+                    on raw_messages(processing_status, collected_at);
+                create table if not exists content_enrichment_jobs (
+                    job_id text primary key,
+                    intake_key text not null unique,
+                    status text not null,
+                    not_before text not null,
+                    lease_expires_at text,
+                    created_at text not null,
+                    data_json text not null
+                );
+                create index if not exists idx_mbv2_enrichment_ready
+                    on content_enrichment_jobs(status, not_before, created_at);
+                create table if not exists site_strategy_result_outbox (
+                    outbox_id text primary key,
+                    kind text not null,
+                    status text not null,
+                    attempts integer not null default 0,
+                    next_attempt_at text not null,
+                    created_at text not null,
+                    confirmed_at text,
+                    payload_json text not null
+                );
+                create index if not exists idx_site_strategy_outbox_ready
+                    on site_strategy_result_outbox(status,next_attempt_at,created_at);
+                create table if not exists source_item_baselines (
+                    binding_id text not null,
+                    identity_key text not null,
+                    content_hash text not null,
+                    observed_at text not null,
+                    primary key(binding_id, identity_key, content_hash)
+                );
+                create table if not exists standard_messages (
+                    standard_message_id text primary key,
+                    raw_message_id text not null unique,
+                    ticker text not null,
+                    source_id text not null,
+                    binding_id text not null,
+                    published_at text not null,
+                    data_json text not null
+                );
+                create index if not exists idx_mbv2_standard_ticker
+                    on standard_messages(ticker, published_at desc);
+                create table if not exists stream_items (
+                    stream_item_id text primary key,
+                    ticker text not null,
+                    stream_offset integer not null,
+                    publication_mode text not null,
+                    published_at text not null,
+                    data_json text not null,
+                    unique(ticker, stream_offset)
+                );
+                create index if not exists idx_mbv2_stream_ticker
+                    on stream_items(ticker, stream_offset);
+                create table if not exists stream_members (
+                    stream_item_id text not null,
+                    member_index integer not null,
+                    standard_message_id text not null,
+                    data_json text not null,
+                    primary key(stream_item_id, member_index),
+                    foreign key(stream_item_id) references stream_items(stream_item_id)
+                );
+                create unique index if not exists idx_mbv2_stream_member_standard
+                    on stream_members(standard_message_id);
+                create table if not exists consumer_offsets (
+                    consumer_id text not null,
+                    ticker text not null,
+                    stream_offset integer not null,
+                    committed_at text not null,
+                    data_json text not null,
+                    primary key(consumer_id, ticker)
+                );
+                create table if not exists poll_states (
+                    binding_id text primary key,
+                    source_id text not null,
+                    ticker text not null,
+                    status text not null,
+                    next_dispatch_at text,
+                    data_json text not null
+                );
+                create index if not exists idx_mbv2_poll_dispatch
+                    on poll_states(next_dispatch_at);
+                create table if not exists buffer_entries (
+                    standard_message_id text primary key,
+                    binding_id text not null,
+                    ticker text not null,
+                    source_id text not null,
+                    added_at text not null,
+                    data_json text not null
+                );
+                create index if not exists idx_mbv2_buffer_binding
+                    on buffer_entries(binding_id, added_at);
+                create table if not exists acquisition_failures (
+                    failure_id text primary key,
+                    source_id text not null,
+                    binding_id text not null,
+                    ticker text not null,
+                    error_code text not null,
+                    raw_hash text not null,
+                    last_seen_at text not null,
+                    data_json text not null,
+                    unique(binding_id, error_code, raw_hash)
+                );
+                create table if not exists operational_alerts (
+                    alert_id text primary key,
+                    alert_key text not null unique,
+                    severity text not null,
+                    resolved_at text,
+                    last_seen_at text not null,
+                    data_json text not null
+                );
+                create table if not exists scheduler_group_states (
+                    scheduler_group text primary key,
+                    data_json text not null
+                );
+                create table if not exists audit_log (
+                    audit_id text primary key,
+                    entity_type text not null,
+                    entity_id text not null,
+                    action text not null,
+                    created_at text not null,
+                    data_json text not null
+                );
+                create index if not exists idx_mbv2_audit_entity
+                    on audit_log(entity_type, entity_id, created_at desc);
+                """
+            )
+            connection.executescript(dedup.SCHEMA)
+            connection.execute(
+                "create index if not exists raw_article_url "
+                "on raw_messages(ticker,json_extract(data_json,'$.url'))"
+            )
+            connection.execute(
+                "create index if not exists raw_article_title "
+                "on raw_messages(ticker,json_extract(data_json,'$.title'))"
+            )
+
+    def _adopt_legacy(self, connection: sqlite3.Connection, raw: RawMessage) -> RawMessage:
+        """Index historical identity lazily without rewriting Raw or old IDs/hashes."""
+        if raw.metadata.get("message_version"):
+            return raw
+        from doxagent.message_bus_v2.schema import canonical_json, sha256_text
+
+        summary = raw.raw_payload.get("summary") or raw.raw_payload.get("description")
+        if not isinstance(summary, str) or dedup.invalid_page(summary):
+            summary = None
+        body = raw.body if not dedup.invalid_page(raw.body) else None
+        if body == summary:
+            body = None
+        media = raw.metadata.get("media_enrichment", {})
+        full = bool(
+            body
+            and (
+                media.get("succeeded")
+                or (raw.raw_payload.get("articleText") and raw.raw_payload.get("articleType") == 0)
+            )
+            and dedup.assess_media_body(body, raw.title).complete_like
+        )
+        first = connection.execute(
+            """select raw_message_id from raw_messages where ticker=? and source_id=?
+               and identity_key=? order by revision limit 1""",
+            (raw.ticker, raw.source_id, raw.identity_key),
+        ).fetchone()
+        logical_id = "message_" + first[0]
+        metadata = {
+            **raw.metadata,
+            "message_version": {
+                "logical_message_id": logical_id,
+                "business_version": raw.revision,
+                "classification": "LEGACY_VERSION",
+            },
+            "content_evidence": {
+                "article_body": body,
+                "summary": summary,
+                "kind": "FULL" if full else "BODY" if body else "SUMMARY" if summary else "EMPTY",
+                "body_fingerprint": sha256_text(dedup.text(body)) if full else None,
+            },
+        }
+        if raw.source_id == "yahoo_finance_news":
+            metadata["identity_evidence"] = {
+                **metadata.get("identity_evidence", {}),
+                "id_kind": "stable_article",
+            }
+        adopted = raw.model_copy(update={"metadata": metadata})
+        connection.execute(
+            "insert or ignore into logical_message_versions values(?,?,?,?,?,?)",
+            (
+                raw.ticker,
+                logical_id,
+                raw.revision,
+                raw.raw_message_id,
+                metadata["content_evidence"]["body_fingerprint"],
+                canonical_json(metadata["message_version"]),
+            ),
+        )
+        for key in dedup.aliases(adopted):
+            connection.execute(
+                "insert or ignore into message_identity_aliases values(?,?,?)",
+                (raw.ticker, key, logical_id),
+            )
+        return adopted
+
+    def observe_input(
+        self,
+        message: RawMessageInput,
+        *,
+        ticker: str,
+        source_id: str,
+        identity_key: str,
+        now: datetime,
+    ) -> bool:
+        """Preserve provider evidence before enrichment; reuse only recent completed input.
+
+        A 30-minute recheck bounds caching even for sources without update signals.
+        Pending/failed publication is deliberately never treated as a receipt.
+        """
+        from doxagent.message_bus_v2.schema import canonical_json, sha256_text
+
+        raw_hash = sha256_text(canonical_json(message.raw_payload))
+        fields = dedup.stable_fields(message)
+        key_url = dedup.article_url(
+            message.url, message.metadata.get("identity_evidence", {}).get("url_kind", "unknown")
+        )
+        with self.transaction() as connection:
+            reusable = None
+            rows = connection.execute(
+                """select r.data_json, o.data_json as payload_json from message_observations o
+                   join raw_messages r on r.raw_message_id=o.canonical_raw_id
+                   where o.ticker=? and o.source_id=? and o.identity_key=?
+                   and o.last_seen_at>=? and (json_extract(r.data_json,'$.bootstrap_suppressed')=1
+                   or exists(select 1 from standard_messages s join stream_members sm
+                     on sm.standard_message_id=s.standard_message_id
+                     where s.raw_message_id=r.raw_message_id))
+                   order by o.last_seen_at desc limit 8""",
+                (ticker, source_id, identity_key, (now - timedelta(minutes=30)).isoformat()),
+            ).fetchall()
+            if key_url:
+                rows += connection.execute(
+                    """select r.data_json, null as payload_json from message_identity_aliases a
+                       join logical_message_versions v on v.ticker=a.ticker
+                         and v.logical_message_id=a.logical_message_id
+                       join raw_messages r on r.raw_message_id=v.raw_message_id
+                       where a.ticker=? and a.alias=? and exists(select 1 from standard_messages s
+                         join stream_members sm on sm.standard_message_id=s.standard_message_id
+                         where s.raw_message_id=r.raw_message_id)
+                       order by v.business_version desc limit 8""",
+                    (ticker, "url:" + key_url),
+                ).fetchall()
+            for row in rows:
+                raw = RawMessage.model_validate_json(row["data_json"])
+                old = raw.metadata.get("content_evidence", {}).get("input_fields", {})
+                if row["payload_json"]:
+                    observation = json.loads(row["payload_json"])
+                    old = observation.get("metadata", {}).get("content_evidence", {}).get(
+                        "input_fields"
+                    ) or dedup.stable_fields(RawMessageInput.model_validate(observation))
+                # Missing fields do not invalidate a richer previous observation. Time/URL
+                # conflicts and meaningful supplied fields must still be checked.
+                key_url = dedup.article_url(
+                    message.url,
+                    message.metadata.get("identity_evidence", {}).get("url_kind", "unknown"),
+                )
+                if key_url and "url:" + key_url not in dedup.aliases(raw):
+                    logical_id = raw.metadata.get("message_version", {}).get("logical_message_id")
+                    if not connection.execute(
+                        "select 1 from message_identity_aliases "
+                        "where ticker=? and alias=? and logical_message_id=?",
+                        (ticker, "url:" + key_url, logical_id),
+                    ).fetchone():
+                        continue
+                if old and all(
+                    not value
+                    or old.get(key) == value
+                    or (key == "published_at" and raw.raw_hash == raw_hash)
+                    for key, value in fields.items()
+                ):
+                    checked = raw.metadata.get("content_evidence", {}).get(
+                        "checked_at", raw.collected_at.isoformat()
+                    )
+                    if now - datetime.fromisoformat(checked.replace("Z", "+00:00")) < timedelta(
+                        minutes=30
+                    ):
+                        reusable = raw
+                        break
+            connection.execute(
+                """insert into message_observations(ticker,source_id,identity_key,raw_hash,
+                     input_fingerprint,first_seen_at,last_seen_at,data_json,canonical_raw_id,logical_message_id,classification)
+                   values(?,?,?,?,?,?,?,?,?,?,?) on conflict(ticker,source_id,identity_key,raw_hash)
+                   do update set last_seen_at=excluded.last_seen_at,seen_count=seen_count+1""",
+                (
+                    ticker,
+                    source_id,
+                    identity_key,
+                    raw_hash,
+                    dedup.stable_fingerprint(message),
+                    now.isoformat(),
+                    now.isoformat(),
+                    self.content.encode(message.model_dump(mode="json")),
+                    reusable.raw_message_id if reusable else None,
+                    reusable.metadata.get("message_version", {}).get("logical_message_id")
+                    if reusable
+                    else None,
+                    "INPUT_REUSED" if reusable else "OBSERVED",
+                ),
+            )
+            if reusable:
+                logical_id = reusable.metadata["message_version"]["logical_message_id"]
+                connection.execute(
+                    "insert or ignore into message_identity_aliases values(?,?,?)",
+                    (ticker, "id:" + identity_key, logical_id),
+                )
+                association = {
+                    "source_id": source_id,
+                    "external_id": message.external_id,
+                    "url": message.url,
+                }
+                sources = list(reusable.metadata.get("message_sources", []))
+                for item in [
+                    {
+                        "source_id": reusable.source_id,
+                        "external_id": reusable.external_id,
+                        "url": reusable.url,
+                    },
+                    association,
+                ]:
+                    if item not in sources:
+                        sources.append(item)
+                metadata = {**reusable.metadata, "message_sources": sources}
+                reusable = reusable.model_copy(update={"metadata": metadata})
+                connection.execute(
+                    "update raw_messages set data_json=? where raw_message_id=?",
+                    (self._json(reusable), reusable.raw_message_id),
+                )
+                for row in connection.execute(
+                    "select data_json from standard_messages where raw_message_id=?",
+                    (reusable.raw_message_id,),
+                ):
+                    standard = StandardMessage.model_validate_json(row["data_json"])
+                    connection.execute(
+                        "update standard_messages set data_json=? where standard_message_id=?",
+                        (
+                            self._json(standard.model_copy(update={"metadata": metadata})),
+                            standard.standard_message_id,
+                        ),
+                    )
+            return reusable is not None
+
+    def _dedup_candidate(
+        self, connection: sqlite3.Connection, candidate: RawMessage
+    ) -> tuple[RawMessage, RawMessage | None]:
+        """Reserve a logical version or merge an observation, under BEGIN IMMEDIATE."""
+        if "content_evidence" not in candidate.metadata:
+            return candidate, None  # Legacy caller compatibility.
+        keys = dedup.aliases(candidate)
+        # Read a bounded indexed legacy candidate set; do not rewrite all old history.
+        rows = connection.execute(
+            """select data_json from raw_messages where ticker=? and source_id=? and identity_key=?
+               order by revision desc limit 1""",
+            (candidate.ticker, candidate.source_id, candidate.identity_key),
+        ).fetchall()
+        if candidate.title:
+            rows += connection.execute(
+                """select data_json from raw_messages
+                   where ticker=? and json_extract(data_json,'$.title')=?
+                   order by collected_at desc limit 32""",
+                (candidate.ticker, candidate.title),
+            ).fetchall()
+        for key in keys:
+            if key.startswith("url:"):
+                rows += connection.execute(
+                    """select data_json from raw_messages
+                       where ticker=? and json_extract(data_json,'$.url')=?
+                       order by collected_at desc limit 8""",
+                    (candidate.ticker, key[4:]),
+                ).fetchall()
+        legacy: dict[str, RawMessage] = {}
+        for row in rows:
+            raw = RawMessage.model_validate_json(row["data_json"])
+            if not raw.metadata.get("message_version"):
+                adopted = self._adopt_legacy(connection, raw)
+                legacy[adopted.raw_message_id] = adopted
+        logical_ids: set[str] = set()
+        for key in keys:
+            logical_ids.update(
+                row[0]
+                for row in connection.execute(
+                    "select logical_message_id from message_identity_aliases "
+                    "where ticker=? and alias=?",
+                    (candidate.ticker, key),
+                )
+            )
+        matches = []
+        for logical_id in logical_ids:
+            row = connection.execute(
+                """select r.data_json from logical_message_versions v join raw_messages r
+                   on r.raw_message_id=v.raw_message_id where v.ticker=? and v.logical_message_id=?
+                   order by v.business_version desc limit 1""",
+                (candidate.ticker, logical_id),
+            ).fetchone()
+            if row:
+                old = RawMessage.model_validate_json(row["data_json"])
+                old = legacy.get(old.raw_message_id, old)
+                if not old.metadata.get("message_version"):
+                    old = self._adopt_legacy(connection, old)
+                if not dedup.context_conflict(old, candidate):
+                    matches.append(old)
+        # Multiple incompatible candidate identities: do not force an ambiguous merge.
+        old = matches[0] if len(matches) == 1 else None
+        fingerprint = candidate.metadata["content_evidence"].get("body_fingerprint")
+        content_matched = False
+        if not matches and fingerprint:
+            rows = connection.execute(
+                """select r.data_json from logical_message_versions v join raw_messages r
+                   on r.raw_message_id=v.raw_message_id where v.ticker=? and v.body_fingerprint=?
+                   order by v.business_version desc limit 32""",
+                (candidate.ticker, fingerprint),
+            ).fetchall()
+            for row in rows:
+                found = RawMessage.model_validate_json(row["data_json"])
+                found = legacy.get(found.raw_message_id, found)
+                if not found.metadata.get("message_version"):
+                    found = self._adopt_legacy(connection, found)
+                if not dedup.context_conflict(found, candidate, content_match=True):
+                    old = found
+                    content_matched = True
+                    break
+        version = old.metadata.get("message_version", {}) if old else {}
+        logical_id = version.get("logical_message_id") or new_id("message")
+        classification = dedup.classify(old, candidate) if old else "NEW_MESSAGE"
+        if (
+            old
+            and fingerprint
+            and fingerprint == old.metadata.get("content_evidence", {}).get("body_fingerprint")
+            and (content_matched or old.source_id != candidate.source_id)
+            and not dedup.context_conflict(old, candidate, content_match=True)
+        ):
+            classification = "SAME_VERSION"
+        if (
+            old
+            and old.raw_hash == candidate.raw_hash
+            and classification not in {"CONTENT_SUPPLEMENT", "BUSINESS_UPDATE"}
+            and dedup.text(old.title) == dedup.text(candidate.title)
+            and all(
+                not candidate.metadata["content_evidence"].get("input_fields", {}).get(k)
+                or candidate.metadata["content_evidence"].get("input_fields", {}).get(k)
+                == old.metadata.get("content_evidence", {}).get("input_fields", {}).get(k)
+                for k in ("updated_at", "provider_version")
+            )
+        ):
+            checked = old.metadata.get("content_evidence", {}).get(
+                "checked_at", old.collected_at.isoformat()
+            )
+            if candidate.collected_at - datetime.fromisoformat(
+                checked.replace("Z", "+00:00")
+            ) < timedelta(minutes=30):
+                classification = "SAME_VERSION"
+        # Recheck against all prior versions: a stale provider version must not republish.
+        if old and classification in {"BUSINESS_UPDATE", "CONTENT_SUPPLEMENT"}:
+            for row in connection.execute(
+                """select r.data_json from logical_message_versions v join raw_messages r
+                   on r.raw_message_id=v.raw_message_id
+                   where v.ticker=? and v.logical_message_id=?""",
+                (candidate.ticker, logical_id),
+            ):
+                prior = RawMessage.model_validate_json(row["data_json"])
+                if not prior.metadata.get("message_version"):
+                    prior = self._adopt_legacy(connection, prior)
+                if dedup.classify(prior, candidate) == "SAME_VERSION":
+                    classification = "SAME_VERSION"
+                    old = prior
+                    version = prior.metadata.get("message_version", version)
+                    break
+        # Article identity owns publication. Content differences are audited in place,
+        # never a second Stream/Runtime admission for an already matched article.
+        suppressed = old is not None
+        target = old if suppressed else candidate
+        assert target is not None
+        if old:
+            latest_version = (
+                connection.execute(
+                    "select max(business_version) from logical_message_versions "
+                    "where ticker=? and logical_message_id=?",
+                    (candidate.ticker, logical_id),
+                ).fetchone()[0]
+                or 0
+            )
+        else:
+            latest_version = 0
+        business_version = version.get("business_version", 1) if suppressed else latest_version + 1
+        version_meta = {
+            "logical_message_id": logical_id,
+            "business_version": business_version,
+            "classification": classification,
+            "previous_raw_message_id": old.raw_message_id if old and not suppressed else None,
+            "publication_policy": "ARTICLE_ONCE",
+            "content_revision": 1,
+        }
+        candidate = candidate.model_copy(
+            update={"metadata": {**candidate.metadata, "message_version": version_meta}}
+        )
+        for key in keys:
+            connection.execute(
+                "insert or ignore into message_identity_aliases values(?,?,?)",
+                (candidate.ticker, key, logical_id),
+            )
+        from doxagent.message_bus_v2.schema import canonical_json
+
+        connection.execute(
+            """insert into message_observations(ticker,source_id,identity_key,raw_hash,
+                 input_fingerprint,
+                 first_seen_at,last_seen_at,data_json,logical_message_id,canonical_raw_id,classification)
+               values(?,?,?,?,?,?,?,?,?,?,?) on conflict(ticker,source_id,identity_key,raw_hash)
+               do update set last_seen_at=excluded.last_seen_at,
+                 logical_message_id=excluded.logical_message_id,
+                 canonical_raw_id=excluded.canonical_raw_id,classification=excluded.classification""",
+            (
+                candidate.ticker,
+                candidate.source_id,
+                candidate.identity_key,
+                candidate.raw_hash,
+                candidate.metadata["content_evidence"]["input_fingerprint"],
+                candidate.collected_at.isoformat(),
+                utc_now().isoformat(),
+                self._json(candidate),
+                logical_id,
+                target.raw_message_id,
+                classification,
+            ),
+        )
+        if suppressed:
+            # Evidence is append-only in observations; provenance view can be refreshed in place.
+            sources = list(old.metadata.get("message_sources", []))
+            association = {
+                "source_id": candidate.source_id,
+                "external_id": candidate.external_id,
+                "url": candidate.url,
+            }
+            for item in [
+                {"source_id": old.source_id, "external_id": old.external_id, "url": old.url},
+                association,
+            ]:
+                if item not in sources:
+                    sources.append(item)
+            evidence = dict(old.metadata.get("content_evidence", {}))
+            evidence["checked_at"] = utc_now().isoformat()
+            new_evidence = candidate.metadata["content_evidence"]
+            refresh = classification in {"BUSINESS_UPDATE", "CONTENT_SUPPLEMENT"}
+            explicit_update = any(
+                new_evidence.get("input_fields", {}).get(k)
+                and new_evidence["input_fields"][k] != evidence.get("input_fields", {}).get(k)
+                for k in ("updated_at", "provider_version")
+            )
+            if refresh:
+                if new_evidence.get("article_body") and (
+                    evidence.get("kind") != "FULL"
+                    or new_evidence.get("kind") == "FULL"
+                    or explicit_update
+                ):
+                    evidence = {**new_evidence, "checked_at": utc_now().isoformat()}
+                    if not evidence.get("summary"):
+                        evidence["summary"] = old.metadata.get("content_evidence", {}).get(
+                            "summary"
+                        )
+                elif explicit_update and new_evidence.get("summary"):
+                    evidence = {
+                        **new_evidence,
+                        "previous_article_body": evidence.get("article_body"),
+                        "kind": "SUMMARY_UPDATE",
+                        "checked_at": utc_now().isoformat(),
+                    }
+                elif new_evidence.get("summary"):
+                    evidence["summary"] = new_evidence["summary"]
+                    if not evidence.get("article_body"):
+                        evidence.update(new_evidence)
+            if new_evidence.get("kind") == "FULL" and dedup.text(
+                evidence.get("article_body")
+            ) == dedup.text(new_evidence.get("article_body")):
+                evidence.update(
+                    {k: new_evidence[k] for k in ("kind", "body_fingerprint", "body_source")}
+                )
+                connection.execute(
+                    "update logical_message_versions set body_fingerprint=? where raw_message_id=?",
+                    (evidence["body_fingerprint"], old.raw_message_id),
+                )
+            if not evidence.get("summary"):
+                evidence["summary"] = candidate.metadata["content_evidence"].get("summary")
+            identity_evidence = dict(old.metadata.get("identity_evidence", {}))
+            identity_evidence["verified_urls"] = list(
+                dict.fromkeys(
+                    [
+                        *identity_evidence.get("verified_urls", []),
+                        *candidate.metadata.get("identity_evidence", {}).get("verified_urls", []),
+                    ]
+                )
+            )
+            latest_completion = {}
+            if (
+                new_evidence.get("article_body")
+                and evidence.get("article_body") == new_evidence["article_body"]
+            ):
+                latest_completion = {
+                    k: candidate.metadata[k]
+                    for k in ("media_enrichment", "v2_body_completion")
+                    if k in candidate.metadata
+                }
+            updated = old.model_copy(
+                update={
+                    "title": (candidate.title or old.title) if refresh else old.title,
+                    "body": (evidence.get("article_body") or evidence.get("summary") or old.body),
+                    "metadata": {
+                        **old.metadata,
+                        **latest_completion,
+                        "message_sources": sources,
+                        "content_evidence": evidence,
+                        "identity_evidence": identity_evidence,
+                    },
+                    "duplicate_seen_count": old.duplicate_seen_count + 1,
+                    "last_seen_at": utc_now(),
+                }
+            )
+            old_revision = old.metadata.get("message_version", {}).get("content_revision", 1)
+            content_changed = (
+                updated.body != old.body
+                or updated.title != old.title
+                or evidence.get("summary")
+                != old.metadata.get("content_evidence", {}).get("summary")
+                or evidence.get("kind") != old.metadata.get("content_evidence", {}).get("kind")
+            )
+            updated.metadata["message_version"] = {
+                **old.metadata.get("message_version", version_meta),
+                "publication_policy": "ARTICLE_ONCE",
+                "content_revision": old_revision + int(content_changed),
+            }
+            if content_changed:
+                for revision, snapshot in [(old_revision, old), (old_revision + 1, updated)]:
+                    connection.execute(
+                        "insert or ignore into message_content_revisions values(?,?,?,?)",
+                        (old.ticker, logical_id, revision, self._json(snapshot)),
+                    )
+            connection.execute(
+                "update logical_message_versions set body_fingerprint=? where raw_message_id=?",
+                (evidence.get("body_fingerprint"), old.raw_message_id),
+            )
+            published = connection.execute(
+                "select 1 from standard_messages s join stream_members sm "
+                "on sm.standard_message_id=s.standard_message_id where s.raw_message_id=?",
+                (old.raw_message_id,),
+            ).fetchone()
+            if (
+                not published
+                and not old.bootstrap_suppressed
+                and candidate.admission_context
+                and candidate.admission_context.mode == "CLOSED_SWEEP"
+            ):
+                updated = updated.model_copy(
+                    update={
+                        "admission_context": candidate.admission_context,
+                        "processing_status": RawProcessingStatus.PENDING,
+                    }
+                )
+            connection.execute(
+                "update raw_messages set data_json=?,processing_status=? where raw_message_id=?",
+                (self._json(updated), updated.processing_status.value, old.raw_message_id),
+            )
+            for row in connection.execute(
+                "select data_json from standard_messages where raw_message_id=?",
+                (old.raw_message_id,),
+            ):
+                standard = StandardMessage.model_validate_json(row["data_json"])
+                standard = standard.model_copy(
+                    update={
+                        "body": updated.body,
+                        "title": updated.title,
+                        "metadata": updated.metadata,
+                        "admission_context": updated.admission_context,
+                    }
+                )
+                connection.execute(
+                    "update standard_messages set data_json=? where standard_message_id=?",
+                    (self._json(standard), standard.standard_message_id),
+                )
+                connection.execute(
+                    "update buffer_entries set data_json=? where standard_message_id=?",
+                    (self._json(standard), standard.standard_message_id),
+                )
+            self._record_body_attempt(connection, candidate, updated)
+            return candidate, updated
+        connection.execute(
+            "insert into logical_message_versions values(?,?,?,?,?,?)",
+            (
+                candidate.ticker,
+                logical_id,
+                business_version,
+                candidate.raw_message_id,
+                fingerprint,
+                canonical_json(version_meta),
+            ),
+        )
+        connection.execute(
+            "insert or ignore into message_content_revisions values(?,?,?,?)",
+            (candidate.ticker, logical_id, 1, self._json(candidate)),
+        )
+        if old:
+            # Missing/new lower-quality fields never erase information in an actual update.
+            evidence = dict(candidate.metadata["content_evidence"])
+            if not evidence.get("article_body") and old.metadata.get("content_evidence", {}).get(
+                "article_body"
+            ):
+                correction = (
+                    classification == "BUSINESS_UPDATE"
+                    and evidence.get("summary")
+                    and dedup.text(evidence["summary"])
+                    != dedup.text(old.metadata.get("content_evidence", {}).get("summary"))
+                )
+                if correction:
+                    evidence["previous_article_body"] = old.metadata["content_evidence"][
+                        "article_body"
+                    ]
+                    evidence["kind"] = "SUMMARY_UPDATE"
+                    evidence["body_fingerprint"] = None
+                    candidate = candidate.model_copy(
+                        update={
+                            "body": evidence["summary"]
+                            + "\n\n[Previous article body — retained context, "
+                            "not the current correction]\n" + old.body
+                        }
+                    )
+                else:
+                    evidence.update(
+                        {
+                            k: old.metadata["content_evidence"].get(k)
+                            for k in ("article_body", "kind", "body_fingerprint", "body_source")
+                        }
+                    )
+                    candidate = candidate.model_copy(update={"body": old.body})
+            if not evidence.get("summary"):
+                evidence["summary"] = old.metadata.get("content_evidence", {}).get("summary")
+            sources = list(old.metadata.get("message_sources", []))
+            for item in [
+                {"source_id": old.source_id, "external_id": old.external_id, "url": old.url},
+                {
+                    "source_id": candidate.source_id,
+                    "external_id": candidate.external_id,
+                    "url": candidate.url,
+                },
+            ]:
+                if item not in sources:
+                    sources.append(item)
+            candidate = candidate.model_copy(
+                update={
+                    "metadata": {
+                        **candidate.metadata,
+                        "content_evidence": evidence,
+                        "message_sources": sources,
+                    }
+                }
+            )
+            connection.execute(
+                "update logical_message_versions set body_fingerprint=? where raw_message_id=?",
+                (evidence.get("body_fingerprint"), candidate.raw_message_id),
+            )
+        return candidate, None
+
+    def _json(self, model: BaseModel) -> str:
+        if isinstance(model, (RawMessage, EnrichmentJob)):
+            return self.content.encode(model.model_dump(mode="json"))
+        return model.model_dump_json()
+
+    @staticmethod
+    def _model(model_type: type[ModelT], row: sqlite3.Row | None) -> ModelT | None:
+        return None if row is None else model_type.model_validate_json(row["data_json"])
+
+    @staticmethod
+    def _models(model_type: type[ModelT], rows: Sequence[sqlite3.Row]) -> list[ModelT]:
+        return [model_type.model_validate_json(row["data_json"]) for row in rows]
+
+    # -- Source registry and profiles -------------------------------------------------
+
+    def save_source(self, source: SourceDefinition) -> None:
+        with self.transaction() as connection:
+            self._save_source_tx(connection, source)
+
+    def save_source_with_bindings(
+        self, source: SourceDefinition, bindings: Sequence[TickerSourceBinding]
+    ) -> None:
+        with self.transaction() as connection:
+            self._save_source_tx(connection, source)
+            for binding in bindings:
+                self._save_binding_tx(connection, binding)
+
+    def _save_source_tx(self, connection: sqlite3.Connection, source: SourceDefinition) -> None:
+        value = self._json(source)
+        connection.execute(
+            """insert into source_definitions(
+                     source_id, version, enabled, scheduler_group, data_json)
+                   values(?, ?, ?, ?, ?)
+                   on conflict(source_id) do update set version=excluded.version,
+                     enabled=excluded.enabled, scheduler_group=excluded.scheduler_group,
+                     data_json=excluded.data_json""",
+            (
+                source.source_id,
+                source.version,
+                int(source.enabled),
+                source.scheduler_group,
+                value,
+            ),
+        )
+        connection.execute(
+            """insert into source_definition_revisions(source_id, version, data_json)
+                   values(?, ?, ?) on conflict(source_id, version) do nothing""",
+            (source.source_id, source.version, value),
+        )
+
+    def get_source(self, source_id: str) -> SourceDefinition | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                "select data_json from source_definitions where source_id=?",
+                (source_id.strip().lower(),),
+            ).fetchone()
+        return self._model(SourceDefinition, row)
+
+    def list_sources(self, *, include_disabled: bool = True) -> list[SourceDefinition]:
+        where = "" if include_disabled else "where enabled=1"
+        with self._connect() as connection:
+            rows = connection.execute(
+                f"select data_json from source_definitions {where} order by source_id"
+            ).fetchall()
+        return self._models(SourceDefinition, rows)
+
+    def source_revision(self, source_id: str, version: int) -> SourceDefinition | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                "select data_json from source_definition_revisions where source_id=? and version=?",
+                (source_id.strip().lower(), version),
+            ).fetchone()
+        return self._model(SourceDefinition, row)
+
+    def list_source_revisions(self, source_id: str) -> list[SourceDefinition]:
+        with self._connect() as connection:
+            rows = connection.execute(
+                """select data_json from source_definition_revisions
+                   where source_id=? order by version desc""",
+                (source_id.strip().lower(),),
+            ).fetchall()
+        return self._models(SourceDefinition, rows)
+
+    def delete_source_control_plane(
+        self,
+        source_id: str,
+        *,
+        actor: UpdateActor,
+        reason: str | None,
+    ) -> int:
+        normalized = source_id.strip().lower()
+        with self.transaction() as connection:
+            count = connection.execute(
+                """select count(*) from ticker_source_bindings
+                   where source_id=? and tombstoned_at is null""",
+                (normalized,),
+            ).fetchone()[0]
+            connection.execute("delete from buffer_entries where source_id=?", (normalized,))
+            connection.execute("delete from poll_states where source_id=?", (normalized,))
+            connection.execute(
+                "delete from ticker_source_bindings where source_id=?", (normalized,)
+            )
+            connection.execute("delete from source_definitions where source_id=?", (normalized,))
+            profiles = connection.execute(
+                "select profile_id, data_json from default_profiles"
+            ).fetchall()
+            for row in profiles:
+                profile = DefaultMonitoringProfile.model_validate_json(row["data_json"])
+                entries = [entry for entry in profile.entries if entry.source_id != normalized]
+                if len(entries) == len(profile.entries):
+                    continue
+                updated = profile.model_copy(
+                    update={
+                        "entries": entries,
+                        "version": profile.version + 1,
+                        "updated_at": utc_now(),
+                        "updated_by": actor,
+                        "updated_reason": reason,
+                    }
+                )
+                value = self._json(updated)
+                connection.execute(
+                    "update default_profiles set version=?, data_json=? where profile_id=?",
+                    (updated.version, value, updated.profile_id),
+                )
+                connection.execute(
+                    """insert into default_profile_revisions(
+                         profile_id, version, data_json) values(?,?,?)""",
+                    (updated.profile_id, updated.version, value),
+                )
+        return int(count)
+
+    def save_default_profile(self, profile: DefaultMonitoringProfile) -> None:
+        value = self._json(profile)
+        with self.transaction() as connection:
+            connection.execute(
+                """insert into default_profiles(profile_id, version, data_json) values(?,?,?)
+                   on conflict(profile_id) do update set version=excluded.version,
+                     data_json=excluded.data_json""",
+                (profile.profile_id, profile.version, value),
+            )
+            connection.execute(
+                """insert into default_profile_revisions(profile_id, version, data_json)
+                   values(?,?,?) on conflict(profile_id, version) do nothing""",
+                (profile.profile_id, profile.version, value),
+            )
+
+    def get_default_profile(self, profile_id: str = "default") -> DefaultMonitoringProfile | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                "select data_json from default_profiles where profile_id=?", (profile_id,)
+            ).fetchone()
+        return self._model(DefaultMonitoringProfile, row)
+
+    def profile_revision(self, profile_id: str, version: int) -> DefaultMonitoringProfile | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                "select data_json from default_profile_revisions where profile_id=? and version=?",
+                (profile_id, version),
+            ).fetchone()
+        return self._model(DefaultMonitoringProfile, row)
+
+    def list_profile_revisions(self, profile_id: str) -> list[DefaultMonitoringProfile]:
+        with self._connect() as connection:
+            rows = connection.execute(
+                """select data_json from default_profile_revisions where profile_id=?
+                   order by version desc""",
+                (profile_id,),
+            ).fetchall()
+        return self._models(DefaultMonitoringProfile, rows)
+
+    # -- Ticker lifecycle and bindings ----------------------------------------------
+
+    def save_ticker_state(self, state: TickerMonitoringState) -> None:
+        with self.transaction() as connection:
+            prior = connection.execute(
+                "SELECT data_json FROM ticker_monitoring_states WHERE ticker=?", (state.ticker,)
+            ).fetchone()
+            previous = TickerMonitoringState.model_validate_json(prior[0]) if prior else None
+            began = None
+            if state.status.value == "running":
+                began = (
+                    previous.continuous_run_started_at
+                    if previous and previous.status.value == "running"
+                    else utc_now()
+                )
+            state = state.model_copy(update={"continuous_run_started_at": began})
+            from doxagent.v2_control.mirror import state_in
+
+            control = state_in(connection, state.ticker)
+            if (
+                control
+                and state.status.value == "running"
+                and not (control["analysis_allowed"] or control.get("admission_allowed"))
+            ):
+                raise ValueError("V2 control has stopped Bus admission")
+            connection.execute(
+                """insert into ticker_monitoring_states(ticker, status, data_json) values(?,?,?)
+                   on conflict(ticker) do update set status=excluded.status,
+                     data_json=excluded.data_json""",
+                (state.ticker, state.status.value, self._json(state)),
+            )
+
+    def get_ticker_state(self, ticker: str) -> TickerMonitoringState | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                "select data_json from ticker_monitoring_states where ticker=?",
+                (ticker.strip().upper(),),
+            ).fetchone()
+        return self._model(TickerMonitoringState, row)
+
+    def list_ticker_states(self) -> list[TickerMonitoringState]:
+        with self._connect() as connection:
+            rows = connection.execute(
+                "select data_json from ticker_monitoring_states order by ticker"
+            ).fetchall()
+        return self._models(TickerMonitoringState, rows)
+
+    def save_binding(self, binding: TickerSourceBinding) -> None:
+        with self.transaction() as connection:
+            self._save_binding_tx(connection, binding)
+
+    def _save_binding_tx(
+        self, connection: sqlite3.Connection, binding: TickerSourceBinding
+    ) -> None:
+        value = self._json(binding)
+        connection.execute(
+            """insert into ticker_source_bindings(
+                     binding_id,ticker,source_id,enabled,tombstoned_at,version,data_json)
+                   values(?,?,?,?,?,?,?) on conflict(binding_id) do update set
+                     ticker=excluded.ticker, source_id=excluded.source_id,
+                     enabled=excluded.enabled, tombstoned_at=excluded.tombstoned_at,
+                     version=excluded.version, data_json=excluded.data_json""",
+            (
+                binding.binding_id,
+                binding.ticker,
+                binding.source_id,
+                int(binding.enabled),
+                binding.tombstoned_at.isoformat() if binding.tombstoned_at else None,
+                binding.version,
+                value,
+            ),
+        )
+        connection.execute(
+            """insert into ticker_source_binding_revisions(binding_id,version,data_json)
+                   values(?,?,?) on conflict(binding_id,version) do nothing""",
+            (binding.binding_id, binding.version, value),
+        )
+
+    def get_binding(
+        self, binding_id: str, *, include_tombstoned: bool = False
+    ) -> TickerSourceBinding | None:
+        clause = "" if include_tombstoned else " and tombstoned_at is null"
+        with self._connect() as connection:
+            row = connection.execute(
+                f"select data_json from ticker_source_bindings where binding_id=?{clause}",
+                (binding_id,),
+            ).fetchone()
+        return self._model(TickerSourceBinding, row)
+
+    def list_bindings(
+        self,
+        *,
+        ticker: str | None = None,
+        source_id: str | None = None,
+        active_only: bool = False,
+        include_tombstoned: bool = False,
+    ) -> list[TickerSourceBinding]:
+        clauses: list[str] = []
+        params: list[object] = []
+        if ticker:
+            clauses.append("ticker=?")
+            params.append(ticker.strip().upper())
+        if source_id:
+            clauses.append("source_id=?")
+            params.append(source_id.strip().lower())
+        if active_only:
+            clauses.append("enabled=1")
+        if not include_tombstoned:
+            clauses.append("tombstoned_at is null")
+        where = f"where {' and '.join(clauses)}" if clauses else ""
+        with self._connect() as connection:
+            rows = connection.execute(
+                f"select data_json from ticker_source_bindings {where} order by ticker,source_id",
+                params,
+            ).fetchall()
+        return self._models(TickerSourceBinding, rows)
+
+    def binding_revision(self, binding_id: str, version: int) -> TickerSourceBinding | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                """select data_json from ticker_source_binding_revisions
+                   where binding_id=? and version=?""",
+                (binding_id, version),
+            ).fetchone()
+        return self._model(TickerSourceBinding, row)
+
+    # -- Raw, Standard and buffering -------------------------------------------------
+
+    def enqueue_enrichment_job(self, job: EnrichmentJob) -> tuple[EnrichmentJob, bool]:
+        """Insert one active intake job, or return the already queued equivalent."""
+
+        with self.transaction() as connection:
+            existing_row = connection.execute(
+                "select data_json from content_enrichment_jobs where intake_key=?",
+                (job.intake_key,),
+            ).fetchone()
+            if existing_row is not None:
+                existing = EnrichmentJob.model_validate_json(existing_row["data_json"])
+                from .admission import evaluate_admission
+
+                expired = evaluate_admission(
+                    existing.message.published_at,
+                    existing.message.admission_context,
+                    utc_now(),
+                    existing.message.publication_time_basis,
+                )
+                if (
+                    expired
+                    and job.message.admission_context
+                    and job.message.admission_context.mode == "CLOSED_SWEEP"
+                ):
+                    connection.execute(
+                        "DELETE FROM content_enrichment_jobs WHERE job_id=?", (existing.job_id,)
+                    )
+                    # Fall through to insert a fresh lease with the same durable intake identity.
+                else:
+                    refreshed = existing.model_copy(
+                        update={"last_seen_at": job.last_seen_at, "updated_at": job.updated_at}
+                    )
+                    connection.execute(
+                        "update content_enrichment_jobs set data_json=? where job_id=?",
+                        (self._json(refreshed), existing.job_id),
+                    )
+                    return refreshed, False
+            connection.execute(
+                """insert into content_enrichment_jobs(
+                     job_id,intake_key,status,not_before,lease_expires_at,created_at,data_json)
+                   values(?,?,?,?,?,?,?)""",
+                (
+                    job.job_id,
+                    job.intake_key,
+                    job.status.value,
+                    job.not_before.isoformat(),
+                    None,
+                    job.created_at.isoformat(),
+                    self._json(job),
+                ),
+            )
+        return job, True
+
+    def claim_enrichment_jobs(
+        self, *, limit: int, now: datetime | None = None, lease_seconds: int = 60
+    ) -> list[EnrichmentJob]:
+        """Atomically claim ready jobs and recover expired worker leases."""
+
+        current = (now or utc_now()).astimezone(UTC)
+        lease_until = current + timedelta(seconds=lease_seconds)
+        with self.transaction() as connection:
+            expired = connection.execute(
+                """select data_json from content_enrichment_jobs
+                   where status=? and lease_expires_at is not null and lease_expires_at<=?""",
+                (EnrichmentJobStatus.RUNNING.value, current.isoformat()),
+            ).fetchall()
+            for row in expired:
+                job = EnrichmentJob.model_validate_json(row["data_json"])
+                recovered = job.model_copy(
+                    update={
+                        "status": EnrichmentJobStatus.QUEUED,
+                        "lease_expires_at": None,
+                        "updated_at": current,
+                    }
+                )
+                connection.execute(
+                    """update content_enrichment_jobs
+                       set status=?,lease_expires_at=null,data_json=? where job_id=?""",
+                    (recovered.status.value, self._json(recovered), recovered.job_id),
+                )
+            rows = connection.execute(
+                """select data_json from content_enrichment_jobs
+                   where status in (?,?) and not_before<=?
+                   order by created_at limit ?""",
+                (
+                    EnrichmentJobStatus.QUEUED.value,
+                    EnrichmentJobStatus.RETRY_WAIT.value,
+                    current.isoformat(),
+                    max(64, min(1024, limit * 128)),
+                ),
+            ).fetchall()
+            # A bounded ready window spreads claims across publishers; the HTTP
+            # controller still enforces actual request pacing after redirects.
+            ready = [EnrichmentJob.model_validate_json(row["data_json"]) for row in rows]
+            host_counts: dict[str, int] = {}
+            running = connection.execute(
+                "select data_json from content_enrichment_jobs where status=?",
+                (EnrichmentJobStatus.RUNNING.value,),
+            ).fetchall()
+            for row in running:
+                active = EnrichmentJob.model_validate_json(row["data_json"])
+                host = urlparse(active.message.url).hostname or ""
+                host_counts[host] = host_counts.get(host, 0) + 1
+            selected: list[EnrichmentJob] = []
+            while ready and len(selected) < max(1, limit):
+                existing = min(
+                    ready,
+                    key=lambda item: host_counts.get(urlparse(item.message.url).hostname or "", 0),
+                )
+                ready.remove(existing)
+                selected.append(existing)
+                host = urlparse(existing.message.url).hostname or ""
+                host_counts[host] = host_counts.get(host, 0) + 1
+            claimed = []
+            for existing in selected:
+                # Closed sweeps can enqueue a large batch. Queue waiting must
+                # not consume the entire finite fetch/retry budget before the
+                # first claim. Reclaims/retries never renew this deadline;
+                # original publication-window admission remains unchanged.
+                closed_work = existing.owner_kind == "distribution_article" or (
+                    existing.message.admission_context is not None
+                    and existing.message.admission_context.mode == "CLOSED_SWEEP"
+                )
+                deadline_at = existing.deadline_at
+                if closed_work and existing.attempt_count == 0:
+                    retry_budget = max(timedelta(seconds=1), existing.deadline_at - existing.created_at)
+                    deadline_at = current + retry_budget
+                job = existing.model_copy(
+                    update={
+                        "status": EnrichmentJobStatus.RUNNING,
+                        "attempt_count": existing.attempt_count + 1,
+                        "claim_token": new_id("claim"),
+                        "lease_expires_at": lease_until,
+                        "updated_at": current,
+                        "deadline_at": deadline_at,
+                    }
+                )
+                connection.execute(
+                    """update content_enrichment_jobs
+                       set status=?,lease_expires_at=?,data_json=? where job_id=?""",
+                    (
+                        job.status.value,
+                        lease_until.isoformat(),
+                        self._json(job),
+                        job.job_id,
+                    ),
+                )
+                claimed.append(job)
+        return claimed
+
+    def requeue_enrichment_job(self, job: EnrichmentJob) -> None:
+        with self.transaction() as connection:
+            if job.claim_token:
+                self._assert_enrichment_claim(connection, job.job_id, job.claim_token)
+            connection.execute(
+                """update content_enrichment_jobs
+                   set status=?,not_before=?,lease_expires_at=null,data_json=? where job_id=?""",
+                (job.status.value, job.not_before.isoformat(), self._json(job), job.job_id),
+            )
+
+    def pending_enrichment_ids(self, identities: list[str]) -> list[str]:
+        with self._connect() as connection:
+            return [
+                row[0]
+                for row in connection.execute(
+                    "select job_id from content_enrichment_jobs where job_id in "
+                    "(select value from json_each(?))",
+                    (json.dumps(identities),),
+                )
+            ]
+
+    def delete_enrichment_job(self, job_id: str, *, claim_token: str | None = None) -> None:
+        with self.transaction() as connection:
+            if claim_token:
+                self._assert_enrichment_claim(connection, job_id, claim_token)
+            connection.execute("delete from content_enrichment_jobs where job_id=?", (job_id,))
+
+    def list_site_strategy_outbox(self, *, limit: int = 100) -> list[dict[str, Any]]:
+        now = utc_now().isoformat()
+        with self._connect() as connection:
+            rows = connection.execute(
+                """select outbox_id,attempts,payload_json from site_strategy_result_outbox
+                   where status='PENDING' and next_attempt_at<=?
+                   order by created_at limit ?""",
+                (now, max(1, min(limit, 1000))),
+            ).fetchall()
+        return [
+            {
+                "outbox_id": row["outbox_id"],
+                "attempts": row["attempts"],
+                "payload": json.loads(row["payload_json"]),
+            }
+            for row in rows
+        ]
+
+    def complete_enrichment_job_with_outcome(
+        self,
+        job_id: str,
+        claim_token: str | None,
+        payload: dict[str, Any] | None,
+    ) -> None:
+        with self.transaction() as connection:
+            row = connection.execute(
+                "select 1 from content_enrichment_jobs where job_id=?", (job_id,)
+            ).fetchone()
+            if row is None:
+                return
+            if claim_token:
+                self._assert_enrichment_claim(connection, job_id, claim_token)
+            if payload:
+                now = utc_now().isoformat()
+                connection.execute(
+                    """insert or ignore into site_strategy_result_outbox(
+                           outbox_id,kind,status,attempts,next_attempt_at,created_at,payload_json
+                       ) values(?,?,?,?,?,?,?)""",
+                    (
+                        job_id,
+                        "body",
+                        "PENDING",
+                        0,
+                        now,
+                        now,
+                        json.dumps(payload, ensure_ascii=False, default=str),
+                    ),
+                )
+            connection.execute("delete from content_enrichment_jobs where job_id=?", (job_id,))
+
+    def confirm_site_strategy_outbox(self, outbox_ids: list[str]) -> None:
+        if not outbox_ids:
+            return
+        now = utc_now().isoformat()
+        with self.transaction() as connection:
+            connection.execute(
+                """update site_strategy_result_outbox set status='CONFIRMED',confirmed_at=?
+                   where outbox_id in (select value from json_each(?))""",
+                (now, json.dumps(outbox_ids)),
+            )
+
+    def retry_site_strategy_outbox(self, outbox_ids: list[str]) -> None:
+        if not outbox_ids:
+            return
+        with self.transaction() as connection:
+            rows = connection.execute(
+                """select outbox_id,attempts from site_strategy_result_outbox
+                   where outbox_id in (select value from json_each(?))""",
+                (json.dumps(outbox_ids),),
+            ).fetchall()
+            for row in rows:
+                attempts = int(row["attempts"]) + 1
+                delay = min(600, 2 ** min(attempts, 9))
+                connection.execute(
+                    """update site_strategy_result_outbox set attempts=?,next_attempt_at=?
+                       where outbox_id=?""",
+                    (
+                        attempts,
+                        (utc_now() + timedelta(seconds=delay)).isoformat(),
+                        row["outbox_id"],
+                    ),
+                )
+
+    def prune_site_strategy_outbox(self, *, now: datetime | None = None) -> int:
+        cutoff = (now or utc_now()) - timedelta(days=7)
+        with self.transaction() as connection:
+            return connection.execute(
+                "delete from site_strategy_result_outbox where status='CONFIRMED' "
+                "and confirmed_at<?",
+                (cutoff.isoformat(),),
+            ).rowcount
+
+    @staticmethod
+    def _body_outcome_payload(candidate: RawMessage) -> dict[str, Any] | None:
+        enrichment = candidate.metadata.get("media_enrichment", {})
+        completion = candidate.metadata.get("v2_body_completion", {})
+        if enrichment.get("pipeline_version") != "body_v2.2":
+            return None
+        job_id = completion.get("attempt_id")
+        if not isinstance(job_id, str) or not job_id:
+            return None
+        trace = enrichment.get("site_access_trace") or []
+        final_access = trace[-1] if isinstance(trace, list) and trace else {}
+        return {
+            "job_id": job_id,
+            "final_site_id": enrichment.get("site_id")
+            or final_access.get("site_id")
+            or candidate.resolved_domain
+            or "generic",
+            "strategy_ref": enrichment.get("strategy_ref")
+            or final_access.get("strategy_ref")
+            or "builtin:generic@1",
+            "combination_id": final_access.get("combination_id"),
+            "outcome": enrichment.get("outcome") or "UNAVAILABLE",
+            "reason": enrichment.get("reason_code"),
+            "completed_at": completion.get("completed_at") or utc_now().isoformat(),
+            "payload": {
+                "source_id": candidate.source_id,
+                "ticker": candidate.ticker,
+                "url": candidate.url,
+                "access_trace": trace,
+            },
+        }
+
+    @staticmethod
+    def _assert_enrichment_claim(
+        connection: sqlite3.Connection,
+        job_id: str,
+        claim_token: str,
+    ) -> EnrichmentJob:
+        row = connection.execute(
+            "select data_json from content_enrichment_jobs where job_id=?",
+            (job_id,),
+        ).fetchone()
+        job = EnrichmentJob.model_validate_json(row["data_json"]) if row else None
+        if (
+            job is None
+            or job.status is not EnrichmentJobStatus.RUNNING
+            or job.claim_token != claim_token
+            or job.lease_expires_at is None
+            or job.lease_expires_at <= utc_now()
+        ):
+            raise RuntimeError("enrichment_lease_lost")
+        return job
+
+    def renew_enrichment_claim(self, job_id: str, claim_token: str) -> None:
+        with self.transaction() as connection:
+            job = self._assert_enrichment_claim(connection, job_id, claim_token)
+            renewed = job.model_copy(update={"lease_expires_at": utc_now() + timedelta(seconds=60)})
+            assert renewed.lease_expires_at is not None
+            connection.execute(
+                "update content_enrichment_jobs set lease_expires_at=?,data_json=? where job_id=?",
+                (renewed.lease_expires_at.isoformat(), self._json(renewed), job_id),
+            )
+
+    def list_enrichment_jobs(self, *, limit: int = 100) -> list[EnrichmentJob]:
+        with self._connect() as connection:
+            rows = connection.execute(
+                "select data_json from content_enrichment_jobs order by created_at limit ?",
+                (max(1, limit),),
+            ).fetchall()
+        return self._models(EnrichmentJob, rows)
+
+    def has_seen_provider_payload(
+        self,
+        *,
+        ticker: str,
+        source_id: str,
+        identity_key: str,
+        raw_hash: str,
+    ) -> bool:
+        """Return whether this exact provider payload was already materialized."""
+
+        with self._connect() as connection:
+            row = connection.execute(
+                """select 1 from raw_messages r
+                   where ticker=? and source_id=? and identity_key=? and raw_hash=?
+                   and (json_extract(r.data_json,'$.bootstrap_suppressed')=1 or exists(
+                     select 1 from standard_messages st join stream_members sm
+                     on sm.standard_message_id=st.standard_message_id
+                     where st.raw_message_id=r.raw_message_id)) limit 1""",
+                (ticker, source_id, identity_key, raw_hash),
+            ).fetchone()
+        return row is not None
+
+    def record_raw(
+        self, candidate: RawMessage, *, enrichment_claim: tuple[str, str] | None = None
+    ) -> tuple[IngestDecision, RawMessage]:
+        site_outcome = self._body_outcome_payload(candidate)
+        with self.transaction() as connection:
+            try:
+                if enrichment_claim:
+                    self._assert_enrichment_claim(connection, *enrichment_claim)
+                candidate, duplicate = self._dedup_candidate(connection, candidate)
+                if duplicate is not None:
+                    return IngestDecision.DUPLICATE, duplicate
+                matching_row = connection.execute(
+                    """select data_json from raw_messages
+                   where ticker=? and source_id=? and identity_key=?
+                   and (content_hash=? or (raw_hash=? and ?=0))
+                   order by case when content_hash=? then 0 else 1 end
+                   limit 1""",
+                    (
+                        candidate.ticker,
+                        candidate.source_id,
+                        candidate.identity_key,
+                        candidate.content_hash,
+                        candidate.raw_hash,
+                        int("content_evidence" in candidate.metadata),
+                        candidate.content_hash,
+                    ),
+                ).fetchone()
+            finally:
+                if enrichment_claim and site_outcome:
+                    now = utc_now().isoformat()
+                    connection.execute(
+                        """insert or ignore into site_strategy_result_outbox(
+                               outbox_id,kind,status,attempts,next_attempt_at,created_at,payload_json
+                           ) values(?,?,?,?,?,?,?)""",
+                        (
+                            site_outcome["job_id"],
+                            "body",
+                            "PENDING",
+                            0,
+                            now,
+                            now,
+                            json.dumps(site_outcome, ensure_ascii=False, default=str),
+                        ),
+                    )
+                    connection.execute(
+                        "delete from content_enrichment_jobs where job_id=?",
+                        (enrichment_claim[0],),
+                    )
+            if matching_row is not None:
+                # A conservative ambiguity fallback may find an exact legacy hash.
+                # Remove only this uncommitted reservation, never historical evidence.
+                connection.execute(
+                    "delete from logical_message_versions where raw_message_id=?",
+                    (candidate.raw_message_id,),
+                )
+                matching = RawMessage.model_validate_json(matching_row["data_json"])
+                if "content_evidence" in candidate.metadata:
+                    matching = self._adopt_legacy(connection, matching)
+                    reserved_id = candidate.metadata["message_version"]["logical_message_id"]
+                    connection.execute(
+                        "delete from message_identity_aliases "
+                        "where ticker=? and logical_message_id=? "
+                        "and not exists(select 1 from logical_message_versions "
+                        "where ticker=? and logical_message_id=?)",
+                        (candidate.ticker, reserved_id, candidate.ticker, reserved_id),
+                    )
+                    connection.execute(
+                        "update message_observations set canonical_raw_id=?,logical_message_id=?, "
+                        "classification='SAME_VERSION' "
+                        "where ticker=? and source_id=? and identity_key=? and raw_hash=?",
+                        (
+                            matching.raw_message_id,
+                            matching.metadata["message_version"]["logical_message_id"],
+                            candidate.ticker,
+                            candidate.source_id,
+                            candidate.identity_key,
+                            candidate.raw_hash,
+                        ),
+                    )
+                self._record_body_attempt(connection, candidate, matching)
+                # An unpublished expired Raw is not a consumption receipt. Reuse its
+                # identity and materialized body when a legitimate sweep adopts it.
+                published = connection.execute(
+                    "SELECT 1 FROM standard_messages st JOIN stream_members sm ON "
+                    "sm.standard_message_id=st.standard_message_id WHERE st.raw_message_id=?",
+                    (matching.raw_message_id,),
+                ).fetchone()
+                if (
+                    not published
+                    and not matching.bootstrap_suppressed
+                    and candidate.admission_context
+                    and candidate.admission_context.mode == "CLOSED_SWEEP"
+                ):
+                    matching = matching.model_copy(
+                        update={
+                            "admission_context": candidate.admission_context,
+                            "processing_status": RawProcessingStatus.PENDING,
+                        }
+                    )
+                    stored = connection.execute(
+                        "SELECT data_json FROM standard_messages WHERE raw_message_id=?",
+                        (matching.raw_message_id,),
+                    ).fetchone()
+                    if stored:
+                        standard = StandardMessage.model_validate_json(stored[0]).model_copy(
+                            update={"admission_context": candidate.admission_context}
+                        )
+                        connection.execute(
+                            "UPDATE standard_messages SET data_json=? WHERE raw_message_id=?",
+                            (self._json(standard), matching.raw_message_id),
+                        )
+                        connection.execute(
+                            "UPDATE buffer_entries SET data_json=? WHERE standard_message_id=?",
+                            (self._json(standard), standard.standard_message_id),
+                        )
+                updated = matching.model_copy(
+                    update={
+                        "last_seen_at": candidate.collected_at,
+                        "duplicate_seen_count": matching.duplicate_seen_count + 1,
+                    }
+                )
+                connection.execute(
+                    "update raw_messages set data_json=? where raw_message_id=?",
+                    (self._json(updated), updated.raw_message_id),
+                )
+                return IngestDecision.DUPLICATE, updated
+            latest_row = connection.execute(
+                """select data_json from raw_messages
+                   where ticker=? and source_id=? and identity_key=?
+                   order by revision desc limit 1""",
+                (candidate.ticker, candidate.source_id, candidate.identity_key),
+            ).fetchone()
+            if latest_row is not None:
+                latest = RawMessage.model_validate_json(latest_row["data_json"])
+                candidate = candidate.model_copy(update={"revision": latest.revision + 1})
+                decision = IngestDecision.REVISION
+            else:
+                decision = IngestDecision.INSERTED
+            # Capture origin at first ingestion, never on a delayed normalization/replay.
+            # Caller metadata is untrusted and cannot manufacture business provenance.
+            from doxagent.v2_control.mirror import state_in
+
+            origin = state_in(connection, candidate.ticker)
+            metadata = dict(candidate.metadata)
+            metadata.pop("v2_control_origin", None)
+            if origin is not None:
+                metadata["v2_control_origin"] = {
+                    "epoch": origin["epoch"],
+                    "mode": origin["mode"],
+                    "recorded_at": candidate.collected_at.isoformat(),
+                }
+            candidate = candidate.model_copy(update={"metadata": metadata})
+            self._record_body_attempt(connection, candidate, candidate)
+            connection.execute(
+                """insert into raw_messages(
+                     raw_message_id,ticker,source_id,binding_id,identity_key,content_hash,
+                     raw_hash,revision,processing_status,published_at,collected_at,data_json)
+                   values(?,?,?,?,?,?,?,?,?,?,?,?)""",
+                (
+                    candidate.raw_message_id,
+                    candidate.ticker,
+                    candidate.source_id,
+                    candidate.binding_id,
+                    candidate.identity_key,
+                    candidate.content_hash,
+                    candidate.raw_hash,
+                    candidate.revision,
+                    candidate.processing_status.value,
+                    candidate.published_at.isoformat(),
+                    candidate.collected_at.isoformat(),
+                    self._json(candidate),
+                ),
+            )
+            return decision, candidate
+
+    def _record_body_attempt(
+        self,
+        connection: sqlite3.Connection,
+        candidate: RawMessage,
+        persisted: RawMessage,
+    ) -> None:
+        attempt = candidate.metadata.get("v2_body_completion")
+        origin = persisted.metadata.get("v2_control_origin")
+        if not attempt or not origin:
+            return
+        audit = AuditRecord(
+            audit_id=attempt["attempt_id"],
+            entity_type="body_completion",
+            entity_id=persisted.raw_message_id,
+            action="completed",
+            actor=UpdateActor.SYSTEM,
+            payload={
+                **attempt,
+                "ticker": persisted.ticker,
+                "source_id": persisted.source_id,
+                "binding_id": persisted.binding_id,
+                "raw_message_id": persisted.raw_message_id,
+                "v2_control_origin": origin,
+            },
+        )
+        connection.execute(
+            "INSERT OR IGNORE INTO audit_log "
+            "(audit_id,entity_type,entity_id,action,created_at,data_json) "
+            "VALUES(?,?,?,?,?,?)",
+            (
+                audit.audit_id,
+                audit.entity_type,
+                audit.entity_id,
+                audit.action,
+                audit.created_at.isoformat(),
+                self._json(audit),
+            ),
+        )
+
+    def save_raw(self, raw: RawMessage) -> None:
+        with self.transaction() as connection:
+            raw = self._retain_concurrent_evidence(connection, raw)
+            connection.execute(
+                """update raw_messages set processing_status=?, data_json=?
+                   where raw_message_id=?""",
+                (raw.processing_status.value, self._json(raw), raw.raw_message_id),
+            )
+
+    def _retain_concurrent_evidence(
+        self, connection: sqlite3.Connection, raw: RawMessage
+    ) -> RawMessage:
+        row = connection.execute(
+            "select data_json from raw_messages where raw_message_id=?", (raw.raw_message_id,)
+        ).fetchone()
+        if not row:
+            return raw
+        stored = RawMessage.model_validate_json(row["data_json"])
+        metadata = dict(raw.metadata)
+        sources = list(stored.metadata.get("message_sources", []))
+        for item in metadata.get("message_sources", []):
+            if item not in sources:
+                sources.append(item)
+        if sources:
+            metadata["message_sources"] = sources
+        identity = dict(metadata.get("identity_evidence", {}))
+        identity["verified_urls"] = list(
+            dict.fromkeys(
+                [
+                    *stored.metadata.get("identity_evidence", {}).get("verified_urls", []),
+                    *identity.get("verified_urls", []),
+                ]
+            )
+        )
+        metadata["identity_evidence"] = identity
+        updates = {
+            "metadata": metadata,
+            "duplicate_seen_count": max(raw.duplicate_seen_count, stored.duplicate_seen_count),
+            "last_seen_at": max(raw.last_seen_at, stored.last_seen_at),
+        }
+        if stored.metadata.get("message_version", {}).get("content_revision", 1) > metadata.get(
+            "message_version", {}
+        ).get("content_revision", 1):
+            # A first-publication worker cannot overwrite content refreshed concurrently.
+            metadata.update(
+                {
+                    k: stored.metadata[k]
+                    for k in (
+                        "content_evidence",
+                        "message_version",
+                        "media_enrichment",
+                        "v2_body_completion",
+                    )
+                    if k in stored.metadata
+                }
+            )
+            updates.update(body=stored.body, title=stored.title)
+        # A stale worker cannot undo an already committed publication.
+        if stored.processing_status is RawProcessingStatus.COMPLETED:
+            updates["processing_status"] = RawProcessingStatus.COMPLETED
+        return raw.model_copy(update=updates)
+
+    def get_raw(self, raw_message_id: str) -> RawMessage | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                "select data_json from raw_messages where raw_message_id=?", (raw_message_id,)
+            ).fetchone()
+        return self._model(RawMessage, row)
+
+    def list_raw(
+        self,
+        *,
+        ticker: str | None = None,
+        status: RawProcessingStatus | None = None,
+        limit: int = 100,
+    ) -> list[RawMessage]:
+        clauses: list[str] = []
+        params: list[object] = []
+        if ticker:
+            clauses.append("ticker=?")
+            params.append(ticker.strip().upper())
+        if status:
+            clauses.append("processing_status=?")
+            params.append(status.value)
+        where = f"where {' and '.join(clauses)}" if clauses else ""
+        params.append(limit)
+        with self._connect() as connection:
+            rows = connection.execute(
+                f"select data_json from raw_messages {where} order by collected_at desc limit ?",
+                params,
+            ).fetchall()
+        return self._models(RawMessage, rows)
+
+    def add_baseline(self, raw: RawMessage) -> None:
+        with self.transaction() as connection:
+            connection.execute(
+                """insert into source_item_baselines(
+                     binding_id,identity_key,content_hash,observed_at)
+                   values(?,?,?,?) on conflict do nothing""",
+                (raw.binding_id, raw.identity_key, raw.content_hash, raw.collected_at.isoformat()),
+            )
+
+    def reset_binding_baseline(self, binding_id: str) -> None:
+        with self.transaction() as connection:
+            connection.execute(
+                "delete from source_item_baselines where binding_id=?", (binding_id,)
+            )
+            connection.execute("delete from poll_states where binding_id=?", (binding_id,))
+
+    def save_standard(self, message: StandardMessage) -> None:
+        with self.transaction() as connection:
+            connection.execute(
+                """insert into standard_messages(
+                     standard_message_id,raw_message_id,ticker,source_id,binding_id,published_at,data_json)
+                   values(?,?,?,?,?,?,?) on conflict(raw_message_id) do nothing""",
+                (
+                    message.standard_message_id,
+                    message.raw_message_id,
+                    message.ticker,
+                    message.source_id,
+                    message.binding_id,
+                    message.published_at.isoformat(),
+                    self._json(message),
+                ),
+            )
+
+    def finalize_standard(
+        self,
+        *,
+        raw: RawMessage,
+        message: StandardMessage,
+        streaming: StreamingConfig,
+    ) -> StreamItem | None:
+        """Atomically persist Standard + publication target + completed Raw state."""
+
+        completed = raw.model_copy(update={"processing_status": RawProcessingStatus.COMPLETED})
+        with self.transaction() as connection:
+            completed = self._retain_concurrent_evidence(connection, completed)
+            message = message.model_copy(
+                update={
+                    "metadata": completed.metadata,
+                    "title": completed.title,
+                    "body": completed.body,
+                }
+            )
+            connection.execute(
+                """insert into standard_messages(
+                     standard_message_id,raw_message_id,ticker,source_id,binding_id,published_at,data_json)
+                   values(?,?,?,?,?,?,?) on conflict(raw_message_id) do nothing""",
+                (
+                    message.standard_message_id,
+                    message.raw_message_id,
+                    message.ticker,
+                    message.source_id,
+                    message.binding_id,
+                    message.published_at.isoformat(),
+                    self._json(message),
+                ),
+            )
+            stored_row = connection.execute(
+                "select data_json from standard_messages where raw_message_id=?",
+                (raw.raw_message_id,),
+            ).fetchone()
+            stored = StandardMessage.model_validate_json(stored_row["data_json"])
+            item: StreamItem | None = None
+            if streaming.publication_mode is PublicationMode.IMMEDIATE:
+                existing_row = connection.execute(
+                    """select si.data_json from stream_items si
+                       join stream_members sm on sm.stream_item_id=si.stream_item_id
+                       where sm.standard_message_id=?""",
+                    (stored.standard_message_id,),
+                ).fetchone()
+                if existing_row is not None:
+                    item = StreamItem.model_validate_json(existing_row["data_json"])
+                else:
+                    item = self._publish_in_transaction(
+                        connection, stored.ticker, [stored], PublicationMode.IMMEDIATE
+                    )
+            else:
+                added_at = utc_now()
+                connection.execute(
+                    """insert into buffer_entries(
+                         standard_message_id,binding_id,ticker,source_id,added_at,data_json)
+                       values(?,?,?,?,?,?) on conflict(standard_message_id) do nothing""",
+                    (
+                        stored.standard_message_id,
+                        stored.binding_id,
+                        stored.ticker,
+                        stored.source_id,
+                        added_at.isoformat(),
+                        self._json(stored),
+                    ),
+                )
+            connection.execute(
+                """update raw_messages set processing_status=?,data_json=?
+                   where raw_message_id=?""",
+                (
+                    completed.processing_status.value,
+                    self._json(completed),
+                    completed.raw_message_id,
+                ),
+            )
+        return item
+
+    def get_standard(self, standard_message_id: str) -> StandardMessage | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                "select data_json from standard_messages where standard_message_id=?",
+                (standard_message_id,),
+            ).fetchone()
+        return self._model(StandardMessage, row)
+
+    def get_standard_for_raw(self, raw_message_id: str) -> StandardMessage | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                "select data_json from standard_messages where raw_message_id=?",
+                (raw_message_id,),
+            ).fetchone()
+        return self._model(StandardMessage, row)
+
+    def list_standard(
+        self, *, ticker: str | None = None, limit: int = 100
+    ) -> list[StandardMessage]:
+        where = "where ticker=?" if ticker else ""
+        params: list[object] = [ticker.strip().upper()] if ticker else []
+        params.append(limit)
+        with self._connect() as connection:
+            rows = connection.execute(
+                f"""select data_json from standard_messages {where}
+                    order by published_at desc limit ?""",
+                params,
+            ).fetchall()
+        return self._models(StandardMessage, rows)
+
+    def add_buffer_entry(
+        self, message: StandardMessage, *, added_at: datetime | None = None
+    ) -> None:
+        when = added_at or utc_now()
+        with self.transaction() as connection:
+            connection.execute(
+                """insert into buffer_entries(
+                     standard_message_id,binding_id,ticker,source_id,added_at,data_json)
+                   values(?,?,?,?,?,?) on conflict(standard_message_id) do nothing""",
+                (
+                    message.standard_message_id,
+                    message.binding_id,
+                    message.ticker,
+                    message.source_id,
+                    when.isoformat(),
+                    self._json(message),
+                ),
+            )
+
+    def list_buffer(self, binding_id: str) -> list[tuple[StandardMessage, datetime]]:
+        with self._connect() as connection:
+            rows = connection.execute(
+                """select data_json,added_at from buffer_entries where binding_id=?
+                   order by added_at,standard_message_id""",
+                (binding_id,),
+            ).fetchall()
+        return [
+            (
+                StandardMessage.model_validate_json(row["data_json"]),
+                datetime.fromisoformat(row["added_at"]),
+            )
+            for row in rows
+        ]
+
+    def delete_buffer_members(self, standard_message_ids: Sequence[str]) -> None:
+        if not standard_message_ids:
+            return
+        placeholders = ",".join("?" for _ in standard_message_ids)
+        with self.transaction() as connection:
+            connection.execute(
+                f"delete from buffer_entries where standard_message_id in ({placeholders})",
+                list(standard_message_ids),
+            )
+
+    def list_buffer_binding_ids(self) -> list[str]:
+        with self._connect() as connection:
+            rows = connection.execute(
+                "select distinct binding_id from buffer_entries order by binding_id"
+            ).fetchall()
+        return [str(row[0]) for row in rows]
+
+    # -- Durable ticker stream and consumer offsets ---------------------------------
+
+    def publish(
+        self, ticker: str, messages: Sequence[StandardMessage], mode: PublicationMode
+    ) -> StreamItem | None:
+        if not messages:
+            raise ValueError("cannot publish an empty stream item")
+        normalized_ticker = ticker.strip().upper()
+        if any(message.ticker != normalized_ticker for message in messages):
+            raise ValueError("all stream members must belong to the stream ticker")
+        with self.transaction() as connection:
+            return self._publish_in_transaction(connection, normalized_ticker, messages, mode)
+
+    def publish_buffered(
+        self, ticker: str, messages: Sequence[StandardMessage]
+    ) -> StreamItem | None:
+        """Atomically publish a buffered batch and remove exactly its pending members."""
+
+        if not messages:
+            raise ValueError("cannot publish an empty buffered stream item")
+        normalized_ticker = ticker.strip().upper()
+        if any(message.ticker != normalized_ticker for message in messages):
+            raise ValueError("all buffered members must belong to the stream ticker")
+        identifiers = [message.standard_message_id for message in messages]
+        placeholders = ",".join("?" for _ in identifiers)
+        with self.transaction() as connection:
+            present = connection.execute(
+                f"""select standard_message_id from buffer_entries
+                    where standard_message_id in ({placeholders})""",
+                identifiers,
+            ).fetchall()
+            pending_ids = {str(row[0]) for row in present}
+            messages = [
+                message
+                for message in messages
+                if message.standard_message_id in pending_ids
+                or connection.execute(
+                    "SELECT 1 FROM stream_members WHERE standard_message_id=? LIMIT 1",
+                    (message.standard_message_id,),
+                ).fetchone()
+                is not None
+            ]
+            if not messages:
+                return None  # Another publisher already terminally filtered this batch.
+            item = self._publish_in_transaction(
+                connection, normalized_ticker, messages, PublicationMode.BUFFERED
+            )
+            connection.execute(
+                f"delete from buffer_entries where standard_message_id in ({placeholders})",
+                identifiers,
+            )
+            return item
+
+    def _publish_in_transaction(
+        self,
+        connection: sqlite3.Connection,
+        ticker: str,
+        messages: Sequence[StandardMessage],
+        mode: PublicationMode,
+    ) -> StreamItem | None:
+        from .admission import evaluate_admission
+
+        eligible = []
+        existing_receipt: StreamItem | None = None
+        for message in messages:
+            previous = connection.execute(
+                "SELECT si.data_json FROM stream_items si JOIN stream_members sm "
+                "ON sm.stream_item_id=si.stream_item_id WHERE sm.standard_message_id=? LIMIT 1",
+                (message.standard_message_id,),
+            ).fetchone()
+            if previous is not None:
+                existing_receipt = StreamItem.model_validate_json(previous[0])
+                continue
+            reason = evaluate_admission(
+                message.published_at,
+                message.admission_context,
+                utc_now(),
+                message.publication_time_basis,
+            )
+            if reason:
+                self.record_admission(
+                    message, reason, "PUBLICATION", message.binding_id, connection
+                )
+            else:
+                eligible.append(message)
+        if not eligible:
+            return existing_receipt
+        messages = eligible
+        item_id = new_id("stream")
+        now = utc_now()
+        row = connection.execute(
+            "select coalesce(max(stream_offset),0) from stream_items where ticker=?",
+            (ticker,),
+        ).fetchone()
+        offset = int(row[0]) + 1
+        item = StreamItem(
+            stream_item_id=item_id,
+            ticker=ticker,
+            stream_offset=offset,
+            publication_mode=mode,
+            published_at=now,
+            member_count=len(messages),
+            event_type=(
+                "message_bus_v2.stream_item.content_updated"
+                if any(
+                    m.metadata.get("message_version", {}).get("classification")
+                    in {"BUSINESS_UPDATE", "CONTENT_SUPPLEMENT"}
+                    for m in messages
+                )
+                else "message_bus_v2.stream_item.published"
+            ),
+        )
+        connection.execute(
+            """insert into stream_items(
+                 stream_item_id,ticker,stream_offset,publication_mode,published_at,data_json)
+               values(?,?,?,?,?,?)""",
+            (item_id, ticker, offset, mode.value, now.isoformat(), self._json(item)),
+        )
+        for index, message in enumerate(messages):
+            member = StreamMember(
+                stream_item_id=item_id,
+                member_index=index,
+                standard_message_id=message.standard_message_id,
+            )
+            connection.execute(
+                """insert into stream_members(
+                     stream_item_id,member_index,standard_message_id,data_json)
+                   values(?,?,?,?)""",
+                (item_id, index, message.standard_message_id, self._json(member)),
+            )
+        return item
+
+    def get_stream_item(self, stream_item_id: str) -> MaterializedStreamItem | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                "select data_json from stream_items where stream_item_id=?", (stream_item_id,)
+            ).fetchone()
+            if row is None:
+                return None
+            members = self._materialized_members(connection, stream_item_id)
+        item = StreamItem.model_validate_json(row["data_json"])
+        return MaterializedStreamItem(item=item, members=members)
+
+    def read_stream(
+        self, ticker: str, *, after_offset: int = 0, limit: int = 100
+    ) -> list[MaterializedStreamItem]:
+        normalized = ticker.strip().upper()
+        with self._connect() as connection:
+            rows = connection.execute(
+                """select data_json from stream_items where ticker=? and stream_offset>?
+                   order by stream_offset limit ?""",
+                (normalized, after_offset, limit),
+            ).fetchall()
+            result: list[MaterializedStreamItem] = []
+            for row in rows:
+                item = StreamItem.model_validate_json(row["data_json"])
+                result.append(
+                    MaterializedStreamItem(
+                        item=item,
+                        members=self._materialized_members(connection, item.stream_item_id),
+                    )
+                )
+        return result
+
+    def _materialized_members(
+        self, connection: sqlite3.Connection, stream_item_id: str
+    ) -> list[MaterializedStreamMember]:
+        rows = connection.execute(
+            """select sm.data_json as relation_json, std.data_json as standard_json
+               from stream_members sm
+               join standard_messages std
+                 on std.standard_message_id=sm.standard_message_id
+               where sm.stream_item_id=?
+               order by sm.member_index""",
+            (stream_item_id,),
+        ).fetchall()
+        result: list[MaterializedStreamMember] = []
+        for row in rows:
+            relation = StreamMember.model_validate_json(row["relation_json"])
+            standard = StandardMessage.model_validate_json(row["standard_json"])
+            result.append(
+                MaterializedStreamMember(
+                    metadata=standard.metadata,
+                    stream_item_id=relation.stream_item_id,
+                    member_index=relation.member_index,
+                    standard_message_id=relation.standard_message_id,
+                    source_id=standard.source_id,
+                    binding_id=standard.binding_id,
+                    title=standard.title,
+                    body=standard.body,
+                    source=standard.source,
+                    publisher_name=standard.publisher_name,
+                    resolved_domain=standard.resolved_domain,
+                    url=standard.url,
+                    published_at=standard.published_at,
+                    normalized_at=standard.normalized_at,
+                    admission_context=standard.admission_context,
+                    publication_time_basis=standard.publication_time_basis,
+                )
+            )
+        return result
+
+    def latest_stream_offset(self, ticker: str) -> int:
+        with self._connect() as connection:
+            row = connection.execute(
+                "select coalesce(max(stream_offset),0) from stream_items where ticker=?",
+                (ticker.strip().upper(),),
+            ).fetchone()
+        return int(row[0])
+
+    def get_consumer_offset(self, consumer_id: str, ticker: str) -> ConsumerOffset:
+        normalized = ticker.strip().upper()
+        with self._connect() as connection:
+            row = connection.execute(
+                "select data_json from consumer_offsets where consumer_id=? and ticker=?",
+                (consumer_id, normalized),
+            ).fetchone()
+        return self._model(ConsumerOffset, row) or ConsumerOffset(
+            consumer_id=consumer_id, ticker=normalized
+        )
+
+    def initialize_runtime_cursor(self, consumer_id: str, ticker: str) -> int:
+        """Commit the initial tail and initialization marker in one transaction.
+
+        An existing consumer row is also a durable receipt from older releases;
+        never seek it forward after a crash between their two separate writes.
+        """
+        ticker = ticker.strip().upper()
+        with self.transaction() as connection:
+            row = connection.execute(
+                "SELECT data_json FROM ticker_monitoring_states WHERE ticker=?", (ticker,)
+            ).fetchone()
+            if row is None:
+                raise KeyError(f"ticker monitoring state not found: {ticker}")
+            state = TickerMonitoringState.model_validate_json(row[0])
+            existing = connection.execute(
+                "SELECT stream_offset FROM consumer_offsets WHERE consumer_id=? AND ticker=?",
+                (consumer_id, ticker),
+            ).fetchone()
+            if existing:
+                offset = int(existing[0])
+            elif state.runtime_cursor_initialized:
+                offset = 0
+            else:
+                offset = int(
+                    connection.execute(
+                        "SELECT coalesce(max(stream_offset),0) FROM stream_items WHERE ticker=?",
+                        (ticker,),
+                    ).fetchone()[0]
+                )
+            if existing is None:
+                cursor = ConsumerOffset(
+                    consumer_id=consumer_id, ticker=ticker, stream_offset=offset
+                )
+                connection.execute(
+                    """INSERT INTO consumer_offsets
+                    (consumer_id,ticker,stream_offset,committed_at,data_json) VALUES(?,?,?,?,?)""",
+                    (
+                        consumer_id,
+                        ticker,
+                        offset,
+                        cursor.committed_at.isoformat(),
+                        self._json(cursor),
+                    ),
+                )
+            if not state.runtime_cursor_initialized:
+                state = state.model_copy(
+                    update={
+                        "runtime_cursor_initialized": True,
+                        "updated_at": utc_now(),
+                    }
+                )
+                connection.execute(
+                    "UPDATE ticker_monitoring_states SET data_json=? WHERE ticker=?",
+                    (self._json(state), ticker),
+                )
+            return offset
+
+    def commit_consumer_offset(
+        self, consumer_id: str, ticker: str, stream_offset: int
+    ) -> ConsumerOffset:
+        current = self.get_consumer_offset(consumer_id, ticker)
+        if stream_offset < current.stream_offset:
+            raise ValueError("consumer offsets cannot move backwards")
+        updated = ConsumerOffset(
+            consumer_id=consumer_id,
+            ticker=ticker.strip().upper(),
+            stream_offset=stream_offset,
+            committed_at=utc_now(),
+        )
+        with self.transaction() as connection:
+            connection.execute(
+                """insert into consumer_offsets(
+                     consumer_id,ticker,stream_offset,committed_at,data_json) values(?,?,?,?,?)
+                   on conflict(consumer_id,ticker) do update set
+                     stream_offset=excluded.stream_offset, committed_at=excluded.committed_at,
+                     data_json=excluded.data_json""",
+                (
+                    updated.consumer_id,
+                    updated.ticker,
+                    updated.stream_offset,
+                    updated.committed_at.isoformat(),
+                    self._json(updated),
+                ),
+            )
+        return updated
+
+    # -- Poll state, failures, alerts and audit --------------------------------------
+
+    def save_poll_state(self, state: PollState) -> None:
+        with self.transaction() as connection:
+            connection.execute(
+                """insert into poll_states(
+                     binding_id,source_id,ticker,status,next_dispatch_at,data_json)
+                   values(?,?,?,?,?,?) on conflict(binding_id) do update set
+                     source_id=excluded.source_id,ticker=excluded.ticker,status=excluded.status,
+                     next_dispatch_at=excluded.next_dispatch_at,data_json=excluded.data_json""",
+                (
+                    state.binding_id,
+                    state.source_id,
+                    state.ticker,
+                    state.status.value,
+                    state.next_dispatch_at.isoformat() if state.next_dispatch_at else None,
+                    self._json(state),
+                ),
+            )
+
+    def get_poll_state(self, binding: TickerSourceBinding) -> PollState:
+        with self._connect() as connection:
+            row = connection.execute(
+                "select data_json from poll_states where binding_id=?", (binding.binding_id,)
+            ).fetchone()
+        return self._model(PollState, row) or PollState(
+            binding_id=binding.binding_id, source_id=binding.source_id, ticker=binding.ticker
+        )
+
+    def list_poll_states(self, *, ticker: str | None = None) -> list[PollState]:
+        where = "where ticker=?" if ticker else ""
+        params = (ticker.strip().upper(),) if ticker else ()
+        with self._connect() as connection:
+            rows = connection.execute(
+                f"select data_json from poll_states {where} order by ticker,source_id", params
+            ).fetchall()
+        return self._models(PollState, rows)
+
+    def save_failure(self, failure: AcquisitionFailure) -> AcquisitionFailure:
+        with self.transaction() as connection:
+            row = connection.execute(
+                """select data_json from acquisition_failures
+                   where binding_id=? and error_code=? and raw_hash=?""",
+                (failure.binding_id, failure.error_code, failure.raw_hash),
+            ).fetchone()
+            if row is not None:
+                current = AcquisitionFailure.model_validate_json(row["data_json"])
+                failure = current.model_copy(
+                    update={
+                        "last_seen_at": failure.last_seen_at,
+                        "repeat_count": current.repeat_count + 1,
+                        "error_message": failure.error_message,
+                    }
+                )
+                connection.execute(
+                    """update acquisition_failures set last_seen_at=?,data_json=?
+                       where failure_id=?""",
+                    (failure.last_seen_at.isoformat(), self._json(failure), failure.failure_id),
+                )
+            else:
+                connection.execute(
+                    """insert into acquisition_failures(
+                         failure_id,source_id,binding_id,ticker,error_code,raw_hash,last_seen_at,data_json)
+                       values(?,?,?,?,?,?,?,?)""",
+                    (
+                        failure.failure_id,
+                        failure.source_id,
+                        failure.binding_id,
+                        failure.ticker,
+                        failure.error_code,
+                        failure.raw_hash,
+                        failure.last_seen_at.isoformat(),
+                        self._json(failure),
+                    ),
+                )
+        return failure
+
+    def list_failures(
+        self, *, ticker: str | None = None, limit: int = 100
+    ) -> list[AcquisitionFailure]:
+        where = "where ticker=?" if ticker else ""
+        params: list[object] = [ticker.strip().upper()] if ticker else []
+        params.append(limit)
+        with self._connect() as connection:
+            rows = connection.execute(
+                f"""select data_json from acquisition_failures {where}
+                    order by last_seen_at desc limit ?""",
+                params,
+            ).fetchall()
+        return self._models(AcquisitionFailure, rows)
+
+    def upsert_alert(self, alert: OperationalAlert) -> OperationalAlert:
+        with self.transaction() as connection:
+            row = connection.execute(
+                "select data_json from operational_alerts where alert_key=?", (alert.alert_key,)
+            ).fetchone()
+            if row is not None:
+                current = OperationalAlert.model_validate_json(row["data_json"])
+                alert = current.model_copy(
+                    update={
+                        "severity": alert.severity,
+                        "message": alert.message,
+                        "last_seen_at": alert.last_seen_at,
+                        "repeat_count": current.repeat_count + 1,
+                        "resolved_at": None,
+                        "metadata": alert.metadata,
+                    }
+                )
+                connection.execute(
+                    """update operational_alerts set
+                         severity=?,resolved_at=null,last_seen_at=?,data_json=?
+                       where alert_key=?""",
+                    (
+                        alert.severity.value,
+                        alert.last_seen_at.isoformat(),
+                        self._json(alert),
+                        alert.alert_key,
+                    ),
+                )
+            else:
+                connection.execute(
+                    """insert into operational_alerts(
+                         alert_id,alert_key,severity,resolved_at,last_seen_at,data_json)
+                       values(?,?,?,?,?,?)""",
+                    (
+                        alert.alert_id,
+                        alert.alert_key,
+                        alert.severity.value,
+                        None,
+                        alert.last_seen_at.isoformat(),
+                        self._json(alert),
+                    ),
+                )
+        return alert
+
+    def resolve_alert(self, alert_key: str) -> OperationalAlert | None:
+        with self.transaction() as connection:
+            row = connection.execute(
+                "select data_json from operational_alerts where alert_key=?", (alert_key,)
+            ).fetchone()
+            if row is None:
+                return None
+            current = OperationalAlert.model_validate_json(row["data_json"])
+            resolved_at = utc_now()
+            resolved = current.model_copy(update={"resolved_at": resolved_at})
+            connection.execute(
+                "update operational_alerts set resolved_at=?,data_json=? where alert_key=?",
+                (resolved_at.isoformat(), self._json(resolved), alert_key),
+            )
+        return resolved
+
+    def list_alerts(self, *, active_only: bool = False) -> list[OperationalAlert]:
+        where = "where resolved_at is null" if active_only else ""
+        with self._connect() as connection:
+            rows = connection.execute(
+                f"select data_json from operational_alerts {where} order by last_seen_at desc"
+            ).fetchall()
+        return self._models(OperationalAlert, rows)
+
+    def save_scheduler_group_state(self, state: SchedulerGroupState) -> None:
+        with self.transaction() as connection:
+            connection.execute(
+                """insert into scheduler_group_states(scheduler_group,data_json) values(?,?)
+                   on conflict(scheduler_group) do update set data_json=excluded.data_json""",
+                (state.scheduler_group, self._json(state)),
+            )
+
+    def get_scheduler_group_state(self, group: str) -> SchedulerGroupState:
+        with self._connect() as connection:
+            row = connection.execute(
+                "select data_json from scheduler_group_states where scheduler_group=?", (group,)
+            ).fetchone()
+        return self._model(SchedulerGroupState, row) or SchedulerGroupState(scheduler_group=group)
+
+    def save_audit(self, audit: AuditRecord) -> None:
+        with self.transaction() as connection:
+            connection.execute(
+                """insert into audit_log(
+                     audit_id,entity_type,entity_id,action,created_at,data_json)
+                   values(?,?,?,?,?,?)""",
+                (
+                    audit.audit_id,
+                    audit.entity_type,
+                    audit.entity_id,
+                    audit.action,
+                    audit.created_at.isoformat(),
+                    self._json(audit),
+                ),
+            )
+
+    def list_audit(self, entity_type: str, entity_id: str) -> list[AuditRecord]:
+        with self._connect() as connection:
+            rows = connection.execute(
+                """select data_json from audit_log where entity_type=? and entity_id=?
+                   order by created_at desc""",
+                (entity_type, entity_id),
+            ).fetchall()
+        return self._models(AuditRecord, rows)
+
+    def snapshot_counts(self) -> dict[str, int]:
+        tables = (
+            "source_definitions",
+            "ticker_source_bindings",
+            "raw_messages",
+            "content_enrichment_jobs",
+            "standard_messages",
+            "stream_items",
+            "buffer_entries",
+            "acquisition_failures",
+            "operational_alerts",
+        )
+        with self._connect() as connection:
+            return {
+                table: int(connection.execute(f"select count(*) from {table}").fetchone()[0])
+                for table in tables
+            }
+
+
+__all__ = ["MessageBusV2Repository"]

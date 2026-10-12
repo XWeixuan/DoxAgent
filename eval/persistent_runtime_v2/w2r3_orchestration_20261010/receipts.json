@@ -1,0 +1,195 @@
+{
+  "synthetic_only": true,
+  "passed": true,
+  "receipts": [
+    {
+      "name": "probe_w1_r2",
+      "model": "qwen3.8-flash",
+      "response_id": "resp_435258aa-6c03-99e7-979c-f6d0bc7924d8",
+      "output": {
+        "result": "NEW",
+        "confidence": "normal",
+        "reference_ids": [],
+        "fact_attributions": null,
+        "reason": "The new boundary is events occurring on today's date (October 10, 2026). ALPHA's qualification was completed today, placing it within the new boundary. The warehouse opening occurred yesterday and falls outside it."
+      },
+      "input_tokens": 357,
+      "output_tokens": 330,
+      "latency_ms": 8535
+    },
+    {
+      "name": "probe_w1_r3",
+      "model": "qwen3.8-flash",
+      "response_id": "resp_c5e39c8b-e65d-9dd3-8b7b-95711a9da850",
+      "output": {
+        "candidates": [
+          {
+            "proposition": "ALPHA completed qualification.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "ALPHA"
+            ]
+          }
+        ]
+      },
+      "input_tokens": 422,
+      "output_tokens": 146,
+      "latency_ms": 3461
+    },
+    {
+      "name": "probe_w2_r2_hit",
+      "model": "qwen3.8-flash",
+      "response_id": "resp_e387a62f-c1f6-9779-b6c2-6ca343a67b44",
+      "output": {
+        "policy_hit": true,
+        "policy_related": false,
+        "policy_ids": [
+          "P1"
+        ],
+        "hit_condition_ids": [
+          {
+            "policy_id": "P1",
+            "condition_ids": [
+              "C1"
+            ]
+          }
+        ],
+        "matched_condition_ids": [],
+        "confidence": "normal",
+        "reason": "ALPHA completed qualification today"
+      },
+      "input_tokens": 383,
+      "output_tokens": 309,
+      "latency_ms": 5202
+    },
+    {
+      "name": "probe_w2_r3_hit",
+      "model": "qwen3.8-flash",
+      "response_id": "resp_2cb97cb9-4c4e-91e6-8828-4db0ce9fa9f2",
+      "output": {
+        "condition_results": [
+          {
+            "condition_ids": [
+              "P1/C1"
+            ],
+            "is_new": true
+          }
+        ]
+      },
+      "input_tokens": 348,
+      "output_tokens": 201,
+      "latency_ms": 3887
+    },
+    {
+      "name": "probe_w2_r2_related",
+      "model": "qwen3.8-flash",
+      "response_id": "resp_5f6cd5b7-0d25-9ace-91e7-4c6b43af712c",
+      "output": {
+        "policy_hit": false,
+        "policy_related": true,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": [
+          {
+            "policy_id": "P1",
+            "condition_ids": [
+              "C2"
+            ]
+          }
+        ],
+        "confidence": "normal",
+        "reason": "ALPHA completed qualification today"
+      },
+      "input_tokens": 380,
+      "output_tokens": 208,
+      "latency_ms": 5033
+    },
+    {
+      "name": "probe_w2_r3_related",
+      "model": "qwen3.8-flash",
+      "response_id": "resp_3015d8e9-788a-92f0-aacf-4294f0378ff4",
+      "output": {
+        "condition_results": [
+          {
+            "condition_ids": [
+              "P1/C2"
+            ],
+            "is_new": true
+          }
+        ]
+      },
+      "input_tokens": 346,
+      "output_tokens": 199,
+      "latency_ms": 4120
+    },
+    {
+      "name": "probe_w2_r2_old",
+      "model": "qwen3.8-flash",
+      "response_id": "resp_ea4f579a-39ed-991a-968e-509f2dd528a5",
+      "output": {
+        "policy_hit": true,
+        "policy_related": false,
+        "policy_ids": [
+          "P1"
+        ],
+        "hit_condition_ids": [
+          {
+            "policy_id": "P1",
+            "condition_ids": [
+              "C1"
+            ]
+          }
+        ],
+        "matched_condition_ids": [],
+        "confidence": "normal",
+        "reason": "ALPHA opened a warehouse yesterday"
+      },
+      "input_tokens": 385,
+      "output_tokens": 312,
+      "latency_ms": 6325
+    },
+    {
+      "name": "probe_w2_r3_old",
+      "model": "qwen3.8-flash",
+      "response_id": "resp_87f37210-7400-9a6a-ac6c-104d2e9efa19",
+      "output": {
+        "condition_results": [
+          {
+            "condition_ids": [
+              "P1/C1"
+            ],
+            "is_new": false
+          }
+        ]
+      },
+      "input_tokens": 350,
+      "output_tokens": 355,
+      "latency_ms": 5230
+    },
+    {
+      "name": "probe_invalid_parent",
+      "error_code": "provider_previous_response_unavailable",
+      "retryable": true
+    },
+    {
+      "name": "probe_replay",
+      "model": "qwen3.8-flash",
+      "response_id": "resp_800f8dc9-fef7-99fa-8bba-fcb1e22e9388",
+      "output": {
+        "condition_results": [
+          {
+            "condition_ids": [
+              "C1"
+            ],
+            "is_new": false
+          }
+        ]
+      },
+      "input_tokens": 336,
+      "output_tokens": 197,
+      "latency_ms": 4012
+    }
+  ]
+}

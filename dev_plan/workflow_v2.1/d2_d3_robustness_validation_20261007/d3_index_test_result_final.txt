@@ -1,0 +1,8 @@
+..........................................................               [100%]
+============================== warnings summary ===============================
+tests/test_codex_document3_v21_orchestration.py::test_sdk_global_resume_planning_disables_then_build_reenables_data
+  C:\Users\WEIXUANXIE\Desktop\DoxAgent\.venv\Lib\site-packages\opentelemetry\util\_importlib_metadata.py:32: DeprecationWarning: SelectableGroups dict interface is deprecated. Use select.
+    return EntryPoints(ep for group_eps in eps.values() for ep in group_eps)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+58 passed, 1 warning in 340.02s (0:05:40)

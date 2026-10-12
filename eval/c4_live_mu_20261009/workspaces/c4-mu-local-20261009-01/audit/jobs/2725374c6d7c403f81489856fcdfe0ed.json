@@ -1,0 +1,48 @@
+{
+  "resource_receipt": {
+    "execution_lane": "background",
+    "dispatch_safety_level": "NORMAL",
+    "cleanup_ms": 46
+  },
+  "execution_phase": "SETTLED",
+  "wait_reason": null,
+  "infra_recovery_count": 0,
+  "next_retry_at": 0.0,
+  "worker_generation": "c33e412048a24397b33183281c7a98b2",
+  "cleanup_error": null,
+  "started_at": "2026-10-09T13:33:35.482629Z",
+  "finished_at": "2026-10-09T13:33:39.394825Z",
+  "job_id": "2725374c6d7c403f81489856fcdfe0ed",
+  "run_id": "c4-mu-local-20261009-01",
+  "attempt_id": "c4f_future_nodes-1-75c8105f60",
+  "request_sha256": "83368cc2f74bbf79ad21e7e24990711edeae242def66c0f5bda1a579f167a999",
+  "status": "failed",
+  "thread_id": null,
+  "turn_id": null,
+  "final_response": null,
+  "error_code": "CODEX_WORKER_ERROR",
+  "error_message": "START_THREAD: WorkerJobManager._capture_identity() missing 1 required positional argument: 'turn'",
+  "telemetry": {
+    "usage": {
+      "input_tokens": 0,
+      "cached_input_tokens": 0,
+      "output_tokens": 0,
+      "reasoning_output_tokens": 0,
+      "total_tokens": 0
+    },
+    "observed_usage": null,
+    "sdk_duration_ms": null,
+    "worker_wall_time_ms": 3875,
+    "mcp_call_count": 0,
+    "command_call_count": 0,
+    "subagent_call_count": 0,
+    "file_change_count": 0,
+    "slowest_steps": [],
+    "failures": [
+      "WorkerJobManager._capture_identity() missing 1 required positional argument: 'turn'"
+    ],
+    "events": []
+  },
+  "created_at": "2026-10-09T13:33:35.401311Z",
+  "updated_at": "2026-10-09T13:33:39.397824Z"
+}

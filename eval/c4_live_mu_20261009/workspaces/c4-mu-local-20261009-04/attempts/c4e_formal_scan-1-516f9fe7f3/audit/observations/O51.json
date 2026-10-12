@@ -1,0 +1,9 @@
+{
+  "alias": "O51",
+  "title": "text paragraphs 5",
+  "content": "- Second-Generation RAS Engine: The Rubin platform — spanning GPU, CPU and NVLink — features real-time health checks, fault tolerance and proactive maintenance to maximize system productivity. The rack’s modular, cable-free tray design enables up to 18x faster assembly and servicing than Blackwell.\n\nAI-Native Storage and Secure, Software-Defined Infrastructure\n\nNVIDIA Rubin introduces NVIDIA Inference Context Memory Storage Platform, a new class of AI-native storage infrastructure designed to scale inference context at gigascale.\n\nPowered by NVIDIA BlueField-4, the platform enables efficient sharing and reuse of key-value cache data across AI infrastructure, improving responsiveness and throughput while enabling predictable, power-efficient scaling of agentic AI.\n\nAs AI factories increasingly adopt bare-metal and multi-tenant deployment models, maintaining strong infrastructure control and isolation becomes essential.\n\nBlueField-4 also introduces Advanced Secure Trusted Resource Architecture, or ASTRA, a system-level trust architecture that gives AI infrastructure builders a single, trusted control point to securely provision, isolate and operate large-scale AI environments without compromising performance.\n\nWith AI applications evolving toward multi-turn agentic reasoning, AI-native organizations must manage and share far larger volumes of inference context across users, sessions and services.\n\nDifferent Forms for Different Workloads",
+  "source": {
+    "provider": "Public web source",
+    "locator": "https://nvidianews.nvidia.com/news/rubin-platform-ai-supercomputer"
+  }
+}

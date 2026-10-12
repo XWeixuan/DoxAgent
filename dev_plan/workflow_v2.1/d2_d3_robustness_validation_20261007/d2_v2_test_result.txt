@@ -1,0 +1,18 @@
+.........F
+================================== FAILURES ===================================
+________ test_partial_publish_resumes_from_last_successful_shell_turn _________
+tests\test_codex_document2_workflow.py:458: in test_partial_publish_resumes_from_last_successful_shell_turn
+    assert CodexD2Node.O1_FINALIZATION not in workflow_checkpoint.completed_nodes
+E   AssertionError: assert <CodexD2Node.O1_FINALIZATION: 'd2_o1_finalization'> not in [<CodexD2Node.INPUT_PREPARATION: 'd2_input_preparation'>, <CodexD2Node.O0_FINALIZATION: 'd2_o0_finalization'>, <CodexD2Node.O1_FINALIZATION: 'd2_o1_finalization'>, <CodexD2Node.ASSEMBLE: 'd2_assemble'>, <CodexD2Node.PUBLISH: 'd2_publish'>]
+E    +  where <CodexD2Node.O1_FINALIZATION: 'd2_o1_finalization'> = CodexD2Node.O1_FINALIZATION
+E    +  and   [<CodexD2Node.INPUT_PREPARATION: 'd2_input_preparation'>, <CodexD2Node.O0_FINALIZATION: 'd2_o0_finalization'>, <CodexD2Node.O1_FINALIZATION: 'd2_o1_finalization'>, <CodexD2Node.ASSEMBLE: 'd2_assemble'>, <CodexD2Node.PUBLISH: 'd2_publish'>] = WorkflowCheckpoint(workflow_version='codex_document2_v1', research_lane=<ResearchLane.DOCUMENT2: 'document2'>, ticker=...d_nodes=[], cancelled=False, updated_at=datetime.datetime(2026, 10, 6, 20, 22, 9, 11544, tzinfo=datetime.timezone.utc)).completed_nodes
+============================== warnings summary ===============================
+.venv\Lib\site-packages\opentelemetry\util\_importlib_metadata.py:32
+  C:\Users\WEIXUANXIE\Desktop\DoxAgent\.venv\Lib\site-packages\opentelemetry\util\_importlib_metadata.py:32: DeprecationWarning: SelectableGroups dict interface is deprecated. Use select.
+    return EntryPoints(ep for group_eps in eps.values() for ep in group_eps)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_codex_document2_workflow.py::test_partial_publish_resumes_from_last_successful_shell_turn
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed, 9 passed, 1 warning in 108.65s (0:01:48)

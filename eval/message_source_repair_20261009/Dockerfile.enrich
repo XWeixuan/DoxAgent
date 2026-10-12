@@ -1,0 +1,4 @@
+FROM doxagent-v2:market-news-enrich-3ef317a4
+COPY content_enrichment/service.py /app/src/doxagent/content_enrichment/service.py
+COPY site_strategy/client.py /app/src/doxagent/site_strategy/client.py
+LABEL io.doxagent.source-storage-recovery="20261009-r1"

@@ -1,0 +1,76 @@
+{
+  "$defs": {
+    "FutureNode": {
+      "additionalProperties": false,
+      "properties": {
+        "时间": {
+          "title": "时间",
+          "type": "string"
+        },
+        "未来事项": {
+          "title": "未来事项",
+          "type": "string"
+        },
+        "与目标公司的关系": {
+          "title": "与目标公司的关系",
+          "type": "string"
+        },
+        "来源": {
+          "title": "来源",
+          "type": "string"
+        },
+        "来源发布日期": {
+          "title": "来源发布日期",
+          "type": "string"
+        }
+      },
+      "required": [
+        "时间",
+        "未来事项",
+        "与目标公司的关系",
+        "来源",
+        "来源发布日期"
+      ],
+      "title": "FutureNode",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "type": "object",
+  "properties": {
+    "status": {
+      "title": "Status",
+      "type": "string"
+    },
+    "summary": {
+      "default": "",
+      "title": "Summary",
+      "type": "string"
+    },
+    "report_markdown": {
+      "type": "string",
+      "const": ""
+    },
+    "warnings": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+    },
+    "future_nodes": {
+      "items": {
+        "$ref": "#/$defs/FutureNode"
+      },
+      "title": "Future Nodes",
+      "type": "array"
+    }
+  },
+  "required": [
+    "status",
+    "summary",
+    "report_markdown",
+    "warnings",
+    "future_nodes"
+  ]
+}

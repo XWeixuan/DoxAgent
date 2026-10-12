@@ -1,0 +1,18 @@
+{
+  "alias": "O38",
+  "title": "sections 3 — metadata",
+  "content": {
+    "section": "Item 7",
+    "heading_match": "ITEM 7.",
+    "start_offset": 235246,
+    "end_offset": 249983,
+    "full_text_chars": 14728,
+    "returned_chars": 14728,
+    "truncated": false,
+    "match_quality": "substantive_body"
+  },
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

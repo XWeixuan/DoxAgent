@@ -1,0 +1,18 @@
+{
+  "alias": "O18",
+  "title": "sections 2 — metadata",
+  "content": {
+    "section": "Risk Factors",
+    "heading_match": "Risk Factors",
+    "start_offset": 276463,
+    "end_offset": 356475,
+    "full_text_chars": 80000,
+    "returned_chars": 40000,
+    "truncated": true,
+    "match_quality": "substantive_body"
+  },
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

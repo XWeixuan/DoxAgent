@@ -1,0 +1,94 @@
+{
+  "schema_version": "codex-d1-turn-summary-v1",
+  "run_id": "c4-mu-local-20261009-02",
+  "attempt_id": "c4f_future_nodes-1-c91dc27f3c",
+  "node": "c4f_future_nodes",
+  "model": "gpt-6-sol",
+  "model_provider": null,
+  "job_status": "succeeded",
+  "thread_id": "01a120df-434e-7841-8912-80dd270841f3",
+  "turn_id": "01a120e3-6a05-77e0-8bae-71d64f482710",
+  "usage": {
+    "input_tokens": 215397,
+    "cached_input_tokens": 214784,
+    "output_tokens": 2580,
+    "reasoning_output_tokens": 88,
+    "total_tokens": 217977
+  },
+  "observed_usage": {
+    "input_tokens": 215397,
+    "cached_input_tokens": 214784,
+    "output_tokens": 2580,
+    "reasoning_output_tokens": 88,
+    "total_tokens": 217977
+  },
+  "sdk_duration_ms": 329823,
+  "worker_wall_time_ms": 329921,
+  "mcp_call_count": 18,
+  "command_call_count": 9,
+  "subagent_call_count": 0,
+  "file_change_count": 1,
+  "slowest_steps": [
+    {
+      "sequence": 34,
+      "event": "item.completed",
+      "item_type": "mcp_tool_call",
+      "name": "data.sec_filing_content",
+      "status": "completed",
+      "duration_ms": 560,
+      "summary": "completed"
+    },
+    {
+      "sequence": 31,
+      "event": "item.completed",
+      "item_type": "mcp_tool_call",
+      "name": "data.sec_filing_content",
+      "status": "completed",
+      "duration_ms": 269,
+      "summary": "completed"
+    },
+    {
+      "sequence": 23,
+      "event": "item.completed",
+      "item_type": "mcp_tool_call",
+      "name": "data.sec_filing_content",
+      "status": "completed",
+      "duration_ms": 267,
+      "summary": "completed"
+    },
+    {
+      "sequence": 29,
+      "event": "item.completed",
+      "item_type": "mcp_tool_call",
+      "name": "data.sec_filing_content",
+      "status": "completed",
+      "duration_ms": 261,
+      "summary": "completed"
+    },
+    {
+      "sequence": 14,
+      "event": "item.completed",
+      "item_type": "mcp_tool_call",
+      "name": "data.sec_filing_content",
+      "status": "completed",
+      "duration_ms": 254,
+      "summary": "completed"
+    }
+  ],
+  "failures": [
+    "mcp_tool_call:source_capture.capture_source:failed"
+  ],
+  "validation": {
+    "schema": "passed",
+    "progressive": "passed",
+    "citation": "passed_with_warnings",
+    "citation_warnings": [
+      "unresolved citation alias in c4f_future_nodes-1-c91dc27f3c: O567",
+      "unresolved citation alias in c4f_future_nodes-1-c91dc27f3c: O604",
+      "unresolved citation alias in c4f_future_nodes-1-c91dc27f3c: O545",
+      "unresolved citation alias in c4f_future_nodes-1-c91dc27f3c: O478",
+      "unresolved citation alias in c4f_future_nodes-1-c91dc27f3c: O449"
+    ],
+    "error": null
+  }
+}

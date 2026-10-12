@@ -1,0 +1,2 @@
+FROM doxagent-v2-web:gateway-viewfix2-20261003
+COPY dist/ /usr/share/nginx/html/

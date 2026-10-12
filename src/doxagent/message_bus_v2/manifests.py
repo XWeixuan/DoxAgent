@@ -39,6 +39,18 @@ def _source(
     search_policy: SearchPolicy | None = None,
     distribution_policy: DistributionPolicy | None = None,
 ) -> SourceDefinition:
+    if acquisition_mode is AcquisitionMode.BY_DISTRIBUTION and kind is not SourceKind.CRAWLER:
+        from .industry_sources import FEED_HTTP_EGRESSES
+
+        properties = {
+            **(properties or {}),
+            "feed_http_routes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 2,
+                "items": {"type": "string", "enum": list(FEED_HTTP_EGRESSES)},
+            },
+        }
     return SourceDefinition(
         source_id=source_id,
         display_name=display_name,

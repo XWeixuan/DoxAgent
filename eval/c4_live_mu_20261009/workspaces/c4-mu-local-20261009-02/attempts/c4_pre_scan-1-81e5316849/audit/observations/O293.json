@@ -1,0 +1,18 @@
+{
+  "alias": "O293",
+  "title": "sections 1 — metadata",
+  "content": {
+    "section": "Taiwan",
+    "heading_match": "Taiwan",
+    "start_offset": 305674,
+    "end_offset": 385680,
+    "full_text_chars": 80000,
+    "returned_chars": 40000,
+    "truncated": true,
+    "match_quality": "substantive_body"
+  },
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

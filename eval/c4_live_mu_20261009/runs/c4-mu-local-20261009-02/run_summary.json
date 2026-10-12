@@ -1,0 +1,271 @@
+{
+  "run_id": "c4-mu-local-20261009-02",
+  "ticker": "MU",
+  "workflow_version": "codex_global_research_v1",
+  "scope": "C4 stages only, using production workflow node runner and embedded real Codex Worker",
+  "model": "gpt-6-sol",
+  "effort": "high",
+  "cutoff_at": "2026-10-09T13:34:21+00:00",
+  "source_files": {
+    "c1.md": {
+      "path": "D:\\DoxAgentPilot\\cases\\document2\\_sources\\init-mu-1f3e9130ae304b01a7fdf2991a35e028-d1\\c1.md",
+      "bytes": 23895,
+      "sha256": "0955a7c754c74f57edf14b924fd36852e698bc6fdd8b299f0b724529513114eb"
+    },
+    "c3.md": {
+      "path": "D:\\DoxAgentPilot\\cases\\document2\\_sources\\init-mu-1f3e9130ae304b01a7fdf2991a35e028-d1\\c3.md",
+      "bytes": 31660,
+      "sha256": "fa16f0b3d396830c8d22181809e7a2a9f9b9d28bf57d9b50f9261db46b105d9f"
+    },
+    "c5.md": {
+      "path": "D:\\DoxAgentPilot\\cases\\document2\\_sources\\init-mu-1f3e9130ae304b01a7fdf2991a35e028-d1\\c5.md",
+      "bytes": 19099,
+      "sha256": "75e2b0737d5ac0f115b5fa04bd840b9bb6a3e408084c5f2223d53b31946ab389"
+    },
+    "horizontal.json": {
+      "path": "D:\\DoxAgentPilot\\cases\\document2\\_sources\\init-mu-1f3e9130ae304b01a7fdf2991a35e028-d1\\horizontal.json",
+      "bytes": 32486,
+      "sha256": "14bfee7335e82fc743db5f751c171a9e2fbf6235101e44f3e6872732b8687511"
+    }
+  },
+  "workspace_preflight": {
+    "c4_pre_scan": {
+      "prompt": "agents/c4e.md",
+      "skill": "skills/c4/c4e_pre_scan.md",
+      "schema": "schemas/c4e_relations.schema.json",
+      "input_sha256": "32d1ff422982a9abadaaf0da50651798b581ef546050ade6866debd878b59edb"
+    },
+    "c4f_future_nodes": {
+      "prompt": "agents/c4f.md",
+      "skill": "skills/c4/c4f_future_node.md",
+      "schema": "schemas/c4f_future_nodes.schema.json",
+      "input_sha256": "2d4b090f359485ac7fa7b867cb27f91b5d362e6e9bfb3499eadb42d8edf3e72d"
+    },
+    "c4e_formal_scan": {
+      "prompt": "agents/c4e.md",
+      "skill": "skills/c4/c4e_formal-scan.md",
+      "schema": "schemas/c4e_relations.schema.json",
+      "input_sha256": "8bc84c49bc2c09e12f0fc3c7e54191d76aeeec069663b36b9fcc6d7a9a7306b6"
+    },
+    "c4e_network_build": {
+      "prompt": "agents/c4e.md",
+      "skill": "skills/c4/c4e_network-build.md",
+      "schema": "schemas/c4e_network-build.schema.json",
+      "input_sha256": "7cefdc83978c5c7dffb7b3d0dd9f96d73df5c60f1364e9e581ab660e14297262"
+    }
+  },
+  "stages": {
+    "c4_pre_scan": {
+      "status": "completed",
+      "report_ref": {
+        "workflow_version": "codex_global_research_v1",
+        "research_lane": "global_research",
+        "artifact_id": "184e4a14ba7a42cc9723763119fbffd9",
+        "run_id": "c4-mu-local-20261009-02",
+        "node": "c4_pre_scan",
+        "attempt_id": "c4_pre_scan-1-81e5316849",
+        "kind": "report",
+        "relative_path": "artifacts/c4_pre_scan/c4_pre_scan-1-81e5316849/report.md",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size_bytes": 0,
+        "content_type": "text/markdown",
+        "published": false,
+        "created_at": "2026-10-09T13:38:50.603528Z"
+      },
+      "relations": 18,
+      "future_nodes": 0,
+      "network_chars": 0,
+      "warnings": [
+        "base_context所列D盘历史资料不在本轮工作区，未读取或沿用其旧引用；本表仅使用本轮O#观察。",
+        "Source Capture MCP被当前权限策略拒绝；缺少本轮可引用正文证据的具名技术适配对象未写成已确认采购关系。",
+        "UNRESOLVED_CITATIONS: O108, O119, O130, O161, O254, O314, O374, O394, O405, O416, O64, O75"
+      ],
+      "attempts": [
+        {
+          "attempt_id": "c4_pre_scan-1-81e5316849",
+          "workflow_version": "codex_global_research_v1",
+          "research_lane": "global_research",
+          "cutoff_at": "2026-10-09T13:34:21Z",
+          "ticker": "MU",
+          "run_id": "c4-mu-local-20261009-02",
+          "node": "c4_pre_scan",
+          "status": "succeeded",
+          "attempt_number": 1,
+          "thread_id": "01a120df-434e-7841-8912-80dd270841f3",
+          "input_sha256": "8d9f62d913dd00678f33db1d01ae3ba8daf046f05aaef3ba02a7de8150f8f2ec",
+          "error_code": null,
+          "error_message": null,
+          "started_at": "2026-10-09T13:34:24.815018Z",
+          "completed_at": "2026-10-09T13:38:56.815660Z",
+          "created_at": "2026-10-09T13:34:24.815520Z"
+        }
+      ]
+    },
+    "c4f_future_nodes": {
+      "status": "completed",
+      "report_ref": {
+        "workflow_version": "codex_global_research_v1",
+        "research_lane": "global_research",
+        "artifact_id": "66e8c0e2c8994b719ca363eb556f181a",
+        "run_id": "c4-mu-local-20261009-02",
+        "node": "c4f_future_nodes",
+        "attempt_id": "c4f_future_nodes-1-c91dc27f3c",
+        "kind": "report",
+        "relative_path": "artifacts/c4f_future_nodes/c4f_future_nodes-1-c91dc27f3c/report.md",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size_bytes": 0,
+        "content_type": "text/markdown",
+        "published": false,
+        "created_at": "2026-10-09T13:44:27.674841Z"
+      },
+      "relations": 0,
+      "future_nodes": 12,
+      "network_chars": 0,
+      "warnings": [
+        "上游C1/C3/C5为2026年9月冻结快照，其旧O别名在本轮不可用；涉及FY26 Q4的未来叙述已按9月30日正式业绩更新。",
+        "Source Capture MCP受当前权限策略阻止；外部网页在来源字段保留可追溯的原始链接，未伪造O别名。",
+        "桃园工会罢工授权投票已于2026-10-07完成，不列为未来事件；实际停工尚无确定日期。",
+        "UNRESOLVED_CITATIONS: O449, O478, O545, O567, O604"
+      ],
+      "attempts": [
+        {
+          "attempt_id": "c4f_future_nodes-1-c91dc27f3c",
+          "workflow_version": "codex_global_research_v1",
+          "research_lane": "global_research",
+          "cutoff_at": "2026-10-09T13:34:21Z",
+          "ticker": "MU",
+          "run_id": "c4-mu-local-20261009-02",
+          "node": "c4f_future_nodes",
+          "status": "succeeded",
+          "attempt_number": 1,
+          "thread_id": "01a120df-434e-7841-8912-80dd270841f3",
+          "input_sha256": "6af517b28288dd2d0389a43a4c9130167711b7075fd178187f1cdf42eda36b77",
+          "error_code": null,
+          "error_message": null,
+          "started_at": "2026-10-09T13:38:56.870233Z",
+          "completed_at": "2026-10-09T13:44:31.833519Z",
+          "created_at": "2026-10-09T13:38:56.870233Z"
+        }
+      ]
+    },
+    "c4e_formal_scan": {
+      "status": "completed",
+      "report_ref": {
+        "workflow_version": "codex_global_research_v1",
+        "research_lane": "global_research",
+        "artifact_id": "03d777ed521948449b5d716ad492a4a7",
+        "run_id": "c4-mu-local-20261009-02",
+        "node": "c4e_formal_scan",
+        "attempt_id": "c4e_formal_scan-1-2078211c18",
+        "kind": "report",
+        "relative_path": "artifacts/c4e_formal_scan/c4e_formal_scan-1-2078211c18/report.md",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size_bytes": 0,
+        "content_type": "text/markdown",
+        "published": false,
+        "created_at": "2026-10-09T13:50:03.043259Z"
+      },
+      "relations": 31,
+      "future_nodes": 0,
+      "network_chars": 0,
+      "warnings": [
+        "Data MCP 当前路由仍指向 c4_pre_scan 旧 attempt；其 O# 不属于本轮，故未复用旧别名。关系说明使用可核验的来源链接。",
+        "未披露的具名云客户、手机客户及采购金额不作推断。",
+        "拟议协议、合作备忘录、送样、取得罢工权均未写成已完成供货、量产或停工。"
+      ],
+      "attempts": [
+        {
+          "attempt_id": "c4e_formal_scan-1-2078211c18",
+          "workflow_version": "codex_global_research_v1",
+          "research_lane": "global_research",
+          "cutoff_at": "2026-10-09T13:34:21Z",
+          "ticker": "MU",
+          "run_id": "c4-mu-local-20261009-02",
+          "node": "c4e_formal_scan",
+          "status": "succeeded",
+          "attempt_number": 1,
+          "thread_id": "01a120df-434e-7841-8912-80dd270841f3",
+          "input_sha256": "f08510c8b217cae95db398d242bc5d3ca4848f3c6c9249ff2b4858f9061e9f62",
+          "error_code": null,
+          "error_message": null,
+          "started_at": "2026-10-09T13:44:31.894843Z",
+          "completed_at": "2026-10-09T13:50:06.617886Z",
+          "created_at": "2026-10-09T13:44:31.894843Z"
+        }
+      ]
+    },
+    "c4e_network_build": {
+      "status": "failed",
+      "report_ref": null,
+      "relations": 0,
+      "future_nodes": 0,
+      "network_chars": 0,
+      "warnings": [
+        "c4e_network_build: additional_details=None codex_error_info=CodexErrorInfo(root=<CodexErrorInfoValue.other: 'other'>) message='{\"type\":\"error\",\"error\":{\"message\":\"Invalid schema for response_format \\'codex_output_schema\\': schema must be a JSON Schema of \\'type: \\\\\"object\\\\\"\\', got \\'type: \\\\\"string\\\\\"\\'.\",\"type\":\"invalid_request_error\",\"param\":\"text.format.schema\",\"code\":\"invalid_json_schema\"},\"status\":400}' misalignment=None"
+      ],
+      "attempts": [
+        {
+          "attempt_id": "c4e_network_build-1-e04563ecf2",
+          "workflow_version": "codex_global_research_v1",
+          "research_lane": "global_research",
+          "cutoff_at": "2026-10-09T13:34:21Z",
+          "ticker": "MU",
+          "run_id": "c4-mu-local-20261009-02",
+          "node": "c4e_network_build",
+          "status": "failed",
+          "attempt_number": 1,
+          "thread_id": "01a120df-434e-7841-8912-80dd270841f3",
+          "input_sha256": "cf09d89d77344775819dd9984d9f022fe3a162a1a502aaf5d4c5373582428724",
+          "error_code": "CODEX_TURN_FAILED",
+          "error_message": "additional_details=None codex_error_info=CodexErrorInfo(root=<CodexErrorInfoValue.other: 'other'>) message='{\"type\":\"error\",\"error\":{\"message\":\"Invalid schema for response_format \\'codex_output_schema\\': schema must be a JSON Schema of \\'type: \\\\\"object\\\\\"\\', got \\'type: \\\\\"string\\\\\"\\'.\",\"type\":\"invalid_request_error\",\"param\":\"text.format.schema\",\"code\":\"invalid_json_schema\"},\"status\":400}' misalignment=None",
+          "started_at": "2026-10-09T13:50:06.687730Z",
+          "completed_at": "2026-10-09T13:50:12.108695Z",
+          "created_at": "2026-10-09T13:50:06.687730Z"
+        },
+        {
+          "attempt_id": "c4e_network_build-2-a4ff9cedf4",
+          "workflow_version": "codex_global_research_v1",
+          "research_lane": "global_research",
+          "cutoff_at": "2026-10-09T13:34:21Z",
+          "ticker": "MU",
+          "run_id": "c4-mu-local-20261009-02",
+          "node": "c4e_network_build",
+          "status": "failed",
+          "attempt_number": 2,
+          "thread_id": "01a120df-434e-7841-8912-80dd270841f3",
+          "input_sha256": "cf09d89d77344775819dd9984d9f022fe3a162a1a502aaf5d4c5373582428724",
+          "error_code": "CODEX_TURN_FAILED",
+          "error_message": "additional_details=None codex_error_info=CodexErrorInfo(root=<CodexErrorInfoValue.other: 'other'>) message='{\"type\":\"error\",\"error\":{\"message\":\"Invalid schema for response_format \\'codex_output_schema\\': schema must be a JSON Schema of \\'type: \\\\\"object\\\\\"\\', got \\'type: \\\\\"string\\\\\"\\'.\",\"type\":\"invalid_request_error\",\"param\":\"text.format.schema\",\"code\":\"invalid_json_schema\"},\"status\":400}' misalignment=None",
+          "started_at": "2026-10-09T13:50:12.166106Z",
+          "completed_at": "2026-10-09T13:50:17.574036Z",
+          "created_at": "2026-10-09T13:50:12.166106Z"
+        }
+      ]
+    }
+  },
+  "model_probe": {
+    "authenticated": true,
+    "model_list_includes_requested": true
+  },
+  "completed_at": "2026-10-09T13:50:17+00:00",
+  "thread_ids": [
+    "01a120df-434e-7841-8912-80dd270841f3"
+  ],
+  "checkpoint": {
+    "workflow_version": "codex_global_research_v1",
+    "research_lane": "global_research",
+    "ticker": "MU",
+    "run_id": "c4-mu-local-20261009-02",
+    "completed_nodes": [
+      "c4_pre_scan",
+      "c4f_future_nodes",
+      "c4e_formal_scan"
+    ],
+    "current_nodes": [],
+    "failed_nodes": [
+      "c4e_network_build"
+    ],
+    "cancelled": false,
+    "updated_at": "2026-10-09T13:50:17.622748Z"
+  }
+}

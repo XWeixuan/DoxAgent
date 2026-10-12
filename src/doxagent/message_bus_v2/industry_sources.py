@@ -22,6 +22,16 @@ from .schema import PollContext, PollResult, RawMessageInput, SharedPollContext
 _TAIPEI = ZoneInfo("Asia/Taipei")
 _SEOUL = ZoneInfo("Asia/Seoul")
 _NEW_YORK = ZoneInfo("America/New_York")
+# Fixed deployment listeners, never arbitrary caller-provided proxy destinations.
+FEED_HTTP_EGRESSES = {
+    "direct": None,
+    "jp-standard-6": "http://doxagent-egress-clash:18080",
+    "us-standard-5": "http://doxagent-egress-clash:18081",
+    "nl-standard-2": "http://doxagent-egress-clash:18082",
+    "de-standard-1": "http://doxagent-egress-clash:18083",
+    "server-direct": "http://doxagent-egress-clash:18084",
+    "tr-standard-1": "http://doxagent-egress-clash:18085",
+}
 _BARRONS_ET_DATE = re.compile(
     r"\b([A-Z][a-z]{2}) (\d{1,2}), (\d{4}) (\d{1,2}):(\d{2}) ([ap])\.m\. ET"
 )
@@ -44,9 +54,7 @@ def _canonical(url: str) -> str:
     parsed = urlparse(url)
     # DIGITIMES Taiwan and The Elec identify distinct articles through query IDs.
     query = (
-        parsed.query
-        if parsed.path.lower().endswith(("/shwnws.asp", "/articleview.html"))
-        else ""
+        parsed.query if parsed.path.lower().endswith(("/shwnws.asp", "/articleview.html")) else ""
     )
     return urlunparse((parsed.scheme, parsed.netloc.lower(), parsed.path, "", query, ""))
 
@@ -137,9 +145,13 @@ def parse_trendforce_listing(html: str, *, press: bool, now: datetime) -> list[R
             published = _date_only(date, _TAIPEI)
         except ValueError:
             continue
-        card = link.getparent().getparent() if press else link.xpath(
-            'ancestor::div[contains(concat(" ",normalize-space(@class)," "),'
-            '" insight-list-item ")][1]'
+        card = (
+            link.getparent().getparent()
+            if press
+            else link.xpath(
+                'ancestor::div[contains(concat(" ",normalize-space(@class)," "),'
+                '" insight-list-item ")][1]'
+            )
         )
         if isinstance(card, list):
             card = card[0] if card else None
@@ -177,8 +189,7 @@ def parse_digitimes_listing(html: str, *, now: datetime) -> list[RawMessageInput
         if not match or len(title) < 15:
             continue
         card = link.xpath(
-            'ancestor::div[contains(concat(" ",normalize-space(@class)," "),'
-            '" more-news ")][1]'
+            'ancestor::div[contains(concat(" ",normalize-space(@class)," ")," more-news ")][1]'
         )
         card = card[0] if card else None
         date_node = card.xpath('.//div[contains(@class,"date")][1]') if card is not None else []
@@ -222,9 +233,7 @@ def parse_digitimes_listing(html: str, *, now: datetime) -> list[RawMessageInput
     return list(rows.values())
 
 
-def parse_barrons_ticker_listing(
-    html: str, *, ticker: str, now: datetime
-) -> list[RawMessageInput]:
+def parse_barrons_ticker_listing(html: str, *, ticker: str, now: datetime) -> list[RawMessageInput]:
     root = lxml_html.fromstring(html)
     _listing_guard(root, html)
     main = root.xpath("//main")
@@ -238,19 +247,19 @@ def parse_barrons_ticker_listing(
     rows: dict[str, RawMessageInput] = {}
     candidate_count = 0
     other_heading = scope.xpath(
-        '//*[self::h2 or self::h3 or self::h4 or self::div or self::span]'
+        "//*[self::h2 or self::h3 or self::h4 or self::div or self::span]"
         '[translate(normalize-space(.),"abcdefghijklmnopqrstuvwxyz",'
         '"ABCDEFGHIJKLMNOPQRSTUVWXYZ")="OTHER DOW JONES"]'
     )
     ordered = {node: index for index, node in enumerate(scope.iter())}
-    wrapped = scope.xpath('.//section[@data-dj-section]')
+    wrapped = scope.xpath(".//section[@data-dj-section]")
     other_starts = sorted(ordered[node] for node in other_heading)
     section_ends = sorted(
         ordered[node]
         for node in scope.xpath(".//h2|.//h3|.//h4")
         if ordered[node] not in other_starts
     )
-    for link in scope.xpath('.//a[@href]'):
+    for link in scope.xpath(".//a[@href]"):
         url = urljoin("https://www.barrons.com", link.get("href", ""))
         parsed = urlparse(url)
         host = (parsed.hostname or "").removeprefix("www.")
@@ -261,8 +270,11 @@ def parse_barrons_ticker_listing(
         is_barrons = host == "barrons.com"
         if wrapped:
             section = next(
-                (node.get("data-dj-section") for node in link.iterancestors()
-                 if node.get("data-dj-section")),
+                (
+                    node.get("data-dj-section")
+                    for node in link.iterancestors()
+                    if node.get("data-dj-section")
+                ),
                 None,
             )
             if section not in {"barrons", "other"}:
@@ -271,8 +283,7 @@ def parse_barrons_ticker_listing(
                 continue
         # Other publishers are admitted only under the explicitly labelled Dow Jones section.
         under_other = any(
-            start < ordered[link]
-            and not any(start < end < ordered[link] for end in section_ends)
+            start < ordered[link] and not any(start < end < ordered[link] for end in section_ends)
             for start in other_starts
         )
         if not wrapped and not is_barrons and not under_other:
@@ -288,7 +299,7 @@ def parse_barrons_ticker_listing(
             card = card.getparent()
             if card.tag in {"article", "li"}:
                 break
-        times = card.xpath('.//time[@datetime]/@datetime')
+        times = card.xpath(".//time[@datetime]/@datetime")
         basis = "UNKNOWN_FIRST_SEEN"
         published = now
         if times:
@@ -327,7 +338,7 @@ def parse_barrons_ticker_listing(
         if wrapped and basis != "EXACT":
             # A newly discovered historical card is not a newly published article.
             continue
-        summary = next((_text(p) for p in card.xpath('.//p') if _text(p) != title), "")
+        summary = next((_text(p) for p in card.xpath(".//p") if _text(p) != title), "")
         rows[_canonical(url)] = _message(
             source=_DJ_PUBLISHERS.get(host, host),
             url=_canonical(url),
@@ -361,9 +372,7 @@ class IndustryListingAdapter:
             run_id = context.poll_run_id if isinstance(context, PollContext) else context.run_id
             async with context.request_permit():
                 recipe_options = (
-                    {"recipe_ref": "builtin:barrons_ticker@1"}
-                    if self.variant == "barrons"
-                    else {}
+                    {"recipe_ref": "builtin:barrons_ticker@1"} if self.variant == "barrons" else {}
                 )
                 status, final_url, _headers, html = await self.browser.get(
                     url,
@@ -389,9 +398,7 @@ class IndustryListingAdapter:
             messages = parse_digitimes_listing(html, now=now)
         else:
             press = "/presscenter/news" in urlparse(url).path
-            messages = parse_trendforce_listing(
-                html, press=press, now=now
-            )
+            messages = parse_trendforce_listing(html, press=press, now=now)
         return PollResult(
             messages=messages,
             window_done=True,
@@ -552,12 +559,25 @@ class SharedFeedAdapter:
         if not source.entry_url or not source.content_language:
             raise RuntimeError("shared publisher feed URL/language is missing")
         proxy = source.default_parameters.get("feed_proxy_url")
+        routes = source.default_parameters.get("feed_http_routes")
+        if routes is not None and (
+            not isinstance(routes, list)
+            or not 1 <= len(routes) <= 2
+            or any(route not in FEED_HTTP_EGRESSES for route in routes)
+        ):
+            raise ValueError(
+                "feed_http_routes requires one primary and at most one approved fallback"
+            )
+        route_used = routes[0] if routes else "legacy"
         async with context.request_permit():
             # One retry for read-only connection loss; all attempts share a short
             # deadline so an RSS failure cannot occupy the shared collector for minutes.
             async with asyncio.timeout(30):
                 for attempt in range(2):
                     try:
+                        if routes:
+                            route_used = routes[min(attempt, len(routes) - 1)]
+                            proxy = FEED_HTTP_EGRESSES[route_used]
                         if proxy:
                             async with httpx.AsyncClient(
                                 proxy=str(proxy), timeout=httpx.Timeout(25, connect=5, pool=5)
@@ -568,8 +588,13 @@ class SharedFeedAdapter:
                                 source.entry_url, timeout=httpx.Timeout(25, connect=5, pool=5)
                             )
                         break
-                    except (httpx.ConnectError, httpx.ConnectTimeout,
-                            httpx.ReadError, httpx.RemoteProtocolError):
+                    except (
+                        httpx.ConnectError,
+                        httpx.ConnectTimeout,
+                        httpx.ReadError,
+                        httpx.ReadTimeout,
+                        httpx.RemoteProtocolError,
+                    ):
                         if attempt:
                             raise
                         await asyncio.sleep(0.2)
@@ -584,12 +609,18 @@ class SharedFeedAdapter:
             now=context.requested_at,
         )
         lower = context.window_start or context.requested_at - timedelta(minutes=30)
-        complete = min(message.published_at for message in messages) <= lower
+        complete = bool(messages) and min(message.published_at for message in messages) <= lower
         return PollResult(
             messages=messages,
             window_done=True,
             window_coverage="COMPLETE" if complete else "PARTIAL",
-            acquisition_metadata={"feed_url": source.entry_url, "item_count": len(messages)},
+            acquisition_metadata={
+                "feed_url": source.entry_url,
+                "item_count": len(messages),
+                "http_route": route_used,
+                "http_status": response.status_code,
+                "xml_valid": True,
+            },
         )
 
 

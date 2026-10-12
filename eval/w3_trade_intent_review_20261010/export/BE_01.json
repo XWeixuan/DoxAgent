@@ -1,0 +1,2327 @@
+{
+  "format": "doxagent.w3-trade-intent-review.v1",
+  "ticker": "BE",
+  "window": {
+    "since_utc": "2026-09-19T12:53:20.738930+00:00",
+    "as_of_utc": "2026-10-10T12:53:20.738930+00:00"
+  },
+  "part": 1,
+  "record_count": 5,
+  "records": [
+    {
+      "intent_id": "trade:case_d352e02e723b459486242d142db27af3",
+      "ticker": "BE",
+      "case_id": "case_d352e02e723b459486242d142db27af3",
+      "intent_released_at_utc": "2026-09-24T14:43:36.499608+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_17a40e0f939c40e987a243dba22bfa69",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "Oracle",
+              "New Mexico AI data center"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "据报道，Oracle正寻求在其New Mexico AI数据中心未能按计划于2028年投产时推迟部分付款。",
+            "subject_time": "2028年计划投产"
+          }
+        ],
+        "expert_trade": {
+          "direction": "SHORT",
+          "evaluated": true,
+          "expectation_delta": "Oracle据报道寻求在New Mexico AI数据中心未能按计划于2028年投产时推迟部分付款，降低该Oracle项目按期兑现的确定性，并提高Bloom相关部署验收、付款/现金转换及收入确认后移的概率；这尚未证明项目已经错过、取消或存在已量化的Bloom特定损失。",
+          "prior_expectation": "事件前，Bloom已将Oracle作为直接超大规模客户，并披露Oracle New Mexico数据中心正在使用Bloom燃料电池；市场基线是该大型负荷项目沿已知计划推进并逐步转化为Bloom部署、验收、付款和收入，未有Oracle寻求付款延期的已知条件。",
+          "reason": "Surprise来自E16/E40均未包含的具体付款推迟与2028投产条件。Materiality较高：New Mexico是已识别的Oracle-Bloom部署，BE的FY2026增长指引和高估值依赖大型负荷项目持续转化。Transmission清晰为Oracle项目启动风险→Bloom燃料电池部署/验收→付款、收入与经营现金流时点，因此方向为SHORT。Bloom特定付款金额和实际错过2028节点尚未确认，但属于强度不确定性，不破坏当前的方向性预期差。",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "E16已记录Bloom与Oracle的关系及Oracle New Mexico数据中心的Bloom燃料电池部署；E40只记录Oracle因数据中心建设延误寻求force-majeure保护的泛化报道。当前消息新增了Oracle拟在New Mexico AI数据中心未按计划于2028年投产时推迟部分付款这一具体合同条件，未被Reference View记录，因此核心事实为NEW。",
+          "reference_ids": [
+            "E16",
+            "E40"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息未确认Bloom项目取消、缩量、正式验收窗口跨季度后移或后续申报中的backlog/收入变化；其内容是Oracle据报道提出的、以2028年投产落空为条件的付款推迟请求，未达到现行客户下调或项目延误Policy的触发边界。"
+        },
+        "w3_case_id": "w3_17a40e0f939c40e987a243dba22bfa69"
+      },
+      "trade_direction": "SHORT",
+      "case_summary": {
+        "case_id": "case_d352e02e723b459486242d142db27af3",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-24T14:43:36.642163Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 235.983659
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-24T14:39:40.658504Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_EXECUTION",
+          "TRADE_INTENT"
+        ],
+        "revision": 2451940,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-24",
+        "source": {
+          "binding_id": "BE:yahoo_finance_news",
+          "kind": "api",
+          "name": "Yahoo Finance News",
+          "source_id": "yahoo_finance_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_c44241ce28c04784bd30bcf22e75caf2",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "ORCL Stock Slides To Early August Levels – $165B New Mexico Project In Focus After Company Reportedly Cites ‘Force Majeure’"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "ORDER_FILLED"
+          ],
+          "state": "EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-24T14:39:40.658504Z",
+        "completed_at": "2026-09-24T14:43:36.642163Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E2",
+            "E16"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [
+            {
+              "event_id": "E16",
+              "fact_ids": [
+                "F46",
+                "F47"
+              ]
+            }
+          ],
+          "reason": "当前消息的核心事实是：据报道 Oracle 以 force majeure 为由寻求推迟付款，条件是 New Mexico AI 数据中心未能按计划于 2028 年投产。已加载事实仅覆盖 Oracle-Bloom 合作关系建立(F2)、New Mexico 部署进行中(F46)、1.2 GW 容量签约部署(F47)，均未涉及付款推迟、force majeure 引用或2028投产节点相关的合同争议。",
+          "reference_ids": [
+            "E16"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "本轮未提供包含具体事实陈述的 source_message，仅注入了 Policy 精简信息。没有可评估的现实观察事实，无法与任何 criterion 建立具体触发关系，因此不召回任何 Candidate Policy。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "本轮未提供包含具体事实陈述的 source_message，仅注入了 Policy 精简信息。没有可评估的现实观察事实，无法与任何 criterion 建立具体触发关系，因此不召回任何 Candidate Policy。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "RUMORED",
+              "entities": [
+                "Oracle",
+                "New Mexico AI data center"
+              ],
+              "occurrence_date": "2026-09-24",
+              "proposition": "据报道，Oracle正寻求在其New Mexico AI数据中心未能按计划于2028年投产时推迟部分付款。",
+              "subject_time": "2028年计划投产"
+            }
+          ],
+          "expert_trade": {
+            "direction": "SHORT",
+            "evaluated": true,
+            "expectation_delta": "Oracle据报道寻求在New Mexico AI数据中心未能按计划于2028年投产时推迟部分付款，降低该Oracle项目按期兑现的确定性，并提高Bloom相关部署验收、付款/现金转换及收入确认后移的概率；这尚未证明项目已经错过、取消或存在已量化的Bloom特定损失。",
+            "prior_expectation": "事件前，Bloom已将Oracle作为直接超大规模客户，并披露Oracle New Mexico数据中心正在使用Bloom燃料电池；市场基线是该大型负荷项目沿已知计划推进并逐步转化为Bloom部署、验收、付款和收入，未有Oracle寻求付款延期的已知条件。",
+            "reason": "Surprise来自E16/E40均未包含的具体付款推迟与2028投产条件。Materiality较高：New Mexico是已识别的Oracle-Bloom部署，BE的FY2026增长指引和高估值依赖大型负荷项目持续转化。Transmission清晰为Oracle项目启动风险→Bloom燃料电池部署/验收→付款、收入与经营现金流时点，因此方向为SHORT。Bloom特定付款金额和实际错过2028节点尚未确认，但属于强度不确定性，不破坏当前的方向性预期差。",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "E16已记录Bloom与Oracle的关系及Oracle New Mexico数据中心的Bloom燃料电池部署；E40只记录Oracle因数据中心建设延误寻求force-majeure保护的泛化报道。当前消息新增了Oracle拟在New Mexico AI数据中心未按计划于2028年投产时推迟部分付款这一具体合同条件，未被Reference View记录，因此核心事实为NEW。",
+            "reference_ids": [
+              "E16",
+              "E40"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "消息未确认Bloom项目取消、缩量、正式验收窗口跨季度后移或后续申报中的backlog/收入变化；其内容是Oracle据报道提出的、以2028年投产落空为条件的付款推迟请求，未达到现行客户下调或项目延误Policy的触发边界。"
+          },
+          "w3_case_id": "w3_17a40e0f939c40e987a243dba22bfa69"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "7c77165ca84dcff7f639cfa847d3e4b1736c5504332606ecf0d0932c267580f8",
+            "content_type": "text/plain",
+            "sha256": "2a9ac49f25d4239955a2c06d3f48aeb58582c12e67acabe1630187efd3b8a27a",
+            "size_bytes": 141
+          },
+          "case": {
+            "case_id": "case_d352e02e723b459486242d142db27af3",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-24T14:39:31.079983Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-24T14:39:39.648310Z",
+          "revision": 1,
+          "row_revision": 1548830,
+          "source": {
+            "binding_id": "BE:yahoo_finance_news",
+            "kind": "api",
+            "name": "Yahoo Finance News",
+            "source_id": "yahoo_finance_news"
+          },
+          "source_published_at": "2026-09-24T14:30:24Z",
+          "standard_message_id": "std_e9c03ad458734b46a2a8c2854e906123",
+          "stream_item_id": "stream_c44241ce28c04784bd30bcf22e75caf2",
+          "stream_offset": 20,
+          "stream_published_at": "2026-09-24T14:39:39.651865Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "ORCL Stock Slides To Early August Levels – $165B New Mexico Project In Focus After Company Reportedly Cites ‘Force Majeure’"
+          },
+          "url": "https://stocktwits.com/news-articles/markets/equity/orcl-stock-slides-165-b-new-mexico-project-cites-force-majeure/cZMJ5bARB91",
+          "body_text": "According to a Bloomberg report, Oracle is seeking to defer certain payments if the New Mexico AI data center misses its planned 2028 launch."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "RUMORED",
+          "candidate_id": "[\"runtime-v2-msg:std_e9c03ad458734b46a2a8c2854e906123:0\"]",
+          "created_at": "2026-09-24T14:43:36.445190Z",
+          "dedupe_key": "1ac86e03f47389f6415a1dd42704f90e05c4c26cc48cef6d82d9640344c00ef3",
+          "entities": [
+            "Oracle",
+            "New Mexico AI data center"
+          ],
+          "occurrence_date": "2026-09-24",
+          "originating_node": "W3",
+          "proposition": "据报道，Oracle正寻求在其New Mexico AI数据中心未能按计划于2028年投产时推迟部分付款。",
+          "provisional_event_id": "E32",
+          "subject_time": "2028年计划投产"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_d352e02e723b459486242d142db27af3",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-09-24T14:43:36.499608+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-24",
+            "delivery_failure": null,
+            "direction": "SHORT",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_17a40e0f939c40e987a243dba22bfa69",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-24T14:43:36.602025Z"
+              },
+              "case_id": "case_d352e02e723b459486242d142db27af3",
+              "direction": "SHORT",
+              "entry_reason": "ORDER_FILLED",
+              "entry_result": "FILLED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_d352e02e723b459486242d142db27af3",
+              "execution_reason_codes": [
+                "ORDER_FILLED"
+              ],
+              "execution_state": "EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "20061.6"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "78"
+              },
+              "first_fill_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-24T14:43:44Z"
+              },
+              "has_actual_fill": true,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_d352e02e723b459486242d142db27af3",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_e1d7c65e0656af2e6c4923b1"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-24T14:43:36.499608Z"
+              }
+            },
+            "entry": {
+              "side": "SELL",
+              "quantity": "78",
+              "average_price_usd": "257.2",
+              "first_fill_at": "2026-09-24T14:43:44+00:00",
+              "last_fill_at": "2026-09-24T14:43:44+00:00"
+            },
+            "exit": {
+              "side": "BUY",
+              "quantity": "78",
+              "average_price_usd": "267.97",
+              "first_fill_at": "2026-09-24T19:30:09+00:00",
+              "last_fill_at": "2026-09-24T19:30:09+00:00"
+            },
+            "fills": [
+              {
+                "kind": "ENTRY",
+                "side": "SELL",
+                "quantity": "78",
+                "price_usd": "257.2",
+                "filled_at": "2026-09-24T14:43:44+00:00",
+                "broker_fill_id": "0000e0d5.6ab5515a.01.01"
+              },
+              {
+                "kind": "EXIT",
+                "side": "BUY",
+                "quantity": "78",
+                "price_usd": "267.97",
+                "filled_at": "2026-09-24T19:30:09+00:00",
+                "broker_fill_id": "0000dc8f.6bb759ba.01.01"
+              }
+            ],
+            "lot_remaining_quantity": 0,
+            "realized_pnl_usd": "-842.4889470000000000000000000",
+            "realized_pnl_records": [
+              {
+                "amount": "-842.4889470000000000000000000",
+                "day": "2026-09-24",
+                "environment": "PAPER",
+                "provisional": false,
+                "reason": null
+              }
+            ],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "EXECUTED",
+        "read_execution_reason_codes": [
+          "ORDER_FILLED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": {
+          "side": "SELL",
+          "quantity": "78",
+          "average_price_usd": "257.2",
+          "first_fill_at": "2026-09-24T14:43:44+00:00",
+          "last_fill_at": "2026-09-24T14:43:44+00:00"
+        },
+        "exit": {
+          "side": "BUY",
+          "quantity": "78",
+          "average_price_usd": "267.97",
+          "first_fill_at": "2026-09-24T19:30:09+00:00",
+          "last_fill_at": "2026-09-24T19:30:09+00:00"
+        },
+        "realized_pnl_usd": "-842.4889470000000000000000000",
+        "pnl_state": "REALIZED",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_3ea75c51070f43cfbf3f95b2180433dc",
+      "ticker": "BE",
+      "case_id": "case_3ea75c51070f43cfbf3f95b2180433dc",
+      "intent_released_at_utc": "2026-09-24T15:54:57.710005+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_e4403ecc52394e4a9773a1d23b1c97cd",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "Bloom Energy",
+              "大型数据中心项目"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "据报道，Bloom Energy最大的单一燃料电池部署项目因Bloom无法控制的管线延误而面临延期。",
+            "subject_time": null
+          }
+        ],
+        "expert_trade": {
+          "direction": "SHORT",
+          "evaluated": true,
+          "expectation_delta": "据报道，Bloom最大单体燃料电池部署因外部管线延误而受阻，降低该项目按原节奏交付、验收和确认收入的概率，并使2027至2028年收入目标的时间和确定性下修。当前证据尚不足以证明项目取消或全部收入损失，但延迟本身已是实质性负面变化。",
+          "prior_expectation": "事件前，市场基线是Bloom的大型AI数据中心项目和 backlog 将继续转化为Energy Server发货、安装和验收，并支撑2027至2028年的多季度收入与盈利延续；项目集中度和验收时点虽是风险，但没有重大延期进入基线。",
+          "reason": "Surprise来自Bloom核心大型部署相对预期节奏的直接延迟。该项目被报道为支撑多年度收入叙事的最大单体项目，Materiality高；传导路径清晰：管线延误→项目送电/施工/验收后移→Energy Server收入确认和盈利持续性下修→BE估值承压。虽然消息缺少量化日期和正式项目披露、且属报道性质，但不足以消除当前可交易的下行预期差，因此为SHORT。",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "E16记录了Oracle相关Bloom燃料电池部署及约1.2GW已签约容量，但未覆盖Bloom最大单体部署遭遇外部管线延误及其对后续收入兑现的影响。E40/E41仅记录Oracle方面的延误和付款诉求，未确认Bloom项目本身的延迟。",
+          "reference_ids": [
+            "E16"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "报道未正式识别客户项目、原定与新commissioning日期、容量缩减、取消或后续财报影响，也没有客户/项目业主的正式延期或合同变更披露；因此未满足项目级延误、客户重谈或收入确认Policy的触发边界。"
+        },
+        "w3_case_id": "w3_e4403ecc52394e4a9773a1d23b1c97cd"
+      },
+      "trade_direction": "SHORT",
+      "case_summary": {
+        "case_id": "case_3ea75c51070f43cfbf3f95b2180433dc",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-24T15:54:57.846093Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 707.632061
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-24T15:43:10.214032Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_EXECUTION",
+          "TRADE_INTENT"
+        ],
+        "revision": 2451924,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-24",
+        "source": {
+          "binding_id": "BE:yahoo_finance_news",
+          "kind": "api",
+          "name": "Yahoo Finance News",
+          "source_id": "yahoo_finance_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_605f468ef67e469884e5626d57972fa5",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Bloom Energy’s Single Largest Fuel Cell Deployment Is In Trouble"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "ORDER_FILLED"
+          ],
+          "state": "EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-24T15:43:10.214032Z",
+        "completed_at": "2026-09-24T15:54:57.846093Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E40",
+            "E41",
+            "E2",
+            "E16",
+            "E60"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "当前消息的核心事实是Bloom Energy最大单体燃料电池部署项目遭遇pipeline delay，投资者质疑其2027/2028营收目标的可靠性。Canonical Facts（E16）仅记录了Oracle数据中心的正面部署状态和1.2 GW contracted capacity；Provisional events（E40/E41）描述了Oracle方面的construction delay和payment deferral诉求，但均未涉及Bloom Energy自身pipeline延误及其对营收指引的具体冲击。",
+          "reference_ids": [
+            "E16"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [
+            "pol_26f8286632a439db9490",
+            "pol_b2475a5727c6b73f0d18",
+            "pol_1ab64bb336f6624cd158"
+          ],
+          "reason": "消息直接陈述Fremont/Delmarva扩产与供应商qualify已产生跨数个季度的持续合格Energy Server产出及材料/人工/返工/运费成本下降，与pol_26f8286632a439db9490（qualified scale产品成本阶梯下降）criterion高度对应；同时触及pol_b2475a5727c6b73f0d18（扩产达到合格产出且在资金计划内）和pol_1ab64bb336f6624cd158（Fremont/Delmarva连续可比周期合格释放量达生产计划）的触发路径，现有精简信息不足以排除这些Policy最终命中的可能。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "当前消息陈述的唯一事实是：Bloom Energy最大单一燃料电池部署项目因外部pipeline delay出现延迟，投资者开始质疑2027/2028收入目标可靠性。该消息不涉及Fremont/Delmarva制造扩张、合格吞吐量、供应商认证、产品成本或利润率改善、产能达成、PP&E支出、资金计划或任何设施的合格units/MW释放。三个Candidate Policies的触发条件均要求制造/产能/成本/出货层面的具体量化披露，当前消息完全未触及这些维度，所有条件明确不满足。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "RUMORED",
+              "entities": [
+                "Bloom Energy",
+                "大型数据中心项目"
+              ],
+              "occurrence_date": "2026-09-24",
+              "proposition": "据报道，Bloom Energy最大的单一燃料电池部署项目因Bloom无法控制的管线延误而面临延期。",
+              "subject_time": null
+            }
+          ],
+          "expert_trade": {
+            "direction": "SHORT",
+            "evaluated": true,
+            "expectation_delta": "据报道，Bloom最大单体燃料电池部署因外部管线延误而受阻，降低该项目按原节奏交付、验收和确认收入的概率，并使2027至2028年收入目标的时间和确定性下修。当前证据尚不足以证明项目取消或全部收入损失，但延迟本身已是实质性负面变化。",
+            "prior_expectation": "事件前，市场基线是Bloom的大型AI数据中心项目和 backlog 将继续转化为Energy Server发货、安装和验收，并支撑2027至2028年的多季度收入与盈利延续；项目集中度和验收时点虽是风险，但没有重大延期进入基线。",
+            "reason": "Surprise来自Bloom核心大型部署相对预期节奏的直接延迟。该项目被报道为支撑多年度收入叙事的最大单体项目，Materiality高；传导路径清晰：管线延误→项目送电/施工/验收后移→Energy Server收入确认和盈利持续性下修→BE估值承压。虽然消息缺少量化日期和正式项目披露、且属报道性质，但不足以消除当前可交易的下行预期差，因此为SHORT。",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "E16记录了Oracle相关Bloom燃料电池部署及约1.2GW已签约容量，但未覆盖Bloom最大单体部署遭遇外部管线延误及其对后续收入兑现的影响。E40/E41仅记录Oracle方面的延误和付款诉求，未确认Bloom项目本身的延迟。",
+            "reference_ids": [
+              "E16"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "报道未正式识别客户项目、原定与新commissioning日期、容量缩减、取消或后续财报影响，也没有客户/项目业主的正式延期或合同变更披露；因此未满足项目级延误、客户重谈或收入确认Policy的触发边界。"
+          },
+          "w3_case_id": "w3_e4403ecc52394e4a9773a1d23b1c97cd"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "702c8b1073666c8b350edeaaa0db0e3d0dc30d2281378832cdbe0d5d04ca6637",
+            "content_type": "text/plain",
+            "sha256": "3ba0020b8bb6994c52341dbb39ecbc090b207c8c20f7fedc0b862d781dcec83a",
+            "size_bytes": 249
+          },
+          "case": {
+            "case_id": "case_3ea75c51070f43cfbf3f95b2180433dc",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-24T15:41:41.005123Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-24T15:43:06.852896Z",
+          "revision": 1,
+          "row_revision": 1554145,
+          "source": {
+            "binding_id": "BE:yahoo_finance_news",
+            "kind": "api",
+            "name": "Yahoo Finance News",
+            "source_id": "yahoo_finance_news"
+          },
+          "source_published_at": "2026-09-24T15:29:32Z",
+          "standard_message_id": "std_a4cb04b10a8748b3a64fd1cc26cca31e",
+          "stream_item_id": "stream_605f468ef67e469884e5626d57972fa5",
+          "stream_offset": 37,
+          "stream_published_at": "2026-09-24T15:43:06.858427Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Bloom Energy’s Single Largest Fuel Cell Deployment Is In Trouble"
+          },
+          "url": "https://247wallst.com/investing/2026/09/24/bloom-energys-single-largest-fuel-cell-deployment-is-in-trouble/",
+          "body_text": "Bloom Energy built its entire bull case on a backlog anchored by one massive data center project, and now a pipeline delay outside its control is forcing investors to ask whether 2027 and 2028 revenue targets were ever as solid as the pitch sounded."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "RUMORED",
+          "candidate_id": "[\"runtime-v2-msg:std_a4cb04b10a8748b3a64fd1cc26cca31e:0\"]",
+          "created_at": "2026-09-24T15:54:57.687865Z",
+          "dedupe_key": "45127cbed18c114faf3a7a39c7e7beb4751704df198e6daedf60381785ae1aea",
+          "entities": [
+            "Bloom Energy",
+            "大型数据中心项目"
+          ],
+          "occurrence_date": "2026-09-24",
+          "originating_node": "W3",
+          "proposition": "据报道，Bloom Energy最大的单一燃料电池部署项目因Bloom无法控制的管线延误而面临延期。",
+          "provisional_event_id": "E63",
+          "subject_time": null
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_3ea75c51070f43cfbf3f95b2180433dc",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-09-24T15:54:57.710005+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-24",
+            "delivery_failure": null,
+            "direction": "SHORT",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_e4403ecc52394e4a9773a1d23b1c97cd",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-24T15:54:58.621623Z"
+              },
+              "case_id": "case_3ea75c51070f43cfbf3f95b2180433dc",
+              "direction": "SHORT",
+              "entry_reason": "ORDER_FILLED",
+              "entry_result": "FILLED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_3ea75c51070f43cfbf3f95b2180433dc",
+              "execution_reason_codes": [
+                "ORDER_FILLED"
+              ],
+              "execution_state": "EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "20196.54"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "78"
+              },
+              "first_fill_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-24T15:55:01Z"
+              },
+              "has_actual_fill": true,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_3ea75c51070f43cfbf3f95b2180433dc",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_e1d7c65e0656af2e6c4923b1"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-24T15:54:57.710005Z"
+              }
+            },
+            "entry": {
+              "side": "SELL",
+              "quantity": "78",
+              "average_price_usd": "258.93",
+              "first_fill_at": "2026-09-24T15:55:01+00:00",
+              "last_fill_at": "2026-09-24T15:55:01+00:00"
+            },
+            "exit": {
+              "side": "BUY",
+              "quantity": "78",
+              "average_price_usd": "267.81",
+              "first_fill_at": "2026-09-24T19:30:01+00:00",
+              "last_fill_at": "2026-09-24T19:30:01+00:00"
+            },
+            "fills": [
+              {
+                "kind": "ENTRY",
+                "side": "SELL",
+                "quantity": "78",
+                "price_usd": "258.93",
+                "filled_at": "2026-09-24T15:55:01+00:00",
+                "broker_fill_id": "0000dc8f.6bb6ad25.01.01"
+              },
+              {
+                "kind": "EXIT",
+                "side": "BUY",
+                "quantity": "78",
+                "price_usd": "267.81",
+                "filled_at": "2026-09-24T19:30:01+00:00",
+                "broker_fill_id": "0000e0d5.6ab5c2f5.01.01"
+              }
+            ],
+            "lot_remaining_quantity": 0,
+            "realized_pnl_usd": "-695.0717270000000000000000000",
+            "realized_pnl_records": [
+              {
+                "amount": "-695.0717270000000000000000000",
+                "day": "2026-09-24",
+                "environment": "PAPER",
+                "provisional": false,
+                "reason": null
+              }
+            ],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "EXECUTED",
+        "read_execution_reason_codes": [
+          "ORDER_FILLED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": {
+          "side": "SELL",
+          "quantity": "78",
+          "average_price_usd": "258.93",
+          "first_fill_at": "2026-09-24T15:55:01+00:00",
+          "last_fill_at": "2026-09-24T15:55:01+00:00"
+        },
+        "exit": {
+          "side": "BUY",
+          "quantity": "78",
+          "average_price_usd": "267.81",
+          "first_fill_at": "2026-09-24T19:30:01+00:00",
+          "last_fill_at": "2026-09-24T19:30:01+00:00"
+        },
+        "realized_pnl_usd": "-695.0717270000000000000000000",
+        "pnl_state": "REALIZED",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_403144dc6a504d0582477529846097d8",
+      "ticker": "BE",
+      "case_id": "case_403144dc6a504d0582477529846097d8",
+      "intent_released_at_utc": "2026-09-24T20:53:05.624032+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_3d0404aed9814ab0ac7509bfcb48cdd2",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Oracle",
+              "Blue Owl Capital",
+              "Project Jupiter"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "Oracle已向Blue Owl Capital就New Mexico Project Jupiter计算园区发出force majeure通知。",
+            "subject_time": null
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Oracle",
+              "Blue Owl Capital",
+              "Project Jupiter"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "Oracle寻求在该园区无法按计划于2028年投产时推迟或调整部分付款。",
+            "subject_time": "2028年计划投产"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Oracle",
+              "Project Jupiter",
+              "Stargate"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "Project Jupiter被描述为2.45GW计算园区，属于更广泛的Stargate AI建设项目，项目规模约1650亿美元。",
+            "subject_time": null
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Bloom Energy",
+              "Oracle",
+              "Project Jupiter"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "Bloom Energy据报道将为该项目提供2.5GW燃料电池容量。",
+            "subject_time": null
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Project Jupiter",
+              "critical gas pipeline",
+              "New Mexico water rights"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "该项目面临关键燃气管线约六个月的延误以及水权争议。",
+            "subject_time": null
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Project Jupiter",
+              "construction debt"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "与该项目相关的约180亿美元建设债务交易价格低于面值90美分。",
+            "subject_time": null
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Oracle",
+              "Project Jupiter"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "Oracle表示项目仍按计划推进，并称force majeure通知是大型开发项目中保护合同权利的标准步骤。",
+            "subject_time": null
+          }
+        ],
+        "expert_trade": {
+          "direction": "SHORT",
+          "evaluated": true,
+          "expectation_delta": "Oracle正式发出force majeure通知并寻求在2028年投产延误时推迟或调整付款，叠加关键燃气管线约六个月延误和水权争议，使与Bloom据称相关的2.5GW项目的付款、交付、验收和现金转换时点更不确定。Oracle称项目仍按计划推进，因此这不是已确认取消，但相较事件前预期，项目执行和实现确定性已下修。",
+          "prior_expectation": "BE的事件前预期包含Oracle大型数据中心关系和持续的AI大负荷项目兑现：Bloom已披露最多2.8GW的Oracle主服务协议、约1.2GW已签约并部署容量，以及依赖项目融资、许可、交付和验收兑现的FY2026增长指引。基线并未包含Oracle针对该旗舰项目正式采取付款保护措施。",
+          "reason": "正式force majeure通知相对此前传闻和正常执行基线构成实质Surprise；2.45GW项目及据报道的2.5GW Bloom燃料电池容量使其对客户集中度、收入时点和营运资本具有Materiality。传导路径为项目许可/燃料与付款风险上升→Bloom部署、验收及收款时点延后或条件化→收入、现金流和FY2026后续持续期预期下修。Oracle的按期表述限制了下行幅度但不足以消除风险，因此形成SHORT交易判断。",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "E40和E41仅记录Oracle据报道寻求force majeure及付款延期，状态为传闻；当前消息确认Oracle已向Blue Owl Capital发出正式通知，并新增项目规模、Bloom容量、管线延误、建设债务和Oracle对项目进度的正式表述。",
+          "reference_ids": [
+            "E40",
+            "E41"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "虽然事件对Project Jupiter及Bloom的项目兑现风险具有实质意义，但未确认Green Chile管线及其与原有燃料里程碑的越窗关系，也未明确Bloom Energy部署取消、承诺容量缩减、backlog或收入变化，因此未满足现行Policy的具体触发边界。"
+        },
+        "w3_case_id": "w3_3d0404aed9814ab0ac7509bfcb48cdd2"
+      },
+      "trade_direction": "SHORT",
+      "case_summary": {
+        "case_id": "case_403144dc6a504d0582477529846097d8",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-24T20:53:05.831407Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 450.969472
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-24T20:45:34.861935Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2603749,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-24",
+        "source": {
+          "binding_id": "BE:huggingnews_rss",
+          "kind": "api",
+          "name": "HuggingNews Atom",
+          "source_id": "huggingnews_rss"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_c17160ea0ca24ddf84b1867115190f71",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Oracle Invokes Force Majeure on New Mexico AI Site to Defer Payments"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "FRESH_QUOTE_UNAVAILABLE"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-24T20:45:34.861935Z",
+        "completed_at": "2026-09-24T20:53:05.831407Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E40",
+            "E41",
+            "E72",
+            "E60",
+            "E16"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "Oracle实际向Blue Owl Capital发出force majeure通知构成对E40/E41中\"据报道寻求适用\"（RUMORED）状态的事实确认，传闻与已发生不可互覆盖；同时2.5GW燃料电池容量、$165B项目规模、$18B建设债务低于90美分、Oracle股价跌约5%等均为现有Detail未涉及的新核心事实。",
+          "reference_ids": [
+            "E40",
+            "E41"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [
+            "pol_7b7ccfd2cb4eecfb6a8f",
+            "pol_b88a58def59b82c29eb5",
+            "pol_c6f78f9f2be8ff1d1ee8"
+          ],
+          "reason": "消息明确披露Project Jupiter（2.45GW）因关键燃气管道面临六个月许可延迟，直接触及燃料管道可用性与项目连接里程碑的触发路径（pol_7b7ccfd2cb4eecfb6a8f）；Oracle作为锚定大客户/开发者对Blue Owl发出force majeure通知、推迟付款并修订财务条款，构成对已公布重大部署的实质延期与重新谈判（pol_b88a58def59b82c29eb5）；结合许可障碍与财务重谈，存在承诺容量最终被削减或取消的合理可能，当前精简信息不足以完全排除（pol_c6f78f9f2be8ff1d1ee8）。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "三条Candidate Policy均未命中。Policy 1(Green Chile)：消息提及\"a critical gas pipeline\"六个月延迟，但未明确指名为Green Chile，且trigger boundary要求同时提供管道可用日与Jupiter燃料连接里程碑并显示越窗，消息未给出这些具体日期和越窗确认。Policy 2(财务下行)：Oracle force majeure针对的是\"Defer Payments\"（付款条款），而非Energy Server部署的取消、推迟、缩量或重谈；Oracle明确表示项目on schedule，通知定性为\"standard step to preserve contractual rights\"，无backlog/shipment/revenue预期变化证据。Policy 3(锚定客户取消)：消息未确认Oracle取消或削减Bloom 2.5GW承诺容量，force majeure仅涉及付款保护机制，不构成对已签约容量的正式取消或缩减。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Oracle",
+                "Blue Owl Capital",
+                "Project Jupiter"
+              ],
+              "occurrence_date": "2026-09-24",
+              "proposition": "Oracle已向Blue Owl Capital就New Mexico Project Jupiter计算园区发出force majeure通知。",
+              "subject_time": null
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Oracle",
+                "Blue Owl Capital",
+                "Project Jupiter"
+              ],
+              "occurrence_date": "2026-09-24",
+              "proposition": "Oracle寻求在该园区无法按计划于2028年投产时推迟或调整部分付款。",
+              "subject_time": "2028年计划投产"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Oracle",
+                "Project Jupiter",
+                "Stargate"
+              ],
+              "occurrence_date": "2026-09-24",
+              "proposition": "Project Jupiter被描述为2.45GW计算园区，属于更广泛的Stargate AI建设项目，项目规模约1650亿美元。",
+              "subject_time": null
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Bloom Energy",
+                "Oracle",
+                "Project Jupiter"
+              ],
+              "occurrence_date": "2026-09-24",
+              "proposition": "Bloom Energy据报道将为该项目提供2.5GW燃料电池容量。",
+              "subject_time": null
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Project Jupiter",
+                "critical gas pipeline",
+                "New Mexico water rights"
+              ],
+              "occurrence_date": "2026-09-24",
+              "proposition": "该项目面临关键燃气管线约六个月的延误以及水权争议。",
+              "subject_time": null
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Project Jupiter",
+                "construction debt"
+              ],
+              "occurrence_date": "2026-09-24",
+              "proposition": "与该项目相关的约180亿美元建设债务交易价格低于面值90美分。",
+              "subject_time": null
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Oracle",
+                "Project Jupiter"
+              ],
+              "occurrence_date": "2026-09-24",
+              "proposition": "Oracle表示项目仍按计划推进，并称force majeure通知是大型开发项目中保护合同权利的标准步骤。",
+              "subject_time": null
+            }
+          ],
+          "expert_trade": {
+            "direction": "SHORT",
+            "evaluated": true,
+            "expectation_delta": "Oracle正式发出force majeure通知并寻求在2028年投产延误时推迟或调整付款，叠加关键燃气管线约六个月延误和水权争议，使与Bloom据称相关的2.5GW项目的付款、交付、验收和现金转换时点更不确定。Oracle称项目仍按计划推进，因此这不是已确认取消，但相较事件前预期，项目执行和实现确定性已下修。",
+            "prior_expectation": "BE的事件前预期包含Oracle大型数据中心关系和持续的AI大负荷项目兑现：Bloom已披露最多2.8GW的Oracle主服务协议、约1.2GW已签约并部署容量，以及依赖项目融资、许可、交付和验收兑现的FY2026增长指引。基线并未包含Oracle针对该旗舰项目正式采取付款保护措施。",
+            "reason": "正式force majeure通知相对此前传闻和正常执行基线构成实质Surprise；2.45GW项目及据报道的2.5GW Bloom燃料电池容量使其对客户集中度、收入时点和营运资本具有Materiality。传导路径为项目许可/燃料与付款风险上升→Bloom部署、验收及收款时点延后或条件化→收入、现金流和FY2026后续持续期预期下修。Oracle的按期表述限制了下行幅度但不足以消除风险，因此形成SHORT交易判断。",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "E40和E41仅记录Oracle据报道寻求force majeure及付款延期，状态为传闻；当前消息确认Oracle已向Blue Owl Capital发出正式通知，并新增项目规模、Bloom容量、管线延误、建设债务和Oracle对项目进度的正式表述。",
+            "reference_ids": [
+              "E40",
+              "E41"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "虽然事件对Project Jupiter及Bloom的项目兑现风险具有实质意义，但未确认Green Chile管线及其与原有燃料里程碑的越窗关系，也未明确Bloom Energy部署取消、承诺容量缩减、backlog或收入变化，因此未满足现行Policy的具体触发边界。"
+          },
+          "w3_case_id": "w3_3d0404aed9814ab0ac7509bfcb48cdd2"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "edcb716a08e5893e3ab318bfcb5609f7620db8ed8b08731acce40d59c421d3e1",
+            "content_type": "text/plain",
+            "sha256": "fb7e83ee14bc870136100d41342ec2f92b94aeced517388879cd0c9c0436067d",
+            "size_bytes": 1231
+          },
+          "case": {
+            "case_id": "case_403144dc6a504d0582477529846097d8",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-24T20:45:32.928849Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-24T20:45:32.979021Z",
+          "revision": 1,
+          "row_revision": 1574977,
+          "source": {
+            "binding_id": "BE:huggingnews_rss",
+            "kind": "api",
+            "name": "HuggingNews Atom",
+            "source_id": "huggingnews_rss"
+          },
+          "source_published_at": "2026-09-24T20:39:46.877000Z",
+          "standard_message_id": "std_5662607c30ec4680b1f01ff4988ecd6c",
+          "stream_item_id": "stream_c17160ea0ca24ddf84b1867115190f71",
+          "stream_offset": 57,
+          "stream_published_at": "2026-09-24T20:45:32.984641Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Oracle Invokes Force Majeure on New Mexico AI Site to Defer Payments"
+          },
+          "url": "https://huggingnews.com/ai/oracle-invokes-force-majeure-on-new-mexico-ai-site-to-defer-payments-76d8f4da",
+          "body_text": "← Back to live feed · 1 stories across 1 day\nThursday, Sep 24, 2026\n1 story1 Oracle Invokes Force Majeure on New Mexico AI Site to Defer Payments AI Sep 24, 8:25 AM EDT 37/25 \n The 2028 launch of a massive compute campus in the Southwest is now subject to revised financial terms after Oracle issued a force majeure notice to developer Blue Owl Capital. The 2.45GW Project Jupiter site, part of the broader Stargate AI buildout, has faced permitting hurdles including a six month delay for a critical gas pipeline and disputes over water rights. This maneuver seeks to shield the company from rising expenses if the facility misses its opening date, while associated construction debt of $18B is already trading below 90 cents on the dollar.\nOracle maintains that the project is on schedule and characterizes the notice as a standard step to preserve contractual rights in large-scale developments. The news triggered a decline of around 5% in Oracle shares and weighed on Bloom Energy, which is providing 2.5GW of fuel cell capacity for the $165B project. Local opposition in Doña Ana County has increased scrutiny over environmental impacts while New Mexico state officials draft new regulations for the data center industry."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_5662607c30ec4680b1f01ff4988ecd6c:0\"]",
+          "created_at": "2026-09-24T20:53:05.442359Z",
+          "dedupe_key": "bd3b2b41aa017250a801efdf9576f263b9e7d9efc345248836f0be89f893c333",
+          "entities": [
+            "Oracle",
+            "Blue Owl Capital",
+            "Project Jupiter"
+          ],
+          "occurrence_date": "2026-09-24",
+          "originating_node": "W3",
+          "proposition": "Oracle已向Blue Owl Capital就New Mexico Project Jupiter计算园区发出force majeure通知。",
+          "provisional_event_id": "E99",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_5662607c30ec4680b1f01ff4988ecd6c:1\"]",
+          "created_at": "2026-09-24T20:53:05.464472Z",
+          "dedupe_key": "b390cf1c76953c52a8ace46176af2eebc7cc2b196f5d145e91817c55abd16b3b",
+          "entities": [
+            "Oracle",
+            "Blue Owl Capital",
+            "Project Jupiter"
+          ],
+          "occurrence_date": "2026-09-24",
+          "originating_node": "W3",
+          "proposition": "Oracle寻求在该园区无法按计划于2028年投产时推迟或调整部分付款。",
+          "provisional_event_id": "E100",
+          "subject_time": "2028年计划投产"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_5662607c30ec4680b1f01ff4988ecd6c:2\"]",
+          "created_at": "2026-09-24T20:53:05.486918Z",
+          "dedupe_key": "57c99230fa3b9c3057a5c595876b774b9aaff6c37d1313f5da15016fb102ed96",
+          "entities": [
+            "Oracle",
+            "Project Jupiter",
+            "Stargate"
+          ],
+          "occurrence_date": "2026-09-24",
+          "originating_node": "W3",
+          "proposition": "Project Jupiter被描述为2.45GW计算园区，属于更广泛的Stargate AI建设项目，项目规模约1650亿美元。",
+          "provisional_event_id": "E101",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_5662607c30ec4680b1f01ff4988ecd6c:3\"]",
+          "created_at": "2026-09-24T20:53:05.501490Z",
+          "dedupe_key": "770ade7b51fe3a8e63c26182cf6f612905f0ef76ccd7a367350eaa5265fcdd03",
+          "entities": [
+            "Bloom Energy",
+            "Oracle",
+            "Project Jupiter"
+          ],
+          "occurrence_date": "2026-09-24",
+          "originating_node": "W3",
+          "proposition": "Bloom Energy据报道将为该项目提供2.5GW燃料电池容量。",
+          "provisional_event_id": "E102",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_5662607c30ec4680b1f01ff4988ecd6c:4\"]",
+          "created_at": "2026-09-24T20:53:05.518787Z",
+          "dedupe_key": "209a7cefa52e172f0230788996fb55d9c7825ae0a7767e5162eaaba487b18353",
+          "entities": [
+            "Project Jupiter",
+            "critical gas pipeline",
+            "New Mexico water rights"
+          ],
+          "occurrence_date": "2026-09-24",
+          "originating_node": "W3",
+          "proposition": "该项目面临关键燃气管线约六个月的延误以及水权争议。",
+          "provisional_event_id": "E103",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_5662607c30ec4680b1f01ff4988ecd6c:5\"]",
+          "created_at": "2026-09-24T20:53:05.543098Z",
+          "dedupe_key": "6b2f4cdef1a4b9833cfa5adbb9dc7dcc13e35db90412d7fb86b2aa2b8ab60948",
+          "entities": [
+            "Project Jupiter",
+            "construction debt"
+          ],
+          "occurrence_date": "2026-09-24",
+          "originating_node": "W3",
+          "proposition": "与该项目相关的约180亿美元建设债务交易价格低于面值90美分。",
+          "provisional_event_id": "E104",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_5662607c30ec4680b1f01ff4988ecd6c:6\"]",
+          "created_at": "2026-09-24T20:53:05.563973Z",
+          "dedupe_key": "59b56f975cd609d622aa62cb93876f8359f508e2dfa4f38af740f2e1547e85b6",
+          "entities": [
+            "Oracle",
+            "Project Jupiter"
+          ],
+          "occurrence_date": "2026-09-24",
+          "originating_node": "W3",
+          "proposition": "Oracle表示项目仍按计划推进，并称force majeure通知是大型开发项目中保护合同权利的标准步骤。",
+          "provisional_event_id": "E105",
+          "subject_time": null
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_403144dc6a504d0582477529846097d8",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-09-24T20:53:05.624032+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-24",
+            "delivery_failure": null,
+            "direction": "SHORT",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_3d0404aed9814ab0ac7509bfcb48cdd2",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-24T20:53:06.199340Z"
+              },
+              "case_id": "case_403144dc6a504d0582477529846097d8",
+              "direction": "SHORT",
+              "entry_reason": "FRESH_QUOTE_UNAVAILABLE",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_403144dc6a504d0582477529846097d8",
+              "execution_reason_codes": [
+                "FRESH_QUOTE_UNAVAILABLE"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_403144dc6a504d0582477529846097d8",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_e1d7c65e0656af2e6c4923b1"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-24T20:53:05.624032Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "FRESH_QUOTE_UNAVAILABLE"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_c86c75f6556a499a8960974922aae41b",
+      "ticker": "BE",
+      "case_id": "case_c86c75f6556a499a8960974922aae41b",
+      "intent_released_at_utc": "2026-09-24T20:53:31.163706+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_7a3e387b6c064d0eb3ece86826a2c345",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Oracle",
+              "Project Jupiter",
+              "New Mexico"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "Oracle已向Project Jupiter（新墨西哥州数据中心园区）开发商发出force majeure（不可抗力）通知。",
+            "subject_time": null
+          }
+        ],
+        "expert_trade": {
+          "direction": "SHORT",
+          "evaluated": true,
+          "expectation_delta": "Oracle实际发出force majeure通知，使Jupiter从“按计划推进、风险尚未兑现”变为已出现合同层面的延期/付款保护行动，迫使市场下调项目按2028目标完成的确定性并后移Bloom相关部署、验收和现金/收入转换的时点；这提高了延期或范围变化概率，但尚未证明取消或Bloom全部范围损失。",
+          "prior_expectation": "事件前基线是：Project Jupiter仍是Oracle拟使用Bloom燃料电池的已宣布大型负荷项目，项目建设被描述为按计划推进，Bloom相关部署/验收和大型负荷项目转化仍可支撑FY2026以后增长；空气许可、燃气路线、互联和水环境审批虽是已知风险，但尚无Oracle退出、付款减免或项目取消的确认。",
+          "reason": "Surprise：与事件前按计划推进的基线相比，实际保护性通知是对已知许可/燃气风险的确认和风险升级；E40/E41虽已有传闻，ACTUAL确认仍提高了可交易的确定性。Materiality：Project Jupiter的Bloom-powered配置约2.45GW，BE当前高估值和盈利持续期依赖大型负荷项目持续转化。Transmission：Oracle通知→Jupiter延期/付款与融资时点风险→Bloom部署、验收及收入/现金转换推迟→BE下行。Oracle仍称项目按计划、未寻求退出，且Bloom范围与金额尚未量化，降低判断强度但不消除直接传导，故给出SHORT。[TechCrunch](https://techcrunch.com/2026/09/24/oracle-sends-force-majeure-notice-on-its-new-mexico-stargate-data-center/)",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "核心新现实是Oracle已实际向Project Jupiter开发商发出force majeure通知。Reference View中的E40/E41仅记录Oracle可能寻求不可抗力和付款延期的传闻，E16记录Oracle在Bloom燃料电池支持的New Mexico数据中心部署；本消息把关键状态从传闻推进为已发生的合同行动。",
+          "reference_ids": [
+            "E16",
+            "E40",
+            "E41"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "当前消息确认了合同保护性通知，但没有给出Project Jupiter最终许可/燃气/互联决定、Bloom项目取消或量化缩量、原新验收日期，亦未证明Bloom合同付款受损；因此未满足任何现行Policy，仍属uncovered。"
+        },
+        "w3_case_id": "w3_7a3e387b6c064d0eb3ece86826a2c345"
+      },
+      "trade_direction": "SHORT",
+      "case_summary": {
+        "case_id": "case_c86c75f6556a499a8960974922aae41b",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-24T20:53:31.304158Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 489.892806
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-24T20:45:21.411352Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2603950,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-24",
+        "source": {
+          "binding_id": "BE:yahoo_finance_news",
+          "kind": "api",
+          "name": "Yahoo Finance News",
+          "source_id": "yahoo_finance_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_ad1308e205c54986b5f3eed7d8ee9aed",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Oracle, Qualcomm, Meta, Everpure, BlackBerry, MGM, Nebius, and More Stocks That Explain Today’s Market"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "FRESH_QUOTE_UNAVAILABLE"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-24T20:45:21.411352Z",
+        "completed_at": "2026-09-24T20:53:31.304158Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E40",
+            "E41",
+            "E72",
+            "E16",
+            "E2"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "当前消息核心事实为Oracle已实际向Project Jupiter园区开发商发出force majeure通知（ACTUAL）。最接近的已知事实E40仅为RUMORED（据报道Oracle正寻求适用不可抗力保护），按规则传闻与已确认事实属不同事实状态，尚未被覆盖。",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "本轮未提供任何需要评估的 source_message 具体事实内容，仅有 Policy 参考数据。无事实可匹配任何 criterion，因此无 Candidate Policy 可召回。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "本轮未提供任何需要评估的 source_message 具体事实内容，仅有 Policy 参考数据。无事实可匹配任何 criterion，因此无 Candidate Policy 可召回。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Oracle",
+                "Project Jupiter",
+                "New Mexico"
+              ],
+              "occurrence_date": "2026-09-24",
+              "proposition": "Oracle已向Project Jupiter（新墨西哥州数据中心园区）开发商发出force majeure（不可抗力）通知。",
+              "subject_time": null
+            }
+          ],
+          "expert_trade": {
+            "direction": "SHORT",
+            "evaluated": true,
+            "expectation_delta": "Oracle实际发出force majeure通知，使Jupiter从“按计划推进、风险尚未兑现”变为已出现合同层面的延期/付款保护行动，迫使市场下调项目按2028目标完成的确定性并后移Bloom相关部署、验收和现金/收入转换的时点；这提高了延期或范围变化概率，但尚未证明取消或Bloom全部范围损失。",
+            "prior_expectation": "事件前基线是：Project Jupiter仍是Oracle拟使用Bloom燃料电池的已宣布大型负荷项目，项目建设被描述为按计划推进，Bloom相关部署/验收和大型负荷项目转化仍可支撑FY2026以后增长；空气许可、燃气路线、互联和水环境审批虽是已知风险，但尚无Oracle退出、付款减免或项目取消的确认。",
+            "reason": "Surprise：与事件前按计划推进的基线相比，实际保护性通知是对已知许可/燃气风险的确认和风险升级；E40/E41虽已有传闻，ACTUAL确认仍提高了可交易的确定性。Materiality：Project Jupiter的Bloom-powered配置约2.45GW，BE当前高估值和盈利持续期依赖大型负荷项目持续转化。Transmission：Oracle通知→Jupiter延期/付款与融资时点风险→Bloom部署、验收及收入/现金转换推迟→BE下行。Oracle仍称项目按计划、未寻求退出，且Bloom范围与金额尚未量化，降低判断强度但不消除直接传导，故给出SHORT。[TechCrunch](https://techcrunch.com/2026/09/24/oracle-sends-force-majeure-notice-on-its-new-mexico-stargate-data-center/)",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "核心新现实是Oracle已实际向Project Jupiter开发商发出force majeure通知。Reference View中的E40/E41仅记录Oracle可能寻求不可抗力和付款延期的传闻，E16记录Oracle在Bloom燃料电池支持的New Mexico数据中心部署；本消息把关键状态从传闻推进为已发生的合同行动。",
+            "reference_ids": [
+              "E16",
+              "E40",
+              "E41"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "当前消息确认了合同保护性通知，但没有给出Project Jupiter最终许可/燃气/互联决定、Bloom项目取消或量化缩量、原新验收日期，亦未证明Bloom合同付款受损；因此未满足任何现行Policy，仍属uncovered。"
+          },
+          "w3_case_id": "w3_7a3e387b6c064d0eb3ece86826a2c345"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "f9a259cdbe60db7b273822f88a29058aeeabbaa80a1f5618029ad8c062f68489",
+            "content_type": "text/plain",
+            "sha256": "dfbf1a7aa9a44f5be196fa0eafa48644d9cffbda6a700aeb5c45554aa31f55ba",
+            "size_bytes": 137
+          },
+          "case": {
+            "case_id": "case_c86c75f6556a499a8960974922aae41b",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-24T20:44:33.170296Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-24T20:45:19.185562Z",
+          "revision": 1,
+          "row_revision": 1575066,
+          "source": {
+            "binding_id": "BE:yahoo_finance_news",
+            "kind": "api",
+            "name": "Yahoo Finance News",
+            "source_id": "yahoo_finance_news"
+          },
+          "source_published_at": "2026-09-24T20:32:00Z",
+          "standard_message_id": "std_b86f8559d1a14f0197241a18d09c85c7",
+          "stream_item_id": "stream_ad1308e205c54986b5f3eed7d8ee9aed",
+          "stream_offset": 55,
+          "stream_published_at": "2026-09-24T20:45:19.193097Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Oracle, Qualcomm, Meta, Everpure, BlackBerry, MGM, Nebius, and More Stocks That Explain Today’s Market"
+          },
+          "url": "https://www.barrons.com/articles/stock-movers-45e41551?siteid=yhoof2&yptr=yahoo",
+          "body_text": "Oracle is tumbling. It sent a force majeure notice to the developer of the Project Jupiter campus, its data center project in New Mexico."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_b86f8559d1a14f0197241a18d09c85c7:0\"]",
+          "created_at": "2026-09-24T20:53:31.119036Z",
+          "dedupe_key": "c292543041663ab7d36b01afed4ae87b7af4571035833a7b0cb128ea8028a639",
+          "entities": [
+            "Oracle",
+            "Project Jupiter",
+            "New Mexico"
+          ],
+          "occurrence_date": "2026-09-24",
+          "originating_node": "W3",
+          "proposition": "Oracle已向Project Jupiter（新墨西哥州数据中心园区）开发商发出force majeure（不可抗力）通知。",
+          "provisional_event_id": "E106",
+          "subject_time": null
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_c86c75f6556a499a8960974922aae41b",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-09-24T20:53:31.163706+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-24",
+            "delivery_failure": null,
+            "direction": "SHORT",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_7a3e387b6c064d0eb3ece86826a2c345",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-24T20:53:31.730875Z"
+              },
+              "case_id": "case_c86c75f6556a499a8960974922aae41b",
+              "direction": "SHORT",
+              "entry_reason": "FRESH_QUOTE_UNAVAILABLE",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_c86c75f6556a499a8960974922aae41b",
+              "execution_reason_codes": [
+                "FRESH_QUOTE_UNAVAILABLE"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_c86c75f6556a499a8960974922aae41b",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_e1d7c65e0656af2e6c4923b1"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-24T20:53:31.163706Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "FRESH_QUOTE_UNAVAILABLE"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_2889fbb92ed94d4a85cc07264be4bb87",
+      "ticker": "BE",
+      "case_id": "case_2889fbb92ed94d4a85cc07264be4bb87",
+      "intent_released_at_utc": "2026-09-24T21:11:59.801735+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_0dc78d09d23c4ae6a3bbfd92d9b57add",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Oracle",
+              "Project Jupiter",
+              "New Mexico"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "Oracle于2026年9月24日就新墨西哥Project Jupiter AI数据中心项目宣布force majeure，以保护自己免受潜在供电延误导致的成本上升影响。",
+            "subject_time": "2026年9月24日"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "U.S. Treasury",
+              "U.S. bond market",
+              "European bond markets",
+              "Japanese bond market"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "全球债券抛售持续，多个主要经济体的关键债券收益率升至数十年高位。",
+            "subject_time": "2026年9月24日"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "U.S. Treasury",
+              "5-year Treasury auction",
+              "7-year Treasury auction"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "五年期美国国债拍卖需求降至九年来最低，七年期美国国债拍卖也表现极其疲弱。",
+            "subject_time": "2026年9月23日至2026年9月24日"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "United States",
+              "China",
+              "U.S. bond market",
+              "Chinese bond market"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "美国与中国债券收益率利差扩大至创纪录的350个基点。",
+            "subject_time": "2026年9月24日"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "AI data-center industry",
+              "AI infrastructure investors"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "全球AI基础设施资本支出已达数万亿美元规模，并越来越多通过债务、租赁和其他表外结构融资。",
+            "subject_time": "2026年9月24日"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Oracle",
+              "Oracle debt"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "Oracle信用评级仅比垃圾级高一档，总债务约为1400亿美元，股价跌至七周低点。",
+            "subject_time": "2026年9月24日"
+          }
+        ],
+        "expert_trade": {
+          "direction": "SHORT",
+          "evaluated": true,
+          "expectation_delta": "全球债券收益率和融资成本上升、弱国债拍卖，以及Oracle因潜在供电延误和成本上升宣布force majeure，降低AI数据中心资本开支和融资兑现的确定性，新增BE大型客户项目延期、付款或验收推迟及估值持续期压缩风险。",
+          "prior_expectation": "BE的既有预期包含强劲AI和数据中心需求、Oracle/Bloom合作及大型项目放量，但估值和后续增长依赖客户融资、项目许可与互联、交付、验收及现金转换。",
+          "reason": "实际force-majeure行动叠加债券融资条件恶化，并将风险从Oracle扩展至高债务融资的AI数据中心行业。BE高估值和增长预期依赖多季度大型负荷项目融资、部署与验收，传导路径为融资成本或可得性恶化→数据中心项目延期或资本纪律收紧→Bloom订单兑现、部署验收和现金转换时点承压→BE估值与盈利持续期下修。虽未确认Bloom特定订单取消，幅度仍不确定但方向性风险足以形成SHORT。",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "E16仅记录Oracle使用Bloom燃料电池为新墨西哥数据中心供电及约1.2GW部署；当前报道新增了Oracle就Project Jupiter宣布force majeure、潜在供电延误引发成本风险，以及AI基础设施债务融资压力扩大的现实。",
+          "reference_ids": [
+            "E16"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息未确认具体Bloom项目的许可、互联或燃料闸门失败，未提供原定与新投运日期，也未确认Bloom容量取消、缩减或重谈，且未提供本地 firm-gas 容量变化，不满足现行Policy条件。"
+        },
+        "w3_case_id": "w3_0dc78d09d23c4ae6a3bbfd92d9b57add"
+      },
+      "trade_direction": "SHORT",
+      "case_summary": {
+        "case_id": "case_2889fbb92ed94d4a85cc07264be4bb87",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-24T21:12:00.010271Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 359.190893
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-24T21:06:00.819378Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2603705,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-24",
+        "source": {
+          "binding_id": "BE:reuters_site_search",
+          "kind": "crawler",
+          "name": "Reuters Site Search",
+          "source_id": "reuters_site_search"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_eade650752034d9081678b16cc884ef0",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "TRADING DAY Rout of control"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "FRESH_QUOTE_UNAVAILABLE"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-24T21:06:00.819378Z",
+        "completed_at": "2026-09-24T21:12:00.010271Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E29",
+            "E16",
+            "E2",
+            "E26",
+            "E23"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [
+            {
+              "event_id": "E16",
+              "fact_ids": [
+                "F46"
+              ]
+            }
+          ],
+          "reason": "Oracle于9月24日宣布对\"Project Jupiter\"（新墨西哥州AI数据中心项目）援引\"不可抗力\"（force majeure），以应对因供电延迟导致的成本飙升。E16中F46仅记录Oracle正在使用Bloom燃料电池为新墨西哥数据中心供电（ONGOING状态），force majeure声明是一个全新的法律/合同行动，构成状态变化，尚未被任何现有Fact覆盖。",
+          "reference_ids": [
+            "E16"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [
+            "pol_9795c572511e9fcc514e",
+            "pol_b88a58def59b82c29eb5",
+            "pol_82afe9ef8746239e0beb"
+          ],
+          "reason": "消息核心事实为Oracle对Project Jupiter宣布force majeure，明确归因于\"securing power的潜在延误\"。该具体事实直接触及pol_9795c572511e9fcc514e所关注的具名承诺项目因fuel readiness/interconnection失败导致无法energize的触发路径——force majeure作为法律行动是对项目推进受阻的正式确认，是否公布新commissioning date或scope cut尚不确定，值得完整判定。同时Oracle作为Project Jupiter的sponsor/开发方，其force majeure声明可能构成pol_b88a58def59b82c29eb5所关注的重大客户defer或renegotiate Energy Server deployment。此外，New Mexico大型负荷项目的\"securing power延误\"与pol_82afe9ef8746239e0beb关注的具名负荷区燃气路线推迟至需求日之后的criterion存在实质关联，消息未明确排除该具体原因。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "Oracle对Project Jupiter宣布force majeure，原因为\"potential delays in securing power\"，属于成本风险预期而非已确认的permit/interconnection/fuel gate失败，未公布具体gate、新commissioning date或scope cut/cancel，不满足pol_9795c572511e9fcc514e。消息未涉及Bloom Energy及Energy Server部署取消或重新谈判，不满足pol_b88a58def59b82c29eb5。消息未识别具体燃气路线、负荷区或firm transport容量拒绝，不满足pol_82afe9ef8746239e0beb。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Oracle",
+                "Project Jupiter",
+                "New Mexico"
+              ],
+              "occurrence_date": "2026-09-24",
+              "proposition": "Oracle于2026年9月24日就新墨西哥Project Jupiter AI数据中心项目宣布force majeure，以保护自己免受潜在供电延误导致的成本上升影响。",
+              "subject_time": "2026年9月24日"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "U.S. Treasury",
+                "U.S. bond market",
+                "European bond markets",
+                "Japanese bond market"
+              ],
+              "occurrence_date": "2026-09-24",
+              "proposition": "全球债券抛售持续，多个主要经济体的关键债券收益率升至数十年高位。",
+              "subject_time": "2026年9月24日"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "U.S. Treasury",
+                "5-year Treasury auction",
+                "7-year Treasury auction"
+              ],
+              "occurrence_date": "2026-09-24",
+              "proposition": "五年期美国国债拍卖需求降至九年来最低，七年期美国国债拍卖也表现极其疲弱。",
+              "subject_time": "2026年9月23日至2026年9月24日"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "United States",
+                "China",
+                "U.S. bond market",
+                "Chinese bond market"
+              ],
+              "occurrence_date": "2026-09-24",
+              "proposition": "美国与中国债券收益率利差扩大至创纪录的350个基点。",
+              "subject_time": "2026年9月24日"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "AI data-center industry",
+                "AI infrastructure investors"
+              ],
+              "occurrence_date": "2026-09-24",
+              "proposition": "全球AI基础设施资本支出已达数万亿美元规模，并越来越多通过债务、租赁和其他表外结构融资。",
+              "subject_time": "2026年9月24日"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Oracle",
+                "Oracle debt"
+              ],
+              "occurrence_date": "2026-09-24",
+              "proposition": "Oracle信用评级仅比垃圾级高一档，总债务约为1400亿美元，股价跌至七周低点。",
+              "subject_time": "2026年9月24日"
+            }
+          ],
+          "expert_trade": {
+            "direction": "SHORT",
+            "evaluated": true,
+            "expectation_delta": "全球债券收益率和融资成本上升、弱国债拍卖，以及Oracle因潜在供电延误和成本上升宣布force majeure，降低AI数据中心资本开支和融资兑现的确定性，新增BE大型客户项目延期、付款或验收推迟及估值持续期压缩风险。",
+            "prior_expectation": "BE的既有预期包含强劲AI和数据中心需求、Oracle/Bloom合作及大型项目放量，但估值和后续增长依赖客户融资、项目许可与互联、交付、验收及现金转换。",
+            "reason": "实际force-majeure行动叠加债券融资条件恶化，并将风险从Oracle扩展至高债务融资的AI数据中心行业。BE高估值和增长预期依赖多季度大型负荷项目融资、部署与验收，传导路径为融资成本或可得性恶化→数据中心项目延期或资本纪律收紧→Bloom订单兑现、部署验收和现金转换时点承压→BE估值与盈利持续期下修。虽未确认Bloom特定订单取消，幅度仍不确定但方向性风险足以形成SHORT。",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "E16仅记录Oracle使用Bloom燃料电池为新墨西哥数据中心供电及约1.2GW部署；当前报道新增了Oracle就Project Jupiter宣布force majeure、潜在供电延误引发成本风险，以及AI基础设施债务融资压力扩大的现实。",
+            "reference_ids": [
+              "E16"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "消息未确认具体Bloom项目的许可、互联或燃料闸门失败，未提供原定与新投运日期，也未确认Bloom容量取消、缩减或重谈，且未提供本地 firm-gas 容量变化，不满足现行Policy条件。"
+          },
+          "w3_case_id": "w3_0dc78d09d23c4ae6a3bbfd92d9b57add"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "d00605fca004d34d9d7bed0c4651b86fc64807bf1e2317af2053fe916e13f0ed",
+            "content_type": "text/plain",
+            "sha256": "a4be82f81bf2aaa741c11ceda277abf42df4a2a462d3fb17aab1e747ba5981ba",
+            "size_bytes": 3540
+          },
+          "case": {
+            "case_id": "case_2889fbb92ed94d4a85cc07264be4bb87",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-24T21:04:31.238263Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-24T21:05:58.932877Z",
+          "revision": 1,
+          "row_revision": 1576505,
+          "source": {
+            "binding_id": "BE:reuters_site_search",
+            "kind": "crawler",
+            "name": "Reuters Site Search",
+            "source_id": "reuters_site_search"
+          },
+          "source_published_at": "2026-09-24T16:00:00Z",
+          "standard_message_id": "std_207dfa0388034d9092a3bea313a17beb",
+          "stream_item_id": "stream_eade650752034d9081678b16cc884ef0",
+          "stream_offset": 61,
+          "stream_published_at": "2026-09-24T21:05:58.942001Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "TRADING DAY Rout of control"
+          },
+          "url": "https://www.reuters.com/commentary/reuters-open-interest/global-markets-trading-day-graphic-2026-09-24/",
+          "body_text": "ORLANDO, Florida, Sept 24 (Reuters) - The global bond rout continued on Thursday, pushing many key yields around the world to new multi-decade highs. Stock markets around the world felt the heat, although the S&P 500 and Nasdaq staged late rallies to end flat, while oil and the dollar marched higher.\n\nIn my column today, I look at the dollar's resurgence and soaring bond yields ​in the context of the US Treasury's recent forays into the FX and bond markets. Right now, \"the house\" — as Treasury Secretary Scott Bessent referred to himself ‌recently — is not winning.\n\nToday's Key Reads\n\nToday's Talking Points:\n\nNo, Mr Bond, I expect you to die\n\nThe global bond ​selloff got ugly this week. The rise in yields on Wednesday — ostensibly for \"good\" reasons of strong business activity data — was exceptional, and pointed to a more worrying breakdown in sentiment. There was ​little relief on Thursday. Yields are at multi-decade highs in the US, Europe and Japan, but this isn't drawing in buyers en masse. Bond market volatility is now surging too, another reason many investors might sit it out a bit longer.\n\nDemand at yesterday's 5-year US bond auction was the lowest in nine years, and the premium demanded by buyers who did show up was one of the highest ever. Today's 7-year ​auction was also extremely weak. As BofA analysts put it, \"the price action likely highlights that investors are not yet comfortable owning bonds in the environment of a Fed restarting the ​hiking cycle, continued conflict in the Middle East, and a resilient US economy and consumer.\"\n\nAn unbridgeable US-China gap\n\nHuge fanfare, pomp, and ceremony, but not much substance when it comes to the big issues of the ‌day. Is ⁠that a harsh but fair assessment of how the Trump-Xi summit will pan out? True, the US-China trade truce could be extended for another two months to January, and the two sides will agree to further dialogue on AI. But from a market and investment perspective, that's about it.\n\nOne ironic market curiosity: it is perhaps fitting that on the day Trump and Xi tried to bridge divides and close gaps between the two superpowers, the spread between the two countries' bond yields widened to a record 350 basis points. US borrowing costs are soaring ​in the face of high inflation, while China’s ​are sliding as the threat of deflation ⁠continues to stalk the economy. Neither side is \"winning\" on that front.\n\nData center blues\n\nOracle on Thursday declared \"force majeure\" on a massive AI data center project, seeking to protect itself from soaring costs from potential delays in securing power for the \"Project Jupiter\" venture in New Mexico. Oracle's credit rating ​sits one notch above junk, and its total debt stands at around $140 billion. Shares fell to a seven-week low on Thursday.\n\nBut this ​goes well beyond Oracle. ⁠The industry-wide AI capex spend runs into the trillions of dollars, and is increasingly being financed by debt, leasing and other off-balance sheet structures. Many investors were already nervous about the vast cost of building the data centers needed to power the artificial intelligence revolution. This potentially pours fuel on these flames.\n\nWhat could move markets tomorrow?\n\nWant to receive Trading Day in your inbox every weekday morning? Sign up for my newsletter here. Opinions expressed are those ​of the author. They do not reflect the views of Reuters News, which, under the Trust Principles, is committed to integrity, independence, and freedom from bias."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_207dfa0388034d9092a3bea313a17beb:0\"]",
+          "created_at": "2026-09-24T21:11:59.672691Z",
+          "dedupe_key": "2415fd815aacb671d2fe14b2c440914414cc681d3f4931218a2869c5e7c7bf11",
+          "entities": [
+            "Oracle",
+            "Project Jupiter",
+            "New Mexico"
+          ],
+          "occurrence_date": "2026-09-24",
+          "originating_node": "W3",
+          "proposition": "Oracle于2026年9月24日就新墨西哥Project Jupiter AI数据中心项目宣布force majeure，以保护自己免受潜在供电延误导致的成本上升影响。",
+          "provisional_event_id": "E113",
+          "subject_time": "2026年9月24日"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_207dfa0388034d9092a3bea313a17beb:1\"]",
+          "created_at": "2026-09-24T21:11:59.693056Z",
+          "dedupe_key": "32dcc00f54b7e5b897f6a798bbafbf2d9965601eef42f3b1963c00874cfb59e3",
+          "entities": [
+            "U.S. Treasury",
+            "U.S. bond market",
+            "European bond markets",
+            "Japanese bond market"
+          ],
+          "occurrence_date": "2026-09-24",
+          "originating_node": "W3",
+          "proposition": "全球债券抛售持续，多个主要经济体的关键债券收益率升至数十年高位。",
+          "provisional_event_id": "E114",
+          "subject_time": "2026年9月24日"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_207dfa0388034d9092a3bea313a17beb:2\"]",
+          "created_at": "2026-09-24T21:11:59.708224Z",
+          "dedupe_key": "fb7a4c40cf78a8f004ee851864b1bbdb50d54d9136ee0ca2179bd8e54a0a2b84",
+          "entities": [
+            "U.S. Treasury",
+            "5-year Treasury auction",
+            "7-year Treasury auction"
+          ],
+          "occurrence_date": "2026-09-24",
+          "originating_node": "W3",
+          "proposition": "五年期美国国债拍卖需求降至九年来最低，七年期美国国债拍卖也表现极其疲弱。",
+          "provisional_event_id": "E115",
+          "subject_time": "2026年9月23日至2026年9月24日"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_207dfa0388034d9092a3bea313a17beb:3\"]",
+          "created_at": "2026-09-24T21:11:59.725496Z",
+          "dedupe_key": "b0e9d418be14ee9d9c0b9d80c74142f672d190e2e3785ff2479b641de973526a",
+          "entities": [
+            "United States",
+            "China",
+            "U.S. bond market",
+            "Chinese bond market"
+          ],
+          "occurrence_date": "2026-09-24",
+          "originating_node": "W3",
+          "proposition": "美国与中国债券收益率利差扩大至创纪录的350个基点。",
+          "provisional_event_id": "E116",
+          "subject_time": "2026年9月24日"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_207dfa0388034d9092a3bea313a17beb:4\"]",
+          "created_at": "2026-09-24T21:11:59.740206Z",
+          "dedupe_key": "a93f8a45b019b0f4add00e7528df2d70f1a8ec9de334a713e8a5893bcf80e667",
+          "entities": [
+            "AI data-center industry",
+            "AI infrastructure investors"
+          ],
+          "occurrence_date": "2026-09-24",
+          "originating_node": "W3",
+          "proposition": "全球AI基础设施资本支出已达数万亿美元规模，并越来越多通过债务、租赁和其他表外结构融资。",
+          "provisional_event_id": "E117",
+          "subject_time": "2026年9月24日"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_207dfa0388034d9092a3bea313a17beb:5\"]",
+          "created_at": "2026-09-24T21:11:59.756121Z",
+          "dedupe_key": "d3c7faa28f1b5d7dfe50336ad7d52803372b900490884d7e94bf9e0dcffea829",
+          "entities": [
+            "Oracle",
+            "Oracle debt"
+          ],
+          "occurrence_date": "2026-09-24",
+          "originating_node": "W3",
+          "proposition": "Oracle信用评级仅比垃圾级高一档，总债务约为1400亿美元，股价跌至七周低点。",
+          "provisional_event_id": "E118",
+          "subject_time": "2026年9月24日"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_2889fbb92ed94d4a85cc07264be4bb87",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-09-24T21:11:59.801735+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-24",
+            "delivery_failure": null,
+            "direction": "SHORT",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_0dc78d09d23c4ae6a3bbfd92d9b57add",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-24T21:12:00.403509Z"
+              },
+              "case_id": "case_2889fbb92ed94d4a85cc07264be4bb87",
+              "direction": "SHORT",
+              "entry_reason": "FRESH_QUOTE_UNAVAILABLE",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_2889fbb92ed94d4a85cc07264be4bb87",
+              "execution_reason_codes": [
+                "FRESH_QUOTE_UNAVAILABLE"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_2889fbb92ed94d4a85cc07264be4bb87",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_e1d7c65e0656af2e6c4923b1"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-24T21:11:59.801735Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "FRESH_QUOTE_UNAVAILABLE"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    }
+  ]
+}

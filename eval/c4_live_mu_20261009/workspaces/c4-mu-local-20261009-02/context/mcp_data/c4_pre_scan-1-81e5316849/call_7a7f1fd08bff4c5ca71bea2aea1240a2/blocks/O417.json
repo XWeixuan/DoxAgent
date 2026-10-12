@@ -1,0 +1,18 @@
+{
+  "alias": "O417",
+  "title": "sections 1 — metadata",
+  "content": {
+    "section": "Idaho and New York",
+    "heading_match": "Idaho and New York",
+    "start_offset": 254844,
+    "end_offset": 334862,
+    "full_text_chars": 80000,
+    "returned_chars": 40000,
+    "truncated": true,
+    "match_quality": "substantive_body"
+  },
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

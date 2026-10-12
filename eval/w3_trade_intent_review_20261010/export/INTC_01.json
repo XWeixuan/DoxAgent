@@ -1,0 +1,2647 @@
+{
+  "format": "doxagent.w3-trade-intent-review.v1",
+  "ticker": "INTC",
+  "window": {
+    "since_utc": "2026-09-19T12:53:20.738930+00:00",
+    "as_of_utc": "2026-10-10T12:53:20.738930+00:00"
+  },
+  "part": 1,
+  "record_count": 5,
+  "records": [
+    {
+      "intent_id": "trade:case_be54a8b3078048dba6f49560cf9d9629",
+      "ticker": "INTC",
+      "case_id": "case_be54a8b3078048dba6f49560cf9d9629",
+      "intent_released_at_utc": "2026-09-22T15:42:10.422027+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_e14e3fb968574b0cb912d897d2f5d962",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Intel",
+              "INTC",
+              "Googlebook",
+              "Alphabet",
+              "Core Ultra Series 3"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "New Googlebook laptops are powered by Intel Core Ultra Series 3 processors.",
+            "subject_time": "Googlebook launch and initial market availability"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Googlebook",
+              "Acer",
+              "ASUS",
+              "Lenovo",
+              "Intel",
+              "Core Ultra Series 3"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Googlebook laptops powered by Intel Core Ultra Series 3 are being brought to market by Acer, ASUS, and Lenovo.",
+            "subject_time": "Googlebook initial market availability"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Intel",
+              "Core Ultra Series 3",
+              "Intel 18A"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Intel Core Ultra Series 3 processors in the Googlebook laptops are built on Intel's 18A process technology.",
+            "subject_time": "Googlebook launch"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Intel",
+              "Core Ultra Series 3",
+              "Googlebook"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "The Core Ultra Series 3 platform in the Googlebook laptops integrates CPU, GPU, and NPU architectures.",
+            "subject_time": "Googlebook launch"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "Intel is now specifically selected for a commercial Googlebook platform using Core Ultra Series 3 on 18A, with Acer, ASUS, and Lenovo bringing the laptops to market. This shifts Intel's role from an optional planned processor to an actual multi-OEM premium AI-PC launch, improving the timing and probability of client-unit, ASP/mix, and 18A product contribution. Volume and revenue are not disclosed, limiting strength but not eliminating the directional gap.",
+          "prior_expectation": "Before this announcement, Googlebook's processor supplier was unresolved between Intel and Qualcomm, while broader Core Ultra Series 3 adoption remained largely in testing or qualification. Intel's client baseline was mixed, with Q2 client units down 8% and recovery dependent on converting OEM qualification into actual products and sustained sell-through.",
+          "reason": "TRADE LONG: the surprise is the confirmed Intel-specific commercial stage and beneficiary shift from the prior generic Intel-or-Qualcomm plan. The launch spans a major Google platform and three OEMs, with a clear path from product availability to Intel client shipments, premium mix, and 18A validation. No unit or revenue figures are disclosed, so the edge is moderate rather than fully quantified.",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "The prior Reference View recorded Googlebook as a planned product with unspecified Intel or Qualcomm processors. The current report newly confirms that Intel Core Ultra Series 3, built on 18A, powers the Googlebook launch with Acer, ASUS, and Lenovo.",
+          "reference_ids": [
+            "E77",
+            "E79",
+            "E80"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "The announcement confirms a product launch but provides no customer replenishment, unit sales, sell-through, supply recovery, delay, cancellation, inventory, or other specific PolicySet trigger."
+        },
+        "w3_case_id": "w3_e14e3fb968574b0cb912d897d2f5d962"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_be54a8b3078048dba6f49560cf9d9629",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-22T15:42:10.595668Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 438.030296
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-22T15:34:52.565372Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_EXECUTION",
+          "TRADE_INTENT"
+        ],
+        "revision": 2604485,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-22",
+        "source": {
+          "binding_id": "INTC:yahoo_finance_news",
+          "kind": "api",
+          "name": "Yahoo Finance News",
+          "source_id": "yahoo_finance_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_7f08259ae70f49958b8857bb9c5b8c73",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Can Intel's Core Ultra Expansion With Googlebook Benefit the Stock?"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "ORDER_FILLED"
+          ],
+          "state": "EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-22T15:34:52.565372Z",
+        "completed_at": "2026-09-22T15:42:10.595668Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E80",
+            "E79",
+            "E77",
+            "E81",
+            "E78"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [
+            {
+              "event_id": "E80",
+              "fact_ids": []
+            }
+          ],
+          "reason": "E80 only records a PLANNED state that Googlebook laptops 'will use Intel or Qualcomm processors.' The current message is Intel's own ACTUAL announcement that Core Ultra Series 3 (18A process) specifically powers new Googlebook laptops, with confirmed partners Acer, ASUS, Lenovo. The transition from planned/generic processor attribution to Intel's confirmed, specific product launch is a new core fact not covered by existing facts.",
+          "reference_ids": [
+            "E77",
+            "E79",
+            "E80"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "当前消息为Intel Core Ultra Series 3在Googlebook新形态上的产品发布/上市公告，涉及Acer、ASUS、Lenovo三家OEM将搭载18A工艺的Core Ultra Series 3笔记本推向市场。该消息未包含任何政策criterion所要求的具体触发事实：无确认的终端销售数据及据此产生的补单（pol_849bf577d74f6b102e74），无供给约束缓解或单位出货数据（pol_00aedd21578697ff89d7），无库存、延期、取消或削减信息，也非边缘AI/机器人客户量产设计承诺。消息仅为产品市场导入公告，与任何Policy的触发条件不存在具体、实质性的事实对应关系。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "当前消息为Intel Core Ultra Series 3在Googlebook新形态上的产品发布/上市公告，涉及Acer、ASUS、Lenovo三家OEM将搭载18A工艺的Core Ultra Series 3笔记本推向市场。该消息未包含任何政策criterion所要求的具体触发事实：无确认的终端销售数据及据此产生的补单（pol_849bf577d74f6b102e74），无供给约束缓解或单位出货数据（pol_00aedd21578697ff89d7），无库存、延期、取消或削减信息，也非边缘AI/机器人客户量产设计承诺。消息仅为产品市场导入公告，与任何Policy的触发条件不存在具体、实质性的事实对应关系。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Intel",
+                "INTC",
+                "Googlebook",
+                "Alphabet",
+                "Core Ultra Series 3"
+              ],
+              "occurrence_date": "2026-09-22",
+              "proposition": "New Googlebook laptops are powered by Intel Core Ultra Series 3 processors.",
+              "subject_time": "Googlebook launch and initial market availability"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Googlebook",
+                "Acer",
+                "ASUS",
+                "Lenovo",
+                "Intel",
+                "Core Ultra Series 3"
+              ],
+              "occurrence_date": "2026-09-22",
+              "proposition": "Googlebook laptops powered by Intel Core Ultra Series 3 are being brought to market by Acer, ASUS, and Lenovo.",
+              "subject_time": "Googlebook initial market availability"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Intel",
+                "Core Ultra Series 3",
+                "Intel 18A"
+              ],
+              "occurrence_date": "2026-09-22",
+              "proposition": "Intel Core Ultra Series 3 processors in the Googlebook laptops are built on Intel's 18A process technology.",
+              "subject_time": "Googlebook launch"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Intel",
+                "Core Ultra Series 3",
+                "Googlebook"
+              ],
+              "occurrence_date": "2026-09-22",
+              "proposition": "The Core Ultra Series 3 platform in the Googlebook laptops integrates CPU, GPU, and NPU architectures.",
+              "subject_time": "Googlebook launch"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "Intel is now specifically selected for a commercial Googlebook platform using Core Ultra Series 3 on 18A, with Acer, ASUS, and Lenovo bringing the laptops to market. This shifts Intel's role from an optional planned processor to an actual multi-OEM premium AI-PC launch, improving the timing and probability of client-unit, ASP/mix, and 18A product contribution. Volume and revenue are not disclosed, limiting strength but not eliminating the directional gap.",
+            "prior_expectation": "Before this announcement, Googlebook's processor supplier was unresolved between Intel and Qualcomm, while broader Core Ultra Series 3 adoption remained largely in testing or qualification. Intel's client baseline was mixed, with Q2 client units down 8% and recovery dependent on converting OEM qualification into actual products and sustained sell-through.",
+            "reason": "TRADE LONG: the surprise is the confirmed Intel-specific commercial stage and beneficiary shift from the prior generic Intel-or-Qualcomm plan. The launch spans a major Google platform and three OEMs, with a clear path from product availability to Intel client shipments, premium mix, and 18A validation. No unit or revenue figures are disclosed, so the edge is moderate rather than fully quantified.",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "The prior Reference View recorded Googlebook as a planned product with unspecified Intel or Qualcomm processors. The current report newly confirms that Intel Core Ultra Series 3, built on 18A, powers the Googlebook launch with Acer, ASUS, and Lenovo.",
+            "reference_ids": [
+              "E77",
+              "E79",
+              "E80"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "The announcement confirms a product launch but provides no customer replenishment, unit sales, sell-through, supply recovery, delay, cancellation, inventory, or other specific PolicySet trigger."
+          },
+          "w3_case_id": "w3_e14e3fb968574b0cb912d897d2f5d962"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "1dc8ef40b66d44fe40bc64be1ad37f0552bba59b33898081a6c49a9d51118433",
+            "content_type": "text/plain",
+            "sha256": "acefe4889e1879ad30a98f0ba511b05bce28325506aeeae73e834c3dd4f3539d",
+            "size_bytes": 3393
+          },
+          "case": {
+            "case_id": "case_be54a8b3078048dba6f49560cf9d9629",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-22T15:34:46.451497Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-22T15:34:51.135041Z",
+          "revision": 1,
+          "row_revision": 1401414,
+          "source": {
+            "binding_id": "INTC:yahoo_finance_news",
+            "kind": "api",
+            "name": "Yahoo Finance News",
+            "source_id": "yahoo_finance_news"
+          },
+          "source_published_at": "2026-09-22T15:22:00Z",
+          "standard_message_id": "std_bb71cd8f1eae4683ae9e817d67b78d9f",
+          "stream_item_id": "stream_7f08259ae70f49958b8857bb9c5b8c73",
+          "stream_offset": 16,
+          "stream_published_at": "2026-09-22T15:34:51.138387Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Can Intel's Core Ultra Expansion With Googlebook Benefit the Stock?"
+          },
+          "url": "https://finance.yahoo.com/markets/stocks/articles/intels-core-ultra-expansion-googlebook-152200497.html",
+          "body_text": "Intel Corporation INTC has extended its Core Ultra platform to new Googlebook laptops from Alphabet Inc. GOOGL powered by Intel Core Ultra Series 3 processors. Developed with Google, the new laptops are being brought to market by PC makers Acer, ASUS and Lenovo, combining Intel processing and connectivity technologies with Google's computing experience.Intel's latest processors deliver responsive performance and power efficiency for modern computing. Built on its advanced 18A process technology, the Core Ultra Series 3 integrates CPU, GPU and NPU architectures to support demanding workloads and artificial intelligence (AI)-enabled experiences. The platform is designed to help users multitask across applications while maintaining efficient power consumption for longer battery life.The company also brings enhanced connectivity features to the new Googlebook laptops, including Intel Wi-Fi 7, Dual Intel Bluetooth 6.0 and Intel Thunderbolt. These technologies deliver fast and reliable connections across different environments while supporting seamless device experiences.Building on more than a decade of collaboration between Intel and Google, the launch introduces premium laptops with modern designs, vibrant displays and next-generation features. The initiative supports Intel's efforts to deliver high-performance, efficient and AI-capable technologies across a broader range of devices.\n\nHow Are Competitors Performing in the PC Market?\n\nIntel faces competition from Qualcomm Incorporated QCOM and Advanced Micro Devices AMD. Qualcomm is strengthening its presence in the PC market with its Snapdragon X2 processors, which offer AI capabilities, performance and power efficiency. The company launched the Snapdragon C platform for affordable laptops targeting students, families and small businesses. Qualcomm is further expanding its PC portfolio through laptops from major PC manufacturers such as ASUS, HP, Lenovo and Acer.AMD is advancing in the PC market with Ryzen AI processors, which combine strong computing performance with built-in AI capabilities. The company offers Ryzen AI chips across consumer and business PCs, including laptops, desktops and workstations. AMD is working with major PC manufacturers to expand the availability of its Ryzen-powered AI PCs.\n\nINTC's Price Performance, Valuation & Estimates\n\nShares of Intel have skyrocketed 323.4% over the past year compared with the industry's growth of 31.7%.\n\nImage Source: Zacks Investment Research\n\nGoing by the price/book ratio, the company's shares currently trade at 5.96 times book value, lower than the industry average of 23.92.\n\nINTC's earnings estimates for 2026 have increased 27.1% to $1.50 per share, while those for 2027 have increased 18.8% to $1.96 over the past 60 days.\n\nIntel currently carries a Zacks Rank #3 (Hold). You can see the complete list of today's Zacks #1 Rank (Strong Buy) stocks here.\n\nWant the latest recommendations from Zacks Investment Research? Today, you can download 7 Best Stocks for the Next 30 Days. Click to get this free report\n\nIntel Corporation (INTC) : Free Stock Analysis Report\n\nQUALCOMM Incorporated (QCOM) : Free Stock Analysis Report\n\nAdvanced Micro Devices, Inc. (AMD) : Free Stock Analysis Report\n\nAlphabet Inc. (GOOGL) : Free Stock Analysis Report\n\nThis article originally published on Zacks Investment Research (zacks.com).\n\nZacks Investment Research"
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_bb71cd8f1eae4683ae9e817d67b78d9f:0\"]",
+          "created_at": "2026-09-22T15:42:10.343466Z",
+          "dedupe_key": "17135455330728023ac0fd10ad6852d734421e46891d1f307c75e181525c141f",
+          "entities": [
+            "Intel",
+            "INTC",
+            "Googlebook",
+            "Alphabet",
+            "Core Ultra Series 3"
+          ],
+          "occurrence_date": "2026-09-22",
+          "originating_node": "W3",
+          "proposition": "New Googlebook laptops are powered by Intel Core Ultra Series 3 processors.",
+          "provisional_event_id": "E87",
+          "subject_time": "Googlebook launch and initial market availability"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_bb71cd8f1eae4683ae9e817d67b78d9f:1\"]",
+          "created_at": "2026-09-22T15:42:10.357031Z",
+          "dedupe_key": "f3965e158f344fc5e82869ea3f51a7f7f5b9a1d3c86c10b699ae4d70fc361714",
+          "entities": [
+            "Googlebook",
+            "Acer",
+            "ASUS",
+            "Lenovo",
+            "Intel",
+            "Core Ultra Series 3"
+          ],
+          "occurrence_date": "2026-09-22",
+          "originating_node": "W3",
+          "proposition": "Googlebook laptops powered by Intel Core Ultra Series 3 are being brought to market by Acer, ASUS, and Lenovo.",
+          "provisional_event_id": "E88",
+          "subject_time": "Googlebook initial market availability"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_bb71cd8f1eae4683ae9e817d67b78d9f:2\"]",
+          "created_at": "2026-09-22T15:42:10.363303Z",
+          "dedupe_key": "c6e1ec722d61ce139a99d5ed44326b493f86f919eaf1d2aa986ad7e29606c155",
+          "entities": [
+            "Intel",
+            "Core Ultra Series 3",
+            "Intel 18A"
+          ],
+          "occurrence_date": "2026-09-22",
+          "originating_node": "W3",
+          "proposition": "Intel Core Ultra Series 3 processors in the Googlebook laptops are built on Intel's 18A process technology.",
+          "provisional_event_id": "E89",
+          "subject_time": "Googlebook launch"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_bb71cd8f1eae4683ae9e817d67b78d9f:3\"]",
+          "created_at": "2026-09-22T15:42:10.370011Z",
+          "dedupe_key": "4da742d08bbed4bfb6ac3959f994ba5259ed7ab18482dd03887e15f497b6a70c",
+          "entities": [
+            "Intel",
+            "Core Ultra Series 3",
+            "Googlebook"
+          ],
+          "occurrence_date": "2026-09-22",
+          "originating_node": "W3",
+          "proposition": "The Core Ultra Series 3 platform in the Googlebook laptops integrates CPU, GPU, and NPU architectures.",
+          "provisional_event_id": "E90",
+          "subject_time": "Googlebook launch"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_be54a8b3078048dba6f49560cf9d9629",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-09-22T15:42:10.422027+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-22",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_e14e3fb968574b0cb912d897d2f5d962",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-22T15:42:10.736959Z"
+              },
+              "case_id": "case_be54a8b3078048dba6f49560cf9d9629",
+              "direction": "LONG",
+              "entry_reason": "ORDER_FILLED",
+              "entry_result": "FILLED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_be54a8b3078048dba6f49560cf9d9629",
+              "execution_reason_codes": [
+                "ORDER_FILLED"
+              ],
+              "execution_state": "EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "19767.24"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "162"
+              },
+              "first_fill_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-22T15:42:12Z"
+              },
+              "has_actual_fill": true,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_be54a8b3078048dba6f49560cf9d9629",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_e1d7c65e0656af2e6c4923b1"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-22T15:42:10.422027Z"
+              }
+            },
+            "entry": {
+              "side": "BUY",
+              "quantity": "162",
+              "average_price_usd": "122.02",
+              "first_fill_at": "2026-09-22T15:42:12+00:00",
+              "last_fill_at": "2026-09-22T15:42:12+00:00"
+            },
+            "exit": {
+              "side": "SELL",
+              "quantity": "162",
+              "average_price_usd": "122.77",
+              "first_fill_at": "2026-09-22T19:30:04+00:00",
+              "last_fill_at": "2026-09-22T19:30:04+00:00"
+            },
+            "fills": [
+              {
+                "kind": "ENTRY",
+                "side": "BUY",
+                "quantity": "30",
+                "price_usd": "122.02",
+                "filled_at": "2026-09-22T15:42:12+00:00",
+                "broker_fill_id": "0000dc8f.6baf8563.01.01"
+              },
+              {
+                "kind": "ENTRY",
+                "side": "BUY",
+                "quantity": "132",
+                "price_usd": "122.02",
+                "filled_at": "2026-09-22T15:42:12+00:00",
+                "broker_fill_id": "00025b45.6ab3094b.01.01"
+              },
+              {
+                "kind": "EXIT",
+                "side": "SELL",
+                "quantity": "62",
+                "price_usd": "122.77",
+                "filled_at": "2026-09-22T19:30:04+00:00",
+                "broker_fill_id": "0000dc8f.6bb0c0c4.01.01"
+              },
+              {
+                "kind": "EXIT",
+                "side": "SELL",
+                "quantity": "100",
+                "price_usd": "122.77",
+                "filled_at": "2026-09-22T19:30:04+00:00",
+                "broker_fill_id": "00025b45.6ab3ad56.01.01"
+              }
+            ],
+            "lot_remaining_quantity": 0,
+            "realized_pnl_usd": "119.0577300000000000000000000",
+            "realized_pnl_records": [
+              {
+                "amount": "46.08831175757575757575757576",
+                "day": "2026-09-22",
+                "environment": "PAPER",
+                "provisional": false,
+                "reason": null
+              },
+              {
+                "amount": "72.96941824242424242424242424",
+                "day": "2026-09-22",
+                "environment": "PAPER",
+                "provisional": false,
+                "reason": null
+              }
+            ],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "EXECUTED",
+        "read_execution_reason_codes": [
+          "ORDER_FILLED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": {
+          "side": "BUY",
+          "quantity": "162",
+          "average_price_usd": "122.02",
+          "first_fill_at": "2026-09-22T15:42:12+00:00",
+          "last_fill_at": "2026-09-22T15:42:12+00:00"
+        },
+        "exit": {
+          "side": "SELL",
+          "quantity": "162",
+          "average_price_usd": "122.77",
+          "first_fill_at": "2026-09-22T19:30:04+00:00",
+          "last_fill_at": "2026-09-22T19:30:04+00:00"
+        },
+        "realized_pnl_usd": "119.0577300000000000000000000",
+        "pnl_state": "REALIZED",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_105b32c987c54684ad1a890e639298ad",
+      "ticker": "INTC",
+      "case_id": "case_105b32c987c54684ad1a890e639298ad",
+      "intent_released_at_utc": "2026-09-29T11:23:57.839037+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_fd43a1f9991547238ab91953242ab8e2",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "AMD",
+              "EPYC 9006",
+              "Venice",
+              "Zen 6",
+              "EPYC 9996",
+              "服务器CPU"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "AMD公开披露的EPYC 9006（Venice、Zen 6）服务器处理器价格覆盖约700美元至14904美元，产品线从8核延伸至256核；256核EPYC 9996定价14904美元。",
+            "subject_time": "EPYC 9006 Venice当前定价"
+          },
+          {
+            "assertion_state": "SCHEDULED",
+            "entities": [
+              "AMD",
+              "EPYC 9006",
+              "SP7",
+              "SP8",
+              "服务器CPU"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "AMD EPYC 9006的SP7平台计划于2026年第四季度上市，SP8平台计划于2027年上半年上市。",
+            "subject_time": "SP7：2026年第四季度；SP8：2027年上半年"
+          }
+        ],
+        "expert_trade": {
+          "direction": "SHORT",
+          "evaluated": true,
+          "expectation_delta": "AMD公布EPYC 9006 Venice从700美元至14904美元的完整价格带，最高256核旗舰将于SP7平台在2026年第四季度附近进入市场，SP8平台计划于2027年上半年推出。该信息把此前的AMD供给改善预期具体化为接近Intel涨价窗口的高核心数、广覆盖价格替代方案，增加AMD争夺增量服务器需求并限制Intel ASP和份额的概率。",
+          "prior_expectation": "事件前Intel服务器业务的基线是需求强劲但供给只能满足约50%客户需求，并计划于2027年3月涨价；AMD虽已取得34.5%的服务器CPU份额且预计2027年供给改善，但下一代产品的价格、上市时点和可供客户选择的具体程度尚未明确。",
+          "reason": "竞争产品的核心数、价格和上市时点形成了非琐碎的Surprise；服务器CPU是Intel DCAI的重要价值接口，AMD产品供给改善可通过客户平台分配、Intel价格实现和单位量传导至INTC。虽然价格尚可能调整、上市仍属计划且尚无客户转单，但当前竞争威胁的方向和时间窗口已足够清晰，支持适度SHORT。",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "E41、E763、E764、E766、E768和E769已覆盖AMD供给、份额、产能扩张及Intel服务器供给和价格计划，但未覆盖AMD Zen 6 Venice EPYC 9006的完整价格表、256核旗舰规格及SP7/SP8上市时点。",
+          "reference_ids": [
+            "E41",
+            "E763",
+            "E764",
+            "E766",
+            "E768",
+            "E769"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息提供了竞争产品定价、规格和计划上市信息，但没有客户将Intel订单转向AMD、取消Intel采购或确认部署变化，因此不满足现行Policy的客户迁移或订单触发条件。"
+        },
+        "w3_case_id": "w3_fd43a1f9991547238ab91953242ab8e2"
+      },
+      "trade_direction": "SHORT",
+      "case_summary": {
+        "case_id": "case_105b32c987c54684ad1a890e639298ad",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-29T11:23:58.236793Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 209.31411
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-29T11:20:28.922683Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2604063,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-29",
+        "source": {
+          "binding_id": "INTC:tomshardware_rss",
+          "kind": "api",
+          "name": "Tom's Hardware RSS",
+          "source_id": "tomshardware_rss"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_72d7543e6b6641f181e42380cf5fbef4",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "AMD drops an EPYC $15,000, 256-core beast"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "IBKR_201: Order rejected - reason:We are unable to accept your order. Your Available Funds are in sufficient to cover the change in the <br>account's margin requirements if this order executes. In order to obtain the desired position your Equity with<br> Loan Value [17491.98 USD] must exceed the new total Initial Margin of  [20656.49 USD]."
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-29T11:20:28.922683Z",
+        "completed_at": "2026-09-29T11:23:58.236793Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E25",
+            "E734",
+            "E20",
+            "E41"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "当前消息核心事实为 AMD 正式释放 EPYC 9006 (Venice/Zen 6) 全系列完整定价（$700–$14,904）及 SP7/SP8 平台规格与上市计划（SP7 Q4 2026，SP8 2027 H1）。已加载的 E25（涨价警告）、E20（市场规模预测）、E41（2026 售罄）及 provisional E734（编译时间预测）均未覆盖该产品定价发布事实。",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "消息核心内容为AMD发布EPYC 9006（Venice）系列服务器芯片的完整定价与规格，涵盖SP7/SP8平台SKU、核心数、价格区间（$700-$14,904）及上市时间。未涉及任何Intel产品的采购、部署、续约、取消、供给状态、客户决策、财务数据或节点资格等具体事实。侧栏中出现的Intel VP标题为页面导航链接而非本文实质内容。该消息与任何Policy criterion均无直接触发关系，仅存在服务器CPU行业及Intel/AMD竞争格局的宽泛主题关联，不构成Candidate召回依据。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息核心内容为AMD发布EPYC 9006（Venice）系列服务器芯片的完整定价与规格，涵盖SP7/SP8平台SKU、核心数、价格区间（$700-$14,904）及上市时间。未涉及任何Intel产品的采购、部署、续约、取消、供给状态、客户决策、财务数据或节点资格等具体事实。侧栏中出现的Intel VP标题为页面导航链接而非本文实质内容。该消息与任何Policy criterion均无直接触发关系，仅存在服务器CPU行业及Intel/AMD竞争格局的宽泛主题关联，不构成Candidate召回依据。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "AMD",
+                "EPYC 9006",
+                "Venice",
+                "Zen 6",
+                "EPYC 9996",
+                "服务器CPU"
+              ],
+              "occurrence_date": "2026-09-29",
+              "proposition": "AMD公开披露的EPYC 9006（Venice、Zen 6）服务器处理器价格覆盖约700美元至14904美元，产品线从8核延伸至256核；256核EPYC 9996定价14904美元。",
+              "subject_time": "EPYC 9006 Venice当前定价"
+            },
+            {
+              "assertion_state": "SCHEDULED",
+              "entities": [
+                "AMD",
+                "EPYC 9006",
+                "SP7",
+                "SP8",
+                "服务器CPU"
+              ],
+              "occurrence_date": "2026-09-29",
+              "proposition": "AMD EPYC 9006的SP7平台计划于2026年第四季度上市，SP8平台计划于2027年上半年上市。",
+              "subject_time": "SP7：2026年第四季度；SP8：2027年上半年"
+            }
+          ],
+          "expert_trade": {
+            "direction": "SHORT",
+            "evaluated": true,
+            "expectation_delta": "AMD公布EPYC 9006 Venice从700美元至14904美元的完整价格带，最高256核旗舰将于SP7平台在2026年第四季度附近进入市场，SP8平台计划于2027年上半年推出。该信息把此前的AMD供给改善预期具体化为接近Intel涨价窗口的高核心数、广覆盖价格替代方案，增加AMD争夺增量服务器需求并限制Intel ASP和份额的概率。",
+            "prior_expectation": "事件前Intel服务器业务的基线是需求强劲但供给只能满足约50%客户需求，并计划于2027年3月涨价；AMD虽已取得34.5%的服务器CPU份额且预计2027年供给改善，但下一代产品的价格、上市时点和可供客户选择的具体程度尚未明确。",
+            "reason": "竞争产品的核心数、价格和上市时点形成了非琐碎的Surprise；服务器CPU是Intel DCAI的重要价值接口，AMD产品供给改善可通过客户平台分配、Intel价格实现和单位量传导至INTC。虽然价格尚可能调整、上市仍属计划且尚无客户转单，但当前竞争威胁的方向和时间窗口已足够清晰，支持适度SHORT。",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "E41、E763、E764、E766、E768和E769已覆盖AMD供给、份额、产能扩张及Intel服务器供给和价格计划，但未覆盖AMD Zen 6 Venice EPYC 9006的完整价格表、256核旗舰规格及SP7/SP8上市时点。",
+            "reference_ids": [
+              "E41",
+              "E763",
+              "E764",
+              "E766",
+              "E768",
+              "E769"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "消息提供了竞争产品定价、规格和计划上市信息，但没有客户将Intel订单转向AMD、取消Intel采购或确认部署变化，因此不满足现行Policy的客户迁移或订单触发条件。"
+          },
+          "w3_case_id": "w3_fd43a1f9991547238ab91953242ab8e2"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "b3c3874432720696203626f6d35cb83f94f967880ff86d6473c7283599371e03",
+            "content_type": "text/plain",
+            "sha256": "3b6c224e01cbf84b3445876815e208f165056b91e9614d5c93d6f51a38aa73b4",
+            "size_bytes": 7366
+          },
+          "case": {
+            "case_id": "case_105b32c987c54684ad1a890e639298ad",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-29T11:20:27.508146Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-29T11:20:27.537488Z",
+          "revision": 1,
+          "row_revision": 2435359,
+          "source": {
+            "binding_id": "INTC:tomshardware_rss",
+            "kind": "api",
+            "name": "Tom's Hardware RSS",
+            "source_id": "tomshardware_rss"
+          },
+          "source_published_at": "2026-09-29T11:20:00Z",
+          "standard_message_id": "std_e4e5df7ee2db4e69ad17ed7c430218ac",
+          "stream_item_id": "stream_72d7543e6b6641f181e42380cf5fbef4",
+          "stream_offset": 497,
+          "stream_published_at": "2026-09-29T11:20:27.542731Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "AMD drops an EPYC $15,000, 256-core beast"
+          },
+          "url": "https://www.tomshardware.com/pc-components/cpus/amd-drops-an-epyc-usd15-000-256-core-bomb-epyc-9006-zen-6-venice-cpus-get-full-spec-and-pricing-treatment-from-usd700-up-to-usd14-904",
+          "body_text": "Facebook\n\nX\n\nWhatsapp\n\nReddit\n\nPinterest\n\nFlipboard\n\nEmail\n\nAfter unveiling the EPYC 9006 (codenamed Venice) series in July and previewing a few impressive Zen 6 benchmarks, AMD has now released full pricing for its highly anticipated next-generation server chips. According to the list StorageReview obtained, AMD has big plans for the data center, with a wide range of SKUs from eight to 256 cores and pricing from $700 to $14,904.\n\nIntel VP Robert Hallock sets Nova Lake expectations, teases return to Raptor Lake for DDR4 platforms\n\nCPU scaling with DLSS\n\nIntel's one-two punch plan in desktop CPUs is taking shape\n\nBenchmarking AMD's BC-250, offering Steam Machine-like performance at half the price\n\nAMD splits Zen 7 into three EPYC families for 2028 and starts selling server CPUs by the agent\n\nAs a quick refresher, AMD strategically divided the Venice lineup into two distinct segments. The SP7 platform is the flagship offering, delivering maximum memory capacity and throughput. It supports up to 16 memory channels, accommodating both RDIMMs and MDRDIMMs up to DDR5-12800. The platform offers up to 96 PCIe 6.0 lanes and supports Venice chips with TDPs between 400W and 600W.\n\nThe Venice parts designed for the SP7 socket offer scalable performance for enterprises. The lineup begins with the 64-core EPYC 9556, priced at $8,008, and extends to the flagship 256-core EPYC 9996, which commands $14,904. In retrospect, the EPYC 9996's price tag does not seem particularly shocking, especially since the previous-generation EPYC 9965 (codenamed Turin) launched at nearly the same price, around $14,800.\n\nAs is typical for server processors, the total price increases as the number of cores rises. However, the price per core actually decreases substantially as you move up the core ladder. The pricing dynamic is very notable with Venice. For example, the flagship EPYC 9996, with a massive 256 cores, comes out to just $58.21 per core, whereas the \"entry-level\" SP7 chip, the 64-core EPYC 9556, costs around $125.12 per core. As a result, higher core-count models are more attractive from a per-core value perspective for data centers, cloud service providers, and enterprises.\n\nAMD EPYC 9006 SP7 Specifications and Pricing\n\nProcessor\n1Ku Price\nCores / Threads\nBase / Boost Clock (GHz)\nL3 Cache (MB)\nSocket\nTDP (W)\n\n\n\n\nEPYC 9996\n$14,904\n256 / 512\n2.55 / 4.10\n1,024\n1P / 2P\n600\n\n\nEPYC 9966\n$14,079\n192 / 384\n2.90 / 4.00\n768\n1P / 2P\n600\n\n\nEPYC 9846\n$13,114\n168 / 336\n2.85 / 3.70\n768\n1P / 2P\n500\n\n\nEPYC 9756\n$12,498\n128 / 256\n3.15 / 4.00\n512\n1P / 2P\n500\n\n\nEPYC 9G76\n$11,622\n96 / 192\n3.40 / 4.80\n384\n1P / 2P\n500\n\n\nEPYC 9686F\n$11,434\n96 / 192\n3.40 / 5.00\n384\n1P / 2P\n500\n\n\nEPYC 9656\n$9,713\n96 / 192\n3.05 / 3.70\n512\n1P / 2P\n400\n\n\nEPYC 9586F\n$9,701\n64 / 128\n3.75 / 5.00\n384\n1P / 2P\n500\n\n\nEPYC 9556\n$8,008\n64 / 128\n2.75 / 4.30\n384\n1P / 2P\n300\n\nThe SP7 SKUs support both 1P and 2P socket configurations. The latter, in particular, enables up to 512 Zen 6 cores in one system by pairing two EPYC 9996 chips on a single motherboard. That level of performance logically comes with a substantial investment, since the processors alone would cost $29,808 before factoring in the significant expense of memory today.\n\nAmong the nine SP7 SKUs, two models in particular stand out: the EPYC 9686F and EPYC 9586F. The \"F\" suffix means these chips feature maximum boost clock speeds, in this case, 5 GHz. While both are impressive in their own right, AMD optimized these parts to hit 5 GHz. Naturally, this level of optimization carries a price premium. For example, the 64-core EPYC 9586F costs almost as much as the 96-core EPYC 9656, despite offering 33% fewer cores. The trade-off is also apparent in the thermal envelope. The EPYC 9586F has a TDP that is 100W higher than the EPYC 9656.\n\nAMD EPYC 9006 SP8 Specifications and Pricing\n\nProcessor\n1Ku Price\nCores / Threads\nBase / Boost Clock (GHz)\nL3 Cache (MB)\nSocket\nTDP (W)\n\n\n\n\nEPYC 9746\n$11,679\n128 / 256\n2.90 / 4.00\n512\n1P / 2P\n400\n\n\nEPYC 9736\n$10,639\n128 / 256\n2.70 / 3.70\n256\n1P / 2P\n360\n\n\nEPYC 9736P\n$9,989\n128 / 256\n2.70 / 3.70\n256\n1P\n360\n\n\nEPYC 9676F\n$10,116\n96 / 192\n3.10 / 5.00\n384\n1P / 2P\n400\n\n\nEPYC 9646\n$8,904\n96 / 192\n2.80 / 3.70\n256\n1P / 2P\n300\n\n\nEPYC 9646P\n$8,001\n96 / 192\n2.80 / 3.70\n256\n1P\n300\n\n\nEPYC 9576F\n$9,431\n64 / 128\n3.55 / 5.00\n384\n1P / 2P\n400\n\n\nEPYC 9536\n$7,837\n64 / 128\n3.25 / 4.00\n256\n1P / 2P\n300\n\n\nEPYC 9526\n$7,123\n64 / 128\n2.75 / 3.70\n256\n1P / 2P\n220\n\n\nEPYC 9536P\n$6,595\n64 / 128\n3.25 / 4.00\n256\n1P\n300\n\n\nEPYC 9476F\n$6,695\n48 / 96\n3.65 / 5.00\n192\n1P / 2P\n330\n\n\nEPYC 9456\n$5,252\n48 / 96\n3.20 / 3.70\n256\n1P / 2P\n265\n\n\nEPYC 9456P\n$4,628\n48 / 96\n3.20 / 3.70\n256\n1P\n265\n\n\nEPYC 9376F\n$4,849\n32 / 64\n3.80 / 5.00\n192\n1P / 2P\n285\n\n\nEPYC 9356\n$3,789\n32 / 64\n3.60 / 4.50\n192\n1P / 2P\n250\n\n\nEPYC 9336\n$3,320\n32 / 64\n3.15 / 3.70\n128\n1P / 2P\n195\n\n\nEPYC 9356P\n$2,795\n32 / 64\n3.60 / 4.50\n192\n1P\n250\n\n\nEPYC 9276F\n$3,512\n24 / 48\n3.80 / 5.00\n96\n1P / 2P\n230\n\n\nEPYC 9256\n$2,501\n24 / 48\n2.85 / 4.50\n96\n1P / 2P\n190\n\n\nEPYC 9176F\n$3,787\n16 / 32\n3.90 / 5.00\n192\n1P / 2P\n200\n\n\nEPYC 9116\n$1,200\n16 / 32\n2.85 / 4.50\n48\n1P / 2P\n160\n\n\nEPYC 9016\n$700\n8 / 16\n3.05 / 4.80\n48\n1P / 2P\n130\n\nThe SP8 platform is a more streamlined and cost-effective counterpart to the SP7 platform for the Venice family. It supports eight-channel memory and does not embrace MRDIMMs. However, the limitation balances out by expansion possibilities, as the SP8 platform offers 128 PCIe 6.0 lanes, 33% more than the SP7 platform. Additionally, the SP7 platform has a lower thermal footprint, as these Zen 6 parts carry TDP ratings between 130W and 400W.\n\nGet Tom's Hardware's best news and in-depth reviews, straight to your inbox.\n\nThe SP8 platform offers an accessible entry point for organizations, with the octa-core EPYC 9106 priced at just $700. At the other end of the spectrum, the EPYC 9746, which is the top SP8 SKU, offers 128 Zen 6 cores at $11,679.\n\nWith the SP8 platform, we also see Zen 6 models with the “P” suffix, which indicates support for single-socket systems only. These variants deliver the same performance as their standard counterparts but at a significantly lower price. For example, the 128-core EPYC 9736P is 6% less expensive than the EPYC 9736. In an even more dramatic case, the 32-core EPYC 9356P retails for 26% less than the EPYC 9356.\n\nOne of the more unusual Venice chips is the 16-core EPYC 9176F. Despite its modest core count, it features a massive 192MB of L3 cache, 4X that of the 16-core EPYC 9116, while costing more than 3X as much. This translates to 12MB of L3 cache per core. With its high cache capacity and 5 GHz boost clock, AMD likely designed the EPYC 9176F for organizations seeking to minimize licensing costs for software priced per core.\n\nAMD’s SP7 and SP8 platforms are scheduled to launch in the fourth quarter of this year and the first half of 2027, respectively. However, these Venice prices are not final, as AMD has stated that the list is subject to change. AMD will extend the lineup further later in 2027 with Venice-X chips, which use the company's 3D V-Cache stacking.\n\nFollow Tom's Hardware on Google News, or add us as a preferred source, to get our latest news, analysis, & reviews in your feeds.\n\nZhiye Liu is a news editor, memory reviewer, and SSD tester at Tom’s Hardware. Although he loves everything that’s hardware, he has a soft spot for CPUs, GPUs, and RAM."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_e4e5df7ee2db4e69ad17ed7c430218ac:0\"]",
+          "created_at": "2026-09-29T11:23:57.796958Z",
+          "dedupe_key": "c058da0d592a6743a2e9312fccf07690b276a876060e37543a6ae0252d9db092",
+          "entities": [
+            "AMD",
+            "EPYC 9006",
+            "Venice",
+            "Zen 6",
+            "EPYC 9996",
+            "服务器CPU"
+          ],
+          "occurrence_date": "2026-09-29",
+          "originating_node": "W3",
+          "proposition": "AMD公开披露的EPYC 9006（Venice、Zen 6）服务器处理器价格覆盖约700美元至14904美元，产品线从8核延伸至256核；256核EPYC 9996定价14904美元。",
+          "provisional_event_id": "E132",
+          "subject_time": "EPYC 9006 Venice当前定价"
+        },
+        {
+          "assertion_state": "SCHEDULED",
+          "candidate_id": "[\"runtime-v2-msg:std_e4e5df7ee2db4e69ad17ed7c430218ac:1\"]",
+          "created_at": "2026-09-29T11:23:57.808777Z",
+          "dedupe_key": "bb6aa7a2603ad7c9f9f520febb772712cb749974ea79219b45422a7dc21eae22",
+          "entities": [
+            "AMD",
+            "EPYC 9006",
+            "SP7",
+            "SP8",
+            "服务器CPU"
+          ],
+          "occurrence_date": "2026-09-29",
+          "originating_node": "W3",
+          "proposition": "AMD EPYC 9006的SP7平台计划于2026年第四季度上市，SP8平台计划于2027年上半年上市。",
+          "provisional_event_id": "E133",
+          "subject_time": "SP7：2026年第四季度；SP8：2027年上半年"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_105b32c987c54684ad1a890e639298ad",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-09-29T11:23:57.839037+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-29",
+            "delivery_failure": null,
+            "direction": "SHORT",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_fd43a1f9991547238ab91953242ab8e2",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-29T11:23:58.220812Z"
+              },
+              "case_id": "case_105b32c987c54684ad1a890e639298ad",
+              "direction": "SHORT",
+              "entry_reason": "IBKR_201: Order rejected - reason:We are unable to accept your order. Your Available Funds are in sufficient to cover the change in the <br>account's margin requirements if this order executes. In order to obtain the desired position your Equity with<br> Loan Value [17491.98 USD] must exceed the new total Initial Margin of  [20656.49 USD].",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_105b32c987c54684ad1a890e639298ad",
+              "execution_reason_codes": [
+                "IBKR_201: Order rejected - reason:We are unable to accept your order. Your Available Funds are in sufficient to cover the change in the <br>account's margin requirements if this order executes. In order to obtain the desired position your Equity with<br> Loan Value [17491.98 USD] must exceed the new total Initial Margin of  [20656.49 USD]."
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_105b32c987c54684ad1a890e639298ad",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_e1d7c65e0656af2e6c4923b1"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-29T11:23:57.839037Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "IBKR_201: Order rejected - reason:We are unable to accept your order. Your Available Funds are in sufficient to cover the change in the <br>account's margin requirements if this order executes. In order to obtain the desired position your Equity with<br> Loan Value [17491.98 USD] must exceed the new total Initial Margin of  [20656.49 USD]."
+        ],
+        "executor_execution_record_exists": true,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_22e5f50bc9174893989e0321a397219d",
+      "ticker": "INTC",
+      "case_id": "case_22e5f50bc9174893989e0321a397219d",
+      "intent_released_at_utc": "2026-09-30T09:43:16.911823+00:00",
+      "intent_status": "DELIVERY_FAILED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_640bab5a146743e5a88e509f9d29f5de",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Samsung Electronics",
+              "Samsung Foundry",
+              "HBM4",
+              "4nm"
+            ],
+            "occurrence_date": null,
+            "proposition": "Samsung stated that HBM4 uses a base die manufactured on its own 4nm foundry process.",
+            "subject_time": "HBM4 product architecture"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Samsung Electronics",
+              "HBM4"
+            ],
+            "occurrence_date": null,
+            "proposition": "Samsung stated that it began volume shipments of HBM4 in February 2026.",
+            "subject_time": "From February 2026"
+          },
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Samsung Electronics",
+              "HBM4"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Samsung forecasts HBM4 revenue to grow more than threefold quarter over quarter in Q3 2026 and to exceed 60% of its HBM revenue in the second half of 2026.",
+            "subject_time": "Q3 2026 and second half of 2026"
+          },
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Samsung Electronics",
+              "Samsung Foundry",
+              "Samsung System LSI",
+              "Kiwoom Securities"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Kiwoom Securities estimates Samsung Foundry and System LSI combined operating loss will narrow 41.8% year over year in FY2026 to KRW3.92 trillion from KRW6.74 trillion, with Q3 loss estimated at KRW777 billion.",
+            "subject_time": "Q3 2026 and FY2026"
+          },
+          {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "Samsung Foundry",
+              "4nm",
+              "advanced semiconductor processes"
+            ],
+            "occurrence_date": null,
+            "proposition": "Reports said Samsung raised prices for new 4nm orders in July 2026 and that some advanced-process prices rose 10% to 15%.",
+            "subject_time": "July 2026 advanced-process orders"
+          },
+          {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "Samsung Electronics",
+              "Broadcom",
+              "HBM4",
+              "HBM4E",
+              "2nm",
+              "advanced packaging"
+            ],
+            "occurrence_date": null,
+            "proposition": "A report said Samsung Electronics and Broadcom signed a memorandum of understanding in July 2026 for planned cooperation worth more than US$200 billion through 2030 covering HBM4/HBM4E, 2nm-or-below processes, and advanced packaging.",
+            "subject_time": "July 2026 signing and cooperation through 2030"
+          },
+          {
+            "assertion_state": "ONGOING",
+            "entities": [
+              "Samsung Foundry",
+              "CSPs",
+              "AI customers",
+              "HPC customers",
+              "2nm"
+            ],
+            "occurrence_date": null,
+            "proposition": "Samsung said its foundry obtained 2nm projects from large cloud-service-provider and AI/HPC customers in Q2 2026, and those customers have begun product design.",
+            "subject_time": "Q2 2026 and the subsequent customer-design phase"
+          },
+          {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "Anthropic",
+              "Samsung Foundry",
+              "AI chips"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "The Information reportedly said Anthropic may use Samsung Foundry to produce AI chips.",
+            "subject_time": "Potential future AI-chip production"
+          }
+        ],
+        "expert_trade": {
+          "direction": "SHORT",
+          "evaluated": true,
+          "expectation_delta": "新信息把三星竞争变量从“技术成熟/客户评估”推进为“HBM4 4nm基底需求提供Foundry量与收入、预计亏损显著收窄、据称涨价，并出现Broadcom合作及CSP/AI-HPC 2nm设计项目”。因此应上调三星成为具备更强自我供给与定价能力、能够争夺先进AI代工客户的概率和时间确定性，并下调Intel 18A/14A外部客户转化、利用率及长期Foundry价值获取预期。MoU、预测和Anthropic消息尚非已兑现订单，Delta主要体现为竞争强度和概率/时间的修订，而非立即下调Intel当季收入。",
+          "prior_expectation": "在消息前，研究基线是Intel外部Foundry商业化仍处于技术里程碑和客户设计协作向资格、订单转换的未验证阶段，Q2外部Foundry收入约2.93亿美元；三星虽已有SF2良率改善和2nm客户评估/早期项目，但其先进代工的经济吸收、定价权和绑定客户规模仍未证实。市场对Intel Foundry的定价仍更像有条件的长期期权，而非已实现的外部收入流。",
+          "reason": "Surprise为中等：HBM4扩张与SF2改善已在E195/E239附近的基线内，但本消息首次把HBM4 base-die需求、亏损收窄、涨价和外部2nm客户管线连接成经济竞争叙事。Materiality对短期盈利有限、对Intel的长期Foundry期权较高；Intel外部Foundry收入仅约2.93亿美元，而当前估值条件依赖客户转化和资本吸收。Transmission清晰为三星有效代工需求/价格与客户选择增强，进而增加替代供给和议价压力，压低Intel先进节点design win、外部利用率、现金吸收和Foundry持续期。虽然没有Intel客户已转单且证据强度混合，方向性长期竞争风险已足以支持SHORT。",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "消息新增了三星HBM4 4nm基底晶片需求对Foundry收入和亏损的量化预测、4nm/先进制程涨价、博通合作备忘录、CSP及AI/HPC客户2nm设计导入以及Anthropic可能采用三星代工；Reference View仅有HBM扩张结构预测（E195）、SF2良率与客户争取（E239）、客户评估或早期项目（E141、E229），以及Intel自身外部Foundry收入和客户转化困难基线（E16、E17），没有这些新增的经济吸收和客户管线事实。",
+          "reference_ids": [
+            "E195",
+            "E239",
+            "E141",
+            "E229",
+            "E16",
+            "E17"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "无现行Policy命中；消息只涉及三星Foundry及其客户/伙伴的预测、报告或传闻，没有达到任何要求Intel客户转单、Intel节点资格或产能预订、Intel收入利用率，或Intel成本、供给和现金指标的激活条件。"
+        },
+        "w3_case_id": "w3_640bab5a146743e5a88e509f9d29f5de"
+      },
+      "trade_direction": "SHORT",
+      "case_summary": {
+        "case_id": "case_22e5f50bc9174893989e0321a397219d",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-30T09:43:17.110359Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 686.297575
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-30T09:31:50.812784Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2609065,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-30",
+        "source": {
+          "binding_id": "INTC:trendforce_news",
+          "kind": "crawler",
+          "name": "TrendForce News",
+          "source_id": "trendforce_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_bde20f6969564ad38daa6d0bb38bfefc",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "[News] Samsung Foundry Loss Reportedly Seen Shrinking 42% YoY in 2026 as HBM4 Base-Die 4nm Demand Rises"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "DELIVERY_FAILED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "READY",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-30T09:31:50.812784Z",
+        "completed_at": "2026-09-30T09:43:17.110359Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E239",
+            "E195",
+            "E141"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "消息核心事实——HBM4批量出货推动晶圆代工亏损收窄（合并营业亏损同比收窄41.8%、Q3缩至7,770亿韩元）、三星4nm新订单7月提价及部分先进制程涨价10-15%、与博通签署2030年前超2000亿美元合作备忘录、Q2获得CSP及AI/HPC客户2nm项目并进入产品设计阶段、Anthropic可能使用三星代工——均未出现在已加载Fact中。E195仅覆盖HBM占DRAM产能比例及2027年出货结构预测，未涉及HBM对代工经济性的传导；E239仅覆盖SF2良率提升与工程转向，未涉及上述具体客户与财务事实。",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "消息主体为三星晶圓代工业务因HBM4基片(4nm)需求增长而收窄亏损、提高先进制程价格，以及与博通/CSP/Arm等外部客户的合作进展。内容聚焦三星自身Foundry与存储业务改善，未涉及Intel产品出货、Intel供给约束、Intel Foundry指标、Intel客户采购变更或Intel成本桥等任何Policy criterion所需的具体事实，仅存在宽泛的半导体/代工行业主题相关性，不构成候选召回。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息主体为三星晶圓代工业务因HBM4基片(4nm)需求增长而收窄亏损、提高先进制程价格，以及与博通/CSP/Arm等外部客户的合作进展。内容聚焦三星自身Foundry与存储业务改善，未涉及Intel产品出货、Intel供给约束、Intel Foundry指标、Intel客户采购变更或Intel成本桥等任何Policy criterion所需的具体事实，仅存在宽泛的半导体/代工行业主题相关性，不构成候选召回。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Samsung Electronics",
+                "Samsung Foundry",
+                "HBM4",
+                "4nm"
+              ],
+              "occurrence_date": null,
+              "proposition": "Samsung stated that HBM4 uses a base die manufactured on its own 4nm foundry process.",
+              "subject_time": "HBM4 product architecture"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Samsung Electronics",
+                "HBM4"
+              ],
+              "occurrence_date": null,
+              "proposition": "Samsung stated that it began volume shipments of HBM4 in February 2026.",
+              "subject_time": "From February 2026"
+            },
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "Samsung Electronics",
+                "HBM4"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Samsung forecasts HBM4 revenue to grow more than threefold quarter over quarter in Q3 2026 and to exceed 60% of its HBM revenue in the second half of 2026.",
+              "subject_time": "Q3 2026 and second half of 2026"
+            },
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "Samsung Electronics",
+                "Samsung Foundry",
+                "Samsung System LSI",
+                "Kiwoom Securities"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Kiwoom Securities estimates Samsung Foundry and System LSI combined operating loss will narrow 41.8% year over year in FY2026 to KRW3.92 trillion from KRW6.74 trillion, with Q3 loss estimated at KRW777 billion.",
+              "subject_time": "Q3 2026 and FY2026"
+            },
+            {
+              "assertion_state": "RUMORED",
+              "entities": [
+                "Samsung Foundry",
+                "4nm",
+                "advanced semiconductor processes"
+              ],
+              "occurrence_date": null,
+              "proposition": "Reports said Samsung raised prices for new 4nm orders in July 2026 and that some advanced-process prices rose 10% to 15%.",
+              "subject_time": "July 2026 advanced-process orders"
+            },
+            {
+              "assertion_state": "RUMORED",
+              "entities": [
+                "Samsung Electronics",
+                "Broadcom",
+                "HBM4",
+                "HBM4E",
+                "2nm",
+                "advanced packaging"
+              ],
+              "occurrence_date": null,
+              "proposition": "A report said Samsung Electronics and Broadcom signed a memorandum of understanding in July 2026 for planned cooperation worth more than US$200 billion through 2030 covering HBM4/HBM4E, 2nm-or-below processes, and advanced packaging.",
+              "subject_time": "July 2026 signing and cooperation through 2030"
+            },
+            {
+              "assertion_state": "ONGOING",
+              "entities": [
+                "Samsung Foundry",
+                "CSPs",
+                "AI customers",
+                "HPC customers",
+                "2nm"
+              ],
+              "occurrence_date": null,
+              "proposition": "Samsung said its foundry obtained 2nm projects from large cloud-service-provider and AI/HPC customers in Q2 2026, and those customers have begun product design.",
+              "subject_time": "Q2 2026 and the subsequent customer-design phase"
+            },
+            {
+              "assertion_state": "RUMORED",
+              "entities": [
+                "Anthropic",
+                "Samsung Foundry",
+                "AI chips"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "The Information reportedly said Anthropic may use Samsung Foundry to produce AI chips.",
+              "subject_time": "Potential future AI-chip production"
+            }
+          ],
+          "expert_trade": {
+            "direction": "SHORT",
+            "evaluated": true,
+            "expectation_delta": "新信息把三星竞争变量从“技术成熟/客户评估”推进为“HBM4 4nm基底需求提供Foundry量与收入、预计亏损显著收窄、据称涨价，并出现Broadcom合作及CSP/AI-HPC 2nm设计项目”。因此应上调三星成为具备更强自我供给与定价能力、能够争夺先进AI代工客户的概率和时间确定性，并下调Intel 18A/14A外部客户转化、利用率及长期Foundry价值获取预期。MoU、预测和Anthropic消息尚非已兑现订单，Delta主要体现为竞争强度和概率/时间的修订，而非立即下调Intel当季收入。",
+            "prior_expectation": "在消息前，研究基线是Intel外部Foundry商业化仍处于技术里程碑和客户设计协作向资格、订单转换的未验证阶段，Q2外部Foundry收入约2.93亿美元；三星虽已有SF2良率改善和2nm客户评估/早期项目，但其先进代工的经济吸收、定价权和绑定客户规模仍未证实。市场对Intel Foundry的定价仍更像有条件的长期期权，而非已实现的外部收入流。",
+            "reason": "Surprise为中等：HBM4扩张与SF2改善已在E195/E239附近的基线内，但本消息首次把HBM4 base-die需求、亏损收窄、涨价和外部2nm客户管线连接成经济竞争叙事。Materiality对短期盈利有限、对Intel的长期Foundry期权较高；Intel外部Foundry收入仅约2.93亿美元，而当前估值条件依赖客户转化和资本吸收。Transmission清晰为三星有效代工需求/价格与客户选择增强，进而增加替代供给和议价压力，压低Intel先进节点design win、外部利用率、现金吸收和Foundry持续期。虽然没有Intel客户已转单且证据强度混合，方向性长期竞争风险已足以支持SHORT。",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "消息新增了三星HBM4 4nm基底晶片需求对Foundry收入和亏损的量化预测、4nm/先进制程涨价、博通合作备忘录、CSP及AI/HPC客户2nm设计导入以及Anthropic可能采用三星代工；Reference View仅有HBM扩张结构预测（E195）、SF2良率与客户争取（E239）、客户评估或早期项目（E141、E229），以及Intel自身外部Foundry收入和客户转化困难基线（E16、E17），没有这些新增的经济吸收和客户管线事实。",
+            "reference_ids": [
+              "E195",
+              "E239",
+              "E141",
+              "E229",
+              "E16",
+              "E17"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "无现行Policy命中；消息只涉及三星Foundry及其客户/伙伴的预测、报告或传闻，没有达到任何要求Intel客户转单、Intel节点资格或产能预订、Intel收入利用率，或Intel成本、供给和现金指标的激活条件。"
+          },
+          "w3_case_id": "w3_640bab5a146743e5a88e509f9d29f5de"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "f041628ff7681ecda5ce6ad143ebcb7c75acf5ab4d42ebf6336e3b143937ef5d",
+            "content_type": "text/plain",
+            "sha256": "6196e72d65838d3ae3cb46a72690c96ffd769bfe6df880370b12181e7a653565",
+            "size_bytes": 3152
+          },
+          "case": {
+            "case_id": "case_22e5f50bc9174893989e0321a397219d",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-30T09:31:47.541257Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-30T09:31:47.595219Z",
+          "revision": 1,
+          "row_revision": 2565549,
+          "source": {
+            "binding_id": "INTC:trendforce_news",
+            "kind": "crawler",
+            "name": "TrendForce News",
+            "source_id": "trendforce_news"
+          },
+          "source_published_at": "2026-09-30T04:00:00Z",
+          "standard_message_id": "std_00235121652b45869188f49e888fa45c",
+          "stream_item_id": "stream_bde20f6969564ad38daa6d0bb38bfefc",
+          "stream_offset": 576,
+          "stream_published_at": "2026-09-30T09:31:47.601391Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "[News] Samsung Foundry Loss Reportedly Seen Shrinking 42% YoY in 2026 as HBM4 Base-Die 4nm Demand Rises"
+          },
+          "url": "https://www.trendforce.com/news/2026/09/30/news-samsung-foundry-loss-reportedly-seen-shrinking-42-yoy-in-2026-as-hbm4-base-die-4nm-demand-rises/",
+          "body_text": "三星電子不斷成長的HBM4業務正在幫助其晶圓代工業務改善運營，助力公司縮小虧損。根據Digital Today報導，在三星記憶體部門HBM銷售成長的推動下，晶圓代工業務預計將在第三季減少虧損。由於HBM4晶片採用三星自主研發的晶圓代工製程製造，HBM4銷量的成長也為晶圓代工業務帶來了收入。\n\n這種關聯源自於HBM的架構。 HBM採用堆疊式設計，將多個DRAM晶片堆疊在一起，而最底層的基片則控制訊號貫穿整個堆疊。三星表示，已於2月開始批量出貨HBM4，該產品將單通道DRAM與採用4nm製程製造的基片相結合，並於5月份向客戶提供了HBM4E樣品。\n\n報告指出，隨著HBM4在三星HBM銷售額中所佔份額不斷擴大，其對晶圓代工收入的貢獻也不斷增長。三星預計第三季HBM4營收將較上季成長三倍以上，並在下半年佔HBM總營收的60%以上，這預示著晶片基片產量將進一步成長。\n\n銷售成長預計也將改善獲利狀況。報告引述Kiwoom證券的數據稱，三星晶圓代工和系統級晶片業務的合併營業虧損預計將年比收窄41.8%，從去年的6.74兆韓元降至今年的3.92兆韓元。第二季虧損擴大後，預計第三季將收窄至7,770億韓元。\n\nHBM4晶片產量的成長也可能為三星帶來更大的定價彈性。根據iNews24報道，市場對HBM4基礎晶片和先進製程訂單的強勁需求，降低了三星晶圓代工為了提高產能利用率而接受低價合約的必要性。該報告指出，三星在7月提高了4nm新訂單的價格，而部分先進製程的價格據稱也上漲了10%至15%。\n\n外部訂單是進一步改進的關鍵\n\n去年上半年三星晶圓代工虧損超過每季2兆韓元後，今年以來每季虧損在7,000億韓元至1.2兆韓元之間波動。虧損額的波動反映出僅依靠記憶體相關需求來填滿晶圓代工產能的限制。 《今日數字》指出，僅靠內部記憶體相關訂單不足以充分利用三星的晶圓代工產能。\n\n因此，三星正在擴大與外部客戶的交鑰匙工程合約。根據 Digital Today 報道，三星於 7 月與博通簽署了一份諒解備忘錄，雙方計劃在 2030 年前開展價值超過 2000 億美元的合作。該協議包括為博通設計的客製化 AI 加速器提供 HBM4 和 HBM4E 晶片，以及為關鍵產品提供 2 奈米及以下製程製程和先進封裝技術。\n\n進一步的改進最終取決於外部客戶對先進節點製程的訂單。三星表示，其晶圓代工業務在第二季度獲得了來自大型雲端服務供應商 (CSP) 以及人工智慧和高效能運算 (HPC) 客戶的 2nm 項目，客戶已經開始進行產品設計。《The Information》 也指出，Anthropic 據稱可能會利用三星晶圓代工來生產人工智慧晶片。\n\n閱讀更多\n\n【新聞】三星預計，到2027年，HBM將佔據近30%的產業DRAM產能，高於目前的20%。\n\n【新聞】據報道，三星泰勒晶圓廠2nm製程訂單已全部被特斯拉、博通和Arm預訂；Fab 2的籌備工作正在加速進行。\n\n（圖片來源：三星）"
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_00235121652b45869188f49e888fa45c:0\"]",
+          "created_at": "2026-09-30T09:43:16.667369Z",
+          "dedupe_key": "febf71085e94e8347df7e527f1f75fecbe844ecd58801452c1cd2c43ea17ba6f",
+          "entities": [
+            "Samsung Electronics",
+            "Samsung Foundry",
+            "HBM4",
+            "4nm"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W3",
+          "proposition": "Samsung stated that HBM4 uses a base die manufactured on its own 4nm foundry process.",
+          "provisional_event_id": "E231",
+          "subject_time": "HBM4 product architecture"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_00235121652b45869188f49e888fa45c:1\"]",
+          "created_at": "2026-09-30T09:43:16.682963Z",
+          "dedupe_key": "b04b5f6d7f5a09196c6dceba9f56488abd49316d11864a0b6adb005ac042e46b",
+          "entities": [
+            "Samsung Electronics",
+            "HBM4"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W3",
+          "proposition": "Samsung stated that it began volume shipments of HBM4 in February 2026.",
+          "provisional_event_id": "E232",
+          "subject_time": "From February 2026"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_00235121652b45869188f49e888fa45c:2\"]",
+          "created_at": "2026-09-30T09:43:16.699143Z",
+          "dedupe_key": "e8272415b48b1fb2f44983ca0b7ff86481f9fb291f0c760e652e9b6a41929539",
+          "entities": [
+            "Samsung Electronics",
+            "HBM4"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Samsung forecasts HBM4 revenue to grow more than threefold quarter over quarter in Q3 2026 and to exceed 60% of its HBM revenue in the second half of 2026.",
+          "provisional_event_id": "E233",
+          "subject_time": "Q3 2026 and second half of 2026"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_00235121652b45869188f49e888fa45c:3\"]",
+          "created_at": "2026-09-30T09:43:16.718709Z",
+          "dedupe_key": "4a1a2596bcc988ec375a1d3878166732e6a9933a92ee6991ac7ed4d1fdd46197",
+          "entities": [
+            "Samsung Electronics",
+            "Samsung Foundry",
+            "Samsung System LSI",
+            "Kiwoom Securities"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Kiwoom Securities estimates Samsung Foundry and System LSI combined operating loss will narrow 41.8% year over year in FY2026 to KRW3.92 trillion from KRW6.74 trillion, with Q3 loss estimated at KRW777 billion.",
+          "provisional_event_id": "E234",
+          "subject_time": "Q3 2026 and FY2026"
+        },
+        {
+          "assertion_state": "RUMORED",
+          "candidate_id": "[\"runtime-v2-msg:std_00235121652b45869188f49e888fa45c:4\"]",
+          "created_at": "2026-09-30T09:43:16.773017Z",
+          "dedupe_key": "3ac658b53d04d8fe3e1ef866aef81ae56ca2fb566e4e1d134592c45c3c17bc0a",
+          "entities": [
+            "Samsung Foundry",
+            "4nm",
+            "advanced semiconductor processes"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W3",
+          "proposition": "Reports said Samsung raised prices for new 4nm orders in July 2026 and that some advanced-process prices rose 10% to 15%.",
+          "provisional_event_id": "E235",
+          "subject_time": "July 2026 advanced-process orders"
+        },
+        {
+          "assertion_state": "RUMORED",
+          "candidate_id": "[\"runtime-v2-msg:std_00235121652b45869188f49e888fa45c:5\"]",
+          "created_at": "2026-09-30T09:43:16.808662Z",
+          "dedupe_key": "7495cf6361377183251899726947a53cce63aa1a5a42b70f57204ec591346de5",
+          "entities": [
+            "Samsung Electronics",
+            "Broadcom",
+            "HBM4",
+            "HBM4E",
+            "2nm",
+            "advanced packaging"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W3",
+          "proposition": "A report said Samsung Electronics and Broadcom signed a memorandum of understanding in July 2026 for planned cooperation worth more than US$200 billion through 2030 covering HBM4/HBM4E, 2nm-or-below processes, and advanced packaging.",
+          "provisional_event_id": "E236",
+          "subject_time": "July 2026 signing and cooperation through 2030"
+        },
+        {
+          "assertion_state": "ONGOING",
+          "candidate_id": "[\"runtime-v2-msg:std_00235121652b45869188f49e888fa45c:6\"]",
+          "created_at": "2026-09-30T09:43:16.842260Z",
+          "dedupe_key": "719abc4130a84d1c8d3ff0c30f364b7c17f6a94b579b98aa0c0ea0cc60b38c63",
+          "entities": [
+            "Samsung Foundry",
+            "CSPs",
+            "AI customers",
+            "HPC customers",
+            "2nm"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W3",
+          "proposition": "Samsung said its foundry obtained 2nm projects from large cloud-service-provider and AI/HPC customers in Q2 2026, and those customers have begun product design.",
+          "provisional_event_id": "E237",
+          "subject_time": "Q2 2026 and the subsequent customer-design phase"
+        },
+        {
+          "assertion_state": "RUMORED",
+          "candidate_id": "[\"runtime-v2-msg:std_00235121652b45869188f49e888fa45c:7\"]",
+          "created_at": "2026-09-30T09:43:16.857379Z",
+          "dedupe_key": "2770e3ffe30199d6e1c9de0a6def0df752bbb8735716a0a3936b33babff3ab85",
+          "entities": [
+            "Anthropic",
+            "Samsung Foundry",
+            "AI chips"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "The Information reportedly said Anthropic may use Samsung Foundry to produce AI chips.",
+          "provisional_event_id": "E238",
+          "subject_time": "Potential future AI-chip production"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_22e5f50bc9174893989e0321a397219d",
+            "status": "DELIVERY_FAILED",
+            "released_at": "2026-09-30T09:43:16.911823+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-30",
+            "delivery_failure": {
+              "code": "PROFILE_VALIDATION_FAILED",
+              "detail": "旧版 v2-delivery 的 ExecutionProfile 不支持冻结的 SHARED_CYCLE Profile：仍要求 target_notional_usd，且拒绝新增仓位参数。",
+              "status": "FAILED"
+            },
+            "direction": "SHORT",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_640bab5a146743e5a88e509f9d29f5de",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "case_id": "case_22e5f50bc9174893989e0321a397219d",
+              "direction": "SHORT",
+              "entry_reason": "PROFILE_VALIDATION_FAILED: 旧版 v2-delivery 的 ExecutionProfile 不支持冻结的 SHARED_CYCLE Profile：仍要求 target_notional_usd，且拒绝新增仓位参数。",
+              "entry_result": null,
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_22e5f50bc9174893989e0321a397219d",
+              "execution_reason_codes": [
+                "DELIVERY_FAILED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "REJECTED",
+              "intent_id": "trade:case_22e5f50bc9174893989e0321a397219d",
+              "intent_status": "DELIVERY_FAILED",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T09:43:16.911823Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "DELIVERY_FAILED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "DELIVERY_FAILED"
+        ],
+        "executor_execution_record_exists": false,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_2420a79ef4df43e2bfc5f4792d0ce38a",
+      "ticker": "INTC",
+      "case_id": "case_2420a79ef4df43e2bfc5f4792d0ce38a",
+      "intent_released_at_utc": "2026-09-30T11:20:06.346805+00:00",
+      "intent_status": "DELIVERY_FAILED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_5c844c66f5d444639d62fd975e2a12bb",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "TSMC",
+              "Foundry 2.0"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "TSMC在2026年第二季度营收约为402亿美元，同比增加34%、环比增加12%。",
+            "subject_time": "2026年第二季度"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "TSMC",
+              "Foundry 2.0"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "TSMC在2026年第二季度约占Foundry 2.0市场42%，高于2025年的38%。",
+            "subject_time": "2026年第二季度及2025年全年比较"
+          },
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "TSMC",
+              "CoWoS",
+              "Advanced packaging"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Counterpoint预计TSMC的CoWoS先进封装供需缺口约为2026年的20%，并在2027年缩小至约10%。",
+            "subject_time": "2026年至2027年"
+          },
+          {
+            "assertion_state": "EXPECTED",
+            "entities": [
+              "TSMC",
+              "CoWoS"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Counterpoint预计TSMC内部CoWoS产能扩张将接近每月185000片晶圆。",
+            "subject_time": "2027年产能扩张周期"
+          },
+          {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "Intel",
+              "EMIB-T",
+              "Google",
+              "Next-generation TPU"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "据Counterpoint，Intel的EMIB-T封装技术已被用于Google下一代TPU。",
+            "subject_time": "Google下一代TPU开发与量产周期"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "当前消息将Google下一代TPU与Intel EMIB-T从潜在采用联系推进到据报道已采用，提升了Intel获得外部先进封装资格、利用率和后续重复吞吐的概率；同时TSMC CoWoS约20%的供需缺口强化了替代封装的需求背景。",
+          "prior_expectation": "事件前EMIB-T主要是CoWoS紧张下的条件性替代方案，Google采用仅处于预期或测试阶段；即使Google已选择Intel制造TPU，EMIB-T的产品级资格、产能分配和量产交付仍未确认。",
+          "reason": "这是一个具体客户—产品—封装技术的正向设计选择，相对此前的条件性预期形成了非微小的确定性提升，并可通过EMIB-T资格、封装产能和外部Foundry价值获取直接传导至INTC。订单规模和正式资格仍是后续验证点，但不足以消除当前的早期LONG预期差。",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "E29和E79仅记录CoWoS短缺下EMIB-T可能获得客户转移或Google未来采用，E149记录Google选择Intel制造TPU但未确认EMIB-T采用。当前消息首次称EMIB-T已用于Google下一代TPU，并新增TSMC的营收、市场份额及CoWoS供需数据。",
+          "reference_ids": [
+            "E29",
+            "E79",
+            "E149"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "Intel EMIB-T被采用的表述来自Counterpoint分析，未披露完成电气、热和可靠性资格，也未披露绑定量产订单、产能预订或付费good-package交付，因此未满足现行Policy的正式触发边界。"
+        },
+        "w3_case_id": "w3_5c844c66f5d444639d62fd975e2a12bb"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_2420a79ef4df43e2bfc5f4792d0ce38a",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-30T11:20:06.506507Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 257.897451
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-30T11:15:48.609056Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2609066,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-30",
+        "source": {
+          "binding_id": "INTC:benzinga_news",
+          "kind": "api",
+          "name": "Benzinga News API",
+          "source_id": "benzinga_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_4104b069fe9d4439bfd87dabc6bd0569",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "AI’s Semiconductor Boom Has a Clear Center of Gravity: Taiwan Semiconductor"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "DELIVERY_FAILED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "READY",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-30T11:15:48.609056Z",
+        "completed_at": "2026-09-30T11:20:06.506507Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E210",
+            "E29",
+            "E249",
+            "E170",
+            "E133"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "当前消息的核心事实——TSMC Q2营收$40.2B(同比+34%)、Foundry 2.0市占率42%、CoWoS供需缺口约20%(2026)/10%(2027)及185K wafer/month产能目标、全年2026营收增长约43%——均未被已加载Event Fact覆盖。Intel EMIB-T被Google下一代TPU正式采用也超越了E29中UBS所述'可能引导客户转向'的条件性预期，构成新的事实进展。",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [
+            "pol_2c175c35a579529f28d8"
+          ],
+          "reason": "消息明确指出Google下一代TPU已采用Intel的EMIB-T封装技术（'adopted for Google's next-generation TPU'），这是重大AI客户的具体产品与Intel EMIB-T的直接事实对应，触及该Policy关于'单一重大AI或Foundry客户的具体产品完成EMIB/EMIB-T电气、热和可靠性资格，并形成绑定量产订单'的触发路径，但消息仅以'has gained traction'和'adopted'描述，尚未确认是否已完成完整资格验证并形成绑定生产订单或首批付费good-package，值得进入完整Policy判定。消息其他内容（TSMC营收、CoWoS缺口、市场格局）与其余Policy criterion无具体事实对应。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息中关于Intel EMIB-T的关键表述为Counterpoint Research称EMIB-T 'has been adopted for Google's next-generation TPU'。Criterion C1要求两个里程碑同时成立：(1)具体产品完成电气、热和可靠性资格；(2)形成绑定量产订单/产能预订或首批付费good-package生产。消息仅说'adopted for'，属于设计选择/采用决策层面的陈述，未明确提及系统级资格完成或绑定商业订单/产能预订/付费量产。此外，该信息来源于研究机构(Counterpoint)分析师表述，trigger_boundary明确将'分析师观点'和'Google采用预期'列为不触发项；后文还指出Intel尚未达到TSMC的packaging execution水平，进一步说明未跨过binding production边界。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "TSMC",
+                "Foundry 2.0"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "TSMC在2026年第二季度营收约为402亿美元，同比增加34%、环比增加12%。",
+              "subject_time": "2026年第二季度"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "TSMC",
+                "Foundry 2.0"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "TSMC在2026年第二季度约占Foundry 2.0市场42%，高于2025年的38%。",
+              "subject_time": "2026年第二季度及2025年全年比较"
+            },
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "TSMC",
+                "CoWoS",
+                "Advanced packaging"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Counterpoint预计TSMC的CoWoS先进封装供需缺口约为2026年的20%，并在2027年缩小至约10%。",
+              "subject_time": "2026年至2027年"
+            },
+            {
+              "assertion_state": "EXPECTED",
+              "entities": [
+                "TSMC",
+                "CoWoS"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Counterpoint预计TSMC内部CoWoS产能扩张将接近每月185000片晶圆。",
+              "subject_time": "2027年产能扩张周期"
+            },
+            {
+              "assertion_state": "RUMORED",
+              "entities": [
+                "Intel",
+                "EMIB-T",
+                "Google",
+                "Next-generation TPU"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "据Counterpoint，Intel的EMIB-T封装技术已被用于Google下一代TPU。",
+              "subject_time": "Google下一代TPU开发与量产周期"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "当前消息将Google下一代TPU与Intel EMIB-T从潜在采用联系推进到据报道已采用，提升了Intel获得外部先进封装资格、利用率和后续重复吞吐的概率；同时TSMC CoWoS约20%的供需缺口强化了替代封装的需求背景。",
+            "prior_expectation": "事件前EMIB-T主要是CoWoS紧张下的条件性替代方案，Google采用仅处于预期或测试阶段；即使Google已选择Intel制造TPU，EMIB-T的产品级资格、产能分配和量产交付仍未确认。",
+            "reason": "这是一个具体客户—产品—封装技术的正向设计选择，相对此前的条件性预期形成了非微小的确定性提升，并可通过EMIB-T资格、封装产能和外部Foundry价值获取直接传导至INTC。订单规模和正式资格仍是后续验证点，但不足以消除当前的早期LONG预期差。",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "E29和E79仅记录CoWoS短缺下EMIB-T可能获得客户转移或Google未来采用，E149记录Google选择Intel制造TPU但未确认EMIB-T采用。当前消息首次称EMIB-T已用于Google下一代TPU，并新增TSMC的营收、市场份额及CoWoS供需数据。",
+            "reference_ids": [
+              "E29",
+              "E79",
+              "E149"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "Intel EMIB-T被采用的表述来自Counterpoint分析，未披露完成电气、热和可靠性资格，也未披露绑定量产订单、产能预订或付费good-package交付，因此未满足现行Policy的正式触发边界。"
+          },
+          "w3_case_id": "w3_5c844c66f5d444639d62fd975e2a12bb"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "add01613f6d2c88a0c43d5ab7406fbaefef63f12e3818acd48a4c2425a4e0835",
+            "content_type": "text/plain",
+            "sha256": "43f150dd0a789030360dc5d929d6d7911ec6d438214265d0f8462bf0e9fb77b4",
+            "size_bytes": 3574
+          },
+          "case": {
+            "case_id": "case_2420a79ef4df43e2bfc5f4792d0ce38a",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-30T11:14:46.427133Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-30T11:15:46.779516Z",
+          "revision": 1,
+          "row_revision": 2575185,
+          "source": {
+            "binding_id": "INTC:benzinga_news",
+            "kind": "api",
+            "name": "Benzinga News API",
+            "source_id": "benzinga_news"
+          },
+          "source_published_at": "2026-09-30T11:15:34Z",
+          "standard_message_id": "std_b5030f1b9c9d4c10bc24bf0c36c748fa",
+          "stream_item_id": "stream_4104b069fe9d4439bfd87dabc6bd0569",
+          "stream_offset": 587,
+          "stream_published_at": "2026-09-30T11:15:46.784423Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "AI’s Semiconductor Boom Has a Clear Center of Gravity: Taiwan Semiconductor"
+          },
+          "url": "https://www.benzinga.com/markets/tech/26/09/62074203/ais-semiconductor-boom-has-a-clear-center-of-gravity-taiwan-semiconductor",
+          "body_text": "Taiwan Semiconductor Manufacturing Co. Ltd. (NYSE: TSM ) remains the biggest beneficiary of the artificial intelligence semiconductor boom, with analysts at Counterpoint Research expecting its growth to accelerate through the second half of 2026 as advanced-node demand and packaging capacity remain tight. Counterpoint said Taiwan Semiconductor’s revenue rose 34% year over year and 12% sequentially to $40.2 billion in the second quarter. That gave the company about 42% of the broader Foundry 2.0 market, up from 38% in 2025. The research firm expects Taiwan Semiconductor’s full-year 2026 revenue to grow about 43%, implying growth of nearly 50% in the second half. AI Demand Keeps Taiwan Semiconductor at the Center Counterpoint Associate Director Brady Wang said the AI investment cycle has broadened across pure-play foundries, non-memory chipmakers and outsourced semiconductor assembly and test companies. However, he said Taiwan Semiconductor remains the “central beneficiary.” The firm estimates Taiwan Semiconductor’s CoWoS advanced-packaging supply-demand gap at about 20% in 2026. It expects the shortfall to narrow to roughly 10% in 2027 as in-house capacity expands toward 185,000 wafers per month. Counterpoint said Taiwan Semiconductor’s second-half growth will depend on the ramp of its N2 process, wafer price increases and planned CoWoS capacity additions. Tight packaging capacity is currently limiting AI product shipments, prompting Taiwan Semiconductor to increase back-end investment while customers develop alternative packaging options. See More: Top Value Stocks Samsung, Intel Gain As Customers Seek Alternatives Senior Analyst William Li said Samsung Electronics Co. Ltd. (OTC: SSNLF ) and Intel Corp. (NASDAQ: INTC ) are also benefiting as customers look for additional manufacturing sources. Samsung held the No. 2 foundry position with about 4% market share during the quarter, supported by SF4 and SF5 demand and higher wafer prices. Intel, meanwhile, has gained traction with its EMIB-T packaging technology, which has been adopted for Google’s next-generation TPU, according to Counterpoint. Still, Li said neither company currently matches Taiwan Semiconductor’s combination of advanced-node scale, manufacturing yields and packaging execution. AI Boom Broadens Across Chip Supply Chain The broader Foundry 2.0 market reached a record $96.6 billion in second-quarter revenue, up 25% from a year earlier and 11% sequentially. Counterpoint attributed the growth to demand for AI GPUs, custom ASICs, server CPUs, networking chips and power-management semiconductors. Non-Taiwan Semiconductor pure-play foundry revenue rose 18% year over year. Semiconductor Manufacturing International Corp. led that group with 36% growth, helped by demand for domestic AI chips in China. Hua Hong and Nexchip posted growth of 17% and 21%, respectively. Meanwhile, outsourced semiconductor assembly and test revenue rose 22% to $12.6 billion. ASE Technology posted 24% growth, while Amkor Technology, Inc. (NASDAQ: AMKR ) grew 26%, as advanced packaging, wafer probing and AI processor testing demand strengthened. Counterpoint expects the Foundry 2.0 market to maintain double-digit growth through the second half of 2026. However, it flagged CoWoS and substrate shortages, higher wafer and packaging costs, weak consumer demand and trade-policy uncertainty as key risks. TSM Price Action: Taiwan Semiconductor shares were down 0.49% at $454.72 during premarket trading on Wednesday, according to Benzinga Pro data . Photo via Shutterstock"
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_b5030f1b9c9d4c10bc24bf0c36c748fa:0\"]",
+          "created_at": "2026-09-30T11:20:06.243056Z",
+          "dedupe_key": "8e56238266348e65e049609ae452950c2f5e8cf1d834f301d9e2d28bf636d825",
+          "entities": [
+            "TSMC",
+            "Foundry 2.0"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "TSMC在2026年第二季度营收约为402亿美元，同比增加34%、环比增加12%。",
+          "provisional_event_id": "E262",
+          "subject_time": "2026年第二季度"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_b5030f1b9c9d4c10bc24bf0c36c748fa:1\"]",
+          "created_at": "2026-09-30T11:20:06.267872Z",
+          "dedupe_key": "c0d16e3e49c5ad063359b84fff376b45a30d516cb22dcfab086f993a7e5d7258",
+          "entities": [
+            "TSMC",
+            "Foundry 2.0"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "TSMC在2026年第二季度约占Foundry 2.0市场42%，高于2025年的38%。",
+          "provisional_event_id": "E263",
+          "subject_time": "2026年第二季度及2025年全年比较"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_b5030f1b9c9d4c10bc24bf0c36c748fa:2\"]",
+          "created_at": "2026-09-30T11:20:06.279924Z",
+          "dedupe_key": "eb1e08e2d7ea002a9f6930ee8a1f515eb6351d66b6064d26b5d0570d6dc60190",
+          "entities": [
+            "TSMC",
+            "CoWoS",
+            "Advanced packaging"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Counterpoint预计TSMC的CoWoS先进封装供需缺口约为2026年的20%，并在2027年缩小至约10%。",
+          "provisional_event_id": "E264",
+          "subject_time": "2026年至2027年"
+        },
+        {
+          "assertion_state": "EXPECTED",
+          "candidate_id": "[\"runtime-v2-msg:std_b5030f1b9c9d4c10bc24bf0c36c748fa:3\"]",
+          "created_at": "2026-09-30T11:20:06.292439Z",
+          "dedupe_key": "249d638d269d824d1ecb36268a4ead278a9bb36835923b8a7d5318309e82a964",
+          "entities": [
+            "TSMC",
+            "CoWoS"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Counterpoint预计TSMC内部CoWoS产能扩张将接近每月185000片晶圆。",
+          "provisional_event_id": "E265",
+          "subject_time": "2027年产能扩张周期"
+        },
+        {
+          "assertion_state": "RUMORED",
+          "candidate_id": "[\"runtime-v2-msg:std_b5030f1b9c9d4c10bc24bf0c36c748fa:4\"]",
+          "created_at": "2026-09-30T11:20:06.300142Z",
+          "dedupe_key": "04f9f1cdb0867599f2de4f790fda87a9f956b22fbcf5bc9c443ca92ac125c4d2",
+          "entities": [
+            "Intel",
+            "EMIB-T",
+            "Google",
+            "Next-generation TPU"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "据Counterpoint，Intel的EMIB-T封装技术已被用于Google下一代TPU。",
+          "provisional_event_id": "E266",
+          "subject_time": "Google下一代TPU开发与量产周期"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_2420a79ef4df43e2bfc5f4792d0ce38a",
+            "status": "DELIVERY_FAILED",
+            "released_at": "2026-09-30T11:20:06.346805+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-30",
+            "delivery_failure": {
+              "code": "PROFILE_VALIDATION_FAILED",
+              "detail": "旧版 v2-delivery 的 ExecutionProfile 不支持冻结的 SHARED_CYCLE Profile：仍要求 target_notional_usd，且拒绝新增仓位参数。",
+              "status": "FAILED"
+            },
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_5c844c66f5d444639d62fd975e2a12bb",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "case_id": "case_2420a79ef4df43e2bfc5f4792d0ce38a",
+              "direction": "LONG",
+              "entry_reason": "PROFILE_VALIDATION_FAILED: 旧版 v2-delivery 的 ExecutionProfile 不支持冻结的 SHARED_CYCLE Profile：仍要求 target_notional_usd，且拒绝新增仓位参数。",
+              "entry_result": null,
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_2420a79ef4df43e2bfc5f4792d0ce38a",
+              "execution_reason_codes": [
+                "DELIVERY_FAILED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "REJECTED",
+              "intent_id": "trade:case_2420a79ef4df43e2bfc5f4792d0ce38a",
+              "intent_status": "DELIVERY_FAILED",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T11:20:06.346805Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "DELIVERY_FAILED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "DELIVERY_FAILED"
+        ],
+        "executor_execution_record_exists": false,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_7378fdedc94241bbacdf753c94cc2f8d",
+      "ticker": "INTC",
+      "case_id": "case_7378fdedc94241bbacdf753c94cc2f8d",
+      "intent_released_at_utc": "2026-10-01T12:57:52.820953+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_a5c620e1031c4fd99aaa85cc82c4e5a3",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Micron",
+              "DRAM",
+              "NAND",
+              "Memory industry"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "美光预计2027年和2028年DRAM及NAND需求都将超过供应，且行业供需紧张程度将高于2026年；公司目前看不到供需恢复平衡的时间线。",
+            "subject_time": "2027年至2028年"
+          },
+          {
+            "assertion_state": "EXPECTED",
+            "entities": [
+              "Micron",
+              "DRAM",
+              "NAND",
+              "Memory capacity",
+              "Memory pricing"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "美光表示其2027年大部分产能已经售出，客户将为内存和存储产品支付高于2026年的价格。",
+            "subject_time": "2027年"
+          },
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Micron",
+              "DRAM",
+              "NAND",
+              "HBM"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "美光预计未来两年NAND和DRAM行业位出货量将以约20%的速度增长，但供给仍将受限，HBM出货量增长将快于传统DRAM。",
+            "subject_time": "2027年至2028年"
+          },
+          {
+            "assertion_state": "GUIDANCE",
+            "entities": [
+              "Micron",
+              "Gross margin",
+              "Revenue guidance",
+              "DRAM",
+              "NAND"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "美光FY2026第四季度毛利率达到86.25%，并预计FY2027第一季度营收约为615亿美元、毛利率对应的毛利润超过530亿美元。",
+            "subject_time": "Micron FY2026第四季度及FY2027第一季度"
+          }
+        ],
+        "expert_trade": {
+          "direction": "SHORT",
+          "evaluated": true,
+          "expectation_delta": "美光现在预计DRAM和NAND在2027至2028年比2026年更紧张、供需没有明确回归平衡时间线，且大部分明年产能已售出并将提高客户价格。这将把PC内存成本和终端价格压力延长至Intel原本可能的供给缓解之后，推迟客户端单位、OEM订单和sell-through恢复，并增加CCPG高端组合难以抵消数量疲弱的风险。",
+          "prior_expectation": "事件前基线是Intel PC供给约束预计在2026年下半年缓解，客户端单位量有望从Q2同比下降8%的状态逐步恢复；此前的内存价格压力主要被视为2026年的近端因素，而高端ASP和组合仍可部分支撑CCPG收入。",
+          "reason": "Surprise来自供给紧张持续时间和恶化程度超出2026年下半年缓解基线；Materiality在于Intel CCPG季度收入约89亿美元，客户端单位已下降8%且ASP上升27%部分掩盖数量压力；Transmission为内存供给/价格上升→PC BOM与终端价格上升及需求弹性受压→OEM补单和sell-through走弱→Intel客户端单位恢复延迟。DCAI、Foundry和中国新增供给是抵消因素，但不足以消除该客户端负向预期差。",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "E255已覆盖美光2027至2028年供应受限的方向，但当前消息新增了供需紧张程度较2026年进一步恶化、没有回归平衡时间线、明年大部分产能已售出及客户将支付更高价格等更强的约束与定价信号，并补充了创纪录利润率和盈利指引。",
+          "reference_ids": [
+            "E255"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息由Micron披露，未确认Intel自身客户端出货、订单、成本或交付受到影响，未达到现行Policy对Intel或具名客户的直接触发边界。"
+        },
+        "w3_case_id": "w3_a5c620e1031c4fd99aaa85cc82c4e5a3"
+      },
+      "trade_direction": "SHORT",
+      "case_summary": {
+        "case_id": "case_7378fdedc94241bbacdf753c94cc2f8d",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-10-01T12:57:53.115402Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 322.806714
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-10-01T12:52:30.308688Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2718537,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-10-01",
+        "source": {
+          "binding_id": "INTC:tomshardware_rss",
+          "kind": "api",
+          "name": "Tom's Hardware RSS",
+          "source_id": "tomshardware_rss"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_eceab9e3abdd453fbadd0ecfd467e923",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Micron projects tightening RAM shortages through 2028 as it generates record profit"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "INSUFFICIENT_MARGIN"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-10-01T12:52:30.308688Z",
+        "completed_at": "2026-10-01T12:57:53.115402Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E255",
+            "E14"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [
+            {
+              "event_id": "E255",
+              "fact_ids": [
+                "F1100",
+                "F1101",
+                "F1102"
+              ]
+            }
+          ],
+          "reason": "当前消息核心事实包含E255尚未覆盖的新内容：1）毛利率86.25%及EPS指引$38.15(±$1.00)为全新财务指标，F1101仅覆盖$615亿营收指引；2）\"已卖出明年大部分产能、客户将支付高于2026年价格\"针对全部RAM/存储，而F1100仅涉及HBM芯片供应协议；3）\"2027和2028年行业紧张程度将超过2026\"及\"看不到供需回归平衡的时间线\"的恶化方向性表述，超出F1102\"供应持续受限\"的程度描述。",
+          "reference_ids": [
+            "E255"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "消息核心事实为Micron在FY2026财报电话会上对2027-2028年RAM/NAND/DRAM行业供需紧平衡的前瞻预测及HBM优先级说明，属于存储器供应商层面的行业展望。消息中不存在Intel自身确认的产品出货受限、订单延期或成本冲击，也不涉及具体Intel客户/伙伴的行动或Intel季报数据。各Policy的criterion均要求Intel或具名客户/伙伴对特定触发条件作出确认或描述具体事件（如Intel确认内存价格恶化是Q3出货缺口原因、后端伙伴确认封装starts被配给等），本消息的事实形态和归属主体与任何criterion的触发路径不构成直接、实质对应，无合理命中可能。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息核心事实为Micron在FY2026财报电话会上对2027-2028年RAM/NAND/DRAM行业供需紧平衡的前瞻预测及HBM优先级说明，属于存储器供应商层面的行业展望。消息中不存在Intel自身确认的产品出货受限、订单延期或成本冲击，也不涉及具体Intel客户/伙伴的行动或Intel季报数据。各Policy的criterion均要求Intel或具名客户/伙伴对特定触发条件作出确认或描述具体事件（如Intel确认内存价格恶化是Q3出货缺口原因、后端伙伴确认封装starts被配给等），本消息的事实形态和归属主体与任何criterion的触发路径不构成直接、实质对应，无合理命中可能。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "Micron",
+                "DRAM",
+                "NAND",
+                "Memory industry"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "美光预计2027年和2028年DRAM及NAND需求都将超过供应，且行业供需紧张程度将高于2026年；公司目前看不到供需恢复平衡的时间线。",
+              "subject_time": "2027年至2028年"
+            },
+            {
+              "assertion_state": "EXPECTED",
+              "entities": [
+                "Micron",
+                "DRAM",
+                "NAND",
+                "Memory capacity",
+                "Memory pricing"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "美光表示其2027年大部分产能已经售出，客户将为内存和存储产品支付高于2026年的价格。",
+              "subject_time": "2027年"
+            },
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "Micron",
+                "DRAM",
+                "NAND",
+                "HBM"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "美光预计未来两年NAND和DRAM行业位出货量将以约20%的速度增长，但供给仍将受限，HBM出货量增长将快于传统DRAM。",
+              "subject_time": "2027年至2028年"
+            },
+            {
+              "assertion_state": "GUIDANCE",
+              "entities": [
+                "Micron",
+                "Gross margin",
+                "Revenue guidance",
+                "DRAM",
+                "NAND"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "美光FY2026第四季度毛利率达到86.25%，并预计FY2027第一季度营收约为615亿美元、毛利率对应的毛利润超过530亿美元。",
+              "subject_time": "Micron FY2026第四季度及FY2027第一季度"
+            }
+          ],
+          "expert_trade": {
+            "direction": "SHORT",
+            "evaluated": true,
+            "expectation_delta": "美光现在预计DRAM和NAND在2027至2028年比2026年更紧张、供需没有明确回归平衡时间线，且大部分明年产能已售出并将提高客户价格。这将把PC内存成本和终端价格压力延长至Intel原本可能的供给缓解之后，推迟客户端单位、OEM订单和sell-through恢复，并增加CCPG高端组合难以抵消数量疲弱的风险。",
+            "prior_expectation": "事件前基线是Intel PC供给约束预计在2026年下半年缓解，客户端单位量有望从Q2同比下降8%的状态逐步恢复；此前的内存价格压力主要被视为2026年的近端因素，而高端ASP和组合仍可部分支撑CCPG收入。",
+            "reason": "Surprise来自供给紧张持续时间和恶化程度超出2026年下半年缓解基线；Materiality在于Intel CCPG季度收入约89亿美元，客户端单位已下降8%且ASP上升27%部分掩盖数量压力；Transmission为内存供给/价格上升→PC BOM与终端价格上升及需求弹性受压→OEM补单和sell-through走弱→Intel客户端单位恢复延迟。DCAI、Foundry和中国新增供给是抵消因素，但不足以消除该客户端负向预期差。",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "E255已覆盖美光2027至2028年供应受限的方向，但当前消息新增了供需紧张程度较2026年进一步恶化、没有回归平衡时间线、明年大部分产能已售出及客户将支付更高价格等更强的约束与定价信号，并补充了创纪录利润率和盈利指引。",
+            "reference_ids": [
+              "E255"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "消息由Micron披露，未确认Intel自身客户端出货、订单、成本或交付受到影响，未达到现行Policy对Intel或具名客户的直接触发边界。"
+          },
+          "w3_case_id": "w3_a5c620e1031c4fd99aaa85cc82c4e5a3"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "eb2b2a5672365d3038d11dc621f56bb70a179041cb56a9688658ea97b1c11838",
+            "content_type": "text/plain",
+            "sha256": "efc712e3cb59c173871faa6d1c22f82f0489aaa2d641f6d6ce41a59a92172553",
+            "size_bytes": 3195
+          },
+          "case": {
+            "case_id": "case_7378fdedc94241bbacdf753c94cc2f8d",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-10-01T12:52:28.278862Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-10-01T12:52:28.304335Z",
+          "revision": 1,
+          "row_revision": 2718492,
+          "source": {
+            "binding_id": "INTC:tomshardware_rss",
+            "kind": "api",
+            "name": "Tom's Hardware RSS",
+            "source_id": "tomshardware_rss"
+          },
+          "source_published_at": "2026-10-01T12:50:00Z",
+          "standard_message_id": "std_5154d2a851244d5181f0b5efac5c6dc2",
+          "stream_item_id": "stream_eceab9e3abdd453fbadd0ecfd467e923",
+          "stream_offset": 659,
+          "stream_published_at": "2026-10-01T12:52:28.308000Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Micron projects tightening RAM shortages through 2028 as it generates record profit"
+          },
+          "url": "https://www.tomshardware.com/pc-components/dram/micron-projects-tightening-ram-shortages-through-2028-as-it-generates-record-profit-record-86-25-percent-gross-margin-drives-over-usd53-billion-in-quarterly-profit",
+          "body_text": "Facebook\n\nX\n\nWhatsapp\n\nReddit\n\nPinterest\n\nFlipboard\n\nEmail\n\nMicron said during its FY 2026 earnings call that RAM and storage chip shortages will worsen in 2027 and 2028, even as it announced a record gross margin of 86.25%. CEO and chairperson Sanjay Mehrotra said that the company has already sold most of its capacity for next year and that customers will have to pay more compared to 2026.\n\n“In calendar 2027 as well as 2028, we see demand exceeding supply. In fact, we see greater tightness in the industry in 2027 and in 2028 versus 2026. Overall, supply-demand environment is only getting tighter,” Mehrotra said. “We do not have line of sight to when supply and demand will return to balance.”\n\nThe memory and storage industry is not holding back on increasing production, though, with Micron saying that NAND and DRAM shipments are expected to grow in the low-to-mid 20s percentage range for the next two years. However, it seems that this is not enough to match growing demand, as it expects “the industry to remain supply constrained in both years.” Still, it seems that manufacturers are prioritizing HBM demand for AI data centers, with the company expecting shipments of these chips to grow faster than conventional DRAM.\n\nMicron and other chip manufacturers are bringing new factories online to increase output, but it’s going to take years before they can start producing chips. But even as we’re amid an unprecedented multi-year memory chip shortage, Micron also announced record financial guidance. It forecasted a record $61.5 billion FQ1 revenue and a gross margin of 86.25%, implying a gross profit of more than $53 billion. After accounting for an estimated $2.06 billion in operating expenses and a tax rate of around 15.5%, the company said its earnings per share sit at $38.15, plus or minus $1.00, for approximately 1.15 billion shares.\n\nThese are record numbers, but it’s not surprising given the amount of money being poured into AI data centers. It has gotten to the point where the memory workers from Samsung and SK hynix have demanded and received bonuses worth hundreds of thousands of dollars, with Micron’s workers in Taiwan threatening to strike if they do not receive a bigger slice of the AI pie. While this is good news for the average employee from these big companies, it’s unfortunately bad news for the average person who must pay for RAM and storage at higher prices.\n\nMicron’s prediction goes directly against the Acer CEO’s prediction that PC prices will decline by late 2027, especially as Chinese RAM chips enter the market and consumers simply refuse to pay more for expensive memory chips. We can only wait and see which of these CEOs will be correct when it comes to DRAM and NAND pricing.\n\nFollow Tom's Hardware on Google News, or add us as a preferred source, to get our latest news, analysis, & reviews in your feeds.\n\nGet Tom's Hardware's best news and in-depth reviews, straight to your inbox.\n\nJowi Morales is a tech enthusiast with years of experience working in the industry. He’s been writing with several tech publications since 2021, where he’s been interested in tech hardware and consumer electronics."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_5154d2a851244d5181f0b5efac5c6dc2:0\"]",
+          "created_at": "2026-10-01T12:57:52.402399Z",
+          "dedupe_key": "13aeb187973a10db7dc1232bb962e97aabe0e83c822b440bc797a312aad9bc2b",
+          "entities": [
+            "Micron",
+            "DRAM",
+            "NAND",
+            "Memory industry"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "美光预计2027年和2028年DRAM及NAND需求都将超过供应，且行业供需紧张程度将高于2026年；公司目前看不到供需恢复平衡的时间线。",
+          "provisional_event_id": "E359",
+          "subject_time": "2027年至2028年"
+        },
+        {
+          "assertion_state": "EXPECTED",
+          "candidate_id": "[\"runtime-v2-msg:std_5154d2a851244d5181f0b5efac5c6dc2:1\"]",
+          "created_at": "2026-10-01T12:57:52.566526Z",
+          "dedupe_key": "91871f38732f888aa65dfb48896bc668010502b20a6bf28e9d79414af45318ea",
+          "entities": [
+            "Micron",
+            "DRAM",
+            "NAND",
+            "Memory capacity",
+            "Memory pricing"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "美光表示其2027年大部分产能已经售出，客户将为内存和存储产品支付高于2026年的价格。",
+          "provisional_event_id": "E360",
+          "subject_time": "2027年"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_5154d2a851244d5181f0b5efac5c6dc2:2\"]",
+          "created_at": "2026-10-01T12:57:52.587767Z",
+          "dedupe_key": "4c034c820158be670a7b0994a22388c2cce4cb55d251e874520e4904a595214d",
+          "entities": [
+            "Micron",
+            "DRAM",
+            "NAND",
+            "HBM"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "美光预计未来两年NAND和DRAM行业位出货量将以约20%的速度增长，但供给仍将受限，HBM出货量增长将快于传统DRAM。",
+          "provisional_event_id": "E361",
+          "subject_time": "2027年至2028年"
+        },
+        {
+          "assertion_state": "GUIDANCE",
+          "candidate_id": "[\"runtime-v2-msg:std_5154d2a851244d5181f0b5efac5c6dc2:3\"]",
+          "created_at": "2026-10-01T12:57:52.701919Z",
+          "dedupe_key": "251f751378bdff6b9b4621055ea1ea97a02642714054426e6e32be709e51d0d9",
+          "entities": [
+            "Micron",
+            "Gross margin",
+            "Revenue guidance",
+            "DRAM",
+            "NAND"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "美光FY2026第四季度毛利率达到86.25%，并预计FY2027第一季度营收约为615亿美元、毛利率对应的毛利润超过530亿美元。",
+          "provisional_event_id": "E362",
+          "subject_time": "Micron FY2026第四季度及FY2027第一季度"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_7378fdedc94241bbacdf753c94cc2f8d",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-10-01T12:57:52.820953+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-10-01",
+            "delivery_failure": null,
+            "direction": "SHORT",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_a5c620e1031c4fd99aaa85cc82c4e5a3",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-01T12:57:53.809537Z"
+              },
+              "case_id": "case_7378fdedc94241bbacdf753c94cc2f8d",
+              "direction": "SHORT",
+              "entry_reason": "INSUFFICIENT_MARGIN",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_7378fdedc94241bbacdf753c94cc2f8d",
+              "execution_reason_codes": [
+                "INSUFFICIENT_MARGIN"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_7378fdedc94241bbacdf753c94cc2f8d",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-01T12:57:52.820953Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "INSUFFICIENT_MARGIN"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    }
+  ]
+}

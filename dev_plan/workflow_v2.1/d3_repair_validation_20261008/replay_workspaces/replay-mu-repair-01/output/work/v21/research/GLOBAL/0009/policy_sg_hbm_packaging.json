@@ -1,0 +1,35 @@
+{
+  "policy_id": "pol_6249ddce7b7745c08167e38d8a3584a2",
+  "title": "新加坡HBM先进封装的2027年合格供给窗口",
+  "ref": [
+    "context/document3/v21/shared/global/0002.txt",
+    "context/document3/v21/shared/global/0003.txt",
+    "context/document3/v21/shared/document2.json",
+    "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+    "https://investors.micron.com/news/press-release/2026/Micron-Breaks-Ground-on-Advanced-Wafer-Fabrication-Facility-in-Singapore-01-26-2026/default.aspx"
+  ],
+  "transmission": "HBM的可售位数同时受DRAM晶圆、堆叠良率、测试及先进封装约束，单有前段晶圆或新洁净室不能按比例增加成品。美光截至2026-09-30称新加坡HBM先进封装厂洁净室准备早于计划，预计2027年初首次产出，并计划在2027年对总体HBM供给形成有意义贡献；公司已为2027年绝大部分HBM位供应签订协议。该厂能否在客户供货窗口形成合格封装产出，影响合同执行、区域分散和高价值产品增量；阶段性开机、试封装与合格商业供给应分开。",
+  "match_scope": "召回美光及新加坡项目伙伴就该HBM先进封装设施的洁净室、设备安装、试生产、合格HBM封装产出、商业供给、扩容或延误的消息，并注意与台湾既有封装能力及新加坡NAND晶圆厂区别。洁净室准备提前、按计划2027年初首次试产、合格供给提前或2027年贡献目标取消都属于相关情景；示例非穷举，仍依条件而非标题命中。",
+  "activation_conditions": [
+    {
+      "condition_id": "C1",
+      "decision": "LONG",
+      "trigger_layer": "MIDDLE",
+      "criterion": "美光确认新加坡新HBM先进封装设施在2027年初首次产出窗口内已形成可用于客户商业供货的合格HBM封装产品，而非仅完成洁净室或试封装。",
+      "calibration": {
+        "reference_state": "截至2026-09-30，该厂洁净室准备早于计划；公司预计2027年初初始产出，2027年对总体HBM供给形成有意义贡献。初产与合格商业供给不是同一状态；公司未在该时点披露新加坡设施已经交付合格商业HBM。2027年绝大部分HBM位供应已签约，增加合格后段能力有明确需求接口。",
+        "trigger_boundary": "在原本仅安排初产的2027年初窗口就取得客户可用的合格HBM封装产出，提前压缩试封装到可销售供给的爬坡不确定性，足以改善2027履约容量预期。无需再等季度收入、全部产能满载或跨客户重复出货；仅设备到位和按计划试产不足以命中。"
+      }
+    },
+    {
+      "condition_id": "C2",
+      "decision": "SHORT",
+      "trigger_layer": "MIDDLE",
+      "criterion": "美光正式撤回新加坡HBM先进封装设施将于2027年对总体HBM供应形成有意义贡献的计划，将首次产出或合格扩容量推迟到无法服务2027年供应窗口。",
+      "calibration": {
+        "reference_state": "截至2026-09-30，公司计划该设施2027年初首次产出并在2027年形成有意义的HBM供给贡献，同时已签约2027年绝大部分HBM位供应；台湾既有封装产能仍在，不能把新加坡延误等同于公司全部HBM停供。",
+        "trigger_boundary": "官方项目重排已使新加坡设施不再被纳入2027年有意义的合格封装供给，而非仅初产日程小幅波动时，就失去原计划缓解后段瓶颈及分散地域风险的当年增量。无需等待客户违约、HBM收入下滑或其他工厂也告急。"
+      }
+    }
+  ]
+}

@@ -1,0 +1,302 @@
+[
+  {
+    "alias": "O121",
+    "title": "text paragraphs 1",
+    "block_type": "text",
+    "path": "blocks/O121.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://semiconductor.samsung.com/news-events/news/samsung-electronics-begins-shipment-of-industry-first-hbm4e-samples/"
+    },
+    "content_chars": 604,
+    "selected": true
+  },
+  {
+    "alias": "O122",
+    "title": "text paragraphs 2",
+    "block_type": "text",
+    "path": "blocks/O122.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://semiconductor.samsung.com/news-events/news/samsung-electronics-begins-shipment-of-industry-first-hbm4e-samples/"
+    },
+    "content_chars": 598,
+    "selected": true
+  },
+  {
+    "alias": "O123",
+    "title": "text paragraphs 3",
+    "block_type": "text",
+    "path": "blocks/O123.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://semiconductor.samsung.com/news-events/news/samsung-electronics-begins-shipment-of-industry-first-hbm4e-samples/"
+    },
+    "content_chars": 598,
+    "selected": true
+  },
+  {
+    "alias": "O124",
+    "title": "text paragraphs 4",
+    "block_type": "text",
+    "path": "blocks/O124.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://semiconductor.samsung.com/news-events/news/samsung-electronics-begins-shipment-of-industry-first-hbm4e-samples/"
+    },
+    "content_chars": 595,
+    "selected": true
+  },
+  {
+    "alias": "O125",
+    "title": "text paragraphs 5",
+    "block_type": "text",
+    "path": "blocks/O125.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://semiconductor.samsung.com/news-events/news/samsung-electronics-begins-shipment-of-industry-first-hbm4e-samples/"
+    },
+    "content_chars": 598,
+    "selected": true
+  },
+  {
+    "alias": "O126",
+    "title": "text paragraphs 6",
+    "block_type": "text",
+    "path": "blocks/O126.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://semiconductor.samsung.com/news-events/news/samsung-electronics-begins-shipment-of-industry-first-hbm4e-samples/"
+    },
+    "content_chars": 606,
+    "selected": true
+  },
+  {
+    "alias": "O127",
+    "title": "text paragraphs 7",
+    "block_type": "text",
+    "path": "blocks/O127.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://semiconductor.samsung.com/news-events/news/samsung-electronics-begins-shipment-of-industry-first-hbm4e-samples/"
+    },
+    "content_chars": 590,
+    "selected": true
+  },
+  {
+    "alias": "O128",
+    "title": "text paragraphs 8",
+    "block_type": "text",
+    "path": "blocks/O128.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://semiconductor.samsung.com/news-events/news/samsung-electronics-begins-shipment-of-industry-first-hbm4e-samples/"
+    },
+    "content_chars": 582,
+    "selected": true
+  },
+  {
+    "alias": "O129",
+    "title": "text paragraphs 9",
+    "block_type": "text",
+    "path": "blocks/O129.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://semiconductor.samsung.com/news-events/news/samsung-electronics-begins-shipment-of-industry-first-hbm4e-samples/"
+    },
+    "content_chars": 583,
+    "selected": true
+  },
+  {
+    "alias": "O130",
+    "title": "text paragraphs 10",
+    "block_type": "text",
+    "path": "blocks/O130.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://semiconductor.samsung.com/news-events/news/samsung-electronics-begins-shipment-of-industry-first-hbm4e-samples/"
+    },
+    "content_chars": 582,
+    "selected": true
+  },
+  {
+    "alias": "O131",
+    "title": "text paragraphs 11",
+    "block_type": "text",
+    "path": "blocks/O131.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://semiconductor.samsung.com/news-events/news/samsung-electronics-begins-shipment-of-industry-first-hbm4e-samples/"
+    },
+    "content_chars": 612,
+    "selected": true
+  },
+  {
+    "alias": "O132",
+    "title": "text paragraphs 12",
+    "block_type": "text",
+    "path": "blocks/O132.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://semiconductor.samsung.com/news-events/news/samsung-electronics-begins-shipment-of-industry-first-hbm4e-samples/"
+    },
+    "content_chars": 536,
+    "selected": true
+  },
+  {
+    "alias": "O133",
+    "title": "text paragraphs 13",
+    "block_type": "text",
+    "path": "blocks/O133.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://semiconductor.samsung.com/news-events/news/samsung-electronics-begins-shipment-of-industry-first-hbm4e-samples/"
+    },
+    "content_chars": 542,
+    "selected": true
+  },
+  {
+    "alias": "O134",
+    "title": "text paragraphs 14",
+    "block_type": "text",
+    "path": "blocks/O134.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://semiconductor.samsung.com/news-events/news/samsung-electronics-begins-shipment-of-industry-first-hbm4e-samples/"
+    },
+    "content_chars": 542,
+    "selected": true
+  },
+  {
+    "alias": "O135",
+    "title": "text paragraphs 15",
+    "block_type": "text",
+    "path": "blocks/O135.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://semiconductor.samsung.com/news-events/news/samsung-electronics-begins-shipment-of-industry-first-hbm4e-samples/"
+    },
+    "content_chars": 542,
+    "selected": true
+  },
+  {
+    "alias": "O136",
+    "title": "text paragraphs 16",
+    "block_type": "text",
+    "path": "blocks/O136.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://semiconductor.samsung.com/news-events/news/samsung-electronics-begins-shipment-of-industry-first-hbm4e-samples/"
+    },
+    "content_chars": 542,
+    "selected": true
+  },
+  {
+    "alias": "O137",
+    "title": "text paragraphs 17",
+    "block_type": "text",
+    "path": "blocks/O137.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://semiconductor.samsung.com/news-events/news/samsung-electronics-begins-shipment-of-industry-first-hbm4e-samples/"
+    },
+    "content_chars": 542,
+    "selected": true
+  },
+  {
+    "alias": "O138",
+    "title": "text paragraphs 18",
+    "block_type": "text",
+    "path": "blocks/O138.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://semiconductor.samsung.com/news-events/news/samsung-electronics-begins-shipment-of-industry-first-hbm4e-samples/"
+    },
+    "content_chars": 542,
+    "selected": true
+  },
+  {
+    "alias": "O139",
+    "title": "text paragraphs 19",
+    "block_type": "text",
+    "path": "blocks/O139.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://semiconductor.samsung.com/news-events/news/samsung-electronics-begins-shipment-of-industry-first-hbm4e-samples/"
+    },
+    "content_chars": 542,
+    "selected": true
+  },
+  {
+    "alias": "O140",
+    "title": "text paragraphs 20",
+    "block_type": "text",
+    "path": "blocks/O140.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://semiconductor.samsung.com/news-events/news/samsung-electronics-begins-shipment-of-industry-first-hbm4e-samples/"
+    },
+    "content_chars": 542,
+    "selected": true
+  },
+  {
+    "alias": "O141",
+    "title": "text paragraphs 21",
+    "block_type": "text",
+    "path": "blocks/O141.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://semiconductor.samsung.com/news-events/news/samsung-electronics-begins-shipment-of-industry-first-hbm4e-samples/"
+    },
+    "content_chars": 542,
+    "selected": true
+  },
+  {
+    "alias": "O142",
+    "title": "text paragraphs 22",
+    "block_type": "text",
+    "path": "blocks/O142.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://semiconductor.samsung.com/news-events/news/samsung-electronics-begins-shipment-of-industry-first-hbm4e-samples/"
+    },
+    "content_chars": 557,
+    "selected": false
+  },
+  {
+    "alias": "O143",
+    "title": "text paragraphs 23",
+    "block_type": "text",
+    "path": "blocks/O143.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://semiconductor.samsung.com/news-events/news/samsung-electronics-begins-shipment-of-industry-first-hbm4e-samples/"
+    },
+    "content_chars": 566,
+    "selected": false
+  },
+  {
+    "alias": "O144",
+    "title": "text paragraphs 24",
+    "block_type": "text",
+    "path": "blocks/O144.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://semiconductor.samsung.com/news-events/news/samsung-electronics-begins-shipment-of-industry-first-hbm4e-samples/"
+    },
+    "content_chars": 520,
+    "selected": false
+  },
+  {
+    "alias": "O145",
+    "title": "text paragraphs 25",
+    "block_type": "text",
+    "path": "blocks/O145.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://semiconductor.samsung.com/news-events/news/samsung-electronics-begins-shipment-of-industry-first-hbm4e-samples/"
+    },
+    "content_chars": 130,
+    "selected": true
+  }
+]

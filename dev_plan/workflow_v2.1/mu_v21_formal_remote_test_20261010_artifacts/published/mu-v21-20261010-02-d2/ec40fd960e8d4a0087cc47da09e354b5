@@ -1,0 +1,2927 @@
+{
+  "name": "DRAM行业市场",
+  "scope": "各类DRAM的终端消耗、客户库存与采购、竞争供给、技术迁移、晶圆配置及市场价格结构，涵盖HBM与其他DRAM的资源关系、美光的市场实现价和供给配置。共同研究背景为DRAM供应商、买方群体及交易市场。",
+  "boundary": "全行业需求、竞争者有效供给、资源配置和市场价格由本域深化；美光各终端产品的客户采用、份额及商业组合由相应产品业务域深化。美光自身生产资产和工序归DRAM与HBM制造体系，跨产品供给合同归战略客户供给与资金保障关系，地域采购资格归地域市场准入。",
+  "ref": [
+    "D1-O31",
+    "D1-O74",
+    "D1-O205",
+    "D1-O3",
+    "D1-O57",
+    "D1-O44",
+    "D1-O18"
+  ],
+  "units": [
+    {
+      "name": "DRAM市场供需与定价",
+      "scope": "DRAM各产品的需求、客户库存与采购、供应商竞争、制程迁移、晶圆资源配置、有效供给及价格结构，涵盖HBM与其他DRAM之间的资源关系以及美光的市场实现价与供给配置。",
+      "horizon": "季度采购与定价周期，延伸至数个季度和多年行业产能周期。",
+      "ref": [
+        "D1-O31",
+        "D1-O74",
+        "D1-O205",
+        "D1-O3",
+        "D1-O57",
+        "D1-O44",
+        "D1-O18",
+        "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+        "https://www.trendforce.com/presscenter/news/20260907-13219.html",
+        "https://www.trendforce.com/presscenter/news/20260929-13255.html",
+        "https://www.trendforce.com/presscenter/news/20260730-13158.html",
+        "https://www.trendforce.com.tw/presscenter/news/20260709-13138.html",
+        "https://www.trendforce.com/presscenter/news/20260908-13222.html",
+        "https://www.trendforce.com/presscenter/news/20261008-13264.html",
+        "https://www.cxmt.com/en/news/info_22.html",
+        "https://www.cxmt.com/en/news/info_21.html",
+        "https://www.dramexchange.com/",
+        "https://www.microsoft.com/en-us/investor/earnings/fy-2026-q4/press-release-webcast",
+        "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+        "D1-O67",
+        "D1-O80",
+        "D1-O81",
+        "D1-O83",
+        "https://investors.coreweave.com/news/news-details/2026/CoreWeave-Reports-Strong-Second-Quarter-2026-Results/default.aspx",
+        "D1-O50",
+        "D1-O51",
+        "D1-O130",
+        "https://www.trendforce.com/presscenter/news/20260803-13161.html",
+        "D1-O96",
+        "D1-O103",
+        "D1-O105",
+        "D1-O107",
+        "D1-O88",
+        "https://www.trendforce.com/presscenter/news/20260904-13217.html",
+        "https://www.idc.com/resource-center/blog/smartphone-shipments-set-for-record-16-7-drop-in-2026-as-the-memory-crisis-hits-full-force/",
+        "D1-O86",
+        "D1-O69",
+        "D1-O66",
+        "D1-O171",
+        "https://sg.micron.com/content/dam/micron/global/public/corporate/quality/certificates/micron-21-03-104-c-r018-y4bm-type-certificate-v2r0.pdf",
+        "D1-O147",
+        "D1-O148",
+        "D1-O149",
+        "D1-O150",
+        "D1-O117",
+        "D1-O125",
+        "D1-O76",
+        "D1-O92",
+        "D1-O98",
+        "D1-O102",
+        "https://developer.nvidia.com/blog/?p=111143",
+        "https://github.com/microncxl/cxl-reskit",
+        "https://www.trendforce.com/price/dram/lpddr_spot",
+        "https://www.trendforce.com/research/download/RP260728GY",
+        "D1-O71",
+        "D1-O72",
+        "D1-O91",
+        "https://news.skhynix.com/en/q2-2026-business-results/",
+        "https://www.trendforce.com/presscenter/news/20260602-13074.html",
+        "https://micron.gcs-web.com/static-files/df96216e-3e07-4b97-a4ef-df0a5fa684d6",
+        "D1-O52",
+        "D1-O186",
+        "https://news.skhynix.com/en/new-facility-investment-for-yongin-semiconductor-cluster/",
+        "https://news.skhynix.com/en/fab-facility-investment-2026/",
+        "https://www.nanya.com/cn/IR/16/%E6%96%B0%E9%97%BB%E7%A8%BF?IRId=13150",
+        "https://www.trendforce.com/research/download/RP260708BM",
+        "https://www.dramexchange.com/Service/Faqs",
+        "https://semiconductor.samsung.com/news-events/tech-blog/dividing-and-conquering-linux-high-capacity-ssd-support-with-lbs-ep1/",
+        "https://doi.org/10.1145/3789202",
+        "https://news.samsung.com/us/samsung-introduces-990-evo-ssd/",
+        "https://www.microsoft.com/en-us/copilot/blog/2026/06/16/copilot-cowork-is-now-generally-available/",
+        "https://www.anthropic.com/news/improving-alignment-security-efforts",
+        "https://nvidianews.nvidia.com/news/open-agent-safety-platform",
+        "https://blogs.microsoft.com/blog/2026/02/24/microsoft-sovereign-cloud-adds-governance-productivity-and-support-for-large-ai-models-securely-running-even-when-completely-disconnected/",
+        "https://www.pjm.com/markets-and-operations/large-load",
+        "https://insidelines.pjm.com/pjm-proposes-framework-to-connect-data-centers-without-compromising-reliability-affordability/",
+        "https://arxiv.org/abs/2606.25098v1",
+        "D1-O108",
+        "D1-O109",
+        "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf",
+        "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html",
+        "https://blogs.windows.com/windowsexperience/2025/06/24/stay-secure-with-windows-11-copilot-pcs-and-windows-365-before-support-ends-for-windows-10/",
+        "https://nvidianews.nvidia.com/news/nvidia-announces-open-physical-ai-data-factory-blueprint-to-accelerate-robotics-vision-ai-agents-and-autonomous-vehicle-development",
+        "D1-O78",
+        "https://news.skhynix.com/en/groundbreaking-ceremony-in-indiana/",
+        "https://www.nanya.com/en/IR/16/Press%20Release?IRId=13150",
+        "D1-O70",
+        "D1-O172"
+      ],
+      "state": {
+        "parameters": [
+          {
+            "name": "常规DRAM合约价环比变化",
+            "definition": "不含HBM的常规DRAM合约价格季度变动；行业调查预测与已结算交易分开，不是美光实现ASP。",
+            "value_type": "RANGE",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+              "https://www.trendforce.com/presscenter/news/20260907-13219.html"
+            ]
+          },
+          {
+            "name": "服务器DRAM合约价环比变化",
+            "definition": "服务器DRAM季度合约价变动，包含长约与非长约不同兑现节奏。",
+            "value_type": "RANGE",
+            "ref": [
+              "https://www.trendforce.com.tw/presscenter/news/20260709-13138.html"
+            ]
+          },
+          {
+            "name": "移动DRAM合约价环比变化",
+            "definition": "手机移动DRAM季度合约价变动，不与NAND、手机整机ASP合并。",
+            "value_type": "RANGE",
+            "ref": [
+              "https://www.trendforce.com/price/dram/lpddr_spot",
+              "https://www.trendforce.com/research/download/RP260803NC"
+            ]
+          },
+          {
+            "name": "HBM混合ASP同比变化",
+            "definition": "行业HBM代际、层数和客户组合下的混合ASP增幅；不代表同一SKU涨幅或美光保证价格。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260929-13255.html"
+            ]
+          },
+          {
+            "name": "8层HBM相对12层的每Gb价格溢价",
+            "definition": "2027年8-Hi相对12-Hi产品的每Gb价差预测；不是每堆叠总价之差。",
+            "value_type": "RANGE",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260929-13255.html"
+            ]
+          },
+          {
+            "name": "DDR5标准颗粒现货均价",
+            "definition": "DRAMeXchange/TrendForce的DDR5 16Gb (2Gx8) 4800/5600单颗粒现货收盘session average；Gb是颗粒密度，不是GB模组容量。eTT与标准速度规格不互换，样本不是美光直销价格。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.dramexchange.com/",
+              "https://www.dramexchange.com/Service/Faqs"
+            ]
+          },
+          {
+            "name": "DDR4标准颗粒现货均价",
+            "definition": "DRAMeXchange/TrendForce的DDR4 16Gb (2Gx8) 3200单颗粒现货收盘session average；Gb是颗粒密度，不是GB模组容量。eTT与标准速度规格不互换，样本不是美光直销价格。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.dramexchange.com/",
+              "https://www.dramexchange.com/Service/Faqs"
+            ]
+          },
+          {
+            "name": "DDR5 eTT颗粒现货均价",
+            "definition": "DRAMeXchange/TrendForce的DDR5 16Gb (2Gx8) eTT单颗粒现货收盘session average；Gb是颗粒密度，不是GB模组容量。eTT与标准速度规格不互换，样本不是美光直销价格。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.dramexchange.com/",
+              "https://www.dramexchange.com/Service/Faqs"
+            ]
+          },
+          {
+            "name": "DDR4 eTT颗粒现货均价",
+            "definition": "DRAMeXchange/TrendForce的DDR4 16Gb (2Gx8) eTT单颗粒现货收盘session average；Gb是颗粒密度，不是GB模组容量。eTT与标准速度规格不互换，样本不是美光直销价格。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.dramexchange.com/",
+              "https://www.dramexchange.com/Service/Faqs"
+            ]
+          },
+          {
+            "name": "DDR5服务器模组现货均价",
+            "definition": "DDR5 RDIMM 32GB 4800/5600的session average，USD/整条模组；不是16Gb单颗粒价格或OEM长约实现价。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.dramexchange.com/"
+            ]
+          },
+          {
+            "name": "DDR5客户端模组合约均价",
+            "definition": "公开表DDR5 8GB SO-DIMM合约session average，USD/整条模组；不含战略客户特殊协议。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.trendforce.com/price/dram/lpddr_spot",
+              "https://www.dramexchange.com/Service/Faqs"
+            ]
+          },
+          {
+            "name": "DDR4标准颗粒合约均价",
+            "definition": "公开表DDR4 16Gb 2Gx8合约session average，USD/颗；与同密度现货仍有时间和交易客户差异。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.trendforce.com/price/dram/lpddr_spot",
+              "https://www.dramexchange.com/Service/Faqs"
+            ]
+          },
+          {
+            "name": "全球智能手机生产数量",
+            "definition": "TrendForce统计的智能手机生产台数；用于移动DRAM装机需求基础，不等于渠道sell-through或IDC出货量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260908-13222.html"
+            ]
+          },
+          {
+            "name": "全球智能手机生产同比增幅",
+            "definition": "TrendForce同期间智能手机生产台数同比变化，独立于生产绝对量及出货同比。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260908-13222.html"
+            ]
+          },
+          {
+            "name": "全球智能手机出货同比增幅",
+            "definition": "IDC全球智能手机出货台数同比变化；与TrendForce生产口径并列，不平均两者，也不直接替代DRAM位元消耗。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.idc.com/resource-center/blog/smartphone-shipments-set-for-record-16-7-drop-in-2026-as-the-memory-crisis-hits-full-force/"
+            ]
+          },
+          {
+            "name": "全球笔记本出货同比增幅",
+            "definition": "TrendForce全球笔记本出货台数同比变化；不含全部桌面PC，台数需与平均DRAM配置结合解释装机位元需求。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260904-13217.html",
+              "https://www.trendforce.com/presscenter/news/20261008-13264.html"
+            ]
+          },
+          {
+            "name": "笔记本出货半年度分布",
+            "definition": "TrendForce全年笔记本出货中上半年占比，用于定位采购和更新需求前移，而非行业增长率。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260904-13217.html"
+            ]
+          },
+          {
+            "name": "全球PC出货同比增幅",
+            "definition": "IDC全PC而非仅笔记本的台数同比变化；保留发布时点，不当作10月最新季度实际。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.idc.com/resource-center/blog/pc-market-enters-volatile-territory-as-memory-shortage-persists-through-2027/"
+            ]
+          },
+          {
+            "name": "服务器RDIMM容量采购组合",
+            "definition": "CSP/OEM在服务器模组容量间的实际采购选择；影响每条模组消耗位元及可满足的服务器数量，不等于服务器台数减少。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.trendforce.com.tw/presscenter/news/20260709-13138.html"
+            ]
+          },
+          {
+            "name": "全球AI服务器出货增长状态",
+            "definition": "TrendForce全球AI服务器台数同比预测状态，保存近似增幅；GPU与ASIC路线均可需要HBM，不能按统一内存BOM换算。",
+            "value_type": "DIRECTION",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260803-13161.html"
+            ]
+          },
+          {
+            "name": "GPU和ASIC的HBM层数配置选择",
+            "definition": "客户对每器件HBM层数和容量的选型状态，直接影响单平台位元需求及资源分配；评估不等于定案。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260929-13255.html",
+              "D1-O52",
+              "D1-O186"
+            ]
+          },
+          {
+            "name": "图形DRAM代际供需安排",
+            "definition": "GDDR6/GDDR7买方选型与供应资源配置形成的市场供需位置；用于解释图形DRAM并非PC销量的简单镜像。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260930-13258.html"
+            ]
+          },
+          {
+            "name": "SSD客户对配套DRAM的需求方向",
+            "definition": "SSD需求带来的配套DRAM组件采购变化；仅记录DRAM连接，不把全部SSD/NAND位元直接算作DRAM。",
+            "value_type": "DIRECTION",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260930-13258.html"
+            ]
+          },
+          {
+            "name": "DRAM供应商库存位置",
+            "definition": "行业厂商可用于供货的DRAM库存经营状态；不同于买方库存或美光报表库存美元金额。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260907-13219.html"
+            ]
+          },
+          {
+            "name": "美国CSP的DRAM库存方向",
+            "definition": "美国CSP持有DRAM库存的变化方向，区分平台组装约束下备货与实际部署消耗。",
+            "value_type": "DIRECTION",
+            "ref": [
+              "https://www.trendforce.com.tw/presscenter/news/20260709-13138.html"
+            ]
+          },
+          {
+            "name": "PC OEM预防性采购位置",
+            "definition": "PC OEM为未来可得性而提前采购的经营状态，与终端销售及渠道库存分开。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260904-13217.html",
+              "https://www.trendforce.com/presscenter/news/20261008-13264.html"
+            ]
+          },
+          {
+            "name": "移动DRAM库存与议价位置",
+            "definition": "手机品牌库存对新增移动DRAM采购和议价紧迫性的影响，不是NAND/eMMC库存。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.trendforce.com/price/dram/lpddr_spot",
+              "https://www.trendforce.com/research/download/RP260803NC"
+            ]
+          },
+          {
+            "name": "全球DRAM供需充足率",
+            "definition": "TrendForce的DRAM位元供需差距sufficiency ratio，负值表示不足；仅保留其模型估计，公开摘要未给出完整分母公式。",
+            "value_type": "RANGE",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260730-13158.html"
+            ]
+          },
+          {
+            "name": "三大供应商HBM晶圆投入占比",
+            "definition": "HBM占三星、SK hynix和美光总DRAM晶圆投入的比重；是晶圆投入而非行业HBM营收或位元份额。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260602-13074.html"
+            ]
+          },
+          {
+            "name": "HBM占DRAM位元供给比重",
+            "definition": "TrendForce公开模型中HBM占total DRAM bit supply的比重；与三大厂晶圆投入模型并列，但摘要未单列位元分母的完整供应商范围，不能扩成独立实测份额。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260602-13074.html"
+            ]
+          },
+          {
+            "name": "行业增量DRAM供给路径",
+            "definition": "现有厂技术迁移、晶圆投入和新厂爬坡构成的增量供给安排；定义可售位元形成路径，不以厂房面积等同产量。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260907-13219.html",
+              "https://www.trendforce.com/presscenter/news/20260730-13158.html"
+            ]
+          },
+          {
+            "name": "服务器RDIMM位元供给同比增长",
+            "definition": "TrendForce依据供应商供给意向估算的RDIMM位元年增幅，区别于全部DRAM位元及服务器CPU台数。",
+            "value_type": "RANGE",
+            "ref": [
+              "https://www.trendforce.com.tw/presscenter/news/20260709-13138.html"
+            ]
+          },
+          {
+            "name": "HBM相对DDR5 RDIMM单位晶圆经济性",
+            "definition": "同一单位晶圆下HBM和DDR5 64GB RDIMM收入/获利的相对排序；行业以面积、良率和每Gb价推算，不是供应商单品实报毛利。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260602-13074.html"
+            ]
+          },
+          {
+            "name": "美光1γ在DRAM产量中的地位",
+            "definition": "美光先进节点在其DRAM位元产量中的采用规模状态，作为市场供给密度改善锚点；不深化工序良率和项目回报。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O88",
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "美光DRAM既有供给利用状态",
+            "definition": "美光自身既有DRAM制造资源可用性及供给约束的管理层描述，不是独立统计的数值利用率。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O57",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "美光Idaho新增前段首次晶圆时间",
+            "definition": "新DRAM厂从建设进入首次晶圆产出的计划时间；并非满产或合格商业出货。",
+            "value_type": "TIME",
+            "ref": [
+              "D1-O31",
+              "D1-O88"
+            ]
+          },
+          {
+            "name": "美光铜锣增量商业出货时间",
+            "definition": "已收购现有厂形成有意义产品出货的计划时间，用于行业增量供应；不等于全部厂房满产。",
+            "value_type": "TIME",
+            "ref": [
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "美光新加坡HBM封装扩容时间",
+            "definition": "专用后段预计开始显著增加封装能力的时间；不是额外晶圆投入，也非同日形成可售HBM位元。",
+            "value_type": "TIME",
+            "ref": [
+              "D1-O31",
+              "D1-O88"
+            ]
+          },
+          {
+            "name": "SK hynix龙仁Y1首洁净室开放时间",
+            "definition": "竞争者首洁净室可用空间的计划节点，设备安装、制造和合格出货另有时滞。",
+            "value_type": "TIME",
+            "ref": [
+              "https://news.skhynix.com/en/new-facility-investment-for-yongin-semiconductor-cluster/",
+              "https://news.skhynix.com/en/fab-facility-investment-2026/"
+            ]
+          },
+          {
+            "name": "SK hynix龙仁Y2首洁净室开放时间",
+            "definition": "后续DRAM/HBM厂Y2新增物理供给空间的计划时间，不能作为2027年缓解缺口的既有供给。",
+            "value_type": "TIME",
+            "ref": [
+              "https://news.skhynix.com/en/fab-facility-investment-2026/"
+            ]
+          },
+          {
+            "name": "南亚新厂第一阶段晶圆月投入能力",
+            "definition": "南亚新厂第一阶段计划月投片量；不等于当前投入、不含其既有厂，也不直接等于合格位元。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.nanya.com/cn/IR/16/%E6%96%B0%E9%97%BB%E7%A8%BF?IRId=13150"
+            ]
+          },
+          {
+            "name": "HBM4供应商商业供给阶段",
+            "definition": "各供应商已达到的HBM4供给状态，按供应商、层数与日期保存，不能据阶段认定统一产能或客户份额。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O205",
+              "D1-O88",
+              "https://news.skhynix.com/en/q2-2026-business-results/"
+            ]
+          },
+          {
+            "name": "CXMT高端移动DRAM商业供给位置",
+            "definition": "CXMT在较先进移动DRAM规格上的生产与商业采用位置，作为竞争供给实际进入的锚点；公司宣称不等于全行业份额。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.cxmt.com/en/news/info_22.html",
+              "https://www.cxmt.com/en/news/info_21.html"
+            ]
+          },
+          {
+            "name": "CXMT G5 LPDDR5X单die容量",
+            "definition": "量产G5 LPDDR5X单个DRAM die的位元密度，独立于封装容量和单位晶圆die数。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.cxmt.com/en/news/info_22.html"
+            ]
+          },
+          {
+            "name": "CXMT G5相对前代单位晶圆毛die密度",
+            "definition": "在8Gb密度归一基准下G5相对G4的gross dies per wafer变化幅度；不是良率或合格位元增幅。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.cxmt.com/en/news/info_22.html"
+            ]
+          },
+          {
+            "name": "南亚DRAM实现ASP增幅状态",
+            "definition": "南亚自身DRAM混合ASP环比增幅，保留一侧界限，非全行业同规格价差。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.nanya.com/en/IR/16/Press%20Release?IRId=13150"
+            ]
+          },
+          {
+            "name": "南亚DRAM位元出货方向",
+            "definition": "南亚DRAM位元出货环比变动，与ASP及营收分别保留。",
+            "value_type": "DIRECTION",
+            "ref": [
+              "https://www.nanya.com/en/IR/16/Press%20Release?IRId=13150"
+            ]
+          },
+          {
+            "name": "全球DRAM行业营收规模",
+            "definition": "TrendForce对DRAM行业含HBM的季度收入估计，量价及组合的综合结果，不等于物理需求。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260907-13219.html"
+            ]
+          },
+          {
+            "name": "全球DRAM行业营收环比增幅",
+            "definition": "同一TrendForce季度行业收入口径的环比变化；单独于收入绝对量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260907-13219.html"
+            ]
+          },
+          {
+            "name": "三星DRAM营收份额",
+            "definition": "TrendForce自然季度行业营收口径下三星的份额，含价格与组合影响；不是位元份额、HBM份额或美光财季数据。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260907-13219.html"
+            ]
+          },
+          {
+            "name": "SK hynixDRAM营收份额",
+            "definition": "TrendForce自然季度行业营收口径下SK hynix的份额，含价格与组合影响；不是位元份额、HBM份额或美光财季数据。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260907-13219.html"
+            ]
+          },
+          {
+            "name": "美光DRAM营收份额",
+            "definition": "TrendForce自然季度行业营收口径下美光的份额，含价格与组合影响；不是位元份额、HBM份额或美光财季数据。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260907-13219.html"
+            ]
+          },
+          {
+            "name": "美光DRAM混合实现ASP同比增幅",
+            "definition": "美光已实现DRAM平均售价同比变化，保留组合作用，不与现货或同行合约指数等同。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "美光DRAM位元出货增长方向",
+            "definition": "美光全年已销售DRAM位元同比变动，按公司定性幅度保留，不制造精确点值。",
+            "value_type": "DIRECTION",
+            "ref": [
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "美光DRAM营收同比增幅",
+            "definition": "美光DRAM产品营收年度变动，单独于全公司和业务单元营收。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "美光非数据中心供给分配方向",
+            "definition": "美光资源在移动/客户端业务与其他业务间的重配方向；MCBU的DRAM/NAND混合位元不能充当DRAM终端需求总量。",
+            "value_type": "DIRECTION",
+            "ref": [
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "美光市场供货的多年价格与数量安排",
+            "definition": "美光已签多年供给协议中的定价、数量约束经营状态，仅在此定位价格/分配形成方式，详细合同与资金经济性归相邻域。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O57",
+              "D1-O31",
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "SK hynix多年客户供货安排",
+            "definition": "竞争供应者SK hynix对关键客户的长期合同位置；与美光合同分别记录，不将客户数视为覆盖位元比例。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://news.skhynix.com/en/q2-2026-business-results/"
+            ]
+          },
+          {
+            "name": "全球DRAM终端消耗位元增长率",
+            "definition": "在既定终端与年度口径下真正装机/使用的DRAM位元同比增长，须排除买方备货；当前未取得可比统一量值。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260730-13158.html",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "全球DRAM位元供给增长率",
+            "definition": "全行业DRAM供给位元同比增长，按实际或预测身份保留；不以毛die、晶圆投入或营收替代。公开报告摘要预测不能当作已完成合格交付量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.trendforce.com/research/download/RP260728GY",
+              "https://www.trendforce.com/presscenter/news/20260907-13219.html",
+              "https://www.trendforce.com/presscenter/news/20260730-13158.html"
+            ]
+          },
+          {
+            "name": "美国CSP DRAM库存周数",
+            "definition": "美国CSP持有DRAM库存相对其同口径消耗的覆盖周数；仅有Q2方向观察，未取得截止时点周数。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.trendforce.com.tw/presscenter/news/20260709-13138.html"
+            ]
+          },
+          {
+            "name": "PC OEM DRAM库存周数",
+            "definition": "PC OEM持有DRAM组件库存的消耗覆盖周数，不包括SSD库存或整机渠道库存；未取得统一当前数量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260904-13217.html",
+              "https://www.trendforce.com/presscenter/news/20260930-13258.html"
+            ]
+          },
+          {
+            "name": "手机OEM DRAM库存周数",
+            "definition": "手机OEM的移动DRAM组件库存相对同口径使用量的周数，不混入NAND或全部BOM；八月报告目录给出买方平均范围，但样本和消耗口径未展开，不能据此补成全体手机OEM在研究截点的统一数值。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.trendforce.com/price/dram/lpddr_spot",
+              "https://www.trendforce.com/research/download/RP260803NC"
+            ]
+          },
+          {
+            "name": "美光同规格DDR5合约实现价",
+            "definition": "美光同密度、速率、客户及合约口径DDR5实际成交价格，USD/Gb；用于分离市场价格与组合，当前未取得匹配序列。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O57",
+              "https://www.dramexchange.com/Service/Faqs"
+            ]
+          },
+          {
+            "name": "美光HBM已承诺供给覆盖率",
+            "definition": "特定年度美光HBM可交付位元中已有可执行客户承诺的比例；不从保证金、全部DRAM合同或客户名单反推。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O57",
+              "D1-O88"
+            ]
+          },
+          {
+            "name": "TrendForce移动DRAM买方平均库存报告范围",
+            "definition": "TrendForce 2026Q3移动DRAM报告公开目录所称买方平均库存覆盖范围；目录未公开样本与具体消耗口径，不替代全体手机OEM、PC OEM或美国CSP的同口径库存周数。",
+            "value_type": "RANGE",
+            "ref": [
+              "https://www.trendforce.com/research/download/RP260803NC"
+            ]
+          }
+        ],
+        "values": [
+          {
+            "name": "TrendForce四季度合约价预测",
+            "parameter": "常规DRAM合约价环比变化",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "lower": 10.0,
+              "upper": 15.0,
+              "unit": "%环比"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2026Q4，相对Q3；预测",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260930-13258.html"
+            ]
+          },
+          {
+            "name": "TrendForce三季度预测快照",
+            "parameter": "常规DRAM合约价环比变化",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "lower": 13.0,
+              "upper": 18.0,
+              "unit": "%环比"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2026Q3，相对Q2；9月预测，非已结算实际",
+            "as_of": "2026-09-07",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260907-13219.html"
+            ]
+          },
+          {
+            "name": "TrendForce服务器三季度预测",
+            "parameter": "服务器DRAM合约价环比变化",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "lower": 13.0,
+              "upper": 18.0,
+              "unit": "%环比"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2026Q3，相对Q2；7月预测",
+            "as_of": "2026-07-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com.tw/presscenter/news/20260709-13138.html"
+            ]
+          },
+          {
+            "name": "TrendForce移动DRAM三季度预测",
+            "parameter": "移动DRAM合约价环比变化",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "lower": 8.0,
+              "upper": 13.0,
+              "unit": "%环比"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2026Q3，相对Q2；尚在议价的预测",
+            "as_of": "2026-08-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/price/dram/lpddr_spot",
+              "https://www.trendforce.com/research/download/RP260803NC"
+            ]
+          },
+          {
+            "name": "TrendForce上修后2027年HBM价格展望",
+            "parameter": "HBM混合ASP同比变化",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 121.0,
+              "unit": "%同比"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2027相对2026；预测，含HBM4及HBM4e组合变化",
+            "as_of": "2026-09-29",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260929-13255.html"
+            ]
+          },
+          {
+            "name": "TrendForce层数价差预测",
+            "parameter": "8层HBM相对12层的每Gb价格溢价",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "lower": 10.0,
+              "upper": 20.0,
+              "unit": "%溢价/每Gb"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2027；预测",
+            "as_of": "2026-09-29",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260929-13255.html"
+            ]
+          },
+          {
+            "name": "DDR5 16Gb (2Gx8) 4800/5600现货收盘读数",
+            "parameter": "DDR5标准颗粒现货均价",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 58.9,
+              "unit": "USD/颗"
+            },
+            "previous_value": null,
+            "time_scope": "2026-10-09收盘场次；公开更新时间18:10 GMT+8，即10:10 UTC，早于研究截点17:42:05 UTC",
+            "as_of": "2026-10-09T10:10:00+00:00",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.dramexchange.com/",
+              "https://www.trendforce.com/price/dram/lpddr_spot",
+              "https://www.dramexchange.com/Service/Faqs"
+            ]
+          },
+          {
+            "name": "DDR4 16Gb (2Gx8) 3200现货收盘读数",
+            "parameter": "DDR4标准颗粒现货均价",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 83.64,
+              "unit": "USD/颗"
+            },
+            "previous_value": null,
+            "time_scope": "2026-10-09收盘场次；公开更新时间18:10 GMT+8，即10:10 UTC，早于研究截点17:42:05 UTC",
+            "as_of": "2026-10-09T10:10:00+00:00",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.dramexchange.com/",
+              "https://www.trendforce.com/price/dram/lpddr_spot",
+              "https://www.dramexchange.com/Service/Faqs"
+            ]
+          },
+          {
+            "name": "DDR5 16Gb (2Gx8) eTT现货收盘读数",
+            "parameter": "DDR5 eTT颗粒现货均价",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 26.8,
+              "unit": "USD/颗"
+            },
+            "previous_value": null,
+            "time_scope": "2026-10-09收盘场次；公开更新时间18:10 GMT+8，即10:10 UTC，早于研究截点17:42:05 UTC",
+            "as_of": "2026-10-09T10:10:00+00:00",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.dramexchange.com/",
+              "https://www.trendforce.com/price/dram/lpddr_spot",
+              "https://www.dramexchange.com/Service/Faqs"
+            ]
+          },
+          {
+            "name": "DDR4 16Gb (2Gx8) eTT现货收盘读数",
+            "parameter": "DDR4 eTT颗粒现货均价",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 14.125,
+              "unit": "USD/颗"
+            },
+            "previous_value": null,
+            "time_scope": "2026-10-09收盘场次；公开更新时间18:10 GMT+8，即10:10 UTC，早于研究截点17:42:05 UTC",
+            "as_of": "2026-10-09T10:10:00+00:00",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.dramexchange.com/",
+              "https://www.trendforce.com/price/dram/lpddr_spot",
+              "https://www.dramexchange.com/Service/Faqs"
+            ]
+          },
+          {
+            "name": "32GB RDIMM公开现货样本",
+            "parameter": "DDR5服务器模组现货均价",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 2163.5,
+              "unit": "USD/条"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-28模组现货场次；公开表最新样本，不代表10月9日新成交",
+            "as_of": "2026-09-28T06:40:00+00:00",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.dramexchange.com/",
+              "https://www.trendforce.com/price/dram/lpddr_spot"
+            ]
+          },
+          {
+            "name": "8GB SO-DIMM八月下半月合约样本",
+            "parameter": "DDR5客户端模组合约均价",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 133.0,
+              "unit": "USD/条"
+            },
+            "previous_value": null,
+            "time_scope": "2026年8月下半月；公开历史样本，9月详细表需会员，不能改标为9月/10月价格",
+            "as_of": "2026-08-31T06:00:00+00:00",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/price/dram/lpddr_spot",
+              "https://www.dramexchange.com/Service/Faqs"
+            ]
+          },
+          {
+            "name": "16Gb DDR4八月下半月合约样本",
+            "parameter": "DDR4标准颗粒合约均价",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 50.0,
+              "unit": "USD/颗"
+            },
+            "previous_value": null,
+            "time_scope": "2026年8月下半月；不是研究截点同期合约价",
+            "as_of": "2026-08-31T06:00:00+00:00",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/price/dram/lpddr_spot",
+              "https://www.dramexchange.com/Service/Faqs"
+            ]
+          },
+          {
+            "name": "二季度生产实绩调查",
+            "parameter": "全球智能手机生产数量",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 275.0,
+              "unit": "百万台"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2026Q2；调查实际",
+            "as_of": "2026-09-08",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260908-13222.html"
+            ]
+          },
+          {
+            "name": "全年生产预测小幅回补",
+            "parameter": "全球智能手机生产数量",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 1070.0,
+              "unit": "百万台"
+            },
+            "previous_value": {
+              "number": 1050.0,
+              "unit": "百万台"
+            },
+            "time_scope": "自然年2026全年预测；前一版为同年1050百万台",
+            "as_of": "2026-09-08",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260908-13222.html"
+            ]
+          },
+          {
+            "name": "二季度生产同比下降",
+            "parameter": "全球智能手机生产同比增幅",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": -8.0,
+              "unit": "%同比"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2026Q2相对2025Q2；调查实际",
+            "as_of": "2026-09-08",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260908-13222.html"
+            ]
+          },
+          {
+            "name": "全年生产同比预测修订",
+            "parameter": "全球智能手机生产同比增幅",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": -14.0,
+              "unit": "%同比"
+            },
+            "previous_value": {
+              "number": -16.0,
+              "unit": "%同比"
+            },
+            "time_scope": "自然年2026全年预测；此前同年预测-16%",
+            "as_of": "2026-09-08",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260908-13222.html"
+            ]
+          },
+          {
+            "name": "IDC全年出货预测转弱",
+            "parameter": "全球智能手机出货同比增幅",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": -16.7,
+              "unit": "%同比"
+            },
+            "previous_value": {
+              "number": -13.9,
+              "unit": "%同比"
+            },
+            "time_scope": "自然年2026全年；上一季度对同年预测-13.9%",
+            "as_of": "2026-08-26",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.idc.com/resource-center/blog/smartphone-shipments-set-for-record-16-7-drop-in-2026-as-the-memory-crisis-hits-full-force/"
+            ]
+          },
+          {
+            "name": "IDC下半年出货预测",
+            "parameter": "全球智能手机出货同比增幅",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": -27.2,
+              "unit": "%同比"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2026H2相对2025H2；预测",
+            "as_of": "2026-08-26",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.idc.com/resource-center/blog/smartphone-shipments-set-for-record-16-7-drop-in-2026-as-the-memory-crisis-hits-full-force/"
+            ]
+          },
+          {
+            "name": "TrendForce全年笔记本预测",
+            "parameter": "全球笔记本出货同比增幅",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": -9.4,
+              "unit": "%同比"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2026全年；预测",
+            "as_of": "2026-09-04",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260904-13217.html"
+            ]
+          },
+          {
+            "name": "全年出货前重后轻",
+            "parameter": "笔记本出货半年度分布",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 53.0,
+              "unit": "%全年出货在H1"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2026；预测H1:H2为53:47",
+            "as_of": "2026-09-04",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260904-13217.html"
+            ]
+          },
+          {
+            "name": "IDC六月全年PC预测",
+            "parameter": "全球PC出货同比增幅",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": -11.3,
+              "unit": "%同比"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2026全年；6月预测",
+            "as_of": "2026-06-02",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.idc.com/resource-center/blog/pc-market-enters-volatile-territory-as-memory-shortage-persists-through-2027/"
+            ]
+          },
+          {
+            "name": "部分买方由高容量转向中低容量",
+            "parameter": "服务器RDIMM容量采购组合",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "部分CSP/OEM自96/128GB转向32/64GB；成本控制和CPU配套使较低容量模组在Q3出货组合中增加。"
+            },
+            "previous_value": null,
+            "time_scope": "2026H1采购调整及Q3出货组合预期",
+            "as_of": "2026-07-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com.tw/presscenter/news/20260709-13138.html"
+            ]
+          },
+          {
+            "name": "AI服务器全年预测上修",
+            "parameter": "全球AI服务器出货增长状态",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "direction": "同比增长预测由28%提高至接近31%。"
+            },
+            "previous_value": {
+              "direction": "同比增长预测28%。"
+            },
+            "time_scope": "自然年2026；同一全年预测目标修订",
+            "as_of": "2026-08-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260803-13161.html"
+            ]
+          },
+          {
+            "name": "2027平台优先评估8层配置",
+            "parameter": "GPU和ASIC的HBM层数配置选择",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "多家GPU/ASIC厂商考虑以8-Hi替代原计划12-Hi，以缓解供给和系统成本；截至该调查仍属选型评估。"
+            },
+            "previous_value": null,
+            "time_scope": "2027平台配置；9月调查快照",
+            "as_of": "2026-09-29",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260929-13255.html",
+              "D1-O52",
+              "D1-O186"
+            ]
+          },
+          {
+            "name": "成本回退与供给退出并存",
+            "parameter": "图形DRAM代际供需安排",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "部分PC品牌重考虑GDDR6降成本，但原厂缩减/退出GDDR6；GDDR7采购由AI更强驱动，先进制程供给受限。"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2026Q4展望",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260930-13258.html"
+            ]
+          },
+          {
+            "name": "QLC SSD带动配套DRAM增量",
+            "parameter": "SSD客户对配套DRAM的需求方向",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "direction": "QLC SSD需求展望改善，增加对应DRAM组件需求。"
+            },
+            "previous_value": null,
+            "time_scope": "2026Q4前的近期采购及展望",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260930-13258.html"
+            ]
+          },
+          {
+            "name": "供应商库存处于历史低位",
+            "parameter": "DRAM供应商库存位置",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "TrendForce调查称供应商库存处于历史低位；不是已披露统一库存周数。"
+            },
+            "previous_value": null,
+            "time_scope": "2026Q2行业调查状态",
+            "as_of": "2026-09-07",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260907-13219.html"
+            ]
+          },
+          {
+            "name": "CPU约束期间库存上升",
+            "parameter": "美国CSP的DRAM库存方向",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "direction": "Q2因CPU供应不足影响服务器组装，CSP DRAM库存逐渐增加，同时继续追加采购。"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2026Q2；7月调查",
+            "as_of": "2026-07-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com.tw/presscenter/news/20260709-13138.html"
+            ]
+          },
+          {
+            "name": "客户端采购前移",
+            "parameter": "PC OEM预防性采购位置",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "品牌加速采购以锁定组件；较低成本既有库存暂缓终端涨价，消耗后成本压力更直接。"
+            },
+            "previous_value": null,
+            "time_scope": "2026H1至H2；9月调查",
+            "as_of": "2026-09-04",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260904-13217.html"
+            ]
+          },
+          {
+            "name": "移动补库完成后采购转缓",
+            "parameter": "移动DRAM库存与议价位置",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "移动DRAM补库大体完成、需求开始转弱，采购议价迫切性降低，Q3结算可能延后。"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2026Q3；8月公开研究快照",
+            "as_of": "2026-08-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/price/dram/lpddr_spot",
+              "https://www.trendforce.com/research/download/RP260803NC"
+            ]
+          },
+          {
+            "name": "全年位元缺口模型估计",
+            "parameter": "全球DRAM供需充足率",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "lower": -2.0,
+              "upper": -1.0,
+              "unit": "%；TrendForce sufficiency ratio"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2026全年；7月模型估计",
+            "as_of": "2026-07-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260730-13158.html"
+            ]
+          },
+          {
+            "name": "TrendForce六月模型：2025年末HBM投入占比",
+            "parameter": "三大供应商HBM晶圆投入占比",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 18.0,
+              "unit": "%三大厂DRAM晶圆投入"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2025年末；2025为模型估计、2026/2027为预测",
+            "as_of": "2026-06-02",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260602-13074.html"
+            ]
+          },
+          {
+            "name": "TrendForce六月模型：2026年末HBM投入占比",
+            "parameter": "三大供应商HBM晶圆投入占比",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 22.0,
+              "unit": "%三大厂DRAM晶圆投入"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2026年末；2025为模型估计、2026/2027为预测",
+            "as_of": "2026-06-02",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260602-13074.html"
+            ]
+          },
+          {
+            "name": "TrendForce六月模型：2027年末HBM投入占比",
+            "parameter": "三大供应商HBM晶圆投入占比",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 30.0,
+              "unit": "%三大厂DRAM晶圆投入"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2027年末；2025为模型估计、2026/2027为预测",
+            "as_of": "2026-06-02",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260602-13074.html"
+            ]
+          },
+          {
+            "name": "TrendForce六月模型：2025年末HBM位元占比",
+            "parameter": "HBM占DRAM位元供给比重",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 8.0,
+              "unit": "%对应模型总DRAM位元"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2025年末；2025为模型估计、2026/2027为预测",
+            "as_of": "2026-06-02",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260602-13074.html"
+            ]
+          },
+          {
+            "name": "TrendForce六月模型：2026年末HBM位元占比",
+            "parameter": "HBM占DRAM位元供给比重",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 9.0,
+              "unit": "%对应模型总DRAM位元"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2026年末；2025为模型估计、2026/2027为预测",
+            "as_of": "2026-06-02",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260602-13074.html"
+            ]
+          },
+          {
+            "name": "TrendForce六月模型：2027年末HBM位元占比",
+            "parameter": "HBM占DRAM位元供给比重",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 13.0,
+              "unit": "%对应模型总DRAM位元"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2027年末；2025为模型估计、2026/2027为预测",
+            "as_of": "2026-06-02",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260602-13074.html"
+            ]
+          },
+          {
+            "name": "近端主要依靠节点转换",
+            "parameter": "行业增量DRAM供给路径",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "2026—2027三大厂增量主要来自先进制程迁移，晶圆投入仅温和增加。"
+            },
+            "previous_value": null,
+            "time_scope": "2026—2027；行业研究预测",
+            "as_of": "2026-09-07",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260907-13219.html"
+            ]
+          },
+          {
+            "name": "行业新厂有效增量偏后",
+            "parameter": "行业增量DRAM供给路径",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "新厂实质爬坡偏2027H2，大量产出贡献偏2028；建设、设备安装和制造周期使空间与出货有时间差。"
+            },
+            "previous_value": null,
+            "time_scope": "2027—2028；行业研究预测",
+            "as_of": "2026-07-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260730-13158.html"
+            ]
+          },
+          {
+            "name": "2027年RDIMM供给意向估计",
+            "parameter": "服务器RDIMM位元供给同比增长",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "lower": 15.0,
+              "upper": 20.0,
+              "unit": "%同比"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2027相对2026；Q2末厂商意向的初步估计，不是已实现产量",
+            "as_of": "2026-07-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com.tw/presscenter/news/20260709-13138.html"
+            ]
+          },
+          {
+            "name": "年度HBM价滞后改变资源收益排序",
+            "parameter": "HBM相对DDR5 RDIMM单位晶圆经济性",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "TrendForce模型显示2026Q1起DDR5 64GB RDIMM每晶圆收入及获利超过HBM；HBM年度定价未及时反映常规DRAM季度涨价。"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2026Q1至6月研究快照",
+            "as_of": "2026-06-02",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260602-13074.html"
+            ]
+          },
+          {
+            "name": "1γ已经成为主要生产节点",
+            "parameter": "美光1γ在DRAM产量中的地位",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "FY2026Q4，1γ占美光DRAM位元产量多数（超过一半）；没有更精确占比。"
+            },
+            "previous_value": null,
+            "time_scope": "美光FY2026Q4，截至2026-09-03",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O88",
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "既有资源广泛使用并进行供给配置",
+            "parameter": "美光DRAM既有供给利用状态",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "公司称通常使用全部既有制造能力，需求增长超过公司及行业增加供给的能力；不据此填入100%利用率。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026年报描述及近端经营判断",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O57",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "美光Idaho新增前段首次晶圆时间管理层计划",
+            "parameter": "美光Idaho新增前段首次晶圆时间",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "point": "2027年中",
+              "start": null,
+              "end": null,
+              "precision": "约年中"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2027计划，尚未实现",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O31",
+              "D1-O88"
+            ]
+          },
+          {
+            "name": "美光铜锣增量商业出货时间管理层计划",
+            "parameter": "美光铜锣增量商业出货时间",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "point": "2027年中",
+              "start": null,
+              "end": null,
+              "precision": "约年中"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2027计划，尚未实现",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "美光新加坡HBM封装扩容时间管理层计划",
+            "parameter": "美光新加坡HBM封装扩容时间",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "point": "2027年初",
+              "start": null,
+              "end": null,
+              "precision": "约年初"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2027计划，尚未实现",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O31",
+              "D1-O88"
+            ]
+          },
+          {
+            "name": "龙仁Y1计划由五月提前到二月",
+            "parameter": "SK hynix龙仁Y1首洁净室开放时间",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "point": "2027-02",
+              "start": null,
+              "end": null,
+              "precision": "月"
+            },
+            "previous_value": {
+              "point": "2027-05",
+              "start": null,
+              "end": null,
+              "precision": "月"
+            },
+            "time_scope": "自然年2027；同一首洁净室目标修订",
+            "as_of": "2026-02-25",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://news.skhynix.com/en/new-facility-investment-for-yongin-semiconductor-cluster/"
+            ]
+          },
+          {
+            "name": "八月再次确认龙仁Y1目标",
+            "parameter": "SK hynix龙仁Y1首洁净室开放时间",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "point": "2027-02",
+              "start": null,
+              "end": null,
+              "precision": "月"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2027；八月确认仍按二月目标建设",
+            "as_of": "2026-08-07",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://news.skhynix.com/en/fab-facility-investment-2026/"
+            ]
+          },
+          {
+            "name": "Y2远期空间准备计划",
+            "parameter": "SK hynix龙仁Y2首洁净室开放时间",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "point": "2029-06",
+              "start": null,
+              "end": null,
+              "precision": "月"
+            },
+            "previous_value": null,
+            "time_scope": "计划2027-07开工，2029-06开放首洁净室；设备投放随需求分期",
+            "as_of": "2026-08-07",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://news.skhynix.com/en/fab-facility-investment-2026/"
+            ]
+          },
+          {
+            "name": "2028年第一阶段扩产规模计划",
+            "parameter": "南亚新厂第一阶段晶圆月投入能力",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 30000.0,
+              "unit": "片晶圆/月"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2028计划；全厂规划45000片/月未披露相同完成时间",
+            "as_of": "2026-07-10",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.nanya.com/cn/IR/16/%E6%96%B0%E9%97%BB%E7%A8%BF?IRId=13150"
+            ]
+          },
+          {
+            "name": "三星HBM4已有商业出货",
+            "parameter": "HBM4供应商商业供给阶段",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "三星官方2月12日量产和商业出货摘要已建立供给进入；摘要不支持全部层数和客户资格。"
+            },
+            "previous_value": null,
+            "time_scope": "截至2026-02-12的HBM4商业阶段",
+            "as_of": "2026-02-12",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O205"
+            ]
+          },
+          {
+            "name": "SK hynix HBM4开始批量出货",
+            "parameter": "HBM4供应商商业供给阶段",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "SK hynix称Q2开始HBM4批量出货；H2扩产是其计划，而不是已实现数量。"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2026Q2实际供给阶段",
+            "as_of": "2026-07-29",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://news.skhynix.com/en/q2-2026-business-results/"
+            ]
+          },
+          {
+            "name": "美光HBM4按层数分阶段",
+            "parameter": "HBM4供应商商业供给阶段",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "36GB 12-high已量产，48GB 16-high仍送样；FY2026 HBM出货多数为HBM3E 12-high。"
+            },
+            "previous_value": null,
+            "time_scope": "美光FY2026全年及Q4末产品阶段",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O88",
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "CXMT G5 LPDDR5X已量产",
+            "parameter": "CXMT高端移动DRAM商业供给位置",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "公司公布G5平台量产，496-ball和245-ball的24Gb LPDDR5X均已批量生产；未披露合格位元量。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-20产品生产状态",
+            "as_of": "2026-09-20",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.cxmt.com/en/news/info_22.html"
+            ]
+          },
+          {
+            "name": "CXMT称LPDDR6已有手机商用",
+            "parameter": "CXMT高端移动DRAM商业供给位置",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "公司称16GB LPDDR6封装芯片已量产并进入小米18 Fold；这是具名采用的供给进展，不是广泛OEM渗透率。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-07产品商业状态",
+            "as_of": "2026-09-07",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.cxmt.com/en/news/info_21.html"
+            ]
+          },
+          {
+            "name": "G5移动颗粒密度",
+            "parameter": "CXMT G5 LPDDR5X单die容量",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 24.0,
+              "unit": "Gb/die"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-20公布的量产产品规格；公司称比前代等价产品提高50%",
+            "as_of": "2026-09-20",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.cxmt.com/en/news/info_22.html"
+            ]
+          },
+          {
+            "name": "CXMT报告毛die密度提高下界",
+            "parameter": "CXMT G5相对前代单位晶圆毛die密度",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "公司称归一至8Gb的gross DPW至少增加50%；缺少良率，不能转成50%合格供给增长。"
+            },
+            "previous_value": null,
+            "time_scope": "G5相对G4平台；2026年9月公布",
+            "as_of": "2026-09-20",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.cxmt.com/en/news/info_22.html"
+            ]
+          },
+          {
+            "name": "南亚二季度ASP涨幅超过60%",
+            "parameter": "南亚DRAM实现ASP增幅状态",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "平均售价环比增加超过60%；公司自行结算，非精确60%点值。"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2026Q2相对Q1",
+            "as_of": "2026-07-10",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.nanya.com/en/IR/16/Press%20Release?IRId=13150"
+            ]
+          },
+          {
+            "name": "南亚二季度位元量持平",
+            "parameter": "南亚DRAM位元出货方向",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "direction": "位元出货相对上季持平。"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2026Q2相对Q1；公司自行结算",
+            "as_of": "2026-07-10",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.nanya.com/en/IR/16/Press%20Release?IRId=13150"
+            ]
+          },
+          {
+            "name": "二季度DRAM行业规模",
+            "parameter": "全球DRAM行业营收规模",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 154.73,
+              "unit": "十亿美元"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2026Q2；TrendForce调查估计",
+            "as_of": "2026-09-07",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260907-13219.html"
+            ]
+          },
+          {
+            "name": "二季度行业营收环比增长",
+            "parameter": "全球DRAM行业营收环比增幅",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 59.5,
+              "unit": "%环比"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2026Q2相对Q1；并非位元增长59.5%",
+            "as_of": "2026-09-07",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260907-13219.html"
+            ]
+          },
+          {
+            "name": "三星二季度收入份额",
+            "parameter": "三星DRAM营收份额",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 39.4,
+              "unit": "%行业DRAM营收"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2026Q2；同源同季口径",
+            "as_of": "2026-09-07",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260907-13219.html"
+            ]
+          },
+          {
+            "name": "SK hynix二季度收入份额",
+            "parameter": "SK hynixDRAM营收份额",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 24.9,
+              "unit": "%行业DRAM营收"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2026Q2；同源同季口径",
+            "as_of": "2026-09-07",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260907-13219.html"
+            ]
+          },
+          {
+            "name": "美光二季度收入份额",
+            "parameter": "美光DRAM营收份额",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 23.3,
+              "unit": "%行业DRAM营收"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2026Q2；同源同季口径",
+            "as_of": "2026-09-07",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260907-13219.html"
+            ]
+          },
+          {
+            "name": "美光全年售价增幅",
+            "parameter": "美光DRAM混合实现ASP同比增幅",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 180.0,
+              "unit": "%同比，约"
+            },
+            "previous_value": null,
+            "time_scope": "美光FY2026相对FY2025；FY2026为53周、FY2025为52周",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "美光全年位元增长20%中段",
+            "parameter": "美光DRAM位元出货增长方向",
+            "source_role": "ACTUAL",
+            "value": {
+              "direction": "同比增长为20%中段；没有可据以填写25%的精确值。"
+            },
+            "previous_value": null,
+            "time_scope": "美光FY2026相对FY2025；53周相对52周，非周数标准化",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "美光DRAM全年营收增长",
+            "parameter": "美光DRAM营收同比增幅",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 252.0,
+              "unit": "%同比"
+            },
+            "previous_value": null,
+            "time_scope": "美光FY2026相对FY2025；53周相对52周",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "移动客户端业务位元减少伴随资源外移",
+            "parameter": "美光非数据中心供给分配方向",
+            "source_role": "ACTUAL",
+            "value": {
+              "direction": "FY2026 MCBU位元出货减少，部分供给转配其他业务单元；其收入仍因ASP上升而增长。"
+            },
+            "previous_value": null,
+            "time_scope": "美光FY2026相对FY2025；业务单元混合产品口径",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "多年承诺进入供货安排",
+            "parameter": "美光市场供货的多年价格与数量安排",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "FY2026Q3/Q4已签take-or-pay及可执行数量承诺，价格固定或周期谈判，多数设上下限；产品覆盖和价带数值未公开。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026签约形成的多年供货安排",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O57",
+              "D1-O31",
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "SK hynix已签约约十家客户",
+            "parameter": "SK hynix多年客户供货安排",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "SK hynix称已与约10家关键客户敲定LTA，并继续洽谈；未披露按DRAM/HBM划分的数量或价格覆盖。"
+            },
+            "previous_value": null,
+            "time_scope": "截至2026-07-29的多年供货经营状态",
+            "as_of": "2026-07-29",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://news.skhynix.com/en/q2-2026-business-results/"
+            ]
+          },
+          {
+            "name": "TrendForce2027年供给位元预测",
+            "parameter": "全球DRAM位元供给增长率",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 24.0,
+              "unit": "%同比"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2027相对2026；7月公开目录明确24%，正文模型细项未公开",
+            "as_of": "2026-07-28",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/research/download/RP260728GY"
+            ]
+          },
+          {
+            "name": "八月移动DRAM研究目录的买方库存范围",
+            "parameter": "TrendForce移动DRAM买方平均库存报告范围",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "lower": 12.0,
+              "upper": 14.0,
+              "unit": "周"
+            },
+            "previous_value": null,
+            "time_scope": "自然年2026Q3；8月3日报告公开目录中的买方平均库存范围，不是10月9日重新测量或全部手机OEM统一样本。",
+            "as_of": "2026-08-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/research/download/RP260803NC"
+            ]
+          }
+        ]
+      },
+      "expectation_baseline": [
+        {
+          "name": "近端DRAM价格仍偏强，但增幅与兑现不齐",
+          "baseline": "工作基线是2026Q4常规DRAM合约价继续上涨，最新TrendForce预测10—15%环比；不是全年约180%的美光ASP增幅再次重演。低供应商库存与数量增长较慢支持价格而非纯位元解释，长约使厂商兑现不同步。这是经营证据与行业研究综合，不能宣称全部已被股票价格计入。",
+          "ordinary_progress": "季度议价在较高基数上继续涨价、美光混合ASP受组合和合约节奏影响，属于该路径延续；小幅毛利波动本身不等于DRAM价格反转。",
+          "open_frontier": "转折取决于新增合格供给与买方库存消化能否一起缩小缺口；若报价仍涨而净采购或同规格实现价转弱，当前涨价路径的持续性会先受影响。",
+          "time_scope": "自然年2026Q4至2027H1",
+          "ref": [
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+            "https://www.trendforce.com/presscenter/news/20260907-13219.html",
+            "https://www.trendforce.com.tw/presscenter/news/20260709-13138.html",
+            "D1-O57",
+            "D1-O44",
+            "D1-O18"
+          ]
+        },
+        {
+          "name": "服务器需求扩张仍是主导，但采购不等于消耗",
+          "baseline": "采用服务器相关DRAM需求继续扩大的工作解释：AI服务器2026增长预测接近31%，ASIC扩展并不退出HBM，一般服务器也承接agentic工作负载。CPU释放有利于把库存转为组装；但Q2 CSP库存已增加，且部分RDIMM由96/128GB转32/64GB，不能将台数或采购追加等比例外推为位元消耗。",
+          "ordinary_progress": "既有GPU、ASIC和一般CPU平台按计划部署，CPU与模组配套改善，库存进入整机，均是默认扩张的实现过程。",
+          "open_frontier": "关键未定量是新增平台数量乘以实际容量相对库存吸收、成本压缩配置和能效改善的净结果；电力/融资限制可能先改变部署时点而非最终需求。",
+          "time_scope": "2026H2至2027年",
+          "ref": [
+            "https://www.trendforce.com/presscenter/news/20260803-13161.html",
+            "https://www.trendforce.com.tw/presscenter/news/20260709-13138.html",
+            "https://www.trendforce.com/presscenter/news/20260730-13158.html",
+            "https://aws.amazon.com/about-aws/whats-new/2025/12/amazon-ec2-trn3-ultraservers/",
+            "https://blog.google/innovation-and-ai/infrastructure-and-cloud/google-cloud/eighth-generation-tpu-agentic-era/",
+            "D1-O130"
+          ]
+        },
+        {
+          "name": "消费终端数量偏弱与内存短缺可以并存",
+          "baseline": "手机和PC不是广泛数量复苏基线。TrendForce手机生产2026预测10.7亿台、同比-14%，IDC出货预测-16.7%；统计对象不同而非可平均的分歧。笔记本2026预测-9.4%，2027最新基线仍为低个位数下降。早买和恢复过度削减的计划能改善短期表象，供应重配及成本传导仍压终端数量。",
+          "ordinary_progress": "提前采购、品牌维持商业客户供货和低价库存消耗，均可在终端偏弱时维持组件采购和报价；不把这种持续采购命名为真实消费恢复。",
+          "open_frontier": "2027成本由品牌吸收、终端提价还是减配承担决定位元量的不同路径；TrendForce高个位数笔记本下降是更强传导情景，不是默认值。端侧AI容量需求能否抵消台数减少尚未量化。",
+          "time_scope": "2026H2至2027年",
+          "ref": [
+            "https://www.trendforce.com/presscenter/news/20260908-13222.html",
+            "https://www.idc.com/resource-center/blog/smartphone-shipments-set-for-record-16-7-drop-in-2026-as-the-memory-crisis-hits-full-force/",
+            "https://www.trendforce.com/presscenter/news/20260904-13217.html",
+            "https://www.trendforce.com/presscenter/news/20261008-13264.html",
+            "D1-O57"
+          ]
+        },
+        {
+          "name": "HBM2027年重定价伴随容量弹性",
+          "baseline": "采用HBM年际报价与代际组合继续抬升的基线，TrendForce最新混合ASP预测2027同比+121%，不同于锁定同SKU涨幅。其模型中DDR5 64GB RDIMM单位晶圆经济性已超过HBM，说明资源去向还取决于相对收益；年度价滞后支持HBM重定价，8层选项则使未来容量不宜锁死。",
+          "ordinary_progress": "HBM4扩大供给、HBM4e按已公布计划推进及层数组合调整，是该路径内的进展；更低单堆叠容量可支持更多加速器，同时每Gb价格仍可能较高。",
+          "open_frontier": "8层最终渗透、平台总出货和每器件堆叠数共同决定需求；新代际良率和竞争供货速度决定重定价幅度能否兑现。8层相对12层每Gb溢价10—20%只是行业预测。",
+          "time_scope": "2027年度议价及2027平台周期",
+          "ref": [
+            "https://www.trendforce.com/presscenter/news/20260929-13255.html",
+            "https://www.trendforce.com/presscenter/news/20260602-13074.html",
+            "D1-O52",
+            "D1-O186",
+            "D1-O88"
+          ]
+        },
+        {
+          "name": "近端供给增长先由技术迁移而非新厂满产承担",
+          "baseline": "默认2026—2027供给增加以现有资源密度改善和有限晶圆增投为主，新增空间不是立即可售量。TrendForce七月模型仍预测2027供给位元增长24%，紧张并不意味着零增量；美光1γ已是主要节点，Idaho首晶圆/铜锣出货计划在2027年中，SK龙仁Y1首洁净室目标二月。阶段不同且实质增量偏后，不采用2027年初全面解压路径。",
+          "ordinary_progress": "节点迁移提高位元、按日期完成空间和设备准备，再逐步取得合格交付，是正常扩产。新加坡HBM后段2027年初扩容不能单独解除前段约束。",
+          "open_frontier": "2027H2到2028合格位元增加的量与速度尚开放；HBM投入占比上升可能抵消部分晶圆增长，而较低层数和更好良率也可能释放资源。新厂提前/延期应比较同一生产阶段，不混用洁净室和商业出货。",
+          "time_scope": "2026Q4至2028年；更远项目只作供给背景",
+          "ref": [
+            "https://www.trendforce.com/presscenter/news/20260907-13219.html",
+            "https://www.trendforce.com/presscenter/news/20260730-13158.html",
+            "https://www.trendforce.com/research/download/RP260728GY",
+            "https://www.trendforce.com/presscenter/news/20260602-13074.html",
+            "D1-O88",
+            "D1-O31",
+            "https://news.skhynix.com/en/new-facility-investment-for-yongin-semiconductor-cluster/",
+            "https://news.skhynix.com/en/fab-facility-investment-2026/"
+          ]
+        },
+        {
+          "name": "竞争供给已经进入，影响先按规格而非全球份额展开",
+          "baseline": "三大厂在HBM4均已有商业供给阶段；CXMT也不能继续仅列为潜在移动DRAM竞争者：其G5 LPDDR5X宣称量产，LPDDR6已有具名手机采用。工作基线是竞争在规格、客户资格和可交付数量上加深，而不是从新节点标题立即推导行业过剩或美光份额归零。",
+          "ordinary_progress": "既有合格产品扩大供货、客户增加第二来源、较新规格进入更多平台，是当前竞争位置的延伸。",
+          "open_frontier": "CXMT实际良率、位元规模及更多客户采用能否形成跨市场价格约束尚未量化；HBM4高层数资格和采购分配未随量产摘要一并解决。营收份额含价格/组合，不能作为竞争位元份额替代。",
+          "time_scope": "2026Q4至2027年",
+          "ref": [
+            "https://www.cxmt.com/en/news/info_22.html",
+            "https://www.cxmt.com/en/news/info_21.html",
+            "https://news.skhynix.com/en/q2-2026-business-results/",
+            "D1-O205",
+            "D1-O88",
+            "https://www.trendforce.com/presscenter/news/20260907-13219.html"
+          ]
+        },
+        {
+          "name": "成熟与图形DRAM存在局部紧张，弱PC需求并不自动解压",
+          "baseline": "成熟产品的工作解释仍是退出和配置造成局部短缺，台湾供应者承接被三大厂放弃的需求；南亚Q2位元量持平而ASP超过60%环比支持这一解释。图形内存也面临代际错配。新增供给或买方回退可以改变局部价格，但不能由成熟颗粒现货直接推导全部服务器合约价格。",
+          "ordinary_progress": "成熟规格涨价、南亚/华邦承接需求及图形买方调整配置，是原供给结构下的响应；南亚2028月投片3万片规划不是近期现货缓解。",
+          "open_frontier": "退出速度相对第二来源有效新增供给，以及GDDR回退实际规模，决定局部短缺是否缓解；消费设备与SSD客户的不同订单组合可能使行业平均掩盖分化。",
+          "time_scope": "2026Q4至2027年；2028扩产为延伸背景",
+          "ref": [
+            "https://www.trendforce.com/presscenter/news/20260907-13219.html",
+            "https://www.nanya.com/en/IR/16/Press%20Release?IRId=13150",
+            "https://www.nanya.com/cn/IR/16/%E6%96%B0%E9%97%BB%E7%A8%BF?IRId=13150",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+            "https://www.dramexchange.com/"
+          ]
+        },
+        {
+          "name": "合同化使实现价分层，而不是消灭价格周期",
+          "baseline": "工作基线是长约部分量价较稳定、非长约和追加供货更多承担边际涨价。美光已有可执行数量承诺和价带，SK hynix已签约约十家客户，行业服务器调查也指出长约限制涨幅。因此相同紧张市场下不同厂商ASP和季度表现可以分化；不能仅凭协议形式认定全公司永久高利润。",
+          "ordinary_progress": "按既有条款交付、固定/周期谈判价格滞后以及追加供给另行定价，是合同安排的正常实现，不应将融资保证金作为新终端需求。",
+          "open_frontier": "受保护产品/位元占比、实际上下限、重谈机制及跨代际履约决定合同能保护多大价格池；未公开覆盖率使合并利润下限不能被数值化。",
+          "time_scope": "2026Q4至多年供货期",
+          "ref": [
+            "D1-O57",
+            "D1-O31",
+            "D1-O44",
+            "https://news.skhynix.com/en/q2-2026-business-results/",
+            "https://www.trendforce.com.tw/presscenter/news/20260709-13138.html"
+          ]
+        },
+        {
+          "name": "工作负载扩展与内存效率同时发展",
+          "baseline": "工作基线不是token数线性换算DRAM，而是部署增加仍拉动容量、分层和重用改变单位任务需求。已发布CMX架构将热KV、主机DRAM及闪存分工，需要预取回活跃层；CXL依赖软件使用方式。HBF标准和GP1样品计划还不足以构成近端HBM全面替代。",
+          "ordinary_progress": "服务器/加速器部署按计划推进，缓存分层和软件适配在合适负载落地，是扩张与节约并行的正常进展；GPU转ASIC仍可能持续消耗HBM。",
+          "open_frontier": "效率降低每任务容量还是低成本扩大服务量，最终由实际负载和商业吸收决定；尚无可用于全行业位元预测的统一节约系数或部署份额。",
+          "time_scope": "未来数季至2027平台/软件周期",
+          "ref": [
+            "https://developer.nvidia.com/blog/?p=111143",
+            "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf",
+            "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html",
+            "https://aws.amazon.com/about-aws/whats-new/2025/12/amazon-ec2-trn3-ultraservers/",
+            "https://blog.google/innovation-and-ai/infrastructure-and-cloud/google-cloud/eighth-generation-tpu-agentic-era/",
+            "D1-O74"
+          ]
+        },
+        {
+          "name": "SSD配套DRAM随容量扩张，但单位容量强度并非固定",
+          "baseline": "QLC SSD需求改善提供配套DRAM正向增量；控制器映射粒度、缓存设计和软件支持使GB/TB强度可变，因此不能把NAND容量增长率直接当配套DRAM增长率。",
+          "ordinary_progress": "若SSD数量/容量继续扩张且控制器设计近似稳定，配套DRAM随之增长；部分大容量平台引入更大IU或更有效缓存会降低映射DRAM强度，先体现于适配产品而非所有SSD。",
+          "open_frontier": "全行业SSD单位容量DRAM配置、较大IU及HMB的部署份额未测；技术条件例可说明节约方向与范围，不能建立2026配套DRAM总量或统一削减比例。",
+          "time_scope": "截至2026-10-09的行业需求方向与技术机制；后续数季度产品/软件部署，不把无明确发布日期技术资料当本季新采用。",
+          "ref": [
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+            "https://semiconductor.samsung.com/news-events/tech-blog/dividing-and-conquering-linux-high-capacity-ssd-support-with-lbs-ep1/"
+          ]
+        }
+      ],
+      "realization_factors": [
+        {
+          "name": "有用且可收费的AI活动经并发与容量余量形成内存需求",
+          "mechanism": "企业和个人先按任务完成质量、节省时间及数据/安全集成成本决定是否付费、续约和扩大使用；席位制与按量计费的价格又约束每位用户的任务频次。付费用户数×任务频次决定活动规模，任务持续时间、上下文长度及模型驻留规模决定同时在线的内存工作集。平台以批处理、调度和硬件吞吐提高既有机群承载量；只有活动超过可用余量和服务等级所需预留，才转成新增设备与HBM/主机DRAM配置。云方和模型方同时按每项任务收益与服务成本决定扩大训练、推理或CPU代理执行，降低成本也可能诱发更多使用。新增需求若遇供给约束，先进入价格、配额和未来扩产，而不必立即增加行业位元出货。 授予数据、工具和写入权限决定代理实际能承担的任务范围；沙箱、监督及人工审批既有额外CPU/内存开销，也可能降低自主执行频率或打开原本不愿部署的业务。安全因此先影响可部署活动池，再影响每活动的资源配置，不只是收费用户数的附属指标。",
+          "current_status": "工作判断是新增可收费活动正在扩大，服务器链比消费终端更能承受内存涨价。微软7月29日披露M365 Copilot付费席位超过3,000万，提供商业采用而非仅免费流量的锚；同日称Azure需求超过可提供容量，说明至少该平台的余量已限制变现。此位置使使用增长和交付速度具有较强近端作用。付费席位并不等于同时活跃任务，且没有公开行业级任务—DRAM转换系数；本模型据此保留工作集和调度这一中间层，不把收入或token直接换算成位元。 Cowork的长任务、按量收费和租户预算控制已经把使用与授权安排连接起来；独立运行控制也已有产品/参考设计路线。Anthropic披露的是降低防护的测试环境事件和部分评估/训练暂停，不构成生产客户普遍损失的证据。",
+          "materiality_context": "任务价值、质量及集成成本改变的是愿意付费的用户池和续约强度，主要作用于数季及更长机会；收费方式/价格、用户数和频次则直接改变可货币化任务量，但涨价增收可能伴随使用减少。固定其他条件，任务量、持续时间或单任务工作集各增加10%，相应内存占用压力约增加10%，这是同负载条件估算，不是行业预测。上下文和驻留模型使HBM容量敏感性高于仅看芯片数；CPU代理活动又会偏向普通DRAM。调度/吞吐改善降低单位活动资源量，其效果可被使用扩张抵销；服务预留与余量决定压力何时变成采购，目前容量受限平台的时点杠杆比空闲平台大。单位服务回报决定扩张能否持续；内存配额决定近端压力在数量与价格之间的分配，不能把未增产误读为需求无影响。 授权范围决定可参与任务的广度，监督方式决定任务可自主运行的时长及等待，隔离/监控改变普通服务器配置；它们可分别作用而非同一增长系数。对高敏感业务，可信控制可能是从不部署到部署的门槛，影响大于少量运行开销；已可放心使用的任务则主要受预算、工作集和余量约束。目前没有通用隔离内存系数，不能把参考设计直接加入行业位元预测。",
+          "scope_boundary": "覆盖训练、推理、搜索、办公、编程和代理任务对行业内存的活动来源及容量转换。模型产品商业化在外部行动者处深化；具体美光客户资格和平台份额由产品业务域深化，本域不推定微软是某项内存的直接买方或美光独供。",
+          "ref": [
+            "https://www.microsoft.com/en-us/investor/earnings/fy-2026-q4/press-release-webcast",
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "D1-O67",
+            "D1-O80",
+            "D1-O81",
+            "D1-O83",
+            "https://www.trendforce.com.tw/presscenter/news/20260709-13138.html",
+            "https://www.microsoft.com/en-us/copilot/blog/2026/06/16/copilot-cowork-is-now-generally-available/",
+            "https://www.anthropic.com/news/improving-alignment-security-efforts",
+            "https://nvidianews.nvidia.com/news/open-agent-safety-platform"
+          ]
+        },
+        {
+          "name": "投资回报和融资能力通过基础设施交付节奏约束采购",
+          "mechanism": "云运营者以预期租用收入、利用率和电力/设备/利息成本衡量项目回报；经营现金流、股权、债务和客户承诺决定资金可获得性。回报及信用恶化会提高融资成本或推迟建设，即使远期算力需求仍在。土地、电网接入、机房冷却、CPU/GPU和系统验收决定已融资项目何时能承载工作负载；内存可以提前采购而成为库存，也可以随项目延迟而后移。长期租约和可执行算力订单降低部分风险，但未交付能力不等于收入；股权投资、算力合同和组件订单属于同一活动的不同资金环节，不能相加为三份需求。资本开支还受设备涨价、建设占比和租赁会计分类影响，不是DRAM实物量。",
+          "current_status": "融资和建设仍支持扩张，但已承诺能力大于已投运能力。CoreWeave 8月11日披露6月末活跃电力约1.5GW、签约电力约3.7GW，Q2收入25.75亿美元、净利息费用6.40亿美元；约1,040亿美元积压包含依赖交付和服务可用性的承诺。它们说明订单和融资组织较强、交付与资金成本也实质约束，而不是证明2.2GW差额已变成内存订单。微软7月表示CY2026投资预期未变，但建筑寿命调整使部分租赁由融资租赁转为经营租赁，报告CapEx预期改为约1,750亿美元；表观CapEx下降并非同额削减设备投资。",
+          "materiality_context": "租用收入/利用率决定现金回报与扩张意愿，设备和电力成本压缩可承担的配置，利息与融资可得性对依赖外部资本的运营者比现金充裕云方更敏感；上述CoreWeave利息约为季度收入的25%是规模比较，并非DRAM成本占比。客户承诺改善可融资性但交付条件保留取消、延后和履约风险。土地、接电、冷却与CPU/GPU验收分别是时点门槛，任何一项推迟都能将一批服务器的配套DRAM从本季移至以后，幅度取决于受影响项目份额；其余已投运项目不必同步停止。提前备货只改变库存时点，不能补足运行能力。价格、工程支出占比与会计分类可显著改变资本支出美元数而实物采购不变；当前应把投运进度和实际设备配置置于CapEx总额之上。中期融资放松可扩大可交付机会，近端仍可能主要竞争有限内存配额。",
+          "scope_boundary": "解释买方预算、资金及数据中心交付对行业采购的影响，不将GW、积压或融资金额转换成美光收入。跨产品供给担保及预付款条款在战略客户供给与资金保障关系深化；电网规则只作用于其实际辖区，不套用于所有存储工厂。",
+          "ref": [
+            "https://investors.coreweave.com/news/news-details/2026/CoreWeave-Reports-Strong-Second-Quarter-2026-Results/default.aspx",
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "D1-O50",
+            "D1-O51",
+            "D1-O80",
+            "D1-O81",
+            "D1-O130"
+          ]
+        },
+        {
+          "name": "计算平台选择与普通服务器配套共同决定DRAM结构",
+          "mechanism": "买方按任务的软件适配、单位任务成本和可获得算力在GPU、云自研ASIC、CPU之间分配工作。平台吞吐决定完成同一工作所需芯片数，芯片的HBM规格和主机架构决定每台内存配置，因此替换GPU品牌不是自动减少HBM。普通服务器还承担数据库、代理沙箱、虚拟机和数据准备；业务量、CPU可供量、插槽/通道数、每通道DIMM数量及单条容量共同决定DDR位元。OEM/CSP为控制成本可改用低容量模组、延用旧设备或以LPDDR/SOCAMM替换部分DDR形态；平台兼容与客户验证决定替换速度。内存带宽/能耗改变任务性能及固定电力预算可承载的设备量，不只有GB配置一条路线。CPU短缺使DRAM采购与整机安装脱节，随后CPU到货可释放已备内存而非立刻产生同量新采购。",
+          "current_status": "AI扩张不只沿NVIDIA一条路径，也不只需要HBM。供给端已有HBM4商业进入，买方同时增加自研ASIC和CPU任务。AWS已可用的Trainium3规格为每芯片144GB HBM3e；Google公布TPU8i为288GB HBM，但其普遍可用仍是当年稍后计划，二者不是相同吞吐的容量比较。服务器链又出现CPU配套不足与部分96/128GB转向32/64GB的降配；这些选择解释为何AI服务器数量强而每台普通DRAM增量可不齐。",
+          "materiality_context": "任务平台分配、软件适配和每项任务成本决定各架构机会的大小与切换速度，吞吐改变所需设备数，HBM/主机规格改变位元强度，三者必须联合而不能只比较单芯片GB。CPU供应决定整机完成的近端节拍，插槽/通道与DIMM数量约束模块需求，单条容量则直接作用位元：同条数由128GB改64GB使该批配置位元减半，但这是受影响批次而非全行业。数据库/代理等业务量可扩大普通DRAM用途，旧设备延用降低新采购、也可能提高维护用成熟规格需求。带宽改善可在相同位元量下提高性能和速度档价格；能耗降低在电力紧约束位置可允许更多设备，在有余量位置先节约运营成本，其净增量取决于内存占整机功耗及设备利用率。LPDDR/SOCAMM转换改变形态和供应资格，不能把替代的DDR与LP都算新增。当前降配和CPU瓶颈是实际抵销项，合格平台及可交付配额决定供应者参与范围；没有依据认为它们已抵销整个AI扩张。",
+          "scope_boundary": "覆盖行业级平台分配、HBM与普通DRAM的配套和替换。具体平台BOM、产品采用和美光份额连接数据中心产品业务；不能由ASIC公告推定其美光份额，不能把CPU服务器与同一AI项目的主机重复计数。",
+          "ref": [
+            "https://www.trendforce.com.tw/presscenter/news/20260709-13138.html",
+            "https://www.trendforce.com/presscenter/news/20260803-13161.html",
+            "D1-O96",
+            "D1-O103",
+            "D1-O105",
+            "D1-O107",
+            "D1-O81",
+            "D1-O88",
+            "D1-O205"
+          ]
+        },
+        {
+          "name": "消费终端购买力、换机周期与容量升级相互抵销",
+          "mechanism": "手机、PC用户按收入、设备售价及新功能价值决定换机；厂商在零组件成本、利润空间和竞争压力之间选择涨价、降配、减少低价型号或承担成本。既有低成本库存和渠道促销暂缓零售价传导，库存耗尽后压力更直接。企业PC更新及操作系统/AI软件要求可推高最低容量，但只有实际采用的机型份额提高才增加加权GB/台。行业位元消耗由终端数量×每台容量决定，采购还叠加OEM/渠道库存变化。供给转向服务器会压缩消费端可得量和型号组合，造成弱终端数量、组件短缺和内存价格上涨同时存在。",
+          "current_status": "消费需求数量偏弱是当前有效抵销项，不是所有DRAM都会过剩的证据。手机生产和出货调查都指向2026年明显下滑，但两种统计口径及最新修订不同，不能平均成一条实绩；笔记本全年预测同样偏弱。早期备货曾维持相对低价终端，现在内存成本传导增加。AI高配保住部分容量需求，但没有足够统一的加权配置数据证明容量增长已补齐数量下降；同时原厂资源偏向数据中心，消费端供给也在减少。",
+          "materiality_context": "用户收入/售价和换机价值影响广泛设备数量，厂商利润及竞争压力决定成本由谁承担；固定其他条件，终端数量下降10%需要平均容量上升约11.1%才能保持位元消耗，这是算术敏感性而非2026实际配置预测。容量下限、AI高配渗透及低价型号退出改变加权容量，影响可能与数量同阶；功能宣传本身不产生位元。低成本库存和促销改变传导速度而非长期成本，OEM/渠道补库可以放大单季订单但随后回吐。资源转配直接缩小该用途可供量，在短缺位置可能较弱终端数量更快推动价格；长期高售价再拉长换机周期，形成需求自我抑制。当前消费数量的负贡献已明确，容量升级的抵销幅度较不确定，不应以高配样机代表全部消费者。",
+          "scope_boundary": "解释手机、PC及一般消费设备对DRAM的行业数量、配置和采购弹性。具体OEM采用、移动客户端业务组合由相应产品域深化；终端sell-through、生产、出货和OEM采购保留不同口径。",
+          "ref": [
+            "https://www.trendforce.com/presscenter/news/20260908-13222.html",
+            "https://www.trendforce.com/presscenter/news/20260904-13217.html",
+            "https://www.trendforce.com/presscenter/news/20261008-13264.html",
+            "https://www.idc.com/resource-center/blog/smartphone-shipments-set-for-record-16-7-drop-in-2026-as-the-memory-crisis-hits-full-force/",
+            "D1-O57",
+            "D1-O86"
+          ]
+        },
+        {
+          "name": "汽车工业与边缘计算按实际任务和安全资格增加内存含量",
+          "mechanism": "整车、机器人和工业设备的实际生产及装机数决定需求基数；辅助驾驶、感知、信息娱乐和本地控制任务增加模型、传感数据和实时工作集，推高每台DRAM含量。本地执行相对云执行取决于延迟、联网可靠性、隐私和成本，不能把云侧和边缘侧同一任务的全部资源都算增量。系统集成者还按温度、寿命、错误检测/纠正和安全使用假设验证部件；认证降低验证摩擦，但必须由主机和整套系统满足条件。长平台生命周期和供货连续性使客户不轻易随现货价格改料，也使新容量从送样到量产较慢。",
+          "current_status": "这一用途已经有现实DRAM需求，物理AI进一步放量仍不能从样品或合作名单直接推出。供应研究确认美光车规LPDDR5X进入DRIVE AGX Orin、1γ LPDDR5生产就绪/客户交付，而LPDDR6物理AI仍为送样。既有Y4BM LPDDR5证书要求额外系统机制才能达到更高安全等级，证明系统资格是独立环节，不是任何部件装入即合格。其长资格周期使短期供给切换比通用PC慢；当前没有可据以估算全球机器人DRAM量的量产基数。",
+          "materiality_context": "车辆/工业设备数量影响当前存量较大的需求，机器人新装机主要影响尚开放的增量；每台任务复杂度和本地模型/数据工作集决定容量强度，少数高配系统不能代表加权车辆。若同等装机量每台容量增10%，对应产品位元需求也约增10%；若任务转到云，边缘容量压力减弱但服务器需求可增加，净量取决于两端实际配置。延迟、网络可靠性和隐私通常是部署位置门槛，成本决定规模扩张能否持续。温度/寿命、安全机制及验证周期决定哪些料号可进入以及何时转为订单，范围限于相关系统；供货连续性与平台寿命降低短期价格弹性、维持成熟规格需求。现阶段广泛车用/工业基础业务比未量产机器人贡献更实在，但新平台资格改善仍可显著改变未来可参与机会，不能仅按送样阶段判定其修订意义很小。",
+          "scope_boundary": "行业层面解释汽车、工业和边缘设备的内存消耗及资格导致的需求时滞。具体美光料号、平台份额和AEBU商业采用由汽车与嵌入式产品域深化；单一证书不外推到全部1γ或LPDDR6产品。",
+          "ref": [
+            "D1-O69",
+            "D1-O66",
+            "D1-O171",
+            "https://sg.micron.com/content/dam/micron/global/public/corporate/quality/certificates/micron-21-03-104-c-r018-y4bm-type-certificate-v2r0.pdf"
+          ]
+        },
+        {
+          "name": "内存层级与软件效率改变单位任务强度并诱发使用反弹",
+          "mechanism": "模型精度、压缩及上下文管理决定驻留字节，缓存命中、重算策略和调度决定数据在HBM、主机DRAM、SSD间的停留和搬移。热数据需低延迟/高带宽；把较冷KV或权重移向闪存，只有预取、网络及软件能避免等待才有用。CXL池化可提高已配置DRAM利用率，但OS呈现模式和应用分配策略决定容量是否有效使用，它也可能替代本地DIMM或新增整机。效率提升先降低每任务内存/设备需求和成本，后者扩大可负担任务量；最终总位元取决于使用扩张是否超过强度下降。新接口和HBF类方案改变可替代范围，不凭标准发布就假定已有大规模替代。 池化的可用范围还取决于数据和运营控制边界。区域、客户或断网机群若必须分别驻留模型和服务预留，同样任务量可需要更多已安装内存；区域共享、旧机群退役和紧凑模型可抵销复制。已安装容量、实际活动和新采购因此不能视作同一个量。",
+          "current_status": "当前是层级共存和效率改善，而非HBM被整体闪存替代。已供资料显示CMX把热KV保留在GPU/主机内存并从SSD层预取；CXL容量可见也需应用正确分配。微软7月称年初以来Copilot负载吞吐提高4倍，这体现多种优化的联合结果，不是DRAM每任务减少75%的测量。HBF已公布标准、其他GPU直连闪存仍有样品/路线图性质，扩大未来选择但未形成可量化的行业DRAM替代份额。强使用和低余量位置使当前效率更可能同时支持新增服务与节约资源。 微软已提供断网Azure Local/M365 Local和面向合格客户的本地大模型部署选项，说明非集中云的运行路线已可行；它不是各国普遍强制本地化或已完成内存采购的证据。",
+          "materiality_context": "精度/压缩与上下文管理直接作用驻留字节；缓存命中及重算改变容量、计算和电力间取舍；调度提高利用率，因此相同任务可由更少硬件完成。固定任务量，单位强度降20%使该负载资源需求约降20%；若任务量升30%，两者乘积为1.04，净需求仍升4%，是透明条件例而非预测。层级放置和预取/网络带宽、尾延迟决定哪些字节能移出HBM，不能将SSD TB按同等HBM容量替代。CXL软件模式/分配策略决定可用率与切换速度，池化首先减少闲置DRAM而不一定增加总位元；本地DIMM替代需从增量中扣除。低成本扩大任务池和模型规模，是中期反弹通道；剩余余量决定采购的近端响应。HBF兼容范围影响更长机会，目前量产部署未建立，当前直接贡献弱于已有缓存和调度，但可改变远期强度预期。 部署边界决定可共享池的大小，独立模型副本及服务预留决定额外固定容量，机群利用率决定新增活动能否被旧设备吸收；小独立环境的复制杠杆可能大于单请求效率改善，但必须有实际建设和预算。区域迁址若伴随旧能力退役，净新增量远小于新址采购；采购归属与地域供应资格还决定美光能否参与，不将所有本地化容量均算其机会。",
+          "scope_boundary": "覆盖行业需求强度、DRAM/HBM/闪存替代和效率反弹；SSD产品采用、系统性能及美光份额由相邻产品域深化。CXL仍是DRAM扩展而非块存储；不把各层容量和节省设备的方案重复相加。",
+          "ref": [
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "D1-O147",
+            "D1-O148",
+            "D1-O149",
+            "D1-O150",
+            "D1-O117",
+            "D1-O125",
+            "D1-O76",
+            "D1-O92",
+            "D1-O98",
+            "D1-O102",
+            "https://developer.nvidia.com/blog/?p=111143",
+            "https://github.com/microncxl/cxl-reskit",
+            "https://blogs.microsoft.com/blog/2026/02/24/microsoft-sovereign-cloud-adds-governance-productivity-and-support-for-large-ai-models-securely-running-even-when-completely-disconnected/",
+            "D1-O74"
+          ]
+        },
+        {
+          "name": "库存和缺货保险使采购偏离终端消耗并放大周期",
+          "mechanism": "某买方净采购等于实际消耗加库存净增加；目标库存取决于交期/缺货风险、未来涨价预期和CPU等配套到货节拍。OEM/CSP为避免停线及锁定供应可提前备货或跨供应商下单；只有可执行数量承诺与真实交付才区别于可撤订单，重复订单不能成为两份终端消耗。持有库存的资金成本、价格回落风险及配置过时风险限制囤货。供应商库存又决定能否缓冲突发采购；当买方已经补足且供应商库存恢复，采购可低于消耗并拖累价格，即使终端工作量不降。",
+          "current_status": "当前库存不是全链条同方向。行业调查称供应商库存处历史低位，而CSP曾因CPU短缺积累DRAM、PC品牌提前备货，移动补库大体完成后议价紧迫性下降。工作判断是低供应商缓冲与部分买方保险采购共同支撑近端价格，同时已经存在移动采购放缓和服务器装配错位的回吐渠道。8月移动DRAM报告公开目录列出买方平均库存12—14周，是历史调查锚点；样本与消耗口径未展开，且不覆盖其他买方或研究截点。仍未取得可比口径的截点CSP/PC/手机库存周数，不能宣称全行业都在去库或给出统一补库空间。",
+          "materiality_context": "实际消耗是可持续需求基础，库存净变动则可以主导单季采购：以固定周消耗d、13周季度举例，目标库存额外增加2周会带来约2/13即15.4%的单季额外采购，之后不重复，这是条件估算。交期、缺货损失和涨价预期决定目标库存幅度；CPU到货节拍可改变库存位置与释放时间，不自动改变全年消耗。资金成本、跌价与过时风险压低可承受持有量，价格反转时作用增强。可撤/重复订单影响表观需求可信度，执行承诺提高供给规划依据但不能证明最终使用。供应商库存决定涨价及缺货的非线性，历史低位下同量追加采购冲击较强；买方补库完成会削弱边际追价，当前移动链比尚追加采购的服务器链更明显。",
+          "scope_boundary": "解释全行业采购、消耗和上下游库存的时间差；公司财务库存不能替代客户库存。合同执行在合同Factor衔接，具体买方及渠道去库不外推为全行业实绩。",
+          "ref": [
+            "https://www.trendforce.com/presscenter/news/20260907-13219.html",
+            "https://www.trendforce.com.tw/presscenter/news/20260709-13138.html",
+            "https://www.trendforce.com/presscenter/news/20260904-13217.html",
+            "https://www.trendforce.com/price/dram/lpddr_spot",
+            "D1-O57",
+            "https://www.trendforce.com/research/download/RP260803NC"
+          ]
+        },
+        {
+          "name": "前后段良率、节点转换和资格共同决定净可售位元",
+          "mechanism": "前段晶圆投入、资源可用率和每片晶圆的die密度/良率决定合格芯片；制程迁移缩小die但转换停机、初期良率及周期可能暂时抵销密度收益。设备、材料、电力及工序能力限制投入和运行，HBM还须匹配堆叠/测试能力及合格堆叠良率；客户把HBM与GPU/xPU整合的封装及系统验证是另一层资源，受阻时可使已合格HBM积在链上而非变成运行能力。不同料号不能在客户未验证时互换，合格位元从生产到可交付还受制造周期、库存位置和平台资格约束。因此有效供给不是各环节名义产能相加，而是匹配后的瓶颈产出。即使总需求不变，净良率、配置或节点转换改变也能独立改变行业供需和价格。",
+          "current_status": "近端新增供给主要依靠节点迁移和既有资源优化，而不是大量新增晶圆。美光1γ已占FY2026Q4 DRAM位元多数，公司定性称普遍使用既有制造资源；不能据此写100%独立行业利用率。三大厂HBM4已不同程度进入商业供货，但规格资格与前后段匹配不齐。美光内部基础die与竞争者TSMC合作路线不同，却都不能免除加速器封装/平台验证。SPHBM4标准提供改变封装方式的未来路径，不证明封装瓶颈已消除。行业2027位元增长预测仍是模型；先进供给和低库存使合格产出的微小变化也可影响配额和议价。",
+          "materiality_context": "晶圆投入和资源可用率影响全厂规模：仅当设备/材料/电力及后段有余量时，提高投入才近似同比增加产出。die密度与晶圆良率分别改变每片良品数量；固定其他条件，良率从80%升至88%使相应良品量增10%，只是敏感性例，不是已知实际良率。迁移停机和初期良率影响季度时点，成熟密度收益影响数季成本/位元。HBM堆叠/测试能力和良率决定可售HBM；加速器封装/系统验证决定其能否变成客户运行能力，任一受限均可推迟后续采购但不必同日取消已交付内存收入。新封装接口若适配成功可放松局部瓶颈，不增加核心die本身产量。制造周期、库存位置、料号/平台资格决定交付滞后与客户范围。当前既有资源普遍使用使释放闲置能力杠杆偏小，节点和良率/前后段匹配较大；一个瓶颈解除后，杠杆会转到下一约束而非无限增产。",
+          "scope_boundary": "行业层面建立净供给及价格作用；美光资产、工艺良率和扩容执行由DRAM与HBM制造体系深化。NAND闲置设备/减产不能当成DRAM闲置产能，任何良率例均不是公司测量值。",
+          "ref": [
+            "https://www.trendforce.com/presscenter/news/20260907-13219.html",
+            "https://www.trendforce.com/presscenter/news/20260730-13158.html",
+            "https://www.trendforce.com/research/download/RP260728GY",
+            "D1-O31",
+            "D1-O57",
+            "D1-O88",
+            "D1-O44",
+            "D1-O205",
+            "D1-O66",
+            "D1-O71",
+            "D1-O72",
+            "D1-O91",
+            "https://news.skhynix.com/en/q2-2026-business-results/"
+          ]
+        },
+        {
+          "name": "HBM硅强度与每晶圆收益使需求在共享资源中重新分配",
+          "mechanism": "HBM核心die面积/密度、层数、堆叠及测试良率和基础die/封装需求决定每个可售位元占用的资源；相同位元不是与DDR5消耗相同晶圆。供应商在已承诺客户、工艺/资格兼容和转换时间约束下，按各产品每晶圆可实现收入减去成本、风险及后段瓶颈比较配置。年度HBM价格与季度常规DRAM价格的更新节奏不同，能改变收益排序并反向刺激HBM重定价。客户也可降低堆叠层数或每加速器容量以控制成本/可获得性，减少位元却增加需配套的堆叠/基础die数量；因此HBM销售强不必等于全行业位元增长强，却可挤压普通DRAM有效供给。",
+          "current_status": "这种资源竞争正在运行，而非只有未来假设。TrendForce六月模型的年末2026 HBM晶圆投入份额22%、位元份额9%显示硅强度方向，但两者口径不支持直接倒算精确贸易比例。其每晶圆模型还显示2026Q1 DDR5 64GB RDIMM收益超过年度价HBM，说明HBM不是永远经济上最优。美光2025年3月20日曾给出HBM3E同位元约3倍DDR5硅消耗、HBM4E预期超过4倍的技术判断；作为历史基准而非2026实测。2027 HBM大幅重定价预测与8-Hi替代12-Hi的买方评估，正是收益和配置相互反馈。",
+          "materiality_context": "die面积/密度及良率决定硅强度，作用跨共同先进产能；历史3倍基准意味着同节点、同位元假设下新增HBM可占用多倍DDR资源，不可外推所有规格或今日精确比例。层数决定每堆叠容量：同核心die及堆叠数，12层改8层减少约1/3核心位元；若保持核心die总量则理论堆叠数可增50%，但基础die/封装测试需求增加，未必可实现。基础die、堆叠良率和后段能力决定这项节约能否变成更多合格产品。价格、成本和风险改变每晶圆利润及配置意愿，年度/季度重置节奏决定反馈滞后；涨HBM价既可改善配置吸引力也会刺激买方降配。客户承诺、工艺资格和转换时间使收益差不能即刻完全重分配。当前其主要杠杆是共享资源分配和实现价格，既能使消费端缺货，也能使常规DRAM涨价反向推高HBM谈判；不应只看HBM位元份额判断其行业重要性。",
+          "scope_boundary": "本域深化HBM与其他DRAM的资源、价格和竞争配置。核心/基础die及堆叠制造细节连接制造体系；具体层数客户采用和利润组合连接产品业务；历史硅强度与条件层数算术不作为当前产量预测。",
+          "ref": [
+            "https://www.trendforce.com/presscenter/news/20260602-13074.html",
+            "https://www.trendforce.com/presscenter/news/20260929-13255.html",
+            "https://micron.gcs-web.com/static-files/df96216e-3e07-4b97-a4ef-df0a5fa684d6",
+            "D1-O31",
+            "D1-O52",
+            "D1-O186",
+            "D1-O66",
+            "D1-O71",
+            "D1-O72"
+          ]
+        },
+        {
+          "name": "高收益和合同可见性驱动扩产但建设到合格出货存在长滞后",
+          "mechanism": "供应商依据预期价格/利润、客户数量承诺、融资与政策支持决定长期厂房和设备投资；厂房空间先准备，设备交付安装、配套电力/材料、制程爬坡和客户资格再决定可售位元。前段新厂与HBM后段扩容是不同资源，只有匹配才增加最终供给。当前短缺和高收益刺激多家投资，但建设时滞使近端价格仍可强；后续多个项目一起释放、若需求或强度未同步增加，新增供给会降低价格和扩产回报，供应商又可调节设备投放及配置。资本支出总额包含建筑和技术迁移，不能等量换算新增晶圆。",
+          "current_status": "工作基线是2026—2027先吃节点收益，较大新增前段产出偏后，而不是公告新厂即近端解压。美光新加坡HBM封装目标2027年初、Idaho首次晶圆目标年中、铜锣有意义商业出货目标年中，属于不同里程碑。SK hynix Y1首个洁净室目标2027年2月，Y2首个洁净室为2029年6月；南亚2028第一阶段计划30,000片/月。提前交付建筑提高未来可选空间，但设备安装和合格爬坡仍决定最终增量。当前供给增长模型已包含扩产意向，不应把上述公告全部当额外超预期数量。",
+          "materiality_context": "价格/利润和可执行客户承诺改变投资回报与风险，影响多年潜在产能；融资及政策支持影响项目可负担性与实施条件，不直接创造客户消耗。厂房空间/洁净室主要扩大投放选项，设备数量/交期决定前段规模，电力材料与制程良率决定运行和爬坡，客户资格决定新增供给可服务范围；各变量可独立推迟或扩大有效产出。前后段匹配使一端增产在另一端受限时贡献变小。30,000片/月是南亚一期计划规模，缺乏产品密度/良率不能转行业位元百分比；首次晶圆也不是同日商业出货。当前近端杠杆仍在迁移和配置，2027H2以后新增合格产出更有机会改变供需；若需求不变、有效供给提高数个百分点，可显著缩小约1%—2%模型缺口，但不能据此推固定跌价幅度。设备投放节奏与扩产回报反馈决定未来周期峰值，多个公司计划不是互相独立、必然全量执行的供给。",
+          "scope_boundary": "覆盖全行业产能周期、项目阶段与价格反馈，不替代各公司制造执行研究。政策补贴和预付款只作为资金来源；不将某电网数据中心规则套用于晶圆厂，也不把NAND共建投资当DRAM供给。",
+          "ref": [
+            "https://www.trendforce.com/presscenter/news/20260730-13158.html",
+            "https://www.trendforce.com/presscenter/news/20260907-13219.html",
+            "D1-O31",
+            "D1-O88",
+            "https://news.skhynix.com/en/new-facility-investment-for-yongin-semiconductor-cluster/",
+            "https://news.skhynix.com/en/fab-facility-investment-2026/",
+            "https://www.nanya.com/cn/IR/16/%E6%96%B0%E9%97%BB%E7%A8%BF?IRId=13150"
+          ]
+        },
+        {
+          "name": "竞争供应和地域资格按规格改变可选供给而非均匀增加全球位元",
+          "mechanism": "竞争者的合格产量、性能/能耗、成本和报价构成买方替代选择；客户设计兼容、质量验证和多源采购意愿决定这些选择何时可用。新供应进入先影响其能服务的规格、客户和地区的价格/交期，再通过原有供应被释放到其他用途影响更广市场。地域采购资格、出口/安全限制和政策支持会分割采购池并影响扩产资金，可能使某地供给充裕而另一地仍短缺。即使全球实物位元不变，取消供应资格或改变客户配额也会转移美光可实现机会；竞争者毛die密度提升还须良率、设备投入及客户认证才能成为净量。",
+          "current_status": "HBM4已不是美光独有的未来进入点，三星和SK hynix已有商业进展，规格及客户资格不同；中国移动DRAM竞争也有具名商业采用。CXMT公布G5 24Gb LPDDR5X量产与归一毛die密度至少提高50%，但未给净良率/出货，不能当作全球供给增加50%。其LPDDR6进入具名手机是替代选择增加，不是全部OEM渗透。现有中国采购限制的范围也不是禁止所有中国买方购买美光。当前影响首先落在可替换移动规格与指定平台，全球数量缓解和美光份额变化仍由合格规模及分配决定。",
+          "materiality_context": "合格产量决定竞争数量规模，性能/能耗和报价决定买方是否值得替换，成本影响供应者持续报价及扩产；它们各可在总需求不变时改变价格或利润捕获。设计兼容、质量验证和多源意愿决定切换速度及受影响客户范围，短缺时第二来源的保险价值更高。地域资格/管制直接改变可购买池，不必等全球供给变化；政策资金主要影响更长供给弹性。当前CXMT毛die增加是较大的潜在密度杠杆，但良率和设备投入决定净量，不能将毛密度按比例加入行业模型；竞争者HBM资格增加可减轻单一供应者议价，并不保证每层数立即互换。三大厂收入份额混合售价和产品结构，不是位元份额；局部供给释放向全球传导还有库存和资源再配置滞后。",
+          "scope_boundary": "本域解释竞争有效供给、替代弹性和价格传导；具体美光产品份额由产品域、地域准入规则由地域市场准入深化。不得从一家手机采用推全部市场份额，也不把政策资金直接当可售量。",
+          "ref": [
+            "D1-O205",
+            "D1-O74",
+            "D1-O57",
+            "D1-O88",
+            "https://news.skhynix.com/en/q2-2026-business-results/",
+            "https://www.cxmt.com/en/news/info_22.html",
+            "https://www.cxmt.com/en/news/info_21.html",
+            "https://www.trendforce.com/presscenter/news/20260907-13219.html"
+          ]
+        },
+        {
+          "name": "成熟和图形规格退出使弱终端需求仍可能遭遇局部紧张",
+          "mechanism": "供应商比较成熟DRAM/GDDR与先进服务器产品的资源收益，决定退出、缩量或转移节点；买方已有CPU/GPU平台、PCB和质量资格约束，不能即时将DDR4改DDR5、GDDR6改GDDR7。终端销量下滑减少消耗，但成本敏感买方回退旧代会延长旧规格需求；替代厂商的合格增量、客户重新设计和库存缓冲决定缺口能否补上。GDDR7还受到AI用途与PC图形用途之间的配额竞争，采购用途变化可以压缩PC可得量而不增加PC销量。局部稀缺推动相应标准品价格和生命周期备货，不代表所有等级/代际同幅上涨。",
+          "current_status": "原有State发现的GDDR代际回退与供应退出错配仍成立。部分PC品牌重考虑GDDR6降低成本，原厂却缩减/退出相关供给；GDDR7先进资源又更多被AI采购吸收。DDR4标准品现货亦表现出旧代稀缺，但eTT与标准品价格关系不同，因此不能给DDR4总体固定溢价。工作判断是旧平台迁移速度落后于供应退出，弱PC需求不足以自动解压；台湾等替代供给可缓冲局部缺口，但不是原三大厂退出量的即时完全替代。",
+          "materiality_context": "供应退出规模和转配速度直接减少特定料号可供量，当前比泛称PC疲弱更接近局部价格驱动；终端销量降低该用途消耗，成本回退则改变代际份额，两者可能抵销。固定其他条件，旧代需求降10%而合格供给降20%，稀缺仍加重，例示方向而非实际比例。平台/PCB兼容、质量资格和重新设计周期决定替代速度，往往跨多个采购季度；生命周期库存暂缓缺货但会放大前期订单。替代供应者的合格规模决定缺口缓解幅度，不能只看宣布产能。AI/PC配额决定GDDR7供应分流，等级/渠道决定哪些价格最敏感：10月9日16Gb标准DDR4每颗83.64美元高于标准DDR5的58.90美元，但eTT为14.125与26.80美元，差异显示不能跨等级作统一价格推论。",
+          "scope_boundary": "行业范围涵盖DDR4、消费成熟DRAM、GDDR6/7和长生命周期兼容需求。沿用STATE方向身份，不把进一步研究记为新发现；具体PC/图形产品客户采用由相应业务域深化。现货值仅是截止前公开样本，不等于全行业加权ASP。",
+          "ref": [
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+            "https://www.trendforce.com/research/download/RP260708BM",
+            "https://www.dramexchange.com/",
+            "https://www.dramexchange.com/Service/Faqs"
+          ]
+        },
+        {
+          "name": "SSD容量增长与控制器映射设计共同决定配套DRAM强度",
+          "mechanism": "QLC提高存储密度/容量并降低某些容量层成本，买方由数据保留、SSD替代其他介质及实际预算决定SSD数量和TB容量；SSD控制器为地址转换、缓存及服务质量配DRAM。全表驻留的映射DRAM约等于NAND容量÷映射单元IU大小×每项映射字节，因此SSD容量扩大并不必然按固定GB/TB系数增加DRAM。增加IU、改变映射项宽度或采用部分缓存/host-memory buffer可以改变控制器DRAM强度；HMB把一部分需求移向主机而非凭空消失。较大IU及减少DRAM需OS/文件系统、控制器缓存策略和随机访问/尾延迟配合，设计选择由容量成本与负载性能共同决定。",
+          "current_status": "行业调查的QLC SSD需求改善与配套DRAM增加方向仍有依据，同时控制器与软件机制说明其强度可变。三星Linux高容量SSD技术资料以4KiB IU、4字节映射项说明256GiB容量需256MiB映射DRAM；16KiB IU下同条件仅需64MiB。该资料是设计机制而非2026全行业已迁移比例。HMB已在客户端SSD使用，不能因此假定企业级全表驻留均被替代；2026年4月的映射研究也强调部分缓存的容量与性能约束。工作判断是容量增长有正向配套需求，但控制器/软件可显著削弱同容量DRAM增量，不采用统一系数。",
+          "materiality_context": "数据保留用途、介质替代和预算决定SSD可售数量/容量，QLC成本改善扩大可负担容量，但并非每项新数据都买新SSD。SSD数量与单台容量在强度不变时各近似比例影响配套量；IU和映射项宽度直接改变映射DRAM。上述同容量条件例把IU提高4倍，映射部分DRAM降75%，不能外推整个SSD DRAM或全球行业量；更大地址范围若需更宽项会抵销一部分节省。全表/部分缓存及HMB决定控制器DRAM与主机DRAM分配，只有节约了两端净量才是全行业减少。OS/文件系统兼容和控制器策略决定节省能部署多少，随机访问及尾延迟决定哪些负载可采用，是范围门槛而非统一百分比。当前QLC容量扩张是已出现的正向驱动，映射粒度/缓存是较强的反向强度杠杆；缺乏部署份额，不能断言哪项已主导总量。",
+          "scope_boundary": "深化既有STATE发现的QLC SSD向DRAM传导，不改其首次发现阶段。NAND/SSD商业量和份额由相邻存储业务域深化；本域只计算DRAM净配套影响。技术算术区分GiB/MiB与市场TB/GB，不把映射表大小当整个控制器的全部内存。",
+          "ref": [
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+            "https://semiconductor.samsung.com/news-events/tech-blog/dividing-and-conquering-linux-high-capacity-ssd-support-with-lbs-ep1/",
+            "https://doi.org/10.1145/3789202",
+            "https://news.samsung.com/us/samsung-introduces-990-evo-ssd/"
+          ]
+        },
+        {
+          "name": "边际供需、库存和交易分层形成不同节奏的价格",
+          "mechanism": "各规格的合格供给相对真实消耗与补库、库存缓冲及买方缺货损失共同决定边际议价；短期产能刚性和平台切换慢使小缺口也可能带来大价格变化。供应者集中度、客户规模/资格及可选供应决定价值如何分配；高价又促使降配、延后终端购买、增加替代和扩产。现货主要反映可立即交付的二级市场与部分稀薄品种，季度/年度合约按客户、质量等级、数量、结算期分层，报价、预测和已结算ASP不同。因而总位元供需、spot价格或营收增长中的任何一个，都不能单独代替所有DRAM的定价。",
+          "current_status": "工作判断仍是广谱价格偏强、增幅和兑现不齐：供应商低库存、服务器采购及资源转配支撑价格，移动补库完成和消费降配限制部分买方追价。Q4常规合约涨幅10%—15%是行业预测，不是已结算结果；HBM年度价与常规季度价错位，已改变配置收益。标准品、eTT、模组和不同日期公开合约样本分化，说明市场并非一个均一价格。全年约1%—2%模型缺口描述紧张位置，不给定价格弹性，也不证明每种产品都短缺。",
+          "materiality_context": "合格供需差决定数量压力，供应商/客户库存改变缓冲，缺货损失与短期替代弹性决定价格可升多少；在低库存、难切换位置，百分点级缺口可比正常库存时更有价格杠杆，但没有可靠固定系数。集中度和客户规模/资格决定议价分配，不直接增加终端位元；新增合格替代来源会降低特定客户价格压力。高价触发的降配、延期、替代和扩产分别在配置、终端数量、供应资格和多年产能上反馈，阻止无限涨价。渠道/质量、数量及重置周期决定不同ASP暴露范围和滞后；spot成交深度低时价格更敏感却代表量更小，季度和年度合同则影响较大实际交付。当前应重视可持续合约实现及配额，而不是把两日期/不同产品的价差当现行溢价，或把59.5%行业营收增长当同幅实物消耗增长。",
+          "scope_boundary": "本域解释行业价格结构与反馈，区分每颗/每Gb/每条、等级、日期及实绩/预测。具体美光合同实现衔接下一Factor；不设交易阈值，不以少数现货成交代表全行业价格底。",
+          "ref": [
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+            "https://www.trendforce.com/presscenter/news/20260907-13219.html",
+            "https://www.trendforce.com/presscenter/news/20260929-13255.html",
+            "https://www.trendforce.com/presscenter/news/20260730-13158.html",
+            "https://www.dramexchange.com/",
+            "https://www.dramexchange.com/Service/Faqs",
+            "https://www.trendforce.com.tw/presscenter/news/20260709-13138.html"
+          ]
+        },
+        {
+          "name": "长约的数量保障和价格边界改变风险与实现价分层",
+          "mechanism": "客户以可执行多年数量或take-or-pay换取供应确定性，供应商获得规划产能和融资的需求可见性；合同数量不等于终端当期消耗，履约交付和客户信用仍决定实际兑现。固定价格、周期重谈、上下限以及代际/料号变更分别决定市场涨跌如何传到实现价。预付款/押金提供资金、分配风险，不是额外需求；救济、担保与可执行性影响客户违约时保障力度。合同覆盖比例、期限和重置节奏决定周期暴露，未覆盖产品仍按市场谈判；客户可在数量约束内改配置或另选合格供应，使长约与替代竞争并存。",
+          "current_status": "合同化已经进入现实业务，但不足以宣称行业价格周期消失。美光FY2026Q3/Q4签约包含可执行数量、take-or-pay及多数价格带，SK hynix称已与约十家关键客户敲定LTA；没有按DRAM产品披露一致的覆盖比例、价带宽度或重置日期。当前数量约束强化中期供应规划，价带可缓和下行却限制部分上行捕获，年度HBM与季度常规重置仍使实现价错位。",
+          "materiality_context": "承诺数量和期限影响规划规模/持续性，take-or-pay与信用/救济决定下行保障能否实现；交付能力仍是收入时点门槛。固定价、上限/下限、重置节奏和代际条款各决定价格风险的方向及滞后：上限抑制涨价捕获，下限保护跌价，周期重谈保留市场传导，换代可重新打开谈判。覆盖比例决定行业冲击在组合中的权重；若同口径固定价占比c、其余价格变化x，暂不考虑数量和混合变化，加权价格影响约(1-c)×x，是条件公式而非已知c。预付款/押金主要改善流动性和扩产资金，不增加位元；配置调整和合格替代决定客户如何履行/重分配。当前条款有实质意义但覆盖未量化，因此比没有合同时更有保障，远不足以据此设永久ASP底或认定利润已全锁定。",
+          "scope_boundary": "行业层面解释价格周期、供给可见性及美光实现价暴露。合同法律条款、资金担保和跨产品履约由战略客户供给与资金保障关系深化；不将客户数当数量覆盖率，不把押金计为销售。",
+          "ref": [
+            "D1-O57",
+            "D1-O31",
+            "D1-O44",
+            "https://news.skhynix.com/en/q2-2026-business-results/",
+            "https://www.trendforce.com/presscenter/news/20260602-13074.html",
+            "https://www.trendforce.com.tw/presscenter/news/20260709-13138.html"
+          ]
+        },
+        {
+          "name": "行业价格和供给通过合格组合传到美光实现ASP与出货",
+          "mechanism": "美光DRAM收入是各规格交付位元×相应实现价之和；同SKU重定价与HBM/DDR/LPDDR/GDDR等组合迁移分别改变加权ASP，市场报价不能直接替代公司价。公司合格产量及业务间供给配置决定可交付数量，客户平台资格、地域可销售池、竞争份额与合同价格/数量覆盖决定能出售给谁及捕获多少涨价。为高收益用途改配可使某业务位元下降而全公司增长；高价也可在位元近乎不增时扩大行业收入。制造单位成本决定利润而非收入，它又影响下一轮配置与扩产意愿；因此收入份额、物理份额和利润份额不同。",
+          "current_status": "当前美光DRAM增长的主要已披露驱动是广谱售价，不是可证明全部来自HBM放量。FY2026 DRAM收入同比增252%，ASP约增180%，位元增20%中段；53周财年对比52周也保留口径差。MCBU位元减少部分来自资源外移但收入随ASP增长，显示业务间配置已实质影响表观终端表现。行业收入份额23.3%不能视作美光位元份额；新的合格竞争供应和价格带将使后续同SKU捕获、组合和数量贡献继续分化。",
+          "materiality_context": "同SKU实现价和交付位元分别是一阶收入驱动：固定其他条件，任一增10%使对应收入约增10%，二者同时增10%约增21%。年度+180% ASP约为2.8倍，乘以约1.2倍以上位元与3.52倍收入大致一致，支持价格主导判断而不精确倒推出25%位元。产品组合改变加权ASP及收入份额，可在同SKU价不变时增收；资格、地域池和竞争份额决定可参与市场，业务配置决定供给去向，其影响不能再与总交付位元独立相加。合格产量制约近端数量，合同覆盖影响涨跌价捕获和时点；单位成本影响利润及配置激励，HBM价高不自动意味着每晶圆利润最高。当前价格贡献很大，新信息可能主要改变未来实现价持续性和配置而非即时产量；未公开的同SKU公司ASP、位元份额和覆盖率继续保持未测，不用市场现货填入。",
+          "scope_boundary": "终点为行业供需对美光DRAM实现价、供给配置和收入结构的影响。产品客户采用/份额、制造成本及公司EPS/估值由各相邻域深化；MCBU包含DRAM与NAND，不把其BU数量当整个DRAM行业需求。",
+          "ref": [
+            "D1-O57",
+            "D1-O31",
+            "D1-O44",
+            "D1-O74",
+            "https://www.trendforce.com/presscenter/news/20260907-13219.html",
+            "https://www.trendforce.com/presscenter/news/20260602-13074.html"
+          ]
+        }
+      ],
+      "potential_gaps": [
+        {
+          "name": "AI分发、付费回报与长任务使用改变服务器需求规模",
+          "why_live": "既有服务器扩张基线已有商业使用支撑，但付费席位、每席任务数与任务深度仍不是同一件事。微软7月披露Copilot付费席位超过3,000万；六月Cowork公告又把长时间多工具任务单独按使用收费，并提供租户/用户预算控制。分发渠道已广，实际购买和预算执行可以独立改变任务规模，不必等下一代GPU发布。",
+          "revision_logic": "当前默认是可收费AI活动扩张与效率提升并行。企业的付费续约、业务流程改造和平台的套餐/计费选择，可以改变活动规模与驻留时间；再经已有机群余量和HBM/普通DRAM配置改变采购。低余量下先改变配额和价格，中期改变扩产机会；只涨收入或席位而不增实际工作量，不支持同幅位元增长。",
+          "possibility_space": [
+            {
+              "name": "大型平台将后台代理纳入常用套餐并开放自动触发",
+              "implication": "如果办公、编程或消费平台降低单独购买门槛、让代理在事件触发后持续工作，新增的不只是用户数，还有并发和驻留时长；服务器内存需求可超出一次性问答基线。套餐可能由平台补贴，持续采购取决于付费收入或其他业务收益能覆盖服务成本，不把免费触达人数等同订单。"
+            },
+            {
+              "name": "企业把试用工具改造成长期业务流程并按成果续约",
+              "implication": "采购方若把客服、研发或财务流程中的重复工作交给代理，任务量可在席位平稳时增长，CPU沙箱、数据库及HBM均可能获益。可证明的节省和收入贡献使预算较能承受内存涨价，扩大持续机会；不会机械把节省人时换算成DRAM GB。"
+            },
+            {
+              "name": "企业在按量账单出现后收紧预算并把简单任务路由给小模型",
+              "implication": "同样的已付费席位可产生更少昂贵长任务，既降低每任务资源强度，也削弱新增机群的迫切性。若低成本小模型让更多部门开始使用，部分节约会被新增活动吸收；能否吸收取决于实际新增任务而非厂商价格宣传。"
+            },
+            {
+              "name": "应用新增用户很多但续费和业务价值停留在少数高使用群体",
+              "implication": "广泛分发可被重新解释为浅层使用而非普遍长期采购基础；云方可能优先提高现有机群利用率、放慢预留能力扩张。这改变需求持续期，不必意味着现有高价值客户停止采购或行业立刻过剩。"
+            }
+          ],
+          "ref": [
+            "https://www.microsoft.com/en-us/investor/earnings/fy-2026-q4/press-release-webcast",
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "https://www.microsoft.com/en-us/copilot/blog/2026/06/16/copilot-cowork-is-now-generally-available/",
+            "https://www.trendforce.com.tw/presscenter/news/20260709-13138.html",
+            "D1-O67",
+            "D1-O81"
+          ]
+        },
+        {
+          "name": "代理授权、安全事件与治理方式重塑可部署活动",
+          "why_live": "当前模型把质量和数据集成视为采用条件，但安全不是一次性认证。Anthropic 8月31日披露的越权事件发生于降低防护的测试环境，并曾暂停部分高风险评估/训练；不能写成所有生产客户已受损。NVIDIA 9月28日发布运行边界及独立监控参考设计，说明约束长任务正在成为基础设施安排，而非只在模型回答上加提示。",
+          "revision_logic": "默认可收费活动扩张还隐含客户愿意授予工具和数据权限。授权范围、监督方式或模型可获得性改变，可先改代理能做什么、任务能运行多久以及企业是否部署，再影响服务器需求。安全治理也可能扩大可用市场、增加CPU隔离和监控资源，而非只有抑制需求的方向；这是独立的外部行为主题，不是把AI增长换一个名称。",
+          "possibility_space": [
+            {
+              "name": "重要企业发生公开生产数据损失后撤回代理写入和交易权限",
+              "implication": "这是未来可能事件，不是把现有测试事故改写为生产事故。客户若从自主执行退回人工审批、只读助手，长驻任务和自动重复操作会减少，降低新增机群需求的斜率；安全审计/恢复可能增加短期计算，却不能补回全部长期业务使用。"
+            },
+            {
+              "name": "提供商扩大高能力模型的受限访问并暂停高风险训练路线",
+              "implication": "有限合作伙伴和受控用途会压缩最重任务的可参与范围，改变前沿训练及推理扩张时点；既有安全模型仍可承接办公和一般开发活动。资本可能转向安全评估、其他模型或CPU工具，不应推成所有DRAM需求消失。"
+            },
+            {
+              "name": "企业采用强制沙箱、独立监控和可审计权限后扩大自主工作",
+              "implication": "若可执行边界使受监管和关键业务愿意部署，新增活动可超过隔离/监控开销，扩大HBM及普通服务器DRAM机会；反之，权限频繁阻断或人工等待会限制有效吞吐。NVIDIA参考设计提供可行路线，但没有公开通用的每代理内存增量或部署份额。安全要求若另促成独立机群，连接下一主权部署主题，不重复计算同一建设。"
+            }
+          ],
+          "ref": [
+            "https://www.anthropic.com/news/improving-alignment-security-efforts",
+            "https://nvidianews.nvidia.com/news/open-agent-safety-platform",
+            "https://www.microsoft.com/en-us/copilot/blog/2026/06/16/copilot-cowork-is-now-generally-available/",
+            "https://www.microsoft.com/en-us/investor/earnings/fy-2026-q4/press-release-webcast"
+          ]
+        },
+        {
+          "name": "主权和隔离部署改变机群复制、利用率与采购归属",
+          "why_live": "微软2026年2月已提供断网运行的Azure Local/M365 Local，并向合格客户提供本地大型模型路线。这是技术与商业选项，不证明各国已普遍要求本地化，更不是已披露的DRAM采购量。现有行业需求模型较偏集中云，较小独立机群的模型复制、预留及利用率差异尚未充分进入总量解释。",
+          "revision_logic": "同一最终任务量不必对应同一已安装内存。客户或公共机构若为控制数据、运营连续性而复制区域/本地能力，减少共享池化可能提高总配置位元；若只把既有活动迁到可共享区域，则更多改变订单归属和时点。行业需求扩大与美光可参与供应池还需分开，地域采购规则由相邻Shell深化。",
+          "possibility_space": [
+            {
+              "name": "政府和受监管企业以独立预算建设断网或专属推理机群",
+              "implication": "每个独立环境都需驻留模型和服务预留，即使任务数量不增，低于大型共享云的利用率也可能提高已安装HBM/DRAM。它打开不愿使用公有云的活动，但较小预算和运维能力会限制配置；厂商方案可用不等于所有客户已建成。"
+            },
+            {
+              "name": "云运营者用区域池化和统一治理满足控制要求",
+              "implication": "若数据边界不要求每个客户独立机群，可在区域内共享容量，新增需求主要来自新用户而非反复复制同一模型；迁址会重排区域采购并提前建设，旧能力随后退役则抵销部分净增量。"
+            },
+            {
+              "name": "本地部署客户优先用紧凑模型和旧服务器而非前沿加速器",
+              "implication": "控制要求可能扩张普通DDR/LPDDR需求而抑制高容量HBM配置，增加的设备数不等于高价值内存同幅增长。若小模型能力足够完成任务，行业结构而非仅总量会改变；后续能力要求提高又可引出升级需求。"
+            },
+            {
+              "name": "公共采购把算力本地化进一步绑定特定供应资格",
+              "implication": "潜在订单虽新增，却可能只流向获准内存或系统供应商，行业机会与美光市场机会分离。采购池分割还能促使区域备库存和重复产能；此为未来政策可能性，不宣称已有全球统一禁购规则。"
+            }
+          ],
+          "ref": [
+            "https://blogs.microsoft.com/blog/2026/02/24/microsoft-sovereign-cloud-adds-governance-productivity-and-support-for-large-ai-models-securely-running-even-when-completely-disconnected/",
+            "D1-O74",
+            "D1-O57"
+          ]
+        },
+        {
+          "name": "融资、租约和客户承诺改变AI扩建的可持续能力",
+          "why_live": "资金不是只在终端需求下降时才收缩。既有Factor显示活跃电力与签约电力有差、算力积压依赖交付，独立运营商利息负担显著；模型方的多平台投资和算力承诺又相互联系。大量已经谈妥的远期能力仍需现金、信用及投运才能成为有效采购。",
+          "revision_logic": "当前基线是资金支持扩张但存在交付瓶颈。融资条件、承诺的可执行性和资产承租人变化，可使相同使用兴趣对应不同建设速度；取消远期项目与转让既有机群的经济含义不同。此主题改变中期DRAM需求的可交付规模和采购时点，不用融资美元直接换成位元。",
+          "possibility_space": [
+            {
+              "name": "基础设施债权人减少授信、提高抵押要求或拒绝再融资",
+              "implication": "依赖外部资本的运营者可被迫延后设备订单、保留旧GPU，HBM和配套DRAM增量转弱；现金充裕云方不必同步缩减。供应短缺时空出的配额可被其他买方吸收，先改变客户分配而未必改变全行业出货。"
+            },
+            {
+              "name": "模型公司的付费增长落后于远期算力承诺并重谈建设节奏",
+              "implication": "终端业务回报不足会把名义积压重解释为需重排的能力，而非确定持续采购。已有训练和推理不必停止，但未来新增机群、预购内存及长约履约压力会改变，可与客户库存回吐叠加。"
+            },
+            {
+              "name": "高信用租户、长期租约或政府/战略资金承接建设风险",
+              "implication": "若融资安排使土地/电力项目能完成，原本只有远期需求的机会可提前变为设备采购；收益仍取决于有偿租用和安装，不把担保或股权注资当新增工作量。对受资金约束客户的修订大于已自筹完成的项目。"
+            },
+            {
+              "name": "经营不佳运营商的机群被另一云方接管继续服务",
+              "implication": "资产和终端任务可能继续运行，全球已配置内存未消失，但新业主可合并闲置容量、延迟新采购或改变后续供应名单。破产/重组新闻因此既是扩产风险，也可能只是订单归属变化，不能一律等同终端需求崩溃。"
+            }
+          ],
+          "ref": [
+            "https://investors.coreweave.com/news/news-details/2026/CoreWeave-Reports-Strong-Second-Quarter-2026-Results/default.aspx",
+            "D1-O80",
+            "D1-O81",
+            "D1-O83",
+            "D1-O130",
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4"
+          ]
+        },
+        {
+          "name": "电力服务等级和灵活运行改变建设瓶颈的需求含义",
+          "why_live": "截至研究截点，PJM的IRAS与Large Load Registry仍待FERC批准；其8月提案把自带新增供给与更易被削减的新大负荷服务区分，不能把申请日期写成批准。2026年6月研究在130kW GPU集群展示调度削峰和跨地负载迁移，是可行性依据而非GW级普遍部署。电力约束可以由商业服务和运行方式改变，不只等待更多电厂。",
+          "revision_logic": "当前默认电力/机房拖慢安装。若监管或客户选择可中断服务、自备电源或灵活工作负载，受限项目可更早安装，却降低可保证运行时间；若必须全天候服务则成本和延期仍在。新增内存是硬件配置而不是每小时耗电，两者可暂时脱节；涉及PJM的规则不套用于全球园区或美光晶圆厂。",
+          "possibility_space": [
+            {
+              "name": "监管接受更严的新负荷可靠性和成本承担安排",
+              "implication": "需要新增发电、保证服务或承担高接入成本的园区可延后/降规模，配套DRAM采购后移；资金强或已具自备电源项目可能相对获益。市场应改变受影响项目的可交付时点，而不是推定已投运机群全部停机。"
+            },
+            {
+              "name": "客户接受可中断电力并把训练等可延迟任务调度到空闲时段",
+              "implication": "若调度和合同允许，原本等待稳定供电的服务器可以更早安装，内存采购先实现，但吞吐/回报低于全天候假设。抢先装机与长期有效工作量需分别解释，不能因峰值负荷下降就认定同幅内存需求减少。"
+            },
+            {
+              "name": "运营者以新增本地电源、储能及供电长约换取更快投运",
+              "implication": "建设约束可部分解除，现有业务增长更快转成HBM/DDR采购；电源投资挤占设备预算且燃料/运行成本改变回报，效果在已完成其他配套、只缺电的项目最大。自备电源不是天然无许可和交付风险。"
+            },
+            {
+              "name": "跨区域迁移与算力池化替代在拥堵电网新建容量",
+              "implication": "在别处有余量时，更多任务可由已有机群服务，减少拥堵地区的新增内存采购而保住工作量；若可迁移容量不足，则会推动新地区建设。数据主权和低延迟要求限制迁移范围，与区域复制主题形成取舍。"
+            }
+          ],
+          "ref": [
+            "https://www.pjm.com/markets-and-operations/large-load",
+            "https://insidelines.pjm.com/pjm-proposes-framework-to-connect-data-centers-without-compromising-reliability-affordability/",
+            "https://arxiv.org/abs/2606.25098v1",
+            "D1-O108",
+            "D1-O109",
+            "D1-O130"
+          ]
+        },
+        {
+          "name": "平台选择和CPU任务结构改变HBM与普通DRAM分工",
+          "why_live": "GPU、ASIC和CPU已共同承接扩张，服务器降配与CPU短缺也已出现。既有规格证明自研芯片仍用HBM，但不同平台的吞吐、软件栈和主机BOM不等价。故AI服务器台数增长不能固定映射HBM和RDIMM各自的位元增长。",
+          "revision_logic": "默认服务器需求增加，但各内存类别的份额与单位任务配置仍开放。模型方和云方的路由、平台自研及采购选择可在任务量不变时改资源强度，在任务增加时又改变受益内存种类和供应者；对美光还需经过具体资格和配额。",
+          "possibility_space": [
+            {
+              "name": "大型模型服务把更多可适配推理路由到自研ASIC",
+              "implication": "NVIDIA路径减量不等于退出HBM；如果ASIC完成同等任务所需芯片更少或不同容量，总HBM强度可下降，反之可扩大另一条HBM路径。软件切换摩擦和可交付数量决定速度，不能只比单芯片GB。"
+            },
+            {
+              "name": "自主代理执行扩展为大量CPU沙箱、数据库和编译活动",
+              "implication": "普通服务器DRAM可成为比GPU台数更重要的新增用途，CPU可得量和每节点容量决定能形成多少DDR采购；HBM仍服务模型调用，两端是互补而不是两份完整终端任务需求。"
+            },
+            {
+              "name": "云方以更低容量DIMM和更高利用率满足扩张预算",
+              "implication": "服务器数量可继续强而普通DRAM位元增长被削弱，推低加权模组容量并改变价格等级。若之后达到内存容量瓶颈，降配省下的预算可能转为更多节点，其抵销取决于真实负载而非型号公告。"
+            },
+            {
+              "name": "平台广泛采用低功耗内存或可维护的新模组形态",
+              "implication": "LPDDR/SOCAMM等路线若降低电力限制和服务成本，可扩大可部署设备数，也可能替换同一服务器内的DDR容量；最先改变的是产品/供应资格和ASP组合，不应把两种形态都计为新增位元。"
+            }
+          ],
+          "ref": [
+            "https://www.trendforce.com.tw/presscenter/news/20260709-13138.html",
+            "D1-O88",
+            "D1-O96",
+            "D1-O103",
+            "D1-O105",
+            "D1-O107",
+            "D1-O81"
+          ]
+        },
+        {
+          "name": "模型和内存层级创新改变单位活动资源强度",
+          "why_live": "缓存重用、CXL软件适配、CMX闪存分层已给出技术路线，HBF标准和GP1样品计划则扩大未来替代范围，尚不是行业已大规模替代。当前基线同时承认效率节约与更低成本诱发使用增长，未给统一的DRAM节约系数。",
+          "revision_logic": "新方法可改变每任务驻留字节、已安装内存利用率或可承担的模型规模。它先改变资源强度和成本，再改变活动规模；可在出货前修订远期需求和供应者议价。关键区别是相同任务的净节约、额外服务的吸收，以及从HBM转往其他DRAM/闪存的结构变化。",
+          "possibility_space": [
+            {
+              "name": "应用提供商用蒸馏、量化和按任务选模型替换大模型常驻",
+              "implication": "若保持所需质量，可在相同活动下减少HBM工作集和设备量，弱化当前容量增长外推；若更便宜服务打开新用途，扩大任务量会抵销甚至超过节约。范围限于能保持任务质量的应用，不将一次模型演示当全部市场变化。"
+            },
+            {
+              "name": "云方把冷KV卸载和跨请求缓存重用变成常用部署方法",
+              "implication": "部分容量迁向主机DRAM/SSD，减少重复计算和HBM预留；预取与尾延迟若可控，既有电力可服务更多请求。对行业总DRAM要扣除被替代HBM、加入实际新增主机/控制器内存，不能把闪存TB当同等HBM。"
+            },
+            {
+              "name": "服务器软件把CXL池化从可识别容量变成常规有效内存",
+              "implication": "减少闲置和高配本地DIMM可延长现有机群使用、降低新增整机需求；同时扩大无法用本地插槽承载的大容量用途。采购从单机配置转向池化模块，净位元取决于节约与新任务，资格扩大也降低供应者进入摩擦。"
+            },
+            {
+              "name": "HBF或低延迟GPU直连闪存通过适用负载验证",
+              "implication": "冷权重/上下文若能低成本放入新层级，可改变HBM容量上限和议价，即使不是全部替代。受益可先落于闪存竞争者，美光不能自动获得所有增量；真实低延迟负载仍可能保留大量HBM。"
+            },
+            {
+              "name": "更长上下文和多模态推理吸收效率提升后的成本空间",
+              "implication": "即使每字节处理更有效，用户转向更大工作集和更长任务也可让内存总量继续上升；这修订的是使用范围而非否认效率。若服务预算和可用容量不能跟上，新机会会先表现为分级收费、配额和未来投资。"
+            }
+          ],
+          "ref": [
+            "D1-O147",
+            "D1-O148",
+            "D1-O149",
+            "D1-O150",
+            "D1-O117",
+            "D1-O125",
+            "D1-O98",
+            "D1-O102",
+            "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf",
+            "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html",
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4"
+          ]
+        },
+        {
+          "name": "终端成本传导与实际换机价值改变消费DRAM的底部路径",
+          "why_live": "当前手机/PC数量基线偏弱，低成本库存缓冲和AI高配尚未证明能抵销整体下降；企业更新、系统支持和云端使用提供不同替换路线。微软既有Windows 10 ESU选项表明支持结束并不强迫每台设备即刻换新，未明确更新日期的网页不用于扩展具体覆盖期限。",
+          "revision_logic": "行业位元取决于实际卖出设备数量与加权容量，不是内存报价或AI型号数。厂商价格/产品组合选择、用户认可的功能价值和企业更新安排可改变数量与容量的抵销关系；采购提前及渠道积货还会使修订先影响终端、后影响原厂订单。",
+          "possibility_space": [
+            {
+              "name": "OEM耗尽低价库存后全面提价并取消低端型号",
+              "implication": "购买力受限用户更易延迟换机，消费位元需求可比当前弱基线进一步下降；剩余高端占比提高可能令平均GB/台和ASP上升，不能因此误判总数量恢复。供给同步退出时局部价格仍可强。"
+            },
+            {
+              "name": "运营商、企业或公共采购用补贴和批量更新恢复设备购买",
+              "implication": "由实际支付支持的换机可扩大终端数量并消化库存，消费需求不再只靠高配少数机型；补贴撤出或前置更新会造成后续回落，不把一次采购峰值当永久增长。"
+            },
+            {
+              "name": "本地AI应用带来消费者愿意为容量和性能付费的新功能",
+              "implication": "若新功能不能由旧设备或共享云等效提供，换机与容量升级可同时发生，改变“台数偏弱、高配有限抵销”的理解；行业获益依赖加权采用而非旗舰规格。"
+            },
+            {
+              "name": "企业延用旧PC、个人以云AI代替新高配设备",
+              "implication": "ESU、维修与云服务使更新周期更长，新设备DRAM采购受压，成熟规格维护需求及云服务器需求可能增加。两端替代须净计，不能因云AI使用强就宣称消费内存也同步复苏。"
+            }
+          ],
+          "ref": [
+            "https://www.trendforce.com/presscenter/news/20260908-13222.html",
+            "https://www.trendforce.com/presscenter/news/20260904-13217.html",
+            "https://www.trendforce.com/presscenter/news/20261008-13264.html",
+            "https://www.idc.com/resource-center/blog/smartphone-shipments-set-for-record-16-7-drop-in-2026-as-the-memory-crisis-hits-full-force/",
+            "https://blogs.windows.com/windowsexperience/2025/06/24/stay-secure-with-windows-11-copilot-pcs-and-windows-365-before-support-ends-for-windows-10/",
+            "D1-O57"
+          ]
+        },
+        {
+          "name": "物理AI从研发投入到实际运营的内存需求形态变化",
+          "why_live": "车用和工业内存已有现实需求，机器人/新自动驾驶项目并未都建立量产基数。NVIDIA三月的Physical AI Data Factory把数据生成、训练和验证连接到云服务，说明研发活动可先于车队/机器人装机；美光已有车用交付、LPDDR6物理AI仍送样，系统安全条件也不同于部件认证。",
+          "revision_logic": "当前不把物理AI产品送样外推成行业大规模终端量。实际运营、新任务及其部署位置可以扩大车规/工业DRAM；研发仿真则主要经服务器内存形成机会。两条时间不同的路径不能互相替代，也不能用机器人数量同时外推两端相同倍数需求。",
+          "possibility_space": [
+            {
+              "name": "机器人和自动驾驶开发者扩大仿真、合成数据和安全评估",
+              "implication": "即使终端装机尚小，也可增加训练/验证服务器活动，拓宽服务器DRAM需求来源；自动生成更多数据不是自动买同量新内存，需经过研发预算、任务并发和既有机群余量。终端量产延期不必等量取消这条研发路径。"
+            },
+            {
+              "name": "车队和工业用户把通过验证的系统扩大为持续运营设备",
+              "implication": "实际设备采购及更复杂本地工作集可推高加权车用/工业容量，长期供货规格与质量资格使需求较少随现货价格切换。新机会由获配供应者取得，不能以平台合作名单证明美光供货。"
+            },
+            {
+              "name": "安全事故、责任成本或现场回报不足使部署保持小规模",
+              "implication": "新终端需求持续期被削弱，资格投入不能按原速变销量；测试/改进工作可能增加云端活动，但不是自动补偿全部车用DRAM机会。既有汽车信息娱乐和工业控制市场不必同步衰退。"
+            },
+            {
+              "name": "系统商把可迁移工作放到云端并以较小本地模型保障实时控制",
+              "implication": "终端容量强度可低于高配示范设备，云侧形成配套需求；联网不稳定和实时安全任务限制可迁移比例，可能仍需独立本地内存。行业配置重排的受益者不同，不以单台演示容量估全市场。"
+            }
+          ],
+          "ref": [
+            "https://nvidianews.nvidia.com/news/nvidia-announces-open-physical-ai-data-factory-blueprint-to-accelerate-robotics-vision-ai-agents-and-autonomous-vehicle-development",
+            "D1-O69",
+            "D1-O66",
+            "D1-O171",
+            "D1-O78",
+            "https://sg.micron.com/content/dam/micron/global/public/corporate/quality/certificates/micron-21-03-104-c-r018-y4bm-type-certificate-v2r0.pdf"
+          ]
+        },
+        {
+          "name": "库存保险和配套错位改变采购信号的可持续性",
+          "why_live": "供应商低库存与部分CSP库存增加同时存在，移动补库趋完、PC提前采购也已出现。当前支持价格的订单含真实消耗和保险库存两部分，八月移动报告目录虽给买方平均库存12—14周，却未建立各类客户在研究截点的可比库存周数，尚不能把新增采购全解释为新增运行能力。",
+          "revision_logic": "默认采购持续但不等同消耗。买方目标库存、配套到货和订单可撤性变化，可以在终端活动不变时改变一个或多个季度的净采购，继而改变追价紧迫性；库存释放不必代表终端消耗下降，囤货也不必代表持续增长。",
+          "possibility_space": [
+            {
+              "name": "CPU和机房配套到货后CSP先消耗此前备好的DRAM",
+              "implication": "服务器投运会强而原厂新订单暂时弱，需把库存进入整机与新增采购分开；较低缓冲在消耗后可恢复补库，影响以季度时点为主而不必缩小长期活动。"
+            },
+            {
+              "name": "供应交期改善或涨价预期退潮使OEM降低安全库存",
+              "implication": "即使终端销售平稳，采购也可低于消耗，短缺保险溢价和spot价格先减弱；如果多类客户同时降目标库存，回吐比单一终端疲弱更广，并会释放供应给其他用途。"
+            },
+            {
+              "name": "新的停线风险促使客户再次进行生命周期或跨供应商备货",
+              "implication": "库存保险可进一步推高近期采购和价格，却扩大未来回吐风险。可执行长约与可撤重复订单的约束不同，不能把同一终端的多个保险订单都计可持续位元需求。"
+            },
+            {
+              "name": "企业终端使用增长持续吸收库存，原先保险订单变成正常消耗",
+              "implication": "强采购可被重新理解为具有更高可持续基础，价格韧性不再只靠买方囤货；供应约束下仍可能先表现为配额争夺而非同幅行业出货。它可以与部分移动去库并存，不要求全链条库存同方向。"
+            }
+          ],
+          "ref": [
+            "https://www.trendforce.com/presscenter/news/20260907-13219.html",
+            "https://www.trendforce.com.tw/presscenter/news/20260709-13138.html",
+            "https://www.trendforce.com/price/dram/lpddr_spot",
+            "https://www.trendforce.com/presscenter/news/20260904-13217.html",
+            "D1-O57",
+            "https://www.trendforce.com/research/download/RP260803NC"
+          ]
+        },
+        {
+          "name": "净良品效率和封装方法改变既有资源的供给弹性",
+          "why_live": "近端扩量主要靠节点迁移，名义利用资源较满，HBM还存在前段、堆叠测试和加速器封装不同层次。已有1γ多数产量、竞争者HBM4商业进入和SPHBM4标准提供改进基础；毛die、空间或接口均不等同净可售位元。",
+          "revision_logic": "在终端活动及新厂建设大体不变时，良率、密度、转换损耗与封装兼容本身可改变有效供给，从而修订价格持续性。释放瓶颈的效果取决于下一环节是否有余量，不要求所有环节同日改善才有意义，也不把标准发布直接升级为产量。",
+          "possibility_space": [
+            {
+              "name": "主要厂商的新节点更快达到稳定良率并缩短转换损耗",
+              "implication": "相同晶圆投入可产生更多合格位元，比等待新厂更快缓解近端缺口；成本下降还改变各用途收益和竞争报价。收益若被HBM硅强度和客户增长吸收，供给改善不必形成全面跌价。"
+            },
+            {
+              "name": "迁移初期良率或高层堆叠问题导致重复加工和合格量减少",
+              "implication": "可售量低于节点/设备进度标题，交期和稀缺价格可能更强；客户若改用低层数或旧代产品，可转移而非消除需求。影响要按受限料号和产线，不把单一问题推成全行业停产。"
+            },
+            {
+              "name": "堆叠测试或GPU整合封装能力先解除限制",
+              "implication": "已制成die可更快成为HBM或完整系统，前段压力反而上升；若原先下游库存充足，最先恢复的是使用与库存消耗，追加采购有滞后。前后段各自改善对价格和交付的作用不同。"
+            },
+            {
+              "name": "新封装接口被客户适配并扩大可用基板/制造路径",
+              "implication": "SPHBM4等路径若真实适配，可降低某一封装依赖及进入摩擦，扩大未来供给选择和议价；核心DRAM die仍要生产，瓶颈可能转回晶圆和测试。这改变资源关系而非仅把同一产能数字上调。"
+            }
+          ],
+          "ref": [
+            "https://www.trendforce.com/presscenter/news/20260907-13219.html",
+            "https://www.trendforce.com/presscenter/news/20260730-13158.html",
+            "D1-O31",
+            "D1-O88",
+            "D1-O44",
+            "D1-O66",
+            "D1-O71",
+            "D1-O72",
+            "D1-O91"
+          ]
+        },
+        {
+          "name": "扩产兑现和设备投放纪律改变短缺的持续期",
+          "why_live": "当前供给基线已包含节点和2027增量意向，较大新厂产出偏2027H2—2028；各厂空间、首片晶圆和商业出货阶段不同。高收益与长约既刺激扩产，也提高同步投放风险，不能把所有既知项目再加成额外增量。",
+          "revision_logic": "修订对象是新增合格供给的时间、规模及厂商在回报变化后的投放选择，而不是某个剪彩是否发生。供给超出需求吸收会压价格，高价继续吸引需求/投资又可能延缓缓解；较小模型缺口意味着数个百分点有效产量变化即可改变紧张位置，但没有固定价格系数。",
+          "possibility_space": [
+            {
+              "name": "现有厂房整合和设备到位使商业出货早于原定爬坡",
+              "implication": "可用资产再利用比全新建设更快进入供给，对普通DRAM或HBM的影响取决于实际料号；在需求路径不变时，短缺持续期缩短。只提前洁净室而没提前合格量则主要改善远期选择，不视为近期解压。"
+            },
+            {
+              "name": "设备、供电或资格拖延使现金投入先行而产出后移",
+              "implication": "近端价格支持可更久，厂商承担较多爬坡成本与资本占用；美光或其他已能交付者可能取得配额，但共同输入瓶颈可使其也无法替代。供给延期不是永久取消。"
+            },
+            {
+              "name": "多家厂商在2028前后同时释放超过新增消耗的合格量",
+              "implication": "行业从分配短缺转向争取订单，非长约价可先正常化，长约保护与产品差异成为更重要的盈利来源；较便宜内存会促进容量升级并吸收部分增量，因此不是单向无限下跌。"
+            },
+            {
+              "name": "厂商在回报变弱时分阶段安装设备而保留已建空间",
+              "implication": "名义项目仍推进但净位元弹性较低，延长价格韧性并减少未来过剩风险；它是商业决策而非建设失败，也不能据厂房面积推定满负荷供给。若需求再强，现成空间缩短下一轮响应时间。"
+            }
+          ],
+          "ref": [
+            "https://www.trendforce.com/presscenter/news/20260730-13158.html",
+            "https://www.trendforce.com/presscenter/news/20260907-13219.html",
+            "https://www.trendforce.com/research/download/RP260728GY",
+            "D1-O31",
+            "D1-O88",
+            "https://news.skhynix.com/en/new-facility-investment-for-yongin-semiconductor-cluster/",
+            "https://news.skhynix.com/en/fab-facility-investment-2026/",
+            "https://www.nanya.com/cn/IR/16/%E6%96%B0%E9%97%BB%E7%A8%BF?IRId=13150"
+          ]
+        },
+        {
+          "name": "集中制造和共同投入的中断改变供给与份额的方向",
+          "why_live": "三大厂仍主导DRAM供给，低库存缓冲与已广泛使用的资源使临时中断较难靠闲置量补足。既有研究也披露部分材料/组件短缺或长交期，但没有可量化具名断供事件；本主题探索未来运营中断，不宣称截点发生了新灾害。",
+          "revision_logic": "即使终端需求不变，停电、灾害、网络/质量事件或共同供应商中断也可减少合格位元并提高备货。影响行业价格与美光交付的方向可能相反；来源集中度、库存和第二来源资格决定能否替代，恢复后库存反应可再改变价格。",
+          "possibility_space": [
+            {
+              "name": "关键生产地区的灾害或公用设施故障影响多家产线",
+              "implication": "共同供给下降可放大紧张和价格，但受损厂商可能失量、承担恢复成本；美光若同受影响，高价不自动带来更高收入。恢复和重新认证跨越制造周期，客户会提高风险库存。"
+            },
+            {
+              "name": "某一供应者发生质量问题并暂停特定料号交付",
+              "implication": "合格竞争者可取得紧急采购和更高议价，影响先落在该规格/平台；客户未完成第二来源验证时，停线风险比全球总位元缺口更大。不能把一个批次质量事件推成所有代际失去资格。"
+            },
+            {
+              "name": "共同材料或关键工序资源受阻，而厂房和设备均已准备",
+              "implication": "多家名义扩产不能同步变可售量，短缺持续期延长；替代材料/工艺若可验证会降低共同依赖，通常先改变交付时间，再改变稳定产出。增加前段投入在后段受限时可能只积累在制品。"
+            },
+            {
+              "name": "恢复后客户保留双源和较高缓冲，随后消化保险库存",
+              "implication": "中断造成的采购提升可在数季后回吐，行业价格从稀缺溢价回到真实消耗；获得新资格的供应者可能保住部分份额，即使最初的紧急高价已消失。供给恢复与采购恢复不能同幅相加。"
+            }
+          ],
+          "ref": [
+            "D1-O74",
+            "D1-O31",
+            "D1-O57",
+            "https://www.trendforce.com/presscenter/news/20260907-13219.html",
+            "https://www.trendforce.com/presscenter/news/20260730-13158.html"
+          ]
+        },
+        {
+          "name": "HBM层数、代际和相对收益重新定义共享晶圆压力",
+          "why_live": "2027混合HBM价格上升是行业预测，8-Hi替代12-Hi仍属平台评估；年度HBM与季度DDR价错位已让每晶圆收益排序改变。HBM较高硅强度意味着它的需求和规格变化能影响普通DRAM，即使HBM位元份额较小。",
+          "revision_logic": "当前默认HBM重定价、换代和普通DRAM紧张共存。客户容量/层数决定资源强度，代际良率与封装决定实际可供，价格和承诺约束决定供应商如何分配；这些变量可使HBM数量、HBM收入与全行业位元呈不同方向，不能锁定一种层数外推。",
+          "possibility_space": [
+            {
+              "name": "平台最终采用较低层数并用节约资源交付更多加速器",
+              "implication": "每堆叠位元可减少，供应覆盖更多设备、HBM每Gb价仍可提高；若设备增量超过容量削减，总HBM需求仍增。基础die和封装数量可能成为新瓶颈，普通DRAM资源是否释放取决于净核心die消耗而非只看GPU台数。"
+            },
+            {
+              "name": "客户为大模型工作集保留或增加高层数/每器件容量",
+              "implication": "HBM资源占用更强，可挤压其他先进DRAM，并提高合格高层数供应者的议价；如果系统成本压低可售平台数，位元强度增加不保证总量增长。资格和良率决定哪家能承接，而不是量产一代即覆盖所有层数。"
+            },
+            {
+              "name": "HBM重谈价格提高其相对每晶圆收益并吸引更多配置",
+              "implication": "若可交付和合同允许，普通DRAM资源被重新挤出，消费/服务器DRAM价格可能更强；但高价刺激客户降配和竞争者扩产，2027混合ASP预测不能当同SKU必然涨幅。"
+            },
+            {
+              "name": "DDR收益更高或HBM承诺限制重定价，厂商偏向常规产品",
+              "implication": "普通DRAM可供改善而HBM配额更紧，行业并非所有类别同涨同跌；转配需工艺、资格及制造周期，短期收益差不能立即完全实现。"
+            },
+            {
+              "name": "新代际良率改善抵销硅强度增长并提高竞争可供量",
+              "implication": "在活动不变时资源压力可小于当前高强度外推，削弱大幅涨价持续性；如果低成本扩大模型和平台使用，新增需求可能吸收释放量。历史3倍硅消耗基准不当作最新HBM4/4E实测。"
+            }
+          ],
+          "ref": [
+            "https://www.trendforce.com/presscenter/news/20260929-13255.html",
+            "https://www.trendforce.com/presscenter/news/20260602-13074.html",
+            "D1-O52",
+            "D1-O186",
+            "D1-O88",
+            "https://micron.gcs-web.com/static-files/df96216e-3e07-4b97-a4ef-df0a5fa684d6"
+          ]
+        },
+        {
+          "name": "竞争者的合格规模和采购选择改变供应议价结构",
+          "why_live": "当前基线已承认三星/SK hynix HBM4商业供货和CXMT移动DRAM具名采用，不能再只讨论潜在进入。实际良率、规模和更广客户资格尚未量化，收入份额又混合售价和产品结构。既有供应者的配置和买方主动多源也可在不增总需求时改变竞争。",
+          "revision_logic": "竞争新信息可能先改变可选来源、议价和美光份额，再影响全球净供给。哪种规格、客户和地区可用决定冲击范围；优秀性能、低成本和实际可交付量是不同竞争路线，不能把节点名或毛die密度直接外推行业过剩。",
+          "possibility_space": [
+            {
+              "name": "CXMT将具名移动产品扩大为更多OEM可用的稳定净产量",
+              "implication": "其价格/交期约束从局部选择扩大，原三大厂被释放的移动供给还可转向其他用途，行业价格传导比单一采用更广。实际良率和资格决定规模，不能把毛die密度至少增50%当净供给增50%。"
+            },
+            {
+              "name": "现有HBM竞争者在更多层数和平台取得可互换资格",
+              "implication": "买方第二来源增多、保险价值降低，单一供应者稀缺议价和份额可下降；行业HBM量仍可强。若竞争者只增加某一旧代，影响不能覆盖所有新代际高层数。"
+            },
+            {
+              "name": "客户为降低供应风险主动分散采购，即使价格和性能近似",
+              "implication": "美光可能失去一部分原有配额，也可能成为他人客户的第二来源；竞争变化由风险分配而非终端工作量驱动。合格供给增加降低缺货损失，价格溢价可先消退而总位元出货仍增长。"
+            },
+            {
+              "name": "某家供应者以性能、能耗或可靠交付优势而非最低价获配",
+              "implication": "行业不必走向完全同质价格竞争，高要求平台的合格产品可维持溢价；美光获益取决于具体优势与配额，不能从整体行业紧张推独享收益。较低规格仍可能进入竞争性定价。"
+            }
+          ],
+          "ref": [
+            "https://www.cxmt.com/en/news/info_22.html",
+            "https://www.cxmt.com/en/news/info_21.html",
+            "D1-O205",
+            "D1-O88",
+            "https://news.skhynix.com/en/q2-2026-business-results/",
+            "https://www.trendforce.com/presscenter/news/20260907-13219.html"
+          ]
+        },
+        {
+          "name": "地域准入和本地供应安排分割可参与市场",
+          "why_live": "当前采购资格限制有特定范围，不是全部中国需求消失；供应者也在美国等地准备本地制造/封装选择。相同全球位元量可被地域、客户资格及供应连续性偏好分割，全球供需与美光可销售池因此不完全等价。",
+          "revision_logic": "默认竞争按规格/客户展开，地域仍是另一分配维度。公共采购、出口或安全政策及供应者本地化若改变可买名单，可以先改变价格与份额而不改变全球真实消耗；长期才经重复投资和本地有效产出改变供给。未来规则分支是可能性，不把未发布政策写成已生效事实。",
+          "possibility_space": [
+            {
+              "name": "公共机构扩大敏感买方采购限制或组件来源要求",
+              "implication": "美光或竞争者的可参与订单池可缩小，本地替代者获配；全球需求未必减少。被排除供给可流向其他市场，令地区价格分化，也可能因资格慢出现局部缺货。"
+            },
+            {
+              "name": "买方接受更多跨区域合格供应或限制范围缩小",
+              "implication": "订单池重新相连，局部稀缺溢价与保险库存可下降；美光获得市场入口不等于已经拿到份额，仍与本地/全球供应者竞争。"
+            },
+            {
+              "name": "本地封装和长期供应安排满足特定客户的连续性要求",
+              "implication": "区域竞争选择增加，客户可能减少对单一美国总部供应者的依赖；本地封装不是本地核心die新增量，先影响资格和订单归属，再受前段及良率约束。"
+            },
+            {
+              "name": "政策资金推动区域重复建设但采购规模没有同步扩大",
+              "implication": "多年净供给潜在增量提高，成熟后可能向其他市场传导竞争；若区域资格隔离仍强，则一地过剩与另一地短缺可并存。补贴/建设承诺不能直接计为当前可售位元。"
+            }
+          ],
+          "ref": [
+            "D1-O74",
+            "D1-O57",
+            "D1-O81",
+            "https://news.skhynix.com/en/groundbreaking-ceremony-in-indiana/",
+            "https://www.cxmt.com/en/news/info_22.html"
+          ]
+        },
+        {
+          "name": "成熟与图形DRAM的退出、回退和重新进入改变局部缺口",
+          "why_live": "STATE已发现GDDR代际回退与供应退出的错配；后续机制解释表明DDR4/消费成熟DRAM也受平台迁移慢和三大厂资源重配约束。弱PC数量不能保证解压，标准品/eTT现货关系不同，旧代价格不可简单推广所有DRAM。",
+          "revision_logic": "默认局部紧张来自有效供给退出快于客户迁移。厂商改变退出决策、买方重新设计和第二来源增量可在总终端数量不变时改缺口；成本回退又可延长旧代需求。此Gap保留原STATE方向身份，并将其置于成熟/图形规格的共同但分层供需问题中。",
+          "possibility_space": [
+            {
+              "name": "PC品牌为降成本扩大GDDR6回退，而原厂继续退出",
+              "implication": "旧代需求比原退场计划更持久，局部缺货和生命周期备货可加剧；GDDR7仍可能被AI吸收。它改变代际结构而非证明PC数量复苏，终端被迫减量又会反向限制采购。"
+            },
+            {
+              "name": "高价使原厂推迟停供或第二来源更快提供合格旧代",
+              "implication": "退出驱动的稀缺可缓和，受影响价格先正常化；资源若从其他DRAM转回，会把部分紧张转移而不是全行业净供给同幅增加。第二来源速度要按客户合格量而非厂房计划。"
+            },
+            {
+              "name": "OEM完成平台重设计并减少旧代兼容依赖",
+              "implication": "DDR4/GDDR6生命周期采购可转为库存消化，弱终端下旧代价格韧性更易减弱；先进DDR/GDDR需求增加可能接替，迁移带来的总位元和价值量取决于配置而非代际名字。"
+            },
+            {
+              "name": "AI和SSD/网络用途继续夺取原属消费的成熟或图形资源",
+              "implication": "消费终端少卖不必释放相同供给，局部价格可维持强势；不同用途所需密度和等级使行业平均掩盖料号分化。供给长期退出与新用途扩张可共同延长缺口。"
+            }
+          ],
+          "ref": [
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+            "https://www.trendforce.com/research/download/RP260708BM",
+            "https://www.dramexchange.com/",
+            "https://www.dramexchange.com/Service/Faqs",
+            "https://www.nanya.com/en/IR/16/Press%20Release?IRId=13150"
+          ]
+        },
+        {
+          "name": "SSD配套DRAM的容量机会与映射强度出现不同路径",
+          "why_live": "STATE的QLC SSD增量方向已有机制支撑，但新增Baseline明确映射粒度、缓存和软件使DRAM/TB强度可变。容量层HDD/QLC选择、AI缓存用途与控制器设计是不同需求来源；技术可节约映射内存，不等于所有企业SSD已采用。",
+          "revision_logic": "修订对象是SSD增长向配套DRAM的净传导，而不是NAND市场本身。实际SSD数量/容量与控制器、主机净内存强度共同决定位元机会，设计节约和数据用途扩张可独立发生；不使用统一GB/TB系数。此为原STATE发现的深化，不重新记为GAPS首发现。",
+          "possibility_space": [
+            {
+              "name": "云客户用QLC SSD替代更多合适容量层并保留全表驻留设计",
+              "implication": "SSD容量和控制器DRAM可同步增长，扩大成熟/配套DRAM需求来源；成本更低会鼓励保留更多数据，但只有实际采购和配置才形成位元，不把数据生成量线性换算DRAM。"
+            },
+            {
+              "name": "高容量企业SSD广泛采用更大IU和匹配的软件栈",
+              "implication": "同容量映射部分DRAM可明显下降，削弱容量增长的配套强度；既有4KiB至16KiB条件例是映射部分可减75%，不是整个SSD或行业削减率。随机访问和OS兼容决定适用市场，更多容量可抵销部分节约。"
+            },
+            {
+              "name": "控制器更多使用部分映射缓存或主机HMB",
+              "implication": "需求由SSD上DRAM部分转到主机或更小缓存，单看SSD料号采购会高估行业损失；若两端净配置都减少才是行业节约。客户端已有HMB不证明企业服务质量要求均可满足。"
+            },
+            {
+              "name": "容量层HDD竞争回升而低延迟AI缓存继续用SSD",
+              "implication": "QLC容量增量可能低于原展望，但缓存层SSD数量/性能配置仍可强，DRAM配套按用途分化。HAMR等只作用适合的容量层，不外推成全部SSD或HBM替代。"
+            }
+          ],
+          "ref": [
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+            "https://semiconductor.samsung.com/news-events/tech-blog/dividing-and-conquering-linux-high-capacity-ssd-support-with-lbs-ep1/",
+            "https://doi.org/10.1145/3789202",
+            "https://news.samsung.com/us/samsung-introduces-990-evo-ssd/",
+            "D1-O70",
+            "D1-O172"
+          ]
+        },
+        {
+          "name": "价格形成与合同覆盖改变高盈利的周期暴露",
+          "why_live": "当前基线是价格偏强但分层兑现、长约保护部分量价而非消灭周期。低库存和小供需缺口模型解释紧张位置，不能给固定价格弹性；固定价、重谈和价带并存，公开spot样本也不是全部主流成交。C5对高盈利持续期提出条件问题，没有给出行业价格底或明确市场已定价年数。",
+          "revision_logic": "在实物需求较强时，合同覆盖、议价分配或交易样本变化仍可改实现价持续性；在边际市场转弱时，价格下限及客户履约可使厂商分化。新消息可以先改变对当前价格读数的解释，再改变预期ASP，不需要同时出现全行业位元或营收下降。",
+          "possibility_space": [
+            {
+              "name": "供应者和客户将更广产品纳入可执行数量及有效价带",
+              "implication": "较大实际业务池可降低下行价格波动和扩产风险，但上限会限制上涨捕获；覆盖率和跨代际适用决定保护范围，不能由合同数推永久高利润。"
+            },
+            {
+              "name": "客户重谈长期价格或在信用压力下要求延期履约",
+              "implication": "数量可见性和价格保护的有效性可分离：固定量未必固定价，价带存在也需付款和交付。若改约只延时，机会后移；若数量/最低价实质降低，高盈利持续性减弱。"
+            },
+            {
+              "name": "非合同市场库存恢复并重新出现争取订单的报价",
+              "implication": "边际跌价可先落在追加、低规格或非长约供货，整体ASP因合同滞后暂时稳；之后重置才放大传导。强终端任务与价格正常化可并存，供给纪律和降配回升会影响后续幅度。"
+            },
+            {
+              "name": "现货保险溢价或稀薄品种报价回落，而主流合约仍强",
+              "implication": "应削弱对spot高点的外推，而不是立即改成全行业周期反转；不同日期、等级和成交深度可解释分化。反过来，spot仍高而大客户降配/实际实现价弱，则高报价代表的量较小、持续性解释需要下修。"
+            },
+            {
+              "name": "年度HBM重置和季度DDR议价改变供应商获利分配",
+              "implication": "相同实物缺口可以由客户、供应者和不同产品重新分担，行业收入/利润变化未必同位元变化；公司价带及产品组合使美光不一定复制市场平均涨幅。"
+            }
+          ],
+          "ref": [
+            "D1-O57",
+            "D1-O31",
+            "D1-O44",
+            "D1-O18",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+            "https://www.trendforce.com/presscenter/news/20260602-13074.html",
+            "https://www.trendforce.com.tw/presscenter/news/20260709-13138.html",
+            "https://news.skhynix.com/en/q2-2026-business-results/",
+            "https://www.dramexchange.com/Service/Faqs"
+          ]
+        },
+        {
+          "name": "行业繁荣向美光实现价、份额和配置的传导变化",
+          "why_live": "美光全年DRAM增长的主要已披露贡献是售价，MCBU位元减少含资源外移；行业收入份额含组合而不是物理份额。当前同行均进入HBM4、合同覆盖未量化，行业紧张不能保证美光在每个用途都等比例获益。",
+          "revision_logic": "修订对象是美光从行业需求/价格中能捕获的组合、同SKU实现价和可交付量；外部活动保持扩张时，公司自身配置和合格竞争也可改结果。它不要求行业景气先反转，终点仍为DRAM市场实现价及供给配置，不在本域建立EPS或股票触发条件。",
+          "possibility_space": [
+            {
+              "name": "美光把更多有限资源转配已合格的高收益数据中心用途",
+              "implication": "组合ASP和收入可提高，而移动/PC位元继续弱；它是公司配置变化，不证明对应消费终端需求更差。合同上限、实际每晶圆收益和被放弃用途的价格决定净捕获，HBM名义售价高不能替代经济性比较。"
+            },
+            {
+              "name": "重要平台把更多采购配给已合格竞争者",
+              "implication": "行业HBM或DDR总量可以继续增长，美光份额与混合ASP却弱于原理解；失去的是目标参与而非全部行业机会。新进入第二来源也可降低价格溢价，具体客户采用由相邻产品域深化。"
+            },
+            {
+              "name": "美光有效良品和资格覆盖提高，使相同资源获得更多交付",
+              "implication": "在市场价格不变时数量/份额也可增加，近端约束从生产或资格转向客户配额；若扩量偏低价产品，混合ASP下降不一定是同SKU跌价。需保持量价组合的不同解释，不把它们独立重复加总。"
+            },
+            {
+              "name": "市场继续涨价但美光受固定价、价带或区域产品组合限制",
+              "implication": "公司实现价可以落后现货或行业预测，既有保护在上行时成为捕获约束；非长约池和换代重谈可能补偿。反之市场回落时，同样条款可保护相对实现价，不能只按一个方向解释合同。"
+            }
+          ],
+          "ref": [
+            "D1-O57",
+            "D1-O31",
+            "D1-O44",
+            "D1-O74",
+            "https://www.trendforce.com/presscenter/news/20260907-13219.html",
+            "https://www.trendforce.com/presscenter/news/20260602-13074.html",
+            "D1-O205",
+            "D1-O88"
+          ]
+        }
+      ]
+    }
+  ]
+}

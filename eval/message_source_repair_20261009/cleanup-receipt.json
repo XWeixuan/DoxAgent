@@ -1,0 +1,12 @@
+{
+  "authorized_by": "user explicitly requested aggressive remote disk cleanup",
+  "deleted_backup_paths": [
+    {"path": "/var/lib/docker/volumes/doxagent-v2_v2-data/_data/backups/20260927T184853Z-verified-current", "file_bytes": 19449281123},
+    {"path": "/var/lib/docker/volumes/doxagent-v2_v2-data/_data/backups/trade-execution-20260929T122500Z", "file_bytes": 20288586166}
+  ],
+  "before": {"total": 189559676928, "used": 184161079296, "free": 0},
+  "after": {"total": 189559676928, "used": 144248692736, "free": 37486850048},
+  "retained": ["all live business databases", "all Chrome Profiles and Cookies", "20261006 event-maintenance recovery backup (not a replacement full-system backup)", "current and rollback images"],
+  "recoverability": "These two historical full backup points were deleted, not archived; current live data and the newer recovery point remain. No off-host full copy was made.",
+  "evidence_limit": "Cleanup stdout included a recursively verbose file list and was truncated by the execution output cap. Target sizes and final disk counters were captured; do not treat the truncated list as a complete archived manifest."
+}

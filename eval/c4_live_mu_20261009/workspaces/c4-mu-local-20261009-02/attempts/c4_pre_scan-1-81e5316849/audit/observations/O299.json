@@ -1,0 +1,9 @@
+{
+  "alias": "O299",
+  "title": "report_date",
+  "content": "2026-09-03",
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

@@ -1,0 +1,78 @@
+[
+  {
+    "name": "/doxagent-mu-v21-02-d1",
+    "image": "doxagent-v2:codex-gpt6-research-0.159.3",
+    "started": "2026-10-09T18:11:33.132102523Z",
+    "finished": "2026-10-09T18:44:49.782796067Z",
+    "status": "exited",
+    "exit_code": 0,
+    "workflow_env": []
+  },
+  {
+    "name": "/doxagent-mu-v21-02-c4-retry2",
+    "image": "doxagent-v2:codex-gpt6-research-0.159.3",
+    "started": "2026-10-09T19:23:01.809751599Z",
+    "finished": "2026-10-09T20:14:09.603202293Z",
+    "status": "exited",
+    "exit_code": 0,
+    "workflow_env": []
+  },
+  {
+    "name": "/doxagent-mu-v21-02-d2",
+    "image": "doxagent-v2:codex-gpt6-research-0.159.3",
+    "started": "2026-10-09T22:25:38.144497795Z",
+    "finished": "2026-10-09T22:25:52.810251121Z",
+    "status": "exited",
+    "exit_code": 0,
+    "workflow_env": []
+  },
+  {
+    "name": "/doxagent-mu-v21-02-d3",
+    "image": "doxagent-v2:codex-gpt6-research-0.159.3",
+    "started": "2026-10-10T01:11:41.361891578Z",
+    "finished": "2026-10-10T03:36:37.349460878Z",
+    "status": "exited",
+    "exit_code": 0,
+    "workflow_env": []
+  },
+  {
+    "name": "/doxagent-mu-v21-02-d3-resume-canary",
+    "image": "doxagent-v2:codex-gpt6-research-0.159.3",
+    "started": "2026-10-10T08:44:15.55623224Z",
+    "finished": "2026-10-10T08:55:04.082465297Z",
+    "status": "exited",
+    "exit_code": 0,
+    "workflow_env": [
+      "DOXAGENT_CODEX_D3_MAX_CONCURRENCY=1"
+    ]
+  },
+  {
+    "name": "/doxagent-mu-v21-02-d3-resume-parallel",
+    "image": "doxagent-v2:codex-gpt6-research-0.159.3",
+    "started": "2026-10-10T09:03:58.099853872Z",
+    "finished": "2026-10-10T17:45:00.671021551Z",
+    "status": "exited",
+    "exit_code": 0,
+    "workflow_env": [
+      "DOXAGENT_CODEX_D3_MAX_CONCURRENCY=4"
+    ]
+  },
+  {
+    "name": "/doxagent-v2-v2-initialization-1",
+    "image": "doxagent-v2:codex-gpt6-research-0.159.3",
+    "started": "2026-10-01T21:10:21.612946584Z",
+    "finished": "0001-01-01T00:00:00Z",
+    "status": "running",
+    "exit_code": 0,
+    "workflow_env": []
+  },
+  {
+    "name": "/doxagent-v2-codex-worker-1",
+    "image": "doxagent-v2:maintenance-worker-20261003",
+    "started": "2026-10-02T19:04:44.31155304Z",
+    "finished": "0001-01-01T00:00:00Z",
+    "status": "running",
+    "exit_code": 0,
+    "workflow_env": []
+  }
+]

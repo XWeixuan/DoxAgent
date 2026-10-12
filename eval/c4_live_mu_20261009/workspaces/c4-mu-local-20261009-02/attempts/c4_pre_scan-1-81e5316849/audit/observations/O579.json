@@ -1,0 +1,18 @@
+{
+  "alias": "O579",
+  "title": "sections 1 — metadata",
+  "content": {
+    "section": "total advanced packaging capacity",
+    "heading_match": "total advanced packaging capacity",
+    "start_offset": 259245,
+    "end_offset": 339279,
+    "full_text_chars": 80000,
+    "returned_chars": 40000,
+    "truncated": true,
+    "match_quality": "substantive_body"
+  },
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

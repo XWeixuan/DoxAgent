@@ -1,0 +1,1764 @@
+{
+  "name": "战略客户供给与资金保障关系",
+  "scope": "美光跨年度、跨产品战略客户供给协议组合及客户保证金、第三方信用支持的资金关系。共同背景为战略客户、信用支持方、采购数量与产能承诺、价格和期限、履约责任、信用保障、资金使用及返还安排。",
+  "boundary": "合同组合的商业数量、价格、期限、供货与履约经济性，以及客户保证金和信用支持的特定条款、资金期限和信用敞口由本域深化；产品平台采用与采购地位归各产品业务域，行业价格形成归行业市场，制造产出和项目资本归制造域。公司合并资金池、投资、债务和融资承受能力归公司资金与股东权益。本域覆盖跨产品客户关系，不以单一HBM产品或具名客户限定。",
+  "ref": [
+    "D1-O31",
+    "D1-O74",
+    "D1-O57",
+    "D1-O44",
+    "D1-O3",
+    "D1-O6",
+    "D1-O10",
+    "D1-O72",
+    "D1-O18",
+    "D1-O19",
+    "D1-O23",
+    "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+    "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf",
+    "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf",
+    "https://micron.gcs-web.com/news-releases/news-release-details/micron-and-anthropic-announce-strategic-agreement-scale-next",
+    "https://investors.micron.com/news/press-release/2026/Micron-Strengthens-Automotive-Ecosystem-Supply-Through-Strategic-Customer-Agreements/default.aspx",
+    "https://investors.micron.com/news/press-release/2026/Micron-and-General-Motors-Sign-Strategic-Agreement-to-Secure-Supply-and-Accelerate-Innovation/default.aspx",
+    "https://investors.micron.com/news/press-release/2026/Micron-and-Ford-Sign-Strategic-Agreement-to-Strengthen-Long-Term-Memory-Supply-and-Industry-Resilience/default.aspx",
+    "D1-O104",
+    "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+    "D1-O88",
+    "https://www.anthropic.com/news/series-h",
+    "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-05-sandisk-reports-fiscal-fourth-quarter-2026-financial-results",
+    "D1-O156",
+    "https://claude.com/resources/articles/message-batches-api",
+    "D1-O103",
+    "https://developer.nvidia.com/blog/?p=111143",
+    "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Partners-With-Apollo-BlackRock-Blackstone-Brookfield-Goldman-Sachs-and-KKR-to-Establish-AI-Compute-Infrastructure-Financing-Platforms-to-Mobilize-Over-500-Billion-of-Third-Party-Capital/default.aspx",
+    "https://www.crusoe.ai/resources/newsroom/crusoe-announces-new-900-mw-ai-factory-campus-in-abilene-texas-to-support-microsoft-ai-infrastructure",
+    "https://www.sec.gov/Archives/edgar/data/1944366/000194436626000020/exhibit993-2025abelinedc1l.htm",
+    "D1-O130",
+    "https://gf.com/news-and-events/news/globalfoundries-and-gm-announce-long-term-direct-supply-agreement-for-u-s-production-of-semiconductor-chips/",
+    "D1-O205",
+    "https://www.occ.treas.gov/publications-and-resources/publications/comptrollers-handbook/files/trade-finance-services/pub-ch-trade-finance.pdf",
+    "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf",
+    "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html",
+    "https://github.com/microncxl/cxl-reskit",
+    "https://aws.amazon.com/about-aws/whats-new/2025/12/amazon-ec2-trn3-ultraservers/",
+    "https://blog.google/innovation-and-ai/infrastructure-and-cloud/google-cloud/eighth-generation-tpu-agentic-era/",
+    "https://www.anthropic.com/news/disrupting-AI-espionage",
+    "https://www.microsoft.com/en-us/security/blog/2025/03/24/microsoft-unveils-microsoft-security-copilot-agents-and-new-protections-for-ai/",
+    "https://d18rn0p25nwr6d.cloudfront.net/CIK-0001769628/f600a0f8-1497-4372-8b4a-1ba9c1e39947.pdf",
+    "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000104/crwv-20251231.htm"
+  ],
+  "units": [
+    {
+      "name": "美光战略客户供给协议组合",
+      "scope": "美光跨年度战略供给协议的客户和产品覆盖、采购数量与产能承诺、价格安排、交付期限、供给配置、跨代际履约、信用保障及合同组合的商业经济敞口；客户资金和支持条款作为相连的合同关系纳入。",
+      "horizon": "季度合同组合变化，延伸至跨年度供给、重谈和产品换代周期。",
+      "ref": [
+        "D1-O31",
+        "D1-O74",
+        "D1-O57",
+        "D1-O44",
+        "D1-O72",
+        "D1-O18",
+        "D1-O3",
+        "D1-O19",
+        "D1-O23",
+        "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+        "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf",
+        "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf",
+        "https://micron.gcs-web.com/news-releases/news-release-details/micron-and-anthropic-announce-strategic-agreement-scale-next",
+        "https://investors.micron.com/news/press-release/2026/Micron-Strengthens-Automotive-Ecosystem-Supply-Through-Strategic-Customer-Agreements/default.aspx",
+        "https://investors.micron.com/news/press-release/2026/Micron-and-General-Motors-Sign-Strategic-Agreement-to-Secure-Supply-and-Accelerate-Innovation/default.aspx",
+        "https://investors.micron.com/news/press-release/2026/Micron-and-Ford-Sign-Strategic-Agreement-to-Strengthen-Long-Term-Memory-Supply-and-Industry-Resilience/default.aspx",
+        "D1-O104",
+        "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+        "D1-O88",
+        "https://www.anthropic.com/news/series-h",
+        "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-05-sandisk-reports-fiscal-fourth-quarter-2026-financial-results",
+        "D1-O156",
+        "https://claude.com/resources/articles/message-batches-api",
+        "D1-O103",
+        "https://developer.nvidia.com/blog/?p=111143",
+        "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Partners-With-Apollo-BlackRock-Blackstone-Brookfield-Goldman-Sachs-and-KKR-to-Establish-AI-Compute-Infrastructure-Financing-Platforms-to-Mobilize-Over-500-Billion-of-Third-Party-Capital/default.aspx",
+        "https://www.crusoe.ai/resources/newsroom/crusoe-announces-new-900-mw-ai-factory-campus-in-abilene-texas-to-support-microsoft-ai-infrastructure",
+        "https://www.sec.gov/Archives/edgar/data/1944366/000194436626000020/exhibit993-2025abelinedc1l.htm",
+        "D1-O130",
+        "https://gf.com/news-and-events/news/globalfoundries-and-gm-announce-long-term-direct-supply-agreement-for-u-s-production-of-semiconductor-chips/",
+        "D1-O205",
+        "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf",
+        "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html",
+        "https://github.com/microncxl/cxl-reskit",
+        "https://aws.amazon.com/about-aws/whats-new/2025/12/amazon-ec2-trn3-ultraservers/",
+        "https://blog.google/innovation-and-ai/infrastructure-and-cloud/google-cloud/eighth-generation-tpu-agentic-era/",
+        "https://www.anthropic.com/news/disrupting-AI-espionage",
+        "https://www.microsoft.com/en-us/security/blog/2025/03/24/microsoft-unveils-microsoft-security-copilot-agents-and-new-protections-for-ai/"
+      ],
+      "state": {
+        "parameters": [
+          {
+            "name": "已签战略客户协议数量",
+            "definition": "累计已完成签署的SCA数量；协议数不等于独立客户数，延期也不自动计作新客户。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf"
+            ]
+          },
+          {
+            "name": "合同采购约束与供给责任",
+            "definition": "SCA的数量约束、采购义务及美光对应供货责任所处的实质安排。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O74",
+              "D1-O31",
+              "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf"
+            ]
+          },
+          {
+            "name": "已签组合预期收入覆盖位置",
+            "definition": "管理层预计已签SCA收入占公司收入的覆盖程度；分母为同一展望期间公司收入，单侧界限不改成点估计。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf"
+            ]
+          },
+          {
+            "name": "明确价格框架收入占SCA预期收入比例",
+            "definition": "在管理层预计SCA收入中，具有明确价格框架的收入比例；不是协议份数占比。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf"
+            ]
+          },
+          {
+            "name": "周期市场议价收入占SCA预期收入比例",
+            "definition": "在管理层预计SCA收入中，按市场价格周期协商的收入比例。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf"
+            ]
+          },
+          {
+            "name": "存量产品价格安排",
+            "definition": "既有产品固定价格、底价/上限及市场议价的合同安排。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O74",
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf"
+            ]
+          },
+          {
+            "name": "价格带协议底价毛利位置",
+            "definition": "管理层对带底价协议在最低价执行时的毛利表现判断；不是全公司数值毛利保证。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O72",
+              "D1-O74",
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356"
+            ]
+          },
+          {
+            "name": "跨代际产品重新定价安排",
+            "definition": "SCA覆盖的未来新产品能否区别于旧产品价带重新协商价格。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356"
+            ]
+          },
+          {
+            "name": "新增协议议价方向",
+            "definition": "新增SCA谈判的价格方向，区别于已签协议内按既有价带执行。",
+            "value_type": "DIRECTION",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf"
+            ]
+          },
+          {
+            "name": "典型非汽车协议覆盖窗口",
+            "definition": "通常非汽车SCA约定供给和采购的日历年窗口。",
+            "value_type": "TIME",
+            "ref": [
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356"
+            ]
+          },
+          {
+            "name": "典型汽车协议期限",
+            "definition": "汽车SCA的一般合同年限，区别于车用产品完整生命周期。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356"
+            ]
+          },
+          {
+            "name": "供给期限延展状态",
+            "definition": "合同组合能否通过新签和延期延伸原有供给保障年份。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf"
+            ]
+          },
+          {
+            "name": "剩余履约义务金额",
+            "definition": "按承诺采购量与最低价格计算的RPO；排除无固定价或价带的协议及原始期限不超过一年的合同，非全部SCA预期销售额。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf"
+            ]
+          },
+          {
+            "name": "RPO未来十二个月收入确认比例",
+            "definition": "公司预计期末RPO在其后十二个月确认为收入的比例。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf"
+            ]
+          },
+          {
+            "name": "RPO全部收入确认期限",
+            "definition": "管理层预计期末RPO完成收入确认的时间范围；保留五年以内的单侧界限。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf"
+            ]
+          },
+          {
+            "name": "初批可量化合同最低累计收入",
+            "definition": "六月已签组合中披露最低价格累计收入的14份协议剩余期金额；它不是全组合实际收入或与RPO完全相同的会计口径。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356"
+            ]
+          },
+          {
+            "name": "初批SCA的DRAM数量覆盖率",
+            "definition": "六月16份已签协议在其合同期间覆盖的DRAM供给量比例；不是九月组合最新份额。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356"
+            ]
+          },
+          {
+            "name": "初批SCA的NAND数量覆盖位置",
+            "definition": "六月16份已签协议在其合同期间覆盖的NAND供给量比例位置。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356"
+            ]
+          },
+          {
+            "name": "客户与产品覆盖结构",
+            "definition": "协议组合所覆盖的客户市场、产品及不同采购主体层级。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+              "https://micron.gcs-web.com/news-releases/news-release-details/micron-and-anthropic-announce-strategic-agreement-scale-next",
+              "https://investors.micron.com/news/press-release/2026/Micron-Strengthens-Automotive-Ecosystem-Supply-Through-Strategic-Customer-Agreements/default.aspx",
+              "https://investors.micron.com/news/press-release/2026/Micron-and-General-Motors-Sign-Strategic-Agreement-to-Secure-Supply-and-Accelerate-Innovation/default.aspx",
+              "https://investors.micron.com/news/press-release/2026/Micron-and-Ford-Sign-Strategic-Agreement-to-Strengthen-Long-Term-Memory-Supply-and-Industry-Resilience/default.aspx",
+              "D1-O104"
+            ]
+          },
+          {
+            "name": "AI服务客户的跨产品供给关系",
+            "definition": "具名AI服务客户已形成的内存/存储供给和工作负载协作关系，不替代单个平台设计赢单或采购量。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://micron.gcs-web.com/news-releases/news-release-details/micron-and-anthropic-announce-strategic-agreement-scale-next",
+              "D1-O104"
+            ]
+          },
+          {
+            "name": "已约定HBM年度供给覆盖位置",
+            "definition": "年度HBM供给协议覆盖程度，与跨产品多年SCA可能交叉但不等同。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf"
+            ]
+          },
+          {
+            "name": "分产品分年承诺采购量",
+            "definition": "每一产品类别在特定合同年度的约定采购比特量；用于区分数量保护、产品迁移和收入价格效应。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O74",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "分产品合同底价",
+            "definition": "特定产品和有效期间的最低合同单价；不能用公司毛利率或行业ASP替代。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O74",
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356"
+            ]
+          },
+          {
+            "name": "分产品合同价格上限",
+            "definition": "特定产品和有效期间的最高合同单价；既有产品与新代际产品需分开。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O74",
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356"
+            ]
+          },
+          {
+            "name": "SCA已实现销售额",
+            "definition": "指定报告期间按实际交付确认、可归属于SCA的销售额；与RPO、保证金和预期覆盖率分开。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O57",
+              "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf"
+            ]
+          },
+          {
+            "name": "SCA客户收入集中度",
+            "definition": "特定期间最大SCA客户或固定客户集合的SCA收入占比；不以公司全部客户前十收入占比充当。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+              "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf"
+            ]
+          },
+          {
+            "name": "交付与替代供应义务状态",
+            "definition": "合同交付时间、质量验收、替代产品、客户豁免及美光未履约救济的具体安排。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O74",
+              "D1-O31",
+              "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf"
+            ]
+          }
+        ],
+        "values": [
+          {
+            "name": "九月已签26份，六月为16份",
+            "parameter": "已签战略客户协议数量",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 26.0,
+              "unit": "份"
+            },
+            "previous_value": {
+              "number": 16.0,
+              "unit": "份"
+            },
+            "time_scope": "截至2026-09-30的累计签约组合；前值为2026-06-24同一累计计数口径",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf",
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356"
+            ]
+          },
+          {
+            "name": "多年可执行数量承诺，不是意向订单",
+            "parameter": "合同采购约束与供给责任",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "take-or-pay，多年约定具体且可执行的采购数量；美光承担供货义务，违约可产生赔偿及其他合同后果。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026 Q3/Q4已签的多年协议",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O74",
+              "D1-O31",
+              "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf"
+            ]
+          },
+          {
+            "name": "已签组合覆盖预计超过35%",
+            "parameter": "已签组合预期收入覆盖位置",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "stage": "已签26份SCA预计覆盖公司截至2030年期间收入的超过35%；不是已实现收入占比或受保护毛利占比。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-30已签组合对截至2030年的收入展望",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf"
+            ]
+          },
+          {
+            "name": "四分之三有明确价格框架",
+            "parameter": "明确价格框架收入占SCA预期收入比例",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "number": 75.0,
+              "unit": "%"
+            },
+            "previous_value": null,
+            "time_scope": "九月已签组合截至2030年的预计SCA收入构成",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf"
+            ]
+          },
+          {
+            "name": "四分之一随市场周期议价",
+            "parameter": "周期市场议价收入占SCA预期收入比例",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "number": 25.0,
+              "unit": "%"
+            },
+            "previous_value": null,
+            "time_scope": "九月已签组合截至2030年的预计SCA收入构成",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf"
+            ]
+          },
+          {
+            "name": "价带为主，但并非全部收入固定",
+            "parameter": "存量产品价格安排",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "明确价格框架部分多数设底价与上限；另有固定价及周期议价。六月披露的大型既有产品协议上限通常接近CY2026 Q2市价，底价贯穿合同期。"
+            },
+            "previous_value": null,
+            "time_scope": "六月既有产品条款背景及九月已签组合结构",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf",
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "管理层预期底价毛利高于历史周期峰值",
+            "parameter": "价格带协议底价毛利位置",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "stage": "管理层称带价格区间协议即使按底价执行，毛利率仍显著高于任何过去周期的峰值季度；未给出底价或合同组合加权毛利数值。"
+            },
+            "previous_value": null,
+            "time_scope": "多年价带协议剩余履约期，按最低价格执行的公司预期",
+            "as_of": "2026-06-24",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+              "D1-O72",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "新产品溢价留待未来协商",
+            "parameter": "跨代际产品重新定价安排",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "合同允许未来新产品协商适当价格溢价；旧产品上限不直接锁死下一代产品单价。"
+            },
+            "previous_value": null,
+            "time_scope": "已签SCA的未来产品换代周期",
+            "as_of": "2026-06-24",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356"
+            ]
+          },
+          {
+            "name": "新谈判价格提高",
+            "parameter": "新增协议议价方向",
+            "source_role": "ACTUAL",
+            "value": {
+              "direction": "新SCA涉及定价的谈判按当时市场条件和展望提高价格"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-30时点新增SCA谈判",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf"
+            ]
+          },
+          {
+            "name": "初批通常覆盖2026至2030年",
+            "parameter": "典型非汽车协议覆盖窗口",
+            "source_role": "ACTUAL",
+            "value": {
+              "point": null,
+              "start": "2026",
+              "end": "2030",
+              "precision": "年"
+            },
+            "previous_value": null,
+            "time_scope": "六月已签初批组合，典型期限五年；不代表每份协议同起止日",
+            "as_of": "2026-06-24",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356"
+            ]
+          },
+          {
+            "name": "汽车通常三年",
+            "parameter": "典型汽车协议期限",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 3.0,
+              "unit": "年（一般期限）"
+            },
+            "previous_value": null,
+            "time_scope": "2026-06-24披露的汽车SCA",
+            "as_of": "2026-06-24",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356"
+            ]
+          },
+          {
+            "name": "组合已延至2031年",
+            "parameter": "供给期限延展状态",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "已有SCA延伸到2031年，且两份既有协议已获一年延期至2031年。"
+            },
+            "previous_value": null,
+            "time_scope": "九月已签SCA及延期所覆盖的跨年度供给",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf"
+            ]
+          },
+          {
+            "name": "期末RPO约1340亿美元",
+            "parameter": "剩余履约义务金额",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 134.0,
+              "unit": "十亿美元（约）"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-03余额日；不与六月14份协议1000亿美元口径作同比",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf"
+            ]
+          },
+          {
+            "name": "约四分之一在未来十二个月确认",
+            "parameter": "RPO未来十二个月收入确认比例",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "number": 25.0,
+              "unit": "%（约）"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-03期末RPO，预计随后十二个月确认",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf"
+            ]
+          },
+          {
+            "name": "预计五年内全部确认",
+            "parameter": "RPO全部收入确认期限",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "stage": "预计自2026-09-03余额日起五年内全部确认为收入。"
+            },
+            "previous_value": null,
+            "time_scope": "自2026-09-03起的RPO确认展望",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf"
+            ]
+          },
+          {
+            "name": "14份首批协议最低累计收入约1000亿美元",
+            "parameter": "初批可量化合同最低累计收入",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 100.0,
+              "unit": "十亿美元（约）"
+            },
+            "previous_value": null,
+            "time_scope": "2026-06-24时14/16份协议剩余期限；保留原队列，不代表九月完整组合",
+            "as_of": "2026-06-24",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356"
+            ]
+          },
+          {
+            "name": "首批约覆盖20% DRAM供给量",
+            "parameter": "初批SCA的DRAM数量覆盖率",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "number": 20.0,
+              "unit": "%（约）"
+            },
+            "previous_value": null,
+            "time_scope": "六月16份组合的跨年合同供给量估计",
+            "as_of": "2026-06-24",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356"
+            ]
+          },
+          {
+            "name": "首批约覆盖三分之一NAND供给量",
+            "parameter": "初批SCA的NAND数量覆盖位置",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "stage": "六月16份协议约覆盖合同期间NAND供给量的三分之一。"
+            },
+            "previous_value": null,
+            "time_scope": "六月16份组合的跨年合同供给量估计；无九月同口径更新",
+            "as_of": "2026-06-24",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356"
+            ]
+          },
+          {
+            "name": "首批跨市场且大客户占重要位置",
+            "parameter": "客户与产品覆盖结构",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "16份首批协议跨数据中心、消费和汽车，含四家非常大客户、三家中等客户，其余为较小汽车客户；DRAM含适用HBM，另覆盖NAND。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-06-24初批组合；不把26份协议解释为26家独立客户",
+            "as_of": "2026-06-24",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356"
+            ]
+          },
+          {
+            "name": "汽车OEM与生态采购主体均有长期锁供",
+            "parameter": "客户与产品覆盖结构",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "GM与Ford已有SCA；GM涵盖LPDRAM、NOR、UFS NAND。Qualcomm、Visteon、HARMAN、JOYNEXT、DENSO、Astemo、Hyundai Mobis亦已完成SCA，支持长期供应及路线图合作；这些属于Q3已讨论组合，不在16或26之外另加。"
+            },
+            "previous_value": null,
+            "time_scope": "截至2026-07-16已公开的车用客户安排",
+            "as_of": "2026-07-16",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-Strengthens-Automotive-Ecosystem-Supply-Through-Strategic-Customer-Agreements/default.aspx",
+              "https://investors.micron.com/news/press-release/2026/Micron-and-General-Motors-Sign-Strategic-Agreement-to-Secure-Supply-and-Accelerate-Innovation/default.aspx",
+              "https://investors.micron.com/news/press-release/2026/Micron-and-Ford-Sign-Strategic-Agreement-to-Strengthen-Long-Term-Memory-Supply-and-Industry-Resilience/default.aspx"
+            ]
+          },
+          {
+            "name": "Anthropic已建立跨数据中心产品合作",
+            "parameter": "AI服务客户的跨产品供给关系",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "与Anthropic的协议覆盖HBM、DRAM及SSD，并结合Claude负载优化；美光参与Series H投资及使用Claude是相邻关系，不是合同采购金额。公开材料未把此协议逐项映射到26份SCA或特定信用证。"
+            },
+            "previous_value": null,
+            "time_scope": "自2026-06-22形成的长期AI客户关系",
+            "as_of": "2026-06-22",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://micron.gcs-web.com/news-releases/news-release-details/micron-and-anthropic-announce-strategic-agreement-scale-next",
+              "D1-O104"
+            ]
+          },
+          {
+            "name": "2027年HBM绝大部分供给已达协议",
+            "parameter": "已约定HBM年度供给覆盖位置",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "CY2027 HBM比特供给绝大部分已完成协议，约定价格同比显著提高；不能把全部年度HBM协议计入多年SCA数量。"
+            },
+            "previous_value": null,
+            "time_scope": "CY2027 HBM年度供给安排",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf"
+            ]
+          }
+        ]
+      },
+      "expectation_baseline": [
+        {
+          "name": "部分收入已锁定，新增和延长仍是合理默认路径",
+          "baseline": "研究判断：组合将继续扩大或延展，跨产品供给保障不会仅随单一HBM代际结束。已签协议和实际延期比单纯需求预测更支持这一默认路径；管理层预计已签覆盖仍只是公司收入的一部分，不能推出合并收入、价格或利润已全部锁定。",
+          "ordinary_progress": "现有客户按计划提货、更多SCA签署及既有协议延长，构成这一商业安排的延续。",
+          "open_frontier": "新增协议的数量、产品分布和经济规模，以及市场议价部分能否转为更稳定条款；新签份数的增加不自动代表等比例收入保护。",
+          "time_scope": "未来几个季度至2031年合同周期",
+          "ref": [
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "D1-O72",
+            "D1-O74"
+          ]
+        },
+        {
+          "name": "先履约存量承诺，再随产品换代调整商业经济性",
+          "baseline": "研究判断：存量承诺构成跨年的可执行供给基础，但不同定价组的利润弹性会分化。旧产品价带限制上行也提供下行保护，新产品可协商溢价；因此默认不是全部旧价永久延用，也不是市场涨价完整传入所有SCA。管理层的高底价毛利判断仍是公司端预期，不是合并利润下限。",
+          "ordinary_progress": "在既定价带内结算，随新产品资格和交付进行溢价谈判，新增合约反映较高议价水平。",
+          "open_frontier": "产品成本上升与溢价的幅度/生效时点是否匹配，数量向新产品迁移是否需重谈，以及旧SKU上限在高市价时期的机会成本。",
+          "time_scope": "季度定价及2027—2031年跨代际履约",
+          "ref": [
+            "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf",
+            "D1-O72",
+            "D1-O74"
+          ]
+        },
+        {
+          "name": "收入转化具有多年排期，不把保障金额当作近期销量",
+          "baseline": "公司预计RPO将分期确认为收入。研究采用按排期持续交付的工作路径，而非一次性兑现或全部取消；数量义务、客户资金和建设中的新增供给使延续履约比无约束订单更可信。RPO按最低价且排除部分协议，不能用它代表完整收入预测或把保证金再加成订单。",
+          "ordinary_progress": "既定产品按期交付和验收，部分RPO逐季转为收入，建设及认证正常推进支撑后段供给。",
+          "open_frontier": "年度/季度分配、客户接受替代产品的空间及美光未履约损失；2027年计划新增产出的起点不等于立即满足全部合同。",
+          "time_scope": "未来十二个月及五年履约周期",
+          "ref": [
+            "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf",
+            "D1-O31",
+            "D1-O74",
+            "D1-O88"
+          ]
+        },
+        {
+          "name": "客户锁供有业务用途，但多供应者并存",
+          "baseline": "研究判断：AI服务和车用客户会继续把可靠供给与路线图合作当作采购条件，而非仅购买当期低价。Anthropic已融资并配置多云算力，汽车客户的长生命周期和资格要求也支持提前保障供给。Anthropic同时与Samsung、SK hynix建立战略关系，Sandisk亦扩展长期采购安排，说明锁供是更广的采购制度变化，不是美光独占需求。",
+          "ordinary_progress": "Claude负载协作、车用产品资格和长期生产规划深化，已有客户按其部署/整车项目计划提货。",
+          "open_frontier": "多供应者之间的实际份额、AI部署兑现速度、车用OEM与Tier1采购责任分配；下游投入不能直接转译为美光订单数或某平台BOM。",
+          "time_scope": "未来几个季度至跨年产品/客户项目周期",
+          "ref": [
+            "https://micron.gcs-web.com/news-releases/news-release-details/micron-and-anthropic-announce-strategic-agreement-scale-next",
+            "https://www.anthropic.com/news/series-h",
+            "https://investors.micron.com/news/press-release/2026/Micron-Strengthens-Automotive-Ecosystem-Supply-Through-Strategic-Customer-Agreements/default.aspx",
+            "https://investors.micron.com/news/press-release/2026/Micron-and-General-Motors-Sign-Strategic-Agreement-to-Secure-Supply-and-Accelerate-Innovation/default.aspx",
+            "https://investors.micron.com/news/press-release/2026/Micron-and-Ford-Sign-Strategic-Agreement-to-Strengthen-Long-Term-Memory-Supply-and-Industry-Resilience/default.aspx",
+            "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-05-sandisk-reports-fiscal-fourth-quarter-2026-financial-results",
+            "D1-O104",
+            "D1-O156"
+          ]
+        }
+      ],
+      "realization_factors": [
+        {
+          "name": "付费应用价值与单位服务资源效率共同生成锁供需求",
+          "mechanism": "研究机制：企业和个人从代码、知识处理等服务获得的可用价值，与组织允许的任务、数据和运行环境一起决定付费采用、留存和任务量；访问治理可能关闭某类使用，也可能将它移向受控部署而非消灭用途。模型上下文、并发及持续时间决定每任务的内存/存储资源强度。服务商通过批处理、缓存重用和软硬件优化改变资源效率，已有可用能力的余量决定新增任务先被吸收还是要求扩充。扩充预期再经平台规格与供应者分配，形成跨年锁供意愿和采购数量；单任务效率提升也可能降低收费门槛、扩大用量，净需求不能只看一个技术比率。",
+          "current_status": "默认采用服务使用扩张推动提前锁供的工作解释，而不是仅凭AI口号外推订单：Anthropic在2026年5月自报收入运行率超过470亿美元，并已建立跨产品供给关系；运行率不是已审计年度收入。其2024年批处理产品以等待窗口换取50%价格折扣，提供服务经济性可主动改变的实例，并非证明硬件需求减半。当前美光供给稀缺使追加需求更先体现为预留、分配和谈判，而非当季无限加量。 企业部署还受许可主体约束：2025年公开资料已出现智能体滥用处置、AI访问控制和安全智能体产品。它们提供治理与防御用途的前提，不证明美光客户已停用或预览产品已全面部署。",
+          "materiality_context": "服务价值和付费留存决定多年承诺能否续接，比一次评测成绩影响面更广；任务量决定机会规模，资源强度决定同等任务的数量和产品组合，不能将服务收入按固定系数换成位元。效率改善对既有任务有减量作用，降价后的新增用量是反向反馈，时间通常快于扩厂。能力余量决定采购时滞：客户未披露利用率，不假设满载；公司端稀缺则已令短期需求增长对锁供价格与份额的杠杆大于对即时总产量的杠杆。平台规格和分配最终决定美光而非其他供应者承接多少。 组织权限是有用服务成为获批需求的前置门槛，受控部署可改变采购主体和资格；单一用途被限制与AI总资源需求下降并不等价。",
+          "scope_boundary": "解释AI使用如何形成SCA需求；产品架构性能和平台份额由相邻产品域深化。本域不将每个token、客户服务收入或GW直接换算成美光合同额。",
+          "ref": [
+            "https://www.anthropic.com/news/series-h",
+            "https://micron.gcs-web.com/news-releases/news-release-details/micron-and-anthropic-announce-strategic-agreement-scale-next",
+            "https://claude.com/resources/articles/message-batches-api",
+            "D1-O31",
+            "D1-O74",
+            "D1-O103",
+            "https://developer.nvidia.com/blog/?p=111143",
+            "https://www.anthropic.com/news/disrupting-AI-espionage",
+            "https://www.microsoft.com/en-us/security/blog/2025/03/24/microsoft-unveils-microsoft-security-copilot-agents-and-new-protections-for-ai/"
+          ]
+        },
+        {
+          "name": "资金与部署资源决定承诺转为采购的时间",
+          "mechanism": "研究机制：客户可融资金额、资金成本和建设/设备付款排期决定算力项目可启动的规模；电力、机房、冷却及系统安装形成可投入运行的时间。即使终端应用需求不变，任一资源延迟也会改变客户实际消耗和采购排期。已签合同把该延迟的一部分风险留在客户：其可能按约收货并持有库存，也可能在允许的条款内重排，不能从机房延期直接跳到美光取消订单。",
+          "current_status": "客户已有资本与多云扩张行动，部署不是无资金支持的愿景；但NVIDIA明确提示土地、电力、机房及资金约束。其8月与六家资本机构签署的融资平台备忘录仍待最终协议，5000亿美元以上是长期动员目标而非已到账资金。供给保障可以在项目上线前签订；Crusoe新增Abilene园区首楼2027年中通电计划与既有首期资产已经起租须分开。",
+          "materiality_context": "融资规模影响可建设的机会总量，资金价格和付款排期影响先后顺序，不能把名义融资目标叠加成采购额；电力/机房/安装决定能否在特定月份使用设备，其边际影响在接近上线时可超过融资标题。合同排期与调整权决定部署延期先成为客户库存还是美光收入推迟：同样延迟一季，两种合同结果可完全不同。当前已签约保障比项目愿景更接近美光，但项目资源决定后续扩约和按需提货的持续性；没有合同映射，不能量化该园区的美光敞口。",
+          "scope_boundary": "覆盖下游部署对SCA采购时间和重谈意愿的影响；不是园区融资模型，也不把电网区域规则套用到美光工厂。",
+          "ref": [
+            "https://www.anthropic.com/news/series-h",
+            "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Partners-With-Apollo-BlackRock-Blackstone-Brookfield-Goldman-Sachs-and-KKR-to-Establish-AI-Compute-Infrastructure-Financing-Platforms-to-Mobilize-Over-500-Billion-of-Third-Party-Capital/default.aspx",
+            "https://www.crusoe.ai/resources/newsroom/crusoe-announces-new-900-mw-ai-factory-campus-in-abilene-texas-to-support-microsoft-ai-infrastructure",
+            "https://www.sec.gov/Archives/edgar/data/1944366/000194436626000020/exhibit993-2025abelinedc1l.htm",
+            "D1-O130",
+            "D1-O31",
+            "D1-O74"
+          ]
+        },
+        {
+          "name": "采购主体与平台生命周期决定汽车锁供分配",
+          "mechanism": "研究机制：整车/设备生产量与每个平台内存配置形成基础需求，平台寿命和缺芯停产损失提高长期供给的价值；OEM、Tier1及技术生态主体决定谁选型、谁保留供给、谁承担实际采购。统一料号和集中采购可把相同终端需求集中到更少合同，提高批量效率也增强买方议价。可靠性资格与平台换代决定这些数量能否转到美光及何时开始；直接锁供与Tier1集成可以互补，并不表示同一需求可以重复计数。",
+          "current_status": "汽车锁供已经跨OEM和生态采购层级，但未观察到采购责任实际迁移。GM、Ford以及七家车用生态主体的SCA与初批三年汽车期限相配，主要降低长生命周期生产的不确定性。作为不同产品的制度类比，GM在2023年与GlobalFoundries直接约定专用产能，由GF为GM关键芯片供应者制造，同时推动减少独特料号；这证明直接保障与中间供应者并存是可运行安排，不是美光合同的同一条款。",
+          "materiality_context": "整车量控制年度基础数量，配置控制单车强度，两者变化可能互相抵消；不能由ADAS功能增加断言采购量增加。平台寿命和停产损失提高保障需求，即使销量不增长也可促成SCA。采购主体和料号统一改变合同集中度与议价位置，对同一终端规模仍有独立影响；资格通过与换代时间更直接决定某个项目能否进入本组合。当前车用长周期锁供已有具体主体，比机器人送样机会更能解释既有商业关系，但没有客户金额，不将汽车协议份数等同主要收入贡献。",
+          "scope_boundary": "解释汽车及嵌入式采购安排的商业分配；不接管单车型BOM、功能安全设计或整车销量预测，不声称OEM与Tier1已经重复订货。",
+          "ref": [
+            "https://investors.micron.com/news/press-release/2026/Micron-Strengthens-Automotive-Ecosystem-Supply-Through-Strategic-Customer-Agreements/default.aspx",
+            "https://investors.micron.com/news/press-release/2026/Micron-and-General-Motors-Sign-Strategic-Agreement-to-Secure-Supply-and-Accelerate-Innovation/default.aspx",
+            "https://investors.micron.com/news/press-release/2026/Micron-and-Ford-Sign-Strategic-Agreement-to-Strengthen-Long-Term-Memory-Supply-and-Industry-Resilience/default.aspx",
+            "https://gf.com/news-and-events/news/globalfoundries-and-gm-announce-long-term-direct-supply-agreement-for-u-s-production-of-semiconductor-chips/",
+            "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+            "D1-O103",
+            "D1-O74"
+          ]
+        },
+        {
+          "name": "多供应者资格与地域可采购性决定协议获取和续约",
+          "mechanism": "研究机制：客户先依据规格适配、可靠性和交期筛选可用供应者，再比较综合采购成本、供给保障和地域合规；供应者可交付能力与客户的备选来源共同决定分配份额和谈判权。长期协议提高已有关系的切换代价，但不消除对下一代产品重新验证、配置或多源采购的选择。美光主动挑选客户和产品承诺也影响组合：相同终端需求下，更高保障价值或更低履约风险的客户可以获得更多供给。",
+          "current_status": "Anthropic同时与三家主要内存企业建立战略关系，Sandisk也扩展长期客户安排，锁供不是排他制度。美光新品具有实际资格/出货进展，竞争者也已商业化；缺口在具体客户分配而非竞争者是否存在。美国供给被客户看重，但未来美国项目与当前全球供给不能混用；中国特定关键信息基础设施买方的采购限制改变可服务客户，不能扩大成中国全面禁购。",
+          "materiality_context": "资格决定某SKU进入可分配集合，份额决定美光捕获多少机会，二者对本组合比行业总规模更直接。交期和可交付能力在当前稀缺环境中增强美光议价；若其他合格来源增加，既有固定条款未必立刻变动，但新签和续约可能先承压。地域合规可直接排除一类买方，美国来源偏好则影响供给选择和期限，不能按地域需求总额计算收入。客户/产品筛选决定有限能力被锁定在哪个利润与信用池，对当前新增签约比简单追求协议数量更重要。",
+          "scope_boundary": "止于本组合获得、分配及续约条件；平台采用资格、政策规则和行业价格的深度研究仍由相邻域承担。",
+          "ref": [
+            "https://www.anthropic.com/news/series-h",
+            "https://micron.gcs-web.com/news-releases/news-release-details/micron-and-anthropic-announce-strategic-agreement-scale-next",
+            "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-05-sandisk-reports-fiscal-fourth-quarter-2026-financial-results",
+            "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+            "D1-O74",
+            "D1-O31",
+            "D1-O205",
+            "D1-O103"
+          ]
+        },
+        {
+          "name": "数量承诺与覆盖边界重分配供给和周期风险",
+          "mechanism": "研究机制：美光与客户协商的年度采购数量、合同覆盖产品、期限及调整空间，决定多少未来业务从开放市场转为有约束的供需关系。较高有效覆盖降低在行情下行时的采购撤回风险，客户则获得供给优先确定性；美光放弃部分将未来产量重新配置给更高价客户的自由。合同数量增加若占用同一有限能力，首先改变分配而非凭空增加行业供给；合同执行和可达产能力决定名义覆盖最终能保护多少销售。",
+          "current_status": "组合已从16份扩大到26份并出现2031年延展；已签覆盖具有实质意义，但管理层收入覆盖展望仍是部分公司业务。初批DRAM/NAND数量覆盖分母与九月收入覆盖不同，不能直接拼成新份额。当前可执行数量配合保障资金改变下行风险分担，实际SCA销售额和分年数量尚未单独披露，因此工作模型采用部分保护而非合并利润保证。",
+          "materiality_context": "数量决定被锁业务的规模，产品覆盖决定是否保护高贡献业务，期限决定保护持续多久，不能以合同份数替代三者。调整空间与履约能力决定保护强度；更长承诺同时提高客户保障价值和美光资源锁定程度。当前已有多年承诺而供给稀缺，数量上调对组合配置的影响更快于扩产效果；若覆盖上升但锁到较低价产品，其收入规模与利润保护可以分离。非合同业务仍传递周期变化，是合同保护向合并结果外推时最大的边界之一。",
+          "scope_boundary": "拥有合同数量、产品、期限及供给配置经济性；不以RPO或保证金推算未披露的年度bit、销量或合并受保护毛利。",
+          "ref": [
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf",
+            "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+            "D1-O74",
+            "D1-O31",
+            "D1-O57"
+          ]
+        },
+        {
+          "name": "价格框架与代际成本决定锁供的收益分布",
+          "mechanism": "研究机制：对真正按市场价在底价和上限间结算的协议，可用“实现价受上下界约束”作工作模型；固定价和周期议价另按各自条款处理，不能强套一个公式。市场价在带内变化会传入合约，低于底价时保护开始发挥作用，高于上限时美光让渡部分上涨收益。实际产品组合、每bit成本及新产品溢价的协商/生效时间共同决定合同毛利；新代际若成本先上升而溢价滞后，即使数量与旧底价不变，经济性也会变差。",
+          "current_status": "当前既有价格框架与市场议价共存，底价毛利优越性是管理层预期，不是已测得的组合毛利保证。新签谈判反映较高价格，而已签旧产品不能因此自动重置。美光明确未来高性能产品和新厂爬坡可能提高混合成本，并保留新产品溢价谈判；所以未来保护要按产品代际解释，不能永久引用CY2026 Q2旧产品上限。",
+          "materiality_context": "定价框架决定周期传导斜率，底价决定下行边界，上限决定景气上行的机会成本，具体带宽决定在哪个市场区间开始不对称。产品组合及单位成本决定相同合同收入能留下多少毛利；溢价幅度和生效时间决定换代成本能否收回。当前价涨且新协议议价提高，上限与新旧组合对边际捕获更敏感；下行周期底价重要性才会提高。条件示例：某同期间、同产品合同收入100亿美元、数量和成本不变时，实现价变化1%约改变收入及毛利1亿美元，不代表公司实际敏感度。明确框架收入并非全是价带，不能把75%推成全部受底价保护。",
+          "scope_boundary": "深化SCA商业定价和履约成本经济性；行业价格形成和工厂成本细节属邻域，合并EPS与估值不在本因子内。",
+          "ref": [
+            "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf",
+            "D1-O72",
+            "D1-O74",
+            "D1-O57"
+          ]
+        },
+        {
+          "name": "有效产出与合同优先级决定交付和供给锁定成本",
+          "mechanism": "研究机制：晶圆良品、合格堆叠/封装、测试及客户验收中受限的环节决定可交付数量；设备、材料和人员保障决定这些环节何时放松。美光以合同义务和客户优先级分配有效能力，同时承担换代、爬坡损耗和履约赔偿风险。长期承诺及客户资金提高扩产计划可见性，扩产又增加未来可签数量；若增量供给快于客户需求，则降低非固定定价的实现价并改变后续议价。",
+          "current_status": "当前有效能力紧张，已有移动/客户端数量因改配而下降的实际证据，资源优先级已经在运作。2027年后段、前段及铜锣商业出货是不同计划节点，不是既有合格增量；产能里程碑不能代替验收。资金保障有助于安排投入，但并未解决每一种产品的工序瓶颈。合同组合因此同时是客户关系资产和对未来交付的约束。",
+          "materiality_context": "瓶颈工序控制短期数量，其他工序先扩容可能只形成闲置投入；投入品到位和良率/验收决定解除瓶颈的时间与成本。合同优先级决定哪一业务获益，即使总产出不变也能显著改变组合。爬坡损耗侵蚀单位经济性，赔偿条款在交付不足时增加额外损失，不能以退款额度替代损失上限。扩产有利于承诺兑现，但主要从2027年计划爬坡后起作用；在当前供给受限位置，优先分配与良品可交付量的杠杆大于只增加名义厂房。较远期客户需求吸收决定新增供给是增量利润还是削弱议价。",
+          "scope_boundary": "覆盖制造结果和资源分配如何作用于SCA履约；不计算新厂产能、项目ROIC或合并资本预算。",
+          "ref": [
+            "D1-O31",
+            "D1-O74",
+            "D1-O88",
+            "D1-O57",
+            "D1-O103",
+            "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356"
+          ]
+        },
+        {
+          "name": "采购义务与实际消耗偏离通过库存和重谈反馈",
+          "mechanism": "研究机制：客户实际消耗、已有库存和合同最低采购共同决定当期需要与当期义务的差额。消耗低于承诺时，履行采购可把差额存为客户库存；若无法承担，则通过具体条款的重排/重谈或违约进入另一条路径。库存积累随后压低额外非合同采购和续约意愿，需求下降因而可以先被合同延后而非消失。反之，实际消耗超出保障量会提高追加锁供价值，但仍受美光可交付量限制。",
+          "current_status": "工作基准仍是正常履约，没有证据表明SCA客户已普遍违约或存在超额库存。协议及信用支持提高了不能随意撤回的采购强度，同时公开风险披露承认按长期承诺采购超出生产需要可能形成库存和后续供需问题。RPO给出最低价承诺量对应的确认排期，不是终端即时消耗；客户部署延期可先表现为两者分离。",
+          "materiality_context": "最低采购额决定短期销售惯性，实际消耗决定长期关系可持续性，库存决定两者差额能缓冲多久；当前库存未测得，不能当作已发生周期反转。重排权限影响季度时间，重谈改变剩余合同经济性，违约及保障可取用性影响损失大小，三者不是同一结果。当前保障较强使短期消耗变化不一定等比例冲击收入，但会改变客户库存、追加采购及下一轮议价；若多客户同时偏离，后续非合同需求压力可能比单一违约额更广。",
+          "scope_boundary": "研究SCA数量履行与客户消耗之间的商业反馈；信用工具回收、保证金收入确认由资金Unit细化，不把情景写成已发生违约。",
+          "ref": [
+            "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf",
+            "D1-O31",
+            "D1-O74",
+            "D1-O130"
+          ]
+        }
+      ],
+      "potential_gaps": [
+        {
+          "name": "合同扩张改变保护边界与有限供给的分配",
+          "why_live": "截至2026年9月30日已有26份SCA，管理层预计已签组合覆盖至2030年公司收入的35%以上；但份数不等于客户数，预期覆盖也不等于实际销售或受保护毛利。组合包含明确价格框架和周期市场议价两类业务，当前供给稀缺使扩约同时成为产量配置选择。",
+          "revision_logic": "当前工作解释是部分收入获得跨年约束、组合继续延展，而不是公司整体摆脱周期。未来若承诺量、产品贡献、调节权和期限出现不同组合，保护规模与资源锁定成本可能分离；需要修订的是合同组合能保护哪一部分经济结果，而非新签数本身。以下均为可能发展。",
+          "possibility_space": [
+            {
+              "name": "美光把新增数量承诺配置给高贡献且有明确价格框架的业务",
+              "implication": "即使新增协议不多，较大的可执行数量与较高贡献产品也能扩大实质保护。增量主要重分配有限供给，可能挤出其他客户的机会，不能把合同扩张再加作额外产量。"
+            },
+            {
+              "name": "新增客户主要购买小额车用项目或保留周期市场议价",
+              "implication": "商业关系更广、未来销量更可见，但价格和利润的周期暴露下降较少；组合扩张与利润防护增强不再同义。小额长期项目仍可能改善客户分散，并非没有价值。"
+            },
+            {
+              "name": "大客户为更长供给保障换取更强的跨产品调量权",
+              "implication": "期限变长但采购选择权更多留给客户，名义长期覆盖未必形成同等年度最低收入。美光获得稳定关系，却更难将能力转给当时价值最高的买方，保护与机会成本需同时重估。"
+            },
+            {
+              "name": "美光限制低回报续约，把供给转向保障更强的新买方",
+              "implication": "协议份数可能停滞甚至减少，组合质量反而改善；既有RPO的履行仍与之后的配置选择分开。这是主动客户筛选，不等同于终端需求恶化。"
+            }
+          ],
+          "ref": [
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf",
+            "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+            "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf",
+            "D1-O74",
+            "D1-O31"
+          ]
+        },
+        {
+          "name": "跨代际定价把长期数量保障转为不同收益",
+          "why_live": "六月披露既有产品包含价带、固定价和市场议价，新产品溢价另行协商；九月公司称新谈判价格较高。管理层对底价毛利的强判断不是合并利润下限，产品换代也不是所有旧协议自动按新市价重置。",
+          "revision_logic": "默认路径是履行存量并随新品调整经济性。变化可能来自代际定义、资格进度、成本承担和买卖双方重谈，而不只是行业价格方向；同一被锁数量可产生不同的实现价、单位贡献及放弃上行的代价。",
+          "possibility_space": [
+            {
+              "name": "客户及时采用新代际并接受覆盖新增成本的溢价",
+              "implication": "新产品价与良品成本匹配可让既有客户关系承接更高贡献，长期承诺不是把美光永久锁在旧价上。新品实际进入可交付产品池后才增加组合经济性，不能提前认定成本全被转嫁。"
+            },
+            {
+              "name": "客户延用旧料号，或要求升级仍按旧产品价带结算",
+              "implication": "美光可能需要维持低规模旧工艺、为代际定义重谈或暂时承担升级成本；数量稳定与利润稳定分离。汽车长生命周期延用和AI快速升级都可能触及这一问题，但成本来源不同。"
+            },
+            {
+              "name": "稀缺维持而旧产品上限限制收益，新协议重新获得较高条款",
+              "implication": "存量保护相对开放市场的机会成本扩大，新签改善不能覆盖所有历史协议。合约组合的年代和产品结构会比平均行业ASP更能解释收益差异。"
+            },
+            {
+              "name": "行业宽松使客户寻求重新议价，美光选择守约或交换承诺",
+              "implication": "若原底价和最低量维持，合同防护价值更显著；若美光用降价换更长数量或产品迁移，短期贡献下降可能换取长期利用率。双方商业调整与不可收回违约是不同路径，不能由市场跌价直接认定底价失效。"
+            }
+          ],
+          "ref": [
+            "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf",
+            "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf",
+            "D1-O72",
+            "D1-O74"
+          ]
+        },
+        {
+          "name": "AI服务的日常化与效率反馈改变锁供需求",
+          "why_live": "Anthropic已形成跨产品供给协作，并自报2026年5月收入运行率超过470亿美元；运行率不是年度已审计收入。其批处理以等待换折扣，说明服务商会主动改变服务经济性。当前锁供具有应用用途，但收入增长、任务增长和每任务资源消耗并无固定换算。",
+          "revision_logic": "工作模型把有用且付费的服务转化为扩充意愿，再经过能力余量和采购分配形成SCA。未来变化可来自分发方式、任务持续性和效率改善后的使用反应；相同模型能力下，人们如何采用比一次性能提升更能改写跨年的承诺规模。",
+          "possibility_space": [
+            {
+              "name": "大型工作软件把持续智能体纳入已有订阅与业务流程",
+              "implication": "使用门槛降低，任务从主动提问扩展到后台处理和反复执行；服务商可能需要更大常备能力，增加跨产品预留。若原有能力余量先吸收使用，锁供需求先于当期采购量变化，不能把席位数直接换成合同bit。"
+            },
+            {
+              "name": "企业发现工具价值只集中于少数流程，主动缩减广泛付费部署",
+              "implication": "买方从全员席位转向有收益的专门任务，仍增长的服务收入可能伴随更少常备算力。既有最低量不自动取消，但后段追加量和续约意愿转弱；这区别于客户缺钱或机房不能上线。"
+            },
+            {
+              "name": "批处理、缓存复用和模型优化先消化既有任务扩张",
+              "implication": "同等任务的新增资源需要下降，客户可利用已留能力而减少追加承诺。折扣不是硬件减半的证据；净影响取决于被优化的任务占比与现有余量，而不是把一种技术比率套到全部SCA。"
+            },
+            {
+              "name": "较低服务成本引出更多长任务与更大模型使用",
+              "implication": "效率改进之后的便宜访问可能扩大实际用途、持续时间和服务量，使原先减量被吸收甚至反转。先节省资源、后追加锁供可以先后发生；美光是否承接新增量仍由平台资格和客户分配决定。"
+            }
+          ],
+          "ref": [
+            "https://micron.gcs-web.com/news-releases/news-release-details/micron-and-anthropic-announce-strategic-agreement-scale-next",
+            "https://www.anthropic.com/news/series-h",
+            "https://claude.com/resources/articles/message-batches-api",
+            "https://developer.nvidia.com/blog/?p=111143",
+            "D1-O31",
+            "D1-O103"
+          ]
+        },
+        {
+          "name": "部署架构与数据分层重画跨产品承诺",
+          "why_live": "客户多云和多种加速器并存，Trainium、TPU及GPU的内存配置不同。CMX等方案把不同数据置于HBM、主机内存和SSD层；HBF已有标准推进，GP1仍处样品规划，CXL还需要操作系统和应用分配适配。现有技术方向不是已完成的HBM替代。",
+          "revision_logic": "总AI活动保持增长也可改变每任务产品组合和实际采购者。合同若不能灵活迁移产品，架构选择会造成原承诺与新需要错位；若可以迁移，跨产品关系可能比单SKU锁供更稳。产品性能与平台份额由相邻域深化，本主题解释承诺、调量和商业分配的变化。",
+          "possibility_space": [
+            {
+              "name": "客户把更多任务移向自研加速器并由云平台集中采购",
+              "implication": "需求未退出内存，但平台配置、认证和下单主体改变；美光若进入新平台可延续合同经济性，否则终端使用扩张也可能流向其他供应者。应用客户的合作声明不等于其所有云端内存都由其直接指定。"
+            },
+            {
+              "name": "服务商将更多上下文或可缓存数据放到共享SSD层",
+              "implication": "可降低部分活跃内存配置或重复存放，并增加SSD保障需求，HBM与NAND的承诺需要重新配比。既有低延迟工作集仍可留在HBM，跨产品合作可能吸收迁移，但NAND增量不必由美光取得。"
+            },
+            {
+              "name": "HBF或GPU直连闪存通过特定负载验证，客户要求改写产品承诺",
+              "implication": "适合的数据访问路径可能降低原HBM承诺强度或改变价格议价，原协议的产品替代权与新供应者资格变得重要。这是未来生产采用的假设，不是将标准公布或功能样品当作完成替代；便宜容量还可能扩大模型规模。"
+            },
+            {
+              "name": "内存池与CXL分配软件成熟，客户改变服务器配置方式",
+              "implication": "跨服务器共享可能减少闲置高配DIMM或多余服务器，也可能让原先受容量限制的任务可部署；本地DRAM、池化模块和SSD的采购需求不能机械相加。合同组合的净量取决于实际任务扩张与客户采用的配置。"
+            }
+          ],
+          "ref": [
+            "https://developer.nvidia.com/blog/?p=111143",
+            "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf",
+            "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html",
+            "https://github.com/microncxl/cxl-reskit",
+            "https://aws.amazon.com/about-aws/whats-new/2025/12/amazon-ec2-trn3-ultraservers/",
+            "https://blog.google/innovation-and-ai/infrastructure-and-cloud/google-cloud/eighth-generation-tpu-agentic-era/",
+            "https://micron.gcs-web.com/news-releases/news-release-details/micron-and-anthropic-announce-strategic-agreement-scale-next",
+            "D1-O103",
+            "D1-O88"
+          ]
+        },
+        {
+          "name": "企业AI信任与部署权限重画锁供买方",
+          "why_live": "作为2025年的公开前提，Anthropic自报发现智能体滥用并处置账号；Microsoft宣布AI访问控制、数据防泄漏能力和安全智能体，其中部分当时为预览。这说明部署权掌握在安全与管理主体手中，也有新的防御用途；并不证明当前美光客户已经大规模停用。",
+          "revision_logic": "当前“有用服务推动多供应者锁供”的理解还取决于企业允许哪些任务、数据和环境运行。未来信任事件与治理改进可以改变参与人数、部署位置和硬件采购主体，在总AI兴趣仍强时也足以改写合同新增和续接；以下为自主推演而非来源报告的订单变化。",
+          "possibility_space": [
+            {
+              "name": "重大数据损失或越权事件使大型雇主暂停通用智能体上线",
+              "implication": "获批任务减少、企业部署放缓，会先削弱服务商追加能力和长期承诺的意愿。既有采购义务仍可能形成客户库存或重谈，不能把公众事件直接当作美光取消订单；受影响用途也不等于所有AI业务。"
+            },
+            {
+              "name": "企业改在私有或受控云运行敏感任务，而非退出AI",
+              "implication": "任务从通用服务迁到可审计环境，采购可能从应用提供商移向云运营商、集成商或企业自身。跨产品需求可保留但美光需要新的资格与客户配置，原买方收入变弱不自动代表本组合总机会同等收缩。"
+            },
+            {
+              "name": "访问治理降低企业顾虑，同时安全团队广泛采用防御智能体",
+              "implication": "受控业务部署和持续安全分析可一起增加经批准的使用。长期在线防御形成不同于个人问答的需求来源，可能提升可靠供给价值；其采购若集中在云平台，受益客户和合同分配也与原应用服务商不同。"
+            }
+          ],
+          "ref": [
+            "https://www.anthropic.com/news/disrupting-AI-espionage",
+            "https://www.microsoft.com/en-us/security/blog/2025/03/24/microsoft-unveils-microsoft-security-copilot-agents-and-new-protections-for-ai/",
+            "https://micron.gcs-web.com/news-releases/news-release-details/micron-and-anthropic-announce-strategic-agreement-scale-next",
+            "https://www.anthropic.com/news/series-h"
+          ]
+        },
+        {
+          "name": "客户建设排期与库存消化重塑履约路径",
+          "why_live": "供给协议可早于客户机房上线签署。NVIDIA的融资平台仍是待最终协议的资本动员目标，Crusoe新增园区首楼计划2027年中通电；既有首期物业起租不能证明新园区完成。美光SCA有采购与供货义务，因此部署延期未必先表现为取消。",
+          "revision_logic": "默认是按多年排期交付。客户资金、电力和安装若与合同时间错位，变化会分别落在客户库存、美光交付节奏或后续续约，需区分有限延期与长期需求重新评估。终端热度不变也可能修订近期收入转化和远期关系质量。",
+          "possibility_space": [
+            {
+              "name": "融资最终落实且客户以可运行电力和机房同步安装设备",
+              "implication": "项目愿景转为可接受货物的部署窗口，后段采购更可信，客户可能追加保障以避免新一轮缺货。已有合同量的提前交付是排期变化，不可同时计作新增承诺与额外需求。"
+            },
+            {
+              "name": "电力接入、现场发电或安装拖后，客户仍按最低量收货",
+              "implication": "美光近期销售可能维持，但客户库存与保管成本上升，实际消耗脱离提货量；之后可能先消化库存而不是追加采购，续约质量弱于当期收入所示。"
+            },
+            {
+              "name": "双方通过交付展期或产品替换配合延后的项目",
+              "implication": "收入转化后移但长期用途可保留，美光承担产能改配和排期成本，客户关系未必破坏。允许的调整与不履约损害赔偿不同，不能把RPO确认延后等同于最终无法回收。"
+            },
+            {
+              "name": "多项目同时被暂停，客户重估计划并要求系统性重谈",
+              "implication": "不再只是一个园区晚几个月，采购与实际消耗的偏离可能持续累积；合同执行、承诺缩量和违约救济成为不同路线。收入保障的含金量取决于客户履约能力及双方选择，而非继续增长的名义建设目标。"
+            }
+          ],
+          "ref": [
+            "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Partners-With-Apollo-BlackRock-Blackstone-Brookfield-Goldman-Sachs-and-KKR-to-Establish-AI-Compute-Infrastructure-Financing-Platforms-to-Mobilize-Over-500-Billion-of-Third-Party-Capital/default.aspx",
+            "https://www.crusoe.ai/resources/newsroom/crusoe-announces-new-900-mw-ai-factory-campus-in-abilene-texas-to-support-microsoft-ai-infrastructure",
+            "https://www.sec.gov/Archives/edgar/data/1944366/000194436626000020/exhibit993-2025abelinedc1l.htm",
+            "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf",
+            "D1-O130",
+            "D1-O74"
+          ]
+        },
+        {
+          "name": "合格供给与地域采购选择改变交付和续约",
+          "why_live": "2027年的美光封装、前段晶圆和铜锣规模出货分别是不同工序计划，当前不是可自由互换的合格产品量。竞争者长期安排与多源资格已存在；美国来源偏好和中国特定买方采购限制影响可服务关系，不是全球需求变化。",
+          "revision_logic": "既有长期义务需要美光可交付，新增与续约则同时依赖客户可选来源。物理瓶颈、资格和地域可采购性共同改变供给保障的价值：改善可能提高兑现，也可能使客户减少对单一锁供的依赖。保持行业价格形成和制造工程归属相邻域，回传合同配置、履约成本和议价。",
+          "possibility_space": [
+            {
+              "name": "美光前后段与客户认证匹配，优先满足承诺产品",
+              "implication": "更多计划产出成为合格交付，降低延期和损害赔偿风险，也为新增量提供基础。新增建筑或单一工序扩充不能代表这一整合结果，合同优先配置仍可能挤出非SCA高价需求。"
+            },
+            {
+              "name": "某个工序或客户验收滞后，其他新增能力无法补位",
+              "implication": "拥有晶圆不等于有合格封装产品，供给义务可能要求改配、外部加工或赔偿，锁供的利润保护因此弱于数量保障。若只是短期爬坡，可由排期吸收；持续错配会损及续约。"
+            },
+            {
+              "name": "竞争者在客户下一代平台获得可靠供给资格",
+              "implication": "备选来源增加首先作用于新签、溢价和续约，美光已签条款未必立刻改变。多源并存可降低客户保障溢价，也可能鼓励更大项目，不能由竞争者资格直接推出美光存量取消。"
+            },
+            {
+              "name": "客户把地域来源要求写入长期协议，美光按地区配置供给",
+              "implication": "可用来源受限可能提高指定地区保障价值，但也提高履行与换厂成本。未来美国新厂若满足产品资格才支持这种配置；不能把客户偏好当作当前所有产品已美国制造。"
+            },
+            {
+              "name": "采购限制扩大或放宽，客户依法重排合格供应者",
+              "implication": "改变的是美光可签客户池和分流路径，而非同等幅度的全球需求。原买方可能改用竞争者、迁移项目或暂缓采购，美光则可向其他市场配置有限产量；尚未发生的范围变化不写成现行全面禁购。"
+            }
+          ],
+          "ref": [
+            "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf",
+            "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-05-sandisk-reports-fiscal-fourth-quarter-2026-financial-results",
+            "https://www.anthropic.com/news/series-h",
+            "D1-O88",
+            "D1-O205",
+            "D1-O31"
+          ]
+        },
+        {
+          "name": "汽车平台与采购责任迁移改变锁供经济性",
+          "why_live": "美光已签OEM与多家车用生态主体，汽车初批典型期限为三年；同一车用体系可以同时存在直接保障与Tier1集成。GM/GF的不同芯片合同提供直接保留产能供下级供应者使用的制度类比，不证明美光存在重复订货或责任已经迁移。",
+          "revision_logic": "当前锁供有长生命周期与停产损失的业务基础。未来OEM和Tier1怎样分工、平台是否标准化及生命周期是否延长，可在整车总量不变时改写组合集中度、议价、产品寿命和采购责任；与单纯单车容量增长区别处理。",
+          "possibility_space": [
+            {
+              "name": "OEM统一料号并集中保留内存供给，Tier1按指定方案集成",
+              "implication": "同一终端需求可能集中到更少且更大的合同，保障可信度和批量效率提高，也增强OEM议价权。客户数下降不一定意味着需求损失，OEM预留与Tier1采购不能重复计算。"
+            },
+            {
+              "name": "OEM将选型和采购责任重新交给Tier1或平台集成方",
+              "implication": "可执行采购主体及信用敞口迁移，美光需要延续指定料号和供给配置；OEM的保障关系可能减少而中间主体协议增加。总汽车需求可不变，签约增长也可能只是责任重分配。"
+            },
+            {
+              "name": "客户延长既有车型平台寿命，要求美光持续维护旧料号",
+              "implication": "长期供给保障更有价值，但旧工艺、少量批次及维持资格的成本上升；汽车协议三年窗口未必覆盖整个平台寿命，需要新的期限和价格安排。"
+            },
+            {
+              "name": "整车平台换代或安全重新验证使原定量产项目迁移",
+              "implication": "功能升级可提高配置却延后原料号采购，另一供应者通过系统资格也可承接机会。名义每车内存增长不能单独支持SCA新增，原承诺如何转到合格新品决定组合最终受益。"
+            }
+          ],
+          "ref": [
+            "https://investors.micron.com/news/press-release/2026/Micron-Strengthens-Automotive-Ecosystem-Supply-Through-Strategic-Customer-Agreements/default.aspx",
+            "https://investors.micron.com/news/press-release/2026/Micron-and-General-Motors-Sign-Strategic-Agreement-to-Secure-Supply-and-Accelerate-Innovation/default.aspx",
+            "https://gf.com/news-and-events/news/globalfoundries-and-gm-announce-long-term-direct-supply-agreement-for-u-s-production-of-semiconductor-chips/",
+            "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+            "D1-O103",
+            "D1-O74"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "客户保证金与信用支持融资结构",
+      "scope": "战略客户保证金及第三方信用支持的规模、条款、使用、取用条件和返还安排，以及美光相关资金期限、流动性和履约信用敞口。",
+      "horizon": "季度余额与条款变化，延伸至多年保证金返还和信用支持期限。",
+      "ref": [
+        "D1-O3",
+        "D1-O6",
+        "D1-O10",
+        "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+        "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf",
+        "D1-O31",
+        "D1-O57",
+        "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf",
+        "D1-O18",
+        "D1-O74",
+        "https://micron.gcs-web.com/news-releases/news-release-details/micron-and-anthropic-announce-strategic-agreement-scale-next",
+        "https://www.anthropic.com/news/series-h",
+        "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Partners-With-Apollo-BlackRock-Blackstone-Brookfield-Goldman-Sachs-and-KKR-to-Establish-AI-Compute-Infrastructure-Financing-Platforms-to-Mobilize-Over-500-Billion-of-Third-Party-Capital/default.aspx",
+        "https://www.occ.treas.gov/publications-and-resources/publications/comptrollers-handbook/files/trade-finance-services/pub-ch-trade-finance.pdf",
+        "https://www.sec.gov/Archives/edgar/data/1944366/000194436626000020/exhibit993-2025abelinedc1l.htm",
+        "D1-O19",
+        "D1-O23",
+        "https://d18rn0p25nwr6d.cloudfront.net/CIK-0001769628/f600a0f8-1497-4372-8b4a-1ba9c1e39947.pdf",
+        "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000104/crwv-20251231.htm"
+      ],
+      "state": {
+        "parameters": [
+          {
+            "name": "客户资金承诺总规模",
+            "definition": "特定时点已签组合的现金保证金及相关财务承诺总额；实际承诺、预计收取与已到账现金分开记录，不同组合不作同队列比较。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf"
+            ]
+          },
+          {
+            "name": "客户资金承诺的现金构成位置",
+            "definition": "客户资金承诺中现金保证金相对其他信用支持的构成状态。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf"
+            ]
+          },
+          {
+            "name": "当期收到客户合同保证金",
+            "definition": "报告期间客户合同负债保证金带来的实际现金流入；不是净销售收入或经营现金流。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O31",
+              "D1-O57",
+              "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf"
+            ]
+          },
+          {
+            "name": "非流动客户合同负债余额",
+            "definition": "资产负债表非流动客户合同负债；不把全部余额等同当年新SCA现金流。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf"
+            ]
+          },
+          {
+            "name": "已确认客户合同负债总规模",
+            "definition": "RPO披露中已记录为客户合同负债的总规模，主要为SCA保证金；“确认负债”不是“已确认收入”。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf"
+            ]
+          },
+          {
+            "name": "已签发或承诺签发信用证上限",
+            "definition": "第三方金融机构已签发或合同承诺签发的信用证最大潜在违约取用金额；不是全额已签发、现金余额或已实现补偿。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O31",
+              "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf"
+            ]
+          },
+          {
+            "name": "保证金主要返还窗口",
+            "definition": "已收保证金几乎全部按约安排返还的时间窗口，而非全部合同收入确认期限。",
+            "value_type": "TIME",
+            "ref": [
+              "D1-O31",
+              "D1-O6",
+              "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf"
+            ]
+          },
+          {
+            "name": "保证金返还与保留条件",
+            "definition": "客户最低采购履行与保证金归还、扣减及违约收入处理的合同关系。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf"
+            ]
+          },
+          {
+            "name": "信用支持取用与追索安排",
+            "definition": "信用证及保证金保护在何种客户违约状态可转为实际追索。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O31",
+              "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf"
+            ]
+          },
+          {
+            "name": "保证金的会计及商业融资定位",
+            "definition": "现金流分类、合同负债分类与收入准则中的融资成分判断，三者分别定位。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "分年度保证金返还额",
+            "definition": "各年度按具体条款须归还的保证金金额；用于区分窗口内集中偿付与平滑返还。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O31",
+              "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf"
+            ]
+          },
+          {
+            "name": "保证金合同资金成本",
+            "definition": "保证金约定利息、融资收费或其他明确资金补偿的年化成本；不从收入会计无重大融资成分推导免息。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf"
+            ]
+          },
+          {
+            "name": "客户保证金使用约束",
+            "definition": "保证金是否允许一般经营使用，或附专用、托管、抵押及限制转移条件。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "信用支持方集中度",
+            "definition": "按具名支持机构合并的信用证风险集中程度；机构身份和客户映射未披露时不由银行行业指标替代。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf"
+            ]
+          },
+          {
+            "name": "未受保障的合同信用敞口",
+            "definition": "特定客户履约损失在现金保证金、信用证及其他救济之后的净敞口；须考虑工具重叠、到期和可追索性。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf",
+              "D1-O31"
+            ]
+          }
+        ],
+        "values": [
+          {
+            "name": "九月26份及延期承诺320亿美元",
+            "parameter": "客户资金承诺总规模",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 32.0,
+              "unit": "十亿美元"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-30的26份已签SCA及延期；不是该日全部到账现金",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf"
+            ]
+          },
+          {
+            "name": "六月初批预计收取220亿美元（旧组合）",
+            "parameter": "客户资金承诺总规模",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "number": 22.0,
+              "unit": "十亿美元"
+            },
+            "previous_value": null,
+            "time_scope": "2026-06-24初批已签组合预计收到的现金及相关财务承诺；已被后续整体组合披露替代",
+            "as_of": "2026-06-24",
+            "validity_state": "SUPERSEDED",
+            "ref": [
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+              "D1-O18"
+            ]
+          },
+          {
+            "name": "承诺以现金保证金为绝大部分",
+            "parameter": "客户资金承诺的现金构成位置",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "九月披露的320亿美元财务承诺绝大部分为现金保证金；未披露逐项现金到账日与各支持工具金额拆分。"
+            },
+            "previous_value": null,
+            "time_scope": "九月已签26份协议及延期的资金承诺结构",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf"
+            ]
+          },
+          {
+            "name": "FY2026实际到账127.47亿美元",
+            "parameter": "当期收到客户合同保证金",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 12.747,
+              "unit": "十亿美元"
+            },
+            "previous_value": null,
+            "time_scope": "截至2026-09-03的FY2026现金流；列融资活动",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O31",
+              "D1-O57",
+              "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf"
+            ]
+          },
+          {
+            "name": "非流动合同负债128.95亿美元",
+            "parameter": "非流动客户合同负债余额",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 12.895,
+              "unit": "十亿美元"
+            },
+            "previous_value": {
+              "number": 0.142,
+              "unit": "十亿美元"
+            },
+            "time_scope": "2026-09-03余额；前值为2025-08-28同一报表项目",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf"
+            ]
+          },
+          {
+            "name": "约130亿美元已列合同负债",
+            "parameter": "已确认客户合同负债总规模",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 13.0,
+              "unit": "十亿美元（约）"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-03余额，含相关合同负债总体而非仅非流动项目",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf"
+            ]
+          },
+          {
+            "name": "潜在信用证保障70亿美元",
+            "parameter": "已签发或承诺签发信用证上限",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 7.0,
+              "unit": "十亿美元"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-03余额日，客户违约/违反约定时的最高潜在取用额",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O31",
+              "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf"
+            ]
+          },
+          {
+            "name": "几乎全部返还集中2029至2031年",
+            "parameter": "保证金主要返还窗口",
+            "source_role": "ACTUAL",
+            "value": {
+              "point": null,
+              "start": "2029",
+              "end": "2031",
+              "precision": "年"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-03既有保证金的合同返还安排",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O31",
+              "D1-O6",
+              "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf"
+            ]
+          },
+          {
+            "name": "履约返还，未满足采购承诺可保留",
+            "parameter": "保证金返还与保留条件",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "满足最低采购承诺则返还保证金；否则美光可能保留全部或部分并确认为收入。此为条款，不是已发生客户违约。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026已签SCA的多年履约和资金结算",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf"
+            ]
+          },
+          {
+            "name": "信用证为附条件补偿，不是无条件流动性",
+            "parameter": "信用支持取用与追索安排",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "特定客户违约或违反约定才触发信用证取用；救济可包括信用证款、扣减保证金和其他合同追索。不能把不同工具简单相加视为互不重叠的损失保障。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-03披露的信用保护安排",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O31",
+              "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf"
+            ]
+          },
+          {
+            "name": "融资现金流与锁供商业目的并存",
+            "parameter": "保证金的会计及商业融资定位",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "保证金流入列融资现金流；合同负债按履约时点分流动/非流动；收入会计认为主要用于确保未来生产能力与供给，不构成重大融资成分。这不证明经济资金成本为零或存在受限账户。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026保证金会计处理与合同商业目的",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf",
+              "D1-O31"
+            ]
+          }
+        ]
+      },
+      "expectation_baseline": [
+        {
+          "name": "合同资金保障扩张，到账按另一条时间线发生",
+          "baseline": "研究判断：随着新增和延期，客户资金支持仍会成为锁供关系的重要部分，已到账保证金证明该模式有实际资金执行，不只是营销承诺。但九月承诺总额与财年末现金流属不同日期、不同状态，不能据二者差额预测下一季度到账，也不能把信用证计入可自由使用现金。",
+          "ordinary_progress": "约定保证金分批到账、客户按约维持信用支持，余额随履约结算变化。",
+          "open_frontier": "剩余承诺的现金/信用工具拆分、到账节奏及专用限制，可能使相同承诺额提供不同的资金使用价值。",
+          "time_scope": "未来几个季度至合同生效与持续履约期",
+          "ref": [
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf",
+            "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+            "D1-O31",
+            "D1-O57"
+          ]
+        },
+        {
+          "name": "多年返还义务是资金期限的基准，不是永久资本",
+          "baseline": "研究判断：正常履约路径下，保证金先提供多年期限缓冲，随后归还；短期不把它当作立即到期债务，也不将其永久化。晚于近期交付的返还窗口改善资金期限匹配，但新保证金能否滚续以及返还年度的集中程度仍决定长期可用性。本域只讨论这些特定资金条款，不代替合并资本承受能力判断。",
+          "ordinary_progress": "客户完成最低采购，负债按履约和期限分类，进入约定窗口后返还。",
+          "open_frontier": "提前返还/加速条款、按年返还峰值、滚续规模以及技术换代或客户重谈对资金期限的改变。",
+          "time_scope": "近期季度至2029—2031年主要返还窗口",
+          "ref": [
+            "D1-O31",
+            "D1-O6",
+            "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf"
+          ]
+        },
+        {
+          "name": "保障提高违约可追索性，而非消除交付和客户风险",
+          "baseline": "研究判断：保证金及第三方信用支持使采购承诺比无担保预测订单更具约束，默认采用正常提货、无需大规模违约取用的履约路径。Anthropic融资与多云扩张支持持续锁供的业务基础，但其多供应者关系并不证明某家银行已担保美光、也不等同保证全部采购。客户违约后的补偿可能减轻损失，却不能替代长期正常销售关系。",
+          "ordinary_progress": "信用证持续有效、客户照常采购，保证金仍作为履约保障而非被扣减确认收入。",
+          "open_frontier": "支持机构与客户集中风险、取用门槛和有效期、救济重叠，以及美光自身交付失败时是否失去保护或承担反向赔偿。",
+          "time_scope": "季度信用状态至多年供货期",
+          "ref": [
+            "D1-O31",
+            "D1-O74",
+            "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf",
+            "https://micron.gcs-web.com/news-releases/news-release-details/micron-and-anthropic-announce-strategic-agreement-scale-next",
+            "https://www.anthropic.com/news/series-h"
+          ]
+        },
+        {
+          "name": "锁供资金与经营成果分开读取",
+          "baseline": "研究判断：该结构兼有预留产能的商业目的和实际资金期限价值，不能只用“贷款”或“客户预付销售收入”单一标签解释。默认按正常交付确认销售、按采购履约归还保证金；融资活动现金流不是CFO改善，合同负债增长不是销售增长。若客户违约导致保留保证金转收入，收入质量及返还义务会同时改变，不能仍按正常出货经营性增长解释。",
+          "ordinary_progress": "正常交付收入、保证金现金流、负债余额与返还支出在各自口径上反映同一合同关系的执行。",
+          "open_frontier": "经济资金成本、使用约束和违约保留的实际金额/确认时点；会计融资成分判断不能填补这些商业条款。",
+          "time_scope": "季度报表至合同最终结算",
+          "ref": [
+            "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf",
+            "D1-O31",
+            "D1-O57"
+          ]
+        }
+      ],
+      "realization_factors": [
+        {
+          "name": "客户资金预算与保障形式选择决定可签融资规模",
+          "mechanism": "研究机制：客户预计需要保障的供给和缺供损失，决定其愿意付出的资金代价；现金预算、外部融资可得性、资金机会成本及银行授信/抵押要求，决定能选择现金保证金还是信用支持。美光以资金保障强度、采购义务及价格/供货承诺共同谈判，客户资金不是无条件赠与。银行信用支持可减少向美光直接支付的现金，但并不保证不占用客户授信或抵押资源；形式替代会改变美光可用资金而不必改变名义保障额。",
+          "current_status": "客户已实际支付保证金，最新组合承诺又扩大且现金占绝大部分，说明供給确定性的商业价值足以带动实质资金投入。Anthropic融资和平台资本安排提供客户融资路径的例证，不能识别谁为美光保证金或信用证出资。OCC对银行信用工具的监管说明支持授信审查与额度约束这一机制，未给出美光各工具的实际银行、费率或抵押要求。",
+          "materiality_context": "保障需要决定资金机会规模，现金预算与融资可得性决定能否签及何时落实，机会成本影响客户愿意换取多大价格/供给优惠。授信和抵押条件影响信用支持的真实成本；形式选择对美光资金价值有独立杠杆：同为10亿美元保障，到账现金提供资金期限，未取用信用证主要保护违约尾部而不资助日常投入。当前现金承诺占主导，客户预算与到账执行比泛称银行愿意融资更直接；提高保证金要求也可能筛掉资金较弱但需求真实的客户。",
+          "scope_boundary": "覆盖SCA特定资金安排的形成与选择；不是客户或银行总体融资建议，不推定美光信用证均遵循某一规则或有特定抵押。",
+          "ref": [
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf",
+            "D1-O31",
+            "https://www.anthropic.com/news/series-h",
+            "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Partners-With-Apollo-BlackRock-Blackstone-Brookfield-Goldman-Sachs-and-KKR-to-Establish-AI-Compute-Infrastructure-Financing-Platforms-to-Mobilize-Over-500-Billion-of-Third-Party-Capital/default.aspx",
+            "https://www.occ.treas.gov/publications-and-resources/publications/comptrollers-handbook/files/trade-finance-services/pub-ch-trade-finance.pdf"
+          ]
+        },
+        {
+          "name": "实际到账与可使用条件决定保证金资金价值",
+          "mechanism": "研究机制：承诺金额经支付排期变成实际到账，到账后再由专用/托管等使用条款决定可调动金额。可用资金降低同期外部融资需求或允许投入提前，但其价值取决于使用时间、替代资金成本及最终返还，不是等于保证金面值的新利润。若美光原已有足够资金，边际价值更偏期限、成本和选择权，而非断言没有保证金就无法扩产。",
+          "current_status": "已收到的客户保证金形成真实融资现金流，最新承诺额则包含不同时间的现金及信用工具。使用限制和经济资金成本没有公开逐项量化，因此只对允许使用的部分建立资金价值模型，不假设全部受限或全部无限制。已读C1显示合并资金缓冲增强，本结构不是唯一资金来源；它仍独立改变特定客户关系的资金条件。",
+          "materiality_context": "承诺额提供未来规模，到账时点决定本季流动性，使用条件决定到账中真正可投入的部分；三者不能互代。替代融资成本决定期限价值，返还义务压低永久价值。规模参照：FY2026保证金现金流127.47亿美元约为同年毛额PP&E现金支付307.12亿美元的41.5%，只是同期间量级比较，非专用资金去向或capex抵减。条件敏感度：每10亿美元可用资金的年化替代成本相差100bp，全年资金价值约差1000万美元，未宣称实际免息或实际节省。当前最直接的新增信息是可用到账与条款，非把320亿美元承诺当现金。",
+          "scope_boundary": "只讨论客户保证金可用金额与期限价值；合并投资、债务、股东分配和扩产预算的承受能力归公司资金域。",
+          "ref": [
+            "D1-O31",
+            "D1-O57",
+            "D1-O6",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf",
+            "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf"
+          ]
+        },
+        {
+          "name": "返还条件与收付期限匹配决定资金是否可接续",
+          "mechanism": "研究机制：最低采购履行及具体返还约定决定保证金何时需要归还；分年返还集中度与提前/加速条款决定资金峰值。新签或续约保证金形成可能的流入，但只有落实后才能抵接旧返还；业务交付回款可增加应付返还的资源，也可能因投入在前、回款在后形成期限缺口。履约期与返还期是两条时间线，较晚返还不取消中间正常销售结算。",
+          "current_status": "主要返还安排在2029—2031年，近期提供多年缓冲，正常履约默认最后归还。客户通常在交付后付款，保证金主要保障供给，并非逐笔发货的销售预收款。最新延期和新增支持说明滚续有商业基础，但未披露按年返还额、提前返还权或既有资金随延期的具体重置；不能自动认为返还被一并延后。",
+          "materiality_context": "返还日期控制期限，年度集中度控制峰值，履约及加速条件控制时间线是否跳变；当前多年窗口使立即偿付压力弱于未来集中返还风险。滚续规模与兑现时间决定能否接续，不是协议数量单独决定；客户回款和先期投入排期决定中间资金缺口。反事实：同一笔10亿美元若提前一年返还，永久负债总额可以不变，但可用期限减少且需更早替代；若新保证金等额且同步到账才抵接，未来意向不能抵接。年度分布未测得，不将三年窗口均分成三份。",
+          "scope_boundary": "覆盖特定保证金收付与合同资金期限；不输出公司级到期债务或整体流动性预测。",
+          "ref": [
+            "D1-O31",
+            "D1-O6",
+            "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf"
+          ]
+        },
+        {
+          "name": "信用证覆盖与取用条件把客户风险转为有限银行追索",
+          "mechanism": "研究机制：信用证金额和覆盖义务界定最高可追回范围，实际签发与有效期决定保护是否在需要时存在；约定违约事件、请求文件和支付程序决定能否以及何时取用。银行信用质量及相关集中风险决定信用替代的可靠性。保证金扣减、信用证与其他救济要按同一损失的权利顺序和重叠计算，不能重复收回；法律/合同适用范围影响争议下的可执行性，不因标题为信用证就免除执行风险。",
+          "current_status": "美光披露的70亿美元是已签发或承诺签发的最高潜在取用额，取用依赖特定客户违约；当前没有大规模取用的实际记录。OCC把此类银行信用替代、文件条件与发行方风险作为信用工具分析的重要部分，这可说明风险如何转移，但不能证明美光工具均为同一类备用信用证、均受美国法律管辖或已完成全部签发。",
+          "materiality_context": "金额决定潜在回收上限；签发、有效期与覆盖义务可把名义金额变成有效保障或保障空档。违约门槛和文件/支付程序决定触发与收现速度，对当季流动性不同于最终可追索额；银行质量、集中和适用范围决定尾部可靠性。当前公开规模是有限额度而非全组合保险，更重要的边际变量是已生效覆盖及与未履约义务匹配。客户风险恶化与银行/行业集中若同时发生，名义信用替代价值可能下降；不把70亿美元与约130亿美元合同负债相加作净保障，也不除以RPO制造保障率。",
+          "scope_boundary": "解释美光特定第三方保障的信用敞口与取用；一般银行机理是条件模型，不是对未公开法律条款的结论。",
+          "ref": [
+            "D1-O31",
+            "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf",
+            "https://www.occ.treas.gov/publications-and-resources/publications/comptrollers-handbook/files/trade-finance-services/pub-ch-trade-finance.pdf"
+          ]
+        },
+        {
+          "name": "客户经营与共同融资依赖决定违约相关性和保障需求",
+          "mechanism": "研究机制：客户的实际销售/现金生成、资本开支和融资滚续共同决定其能否继续采购及维持保障。多个客户若依赖相似AI利用率、相同云项目或同一资金来源，宏观融资或终端回报变化可能同时削弱履约，客户数量增加未必等于独立风险分散。保证金可提高不履约成本、信用证可改善回收，但两者不能让缺乏商业回报的客户永久继续买入；美光选择客户、要求补充支持和后续议价反过来改变组合风险。 有条件的服务承购也可支持客户融资，尤其是设备平台购买残余算力的安排；此时偿付基础部分来自承购者而非最终使用者，交付条件与承购期限会改变资金可持续性，不能把它当成美光可直接提款的银行保障。",
+          "current_status": "正常履约仍为基准，融资及已签采购承诺提供缓冲。客户经营机会与供应者投资已经相连：美光参与Anthropic融资，客户又依赖多家云和内存伙伴；这是关系事实，不是美光资助其保证金或循环确认收入的证据。初批包含数家非常大和中等客户，完整收入集中度及支持银行名单未披露，不能以26份协议认定信用高度分散。 行业类比中，CoreWeave披露了有条件的NVIDIA残余算力承购，并以客户承诺支持资产层融资；这一制度可解释信用来源，但未映射到美光SCA客户或保障工具。",
+          "materiality_context": "实际现金生成决定长期偿付基础，资本投入决定现金消耗，融资滚续决定负现金期能持续多久；新融资可降低短期违约风险而不证明正经营回报。客户集中度决定单一事件规模，共同项目/融资依赖决定同时受压的范围，保障强度决定违约后的净损失；三者与客户份数不是同义。当前既有资金承诺有真实执行，短期信用不宜由融资标题反向认定恶化，但大型客户和多年期限使持续商业回报、滚续条件对组合尾部重要。美光提高保障要求能降低单户风险，也可能压缩新增可签客户池。 支持者独立性与承购条件决定共同融资依赖的范围：多个运营者依赖同一平台可放大相关性，最终用户接替支持则可改善可持续性；包销名义额不是美光的可回收额度。",
+          "scope_boundary": "只解释SCA客户信用与支持结构的组合风险；不把物业租金、服务收入、投资资金及美光销售作为独立终端需求相加。",
+          "ref": [
+            "https://www.anthropic.com/news/series-h",
+            "https://micron.gcs-web.com/news-releases/news-release-details/micron-and-anthropic-announce-strategic-agreement-scale-next",
+            "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+            "D1-O31",
+            "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Partners-With-Apollo-BlackRock-Blackstone-Brookfield-Goldman-Sachs-and-KKR-to-Establish-AI-Compute-Infrastructure-Financing-Platforms-to-Mobilize-Over-500-Billion-of-Third-Party-Capital/default.aspx",
+            "https://www.sec.gov/Archives/edgar/data/1944366/000194436626000020/exhibit993-2025abelinedc1l.htm",
+            "https://d18rn0p25nwr6d.cloudfront.net/CIK-0001769628/f600a0f8-1497-4372-8b4a-1ba9c1e39947.pdf",
+            "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000104/crwv-20251231.htm"
+          ]
+        },
+        {
+          "name": "正常采购与违约救济产生不同现金和收入路径",
+          "mechanism": "研究机制：正常履约时，客户采购带来交付销售及另行回款，保证金仍按约返还；采购不足时，只有依条款保留或扣减的部分才改变未来返还义务，符合确认条件的部分可转为收入。实际信用证取用另带来追索现金，其确认、费用和损失要单独处理。返还负债减少、当期收入上升、正常出货下降可能同时出现；保证金过去已收，因此负债转收入本身不会再产生同额新现金。",
+          "current_status": "最低采购满足则返还、未满足可保留并确认收入是已披露条款，尚无实际违约转收入规模。因而当前采用正常交付模型，而将违约救济视为风险处置路径。融资现金流分类与收入准则“不构成重大融资成分”的商业解释并存，不能据会计标签认定资金毫无经济价值或把合同负债当未确认的普通销售收入。",
+          "materiality_context": "正常采购量和回款决定持续经营收入与现金，保留金额决定返还义务减量和可能补偿收入，确认时点决定报表期间；三种变量影响不同，不能相互抵消成正常销量。实际取用及追索成本决定新增补偿现金，客户关系中断决定后续销售和滚续资金的损失。条件例子：已收保证金中10亿美元被依约保留并确认收入，可减少相应返还义务但不新增10亿美元到账；违约损失若超过补偿仍可能净不利。当前没有违约确认，以保障额度判断盈利兑现比以正常交付/回款判断更不可靠。",
+          "scope_boundary": "拥有保证金返还、保留及信用追索的经济和确认区别；不构成法律、税务意见，不推定实际违约、具体补偿收入或全部损失已受保。",
+          "ref": [
+            "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf",
+            "D1-O31",
+            "D1-O57"
+          ]
+        }
+      ],
+      "potential_gaps": [
+        {
+          "name": "保障形式与使用条件改变实际资金价值",
+          "why_live": "截至2026年9月30日组合及延期有320亿美元财务承诺，绝大多数为现金保证金；FY2026实际保证金融资现金流为127.47亿美元。这是承诺与到账的两种口径。信用证是条件追索，保证金ASC606处理也不能证明经济上免费或用途不受限。",
+          "revision_logic": "当前默认保障扩张与现金到账分开读取。客户可能改变形式、时点和价格交换，美光可用资金的规模、期限与经济成本因此偏离承诺总额；本主题只解释客户资金关系，不以合并投资或融资收益替代特定合同条款。",
+          "possibility_space": [
+            {
+              "name": "客户提前缴付保证金，美光取得可实际使用的长期资金",
+              "implication": "在返还前形成更长资金窗口，潜在价值来自替代融资而不是销售收入。若合同限制使用或要求专户，到账改善并不等同于同额自由流动性；客户可能以此换取供给或价格让步。"
+            },
+            {
+              "name": "客户用银行信用支持替换原拟现金保证金",
+              "implication": "名义保障可保持而美光新增现金减少，客户则保留自身部署资金。信用风险从现金持有转向条件银行追索，不能把相同承诺金额视为相同融资价值。"
+            },
+            {
+              "name": "客户为长期占用资金要求利息、费用补偿或产品折让",
+              "implication": "可用现金未必减少，但经济成本进入现金支出或商品贡献，资金价值不再由低显性利息来判断。会计上没有重大融资成分仍可与实际商业让利并存。"
+            },
+            {
+              "name": "新增协议把缴付拆成随建设或交付推进的多期安排",
+              "implication": "承诺总额先扩大，实际现金随客户项目后到，短期对投入的支持较弱；已付部分与未来分期各有不同期限。合同签署增长不是同季融资现金增量。"
+            }
+          ],
+          "ref": [
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf",
+            "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf",
+            "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+            "https://www.occ.treas.gov/publications-and-resources/publications/comptrollers-handbook/files/trade-finance-services/pub-ch-trade-finance.pdf",
+            "D1-O10"
+          ]
+        },
+        {
+          "name": "履约返还与合同滚续决定资金可接续性",
+          "why_live": "公开安排是客户满足最低采购后返还保证金，几乎全部返还位于2029—2031年；最新协议及延期延至2031年并含延长期。公司未披露逐年返还表，供给协议延长不自动证明原保证金返还顺延。",
+          "revision_logic": "默认保证金提供多年而非永久资本。未来变化取决于旧保障何时释放、新现金何时进来以及是否真正改变可执行返还条件；合同关系持续、收入增长和资金期限接续是三种不同判断。",
+          "possibility_space": [
+            {
+              "name": "老客户续约并明确将旧保证金留存或补足到新期限",
+              "implication": "资金窗口可在真实条款下延长，减少集中返还压力；必须区分留存旧现金与收到新现金，否则滚续金额会被重复计入融资规模。"
+            },
+            {
+              "name": "客户正常履约后收回旧保证金，新协议仅延长供给或改用信用证",
+              "implication": "客户关系和采购可以继续，美光却需要返还现金，未来供给保护与资金支持脱钩。经营成功不保证保证金融资可自动接续。"
+            },
+            {
+              "name": "新客户现金较早进入，抵接老批次正常返还",
+              "implication": "旧余额减少与新增实际到账能够部分平滑期限，资金结构更像不断更新的客户池；如果新客户依赖同一融资来源，滚动能力仍非独立分散，不能只看净余额稳定。"
+            },
+            {
+              "name": "重谈改变返还时点，或某批客户集中完成采购后同时取回资金",
+              "implication": "支出窗口可提前或更集中，即使累计返还额未上升也影响资金期限匹配。分年表缺失不妨碍认识此路径，但当前不能编造提前取回权或特定年度缺口。"
+            }
+          ],
+          "ref": [
+            "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf",
+            "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+            "D1-O6",
+            "D1-O19"
+          ]
+        },
+        {
+          "name": "银行支持从名义覆盖到实际可追索现金",
+          "why_live": "截至2026年9月3日信用证已签发或约定支持合计70亿美元，披露为最大潜在违约取用额，未区分全部已签发。公开银行制度资料说明信用证依单据和条件运行，但不能据此认定所有美光支持适用同一信用证种类、法律或抵押安排。",
+          "revision_logic": "工作模型是有限第三方追索而非无风险现金。未来额度落实、期限连续性、客户与支持方的共同依赖以及提款执行，均可改变净敞口；与保证金和其他救济的重叠必须扣除，名义覆盖不得相加成无条件可回收资金。",
+          "possibility_space": [
+            {
+              "name": "已约定额度转为有效支持，并覆盖客户义务的关键期限",
+              "implication": "条件保障更接近可执行追索，违约损失吸收能力提高，但正常期间仍不是现金融资。银行支持到期与合同期限若不同，覆盖也不会永久延续。"
+            },
+            {
+              "name": "银行要求客户增加抵押、收紧额度或提高费用",
+              "implication": "客户可能改交现金、缩减新承诺或转向较小供给安排；美光保障质量可以改善而签约规模变小。若资金被银行锁作抵押，不能同时把它视为客户仍可自由用于部署的预算。"
+            },
+            {
+              "name": "支持银行和客户共同受某地区或平台融资压力冲击",
+              "implication": "客户违约需求与银行支付能力弱化可能同时出现，多个支持安排未必提供真正独立风险分散。当前没有支持银行清单，故这是相关性路径而非已发生银行信用事件。"
+            },
+            {
+              "name": "客户违约后出现单据争议、期限错配或跨境执行延迟",
+              "implication": "名义金额仍在但现金到达更晚或少于预期，美光可能需要诉讼及其他救济。反之有效按条件提款可形成新增现金；两种执行结果都不能与已收保证金重复覆盖同一损失。"
+            }
+          ],
+          "ref": [
+            "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf",
+            "https://www.occ.treas.gov/publications-and-resources/publications/comptrollers-handbook/files/trade-finance-services/pub-ch-trade-finance.pdf",
+            "D1-O18",
+            "D1-O23"
+          ]
+        },
+        {
+          "name": "平台残余算力包销改变客户信用的支撑来源",
+          "why_live": "公开行业类比：CoreWeave在2025年9月披露NVIDIA购买未售算力的安排，有交付、可用性和终止条件；其2025年10-K说明以客户长期承诺支持资产层债务融资。不是美光SCA、银行信用证或美光客户映射，也不能将云服务预付款移作美光可返还保证金。",
+          "revision_logic": "客户预算和共同融资依赖之外，上游平台包销提供另一种商业支撑：客户筹钱及缴保证金的能力可依赖服务需求之外的承购者。未来该安排扩散或改变，会修订客户信用的独立性和可持续性，而非只提高或降低某个融资总额；下面是这一类关系的可能后果，不断言它已存在于26份SCA。",
+          "possibility_space": [
+            {
+              "name": "设备平台把有条件残余承购推广给更多基础设施运营者",
+              "implication": "运营者更容易将可交付服务合同融资，可能扩大锁供与缴付资金能力；新增客户却可能共同依赖同一平台承购者，客户数增加不等于信用来源分散。"
+            },
+            {
+              "name": "运营者逐步由有持续收益的最终客户替代残余承购",
+              "implication": "终端现金而非支持者购买剩余能力成为偿债基础，潜在保证金能力更可续；这种改善可早于美光客户余额变化，但只对实际具备该连接的合同有意义。"
+            },
+            {
+              "name": "平台收紧后续承购，或运营者未达到服务交付条件",
+              "implication": "即使最终用户兴趣未减，运营者融资基础也可能先变弱，带来缴付延迟、保障形式更换或重谈。履行中的包销不能被假定任意撤回，风险来自适用条件或新项目不获续接，而非已确认违约。"
+            },
+            {
+              "name": "买方与平台为减少相互依赖，改由独立长期用户直接承诺",
+              "implication": "风险从设备供应者关联关系移到实际服务买方，短期可签资金可能更慢或更少，却改善保障来源透明度。若新安排没有原有信用实力，独立性提升并不保证可回收性也提升。"
+            }
+          ],
+          "ref": [
+            "https://d18rn0p25nwr6d.cloudfront.net/CIK-0001769628/f600a0f8-1497-4372-8b4a-1ba9c1e39947.pdf",
+            "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000104/crwv-20251231.htm",
+            "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Partners-With-Apollo-BlackRock-Blackstone-Brookfield-Goldman-Sachs-and-KKR-to-Establish-AI-Compute-Infrastructure-Financing-Platforms-to-Mobilize-Over-500-Billion-of-Third-Party-Capital/default.aspx",
+            "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf",
+            "https://www.occ.treas.gov/publications-and-resources/publications/comptrollers-handbook/files/trade-finance-services/pub-ch-trade-finance.pdf"
+          ]
+        },
+        {
+          "name": "违约救济与关系修复改变保障资金的兑现质量",
+          "why_live": "美光披露客户满足最低采购则返还保证金，不满足时可保留全部或部分并计入收入；某些违约可触发信用证取用或其他救济。当前没有大规模违约执行事实，过去到账保证金转收入也不是新的现金流入。",
+          "revision_logic": "基准把锁供资金与正常经营成果分开。未来采购偏离的解决方式会改变返还义务、回收现金和长期客户关系，账面收入或负债下降可能与商业质量下降并存；不能把获赔自动视为原定销量和贡献完整兑现。",
+          "possibility_space": [
+            {
+              "name": "客户未完成最低量，美光按约保留保证金并确认补偿收入",
+              "implication": "减少后续返还并可能提高当期报表收入，却不是新增到账；未实现的正常出货和后段续约可能变弱。现金期限改善与经营关系受损可同时出现，不能仅以收入增长读作需求兑现。"
+            },
+            {
+              "name": "客户违约后有效信用证提款弥补部分现金损失",
+              "implication": "可产生此前未收到的现金，区别于保证金负债转收入；回收金额、未交付产品成本、争议支出和未来客户流失决定净效果，不把最大名义保障当作原利润保证。"
+            },
+            {
+              "name": "双方以分期采购、产品替换或部分返还换取关系修复",
+              "implication": "短期可能少收补偿或后移收入，却保留可持续买方与后续资金接续。商业重谈也可能被客户用于转移周期风险，是否值得取决于修改后的实质数量和经济性，而不以让步本身定性。"
+            },
+            {
+              "name": "美光供货或资格延迟导致客户救济，与客户采购偏离相互争议",
+              "implication": "持有保证金不能消除自身履约责任，可能发生赔偿、释放保障或延迟结算；净资金收益不能只看客户违约条款。这不是认定现有合同赋予特定自动抵销权，而是双方义务共同影响最终清算的可能配置。"
+            }
+          ],
+          "ref": [
+            "https://d18rn0p25nwr6d.cloudfront.net/CIK-0000723125/5dafce68-38e8-4cad-a8f3-ab56d04d73fd.pdf",
+            "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-26-Earnings-Deck.pdf",
+            "D1-O74",
+            "D1-O18"
+          ]
+        }
+      ]
+    }
+  ]
+}

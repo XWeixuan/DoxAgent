@@ -1,0 +1,88 @@
+{
+  "schema_version": "codex-d1-turn-summary-v1",
+  "run_id": "c4-mu-local-20261009-03",
+  "attempt_id": "c4_pre_scan-1-45874dbbe7",
+  "node": "c4_pre_scan",
+  "model": "gpt-6-sol",
+  "model_provider": null,
+  "job_status": "succeeded",
+  "thread_id": "01a120f3-e144-7e93-b37f-a4bf1e385a0c",
+  "turn_id": "01a120f3-f19c-7742-8656-521b80c51da6",
+  "usage": {
+    "input_tokens": 64455,
+    "cached_input_tokens": 62208,
+    "output_tokens": 2078,
+    "reasoning_output_tokens": 84,
+    "total_tokens": 66533
+  },
+  "observed_usage": {
+    "input_tokens": 64455,
+    "cached_input_tokens": 62208,
+    "output_tokens": 2078,
+    "reasoning_output_tokens": 84,
+    "total_tokens": 66533
+  },
+  "sdk_duration_ms": 163601,
+  "worker_wall_time_ms": 167922,
+  "mcp_call_count": 6,
+  "command_call_count": 6,
+  "subagent_call_count": 0,
+  "file_change_count": 1,
+  "slowest_steps": [
+    {
+      "sequence": 4,
+      "event": "item.completed",
+      "item_type": "mcp_tool_call",
+      "name": "data.sec_issuer_filings",
+      "status": "completed",
+      "duration_ms": 1772,
+      "summary": "completed"
+    },
+    {
+      "sequence": 5,
+      "event": "item.completed",
+      "item_type": "mcp_tool_call",
+      "name": "data.sec_filing_content",
+      "status": "completed",
+      "duration_ms": 1030,
+      "summary": "completed"
+    },
+    {
+      "sequence": 7,
+      "event": "item.completed",
+      "item_type": "mcp_tool_call",
+      "name": "data.sec_filing_content",
+      "status": "completed",
+      "duration_ms": 325,
+      "summary": "completed"
+    },
+    {
+      "sequence": 6,
+      "event": "item.completed",
+      "item_type": "command",
+      "name": "shell",
+      "status": "failed",
+      "duration_ms": 178,
+      "summary": "\"C:\\\\Users\\\\WEIXUANXIE\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\native\\\\powershell\\\\pwsh.exe\" -Command \"Get-Content -LiteralPath 'context/mcp_data/c4_pre_scan-1-45874dbbe7/call_10a5d2530ff94bd78246477e39bbf5e4/select..."
+    },
+    {
+      "sequence": 3,
+      "event": "item.completed",
+      "item_type": "command",
+      "name": "shell",
+      "status": "completed",
+      "duration_ms": 166,
+      "summary": "\"C:\\\\Users\\\\WEIXUANXIE\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\native\\\\powershell\\\\pwsh.exe\" -Command \"Get-Content -LiteralPath 'attempts/c4_pre_scan-1-45874dbbe7/input/bundle_manifest.json' -Raw; Get-ChildItem -Lit..."
+    }
+  ],
+  "failures": [
+    "command:shell:failed"
+  ],
+  "validation": {
+    "schema": "passed",
+    "progressive": "passed",
+    "citation": "passed",
+    "citation_warnings": [],
+    "error": null
+  }
+}

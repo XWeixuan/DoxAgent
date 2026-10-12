@@ -1,0 +1,1646 @@
+{
+  "format": "doxagent.w3-trade-intent-review.v1",
+  "ticker": "MU",
+  "window": {
+    "since_utc": "2026-09-19T12:53:20.738930+00:00",
+    "as_of_utc": "2026-10-10T12:53:20.738930+00:00"
+  },
+  "part": 10,
+  "record_count": 4,
+  "records": [
+    {
+      "intent_id": "trade:case_b7e889fed45e44b6b178e1a988fc3f78",
+      "ticker": "MU",
+      "case_id": "case_b7e889fed45e44b6b178e1a988fc3f78",
+      "intent_released_at_utc": "2026-10-05T19:29:41.079835+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_2298917bff6d4d59a33a3f558a79057d",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Morgan Stanley",
+              "Joseph Moore",
+              "Micron Technology"
+            ],
+            "occurrence_date": "2026-10-01",
+            "proposition": "Morgan Stanley analyst Joseph Moore raised the firm’s Micron FY2027 EPS forecast to $182.52 from $168.52 and its revenue forecast to $281 billion from $266.9 billion in an Oct. 1 research note.",
+            "subject_time": "Micron FY2027"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "Morgan Stanley raised its FY2027 EPS estimate by about 8.3%, from $168.52 to $182.52—about 14% above the approximately $160 baseline. This is a single-firm estimate, not a market-wide consensus revision.",
+          "prior_expectation": "The post-FY2026 Q4 market baseline in E208 was approximately $160 in FY2027 adjusted EPS.",
+          "reason": "The estimate increase is a meaningful positive earnings-expectation revision. Micron’s tight supply and AI-memory demand support transmission from higher expected pricing and earnings to MU’s value capture. The unchanged $1,200 price target and the fact that the cited note dates to Oct. 1 temper the signal, but the size of the EPS uplift versus the existing baseline supports a LONG. [TheStreet article](https://www.thestreet.com/investing/stocks/mu-morgan-stanley-maintains-micron-stock-price-target-ai-memory-growth)",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "TheStreet disclosed Morgan Stanley’s FY2027 Micron estimate revision, which is not stated among E208’s existing analyst facts; E208 provides the relevant post-earnings baseline of about $160 consensus adjusted EPS. Morgan Stanley raised its estimate from $168.52 to $182.52 in an Oct. 1 note. [TheStreet article](https://www.thestreet.com/investing/stocks/mu-morgan-stanley-maintains-micron-stock-price-target-ai-memory-growth)",
+          "reference_ids": [
+            "E208"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "Following the UNCOVERED_NEW mode’s established no-Policy state, retain the empty Policy match and evaluate the newly surfaced forecast independently."
+        },
+        "w3_case_id": "w3_2298917bff6d4d59a33a3f558a79057d"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_b7e889fed45e44b6b178e1a988fc3f78",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-10-05T19:29:41.621852Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 564.651954
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-10-05T19:20:16.969898Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 3296016,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-10-05",
+        "source": {
+          "binding_id": "MU:yahoo_finance_news",
+          "kind": "api",
+          "name": "Yahoo Finance News",
+          "source_id": "yahoo_finance_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_1f9822294c92486c8cf9e9a4f883b92e",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Morgan Stanley revisits Micron stock price target amid stellar growth"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "PORTFOLIO_CAPACITY_EXHAUSTED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-10-05T19:20:16.969898Z",
+        "completed_at": "2026-10-05T19:29:41.621852Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E208",
+            "E207",
+            "E4",
+            "E1979"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "Ben Reitzes / Melius Research 作为分析师来源未在 E208（覆盖至 10 月 3 日）或 E4（覆盖至 9 月 29 日）的任何 Fact 中出现，其针对 Micron 和内存行业发出的 FORECAST 构成未被现有事实覆盖的新分析师观点命题。",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "消息核心事实为：Micron股价因AI内存需求旺盛上涨、管理层提示供给紧张持续至2028、Morgan Stanley修订股票目标价。这些均为市场情绪/分析师目标价动作及前瞻性管理展望，未涉及任何Policy criterion所要求的具体可触发事实（如HBM份额/ASP连续两季下降、正式政策文件确认AI约束解除、战略合同延期、产品资格/良率事件、FY2027 Q1实际财报结果、具名卖方EPS预测新旧值对比等），与所有criterion均无具体实质性触发关系。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息核心事实为：Micron股价因AI内存需求旺盛上涨、管理层提示供给紧张持续至2028、Morgan Stanley修订股票目标价。这些均为市场情绪/分析师目标价动作及前瞻性管理展望，未涉及任何Policy criterion所要求的具体可触发事实（如HBM份额/ASP连续两季下降、正式政策文件确认AI约束解除、战略合同延期、产品资格/良率事件、FY2027 Q1实际财报结果、具名卖方EPS预测新旧值对比等），与所有criterion均无具体实质性触发关系。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "Morgan Stanley",
+                "Joseph Moore",
+                "Micron Technology"
+              ],
+              "occurrence_date": "2026-10-01",
+              "proposition": "Morgan Stanley analyst Joseph Moore raised the firm’s Micron FY2027 EPS forecast to $182.52 from $168.52 and its revenue forecast to $281 billion from $266.9 billion in an Oct. 1 research note.",
+              "subject_time": "Micron FY2027"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "Morgan Stanley raised its FY2027 EPS estimate by about 8.3%, from $168.52 to $182.52—about 14% above the approximately $160 baseline. This is a single-firm estimate, not a market-wide consensus revision.",
+            "prior_expectation": "The post-FY2026 Q4 market baseline in E208 was approximately $160 in FY2027 adjusted EPS.",
+            "reason": "The estimate increase is a meaningful positive earnings-expectation revision. Micron’s tight supply and AI-memory demand support transmission from higher expected pricing and earnings to MU’s value capture. The unchanged $1,200 price target and the fact that the cited note dates to Oct. 1 temper the signal, but the size of the EPS uplift versus the existing baseline supports a LONG. [TheStreet article](https://www.thestreet.com/investing/stocks/mu-morgan-stanley-maintains-micron-stock-price-target-ai-memory-growth)",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "TheStreet disclosed Morgan Stanley’s FY2027 Micron estimate revision, which is not stated among E208’s existing analyst facts; E208 provides the relevant post-earnings baseline of about $160 consensus adjusted EPS. Morgan Stanley raised its estimate from $168.52 to $182.52 in an Oct. 1 note. [TheStreet article](https://www.thestreet.com/investing/stocks/mu-morgan-stanley-maintains-micron-stock-price-target-ai-memory-growth)",
+            "reference_ids": [
+              "E208"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "Following the UNCOVERED_NEW mode’s established no-Policy state, retain the empty Policy match and evaluate the newly surfaced forecast independently."
+          },
+          "w3_case_id": "w3_2298917bff6d4d59a33a3f558a79057d"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "2043ba9f8dfc501938abbffbd9a88a41c2d1f1e0685b7f571a547c08d9c22a0f",
+            "content_type": "text/plain",
+            "sha256": "611619cd3011da593a8443524898379d4205d0c951fa258e518808266d40a02f",
+            "size_bytes": 111
+          },
+          "case": {
+            "case_id": "case_b7e889fed45e44b6b178e1a988fc3f78",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-10-05T19:19:01.800096Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-10-05T19:20:16.176570Z",
+          "revision": 1,
+          "row_revision": 3296006,
+          "source": {
+            "binding_id": "MU:yahoo_finance_news",
+            "kind": "api",
+            "name": "Yahoo Finance News",
+            "source_id": "yahoo_finance_news"
+          },
+          "source_published_at": "2026-10-05T19:13:00Z",
+          "standard_message_id": "std_95efee332e464ac0b8bc7716b3cb47ee",
+          "stream_item_id": "stream_1f9822294c92486c8cf9e9a4f883b92e",
+          "stream_offset": 2921,
+          "stream_published_at": "2026-10-05T19:20:16.182650Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Morgan Stanley revisits Micron stock price target amid stellar growth"
+          },
+          "url": "https://www.thestreet.com/investing/stocks/mu-morgan-stanley-maintains-micron-stock-price-target-ai-memory-growth?.tsrc=rss",
+          "body_text": "Micron stock rides an AI memory boom, even as management warns that tight memory supply will last through 2028."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_95efee332e464ac0b8bc7716b3cb47ee:0\"]",
+          "created_at": "2026-10-05T19:29:41.048594Z",
+          "dedupe_key": "22002d3a2e6acf03b0f7afe0edbdcee7bc363188a9ddc36f258e7624c58a9ec1",
+          "entities": [
+            "Morgan Stanley",
+            "Joseph Moore",
+            "Micron Technology"
+          ],
+          "occurrence_date": "2026-10-01",
+          "originating_node": "W3",
+          "proposition": "Morgan Stanley analyst Joseph Moore raised the firm’s Micron FY2027 EPS forecast to $182.52 from $168.52 and its revenue forecast to $281 billion from $266.9 billion in an Oct. 1 research note.",
+          "provisional_event_id": "E372",
+          "subject_time": "Micron FY2027"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_b7e889fed45e44b6b178e1a988fc3f78",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-10-05T19:29:41.079835+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-10-05",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_2298917bff6d4d59a33a3f558a79057d",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-05T19:29:41.700034Z"
+              },
+              "case_id": "case_b7e889fed45e44b6b178e1a988fc3f78",
+              "direction": "LONG",
+              "entry_reason": "PORTFOLIO_CAPACITY_EXHAUSTED",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_b7e889fed45e44b6b178e1a988fc3f78",
+              "execution_reason_codes": [
+                "PORTFOLIO_CAPACITY_EXHAUSTED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_b7e889fed45e44b6b178e1a988fc3f78",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-05T19:29:41.079835Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "PORTFOLIO_CAPACITY_EXHAUSTED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_05e5da6081404ac08f72e26f3171fd8d",
+      "ticker": "MU",
+      "case_id": "case_05e5da6081404ac08f72e26f3171fd8d",
+      "intent_released_at_utc": "2026-10-06T12:13:16.195646+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_b223e2cc544f44cc887b882857507a55",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Netlist, Inc.",
+              "Micron Technology, Inc."
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "Netlist与Micron于2026年10月6日签订专利许可及和解协议，约定和解并相互解除双方之间所有未决法律程序。",
+            "subject_time": null
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Netlist, Inc.",
+              "Micron Technology, Inc."
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "协议向Micron授予Netlist专利组合的五年期许可，其中包括覆盖服务器DIMM和HBM技术的专利。",
+            "subject_time": "协议签署后的五年许可期"
+          },
+          {
+            "assertion_state": "SCHEDULED",
+            "entities": [
+              "Netlist, Inc.",
+              "Micron Technology, Inc."
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "协议规定Micron自2026年第四季度至2031年第三季度每季度向Netlist支付3,000万美元，五年合计6亿美元。",
+            "subject_time": "2026年第四季度至2031年第三季度"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "双方现已约定解决并相互解除所有未决法律程序，Micron取得覆盖服务器DIMM及HBM专利的五年许可；原先未定的法律风险转为许可期内较明确的经营保障和每季度3,000万美元的约定费用。核心变化是高价值内存产品的法律确定性提升，而非新增出货或需求。",
+          "prior_expectation": "消息前公开状态仍包括Netlist针对Micron的HBM ITC新案、服务器内存相关诉讼、上诉及单独的损害赔偿事项；尚无公开的全面和解或HBM/服务器DIMM许可。此前存在未解决的法律与潜在供货限制风险，但没有证据支持对禁令概率作精确估值。",
+          "reason": "这是相对近期公开状态的正向惊喜：9月29日刚出现新的HBM ITC行动，此次协议迅速解决双方未决程序并覆盖HBM和服务器DIMM。传导路径是法律不确定性和潜在供货限制风险下降，保护Micron面向AI/服务器市场的高价值产品经营；已知许可费用每年约1.2亿美元，不到FY26收入的0.1%，相对公司规模较小。由于此前没有证据表明禁令迫近，不将其视为新增收入，但净影响仍支持LONG。",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "Reference View记录了Micron与Netlist之间仍在进行的ITC、上诉及损害赔偿事项，但没有记录双方已达成和解或五年许可。此次协议带来的法律状态变化是新的。",
+          "reference_ids": [
+            "E21",
+            "E22",
+            "E23",
+            "E176"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "PolicySet v17没有覆盖专利和解或许可的触发条件。消息也未触发其中关于HBM商业出货、竞争地位、经营或财务结果的具体门槛。"
+        },
+        "w3_case_id": "w3_b223e2cc544f44cc887b882857507a55"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_05e5da6081404ac08f72e26f3171fd8d",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-10-06T12:13:16.386713Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 406.276627
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-10-06T12:06:30.110086Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_EXECUTION",
+          "TRADE_INTENT"
+        ],
+        "revision": 3440819,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-10-06",
+        "source": {
+          "binding_id": "MU:yahoo_finance_news",
+          "kind": "api",
+          "name": "Yahoo Finance News",
+          "source_id": "yahoo_finance_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_c50bd2732565460a9ca47555191dde3c",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Netlist and Micron Enter Patent License and Settlement Agreements"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "ORDER_FILLED"
+          ],
+          "state": "EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-10-06T12:06:30.110086Z",
+        "completed_at": "2026-10-06T12:13:16.386713Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E176",
+            "E21",
+            "E23",
+            "E22"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "当前消息核心事实是 Netlist 与 Micron 已签署专利许可及和解协议（相互撤回所有未决诉讼、Micron 获 5 年期许可、每季度 3000 万美元共 6 亿美元）。已知事实仅覆盖 ITC 诉讼提起、排除令请求、4.45 亿美元损害赔偿、专利无效裁决及上诉进行中，无任何事实表明双方已达成和解或许可协议。这是一个全新的状态变化。",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "该消息为Netlist与Micron之间的专利许可与诉讼和解公告（Micron每季度支付3000万美元，5年期共6亿美元，涉及服务器DIMM和HBM相关专利授权）。消息核心事实是IP许可与法律和解安排，未涉及Micron的收入组合、ASP、bit shipments、HBM市场份额变化、客户合同交付、产能爬坡、良率、库存、现金流结构、竞争供应商供货地位或平台规格替代等任何Policy criterion所关注的运营或财务状态变化。不存在与任何criterion构成具体、实质性触发关系的事实。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "该消息为Netlist与Micron之间的专利许可与诉讼和解公告（Micron每季度支付3000万美元，5年期共6亿美元，涉及服务器DIMM和HBM相关专利授权）。消息核心事实是IP许可与法律和解安排，未涉及Micron的收入组合、ASP、bit shipments、HBM市场份额变化、客户合同交付、产能爬坡、良率、库存、现金流结构、竞争供应商供货地位或平台规格替代等任何Policy criterion所关注的运营或财务状态变化。不存在与任何criterion构成具体、实质性触发关系的事实。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Netlist, Inc.",
+                "Micron Technology, Inc."
+              ],
+              "occurrence_date": "2026-10-06",
+              "proposition": "Netlist与Micron于2026年10月6日签订专利许可及和解协议，约定和解并相互解除双方之间所有未决法律程序。",
+              "subject_time": null
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Netlist, Inc.",
+                "Micron Technology, Inc."
+              ],
+              "occurrence_date": "2026-10-06",
+              "proposition": "协议向Micron授予Netlist专利组合的五年期许可，其中包括覆盖服务器DIMM和HBM技术的专利。",
+              "subject_time": "协议签署后的五年许可期"
+            },
+            {
+              "assertion_state": "SCHEDULED",
+              "entities": [
+                "Netlist, Inc.",
+                "Micron Technology, Inc."
+              ],
+              "occurrence_date": "2026-10-06",
+              "proposition": "协议规定Micron自2026年第四季度至2031年第三季度每季度向Netlist支付3,000万美元，五年合计6亿美元。",
+              "subject_time": "2026年第四季度至2031年第三季度"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "双方现已约定解决并相互解除所有未决法律程序，Micron取得覆盖服务器DIMM及HBM专利的五年许可；原先未定的法律风险转为许可期内较明确的经营保障和每季度3,000万美元的约定费用。核心变化是高价值内存产品的法律确定性提升，而非新增出货或需求。",
+            "prior_expectation": "消息前公开状态仍包括Netlist针对Micron的HBM ITC新案、服务器内存相关诉讼、上诉及单独的损害赔偿事项；尚无公开的全面和解或HBM/服务器DIMM许可。此前存在未解决的法律与潜在供货限制风险，但没有证据支持对禁令概率作精确估值。",
+            "reason": "这是相对近期公开状态的正向惊喜：9月29日刚出现新的HBM ITC行动，此次协议迅速解决双方未决程序并覆盖HBM和服务器DIMM。传导路径是法律不确定性和潜在供货限制风险下降，保护Micron面向AI/服务器市场的高价值产品经营；已知许可费用每年约1.2亿美元，不到FY26收入的0.1%，相对公司规模较小。由于此前没有证据表明禁令迫近，不将其视为新增收入，但净影响仍支持LONG。",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "Reference View记录了Micron与Netlist之间仍在进行的ITC、上诉及损害赔偿事项，但没有记录双方已达成和解或五年许可。此次协议带来的法律状态变化是新的。",
+            "reference_ids": [
+              "E21",
+              "E22",
+              "E23",
+              "E176"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "PolicySet v17没有覆盖专利和解或许可的触发条件。消息也未触发其中关于HBM商业出货、竞争地位、经营或财务结果的具体门槛。"
+          },
+          "w3_case_id": "w3_b223e2cc544f44cc887b882857507a55"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "381d5fd87dfe19ada65e9a0f87bab69a969147a72069f92bb9a36a95bbe3dabf",
+            "content_type": "text/plain",
+            "sha256": "822982c4d0e6f7773e49fdb5b748fd05a47c65d4a853101874321fc81c7004bc",
+            "size_bytes": 5404
+          },
+          "case": {
+            "case_id": "case_05e5da6081404ac08f72e26f3171fd8d",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-10-06T12:04:45.340055Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-10-06T12:06:27.206429Z",
+          "revision": 1,
+          "row_revision": 3440654,
+          "source": {
+            "binding_id": "MU:yahoo_finance_news",
+            "kind": "api",
+            "name": "Yahoo Finance News",
+            "source_id": "yahoo_finance_news"
+          },
+          "source_published_at": "2026-10-06T12:00:00Z",
+          "standard_message_id": "std_0564443dd35a4ec68c2318f7dee357ce",
+          "stream_item_id": "stream_c50bd2732565460a9ca47555191dde3c",
+          "stream_offset": 2957,
+          "stream_published_at": "2026-10-06T12:06:27.214798Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Netlist and Micron Enter Patent License and Settlement Agreements"
+          },
+          "url": "https://finance.yahoo.com/technology/ai/articles/netlist-micron-enter-patent-license-120000503.html?.tsrc=rss",
+          "body_text": "IRVINE, Calif., Oct. 6, 2026 /PRNewswire/ -- Netlist, Inc. (OTCQB: NLST) today announced that the Company and Micron Technology, Inc. (\"Micron\") have entered into Patent License and Settlement Agreements.\n\nUnder the agreements, the parties have agreed to settle and mutually release all pending legal proceedings between the companies, and Micron will receive a 5-year term license to Netlist's patent portfolio, including patents covering server DIMMs and High Bandwidth Memory technologies. Micron will pay Netlist $30 million per quarter from the fourth quarter of 2026 through the third quarter of 2031, totaling $600 million during the term.\n\n\"The agreement with Micron further validates the value of our AI memory technologies,\" said C.K. Hong, Netlist's Chief Executive Officer. \"We remain committed to protecting our IP while continuing to invest in the development of next-generation products.\"\n\nFurther details regarding the transaction are available in Netlist's Current Report on Form 8-K filed concurrently with the issuance of this release and available on the SEC filings page of the Netlist website here.\n\nAbout NetlistNetlist is a leading innovator in advanced memory and storage solutions. With a rich portfolio of patented technologies, Netlist's inventions are foundational to the advancement of AI computing. To learn more about Netlist, please visit www.netlist.com.\n\nSafe Harbor StatementThis news release contains forward-looking statements within the meaning of the Private Securities Litigation Reform Act of 1995. Forward-looking statements contained in this news release include, without limitation, statements about anticipated benefits of the agreements, the parties' ability to perform their respective obligations under, and to realize the anticipated benefits of those agreements, future exclusion and cease and desist orders, Netlist's ability to successfully enforce its intellectual property rights, and evaluations and judgments regarding Netlist's intellectual property portfolio. Forward-looking statements are statements other than historical facts and often address future events or Netlist's future performance. They reflect management's present expectations regarding future events and are subject to known and unknown risks, uncertainties and other factors that could cause actual results to differ materially from those expressed in or implied by any forward-looking statements. These risks, uncertainties and other factors include, among others, risks: Netlist may not be able to collect the substantial amount in damages previously awarded to it in its litigations (appeals in general could cause a lengthy delay in Netlist's ability to collect damages awards, could overturn the verdicts or reduce the damages awards); Netlist will suffer adverse outcomes in its litigation with Google or in its various other active proceedings to defend the validity of its patents; related to Netlist's plans for its intellectual property, including its strategies for monetizing, licensing, expanding, and defending its patent portfolio, which efforts may not be successful; other patent infringement litigation initiated by Netlist, or by others against Netlist, may not be successful or resolve favorably for Netlist, particularly given the costs and unpredictability of any such litigation; associated with Netlist's product sales, including whether and how long the current market and demand for products sold by Netlist will persist or persist as expected and whether Netlist may successfully develop and launch new products that are attractive to the market; whether Netlist will continue to acquire components or products for resale on favorable terms; that Netlist or its counterparties may fail to perform their obligations as required pursuant to applicable license and supply agreements, associated with the competitive landscape of Netlist's industry, general economic, political and market conditions, factory slowdowns and/or shutdowns, and changes in international trade and tariff policies. All forward-looking statements reflect management's present assumptions, expectations and beliefs regarding future events and are subject to known and unknown risks, uncertainties and other factors that could cause actual results to differ materially from those expressed in or implied by any forward-looking statements. These and other risks and uncertainties are described in Netlist's Annual Report on Form 10-K for the fiscal year ended December 27, 2025 filed with the SEC on March 19, 2026, and the other filings it makes with the U.S. Securities and Exchange Commission from time to time, including any subsequently filed quarterly and current reports. In light of these risks, uncertainties and other factors, these forward-looking statements should not be relied on as predictions of future events. These forward-looking statements represent Netlist's assumptions, expectations and beliefs only as of the date they are made, and except as required by law, Netlist undertakes no obligation to revise or update any forward-looking statements for any reason.\n\nFor more information, please contact:Investors / MediaMike SmargiassiThe Plunkett GroupNLST@theplunkettgroup.com(212) 739‑6729\n\nView original content to download multimedia:https://www.prnewswire.com/news-releases/netlist-and-micron-enter-patent-license-and-settlement-agreements-302899647.html"
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_0564443dd35a4ec68c2318f7dee357ce:0\"]",
+          "created_at": "2026-10-06T12:13:16.037974Z",
+          "dedupe_key": "f9435993a427647d4d991ca9c355a98045855b26250866f128fccfc38336e668",
+          "entities": [
+            "Netlist, Inc.",
+            "Micron Technology, Inc."
+          ],
+          "occurrence_date": "2026-10-06",
+          "originating_node": "W3",
+          "proposition": "Netlist与Micron于2026年10月6日签订专利许可及和解协议，约定和解并相互解除双方之间所有未决法律程序。",
+          "provisional_event_id": "E354",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_0564443dd35a4ec68c2318f7dee357ce:1\"]",
+          "created_at": "2026-10-06T12:13:16.061707Z",
+          "dedupe_key": "d1a36598ce5a22d4e699752fb04b9c563cc7ba2fccdf67915c9582b5dce2229b",
+          "entities": [
+            "Netlist, Inc.",
+            "Micron Technology, Inc."
+          ],
+          "occurrence_date": "2026-10-06",
+          "originating_node": "W3",
+          "proposition": "协议向Micron授予Netlist专利组合的五年期许可，其中包括覆盖服务器DIMM和HBM技术的专利。",
+          "provisional_event_id": "E355",
+          "subject_time": "协议签署后的五年许可期"
+        },
+        {
+          "assertion_state": "SCHEDULED",
+          "candidate_id": "[\"runtime-v2-msg:std_0564443dd35a4ec68c2318f7dee357ce:2\"]",
+          "created_at": "2026-10-06T12:13:16.094699Z",
+          "dedupe_key": "41073aaef237b9f6388af92090b485d7127f790289a7c1982ed66b638a446d32",
+          "entities": [
+            "Netlist, Inc.",
+            "Micron Technology, Inc."
+          ],
+          "occurrence_date": "2026-10-06",
+          "originating_node": "W3",
+          "proposition": "协议规定Micron自2026年第四季度至2031年第三季度每季度向Netlist支付3,000万美元，五年合计6亿美元。",
+          "provisional_event_id": "E356",
+          "subject_time": "2026年第四季度至2031年第三季度"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_05e5da6081404ac08f72e26f3171fd8d",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-10-06T12:13:16.195646+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-10-06",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_b223e2cc544f44cc887b882857507a55",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-06T12:13:16.560823Z"
+              },
+              "case_id": "case_05e5da6081404ac08f72e26f3171fd8d",
+              "direction": "LONG",
+              "entry_reason": "ORDER_FILLED",
+              "entry_result": "FILLED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_05e5da6081404ac08f72e26f3171fd8d",
+              "execution_reason_codes": [
+                "ORDER_FILLED"
+              ],
+              "execution_state": "EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "17151.68"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "16"
+              },
+              "first_fill_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-06T12:13:23Z"
+              },
+              "has_actual_fill": true,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_05e5da6081404ac08f72e26f3171fd8d",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-06T12:13:16.195646Z"
+              }
+            },
+            "entry": {
+              "side": "BUY",
+              "quantity": "16",
+              "average_price_usd": "1071.98",
+              "first_fill_at": "2026-10-06T12:13:23+00:00",
+              "last_fill_at": "2026-10-06T12:13:23+00:00"
+            },
+            "exit": {
+              "side": "SELL",
+              "quantity": "16",
+              "average_price_usd": "1052.25",
+              "first_fill_at": "2026-10-06T19:30:02+00:00",
+              "last_fill_at": "2026-10-06T19:30:02+00:00"
+            },
+            "fills": [
+              {
+                "kind": "ENTRY",
+                "side": "BUY",
+                "quantity": "16",
+                "price_usd": "1071.98",
+                "filled_at": "2026-10-06T12:13:23+00:00",
+                "broker_fill_id": "00025b45.6ac538af.01.01"
+              },
+              {
+                "kind": "EXIT",
+                "side": "SELL",
+                "quantity": "16",
+                "price_usd": "1052.25",
+                "filled_at": "2026-10-06T19:30:02+00:00",
+                "broker_fill_id": "00025b45.6ac6bf71.01.01"
+              }
+            ],
+            "lot_remaining_quantity": 0,
+            "realized_pnl_usd": "-318.026918000",
+            "realized_pnl_records": [
+              {
+                "amount": "-318.026918000",
+                "day": "2026-10-06",
+                "environment": "PAPER",
+                "provisional": false,
+                "reason": null
+              }
+            ],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "EXECUTED",
+        "read_execution_reason_codes": [
+          "ORDER_FILLED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": {
+          "side": "BUY",
+          "quantity": "16",
+          "average_price_usd": "1071.98",
+          "first_fill_at": "2026-10-06T12:13:23+00:00",
+          "last_fill_at": "2026-10-06T12:13:23+00:00"
+        },
+        "exit": {
+          "side": "SELL",
+          "quantity": "16",
+          "average_price_usd": "1052.25",
+          "first_fill_at": "2026-10-06T19:30:02+00:00",
+          "last_fill_at": "2026-10-06T19:30:02+00:00"
+        },
+        "realized_pnl_usd": "-318.026918000",
+        "pnl_state": "REALIZED",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_5e7ae91538234d3dac6b6378e599b71e",
+      "ticker": "MU",
+      "case_id": "case_5e7ae91538234d3dac6b6378e599b71e",
+      "intent_released_at_utc": "2026-10-06T12:19:43.686860+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_24095f613d3f4bef8e0b97e3ec127748",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology, Inc.",
+              "Netlist, Inc."
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "Micron与Netlist达成专利许可协议，协议授予Micron为期五年的Netlist专利组合许可，涵盖服务器DIMM与HBM技术。",
+            "subject_time": "五年许可期（2026年至2031年）"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology, Inc.",
+              "Netlist, Inc."
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "Micron与Netlist的协议约定，双方之间所有未决法律程序将予以和解并相互解除。",
+            "subject_time": null
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology, Inc.",
+              "Netlist, Inc."
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "协议约定Micron从2026年第四季度至2031年第三季度每季度向Netlist支付3000万美元，许可期内合计支付6亿美元。",
+            "subject_time": "2026年第四季度至2031年第三季度"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "法律状态从未决诉讼、赔偿与潜在排除风险，转为Micron获得覆盖服务器DIMM及HBM的五年许可、双方约定解决所有未决诉讼；相应代价是2026年Q4至2031年Q3每季度3000万美元、总计6亿美元。需要上修法律确定性及产品供货连续性预期，并将成本风险收敛为明确的许可费；这不是内存需求、销量或ASP上修。",
+          "prior_expectation": "事件前的基线是内存业务继续运营，但Netlist相关的损害赔偿与排除救济风险仍未解决，并非已有许可或和解。Reference View记录了Netlist针对HBM的ITC行动（E176）、先前ITC行动（E21）、专利上诉状态（E22）及既有4.45亿美元赔偿判决（E23）；Micron公开申报亦记载该判决及上诉。[Micron申报](https://www.sec.gov/Archives/edgar/data/723125/000072312526000006/mu-20260226.htm) Netlist于9月29日宣布新的HBM专利ITC行动并寻求排除及停止令。[Netlist公告](https://www.prnewswire.com/news-releases/netlist-files-new-itc-action-against-micron-technology-inc-involving-hbm-patents-for-ai-computing-302892194.html) 合理预期是继续出货与未决法律尾部风险并存，结果不确定，而非禁售必然。",
+          "reason": "和解及许可条款此前未公开，且Netlist在9月29日刚针对HBM寻求ITC排除救济，故相对事件前未决基线有明显惊喜。HBM和服务器内存是Micron重要业务；许可及诉讼和解降低产品销售受法律救济干扰的尾部风险，传导路径清晰。每季度3000万美元虽为新增成本，但约为FY26 Q4约500亿美元收入指引中点的0.06%；净预期变化偏正，支持LONG。[协议报道](https://www.investing.com/news/assorted/netlist-and-micron-reach-600m-patent-license-and-settlement-deal-432SI-4934250)",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "新现实是Micron与Netlist达成五年专利许可及和解，涵盖服务器DIMM与HBM，并约定每季度支付3000万美元、合计6亿美元。Reference View中的E176、E21、E22和E23只记录未决诉讼、ITC救济请求及既有赔偿判决，未记录许可或和解。 [当日消息](https://www.investing.com/news/assorted/netlist-and-micron-reach-600m-patent-license-and-settlement-deal-432SI-4934250)",
+          "reference_ids": [
+            "E176",
+            "E21",
+            "E22",
+            "E23"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "PolicySet v17没有针对Netlist诉讼、专利许可或法律风险解除的触发条件；现有经营与产品相关条件均未被该和解事实满足，因此此案仍属uncovered。"
+        },
+        "w3_case_id": "w3_24095f613d3f4bef8e0b97e3ec127748"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_5e7ae91538234d3dac6b6378e599b71e",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-10-06T12:19:44.230114Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 467.828214
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-10-06T12:11:56.401900Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 3441593,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-10-06",
+        "source": {
+          "binding_id": "MU:investing_ticker_news",
+          "kind": "crawler",
+          "name": "Investing.com ticker news",
+          "source_id": "investing_ticker_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_83a6730dd56c4cfe9da74a82d3c324ea",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Netlist and Micron reach $600M patent license and settlement deal"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "PORTFOLIO_CAPACITY_EXHAUSTED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-10-06T12:11:56.401900Z",
+        "completed_at": "2026-10-06T12:19:44.230114Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E176",
+            "E23",
+            "E21",
+            "E22"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [
+            {
+              "event_id": "E176",
+              "fact_ids": [
+                "F846"
+              ]
+            },
+            {
+              "event_id": "E21",
+              "fact_ids": [
+                "F292",
+                "F293"
+              ]
+            }
+          ],
+          "reason": "现有事实均为 Netlist 对 Micron 发起/推进 ITC 诉讼及维持 $445M 赔偿判决，没有任何事实描述双方达成专利许可与和解协议、$600M（$30M/季度）付款安排或全部诉讼互免。当前消息的核心事实——正式签署 license & settlement agreement 及具体财务条款——完全未被覆盖。",
+          "reference_ids": [
+            "E176",
+            "E21"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "该消息为Netlist与Micron之间的专利许可及和解协议公告，涉及5年期$600M许可费（自FY26 Q4起每季度$30M）。核心事实为法律和解与IP许可安排，未涉及任何Policy criterion所关注的产品组合变化、ASP/份额变动、竞争供货地位转移、产能/良率瓶颈、客户合同履约、项目进度、库存/现金流或盈利质量等具体触发条件。$600M许可费虽为新增成本，但不属于研发、预资格、折旧、爬坡、质量或重组等criterion明确列出的费用类别，也无法与任何触发路径建立直接实质对应。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "该消息为Netlist与Micron之间的专利许可及和解协议公告，涉及5年期$600M许可费（自FY26 Q4起每季度$30M）。核心事实为法律和解与IP许可安排，未涉及任何Policy criterion所关注的产品组合变化、ASP/份额变动、竞争供货地位转移、产能/良率瓶颈、客户合同履约、项目进度、库存/现金流或盈利质量等具体触发条件。$600M许可费虽为新增成本，但不属于研发、预资格、折旧、爬坡、质量或重组等criterion明确列出的费用类别，也无法与任何触发路径建立直接实质对应。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology, Inc.",
+                "Netlist, Inc."
+              ],
+              "occurrence_date": "2026-10-06",
+              "proposition": "Micron与Netlist达成专利许可协议，协议授予Micron为期五年的Netlist专利组合许可，涵盖服务器DIMM与HBM技术。",
+              "subject_time": "五年许可期（2026年至2031年）"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology, Inc.",
+                "Netlist, Inc."
+              ],
+              "occurrence_date": "2026-10-06",
+              "proposition": "Micron与Netlist的协议约定，双方之间所有未决法律程序将予以和解并相互解除。",
+              "subject_time": null
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology, Inc.",
+                "Netlist, Inc."
+              ],
+              "occurrence_date": "2026-10-06",
+              "proposition": "协议约定Micron从2026年第四季度至2031年第三季度每季度向Netlist支付3000万美元，许可期内合计支付6亿美元。",
+              "subject_time": "2026年第四季度至2031年第三季度"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "法律状态从未决诉讼、赔偿与潜在排除风险，转为Micron获得覆盖服务器DIMM及HBM的五年许可、双方约定解决所有未决诉讼；相应代价是2026年Q4至2031年Q3每季度3000万美元、总计6亿美元。需要上修法律确定性及产品供货连续性预期，并将成本风险收敛为明确的许可费；这不是内存需求、销量或ASP上修。",
+            "prior_expectation": "事件前的基线是内存业务继续运营，但Netlist相关的损害赔偿与排除救济风险仍未解决，并非已有许可或和解。Reference View记录了Netlist针对HBM的ITC行动（E176）、先前ITC行动（E21）、专利上诉状态（E22）及既有4.45亿美元赔偿判决（E23）；Micron公开申报亦记载该判决及上诉。[Micron申报](https://www.sec.gov/Archives/edgar/data/723125/000072312526000006/mu-20260226.htm) Netlist于9月29日宣布新的HBM专利ITC行动并寻求排除及停止令。[Netlist公告](https://www.prnewswire.com/news-releases/netlist-files-new-itc-action-against-micron-technology-inc-involving-hbm-patents-for-ai-computing-302892194.html) 合理预期是继续出货与未决法律尾部风险并存，结果不确定，而非禁售必然。",
+            "reason": "和解及许可条款此前未公开，且Netlist在9月29日刚针对HBM寻求ITC排除救济，故相对事件前未决基线有明显惊喜。HBM和服务器内存是Micron重要业务；许可及诉讼和解降低产品销售受法律救济干扰的尾部风险，传导路径清晰。每季度3000万美元虽为新增成本，但约为FY26 Q4约500亿美元收入指引中点的0.06%；净预期变化偏正，支持LONG。[协议报道](https://www.investing.com/news/assorted/netlist-and-micron-reach-600m-patent-license-and-settlement-deal-432SI-4934250)",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "新现实是Micron与Netlist达成五年专利许可及和解，涵盖服务器DIMM与HBM，并约定每季度支付3000万美元、合计6亿美元。Reference View中的E176、E21、E22和E23只记录未决诉讼、ITC救济请求及既有赔偿判决，未记录许可或和解。 [当日消息](https://www.investing.com/news/assorted/netlist-and-micron-reach-600m-patent-license-and-settlement-deal-432SI-4934250)",
+            "reference_ids": [
+              "E176",
+              "E21",
+              "E22",
+              "E23"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "PolicySet v17没有针对Netlist诉讼、专利许可或法律风险解除的触发条件；现有经营与产品相关条件均未被该和解事实满足，因此此案仍属uncovered。"
+          },
+          "w3_case_id": "w3_24095f613d3f4bef8e0b97e3ec127748"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "3ce620cafa934c348e19b1b6d0609b8b1e8dd0bedc7772b8ed4b761cc34fc60b",
+            "content_type": "text/plain",
+            "sha256": "6104e9b7f4b253e5e1467af648c8dc9fe65b3c5a9eb4d982d7144139af599313",
+            "size_bytes": 1597
+          },
+          "case": {
+            "case_id": "case_5e7ae91538234d3dac6b6378e599b71e",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-10-06T12:10:45.374409Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-10-06T12:11:52.362962Z",
+          "revision": 1,
+          "row_revision": 3441532,
+          "source": {
+            "binding_id": "MU:investing_ticker_news",
+            "kind": "crawler",
+            "name": "Investing.com ticker news",
+            "source_id": "investing_ticker_news"
+          },
+          "source_published_at": "2026-10-06T12:10:04Z",
+          "standard_message_id": "std_c24c5ab78f224e30874cdbbc2871a29b",
+          "stream_item_id": "stream_83a6730dd56c4cfe9da74a82d3c324ea",
+          "stream_offset": 2959,
+          "stream_published_at": "2026-10-06T12:11:52.368435Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Netlist and Micron reach $600M patent license and settlement deal"
+          },
+          "url": "https://www.investing.com/news/assorted/netlist-and-micron-reach-600m-patent-license-and-settlement-deal-432SI-4934250",
+          "body_text": "© Reuters\n\nNetlist, Inc. (NLST) and Micron Technology, Inc. have entered into patent license and settlement agreements, according to a press release from Netlist.\n\nUnder the terms of the agreements, all pending legal proceedings between the two companies will be settled and mutually released. Micron will receive a five-year license to Netlist’s patent portfolio, which includes patents covering server DIMMs and High Bandwidth Memory technologies.\n\nMicron will pay Netlist $30 million per quarter beginning in the fourth quarter of 2026 through the third quarter of 2031, totaling $600 million over the term of the license.\n\n\"The agreement with Micron further validates the value of our AI memory technologies,\" said C.K. Hong, Netlist’s Chief Executive Officer. \"We remain committed to protecting our IP while continuing to invest in the development of next-generation products.\"\n\nNetlist filed a Current Report on Form 8-K with the SEC concurrently with the announcement.\n\nShould you invest $2,000 in MU right now?\n\nProPicks AI evaluates MU alongside thousands of other companies every month using 100+ financial metrics. Using powerful AI to generate exciting stock ideas, it looks beyond popularity to assess fundamentals, momentum, and valuation. The AI has no bias—it simply identifies which stocks offer the best risk-reward based on current data with notable past winners that include Super Micro Computer (+185%) and AppLovin (+157%). Want to know if MU is currently featured in any ProPicks AI strategies, or if there are better opportunities in the same space?\n\nLatest comments"
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_c24c5ab78f224e30874cdbbc2871a29b:0\"]",
+          "created_at": "2026-10-06T12:19:43.626604Z",
+          "dedupe_key": "4bed71b0d0bfa7e7de03e83545042e31d89c4d6f6f8e44c2cbf6c03e415a3657",
+          "entities": [
+            "Micron Technology, Inc.",
+            "Netlist, Inc."
+          ],
+          "occurrence_date": "2026-10-06",
+          "originating_node": "W3",
+          "proposition": "Micron与Netlist达成专利许可协议，协议授予Micron为期五年的Netlist专利组合许可，涵盖服务器DIMM与HBM技术。",
+          "provisional_event_id": "E358",
+          "subject_time": "五年许可期（2026年至2031年）"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_c24c5ab78f224e30874cdbbc2871a29b:1\"]",
+          "created_at": "2026-10-06T12:19:43.638426Z",
+          "dedupe_key": "9dee38dd3376ae379f32e1ec7cf71443a89d0a4f84a195bef14c32825f44f902",
+          "entities": [
+            "Micron Technology, Inc.",
+            "Netlist, Inc."
+          ],
+          "occurrence_date": "2026-10-06",
+          "originating_node": "W3",
+          "proposition": "Micron与Netlist的协议约定，双方之间所有未决法律程序将予以和解并相互解除。",
+          "provisional_event_id": "E359",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_c24c5ab78f224e30874cdbbc2871a29b:2\"]",
+          "created_at": "2026-10-06T12:19:43.650241Z",
+          "dedupe_key": "92e60aa1c15a5d18664c65b777322e7ce02e808b10d05b69d73a5b847df51a6b",
+          "entities": [
+            "Micron Technology, Inc.",
+            "Netlist, Inc."
+          ],
+          "occurrence_date": "2026-10-06",
+          "originating_node": "W3",
+          "proposition": "协议约定Micron从2026年第四季度至2031年第三季度每季度向Netlist支付3000万美元，许可期内合计支付6亿美元。",
+          "provisional_event_id": "E360",
+          "subject_time": "2026年第四季度至2031年第三季度"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_5e7ae91538234d3dac6b6378e599b71e",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-10-06T12:19:43.686860+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-10-06",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_24095f613d3f4bef8e0b97e3ec127748",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-06T12:19:44.436822Z"
+              },
+              "case_id": "case_5e7ae91538234d3dac6b6378e599b71e",
+              "direction": "LONG",
+              "entry_reason": "PORTFOLIO_CAPACITY_EXHAUSTED",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_5e7ae91538234d3dac6b6378e599b71e",
+              "execution_reason_codes": [
+                "PORTFOLIO_CAPACITY_EXHAUSTED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_5e7ae91538234d3dac6b6378e599b71e",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-06T12:19:43.686860Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "PORTFOLIO_CAPACITY_EXHAUSTED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_d92564598f294e6c91d3cee128cbe800",
+      "ticker": "MU",
+      "case_id": "case_d92564598f294e6c91d3cee128cbe800",
+      "intent_released_at_utc": "2026-10-09T12:13:34.447759+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_b32fbb895d7d4709b2d1dd2c6d30acc5",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "Apple",
+              "Nikkei Asia",
+              "Reuters",
+              "iPhone 18 Pro",
+              "iPhone 18 Pro Max",
+              "component suppliers"
+            ],
+            "occurrence_date": "2026-10-09",
+            "proposition": "Nikkei Asia据报Apple将2026年10月iPhone 18 Pro和iPhone 18 Pro Max组件订单较原计划至少削减15%；Reuters称无法立即独立核实该报道。",
+            "subject_time": "2026年10月的iPhone 18 Pro和iPhone 18 Pro Max组件订单"
+          }
+        ],
+        "expert_trade": {
+          "direction": "SHORT",
+          "evaluated": true,
+          "expectation_delta": "Nikkei据报Apple将10月iPhone 18 Pro/Pro Max组件订单较原计划至少削减15%，使风险从行业层面的消费端压力推进到Apple旗舰机型的具体订单下修；下调近期旗舰手机及其移动内存需求预期，但尚无Micron实际订单或ASP变化数据。[Reuters转述](https://ca.investing.com/news/stock-market-news/apple-cuts-iphone-18-pro-orders-due-to-soft-demand-nikkei-asia-reports-4872803)",
+          "prior_expectation": "事件前已预期高内存成本会压制手机需求，但移动DRAM供给仍紧、价格仍可能上涨；Apple高端机此前的基线更偏向通过提价或吸收部分成本来维持出货。[TrendForce 9月30日](https://www.trendforce.com/presscenter/news/20260930-13258.html)；[TrendForce 8月10日](https://www.trendforce.com/presscenter/news/20260810-13172.html)",
+          "reason": "给出适度、战术性SHORT：报道中的订单下修早于完整财务兑现，手机产量下降会减少单机内存需求，压低Micron移动/客户端业务的位出货预期；该业务在Micron最新FY26 Q3收入中约占28%。一项事件前供应链报道还称Apple较依赖Micron内存，但具体受影响的Micron订单未披露。[供应链报道](https://www.macrumors.com/2026/08/06/apple-scrambling-to-secure-memory/) 报道未经Reuters独立证实，削减的是组件订单且可能混有排产因素；4Q移动DRAM供给仍紧、价格仍预期上行，AI/服务器业务亦提供缓冲。因此该信号支持短期负向预期差，不足以判断全行业周期反转。",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "新现实是Apple据报下调iPhone 18 Pro/Pro Max组件订单；E4已记录内存紧缺、价格压力及Apple面临内存约束，但未记录这次新品订单下修。",
+          "reference_ids": [
+            "E4"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "现行PolicySet没有覆盖此Apple手机端需求变化并明确连接Micron实际供货或财务影响的触发条件；维持无Policy覆盖。"
+        },
+        "w3_case_id": "w3_b32fbb895d7d4709b2d1dd2c6d30acc5"
+      },
+      "trade_direction": "SHORT",
+      "case_summary": {
+        "case_id": "case_d92564598f294e6c91d3cee128cbe800",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-10-09T12:13:34.768854Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 415.878355
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-10-09T12:06:38.890499Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 3942693,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-10-09",
+        "source": {
+          "binding_id": "MU:reuters_site_search",
+          "kind": "crawler",
+          "name": "Reuters Site Search",
+          "source_id": "reuters_site_search"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_72a894c7b97e44e2a58b94a6f208a6bb",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Wall St futures up as oil slips; telecoms pressured by SpaceX spectrum deal"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "RETRY_BUDGET_EXHAUSTED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-10-09T12:06:38.890499Z",
+        "completed_at": "2026-10-09T12:13:34.768854Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E5",
+            "E4",
+            "E208",
+            "E348",
+            "E341"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "当前消息包含多项尚未被已知事实覆盖的核心进展：(1) SpaceX收购全国性低频频谱组合导致电信板块承压（T-Mobile -7.3%、AT&T -5.8%、Verizon -5.4%）；(2) Apple告知供应商削减iPhone 18 Pro/Max组件产能，系记忆芯片成本上涨抑制需求的具体企业行动；(3) OpenAI年化收入较此前信号低约200亿美元引发芯片股前日暴跌、本日反弹；(4) Trump称美国不会在中期选举前攻击伊朗致油价回落。E348仅覆盖\"美股基准指数盘前走高\"的方向性事实，上述具体催化剂和企业行动均为新核心事实。",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "当前消息为美股周五早盘市场综述，涉及油价回落、电信股受SpaceX频谱收购冲击、芯片ETF小幅反弹及Apple因'soaring memory chip costs'削减iPhone 18 Pro组件生产的媒体报道。该消息未提供Micron自身的产品组合、ASP、bit shipments、合同条件、扩产计划、HBM客户资格、竞争份额或财务数据等任何具体事实。Apple报道中'内存成本上升抑制消费需求'仅反映终端定价传导，与任一Policy criterion所要求的Micron高价值组合变化、连续季度ASP/bit趋势、合同价格带、供给约束或产能项目状态均无直接触发对应，不构成值得进入完整判定的Candidate。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "当前消息为美股周五早盘市场综述，涉及油价回落、电信股受SpaceX频谱收购冲击、芯片ETF小幅反弹及Apple因'soaring memory chip costs'削减iPhone 18 Pro组件生产的媒体报道。该消息未提供Micron自身的产品组合、ASP、bit shipments、合同条件、扩产计划、HBM客户资格、竞争份额或财务数据等任何具体事实。Apple报道中'内存成本上升抑制消费需求'仅反映终端定价传导，与任一Policy criterion所要求的Micron高价值组合变化、连续季度ASP/bit趋势、合同价格带、供给约束或产能项目状态均无直接触发对应，不构成值得进入完整判定的Candidate。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "RUMORED",
+              "entities": [
+                "Apple",
+                "Nikkei Asia",
+                "Reuters",
+                "iPhone 18 Pro",
+                "iPhone 18 Pro Max",
+                "component suppliers"
+              ],
+              "occurrence_date": "2026-10-09",
+              "proposition": "Nikkei Asia据报Apple将2026年10月iPhone 18 Pro和iPhone 18 Pro Max组件订单较原计划至少削减15%；Reuters称无法立即独立核实该报道。",
+              "subject_time": "2026年10月的iPhone 18 Pro和iPhone 18 Pro Max组件订单"
+            }
+          ],
+          "expert_trade": {
+            "direction": "SHORT",
+            "evaluated": true,
+            "expectation_delta": "Nikkei据报Apple将10月iPhone 18 Pro/Pro Max组件订单较原计划至少削减15%，使风险从行业层面的消费端压力推进到Apple旗舰机型的具体订单下修；下调近期旗舰手机及其移动内存需求预期，但尚无Micron实际订单或ASP变化数据。[Reuters转述](https://ca.investing.com/news/stock-market-news/apple-cuts-iphone-18-pro-orders-due-to-soft-demand-nikkei-asia-reports-4872803)",
+            "prior_expectation": "事件前已预期高内存成本会压制手机需求，但移动DRAM供给仍紧、价格仍可能上涨；Apple高端机此前的基线更偏向通过提价或吸收部分成本来维持出货。[TrendForce 9月30日](https://www.trendforce.com/presscenter/news/20260930-13258.html)；[TrendForce 8月10日](https://www.trendforce.com/presscenter/news/20260810-13172.html)",
+            "reason": "给出适度、战术性SHORT：报道中的订单下修早于完整财务兑现，手机产量下降会减少单机内存需求，压低Micron移动/客户端业务的位出货预期；该业务在Micron最新FY26 Q3收入中约占28%。一项事件前供应链报道还称Apple较依赖Micron内存，但具体受影响的Micron订单未披露。[供应链报道](https://www.macrumors.com/2026/08/06/apple-scrambling-to-secure-memory/) 报道未经Reuters独立证实，削减的是组件订单且可能混有排产因素；4Q移动DRAM供给仍紧、价格仍预期上行，AI/服务器业务亦提供缓冲。因此该信号支持短期负向预期差，不足以判断全行业周期反转。",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "新现实是Apple据报下调iPhone 18 Pro/Pro Max组件订单；E4已记录内存紧缺、价格压力及Apple面临内存约束，但未记录这次新品订单下修。",
+            "reference_ids": [
+              "E4"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "现行PolicySet没有覆盖此Apple手机端需求变化并明确连接Micron实际供货或财务影响的触发条件；维持无Policy覆盖。"
+          },
+          "w3_case_id": "w3_b32fbb895d7d4709b2d1dd2c6d30acc5"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "6fdc1daca456e06024433ffbf548cc2fe837d69bbfd5f96b9a344b003f95321b",
+            "content_type": "text/plain",
+            "sha256": "c02fe4dc31eece2466789655f7c82db4f115dc443e5ba2c953eeb8cc94f68dc1",
+            "size_bytes": 3309
+          },
+          "case": {
+            "case_id": "case_d92564598f294e6c91d3cee128cbe800",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-10-09T12:05:01.771009Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-10-09T12:06:36.961450Z",
+          "revision": 1,
+          "row_revision": 3942496,
+          "source": {
+            "binding_id": "MU:reuters_site_search",
+            "kind": "crawler",
+            "name": "Reuters Site Search",
+            "source_id": "reuters_site_search"
+          },
+          "source_published_at": "2026-10-09T16:00:00Z",
+          "standard_message_id": "std_0a53c6bd52a347f8b7a62b1eed151b8b",
+          "stream_item_id": "stream_72a894c7b97e44e2a58b94a6f208a6bb",
+          "stream_offset": 3204,
+          "stream_published_at": "2026-10-09T12:06:36.969144Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Wall St futures up as oil slips; telecoms pressured by SpaceX spectrum deal"
+          },
+          "url": "https://www.reuters.com/business/wall-st-futures-gain-oil-slips-telecoms-pressured-by-spacex-spectrum-deal-2026-10-09/",
+          "body_text": "Oct 9 (Reuters) - US stock index ​futures rose on Friday as oil prices retreated on easing Middle East supply concerns, though telecom shares remained under pressure ‌after SpaceX's spectrum acquisition raised competitive concerns across the sector.\n\nOil prices fell after US President Donald Trump said on Thursday the country will not attack Iran before US midterm elections next month, easing fears that the conflict could further disrupt global energy supplies.\n\nBrent crude prices were down over 1%, but were still ​trading over the psychologically important $100-a-barrel mark.\n\nUS Treasury yields were also calmer, with the benchmark 10-year yield steady at 5.24% ​but holding close to the 24-year high of 5.364% hit on Wednesday.\n\nThe benchmark S&P 500 (.SPX) and ⁠the tech-heavy Nasdaq were headed for weekly gains despite pulling back over the previous two sessions as optimism around an AI-driven ​third-quarter earnings season pushed both the indexes to record highs earlier this week.\n\nThe blue-chip Dow was also on track for slim ​weekly gains and the equal-weighted S&P 500 index (.SPXEW) was on track to snap a seven-week losing streak.\n\n\"Strong earnings, guidance and evidence of sustained AI demand could quickly rebuild conviction and put new highs back on the radar,\" said Chris Weston, head of research at Pepperstone.\n\n\"For now, though, the price ​action suggests investors are becoming more selective about where they want exposure and, importantly, what price they are prepared to ​pay for future growth.\"\n\nMegacap growth stocks were broadly higher on the day, with Nvidia (NVDA.O) up 1.5% premarket, Tesla (TSLA.O) rising 1.1%, while Amazon.com (AMZN.O) and Alphabet (GOOGL.O) were slightly higher.\n\nChip stocks ‌were ⁠broadly higher a day after dropping sharply following reports that OpenAI's annualized revenue was $20 billion less than the company previously signaled. An ETF tracking US chipmakers (SOXX.O) rose 1.4%.\n\nSpaceX (SPCX.O) gained 3.9% after the rocket and satellite maker struck a deal to acquire a nationwide low-band spectrum portfolio, mounting a direct, orbital challenge to legacy wireless giants across the US.\n\nTelecom firms traded lower, with T-Mobile US (TMUS.O) down 7.3%, AT&T (T.N) ​falling 5.8% and Verizon (VZ.N) easing 5.4%.\n\nAt 7:05 a.m. ET, ​Dow E-minis were up ⁠38 points, or 0.07%, S&P 500 E-minis were up 27.5 points, or 0.35%, and Nasdaq 100 E-minis were up 224.5 points, or 0.72%.\n\nThe quarterly earnings season picks up pace next week with ​big banks set to report results. Optimism around strong earnings has buoyed US stocks lately ​despite shaky geopolitical ⁠developments and concerns about rising interest rates.\n\nAmong early movers, Humana (HUM.N) climbed 14.2% after US government data showed 95% of the health insurer's members were in Medicare Advantage plans rated four stars or higher for 2027.\n\nApple (AAPL.O) fell 1.8% after a media report that the iPhone maker has told some ⁠suppliers to ​cut production of components for its newly launched iPhone 18 Pro and ​iPhone 18 Pro Max, as soaring memory chip costs and price increases dampen consumer demand.\n\nDelta Air Lines (DAL.N) dropped 4.5%, as the company cut its annual profit forecast ​by nearly a quarter at the midpoint of the range."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "RUMORED",
+          "candidate_id": "[\"runtime-v2-msg:std_0a53c6bd52a347f8b7a62b1eed151b8b:0\"]",
+          "created_at": "2026-10-09T12:13:34.358397Z",
+          "dedupe_key": "244eb59120d33d14b8b6bec0dfa8096f05414c87d6dcfc0e19898040fb2a3a42",
+          "entities": [
+            "Apple",
+            "Nikkei Asia",
+            "Reuters",
+            "iPhone 18 Pro",
+            "iPhone 18 Pro Max",
+            "component suppliers"
+          ],
+          "occurrence_date": "2026-10-09",
+          "originating_node": "W3",
+          "proposition": "Nikkei Asia据报Apple将2026年10月iPhone 18 Pro和iPhone 18 Pro Max组件订单较原计划至少削减15%；Reuters称无法立即独立核实该报道。",
+          "provisional_event_id": "E359",
+          "subject_time": "2026年10月的iPhone 18 Pro和iPhone 18 Pro Max组件订单"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_d92564598f294e6c91d3cee128cbe800",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-10-09T12:13:34.447759+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-10-09",
+            "delivery_failure": null,
+            "direction": "SHORT",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_b32fbb895d7d4709b2d1dd2c6d30acc5",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-09T12:13:34.951463Z"
+              },
+              "case_id": "case_d92564598f294e6c91d3cee128cbe800",
+              "direction": "SHORT",
+              "entry_reason": "RETRY_BUDGET_EXHAUSTED",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_d92564598f294e6c91d3cee128cbe800",
+              "execution_reason_codes": [
+                "RETRY_BUDGET_EXHAUSTED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_d92564598f294e6c91d3cee128cbe800",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-09T12:13:34.447759Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "RETRY_BUDGET_EXHAUSTED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    }
+  ]
+}

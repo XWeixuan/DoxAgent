@@ -1,0 +1,1114 @@
+{
+  "observed_at": "2026-10-09T12:16:41.257123+00:00",
+  "readiness": {
+    "http_status": 200,
+    "body": {
+      "status": "ready",
+      "external_driver": {
+        "state": "READY",
+        "ready": true,
+        "epoch": 1,
+        "pid": 33,
+        "rss_bytes": 199970816,
+        "age_seconds": 70.2165842289105,
+        "attachments": 5,
+        "active_pages": 0,
+        "last_recovery_reason": null
+      },
+      "registry": true,
+      "storage": {
+        "state": "ready",
+        "unavailable": false,
+        "available_bytes": 37421457408,
+        "last_commit_at": "2026-10-09T12:16:44.330655+00:00",
+        "last_error": null
+      },
+      "browser_driver": true,
+      "accepting": true
+    }
+  },
+  "diagnostics": {
+    "external_driver": {
+      "state": "READY",
+      "ready": true,
+      "epoch": 1,
+      "pid": 33,
+      "rss_bytes": 199970816,
+      "age_seconds": 70.21955652488396,
+      "attachments": 5,
+      "active_pages": 0,
+      "last_recovery_reason": null
+    },
+    "stalled": false,
+    "operations": [],
+    "storage": {
+      "state": "ready",
+      "unavailable": false,
+      "available_bytes": 37421457408,
+      "last_commit_at": "2026-10-09T12:16:44.330655+00:00",
+      "last_error": null
+    },
+    "queue_waiters": 0,
+    "queue_locked": false,
+    "site_active": {
+      "yahoo_finance": 0,
+      "reuters": 0,
+      "globenewswire": 0,
+      "investorshub": 0,
+      "digitimes": 0,
+      "trendforce": 0
+    },
+    "identity_active": {
+      "yahoo-main": 0,
+      "reuters-1": 0,
+      "globenewswire-1": 0,
+      "public-markets-nl": 0,
+      "digitimes-nl-1": 0,
+      "trendforce-1": 0
+    }
+  },
+  "identities": {
+    "dowjones-main": {
+      "running": true,
+      "instance_id": "0854db06758b49a68cdce663ce78e922",
+      "pid": 236756,
+      "generation": 1,
+      "profile_id": "dowjones-main",
+      "egress_id": "us-standard-5"
+    },
+    "digitimes-nl-1": {
+      "running": true,
+      "instance_id": "03259f271d684527b235137c3e6acc33",
+      "pid": 2684792,
+      "generation": 1,
+      "profile_id": "digitimes-nl-1",
+      "egress_id": "nl-standard-2"
+    },
+    "digitimes-de-1": {
+      "running": true,
+      "instance_id": "916734b760404c92b38ed856391ff95f",
+      "pid": 3517502,
+      "generation": 1,
+      "profile_id": "digitimes-de-1",
+      "egress_id": "de-standard-1"
+    },
+    "public-markets-nl": {
+      "running": true,
+      "instance_id": "2e256ab3aa5a4bc18c20fd370ff585ff",
+      "pid": 2721513,
+      "generation": 1,
+      "profile_id": "public-markets-nl",
+      "egress_id": "nl-standard-2"
+    },
+    "yahoo-main": {
+      "running": true,
+      "instance_id": "c19bf9032f274015aa1b4a901ba4c104",
+      "pid": 237095,
+      "generation": 1,
+      "profile_id": "yahoo-main",
+      "egress_id": "jp-standard-6"
+    },
+    "seeking-alpha-main": {
+      "running": true,
+      "instance_id": "0f6fb958d3ef41ed9e94296a007ef047",
+      "pid": 236960,
+      "generation": 1,
+      "profile_id": "seeking-alpha-main",
+      "egress_id": "us-standard-5"
+    }
+  },
+  "combinations": {
+    "barrons": {
+      "runtime_key": "barrons",
+      "active_combination_id": "barrons-1",
+      "combinations": {
+        "barrons-1": {
+          "purpose_denials": {
+            "CRAWLER": [
+              "2026-10-09T12:00:45.328758+00:00|poll_4f870dd5f85241fc8dce1fb07dbe78dc:barrons",
+              "2026-10-09T12:07:23.748375+00:00|poll_01c40bae3dd34337b44c043e6d8fd399:barrons",
+              "2026-10-09T12:13:49.692668+00:00|poll_e784b725f58d4e3884aa66aca279b855:barrons"
+            ]
+          },
+          "purpose_rejected_until": {
+            "CRAWLER": "2026-10-09T12:18:49.692668Z"
+          },
+          "state": "READY",
+          "risk_strikes": 0,
+          "cooldown_until": null,
+          "last_failure": "http_403_unclassified",
+          "last_failure_at": "2026-10-09T12:13:49.692668Z",
+          "last_success_at": "2026-10-08T21:30:53.322578Z",
+          "probe_in_flight": false,
+          "manual_attention_required": false,
+          "last_browser_result": "SUCCESS",
+          "last_browser_at": "2026-10-08T21:30:53.322592Z",
+          "http_state": "READY",
+          "http_risk_strikes": 0,
+          "http_cooldown_until": null,
+          "last_http_result": "SUCCESS",
+          "last_http_at": "2026-09-29T18:01:51.274563Z"
+        },
+        "barrons-2": {
+          "purpose_denials": {},
+          "purpose_rejected_until": {},
+          "state": "READY",
+          "risk_strikes": 0,
+          "cooldown_until": null,
+          "last_failure": null,
+          "last_failure_at": null,
+          "last_success_at": null,
+          "probe_in_flight": false,
+          "manual_attention_required": false,
+          "last_browser_result": null,
+          "last_browser_at": null,
+          "http_state": "READY",
+          "http_risk_strikes": 0,
+          "http_cooldown_until": null,
+          "last_http_result": null,
+          "last_http_at": null
+        },
+        "barrons-direct-1": {
+          "purpose_denials": {},
+          "purpose_rejected_until": {},
+          "state": "READY",
+          "risk_strikes": 0,
+          "cooldown_until": null,
+          "last_failure": null,
+          "last_failure_at": null,
+          "last_success_at": "2026-09-21T19:10:02.258702Z",
+          "probe_in_flight": false,
+          "manual_attention_required": false,
+          "last_browser_result": "SUCCESS",
+          "last_browser_at": "2026-09-21T19:10:02.258765Z",
+          "http_state": "READY",
+          "http_risk_strikes": 0,
+          "http_cooldown_until": null,
+          "last_http_result": null,
+          "last_http_at": null
+        }
+      },
+      "generation": 8,
+      "updated_at": "2026-10-09T12:13:49.692849Z"
+    },
+    "reuters": {
+      "runtime_key": "reuters",
+      "active_combination_id": "reuters-1",
+      "combinations": {
+        "reuters-1": {
+          "purpose_denials": {
+            "CRAWLER": [
+              "2026-10-09T12:16:05.048635+00:00|poll_705d5c4869c948af93825cca69cc0f3b:826aa29b3f9ba71eb6280c7c:0",
+              "2026-10-09T12:16:12.154061+00:00|poll_32fb389e0e5b4004b563500bc76ad70c:d0994f85c3a9d9ad9f9411f5:0",
+              "2026-10-09T12:16:16.126039+00:00|poll_9afb6e275105460b86d0ffbe4397782f:8d0e618a941c6b22662c5d6f:0"
+            ]
+          },
+          "purpose_rejected_until": {
+            "CRAWLER": "2026-10-09T12:21:16.126039Z"
+          },
+          "state": "READY",
+          "risk_strikes": 0,
+          "cooldown_until": null,
+          "last_failure": "http_403_unclassified",
+          "last_failure_at": "2026-10-09T12:16:16.126039Z",
+          "last_success_at": "2026-10-09T12:15:14.206075Z",
+          "probe_in_flight": false,
+          "manual_attention_required": false,
+          "last_browser_result": "SUCCESS",
+          "last_browser_at": "2026-10-09T12:15:14.206087Z",
+          "http_state": "READY",
+          "http_risk_strikes": 0,
+          "http_cooldown_until": null,
+          "last_http_result": "SUCCESS",
+          "last_http_at": "2026-10-08T21:29:24.168638Z"
+        },
+        "reuters-2": {
+          "purpose_denials": {},
+          "purpose_rejected_until": {},
+          "state": "COOLDOWN",
+          "risk_strikes": 2,
+          "cooldown_until": "2026-10-06T09:35:04.370917Z",
+          "last_failure": "challenge_required",
+          "last_failure_at": "2026-10-07T12:52:26.679885Z",
+          "last_success_at": "2026-10-06T09:28:28.786522Z",
+          "probe_in_flight": false,
+          "manual_attention_required": true,
+          "last_browser_result": "ACCESS_CHALLENGE",
+          "last_browser_at": "2026-10-06T09:30:04.370909Z",
+          "http_state": "READY",
+          "http_risk_strikes": 1,
+          "http_cooldown_until": null,
+          "last_http_result": "ACCESS_CHALLENGE",
+          "last_http_at": "2026-10-07T12:52:26.679897Z"
+        },
+        "reuters-direct-1": {
+          "purpose_denials": {},
+          "purpose_rejected_until": {},
+          "state": "COOLDOWN",
+          "risk_strikes": 2,
+          "cooldown_until": "2026-10-04T05:39:04.317358Z",
+          "last_failure": "challenge_required",
+          "last_failure_at": "2026-10-07T12:52:29.517129Z",
+          "last_success_at": "2026-09-21T19:02:45.622672Z",
+          "probe_in_flight": false,
+          "manual_attention_required": true,
+          "last_browser_result": "ACCESS_CHALLENGE",
+          "last_browser_at": "2026-10-04T05:34:04.317350Z",
+          "http_state": "READY",
+          "http_risk_strikes": 1,
+          "http_cooldown_until": null,
+          "last_http_result": "ACCESS_CHALLENGE",
+          "last_http_at": "2026-10-07T12:52:29.517142Z"
+        },
+        "reuters-native-direct": {
+          "purpose_denials": {},
+          "purpose_rejected_until": {},
+          "state": "COOLDOWN",
+          "risk_strikes": 2,
+          "cooldown_until": "2026-10-06T09:53:01.696307Z",
+          "last_failure": "challenge_required",
+          "last_failure_at": "2026-10-06T09:48:01.696284Z",
+          "last_success_at": "2026-10-06T09:45:17.217376Z",
+          "probe_in_flight": false,
+          "manual_attention_required": true,
+          "last_browser_result": "ACCESS_CHALLENGE",
+          "last_browser_at": "2026-10-06T09:48:01.696296Z",
+          "http_state": "READY",
+          "http_risk_strikes": 0,
+          "http_cooldown_until": null,
+          "last_http_result": null,
+          "last_http_at": null
+        },
+        "reuters-de2-1": {
+          "purpose_denials": {},
+          "purpose_rejected_until": {},
+          "state": "COOLDOWN",
+          "risk_strikes": 1,
+          "cooldown_until": "2026-10-06T09:56:37.002879Z",
+          "last_failure": "challenge_required",
+          "last_failure_at": "2026-10-06T09:50:35.897219Z",
+          "last_success_at": null,
+          "probe_in_flight": false,
+          "manual_attention_required": false,
+          "last_browser_result": "ACCESS_CHALLENGE",
+          "last_browser_at": "2026-10-06T09:50:35.897234Z",
+          "http_state": "READY",
+          "http_risk_strikes": 0,
+          "http_cooldown_until": null,
+          "last_http_result": null,
+          "last_http_at": null
+        },
+        "reuters-tr1-1": {
+          "purpose_denials": {},
+          "purpose_rejected_until": {},
+          "state": "COOLDOWN",
+          "risk_strikes": 2,
+          "cooldown_until": "2026-10-06T09:58:17.615101Z",
+          "last_failure": "challenge_required",
+          "last_failure_at": "2026-10-06T09:53:17.615082Z",
+          "last_success_at": null,
+          "probe_in_flight": false,
+          "manual_attention_required": true,
+          "last_browser_result": "ACCESS_CHALLENGE",
+          "last_browser_at": "2026-10-06T09:53:17.615092Z",
+          "http_state": "READY",
+          "http_risk_strikes": 0,
+          "http_cooldown_until": null,
+          "last_http_result": null,
+          "last_http_at": null
+        },
+        "reuters-native-de": {
+          "purpose_denials": {},
+          "purpose_rejected_until": {},
+          "state": "COOLDOWN",
+          "risk_strikes": 2,
+          "cooldown_until": "2026-10-07T19:36:26.657090Z",
+          "last_failure": "challenge_required",
+          "last_failure_at": "2026-10-07T19:31:26.657065Z",
+          "last_success_at": "2026-10-07T19:28:54.492549Z",
+          "probe_in_flight": false,
+          "manual_attention_required": true,
+          "last_browser_result": "ACCESS_CHALLENGE",
+          "last_browser_at": "2026-10-07T19:31:26.657081Z",
+          "http_state": "READY",
+          "http_risk_strikes": 1,
+          "http_cooldown_until": null,
+          "last_http_result": "ACCESS_CHALLENGE",
+          "last_http_at": "2026-10-07T12:52:24.408008Z"
+        }
+      },
+      "generation": 24,
+      "updated_at": "2026-10-09T12:16:16.126335Z"
+    },
+    "investing": {
+      "runtime_key": "investing",
+      "active_combination_id": null,
+      "combinations": {
+        "investing-1": {
+          "purpose_denials": {},
+          "purpose_rejected_until": {},
+          "state": "READY",
+          "risk_strikes": 0,
+          "cooldown_until": null,
+          "last_failure": null,
+          "last_failure_at": null,
+          "last_success_at": null,
+          "probe_in_flight": false,
+          "manual_attention_required": false,
+          "last_browser_result": null,
+          "last_browser_at": null,
+          "http_state": "READY",
+          "http_risk_strikes": 0,
+          "http_cooldown_until": null,
+          "last_http_result": null,
+          "last_http_at": null
+        },
+        "investing-2": {
+          "purpose_denials": {},
+          "purpose_rejected_until": {},
+          "state": "COOLDOWN",
+          "risk_strikes": 2,
+          "cooldown_until": "2026-10-06T09:43:01.454617Z",
+          "last_failure": "challenge_required",
+          "last_failure_at": "2026-10-06T09:38:01.454570Z",
+          "last_success_at": "2026-10-02T07:11:02.445911Z",
+          "probe_in_flight": false,
+          "manual_attention_required": true,
+          "last_browser_result": "ACCESS_CHALLENGE",
+          "last_browser_at": "2026-10-06T09:38:01.454596Z",
+          "http_state": "READY",
+          "http_risk_strikes": 0,
+          "http_cooldown_until": null,
+          "last_http_result": null,
+          "last_http_at": null
+        },
+        "investing-external-1": {
+          "purpose_denials": {},
+          "purpose_rejected_until": {},
+          "state": "READY",
+          "risk_strikes": 0,
+          "cooldown_until": null,
+          "last_failure": null,
+          "last_failure_at": null,
+          "last_success_at": null,
+          "probe_in_flight": false,
+          "manual_attention_required": false,
+          "last_browser_result": null,
+          "last_browser_at": null,
+          "http_state": "READY",
+          "http_risk_strikes": 0,
+          "http_cooldown_until": null,
+          "last_http_result": null,
+          "last_http_at": null
+        },
+        "investing-external-nl": {
+          "purpose_denials": {},
+          "purpose_rejected_until": {},
+          "state": "COOLDOWN",
+          "risk_strikes": 3,
+          "cooldown_until": "2026-10-09T12:24:23.889265Z",
+          "last_failure": "challenge_required",
+          "last_failure_at": "2026-10-09T12:09:23.889248Z",
+          "last_success_at": "2026-10-06T14:42:17.855984Z",
+          "probe_in_flight": false,
+          "manual_attention_required": true,
+          "last_browser_result": "ACCESS_CHALLENGE",
+          "last_browser_at": "2026-10-09T12:09:23.889257Z",
+          "http_state": "COOLDOWN",
+          "http_risk_strikes": 1,
+          "http_cooldown_until": "2026-10-02T07:42:31.364911Z",
+          "last_http_result": "ACCESS_CHALLENGE",
+          "last_http_at": "2026-10-02T07:41:31.364903Z"
+        },
+        "investing-native-direct": {
+          "purpose_denials": {},
+          "purpose_rejected_until": {},
+          "state": "READY",
+          "risk_strikes": 0,
+          "cooldown_until": null,
+          "last_failure": null,
+          "last_failure_at": null,
+          "last_success_at": null,
+          "probe_in_flight": false,
+          "manual_attention_required": false,
+          "last_browser_result": null,
+          "last_browser_at": null,
+          "http_state": "READY",
+          "http_risk_strikes": 0,
+          "http_cooldown_until": null,
+          "last_http_result": null,
+          "last_http_at": null
+        }
+      },
+      "generation": 62,
+      "updated_at": "2026-10-09T12:09:23.889275Z"
+    },
+    "digitimes": {
+      "runtime_key": "digitimes",
+      "active_combination_id": "digitimes-nl-1",
+      "combinations": {
+        "digitimes-1": {
+          "purpose_denials": {},
+          "purpose_rejected_until": {},
+          "state": "READY",
+          "risk_strikes": 0,
+          "cooldown_until": null,
+          "last_failure": null,
+          "last_failure_at": null,
+          "last_success_at": "2026-09-24T15:25:19.207150Z",
+          "probe_in_flight": false,
+          "manual_attention_required": false,
+          "last_browser_result": "SUCCESS",
+          "last_browser_at": "2026-09-24T15:25:19.207162Z",
+          "http_state": "READY",
+          "http_risk_strikes": 0,
+          "http_cooldown_until": null,
+          "last_http_result": null,
+          "last_http_at": null
+        },
+        "digitimes-de-1": {
+          "purpose_denials": {},
+          "purpose_rejected_until": {},
+          "state": "READY",
+          "risk_strikes": 0,
+          "cooldown_until": null,
+          "last_failure": null,
+          "last_failure_at": null,
+          "last_success_at": "2026-10-07T12:52:15.937447Z",
+          "probe_in_flight": false,
+          "manual_attention_required": false,
+          "last_browser_result": "SUCCESS",
+          "last_browser_at": "2026-10-07T12:52:15.937462Z",
+          "http_state": "READY",
+          "http_risk_strikes": 0,
+          "http_cooldown_until": null,
+          "last_http_result": null,
+          "last_http_at": null
+        },
+        "digitimes-nl-1": {
+          "purpose_denials": {},
+          "purpose_rejected_until": {},
+          "state": "READY",
+          "risk_strikes": 0,
+          "cooldown_until": null,
+          "last_failure": null,
+          "last_failure_at": null,
+          "last_success_at": "2026-10-09T12:16:21.140523Z",
+          "probe_in_flight": false,
+          "manual_attention_required": false,
+          "last_browser_result": "SUCCESS",
+          "last_browser_at": "2026-10-09T12:16:21.140539Z",
+          "http_state": "READY",
+          "http_risk_strikes": 0,
+          "http_cooldown_until": null,
+          "last_http_result": null,
+          "last_http_at": null
+        }
+      },
+      "generation": 4,
+      "updated_at": "2026-10-09T12:16:21.145463Z"
+    }
+  },
+  "recent_body_outcomes": [
+    {
+      "final_site_id": "yahoo_finance",
+      "outcome": "PARTIAL",
+      "reason": "subscription_required",
+      "completed_at": "2026-10-09T12:16:30.221101+00:00"
+    },
+    {
+      "final_site_id": "huggingnews",
+      "outcome": "FULL",
+      "reason": null,
+      "completed_at": "2026-10-09T12:15:23.306520+00:00"
+    },
+    {
+      "final_site_id": "247wallst",
+      "outcome": "FULL",
+      "reason": null,
+      "completed_at": "2026-10-09T12:14:22.319948+00:00"
+    },
+    {
+      "final_site_id": "reuters",
+      "outcome": "FULL",
+      "reason": null,
+      "completed_at": "2026-10-09T12:10:08.151803+00:00"
+    },
+    {
+      "final_site_id": "reuters",
+      "outcome": "FULL",
+      "reason": null,
+      "completed_at": "2026-10-09T12:10:04.868346+00:00"
+    },
+    {
+      "final_site_id": "reuters",
+      "outcome": "FULL",
+      "reason": null,
+      "completed_at": "2026-10-09T12:09:52.394559+00:00"
+    },
+    {
+      "final_site_id": "reuters",
+      "outcome": "FULL",
+      "reason": null,
+      "completed_at": "2026-10-09T12:09:41.520664+00:00"
+    },
+    {
+      "final_site_id": "reuters",
+      "outcome": "FULL",
+      "reason": null,
+      "completed_at": "2026-10-09T12:09:35.946018+00:00"
+    },
+    {
+      "final_site_id": "reuters",
+      "outcome": "FULL",
+      "reason": null,
+      "completed_at": "2026-10-09T12:09:28.763767+00:00"
+    },
+    {
+      "final_site_id": "generic",
+      "outcome": "FULL",
+      "reason": null,
+      "completed_at": "2026-10-09T12:08:33.409095+00:00"
+    },
+    {
+      "final_site_id": "reuters",
+      "outcome": "FULL",
+      "reason": null,
+      "completed_at": "2026-10-09T12:08:03.774094+00:00"
+    },
+    {
+      "final_site_id": "reuters",
+      "outcome": "FULL",
+      "reason": null,
+      "completed_at": "2026-10-09T12:07:32.131959+00:00"
+    },
+    {
+      "final_site_id": "reuters",
+      "outcome": "FULL",
+      "reason": null,
+      "completed_at": "2026-10-09T12:07:23.753012+00:00"
+    },
+    {
+      "final_site_id": "reuters",
+      "outcome": "FULL",
+      "reason": null,
+      "completed_at": "2026-10-09T12:07:18.750073+00:00"
+    },
+    {
+      "final_site_id": "reuters",
+      "outcome": "FULL",
+      "reason": null,
+      "completed_at": "2026-10-09T12:07:13.261386+00:00"
+    },
+    {
+      "final_site_id": "reuters",
+      "outcome": "FULL",
+      "reason": null,
+      "completed_at": "2026-10-09T12:07:08.200566+00:00"
+    },
+    {
+      "final_site_id": "reuters",
+      "outcome": "PARTIAL",
+      "reason": "subscription_required",
+      "completed_at": "2026-10-09T12:07:02.555892+00:00"
+    },
+    {
+      "final_site_id": "reuters",
+      "outcome": "FULL",
+      "reason": null,
+      "completed_at": "2026-10-09T12:06:56.943726+00:00"
+    },
+    {
+      "final_site_id": "247wallst",
+      "outcome": "FULL",
+      "reason": null,
+      "completed_at": "2026-10-09T12:06:56.016033+00:00"
+    },
+    {
+      "final_site_id": "reuters",
+      "outcome": "FULL",
+      "reason": null,
+      "completed_at": "2026-10-09T12:06:48.651218+00:00"
+    },
+    {
+      "final_site_id": "reuters",
+      "outcome": "FULL",
+      "reason": null,
+      "completed_at": "2026-10-09T12:06:36.901898+00:00"
+    },
+    {
+      "final_site_id": "reuters",
+      "outcome": "FULL",
+      "reason": null,
+      "completed_at": "2026-10-09T12:06:23.372410+00:00"
+    },
+    {
+      "final_site_id": "reuters",
+      "outcome": "FULL",
+      "reason": null,
+      "completed_at": "2026-10-09T12:06:19.188997+00:00"
+    },
+    {
+      "final_site_id": "reuters",
+      "outcome": "FULL",
+      "reason": null,
+      "completed_at": "2026-10-09T12:06:16.936975+00:00"
+    },
+    {
+      "final_site_id": "globenewswire",
+      "outcome": "FULL",
+      "reason": null,
+      "completed_at": "2026-10-09T12:02:44.818000+00:00"
+    },
+    {
+      "final_site_id": "globenewswire",
+      "outcome": "FULL",
+      "reason": null,
+      "completed_at": "2026-10-09T12:02:23.667988+00:00"
+    },
+    {
+      "final_site_id": "www.on3.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T11:10:13.284737+00:00"
+    },
+    {
+      "final_site_id": "nypost.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T07:54:10.838504+00:00"
+    },
+    {
+      "final_site_id": "www.fxleaders.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T07:39:39.086777+00:00"
+    },
+    {
+      "final_site_id": "generic",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T07:19:10.778205+00:00"
+    },
+    {
+      "final_site_id": "generic",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T07:19:09.661790+00:00"
+    },
+    {
+      "final_site_id": "simplywall.st",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T07:12:04.465739+00:00"
+    },
+    {
+      "final_site_id": "stocktwits.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T06:57:11.108810+00:00"
+    },
+    {
+      "final_site_id": "en.gamegpu.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T06:53:39.768223+00:00"
+    },
+    {
+      "final_site_id": "stocktwits.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T06:38:03.331357+00:00"
+    },
+    {
+      "final_site_id": "generic",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T06:18:11.619408+00:00"
+    },
+    {
+      "final_site_id": "simplywall.st",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T06:11:25.462840+00:00"
+    },
+    {
+      "final_site_id": "generic",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T05:58:11.289949+00:00"
+    },
+    {
+      "final_site_id": "generic",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T05:48:15.328066+00:00"
+    },
+    {
+      "final_site_id": "finance.yahoo.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T05:30:41.523364+00:00"
+    },
+    {
+      "final_site_id": "stocktwits.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T05:18:33.863780+00:00"
+    },
+    {
+      "final_site_id": "generic",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T05:07:20.571895+00:00"
+    },
+    {
+      "final_site_id": "nai500.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T04:49:44.232673+00:00"
+    },
+    {
+      "final_site_id": "generic",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T04:47:20.265920+00:00"
+    },
+    {
+      "final_site_id": "www.thelec.net",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T04:21:09.329830+00:00"
+    },
+    {
+      "final_site_id": "www.on3.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T04:03:49.904341+00:00"
+    },
+    {
+      "final_site_id": "www.fool.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T03:35:10.325967+00:00"
+    },
+    {
+      "final_site_id": "generic",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T03:26:23.955508+00:00"
+    },
+    {
+      "final_site_id": "valadao.house.gov",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T03:21:39.205204+00:00"
+    },
+    {
+      "final_site_id": "www.barchart.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T03:19:44.515704+00:00"
+    },
+    {
+      "final_site_id": "www.fool.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T03:12:36.041479+00:00"
+    },
+    {
+      "final_site_id": "www.newsweek.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T02:59:04.051610+00:00"
+    },
+    {
+      "final_site_id": "www.fool.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T02:51:50.733211+00:00"
+    },
+    {
+      "final_site_id": "www.nwahomepage.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T02:51:42.811806+00:00"
+    },
+    {
+      "final_site_id": "www.fool.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T02:46:07.327470+00:00"
+    },
+    {
+      "final_site_id": "www.newsweek.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T02:39:57.328448+00:00"
+    },
+    {
+      "final_site_id": "generic",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T02:34:17.155743+00:00"
+    },
+    {
+      "final_site_id": "stocktwits.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T02:30:10.206636+00:00"
+    },
+    {
+      "final_site_id": "www.digitimes.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T02:04:17.429601+00:00"
+    },
+    {
+      "final_site_id": "www.wfmd.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T02:04:17.182071+00:00"
+    },
+    {
+      "final_site_id": "www.trefis.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T01:19:26.629156+00:00"
+    },
+    {
+      "final_site_id": "www.thestreet.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T01:12:54.489958+00:00"
+    },
+    {
+      "final_site_id": "www.windowslatest.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T01:00:15.160083+00:00"
+    },
+    {
+      "final_site_id": "generic",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T00:32:17.163863+00:00"
+    },
+    {
+      "final_site_id": "stocktwits.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T00:29:28.623529+00:00"
+    },
+    {
+      "final_site_id": "www.theglobeandmail.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T00:05:16.027458+00:00"
+    },
+    {
+      "final_site_id": "www.cnbc.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-08T23:56:17.604602+00:00"
+    },
+    {
+      "final_site_id": "finance.yahoo.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-08T23:42:27.609527+00:00"
+    },
+    {
+      "final_site_id": "www.fool.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-08T23:39:16.845331+00:00"
+    },
+    {
+      "final_site_id": "www.marketbeat.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-08T23:17:31.431795+00:00"
+    },
+    {
+      "final_site_id": "www.trefis.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-08T23:15:49.619213+00:00"
+    },
+    {
+      "final_site_id": "www.fool.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-08T23:15:32.372536+00:00"
+    },
+    {
+      "final_site_id": "finance.yahoo.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-08T23:11:34.930359+00:00"
+    },
+    {
+      "final_site_id": "finance.yahoo.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-08T23:10:16.763129+00:00"
+    },
+    {
+      "final_site_id": "www.marketbeat.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-08T23:09:31.461689+00:00"
+    },
+    {
+      "final_site_id": "generic",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-08T23:03:15.012703+00:00"
+    },
+    {
+      "final_site_id": "au.finance.yahoo.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-08T23:01:32.892375+00:00"
+    },
+    {
+      "final_site_id": "finance.yahoo.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-08T22:59:06.716449+00:00"
+    },
+    {
+      "final_site_id": "hoodline.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-08T22:13:45.754821+00:00"
+    },
+    {
+      "final_site_id": "www.01net.it",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-08T22:04:21.115236+00:00"
+    },
+    {
+      "final_site_id": "generic",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-08T22:00:30.041084+00:00"
+    },
+    {
+      "final_site_id": "simplywall.st",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-08T21:51:46.867335+00:00"
+    },
+    {
+      "final_site_id": "generic",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-08T21:51:13.092240+00:00"
+    },
+    {
+      "final_site_id": "generic",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-08T21:51:12.036856+00:00"
+    },
+    {
+      "final_site_id": "shattered.io",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-08T21:37:38.067452+00:00"
+    },
+    {
+      "final_site_id": "www.interactivebrokers.com",
+      "outcome": "FULL",
+      "reason": null,
+      "completed_at": "2026-10-08T21:34:05.667883+00:00"
+    },
+    {
+      "final_site_id": "www.interactivebrokers.com",
+      "outcome": "FULL",
+      "reason": null,
+      "completed_at": "2026-10-08T21:34:05.594833+00:00"
+    },
+    {
+      "final_site_id": "www.interactivebrokers.com",
+      "outcome": "FULL",
+      "reason": null,
+      "completed_at": "2026-10-08T21:34:05.547791+00:00"
+    },
+    {
+      "final_site_id": "www.interactivebrokers.com",
+      "outcome": "FULL",
+      "reason": null,
+      "completed_at": "2026-10-08T21:34:05.437120+00:00"
+    },
+    {
+      "final_site_id": "www.interactivebrokers.com",
+      "outcome": "FULL",
+      "reason": null,
+      "completed_at": "2026-10-08T21:33:56.963743+00:00"
+    },
+    {
+      "final_site_id": "www.interactivebrokers.com",
+      "outcome": "FULL",
+      "reason": null,
+      "completed_at": "2026-10-08T21:33:56.928837+00:00"
+    },
+    {
+      "final_site_id": "www.interactivebrokers.com",
+      "outcome": "FULL",
+      "reason": null,
+      "completed_at": "2026-10-08T21:33:56.882134+00:00"
+    },
+    {
+      "final_site_id": "www.interactivebrokers.com",
+      "outcome": "FULL",
+      "reason": null,
+      "completed_at": "2026-10-08T21:33:56.821308+00:00"
+    },
+    {
+      "final_site_id": "www.marketbeat.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-08T21:31:41.892616+00:00"
+    },
+    {
+      "final_site_id": "www.marketbeat.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-08T21:31:26.163631+00:00"
+    },
+    {
+      "final_site_id": "finnhub.io",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T09:01:10.994364+00:00"
+    },
+    {
+      "final_site_id": "www.fxleaders.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T08:06:12.427264+00:00"
+    },
+    {
+      "final_site_id": "www.marketbeat.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T11:26:43.111006+00:00"
+    },
+    {
+      "final_site_id": "www.pcgamer.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T10:26:16.041904+00:00"
+    },
+    {
+      "final_site_id": "generic",
+      "outcome": "UNAVAILABLE",
+      "reason": "httpstatuserror",
+      "completed_at": "2026-10-09T09:43:14.541434+00:00"
+    }
+  ]
+}

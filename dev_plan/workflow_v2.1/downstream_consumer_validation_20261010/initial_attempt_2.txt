@@ -1,0 +1,13 @@
+..............................F......                                    [100%]
+================================== FAILURES ===================================
+_______ test_ready_freezes_legacy_policy_and_same_case_stays_idempotent _______
+tests\test_runtime_w2r3_orchestration.py:315: in test_ready_freezes_legacy_policy_and_same_case_stays_idempotent
+    assert runtime.repository.list_consumed_policy_revisions("MU") == set()
+E   AssertionError: assert {('pol_any', ...def12345678')} == set()
+E     
+E     Extra items in the left set:
+E     ('pol_any', 'ar_1234567890abcdef12345678')
+E     Use -v to get more diff
+=========================== short test summary info ===========================
+FAILED tests/test_runtime_w2r3_orchestration.py::test_ready_freezes_legacy_policy_and_same_case_stays_idempotent
+1 failed, 36 passed in 27.99s

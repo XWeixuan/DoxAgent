@@ -1,0 +1,199 @@
+{
+  "run_id": "c4-mu-local-20261009-01",
+  "ticker": "MU",
+  "workflow_version": "codex_global_research_v1",
+  "scope": "C4 stages only, using production workflow node runner and embedded real Codex Worker",
+  "model": "gpt-6-sol",
+  "effort": "high",
+  "cutoff_at": "2026-10-09T13:33:18+00:00",
+  "source_files": {
+    "c1.md": {
+      "path": "D:\\DoxAgentPilot\\cases\\document2\\_sources\\init-mu-1f3e9130ae304b01a7fdf2991a35e028-d1\\c1.md",
+      "bytes": 23895,
+      "sha256": "0955a7c754c74f57edf14b924fd36852e698bc6fdd8b299f0b724529513114eb"
+    },
+    "c3.md": {
+      "path": "D:\\DoxAgentPilot\\cases\\document2\\_sources\\init-mu-1f3e9130ae304b01a7fdf2991a35e028-d1\\c3.md",
+      "bytes": 31660,
+      "sha256": "fa16f0b3d396830c8d22181809e7a2a9f9b9d28bf57d9b50f9261db46b105d9f"
+    },
+    "c5.md": {
+      "path": "D:\\DoxAgentPilot\\cases\\document2\\_sources\\init-mu-1f3e9130ae304b01a7fdf2991a35e028-d1\\c5.md",
+      "bytes": 19099,
+      "sha256": "75e2b0737d5ac0f115b5fa04bd840b9bb6a3e408084c5f2223d53b31946ab389"
+    },
+    "horizontal.json": {
+      "path": "D:\\DoxAgentPilot\\cases\\document2\\_sources\\init-mu-1f3e9130ae304b01a7fdf2991a35e028-d1\\horizontal.json",
+      "bytes": 32486,
+      "sha256": "14bfee7335e82fc743db5f751c171a9e2fbf6235101e44f3e6872732b8687511"
+    }
+  },
+  "workspace_preflight": {
+    "c4_pre_scan": {
+      "prompt": "agents/c4e.md",
+      "skill": "skills/c4/c4e_pre_scan.md",
+      "schema": "schemas/c4e_relations.schema.json",
+      "input_sha256": "32d1ff422982a9abadaaf0da50651798b581ef546050ade6866debd878b59edb"
+    },
+    "c4f_future_nodes": {
+      "prompt": "agents/c4f.md",
+      "skill": "skills/c4/c4f_future_node.md",
+      "schema": "schemas/c4f_future_nodes.schema.json",
+      "input_sha256": "2d4b090f359485ac7fa7b867cb27f91b5d362e6e9bfb3499eadb42d8edf3e72d"
+    },
+    "c4e_formal_scan": {
+      "prompt": "agents/c4e.md",
+      "skill": "skills/c4/c4e_formal-scan.md",
+      "schema": "schemas/c4e_relations.schema.json",
+      "input_sha256": "8bc84c49bc2c09e12f0fc3c7e54191d76aeeec069663b36b9fcc6d7a9a7306b6"
+    },
+    "c4e_network_build": {
+      "prompt": "agents/c4e.md",
+      "skill": "skills/c4/c4e_network-build.md",
+      "schema": "schemas/c4e_network-build.schema.json",
+      "input_sha256": "7cefdc83978c5c7dffb7b3d0dd9f96d73df5c60f1364e9e581ab660e14297262"
+    }
+  },
+  "stages": {
+    "c4_pre_scan": {
+      "status": "failed",
+      "report_ref": null,
+      "relations": 0,
+      "future_nodes": 0,
+      "network_chars": 0,
+      "warnings": [
+        "c4_pre_scan: START_THREAD: WorkerJobManager._capture_identity() missing 1 required positional argument: 'turn'"
+      ],
+      "attempts": [
+        {
+          "attempt_id": "c4_pre_scan-1-965d2227b6",
+          "workflow_version": "codex_global_research_v1",
+          "research_lane": "global_research",
+          "cutoff_at": "2026-10-09T13:33:18Z",
+          "ticker": "MU",
+          "run_id": "c4-mu-local-20261009-01",
+          "node": "c4_pre_scan",
+          "status": "failed",
+          "attempt_number": 1,
+          "thread_id": null,
+          "input_sha256": "8d9f62d913dd00678f33db1d01ae3ba8daf046f05aaef3ba02a7de8150f8f2ec",
+          "error_code": "CODEX_WORKER_ERROR",
+          "error_message": "START_THREAD: WorkerJobManager._capture_identity() missing 1 required positional argument: 'turn'",
+          "started_at": "2026-10-09T13:33:24.586138Z",
+          "completed_at": "2026-10-09T13:33:29.842996Z",
+          "created_at": "2026-10-09T13:33:24.586138Z"
+        },
+        {
+          "attempt_id": "c4_pre_scan-2-85e52f5bad",
+          "workflow_version": "codex_global_research_v1",
+          "research_lane": "global_research",
+          "cutoff_at": "2026-10-09T13:33:18Z",
+          "ticker": "MU",
+          "run_id": "c4-mu-local-20261009-01",
+          "node": "c4_pre_scan",
+          "status": "failed",
+          "attempt_number": 2,
+          "thread_id": null,
+          "input_sha256": "8d9f62d913dd00678f33db1d01ae3ba8daf046f05aaef3ba02a7de8150f8f2ec",
+          "error_code": "CODEX_WORKER_ERROR",
+          "error_message": "START_THREAD: WorkerJobManager._capture_identity() missing 1 required positional argument: 'turn'",
+          "started_at": "2026-10-09T13:33:29.887020Z",
+          "completed_at": "2026-10-09T13:33:35.154146Z",
+          "created_at": "2026-10-09T13:33:29.887020Z"
+        }
+      ]
+    },
+    "c4f_future_nodes": {
+      "status": "failed",
+      "report_ref": null,
+      "relations": 0,
+      "future_nodes": 0,
+      "network_chars": 0,
+      "warnings": [
+        "c4f_future_nodes: START_THREAD: WorkerJobManager._capture_identity() missing 1 required positional argument: 'turn'"
+      ],
+      "attempts": [
+        {
+          "attempt_id": "c4f_future_nodes-1-75c8105f60",
+          "workflow_version": "codex_global_research_v1",
+          "research_lane": "global_research",
+          "cutoff_at": "2026-10-09T13:33:18Z",
+          "ticker": "MU",
+          "run_id": "c4-mu-local-20261009-01",
+          "node": "c4f_future_nodes",
+          "status": "failed",
+          "attempt_number": 1,
+          "thread_id": null,
+          "input_sha256": "ed69a6d9ec65c3d626b9f0b25ea561a87165304e9e14e084f4d348e6efa48c12",
+          "error_code": "CODEX_WORKER_ERROR",
+          "error_message": "START_THREAD: WorkerJobManager._capture_identity() missing 1 required positional argument: 'turn'",
+          "started_at": "2026-10-09T13:33:35.240649Z",
+          "completed_at": "2026-10-09T13:33:40.518333Z",
+          "created_at": "2026-10-09T13:33:35.240649Z"
+        },
+        {
+          "attempt_id": "c4f_future_nodes-2-bb52d2fad0",
+          "workflow_version": "codex_global_research_v1",
+          "research_lane": "global_research",
+          "cutoff_at": "2026-10-09T13:33:18Z",
+          "ticker": "MU",
+          "run_id": "c4-mu-local-20261009-01",
+          "node": "c4f_future_nodes",
+          "status": "failed",
+          "attempt_number": 2,
+          "thread_id": null,
+          "input_sha256": "ed69a6d9ec65c3d626b9f0b25ea561a87165304e9e14e084f4d348e6efa48c12",
+          "error_code": "CODEX_WORKER_ERROR",
+          "error_message": "START_THREAD: WorkerJobManager._capture_identity() missing 1 required positional argument: 'turn'",
+          "started_at": "2026-10-09T13:33:40.572202Z",
+          "completed_at": "2026-10-09T13:33:45.842618Z",
+          "created_at": "2026-10-09T13:33:40.572202Z"
+        }
+      ]
+    },
+    "c4e_formal_scan": {
+      "status": "failed",
+      "report_ref": null,
+      "relations": 0,
+      "future_nodes": 0,
+      "network_chars": 0,
+      "warnings": [
+        "preceding C4 stage failed; required upstream product unavailable"
+      ],
+      "attempts": []
+    },
+    "c4e_network_build": {
+      "status": "failed",
+      "report_ref": null,
+      "relations": 0,
+      "future_nodes": 0,
+      "network_chars": 0,
+      "warnings": [
+        "preceding C4 stage failed; required upstream product unavailable"
+      ],
+      "attempts": []
+    }
+  },
+  "model_probe": {
+    "authenticated": true,
+    "model_list_includes_requested": true
+  },
+  "completed_at": "2026-10-09T13:33:45+00:00",
+  "thread_ids": [],
+  "checkpoint": {
+    "workflow_version": "codex_global_research_v1",
+    "research_lane": "global_research",
+    "ticker": "MU",
+    "run_id": "c4-mu-local-20261009-01",
+    "completed_nodes": [],
+    "current_nodes": [],
+    "failed_nodes": [
+      "c4_pre_scan",
+      "c4f_future_nodes",
+      "c4e_formal_scan",
+      "c4e_network_build"
+    ],
+    "cancelled": false,
+    "updated_at": "2026-10-09T13:33:45.931374Z"
+  }
+}

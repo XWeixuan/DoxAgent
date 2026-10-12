@@ -1,0 +1,30 @@
+{
+  "selected_aliases": [
+    "O3",
+    "O4",
+    "O5",
+    "O1"
+  ],
+  "blocks": [
+    {
+      "alias": "O1",
+      "path": "blocks/O1.json"
+    },
+    {
+      "alias": "O2",
+      "path": "blocks/O2.json"
+    },
+    {
+      "alias": "O3",
+      "path": "blocks/O3.md"
+    },
+    {
+      "alias": "O4",
+      "path": "blocks/O4.md"
+    },
+    {
+      "alias": "O5",
+      "path": "blocks/O5.md"
+    }
+  ]
+}

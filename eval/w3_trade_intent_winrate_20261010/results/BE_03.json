@@ -1,0 +1,229 @@
+{
+  "ticker": "BE",
+  "part": 3,
+  "record_count": 5,
+  "records": [
+    {
+      "intent_id": "trade:case_b9c894cab25d44f9a460b3728e910d48",
+      "ticker": "BE",
+      "case_id": "case_b9c894cab25d44f9a460b3728e910d48",
+      "direction": "LONG",
+      "intent_status": "DELIVERY_FAILED",
+      "intent_released_at_utc": "2026-09-29T15:01:50.506090+00:00",
+      "intent_released_at_et": "2026-09-29T11:01:50.506090-04:00",
+      "entry_basis": "hypothetical_trade_tick",
+      "entry_at_utc": "2026-09-29T15:01:50.506090+00:00",
+      "cycle_end_utc": "2026-09-29T19:30:00+00:00",
+      "cycle_end_et": "2026-09-29T15:30:00-04:00",
+      "actual_entry": false,
+      "actual_exit": false,
+      "entry_evidence": {
+        "query_key": "BE|2026-09-29T15:01:50.506090+00:00|entry",
+        "status": "ok",
+        "selected": {
+          "exchange": "FINRA",
+          "offset_seconds": 0.49391,
+          "price_usd": 297.68,
+          "special_conditions": "    ",
+          "timestamp_utc": "2026-09-29T15:01:51+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-09-29T15:01:51+00:00",
+        "error": null
+      },
+      "entry_price_usd": "297.68",
+      "exit_evidence": {
+        "query_key": "BE|2026-09-29T19:30:00+00:00|exit",
+        "status": "ok",
+        "selected": {
+          "exchange": "FINRA",
+          "offset_seconds": 0.0,
+          "price_usd": 291.45,
+          "special_conditions": "    ",
+          "timestamp_utc": "2026-09-29T19:30:00+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-09-29T19:30:00+00:00",
+        "error": null
+      },
+      "exit_price_usd": "291.45",
+      "return_pct": "-2.0929",
+      "classification": "loss"
+    },
+    {
+      "intent_id": "trade:case_bb3f60a12775493baf757cde0e66a1c8",
+      "ticker": "BE",
+      "case_id": "case_bb3f60a12775493baf757cde0e66a1c8",
+      "direction": "LONG",
+      "intent_status": "DELIVERY_FAILED",
+      "intent_released_at_utc": "2026-09-29T16:35:41.408788+00:00",
+      "intent_released_at_et": "2026-09-29T12:35:41.408788-04:00",
+      "entry_basis": "hypothetical_trade_tick",
+      "entry_at_utc": "2026-09-29T16:35:41.408788+00:00",
+      "cycle_end_utc": "2026-09-29T19:30:00+00:00",
+      "cycle_end_et": "2026-09-29T15:30:00-04:00",
+      "actual_entry": false,
+      "actual_exit": false,
+      "entry_evidence": {
+        "query_key": "BE|2026-09-29T16:35:41.408788+00:00|entry",
+        "status": "ok",
+        "selected": {
+          "exchange": "IEX",
+          "offset_seconds": 0.591212,
+          "price_usd": 298.45,
+          "special_conditions": "    ",
+          "timestamp_utc": "2026-09-29T16:35:42+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-09-29T16:35:42+00:00",
+        "error": null
+      },
+      "entry_price_usd": "298.45",
+      "exit_evidence": {
+        "query_key": "BE|2026-09-29T19:30:00+00:00|exit",
+        "status": "ok",
+        "selected": {
+          "exchange": "FINRA",
+          "offset_seconds": 0.0,
+          "price_usd": 291.45,
+          "special_conditions": "    ",
+          "timestamp_utc": "2026-09-29T19:30:00+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-09-29T19:30:00+00:00",
+        "error": null
+      },
+      "exit_price_usd": "291.45",
+      "return_pct": "-2.3455",
+      "classification": "loss"
+    },
+    {
+      "intent_id": "trade:case_a5d78ace5c0d462fb2ae722ff04b234f",
+      "ticker": "BE",
+      "case_id": "case_a5d78ace5c0d462fb2ae722ff04b234f",
+      "direction": "LONG",
+      "intent_status": "DELIVERY_FAILED",
+      "intent_released_at_utc": "2026-09-29T18:20:15.533110+00:00",
+      "intent_released_at_et": "2026-09-29T14:20:15.533110-04:00",
+      "entry_basis": "hypothetical_trade_tick",
+      "entry_at_utc": "2026-09-29T18:20:15.533110+00:00",
+      "cycle_end_utc": "2026-09-29T19:30:00+00:00",
+      "cycle_end_et": "2026-09-29T15:30:00-04:00",
+      "actual_entry": false,
+      "actual_exit": false,
+      "entry_evidence": {
+        "query_key": "BE|2026-09-29T18:20:15.533110+00:00|entry",
+        "status": "ok",
+        "selected": {
+          "exchange": "FINRA",
+          "offset_seconds": 8.46689,
+          "price_usd": 293.8,
+          "special_conditions": "    ",
+          "timestamp_utc": "2026-09-29T18:20:24+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-09-29T18:20:16+00:00",
+        "error": null
+      },
+      "entry_price_usd": "293.8",
+      "exit_evidence": {
+        "query_key": "BE|2026-09-29T19:30:00+00:00|exit",
+        "status": "ok",
+        "selected": {
+          "exchange": "FINRA",
+          "offset_seconds": 0.0,
+          "price_usd": 291.45,
+          "special_conditions": "    ",
+          "timestamp_utc": "2026-09-29T19:30:00+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-09-29T19:30:00+00:00",
+        "error": null
+      },
+      "exit_price_usd": "291.45",
+      "return_pct": "-0.7999",
+      "classification": "flat"
+    },
+    {
+      "intent_id": "trade:case_d2034923c648403b9399ff7084337b98",
+      "ticker": "BE",
+      "case_id": "case_d2034923c648403b9399ff7084337b98",
+      "direction": "LONG",
+      "intent_status": "DELIVERY_FAILED",
+      "intent_released_at_utc": "2026-09-30T04:48:39.613547+00:00",
+      "intent_released_at_et": "2026-09-30T00:48:39.613547-04:00",
+      "entry_basis": "hypothetical_trade_tick",
+      "entry_at_utc": "2026-09-30T04:48:39.613547+00:00",
+      "cycle_end_utc": "2026-09-30T19:30:00+00:00",
+      "cycle_end_et": "2026-09-30T15:30:00-04:00",
+      "actual_entry": false,
+      "actual_exit": false,
+      "entry_evidence": {
+        "query_key": "BE|2026-09-30T04:48:39.613547+00:00|entry",
+        "status": "no_nearby_trade",
+        "selected": null,
+        "first_event_utc": "2026-09-30T08:00:00+00:00",
+        "error": null
+      },
+      "exit_evidence": {
+        "query_key": "BE|2026-09-30T19:30:00+00:00|exit",
+        "status": "ok",
+        "selected": {
+          "exchange": "BATS",
+          "offset_seconds": 0.0,
+          "price_usd": 277.33,
+          "special_conditions": "    ",
+          "timestamp_utc": "2026-09-30T19:30:00+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-09-30T19:30:00+00:00",
+        "error": null
+      },
+      "exit_price_usd": "277.33",
+      "classification": "unpriceable"
+    },
+    {
+      "intent_id": "trade:case_4a89a6a48f1b42c0893797c8847928a1",
+      "ticker": "BE",
+      "case_id": "case_4a89a6a48f1b42c0893797c8847928a1",
+      "direction": "LONG",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "intent_released_at_utc": "2026-09-30T18:54:46.077417+00:00",
+      "intent_released_at_et": "2026-09-30T14:54:46.077417-04:00",
+      "entry_basis": "actual_fill",
+      "entry_at_utc": "2026-09-30T18:54:52+00:00",
+      "cycle_end_utc": "2026-09-30T19:30:00+00:00",
+      "cycle_end_et": "2026-09-30T15:30:00-04:00",
+      "actual_entry": true,
+      "actual_exit": true,
+      "entry_price_usd": "278.83",
+      "entry_evidence": {
+        "source": "actual_broker_fill",
+        "fill": {
+          "side": "BUY",
+          "quantity": "61",
+          "average_price_usd": "278.83",
+          "first_fill_at": "2026-09-30T18:54:52+00:00",
+          "last_fill_at": "2026-09-30T18:54:52+00:00"
+        }
+      },
+      "exit_evidence": {
+        "query_key": "BE|2026-09-30T19:30:00+00:00|exit",
+        "status": "ok",
+        "selected": {
+          "exchange": "BATS",
+          "offset_seconds": 0.0,
+          "price_usd": 277.33,
+          "special_conditions": "    ",
+          "timestamp_utc": "2026-09-30T19:30:00+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-09-30T19:30:00+00:00",
+        "error": null
+      },
+      "exit_price_usd": "277.33",
+      "return_pct": "-0.5380",
+      "classification": "flat"
+    }
+  ]
+}

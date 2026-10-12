@@ -1,0 +1,4 @@
+FROM doxagent-v2:sweep-priority-20261006
+COPY message_bus_v2/ /app/src/doxagent/message_bus_v2/
+COPY site_strategy/client.py /app/src/doxagent/site_strategy/client.py
+LABEL io.doxagent.source-storage-recovery="20261009-r1"

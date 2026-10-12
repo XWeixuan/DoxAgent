@@ -1,0 +1,1946 @@
+{
+  "format": "doxagent.w3-trade-intent-review.v1",
+  "ticker": "INTC",
+  "window": {
+    "since_utc": "2026-09-19T12:53:20.738930+00:00",
+    "as_of_utc": "2026-10-10T12:53:20.738930+00:00"
+  },
+  "part": 2,
+  "record_count": 4,
+  "records": [
+    {
+      "intent_id": "trade:case_eafa7ae7cba147e68fbf9e021466480d",
+      "ticker": "INTC",
+      "case_id": "case_eafa7ae7cba147e68fbf9e021466480d",
+      "intent_released_at_utc": "2026-10-01T18:59:30.162569+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_f1f282d646cc45f88cdb95e5a17d680b",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Signal65",
+              "Qualcomm",
+              "Snapdragon X2 Elite X2E-88-100",
+              "Intel Core Ultra X7 358H",
+              "AMD Ryzen AI 7 445",
+              "Lenovo Slim 7x",
+              "Dell XPS 14",
+              "Lenovo Yoga 7a 14"
+            ],
+            "occurrence_date": "2026-10-01",
+            "proposition": "Signal65发布后续研究，比较标准18核Snapdragon X2 Elite X2E-88-100、Intel Core Ultra X7 358H和AMD Ryzen AI 7 445在14英寸高端笔记本中的表现。",
+            "subject_time": "2026年10月1日Signal65后续研究"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Qualcomm",
+              "Snapdragon X2 Elite",
+              "Intel Core Ultra X7 358H",
+              "Geekbench 7"
+            ],
+            "occurrence_date": "2026-10-01",
+            "proposition": "在Geekbench 7中，Snapdragon系统多核得分24016、单核得分3237，分别高于Intel系统的18360和2602，领先约31%和24%。",
+            "subject_time": "Signal65 Geekbench 7测试"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Qualcomm",
+              "Snapdragon X2 Elite",
+              "Intel Core Ultra X7 358H",
+              "UL Procyon",
+              "WinML"
+            ],
+            "occurrence_date": "2026-10-01",
+            "proposition": "在UL Procyon AI Computer Vision测试中，Snapdragon系统得分4360，高于Intel系统的2302；在AI CV 2.0 WinML测试中仍领先约31%。",
+            "subject_time": "Signal65 AI性能测试"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Qualcomm",
+              "Snapdragon X2 Elite",
+              "Intel Core Ultra X7 358H",
+              "Lenovo Slim 7x",
+              "Dell XPS 14"
+            ],
+            "occurrence_date": "2026-10-01",
+            "proposition": "在六项基准测试中，Snapdragon系统平均保留插电平衡模式性能的97%，Intel系统为95%；其本地视频播放续航为16.1小时，Chrome浏览续航为11.2小时，均高于Intel系统的14.4小时和8.6小时。",
+            "subject_time": "Signal65电池性能测试"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Intel",
+              "Arc B390",
+              "Qualcomm",
+              "Adreno X2-90",
+              "3DMark Steel Nomad Light"
+            ],
+            "occurrence_date": "2026-10-01",
+            "proposition": "在3DMark Steel Nomad Light测试中，Intel Arc B390的图形性能比Qualcomm Adreno X2-90高约23%。",
+            "subject_time": "Signal65图形性能测试"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Qualcomm",
+              "Snapdragon X2 Elite",
+              "Intel Core Ultra X7 358H",
+              "Lenovo Slim 7x",
+              "Dell XPS 14"
+            ],
+            "occurrence_date": "2026-10-01",
+            "proposition": "研究比较的Snapdragon笔记本售价为1999美元，Intel笔记本售价为2749美元；按选定CPU、渲染和AI基准归一化后，Snapdragon系统的单位价格性能约为Intel的2.15倍。",
+            "subject_time": "Signal65整机价格与价值比较"
+          }
+        ],
+        "expert_trade": {
+          "direction": "SHORT",
+          "evaluated": true,
+          "expectation_delta": "标准18核Snapdragon X2在14英寸高端整机中而非仅Extreme旗舰SKU，在CPU、AI、生产力和多数电池测试中领先Intel，并以更低整机价格实现约2.15倍价值，降低Intel平台转化为持续OEM分配和终端sell-through的概率，增加客户端单位、ASP和组合下行风险。",
+          "prior_expectation": "事件前合理基线是Intel Core Ultra和Core Series 3借助供给缓解、OEM上市及客户测试，将性能差距收窄并转化为客户端单位、组合和sell-through恢复；Qualcomm存在替代风险，但缺少标准SKU在主流高端14英寸机型中全面领先的证据。",
+          "reason": "该研究将竞争不利信号从单一旗舰扩展到更可能形成销量的高端主流区间；在Intel客户端单位已同比下降8%、且供给缓解后需要竞争力和OEM分配承接的背景下，传导至CCPG份额和产品组合的路径清楚。委托研究、整机差异及尚无订单输单限制置信度，但不足以消除方向性，故TRADE/SHORT。",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "Signal65发布了针对标准18核Snapdragon X2 Elite而非Extreme版本的后续研究，聚焦14英寸高端笔记本，并显示其相对Intel Core Ultra X7 358H的竞争优势；该具体研究和结论未被Reference View覆盖。",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息是受委托的整机性能基准测试，未包含OEM订单、设计输赢、量产延期或采购转移等Policy要求的具体业务行动，因此没有Policy命中。"
+        },
+        "w3_case_id": "w3_f1f282d646cc45f88cdb95e5a17d680b"
+      },
+      "trade_direction": "SHORT",
+      "case_summary": {
+        "case_id": "case_eafa7ae7cba147e68fbf9e021466480d",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-10-01T18:59:30.305432Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 190.854664
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-10-01T18:56:19.450768Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2760204,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-10-01",
+        "source": {
+          "binding_id": "INTC:google_news_search_rss",
+          "kind": "api",
+          "name": "Google News Search RSS",
+          "source_id": "google_news_search_rss"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_b0a524031d90442e9a9ed4adfd13cedb",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Qualcomm's \"non-Extreme\" Snapdragon X2 just embarrassed Intel's premium laptop strategy - Windows Central"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "INSUFFICIENT_MARGIN"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-10-01T18:56:19.450768Z",
+        "completed_at": "2026-10-01T18:59:30.305432Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": []
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "本轮无已加载的 Event 或 Fact。当前消息核心事实为：Signal65 发布了新的后续研究，测试的是标准 18 核 Snapdragon X2 Elite（X2E-88-100）而非此前 Extreme 版本，聚焦 14 英寸高端笔电品类，结论为 Qualcomm 的 CPU/AI/电池/生产力优势不再仅限于 Extreme 旗舰 SKU。这是新的独立研究发布和新的事实发现，未被任何已知事实覆盖。",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "当前消息为Signal65（高通委托）发布的独立性能基准测试报道，对比Qualcomm Snapdragon X2 Elite、Intel Core Ultra X7 358H与AMD Ryzen AI 7 445在14英寸笔记本中的CPU、AI、图形及续航表现。消息陈述的核心事实是产品性能排名和价格对比，未涉及任何具体客户的采购订单变化、OEM补单/取消、量产延期、供给约束变化、Intel财报数据或可识别的商业决策。各Policy的criterion均要求具体业务行动或状态变化（如订单取消、生产批次调整、收入报告、设计导入等），基准测试结果本身不构成任何trigger path的直接事实对应，无法明确指向任何Policy的命中可能。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "当前消息为Signal65（高通委托）发布的独立性能基准测试报道，对比Qualcomm Snapdragon X2 Elite、Intel Core Ultra X7 358H与AMD Ryzen AI 7 445在14英寸笔记本中的CPU、AI、图形及续航表现。消息陈述的核心事实是产品性能排名和价格对比，未涉及任何具体客户的采购订单变化、OEM补单/取消、量产延期、供给约束变化、Intel财报数据或可识别的商业决策。各Policy的criterion均要求具体业务行动或状态变化（如订单取消、生产批次调整、收入报告、设计导入等），基准测试结果本身不构成任何trigger path的直接事实对应，无法明确指向任何Policy的命中可能。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Signal65",
+                "Qualcomm",
+                "Snapdragon X2 Elite X2E-88-100",
+                "Intel Core Ultra X7 358H",
+                "AMD Ryzen AI 7 445",
+                "Lenovo Slim 7x",
+                "Dell XPS 14",
+                "Lenovo Yoga 7a 14"
+              ],
+              "occurrence_date": "2026-10-01",
+              "proposition": "Signal65发布后续研究，比较标准18核Snapdragon X2 Elite X2E-88-100、Intel Core Ultra X7 358H和AMD Ryzen AI 7 445在14英寸高端笔记本中的表现。",
+              "subject_time": "2026年10月1日Signal65后续研究"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Qualcomm",
+                "Snapdragon X2 Elite",
+                "Intel Core Ultra X7 358H",
+                "Geekbench 7"
+              ],
+              "occurrence_date": "2026-10-01",
+              "proposition": "在Geekbench 7中，Snapdragon系统多核得分24016、单核得分3237，分别高于Intel系统的18360和2602，领先约31%和24%。",
+              "subject_time": "Signal65 Geekbench 7测试"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Qualcomm",
+                "Snapdragon X2 Elite",
+                "Intel Core Ultra X7 358H",
+                "UL Procyon",
+                "WinML"
+              ],
+              "occurrence_date": "2026-10-01",
+              "proposition": "在UL Procyon AI Computer Vision测试中，Snapdragon系统得分4360，高于Intel系统的2302；在AI CV 2.0 WinML测试中仍领先约31%。",
+              "subject_time": "Signal65 AI性能测试"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Qualcomm",
+                "Snapdragon X2 Elite",
+                "Intel Core Ultra X7 358H",
+                "Lenovo Slim 7x",
+                "Dell XPS 14"
+              ],
+              "occurrence_date": "2026-10-01",
+              "proposition": "在六项基准测试中，Snapdragon系统平均保留插电平衡模式性能的97%，Intel系统为95%；其本地视频播放续航为16.1小时，Chrome浏览续航为11.2小时，均高于Intel系统的14.4小时和8.6小时。",
+              "subject_time": "Signal65电池性能测试"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Intel",
+                "Arc B390",
+                "Qualcomm",
+                "Adreno X2-90",
+                "3DMark Steel Nomad Light"
+              ],
+              "occurrence_date": "2026-10-01",
+              "proposition": "在3DMark Steel Nomad Light测试中，Intel Arc B390的图形性能比Qualcomm Adreno X2-90高约23%。",
+              "subject_time": "Signal65图形性能测试"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Qualcomm",
+                "Snapdragon X2 Elite",
+                "Intel Core Ultra X7 358H",
+                "Lenovo Slim 7x",
+                "Dell XPS 14"
+              ],
+              "occurrence_date": "2026-10-01",
+              "proposition": "研究比较的Snapdragon笔记本售价为1999美元，Intel笔记本售价为2749美元；按选定CPU、渲染和AI基准归一化后，Snapdragon系统的单位价格性能约为Intel的2.15倍。",
+              "subject_time": "Signal65整机价格与价值比较"
+            }
+          ],
+          "expert_trade": {
+            "direction": "SHORT",
+            "evaluated": true,
+            "expectation_delta": "标准18核Snapdragon X2在14英寸高端整机中而非仅Extreme旗舰SKU，在CPU、AI、生产力和多数电池测试中领先Intel，并以更低整机价格实现约2.15倍价值，降低Intel平台转化为持续OEM分配和终端sell-through的概率，增加客户端单位、ASP和组合下行风险。",
+            "prior_expectation": "事件前合理基线是Intel Core Ultra和Core Series 3借助供给缓解、OEM上市及客户测试，将性能差距收窄并转化为客户端单位、组合和sell-through恢复；Qualcomm存在替代风险，但缺少标准SKU在主流高端14英寸机型中全面领先的证据。",
+            "reason": "该研究将竞争不利信号从单一旗舰扩展到更可能形成销量的高端主流区间；在Intel客户端单位已同比下降8%、且供给缓解后需要竞争力和OEM分配承接的背景下，传导至CCPG份额和产品组合的路径清楚。委托研究、整机差异及尚无订单输单限制置信度，但不足以消除方向性，故TRADE/SHORT。",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "Signal65发布了针对标准18核Snapdragon X2 Elite而非Extreme版本的后续研究，聚焦14英寸高端笔记本，并显示其相对Intel Core Ultra X7 358H的竞争优势；该具体研究和结论未被Reference View覆盖。",
+            "reference_ids": [],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "消息是受委托的整机性能基准测试，未包含OEM订单、设计输赢、量产延期或采购转移等Policy要求的具体业务行动，因此没有Policy命中。"
+          },
+          "w3_case_id": "w3_f1f282d646cc45f88cdb95e5a17d680b"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "4f62a5d2ab9849920447c9e15975676d24f72c543c5cb5a0a606593f3209ce3c",
+            "content_type": "text/plain",
+            "sha256": "827478986579f633add515bd177ecebf87740074d0d70f70379925d812b0b2a5",
+            "size_bytes": 11901
+          },
+          "case": {
+            "case_id": "case_eafa7ae7cba147e68fbf9e021466480d",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-10-01T18:56:01.051981Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-10-01T18:56:17.212721Z",
+          "revision": 1,
+          "row_revision": 2760182,
+          "source": {
+            "binding_id": "INTC:google_news_search_rss",
+            "kind": "api",
+            "name": "Google News Search RSS",
+            "source_id": "google_news_search_rss"
+          },
+          "source_published_at": "2026-10-01T18:38:23Z",
+          "standard_message_id": "std_cd9bc66e116943b4bff9782d58cb5f1a",
+          "stream_item_id": "stream_b0a524031d90442e9a9ed4adfd13cedb",
+          "stream_offset": 717,
+          "stream_published_at": "2026-10-01T18:56:17.219941Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Qualcomm's \"non-Extreme\" Snapdragon X2 just embarrassed Intel's premium laptop strategy - Windows Central"
+          },
+          "url": "https://www.windowscentral.com/hardware/qualcomm/qualcomms-snapdragon-x2-doesnt-need-the-extreme-badge-to-beat-intel-signal65-study",
+          "body_text": "Facebook\n\nX\n\nReddit\n\nPinterest\n\nFlipboard\n\nBluesky\n\nThreads\n\nEmail\n\nLast month, Windows Central exclusively covered a Signal65 report that showed Qualcomm's flagship Snapdragon X2 Elite Extreme outperforming Intel and AMD in a premium laptop showdown.\n\nNow, a new follow-up study by Signal65 just published suggests the more important story may involve the version most people are likely to buy (Qualcomm’s Extreme chip is basically in one laptop, albeit an awesome one).\n\nThe independent testing firm's latest research examined the standard 18-core Snapdragon X2 Elite X2E-88-100 in Lenovo's Slim 7x, comparing it against Intel's Core Ultra X7 358H inside Dell's banger XPS 14 and AMD's Ryzen AI 7 445 in Lenovo's Yoga 7a 14.\n\nThis time, the focus shifted from large 16-inch flagship laptops to the increasingly important premium 14-inch category, where thermal constraints, battery life, and efficiency matter just as much as peak performance.\n\nThe most consistent finding in the data is that the Snapdragon system does not need to be set to a higher power profile to reach its top-tier performance, while the x86 systems do.\n\nLuckily for Qualcomm, which commissioned the study, the results largely mirror the earlier Extreme-chip study. Qualcomm's platform led in CPU performance, AI workloads, productivity, and most battery-focused tests while also coming in significantly below the price of the Intel system evaluated.\n\nHowever, that does not mean Qualcomm won everything. Intel continues to hold meaningful advantages in graphics performance (exemplified to perfection in MSI’s latest handheld gaming PC), and the XPS 14 remains one of the most premium Windows laptops available today. Still, the latest findings strengthen the argument that Snapdragon's lead is no longer limited to a halo product, nor a quirk of its Extreme chip.\n\nLet's dive into the numbers, and then break down what it really means, as there is some nuance here.\n\nStrong CPU results, even without the flagship chip\n\nIn Geekbench 7, the Snapdragon-powered Lenovo Slim 7x posted a multi-core score of 24,016, compared to 18,360 for the Intel-powered XPS 14. Single-core performance also favored Qualcomm, with a score of 3,237 against Intel's 2,602.\n\nAccording to Signal65, that translates into leads of 31% and 24%, respectively, favoring Qualcomm.\n\nThose numbers are especially notable because they are not solely the result of having more CPU cores. While Qualcomm's 18-core design certainly helps in heavily threaded workloads, the single-core advantage points to meaningful architectural gains from the second-generation Oryon design as well.\n\nThe company also maintained substantial leads in Cinebench 2026 rendering tests and across Microsoft's Office applications as measured by UL Procyon. In the productivity benchmark, Snapdragon led Intel by 10% in Best Performance mode and retained a smaller advantage in the default Balanced profile.\n\nFor buyers who spend most of their day in Word, Outlook, PowerPoint, Edge, and Teams, those productivity-oriented results may matter more than synthetic benchmark scores.\n\nQualcomm's AI advantage continues\n\nAI remains one of Qualcomm's strongest categories.\n\nIn UL Procyon AI Computer Vision, the Snapdragon system scored 4,360 compared to Intel's 2,302. Even in the newer AI CV 2.0 WinML benchmark, which routes through Microsoft's Windows ML framework rather than a vendor-specific path, Qualcomm maintained a lead of roughly 31% over Intel.\n\nThat distinction is important because it better reflects the way many Windows AI experiences are expected to work going forward. Basically, a benchmark that favors proprietary software optimizations is useful, but a benchmark that preserves the advantage through a common Windows layer is arguably more relevant.\n\nBattery performance remains a major story\n\nOne of the headline findings from the earlier Snapdragon X2 Elite Extreme study was that Qualcomm gave up remarkably little performance when running unplugged. Qualcomm has been touting this advantage since the first gen of Snapdragon X.\n\nThe trend continues here.\n\nAcross six benchmarks, the Snapdragon system retained an average of 97% of its plugged-in Balanced-mode performance. Intel retained 95%, while the AMD system retained 74%. According to Signal65, the Snapdragon-powered laptop led every CPU, productivity, and AI benchmark tested on battery.\n\nCritically, we must remember that OEMs, especially on Intel and AMD systems, have leverage on AC/DC performance choices, meaning a company like Lenovo could have its AMD system perform worse on battery ... in order to get better battery life. Companies do this to find what they think is a balance for their intended customer, even if the explanation is opaque.\n\nI wrote about this AMD-throttling issue back in 2021, because I found it frustrating, deceptive, and disappointing. Not much has changed in 2026, apparently.\n\nThe battery life data was also favorable for Qualcomm, particularly because the three laptops used nearly identical battery capacities.\n\nThe Slim 7x (Qualcomm) lasted 16.1 hours in local video playback compared to 14.4 hours for the XPS 14 (Intel). In a Chrome browsing rundown, the Snapdragon laptop reached 11.2 hours versus 8.6 hours for Intel's machine.\n\nThere was one significant exception. Intel won the sustained Procyon Office battery test, posting 17.4 hours compared to Qualcomm's 14.3 hours. Signal65 argues that Snapdragon completed more work during that test, making the outcome more nuanced than a simple battery-life loss, but the result remains one of Intel's clearest victories in the report.\n\nThe XPS 14 deserves context\n\nThis is where I think the conversation becomes more interesting than benchmark charts.\n\nThe Snapdragon machine tested was a $1,999 Lenovo Slim 7x. The Intel competitor was a $2,749 Dell XPS 14. That $750 difference looms over nearly every chart in the report.\n\nAt the same time, it is difficult to discuss the XPS 14 purely as a processor comparison.\n\nDell's laptop is widely regarded as one of the most premium Windows notebooks on the market, with exceptional build quality, materials, industrial design, and one of the best displays available in the category. The Signal65 report acknowledges that these are comparisons of complete retail systems rather than isolated silicon measurements.\n\nThat matters because buyers are not choosing between just processors. They are choosing between laptops, aka the full package.\n\nThe display difference is particularly worth mentioning. Signal65 did not evaluate screen quality, but Dell's OLED-equipped XPS 14 has generally been considered one of the standout displays in the Windows ecosystem. Some buyers may reasonably decide that premium construction, display quality, and graphics performance justify paying more.\n\nOthers may look at a $750 premium and conclude that Intel's advantages are simply not large enough, which is fair, too. After all, we reviewed the Yoga Slim 7x back in May and gave it very high marks.\n\nIt's also worth pointing out that Dell's display is a VRR 120Hz at 2880 x 1800, while the Slim 7x is just 1920 x 1200 at 60Hz (both are OLED). Anyone worth their salt in comparing laptops and battery life knows the display is, by far, the number one draw on power, so while I do believe Qualcomm's chip here is better, a pinch of salt is needed for battery life results.\n\nIntel still has a meaningful win: GPU\n\nThe strongest argument for Intel remains graphics, something the company has been working very hard at in recent years.\n\nIn 3DMark Steel Nomad Light, Intel's Arc B390 outperformed Qualcomm's Adreno X2-90 GPU by roughly 23% in both DirectX 12 and Vulkan testing. That's the same GPU powering the beastly MSI Claw 8 EX AI+ gaming handheld, which crushes AMD in the same space.\n\nThe practical consequence is that the Intel system's wins require the user to be plugged in and to have selected the right mode, while the Snapdragon system's wins do not.\n\nFor users who prioritize integrated graphics performance, gaming, or creative workloads that benefit from stronger GPU hardware, Intel still has a compelling case.\n\nThat advantage becomes harder to defend when price enters the discussion, which is why Signal65 ultimately concludes that Snapdragon delivers better performance per dollar across the tested systems. According to the study, Qualcomm's laptop delivered roughly 2.15 times Intel's value when normalized across selected CPU, rendering, and AI benchmarks.\n\nFinal thoughts\n\nAs with the previous report, this study was commissioned by Qualcomm, a fact readers should keep in mind. Signal65 remains an independent testing organization, but commissioned research naturally benefits from additional scrutiny.\n\nEven with that caveat, the broader pattern is becoming difficult to ignore. I also trust the results.\n\nThe earlier Snapdragon X2 Elite Extreme report established that Qualcomm's flagship laptop chip could outperform competing Intel and AMD systems. This latest study suggests those advantages extend well beyond the top, hard-to-find SKU.\n\nThat may be the more consequential finding.\n\nFlagship products are important for headlines, but the laptops that shape a market tend to be the mainstream premium systems people actually purchase. If Qualcomm can deliver strong CPU performance, class-leading AI results, competitive battery life, and lower pricing with a standard 18-core Snapdragon X2 Elite, the company has moved beyond proving a point and started building a sustainable competitive position in the Windows laptop market.\n\nFrom my experience with both systems, I prefer Qualcomm since they usually run cooler and quieter, and my overall Windows 11 experience feels faster and smoother. That said, I have to admit Intel’s Core Ultra 3 series has really closed the gap — they’re genuinely impressive chips.\n\nIf anything, the bigger subtext with this story is just how far AMD has fallen out of this space. We recently covered how no modern Surface PCs opt for AMD, and it's not because of \"not enough product\" as Microsoft claims. It's because Microsoft knows they're not as good as what Intel and Qualcomm offer, full stop.\n\nQualcomm has seamlessly stepped into AMD's role as Intel's rival in the thin-and-light laptop market. While AMD continues to excel in AI and data servers, it faces a significant challenge in closing the gap with Intel and Qualcomm in the competitive 14-inch laptop segment.\n\nJoin us on Reddit at r/WindowsCentral to share your insights and discuss our latest news, reviews, and more.\n\nDaniel Rubino is the Editor-in-Chief of Windows Central. He is also the head reviewer, podcast co-host, and lead analyst. He has been covering Microsoft since 2007, when this site was called WMExperts (and later Windows Phone Central). His interests include Windows, laptops, next-gen computing, and wearable tech. He has reviewed laptops for over 10 years and is particularly fond of Qualcomm processors, new form factors, and thin-and-light PCs. Before all this tech stuff, he worked on a Ph.D. in linguistics studying brain and syntax, performed polysomnographs in NYC, and was a motion-picture operator for 17 years.\n\nYou must confirm your public display name before commenting\n\nPlease logout and then login again, you will then be prompted to enter your display name.\n\n1\n\n\nGears of War: E-Day's post-launch multiplayer plans are revealed as the game finally launches today in early access\n\n2\n\n\nGears of War: E-Day review (in progress) — Gorgeous, satisfying, harrowing ... but undeniably messy in aspects of execution\n\n3\n\n\nThe Witcher 3: Wild Hunt Remastered update addresses missing DLSS for Xbox Play Anywhere on PC, plus more fixes\n\n4\n\n\nCommunity ports bring the original Halo to PS5, Android, and even your humble web browser as AI modding takes over\n\n5\n\n\nXbox x IKEA collection available to buy instore and online from today"
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_cd9bc66e116943b4bff9782d58cb5f1a:0\"]",
+          "created_at": "2026-10-01T18:59:30.086849Z",
+          "dedupe_key": "0c0c51e03486312151d0fe1c3dfaf665bdc0d5cee7bf9f82661dc7c9d207d8d3",
+          "entities": [
+            "Signal65",
+            "Qualcomm",
+            "Snapdragon X2 Elite X2E-88-100",
+            "Intel Core Ultra X7 358H",
+            "AMD Ryzen AI 7 445",
+            "Lenovo Slim 7x",
+            "Dell XPS 14",
+            "Lenovo Yoga 7a 14"
+          ],
+          "occurrence_date": "2026-10-01",
+          "originating_node": "W3",
+          "proposition": "Signal65发布后续研究，比较标准18核Snapdragon X2 Elite X2E-88-100、Intel Core Ultra X7 358H和AMD Ryzen AI 7 445在14英寸高端笔记本中的表现。",
+          "provisional_event_id": "E455",
+          "subject_time": "2026年10月1日Signal65后续研究"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_cd9bc66e116943b4bff9782d58cb5f1a:1\"]",
+          "created_at": "2026-10-01T18:59:30.098895Z",
+          "dedupe_key": "0bb7e7c18f4f6b999ecc507ab15cdd23bbacc0620d2a67581ad159d12e48bf89",
+          "entities": [
+            "Qualcomm",
+            "Snapdragon X2 Elite",
+            "Intel Core Ultra X7 358H",
+            "Geekbench 7"
+          ],
+          "occurrence_date": "2026-10-01",
+          "originating_node": "W3",
+          "proposition": "在Geekbench 7中，Snapdragon系统多核得分24016、单核得分3237，分别高于Intel系统的18360和2602，领先约31%和24%。",
+          "provisional_event_id": "E456",
+          "subject_time": "Signal65 Geekbench 7测试"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_cd9bc66e116943b4bff9782d58cb5f1a:2\"]",
+          "created_at": "2026-10-01T18:59:30.108186Z",
+          "dedupe_key": "9e6f52dfc03669b7e0d73b6cf47435a65fbce5b7fa50d3d5040f65f07d2da33d",
+          "entities": [
+            "Qualcomm",
+            "Snapdragon X2 Elite",
+            "Intel Core Ultra X7 358H",
+            "UL Procyon",
+            "WinML"
+          ],
+          "occurrence_date": "2026-10-01",
+          "originating_node": "W3",
+          "proposition": "在UL Procyon AI Computer Vision测试中，Snapdragon系统得分4360，高于Intel系统的2302；在AI CV 2.0 WinML测试中仍领先约31%。",
+          "provisional_event_id": "E457",
+          "subject_time": "Signal65 AI性能测试"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_cd9bc66e116943b4bff9782d58cb5f1a:3\"]",
+          "created_at": "2026-10-01T18:59:30.118111Z",
+          "dedupe_key": "96ab89c53d554c35e7986b855352c22ea443dead4ef26132263ab014b4a90d20",
+          "entities": [
+            "Qualcomm",
+            "Snapdragon X2 Elite",
+            "Intel Core Ultra X7 358H",
+            "Lenovo Slim 7x",
+            "Dell XPS 14"
+          ],
+          "occurrence_date": "2026-10-01",
+          "originating_node": "W3",
+          "proposition": "在六项基准测试中，Snapdragon系统平均保留插电平衡模式性能的97%，Intel系统为95%；其本地视频播放续航为16.1小时，Chrome浏览续航为11.2小时，均高于Intel系统的14.4小时和8.6小时。",
+          "provisional_event_id": "E458",
+          "subject_time": "Signal65电池性能测试"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_cd9bc66e116943b4bff9782d58cb5f1a:4\"]",
+          "created_at": "2026-10-01T18:59:30.127718Z",
+          "dedupe_key": "488e4ffae76d136fbdfbf28ed0d2878865fc75ee82c6412d97b09bf3b0477932",
+          "entities": [
+            "Intel",
+            "Arc B390",
+            "Qualcomm",
+            "Adreno X2-90",
+            "3DMark Steel Nomad Light"
+          ],
+          "occurrence_date": "2026-10-01",
+          "originating_node": "W3",
+          "proposition": "在3DMark Steel Nomad Light测试中，Intel Arc B390的图形性能比Qualcomm Adreno X2-90高约23%。",
+          "provisional_event_id": "E459",
+          "subject_time": "Signal65图形性能测试"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_cd9bc66e116943b4bff9782d58cb5f1a:5\"]",
+          "created_at": "2026-10-01T18:59:30.134334Z",
+          "dedupe_key": "2281c4c3f0e16b40ee0db4206d7d0b6c9dfaefc249819205511bb0b779a9f60e",
+          "entities": [
+            "Qualcomm",
+            "Snapdragon X2 Elite",
+            "Intel Core Ultra X7 358H",
+            "Lenovo Slim 7x",
+            "Dell XPS 14"
+          ],
+          "occurrence_date": "2026-10-01",
+          "originating_node": "W3",
+          "proposition": "研究比较的Snapdragon笔记本售价为1999美元，Intel笔记本售价为2749美元；按选定CPU、渲染和AI基准归一化后，Snapdragon系统的单位价格性能约为Intel的2.15倍。",
+          "provisional_event_id": "E460",
+          "subject_time": "Signal65整机价格与价值比较"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_eafa7ae7cba147e68fbf9e021466480d",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-10-01T18:59:30.162569+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-10-01",
+            "delivery_failure": null,
+            "direction": "SHORT",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_f1f282d646cc45f88cdb95e5a17d680b",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-01T18:59:30.537901Z"
+              },
+              "case_id": "case_eafa7ae7cba147e68fbf9e021466480d",
+              "direction": "SHORT",
+              "entry_reason": "INSUFFICIENT_MARGIN",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_eafa7ae7cba147e68fbf9e021466480d",
+              "execution_reason_codes": [
+                "INSUFFICIENT_MARGIN"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_eafa7ae7cba147e68fbf9e021466480d",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-01T18:59:30.162569Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "INSUFFICIENT_MARGIN"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_08a55f792d5c48acbf65a368fa5d81de",
+      "ticker": "INTC",
+      "case_id": "case_08a55f792d5c48acbf65a368fa5d81de",
+      "intent_released_at_utc": "2026-10-05T11:25:29.306539+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_2d53bc93b57d4a029a95ccaa5d46716d",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Susquehanna",
+              "Intel",
+              "AMD",
+              "Qualcomm"
+            ],
+            "occurrence_date": "2026-10-05",
+            "proposition": "Susquehanna estimated that Intel’s laptop CPU model share fell 3.9 percentage points quarter over quarter to 68.1% in Q3 2026; it estimated AMD at 29.3% and Qualcomm at 2.2%.",
+            "subject_time": "Q3 2026"
+          },
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Susquehanna",
+              "Intel"
+            ],
+            "occurrence_date": "2026-10-05",
+            "proposition": "Susquehanna estimated that Intel’s desktop CPU model share fell 1.6 percentage points quarter over quarter to about 76% in Q3 2026, its lowest level in the study since Q2 2023.",
+            "subject_time": "Q3 2026; comparison with the study’s record since Q2 2023"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Susquehanna",
+              "Intel",
+              "Panther Lake"
+            ],
+            "occurrence_date": "2026-10-05",
+            "proposition": "Susquehanna reported that Panther Lake accounted for about 1.8% of Intel-based laptop SKUs in Q3 2026, up from 0.4% in the previous quarter.",
+            "subject_time": "Q3 2026, compared with Q2 2026"
+          }
+        ],
+        "expert_trade": {
+          "direction": "SHORT",
+          "evaluated": true,
+          "expectation_delta": "Susquehanna’s estimates indicate further Q3 model-share losses in both laptops and desktops, while Panther Lake represented only 1.8% of Intel-based laptop SKUs. This lowers the likelihood that supply easing and the new-product ramp will translate into near-term client share and unit recovery.",
+          "prior_expectation": "Q2 client units were down 8% year over year while ASP was up 27%, and Intel expected PC supply constraints to ease in the second half of 2026. Panther Lake’s launch offered a path to improve client competitiveness, but the baseline had no quantified Q3 share-recovery evidence.",
+          "reason": "The estimated 3.9-point laptop and 1.6-point desktop declines are a meaningful adverse signal for Intel’s client competitive position and can transmit through OEM product allocation to CCPG units and mix. The estimates are not confirmed sell-through or revenue data, so the signal is imperfect; nevertheless, the deterioration across both segments supports a cautious SHORT rather than assuming the product ramp will restore share.",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "The TSMC–Terafab discussions are already covered by E304, and E18/E127 cover Panther Lake’s process and launch milestones. The new information is Susquehanna’s Q3 estimates of Intel’s laptop and desktop CPU model-share declines and Panther Lake’s limited share of Intel laptop SKUs.",
+          "reference_ids": [
+            "E304",
+            "E18",
+            "E127"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "The Terafab report describes early discussions, not Intel’s exit or a binding TSMC replacement, as required by the relevant condition. The PC-share figures are analyst estimates; they do not establish the unit/sell-through recovery, inventory action, or customer order cancellation required by the PC policies."
+        },
+        "w3_case_id": "w3_2d53bc93b57d4a029a95ccaa5d46716d"
+      },
+      "trade_direction": "SHORT",
+      "case_summary": {
+        "case_id": "case_08a55f792d5c48acbf65a368fa5d81de",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-10-05T11:25:31.168239Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 418.377481
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-10-05T11:18:32.790758Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_EXECUTION",
+          "TRADE_INTENT"
+        ],
+        "revision": 3212692,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-10-05",
+        "source": {
+          "binding_id": "INTC:yahoo_finance_news",
+          "kind": "api",
+          "name": "Yahoo Finance News",
+          "source_id": "yahoo_finance_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_24f972aba74b4ea4bcb816bfa49bbafb",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Intel stock slides as TSMC explores Terafab tie-up, analyst flags share losses"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "ORDER_FILLED"
+          ],
+          "state": "EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-10-05T11:18:32.790758Z",
+        "completed_at": "2026-10-05T11:25:31.168239Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E304",
+            "E1302",
+            "E43",
+            "E55",
+            "E154"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "TSMC-Terafab洽谈及Intel盘前跌超4%已由E304（F1245/F1258）和provisional E1302覆盖。但Susquehanna分析师报告Intel Q3笔记本CPU型号份额降至68.1%（环比-3.9pp）、AMD升至29.3%、Qualcomm达2.2%、Panther Lake占1.8% SKU、桌面端份额降至约76%等具体量化份额数据，在E55及其他已加载Fact中完全无记录，构成独立于TSMC-Terafab叙事的新型分析师评估核心进展。",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [
+            "pol_e470f8c5662393d8253f",
+            "pol_29d2800563ebf8f98baa"
+          ],
+          "reason": "消息核心事实：Musk确认TSMC与其Terafab项目存在早期讨论，TSMC可能以拥有并运营设施的模式介入，而Intel 14A此前被指定为该项目唯一命名制程。这直接触及Terafab中Intel先进节点参与状态及向竞争代工（TSMC）转移的触发路径。虽然目前仅为'discussions'阶段、尚未构成最终确认，但作为具体事实已为pol_e470f8c5662393d8253f（Intel退出/被排除）和pol_29d2800563ebf8f98baa（已预订客户转向竞争代工）提供了可展开完整判定的实质观察点。消息中Panther Lake SKU占比及分析机构估计的份额变化为第三方估算，不满足客户政策对'Intel季度报告'或'OEM确认'的要求，未构成其他Policy的具体触发事实。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息陈述的是Musk确认TSMC与Terafab之间处于'仅仅是讨论'阶段，Culpium报道TSMC在'探索方式'协助运营，均无Intel退出/被排除的正式确认，也无绑定制造安排。Intel 14A仍被描述为'sole named process technology'。这恰好属于两条Policy trigger_boundary中明确排除的'已知的TSMC讨论、非排他探索、没有绑定生产安排的合作消息'。两条Candidate均NO HIT。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "Susquehanna",
+                "Intel",
+                "AMD",
+                "Qualcomm"
+              ],
+              "occurrence_date": "2026-10-05",
+              "proposition": "Susquehanna estimated that Intel’s laptop CPU model share fell 3.9 percentage points quarter over quarter to 68.1% in Q3 2026; it estimated AMD at 29.3% and Qualcomm at 2.2%.",
+              "subject_time": "Q3 2026"
+            },
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "Susquehanna",
+                "Intel"
+              ],
+              "occurrence_date": "2026-10-05",
+              "proposition": "Susquehanna estimated that Intel’s desktop CPU model share fell 1.6 percentage points quarter over quarter to about 76% in Q3 2026, its lowest level in the study since Q2 2023.",
+              "subject_time": "Q3 2026; comparison with the study’s record since Q2 2023"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Susquehanna",
+                "Intel",
+                "Panther Lake"
+              ],
+              "occurrence_date": "2026-10-05",
+              "proposition": "Susquehanna reported that Panther Lake accounted for about 1.8% of Intel-based laptop SKUs in Q3 2026, up from 0.4% in the previous quarter.",
+              "subject_time": "Q3 2026, compared with Q2 2026"
+            }
+          ],
+          "expert_trade": {
+            "direction": "SHORT",
+            "evaluated": true,
+            "expectation_delta": "Susquehanna’s estimates indicate further Q3 model-share losses in both laptops and desktops, while Panther Lake represented only 1.8% of Intel-based laptop SKUs. This lowers the likelihood that supply easing and the new-product ramp will translate into near-term client share and unit recovery.",
+            "prior_expectation": "Q2 client units were down 8% year over year while ASP was up 27%, and Intel expected PC supply constraints to ease in the second half of 2026. Panther Lake’s launch offered a path to improve client competitiveness, but the baseline had no quantified Q3 share-recovery evidence.",
+            "reason": "The estimated 3.9-point laptop and 1.6-point desktop declines are a meaningful adverse signal for Intel’s client competitive position and can transmit through OEM product allocation to CCPG units and mix. The estimates are not confirmed sell-through or revenue data, so the signal is imperfect; nevertheless, the deterioration across both segments supports a cautious SHORT rather than assuming the product ramp will restore share.",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "The TSMC–Terafab discussions are already covered by E304, and E18/E127 cover Panther Lake’s process and launch milestones. The new information is Susquehanna’s Q3 estimates of Intel’s laptop and desktop CPU model-share declines and Panther Lake’s limited share of Intel laptop SKUs.",
+            "reference_ids": [
+              "E304",
+              "E18",
+              "E127"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "The Terafab report describes early discussions, not Intel’s exit or a binding TSMC replacement, as required by the relevant condition. The PC-share figures are analyst estimates; they do not establish the unit/sell-through recovery, inventory action, or customer order cancellation required by the PC policies."
+          },
+          "w3_case_id": "w3_2d53bc93b57d4a029a95ccaa5d46716d"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "27818a4416b5cdca79a1a9c1f8d40970875b5e33b3b68a83211fab11c73565ac",
+            "content_type": "text/plain",
+            "sha256": "06879657a408bcd788081a976b4e853ed4e1491e04b7b94dd89a50940dcdad5a",
+            "size_bytes": 3131
+          },
+          "case": {
+            "case_id": "case_08a55f792d5c48acbf65a368fa5d81de",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-10-05T11:17:06.211789Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-10-05T11:18:32.302148Z",
+          "revision": 1,
+          "row_revision": 3212578,
+          "source": {
+            "binding_id": "INTC:yahoo_finance_news",
+            "kind": "api",
+            "name": "Yahoo Finance News",
+            "source_id": "yahoo_finance_news"
+          },
+          "source_published_at": "2026-10-05T11:10:04Z",
+          "standard_message_id": "std_4cde9c4136d24a5992acc1868496555f",
+          "stream_item_id": "stream_24f972aba74b4ea4bcb816bfa49bbafb",
+          "stream_offset": 980,
+          "stream_published_at": "2026-10-05T11:18:32.312601Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Intel stock slides as TSMC explores Terafab tie-up, analyst flags share losses"
+          },
+          "url": "https://finance.yahoo.com/markets/stocks/articles/intel-stock-slides-tsmc-explores-111004610.html?.tsrc=rss",
+          "body_text": "Investing.com -- Intel shares fell over 4% in premarket trading Monday after reports emerged that TSMC is in discussions with Elon Musk's Terafab venture about a potential collaboration — a development that raises questions about Intel's position as the only previously named manufacturing partner at the Texas semiconductor project.\n\nBefore you buy NVIDIA: our AI model's stock picks are beating the market by 120%+. See the list now »\n\nIntel joined Terafab in April 2026, with its next-generation 14A node designated as the facility's sole named process technology.\n\nMeanwhile, TSMC's NYSE-listed ADR climbed 1% after Elon Musk confirmed over the weekend that discussions with the Taiwanese chipmaker about his Terafab semiconductor venture in Texas are ongoing. Taiwan-listed shares closed up 3% on Monday.\n\nMusk posted on X on Sunday, October 4, that the talks are real but early: \"Just discussions, but something may come of it.\" His confirmation followed an exclusive report published Friday, October 2 by the Culpium newsletter, which said TSMC is exploring ways to help Terafab operate its planned Texas semiconductor factories.\n\nAccording to Culpium, the most likely structure would see TSMC own and operate the new facility with Terafab serving as an anchor customer — a model similar to TSMC's JASM joint venture in Japan and its ESMC partnership in Germany.\n\nA Terafab partnership would represent an incremental addition to the $265 billion already committed to its 12-facility Arizona complex. Terafab is being developed by SpaceX and Tesla in Grimes County, Texas, roughly 100 km northwest of Houston.\n\nNot finding the right stocks? Our AI's list of investor-grade stock picks for October just dropped »\n\nAn August 6 announcement committed $16.8 billion for the first phase, with county filings indicating a potential total cost of up to $119 billion across multiple phases.\n\nOutput is intended exclusively for Tesla, SpaceX, and xAI. Reports had already flagged that TSMC was separately evaluating a potential Texas investment on top of its Arizona commitments.\n\nMoreover, Susquehanna analysts said this morning that Intel has likely continued to lose CPU model share in both laptops and desktops in the third quarter, with AMD gaining ground and Qualcomm reaching its highest laptop share yet.\n\nSusquehanna estimates Intel's model share fell 3.9% quarter over quarter to 68.1%, while AMD gained 3.1% to 29.3%. Qualcomm increased modestly to 2.2%, its highest level yet.\n\nIntel's new Panther Lake processor, based on its 18A process, reached about 1.8% of Intel-based laptop SKUs, up from 0.4% in the previous quarter. Susquehanna said the ramp was ahead of Lunar Lake's trajectory but roughly in line with Arrow Lake.\n\nOn desktops, Intel's model share fell 1.6% quarter over quarter to about 76%, its lowest level in the study since the second quarter of 2023.\n\nOriginal Article\n\nIntel stock slides as TSMC explores Terafab tie-up, analyst flags share losses\n\nFrance's CAC 40 hits 6-month low while European stocks inch up in caution\n\nU.S. shares of Brazilian companies rally after first round election result"
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_4cde9c4136d24a5992acc1868496555f:0\"]",
+          "created_at": "2026-10-05T11:25:29.148467Z",
+          "dedupe_key": "4037f60e61e8ef2ade639132d33736b5043986da498d511ff031500e38c4a5f0",
+          "entities": [
+            "Susquehanna",
+            "Intel",
+            "AMD",
+            "Qualcomm"
+          ],
+          "occurrence_date": "2026-10-05",
+          "originating_node": "W3",
+          "proposition": "Susquehanna estimated that Intel’s laptop CPU model share fell 3.9 percentage points quarter over quarter to 68.1% in Q3 2026; it estimated AMD at 29.3% and Qualcomm at 2.2%.",
+          "provisional_event_id": "E336",
+          "subject_time": "Q3 2026"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_4cde9c4136d24a5992acc1868496555f:1\"]",
+          "created_at": "2026-10-05T11:25:29.187421Z",
+          "dedupe_key": "f100dd8a8592964c396dcbb5668e5c36ca16a0d86fda15af76a3530e394f46ec",
+          "entities": [
+            "Susquehanna",
+            "Intel"
+          ],
+          "occurrence_date": "2026-10-05",
+          "originating_node": "W3",
+          "proposition": "Susquehanna estimated that Intel’s desktop CPU model share fell 1.6 percentage points quarter over quarter to about 76% in Q3 2026, its lowest level in the study since Q2 2023.",
+          "provisional_event_id": "E337",
+          "subject_time": "Q3 2026; comparison with the study’s record since Q2 2023"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_4cde9c4136d24a5992acc1868496555f:2\"]",
+          "created_at": "2026-10-05T11:25:29.238932Z",
+          "dedupe_key": "bcdf4be12320af6ed84ce51d34d99276f41a53db85cbbbf9080700729aa901d8",
+          "entities": [
+            "Susquehanna",
+            "Intel",
+            "Panther Lake"
+          ],
+          "occurrence_date": "2026-10-05",
+          "originating_node": "W3",
+          "proposition": "Susquehanna reported that Panther Lake accounted for about 1.8% of Intel-based laptop SKUs in Q3 2026, up from 0.4% in the previous quarter.",
+          "provisional_event_id": "E338",
+          "subject_time": "Q3 2026, compared with Q2 2026"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_08a55f792d5c48acbf65a368fa5d81de",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-10-05T11:25:29.306539+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-10-05",
+            "delivery_failure": null,
+            "direction": "SHORT",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_2d53bc93b57d4a029a95ccaa5d46716d",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-05T11:25:29.602531Z"
+              },
+              "case_id": "case_08a55f792d5c48acbf65a368fa5d81de",
+              "direction": "SHORT",
+              "entry_reason": "ORDER_FILLED",
+              "entry_result": "FILLED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_08a55f792d5c48acbf65a368fa5d81de",
+              "execution_reason_codes": [
+                "ORDER_FILLED"
+              ],
+              "execution_state": "EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "17636.70"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "154"
+              },
+              "first_fill_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-05T11:25:34Z"
+              },
+              "has_actual_fill": true,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_08a55f792d5c48acbf65a368fa5d81de",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-05T11:25:29.306539Z"
+              }
+            },
+            "entry": {
+              "side": "SELL",
+              "quantity": "154",
+              "average_price_usd": "114.5240259740259740259740260",
+              "first_fill_at": "2026-10-05T11:25:34+00:00",
+              "last_fill_at": "2026-10-05T11:25:36+00:00"
+            },
+            "exit": {
+              "side": "BUY",
+              "quantity": "154",
+              "average_price_usd": "116.18",
+              "first_fill_at": "2026-10-05T19:30:02+00:00",
+              "last_fill_at": "2026-10-05T19:30:02+00:00"
+            },
+            "fills": [
+              {
+                "kind": "ENTRY",
+                "side": "SELL",
+                "quantity": "100",
+                "price_usd": "114.51",
+                "filled_at": "2026-10-05T11:25:34+00:00",
+                "broker_fill_id": "00025b45.6ac32768.01.01"
+              },
+              {
+                "kind": "ENTRY",
+                "side": "SELL",
+                "quantity": "54",
+                "price_usd": "114.55",
+                "filled_at": "2026-10-05T11:25:36+00:00",
+                "broker_fill_id": "00025b45.6ac32769.01.01"
+              },
+              {
+                "kind": "EXIT",
+                "side": "BUY",
+                "quantity": "154",
+                "price_usd": "116.18",
+                "filled_at": "2026-10-05T19:30:02+00:00",
+                "broker_fill_id": "00025b45.6ac4b8d2.01.01"
+              }
+            ],
+            "lot_remaining_quantity": 0,
+            "realized_pnl_usd": "-257.3842400000000000000000000",
+            "realized_pnl_records": [
+              {
+                "amount": "-257.3842400000000000000000000",
+                "day": "2026-10-05",
+                "environment": "PAPER",
+                "provisional": false,
+                "reason": null
+              }
+            ],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "EXECUTED",
+        "read_execution_reason_codes": [
+          "ORDER_FILLED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": {
+          "side": "SELL",
+          "quantity": "154",
+          "average_price_usd": "114.5240259740259740259740260",
+          "first_fill_at": "2026-10-05T11:25:34+00:00",
+          "last_fill_at": "2026-10-05T11:25:36+00:00"
+        },
+        "exit": {
+          "side": "BUY",
+          "quantity": "154",
+          "average_price_usd": "116.18",
+          "first_fill_at": "2026-10-05T19:30:02+00:00",
+          "last_fill_at": "2026-10-05T19:30:02+00:00"
+        },
+        "realized_pnl_usd": "-257.3842400000000000000000000",
+        "pnl_state": "REALIZED",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:selection:INTC:2026-10-05",
+      "ticker": "INTC",
+      "case_id": "case_b39f31b559ab46bc8c81cd9f344ebb8f",
+      "intent_released_at_utc": "2026-10-05T11:49:26.626625+00:00",
+      "intent_status": "DUPLICATE_REALTIME_OUTPUT",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_246074428a6c425eb7cb4b5d53611e12",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Mercury Research",
+              "AMD",
+              "x86服务器CPU市场"
+            ],
+            "occurrence_date": null,
+            "proposition": "Mercury Research报告，AMD在x86服务器CPU市场的份额在2026年第二季度为34.5%，高于2025年第二季度的27.3%。",
+            "subject_time": "2026年第二季度，相比2025年第二季度"
+          },
+          {
+            "assertion_state": "RUMOR",
+            "entities": [
+              "Intel",
+              "Tom's Hardware",
+              "CPU价格"
+            ],
+            "occurrence_date": null,
+            "proposition": "据Tom's Hardware报道，Intel据称将在2027年3月实施约10%的CPU涨价。",
+            "subject_time": "2027年3月"
+          },
+          {
+            "assertion_state": "PLAN",
+            "entities": [
+              "AMD",
+              "TSMC",
+              "台湾",
+              "CPU产能"
+            ],
+            "occurrence_date": null,
+            "proposition": "AMD预计在2026年逐季增加CPU产能，并计划在2027年继续增加产能，涉及与TSMC在台湾的扩产合作。",
+            "subject_time": "2026年至2027年"
+          }
+        ],
+        "expert_trade": {
+          "direction": "SHORT",
+          "evaluated": true,
+          "expectation_delta": "AMD服务器CPU份额同比由27.3%升至34.5%，增加7.2个百分点，将原本定性的竞争风险具体化：即使Intel只能满足约50%的需求，新增需求和价值捕获仍在流向AMD；AMD扩产使这一份额压力更可能延续。Intel 2027年3月10%提价仍只是报道，不能抵消份额损失。",
+          "prior_expectation": "事件前基线是Intel服务器需求改善但供给受限，Q2服务器单位同比增长9%、ASP增长48%，良率和周期时间改善及Q3指引支持近端增长；AMD供给在2026年同样紧张，但其相对份额尚无同口径量化证据。",
+          "reason": "形成可交易的负向预期差。AMD份额上升及扩产直接削弱Intel服务器/DCAI的单位、份额和持续定价能力，并可传导至收入、毛利和EPS持续性；服务器业务是Intel当前主要增长与盈利传导。未确认的提价计划及缺乏客户接受证据只能提供有限抵消。",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "相对于Reference View中仅覆盖2026年秋季/10月提价的E28，本消息新增了2027年3月约10%提价的具体时点，并量化披露AMD服务器CPU份额由27.3%升至34.5%，同时补充AMD与TSMC扩充CPU产能的计划。",
+          "reference_ids": [
+            "E28"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息未满足任何现行Policy的激活阈值；没有客户因提价取消或削减采购、供给缓解后的单位量验证、绑定生产订单或其他事件级触发条件。"
+        },
+        "w3_case_id": "w3_246074428a6c425eb7cb4b5d53611e12"
+      },
+      "trade_direction": "SHORT",
+      "case_summary": {
+        "case_id": "case_b39f31b559ab46bc8c81cd9f344ebb8f",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-28T15:54:53.383088Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 35490.268418
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "SEQUENTIAL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-28T06:03:23.114670Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 3216841,
+        "runtime_mode": "CLOSED",
+        "semantic_day": "2026-09-28",
+        "source": {
+          "binding_id": "INTC:finnhub_company_news",
+          "kind": "api",
+          "name": "Finnhub Company News API",
+          "source_id": "finnhub_company_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_73c08805f0eb4103894d7c3766ee4ec3",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Intel CEO Lip-Bu Tan Has Incredible News for AMD Stock Investors"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "DUPLICATE_REALTIME_OUTPUT"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "CANDIDATE",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-28T06:03:23.114670Z",
+        "completed_at": "2026-09-28T15:54:53.383088Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "CLOSED",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": "2026-09-26",
+        "sweep_id": "sweep:INTC:2026-09-28",
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E48",
+            "E20",
+            "E24",
+            "E28",
+            "E67"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [
+            {
+              "event_id": "E28",
+              "fact_ids": [
+                "F200"
+              ]
+            }
+          ],
+          "reason": "消息包含多项未被已加载 Event 覆盖的核心事实：Tom's Hardware 报道 Intel 将于 2027 年 3 月实施 10% 涨价（E28 覆盖的是 2026 秋季/10 月时点）；AMD 预计跟随 Intel 涨价；Intel Q2 实际营收 161 亿美元、非 GAAP EPS 0.42 美元（无对应 Event）；AMD 与台积电合作扩产及 Lisa Su 季度扩容表态；Mercury Research 报告 AMD 服务器 CPU 份额升至 34.5%。这些构成新的核心现实进展。",
+          "reference_ids": [
+            "E28"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "当前消息为一篇关于Intel服务器CPU市场地位的综合分析文章，核心事实包括：Intel CEO确认仅能满足50%的CPU需求（供给约束仍严峻）、Q2 DCAI同比增长59%、计划2027年3月实施10%提价、AMD在x86服务器CPU市场份额上升至34.5%。这些均为宏观市场评论和历史财务数据，未包含任何单一具体客户从验证推进为有约束力采购、供给约束实质缓解确认、特定订单因封装/基板延期、或提价后客户明确取消/削减等与任何Policy criterion存在直接触发关系的事件级观察。消息实际陈述的供给状态（仍严重短缺）与多数相关Policy的触发前提（供给缓解后评估）方向相反，可明确排除。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "当前消息为一篇关于Intel服务器CPU市场地位的综合分析文章，核心事实包括：Intel CEO确认仅能满足50%的CPU需求（供给约束仍严峻）、Q2 DCAI同比增长59%、计划2027年3月实施10%提价、AMD在x86服务器CPU市场份额上升至34.5%。这些均为宏观市场评论和历史财务数据，未包含任何单一具体客户从验证推进为有约束力采购、供给约束实质缓解确认、特定订单因封装/基板延期、或提价后客户明确取消/削减等与任何Policy criterion存在直接触发关系的事件级观察。消息实际陈述的供给状态（仍严重短缺）与多数相关Policy的触发前提（供给缓解后评估）方向相反，可明确排除。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Mercury Research",
+                "AMD",
+                "x86服务器CPU市场"
+              ],
+              "occurrence_date": null,
+              "proposition": "Mercury Research报告，AMD在x86服务器CPU市场的份额在2026年第二季度为34.5%，高于2025年第二季度的27.3%。",
+              "subject_time": "2026年第二季度，相比2025年第二季度"
+            },
+            {
+              "assertion_state": "RUMOR",
+              "entities": [
+                "Intel",
+                "Tom's Hardware",
+                "CPU价格"
+              ],
+              "occurrence_date": null,
+              "proposition": "据Tom's Hardware报道，Intel据称将在2027年3月实施约10%的CPU涨价。",
+              "subject_time": "2027年3月"
+            },
+            {
+              "assertion_state": "PLAN",
+              "entities": [
+                "AMD",
+                "TSMC",
+                "台湾",
+                "CPU产能"
+              ],
+              "occurrence_date": null,
+              "proposition": "AMD预计在2026年逐季增加CPU产能，并计划在2027年继续增加产能，涉及与TSMC在台湾的扩产合作。",
+              "subject_time": "2026年至2027年"
+            }
+          ],
+          "expert_trade": {
+            "direction": "SHORT",
+            "evaluated": true,
+            "expectation_delta": "AMD服务器CPU份额同比由27.3%升至34.5%，增加7.2个百分点，将原本定性的竞争风险具体化：即使Intel只能满足约50%的需求，新增需求和价值捕获仍在流向AMD；AMD扩产使这一份额压力更可能延续。Intel 2027年3月10%提价仍只是报道，不能抵消份额损失。",
+            "prior_expectation": "事件前基线是Intel服务器需求改善但供给受限，Q2服务器单位同比增长9%、ASP增长48%，良率和周期时间改善及Q3指引支持近端增长；AMD供给在2026年同样紧张，但其相对份额尚无同口径量化证据。",
+            "reason": "形成可交易的负向预期差。AMD份额上升及扩产直接削弱Intel服务器/DCAI的单位、份额和持续定价能力，并可传导至收入、毛利和EPS持续性；服务器业务是Intel当前主要增长与盈利传导。未确认的提价计划及缺乏客户接受证据只能提供有限抵消。",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "相对于Reference View中仅覆盖2026年秋季/10月提价的E28，本消息新增了2027年3月约10%提价的具体时点，并量化披露AMD服务器CPU份额由27.3%升至34.5%，同时补充AMD与TSMC扩充CPU产能的计划。",
+            "reference_ids": [
+              "E28"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "消息未满足任何现行Policy的激活阈值；没有客户因提价取消或削减采购、供给缓解后的单位量验证、绑定生产订单或其他事件级触发条件。"
+          },
+          "w3_case_id": "w3_246074428a6c425eb7cb4b5d53611e12"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "fcb40fb94e98af4857573bc4b8134c92dc0df59fd35f94f93c4d21ffee28740f",
+            "content_type": "text/plain",
+            "sha256": "df6d511e760946fc431a47d95b896d37e371620cb7aacf64bb94305a5177a2a1",
+            "size_bytes": 4278
+          },
+          "case": {
+            "case_id": "case_b39f31b559ab46bc8c81cd9f344ebb8f",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-28T06:02:16.584432Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-28T06:03:20.227151Z",
+          "revision": 1,
+          "row_revision": 2314922,
+          "source": {
+            "binding_id": "INTC:finnhub_company_news",
+            "kind": "api",
+            "name": "Finnhub Company News API",
+            "source_id": "finnhub_company_news"
+          },
+          "source_published_at": "2026-09-27T15:23:01Z",
+          "standard_message_id": "std_74d832e07404460285cfebb65e35cf13",
+          "stream_item_id": "stream_73c08805f0eb4103894d7c3766ee4ec3",
+          "stream_offset": 311,
+          "stream_published_at": "2026-09-28T06:03:20.233129Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Intel CEO Lip-Bu Tan Has Incredible News for AMD Stock Investors"
+          },
+          "url": "https://www.fool.com/investing/2026/09/27/intel-ceo-lip-bu-tan-has-incredible-news-for-amd-stock-investors/",
+          "body_text": "Intel (INTC -3.45%) is firmly in the artificial intelligence (AI) chip race, driven by improving demand for server central processing units (CPUs), which has been fueled by growth in agentic AI and inference workloads.\n\nInference and agentic AI are multi-step tasks, unlike chatbots that gained popularity in the first wave of AI deployment. Instead of simply answering a prompt, AI agents break down a query into multiple steps to perform tasks autonomously. This brings CPUs into focus, as they can manage multi-step tasks, call applications into action, and monitor the security of autonomous tasks performed by the agent.\n\nAs a result, Intel rival Advanced Micro Devices (AMD +0.22%) expects the total addressable market (TAM) for server CPUs to increase at a compound annual growth rate of more than 50% through 2030. AMD expects this market to generate $220 billion in revenue in 2030. So, Intel CEO Lip-Bu Tan's remarks about the state of the server CPU market clearly suggest that better times lie ahead for these chipmakers.\n\nImage source: Intel\n\nIntel is finding it difficult to meet server CPU demand\n\nTan recently remarked at a conference that it can meet only 50% of customer demand for CPUs. This is good news for Intel and AMD, as both companies are dominant players in the x86 server CPU space. The shortage of CPUs should ideally lead to higher prices, lifting the margins and earnings of Intel and AMD.\n\nNASDAQ: INTC\n\nKey Data Points\n\nTom's Hardware reports that Intel is poised to implement a 10% price hike in March 2027. It is worth noting that the company has already implemented a couple of price hikes this year. Even AMD is expected to follow suit, according to the report. So, the impressive turnaround in Intel's fortunes is likely to continue.\n\nThe company's revenue in Q2 increased 25% year over year to $16.1 billion, fueled by a 59% jump in the data center and AI (DCAI) segment. What's more, Intel posted non-GAAP earnings per share of $0.42 from a loss of $0.10 in the year-ago quarter. As server CPU demand increases and supply constraints push up prices, the company should ideally be able to sustain its healthy growth momentum.\n\nTan's comments point to better times for AMD\n\nAMD could be a bigger beneficiary of the booming demand for server CPUs. That's because it has consistently taken market share from Intel in the x86 server CPU market. Mercury Research reports that AMD's server CPU market share increased to 34.5% in Q2 this year, up from 27.3% in the year-ago period.\n\nIntel, therefore, lost significant ground to AMD, primarily due to the latter's technological advantage in server CPUs. UBS analysts note that the superior core count of AMD's server CPUs and their multithreading capability make them ideal for handling agentic AI workloads. This explains why AMD is clocking significantly faster growth in the data center segment, with revenue increasing by 107% year over year in Q2.\n\nWhat's more, AMD is looking to capitalize on Intel's supply chain problems by ramping up production capacity in Taiwan in association with foundry giant TSMC. Ceo Lisa Su expects to increase CPU capacity rapidly in every quarter this year. Moreover, AMD is looking to add more capacity in 2027.\n\nIntel, on the other hand, noted on its Q2 earnings call that it is struggling to meet demand despite increasing production yields and enhancing output. AMD, meanwhile, believes that it can grow its server revenue by over 80% in the second half of 2026 compared to last year, followed by an increase of over 70% in 2027.\n\nIn simple terms, AMD believes it can grow faster than the server CPU market, indicating it is confident in taking more share away from Intel. Even consensus estimates project that AMD's server CPU gains will translate into stronger growth.\n\nAnalysts expect an 82% spike in AMD's earnings this year, followed by a 105% increase in 2027. Intel's earnings growth, meanwhile, is expected to slow down from 262% this year to 35% in 2027. With AMD trading at 36 times forward earnings compared to Intel's forward earnings multiple of 56, investors looking to buy a semiconductor stock to capitalize on the booming AI server CPU demand would do well to buy AMD over Intel, especially considering Chipzilla's diminishing market share."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_74d832e07404460285cfebb65e35cf13:0\"]",
+          "created_at": "2026-09-28T14:35:48.994062Z",
+          "dedupe_key": "f6a48e8927a72d1fa7e87603db8cb6256fa873169936e0ffd6c101d1459ce665",
+          "entities": [
+            "Intel",
+            "Lip-Bu Tan"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "Intel CEO Lip-Bu Tan stated at a conference that Intel can meet only 50% of customer demand for server CPUs, indicating a significant supply constraint.",
+          "provisional_event_id": "E232",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "PLANNED",
+          "candidate_id": "[\"runtime-v2-msg:std_74d832e07404460285cfebb65e35cf13:1\"]",
+          "created_at": "2026-09-28T14:35:49.017460Z",
+          "dedupe_key": "ba9f676e1dc732b50150209a2d00c7bc4e2482e1c1c3c133a48c3c1d2ae34c15",
+          "entities": [
+            "Intel"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "Intel is poised to implement a 10% server CPU price increase in March 2027, per Tom's Hardware report.",
+          "provisional_event_id": "E233",
+          "subject_time": "March 2027"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_74d832e07404460285cfebb65e35cf13:2\"]",
+          "created_at": "2026-09-28T14:35:49.031425Z",
+          "dedupe_key": "5b9b5c56926235302414fba6195e439a12be15a32893aa5fa2ad38717147c531",
+          "entities": [
+            "Intel"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "Intel reported Q2 2026 revenue of $16.1 billion, up 25% year over year, with data center and AI segment revenue up 59%; non-GAAP EPS reached $0.42 versus a $0.10 loss in the prior-year quarter.",
+          "provisional_event_id": "E234",
+          "subject_time": "Q2 2026"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_74d832e07404460285cfebb65e35cf13:3\"]",
+          "created_at": "2026-09-28T14:35:49.040065Z",
+          "dedupe_key": "115e8e7400a14383e56fb6970dcd158afe13e93eaad5c6565ef6b0b0c768dff1",
+          "entities": [
+            "AMD",
+            "Mercury Research"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "AMD's server CPU market share rose to 34.5% in Q2 2026, up from 27.3% a year earlier, per Mercury Research.",
+          "provisional_event_id": "E235",
+          "subject_time": "Q2 2026"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_74d832e07404460285cfebb65e35cf13:4\"]",
+          "created_at": "2026-09-28T14:35:49.049283Z",
+          "dedupe_key": "f036ff469bec91703a7ef359dc7941f90e78b83e386ee49e67e3ce669afad272",
+          "entities": [
+            "AMD"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "AMD's data center segment revenue grew 107% year over year in Q2 2026.",
+          "provisional_event_id": "E236",
+          "subject_time": "Q2 2026"
+        },
+        {
+          "assertion_state": "PLAN",
+          "candidate_id": "[\"runtime-v2-msg:std_74d832e07404460285cfebb65e35cf13:5\"]",
+          "created_at": "2026-09-28T14:35:49.057768Z",
+          "dedupe_key": "04b35ba7d39dc2302266daec79f67e5e36a456a6fcb056b04f4a1566e8df29ba",
+          "entities": [
+            "AMD",
+            "TSMC",
+            "Lisa Su"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "AMD plans to increase CPU production capacity via TSMC in Taiwan, with CEO Lisa Su expecting rapid quarterly capacity growth throughout 2026 and additional capacity expansion in 2027.",
+          "provisional_event_id": "E237",
+          "subject_time": "2026–2027"
+        },
+        {
+          "assertion_state": "GUIDANCE",
+          "candidate_id": "[\"runtime-v2-msg:std_74d832e07404460285cfebb65e35cf13:6\"]",
+          "created_at": "2026-09-28T14:35:49.066061Z",
+          "dedupe_key": "d3a71b0a81a427e1cf58726e4061046fe62529aa83e594b7ecb0ab239d80d208",
+          "entities": [
+            "AMD"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "AMD guided that its server revenue will grow over 80% in H2 2026 year over year and over 70% in 2027.",
+          "provisional_event_id": "E238",
+          "subject_time": "H2 2026 and 2027"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:selection:INTC:2026-10-05",
+            "status": "DUPLICATE_REALTIME_OUTPUT",
+            "released_at": "2026-10-05T11:49:26.626625+00:00",
+            "selection_id": "selection:INTC:2026-10-05",
+            "submitted": false,
+            "release_semantic_day": "2026-10-05",
+            "delivery_failure": null,
+            "direction": "SHORT",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_246074428a6c425eb7cb4b5d53611e12",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [
+          {
+            "candidate_id": "candidate:case_b39f31b559ab46bc8c81cd9f344ebb8f",
+            "status": "DUPLICATE_REALTIME_OUTPUT",
+            "created_at": "2026-09-28T15:54:52.857482+00:00",
+            "closed_cycle_id": "2026-09-26",
+            "origin_trade_eligible": true,
+            "trade_disposition": null,
+            "trade": {
+              "decision": "SHORT",
+              "executed_policy_id": null,
+              "candidate_policy_ids": [],
+              "matched_condition_ids": []
+            }
+          }
+        ],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "case_id": "case_b39f31b559ab46bc8c81cd9f344ebb8f",
+              "direction": "SHORT",
+              "entry_reason": null,
+              "entry_result": null,
+              "environment": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "execution_id": "trade:selection:INTC:2026-10-05",
+              "execution_reason_codes": [
+                "DUPLICATE_REALTIME_OUTPUT"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "NOT_RECEIVED",
+              "intent_id": "trade:selection:INTC:2026-10-05",
+              "intent_status": "DUPLICATE_REALTIME_OUTPUT",
+              "profile_revision": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-05T11:49:26.626625Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "DUPLICATE_REALTIME_OUTPUT",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "DUPLICATE_REALTIME_OUTPUT"
+        ],
+        "executor_execution_record_exists": false,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_c24add34b3594b8aa8c356869a18f222",
+      "ticker": "INTC",
+      "case_id": "case_c24add34b3594b8aa8c356869a18f222",
+      "intent_released_at_utc": "2026-10-06T17:13:38.428968+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_e5f539f1f1244acc88df801c4d1c5686",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Intel",
+              "Intel Xeon 6",
+              "AMD第五代EPYC",
+              "Arm v9.2A",
+              "Terminal-Bench 2.0"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "Intel报告称，其截至2026年9月进行的Terminal-Bench 2.0确定性回放测试显示，Xeon 6实例在医疗、银行金融及制造代理工作流中的归一化吞吐分别约为第五代AMD EPYC实例的1.66、1.64及1.58倍，以及Arm v9.2A实例的4.5、4.57及4.24倍；测试使用24路并发、60分钟评估窗口，且不运行模型推理或网络调用。",
+            "subject_time": "截至2026年9月的Terminal-Bench 2.0测试"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "Intel报告的Terminal-Bench 2.0测试显示Xeon 6在医疗、银行金融及制造代理任务中的归一化吞吐均显著领先第五代AMD EPYC和Arm v9.2A，提升了Intel在Agentic AI服务器CPU工作负载中赢得分配的预期。",
+          "prior_expectation": "Agentic AI扩大CPU需求的预期已存在（E388）；Intel服务器需求改善且Xeon 6快速爬坡，但D2指出相对性能优势和客户级分配尚未确立。",
+          "reason": "测试是在相同工作轨迹与实例资源下进行，跨三个垂直领域结果方向一致且差距显著；在Agentic AI需求扩张背景下，这改善了Xeon的竞争力预期，并可经客户工作负载分配影响DCAI需求。数据由Intel自测，且没有客户采用、价格/功耗比较或订单确认，限制了结论强度；但该测试为D2尚缺的相关性能证据，提供了足够明确的正向边际信号，故作LONG。",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "E388已记录Agentic AI带动服务器CPU需求的市场预测，但未覆盖Intel披露的Xeon 6跨行业代理工作负载吞吐测试及其对比结果。",
+          "reference_ids": [
+            "E388"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "此为Intel自述的性能基准测试结果，未确认客户选型、绑定订单、部署、出货或新增供给；不满足现行Policy的触发条件。"
+        },
+        "w3_case_id": "w3_e5f539f1f1244acc88df801c4d1c5686"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_c24add34b3594b8aa8c356869a18f222",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-10-06T17:13:38.703543Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 311.341678
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-10-06T17:08:27.361865Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 3476467,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-10-06",
+        "source": {
+          "binding_id": "INTC:google_news_search_rss",
+          "kind": "api",
+          "name": "Google News Search RSS",
+          "source_id": "google_news_search_rss"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_14cbaa1e5189440c8ed9ddf21113062a",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Boosting Agentic AI Throughput with Intel® Xeon® CPUs - Intel"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "INSUFFICIENT_MARGIN"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-10-06T17:08:27.361865Z",
+        "completed_at": "2026-10-06T17:13:38.703543Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": []
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "当前未加载任何 canonical event 或 provisional fact，消息核心事实（Intel 发布 Xeon 6 在 agentic AI 场景下针对医疗、金融、制造三大行业对 AMD EPYC 及 Arm 的吞吐基准测试结果）无任何已有现实可覆盖，属于全新进展。",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "该消息是Intel自撰的技术营销基准文章，展示Xeon 6在agentic AI工作负载下对比AMD EPYC和Arm v9.2A的吞吐量优势。消息未包含任何客户采购决策、生产部署/续约、供给约束变化、订单取消/延期、产品量产上市里程碑、财报数据、政府管制或架构配置变更等与任何criterion存在具体触发关系的事实。提及AMD EPYC和Arm仅作为既有云实例的基准对比对象，不构成替代CPU新达商业上市或客户转向的观测。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "该消息是Intel自撰的技术营销基准文章，展示Xeon 6在agentic AI工作负载下对比AMD EPYC和Arm v9.2A的吞吐量优势。消息未包含任何客户采购决策、生产部署/续约、供给约束变化、订单取消/延期、产品量产上市里程碑、财报数据、政府管制或架构配置变更等与任何criterion存在具体触发关系的事实。提及AMD EPYC和Arm仅作为既有云实例的基准对比对象，不构成替代CPU新达商业上市或客户转向的观测。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Intel",
+                "Intel Xeon 6",
+                "AMD第五代EPYC",
+                "Arm v9.2A",
+                "Terminal-Bench 2.0"
+              ],
+              "occurrence_date": "2026-10-06",
+              "proposition": "Intel报告称，其截至2026年9月进行的Terminal-Bench 2.0确定性回放测试显示，Xeon 6实例在医疗、银行金融及制造代理工作流中的归一化吞吐分别约为第五代AMD EPYC实例的1.66、1.64及1.58倍，以及Arm v9.2A实例的4.5、4.57及4.24倍；测试使用24路并发、60分钟评估窗口，且不运行模型推理或网络调用。",
+              "subject_time": "截至2026年9月的Terminal-Bench 2.0测试"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "Intel报告的Terminal-Bench 2.0测试显示Xeon 6在医疗、银行金融及制造代理任务中的归一化吞吐均显著领先第五代AMD EPYC和Arm v9.2A，提升了Intel在Agentic AI服务器CPU工作负载中赢得分配的预期。",
+            "prior_expectation": "Agentic AI扩大CPU需求的预期已存在（E388）；Intel服务器需求改善且Xeon 6快速爬坡，但D2指出相对性能优势和客户级分配尚未确立。",
+            "reason": "测试是在相同工作轨迹与实例资源下进行，跨三个垂直领域结果方向一致且差距显著；在Agentic AI需求扩张背景下，这改善了Xeon的竞争力预期，并可经客户工作负载分配影响DCAI需求。数据由Intel自测，且没有客户采用、价格/功耗比较或订单确认，限制了结论强度；但该测试为D2尚缺的相关性能证据，提供了足够明确的正向边际信号，故作LONG。",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "E388已记录Agentic AI带动服务器CPU需求的市场预测，但未覆盖Intel披露的Xeon 6跨行业代理工作负载吞吐测试及其对比结果。",
+            "reference_ids": [
+              "E388"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "此为Intel自述的性能基准测试结果，未确认客户选型、绑定订单、部署、出货或新增供给；不满足现行Policy的触发条件。"
+          },
+          "w3_case_id": "w3_e5f539f1f1244acc88df801c4d1c5686"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "42eaa5c88f9cd7be5d6e8ee6fd0b3213e41303f470b00050690b86b45ae63d07",
+            "content_type": "text/plain",
+            "sha256": "bc2fbdcd137dbb034fe06194ab62133a6bc9e1177947aa2b2711602307c3e661",
+            "size_bytes": 12976
+          },
+          "case": {
+            "case_id": "case_c24add34b3594b8aa8c356869a18f222",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-10-06T17:08:00.897549Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-10-06T17:08:26.855061Z",
+          "revision": 1,
+          "row_revision": 3476444,
+          "source": {
+            "binding_id": "INTC:google_news_search_rss",
+            "kind": "api",
+            "name": "Google News Search RSS",
+            "source_id": "google_news_search_rss"
+          },
+          "source_published_at": "2026-10-06T17:04:14Z",
+          "standard_message_id": "std_de0eaea6832d4142ab06e5fcfe8f9f89",
+          "stream_item_id": "stream_14cbaa1e5189440c8ed9ddf21113062a",
+          "stream_offset": 1131,
+          "stream_published_at": "2026-10-06T17:08:26.861676Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Boosting Agentic AI Throughput with Intel® Xeon® CPUs - Intel"
+          },
+          "url": "https://www.intel.com/content/www/us/en/newsroom/news/data-center/boosting-agentic-ai-throughput-with-intel-xeon-cpus.html",
+          "body_text": "By: Nithya Rao, System and Software Optimization Engineer, Intel Corporation\nContributors\nSaumya Buliya, System and Software Optimization Engineer, Intel Corporation\nFor years, AI infrastructure discussions have focused on model quality, accelerator performance, and inference latency. That approach made sense when most AI applications consisted of relatively simple interactions: a prompt was submitted, a model generated a response, and the transaction ended.\nThe rise of agentic AI is changing that paradigm. Modern AI systems are increasingly expected to reason, plan, retrieve information, invoke tools, execute actions, validate results, and iteratively refine their behavior. What appears to be a single user interaction may trigger dozens of independent tasks spanning multiple software components before a result is delivered.\nRather than focusing exclusively on latency, organizations are increasingly asking a more practical question: How much useful work can the system complete over time? In many agentic deployments, throughput is becoming the metric that ultimately determines productivity.\nAgentic AI Creates New Infrastructure Challenges\nTraditional AI applications typically follow a straightforward execution model: prompt to model to response. Agentic AI introduces planning, tool selection, execution, validation, and iteration.\nAs a result, modern agentic AI workloads generate significantly more activity across the system stack than traditional inference workloads. Organizations deploying coding agents, enterprise copilots, research assistants, operational automation systems, and AI-powered business workflows often discover that the limiting factor is not model generation speed. Instead, bottlenecks emerge across task orchestration, tool execution, memory access, storage operations, and runtime management.\nWhy Intel® Xeon® CPUs Are Well-Suited for Agentic AI\nA common misconception is that agentic AI performance can be measured solely by model inference speed. While strong CPU performance remains foundational for reasoning, tool execution, orchestration, and security operations, agentic workloads also place significant demands on memory, storage, and I/O resources.\nUnlike traditional AI applications, agents maintain conversation history, execution context, retrieved knowledge, intermediate outputs, and workflow state across multiple stages of execution. They continuously invoke tools, access data sources, launch subprocesses, and coordinate dependent tasks. As a result, overall performance depends not only on compute capability, but also on how efficiently the platform moves work through each stage of the workflow.\nEnterprise-scale agent deployments are characterized by high concurrency, significant memory utilization, intensive orchestration requirements, and continuous execution of heterogeneous tasks. Intel Xeon processors with built-in acceleration combine strong compute performance with large memory capacity, substantial memory bandwidth, and robust I/O capabilities, enabling efficient execution across diverse workload requirements.\nAs organizations scale from individual agents to thousands of concurrent workflows, platform efficiency increasingly determines overall productivity. The platforms that deliver the highest throughput are those that balance compute, memory, storage, and orchestration resources to minimize bottlenecks and sustain work under continuous load. This makes Intel Xeon CPUs well suited to the demands of modern agentic AI deployments.\nBuilding a Repeatable Agentic AI Benchmark\nOne of the challenges associated with benchmarking agentic AI is that real-world agent behavior is inherently dynamic. Different prompts can produce different execution paths and different tool selections.\nTo address this challenge, a record-and-replay methodology was adopted. During the recording phase, representative agent workflows were executed while capturing workflow composition and execution characteristics. During replay, each platform processes the exact same workload trace, ensuring observed differences are attributable to infrastructure behavior rather than application-level randomness.\nEvaluating Agentic AI Using a Real-World Workflow\nTo understand how platform capabilities translate into real-world agent performance, we evaluated the same deterministic Terminal-Bench workload across Intel Xeon 6 processor-based, 5th Gen AMD EPYC processor-based, and Arm v9.2A-based instances. The benchmark consisted of a representative set of agent tasks executed at 24-way concurrency over a 60-minute evaluation window, with identical code, inputs, and agent trajectories across all platforms\nTo assess performance across different real-world deployment scenarios, we evaluated three representative industry verticals: healthcare, banking and financial services industry (FSI) and manufacturing. While the specific application workflows differ, these workflows reflect common agentic AI characteristics, including reasoning, retrieval, analytics, document processing, and orchestration.\nAgentic AI for Healthcare\nThe healthcare benchmark includes representative agent workflows spanning clinical documentation, evidence retrieval, diagnostic analysis, fraud detection, risk assessment, molecular research, genomic analysis, and laboratory diagnostics.\nFigure 1. Representative of healthcare agent tasks\nAs shown in Figure 2, the Intel Xeon 6 processor-based instance achieved the highest normalized agent-task throughput, delivering 1.66 times the throughput of the 5th Gen AMD EPYC processor-based instance and 4.5 times the throughput of the Arm v9.2A-based instance during the 60-minute evaluation. Higher throughput enables organizations to support more concurrent agent workflows on the same infrastructure, improving overall productivity and accelerating completion of large-scale agent-driven workloads.\nIntel Xeon 6 CPU’s throughput advantage is not driven by a single workload type. Instead, it delivers consistently higher task completion rates across reasoning, security, and control operations, enabling faster end-to-end execution of real-world healthcare agent workflows.\nAs shown in Figure 3, the Intel Xeon 6 processor-based instance delivered the highest normalized throughput across all workload categories evaluated. Relative to the 5th Gen AMD EPYC processor-based instance, Intel Xeon 6 achieved 1.67 times higher throughput for analytical and reasoning workloads, 1.63 times higher throughput for secure data processing workloads, and 1.61 times higher throughput for control workloads. Relative to the Arm v9.2A based instance, Intel Xeon 6 achieved 4.67 times, 4 times, and 4.14 times higher throughput, respectively. This consistent performance advantage enables organizations to support more concurrent AI agent workflows, improve infrastructure utilization, and complete agent-driven work more quickly.\nAgentic AI for Banking and Financial Services\nThe banking and financial services benchmark includes representative agent workflows spanning lending, risk analysis, investment research, trading analytics, fraud detection, compliance, and regulatory reporting.\nFigure 4. Representative banking and financial services agent tasks\nAs shown in Figure 5, the Intel Xeon 6 processor-based instance delivered the highest normalized agent-task throughput, achieving 1.64 times the throughput of the 5th Gen AMD EPYC processor-based instance and 4.57 times the throughput of the Arm v9.2A-based instance. This higher throughput enables financial institutions to support more concurrent agent-driven workloads, including risk analysis, document processing, compliance operations, and customer-facing services, within the same infrastructure footprint.\nAs shown in Figure 6, the Intel Xeon 6 processor-based instance delivered the highest normalized throughput across all workload categories evaluated. Relative to the 5th Gen AMD EPYC processor-based instance, Intel Xeon 6 achieved 1.66 times higher throughput for analytical and reasoning workloads, 1.61 times higher throughput for secure data processing workloads, and 1.59 times higher throughput for control workloads. Relative to the Arm v9.2A-based instance, Intel Xeon 6 achieved 4.84 times, 3.95 times, and 3.91 times higher throughput, respectively. This consistent performance advantage helps prevent bottlenecks across key stages of AI agent workflows, enabling financial institutions to process more agent-driven work within a given infrastructure footprint.\nAgentic AI for Manufacturing\nThe manufacturing benchmark includes representative agent workflows spanning predictive maintenance, quality inspection, supply chain optimization, production planning, factory operations, industrial security, and process optimization.\nFigure 7. Representative manufacturing agent tasks\nAs shown in Figure 8, the Intel Xeon 6 processor-based instance delivered the highest normalized agent-task throughput, achieving 1.58 times the throughput of the 5th Gen AMD EPYC processor-based instance and 4.24 times the throughput of the Arm v9.2A-based instance. This throughput advantage enables manufacturers to support more concurrent agent-driven workflows per server, accelerating tasks such as predictive maintenance, quality inspection, yield analysis, supplier management, and production optimization while maintaining the same infrastructure footprint.\nAs shown in Figure 9, the Intel Xeon 6 processor-based instance delivered the highest normalized throughput across all workload categories evaluated. Relative to the 5th Gen AMD EPYC processor-based instance, Intel Xeon 6 achieved 1.59 times higher throughput for analytical and reasoning workloads, 1.55 times higher throughput for secure data processing workloads, and 1.55 times higher throughput for control workloads. Relative to the Arm v9.2A-based instance, Intel Xeon 6 achieved 4.48 times, 3.78 times, and 3.78 times higher throughput, respectively. This consistent performance advantage helps maintain throughput and responsiveness across end-to-end manufacturing agent workflows, from production analysis and quality inspection to factory operations and process control.\nWhy Throughput Matters\nAgentic AI shifts performance measurement away from isolated operations and toward complete workflow execution. What ultimately matters is how efficiently the platform can execute tasks, invoke tools, process data, manage state, validate outputs, coordinate dependent actions, and sustain productivity under continuous load.\nThe most valuable platform is the one that can continuously move the greatest amount of work through the system while maintaining efficiency, responsiveness, and scalability.\nFinal Takeaway\nAs organizations deploy larger numbers of agents and increasingly complex workflows, sustaining high throughput becomes a key determinant of operational efficiency. These results demonstrate that an Intel Xeon 6 processor-based instance provides a strong foundation for agentic AI, delivering higher throughput across real-world healthcare, manufacturing and financial services workflows and enabling organizations to process more agent-driven work on the same infrastructure.\nProduct and Performance Information:\nTerminal Bench:\nIntel Xeon 6: 1-instance m8id.12xlarge: 48 vCPU, 185 GB total memory, Ubuntu 26.04, 7.0.0-1006-aws, Terminal-Bench 2.0. Tested by Intel as of September 2026. Results may vary.\n5th Gen AMD EPYC: 1-instance m8a.12xlarge: 48 vCPU, 185 GB total memory, Ubuntu 26.04, 7.0.0-1006-aws, Terminal-Bench 2.0. Tested by Intel as of September 2026. Results may vary.\nArm v9.2A: 1-instance m9gd.12xlarge: 48 vCPU, 185 GB total memory, Ubuntu 26.04, 7.0.0-1006-aws, Terminal-Bench 2.0. Tested by Intel as of September 2026. Results may vary.\nTest-Methodology:\nBenchmark\nTerminal-Bench + Harbor 0.16.1, terminus-2 agent. Deterministic fixture replays - A recorded Claude trajectory is replayed through a local proxy, so runs do no model inference and no network (identical work on every system); one canonical terminus on all systems; verifier enabled, all three instances ran all the tasks without any failures.\nLoad\nOne sandbox per physical core, pinned 1 core/task via cpuset_slot_pinner, memory local to the socket. 24 concurrent sandboxes. 60-minute run, refill setting -k 500 (slots stay full); each task cycles many times.\nImages\nTask images pre-built and staged; runs make no network access (LLM replaced by the replay proxy on :4001). Per-container thread cap = 1.\nPrimary metric\nwhole-box system throughput calculated as tasks completed per 60 minutes (primary).\n1\nPerformance results are based on testing as of the dates shown in configurations and may not reflect all publicly available updates. See backup for configuration details. No product or component can be absolutely secure.\n Your costs and results may vary.\n1 Performance varies by use, configuration, and other factors. Learn more on the Performance Index site."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_de0eaea6832d4142ab06e5fcfe8f9f89:0\"]",
+          "created_at": "2026-10-06T17:13:38.355295Z",
+          "dedupe_key": "ca290cc54f0b780c6a63f483e0a24e8ddc9c19898adc494af6ac92b2eedf51c2",
+          "entities": [
+            "Intel",
+            "Intel Xeon 6",
+            "AMD第五代EPYC",
+            "Arm v9.2A",
+            "Terminal-Bench 2.0"
+          ],
+          "occurrence_date": "2026-10-06",
+          "originating_node": "W3",
+          "proposition": "Intel报告称，其截至2026年9月进行的Terminal-Bench 2.0确定性回放测试显示，Xeon 6实例在医疗、银行金融及制造代理工作流中的归一化吞吐分别约为第五代AMD EPYC实例的1.66、1.64及1.58倍，以及Arm v9.2A实例的4.5、4.57及4.24倍；测试使用24路并发、60分钟评估窗口，且不运行模型推理或网络调用。",
+          "provisional_event_id": "E471",
+          "subject_time": "截至2026年9月的Terminal-Bench 2.0测试"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_c24add34b3594b8aa8c356869a18f222",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-10-06T17:13:38.428968+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-10-06",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_e5f539f1f1244acc88df801c4d1c5686",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-06T17:13:39.598960Z"
+              },
+              "case_id": "case_c24add34b3594b8aa8c356869a18f222",
+              "direction": "LONG",
+              "entry_reason": "INSUFFICIENT_MARGIN",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_c24add34b3594b8aa8c356869a18f222",
+              "execution_reason_codes": [
+                "INSUFFICIENT_MARGIN"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_c24add34b3594b8aa8c356869a18f222",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-06T17:13:38.428968Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "INSUFFICIENT_MARGIN"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    }
+  ]
+}

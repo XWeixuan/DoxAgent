@@ -1,0 +1,1633 @@
+{
+  "name": "地域市场准入",
+  "scope": "美光内存与存储产品在中国及其他地区的可服务市场、买方采购资格、政策适用与执行、区域客户和渠道结构。共同背景为地域监管机构、受约束买方、区域销售网络和商业竞争。",
+  "boundary": "政策造成的客户采购资格、地域商业覆盖及订单分流由本域深化；中国及其他竞争者的新增DRAM/NAND供给归行业市场，具体平台和终端产品采用归产品业务域，工厂建设、资源及项目资助归制造域。专利许可、赔偿和知识产权禁令归知识产权与许可关系。",
+  "ref": [
+    "D1-O74",
+    "D1-O31",
+    "D1-O3",
+    "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+    "https://www.cac.gov.cn/2023-05/21/c_1686348043518073.htm",
+    "https://investors.micron.com/news/press-release/2025/Statement-on-Data-Center-Business-in-China-10-17-2025/default.aspx",
+    "https://www.micron.com/sales-support/sales-network/authorized-distributors",
+    "https://www.micron.com/content/dam/micron/global/public/corporate/legal/terms-conditions/terms-conditions-sales.pdf",
+    "https://www.govinfo.gov/content/pkg/FR-2025-11-12/html/2025-19858.htm",
+    "https://static4.arrow.com/-/media/arrow/files/pdf/111025-bis-removal-federal-register.pdf",
+    "https://www.mof.gov.cn/zhengwuxinxi/caizhengxinwen/202509/t20250930_3973725.htm",
+    "https://www.ccgp.gov.cn/news/202601/t20260121_26097384.htm",
+    "https://www.govinfo.gov/content/pkg/FR-2026-02-17/pdf/2026-03065.pdf",
+    "D2REF:d2-o1_open_discovery-5-03abf8497a:O5",
+    "https://www.govinfo.gov/content/pkg/FR-2024-12-05/pdf/2024-28270.pdf",
+    "https://www.commerce.gov/news/press-releases/2025/11/statement-uae-and-saudi-chip-exports",
+    "https://www.bis.gov/press-release/department-commerce-announces-rescission-biden-era-artificial-intelligence-diffusion-rule-strengthens",
+    "https://www.govinfo.gov/content/pkg/FR-2025-11-12/pdf/2025-19846.pdf",
+    "D2REF:d2-o1_open_discovery-5-03abf8497a:O1",
+    "https://www.whitehouse.gov/presidential-actions/2026/01/adjusting-imports-of-semiconductors-semiconductor-manufacturing-equipment-and-their-derivative-products-into-the-united-states/",
+    "D1-O13",
+    "D1-O14",
+    "D1-O57",
+    "D1-O18",
+    "https://www.bis.gov/regulations/ear/740",
+    "D1-O130",
+    "https://www.cac.gov.cn/2021-08/17/c_1630785976988160.htm",
+    "https://www.micron.com/about/press/news/statement-on-data-center-business-in-china",
+    "https://www.sec.gov/Archives/edgar/data/723125/000072312523000054/mu-20230831.htm",
+    "D1-O103",
+    "D1-O205",
+    "D1-O156",
+    "https://www.micron.com/app-settings/euc-form",
+    "https://www.sec.gov/Archives/edgar/data/7536/000110465926012765/arw-20251231x10k.htm",
+    "https://nvidianews.nvidia.com/news/saudi-arabia-and-nvidia-to-build-ai-factories-to-power-next-wave-of-intelligence-for-the-age-of-reasoning",
+    "D1-O94",
+    "D1-O95",
+    "https://rulings.cbp.gov/ruling/N357333",
+    "https://news.skhynix.com/en/groundbreaking-ceremony-in-indiana/",
+    "D1-O81",
+    "https://www.govinfo.gov/content/pkg/FR-2026-01-15/pdf/2026-00789.pdf",
+    "https://commission.europa.eu/news-and-media/news/commission-advances-cloud-sovereignty-through-strategic-procurement-2026-04-17_en",
+    "https://commission.europa.eu/news-and-media/news/sovereign-cloud-framework-explained-2026-06-01_en",
+    "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=COM:2026:0502:FIN",
+    "https://digital-strategy.ec.europa.eu/en/policies/cloud-and-ai-development-act",
+    "https://blogs.microsoft.com/blog/2025/06/16/announcing-comprehensive-sovereign-solutions-empowering-european-organizations/",
+    "https://blogs.microsoft.com/blog/2026/02/24/microsoft-sovereign-cloud-adds-governance-productivity-and-support-for-large-ai-models-securely-running-even-when-completely-disconnected/",
+    "https://www.govinfo.gov/content/pkg/FR-2026-01-15/html/2026-00789.htm"
+  ],
+  "units": [
+    {
+      "name": "美光地域市场准入",
+      "scope": "美光内存与存储产品在中国及其他市场的客户采购资格、产品与买方适用范围、政策执行、区域客户与渠道结构、商业竞争和可服务销售。",
+      "horizon": "政策与客户采购周期，覆盖数个季度至多年地域市场变化。",
+      "ref": [
+        "D1-O74",
+        "D1-O31",
+        "D1-O3",
+        "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+        "https://www.cac.gov.cn/2023-05/21/c_1686348043518073.htm",
+        "https://investors.micron.com/news/press-release/2025/Statement-on-Data-Center-Business-in-China-10-17-2025/default.aspx",
+        "https://www.micron.com/sales-support/sales-network/authorized-distributors",
+        "https://www.micron.com/content/dam/micron/global/public/corporate/legal/terms-conditions/terms-conditions-sales.pdf",
+        "https://www.govinfo.gov/content/pkg/FR-2025-11-12/html/2025-19858.htm",
+        "https://static4.arrow.com/-/media/arrow/files/pdf/111025-bis-removal-federal-register.pdf",
+        "https://www.mof.gov.cn/zhengwuxinxi/caizhengxinwen/202509/t20250930_3973725.htm",
+        "https://www.ccgp.gov.cn/news/202601/t20260121_26097384.htm",
+        "https://www.govinfo.gov/content/pkg/FR-2026-02-17/pdf/2026-03065.pdf",
+        "D2REF:d2-o1_open_discovery-5-03abf8497a:O5",
+        "https://www.govinfo.gov/content/pkg/FR-2024-12-05/pdf/2024-28270.pdf",
+        "https://www.commerce.gov/news/press-releases/2025/11/statement-uae-and-saudi-chip-exports",
+        "https://www.bis.gov/press-release/department-commerce-announces-rescission-biden-era-artificial-intelligence-diffusion-rule-strengthens",
+        "https://www.govinfo.gov/content/pkg/FR-2025-11-12/pdf/2025-19846.pdf",
+        "D2REF:d2-o1_open_discovery-5-03abf8497a:O1",
+        "https://www.whitehouse.gov/presidential-actions/2026/01/adjusting-imports-of-semiconductors-semiconductor-manufacturing-equipment-and-their-derivative-products-into-the-united-states/",
+        "D1-O13",
+        "D1-O14",
+        "D1-O57",
+        "D1-O18",
+        "https://www.bis.gov/regulations/ear/740",
+        "D1-O130",
+        "https://www.cac.gov.cn/2021-08/17/c_1630785976988160.htm",
+        "https://www.micron.com/about/press/news/statement-on-data-center-business-in-china",
+        "https://www.sec.gov/Archives/edgar/data/723125/000072312523000054/mu-20230831.htm",
+        "D1-O103",
+        "D1-O205",
+        "D1-O156",
+        "https://www.micron.com/app-settings/euc-form",
+        "https://www.sec.gov/Archives/edgar/data/7536/000110465926012765/arw-20251231x10k.htm",
+        "https://nvidianews.nvidia.com/news/saudi-arabia-and-nvidia-to-build-ai-factories-to-power-next-wave-of-intelligence-for-the-age-of-reasoning",
+        "D1-O94",
+        "D1-O95",
+        "https://rulings.cbp.gov/ruling/N357333",
+        "https://news.skhynix.com/en/groundbreaking-ceremony-in-indiana/",
+        "D1-O81",
+        "https://www.govinfo.gov/content/pkg/FR-2026-01-15/pdf/2026-00789.pdf",
+        "https://commission.europa.eu/news-and-media/news/commission-advances-cloud-sovereignty-through-strategic-procurement-2026-04-17_en",
+        "https://commission.europa.eu/news-and-media/news/sovereign-cloud-framework-explained-2026-06-01_en",
+        "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=COM:2026:0502:FIN",
+        "https://digital-strategy.ec.europa.eu/en/policies/cloud-and-ai-development-act",
+        "https://blogs.microsoft.com/blog/2025/06/16/announcing-comprehensive-sovereign-solutions-empowering-european-organizations/",
+        "https://blogs.microsoft.com/blog/2026/02/24/microsoft-sovereign-cloud-adds-governance-productivity-and-support-for-large-ai-models-securely-running-even-when-completely-disconnected/",
+        "https://www.govinfo.gov/content/pkg/FR-2026-01-15/html/2026-00789.htm"
+      ],
+      "state": {
+        "parameters": [
+          {
+            "name": "美国总部客户销售额",
+            "definition": "合并净销售额，客户总部位于美国；非收货地或最终使用地。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "台湾总部客户销售额",
+            "definition": "合并净销售额，客户总部位于台湾；非收货地或最终使用地。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "中国大陆（不含香港）总部客户销售额",
+            "definition": "合并净销售额，客户总部位于中国大陆（不含香港）；非收货地或最终使用地。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "香港总部客户销售额",
+            "definition": "合并净销售额，客户总部位于香港；非收货地或最终使用地。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "其他亚太总部客户销售额",
+            "definition": "合并净销售额，客户总部位于其他亚太；非收货地或最终使用地。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "日本总部客户销售额",
+            "definition": "合并净销售额，客户总部位于日本；非收货地或最终使用地。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "欧洲总部客户销售额",
+            "definition": "合并净销售额，客户总部位于欧洲；非收货地或最终使用地。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "其他地区总部客户销售额",
+            "definition": "合并净销售额，客户总部位于其他地区；非收货地或最终使用地。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "中国大陆与香港总部客户销售额",
+            "definition": "上述两地总部客户销售额之和；不是CAC暴露额或中国终端销售额。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "中国大陆（不含香港）总部客户收入占比",
+            "definition": "中国大陆（不含香港）总部客户销售额/合并净销售额；研究者按报表计算，非市场份额。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "中国大陆与香港总部客户收入占比",
+            "definition": "中国大陆与香港总部客户销售额/合并净销售额；研究者按报表计算，非市场份额。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "美国总部客户收入占比",
+            "definition": "美国总部客户销售额/合并净销售额；研究者按报表计算，非市场份额。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "中国最终使用销售额",
+            "definition": "产品最终在中国大陆使用的美光销售额，含境外总部OEM和间接渠道；不以总部表替代。当前无同口径测量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O74",
+              "D1-O3",
+              "https://www.cac.gov.cn/2023-05/21/c_1686348043518073.htm"
+            ]
+          },
+          {
+            "name": "中国CII买方采购资格",
+            "definition": "中国关键信息基础设施运营者对美光产品的采购资格及其买方边界。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.cac.gov.cn/2023-05/21/c_1686348043518073.htm",
+              "D1-O74",
+              "D1-O3"
+            ]
+          },
+          {
+            "name": "CAC限制进一步执行的存量销售暴露",
+            "definition": "现仍可销售、但若既有CII限制延伸至供应商或采购链执行而失去的销售额；剔除已流失业务，不等同中国总部客户总收入。尚无可用金额。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.cac.gov.cn/2023-05/21/c_1686348043518073.htm",
+              "D1-O74",
+              "D1-O3"
+            ]
+          },
+          {
+            "name": "中国非CII买方自主排除覆盖率",
+            "definition": "未被CII禁购直接约束的客户采购中，因自主供应商排除而不可由美光参与的采购金额占比；与价格、供给分配和竞争选型分开。未取得具名采购分母。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O74",
+              "D1-O3",
+              "https://investors.micron.com/news/press-release/2025/Statement-on-Data-Center-Business-in-China-10-17-2025/default.aspx"
+            ]
+          },
+          {
+            "name": "美光中国商业与验证支持覆盖",
+            "definition": "中国合资格DRAM/NAND客户可接触的销售与技术支持网络；不把制造基地存在等同全部客户服务保留。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2025/Statement-on-Data-Center-Business-in-China-10-17-2025/default.aspx"
+            ]
+          },
+          {
+            "name": "地域授权分销入口",
+            "definition": "组件客户在各地区可使用的公司授权分销入口，区别于消费者品牌零售与未经授权转售。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.micron.com/sales-support/sales-network/authorized-distributors",
+              "https://www.micron.com/content/dam/micron/global/public/corporate/legal/terms-conditions/terms-conditions-sales.pdf"
+            ]
+          },
+          {
+            "name": "Arrow中国分销交易实体资格",
+            "definition": "作为美光公开亚洲分销网络中Arrow路径的交易实体，Arrow China及真实关联方是否因BIS列名受限；与相似名称实体分开。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.govinfo.gov/content/pkg/FR-2025-11-12/html/2025-19858.htm",
+              "https://static4.arrow.com/-/media/arrow/files/pdf/111025-bis-removal-federal-register.pdf",
+              "https://www.micron.com/sales-support/sales-network/authorized-distributors"
+            ]
+          },
+          {
+            "name": "中国政府采购整机的本国产品适用状态",
+            "definition": "采购计算或存储系统能否按本国产品获得评审支持，以及进口内存组件对系统资格的适用边界；与CII禁购独立。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.mof.gov.cn/zhengwuxinxi/caizhengxinwen/202509/t20250930_3973725.htm",
+              "https://www.ccgp.gov.cn/news/202601/t20260121_26097384.htm"
+            ]
+          },
+          {
+            "name": "中国本国产品投标评审优惠幅度",
+            "definition": "符合条件的本国产品报价在政府采购竞争评审中的价格扣除比例；不是成交价折扣或美光实际售价变化。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.mof.gov.cn/zhengwuxinxi/caizhengxinwen/202509/t20250930_3973725.htm",
+              "https://www.ccgp.gov.cn/news/202601/t20260121_26097384.htm"
+            ]
+          },
+          {
+            "name": "多产品采购包整体享受本国产品优惠的成本门槛",
+            "definition": "符合本国产品标准的产品成本占供应商提供全部产品成本的最低比例；不是整机国产芯片比例。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.ccgp.gov.cn/news/202601/t20260121_26097384.htm",
+              "https://www.mof.gov.cn/zhengwuxinxi/caizhengxinwen/202509/t20250930_3973725.htm"
+            ]
+          },
+          {
+            "name": "美国联邦半导体采购合规供应池",
+            "definition": "Section 5949约束下联邦采购系统与服务中可采用的半导体来源集合，含向承包商供应链传递的资格要求；不等同全美商业市场。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.govinfo.gov/content/pkg/FR-2026-02-17/pdf/2026-03065.pdf",
+              "D2REF:d2-o1_open_discovery-5-03abf8497a:O5"
+            ]
+          },
+          {
+            "name": "美国联邦半导体采购禁令法定适用起点",
+            "definition": "Section 5949采购限制的法定起点，作为联邦客户和供应链准备窗口；不是美光订单交付日期。",
+            "value_type": "TIME",
+            "ref": [
+              "https://www.govinfo.gov/content/pkg/FR-2026-02-17/pdf/2026-03065.pdf",
+              "D2REF:d2-o1_open_discovery-5-03abf8497a:O5"
+            ]
+          },
+          {
+            "name": "跨国OEM地域内存供应名单安排",
+            "definition": "同一OEM是否按中国、美国联邦及其他终端地域/用途分别设供应名单或BOM，或采用统一合规BOM。未取得可归属美光的具名实施观察。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.govinfo.gov/content/pkg/FR-2026-02-17/pdf/2026-03065.pdf",
+              "https://www.cac.gov.cn/2023-05/21/c_1686348043518073.htm",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "美光HBM地域供货资格",
+            "definition": "美光HBM在目的地、买方、最终用途及封装路径条件下的合法供货位置；不是客户技术认证或产量。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.micron.com/content/dam/micron/global/public/corporate/legal/terms-conditions/terms-conditions-sales.pdf",
+              "https://www.govinfo.gov/content/pkg/FR-2024-12-05/pdf/2024-28270.pdf"
+            ]
+          },
+          {
+            "name": "客户及下游贸易合规传递安排",
+            "definition": "美光商业交易要求客户把目的地、参与实体、最终用途和所需许可沿后续转移链处理的安排。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.micron.com/content/dam/micron/global/public/corporate/legal/terms-conditions/terms-conditions-sales.pdf"
+            ]
+          },
+          {
+            "name": "现有收入中须出口授权的销售额",
+            "definition": "按商品分类、最终用途和参与实体判定须美国出口授权的现有美光销售额；不是中国地区销售额或所有HBM收入。没有可比量化披露。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.micron.com/content/dam/micron/global/public/corporate/legal/terms-conditions/terms-conditions-sales.pdf",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "第三国AI系统采购的授权客户网络",
+            "definition": "可按美国授权进口先进AI系统的第三国客户/服务路径；是美光经平台客户供货的地域入口，不是目标公司已取得订单。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.commerce.gov/news/press-releases/2025/11/statement-uae-and-saudi-chip-exports",
+              "https://www.bis.gov/press-release/department-commerce-announces-rescission-biden-era-artificial-intelligence-diffusion-rule-strengthens"
+            ]
+          },
+          {
+            "name": "海湾具名客户先进芯片授权额度上限",
+            "definition": "单个获批客户采购的NVIDIA Blackwell GB300等效芯片数量上限；衡量获批系统入口尺度，不是实际采购、安装数量或美光HBM销量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.commerce.gov/news/press-releases/2025/11/statement-uae-and-saudi-chip-exports"
+            ]
+          },
+          {
+            "name": "关联实体所有权对出口买方资格的适用状态",
+            "definition": "非列名实体因被受限主体直接或间接合计持有至少50%而承接其限制的规则是否适用；与普通商业名单筛查和HBM商品限制分开。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.govinfo.gov/content/pkg/FR-2025-11-12/pdf/2025-19846.pdf",
+              "D2REF:d2-o1_open_discovery-5-03abf8497a:O1"
+            ]
+          },
+          {
+            "name": "关联实体所有权扩展规则的已公布恢复日",
+            "definition": "在未获正式延期或修订前，用于客户/分销商所有权筛查准备的法规恢复日期；不是受限客户数量预测。",
+            "value_type": "TIME",
+            "ref": [
+              "https://www.govinfo.gov/content/pkg/FR-2025-11-12/pdf/2025-19846.pdf",
+              "D2REF:d2-o1_open_discovery-5-03abf8497a:O1"
+            ]
+          },
+          {
+            "name": "美国进口美光内存加权适用税率",
+            "definition": "依具体产品税号、原产地、用途、组件/整机进口方式及有效豁免计算的美光美国进口加权税率。未取得截点SKU与进口额权重，不能用先进计算芯片25%代替。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.whitehouse.gov/presidential-actions/2026/01/adjusting-imports-of-semiconductors-semiconductor-manufacturing-equipment-and-their-derivative-products-into-the-united-states/",
+              "https://www.micron.com/content/dam/micron/global/public/corporate/legal/terms-conditions/terms-conditions-sales.pdf",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "地域税费的商业承担安排",
+            "definition": "商业报价、到岸税费和客户支付责任的标准安排；区别于法定税率和美光最终毛利影响。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.micron.com/content/dam/micron/global/public/corporate/legal/terms-conditions/terms-conditions-sales.pdf"
+            ]
+          },
+          {
+            "name": "Humain首期AI平台芯片采购计划",
+            "definition": "NVIDIA与Humain公布的沙特首期GB300数量计划，按公告名义单元记录，不自行换算GPU与超级芯片；用于定位具名授权客户系统采购入口，非已装机数量、Micron采购量或获批额度。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://nvidianews.nvidia.com/news/saudi-arabia-and-nvidia-to-build-ai-factories-to-power-next-wave-of-intelligence-for-the-age-of-reasoning"
+            ]
+          }
+        ],
+        "values": [
+          {
+            "name": "美国总部客户FY2026销售额",
+            "parameter": "美国总部客户销售额",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 91323.0,
+              "unit": "USD million"
+            },
+            "previous_value": {
+              "number": 24113.0,
+              "unit": "USD million"
+            },
+            "time_scope": "FY2026截至2026-09-03；previous_value为FY2025截至2025-08-28。年度分别53周、52周，未作周数标准化。",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "D1-O13",
+              "D1-O14",
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "台湾总部客户FY2026销售额",
+            "parameter": "台湾总部客户销售额",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 16950.0,
+              "unit": "USD million"
+            },
+            "previous_value": {
+              "number": 5672.0,
+              "unit": "USD million"
+            },
+            "time_scope": "FY2026截至2026-09-03；previous_value为FY2025截至2025-08-28。年度分别53周、52周，未作周数标准化。",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "D1-O13",
+              "D1-O14",
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "中国大陆（不含香港）总部客户FY2026销售额",
+            "parameter": "中国大陆（不含香港）总部客户销售额",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 8338.0,
+              "unit": "USD million"
+            },
+            "previous_value": {
+              "number": 2639.0,
+              "unit": "USD million"
+            },
+            "time_scope": "FY2026截至2026-09-03；previous_value为FY2025截至2025-08-28。年度分别53周、52周，未作周数标准化。",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "D1-O13",
+              "D1-O14",
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "香港总部客户FY2026销售额",
+            "parameter": "香港总部客户销售额",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 6289.0,
+              "unit": "USD million"
+            },
+            "previous_value": {
+              "number": 1138.0,
+              "unit": "USD million"
+            },
+            "time_scope": "FY2026截至2026-09-03；previous_value为FY2025截至2025-08-28。年度分别53周、52周，未作周数标准化。",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "D1-O13",
+              "D1-O14",
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "其他亚太总部客户FY2026销售额",
+            "parameter": "其他亚太总部客户销售额",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 5777.0,
+              "unit": "USD million"
+            },
+            "previous_value": {
+              "number": 1913.0,
+              "unit": "USD million"
+            },
+            "time_scope": "FY2026截至2026-09-03；previous_value为FY2025截至2025-08-28。年度分别53周、52周，未作周数标准化。",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "D1-O13",
+              "D1-O14",
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "日本总部客户FY2026销售额",
+            "parameter": "日本总部客户销售额",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 2066.0,
+              "unit": "USD million"
+            },
+            "previous_value": {
+              "number": 895.0,
+              "unit": "USD million"
+            },
+            "time_scope": "FY2026截至2026-09-03；previous_value为FY2025截至2025-08-28。年度分别53周、52周，未作周数标准化。",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "D1-O13",
+              "D1-O14",
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "欧洲总部客户FY2026销售额",
+            "parameter": "欧洲总部客户销售额",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 1716.0,
+              "unit": "USD million"
+            },
+            "previous_value": {
+              "number": 625.0,
+              "unit": "USD million"
+            },
+            "time_scope": "FY2026截至2026-09-03；previous_value为FY2025截至2025-08-28。年度分别53周、52周，未作周数标准化。",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "D1-O13",
+              "D1-O14",
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "其他地区总部客户FY2026销售额",
+            "parameter": "其他地区总部客户销售额",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 729.0,
+              "unit": "USD million"
+            },
+            "previous_value": {
+              "number": 383.0,
+              "unit": "USD million"
+            },
+            "time_scope": "FY2026截至2026-09-03；previous_value为FY2025截至2025-08-28。年度分别53周、52周，未作周数标准化。",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "D1-O13",
+              "D1-O14",
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "大陆与香港总部客户合计FY2026销售额",
+            "parameter": "中国大陆与香港总部客户销售额",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 14627.0,
+              "unit": "USD million"
+            },
+            "previous_value": {
+              "number": 3777.0,
+              "unit": "USD million"
+            },
+            "time_scope": "FY2026截至2026-09-03；previous_value为FY2025截至2025-08-28。年度分别53周、52周，未作周数标准化。",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "中国大陆（不含香港）总部客户FY2026收入占比",
+            "parameter": "中国大陆（不含香港）总部客户收入占比",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 6.26,
+              "unit": "%"
+            },
+            "previous_value": {
+              "number": 7.06,
+              "unit": "%"
+            },
+            "time_scope": "FY2026截至2026-09-03；previous_value为FY2025截至2025-08-28。年度分别53周、52周，未作周数标准化。",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "中国大陆与香港总部客户FY2026收入占比",
+            "parameter": "中国大陆与香港总部客户收入占比",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 10.98,
+              "unit": "%"
+            },
+            "previous_value": {
+              "number": 10.1,
+              "unit": "%"
+            },
+            "time_scope": "FY2026截至2026-09-03；previous_value为FY2025截至2025-08-28。年度分别53周、52周，未作周数标准化。",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "美国总部客户FY2026收入占比",
+            "parameter": "美国总部客户收入占比",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 68.57,
+              "unit": "%"
+            },
+            "previous_value": {
+              "number": 64.51,
+              "unit": "%"
+            },
+            "time_scope": "FY2026截至2026-09-03；previous_value为FY2025截至2025-08-28。年度分别53周、52周，未作周数标准化。",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "CII停止采购仍构成中国市场资格边界",
+            "parameter": "中国CII买方采购资格",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "CAC要求中国关键信息基础设施运营者停止采购美光产品；截点最新上游年报仍列示该限制。不是全部中国买方禁购，亦未据外交表述认定已经撤销。"
+            },
+            "previous_value": null,
+            "time_scope": "2023-05-21决定形成的采购状态；截至2026-10-09年报披露仍适用",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.cac.gov.cn/2023-05/21/c_1686348043518073.htm",
+              "D1-O74",
+              "D1-O3"
+            ]
+          },
+          {
+            "name": "中国服务网络已披露保留的支点",
+            "parameter": "美光中国商业与验证支持覆盖",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "公司披露上海、北京、深圳客户实验室，并按各地区业务规模配置销售与业务基础设施；中国数据中心业务受限制影响。该披露没有给出2026年各地人数或全部客户名单。"
+            },
+            "previous_value": null,
+            "time_scope": "2025-10-17公司披露的商业覆盖；非2026年人数盘点",
+            "as_of": "2025-10-17",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2025/Statement-on-Data-Center-Business-in-China-10-17-2025/default.aspx"
+            ]
+          },
+          {
+            "name": "中国合法客户继续供货的公司方针",
+            "parameter": "美光中国商业与验证支持覆盖",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "stage": "公司表示在遵守适用法律的前提下继续向中国客户供应DRAM与NAND；不是全面撤离，也不是承诺恢复受限数据中心买方资格。"
+            },
+            "previous_value": null,
+            "time_scope": "2025-10-17发布的后续经营方针，未披露地域销售目标",
+            "as_of": "2025-10-17",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2025/Statement-on-Data-Center-Business-in-China-10-17-2025/default.aspx"
+            ]
+          },
+          {
+            "name": "公开授权网络保留跨区域组件入口",
+            "parameter": "地域授权分销入口",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "公开网络包含亚洲Arrow Electronics Asia、Avnet、Macnica Cytech、GainHero及Goldenflash等，美洲和欧洲亦有授权分销商。网络表示商业触达，不赋予受限最终用户采购许可。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-10-09检索的公开网络快照；网页无版本日期，不反推2025年具体授权起点",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.micron.com/sales-support/sales-network/authorized-distributors"
+            ]
+          },
+          {
+            "name": "真实Arrow中国实体列名障碍解除",
+            "parameter": "Arrow中国分销交易实体资格",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "BIS移除Arrow China Electronics Trading Co., Ltd.和另一个条目下六个别名，2025-11-10生效；Arrow说明这些真实关联方不再承担列名限制。Arrow Electronics (Hong Kong) Co., Ltd.仍被列名，Arrow称它是非关联的冒名组织。不能把同名香港条目当真实Arrow集团全面受限。"
+            },
+            "previous_value": null,
+            "time_scope": "2025-11-10起的移除决定及Arrow当日说明；不代表所有商品、用途和客户免审查",
+            "as_of": "2025-11-12",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.govinfo.gov/content/pkg/FR-2025-11-12/html/2025-19858.htm",
+              "https://static4.arrow.com/-/media/arrow/files/pdf/111025-bis-removal-federal-register.pdf"
+            ]
+          },
+          {
+            "name": "本国产品框架已实施且不得把声明函作为供应商资格",
+            "parameter": "中国政府采购整机的本国产品适用状态",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "2026-01-01起实施一般标准。分产品组件比例/关键组件细则实施前，境内实质性制造、加工或组装形成新产品即可按一般标准认定；贴牌不足。财政部明确声明函是享受支持的条件，不应成为供应商资格条件。外资企业平等适用，不等于所有进口美光组件已被禁用。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-01-01实施框架；2026-01-21财政部答复",
+            "as_of": "2026-01-21",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.mof.gov.cn/zhengwuxinxi/caizhengxinwen/202509/t20250930_3973725.htm",
+              "https://www.ccgp.gov.cn/news/202601/t20260121_26097384.htm"
+            ]
+          },
+          {
+            "name": "本国产品评审扣除比例",
+            "parameter": "中国本国产品投标评审优惠幅度",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 20.0,
+              "unit": "%"
+            },
+            "previous_value": null,
+            "time_scope": "2026-01-01起一般政策；单一产品本国/非本国产品竞争及符合条件的多产品采购包",
+            "as_of": "2026-01-21",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.mof.gov.cn/zhengwuxinxi/caizhengxinwen/202509/t20250930_3973725.htm",
+              "https://www.ccgp.gov.cn/news/202601/t20260121_26097384.htm"
+            ]
+          },
+          {
+            "name": "采购包整体评审优惠门槛",
+            "parameter": "多产品采购包整体享受本国产品优惠的成本门槛",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 80.0,
+              "unit": "%"
+            },
+            "previous_value": null,
+            "time_scope": "2026-01-21财政部答复；达到或超过该比例并作承诺时全包报价可按20%扣除评审",
+            "as_of": "2026-01-21",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.ccgp.gov.cn/news/202601/t20260121_26097384.htm",
+              "https://www.mof.gov.cn/zhengwuxinxi/caizhengxinwen/202509/t20250930_3973725.htm"
+            ]
+          },
+          {
+            "name": "联邦来源排除进入有法定期限的规则准备阶段",
+            "parameter": "美国联邦半导体采购合规供应池",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "2026-02-17 FAR提案针对SMIC、CXMT、YMTC及其受覆盖关联方的产品和相关采购/使用情形，提出合理查询、声明及分包传递要求。提案不是已执行的全市场禁令；既有设备不要求一概更换，另有豁免/宽免。美光与其他合规供应者共同处于可竞争供应池。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-02-17提案所述实施框架；当前保留其提案身份，不据检索遗漏断言后续没有修订",
+            "as_of": "2026-02-17",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.govinfo.gov/content/pkg/FR-2026-02-17/pdf/2026-03065.pdf",
+              "D2REF:d2-o1_open_discovery-5-03abf8497a:O5"
+            ]
+          },
+          {
+            "name": "联邦客户准备窗口的法定终点",
+            "parameter": "美国联邦半导体采购禁令法定适用起点",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "point": "2027-12-23",
+              "start": null,
+              "end": null,
+              "precision": "day"
+            },
+            "previous_value": null,
+            "time_scope": "法定未来适用日，2026-02-17提案重申",
+            "as_of": "2026-02-17",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.govinfo.gov/content/pkg/FR-2026-02-17/pdf/2026-03065.pdf",
+              "D2REF:d2-o1_open_discovery-5-03abf8497a:O5"
+            ]
+          },
+          {
+            "name": "HBM受商品和最终交易链双重授权约束",
+            "parameter": "美光HBM地域供货资格",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "美光2026-09-11修订销售条款把HBM纳入先进计算出口约束：没有所需美国政府授权，不得向中国（含香港）、澳门、受武器禁运目的地及其他受EAR相关规定约束的交易转移。外国生产与转售链不自动脱离EAR。此为授权门槛，不是宣布所有HBM对全世界禁售。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-11版商业供货条款",
+            "as_of": "2026-09-11",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.micron.com/content/dam/micron/global/public/corporate/legal/terms-conditions/terms-conditions-sales.pdf",
+              "https://www.govinfo.gov/content/pkg/FR-2024-12-05/pdf/2024-28270.pdf"
+            ]
+          },
+          {
+            "name": "商业销售已带有客户筛查和最终用户信息接口",
+            "parameter": "客户及下游贸易合规传递安排",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "销售条款要求客户筛查交易参与方、取得所需许可或有效例外、提供交易/运输信息并签署所要求的最终用户证明；涉及禁交易的列名可触发暂停或取消交付。该安排不是已观测的违法转移数量。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-11修订销售条款，适用于其覆盖的商业产品而非Crucial零售条款",
+            "as_of": "2026-09-11",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.micron.com/content/dam/micron/global/public/corporate/legal/terms-conditions/terms-conditions-sales.pdf"
+            ]
+          },
+          {
+            "name": "海湾已有具名条件授权路径",
+            "parameter": "第三国AI系统采购的授权客户网络",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "美国商务部批准向阿联酋G42和沙特Humain出口先进半导体；两家均须满足安全、报告和持续合规监督条件。该授权给出合法系统采购入口，并未指明美光内存采购份额。"
+            },
+            "previous_value": null,
+            "time_scope": "2025-11-19已宣布的具名采购批准，不当作2026年已全部交付或部署",
+            "as_of": "2025-11-19",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.commerce.gov/news/press-releases/2025/11/statement-uae-and-saudi-chip-exports"
+            ]
+          },
+          {
+            "name": "G42（阿联酋）获批额度上限",
+            "parameter": "海湾具名客户先进芯片授权额度上限",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 35000.0,
+              "unit": "NVIDIA GB300-equivalent chips"
+            },
+            "previous_value": null,
+            "time_scope": "2025-11-19批准给予G42（阿联酋）的采购上限；两家公司各自上限，不是两家合计",
+            "as_of": "2025-11-19",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.commerce.gov/news/press-releases/2025/11/statement-uae-and-saudi-chip-exports"
+            ]
+          },
+          {
+            "name": "Humain（沙特）获批额度上限",
+            "parameter": "海湾具名客户先进芯片授权额度上限",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 35000.0,
+              "unit": "NVIDIA GB300-equivalent chips"
+            },
+            "previous_value": null,
+            "time_scope": "2025-11-19批准给予Humain（沙特）的采购上限；两家公司各自上限，不是两家合计",
+            "as_of": "2025-11-19",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.commerce.gov/news/press-releases/2025/11/statement-uae-and-saudi-chip-exports"
+            ]
+          },
+          {
+            "name": "公开正式安排仍处于关联扩展暂停窗口",
+            "parameter": "关联实体所有权对出口买方资格的适用状态",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "2025-11-12最终规则暂停Affiliates Rule至2026-11-09，正式日程为2026-11-10恢复；截至研究截点仍在该已公布暂停窗口内。暂停不取消主体本身的列名、用途或商品限制；没有把贸易谈判消息写成已经完成的美国法规延期。"
+            },
+            "previous_value": null,
+            "time_scope": "2025-11-10至2026-11-09的已公布暂停窗口；正式后续版本未取得可替代该日程的证据",
+            "as_of": "2025-11-12",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.govinfo.gov/content/pkg/FR-2025-11-12/pdf/2025-19846.pdf",
+              "D2REF:d2-o1_open_discovery-5-03abf8497a:O1"
+            ]
+          },
+          {
+            "name": "关联资格扩展的公开恢复日程",
+            "parameter": "关联实体所有权扩展规则的已公布恢复日",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "point": "2026-11-10",
+              "start": null,
+              "end": null,
+              "precision": "day"
+            },
+            "previous_value": null,
+            "time_scope": "2025-11-12最终规则给出的未来恢复日，受后续正式延期/修订影响",
+            "as_of": "2025-11-12",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.govinfo.gov/content/pkg/FR-2025-11-12/pdf/2025-19846.pdf",
+              "D2REF:d2-o1_open_discovery-5-03abf8497a:O1"
+            ]
+          },
+          {
+            "name": "标准报价外的税费由客户承担",
+            "parameter": "地域税费的商业承担安排",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "2026-09-11销售条款规定报价不含适用税费、关税等，由客户承担，另有书面约定除外。供应成本或关税变化可引发价格协商，修订价格须客户同意；不是所有新增税负自动一比一提高美光净实现价。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-11版商业交易安排；不代表全部已签长期协议条款一致",
+            "as_of": "2026-09-11",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.micron.com/content/dam/micron/global/public/corporate/legal/terms-conditions/terms-conditions-sales.pdf"
+            ]
+          },
+          {
+            "name": "Humain首期GB300采购计划规模",
+            "parameter": "Humain首期AI平台芯片采购计划",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 18000.0,
+              "unit": "NVIDIA GB300 units（公告名义单元）"
+            },
+            "previous_value": null,
+            "time_scope": "2025-05-13公布的首期部署计划；未给可据以认定完成采购的日期",
+            "as_of": "2025-05-13",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://nvidianews.nvidia.com/news/saudi-arabia-and-nvidia-to-build-ai-factories-to-power-next-wave-of-intelligence-for-the-age-of-reasoning"
+            ]
+          }
+        ]
+      },
+      "expectation_baseline": [
+        {
+          "name": "中国维持分段受限市场，而非全面退出或采购正常化",
+          "baseline": "工作判断是未来数季保留中国合资格DRAM/NAND客户与商业触达，同时CII限制继续构成基本边界。依据是最新上游年报仍列CAC限制、公司明确继续依法供货，且中国总部客户已有实质收入。大陆总部收入占比下降与大陆加香港合计占比上升并存；因此不采用“中国已全面退出”或“收入增长证明禁令解除”的解释。该判断为经营证据综合，不是卖方共识。全球ASP及业务分配足以影响地区收入，不能由名义金额推断中国bit增长或政策宽松。",
+          "ordinary_progress": "在现有买方边界内供应、经授权分销商服务和客户验证，是该路径的正常延续；地区收入随价格、组合和客户总部结构变化仍可波动。",
+          "open_frontier": "真正的边界修订在于受限行业/设备采购链执行是否改变，或正式重审使特定买方恢复资格。未受限客户的主动排除及替代关系黏性决定商业覆盖是否比法定集合更窄；目前没有金额足以把这些影响量化。",
+          "time_scope": "截至2026-10-09建立的未来数季度工作基准；恢复与执行变化可跨多年客户采购周期",
+          "ref": [
+            "https://www.cac.gov.cn/2023-05/21/c_1686348043518073.htm",
+            "https://investors.micron.com/news/press-release/2025/Statement-on-Data-Center-Business-in-China-10-17-2025/default.aspx",
+            "D1-O74",
+            "D1-O31",
+            "D1-O3",
+            "D1-O18",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+          ]
+        },
+        {
+          "name": "中国公共采购先按整机资格与评审偏好运行",
+          "baseline": "工作判断是中国计算/存储公共采购近期继续以境内形成产品及声明认定为基本入口，合格系统获得评审优势，而非因美光美国所有权一概不能进入BOM。财政部明确支持条件不能直接变成供应商资格门槛；这使“进口组件必然使整机不合格”的路径弱于“由系统制造与具体品目规则判定”的路径。该判断不覆盖独立的CAC禁购。",
+          "ordinary_progress": "OEM维持能按现行规则取得本国产品资格的境内制造、填写声明并按采购包条件竞标，属于通常推进；不是已确认所有OEM正在替换内存供应者。",
+          "open_frontier": "品目级组件比例与关键工序细则一旦适用于服务器/存储系统，才可能改变进口内存的可采用空间。一般通知要求五年内分产品制定，另有3—5年过渡安排；这些不是统一内存禁用日期。",
+          "time_scope": "2026年采购运行，延伸至品目细则及多年过渡期",
+          "ref": [
+            "https://www.mof.gov.cn/zhengwuxinxi/caizhengxinwen/202509/t20250930_3973725.htm",
+            "https://www.ccgp.gov.cn/news/202601/t20260121_26097384.htm"
+          ]
+        },
+        {
+          "name": "联邦合规准备扩张，订单重分配只在有受覆盖来源的部分发生",
+          "baseline": "工作判断是美国联邦系统供应链将围绕2027-12-23法定日期增加来源查询、证明与合规选型准备，美光属于可竞争而非独占的供应池。提案向分包链传递要求且保留既有设备及豁免边界，故比“一次性把所有中国芯片存量换成美光”更支持渐进的新增采购合规化。该判断是对法定窗口和提案安排的投资研究推断，不是已经完成的OEM换料观察。",
+          "ordinary_progress": "承包商完成来源盘点、供应商声明和新系统设计的合规准备，已不使用受覆盖来源的产品可仅增加证明成本；韩国及其他合规供应者亦能竞争。",
+          "open_frontier": "最终规则范围及实际采购分母决定可转移销售。OEM选用统一全球合规BOM还是地域双BOM，会分别放大或隔离联邦规则外溢；尚无具名实施观察足以选择其中一种为已实现状态。",
+          "time_scope": "2026年合规准备至2027-12-23后采购周期",
+          "ref": [
+            "https://www.govinfo.gov/content/pkg/FR-2026-02-17/pdf/2026-03065.pdf",
+            "D2REF:d2-o1_open_discovery-5-03abf8497a:O5",
+            "D1-O74",
+            "https://www.cac.gov.cn/2023-05/21/c_1686348043518073.htm"
+          ]
+        },
+        {
+          "name": "先进内存地域供货沿具名合规平台网络展开",
+          "baseline": "工作判断是先进内存对第三国的可服务入口更可能沿获批系统客户、合规封装与云/平台采购网络延伸，而不是按旧AI Diffusion国家层级配额简单分配。G42和Humain已有具名条件批准，给出实际合法采购通道；美光销售条款又把HBM及下游转移纳入授权责任。这两者支持“合规通道可扩展、目的地与最终实体仍受筛查”而非“中国HBM自由供货”或“海外所有项目均可无条件购买”。采购平台获批不等于内存供应者自动获得订单。NVIDIA/Humain已公布的首期18,000个GB300采购计划，支持获批客户背后有具名平台采购组织，而非只有许可头寸；计划与35,000个等效芯片额度各保留其身份，不据此认定2026年已完成交付。",
+          "ordinary_progress": "获批客户在安全与报告要求下安排进口，平台供应链按交易用途及参与方办理授权、证明和合法转移；符合HBM例外的交易仍需满足其封装等条件。",
+          "open_frontier": "授权覆盖能否转为持续可用系统入口、买方/云服务的最终对象、以及美光在获批平台中的供应连接，决定许可变化影响新增市场还是地点重排。授权额度不能直接乘以每台内存含量预测美光销售。",
+          "time_scope": "已公布授权与2026—2027年第三国系统采购/部署周期",
+          "ref": [
+            "https://www.commerce.gov/news/press-releases/2025/11/statement-uae-and-saudi-chip-exports",
+            "https://www.bis.gov/press-release/department-commerce-announces-rescission-biden-era-artificial-intelligence-diffusion-rule-strengthens",
+            "https://www.micron.com/content/dam/micron/global/public/corporate/legal/terms-conditions/terms-conditions-sales.pdf",
+            "https://www.govinfo.gov/content/pkg/FR-2024-12-05/pdf/2024-28270.pdf",
+            "https://www.bis.gov/regulations/ear/740",
+            "D1-O130",
+            "D1-O74",
+            "https://nvidianews.nvidia.com/news/saudi-arabia-and-nvidia-to-build-ai-factories-to-power-next-wave-of-intelligence-for-the-age-of-reasoning"
+          ]
+        },
+        {
+          "name": "暂停期内维持既有规则，按公开恢复日准备所有权筛查",
+          "baseline": "近期工作基准是当前已公布暂停窗口内按既有列名、商品和最终用途约束供货，同时以2026-11-10公开恢复日作所有权合规准备基准。没有将谈判中的延期当作已实施法规，也不预测恢复必然发生。若按现日程恢复，非列名的多数持有实体会承接相关限制，服务客户集合可在没有新增列名时缩小；这与HBM商品级门槛是两个独立接口。",
+          "ordinary_progress": "客户和分销商维持参与方资料及所有权链准备；恢复日未改时，筛查从名字扩大到相关多数持有关系，是已公布路径的延续。",
+          "open_frontier": "正式延期、恢复或修订是近端分岔。即使恢复，影响规模仍由美光当前合法交易与被覆盖所有权链的重叠决定，不能把所有中国收入视作受限收入。",
+          "time_scope": "截至2026-10-09的暂停窗口，重点为2026-11至下一季度",
+          "ref": [
+            "https://www.govinfo.gov/content/pkg/FR-2025-11-12/pdf/2025-19846.pdf",
+            "D2REF:d2-o1_open_discovery-5-03abf8497a:O1",
+            "https://www.micron.com/content/dam/micron/global/public/corporate/legal/terms-conditions/terms-conditions-sales.pdf"
+          ]
+        },
+        {
+          "name": "区域税负先进入客户到岸成本与价格协商",
+          "baseline": "工作判断是标准商业交易继续以报价与进口税费分列、客户承担为起点，潜在地区税负差异首先进入买方到岸成本和采购比较，而不是由美光美国总部身份自动消除。9月销售条款支持这一商务基准；美光全球制造使具体原产地仍必要。1月Section 232公告的25%只针对狭窄先进计算类别，不能作为截点美光DRAM/NAND有效税率。故不建立统一税率收入或毛利预测。",
+          "ordinary_progress": "按产品、原产地、用途与合同核算到岸成本，常规税费分列及协商价格延续现商务安排；不把关税付费责任等同长期竞争成本完全可转嫁。",
+          "open_frontier": "后续正式税则/豁免、实际SKU和进口金额权重，以及客户议价或换来源决定美光相对供应位置。当前缺少加权税率，亦未证明所有美国进口内存享有或丧失同一豁免。",
+          "time_scope": "2026-09条款建立的未来数季度区域采购与报价周期",
+          "ref": [
+            "https://www.micron.com/content/dam/micron/global/public/corporate/legal/terms-conditions/terms-conditions-sales.pdf",
+            "https://www.whitehouse.gov/presidential-actions/2026/01/adjusting-imports-of-semiconductors-semiconductor-manufacturing-equipment-and-their-derivative-products-into-the-united-states/",
+            "D1-O31",
+            "D1-O74"
+          ]
+        },
+        {
+          "name": "经销商合法身份修复维持区域商业入口",
+          "baseline": "工作判断是合资格客户可继续利用跨区域授权组件分销网络，而非把中国政策风险或同名实体列名解释成全部渠道中断。Arrow真实中国实体列名障碍已被正式解除，且公司公开网络含Arrow亚洲入口；这为“维持合法区域触达”提供比渠道名称或总部收入表更直接的依据。此处综合判断不宣称渠道库存、最终用户订单或受限客户已恢复。Arrow年报所述工程设计、物流和灵活交付服务，使保留入口还包含设计进入与批次履约能力，而不仅是经销商名字。",
+          "ordinary_progress": "真实交易实体识别、名单与最终用途筛查支持现有授权渠道继续运行；独立商品/买方限制仍逐笔适用。",
+          "open_frontier": "新列名、渠道商退出或合法实体被误拒会改变非CII及其他地区客户入口。分销商被移除列名并不恢复CAC限制下终端买方的资格，两套审查不能互相替代。",
+          "time_scope": "2026年公开渠道状态及未来数季度客户采购；列名和商业网络可跨多年变动",
+          "ref": [
+            "https://www.govinfo.gov/content/pkg/FR-2025-11-12/html/2025-19858.htm",
+            "https://static4.arrow.com/-/media/arrow/files/pdf/111025-bis-removal-federal-register.pdf",
+            "https://www.micron.com/sales-support/sales-network/authorized-distributors",
+            "https://www.cac.gov.cn/2023-05/21/c_1686348043518073.htm",
+            "https://www.micron.com/content/dam/micron/global/public/corporate/legal/terms-conditions/terms-conditions-sales.pdf",
+            "https://www.sec.gov/Archives/edgar/data/7536/000110465926012765/arw-20251231x10k.htm"
+          ]
+        },
+        {
+          "name": "欧洲主权部署先分化采购组织，不等于进口内存全面失去资格",
+          "baseline": "工作基准是欧洲受约束云需求沿不同保障与运营模式分流，原国际云商加控制、本地独立伙伴及私有环境可以并存。实际主权采购仍容纳合规非欧技术，故不把欧洲本地部署直接解释成美光被排除；研究重点先放在谁控制采购和服务连续性。该经营推断不是欧洲市场共识或Micron新增订单预测。",
+          "ordinary_progress": "运营与数据控制完善、服务商接受评估、本地伙伴承接项目，可以在组件名单不变时推进；地区报表仍按客户总部归属，欧洲工作负载不必体现为欧洲总部销售。",
+          "open_frontier": "更高保障要求是否广泛采用、是否具体延伸至硬件来源，以及用户选择原公共云还是独立/断网运行，会决定只改管理安排、重排采购客户，还是缩窄美光可参与的系统池。CADA提案不能预先当作已落地的统一限制。",
+          "time_scope": "数季度至多年公共采购与主权部署周期；当前依据为2025—2026年已发表安排及提案，不预设后续立法结果。",
+          "ref": [
+            "https://commission.europa.eu/news-and-media/news/commission-advances-cloud-sovereignty-through-strategic-procurement-2026-04-17_en",
+            "https://commission.europa.eu/news-and-media/news/sovereign-cloud-framework-explained-2026-06-01_en",
+            "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=COM:2026:0502:FIN",
+            "https://blogs.microsoft.com/blog/2025/06/16/announcing-comprehensive-sovereign-solutions-empowering-european-organizations/",
+            "https://blogs.microsoft.com/blog/2026/02/24/microsoft-sovereign-cloud-adds-governance-productivity-and-support-for-large-ai-models-securely-running-even-when-completely-disconnected/",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+          ]
+        }
+      ],
+      "realization_factors": [
+        {
+          "name": "CII认定与采购链执行划分可服务买方集合",
+          "mechanism": "监管并非按中国总内存需求等比例削减美光市场。行业保护工作部门认定关键设施与运营者，CAC采购决定改变这些买方的可选供应商；实际采购链执行再决定限制是停在运营者直接采购，还是在整机、云/OEM供应商的选型条款中传递。被覆盖买方的采购规模决定被移出的机会量，供应商名单执行决定它是否真正移走美光份额。若执行只隔离受限用途，其他地域和用途仍可保留；若整机供应者为降低审查成本扩大排除范围，商业影响可超过直接买方。反方向的正式恢复扩大合法集合，但既有替代供应关系和重新验证使回收订单慢于资格变化。",
+          "current_status": "现有工作解释仍是CII限定的分段市场，而非所有中国客户禁购。关键基础设施保护条例表明认定按关键业务重要性、失效危害及跨行业关联进行，由保护工作部门通知运营者；行业名称、公司总部或“数据中心”标签不能代替具体身份。2025年公司明确中国数据中心业务已受影响，2026年上游年报继续列该边界；目前没有把新增执行或局部恢复承认为已发生状态。",
+          "materiality_context": "当前认定/适用边界具有最高的资格杠杆：同样的需求、价格和性能下，买方由可采购变为禁购，可直接拿走其可参与采购，而非只减少几个价格点。采购规模是金额分母，执行传递是覆盖乘数；执行加深的增量仅是尚未失去的重叠部分，已退出买方不能再计损失。2023年公司曾判断约半数中国总部客户收入、即全球收入低双位比例有风险，说明间接链条可能重要，但这是旧风险估计，不是2026年剩余暴露。以FY2026大陆总部收入8,338百万美元仅作尺度演示：若其中同口径10%的销售新受影响且无改配，毛额为833.8百万美元、约全球收入0.63%；该假设不是暴露估算，且最终使用口径可落在其他总部地区。正式恢复先提高期望机会，重新验证与替代关系决定数季至多年的回收速度；不能要求收入已回流才认为资格变化有意义。",
+          "scope_boundary": "本Factor解释地域买方集合与执行边界。竞争者是否有合格供给、公司如何改配合法销售分别连接商业选择及供给分配Factor；中国新晶圆产能的深度归行业/制造域。",
+          "ref": [
+            "https://www.cac.gov.cn/2023-05/21/c_1686348043518073.htm",
+            "https://www.cac.gov.cn/2021-08/17/c_1630785976988160.htm",
+            "https://www.micron.com/about/press/news/statement-on-data-center-business-in-china",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312523000054/mu-20230831.htm",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O74",
+            "D1-O3"
+          ]
+        },
+        {
+          "name": "非受限买方的连续性偏好与替代关系决定商业覆盖",
+          "mechanism": "合法可采购只是候选资格，非CII企业和OEM仍比较供应连续性、政策中断预期、到岸价格及已验证的性能/可靠性。采购部门把中断概率与停机、重设计损失纳入隐含成本，会主动分散来源或排除一家供应者，即使没有新禁令；技术验证和当地支持决定替代方案是否可用，竞争者可交付供给与价格决定真正可替代的数量。名单改变后，平台重新验证、库存和售后成本会形成黏性；政策缓和降低风险溢价，却未必立刻把已设计给竞争者的产品换回。价格性能及供货优势也能使美光保留高要求客户，不能把所有份额变化归于政治。",
+          "current_status": "当前选择压力同时来自地区政策和全球内存紧张，而不是已经确认的非CII全面抵制。公司仍有合法中国客户与验证支点；上游已披露多种产品认证与商业交付，同时MCBU供给被转给其他业务。Samsung、SK hynix以及各类NAND供应者构成不同产品的替代池，CXMT/YMTC也是竞争者，但不能据其厂商身份推定全部规格已可替换。工作判断是合资格市场中可得性、性能与关系黏性仍有实质作用；自主排除份额留为未测量而非零。",
+          "materiality_context": "风险预期影响合法市场中的参与率，潜在覆盖面可大于新增监管名单，现却缺少份额分母，不能排在已证明的CII边界之上作为既成损失。供应连续性在缺货时比小幅报价差更能决定谁拿订单；若竞争者也无合格余量，名单换源会表现为延迟、减配置或更高成本，而不是马上替走美光全量。性能验证限制可替代规格的范围，当产品高度互换且价差扩大时，价格杠杆才更强。平台验证、库存/售后投入与本地支持共同影响切换成本和持续时间，方向相似可合并评估：已换源后，恢复资格的即时回收系数通常低于原可服务规模；仍有设计协作的客户回收更快。供给和政策不变时，改善交期或服务也能增大商业覆盖，这是公司能控制的中间层，不需等待禁令变化。",
+          "scope_boundary": "研究中国及其他地域客户为何选择或排除美光。具体产品性能/认证归对应产品域，竞品净新增产能归行业域；这里保留它们对地域可服务采购份额、替代速度和客户关系的影响。",
+          "ref": [
+            "https://www.micron.com/about/press/news/statement-on-data-center-business-in-china",
+            "D1-O74",
+            "D1-O31",
+            "D1-O103",
+            "D1-O205",
+            "D1-O156",
+            "D1-O3"
+          ]
+        },
+        {
+          "name": "本国产品资格与评审优惠通过系统BOM重排公共采购",
+          "mechanism": "中国公共采购有两条不同接口：境内形成产品及未来品目组件/工序要求决定系统能否按本国产品认定，评审优惠改变本国产品相对报价。系统厂商选择境内制造及BOM结构，声明与证明材料把认定传入投标；未来若品目规则限制关键内存组件，才会通过系统采购份额传回美光。多产品包另按合格产品成本占全包成本的比例确定全包优惠，不是按整机国产芯片比例。OEM会比较本地化成本、所需性能、进口内存可得性和评审收益，决定使用美光、换来源或放弃某投标。",
+          "current_status": "一般框架2026-01-01实施，财政部1月答复明确细则实施前按境内实质性制造/加工/组装认定，声明是享受支持条件而非供应商资格门槛。外资企业平等适用。因而当前机制以系统产品形成与价格评审为主，不能从美光外资身份或进口组件推导一律失去BOM资格；CII禁购仍独立存在。尚未取得服务器内存品目细则足以替换这个工作解释。",
+          "materiality_context": "系统资格决定是否拿到政策偏好，评审幅度决定偏好的经济强度：20%扣除在只比较价格、其他条件相同时，使合格报价125可与非合格报价100形成相同评审价，这是研究者算术而非已观察成交溢价。80%门槛决定多产品包是否整体享受支持，门槛附近的合格产品成本占比具有非线性影响，远离门槛的小变动较弱；它不是进口内存成本上限20%。未来组件比例/关键工序规则可把目前的价格偏好变成更强的BOM约束，但五年制定窗口及分品目3—5年过渡让时间杠杆不同于即时禁购。内存价格、性能和本地化成本影响系统厂商取舍：单纯涨价不会使境内制造整机自动失去当前一般资格；若未来有组件比例要求，价格改变成本分母才可能使边界敏感。声明/证明质量影响能否获得优惠，并不产生新的终端需求。",
+          "scope_boundary": "覆盖中国系统投标、组件适用与美光订单入口；工厂建设/补助留制造域。与美国来源排除Factor对照时，保持整机产品形成、组件原产地、供应商所有权三种身份独立。",
+          "ref": [
+            "https://www.mof.gov.cn/zhengwuxinxi/caizhengxinwen/202509/t20250930_3973725.htm",
+            "https://www.ccgp.gov.cn/news/202601/t20260121_26097384.htm",
+            "https://www.micron.com/about/press/news/statement-on-data-center-business-in-china"
+          ]
+        },
+        {
+          "name": "联邦来源排除与OEM地域BOM选择分配合规机会",
+          "mechanism": "Section 5949通过受覆盖来源、系统/服务适用和采购时点缩小联邦合规供应池；承包商合理查询、声明和分包传递把规则带到OEM与组件供应者。原本采用受覆盖来源的新增采购才产生直接改料机会，原已合规的系统主要增加证明成本。OEM比较统一合规BOM的规模采购收益与双BOM的认证、库存及售后成本，可能把来源排除推广到全球商业版本，也可能只隔离联邦用途。最后由其他合规供应者的性能、价格和可交付量决定美光捕获比例，名单排除不指定唯一受益者。",
+          "current_status": "当前承接的是2026-02-17提案及2027-12-23法定起点，不把其作为截点已执行的全市场禁令。提案指向SMIC、CXMT、YMTC等受覆盖来源并有分包接口，既有设备和豁免边界排除了无条件全量替换解释。未取得具名OEM地域双BOM实施观察，因此以两种设计选择的经济条件解释外溢，而不替它填实际Value。",
+          "materiality_context": "受覆盖来源的原采购份额及新增采购规模共同决定机会分母，比“美国市场很大”更有决定力。FY2026美国总部客户收入91,323百万美元、68.57%只显示总部集中，不能代替联邦采购规模。适用系统/服务与豁免决定有效覆盖，既有设备不要求一概更换会显著削弱即时存量替换假设。法定窗口影响设计提前量，准备工作可在2027年底前改变预期和新产品供应名单。统一BOM可放大商业外溢、双BOM可把它隔离；认证/库存/售后成本合计决定哪个方案更经济，故不是把中国损失与美国机会机械净额抵消。竞争者资格和合格供给决定目标份额，当前供给紧张下排除一家也可能先拉长交期、推高价格而非增加美光立即出货。",
+          "scope_boundary": "解释联邦与跨国OEM采购来源传递。平台性能和认证深度留产品域，全球竞争供给留行业域；中国BOM资格由独立Factor解释，不把两国规则合成为一个国籍标签。",
+          "ref": [
+            "https://www.govinfo.gov/content/pkg/FR-2026-02-17/pdf/2026-03065.pdf",
+            "D2REF:d2-o1_open_discovery-5-03abf8497a:O5",
+            "https://www.cac.gov.cn/2023-05/21/c_1686348043518073.htm",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O74",
+            "D1-O31"
+          ]
+        },
+        {
+          "name": "HBM商品分类与封装交易路径共同决定合法地域供货",
+          "mechanism": "HBM供货需同时满足商品分类、EAR管辖、目的地/最终用途与交易参与方要求。规则也可覆盖外国生产的相关商品，因此移动发货或封装地点不自动移除管辖。适用许可及有效例外决定能否供货，办理与信息完整性决定交易节奏；HBM例外还按带宽密度、设计购买方、封装路径及相关总部/最终母公司条件限定，不是低规格一项即可普遍免许可。客户平台采购与内存器件授权分别作用：平台取得某目的地批准不能被理解为美光每笔组件交易无须审查。",
+          "current_status": "美光9月商业条款已把HBM及下游转移纳入所需授权责任，工作模型把地域许可放在技术认证之外。BIS规则与例外表明覆盖对象与可用合法路径并存；公开例外以小于3.3 GB/s/mm²为条件之一。未用产品名称或公司国籍推算某个Micron SKU满足例外，也未把HBM可交付产能当作对所有地域均可销售。2026-01-15正式规则还允许从美国出口、满足规格、供给、安全及测试等条件的H200/MI325X等特定先进计算商品对中国/澳门逐案审查；相关再出口，以及向位于第三国但自身或最终母公司总部在澳门或D:5目的地的实体出口，仍按有关拒绝推定处理。这是总部/最终母公司条件，不是所有含中国投资的企业一概受同等限制。它不是已批准出货，也不解除独立HBM组件限制；系统、组件和交易路径须分别解释。",
+          "materiality_context": "商品分类与管辖决定被控制的产品集合，目的地/最终用途和参与方决定集合内哪些交易受限，二者是资格硬边界，作用面不同，不能相加两次。许可/例外的适用与处理直接影响合法池及时间：许可改变可先重估未来客户网络，尚未交付并不意味着影响为零；但对原已不可服务交易再次收紧的边际销售影响较小。封装路径及总部/母公司条件决定可用例外宽度，满足性能条件而路径不符仍不能得到同一许可收益；因此搬一次物流未必有经济价值。信息完整性影响行政可执行性，不等于政府许可排队天数；美光EUC页面的“最多10天”属于文档访问处理，不能当出口授权时长。当前先进平台供给紧张，放宽许可也可能只重排区域配额或改善组合，新增器件数量仍受供给Factor制约。",
+          "scope_boundary": "本Factor仅深化商品及交易路径的地域销售条件；HBM带宽、封装良率和平台份额深度归产品/制造域。所有权与中间商列名由下一个Factor解释，第三国系统部署另有完整机制。",
+          "ref": [
+            "https://www.govinfo.gov/content/pkg/FR-2024-12-05/pdf/2024-28270.pdf",
+            "https://www.bis.gov/regulations/ear/740",
+            "https://www.micron.com/content/dam/micron/global/public/corporate/legal/terms-conditions/terms-conditions-sales.pdf",
+            "https://www.micron.com/app-settings/euc-form",
+            "D1-O74",
+            "D1-O130",
+            "https://www.govinfo.gov/content/pkg/FR-2026-01-15/pdf/2026-00789.pdf",
+            "https://www.govinfo.gov/content/pkg/FR-2026-01-15/html/2026-00789.htm"
+          ]
+        },
+        {
+          "name": "所有权与中间交易实体身份改变出口客户网络",
+          "mechanism": "名单审查是交易网络审查而非仅看最终客户名称。参与方本身列名及其具体限制可阻断采购、经销或最终用途环节；Affiliates Rule适用时，直接/间接合计至少50%所有权使未列名实体承接相关限制。监管恢复/暂停改变覆盖集合，企业集团结构和逐笔参与者映射决定美光与该集合的重叠。真实主体识别与材料完整性可避免把相似名称错当受限实体；过度拒绝会收缩本来合法的客户网络，移除列名则恢复相应中间节点但不取消其他商品或买方限制。",
+          "current_status": "已公布正式日程仍为暂停至2026-11-09、次日恢复，保持“当前暂停、按公开日程准备”的工作解释，不认定谈判延期已成为正式法规。Arrow中国真实实体与部分别名已移除、另一同名香港条目仍在，说明法律身份可独立于地域品牌修复。美光EUC要求说明实际交易实体、最终用户与全球目的地，使用用途变化还需更新；这是集团/下游映射的商业接口，不是已经测得受限客户数量。",
+          "materiality_context": "规则适用状态控制近端时间杠杆，50%所有权门槛控制哪些未列名节点跨入限制，覆盖范围可沿集团链扩散；但继承的是有关限制，不能把所有相关交易写成绝对禁售。交易网络重叠的现有销售额才是金额分母，当前仍未知，不以中国总部收入填代。逐笔参与者和真实主体识别在分销环节尤其有影响：错误封堵一个跨客户节点可能同时损失多个合法客户入口，单一最终买方列名则较集中。Arrow移除恢复的是中间节点资格，不会同步恢复CII买方或HBM商品许可。材料准确度主要改变拒单、处理和合规成本，对已明确禁止的交易没有放行杠杆；在规则暂停期间继续补齐所有权链也不等于已有全部受限客户收入损失。",
+          "scope_boundary": "研究全球客户/分销商网络的法律身份与资格；不是公司集团所有权的估值研究。渠道服务、库存和替代分销商能力另由商业网络Factor评估；不得把美国出口名单与中国CII买方认定当成同一集合。",
+          "ref": [
+            "https://www.govinfo.gov/content/pkg/FR-2025-11-12/pdf/2025-19846.pdf",
+            "D2REF:d2-o1_open_discovery-5-03abf8497a:O1",
+            "https://www.govinfo.gov/content/pkg/FR-2025-11-12/html/2025-19858.htm",
+            "https://static4.arrow.com/-/media/arrow/files/pdf/111025-bis-removal-federal-register.pdf",
+            "https://www.micron.com/sales-support/sales-network/authorized-distributors",
+            "https://www.micron.com/app-settings/euc-form",
+            "https://www.micron.com/content/dam/micron/global/public/corporate/legal/terms-conditions/terms-conditions-sales.pdf"
+          ]
+        },
+        {
+          "name": "授权渠道与当地设计服务把合法资格转成可接触订单",
+          "mechanism": "有合法客户却没有有效销售入口，市场仍可能无法商业覆盖。美光当地实验室和分销商的工程支持降低客户设计、优化与验证成本，分销网络提供小批量/分期交付、库存与采购组织能力，决定中小客户能否使用组件。授权范围、真实交易实体及替代分销商决定入口是否可用；库存和客户采购节奏决定订单何时传到制造商。区域业务缩小后服务资源随之收缩，可进一步减少设计入口，形成反馈；保留关键实验室和代理商则保留留客及未来回收能力。",
+          "current_status": "美光披露中国服务支点与按业务规模配置基础设施并存，公开授权网络保留亚洲与其他地区入口，不支持全部中国商业退出。Arrow年报显示分销商通过设计工程、物流和灵活交付创造供应者需求，也经历过因客户高库存导致的组件下行；这是渠道作用的实际商业依据，不是Micron渠道库存数据。真实Arrow中国身份修复支持合法入口，未据其集团总量推算美光在中国的sell-through。",
+          "materiality_context": "销售/验证支点和工程服务影响进入设计名单的概率与换回速度，对需要持续协作的客户更有杠杆；简单可互换组件的边际杠杆较小。授权及真实实体资格决定入口能否运行，是硬接口；可替代代理商数量影响单点关闭是否能迅速被补上。库存、交付批次和采购组织能力主要影响短期可得性及订货时点，而非创造独立终端需求：客户可先消化库存，制造商新供货低于当地使用量，反之备货可先放大销售。作为行业机制标尺，Arrow称不少分销协议可在30—90天短通知内取消，说明渠道连续性可快于多年产品周期变化；不能把该期限指定为Micron协议。区域收入与服务资源相互作用，法律仍开放时主动服务收缩也可压低未来设计机会，且恢复投入不能立即消除平台验证滞后。",
+          "scope_boundary": "解释地域商业触达、组件渠道及客户支持，不接管Crucial全球消费者产品退出；该历史品牌动作没有独立地区资格机制时仍留客户端域。物流中受限最终用途不能通过换代理商规避。",
+          "ref": [
+            "https://www.micron.com/about/press/news/statement-on-data-center-business-in-china",
+            "https://www.micron.com/sales-support/sales-network/authorized-distributors",
+            "https://www.govinfo.gov/content/pkg/FR-2025-11-12/html/2025-19858.htm",
+            "https://static4.arrow.com/-/media/arrow/files/pdf/111025-bis-removal-federal-register.pdf",
+            "https://www.sec.gov/Archives/edgar/data/7536/000110465926012765/arw-20251231x10k.htm",
+            "D1-O74",
+            "D1-O103"
+          ]
+        },
+        {
+          "name": "第三国AI授权与项目组织重绘平台采购地域",
+          "mechanism": "主权AI、企业云及开发者服务需求使第三国买方组织计算项目，主权资金与商业回报预期决定采购预算；与平台厂商签订的路线/采购计划确定所需系统，美国授权与防转移条件确定合法目的地和服务对象。电力、机房及资金落实决定获批系统何时能接收使用。系统通常由平台/OEM或云采购实体购买内存，故项目所在地变化会改变美光可服务客户网络，却不必改变财报客户总部分类。迁移原有工作负载主要重排地域，新增付费使用和预算才扩大总机会；目标供应份额及合格供给决定谁捕获它。",
+          "current_status": "已有G42与Humain具名条件授权，非全球无条件开放。NVIDIA披露Humain首期18,000个GB300计划及五年最高500MW愿景，表明有具名平台组织者与主权客户，而不仅是园区新闻；两者均是2025年发布的计划/批准，不作为2026年完成安装。旧AI Diffusion分层不能充当当前许可地图。工作判断是沿具名合规平台网络推进的机会更有依据，实际交付节奏仍受资源和持续合规共同控制。",
+          "materiality_context": "服务需求、回报预期和预算决定项目为何采购及其规模，主权资金背景降低纯无主体愿景的不确定性，但不证明全部资金已到位。平台采购计划决定可连接到内存的产品与数量，授权/服务对象决定合法边界；若两份公告的GB300名义单元完全对应，Humain18,000首期计划约为其35,000等效获批上限的51.4%，该条件算术只说明额度未必是唯一瓶颈，不是额度已使用51.4%，也不自行换算GPU与超级芯片数量。500MW是多年愿景，不能当当前获批芯片或Micron订单。机房、电力和实际付款能力在获批后更影响近端采购节奏，延迟可把机会推后而非永久消失。工作负载迁移与真实新增使用决定全球增量，对原有客户改址不能再计一份新需求；采购实体及供应份额决定地区报表落点和美光捕获，哪怕部署全兑现也不能按园区功率计算目标收入。",
+          "scope_boundary": "深化合法地域客户网络与采购连接；AI付费使用、硬件配置、电力/机房工程的深度在数据中心需求域，但其对本Unit入口及时间的后果在此保留。不是单独为G42或Humain建立产品订单假设。",
+          "ref": [
+            "https://www.commerce.gov/news/press-releases/2025/11/statement-uae-and-saudi-chip-exports",
+            "https://nvidianews.nvidia.com/news/saudi-arabia-and-nvidia-to-build-ai-factories-to-power-next-wave-of-intelligence-for-the-age-of-reasoning",
+            "https://www.bis.gov/press-release/department-commerce-announces-rescission-biden-era-artificial-intelligence-diffusion-rule-strengthens",
+            "https://www.micron.com/content/dam/micron/global/public/corporate/legal/terms-conditions/terms-conditions-sales.pdf",
+            "D1-O130",
+            "D1-O74",
+            "D1-O94",
+            "D1-O95"
+          ]
+        },
+        {
+          "name": "原产地与进口适用条件经到岸成本改变地区采购竞争",
+          "mechanism": "有效税负取决于进口商品分类、具体生产所形成的原产地、用途及正式税则/豁免，而不是供应商总部国籍；器件与含器件整机可有不同适用。差别税负改变客户到岸成本，经合同承担与价格协商影响供应商净价，再通过客户价格弹性、替代合格来源和物流/生产安排改变地区采购份额。重排发货地不等于改变原产地，增加某地实质生产也不等于立即获得所有税收或采购资格。",
+          "current_status": "美光9月标准报价外的税费由客户承担，另有书面约定除外，价格调整存在协商接口；全球制造意味着“美国总部即美国原产”不可用。1月狭窄先进计算芯片税率不能填作10月美光内存税率。CBP N357333以具体主要功能组件和加工事实判断RFID产品原产地，即使另在美国/中国组装也未自动改产地；它是区分制造事实与最终装配地的类比，不是Micron内存税号裁定。现仍没有SKU进口权重可计算美光加权税负。",
+          "materiality_context": "分类、原产地、用途/豁免共同决定适用分母和相对税差，其中是否覆盖产品/交易比公布一个标题税率更重要。透明敏感性而非预测：若某进口产品税负新增加10个百分点且价格、其他费用不变，客户相关完税成本先增加约其计税价值的10%；若同等合格竞品未受同样变化，它获得相对价格优势，若全部同样受税则主要表现为行业成本而非美光份额优势。合同承担先决定账单落点，协商净价决定最终谁吸收，不能把客户法定付款责任等同公司利润零影响。价格弹性和替代来源决定份额/减配置反应，缺货时可替代余量少，换供应反应弱于费用上升；物流调整影响费用与速度但未必改变法律原产地，实质生产重配作用更慢且需要产能/认证。当前最强结论是具体税差与商务归属重要，不能量化一个不存在的统一Micron税率。",
+          "scope_boundary": "覆盖地域竞争到岸成本与交易适用；制造选址、工艺、资本回报留制造域。中国本国产品标准、美国联邦来源资格、EAR管辖及关税原产地各服务不同规则，不能用一次装配或国籍结论跨制度替代。",
+          "ref": [
+            "https://www.whitehouse.gov/presidential-actions/2026/01/adjusting-imports-of-semiconductors-semiconductor-manufacturing-equipment-and-their-derivative-products-into-the-united-states/",
+            "https://www.micron.com/content/dam/micron/global/public/corporate/legal/terms-conditions/terms-conditions-sales.pdf",
+            "https://rulings.cbp.gov/ruling/N357333",
+            "D1-O31",
+            "D1-O74"
+          ]
+        },
+        {
+          "name": "合资格需求在供给配置与价格组合中转成地域销售",
+          "mechanism": "区域客户的业务投资、终端销量和采购预算决定原始内存/存储需求，产品组合与库存决定当期订货；合法资格、商业供应商份额和实际可交付配额把该需求转成美光地区销售。公司在合格SKU、客户合同承诺和各业务回报之间配置有限供给，失去一地订单可能改配其他合法客户，也可能因规格/认证不匹配闲置，不能假定全额损失或全额对冲。实际金额还受ASP及高价值产品组合影响；财报总部归属把跨境OEM/分销采购映射为地域收入，最终使用与系统部署所在并非同一口径。",
+          "current_status": "当前供给配置比“有机会就能等量新增销售”更符合上游事实：公司称需求超过增供能力，MCBU全年bit出货减少而收入仍增长，供给转向其他单元；DRAM/NAND全年ASP约升180%/200%，总bit出货为20%中段增长。中国总部收入保留、美国总部占比提高与全球价格平台同存，尚不能认定区域准入已恢复或中国终端数量增长。多年采购承诺提高部分客户供货优先级和可见性，但未披露地域覆盖。",
+          "materiality_context": "客户真实需求/预算与库存决定订货规模及时点，不能以地区名义收入增长替代它们。资格和商业份额控制可参与及能拿到的份额，产品匹配与可交付配额控制兑现速度；在当前紧供给状态下，后两者使许可放宽更可能先影响区域分配、价格/组合及未来机会，而非同季总bit增加。合同承诺改变改配灵活性，既可保住已合规客户供给，也可能限制临时转向更高价市场；具体地域覆盖未知。以失去的同一规格可交付量作分母，若全部改配且新净价相同，全球销售金额初始影响可接近零，但地域结构变；若仅能改配一半，尚未改配的一半才形成数量缺口，价差与库存再改变结果。这是条件算术，不是实际对冲率。ASP/组合在已观测年度幅度上明显足以主导名义增长，故价格解释目前比“收入即资格正常化”更有力。总部口径只决定统计落点，不是独立需求驱动；FY2026大陆占比6.26%较7.06%下降，大陆加香港10.98%较10.10%上升，说明不同地域定义会给相反表象。",
+          "scope_boundary": "保留本Unit从可服务市场到地区客户销售的核心商业中间层，不复制全行业价格/产能模型。行业供需、产品认证和制造有效产出由邻域深化，本域解释其对区域机会、改配能力和名义地域指标的后果；不按统一利润率计算政策损失。",
+          "ref": [
+            "D1-O57",
+            "D1-O31",
+            "D1-O74",
+            "D1-O103",
+            "D1-O18",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+          ]
+        },
+        {
+          "name": "数据主权与运营控制通过服务商资格重排地域采购入口",
+          "mechanism": "政府与受监管企业不仅选择机房地点，还选择数据访问权、服务商控制权、运行连续性和供应链自主性。服务层资格改变哪些云商/本地运营者能够承接业务，再由这些主体的系统采购、OEM及渠道关系影响美光进入当地需求的路径。数据本地化可由原云商调整控制实现，也可要求独立运营或私有部署；前者未必改变组件供应名单，后者可能改变采购决策者。把高保障要求进一步传到芯片来源，才形成不同于服务商国籍的硬件准入约束。",
+          "current_status": "欧委会2026-04采购已使用主权评分，最低SEAL-2允许受适当控制的非欧洲技术；6月澄清将SEAL与综合评分区分。2026-06-03 CADA文件是立法提案，不是本模型认定已经执行的全欧芯片禁令。Microsoft在2025年提出欧洲公共、私有与独立伙伴路径，2026-02宣布断网私有部署能力；这是供应者能力陈述，并非这些用户已向美光下单。",
+          "materiality_context": "可服务分母首先是受相应要求约束的工作负载和采购，而非美光全部欧洲总部收入。既有工作负载迁移主要重排客户及地域，先前因信任/合规无法使用云的客户开始部署才可能扩大可参与需求；同一业务不得同时计入原云与新私有环境。采购控制点、组件来源条件与本地服务能力决定美光能否随迁。小额框架本身不代表欧洲内存市场规模，其意义在于可复制的资格制度；若大范围扩散，影响可能超出最初采购额。运行控制强化也可以保住外国技术的合法入口，而不必产生国产器件替代。",
+          "scope_boundary": "本域解释服务商资格、地区客户网络与组件采购入口；AI使用强度、具体服务器配置和制造本地化由邻域深化。SEAL采购评分与CADA拟议保障等级是不同框架，不互换数字；数据存放地、运营者所有权与内存原产地也不等同。未据主权云名称认定美光或其他非欧内存已被禁用。",
+          "ref": [
+            "https://commission.europa.eu/news-and-media/news/commission-advances-cloud-sovereignty-through-strategic-procurement-2026-04-17_en",
+            "https://commission.europa.eu/news-and-media/news/sovereign-cloud-framework-explained-2026-06-01_en",
+            "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=COM:2026:0502:FIN",
+            "https://digital-strategy.ec.europa.eu/en/policies/cloud-and-ai-development-act",
+            "https://blogs.microsoft.com/blog/2025/06/16/announcing-comprehensive-sovereign-solutions-empowering-european-organizations/",
+            "https://blogs.microsoft.com/blog/2026/02/24/microsoft-sovereign-cloud-adds-governance-productivity-and-support-for-large-ai-models-securely-running-even-when-completely-disconnected/",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+          ]
+        }
+      ],
+      "potential_gaps": [
+        {
+          "name": "中国采购限制的法定边界与实际执行重新划分市场",
+          "why_live": "当前CII限制与依法供货并存。关键基础设施认定由保护工作部门按业务危害及关联性执行，不是所有数据中心或中国公司天然同属一个集合；公司又明确中国数据中心业务受影响。FY2026中国总部销售保留实质规模，但既非最终使用分母，也非仍面临进一步禁购的存量金额。",
+          "revision_logic": "默认分段受限而非全面退出。认定、受限采购链覆盖或正式重审改变的，是美光可以竞争的买方与用途集合；其销售后果还由已被替代的份额、回流摩擦及合法改配空间决定，不能把历史风险估计当作今天新增损失。",
+          "possibility_space": [
+            {
+              "name": "保护部门把新业务或新运营者纳入CII，并将要求落实到OEM嵌入式采购",
+              "implication": "同一终端需求可仍增长，合法美光入口却从直接客户扩展到更多系统链而收窄。若新增覆盖主要落在本来未用美光的采购，机会损失大于当期存量损失；覆盖仍在使用的系统才会直接转移订单。"
+            },
+            {
+              "name": "监管明确受限采购、维护替换与非关键业务的分隔处理",
+              "implication": "更清楚的使用边界可以保留原被买方一并排除的合法采购，降低过度合规外溢；但给出定义不等于取消受限运营者的新采购禁令，也不使所有旧型号继续供货。"
+            },
+            {
+              "name": "网络安全重审或政策安排恢复部分买方或产品的采购资格",
+              "implication": "可竞争市场先扩大。长期替代关系已固化的客户可能只把美光纳入备选，供应紧张或旧方案匹配的客户回流更快；同样的法律开放可对应不同订单恢复速度。"
+            },
+            {
+              "name": "重大安全事件促使主管部门把限制从特定运营者推向更广采购场景",
+              "implication": "这是低概率但作用面更广的未来政策配置，不是当前事实。若扩及普通商业采购，非CII边界的保护会减弱，需重新理解合法客户池，而不是仅上调既有CII执行强度。"
+            }
+          ],
+          "ref": [
+            "https://www.cac.gov.cn/2023-05/21/c_1686348043518073.htm",
+            "https://www.cac.gov.cn/2021-08/17/c_1630785976988160.htm",
+            "https://www.micron.com/about/press/news/statement-on-data-center-business-in-china",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O3",
+            "D1-O74"
+          ]
+        },
+        {
+          "name": "合资格中国客户的供应连续性选择改变商业覆盖",
+          "why_live": "中国非受限买方自主排除尚未测得，不能设为零或认定全面抵制。美光合法客户与实验室仍在，全球紧供给又使可得性影响选型。客户同时比较安全/政治中断风险、价格性能与经验证的替代来源，正式采购资格只是商业覆盖的上限。",
+          "revision_logic": "默认合法市场中美光仍可竞争，而不是法律允许即全部留存。买方如何管理连续性风险、合格替代者能否承担具体规格，能在法规不变时缩窄或扩大实际供应名单；单纯价格竞争与政治性排除有不同持续性。",
+          "possibility_space": [
+            {
+              "name": "大型非CII企业将预防性不用美光写入集团采购政策",
+              "implication": "自主排除可跨工厂、采购代理及普通商业SKU传播，比正式禁购覆盖更广。替代认证和集团政策的沉没成本使以后正式放宽也未必带来快速回流；这不是已确认发生的集团清单。"
+            },
+            {
+              "name": "竞争者在目标客户所需规格上取得可靠供货并给出连续性保障",
+              "implication": "客户无需等待新增禁令就能降低切换代价，美光可失去合法份额。影响应分到被替代规格；一般DRAM/NAND的替换不能外推到所有高端器件。若优势只来自暂时低价，关系固化可能弱于永久排除。"
+            },
+            {
+              "name": "替代来源短缺或质量问题促使客户保留美光作为真正第二来源",
+              "implication": "安全分散偏好反而保住美光的入口，即使不恢复旧主供份额。客户愿意采购与美光愿意配置稀缺供给仍是两件事；改善首先可体现为长期客户选择权而非当期总量新增。"
+            },
+            {
+              "name": "客户与美光形成可执行的供货和风险分担安排",
+              "implication": "对合法业务的连续性担忧可由合同、技术支持和多地履约降低，改变“随时退出”的商业解释。但合同不豁免未来禁令，过强地区承诺也可能限制公司向其他合格市场改配。"
+            }
+          ],
+          "ref": [
+            "https://www.micron.com/about/press/news/statement-on-data-center-business-in-china",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O74",
+            "D1-O103",
+            "D1-O205",
+            "D1-O156"
+          ]
+        },
+        {
+          "name": "中国本国产品规则从整机偏好走向不同组件安排",
+          "why_live": "一般制度已按境内实质性制造/加工/组装及声明运行，外资平等；20%是报价评审扣除，采购包80%是合格产品成本占包内产品成本，不是本地内存比例。未来分品目组件与工序细则留下独立于CAC的系统BOM修订空间。",
+          "revision_logic": "默认进口美光组件并不自动使境内形成的系统失去支持条件。品目细则、OEM配置和投标包结构可改变使用美光的中标经济性乃至可进入的BOM，需把硬性芯片来源、系统优惠和供应商资格三个机制分开。",
+          "possibility_space": [
+            {
+              "name": "服务器或存储品目细则要求特定本地组件或关键工序",
+              "implication": "若要求落到内存/闪存及相关工序，美光通过现有整机制造入口参与采购的空间可能缩小；若仅覆盖其他关键部件，系统调整可保留美光。不能将未来某品目规则外推为全部中国终端禁用。"
+            },
+            {
+              "name": "规则保留进口内存空间，OEM以境内实质制造取得整机支持",
+              "implication": "系统本地化可与外国组件并存，地域采购偏好主要重排整机生产和投标组织而非器件国籍。美光得益于这些合规OEM渠道，但仍须在价格/性能及独立CAC约束下竞争。"
+            },
+            {
+              "name": "采购方通过合格产品组合取得整包评审优势",
+              "implication": "包内结构可以使含进口组件的部分系统进入有竞争力的投标；也可以因合格产品成本不足而失去整包优势。变化来自采购组织与成本构成，不是直接强迫每台设备达到80%本地芯片。"
+            },
+            {
+              "name": "高价内存改变系统报价，OEM重配容量、供应来源或产品包",
+              "implication": "评审优势保留时也可能压不过实际成本上升。OEM可先改容量/组合而非换供应商；替代来源若同样涨价，进口组件份额未必下降。此路径改变实际可参与订单量，不把评审扣除误作美光售价折扣。"
+            }
+          ],
+          "ref": [
+            "https://www.mof.gov.cn/zhengwuxinxi/caizhengxinwen/202509/t20250930_3973725.htm",
+            "https://www.ccgp.gov.cn/news/202601/t20260121_26097384.htm",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O74"
+          ]
+        },
+        {
+          "name": "联邦合规要求与跨国BOM选择重排供应池",
+          "why_live": "联邦采购已有2027-12-23法定窗口与2026-02提案，受覆盖来源、分包接口、既有设备与豁免限定实际替换分母，不能用全部美国总部收入代替，也没有可量化的联邦替换规模。OEM仍有统一BOM和地域双BOM的经济选择；美光与韩国等合规供应者竞争，并非美国籍自动独供。",
+          "revision_logic": "默认是合规准备逐步扩张、只在原有受覆盖来源的采购中发生替换。最终适用及OEM如何承受认证、库存、售后成本，可把机会限于联邦新系统，也可传到商业甚至其他地区，改变美光可竞争订单的范围和竞争者集合。",
+          "possibility_space": [
+            {
+              "name": "承包商为降低审查成本，把合规来源写入全球通用产品线",
+              "implication": "统一BOM将联邦要求外溢到不受法律直接约束的商业采购，美光机会池扩大；其中不少SKU本来就用合规来源，只新增文件成本。若全球方案又遇中国不同要求，统一设计的成本优势会减弱。"
+            },
+            {
+              "name": "跨国OEM分别维持美国合规BOM与中国区域BOM",
+              "implication": "双BOM隔离政策传播，美光可在美国版本取得机会而在中国版本被移除，两者不能按OEM总部净额抹平。额外认证、备件和库存成本会影响定价及导入速度。"
+            },
+            {
+              "name": "最终实施保留较广豁免或由采购方延长迁移安排",
+              "implication": "换料机会向后移或局限到关键系统，新设计准备仍可能推进，但不支持一波替换全部已安装设备。规则收窄主要压低可转移采购分母，而非否定全部合规需求。"
+            },
+            {
+              "name": "采购方将来源透明与本地生产条件叠加到原有排除规则",
+              "implication": "合规竞争可能从单纯排除指定中国来源转向生产与追溯能力。竞争者在美国封装等布局可影响部分客户选择；SK hynix的2029年下半年计划不是当前美国量产，也不能仅凭当地封装推定原产或全部资格。"
+            }
+          ],
+          "ref": [
+            "https://www.govinfo.gov/content/pkg/FR-2026-02-17/pdf/2026-03065.pdf",
+            "D2REF:d2-o1_open_discovery-5-03abf8497a:O5",
+            "https://www.cac.gov.cn/2023-05/21/c_1686348043518073.htm",
+            "https://www.micron.com/app-settings/euc-form",
+            "https://news.skhynix.com/en/groundbreaking-ceremony-in-indiana/",
+            "D1-O81",
+            "D1-O74"
+          ]
+        },
+        {
+          "name": "先进内存的合法交易路径在组件与系统之间重构",
+          "why_live": "独立HBM管辖、目的地/用途与复合封装例外仍是商品入口。2026-01正式规则允许满足条件的特定先进计算商品从美国对中国/澳门逐案审查，但没有自动批准系统或取消HBM规则。因而“任何先进内存都不能到中国”和“GPU获准即HBM自由流通”同样过宽。",
+          "revision_logic": "默认按具体商品、交易和终端约束供货。不同授权对象、许可条件及平台组装方式可打开系统内嵌需求而不开放独立组件，也可使既有合法封装通道变窄；变化先修订可服务路线及SKU集合，再由技术份额和配置决定美光捕获。",
+          "possibility_space": [
+            {
+              "name": "获许可平台以特定系统商品向合资格中国买方供货",
+              "implication": "该未来实际交易可为系统中已选定美光器件形成间接终端入口，但收益取决于该平台的真实内存供应分配及许可覆盖，不能把特定系统通道写成独立HBM普遍开放或中国CII采购恢复。"
+            },
+            {
+              "name": "BIS调整组件许可或封装例外的范围与责任安排",
+              "implication": "适用SKU及封装伙伴池可能扩大，也可能因新增用途/身份限制而缩小；成熟路线若能降低合规成本，可改变美光与其他合法来源的相对供应位置。封装地点本身仍不是解除管辖的办法。"
+            },
+            {
+              "name": "许可机构围绕转移风险强化记录、测试与下游用途约束",
+              "implication": "部分法律上仍可申请的交易可能变得慢、贵或不再值得履行，平台改用其他合规地点或产品，商业可服务性先收缩。EUC文档访问处理与政府许可等待不是同一交期，不以现有流程天数推算审批。"
+            },
+            {
+              "name": "客户选择不同性能等级或已获合法资格的平台满足同一应用",
+              "implication": "合法产品替代可保留地区算力使用，但改变所需内存组合及美光连接；降规格不必意味着退出全部DRAM/NAND。地域机制在于可采购方案变化，具体技术优劣和HBM份额由产品域解释。"
+            }
+          ],
+          "ref": [
+            "https://www.govinfo.gov/content/pkg/FR-2024-12-05/pdf/2024-28270.pdf",
+            "https://www.bis.gov/regulations/ear/740",
+            "https://www.govinfo.gov/content/pkg/FR-2026-01-15/pdf/2026-00789.pdf",
+            "https://www.micron.com/content/dam/micron/global/public/corporate/legal/terms-conditions/terms-conditions-sales.pdf",
+            "https://www.micron.com/app-settings/euc-form",
+            "D1-O74",
+            "D1-O130",
+            "https://www.govinfo.gov/content/pkg/FR-2026-01-15/html/2026-00789.htm"
+          ]
+        },
+        {
+          "name": "所有权筛查与中间商身份修复改变合法交易网络",
+          "why_live": "50%关联实体机制的正式暂停期到2026-11-09，现有时间表次日恢复；谈判延期未被当作生效规则。Arrow真实中国实体已移除，但冒名同名香港条目仍列名，显示所有权继承和实名识别是不同的限制接口，可影响多层合法客户。",
+          "revision_logic": "默认暂停期间仍遵守独立列名、商品与用途限制，并按公开恢复日准备。规则改动或中间节点身份改变，会重划需授权的网络；商业方过度拒绝、文件成本与替代渠道能力可放大或缓冲法律集合变化。",
+          "possibility_space": [
+            {
+              "name": "正式延期或修订把所有权扩展改成更窄的适用",
+              "implication": "原来准备排除的部分客户可维持入口，减少全面筛查及不确定性成本；这不是新增实物需求，也不解除母体已适用或独立商品/用途约束。利益取决于现有合法交易与新旧所有权范围的重叠。"
+            },
+            {
+              "name": "机制按日程恢复，中间采购实体继承相关列名限制",
+              "implication": "未直接列名的客户也可能改变许可身份，渠道可一次影响多个终端账户。若当地业务主要已受其他限制，新增经济损失较小；若覆盖大量原合格交易，影响不同于只增加合规文件。"
+            },
+            {
+              "name": "真实交易方移除列名或消除相似名称误识别",
+              "implication": "可恢复合格客户的中间入口并降低误拒，Arrow案例提供现实机制依据。但恢复一个节点不能使最终受限买方、用途或商品交易自动合法，也不等于渠道库存已经转成终端销量。"
+            },
+            {
+              "name": "银行、物流商或经销商采取比规则更宽的风险拒绝政策",
+              "implication": "正式可售客户仍可能因付款和履约链中断而被商业排除，单靠法律许可不能解决。其他有能力且合法的节点可承接业务，但交付、信用和技术支持切换有摩擦；不是借换主体规避管制。"
+            }
+          ],
+          "ref": [
+            "https://www.govinfo.gov/content/pkg/FR-2025-11-12/pdf/2025-19846.pdf",
+            "D2REF:d2-o1_open_discovery-5-03abf8497a:O1",
+            "https://www.govinfo.gov/content/pkg/FR-2025-11-12/html/2025-19858.htm",
+            "https://static4.arrow.com/-/media/arrow/files/pdf/111025-bis-removal-federal-register.pdf",
+            "https://www.micron.com/app-settings/euc-form",
+            "https://www.micron.com/sales-support/sales-network/authorized-distributors",
+            "https://www.micron.com/content/dam/micron/global/public/corporate/legal/terms-conditions/terms-conditions-sales.pdf"
+          ]
+        },
+        {
+          "name": "第三国AI项目从授权地点走向受约束客户网络",
+          "why_live": "G42与Humain已有具名条件批准，Humain另有首期18,000个GB300计划；批准额度、采购计划与安装各是不同事实。项目还依赖资金、供电和持续防转移安排。2026-01特定先进计算许可规则把部分远程IaaS用户列入申报，说明硬件所在地未必穷尽使用者审查，但该条不能泛化为全球云统一禁令。",
+          "revision_logic": "默认机会沿具名合规系统平台网络展开。客户使用范围、持续授权及项目融资组织变化，可使原有工作负载迁移、原无法部署的需求开放，或有许可却缺实际采购；三者对美光地域入口和增量需求不同。",
+          "possibility_space": [
+            {
+              "name": "主权客户把具名批准转成可持续采购与面向本地的新服务",
+              "implication": "若服务吸引原受合规/可获得性约束的使用者，会扩大可参与需求并产生系统采购入口；Micron仍须经平台供应名单捕获，不能按许可额度全额计算销售。"
+            },
+            {
+              "name": "国际云或模型公司把既有业务迁至获批园区",
+              "implication": "系统部署地域与采购实体可重排，美光可保持旧平台供应连接而不增加一份全球工作负载。当地项目扩张不等于当地总部收入同幅增长，尤其集中采购仍在其他国家时。"
+            },
+            {
+              "name": "持续合规审查收窄最终用户、远程访问或项目授权",
+              "implication": "可运营系统仍在，能够服务的客户池却变窄，影响项目回报与后续采购；严重时许可中断使供货入口关闭。商品特定规则和具体项目条件分别适用，不把一条远程用户条款套到全部境外算力。"
+            },
+            {
+              "name": "融资方缩减项目承诺或电力交付推迟，运营者改用既有托管算力",
+              "implication": "许可容量不变而本地新硬件采购延期；如果应用转到现有合规云，需求可被其他地区吸收而非完全消失。若项目服务本为新增，融资收缩会实际延后新增市场，不能只解释为搬迁。"
+            },
+            {
+              "name": "新双边安全安排使更多独立运营者可以合法承接平台",
+              "implication": "客户网络可从少数具名节点扩展，增加入口并降低对单一项目依赖；如果只是现有采购代理换名或分流，并不扩大最终用途池。不同运营者的采购和平台选择会重分供应者机会。"
+            }
+          ],
+          "ref": [
+            "https://www.commerce.gov/news/press-releases/2025/11/statement-uae-and-saudi-chip-exports",
+            "https://nvidianews.nvidia.com/news/saudi-arabia-and-nvidia-to-build-ai-factories-to-power-next-wave-of-intelligence-for-the-age-of-reasoning",
+            "https://www.bis.gov/press-release/department-commerce-announces-rescission-biden-era-artificial-intelligence-diffusion-rule-strengthens",
+            "https://www.govinfo.gov/content/pkg/FR-2026-01-15/pdf/2026-00789.pdf",
+            "D1-O130",
+            "D1-O94",
+            "D1-O95",
+            "D1-O74",
+            "https://www.govinfo.gov/content/pkg/FR-2026-01-15/html/2026-00789.htm"
+          ]
+        },
+        {
+          "name": "主权云要求从数据驻留延伸到采购控制与供应链资格",
+          "why_live": "主权要求已进入欧洲真实采购而非只有机房选址讨论，6月框架同时评价法律、运营及供应链。Microsoft又提供原公共云加控制、独立伙伴与断网私有部署的不同路线。CADA是2026-06提出的立法方案，不是本模型承认的全欧现行硬件门槛；当前非欧技术仍存在合规入口。",
+          "revision_logic": "默认数据/运行控制与进口内存资格可以并存。政府及企业提高保障需求可能只改访问控制，也可能换采购决策者、复制本地系统，或把条件传到芯片供应链；因此欧洲可服务市场不能只用出口目的地或客户总部收入描述。",
+          "possibility_space": [
+            {
+              "name": "公共部门扩展主权云采购，本地独立运营者承接更多工作负载",
+              "implication": "美光进入需求的控制点从原国际云集中采购转到区域运营者、OEM及分销网络，旧供应关系未必自动随迁。若组件资格不变，主要是份额/渠道重排，不是欧洲禁用美国内存。"
+            },
+            {
+              "name": "高保障采购把非欧供应依赖审查具体延伸到关键硬件",
+              "implication": "进口内存可参与的系统池可能收窄，或要求更多来源透明、备份与连续性保障。没有充足合格本地替代时，也可能使项目延后而非立即替换；不能由服务商欧盟所有权直接推出器件必须欧洲原产。"
+            },
+            {
+              "name": "服务中断或敏感数据事件促使受监管企业转向隔离私有环境",
+              "implication": "这是未来事件而非已发生事故。现有断网能力使迁移路线具有技术基础；采购更可能由本地企业/OEM决定，并可能形成额外冗余系统。既有工作负载迁移不是双倍需求，美光能否获配取决于这些新的系统名单。"
+            },
+            {
+              "name": "国际公共云的本地访问和运营控制满足买方要求",
+              "implication": "客户保留原平台，主权化帮助外国技术守住可服务入口，主要增加治理成本而非硬件来源变化。欧洲部署增长仍可体现为美国等总部采购，美光欧洲报表占比不必随之提高。"
+            },
+            {
+              "name": "公共与商业采购采用互不兼容的主权要求，运营者缩减或整合项目",
+              "implication": "重复系统、评估和运维成本可压低用户采用速度，缩小近期可服务采购；若之后统一认可又可释放受阻需求。此处修订的是地区市场入口与采购组织效率，不把每种主权标签都算作新需求。"
+            }
+          ],
+          "ref": [
+            "https://commission.europa.eu/news-and-media/news/commission-advances-cloud-sovereignty-through-strategic-procurement-2026-04-17_en",
+            "https://commission.europa.eu/news-and-media/news/sovereign-cloud-framework-explained-2026-06-01_en",
+            "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=COM:2026:0502:FIN",
+            "https://digital-strategy.ec.europa.eu/en/policies/cloud-and-ai-development-act",
+            "https://blogs.microsoft.com/blog/2025/06/16/announcing-comprehensive-sovereign-solutions-empowering-european-organizations/",
+            "https://blogs.microsoft.com/blog/2026/02/24/microsoft-sovereign-cloud-adds-governance-productivity-and-support-for-large-ai-models-securely-running-even-when-completely-disconnected/",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+          ]
+        },
+        {
+          "name": "关税与不同原产资格改变地区采购的相对成本",
+          "why_live": "狭窄先进计算Section 232措施不能作为美光全内存25%税率。公司全球制造、标准税费条款及CBP加工事实类比说明最终装配地、总部国籍和原产地不能互换；实际加权适用税率尚未取得。制造与封装地域化又可能改变未来采购竞争条件。",
+          "revision_logic": "默认税费先进入客户到岸成本，净价再由议价与可替代来源决定。正式适用范围、差别豁免和生产事实变化可改变美光相对位置；全行业同受税、唯独某来源受税和客户减少配置的经济意义不同。",
+          "possibility_space": [
+            {
+              "name": "美国把措施扩大至更多内存或含内存系统，并设差别豁免",
+              "implication": "新的相对税差可重排合格供应来源；如果所有竞品同受影响，主要是需求成本增加而非Micron独占份额收益。组件与整机的不同待遇还会改变OEM在哪里采购和集成，不能套一个统一公司税率。"
+            },
+            {
+              "name": "买方接受较高到岸成本，或供应者通过净价协商分担",
+              "implication": "缺货或缺合格替代时，采购量可能保持而利润/客户成本重新分配；供应充裕时客户议价更强。合同账单归客户不等于美光经济上完全转嫁，需修订的是竞争与净价而不仅法定付款人。"
+            },
+            {
+              "name": "OEM更换合格来源，降低配置或延长换机周期",
+              "implication": "关税可在销售合法性不变时缩小美光的商业可服务市场。换来源转移份额，减配置/延长周期压低同地区总采购，这两类影响不能相加为同一批器件损失。"
+            },
+            {
+              "name": "供应者增加实质生产或当地封装，采购方调整其来源认定",
+              "implication": "长期地域化可能改善特定资格或成本，但具体法律规则各异；仅换发货地或最后装配并不自动改变原产。美光和竞争者都能布局，SK hynix美国封装计划说明潜在竞争路径而非当前税收优势已兑现。"
+            }
+          ],
+          "ref": [
+            "https://www.whitehouse.gov/presidential-actions/2026/01/adjusting-imports-of-semiconductors-semiconductor-manufacturing-equipment-and-their-derivative-products-into-the-united-states/",
+            "https://www.micron.com/content/dam/micron/global/public/corporate/legal/terms-conditions/terms-conditions-sales.pdf",
+            "https://rulings.cbp.gov/ruling/N357333",
+            "https://news.skhynix.com/en/groundbreaking-ceremony-in-indiana/",
+            "D1-O81",
+            "D1-O31",
+            "D1-O74"
+          ]
+        },
+        {
+          "name": "区域商业服务与分销能力决定合法市场能否被经营",
+          "why_live": "中国上海、北京、深圳客户实验室及全球授权组件渠道仍提供支点；公司称基础设施按业务规模配置，不是无限承诺投入。Arrow年报把工程、物流和灵活交付列为价值来源，亦说明库存周期影响渠道采购；这些能力不是一个合法分销商名字就能替代。",
+          "revision_logic": "默认保留合法入口，但法律资格不是自动可达销售。公司和渠道对设计服务、信用、库存及覆盖资源的选择可以独立改变地区份额；客户缩减业务与服务缩减可形成反馈，也可由有能力的新伙伴打断。",
+          "possibility_space": [
+            {
+              "name": "美光主动集中支持少数高价值合法客户，退出低回报区域服务",
+              "implication": "服务收缩可使仍合法的中小客户难以维持选型和复购，实际覆盖缩小；被保留大客户的单位服务经济性可能改善。不能据某支点收缩宣称中国所有业务或制造退出。"
+            },
+            {
+              "name": "公司与区域渠道扩建设计支持和合法小批量交付",
+              "implication": "有技术资格但缺接触/履约能力的客户可转成可竞争订单，也能提高重新开放后的回流速度。投入先改善可经营市场与关系，稀缺供给仍可能限制短期新增销售。"
+            },
+            {
+              "name": "关键分销商退出或信用资源收缩，由其他合格伙伴承接",
+              "implication": "客户并非必然失去法律入口，但伙伴的工程能力、库存和融资服务不同，切换可能造成设计流失及交付中断；替代者有效承接时能吸收冲击，不应按旧渠道采购额全算终端损失。"
+            },
+            {
+              "name": "地区分销商为政策或交付风险提前备货，随后集中去库",
+              "implication": "总部口径销售可能先上升后下降，即使终端资格和用量变化较小。长期采购若同时流失才是覆盖收缩；此可能性修订收入变化的解释，不把渠道进货当已恢复的终端使用。"
+            }
+          ],
+          "ref": [
+            "https://www.micron.com/about/press/news/statement-on-data-center-business-in-china",
+            "https://www.micron.com/sales-support/sales-network/authorized-distributors",
+            "https://www.sec.gov/Archives/edgar/data/7536/000110465926012765/arw-20251231x10k.htm",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O74"
+          ]
+        },
+        {
+          "name": "供给松紧与合同配置改变地域冲击的可对冲性",
+          "why_live": "当前紧供给、MCBU bit减少及广谱ASP上涨表明，地区收入并非可服务资格的直读。战略协议又保留部分客户供给和价带，而地区覆盖未披露。失去一地可销售量能否在同规格、同净价条件下被其他合法客户接走，是政策影响规模的重要隐含假设。",
+          "revision_logic": "默认准入变化先影响可参与市场，当前总量还受配额制约。外部供需、客户合同和SKU可迁移性改变后，相同的地区政策新闻可以从订单重分配变成合并销售损失，或从未来选项变成可兑现新增销售；不机械采用全损或全对冲。",
+          "possibility_space": [
+            {
+              "name": "其他合法客户仍缺货且愿承接失去地区的同规格供给",
+              "implication": "地区销售组合明显改变而全球数量损失较小；新客户净价、服务成本和组合决定经济得失。缓冲只适用于可替换、可交付的产品，不覆盖每种规格或永久失去的客户选择权。"
+            },
+            {
+              "name": "行业有效供给改善、替代需求转弱，使地区损失难以改配",
+              "implication": "以前主要改变分配的限制开始留下闲置或降价压力，地区准入的边际经济重要性提高。行业宽松原因由邻域研究，本域保留它如何改变同一政策冲击的全球缓冲。"
+            },
+            {
+              "name": "多年协议锁定其他客户容量，新开放地区只能进入后续配置",
+              "implication": "法律开放提高未来可服务选项，却未必增加当期bit；公司需比较既有履约与新区域关系。反过来，若受限地区合同允许合规改配，损失可能被吸收；没有披露的条款不能当作已兑现保护。"
+            },
+            {
+              "name": "新增合格供给与客户认证使此前无法承接的重开市场可被服务",
+              "implication": "准入改善不再只是名单变化，能转成更多可交付地区订单。若扩供同时压低价格，数量机会与名义收入并不同比例；同一产能也不能同时计入各地区新增销售。"
+            },
+            {
+              "name": "集中采购实体或分销路径改组，使报表地域与最终用途重新分离",
+              "implication": "若中国/香港或其他总部销售变动来自采购落点迁移，原先对禁购扩大或恢复的解释需撤回，而不是跟随报表比例外推终端市场。交易主体改变也可能真实改变其资格，统计重归属与法律变化必须分别理解。"
+            }
+          ],
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O57",
+            "D1-O31",
+            "D1-O74",
+            "D1-O103",
+            "D1-O18"
+          ]
+        }
+      ]
+    }
+  ]
+}

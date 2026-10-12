@@ -1,0 +1,18 @@
+{
+  "alias": "O120",
+  "title": "sections 1 — metadata",
+  "content": {
+    "section": "Mobile and Client Business Unit",
+    "heading_match": "Mobile and Client Business Unit",
+    "start_offset": 46606,
+    "end_offset": 126638,
+    "full_text_chars": 80000,
+    "returned_chars": 40000,
+    "truncated": true,
+    "match_quality": "substantive_body"
+  },
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "schema_version": "d1-horizontal-target-result-v1",
+  "result": {
+    "collection_target_id": "c5_enterprise_value",
+    "status": "FAILED",
+    "requested_items": 1,
+    "succeeded_items": 0,
+    "unavailable_items": 0,
+    "failed_items": 1,
+    "provider_attempts": [
+      {
+        "provider": "Alpha Vantage",
+        "tool_name": "alpha.valuation_snapshot",
+        "status": "FAILED",
+        "started_at": "2026-10-09T18:11:44.278085Z",
+        "finished_at": "2026-10-09T18:11:45.758371Z",
+        "error_code": "entitlement_or_permission_denied",
+        "message": "Thank you for using Alpha Vantage! This is a premium endpoint. You may subscribe to any of the premium plans at https://www.alphavantage.co/premium/ to instantly unlock all premium endpoints"
+      }
+    ],
+    "output_refs": [],
+    "reason": "Thank you for using Alpha Vantage! This is a premium endpoint. You may subscribe to any of the premium plans at https://www.alphavantage.co/premium/ to instantly unlock all premium endpoints"
+  },
+  "observations": []
+}

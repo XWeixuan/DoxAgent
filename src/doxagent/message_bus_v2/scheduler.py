@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import time
 from collections import defaultdict
 from collections.abc import AsyncIterator, Awaitable, Callable
@@ -157,7 +158,13 @@ class GlobalPollScheduler:
 
     async def run_forever(self, *, loop_sleep_seconds: float, stop: asyncio.Event) -> None:
         while not stop.is_set():
-            await self.run_once()
+            try:
+                await self.run_once()
+            except Exception as exc:
+                from doxagent.persistent_runtime_v2.journal import is_sqlite_contention
+                if not is_sqlite_contention(exc):
+                    raise
+                logging.getLogger(__name__).warning("bus runtime lock contention; preserving durable leases and retrying next loop")
             try:
                 await asyncio.wait_for(stop.wait(), timeout=loop_sleep_seconds)
             except TimeoutError:

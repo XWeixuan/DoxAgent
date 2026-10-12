@@ -1,0 +1,1982 @@
+[
+  {
+    "alias": "O89",
+    "title": "text paragraphs 1",
+    "block_type": "text",
+    "path": "blocks/O89.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 23420,
+    "selected": false
+  },
+  {
+    "alias": "O90",
+    "title": "text paragraphs 2",
+    "block_type": "text",
+    "path": "blocks/O90.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 342,
+    "selected": true
+  },
+  {
+    "alias": "O91",
+    "title": "text paragraphs 3",
+    "block_type": "text",
+    "path": "blocks/O91.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 496,
+    "selected": true
+  },
+  {
+    "alias": "O92",
+    "title": "text paragraphs 4",
+    "block_type": "text",
+    "path": "blocks/O92.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 301,
+    "selected": true
+  },
+  {
+    "alias": "O93",
+    "title": "text paragraphs 5",
+    "block_type": "text",
+    "path": "blocks/O93.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 855,
+    "selected": true
+  },
+  {
+    "alias": "O94",
+    "title": "text paragraphs 6",
+    "block_type": "text",
+    "path": "blocks/O94.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 1129,
+    "selected": true
+  },
+  {
+    "alias": "O95",
+    "title": "text paragraphs 7",
+    "block_type": "text",
+    "path": "blocks/O95.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 797,
+    "selected": true
+  },
+  {
+    "alias": "O96",
+    "title": "text paragraphs 8",
+    "block_type": "text",
+    "path": "blocks/O96.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 785,
+    "selected": true
+  },
+  {
+    "alias": "O97",
+    "title": "text paragraphs 9",
+    "block_type": "text",
+    "path": "blocks/O97.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 306,
+    "selected": true
+  },
+  {
+    "alias": "O98",
+    "title": "text paragraphs 10",
+    "block_type": "text",
+    "path": "blocks/O98.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 496,
+    "selected": true
+  },
+  {
+    "alias": "O99",
+    "title": "text paragraphs 11",
+    "block_type": "text",
+    "path": "blocks/O99.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 520,
+    "selected": true
+  },
+  {
+    "alias": "O100",
+    "title": "text paragraphs 12",
+    "block_type": "text",
+    "path": "blocks/O100.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 334,
+    "selected": true
+  },
+  {
+    "alias": "O101",
+    "title": "text paragraphs 13",
+    "block_type": "text",
+    "path": "blocks/O101.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 321,
+    "selected": true
+  },
+  {
+    "alias": "O102",
+    "title": "text paragraphs 14",
+    "block_type": "text",
+    "path": "blocks/O102.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 1015,
+    "selected": true
+  },
+  {
+    "alias": "O103",
+    "title": "text paragraphs 15",
+    "block_type": "text",
+    "path": "blocks/O103.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 1072,
+    "selected": true
+  },
+  {
+    "alias": "O104",
+    "title": "text paragraphs 16",
+    "block_type": "text",
+    "path": "blocks/O104.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 976,
+    "selected": true
+  },
+  {
+    "alias": "O105",
+    "title": "text paragraphs 17",
+    "block_type": "text",
+    "path": "blocks/O105.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 900,
+    "selected": true
+  },
+  {
+    "alias": "O106",
+    "title": "text paragraphs 18",
+    "block_type": "text",
+    "path": "blocks/O106.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 3973,
+    "selected": false
+  },
+  {
+    "alias": "O107",
+    "title": "text paragraphs 19",
+    "block_type": "text",
+    "path": "blocks/O107.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 2551,
+    "selected": false
+  },
+  {
+    "alias": "O108",
+    "title": "text paragraphs 20",
+    "block_type": "text",
+    "path": "blocks/O108.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 2527,
+    "selected": false
+  },
+  {
+    "alias": "O109",
+    "title": "text paragraphs 21",
+    "block_type": "text",
+    "path": "blocks/O109.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 2285,
+    "selected": false
+  },
+  {
+    "alias": "O110",
+    "title": "text paragraphs 22",
+    "block_type": "text",
+    "path": "blocks/O110.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 289,
+    "selected": true
+  },
+  {
+    "alias": "O111",
+    "title": "text paragraphs 23",
+    "block_type": "text",
+    "path": "blocks/O111.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 538,
+    "selected": true
+  },
+  {
+    "alias": "O112",
+    "title": "text paragraphs 24",
+    "block_type": "text",
+    "path": "blocks/O112.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 770,
+    "selected": true
+  },
+  {
+    "alias": "O113",
+    "title": "text paragraphs 25",
+    "block_type": "text",
+    "path": "blocks/O113.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 626,
+    "selected": false
+  },
+  {
+    "alias": "O114",
+    "title": "text paragraphs 26",
+    "block_type": "text",
+    "path": "blocks/O114.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 672,
+    "selected": false
+  },
+  {
+    "alias": "O115",
+    "title": "text paragraphs 27",
+    "block_type": "text",
+    "path": "blocks/O115.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 718,
+    "selected": false
+  },
+  {
+    "alias": "O116",
+    "title": "text paragraphs 28",
+    "block_type": "text",
+    "path": "blocks/O116.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 504,
+    "selected": false
+  },
+  {
+    "alias": "O117",
+    "title": "text paragraphs 29",
+    "block_type": "text",
+    "path": "blocks/O117.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 378,
+    "selected": false
+  },
+  {
+    "alias": "O118",
+    "title": "text paragraphs 30",
+    "block_type": "text",
+    "path": "blocks/O118.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 681,
+    "selected": false
+  },
+  {
+    "alias": "O119",
+    "title": "text paragraphs 31",
+    "block_type": "text",
+    "path": "blocks/O119.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 225,
+    "selected": false
+  },
+  {
+    "alias": "O120",
+    "title": "text paragraphs 32",
+    "block_type": "text",
+    "path": "blocks/O120.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 426,
+    "selected": false
+  },
+  {
+    "alias": "O121",
+    "title": "text paragraphs 33",
+    "block_type": "text",
+    "path": "blocks/O121.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 474,
+    "selected": false
+  },
+  {
+    "alias": "O122",
+    "title": "text paragraphs 34",
+    "block_type": "text",
+    "path": "blocks/O122.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 545,
+    "selected": false
+  },
+  {
+    "alias": "O123",
+    "title": "text paragraphs 35",
+    "block_type": "text",
+    "path": "blocks/O123.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 450,
+    "selected": false
+  },
+  {
+    "alias": "O124",
+    "title": "text paragraphs 36",
+    "block_type": "text",
+    "path": "blocks/O124.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 299,
+    "selected": false
+  },
+  {
+    "alias": "O125",
+    "title": "text paragraphs 37",
+    "block_type": "text",
+    "path": "blocks/O125.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 314,
+    "selected": false
+  },
+  {
+    "alias": "O126",
+    "title": "text paragraphs 38",
+    "block_type": "text",
+    "path": "blocks/O126.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 456,
+    "selected": false
+  },
+  {
+    "alias": "O127",
+    "title": "text paragraphs 39",
+    "block_type": "text",
+    "path": "blocks/O127.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 479,
+    "selected": false
+  },
+  {
+    "alias": "O128",
+    "title": "text paragraphs 40",
+    "block_type": "text",
+    "path": "blocks/O128.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 534,
+    "selected": false
+  },
+  {
+    "alias": "O129",
+    "title": "text paragraphs 41",
+    "block_type": "text",
+    "path": "blocks/O129.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 348,
+    "selected": false
+  },
+  {
+    "alias": "O130",
+    "title": "text paragraphs 42",
+    "block_type": "text",
+    "path": "blocks/O130.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 357,
+    "selected": false
+  },
+  {
+    "alias": "O131",
+    "title": "text paragraphs 43",
+    "block_type": "text",
+    "path": "blocks/O131.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 665,
+    "selected": false
+  },
+  {
+    "alias": "O132",
+    "title": "text paragraphs 44",
+    "block_type": "text",
+    "path": "blocks/O132.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 514,
+    "selected": false
+  },
+  {
+    "alias": "O133",
+    "title": "text paragraphs 45",
+    "block_type": "text",
+    "path": "blocks/O133.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 469,
+    "selected": false
+  },
+  {
+    "alias": "O134",
+    "title": "text paragraphs 46",
+    "block_type": "text",
+    "path": "blocks/O134.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 158,
+    "selected": false
+  },
+  {
+    "alias": "O135",
+    "title": "text paragraphs 47",
+    "block_type": "text",
+    "path": "blocks/O135.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 512,
+    "selected": false
+  },
+  {
+    "alias": "O136",
+    "title": "text paragraphs 48",
+    "block_type": "text",
+    "path": "blocks/O136.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 509,
+    "selected": false
+  },
+  {
+    "alias": "O137",
+    "title": "text paragraphs 49",
+    "block_type": "text",
+    "path": "blocks/O137.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 580,
+    "selected": false
+  },
+  {
+    "alias": "O138",
+    "title": "text paragraphs 50",
+    "block_type": "text",
+    "path": "blocks/O138.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 309,
+    "selected": false
+  },
+  {
+    "alias": "O139",
+    "title": "text paragraphs 51",
+    "block_type": "text",
+    "path": "blocks/O139.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 578,
+    "selected": false
+  },
+  {
+    "alias": "O140",
+    "title": "text paragraphs 52",
+    "block_type": "text",
+    "path": "blocks/O140.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 766,
+    "selected": false
+  },
+  {
+    "alias": "O141",
+    "title": "text paragraphs 53",
+    "block_type": "text",
+    "path": "blocks/O141.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 470,
+    "selected": false
+  },
+  {
+    "alias": "O142",
+    "title": "text paragraphs 54",
+    "block_type": "text",
+    "path": "blocks/O142.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 696,
+    "selected": false
+  },
+  {
+    "alias": "O143",
+    "title": "text paragraphs 55",
+    "block_type": "text",
+    "path": "blocks/O143.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 311,
+    "selected": false
+  },
+  {
+    "alias": "O144",
+    "title": "text paragraphs 56",
+    "block_type": "text",
+    "path": "blocks/O144.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 514,
+    "selected": false
+  },
+  {
+    "alias": "O145",
+    "title": "text paragraphs 57",
+    "block_type": "text",
+    "path": "blocks/O145.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 635,
+    "selected": false
+  },
+  {
+    "alias": "O146",
+    "title": "text paragraphs 58",
+    "block_type": "text",
+    "path": "blocks/O146.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 820,
+    "selected": false
+  },
+  {
+    "alias": "O147",
+    "title": "text paragraphs 59",
+    "block_type": "text",
+    "path": "blocks/O147.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 478,
+    "selected": false
+  },
+  {
+    "alias": "O148",
+    "title": "text paragraphs 60",
+    "block_type": "text",
+    "path": "blocks/O148.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 325,
+    "selected": false
+  },
+  {
+    "alias": "O149",
+    "title": "text paragraphs 61",
+    "block_type": "text",
+    "path": "blocks/O149.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 568,
+    "selected": false
+  },
+  {
+    "alias": "O150",
+    "title": "text paragraphs 62",
+    "block_type": "text",
+    "path": "blocks/O150.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 225,
+    "selected": false
+  },
+  {
+    "alias": "O151",
+    "title": "text paragraphs 63",
+    "block_type": "text",
+    "path": "blocks/O151.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 473,
+    "selected": false
+  },
+  {
+    "alias": "O152",
+    "title": "text paragraphs 64",
+    "block_type": "text",
+    "path": "blocks/O152.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 427,
+    "selected": false
+  },
+  {
+    "alias": "O153",
+    "title": "text paragraphs 65",
+    "block_type": "text",
+    "path": "blocks/O153.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 535,
+    "selected": false
+  },
+  {
+    "alias": "O154",
+    "title": "text paragraphs 66",
+    "block_type": "text",
+    "path": "blocks/O154.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 454,
+    "selected": false
+  },
+  {
+    "alias": "O155",
+    "title": "text paragraphs 67",
+    "block_type": "text",
+    "path": "blocks/O155.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 251,
+    "selected": false
+  },
+  {
+    "alias": "O156",
+    "title": "text paragraphs 68",
+    "block_type": "text",
+    "path": "blocks/O156.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 391,
+    "selected": false
+  },
+  {
+    "alias": "O157",
+    "title": "text paragraphs 69",
+    "block_type": "text",
+    "path": "blocks/O157.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 411,
+    "selected": false
+  },
+  {
+    "alias": "O158",
+    "title": "text paragraphs 70",
+    "block_type": "text",
+    "path": "blocks/O158.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 486,
+    "selected": false
+  },
+  {
+    "alias": "O159",
+    "title": "text paragraphs 71",
+    "block_type": "text",
+    "path": "blocks/O159.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 532,
+    "selected": false
+  },
+  {
+    "alias": "O160",
+    "title": "text paragraphs 72",
+    "block_type": "text",
+    "path": "blocks/O160.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 344,
+    "selected": false
+  },
+  {
+    "alias": "O161",
+    "title": "text paragraphs 73",
+    "block_type": "text",
+    "path": "blocks/O161.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 376,
+    "selected": false
+  },
+  {
+    "alias": "O162",
+    "title": "text paragraphs 74",
+    "block_type": "text",
+    "path": "blocks/O162.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 681,
+    "selected": false
+  },
+  {
+    "alias": "O163",
+    "title": "text paragraphs 75",
+    "block_type": "text",
+    "path": "blocks/O163.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 514,
+    "selected": false
+  },
+  {
+    "alias": "O164",
+    "title": "text paragraphs 76",
+    "block_type": "text",
+    "path": "blocks/O164.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 391,
+    "selected": false
+  },
+  {
+    "alias": "O165",
+    "title": "text paragraphs 77",
+    "block_type": "text",
+    "path": "blocks/O165.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 365,
+    "selected": false
+  },
+  {
+    "alias": "O166",
+    "title": "text paragraphs 78",
+    "block_type": "text",
+    "path": "blocks/O166.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 435,
+    "selected": false
+  },
+  {
+    "alias": "O167",
+    "title": "text paragraphs 79",
+    "block_type": "text",
+    "path": "blocks/O167.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 619,
+    "selected": false
+  },
+  {
+    "alias": "O168",
+    "title": "text paragraphs 80",
+    "block_type": "text",
+    "path": "blocks/O168.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 665,
+    "selected": false
+  },
+  {
+    "alias": "O169",
+    "title": "text paragraphs 81",
+    "block_type": "text",
+    "path": "blocks/O169.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 3707,
+    "selected": false
+  },
+  {
+    "alias": "O170",
+    "title": "text paragraphs 82",
+    "block_type": "text",
+    "path": "blocks/O170.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 2216,
+    "selected": false
+  },
+  {
+    "alias": "O171",
+    "title": "text paragraphs 83",
+    "block_type": "text",
+    "path": "blocks/O171.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 1393,
+    "selected": false
+  },
+  {
+    "alias": "O172",
+    "title": "text paragraphs 84",
+    "block_type": "text",
+    "path": "blocks/O172.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 419,
+    "selected": false
+  },
+  {
+    "alias": "O173",
+    "title": "text paragraphs 85",
+    "block_type": "text",
+    "path": "blocks/O173.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 596,
+    "selected": false
+  },
+  {
+    "alias": "O174",
+    "title": "text paragraphs 86",
+    "block_type": "text",
+    "path": "blocks/O174.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 537,
+    "selected": false
+  },
+  {
+    "alias": "O175",
+    "title": "text paragraphs 87",
+    "block_type": "text",
+    "path": "blocks/O175.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 236,
+    "selected": false
+  },
+  {
+    "alias": "O176",
+    "title": "text paragraphs 88",
+    "block_type": "text",
+    "path": "blocks/O176.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 1535,
+    "selected": false
+  },
+  {
+    "alias": "O177",
+    "title": "text paragraphs 89",
+    "block_type": "text",
+    "path": "blocks/O177.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 3634,
+    "selected": false
+  },
+  {
+    "alias": "O178",
+    "title": "text paragraphs 90",
+    "block_type": "text",
+    "path": "blocks/O178.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 1911,
+    "selected": false
+  },
+  {
+    "alias": "O179",
+    "title": "text paragraphs 91",
+    "block_type": "text",
+    "path": "blocks/O179.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 573,
+    "selected": false
+  },
+  {
+    "alias": "O180",
+    "title": "text paragraphs 92",
+    "block_type": "text",
+    "path": "blocks/O180.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 430,
+    "selected": false
+  },
+  {
+    "alias": "O181",
+    "title": "text paragraphs 93",
+    "block_type": "text",
+    "path": "blocks/O181.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 783,
+    "selected": false
+  },
+  {
+    "alias": "O182",
+    "title": "text paragraphs 94",
+    "block_type": "text",
+    "path": "blocks/O182.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 1543,
+    "selected": false
+  },
+  {
+    "alias": "O183",
+    "title": "text paragraphs 95",
+    "block_type": "text",
+    "path": "blocks/O183.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 1704,
+    "selected": false
+  },
+  {
+    "alias": "O184",
+    "title": "text paragraphs 96",
+    "block_type": "text",
+    "path": "blocks/O184.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 658,
+    "selected": false
+  },
+  {
+    "alias": "O185",
+    "title": "text paragraphs 97",
+    "block_type": "text",
+    "path": "blocks/O185.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 435,
+    "selected": false
+  },
+  {
+    "alias": "O186",
+    "title": "text paragraphs 98",
+    "block_type": "text",
+    "path": "blocks/O186.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 2438,
+    "selected": false
+  },
+  {
+    "alias": "O187",
+    "title": "text paragraphs 99",
+    "block_type": "text",
+    "path": "blocks/O187.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 2364,
+    "selected": false
+  },
+  {
+    "alias": "O188",
+    "title": "text paragraphs 100",
+    "block_type": "text",
+    "path": "blocks/O188.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 933,
+    "selected": false
+  },
+  {
+    "alias": "O189",
+    "title": "text paragraphs 101",
+    "block_type": "text",
+    "path": "blocks/O189.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 1443,
+    "selected": false
+  },
+  {
+    "alias": "O190",
+    "title": "text paragraphs 102",
+    "block_type": "text",
+    "path": "blocks/O190.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 1788,
+    "selected": false
+  },
+  {
+    "alias": "O191",
+    "title": "text paragraphs 103",
+    "block_type": "text",
+    "path": "blocks/O191.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 2813,
+    "selected": false
+  },
+  {
+    "alias": "O192",
+    "title": "text paragraphs 104",
+    "block_type": "text",
+    "path": "blocks/O192.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 2783,
+    "selected": false
+  },
+  {
+    "alias": "O193",
+    "title": "text paragraphs 105",
+    "block_type": "text",
+    "path": "blocks/O193.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 455,
+    "selected": false
+  },
+  {
+    "alias": "O194",
+    "title": "text paragraphs 106",
+    "block_type": "text",
+    "path": "blocks/O194.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 695,
+    "selected": false
+  },
+  {
+    "alias": "O195",
+    "title": "text paragraphs 107",
+    "block_type": "text",
+    "path": "blocks/O195.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 2580,
+    "selected": false
+  },
+  {
+    "alias": "O196",
+    "title": "text paragraphs 108",
+    "block_type": "text",
+    "path": "blocks/O196.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 5842,
+    "selected": false
+  },
+  {
+    "alias": "O197",
+    "title": "text paragraphs 109",
+    "block_type": "text",
+    "path": "blocks/O197.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 898,
+    "selected": false
+  },
+  {
+    "alias": "O198",
+    "title": "text paragraphs 110",
+    "block_type": "text",
+    "path": "blocks/O198.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 1720,
+    "selected": false
+  },
+  {
+    "alias": "O199",
+    "title": "text paragraphs 111",
+    "block_type": "text",
+    "path": "blocks/O199.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 830,
+    "selected": false
+  },
+  {
+    "alias": "O200",
+    "title": "text paragraphs 112",
+    "block_type": "text",
+    "path": "blocks/O200.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 959,
+    "selected": false
+  },
+  {
+    "alias": "O201",
+    "title": "text paragraphs 113",
+    "block_type": "text",
+    "path": "blocks/O201.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 2421,
+    "selected": false
+  },
+  {
+    "alias": "O202",
+    "title": "text paragraphs 114",
+    "block_type": "text",
+    "path": "blocks/O202.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 1781,
+    "selected": false
+  },
+  {
+    "alias": "O203",
+    "title": "text paragraphs 115",
+    "block_type": "text",
+    "path": "blocks/O203.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 683,
+    "selected": false
+  },
+  {
+    "alias": "O204",
+    "title": "text paragraphs 116",
+    "block_type": "text",
+    "path": "blocks/O204.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 3007,
+    "selected": false
+  },
+  {
+    "alias": "O205",
+    "title": "text paragraphs 117",
+    "block_type": "text",
+    "path": "blocks/O205.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 963,
+    "selected": false
+  },
+  {
+    "alias": "O206",
+    "title": "text paragraphs 118",
+    "block_type": "text",
+    "path": "blocks/O206.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 809,
+    "selected": false
+  },
+  {
+    "alias": "O207",
+    "title": "text paragraphs 119",
+    "block_type": "text",
+    "path": "blocks/O207.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 685,
+    "selected": false
+  },
+  {
+    "alias": "O208",
+    "title": "text paragraphs 120",
+    "block_type": "text",
+    "path": "blocks/O208.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 835,
+    "selected": false
+  },
+  {
+    "alias": "O209",
+    "title": "text paragraphs 121",
+    "block_type": "text",
+    "path": "blocks/O209.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 583,
+    "selected": false
+  },
+  {
+    "alias": "O210",
+    "title": "text paragraphs 122",
+    "block_type": "text",
+    "path": "blocks/O210.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 1221,
+    "selected": false
+  },
+  {
+    "alias": "O211",
+    "title": "text paragraphs 123",
+    "block_type": "text",
+    "path": "blocks/O211.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 1906,
+    "selected": false
+  },
+  {
+    "alias": "O212",
+    "title": "text paragraphs 124",
+    "block_type": "text",
+    "path": "blocks/O212.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 840,
+    "selected": false
+  },
+  {
+    "alias": "O213",
+    "title": "text paragraphs 125",
+    "block_type": "text",
+    "path": "blocks/O213.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 1731,
+    "selected": false
+  },
+  {
+    "alias": "O214",
+    "title": "text paragraphs 126",
+    "block_type": "text",
+    "path": "blocks/O214.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 558,
+    "selected": false
+  },
+  {
+    "alias": "O215",
+    "title": "text paragraphs 127",
+    "block_type": "text",
+    "path": "blocks/O215.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 748,
+    "selected": false
+  },
+  {
+    "alias": "O216",
+    "title": "text paragraphs 128",
+    "block_type": "text",
+    "path": "blocks/O216.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 2588,
+    "selected": false
+  },
+  {
+    "alias": "O217",
+    "title": "text paragraphs 129",
+    "block_type": "text",
+    "path": "blocks/O217.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 423,
+    "selected": false
+  },
+  {
+    "alias": "O218",
+    "title": "text paragraphs 130",
+    "block_type": "text",
+    "path": "blocks/O218.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 778,
+    "selected": false
+  },
+  {
+    "alias": "O219",
+    "title": "text paragraphs 131",
+    "block_type": "text",
+    "path": "blocks/O219.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 767,
+    "selected": false
+  },
+  {
+    "alias": "O220",
+    "title": "text paragraphs 132",
+    "block_type": "text",
+    "path": "blocks/O220.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 745,
+    "selected": false
+  },
+  {
+    "alias": "O221",
+    "title": "text paragraphs 133",
+    "block_type": "text",
+    "path": "blocks/O221.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 750,
+    "selected": false
+  },
+  {
+    "alias": "O222",
+    "title": "text paragraphs 134",
+    "block_type": "text",
+    "path": "blocks/O222.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 771,
+    "selected": false
+  },
+  {
+    "alias": "O223",
+    "title": "text paragraphs 135",
+    "block_type": "text",
+    "path": "blocks/O223.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 497,
+    "selected": false
+  },
+  {
+    "alias": "O224",
+    "title": "text paragraphs 136",
+    "block_type": "text",
+    "path": "blocks/O224.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 590,
+    "selected": false
+  },
+  {
+    "alias": "O225",
+    "title": "text paragraphs 137",
+    "block_type": "text",
+    "path": "blocks/O225.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 563,
+    "selected": false
+  },
+  {
+    "alias": "O226",
+    "title": "text paragraphs 138",
+    "block_type": "text",
+    "path": "blocks/O226.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 669,
+    "selected": false
+  },
+  {
+    "alias": "O227",
+    "title": "text paragraphs 139",
+    "block_type": "text",
+    "path": "blocks/O227.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 2011,
+    "selected": false
+  },
+  {
+    "alias": "O228",
+    "title": "text paragraphs 140",
+    "block_type": "text",
+    "path": "blocks/O228.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 1358,
+    "selected": false
+  },
+  {
+    "alias": "O229",
+    "title": "text paragraphs 141",
+    "block_type": "text",
+    "path": "blocks/O229.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 362,
+    "selected": false
+  },
+  {
+    "alias": "O230",
+    "title": "text paragraphs 142",
+    "block_type": "text",
+    "path": "blocks/O230.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 1974,
+    "selected": false
+  },
+  {
+    "alias": "O231",
+    "title": "text paragraphs 143",
+    "block_type": "text",
+    "path": "blocks/O231.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 1116,
+    "selected": false
+  },
+  {
+    "alias": "O232",
+    "title": "text paragraphs 144",
+    "block_type": "text",
+    "path": "blocks/O232.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 2404,
+    "selected": false
+  },
+  {
+    "alias": "O233",
+    "title": "text paragraphs 145",
+    "block_type": "text",
+    "path": "blocks/O233.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 2107,
+    "selected": false
+  },
+  {
+    "alias": "O234",
+    "title": "text paragraphs 146",
+    "block_type": "text",
+    "path": "blocks/O234.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 2521,
+    "selected": false
+  },
+  {
+    "alias": "O235",
+    "title": "text paragraphs 147",
+    "block_type": "text",
+    "path": "blocks/O235.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 812,
+    "selected": false
+  },
+  {
+    "alias": "O236",
+    "title": "text paragraphs 148",
+    "block_type": "text",
+    "path": "blocks/O236.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 872,
+    "selected": false
+  },
+  {
+    "alias": "O237",
+    "title": "text paragraphs 149",
+    "block_type": "text",
+    "path": "blocks/O237.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 862,
+    "selected": false
+  },
+  {
+    "alias": "O238",
+    "title": "text paragraphs 150",
+    "block_type": "text",
+    "path": "blocks/O238.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 670,
+    "selected": false
+  },
+  {
+    "alias": "O239",
+    "title": "text paragraphs 151",
+    "block_type": "text",
+    "path": "blocks/O239.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 2082,
+    "selected": false
+  },
+  {
+    "alias": "O240",
+    "title": "text paragraphs 152",
+    "block_type": "text",
+    "path": "blocks/O240.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 3006,
+    "selected": false
+  },
+  {
+    "alias": "O241",
+    "title": "text paragraphs 153",
+    "block_type": "text",
+    "path": "blocks/O241.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 4156,
+    "selected": false
+  },
+  {
+    "alias": "O242",
+    "title": "text paragraphs 154",
+    "block_type": "text",
+    "path": "blocks/O242.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 5004,
+    "selected": false
+  },
+  {
+    "alias": "O243",
+    "title": "text paragraphs 155",
+    "block_type": "text",
+    "path": "blocks/O243.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 4863,
+    "selected": false
+  },
+  {
+    "alias": "O244",
+    "title": "text paragraphs 156",
+    "block_type": "text",
+    "path": "blocks/O244.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 2584,
+    "selected": false
+  },
+  {
+    "alias": "O245",
+    "title": "text paragraphs 157",
+    "block_type": "text",
+    "path": "blocks/O245.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 664,
+    "selected": false
+  },
+  {
+    "alias": "O246",
+    "title": "text paragraphs 158",
+    "block_type": "text",
+    "path": "blocks/O246.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 984,
+    "selected": false
+  },
+  {
+    "alias": "O247",
+    "title": "text paragraphs 159",
+    "block_type": "text",
+    "path": "blocks/O247.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 512,
+    "selected": false
+  },
+  {
+    "alias": "O248",
+    "title": "text paragraphs 160",
+    "block_type": "text",
+    "path": "blocks/O248.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 2860,
+    "selected": false
+  },
+  {
+    "alias": "O249",
+    "title": "text paragraphs 161",
+    "block_type": "text",
+    "path": "blocks/O249.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 604,
+    "selected": false
+  },
+  {
+    "alias": "O250",
+    "title": "text paragraphs 162",
+    "block_type": "text",
+    "path": "blocks/O250.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 590,
+    "selected": false
+  },
+  {
+    "alias": "O251",
+    "title": "text paragraphs 163",
+    "block_type": "text",
+    "path": "blocks/O251.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 543,
+    "selected": false
+  },
+  {
+    "alias": "O252",
+    "title": "text paragraphs 164",
+    "block_type": "text",
+    "path": "blocks/O252.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 2470,
+    "selected": false
+  },
+  {
+    "alias": "O253",
+    "title": "text paragraphs 165",
+    "block_type": "text",
+    "path": "blocks/O253.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+    },
+    "content_chars": 1930,
+    "selected": false
+  }
+]

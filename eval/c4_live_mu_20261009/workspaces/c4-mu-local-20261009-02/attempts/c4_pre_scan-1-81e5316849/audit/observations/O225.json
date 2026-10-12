@@ -1,0 +1,20 @@
+{
+  "alias": "O225",
+  "title": "unknowns 1-1",
+  "content": {
+    "columns": [
+      "field",
+      "reason"
+    ],
+    "rows": [
+      {
+        "field": "NVIDIA",
+        "reason": "section heading not found"
+      }
+    ]
+  },
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

@@ -1,0 +1,292 @@
+{
+  "status": "completed",
+  "summary": "截至2026-10-09的C4e正式扫描：继承并修正pre-scan关系，扩展至40条去重的直接及外部—外部关系；新增Anthropic、汽车SCA、Netlist许可、GlobalWafers拟议硅片安排、PSMC收购、台湾分厂劳资状态，以及NVIDIA／TSMC／SK hynix／Amazon等平台和封装网络。",
+  "report_markdown": "",
+  "warnings": [
+    "上游C1/C3/C5截至2026-09-09，其FY26 Q4仍为未来的表述已过时；FY26 Q4已于2026-09-30披露，本快照以较新公告为准。",
+    "本轮Data MCP授权目录仍指向pre-scan尝试，旧【cite:O#】别名不可在本尝试复用；关系说明改用本轮检索到的直接来源链接。来源捕获连接不可用，不将其失败解释为事实不存在。",
+    "客户级协议、产品量价、供应商名单及诉讼结果在公开材料中多未披露；相关行保留类别级或明确标注计划／主张，不把计划、授权罢工或承诺金额写作已实现交付／现金。"
+  ],
+  "entity_relations": [
+    {
+      "关系主体": "美光科技",
+      "关系对象": "大型云服务商及数据中心客户",
+      "关系类型": "多年期供货／战略客户协议",
+      "关系说明": "截至2026-09-30已签26项战略客户协议，覆盖数据中心等市场；管理层估计对应至2030年收入逾35%，多数有定价区间，但客户名单、现金到账与实际提货不逐项披露，不能把承诺视为已实现收入。[FY26 Q4 prepared remarks](https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf)",
+      "关联业务或产品": "HBM、服务器DRAM、数据中心SSD"
+    },
+    {
+      "关系主体": "美光科技",
+      "关系对象": "Anthropic",
+      "关系类型": "已签技术与供货合作及战略投资",
+      "关系说明": "双方2026-06公布内存／存储架构协作、多年供货协议、Anthropic对美光内部Claude应用，以及美光参与Anthropic H轮投资；未披露产品数量与实际收入。[Micron公告](https://investors.micron.com/news/press-release/2026/Micron-and-Anthropic-Announce-Strategic-Agreement-to-Scale-Next-Generation-AI-Infrastructure/default.aspx)",
+      "关联业务或产品": "AI训练／推理用HBM、DRAM、SSD"
+    },
+    {
+      "关系主体": "美光科技",
+      "关系对象": "NVIDIA",
+      "关系类型": "已量产供货与联合产品设计",
+      "关系说明": "美光HBM4 36GB 12H已于2026年一季度开始量产出货，设计面向Vera Rubin；SOCAMM2及9650 SSD分别面向Rubin/BlueField-4相关平台。2026-09管理层另称双方合作定制HBM4E／NVHBM，但未公布量价。[Micron产品公告](https://investors.micron.com/news/press-release/2026/Micron-in-High-Volume-Production-of-HBM4-Designed-for-NVIDIA-Vera-Rubin-PCIe-Gen6-SSD-and-SOCAMM2-03-16-2026/default.aspx) [FY26 Q4 remarks](https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf)",
+      "关联业务或产品": "HBM4／HBM4E、SOCAMM2、数据中心SSD"
+    },
+    {
+      "关系主体": "美光科技",
+      "关系对象": "服务器OEM与NeoCloud客户",
+      "关系类型": "直接销售／系统集成需求",
+      "关系说明": "CDBU等业务服务服务器OEM、云和新型云客户；其采购需随整机／机架平台验证，个别客户身份和量价未披露，不能假定某一服务器厂商直接采购。[2025年报业务与客户](https://investors.micron.com/static-files/7a1f8c6f-1ce9-4efe-bc6e-722b6b9c4550) [FY26 Q4 remarks](https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf)",
+      "关联业务或产品": "服务器DRAM、SSD、HBM"
+    },
+    {
+      "关系主体": "美光科技",
+      "关系对象": "智能手机OEM",
+      "关系类型": "移动端供货",
+      "关系说明": "公司向移动终端生态供应LPDRAM、NAND/UFS；AI服务器产能分配和手机终端需求共同影响移动端可得量与定价，未披露客户级份额。[2025年报](https://investors.micron.com/static-files/7a1f8c6f-1ce9-4efe-bc6e-722b6b9c4550) [TrendForce行业调查](https://www.trendforce.com/presscenter/news/20260930-13258.html)",
+      "关联业务或产品": "LPDDR、UFS、移动NAND"
+    },
+    {
+      "关系主体": "美光科技",
+      "关系对象": "PC OEM",
+      "关系类型": "客户端供货",
+      "关系说明": "PC客户采购DDR与SSD；2026年四季度供给分配偏向服务器，对PC采购价格及可得量形成约束，但不等于已知每家OEM合同。[2025年报](https://investors.micron.com/static-files/7a1f8c6f-1ce9-4efe-bc6e-722b6b9c4550) [TrendForce](https://www.trendforce.com/presscenter/news/20260930-13258.html)",
+      "关联业务或产品": "PC DRAM、客户端SSD"
+    },
+    {
+      "关系主体": "美光科技",
+      "关系对象": "General Motors",
+      "关系类型": "已签汽车战略客户协议",
+      "关系说明": "2026-07-01签署长期SCA，涵盖LPDRAM、NOR、UFS NAND，并就未来汽车架构与产品认证合作；Manassas扩产支持长生命周期供给。[双方公告](https://investors.micron.com/node/50721/pdf)",
+      "关联业务或产品": "汽车LPDRAM、NOR、UFS NAND"
+    },
+    {
+      "关系主体": "美光科技",
+      "关系对象": "Ford Motor Company",
+      "关系类型": "已签汽车战略客户协议",
+      "关系说明": "2026-07-06签署长期SCA，保障下一代汽车内存与存储供应；公告未逐项给出产品数量、价格或交付时点。[双方公告](https://investors.micron.com/news/press-release/2026/Micron-and-Ford-Sign-Strategic-Agreement-to-Strengthen-Long-Term-Memory-Supply-and-Industry-Resilience/default.aspx)",
+      "关联业务或产品": "汽车DRAM、NAND／存储"
+    },
+    {
+      "关系主体": "美光科技",
+      "关系对象": "Qualcomm",
+      "关系类型": "已签汽车生态战略客户协议",
+      "关系说明": "美光将Qualcomm列为2026-07已签SCA的汽车生态伙伴；其车载计算平台与存储需求相关，但公告未披露特定芯片组合或采购量。[Micron公告](https://investors.micron.com/news/press-release/2026/Micron-Strengthens-Automotive-Ecosystem-Supply-Through-Strategic-Customer-Agreements/default.aspx)",
+      "关联业务或产品": "车载计算平台配套内存／存储"
+    },
+    {
+      "关系主体": "美光科技",
+      "关系对象": "Visteon、HARMAN、JOYNEXT、DENSO、Astemo、Hyundai Mobis",
+      "关系类型": "已签汽车Tier 1战略客户协议",
+      "关系说明": "六家被美光列为已签SCA的车用Tier 1／生态伙伴；共同作用是保障长生命周期车载系统供货，个别产品、价格和OEM终端流向未披露。[Micron公告](https://investors.micron.com/news/press-release/2026/Micron-Strengthens-Automotive-Ecosystem-Supply-Through-Strategic-Customer-Agreements/default.aspx)",
+      "关联业务或产品": "车载信息娱乐、ADAS、联网系统内存／存储"
+    },
+    {
+      "关系主体": "汽车Tier 1供应商",
+      "关系对象": "汽车OEM",
+      "关系类型": "系统集成／零部件供给",
+      "关系说明": "上述Tier 1为车厂提供关键电子系统；美光与Tier 1的SCA因此可通过车载平台资格认证与量产计划传导，但公告未证明任何特定Tier 1向GM或Ford转售美光产品。[Micron汽车生态公告](https://investors.micron.com/news/press-release/2026/Micron-Strengthens-Automotive-Ecosystem-Supply-Through-Strategic-Customer-Agreements/default.aspx)",
+      "关联业务或产品": "车载信息娱乐、ADAS、联网"
+    },
+    {
+      "关系主体": "美光科技",
+      "关系对象": "分销商、合同制造商与EMS",
+      "关系类型": "销售渠道／交付",
+      "关系说明": "除直接客户外，分销和合同制造渠道参与内存／存储产品销售与集成；公开资料只支持类别级联系，不推断未披露的特定渠道份额。[2025年报](https://investors.micron.com/static-files/7a1f8c6f-1ce9-4efe-bc6e-722b6b9c4550)",
+      "关联业务或产品": "DRAM、NAND、SSD"
+    },
+    {
+      "关系主体": "美光科技",
+      "关系对象": "控制器与模拟IC第三方制造商／晶圆代工厂",
+      "关系类型": "关键外购组件依赖",
+      "关系说明": "部分产品需第三方控制器、模拟IC及代工服务；新供应商需要资格认证，单一或有限来源可约束出货。未披露某产品对应的具体供应商。[2025年报供应链风险](https://investors.micron.com/static-files/7a1f8c6f-1ce9-4efe-bc6e-722b6b9c4550)",
+      "关联业务或产品": "SSD、存储模组及相关组件"
+    },
+    {
+      "关系主体": "美光科技",
+      "关系对象": "外包封装、测试与合同制造商",
+      "关系类型": "制造外包／产能依赖",
+      "关系说明": "公司制造网络依赖外包封测及合同制造；这些节点的停产、良率或交付失常可放大到多地产品，不能与美光自建HBM封装产能混为一谈。[2025年报](https://investors.micron.com/static-files/7a1f8c6f-1ce9-4efe-bc6e-722b6b9c4550)",
+      "关联业务或产品": "DRAM、NAND、HBM封装与测试"
+    },
+    {
+      "关系主体": "美光科技",
+      "关系对象": "高纯度材料及基板供应商",
+      "关系类型": "关键原料采购",
+      "关系说明": "硅片、化学品、气体、光刻胶、基板等必须满足严格标准；一些材料为有限或单一合格来源，替代须认证。[2025年报](https://investors.micron.com/static-files/7a1f8c6f-1ce9-4efe-bc6e-722b6b9c4550)",
+      "关联业务或产品": "DRAM／NAND晶圆与先进封装"
+    },
+    {
+      "关系主体": "美光科技",
+      "关系对象": "ASML及其他设备／维护供应商",
+      "关系类型": "资本设备与持续维护依赖",
+      "关系说明": "先进DRAM节点与扩产需要光刻设备和维护；ASML称DRAM客户增加EUV／浸没式DUV投入，但其披露未拆分美光订单，故这里只认定行业级设备依赖而非订单金额。[Micron年报](https://investors.micron.com/static-files/7a1f8c6f-1ce9-4efe-bc6e-722b6b9c4550) [ASML Q2电话会](https://ourbrand.asml.com/asset/1fd3908a-0381-47b5-9b69-a3094f656651/2026_07_15-ASML-Transcript-investor-call-Q2-2026.pdf)",
+      "关联业务或产品": "先进DRAM、HBM晶圆制造"
+    },
+    {
+      "关系主体": "美光科技",
+      "关系对象": "厂区电力、水和公用事业提供者",
+      "关系类型": "生产要素依赖",
+      "关系说明": "晶圆与封装设施需要稳定电、水等公用事业；供应中断会扰动制造。公开资料未指名各厂区具体公用事业公司。[2025年报](https://investors.micron.com/static-files/7a1f8c6f-1ce9-4efe-bc6e-722b6b9c4550)",
+      "关联业务或产品": "全球晶圆厂与封装厂"
+    },
+    {
+      "关系主体": "美光科技",
+      "关系对象": "GlobalWafers／GlobalWafers America",
+      "关系类型": "既有伙伴；拟议融资与长期硅片供给",
+      "关系说明": "2026-07宣布拟向GlobalWafers提供5亿美元战略融资，并拟订10年原硅片供应协议以支持德州Sherman 300mm设施；最终协议、审批及交割仍待完成，不写作已到账或已履约。[Micron公告](https://investors.micron.com/news/press-release/2026/Micron-Announces-Up-to-3-Billion-Strategic-Investment-to-Strengthen-U-S--Semiconductor-Ecosystem/default.aspx)",
+      "关联业务或产品": "300mm原硅片、美国DRAM扩产"
+    },
+    {
+      "关系主体": "美国商务部CHIPS项目",
+      "关系对象": "GlobalWafers America及MEMC",
+      "关系类型": "有条件项目补助",
+      "关系说明": "2024-12授予最高4.06亿美元直接资金，按项目里程碑拨付；德州300mm硅片厂是美光拟议长期采购的上游设施之一，但该补助不是对美光采购量的保证。[商务部公告](https://www.commerce.gov/news/press-releases/2024/12/biden-harris-administration-announces-chips-incentives-awards) [Micron-GlobalWafers计划](https://investors.micron.com/news/press-release/2026/Micron-Announces-Up-to-3-Billion-Strategic-Investment-to-Strengthen-U-S--Semiconductor-Ecosystem/default.aspx)",
+      "关联业务或产品": "美国300mm原硅片产能"
+    },
+    {
+      "关系主体": "美光科技",
+      "关系对象": "Powerchip Semiconductor Manufacturing／PSMC",
+      "关系类型": "已完成厂址收购",
+      "关系说明": "2026-03-15完成收购台湾苗栗铜锣晶圆厂，现金对价合计18亿美元分期支付；收购完成不等于已形成新增量产，美光预计该设施2027年中开始出货。[FY26 Q2 10-Q](https://investors.micron.com/static-files/236af4a3-d99f-4287-b088-09721d0f6ace) [FY26 Q4 remarks](https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf)",
+      "关联业务或产品": "台湾DRAM晶圆产能"
+    },
+    {
+      "关系主体": "美光科技",
+      "关系对象": "美国商务部CHIPS项目",
+      "关系类型": "已授予、按条件拨付的制造激励",
+      "关系说明": "商务部2024-12为爱达荷与纽约项目授予最高61.65亿美元直接资金；拨付取决于项目条款与里程碑，不能等同现金已全数收到。[商务部授予公告](https://www.commerce.gov/news/press-releases/2024/12/department-commerce-awards-chips-incentives-micron-idaho-and-new-york)",
+      "关联业务或产品": "Boise／Clay先进DRAM工厂"
+    },
+    {
+      "关系主体": "美光科技",
+      "关系对象": "美国及亚洲制造设施",
+      "关系类型": "自有／建设中的生产网络",
+      "关系说明": "Manassas 1α DDR4已开始初期生产，Boise ID1首片晶圆预计2027年中、ID2预计2028年末、纽约首厂预计2030年及以后；台湾铜锣和新加坡封装／NAND亦在后续爬坡，预期时点不是已实现产出。[Micron美国项目公告](https://investors.micron.com/news/press-release/2026/Micron-Accelerates-U-S--Investments-Pours-First-Concrete-at-New-York-Fab/default.aspx) [FY26 Q4 remarks](https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf)",
+      "关联业务或产品": "DRAM、HBM先进封装、NAND"
+    },
+    {
+      "关系主体": "美光台湾桃园厂",
+      "关系对象": "桃园厂工会",
+      "关系类型": "劳资谈判／罢工授权",
+      "关系说明": "2026-10-07报道桃园工会投票授权罢工，但截至报道尚未确定罢工日期；不将授权等同停工，也不混同台中厂。[中央社报道](https://focustaiwan.tw/business/202610070021)",
+      "关联业务或产品": "台湾DRAM制造与交付"
+    },
+    {
+      "关系主体": "美光台湾台中厂",
+      "关系对象": "台中厂工会",
+      "关系类型": "劳资调解",
+      "关系说明": "台中厂劳资争议第二次调解定于2026-10-22，属仍待进行的程序；与桃园授权罢工为不同主体和状态。[中央社报道](https://www.cna.com.tw/news/afe/202609210300.aspx)",
+      "关联业务或产品": "台湾HBM封装及相关产能"
+    },
+    {
+      "关系主体": "美光科技",
+      "关系对象": "Samsung Electronics",
+      "关系类型": "HBM／DRAM竞争与替代供给",
+      "关系说明": "Samsung已量产出货HBM4并开发HBM4E及定制HBM；与美光争夺AI加速器平台验证和客户产能，但不推定两者产品可以无成本即时互换。[Samsung新闻稿](https://news.samsung.com/kr/%EC%82%BC%EC%84%B1%EC%A0%84%EC%9E%90-%EC%84%B8%EA%B3%84-%EC%B5%9C%EC%B4%88-%EC%97%85%EA%B3%84-%EC%B5%9C%EA%B3%A0-%EC%84%B1%EB%8A%A5%EC%9D%98-hbm4-%EC%96%91%EC%82%B0-%EC%B6%9C%ED%95%98)",
+      "关联业务或产品": "HBM4、HBM4E、服务器DRAM"
+    },
+    {
+      "关系主体": "美光科技",
+      "关系对象": "SK hynix",
+      "关系类型": "HBM／DRAM竞争与替代供给",
+      "关系说明": "SK hynix已出货HBM4E样品，并与NVIDIA深化多年技术／供应合作；该竞争影响平台设计选择与未来份额，样品不等同客户量产认证。[SK hynix HBM4E](https://news.skhynix.com/en/sk-hynix-ships-samples-of-12-layer-next-gen-hbm4e-2/) [SK hynix-NVIDIA](https://news.skhynix.com/en/multi-year-tech-partnership-with-nvidia/)",
+      "关联业务或产品": "HBM4／HBM4E、服务器DRAM"
+    },
+    {
+      "关系主体": "美光科技",
+      "关系对象": "Kioxia及Sandisk",
+      "关系类型": "NAND／SSD竞争",
+      "关系说明": "两家公司构成NAND制造和存储产品的重要替代供给；公开行业与美光年报支持竞争类别，但此处不推断具体客户转单或当季份额。[2025年报竞争风险](https://investors.micron.com/static-files/7a1f8c6f-1ce9-4efe-bc6e-722b6b9c4550)",
+      "关联业务或产品": "NAND、客户端及企业SSD"
+    },
+    {
+      "关系主体": "美光科技",
+      "关系对象": "CXMT",
+      "关系类型": "DRAM竞争／潜在替代供给",
+      "关系说明": "CXMT属于中国DRAM扩产竞争者；对美光的具体高端产品替代能力、客户认证和量价影响需另行核实，不能以行业名称推算份额。[2025年报竞争风险](https://investors.micron.com/static-files/7a1f8c6f-1ce9-4efe-bc6e-722b6b9c4550)",
+      "关联业务或产品": "DRAM"
+    },
+    {
+      "关系主体": "美光科技",
+      "关系对象": "YMTC",
+      "关系类型": "NAND竞争及进行中的知识产权争议",
+      "关系说明": "双方在3D NAND／相关专利有跨法域争议；2026-09美光在爱达荷州联邦法院起诉YMTC及前雇员，主张商业秘密等，均属诉讼主张而非已判定事实。[法院案卷](https://dockets.justia.com/docket/idaho/iddce/1%3A2026cv00604/60724)",
+      "关联业务或产品": "3D NAND及相关专利"
+    },
+    {
+      "关系主体": "中国网信办及关键信息基础设施运营者",
+      "关系对象": "美光科技",
+      "关系类型": "监管采购限制",
+      "关系说明": "2023年网信办称美光在华销售产品未通过网络安全审查，并要求关键信息基础设施运营者停止采购；不能外推为中国所有客户一律禁止采购。[网信办公告](https://www.cac.gov.cn/2023-05/21/c_1686348043518073.htm)",
+      "关联业务或产品": "中国市场内存／存储销售"
+    },
+    {
+      "关系主体": "美光科技",
+      "关系对象": "Netlist",
+      "关系类型": "已签专利许可与诉讼和解",
+      "关系说明": "双方2026-10-05达成和解及五年全球专利许可，覆盖包括服务器DIMM和HBM在内的Netlist组合；美光自2026Q4至2031Q3每季付3000万美元、合计6亿美元。仅限协议所列双方待决程序，不推断所有第三方纠纷终止。[Netlist 8-K](https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_8k.htm)",
+      "关联业务或产品": "服务器DIMM、HBM知识产权"
+    },
+    {
+      "关系主体": "Netlist",
+      "关系对象": "Samsung Electronics／Samsung Semiconductor",
+      "关系类型": "已签交叉许可、产品供给与技术合作",
+      "关系说明": "2026-08达成五年交叉许可与和解；Samsung Semiconductor给予Netlist每年最高3亿美元DRAM／NAND购买权，该数额是上限非已采购额。该外部关系显示同一专利／存储生态的竞争者各自取得许可，不是美光与Samsung合作。[Netlist 8-K](https://www.sec.gov/Archives/edgar/data/1282631/000110465926090641/tm2622153d1_8k.htm)",
+      "关联业务或产品": "HBM／DIMM专利、DRAM／NAND"
+    },
+    {
+      "关系主体": "SK hynix",
+      "关系对象": "TSMC",
+      "关系类型": "HBM4基底逻辑晶粒与先进封装合作",
+      "关系说明": "双方合作将TSMC先进逻辑制程用于SK hynix HBM4 base die，并协同CoWoS集成；这是一条竞争者技术路径，不代表美光使用同一供应安排。[SK hynix公告](https://news.skhynix.com/en/tsmc-technology-symposium-2026/)",
+      "关联业务或产品": "HBM4 base die、CoWoS"
+    },
+    {
+      "关系主体": "SK hynix",
+      "关系对象": "NVIDIA",
+      "关系类型": "已宣布多年AI内存技术及供给合作",
+      "关系说明": "2026-06公布共同开发下一代内存并支持NVIDIA Vera Rubin等平台；这是美光面临的替代供应路径，不能从公告推出独家供货。[双方公告](https://news.skhynix.com/en/multi-year-tech-partnership-with-nvidia/)",
+      "关联业务或产品": "HBM、Vera Rubin平台内存"
+    },
+    {
+      "关系主体": "TSMC CoWoS先进封装",
+      "关系对象": "AI加速器设计商／HBM供应商",
+      "关系类型": "系统集成技术依赖",
+      "关系说明": "CoWoS将逻辑SoC和多组HBM堆栈共同封装，是AI加速器把HBM转成可部署系统的外部集成条件；实际产能与平台分配需按客户和产品核实。[TSMC技术说明](https://3dfabric.tsmc.com/english/dedicatedFoundry/technology/cowos.htm)",
+      "关联业务或产品": "AI加速器HBM集成"
+    },
+    {
+      "关系主体": "NVIDIA",
+      "关系对象": "Amazon Annapurna Labs",
+      "关系类型": "NVHBM／NVLink Fusion技术协作",
+      "关系说明": "NVIDIA称Amazon Annapurna首先参与NVHBM控制器位于HBM base die的新实现，服务Trainium4与NVLink Fusion；这是潜在HBM设计接口变化的外部入口，并未披露Amazon采用美光HBM。[NVIDIA技术博客](https://blogs.nvidia.com/blog/nvlink-fusion-nvhbm-custom-high-bandwidth-memory/)",
+      "关联业务或产品": "NVHBM、Trainium4、NVLink Fusion"
+    },
+    {
+      "关系主体": "NVIDIA",
+      "关系对象": "Thinking Machines Lab",
+      "关系类型": "已宣布AI基础设施合作／计划部署",
+      "关系说明": "双方2026-03宣布合作，并计划在2027年初部署Vera Rubin系统；从部署意向可追踪下游算力需求，但不能据此认定Thinking Machines直接采购美光产品。[NVIDIA公告](https://blogs.nvidia.com/blog/nvidia-thinking-machines-lab/)",
+      "关联业务或产品": "Vera Rubin AI系统"
+    },
+    {
+      "关系主体": "NVIDIA",
+      "关系对象": "台湾服务器制造商及全球系统伙伴",
+      "关系类型": "Vera Rubin系统量产集成",
+      "关系说明": "NVIDIA称Vera Rubin平台已进入生产爬坡，台湾服务器制造商等在制造整机／机架系统；系统需求必须穿过集成、验证和交付，不可将GPU产量直接等同HBM供应商收入。[NVIDIA新闻稿](https://nvidianews.nvidia.com/news/vera-rubin-full-production-agentic-ai-factory)",
+      "关联业务或产品": "Vera Rubin服务器及机架"
+    },
+    {
+      "关系主体": "NVIDIA",
+      "关系对象": "SK Telecom",
+      "关系类型": "计划中的AI云／算力设施建设",
+      "关系说明": "双方计划建设采用Vera Rubin与NVIDIA DSX的韩国2GW级AI云，首座设施计划2027年上线，公告为意向书阶段；SK hynix HBM4被指为该规划技术栈的一部分，非已交付事实。[SK Group公告](https://news.skhynix.com/en/skhynix-nvidia-partnership-2026/)",
+      "关联业务或产品": "Vera Rubin AI factory、HBM4"
+    },
+    {
+      "关系主体": "服务器／云客户",
+      "关系对象": "PC及手机OEM",
+      "关系类型": "共享先进内存产能的需求竞争",
+      "关系说明": "TrendForce指出DRAM厂将更先进产能向服务器分配，云／企业SSD需求较强而PC／手机面临较高价格和供应约束；这是行业资源竞争关系，不指称客户间存在直接合同。[TrendForce 4Q26展望](https://www.trendforce.com/presscenter/news/20260930-13258.html)",
+      "关联业务或产品": "DRAM、NAND／SSD产能分配"
+    }
+  ]
+}

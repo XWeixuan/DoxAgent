@@ -1,0 +1,19 @@
+{
+  "alias": "O638",
+  "title": "section_previews 5",
+  "content": {
+    "section": "Automotive and Embedded Business Unit",
+    "heading_match": "Automotive and Embedded Business Unit",
+    "start_offset": 50333,
+    "end_offset": 130371,
+    "full_text_chars": 79999,
+    "returned_chars": 40000,
+    "truncated": true,
+    "match_quality": "substantive_body",
+    "text_preview": "(\"AEBU\") AEBU is focused on memory and storage solutions for the automotive, industrial, and consumer segments sold into the intelligent edge, including discrete and module DRAM, discrete NAND, managed NAND, SSDs, and NOR. The intelligent edge refers to the continually growing set of connected systems and devices where data is analyzed and aggregated closest to where it is captured. Intelligent devices, those using AI for inference at the edge, are now more self-contained and do not need to connect to the cloud to run their algorithms. Automotive : Improvements in autonomous driving, advanced driver-assistance systems, in-vehicle infotainment systems, advanced robotaxi platforms, and AI technologies continue to increase the requirements for high-performing memory and storage products, with higher reliability requirements for leading-edge products. Automotive memory and storage products enable connected, advanced infotainment systems with increasingly larger and higher definition displays and support improved voice and gesture control. Adoption of Level 2+ advanced driver-assistance systems capabilities continue to gain momentum and feature progressively increasing levels of autonomy, further expanding content per vehicle. Our products enable increasingly advanced vision- and sensor-based automated systems to support driver assistance solutions and vehicle safety. In 2026, our G9-based UFS 4.1 automotive NAND solution began volume shipments, enabling rapid data access, robust reliability, and enhanced safety and security for next-generation vehicles. We reached automotive production readiness of our automotive 1γ LPDDR5 DRAM product that supports the increasing performance requirements of AI-driven applications in vehicles, with shipments delivered to key customers. Industrial : Growing adoption of IoT devices, automation, machine-to-machine communication, and smart infrastructure across sectors, such as manufacturing, transportation, surveillance, and retail, is driving demand for industrial memory solutions. In robotics, continued advances in simulation, foundation models, and integrated hardware and software stacks are accelerating physical AI and the future growth of general purpose humanoid robotics. This creates a growing, content-rich opportunity for high-bandwidth, low-power memory and storage that power real-time perception, inference, and control. High-reliability and high-performance memory solutions are critical for these applications. Consumer Embedded : Embedded memory and storage solutions are used in a diverse set of consumer products, including service provider and digital home assistants, digital still and video cameras, home networking, ultra-high-definition televisions, smart glasses, and augmented reality and virtual reality headsets. The emerging category of AR glasses-lightweight, all-day wearable devices that overlay digital information onto the physical world-is driving new demand for low-power, small-form-factor memory an"
+  },
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

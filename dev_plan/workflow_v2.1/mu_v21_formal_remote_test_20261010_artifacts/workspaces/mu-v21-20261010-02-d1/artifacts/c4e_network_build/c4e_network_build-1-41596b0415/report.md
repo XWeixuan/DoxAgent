@@ -1,0 +1,129 @@
+# MU｜外部行动者网络研究
+
+研究截止：2026-10-09，UTC。财年、自然年及公告日分别保留；截止后的事项仅按已公布计划讨论。
+
+这张网络围绕三类现实活动展开：把模型服务需求变成可采用、可交付的存储配置；用合同与资本组织晶圆、机房和能源投入；在性能、可靠性、成本及地域资格约束下分配采购。美光不是这些活动的唯一组织者：模型公司选择计算平台，平台公司决定接口与系统方案，制造伙伴控制部分资源，软件和安全验证决定产品能否使用，资本方与监管机构分配交付风险。
+
+公司侧基线沿用 C1/C3：MU 主营 DRAM、NAND、NOR；CMBU 负责所有数据中心客户的 HBM及大型云客户内存，CDBU负责其他数据中心内存和全部数据中心 SSD/NAND。FY2026 利润提升的首要已披露原因是广谱售价上涨，不能把以下 AI 网络全部变化归为 HBM 利润；MCBU 数量下降与收入增长并存，说明供给配置已经影响非数据中心业务。【cite:O5】【cite:O66】本报告的箭头是条件性经济解释，不是订单预测、市场已定价判断或交易条件。
+
+## Claude 如何取得多平台算力，存储供应又由谁决定？
+
+Anthropic 要解决的是模型训练和服务能力，而不是购买某一种 GPU。已知安排包括：AWS 仍是主要训练/云伙伴，4 月扩展协议涉及最高 5GW 新能力；Google/Broadcom 协议预计自 2027 年接入下一代 TPU 算力；Azure 承诺初期采用 Grace Blackwell/Vera Rubin。同时，美光与 Anthropic 在 6 月达成跨数据中心产品组合的存储供给及架构优化协议。模型使用者、芯片设计者、云运营者和存储供给方由此相连，但付款及组件采购路径没有完整公开。【cite:O67】【cite:O80】【cite:O81】【cite:O83】[Anthropic 的多平台说明](https://www.anthropic.com/news/google-broadcom-partnership-compute)支持选择范围，不提供美光的分平台份额。
+
+本轮进一步核实，**从 NVIDIA 转向自研芯片，不等于退出 HBM 需求**。AWS 已于 2025 年 12 月宣布 Trn3 UltraServers 可用，每颗 Trainium3 配置 144GB HBM3e。Google 2026 年公布的 TPU 8t/8i 分别偏训练和推理，8i 配置 288GB HBM及384MB片上 SRAM；原公告仅承诺当年稍后普遍可用。这些是不同状态的平台规格，不是 Anthropic 2027 年采购配置，更不是同吞吐需求的内存用量对照。【cite:O96】【cite:O103】【cite:O105】【cite:O107】[AWS 产品公告](https://aws.amazon.com/about-aws/whats-new/2025/12/amazon-ec2-trn3-ultraservers/)、[Google 架构公告](https://blog.google/innovation-and-ai/infrastructure-and-cloud/google-cloud/eighth-generation-tpu-agentic-era/)提供芯片和软件栈入口。
+
+**回传解释：**若 Anthropic 因成本、模型适配或资源可用性改变平台配置，首先变化的是云端能力的购买与工作负载分配，再经过该平台的存储规格、供应资格和可交付数量影响 MU。自研芯片可能减少一条 NVIDIA 路径，却扩大另一条 HBM/服务器内存路径；若单位任务效率提升，也可能减少所需芯片数。没有产品 BOM、资格及采购分配，不能净算美光获益或损失。Broadcom 已负责 Google 后续 TPU及网络组件的开发/供货保障，但没有证据证明 Broadcom 就是美光的直接买方。【cite:O81】
+
+资本也在这张网络内：Amazon 投资 Anthropic，Microsoft/NVIDIA另有投资承诺；美光参与 Series H，又在内部采用 Claude。股权资金、算力采购和存储销售不能三次计为独立终端需求。若模型公司的商业增长放缓，采购可能重排；Broadcom 明确其新增能力消费依赖 Anthropic 持续商业成功。投资缓冲能改善融资条件，却不证明能力已上线或供给已变成收入。【cite:O67】【cite:O80】【cite:O81】【cite:O83】
+
+信息入口应分工理解：Anthropic 知道工作负载和平台选择；AWS、Google、Microsoft 知道可提供的能力；Broadcom 的 SEC 披露更接近芯片/组件承诺；美光知道自身供给条款和实际交付。某方宣布合作，只能证明它所披露的那一段。具体内存供应分配可能不公开，不能以云支出或 GW 替代。
+
+## HBM 怎样从合格堆叠变成客户可用的平台？
+
+美光已量产面向 Rubin 的 HBM4 36GB 12-high，48GB 16-high仍送样；NVIDIA 已披露 Rubin 平台开始生产出货，AMD MI350亦有美光 HBM3E 的已公布采用。这些事实分别属于器件阶段、平台阶段和特定版本采用，不证明全部后续平台、独供或最新配额。【cite:O68】【cite:O27】【cite:O85】[美光 Rubin 产品公告](https://jp.micron.com/about/press/news/micron-in-high-volume-production-of-hbm4-designed-for-nvidia-vera-rubin-pcie-gen6-ssd-and-socamm2)是明确的产品—平台连接。
+
+这里存在两个不能混同的封装层次：先制造、堆叠并测试 HBM；再将 HBM 与 GPU/xPU 集成为系统可用的封装。SK hynix 从 HBM4 起应用 TSMC 先进逻辑工艺到基础 die，并协作优化 HBM与CoWoS集成；美光 HBM4 的基础和核心 die内部设计制造。**内部基础 die 降低的是该环节外包依赖，不消除客户加速器封装、系统验证和平台交付的约束。**不能把 SK hynix 的 TSMC 合作写成 MU 的采购合同，也不能因路线不同认定资源风险完全隔离。【cite:O66】【cite:O71】【cite:O72】[SK hynix/TSMC 原始合作说明](https://news.skhynix.com/en/sk-hynix-partners-with-tsmc-to-strengthen-hbm-technological-leadership/)具体说明了两种协作。
+
+客户规格改变会先作用于设计、验证和资源配置。例如，堆叠高度下降可能减少每个位置的容量，却改善可制造性或支持更多平台交付；最终影响需要同时看每平台容量、平台数量及供应者配额。Rubin Ultra 多配置评估目前来自行业研究，正式配置和定案日期未知，不能以该线索推翻现有 Rubin 出货。【cite:O53】【cite:O54】同样，三星已有 HBM4 商业出货公告摘要，竞争者不只是潜在进入者，但最新份额及16-high完成度仍未知。【cite:O70】
+
+JEDEC 的 SPHBM4 是另一种具体选择：沿用 HBM4 DRAM 核心 die，改变基础接口，通过串行化使其可接有机基板。它可能改变封装资源与成本的组合，**不是 NAND 替代，也不是增加 DRAM 核心 die 的产量**。接口及系统适配若未实现，标准不会直接产生可售供给；若适配成功，封装约束放松还可能把瓶颈移回晶圆、测试或客户需求。【cite:O91】[JEDEC 公告转载](https://markets.financialcontent.com/bpas/article/bizwire-2026-7-13-new-jedec-sphbm4-standard-enables-hbm4-class-bandwidth-on-organic-substrates)支持标准发布，不证明任何供应者量产。
+
+因此，一则 TSMC 工艺、封装能力或标准消息，可能改变竞争者的生产条件，也可能暴露客户平台的共同约束。是否利好 MU，取决于其可替代产品是否已合格、客户是否重分配、系统端是否仍受限。存储厂披露适合核实器件状态，平台方适合核实采用版本，封装伙伴和标准组织适合核实技术条件；任何一方都不能单独证明完整可交付链。
+
+## 长上下文推理怎样把 SSD 变成有效工作内存？
+
+NVIDIA 的 CMX 技术资料把数据分为热 KV 所在的 GPU HBM、主机内存、局部 SSD和持久共享存储，并以 Ethernet 附着闪存建立 pod级上下文层。关键动作不是把活跃计算搬到任意 SSD，而是由 Dynamo/NIXL 等协调缓存，预先把需要的 KV 放回 GPU/主机内存；BlueField-4、网络及 DOCA Memos 承担移动与管理。KV 可重算的性质与企业记录的持久性要求也不同。【cite:O147】【cite:O148】【cite:O149】【cite:O150】[NVIDIA CMX 技术正文](https://developer.nvidia.com/blog/?p=111143)提供系统作用与适用负载，而非客户实测的统一性能保证。
+
+这解释了 MU 的机会和条件：7600/9650 已向客户用于 KV-cache 出货，9650具备CMX应用连接；但 SSD带宽必须与尾延迟、网络、数据预取及软件调度一起工作。增加便宜闪存若导致 decode等待，容量并不成为有用能力；上下文重用改善若减少重复计算，则既可能节省新增 GPU/HBM，也可能让同一电力预算服务更多请求。后者是否扩大总存储采购，取决于服务增长是否超过单位请求节约，不是技术效率提高就自动放量。【cite:O24】【cite:O68】
+
+合作角色也必须拆开：Dell、HPE、VAST、WEKA 等是 STX 共同设计方；AIC、Supermicro、QCT 是系统制造方；CoreWeave、Crusoe、OCI 等在公告中为计划采用者。MU 需要进入具体方案的资格和采购配置，而非只进入伙伴名单。【cite:O89】本轮新增的 NVIDIA Storage-Next 披露同时列出 Micron、Kioxia、DDN，并介绍 cuFile 开放接口及 SCADA 数据访问框架：开放接口可以降低集成摩擦，也能降低竞争产品进入同一架构的摩擦。【cite:O142】【cite:O143】[NVIDIA FMS 公告](https://blogs.nvidia.com/blog/ai-storage-fms/)因此既是技术采用入口，也是竞争兼容性入口，不构成排他供给证据。
+
+若 DDN 等系统方公布软件集成或客户部署，首先可检验数据路径是否成立；只有具体 SSD资格、部署数量和采购记录，才能进一步解释 MU 销量。平台性能宣称、开放规范和客户生产负载不是同等证据。缺少这些细节时，应保留“系统使需求可实现”的判断，而非声称需求已全部落在美光。
+
+## CXL 扩容为何同时需要模块、交换、操作系统和分配策略？
+
+CXL 的活动是让 CPU/服务器使用额外内存容量，而非把块存储直接等同 DRAM。MU 的 CZ120 已有 Supermicro X13/H13平台验证及 OEM生产量渠道；Red Hat与MU进行了 RHEL测试并朝认证推进，XConn Apollo 的角色是交换兼容。MemVerge联合演示进一步用软件协调 GPU、CPU与CXL内存，但特定模型/硬件的成绩不是商业装机量。【cite:O87】【cite:O88】[CZ120 公告](https://sg.micron.com/about/press/news/micron-first-to-achieve-qualification-sample-milestone)、[MemVerge 演示说明](https://memverge.ai/product/gtc2024)支持这些不同状态。
+
+本轮读取的 Micron CXL Resource Kit说明了更具体的使用条件：依 BIOS设置，设备可以呈现为需应用映射的 DAX，或呈现为没有本地 CPU 的 NUMA 内存；分配策略和模式转换决定应用实际使用它的方式。**模块被识别、容量可见与应用有效利用，至少是三件事。**资料为无明确发布日期的技术文档，不作为2026年新增认证或部署证明。【cite:O117】【cite:O125】[资源文档](https://github.com/microncxl/cxl-reskit)比仅列“生态伙伴”更接近软件门槛。
+
+如果 OS/交换兼容改善，首先扩大的是可部署范围；若工作负载仍不能容忍远端访问、数据布局不适配或分配策略不正确，扩容不会同步形成客户采购。适配成功可能增加 MU 的 CXL/DRAM模块机会，也可能减少高配本地 DIMM 或更多服务器的需要，不能把两者相加为独立增量。服务器 OEM知道支持矩阵，OS和软件方知道应用条件，客户知道实际利用率；缺少客户采购细节，不妨碍研究前两段，但不能推算总DRAM需求。
+
+## 哪些数据会留在 HBM，哪些会迁向 HBF、GPU-direct 闪存或 HDD？
+
+三种替代路径服务不同问题，不能合并成“AI存储闪存化”或“HBM被替代”：
+
+| 路线 | 当前可确认的作用与状态 | 关键选择条件 |
+|---|---|---|
+| Sandisk/SK hynix HBF | OCP 已发布接口、电气、封装及软件规范；Google/Tenstorrent参与标准验证，尚不证明商业采用 | 近计算大容量与带宽收益能否抵消 NAND延迟、管理及系统改造 |
+| Kioxia GP1/XL-FLASH | GPU-direct 高 IOPS 闪存扩展已公告；年底样品计划限功能检查，量产规格可变 | 访问粒度、延迟、软件路径及实际工作负载适配 |
+| WD容量 HDD | 已有云端实物销售增长、长期客户承诺；HAMR资格和2027爬坡仍为阶段性计划 | 容量成本、耐久可靠性、能耗与检索时延，通常不是活跃 decode所需层级 |
+
+依据分别为【cite:O76】【cite:O74】【cite:O92】【cite:O93】；[HBF 标准公告](https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf)、[GP1 公告](https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html)、[WD 路线图](https://www.westerndigital.com/in-id/company/newsroom/press-releases/2026/2026-02-03-western-digital-accelerates-storage-innovation-for-ai-era)分别由技术推动者和商业供应者掌握。
+
+HBF 不能只按峰值带宽判断。Sandisk 原始技术说明的突出比较是读取预训练权重的模拟；本轮发现的 FlashAccel论文则明确高访问延迟、带宽利用率及异构管理难点，提出专门布局与管理机制。两者可以同时成立：适当并行和布局下的带宽可行，不意味着任意访问模式均可无缝替换 HBM。论文为研究方案，不是量产客户验证。【cite:O98】【cite:O102】[Sandisk 技术说明](https://www.sandisk.com/company/newsroom/blogs/2025/scaling-beyond-the-wall-inside-sandisks-high-bandwidth-flash-for-ai)、[FlashAccel 原论文](https://arxiv.org/abs/2607.10186)让这条适用边界可继续研究。
+
+回到 MU，若一部分权重或上下文移向闪存，可能削减每任务 HBM配置，也可能降低部署成本、扩大模型规模或服务量。NAND需求增量又未必由 MU取得，需区分 HBF、XL-FLASH、标准TLC/QLC及产品资格。若 HAMR降低容量层单位成本，影响更接近数据湖/归档的 HDD与QLC分配，不能移植成高性能缓存的份额变化。Sandisk数据中心容量销量与WDC云端容量销量各有不同分母；它们同时增长是多层共存证据，不足以计算行业份额或证明 MU 的复购。
+
+## NAND 商业竞争为何同时依赖共同制造和政府支持？
+
+Kioxia/Sandisk 在市场上分别销售，但四日市和北上采用共同研发制造安排。1 月续约对齐至2034年底；Sandisk分期向Kioxia支付11.65亿美元，获得制造服务及持续供给。8 月公布到2032年的超过310亿美元联合投资计划，实施取决于政府支持。这些把晶圆、制造运营、资本支付与公共支持绑在一起，不是两套完全独立的扩产。【cite:O73】【cite:O90】[续约公告](https://apac.kioxia.com/en-apac/about/news/2026/20260130-1.html)、[附条件投资公告](https://www.kioxia.com.cn/zh-cn/about/news/2026/20260827-3.html)分别说明供给保障和未完成的投资条件。
+
+如果共同设施、制程或政府支持变化，两个商业主体可能同时受影响；只观察其中一个销量或利润，容易漏掉共享供给约束。共同制造效率提升可改善成本，新增良品位元若被需求吸收，则不必造成跌价；若扩产超过需求，才可能经行业价格传回 MU。反过来，项目受阻也不自动带来 MU份额：客户可选择 SK hynix、其他SSD或延后采购，MU自身也可能没有额外合格产量。
+
+信息上，合资公告掌握合作和投资范围，政府文件才适合核实支持承诺和兑现，双方财报适合分辨产出、资本付款与商业销售。310亿美元计划不能当作已花出资本或当年供应量；11.65亿美元服务付款也不能充当新增晶圆数。CXMT/YMTC则是另一条竞争入口：美光列示其为DRAM/NAND竞争者，并讨论中国投资可能扩大供给，但本轮没有其合格量、终端采用或具体资助的新证据，不将宏观支持标签转为供给过剩事实。【cite:O66】
+
+## AI 园区如何由土地、电力和租约变成可融资资产？
+
+Crusoe不仅是“潜在内存客户”。它与Lancium分工取得物理资源：7月Childress公告显示，Lancium拥有土地、落实接电并管理能源，Crusoe设计、建设和运营机房。该1GW并网项目的公告规模不是已投运能力，也未具名最终hyperscaler；不能据此指定Microsoft或MU订单。【cite:O131】【cite:O132】[双方公告](https://www.crusoe.ai/resources/newsroom/crusoe-and-lancium-announce-1-gigawatt-ai-data-center-campus-in-childress-texas)是区分土地/能源组织者与机房运营者的新入口。
+
+融资端亦有可验证安排：2024年首期Abilene项目采用Blue Owl/Primary Digital的forward takeout，公告称已长期租出；2025年联合项目扩至总规模150亿美元。这里的资本逻辑是把稳定租赁资产与开发运营资本分开，不能把旧34亿美元、扩大后的150亿美元及新园区资金相加。【cite:O134】【cite:O138】[首期资本安排](https://www.crusoe.ai/resources/newsroom/crusoe-blue-owl-capital-primary-digital-joint-venture)公开表达资本回收逻辑，未公开全部退出条件。
+
+本轮进一步取得2026-03-13公开的 **Abilene DC 1, LLC** 财务附表：其为两栋建筑的资产载体，2025年已交付给单一租户并分别起租，租期15年；租户承担运营成本及直接向Lancium支付电费，土地租金向租户传递。建设贷款最高22.88亿美元，受财务/建设约束，债务合同到期在2028年。**这是既有首期资产，不是2026年Microsoft新增900MW园区。**【cite:O165】[SEC财务附表](https://www.sec.gov/Archives/edgar/data/1944366/000194436626000020/exhibit993-2025abelinedc1l.htm)提供比总投资公告更细的支付和风险结构，租户在该正文中未具名。
+
+这组结构意味着：租金、工程交付、能源付款与贷款偿付通过合同相连，却不是同一个收入。若施工延期，可能先影响交付及起租；若租户付款能力改变，先影响资产现金与融资；若再融资条件收紧，即使长期租约仍在，新增项目资本循环也可能受阻。2028年债务与15年租约的期限差提供再融资研究入口，但不证明届时一定困境。既有物业起租证明商业交付，不证明 GPU利用率、模型收费或存储供应者份额；附表还显示2025年底电站仍开发，不能反推整个已交付物业没有可用电力。
+
+另一条路径是Microsoft新Abilene园区：2026公告设计900MW现场发电、储能和闭式液冷，两栋楼各336MW关键IT负载，首楼预计2027年中通电。现场能源可缓解部分接网依赖，却引入自身建设与运行条件；900MW发电不能换成672MW之外的GPU数量，更不能换成MU订单。【cite:O94】【cite:O95】[Crusoe/Microsoft 公告](https://www.crusoe.ai/resources/newsroom/crusoe-announces-new-900-mw-ai-factory-campus-in-abilene-texas-to-support-microsoft-ai-infrastructure)与旧资产资料应并列而非混用。
+
+MU的回传链因此是“可融资、可供电的空间→客户安装并接受服务器→平台配置与供应分配→合格存储采购”。园区通电是其中一段，不要求消息当时同时给出MU收入，但也不能越过未公开的采购联系。物业财表、土地/能源伙伴和租户各掌握不同事实；资金承诺、物业租金与终端AI收费不可作为彼此独立的三份需求证据。
+
+## 美光如何用客户承诺、设备和电力安排组织扩产？
+
+MU的多年战略客户协议含可执行数量、多数有价格带，部分由保证金及第三方信用证支持。保证金列融资现金流、主要于2029—2031年返还；截至期末已签发或承诺信用证合计70亿美元，取用依赖违约条件。客户获得供给可见性，美光获得投入与履约保障，银行承担指定信用支持；这不同于前节物业租约，也不代表同一批最终使用者。【cite:O66】【cite:O79】
+
+**条件性解释：**客户预付保障可支持先投入，但不能制造合格位元；协议数量保护不能替代价格、成本和产品换代匹配。终端平台延期时，MU仍可能按合同交付给客户、形成库存，或依条款调整节奏，不能从机房延期直接认定MU订单取消。若客户违约，资金追索也未必等同原计划销售利润。合同覆盖产品、年度量、价格重谈及交付例外仍未披露，尤其不能默认都来自Anthropic或都为HBM。
+
+物理执行依赖不同工序协调：EUV工具、晶圆工艺、封装测试、材料/控制器及水电各可能限制产量。formal-scan已核实美光6月官方材料披露ASML多年EUV协议，支持1δ及后续节点；原PDF捕获未取得O引用，保留[官方材料入口](https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356)，不借其他观察证明合同。工具获得、安装和良率改善仍是不同阶段；材料、控制器、工程及外包服务中未具名部分，不据设备合同反推出完整供应商清单。【cite:O66】
+
+地域项目也不是可互换的产能：新加坡2027年初HBM封装扩容作用于后段；Idaho首厂2027年中初始晶圆作用于前段；铜锣资产收购已完成，但2027年中有规模出货仍为计划；印度Gujarat已商业出货和爬坡；日本广岛及新加坡NAND后续建设服务不同产品/时间。美国CHIPS及纽约激励附条件，额度上限不是到账或产出。【cite:O77】若只增加封装而晶圆/认证不足，增量受阻；只增加晶圆而后段受限，也不能兑现产品销量。
+
+Idaho还给出直接的成本分配入口。IPUC在2026-05-08的Order37039附修改批准新厂Idaho Power ESA，包含容量/最低需求收费及信用安排，要求修改费率与条款。原始命令可检索，尚无成功捕获的O引用，依据[监管命令](https://puc.idaho.gov/Fileroom/PublicFiles/ELEC/IPC/IPCE2444/OrdNotc/20260508Final_Order_No_37039.pdf)并保留此边界。**预留电力意味着成本承诺，不意味着已使用或已产出**：爬坡慢可能先增加单位负担；供给可靠性改善则仍需其他工序匹配才能增加可售量。不能用Idaho价格外推全球工厂，更不能套用数据中心项目的供电结构。
+
+设备公司知道交付，公用事业/监管知道连接及费率条件，工厂与客户知道良率和资格。这些事实可以分别改变供给、成本或资本风险；建筑进度与补助到账主要提供执行证据，不直接证明新增回报。PJM/FERC大负荷程序则作用于特定电网的数据中心部署条件，不能移植为Idaho新厂的直接规则，也不能把申请生效日当作批准。【cite:O50】【cite:O51】
+
+## 终端如何跨过选型、安全和量产门槛，而不只是增加每台容量？
+
+PC/手机采购首先是配置和可供数量问题。Lenovo于2024年与MU共同推出P1 Gen7的LPDDR5X LPCAMM2，提供已采用的模组入口，不证明2026年整条产品线订单。MU退出Crucial消费者业务又改变零售路径，不能从品牌历史推定当前扩张；组件渠道与OEM供应仍应分别看。FY2026 MCBU数量下降并含向其他业务改配，手机新LPDDR5X出货因此不等于MCBU总量或终端sell-through增长。【cite:O86】【cite:O66】【cite:O5】[Lenovo原公告](https://news.lenovo.com/pressroom/press-releases/lenovo-unveils-its-new-ai-ready-thinkpad-p1-gen-7-mobile-workstation/)适合核实指定平台，不适合估计全部渠道份额。
+
+汽车和工业的采用多一层系统可靠性要求。已有MU LPDDR5X集成DRIVE AGX Orin，以及车规UFS4.1批量出货、1γ LPDDR5生产就绪/客户交付；LPDDR6 physical AI仍送样。Orin实例不能推定Thor、Uber全部车队或机器人量产项目均采用MU。【cite:O69】【cite:O66】
+
+本轮取得exida的Y4BM LPDDR5证书，2025年8月修订版明确：默认安全机制对应的随机硬件指标为ASIL C/SIL2；要达到更高ASIL D/SIL3，需额外机制，包括系统方实现使用假设和主机错误检测/纠正，并按实际应用验证指标。**“部件获证”不等于“装入任何系统即满足最高安全等级”。**该证书也不能转用为所有1γ新品的认证。【cite:O171】[具体证书](https://sg.micron.com/content/dam/micron/global/public/corporate/quality/certificates/micron-21-03-104-c-r018-y4bm-type-certificate-v2r0.pdf)比泛称车规或ASIL-D更能解释集成门槛。
+
+若整车平台、主机安全架构或工业任务需求改变，首先影响系统集成者的验证、选型和量产时程，再经指定料号与份额影响AEBU。认证可降低采用摩擦；若使用条件、温度/寿命要求或供应连续性不匹配，较高性能也未必换得订单。OEM/一级供应商知道项目采购，exida知道特定证书范围，平台方知道接口支持，MU知道供货；没有具名终端客户或项目BOM时，保留这一真实门槛，而不创造合作名单。
+
+## 地域采购资格如何改变分流，而不等同全球供需？
+
+美光披露CAC自2023年5月限制中国关键信息基础设施运营者采购其产品。作用对象是特定买方资格，不是所有中国客户全面禁购，也不是所有内存产品全球失去需求。【cite:O66】这条机制与CXMT/YMTC潜在供给不同：前者改变谁可购买MU，后者在形成合格产出和客户采用后才改变竞争供给。
+
+若采购资格或执行范围发生变化，第一步应辨别买方、产品和地域：客户可能转向合格竞争者，使用其他技术方案或延后项目；相关销售还可能迁至其他合法可供市场。没有客户分布和产量弹性，不能按中国行业需求比例折算MU收入。反过来，中国支持某厂商或材料出口安排变化，也不自动解除MU的市场准入限制。
+
+监管原文最接近规则范围，具体采购方更接近执行，供应者财报更接近实际销售；政策标题只能提供研究入口。本轮未取得截至截点新增执行细则、具名受影响采购或中国竞争者净合格量，结论止于已披露资格约束与可研究的分流选择。
+
+## 跨活动联系与尚未确立的连接
+
+这张网络有三项共同安排，不能当成互不相关的证据重复累加：
+
+- **功率预算同时约束芯片配置、缓存分层和园区实现。**效率提升能减少单位服务资源，也能扩大同一功率下的服务规模；哪种效应主导取决于实际工作负载与商业吸收。
+- **长期承诺分配风险，不消灭风险。**模型平台采购、物业租约、MU供给协议及Idaho电力合同连接不同义务；融资保障、租金、产出与终端消耗不是同一事实。
+- **共同标准与共享资源既促采用，也促竞争。**CoWoS、HBF、Storage-Next及合资制造的变化可能同时作用多个供应者；竞争者受阻不等于MU有资格和能力接单。
+
+最影响解释的未知仍位于具体连接：Anthropic各平台的内存BOM与MU分配；新架构在客户生产负载中的资格和复购；项目资金/通电到实际服务器采购的路径；合同覆盖与跨代际履约；新厂良率及瓶颈工序的合格产出。这些未知不否定已核实的架构、合同、资本与资源安排，也不允许把它们提前写成收入结果。外部资料分别提供“经营条件改变”和“新证据出现”两种价值，后者需保留产品、阶段、地域和分母差异。

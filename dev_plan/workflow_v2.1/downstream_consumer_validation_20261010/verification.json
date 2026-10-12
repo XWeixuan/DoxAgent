@@ -1,0 +1,42 @@
+{
+  "date": "2026-10-10",
+  "scope": "isolated offline tests; no model calls or deployment",
+  "backend_main": {
+    "passed": 164,
+    "seconds": 220.27,
+    "log": "backend_main_164.txt"
+  },
+  "adapters": {
+    "passed": 11,
+    "seconds": 31.27,
+    "log": "backend_adapters_11.txt"
+  },
+  "publication_supplement": {
+    "passed": 2,
+    "seconds": 29.7,
+    "note": "large D3 repeats main suite; external D2 is additional"
+  },
+  "legacy_d2_storage": {
+    "passed": 1,
+    "seconds": 21.28
+  },
+  "frontend_unit": {
+    "passed": 58,
+    "files": 12
+  },
+  "frontend_browser": {
+    "passed": 12,
+    "seconds": 6.1,
+    "widths": [
+      1262,
+      1559
+    ]
+  },
+  "schema_generation": "passed backend and frontend",
+  "typecheck": "passed",
+  "production_build": "passed",
+  "ruff_core": "passed",
+  "ruff_existing_consumers": "passed excluding E501",
+  "diff_check": "passed",
+  "shadow": "isolated rebuild, verify_shadow and isolated alias passed; no production alias switch"
+}

@@ -1,0 +1,9 @@
+{
+  "alias": "O26",
+  "title": "text paragraphs 10",
+  "content": "In fiscal Q4, we held a groundbreaking ceremony for our DRAM fab expansion in Japan, with initial output\n\nexpected in late calendar 2028 to support technology node transitions. In Taiwan, we are on track for\n\nmeaningful product shipments from our Tongluo facility in mid-calendar 2027. In Singapore, cleanroom\n\npreparation is ahead of plan at our HBM advanced packaging facility, with initial output expected in early\n\ncalendar 2027. Also, construction is on track for our new NAND facility in Singapore to begin output in the\n\nsecond half of calendar 2028.\n\nProduction from new DRAM and NAND fabrication facilities takes time to ramp and gradually becomes\n\nmore meaningful starting a few quarters after initial output.",
+  "source": {
+    "provider": "Public web source",
+    "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+  }
+}

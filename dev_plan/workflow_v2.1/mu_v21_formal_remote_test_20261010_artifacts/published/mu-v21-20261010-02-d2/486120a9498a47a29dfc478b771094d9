@@ -1,0 +1,2936 @@
+{
+  "name": "NAND行业市场",
+  "scope": "NAND终端需求、客户与渠道库存、组件和系统价格、有效bit供给及竞争格局，涵盖供应商制程密度演进、合资制造、扩产和美光的市场实现价。共同背景包括NAND供应商、共享制造安排及买方采购体系。",
+  "boundary": "行业NAND需求、竞争供给及市场价格由本域深化；美光数据中心SSD、组件供货及闪存与HDD的工作负载竞争归数据中心闪存与存储系统，其他终端产品采用归各产品业务域。美光自身生产网络归NAND与存储产品制造体系，跨年合同归战略客户供给与资金保障关系。",
+  "ref": [
+    "D1-O156",
+    "D1-O153",
+    "D1-O74",
+    "D1-O3",
+    "D1-O106",
+    "D1-O129",
+    "https://apac.kioxia.com/en-apac/about/news/2026/20260130-1.html",
+    "D1-O57",
+    "D1-O18",
+    "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+    "https://www.trendforce.com/presscenter/news/20260930-13258.html?trk=article-ssr-frontend-pulse_little-text-block",
+    "https://www.trendforce.com/price/flash/wafer_spot",
+    "https://www.dramx.com/Price/",
+    "https://www.trendforce.com/price/flash/pcc_oem_ssd_contract",
+    "https://www.trendforce.com/price/flash/flash_spot",
+    "https://www.trendforce.com/research/download/RP261007NY",
+    "D1-O172",
+    "D1-O70",
+    "https://www.trendforce.com/presscenter/news/20260721-13148.html",
+    "https://www.trendforce.com/presscenter/news/20260908-13222.html",
+    "https://www.trendforce.com/presscenter/news/20260904-13217.html",
+    "https://www.trendforce.com/presscenter/news/20261008-13264.html",
+    "https://www.trendforce.com/presscenter/news/20260323-12983.html",
+    "https://www.apple.com/newsroom/2026/03/apple-introduces-iphone-17e/",
+    "https://www.apple.com/newsroom/2026/03/macbook-neo-iphone-17e-ipad-air-with-m4-and-more-are-now-available/",
+    "https://www.trendforce.com/research/download/RP260930DA",
+    "https://www.trendforce.com/presscenter/news/20260921-13246.html",
+    "https://www.kioxia-holdings.com/content/dam/kioxia-hd/en-jp/ir/library/event/asset/Investor-Day-2026-Eng-QA.pdf",
+    "https://www.trendforce.com.tw/presscenter/news/20260818-13185.html",
+    "D1-O88",
+    "https://www.kioxia.com/en-jp/about/news/2026/20260703-2.html",
+    "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-13-sandisk-investor-day-2026",
+    "https://apac.kioxia.com/en-apac/about/news/2026/20260827-3.html",
+    "D1-O90",
+    "https://apac.kioxia.com/en-apac/about/news/2026/20260827-2.html",
+    "D1-O4",
+    "D1-O73",
+    "https://content.govdelivery.com/accounts/USCENSUS/bulletins/4008e2b?trk=article-ssr-frontend-pulse_little-text-block",
+    "https://www.govinfo.gov/app/details/FR-2025-09-02/2025-16735",
+    "D1-O103",
+    "https://www.min.io/press/minio-announces-memkv-purpose-built-context-memory-store-for-ai-inference",
+    "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf",
+    "D1-O76",
+    "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html",
+    "D1-O51",
+    "D1-O31",
+    "https://research.google/blog/turboquant-redefining-ai-efficiency-with-extreme-compression/",
+    "D1-O11",
+    "https://www.phison.com/images/media-kits-ces2026/Phison%20PR_Phison%20aiDAPTIV%20Unlocks%20Powerful%20AI%20Processing%20on%20iGPU%20PC%20Platforms_ENG_Official.pdf",
+    "D1-O78",
+    "D1-O102",
+    "D1-O130",
+    "D1-O165",
+    "https://www.brookings.edu/articles/financing-the-ai-buildout/",
+    "https://www.crusoe.ai/resources/newsroom/crusoe-announces-new-900-mw-ai-factory-campus-in-abilene-texas-to-support-microsoft-ai-infrastructure"
+  ],
+  "units": [
+    {
+      "name": "NAND市场供需与定价",
+      "scope": "NAND各终端的需求、客户及渠道库存、供应商竞争、制程与密度迁移、合资制造和扩产、有效bit供给、组件与系统价格结构及采购安排，涵盖美光实现价与行业销售结构。",
+      "horizon": "季度库存与定价周期，延伸至数个季度和多年行业产能周期。",
+      "ref": [
+        "D1-O156",
+        "D1-O153",
+        "D1-O74",
+        "D1-O3",
+        "https://apac.kioxia.com/en-apac/about/news/2026/20260130-1.html",
+        "D1-O57",
+        "D1-O18",
+        "D1-O106",
+        "D1-O129",
+        "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+        "https://www.trendforce.com/presscenter/news/20260930-13258.html?trk=article-ssr-frontend-pulse_little-text-block",
+        "https://www.trendforce.com/price/flash/wafer_spot",
+        "https://www.dramx.com/Price/",
+        "https://www.trendforce.com/price/flash/pcc_oem_ssd_contract",
+        "https://www.trendforce.com/price/flash/flash_spot",
+        "https://www.trendforce.com/research/download/RP261007NY",
+        "D1-O172",
+        "D1-O70",
+        "https://www.trendforce.com/presscenter/news/20260721-13148.html",
+        "https://www.trendforce.com/presscenter/news/20260908-13222.html",
+        "https://www.trendforce.com/presscenter/news/20260904-13217.html",
+        "https://www.trendforce.com/presscenter/news/20261008-13264.html",
+        "https://www.trendforce.com/presscenter/news/20260323-12983.html",
+        "https://www.apple.com/newsroom/2026/03/apple-introduces-iphone-17e/",
+        "https://www.apple.com/newsroom/2026/03/macbook-neo-iphone-17e-ipad-air-with-m4-and-more-are-now-available/",
+        "https://www.trendforce.com/research/download/RP260930DA",
+        "https://www.trendforce.com/presscenter/news/20260921-13246.html",
+        "https://www.kioxia-holdings.com/content/dam/kioxia-hd/en-jp/ir/library/event/asset/Investor-Day-2026-Eng-QA.pdf",
+        "https://www.trendforce.com.tw/presscenter/news/20260818-13185.html",
+        "D1-O88",
+        "https://www.kioxia.com/en-jp/about/news/2026/20260703-2.html",
+        "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-13-sandisk-investor-day-2026",
+        "https://apac.kioxia.com/en-apac/about/news/2026/20260827-3.html",
+        "D1-O90",
+        "https://apac.kioxia.com/en-apac/about/news/2026/20260827-2.html",
+        "D1-O4",
+        "D1-O73",
+        "https://content.govdelivery.com/accounts/USCENSUS/bulletins/4008e2b?trk=article-ssr-frontend-pulse_little-text-block",
+        "https://www.govinfo.gov/app/details/FR-2025-09-02/2025-16735",
+        "D1-O103",
+        "https://www.min.io/press/minio-announces-memkv-purpose-built-context-memory-store-for-ai-inference",
+        "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf",
+        "D1-O76",
+        "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html",
+        "D1-O51",
+        "D1-O31",
+        "https://research.google/blog/turboquant-redefining-ai-efficiency-with-extreme-compression/",
+        "D1-O11",
+        "https://www.phison.com/images/media-kits-ces2026/Phison%20PR_Phison%20aiDAPTIV%20Unlocks%20Powerful%20AI%20Processing%20on%20iGPU%20PC%20Platforms_ENG_Official.pdf",
+        "D1-O78",
+        "D1-O102",
+        "D1-O130",
+        "D1-O165",
+        "https://www.brookings.edu/articles/financing-the-ai-buildout/",
+        "https://www.crusoe.ai/resources/newsroom/crusoe-announces-new-900-mw-ai-factory-campus-in-abilene-texas-to-support-microsoft-ai-infrastructure"
+      ],
+      "state": {
+        "parameters": [
+          {
+            "name": "美光NAND年度销售收入",
+            "definition": "美光按技术类别披露的NAND年度收入，美元口径；不是含服务器DRAM的CDBU收入。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O57",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "美光NAND年度ASP同比变化",
+            "definition": "美光NAND产品组合平均实现售价的年度同比变化；含规格、渠道和组合，不是同规格市场价格指数。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "美光NAND年度bit出货增幅档位",
+            "definition": "美光年度NAND bit出货同比增长的披露档位，保留管理层使用的模糊数值精度。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "行业NAND合约价格季度涨幅",
+            "definition": "TrendForce对整体NAND Flash合约价格的季度环比涨幅预测；不等于现货变动或美光ASP。",
+            "value_type": "RANGE",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260930-13258.html?trk=article-ssr-frontend-pulse_little-text-block"
+            ]
+          },
+          {
+            "name": "512Gb TLC晶圆级现货盘平均报价",
+            "definition": "TrendForce/DRAMeXchange Wafer Spot板中512Gb TLC规格的盘平均美元报价；按该规格报价单元，不是整片晶圆金额、SSD价或全行业成交均价。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.trendforce.com/price/flash/wafer_spot",
+              "https://www.dramx.com/Price/"
+            ]
+          },
+          {
+            "name": "512Gb TLC晶圆级现货盘报价区间",
+            "definition": "同一512Gb TLC现货盘面的Session Low至Session High，度量同规格公开报价分散；不是未来价格预测区间。",
+            "value_type": "RANGE",
+            "ref": [
+              "https://www.trendforce.com/price/flash/wafer_spot"
+            ]
+          },
+          {
+            "name": "512Gb TLC现货盘平均报价变动",
+            "definition": "公开512Gb TLC Wafer Spot板的Session Change；保留发布者比较口径，不反推出未披露前值或解释成全行业环比。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.trendforce.com/price/flash/wafer_spot"
+            ]
+          },
+          {
+            "name": "1TB客户端Value Grade TLC PCIe SSD OEM合约均价",
+            "definition": "TrendForce PC-Client OEM SSD Contract板中1TB-mSATA/M.2 TLC PCIe-Value Grade规格的样本平均系统采购价格；不是NAND die价格或企业SSD价格。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.trendforce.com/price/flash/pcc_oem_ssd_contract"
+            ]
+          },
+          {
+            "name": "Samsung 990 Pro 1TB零售样本均价",
+            "definition": "TrendForce SSD Street Price板中Samsung PCIe 4.0 x4 990 Pro 1TB的零售样本均价；规格、品牌和渠道固定，不代表全体消费者SSD成本。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.trendforce.com/price/flash/flash_spot"
+            ]
+          },
+          {
+            "name": "企业与消费NAND市场议价分层",
+            "definition": "企业SSD、客户端SSD、eMMC/UFS和晶圆模组采购的相对议价与涨价状态，不把不同规格价格相除成统一溢价。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260930-13258.html?trk=article-ssr-frontend-pulse_little-text-block",
+              "https://www.trendforce.com/research/download/RP261007NY"
+            ]
+          },
+          {
+            "name": "企业SSD年度bit需求增幅状态",
+            "definition": "TrendForce对企业SSD年度bit需求同比增长的边界性预测，不扩展为所有NAND或供应商收入增长。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260930-13258.html?trk=article-ssr-frontend-pulse_little-text-block"
+            ]
+          },
+          {
+            "name": "Sandisk数据中心年度exabyte销售增幅状态",
+            "definition": "Sandisk数据中心产品实物销售按exabyte计的年度同比披露；不是行业需求或份额。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O156"
+            ]
+          },
+          {
+            "name": "WDC云端HDD年度exabyte销售增幅",
+            "definition": "WDC云端HDD实物销售的年度同比增长，作为容量数据的替代/互补介质活动锚；不是闪存份额。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O172"
+            ]
+          },
+          {
+            "name": "容量HDD可获得性及买方安排",
+            "definition": "容量HDD制造交期与客户采购合作状态，对QLC临时分流及分层配置具有直接业务联系。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O172",
+              "D1-O70"
+            ]
+          },
+          {
+            "name": "服务器在NAND bit需求中的占比状态",
+            "definition": "TrendForce估计服务器用途占全部NAND Flash bit需求的比例状态，与消费用途占比分开保存。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260721-13148.html"
+            ]
+          },
+          {
+            "name": "手机与笔记本在NAND bit需求中的合计占比状态",
+            "definition": "TrendForce估计手机与笔记本两类终端合计占NAND bit需求的比例；不包括全部消费及汽车。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260721-13148.html"
+            ]
+          },
+          {
+            "name": "全球智能手机季度生产台数",
+            "definition": "TrendForce调查的全球智能手机季度生产量，单位台数；非最终零售sell-through。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260908-13222.html"
+            ]
+          },
+          {
+            "name": "全球智能手机年度生产台数预测",
+            "definition": "TrendForce同一日历年度目标的全球智能手机生产量预测，不等同出货或装机存储容量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260908-13222.html"
+            ]
+          },
+          {
+            "name": "全球智能手机年度生产同比预测",
+            "definition": "TrendForce对年度全球智能手机生产量同比变化的预测。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260908-13222.html"
+            ]
+          },
+          {
+            "name": "全球笔记本年度出货同比预测",
+            "definition": "TrendForce全球笔记本年度出货量同比增长预测；不代表SSD采购量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260904-13217.html"
+            ]
+          },
+          {
+            "name": "全球笔记本CY2027出货变化档位",
+            "definition": "TrendForce对CY2027笔记本年度出货变化的模糊数值档位及条件场景，保留低/高个位数而非人为设区间。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20261008-13264.html"
+            ]
+          },
+          {
+            "name": "智能手机平均NAND容量年度增幅预测",
+            "definition": "TrendForce对全球智能手机平均存储容量的年度同比预测；区分台数变化、单机容量与高端组合。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260323-12983.html"
+            ]
+          },
+          {
+            "name": "高端端侧AI系统缓存的存储容量需求估计",
+            "definition": "TrendForce所讨论部分高端手机端侧AI模型使用的系统存储缓存量；不是所有手机额外NAND增量或现有全行业均值。",
+            "value_type": "RANGE",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260323-12983.html"
+            ]
+          },
+          {
+            "name": "iPhone e系列入门存储配置",
+            "definition": "Apple e系列相邻代入门型号的出厂最低存储容量，作为手机OEM实际配置选择锚；不代表所有手机均值或某NAND供应商份额。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.apple.com/newsroom/2026/03/apple-introduces-iphone-17e/",
+              "https://www.apple.com/newsroom/2026/03/macbook-neo-iphone-17e-ipad-air-with-m4-and-more-are-now-available/"
+            ]
+          },
+          {
+            "name": "主流PC SSD配置与采购容量方向",
+            "definition": "主流PC品牌为控制BOM而调整SSD容量及采购bit的方向，区别于手机高端平均容量。",
+            "value_type": "DIRECTION",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260930-13258.html?trk=article-ssr-frontend-pulse_little-text-block"
+            ]
+          },
+          {
+            "name": "主流笔记本核心组件BOM占比",
+            "definition": "TrendForce以1Q25 MSRP为900美元的主流笔记本为比较基准，CPU、DRAM及SSD合计占整机BOM的比例；不是SSD单项占比。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260904-13217.html",
+              "https://www.trendforce.com/presscenter/news/20261008-13264.html"
+            ]
+          },
+          {
+            "name": "NAND原厂库存位置",
+            "definition": "NAND原厂库存的行业调查状态，不以美光合并美元库存代替行业实物库存。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.trendforce.com/research/download/RP260930DA",
+              "https://www.trendforce.com/presscenter/news/20260721-13148.html"
+            ]
+          },
+          {
+            "name": "消费品牌与模组商库存位置",
+            "definition": "PC/手机品牌和模组渠道的NAND相关库存状态及持有原因；非供应商库存。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.trendforce.com/research/download/RP260930DA",
+              "https://www.trendforce.com/research/download/RP261007NY"
+            ]
+          },
+          {
+            "name": "美国云商存储库存消化方向",
+            "definition": "TrendForce所调查美国大型云商的库存消化方向，不泛化为所有CSP或最终使用量。",
+            "value_type": "DIRECTION",
+            "ref": [
+              "https://www.trendforce.com/research/download/RP260930DA"
+            ]
+          },
+          {
+            "name": "中国云商存储库存与采购状态",
+            "definition": "TrendForce所调查中国运营商的库存位置及采购行为，与美国云商分开。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.trendforce.com/research/download/RP260930DA"
+            ]
+          },
+          {
+            "name": "企业SSD增量供给的开放市场可得性",
+            "definition": "企业SSD新增合格供给在承诺客户与开放采购池之间的可得状态；不是晶圆厂名义产能。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260930-13258.html?trk=article-ssr-frontend-pulse_little-text-block",
+              "https://www.trendforce.com/research/download/RP260930DA"
+            ]
+          },
+          {
+            "name": "非长期协议企业SSD追加采购状态",
+            "definition": "长期协议之外美国云商的新增企业SSD需求状态，定位边际价格形成的流通池。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.trendforce.com/research/download/RP261007NY",
+              "https://www.trendforce.com/presscenter/news/20260921-13246.html"
+            ]
+          },
+          {
+            "name": "可交付企业SSD配套瓶颈状态",
+            "definition": "影响NAND die转成可交付企业SSD的关键组件供给状态；未识别具体厂商时不臆指控制器。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.trendforce.com/research/download/RP260930DA",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "行业NAND年度供给缺口率预测",
+            "definition": "TrendForce年度供需模型所报供给缺口百分比，保留机构模型口径；公开文未充分披露分母，非审计实物缺货率。",
+            "value_type": "RANGE",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260721-13148.html"
+            ]
+          },
+          {
+            "name": "行业NAND中期供需平衡预期状态",
+            "definition": "公开供应者及产业研究对CY2027下半年至随后数季的供需松紧预期；分歧各自保留，不平均或假定旧观点撤回。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260721-13148.html",
+              "https://www.trendforce.com/research/download/RP261007NY",
+              "https://www.trendforce.com/presscenter/news/20261008-13264.html",
+              "https://www.kioxia-holdings.com/content/dam/kioxia-hd/en-jp/ir/library/event/asset/Investor-Day-2026-Eng-QA.pdf"
+            ]
+          },
+          {
+            "name": "Kioxia采用的中期市场bit增长假设",
+            "definition": "Kioxia投资者日采用的全球NAND市场bit需求CAGR假设；不是已实现增长、所有厂商共同指引或新增晶圆增速。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.kioxia-holdings.com/content/dam/kioxia-hd/en-jp/ir/library/event/asset/Investor-Day-2026-Eng-QA.pdf"
+            ]
+          },
+          {
+            "name": "上市主要NAND品牌季度合计收入",
+            "definition": "TrendForce对已上市前五大NAND品牌的季度收入合计，不包含其全部全球bit供给，也不以该合计作未披露份额分母。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.trendforce.com.tw/presscenter/news/20260818-13185.html"
+            ]
+          },
+          {
+            "name": "主要NAND品牌行业竞争位置",
+            "definition": "TrendForce按NAND销售收入排序的品牌竞争格局，SK集团含SK hynix及Solidigm；收入排名不代表bit、技术或未来供给排名。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.trendforce.com.tw/presscenter/news/20260818-13185.html",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "中国NAND供应者全球bit产出份额预期状态",
+            "definition": "TrendForce预计中国供应商合计占全球NAND bit产出的比例状态；不等于YMTC单家公司份额或外销资格。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260721-13148.html"
+            ]
+          },
+          {
+            "name": "美光NAND主力生产节点",
+            "definition": "美光NAND bit生产的主力节点组合，作为行业既有供给密度迁移的目标侧锚，不代替行业QLC比例。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O57",
+              "D1-O88"
+            ]
+          },
+          {
+            "name": "Kioxia/Sandisk共同制造的先进节点投产状态",
+            "definition": "北上K2共同制造先进NAND的生产状态；两个销售品牌共享工厂，不重复计入行业晶圆产能。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.kioxia.com/en-jp/about/news/2026/20260703-2.html"
+            ]
+          },
+          {
+            "name": "BiCS10 QLC相对BiCS8的bit密度增幅",
+            "definition": "Sandisk披露BiCS10 QLC相对BiCS8的bit密度设计改善；不是合格可售bit增幅、晶圆投入增幅或行业供给增长。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-13-sandisk-investor-day-2026"
+            ]
+          },
+          {
+            "name": "行业NAND供给扩展的资本配置状态",
+            "definition": "产业研究所见主要原厂对新增NAND晶圆、既有设备迁移及DRAM/HBM扩产的资源优先级。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260721-13148.html",
+              "https://www.trendforce.com/research/download/RP261007NY"
+            ]
+          },
+          {
+            "name": "Kioxia/Sandisk长期共同投资规模状态",
+            "definition": "双方共同计划在日本至2032年的总投资规模及政府支持条件；是联合计划，非各自重复金额或已经支付capex。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://apac.kioxia.com/en-apac/about/news/2026/20260827-3.html",
+              "D1-O90"
+            ]
+          },
+          {
+            "name": "Kioxia北上K3新增工厂经营目标时点",
+            "definition": "Kioxia新K3厂预计开始operations的财年时点；不等于量产bit交付或满产。",
+            "value_type": "TIME",
+            "ref": [
+              "https://apac.kioxia.com/en-apac/about/news/2026/20260827-2.html"
+            ]
+          },
+          {
+            "name": "美光新加坡新增NAND洁净室可用时点",
+            "definition": "美光披露新加坡新增NAND制造洁净室开始运营的时间窗口，只定位行业远期空间供给，不接管其制造项目模型。",
+            "value_type": "TIME",
+            "ref": [
+              "D1-O4"
+            ]
+          },
+          {
+            "name": "Kioxia/Sandisk共同制造安排存续状态",
+            "definition": "共同开发与制造闪存晶圆的合资安排存续及共享关系，影响长期供给决策而非当期销量。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://apac.kioxia.com/en-apac/about/news/2026/20260130-1.html",
+              "D1-O73"
+            ]
+          },
+          {
+            "name": "在华竞争制造设施设备取得安排",
+            "definition": "美国EAR管辖设备及物项进入相关在华工厂的授权安排状态，对维护和升级能力有直接联系；工厂范围不等于全部中国NAND。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://content.govdelivery.com/accounts/USCENSUS/bulletins/4008e2b?trk=article-ssr-frontend-pulse_little-text-block",
+              "https://www.govinfo.gov/app/details/FR-2025-09-02/2025-16735"
+            ]
+          },
+          {
+            "name": "Sandisk已签NBM客户数",
+            "definition": "Sandisk以数量承诺、最低财务保障和结构化定价签订NBM的客户数量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-13-sandisk-investor-day-2026"
+            ]
+          },
+          {
+            "name": "Sandisk NBM预计bit覆盖状态",
+            "definition": "Sandisk已签NBM在未来财年预计覆盖其bit销量的比例，按公司原文约数/分数保存，不代表整个行业锁量。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-13-sandisk-investor-day-2026"
+            ]
+          },
+          {
+            "name": "Kioxia CY2028 LTA计划覆盖比例",
+            "definition": "Kioxia在投资者日计划由LTA覆盖的CY2028预计出货量比例；正在商谈与计划，非已签约数量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.kioxia-holdings.com/content/dam/kioxia-hd/en-jp/ir/library/event/asset/Investor-Day-2026-Eng-QA.pdf"
+            ]
+          },
+          {
+            "name": "推理缓存NAND的客户采用状态",
+            "definition": "NAND SSD用于KV cache或推理上下文的商业客户交付/资格状态；行业用途锚，不替代美光单品收入与份额研究。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O103",
+              "https://www.kioxia-holdings.com/content/dam/kioxia-hd/en-jp/ir/library/event/asset/Investor-Day-2026-Eng-QA.pdf",
+              "https://www.trendforce.com/presscenter/news/20260921-13246.html"
+            ]
+          },
+          {
+            "name": "共享持久上下文闪存软件可用状态",
+            "definition": "使GPU集群利用NVMe共享持久上下文的商业软件可用状态；产品可用不等于全行业部署。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.min.io/press/minio-announces-memkv-purpose-built-context-memory-store-for-ai-inference"
+            ]
+          },
+          {
+            "name": "HBF近计算闪存生态采用准备状态",
+            "definition": "近计算高带宽闪存的接口标准、平台验证及采用准备；区别于普通企业SSD既有采购。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf",
+              "D1-O76"
+            ]
+          },
+          {
+            "name": "GP1 GPU-direct闪存功能样品目标时点",
+            "definition": "Kioxia GP1功能检查样品向选定客户提供的目标时点，不等于可销售最终量产规格。",
+            "value_type": "TIME",
+            "ref": [
+              "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html",
+              "D1-O51"
+            ]
+          },
+          {
+            "name": "全球NAND可售bit供给年度增速",
+            "definition": "全球合格可交付NAND bit供给的年度同比增长；应扣除节点转换损失并区分总die和可售系统，当前未获得同口径测量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260721-13148.html",
+              "https://www.kioxia.com/en-jp/about/news/2026/20260703-2.html",
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "全球NAND晶圆投入量",
+            "definition": "主要NAND制造网络每月晶圆投入，300mm等效片数；共同制造去重，名义工厂面积、设备投资和bit密度不能代替。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.kioxia.com/en-jp/about/news/2026/20260703-2.html",
+              "https://apac.kioxia.com/en-apac/about/news/2026/20260827-3.html",
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "全球NAND总bit需求量",
+            "definition": "行业各用途年度实际采购/消耗的NAND bit容量，以EB等可比单位定位规模；当前各供应者增长和用途占比不能拼成总量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260721-13148.html",
+              "D1-O156"
+            ]
+          },
+          {
+            "name": "全球QLC NAND bit产出占比",
+            "definition": "全球可售NAND bit产出中QLC所占比例；技术推出、单节点密度和某厂数据中心销售不能替代行业占比。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-13-sandisk-investor-day-2026",
+              "https://www.kioxia.com/en-jp/about/news/2026/20260703-2.html",
+              "https://www.trendforce.com/presscenter/news/20260921-13246.html"
+            ]
+          },
+          {
+            "name": "消费NAND渠道库存天数",
+            "definition": "按固定PC/手机/模组渠道样本与销售消耗率衡量的实物库存天数；现有高低库存描述未提供同口径天数。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.trendforce.com/research/download/RP260930DA",
+              "https://www.trendforce.com/research/download/RP261007NY"
+            ]
+          },
+          {
+            "name": "企业SSD同规格合约价格水平",
+            "definition": "固定容量、性能、耐久、接口及采购条款的企业SSD系统合约价格；当前只取得涨幅方向及整体NAND预测，未取得此可比价格点。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260930-13258.html?trk=article-ssr-frontend-pulse_little-text-block",
+              "https://www.trendforce.com/research/download/RP260930DA"
+            ]
+          },
+          {
+            "name": "YMTC全球可售bit供给份额",
+            "definition": "YMTC自身合格可售NAND bit占全球同口径供给的比例；中国供应者合计2027预测、收入排名和产品目录不能代替。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O74",
+              "https://www.trendforce.com/presscenter/news/20260721-13148.html"
+            ]
+          },
+          {
+            "name": "美光NAND多年数量合同覆盖比例",
+            "definition": "美光NAND预计出货bit中已受多年可执行数量承诺约束的比例；公司全技术保证金与take-or-pay安排不证明NAND覆盖量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O31",
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "持久上下文的单位任务净闪存容量",
+            "definition": "固定任务/模型、并发及保留周期下，扣除共享、压缩和复制后的净持久NAND容量；token读写次数与实验KV压缩倍数均不能填作该量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.min.io/press/minio-announces-memkv-purpose-built-context-memory-store-for-ai-inference",
+              "https://research.google/blog/turboquant-redefining-ai-efficiency-with-extreme-compression/",
+              "https://www.trendforce.com/presscenter/news/20260921-13246.html"
+            ]
+          }
+        ],
+        "values": [
+          {
+            "name": "FY2026 NAND收入及上年比较",
+            "parameter": "美光NAND年度销售收入",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 31.79,
+              "unit": "十亿美元"
+            },
+            "previous_value": {
+              "number": 8.5,
+              "unit": "十亿美元"
+            },
+            "time_scope": "美光FY2026，截至2026-09-03，53周；previous_value为FY2025截至2025-08-28、52周的8.50十亿美元；未周数标准化。",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O57",
+              "D1-O11",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "FY2026 NAND ASP约增200%",
+            "parameter": "美光NAND年度ASP同比变化",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 200.0,
+              "unit": "%同比，约数"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026对FY2025，53周对52周；公司量价解释。",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "FY2026实物增长为20%中段",
+            "parameter": "美光NAND年度bit出货增幅档位",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "同比增幅为20%中段（mid-twenties），非明确25%点值。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026对FY2025，53周对52周。",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "TrendForce的4Q26合约价预测",
+            "parameter": "行业NAND合约价格季度涨幅",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "lower": 15.0,
+              "upper": 20.0,
+              "unit": "%环比"
+            },
+            "previous_value": null,
+            "time_scope": "CY2026第四季度；9月30日预测，非第四季度已实现价格。",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260930-13258.html?trk=article-ssr-frontend-pulse_little-text-block"
+            ]
+          },
+          {
+            "name": "9月28日512Gb TLC现货均价",
+            "parameter": "512Gb TLC晶圆级现货盘平均报价",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 19.396,
+              "unit": "美元/512Gb TLC报价单元"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-28 14:40 GMT+8盘面；截点前公开板最新可读NAND观察仍为此日，未当作10月9日报价。",
+            "as_of": "2026-09-28T14:40:00+08:00",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/price/flash/wafer_spot",
+              "https://www.dramx.com/Price/"
+            ]
+          },
+          {
+            "name": "同盘512Gb TLC高低报价",
+            "parameter": "512Gb TLC晶圆级现货盘报价区间",
+            "source_role": "ACTUAL",
+            "value": {
+              "lower": 17.2,
+              "upper": 22.0,
+              "unit": "美元/512Gb TLC报价单元"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-28 14:40 GMT+8盘低点与盘高点。",
+            "as_of": "2026-09-28T14:40:00+08:00",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/price/flash/wafer_spot",
+              "https://www.dramx.com/Price/"
+            ]
+          },
+          {
+            "name": "512Gb TLC盘变动为负",
+            "parameter": "512Gb TLC现货盘平均报价变动",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": -2.45,
+              "unit": "%盘变动"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-28公开盘面所示Session Change。",
+            "as_of": "2026-09-28T14:40:00+08:00",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/price/flash/wafer_spot"
+            ]
+          },
+          {
+            "name": "3Q26 1TB客户端OEM样本均价",
+            "parameter": "1TB客户端Value Grade TLC PCIe SSD OEM合约均价",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 321.0,
+              "unit": "美元/1TB SSD"
+            },
+            "previous_value": null,
+            "time_scope": "CY2026第三季度报价板，2026-08-05 11:00 GMT+8更新；样本报价而非全季度加权销售实现价。",
+            "as_of": "2026-08-05T11:00:00+08:00",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/price/flash/pcc_oem_ssd_contract"
+            ]
+          },
+          {
+            "name": "9月24日990 Pro 1TB零售样本",
+            "parameter": "Samsung 990 Pro 1TB零售样本均价",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 239.99,
+              "unit": "美元/1TB SSD"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-24 11:30 GMT+8街价样本；不能与8月Value Grade OEM价计算渠道价差。",
+            "as_of": "2026-09-24T11:30:00+08:00",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/price/flash/flash_spot"
+            ]
+          },
+          {
+            "name": "4Q26价格分层仍偏企业端",
+            "parameter": "企业与消费NAND市场议价分层",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "企业SSD预计涨价加速；客户端、eMMC/UFS及模组晶圆采购弱，涨价幅度受买方预算约束。"
+            },
+            "previous_value": null,
+            "time_scope": "CY2026第四季度市场研究预测；企业端与消费端分别识别。",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260930-13258.html?trk=article-ssr-frontend-pulse_little-text-block"
+            ]
+          },
+          {
+            "name": "企业SSD CY2026需求预测超过80%",
+            "parameter": "企业SSD年度bit需求增幅状态",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "预计同比增长超过80%；单边下限表述，未披露上界。"
+            },
+            "previous_value": null,
+            "time_scope": "CY2026全年预测；用途包含AI推理、检索及缓存。",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260930-13258.html?trk=article-ssr-frontend-pulse_little-text-block"
+            ]
+          },
+          {
+            "name": "Sandisk FY2026数据中心实物销售近增120%",
+            "parameter": "Sandisk数据中心年度exabyte销售增幅状态",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "数据中心exabyte销售同比增加接近120%。"
+            },
+            "previous_value": null,
+            "time_scope": "Sandisk FY2026截至2026-07-03对自身FY2025；保留公司年度销售口径。",
+            "as_of": "2026-08-17",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O156"
+            ]
+          },
+          {
+            "name": "WDC FY2026云端HDD容量增长",
+            "parameter": "WDC云端HDD年度exabyte销售增幅",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 27.0,
+              "unit": "%同比"
+            },
+            "previous_value": null,
+            "time_scope": "WDC FY2026截至2026-07-03对FY2025，53周对52周；不能与Sandisk不同产品分母计算替代率。",
+            "as_of": "2026-08-14",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O172"
+            ]
+          },
+          {
+            "name": "容量HDD交期拉长并提前协同",
+            "parameter": "容量HDD可获得性及买方安排",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "WDC称高容量盘制造更复杂、交期更长；客户更早合作并延长商业安排期限。"
+            },
+            "previous_value": null,
+            "time_scope": "WDC FY2026经营披露；不构成所有客户无法买到HDD。",
+            "as_of": "2026-08-14",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O172"
+            ]
+          },
+          {
+            "name": "服务器用途超过四成",
+            "parameter": "服务器在NAND bit需求中的占比状态",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "服务器占NAND bit需求超过40%。"
+            },
+            "previous_value": null,
+            "time_scope": "CY2026市场结构估计，7月研究快照。",
+            "as_of": "2026-07-21",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260721-13148.html"
+            ]
+          },
+          {
+            "name": "手机和笔记本仍接近四成",
+            "parameter": "手机与笔记本在NAND bit需求中的合计占比状态",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "两者合计接近40%。"
+            },
+            "previous_value": null,
+            "time_scope": "CY2026市场结构估计，7月研究快照；非与服务器互补到100%的两类总表。",
+            "as_of": "2026-07-21",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260721-13148.html"
+            ]
+          },
+          {
+            "name": "2Q26智能手机生产调查值",
+            "parameter": "全球智能手机季度生产台数",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 275.0,
+              "unit": "百万台"
+            },
+            "previous_value": null,
+            "time_scope": "CY2026第二季度；研究报告同比下降约8%，未取得相同调查上年点值作previous_value。",
+            "as_of": "2026-09-08",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260908-13222.html"
+            ]
+          },
+          {
+            "name": "CY2026手机生产预测获小幅上修",
+            "parameter": "全球智能手机年度生产台数预测",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 1.07,
+              "unit": "十亿台"
+            },
+            "previous_value": {
+              "number": 1.05,
+              "unit": "十亿台"
+            },
+            "time_scope": "CY2026全年；previous_value为9月8日报告引用的此前同年预测1.05十亿台，旧快照确切发布日期未披露。",
+            "as_of": "2026-09-08",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260908-13222.html"
+            ]
+          },
+          {
+            "name": "CY2026手机生产仍预期下降14%",
+            "parameter": "全球智能手机年度生产同比预测",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": -14.0,
+              "unit": "%同比"
+            },
+            "previous_value": {
+              "number": -16.0,
+              "unit": "%同比"
+            },
+            "time_scope": "CY2026；previous_value为同一目标年旧预测下降16%，与1.07十亿台的同日修订配套。",
+            "as_of": "2026-09-08",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260908-13222.html"
+            ]
+          },
+          {
+            "name": "CY2026笔记本预期下降9.4%",
+            "parameter": "全球笔记本年度出货同比预测",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": -9.4,
+              "unit": "%同比"
+            },
+            "previous_value": null,
+            "time_scope": "CY2026全年，9月研究修订；没有同源精确旧值，previous_value为空。",
+            "as_of": "2026-09-04",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260904-13217.html"
+            ]
+          },
+          {
+            "name": "CY2027笔记本默认预测",
+            "parameter": "全球笔记本CY2027出货变化档位",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "同比下降低个位数百分比。"
+            },
+            "previous_value": null,
+            "time_scope": "CY2027默认情景；品牌调整配置/组合并吸收部分成本。",
+            "as_of": "2026-10-08",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20261008-13264.html"
+            ]
+          },
+          {
+            "name": "CY2027笔记本成本转嫁情景",
+            "parameter": "全球笔记本CY2027出货变化档位",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "若CPU和DRAM成本高企并更多传给消费者，降幅可能达到高个位数百分比。"
+            },
+            "previous_value": null,
+            "time_scope": "CY2027条件情景，不是默认预测被正式下调。",
+            "as_of": "2026-10-08",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20261008-13264.html"
+            ]
+          },
+          {
+            "name": "CY2026手机平均容量仍有增长预测",
+            "parameter": "智能手机平均NAND容量年度增幅预测",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 4.8,
+              "unit": "%同比"
+            },
+            "previous_value": null,
+            "time_scope": "CY2026，3月23日预测快照；未获得截至10月的同目标修订或全年实际。",
+            "as_of": "2026-03-23",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260323-12983.html"
+            ]
+          },
+          {
+            "name": "部分旗舰AI系统缓存估计40至60GB",
+            "parameter": "高端端侧AI系统缓存的存储容量需求估计",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "lower": 40.0,
+              "upper": 60.0,
+              "unit": "GB/所讨论旗舰设备"
+            },
+            "previous_value": null,
+            "time_scope": "2026年高端AI手机配置研究；缓存占用可能使用既有空间，不能直接加到出厂容量。",
+            "as_of": "2026-03-23",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260323-12983.html"
+            ]
+          },
+          {
+            "name": "iPhone 17e上市起步容量翻倍",
+            "parameter": "iPhone e系列入门存储配置",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 256.0,
+              "unit": "GB/台起步配置"
+            },
+            "previous_value": {
+              "number": 128.0,
+              "unit": "GB/台起步配置"
+            },
+            "time_scope": "2026年3月11日iPhone 17e上市配置；previous_value为上代iPhone 16e起步128GB，Apple披露换代后美国起售价仍为599美元，非行业均价变化。",
+            "as_of": "2026-03-11",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.apple.com/newsroom/2026/03/apple-introduces-iphone-17e/",
+              "https://www.apple.com/newsroom/2026/03/macbook-neo-iphone-17e-ipad-air-with-m4-and-more-are-now-available/"
+            ]
+          },
+          {
+            "name": "主流PC容量配置趋降",
+            "parameter": "主流PC SSD配置与采购容量方向",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "direction": "减少"
+            },
+            "previous_value": null,
+            "time_scope": "4Q26研究快照：主流型号SSD减配，采购量及平均单机容量下行。",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260930-13258.html?trk=article-ssr-frontend-pulse_little-text-block"
+            ]
+          },
+          {
+            "name": "核心组件BOM占比由45%至68%",
+            "parameter": "主流笔记本核心组件BOM占比",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 68.0,
+              "unit": "%整机BOM，约数"
+            },
+            "previous_value": {
+              "number": 45.0,
+              "unit": "%整机BOM，约数"
+            },
+            "time_scope": "CY2026第三季度同档主流产品估计；previous_value为CY2025第一季度约45%。",
+            "as_of": "2026-09-04",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260904-13217.html",
+              "https://www.trendforce.com/presscenter/news/20261008-13264.html"
+            ]
+          },
+          {
+            "name": "供应商库存低且控制产能",
+            "parameter": "NAND原厂库存位置",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "主要原厂库存处于健康偏低水平，并严格控制产能。"
+            },
+            "previous_value": null,
+            "time_scope": "2026年9月末NAND调查。",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/research/download/RP260930DA"
+            ]
+          },
+          {
+            "name": "渠道备货与高库存并存",
+            "parameter": "消费品牌与模组商库存位置",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "品牌秋季备货、维持供应关系以及模组商以接收消费库存交换稀缺组件配额，使库存上升；10月7日模组库存仍高、现货交易弱。"
+            },
+            "previous_value": null,
+            "time_scope": "2026年9月末至10月初的渠道调查。",
+            "as_of": "2026-10-07",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/research/download/RP260930DA",
+              "https://www.trendforce.com/research/download/RP261007NY"
+            ]
+          },
+          {
+            "name": "美国云商库存加快消化",
+            "parameter": "美国云商存储库存消化方向",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "direction": "消化加快"
+            },
+            "previous_value": null,
+            "time_scope": "2026年9月末，研究归因AI采用；未披露库存天数。",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/research/download/RP260930DA"
+            ]
+          },
+          {
+            "name": "中国云商库存高并谨慎采购",
+            "parameter": "中国云商存储库存与采购状态",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "部分中国运营商库存偏高，采购较保守。"
+            },
+            "previous_value": null,
+            "time_scope": "2026年9月末区域采购调查。",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/research/download/RP260930DA"
+            ]
+          },
+          {
+            "name": "大部分企业增量供给已有承诺",
+            "parameter": "企业SSD增量供给的开放市场可得性",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "供应商扩展QLC及高容量组合，但大部分增量供给已被承诺，开放市场可用量有限。"
+            },
+            "previous_value": null,
+            "time_scope": "4Q26供给配置研究。",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260930-13258.html?trk=article-ssr-frontend-pulse_little-text-block"
+            ]
+          },
+          {
+            "name": "非LTA追加订单继续存在",
+            "parameter": "非长期协议企业SSD追加采购状态",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "北美CSP存在额外非LTA订单，合同采购之外的边际需求仍支持供应商议价。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-10-07周报公开摘要；没有公开追加bit数量。",
+            "as_of": "2026-10-07",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/research/download/RP261007NY"
+            ]
+          },
+          {
+            "name": "关键组件仍限制企业端供给",
+            "parameter": "可交付企业SSD配套瓶颈状态",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "企业高容量采购同时受到关键组件短缺约束；公开摘要未量化组件种类与受限bit。"
+            },
+            "previous_value": null,
+            "time_scope": "2026年9月末企业SSD供给调查。",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/research/download/RP260930DA"
+            ]
+          },
+          {
+            "name": "CY2026供需模型预计缺口4至5%",
+            "parameter": "行业NAND年度供给缺口率预测",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "lower": 4.0,
+              "upper": 5.0,
+              "unit": "%供给缺口，机构口径"
+            },
+            "previous_value": null,
+            "time_scope": "CY2026全年模型估计，7月21日快照；不是截至10月已实现缺口。",
+            "as_of": "2026-07-21",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260721-13148.html"
+            ]
+          },
+          {
+            "name": "Kioxia认为2027下半年后仍紧",
+            "parameter": "行业NAND中期供需平衡预期状态",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "Kioxia预计即使CY2027下半年后市场仍相对紧张，不预期价格急剧恶化。"
+            },
+            "previous_value": null,
+            "time_scope": "CY2027及其后；6月投资者日客户讨论与研究机构数据所形成的供应者判断。",
+            "as_of": "2026-06-02",
+            "validity_state": "DISPUTED",
+            "ref": [
+              "https://www.kioxia-holdings.com/content/dam/kioxia-hd/en-jp/ir/library/event/asset/Investor-Day-2026-Eng-QA.pdf"
+            ]
+          },
+          {
+            "name": "7月研究预测2027下半年转松",
+            "parameter": "行业NAND中期供需平衡预期状态",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "TrendForce预计迁移增bit及消费弱使CY2027下半年供需余额转正、短缺缓解。"
+            },
+            "previous_value": null,
+            "time_scope": "CY2027下半年；7月模型判断，未视为已实现或正式撤回。",
+            "as_of": "2026-07-21",
+            "validity_state": "DISPUTED",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260721-13148.html"
+            ]
+          },
+          {
+            "name": "10月NAND周报倾向更持久紧张",
+            "parameter": "行业NAND中期供需平衡预期状态",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "TrendForce NAND周报称随后两年供给将比本年更紧，未见清晰再平衡时点。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-10-07起随后两年；公开摘要未给bit模型。",
+            "as_of": "2026-10-07",
+            "validity_state": "DISPUTED",
+            "ref": [
+              "https://www.trendforce.com/research/download/RP261007NY"
+            ]
+          },
+          {
+            "name": "10月笔记本研究仍保留转松情景",
+            "parameter": "行业NAND中期供需平衡预期状态",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "TrendForce笔记本研究仍称新增产能可能使NAND短缺于CY2027下半年缓解。"
+            },
+            "previous_value": null,
+            "time_scope": "CY2027下半年；同机构不同研究口径与前日NAND周报并存，非明确统一修订。",
+            "as_of": "2026-10-08",
+            "validity_state": "DISPUTED",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20261008-13264.html"
+            ]
+          },
+          {
+            "name": "Kioxia CY2025至CY2028市场增长假设",
+            "parameter": "Kioxia采用的中期市场bit增长假设",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 22.0,
+              "unit": "%年复合增长率，约数"
+            },
+            "previous_value": null,
+            "time_scope": "CY2025—CY2028市场bit需求假设；用于其设备投资规划。",
+            "as_of": "2026-06-02",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.kioxia-holdings.com/content/dam/kioxia-hd/en-jp/ir/library/event/asset/Investor-Day-2026-Eng-QA.pdf"
+            ]
+          },
+          {
+            "name": "2Q26前五上市NAND品牌合计收入",
+            "parameter": "上市主要NAND品牌季度合计收入",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 68.87,
+              "unit": "十亿美元"
+            },
+            "previous_value": null,
+            "time_scope": "TrendForce CY2026第二季度调查合计，环比约增长77%；收入强增主要伴随ASP上涨。",
+            "as_of": "2026-08-18",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com.tw/presscenter/news/20260818-13185.html"
+            ]
+          },
+          {
+            "name": "美光在季度收入调查升至第三",
+            "parameter": "主要NAND品牌行业竞争位置",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "2Q26收入排名：Samsung、SK hynix Group、美光、Kioxia、Sandisk；美光升至第三。YMTC另为竞争者，非此上市前五列表成员。"
+            },
+            "previous_value": null,
+            "time_scope": "CY2026第二季度产业收入调查；没有据此计算美光全球bit份额。",
+            "as_of": "2026-08-18",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com.tw/presscenter/news/20260818-13185.html",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "CY2027中国供应者份额预测接近19%",
+            "parameter": "中国NAND供应者全球bit产出份额预期状态",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "随设备到位及扩产，中国供应者合计全球bit产出份额预计接近19%。"
+            },
+            "previous_value": null,
+            "time_scope": "CY2027预测，7月21日研究快照；不是CY2026实际份额。",
+            "as_of": "2026-07-21",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260721-13148.html"
+            ]
+          },
+          {
+            "name": "FY2026 G8/G9为多数生产节点",
+            "parameter": "美光NAND主力生产节点",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "G8/G9占FY2026 NAND生产多数，密度改善支持单位bit成本下降。"
+            },
+            "previous_value": null,
+            "time_scope": "美光FY2026；未披露单一节点份额及独立降本贡献。",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O57",
+              "D1-O88"
+            ]
+          },
+          {
+            "name": "K2开始第十代生产",
+            "parameter": "Kioxia/Sandisk共同制造的先进节点投产状态",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "北上K2已启动第十代3D NAND生产并准备扩展产出；启动不是客户认证、经济良率或满产。"
+            },
+            "previous_value": {
+              "stage": "K2已生产第八代3D NAND。"
+            },
+            "time_scope": "2026-07-03生产状态；previous_value为K2在2025年9月开业后已生产第八代的前阶段。",
+            "as_of": "2026-07-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.kioxia.com/en-jp/about/news/2026/20260703-2.html"
+            ]
+          },
+          {
+            "name": "BiCS10 QLC密度提高60%",
+            "parameter": "BiCS10 QLC相对BiCS8的bit密度增幅",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 60.0,
+              "unit": "%相对BiCS8"
+            },
+            "previous_value": null,
+            "time_scope": "2026-08-13公开技术路线图的厂商性能声明。",
+            "as_of": "2026-08-13",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-13-sandisk-investor-day-2026"
+            ]
+          },
+          {
+            "name": "NAND更依赖迁移而非近期新厂",
+            "parameter": "行业NAND供给扩展的资本配置状态",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "主要供应商仍优先DRAM扩张，NAND以既有线节点迁移和选择性设备扩展增bit；新厂爬坡较慢。"
+            },
+            "previous_value": null,
+            "time_scope": "2026年至CY2027供给研究；未等同永久限产或无NAND投资。",
+            "as_of": "2026-10-07",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260721-13148.html",
+              "https://www.trendforce.com/research/download/RP261007NY"
+            ]
+          },
+          {
+            "name": "至2032年拟共同投资超过310亿美元",
+            "parameter": "Kioxia/Sandisk长期共同投资规模状态",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "总额超过310亿美元（约5万亿日元）的日本投资计划，以政府支持为条件，按市场趋势分期建设与设备投入。"
+            },
+            "previous_value": null,
+            "time_scope": "2026年公告至2032年的联合计划；未公开净新增良品bit。",
+            "as_of": "2026-08-27",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://apac.kioxia.com/en-apac/about/news/2026/20260827-3.html",
+              "D1-O90"
+            ]
+          },
+          {
+            "name": "K3以FY2029开始运营为目标",
+            "parameter": "Kioxia北上K3新增工厂经营目标时点",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "point": "FY2029（Kioxia财年口径）",
+              "start": null,
+              "end": null,
+              "precision": "财年目标"
+            },
+            "previous_value": null,
+            "time_scope": "2026-08-27已开始场地准备；具体工程与设备计划视市场及政府支持确定，未擅自转为某个日历季度。",
+            "as_of": "2026-08-27",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://apac.kioxia.com/en-apac/about/news/2026/20260827-2.html"
+            ]
+          },
+          {
+            "name": "新加坡NAND洁净室目标2028下半年",
+            "parameter": "美光新加坡新增NAND洁净室可用时点",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "point": null,
+              "start": "2028-07-01",
+              "end": "2028-12-31",
+              "precision": "半年目标窗口"
+            },
+            "previous_value": null,
+            "time_scope": "2028日历年下半年洁净室运营计划；未公开同窗口合格bit爬坡量。",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O4"
+            ]
+          },
+          {
+            "name": "共同制造框架已延长至2034年底",
+            "parameter": "Kioxia/Sandisk共同制造安排存续状态",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "四日市共同制造框架延长至2034年12月；供应链包含共同研发与制造，不能把Kioxia及Sandisk当两套独立新增晶圆产能。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-01-30安排更新，覆盖多年供给周期；服务付款不是新增晶圆数。",
+            "as_of": "2026-01-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://apac.kioxia.com/en-apac/about/news/2026/20260130-1.html",
+              "D1-O73"
+            ]
+          },
+          {
+            "name": "既有VEU转为Fab许可安排",
+            "parameter": "在华竞争制造设施设备取得安排",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "Intel大连、Samsung中国半导体、SK hynix中国半导体的VEU资格自2025-12-31撤销；2026年C79 Fab License机制采用H开头许可证按具体条款授权。不是全体停产或所有升级获准。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-01-05政府实施说明所定位的新制度；截至研究截点未取得各厂2027年续期与技术范围。",
+            "as_of": "2026-01-05",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://content.govdelivery.com/accounts/USCENSUS/bulletins/4008e2b?trk=article-ssr-frontend-pulse_little-text-block",
+              "https://www.govinfo.gov/app/details/FR-2025-09-02/2025-16735"
+            ]
+          },
+          {
+            "name": "已签NBM客户为八家",
+            "parameter": "Sandisk已签NBM客户数",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 8.0,
+              "unit": "客户"
+            },
+            "previous_value": null,
+            "time_scope": "2026-08-13签约披露；非八家新增终端用户或等额采购份额。",
+            "as_of": "2026-08-13",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-13-sandisk-investor-day-2026"
+            ]
+          },
+          {
+            "name": "NBM预计覆盖FY2027约半数bit",
+            "parameter": "Sandisk NBM预计bit覆盖状态",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "约50%的FY2027 bit。"
+            },
+            "previous_value": null,
+            "time_scope": "Sandisk FY2027预计销量覆盖；已签框架不等于这些bit已消费。",
+            "as_of": "2026-08-13",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-13-sandisk-investor-day-2026"
+            ]
+          },
+          {
+            "name": "NBM预计覆盖FY2028约三分之二bit",
+            "parameter": "Sandisk NBM预计bit覆盖状态",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "约三分之二的FY2028 bit。"
+            },
+            "previous_value": null,
+            "time_scope": "Sandisk FY2028预计销量覆盖，保留原分数不人为添精度。",
+            "as_of": "2026-08-13",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-13-sandisk-investor-day-2026"
+            ]
+          },
+          {
+            "name": "Kioxia计划覆盖CY2028约50%出货",
+            "parameter": "Kioxia CY2028 LTA计划覆盖比例",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 50.0,
+              "unit": "%预计CY2028出货，约数"
+            },
+            "previous_value": null,
+            "time_scope": "CY2028出货计划；6月时主要同数据中心/企业客户讨论，保持产品规格灵活性。",
+            "as_of": "2026-06-02",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.kioxia-holdings.com/content/dam/kioxia-hd/en-jp/ir/library/event/asset/Investor-Day-2026-Eng-QA.pdf"
+            ]
+          },
+          {
+            "name": "目标侧已有具用途的客户出货",
+            "parameter": "推理缓存NAND的客户采用状态",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "美光7600/9650已向领先客户出货用于KV cache；6600 ION于Q4爬坡，容量与性能用途分别承接。"
+            },
+            "previous_value": null,
+            "time_scope": "美光FY2026第四季度产品披露；无全行业装机量或复购份额。",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O103"
+            ]
+          },
+          {
+            "name": "外部供应者已有缓存产品客户资格",
+            "parameter": "推理缓存NAND的客户采用状态",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "Kioxia称CM系列已被主要企业及超大规模客户采用并认证，观察到KV-cache需求增强。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-06-02供应者客户需求与产品采用披露。",
+            "as_of": "2026-06-02",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.kioxia-holdings.com/content/dam/kioxia-hd/en-jp/ir/library/event/asset/Investor-Day-2026-Eng-QA.pdf"
+            ]
+          },
+          {
+            "name": "MemKV已可用并支持NVMe共享上下文",
+            "parameter": "共享持久上下文闪存软件可用状态",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "MinIO MemKV已可获取，面向STX/NIXL/Dynamo架构提供NVMe共享持久上下文及RDMA数据路径；尚无披露行业部署覆盖。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-05-12产品供给状态；性能宣传不是NAND采购量。",
+            "as_of": "2026-05-12",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.min.io/press/minio-announces-memkv-purpose-built-context-memory-store-for-ai-inference"
+            ]
+          },
+          {
+            "name": "HBF处于公开标准与生态验证阶段",
+            "parameter": "HBF近计算闪存生态采用准备状态",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "首个OCP HBF技术规范已发布，Google及Tenstorrent参与技术验证和标准建立；此证据未建立量产平台选型与采购。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-08-03生态状态。",
+            "as_of": "2026-08-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf",
+              "D1-O76"
+            ]
+          },
+          {
+            "name": "GP1功能样品计划2026年底前",
+            "parameter": "GP1 GPU-direct闪存功能样品目标时点",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "point": "2026年末前",
+              "start": null,
+              "end": null,
+              "precision": "年末目标截止"
+            },
+            "previous_value": null,
+            "time_scope": "2026年末前选定客户功能检查样品；规格可能与量产不同。",
+            "as_of": "2026-08-04",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html",
+              "D1-O51"
+            ]
+          }
+        ]
+      },
+      "expectation_baseline": [
+        {
+          "name": "近端定价是企业紧缺主导的分层上行",
+          "baseline": "本研究的默认路径是未来一至两个季度企业SSD采购和供给承诺继续支撑NAND合约价格，而消费组件/现货弱于企业端，并非各类价格统一上涨。4Q整体合约价15—20%的机构预测与企业增量大多已承诺一致；9月28日512Gb TLC现货盘变动为-2.45%，说明紧张的企业采购并不自动抬升所有组件报价。美光FY2026价格涨幅约200%、实物仅为20%中段，因此收入高增长首先定位为实现价驱动，不能按年增幅外推。此为经营证据工作路径，不是从MU股价识别的NAND价格期限预期。",
+          "ordinary_progress": "企业采购沿已承诺组合交付，消费合约仍小幅上调或横盘；美光ASP随合同定价和销售组合变动而偏离统一报价。",
+          "open_frontier": "企业合格系统释放、替代供应者进入和新增非LTA采购共同决定分层继续扩大还是企业溢价先收敛；同规格价格与公司销售组合可分别变化，不能由其中一个推断另一个。",
+          "time_scope": "CY2026第四季度至CY2027上半年。",
+          "ref": [
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html?trk=article-ssr-frontend-pulse_little-text-block",
+            "https://www.trendforce.com/price/flash/wafer_spot",
+            "https://www.trendforce.com/research/download/RP261007NY",
+            "D1-O57"
+          ]
+        },
+        {
+          "name": "AI推理采购增长已商业化但容量强度不线性",
+          "baseline": "默认企业闪存bit需求继续较消费用途增长更快，支撑来自具KV用途客户交付、外部供应者容量销售及北美云商扩大应用，而不是单靠AI投资口号。QLC不仅存冷数据，也进入向量数据库及部分缓存卸载。与此同时，共享上下文可避免重复计算与重复副本；Google的压缩研究作用于KV/向量表示，并非全部持久数据。本研究采用“使用面扩展、单位活动资源强度有节约”的路径，拒绝把token增长等比例换成NAND bit。",
+          "ordinary_progress": "更多现有云/企业工作负载启用共享持久上下文与QLC分层，在已可用软件和客户资格下继续采购；效率提升与容量扩张并行。",
+          "open_frontier": "长期保留的业务记忆相对可重算KV的占比、压缩/共享普及速度以及成本降低带来的使用反弹，决定采购增长高于还是低于当前企业需求预期。企业是否持续授予数据与行动权限是活动扩散的前提；治理可以撤回权限，也可以通过受控部署恢复采用并改变审计、保护与删除的存储结构。",
+          "time_scope": "未来数季度，延伸至CY2027—CY2028。",
+          "ref": [
+            "D1-O103",
+            "D1-O156",
+            "https://www.trendforce.com/presscenter/news/20260921-13246.html",
+            "https://www.min.io/press/minio-announces-memkv-purpose-built-context-memory-store-for-ai-inference",
+            "https://research.google/blog/turboquant-redefining-ai-efficiency-with-extreme-compression/",
+            "https://www.kioxia-holdings.com/content/dam/kioxia-hd/en-jp/ir/library/event/asset/Investor-Day-2026-Eng-QA.pdf",
+            "https://www.anthropic.com/research/alignment-assessment-cybersecurity-incidents",
+            "https://nvidianews.nvidia.com/news/open-agent-safety-platform"
+          ]
+        },
+        {
+          "name": "手机与PC的台数、配置和产品组合分化",
+          "baseline": "默认消费NAND的数量吸收仍受成本和提前购买拖累，但不是所有单机容量一起减少。最新手机年度生产预测从1.05上修至1.07十亿台仍意味着同比下降14%；2026笔记本预测下降9.4%，2027默认仍是低个位数下降。PC主流减配与手机高端AI/低密度die退出支持平均容量增长可以并存；Apple的17e已把入门容量从128增至256GB并保持599美元起售价，配置增长也不限于旗舰。3月的手机容量+4.8%预测是较旧配置参照，不能与9月台数模型机械相乘当作最新手机bit预测。",
+          "ordinary_progress": "品牌消耗低价库存、调整高低端组合、在价格/利润/配置之间折衷；早买形成的短期量改善不构成持续终端复苏。",
+          "open_frontier": "零售价传导引起的换机延长和平均容量变化谁占主导，决定消费bit继续收缩还是恢复；高端占比上升也可能使平均容量增、总bit仍减。",
+          "time_scope": "CY2026下半年至CY2027。",
+          "ref": [
+            "https://www.trendforce.com/presscenter/news/20260908-13222.html",
+            "https://www.trendforce.com/presscenter/news/20260904-13217.html",
+            "https://www.trendforce.com/presscenter/news/20261008-13264.html",
+            "https://www.trendforce.com/presscenter/news/20260323-12983.html",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html?trk=article-ssr-frontend-pulse_little-text-block",
+            "https://www.apple.com/newsroom/2026/03/apple-introduces-iphone-17e/"
+          ]
+        },
+        {
+          "name": "库存错位让订单强弱领先于终端消费",
+          "baseline": "默认近期库存调整首先发生在消费品牌/模组端，限制现货与组件追加采购；它尚不是所有原厂和所有云商同时去库的周期反转。9月调查区分原厂低库存、美国云商加快消化、中国云商高库存及品牌/模组为配额和秋季新品持货。因而“供应商库存低”不能证明全部买方缺货，采购维持供应关系也不等于新增终端消耗。",
+          "ordinary_progress": "消费渠道用库存支持生产，模组谨慎拉货；美国云商在消耗库存同时履行承诺及追加边际订单，区域差异延续。",
+          "open_frontier": "配额交换库存能否通过真实sell-through消化，决定渠道下一步是再补库还是降价去库；更关键的是这是否传到原厂可流通库存与合同议价。",
+          "time_scope": "未来一至三个季度。",
+          "ref": [
+            "https://www.trendforce.com/research/download/RP260930DA",
+            "https://www.trendforce.com/research/download/RP261007NY",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html?trk=article-ssr-frontend-pulse_little-text-block"
+          ]
+        },
+        {
+          "name": "供给增量先来自密度迁移与设备填充",
+          "baseline": "本研究默认近期新增bit主要来自既有线迁移、QLC/CBA密度与选择性设备填充，新工厂不会立即补足市场。K2第十代生产已启动，BiCS10 QLC所称60%密度改善使“无新厂即无供给弹性”不成立；但设计密度必须转成良率、资格和可交付产品。Kioxia/Sandisk至2032年超过310亿美元共同计划及K3 FY2029运营目标，连同美光新加坡2028下半年洁净室目标，表明高利润已伴随长期投资准备，而非永久供应纪律。这条有计划的供给路径以主要设施和关键投入继续可用为前提；共享制造意味着跨品牌物理暴露相关。2022年事故用于理解这一关系，不计为2026损失。",
+          "ordinary_progress": "现有空间继续配置设备，先进节点及QLC产品逐步获得客户资格；远期共同投资和新厂按支持条件分期推进，不把两个品牌共享制造重复计产能。",
+          "open_frontier": "实际晶圆投入、节点转换损失及合格QLC增量的组合，决定可售bit是否在新厂投产前就足以压低边际价格；政府支持主要改变联合项目的规模与节奏。",
+          "time_scope": "CY2026—CY2028既有网络迁移；延伸至FY2029及2032项目周期。",
+          "ref": [
+            "https://www.kioxia.com/en-jp/about/news/2026/20260703-2.html",
+            "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-13-sandisk-investor-day-2026",
+            "https://apac.kioxia.com/en-apac/about/news/2026/20260827-3.html",
+            "https://apac.kioxia.com/en-apac/about/news/2026/20260827-2.html",
+            "https://apac.kioxia.com/en-apac/about/news/2026/20260130-1.html",
+            "D1-O57",
+            "D1-O4",
+            "https://www.westerndigital.com/company/newsroom/press-releases/2022/2022-02-09-western-digital-comments-on-production-status-of-its-joint-venture-flash-memory-manufacturing-facilities",
+            "https://www.kioxia.com/en-jp/about/news/2022/20220210-1.html"
+          ]
+        },
+        {
+          "name": "2027再平衡不能被视为统一确定预期",
+          "baseline": "近端紧张比“长期永远紧”更有证据。本研究在2027年仍采用企业端相对紧、消费端承压的工作路径，但不设统一的供需转松日期：Kioxia6月认为2027下半年后仍紧；TrendForce7月以迁移增bit/弱消费推导2027下半年缓解，10月7日NAND摘要反而更偏两年持续紧，10月8日笔记本研究又保留下半年转松。本研究保留两条实质路径：AI持久容量快速吸收增量则紧张延续，迁移加速且消费疲弱则大宗组件先平衡。",
+          "ordinary_progress": "企业容量和消费采购继续分化，迁移供给按计划增加；单季涨价放缓不自动代表全行业供需已转正。",
+          "open_frontier": "足以区别两条路径的是企业实际新增容量对密度/QLC及中国供应者净增bit的吸收，而非研究观点日期谁较晚；短缺缓解可能先出现在组件而非企业系统。",
+          "time_scope": "CY2027下半年至CY2028。",
+          "ref": [
+            "https://www.kioxia-holdings.com/content/dam/kioxia-hd/en-jp/ir/library/event/asset/Investor-Day-2026-Eng-QA.pdf",
+            "https://www.trendforce.com/presscenter/news/20260721-13148.html",
+            "https://www.trendforce.com/research/download/RP261007NY",
+            "https://www.trendforce.com/presscenter/news/20261008-13264.html"
+          ]
+        },
+        {
+          "name": "竞争供给具有区域与资格约束",
+          "baseline": "默认中国供应者增量先提高区域组件和消费市场竞争压力，再由客户资格和产品能力决定其能否压低全球企业SSD价格。中国合计CY2027 bit份额接近19%的7月预测提供潜在规模，不是YMTC已达份额；上市品牌收入排序只能定位当前收入竞争。相关在华工厂由VEU转为具体Fab许可证，当前有许可制度而非全面停产，本研究首先将其解释为维护/升级弹性的约束，不把法律变化直接计作全球供给骤减。",
+          "ordinary_progress": "中国设备与产品资格推进、主要原厂节点迁移以及在华工厂按授权条件运营，分别改变可售供给而非同步影响所有用途。",
+          "open_frontier": "区域新增bit跨过企业可靠性与采购资格边界的程度，以及厂级许可是否限制先进节点升级，决定价格压力局限于消费组件还是传向全球企业采购。",
+          "time_scope": "未来数季度至CY2027—CY2028。",
+          "ref": [
+            "https://www.trendforce.com/presscenter/news/20260721-13148.html",
+            "https://www.trendforce.com.tw/presscenter/news/20260818-13185.html",
+            "https://content.govdelivery.com/accounts/USCENSUS/bulletins/4008e2b?trk=article-ssr-frontend-pulse_little-text-block",
+            "https://www.govinfo.gov/app/details/FR-2025-09-02/2025-16735",
+            "D1-O74"
+          ]
+        },
+        {
+          "name": "锁量扩大可见性但边际定价和履约风险仍在",
+          "baseline": "默认行业采购继续向多年数量承诺与结构化定价迁移，部分收入波动减弱但不会消灭价格周期。Sandisk已签8家NBM，预计覆盖FY2027约50%及FY2028约三分之二bit，比只有意向更能支持该路径；Kioxia约50% CY2028覆盖仍是商谈计划。美光take-or-pay及价格带已存在，但NAND覆盖比例未公开，不能把全公司保证金当NAND订单量或利润底线。非LTA追加订单说明边际流通池仍活跃。",
+          "ordinary_progress": "协议继续签署，承诺采购按产品资格及交期履行，周期性价格协商/价格带与非合同采购并存；预付款仍保留融资与退还属性。",
+          "open_frontier": "覆盖扩大是否锁住新增供给，及需求放缓后数量承诺如何履行或重谈，决定波动由现货价转成客户库存、交期和履约风险，还是实现价确实跨周期稳定。",
+          "time_scope": "FY2027—FY2028及多年合同周期。",
+          "ref": [
+            "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-13-sandisk-investor-day-2026",
+            "https://www.kioxia-holdings.com/content/dam/kioxia-hd/en-jp/ir/library/event/asset/Investor-Day-2026-Eng-QA.pdf",
+            "D1-O31",
+            "D1-O57",
+            "D1-O153",
+            "https://www.trendforce.com/research/download/RP261007NY"
+          ]
+        },
+        {
+          "name": "HDD与闪存共同扩张而非整池替代",
+          "baseline": "默认QLC在容量工作负载中继续增长，但HDD仍承担大量可延期/低成本容量数据，不能推演成所有AI数据闪存化。Sandisk数据中心exabyte近增120%和WDC云端HDD增27%表明两种路径均有真实销售；HDD交期拉长可促成阶段性QLC补位，性能缓存则因访问需求本就适合闪存。WDC的2027 HAMR爬坡是潜在可获得性改善而非已交付增量。",
+          "ordinary_progress": "热缓存及检索使用闪存、容量数据按时效和预算分层；HDD缺口中有部分由高容量QLC承接，两个介质的实物销售可同时增长。",
+          "open_frontier": "HDD供给恢复后的交期与总持有成本改善，决定QLC容量分流有多少是临时、多少由应用性能永久保留；这不直接改变所有推理缓存需求。HDD容量提高但每TB访问能力下降时，暖层QLC仍可扩大；减少闲置容量和超配则会降低同服务量所需的原始bit。",
+          "time_scope": "未来数季度至CY2027。",
+          "ref": [
+            "D1-O156",
+            "D1-O172",
+            "D1-O70",
+            "https://www.trendforce.com/research/download/RP261007NY",
+            "https://engineering.fb.com/2025/03/04/data-center-engineering/a-case-for-qlc-ssds-in-the-data-center/"
+          ]
+        },
+        {
+          "name": "新型端侧与近计算用途先验证后贡献行业规模",
+          "baseline": "默认HBF、GPU-direct闪存及本地闪存辅助AI在未来数季主要增加可服务用途和验证活动，而非立即主导行业bit增长。HBF开放标准、GP1年末功能样品和Phison本地AI平台路径已给出技术与生态准备，但与普通企业SSD已有客户交付不是同一阶段。手机高端本地缓存已有配置含义；汽车/机器人记录及物理AI数据管线可扩展需求池，但本研究不把LPDDR送样、车队计划或机器人数量换算为NAND规模。",
+          "ordinary_progress": "标准实现、功能样品与选定平台验证延续；本地模型利用既有SSD和部分更高容量配置，汽车/机器人存储随具名平台交付逐步形成需求。",
+          "open_frontier": "哪类平台实际采购专用闪存或新增而非占用既有容量，以及这些用途是否达到能吸收行业增bit的规模，决定它们从附加用途升为主需求支柱的时点。",
+          "time_scope": "CY2026年末至CY2027—CY2028。",
+          "ref": [
+            "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf",
+            "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html",
+            "https://www.phison.com/images/media-kits-ces2026/Phison%20PR_Phison%20aiDAPTIV%20Unlocks%20Powerful%20AI%20Processing%20on%20iGPU%20PC%20Platforms_ENG_Official.pdf",
+            "https://www.trendforce.com/presscenter/news/20260323-12983.html",
+            "D1-O103",
+            "D1-O74",
+            "D1-O78",
+            "D1-O102"
+          ]
+        },
+        {
+          "name": "买方资源承诺更支持继续部署而非即时全面退缩",
+          "baseline": "本研究默认已建立商业用途且正在追加采购的云端需求继续分期部署，不以融资风险或接电约束直接预测NAND需求崩塌。数量承诺和非LTA订单比预算口号更接近采购；Crusoe/Microsoft园区首楼2027年中通电计划说明投资同时受交付时序制约。外部资金结构和硬件折旧风险是买方履约/部署的条件，合同到货可早于上线，使采购增长与当期消耗分离。",
+          "ordinary_progress": "承诺项目按机房、电力与平台资格分批收货和上线，库存缓冲吸收部分时序差；融资继续支持已签项目而非立即撤销。",
+          "open_frontier": "部署延迟通过库存承载、付款期限和既有容量余量传到追加采购：缓冲充足时主要移动使用时点，缓冲不足时先压新项目与非合同收货。租户转移和已购资产再利用还可使终端使用继续增长而行业新增订单暂缓。",
+          "time_scope": "未来数季度至CY2027。",
+          "ref": [
+            "https://www.trendforce.com/presscenter/news/20260921-13246.html",
+            "https://www.trendforce.com/research/download/RP261007NY",
+            "D1-O130",
+            "D1-O165",
+            "https://www.brookings.edu/articles/financing-the-ai-buildout/",
+            "https://www.crusoe.ai/resources/newsroom/crusoe-announces-new-900-mw-ai-factory-campus-in-abilene-texas-to-support-microsoft-ai-infrastructure",
+            "D1-O31"
+          ]
+        }
+      ],
+      "realization_factors": [
+        {
+          "name": "任务价值与付费采用决定存储需求的活动底盘",
+          "mechanism": "企业、个人和软件商先比较任务成功率带来的收入或节省工时，与订阅费、推理费用、人工复核及失败重试成本；正净收益才支持从试用转向重复付费。软件分发与业务流程集成决定可触达客户及权限，付费客户中的活跃比例和每活跃客户任务频率决定任务量；成功率改善可以增加被交给智能体的流程，也可减少同一任务的重试。代码开发、客服、文档、搜索和数据分析需要不同的工作集与记录，工作负载组合决定活动落到何种存储，而非所有token都变成持久NAND。云SaaS、API客户和企业自建通过不同采购主体把这些活动交给下一Factor的容量模型。风险负责人授予的数据/行动权限是独立于技术成功率的活动闸门：责任、信任和治理成本改变能交给智能体的流程范围；沙箱与审计可增加成本，却也能使原先被禁止的业务开始使用。",
+          "current_status": "截至2026-10-09，需求不再只是训练预算的附属项。Microsoft FY26 Q4披露Microsoft 365 Copilot超过3,000万付费席位、Azure全年收入超过1,000亿美元，证明付费渠道有规模，但Azure并非纯AI收入、席位亦非日活智能体。Anthropic 6月26日研究观察到Claude Code/Cowork增长和更长的智能体任务，同时高价值工作仍有人参与；它的样本不能代表所有云商。结合已有KV用途SSD交付，工作判断是代码、知识工作和后台流程正形成重复采购理由，扩大持久工作集的机会；尚不能把自报效率或token增长当作已兑现的行业bit增长。9月9日Anthropic披露发布前网络安全评估中访问真实第三方系统的事件，9月28日NVIDIA公布运行时安全平台；前者说明权限风险，后者提供控制路径，均不证明全行业已停购或风险已解决。",
+          "materiality_context": "任务成功率/净收益决定客户是否续费和扩大工作授权，对机会持续期比一次演示速度更重要；成功率上升还会减少失败重试，故活动增速未必等于计算增速。费用与人工复核成本影响低价值任务的采用边界，在既有高价值流程中降费更可能扩频；没有已核实的通用价格弹性。分发/集成扩大可触达范围，但权限、流程改造可使收入领先实际使用数季。付费客户数决定最大触达底盘，活跃比例与频率决定真正活动：仅作敏感性，3,000万席位中活跃比例改变10个百分点等于300万席位的活动差异，不能转换为300万台服务器。频率增加10%初始使同类任务流量增加10%，工作负载组合若从短答转向多步代码/检索会另改变容量强度，反之轻量问答扩张可以贡献收入却少贡献NAND。当前已付费和用途交付证据使采用路线有实质权重；下一环节的保留、缓存与闲置空间仍决定何时变成采购。权限撤回首先缩小可服务活动和未来扩容，已有付费席位及锁量设备不必同步下降；治理恢复权限则可以上修需求持续期。审计/保护是否常驻及部署是否分散，再经容量存量Factor影响净bit，不能把安全控制节点数当容量。",
+          "scope_boundary": "解释行业需求为何产生及由谁购买，不评估某软件公司的估值或劳动市场总效应；AI数据中心需求负责客户工作负载及基础设施深度，数据中心闪存与存储系统负责具名存储部署，本域保留其对行业需求池的影响。",
+          "ref": [
+            "https://www.microsoft.com/en-us/Investor/earnings/FY-2026-Q4/press-release-webcast",
+            "https://www.anthropic.com/research/economic-index-june-2026-report",
+            "https://www.trendforce.com/presscenter/news/20260921-13246.html",
+            "D1-O103",
+            "https://www.anthropic.com/research/alignment-assessment-cybersecurity-incidents",
+            "https://nvidianews.nvidia.com/news/open-agent-safety-platform"
+          ]
+        },
+        {
+          "name": "活动、保留与服务等级把数据流转成闪存容量存量",
+          "mechanism": "企业把交易、客户交互和软件运作数字化、用户增加内容访问，会提高记录产生与活跃工作集；应用服务收入、员工使用价值和查询/恢复时延要求决定哪些数据值得保留和放在闪存，成本控制则驱动删除/归档。持久业务数据的逻辑存量由新增记录速率、每记录字节和保留期限形成，已有数据则随删除/归档减少；数据库、内容分发、企业文件、备份与AI产物均在其中。可重算KV的工作存量另由同时活跃/可恢复的任务数、上下文大小及淘汰策略决定，重复读取不等于重复容量。应用与风险负责人控制保留和恢复要求，存储架构师控制热温冷分层、复制/纠删码保护和可用容量预留：只有落在闪存层的份额，经过保护开销、压缩去重及原始/可用容量转换，才对应原始NAND。平台兼容与数据搬运速度决定这层容量能否实际部署；已有可用空间先吸收增量，接近安全阈值后才采购，且对写入耐久的要求可能使容量尚有空间也需替换。信任与数据治理改变保留的对象而非统一放大所有数据：审计和恢复副本可增加存量，敏感记忆最小化及自动删除可同时减少另一池；两者只对实际落在闪存的部分净计。",
+          "current_status": "工作判断是企业闪存的增量同时来自传统数据保有与AI上下文层，而不是训练数据全池转用SSD。MinIO MemKV提供共享NVMe/RDMA上下文路径，Micron相关SSD已有客户交付。NVIDIA 3月16日CMX架构把短时可复用KV与必须耐久的历史/结果分层，说明两者不宜重复算同一个永久数据池。2019年AWS Object Lock的保留及跨区复制是长期存在的经济类比，支持保留/保护可独立扩大存量，不代表S3全部使用NAND或2026新需求量。美国云商库存消化较快、增量供给多被承诺，采购边际目前比消费渠道更敏感；客户具体剩余可用容量仍没有统一量测。",
+          "materiality_context": "数字化覆盖与用户/交易量扩大可提高记录流量，媒体/记录精细度可提高每记录字节；服务收入和使用价值决定预算可持续性，查询/恢复时延要求决定热层比例而非必然扩大总数据池。这些变量对传统数据库、内容和文件具有大存量基础；把既有数据从本地迁云仅换采购者，若介质和保护强度不变则不新增行业bit。记录速率和每记录字节是流量尺度，保留期决定何时流量积成存量：明确假设每天100万任务、每任务新留10MB、保留30天，稳定逻辑产物仅约300TB，非实测行业容量；改为90天最终增至900TB，但逐日积累而非当日采购三倍。并发/上下文则可更快改变暖层：假设100万同时保留任务、每任务1GB上下文就是1PB，与上述产物不能无条件相加。闪存分层份额是介质选择闸门，10%至20%仅令对应数据池闪存量翻倍、不令全行业翻倍。保护开销与可用率独立影响原始bit，例如假设100TB有效数据、双副本、80%可用率需250TB原始容量；复制改为三份初始多50%，随后可用纠删码或归档抵消。压缩/去重倍数上升会在其适用数据池等比例降低原始bit需求，作用范围和采用反弹由下一Factor解释，不再重复扣减。删除/保留政策可让数据产生速率不变而容量增减，冷数据归档会降低NAND份额。兼容、搬运速度决定项目可兑现范围及上线时滞；余量决定订单非线性，20%容量余量可暂吸收10%存量增加，接近阈值则提前扩容。耐久不足通过更高预留、介质升级或替换增加采购，不应将每次写入当新增存量。当前上下文部署与企业采购强支持暖层机会，永久保留强度不是已知常数。",
+          "scope_boundary": "终点为行业原始bit需求和采购时点；具名软件架构和SSD固件深度归邻域。保留、保护是原方向内的变量扩展，不将每类业务记录另算一项新发现。",
+          "ref": [
+            "https://www.min.io/press/minio-announces-memkv-purpose-built-context-memory-store-for-ai-inference",
+            "https://developer.nvidia.com/blog/introducing-nvidia-bluefield-4-powered-inference-context-memory-storage-platform-for-the-next-frontier-of-ai/",
+            "https://aws.amazon.com/blogs/storage/protecting-data-with-amazon-s3-object-lock/",
+            "D1-O103",
+            "https://www.trendforce.com/research/download/RP260930DA",
+            "https://www.trendforce.com/research/download/RP261007NY",
+            "https://www.anthropic.com/research/alignment-assessment-cybersecurity-incidents",
+            "https://nvidianews.nvidia.com/news/open-agent-safety-platform"
+          ]
+        },
+        {
+          "name": "压缩共享与重算取舍改变每单位活动的净资源强度",
+          "mechanism": "平台软件可在KV、向量索引或业务记录的特定层采用量化压缩、公共前缀共享和去重；适用工作负载比例、压缩率与重复程度共同决定被节约的容量，而命中率与保留成本决定保留缓存是否比重新计算划算。压缩质量、解码开销、I/O布局和尾延迟约束其可部署范围。若缓存共享跨节点，既可减少同一内容的多份存储，也可因更多上下文值得长期保存而扩展暖层；因此效率不会自动令NAND需求下降。更低的每成功任务成本还可能提高用户频率和采用，反弹幅度与活动需求弹性决定净效果。",
+          "current_status": "效率路线已经有具体算法和软件安排，但尚不是全行业容量下修事实。Google 2026年TurboQuant主要针对KV与向量索引，不能将实验压缩倍数应用到全部持久存储；MinIO共享层和CMX的共享/预取减少冗余并扩展上下文用途。5月Tutti论文指出碎片化小随机I/O及CPU发起路径可以使SSD恢复KV成为瓶颈，因而换布局和调度也能改变实际可用性。当前最佳解释是效率和新用途共同演化：局部资源强度下降约束线性外推，但有机会降低昂贵GPU等待、使原本不经济的上下文服务可购买。",
+          "materiality_context": "适用比例先限制经济覆盖：假设20%的暖层可使用某压缩法、该部分缩至原来1/4，全暖层初始节约15%，并非75%；它对全行业还需乘该层的行业份额。重复程度/共享范围独立决定副本减少，低重复的私有记录获益较小，共用系统提示较大。压缩率影响容量，质量损失与解码/I/O成本决定可用率，不能分别把容量压缩和吞吐改善再算两次bit节约。命中率改变节省的重算费用，在昂贵长上下文中提高命中可使多存缓存的回报反而上升；保留成本与尾延迟门槛决定哪些缓存被淘汰。布局/调度的改进主要扩大可服务范围和利用率，可在NAND总量不变时扩大吞吐。反弹仅为条件敏感性：若净每任务资源强度降20%，同类活动需增25%才回到原总资源量；实际发生多少取决于付费需求，不能援引算法论文当弹性。当前业务已在增长，适用份额与采用成本比极端实验倍率更有解释力；短期可先降低新增采购，随后扩大机会，不预设相抵。",
+          "scope_boundary": "覆盖行业单位任务/记录资源强度及机会扩展；实验性能不填入NAND实际State，具体计算框架和产品实现归邻域。与活动采用和容量存量Factors连接但不重复计量。",
+          "ref": [
+            "https://research.google/blog/turboquant-redefining-ai-efficiency-with-extreme-compression/",
+            "https://www.min.io/press/minio-announces-memkv-purpose-built-context-memory-store-for-ai-inference",
+            "https://developer.nvidia.com/blog/introducing-nvidia-bluefield-4-powered-inference-context-memory-storage-platform-for-the-next-frontier-of-ai/",
+            "https://arxiv.org/abs/2605.03375",
+            "D1-O147",
+            "D1-O148"
+          ]
+        },
+        {
+          "name": "投资回报、信用和资金来源约束边际云存储预算",
+          "mechanism": "云商依据可收取服务收入、租户信用和机群利用率形成预期投资回报，再在计算、网络、电力、机房和存储间分配预算。现金流强的综合云商可内部融资；新云运营者更多依赖客户预付款、债务或股权，融资成本/期限与交付条件影响扩张现金缺口。长期租约和服务积压提升资金可见性，却要在资源交付后才能变成收入；租户回报变差可以先降低扩展承诺或利用率，再侵蚀运营者融资。存储既与其他设备争夺资本，也可能用较小支出减少GPU闲置而得到优先支持。资金受限时可延迟新项目、延后到货或提高现有设备利用率；已承诺采购通常比新增项目更粘性，库存和合同决定传导延迟。",
+          "current_status": "截至截点仍以继续建设和追加企业SSD为主，不支持宣布全行业资金退缩。Microsoft的规模化云收入/付费渠道提供内部资金与变现基础；CoreWeave 8月11日披露6月底约1,040亿美元收入积压，定义明确以交付及服务可用为条件，同时存在重投资和大额融资，说明不同买方的预算持续性不能用同一个CSP capex增速表示。没有已核实的行业SSD预算份额。美光可退保证金说明供给关系兼有资金功能，但其全公司金额不能代表NAND终端需求。",
+          "materiality_context": "服务收入、租户信用与利用率决定回报及可融资合同质量，对多年机会有更大影响；某一运营者信用变化的行业影响需乘其采购权重，未测量权重不外推为全行业收缩。现金来源/融资期限决定现金缺口能否覆盖交付前投入，利率改变要求回报而非直接按比例改变bit。CoreWeave Q2披露经营现金流约6.79亿美元、购置设备（含资本化自用软件）约64.22亿美元、债务发行净流入134.57亿美元（发行净额未扣同期偿债）：购置设备/经营现金流约9.5倍，是单公司对外部资金敏感的尺度，不是违约判断或NAND支出系数。预算分配若存储占新增项目支出的假设5%，项目预算缩10%并不必削SSD10%；避免GPU等待的回报可能保护SSD，而取消整套项目可令其配套采购归零。合同/库存缓冲先影响新增与非锁定采购，收入积压1040亿美元不能当当期现金、设备订单或容量。融资改善可提前交付但仍受电力约束；回报恶化可通过续约/利用率先影响未来。当前短期订单粘性与现金充裕买方占有实质解释力，融资依赖路线对边际扩张和时间更敏感。",
+          "scope_boundary": "本域终点为行业NAND/SSD预算、增量采购和时点，不评估客户债券或股票；客户供给与资金保障关系负责合同/保证金细节，AI数据中心需求负责买方总投资与基础设施条件。本域不将美元AI投资折算为bit。",
+          "ref": [
+            "https://www.microsoft.com/en-us/Investor/earnings/FY-2026-Q4/press-release-webcast",
+            "https://investors.coreweave.com/news/news-details/2026/CoreWeave-Reports-Strong-Second-Quarter-2026-Results/default.aspx",
+            "D1-O130",
+            "D1-O165",
+            "D1-O31",
+            "D1-O57",
+            "https://www.trendforce.com/research/download/RP261007NY"
+          ]
+        },
+        {
+          "name": "电力空间与验收进度重排收货、上线和后续补购",
+          "mechanism": "电网、园区开发者和运营商共同决定可用电力、机房空间及冷却设施；设备平台交付和安装验收将这些条件转成可用机群。SSD可在接电前按合同先到货，也可跟随整机推迟，故交货库存不等于负载消耗。上线后的活跃负载与已有存储余量决定是否追加采购，客户库存承载能力和到货/付款安排决定延期被吸收还是取消。资源短缺还会鼓励容量更密、功耗更低的存储设计，让部署限制改变介质/产品组合，而非只有总量下降。",
+          "current_status": "Crusoe为Microsoft规划900MW Abilene园区、首栋预计2027年中通电，是远期资源计划而不是截至10月9日已运行的NAND消费。上游NVIDIA供给/场地/电力约束与美国云商仍追加非LTA需求共同说明：物理限制主要重排兑现，而没有消灭采购意愿。当前工作判断是紧张环境下买方有先锁配额动机、收货和上线错位会存在；没有统一项目级SSD到货安排或可用空间比例，不能断言所有延期只堆库存。",
+          "materiality_context": "电力/空间/冷却决定可交付机群的上限，常在多年建设中具有高时点杠杆；900MW只有项目资源分母，没有通用MW到bit转换。平台交付、验收分别决定装机与可用日，延期一个季度可改变季度sell-in而不改变多年度数据存量。到货安排与库存承载能力决定本期订单效应：明确假设项目拟购10PB原始SSD，30%批次推迟且不能先收货，本期交货少3PB；若能全额先收货，本期销售不变、买方库存多3PB，未来补购后移。付款/资金承载能力约束能否先收货，与上一Factor互相放大而非同一个原因。负载上线速度与剩余容量决定下一次补购，验收完成但利用率低仍可无需立刻扩SSD。密度/能效选择决定有限机柜和电力可服务的容量，可能增加QLC份额；冷数据用HDD仍可有较低购置成本，需同服务等级TCO。当前已锁供给使当期价格可能先受可流通配额而非通电进度影响，未来延期则先进入库存与边际补购。",
+          "scope_boundary": "解释资源交付对行业采购时序与产品组合的影响；园区规则、具名电网和机群建设深度归AI数据中心需求，不将一个园区推广为全球接电状态。",
+          "ref": [
+            "https://www.crusoe.ai/resources/newsroom/crusoe-announces-new-900-mw-ai-factory-campus-in-abilene-texas-to-support-microsoft-ai-infrastructure",
+            "D1-O130",
+            "D1-O108",
+            "D1-O109",
+            "https://www.trendforce.com/research/download/RP261007NY"
+          ]
+        },
+        {
+          "name": "工作负载总成本与可交付性决定HDD和闪存分流",
+          "mechanism": "存储架构师按延迟、吞吐、并发、写入耐久和恢复要求筛出可用介质，再比较购置价格、可用容量、功耗、机柜、运维及寿命期成本。冷档案容量不因AI标签必须转闪存；需要随机访问、密集并发或受空间电力约束的暖数据更可能用QLC/TLC。HDD可交付容量与交期、QLC性能/耐久适配、软件写入整形和预留容量决定同一数据池能分流多少；交期紧造成临时替代，长期TCO优势才支持结构迁移。HDD技术密度改善或价格回落会反向改变选择，数据产生增加也可以让两种介质同时扩张。",
+          "current_status": "WDC FY26云端HDD exabyte销售增长27%与Sandisk数据中心闪存exabyte销售接近增长120%并存，支持共同扩张和局部分流，不支持相除得到替代率。HAMR 2027年量产爬坡仍是计划，当前长交期提升闪存的可获得性价值。Solidigm既有QLC资料及CSAL实现说明读取密集工作负载有适配基础，写整形可缓和QLC随机写压力；这些厂商的TCO测试不是2026当前所有介质价差。行业NAND大幅涨价提高购置门槛，因此现阶段最强迁移理由是有性能/空间约束或必须按时上线的暖层，而不是所有冷数据的每GB采购成本必然更低。Meta 2025年工程记录提供另一结构性解释：HDD容量增长快于带宽，使每TB访问能力下降并留下性能受限的闲置字节；其同时探索DFM与标准NVMe QLC，说明容量可得性恢复也不必取消暖层需求。",
+          "materiality_context": "延迟/吞吐/并发要求先确定可替代的数据池，写耐久与软件适配再限制QLC范围；若数据必须满足低尾延迟，HDD便宜也不构成可用替代。购置价影响资本门槛，能耗、机柜与运维影响多年度TCO，各项权重随电力/空间稀缺程度变，不能用2023/2025厂商测试认定2026行业固定节约率。预留和寿命决定有效成本：假设同标价100TB盘仅80TB可用，每可用TB购置成本比名义高25%；写整形降低放大可提高寿命/可用率，但不把测试速度倍数当销量倍数。HDD交期改变可立即服务的份额，假设可替代的新增数据池100PB、其中20PB因延期被转SSD，则只有20PB逻辑容量进入转换，不是原有HDD存量全移。若HAMR及时供货或NAND价差扩大，该临时部分可回流；长期性能层较不敏感。总数据池增长扩大两者，介质分配决定NAND捕获比例，当前性能/上线紧迫性与QLC资格的边际杠杆高于泛泛AI数据量。WDC与Sandisk增长属不同企业、不同年度产品范围，仅用于证明两种介质真实增长。带宽/TB与可用容量是独立变量：同一逻辑数据池因访问要求而过量配置HDD时，适配QLC可以减少名义存储超配；因此更高闪存份额可与更少总名义容量并存，不能再把被解除的闲置容量算一次新增需求。",
+          "scope_boundary": "本域研究介质分流对行业需求及价格；具名系统性能和闪存与HDD工作负载竞争的产品选择深度由数据中心闪存与存储系统承接。",
+          "ref": [
+            "D1-O172",
+            "D1-O70",
+            "D1-O156",
+            "https://www.trendforce.com/research/download/RP261007NY",
+            "https://www.solidigm.com/products/technology/qlc-considerations-for-mainstream-workloads-data-center.html",
+            "https://www.solidigm.com/products/technology/platform-optimization-for-performance-and-endurance-qlc-csal.html",
+            "https://engineering.fb.com/2025/03/04/data-center-engineering/a-case-for-qlc-ssds-in-the-data-center/"
+          ]
+        },
+        {
+          "name": "终端预算、台数与配置反馈形成消费bit需求",
+          "mechanism": "手机/PC的有效消费者收入、设备用途与性能改善、存量机龄共同影响换机意愿；OEM用终端售价、促销、毛利承受和容量SKU响应组件成本。行业消费bit流量近似各机型售出/生产台数乘平均NAND容量，品牌备货另进入库存而非最终消耗。高NAND价格可让品牌吸收利润、涨价减量、减少标配容量或转高端组合；新AI/应用用途提高容量价值，但是否购买仍受总设备预算约束。成本回落可能先修复OEM利润，再恢复容量或促销换机，恢复顺序取决于竞争和机龄需求。",
+          "current_status": "当前消费不是同幅减配：2Q26手机生产调查下降8%，全年手机及笔电预测仍弱，主流PC预计降SSD规格；Apple 17e在相同599美元起价把标配从16e的128GB增至256GB，显示品牌/SKU可以反向扩容。TrendForce较早4.8%手机平均容量增长预测和后续减配压力不是同一日期结论。约束来自终端预算和广义BOM，而不是把CPU/DRAM/SSD合计68%占比当NAND单项。美光MCBU bit减少也含资源转配，不能替代行业消费需求下降的直接观测。",
+          "materiality_context": "有效收入/价格承担能力决定低价和主流市场可购买台数，换机用途/机龄决定需求被延后还是永久消失，通常跨数季传导；高端用户容量价值更高，平均组合可以掩盖低端受损。OEM毛利承受和促销控制成本传递速度，涨价10%没有通用台数弹性，减配是独立选择。台数与平均容量同等是bit乘数：以预测手机台数下降14%、较早容量增长4.8%仅作异时假设组合，0.86×1.048−1约−9.9%，不是新同口径行业预测。说明温和容量增幅不能自动补偿台数两位数下滑。SKU/高端占比改变平均容量：每100万台从128升到256GB对应128PB逻辑NAND增量（十进制），不可推广到全体手机；品牌若仅用既有库存则当期原厂订单仍不增。用途价值决定扩容能否被付费接受，新AI容量可能被压缩/云替代；成本缓和先修复毛利时bit弹性弱，恢复配置/换机时才更强。手机和笔电7月估计接近40%行业bit需求意味着消费反馈仍可抵消企业增量的一部分，非AI小池。当前最重要的是台数和主流配置两端同受预算压制，同时品牌/高端分化，不能用平均ASP强否认需求破坏。",
+          "scope_boundary": "终点为手机/PC等消费市场行业bit、采购及价格反馈；产品业务域研究美光具体设计赢单和终端产品，宏观购买力仍是本域重要外部变量。",
+          "ref": [
+            "https://www.trendforce.com/presscenter/news/20260721-13148.html",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html?trk=article-ssr-frontend-pulse_little-text-block",
+            "D1-O57",
+            "https://www.trendforce.com/presscenter/news/20260908-13222.html",
+            "https://www.trendforce.com/presscenter/news/20260904-13217.html",
+            "https://www.trendforce.com/presscenter/news/20261008-13264.html",
+            "https://www.trendforce.com/presscenter/news/20260323-12983.html",
+            "https://www.apple.com/newsroom/2026/03/apple-introduces-iphone-17e/"
+          ]
+        },
+        {
+          "name": "库存位置与配额动机放大或反转采购",
+          "mechanism": "各环节采购量等于最终用量加目标库存变化，原厂、模组、OEM与云商库存不能合成一个紧缺指标。终端预期、交期/配额风险和资金成本决定目标安全库存；原厂按合同、组合利润和战略关系分配份额，争取未来配额可诱发超过当期消耗的收货。区域需求与可替代规格决定库存能否转售或转换用途。预期涨价时提前采购放大订单，资金占用/跌价或sell-through不足时去库先压现货与边际合约，未必先压锁量出货；原厂低库存可以与消费渠道过量共存。",
+          "current_status": "截点附近低原厂库存、高消费品牌/模组库存以及美国云商消化较快、中国买方库存高且谨慎同时存在。工作判断是企业买方仍争有限可供量，而消费中间环节的边际再采购较脆弱；通用颗粒可以松动但企业系统未必解紧。没有可比全球库存天数，因此不用低库存一词证明所有终端高利用率，亦不以强sell-in确认所有AI订单已经被消耗。",
+          "materiality_context": "最终用量决定持续底盘，目标库存变化可在一季内形成更大的边际订单变化。仅作同口径敏感性：季度消耗100PB，目标库存净增加20PB时采购120PB；下一季消耗不变而去20PB，采购80PB，订单环比下降33%但终端零增长。交期/配额风险决定提前程度，短缺缓解会使安全库存目标下降；资金成本与跌价预期会加速去库，对薄利消费模组更敏感。原厂分配影响谁能买到和库存放在哪，合同可把滞销先留在买方而不是立即减原厂交货。区域/规格可替代性限制库存救济：消费TLC多不保证合格eSSD多，中国库存高不保证美国现货充裕，转换需要资格与组件。现在库存位置及能否服务企业比未经区分的总库存更有杠杆；转售库存增加可迅速压通用现货，企业缺口则可能需数季系统供给响应。",
+          "scope_boundary": "解释行业sell-in、sell-through和报价的错位；不制造统一库存天数，客户合同权利及单公司库存会计深度归相关邻域。",
+          "ref": [
+            "https://www.trendforce.com/research/download/RP260930DA",
+            "https://www.trendforce.com/research/download/RP261007NY",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html?trk=article-ssr-frontend-pulse_little-text-block",
+            "D1-O57"
+          ]
+        },
+        {
+          "name": "晶圆投入、密度与合格率共同形成有效bit供给",
+          "mechanism": "行业可售bit由晶圆投入、每晶圆设计bit、经济良率和客户合格比例共同形成；生产周期/在制品决定本期交付。高层数、键合和QLC增加设计密度，但节点转换的停机、重复加工、爬坡损耗可先减少产出。供应商既可在相同晶圆量增bit，也可改变晶圆利用率和TLC/QLC/SLC产品组合；QLC四bit/cell相对TLC三bit/cell的理论增益须扣除die面积、良率、预留和性能约束。成本下降提高可供/降价空间，需求吸收与后续资本纪律决定该增量最终表现为销量还是价格压力。制造和关键投入的可用性另决定计划产出有多少实际可交：材料污染、公共资源中断或批次质量隔离可以在节点设计不变时减少可用产出。共享设施及投入使多个销售品牌同时暴露，不能用品牌数量代替物理独立性；恢复、库存和替代客户资格共同决定损失的时长与价格传播。",
+          "current_status": "当前净增长更依赖技术迁移与既有空间设备填充，而非即时绿地大增晶圆。美光G8/G9已为FY26主要节点，Kioxia/Sandisk K2第十代7月开始生产，Sandisk BiCS10 QLC较BiCS8的60%密度提升是设计/产品声明，不是行业净供给增速。公开资料未给全球实际晶圆、QLC占比和合格bit增长；已确认迁移有规模，但企业资格与转换损耗使稀缺不能仅靠层数推算。2027平衡预测仍有分歧，适合用净有效供给与需求吸收共同解释。2022年四日市/北上的材料污染曾影响共同制造，WDC当时预计其自身闪存可用量减少至少6.5EB；该历史公告不是合资总损失，也不是2026发生了新事故。它说明共享网络相关性，当前模型不额外扣除未发生的事故产量。",
+          "materiality_context": "晶圆投入决定资源基数，设计密度决定技术杠杆，良率/合格率决定变成可卖容量的折损，每项可以在外部需求不变时改动供给。透明假设某节点占行业20%晶圆、设计密度提高60%、其他不变，最终行业设计bit增12%；若迁移组有效良率暂降10%，其产出系数1.6×0.9=1.44，行业仅增8.8%，另有停机时更少，均非产量预测。QLC比例从假设30%至50%、其他相同，用TLC=3/QLC=4的cell模型平均bit由3.3至3.5仅增6.1%，且物理与客户要求会再修正；不能叠加厂商密度指标后重复计算其已包含的QLC提升。利用率若原已高，短期恢复空间有限；改变生产周期/WIP先改变季度交货、稳定后不必增加年产。客户合格率决定新增bit服务哪种缺口，通用良品不是全可卖企业容量。成本下降提高竞争定价和回报，与扩产Factor形成反馈；需求吸收决定价格方向。7月调查4–5%短缺预测仅为数量级对照（其分母未充分说明）：几个百分点净供给就可能改边际紧张，故当前良率、转换节奏与用途合格率不应被新厂标题盖过。中断权重、实际受损比例和持续时间决定可用供给损失，制造库存与合格替代决定采购缺口；仅作敏感性，某共同网络原占同口径季度供给10%、季度可交付量少25%，未补供前行业季度量少2.5%，不是厂级份额或事故预测。短期可能先增加替换采购和溢价，恢复后库存释放又可反转；提高目标安全库存是存量前置，不等于持续消耗增速永久提高。",
+          "scope_boundary": "行业净有效bit及成本曲线为终点；美光制造配方和产线工程归NAND与存储产品制造体系，公共洁净室建设归资本配置Factor，避免两次算同一增量。",
+          "ref": [
+            "D1-O57",
+            "D1-O88",
+            "https://www.kioxia.com/en-jp/about/news/2026/20260703-2.html",
+            "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-13-sandisk-investor-day-2026",
+            "https://www.trendforce.com/presscenter/news/20260721-13148.html",
+            "https://www.trendforce.com/research/download/RP261007NY",
+            "https://www.westerndigital.com/company/newsroom/press-releases/2022/2022-02-09-western-digital-comments-on-production-status-of-its-joint-venture-flash-memory-manufacturing-facilities",
+            "https://www.kioxia.com/en-jp/about/news/2022/20220210-1.html"
+          ]
+        },
+        {
+          "name": "配套资源、资格与用途分配把NAND转成可售系统",
+          "mechanism": "可售企业SSD数量由合格NAND、控制器、配套DRAM、封装测试及系统/固件验证中最紧环节限制；die库存可以存在而客户可买系统不足。客户验收的可靠性、耐久和平台兼容定义可服务份额，不能将消费盘无摩擦改成企业盘。供应商用利润、履约承诺和转换成本分配NAND/配套资源，企业高回报吸走消费份额，形成系统溢价与消费减量；瓶颈解除或资格通过可释放已存在的NAND，反之新增裸bit也未必降企业价。采购架构决定上述资源由谁集成和选择：品牌SSD由供应者承担较完整系统责任，软件授权加自采模块则让大型客户或其供应链直接控制NAND来源。后者扩大组件参与机会并改变议价，仍需模块、固件和可靠性资格；减少预留及延长寿命可降低固定服务量的原始bit和替换强度，低TCO又可扩大新工作负载。",
+          "current_status": "9月研究及年报支持关键组件/材料约束，但没有具名证明某控制器厂或封测工厂已导致哪款美光SSD停产。工作判断是企业需求/锁定供给与配套、资格摩擦共同抬高可交付系统稀缺性，消费库存不能即刻填缺。Micron具用途SSD交付及Kioxia CM系列资格说明新增产品已经有可服务市场，不等于全供给随时互换；企业分配优先与MCBU减少交货可以在全行业终端需求不变时发生。Everpure 2026年8月第二家top-five hyperscaler协议Q&A明确，其供给软件及非NAND部件，客户通过自有供应链采购含NAND模块；FY28显著收入贡献仍是其财年预期。Micron/Pure既有合作支持第三方模块的组件参与，不证明Micron品牌SSD或NAND已经取得相同增量。",
+          "materiality_context": "合格NAND是容量上限，控制器、DRAM和封测是各自独立的数量/时点上限，客户验证决定市场覆盖，销售分配决定哪一端受益。瓶颈示例非实测：NAND可组装100万盘、控制器80万、DRAM90万、封测95万且全合格，则可交80万；控制器升至100万仅释放10万到90万、再受DRAM限制，并非20万全部兑现。若验收合格比例由80%至90%，同制造资源可交付量提高12.5%；初始释放可在库存已有时快于新增晶圆，但新平台验证通常跨多个采购周期。配套稀缺还可提高系统非NAND成本，因此系统涨价不自动等于die涨价。利润/合同优先级令同一批bit从消费转企业，行业总bit不变但收入组合与消费可供量改变；转换成本/验证限制分配反应速度。当前合格系统和非合同可供池比裸die目录供给更决定企业边际价格，瓶颈解除对企业价差可能很大，对全球总原始bit却不一定新增。这条路线独立于技术密度，亦为价格分层Factor提供供给桥。采购主导权和供应者可替换性决定NAND厂在强总需求中的议价和可参与份额，软件商的收入/毛利不是NAND的同口径收入/毛利。固定可用容量下预留减少、寿命延长分别压初装和替换采购，范围仅限实际采用的客户池；更低有效成本带来的工作负载扩面由介质及活动Factors解释，不重复加算。",
+          "scope_boundary": "本域研究可交付数量、行业用途配置和价差；具名SSD控制器、固件及封测工程归产品/制造邻域，不把通用可能部件当已查明短缺部件。",
+          "ref": [
+            "https://www.trendforce.com/research/download/RP260930DA",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html?trk=article-ssr-frontend-pulse_little-text-block",
+            "D1-O74",
+            "D1-O57",
+            "D1-O103",
+            "https://www.kioxia-holdings.com/content/dam/kioxia-hd/en-jp/ir/library/event/asset/Investor-Day-2026-Eng-QA.pdf",
+            "https://investor.everpuredata.com/files/doc_downloads/2026/08/Hyperscaler-Design-Supply-Agreement-QA.pdf",
+            "https://www.everpuredata.com/uk/company/newsroom/press-releases/everpure-lands-new-design-win-with-second-top-five-hyperscaler.html",
+            "https://investors.micron.com/news/press-release/2025/Pure-Storage-and-Micron-Collaborate-to-Deliver-Scalable-Energy-Efficient-Solutions-for-Hyperscale-Data-Centers-01-07-2025/default.aspx",
+            "https://www.purestorage.com/content/dam/pdf/en/legal/2025-form-10-k.pdf"
+          ]
+        },
+        {
+          "name": "回报比较、公共支持与建设时滞决定晶圆扩张反应",
+          "mechanism": "供应商比较NAND未来价格/需求可见性与新设备、折旧、资金和运营成本形成投资回报，同时与DRAM/HBM等用途竞争有限资本和工程资源；不意味着NAND产线可直接变HBM。现有闲置设备复产、洁净室填充、技术迁移和绿地建设的时滞不同。管理层以份额、库存及客户数量承诺调整扩张节奏，利润上升可激励新供给，竞争者增量又促使其他厂保护份额。合资双方的投资/产量分配与公共补助条件改变融资门槛和决策速度，但共同设施只计一套。建筑、设备到位、良率爬坡、客户资格逐级把资本变成净新增晶圆及可售bit。共同制造中断之后的双来源或地域保障要求，还可改变新增投资的地点和冗余成本；它与原本追求最低单位bit成本的资本选择不同，合同保障可提高项目可见性而不必增加当期终端消耗。",
+          "current_status": "当前主要厂商优先既有节点升级，DRAM/HBM资本机会与NAND慢扩张共同维持纪律，但远期新增资源并未消失。Kioxia/Sandisk至2032年超过310亿美元联合计划以政府支持为条件，合资安排延至2034年；K3 FY2029运营目标处于准备阶段。美光年报预计新加坡NAND洁净室2028年下半年可用，不代表当日满产bit。工作判断是近端供给反应靠利用率/迁移/设备填充，远期则受回报、客户承诺和支持条件驱动，不是寡头可以永远保持当前价格。",
+          "materiality_context": "预期价格/需求与设备、折旧、资金及运营成本共同决定新增供给的净回报，影响未来数年规模；现价高而预期均衡价低可抑制扩张，反之长约提高可见性。DRAM/HBM机会成本改变NAND在资本组合中的排序，对NAND需求未变时仍有独立供给效应。利用率若已有高基数，恢复余量有限；现有空间设备填充通常快于绿地建设，故近端杠杆不能从总capex判断。公共支持降低实际承担资本/风险、合资治理决定何时投放，310亿美元到2032年不是当期晶圆分母，延迟补助可延后设备而非使存量厂停产。份额争夺、库存和客户承诺决定管理层愿否把盈利再投入，供给纪律有反馈但不是共同定价保证。阶段/时滞是关键：2028下半年洁净室、FY2029 K3目标只开启后续设备/资格过程，对2026交货贡献为零；设备交付决定可投入晶圆，良率爬坡与客户验证再决定最早可卖容量，不因建筑就绪同步兑现。技术迁移仍可提前增加bit。示例若一个共享设施新增10单位晶圆，两销售伙伴分6/4仍是10不是20；设备投入若只是替旧节点，需扣被撤产出再算净增。当前最具近端影响的是既有资源增效及资本优先级，公共支持/绿地计划对未来可供成本和紧张持续期的预期仍重要，即使本期贡献小。",
+          "scope_boundary": "终点是行业净晶圆/bit供给响应及竞争价格，不预测补助审批或美光单厂工程结果；共享设施去重，财务总资本支出不直接变为NAND产能。",
+          "ref": [
+            "D1-O57",
+            "D1-O4",
+            "D1-O156",
+            "https://apac.kioxia.com/en-apac/about/news/2026/20260827-2.html",
+            "https://apac.kioxia.com/en-apac/about/news/2026/20260827-3.html",
+            "https://apac.kioxia.com/en-apac/about/news/2026/20260130-1.html",
+            "D1-O73",
+            "D1-O90",
+            "https://www.trendforce.com/research/download/RP261007NY",
+            "https://www.westerndigital.com/company/newsroom/press-releases/2022/2022-02-09-western-digital-comments-on-production-status-of-its-joint-venture-flash-memory-manufacturing-facilities",
+            "https://www.kioxia.com/en-jp/about/news/2022/20220210-1.html"
+          ]
+        },
+        {
+          "name": "区域准入与可替代资格决定竞争供给的价格外溢",
+          "mechanism": "YMTC及既有供应商的实际可售bit、成本/可靠性与客户资格决定竞争容量，地域采购政策、设备来源和渠道决定这批供给能到哪些买方。中国消费/模组新增供给可先替代当地进口，释放其他厂bit到海外并压区域现货，未必直接替换全球云端合格eSSD。通过设备升级、良率和长期产品支持扩展资格，区域竞争才更深传至企业价格；相反，政策和认证壁垒可让两市场价格长期分化。供应商按客户/区域收益和准入重新配置销售，Micron行业ASP参与还取决于其可进入的客户而不只是全球平均供需。",
+          "current_status": "YMTC已是年报明确竞争者，公开目录支持有QLC路线，不把无日期目录当2026新增量产。7月研究中国供应商CY2027接近19%bit份额是合计预测，非YMTC实测份额。当前可靠的工作解释是竞争外溢更可能先发生在中国消费/组件和可互换产品，全球企业供给还需质量、资格与服务。美光在中国的CAC限制针对关键信息基础设施运营者，不能扩大成中国全部客户禁买；市场分割既影响供给传播，也影响Micron捕获行业需求的范围。",
+          "materiality_context": "实际bit与成本决定竞争压力规模，良率/可靠性和持续服务决定可售与续用资格；目录没有产量权重，故不为YMTC造点估计。中国合计近19%预测显示区域池可能不可忽略，但不能乘到美光份额损失。资格和准入的覆盖范围是当下最强传播闸门：假设区域新增100PB，40%满足可互换消费规格、10%通过某企业客户验证，则对两池分别最多40PB/10PB，不能把100PB全部加入全球企业可供量。渠道/买方议价可在现货数周传导，企业验证和长期支持则跨数季；低成本但受准入限制的bit会先影响区域价格和原厂资源重新分配。当地进口被替代后，其他供应商释放海外bit形成间接外溢，幅度还受合同和系统瓶颈限制。政策改变买方可选集合和Micron销售机会，全球需求/产量不变也能改变其组合；供应商地理配置可能缓冲总销量，但不能假设零成本、零时滞转移。当前区域和资格比未知名义层数更能解释为何通用竞争可加剧而企业溢价仍存，未来资格扩大可能具有比当前收入规模更大的预期修订作用。",
+          "scope_boundary": "研究区域竞争对行业供给、报价和美光实现价参与的影响；中国政策与具名客户采购准入深度归地域市场准入，不猜测下一次监管决定。",
+          "ref": [
+            "D1-O74",
+            "https://www.trendforce.com/presscenter/news/20260721-13148.html",
+            "https://www.ymtc.com/en/buslist.html?cat=35%3Fcat%3D35",
+            "D1-O57"
+          ]
+        },
+        {
+          "name": "设备许可经维护和节点升级改变在华存量供给弹性",
+          "mechanism": "监管对设备、备件、维护与先进升级的许可范围和有效期限改变Samsung西安、SK系大连等存量NAND资产的可维护性及迁移路径。既有设备仍能运行时，许可变化主要限制新设备、升级密度和转换速度，而非立即消灭全部晶圆。企业可用备件、维护库存、设备替代及海外投资缓冲，代价是成本、停机风险或时滞；受影响厂的行业权重与可替代节点产出决定净供给影响。许可与区域买方采购准入是不同机制，不把限制设备升级写成限制美光销售。",
+          "current_status": "2025年VEU撤销于12月31日生效，2026年1月政府说明Fab License机制；截至截点有按具体条款授权的制度基础，没有厂级资料证明全面停供停产或2027续期遭拒。当前工作判断是该机制主要增加在华节点升级和供应弹性的不确定性，对存量保有与维护的实际后果取决于具体授权和依赖；它可延缓中期有效bit增长，却尚不构成已实现行业供给坍塌。",
+          "materiality_context": "许可范围决定被限制的是维护、替换还是新增先进设备，作用方向和速度不同；有效期决定投资敢否提前下单，公告标题本身不具同一量级。设备依赖和备件缓冲决定停机概率/持续期，已有足够维护能力则短期出货影响小，节点升级受限仍可在数季后落后密度。受影响厂权重决定行业 reach：仅作假设，某组占行业20%可售bit，若相对反事实密度增量少10%，行业供给路径低2%；20%不是西安/大连已估份额，10%不是许可损失预测。若约束变成实际停机，影响则按停机比例/时间作用于存量，可能大于上述增长路径损失。替代设备、迁移海外和其他厂扩张分别降低暴露或补供，但会耗资金和工程时间，不应与损失同时当即时净增。当前既有制度变化对未来供给响应有独立重要性，而没有厂级授权暴露时精确百分比不可靠；它与通常节点良率路线可产生相反效果，不能因暂无减量就忽略预期路径变化。",
+          "scope_boundary": "行业竞争资产维护/升级与净有效供给为终点；不出具法律合规意见，不推断未公开许可证条款。与区域竞争、密度迁移和资本投资Factors相接。",
+          "ref": [
+            "https://www.govinfo.gov/app/details/FR-2025-09-02/2025-16735",
+            "https://content.govdelivery.com/accounts/USCENSUS/bulletins/4008e2b?trk=article-ssr-frontend-pulse_little-text-block",
+            "D1-O74"
+          ]
+        },
+        {
+          "name": "锁量、价带与履约安排改变边际流通池和周期风险",
+          "mechanism": "多年合同的承诺数量、覆盖产品/年份和履约条件把部分供给从开放采购池锁住；市场边际价格由剩余可供量与非合同需求形成，合同量则按固定价或定期重谈/价带兑现。价格重置频率及上限/下限让实现价对现货有滞后、上行封顶或下行保护，锁量不等于锁价。保证金/预付款和客户信用减轻供给商扩产现金风险，但退款、交期调整和客户库存承接决定需求变弱时风险转移给谁。已有承诺提高投资可见性，也可诱发额外扩张；供给超出需求时合同保护不覆盖整个开放市场。",
+          "current_status": "美光Q3/Q4已有可执行数量承诺及多数价带，但NAND覆盖没有公开，不能把全公司保证金当NAND锁量；已知全公司可退保证金为127.47亿美元、未来退还安排不代表存储已消耗。Sandisk 8月披露8个NBM客户，并给FY27约50%、FY28约三分之二的预期bit覆盖；Kioxia CY28 50%是计划/商谈。行业仍有非LTA美国云商追加需求。工作判断是合同化使短期供给流动性下降、收入可见性上升，却把周期部分转成买方库存、重谈和履约，而非消灭周期。",
+          "materiality_context": "覆盖比例和产品范围决定开放池大小，数量承诺与履约条件决定可兑现程度；不能用一家管理层计划当全行业已锁份额。敏感性：同类合格供给100单位、已锁70，开放池30，额外非合同需求5相当开放池16.7%，不是全行业需求增加16.7%；该比例说明小追加订单可有较大价格杠杆，不给固定价格弹性。价格重置频率影响收入季度节奏，价带宽度影响涨跌可传递区间，两者独立于数量；锁量覆盖高可削现货波动暴露，也可能限制上涨捕获。客户信用和预付款决定资金/违约风险，保证金有退款义务时不能等同盈利；履约强则弱终端先形成客户库存，交期协商有弹性时订单影响较快。新增供给投资会反向扩大开放池，未来覆盖也随分母变化，故锁量不保证永远紧缺。当前企业增量大多被承诺，使开放池对追加需求敏感；精确Micron NAND覆盖未知，无法把全公司合同直接变成行业最低ASP。",
+          "scope_boundary": "本域研究合同化对行业数量流动性、价格响应与供给反馈；法律执行、信用条款和融资会计由战略客户供给与资金保障关系负责。",
+          "ref": [
+            "D1-O31",
+            "D1-O57",
+            "D1-O44",
+            "D1-O153",
+            "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-13-sandisk-investor-day-2026",
+            "https://www.kioxia-holdings.com/content/dam/kioxia-hd/en-jp/ir/library/event/asset/Investor-Day-2026-Eng-QA.pdf",
+            "https://www.trendforce.com/research/download/RP261007NY"
+          ]
+        },
+        {
+          "name": "分层稀缺、议价和销售组合共同决定市场价及实现价",
+          "mechanism": "同规格同采购周期价格由可交付/可流通供给与买方需求的相对紧张、买方议价和替代选择形成；企业系统、客户端、UFS/eMMC、裸die/晶圆及零售是不同池，资格/组件摩擦限制套利。原厂分配和开放合同池大小改变各池边际稀缺，报价、合约重置与到货时间再决定实现价。公司平均ASP是各产品单价按出货bit权重的组合，高价值企业份额增加可在同规格价格不变时抬ASP；行业涨价的捕获还取决于公司可服务客户/地域和产品资格。价格上升提高供给回报并压消费台数/配置、诱发去库，反馈逐步收敛缺口。客户直接采购NAND模块时，最终系统/软件价格与裸NAND实现价之间的商业捕获还会分离；分析行业价传到Micron须保留自有SSD与第三方组件两条销售路径，而不能把架构软件的高附加值归给NAND。",
+          "current_status": "当前最佳解释是企业稀缺带动分层上行，而非每个池同幅上涨。4Q26合约价上升15–20%是9月30日调查预测，企业更强、消费边际采购较弱；9月28日512Gb TLC晶圆现货均价19.396美元及当场跌幅只是特定时点，不改称10月9日市场价。Micron FY26 NAND收入317.9亿美元、ASP约增200%、bit出货增长为20%中段说明实现价/组合比数量对本年收入更有杠杆，仍非季度纯价格指数。工作判断是系统可售量、分配和非LTA池使企业议价偏向供应方，消费高库存与减配限制外溢；中期均衡时间没有统一确定预期。",
+          "materiality_context": "相对合格供需决定价格方向，开放池、买方议价及可替代性决定边际敏感度；一池短缺4%不能套固定ASP弹性，企业资格锁定/急于上线会比消费滞销更能承价。9月30日企业SSD CY26 bit增长超过80%是产业预测而非实测，使当前企业追加和用途可供量更有杠杆；全球影响仍需企业池权重，不能把80%当全行业增速。原厂分配可在总bit不变时加重消费限量或扩企业溢价，套利/转换摩擦决定分层延续多久。报价与合约重置/交付时点决定传导速度，现货变化可数周领先合约，公司ASP又受销售期组合影响。组合权重具有独立收入效应：示例消费单价1、企业2（同bit单位的假设）、企业权重从20%升30%，ASP从1.2到1.3增8.3%，全非同规格涨价。Micron FY26约3倍ASP与约1.25倍bit的量级组合约3.75倍收入，接近实际3.74倍，支持价格是主贡献而非能精确分离组合的审计桥。客户/地域/资格决定捕获的bit份额，行业涨而Micron份额下降可削收入兑现，不推导EPS。供给回报、消费减量和库存去化是价格反馈的不同出口，现阶段供应/合格系统回应慢、企业追加强，故短期价格杠杆高；数季后效率、需求破坏和供给反应可削弱它。不同规格、币种、时间的OEM/零售价不相除计算企业溢价，也不以股票价格倒推NAND一致预期。",
+          "scope_boundary": "终点是行业分层市场价与Micron NAND实现价/收入规模，不延伸为全公司利润、股价或交易条件。与各需求、库存、有效bit和合同Factors形成反馈闭环。",
+          "ref": [
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html?trk=article-ssr-frontend-pulse_little-text-block",
+            "https://www.trendforce.com/research/download/RP260930DA",
+            "https://www.trendforce.com/research/download/RP261007NY",
+            "D1-O57",
+            "D1-O11",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.trendforce.com/price/flash/wafer_spot",
+            "https://www.trendforce.com/price/flash/pcc_oem_ssd_contract",
+            "https://investor.everpuredata.com/files/doc_downloads/2026/08/Hyperscaler-Design-Supply-Agreement-QA.pdf",
+            "https://www.everpuredata.com/uk/company/newsroom/press-releases/everpure-lands-new-design-win-with-second-top-five-hyperscaler.html",
+            "https://investors.micron.com/news/press-release/2025/Pure-Storage-and-Micron-Collaborate-to-Deliver-Scalable-Energy-Efficient-Solutions-for-Hyperscale-Data-Centers-01-07-2025/default.aspx",
+            "https://www.purestorage.com/content/dam/pdf/en/legal/2025-form-10-k.pdf"
+          ]
+        },
+        {
+          "name": "访问层级与平台兼容扩展近计算闪存可服务机会",
+          "mechanism": "模型权重、热KV和暖上下文有不同访问频率、延迟和带宽要求；只有性能可被预取、批量I/O或分层掩盖的部分才适合闪存，HBM热层不是整体可替代池。HBF、XL-FLASH/GPU直连与网络上下文层通过接口、布局和调度减少数据路径成本，使更多可服务容量跨过每任务成本/吞吐门槛。平台软硬件兼容、验证进度和客户经济回报决定采用数量；特殊SLC/高性能die、良率和供应者资格决定晶圆占用、bit成本与行业价值捕获。新层既可能替代原有SSD/DRAM，又可能支持更大模型/更多任务，需算净新增而非只加名义容量。",
+          "current_status": "截至截点HBF标准生态在8月推进，GP1预计年末功能样品，属于机会打开而非已大量采购；已有传统SSD的KV交付则显示暖层用途已经商业化，两者阶段不同。NVIDIA 3月CMX的G3.5共享闪存层与5月Tutti研究证明系统/软件路径可以缓解I/O瓶颈，但厂商性能上限、论文测试不能当量产需求或Micron赢单。当前工作解释是近计算路线可显著扩展可服务内存容量和任务经济性，先影响行业机会/供应者定位，尚不是CY26总体供需的主数量来源。",
+          "materiality_context": "可迁移权重/上下文份额决定机会范围，延迟/带宽与访问模式决定其中哪段实用；100TB名义模型池若仅20%可放冷/暖层，对应20TB而非100TB HBM替代，例为分层敏感性。接口/布局/调度可使同容量获得更多有效吞吐，收益主要减少GPU等待，兼容和验证决定能跨多少平台及兑现时点；它们对机会修订可能大于当前bit贡献。客户回报决定采用量，若部署只能替换已有SSD层则净NAND增量小，若打开此前不经济的更长上下文则扩张更大；需与效率反弹相接。die模式和良率影响资源压力：假设相同cell数/面积，SLC按1bit/cell服务容量，相对QLC四bit需约4倍cell，实际die/工艺会改变比例；故高性能闪存销售可增长而行业名义bit增长不大，甚至挤出普通产出。供应者资格决定谁捕获价格/bit，本域不预设美光HBF份额。当前暖层适配已开始贡献、专用近计算路径仍早；潜在内存层机会的范围变化比几个样品当期收入更能修改多年供给/需求认识，但没有足够分母估出市场总量。",
+          "scope_boundary": "研究新层可服务容量、净行业bit及晶圆竞争；专用产品规格、系统性能和具名资格深度归数据中心闪存与存储系统/制造域，标准成员不等于采购客户。",
+          "ref": [
+            "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf",
+            "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html",
+            "D1-O76",
+            "D1-O98",
+            "D1-O102",
+            "D1-O67",
+            "https://developer.nvidia.com/blog/introducing-nvidia-bluefield-4-powered-inference-context-memory-storage-platform-for-the-next-frontier-of-ai/",
+            "https://arxiv.org/abs/2605.03375",
+            "D1-O103"
+          ]
+        },
+        {
+          "name": "本地AI的使用经济与闲置空间决定客户端净增量",
+          "mechanism": "用户/小企业比较隐私、离线/响应需求、持续云费与本地设备及管理成本，决定任务留在云或迁往PC/小服务器。闪存辅助模型/缓存扩展需要软件与平台兼容、足够读取性能和写耐久；采用比例、每设备模型/工作集容量、原有SSD余量决定是利用旧盘还是提高新机/升级配置。新增本地bit应扣除其替代的云存储容量，同时考虑私有模型副本/更新频率造成分散复制。较高本地价格和CPU/DRAM等BOM成本也会抑制换机，普通AI PC标志不自动对应额外SSD。",
+          "current_status": "Phison 1月CES发布aiDAPTIV+ iGPU PC路线及Acer合作，提供能力和成本门槛变化，不是已知全行业采用率。高端手机AI缓存容量主张亦是特定产品/行业估计，不能认作所有手机新增40–60GB。当前工作判断是隐私/离线及重度使用用户具更强本地动机，但主流PC处于总预算压力和减配环境，多数初始采用可先吃既有容量。因而机会可能扩展用户群/产品组合，CY26行业净增量不应由宣传速度倍率计算。",
+          "materiality_context": "隐私/离线需求是可使用性条件，云费与本地总成本决定跨过购买门槛的用户范围；对偶尔使用者云服务可更便宜，对持续私有工作流本地有更强回报，暂无通用采用弹性。兼容/性能/耐久决定可用任务而非容量总量，门槛降低可扩大机会但会延后实际换机。采用比例决定参与设备数、每设备模型/工作集决定容量、原有余量决定订单时间：假设100万采用设备需额外64GB逻辑工作集，其中一半能由旧盘余量吸收，仅32PB需要升级/配置，不是64PB立即采购。新机器型组合/价格决定新装容量收益，云端替代要扣净量，私有多副本则可能提高全系统强度；不能把本地与云端同一任务全额双计。写更新频率可使替换/耐久先起作用，已有空容量并不无限可用。主流总BOM与换机意愿目前比能力展示更限制采购，特定高价值/隐私市场变化对未来机会更有杠杆；量产台数与实购容量才给规模，本地采用率未测量不等于机会为零。",
+          "scope_boundary": "终点为客户端/小企业行业bit和云端替代净影响；具名PC平台、手机设计赢单由产品业务域负责，本域与消费Factor共享台数/配置但不重复计增长。",
+          "ref": [
+            "https://www.phison.com/images/media-kits-ces2026/Phison%20PR_Phison%20aiDAPTIV%20Unlocks%20Powerful%20AI%20Processing%20on%20iGPU%20PC%20Platforms_ENG_Official.pdf",
+            "D1-O103",
+            "https://www.trendforce.com/presscenter/news/20260323-12983.html",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html?trk=article-ssr-frontend-pulse_little-text-block",
+            "https://www.solidigm.com/products/technology/platform-optimization-for-performance-and-endurance-qlc-csal.html"
+          ]
+        },
+        {
+          "name": "运营设备与选择性记录决定物理AI存储强度",
+          "mechanism": "机器人/车辆运营者按安全、可靠性与劳动替代回报决定从测试到部署的设备数；车端模型、地图和状态占固定容量，传感器数量/码率、运营小时、触发记录比例、上传速度及本地保留窗口决定循环记录容量与写耐久。运营数据的有用比例、压缩/筛选、云端保留及介质分层又形成数据工厂需求，不把传感器原始流全永久保存。汽车/工业可靠性、温度和寿命资格限制可用供给并延长采用周期，高耐久SLC模式会降低同cell可用bit。部署增长可扩大NAND终端池，但设备计算DRAM含量不能代表存储。研发数据工厂另由实验迭代次数、真实/合成数据生成、筛选后保留比例和存储分层决定容量，可以在运营设备数量不变时扩大；按需生成后丢弃主要增加吞吐，重复保存的数据则须与既有云池去重。",
+          "current_status": "Micron汽车UFS4.1的既有交付与2025年11月公告支持模型切换/传感器记录真实用途，不代表整个机器人市场已规模运营。10月研究把机器人/车载列为增长方向，仍没有可比行业NAND总量。NVIDIA 2020年自动驾驶数据工厂文章明确测试车辆与量产不同、并非所有采集数据有用；这种生命周期逻辑可复用，但旧测试车PB示例不能移植成2026每辆商业车强度。当前判断是汽车存储已有经营贡献，新机器人/无人车池的预期影响主要取决于运营扩散及实际记录/保留政策，而非送样数量或摄像头总数据率。NVIDIA 2026年3月数据工厂蓝图及云合作把真实/合成数据整理、扩增和评价连接成开发路径；它支持后端机会与终端部署分岔，不提供行业数据留存量或实际NAND采购量。",
+          "materiality_context": "运营回报/安全可用性决定部署范围和速度，设备数是终端规模；可靠性/温度/寿命资格决定供应者覆盖和设计周期，验证通过可先改未来机会而非立刻改总bit。模型/地图容量设单机底盘，传感器码率和运营小时设流量，触发记录、上传/本地保留设存量：仅作假设，一设备经筛选后记录10MB/s、日运行8小时生成288GB；本地保留2小时循环窗口需72GB（未含保护/预留），不是每天新增288GB永久NAND。码率增加一倍初始加大容量/耐久压力；触发比例减半可抵消，上传改善缩短本地窗口却可能扩大云端保留，不能只看车端减少。假设100万辆新增64GB配置为64PB逻辑bit；如果只是旧容量内换用法则新增为零，对比手机10亿级台数池显示汽车/机器人当期需较大强度才成行业主导，100万辆和64GB均非预测。有效数据比例/压缩、云保留和介质份额决定后端需求，数据工厂可增长但不是全用闪存；高耐久模式/预留降低可用率并增加原始cell需要，可能先改变供给组合和价格。现在已汽车交付支持基础贡献，规模运营和更长保留对新池的预期杠杆大于演示算力，须与云容量、介质分流连接去重。",
+          "scope_boundary": "解释物理AI行业NAND需求、耐久组合和数据工厂接口；车载/机器人产品与部署安全深度归产品/AI邻域，不以LPDDR/HBM容量估NAND。",
+          "ref": [
+            "https://investors.micron.com/news/press-release/2025/Micron-Ships-Automotive-UFS-4-1-Designed-to-Unlock-Intelligent-Mobility-With-Speed-Safety-and-Reliability-11-13-2025/default.aspx",
+            "https://developer.nvidia.com/blog/building-ai-infrastructure-with-dgx-a100-for-autonomous-vehicles/",
+            "D1-O74",
+            "D1-O103",
+            "D1-O78",
+            "https://www.trendforce.com/research/download/RP261007NY",
+            "https://nvidianews.nvidia.com/news/nvidia-announces-open-physical-ai-data-factory-blueprint-to-accelerate-robotics-vision-ai-agents-and-autonomous-vehicle-development?trk=article-ssr-frontend-pulse_little-text-block"
+          ]
+        }
+      ],
+      "potential_gaps": [
+        {
+          "name": "付费工作流与平台分发改写企业容量需求底盘",
+          "why_live": "当前Baseline是企业推理用途已商业化、比消费增长更快，并非所有软件席位都持续运行智能体。已有大规模付费渠道和长任务使用；Microsoft 9月25日进一步公布Home/Code及Autopilot分期预览，不能写成全面部署。10月6日计费说明区分基础订阅与高级智能体用量收费。2025年工作场景随机实验发现个人节时而未发现任务数量/构成明显改变，提示流程重组与单人助手有不同容量后果。",
+          "revision_logic": "修订点是企业闪存增长由少量重度用户扩展到何种持续活动，而不只是下一季CSP支出。分发降低触达门槛，流程权限、净收益和计费决定活跃比例及任务复杂度，再经持久/暖工作集与容量余量传到采购。新用途可以先扩大多年机会，固定订阅席位增加也可以先增加收入而不增加行业bit；与保留/效率主题共同决定净强度。",
+          "possibility_space": [
+            {
+              "name": "大型软件平台把持续助手纳入既有工作入口并扩大可用人群",
+              "implication": "用户无需另购独立工具便能启动更多后台任务，扩大活跃群体及上下文工作集；若仍为预览或受权限限制，先改变机会范围。既有余量吸收初期活动，达到扩容区间后才放大采购，不把分发人数直乘GB。"
+            },
+            {
+              "name": "企业以客服、代码和文档业务流程重组替代零散个人试用",
+              "implication": "部门把任务与记录访问权限正式交给可重复运行的智能体，新增任务、检索及审计产物有持续用途；相比单人节时，组织级重组更可能扩大存储工作集，也可能以少量共享模型取代重复副本。"
+            },
+            {
+              "name": "业务部门对高级任务启用按用量预算与自动降级路由",
+              "implication": "买方按成功任务回报控制长期运行和高成本推理，付费席位仍增但复杂任务/缓存需求受抑；低成本短任务可以扩频，NAND需求需按负载组合重估，不能由软件收入增速推出同幅bit增长。"
+            },
+            {
+              "name": "自动化服务商把收费改成业务结果并承担失败重试成本",
+              "implication": "供应商有动力提高成功率、减少重试和优化缓存，可能以更少资源交付同量结果；若结果回报足够好而客户扩大授权，长期活动又增。价值验证可上修需求持续期，但单位强度未必同步上修。"
+            }
+          ],
+          "ref": [
+            "https://www.microsoft.com/en-us/Investor/earnings/FY-2026-Q4/press-release-webcast",
+            "https://www.anthropic.com/research/economic-index-june-2026-report",
+            "https://www.trendforce.com/presscenter/news/20260921-13246.html",
+            "D1-O103",
+            "https://www.min.io/press/minio-announces-memkv-purpose-built-context-memory-store-for-ai-inference",
+            "https://developer.nvidia.com/blog/introducing-nvidia-bluefield-4-powered-inference-context-memory-storage-platform-for-the-next-frontier-of-ai/",
+            "https://aws.amazon.com/blogs/storage/protecting-data-with-amazon-s3-object-lock/",
+            "https://www.trendforce.com/research/download/RP260930DA",
+            "https://www.trendforce.com/research/download/RP261007NY",
+            "https://research.google/blog/turboquant-redefining-ai-efficiency-with-extreme-compression/",
+            "https://arxiv.org/abs/2605.03375",
+            "D1-O147",
+            "D1-O148",
+            "https://news.microsoft.com/source/emea/2026/09/new-microsoft-copilot-brings-home-code-and-autopilot-together/",
+            "https://learn.microsoft.com/en-us/microsoft-365/copilot/user-subscription-license-usage-based-billing",
+            "https://arxiv.org/abs/2504.11436v4"
+          ]
+        },
+        {
+          "name": "记忆保留、共享和压缩改变任务增长的容量含义",
+          "why_live": "默认使用面扩展与单位资源节约并行；MinIO共享NVMe、CMX分层和Google压缩研究使多种实现已具能力基础。业务历史、日志、向量与可重算KV的保留价值不同。净每固定任务持久NAND仍未测量，因此同样任务增长可对应截然不同的存量和采购时点。",
+          "revision_logic": "修订AI推理采购增长Baseline的资源强度，而非反向押注采用必然下降。架构师改变保留、复制、共享范围或压缩适用层，可在付费活动不变时改变原始bit；更便宜服务又能反弹扩大任务。关键经济区别是容量减少、由冷转暖、避免重算和重新分配已有空间，不应把它们统一命名为效率提升。",
+          "possibility_space": [
+            {
+              "name": "企业把跨会话业务记忆和检索历史设为长期保留",
+              "implication": "每次任务不再结束即删，流量逐步形成持久存量，强化多季度容量需求；仍需区分热层与冷归档、复制和去重，保留更长不是当日采购同比倍增。"
+            },
+            {
+              "name": "模型服务商普及公共前缀共享和持久层量化压缩",
+              "implication": "适用缓存的原始bit/副本下降，初期提高既有容量余量、推迟采购；对私有日志等不适用层影响较小。成本节约若扩大调用，只需足够活动反弹便可抵消，而非论文压缩倍率覆盖全NAND。"
+            },
+            {
+              "name": "云商因GPU重算昂贵而将更多可复用KV移入共享暖层",
+              "implication": "即使每份KV压缩，值得保留的上下文范围和命中价值增加，闪存可服务池扩张；其中替代DRAM/冷层的部分与真正新增需分开，GPU效率提高不是必然少买SSD。"
+            },
+            {
+              "name": "应用商改用短记忆、按需检索及自动过期策略",
+              "implication": "保持任务功能但缩小长期保存与同时可恢复上下文，降低单任务存量；高频重新检索可提高吞吐/耐久要求而不提高容量，价格和产品组合后果不同于总bit减少。"
+            }
+          ],
+          "ref": [
+            "https://www.min.io/press/minio-announces-memkv-purpose-built-context-memory-store-for-ai-inference",
+            "https://developer.nvidia.com/blog/introducing-nvidia-bluefield-4-powered-inference-context-memory-storage-platform-for-the-next-frontier-of-ai/",
+            "https://aws.amazon.com/blogs/storage/protecting-data-with-amazon-s3-object-lock/",
+            "D1-O103",
+            "https://www.trendforce.com/research/download/RP260930DA",
+            "https://www.trendforce.com/research/download/RP261007NY",
+            "https://research.google/blog/turboquant-redefining-ai-efficiency-with-extreme-compression/",
+            "https://arxiv.org/abs/2605.03375",
+            "D1-O147",
+            "D1-O148",
+            "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf",
+            "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html",
+            "D1-O76",
+            "D1-O98",
+            "D1-O102",
+            "D1-O67"
+          ]
+        },
+        {
+          "name": "信任事件与治理选择重排AI存储的部署和保留",
+          "why_live": "当前采用与资金Baseline隐含企业继续愿意给智能体数据/行动权限。Anthropic 9月9日披露的是发布前网络安全评估中越界的事件，不是全行业客户数据损失；NVIDIA 9月28日发布可隔离、监控和审计智能体的安全平台，证明治理正在成为部署配置。已有长期保留/备份与私有部署路径，但未见本材料证明企业全面暂停AI。",
+          "revision_logic": "信任是独立于任务性能与资金的采用闸门。一场公开损失或公共治理决定可以改变授权、部署地点、审计副本和保留期，修订“既有商业用途会自然持续扩散”的默认路径。暂停高自治任务会收缩暖层机会；受控环境、审计和恢复需求可增加另一类存储。总bit、区域分配和可进入供应者可能朝不同方向变化。",
+          "possibility_space": [
+            {
+              "name": "重大企业数据损毁或泄露事件促使买方暂停高自治流程",
+              "implication": "即使模型便宜且已有资金，权限撤回可先下修复杂任务的机会与后续扩容；已锁设备未必马上取消，风险先进入利用率/库存和非合同订单。此是假设未来事件，不把实验室事件升级为现有企业停购。"
+            },
+            {
+              "name": "行业将可审计沙箱、最小权限和受控私有部署定为采购标准",
+              "implication": "更严格控制可恢复采用，却把工作集转向企业自建/主权云并增加审计、备份和分散副本；可能较少共享、较多本地闪存。若仅采用短期日志且冷归档，新增原始NAND较小，不能按安全平台节点数估容量。"
+            },
+            {
+              "name": "公共机构或企业董事会要求敏感记忆最小化并定期删除",
+              "implication": "长期历史/上下文保有缩短，任务不变也可下修净存量；同时合规记录可能必须另行保留，降低的是敏感记忆而非全部企业数据。区域隔离若同时加严，会抵消部分共享节约。"
+            },
+            {
+              "name": "运行时治理降低责任顾虑并允许先前封闭的业务授权",
+              "implication": "安全控制可成为扩散催化剂，而非只增加费用；更多高价值后台任务扩大机会。监控开销及复核拖慢单任务速度可能提高在途上下文，但净采购仍取决于可用余量和持久化选择。"
+            }
+          ],
+          "ref": [
+            "https://www.microsoft.com/en-us/Investor/earnings/FY-2026-Q4/press-release-webcast",
+            "https://www.anthropic.com/research/economic-index-june-2026-report",
+            "https://www.trendforce.com/presscenter/news/20260921-13246.html",
+            "D1-O103",
+            "https://www.min.io/press/minio-announces-memkv-purpose-built-context-memory-store-for-ai-inference",
+            "https://developer.nvidia.com/blog/introducing-nvidia-bluefield-4-powered-inference-context-memory-storage-platform-for-the-next-frontier-of-ai/",
+            "https://aws.amazon.com/blogs/storage/protecting-data-with-amazon-s3-object-lock/",
+            "https://www.trendforce.com/research/download/RP260930DA",
+            "https://www.trendforce.com/research/download/RP261007NY",
+            "https://www.phison.com/images/media-kits-ces2026/Phison%20PR_Phison%20aiDAPTIV%20Unlocks%20Powerful%20AI%20Processing%20on%20iGPU%20PC%20Platforms_ENG_Official.pdf",
+            "https://www.trendforce.com/presscenter/news/20260323-12983.html",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html?trk=article-ssr-frontend-pulse_little-text-block",
+            "https://www.solidigm.com/products/technology/platform-optimization-for-performance-and-endurance-qlc-csal.html",
+            "https://www.anthropic.com/research/alignment-assessment-cybersecurity-incidents",
+            "https://nvidianews.nvidia.com/news/open-agent-safety-platform"
+          ]
+        },
+        {
+          "name": "买方投资回报与融资链改变边际存储扩张",
+          "why_live": "默认已商业化云端需求继续分期部署。强现金流综合云商与外部融资依赖运营者不具相同预算弹性；CoreWeave服务积压要在交付可用后变收入，设备购置远超同期经营现金流的单公司尺度提示外部资金重要，而非证明融资危机。存储可减少昂贵GPU等待，也与其他基础设施争夺预算。",
+          "revision_logic": "修订的是需求持续期、追加规模和买方分布，不将债务标题直接等同需求崩塌。回报改变租户购买与运营者利用率，资金条件改变能否先垫建设/到货；既有合同和库存缓冲延迟传导。融资紧缩还能通过资产转手、项目承接或预算内优先存储改变受益者，不必消灭同样终端任务。",
+          "possibility_space": [
+            {
+              "name": "云服务收费和企业业务结果支持扩大已运行机群",
+              "implication": "持续变现为追加SSD提供内部资金与用途回报，提高增长持续期；若利用率先升、余量尚足，采购可晚于收入增长，仍不能把总云收入变为存储订单。"
+            },
+            {
+              "name": "贷款人提高抵押折扣或限制依赖外部资金运营者续贷",
+              "implication": "新增项目及非锁量采购更容易后移，已到货设备先留库存/承压；影响取决于相关买方权重和交付前现金缺口，不推广为所有现金充裕云商削减同幅预算。"
+            },
+            {
+              "name": "大租户缩减扩展承诺并将负载集中到既有供应者",
+              "implication": "租户回报/信用变化同时降低被撤项目的融资基础，放大新增存储收缩；承接云商可能提高利用率而未立即扩容，行业采购暂低于终端使用路径。"
+            },
+            {
+              "name": "资本充裕买方承接停滞项目或收购可用机群",
+              "implication": "需求可能只是换采购主体和兑现时点，已购SSD再利用会推迟行业新增订单；长期较低资金成本可恢复扩张，不能将资产成交额作为新NAND销售。"
+            }
+          ],
+          "ref": [
+            "https://www.microsoft.com/en-us/Investor/earnings/FY-2026-Q4/press-release-webcast",
+            "https://investors.coreweave.com/news/news-details/2026/CoreWeave-Reports-Strong-Second-Quarter-2026-Results/default.aspx",
+            "D1-O130",
+            "D1-O165",
+            "D1-O31",
+            "D1-O57",
+            "https://www.trendforce.com/research/download/RP261007NY",
+            "https://www.trendforce.com/research/download/RP260930DA",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html?trk=article-ssr-frontend-pulse_little-text-block",
+            "D1-O44",
+            "D1-O153",
+            "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-13-sandisk-investor-day-2026",
+            "https://www.kioxia-holdings.com/content/dam/kioxia-hd/en-jp/ir/library/event/asset/Investor-Day-2026-Eng-QA.pdf"
+          ]
+        },
+        {
+          "name": "接电安排与园区交付改写采购时钟和密度选择",
+          "why_live": "默认资源承诺支撑继续建设，收货可早于上线。Crusoe/Microsoft首楼2027年中通电仍为计划；PJM大负荷/IRAS方案在给定Future Nodes中待裁决，10月12日是申请日期而非已批准日期。不同电网、自备电源和设施验收路径可独立改写项目时序。",
+          "revision_logic": "修订季度订单与多年容量兑现的关系，不把MW直接折算bit。规则/工程决定可用机群，客户到货条款、仓储资金和余量决定延期被库存吸收还是变成采购后移；空间/电力紧还可以推动密度型QLC，而不只减少所有设备。局部规则影响需保留地域覆盖。",
+          "possibility_space": [
+            {
+              "name": "公共机构调整大负荷接入条件并要求额外供电保障",
+              "implication": "受影响园区可能改设计、分期上线或增加资金支出，SSD到货有后移压力；规则影响范围不是全球，已能先收货的客户则先增加库存，并不立刻减少供应商出货。"
+            },
+            {
+              "name": "开发者通过自备电源或既有设施改造提前交付空间",
+              "implication": "解除局部资源约束、加快机群/存储安装，可能集中兑现延后需求；若平台或资格仍未到位，通电只提升可部署机会，不等于NAND全量立即销售。"
+            },
+            {
+              "name": "大型买方在园区延期时继续接收合同设备",
+              "implication": "当前sell-in保持而实际使用后移，后续追加采购易放缓，库存与资金承受决定能持续多久；与融资主题可相互放大，但物理延期本身不是资金撤退。"
+            },
+            {
+              "name": "运营商以高密度闪存替换受限机柜中的低效存储",
+              "implication": "同机房约束下可提高可服务容量，扩大特定QLC/性能层机会；如果以更少原始NAND/更长寿命实现同服务，净采购不必增。同等服务TCO而非每TB功耗口号决定介质选择。"
+            }
+          ],
+          "ref": [
+            "https://www.crusoe.ai/resources/newsroom/crusoe-announces-new-900-mw-ai-factory-campus-in-abilene-texas-to-support-microsoft-ai-infrastructure",
+            "D1-O130",
+            "D1-O108",
+            "D1-O109",
+            "https://www.trendforce.com/research/download/RP261007NY",
+            "https://www.microsoft.com/en-us/Investor/earnings/FY-2026-Q4/press-release-webcast",
+            "https://investors.coreweave.com/news/news-details/2026/CoreWeave-Reports-Strong-Second-Quarter-2026-Results/default.aspx",
+            "D1-O165",
+            "D1-O31",
+            "D1-O57",
+            "D1-O172",
+            "D1-O70",
+            "D1-O156",
+            "https://www.solidigm.com/products/technology/qlc-considerations-for-mainstream-workloads-data-center.html",
+            "https://www.solidigm.com/products/technology/platform-optimization-for-performance-and-endurance-qlc-csal.html",
+            "https://www.pjm.com/markets-and-operations/large-load",
+            "https://www.govinfo.gov/content/pkg/FR-2026-08-18/pdf/2026-16808.pdf"
+          ]
+        },
+        {
+          "name": "容量介质竞争由短缺补位走向工作负载重设计",
+          "why_live": "HDD与闪存已有各自实物增长，默认共同扩张。HAMR计划2027年爬坡可能改善容量可获得性；Meta 2025年工程说明HDD容量增长而带宽/TB下降会产生性能受限的闲置字节，并同时探索DFM和标准NVMe QLC。旧工程案例说明可替代边界，不是2026固定TCO价差。",
+          "revision_logic": "修订QLC新增中临时交期分流与结构性暖层迁移的比例。容量、带宽、耐久与有效TCO变化可让同一数据池分流、共同成长或减少超配，不能把HAMR大容量即认作所有SSD替代。软件写整形、服务要求和NAND价格反馈决定介质改善最终增加闪存bit还是提高利用率。",
+          "possibility_space": [
+            {
+              "name": "HAMR量产与长期供货安排恢复可按期交付的大容量HDD",
+              "implication": "可延期/低性能池重新比较低购置成本，部分临时QLC补位消退；低延迟缓存和高并发暖层仍不同。即使HDD回流，行业数据量增长可使两介质绝对销量继续升。"
+            },
+            {
+              "name": "更密HDD仍不能满足每TB访问要求，云商部署专用QLC中间层",
+              "implication": "容量供给恢复也不消除性能受限字节，闪存迁移变成结构性架构选择；新增仅覆盖合适暖池，存储无需因AI标签整池闪存化。"
+            },
+            {
+              "name": "系统商用写整形和分层管理扩展QLC到原先TLC工作负载",
+              "implication": "QLC可服务范围扩大、有效TCO下降，可能减少TLC超配并提高容量利用；同时降低门槛可拓展数据池。更多QLC份额不是必然更多行业总原始bit。"
+            },
+            {
+              "name": "NAND高价迫使容量客户重设计为HDD加小闪存缓存",
+              "implication": "保持服务但缩小闪存容量池，弱化高容量QLC的增长外推；对性能缓存可能保留或新增，价格破坏与分层创新同时发生，影响不等于全企业SSD需求转弱。"
+            }
+          ],
+          "ref": [
+            "D1-O172",
+            "D1-O70",
+            "D1-O156",
+            "https://www.trendforce.com/research/download/RP261007NY",
+            "https://www.solidigm.com/products/technology/qlc-considerations-for-mainstream-workloads-data-center.html",
+            "https://www.solidigm.com/products/technology/platform-optimization-for-performance-and-endurance-qlc-csal.html",
+            "https://research.google/blog/turboquant-redefining-ai-efficiency-with-extreme-compression/",
+            "https://www.min.io/press/minio-announces-memkv-purpose-built-context-memory-store-for-ai-inference",
+            "https://developer.nvidia.com/blog/introducing-nvidia-bluefield-4-powered-inference-context-memory-storage-platform-for-the-next-frontier-of-ai/",
+            "https://arxiv.org/abs/2605.03375",
+            "D1-O147",
+            "D1-O148",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html?trk=article-ssr-frontend-pulse_little-text-block",
+            "https://www.trendforce.com/research/download/RP260930DA",
+            "D1-O57",
+            "D1-O11",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.trendforce.com/price/flash/wafer_spot",
+            "https://www.trendforce.com/price/flash/pcc_oem_ssd_contract",
+            "https://engineering.fb.com/2025/03/04/data-center-engineering/a-case-for-qlc-ssds-in-the-data-center/"
+          ]
+        },
+        {
+          "name": "消费购买预算与容量竞争形成不同的需求恢复路径",
+          "why_live": "默认台数弱与容量/SKU分化，手机/笔电仍是重要行业bit池。已有主流PC减配压力、较弱台数预测和Apple同价入门扩容，说明价格、品牌利润及配置选择并非统一。CPU/DRAM/SSD合计BOM负担也不等同NAND单项成本。",
+          "revision_logic": "修订的是消费台数乘容量的吸收能力及对市场价格的反馈，而非仅追踪某供应商移动产品出货。换机意愿、OEM利润承担、其他组件预算和竞争策略可在AI需求基本不变时独立改变NAND。成本缓和若只修复毛利，数量恢复较慢；促销和容量竞争则更能吸收bit。",
+          "possibility_space": [
+            {
+              "name": "品牌把组件成本转嫁到整机售价并延长低价机生命周期",
+              "implication": "主流消费者推迟换机、厂商缩容量SKU，台数与配置双重压制bit；高端占比上升可抬平均容量/ASP，但不说明总bit恢复。"
+            },
+            {
+              "name": "品牌为争取换机保持售价并提高存储标配",
+              "implication": "类似同价扩容的策略扩散可加大bit吸收，先消耗库存再追加采购；若补贴不可持续或只覆盖少量机型，对行业影响小于对品牌平均配置。"
+            },
+            {
+              "name": "其他核心组件继续涨价，OEM即使NAND转便宜也压SSD规格",
+              "implication": "预算竞争使NAND自身降价未能恢复客户端bit，打破低价必有强数量反弹的解释；手机与PC的BOM权重和毛利承受不同，不能同幅推广。"
+            },
+            {
+              "name": "组件成本缓和后OEM在毛利修复、促销和扩容间重新竞争",
+              "implication": "仅修利润时bit改善小；推出促销换机和容量升级时可同时恢复台数/配置，并拉动再补库。与渠道主题联动，可让订单先快于最终消耗。"
+            }
+          ],
+          "ref": [
+            "https://www.trendforce.com/presscenter/news/20260721-13148.html",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html?trk=article-ssr-frontend-pulse_little-text-block",
+            "D1-O57",
+            "https://www.trendforce.com/presscenter/news/20260908-13222.html",
+            "https://www.trendforce.com/presscenter/news/20260904-13217.html",
+            "https://www.trendforce.com/presscenter/news/20261008-13264.html",
+            "https://www.trendforce.com/presscenter/news/20260323-12983.html",
+            "https://www.apple.com/newsroom/2026/03/apple-introduces-iphone-17e/",
+            "https://www.trendforce.com/research/download/RP260930DA",
+            "https://www.trendforce.com/research/download/RP261007NY",
+            "D1-O11",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.trendforce.com/price/flash/wafer_spot",
+            "https://www.trendforce.com/price/flash/pcc_oem_ssd_contract"
+          ]
+        },
+        {
+          "name": "配额备货被消化或清算后改变边际订单和议价",
+          "why_live": "当前原厂低库存与消费品牌/模组高库存、美国与中国云商差异并存；默认先调整消费中间环节而非所有云商同时去库。尚无同口径全球库存天数，配额交换和先收货行为使订单不能直接代表最终使用。",
+          "revision_logic": "修订采购领先/滞后真实需求的幅度及可流通供给。目标库存和转售可在终端活动不变时显著改变季度订单，原厂合同把风险留在买方也会延迟价格反应。规格/区域不可替代限制库存救济；清库还可反馈配额、供给配置和合同谈判。",
+          "possibility_space": [
+            {
+              "name": "消费新品sell-through不及备货，模组商降价清算通用颗粒",
+              "implication": "开放市场增加库存并减少再采购，可先压现货而企业系统仍紧；若原厂依合同继续交货，价格/数量压力先留中间环节，不宣称同步全行业反转。"
+            },
+            {
+              "name": "美国云商真实消耗快于安全库存目标而恢复追加采购",
+              "implication": "除已锁量外再补库使开放池更紧，企业边际价可能先变而最终任务增长较平滑；持续性取决于消耗是否继续，补库不是永久新增需求。"
+            },
+            {
+              "name": "高库存地区改善资格或渠道流动性并向缺货区域转售",
+              "implication": "可用库存释放降低部分组件紧张，即使全球生产不增加；企业验证、协议和规格不匹配使价格传播不均，不能把所有消费存货当eSSD替代供给。"
+            },
+            {
+              "name": "买方不再接受交换配额的附带采购并重谈交货组合",
+              "implication": "取消非用途支撑的备货使订单放缓，而终端需求可能不变；稀缺产品仍愿付溢价，原厂销售组合和库存位置改变，采购动机重估先于终端周期判断。"
+            }
+          ],
+          "ref": [
+            "https://www.trendforce.com/research/download/RP260930DA",
+            "https://www.trendforce.com/research/download/RP261007NY",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html?trk=article-ssr-frontend-pulse_little-text-block",
+            "D1-O57",
+            "D1-O74",
+            "D1-O103",
+            "https://www.kioxia-holdings.com/content/dam/kioxia-hd/en-jp/ir/library/event/asset/Investor-Day-2026-Eng-QA.pdf",
+            "D1-O31",
+            "D1-O44",
+            "D1-O153",
+            "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-13-sandisk-investor-day-2026",
+            "D1-O11",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.trendforce.com/price/flash/wafer_spot",
+            "https://www.trendforce.com/price/flash/pcc_oem_ssd_contract"
+          ]
+        },
+        {
+          "name": "技术迁移的净可售增量重估新厂前的供需平衡",
+          "why_live": "默认新增bit主要由密度迁移和设备填充形成。K2生产启动、BiCS10密度和美光节点支持弹性，但设计密度、QLC份额、转换损失与企业资格不同；2027供需机构观点相互分歧，未有统一转松日期。",
+          "revision_logic": "修订近端紧张能延续多久，以及平衡先发生在哪个池。即使外部AI/消费活动不变，净良品bit、生产周期和产品模式可改变供给路径。几个百分点有效增量已有能力改变边际缺口；被企业吸收、停留通用池或被高性能模式挤出具有不同价格含义。",
+          "possibility_space": [
+            {
+              "name": "先进节点取得稳定经济良率并加快现有产线转换",
+              "implication": "新厂前可售bit超出此前迁移假设，增加价格正常化可能；若合格企业需求迅速吸收，表现为更多交货而不必跌价。设计密度需扣转换与撤旧产出，不把公告倍率算行业增速。"
+            },
+            {
+              "name": "转换停机、长周期或良率爬坡拖慢技术增量",
+              "implication": "维护/改造占用资源，名义技术领先暂不增加可售bit，紧张持续期上修；恢复后集中释放WIP可造成季度供给跳升，不等同永久产能缺失。"
+            },
+            {
+              "name": "高密QLC首先在消费/通用渠道成熟而企业验证仍慢",
+              "implication": "组件可先平衡、企业价差继续大，行业均价与系统价分离；随后资格扩大可把原有bit转入企业池，价格修订早于新增晶圆。"
+            },
+            {
+              "name": "供应商把先进资源转向低bit密度高性能或高耐久闪存",
+              "implication": "新用途提高价值和单容量cell占用，普通TLC/QLC增量受挤；总收入强而名义bit增速较低，不应同时将专用供给与标准密度增益全额相加。"
+            }
+          ],
+          "ref": [
+            "D1-O57",
+            "D1-O88",
+            "https://www.kioxia.com/en-jp/about/news/2026/20260703-2.html",
+            "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-13-sandisk-investor-day-2026",
+            "https://www.trendforce.com/presscenter/news/20260721-13148.html",
+            "https://www.trendforce.com/research/download/RP261007NY",
+            "https://www.trendforce.com/research/download/RP260930DA",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html?trk=article-ssr-frontend-pulse_little-text-block",
+            "D1-O74",
+            "D1-O103",
+            "https://www.kioxia-holdings.com/content/dam/kioxia-hd/en-jp/ir/library/event/asset/Investor-Day-2026-Eng-QA.pdf",
+            "D1-O4",
+            "D1-O156",
+            "https://apac.kioxia.com/en-apac/about/news/2026/20260827-2.html",
+            "https://apac.kioxia.com/en-apac/about/news/2026/20260827-3.html",
+            "https://apac.kioxia.com/en-apac/about/news/2026/20260130-1.html",
+            "D1-O73",
+            "D1-O90",
+            "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf",
+            "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html",
+            "D1-O76",
+            "D1-O98",
+            "D1-O102",
+            "D1-O67",
+            "https://developer.nvidia.com/blog/introducing-nvidia-bluefield-4-powered-inference-context-memory-storage-platform-for-the-next-frontier-of-ai/",
+            "https://arxiv.org/abs/2605.03375"
+          ]
+        },
+        {
+          "name": "回报与客户承诺改变NAND资本纪律和净晶圆路径",
+          "why_live": "当前优先迁移和DRAM/HBM资本机会，远期NAND投资准备已存在；联合至2032年计划有政府支持条件，共享设施只计一次。2028下半年新加坡空间和FY2029 K3目标并非当期可售量。高现价与长期均衡价、份额压力和锁量可见性可拉动相反投资选择。",
+          "revision_logic": "修订行业供给反应函数，不把投资额直接折bit。设备填充和复产比新建筑快，政府支持影响承担资本及时间，长约可能支持扩张也可把未来bit预先锁住。多供应者同步决策能够在数季后放大供给，技术/资格和需求吸收决定价格后果。",
+          "possibility_space": [
+            {
+              "name": "原厂用高利润和数量承诺提前填充已有洁净室设备",
+              "implication": "较快增加晶圆/可售bit，弱化只因无新厂就永远紧的路径；若新增全部绑定客户，开放市场短期未必放松，但未来供给基数变大。"
+            },
+            {
+              "name": "DRAM/HBM相对回报下降或竞争压力促使资本转回NAND",
+              "implication": "NAND需求不变也可能提高投入排序，行业份额争夺增加中期供给弹性；不同设备/工程资源不能即刻互换，资本公告领先产出。"
+            },
+            {
+              "name": "日本公共支持落实并使合资项目提前或扩大设备投放",
+              "implication": "降低共同承担成本、加速两品牌共享制造，但不是两套新增产能；增长阶段从长期空间转为设备/良率兑现时，更能影响供需持续期判断。"
+            },
+            {
+              "name": "补助或项目收益条件变化使合资双方延后分期投资",
+              "implication": "近端存量仍可运行，主要减少未来增量或改变节点选择，不能将整笔联合计划撤延等同本期停产；其他厂可争份额补供。"
+            },
+            {
+              "name": "多家供应商为份额同步扩张后遇到较弱最终吸收",
+              "implication": "行业由有序迁移转向较大净晶圆增量，未来开放池/价格压力可能比各单厂计划显著；合同保护转移部分风险到客户库存，而非消除集体过量投入。"
+            }
+          ],
+          "ref": [
+            "D1-O57",
+            "D1-O4",
+            "D1-O156",
+            "https://apac.kioxia.com/en-apac/about/news/2026/20260827-2.html",
+            "https://apac.kioxia.com/en-apac/about/news/2026/20260827-3.html",
+            "https://apac.kioxia.com/en-apac/about/news/2026/20260130-1.html",
+            "D1-O73",
+            "D1-O90",
+            "https://www.trendforce.com/research/download/RP261007NY",
+            "D1-O88",
+            "https://www.kioxia.com/en-jp/about/news/2026/20260703-2.html",
+            "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-13-sandisk-investor-day-2026",
+            "https://www.trendforce.com/presscenter/news/20260721-13148.html",
+            "D1-O31",
+            "D1-O44",
+            "D1-O153",
+            "https://www.kioxia-holdings.com/content/dam/kioxia-hd/en-jp/ir/library/event/asset/Investor-Day-2026-Eng-QA.pdf"
+          ]
+        },
+        {
+          "name": "中国竞争供给跨越区域和产品资格的传播路径",
+          "why_live": "默认中国增量先影响区域消费/组件，再由可靠性、资格和准入决定全球企业影响。中国合计2027近19%是较早预测，YMTC实际可售份额未量测；目录和资本支持不能证明已形成合格增量。供应者可以直接外销，也可通过替代进口间接释放海外供给。",
+          "revision_logic": "修订全球边际供给与美光可捕获的需求，而不是把中国收入份额简单减去MU份额。设备/良率决定实际bit，买方验证、服务和政策决定可替代池；间接外溢可以先传通用价格，全球企业价差则可能长期不同。外部需求不变时，竞争资格扩大本身就能改变议价。",
+          "possibility_space": [
+            {
+              "name": "中国供应者在当地消费及模组市场以高密产品争取进口份额",
+              "implication": "当地价格压力增加，既有原厂把被替代bit转去海外，形成间接松供；海外合同和系统资格限制传导，并非新增bit全部直接卖给全球云商。"
+            },
+            {
+              "name": "中国企业/云商将新供应者纳入长期企业存储资格",
+              "implication": "由组件延伸到可靠系统，扩大真正企业可选供给并改变价格/锁量谈判；先影响获准市场和未来机会，之后才随分配形成销量，美光参与取决于各地客户准入。"
+            },
+            {
+              "name": "多地域买方坚持安全审查和供应资格隔离",
+              "implication": "区域产量增长但外溢更多限于可互换消费池，全球企业紧张可能延续；其他供应商仍可被间接释放，因此壁垒不等于零价格传播。"
+            },
+            {
+              "name": "中国供应者与第三方系统商合作通过其渠道向外扩展",
+              "implication": "买方以系统级验证接触新的NAND来源，竞争从厂牌颗粒转为集成方案；取决于实际可售量、服务责任和采购政策，目录新SKU不等于全球份额已变。"
+            }
+          ],
+          "ref": [
+            "D1-O74",
+            "https://www.trendforce.com/presscenter/news/20260721-13148.html",
+            "https://www.ymtc.com/en/buslist.html?cat=35%3Fcat%3D35",
+            "D1-O57",
+            "https://www.trendforce.com/research/download/RP260930DA",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html?trk=article-ssr-frontend-pulse_little-text-block",
+            "D1-O103",
+            "https://www.kioxia-holdings.com/content/dam/kioxia-hd/en-jp/ir/library/event/asset/Investor-Day-2026-Eng-QA.pdf",
+            "https://www.trendforce.com/research/download/RP261007NY",
+            "D1-O11",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.trendforce.com/price/flash/wafer_spot",
+            "https://www.trendforce.com/price/flash/pcc_oem_ssd_contract"
+          ]
+        },
+        {
+          "name": "在华存量资产的许可选择重写维护和升级弹性",
+          "why_live": "现有VEU转具体Fab许可制度，默认首先约束升级弹性而非全面停产。西安/大连等在华NAND存量资产仍有独立经济身份；许可范围、有效期、设备依赖和备件缓冲尚没有完整厂级桥。",
+          "revision_logic": "修订竞争有效供给的增长路径或存量可用性，保持与中国新供应者及美光买方准入不同。维护授权主要保护现有出货，先进设备授权影响密度增量；授权不确定还可诱发地域迁移。新闻的行业影响是受影响资源权重乘缺失/恢复路径，而非法律标题等于全部产能归零。",
+          "possibility_space": [
+            {
+              "name": "主管机关允许维护替换但收紧先进节点设备升级",
+              "implication": "存量继续交付而相对反事实bit增长放慢，上修中期紧张持续期；原厂可能加大其他地区迁移，缓冲有时间和成本，不是本期普遍停供。"
+            },
+            {
+              "name": "厂级授权扩大升级设备范围并降低续期不确定性",
+              "implication": "可提高在华迁移/设备投入意愿，增量可早于新海外工厂，令供给更有弹性；技术良率及客户资格仍决定新增bit服务的池，不把许可证作产量凭据。"
+            },
+            {
+              "name": "具体维护许可或关键备件中断导致受影响线停机",
+              "implication": "从少增量升级为存量可用性损失，季度交货和价格后果更强；已有备件/在制品库存可能缓冲，其他供应商份额获益需能提供同规格资格。"
+            },
+            {
+              "name": "原厂为降低续期依赖把未来投资转到海外网络",
+              "implication": "长期资源范围迁移、过渡期增量放慢与重复投入可能并存；迁移完成后地域风险下降，不能同时把原厂撤旧和新厂名义量算双份净增。"
+            }
+          ],
+          "ref": [
+            "https://www.govinfo.gov/app/details/FR-2025-09-02/2025-16735",
+            "https://content.govdelivery.com/accounts/USCENSUS/bulletins/4008e2b?trk=article-ssr-frontend-pulse_little-text-block",
+            "D1-O74",
+            "D1-O57",
+            "D1-O88",
+            "https://www.kioxia.com/en-jp/about/news/2026/20260703-2.html",
+            "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-13-sandisk-investor-day-2026",
+            "https://www.trendforce.com/presscenter/news/20260721-13148.html",
+            "https://www.trendforce.com/research/download/RP261007NY",
+            "D1-O4",
+            "D1-O156",
+            "https://apac.kioxia.com/en-apac/about/news/2026/20260827-2.html",
+            "https://apac.kioxia.com/en-apac/about/news/2026/20260827-3.html",
+            "https://apac.kioxia.com/en-apac/about/news/2026/20260130-1.html",
+            "D1-O73",
+            "D1-O90"
+          ]
+        },
+        {
+          "name": "合格系统与用途分配改变价格分层及实现价解释",
+          "why_live": "默认企业紧缺主导分层上涨，裸die、客户端和eSSD并非同一池。关键组件约束、客户验证与资源转配支持这一区别；美光全年ASP又包含销售组合。此前停放的MLC退出方向具有长期可靠性/低密度资格的不同价格意义，1月退出/产能预测不证明10月已全部发生。",
+          "revision_logic": "修订企业溢价来自哪种约束、分层能否收敛，以及Micron ASP变化是市场价、组合还是竞争参与。现有NAND在组件/资格改变时即可转为系统供给，行业总bit不必先增加；品牌或用途分配也能令公司实现价与通用报价背离。利基生命周期保留于此，不把局部稀缺提升为大宗行业主驱动。",
+          "possibility_space": [
+            {
+              "name": "控制器、配套DRAM或封测的供给商释放可用资源",
+              "implication": "已有合格NAND转成更多可交付系统，企业溢价可先收敛而裸bit产出不增；接下来最紧环节可能换成客户验证或NAND，不能按一个部件增量估全系统释放。"
+            },
+            {
+              "name": "云商验证替代供应者或新规格并分散采购分配",
+              "implication": "可用选择扩大，削原供应商议价/份额，即使行业需求不减；认证先改变未来参与机会，系统能力差异会保留部分性能溢价。"
+            },
+            {
+              "name": "原厂把更多合格bit与配套资源转给高价值企业用途",
+              "implication": "企业可供增加、消费更限量，综合ASP可能因组合而升，企业同规格价却未必升；若再平衡后转回消费，反向组合亦可使ASP弱于市场价。"
+            },
+            {
+              "name": "可靠性寿命客户对成熟MLC退出进行末次采购或迁移认证",
+              "implication": "形成利基拉货/溢价和库存前置，或经TLC替代缓和；影响由利基权重及迁移占用决定，不足以独自证明大宗TLC/QLC永久紧张。原停车方向在本主题取得局部分层贡献。"
+            },
+            {
+              "name": "企业同规格合约转弱但Micron高价值产品份额继续提高",
+              "implication": "公司ASP/收入仍可受组合支撑，需下修统一价格平台而非直接下修同幅公司销量；若其资格/份额受竞争损失，行业涨价也不能保证相同捕获。公开现货与公司ASP各有不同信息含义。"
+            }
+          ],
+          "ref": [
+            "https://www.trendforce.com/research/download/RP260930DA",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html?trk=article-ssr-frontend-pulse_little-text-block",
+            "D1-O74",
+            "D1-O57",
+            "D1-O103",
+            "https://www.kioxia-holdings.com/content/dam/kioxia-hd/en-jp/ir/library/event/asset/Investor-Day-2026-Eng-QA.pdf",
+            "https://www.trendforce.com/research/download/RP261007NY",
+            "D1-O11",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.trendforce.com/price/flash/wafer_spot",
+            "https://www.trendforce.com/price/flash/pcc_oem_ssd_contract",
+            "https://www.trendforce.com/presscenter/news/20260721-13148.html",
+            "https://www.ymtc.com/en/buslist.html?cat=35%3Fcat%3D35",
+            "https://www.trendforce.com/presscenter/news/20260107-12866.html"
+          ]
+        },
+        {
+          "name": "多年采购把价格周期转化为不同的履约和库存风险",
+          "why_live": "默认数量合同扩大可见性、非LTA池仍定边际价。Sandisk覆盖为管理层预期、Kioxia为商谈计划，美光NAND覆盖未知；可退保证金不是消费或利润。不同价格重置、价带和交期安排使同样行业平衡具有不同公司/客户后果。",
+          "revision_logic": "修订周期的传递方式而非简单判定周期消失。更多增量被锁定会收缩开放池，数量履约可把弱终端转为客户库存，价格上限则限制旺市捕获；新增资本和供应者选择又能扩大未来开放供给。合同法律深度归邻域，本域解释市场数量流动性和实现价响应。",
+          "possibility_space": [
+            {
+              "name": "大买方签下更多新增bit并提供资金或信用保障",
+              "implication": "未锁池变小、少量非LTA追加更有价格杠杆，扩产资金可见性增强；多年后供给分母扩大仍可重新放松，覆盖扩大不等于固定价格。"
+            },
+            {
+              "name": "行业继续紧缺但更多交货价格落入既有上限或固定安排",
+              "implication": "现货更强而受约束实现价涨幅较小，数量保护与上行捕获的价值分离；若可重谈价的部分占比高，传导更快，不能默认全NAND统一封顶。"
+            },
+            {
+              "name": "项目使用变慢而客户继续履行数量承诺并积累存货",
+              "implication": "供应商销售暂稳定，周期压力转入客户资金和未来补购，开放采购先弱；库存最终被使用则只是时点，难吸收时会加大再协商或信用风险。"
+            },
+            {
+              "name": "供给恢复后买方争取交期调整、产品转换或替代供应",
+              "implication": "通过合法协商重新分配承诺而非假定可任意毁约，价格/数量保护范围变小或延迟；强执行条款仍能缓冲，但不能以保证金证明所有未来收入不受影响。"
+            }
+          ],
+          "ref": [
+            "D1-O31",
+            "D1-O57",
+            "D1-O44",
+            "D1-O153",
+            "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-13-sandisk-investor-day-2026",
+            "https://www.kioxia-holdings.com/content/dam/kioxia-hd/en-jp/ir/library/event/asset/Investor-Day-2026-Eng-QA.pdf",
+            "https://www.trendforce.com/research/download/RP261007NY",
+            "https://www.trendforce.com/research/download/RP260930DA",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html?trk=article-ssr-frontend-pulse_little-text-block",
+            "D1-O4",
+            "D1-O156",
+            "https://apac.kioxia.com/en-apac/about/news/2026/20260827-2.html",
+            "https://apac.kioxia.com/en-apac/about/news/2026/20260827-3.html",
+            "https://apac.kioxia.com/en-apac/about/news/2026/20260130-1.html",
+            "D1-O73",
+            "D1-O90",
+            "D1-O11",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.trendforce.com/price/flash/wafer_spot",
+            "https://www.trendforce.com/price/flash/pcc_oem_ssd_contract"
+          ]
+        },
+        {
+          "name": "近计算闪存的边界扩展与普通NAND资源挤出",
+          "why_live": "默认HBF/GP1等先验证后贡献行业规模，普通KV SSD已有交付。标准、功能样品计划及软件布局能力使新层可研究，但热HBM、权重和暖KV不同。专用低bit密度die、平台接口及供应资格决定机会可能比当期销售大。",
+          "revision_logic": "修订NAND可承担的工作范围、资源需求和供应者定位，而不是等全量收入才承认可服务机会。越过兼容/性能边界可以先扩多年市场；替换已有SSD层净bit小、打开此前内存成本受限用途净需求大。高性能模式占更多cell，收入机会与行业名义bit增长可能分离。",
+          "possibility_space": [
+            {
+              "name": "加速平台把HBF或低延迟GPU-direct闪存纳入新的读取密集层",
+              "implication": "权重/上下文部分容量获得新的可服务路径，改变机会范围及客户议价；仍有热HBM和带宽限制，不推成HBM整池替代，也不预设Micron取得专用份额。"
+            },
+            {
+              "name": "软件预取和GPU直接I/O使普通NVMe暖层更经济",
+              "implication": "新用途可在现有SSD供应体系扩大，降低专用产品必要性；先减少GPU等待、提高容量利用，若支持更长任务/更多保留再扩大NAND采购。"
+            },
+            {
+              "name": "平台验证因尾延迟、带宽或软件迁移成本转向更大DRAM层",
+              "implication": "专用近计算闪存的近期范围/兑现后移，普通持久SSD用途仍可增长；并非所有AI闪存需求归零，修订的是新增内存层可替代边界。"
+            },
+            {
+              "name": "高性能闪存订单占用原本用于高密TLC/QLC的先进资源",
+              "implication": "专用价值和晶圆压力可上升而总可售bit较少，延长普通NAND紧张；后续专用扩产缓和挤出，不能将新层bit与失去的通用产出全额并计。"
+            }
+          ],
+          "ref": [
+            "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf",
+            "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html",
+            "D1-O76",
+            "D1-O98",
+            "D1-O102",
+            "D1-O67",
+            "https://developer.nvidia.com/blog/introducing-nvidia-bluefield-4-powered-inference-context-memory-storage-platform-for-the-next-frontier-of-ai/",
+            "https://arxiv.org/abs/2605.03375",
+            "D1-O103",
+            "D1-O57",
+            "D1-O88",
+            "https://www.kioxia.com/en-jp/about/news/2026/20260703-2.html",
+            "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-13-sandisk-investor-day-2026",
+            "https://www.trendforce.com/presscenter/news/20260721-13148.html",
+            "https://www.trendforce.com/research/download/RP261007NY",
+            "https://research.google/blog/turboquant-redefining-ai-efficiency-with-extreme-compression/",
+            "https://www.min.io/press/minio-announces-memkv-purpose-built-context-memory-store-for-ai-inference",
+            "D1-O147",
+            "D1-O148"
+          ]
+        },
+        {
+          "name": "本地与云端AI选择改变终端配置及行业净需求",
+          "why_live": "默认本地AI先利用既有空间和有限新配置，主流PC预算仍弱。Phison iGPU路径、手机端侧缓存及企业隐私需求提供能力/用途，但普通AI PC标志不是额外存储。应用提供者的价格和部署选择可改变需求位置。",
+          "revision_logic": "修订客户端平均容量和云需求的净加总。谁选择运行位置、旧盘余量、模型副本/更新与耐久决定本地新增；云任务被替代要扣除原池，分散私有模型又可能提高总副本。普通终端换机与专门AI新用法应保留不同购买动机。",
+          "possibility_space": [
+            {
+              "name": "操作系统或OEM把有实际离线用途的本地模型纳入标配",
+              "implication": "无需用户单独安装的持久模型可推动新机容量竞争；若用旧盘空间或模型自动卸载，实际新增更小。已弱台数仍可能抵消更高配置。"
+            },
+            {
+              "name": "小企业采用闪存辅助私有推理并扩展原来付不起的工作流",
+              "implication": "较低本地门槛扩大新增用户池而非仅搬云任务，增加小服务器/PC容量与耐久需求；软件兼容和旧盘余量决定订单时点。"
+            },
+            {
+              "name": "企业因隐私或治理把部分云端工作转到受控本地设备",
+              "implication": "本地份额和私有副本上升、云暖层需求减少，两者需净计；若统一企业服务器而非每PC复制，总bit增量低于分散部署。与信任主题可以共同发生。"
+            },
+            {
+              "name": "云服务商降费和提高响应使用户放弃本地升级",
+              "implication": "客户端新容量机会缩小、需求回到集中云，共享和高利用率可能降低同任务总NAND强度；如果价格低带来新使用，总需求仍可增加，受益渠道与数量方向不同。"
+            }
+          ],
+          "ref": [
+            "https://www.phison.com/images/media-kits-ces2026/Phison%20PR_Phison%20aiDAPTIV%20Unlocks%20Powerful%20AI%20Processing%20on%20iGPU%20PC%20Platforms_ENG_Official.pdf",
+            "D1-O103",
+            "https://www.trendforce.com/presscenter/news/20260323-12983.html",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html?trk=article-ssr-frontend-pulse_little-text-block",
+            "https://www.solidigm.com/products/technology/platform-optimization-for-performance-and-endurance-qlc-csal.html",
+            "https://www.trendforce.com/presscenter/news/20260721-13148.html",
+            "D1-O57",
+            "https://www.trendforce.com/presscenter/news/20260908-13222.html",
+            "https://www.trendforce.com/presscenter/news/20260904-13217.html",
+            "https://www.trendforce.com/presscenter/news/20261008-13264.html",
+            "https://www.apple.com/newsroom/2026/03/apple-introduces-iphone-17e/",
+            "https://www.min.io/press/minio-announces-memkv-purpose-built-context-memory-store-for-ai-inference",
+            "https://developer.nvidia.com/blog/introducing-nvidia-bluefield-4-powered-inference-context-memory-storage-platform-for-the-next-frontier-of-ai/",
+            "https://aws.amazon.com/blogs/storage/protecting-data-with-amazon-s3-object-lock/",
+            "https://www.trendforce.com/research/download/RP260930DA",
+            "https://www.trendforce.com/research/download/RP261007NY",
+            "https://research.google/blog/turboquant-redefining-ai-efficiency-with-extreme-compression/",
+            "https://arxiv.org/abs/2605.03375",
+            "D1-O147",
+            "D1-O148"
+          ]
+        },
+        {
+          "name": "物理AI从测试车和数据工厂走向运营存储池",
+          "why_live": "汽车UFS已交付，车队与机器人规模仍属新池；默认不由计算内存或计划设备数推NAND。NVIDIA 3月16日数据工厂公告提供真实/合成数据整理、扩增和筛选路径及云合作，说明后端开发存储可独立于设备销量；公告能力不等于全量持久数据。",
+          "revision_logic": "修订的是新增终端池及后端开发数据的范围、强度与时点。运营回报、安全/资格决定部署；记录、上传和保留决定单机循环存量；开发数据是否留存与介质分层决定后端量。仿真可减真实采集又扩总实验，不能从机器人数量单线外推云存储。",
+          "possibility_space": [
+            {
+              "name": "物流、工厂或车队运营者把验证平台扩成持续付费运营",
+              "implication": "设备数和模型/记录配置扩大真实终端NAND池，安全/寿命资格先决定可服务份额；数量尚小时，对整体台数市场的规模影响可小于对未来机会的修订。"
+            },
+            {
+              "name": "运营商采用事件触发上传和边缘筛选而非连续长留原始流",
+              "implication": "同设备数下本地保留/写入可下降，后端保留有价值片段仍增；更多传感器不再等比例变容量，耐久和有效数据比例可比设备算力更有解释力。"
+            },
+            {
+              "name": "开发者利用仿真和数据扩增扩大训练与回归测试",
+              "implication": "实车采集约束减轻，后端实验/数据管线可在设备销量不增时扩张；若按需生成后即丢弃，多贡献算力/吞吐而少贡献存量，不能把合成视频全永久乘到NAND。"
+            },
+            {
+              "name": "安全问题或运营回报不足使部署停留试验而继续研发",
+              "implication": "终端规模路径后移，但研发迭代/数据工厂可保持或增加，形成端侧与云端分岔；若资金也撤回才可能同步收缩，两个变化不是一个必备确认链。"
+            }
+          ],
+          "ref": [
+            "https://investors.micron.com/news/press-release/2025/Micron-Ships-Automotive-UFS-4-1-Designed-to-Unlock-Intelligent-Mobility-With-Speed-Safety-and-Reliability-11-13-2025/default.aspx",
+            "https://developer.nvidia.com/blog/building-ai-infrastructure-with-dgx-a100-for-autonomous-vehicles/",
+            "D1-O74",
+            "D1-O103",
+            "D1-O78",
+            "https://www.trendforce.com/research/download/RP261007NY",
+            "https://www.min.io/press/minio-announces-memkv-purpose-built-context-memory-store-for-ai-inference",
+            "https://developer.nvidia.com/blog/introducing-nvidia-bluefield-4-powered-inference-context-memory-storage-platform-for-the-next-frontier-of-ai/",
+            "https://aws.amazon.com/blogs/storage/protecting-data-with-amazon-s3-object-lock/",
+            "https://www.trendforce.com/research/download/RP260930DA",
+            "D1-O172",
+            "D1-O70",
+            "D1-O156",
+            "https://www.solidigm.com/products/technology/qlc-considerations-for-mainstream-workloads-data-center.html",
+            "https://www.solidigm.com/products/technology/platform-optimization-for-performance-and-endurance-qlc-csal.html",
+            "https://nvidianews.nvidia.com/news/nvidia-announces-open-physical-ai-data-factory-blueprint-to-accelerate-robotics-vision-ai-agents-and-autonomous-vehicle-development?trk=article-ssr-frontend-pulse_little-text-block"
+          ]
+        },
+        {
+          "name": "采购架构主导权转移改变裸NAND与品牌SSD的价值捕获",
+          "why_live": "Meta 2025年已同时探索DFM和标准NVMe QLC。Everpure 2026年8月10日公布第二家top-five hyperscaler设计/供给协议；其Q&A明确软件和非NAND部件由其提供，含NAND模块由客户自己的供应链采购，主要收入贡献仍预计FY28。Micron与Pure的2025年合作说明组件NAND可进入第三方模块，不等于自有SSD份额。",
+          "revision_logic": "当前模型以合格系统及用途配置解释企业稀缺，并区分组件和品牌盘；客户掌握模块采购尚不能当作全行业默认架构。这是锁量与介质分流之外的新关系：谁控制闪存管理软件、模块和采购资格，决定NAND供应者参与和议价。大型客户可在有更多逻辑容量需求时减少预留、延长寿命，降低原始bit/替换强度；也可用更低TCO扩大HDD迁移。企业系统价或软件高毛利不再是NAND实现价的直接代理，组件供应商与品牌SSD受益可分离。",
+          "possibility_space": [
+            {
+              "name": "更多大型客户采用软件授权加自有供应链采购NAND模块",
+              "implication": "采购权转向云商/代工链，组件参与机会扩大而品牌盘附加值受竞争，需按同规格bit和模块责任重新理解ASP；设计协议先改未来机会，未立即增加当期交货。"
+            },
+            {
+              "name": "云商保留DFM与标准NVMe双路径并使NAND来源可替换",
+              "implication": "多供应者选择和统一管理提高议价，原厂资格/成本更重要，行业需求强也未必带来同幅实现价；适配不同来源有验证时滞，不假设裸die随时可互换。"
+            },
+            {
+              "name": "系统管理减少预留并延长可用寿命，同时扩展容量工作负载",
+              "implication": "固定服务量需较少原始NAND、替换节奏慢，短期压采购；较低每可用TB成本和机柜占用可拉更多HDD池迁移，新增机会与单位强度节约相互竞争，不能把模块名义TB当新增原始bit。"
+            },
+            {
+              "name": "大型买方因服务责任或集成成本保留品牌企业SSD",
+              "implication": "自建管理机会不扩成普适架构，品牌盘可靠性/固件价值继续获付费，新的供给议价影响局限于特定云池；组件合作仍存在，不等于新路线失败就消灭其全部NAND需求。"
+            }
+          ],
+          "ref": [
+            "https://www.trendforce.com/research/download/RP260930DA",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html?trk=article-ssr-frontend-pulse_little-text-block",
+            "D1-O74",
+            "D1-O57",
+            "D1-O103",
+            "https://www.kioxia-holdings.com/content/dam/kioxia-hd/en-jp/ir/library/event/asset/Investor-Day-2026-Eng-QA.pdf",
+            "https://www.trendforce.com/presscenter/news/20260721-13148.html",
+            "https://www.ymtc.com/en/buslist.html?cat=35%3Fcat%3D35",
+            "https://www.trendforce.com/research/download/RP261007NY",
+            "D1-O11",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.trendforce.com/price/flash/wafer_spot",
+            "https://www.trendforce.com/price/flash/pcc_oem_ssd_contract",
+            "D1-O172",
+            "D1-O70",
+            "D1-O156",
+            "https://www.solidigm.com/products/technology/qlc-considerations-for-mainstream-workloads-data-center.html",
+            "https://www.solidigm.com/products/technology/platform-optimization-for-performance-and-endurance-qlc-csal.html",
+            "https://www.everpuredata.com/uk/company/newsroom/press-releases/everpure-lands-new-design-win-with-second-top-five-hyperscaler.html",
+            "https://investor.everpuredata.com/files/doc_downloads/2026/08/Hyperscaler-Design-Supply-Agreement-QA.pdf",
+            "https://investors.micron.com/news/press-release/2025/Pure-Storage-and-Micron-Collaborate-to-Deliver-Scalable-Energy-Efficient-Solutions-for-Hyperscale-Data-Centers-01-07-2025/default.aspx",
+            "https://www.purestorage.com/content/dam/pdf/en/legal/2025-form-10-k.pdf",
+            "https://engineering.fb.com/2025/03/04/data-center-engineering/a-case-for-qlc-ssds-in-the-data-center/"
+          ]
+        },
+        {
+          "name": "共同制造与关键投入中断重排可用供给和采购保障",
+          "why_live": "迁移/扩产Baseline隐含主要制造与输入链继续可用。Kioxia/Sandisk共享制造使品牌竞争不是物理独立；2022年2月材料污染曾同时影响四日市/北上，WDC当时预计其自身可供闪存减少至少6.5EB，属于历史尺度而非2026损失或合资总量。薄库存、用途资格和慢补供让类似突发冲击值得独立保留。",
+          "revision_logic": "修订季度可用bit、跨品牌相关性和供应保障价值，而非正常建设计划的进度。事故、公共资源中断或系统质量隔离可先减少可买供给，其他厂库存/资格决定能否补救；买方之后增加双来源、安全库存或区域资源又改变中期成本与订单形态。本主题不预测事故，也不把短缺带来的价格机会等于Micron净收益。",
+          "possibility_space": [
+            {
+              "name": "共享制造发生污染或关键材料质量问题而隔离批次",
+              "implication": "两销售品牌同时受一处网络冲击，合格供给少于各品牌计划加总，库存/资格稀缺可提高边际价；受损bit、修复时间和替代来源限制经济 reach，不能把2022损失搬到本轮。"
+            },
+            {
+              "name": "区域电力、用水、地震或运输中断使生产和交货分离",
+              "implication": "已有产能暂不可用或成品滞留，订单可先转交期而非永久产能消失；可转售库存/其他地区恢复会压回短缺溢价，对不同终端的合格替代范围不同。"
+            },
+            {
+              "name": "客户发现系统可靠性问题并暂停特定产品出货验收",
+              "implication": "裸NAND可能未少，但可售SSD被隔离，缺口先在资格池与替换采购形成；竞争者可受益于可用资格，原厂又可能承担召回/改配。本域止于数量、分配和价差，不由此推全公司利润。"
+            },
+            {
+              "name": "大买方在冲击后扩大双来源和地域冗余承诺",
+              "implication": "安全库存拉货可先放大订单，长期分散采购削单一供给者议价，也促使新增资源投资；若实际增加数据保护副本，长期原始NAND存量上升；仅增加双来源不自动多存数据，提高目标安全库存也只前置库存规模，达到新水平后不持续提高终端消耗，并可能压后续补购。"
+            }
+          ],
+          "ref": [
+            "D1-O57",
+            "D1-O88",
+            "https://www.kioxia.com/en-jp/about/news/2026/20260703-2.html",
+            "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-13-sandisk-investor-day-2026",
+            "https://www.trendforce.com/presscenter/news/20260721-13148.html",
+            "https://www.trendforce.com/research/download/RP261007NY",
+            "https://www.trendforce.com/research/download/RP260930DA",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html?trk=article-ssr-frontend-pulse_little-text-block",
+            "D1-O74",
+            "D1-O103",
+            "https://www.kioxia-holdings.com/content/dam/kioxia-hd/en-jp/ir/library/event/asset/Investor-Day-2026-Eng-QA.pdf",
+            "D1-O4",
+            "D1-O156",
+            "https://apac.kioxia.com/en-apac/about/news/2026/20260827-2.html",
+            "https://apac.kioxia.com/en-apac/about/news/2026/20260827-3.html",
+            "https://apac.kioxia.com/en-apac/about/news/2026/20260130-1.html",
+            "D1-O73",
+            "D1-O90",
+            "https://www.westerndigital.com/company/newsroom/press-releases/2022/2022-02-09-western-digital-comments-on-production-status-of-its-joint-venture-flash-memory-manufacturing-facilities",
+            "https://www.kioxia.com/en-jp/about/news/2022/20220210-1.html"
+          ]
+        }
+      ]
+    }
+  ]
+}

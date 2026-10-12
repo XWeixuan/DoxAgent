@@ -1,0 +1,86 @@
+{
+  "schema_version": "codex-d1-turn-summary-v1",
+  "run_id": "c4-mu-local-20261009-03",
+  "attempt_id": "c4e_formal_scan-1-827ae8e457",
+  "node": "c4e_formal_scan",
+  "model": "gpt-6-sol",
+  "model_provider": null,
+  "job_status": "succeeded",
+  "thread_id": "01a120f3-e144-7e93-b37f-a4bf1e385a0c",
+  "turn_id": "01a120fc-2a06-70b3-9be2-5b87adf6b69a",
+  "usage": {
+    "input_tokens": 100070,
+    "cached_input_tokens": 99712,
+    "output_tokens": 6996,
+    "reasoning_output_tokens": 0,
+    "total_tokens": 107066
+  },
+  "observed_usage": {
+    "input_tokens": 100070,
+    "cached_input_tokens": 99712,
+    "output_tokens": 6996,
+    "reasoning_output_tokens": 0,
+    "total_tokens": 107066
+  },
+  "sdk_duration_ms": 429246,
+  "worker_wall_time_ms": 429358,
+  "mcp_call_count": 0,
+  "command_call_count": 8,
+  "subagent_call_count": 0,
+  "file_change_count": 1,
+  "slowest_steps": [
+    {
+      "sequence": 10,
+      "event": "item.completed",
+      "item_type": "command",
+      "name": "shell",
+      "status": "completed",
+      "duration_ms": 195,
+      "summary": "\"C:\\\\Users\\\\WEIXUANXIE\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\native\\\\powershell\\\\pwsh.exe\" -Command '$j=Get-Content -Raw '\"'attempts/c4e_formal_scan-1-827ae8e457/input/context.json'|ConvertFrom-Json; \"'$j.payload...."
+    },
+    {
+      "sequence": 2,
+      "event": "item.completed",
+      "item_type": "command",
+      "name": "shell",
+      "status": "completed",
+      "duration_ms": 175,
+      "summary": "\"C:\\\\Users\\\\WEIXUANXIE\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\native\\\\powershell\\\\pwsh.exe\" -Command '$c=Get-Content -LiteralPath '\"'attempts/c4e_formal_scan-1-827ae8e457/input/context.json' -Raw | ConvertFrom-Json..."
+    },
+    {
+      "sequence": 17,
+      "event": "item.completed",
+      "item_type": "command",
+      "name": "shell",
+      "status": "completed",
+      "duration_ms": 168,
+      "summary": "\"C:\\\\Users\\\\WEIXUANXIE\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\native\\\\powershell\\\\pwsh.exe\" -Command '$p='\"'attempts/c4e_formal_scan-1-827ae8e457/output/completion.json'; \"'$j=Get-Content -Raw $p|ConvertFrom-Json; ..."
+    },
+    {
+      "sequence": 3,
+      "event": "item.completed",
+      "item_type": "command",
+      "name": "shell",
+      "status": "completed",
+      "duration_ms": 164,
+      "summary": "\"C:\\\\Users\\\\WEIXUANXIE\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\native\\\\powershell\\\\pwsh.exe\" -Command '$c=Get-Content -LiteralPath '\"'attempts/c4e_formal_scan-1-827ae8e457/input/context.json' -Raw | ConvertFrom-Json..."
+    },
+    {
+      "sequence": 7,
+      "event": "item.completed",
+      "item_type": "command",
+      "name": "shell",
+      "status": "completed",
+      "duration_ms": 125,
+      "summary": "\"C:\\\\Users\\\\WEIXUANXIE\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\native\\\\powershell\\\\pwsh.exe\" -Command \"Get-Content -Raw 'attempts/c4e_formal_scan-1-827ae8e457/input/task.md'; Get-Content -Raw 'attempts/c4e_formal_sc..."
+    }
+  ],
+  "failures": [],
+  "validation": {
+    "schema": "passed",
+    "progressive": "passed",
+    "citation": "passed",
+    "citation_warnings": [],
+    "error": null
+  }
+}

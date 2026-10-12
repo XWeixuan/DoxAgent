@@ -1,0 +1,2722 @@
+{
+  "name": "DRAM与HBM制造体系",
+  "scope": "美光DRAM及HBM核心与基础die的晶圆制造、普通DRAM封装测试和内存模组制造，以及HBM专用堆叠、先进封装与测试。共同背景为内存制程、产品规格、良率、有效产出、前后段资源配置、基地和外包网络、设备材料、人员与劳动关系、公用事业、建设资本和相关公共资助。",
+  "boundary": "美光自身DRAM晶圆及常规后段、HBM专用后段的工艺、资产、产出、成本和项目经济性由本域深化；NAND、托管存储和SSD相关制造归NAND与存储产品制造体系。混合设施与MCP中的DRAM子组件工序归本域，含NAND的MCP整体存储组装归存储产品制造域，共同基地及外包商背景可共享。客户加速器系统封装、平台采购和产品地位归数据中心计算平台与内存；竞争者供给与市场价格归DRAM行业市场。项目资助与工厂资源合同归本域，公司总量现金生成和融资偿付归公司资金与股东权益，客户保证金条款归战略客户供给与资金保障关系。",
+  "ref": [
+    "D1-O74",
+    "D1-O31",
+    "D1-O88",
+    "D1-O4",
+    "D1-O3",
+    "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+    "https://puc.idaho.gov/Fileroom/PublicFiles/ELEC/IPC/IPCE2444/OrdNotc/20260508Final_Order_No_37039.pdf",
+    "D1-O57",
+    "D1-O6",
+    "event-library:MU:v1",
+    "https://investors.micron.com/news/press-release/2025/Micron-Announces-Shipment-of-1-1-gamma-DRAM-Pioneering-Memory-Technology-Advancements-for-Future-Compute-Needs-02-25-2025/default.aspx",
+    "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+    "D1-O103",
+    "https://www.investor.asml.com/news-releases/news-release-details/q2-2026-financial-results",
+    "https://investors.micron.com/news/press-release/2026/Micron-Completes-Acquisition-of-PSMCs-Tongluo-P5-Site-in-Taiwan-03-15-2026/default.aspx",
+    "D1-O11",
+    "D1-O44",
+    "https://www.irs.gov/forms-pubs/correction-to-the-2025-instructions-for-form-3468-of-the-applicability-of-the-35-rate-on-line-1c-in-part-iv-advanced-manufacturing-investment-credit-under-section-48d",
+    "https://focustaiwan.tw/business/202610070021",
+    "https://www.taipeitimes.com/News/biz/archives/2026/10/08/2003865571",
+    "https://investors.micron.com/news/press-release/2025/Micron-Breaks-Ground-on-New-HBM-Advanced-Packaging-Facility-in-Singapore-01-08-2025/default.aspx",
+    "D1-O130",
+    "https://www.appliedmaterials.com/us/en/newsroom/blogs/tackling-key-hbm-and-advanced-packaging-bottlenecks-for-ai-era.html",
+    "https://investors.micron.com/news/press-release/2026/Micron-Announces-Up-to-3-Billion-Strategic-Investment-to-Strengthen-U-S--Semiconductor-Ecosystem/default.aspx",
+    "https://www.sas-globalwafers.com/en/gwc_news_en_20260804/",
+    "https://www.aboutamazon.com/news/company-news/amazon-earnings-q2-2026-report",
+    "https://github.com/microncxl/cxl-reskit",
+    "https://developer.nvidia.com/blog/full-stack-optimizations-for-agentic-inference-with-nvidia-dynamo/",
+    "https://micron.gcs-web.com/static-files/c531bd08-22cd-4d6b-9540-f8aa72459716",
+    "https://www.asml.com/en/investors/annual-report/2025/strategy-and-stories",
+    "D1-O171",
+    "https://sg.micron.com/content/dam/micron/global/public/corporate/quality/certificates/micron-21-03-104-c-r018-y4bm-type-certificate-v2r0.pdf",
+    "https://www.advantest.com/document/en/investors/ir-library/briefing/E_IR_technical_briefing_231129.pdf",
+    "D1-O96",
+    "D1-O205",
+    "https://aws.amazon.com/about-aws/whats-new/2025/12/amazon-ec2-trn3-ultraservers/",
+    "https://nvidianews.nvidia.com/news/nvidia-launches-bluefield-4-stx-storage-architecture-with-broad-industry-adoption",
+    "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf",
+    "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html",
+    "D1-O147",
+    "D1-O148",
+    "D1-O150",
+    "https://www.appliedmaterials.com/us/en/newsroom/press-releases/100126-applied-besi-expand-partnership.html",
+    "D1-O52",
+    "D1-O186",
+    "D1-O66",
+    "D1-O125",
+    "https://markets.financialcontent.com/bpas/article/bizwire-2026-7-13-new-jedec-sphbm4-standard-enables-hbm4-class-bandwidth-on-organic-substrates",
+    "https://openai.com/index/how-enterprises-put-ai-to-work/",
+    "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+    "https://www.anthropic.com/news/enterprise-frontier-safeguards",
+    "https://blogs.microsoft.com/blog/2026/02/24/microsoft-sovereign-cloud-adds-governance-productivity-and-support-for-large-ai-models-securely-running-even-when-completely-disconnected/",
+    "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000236/ex9912.htm",
+    "https://nvidianews.nvidia.com/news/nvidia-partners-with-apollo-blackrock-blackstone-brookfield-goldman-sachs-and-kkr-to-establish-ai-compute-infrastructure-financing-platforms-to-mobilize-over-500-billion-of-third-party-capital",
+    "https://insidelines.pjm.com/pjm-proposes-framework-to-connect-data-centers-without-compromising-reliability-affordability/",
+    "https://www.pjm.com/markets-and-operations/large-load",
+    "https://www.idc.com/resource-center/blog/higher-asps-lower-unit-volumes-how-the-memory-crisis-is-reshaping-the-pc-and-smartphone-outlook/",
+    "https://www.trendforce.com/presscenter/news/20260514-13044.html",
+    "https://nvidianews.nvidia.com/news/drive-hyperion-level-4",
+    "https://arxiv.org/abs/2203.00241",
+    "https://arxiv.org/abs/2606.24079",
+    "https://news.skhynix.com/en/new-facility-investment-for-yongin-semiconductor-cluster/",
+    "https://news.skhynix.com/en/groundbreaking-ceremony-in-indiana/"
+  ],
+  "units": [
+    {
+      "name": "美光DRAM晶圆与常规后段制造体系",
+      "scope": "美光DRAM以及HBM核心与基础die的晶圆制造，普通DRAM封装测试、内存模组及相关MCP子组件制造的自有与外包网络，涵盖制程研发和转换、产能与利用率、良率、合格产出、产品及基地配置、设备材料、公用事业、人员与劳动关系、制造成本、扩建、资本投入及公共资助。",
+      "horizon": "季度运营与制程转换周期，延伸至多年基地建设、爬坡和资产使用周期。",
+      "ref": [
+        "D1-O74",
+        "D1-O31",
+        "D1-O88",
+        "D1-O57",
+        "D1-O4",
+        "D1-O6",
+        "D1-O3",
+        "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+        "https://puc.idaho.gov/Fileroom/PublicFiles/ELEC/IPC/IPCE2444/OrdNotc/20260508Final_Order_No_37039.pdf",
+        "event-library:MU:v1",
+        "https://investors.micron.com/news/press-release/2025/Micron-Announces-Shipment-of-1-1-gamma-DRAM-Pioneering-Memory-Technology-Advancements-for-Future-Compute-Needs-02-25-2025/default.aspx",
+        "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+        "D1-O103",
+        "https://www.investor.asml.com/news-releases/news-release-details/q2-2026-financial-results",
+        "https://investors.micron.com/news/press-release/2026/Micron-Completes-Acquisition-of-PSMCs-Tongluo-P5-Site-in-Taiwan-03-15-2026/default.aspx",
+        "D1-O11",
+        "D1-O44",
+        "https://www.irs.gov/forms-pubs/correction-to-the-2025-instructions-for-form-3468-of-the-applicability-of-the-35-rate-on-line-1c-in-part-iv-advanced-manufacturing-investment-credit-under-section-48d",
+        "https://focustaiwan.tw/business/202610070021",
+        "https://www.taipeitimes.com/News/biz/archives/2026/10/08/2003865571",
+        "https://investors.micron.com/news/press-release/2026/Micron-Announces-Up-to-3-Billion-Strategic-Investment-to-Strengthen-U-S--Semiconductor-Ecosystem/default.aspx",
+        "https://www.sas-globalwafers.com/en/gwc_news_en_20260804/",
+        "D1-O130",
+        "https://www.aboutamazon.com/news/company-news/amazon-earnings-q2-2026-report",
+        "https://github.com/microncxl/cxl-reskit",
+        "https://developer.nvidia.com/blog/full-stack-optimizations-for-agentic-inference-with-nvidia-dynamo/",
+        "https://micron.gcs-web.com/static-files/c531bd08-22cd-4d6b-9540-f8aa72459716",
+        "https://www.asml.com/en/investors/annual-report/2025/strategy-and-stories",
+        "D1-O171",
+        "https://sg.micron.com/content/dam/micron/global/public/corporate/quality/certificates/micron-21-03-104-c-r018-y4bm-type-certificate-v2r0.pdf",
+        "https://www.advantest.com/document/en/investors/ir-library/briefing/E_IR_technical_briefing_231129.pdf",
+        "D1-O96",
+        "D1-O205",
+        "https://openai.com/index/how-enterprises-put-ai-to-work/",
+        "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+        "https://www.anthropic.com/news/enterprise-frontier-safeguards",
+        "https://blogs.microsoft.com/blog/2026/02/24/microsoft-sovereign-cloud-adds-governance-productivity-and-support-for-large-ai-models-securely-running-even-when-completely-disconnected/",
+        "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000236/ex9912.htm",
+        "https://nvidianews.nvidia.com/news/nvidia-partners-with-apollo-blackrock-blackstone-brookfield-goldman-sachs-and-kkr-to-establish-ai-compute-infrastructure-financing-platforms-to-mobilize-over-500-billion-of-third-party-capital",
+        "https://insidelines.pjm.com/pjm-proposes-framework-to-connect-data-centers-without-compromising-reliability-affordability/",
+        "https://www.pjm.com/markets-and-operations/large-load",
+        "https://www.idc.com/resource-center/blog/higher-asps-lower-unit-volumes-how-the-memory-crisis-is-reshaping-the-pc-and-smartphone-outlook/",
+        "https://www.trendforce.com/presscenter/news/20260514-13044.html",
+        "https://nvidianews.nvidia.com/news/drive-hyperion-level-4",
+        "https://arxiv.org/abs/2203.00241",
+        "https://arxiv.org/abs/2606.24079",
+        "D1-O125",
+        "https://news.skhynix.com/en/new-facility-investment-for-yongin-semiconductor-cluster/",
+        "https://news.skhynix.com/en/groundbreaking-ceremony-in-indiana/"
+      ],
+      "state": {
+        "parameters": [
+          {
+            "name": "DRAM合格比特产出",
+            "definition": "本体系经晶圆制造及必要验证形成的合格DRAM比特量，包含HBM核心die；不以销售额、晶圆面积或已出货比特替代。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O74",
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "DRAM晶圆投入能力",
+            "definition": "按基地及产品用途界定的300mm晶圆月投入能力，区分已装备能力与建设规划；无同口径公开测量值。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O31",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "DRAM数值利用率",
+            "definition": "DRAM已装备晶圆制造能力实际使用比例；公司通常使用全部既有制造能力的文字不转换为100%。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O57",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "现有制造资源使用与分配",
+            "definition": "既有制造网络的使用状态及DRAM产品之间的有限供给分配。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O57",
+              "D1-O31",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "DRAM出货比特同比增长幅度",
+            "definition": "公司DRAM销售出货比特的同比幅度；保留公司百分比区间用语，不代表生产增长或标准化周数增长。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "1γ制造采用地位",
+            "definition": "1γ在DRAM合格比特产出中的商业制造地位；与采用EUV的技术属性共同界定节点转换。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O88",
+              "D1-O74",
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "1γ设计比特密度优势",
+            "definition": "1γ对1β的晶圆比特密度技术比较，保留一侧下限；不是当期每片晶圆经济良品比特增长。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2025/Micron-Announces-Shipment-of-1-1-gamma-DRAM-Pioneering-Memory-Technology-Advancements-for-Future-Compute-Needs-02-25-2025/default.aspx"
+            ]
+          },
+          {
+            "name": "DRAM分节点制造良率",
+            "definition": "各节点及核心die、基础die等用途的合格die比例；当前没有可比的数值序列。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O88",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "DRAM单位比特制造成本",
+            "definition": "同规格、节点及基地口径的每合格比特制造成本；与全产品混合成本区分。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O57",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "DRAM工艺降本方向",
+            "definition": "产品和制程改进对既有DRAM制造成本的已实现方向，不含ASP变化。",
+            "value_type": "DIRECTION",
+            "ref": [
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "混合DRAM单位比特成本预期",
+            "definition": "管理层对产品组合、复杂度及新厂爬坡共同作用下的DRAM混合单位成本方向判断。",
+            "value_type": "DIRECTION",
+            "ref": [
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356"
+            ]
+          },
+          {
+            "name": "制造激励薪酬成本吸收状态",
+            "definition": "制造人员激励薪酬增加在存货成本与销售成本间的吸收状态；公司全制造网络口径，未分出DRAM金额。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "下一代DRAM节点量产时间",
+            "definition": "1γ之后下一代DRAM技术进入量产的管理层计划，独立于新厂首片晶圆时间。",
+            "value_type": "TIME",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "HBM核心与基础die制造归属",
+            "definition": "HBM4前段核心DRAM die及逻辑基础die的设计制造归属，界定本体系承担的技术与产能责任。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O88",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "常规后段自有与外包安排",
+            "definition": "DRAM封装测试、模组及MCP中DRAM子组件的内部和外部制造安排；不包括含NAND的MCP整体存储组装。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O3",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "印度常规后段商业阶段",
+            "definition": "Gujarat装配测试设施的商业运作阶段；混合DRAM/NAND设施仅作为DRAM后段网络新增接口。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "服务器DRAM模组制造接受状态",
+            "definition": "新节点服务器模组跨越送样、客户认证与商业交付的状态，是常规后段产品规格与合格交付接口。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O103",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "长期采购数量承诺安排",
+            "definition": "关联制造规划的多年客户可执行采购数量安排及价格制定方式，不把客户现金保证金当作本体系收入。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O31",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "关键材料可获得性",
+            "definition": "晶圆、化学品、气体、光刻材料、基板等合格制造投入的供应及交期状态。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O74",
+              "D1-O3"
+            ]
+          },
+          {
+            "name": "EUV设备供给安排",
+            "definition": "支撑1δ及后续DRAM节点的美光EUV设备采购保障安排。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356"
+            ]
+          },
+          {
+            "name": "EUV上游年度生产能力",
+            "definition": "ASML低NA EUV年度生产能力规划；为美光节点设备可获得性的上游数量锚点，不是美光已获设备数量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.investor.asml.com/news-releases/news-release-details/q2-2026-financial-results"
+            ]
+          },
+          {
+            "name": "EUV上游能力扩张率",
+            "definition": "ASML低NA EUV生产能力对上一年能力规划的增幅，不计算为美光分配。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.investor.asml.com/news-releases/news-release-details/q2-2026-financial-results"
+            ]
+          },
+          {
+            "name": "铜锣已取得洁净室规模",
+            "definition": "已收购P5设施现有300mm洁净室面积，定位可装备空间，不代表晶圆投入或良品产出。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-Completes-Acquisition-of-PSMCs-Tongluo-P5-Site-in-Taiwan-03-15-2026/default.aspx"
+            ]
+          },
+          {
+            "name": "铜锣制造项目阶段",
+            "definition": "已取得P5资产及其后续洁净室建设的阶段，区分资产所有权与商业产出。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O31",
+              "https://investors.micron.com/news/press-release/2026/Micron-Completes-Acquisition-of-PSMCs-Tongluo-P5-Site-in-Taiwan-03-15-2026/default.aspx",
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356"
+            ]
+          },
+          {
+            "name": "铜锣有规模出货时间",
+            "definition": "铜锣现有厂开始有规模产品出货的管理层时点，不是首片晶圆或满产时间。",
+            "value_type": "TIME",
+            "ref": [
+              "D1-O31",
+              "D1-O4",
+              "https://investors.micron.com/news/press-release/2026/Micron-Completes-Acquisition-of-PSMCs-Tongluo-P5-Site-in-Taiwan-03-15-2026/default.aspx"
+            ]
+          },
+          {
+            "name": "Idaho首厂初始晶圆时间",
+            "definition": "ID1初始晶圆产出计划，区分首产与数季后的有规模合格出货。",
+            "value_type": "TIME",
+            "ref": [
+              "D1-O31",
+              "D1-O6"
+            ]
+          },
+          {
+            "name": "Idaho第二厂初始晶圆时间",
+            "definition": "ID2初始晶圆产出计划，独立于首厂和后续满产。",
+            "value_type": "TIME",
+            "ref": [
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "广岛扩建初始产出时间",
+            "definition": "广岛DRAM新洁净室扩建支持节点转换的初始产出计划。",
+            "value_type": "TIME",
+            "ref": [
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "纽约首厂初始晶圆时间",
+            "definition": "New York第一座DRAM厂的初始晶圆产出计划，不把远期工厂计算入当前供给。",
+            "value_type": "TIME",
+            "ref": [
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "美国既有厂长生命周期DRAM制造阶段",
+            "definition": "Virginia既有厂用于汽车、工业、医疗、航空防务等长生命周期DDR产品的节点及生产状态。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356"
+            ]
+          },
+          {
+            "name": "公司制造资本毛额现金支付",
+            "definition": "公司全产品PP&E毛额现金支出，是本体系投资扩张的总预算背景，未分拆DRAM/HBM，不等于本Unit资本开支。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O31",
+              "D1-O11"
+            ]
+          },
+          {
+            "name": "公司制造资本净额计划",
+            "definition": "公司PP&E支出扣预期政府激励后的分期预算；季度与半年预算重叠，不相加，不能直接比毛额。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O31",
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "资本投入后半年前置扩张方向",
+            "definition": "公司制造资本计划的下半年相对上半年方向；不由方向推造全年精确数。",
+            "value_type": "DIRECTION",
+            "ref": [
+              "D1-O31",
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "DRAM专项建设与设备资本",
+            "definition": "仅本Unit建设及设备支出，不将公司总量或新加坡NAND厂投入整体归入DRAM。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O31",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "美国项目公共资助安排",
+            "definition": "美国DRAM制造项目公共资助的约定上限和制度状态，非已到账补助。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "美国合格投资税收抵免率",
+            "definition": "美国48D先进制造投资抵免对合格投资的法定税率，需按资产投入使用日期及合格范围确定，不把全部全球capex视为适用。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.irs.gov/forms-pubs/correction-to-the-2025-instructions-for-form-3468-of-the-applicability-of-the-35-rate-on-line-1c-in-part-iv-advanced-manufacturing-investment-credit-under-section-48d"
+            ]
+          },
+          {
+            "name": "Idaho厂用电合同承诺状态",
+            "definition": "支撑Idaho扩建的电力资源合约批准及容量、最低需求费用和信用保障义务；不代表实际用电量。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://puc.idaho.gov/Fileroom/PublicFiles/ELEC/IPC/IPCE2444/OrdNotc/20260508Final_Order_No_37039.pdf"
+            ]
+          },
+          {
+            "name": "台湾制造劳动关系状态",
+            "definition": "台湾制造基地工会谈判、罢工授权与实际行动阶段，分别保留Taoyuan与Taichung，不将工会票数等同产出损失。",
+            "value_type": "STAGE",
+            "ref": [
+              "event-library:MU:v1",
+              "https://focustaiwan.tw/business/202610070021",
+              "https://www.taipeitimes.com/News/biz/archives/2026/10/08/2003865571"
+            ]
+          },
+          {
+            "name": "劳动行动造成的制造损失",
+            "definition": "劳动行动已造成的实际停工工时或晶圆产出损失；授权票及抗议不替代该测量，当前没有数值。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://focustaiwan.tw/business/202610070021",
+              "event-library:MU:v1"
+            ]
+          },
+          {
+            "name": "美国原始硅片供给合作阶段",
+            "definition": "为美国先进内存制造提供300mm原始硅晶圆的具名供应合作状态；供应商的客户认证与扩产不等于美光DRAM合格产出。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-Announces-Up-to-3-Billion-Strategic-Investment-to-Strengthen-U-S--Semiconductor-Ecosystem/default.aspx",
+              "https://www.sas-globalwafers.com/en/gwc_news_en_20260804/"
+            ]
+          },
+          {
+            "name": "GlobalWafers战略融资规划",
+            "definition": "美光拟提供给GlobalWafers America Sherman原始硅片厂的战略融资支持金额；属供给保障规划，非已确认付款、股权持有额或DRAM资本支出。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-Announces-Up-to-3-Billion-Strategic-Investment-to-Strengthen-U-S--Semiconductor-Ecosystem/default.aspx"
+            ]
+          }
+        ],
+        "values": [
+          {
+            "name": "既有资源被充分使用但分配并非平均",
+            "parameter": "现有制造资源使用与分配",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "公司称通常使用全部既有制造能力；FY2026 MCBU比特出货下降，因有限供给转配其他业务单元。此处总体网络包含DRAM及NAND，未给DRAM独立利用率。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026及2026年10月年报经营描述",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O57",
+              "D1-O31",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "FY2026实物出货增长",
+            "parameter": "DRAM出货比特同比增长幅度",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "同比增长为20%中段；FY2026为53周、FY2025为52周，未作周数标准化。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026，相比FY2025",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "1γ已成为产出主力",
+            "parameter": "1γ制造采用地位",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "FY2026 Q4 DRAM比特产量多数来自1γ；为美光首个采用EUV的DRAM节点。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026 Q4",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O88",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "1γ相对1β密度下限",
+            "parameter": "1γ设计比特密度优势",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "公司技术披露：每片晶圆比特数提高超过30%，比较1β；这是设计密度而非当期实测良率调整后的有效产出。"
+            },
+            "previous_value": null,
+            "time_scope": "1γ与1β技术比较",
+            "as_of": "2025-02-25",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2025/Micron-Announces-Shipment-of-1-1-gamma-DRAM-Pioneering-Memory-Technology-Advancements-for-Future-Compute-Needs-02-25-2025/default.aspx"
+            ]
+          },
+          {
+            "name": "全年已实现制造降本",
+            "parameter": "DRAM工艺降本方向",
+            "source_role": "ACTUAL",
+            "value": {
+              "direction": "产品和制程技术改进降低制造成本，构成FY2026 DRAM利润改善的一部分；未披露节点贡献幅度。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "复杂度与新厂带来成本上行预期",
+            "parameter": "混合DRAM单位比特成本预期",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "direction": "预期LP5转LP6、DDR5转DDR6、新代HBM及绿地爬坡使混合DRAM成本/bit高于2026年6月水平。"
+            },
+            "previous_value": null,
+            "time_scope": "未来数年产品与绿地扩产周期",
+            "as_of": "2026-06-24",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356"
+            ]
+          },
+          {
+            "name": "FY2026制造奖励增量主要进入期末存货",
+            "parameter": "制造激励薪酬成本吸收状态",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "FY2026 Q4提高的制造相关激励薪酬，多数已吸收进Q4存货。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026 Q4",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "费用影响向下一财季释放",
+            "parameter": "制造激励薪酬成本吸收状态",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "stage": "这些高成本存货主要影响FY2027 Q1；Q2该批费用减轻，但FY2027更高激励薪酬抵消部分收益。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2027 Q1—Q2",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "下一代DRAM节点计划量产窗口",
+            "parameter": "下一代DRAM节点量产时间",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "point": null,
+              "start": "2027-07",
+              "end": "2027-12",
+              "precision": "半年"
+            },
+            "previous_value": null,
+            "time_scope": "日历2027下半年",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "HBM4两类die内部设计制造",
+            "parameter": "HBM核心与基础die制造归属",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "HBM4逻辑基础die与DRAM核心die均为内部设计及制造，不将其默认归于外部逻辑代工。"
+            },
+            "previous_value": null,
+            "time_scope": "截至FY2026年报的HBM4制造安排",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O88",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "内部为主并外包部分工序",
+            "parameter": "常规后段自有与外包安排",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "制造主要由内部完成，部分封装die、模组与MCP组装由外包网络承接；当前材料没有DRAM外包比例或具名新增配额。"
+            },
+            "previous_value": null,
+            "time_scope": "2026年10月年报制造网络",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O3",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "印度设施已出货并爬坡",
+            "parameter": "印度常规后段商业阶段",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "FY2026开始商业出货，目前处于爬坡；未披露可分配给DRAM的独立产能。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026及年报经营状态",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "高速RDIMM多客户认证而高容量规格仍送样",
+            "parameter": "服务器DRAM模组制造接受状态",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "1γ 8,800 MT/s RDIMM获多个客户认证；512GB 9,200 MT/s RDIMM为送样，未等同全部模组量产配额。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026 Q4产品状态",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O103",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "已签多年take-or-pay支持制造规划",
+            "parameter": "长期采购数量承诺安排",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "FY2026 Q3/Q4签订多年take-or-pay，具可执行数量，价格固定或周期谈判，多数战略协议有最低/最高价带；DRAM/HBM产品覆盖量未在所用最新上游材料分拆。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026 Q3/Q4签约及多年履约期",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O31",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "部分关键投入品短缺或交期拉长",
+            "parameter": "关键材料可获得性",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "部分材料或组件已有短缺或交期延长；若干投入依赖有限或单一合格供应商，未披露具体短缺品种及受影响产量。"
+            },
+            "previous_value": null,
+            "time_scope": "2026年10月年报供应状态",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O74",
+              "D1-O3"
+            ]
+          },
+          {
+            "name": "ASML多年供给协议已成立",
+            "parameter": "EUV设备供给安排",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "已与ASML完成多年EUV供给协议，支持1δ及以后节点增加EUV采用。"
+            },
+            "previous_value": null,
+            "time_scope": "协议签署后多年",
+            "as_of": "2026-06-24",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356"
+            ]
+          },
+          {
+            "name": "ASML2026低NA EUV能力计划",
+            "parameter": "EUV上游年度生产能力",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 65.0,
+              "unit": "台/年（约，ASML生产能力）"
+            },
+            "previous_value": null,
+            "time_scope": "日历2026",
+            "as_of": "2026-07-15",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.investor.asml.com/news-releases/news-release-details/q2-2026-financial-results"
+            ]
+          },
+          {
+            "name": "ASML2027扩能计划",
+            "parameter": "EUV上游能力扩张率",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 30.0,
+              "unit": "%（计划增幅）"
+            },
+            "previous_value": null,
+            "time_scope": "日历2027，相比2026能力",
+            "as_of": "2026-07-15",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.investor.asml.com/news-releases/news-release-details/q2-2026-financial-results"
+            ]
+          },
+          {
+            "name": "P5已取得既有洁净室",
+            "parameter": "铜锣已取得洁净室规模",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 300000.0,
+              "unit": "平方英尺"
+            },
+            "previous_value": null,
+            "time_scope": "2026年3月收购交割的既有设施",
+            "as_of": "2026-03-15",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-Completes-Acquisition-of-PSMCs-Tongluo-P5-Site-in-Taiwan-03-15-2026/default.aspx"
+            ]
+          },
+          {
+            "name": "铜锣交割并推进第二洁净室",
+            "parameter": "铜锣制造项目阶段",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "2026年3月完成P5收购；第二洁净室已开工，支持后续EUV设备配置。"
+            },
+            "previous_value": null,
+            "time_scope": "2026年3月至10月制造项目",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O31",
+              "https://investors.micron.com/news/press-release/2026/Micron-Completes-Acquisition-of-PSMCs-Tongluo-P5-Site-in-Taiwan-03-15-2026/default.aspx",
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356"
+            ]
+          },
+          {
+            "name": "铜锣最新商业出货计划",
+            "parameter": "铜锣有规模出货时间",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "point": "2027年中",
+              "start": null,
+              "end": null,
+              "precision": "近似年中"
+            },
+            "previous_value": null,
+            "time_scope": "日历2027",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O31",
+              "D1-O4"
+            ]
+          },
+          {
+            "name": "ID1首产计划",
+            "parameter": "Idaho首厂初始晶圆时间",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "point": "2027年中",
+              "start": null,
+              "end": null,
+              "precision": "近似年中"
+            },
+            "previous_value": null,
+            "time_scope": "日历2027",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O31",
+              "D1-O6"
+            ]
+          },
+          {
+            "name": "ID2首产计划",
+            "parameter": "Idaho第二厂初始晶圆时间",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "point": "2028年末",
+              "start": null,
+              "end": null,
+              "precision": "近似年末"
+            },
+            "previous_value": null,
+            "time_scope": "日历2028",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "广岛扩建首产计划",
+            "parameter": "广岛扩建初始产出时间",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "point": "2028年末",
+              "start": null,
+              "end": null,
+              "precision": "近似年末"
+            },
+            "previous_value": null,
+            "time_scope": "日历2028",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "纽约首厂首产计划",
+            "parameter": "纽约首厂初始晶圆时间",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "point": "2030",
+              "start": null,
+              "end": null,
+              "precision": "年"
+            },
+            "previous_value": null,
+            "time_scope": "日历2030",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "Virginia启动1α DDR4生产",
+            "parameter": "美国既有厂长生命周期DRAM制造阶段",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "Manassas厂已启动1α DDR4初次生产投片，支持长生命周期产品；不等同高容量DDR5或HBM量产。"
+            },
+            "previous_value": null,
+            "time_scope": "截至2026年6月披露的生产安排",
+            "as_of": "2026-06-24",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356"
+            ]
+          },
+          {
+            "name": "FY2026公司PP&E毛额支付",
+            "parameter": "公司制造资本毛额现金支付",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 30.712,
+              "unit": "十亿美元（公司全产品，毛额）"
+            },
+            "previous_value": {
+              "number": 15.857,
+              "unit": "十亿美元（公司全产品，毛额）"
+            },
+            "time_scope": "FY2026，相比FY2025",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O31",
+              "D1-O11"
+            ]
+          },
+          {
+            "name": "FY2027 Q1公司净资本计划",
+            "parameter": "公司制造资本净额计划",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "number": 11.5,
+              "unit": "十亿美元（约，扣预期政府激励）"
+            },
+            "previous_value": null,
+            "time_scope": "FY2027 Q1",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O31",
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "FY2027 H1公司净资本计划",
+            "parameter": "公司制造资本净额计划",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "number": 25.0,
+              "unit": "十亿美元（约，扣预期政府激励）"
+            },
+            "previous_value": null,
+            "time_scope": "FY2027前六个月，包含Q1",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O31",
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "FY2027下半年高于上半年",
+            "parameter": "资本投入后半年前置扩张方向",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "direction": "FY2027后六个月净PP&E支出高于前六个月。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2027 H2，相比H1",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O31",
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "联邦有条件协议与州级非约束性条款",
+            "parameter": "美国项目公共资助安排",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "Idaho、New York及Virginia相关CHIPS直接资助协议最高64亿美元并附条件；New York州激励最高55亿美元仍为非约束性条款清单。上限不是实收。"
+            },
+            "previous_value": null,
+            "time_scope": "多年美国DRAM项目",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "2026年起适用合格投资税率",
+            "parameter": "美国合格投资税收抵免率",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 35.0,
+              "unit": "%（仅满足48D条件的投资）"
+            },
+            "previous_value": null,
+            "time_scope": "合格投资税年从2025年起；2026年前投入使用的资产仍为25%",
+            "as_of": "2026-08-27",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.irs.gov/forms-pubs/correction-to-the-2025-instructions-for-form-3468-of-the-applicability-of-the-35-rate-on-line-1c-in-part-iv-advanced-manufacturing-investment-credit-under-section-48d"
+            ]
+          },
+          {
+            "name": "专属电力服务协议获修改后批准",
+            "parameter": "Idaho厂用电合同承诺状态",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "Idaho PUC以第37039号命令修改后批准Idaho Power相关专属服务协议，包含容量/最低需求费用及信用保障安排。"
+            },
+            "previous_value": null,
+            "time_scope": "新厂电力服务与建设期资源承诺",
+            "as_of": "2026-05-08",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://puc.idaho.gov/Fileroom/PublicFiles/ELEC/IPC/IPCE2444/OrdNotc/20260508Final_Order_No_37039.pdf"
+            ]
+          },
+          {
+            "name": "桃园获罢工授权而台中仍待调解",
+            "parameter": "台湾制造劳动关系状态",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "10月7日桃园工会宣布获罢工授权：2,258名合资格会员中2,012投票、1,994赞成，占合资格者88.3%及投票者约99%；尚无罢工日期。台中工会第二次调解定于10月22日。"
+            },
+            "previous_value": null,
+            "time_scope": "2026年10月7日劳动关系快照及后续调解安排",
+            "as_of": "2026-10-07",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://focustaiwan.tw/business/202610070021",
+              "https://www.taipeitimes.com/News/biz/archives/2026/10/08/2003865571"
+            ]
+          },
+          {
+            "name": "供应商确认长期合作与资金支持",
+            "parameter": "美国原始硅片供给合作阶段",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "GlobalWafers于8月4日称Micron通过长期协议及战略资金支持加强美国先进硅片供给；Sherman厂获多个Tier-1客户认证，但未单独证明美光全部工艺资格或融资交割。"
+            },
+            "previous_value": null,
+            "time_scope": "截至2026年8月供应合作及美国硅片扩产",
+            "as_of": "2026-08-04",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sas-globalwafers.com/en/gwc_news_en_20260804/",
+              "https://investors.micron.com/news/press-release/2026/Micron-Announces-Up-to-3-Billion-Strategic-Investment-to-Strengthen-U-S--Semiconductor-Ecosystem/default.aspx"
+            ]
+          },
+          {
+            "name": "拟议5亿美元原始硅片融资",
+            "parameter": "GlobalWafers战略融资规划",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "number": 0.5,
+              "unit": "十亿美元（拟议战略融资）"
+            },
+            "previous_value": null,
+            "time_scope": "支持Sherman 300mm厂及拟议10年供给协议；7月公告仍待最终协议、审批和交割条件",
+            "as_of": "2026-07-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-Announces-Up-to-3-Billion-Strategic-Investment-to-Strengthen-U-S--Semiconductor-Ecosystem/default.aspx"
+            ]
+          }
+        ]
+      },
+      "expectation_baseline": [
+        {
+          "name": "近端产出由既有网络、节点转换和用途分配驱动",
+          "baseline": "工作判断是FY2027近端DRAM供给继续增长但仍受既有空间与合格产出约束，优先通过1γ密度、良率学习、设备效率和产品分配兑现，而非立即依靠绿地厂满产。1γ已为多数比特产出、既有网络充分使用及MCBU减量转配支持这一解释；多个客户认证高速RDIMM表明节点转换已进入可采购产品，但不意味着各用途同时无约束放量。",
+          "ordinary_progress": "1γ占比继续提升、认证规格转为持续交付、既有设备生产率改善和印度DRAM相关后段爬坡，均延续这一路径。",
+          "open_frontier": "节点有效良品比特提升能否超过新产品晶圆面积与资源占用；移动客户端是否继续被挤出；材料短缺是否转成有量化幅度的交付损失。",
+          "time_scope": "FY2027及2027年初至年中",
+          "ref": [
+            "D1-O88",
+            "D1-O57",
+            "D1-O31",
+            "D1-O74",
+            "D1-O103"
+          ]
+        },
+        {
+          "name": "制造效率改善不等于混合成本持续下降",
+          "baseline": "采用同规格工艺降本延续、混合成本承压的双层成本基准，而非外推全体系成本/bit单调下降。FY2026已实现技术降本；管理层另预期复杂新品与绿地爬坡推高混合成本，制造激励薪酬也通过存货滞后影响成本。这是成本口径与组合变化，不是对既有节点效率改善的否定。",
+          "ordinary_progress": "成熟节点继续改善良率和效率，常规季节性存货释放及计划内新品/新基地爬坡带来阶段性费用，符合此成本路径。",
+          "open_frontier": "混合成本上升由更高价值规格补偿还是由低良率、闲置与基地结构拖累；新规格合同溢价能否覆盖其成本，而非仅观察合并毛利率。",
+          "time_scope": "FY2027至数年产品/基地转换周期",
+          "ref": [
+            "D1-O57",
+            "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+          ]
+        },
+        {
+          "name": "2027新增能力分层兑现而非一次性供给跃升",
+          "baseline": "默认扩张会按已交割资产和建设项目逐步兑现：铜锣现有厂有规模出货与ID1首片晶圆均指向2027年中，但它们不是同一商业里程碑。印度已有商业出货，是更近的后段接口；广岛/ID2在2028年末、纽约2030年属更远期。资产交割和实际施工使继续扩张比停建更可信，仍不能把计划表加总为当前DRAM合格产能。",
+          "ordinary_progress": "项目按既定时间完成设备安装、人员与公用事业配置，首产后经过良率学习与产品资格逐季增加销售，不是首日满产。",
+          "open_frontier": "新增晶圆的经济良率和客户可用时间是否明显偏离首产；铜锣设备转换能否释放早期商业量；各地建设资源拥挤是否形成不同项目排序。",
+          "time_scope": "2027—2030",
+          "ref": [
+            "D1-O31",
+            "D1-O4",
+            "D1-O6",
+            "https://investors.micron.com/news/press-release/2026/Micron-Completes-Acquisition-of-PSMCs-Tongluo-P5-Site-in-Taiwan-03-15-2026/default.aspx",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+          ]
+        },
+        {
+          "name": "采购承诺提高投入可信度但不包办项目回报",
+          "baseline": "已签多年可执行采购数量、已取得制造资产、设备长期供给安排及有条件公共资助共同支持持续投入。FY2027前半年公司净资本计划约250亿美元、后半年更高，故扩张期的基准是先建设和设备现金投入、后合格产出与资产回收；这是经营证据综合，不是市场已完全计价或所有项目高ROIC的证明。",
+          "ordinary_progress": "执行既有take-or-pay、依约获得合格项目补助和税收抵免、保持电力资源保障并完成已宣布建设，均是扩张基准内进度。",
+          "open_frontier": "项目对应的DRAM投入分拆、有效合同覆盖、补助实收与成本溢价；当产品价格或用途需求改变时，规模扩张能否仍获得合理资产回报。",
+          "time_scope": "FY2027投入窗口及2027—2030项目经济周期",
+          "ref": [
+            "D1-O31",
+            "D1-O74",
+            "D1-O44",
+            "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+            "https://puc.idaho.gov/Fileroom/PublicFiles/ELEC/IPC/IPCE2444/OrdNotc/20260508Final_Order_No_37039.pdf",
+            "https://www.irs.gov/forms-pubs/correction-to-the-2025-instructions-for-form-3468-of-the-applicability-of-the-35-rate-on-line-1c-in-part-iv-advanced-manufacturing-investment-credit-under-section-48d"
+          ]
+        },
+        {
+          "name": "投入品和劳动资源使连续运营基准更具条件性",
+          "baseline": "仍以现有工厂连续运营、供应商与工会持续协商为工作路径，不把未测量停工写入产出。部分投入已有短缺或长交期；桃园10月7日取得罢工授权且未定日期，劳动关系已从威胁阶段转为可发动行动的状态，不能沿用9月早期材料认定尚无授权。这个变化提高连续运营路径的脆弱性，但现有证据不是已发生减产。",
+          "ordinary_progress": "采购替代/交期管理、既有电力保障、与桃园协商及台中10月22日调解属于常规维持供给动作。",
+          "open_frontier": "桃园是否实施短通知行动、覆盖哪些关键岗位及持续时长；永久分红安排的成本能否与一次奖励不同；短缺是否集中在无替代的合格投入。",
+          "time_scope": "截至2026年10月的运营状态，延伸未来数季",
+          "ref": [
+            "D1-O74",
+            "D1-O3",
+            "https://focustaiwan.tw/business/202610070021",
+            "https://www.taipeitimes.com/News/biz/archives/2026/10/08/2003865571",
+            "https://puc.idaho.gov/Fileroom/PublicFiles/ELEC/IPC/IPCE2444/OrdNotc/20260508Final_Order_No_37039.pdf",
+            "event-library:MU:v1"
+          ]
+        }
+      ],
+      "realization_factors": [
+        {
+          "name": "应用的商业吸收、内存架构与客户采购预算",
+          "mechanism": "可持续的制造负载首先来自客户愿意支付的服务或终端用途，而非AI标签。云端付费任务、并发与工作集大小，经运营者选择模型、服务器架构和服务质量，形成DDR/LPDDR/HBM配置；缓存分层、CXL分配和调度改变每台及每任务的DRAM强度。运营者依据利用率、单位服务经济性及资金预算决定新服务器采购或先利用存量；机房通电与平台交付再决定采购时点。PC/手机则由终端售价、销量、每台容量及OEM库存/供货分配形成订单，汽车工业还受平台量产和长供货周期约束。客户订单最终通过美光资格与供给配额成为本体系的制造用途。",
+          "current_status": "工作判断是数据中心存在商业吸收及实物平台推进，近端新增需求更多改变用途分配和扩产计划，而非让满负荷网络按需求同比增产。AWS Q2 2026收入422亿美元、营业利润166亿美元，证明一条已经营的云收入来源；其公司TTM自由现金流为负76亿美元，显示投入仍占用资金，不是全部AI投资已经回收。美光服务器RDIMM多客户认证、SOCAMM销售与MCBU减量改配并存。CXL已有模块/软件接口路径，但容量被识别不等于所有应用已高效利用。",
+          "materiality_context": "付费吸收和终端销量决定机会持续长度；并发、工作集及每台配置决定实物强度，不能以销售额同比替代比特同比。架构/缓存效率提高时，同一任务量可少购内存或服务器；若降低服务成本引发更快使用增长，总量仍可能增加，当前商业增长支持后者有空间但无统一弹性。利用率与存量余量决定订单对任务增长的短期敏感度：有空闲时先吸收，接近满载时预算与供电时点更有杠杆。预算、资金和部署许可控制季度交付节奏；AWS现金流不能代表所有客户融资。OEM库存及售价可能压低PC/手机销量并抵消内容升级。汽车/工业平台量产和长供货周期使新内容较慢转为制造负载，并限制旧料号资源退出，相比已认证服务器规格更少体现为立即可重配的晶圆。美光资格/配额决定谁承接机会，当前MCBU改配说明本体系的分配边际比终端泛化TAM更直接。",
+          "scope_boundary": "解释DRAM制造负载的外部来源与产品用途；平台销售、终端市场规模及软件产品本身归相关产品/行业Shell深化，不将云收入或GW折算为美光订单。",
+          "ref": [
+            "D1-O31",
+            "D1-O74",
+            "D1-O103",
+            "D1-O130",
+            "https://www.aboutamazon.com/news/company-news/amazon-earnings-q2-2026-report",
+            "https://github.com/microncxl/cxl-reskit",
+            "https://developer.nvidia.com/blog/full-stack-optimizations-for-agentic-inference-with-nvidia-dynamo/"
+          ]
+        },
+        {
+          "name": "有限晶圆的产品分配与HBM机会成本",
+          "mechanism": "在可用晶圆空间和设备短期有限时，美光按每片晶圆的合格产品价值、客户义务和长期关系分配DDR、LPDDR及HBM核心/基础die。HBM较大的die与额外工艺占用，使相同比特需要更多前段资源；增加HBM份额会挤出常规DRAM比特，而不一定减少公司收入。节点转换提高密度可部分补偿挤出；各产品良率、可交付后段能力及认证使晶圆并非随时一比一互换。常规DRAM相对售价上涨又提高其机会成本，反馈到产品排程和后续扩产，而非永远优先选择最高名义ASP。",
+          "current_status": "已发生的MCBU比特减量与向其他单元转配，支持真实资源争夺；HBM4核心与基础die内部制造，把两种die的排程协调留在美光体系。FY2026 HBM仍以3E 12层为主，常规DRAM也贡献广谱涨价。2024年3月公司给出同技术节点HBM3E每比特约耗用DDR5三倍晶圆的行业比较；它是制造强度基准，不是2026年HBM4当前精确转换系数。",
+          "materiality_context": "晶圆可用量决定约束总盘子；产品比特/晶圆与良率决定挤出比例，当前在既有能力普遍被使用的环境下杠杆大。仅作同节点示意：若用约3倍强度，将原全DDR5网络10%的晶圆转为HBM3E，其总比特约变为90%+10%/3，即减少约6.7%，同时新增HBM用途；这不是美光实际配比预测。相对实现价和单位晶圆成本决定经济选择，价带和客户义务限制自由重配，长期关系使公司可能为持续供货保留并非当季最高贡献的产品资源。节点密度可补量，后段能力/资格限制HBM投片的可售回报；盲目增加投片可先积累在制品。相对价格或合同需求变化能在新厂出现前改变组合和收益，其修订作用不必等到全公司数量明显改变。",
+          "scope_boundary": "覆盖美光内部晶圆用途与资源机会成本；HBM合格堆叠归后段Unit，行业价格形成归DRAM行业市场；不把历史3倍比较外推为所有代际固定系数。",
+          "ref": [
+            "D1-O31",
+            "D1-O57",
+            "D1-O74",
+            "D1-O88",
+            "https://micron.gcs-web.com/static-files/c531bd08-22cd-4d6b-9540-f8aa72459716",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+          ]
+        },
+        {
+          "name": "节点密度、制造学习与瓶颈设备共同形成有效产出",
+          "mechanism": "合格DRAM比特可按各产品晶圆完工量×设计比特/晶圆×电性/可靠性合格率理解。美光研发与设计决定密度和工艺流程，制造团队通过缺陷控制、参数学习、维修与良率分档决定合格率；设备有效开机、关键步骤节拍、工艺循环时间和转换停机共同限制可完工晶圆。EUV可替代部分多重图形化步骤，但昂贵工具的供给、安装、维护与实际曝光生产率仍影响瓶颈。良率改善也降低每合格比特承担的材料、设备及固定费用；工序增加或新节点转换占用设备则可能抵消密度收益。",
+          "current_status": "1γ已为FY2026 Q4多数DRAM比特，技术优势正在全网络而非样品线发挥作用；全年已报告制造降本。超过30%的1γ设计密度优势不等于同比良品增长。ASML多年EUV协议支持下一节点，供应商计划2027低NA能力比约65台的2026能力增30%，不是美光确定分配。工作解释是先优化既有工具和节点学习，同时继续投入下一代；工厂总量良率及设备节拍仍未公开。",
+          "materiality_context": "设计密度影响每片可得比特，良率决定有多少密度能出售；二者均作用于全节点覆盖量，当前1γ主力地位使其比纯送样节点更接近当期产出。只作示意，密度增加30%而相对良率低于约77%，相同完工晶圆下就不能净增良品比特；不是公司良率估计。有效开机与瓶颈节拍控制能否利用密度，非瓶颈设备加速可能主要减在制品而不增最终量。循环时间影响资金占用及客户响应，转换停机短期减量、随后换取密度。EUV减少部分步骤与新增复杂工序方向相反，需看完整流程；新工具供给/安装主要作用后续转换时间，现有设备稳定性更支配当季。固定费用随合格量摊薄，但材料/能耗和工具成本可使成本改善小于比特改善。",
+          "scope_boundary": "覆盖前段工艺、合格die与制造成本；后段良率及测试不并入前段电性良率，ASML通用工艺模型不认定为美光已实现节能比例或High-NA采用。",
+          "ref": [
+            "D1-O57",
+            "D1-O74",
+            "D1-O88",
+            "https://investors.micron.com/news/press-release/2025/Micron-Announces-Shipment-of-1-1-gamma-DRAM-Pioneering-Memory-Technology-Advancements-for-Future-Compute-Needs-02-25-2025/default.aspx",
+            "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+            "https://www.investor.asml.com/news-releases/news-release-details/q2-2026-financial-results",
+            "https://www.asml.com/en/investors/annual-report/2025/strategy-and-stories"
+          ]
+        },
+        {
+          "name": "常规后段、产品资格与制造网络决定销售组合",
+          "mechanism": "前段合格die要经过封装/模组装配、电性测试及可靠性流程，才能成为客户指定料号的可销售产品。封装材料与装配节拍决定后段可处理量；测试覆盖、并行度、复测和分档影响合格交付速度与成本。服务器OEM按速度、功耗、容量及平台兼容验证模组；汽车工业还按安全使用条件和生命周期验证。自有后段保留质量协调，合格外包及新基地可弹性增加特定工序，但跨基地转移需要工艺/客户资格，不能仅凭空闲工位替代。资格通过后仍由客户平台量产与采购配额决定负载。",
+          "current_status": "印度设施已商业出货和爬坡，但其DRAM/NAND混合网络没有DRAM独立量；公司制造内部为主，部分封装与模组外包。8,800 MT/s 1γ RDIMM多客户认证，512GB 9,200 MT/s仍送样，说明规格路径分层推进。车规LPDDR5已有生产就绪及关键客户交付；具体安全证书还要求系统方落实使用假设，不能以部件标签免去平台验证。",
+          "materiality_context": "装配节拍和材料供给影响物理吞吐，测试并行度/时长决定该产量何时变可交付；在前段紧张时提升后段良率比增加无输入的工位更有效。示意固定有效工时、并行度不变，测试时长增加20%会使测试容量降至约83%，不是美光测量。速度/容量/功耗决定客户可选择的规格与潜在价值，资格和系统安全条件则控制可售集合及时滞，不只是额外检测费用。可靠性失效会影响整个料号的资格，经济影响范围可大于少量报废。外包/印度增加弹性及地域选择，但工艺匹配和移转认证决定实际可用范围；客户平台量产/配额是后续负载变量，认证本身不设定数量。当前已认证服务器产品更接近季度交付，车规长生命周期对供给连续性的依赖更长。",
+          "scope_boundary": "覆盖普通DRAM封装、模组及DRAM子组件；HBM专用堆叠另由后段Unit解释，证书仅支持指定产品/系统条件，不转用为全部1γ新品资格。",
+          "ref": [
+            "D1-O3",
+            "D1-O31",
+            "D1-O74",
+            "D1-O103",
+            "D1-O171",
+            "https://sg.micron.com/content/dam/micron/global/public/corporate/quality/certificates/micron-21-03-104-c-r018-y4bm-type-certificate-v2r0.pdf",
+            "https://www.advantest.com/document/en/investors/ir-library/briefing/E_IR_technical_briefing_231129.pdf"
+          ]
+        },
+        {
+          "name": "建设、配套与资格使扩容分阶段而非按面积兑现",
+          "mechanism": "扩产由客户负载和资金安排驱动，但净合格产出取决于可交付洁净室、合适设备、公用事业、熟练人员、节点良率及产品资格按顺序配套。许可、承包商与施工人力控制空间交付，设备取得/安装控制投片起点，电水气容量和稳定性控制可持续开机，制造学习与认证决定首片晶圆到经济出货的间隔。铜锣收购复用既有空间，减少部分新建路径却仍需设备改造；扩大节点空间也可先支持技术转换，而非等量增加晶圆。公司可阶段化装备应对需求变化，形成扩建选择权，但已承诺建设成本不随需求自动归零。",
+          "current_status": "工作判断是2027年渐进新增而非瞬时供给跃升。铜锣已有约30万平方英尺空间和资产所有权，其有规模出货目标2027年中；ID1同年中仅为初始晶圆，商业层级不同。广岛/ID2 2028年末和纽约2030年更远，项目处于已行动建设而非仅愿景。Idaho电力合同已获修改后批准，提供资源安排而不是已产出证据。",
+          "materiality_context": "洁净室限制可装备空间，设备决定其中可投入多少量，节点/客户资格决定合格量与可销售比例；任何一项增加都可能先把瓶颈移到下一项。施工许可/人力影响季度至多年时间，当前2027项目比2030纽约对近端量更有杠杆。若首产后认证延后一季，其现值与履约机会会变，不能仅用首产日说产能不变。电水气既决定稳定运行也带最低费用，低爬坡会放大单位负担；熟练人员兼具开机和良率作用，不可用岗位总数替代。阶段化装备减少未用设备资本风险但也延后供给，铜锣空间节省部分土建时间，不消灭转换及资格成本。面积没有固定比特换算率，现阶段良率/装备进度比再公布园区总面积更接近有效扩容。",
+          "scope_boundary": "覆盖美光晶圆和普通后段项目的执行链；新加坡HBM专用后段在另一Unit，不将混合设施、首产与满产混为同一种能力。",
+          "ref": [
+            "D1-O31",
+            "D1-O4",
+            "D1-O6",
+            "https://puc.idaho.gov/Fileroom/PublicFiles/ELEC/IPC/IPCE2444/OrdNotc/20260508Final_Order_No_37039.pdf",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://investors.micron.com/news/press-release/2026/Micron-Completes-Acquisition-of-PSMCs-Tongluo-P5-Site-in-Taiwan-03-15-2026/default.aspx"
+          ]
+        },
+        {
+          "name": "资本激励、地域成本与爬坡负载共同决定资产回收",
+          "mechanism": "制造项目回收来自可持续合格销量与产品净贡献覆盖建设设备投入、启动支出及持续运营成本。政府补助、合格投资抵免和其收取时点降低净资本需求，却不制造比特；地域劳动力、能源/厂务价格及预留容量费改变现金运营成本，低爬坡使固定费用和可用资产折旧由较少合格量承担。设备及建设先支付、可用资产和销售后形成回收，需求吸收/售价与技术寿命决定回收窗口。公司流动性和客户资金保障可跨越这个时间差，但并不提升一个低回报项目的物理生产率。",
+          "current_status": "目前主要矛盾不是公司缺乏明显融资缓冲，而是高投入到后续经济产出的转换。FY2026公司毛额PP&E现金307.12亿美元，FY2027 H1扣预期政府激励后计划约250亿美元且H2更高；两者不直接比较为同口径增幅。CHIPS最高64亿美元为附条件资助，纽约最高55亿美元条款非约束；48D合格资产35%抵免有适用条件。Idaho预留电力包含最低需求/信用安排，慢爬坡也可能产生费用。",
+          "materiality_context": "建设/设备支出决定沉没资本规模，合格量与净贡献决定后续回收，二者的错时现在比总园区承诺额更有解释力。激励金额改变净投入，到账时点改变桥接资金，资格条件改变能否兑现；示意100单位完全合格的投资按35%抵免对应35单位信用，不是全球资本开支统一补贴35%。地域人工/厂务属于每期成本，容量预留费、折旧与启动成本在低负载时杠杆尤其大；合格量增长可摊薄但不能抵消任意售价下跌。售价/需求寿命关系到多年回收，技术寿命及设备可复用性决定代际转换后剩余回收窗口，与节点效率同等重要，不能用当前高价固定多年ROIC。流动性缓冲减少被迫停建风险，客户保证金有返还义务；项目分拆投入/贡献未公开，故不设虚构单位资本回报。",
+          "scope_boundary": "止于本体系项目现金投入、成本和资产经济性；公司筹资偿付及股东回报归资金Shell，法定抵免需按资产条件，不作个体税务建议。",
+          "ref": [
+            "D1-O31",
+            "D1-O44",
+            "D1-O57",
+            "D1-O96",
+            "https://www.irs.gov/forms-pubs/correction-to-the-2025-instructions-for-form-3468-of-the-applicability-of-the-35-rate-on-line-1c-in-part-iv-advanced-manufacturing-investment-credit-under-section-48d",
+            "https://puc.idaho.gov/Fileroom/PublicFiles/ELEC/IPC/IPCE2444/OrdNotc/20260508Final_Order_No_37039.pdf"
+          ]
+        },
+        {
+          "name": "合格投入供应与供应商扩产激励维持制造连续性",
+          "mechanism": "关键硅片、材料与组件必须满足工艺资格，供给量、交期及跨来源替代能力决定能否维持投片。安全库存可吸收短延迟，但耗尽后单一合格投入会阻断多个下游工序；替换原料/来源须验证，急购成本与良率改变又影响单位成本。供应商依据可承接的长期需求和资金回报增加能力，美光可用多年协议和战略资金支持把自身扩产与上游投资协调，换取供给可见性；这同时把资金和承诺风险前置，并不消除供应商施工、资格及交付限制。",
+          "current_status": "公司已报告部分短缺/长交期，但所缺品种与数量未披露。本轮具名材料链是美光7月拟以5亿美元支持GlobalWafers Sherman厂并拟签10年供给协议，公告交易附条件；8月供应商称有长期协议及战略资金支持，既有12英寸产能（排除新线）充分使用，新厂获多家Tier-1认证。由此可采用供应商投资正在被客户承诺组织的解释，不能认定融资全部交割或具体美光工艺已完成认证。",
+          "materiality_context": "合格来源的产量/交期决定近期是否断料，库存长度只改变何时出现瓶颈；库存多一点也增加资金占用而非永久供给。替代来源与跨基地资格决定扰动能否被吸收，未合格的名义空闲产能价值低。原料价格影响可变成本，污染/缺陷还影响良率，后一条可能比小幅涨价更严重。长期订单和资金支持对上游中期扩产有杠杆，但5亿美元为具体拟议安排，不能与本Unit晶圆设备投入混算；批准/交割、供应商建设和客户认证共同控制能力落地时间。当前明确短缺表述提高连续供给变量的重要性，但不能把GlobalWafers全部产能利用或某厂事件归为美光当前缺货。",
+          "scope_boundary": "覆盖本Unit制造投入与供应保障经济性；不自造未具名短缺供应商，原始硅片供给合同不代表晶圆代工或HBM基础die外购。",
+          "ref": [
+            "D1-O3",
+            "D1-O74",
+            "https://investors.micron.com/news/press-release/2026/Micron-Announces-Up-to-3-Billion-Strategic-Investment-to-Strengthen-U-S--Semiconductor-Ecosystem/default.aspx",
+            "https://www.sas-globalwafers.com/en/gwc_news_en_20260804/"
+          ]
+        },
+        {
+          "name": "劳动连续性与薪酬存货吸收产生不同成本路径",
+          "mechanism": "熟练操作、维修及工艺人员同时影响设备开机和缺陷控制，关键岗位缺勤或停工可改变可用工时，并在恢复时影响在制品、合格率和交付；影响不只由参与人数决定。工会组织、行动授权和谈判结果改变发生行动的能力，薪酬/长期分红安排可换取稳定性，也提高每期劳动成本。制造激励成本先进入存货、随产品出售进入成本，产生会计期间时滞；它与生产中断导致的产量/固定费用摊薄是不同传导，不能从下一季毛利变化直接判定良率恶化或罢工损失。",
+          "current_status": "截至所用10月7日报道，桃园获行动授权但未定罢工日期，台中继续安排10月22日调解；支持持续协商基准，且风险已越过早期威胁。未取得实际停工损失，不写成已经减产。FY2026 Q4制造激励增加多数吸收进存货，管理层称主要影响FY2027 Q1，Q2该批释放减轻而新年度更高激励有抵消。永久利润分享为工会诉求而非已签成本公式。",
+          "materiality_context": "熟练人员和关键岗位覆盖决定同样人数变化的实际工时/良率影响，维修或瓶颈岗位缺位可影响多条设备。行动授权提高可实施性，持续时间及恢复质量决定损失范围；当既有能力紧张时，延后产出较难用空闲班次补回。协商及奖励对留任/连续性有利，同时工资、分红计基与覆盖范围决定持续成本，一次奖励不能永久化。存货成本吸收/销售时点只改变利润出现在哪季，不改变奖励总经济成本；当前该时滞比未经测量的罢工损失更能解释近端成本变化。固定费用因减量放大，是中断结果而非独立新增需求；台中和桃园组织范围不同，不按工会赞成率外推全球减产比例。",
+          "scope_boundary": "覆盖本Unit劳动资源、制造连续性与制造成本时点；不把公司全部激励/Opex分配给DRAM，也不认定台湾所有HBM后段岗位参与同一行动。",
+          "ref": [
+            "event-library:MU:v1",
+            "https://focustaiwan.tw/business/202610070021",
+            "https://www.taipeitimes.com/News/biz/archives/2026/10/08/2003865571",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "D1-O3",
+            "D1-O74"
+          ]
+        },
+        {
+          "name": "采购约束与竞争供给改变跨周期产能纪律",
+          "mechanism": "多年take-or-pay数量、价格形成方式和信用保障提高美光安排投片/扩产的可见性，合同供给义务也降低随意重配或减产的自由。价格底线限制某些产品下行，顶价限制上行，新品溢价谈判及成本演进决定实际净贡献；未覆盖产品仍受行业库存、客户购买意愿及竞争者合格供给影响。采购地域资格决定哪些订单可服务，不能靠扩厂消除CAC买方限制。新增行业产能若超过实际吸收，会经价格和利用率压低本体系项目回报，促使阶段化设备投资；若仅填补缺口，则增加交付而未必先压价。",
+          "current_status": "合同形式和可执行数量已建立，但没有最新全DRAM合同量/利润覆盖分拆；C5也没有可辨认的市场定价项目ROIC。FY2026 DRAM ASP约增长180%、出货比特增20%中段，价格对财务改善明显大于纯数量，不能把全部改善写为HBM高价值组合。三星HBM4已商业化，中国竞争者在年报列示但合格增量未量化；其存在及支持政策不证明已经过剩。",
+          "materiality_context": "覆盖量决定保护或约束影响多大，底价/顶价和新品重谈决定每覆盖比特的经济价值，成本是同一合同净贡献的另一边；数量承诺是负载锚点而非自动利润。信用保障减少违约追索风险，客户现金只是可返还融资，不能替代订单交付。当前稀缺价格主导当期回报，合同保护影响持续长度；客户库存及部署速度控制短期实物吸收，竞争合格能力主要改变其后的供需和价格，不能以园区计划当已供给。CAC可采购资格影响特定买方分流而非全球技术产能；供给紧张时丢失买方可能由别处吸收，缓解后这种替代较难。投资分阶段响应减少下行沉没风险，但会错失持续紧张下部分销售，此反馈需同时看履约义务。",
+          "scope_boundary": "研究合同、竞争和市场准入传回制造分配及项目回报的接口；竞争者完整供给、报价及战略客户融资法律细节分别归邻域，不推算股票目标价或市场已完全计价。",
+          "ref": [
+            "D1-O31",
+            "D1-O57",
+            "D1-O74",
+            "D1-O3",
+            "D1-O205",
+            "D1-O6",
+            "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356"
+          ]
+        },
+        {
+          "name": "数据控制与执行责任界定可服务的制造负载",
+          "mechanism": "企业法务、安全团队和公共采购方决定模型可接触的数据、可执行的动作及部署环境；权限、审计和数据控制安排先改变能投入生产的任务集合，再通过本地或云端平台配置、供应资格和采购形成DRAM制造负载。只留日志在客户账户不等于把推理搬到本地；断连环境则需要本地硬件，但未必使用最高端加速器。",
+          "current_status": "Anthropic 9月1日公告客户控制日志/密钥的EFS，计划秋季分阶段推出；Microsoft 2月24日提供断连基础设施和本地大型模型路线。两者支持治理是实际部署设计变量，而非仅泛称监管风险；没有据此认定美光新订单或企业已普遍迁云。",
+          "materiality_context": "治理门槛决定原本有预算的任务是否能运行，也决定采购地点与主体，潜在影响大于单个模组性能提升。客户日志控制通常保留原云计算需求，本地模型则改变服务器数量、DDR/LPDDR配置和共享效率；若复用已有硬件，采购效应较小。执行责任越深入，权限和信任对使用持续期越重要；不能把日志存储增长计作DRAM热工作集同比增长。",
+          "scope_boundary": "止于治理和部署边界传回本Unit的负载及用途；不提供法律合规意见，不把安全公告当已发生全行业数据事故。",
+          "ref": [
+            "https://www.anthropic.com/news/enterprise-frontier-safeguards",
+            "https://blogs.microsoft.com/blog/2026/02/24/microsoft-sovereign-cloud-adds-governance-productivity-and-support-for-large-ai-models-securely-running-even-when-completely-disconnected/",
+            "D1-O74",
+            "D1-O103"
+          ]
+        }
+      ],
+      "potential_gaps": [
+        {
+          "name": "AI从使用席位转为持续业务执行的制造需求",
+          "why_live": "现有模型以商业吸收支持数据中心负载、近端主要改变资源分配为参考。8月12日企业使用研究显示代理工作向非工程岗位扩展，属于单一服务商客户样本而非行业采购统计；已有服务器产品资格使一般计算与模型推理都能传回本体系。",
+          "revision_logic": "未来关键不是AI用户数简单增加，而是企业让代理承担多少反复发生、愿意付费的工作，以及既有服务器余量是否足以吸收。代理若跨数据、工具和长任务循环，可同时增加普通CPU/DRAM与模型加速器负载；服务打包和计费限制改变增长的经济弹性，影响晶圆用途与扩产持续期，不保证满负荷网络即时增产。",
+          "possibility_space": [
+            {
+              "name": "企业把代理接入日常采购、法务和客户服务流程",
+              "implication": "公司从试用转为长期任务预算，后台服务、检索与并发执行可能扩张一般服务器内存负载，不只增加HBM。先利用空闲机群会延后新投片需求，持续商业吸收却提高扩产可回收性的工作判断。"
+            },
+            {
+              "name": "大型软件平台把代理能力捆绑进现有订阅",
+              "implication": "分销降低额外采购门槛，新增用户可能变成频繁任务；若补贴只带来轻用或重复缓存访问，制造需求小于账户增长。若付费留存和重任务同时扩大，则内存稀缺的持续期比单独模型订阅路径更长。"
+            },
+            {
+              "name": "企业财务部门按完成任务价值限制代理预算",
+              "implication": "单次多轮调用的账单促使采购者设预算、改用较小模型或只保留高回报流程。任务活跃度与服务器采购脱钩，削弱线性外推，但低成本流程可能更广泛普及，形成较低资源强度、较大用户面的组合。"
+            },
+            {
+              "name": "自动化扩大到软件构建与数据处理而非持续大模型推理",
+              "implication": "CPU、缓存和内存密集型后台工作比最高端模型算力更快扩张，改变DDR/LPDDR与HBM前段用途的相对回报；即使总AI投入不弱，美光不应被理解为只需继续增加HBM投片。"
+            }
+          ],
+          "ref": [
+            "https://openai.com/index/how-enterprises-put-ai-to-work/",
+            "D1-O103",
+            "D1-O74",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html"
+          ]
+        },
+        {
+          "name": "信任与主权要求重排计算部署和可服务订单",
+          "why_live": "既有制造负载解释默认已获预算的工作可以逐步部署。客户控制日志的EFS计划与断连本地模型方案提供实际治理选择；这不同于直接扩大总AI市场，也不同于现有CAC针对特定买方的采购限制。",
+          "revision_logic": "安全事件、数据控制要求或公共采购选择可改变愿意执行的任务集合及部署地点，进而改变服务器内存配置、采购渠道与地域资格。当前可用的本地/云路线使需求既可能被暂停，也可能迁移或因控制改善而释放；只改变日志存放地通常不应改写晶圆需求。",
+          "possibility_space": [
+            {
+              "name": "监管行业以客户控制的监测和人工审批开放更多任务",
+              "implication": "原先无法让模型处理的敏感工作进入生产，云推理与普通服务器负载可增加；治理费用若未吞掉业务收益，可延长合格DRAM需求。控制日志的安排本身并不证明新增计算订单。"
+            },
+            {
+              "name": "广泛报道的代理误操作或泄密促使大企业暂停自动执行",
+              "implication": "一种未来信任事件可使已规划工作退回人工审查或缩小权限，先减弱任务持续期和采购意愿。即使机房计划不取消，库存/部署可以先吸收硬件，后续新增制造负载变弱；不是认定当前已经发生全行业停用。"
+            },
+            {
+              "name": "公共部门和关键企业要求本地或断连推理",
+              "implication": "需求由共享云转向独立机群，重复配置及本地容量可能提高DDR/LPDDR需求；也可能因小模型、预算及已有服务器复用而少购总DRAM。采购主体和供应资格随之改变，不自动归给美光。"
+            },
+            {
+              "name": "部署规则只改变日志、密钥与审查权而不迁移算力",
+              "implication": "保留云端计算和原硬件配置，制造需求主要由原商业使用决定；应修订的是可服务工作范围与部署摩擦，而非把每份治理合同视作一个新机房。"
+            }
+          ],
+          "ref": [
+            "https://www.anthropic.com/news/enterprise-frontier-safeguards",
+            "https://blogs.microsoft.com/blog/2026/02/24/microsoft-sovereign-cloud-adds-governance-productivity-and-support-for-large-ai-models-securely-running-even-when-completely-disconnected/",
+            "D1-O74",
+            "D1-O103"
+          ]
+        },
+        {
+          "name": "客户融资与能源可用性改变采购兑现节奏",
+          "why_live": "已签数量承诺支持供给规划，但客户土地、电力、机房与资本约束仍在。新研究取得CoreWeave 5月已关闭、与两份非投资级客户合同相关的延迟提款融资；NVIDIA 8月融资平台仅为待最终协议的组织计划。PJM大负荷方案截至所用状态仍待FERC批准，不是美光Idaho厂的直接规则。",
+          "revision_logic": "客户资本和供电安排可以独立改变能购买、安装或使用的服务器量。融资松动未必增加终端收入，接电放行未必完成验收；相反，融资收紧或供电受限也未必立即取消可执行采购。应分开实际需求、客户备货和持续厂房负载，修订投入回收时间及资源分配。",
+          "possibility_space": [
+            {
+              "name": "资本机构把有承租/算力合同的项目转为可提款设施",
+              "implication": "既有意愿获得执行资金，缓解客户采购窗口，支持DRAM/HBM输入负载；贷款承诺和实际提款不是两份需求，若能源或客户验收仍受阻，先增加库存和占用。"
+            },
+            {
+              "name": "贷款方因客户信用或计算资产剩余价值而收紧新提款",
+              "implication": "融资能力下降可延后新服务器采购，即使用户仍愿意使用服务。美光的可执行数量/信用保障可缓冲部分现金风险，却不能把延后购买的资源自动配给另一个合格客户；新项目回收预期可能先变。"
+            },
+            {
+              "name": "电网允许自带新增电源或可中断服务的园区加快接入",
+              "implication": "部署通道扩大但自备发电和中断风险增加运行成本，客户可能接受低价格可迁移工作而保留高质量任务于稳定园区。新增平台数量和规格均可能重排，而不是所有GW同等增加内存。"
+            },
+            {
+              "name": "公共机构或社区要求更严格的成本分担和资源审批",
+              "implication": "额外电源、水或费率条件改变客户项目排序，使部分已规划容量晚于硬件交期；制造端可能先按合同交货形成客户库存，较后才减少新增负载。地域转移能吸收一部分，但不消除系统验证和安装时间。"
+            },
+            {
+              "name": "云运营者以存量机群调度替代新增建设",
+              "implication": "利用率提高可维持任务增长而减少新服务器采购，近端制造负载弹性下降；如果这扩大服务收入并耗尽余量，则后续采购更集中而非永久消失。"
+            }
+          ],
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000236/ex9912.htm",
+            "https://nvidianews.nvidia.com/news/nvidia-partners-with-apollo-blackrock-blackstone-brookfield-goldman-sachs-and-kkr-to-establish-ai-compute-infrastructure-financing-platforms-to-mobilize-over-500-billion-of-third-party-capital",
+            "https://insidelines.pjm.com/pjm-proposes-framework-to-connect-data-centers-without-compromising-reliability-affordability/",
+            "https://www.pjm.com/markets-and-operations/large-load",
+            "D1-O130",
+            "D1-O31"
+          ]
+        },
+        {
+          "name": "终端用途与支付能力改变常规DRAM吸收",
+          "why_live": "手机/PC已有新品交付和设计采用，MCBU数量却因供给改配下降，不能把弱数量完全归给终端。IDC 2月及TrendForce 5月、9月研究把内存涨价、降配和保守生产联系起来，属于行业判断/预测，不是美光客户实测；汽车与physical AI产品仍有不同商业阶段。",
+          "revision_logic": "单机内容增加并非不可逆，终端售价和有用功能共同决定换机与配置。消费者延寿、OEM降配、端侧功能普及或安全许可改变量产，均可改变制造用途吸收。价格抬高后迁回云的行为还可能把LPDDR机会转成服务器/HBM需求，而非简单消失；各种资源不能直接一比一互换。",
+          "possibility_space": [
+            {
+              "name": "OEM以降内存配置和延长产品周期守住入门价格",
+              "implication": "每台需求和终端换机同时减弱，释放部分常规DRAM资源却降低该用途价值；平均容量仍可能因低端产品退出而上升，不能把组合统计当所有机型升级。"
+            },
+            {
+              "name": "消费者转向二手设备而非新一代AI手机或PC",
+              "implication": "新设备装机少于功能宣传暗示，既有DRAM被继续使用；这与OEM被限额不同，供给改善也未必立即恢复制造负载，扩产吸收需重新看支付能力。"
+            },
+            {
+              "name": "低功耗本地代理或多模态功能成为用户愿意付费的升级理由",
+              "implication": "实际换机和保留容量可能增加LPDDR/客户端模组需求，并提高配置底线；只有美光已合格、获配的料号传回本Unit，不能将全行业端侧使用全部算成目标出货。"
+            },
+            {
+              "name": "应用商和OEM把高内存功能迁回云端以控制设备BOM",
+              "implication": "LPDDR高容量升级被削弱，同时云端任务可能扩大服务器/HBM需求。若云服务费抑制使用，总盘子也可减小；若廉价设备扩大活跃用户，可把需求转向不同制造流程而延长数据中心负载。"
+            },
+            {
+              "name": "整车或工业客户把已验证的physical AI方案从试点铺向车队/工厂",
+              "implication": "稳定重复采购扩张车规/工业料号，并延长可靠性供货义务；安全验证、事故责任或运营收益不足也可使项目停留小规模。长期需求增加不意味着可以随时退出旧节点或把所有LPDDR6样品计为量产。"
+            }
+          ],
+          "ref": [
+            "https://www.idc.com/resource-center/blog/higher-asps-lower-unit-volumes-how-the-memory-crisis-is-reshaping-the-pc-and-smartphone-outlook/",
+            "https://www.trendforce.com/presscenter/news/20260514-13044.html",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+            "D1-O74",
+            "D1-O103",
+            "D1-O171",
+            "https://nvidianews.nvidia.com/news/drive-hyperion-level-4"
+          ]
+        },
+        {
+          "name": "内存池化和工作集管理改变新增DRAM强度",
+          "why_live": "当前工作参照是本地内存与CXL/缓存层协同、资格不等于客户有效使用。Pond研究与2026年Aquifer论文提供降低闲置/冷页占用的具体方法，后者为模拟硬件上的研究结果而非商业采用；现有美光模块路径使这些方法具备可连接的产品接口。",
+          "revision_logic": "软件/分配策略或系统拓扑变化可以在任务量不变时减少过度预置，也可用扩展内存承接以前放不下的任务。总DRAM需求取决于释放闲置相对新增工作集与用户面的变化；本地DIMM被替代不等于DRAM被替代，池化模块收入也不应与被减少的旧配置重复相加。",
+          "possibility_space": [
+            {
+              "name": "云运营者用成熟分配软件将低利用内存纳入共享池",
+              "implication": "固定服务量所需新DRAM可减少，削弱每台服务器扩容的默认路径；若客户用节约资本迅速扩大任务，可能恢复总量，但变成池化料号和更少闲置的经济结构。"
+            },
+            {
+              "name": "服务器平台普遍支持扩展内存并承担更大工作集",
+              "implication": "此前受本地插槽/容量限制的任务可运行，增加DRAM容量用途；若增加的池化容量主要替代原DIMM，制造总比特效应小于模块销量。"
+            },
+            {
+              "name": "软件仅做到识别容量而无法满足尾延迟和一致性",
+              "implication": "客户保留本地预置，研发生态进度不转成大规模新配置；应降低池化扩张的贡献，而非据此否定已认证普通服务器内存负载。"
+            },
+            {
+              "name": "应用开发者改变数据布局、缓存复用或模型压缩",
+              "implication": "同等服务质量下热工作集变小、减少重复计算，先降低单位任务内存；低成本又可扩大可付费任务和模型范围，需求反弹由真实使用增长决定，不能设固定正系数。"
+            }
+          ],
+          "ref": [
+            "https://github.com/microncxl/cxl-reskit",
+            "https://arxiv.org/abs/2203.00241",
+            "https://arxiv.org/abs/2606.24079",
+            "https://developer.nvidia.com/blog/full-stack-optimizations-for-agentic-inference-with-nvidia-dynamo/",
+            "D1-O103",
+            "D1-O125"
+          ]
+        },
+        {
+          "name": "HBM与常规DRAM机会成本重排晶圆用途",
+          "why_live": "现有能力有限、MCBU已被改配，1γ密度改善与HBM更高晶圆强度并存。历史HBM3E三倍比较仅为同节点旧基准；2027 HBM协议和常规DRAM价势为真实相对回报背景，最新精确面积/良率没有披露。",
+          "revision_logic": "产品需求和单位晶圆净贡献的相对关系改变时，总收入、合格比特和客户供货可能走不同方向。HBM后段能力不足、常规产品溢价提升或合同义务都可能改变最优投片；同样的晶圆总量也足以修订组合和回收预期。",
+          "possibility_space": [
+            {
+              "name": "常规服务器DRAM贡献上升使公司保留更多DDR或LPDDR资源",
+              "implication": "HBM投片增长减速但全体系回报未必下降，常规合格比特可能增加；应从最高名义售价优先改为相对每晶圆贡献与客户义务的组合选择。"
+            },
+            {
+              "name": "HBM下一代订单强且合格后段配套同时释放",
+              "implication": "更多核心/基础die投片挤出常规比特，在节点补量不足时总bit增长可弱于收入增长。资源强度与售价补偿共同决定是否值得扩厂，不沿用旧三倍系数算所有代际。"
+            },
+            {
+              "name": "HBM后段或平台采用受阻使前段转向其他合格料号",
+              "implication": "减少HBM在制品后可把部分资源回配给常规客户，改善缺货但可能压低稀缺溢价；工艺和资格使转配存在时滞，不能假定所有空闲设备立即产DDR5。"
+            },
+            {
+              "name": "客户以长期供给义务获得非最高当期利润产品的保留配额",
+              "implication": "短期资源排序向履约与关系连续性倾斜，牺牲部分现期机会换取负载可见性；合同覆盖足够且成本可控时可能提高跨周期回收，但也限制供需变化时的自由调整。"
+            }
+          ],
+          "ref": [
+            "D1-O31",
+            "D1-O57",
+            "D1-O88",
+            "https://micron.gcs-web.com/static-files/c531bd08-22cd-4d6b-9540-f8aa72459716",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+          ]
+        },
+        {
+          "name": "节点转换和设备工作方式改变有效供给曲线",
+          "why_live": "1γ已为多数产出，既有节点效率正在现实经营中作用；设计密度优势不能替代良品比特。下一节点与多年EUV安排支持继续转换，工具生态的产能增加尚未给出美光分配。",
+          "revision_logic": "不是再出现一个节点名称就改变判断，而是流程、良率和关键设备的配合能否使更多设计密度转成可售量。更少多重图形化可释放工序，也可能被曝光/维护、新规格复杂度或停机抵消；现有网络的改善可在绿地供给出现前修订数量和成本。",
+          "possibility_space": [
+            {
+              "name": "制造团队以缺陷控制与流程简化释放现有瓶颈",
+              "implication": "不增加大块厂房即可增加合格die并降低同规格成本，近端扩产对土建时间的依赖下降；当后段或客户资格成为新瓶颈时，先改善在制品而非等量销售。"
+            },
+            {
+              "name": "EUV供给和安装提前但关键曝光步骤生产率不足",
+              "implication": "合同降低取得设备的风险，却未形成预期完工量；转换停机与低负载成本可能先增加，削弱将设计密度等同供给增长的理解。"
+            },
+            {
+              "name": "更复杂新品迫使增加可靠性筛选或制造工序",
+              "implication": "同规格效率仍可改善，但系统混合成本和周期时间上升，净良品bit提升弱于设计指标。若产品溢价覆盖额外资源，成本上升可与较好回报并存。"
+            },
+            {
+              "name": "客户较慢切换规格，公司维持多节点并行生产",
+              "implication": "成熟工艺持续贡献但新工具和空间较慢获得负载，延长资产回收；保留旧料号可能保护长期客户，而不应仅以新节点占比低判技术失败。"
+            }
+          ],
+          "ref": [
+            "D1-O88",
+            "D1-O57",
+            "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+            "https://www.asml.com/en/investors/annual-report/2025/strategy-and-stories",
+            "https://www.investor.asml.com/news-releases/news-release-details/q2-2026-financial-results"
+          ]
+        },
+        {
+          "name": "常规后段与产品可靠性改变前段产出的可售范围",
+          "why_live": "印度已有商业出货，服务器模组认证与更高规格送样同时存在；普通后段有内部/外包网络而无DRAM独立月量。车规证书限制到特定产品与系统使用假设，质量资格是负载入口而不只是检验费用。",
+          "revision_logic": "即使前段供给和外部需求按原路径继续，装配测试节拍、产品质量及跨基地认证仍可改变哪些bit能卖、何时卖及每良品成本。与晶圆节点和客户需求独立，新增工位只有接到合格输入且SKU匹配才有经济价值。",
+          "possibility_space": [
+            {
+              "name": "OEM把已认证高速或低功耗模组纳入更多生产平台",
+              "implication": "可售料号集合扩大并获得持续负载，现有die转成更高价值组合；客户仍可多来源采购，因此资格扩展不等于相同比例制造份额。"
+            },
+            {
+              "name": "印度或合格外包商完成跨基地转移并提高测试并行度",
+              "implication": "常规后段可消化更多前段输入，改善交期和地域弹性；如果前段已是瓶颈，主要是减少排队和成本而非新增总bit。"
+            },
+            {
+              "name": "某类模组或车规料号出现可靠性缺陷而被暂停接收",
+              "implication": "未来质量问题可缩小可售集合并引发复测/返工，影响可大于报废bit本身；其他已合格SKU仍能供给，不推定全网络失效。"
+            },
+            {
+              "name": "平台安全要求或更高容量测试使认证流程显著变长",
+              "implication": "设备数量不变时可交付节拍下降，既有前段改善先成为在制品；更高售价若补偿可靠性负担，回报未必同步恶化，但交付路径与扩容时点需要重估。"
+            }
+          ],
+          "ref": [
+            "D1-O3",
+            "D1-O31",
+            "D1-O103",
+            "D1-O171",
+            "https://sg.micron.com/content/dam/micron/global/public/corporate/quality/certificates/micron-21-03-104-c-r018-y4bm-type-certificate-v2r0.pdf",
+            "https://www.advantest.com/document/en/investors/ir-library/briefing/E_IR_technical_briefing_231129.pdf"
+          ]
+        },
+        {
+          "name": "新基地的阶段化装备与商业资格改变增量时间",
+          "why_live": "铜锣资产已取得且计划2027年中有规模出货，ID1同窗是首片晶圆；广岛/ID2与纽约更远。现有基准是逐步兑现，电力承诺、人员与合格量之间存在时间差。",
+          "revision_logic": "建设路径可变为优先装备已有空间、拉长绿地学习或重新排序项目。经济差异来自客户可用量与已承诺成本在时间上的错配，而非把计划提前一天视为完全新的供给。设备安装、节点转移和资格能在土建节奏不变时独立修订爬坡。",
+          "possibility_space": [
+            {
+              "name": "铜锣复用空间和工艺转移比绿地更快形成可售量",
+              "implication": "既有资产成为较早供给来源，缓解部分配额和履约压力；取决于适合的设备/SKU，而非收购面积本身带来固定bit换算。"
+            },
+            {
+              "name": "Idaho按时首产但良率、客户资格或熟练人员形成较长空窗",
+              "implication": "初始晶圆仍证明执行推进，却延后回收并加重可用资产固定费用；近端供应需更多依赖既有台湾/日本网络，而不是把首产重新解释为满产。"
+            },
+            {
+              "name": "公司优先设备和工程资源于最有商业负载的项目",
+              "implication": "阶段化装备保留空间选择权、减少无用资本，但推迟其他基地的有效量；更强需求时会错失销售，较弱需求时可避免更大低利用风险。"
+            },
+            {
+              "name": "地方许可、施工承包或供水电配套改变项目排序",
+              "implication": "瓶颈从工艺移到厂务/建设，跨基地调配或更早采购设备可吸收部分影响；已签最低资源费用不会随延期全部消失，因此供给时间和单位成本均改变。"
+            }
+          ],
+          "ref": [
+            "https://investors.micron.com/news/press-release/2026/Micron-Completes-Acquisition-of-PSMCs-Tongluo-P5-Site-in-Taiwan-03-15-2026/default.aspx",
+            "https://puc.idaho.gov/Fileroom/PublicFiles/ELEC/IPC/IPCE2444/OrdNotc/20260508Final_Order_No_37039.pdf",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "D1-O31",
+            "D1-O4",
+            "D1-O6"
+          ]
+        },
+        {
+          "name": "新品溢价与地域资本成本重写扩张回收",
+          "why_live": "管理层预期LP6、DDR6、新代HBM及绿地爬坡将抬高混合DRAM成本/bit；这与已实现的同规格制造效率改善并不矛盾。高再投资计划、附条件补助、合格抵免和最低电力费用共同说明先投入后回收，单品和项目ROIC未知。",
+          "revision_logic": "应修订的是复杂规格增加的成本能否获得持续补偿，以及净投入和资产寿命是否与负载匹配，而非简单判断成本上升好坏。同规格降本、混合成本上升、产品经济贡献改善可以同时成立；公开新分拆还可能改变对现有高毛利的解释。",
+          "possibility_space": [
+            {
+              "name": "新品客户接受足以覆盖额外工序与爬坡的溢价",
+              "implication": "混合成本上升成为高价值组合的正常投入，合格量扩大可摊薄启动费用，项目回收不必因成本/bit上升而恶化；不能以公司毛利率直接量化这个净效应。"
+            },
+            {
+              "name": "新规格成本高且合同重谈未充分补偿",
+              "implication": "售价保护不足以保护单位净贡献，复杂度或低负载延长回收；需要从单向降本叙事改为同规格效率与新品经济性的分层理解。"
+            },
+            {
+              "name": "合格项目资助实收或抵免兑现与设备投入更好匹配",
+              "implication": "降低净资本及桥接负担，支持相同物理产出下更好的投资经济性；没有直接增加bit，全球不合格资产也不享同一税率。"
+            },
+            {
+              "name": "公共资助条件、当地资源费率或工程成本发生不利改变",
+              "implication": "即使计划产量保持，净投入或持续费用上升；阶段化投资能吸收一部分，已经承诺的建设和电力费用仍在。这里探索未来条件变化，不宣称资助当前已撤销。"
+            },
+            {
+              "name": "设备复用性或产品生命周期与原投资假设不同",
+              "implication": "较长可用寿命和多用途转换扩展回收窗口，较快过时/客户转型缩短窗口；当前高价格不能固定多年贡献，新披露的项目分拆可使原全公司强利润与某些项目低回报同时被理解。"
+            }
+          ],
+          "ref": [
+            "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.irs.gov/forms-pubs/correction-to-the-2025-instructions-for-form-3468-of-the-applicability-of-the-35-rate-on-line-1c-in-part-iv-advanced-manufacturing-investment-credit-under-section-48d",
+            "https://puc.idaho.gov/Fileroom/PublicFiles/ELEC/IPC/IPCE2444/OrdNotc/20260508Final_Order_No_37039.pdf",
+            "D1-O31",
+            "D1-O44",
+            "D1-O57"
+          ]
+        },
+        {
+          "name": "合格投入与跨地域连续性改变供给韧性",
+          "why_live": "部分材料/组件有短缺或长交期但具体损失未知，GlobalWafers长期支持与拟议融资说明客户正在组织上游扩产；资格并未证明所有美光工艺已可替换。台湾等既有基地与美国新厂同时存在，使地理与共享来源的重要性不被新增面积消除。",
+          "revision_logic": "投入可得性与跨基地可替代性决定一个局部事件能否扩散为多工序断料。替代来源、库存与客户资助既可增强连续性，也可把资金和采购义务前置；自然灾害、网络攻击或运输/政策变化是未来可能的新闻路径，而不是目前已测得停工。",
+          "possibility_space": [
+            {
+              "name": "上游受长期承诺支持形成合格的新产线和替代来源",
+              "implication": "投入保障由单点转向较可替代，降低停线概率并支持扩产；若只是名义产能或一般客户认证，不能认定本体系所有工艺无约束。"
+            },
+            {
+              "name": "特定高纯材料或设备服务受出口、运输或贸易条件扰动",
+              "implication": "一项难替代的合格投入可能比原料占成本比例更重要，库存耗尽后约束投片；暂时急购主要增加成本，长期断供才改变资源和基地路线。"
+            },
+            {
+              "name": "台湾或其他集中基地遭遇自然灾害、网络或公用事业事件",
+              "implication": "设备恢复、在制品损失及重新验证放大初始中断；其他基地有余量也须资格匹配，不能按基地面积机械推定补产。市场稀缺涨价可能缓冲收益，却不能补回公司的所有交付义务。"
+            },
+            {
+              "name": "客户和公司增加库存、备用来源与地域冗余",
+              "implication": "连续性增强但现金占用和固定成本上升，短期订单也可能含预防备货。未来风险缓和后库存释放会减弱采购，不能将全部前置量视为永久消费。"
+            }
+          ],
+          "ref": [
+            "D1-O74",
+            "D1-O3",
+            "https://www.sas-globalwafers.com/en/gwc_news_en_20260804/",
+            "https://investors.micron.com/news/press-release/2026/Micron-Announces-Up-to-3-Billion-Strategic-Investment-to-Strengthen-U-S--Semiconductor-Ecosystem/default.aspx",
+            "D1-O4"
+          ]
+        },
+        {
+          "name": "劳动和激励协议改变制造稳定性及成本期限",
+          "why_live": "桃园10月7日已获罢工授权而未定日期，台中后续调解仍为计划；旧事件库无授权的9月快照已被当前State校准。制造激励成本经存货释放的时滞已有管理层解释，永久分红仍为诉求。",
+          "revision_logic": "劳动安排改变可用工时和技能留存，奖励结构改变每期成本；存货时点只决定何季显现，不能等同生产力变差。相同奖金金额也可对应一次解决争议或长期分享不同的成本期限，应分开制造中断与劳动稳定性收益。",
+          "possibility_space": [
+            {
+              "name": "双方以一次奖励和明确协商程序结束近期争议",
+              "implication": "降低授权行动的经营脆弱性，同时增加一次成本及后续存货释放；连续开机的改善可比奖金费用更重要，但不把一次支付永久化。"
+            },
+            {
+              "name": "公司与工会建立可持续的利润分享或留任安排",
+              "implication": "提高技能稳定、培训回报及连续性，也把劳动成本与利润池更紧地连接。正式计基和覆盖范围决定周期效应，不能把工会15%诉求直接写成已签成本公式。"
+            },
+            {
+              "name": "关键岗位实施短通知行动且恢复需重新验证",
+              "implication": "产出和交期先受影响，后续补班未必补回瓶颈工时，低良品量又放大固定成本；参与比例不是全球减产比例，桃园行动不自动代表全部台湾后段。"
+            },
+            {
+              "name": "员工流失或技能培训不足而未发生正式停工",
+              "implication": "设备利用和良率学习可渐进放缓，比罢工标题更慢但可能更持久；若招聘留任改善，新增基地学习也可更快。这是劳动资源另一条传导，不依赖行动授权变为实际罢工。"
+            }
+          ],
+          "ref": [
+            "https://focustaiwan.tw/business/202610070021",
+            "https://www.taipeitimes.com/News/biz/archives/2026/10/08/2003865571",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "event-library:MU:v1",
+            "D1-O74"
+          ]
+        },
+        {
+          "name": "采购承诺跨代际兑现与风险分担的真实范围",
+          "why_live": "多年take-or-pay、价带及信用保障已确立，但产品/利润覆盖与例外未分拆。C5不能证明市场已经给出哪一种项目利润下限；当前基准是协议提高规划可见性而不包办制造回报。",
+          "revision_logic": "新履约安排或披露可以把原来广泛的稳定性解释改为覆盖足够、只覆盖部分或更多约束供给自由的模型。采购数量、价格保护、客户信用与美光合格交付是不同机制，跨代际规格/成本变化决定合同保护是否仍能覆盖项目投入。",
+          "possibility_space": [
+            {
+              "name": "协议扩展到更多核心产品并明确跨代际规格价格",
+              "implication": "负载与净贡献的可见性提高，使阶段化设备投资更有承接依据；价格上限会保留上行约束，制造成本仍由公司承担。"
+            },
+            {
+              "name": "新增披露表明保护只集中在有限料号或客户",
+              "implication": "即使现有协议未违约，也应把未覆盖部分重新放回行业价格/库存周期，降低把合同形式推广为全体系回收保证的强度；这是解释修订，不必发生经营恶化。"
+            },
+            {
+              "name": "客户部署延后但按约接受产品或商定调整交期",
+              "implication": "继续交付可能维持本季负载却增加客户库存，之后采购增长较弱；改期可能释放短期投片但延后回收。两者不能由同一机房延期标题判定为订单取消。"
+            },
+            {
+              "name": "客户信用恶化使保障机制代替部分正常采购",
+              "implication": "保证金/信用证可改善追索与桥接，但不是原销售利润，也不能自动填补合格订单缺口；需通过其他已合格客户吸收才能维持同样制造经济性。"
+            },
+            {
+              "name": "新品资源强度升高而旧合同价带或规格范围不能调整",
+              "implication": "数量履约提高负载却可能锁住低净贡献或挤出高价值机会，反转把数量保护当利润保护的理解；有效重谈则可保留原投资逻辑。"
+            }
+          ],
+          "ref": [
+            "D1-O31",
+            "D1-O74",
+            "D1-O57",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+          ]
+        },
+        {
+          "name": "竞争有效供给与客户备货改变扩产纪律",
+          "why_live": "当前高价格比纯出货增长更能解释利润，紧张供给是经营工作参照而非永久结构。竞争者已有HBM商业化与多年厂房计划；龙仁洁净室和Indiana后段节点不是设备/合格出货。9月行业调查亦区分强服务器采购与弱消费吸收。",
+          "revision_logic": "决定本Unit多年回收的是新增合格资源能否被真实需求吸收，而非竞争园区总投资。行业供给可在总需求增长时削弱稀缺租金，客户预防备货也可制造后来的采购空窗；公司自身阶段化设备投放和用途重配会反馈供需。",
+          "possibility_space": [
+            {
+              "name": "竞争者节点效率和合格新量快于市场原理解",
+              "implication": "无需所有绿地厂满产便增加可替代供给，稀缺溢价和目标设备利用可能下降；更便宜内存也可恢复被压抑的终端用途，缓冲而非自动阻止价格正常化。"
+            },
+            {
+              "name": "竞争者新空间受设备、基础die或平台资格限制",
+              "implication": "名义扩张不转成同规格可用量，美光现有高负载持续更久；只有自身已合格且有余量时，竞争受阻才能转成额外订单。"
+            },
+            {
+              "name": "客户在供应改善后消化此前为缺货而建立的库存",
+              "implication": "采购弱于终端任务增长，先改变季度排程与价格，未必说明长期AI使用逆转；若公司合同要求继续提货，调整可能延后而更加集中。"
+            },
+            {
+              "name": "中国供应者扩大合格常规DRAM并改变区域采购",
+              "implication": "先影响可被其供应的客户和规格，传回美光的跨产品资源与相对售价；技术资格和市场准入不是同一变量，不能按宏观资助或传闻厂房算净供给。"
+            },
+            {
+              "name": "公司和竞争者主动放慢设备安装而保留可用空间",
+              "implication": "降低未来过剩风险，也限制持续短缺中的销售；合理资本纪律与短期较慢bit增长可并存，已经承诺的土建成本不会自动撤回。"
+            }
+          ],
+          "ref": [
+            "D1-O57",
+            "D1-O74",
+            "D1-O205",
+            "D1-O6",
+            "https://news.skhynix.com/en/new-facility-investment-for-yongin-semiconductor-cluster/",
+            "https://news.skhynix.com/en/groundbreaking-ceremony-in-indiana/",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "美光HBM先进封装与测试体系",
+      "scope": "美光HBM专用堆叠、先进封装与测试的技术和制造网络，涵盖代际与规格相关工艺、能力配置、良率、合格产出、自有及外部服务、设备材料和人员等资源、基地扩建、单位成本及资本投入。",
+      "horizon": "季度运营与HBM规格演进周期，延伸至多年设施扩建和制造技术周期。",
+      "ref": [
+        "D1-O31",
+        "D1-O74",
+        "D1-O88",
+        "D1-O4",
+        "D1-O3",
+        "D1-O6",
+        "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+        "D1-O57",
+        "https://investors.micron.com/news/press-release/2025/Micron-Breaks-Ground-on-New-HBM-Advanced-Packaging-Facility-in-Singapore-01-08-2025/default.aspx",
+        "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+        "D1-O130",
+        "https://www.appliedmaterials.com/us/en/newsroom/blogs/tackling-key-hbm-and-advanced-packaging-bottlenecks-for-ai-era.html",
+        "https://aws.amazon.com/about-aws/whats-new/2025/12/amazon-ec2-trn3-ultraservers/",
+        "https://www.aboutamazon.com/news/company-news/amazon-earnings-q2-2026-report",
+        "https://developer.nvidia.com/blog/full-stack-optimizations-for-agentic-inference-with-nvidia-dynamo/",
+        "https://nvidianews.nvidia.com/news/nvidia-launches-bluefield-4-stx-storage-architecture-with-broad-industry-adoption",
+        "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf",
+        "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html",
+        "D1-O103",
+        "D1-O147",
+        "D1-O148",
+        "D1-O150",
+        "https://www.appliedmaterials.com/us/en/newsroom/press-releases/100126-applied-besi-expand-partnership.html",
+        "https://www.advantest.com/document/en/investors/ir-library/briefing/E_IR_technical_briefing_231129.pdf",
+        "D1-O205",
+        "D1-O52",
+        "D1-O186",
+        "D1-O66",
+        "D1-O125",
+        "https://markets.financialcontent.com/bpas/article/bizwire-2026-7-13-new-jedec-sphbm4-standard-enables-hbm4-class-bandwidth-on-organic-substrates",
+        "https://focustaiwan.tw/business/202610070021",
+        "https://www.taipeitimes.com/News/biz/archives/2026/10/08/2003865571",
+        "https://openai.com/index/how-enterprises-put-ai-to-work/",
+        "https://www.anthropic.com/news/enterprise-frontier-safeguards",
+        "https://blogs.microsoft.com/blog/2026/02/24/microsoft-sovereign-cloud-adds-governance-productivity-and-support-for-large-ai-models-securely-running-even-when-completely-disconnected/",
+        "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000236/ex9912.htm",
+        "https://nvidianews.nvidia.com/news/nvidia-partners-with-apollo-blackrock-blackstone-brookfield-goldman-sachs-and-kkr-to-establish-ai-compute-infrastructure-financing-platforms-to-mobilize-over-500-billion-of-third-party-capital",
+        "https://insidelines.pjm.com/pjm-proposes-framework-to-connect-data-centers-without-compromising-reliability-affordability/",
+        "https://www.pjm.com/markets-and-operations/large-load",
+        "https://news.skhynix.com/en/groundbreaking-ceremony-in-indiana/"
+      ],
+      "state": {
+        "parameters": [
+          {
+            "name": "HBM合格堆叠产出",
+            "definition": "按代际、12/16层规格统计的通过封装测试的HBM堆叠数量；不由收入或晶圆投入倒推。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O88",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "HBM先进封装装备能力",
+            "definition": "已装备可运转的堆叠、封装与测试月能力，区分台湾现有网络与新加坡建设。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O31",
+              "D1-O4"
+            ]
+          },
+          {
+            "name": "HBM堆叠封装良率",
+            "definition": "特定代际及层高从合格输入die到合格HBM堆叠的转换率，不与前段die良率混用。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O88",
+              "D1-O74",
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356"
+            ]
+          },
+          {
+            "name": "HBM测试有效吞吐",
+            "definition": "按规格界定的HBM测试设备单位时间合格堆叠产出，反映后段配套瓶颈；无公开同口径值。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O74",
+              "D1-O3"
+            ]
+          },
+          {
+            "name": "HBM先进封装单位成本",
+            "definition": "单位合格堆叠的封装与测试成本，按代际、层高、基地分层，不代以HBM整体毛利或售价。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O57",
+              "D1-O88"
+            ]
+          },
+          {
+            "name": "HBM专项资本投入",
+            "definition": "本Unit堆叠/封装/测试设备和设施实际投入，不把公司全部PP&E或新加坡NAND厂投资计入。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O31",
+              "D1-O4",
+              "https://investors.micron.com/news/press-release/2025/Micron-Breaks-Ground-on-New-HBM-Advanced-Packaging-Facility-in-Singapore-01-08-2025/default.aspx"
+            ]
+          },
+          {
+            "name": "HBM代际主力组合",
+            "definition": "美光实际HBM出货的主力代际与层高，界定当期后段作业负载。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O88",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "HBM4十二层商业制造阶段",
+            "definition": "36GB 12-high HBM4从样品到规模封装测试和商业出货的状态。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O88",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "HBM4十六层商业制造阶段",
+            "definition": "48GB 16-high HBM4的样品、资格与量产状态，独立于12层规格。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O88",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "HBM4十二层产量爬坡比较",
+            "definition": "公司对HBM4 12-high相对HBM3E 12-high产量爬坡速度的比较；不解释为月产量或绝对良率。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356"
+            ]
+          },
+          {
+            "name": "HBM4十二层成熟良率到达预期",
+            "definition": "管理层对HBM4与HBM3E各自达到成熟制造良率所需时间的比较，不代表已经达到成熟良率。",
+            "value_type": "DIRECTION",
+            "ref": [
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356"
+            ]
+          },
+          {
+            "name": "HBM4E量产时间",
+            "definition": "1γ节点HBM4E按公司路线图进入量产爬坡的时间，非已兑现能力。",
+            "value_type": "TIME",
+            "ref": [
+              "D1-O88",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "HBM未来供给商业约定状态",
+            "definition": "公司未来年度HBM比特供应是否已有销售协议安排；界定利用及扩产规划的需求锚点，非直接已实现出货。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "HBM相对常规DRAM利润位置预期",
+            "definition": "HBM合同定价与常规DRAM毛利差距的管理层前瞻判断；不是本Unit封装毛利。",
+            "value_type": "DIRECTION",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "客户加速器平台商业阶段",
+            "definition": "主要HBM4应用平台Rubin的生产交付状态，作为目标HBM代际制造需求的外部锚点，不代表美光独家份额。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O130"
+            ]
+          },
+          {
+            "name": "HBM先进封装地域网络",
+            "definition": "本Unit既有台湾与在建新加坡制造网络的能力阶段，不含客户加速器系统封装或新加坡NAND厂。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O31",
+              "D1-O4",
+              "https://investors.micron.com/news/press-release/2025/Micron-Breaks-Ground-on-New-HBM-Advanced-Packaging-Facility-in-Singapore-01-08-2025/default.aspx"
+            ]
+          },
+          {
+            "name": "新加坡HBM封装扩容时间",
+            "definition": "新加坡HBM先进封装项目明显增加公司专用后段能力的管理层时间计划。",
+            "value_type": "TIME",
+            "ref": [
+              "D1-O31",
+              "D1-O4"
+            ]
+          },
+          {
+            "name": "新加坡HBM项目投资规划规模",
+            "definition": "2025年公布的HBM先进封装项目长期投资包络，非本期实际资本支付。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2025/Micron-Breaks-Ground-on-New-HBM-Advanced-Packaging-Facility-in-Singapore-01-08-2025/default.aspx"
+            ]
+          },
+          {
+            "name": "新加坡HBM项目人员规划规模",
+            "definition": "新建HBM先进封装项目初始拟创造岗位数量，非已经在岗员工数。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2025/Micron-Breaks-Ground-on-New-HBM-Advanced-Packaging-Facility-in-Singapore-01-08-2025/default.aspx"
+            ]
+          },
+          {
+            "name": "HBM输入die供给归属",
+            "definition": "本Unit核心与基础die的上游供应安排，定位前后段匹配责任而不把die生产重复算入后段产出。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O88",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "HBM后段关键投入供应状态",
+            "definition": "关联HBM后段的合格材料、组件、设备与外部服务可获得性；未具名短缺不能归为特定HBM材料。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O74",
+              "D1-O3"
+            ]
+          }
+        ],
+        "values": [
+          {
+            "name": "FY2026主力仍为HBM3E 12层",
+            "parameter": "HBM代际主力组合",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "FY2026 HBM出货多数仍为HBM3E 12-high，不能以HBM4已量产代替全年主力组合。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O88",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "36GB 12层已量产",
+            "parameter": "HBM4十二层商业制造阶段",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "HBM4 36GB 12-high已进入量产，内部设计制造的核心与基础die配合本体系后段。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026 Q4及10月年报状态",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O88",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "48GB 16层仍属送样",
+            "parameter": "HBM4十六层商业制造阶段",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "HBM4 48GB 16-high在送样，尚不能据此记录为已经获得规模采购配额或量产。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026 Q4及10月年报状态",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O88",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "HBM4爬坡速度相对上一代",
+            "parameter": "HBM4十二层产量爬坡比较",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "公司称HBM4 12-high产量爬坡进度约为HBM3E 12-high的两倍速度。"
+            },
+            "previous_value": null,
+            "time_scope": "2026年6月两代爬坡进度比较",
+            "as_of": "2026-06-24",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356"
+            ]
+          },
+          {
+            "name": "达到成熟良率预计更快",
+            "parameter": "HBM4十二层成熟良率到达预期",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "direction": "预期HBM4 12-high达到成熟良率明显快于HBM3E 12-high。"
+            },
+            "previous_value": null,
+            "time_scope": "HBM4 12-high爬坡周期",
+            "as_of": "2026-06-24",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356"
+            ]
+          },
+          {
+            "name": "下一代HBM4E计划",
+            "parameter": "HBM4E量产时间",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "point": "2027",
+              "start": null,
+              "end": null,
+              "precision": "年"
+            },
+            "previous_value": null,
+            "time_scope": "日历2027",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O88",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "2027年大多数比特供应协议已完成",
+            "parameter": "HBM未来供给商业约定状态",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "公司已就日历2027年HBM比特供应的绝大多数完成协议。"
+            },
+            "previous_value": null,
+            "time_scope": "日历2027供应的协议状态",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "价格重订预计缩小相对差距",
+            "parameter": "HBM相对常规DRAM利润位置预期",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "direction": "2027年HBM协议价格同比显著提升，预计缩小与常规DRAM的毛利率差距。"
+            },
+            "previous_value": null,
+            "time_scope": "日历2027",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "Rubin进入生产出货并与Blackwell并行",
+            "parameter": "客户加速器平台商业阶段",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "NVIDIA于8月26日披露Vera Rubin在其FY2027 Q3开始生产出货，Blackwell与Rubin并行；客户部署仍有土地、电力、机房和资金约束。"
+            },
+            "previous_value": null,
+            "time_scope": "NVIDIA FY2027 Q3平台出货及并行期",
+            "as_of": "2026-08-26",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O130"
+            ]
+          },
+          {
+            "name": "台湾既有能力加新加坡建设",
+            "parameter": "HBM先进封装地域网络",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "台湾具既有先进封装能力；新加坡HBM专用先进封装设施2025年1月开工，截至最新披露仍处建设阶段，不预先记录为已放量。"
+            },
+            "previous_value": null,
+            "time_scope": "2025年1月至2026年10月的能力网络",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O31",
+              "D1-O4",
+              "https://investors.micron.com/news/press-release/2025/Micron-Breaks-Ground-on-New-HBM-Advanced-Packaging-Facility-in-Singapore-01-08-2025/default.aspx"
+            ]
+          },
+          {
+            "name": "新加坡专用后段扩容计划",
+            "parameter": "新加坡HBM封装扩容时间",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "point": "2027年初",
+              "start": null,
+              "end": null,
+              "precision": "近似年初"
+            },
+            "previous_value": null,
+            "time_scope": "日历2027",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O31",
+              "D1-O4"
+            ]
+          },
+          {
+            "name": "新加坡HBM长期投资计划",
+            "parameter": "新加坡HBM项目投资规划规模",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "number": 7.0,
+              "unit": "十亿美元（规划）"
+            },
+            "previous_value": null,
+            "time_scope": "至本十年末及以后",
+            "as_of": "2025-01-08",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2025/Micron-Breaks-Ground-on-New-HBM-Advanced-Packaging-Facility-in-Singapore-01-08-2025/default.aspx"
+            ]
+          },
+          {
+            "name": "初期约1400岗位规划",
+            "parameter": "新加坡HBM项目人员规划规模",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "number": 1400.0,
+              "unit": "岗位（约，初始规划）"
+            },
+            "previous_value": null,
+            "time_scope": "新加坡项目初期运营",
+            "as_of": "2025-01-08",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2025/Micron-Breaks-Ground-on-New-HBM-Advanced-Packaging-Facility-in-Singapore-01-08-2025/default.aspx"
+            ]
+          },
+          {
+            "name": "HBM4前段内部配套",
+            "parameter": "HBM输入die供给归属",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "HBM4核心die及逻辑基础die为美光内部设计制造；本Unit接收合格输入后完成堆叠、封装及测试。"
+            },
+            "previous_value": null,
+            "time_scope": "2026年10月HBM4制造安排",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O88",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "共有供应限制但HBM短缺对象未分拆",
+            "parameter": "HBM后段关键投入供应状态",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "公司制造网络存在部分材料/组件短缺或长交期及有限合格来源；当前披露未定位到特定HBM封装投入或供应商，不能据此量化后段损失。"
+            },
+            "previous_value": null,
+            "time_scope": "2026年10月公司制造供应描述",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O74",
+              "D1-O3"
+            ]
+          }
+        ]
+      },
+      "expectation_baseline": [
+        {
+          "name": "已商业化的12层路径承接HBM4升级",
+          "baseline": "以FY2026出货多数仍为HBM3E 12层作为起点，采用HBM4 36GB 12层逐步扩大占比、两代并行承接客户负载的路径，而非把新代量产等同全组合即时替代；此路径不预设FY2027的代际份额。目标器件已量产，客户Rubin已进入生产出货且与Blackwell并行，双方商业动作比单独产品发布更支持持续爬坡。既有HBM4相对更快爬坡提供正向制造锚点，但未披露绝对成熟良率或总封装月产量。",
+          "ordinary_progress": "HBM4连续交付、12层制造学习和测试效率提升、旧代与新代在客户平台并行期共同供给，都属于此路径内的扩大。",
+          "open_frontier": "HBM4量产占比和绝对合格产出能否按平台放量加快；客户供给配额、前段输入、后段测试与竞争者商业供给可使美光路径与平台总量不同。",
+          "time_scope": "FY2027及2027年平台切换周期",
+          "ref": [
+            "D1-O88",
+            "D1-O74",
+            "D1-O130",
+            "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356"
+          ]
+        },
+        {
+          "name": "16层与HBM4E是独立转换门槛",
+          "baseline": "默认48GB 16层从样品验证逐步推进，但当前商业产出仍由已量产规格承担；HBM4E按公司2027年路线图形成下一次规格转换。送样证明堆叠技术已进入客户接触，并不证明高层数已经经济量产；因此不提前计入全部16层或下一代产出。",
+          "ordinary_progress": "规格验证、客户资格完善、样品迭代与已计划HBM4E研发进展，属于既有路线延伸。",
+          "open_frontier": "16层认证及稳定量产的具体时间、层高变化对累计良率和测试节拍的影响；下一代能否在产品转换时同时保持规模、功耗规格与经济产出。",
+          "time_scope": "2026年末至日历2027",
+          "ref": [
+            "D1-O88",
+            "D1-O74",
+            "D1-O130"
+          ]
+        },
+        {
+          "name": "新加坡增加后段能力但需要前后段成套爬坡",
+          "baseline": "已有台湾网络与新加坡专用设施开工、长期投资及人员规划支持2027年初出现新增HBM后段能力的工作路径。不是把70亿美元项目包络当已支付投资，也不是把厂房运营直接等同合格堆叠：新增设备、技能人员、内部合格核心/基础die和测试配套共同决定能卖出的量。",
+          "ordinary_progress": "按计划交付厂务、堆叠/封装/测试装备并训练人员，从初始生产走向连续合格交付，符合扩容基准。",
+          "open_frontier": "台湾与新加坡分工及新加坡贡献量；后段能否与晶圆die、关键材料及测试节拍匹配，或只出现能力闲置/在制品增加；当前无公开月能力数用于量化。",
+          "time_scope": "2027初始扩容至其后数季爬坡",
+          "ref": [
+            "D1-O31",
+            "D1-O4",
+            "D1-O88",
+            "https://investors.micron.com/news/press-release/2025/Micron-Breaks-Ground-on-New-HBM-Advanced-Packaging-Facility-in-Singapore-01-08-2025/default.aspx"
+          ]
+        },
+        {
+          "name": "销售协议支持负载但封装经济性仍需分开",
+          "baseline": "2027年绝大多数HBM比特供应已完成协议，使专用后段规划更有负载依据；管理层预期价格提升缩小与常规DRAM的毛利差距。采用有商业承接的扩容而非纯投机新增产能的基准，同时不以HBM整体售价、CMBU毛利或客户保证金推定封装单位成本和资本回报。更高层数/带宽需求使工艺与测试资源复杂度继续上升，供应商技术材料只说明行业工艺约束，不证明美光使用其特定设备或工艺。",
+          "ordinary_progress": "约定年度数量按合格规格交付、既有封装良率学习以及规划内设备扩容，属于商业化路径内的正常进展。",
+          "open_frontier": "年度协议对应代际/层高分布、采购执行和合格交付时点；价格补偿能否覆盖新规格的良率、测试和资本负担；客户电力/资金受限是否改变实际提货节奏。",
+          "time_scope": "日历2027供应及后续产品周期",
+          "ref": [
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "D1-O31",
+            "D1-O74",
+            "D1-O130",
+            "https://www.appliedmaterials.com/us/en/newsroom/blogs/tackling-key-hbm-and-advanced-packaging-bottlenecks-for-ai-era.html"
+          ]
+        }
+      ],
+      "realization_factors": [
+        {
+          "name": "商业工作量、多平台选择与部署条件形成HBM负载",
+          "mechanism": "训练/推理服务的付费吸收、任务规模、并发及延迟目标决定客户需要的有效算力/热内存。模型服务商按单位任务收益和成本选择GPU或自研ASIC，云运营者按已有机群利用率、资金及功率预算安排扩建；选定平台的HBM代际/配置和供应者资格才把平台量转成美光后段需求。土地、电力、加速器系统封装及整机可得性可延后平台安装，美光可能按供给合同先交付给客户形成库存，也可能调整节奏，不能将园区延期自动写为HBM取消。",
+          "current_status": "Rubin生产交付与Blackwell并行，目标12层HBM4已量产；这是已有业务升级而非只靠愿景。AWS已商业可用Trainium3每芯片144GB HBM3e，说明转自研芯片仍有HBM需求但目标份额未知。云收入与模型服务商业增长支持持续需求，同时客户有部署约束、投入占用资金。工作判断是商业化与采购承诺支撑爬坡，季度产量更受合格交付能力/配额限制，长期负载仍受服务经济性。",
+          "materiality_context": "付费吸收决定投资能维持多久；任务规模/并发和延迟目标决定热内存与带宽，不可只按token数量外推堆叠量。单位服务经济性及资金决定扩建意愿，机群余量决定新增任务先利用旧设备还是触发购买；当前实际商业化和扩产行为比纯TAM更可信。平台选择改变规格和供应资格而不一定消灭HBM，144GB是特定ASIC配置，不与不同吞吐GPU直接比较。功率、土地、系统封装和整机约束控制几季部署时点，其变化可先改变客户库存/提货，不必改变全年需求。供应者资格/配额决定美光分得多少负载，不能因平台出货提高便按比例提高本Unit产量；技术可用性与客户资本条件是不同变量。",
+          "scope_boundary": "覆盖HBM后段需求来源和可承接工作量；外部加速器系统封装、云服务收入归平台/客户研究，本Unit不制造客户GPU或替客户运营机房。",
+          "ref": [
+            "D1-O130",
+            "D1-O74",
+            "D1-O88",
+            "D1-O31",
+            "https://aws.amazon.com/about-aws/whats-new/2025/12/amazon-ec2-trn3-ultraservers/",
+            "https://www.aboutamazon.com/news/company-news/amazon-earnings-q2-2026-report"
+          ]
+        },
+        {
+          "name": "缓存分层与复用改变每任务的HBM制造强度",
+          "mechanism": "推理的权重和活跃KV需要及时供数，长上下文与并发扩大热数据集；但需要保存的所有上下文不必同时驻留HBM。运营者用前缀复用、保留/淘汰策略及预取，把冷KV移到CPU DRAM或闪存，再借网络数据路径送回计算层。命中率、尾延迟和可达带宽决定扩容是否增加有效服务能力；若降低每任务HBM占用或重复计算，固定服务量可少购堆叠。降低服务成本又可能诱发更多服务和更大模型，形成反弹；HBF/GPU-direct闪存是另一类权重/容量路径，其应用资格与访问延迟决定能否分流，不是普遍替代热HBM。",
+          "current_status": "NVIDIA 2026年Dynamo资料明确四层缓存与复用/预取开发，CMX/STX提出外部上下文层；美光也已有KV-cache SSD客户交付，因此分层不是无来源假想。功能、方案公告和客户具体生产采纳仍分层，HBF及GP1只具标准/评估送样路径，没有证据它们已全面替代目标HBM。当前采用热HBM继续承担主计算供数、外层扩大上下文的互补解释；软件效率对新增每任务需求有真实抵消，而非直接设零需求。",
+          "materiality_context": "权重规模设定基线热存储，上下文/并发设定额外需访问的数据量，保留/淘汰策略与热驻留比例直接决定容量要求；在同模型和服务质量下，热比例下降可降低每平台容量压力。缓存命中与预取提高重复会话效率，带宽/尾延迟决定冷数据能否及时回流，任何一个不匹配都会把便宜容量变为等待。需求反弹由付费任务增长相对单位资源节约决定，无固定正系数。对目前已量产12层负载，客户平台固定配置限制即时硬件减配；对下一代规格及扩产预期，软件/分层可在出货前改变需求强度。HBF/GP1资格决定替代路线能服务哪些负载，实验峰值指标不等于当期覆盖规模。外层DRAM/SSD增长可能由美光其他Unit或竞争者承接，不能与HBM增量重复加总。",
+          "scope_boundary": "止于架构和软件选择对HBM后段堆叠需求的影响；DRAM/闪存制造与系统软件分别归其所属域，不把研发路线当作已获得量产订单。",
+          "ref": [
+            "https://developer.nvidia.com/blog/full-stack-optimizations-for-agentic-inference-with-nvidia-dynamo/",
+            "https://nvidianews.nvidia.com/news/nvidia-launches-bluefield-4-stx-storage-architecture-with-broad-industry-adoption",
+            "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf",
+            "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html",
+            "D1-O103",
+            "D1-O147",
+            "D1-O148",
+            "D1-O150"
+          ]
+        },
+        {
+          "name": "层高、互连与机械缺陷共同决定封装良率",
+          "mechanism": "HBM层高和单层容量定义每堆叠输入die及连接数量。更高层数在封装高度限制下要求更薄die，TSV填充、凸点平坦度、表面清洁、应力/翘曲及对准影响连接成功率；热/电性规格再筛选可交付产品。工艺控制、缺陷量测和学习减少报废，可能使同一装备形成更多合格堆叠。新的键合路线可改善密度或连接，但也引入设备、洁净度和重新验证要求，不能以供应商技术发布替代美光实际采用。可修复缺陷与相关性会改变简单累积良率关系。",
+          "current_status": "美光HBM4 36GB 12层量产、48GB 16层送样，后者尚未跨越同样的商业状态。Applied 8月技术资料描述高层数薄die的应力/翘曲与连接均匀性瓶颈；10月1日Applied/Besi扩展TCB和hybrid研发，表明工具生态同时探索多种路径，不证明美光已切换hybrid或采购指定系统。美光较快的HBM4爬坡有制造学习支持，但成熟良率时点仍为管理层预期。",
+          "materiality_context": "层高决定每堆叠die消耗与重复工序次数；36到48GB的容量增幅约33%，12到16层也增33%，固定合格core die输入下理论堆叠数量先降25%，不能把每堆叠容量增量当免费总比特增量。示意每个重复连接阶段独立成功率99%，多4阶段使相对良率乘0.99^4，约再低3.9%；这是敏感性而非美光实测，修复/相关缺陷会改变结果。TSV/凸点、应力、清洁及对准共同决定合格率，任一缺陷都可损失已投入多层材料/工时，因而良率改善能兼增量降成本。热/电性规格限制可售分档，不仅限制机械成品数；量测和学习对现有量产路线有当季杠杆，改变键合路线则以季度至多年设备/资格投入换取后续能力。FY2026已知出货以HBM3E 12层为主、HBM4 12层也已量产，12层路径是当前商业化基础；这不是后段利润占比或FY2027组合份额的测量。16层的规模验证可修订更大的未来组合。",
+          "scope_boundary": "覆盖HBM堆叠内部制造物理及经济良率；客户GPU/中介层整体集成是外部条件。模型数字为透明假设，不写入State实测值或当作交易阈值。",
+          "ref": [
+            "D1-O88",
+            "D1-O74",
+            "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+            "https://www.appliedmaterials.com/us/en/newsroom/blogs/tackling-key-hbm-and-advanced-packaging-bottlenecks-for-ai-era.html",
+            "https://www.appliedmaterials.com/us/en/newsroom/press-releases/100126-applied-besi-expand-partnership.html"
+          ]
+        },
+        {
+          "name": "合格输入、设备节拍与测试覆盖决定可交付吞吐",
+          "mechanism": "可售HBM堆叠受合格核心die/层数、基础die、键合/封装装备及测试能力的最窄有效环节约束，须统一到同规格每期合格堆叠。前段筛选质量和分档决定后段输入，漏检把坏die带入多层高价值在制品；基础die的接口性能和良率也限制整堆叠。装备可用工时、并行度、单位节拍及返工决定实际处理量；测试覆盖/温度/可靠性要求、单次时长与复测占用决定何时成为交付。质量减少报废与长期退货，但过度压缩测试可能损害客户资格。",
+          "current_status": "美光HBM4核心和基础die内部制造，降低该环节跨代工采购依赖但把配套良率、排程责任留在自身；不能因此消除测试或客户平台限制。Advantest技术材料说明HBM增加堆叠后测试插入，密度/速度和可靠性提高测试需求，支持独立测试吞吐路径而非只看封装机台。当前绝对良率、机台节拍和月合格量未披露，采用按规格瓶颈匹配的模型，不指定未经测量的唯一瓶颈。",
+          "materiality_context": "核心die数量按层高换算，基础die逐堆叠配套，其性能/良率限制可用核心die组合，两者任一不足使新增后段装备暂时低利用；内部设计协同提高控制度但前段异常会共同影响后段。输入筛选降低下游昂贵报废，分档影响不同SKU可用量。装备工时、并行度、节拍共同决定吞吐，返工同时吃掉产能和成本；测试时长若单独增20%、其他不变，测试容量约降17%，但仅当测试已是瓶颈才同比限制交付。覆盖/温度要求决定可靠性与客户可用集合，复测可提高判定准确却延后交付。当前量产代际越扩张，测试和前段配套越可能成为设备数量之外的边际杠杆；非瓶颈扩容首先改变在制品/交期，不自动等比增加销售。",
+          "scope_boundary": "覆盖本Unit输入到封装/测试交付，前段die数量与成本由晶圆Unit深化；通用测试商说明不是美光机型、供应商份额或当前量测值。",
+          "ref": [
+            "D1-O88",
+            "D1-O74",
+            "D1-O3",
+            "https://www.advantest.com/document/en/investors/ir-library/briefing/E_IR_technical_briefing_231129.pdf"
+          ]
+        },
+        {
+          "name": "客户资格、接口路径与竞争分配决定能力的去向",
+          "mechanism": "客户平台定义带宽、容量、层高、功耗/热设计和接口，供应者需要在具体规格及系统上验证；有资格后，交期、可靠性、价格和多来源策略分配采购。规格变动可让既有产线需重新调参/验证，未获资格的高名义能力不能接单。共同标准降低设计摩擦，也降低竞争者进入成本；JEDEC SPHBM4保留HBM4核心die而改变基础接口，串行化适配有机基板，可改变系统集成资源和潜在用途，却仍需要堆叠、基础die及平台支持。自有基础die与外部逻辑代工路线的差异改变控制/协同责任，不自动决定赢家。",
+          "current_status": "12层HBM4已量产、16层仍送样，Rubin和Blackwell并行使多代需求同时存在。三星已有正式HBM4商业化证据，不能把美光主力路线当独供。7月SPHBM4标准公告提供核心与接口分离的真实选择，未证明美光或客户已经量产采用；Rubin Ultra的多配置评估仍是行业研究线索，不覆盖当前已出货Rubin配置。工作判断是客户合格配额而非认证标签的总数决定美光后段机会。",
+          "materiality_context": "容量/层高决定每个平台堆叠输入，带宽及功耗/热设计决定是否适用，接口决定需要哪些基础die/集成资源；这些影响机会规模及资源强度，不必等最终销售才修订后段投资需求。资格控制进入集合和时间，采购配额控制集合内份额；缺货时交期/可靠性更重要，有替代能力时价格和多来源更能转移份额。新标准降低某类系统封装约束可扩大用途，也可强化其他合格供应者，核心die供给/测试可能成为新瓶颈；无平台采用前，其当期贡献小、未来机会修订并非零。内部/外部基础die路线决定协同与风险暴露，不能从竞争者代工缺口推定美光能即时替代。已商业化的12层路径构成现期可交付基础，16层及接口选择对未来配置更有开放幅度；同样获得认证不产生同样数量。",
+          "scope_boundary": "覆盖资格/平台接口/竞争分配传回本Unit的工艺与产能选择；SPHBM4不是NAND替代，也不认定美光全部下一代基础die延续内部路线；平台BOM与系统封装归产品域深化。",
+          "ref": [
+            "D1-O74",
+            "D1-O88",
+            "D1-O130",
+            "D1-O205",
+            "D1-O52",
+            "D1-O186",
+            "D1-O66",
+            "D1-O125",
+            "https://markets.financialcontent.com/bpas/article/bizwire-2026-7-13-new-jedec-sphbm4-standard-enables-hbm4-class-bandwidth-on-organic-substrates"
+          ]
+        },
+        {
+          "name": "新增地域配套、熟练资源与连续运营共同决定产能利用",
+          "mechanism": "新加坡新增设施从厂务到合适装备、工艺转移、熟练人员和规格资格逐步形成有效后段能力。内部前段die供给和测试配套不足时，新空间会先闲置；台湾既有线与新线的SKU分工、跨基地资格及物流决定负载能否转移。合格材料/设备维护与电水气可靠性维持连续开机，任何中断的影响经在制品、重启验证及交期传导；台湾前段劳动扰动还可通过内部输入die影响后段，即使后段员工本身没有参加同一行动。地域分散减少某处暴露，却增加爬坡和协调成本。",
+          "current_status": "现有台湾能力加在建新加坡设施构成新增地域路径，目标2027年初扩容；70亿美元是至十年末及以后投资规划，初期约1,400岗位也是计划，并非已装备能力或在岗人数。公司已有部分输入短缺/长交期，具体HBM项目未分拆。桃园有罢工授权而无既定行动日，不能认定台湾全部封装停工。当前解释是逐步匹配输入与新线，不把建筑运营等同稳定经济交付。",
+          "materiality_context": "厂务/设备及转移资格决定新增能力何时可用，配套die和测试决定其中多少能运转；近端这组匹配变量比远期总投资包络更有杠杆。熟练人员决定设备有效工时与良率，招聘数量不能替代经验形成。SKU分工/跨基地资格控制闲置线能否接替受扰线，物流控制配套批次和在制品时长。材料/维护和公用事业若稳定则主要是成本，一旦中断可变成产量约束；前段停工亦可能延迟本Unit合格输入，不按台湾工会投票率推算后段损失。地域分散扩大中期承接空间并降低单点暴露，同时新线低负载增单位固定费用。2027初始扩容有近端时间敏感性，但没有月能力数可量化新增比例。",
+          "scope_boundary": "覆盖HBM专用后段设施、资源和配套；不把新加坡NAND晶圆厂算作HBM封装产能，不把前段劳动事件写为已发生的后段停工。",
+          "ref": [
+            "D1-O31",
+            "D1-O4",
+            "D1-O74",
+            "D1-O88",
+            "https://investors.micron.com/news/press-release/2025/Micron-Breaks-Ground-on-New-HBM-Advanced-Packaging-Facility-in-Singapore-01-08-2025/default.aspx",
+            "https://focustaiwan.tw/business/202610070021",
+            "https://www.taipeitimes.com/News/biz/archives/2026/10/08/2003865571"
+          ]
+        },
+        {
+          "name": "价格协议、代际成本与合格负载共同决定后段经济性",
+          "mechanism": "后段投入回报取决于可交付负载和每合格堆叠的净经济贡献。合格输入die、材料、重复工序与测试成本经封装良率/返工放大，装备和厂务固定费用由有效负载摊薄；更高层数或定制规格提高价值也可能提高资源强度。年度HBM销售协议给负载/价格可见性，多年数量、价带与信用保障另约束履约和风险；新代际溢价谈判必须覆盖新成本。设备和设施先投资，资格爬坡与交付后回收；旧代/新代并行时排程、换线和库存会改变利用效率及过时风险。",
+          "current_status": "2027年绝大多数HBM比特供给已完成协议，管理层预期价格同比显著提高并缩小与常规DRAM毛利差距，支持有商业承接的扩容。但当前全HBM售价和毛利不等于后段独立利润；1γ降本不能消除高层数/测试复杂度和新线爬坡成本。3E仍为FY2026多数出货、4的12层进入量产，工作解释是组合升级与负载改善并行，单品/专用资本回报尚无数值。",
+          "materiality_context": "价格及成本决定每堆叠贡献，良率和返工同时影响单位成本和可售量；示意若全部投入均在最终筛选前发生，良率从90%到95%可使每良品投入从1/0.90降为1/0.95，约降5.3%，实际报废阶段和固定费用结构会改变幅度。有效负载决定固定费用摊薄；仅增加设备而没有已合格负载会拉低短期回报。年度协议覆盖提高规划确定性，价格重谈/代际规格决定下一年的价值，多年take-or-pay与信用保护不能替代自身交付。旧新并行的排程/换线影响季度效率，库存过时风险由平台切换速度放大。新加坡长期资本包络决定潜在回收规模，具体付款、设备利用与经济寿命决定时间；不以HBM整体毛利直接计算本Unit ROIC。当前价格补偿支持扩张，新代际成本路径仍可能改变这一净贡献。",
+          "scope_boundary": "覆盖专用后段合格成本、设备利用和项目回报；多年SCA机制仅在HBM实际被覆盖时适用，不把年度HBM供给协议全部视为带底价的多年SCA。die成本仅作配套输入，HBM产品总量价与公司资金返还由相关Shell深化，不把融资保证金作收入。",
+          "ref": [
+            "D1-O31",
+            "D1-O57",
+            "D1-O74",
+            "D1-O88",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+            "https://investors.micron.com/news/press-release/2025/Micron-Breaks-Ground-on-New-HBM-Advanced-Packaging-Facility-in-Singapore-01-08-2025/default.aspx"
+          ]
+        },
+        {
+          "name": "信任与数据边界改变HBM工作的可部署范围",
+          "mechanism": "业务负责人、安全团队和公共采购方决定哪些代理任务获准执行及在哪里推理。允许使用更强模型可提高热工作集和加速器负载；要求本地/主权环境可迁移而非消灭计算，再由平台是否使用HBM、供应资格及新建或复用机群决定本Unit承接的堆叠量。",
+          "current_status": "截至截点已有EFS的秋季推出计划和Microsoft断连大型模型方案；前者主要改变数据控制，后者提供本地硬件路径。当前HBM4商业爬坡仍由已合格平台承担，这些公告未给出美光平台配额。",
+          "materiality_context": "允许生产执行或暂停高风险任务可改变需求持续长度，影响未必等待所有硬件订单调整。主权分散部署可能增加重复配置/保留余量，也可能因预算选择小模型和非HBM平台；总任务量不变时HBM效应仍不同。日志放置本身主要影响存储，不是改变HBM需求的充分机制；获准模型、并发和机群复用才是重要中间变量。",
+          "scope_boundary": "止于信任与环境选择对HBM专用后段负载的影响；与政府采购、云平台和数据存储域共享背景，不替代其产品经营研究。",
+          "ref": [
+            "https://www.anthropic.com/news/enterprise-frontier-safeguards",
+            "https://blogs.microsoft.com/blog/2026/02/24/microsoft-sovereign-cloud-adds-governance-productivity-and-support-for-large-ai-models-securely-running-even-when-completely-disconnected/",
+            "D1-O130",
+            "D1-O88"
+          ]
+        }
+      ],
+      "potential_gaps": [
+        {
+          "name": "商业代理工作改变HBM扩容的需求期限与平台路线",
+          "why_live": "已有12层HBM4商业路径和2027大多数供应协议，服务商使用研究支持代理向多种工作扩展；这是使用强度线索而非堆叠订单。AWS已商业提供采用HBM3e的Trainium3，说明GPU以外也有实际HBM平台。",
+          "revision_logic": "持续任务、模型选择与机群余量决定HBM负载的长期长度，采购平台和供给资格决定美光能承接多少。代理的后台工作并非都需最新HBM，付费增长可以先被现有设备吸收；扩容判断应允许不同平台、不同代际和不同单位任务资源需求。终端高内存功能因设备BOM转回云端时，也沿此链传导：新增活跃云任务可能形成HBM负载，或仅增加普通服务器DRAM；云收费、存量机群余量与缓存/小模型效率决定是否需要新增堆叠，不能把终端LPDDR减少等量计为HBM增加。",
+          "possibility_space": [
+            {
+              "name": "企业持续运行长任务代理并愿意支付生产服务费用",
+              "implication": "更大活跃工作集和并发可能强化HBM带宽/容量需求，提高后段扩容的商业承接期限；若任务主要是工具侧CPU执行，HBM增量小于总代理活动。"
+            },
+            {
+              "name": "模型服务商通过低价打包打开新的高频使用群体",
+              "implication": "低门槛可扩大推理，但补贴和空闲机群先吸收工作时不必即时增购堆叠。可持续留存超过单位资源节约时，才形成更长后段负载，而非把账户数直接乘容量。"
+            },
+            {
+              "name": "采购者用任务价值限额并将常规工作路由到小模型",
+              "implication": "固定预算下高端模型占比下降、资源强度变小，可能削弱对下一代高层数的需求；降低成本又可能让更多工作进入生产，形成不同规格而非全盘退出HBM。"
+            },
+            {
+              "name": "服务商扩大自研ASIC、其他GPU及多云分工",
+              "implication": "HBM总需求未必下降，目标必须进入这些平台的合格采购；平台效率和代际需求改变后段SKU，已有NVIDIA产品资格不能自动迁移成全部ASIC配额。"
+            }
+          ],
+          "ref": [
+            "https://openai.com/index/how-enterprises-put-ai-to-work/",
+            "https://aws.amazon.com/about-aws/whats-new/2025/12/amazon-ec2-trn3-ultraservers/",
+            "D1-O130",
+            "D1-O74",
+            "D1-O88",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.idc.com/resource-center/blog/higher-asps-lower-unit-volumes-how-the-memory-crisis-is-reshaping-the-pc-and-smartphone-outlook/",
+            "https://www.trendforce.com/presscenter/news/20260514-13044.html"
+          ]
+        },
+        {
+          "name": "信任事件与主权部署重排HBM可承接工作",
+          "why_live": "新治理Factor补充原商业化链未明确的权限与责任节点。EFS为客户控制监测数据的秋季推出计划，Microsoft提供本地/断连大模型路线；两者是不同部署安排，未给出美光采购量。",
+          "revision_logic": "未来获准执行的任务范围、模型复杂度和机群地点可以改变HBM负载，即使总AI兴趣不变。主权需求可释放原先不能上云的工作，也可因本地预算选择不使用HBM；一次信任事件既可能抑制使用，也可能把订单迁往更可控环境。",
+          "possibility_space": [
+            {
+              "name": "受监管客户以自身控制的审计开放更强模型执行",
+              "implication": "更多真实生产任务支持热HBM负载和未来能力持续期；如果只是日志托管改变，计算仍在原机群，不能虚增堆叠。"
+            },
+            {
+              "name": "代理失误或安全事件使重要雇主冻结高风险自动化",
+              "implication": "需求期限与高端模型预算先变弱，后段协议可缓冲近端提货，却不能证明长期工作量不变；人工复核与限定权限也可能保留部分服务，而不是全行业停用。"
+            },
+            {
+              "name": "政府或关键行业采购独立主权大模型机群",
+              "implication": "分散配置和保留余量可增加HBM堆叠，即使共享效率降低；若采用已有GPU或小模型非HBM路线，新增量较少。平台与供应者资格决定获益者。"
+            },
+            {
+              "name": "企业在安全控制成熟后恢复此前暂停的任务",
+              "implication": "重新扩大使用并优先选已有可信平台，可能改善旧代/现代产品负载而不立即推动最高层数；这与新代送样成功是不同需求来源。"
+            }
+          ],
+          "ref": [
+            "https://www.anthropic.com/news/enterprise-frontier-safeguards",
+            "https://blogs.microsoft.com/blog/2026/02/24/microsoft-sovereign-cloud-adds-governance-productivity-and-support-for-large-ai-models-securely-running-even-when-completely-disconnected/",
+            "D1-O130",
+            "D1-O88"
+          ]
+        },
+        {
+          "name": "基础设施风险分担改变HBM提货与存量替代",
+          "why_live": "外部融资与接电研究显示，客户合同、GPU资产和贷款提款相连，融资平台计划尚待最终协议；PJM提案仍非已批准普遍规则。美光已约定的2027供给支持负载，但客户平台仍有安装和资本条件。",
+          "revision_logic": "外部资本和能源变化可让HBM需求由立即新增变成库存、存量机群复用或迁移。对专用后段，影响首先是合格SKU提货、在制品和设备负载，再是后续扩容回收；不能从外部园区延期直接跳到取消订单。",
+          "possibility_space": [
+            {
+              "name": "融资载体与供电方案使此前仅有意愿的AI项目具备执行资源",
+              "implication": "客户平台安装更接近兑现，强化专用后段负载；若只有贷款签署而系统封装和机房未就绪，首先是资金可见性而非新增合格堆叠。"
+            },
+            {
+              "name": "客户融资方提高信用要求或削减新建设提款",
+              "implication": "高端平台投资可能放慢并改用现有GPU，弱化新代后段的增长期限。部分采购继续按合同接受则形成库存，后来的减少更可能集中在续约与新项目。"
+            },
+            {
+              "name": "能源接入变得可中断或附带更高自备电源成本",
+              "implication": "客户选择负载可迁移的区域和更合适平台，购买节奏与规格可变；算力服务收益不足以覆盖能源费用时缩减扩建，不能认为每个新接入MW都会需要相同HBM。"
+            },
+            {
+              "name": "系统封装、冷却或机架供应出现独立瓶颈",
+              "implication": "已合格HBM可以先交至客户排队，也可被协商改期。若平台厂改用其他封装/配置，新代专用负载可能变化；美光HBM内部堆叠完工不等于客户GPU系统交付。"
+            },
+            {
+              "name": "新需求更多由存量机群升级调度和跨客户转租吸收",
+              "implication": "延后新增堆叠购买但维持旧代相关负载，降低服务增长对新产能的即时弹性；若余量耗尽或服务要求升级，后续重购仍可恢复，不能设永久替代。"
+            }
+          ],
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000236/ex9912.htm",
+            "https://nvidianews.nvidia.com/news/nvidia-partners-with-apollo-blackrock-blackstone-brookfield-goldman-sachs-and-kkr-to-establish-ai-compute-infrastructure-financing-platforms-to-mobilize-over-500-billion-of-third-party-capital",
+            "https://insidelines.pjm.com/pjm-proposes-framework-to-connect-data-centers-without-compromising-reliability-affordability/",
+            "https://www.pjm.com/markets-and-operations/large-load",
+            "D1-O130",
+            "D1-O31",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+          ]
+        },
+        {
+          "name": "缓存效率与外层内存改变热HBM的必要规模",
+          "why_live": "当前基准是热HBM继续主供数、外层扩大上下文；Dynamo/STX提供缓存复用和预取路径，HBF标准与GP1评估样品尚非普遍量产替代。既有平台固定配置限制即刻减配，但下一代设计仍开放。",
+          "revision_logic": "外层容量的意义取决于哪些数据可离开热层以及延迟是否允许，效率改进也改变用户可承担的服务成本。可能减少固定任务量所需堆叠，扩大上下文/并发形成反弹，或把稀缺环节移回带宽/测试；不是把闪存增长与HBM消失绑定。",
+          "possibility_space": [
+            {
+              "name": "云运营者在生产中广泛复用前缀、预取和保留策略",
+              "implication": "减少重复计算与热驻留，固定服务量所需HBM资源下降，可能推迟新机群扩建；若节约使长任务服务更便宜而增长更快，总量仍可增加。"
+            },
+            {
+              "name": "外部上下文层使更长会话和更多并发成为付费用途",
+              "implication": "冷数据大量留外层但活跃集/带宽需求仍扩大，热HBM与外围容量互补；每平台容量增速可放慢，总堆叠却随有效平台量增加。"
+            },
+            {
+              "name": "HBF或GPU-direct闪存被特定推理负载纳入商业平台",
+              "implication": "适合的权重/访问模式可分流部分热容量要求，改变下一代规格和后段投资组合；延迟、软件与供应资格决定覆盖，不等于全部HBM被NAND替代，也不保证闪存增量由美光获得。"
+            },
+            {
+              "name": "尾延迟、访问不规则或可靠性使新分层方案只适用少数任务",
+              "implication": "客户保留较多热容量，外层公告不转成普遍减配；本Unit原热层负载解释更稳定，但不能否认已经适配工作中真实的节约。"
+            },
+            {
+              "name": "模型压缩或新算法与更大模型/推理搜索同时发展",
+              "implication": "单位任务热容量可下降，而更复杂推理或更高质量服务增加工作量。未来组合改变容量和带宽哪项更重要，不能用token总量或单项压缩比例净算制造需求。"
+            }
+          ],
+          "ref": [
+            "https://developer.nvidia.com/blog/full-stack-optimizations-for-agentic-inference-with-nvidia-dynamo/",
+            "https://nvidianews.nvidia.com/news/nvidia-launches-bluefield-4-stx-storage-architecture-with-broad-industry-adoption",
+            "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf",
+            "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html",
+            "D1-O103",
+            "D1-O147",
+            "D1-O148",
+            "D1-O150"
+          ]
+        },
+        {
+          "name": "平台规格与接口选择重排合格配额",
+          "why_live": "12层HBM4已量产、16层仍送样，Rubin与Blackwell并行；下一平台多配置评估为行业线索而非定案。三星已商业化，SPHBM4标准保留HBM4核心die并改变基础接口，不证明美光采用。",
+          "revision_logic": "客户可改变每平台容量/层高和供应分配，标准或基础die路线还可改变系统集成成本与可用资源。资格集合扩大与采购份额不同，同样的平台总量也可能带来不同美光后段SKU负载和每堆叠贡献。",
+          "possibility_space": [
+            {
+              "name": "平台方选择较低层数并以更多平台或不同代际满足目标",
+              "implication": "每个堆叠容量/工序负担减小、可制造性可能提高，合格堆叠数量与总bit可走不同方向；不应把层数下降单独判为需求崩塌或利润增加。"
+            },
+            {
+              "name": "客户锁定高容量或定制基础接口并提高验证要求",
+              "implication": "机会单价和性能价值提高，但资格成本与SKU专用性增强；美光若满足要求可获得负载，现有通用资格不能替代新平台验证。"
+            },
+            {
+              "name": "多来源采购把更多合格配额转给竞争者",
+              "implication": "即使平台放量、美光工艺按计划进步，专用线负载与回收仍可能弱于原路径；客户可能因交期、可靠性、价格或风险分散改变授予，不需假定技术失败。"
+            },
+            {
+              "name": "SPHBM4等接口进入实际商业平台并减轻系统集成约束",
+              "implication": "可能开辟成本/封装不同的用途，同时引入新的基础die与资格负担；核心die仍需制造，瓶颈可能移到输入或测试，不能把标准发布当现期新增月量。"
+            },
+            {
+              "name": "客户在内部与外部基础die路线之间重排协同要求",
+              "implication": "自有路线的控制和资源责任、外包路线的工艺/代工依赖可产生不同交期和性能表现。竞争者外部路线受限也不自动变成美光份额，需其合格产品可替代且有能力承接。"
+            }
+          ],
+          "ref": [
+            "D1-O88",
+            "D1-O74",
+            "D1-O130",
+            "D1-O205",
+            "D1-O52",
+            "D1-O186",
+            "D1-O66",
+            "D1-O125",
+            "https://markets.financialcontent.com/bpas/article/bizwire-2026-7-13-new-jedec-sphbm4-standard-enables-hbm4-class-bandwidth-on-organic-substrates"
+          ]
+        },
+        {
+          "name": "高层数与键合路径改变经济量产边界",
+          "why_live": "已商业12层与送样16层是不同门槛，薄die、翘曲和连接均匀性有工具生态技术依据；TCB/hybrid研究提供可选路径，当前没有证据美光已切换指定工艺。",
+          "revision_logic": "层数/规格增加同时改变材料、重复连接及测试负担，制造学习和新的互连路线能改变可交付范围，而不是只提高一项名义容量。未来决定性变化可以来自可靠性和累计良率，也可来自设备/资格重置成本。",
+          "possibility_space": [
+            {
+              "name": "美光把16层从验证推进为可重复、经济的规模生产",
+              "implication": "高容量机会进入实际可售集合，更多die/堆叠和工序意味着固定输入下堆叠数可能下降；若良率与溢价覆盖负担，扩大价值而非免费增加总bit。"
+            },
+            {
+              "name": "更薄die应力或高带宽热电要求造成持续复测和报废",
+              "implication": "样品性能不转成预期经济量产，延长代际学习并浪费已投入多层材料；保留12层供货可缓冲数量，却改变新品收入/成本组合。"
+            },
+            {
+              "name": "在现有键合路线改善量测与缺陷控制",
+              "implication": "无需全面换设备即增加良品、减少返工，释放现有产能和单位成本；若测试/输入die已受限，经济收益主要表现为成本而非比例放量。"
+            },
+            {
+              "name": "客户规格或公司工艺选择促使采用新的键合路线",
+              "implication": "潜在连接密度和可靠性收益伴随新装备、洁净条件与重新验证，先提高资本/转换负担、后可能扩大可制造边界；供应商公告仅证明选择存在，不是美光已采用或获利。"
+            }
+          ],
+          "ref": [
+            "D1-O88",
+            "D1-O74",
+            "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+            "https://www.appliedmaterials.com/us/en/newsroom/blogs/tackling-key-hbm-and-advanced-packaging-bottlenecks-for-ai-era.html",
+            "https://www.appliedmaterials.com/us/en/newsroom/press-releases/100126-applied-besi-expand-partnership.html"
+          ]
+        },
+        {
+          "name": "输入筛选与测试节拍改变已装备能力的交付量",
+          "why_live": "HBM4核心与基础die内部制造，后段接收合格输入；绝对die/封装良率和月堆叠量未知。技术资料说明堆叠后测试及可靠性需求，当前不能指定封装设备就是唯一瓶颈。",
+          "revision_logic": "即使客户配置、厂房和宏观需求不变，筛选质量、配套die、设备调度与测试覆盖仍能改变每期可交付量。改善非瓶颈环节先改变排队与成本，瓶颈转移才改变扩容需要；高性能合格量不等于全部机械完工量。",
+          "possibility_space": [
+            {
+              "name": "前段提高核心筛选和基础die合格配套并优化分档",
+              "implication": "减少坏输入带入昂贵堆叠、增加可用SKU组合，现有后段可获得更多净产出；也把较多缺陷成本留在前段，必须看全链成本而不是后段良率标签。"
+            },
+            {
+              "name": "基础die或特定core规格不足而其他输入富余",
+              "implication": "部分新线闲置或积累在制品，扩大封装设备不解决约束；内部供给提高协调控制，也使前段事件同时影响后段，不是零依赖。"
+            },
+            {
+              "name": "测试并行、量测判定或排程改善减少复测/返工",
+              "implication": "已装备能力更快转成合格交付，可能推迟进一步机台投资；不能通过降低必要覆盖来假设无代价节拍改善。"
+            },
+            {
+              "name": "更严温度、可靠性或客户筛选要求延长测试",
+              "implication": "良品认定质量更高但出货节拍慢、每堆叠资源成本增，原“量产”状态仍在而经济吞吐需要重估；测试本来不是瓶颈时影响主要是周期/费用。"
+            },
+            {
+              "name": "公司以持续运维和跨SKU排程释放设备工时",
+              "implication": "扩大有效工时或减少换线可增加瓶颈产出；若只加速非瓶颈则主要减少在制品。核心配置、客户资格不同，不能用总工位数汇总成统一合格月量。"
+            }
+          ],
+          "ref": [
+            "D1-O88",
+            "D1-O74",
+            "D1-O3",
+            "https://www.advantest.com/document/en/investors/ir-library/briefing/E_IR_technical_briefing_231129.pdf"
+          ]
+        },
+        {
+          "name": "地域爬坡和共同依赖改变后段连续供给",
+          "why_live": "台湾既有线加新加坡在建线是当前网络，2027年初扩容与长期投资/岗位是不同时间口径。输入材料短缺未分拆至特定HBM项；桃园授权不是全部封装已经停工。",
+          "revision_logic": "新增地域可把单点暴露改成有资格的备用能力，也可增加初期低负载、技能和跨基地协调成本。厂务、输入、测试与SKU资格不同步时，名义能力不会形成替代；自然/安全或地域政策事件可使这些原次要连接突然重要。",
+          "possibility_space": [
+            {
+              "name": "新加坡厂务、装备、人员与输入/测试同步形成合格交付",
+              "implication": "改变原主要依赖台湾的增量路径并提高可承接量，固定费用随负载改善；贡献应由合格SKU理解，不把全部长期投资和岗位规划当当季产能。"
+            },
+            {
+              "name": "新设施就绪但熟练团队、die配套或客户资格晚于装备",
+              "implication": "短期折旧/维护负担与闲置增加，建筑进度正常仍可意味着经济回收延后；投入匹配改善后可追上，不能直接判项目终止。"
+            },
+            {
+              "name": "跨基地资格成熟使同类SKU可在台湾与新加坡调配",
+              "implication": "扰动时可保留更多交付，正常时提高排程弹性；冗余、物流和转移费用使韧性有成本，没资格的空闲线不能即时接替。"
+            },
+            {
+              "name": "前段劳动、关键材料或区域灾害中断合格die流入",
+              "implication": "后段本身未停工也可受投入不足影响，体现共同依赖；动作地点/岗位和持续时间决定范围，不按工会投票率估封装损失，也不把通用材料风险写成指定当前缺货。"
+            },
+            {
+              "name": "地域政策或客户本地化采购改变可供平台和配额",
+              "implication": "不同工序所在地的合规/采购条件可要求新验证或改变竞争位置，美国以外路线与远期美国竞争封装并存；仅增加厂房不能自动满足平台供应资格，不能宣布未核实的当前禁令。"
+            }
+          ],
+          "ref": [
+            "https://investors.micron.com/news/press-release/2025/Micron-Breaks-Ground-on-New-HBM-Advanced-Packaging-Facility-in-Singapore-01-08-2025/default.aspx",
+            "D1-O31",
+            "D1-O4",
+            "D1-O74",
+            "https://focustaiwan.tw/business/202610070021",
+            "https://www.taipeitimes.com/News/biz/archives/2026/10/08/2003865571",
+            "https://news.skhynix.com/en/groundbreaking-ceremony-in-indiana/"
+          ]
+        },
+        {
+          "name": "代际价格、履约和设备负载改变封装投入回收",
+          "why_live": "2027绝大多数比特协议及价格提升预期支持有承接的扩容，但年度HBM协议不等于所有多年SCA含底价保护。HBM总毛利未给出后段独立贡献，高层数/测试与新加坡投入改变其资源负担。",
+          "revision_logic": "回收判断可因交付负载、规格溢价、合格成本或设备寿命改变，而不要求外部AI需求先逆转。协议完成保护规划，仍可能锁住不合适规格或只覆盖部分期限；旧代/新代并行及客户库存改变专用设备的有效经济负载。",
+          "possibility_space": [
+            {
+              "name": "年度新价格补偿资源强度且良率学习提高可交付量",
+              "implication": "在计划内扩容基础上扩大单位净贡献、缩短回收，原整体HBM毛利较低未必代表封装路线差；仍不能以产品总毛利直接计算本Unit ROIC。"
+            },
+            {
+              "name": "平台选择更复杂规格而新协议溢价不足",
+              "implication": "销售额可增长、单位合格堆叠成本和专用资本却增得更快，重估后段经济性；全年平均涨价不足以证明每一种新SKU获得补偿。"
+            },
+            {
+              "name": "客户按约提货但库存和代际切换使后续续约放慢",
+              "implication": "当期负载保留而未来设备利用和扩容期限变弱；如果订单可转向其他已合格平台能部分吸收，否则专用SKU/设备更受过时风险。"
+            },
+            {
+              "name": "多代并行的排程与可复用设备延长经济寿命",
+              "implication": "旧代继续有客户用途、新代渐进爬坡，降低突然闲置与资本重置，可能支持较长回收；换线/库存复杂度也可抵消，不是所有旧规格都需同样资本。"
+            },
+            {
+              "name": "新增披露区分年度HBM约定、多年保护覆盖和后段项目负载",
+              "implication": "可把原“已售完所以高回报”的粗解释改为部分受保护、部分依赖续约的模型；只是范围澄清也有修订意义，不要求同时出现违约或股价反应。"
+            },
+            {
+              "name": "合格负载低于扩容计划使公司分阶段追加机台",
+              "implication": "减少后续未用资本却保留已投入厂务成本；持续强需求下则牺牲部分交付，较弱需求下改善纪律。此处是专用后段投资选择，公司整体融资偿付由邻域研究。"
+            }
+          ],
+          "ref": [
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+            "https://investors.micron.com/news/press-release/2025/Micron-Breaks-Ground-on-New-HBM-Advanced-Packaging-Facility-in-Singapore-01-08-2025/default.aspx",
+            "D1-O31",
+            "D1-O57",
+            "D1-O74",
+            "D1-O88"
+          ]
+        }
+      ]
+    }
+  ]
+}

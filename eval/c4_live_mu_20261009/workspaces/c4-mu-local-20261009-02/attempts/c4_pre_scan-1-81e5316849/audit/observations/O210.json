@@ -1,0 +1,14 @@
+{
+  "alias": "O210",
+  "title": "updates 1",
+  "content": {
+    "url": "https://www.micron.com/about/press/image-gallery",
+    "label": "Image gallery",
+    "kind": "official_update",
+    "confidence": 0.72
+  },
+  "source": {
+    "provider": "Official issuer IR",
+    "locator": "https://investors.micron.com/news/press-release/2025/Micron-Announces-Business-Unit-Reorganization-to-Capitalize-on-AI-Growth-Across-All-Market-Segments-04-17-2025/default.aspx"
+  }
+}

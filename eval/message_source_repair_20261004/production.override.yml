@@ -1,0 +1,7 @@
+services:
+  v2-message-bus:
+    image: doxagent-v2:recurring-repair-bus-20261004-r4
+  v2-content-enrichment:
+    image: doxagent-v2:market-news-enrich-3ef317a4
+  v2-site-access:
+    image: doxagent-site-access:recurring-repair-20261004-r5

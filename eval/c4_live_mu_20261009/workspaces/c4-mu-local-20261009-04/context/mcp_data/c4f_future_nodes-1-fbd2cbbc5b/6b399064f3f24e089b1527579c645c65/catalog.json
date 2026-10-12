@@ -1,0 +1,482 @@
+[
+  {
+    "alias": "O22",
+    "title": "text paragraphs 1",
+    "block_type": "text",
+    "path": "blocks/O22.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 748,
+    "selected": true
+  },
+  {
+    "alias": "O23",
+    "title": "text paragraphs 2",
+    "block_type": "text",
+    "path": "blocks/O23.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 935,
+    "selected": true
+  },
+  {
+    "alias": "O24",
+    "title": "text paragraphs 3",
+    "block_type": "text",
+    "path": "blocks/O24.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 768,
+    "selected": true
+  },
+  {
+    "alias": "O25",
+    "title": "text paragraphs 4",
+    "block_type": "text",
+    "path": "blocks/O25.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 482,
+    "selected": true
+  },
+  {
+    "alias": "O26",
+    "title": "text paragraphs 5",
+    "block_type": "text",
+    "path": "blocks/O26.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 1171,
+    "selected": true
+  },
+  {
+    "alias": "O27",
+    "title": "text paragraphs 6",
+    "block_type": "text",
+    "path": "blocks/O27.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 337,
+    "selected": true
+  },
+  {
+    "alias": "O28",
+    "title": "text paragraphs 7",
+    "block_type": "text",
+    "path": "blocks/O28.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 406,
+    "selected": true
+  },
+  {
+    "alias": "O29",
+    "title": "text paragraphs 8",
+    "block_type": "text",
+    "path": "blocks/O29.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 406,
+    "selected": true
+  },
+  {
+    "alias": "O30",
+    "title": "text paragraphs 9",
+    "block_type": "text",
+    "path": "blocks/O30.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 540,
+    "selected": true
+  },
+  {
+    "alias": "O31",
+    "title": "text paragraphs 10",
+    "block_type": "text",
+    "path": "blocks/O31.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 853,
+    "selected": true
+  },
+  {
+    "alias": "O32",
+    "title": "text paragraphs 11",
+    "block_type": "text",
+    "path": "blocks/O32.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 1583,
+    "selected": true
+  },
+  {
+    "alias": "O33",
+    "title": "text paragraphs 12",
+    "block_type": "text",
+    "path": "blocks/O33.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 1855,
+    "selected": true
+  },
+  {
+    "alias": "O34",
+    "title": "text paragraphs 13",
+    "block_type": "text",
+    "path": "blocks/O34.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 231,
+    "selected": true
+  },
+  {
+    "alias": "O35",
+    "title": "text paragraphs 14",
+    "block_type": "text",
+    "path": "blocks/O35.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 647,
+    "selected": true
+  },
+  {
+    "alias": "O36",
+    "title": "text paragraphs 15",
+    "block_type": "text",
+    "path": "blocks/O36.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 719,
+    "selected": true
+  },
+  {
+    "alias": "O37",
+    "title": "text paragraphs 16",
+    "block_type": "text",
+    "path": "blocks/O37.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 492,
+    "selected": true
+  },
+  {
+    "alias": "O38",
+    "title": "text paragraphs 17",
+    "block_type": "text",
+    "path": "blocks/O38.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 167,
+    "selected": false
+  },
+  {
+    "alias": "O39",
+    "title": "text paragraphs 18",
+    "block_type": "text",
+    "path": "blocks/O39.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 449,
+    "selected": false
+  },
+  {
+    "alias": "O40",
+    "title": "text paragraphs 19",
+    "block_type": "text",
+    "path": "blocks/O40.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 514,
+    "selected": false
+  },
+  {
+    "alias": "O41",
+    "title": "text paragraphs 20",
+    "block_type": "text",
+    "path": "blocks/O41.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 597,
+    "selected": false
+  },
+  {
+    "alias": "O42",
+    "title": "text paragraphs 21",
+    "block_type": "text",
+    "path": "blocks/O42.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 383,
+    "selected": false
+  },
+  {
+    "alias": "O43",
+    "title": "text paragraphs 22",
+    "block_type": "text",
+    "path": "blocks/O43.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 391,
+    "selected": false
+  },
+  {
+    "alias": "O44",
+    "title": "text paragraphs 23",
+    "block_type": "text",
+    "path": "blocks/O44.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 384,
+    "selected": false
+  },
+  {
+    "alias": "O45",
+    "title": "text paragraphs 24",
+    "block_type": "text",
+    "path": "blocks/O45.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 467,
+    "selected": false
+  },
+  {
+    "alias": "O46",
+    "title": "text paragraphs 25",
+    "block_type": "text",
+    "path": "blocks/O46.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 529,
+    "selected": false
+  },
+  {
+    "alias": "O47",
+    "title": "text paragraphs 26",
+    "block_type": "text",
+    "path": "blocks/O47.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 532,
+    "selected": false
+  },
+  {
+    "alias": "O48",
+    "title": "text paragraphs 27",
+    "block_type": "text",
+    "path": "blocks/O48.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 540,
+    "selected": false
+  },
+  {
+    "alias": "O49",
+    "title": "text paragraphs 28",
+    "block_type": "text",
+    "path": "blocks/O49.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 337,
+    "selected": false
+  },
+  {
+    "alias": "O50",
+    "title": "text paragraphs 29",
+    "block_type": "text",
+    "path": "blocks/O50.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 439,
+    "selected": false
+  },
+  {
+    "alias": "O51",
+    "title": "text paragraphs 30",
+    "block_type": "text",
+    "path": "blocks/O51.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 638,
+    "selected": false
+  },
+  {
+    "alias": "O52",
+    "title": "text paragraphs 31",
+    "block_type": "text",
+    "path": "blocks/O52.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 661,
+    "selected": false
+  },
+  {
+    "alias": "O53",
+    "title": "text paragraphs 32",
+    "block_type": "text",
+    "path": "blocks/O53.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 786,
+    "selected": false
+  },
+  {
+    "alias": "O54",
+    "title": "text paragraphs 33",
+    "block_type": "text",
+    "path": "blocks/O54.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 499,
+    "selected": false
+  },
+  {
+    "alias": "O55",
+    "title": "text paragraphs 34",
+    "block_type": "text",
+    "path": "blocks/O55.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 265,
+    "selected": false
+  },
+  {
+    "alias": "O56",
+    "title": "text paragraphs 35",
+    "block_type": "text",
+    "path": "blocks/O56.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 2050,
+    "selected": false
+  },
+  {
+    "alias": "O57",
+    "title": "text paragraphs 36",
+    "block_type": "text",
+    "path": "blocks/O57.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 822,
+    "selected": false
+  },
+  {
+    "alias": "O58",
+    "title": "text paragraphs 37",
+    "block_type": "text",
+    "path": "blocks/O58.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 445,
+    "selected": false
+  },
+  {
+    "alias": "O59",
+    "title": "text paragraphs 38",
+    "block_type": "text",
+    "path": "blocks/O59.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 477,
+    "selected": false
+  },
+  {
+    "alias": "O60",
+    "title": "text paragraphs 39",
+    "block_type": "text",
+    "path": "blocks/O60.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 587,
+    "selected": false
+  },
+  {
+    "alias": "O61",
+    "title": "text paragraphs 40",
+    "block_type": "text",
+    "path": "blocks/O61.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+    },
+    "content_chars": 73,
+    "selected": true
+  }
+]

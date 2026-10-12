@@ -1,0 +1,37 @@
+{
+  "policy_id": "pol_3e9ba5ea24604fdd88cc89ce815e8569",
+  "title": "CXL共享池对生产服务器物理主存的增减",
+  "ref": [
+    "output/work/v21/research/S0001/0003/policy-003.json",
+    "context/document3/v21/d2/shell-0001.json#/units/2",
+    "https://www.opencompute.org/documents/final-2024-ocp-cma-cfm-base-specification-rev1-1-pdf",
+    "https://www.opencompute.org/projects/server/composable-memory-system/",
+    "https://www.microsoft.com/en-us/research/wp-content/uploads/2022/10/2023_Pond_asplos23_official_asplos_version.pdf",
+    "https://aisystemcodesign.github.io/papers/isca26/vistara_camera_ready.pdf",
+    "https://www.montage-tech.com/Blog/20260622"
+  ],
+  "transmission": "多主机CXL池把服务器逐机按峰值预留的DRAM转为可在一组CPU主机之间调度的物理容量；峰值错开时，既有负载可少装或少买RDIMM，新服务也可能因池化而采购额外DRAM。微软Pond以Azure真实负载轨迹估算16插槽池可减少约7%的DRAM需求，但其评估不是已实现采购；OCP规范和多主机演示也不是生产节省。Meta的Vistara虽已生产部署，却是单主机CXL分层及旧DDR4复用，不能当作多主机池化净减位。美光参与CXL/服务器内存供应，生产机群的本地主存加池内存的物理位及相应新采购变化，才决定其非HBM服务器DRAM机会；池设备最终供应商仍会影响美光捕获率。",
+  "match_scope": "召回云商、企业数据中心、服务器OEM和内存平台关于CXL多主机共享池的生产机型、每机实际RDIMM装配、池中物理DRAM、服务器更新采购及新增应用准入的消息，也关注旧DIMM复用和因延迟退出池化。比如一组主机共用小池后降低标准本地装配，或为原先容量受限的服务新购池容量，都是非穷举召回示例；是否命中仅依Conditions，规范、演示、逻辑可分配容量及单主机扩容不自动触发。",
+  "activation_conditions": [
+    {
+      "condition_id": "C1",
+      "decision": "SHORT",
+      "trigger_layer": "MIDDLE",
+      "criterion": "大型云商或企业数据中心把既有CPU生产负载的一个主力机群改用真正跨多主机调度的CXL内存池，并正式减少该机群的物理DRAM装配或净采购：公开的前后生产机型/机架配置可显示同一组主机的本地RDIMM加新池物理容量少于先前实际装配，或客户/OEM明确报告计入池设备后同一更新批次新购DRAM位数下降。",
+      "calibration": {
+        "reference_state": "截至2026-10-06，OCP已发布可组合内存规范；Pond基于生产轨迹给出约7%可节省DRAM的模拟估计，而非生产采购结果。Meta Vistara生产使用的是单主机CXL旧DIMM复用，不是多主机池。D2仍以逐机RDIMM更新为主、池化渐进试验；原条件要求客户公开内部逐机方案的精确反事实，正常报道未必提供，但实际旧、新机型装配或更新采购调整更可能披露。",
+        "trigger_boundary": "正式生产机群出现可比的物理位或净采购下降即可证明节省，不必要求客户公布从未实施的逐机设计。比较时把所有池内新装DRAM计入，不能只看本地RDIMM减少；旧DIMM搬到池中、逻辑容量提高、单主机CXL扩容及实验节省率都不满足。若新池为新增应用购买，不能把其物理位遗漏后仍称既有负载节省。"
+      }
+    },
+    {
+      "condition_id": "C2",
+      "decision": "LONG",
+      "trigger_layer": "MIDDLE",
+      "criterion": "大型云商或企业数据中心把CXL多主机共享池投入正式CPU生产服务，让先前受每机主存上限约束而未能上线的内存密集工作负载进入常态运行，并为该服务新购池用DRAM，使生产机群的物理DRAM净增加，而不是仅把既有本地DIMM或退役模块搬入池中。",
+      "calibration": {
+        "reference_state": "OCP规范、厂商多主机演示及Pond评估证明共享/扩展路径存在，D2仍把真实生产采用和净物理位留为开放；常规CPU更新已在默认扩张路径中。Meta Vistara已生产运行但属单主机旧DDR4分层，不等于新的跨主机共享池采购。",
+        "trigger_boundary": "生产服务准入和其所需的新物理DRAM池采购成为同一部署决定，已把原本无法运行的工作转为新增主存机会，不等精确美光订单或收入。仅展示软件可分配容量、把存量模块重接到池、或以池替代相同甚至更多的本地DRAM而没有净新增，均不足。"
+      }
+    }
+  ]
+}

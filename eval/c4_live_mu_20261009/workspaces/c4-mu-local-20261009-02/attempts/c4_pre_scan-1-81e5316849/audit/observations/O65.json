@@ -1,0 +1,18 @@
+{
+  "alias": "O65",
+  "title": "sections 1 — metadata",
+  "content": {
+    "section": "Products, Market, and Sales",
+    "heading_match": "Products, Market, and Sales",
+    "start_offset": 36451,
+    "end_offset": 116479,
+    "full_text_chars": 80000,
+    "returned_chars": 40000,
+    "truncated": true,
+    "match_quality": "substantive_body"
+  },
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

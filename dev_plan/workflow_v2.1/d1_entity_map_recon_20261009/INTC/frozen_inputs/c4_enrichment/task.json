@@ -1,0 +1,22 @@
+{
+  "schema_version": "codex-d1-attempt-task-v4",
+  "bundle_version": "codex-global-research-agent-bundle-v1",
+  "workflow_version": "codex_global_research_v1",
+  "research_lane": "global_research",
+  "node": "c4_enrichment",
+  "required_sections": [],
+  "required_skills": [
+    "attempts/init-779e6ae62c4a4337ae79c2940b874cc9/input/skills/entity-map-and-future-nodes.md"
+  ],
+  "context_path": "attempts/init-779e6ae62c4a4337ae79c2940b874cc9/input/context.json",
+  "horizontal_path": null,
+  "draft_path": null,
+  "progress_path": null,
+  "observation_candidates_path": null,
+  "structured_output_path": "attempts/init-779e6ae62c4a4337ae79c2940b874cc9/output/completion.json",
+  "output_language": "zh-CN",
+  "output_schema_path": "attempts/init-779e6ae62c4a4337ae79c2940b874cc9/input/schemas/node_output.schema.json",
+  "previous_attempt_failure": null,
+  "manual_upstream": null,
+  "progress_contract": null
+}

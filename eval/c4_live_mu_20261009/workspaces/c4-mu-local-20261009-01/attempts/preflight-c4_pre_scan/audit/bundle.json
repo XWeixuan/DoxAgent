@@ -1,0 +1,14 @@
+{
+  "schema_version": "codex-d1-attempt-bundle-audit-v1",
+  "bundle_version": "codex-global-research-agent-bundle-v2",
+  "input_sha256": "32d1ff422982a9abadaaf0da50651798b581ef546050ade6866debd878b59edb",
+  "files": {
+    "attempts/preflight-c4_pre_scan/input/AGENTS.md": "d90ca13c7f624ee2ad0d8d6d22d8edd8a1ecfbe5559f2f663e3f4357c809b8ed",
+    "attempts/preflight-c4_pre_scan/input/bundle_manifest.json": "d191ea1261f8fabcdd843cb97d5b92a7847687e904a1e77c0f86f5aa392b30f6",
+    "attempts/preflight-c4_pre_scan/input/context.json": "ef93e23e369308196eb69e8bca32a0e0aaf1473ad4e40d6093e02222a6290840",
+    "attempts/preflight-c4_pre_scan/input/schemas/c4e_relations.schema.json": "7e7d88c12e8aaf60b4b66af573486f735c344c0510bdf9932b780db8a1cd6b53",
+    "attempts/preflight-c4_pre_scan/input/skills/c4/c4e_pre_scan.md": "1c9debf4200e92a6ed197472d4f042917f78077be31bdb0d1e6432be417b77f8",
+    "attempts/preflight-c4_pre_scan/input/task.json": "5fbbafc1660e68608bfca3251a666fdffec3683901a61464be687927f65ec7e2",
+    "attempts/preflight-c4_pre_scan/input/task.md": "b798eaf26c35c30191c620c36eea930691d6acdb7deda4e31a79d87ae179f9f1"
+  }
+}

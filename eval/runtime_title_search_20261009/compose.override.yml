@@ -1,0 +1,5 @@
+services:
+  v2-api:
+    image: doxagent-v2:runtime-title-search-20261009
+  v2-web:
+    image: doxagent-v2-web:runtime-title-search-20261009

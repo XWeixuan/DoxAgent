@@ -628,6 +628,9 @@ class DoxAgentSettings(BaseSettings):
         default=None,
         validation_alias="DOXAGENT_CRAWLER_EGRESS_PROXY_URL",
     )
+    message_bus_v2_yahoo_http_proxy_url: str | None = Field(
+        default=None, validation_alias="DOXAGENT_MESSAGE_BUS_V2_YAHOO_HTTP_PROXY_URL",
+    )
     content_enrichment_browser_cdp_url: str | None = Field(
         default=None,
         validation_alias="DOXAGENT_CONTENT_ENRICHMENT_BROWSER_CDP_URL",

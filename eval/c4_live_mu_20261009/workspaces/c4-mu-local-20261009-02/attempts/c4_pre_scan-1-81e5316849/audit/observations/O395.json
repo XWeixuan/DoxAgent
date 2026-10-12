@@ -1,0 +1,18 @@
+{
+  "alias": "O395",
+  "title": "sections 1 — metadata",
+  "content": {
+    "section": "U.S. Department of Commerce",
+    "heading_match": "U.S. Department of Commerce",
+    "start_offset": 257042,
+    "end_offset": 337070,
+    "full_text_chars": 80000,
+    "returned_chars": 40000,
+    "truncated": true,
+    "match_quality": "substantive_body"
+  },
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

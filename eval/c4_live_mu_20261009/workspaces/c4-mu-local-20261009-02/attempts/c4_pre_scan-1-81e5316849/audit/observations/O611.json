@@ -1,0 +1,19 @@
+{
+  "alias": "O611",
+  "title": "section_previews 3",
+  "content": {
+    "section": "Item 7",
+    "heading_match": "ITEM 7.",
+    "start_offset": 235246,
+    "end_offset": 249983,
+    "full_text_chars": 14728,
+    "returned_chars": 14728,
+    "truncated": false,
+    "match_quality": "substantive_body",
+    "text_preview": "MANAGEMENT'S DISCUSSION AND ANALYSIS OF FINANCIAL CONDITION AND RESULTS OF OPERATIONS This discussion should be read in conjunction with the consolidated financial statements and accompanying notes for the year ended September 3, 2026. All period references are to our fiscal periods unless otherwise indicated. Our fiscal year is the 52 - or 53-week period ending on the Thursday closest to August 31. Fiscal 2026 contained 53 weeks and fiscal 2025 and 2024 each contained 52 weeks. All tabular dollar amounts are in millions, except per share amounts. Overview For an overview of our business, see Part I, Item 1. Business, Overview. Industry Conditions Memory and Storage Demand AI-driven memory and storage demand growth is outpacing industry supply. In 2026, we continued to benefit from substantial improvements in pricing and margins, reflecting strong demand growth, driven in large part by the continued advancement of AI. The AI-driven growth in the data center has accelerated demand for memory and storage at a rate greater than our ability and the industry's ability to increase supply. This has led to decisions on supply allocation that may impact certain customers and end markets. Robust overall DRAM and NAND demand and constrained supply has led to increased pricing and improved the profitability across our portfolio. In 2025, we benefited from substantial improvements in DRAM pricing, volumes and margins as compared to 2024, reflecting strong demand growth, driven in part by the continued advancement of AI. During 2025, we shifted a portion of our DRAM supply to the data center and hyperscale cloud markets to meet the strong demand fueled by AI, resulting in a revenue mix weighted more prominently toward segments experiencing higher growth. The pivot to higher-growth segments, together with our strong execution, robust overall industry DRAM demand, and constrained supply, led to improved profitability across our DRAM portfolio. In 2025, NAND revenue increased from 2024 on higher bit shipments due to demand growth. The 2025 NAND gross margin percentage increased from 2024 due to cost reductions. Strategic Customer Agreements The evolving industry landscape, characterized by strong long-term customer demand for memory solutions and structurally constrained supply growth, has elevated the strategic importance of memory to our customers' product roadmaps. As customers increasingly seek to secure committed long-term access to advanced memory technology and committed long-term memory supply, we have experienced increased customer engagement in strategic commitments. In the third and fourth quarters of 2026, we entered into, and expect to continue to enter into, strategic customer agreements. These agreements provide customers with contracted supply assurance and greater pricing visibility, and provide us with greater visibility and improved stability in our business performance. Strategic customer agreements are structured as take-or-pay agreements, wi"
+  },
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

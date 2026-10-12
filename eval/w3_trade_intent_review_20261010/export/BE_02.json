@@ -1,0 +1,2595 @@
+{
+  "format": "doxagent.w3-trade-intent-review.v1",
+  "ticker": "BE",
+  "window": {
+    "since_utc": "2026-09-19T12:53:20.738930+00:00",
+    "as_of_utc": "2026-10-10T12:53:20.738930+00:00"
+  },
+  "part": 2,
+  "record_count": 5,
+  "records": [
+    {
+      "intent_id": "trade:case_8a9bf47799544318b931894cd955c109",
+      "ticker": "BE",
+      "case_id": "case_8a9bf47799544318b931894cd955c109",
+      "intent_released_at_utc": "2026-09-24T23:07:39.192949+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_69e28018905b491887f526f802f712fe",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "Oracle",
+              "Blue Owl Capital",
+              "STACK Infrastructure",
+              "OpenAI",
+              "Project Jupiter"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "据接近Oracle通知及项目交易的人士，支持OpenAI的New Mexico Project Jupiter数据中心项目整体计划正延迟约一年。",
+            "subject_time": "Project Jupiter建设及完工计划"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Blue Owl Capital",
+              "STACK Infrastructure",
+              "Oracle",
+              "Project Jupiter"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "Blue Owl表示，Oracle的force majeure通知没有改变各方对Project Jupiter多年期项目的财务承诺。",
+            "subject_time": "Project Jupiter多年期项目"
+          },
+          {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "SB Energy",
+              "OpenAI"
+            ],
+            "occurrence_date": null,
+            "proposition": "据接近其融资的人士，SB Energy本周决定推迟其首次公开募股。",
+            "subject_time": "2026年9月24日所在周"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Data Center Watch",
+              "AI data-center projects",
+              "community groups"
+            ],
+            "occurrence_date": null,
+            "proposition": "2026年第二季度至少45个、价值约680亿美元的数据中心项目遭遇社区组织反对；2026年第一季度有75个、价值约1300亿美元的项目受到干扰。",
+            "subject_time": "2026年第一季度和第二季度"
+          },
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Moody's",
+              "U.S. technology companies",
+              "AI infrastructure"
+            ],
+            "occurrence_date": null,
+            "proposition": "穆迪预计六家最大美国科技公司的AI相关资本支出将在2027年达到约1万亿美元。",
+            "subject_time": "2027年"
+          }
+        ],
+        "expert_trade": {
+          "direction": "SHORT",
+          "evaluated": true,
+          "expectation_delta": "Project Jupiter据报道因供电获取延迟整体推迟约一年，且该事件已外溢至其他AI数据中心融资讨论，SB Energy相关IPO也推迟。即使Blue Owl称财务承诺不变，Oracle相关Bloom部署、验收、收入和现金转换的时点确定性仍需下修，并面临融资成本上升和其他项目融资收紧风险。",
+          "prior_expectation": "BE的既有预期包含Oracle相关Bloom部署和约1.2GW contracted/deploying capacity，FY2026及后续增长依赖大型负荷项目融资、许可、交付和客户验收按计划转化；项目承诺尚未被视为取消。",
+          "reason": "相较已知force majeure，新增的一年期延迟和融资市场传染构成较强Surprise。Oracle是Bloom大型负荷客户和项目锚点，相关部署容量及BE高增长估值对项目融资、交付和验收具有较高Materiality。Transmission为供电延迟→数据中心完工和energization后移→Bloom部署/验收及收入现金转换后移；融资审查收紧→其他客户项目融资和采购条件恶化→未来MW兑现概率下降。Blue Owl对承诺不变的说明降低取消风险，但不能消除时点和融资风险，形成SHORT。",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "E122已记录Oracle因供电延误发出Project Jupiter force majeure通知，但当前消息新增项目整体约延迟一年、SB Energy推迟IPO及AI基础设施融资审查收紧等事实，具体延迟量级和融资外溢影响此前未被覆盖。",
+          "reference_ids": [
+            "E122"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息未提供原定与新定的具体验收或投运日期，未确认field work暂停、Bloom Energy容量取消或缩减，也未给出具体燃气路线或firm transport容量变化，因此不满足现行Policy的硬性触发边界。"
+        },
+        "w3_case_id": "w3_69e28018905b491887f526f802f712fe"
+      },
+      "trade_direction": "SHORT",
+      "case_summary": {
+        "case_id": "case_8a9bf47799544318b931894cd955c109",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-24T23:07:39.411627Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 422.189412
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-24T23:00:37.222215Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2603852,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-24",
+        "source": {
+          "binding_id": "BE:reuters_site_search",
+          "kind": "crawler",
+          "name": "Reuters Site Search",
+          "source_id": "reuters_site_search"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_327d4253125c46e1b8bc59b51e9c7b11",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Oracle, Blue Owl project delay sends ripples through AI financing, sources say"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "FRESH_QUOTE_UNAVAILABLE"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-24T23:00:37.222215Z",
+        "completed_at": "2026-09-24T23:07:39.411627Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E108",
+            "E122",
+            "E72",
+            "E115",
+            "E112"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "现有E122已记录Oracle因供电延误发出force majeure通知，但当前消息新增核心事实：项目具体延迟一年（'The program is being delayed by a year'），且该通知引发AI基础设施融资市场连锁反应（SB Energy推迟IPO、贷款方收紧审查）。这些具体延迟量级及市场外溢影响未被现有provisional事件覆盖。",
+          "reference_ids": [
+            "E122"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [
+            "pol_af4c18c9797e6d5a513f",
+            "pol_9795c572511e9fcc514e",
+            "pol_b88a58def59b82c29eb5"
+          ],
+          "reason": "消息确认Project Jupiter（Bloom/Oracle重大锚定项目）因'延迟获取场地电力'被Oracle发出force majeure通知，整体计划推迟一年。1年期推迟直接触及锚定项目验收/交接窗口后移超过一个报告季度的触发路径；'securing power delays'对应承诺项目因interconnection/fuel readiness受阻而可能暂停energization并公布新时间线；Oracle作为主要客户通过force majeure将部署时间线后移一年，构成对已绑定Energy Server deployment的deferral，尽管Blue Owl声明财务承诺未变。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "三个Candidate均未命中。pol_af4c18c9797e6d5a513f：trigger_boundary要求消息同时提供原验收窗口与新窗口的具体日期，消息仅称'delayed by a year'且未给出任何具名验收/交接日期，亦无正式撤回原日期动作（Blue Owl明确否认承诺变化），不满足'同时提供原验收窗口、新窗口或撤回状态'的硬性要求。pol_9795c572511e9fcc514e：criterion要求'暂停field work或无法energize，并公布新commissioning date、scope cut或cancel'，消息仅涉及power securing delay导致整体完工延后一年，未声明field work暂停、未公布新commissioning date、无scope cut或cancel，且Blue Owl正面确认项目承诺不变。pol_b88a58def59b82c29eb5：criterion及trigger_boundary均限定于Energy Server deployment的取消/延期/缩容/重谈并影响Bloom backlog或revenue，消息内容为Oracle/Blue Owl/OpenAI数据中心项目延期，与该Policy的业务主体和对象完全无关。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "RUMORED",
+              "entities": [
+                "Oracle",
+                "Blue Owl Capital",
+                "STACK Infrastructure",
+                "OpenAI",
+                "Project Jupiter"
+              ],
+              "occurrence_date": "2026-09-24",
+              "proposition": "据接近Oracle通知及项目交易的人士，支持OpenAI的New Mexico Project Jupiter数据中心项目整体计划正延迟约一年。",
+              "subject_time": "Project Jupiter建设及完工计划"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Blue Owl Capital",
+                "STACK Infrastructure",
+                "Oracle",
+                "Project Jupiter"
+              ],
+              "occurrence_date": "2026-09-24",
+              "proposition": "Blue Owl表示，Oracle的force majeure通知没有改变各方对Project Jupiter多年期项目的财务承诺。",
+              "subject_time": "Project Jupiter多年期项目"
+            },
+            {
+              "assertion_state": "RUMORED",
+              "entities": [
+                "SB Energy",
+                "OpenAI"
+              ],
+              "occurrence_date": null,
+              "proposition": "据接近其融资的人士，SB Energy本周决定推迟其首次公开募股。",
+              "subject_time": "2026年9月24日所在周"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Data Center Watch",
+                "AI data-center projects",
+                "community groups"
+              ],
+              "occurrence_date": null,
+              "proposition": "2026年第二季度至少45个、价值约680亿美元的数据中心项目遭遇社区组织反对；2026年第一季度有75个、价值约1300亿美元的项目受到干扰。",
+              "subject_time": "2026年第一季度和第二季度"
+            },
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "Moody's",
+                "U.S. technology companies",
+                "AI infrastructure"
+              ],
+              "occurrence_date": null,
+              "proposition": "穆迪预计六家最大美国科技公司的AI相关资本支出将在2027年达到约1万亿美元。",
+              "subject_time": "2027年"
+            }
+          ],
+          "expert_trade": {
+            "direction": "SHORT",
+            "evaluated": true,
+            "expectation_delta": "Project Jupiter据报道因供电获取延迟整体推迟约一年，且该事件已外溢至其他AI数据中心融资讨论，SB Energy相关IPO也推迟。即使Blue Owl称财务承诺不变，Oracle相关Bloom部署、验收、收入和现金转换的时点确定性仍需下修，并面临融资成本上升和其他项目融资收紧风险。",
+            "prior_expectation": "BE的既有预期包含Oracle相关Bloom部署和约1.2GW contracted/deploying capacity，FY2026及后续增长依赖大型负荷项目融资、许可、交付和客户验收按计划转化；项目承诺尚未被视为取消。",
+            "reason": "相较已知force majeure，新增的一年期延迟和融资市场传染构成较强Surprise。Oracle是Bloom大型负荷客户和项目锚点，相关部署容量及BE高增长估值对项目融资、交付和验收具有较高Materiality。Transmission为供电延迟→数据中心完工和energization后移→Bloom部署/验收及收入现金转换后移；融资审查收紧→其他客户项目融资和采购条件恶化→未来MW兑现概率下降。Blue Owl对承诺不变的说明降低取消风险，但不能消除时点和融资风险，形成SHORT。",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "E122已记录Oracle因供电延误发出Project Jupiter force majeure通知，但当前消息新增项目整体约延迟一年、SB Energy推迟IPO及AI基础设施融资审查收紧等事实，具体延迟量级和融资外溢影响此前未被覆盖。",
+            "reference_ids": [
+              "E122"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "消息未提供原定与新定的具体验收或投运日期，未确认field work暂停、Bloom Energy容量取消或缩减，也未给出具体燃气路线或firm transport容量变化，因此不满足现行Policy的硬性触发边界。"
+          },
+          "w3_case_id": "w3_69e28018905b491887f526f802f712fe"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "81008cc98006e58a65d585fcfd128017a5b59c86224c595b3bb049d0b223304a",
+            "content_type": "text/plain",
+            "sha256": "562c735d6f1cf12bb9ceb6379eb750ce787fe79ff4efc083a3deb3432af5761c",
+            "size_bytes": 4471
+          },
+          "case": {
+            "case_id": "case_8a9bf47799544318b931894cd955c109",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-24T22:58:37.671716Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-24T23:00:35.075883Z",
+          "revision": 1,
+          "row_revision": 1587934,
+          "source": {
+            "binding_id": "BE:reuters_site_search",
+            "kind": "crawler",
+            "name": "Reuters Site Search",
+            "source_id": "reuters_site_search"
+          },
+          "source_published_at": "2026-09-24T16:00:00Z",
+          "standard_message_id": "std_d3f063d3f5fe41fb94d6c0265adf6680",
+          "stream_item_id": "stream_327d4253125c46e1b8bc59b51e9c7b11",
+          "stream_offset": 65,
+          "stream_published_at": "2026-09-24T23:00:35.081343Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Oracle, Blue Owl project delay sends ripples through AI financing, sources say"
+          },
+          "url": "https://www.reuters.com/business/energy/oracle-blue-owl-project-delay-sends-ripples-through-ai-financing-sources-say-2026-09-24/",
+          "body_text": "NEW YORK, Sept 24 (Reuters) - Oracle's (ORCL.N) move to protect itself against potential delays at a massive data center ​project developed by Blue Owl (OWL.N) in New Mexico sent a chill through the trillion-dollar market for AI infrastructure financing, according to interviews with bankers ‌and investors.\n\nOracle issued a force majeure notice in connection with Jupiter, a data center campus Blue Owl unit STACK Infrastructure is building to support OpenAI, the latest setback for a sector where lenders and investors are growing more cautious about financing the industry's breakneck expansion.\n\nBlue Owl said the notice did not alter the parties' commitment to the project. Even so, the event is reverberating through discussions around other proposed data center ​financings, including SB Energy, which is developing a campus to serve OpenAI in Ohio, a person close to its financing said. SB Energy decided this week to ​delay its IPO.\n\nCompanies can use force majeure provisions when events beyond their control make it difficult to meet their contractual obligations. Lawyers ⁠say such provisions are becoming more common in data center development agreements, raising concerns among lenders and investors.\n\n\"The financing side of the AI buildout is starting to ask much ​harder questions than the demand side,\" said Sean McDevitt, a partner at management consulting firm Arthur D. Little. \"The underlying demand still appears very strong, but investors and lenders are ​increasingly focused on how risk is allocated.\"\n\nWith interest rates in the US rising to levels last seen two decades ago, Wall Street is intensifying its scrutiny of the economics and the politics of deals that just months ago appeared settled — meaning that the participation in a deal of highly rated firms such as Oracle isn't necessarily enough to soothe anxious investors.\n\nThe pullback comes as AI-related capital spending by ​the six biggest US technology companies is projected to reach around $1 trillion in 2027, according to Moody's — raising concerns among lenders about whether markets can absorb the volume of issuance ​without wider pricing pressure or tighter terms.\n\nInvestors and lenders are studying the Oracle situation as a real-world example of how contractual protections may be tested and who pays the bill when projects ‌run into delays ⁠outside the parties' control, they said.\n\nThe program is being delayed by a year, said the person familiar with Oracle's notice and the deal. Blue Owl has about $3 billion of equity invested in the project and earns a lower return during construction, with returns increasing once the data center is completed, the person familiar with the terms said.\n\nOracle invoked force majeure due to delays securing power to the site, the person familiar with the matter said. Delaying completion pushes back the start of those higher returns for Blue Owl.\n\nAs developers ​race to build AI infrastructure at unprecedented ​scale, the contracts underpinning those projects are ⁠changing quickly, said Rajat Rana, a New York-based partner at law firm Quinn Emanuel.\n\n“These contracts are so rapidly evolving. If you look at a data center contract from January this year and a contract today, it's massively different,” he said.\n\nAt least 45 projects worth $68 billion ​faced opposition from community groups in the second quarter of 2026, according to research firm Data Center Watch, after 75 projects worth about $130 billion ​were disrupted in the ⁠first quarter. Banks are involved in several projects that face community action.\n\nEarlier this year, Blue Owl struggled to syndicate financing for a $4 billion data center project in Lancaster, Pennsylvania, anchored by CoreWeave (CRWV.O).\n\n\"Blue Owl, STACK Infrastructure and Oracle remain fully aligned on Project Jupiter. This notice does not change the financial commitments to this multiyear project,\" the company said.\n\nOracle stock fell 3.5% on Thursday, after ⁠media reports ​of the notice. Blue Owl closed 3.6% lower.\n\nData center developments including Meta's project in El Paso, Texas, and ​Related Digital's planned $16 billion Oracle-focused campus in Saline Township, Michigan, have faced opposition from residents of those areas.\n\nBlackstone's QTS in July said it had terminated its planned Digital Gateway data center project in Virginia and withdrawn the ​associated filings after years of planning and regulatory review."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "RUMORED",
+          "candidate_id": "[\"runtime-v2-msg:std_d3f063d3f5fe41fb94d6c0265adf6680:0\"]",
+          "created_at": "2026-09-24T23:07:39.005483Z",
+          "dedupe_key": "db598dda08d64c862c0e0e82b048b6079a8bfcd3fb513394e4f855725d0e3190",
+          "entities": [
+            "Oracle",
+            "Blue Owl Capital",
+            "STACK Infrastructure",
+            "OpenAI",
+            "Project Jupiter"
+          ],
+          "occurrence_date": "2026-09-24",
+          "originating_node": "W3",
+          "proposition": "据接近Oracle通知及项目交易的人士，支持OpenAI的New Mexico Project Jupiter数据中心项目整体计划正延迟约一年。",
+          "provisional_event_id": "E127",
+          "subject_time": "Project Jupiter建设及完工计划"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_d3f063d3f5fe41fb94d6c0265adf6680:1\"]",
+          "created_at": "2026-09-24T23:07:39.034758Z",
+          "dedupe_key": "4872c75ed83dcac9e5422a65b86a8b2523f10d713e02ac070fed60d7faf7476c",
+          "entities": [
+            "Blue Owl Capital",
+            "STACK Infrastructure",
+            "Oracle",
+            "Project Jupiter"
+          ],
+          "occurrence_date": "2026-09-24",
+          "originating_node": "W3",
+          "proposition": "Blue Owl表示，Oracle的force majeure通知没有改变各方对Project Jupiter多年期项目的财务承诺。",
+          "provisional_event_id": "E128",
+          "subject_time": "Project Jupiter多年期项目"
+        },
+        {
+          "assertion_state": "RUMORED",
+          "candidate_id": "[\"runtime-v2-msg:std_d3f063d3f5fe41fb94d6c0265adf6680:2\"]",
+          "created_at": "2026-09-24T23:07:39.061469Z",
+          "dedupe_key": "6dabb6687043b28758ab1680733a8a8ae6962542f2a1ff3b23ad7d001cf97f2c",
+          "entities": [
+            "SB Energy",
+            "OpenAI"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W3",
+          "proposition": "据接近其融资的人士，SB Energy本周决定推迟其首次公开募股。",
+          "provisional_event_id": "E129",
+          "subject_time": "2026年9月24日所在周"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_d3f063d3f5fe41fb94d6c0265adf6680:3\"]",
+          "created_at": "2026-09-24T23:07:39.080764Z",
+          "dedupe_key": "cb33bc8b0068392747592aab5f0115c4eeb4aaf25ece33f2927a74bc43713c58",
+          "entities": [
+            "Data Center Watch",
+            "AI data-center projects",
+            "community groups"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W3",
+          "proposition": "2026年第二季度至少45个、价值约680亿美元的数据中心项目遭遇社区组织反对；2026年第一季度有75个、价值约1300亿美元的项目受到干扰。",
+          "provisional_event_id": "E130",
+          "subject_time": "2026年第一季度和第二季度"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_d3f063d3f5fe41fb94d6c0265adf6680:4\"]",
+          "created_at": "2026-09-24T23:07:39.097188Z",
+          "dedupe_key": "92bc51f5f42a02ba777f14026eaa9489a1aeb3d057cd0efaa1284b223fa719ba",
+          "entities": [
+            "Moody's",
+            "U.S. technology companies",
+            "AI infrastructure"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W3",
+          "proposition": "穆迪预计六家最大美国科技公司的AI相关资本支出将在2027年达到约1万亿美元。",
+          "provisional_event_id": "E131",
+          "subject_time": "2027年"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_8a9bf47799544318b931894cd955c109",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-09-24T23:07:39.192949+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-24",
+            "delivery_failure": null,
+            "direction": "SHORT",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_69e28018905b491887f526f802f712fe",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-24T23:07:39.589147Z"
+              },
+              "case_id": "case_8a9bf47799544318b931894cd955c109",
+              "direction": "SHORT",
+              "entry_reason": "FRESH_QUOTE_UNAVAILABLE",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_8a9bf47799544318b931894cd955c109",
+              "execution_reason_codes": [
+                "FRESH_QUOTE_UNAVAILABLE"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_8a9bf47799544318b931894cd955c109",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_e1d7c65e0656af2e6c4923b1"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-24T23:07:39.192949Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "FRESH_QUOTE_UNAVAILABLE"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_9207bf5c695042d286fc85b05efd72e1",
+      "ticker": "BE",
+      "case_id": "case_9207bf5c695042d286fc85b05efd72e1",
+      "intent_released_at_utc": "2026-09-25T12:53:01.835570+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_12c41e01d14944fca90f5bfe060880ec",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Amazon",
+              "Alphabet",
+              "Microsoft",
+              "Oracle",
+              "Meta"
+            ],
+            "occurrence_date": "2026-09-25",
+            "proposition": "Amazon、Alphabet、Microsoft、Oracle和Meta目前预计在2026年合计投入约8000亿美元建设技术基础设施。",
+            "subject_time": "2026年"
+          },
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Goldman Sachs",
+              "Amazon",
+              "Alphabet",
+              "Microsoft",
+              "Oracle",
+              "Meta"
+            ],
+            "occurrence_date": "2026-09-25",
+            "proposition": "高盛预计上述五家美国超大规模云厂商2027年AI相关资本支出将较2026年增加54%，达到约1.2万亿美元。",
+            "subject_time": "2027年"
+          },
+          {
+            "assertion_state": "EXPECTED",
+            "entities": [
+              "Wall Street analysts",
+              "Amazon",
+              "Alphabet",
+              "Microsoft",
+              "Oracle",
+              "Meta"
+            ],
+            "occurrence_date": "2026-09-25",
+            "proposition": "华尔街其他分析师对上述五家云厂商2027年AI资本支出的共识估计约为1.1万亿美元。",
+            "subject_time": "2027年"
+          },
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Goldman Sachs",
+              "Amazon",
+              "Alphabet",
+              "Microsoft",
+              "Oracle",
+              "Meta"
+            ],
+            "occurrence_date": "2026-09-25",
+            "proposition": "高盛估计五家美国云厂商需要约3000亿美元年度AI收入才能使相关投资达到盈亏平衡。",
+            "subject_time": "年度AI业务运行期"
+          },
+          {
+            "assertion_state": "EXPECTED",
+            "entities": [
+              "Goldman Sachs",
+              "AI infrastructure",
+              "hyperscalers"
+            ],
+            "occurrence_date": "2026-09-25",
+            "proposition": "高盛指出，未来AI资本支出增长可能受到融资成本上升和物理基础设施约束限制。",
+            "subject_time": "未来AI资本支出周期"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "高盛预计Amazon、Alphabet、Microsoft、Oracle和Meta的AI相关资本支出将从2026年约8000亿美元增加54%，在2027年达到1.2万亿美元，高于1.1万亿美元共识。该上修提高了未来数据中心电力需求和大型负荷项目持续扩张的规模与持续性预期；在物理基础设施受限时，快速部署的现场电力方案的潜在价值也上升。",
+          "prior_expectation": "BE的基线已包含强劲AI和大型负荷需求、Oracle及其他客户验证和约1.2GW contracted/deploying capacity，但未来收入仍依赖客户选择、项目融资、制造、交付和验收；市场对五大美国云厂商2027年AI资本支出的锚点约为1.1万亿美元。",
+          "reason": "相对共识约高9%的2027年支出预测构成明确的正向Surprise，且BE已拥有Oracle关系、AI客户验证和大型部署管线，Materiality较高。Transmission为更高超大规模资本支出→更多数据中心和供电缺口→客户寻找快速现场firm power→Bloom可争取的部署MW和订单池扩大。融资成本、AI收入盈亏平衡要求及Bloom实际份额仍是不确定因素，且没有新增Bloom订单，因此方向强度受限但不足以消除LONG。",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "E140仅记录穆迪对六家美国科技公司约1万亿美元AI资本支出的预测；当前消息新增了高盛对五家超大规模云厂商2027年1.2万亿美元支出的预测、较当前水平增长54%且高于1.1万亿美元共识，以及相应的AI收入盈亏平衡估算。",
+          "reference_ids": [
+            "E140"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息是行业资本支出预测，未涉及具体Bloom客户的采购、Energy Server容量、项目许可、互联、燃料、交付或验收里程碑，因此不满足任何Policy criterion。"
+        },
+        "w3_case_id": "w3_12c41e01d14944fca90f5bfe060880ec"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_9207bf5c695042d286fc85b05efd72e1",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-25T12:53:02.027742Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 152.234067
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-25T12:50:29.793675Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2603862,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-25",
+        "source": {
+          "binding_id": "BE:huggingnews_rss",
+          "kind": "api",
+          "name": "HuggingNews Atom",
+          "source_id": "huggingnews_rss"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_0e70e0904b744665a6981e2411afec0e",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Goldman Forecasts $1.2T AI Spend for US Hyperscalers to Beat Consensus"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "RETRY_BUDGET_EXHAUSTED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-25T12:50:29.793675Z",
+        "completed_at": "2026-09-25T12:53:02.027742Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E140",
+            "E126",
+            "E26"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "Goldman Sachs 具体预测五家美国超大规模云厂商2027年AI资本支出达$1.2T（较$800B增长54%）并超出$1.1T共识，以及$300B盈亏平衡AI营收估算，均未在已加载事实中出现。E140为穆迪对六家公司约$1T的预测，属不同机构、不同数值、不同公司范围，不构成对Goldman预测的覆盖。",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "该消息为高盛对五大超算企业2027年AI总资本支出的预测（$800B→$1.2T），并泛泛提及未来capex增长可能受融资成本和物理基础设施约束限制。消息未涉及任何具名客户对Bloom的采购指令、项目许可/互联/燃料/设备里程碑、具体设计变更或监管决定等可触发任一criterion的具体事实，仅与AI电力需求主题存在宽泛关联，不构成Candidate。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "该消息为高盛对五大超算企业2027年AI总资本支出的预测（$800B→$1.2T），并泛泛提及未来capex增长可能受融资成本和物理基础设施约束限制。消息未涉及任何具名客户对Bloom的采购指令、项目许可/互联/燃料/设备里程碑、具体设计变更或监管决定等可触发任一criterion的具体事实，仅与AI电力需求主题存在宽泛关联，不构成Candidate。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Amazon",
+                "Alphabet",
+                "Microsoft",
+                "Oracle",
+                "Meta"
+              ],
+              "occurrence_date": "2026-09-25",
+              "proposition": "Amazon、Alphabet、Microsoft、Oracle和Meta目前预计在2026年合计投入约8000亿美元建设技术基础设施。",
+              "subject_time": "2026年"
+            },
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "Goldman Sachs",
+                "Amazon",
+                "Alphabet",
+                "Microsoft",
+                "Oracle",
+                "Meta"
+              ],
+              "occurrence_date": "2026-09-25",
+              "proposition": "高盛预计上述五家美国超大规模云厂商2027年AI相关资本支出将较2026年增加54%，达到约1.2万亿美元。",
+              "subject_time": "2027年"
+            },
+            {
+              "assertion_state": "EXPECTED",
+              "entities": [
+                "Wall Street analysts",
+                "Amazon",
+                "Alphabet",
+                "Microsoft",
+                "Oracle",
+                "Meta"
+              ],
+              "occurrence_date": "2026-09-25",
+              "proposition": "华尔街其他分析师对上述五家云厂商2027年AI资本支出的共识估计约为1.1万亿美元。",
+              "subject_time": "2027年"
+            },
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "Goldman Sachs",
+                "Amazon",
+                "Alphabet",
+                "Microsoft",
+                "Oracle",
+                "Meta"
+              ],
+              "occurrence_date": "2026-09-25",
+              "proposition": "高盛估计五家美国云厂商需要约3000亿美元年度AI收入才能使相关投资达到盈亏平衡。",
+              "subject_time": "年度AI业务运行期"
+            },
+            {
+              "assertion_state": "EXPECTED",
+              "entities": [
+                "Goldman Sachs",
+                "AI infrastructure",
+                "hyperscalers"
+              ],
+              "occurrence_date": "2026-09-25",
+              "proposition": "高盛指出，未来AI资本支出增长可能受到融资成本上升和物理基础设施约束限制。",
+              "subject_time": "未来AI资本支出周期"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "高盛预计Amazon、Alphabet、Microsoft、Oracle和Meta的AI相关资本支出将从2026年约8000亿美元增加54%，在2027年达到1.2万亿美元，高于1.1万亿美元共识。该上修提高了未来数据中心电力需求和大型负荷项目持续扩张的规模与持续性预期；在物理基础设施受限时，快速部署的现场电力方案的潜在价值也上升。",
+            "prior_expectation": "BE的基线已包含强劲AI和大型负荷需求、Oracle及其他客户验证和约1.2GW contracted/deploying capacity，但未来收入仍依赖客户选择、项目融资、制造、交付和验收；市场对五大美国云厂商2027年AI资本支出的锚点约为1.1万亿美元。",
+            "reason": "相对共识约高9%的2027年支出预测构成明确的正向Surprise，且BE已拥有Oracle关系、AI客户验证和大型部署管线，Materiality较高。Transmission为更高超大规模资本支出→更多数据中心和供电缺口→客户寻找快速现场firm power→Bloom可争取的部署MW和订单池扩大。融资成本、AI收入盈亏平衡要求及Bloom实际份额仍是不确定因素，且没有新增Bloom订单，因此方向强度受限但不足以消除LONG。",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "E140仅记录穆迪对六家美国科技公司约1万亿美元AI资本支出的预测；当前消息新增了高盛对五家超大规模云厂商2027年1.2万亿美元支出的预测、较当前水平增长54%且高于1.1万亿美元共识，以及相应的AI收入盈亏平衡估算。",
+            "reference_ids": [
+              "E140"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "消息是行业资本支出预测，未涉及具体Bloom客户的采购、Energy Server容量、项目许可、互联、燃料、交付或验收里程碑，因此不满足任何Policy criterion。"
+          },
+          "w3_case_id": "w3_12c41e01d14944fca90f5bfe060880ec"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "4291b54ecb18227ecdc562884ab122257a0081965d7d6e9e51e891c948980e36",
+            "content_type": "text/plain",
+            "sha256": "61ad703c92ba91152ab3a51e1b165b1174cedd2fb7778dc17a21408478909316",
+            "size_bytes": 884
+          },
+          "case": {
+            "case_id": "case_9207bf5c695042d286fc85b05efd72e1",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-25T12:50:28.631793Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-25T12:50:28.647685Z",
+          "revision": 1,
+          "row_revision": 1740283,
+          "source": {
+            "binding_id": "BE:huggingnews_rss",
+            "kind": "api",
+            "name": "HuggingNews Atom",
+            "source_id": "huggingnews_rss"
+          },
+          "source_published_at": "2026-09-25T12:40:42.454000Z",
+          "standard_message_id": "std_2d724d6547a24092b3a48103cdfda73e",
+          "stream_item_id": "stream_0e70e0904b744665a6981e2411afec0e",
+          "stream_offset": 79,
+          "stream_published_at": "2026-09-25T12:50:28.650918Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Goldman Forecasts $1.2T AI Spend for US Hyperscalers to Beat Consensus"
+          },
+          "url": "https://huggingnews.com/ai/goldman-forecasts-12t-ai-spend-for-us-hyperscalers-to-beat-consensus-83bb05dd",
+          "body_text": "Trending \n ← Back to live feed · 1 stories across 1 day\nFriday, Sep 25, 2026\n1 story1 NEWGoldman Forecasts $1.2T AI Spend for US Hyperscalers to Beat Consensus AI Sep 25, 8:18 AM EDT 4/4 \n 1\n NEWGoldman Forecasts $1.2T AI Spend for US Hyperscalers to Beat Consensus\n AI Sep 25, 8:18 AM EDT 4/4\n Amazon, Alphabet, Microsoft, Oracle and Meta are currently investing roughly $800 billion in their technological infrastructure this year. Goldman Sachs strategists forecast these outlays will increase by 54% to $1.2 trillion in 2027, exceeding the $1.1 trillion consensus estimated by other Wall Street analysts.\nThe bank estimates that the five largest US cloud providers need approximately $300 billion in annual AI revenue to break even on these investments. Future growth in capital expenditure could be limited by rising financing costs and constraints on physical infrastructure."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_2d724d6547a24092b3a48103cdfda73e:0\"]",
+          "created_at": "2026-09-25T12:53:01.753527Z",
+          "dedupe_key": "538badb62acf16c2d9843c2c042a65bd98ba0eb2617b2689818ad00b5cb878c7",
+          "entities": [
+            "Amazon",
+            "Alphabet",
+            "Microsoft",
+            "Oracle",
+            "Meta"
+          ],
+          "occurrence_date": "2026-09-25",
+          "originating_node": "W3",
+          "proposition": "Amazon、Alphabet、Microsoft、Oracle和Meta目前预计在2026年合计投入约8000亿美元建设技术基础设施。",
+          "provisional_event_id": "E50",
+          "subject_time": "2026年"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_2d724d6547a24092b3a48103cdfda73e:1\"]",
+          "created_at": "2026-09-25T12:53:01.770667Z",
+          "dedupe_key": "21731150a289aef2a74117b142d8ccfa02a4fc7d1f3edcc4677a28c0f96d384e",
+          "entities": [
+            "Goldman Sachs",
+            "Amazon",
+            "Alphabet",
+            "Microsoft",
+            "Oracle",
+            "Meta"
+          ],
+          "occurrence_date": "2026-09-25",
+          "originating_node": "W3",
+          "proposition": "高盛预计上述五家美国超大规模云厂商2027年AI相关资本支出将较2026年增加54%，达到约1.2万亿美元。",
+          "provisional_event_id": "E51",
+          "subject_time": "2027年"
+        },
+        {
+          "assertion_state": "EXPECTED",
+          "candidate_id": "[\"runtime-v2-msg:std_2d724d6547a24092b3a48103cdfda73e:2\"]",
+          "created_at": "2026-09-25T12:53:01.784425Z",
+          "dedupe_key": "e972fdc9b0a611237cab373dafa4f9bb7a61543922bc78ee57bbdf1bd9f1ee1e",
+          "entities": [
+            "Wall Street analysts",
+            "Amazon",
+            "Alphabet",
+            "Microsoft",
+            "Oracle",
+            "Meta"
+          ],
+          "occurrence_date": "2026-09-25",
+          "originating_node": "W3",
+          "proposition": "华尔街其他分析师对上述五家云厂商2027年AI资本支出的共识估计约为1.1万亿美元。",
+          "provisional_event_id": "E52",
+          "subject_time": "2027年"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_2d724d6547a24092b3a48103cdfda73e:3\"]",
+          "created_at": "2026-09-25T12:53:01.801674Z",
+          "dedupe_key": "43111a4ea2c9c0958d6965ab0acb842f5b99b6f53434daa5a77fd17434694bd9",
+          "entities": [
+            "Goldman Sachs",
+            "Amazon",
+            "Alphabet",
+            "Microsoft",
+            "Oracle",
+            "Meta"
+          ],
+          "occurrence_date": "2026-09-25",
+          "originating_node": "W3",
+          "proposition": "高盛估计五家美国云厂商需要约3000亿美元年度AI收入才能使相关投资达到盈亏平衡。",
+          "provisional_event_id": "E53",
+          "subject_time": "年度AI业务运行期"
+        },
+        {
+          "assertion_state": "EXPECTED",
+          "candidate_id": "[\"runtime-v2-msg:std_2d724d6547a24092b3a48103cdfda73e:4\"]",
+          "created_at": "2026-09-25T12:53:01.814036Z",
+          "dedupe_key": "cc7719a751a9f0e88632f0cde9b78f1dd1160735c9efb93fff3145eb9c72c5ab",
+          "entities": [
+            "Goldman Sachs",
+            "AI infrastructure",
+            "hyperscalers"
+          ],
+          "occurrence_date": "2026-09-25",
+          "originating_node": "W3",
+          "proposition": "高盛指出，未来AI资本支出增长可能受到融资成本上升和物理基础设施约束限制。",
+          "provisional_event_id": "E54",
+          "subject_time": "未来AI资本支出周期"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_9207bf5c695042d286fc85b05efd72e1",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-09-25T12:53:01.835570+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-25",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_12c41e01d14944fca90f5bfe060880ec",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-25T12:53:02.145356Z"
+              },
+              "case_id": "case_9207bf5c695042d286fc85b05efd72e1",
+              "direction": "LONG",
+              "entry_reason": "RETRY_BUDGET_EXHAUSTED",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_9207bf5c695042d286fc85b05efd72e1",
+              "execution_reason_codes": [
+                "RETRY_BUDGET_EXHAUSTED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_9207bf5c695042d286fc85b05efd72e1",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_e1d7c65e0656af2e6c4923b1"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-25T12:53:01.835570Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "RETRY_BUDGET_EXHAUSTED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_e5399f98a9d5475ca306f77cbf76a7a9",
+      "ticker": "BE",
+      "case_id": "case_e5399f98a9d5475ca306f77cbf76a7a9",
+      "intent_released_at_utc": "2026-09-25T15:08:56.321047+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_1f732609dc4b489db67951d8b4c8c331",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Oracle",
+              "BorderPlex",
+              "Project Jupiter"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "Oracle已移除BorderPlex这一Project Jupiter新墨西哥项目的关键合作方。",
+            "subject_time": null
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Oracle",
+              "Oracle 2056 bonds"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "Oracle的2056年债券收益率首次达到8%。",
+            "subject_time": "2026年9月24日"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Oracle",
+              "Oracle credit default swaps"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "Oracle的信用违约互换利差扩大至创纪录水平。",
+            "subject_time": "2026年9月24日"
+          },
+          {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "Oracle",
+              "Project Jupiter",
+              "investors"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "有报道指出，即使Project Jupiter缺乏电力，Oracle仍可能需要向投资者履行付款义务。",
+            "subject_time": "Project Jupiter缺乏电力时"
+          }
+        ],
+        "expert_trade": {
+          "direction": "SHORT",
+          "evaluated": true,
+          "expectation_delta": "BorderPlex被移除以及Oracle债券收益率、CDS和项目融资压力恶化，降低Project Jupiter按原路径转化为Bloom发货和验收MW的确定性，并提高付款和长期收入兑现延迟风险。",
+          "prior_expectation": "BE的基线预期包含Oracle关系及约1.2GW已签约并部署容量，并将Project Jupiter约2.5GW Bloom-powered机会视为未来大型项目转化来源，但其融资、项目门槛、客户付款和验收仍属条件性假设。",
+          "reason": "该变化直接触及Bloom最大锚定项目的开发合作方、客户信用和融资路径，传导至Bloom的部署时点、现金回收和长期收入价值，形成负向预期差。虽然Oracle仍称项目按计划且尚无Bloom范围取消确认，但新增风险足以支持方向性SHORT；正式Policy因缺少硬性项目变更证据尚未触发。",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "现有事实已覆盖Project Jupiter的Bloom约2.5GW容量、燃气管线延误、建设债务折价、Oracle按计划推进及force majeure通知；但未覆盖Oracle移除BorderPlex、2056债券收益率首次达到8%、CDS创纪录走阔及项目缺电时仍可能承担投资者付款义务等新进展。",
+          "reference_ids": [
+            "E111",
+            "E112",
+            "E113",
+            "E114",
+            "E115",
+            "E127"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "新事实提高了Project Jupiter的融资和执行风险，但未确认Bloom部署取消、缩量、正式重谈、commissioning日期变化或Bloom backlog、shipment或revenue预期变化，未满足现行Policy的硬性触发边界。"
+        },
+        "w3_case_id": "w3_1f732609dc4b489db67951d8b4c8c331"
+      },
+      "trade_direction": "SHORT",
+      "case_summary": {
+        "case_id": "case_e5399f98a9d5475ca306f77cbf76a7a9",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-25T15:08:56.424944Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 511.935492
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-25T15:00:24.489452Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2603993,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-25",
+        "source": {
+          "binding_id": "BE:huggingnews_rss",
+          "kind": "api",
+          "name": "HuggingNews Atom",
+          "source_id": "huggingnews_rss"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_318f2b1361c446b4afb5166c704d4f2e",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Oracle Invokes Force Majeure on $165B AI Center as Bonds Hit First Ever 8% Yield"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "RETRY_BUDGET_EXHAUSTED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-25T15:00:24.489452Z",
+        "completed_at": "2026-09-25T15:08:56.424944Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E108",
+            "E115",
+            "E110",
+            "E111",
+            "E112"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "当前消息包含多个尚未被已知事实覆盖的核心进展：1）Oracle已移除BorderPlex（项目关键合作方），这在所有已知provisional facts中均未提及；2）Oracle 2056 bonds首次收益率达8%、CDS创纪录、$18B建设债低于90美分等信用压力指标为全新事实；3）具体以2028年开幕为条件推迟付款的机制细节超出已有force majeure通知的语义范围。已知事实仅覆盖了force majeure通知本身、燃气管线延误及项目背景。",
+          "reference_ids": [
+            "E115"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [
+            "pol_9795c572511e9fcc514e",
+            "pol_c6f78f9f2be8ff1d1ee8",
+            "pol_b88a58def59b82c29eb5"
+          ],
+          "reason": "消息陈述Oracle就Project Jupiter正式invoke force majeure并通知Blue Owl Capital拟defer payments，理由包括regulatory setbacks、local resistance及一个critical item六个月延迟，项目可能错过2028开幕。这些具体事实直接触及：(1) pol_9795c572511e9fcc514e——具名承诺项目因permit/regulatory相关失败出现实质延迟；(2) pol_c6f78f9f2be8ff1d1ee8——已签约锚定客户对承诺项目的合同修订/削减动作；(3) pol_b88a58def59b82c29eb5——主要客户推迟或重新谈判Energy Server部署。当前精简信息不足以确定force majeure+defer payments是否构成最终取消/削减或部署推迟，需进入完整判定。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "三个Candidate均未命中。消息核心事实是Oracle对Blue Owl Capital发出'intent to defer payments'（附条件：若设施错过2028开业），并移除BorderPlex；Oracle明确声明设施'remains on schedule'。对pol_9795c572511e9fcc514e：6个月管道延迟被提及，但未公布Bloom项目新commissioning date、scope cut或cancel，不满足trigger boundary。对pol_c6f78f9f2be8ff1d1ee8：2.45GW Bloom容量未被取消或削减，'defer payments'≠'取消项目/削减承诺容量'，且为附条件意图而非已执行动作。对pol_b88a58def59b82c29eb5：criterion要求对Energy Server deployment本身的defer/cancel/downsize/renegotiate，而消息所述为Oracle与Blue Owl之间的付款条款调整（附条件），非对2.45GW Bloom部署的实际推迟或重谈；且trigger boundary要求'subsequent filings reflect the change in backlog, shipment, or revenue expectations'，消息中无此要素。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Oracle",
+                "BorderPlex",
+                "Project Jupiter"
+              ],
+              "occurrence_date": "2026-09-24",
+              "proposition": "Oracle已移除BorderPlex这一Project Jupiter新墨西哥项目的关键合作方。",
+              "subject_time": null
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Oracle",
+                "Oracle 2056 bonds"
+              ],
+              "occurrence_date": "2026-09-24",
+              "proposition": "Oracle的2056年债券收益率首次达到8%。",
+              "subject_time": "2026年9月24日"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Oracle",
+                "Oracle credit default swaps"
+              ],
+              "occurrence_date": "2026-09-24",
+              "proposition": "Oracle的信用违约互换利差扩大至创纪录水平。",
+              "subject_time": "2026年9月24日"
+            },
+            {
+              "assertion_state": "RUMORED",
+              "entities": [
+                "Oracle",
+                "Project Jupiter",
+                "investors"
+              ],
+              "occurrence_date": "2026-09-24",
+              "proposition": "有报道指出，即使Project Jupiter缺乏电力，Oracle仍可能需要向投资者履行付款义务。",
+              "subject_time": "Project Jupiter缺乏电力时"
+            }
+          ],
+          "expert_trade": {
+            "direction": "SHORT",
+            "evaluated": true,
+            "expectation_delta": "BorderPlex被移除以及Oracle债券收益率、CDS和项目融资压力恶化，降低Project Jupiter按原路径转化为Bloom发货和验收MW的确定性，并提高付款和长期收入兑现延迟风险。",
+            "prior_expectation": "BE的基线预期包含Oracle关系及约1.2GW已签约并部署容量，并将Project Jupiter约2.5GW Bloom-powered机会视为未来大型项目转化来源，但其融资、项目门槛、客户付款和验收仍属条件性假设。",
+            "reason": "该变化直接触及Bloom最大锚定项目的开发合作方、客户信用和融资路径，传导至Bloom的部署时点、现金回收和长期收入价值，形成负向预期差。虽然Oracle仍称项目按计划且尚无Bloom范围取消确认，但新增风险足以支持方向性SHORT；正式Policy因缺少硬性项目变更证据尚未触发。",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "现有事实已覆盖Project Jupiter的Bloom约2.5GW容量、燃气管线延误、建设债务折价、Oracle按计划推进及force majeure通知；但未覆盖Oracle移除BorderPlex、2056债券收益率首次达到8%、CDS创纪录走阔及项目缺电时仍可能承担投资者付款义务等新进展。",
+            "reference_ids": [
+              "E111",
+              "E112",
+              "E113",
+              "E114",
+              "E115",
+              "E127"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "新事实提高了Project Jupiter的融资和执行风险，但未确认Bloom部署取消、缩量、正式重谈、commissioning日期变化或Bloom backlog、shipment或revenue预期变化，未满足现行Policy的硬性触发边界。"
+          },
+          "w3_case_id": "w3_1f732609dc4b489db67951d8b4c8c331"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "f4a8bedbb294137be73aea8a5d1795fb624a4d395ff02de585255abb24bf150e",
+            "content_type": "text/plain",
+            "sha256": "5cc5a046961796abc5db958354b305a679d448076ab4c495a96065993a8e37c0",
+            "size_bytes": 1142
+          },
+          "case": {
+            "case_id": "case_e5399f98a9d5475ca306f77cbf76a7a9",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-25T15:00:23.588531Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-25T15:00:23.612532Z",
+          "revision": 1,
+          "row_revision": 1769708,
+          "source": {
+            "binding_id": "BE:huggingnews_rss",
+            "kind": "api",
+            "name": "HuggingNews Atom",
+            "source_id": "huggingnews_rss"
+          },
+          "source_published_at": "2026-09-25T14:57:17.932000Z",
+          "standard_message_id": "std_098df317ef98413cb1ddcfcc6a34f0ad",
+          "stream_item_id": "stream_318f2b1361c446b4afb5166c704d4f2e",
+          "stream_offset": 86,
+          "stream_published_at": "2026-09-25T15:00:23.615945Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Oracle Invokes Force Majeure on $165B AI Center as Bonds Hit First Ever 8% Yield"
+          },
+          "url": "https://huggingnews.com/ai/update-oracle-invokes-force-majeure-on-165b-ai-center-as-bonds-hit-first-237d11ef",
+          "body_text": "← Back to live feed · 1 stories across 1 day\nFriday, Sep 25, 2026\n1 story1 Oracle Invokes Force Majeure on $165B AI Center as Bonds Hit First Ever 8% Yield↩︎ AI Sep 24, 2:13 PM EDT 46/32 \n The tech giant has notified developer Blue Owl Capital of its intent to defer payments on Project Jupiter if the massive New Mexico AI facility misses its planned 2028 opening. Oracle cited force majeure to shield itself from costs stemming from local resistance and regulatory setbacks, including a six month delay to a critical gas pipeline. As part of the move to manage the project, Oracle has removed BorderPlex, a key partner on the site.\nThe $165B campus is part of the Stargate AI buildout for OpenAI and requires 2.45GW of Bloom Energy fuel cells for power. Credit stress for Oracle has risen as 2056 bonds yielded 8% for the first time ever, and credit default swaps hit record widths, while the project's $18B construction debt is trading below 90 cents on the dollar. Oracle maintains that the facility remains on schedule, though reports indicate the company may still be required to pay investors even if the site lacks electricity."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_098df317ef98413cb1ddcfcc6a34f0ad:0\"]",
+          "created_at": "2026-09-25T15:08:56.273429Z",
+          "dedupe_key": "8a3ff7a72d44664b55e2b9910e63aa0c62c27a4c6771486aa4b13d2a5d4ba88a",
+          "entities": [
+            "Oracle",
+            "BorderPlex",
+            "Project Jupiter"
+          ],
+          "occurrence_date": "2026-09-24",
+          "originating_node": "W3",
+          "proposition": "Oracle已移除BorderPlex这一Project Jupiter新墨西哥项目的关键合作方。",
+          "provisional_event_id": "E72",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_098df317ef98413cb1ddcfcc6a34f0ad:1\"]",
+          "created_at": "2026-09-25T15:08:56.281591Z",
+          "dedupe_key": "cc31c0f456635205b178120f85653175212ab4c7e83e2b460fd7a8621e72f0ce",
+          "entities": [
+            "Oracle",
+            "Oracle 2056 bonds"
+          ],
+          "occurrence_date": "2026-09-24",
+          "originating_node": "W3",
+          "proposition": "Oracle的2056年债券收益率首次达到8%。",
+          "provisional_event_id": "E73",
+          "subject_time": "2026年9月24日"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_098df317ef98413cb1ddcfcc6a34f0ad:2\"]",
+          "created_at": "2026-09-25T15:08:56.291359Z",
+          "dedupe_key": "67ca018f974cec89a38c7689c45555af316b4a11ec198ed373b36c36e8fc48bd",
+          "entities": [
+            "Oracle",
+            "Oracle credit default swaps"
+          ],
+          "occurrence_date": "2026-09-24",
+          "originating_node": "W3",
+          "proposition": "Oracle的信用违约互换利差扩大至创纪录水平。",
+          "provisional_event_id": "E74",
+          "subject_time": "2026年9月24日"
+        },
+        {
+          "assertion_state": "RUMORED",
+          "candidate_id": "[\"runtime-v2-msg:std_098df317ef98413cb1ddcfcc6a34f0ad:3\"]",
+          "created_at": "2026-09-25T15:08:56.299735Z",
+          "dedupe_key": "605829ad0cf4610be37f578bcdfa3ec2e53e8d697d7c0bc86ac640b2df9105cd",
+          "entities": [
+            "Oracle",
+            "Project Jupiter",
+            "investors"
+          ],
+          "occurrence_date": "2026-09-24",
+          "originating_node": "W3",
+          "proposition": "有报道指出，即使Project Jupiter缺乏电力，Oracle仍可能需要向投资者履行付款义务。",
+          "provisional_event_id": "E75",
+          "subject_time": "Project Jupiter缺乏电力时"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_e5399f98a9d5475ca306f77cbf76a7a9",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-09-25T15:08:56.321047+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-25",
+            "delivery_failure": null,
+            "direction": "SHORT",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_1f732609dc4b489db67951d8b4c8c331",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-25T15:08:56.449746Z"
+              },
+              "case_id": "case_e5399f98a9d5475ca306f77cbf76a7a9",
+              "direction": "SHORT",
+              "entry_reason": "RETRY_BUDGET_EXHAUSTED",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_e5399f98a9d5475ca306f77cbf76a7a9",
+              "execution_reason_codes": [
+                "RETRY_BUDGET_EXHAUSTED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_e5399f98a9d5475ca306f77cbf76a7a9",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_e1d7c65e0656af2e6c4923b1"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-25T15:08:56.321047Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "RETRY_BUDGET_EXHAUSTED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_15f7297e163044719e7ab380a5c0ef6a",
+      "ticker": "BE",
+      "case_id": "case_15f7297e163044719e7ab380a5c0ef6a",
+      "intent_released_at_utc": "2026-09-29T09:28:16.519846+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_a4f31c72e9f74b9793cb8f53f26ec1d4",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Enverus Intelligence Research",
+              "United States",
+              "Behind-the-meter gas generation",
+              "Data centers"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Enverus estimates that approximately 29.6 GW of behind-the-meter gas generation will be added in the United States through 2030, with data centers accounting for roughly 88% of demand.",
+            "subject_time": "U.S. behind-the-meter gas generation through 2030"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Enverus Intelligence Research",
+              "Combined-cycle gas turbines",
+              "Small gas turbines",
+              "Aeroderivative turbines"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Enverus estimates that large combined-cycle gas-turbine plants can have lead times of up to six years, while small or medium-frame turbines can be delivered within two years and aeroderivative turbines in approximately 40 months.",
+            "subject_time": "Current U.S. gas-turbine delivery windows"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Crusoe",
+              "GE Vernova",
+              "Abilene, Texas",
+              "Aeroderivative gas turbines",
+              "Data centers"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Crusoe ordered 29 GE Vernova 35 MW aeroderivative gas turbines for behind-the-meter generation at U.S. data centers, including ten units for its Abilene, Texas campus.",
+            "subject_time": "Crusoe U.S. data-center power deployments"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Crusoe",
+              "Bergen",
+              "Reciprocating gas engines",
+              "U.S. data centers"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Crusoe agreed to procure approximately 750 MW of Bergen reciprocating gas engines for on-site generation at multiple U.S. data-center sites.",
+            "subject_time": "Crusoe multi-site U.S. data-center generation program"
+          },
+          {
+            "assertion_state": "PLANNED",
+            "entities": [
+              "GE Vernova",
+              "Siemens Energy",
+              "Greenville, South Carolina",
+              "Charlotte, North Carolina",
+              "Gas turbines"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "GE Vernova plans to invest $160 million to expand its Greenville, South Carolina factory by 2028 and add 650 workers, while Siemens Energy plans to restart its Charlotte, North Carolina factory by 2028.",
+            "subject_time": "U.S. gas-turbine manufacturing expansion through 2028"
+          },
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Rocky Mountain Institute",
+              "United States",
+              "Virtual power plants",
+              "Batteries",
+              "Hybrid resources",
+              "Grid enhancements"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "The Rocky Mountain Institute stated that near-term alternatives including virtual power plants, batteries, clean-power repowering, hybrid resources, grid enhancements, and energy efficiency could meet nearly all projected near-term U.S. load growth.",
+            "subject_time": "Near-term U.S. electricity-load growth"
+          }
+        ],
+        "expert_trade": {
+          "direction": "SHORT",
+          "evaluated": true,
+          "expectation_delta": "The report moves alternative gas power from a general reservation signal toward a sizeable, modular, faster-deploying route: approximately 29.6 GW of U.S. BTM gas additions through 2030, 88% tied to data centers, small or medium turbines deliverable within two years, aeroderivatives in roughly 40 months, and named Crusoe purchases of 29 GE Vernova units plus about 750 MW of Bergen engines. This shortens the expected duration of Bloom’s time-to-power advantage and raises the probability that future load is allocated to gas alternatives.",
+          "prior_expectation": "BE’s opportunity window relied on grid and large-gas-turbine delivery constraints, with gas turbines previously described as sold out for three to four years and reservations not yet equivalent to local operating capacity. Bloom had customer validation and contracted/deploying capacity, but future share depended on alternatives remaining unavailable on required schedules.",
+          "reason": "TRADE/SHORT: the path is alternative availability → customer firm-power route selection → lower future Bloom share and replacement-pipeline duration. The scale, delivery timing, named orders, and planned U.S. manufacturing expansion are material to BE’s core AI-power thesis even without a current Bloom project cancellation. No commercial operation or Bloom-associated project switch limits magnitude, while higher lifetime cost and emissions preserve some Bloom opportunity.",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "Reference View covered severe large-turbine and transformer supply constraints, but not the emerging small-turbine and reciprocating-engine route, its quantified 29.6 GW BTM buildout, or the named Crusoe procurement commitments.",
+          "reference_ids": [
+            "E20",
+            "E26"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "The message does not satisfy the existing alternative-firm-power Policies because it does not identify a Bloom-associated project switching routes or a commercially operating alternative on a required schedule. It is nevertheless relevant as an uncovered upstream change to the alternative-supply window."
+        },
+        "w3_case_id": "w3_a4f31c72e9f74b9793cb8f53f26ec1d4"
+      },
+      "trade_direction": "SHORT",
+      "case_summary": {
+        "case_id": "case_15f7297e163044719e7ab380a5c0ef6a",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-29T09:28:16.640144Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 445.921768
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-29T09:20:50.718376Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2603689,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-29",
+        "source": {
+          "binding_id": "BE:reuters_site_search",
+          "kind": "crawler",
+          "name": "Reuters Site Search",
+          "source_id": "reuters_site_search"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_5aeb8b144cab479ba8bb98cec18420bb",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Dash for small gas turbines set to impact data center costs"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "IBKR_201: Order rejected - reason:We are unable to accept your order. Your Available Funds are in sufficient to cover the change in the <br>account's margin requirements if this order executes. In order to obtain the desired position your Equity with<br> Loan Value [17491.98 USD] must exceed the new total Initial Margin of  [20656.49 USD]."
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-29T09:20:50.718376Z",
+        "completed_at": "2026-09-29T09:28:16.640144Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E20",
+            "E26"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "当前消息核心事实为：小型开式循环及航改型燃气轮机需求大幅上升、BTM燃气发电至2030年新增29.6 GW（数据中心占88%）、Crusoe订购29台GE Vernova航改型机组及750 MW Bergen发动机、制造商扩产计划等。已加载Event仅覆盖\"燃机售完3-4年\"(E20)和\"变压器交期>160周\"(E26)两项供给约束，均未涵盖向小型/航改型机组的需求转移、具体BTM容量与份额、实际订单交易及产能扩张等新事实。",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [
+            "pol_5e8a9f112a05f0479677",
+            "pol_392b8f242b54614b6429"
+          ],
+          "reason": "消息描述数据中心开发商大规模转向小型燃机/发动机BTM供电：29.6GW BTM燃气到2030年、88%来自数据中心；Crusoe已订购29台GE Vernova 35MW航改机（含Abilene TX十台）及750MW Bergen往复式发动机；燃机lead time缩至2年/40个月，客户愿付更高电价避开并网延误。这些事实直接触及'替代firm-power对大型负荷客户变得更可用/更易接受'的竞争窗口问题（pol_5e8a9f112a05f0479677），以及具名燃机/发动机在数据中心负荷区的采购与交付路径（pol_392b8f242b54614b6429），是否实际压缩Bloom部署机会仍待完整判定。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "两条Candidate Policy均未命中。pol_5e8a9f112a05f0479677的trigger boundary要求'Multiple large-load customers or developers disclose choosing, reserving, or switching to an alternative firm-power route for projects previously associated with Bloom'且需'明确主体、期间和同口径old→new数值/状态'；消息为行业综述，描述数据中心开发商在大型CCGT与小型航改燃机/往复式发动机之间选择更快交付路径，全文未提及Bloom，也未识别任何'previously associated with Bloom'的项目，不构成对Bloom部署的明确替代。pol_392b8f242b54614b6429的trigger boundary明确要求'具名项目/区域、商业运行日、可用MW及客户需求日，并显示按期'，且'预留或采购订单不足'；消息仅涉及Crusoe向GE Vernova订购29台35 MW航改机、与Bergen约定~750 MW往复式发动机的采购/协议阶段，无商业运行日、无实际交付并网，不满足商运条件。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "Enverus Intelligence Research",
+                "United States",
+                "Behind-the-meter gas generation",
+                "Data centers"
+              ],
+              "occurrence_date": "2026-09-29",
+              "proposition": "Enverus estimates that approximately 29.6 GW of behind-the-meter gas generation will be added in the United States through 2030, with data centers accounting for roughly 88% of demand.",
+              "subject_time": "U.S. behind-the-meter gas generation through 2030"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Enverus Intelligence Research",
+                "Combined-cycle gas turbines",
+                "Small gas turbines",
+                "Aeroderivative turbines"
+              ],
+              "occurrence_date": "2026-09-29",
+              "proposition": "Enverus estimates that large combined-cycle gas-turbine plants can have lead times of up to six years, while small or medium-frame turbines can be delivered within two years and aeroderivative turbines in approximately 40 months.",
+              "subject_time": "Current U.S. gas-turbine delivery windows"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Crusoe",
+                "GE Vernova",
+                "Abilene, Texas",
+                "Aeroderivative gas turbines",
+                "Data centers"
+              ],
+              "occurrence_date": "2026-09-29",
+              "proposition": "Crusoe ordered 29 GE Vernova 35 MW aeroderivative gas turbines for behind-the-meter generation at U.S. data centers, including ten units for its Abilene, Texas campus.",
+              "subject_time": "Crusoe U.S. data-center power deployments"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Crusoe",
+                "Bergen",
+                "Reciprocating gas engines",
+                "U.S. data centers"
+              ],
+              "occurrence_date": "2026-09-29",
+              "proposition": "Crusoe agreed to procure approximately 750 MW of Bergen reciprocating gas engines for on-site generation at multiple U.S. data-center sites.",
+              "subject_time": "Crusoe multi-site U.S. data-center generation program"
+            },
+            {
+              "assertion_state": "PLANNED",
+              "entities": [
+                "GE Vernova",
+                "Siemens Energy",
+                "Greenville, South Carolina",
+                "Charlotte, North Carolina",
+                "Gas turbines"
+              ],
+              "occurrence_date": "2026-09-29",
+              "proposition": "GE Vernova plans to invest $160 million to expand its Greenville, South Carolina factory by 2028 and add 650 workers, while Siemens Energy plans to restart its Charlotte, North Carolina factory by 2028.",
+              "subject_time": "U.S. gas-turbine manufacturing expansion through 2028"
+            },
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "Rocky Mountain Institute",
+                "United States",
+                "Virtual power plants",
+                "Batteries",
+                "Hybrid resources",
+                "Grid enhancements"
+              ],
+              "occurrence_date": "2026-09-29",
+              "proposition": "The Rocky Mountain Institute stated that near-term alternatives including virtual power plants, batteries, clean-power repowering, hybrid resources, grid enhancements, and energy efficiency could meet nearly all projected near-term U.S. load growth.",
+              "subject_time": "Near-term U.S. electricity-load growth"
+            }
+          ],
+          "expert_trade": {
+            "direction": "SHORT",
+            "evaluated": true,
+            "expectation_delta": "The report moves alternative gas power from a general reservation signal toward a sizeable, modular, faster-deploying route: approximately 29.6 GW of U.S. BTM gas additions through 2030, 88% tied to data centers, small or medium turbines deliverable within two years, aeroderivatives in roughly 40 months, and named Crusoe purchases of 29 GE Vernova units plus about 750 MW of Bergen engines. This shortens the expected duration of Bloom’s time-to-power advantage and raises the probability that future load is allocated to gas alternatives.",
+            "prior_expectation": "BE’s opportunity window relied on grid and large-gas-turbine delivery constraints, with gas turbines previously described as sold out for three to four years and reservations not yet equivalent to local operating capacity. Bloom had customer validation and contracted/deploying capacity, but future share depended on alternatives remaining unavailable on required schedules.",
+            "reason": "TRADE/SHORT: the path is alternative availability → customer firm-power route selection → lower future Bloom share and replacement-pipeline duration. The scale, delivery timing, named orders, and planned U.S. manufacturing expansion are material to BE’s core AI-power thesis even without a current Bloom project cancellation. No commercial operation or Bloom-associated project switch limits magnitude, while higher lifetime cost and emissions preserve some Bloom opportunity.",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "Reference View covered severe large-turbine and transformer supply constraints, but not the emerging small-turbine and reciprocating-engine route, its quantified 29.6 GW BTM buildout, or the named Crusoe procurement commitments.",
+            "reference_ids": [
+              "E20",
+              "E26"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "The message does not satisfy the existing alternative-firm-power Policies because it does not identify a Bloom-associated project switching routes or a commercially operating alternative on a required schedule. It is nevertheless relevant as an uncovered upstream change to the alternative-supply window."
+          },
+          "w3_case_id": "w3_a4f31c72e9f74b9793cb8f53f26ec1d4"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "cdc701ac9d4b131e81180712d8e53fb71607639ad636b0d02d76cb589191c728",
+            "content_type": "text/plain",
+            "sha256": "86e25ae5f7a64508f6f9432d7b11c161ac95679351e1f641fdbf359548cc6a26",
+            "size_bytes": 5737
+          },
+          "case": {
+            "case_id": "case_15f7297e163044719e7ab380a5c0ef6a",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-29T09:18:16.118760Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-29T09:20:49.529128Z",
+          "revision": 1,
+          "row_revision": 2423993,
+          "source": {
+            "binding_id": "BE:reuters_site_search",
+            "kind": "crawler",
+            "name": "Reuters Site Search",
+            "source_id": "reuters_site_search"
+          },
+          "source_published_at": "2026-09-29T16:00:00Z",
+          "standard_message_id": "std_caded3fdbf334866aba58f893df94862",
+          "stream_item_id": "stream_5aeb8b144cab479ba8bb98cec18420bb",
+          "stream_offset": 283,
+          "stream_published_at": "2026-09-29T09:20:49.534297Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Dash for small gas turbines set to impact data center costs"
+          },
+          "url": "https://www.reuters.com/business/energy/dash-small-gas-turbines-set-impact-data-center-costs--reeii-2026-09-29/",
+          "body_text": "September 28 - Demand for small open cycle and aeroderivative gas turbines has jumped as large data center developers increasingly seek behind-the-meter (BTM) generation and avoid long lead times for larger gas turbine units.\n\nSome 29.6 GW of behind-the-meter (BTM) gas generation will be added in the U.S. through 2030 and data centers will account for ​roughly 88% of demand, according to Enverus Intelligence Research. Data center developers are prioritizing faster development and are often willing to pay higher power prices to avoid grid ‌connection delays.\n\nSoaring demand and a shortage of manufacturing capacity for larger gas turbines has led to rising costs and long lead times. Small gas turbines include aeroderivative turbines derived from aircraft engines, industrial gas turbines and microturbines. Many large-scale data center developers have opted for aeroderivatives as they offer rapid deployment and modular installation.\n\nLead times for large combined cycle gas turbine (CCGT) plants can stretch up to six years while small or medium frame turbines can be delivered within two years and aeroderivatives ​in around 40 months, according to Enverus. Suppliers include GE Vernova, Siemens Energy and Mitsubishi Power for large-frame turbines; GE Vernova, Siemens Energy and Baker Hughes for aeroderivatives; and Caterpillar, Wartsila and ​Innio Jenbacher for reciprocating engines.\n\nSmaller turbines also have lower capital costs then larger units and can be installed incrementally in line with data center expansions.\n\n“We’ve secured ⁠turbine supply through direct partnerships with turbine and equipment manufacturers including GE Vernova and Bergen,” John Adams, SVP, Power Infrastructure at AI infrastructure company Crusoe, told Reuters Events.\n\nCrusoe has ordered 29 GE Vernova 35 ​MW aeroderivative gas turbines in a move towards BTM generation at U.S. data centers, including ten units for its Abilene, Texas campus. In June, Crusoe agreed to procure around 750 MW of Bergen reciprocating gas engines ​for on-site generation at multiple U.S. data-center sites.\n\nCHART: US oil or gas-fired powergen in advanced development, by supplier\n\n(Sample, August 2026)\n\nSiemens Energy has seen rising demand across its gas turbine range, Matt Neal, President of Siemens Energy North America, told Reuters Events.\n\n\"Some customers buy several smaller turbines for earlier availability, flexibility and redundancy,\" Neal said.\n\n“As a general rule, the larger ​a machine is, the longer it takes to manufacture and install,\" he said.\n\nCost equation\n\nA shortage in manufacturing has driven up the cost of new large CCGT units.\n\nIn one example, Duke Indiana has estimated the ​cost of its planned 1.5 GW Cayuga CCGT project at $3.3 billion, some $900 million more than it assumed for new gas-fired capacity in general in 2024.\n\nJoin 1,500+ senior decision-makers across energy and finance at Reuters Events Energy LIVE 2026.\n\nWhile large ‌CCGTs have ⁠higher capital costs than smaller turbines they are more efficient, offering lower average costs over the lifetime of the plant.\n\nCapital costs per unit of electricity can be up to 50% higher for smaller turbines, Bobby Noble, Senior Program Manager, Gas Turbines & Emerging Fuels at the Electric Power Research Institute (EPRI), told Reuters Events.\n\n\"The upfront cost of purchasing, installing and maintaining these technologies must be weighed against the cost per MWh over the plant’s lifetime,” Dan O’Beirne, Interim Project Manager, Global Oil & Gas Plant Tracker at Global Energy Monitor, said.\n\nLarge CCGTs also have lower greenhouse gas emissions per MWh because smaller open-cycle units have “lower firing temperatures and no ​heat recovery system,” he said.\n\nMeanwhile, turbine manufacturers are ​expanding U.S. production capacity for larger turbine models ⁠which will start to curb cost increases and shorten lead times.\n\nGE Vernova is investing $160 million to expand its Greenville, South Carolina factory by 2028, adding 650 workers, while Siemens Energy is restarting its factory in Charlotte, North Carolina by 2028.\n\nExpanded U.S. manufacturing capacity will help some developers switch from buying turbines from overseas ​and avoid import tariffs and steel duties, Heather Leahey, principal analyst at Enverus, said.\n\nFuture value\n\nSome data center developers are installing small gas-fired or hybrid BTM ​power solutions to provide near-term ⁠load until larger permanent power solutions are built or a grid connection becomes available. On-site generation assets can be used to support the data center and local grid needs in the future.\n\nLarger and newer gas-fired turbines are \"more suited to eventually become a merchant grid asset” because lower marginal costs mean they retain more value, Jack Painter, Vice President at consultancy Capstone, told Reuters Events.\n\n“Developers also care about the emissions profile, given that some of the ⁠final customers care ​about it,” he said.\n\nFor exclusive energy insights, sign up to our newsletter.\n\nUtilities and large customers could look to alternative sources to ​gas turbines that can be deployed incrementally, such as virtual power plants, batteries, repowering with clean power assets and hybrid resources, as well as grid enhancements and energy efficiency savings, Mark Dyson, Managing Director at Electricity at research group Rocky Mountain Institute (RMI), told ​Reuters Events.\n\n“Near-term alternatives could meet nearly all projected near-term U.S. load growth, while reducing exposure to turbine shortages and avoiding some of the reliability and affordability risks associated with waiting for new gas generation,\" he said."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_caded3fdbf334866aba58f893df94862:0\"]",
+          "created_at": "2026-09-29T09:28:16.460255Z",
+          "dedupe_key": "a613afb0cd97bbd829c394183d126bd82b99e1ff411ef93df353211030ca5fc4",
+          "entities": [
+            "Enverus Intelligence Research",
+            "United States",
+            "Behind-the-meter gas generation",
+            "Data centers"
+          ],
+          "occurrence_date": "2026-09-29",
+          "originating_node": "W3",
+          "proposition": "Enverus estimates that approximately 29.6 GW of behind-the-meter gas generation will be added in the United States through 2030, with data centers accounting for roughly 88% of demand.",
+          "provisional_event_id": "E45",
+          "subject_time": "U.S. behind-the-meter gas generation through 2030"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_caded3fdbf334866aba58f893df94862:1\"]",
+          "created_at": "2026-09-29T09:28:16.466582Z",
+          "dedupe_key": "770bd9acc0f687af12faacc73f8fba283397b43a29702bb77e33d85e0c17af72",
+          "entities": [
+            "Enverus Intelligence Research",
+            "Combined-cycle gas turbines",
+            "Small gas turbines",
+            "Aeroderivative turbines"
+          ],
+          "occurrence_date": "2026-09-29",
+          "originating_node": "W3",
+          "proposition": "Enverus estimates that large combined-cycle gas-turbine plants can have lead times of up to six years, while small or medium-frame turbines can be delivered within two years and aeroderivative turbines in approximately 40 months.",
+          "provisional_event_id": "E46",
+          "subject_time": "Current U.S. gas-turbine delivery windows"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_caded3fdbf334866aba58f893df94862:2\"]",
+          "created_at": "2026-09-29T09:28:16.474281Z",
+          "dedupe_key": "8b39d1a002b5bde3685f8ea024d0a3828853ff6598419966ca1274508ae1d878",
+          "entities": [
+            "Crusoe",
+            "GE Vernova",
+            "Abilene, Texas",
+            "Aeroderivative gas turbines",
+            "Data centers"
+          ],
+          "occurrence_date": "2026-09-29",
+          "originating_node": "W3",
+          "proposition": "Crusoe ordered 29 GE Vernova 35 MW aeroderivative gas turbines for behind-the-meter generation at U.S. data centers, including ten units for its Abilene, Texas campus.",
+          "provisional_event_id": "E47",
+          "subject_time": "Crusoe U.S. data-center power deployments"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_caded3fdbf334866aba58f893df94862:3\"]",
+          "created_at": "2026-09-29T09:28:16.480528Z",
+          "dedupe_key": "244ce09d870dfafea26b6dc1ac03179321f45a74730d00ec2759b444a05b4f6c",
+          "entities": [
+            "Crusoe",
+            "Bergen",
+            "Reciprocating gas engines",
+            "U.S. data centers"
+          ],
+          "occurrence_date": "2026-09-29",
+          "originating_node": "W3",
+          "proposition": "Crusoe agreed to procure approximately 750 MW of Bergen reciprocating gas engines for on-site generation at multiple U.S. data-center sites.",
+          "provisional_event_id": "E48",
+          "subject_time": "Crusoe multi-site U.S. data-center generation program"
+        },
+        {
+          "assertion_state": "PLANNED",
+          "candidate_id": "[\"runtime-v2-msg:std_caded3fdbf334866aba58f893df94862:4\"]",
+          "created_at": "2026-09-29T09:28:16.486765Z",
+          "dedupe_key": "4083803beac1ea57dc9ce43f579f83c45782e380d18114bbed91dd62d51c3dbb",
+          "entities": [
+            "GE Vernova",
+            "Siemens Energy",
+            "Greenville, South Carolina",
+            "Charlotte, North Carolina",
+            "Gas turbines"
+          ],
+          "occurrence_date": "2026-09-29",
+          "originating_node": "W3",
+          "proposition": "GE Vernova plans to invest $160 million to expand its Greenville, South Carolina factory by 2028 and add 650 workers, while Siemens Energy plans to restart its Charlotte, North Carolina factory by 2028.",
+          "provisional_event_id": "E49",
+          "subject_time": "U.S. gas-turbine manufacturing expansion through 2028"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_caded3fdbf334866aba58f893df94862:5\"]",
+          "created_at": "2026-09-29T09:28:16.492879Z",
+          "dedupe_key": "2c87bd61494f036894d54daf790109e066b1c815f5d3fa2c2a65f1e86065b207",
+          "entities": [
+            "Rocky Mountain Institute",
+            "United States",
+            "Virtual power plants",
+            "Batteries",
+            "Hybrid resources",
+            "Grid enhancements"
+          ],
+          "occurrence_date": "2026-09-29",
+          "originating_node": "W3",
+          "proposition": "The Rocky Mountain Institute stated that near-term alternatives including virtual power plants, batteries, clean-power repowering, hybrid resources, grid enhancements, and energy efficiency could meet nearly all projected near-term U.S. load growth.",
+          "provisional_event_id": "E50",
+          "subject_time": "Near-term U.S. electricity-load growth"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_15f7297e163044719e7ab380a5c0ef6a",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-09-29T09:28:16.519846+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-29",
+            "delivery_failure": null,
+            "direction": "SHORT",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_a4f31c72e9f74b9793cb8f53f26ec1d4",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-29T09:28:17.030768Z"
+              },
+              "case_id": "case_15f7297e163044719e7ab380a5c0ef6a",
+              "direction": "SHORT",
+              "entry_reason": "IBKR_201: Order rejected - reason:We are unable to accept your order. Your Available Funds are in sufficient to cover the change in the <br>account's margin requirements if this order executes. In order to obtain the desired position your Equity with<br> Loan Value [17491.98 USD] must exceed the new total Initial Margin of  [20656.49 USD].",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_15f7297e163044719e7ab380a5c0ef6a",
+              "execution_reason_codes": [
+                "IBKR_201: Order rejected - reason:We are unable to accept your order. Your Available Funds are in sufficient to cover the change in the <br>account's margin requirements if this order executes. In order to obtain the desired position your Equity with<br> Loan Value [17491.98 USD] must exceed the new total Initial Margin of  [20656.49 USD]."
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_15f7297e163044719e7ab380a5c0ef6a",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_e1d7c65e0656af2e6c4923b1"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-29T09:28:16.519846Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "IBKR_201: Order rejected - reason:We are unable to accept your order. Your Available Funds are in sufficient to cover the change in the <br>account's margin requirements if this order executes. In order to obtain the desired position your Equity with<br> Loan Value [17491.98 USD] must exceed the new total Initial Margin of  [20656.49 USD]."
+        ],
+        "executor_execution_record_exists": true,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_fbd4812e4c2044e890f9967655191ceb",
+      "ticker": "BE",
+      "case_id": "case_fbd4812e4c2044e890f9967655191ceb",
+      "intent_released_at_utc": "2026-09-29T13:10:15.461558+00:00",
+      "intent_status": "DELIVERY_FAILED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_6cf1d0af67a54338a4a1449007cbc51d",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Oracle",
+              "New Mexico AI data center",
+              "Force majeure"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Oracle declared a force-majeure notice citing potential delays in securing power for an AI data center in New Mexico.",
+            "subject_time": "Current New Mexico AI data-center power procurement"
+          },
+          {
+            "assertion_state": "EXPECTED",
+            "entities": [
+              "Oracle",
+              "New Mexico AI data center",
+              "Power procurement"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Oracle's New Mexico AI data center could be delayed by up to one year because of power-procurement delays.",
+            "subject_time": "Potential delay of up to one year"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Meta",
+              "Beignet Investor",
+              "Senior secured notes"
+            ],
+            "occurrence_date": "2026-09-28",
+            "proposition": "Beignet Investor's $27 billion of 6.581% senior secured notes maturing in 2049 traded at approximately 91 cents on the dollar, with yields reaching 7.55% and spreads around 230 basis points over Treasuries.",
+            "subject_time": "September 28, 2026 bond trading"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Meta",
+              "Big Tech",
+              "Credit-default swaps"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Meta's credit-default-swap rates rose above their July peak to nearly 100 basis points, while most Big Tech CDS rates reached record levels.",
+            "subject_time": "September 29, 2026 AI-credit market conditions"
+          }
+        ],
+        "expert_trade": {
+          "direction": "SHORT",
+          "evaluated": true,
+          "expectation_delta": "Oracle has now issued a force-majeure notice citing potential delays in securing power for a New Mexico AI data center, with the facility potentially delayed by up to one year. Relative to the prior 90-day Bloom deployment expectation, this materially lowers the near-term probability and timing of Oracle/Bloom delivery, acceptance, and revenue recognition. The notice does not establish permanent volume loss, and the article does not name Bloom, but the same-customer and New Mexico context makes the timing shock directly relevant; worsening AI-project credit conditions add financing risk.",
+          "prior_expectation": "Immediately before publication, the relevant BE baseline included Oracle using Bloom fuel cells at its New Mexico data center and Bloom's stated commitment to provide power within 90 days. BE's high FY2026 outlook and valuation required AI and large-load projects to convert into delivered and accepted MW, revenue, and cash flow on relatively near-term schedules, even though exact acceptance timing remained uncertain.",
+          "reason": "TRADE—SHORT. A direct hyperscaler force-majeure warning creates a non-trivial negative timing surprise against BE's near-term AI deployment and acceptance assumptions. Delayed project realization affects revenue, cash conversion, and the duration supporting BE's valuation. Conditional wording and some uncertainty over exact project identity reduce conviction, but do not eliminate the directional expectation gap.",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "E16 already recorded Oracle's New Mexico data-center relationship with Bloom Energy, including Bloom's commitment to provide power within 90 days. This message adds the previously unrecorded Oracle force-majeure notice citing power-procurement risk and a potential delay of up to one year, alongside new AI-credit stress indicators.",
+          "reference_ids": [
+            "E16"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No current Policy is matched. The Oracle notice uses conditional language about potential power delays and does not confirm a new commissioning date, cancellation, scope reduction, or Bloom-specific contract change required by the relevant trigger boundaries. The credit-market observations likewise do not satisfy a Bloom project criterion."
+        },
+        "w3_case_id": "w3_6cf1d0af67a54338a4a1449007cbc51d"
+      },
+      "trade_direction": "SHORT",
+      "case_summary": {
+        "case_id": "case_fbd4812e4c2044e890f9967655191ceb",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-29T13:10:15.610312Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 433.008399
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-29T13:03:02.601913Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2609076,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-29",
+        "source": {
+          "binding_id": "BE:reuters_site_search",
+          "kind": "crawler",
+          "name": "Reuters Site Search",
+          "source_id": "reuters_site_search"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_447744fd0f5f418aa7252c3e8ae890bb",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Are AI credit cracks a warning, or a 'buy' signal?"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "DELIVERY_FAILED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "READY",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-29T13:03:02.601913Z",
+        "completed_at": "2026-09-29T13:10:15.610312Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E26",
+            "E29",
+            "E16"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "当前消息核心事实包括：Beignet债券价格跌至91美分/收益率7.55%/利差230bps；Meta CDS突破7月峰值接近100bps、多数Big Tech CDS创纪录；Oracle发布force majeure通知称New Mexico数据中心供电可能延迟一年；美联储开始加息。已加载E26/E29/E16的事实分别涉及变压器交付周期、$6.4B融资包、Oracle/Nebius商业部署及1.2 GW容量，均未覆盖上述AI债务市场压力指标、CDS异常或force majeure通知等新事实。",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [
+            "pol_9795c572511e9fcc514e",
+            "pol_af4c18c9797e6d5a513f",
+            "pol_c76a98154cb93c99f2b3"
+          ],
+          "reason": "消息披露Oracle已就新墨西哥AI数据中心（即Project Jupiter）发出force majeure通知，称'securing power'存在延迟，项目可能被推迟至多一年，并提及Blue Owl为该项目另一 backers。这一具名项目的电力获取延迟事实与pol_9795c572511e9fcc514e（interconnection/fuel readiness失败致暂停或无法energize）、pol_af4c18c9797e6d5a513f（重大锚定项目验收/交接从已公布窗口推迟至少一个报告季度）及pol_c76a98154cb93c99f2b3（互联/送电阶段firm MW限制使全部设计容量不能按原窗口使用）的criterion存在直接、实质性的潜在触发关系；当前精简信息尚不足以确定延迟的具体根因是否已满足各criterion的最终边界，应召回进入完整判定。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息为Reuters评论专栏，聚焦AI信用风险（Beignet债券利差、CDS）。Oracle提及为附带一笔：\"force majeure\"通知援引\"potential delays in securing power\"，属条件性表述（\"could now be delayed by up to a year\"），未确认permit/interconnection/fuel gate实际失败、未公布新commissioning日期或scope/cancel，不满足pol_9795c5的trigger boundary。无任何项目公布验收窗口后移或撤回，不满足pol_af4c18c9。Project Jupiter仅作为Blue Owl背书的背景提及，无互联协议、firm MW或强制削减信息，不满足pol_c76a98。三个Candidate均NO HIT。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Oracle",
+                "New Mexico AI data center",
+                "Force majeure"
+              ],
+              "occurrence_date": "2026-09-29",
+              "proposition": "Oracle declared a force-majeure notice citing potential delays in securing power for an AI data center in New Mexico.",
+              "subject_time": "Current New Mexico AI data-center power procurement"
+            },
+            {
+              "assertion_state": "EXPECTED",
+              "entities": [
+                "Oracle",
+                "New Mexico AI data center",
+                "Power procurement"
+              ],
+              "occurrence_date": "2026-09-29",
+              "proposition": "Oracle's New Mexico AI data center could be delayed by up to one year because of power-procurement delays.",
+              "subject_time": "Potential delay of up to one year"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Meta",
+                "Beignet Investor",
+                "Senior secured notes"
+              ],
+              "occurrence_date": "2026-09-28",
+              "proposition": "Beignet Investor's $27 billion of 6.581% senior secured notes maturing in 2049 traded at approximately 91 cents on the dollar, with yields reaching 7.55% and spreads around 230 basis points over Treasuries.",
+              "subject_time": "September 28, 2026 bond trading"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Meta",
+                "Big Tech",
+                "Credit-default swaps"
+              ],
+              "occurrence_date": "2026-09-29",
+              "proposition": "Meta's credit-default-swap rates rose above their July peak to nearly 100 basis points, while most Big Tech CDS rates reached record levels.",
+              "subject_time": "September 29, 2026 AI-credit market conditions"
+            }
+          ],
+          "expert_trade": {
+            "direction": "SHORT",
+            "evaluated": true,
+            "expectation_delta": "Oracle has now issued a force-majeure notice citing potential delays in securing power for a New Mexico AI data center, with the facility potentially delayed by up to one year. Relative to the prior 90-day Bloom deployment expectation, this materially lowers the near-term probability and timing of Oracle/Bloom delivery, acceptance, and revenue recognition. The notice does not establish permanent volume loss, and the article does not name Bloom, but the same-customer and New Mexico context makes the timing shock directly relevant; worsening AI-project credit conditions add financing risk.",
+            "prior_expectation": "Immediately before publication, the relevant BE baseline included Oracle using Bloom fuel cells at its New Mexico data center and Bloom's stated commitment to provide power within 90 days. BE's high FY2026 outlook and valuation required AI and large-load projects to convert into delivered and accepted MW, revenue, and cash flow on relatively near-term schedules, even though exact acceptance timing remained uncertain.",
+            "reason": "TRADE—SHORT. A direct hyperscaler force-majeure warning creates a non-trivial negative timing surprise against BE's near-term AI deployment and acceptance assumptions. Delayed project realization affects revenue, cash conversion, and the duration supporting BE's valuation. Conditional wording and some uncertainty over exact project identity reduce conviction, but do not eliminate the directional expectation gap.",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "E16 already recorded Oracle's New Mexico data-center relationship with Bloom Energy, including Bloom's commitment to provide power within 90 days. This message adds the previously unrecorded Oracle force-majeure notice citing power-procurement risk and a potential delay of up to one year, alongside new AI-credit stress indicators.",
+            "reference_ids": [
+              "E16"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "No current Policy is matched. The Oracle notice uses conditional language about potential power delays and does not confirm a new commissioning date, cancellation, scope reduction, or Bloom-specific contract change required by the relevant trigger boundaries. The credit-market observations likewise do not satisfy a Bloom project criterion."
+          },
+          "w3_case_id": "w3_6cf1d0af67a54338a4a1449007cbc51d"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "c06ba46f1dcf93ce11da43bab00354c76a1e28a3694c3c5edb75e49240cdf228",
+            "content_type": "text/plain",
+            "sha256": "85bc9f2b18941d73194dc1dafdca27daeaa995a08520eb68ebdf2a4e22da1fae",
+            "size_bytes": 5151
+          },
+          "case": {
+            "case_id": "case_fbd4812e4c2044e890f9967655191ceb",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-29T13:00:21.701713Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-29T13:03:01.857295Z",
+          "revision": 1,
+          "row_revision": 2446236,
+          "source": {
+            "binding_id": "BE:reuters_site_search",
+            "kind": "crawler",
+            "name": "Reuters Site Search",
+            "source_id": "reuters_site_search"
+          },
+          "source_published_at": "2026-09-29T16:00:00Z",
+          "standard_message_id": "std_8152c48eef2c46c1a2ac2d1956995419",
+          "stream_item_id": "stream_447744fd0f5f418aa7252c3e8ae890bb",
+          "stream_offset": 300,
+          "stream_published_at": "2026-09-29T13:03:01.862519Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Are AI credit cracks a warning, or a 'buy' signal?"
+          },
+          "url": "https://www.reuters.com/commentary/reuters-open-interest/are-ai-credit-cracks-warning-or-buy-signal-2026-09-29/",
+          "body_text": "ORLANDO, Florida, Sept 29 (Reuters) - \"Hyperion\" and \"Beignet\" are two words many investors may not be familiar with. But they could soon become symbolic of the excesses of the borrowing and spending binge driving the record-breaking US artificial intelligence build-out.\n\n\"Hyperion\" is the name of Meta Platforms' (META.O) AI data center facility under construction in Richland ​Parish, Louisiana. It is the Facebook owner’s largest data center project with 5 gigawatts of compute capacity, and has absorbed more than $50 billion in investment.\n\nBonds sold last year ‌to fund the project were issued through a joint venture in a vehicle called \"Beignet Investor,\" named after the famous New Orleans pastry.\n\nAs Meta's stake is a minority one at 20%, the project's liabilities are off-balance sheet, just like some $3 trillion of other financing and leasing structures that Nvidia (NVDA.O), Broadcom (AVGO.O) and hyperscalers such as Amazon (AMZN.O) and Alphabet (GOOGL.O) are keeping off their balance sheets, according to Morgan Stanley.\n\nThe Beignet bonds – $27 billion of 6.581% senior secured notes maturing in 2049 – were given ​an A+ credit rating at issuance by S&P Global. However, the ratings agency also warned that \"substantial credit risk\" could pass to Meta during both the facility’s construction and operation phases.\n\nThat risk ​may be materializing, as the price of these bonds is now sliding fast. On Monday, they traded at 91 cents on the dollar, pushing the ⁠yield as high as 7.55%. That's around 230 basis points above Treasuries, a wider spread than the 185 bps at launch, but narrower than the record-wide 255 bps in July. So, no cause ​for panic, but it is one of many signs that cracks may be beginning to appear in parts of the AI financing edifice.\n\nCredit default swap (CDS) rates, the cost of insuring against default, for firms in ​the AI ecosystem also appear to be ringing alarm bells. Meta’s on Monday climbed above July's peak and is close to 100 basis points – and most of Big Tech's CDS are also now at record levels.\n\nOn top of this, Oracle (ORCL.N) only a few days ago declared a \"force majeure\" notice citing potential delays in securing power for an AI data center in New Mexico, which could now be delayed by up to a year. Coincidentally, one of the ​other backers in Project Jupiter is again Blue Owl.\n\nOf course, Meta and its peers are highly unlikely to default or go bust given the strength of their underlying businesses. This begs the question: is the ​current selloff in these companies' debt logical given the scale of borrowing relative to expected revenue, or are these bonds a “screaming buy”?\n\nWhere you fall on that question – as ever with the AI story – boils down to ‌whether you ⁠believe the returns will eventually outstrip the outlay, and how long you are prepared to wait.\n\nThe enormous investments in the AI buildout are well-documented by now. Estimates vary, but around $1 trillion in AI capital expenditure (capex) is expected this year and around $1.2 trillion set for next year, with economists at Oxford Economics tallying up cumulative projected AI investment of around $3.8 trillion from 2024 to 2028. A significant portion of this is now being debt-financed, as tech firms have burned through their large cash piles.\n\nGiven these eye-popping outlays, analysts at Goldman Sachs estimate that the hyperscalers will need to generate annual AI revenues of roughly $300 billion ​in the next few years to break even. ​Assuming hyperscalers are targeting a return on investment ⁠of 15%-20%, they would need to make $570-$800 billion of additional profit, Oxford Economics reckons.\n\n\"This is hard to square with our estimates of the additional GDP that AI will create,\" the firm’s economists wrote last week. They estimate AI will boost US GDP by $850 billion by 2032. So, at a 15% return ​on investment, the hyperscalers – just a handful of firms – would need to capture around two-thirds of this additional GDP, or almost all of it ​if we assume a 20% ⁠rate of return.\n\nAs Oxford Economics noted, \"This seems very unlikely.\"\n\nMeanwhile, AI borrowing and investing continues. Hyperscalers have issued around $250 billion of debt this year, and that total is expected to rise sharply next year, even as the cost of doing so also keeps increasing. The Federal Reserve has started to hike its policy rate, and Treasury yields are currently the highest since before the global financial crisis. The interest burden on hyperscalers' borrowings – ⁠both on- and ​off-balance sheet – is getting heavier.\n\nHow heavy is too heavy? The fate of Meta’s “deep-fried” debt deal could offer some clues.\n\n(The opinions ​expressed here are those of the author, a columnist for Reuters)\n\nEnjoying this column? Check out Reuters Open Interest (ROI), your essential new source for global financial commentary. Follow ROI on LinkedIn, and X.\n\nAnd listen to the Morning Bid daily podcast on Apple, ​Spotify, or the Reuters app. Subscribe to hear Reuters journalists discuss the biggest news in markets and finance seven days a week."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_8152c48eef2c46c1a2ac2d1956995419:0\"]",
+          "created_at": "2026-09-29T13:10:15.423509Z",
+          "dedupe_key": "75b0512d93cfffa740510deb4c8576e7fae31f5163c5afbbdccb8e102479c948",
+          "entities": [
+            "Oracle",
+            "New Mexico AI data center",
+            "Force majeure"
+          ],
+          "occurrence_date": "2026-09-29",
+          "originating_node": "W3",
+          "proposition": "Oracle declared a force-majeure notice citing potential delays in securing power for an AI data center in New Mexico.",
+          "provisional_event_id": "E95",
+          "subject_time": "Current New Mexico AI data-center power procurement"
+        },
+        {
+          "assertion_state": "EXPECTED",
+          "candidate_id": "[\"runtime-v2-msg:std_8152c48eef2c46c1a2ac2d1956995419:1\"]",
+          "created_at": "2026-09-29T13:10:15.430666Z",
+          "dedupe_key": "4251d68b5b182f1b9741ef587c62b4cce80ce803ce1e13af22429ee5e962c2e2",
+          "entities": [
+            "Oracle",
+            "New Mexico AI data center",
+            "Power procurement"
+          ],
+          "occurrence_date": "2026-09-29",
+          "originating_node": "W3",
+          "proposition": "Oracle's New Mexico AI data center could be delayed by up to one year because of power-procurement delays.",
+          "provisional_event_id": "E96",
+          "subject_time": "Potential delay of up to one year"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_8152c48eef2c46c1a2ac2d1956995419:2\"]",
+          "created_at": "2026-09-29T13:10:15.437516Z",
+          "dedupe_key": "742ce564f43877805b0a887737a4231e4c71b1e265fb9b9b84733a1b5a8947b2",
+          "entities": [
+            "Meta",
+            "Beignet Investor",
+            "Senior secured notes"
+          ],
+          "occurrence_date": "2026-09-28",
+          "originating_node": "W3",
+          "proposition": "Beignet Investor's $27 billion of 6.581% senior secured notes maturing in 2049 traded at approximately 91 cents on the dollar, with yields reaching 7.55% and spreads around 230 basis points over Treasuries.",
+          "provisional_event_id": "E97",
+          "subject_time": "September 28, 2026 bond trading"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_8152c48eef2c46c1a2ac2d1956995419:3\"]",
+          "created_at": "2026-09-29T13:10:15.444348Z",
+          "dedupe_key": "63c8253b31e4ca0637845166e76aea8acfbb65e414ea9b956c6685e7cd2f141a",
+          "entities": [
+            "Meta",
+            "Big Tech",
+            "Credit-default swaps"
+          ],
+          "occurrence_date": "2026-09-29",
+          "originating_node": "W3",
+          "proposition": "Meta's credit-default-swap rates rose above their July peak to nearly 100 basis points, while most Big Tech CDS rates reached record levels.",
+          "provisional_event_id": "E98",
+          "subject_time": "September 29, 2026 AI-credit market conditions"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_fbd4812e4c2044e890f9967655191ceb",
+            "status": "DELIVERY_FAILED",
+            "released_at": "2026-09-29T13:10:15.461558+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-29",
+            "delivery_failure": {
+              "code": "PROFILE_VALIDATION_FAILED",
+              "detail": "旧版 v2-delivery 的 ExecutionProfile 不支持冻结的 SHARED_CYCLE Profile：仍要求 target_notional_usd，且拒绝新增仓位参数。",
+              "status": "FAILED"
+            },
+            "direction": "SHORT",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_6cf1d0af67a54338a4a1449007cbc51d",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "case_id": "case_fbd4812e4c2044e890f9967655191ceb",
+              "direction": "SHORT",
+              "entry_reason": "PROFILE_VALIDATION_FAILED: 旧版 v2-delivery 的 ExecutionProfile 不支持冻结的 SHARED_CYCLE Profile：仍要求 target_notional_usd，且拒绝新增仓位参数。",
+              "entry_result": null,
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_fbd4812e4c2044e890f9967655191ceb",
+              "execution_reason_codes": [
+                "DELIVERY_FAILED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "REJECTED",
+              "intent_id": "trade:case_fbd4812e4c2044e890f9967655191ceb",
+              "intent_status": "DELIVERY_FAILED",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-29T13:10:15.461558Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "DELIVERY_FAILED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "DELIVERY_FAILED"
+        ],
+        "executor_execution_record_exists": false,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    }
+  ]
+}

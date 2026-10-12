@@ -1,0 +1,37 @@
+{
+  "policy_id": "pol_5518203823a04ab398ca6f065e2695e5",
+  "title": "生产AI训练检查点在性能SSD层的留存与缩减",
+  "ref": [
+    "context/document3/v21/d2/shell-0001.json#/units/3",
+    "output/work/v21/discovery/S0001.late.jsonl#L1",
+    "https://aws.amazon.com/blogs/storage/architecting-scalable-checkpoint-storage-for-large-scale-ml-training-on-aws/",
+    "https://aws.amazon.com/blogs/machine-learning/accelerate-your-model-training-with-managed-tiered-checkpointing-on-amazon-sagemaker-hyperpod/",
+    "https://aws.amazon.com/blogs/aws/introducing-checkpointless-and-elastic-training-on-amazon-sagemaker-hyperpod/",
+    "https://cloud.google.com/blog/products/storage-data-transfer/next26-storage-announcements?e=48754805",
+    "https://arxiv.org/abs/2010.08679"
+  ],
+  "transmission": "大模型训练检查点是体量大且频繁写入的数据，性能SSD负责快速保存和恢复，长期留存的旧版本可另在较低成本层。稳态物理SSD容量受每份检查点大小、同层保留的版本数及压缩/去重影响；写入强度则主要受保存频率、增量格式和重复写入影响，两者不能互相代替。AWS已提供分层检查点的频率/留存配置和checkpointless路线，Google已提供高吞吐训练存储，说明这些选择现实存在，但产品能力不是主要训练运营者已改变全生产集群的留存政策。若运营者把跨训练阶段可复用版本留在性能SSD层，或反向只留即时恢复所需版本并实际清除旧副本，可能改变美光9650等数据中心性能SSD可服务的容量机会；须把它同KV闪存层是否首次进入推理路径、以及QLC/HAMR容量层介质选择分开，不能从原始生成字节直接推出美光订单。",
+  "match_scope": "召回大型模型训练运营者、云训练平台和存储系统商对生产训练检查点的活跃层保留期、版本数、自动删除、压缩去重、增量保存及性能SSD层容量安排的消息。例如把短期容灾检查点变成跨阶段可回读的SSD常驻版本，或把旧版本从活跃SSD层自动清除，均为非穷举召回示例；命中仍依Conditions。单纯新增训练任务、发布存储产品、对象存储逻辑字节增长或把旧检查点搬到归档层，不自动说明净物理SSD位数。",
+  "activation_conditions": [
+    {
+      "condition_id": "C1",
+      "decision": "LONG",
+      "trigger_layer": "MIDDLE",
+      "criterion": "主要AI训练运营者正式改变其主力生产训练集群的检查点生命周期：把原来在性能SSD活跃层只为近期故障恢复而短留的检查点，扩为跨训练阶段或后续实验可反复读取的多版本常驻集合，并规定这些额外版本继续占用性能SSD物理容量，而不是仅转存到冷归档。",
+      "calibration": {
+        "reference_state": "截至2026-10-06，D2只支持性能SSD参与训练及数据路径的扩展，不知道某运营者具体检查点版本数或物理盘位。AWS的分层检查点服务允许各层自设频率和保留策略，亦已有checkpointless功能；Google Cloud Rapid Bucket等支持高吞吐检查点。它们是可用选项，不能视作所有生产训练已长期保留多个闪存版本。未来消息须说明相同运营者旧的短期活跃层规则及新的跨阶段常驻规则。",
+        "trigger_boundary": "从只保留近期恢复点转为主力生产训练中的多个可回读版本长期占用性能SSD，已经把活跃闪存从暂存恢复层改为版本库，扩大稳态物理容量机会；无需再等美光销售确认。只提高检查点逻辑版本数但由去重共享同一物理副本、将旧版本搬到HDD/归档、或只增加原始训练字节而未改变SSD驻留规则，不满足。留存变长本身不推定每秒写入量提高。"
+      }
+    },
+    {
+      "condition_id": "C2",
+      "decision": "SHORT",
+      "trigger_layer": "MIDDLE",
+      "criterion": "主要AI训练运营者对其主力生产训练集群实施新的性能SSD活跃层检查点删除或物理去重政策，把原本同时占盘的多个历史检查点版本收敛为仅近期恢复所需的物理副本，并清除已存旧版本，使同一训练范围的稳态物理SSD占用下降，而不是仅调整云存储计费或逻辑显示容量。",
+      "calibration": {
+        "reference_state": "训练检查点需要快速恢复，AWS等平台已支持按层级设保留和删除规则；D2没有给出某客户当前SSD实际保留份数，也没有总压缩率。现有美光Gen6量产和云训练存储扩展属于产品/平台现实，尚不意味着客户将历史活跃版本全面缩减。新政策须提供该运营者旧、新活跃层版本/物理占盘状态或明确的生产层净物理容量下降。",
+        "trigger_boundary": "同一主力生产训练范围由多个占用性能SSD的历史版本转为只保留近期恢复副本，并实际释放旧版本物理位，已削减该层稳态容量机会，不必等美光季度收入。只把对象标为已过期却仍软删除保留、仅改账单类别或转到同一SSD池的别处、以及新增应用填满释放空间但未减少该数据类占盘的报道，不足以单独证明总SSD采购下降；本条件判断的是既有检查点负载的净物理容量机会。"
+      }
+    }
+  ]
+}

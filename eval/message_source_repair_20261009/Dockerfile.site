@@ -1,0 +1,3 @@
+FROM doxagent-site-access:source-recovery-20261006-r3
+COPY site_strategy/ /app/src/doxagent/site_strategy/
+LABEL io.doxagent.source-storage-recovery="20261009-r1"

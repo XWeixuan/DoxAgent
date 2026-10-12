@@ -1,0 +1,18 @@
+{
+  "alias": "O439",
+  "title": "sections 1 — metadata",
+  "content": {
+    "section": "EUV lithography",
+    "heading_match": "EUV lithography",
+    "start_offset": 77414,
+    "end_offset": 157430,
+    "full_text_chars": 80000,
+    "returned_chars": 40000,
+    "truncated": true,
+    "match_quality": "substantive_body"
+  },
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

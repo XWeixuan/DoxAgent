@@ -1,0 +1,4586 @@
+{
+  "name": "公司资金与股东权益",
+  "scope": "美光公司整体的经营收现、营运资本和税费结算、资本再投资后现金供给、现金与投资资产、融资与偿付结构，以及股息、回购、股权发行和薪酬稀释形成的股东经济权益。共同背景为财务报表、资金管理、付款义务、融资资助条件和股东资本配置。",
+  "boundary": "公司总量现金形成、再投资支付和补助实收、流动性缓冲、投资资产、债务租赁与授信、资金可用性、股东分配及股本结构由本域深化。现金生成对象负责资金形成过程，流动性与融资对象负责资产负债存量和偿付能力，股东权益对象负责分配与每股权益。制造项目资产、工艺、投入和资本回报归制造域，客户保证金及信用支持的具体合同条款和返还期限归战略客户供给与资金保障关系，知识产权权利和争议归知识产权与许可关系。",
+  "ref": [
+    "D1-O31",
+    "D1-O44",
+    "D1-O10",
+    "D1-O11",
+    "D1-O96",
+    "D1-O9",
+    "D1-O57",
+    "D1-O12",
+    "D1-O58",
+    "D1-O6",
+    "D1-O4",
+    "D1-O3",
+    "D1-O104"
+  ],
+  "units": [
+    {
+      "name": "经营与再投资后现金生成",
+      "scope": "美光经营活动收现、应收回款、库存与采购占用、应付和薪酬结算、税费及其他经营付款，以及公司整体资本再投资支付和相关补助实收后的现金规模、波动、形成节奏与可支配性。",
+      "horizon": "季度收付与营运资本周期、年度现金生成周期，延伸至多年再投资周期。",
+      "ref": [
+        "D1-O31",
+        "D1-O44",
+        "D1-O10",
+        "D1-O11",
+        "D1-O3",
+        "D1-O6",
+        "https://www.sec.gov/Archives/edgar/data/723125/000072312526000018/a2026q4ex991-pressrelease.htm",
+        "D1-O57",
+        "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+        "D1-O9",
+        "https://www.iras.gov.sg/media/docs/default-source/e-tax/e-tax-guide-mtt-and-dtt.pdf",
+        "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+        "https://www.irs.gov/forms-pubs/correction-to-the-2025-instructions-for-form-3468-of-the-applicability-of-the-35-rate-on-line-1c-in-part-iv-advanced-manufacturing-investment-credit-under-section-48d",
+        "https://focustaiwan.tw/business/202609110009",
+        "https://investors.netlist.com/news/netlist-and-micron-enter-patent-license-and-settlement-agreements/c8615305-0590-43e4-bcb2-fe05e120f947",
+        "D1-O103",
+        "https://www.microsoft.com/en-us/investor/earnings/fy-2026-q4/press-release-webcast",
+        "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+        "https://www.anthropic.com/claude-sonnet-5-5",
+        "https://blogs.nvidia.com/blog/nvidia-unlocks-ai-compute-at-scale-capital-partners-to-power-ai-infrastructure-buildout/",
+        "https://www.oecd.org/content/dam/oecd/en/topics/policy-sub-issues/global-minimum-tax/side-by-side-package.pdf",
+        "D1-O88",
+        "https://news.agc.org/workforce-development/construction-workforce-shortages-remain-acute-despite-soft-market-conditions-as-data-centers-strain-labor-supply-survey-finds/",
+        "https://www.irs.gov/instructions/i3468",
+        "https://www.gao.gov/assets/gao-26-109121.pdf"
+      ],
+      "state": {
+        "parameters": [
+          {
+            "name": "合并经营现金流",
+            "definition": "合并经营活动现金净额；不含列为融资流的客户保证金，不等同税后利润。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O10",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "合并营业收入",
+            "definition": "交付确认的合并销售额，是经营收现来源而非实收款。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O11",
+              "D1-O57",
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "下一季度收入区间",
+            "definition": "管理层下一季度合并营业收入预测区间，不是同目标旧指引的修订。",
+            "value_type": "RANGE",
+            "ref": [
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "GAAP毛利率",
+            "definition": "合并毛利占销售额；价格、成本和组合共同决定经营利润平台。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O11",
+              "D1-O57",
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "GAAP营业利润率",
+            "definition": "合并营业利润占销售额，保留费用对毛利转现来源的影响。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O11",
+              "D1-O57",
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "合并净利润",
+            "definition": "现金流桥起点，GAAP税后净利润，不是现金净额。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O11",
+              "D1-O57",
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "折旧摊销加回",
+            "definition": "现金流量表折旧及无形资产摊销加回，不能当作本期设备付款。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O10",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "现金流桥股权薪酬加回",
+            "definition": "现金流表调整额；与损益表股权薪酬费用口径不同，不因非现金而无经济成本。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O10",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "应收变动现金贡献",
+            "definition": "现金流桥Receivables变动，负值为吸收现金；包含非贸易应收，不能与贸易应收余额增量直接等同。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O10",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "库存变动现金贡献",
+            "definition": "合并库存变动对经营现金贡献，负值为吸收。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O10",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "应付及应计变动现金贡献",
+            "definition": "现金流桥，主要受税费与薪酬应计变化影响；不等于供应商永久融资。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O10",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "其他流动负债现金贡献",
+            "definition": "经营现金桥其他流动负债的本期贡献。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O10",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "其他非流动负债现金贡献",
+            "definition": "经营现金桥；公司指出增加主要关联Pillar Two非流动应付税款，不含融资活动客户保证金。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O10",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "其他经营现金桥调整",
+            "definition": "现金流表Other净项。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O10",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "贸易应收净额",
+            "definition": "客户销售贸易应收；与总Receivables和现金桥的口径分开。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O31",
+              "D1-O10",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "总应收余额",
+            "definition": "资产负债表Receivables，含贸易、政府激励、税款和其他应收。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O9",
+              "D1-O10"
+            ]
+          },
+          {
+            "name": "库存余额",
+            "definition": "合并账面库存，独立于客户库存和采购承诺。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O9",
+              "D1-O10"
+            ]
+          },
+          {
+            "name": "应付及应计余额",
+            "definition": "总应付及应计费用，包含设备、税款及人员应计。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O9",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "采购应付余额",
+            "definition": "Accounts payable，不含单列PP&E应付款。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "设备资本应付款",
+            "definition": "已计提PP&E相关应付款，是资本付款管线而非本期现金capex。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "流动应计所得及其他税款",
+            "definition": "应付及应计中的所得及其他税款，不能与仅所得税的非流动税款合称同口径税款。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "应计薪酬福利",
+            "definition": "应付及应计中的工资、薪酬及福利；不能推定全为一次性奖金。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "客户价格调整及退货应付估计",
+            "definition": "其他流动负债中向客户应付对价估计，含价格调整和退货，不是已发生全部退款。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "所得税现金净支付",
+            "definition": "已支付所得税扣退款，按支付额正值记录；不含未付税项。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "GAAP所得税费用",
+            "definition": "税收损益计提，不等同现金支出。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O11",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "GAAP有效税率",
+            "definition": "所得税费用除税前利润；不能直接用于预测单季度现金税率。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O57",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "非流动应付所得税",
+            "definition": "合并其他非流动负债中的所得税应付额，不是递延所得税会计负债；到期分布未披露。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "新加坡QDMTT计提",
+            "definition": "FY2026新加坡合格国内最低补足税费用，已计提不等于已付或全额等于非流动税款。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "新加坡最低税结算制度",
+            "definition": "影响美光已计提税款的现行申报及付款制度；制度时限不是公司的实付日期。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.iras.gov.sg/media/docs/default-source/e-tax/e-tax-guide-mtt-and-dtt.pdf",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "税款实际支付时间表",
+            "definition": "公司按税种与辖区确认的未付税款结算日历；仅一般制度期限不能替代该测量。",
+            "value_type": "TIME",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "https://www.iras.gov.sg/media/docs/default-source/e-tax/e-tax-guide-mtt-and-dtt.pdf"
+            ]
+          },
+          {
+            "name": "PP&E现金毛支付",
+            "definition": "合并购建固定资产现金，不扣补助或资产出售；不是会计新增资产。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O10",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "资本政府激励实收",
+            "definition": "列投资现金流的政府激励收款，不是全部已确认税抵免或授予上限。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O44",
+              "D1-O10"
+            ]
+          },
+          {
+            "name": "PP&E出售现金收入",
+            "definition": "公司调整后FCF对账中的资产出售现金。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O44",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000018/a2026q4ex991-pressrelease.htm"
+            ]
+          },
+          {
+            "name": "扣激励后PP&E现金支付",
+            "definition": "计算：PP&E毛支付减激励实收，不减资产出售；FY26=30712-3316。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O44",
+              "D1-O10"
+            ]
+          },
+          {
+            "name": "公司净资本投资现金",
+            "definition": "公司调整口径：PP&E支付减激励及资产出售；FY26=30712-3316-29。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O44",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000018/a2026q4ex991-pressrelease.htm"
+            ]
+          },
+          {
+            "name": "简式再投资后现金",
+            "definition": "计算CFO减PP&E毛支付，不加补助，不扣全部其他投资和融资支付，非FCFF。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O10",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "公司调整后自由现金流",
+            "definition": "CFO减公司净资本投资，包含政府激励及资产出售，不含战略股权投资等其他投资现金使用。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O44",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000018/a2026q4ex991-pressrelease.htm"
+            ]
+          },
+          {
+            "name": "全年净资本付款节奏",
+            "definition": "管理层对FY2027上下半年扣政府补助的PP&E现金支付相对节奏。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "政府激励流动应收",
+            "definition": "已确认的政府激励流动应收，不是已到账资金。",
+            "value_type": "NUMBER",
+            "ref": [
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "政府激励非流动资产",
+            "definition": "政府激励计入其他非流动资产的账面额，与流动应收分别保存。",
+            "value_type": "NUMBER",
+            "ref": [
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "美国制造抵免适用税率",
+            "definition": "48D合格美国财产的制造投资抵免率；2026年前投用适用25%，其他合格财产适用35%，另须满足2026年底前法定开工条件。投用、开工资格与现金兑现不同，不能乘合并全球capex。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.irs.gov/forms-pubs/correction-to-the-2025-instructions-for-form-3468-of-the-applicability-of-the-35-rate-on-line-1c-in-part-iv-advanced-manufacturing-investment-credit-under-section-48d",
+              "https://www.irs.gov/instructions/i3468"
+            ]
+          },
+          {
+            "name": "合同化销售收现基础",
+            "definition": "公司已签可执行多年采购安排的经营覆盖形态，不复制具体单客户条款。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O31",
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "剩余履约义务",
+            "definition": "可执行多年安排按最低承诺数量与最低价格计算的已披露交易价，不是订单现金或完整未来销售；实务简化排除原始期限不超过一年的合同，也排除没有固定价格或价格带、初始对价可变的协议，并非排除所有未来一年可确认收入。",
+            "value_type": "NUMBER",
+            "ref": [
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "履约收入转换窗口",
+            "definition": "剩余履约义务预期确认收入的覆盖期，不等于收款时间表。",
+            "value_type": "STAGE",
+            "ref": [
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "实现价与可售量经营位置",
+            "definition": "公司DRAM/NAND实现价及供给配置的位置，保留现金来源的量价区别。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "贸易应收账龄与实际收款周期",
+            "definition": "贸易应收逾期比例、账龄和账期对应的回款状态；无法用年末应收除爆发增长的收入合成可比DSO。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O10",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "经常性现金薪酬增量",
+            "definition": "已生效薪酬政策下未来经常性现金薪酬增量，区别一次性现金奖励、股权授予及现有应计余额。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://focustaiwan.tw/business/202609110009",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "Netlist季度许可现金付款",
+            "definition": "2026-10-06公告的固定季度付款义务，不是Q4专利许可费用500百万美元的同口径值。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://investors.netlist.com/news/netlist-and-micron-enter-patent-license-and-settlement-agreements/c8615305-0590-43e4-bcb2-fe05e120f947"
+            ]
+          }
+        ],
+        "values": [
+          {
+            "name": "合并经营现金流｜FY2026",
+            "parameter": "合并经营现金流",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 89675.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 17525.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周；previous_value为FY2025，截至2025-08-28，52周，未做周数标准化",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O10",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "Q4经营现金流",
+            "parameter": "合并经营现金流",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 43973.0,
+              "unit": "百万美元"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026 Q4，截至2026-09-03；季度值不与全年值比较",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O44",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000018/a2026q4ex991-pressrelease.htm"
+            ]
+          },
+          {
+            "name": "合并营业收入｜FY2026",
+            "parameter": "合并营业收入",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 133188.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 37378.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周；previous_value为FY2025，截至2025-08-28，52周，未做周数标准化",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O11",
+              "D1-O57",
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "Q4营业收入",
+            "parameter": "合并营业收入",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 54229.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 41456.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026 Q4，截至2026-09-03；previous_value为FY2026 Q3，截至2026-05-28",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O11",
+              "D1-O57",
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "FY2027 Q1收入指引",
+            "parameter": "下一季度收入区间",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "lower": 60000.0,
+              "upper": 63000.0,
+              "unit": "百万美元"
+            },
+            "previous_value": null,
+            "time_scope": "FY2027 Q1，未来季度",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "GAAP毛利率｜FY2026",
+            "parameter": "GAAP毛利率",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 80.7,
+              "unit": "%"
+            },
+            "previous_value": {
+              "number": 39.8,
+              "unit": "%"
+            },
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周；previous_value为FY2025，截至2025-08-28，52周，未做周数标准化",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O11",
+              "D1-O57",
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "Q4 GAAP毛利率",
+            "parameter": "GAAP毛利率",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 86.8,
+              "unit": "%"
+            },
+            "previous_value": {
+              "number": 84.6,
+              "unit": "%"
+            },
+            "time_scope": "FY2026 Q4，截至2026-09-03；previous_value为FY2026 Q3，截至2026-05-28",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O11",
+              "D1-O57",
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "FY2027 Q1 GAAP毛利率指引",
+            "parameter": "GAAP毛利率",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "number": 85.95,
+              "unit": "%"
+            },
+            "previous_value": null,
+            "time_scope": "FY2027 Q1，约数指引",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "GAAP营业利润率｜FY2026",
+            "parameter": "GAAP营业利润率",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 74.6,
+              "unit": "%"
+            },
+            "previous_value": {
+              "number": 26.1,
+              "unit": "%"
+            },
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周；previous_value为FY2025，截至2025-08-28，52周，未做周数标准化",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O11",
+              "D1-O57",
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "Q4 GAAP营业利润率",
+            "parameter": "GAAP营业利润率",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 80.7,
+              "unit": "%"
+            },
+            "previous_value": {
+              "number": 80.4,
+              "unit": "%"
+            },
+            "time_scope": "FY2026 Q4，截至2026-09-03；previous_value为FY2026 Q3，截至2026-05-28",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O11",
+              "D1-O57",
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "合并净利润｜FY2026",
+            "parameter": "合并净利润",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 84969.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 8539.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周；previous_value为FY2025，截至2025-08-28，52周，未做周数标准化",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O11",
+              "D1-O57",
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "折旧摊销加回｜FY2026",
+            "parameter": "折旧摊销加回",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 9503.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 8352.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周；previous_value为FY2025，截至2025-08-28，52周，未做周数标准化",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O10",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "现金流桥股权薪酬加回｜FY2026",
+            "parameter": "现金流桥股权薪酬加回",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 1333.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 972.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周；previous_value为FY2025，截至2025-08-28，52周，未做周数标准化",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O10",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "应收变动现金贡献｜FY2026",
+            "parameter": "应收变动现金贡献",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": -25206.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": -1776.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周；previous_value为FY2025，截至2025-08-28，52周，未做周数标准化",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O10",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "库存变动现金贡献｜FY2026",
+            "parameter": "库存变动现金贡献",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": -2017.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 520.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周；previous_value为FY2025，截至2025-08-28，52周，未做周数标准化",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O10",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "应付及应计变动现金贡献｜FY2026",
+            "parameter": "应付及应计变动现金贡献",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 8707.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 862.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周；previous_value为FY2025，截至2025-08-28，52周，未做周数标准化",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O10",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "其他流动负债现金贡献｜FY2026",
+            "parameter": "其他流动负债现金贡献",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 3141.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": -272.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周；previous_value为FY2025，截至2025-08-28，52周，未做周数标准化",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O10",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "其他非流动负债现金贡献｜FY2026",
+            "parameter": "其他非流动负债现金贡献",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 9633.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 381.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周；previous_value为FY2025，截至2025-08-28，52周，未做周数标准化",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O10",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "其他经营现金桥调整｜FY2026",
+            "parameter": "其他经营现金桥调整",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": -388.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": -53.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周；previous_value为FY2025，截至2025-08-28，52周，未做周数标准化",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O10",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "贸易应收净额｜2026-09-03期末；previous_value为2025-08-28期末",
+            "parameter": "贸易应收净额",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 31793.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 7163.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "2026-09-03期末；previous_value为2025-08-28期末",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O31",
+              "D1-O10",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "总应收余额｜2026-09-03期末；previous_value为2025-08-28期末",
+            "parameter": "总应收余额",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 36197.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 9265.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "2026-09-03期末；previous_value为2025-08-28期末",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O9",
+              "D1-O10"
+            ]
+          },
+          {
+            "name": "库存余额｜2026-09-03期末；previous_value为2025-08-28期末",
+            "parameter": "库存余额",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 10372.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 8355.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "2026-09-03期末；previous_value为2025-08-28期末",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O9",
+              "D1-O10"
+            ]
+          },
+          {
+            "name": "应付及应计余额｜2026-09-03期末；previous_value为2025-08-28期末",
+            "parameter": "应付及应计余额",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 22605.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 9649.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "2026-09-03期末；previous_value为2025-08-28期末",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O9",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "采购应付余额｜2026-09-03期末；previous_value为2025-08-28期末",
+            "parameter": "采购应付余额",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 3518.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 3132.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "2026-09-03期末；previous_value为2025-08-28期末",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "设备资本应付款｜2026-09-03期末；previous_value为2025-08-28期末",
+            "parameter": "设备资本应付款",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 8618.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 4391.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "2026-09-03期末；previous_value为2025-08-28期末",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "流动应计所得及其他税款｜2026-09-03期末；previous_value为2025-08-28期末",
+            "parameter": "流动应计所得及其他税款",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 5626.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 628.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "2026-09-03期末；previous_value为2025-08-28期末",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "应计薪酬福利｜2026-09-03期末；previous_value为2025-08-28期末",
+            "parameter": "应计薪酬福利",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 4447.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 1116.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "2026-09-03期末；previous_value为2025-08-28期末",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "客户价格调整及退货应付估计｜2026-09-03期末；previous_value为2025-08-28期末",
+            "parameter": "客户价格调整及退货应付估计",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 4320.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 1190.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "2026-09-03期末；previous_value为2025-08-28期末",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "所得税现金净支付｜FY2026",
+            "parameter": "所得税现金净支付",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 1254.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 583.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周；previous_value为FY2025，截至2025-08-28，52周，未做周数标准化",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "GAAP所得税费用｜FY2026",
+            "parameter": "GAAP所得税费用",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 14761.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 1124.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周；previous_value为FY2025，截至2025-08-28，52周，未做周数标准化",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O11",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "GAAP有效税率｜FY2026",
+            "parameter": "GAAP有效税率",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 14.8,
+              "unit": "%"
+            },
+            "previous_value": {
+              "number": 11.6,
+              "unit": "%"
+            },
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周；previous_value为FY2025，截至2025-08-28，52周，未做周数标准化",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O57",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "非流动应付所得税｜2026-09-03期末；previous_value为2025-08-28期末",
+            "parameter": "非流动应付所得税",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 9820.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 648.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "2026-09-03期末；previous_value为2025-08-28期末",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "新加坡QDMTT计提｜FY2026",
+            "parameter": "新加坡QDMTT计提",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 9030.0,
+              "unit": "百万美元"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "新加坡最低税结算制度｜现行状态",
+            "parameter": "新加坡最低税结算制度",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "IRAS 2026-01-07第二版：一般申报为集团财年结束后15个月，过渡年18个月；付款不迟于申报截止后1个月，另行评税通知则送达后1个月。FY2026年报确认新加坡QDMTT已适用。"
+            },
+            "previous_value": null,
+            "time_scope": "现行制度及FY2026首期税款，延伸至后续结算",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.iras.gov.sg/media/docs/default-source/e-tax/e-tax-guide-mtt-and-dtt.pdf",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "PP&E现金毛支付｜FY2026",
+            "parameter": "PP&E现金毛支付",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 30712.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 15857.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周；previous_value为FY2025，截至2025-08-28，52周，未做周数标准化",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O10",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "资本政府激励实收｜FY2026",
+            "parameter": "资本政府激励实收",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 3316.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 2005.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周；previous_value为FY2025，截至2025-08-28，52周，未做周数标准化",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O44",
+              "D1-O10"
+            ]
+          },
+          {
+            "name": "PP&E出售现金收入｜FY2026",
+            "parameter": "PP&E出售现金收入",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 29.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 48.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周；previous_value为FY2025，截至2025-08-28，52周，未做周数标准化",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O44",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000018/a2026q4ex991-pressrelease.htm"
+            ]
+          },
+          {
+            "name": "扣激励后PP&E现金支付｜FY2026",
+            "parameter": "扣激励后PP&E现金支付",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 27396.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 13852.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周；previous_value为FY2025，截至2025-08-28，52周，未做周数标准化",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O44",
+              "D1-O10"
+            ]
+          },
+          {
+            "name": "公司净资本投资现金｜FY2026",
+            "parameter": "公司净资本投资现金",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 27367.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 13804.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周；previous_value为FY2025，截至2025-08-28，52周，未做周数标准化",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O44",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000018/a2026q4ex991-pressrelease.htm"
+            ]
+          },
+          {
+            "name": "简式再投资后现金｜FY2026",
+            "parameter": "简式再投资后现金",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 58963.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 1668.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周；previous_value为FY2025，截至2025-08-28，52周，未做周数标准化",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O10",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "公司调整后自由现金流｜FY2026",
+            "parameter": "公司调整后自由现金流",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 62308.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 3721.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周；previous_value为FY2025，截至2025-08-28，52周，未做周数标准化",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O44",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000018/a2026q4ex991-pressrelease.htm"
+            ]
+          },
+          {
+            "name": "Q4调整后自由现金流",
+            "parameter": "公司调整后自由现金流",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 33199.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 18304.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026 Q4，截至2026-09-03；previous_value为FY2026 Q3，截至2026-05-28",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O44",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000018/a2026q4ex991-pressrelease.htm"
+            ]
+          },
+          {
+            "name": "FY2027 Q1净PP&E计划",
+            "parameter": "扣激励后PP&E现金支付",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "number": 11500.0,
+              "unit": "百万美元"
+            },
+            "previous_value": null,
+            "time_scope": "FY2027 Q1；约数，扣政府激励；不是毛额指引",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "FY2027 H1净PP&E计划",
+            "parameter": "扣激励后PP&E现金支付",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "number": 25000.0,
+              "unit": "百万美元"
+            },
+            "previous_value": null,
+            "time_scope": "FY2027前六个月累计；包含Q1而非与Q1相加；约数",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "全年净资本付款节奏｜现行状态",
+            "parameter": "全年净资本付款节奏",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "stage": "下半年净PP&E现金支出高于前半年约250亿美元；公司未给精确全年总额，随需求及政府激励到账调整。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2027 H2与H1比较",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "政府激励流动应收｜2026-09-03期末；previous_value为2025-08-28期末",
+            "parameter": "政府激励流动应收",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 3319.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 1572.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "2026-09-03期末；previous_value为2025-08-28期末",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "政府激励非流动资产｜2026-09-03期末；previous_value为2025-08-28期末",
+            "parameter": "政府激励非流动资产",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 2122.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 914.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "2026-09-03期末；previous_value为2025-08-28期末",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "美国制造抵免适用税率｜设施2025年后投入使用的适用率；previous_value为2026年前适用25%制度",
+            "parameter": "美国制造抵免适用税率",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 35.0,
+              "unit": "%"
+            },
+            "previous_value": {
+              "number": 25.0,
+              "unit": "%"
+            },
+            "time_scope": "设施2025年后投入使用的适用率；previous_value为2026年前适用25%制度，非美光实际实收比率",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.irs.gov/forms-pubs/correction-to-the-2025-instructions-for-form-3468-of-the-applicability-of-the-35-rate-on-line-1c-in-part-iv-advanced-manufacturing-investment-credit-under-section-48d"
+            ]
+          },
+          {
+            "name": "合同化销售收现基础｜现行状态",
+            "parameter": "合同化销售收现基础",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "FY2026 Q3/Q4已形成多年take-or-pay数量承诺；价格固定或周期协商，多数战略协议设上下限，仍有短期合同。保证金另列融资流，合并受保护利润占比未披露。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-03期末",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O31",
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "剩余履约义务｜2026-09-03合同余额；FY2025不重大而非数值零；约数",
+            "parameter": "剩余履约义务",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 134000.0,
+              "unit": "百万美元"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-03合同余额；FY2025不重大而非数值零；约数",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "履约收入转换窗口｜现行状态",
+            "parameter": "履约收入转换窗口",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "stage": "管理层预计约四分之一在未来12个月确认收入，全部在未来5年内确认；最低数量及最低价格口径不代表实际合同未来收入。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-03后12个月至5年",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "实现价与可售量经营位置｜现行状态",
+            "parameter": "实现价与可售量经营位置",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "FY2026 DRAM ASP约升180%、NAND约升200%，两者bit出货增长均为20%中段；MCBU bit出货下降，部分因供给转配其他单元。涨价是公司披露的利润增长主因，不能将收入高增解释成全部终端数量同增。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周；阶段描述中的FY2025同比未做周数标准化",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "Netlist季度许可现金付款｜日历2026 Q4至2031 Q3",
+            "parameter": "Netlist季度许可现金付款",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 30.0,
+              "unit": "百万美元"
+            },
+            "previous_value": null,
+            "time_scope": "日历2026 Q4至2031 Q3，每季度；约定付款未作为截至截点已付",
+            "as_of": "2026-10-06",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.netlist.com/news/netlist-and-micron-enter-patent-license-and-settlement-agreements/c8615305-0590-43e4-bcb2-fe05e120f947"
+            ]
+          }
+        ]
+      },
+      "expectation_baseline": [
+        {
+          "name": "高经营现金平台继续，但不复制本轮全年增长率",
+          "baseline": "研究工作基线是未来几个季度仍有显著高于FY2025的经营利润和现金形成能力，而非FY2026收入256%增速再重复。FY2027 Q1公司收入指引600—630亿美元、GAAP毛利率约85.95%，支持高平台延续但不支持毛利单调升。公司ASP归因、多年承诺和已交付产品比单纯AI故事更近端。外部微软7月披露Copilot付费席位超过3000万、季度新增约1GW且需求仍超容量，扩容及付费共同使采购延续比全面紧缩更可信；这些不是美光份额或现金承诺。本基线是经营证据推断，不是卖方共识或完整市场定价。",
+          "ordinary_progress": "按既定平台和认证交付，维持高价格的合同及非合同产品形成收入；新增普通付费用户和已计划云容量投用延续路径。",
+          "open_frontier": "合并利润受保护覆盖率与非合同售价持续期仍开放。推理降任务成本可能扩大使用也可能减少每任务硬件强度，不能将Sonnet任务成本降30%机械变成美光现金降30%；客户实际回款与付费转成内存采购的比率分开。",
+          "time_scope": "FY2027未来数季度，延伸至多年合同覆盖期",
+          "ref": [
+            "D1-O44",
+            "D1-O57",
+            "D1-O103",
+            "https://www.microsoft.com/en-us/investor/earnings/fy-2026-q4/press-release-webcast",
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "https://www.anthropic.com/claude-sonnet-5-5"
+          ]
+        },
+        {
+          "name": "营运资本是增长吸收而非已证实信用崩坏",
+          "baseline": "研究者采用收入快速扩大下应收与库存继续占用现金的基线，不把贸易应收317.93亿美元判成坏账危机，也不预设占用252.06亿美元会原样每年重复。公司全年现金桥同时受到税费、薪酬及客户对价未结算的支持；因此CFO高于净利润不等于无条件优质收现。NVIDIA为AI云提供融资支持说明资金链在扩容，不能当作美光应收付款保证。非AI客户端更偏数量承压和提前备货：微软已报告组件涨价下OEM/渠道建库存，而美光MCBU数量下降另有供给改配解释，不能把两者直接等同终端衰退。",
+          "ordinary_progress": "交付后按正常账期收款、随收入与产品管线调整库存；价格调整、返利、工资和供应商付款进入日常结算。",
+          "open_frontier": "逾期账龄、客户集中度及非AI备货消化速度会区分正常高增长占用与收款恶化；缺少可比账龄不支持合成恶化指标。",
+          "time_scope": "FY2027季度回款与库存周期",
+          "ref": [
+            "D1-O10",
+            "D1-O31",
+            "D1-O57",
+            "https://blogs.nvidia.com/blog/nvidia-unlocks-ai-compute-at-scale-capital-partners-to-power-ai-infrastructure-buildout/",
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4"
+          ]
+        },
+        {
+          "name": "现金税将追上计提，但首期最低税不是立即到期",
+          "baseline": "研究基线为已计提所得税最终消耗现金，FY2026实付12.54亿美元不能作长期税款运行率；期末非流动应付所得税98.2亿美元体现显著结算时差。IRAS过渡年财年末18个月申报、再1个月付款规则，结合公司称FY2026首次适用，支持首期QDMTT集中结算更接近日历2028年春的推断，而非假设全额下季支付。该时点是一般制度推算，不是公司确认支付表，其他税项和评税可更早。OECD美国集团Side-by-Side安全港涉及IIR/UTPR，不消除新加坡已适用QDMTT；不能把政策标题直接转为免税现金。",
+          "ordinary_progress": "经营税费用持续计提，按辖区正常付款并逐步结算已应计负债；现有激励符合运营及就业条件时保留净税益。",
+          "open_frontier": "具体首期申报身份、公司实际付款分布，以及实质激励和新指导如何改变未来有效税负尚未闭合；不把98.2亿美元全认定同日QDMTT。",
+          "time_scope": "FY2027至FY2028及其后现金税结算",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.iras.gov.sg/media/docs/default-source/e-tax/e-tax-guide-mtt-and-dtt.pdf",
+            "https://www.oecd.org/content/dam/oecd/en/topics/policy-sub-issues/global-minimum-tax/side-by-side-package.pdf",
+            "D1-O31"
+          ]
+        },
+        {
+          "name": "扩产付款升级是默认路径，净现金增长低于利润增长",
+          "baseline": "工作基线是FY2027再投资现金压力显著加大：公司扣政府激励的Q1约115亿美元、H1约250亿美元、H2更高，全年净付款大于约500亿美元这一方向有支持但精确总额没有指引。FY2026扣激励后PP&E支付273.96亿美元而非毛307.12亿美元，比较口径一致后投资强度确实上升；H1含Q1不能相加。设备应付86.18亿美元是已形成付款管线，2027封装/晶圆计划意味着付款先于增量合格收入。高现金平台仍能支撑投资，但不采用净利润同比多少、再投资后现金就同比多少的基线。",
+          "ordinary_progress": "按已计划设备和建设付款，政府激励随达标实收；2027计划能力逐步投产，不将初始晶圆自动标为满产。",
+          "open_frontier": "付款节奏和补助到账、建设资源成本与客户收入接续决定净现金余量；AGC显示数据中心争夺熟练劳力与延误，但不足以推断美光已超支或项目取消。",
+          "time_scope": "FY2027支付周期至日历2027—2028商业爬坡",
+          "ref": [
+            "D1-O31",
+            "D1-O44",
+            "D1-O88",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://news.agc.org/workforce-development/construction-workforce-shortages-remain-acute-despite-soft-market-conditions-as-data-centers-strain-labor-supply-survey-finds/"
+          ]
+        },
+        {
+          "name": "政府激励按现金兑现降低再投资，不以承诺上限计FCF",
+          "baseline": "研究者默认现有条件性激励继续随合格投资兑现，而不是全部停止或一次提前收齐。FY2026实际收款33.16亿美元与流动/非流动激励资产分别为33.19/21.22亿美元，说明确认、申领和到账不同时。35%48D仅适用于合格美国投资及法定投入使用/选举规则，不适用于全球capex；更高抵免支持未来净投入下降方向，但不是当期多10个百分点现金全到账。GAO对行业协议修订和里程碑付款的记录使审批时差成为现实付款变量，并未证明美光拨款被冻结。",
+          "ordinary_progress": "合格支出、里程碑审核、抵免确认或选择支付依各自流程进行，沿现有项目条件收款。",
+          "open_frontier": "2026年底前法定开工资格与后续投用是不同边界，项目分期认定会改变可得抵免基础；不能按未来投产年份直接判定资格。净现金兑现、可退还抵免选择及追索改变当年净付款；超额项目收益分享约束长期现金，不等同立即股权投资。",
+          "time_scope": "FY2027年度净资本付款，延伸至多年激励期",
+          "ref": [
+            "D1-O31",
+            "D1-O44",
+            "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+            "https://www.irs.gov/forms-pubs/correction-to-the-2025-instructions-for-form-3468-of-the-applicability-of-the-35-rate-on-line-1c-in-part-iv-advanced-manufacturing-investment-credit-under-section-48d",
+            "https://www.irs.gov/instructions/i3468",
+            "https://www.gao.gov/assets/gao-26-109121.pdf"
+          ]
+        },
+        {
+          "name": "人员及许可结算纳入正常付款，不预设新增永久利润分享",
+          "baseline": "工作基线将薪酬应计和已约定许可款作为经营付款，而不是把暂缓现金结算永久加回。台湾9月奖励报道同时涉及现金与股票，不能据此认为集团全面现金化或已建立永久利润分享制度。Netlist最新协议已把该项争议化为每季3000万美元、日历2026 Q4至2031 Q3的确定计划；全年约1.2亿美元相对FY2026 CFO约897亿美元属次要付款尺度，不应主导合并现金路径。Q4确认5亿美元许可费用与该付款计划不是已核实一一对应。",
+          "ordinary_progress": "既有薪酬、奖励、税款及季度许可按应计和协议结算，内部AI提升产出不自动消除已承诺工资。",
+          "open_frontier": "常态现金薪酬是否在高利润下系统性提高仍开放；其他未定诉讼和许可义务不能套用Netlist固定付款规模。",
+          "time_scope": "未来数季付款，许可延伸至2031",
+          "ref": [
+            "D1-O10",
+            "D1-O44",
+            "https://focustaiwan.tw/business/202609110009",
+            "https://investors.netlist.com/news/netlist-and-micron-enter-patent-license-and-settlement-agreements/c8615305-0590-43e4-bcb2-fe05e120f947"
+          ]
+        }
+      ],
+      "realization_factors": [
+        {
+          "name": "付费工作流的经济回报形成持续采购预算",
+          "mechanism": "企业业务负责人按可靠产出的价值减去人工复核、流程集成和服务费用评估工作流回报；安全及治理准入决定哪些部门能够部署。模型/应用商控制收费单位、套餐额度和价格，客户控制付费转化、续费和活跃使用频率。正回报使试用成为经常预算，长时任务增加服务成本和付费需求；模型商及云商从收入、毛利和融资能力决定算力采购预算，经平台部署、存储采购及美光交付回款转成经营现金。付费席位、免费活动和已采购算力是不同环节，不能直接互换。",
+          "current_status": "当前较好的工作解释是生产性使用已支持采购持续，而非全由免费试用支撑。微软披露超过3000万付费365 Copilot席位和容量约束；Anthropic 6月报告观察到长运行任务增多，但其用户样本不能代表全球企业ROI。收费也不是单向收紧：Claude SDK的6月15日变更曾暂停，10月7日增加Max/Team API额度。因此使用增长支持未来机会，却不能按token增长等比例推当期新增现金收费。美光当前利润平台主要仍由已实现价格、供给和合同形成。",
+          "materiality_context": "可靠性及复核/集成成本决定可经济部署的任务边界：即使人数不变，少一次人工交接可扩展原先不盈利的流程；治理准入改变可进入的部门范围和数季导入时差，非简单吞吐系数。付费转化、续费扩大/缩短可持续预算，活跃频率与任务时长扩大预算消耗；固定套餐下频率增长先压服务商毛利而非增加收费，按量收费则较快增加收入。降价或加额度降低买方成本、可能刺激采用，却降低每单位收入；由此云商毛利和可融资回报比总请求量更接近投资能力。当前已付费规模和容量紧张使续费及任务预算的变化比新增免费注册更有解释力；仍早期的可靠性/治理突破可打开较大未开发机会，不能因未出货就认定次要。相同预算下采购可因租价、平台和目标份额变化，现金结果由后续资源和回款Factors解释；没有可靠的席位到MU美元系数，不能将3000万当收入预测。",
+          "scope_boundary": "解释应用经济性到美光经营现金的持续期与机会规模；客户产品、平台和制造深度分别衔接相邻域，目标公司的价格捕获及收现由本Unit后续Factors展开。",
+          "ref": [
+            "D1-O103",
+            "D1-O44",
+            "D1-O57",
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "https://www.anthropic.com/research/economic-index-june-2026-report",
+            "https://support.claude.com/en/articles/15036540-use-the-claude-agent-sdk-with-your-claude-plan",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+          ]
+        },
+        {
+          "name": "任务强度与系统余量决定采购时点和产品归属",
+          "mechanism": "在给定付费预算下，任务数量、持续时长和上下文复用决定计算及缓存工作量。云商和软件栈以批处理、调度、预填充/解码分离与缓存分层提高效率，把数据留在HBM或移至主机DRAM、SSD；延迟服务目标约束可采用的方案。现有可用余量决定新增工作先填闲置还是追加硬件，电力/机房决定新容量可部署时点。平台兼容及客户资格决定哪些产品可服务，供应商采购分配决定美光获得的份额，最终经出货、价格和账期进入现金。降单位成本可反过来扩展可付费任务，并非效率提高必然削减总需求。",
+          "current_status": "微软的需求超过可用容量支持关键客户余量较紧、效率释放容量后较快被使用吸收的当前判断；这不证明全行业或每种内存都无余量。NVIDIA 3月16日Dynamo生产版已提供预填充/解码分离及GPU、CPU、SSD间缓存调度，说明替代不是纯假想。工作判断是效率主要同时改变服务能力、采购时间和HBM/DRAM/SSD组合，不能将软件基准吞吐改善率直接当MU现金降幅；客户仍需合格且匹配平台的产品。",
+          "materiality_context": "数量、时长分别扩大工作规模；示例仅在每任务结构固定时，任务量+10%、每任务资源-10%得到总资源0.99倍，若任务更长或成本下降诱发更多使用则抵消节约。上下文复用削减重复计算但提高缓存驻留，分层把机会在不同存储介质间转移；调度效率主要提高既有设备承载，延迟目标若更严可牺牲批处理效率、增加同时驻留资源。紧余量时任务增长和电力/机房落地决定扩容迫切性，价格/配额也可先变；余量宽松时采购推迟，但未来规模与设计份额依然变化。兼容及资格可让目标产品从有机会变成无法参与，采购份额在总工作量不变时也直接改变美光销量，作用不应被宏观增量掩盖。当前约束客户的活跃任务和扩容时点较强，缓存优化对组合同样重要；具体HBM用量及各介质现金系数未测，基准测试只证明机制。",
+          "scope_boundary": "只延伸到公司合并销量、价格及现金时点；不把某软件测试等同全行业利用率，也不把外部机房约束误作美光工厂扩建约束。",
+          "ref": [
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "https://developer.nvidia.com/blog/nvidia-dynamo-1-production-ready/",
+            "D1-O103",
+            "D1-O74",
+            "D1-O88",
+            "D1-O44",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+          ]
+        },
+        {
+          "name": "实现价、合格产出和成本共同决定现金利润池",
+          "mechanism": "行业竞争供给及客户数量/库存周期改变可实现价格，美光在产品间分配合格产出；客户资格、良率和利用率约束可卖数量。合同最低数量及价格下限保护部分业务、价格上限也约束上涨捕获，未覆盖业务更受市场影响。非AI买方可提前备货、降配置、延迟更新或去库存，改变销量和组合。实现价、销售组合与单位制造成本形成毛利，运营费用进一步决定利润；其中折旧等非现金成本需与实际经营付款区分；投资利息收入和借款利息支出补充或消耗现金利润，利润再经过回款、税款和营运资本进入CFO。",
+          "current_status": "当前价格捕获是高现金利润平台的主因之一：FY2026 DRAM/NAND实现价分别约升180%/200%，bits均增约中20%，合并毛利率80.7%。MCBU数量下降包含供给向更高价值业务改配，不足以判全体非AI需求下降。微软已披露组件涨价下渠道提前备货及PC承压，支持后续库存消化的现实路径。合同化降低部分下行波动，但RPO约1340亿美元是特定最低数量/价格交易价，并非全量未来销售、全额现金或已测保护覆盖率。",
+          "materiality_context": "以FY2026 53周1331.88亿美元收入作静态尺度，若全部实现价变1%、销量和成本不变，税前利润约变13.32亿美元；毛利率独立变1个百分点也约13.32亿美元，两者不能重复相加。数量+1%要扣增量制造成本，不能按涨价敏感度等额计利；良率/利用率改善可同时扩大合格数量和降低单位成本，受产能及资格约束，爬坡晚于设备付款。按已报毛利率粗估成本规模约257亿美元，1%总成本变化约2.57亿美元，其中折旧变动不即时变现金；运营费用中的1亿美元经常现金费用则直接降低同额税前经营现金，研发可能换取后续产品资格。组合和配置变化会让bits增速与收入偏离。价格当前比同幅成本变动更有杠杆；合同下限影响下行幅度、上限影响上涨捕获，约四分之一RPO拟在12个月确认仅说明时序，不等于全年覆盖25%。非AI弹性先影响其采购数量/库存，强AI买方与产出改配可缓冲合并损失但增加集中度，供给扩张也会反馈压价；这些变化在报表前即可改写未来利润平台。资金收益/融资费用取决于本金、利率及重定价与收付时点；当前350.89亿美元证券收益全重定价100bp的静态税前尺度约3.51亿美元，较1%实现价敏感度小，剩余27.92亿美元固定票据也不随政策率立即改息。本项财务收付是经营现金补充而非高利润主因，不能把应计利息和到账同季等同。",
+          "scope_boundary": "保留公司自身价格、数量、组合和成本的独立作用；行业及制造域负责详细供需/工艺，本Unit负责其合并利润来源和现金转换，不以应用活动替代公司商业经济性。",
+          "ref": [
+            "D1-O31",
+            "D1-O44",
+            "D1-O57",
+            "D1-O74",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4"
+          ]
+        },
+        {
+          "name": "客户融资与结算条款决定收入兑现为现金",
+          "mechanism": "模型商、云商、OEM及直接购存储者并非同一付款主体。最终付费收入和股权/债务资金支撑上游预算，信用支持及长期服务承诺帮助算力项目获贷；直接买方的资信、交付验收、账期和催收决定美光贸易回款，价格调整/退货改变应收或向客户付款。正常增长可增加应收而不产生坏账；资金链弱化则先延长账期、随后可能违约及损失。美光可用客户信用筛选、预付款和供给分配回应，但会改变销量。条件信用证只在约定违约情形补偿，不是所有应收保证。",
+          "current_status": "NVIDIA 7月融资安排包含云收入分成及信用支持，表明新算力公司单靠长期使用承诺仍可能无法获贷；支持增加融资可得性，但不证明最终任务均盈利或直接担保MU贸易应收。当前贸易应收317.93亿美元、全年总应收变动吸收252.06亿美元，与快速增长相符；缺少账龄不支持已发生信用崩坏。客户退货/价格调整应付估计43.20亿美元说明发货收入尚会调整。保证金现金单列融资活动，不能加入销售CFO改善收现率。",
+          "materiality_context": "最终付费盈利决定较长周期可持续偿付，融资和信用支持更快改变采购/付款时点；融资放量可先增加订单和应收、并不必然立即增加净经营现金。直接买方资信决定可收金额，验收/账期/催收主要改变时间，退货和价格调整则可能同时改数量、价格及现金。以FY2026 53周371天平均收入计算，假设同样销售均匀且全部赊销，统一账期延5天约新增17.95亿美元占用，这是尺度示例不是实际DSO或FY2027预测；若贸易应收10%最终无法收回，暴露约31.79亿美元，非预计损失。既有43.20亿美元客户对价也不能全作新增退款再扣。当前正常增长占用比已证实坏账更有解释力，但单一客户资金变化可比整体任务增速更快影响季度CFO；缩短账期/预付会释放现金，也可能牺牲订单。信用证覆盖、违约条件和回收折价决定补偿，只能按实际同一敞口净算，不与保证金重复当收入。",
+          "scope_boundary": "研究公司合并回款、客户对价和信用损失；跨年保证金及信用证的详细合同属战略客户关系域，本Shell流动性Unit研究其融资存量及返还。",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O10",
+            "D1-O31",
+            "D1-O57",
+            "https://blogs.nvidia.com/blog/nvidia-unlocks-ai-compute-at-scale-capital-partners-to-power-ai-infrastructure-buildout/"
+          ]
+        },
+        {
+          "name": "生产库存和供应商结算独立改变经营现金占用",
+          "mechanism": "美光按订单、交付周期及产品缓冲安排采购和在制/成品库存；生产周期、良率和产品转换决定资金在制造中停留多久。需求及价格变化影响库存能否正常出售、是否跌价或报废。供应商账期、提前付款折扣和支付节奏决定采购应付提供多少临时信用，客户价格调整结算会反向消耗现金。即使客户算力预算不变，这些内部安排也可独立改变CFO；延付供应商可能付出价格、供货可靠性或信用代价，不能永久释放现金。",
+          "current_status": "期末库存103.72亿美元，全年增量在现金桥吸收20.17亿美元；采购应付35.18亿美元只小幅高于上年。总应付/应计大增主要含税款、薪酬及设备款，不适合作供应商融资扩张证据。高价及供给改配下，按产品保留合格缓冲比简单全公司去库存更合理；非AI客户提前备货消化可使某类库存周转变慢，不代表所有产品滞销。设备应付86.18亿美元属于资本付款，不放入这个经营信用敏感度。",
+          "materiality_context": "采购规模和库存天数决定经营资金范围，良率/生产周期改变每批现金占用期限，产品转换及需求匹配决定能否以正常价格回收；跌价损失本身非现金，现金已在前期采购中消耗，不能再把减值当新支付。示例在能正常销售并收款、不需补回库存条件下，减少期末库存10%释放约10.37亿美元；库存不售而只报废并无同等释放。采购应付延结10%约保留3.52亿美元，规模远小于总应计变化；折扣收益须与早付失去的资金收益相比，供货惩罚可能超过暂缓收益。客户调整支付时点每移动1亿美元影响同额当期CFO，但其金额由价格/退货机制决定，不能在两Factor双扣。当前应收占用大于库存增量，库存/真实采购信用仍是独立数亿美元至十亿美元级季度变量，不能被AI增长叙事删除。",
+          "scope_boundary": "经营采购及自有库存的现金周期；不研究客户库存等于美光库存，也不把资本设备应付、税款及薪酬全部归为经营采购信用。",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O10",
+            "D1-O31",
+            "D1-O9",
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4"
+          ]
+        },
+        {
+          "name": "税基、最低税规则与结算时差分开改变现金税",
+          "mechanism": "税前收益、地域利润配置和合格实质激励决定税基及有效税率；各辖区最低税、抵免和安全港规则决定可保留优惠，而非仅看集团注册地。申报及评税期限决定应计税款何时支付。美光在利润确认时计税、结算时消耗现金；现金税低于费用暂时抬高CFO，后续支付在收入不变时仍可降低CFO。新增减免改变终身金额，延期只改变资金期限，两者应分开。",
+          "current_status": "FY2026税费147.61亿美元、净实付12.54亿美元和非流动应付所得税98.20亿美元，使结算时差成为当前重要现金支持，而非永久低税率。新加坡QDMTT已适用；美国集团IIR/UTPR安全港不自动免除当地QDMTT。IRAS过渡年财年末18个月申报、随后1个月付款的一般制度结合公司首期FY2026，推断首期更接近2028年春，不是公司确认支付表，也不表示全部98.20亿美元同日到期。当前首要机制是支付追赶计提，未来实质激励仍影响净税负。",
+          "materiality_context": "收益增加扩大税款基数，地域配置和实质激励对可享低税利润范围起作用；安全港只有在适用税项/主体内才改变金额，不能用标题抵销已计提当地税。按FY2026净利润加所得税费用约997.30亿美元的税前尺度，统一有效税率提高1个百分点约增加9.97亿美元最终税负，属同基数静态估算，非某辖区预测。已应计税款多支付10亿美元，当期CFO少10亿美元而不另降当期利润；相比实付12.54亿美元，98.20亿美元负债使期限变化对未来年度现金具有较高杠杆。申报、评税及分期改变哪年支付，公司地域税基/激励变化影响以后多年金额；利润下降会降低新增税额却不会消除既有欠款。当前不应把低实付率延续至所有年份，也不应为谨慎将全部税负立即从FY2027扣除。",
+          "scope_boundary": "公司所得税金额与收付时点；制造投资抵免及补助现金在再投资Factor单列，避免相同激励同时增加CFO并减少capex两次计益。",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.iras.gov.sg/media/docs/default-source/e-tax/e-tax-guide-mtt-and-dtt.pdf",
+            "https://www.oecd.org/content/dam/oecd/en/topics/policy-sub-issues/global-minimum-tax/side-by-side-package.pdf",
+            "D1-O31",
+            "D1-O10"
+          ]
+        },
+        {
+          "name": "资本承诺、施工资源与验收进度形成付款管线",
+          "mechanism": "管理层按未来供需及项目回报决定扩建、资产购买规模和分期，可推迟的新增预算与已签设备/施工义务弹性不同。承包商劳力、材料及公用配套约束改变单价、预付款和建设进度；设备交付验收与约定账期把资本形成转成现金付款，合同币种及套期收付配对影响美元支付额。良率爬坡及客户资格决定投产后多久形成增量收现。延后付款可改善当季再投资后现金，但若推迟合格产出或丢失分配，则削弱后续现金；支付提早也不等于已新增盈利能力。",
+          "current_status": "公司当前处于扩建现金上升段：FY2026毛资本支付307.12亿美元，扣激励后PP&E273.96亿美元；FY2027 Q1约115亿美元、H1约250亿美元、H2更高，方向支持全年净付款大于约500亿美元，非精确全年指引。期末设备应付86.18亿美元是已形成管线。AGC已观察数据中心争夺熟练施工劳力及延误，支持资源变量实际存在，不证明MU已加价、取消或延迟某项目。高经营现金支持投资，但支出先于合格量产回收。",
+          "materiality_context": "扩建规模决定年度资金大盘，分期/验收/账期决定季度现金；当前净计划相对273.96亿美元基期上升至少约226亿美元这一方向，规模作用大于通常单笔费用。静态毛支付变10%约30.71亿美元，仅作既有FY2026尺度，不假设全合同可改价。若10亿美元尚可调整工程成本涨10%，多用1亿美元；劳力/材料成本的适用范围须限定，延期则可把原付款跨季挪动并延迟回款。86.18亿美元设备应付增大近期已锁定义务，延期不能把全部当取消；未签预算较有弹性。资格/良率决定投资收益时滞与能否回收，供需转弱时继续原规模也会降低跨周期回报。买入现有资产可缩短建设时间，但购买价及整合/认证决定相对于自建的回收速度，若购买款已含于资本支付不能另扣。币种/套期决定美元净支付：假设10亿美元未套期净付款遭5%不利变化约多5000万美元，已匹配套期会缓冲、期限错配仍留结算时差，当前相对投资规模/分期属局部敏感度。FY2027计划H1包含Q1不能相加，净支出与毛支出不能混比；超一年采购承诺108亿美元含PP&E/租赁/服务，可能已在资本计划内，不重复全额叠加。",
+          "scope_boundary": "公司整体资本现金支付及回收时差；工艺、项目产能和单厂ROI归制造域，本Unit保留它们对付款、回款和分期选择的作用。",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O31",
+            "D1-O44",
+            "D1-O88",
+            "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+            "https://news.agc.org/workforce-development/construction-workforce-shortages-remain-acute-despite-soft-market-conditions-as-data-centers-strain-labor-supply-survey-finds/"
+          ]
+        },
+        {
+          "name": "资助资格和兑现期限决定净再投资现金",
+          "mechanism": "项目地点、合格支出、2026年底前法定开工及设施投入使用条件决定制造抵免税率和基数；资本、运营及就业里程碑决定直接资助资格。主管机关审核、申报及选择支付/抵扣程序决定确认资产何时转成到账或少缴税。公司按条件支出可增加实收，但为获款发生的成本也是真实投入；违约追索会逆转资金益处。补助或抵免确认不增加即期现金，现金兑现才降低同一期间净再投资。",
+          "current_status": "FY2026激励实际收款33.16亿美元，期末流动/非流动相关资产33.19/21.22亿美元，确认与实收明显不同。35%48D适用合格美国设施，不是全球毛资本支付的35%；由旧25%升至35%支持部分未来净投资降低，无法直接估全公司减额。当前按现有条件分期兑现是较好基线；GAO行业协议修订使审核/时间差具有现实性，但无MU拨款被冻结证据。",
+          "materiality_context": "地点/合格基数决定益处范围，税率决定单位益处：每10亿美元真正适用基数提高10个百分点，最终毛益处约1亿美元，尚需资格及现金流程，不能乘全球307.12亿美元。若10亿美元基础因开工资格不符失去35%抵免，最终益处减少约3.5亿美元，区别于税率提高10个百分点的1亿美元增益；为保资格加快投入又可前移现金。资本/就业/运营条件会排除部分支出或新增履约成本，直接资助上限不是自动可收总额。审核、申报、选择支付与到账改变时间；已有约54.41亿美元确认资产是兑现暴露尺度而非新增承诺，10亿美元收款跨年使当年净投资现金压力增10亿美元，但如最终如数收回不永久损失同额价值。33.16亿美元年度实收约相当于毛资本支付10.8%，当前对净现金已重要；未来支付节奏可抵销或放大资本升级，实际净计划已扣激励时不可再减一次。追索金额/违约条件决定反向现金压力，在流动性和权益Units分别处理来源稳定性与分享权。",
+          "scope_boundary": "净资本现金的优惠金额及收付差，不以未到账上限作现金；相关所得税抵扣如果已计入现金税不得在再投资敏感度重复计算。",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+            "https://www.irs.gov/forms-pubs/correction-to-the-2025-instructions-for-form-3468-of-the-applicability-of-the-35-rate-on-line-1c-in-part-iv-advanced-manufacturing-investment-credit-under-section-48d",
+            "https://www.irs.gov/instructions/i3468",
+            "https://www.gao.gov/assets/gao-26-109121.pdf",
+            "D1-O31",
+            "D1-O44"
+          ]
+        },
+        {
+          "name": "现金薪酬与可兑现自动化节约改变经营付款",
+          "mechanism": "管理层及劳动力市场通过现金工资、奖金、福利和股权的组合配置劳动回报；高利润奖励可一次性或成为固定薪酬，服务/归属条件和支付期决定现金节奏。内部AI只有在减少可取消的招聘、外购服务、加班或其他实际付款时才节约现金；仅增加产出而工资不变则主要改善能力，模型费用及复核成本抵销部分收益。现金换股票保留当期CFO但把成本移至股东稀释，股票换现金则相反。",
+          "current_status": "期末薪酬福利应计44.47亿美元，当前存在待结算支付而非同额新增工资。台湾9月现金/股票并用奖励不证明集团永久利润分享或全面现金化。与Anthropic合作涵盖编码、工程、制造及企业运营，支持内部效率改善机制存在，但没有可用的集团现金节约额。当前普通应计结算比假设AI立即大规模裁撤工资更可靠，奖励结构变化则可能影响跨年现金成本。",
+          "materiality_context": "员工数量及单位薪酬决定经常成本，奖金范围/是否固定决定影响一次或多年；资金组合决定现金与稀释承担者，支付期决定季度CFO。用44.47亿美元负债作尺度，10%结算跨期约4.45亿美元时差，不是10%工资下降或永久节约。若1亿美元可取消外购费用由AI替代，净现金改善最多为1亿美元减模型/集成/复核实际新增付款；若员工工资不降只产出增多，即期工资节约为零，未来少招聘或更高合格产出才体现价值。劳动力竞争可能将效率收益分享给员工，不能同时计算全部工资省下和全部额外产出无成本。当前薪酬支付范围较内部AI已测节约更实在，自动化的未来作用取决于可变费用/招聘边界，不因尚无美元总额而排除能力价值；替换为股票对本Unit有益却需在股东Unit计稀释。",
+          "scope_boundary": "集团劳动付款和内部流程效率转现金的边界；劳资制度归制造域深化，股权奖励的净股数及经济成本在股东Unit，不以CFO股权薪酬加回消除成本。",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O10",
+            "D1-O31",
+            "https://focustaiwan.tw/business/202609110009",
+            "https://jp.micron.com/about/press/news/micron-and-anthropic-announce-strategic-agreement-to-scale-next-generation-ai-infrastructure"
+          ]
+        },
+        {
+          "name": "许可协议把争议成本转为分期经营现金义务",
+          "mechanism": "许可及和解约定的总额、支付频率和期限决定现金支出，损益确认时点与协议支付可能不同。固定付款不随当季收入变化，或有争议则在协议/判决前仍不确定；法律确定性也减少未来追加诉讼成本与经营干扰。公司可通过分期匹配资金期限，但不能因费用已确认就认为现金已支付。",
+          "current_status": "10月6日Netlist宣布全面和解及五年许可，约定每季3000万美元、日历2026 Q4至2031 Q3，总6亿美元。这一新状态把该争议的未来现金腿具体化，仍未核实与MU FY2026 Q4确认5亿美元专利费用逐美元对应。当前作用是确定且次要的正常付款，不是合并现金路径的主导冲击；其他许可不能套用同一规模。",
+          "materiality_context": "总额决定生命周期资金消耗，季度频率/期限决定负债现金落点，确认期主要影响会计与现金桥而非创造另一份付款。年化1.2亿美元约FY2026 CFO897亿美元的0.13%，每季3000万美元对当前合并收付很小；若其中一期提前/推迟，现金移动3000万美元而非把全6亿美元重新扣。和解对追加诉讼成本及供货连续性的方向有利，但未测节约额不并入该固定付款敏感度。相对十亿美元级税款及资本时差，该项维持从属地位；固定合同仍需保留，不能因规模小删除已知支付。",
+          "scope_boundary": "公司许可及诉讼现金计划；知识产权有效性、技术覆盖和诉讼权利归关系域。本Factor不建立重大新Gap或推定所有未决诉讼均已消失。",
+          "ref": [
+            "https://investors.netlist.com/news/netlist-and-micron-enter-patent-license-and-settlement-agreements/c8615305-0590-43e4-bcb2-fe05e120f947",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O31",
+            "D1-O44"
+          ]
+        },
+        {
+          "name": "运营中断使延迟收现与恢复付款形成双向压力",
+          "mechanism": "连续制造、在制库存及客户资格使关键工序中断难以即时由别厂替代。自然灾害、供电事故或信息系统故障可暂停生产、验收或开票；已承诺采购、人员及资本付款却继续。报废、恢复、加急物流及重新认证消耗资源，能补产与保险覆盖/赔付期限决定损失能否和何时回收。防灾及流程冗余可降低中断概率，但先增加经营或资本支付。",
+          "current_status": "当前模型是多地制造与高投入持续运行，不是MU已发生重大事故。前后段、资格及既定付款管线使运营韧性具有现金意义。TSMC 2024年4月震后声明称多数产量可补回、仍有在制晶圆损失及成本影响，仅是结构类比，不能把其损失率移给MU。",
+          "materiality_context": "受影响工序/产品范围和中断时长决定交付暴露，资格及替代/补产速度决定延期还是永久丢单，持续固定付款放大净现金波动；报废是前期投入损失，不应再将减值当新增现金，实际恢复/加急和认证付款则另有现金负担。FY2026 53周收入的平均日尺度约3.59亿美元，5天全公司交付延期约17.95亿美元收入时差只是极端范围示例，不是预计事故、现金损失或正常季度运行率；局部中断按真实产品范围更小。保险可降低最终损失却不保证同季到账，防灾支出可改善未来尾部风险而降低当期FCF。当前大缓冲降低即时破产风险，不消除延迟、恢复现金和机会损失。",
+          "scope_boundary": "解释公司经营/再投资现金波动，物理工厂、安保和供应资格深度归相邻域；不声称当前有灾害、冻结或已知保险赔付。",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O31",
+            "D1-O88",
+            "https://www.sec.gov/Archives/edgar/data/1046179/000104617924000050/a20240418.htm"
+          ]
+        }
+      ],
+      "potential_gaps": [
+        {
+          "name": "应用分销、收费与治理重写高现金平台的持续期",
+          "why_live": "微软付费席位及紧容量支持生产使用；Anthropic观察长时任务，收费额度仍在调整。Salesforce 2025年已提供员工不计量套餐，2026年6月宣布按自主解决问题收费、计划7月可用；可靠性和付费单位可同时改变预算。Anthropic 4月明确工具权限及注入风险，并非企业都已无障碍部署。",
+          "revision_logic": "当前基线是高利润/采购持续而非本轮增长率重演。应用商的分销和收益制度、雇主的工作流选择可改变长期可付费规模及云商扩容回报，再经余量、产品分配及收现影响MU；早期预算/治理变化已有未来机会含义，无须等MU现金披露，但不能按活跃用户直接换美元。",
+          "possibility_space": [
+            {
+              "name": "主流订阅把持续代理作为默认入口",
+              "implication": "应用平台把代理纳入原有办公或消费订阅，降低另外购买门槛，扩大活跃任务及长时使用。固定费下服务商先承担新增计算成本，规模机会扩大但采购可持续性取决于成本/续费收益，不等于每次使用都产生新收入。"
+            },
+            {
+              "name": "雇主按真实业务结果扩大经常预算",
+              "implication": "大型雇主把客服、财务或工程从试点转为正式流程，按成功结果或节约外购成本付费。真实回报支持更久预算，改善高现金平台持续期；分成/结果费也让失败任务成本留在服务商，不按技术吞吐自动计利润。"
+            },
+            {
+              "name": "公开数据泄露或错误操作引发集中停用",
+              "implication": "若高影响事故促使企业暂停自主权限及计划推广，云端活跃任务与扩容回报可能下降；已签MU合同未必同步取消，先改变未来采购/价格解释。若转向隔离私有环境，机会在采购主体和产品间迁移而非全部消失。"
+            },
+            {
+              "name": "可靠治理降低导入成本而开放受限部门",
+              "implication": "应用商改进权限、审计及人工复核，让原本不经济或不能批准的部门开始付费。即使现有请求量未跳升，也扩大可持续用途；安全软件及复核的新增费用若仍很高，扩展则偏缓慢。"
+            },
+            {
+              "name": "服务商改按量或按结果收费并提高采购门槛",
+              "implication": "打包客户转为需追加预算的计量用法，可能抑制低价值后台任务、提升付费质量；降价或竞争性赠额度则可扩大活动却压毛利。对MU的长期机会与当前供给租金未必同方向。"
+            }
+          ],
+          "ref": [
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "https://www.anthropic.com/research/economic-index-june-2026-report",
+            "https://support.claude.com/en/articles/15036540-use-the-claude-agent-sdk-with-your-claude-plan",
+            "https://www.salesforce.com/news/stories/agentforce-help-agent-announcement/",
+            "https://www.salesforce.com/news/stories/pricing-update-2025/",
+            "https://www.anthropic.com/research/trustworthy-agents",
+            "D1-O44",
+            "D1-O57",
+            "D1-O103"
+          ]
+        },
+        {
+          "name": "效率、部署瓶颈与存储分层改变增量现金归属",
+          "why_live": "Dynamo已有分离推理与跨GPU/CPU/SSD缓存安排，GP1等近GPU闪存尚处评估路线；重要客户容量紧，但并非所有资源都紧。PJM大负荷方案截至输入截点仍待裁决，说明接电及成本分配可改变部署而非只改模型速度。",
+          "revision_logic": "现有解释是效率释放的能力在紧客户较快被吸收、并改变介质组合。新服务方法、任务形态和接电规则可改变同预算的硬件强度、扩容时间及MU份额；库存/合同可能先吸收活动变化。判断的是机会范围与现金持续期，不把软件基准效率当MU同比现金系数。",
+          "possibility_space": [
+            {
+              "name": "云商将重复长上下文移到主机内存和闪存",
+              "implication": "缓存复用及分层更广用于生产，固定任务下减少重复计算或HBM驻留，可能增加DDR/SSD。若MU在新层有资格，现金机会迁移；竞争者软件/器件绑定也可让行业总需求增长而MU份额下降。"
+            },
+            {
+              "name": "应用以持续记忆和多代理协作延长任务",
+              "implication": "用户授权更长流程及持久上下文，即使每token更省资源，总运行时间和缓存保留仍可能上升。紧余量客户更早追加容量，扩大未来采购及价格支撑；低价值活动仍可能被费用控制淘汰。"
+            },
+            {
+              "name": "云商或企业用小模型和端侧路由处理常规任务",
+              "implication": "更多工作在已有CPU、较小模型或终端完成，延后部分加速器扩容，同时增加其他内存/端侧配置机会。新资源受益者及利润组合不同，不能只凭GPU减少推合并现金同幅减少。"
+            },
+            {
+              "name": "接电规则要求自备供给或可中断运行",
+              "implication": "若PJM/FERC或相应辖区采用更严格成本/可靠性安排，运营者将预算转向能源、推迟部署或换地域。已签供给可先进入买方库存，MU近端现金未必立即降，但新采购时间和融资回报下修；现场能源投用则可解除约束。"
+            },
+            {
+              "name": "客户把优化后的余量用于延缓新购而非扩大服务",
+              "implication": "优化先吸收既有工作，在实际闲置资源较多的客户可暂缓硬件采购；长远可承载任务上限仍提高。它与紧客户扩容可并存，需区分供给/配额重分配，不以全行业平均掩盖客户差异。"
+            }
+          ],
+          "ref": [
+            "https://developer.nvidia.com/blog/nvidia-dynamo-1-production-ready/",
+            "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html",
+            "https://insidelines.pjm.com/pjm-board-directs-action-on-resource-adequacy-affordability-and-large-loads/",
+            "https://www.pjm.com/markets-and-operations/large-load",
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "D1-O51",
+            "D1-O74",
+            "D1-O103",
+            "D1-O108"
+          ]
+        },
+        {
+          "name": "合格供给与合同议价重写现金利润保护",
+          "why_live": "FY2026高利润的已披露主因是广谱ASP，而非只靠HBM数量；下一季毛利指引已低于Q4。多年价格带及数量承诺存在、覆盖未测。SK hynix有2027年2月洁净室计划及8月新DRAM/NAND设施投资公告，均非已经形成对应合格产量。",
+          "revision_logic": "高平台基线包含供给稀缺与部分合同保护。有效竞争供给、买方采购权和目标成本/配置可在终端活动不变时改写合并利润底线及现金持续期。FY2026收入尺度下1%统一实现价约影响13.32亿美元税前利润，说明此路径独立于新增任务；保护范围不是RPO/总收入机械比值。",
+          "possibility_space": [
+            {
+              "name": "竞争者把扩建和认证转成可替换的量产",
+              "implication": "设备、良率及客户资格配套后，买方可双源或改变配额，非合同售价和新合同谈判压力上升；建筑提前本身不是等额供给。MU若被分流，即使总行业出货仍增，现金利润池也可收缩。"
+            },
+            {
+              "name": "买方以长期量和资金换取更窄价格带",
+              "implication": "战略客户新增/续签更大数量保护，却要求较低上限或成本节约分享；现金可预测性增强但上涨收益被让渡。若覆盖不足或产品换代例外大，管理层底价观点仍不能升级为公司全量现金底线。"
+            },
+            {
+              "name": "瓶颈持续使未覆盖业务保留高租金",
+              "implication": "竞争者实际爬坡受工具、工艺或验证限制，客户仍争抢供给；合格数量受限时涨价/配额先反应，抬高现金平台持续期而非仅延续原数量。价格上限可能使受合同产品与现货机会不同。"
+            },
+            {
+              "name": "MU以良率和产品配置改变同量经济性",
+              "implication": "既有需求下制造改善降低现金单位成本，或把供给转向净回报更高而非标签更热的产品。可缓冲市场降价；若复杂新品损耗/折旧先升，出货增加也未必增加再投资后现金，须保留降本与价格独立作用。"
+            }
+          ],
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+            "https://news.skhynix.com/en/new-facility-investment-for-yongin-semiconductor-cluster/",
+            "https://news.skhynix.com/en/fab-facility-investment-2026/",
+            "D1-O57",
+            "D1-O44",
+            "D1-O88",
+            "D1-O53"
+          ]
+        },
+        {
+          "name": "非AI终端预算与备货行为改变涨价转现",
+          "why_live": "MCBU数量下降含供给改配，不能作为终端全衰退证据；微软披露组件涨价下OEM/渠道提前备货及PC承压。高价、可得配额和终端预算同时作用，客户端、移动及其他非AI买方并非一条相同周期。",
+          "revision_logic": "当前基线容纳非AI数量承压和暂时备货，同时由AI/高价值分配缓冲合并收入。后续买方选择可改变价格与数量的抵销、客户对价及MU库存收现；终端需求恢复若伴随存储降价，也不能只记销量利好。",
+          "possibility_space": [
+            {
+              "name": "OEM消化抢先采购并削减新订货",
+              "implication": "高价前提前锁料后，终端销售未跟上而消化渠道库存；MU新增出货/收现减慢、返利或价格调整可能增加。历史已发货收入并不全取消，结果由库存位置及合同条款区分。"
+            },
+            {
+              "name": "设备厂商降容量或延长更新周期保利润",
+              "implication": "买方以较低配置、推迟上市/更新应对组件成本，降低每台采购而不必立即减少设备数量；不同规格利润和认证可使MU现金组合变差。配额转向AI可缓冲，却提高依赖集中度。"
+            },
+            {
+              "name": "终端新用途使买方接受更高配置预算",
+              "implication": "更有用的本地AI、工作站或可靠性需求促使用户支付配置溢价，OEM扩大采购；若MU有合格产品且供给不再全被改配，可新增现金来源。用途承诺不是已实现销量，但其预算改变扩大此前受挤压的机会。"
+            },
+            {
+              "name": "行业价格缓和促成补库和设备更新",
+              "implication": "较低组件价格解除买方预算约束、带来数量恢复；MU同时失去部分单价租金。回款和库存周转可改善而毛利下降，合并现金取决于量/价/成本净效应，不强行归为同向复苏。"
+            }
+          ],
+          "ref": [
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O57",
+            "D1-O103",
+            "D1-O79"
+          ]
+        },
+        {
+          "name": "买方融资组织与回款条件改变现金质量",
+          "why_live": "贸易应收317.93亿美元与本年应收现金占用体现快速增长，尚无账龄证明信用崩坏。NVIDIA信用支持和模型商多平台资本关系表明上游融资与实际付款主体不同；客户对价估计另会调整收现。",
+          "revision_logic": "相对增长吸收基线，融资支持或撤出、验收账期及买方调整可改变现金兑现速度甚至可收金额。五天统一账期延长的FY2026平均收入静态尺度约17.95亿美元，仅定位时差非已观察DSO；融资到账与销售回款、保证金三腿分开。",
+          "possibility_space": [
+            {
+              "name": "资本方继续为可收费算力提供长资金",
+              "implication": "股权、贷款及稳定租约支持新项目采购，减少直接买方短期现金压力；先增加销售/应收仍可能压CFO，后续按期收款才改善现金质量。资本支持不能代替最终使用回报。"
+            },
+            {
+              "name": "贷款人撤回承诺或要求更高担保",
+              "implication": "即使最终用户兴趣不变，新云项目也会延采购、验收或付款；MU可调整信用和供给，代价是失去订单。只有真实违约敞口才降低可收金额，不能把融资放缓自动按全部应收减值。"
+            },
+            {
+              "name": "MU与资信较强客户重排账期及预付",
+              "implication": "缩短账期、分段验收或真实提前销售付款可释放经营占用；若用更低价格换条件，季度现金改善伴随利润让渡。可退合同保证金仍列融资，不因称作预付就提升CFO。"
+            },
+            {
+              "name": "买方争议验收或要求价格补偿",
+              "implication": "产品/平台延迟和旧库存压力促使买方延验或主张返利/退货，改变回款时点或最终净金额；已有客户对价负债的正常付款不是新损失。条件信用证可缓冲指定违约，不全包普通商业调整。"
+            }
+          ],
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://blogs.nvidia.com/blog/nvidia-unlocks-ai-compute-at-scale-capital-partners-to-power-ai-infrastructure-buildout/",
+            "D1-O31",
+            "D1-O10",
+            "D1-O57"
+          ]
+        },
+        {
+          "name": "内部库存管线与采购信用改写增长现金占用",
+          "why_live": "自有库存103.72亿美元、采购应付35.18亿美元具有独立范围；总应计的增长主要不是供应商信用。节点、新品及基地转换使制造周转、安全库存和真实账期可以在外部预算不变时变化。",
+          "revision_logic": "现有基线将库存占用视为正常生产增长但非每年复制。产品匹配、生产组织和供应商结算可释放或吸收数亿美元至十亿美元现金；减值不是售出库存，设备款在资本Factor而非全部混入CFO。",
+          "possibility_space": [
+            {
+              "name": "节点和后段协同缩短在制停留",
+              "implication": "制造组织减少等待及重复测试，在同样合格交付下减少在制与采购缓冲，释放现金且不牺牲销量。若只是削掉关键安全库存，未来停线/加急支付可吞回收益。"
+            },
+            {
+              "name": "新品爬坡及多基地并行增加必要备货",
+              "implication": "工序配对或认证延长使在制库存累积，现金先被占用，即使未来需求强也不能立即转现；之后顺利爬坡/出售可释放，非自动永久坏库存。"
+            },
+            {
+              "name": "供应商缩短账期或要求设备材料预付款",
+              "implication": "投入品稀缺或信用风险提高促使供应商收紧信用，经营采购付款前移；设备预付/资本应付另影响投资现金。项目数量不变仍能压低当期净现金，议价折扣可补部分长期成本。"
+            },
+            {
+              "name": "旧规格库存被重配、折价出售或报废",
+              "implication": "真实可售重配/出售能释放前期现金但可能损失毛利；账面减值或报废只承认已发生资源损耗，不等于同额现金释放。它可与新增产品扩张同时出现而改变现金质量。"
+            }
+          ],
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O31",
+            "D1-O10",
+            "D1-O88"
+          ]
+        },
+        {
+          "name": "现金税追赶计提与税制优惠改变可留存现金",
+          "why_live": "本年实付12.54亿美元远低于税费147.61亿美元，非流动应付98.20亿美元。过渡年一般制度支持首期QDMTT约2028春推断而非确认支付表；美国集团安全港并不排除当地QDMTT。",
+          "revision_logic": "基线是已有税负终将支付、现有实质激励继续符合条件。具体评税/申报安排可以只改期限，激励或最低税实施则改金额；这两种修订分别改变年度CFO与多年可留存利润，不把低实付率作为永久能力或把全部负债提前到FY2027。",
+          "possibility_space": [
+            {
+              "name": "税务申报及评税明确更分散或更集中的付款",
+              "implication": "首次申报身份、评税或可行分期使部分支付不同于一般2028春推算；同额税负在年度之间挪移，可与资本付款高峰叠加或错开，不需要收入变化才影响现金。"
+            },
+            {
+              "name": "实质激励调整保留更多合格税收优惠",
+              "implication": "主管机关调整实质激励及抵免承认方式、公司合规投入匹配资格，可能降低未来净税负；若额外运营/就业成本大，净现金收益小于表面优惠。不能从美国资格推冲回新加坡已计提税。"
+            },
+            {
+              "name": "当地最低税或激励条件使原优惠部分失效",
+              "implication": "新规则实施或实际经营不再达标，提高未来有效税率，削弱相同税前利润下现金；已有税负与新增费用分开，不将所有优惠一次归零。"
+            },
+            {
+              "name": "地域利润与经营布局改变税款来源",
+              "implication": "生产、研发和客户配置改变合法地域利润及激励范围，可能同时改变税额及付款地；搬迁/扩建成本会先支付，税收改善不是无成本工具。全球合并利润相近也可有不同现金税路径。"
+            }
+          ],
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.iras.gov.sg/media/docs/default-source/e-tax/e-tax-guide-mtt-and-dtt.pdf",
+            "https://www.oecd.org/content/dam/oecd/en/topics/policy-sub-issues/global-minimum-tax/side-by-side-package.pdf",
+            "D1-O31",
+            "D1-O10"
+          ]
+        },
+        {
+          "name": "资本扩建组织与资源成本改变付款回收差",
+          "why_live": "FY2027净PP&E计划H1约250亿美元且H2更高，设备应付86.18亿美元已经形成付款管线。AGC行业劳力竞争与分期制造/认证说明投入与合格现金回收不同时，当前没有MU已超支金额。",
+          "revision_logic": "基线是净投资明显升级、付款先于回收；管理层选择、工程资源和验收账期可改变净现金高峰及全周期回报。延缓付款不是取消义务，加速建设不是同日新增销量，租赁迁移另由流动性Unit解释。",
+          "possibility_space": [
+            {
+              "name": "公司提前锁工具和加速可用能力",
+              "implication": "强需求和资格优势促使MU提前设备/工程支付，短期再投资后现金更低，但若更早合格出货可增加以后现金并保住分配。若瓶颈在别的工序，提前花钱只扩大等待资本。"
+            },
+            {
+              "name": "承包商和关键材料涨价并要求预付",
+              "implication": "并行数据中心/电力/工厂争资源，使相同项目更贵或付款前移；施工延误还会推迟回收，形成成本与时差双击。固定价/已锁合同可吸收部分冲击，行业调查不直接量化MU全球预算涨幅。"
+            },
+            {
+              "name": "管理层重排项目或购买现有资产替代自建",
+              "implication": "对需求/回报重新排序可降低近期可选支付或缩短建设时间；已承诺管线和整合/认证限制弹性。若因此丢未来资格/份额，季度FCF改善也不能解释为长期现金更强。"
+            },
+            {
+              "name": "交付验收和工程结算集中跨季",
+              "implication": "设备先形成资产/应付后到期支付，或预付款先于交货，使季度支付与厂房进度脱钩；年度合同成本可能不变。已有设备款、采购承诺及净计划互含，不能叠加成新总义务。"
+            }
+          ],
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+            "https://news.agc.org/workforce-development/construction-workforce-shortages-remain-acute-despite-soft-market-conditions-as-data-centers-strain-labor-supply-survey-finds/",
+            "D1-O31",
+            "D1-O44",
+            "D1-O88"
+          ]
+        },
+        {
+          "name": "公共激励资格与现金兑现重估净自筹投入",
+          "why_live": "本年33.16亿美元实收与54.41亿美元确认激励资产并不相同。48D适用35%有美国合格设施边界；直接资助里程碑、地方非约束安排与海外激励各有条件，行业真实修约不是MU已暂停证据。",
+          "revision_logic": "基线依现有条件分期收款、净计划已扣相关激励。审核时差改变当年自筹压力；合格基数/税率、拒绝或追回改变全周期成本。相同抵免只能落在少缴税或到账的一条现金腿，不能再从已净额预算重复扣。",
+          "possibility_space": [
+            {
+              "name": "审核及选择支付使确认资产更快兑现",
+              "implication": "符合条件的项目完成审核、税抵免选择支付/抵扣进入现金，减轻对应期间自筹；若预算已含该到账，只是执行而非再增同额FCF，若时点早于原假设则改善资金高峰。"
+            },
+            {
+              "name": "实际合格投资范围不同于净计划假设",
+              "implication": "法定开工认定、投用条件及进度支出让更多/更少美国基础享35%；2026年后才法定开工的财产不合格，并非所有2027年后投用财产均失格。海外运营条件也可改资格。公司为保资格重排项目或提前支出，会改变最终净投入及近期付款；不能把35%乘全球毛capex。"
+            },
+            {
+              "name": "审核或协议修订推迟尚未拨资金",
+              "implication": "毛工程款照付而支持跨年，压当期再投资后现金但不必永久失去收益。远期非约束州支持不能当现款填缺口，强资金缓冲只能吸收时差而非消除机会成本。"
+            },
+            {
+              "name": "未达条件使支持被拒绝或追索",
+              "implication": "部分支持不再可得、已收款返还使净自筹成本更高，区别于单纯延迟；公司可补合规或谈判替代安排，费用/权益让渡不能忽略。融资来源永久性与股东分享后果在后两Units保留。"
+            }
+          ],
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+            "https://www.irs.gov/forms-pubs/correction-to-the-2025-instructions-for-form-3468-of-the-applicability-of-the-35-rate-on-line-1c-in-part-iv-advanced-manufacturing-investment-credit-under-section-48d",
+            "https://www.irs.gov/instructions/i3468",
+            "https://www.gao.gov/assets/gao-26-109121.pdf",
+            "D1-O31",
+            "D1-O4"
+          ]
+        },
+        {
+          "name": "劳动回报制度与自动化资源配置改变现金费用",
+          "why_live": "已有现金/股票奖励及44.47亿美元应计薪酬，未证实永久利润分享。内部Claude覆盖工程及企业流程但没有集团现金节约额；扩产与人才竞争使节省工时是否变为少付资源具有实际选择。",
+          "revision_logic": "相对普通奖励结算基线，制度化现金回报或真实可取消费用会改变经常CFO；支付跨期只改时点，股票替代改变股东承担者。内部AI仍从属这一经营资源主题，不因工具使用量本身设重大独立Gap。",
+          "possibility_space": [
+            {
+              "name": "高利润奖励成为规则化现金分享",
+              "implication": "管理层/劳动协商将部分奖励与利润挂钩或固定提高待遇，扩大跨年现金费用；利润挂钩使下行时较固定工资有弹性。当前报道/诉求不当作此制度已生效。"
+            },
+            {
+              "name": "奖励在现金和股票之间重新配置",
+              "implication": "更多现金降低股票供给却消耗CFO，更多股票暂保现金却移为稀释；一次性解决争议与经常制度的后果不同。应计正常结算不能再当同额新增薪酬。"
+            },
+            {
+              "name": "AI使可取消外包和新增招聘被替代",
+              "implication": "业务负责人取消真实付费资源或用同员工承接增长，减少未来现金付款；扣除模型、集成及复核费用后才是净益处。仅产出增大而工资照付，则能力改善但当期费用节约不成立。"
+            },
+            {
+              "name": "自动化扩大工作范围但加大服务及治理支付",
+              "implication": "公司更快研发/制造却继续扩招并支付更多模型、安全和数据治理费用，现金费用可先升。未来合格产出/少犯错可回收，不能同时将全部工时省下和额外产出视为零成本。"
+            }
+          ],
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://focustaiwan.tw/business/202609110009",
+            "https://jp.micron.com/about/press/news/micron-and-anthropic-announce-strategic-agreement-to-scale-next-generation-ai-infrastructure",
+            "D1-O31",
+            "D1-O10",
+            "D1-O104",
+            "event-library:MU:v1"
+          ]
+        },
+        {
+          "name": "关键运营事件使交付延迟与恢复付款叠加",
+          "why_live": "多地连续制造、在制库存、资格及已锁付款形成非线性现金暴露。TSMC 2024年震后披露多数产量可补回但仍有晶圆损失，是风险结构的历史类比；没有截止前MU重大新事故的事实主张。",
+          "revision_logic": "正常持续运行是现金基线的隐含前提。局部停线、系统事故或预防安排可在终端需求不变时同步改变收现时间与恢复支付；保险和补产改善最终结果但不保证同季度缓冲。厂房风险深度归制造域，这里保留合并收付与再投资后现金的修订。",
+          "possibility_space": [
+            {
+              "name": "地震或关键供电事故损坏在制并暂停产出",
+              "implication": "受影响产品交付/验收推迟，报废是已投入损耗，恢复和加急付款另增加现金压力；能补产则主要移时，不能替代或失去资格才可能永久丢单。其他厂和保险可缓冲，未假定MU具体损失额。"
+            },
+            {
+              "name": "网络或业务系统事故阻断生产及开票结算",
+              "implication": "即使物理设备完好，调度、客户验收或收款流程停顿也可延收并增加恢复/赔付费用；影响范围与权限/备份决定不同于全面工厂停产的结果。没有把AI供应商风险当MU已遭攻击证据。"
+            },
+            {
+              "name": "公司为韧性增加冗余和防护投入",
+              "implication": "替代资源、备份、隔离及保险安排先增加经营/资本付款，却降低以后尾部中断和集中依赖。相同近期收入可有更低FCF、更稳长期现金，不能只以当季成本判断净价值。"
+            }
+          ],
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.sec.gov/Archives/edgar/data/1046179/000104617924000050/a20240418.htm",
+            "D1-O31",
+            "D1-O88"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "流动性与融资结构",
+      "scope": "美光现金、可交易及战略投资资产、债券债务、融资租赁、授信、客户保证金融资和附条件政府资助形成的合并资金结构，涵盖资金可用性、期限配置、偿付义务、融资能力与流动性缓冲。",
+      "horizon": "季度资产负债与资金变化，延伸至多年投资、债务和其他偿付期限。",
+      "ref": [
+        "D1-O31",
+        "D1-O96",
+        "D1-O9",
+        "D1-O10",
+        "D1-O57",
+        "D1-O6",
+        "D1-O104",
+        "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+        "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+        "https://www.gao.gov/assets/gao-26-109121.pdf",
+        "https://www.intel.com/content/www/us/en/newsroom/news/corporate/intel-and-trump-administration-reach-historic-agreement.html",
+        "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260916a.htm"
+      ],
+      "state": {
+        "parameters": [
+          {
+            "name": "现金及等价物",
+            "definition": "合并现金及等价物，不包括短长期可交易投资及私募股权。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O9",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "短期可交易投资",
+            "definition": "资产负债表短期投资。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O9"
+            ]
+          },
+          {
+            "name": "长期可交易投资",
+            "definition": "资产负债表长期marketable investments，不是战略非市场化股权。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O9"
+            ]
+          },
+          {
+            "name": "现金与可交易投资总额",
+            "definition": "以上三项合计；不是全部可立即无摩擦用于母公司付款的现金。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O9",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "境外子公司现金与投资",
+            "definition": "MD&A披露境外子公司持有现金和投资，地域位置不等于法律受限金额。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "资金投资组合性质",
+            "definition": "银行及证券资产的主要风险和流动性配置。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O31",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "被套期非美元现金证券",
+            "definition": "公允价值货币套期覆盖的非美元现金及债券投资账面公允价值，不是全部外币资产或无风险资产。",
+            "value_type": "NUMBER",
+            "ref": [
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "外币收付套期结构",
+            "definition": "现金资产及未来设备/制造付款的现行汇率管理结构。",
+            "value_type": "STAGE",
+            "ref": [
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "非市场化股权资产",
+            "definition": "其他非流动资产中无可确定市场公允价值股权，主要投AI及科技企业；成本减减值并按合格可观察价格调整，不纳入流动性缓冲。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "非市场化股权现金购买",
+            "definition": "投资现金流购买私募等非市场化股权，不包含在公司调整FCF净capex中。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "战略股权与产品供应资金关系",
+            "definition": "对AI产业投资与存储供应的同时参与状态，不推定对被投公司所有负债承担担保。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O104",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "含融资租赁总债务",
+            "definition": "合并债券及融资租赁净账面总额；不把票据2792百万美元当全部债务。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O96",
+              "D1-O31",
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "票据账面债务",
+            "definition": "未到期无担保票据净账面总额，排除融资租赁。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O96",
+              "D1-O31",
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "融资租赁负债",
+            "definition": "已开始的设备及嵌入气体等租赁负债，不包括尚未开始的合同全部现金。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O96",
+              "D1-O31",
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "一年内到期债务账面额",
+            "definition": "期末Current debt；当前全为融资租赁，与包含利息的租赁付款不同。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O96",
+              "D1-O31",
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "债务现金偿还",
+            "definition": "现金流表债务支付，包含提前偿付及融资租赁相关现金，不等同本金账面下降。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O10",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "票据到期结构",
+            "definition": "母公司未偿还票据的法定偿付位置及债权优先性。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O96",
+              "D1-O31",
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "融资租赁年度现金到期额",
+            "definition": "已开始融资租赁未来现金支付含隐含利息；各财年单独计量，不与负债现值重复相加。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O96",
+              "D1-O31",
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "未动用循环授信",
+            "definition": "无提款时可借额度；取用仍受信用约束，不等同现金资产。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O96",
+              "D1-O31",
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "循环授信到期",
+            "definition": "循环信贷任何已借余额到期日。",
+            "value_type": "TIME",
+            "ref": [
+              "D1-O96",
+              "D1-O31",
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "循环授信成本及约束",
+            "definition": "现行无担保循环贷款融资条件。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O96",
+              "D1-O31",
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "客户保证金实收融资",
+            "definition": "FY2026客户合同负债保证金现金，归融资现金流；不是收入或CFO。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O10",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "非流动客户合同负债",
+            "definition": "期末非流动合同负债账面额，与FY融资收款流量不同。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O9",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "保证金主要返还窗口",
+            "definition": "公司已披露几乎全部保证金的计划返还期，作为合并偿付配置；具体合同条款归合同域。",
+            "value_type": "TIME",
+            "ref": [
+              "D1-O31",
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "客户信用证规模",
+            "definition": "第三方银行信用证已签发或承诺，违约条件满足才能取用，不能计入日常现金或授信。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "保证金及信用支持可用性",
+            "definition": "客户资金及保障对公司总量资金的法律经济位置。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O31",
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "长期不可撤销采购义务",
+            "definition": "超过一年剩余合同期的采购支付管线，含固定/最低采购、PP&E和尚未开始的嵌入租赁；不是全公司资本计划。",
+            "value_type": "STAGE",
+            "ref": [
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "政府资助承诺结构",
+            "definition": "附条件国家和地方激励的融资可用性；授予上限、已确认应收、实际收款区别。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O31",
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "公共资助追索及分配约束",
+            "definition": "政府资金附带的未来资金用途限制与潜在返还安排。",
+            "value_type": "STAGE",
+            "ref": [
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "管理层资金充足判断",
+            "definition": "公司对整体融资与偿付能力的前瞻判断，不是已实现每一期现金盈余。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "资金法律限制与母公司可调拨额",
+            "definition": "受质押、监管、税务、合同或跨境调拨限制的资金规模；境外持有数不是限制额。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O31",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "战略投资后续出资承诺",
+            "definition": "合并战略私募股权未来不可撤销追加出资及相关担保现金敞口；股权账面额不能替代。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "D1-O104"
+            ]
+          }
+        ],
+        "values": [
+          {
+            "name": "现金及等价物｜2026-09-03期末；previous_value为2025-08-28期末",
+            "parameter": "现金及等价物",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 38364.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 9642.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "2026-09-03期末；previous_value为2025-08-28期末",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O9",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "短期可交易投资｜2026-09-03期末；previous_value为2025-08-28期末",
+            "parameter": "短期可交易投资",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 5070.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 665.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "2026-09-03期末；previous_value为2025-08-28期末",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O9"
+            ]
+          },
+          {
+            "name": "长期可交易投资｜2026-09-03期末；previous_value为2025-08-28期末",
+            "parameter": "长期可交易投资",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 30019.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 1629.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "2026-09-03期末；previous_value为2025-08-28期末",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O9"
+            ]
+          },
+          {
+            "name": "现金与可交易投资总额｜2026-09-03期末；previous_value为2025-08-28期末",
+            "parameter": "现金与可交易投资总额",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 73453.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 11936.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "2026-09-03期末；previous_value为2025-08-28期末",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O9",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "境外子公司现金与投资｜2026-09-03期末；披露约数",
+            "parameter": "境外子公司现金与投资",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 5120.0,
+              "unit": "百万美元"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-03期末；披露约数",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "资金投资组合性质｜现行状态",
+            "parameter": "资金投资组合性质",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "主要为银行存款、货币市场基金与流动性较高的投资级固定收益证券；高信用质量、按行业及单一发行人分散，资金政策偏短期限。分类为长期投资不意味着锁定不能出售。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-03期末",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O31",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "被套期非美元现金证券｜2026-09-03期末；previous_value为2025-08-28期末",
+            "parameter": "被套期非美元现金证券",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 11510.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 3050.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "2026-09-03期末；previous_value为2025-08-28期末",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "外币收付套期结构｜现行状态",
+            "parameter": "外币收付套期结构",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "现金及债券投资公允价值货币远期一般一年内；特定capex及制造费用现金流远期/掉期一般两年内；货币资产负债滚动远期一般一年内。不存在已披露全额覆盖保证。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-03期末",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "非市场化股权资产｜2026-09-03期末；previous_value为2025-08-28期末",
+            "parameter": "非市场化股权资产",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 1300.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 194.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "2026-09-03期末；previous_value为2025-08-28期末",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "非市场化股权现金购买｜FY2026",
+            "parameter": "非市场化股权现金购买",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 1046.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 34.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周；previous_value为FY2025，截至2025-08-28，52周，未做周数标准化",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "战略股权与产品供应资金关系｜现行状态",
+            "parameter": "战略股权与产品供应资金关系",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "已参与Anthropic Series H股权投资并建立HBM、DRAM与SSD战略协议；单笔投资额未披露于已读协议，合并非市场化股权1300百万美元不能全部归属Anthropic。"
+            },
+            "previous_value": null,
+            "time_scope": "截至2026-10-09的合作及期末投资资产",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O104",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "含融资租赁总债务｜2026-09-03期末；previous_value为2025-08-28期末",
+            "parameter": "含融资租赁总债务",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 5179.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 14577.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "2026-09-03期末；previous_value为2025-08-28期末",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O96",
+              "D1-O31",
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "票据账面债务｜2026-09-03期末；previous_value为2025-08-28期末",
+            "parameter": "票据账面债务",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 2792.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 11533.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "2026-09-03期末；previous_value为2025-08-28期末",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O96",
+              "D1-O31",
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "融资租赁负债｜2026-09-03期末；previous_value为2025-08-28期末",
+            "parameter": "融资租赁负债",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 2387.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 3044.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "2026-09-03期末；previous_value为2025-08-28期末",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O96",
+              "D1-O31",
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "一年内到期债务账面额｜2026-09-03期末；previous_value为2025-08-28期末",
+            "parameter": "一年内到期债务账面额",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 491.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 560.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "2026-09-03期末；previous_value为2025-08-28期末",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O96",
+              "D1-O31",
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "债务现金偿还｜FY2026",
+            "parameter": "债务现金偿还",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 10043.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 4619.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周；previous_value为FY2025，截至2025-08-28，52周，未做周数标准化",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O10",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "票据到期结构｜现行状态",
+            "parameter": "票据到期结构",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "截至期末2028—2031到期票据和2029 Term Loan A均已清偿；FY2027—FY2031无票据本金到期，剩余票据本金2808百万美元在2032及以后，账面扣折价16百万美元。票据为母公司无担保，结构性次于子公司负债；交叉违约条款仍在。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-03期末",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O96",
+              "D1-O31",
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "FY2027融资租赁付款",
+            "parameter": "融资租赁年度现金到期额",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 577.0,
+              "unit": "百万美元"
+            },
+            "previous_value": null,
+            "time_scope": "FY2027；截至2026-09-03既存租赁的合同付款含利息",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O96",
+              "D1-O31",
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "FY2028融资租赁付款",
+            "parameter": "融资租赁年度现金到期额",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 560.0,
+              "unit": "百万美元"
+            },
+            "previous_value": null,
+            "time_scope": "FY2028；截至2026-09-03既存租赁的合同付款含利息",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O96",
+              "D1-O31",
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "FY2029融资租赁付款",
+            "parameter": "融资租赁年度现金到期额",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 500.0,
+              "unit": "百万美元"
+            },
+            "previous_value": null,
+            "time_scope": "FY2029；截至2026-09-03既存租赁的合同付款含利息",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O96",
+              "D1-O31",
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "FY2030融资租赁付款",
+            "parameter": "融资租赁年度现金到期额",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 349.0,
+              "unit": "百万美元"
+            },
+            "previous_value": null,
+            "time_scope": "FY2030；截至2026-09-03既存租赁的合同付款含利息",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O96",
+              "D1-O31",
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "FY2031融资租赁付款",
+            "parameter": "融资租赁年度现金到期额",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 130.0,
+              "unit": "百万美元"
+            },
+            "previous_value": null,
+            "time_scope": "FY2031；截至2026-09-03既存租赁的合同付款含利息",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O96",
+              "D1-O31",
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "2032以后融资租赁付款",
+            "parameter": "融资租赁年度现金到期额",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 659.0,
+              "unit": "百万美元"
+            },
+            "previous_value": null,
+            "time_scope": "FY2032及以后累计；截至2026-09-03既存租赁合同；不是单年",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O96",
+              "D1-O31",
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "未动用循环授信｜2026-09-03期末；2026-05-06总额度由3500降至2000百万美元",
+            "parameter": "未动用循环授信",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 2000.0,
+              "unit": "百万美元"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-03期末；2026-05-06总额度由3500降至2000百万美元，无余额",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O96",
+              "D1-O31",
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "循环授信到期｜日期窗口",
+            "parameter": "循环授信到期",
+            "source_role": "ACTUAL",
+            "value": {
+              "point": "2030-03-12",
+              "start": null,
+              "end": null,
+              "precision": "日"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-03期末",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O96",
+              "D1-O31",
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "循环授信成本及约束｜现行状态",
+            "parameter": "循环授信成本及约束",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "借款为调整后term SOFR加0.875%—1.50%随评级变化；合并净债务/调整EBITDA不超过3.25倍，重大收购后可暂四季度升至3.75倍，可无罚金提前偿还。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-03期末",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O96",
+              "D1-O31",
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "客户保证金实收融资｜FY2026",
+            "parameter": "客户保证金实收融资",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 12747.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 0.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周；previous_value为FY2025，截至2025-08-28，52周，未做周数标准化",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O10",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "非流动客户合同负债｜2026-09-03期末；previous_value为2025-08-28期末",
+            "parameter": "非流动客户合同负债",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 12895.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 142.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "2026-09-03期末；previous_value为2025-08-28期末",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O9",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "保证金主要返还窗口｜日期窗口",
+            "parameter": "保证金主要返还窗口",
+            "source_role": "ACTUAL",
+            "value": {
+              "point": null,
+              "start": "2029",
+              "end": "2031",
+              "precision": "日历年窗口，几乎全部而非逐笔日期"
+            },
+            "previous_value": null,
+            "time_scope": "截至2026-09-03所持保证金的未来返还",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O31",
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "客户信用证规模｜2026-09-03期末",
+            "parameter": "客户信用证规模",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 7000.0,
+              "unit": "百万美元"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-03期末，已签发或承诺约数",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "保证金及信用支持可用性｜现行状态",
+            "parameter": "保证金及信用支持可用性",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "到账保证金在建设期提供资金，但存在后期返还；信用证为客户违约/违约条件触发的备用保护，不是美光自由提款银行融资。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-03期末",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O31",
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "长期不可撤销采购义务｜现行状态",
+            "parameter": "长期不可撤销采购义务",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "期末约10800百万美元：FY2027约1300、2028约1800、2029约1400、2030约1100、2031约800、2032以后约4400。非取消承诺并未覆盖全部未来付款，不能在已披露capex或租赁付款上机械全额重复相加。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-03期末",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "政府资助承诺结构｜现行状态",
+            "parameter": "政府资助承诺结构",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "美国CHIPS总额至多约6400百万美元；期末尚未确认承诺约4900百万美元，按建设、工具安装、晶圆生产里程碑。纽约州至多5500百万美元为非约束条款，跨20多年。印度及日本尚未确认承诺约1100及3400百万美元；不计入现有现金。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-03期末",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O31",
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "公共资助追索及分配约束｜现行状态",
+            "parameter": "公共资助追索及分配约束",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "支出、运营、员工及项目条件需达成或维持；违约可追索。既有CHIPS协议含特定项目超额现金收益分享：阈值显著高于基线，比例较小，总额不超过该项目拨款75%，自项目累计现金转正首年后最长10年；并非政府持有美光股权。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-03期末",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "管理层资金充足判断｜现行状态",
+            "parameter": "管理层资金充足判断",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "stage": "预计现金与投资、经营现金、政府激励、客户保证金和可用融资足以满足至少未来12个月及其后可预见时期需求。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-10-09起至少12个月及可预见期",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O31"
+            ]
+          }
+        ]
+      },
+      "expectation_baseline": [
+        {
+          "name": "巨大资产缓冲降低近期再融资依赖，不等于全部闲置现金",
+          "baseline": "研究者基线是公司可以依靠现有现金、流动证券和经营收现应对FY2027扩产，不需要立即依赖新发行票据。734.53亿美元现金及可交易投资、51.79亿美元含租赁债务、20亿美元未用授信与2027—2031无票据本金到期，支持这一判断，公司也判断未来至少12个月资金充足。偿债100.43亿美元已降低再融资压力。可交易投资仍承担信用、市场、币种及调拨成本，资本/税款/股息/客户返还义务先于“多余资金”认定。",
+          "ordinary_progress": "存款和高质量证券组合滚动，支付已开始租赁及设备款，授信保留备用而非默认提款；无票据到期年不等于无现金义务。",
+          "open_frontier": "经营现金和净capex差额、税款集中支付、资金法定可达性及自主回购幅度会改变缓冲消耗速度，当前不支持短期流动性危机或无成本全额分配两种极端。",
+          "time_scope": "FY2027资金配置至未来数年偿付",
+          "ref": [
+            "D1-O31",
+            "D1-O9",
+            "D1-O96",
+            "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md"
+          ]
+        },
+        {
+          "name": "客户资金是建设期桥梁，返还期需独立保留流动性",
+          "baseline": "工作基线是既有127.47亿美元保证金先支持供给投资，再在2029—2031主要返还，而非变成永久自有资本或CFO。多年采购承诺及条件信用保护使客户资金继续作为融资来源具合理性，但未有新保证金固定增长指引，不能将现有入账每年滚动外推。未来产品销售和返还款是不同现金腿；70亿美元信用证不能加入无条件可用现金。",
+          "ordinary_progress": "按承诺投资和交付，既有保证金留存至其合同返还窗口；新合同的资金保障按实际签署及到账另记。",
+          "open_frontier": "新增与到期保证金净额能否滚动、客户履约及返还是否重叠投资高峰决定资金替代程度，合同明细由合同域深化。",
+          "time_scope": "FY2027建设资金至日历2029—2031",
+          "ref": [
+            "D1-O31",
+            "D1-O57",
+            "D1-O10"
+          ]
+        },
+        {
+          "name": "公共支持基线仍是条件资助，不将行业改股权样本套用美光",
+          "baseline": "工作基线维持美光现有CHIPS资金结构、追索和项目收益分享约束，按达标取得剩余未确认支持，而非把未确认49亿美元作为已可自由融资资产。行业GAO修订案例和Intel政府持股交易说明政策工具能改变，但没有美光将CHIPS改为政府股权的证据；本公司已有项目超额现金收益分享，不应误写为完全不存在分享。纽约州条款仍非约束且跨20多年，不能补足近期付款缺口。",
+          "ordinary_progress": "按现有项目里程碑报送、审核和分阶段拨款，维持合规、运营和员工条件。",
+          "open_frontier": "目标公司协议重谈、追索触发、额外分享或资本形式变化才会修订融资可用性与权益；行业政策可能性不计作现行负债。",
+          "time_scope": "多年资助及项目累计现金转正后的分享期",
+          "ref": [
+            "D1-O31",
+            "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+            "https://www.gao.gov/assets/gao-26-109121.pdf",
+            "https://www.intel.com/content/www/us/en/newsroom/news/corporate/intel-and-trump-administration-reach-historic-agreement.html"
+          ]
+        },
+        {
+          "name": "流动证券收益与战略股权采用两套资金逻辑",
+          "baseline": "研究者默认高质量短期限取向的资金投资继续服务付款缓冲；9月联储目标区间3.75%—4%提高短端机会成本，但不据此假设美光投资收益全按政策率重定价。私募AI/科技资产期末约13亿美元、年度购买10.46亿美元，规模已不能被旧1.94亿美元余额遮蔽，但仍小于流动证券缓冲，不能作为随时可提款来源。Anthropic产品合作与股权出资同时存在，资本选择支持关系延续，不证明追加出资、担保或销售互为无条件承诺。",
+          "ordinary_progress": "证券随到期和付款管理滚动；已披露战略投资按成本减减值及观察价格调整，不用一级融资估值当即售现金。",
+          "open_frontier": "私人投资后续承诺、估值减值与被投资客户采购资金同向变化可能放大资本暴露；分项规模未知时不假设全部13亿美元投Anthropic。",
+          "time_scope": "未来数季资金投资收益，延伸至战略资产退出",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O104",
+            "D1-O31",
+            "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260916a.htm"
+          ]
+        }
+      ],
+      "realization_factors": [
+        {
+          "name": "资产可用性与支付日历共同决定融资缓冲",
+          "mechanism": "现金、可交易证券的变现能力及所在币种/主体决定可用资金，未来经营现金补充资金池。税款、资本付款、租赁、采购及客户返还在各自到期日消耗资金，自主股息/回购和战略投资可调整。资金管理按期限保留储备、变现/调拨资产或融资；资产与付款同期限比较才决定缺口，不能把不同年份所有承诺一次相加，也不能把全部证券视作即时无摩擦存款。",
+          "current_status": "734.53亿美元现金及可交易投资远大于51.79亿美元含租赁债务，且2027—2031无票据本金到期，当前主要问题是配置和保留能力而非立即再融资危机。FY2027净资本付款升级、税款追赶及2029—2031客户返还说明缓冲并非全闲置。公司称至少12个月资金充足属于管理判断；当前支持较低短期融资依赖，不是已经证实未来每期净现金增长。",
+          "materiality_context": "资产总量提供大盘，变现/调拨摩擦影响某地点某天的可用量；按账面简单现金证券减总债务约682.74亿美元，仅是尺度而非无条件可分配净现金。任一10亿美元未被新增CFO/融资抵销的付款占现有资产约1.36%，其重叠时点比标签更重要；净资本计划超过约500亿美元、客户保证金现金127.47亿美元和非流动税款98.20亿美元都属重要跨期暴露，但后两者不全FY2027付。经营现金是主要动态补充项，收现/投入变化可比低近债到期更快改变缓冲；自主分配/战略投资是可调阀门，延期税款或资本可能附经济代价。采购承诺、设备应付、资本指引和租赁若互含不得重复，客户保证金负债与返还金额也不得两扣。当前票据去杠杆降低短端刚性，未来支付重叠和资产可达性决定保留需求。",
+          "scope_boundary": "合并资金存量、来源用途与到期结构；经营现金形成在前Unit、股东分配在后Unit。本Factor不作无未来CFO的危机预测或全额资产可分配判断。",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+            "D1-O31",
+            "D1-O9",
+            "D1-O96",
+            "D1-O10"
+          ]
+        },
+        {
+          "name": "可返还客户资金以期限换取建设融资",
+          "mechanism": "客户为未来供给支付保证金，合同覆盖、客户资金能力及履约关系决定新保证金规模；资金留存期限把外部融资需要从建设期移至返还期。新增到账减到期返还的净额决定它能否滚动替代贷款，返还不是销售退款或经营成本。违约信用保护影响不履约损失及条件回收，不改变正常到期应返责任。若续签/新增资金不足，美光需依靠经营积累、资产变现或其他融资补位。",
+          "current_status": "FY2026收到127.47亿美元列融资流，期末128.95亿美元非流动合同负债含旧余额；大部分将在2029—2031返还。当前是较大建设期桥梁而非永久资本；未有固定新增保证金增速。70亿美元信用证须满足指定违约条件，不能加入现金池或作为美光日常可提款额度。当前低票据杠杆部分伴随客户来源增加，不能只按债务减少推断全部外部资金撤出。",
+          "materiality_context": "合同覆盖和客户融资能力决定可获得资金的范围，留存期限决定期限匹配，新旧合同滚动净额决定未来融资替代。127.47亿美元到账相当于期末流动资金总量约17.4%，规模大于20亿美元备用授信；新到账少10亿美元或返还多10亿美元使当期融资现金少10亿美元，CFO并不因此直接下降。正常交付、采购承诺和资金返还是不同现金腿，不能以已收到保证金再计算同额销售实收。返还期与资本/税款重叠会增加储备需求，即使合同利润很好亦然；重新收保证金须买方同意与有钱，不是会计滚动。信用保护的额度、触发及回收期限可缓冲违约敞口，但正常返还仍需自有流动性，70亿美元并非无条件抵销127.47亿美元。",
+          "scope_boundary": "融资现金、附返还资金与公司期限匹配；详细合同条件及信用支持关系由战略客户域深化，贸易回款在现金生成Unit。",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O31",
+            "D1-O57",
+            "D1-O10"
+          ]
+        },
+        {
+          "name": "债务、租赁和伙伴资本重排刚性资金义务",
+          "mechanism": "管理层在自有现金、票据、银行授信、租赁及伙伴资本间选择；本金期限、利率/评级及财务约束决定融资成本和可用额度。提前偿债减少未来利息及到期风险，却可能先支付溢价。设备租赁或共同投资降低即期直接资本支付，转为租金、担保、最低采购或伙伴收益权；真正风险取决于母公司承担哪些义务，而非报表capex或票据余额单项下降。",
+          "current_status": "公司已偿还100.43亿美元债务现金；剩余票据账面27.92亿美元、融资租赁23.87亿美元，2027—2031无票据本金到期但租赁付款继续。20亿美元RCF未用、到2030年3月、利差随评级且有净杠杆约束。当前信用线是备用而非扩建主来源。微软披露建筑使用年限调整可改变租赁分类及报告capex、投资预期却不变，是报表口径与总义务分离的实例，不代表MU已改同一会计判断或签新合资。",
+          "materiality_context": "债务金额及到期决定刚性偿付，利率/评级决定新增与浮动融资成本，约束决定压力期能否提款；当前融资租赁占总债务约46%，比仅看票据更重要，FY2027已开始租赁含息付款5.77亿美元不等于当前债务本金4.91亿美元。RCF仅约期末现金证券2.7%，不能包办超过500亿美元年度净资本计划；净杠杆上限3.25倍（规定收购期暂3.75）是合同约束，不是交易阈值。提前偿债中的票据现金92.55亿美元、账面本金及5.10亿美元损失口径不同，支付溢价换来多年成本/风险减少。示例把10亿美元自付设备改为租赁，当前capex少10亿美元但未来应付现值约设备融资额加融资成本，并非免费多出FCF；伙伴资本还改变控制/收益份额和或有责任，须按实际承担比例计。当前低近票据到期使融资方式选择权较大，保留现金和未来租金的权衡比被迫续借更贴近实际。",
+          "scope_boundary": "母公司融资及偿付，包括会计项目之外的义务迁移；新租赁/合资只作结构机制，不写为当前MU新增事实，项目运营回报在制造域、权益分享在股东Unit。",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+            "D1-O96",
+            "D1-O31",
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4"
+          ]
+        },
+        {
+          "name": "证券久期、信用与利率重定价影响储备质量",
+          "mechanism": "资金管理选择证券期限、信用质量和分散程度；市场利率及信用利差改变存量债券价格，新投资/浮动资产收益随重定价改变。到期与付款匹配决定账面波动是否转成实际变现损失，发行人违约改变本金回收。借款利率和授信评级影响补充融资代价；净现金公司利率上升可提高未来收益也压低存量价值，方向不能照搬高杠杆公司。",
+          "current_status": "当前短/长期可交易投资合计350.89亿美元，现金还包括存款及基金，公司采用高评级、分散及短期限取向；这降低但不消除信用/流动性风险。9月联储3.75%—4%目标仅说明当时环境，不代表未来路径或MU全组合票息。大量票据已偿还、RCF未用，当前利率敏感性更偏资产收益及变现价格，而非所有债务利息立即同幅增加。",
+          "materiality_context": "期限/久期决定价格敏感性，信用/分散决定本金及价差暴露，付款匹配决定是否必须卖出，新增投资重定价速度决定收益何时改变。示例350.89亿美元证券全部收益提高100bp，年化税前利息约多3.51亿美元；实际只对可重定价部分成立，非预测。若同组合有效久期假设1年，收益率升100bp的一阶价格影响约负3.51亿美元，真实久期未测；不能把持有至到期的暂时跌价和全部永久本金损失同时扣。高质量不等于无信用风险，若某发行人违约损失取决于集中敞口及回收，而非对所有证券一律减值。当前资产端比27.92亿美元剩余票据上的同幅新融资率变化更大；固定票据不即时重定价，未提款RCF只在使用后形成利息。利息收益属缓冲补充，量级小于年度资本升级，急需变现时价差和流动性可放大局部影响。",
+          "scope_boundary": "可交易资金资产及补充融资成本；不将非上市股权视为债券或将利率变化机械转成MU当前利润/股价判断。",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O9",
+            "D1-O96",
+            "D1-O31",
+            "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260916a.htm"
+          ]
+        },
+        {
+          "name": "战略股权的退出性和追加出资形成关联敞口",
+          "mechanism": "管理层用现金购买非上市权益以支持技术/客户关系；被投企业现金回报、融资估值及退出机会决定权益经济价值，成本减减值/可观察价格规则决定账面确认。新一轮跟投或承诺消耗现金，未实现重估不形成可用资金。若被投者同时是存储客户，融资或经营转弱可同时降低采购能力与股权价值；商业协同不等于担保其融资或承诺追加。",
+          "current_status": "期末非市场化股权约13亿美元，年度现金购买10.46亿美元，已较旧1.94亿美元显著增大。Anthropic投资及HBM/DRAM/SSD合作使产业与资本联系真实存在，但个别金额、后续承诺和退出条款没有量化；总13亿美元不能全归Anthropic。当前这些资产不纳入734.53亿美元现金/可交易投资缓冲，可用资金和战略回报采用两套逻辑。",
+          "materiality_context": "初始规模决定风险大盘，估值/经营回报改变股权价值，退出性决定何时能用于支付，追加出资决定新增现金压力；协同对供应资格/采购可能有价值，但未测收益不得与股权升值重复计。13亿美元约流动资金1.8%，现有资产不足主导偿付，却不是忽略不计；10.46亿美元年度购买已高于6.10亿美元股息。假设账面减值50%为6.5亿美元非现金权益损失，不直接让可交易资金少6.5亿美元；新增跟投10亿美元则立即消耗约1.36%现有资金。客户融资与股权价值同向恶化时，损失可能叠加在贸易回款/未来采购上，不能只看投资小比例；没有合约追加责任时公司可不跟投，代价可能是稀释投资或失去关系机会。当前追加资金及退出流动性比未实现估值标题更直接影响本Unit。",
+          "scope_boundary": "非上市权益作为资金用途、关联风险及退出来源；客户商业现金由前Unit、投资后股本权益及资本配置由后Unit深化，不当作现金等价物。",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O104",
+            "D1-O31",
+            "https://jp.micron.com/about/press/news/micron-and-anthropic-announce-strategic-agreement-to-scale-next-generation-ai-infrastructure"
+          ]
+        },
+        {
+          "name": "公共资金的附条件性决定融资永久程度",
+          "mechanism": "资助机关按支出、运营和就业等条件分期供资，审核或协议修改改变尚未拨款的可得性；违反条件可追索已收资金。现有项目超额现金收益分享在高于约定基线后分流未来现金；改为股权、优先权或伙伴融资则改变资金永久性及提供者回报。美光可用自有流动性替代被延缓资助，但要牺牲投资/分配余量，不能将未确认上限视作已获现金。",
+          "current_status": "当前仍按附条件资助而非政府持股融资运行。美国未确认剩余约49亿美元；纽约州最高55亿美元安排非约束且跨20多年，不能替代近期授信。已有分享条款要求在高溢价回报基线以上分享适度比例，上限为对应项目已拨奖款75%、分享期最长从累计现金转正首年起10年。GAO修改案例及Intel政府持股是政策工具现实类比，不是MU已被要求同样转换。",
+          "materiality_context": "条件达标决定哪些资金最终可得，审核/修订决定时点及金额，追索决定已获款是否需返还；每10亿美元被扣留或追回使可用资金少10亿美元，但前者失去预期来源、后者是现金流出，时间及会计不同。49亿美元未确认余额相当于现有流动资金约6.7%，有意义但非当前现金；纽约非约束远期金额不能并入即期覆盖。收益分享的基线决定触发概率、适度比例决定边际分流、75%项目已拨金额及10年限制决定最大范围；不能把集团全部资助乘75%当确定负债。改股权会减少偿付刚性同时改变权益，优先/保证条款可重新增加刚性；当前巨额自有缓冲降低接受稀释融资的经济迫切性，但不排除政策谈判改变来源。短期审核/追索比远期超额收益分享更直接影响当前支付储备。",
+          "scope_boundary": "公共资金作为公司融资来源的稳定性、返还/分享义务；现金到账对净资本付款在前Unit，股东剩余权改变在后Unit，不把行业类比写为MU事实。",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+            "https://www.gao.gov/assets/gao-26-109121.pdf",
+            "https://www.intel.com/content/www/us/en/newsroom/news/corporate/intel-and-trump-administration-reach-historic-agreement.html",
+            "D1-O4",
+            "D1-O31"
+          ]
+        },
+        {
+          "name": "币种、套期和跨主体调拨决定资金可达性",
+          "mechanism": "资产与制造/资本付款的净币种错配使汇率变动改变所需美元现金；远期及掉期覆盖部分金额和期限，套期结算可能与实付不同步。资产所在主体及当地资金调拨规则/税费决定能否在所需地点使用，合并拥有不等于同日可转出。资金管理可用当地储备、自然收付配对、延长对冲或当地融资回应，付出资金收益和费用代价。",
+          "current_status": "境外子公司持有现金及投资约51.2亿美元，不等同受限现金；被套期非美元现金/债券投资公允价值115.1亿美元属不同范围，不能相减推裸露敞口。现金及债券外汇套期一般一年内、特定资本/制造收付一般两年内，不存在已披露全额永久覆盖。当前已有风险管理支持一定配对，但没有MU遭资金冻结证据，也没有足够地域/币种数据把合并余额折成受限资金。",
+          "materiality_context": "净币种敞口决定方向和金额，汇率决定单位换算，套期覆盖及期限决定净波动，调拨规则/税费决定资金可用地点及代价。示例10亿美元未套期净付款敞口遭5%不利汇率变动约增加5000万美元成本；完全匹配套期一阶抵销，但对冲滚动费、到期差和新增付款仍留风险。115.1亿美元是已套期资产范围而非净风险，不能按其全额套上述示例。币种波动常为局部千万至亿美元级，主体不能及时调拨则可能让整笔付款需本地融资，作用大于普通换算；无已知限制不能假定51.2亿美元全部不可用。当地储备/自然匹配降低交易风险却牺牲集中收益，当前成熟套期使纯汇率冲击较未套期案例弱，真正覆盖与付款期限决定剩余敏感度。",
+          "scope_boundary": "公司可用资金、币种及地点/期限匹配；经营付款币种经济性衔接现金Unit，不把财报换算损益等同已实现现金损失或推定全面资本管制。",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O31",
+            "D1-O3",
+            "D1-O9"
+          ]
+        },
+        {
+          "name": "供应方客户融资支持把生态机会变成或有资金义务",
+          "mechanism": "若供应者由收款方进一步成为客户贷款、担保或收入分成融资的提供者，可帮助客户获得采购资本，但也以自有资金、质押或违约付款支持生态。贷款本金、保证范围、追索及回收期限决定实际敞口；客户经营收入、资产残值和其他出资者决定偿付能力。同一终端需求不能把股权、贷款、担保和产品销售重复视为独立收入。",
+          "current_status": "NVIDIA 7月收入分成/信用支持安排证明供应方参与算力融资的组织方式已经存在。MU参与战略股权投资、收取可退保证金，但材料没有显示这一NVIDIA型支持已成为MU新增客户融资义务；当前仍以无此新增承诺为基线。股权合作本身不是贷款或担保。",
+          "materiality_context": "本金/额度决定可能被占用的资金范围，质押/担保触发决定现金是在签约即锁定还是违约才支付，追索及回收率决定最终净损失，客户收益及资产期限决定能否按时偿付。假设新增10亿美元实际贷款会先动用现有734.53亿美元流动资金约1.36%；同额担保不能签约就当已流出10亿美元，却可能在违约时形成该范围的短端付款，净损失再扣真实回收。融资带来的增量销售毛利可补偿风险，但需扣融资成本和共同客户风险；已有13亿美元股权规模不是未来担保上限。当前非MU已签事实，修订价值在于资金从客户流入变成供应者支持后，传统低净债务指标会漏掉或有义务。",
+          "scope_boundary": "客户生态贷款、担保及关联或有资金暴露，不将外部融资实例移植成MU承诺；制造项目租赁/伙伴资本及客户保证金分别由既有Factors解释。",
+          "ref": [
+            "https://blogs.nvidia.com/blog/nvidia-unlocks-ai-compute-at-scale-capital-partners-to-power-ai-infrastructure-buildout/",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://jp.micron.com/about/press/news/micron-and-anthropic-announce-strategic-agreement-to-scale-next-generation-ai-infrastructure",
+            "D1-O104",
+            "D1-O31"
+          ]
+        }
+      ],
+      "potential_gaps": [
+        {
+          "name": "动态资金补充与付款重叠改变所需缓冲",
+          "why_live": "现有734.53亿美元现金证券与无近年票据本金到期支持低短期融资依赖；资本升级、税款及2029—2031返还却跨期占资金。管理层12个月充足判断不是逐年余额预测，证券可用性也不是只有总额。",
+          "revision_logic": "相对巨大但非全闲置的缓冲基线，未来CFO与刚性/可调付款的日历组合决定保留、变现或融资需要。不能将不同年份全部义务一扣，也不能因债务小忽略客户返还及资本应付；单一10亿美元净流出约占现有资金1.36%只作尺度。",
+          "possibility_space": [
+            {
+              "name": "扩建高峰、税款与返还遇到较慢收现",
+              "implication": "若项目支付升级而回款/利润放缓，后来返还和税款又集中，储备消耗快于单项判断，外部融资价值上升。各日期可叠加而非要求同时出现才有修订，未预测目前已有缺口。"
+            },
+            {
+              "name": "公司提前把资产梯度匹配刚性支付",
+              "implication": "证券到期、当地储备及经营积累覆盖已知窗口，减少被迫出售/借款；占用资金降低自主分配和收益追求，但可使强缓冲结论更具持续性，而不是所有钱均可花。"
+            },
+            {
+              "name": "董事会调低可选分配或未签资本保留资金",
+              "implication": "在销售不变时改变现金用途，降低未来融资需求；已签采购及资助履约限制调整范围，延建设仍有机会损失。股东可分配权益变化不等于公司流动性危机。"
+            },
+            {
+              "name": "运营中断遇到仍需支付的固定管线",
+              "implication": "局部事故使收现晚于设备、人员或租赁支付，保险/补产未同日回补，需临时变现/信用资金。它是现金Unit新事件路径的储备后果，强资产规模减弱尾部压力但不使时差为零。"
+            }
+          ],
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+            "https://www.sec.gov/Archives/edgar/data/1046179/000104617924000050/a20240418.htm",
+            "D1-O31",
+            "D1-O9",
+            "D1-O96"
+          ]
+        },
+        {
+          "name": "客户资金的净滚动改变建设融资来源",
+          "why_live": "127.47亿美元本年保证金融资约占期末流动资金17.4%，主要返还窗口2029—2031；70亿美元信用证为指定违约支持。公司预计继续签协议，但没有每年同额新增保证金指引。",
+          "revision_logic": "基线把现款当建设桥梁而非永久资本。新合同资金条件与旧款返还的净额，可在销售和利润相近时改变传统融资依赖、来源集中和期限；信用保护不能代替正常返还资金。",
+          "possibility_space": [
+            {
+              "name": "新增客户以长保证金换取供给保障",
+              "implication": "更多可退资金提前支持资本投入，降低当前贷款/证券变现需要；返还梯度随新款延后且来源集中可能上升，不能将到账当CFO或永久可分配现金。"
+            },
+            {
+              "name": "客户续签采购但减少前置融资",
+              "implication": "需求与合同收入可延续，却不愿锁定现金或要求更短留存；美光用经营积累/银行替代，来源质量和资金成本改变而非必然销售衰退。"
+            },
+            {
+              "name": "旧保证金到期而新增资金未覆盖",
+              "implication": "正常返还成为净融资流出，储备需求增加；可与良好合同利润并存。若新合同滚动或经营现金已累积，压力被吸收，不将原128.95亿美元负债和返还再两扣。"
+            },
+            {
+              "name": "客户违约改变取用保护和资金结算",
+              "implication": "条件信用证及保证金按具体条款弥补指定损失，回收时点/争议决定真实支持；可能减少信用损失也可能先动用现金。70亿美元额度不是默认可提款的备用贷款。"
+            }
+          ],
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://blogs.nvidia.com/blog/nvidia-unlocks-ai-compute-at-scale-capital-partners-to-power-ai-infrastructure-buildout/",
+            "D1-O31",
+            "D1-O10",
+            "D1-O57"
+          ]
+        },
+        {
+          "name": "资本组织与信用条件重排长期刚性义务",
+          "why_live": "票据低且无2027—2031本金到期，但融资租赁23.87亿美元及FY2027含息付款5.77亿美元仍在。RCF20亿美元未用、2030年到期且有评级/杠杆条件；同行共同制造展示结构选择而非MU新安排。",
+          "revision_logic": "当前主要是自主资金组织而非被迫再融资。租赁、伙伴资本及预融资可改变前期现金、后续租金/担保和控制收益；报表capex下降或票据清偿不能替代母公司总责任判断。",
+          "possibility_space": [
+            {
+              "name": "设备和设施更多采用长期租赁",
+              "implication": "前期直接付款转为多年租金，保持当期资金但增加固定后续支付；资产使用回报若不足，现金义务仍在。分类改变的报表capex下降不等于总投入减少。"
+            },
+            {
+              "name": "项目伙伴资本分担资产并限定母公司追索",
+              "implication": "真非追索共同资本减少母公司资金暴露却让渡项目收益/控制；若附最低采购、担保或回购条款，部分风险只是迁到表外/远期，不是免费释放现金。"
+            },
+            {
+              "name": "公司预融资或保留贷款以免急售证券",
+              "implication": "管理层选择新增较长贷款/票据，即使短期现金足够也可匹配未来支付；增加利息与负债换取时间弹性。与先全额还债再被迫融资相比，不同机会成本取决于实际资产收益及信用条件。"
+            },
+            {
+              "name": "银行续约、评级或财务条件收紧",
+              "implication": "备用授信可用额/利差变化降低压力期融资选择，租赁新合同也可能更贵；现有未用20亿美元并非全年扩建资金。强净现金可吸收局部收紧，不直接写成已违约或新融资必不可得。"
+            }
+          ],
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+            "https://apac.kioxia.com/en-apac/about/news/2026/20260130-1.html",
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "D1-O96",
+            "D1-O31"
+          ]
+        },
+        {
+          "name": "证券再投资与压力变现改变缓冲收益质量",
+          "why_live": "短/长期可交易投资350.89亿美元、高质量分散取向与低债务使资产端利率暴露重要。政策率只是当前环境，实际久期未测，证券账面变动与付钱时能卖出的价格不同。",
+          "revision_logic": "基线用流动证券服务支付，不靠私人估值融资。利率、信用及付款时间的变化可让收益改善同时变现折价，或资金收益减少却价格回升；高评级也不能保证压力期无损出售。",
+          "possibility_space": [
+            {
+              "name": "公司以到期短工具匹配建设付款",
+              "implication": "缩久期及保留现金降低被迫出售风险，可牺牲更长资产收益；对即期支付有利，对闲置资金长期收益未必最高。资金管理行动本身在利率不变时也改变缓冲质量。"
+            },
+            {
+              "name": "市场收益率下降且到期资金重投",
+              "implication": "新利息收入下降、存量债券价格可能上升，净现金公司不必同高杠杆公司受益。只有实际变现或重定价部分进入现金，不能把全组合按政策率一次改息。"
+            },
+            {
+              "name": "价差扩大时公司必须卖出资产付款",
+              "implication": "信用/流动性折价遇到资本结算，使原非现金波动转成真实可用额减少；若持到期且无违约，则不等同永久本金损失。支出梯度及分散程度决定哪部分受迫出售。"
+            },
+            {
+              "name": "特定发行人信用损失穿透高质量组合",
+              "implication": "违约或回收延误减少可用本金，按实际集中敞口及回收计算而非全额证券跌价；公司可增加存款/国债类流动资产，降低收益以改善支付安全。"
+            }
+          ],
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260916a.htm",
+            "D1-O9",
+            "D1-O96",
+            "D1-O31"
+          ]
+        },
+        {
+          "name": "战略股权退出与客户共同风险改变资本锁定",
+          "why_live": "非上市股权13亿美元、年度购买10.46亿美元已增大且不在734.53亿美元流动资产中。MU与Anthropic有股权和商业合作，但分项金额、跟投承诺及退出条件未知，不以总额代表一家。",
+          "revision_logic": "基线把产业投资与付款储备分开。后续出资及退出决定新增现金占用/来源，重估主要改权益；被投客户经营与采购共同变化可放大商业/资本关联，而非按单一投资占比判断所有风险。",
+          "possibility_space": [
+            {
+              "name": "公司跟投以维持战略资格和股权地位",
+              "implication": "新增现金被锁定，可能保住商业协同及较长增长机会；不跟投也许无需现金却承受持股稀释或关系弱化。需区分主动选择与真正合同责任，不能默认已有无限支持。"
+            },
+            {
+              "name": "被投企业下轮估值下降并收缩采购",
+              "implication": "非现金减值与未来订单/回款转弱可同时发生，生态敞口大于仅看账面投资比例；原股权本金已经付出，不将减值再扣一次流动现金。"
+            },
+            {
+              "name": "被投企业上市或被收购后形成可出售份额",
+              "implication": "退出可把战略资产转成现金来源，但上市估值本身不是钱，锁定期、税费及真实出售决定时点和金额；公司保留股份可继续协同而不立即补储备。"
+            },
+            {
+              "name": "被投客户商业现金增强而不再依赖追加融资",
+              "implication": "同一合作兼具更稳采购及较低跟投压力，可改善未来资金锁定预期；不自动重估总13亿美元或把客户商业收入当MU收入。"
+            }
+          ],
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://jp.micron.com/about/press/news/micron-and-anthropic-announce-strategic-agreement-to-scale-next-generation-ai-infrastructure",
+            "D1-O104",
+            "D1-O31"
+          ]
+        },
+        {
+          "name": "公共资金重谈改变来源永久性与偿付责任",
+          "why_live": "美国未确认剩余49亿美元不是现款，纽约55亿美元非约束远期安排也不是贷款。现有协议附追索及项目超额收益分享；GAO真实修改与Intel资本转换使政策组织变化有可行性而非MU已重谈事实。",
+          "revision_logic": "当前依条件资助并用自身缓冲吸收时差。审核延期、追回、转换及触发分享会分别改变预期来源、现金负债与资本提供者权利，同额到账的永久程度可以不同；不得将全部资助统一按分享上限当确定债务。",
+          "possibility_space": [
+            {
+              "name": "主管机关改里程碑而暂缓尚未拨款",
+              "implication": "项目现金照付、来源推迟，增加自有储备/信用资金需求；如果最终照额收到，主要是时间及融资成本，不是同额永久损失。"
+            },
+            {
+              "name": "合规或政策争议导致已收款被追索",
+              "implication": "从少获未来钱变为需要返还已有钱，直接增短端偿付；可补履约或协商分期，但具体义务不能凭行业案例套给MU。"
+            },
+            {
+              "name": "未来支持改为权益或其他长期资本",
+              "implication": "无到期权益可降低返还刚性，却让渡未来收益；若优先回报/保证退出，仍可能存在刚性。同金额资本不能兼算原补助与新增股权两份来源。"
+            },
+            {
+              "name": "项目超额回报达到现有分享安排范围",
+              "implication": "产生未来现金分享付款，也代表项目现金强于约定基线；对应项目已拨款75%上限及最长10年限制范围。它不是政府立即持股或全部承诺资金75%现欠，现金能力与分流同时评价。"
+            }
+          ],
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+            "https://www.gao.gov/assets/gao-26-109121.pdf",
+            "https://www.intel.com/content/www/us/en/newsroom/news/corporate/intel-and-trump-administration-reach-historic-agreement.html",
+            "D1-O4",
+            "D1-O31"
+          ]
+        },
+        {
+          "name": "币种和跨主体可达性改变账面资金的用途",
+          "why_live": "海外子公司持有约51.2亿美元与被套期非美元资产115.1亿美元不同范围；套期有到期、不是全额永久覆盖。没有已证实MU资金冻结，全球生产与分期付款却使地点/币种配对值得探索。",
+          "revision_logic": "相对成熟风险管理基线，汇率及对冲错期、调拨制度或当地储备政策可改变同一合并资产的支付能力。经济敞口按净额，不以报表换算损益或海外余额一律扣为受限。",
+          "possibility_space": [
+            {
+              "name": "资本付款改变时间使套期到期不再匹配",
+              "implication": "延期/提前项目、汇率变动与原对冲结算错位，需滚动套期或临时本地融资；最终对冲可覆盖部分成本，季度资金时差仍存在。"
+            },
+            {
+              "name": "跨境税费或调拨许可规则改变可转出资金",
+              "implication": "若相关辖区新规影响真实主体，合并拥有的资金不再同日可用于别处，需当地储备或替代融资；规则范围决定影响而非全海外扣除，目前仅条件性发展。"
+            },
+            {
+              "name": "公司以当地收付及储备强化自然匹配",
+              "implication": "更多资产币种和付款配对降低外汇/转汇需求，却牺牲集中投资收益或锁定当地现金。可增强资金可达性，不必以账面总额增大来体现。"
+            }
+          ],
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O31",
+            "D1-O3",
+            "D1-O9"
+          ]
+        },
+        {
+          "name": "供应者承担客户融资使资金流向及尾部责任反转",
+          "why_live": "NVIDIA已采用云收入分成和信用支持，说明供应者可帮助客户取得资本；MU现有战略股权及供给关系提供组织入口，但没有此型MU贷款/担保已签证据。当前从客户收保证金的资金腿与反向支持不同。",
+          "revision_logic": "无此新增客户义务的基线若被改变，即使销售和票据净债务仍好，流动资产也可转为贷款、质押或违约责任。可增加客户采购及供应份额，同时把外部融资风险内生化；这是现有股权重估与客户资金滚动之外的独立或有来源。",
+          "possibility_space": [
+            {
+              "name": "MU为战略买方提供有限额贷款或延长专门融资",
+              "implication": "现金先变为较不流动客户债权，帮助采购却延迟自有支付储备回收；贷款利息/销售毛利需补偿信用及期限成本，不能把同一资金在销售和出资两次当新增终端需求。"
+            },
+            {
+              "name": "公司以担保或质押帮助客户获得第三方贷款",
+              "implication": "不一定签约即付全额，质押可先降低可用储备、违约则触发现金；低表内债务不能代表无该尾部责任。保证范围、真实追索及回收决定暴露，未设假想当前担保额。"
+            },
+            {
+              "name": "客户融资与收入分成或长期配额相绑定",
+              "implication": "供应者获取服务收入/优先采购利益以交换支持，可能扩大长期机会；服务收费不足或资产残值下降时融资亏损会吞噬硬件毛利。未来权益/收入腿按协议分别评价。"
+            },
+            {
+              "name": "公司只保留供给和股权合作而拒绝追加信用",
+              "implication": "避免新或有支付，但资金弱买方可能转向能融资的竞争平台或缩采购；这是机会成本而非已有资金损失，强自有现金不使提供支持成为必然选择。"
+            }
+          ],
+          "ref": [
+            "https://blogs.nvidia.com/blog/nvidia-unlocks-ai-compute-at-scale-capital-partners-to-power-ai-infrastructure-buildout/",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://jp.micron.com/about/press/news/micron-and-anthropic-announce-strategic-agreement-to-scale-next-generation-ai-infrastructure",
+            "D1-O31",
+            "D1-O104"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "股东资本回报与股本结构",
+      "scope": "美光股息、实际回购、股权发行及股权薪酬、相关资金和资助条件、流通及稀释股本变化所形成的股东现金回报、权益结构和每股经济权益。",
+      "horizon": "季度资本分配与股本变化，延伸至年度和多年资本配置周期。",
+      "ref": [
+        "D1-O12",
+        "D1-O44",
+        "D1-O57",
+        "D1-O4",
+        "D1-O58",
+        "D1-O6",
+        "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+        "D1-O9",
+        "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+        "D1-O10",
+        "D1-O31",
+        "https://focustaiwan.tw/business/202609110009",
+        "https://www.irs.gov/instructions/i7208",
+        "https://www.intel.com/content/www/us/en/newsroom/news/corporate/intel-and-trump-administration-reach-historic-agreement.html"
+      ],
+      "state": {
+        "parameters": [
+          {
+            "name": "实际流通普通股",
+            "definition": "10-K封面准确股数，不是加权平均、自由流通盘或稀释股数。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O58",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "期末普通股流通量",
+            "definition": "报表以百万股四舍五入的发行股减库存股，可同比但不替代封面准确股数。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O9",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "GAAP基本加权股数",
+            "definition": "期间基本加权平均股数，与期末股数分开。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O12",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "GAAP稀释加权股数",
+            "definition": "期间稀释加权平均股数，受股权奖励与股价等影响。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O12",
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "股权计划稀释增量",
+            "definition": "GAAP EPS计算中股权薪酬计划对基本股数的稀释增量，不是所有未归属奖项数量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O12",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "授权计划实际回购现金",
+            "definition": "自主回购计划支付额，与代扣税股份分开。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O12",
+              "D1-O58",
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "授权计划实际回购股数",
+            "definition": "自主回购实际购回股份，不将授权金额折算为股份。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O12",
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "奖励税款代扣股份现金",
+            "definition": "员工股权归属税款代扣所产生融资现金支付，区别自主回购股东回报。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O10",
+              "D1-O12"
+            ]
+          },
+          {
+            "name": "股息现金支付",
+            "definition": "向股东实付股息总额，排除尚未支付下一次股息。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O10",
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "每股季度股息",
+            "definition": "已宣派并支付的经常性每股季度股息，不年化为承诺永久股息。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O44",
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md"
+            ]
+          },
+          {
+            "name": "下一次股息支付日",
+            "definition": "已宣派未支付股息的计划付款日；股权登记日2026-10-14。",
+            "value_type": "TIME",
+            "ref": [
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "自主回购总授权",
+            "definition": "董事会累计最大授权而非剩余金额，包含历史已执行部分，无强制执行义务。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O4",
+              "D1-O57",
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md"
+            ]
+          },
+          {
+            "name": "旧授权期末可用余额",
+            "definition": "截至财政期末2018回购授权尚未执行额度，不能和10月新总授权相加。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O4",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "新增回购执行起点",
+            "definition": "新授权可执行起始日，受资金及CHIPS条件限制，无到期日不表示已执行。",
+            "value_type": "TIME",
+            "ref": [
+              "D1-O4",
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md"
+            ]
+          },
+          {
+            "name": "回购及股息制度边界",
+            "definition": "已生效政府资金条件和董事会自主分配权限。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O4",
+              "D1-O31",
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "新授权增加计算基础",
+            "definition": "Q4调整FCF扣CHIPS资本激励实收及股息的披露增加基础，不是实付返现；33025加约2160为35185百万美元，与公告累计上限35160存在25百万美元未对账差，保留原披露、不自行改授权。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O4",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "损益股权薪酬费用",
+            "definition": "合并各费用科目的SBC费用，与现金流加回1333百万美元口径分开。",
+            "value_type": "NUMBER",
+            "ref": [
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "未归属限制性奖励存量",
+            "definition": "股份奖励与RSU未归属数量，含19百万中16百万服务条件；不等同立即新发股数。",
+            "value_type": "NUMBER",
+            "ref": [
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "限制性奖励授予股数",
+            "definition": "本期新授奖励目标股份，不是归属后净发数量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "限制性奖励归属股数",
+            "definition": "FY2026奖励归属股数，未扣所有代扣和其他调整。",
+            "value_type": "NUMBER",
+            "ref": [
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "员工购股计划购股量",
+            "definition": "ESPP实际购股数量，与RSU奖励分开。",
+            "value_type": "NUMBER",
+            "ref": [
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "股权计划可供未来奖励股份",
+            "definition": "计划额度存量，含ESPP批准6百万股，不是已承诺全部发行。",
+            "value_type": "NUMBER",
+            "ref": [
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "未确认奖励补偿成本",
+            "definition": "未归属奖励未来待确认费用，未计未来没收，不是现金付款承诺。",
+            "value_type": "NUMBER",
+            "ref": [
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "奖励归属及净稀释安排",
+            "definition": "现有奖励形态、归属和绩效浮动，决定未来股本供应。",
+            "value_type": "STAGE",
+            "ref": [
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "https://focustaiwan.tw/business/202609110009"
+            ]
+          },
+          {
+            "name": "账面股东权益",
+            "definition": "合并普通股东权益存量，非可分配现金或股票市值。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O9",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "留存收益",
+            "definition": "净收益累计减分配等形成的权益存量，不是现金储备。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O9",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "自主回购净注销与奖励净发行",
+            "definition": "同期间自主回购、库存股再发行、奖励归属及代扣后实际净股数变化；不能仅凭授权推定。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O12",
+              "D1-O58",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          }
+        ],
+        "values": [
+          {
+            "name": "实际流通普通股｜2026-10-02普通股存量；2025-09-26至该日增加约0.80%",
+            "parameter": "实际流通普通股",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 1131423212.0,
+              "unit": "股"
+            },
+            "previous_value": null,
+            "time_scope": "2026-10-02普通股存量；2025-09-26至该日增加约0.80%，旧准确数量未以近似反推",
+            "as_of": "2026-10-02",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O58",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "期末普通股流通量｜2026-09-03期末；previous_value为2025-08-28期末",
+            "parameter": "期末普通股流通量",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 1131.0,
+              "unit": "百万股"
+            },
+            "previous_value": {
+              "number": 1122.0,
+              "unit": "百万股"
+            },
+            "time_scope": "2026-09-03期末；previous_value为2025-08-28期末",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O9",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "GAAP基本加权股数｜FY2026",
+            "parameter": "GAAP基本加权股数",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 1127.0,
+              "unit": "百万股"
+            },
+            "previous_value": {
+              "number": 1116.0,
+              "unit": "百万股"
+            },
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周；previous_value为FY2025，截至2025-08-28，52周，未做周数标准化",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O12",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "GAAP稀释加权股数｜FY2026",
+            "parameter": "GAAP稀释加权股数",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 1143.0,
+              "unit": "百万股"
+            },
+            "previous_value": {
+              "number": 1125.0,
+              "unit": "百万股"
+            },
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周；previous_value为FY2025，截至2025-08-28，52周，未做周数标准化",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O12",
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "FY2027 Q1指引稀释股数",
+            "parameter": "GAAP稀释加权股数",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "number": 1150.0,
+              "unit": "百万股"
+            },
+            "previous_value": null,
+            "time_scope": "FY2027 Q1，约数指引；不与旧Q4指引当作同目标修订",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "股权计划稀释增量｜FY2026",
+            "parameter": "股权计划稀释增量",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 16.0,
+              "unit": "百万股"
+            },
+            "previous_value": {
+              "number": 9.0,
+              "unit": "百万股"
+            },
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周；previous_value为FY2025，截至2025-08-28，52周，未做周数标准化",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O12",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "授权计划实际回购现金｜FY2026",
+            "parameter": "授权计划实际回购现金",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 650.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 0.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周；previous_value为FY2025，截至2025-08-28，52周，未做周数标准化",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O12",
+              "D1-O58",
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "Q4授权回购实际现金",
+            "parameter": "授权计划实际回购现金",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 0.0,
+              "unit": "百万美元"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026 Q4，截至2026-09-03",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O4",
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "授权计划实际回购股数｜FY2026",
+            "parameter": "授权计划实际回购股数",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 2.5,
+              "unit": "百万股"
+            },
+            "previous_value": {
+              "number": 0.0,
+              "unit": "百万股"
+            },
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周；previous_value为FY2025，截至2025-08-28，52周，未做周数标准化",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O12",
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "奖励税款代扣股份现金｜FY2026",
+            "parameter": "奖励税款代扣股份现金",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 1127.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 340.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周；previous_value为FY2025，截至2025-08-28，52周，未做周数标准化",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O10",
+              "D1-O12"
+            ]
+          },
+          {
+            "name": "股息现金支付｜FY2026",
+            "parameter": "股息现金支付",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 610.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 522.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周；previous_value为FY2025，截至2025-08-28，52周，未做周数标准化",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O10",
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "每股季度股息｜FY2026 Q3/Q4均0.15；previous_value为FY2026 Q1/Q2均0.115",
+            "parameter": "每股季度股息",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 0.15,
+              "unit": "美元/股/季度"
+            },
+            "previous_value": {
+              "number": 0.115,
+              "unit": "美元/股/季度"
+            },
+            "time_scope": "FY2026 Q3/Q4均0.15；previous_value为FY2026 Q1/Q2均0.115",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O44",
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md"
+            ]
+          },
+          {
+            "name": "下一次已宣派股息",
+            "parameter": "每股季度股息",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "number": 0.15,
+              "unit": "美元/股/季度"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-30宣派，待2026-10-29支付",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "下一次股息支付日｜日期窗口",
+            "parameter": "下一次股息支付日",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "point": "2026-10-29",
+              "start": null,
+              "end": null,
+              "precision": "日"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-30宣派的未来付款",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "自主回购总授权｜2026-10-08增加总授权；previous_value为2018授权10000百万美元",
+            "parameter": "自主回购总授权",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 35160.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 10000.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "2026-10-08增加总授权；previous_value为2018授权10000百万美元",
+            "as_of": "2026-10-08",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O4",
+              "D1-O57",
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md"
+            ]
+          },
+          {
+            "name": "旧授权期末可用余额｜2026-09-03",
+            "parameter": "旧授权期末可用余额",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 2160.0,
+              "unit": "百万美元"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-03，旧10000授权已累计回购7840百万美元",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O4",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "新增回购执行起点｜日期窗口",
+            "parameter": "新增回购执行起点",
+            "source_role": "ACTUAL",
+            "value": {
+              "point": "2026-12-09",
+              "start": null,
+              "end": null,
+              "precision": "日"
+            },
+            "previous_value": null,
+            "time_scope": "2026-10-08批准后的未来执行窗",
+            "as_of": "2026-10-08",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O4",
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md"
+            ]
+          },
+          {
+            "name": "回购及股息制度边界｜现行状态",
+            "parameter": "回购及股息制度边界",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "CHIPS五年期前两年回购主要用于员工薪酬稀释抵消等许可范围；自2026-12-09进入后三年，回购受FCF扣CHIPS资本激励及股息等条件。新授权不强制买入；普通经常股息及合理增长允许，特别一次性股息受五年限制。"
+            },
+            "previous_value": null,
+            "time_scope": "2024-12-09后五年，2026-12-09为阶段切换",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O4",
+              "D1-O31",
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "新授权增加计算基础｜FY2026 Q4基础：33199调整FCF减174股息减0 CHIPS资本拨款；新累计上限公告按35.16bn列示",
+            "parameter": "新授权增加计算基础",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 33025.0,
+              "unit": "百万美元"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026 Q4基础：33199调整FCF减174股息减0 CHIPS资本拨款；新累计上限公告按35.16bn列示",
+            "as_of": "2026-10-08",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O4",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "损益股权薪酬费用｜FY2026",
+            "parameter": "损益股权薪酬费用",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 1282.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 975.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周；previous_value为FY2025，截至2025-08-28，52周，未做周数标准化",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "未归属限制性奖励存量｜2026-09-03期末；previous_value为2025-08-28期末",
+            "parameter": "未归属限制性奖励存量",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 19.0,
+              "unit": "百万股"
+            },
+            "previous_value": {
+              "number": 25.0,
+              "unit": "百万股"
+            },
+            "time_scope": "2026-09-03期末；previous_value为2025-08-28期末",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "限制性奖励授予股数｜FY2026",
+            "parameter": "限制性奖励授予股数",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 7.0,
+              "unit": "百万股"
+            },
+            "previous_value": {
+              "number": 11.0,
+              "unit": "百万股"
+            },
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周；previous_value为FY2025，截至2025-08-28，52周，未做周数标准化",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "限制性奖励归属股数｜FY2026",
+            "parameter": "限制性奖励归属股数",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 12.0,
+              "unit": "百万股"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "员工购股计划购股量｜FY2026",
+            "parameter": "员工购股计划购股量",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 2.0,
+              "unit": "百万股"
+            },
+            "previous_value": {
+              "number": 4.0,
+              "unit": "百万股"
+            },
+            "time_scope": "FY2026，2025-08-29至2026-09-03，53周；previous_value为FY2025，截至2025-08-28，52周，未做周数标准化",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "股权计划可供未来奖励股份｜2026-09-03股权计划额度",
+            "parameter": "股权计划可供未来奖励股份",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 47.0,
+              "unit": "百万股"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-03股权计划额度",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "未确认奖励补偿成本｜2026-09-03",
+            "parameter": "未确认奖励补偿成本",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 1980.0,
+              "unit": "百万美元"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-03，预计确认至FY2030 Q4，加权平均1.2年",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "奖励归属及净稀释安排｜现行状态",
+            "parameter": "奖励归属及净稀释安排",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "服务奖励一般首年归属25%、随后每季6.25%共四年；绩效/市场奖励一般三年、实际股份为目标0%—200%，多数奖项有股息等价权。现金奖励与股票奖励可以并存，不把台湾现金奖励报道解释为替代全部集团股权计划。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-03期末",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "https://focustaiwan.tw/business/202609110009"
+            ]
+          },
+          {
+            "name": "账面股东权益｜2026-09-03期末；previous_value为2025-08-28期末",
+            "parameter": "账面股东权益",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 138378.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 54165.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "2026-09-03期末；previous_value为2025-08-28期末",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O9",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "留存收益｜2026-09-03期末；previous_value为2025-08-28期末",
+            "parameter": "留存收益",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 131851.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 48583.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "2026-09-03期末；previous_value为2025-08-28期末",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O9",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          }
+        ]
+      },
+      "expectation_baseline": [
+        {
+          "name": "授权扩大后的回购是选择权而非预定股本收缩",
+          "baseline": "工作基线是2026-12-09后公司具有明显更大且受条件的回购能力，但不预先将351.6亿美元累计授权折成股数或EPS增厚。FY2026计划回购6.5亿美元/250万股、Q4为零，期间实际股数仍增约0.80%、稀释加权股数升至11.43亿；这些使“授权自动转净缩股”不是默认路径。CHIPS后三年与自由现金净额的约束和高投资计划意味着实际执行会选择现金用途、价格和时点。",
+          "ordinary_progress": "执行窗开放、在资金和协议许可范围披露实际买入；补充授权或定期计划不先计现金减少和股数减少。",
+          "open_frontier": "实际购买规模/价格相对于员工净发行及代扣的比例决定是否净缩股；现金剩余与更高股息、研发或capex竞争决定兑现。回购税适用净发行抵扣后的效率另行约束，不假设全部授权乘1%已纳税。",
+          "time_scope": "2026-12-09后数季及CHIPS五年限制期",
+          "ref": [
+            "D1-O4",
+            "D1-O58",
+            "D1-O12",
+            "D1-O31",
+            "https://www.irs.gov/instructions/i7208"
+          ]
+        },
+        {
+          "name": "经常性股息维持较高季度档位，特别分配不作默认",
+          "baseline": "工作基线是每季0.15美元的新档位继续，而非回到年初0.115美元或立即转特别股息。FY2026已付6.10亿美元，9月30日宣派下一次0.15美元10月29日支付；公司希望随时间增长，仍须董事会逐次批准。CHIPS允许普通经常股息及合理增长、限制特别一次性股息，加上资本建设优先，支持渐进回报而非现金存量全额一次分配。",
+          "ordinary_progress": "按已宣派付款，在经常性股息框架维持或作合理增长。",
+          "open_frontier": "提高长期现金分配比例的幅度与时点仍是资本配置选择，不能由低本期派息率推出已决定大幅加息。",
+          "time_scope": "下一次2026-10-29付款至未来年度分配",
+          "ref": [
+            "D1-O44",
+            "D1-O31",
+            "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md"
+          ]
+        },
+        {
+          "name": "股权奖励继续形成股数供应，现金奖励未证实全面替代",
+          "baseline": "研究者基线保留持续股权薪酬和净稀释压力：期末1900万限制性奖励、4700万未来计划额度及19.8亿美元待认费用体现未归属管线，下一季度公司使用约11.5亿稀释股指引，未预设新回购立即压低分母。当前700万新授较上一年1100万减少不代表股票奖励取消；归属、股价、绩效目标和税款代扣共同影响净股数。台湾现金奖励报道不足以改变集团薪酬结构默认。",
+          "ordinary_progress": "按服务及绩效条件归属并代扣，ESPP继续购股；同时披露实际回购而不是以损益SBC加回代表股东无成本。",
+          "open_frontier": "新授目标、实际归属0%—200%与现金/股票替换若改变经常薪酬结构，净稀释和现金返现需一起修订，不能只看名义回购。",
+          "time_scope": "未来数季度归属至FY2030未确认费用管线",
+          "ref": [
+            "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O44",
+            "https://focustaiwan.tw/business/202609110009"
+          ]
+        },
+        {
+          "name": "高留存资本以建设和支付义务优先，账面权益不作分配池",
+          "baseline": "工作基线是高盈利首先提高留存权益及付款选择空间，而不是将1383.78亿美元账面权益或734.53亿美元流动资产视作即将分配额。FY2027净PP&E计划、税款结算和客户返还资金保留共同支持建设优先，回购与经常股息属于其后的自主配置。现有项目超额收益分享已是公共支持成本；Intel式政府持股仅为可能政策工具，不是美光当前股本稀释。",
+          "ordinary_progress": "利润累积权益、按建设和日常分配支出；满足资助条件后再按资金余量执行回购。",
+          "open_frontier": "资本支出回收期、税款/返还期与提高分配承诺如何重新排序，以及是否出现目标公司具体政府资本转换，决定股东可分配经济权益。",
+          "time_scope": "FY2027资本安排至多年再投资和返还周期",
+          "ref": [
+            "D1-O31",
+            "D1-O9",
+            "D1-O4",
+            "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+            "https://www.intel.com/content/www/us/en/newsroom/news/corporate/intel-and-trump-administration-reach-historic-agreement.html"
+          ]
+        }
+      ],
+      "realization_factors": [
+        {
+          "name": "现金留存与再投资回报决定可分配经济权益",
+          "mechanism": "利润先经回款、税款及营运资本转成经营现金，再支付净资本投入、战略投资、债务及客户资金返还；董事会在储备、再投资、股息和回购间排序。投资回报和收现时滞决定留存资本能否增加以后可分配现金，资金机会成本决定留存与返还的经济优劣。账面留存收益只是累计权益，不是现金分配池；附返还或合规条件资金不能全按永久盈余分配。",
+          "current_status": "FY2026调整FCF623.08亿美元扩大选择空间，但其含激励收款且未扣所有融资返还/战略资金用途。FY2027高净资本计划、税款及客户返还储备使建设优先仍是合理工作解释；董事会未承诺将流动资产或利润全返还。账面权益1383.78亿美元、留存收益1318.51亿美元说明权益累积而非同额可支付。当前回购授权提供弹性，股息提供小规模经常返现，两者与建设资源竞争。",
+          "materiality_context": "经营现金决定主要来源，税/WC及净资本决定其年度残差；每10亿美元额外净投资/战略现金用途在其他不变时少10亿美元可分配现金，若带来高于资金成本的未来现金又能提高长期权益。资本回报率及收现时滞决定这笔保留是否值得，不因账面设备增加就自动创值；现有缓冲降低被迫融资，但低回报项目会锁定资本。偿债及客户返还减少自有余量，后者尤其不能与销售现金混为股东收益。股息/回购及储备是管理选择，支出可暂缓不代表其机会成本为零。超过约500亿美元FY2027净资本方向较6.10亿美元本年股息具有明显较大现金范围，未来经营收现是否续接是分配能力的核心；私募购买10.46亿美元也是独立可选择用途。当前大现金平台是能力，不是已提高派息率的证据；没有同口径全年市场FCF预期，不断言全部选择已定价。",
+          "scope_boundary": "股东可分配经济权益及资本配置，不重算前两Unit资金桥；制造域深化项目ROI，本Unit保留其对留存价值、分配时点和每股剩余权的作用。",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000018/a2026q4ex991-pressrelease.htm",
+            "D1-O31",
+            "D1-O9",
+            "D1-O4",
+            "D1-O104"
+          ]
+        },
+        {
+          "name": "条件回购经执行价格和净发行转为每股权益",
+          "mechanism": "累计授权只设可执行上限，董事会依据资金优先级、CHIPS规则和买入价格决定实际支出及时间；购股款除以成交价决定注销数量。员工净发行/代扣及其他发行共同决定实际净股数，回购消费税和适用净发行抵扣影响同预算购股效率。减少股数提高每股剩余权占比，但消耗现金及投资收益；高于经济价值买回可能损害留存股东价值，EPS分母下降不等于净创值。",
+          "current_status": "10月8日公告累计总授权351.60亿美元，新增执行窗12月9日后仍受CHIPS条件；FY2026计划购股6.5亿美元/250万股、Q4零执行，实际流通股约同比增0.80%。现阶段是回购选择权扩大而非已净缩股。保留State所列330.25亿美元增加基础、旧21.60亿美元余额与351.60亿美元公告间2500万美元未对账差，不自行改公告上限。现行1%消费税需按适用净税基，不把授权直接作已纳税额。",
+          "materiality_context": "授权/CHIPS限制决定可执行边界，资金排序决定实际量，价格决定同现金注销股数，员工/其他净发行决定是否超过抵销稀释。纯假设10亿美元购股款在500美元/股注销200万股、1000美元/股仅100万股，非当前报价；100万净减少约为10月2日11.314亿实际股数的0.0884%。购股可从补偿稀释走向真缩股，也可仍被新发行抵销。1%税若无发行抵扣，每10亿美元适用税基额外约1000万美元，量级较执行价格及总金额小；净发行抵扣降低税基但其稀释不能按同一美元简单抵销股数。资金收益损失随实际买入现金和利率发生，可部分抵销每股盈利增幅；未来投资回报机会及买入价值决定净权益是否增厚。公告未对账差约占上限0.07%，需保留而不主导模型。当前自主执行、净发行和高资本优先级的影响显著大于税费边际，不能把351.60亿美元全部即时除股价。",
+          "scope_boundary": "实际自主回购、税费及每股权益；员工代扣11.27亿美元现金不是面向股东的授权回购，股价案例是假设而非利用日线回补作为截止时实时价格。",
+          "ref": [
+            "D1-O4",
+            "D1-O57",
+            "D1-O58",
+            "D1-O12",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+            "https://www.irs.gov/instructions/i7208"
+          ]
+        },
+        {
+          "name": "经常股息将董事会选择转为持续现金份额",
+          "mechanism": "董事会按可持续现金、投资优先级和协议条件批准每股股息，符合登记条件的实际股份决定总付款；提高普通档位形成经常资金承诺，特别股息是另一次性分配。股息不减股数，却降低公司现金及受条件回购空间；普通合理增长和特别分配在资助规则下待遇不同。",
+          "current_status": "当前季度0.15美元档位已高于年初0.115美元，9月30日宣派下一次10月29日支付、10月14日登记；FY2026现金股息6.10亿美元。公司希望随时间增长但仍逐次批准。CHIPS允许普通经常股息及合理增长、限制特别一次性分配，因此渐进经常回报比立即大额特别分配更符合当前结构；低支付额不等于董事会已决定提高比例。",
+          "materiality_context": "每股档位决定持有人现金回报，合格股份数决定公司总金额，批准/登记/支付日决定承诺和现金时点；普通/特别类别影响许可及未来固定负担。按10月2日实际股份保持不变的静态例子，每季增加0.05美元需约5657万美元、四季约2.26亿美元，非宣布的加息或未来股份预测。当前0.15美元乘该股数约1.70亿美元一季也只是近似尺度，实际取登记股份。相对897亿美元FY2026 CFO，现行股息规模小、近期资金能力不是唯一约束；投资回报及跨周期储备决定董事会愿意锁定多少经常现金。与可暂停回购相比，提高普通股息更影响多年现金基线，特别分配则一次消耗储备且不改变股数；同一股息不能在FCF约束和资金用途敏感度重复扣。",
+          "scope_boundary": "普通及特别股息现金权利和持续承诺，不假设特别股息已获批准或以账面权益推可派金额；与回购、资本留存Factors保持同一现金池。",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000018/a2026q4ex991-pressrelease.htm",
+            "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+            "D1-O44",
+            "D1-O31",
+            "D1-O4"
+          ]
+        },
+        {
+          "name": "奖励归属、代扣和薪酬组合决定净稀释",
+          "mechanism": "管理层按员工留用及绩效选择奖励现金/股票、授予数量和价值；服务、绩效及离职条件决定何时多少归属，代扣税款以公司现金换取不发行部分股份，ESPP形成购股发行。实际净发行及回购决定所有权分母，股价还影响同金额新授股数、税款代扣现金和稀释加权计量。损益股权费用、CFO加回、实际股份和税款现金是不同口径，不能一项替代全部经济成本。",
+          "current_status": "当前1900万未归属奖励、年度700万新授/1200万归属、ESPP购200万股与4700万未来计划额度形成持续供应；额度不是同时发行承诺。服务奖按既定分期、绩效奖三年0%—200%决定未来兑现，19.8亿美元未认费用加权约1.2年。现金/股票并用奖励未证实全面改现金；FY2026稀释加权11.43亿、实际股份仍增，授权回购尚未覆盖净供给。11.27亿美元代扣现金不能算成向股东自主返还。",
+          "materiality_context": "授予数量/价值决定未来成本大盘，股价在固定美元新授预算下改变名义数量；绩效/服务/离职条件和时间决定管线变成实际发行多少，ESPP另添供给，税率与代扣比例决定少发多少及现金负担。每100万净新增约稀释当前实际股份0.0884%，而1900万未归属与4700万额度不能相加即时除股数；归属1200万是毛数、并非已测净发行。股票换现金减少将来分母压力但增加支付，现金换股票保留公司钱但把成本转给持有人；股价升高可能减少固定价值新授数量、提高存量归属代扣现金，并通过加权计量影响稀释股数，方向不由单项SBC推断。当前股权损益费用12.82亿美元与现金桥加回13.33亿美元不同，不把差额当现金省下；代扣11.27亿美元本身已大于普通股息。净发行及买回关系比授权名义大小更直接决定每股权益，奖励结构变化可独立于利润总量产生多年作用。",
+          "scope_boundary": "股权激励及员工现金/股票交换的每股权益，不把加权稀释股份当期末流通股；工资结算现金效应衔接前Unit，不推定所有员工奖励均永久现金化。",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+            "D1-O12",
+            "D1-O58",
+            "D1-O44",
+            "https://focustaiwan.tw/business/202609110009"
+          ]
+        },
+        {
+          "name": "公共资本条件和收益分享改变股东剩余权",
+          "mechanism": "现有补助以条件合规换取低成本资本，并通过回购/股息限制及项目超额现金收益分享约束股东收益。分享基线、比例、奖款上限和期限决定未来现金分流；若将来资金改为普通股、优先权或认股权，发行价、股份比例及权利顺位改变现股东剩余权，同时新增资本或替代本需自付投入。应比较所得资金与让渡权利，而不是按政府入股标签判断价值。",
+          "current_status": "美光已有项目收益分享而非完全无分享，但没有政府持股转换事实；当前先体现分配条件，超额收益现金分流在高回报及累计现金转正后才触发。Intel以剩余资助取得新股/条件认股权、GAO协议修改展示可行政策工具，不可移植其持股比例给MU。公司强流动性降低主动接受稀释资金的需要，政策条件仍可影响选择。",
+          "materiality_context": "合规及分配限制影响资金能否用于返还；分享基线决定只有多高项目回报才触发，适度比例决定边际分流，最高对应项目已拨款75%、最长10年决定范围，不能把集团全部资助承诺上限统一乘75%当确定现值损失。高回报触发分享同时意味着更强项目现金，不能只看分流不看来源。未来假设政府取得增发后10%普通股，原股东所有权比例相对下降10%，但新资本及替代补助可增加总价值；发行价和优先/认股权可能让经济稀释不同于名义比例，需区分无到期股权与固定偿付。当前回购约束对近期分配更直接，远期分享影响项目收益归属，新政府股权仍为条件性结构可能而非基线事实。",
+          "scope_boundary": "股东分配限制、收益份额及资本权利，不重算融资现金；现有协议与未来转换类比明确区分，不假设美光已被要求出让股权。",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+            "D1-O4",
+            "D1-O31",
+            "https://www.gao.gov/assets/gao-26-109121.pdf",
+            "https://www.intel.com/content/www/us/en/newsroom/news/corporate/intel-and-trump-administration-reach-historic-agreement.html"
+          ]
+        }
+      ],
+      "potential_gaps": [
+        {
+          "name": "回购执行、买入价值与净发行改变每股剩余权",
+          "why_live": "351.60亿美元是累计授权，12月9日窗口仍附条件；FY2026仅购250万股、Q4零自主执行，实际股数仍增。现行税率1%及发行抵扣是真实成本边界，授权披露2500万美元未对账差保持原State。",
+          "revision_logic": "基线是选择权而非预定缩股。实际预算、价格、员工净发行及税制能独立改变每股权利；花钱买回低于/高于经济价值的效果不同，EPS分母减少不是无条件创值。不得将日线回补价作截点成交或把上限全部即时折股。",
+          "possibility_space": [
+            {
+              "name": "窗口开放后选择持续净买回而非只抵发行",
+              "implication": "实际购股超过同期净新增，使旧股东占比上升；以失去现金和收益为代价，若资金/价值合适可形成经常缩股解释。执行初步变化已改未来权利，不需预设全年授权花完。"
+            },
+            {
+              "name": "公司优先建设而回购仅抵员工发行",
+              "implication": "名义购股可很大而实际股数持平，股东更多获稀释补偿而非真缩股；授权增大仍是可选权利，不把低执行自动当经营恶化。"
+            },
+            {
+              "name": "价格变化使同预算购买数量和价值不同",
+              "implication": "董事会择价/节奏导致同现金注销不同股数；高价购买可能耗去较多现金却少缩股，低价也要比较投资回报和真实价值，不能仅按EPS增厚定优劣。"
+            },
+            {
+              "name": "税制或净发行处理改变全成本及分配偏好",
+              "implication": "未来法定税率/抵扣规则若修改，会改变同总预算能买的股份；现行1%不是已公布上调。更多发行可能降低税基却增加稀释，股息相对效率也受个人/公司税及规则影响，不能金额直接互抵。"
+            }
+          ],
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+            "https://www.irs.gov/instructions/i7208",
+            "D1-O4",
+            "D1-O58",
+            "D1-O12",
+            "D1-O57"
+          ]
+        },
+        {
+          "name": "股息制度改变经常现金权利与跨周期承诺",
+          "why_live": "0.15美元档位和10月29日付款已宣布但未发生；本年现金610百万美元较大现金平台很小。CHIPS允许普通股息合理增长、限制特别分配，低派息率不说明已有下一次增额承诺。",
+          "revision_logic": "相对维持新普通档位的基线，提高经常比例、特别返现或保留资金分别改变多年承诺和即期分配，不减少股数。约束来自可重复现金及投资/返还优先级，不将暂缓税款及保证金当永久派息能力。",
+          "possibility_space": [
+            {
+              "name": "董事会以可重复现金逐步提高普通档位",
+              "implication": "把部分经常现金变为更稳定的直接回报，降低未来自主回购/投资空间；按现有实际股数每季增0.05美元的静态成本约5657万美元仅作尺度，不是预测加息。"
+            },
+            {
+              "name": "公司争取允许特别返现的协议变更",
+              "implication": "若资金确属剩余且政府条件允许，一次性股息可把储备交给全体持有人、不缩股；当前限制仍在，不能凭高现金推已获准，分配后应保留偿付能力。"
+            },
+            {
+              "name": "投资或偿付排序使分配增长停止甚至重定档位",
+              "implication": "利润强也可能选择维持而非提高；更深现金回落才可能改变既有档位，削弱经常承诺理解。与暂停回购不同，股息政策调整影响持有人对持续现金权利的预期，不直接等于破产。"
+            }
+          ],
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000018/a2026q4ex991-pressrelease.htm",
+            "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+            "D1-O44",
+            "D1-O31",
+            "D1-O4"
+          ]
+        },
+        {
+          "name": "奖励组合及归属兑现改写稀释轨迹",
+          "why_live": "1900万未归属、4700万计划额度和19.8亿美元待认费用体现管线而非同日发行；新授、绩效归属、ESPP及11.27亿美元代扣现金各有后果。现金/股票并用不能推出全面薪酬转换。",
+          "revision_logic": "基线保留持续股票供应及净稀释。管理层奖励制度、绩效和股价可在合并利润不变时改变未来实际股份/现金承担者；每100万净发行约当前股份0.0884%只是规模，不能将毛归属、计划额度与加权稀释股混算。",
+          "possibility_space": [
+            {
+              "name": "高盈利及人才竞争扩大经常股票奖励",
+              "implication": "新增奖励为以后多期供应，回购可能只抵销而非净缩股；当期非现金加回不消除旧股东权利让渡。若用现金替代，则前Unit现金负担提高、分母压力较低。"
+            },
+            {
+              "name": "管理层以现金替换部分授予或压缩新授",
+              "implication": "降低未来发行管线但消耗可分配现金，或牺牲留用竞争力；股票数量减少不等于总劳动经济成本降低。可与普通派息/回购选择互相挤占。"
+            },
+            {
+              "name": "业绩及服务兑现改变实际归属数量",
+              "implication": "三年绩效0%—200%、离职及服务条件使未来股份与目前名义未归属不同；较好业绩可同时增加利润与股份供给，不能仅按EPS涨幅判断净权利。"
+            },
+            {
+              "name": "股价变化重排固定价值新授和代扣现金",
+              "implication": "相同美元新授预算在高价时授股少，存量归属代扣现金却可能变多；稀释加权计量也变，不代表实际流通股已同幅改变。ESPP及真实买回仍须同一实际股数桥。"
+            }
+          ],
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+            "https://focustaiwan.tw/business/202609110009",
+            "D1-O12",
+            "D1-O58",
+            "D1-O44"
+          ]
+        },
+        {
+          "name": "资本配置制度决定留存价值与股东可分配份额",
+          "why_live": "高账面留存非现金分配池。净资本计划、税及返还、已发生资产购买和战略投资竞争用途；623.08亿美元调整FCF不扣全部融资/战略现金用途，C5没有同期全年FCF共识。",
+          "revision_logic": "基线是建设与储备优先。新投资、交易和返还制度会改变剩余现金归谁及何时回收；必须比较资本回报/时滞，不把账面资产增长或少花capex自动当价值增长，也不声称市场已计全部分配。",
+          "possibility_space": [
+            {
+              "name": "公司把新增现金优先投向高回报且较快回收用途",
+              "implication": "若合格供给/客户地位带来高于资金成本的净现金，暂少分配可增加长期权益；未来瓶颈或低回报则把同样支出变为资本锁定。投资选择本身已有机会修订意义。"
+            },
+            {
+              "name": "董事会采用更明确的剩余现金返还制度",
+              "implication": "在真实税/返还储备及承诺资本之外定期返现，提高持有人分配可预测性；不能把保证金融资及未到账支持纳入永久盈余，规则弹性决定下行时是否需借款维持。"
+            },
+            {
+              "name": "资产收购或生态投资扩大竞争性资金用途",
+              "implication": "新收购、股权或资产交易可加速能力/关系但减少现金，若用增发/可转工具还改变旧股东比例及优先权；经济净效果由取得资产回报、价格和融资条款决定，不只看公告规模。"
+            },
+            {
+              "name": "需求回报重估使公司缩减低效项目并保留缓冲",
+              "implication": "放弃未签低回报投资可改善留存价值或释放分配，但已锁义务/资助条件限制取消；若只是推迟高回报能力造成份额损失，当前FCF更高也不等于长期可分配权益更强。"
+            }
+          ],
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+            "D1-O31",
+            "D1-O9",
+            "D1-O4",
+            "D1-O104",
+            "D1-O57"
+          ]
+        },
+        {
+          "name": "公共资本权利与分享条款改变股东收益归属",
+          "why_live": "现有项目分享和资本分配限制已在基线，不是完全无成本补助。Intel权益工具及GAO修改有现实类比，MU目前没有政府持股转换事实；强流动性降低主动稀释融资需要而不排除政策选择。",
+          "revision_logic": "当前理解是附条件资助加有限项目分享。不同公共资本可用额相近，却改变普通持有人份额、权利顺位和以后现金；现有分享触发还与更强项目收益同时发生，不能只扣分流或照搬行业持股比例。",
+          "possibility_space": [
+            {
+              "name": "高回报项目兑现既有超额现金分享",
+              "implication": "在约定高基线之上形成适度分流，影响股东最终可分配项目现金但也验证强回报；上限对应项目已拨奖款75%、最长10年，不将集团资助全额作确定损失。"
+            },
+            {
+              "name": "未拨支持被重新组织为母公司普通股",
+              "implication": "增加/保留永久资本同时稀释持股，发行价与替代原补助决定旧股东净价值；不是无偿取得与无代价稀释各算一份。当前仅可行政策情景，不写为MU已谈交易。"
+            },
+            {
+              "name": "公共出资附优先收益、认股权或项目少数权益",
+              "implication": "优先顺位、可行权条款或仅项目范围让经济权利不同于同名义普通股比例；母公司股数可不变但项目现金份额减少，或未来才发生稀释。资金缓冲与收益让渡须同时解释。"
+            },
+            {
+              "name": "公司用自有资金或替代资本避免额外权益条件",
+              "implication": "保留股东权利却提高自筹投入/储备消耗，可能挤压股息回购；若条件重新放宽，则不额外发股也能提高可分配现金。强现金赋予选择但不消除机会成本。"
+            }
+          ],
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "context/mcp_data/d2-o1_open_discovery-4-322e541e13/call_f989312be8f744c9b8e0357bf0b5d2d4/blocks/O17.md",
+            "https://www.gao.gov/assets/gao-26-109121.pdf",
+            "https://www.intel.com/content/www/us/en/newsroom/news/corporate/intel-and-trump-administration-reach-historic-agreement.html",
+            "D1-O4",
+            "D1-O31"
+          ]
+        }
+      ]
+    }
+  ]
+}

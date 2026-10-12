@@ -1,0 +1,18 @@
+{
+  "prompts/codex_v2/document3/AGENTS.md": "51c557e2f5737d3be63db0e91d8ff82a769f48e4c7dd299f5a43ce135ffca3a5",
+  "prompts/codex_v2/document3/agents/o3.md": "aa79a27b80c8e035ada6db267771a1764efcefcd04d379e8ecd3f23559daf6cb",
+  "prompts/codex_v2/document3/skills/initialize_discovery.md": "c347355e1dc67e60e11c1159f6828bf8b6059fd992e249e9b7bbdc8af658f213",
+  "prompts/codex_v2/document3/skills/initialize_integration.md": "e15e81ef1eaa12f0098e0dafda4092b402a693d908cc5ef9b1e1b99b15b7c062",
+  "prompts/codex_v2/document3/skills/initialize_planning.md": "20c8c78dff63d8d72709a7434d395e2e07b3da30a1aafde0cd605cb4de206393",
+  "prompts/codex_v2/document3/skills/initialize_policy_build.md": "06c33ab2ee1e50650e7529a4928a7b263083cdcc3ccca4aff37bf95e591a172a",
+  "prompts/codex_v2/document3/skills/maintain.md": "deca2b0285498bf157d51263a9f44d5dc97e3755add5b39412bd12bf49aaeda6",
+  "prompts/codex_v2/document3/v2.0_legacy/AGENTS.md": "8626fc3ec4571bd50d4ce8fc03683bc497dad82a21dde072086932bba7403650",
+  "prompts/codex_v2/document3/v2.0_legacy/agents/o3.md": "027ca9cdc0daf4ff109d3dc7b4ae63cdf295e7f630311395e8946f09d0eb773a",
+  "prompts/codex_v2/document3/v2.0_legacy/schemas/policy_patch.schema.json": "22b2a0727c330891d8b773f3e46fdcb1a18c4e9792e7268ee25b9d9f119618b7",
+  "prompts/codex_v2/document3/v2.0_legacy/schemas/policy_set.schema.json": "0ae9acb88822cc55d34e6ec150c09c7d220f3a53e9ed6e938f4396b84bf0258e",
+  "prompts/codex_v2/document3/v2.0_legacy/skills/foundation.md": "ee537c4080d21532b879bfc7a213bfe1486d5e609c433dea3c633517dea3c6ce",
+  "prompts/codex_v2/document3/v2.0_legacy/skills/initialize_final_review.md": "0fe70174e19a2d31155c672367fa8fe502ba5b037c6629b5b9be4667ec94c92a",
+  "prompts/codex_v2/document3/v2.0_legacy/skills/initialize_policy_compile.md": "f350a2d1b6f08b690f6bdfd968cab51475136e43b88c5fe3070daf87f013bc7b",
+  "prompts/codex_v2/document3/v2.0_legacy/skills/initialize_trigger_calibration.md": "90363b17f38759fcf2c9f7caef1134a958684b63b1ae94c7e1547f9a2f78570b",
+  "prompts/codex_v2/document3/v2.0_legacy/skills/maintain.md": "c0f5dcf603d5c746c581b53f3667a28376217d0964857e4496b081ac10da7db7"
+}

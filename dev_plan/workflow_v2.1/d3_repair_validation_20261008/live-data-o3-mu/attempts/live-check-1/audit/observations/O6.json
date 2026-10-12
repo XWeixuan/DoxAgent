@@ -1,0 +1,9 @@
+{
+  "alias": "O6",
+  "title": "vintage_policy",
+  "content": "retrieval-time current consensus only; the provider does not expose a historical point-in-time vintage",
+  "source": {
+    "provider": "Yahoo Finance via yfinance",
+    "locator": "yfinance:sell_side_consensus:MU"
+  }
+}

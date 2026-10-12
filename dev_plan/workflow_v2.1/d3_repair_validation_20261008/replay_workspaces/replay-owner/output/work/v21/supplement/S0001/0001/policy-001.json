@@ -1,0 +1,38 @@
+{
+  "policy_id": "pol_dbdc500c94e44bf3843e8696f8130178",
+  "title": "主要云客户机房投运批次的电力与机架交付重排",
+  "ref": [
+    "context/document3/v21/d2/shell-0001.json#/units/0",
+    "output/work/v21/discovery/GLOBAL.jsonl#L5",
+    "output/work/v21/discovery/S0001.jsonl#L2",
+    "output/work/v21/research/S0001/0001/policy-001.json",
+    "https://www.microsoft.com/en-us/Investor/events/fy-2026/earnings-fy-2026-q3",
+    "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+    "https://news.microsoft.com/source/2026/06/23/microsoft-completes-construction-on-first-datacenter-facility-in-mount-pleasant-wisconsin/",
+    "https://www.iea.org/reports/energy-and-ai/executive-summary"
+  ],
+  "transmission": "数据中心通电和冷却可用，只有传到一个区域或多园区服务器批次的到货、安装日程，才较直接地移动后续内存与 SSD 的采购兑现时点。Microsoft FY26 Q3、Q4 各新增约 1GW 容量，Fairwater 2026 年春季提前六周上线并带来更早的服务收入，说明大客户的实物阶段有分量；但已预购硬件可能先于投运计入美光出货，单址改在别处上线也可能只是调配。本规则只判断明确重排的区域级机架交付批次及其近期美光可服务机会，不称终端需求消失，也不从供电兆瓦直接折算内存位数。",
+  "match_scope": "召回 Microsoft 及其他大型云客户、机房开发商或电力合作方关于区域级/多园区通电、冷却就绪、机架进场、整机交付延期、跨区域承接的安排。Microsoft Fairwater 早投运、芬兰多园区分期建设以及同类云客户的投运调整是非穷举召回示例；园区建成、购电协议、季度资本开支和设备预购均可相关但不自动命中，仍以客户实际机架交付日程的条件判断。",
+  "activation_conditions": [
+    {
+      "condition_id": "C1",
+      "decision": "LONG",
+      "trigger_layer": "MIDDLE",
+      "criterion": "主要云客户确认区域级或多园区的供电与冷却已可支持部署，正式把同一计划中的生产服务器机架交付批次从原定后一财季提前至本财季，而非仅提前建筑竣工或异地调拨既有机架。",
+      "calibration": {
+        "reference_state": "截至 2026-10-06，Microsoft FY26 Q3、Q4 各报告约 1GW 新增容量；Fairwater 已于 2026 年春季较原安排提前六周上线，而其整体容量约两年翻倍的宽泛目标仍维持。后者未给出精确到季度的整体完成日，不能把‘约两年’自行换算成下一季的硬阈值。其他客户亦须按自己同一机架批次的原定到货/安装季度比较。",
+        "trigger_boundary": "同一区域级或多园区机架交付批次有可识别的 old→new 安排，整批从原定后一交付财季正式提前到本财季，就改变了一个完整采购/安装批次的近期时点；不等待实际进场或美光订单披露。只早通电单个园区、提前六周但未改变相关机架交付财季，或把既有设备从别处搬来，不越界。"
+      }
+    },
+    {
+      "condition_id": "C2",
+      "decision": "SHORT",
+      "trigger_layer": "MIDDLE",
+      "criterion": "主要云客户因区域级或多园区供电/冷却无法如期服务，正式把同一计划中的生产服务器机架交付批次从原定本财季推至下一财季或更晚，而非仅改变园区位置、客户整体批次仍按期交付。",
+      "calibration": {
+        "reference_state": "截至 2026-10-06，大型云客户继续扩容而电网和关键设备可能拖慢投运；Microsoft 在 FY26 Q3、Q4 各新增约 1GW，但‘约两年翻倍’不是可逐季判定的精确整体计划。预算、服务器预购、美光出货与机架在役存在时间差；一个园区延期可被其他已就绪地点承接。",
+        "trigger_boundary": "客户公开把一个原定本财季的区域级/多园区机架交付批次整体延至后续财季，已足以推迟该批次设备安装及随后的补充采购机会；不声称已交付给客户的美光产品会退货。单站施工延期但客户该批次仍按原季度在别处交付，或仅调整土地/电力长期协议，不越界。"
+      }
+    }
+  ]
+}

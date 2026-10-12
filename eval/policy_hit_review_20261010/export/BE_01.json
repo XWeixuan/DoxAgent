@@ -1,0 +1,1763 @@
+{
+  "format": "doxagent.policy-hit-review.v1",
+  "ticker": "BE",
+  "window": {
+    "since_utc": "2026-09-18T18:59:35.983285+00:00",
+    "as_of_utc": "2026-10-09T18:59:35.983285+00:00"
+  },
+  "part": 1,
+  "record_count": 5,
+  "records": [
+    {
+      "policy_hit_id": "case_61e1d71660a042a893c8fd101abedc78:pol_36b5ed507595cdea3382",
+      "ticker": "BE",
+      "case_id": "case_61e1d71660a042a893c8fd101abedc78",
+      "hit_observed_at_utc": "2026-09-24T14:51:51.408Z",
+      "hit_current": true,
+      "policy_id": "pol_36b5ed507595cdea3382",
+      "activation_revision": "ar_7f759cc8e794ca828275b52e",
+      "policy": {
+        "frozen_match": {
+          "activation_revision": "ar_7f759cc8e794ca828275b52e",
+          "condition_ids": [
+            "C1"
+          ],
+          "criterion": [
+            "此前未确认的重要AI或数据中心客户授予Bloom具名项目的绑定订单或等效客户指令，并披露容量与部署时间表。"
+          ],
+          "match_scope": "此前未确认的hyperscaler、neocloud、AI实验室或托管客户对Bloom的具名采购、项目授予、容量、取消条款和部署排期消息。",
+          "policy_id": "pol_36b5ed507595cdea3382"
+        },
+        "pinned_detail": {
+          "activation_semantics": "OR",
+          "policy": {
+            "activation_conditions": [
+              {
+                "calibration": {
+                  "reference_state": "市场已知近两打AI基础设施客户、广泛验证和约1.2GW部署，但终端客户身份及绑定分配不完整。",
+                  "trigger_boundary": "一名足够重要且此前未确认的终端客户，须在同一消息中明确Bloom、具名项目或容量、不可任意撤回的采购承诺及部署窗口；匿名客户数、验证或渠道框架不足。"
+                },
+                "condition_id": "C1",
+                "criterion": "此前未确认的重要AI或数据中心客户授予Bloom具名项目的绑定订单或等效客户指令，并披露容量与部署时间表。"
+              }
+            ],
+            "decision": "LONG",
+            "match_scope": "此前未确认的hyperscaler、neocloud、AI实验室或托管客户对Bloom的具名采购、项目授予、容量、取消条款和部署排期消息。",
+            "policy_id": "pol_36b5ed507595cdea3382",
+            "source_refs": [
+              {
+                "expectation_id": "Qualified large-load customer adoption",
+                "gap_id": "Diversified new customer cohort converts",
+                "shell_id": "Large-load Energy Server adoption and share"
+              }
+            ],
+            "title": "新AI大型客户转为绑定采用"
+          },
+          "source_document2": {
+            "artifact_id": "5830b9e9b2d84fa4acc0eb2e711751a0",
+            "content_sha256": "e4e7ef2733ce4cb52fdaf6638bd620878afec466a9f75119cd1f257d7e9237de",
+            "published_at": "2026-09-21T18:47:06.964292Z",
+            "run_id": "init-be-788adefdd31844d98a907468b883176d-d2",
+            "schema_version": "document2.v2"
+          },
+          "summary": {
+            "consumed": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "consumed_at": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "decision": "LONG",
+            "effective": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "lifecycle": "ACTIVE",
+            "matched_filters": [
+              "ACTIVE"
+            ],
+            "policy_activation_revision": "ar_7f759cc8e794ca828275b52e",
+            "policy_id": "pol_36b5ed507595cdea3382",
+            "policy_revision_id": "736c884828c1fb09b4bd98f629994080750049bd6a7a6db039a79a32d27e9361",
+            "policy_set_version": 1,
+            "shell_ids": [
+              "Large-load Energy Server adoption and share"
+            ],
+            "title": "新AI大型客户转为绑定采用",
+            "unresolved_shell_ids": []
+          }
+        },
+        "policy_set_version": 1,
+        "activation_revision_id": "runtime-maintain-0ce6bfd299032791e8eb531a-activation"
+      },
+      "hit_policy_released_for_trade": false,
+      "case_summary": {
+        "case_id": "case_61e1d71660a042a893c8fd101abedc78",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-24T14:51:51.597042Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 126.847212
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "OLD"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": true
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "ARCHIVE",
+        "member_count": 1,
+        "received_at": "2026-09-24T14:49:44.749830Z",
+        "resolved_route": null,
+        "result_settled": true,
+        "results": [
+          "ARCHIVE",
+          "BADCASE"
+        ],
+        "revision": 2451947,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-24",
+        "source": {
+          "binding_id": "BE:yahoo_finance_news",
+          "kind": "api",
+          "name": "Yahoo Finance News",
+          "source_id": "yahoo_finance_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_873566a44706406880bba6693144d7a0",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Bloom Energy Corporation (BE): A Critical Player in AI Buildout"
+        },
+        "trade": {
+          "intent_count": 0,
+          "reason_codes": [],
+          "state": "NOT_APPLICABLE"
+        },
+        "trade_disposition": "NOT_EVALUATED",
+        "w3_status": null
+      },
+      "case_process": {
+        "created_at": "2026-09-24T14:49:44.749830Z",
+        "completed_at": "2026-09-24T14:51:51.597042Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "ARCHIVE",
+          "reason": "w1=OLD/normal;policy_hit=true;w2=normal",
+          "side_effects": [
+            "archive_message",
+            "mark_badcase"
+          ]
+        },
+        "resolved_route": null,
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E2",
+            "E6",
+            "E16",
+            "E11"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [
+            {
+              "event_id": "E2",
+              "fact_ids": [
+                "F2"
+              ]
+            },
+            {
+              "event_id": "E16",
+              "fact_ids": [
+                "F47"
+              ]
+            },
+            {
+              "event_id": "E6",
+              "fact_ids": [
+                "F7",
+                "F9",
+                "F12"
+              ]
+            }
+          ],
+          "reason": "消息核心为Tran Capital Q2 2026投资者信件回顾性提及BE已知业务事实：2.8 GW Oracle主服务协议（E2/F2）、1.2 GW已签约并在部署（E16/F47）、营收翻倍及GAAP盈利转正（E6/F7、F9）、全年指引上调（E6/F11、F12）。信中\"1Q26\"表述为基金信件内部背景引用，不构成独立的BE业务新进展。所有核心事实均已被现有Event覆盖。",
+          "reference_ids": [
+            "E2",
+            "E16",
+            "E6"
+          ],
+          "result": "OLD"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [
+            "pol_36b5ed507595cdea3382",
+            "pol_6d497580e0f6e14ff711"
+          ],
+          "reason": "消息以Tran Capital Q2投资者信函形式陈述了Bloom与Oracle具名\"landmark agreement\"的具体事实：总容量2.8GW、已签约并部署中的初始1.2GW，同时将电网互联排队\"数年\"与Bloom按期主供选择直接关联。这些容量、客户身份和电网瓶颈→Bloom主供的因果表述与两条Policy的criterion存在具体事实对应，且无法仅凭当前信息排除Oracle此前未确认或该协议构成按期主供选择的最终判定。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [
+            {
+              "condition_ids": [
+                "C1"
+              ],
+              "policy_id": "pol_36b5ed507595cdea3382"
+            }
+          ],
+          "policy_ids": [
+            "pol_36b5ed507595cdea3382"
+          ],
+          "reason": "消息明确将Oracle识别为此前未确认的重要AI/超大规模客户（reference_state指出终端客户身份此前不完整），并陈述\"landmark agreement with Oracle for up to 2.8 gigawatts, with an initial 1.2 gigawatts already contracted and deploying\"，满足C1全部要素：具名客户(Oracle)、明确容量(1.2GW已签约)、绑定采购承诺(contract)、部署窗口(正在deploying)。Policy 2未触发：消息仅泛述电网排队\"stretching for years\"，未给出Oracle项目具体的替代路线可用日与负载需求日之间的因果链，亦未正式将Bloom定义为因该延误而选定的按期主供路线。"
+        },
+        "w2_skipped": false,
+        "w3_result": null
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "0a648aeecd945171ff40d87fd659756837095a0e1495988d0b30fc21e7e033d4",
+            "content_type": "text/plain",
+            "sha256": "89f583bd4ae0d0a9645984b725e6b8927f6799c03bffb96a9edaaf276fe59992",
+            "size_bytes": 3888
+          },
+          "case": {
+            "case_id": "case_61e1d71660a042a893c8fd101abedc78",
+            "initial_route": "ARCHIVE",
+            "resolved_route": null,
+            "route_group": "ARCHIVE",
+            "status": "COMPLETED",
+            "w3_status": null
+          },
+          "collected_at": "2026-09-24T14:49:32.526391Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-24T14:49:42.983484Z",
+          "revision": 1,
+          "row_revision": 1549315,
+          "source": {
+            "binding_id": "BE:yahoo_finance_news",
+            "kind": "api",
+            "name": "Yahoo Finance News",
+            "source_id": "yahoo_finance_news"
+          },
+          "source_published_at": "2026-09-24T14:42:59Z",
+          "standard_message_id": "std_550fa705ec8648748def89c8abb6040c",
+          "stream_item_id": "stream_873566a44706406880bba6693144d7a0",
+          "stream_offset": 21,
+          "stream_published_at": "2026-09-24T14:49:42.995238Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Bloom Energy Corporation (BE): A Critical Player in AI Buildout"
+          },
+          "url": "https://finance.yahoo.com/technology/ai/articles/bloom-energy-corporation-critical-player-144259726.html",
+          "body_text": "Tran Capital Management, an investment management company, released its second-quarter investor letter for its \"Midcap Equity Strategy\". The letter can be downloaded here. The Midcap Equity Strategy returned 16.9%, net of fees, in the second quarter, bringing year-to-date returns to 12.3%, compared with Bloomberg U.S. Mid Cap Index's 11.1% quarterly gains and 12.1% year-to-date returns. The S&P 500 returned 15.2% for the quarter and 10.2% year-to-date. After a challenging first quarter, patient, research-driven investing and selective additions during the selloff contributed meaningfully to performance. The firm remains constructive on its portfolio and the broader market, where returns appear supported by genuine earnings growth rather than multiple expansion. Additionally, reviewing the Fund's top five holdings could help identify its best picks for 2026.\n\nIn its second-quarter 2026 investor letter, Tran Capital Midcap Equity Strategy highlighted Bloom Energy Corporation (NYSE:BE). Bloom Energy Corporation (NYSE:BE) designs and manufactures solid-oxide fuel cell systems for clean, reliable, on-site power generation, which positively contributed to the fund's returns this quarter. On September 23, 2026, Bloom Energy Corporation (NYSE:BE) closed at $275.19 per share. Over the past month, Bloom Energy Corporation (NYSE:BE) returned 18.57%, and its shares are up 276.01% over the past year. Bloom Energy Corporation (NYSE:BE) has a market capitalization of $81.05 billion, and its stock has traded within a 52-week range of $61.37 to $351.28.\n\nTran Capital Midcap Equity Strategy stated the following regarding Bloom Energy Corporation (NYSE:BE) in its Q2 2026 investor letter:\n\n\"Bloom Energy Corporation (NYSE:BE) also contributed meaningfully to our performance. Electricity has become the binding constraint on the AI buildout. Operators can secure GPUs far faster than they can secure power, with grid interconnection queues now stretching for years. Bloom's solid oxide fuel cells address this bottleneck, delivering reliable on-site power in a fraction of the time it takes to wait on the grid (i.e. months, not years). We believe BE's solution is now cost-competitive with gas generation, as BE drives down cost each year. During the quarter, that value proposition translated into a landmark agreement with Oracle for up to 2.8 gigawatts of 1000 4th Street, Suite 800 | San Rafael, CA 94901 415.461.800 | info@trancapital.com trancapital.com | 2 fuel cell capacity, with an initial 1.2 gigawatts already contracted and deploying, validating BE's technology. BE reported 1Q26 revenue that more than doubled year-over-year and the company swung firmly to GAAP profitability. Management raised full-year guidance to roughly 80% growth at the midpoint.\"\n\nBloom Energy Corporation (NYSE:BE) is not on our list of the 40 Most Popular Stocks Among Hedge Funds. According to our database, 116 hedge fund portfolios held Bloom Energy Corporation (NYSE:BE) at the end of the second quarter, up from 91 in the previous quarter. While we acknowledge the potential of Bloom Energy Corporation (NYSE:BE) as an investment, we believe certain AI stocks offer greater upside potential and carry less downside risk. If you're looking for an extremely undervalued AI stock that also stands to benefit significantly from Trump-era tariffs and the onshoring trend, see our free report on the best short-term AI stock.\n\nIn another article, we discussed Bloom Energy Corporation (NYSE:BE) and shared Carillon Eagle Small Cap Growth Fund's views on the contributor. In addition, please check out our hedge fund investor letters Q2 2026 page for more investor letters from hedge funds and other leading investors.\n\nREAD NEXT: 33 Stocks That Should Double in 3 Years and 15 Stocks That Will Make You Rich in 10 Years.\n\nThis article is originally published at Insider Monkey."
+        }
+      ],
+      "discovered_facts": [],
+      "trade": {
+        "intents": [],
+        "closed_candidates": [],
+        "executions": []
+      }
+    },
+    {
+      "policy_hit_id": "case_aa6372d40d874adf9172558c14568dad:pol_7b7ccfd2cb4eecfb6a8f",
+      "ticker": "BE",
+      "case_id": "case_aa6372d40d874adf9172558c14568dad",
+      "hit_observed_at_utc": "2026-09-29T16:29:44.184Z",
+      "hit_current": true,
+      "policy_id": "pol_7b7ccfd2cb4eecfb6a8f",
+      "activation_revision": "ar_2fd96c90986646897da1ccbb",
+      "policy": {
+        "frozen_match": {
+          "activation_revision": "ar_2fd96c90986646897da1ccbb",
+          "condition_ids": [
+            "C1"
+          ],
+          "criterion": [
+            "Green Chile路线被最终拒绝、被要求作会重置许可和建设的实质改线，或其可用日期被确认晚于Project Jupiter燃料连接里程碑。"
+          ],
+          "match_scope": "Green Chile管道的FERC授权、环境审查、路线修改、建设/在役日期、Project Jupiter燃料连接里程碑及替代燃料安排消息。",
+          "policy_id": "pol_7b7ccfd2cb4eecfb6a8f"
+        },
+        "pinned_detail": {
+          "activation_semantics": "OR",
+          "policy": {
+            "activation_conditions": [
+              {
+                "calibration": {
+                  "reference_state": "Green Chile是17.77英里拟建管道，截至cutoff仍处于环境评估和公众意见阶段（意见截止2026-10-05），最终授权和在役能力未建立。最新Reference View报告Project Jupiter一条关键燃气管线约六个月延误，但未指明该路线为Green Chile，也未给出管道可用日或Jupiter燃料连接日。",
+                  "trigger_boundary": "最终拒绝或重置性改线可直接触发；若是时间偏离，消息须同时明确Green Chile、管道可用日与Project Jupiter燃料连接里程碑并显示越窗。仅称Project Jupiter发生force majeure、关键燃气管线延误或供气风险而未完成路线和日期归因不足。"
+                },
+                "condition_id": "C1",
+                "criterion": "Green Chile路线被最终拒绝、被要求作会重置许可和建设的实质改线，或其可用日期被确认晚于Project Jupiter燃料连接里程碑。"
+              }
+            ],
+            "decision": "SHORT",
+            "match_scope": "Green Chile管道的FERC授权、环境审查、路线修改、建设/在役日期、Project Jupiter燃料连接里程碑及替代燃料安排消息。",
+            "policy_id": "pol_7b7ccfd2cb4eecfb6a8f",
+            "source_refs": [
+              {
+                "expectation_id": "Large-load project feasibility",
+                "gap_id": "Green Chile route remains unavailable for the project schedule",
+                "shell_id": "Large-load project execution and funding"
+              }
+            ],
+            "title": "Green Chile燃气路线错过Jupiter窗口"
+          },
+          "source_document2": {
+            "artifact_id": "5830b9e9b2d84fa4acc0eb2e711751a0",
+            "content_sha256": "e4e7ef2733ce4cb52fdaf6638bd620878afec466a9f75119cd1f257d7e9237de",
+            "published_at": "2026-09-21T18:47:06.964292Z",
+            "run_id": "init-be-788adefdd31844d98a907468b883176d-d2",
+            "schema_version": "document2.v2"
+          },
+          "summary": {
+            "consumed": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "consumed_at": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "decision": "SHORT",
+            "effective": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "lifecycle": "ACTIVE",
+            "matched_filters": [
+              "ACTIVE"
+            ],
+            "policy_activation_revision": "ar_2fd96c90986646897da1ccbb",
+            "policy_id": "pol_7b7ccfd2cb4eecfb6a8f",
+            "policy_revision_id": "748900a0d51f1f8fe5232e727f4cb5c62e2887d3d404b764ef4f9153dd22dc09",
+            "policy_set_version": 2,
+            "shell_ids": [
+              "Large-load project execution and funding"
+            ],
+            "title": "Green Chile燃气路线错过Jupiter窗口",
+            "unresolved_shell_ids": []
+          }
+        },
+        "policy_set_version": 2,
+        "activation_revision_id": "runtime-maintain-ca0103a0b488dca0793cef75-activation"
+      },
+      "hit_policy_released_for_trade": true,
+      "case_summary": {
+        "case_id": "case_aa6372d40d874adf9172558c14568dad",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-29T16:30:19.474925Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 181.290969
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": true
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "TRADE",
+        "member_count": 1,
+        "received_at": "2026-09-29T16:27:18.183956Z",
+        "resolved_route": null,
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2609071,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-29",
+        "source": {
+          "binding_id": "BE:huggingnews_rss",
+          "kind": "api",
+          "name": "HuggingNews Atom",
+          "source_id": "huggingnews_rss"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_d1db3997e1034ad3b7d59e4a0ab6e96b",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Oracle Bonds Hit Record 8.31% Yield on $120B Junk Downgrade Risk"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "DELIVERY_FAILED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "READY",
+        "w3_status": null
+      },
+      "case_process": {
+        "created_at": "2026-09-29T16:27:18.183956Z",
+        "completed_at": "2026-09-29T16:30:19.474925Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "TRADE",
+          "reason": "w1=NEW/normal;policy_hit=true;w2=normal",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "resolved_route": null,
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E31",
+            "E97",
+            "E98"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [
+            {
+              "event_id": "E31",
+              "fact_ids": [
+                "F76",
+                "F75"
+              ]
+            }
+          ],
+          "reason": "消息核心新增事实为Oracle长期债券收益率创纪录达8.31%、五年期CDS创纪录237个基点、以及市场定价$120B投资级债券面临降级至垃圾级并扩大junk市场约10%的风险。E31已记录Fact仅涵盖$18B建设债务低于90美分交易(F76)和Oracle寻求延期支付(F75)，均未涉及上述信用市场具体数据及降级风险量化。",
+          "reference_ids": [
+            "E31"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [
+            "pol_7b7ccfd2cb4eecfb6a8f",
+            "pol_82afe9ef8746239e0beb",
+            "pol_af4c18c9797e6d5a513f"
+          ],
+          "reason": "消息核心事实：新墨西哥州官员已两次否决Project Jupiter所依赖的17英里燃气管线（即Green Chile路线）许可，Oracle据此向Blue Owl发出不可抗力通知并寻求在错过2028投运窗口时递延租约。该事实直接触及Green Chile路线被拒绝（pol_7b7ccfd2cb4eecfb6a8f）及具名负荷区计划燃气路线被否决（pol_82afe9ef8746239e0beb）的触发路径；同时两次许可否决叠加Oracle递延条款使Project Jupiter 2028投运里程碑存在后移实质可能，与锚定项目延期判定（pol_af4c18c9797e6d5a513f）存在具体关联，完整判定边界尚不能排除。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [
+            {
+              "condition_ids": [
+                "C1"
+              ],
+              "policy_id": "pol_7b7ccfd2cb4eecfb6a8f"
+            },
+            {
+              "condition_ids": [
+                "C1"
+              ],
+              "policy_id": "pol_82afe9ef8746239e0beb"
+            }
+          ],
+          "policy_ids": [
+            "pol_7b7ccfd2cb4eecfb6a8f",
+            "pol_82afe9ef8746239e0beb"
+          ],
+          "reason": "消息明确陈述\"state officials twice denied permits for a 17 mile gas pipeline required for power\"，且该管线服务于Project Jupiter（New Mexico）。17英里与Green Chile的17.77英里为自然四舍五入，在Project Jupiter燃气管道唯一项目语境下构成路线识别。\"twice denied permits\"满足\"最终拒绝\"触发路径，无需额外日期比较即可触发pol_7b7ccfd2cb4eecfb6a8f C1。同一事实同时满足pol_82afe9ef8746239e0beb C1：路线（17-mile pipeline）+ 具名负荷区（Project Jupiter）+ 否决（twice denied permits）均已识别。pol_af4c18c9797e6d5a513f未命中：消息重复force majeure、提及2028 opening仅为Oracle寻求延付的权利条件（\"if the site misses\"），未提供正式原/新窗口对比或确认日期撤回，属于trigger_boundary明确排除的\"重复E31的force-majeure及一般支付保护\"。"
+        },
+        "w2_skipped": false,
+        "w3_result": null
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "ae7bd8bde767d2e176cd80edc1659866b7607a3fb9df31594b7e98ad359477ec",
+            "content_type": "text/plain",
+            "sha256": "e9c97910d4695ec70dcff87f14a7b8fed02385bc722445d0ed17264fb6bf4ddc",
+            "size_bytes": 1309
+          },
+          "case": {
+            "case_id": "case_aa6372d40d874adf9172558c14568dad",
+            "initial_route": "TRADE",
+            "resolved_route": null,
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": null
+          },
+          "collected_at": "2026-09-29T16:27:17.765567Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-29T16:27:17.781728Z",
+          "revision": 1,
+          "row_revision": 2466524,
+          "source": {
+            "binding_id": "BE:huggingnews_rss",
+            "kind": "api",
+            "name": "HuggingNews Atom",
+            "source_id": "huggingnews_rss"
+          },
+          "source_published_at": "2026-09-29T16:25:49.485000Z",
+          "standard_message_id": "std_f3cd757cdc10455088b40926ffb05685",
+          "stream_item_id": "stream_d1db3997e1034ad3b7d59e4a0ab6e96b",
+          "stream_offset": 316,
+          "stream_published_at": "2026-09-29T16:27:17.785036Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Oracle Bonds Hit Record 8.31% Yield on $120B Junk Downgrade Risk"
+          },
+          "url": "https://huggingnews.com/us-markets/update-oracle-bonds-hit-record-831percent-yield-on-120b-junk-downgrade-r-72b2f41d",
+          "body_text": "← Back to live feed · 1 stories across 1 day\nTuesday, Sep 29, 2026\n1 story1 Oracle Bonds Hit Record 8.31% Yield on $120B Junk Downgrade Risk↩︎ AI Sep 24, 2:13 PM EDT 82/44 \n Credit markets are increasingly pricing in a downgrade to junk status for Oracle, a move that would automatically remove $120B of the company's bonds from investment grade indexes. Long-term bond yields climbed to a new record of 8.31% this week, while five-year credit default swaps hit record highs of 237 basis points. Such a downgrade would expand the total junk bond market by roughly 10%. Simultaneously, $18B in construction loans tied to the company's Project Jupiter facility are now trading at approximately 89 cents on the dollar.\nThe escalation in borrowing costs follows Oracle's decision to issue a force majeure notice to Blue Owl Capital, the developer of its New Mexico AI data center built for OpenAI. Oracle is seeking the right to defer lease payments if the site misses its 2028 opening after state officials twice denied permits for a 17 mile gas pipeline required for power. S&P currently rates the company's debt at BBB-, one notch above junk. Morgan Stanley noted that this credit stress is putting other AI infrastructure debt under scrutiny, potentially raising financing costs for other hyperscalers."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_f3cd757cdc10455088b40926ffb05685:0\"]",
+          "created_at": "2026-09-29T16:30:19.278127Z",
+          "dedupe_key": "2b2009eece1460b5b30cec88ff9771b278f75fb5fc93823bd8eff64840b65e2f",
+          "entities": [
+            "Oracle"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "Oracle长期债券收益率本周攀升至创纪录的8.31%。",
+          "provisional_event_id": "E126",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_f3cd757cdc10455088b40926ffb05685:1\"]",
+          "created_at": "2026-09-29T16:30:19.299769Z",
+          "dedupe_key": "173494d57257d57b5f8bab64149dc59eb8466dfa04210bcb4c6608ddc34c1910",
+          "entities": [
+            "Oracle"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "Oracle五年期信用违约互换(CDS)本周触及创纪录的237个基点。",
+          "provisional_event_id": "E127",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "ONGOING",
+          "candidate_id": "[\"runtime-v2-msg:std_f3cd757cdc10455088b40926ffb05685:2\"]",
+          "created_at": "2026-09-29T16:30:19.317743Z",
+          "dedupe_key": "66e4e1888f7ac18df1792844f680a769f2fe16e602a588d2c04770fe0e4c365d",
+          "entities": [
+            "Oracle"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "信用市场正日益将Oracle降级至垃圾级的风险定价在内，该降级将自动使约1200亿美元Oracle投资级债券被移出投资级指数。",
+          "provisional_event_id": "E128",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "HYPOTHETICAL",
+          "candidate_id": "[\"runtime-v2-msg:std_f3cd757cdc10455088b40926ffb05685:3\"]",
+          "created_at": "2026-09-29T16:30:19.335194Z",
+          "dedupe_key": "de4125d528038e9e396b54bf4be2102a214564df86f80594e370b98da378077f",
+          "entities": [
+            "Oracle"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "若Oracle被降级至垃圾级，将使垃圾债券市场总规模扩大约10%。",
+          "provisional_event_id": "E129",
+          "subject_time": null
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_aa6372d40d874adf9172558c14568dad",
+            "status": "DELIVERY_FAILED",
+            "released_at": "2026-09-29T16:29:44.297634+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "direction": "SHORT",
+            "executed_policy_id": "pol_7b7ccfd2cb4eecfb6a8f",
+            "candidate_policy_ids": [
+              "pol_7b7ccfd2cb4eecfb6a8f",
+              "pol_82afe9ef8746239e0beb"
+            ],
+            "matched_condition_ids": [
+              "C1"
+            ]
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "case_id": "case_aa6372d40d874adf9172558c14568dad",
+              "direction": "SHORT",
+              "entry_reason": "PROFILE_VALIDATION_FAILED: 旧版 v2-delivery 的 ExecutionProfile 不支持冻结的 SHARED_CYCLE Profile：仍要求 target_notional_usd，且拒绝新增仓位参数。",
+              "entry_result": null,
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_aa6372d40d874adf9172558c14568dad",
+              "execution_reason_codes": [
+                "DELIVERY_FAILED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "REJECTED",
+              "intent_id": "trade:case_aa6372d40d874adf9172558c14568dad",
+              "intent_status": "DELIVERY_FAILED",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-29T16:29:44.297634Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      }
+    },
+    {
+      "policy_hit_id": "case_aa6372d40d874adf9172558c14568dad:pol_82afe9ef8746239e0beb",
+      "ticker": "BE",
+      "case_id": "case_aa6372d40d874adf9172558c14568dad",
+      "hit_observed_at_utc": "2026-09-29T16:29:44.184Z",
+      "hit_current": true,
+      "policy_id": "pol_82afe9ef8746239e0beb",
+      "activation_revision": "ar_3ce85de3185c4c6a6771d438",
+      "policy": {
+        "frozen_match": {
+          "activation_revision": "ar_3ce85de3185c4c6a6771d438",
+          "condition_ids": [
+            "C1"
+          ],
+          "criterion": [
+            "具名负荷区的计划燃气路线被否决、推迟到项目需求日之后，或其firm transport申请被正式拒绝。"
+          ],
+          "match_scope": "具名负荷区燃气路线许可、投运日、firm transport容量申请及项目需求窗口消息。",
+          "policy_id": "pol_82afe9ef8746239e0beb"
+        },
+        "pinned_detail": {
+          "activation_semantics": "OR",
+          "policy": {
+            "activation_conditions": [
+              {
+                "calibration": {
+                  "reference_state": "全国燃气路线活动改善，但相关负荷区的本地firm transport尚未证明；最新Reference View报告Project Jupiter一条关键燃气管线约六个月延误，却未识别路线、负荷区、firm transport容量或项目需求窗口。",
+                  "trigger_boundary": "消息须识别路线、负荷区，并给出否决/firm容量拒绝，或可直接比较的原/新投运日与项目需求日。仅称Project Jupiter存在关键管线延误、force-majeure或供气风险而无路线和firm容量/日期比较不足。"
+                },
+                "condition_id": "C1",
+                "criterion": "具名负荷区的计划燃气路线被否决、推迟到项目需求日之后，或其firm transport申请被正式拒绝。"
+              }
+            ],
+            "decision": "LONG",
+            "match_scope": "具名负荷区燃气路线许可、投运日、firm transport容量申请及项目需求窗口消息。",
+            "policy_id": "pol_82afe9ef8746239e0beb",
+            "source_refs": [
+              {
+                "expectation_id": "Alternative firm-power supply window",
+                "gap_id": "Local gas route is blocked or lacks firm transport",
+                "shell_id": "Large-load Energy Server adoption and share"
+              }
+            ],
+            "title": "本地燃气路线受阻延长Bloom机会窗口"
+          },
+          "source_document2": {
+            "artifact_id": "5830b9e9b2d84fa4acc0eb2e711751a0",
+            "content_sha256": "e4e7ef2733ce4cb52fdaf6638bd620878afec466a9f75119cd1f257d7e9237de",
+            "published_at": "2026-09-21T18:47:06.964292Z",
+            "run_id": "init-be-788adefdd31844d98a907468b883176d-d2",
+            "schema_version": "document2.v2"
+          },
+          "summary": {
+            "consumed": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "consumed_at": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "decision": "LONG",
+            "effective": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "lifecycle": "ACTIVE",
+            "matched_filters": [
+              "ACTIVE"
+            ],
+            "policy_activation_revision": "ar_3ce85de3185c4c6a6771d438",
+            "policy_id": "pol_82afe9ef8746239e0beb",
+            "policy_revision_id": "a6b6b68e5d449feff9cf6e4ae05826a28a2599905cd9088ef27319bf0530c014",
+            "policy_set_version": 2,
+            "shell_ids": [
+              "Large-load Energy Server adoption and share"
+            ],
+            "title": "本地燃气路线受阻延长Bloom机会窗口",
+            "unresolved_shell_ids": []
+          }
+        },
+        "policy_set_version": 2,
+        "activation_revision_id": "runtime-maintain-ca0103a0b488dca0793cef75-activation"
+      },
+      "hit_policy_released_for_trade": false,
+      "case_summary": {
+        "case_id": "case_aa6372d40d874adf9172558c14568dad",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-29T16:30:19.474925Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 181.290969
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": true
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "TRADE",
+        "member_count": 1,
+        "received_at": "2026-09-29T16:27:18.183956Z",
+        "resolved_route": null,
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2609071,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-29",
+        "source": {
+          "binding_id": "BE:huggingnews_rss",
+          "kind": "api",
+          "name": "HuggingNews Atom",
+          "source_id": "huggingnews_rss"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_d1db3997e1034ad3b7d59e4a0ab6e96b",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Oracle Bonds Hit Record 8.31% Yield on $120B Junk Downgrade Risk"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "DELIVERY_FAILED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "READY",
+        "w3_status": null
+      },
+      "case_process": {
+        "created_at": "2026-09-29T16:27:18.183956Z",
+        "completed_at": "2026-09-29T16:30:19.474925Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "TRADE",
+          "reason": "w1=NEW/normal;policy_hit=true;w2=normal",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "resolved_route": null,
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E31",
+            "E97",
+            "E98"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [
+            {
+              "event_id": "E31",
+              "fact_ids": [
+                "F76",
+                "F75"
+              ]
+            }
+          ],
+          "reason": "消息核心新增事实为Oracle长期债券收益率创纪录达8.31%、五年期CDS创纪录237个基点、以及市场定价$120B投资级债券面临降级至垃圾级并扩大junk市场约10%的风险。E31已记录Fact仅涵盖$18B建设债务低于90美分交易(F76)和Oracle寻求延期支付(F75)，均未涉及上述信用市场具体数据及降级风险量化。",
+          "reference_ids": [
+            "E31"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [
+            "pol_7b7ccfd2cb4eecfb6a8f",
+            "pol_82afe9ef8746239e0beb",
+            "pol_af4c18c9797e6d5a513f"
+          ],
+          "reason": "消息核心事实：新墨西哥州官员已两次否决Project Jupiter所依赖的17英里燃气管线（即Green Chile路线）许可，Oracle据此向Blue Owl发出不可抗力通知并寻求在错过2028投运窗口时递延租约。该事实直接触及Green Chile路线被拒绝（pol_7b7ccfd2cb4eecfb6a8f）及具名负荷区计划燃气路线被否决（pol_82afe9ef8746239e0beb）的触发路径；同时两次许可否决叠加Oracle递延条款使Project Jupiter 2028投运里程碑存在后移实质可能，与锚定项目延期判定（pol_af4c18c9797e6d5a513f）存在具体关联，完整判定边界尚不能排除。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [
+            {
+              "condition_ids": [
+                "C1"
+              ],
+              "policy_id": "pol_7b7ccfd2cb4eecfb6a8f"
+            },
+            {
+              "condition_ids": [
+                "C1"
+              ],
+              "policy_id": "pol_82afe9ef8746239e0beb"
+            }
+          ],
+          "policy_ids": [
+            "pol_7b7ccfd2cb4eecfb6a8f",
+            "pol_82afe9ef8746239e0beb"
+          ],
+          "reason": "消息明确陈述\"state officials twice denied permits for a 17 mile gas pipeline required for power\"，且该管线服务于Project Jupiter（New Mexico）。17英里与Green Chile的17.77英里为自然四舍五入，在Project Jupiter燃气管道唯一项目语境下构成路线识别。\"twice denied permits\"满足\"最终拒绝\"触发路径，无需额外日期比较即可触发pol_7b7ccfd2cb4eecfb6a8f C1。同一事实同时满足pol_82afe9ef8746239e0beb C1：路线（17-mile pipeline）+ 具名负荷区（Project Jupiter）+ 否决（twice denied permits）均已识别。pol_af4c18c9797e6d5a513f未命中：消息重复force majeure、提及2028 opening仅为Oracle寻求延付的权利条件（\"if the site misses\"），未提供正式原/新窗口对比或确认日期撤回，属于trigger_boundary明确排除的\"重复E31的force-majeure及一般支付保护\"。"
+        },
+        "w2_skipped": false,
+        "w3_result": null
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "ae7bd8bde767d2e176cd80edc1659866b7607a3fb9df31594b7e98ad359477ec",
+            "content_type": "text/plain",
+            "sha256": "e9c97910d4695ec70dcff87f14a7b8fed02385bc722445d0ed17264fb6bf4ddc",
+            "size_bytes": 1309
+          },
+          "case": {
+            "case_id": "case_aa6372d40d874adf9172558c14568dad",
+            "initial_route": "TRADE",
+            "resolved_route": null,
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": null
+          },
+          "collected_at": "2026-09-29T16:27:17.765567Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-29T16:27:17.781728Z",
+          "revision": 1,
+          "row_revision": 2466524,
+          "source": {
+            "binding_id": "BE:huggingnews_rss",
+            "kind": "api",
+            "name": "HuggingNews Atom",
+            "source_id": "huggingnews_rss"
+          },
+          "source_published_at": "2026-09-29T16:25:49.485000Z",
+          "standard_message_id": "std_f3cd757cdc10455088b40926ffb05685",
+          "stream_item_id": "stream_d1db3997e1034ad3b7d59e4a0ab6e96b",
+          "stream_offset": 316,
+          "stream_published_at": "2026-09-29T16:27:17.785036Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Oracle Bonds Hit Record 8.31% Yield on $120B Junk Downgrade Risk"
+          },
+          "url": "https://huggingnews.com/us-markets/update-oracle-bonds-hit-record-831percent-yield-on-120b-junk-downgrade-r-72b2f41d",
+          "body_text": "← Back to live feed · 1 stories across 1 day\nTuesday, Sep 29, 2026\n1 story1 Oracle Bonds Hit Record 8.31% Yield on $120B Junk Downgrade Risk↩︎ AI Sep 24, 2:13 PM EDT 82/44 \n Credit markets are increasingly pricing in a downgrade to junk status for Oracle, a move that would automatically remove $120B of the company's bonds from investment grade indexes. Long-term bond yields climbed to a new record of 8.31% this week, while five-year credit default swaps hit record highs of 237 basis points. Such a downgrade would expand the total junk bond market by roughly 10%. Simultaneously, $18B in construction loans tied to the company's Project Jupiter facility are now trading at approximately 89 cents on the dollar.\nThe escalation in borrowing costs follows Oracle's decision to issue a force majeure notice to Blue Owl Capital, the developer of its New Mexico AI data center built for OpenAI. Oracle is seeking the right to defer lease payments if the site misses its 2028 opening after state officials twice denied permits for a 17 mile gas pipeline required for power. S&P currently rates the company's debt at BBB-, one notch above junk. Morgan Stanley noted that this credit stress is putting other AI infrastructure debt under scrutiny, potentially raising financing costs for other hyperscalers."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_f3cd757cdc10455088b40926ffb05685:0\"]",
+          "created_at": "2026-09-29T16:30:19.278127Z",
+          "dedupe_key": "2b2009eece1460b5b30cec88ff9771b278f75fb5fc93823bd8eff64840b65e2f",
+          "entities": [
+            "Oracle"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "Oracle长期债券收益率本周攀升至创纪录的8.31%。",
+          "provisional_event_id": "E126",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_f3cd757cdc10455088b40926ffb05685:1\"]",
+          "created_at": "2026-09-29T16:30:19.299769Z",
+          "dedupe_key": "173494d57257d57b5f8bab64149dc59eb8466dfa04210bcb4c6608ddc34c1910",
+          "entities": [
+            "Oracle"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "Oracle五年期信用违约互换(CDS)本周触及创纪录的237个基点。",
+          "provisional_event_id": "E127",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "ONGOING",
+          "candidate_id": "[\"runtime-v2-msg:std_f3cd757cdc10455088b40926ffb05685:2\"]",
+          "created_at": "2026-09-29T16:30:19.317743Z",
+          "dedupe_key": "66e4e1888f7ac18df1792844f680a769f2fe16e602a588d2c04770fe0e4c365d",
+          "entities": [
+            "Oracle"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "信用市场正日益将Oracle降级至垃圾级的风险定价在内，该降级将自动使约1200亿美元Oracle投资级债券被移出投资级指数。",
+          "provisional_event_id": "E128",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "HYPOTHETICAL",
+          "candidate_id": "[\"runtime-v2-msg:std_f3cd757cdc10455088b40926ffb05685:3\"]",
+          "created_at": "2026-09-29T16:30:19.335194Z",
+          "dedupe_key": "de4125d528038e9e396b54bf4be2102a214564df86f80594e370b98da378077f",
+          "entities": [
+            "Oracle"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "若Oracle被降级至垃圾级，将使垃圾债券市场总规模扩大约10%。",
+          "provisional_event_id": "E129",
+          "subject_time": null
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_aa6372d40d874adf9172558c14568dad",
+            "status": "DELIVERY_FAILED",
+            "released_at": "2026-09-29T16:29:44.297634+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "direction": "SHORT",
+            "executed_policy_id": "pol_7b7ccfd2cb4eecfb6a8f",
+            "candidate_policy_ids": [
+              "pol_7b7ccfd2cb4eecfb6a8f",
+              "pol_82afe9ef8746239e0beb"
+            ],
+            "matched_condition_ids": [
+              "C1"
+            ]
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "case_id": "case_aa6372d40d874adf9172558c14568dad",
+              "direction": "SHORT",
+              "entry_reason": "PROFILE_VALIDATION_FAILED: 旧版 v2-delivery 的 ExecutionProfile 不支持冻结的 SHARED_CYCLE Profile：仍要求 target_notional_usd，且拒绝新增仓位参数。",
+              "entry_result": null,
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_aa6372d40d874adf9172558c14568dad",
+              "execution_reason_codes": [
+                "DELIVERY_FAILED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "REJECTED",
+              "intent_id": "trade:case_aa6372d40d874adf9172558c14568dad",
+              "intent_status": "DELIVERY_FAILED",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-29T16:29:44.297634Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      }
+    },
+    {
+      "policy_hit_id": "case_e7827ec7703c44e6a0960bbebe0b0f79:pol_36b5ed507595cdea3382",
+      "ticker": "BE",
+      "case_id": "case_e7827ec7703c44e6a0960bbebe0b0f79",
+      "hit_observed_at_utc": "2026-09-29T18:55:07.491Z",
+      "hit_current": true,
+      "policy_id": "pol_36b5ed507595cdea3382",
+      "activation_revision": "ar_115b589c5e4ac8583a1d7f0a",
+      "policy": {
+        "frozen_match": {
+          "activation_revision": "ar_115b589c5e4ac8583a1d7f0a",
+          "condition_ids": [
+            "C2"
+          ],
+          "criterion": [
+            "除已确认的Oracle等锚定客户外，此前未确认的重要AI或数据中心客户授予Bloom具名项目的绑定订单或等效客户指令，并披露容量与部署时间表。"
+          ],
+          "match_scope": "此前未确认且不属于已确认锚定客户（包括Oracle）的hyperscaler、neocloud、AI实验室或托管客户对Bloom的具名采购、项目授予、容量、取消条款和部署排期消息。",
+          "policy_id": "pol_36b5ed507595cdea3382"
+        },
+        "pinned_detail": {
+          "activation_semantics": "OR",
+          "policy": {
+            "activation_conditions": [
+              {
+                "calibration": {
+                  "reference_state": "Oracle已是已确认的Bloom锚定客户：既有材料记录最多约2.8GW框架及约1.2GW已签约并部署；最新Reference View又报告Project Jupiter约2.5GW由Bloom提供，但未把该报道全部确认为新的独立绑定容量。除Oracle等已确认锚定客户外，终端客户身份及绑定分配仍不完整。",
+                  "trigger_boundary": "一名足够重要且不在当前已确认锚定客户集合中的终端客户，须在同一消息中明确Bloom、具名项目或容量、不可任意撤回的采购承诺及部署窗口；Oracle或其他已知锚定客户的重复报道/容量复述、匿名客户数、验证或渠道框架不足。"
+                },
+                "condition_id": "C2",
+                "criterion": "除已确认的Oracle等锚定客户外，此前未确认的重要AI或数据中心客户授予Bloom具名项目的绑定订单或等效客户指令，并披露容量与部署时间表。"
+              }
+            ],
+            "decision": "LONG",
+            "match_scope": "此前未确认且不属于已确认锚定客户（包括Oracle）的hyperscaler、neocloud、AI实验室或托管客户对Bloom的具名采购、项目授予、容量、取消条款和部署排期消息。",
+            "policy_id": "pol_36b5ed507595cdea3382",
+            "source_refs": [
+              {
+                "expectation_id": "Qualified large-load customer adoption",
+                "gap_id": "Diversified new customer cohort converts",
+                "shell_id": "Large-load Energy Server adoption and share"
+              }
+            ],
+            "title": "新AI大型客户转为绑定采用"
+          },
+          "source_document2": {
+            "artifact_id": "5830b9e9b2d84fa4acc0eb2e711751a0",
+            "content_sha256": "e4e7ef2733ce4cb52fdaf6638bd620878afec466a9f75119cd1f257d7e9237de",
+            "published_at": "2026-09-21T18:47:06.964292Z",
+            "run_id": "init-be-788adefdd31844d98a907468b883176d-d2",
+            "schema_version": "document2.v2"
+          },
+          "summary": {
+            "consumed": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "consumed_at": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "decision": "LONG",
+            "effective": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "lifecycle": "ACTIVE",
+            "matched_filters": [
+              "ACTIVE"
+            ],
+            "policy_activation_revision": "ar_115b589c5e4ac8583a1d7f0a",
+            "policy_id": "pol_36b5ed507595cdea3382",
+            "policy_revision_id": "e26b7bd6a42834a0473e8a2bb7cfa6d32e3c6af78dcefd7cfbbd8724201287bb",
+            "policy_set_version": 3,
+            "shell_ids": [
+              "Large-load Energy Server adoption and share"
+            ],
+            "title": "新AI大型客户转为绑定采用",
+            "unresolved_shell_ids": []
+          }
+        },
+        "policy_set_version": 3,
+        "activation_revision_id": "runtime-maintain-c13402933cf95cafd5d0c2c0-activation"
+      },
+      "hit_policy_released_for_trade": true,
+      "case_summary": {
+        "case_id": "case_e7827ec7703c44e6a0960bbebe0b0f79",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-29T18:56:12.789832Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 1280.369367
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": true
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "TRADE",
+        "member_count": 1,
+        "received_at": "2026-09-29T18:34:52.420465Z",
+        "resolved_route": null,
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2609075,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-29",
+        "source": {
+          "binding_id": "BE:barrons_ticker_news",
+          "kind": "crawler",
+          "name": "Barron's ticker news and Other Dow Jones (excluding IBD)",
+          "source_id": "barrons_ticker_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_f12b7ecc45c84d26ad35bd636abdb17d",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Nebius Stock Is Soaring. A Partnership With Bloom Energy Solves This AI Dilemma."
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "DELIVERY_FAILED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "READY",
+        "w3_status": null
+      },
+      "case_process": {
+        "created_at": "2026-09-29T18:34:52.420465Z",
+        "completed_at": "2026-09-29T18:56:12.789832Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "TRADE",
+          "reason": "w1=NEW/normal;policy_hit=true;w2=normal",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "resolved_route": null,
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E4",
+            "E16",
+            "E11",
+            "E146",
+            "E29"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [
+            {
+              "event_id": "E16",
+              "fact_ids": [
+                "F41"
+              ]
+            }
+          ],
+          "reason": "E16-F41 仅泛化承认 Bloom 与 Nebius 存在 major deals，未涵盖当前消息的具体商业条款：$2.6 billion 付款总额、328 MW 年内投运、三阶段各 10 年供应期限及 behind-the-meter 部署方式。这些精确经济与技术参数构成尚未被覆盖的新核心事实。",
+          "reference_ids": [
+            "E16"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [
+            "pol_36b5ed507595cdea3382",
+            "pol_6d497580e0f6e14ff711"
+          ],
+          "reason": "消息披露Nebius（此前未确认的neocloud客户）与Bloom签订具名绑定协议：328 MW今年投运、总支付最高26亿美元、三阶段各10年供应期，直接触及pol_36b5ed507595cdea3382关于新AI客户授予绑定订单及容量/排期披露的触发条件。同时消息明确将Bloom定位为解决电网建设周期无法匹配AI部署时间表的'behind-the-meter'主供方案（'Power remains a key constraint for AI infrastructure build-outs'），客户据此正式选择Bloom并授予实质容量，与pol_6d497580e0f6e14ff711关于因电网可用日期晚于需求窗口而选择Bloom作为按期主供路线的触发路径直接对应。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [
+            {
+              "condition_ids": [
+                "C2"
+              ],
+              "policy_id": "pol_36b5ed507595cdea3382"
+            }
+          ],
+          "policy_ids": [
+            "pol_36b5ed507595cdea3382"
+          ],
+          "reason": "pol_36b5ed507595cdea3382 C2命中：Nebius为公开交易的AI云(neocloud)，不在已确认锚定客户列表(Oracle、CoreWeave、AEP)中；消息同一文内明确Bloom Energy具名、328MW容量、$2.6B十年×三阶段不可撤回采购承诺、今年部署时间表，完整满足\"此前未确认的重要AI客户授予Bloom具名绑定订单并披露容量与部署时间表\"。pol_6d497580e0f6e14ff711 C1未命中：消息仅泛述电网为AI建设关键约束及behind-the-meter缩短timeline，未给出替代路线可用日、负载需求日的具体日期及二者先后关系，未达trigger_boundary要求的\"同一消息须给出替代路线可用日、负载需求日、Bloom主供角色及实质容量\"完整因果链。"
+        },
+        "w2_skipped": false,
+        "w3_result": null
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "4c3e21520a0eba93e9bf398f1417aa61488a8b6eba46e60e84685a44898cc989",
+            "content_type": "text/plain",
+            "sha256": "4a555450736a3de2216cbabb37dfaa825d98fffaeba265cddb456b343a7c4787",
+            "size_bytes": 4073
+          },
+          "case": {
+            "case_id": "case_e7827ec7703c44e6a0960bbebe0b0f79",
+            "initial_route": "TRADE",
+            "resolved_route": null,
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": null
+          },
+          "collected_at": "2026-09-29T18:33:29.016402Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-29T18:34:51.659089Z",
+          "revision": 1,
+          "row_revision": 2482085,
+          "source": {
+            "binding_id": "BE:barrons_ticker_news",
+            "kind": "crawler",
+            "name": "Barron's ticker news and Other Dow Jones (excluding IBD)",
+            "source_id": "barrons_ticker_news"
+          },
+          "source_published_at": "2026-09-29T18:33:52.240466Z",
+          "standard_message_id": "std_dace2f79555e4890b7f1fef3bb2c4e3a",
+          "stream_item_id": "stream_f12b7ecc45c84d26ad35bd636abdb17d",
+          "stream_offset": 341,
+          "stream_published_at": "2026-09-29T18:34:51.662693Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Nebius Stock Is Soaring. A Partnership With Bloom Energy Solves This AI Dilemma."
+          },
+          "url": "https://www.barrons.com/articles/nebius-stock-bloom-energy-ai-fuel-cells-4f5e7922",
+          "body_text": "Key Points\n\nNebius Group will use Bloom Energy’s fuel-cell systems to power its data centers, with 328 megawatts operational this year.\n\nNebius will pay up to $2.6 billion over the term of the agreement, which is expected to come on in three phases, each with a supply term of 10 years.\n\nThe partnership addresses AI’s high power demand, using ‘behind-the-meter’ systems to reduce grid dependence for data centers.\n\nArtificial-intelligence cloud provider Nebius Group is turning to fuel-cell maker Bloom Energy as tech companies look for alternatives to local electrical grids to help power their data centers.\n\nBloom Energy’s fuel-cell systems, which generate electricity without combustion, will provide electricity for Nebius, with 328 megawatts of installed capacity expected to be operational this year. Nebius will pay up to $2.6 billion over the term of the agreement, which is expected to come on in three phases, each with a supply term of 10 years.\n\nShares of Nebius rose 15% Thursday, having soared 407% over the last 12 months. Bloom Energy stock, which is up more than 1,400% in the last year, rose 10%. Bloom Energy jumped 8% on Wednesday, when the $2.6 billion figure first was released.\n\nThe Barron's Daily\n\nFree Weekly Newsletter\n\nA morning briefing on what you need to know in the day ahead, including exclusive commentary from Barron's and MarketWatch writers.\n\nElectricity remains one of the most sought-after resources in AI, particularly for so-called neoclouds like Nebius. The neocloud model depends on building out and powering data centers as quickly as possible for customers in need of compute capacity.\n\nBloom Energy’s on-site systems will be “behind-the-meter,” meaning they aren’t dependent on power from the larger electrical grid. This setup reduces Nebius’ dependence on building new grid transmissions and shortens the timeline to power its facilities, the company said.\n\n“Power remains a key constraint for AI infrastructure build-outs, ” said Andrey Korolenko, chief product and infrastructure officer at Nebius. Bloom Energy’s fuel cells, he added, offer clean power “on the timelines our customers need, with the availability AI workloads require.”\n\nBloom Energy stock has surged on this kind of AI demand. Since 2024, the company has notched new or expanded deals with neocloud competitor CoreWeave, cloud giant Oracle, and electricity generator American Electric Power.\n\nAdvertisement - Scroll to Continue\n\nAfter multiple years of losses, Bloom Energy is on track to earn net income of $475 million in 2026, analysts forecast. Wall Street expects that figure to rise to over $1.2 billion in 2027 and $2.1 billion in 2028.\n\nWrite to Nate Wolf at nate.wolf@barrons.comExternal link\n\nCopyright ©2026 Dow Jones & Company, Inc. All Rights Reserved. 87990cbe856818d5eddac44c7b1cdeb8\n\nWhat to Read Next\n\nFed’s Musalem Says Central Bank Must Explain Policies—or Risk Volatility\n\nSt. Louis Fed President Alberto Musalem says the central bank should explain how it determines policy decisions rather than reduce communications.\n\n2 Reasons Oracle Stock Is on Pace to Snap a 4-Day Losing Streak\n\nOracle stock rises and is on pace to snap a four-day losing streak on two AI-related announcements.\n\nINVESTOR CIRCLE\n\nBulls Retake Control of Five Below: Chart of the Day\n\nThe stock can gain 35% by the middle of 2027, judging by technical indicators.\n\nThe 10-Year Yield Is Surging Toward 6%—and You Should Be Very Nervous\n\n“Higher for longer” is set to be a fact of life for financial markets well into the end of the decade—and probably for a lot longer.\n\nChina Unveils Stimulus as Its Economy Sputters. Investors Are Still Wary.\n\nPantheon Macro described the move as the largest stimulus in two years.\n\nIovance Stock Surges as Strong Melanoma Drug Demand Drives Growth\n\nIovance Biotherapeutics raised its fiscal-year guidance on Tuesday.\n\nThe Great AI Dilemma: How to Invest When Extinction Warnings Meet Market Highs\n\nAI fears mean investors need to use all the risk management tools at their disposal."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_dace2f79555e4890b7f1fef3bb2c4e3a:0\"]",
+          "created_at": "2026-09-29T18:56:12.514062Z",
+          "dedupe_key": "89fa7cf4d57ccb04e61a25b35d6b93225869f8506ef15e2cfc16178ec05805d6",
+          "entities": [
+            "Nebius Group",
+            "Bloom Energy"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "Nebius Group has agreed with Bloom Energy to purchase fuel-cell systems for behind-the-meter electricity supply to its data centers, paying up to $2.6 billion over three phases, each with a 10-year supply term.",
+          "provisional_event_id": "E189",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "EXPECTED",
+          "candidate_id": "[\"runtime-v2-msg:std_dace2f79555e4890b7f1fef3bb2c4e3a:1\"]",
+          "created_at": "2026-09-29T18:56:12.554043Z",
+          "dedupe_key": "e041229fe2d33ab82fa5ffe549e904cd37ba2c7822c4f6d51518e54d6474146a",
+          "entities": [
+            "Nebius Group",
+            "Bloom Energy"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "328 megawatts of Bloom Energy fuel-cell installed capacity for Nebius data centers is expected to become operational in 2026.",
+          "provisional_event_id": "E190",
+          "subject_time": "2026"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_e7827ec7703c44e6a0960bbebe0b0f79",
+            "status": "DELIVERY_FAILED",
+            "released_at": "2026-09-29T18:55:07.957469+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "direction": "LONG",
+            "executed_policy_id": "pol_36b5ed507595cdea3382",
+            "candidate_policy_ids": [
+              "pol_36b5ed507595cdea3382"
+            ],
+            "matched_condition_ids": [
+              "C2"
+            ]
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "case_id": "case_e7827ec7703c44e6a0960bbebe0b0f79",
+              "direction": "LONG",
+              "entry_reason": "PROFILE_VALIDATION_FAILED: 旧版 v2-delivery 的 ExecutionProfile 不支持冻结的 SHARED_CYCLE Profile：仍要求 target_notional_usd，且拒绝新增仓位参数。",
+              "entry_result": null,
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_e7827ec7703c44e6a0960bbebe0b0f79",
+              "execution_reason_codes": [
+                "DELIVERY_FAILED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "REJECTED",
+              "intent_id": "trade:case_e7827ec7703c44e6a0960bbebe0b0f79",
+              "intent_status": "DELIVERY_FAILED",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-29T18:55:07.957469Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      }
+    },
+    {
+      "policy_hit_id": "case_f43b23741d484de2847850e6a26d7e6e:pol_6d497580e0f6e14ff711",
+      "ticker": "BE",
+      "case_id": "case_f43b23741d484de2847850e6a26d7e6e",
+      "hit_observed_at_utc": "2026-10-01T18:23:32.337Z",
+      "hit_current": true,
+      "policy_id": "pol_6d497580e0f6e14ff711",
+      "activation_revision": "ar_6caa7aca6d1111f9427f05d3",
+      "policy": {
+        "frozen_match": {
+          "activation_revision": "ar_6caa7aca6d1111f9427f05d3",
+          "condition_ids": [
+            "C1",
+            "C2"
+          ],
+          "criterion": [
+            "一个具名重大项目因电网或燃机可用日期晚于负载需求窗口，正式选择Bloom作为按期主供路线并授予实质容量或可执行扩容。",
+            "主要大型负荷区（包括数据中心负荷区）的正式电网监管或采购行动被暂停或实质推迟，并同时确认该行动造成可比的firm供给时间缺口或量化供给短缺，使现场firm-power相对机会显著扩大。"
+          ],
+          "match_scope": "客户或项目业主将电网/燃机延误与Bloom主供选择、容量、需求日期及可执行扩容直接关联的消息；以及主要大型负荷区正式电网采购或监管行动的暂停、实质推迟、firm供给缺口与现场firm-power机会变化消息。",
+          "policy_id": "pol_6d497580e0f6e14ff711"
+        },
+        "pinned_detail": {
+          "activation_semantics": "OR",
+          "policy": {
+            "activation_conditions": [
+              {
+                "calibration": {
+                  "reference_state": "电网设备和燃机交付受限已广为人知，Bloom也被视作快速现场选项。2026-09-30，FERC已要求PJM把backstop采购启动暂停五个月并修订成本分摊，且报道PJM存在超过6,800MW供给缺口；但该区域信号尚未形成具名Bloom客户选择、容量或项目授予。",
+                  "trigger_boundary": "同一消息须给出替代路线可用日、负载需求日、Bloom主供角色及实质容量/可执行扩容；只有短缺或未量化选择不足。"
+                },
+                "condition_id": "C1",
+                "criterion": "一个具名重大项目因电网或燃机可用日期晚于负载需求窗口，正式选择Bloom作为按期主供路线并授予实质容量或可执行扩容。"
+              },
+              {
+                "calibration": {
+                  "reference_state": "此前基线只有行业级电网/燃机约束和未量化的区域短缺，尚无正式PJM backstop暂停。E54现已确认FERC要求PJM暂停五个月并修订backstop、将相关成本更多分配给大型能源用户，且报道供给缺口超过6,800MW；但尚无具名Bloom项目或容量，因此这只是新的区域机会边界而非已实现份额。",
+                  "trigger_boundary": "消息须识别主要负荷区、正式监管/采购行动、原定与新启动/暂停时长或可比较firm供给时间，以及同一行动导致的量化短缺或成本/可用性后果；一般电网紧张、政策讨论、未量化停滞或与Bloom可服务负荷无关的区域新闻不足。"
+                },
+                "condition_id": "C2",
+                "criterion": "主要大型负荷区（包括数据中心负荷区）的正式电网监管或采购行动被暂停或实质推迟，并同时确认该行动造成可比的firm供给时间缺口或量化供给短缺，使现场firm-power相对机会显著扩大。"
+              }
+            ],
+            "decision": "LONG",
+            "match_scope": "客户或项目业主将电网/燃机延误与Bloom主供选择、容量、需求日期及可执行扩容直接关联的消息；以及主要大型负荷区正式电网采购或监管行动的暂停、实质推迟、firm供给缺口与现场firm-power机会变化消息。",
+            "policy_id": "pol_6d497580e0f6e14ff711",
+            "source_refs": [
+              {
+                "expectation_id": "Durable onsite-power customer preference and share",
+                "gap_id": "Alternative bottlenecks translate into Bloom share gains",
+                "shell_id": "Large-load Energy Server adoption and share"
+              }
+            ],
+            "title": "替代路线延误转化为Bloom份额"
+          },
+          "source_document2": {
+            "artifact_id": "5830b9e9b2d84fa4acc0eb2e711751a0",
+            "content_sha256": "e4e7ef2733ce4cb52fdaf6638bd620878afec466a9f75119cd1f257d7e9237de",
+            "published_at": "2026-09-21T18:47:06.964292Z",
+            "run_id": "init-be-788adefdd31844d98a907468b883176d-d2",
+            "schema_version": "document2.v2"
+          },
+          "summary": {
+            "consumed": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "consumed_at": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "decision": "LONG",
+            "effective": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "lifecycle": "ACTIVE",
+            "matched_filters": [
+              "ACTIVE"
+            ],
+            "policy_activation_revision": "ar_6caa7aca6d1111f9427f05d3",
+            "policy_id": "pol_6d497580e0f6e14ff711",
+            "policy_revision_id": "f9c979c4a1fa2679177a5d035f3f683cb2b1867a9ff7b59446d687d9d3b440b3",
+            "policy_set_version": 6,
+            "shell_ids": [
+              "Large-load Energy Server adoption and share"
+            ],
+            "title": "替代路线延误转化为Bloom份额",
+            "unresolved_shell_ids": []
+          }
+        },
+        "policy_set_version": 6,
+        "activation_revision_id": "runtime-maintain-e4d9ec76af73087e912f2710-activation"
+      },
+      "hit_policy_released_for_trade": false,
+      "case_summary": {
+        "case_id": "case_f43b23741d484de2847850e6a26d7e6e",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-10-01T18:23:32.854861Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 166.829078
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "OLD"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": true
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "ARCHIVE",
+        "member_count": 1,
+        "received_at": "2026-10-01T18:20:46.025783Z",
+        "resolved_route": null,
+        "result_settled": true,
+        "results": [
+          "ARCHIVE",
+          "BADCASE"
+        ],
+        "revision": 2756238,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-10-01",
+        "source": {
+          "binding_id": "BE:google_news_search_rss",
+          "kind": "api",
+          "name": "Google News Search RSS",
+          "source_id": "google_news_search_rss"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_f201fc8e8c7c4f378902d90f37f1098c",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Grid manager delays data center power auction over concern on who gets the bill - Cleveland.com"
+        },
+        "trade": {
+          "intent_count": 0,
+          "reason_codes": [],
+          "state": "NOT_APPLICABLE"
+        },
+        "trade_disposition": "NOT_EVALUATED",
+        "w3_status": null
+      },
+      "case_process": {
+        "created_at": "2026-10-01T18:20:46.025783Z",
+        "completed_at": "2026-10-01T18:23:32.854861Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "ARCHIVE",
+          "reason": "w1=OLD/normal;policy_hit=true;w2=normal",
+          "side_effects": [
+            "archive_message",
+            "mark_badcase"
+          ]
+        },
+        "resolved_route": null,
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E54"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [
+            {
+              "event_id": "E54",
+              "fact_ids": [
+                "F131",
+                "F132"
+              ]
+            }
+          ],
+          "reason": "当前消息的核心事实——FERC因成本分摊问题（要求数据中心用户而非现有客户承担成本）将PJM的backstop拍卖暂停最多五个月——已被E54的F131（五个月暂停）和F132（成本向大型数据中心用户转移）完全覆盖。消息中关于俄亥俄州本地规则缺口、消费者倡导办公室警告及议员表态等属于同一事件的地方性背景与评论，不构成新的核心现实进展。",
+          "reference_ids": [
+            "E54"
+          ],
+          "result": "OLD"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [
+            "pol_6d497580e0f6e14ff711",
+            "pol_9b7af3b3194022fbee4f",
+            "pol_6dcd55a9faeb41870d86"
+          ],
+          "reason": "消息核心事实：FERC暂停PJM（覆盖13州含Ohio的数据中心负荷区）的backstop紧急firm-power拍卖，为期最长5个月，理由是成本分摊未充分确保数据中心客户承担其驱动的费用。该监管/采购行动暂停直接触及pol_6d497580e0f6e14ff711的C2路径（主要大型负荷区正式电网采购行动被暂停）；pol_9b7af3b3194022fbee4f的match_scope明确涵盖FERC/PJM对backstop采购安排的暂停；pol_6dcd55a9faeb41870d86关注PJM等电网采购/监管程序与数据中心辖区成本分摊制度，消息中FERC行动与Ohio缺乏数据中心成本规则的事实构成该policy触发路径下的具体observation。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [
+            {
+              "condition_ids": [
+                "C2"
+              ],
+              "policy_id": "pol_6d497580e0f6e14ff711"
+            }
+          ],
+          "policy_ids": [
+            "pol_6d497580e0f6e14ff711"
+          ],
+          "reason": "pol_6d497580e0f6e14ff711 C2命中：消息确认PJM（覆盖13州含数据中心负荷区）的正式backstop采购行动被FERC以监管命令暂停最长五个月，原因为成本分摊未到位；同时明确PJM在常规拍卖中'fell short'应急供给，暂停使该缺口在最多五个月内无法填补，构成同一行动导致的firm供给时间缺口与可用性后果，满足criterion全部要素。C1未命中（无具名Bloom项目或容量授予）。pol_9b7af3b3194022fbee4f C1未命中：FERC暂停属'被暂停的程序'，非最终生效规则，且无具名项目、firm MW或服务日。pol_6dcd55a9faeb41870d86 C1未命中：trigger_boundary明确排除'FERC/PJM暂停、成本争议或无客户后果的区域短缺'，消息恰好属于该排除范围，无具名项目迁移或路线变化。"
+        },
+        "w2_skipped": false,
+        "w3_result": null
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "d60261b0009cd87cd5045463a1d551ff173bfce2564d883e36662eef7f47aa88",
+            "content_type": "text/plain",
+            "sha256": "f7d2fc491f7b5e042a10d41431fffc4cd34c4428731f9e322f76bfa9b0ee4eeb",
+            "size_bytes": 2173
+          },
+          "case": {
+            "case_id": "case_f43b23741d484de2847850e6a26d7e6e",
+            "initial_route": "ARCHIVE",
+            "resolved_route": null,
+            "route_group": "ARCHIVE",
+            "status": "COMPLETED",
+            "w3_status": null
+          },
+          "collected_at": "2026-10-01T18:20:31.321518Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-10-01T18:20:43.893069Z",
+          "revision": 1,
+          "row_revision": 2756238,
+          "source": {
+            "binding_id": "BE:google_news_search_rss",
+            "kind": "api",
+            "name": "Google News Search RSS",
+            "source_id": "google_news_search_rss"
+          },
+          "source_published_at": "2026-10-01T18:12:00Z",
+          "standard_message_id": "std_672ea779e15a4f4fb9d81dd703553f55",
+          "stream_item_id": "stream_f201fc8e8c7c4f378902d90f37f1098c",
+          "stream_offset": 396,
+          "stream_published_at": "2026-10-01T18:20:43.899143Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Grid manager delays data center power auction over concern on who gets the bill - Cleveland.com"
+          },
+          "url": "https://www.cleveland.com/news/2026/10/grid-manager-delays-data-center-power-auction-over-concern-on-who-gets-the-bill.html",
+          "body_text": "COLUMBUS, Ohio -- A plan to add more power to the electric grid has been postponed after federal regulators raised concerns about who would pay for it.\n\nPJM Interconnection, which manages the power grid for Ohio and 12 other states, had planned to open a special auction Wednesday. The goal was to buy more electricity for peak usage times like the dead of winter and hottest summer days.\n\nThe Federal Energy Regulatory Commission agreed PJM needed more power but said the operator “did not adequately ensure that the procurement’s costs will be allocated to the customers who drive its need.”\n\nPJM already bought enough power for day-to-day demand during its regular auction this summer, but it fell short of the amount it wanted for emergencies.\n\nFERC agreed that PJM needed a backstop. But it said the grid operator “did not adequately ensure that the procurement’s costs will be allocated to the customers who drive its need.”\n\nFERC Commissioner Lindsay See put it more plainly.\n\n“PJM must better ensure that the customers driving new costs bear appropriate responsibility for them and that existing customers are not left paying the bill instead,” See wrote in a statement.\n\nThat is where Ohio comes in.\n\nPJM runs the regional grid, but states still play a major role in deciding how utilities charge different kinds of customers. Ohio has not adopted statewide rules that clearly put data-center-related costs on data centers.\n\nThe Office of the Ohio Consumers’ Counsel warned about that gap.\n\nIt told FERC months ago that PJM was counting on states to protect families, even though Ohio has not put those protections in place.\n\n“Ohio families should not subsidize data center development,” said Rep. Tristan Rader, a Lakewood Democrat. “I support pausing PJM’s backstop auction until there are enforceable protections against sticking households and Ohio’s existing businesses with that bill.”\n\nFERC suspended the auction for up to five months, but it could happen sooner if PJM submits fixes that regulators accept.\n\nPJM said it is “reviewing the order and intends to work quickly to address the Commission’s remaining concerns.”"
+        }
+      ],
+      "discovered_facts": [],
+      "trade": {
+        "intents": [],
+        "closed_candidates": [],
+        "executions": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,2991 @@
+{
+  "format": "doxagent.w3-trade-intent-review.v1",
+  "ticker": "MU",
+  "window": {
+    "since_utc": "2026-09-19T12:53:20.738930+00:00",
+    "as_of_utc": "2026-10-10T12:53:20.738930+00:00"
+  },
+  "part": 9,
+  "record_count": 5,
+  "records": [
+    {
+      "intent_id": "trade:case_c9353f9848c545cea4c046fcb58c4f98",
+      "ticker": "MU",
+      "case_id": "case_c9353f9848c545cea4c046fcb58c4f98",
+      "intent_released_at_utc": "2026-10-01T00:13:14.781848+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_2a33982641ca4b92a0215d0637a71cf2",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "FY2027 shipments"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron committed more than 75% of its planned fiscal 2027 shipments.",
+            "subject_time": "FY2027 shipments"
+          },
+          {
+            "assertion_state": "ONGOING",
+            "entities": [
+              "Micron Technology",
+              "customers",
+              "FY2028 allocations"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron had begun allocation discussions with customers for fiscal 2028.",
+            "subject_time": "FY2028 allocations"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "DRAM",
+              "data centers"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron identified DRAM, rather than logic or power, as the primary constraint on data-center expansion.",
+            "subject_time": "FY2026 Q4 earnings call"
+          },
+          {
+            "assertion_state": "EXPECTED",
+            "entities": [
+              "Micron Technology",
+              "HBM",
+              "DRAM"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron expected HBM shipments to grow faster than conventional DRAM through 2028.",
+            "subject_time": "Through 2028"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "HBM",
+              "DRAM"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron significantly increased HBM pricing for calendar 2027 to narrow the profitability gap with conventional DRAM.",
+            "subject_time": "Calendar 2027 pricing"
+          },
+          {
+            "assertion_state": "ONGOING",
+            "entities": [
+              "Micron Technology",
+              "NVIDIA",
+              "HBM4E",
+              "NVHBM"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron and NVIDIA had been co-developing a customized HBM4E product referred to as NVHBM.",
+            "subject_time": "HBM4E/NVHBM development"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "strategic customer agreements",
+              "customers"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron said it signed 10 new customers during the quarter as part of its strategic agreement expansion.",
+            "subject_time": "FY2026 Q4"
+          },
+          {
+            "assertion_state": "PLAN",
+            "entities": [
+              "Micron Technology",
+              "cleanrooms",
+              "capital expenditures"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron planned construction capital expenditures to accelerate cleanroom availability beginning in late 2028 and beyond, with equipment and qualification still required before meaningful shipments.",
+            "subject_time": "Late 2028 onward"
+          },
+          {
+            "assertion_state": "EXPECTED",
+            "entities": [
+              "Micron Technology",
+              "China exposure"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron expected China exposure to decline to single-digit percentages in fiscal 2027.",
+            "subject_time": "FY2027"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "1-gamma DRAM"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron's 1-gamma DRAM technology had become the majority of its bit output.",
+            "subject_time": "FY2026 Q4"
+          },
+          {
+            "assertion_state": "PLANNED",
+            "entities": [
+              "Micron Technology",
+              "1-delta DRAM"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron was developing its 1-delta DRAM node with a ramp targeted for the second half of 2027.",
+            "subject_time": "Second half of 2027"
+          },
+          {
+            "assertion_state": "GUIDANCE",
+            "entities": [
+              "Micron Technology",
+              "DRAM",
+              "NAND"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron's fiscal 2027 first-quarter guidance assumed single-digit sequential bit growth and double-digit sequential cost growth for both DRAM and NAND.",
+            "subject_time": "FY2027 Q1"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "The call materially increases visibility and expected value capture: more than 75% of FY2027 shipments are committed, FY2028 allocations are already being discussed, HBM shipments are expected to outgrow conventional DRAM, 2027 HBM pricing was raised, and NVHBM co-development adds differentiated upside. Capacity remains constrained because construction-led cleanroom additions do not support meaningful production until late 2028 or later.",
+          "prior_expectation": "The baseline already expected strong AI-memory demand, tight supply, continued FY2027 growth, and expanding strategic agreements, but it lacked quantified FY2027 shipment commitment, FY2028 allocation visibility, a disclosed HBM price increase, and a customized NVIDIA HBM4E path.",
+          "reason": "The disclosures reduce demand and contract uncertainty while supporting higher HBM pricing, stronger mix and margin potential, and durable utilization through the next cycle. The transmission to MU is direct through committed shipments, pricing, HBM growth, and customer agreements. Higher construction spending, double-digit DRAM/NAND cost growth, R&D investment, and qualification lag are offsets but do not outweigh the positive expectation delta; therefore the uncovered facts support a LONG trade.",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "Reference View covers the prior SCA baseline, general contract structure, FY2027 capex expectations, and existing product qualification context, but not this call's specific commitment of more than 75% of FY2027 shipments, FY2028 allocation discussions, 2027 HBM price increase, NVIDIA NVHBM co-development, ten new customers, late-2028 cleanroom timing, China exposure target, 1-gamma output status, 1-delta ramp, or bit/cost and R&D guidance.",
+          "reference_ids": [
+            "E9",
+            "E116",
+            "E257",
+            "E369"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No Policy is satisfied. The message does not show consecutive margin declines, HBM4E delay, or the formal 2029-plus server/HBM supply lock and accompanying conditions required by the relevant supply-visibility policy. FY2028 allocation discussions, late-2028 cleanroom plans, and general supply tightness are insufficient."
+        },
+        "w3_case_id": "w3_2a33982641ca4b92a0215d0637a71cf2"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_c9353f9848c545cea4c046fcb58c4f98",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-10-01T00:13:14.888604Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 336.557355
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-10-01T00:07:38.331249Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2658619,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-30",
+        "source": {
+          "binding_id": "MU:yahoo_finance_news",
+          "kind": "api",
+          "name": "Yahoo Finance News",
+          "source_id": "yahoo_finance_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_2837e228f09344549c0c3a2046a14e7b",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "What Micron Technology (MU) Said on Its Q4 Earnings Call"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "PORTFOLIO_CAPACITY_EXHAUSTED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-10-01T00:07:38.331249Z",
+        "completed_at": "2026-10-01T00:13:14.888604Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E2",
+            "E1",
+            "E115",
+            "E9",
+            "E449"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "当前消息为Micron FY2026 Q4 earnings call（2026-09-30）的完整内容，包含大量未覆盖的核心事实：FY2027超75%出货量已承诺并启动2028分配讨论、DRAM被指为数据中心扩张主要约束、HBM定价在2027日历年上调、与NVIDIA共同开发定制HBM4E（NVHBM）、10个新SCA客户本季度签约、清洁室建设驱动capex（2028年末投产）、中国敞口FY2027降至个位数、1-gamma DRAM成为比特产出主力及1-delta节点H2明年爬坡、FY2027 R&D增量超10亿美元等。现有Canonical Facts（E1/E2/E9/E115）及provisional E449均未覆盖这些Q4 call核心进展。",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [
+            "pol_12b2c75c2f311063e913"
+          ],
+          "reason": "Micron管理层在FY26 Q4财报电话会上正式确认：DRAM是数据中心扩张的首要瓶颈（而非逻辑或电力），行业供给受限于洁净室产能、HBM复杂度及技术转型递减收益；已锁定FY27>75%计划出货量并开始2028分配讨论；明确表示\"没有看到供需何时平衡\"。HBM价格上调（未结构性下跌），消费端bit出货连续下降（供给受限），数据中心/HBM增长快于传统DRAM（组合不低于基线）。上述要素直接触及pol_12b2c75c2f311063e913 C2中服务器/HBM供给约束延续、消费受限、合同价未跌、数据中心组合达标等触发路径；但\"约束继续至2029或更晚\"是否被显式确认尚存边界不确定性，值得进入完整判定。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "C2要求Micron或主要AI/服务器客户正式披露确认服务器/HBM实际可交付供给或绑定订单继续至2029年或更晚。消息仅涉及FY2027已承诺超75%出货、开始讨论2028分配、新洁净室产线支持late 2028后生产，以及SCA覆盖35%销售至2030的目标。2028级分配讨论和'供给紧张超2027'的一般性展望均属于trigger_boundary明确排除的情形（既有SCA条款、供给紧张超过2027、重复的一般性行业紧张），不构成2029+实际可交付供给锁定的新确认。C3要求主要AI使用国或跨国政策主体在正式文件中确认不新增AI限制，消息为Micron财报电话会内容，无任何政策相关信息。两个条件均未触发，Policy NO HIT。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "FY2027 shipments"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron committed more than 75% of its planned fiscal 2027 shipments.",
+              "subject_time": "FY2027 shipments"
+            },
+            {
+              "assertion_state": "ONGOING",
+              "entities": [
+                "Micron Technology",
+                "customers",
+                "FY2028 allocations"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron had begun allocation discussions with customers for fiscal 2028.",
+              "subject_time": "FY2028 allocations"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "DRAM",
+                "data centers"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron identified DRAM, rather than logic or power, as the primary constraint on data-center expansion.",
+              "subject_time": "FY2026 Q4 earnings call"
+            },
+            {
+              "assertion_state": "EXPECTED",
+              "entities": [
+                "Micron Technology",
+                "HBM",
+                "DRAM"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron expected HBM shipments to grow faster than conventional DRAM through 2028.",
+              "subject_time": "Through 2028"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "HBM",
+                "DRAM"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron significantly increased HBM pricing for calendar 2027 to narrow the profitability gap with conventional DRAM.",
+              "subject_time": "Calendar 2027 pricing"
+            },
+            {
+              "assertion_state": "ONGOING",
+              "entities": [
+                "Micron Technology",
+                "NVIDIA",
+                "HBM4E",
+                "NVHBM"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron and NVIDIA had been co-developing a customized HBM4E product referred to as NVHBM.",
+              "subject_time": "HBM4E/NVHBM development"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "strategic customer agreements",
+                "customers"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron said it signed 10 new customers during the quarter as part of its strategic agreement expansion.",
+              "subject_time": "FY2026 Q4"
+            },
+            {
+              "assertion_state": "PLAN",
+              "entities": [
+                "Micron Technology",
+                "cleanrooms",
+                "capital expenditures"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron planned construction capital expenditures to accelerate cleanroom availability beginning in late 2028 and beyond, with equipment and qualification still required before meaningful shipments.",
+              "subject_time": "Late 2028 onward"
+            },
+            {
+              "assertion_state": "EXPECTED",
+              "entities": [
+                "Micron Technology",
+                "China exposure"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron expected China exposure to decline to single-digit percentages in fiscal 2027.",
+              "subject_time": "FY2027"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "1-gamma DRAM"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron's 1-gamma DRAM technology had become the majority of its bit output.",
+              "subject_time": "FY2026 Q4"
+            },
+            {
+              "assertion_state": "PLANNED",
+              "entities": [
+                "Micron Technology",
+                "1-delta DRAM"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron was developing its 1-delta DRAM node with a ramp targeted for the second half of 2027.",
+              "subject_time": "Second half of 2027"
+            },
+            {
+              "assertion_state": "GUIDANCE",
+              "entities": [
+                "Micron Technology",
+                "DRAM",
+                "NAND"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron's fiscal 2027 first-quarter guidance assumed single-digit sequential bit growth and double-digit sequential cost growth for both DRAM and NAND.",
+              "subject_time": "FY2027 Q1"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "The call materially increases visibility and expected value capture: more than 75% of FY2027 shipments are committed, FY2028 allocations are already being discussed, HBM shipments are expected to outgrow conventional DRAM, 2027 HBM pricing was raised, and NVHBM co-development adds differentiated upside. Capacity remains constrained because construction-led cleanroom additions do not support meaningful production until late 2028 or later.",
+            "prior_expectation": "The baseline already expected strong AI-memory demand, tight supply, continued FY2027 growth, and expanding strategic agreements, but it lacked quantified FY2027 shipment commitment, FY2028 allocation visibility, a disclosed HBM price increase, and a customized NVIDIA HBM4E path.",
+            "reason": "The disclosures reduce demand and contract uncertainty while supporting higher HBM pricing, stronger mix and margin potential, and durable utilization through the next cycle. The transmission to MU is direct through committed shipments, pricing, HBM growth, and customer agreements. Higher construction spending, double-digit DRAM/NAND cost growth, R&D investment, and qualification lag are offsets but do not outweigh the positive expectation delta; therefore the uncovered facts support a LONG trade.",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "Reference View covers the prior SCA baseline, general contract structure, FY2027 capex expectations, and existing product qualification context, but not this call's specific commitment of more than 75% of FY2027 shipments, FY2028 allocation discussions, 2027 HBM price increase, NVIDIA NVHBM co-development, ten new customers, late-2028 cleanroom timing, China exposure target, 1-gamma output status, 1-delta ramp, or bit/cost and R&D guidance.",
+            "reference_ids": [
+              "E9",
+              "E116",
+              "E257",
+              "E369"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "No Policy is satisfied. The message does not show consecutive margin declines, HBM4E delay, or the formal 2029-plus server/HBM supply lock and accompanying conditions required by the relevant supply-visibility policy. FY2028 allocation discussions, late-2028 cleanroom plans, and general supply tightness are insufficient."
+          },
+          "w3_case_id": "w3_2a33982641ca4b92a0215d0637a71cf2"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "8646da2126fb662325d895ebf463c8d7a36b62d3ceae85be109f3f22d305ec6d",
+            "content_type": "text/plain",
+            "sha256": "c4c9bda2fc6bc7c4da3e569f0837d588ea4a03680b5b90c72d218fb181617ab6",
+            "size_bytes": 7748
+          },
+          "case": {
+            "case_id": "case_c9353f9848c545cea4c046fcb58c4f98",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-10-01T00:07:00.610688Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-10-01T00:07:35.427369Z",
+          "revision": 1,
+          "row_revision": 2658587,
+          "source": {
+            "binding_id": "MU:yahoo_finance_news",
+            "kind": "api",
+            "name": "Yahoo Finance News",
+            "source_id": "yahoo_finance_news"
+          },
+          "source_published_at": "2026-10-01T00:02:20Z",
+          "standard_message_id": "std_b07fea87c05c4ce0b784ab14e289708e",
+          "stream_item_id": "stream_2837e228f09344549c0c3a2046a14e7b",
+          "stream_offset": 2553,
+          "stream_published_at": "2026-10-01T00:07:35.432789Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "What Micron Technology (MU) Said on Its Q4 Earnings Call"
+          },
+          "url": "https://www.marketbeat.com/instant-alerts/transcript-what-micron-technology-mu-said-on-its-q4-earnings-call-2026-09-30/",
+          "body_text": "Key Points\n\nAI-driven demand is strengthening through 2027 and 2028, with Micron having committed more than 75% of planned fiscal 2027 shipments and already discussing 2028 allocations. Executives said DRAM, rather than logic or power, is the primary constraint on data-center expansion.\n\nHBM remains a major growth driver, with shipments expected to outpace conventional DRAM through 2028. Micron raised HBM pricing for 2027 and is co-developing a customized HBM4E product with NVIDIA.\n\nMicron is investing heavily to expand future capacity, directing higher capital spending mainly toward cleanroom construction expected to support production from late 2028 onward. The company also expects China exposure to decline to single-digit percentages in fiscal 2027 and sees rising costs and R&D spending ahead.\n\nFive stocks to consider instead of Micron Technology.\n\nSanDisk’s $1,800 Breakout Turns Memory Hardware Into a Profit Story\n\nMicron Technology NASDAQ: MU executives said demand tied to artificial intelligence infrastructure is strengthening into 2027 and 2028, while industry supply remains constrained by cleanroom capacity, increasingly complex high-bandwidth memory products and diminishing returns from technology transitions.\n\nDuring the company’s fiscal fourth-quarter analyst call, President and Chief Operating Officer Manish Bhatia said Micron has committed more than 75% of its planned shipments for fiscal 2027. That visibility has allowed the company to begin allocation discussions with customers for 2028, he said.\n\n3 Retail Stocks Getting Crushed and the Long-Dated Options Trade on Each One\n\n“We really do not have line of sight to when supply and demand balances,” Bhatia said, citing the combination of stronger demand and structural constraints on supply growth.\n\nAI Demand Expands Beyond Accelerators\n\nBhatia pointed to continued server-unit growth and the spread of agentic AI workloads as major demand drivers. He said agentic AI is creating a CPU-driven source of demand in addition to the memory needs associated with AI accelerators.\n\nNVIDIA Just Named AI's Next Bottleneck—And These 3 Stocks Sit Right In It\n\nAccording to Bhatia, agentic workloads require significant attachments of LP memory, DDR memory and solid-state drives. He said server units are growing in the high teens, while customers are currently seeking to maximize the amount of compute silicon they can ship with available memory supply.\n\nThat situation has created latent demand for additional memory, executives said. If more memory became available, customers could add more memory to AI systems and improve system performance.\n\nBhatia also said the company sees DRAM as the principal constraint on data-center expansion rather than logic or power. He cited the rapid adoption of enterprise and consumer agentic software as evidence of the demand environment.\n\nHBM Remains a Key Growth Product\n\nMicron expects high-bandwidth memory, or HBM, shipments to grow faster than conventional DRAM through 2028. Bhatia said the product category will therefore represent a growing share of industry capacity.\n\nThe company said it significantly increased HBM pricing for calendar 2027, with the change intended to narrow the profitability gap with conventional DRAM. Micron did not provide an updated estimate for the HBM total addressable market, nor did it provide a specific HBM market-share target.\n\nBhatia said Micron expects its HBM share to remain around its broader DRAM market share, though he noted that the result may vary based on several factors. He said the company had reached its prior goal of bringing HBM share to its broader DRAM share about a year earlier.\n\nScott DeBoer, Micron’s President and Chief Technology and Products Officer, said the company has worked with NVIDIA for more than a year on HBM4E, referred to as NVHBM. He characterized it as the first major custom HBM product expected in the market and said the co-designed product could provide value beyond standard HBM4E.\n\nDeBoer clarified that the HBM4E co-design uses a foundry process for both customized and JEDEC-specified products, rather than Micron’s in-house optimized base die approach used with HBM4. He said Micron seeks differentiation through power efficiency, speed performance, product margin and product quality.\n\nSupply Agreements and Capacity Investments\n\nMicron said its supply-chain agreements, or SCAs, cover both DRAM and NAND. The company has discussed a goal of SCAs covering 35% of sales by 2030, though Bhatia said Micron was not breaking out the agreements by product category.\n\nHe said DRAM bit volume covered by the agreements is somewhat below approximately 35%, while NAND bit volume is somewhat above that level. The company has SCAs across all business units, including mobile and client markets, and said it signed 10 new customers during the quarter.\n\nMost pricing frameworks in the agreements use floors and ceilings, Bhatia said, while approximately one-quarter of SCA revenue has pricing subject to periodic negotiations tied to market conditions. Newer agreements reflect higher current market pricing and Micron’s outlook for future tightness, he added.\n\nMicron is increasing construction capital expenditures primarily to accelerate cleanroom availability beginning in late 2028 and beyond. Bhatia said these investments will not immediately translate into bit production, as fabs must still be equipped and qualified before meaningful shipments begin.\n\nChief Financial Officer Mark Murphy said most of the planned capital-expenditure increase is directed toward construction rather than equipment. Micron plans to equip cleanrooms and add production capacity based on demand trends, executives said.\n\nTechnology, China Exposure and Near-Term Modeling Items\n\nDeBoer said Micron’s technology lead over Chinese competitors is currently at least two DRAM nodes. He said Micron’s 1-gamma DRAM technology has become the majority of its bit output and is on track to become the largest node in company history. The company’s next-generation 1-delta node is under development, with a ramp targeted for the second half of next year.\n\nMicron expects China exposure to fall into the single-digit percentage range in fiscal 2027, Bhatia said.\n\nIn mobile and client products, Micron reported sequential bit declines but revenue growth driven by higher pricing and favorable mix. Bhatia said premium PCs and flagship smartphones continue to show robust demand for higher-content, higher-performance memory, even as unit volumes decline.\n\nFor the fiscal first quarter, Murphy said Micron’s guidance assumes single-digit sequential bit growth and double-digit cost growth for both DRAM and NAND. He also said that, excluding incentive-compensation effects, the company expects its year-over-year research-and-development spending increase to exceed $1 billion in fiscal 2027 as it expands R&D activities.\n\nAbout Micron Technology (NASDAQ:MU)\n\nMicron Technology, Inc is a semiconductor company that develops and manufactures memory and storage solutions. Its product portfolio includes dynamic random-access memory (DRAM), NAND flash memory, three-dimensional XPoint-related technologies, solid-state drives, and high-bandwidth memory products designed for demanding computing applications.\n\nThe company serves customers across the data center, artificial intelligence, networking, automotive, industrial, mobile, consumer electronics, and embedded markets.\n\nThis instant news alert was generated by narrative science technology and financial data from MarketBeat in order to provide readers with the fastest reporting and unbiased coverage. Please send any questions or comments about this story to contact@marketbeat.com."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_b07fea87c05c4ce0b784ab14e289708e:0\"]",
+          "created_at": "2026-10-01T00:13:14.576508Z",
+          "dedupe_key": "cf1158e6e4ee7f361b6f6893daca697e4308aad88c3d0b888062525361cd4129",
+          "entities": [
+            "Micron Technology",
+            "FY2027 shipments"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron committed more than 75% of its planned fiscal 2027 shipments.",
+          "provisional_event_id": "E424",
+          "subject_time": "FY2027 shipments"
+        },
+        {
+          "assertion_state": "ONGOING",
+          "candidate_id": "[\"runtime-v2-msg:std_b07fea87c05c4ce0b784ab14e289708e:1\"]",
+          "created_at": "2026-10-01T00:13:14.585534Z",
+          "dedupe_key": "fee6097bece1a45e6f2815fc334dd15ae66631ff7a5b2239bec930edb9908140",
+          "entities": [
+            "Micron Technology",
+            "customers",
+            "FY2028 allocations"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron had begun allocation discussions with customers for fiscal 2028.",
+          "provisional_event_id": "E425",
+          "subject_time": "FY2028 allocations"
+        },
+        {
+          "assertion_state": "PLANNED",
+          "candidate_id": "[\"runtime-v2-msg:std_b07fea87c05c4ce0b784ab14e289708e:10\"]",
+          "created_at": "2026-10-01T00:13:14.734587Z",
+          "dedupe_key": "32ac833a4aec591b0bd71315ace2e5b1a4e78363e0a57439a19babf42879cba3",
+          "entities": [
+            "Micron Technology",
+            "1-delta DRAM"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron was developing its 1-delta DRAM node with a ramp targeted for the second half of 2027.",
+          "provisional_event_id": "E434",
+          "subject_time": "Second half of 2027"
+        },
+        {
+          "assertion_state": "GUIDANCE",
+          "candidate_id": "[\"runtime-v2-msg:std_b07fea87c05c4ce0b784ab14e289708e:11\"]",
+          "created_at": "2026-10-01T00:13:14.753673Z",
+          "dedupe_key": "714828e6ff2bd738621afcfd86e627a105e9f472bebcd4af727f6974c6939571",
+          "entities": [
+            "Micron Technology",
+            "DRAM",
+            "NAND"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron's fiscal 2027 first-quarter guidance assumed single-digit sequential bit growth and double-digit sequential cost growth for both DRAM and NAND.",
+          "provisional_event_id": "E435",
+          "subject_time": "FY2027 Q1"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_b07fea87c05c4ce0b784ab14e289708e:2\"]",
+          "created_at": "2026-10-01T00:13:14.592147Z",
+          "dedupe_key": "981e7dd4e1d18c6f17eae4812009991203cb520057f76bfed6d0a8d2b4176c47",
+          "entities": [
+            "Micron Technology",
+            "DRAM",
+            "data centers"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron identified DRAM, rather than logic or power, as the primary constraint on data-center expansion.",
+          "provisional_event_id": "E426",
+          "subject_time": "FY2026 Q4 earnings call"
+        },
+        {
+          "assertion_state": "EXPECTED",
+          "candidate_id": "[\"runtime-v2-msg:std_b07fea87c05c4ce0b784ab14e289708e:3\"]",
+          "created_at": "2026-10-01T00:13:14.598896Z",
+          "dedupe_key": "a829185a16d8804b6ceb73ddc91ff6ac1d342149da6b5b36f6c48bbd84b63efe",
+          "entities": [
+            "Micron Technology",
+            "HBM",
+            "DRAM"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron expected HBM shipments to grow faster than conventional DRAM through 2028.",
+          "provisional_event_id": "E427",
+          "subject_time": "Through 2028"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_b07fea87c05c4ce0b784ab14e289708e:4\"]",
+          "created_at": "2026-10-01T00:13:14.619355Z",
+          "dedupe_key": "60b336615ad77271523d8f02476671481205083676e4b07855e7e497cfb86d20",
+          "entities": [
+            "Micron Technology",
+            "HBM",
+            "DRAM"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron significantly increased HBM pricing for calendar 2027 to narrow the profitability gap with conventional DRAM.",
+          "provisional_event_id": "E428",
+          "subject_time": "Calendar 2027 pricing"
+        },
+        {
+          "assertion_state": "ONGOING",
+          "candidate_id": "[\"runtime-v2-msg:std_b07fea87c05c4ce0b784ab14e289708e:5\"]",
+          "created_at": "2026-10-01T00:13:14.643537Z",
+          "dedupe_key": "5390f068fab8593033f28cc16ccd0a5769eefd35503755aa1072b5e7b2b36901",
+          "entities": [
+            "Micron Technology",
+            "NVIDIA",
+            "HBM4E",
+            "NVHBM"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron and NVIDIA had been co-developing a customized HBM4E product referred to as NVHBM.",
+          "provisional_event_id": "E429",
+          "subject_time": "HBM4E/NVHBM development"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_b07fea87c05c4ce0b784ab14e289708e:6\"]",
+          "created_at": "2026-10-01T00:13:14.660247Z",
+          "dedupe_key": "625e224cc4ed7350a5c43019dc8a52134f80fcb4460a011c1e07f2d2d6bf8d7a",
+          "entities": [
+            "Micron Technology",
+            "strategic customer agreements",
+            "customers"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron said it signed 10 new customers during the quarter as part of its strategic agreement expansion.",
+          "provisional_event_id": "E430",
+          "subject_time": "FY2026 Q4"
+        },
+        {
+          "assertion_state": "PLAN",
+          "candidate_id": "[\"runtime-v2-msg:std_b07fea87c05c4ce0b784ab14e289708e:7\"]",
+          "created_at": "2026-10-01T00:13:14.680896Z",
+          "dedupe_key": "df9aee007e765a40ced8490794e9dc62f06fdad19ff1d143781072b2ac21542a",
+          "entities": [
+            "Micron Technology",
+            "cleanrooms",
+            "capital expenditures"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron planned construction capital expenditures to accelerate cleanroom availability beginning in late 2028 and beyond, with equipment and qualification still required before meaningful shipments.",
+          "provisional_event_id": "E431",
+          "subject_time": "Late 2028 onward"
+        },
+        {
+          "assertion_state": "EXPECTED",
+          "candidate_id": "[\"runtime-v2-msg:std_b07fea87c05c4ce0b784ab14e289708e:8\"]",
+          "created_at": "2026-10-01T00:13:14.697627Z",
+          "dedupe_key": "96535da96e379f6d084dafd3c3ab56295422d65ed5d3eb01a0e19088074091b3",
+          "entities": [
+            "Micron Technology",
+            "China exposure"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron expected China exposure to decline to single-digit percentages in fiscal 2027.",
+          "provisional_event_id": "E432",
+          "subject_time": "FY2027"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_b07fea87c05c4ce0b784ab14e289708e:9\"]",
+          "created_at": "2026-10-01T00:13:14.712852Z",
+          "dedupe_key": "fd8459fc6c81ddb1307537b81bfbe786dbcc6c7bbcd1910b333b7b58b5952797",
+          "entities": [
+            "Micron Technology",
+            "1-gamma DRAM"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron's 1-gamma DRAM technology had become the majority of its bit output.",
+          "provisional_event_id": "E433",
+          "subject_time": "FY2026 Q4"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_c9353f9848c545cea4c046fcb58c4f98",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-10-01T00:13:14.781848+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-30",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_2a33982641ca4b92a0215d0637a71cf2",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-01T00:13:15.636363Z"
+              },
+              "case_id": "case_c9353f9848c545cea4c046fcb58c4f98",
+              "direction": "LONG",
+              "entry_reason": "PORTFOLIO_CAPACITY_EXHAUSTED",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_c9353f9848c545cea4c046fcb58c4f98",
+              "execution_reason_codes": [
+                "PORTFOLIO_CAPACITY_EXHAUSTED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_c9353f9848c545cea4c046fcb58c4f98",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-01T00:13:14.781848Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "PORTFOLIO_CAPACITY_EXHAUSTED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_c4aac6c4a449459bbccfc631526b734b",
+      "ticker": "MU",
+      "case_id": "case_c4aac6c4a449459bbccfc631526b734b",
+      "intent_released_at_utc": "2026-10-01T05:36:46.779959+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_cfb631f22b82423d94468c231ff30381",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "Operating income",
+              "Operating margin"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron's FY2026 Q4 operating income was approximately $44.6 billion and operating margin was approximately 82%.",
+            "subject_time": "FY2026 Q4"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "DRAM",
+              "Revenue"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron's annual DRAM revenue exceeded $100 billion for the first time in fiscal 2026.",
+            "subject_time": "Fiscal 2026 full year"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "DRAM",
+              "Revenue"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron's FY2026 Q4 DRAM revenue was approximately $39.8 billion, representing about 73% of total revenue.",
+            "subject_time": "FY2026 Q4"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "DRAM",
+              "Average selling price"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron's DRAM average selling price increased by nearly 10% sequentially in FY2026 Q4.",
+            "subject_time": "FY2026 Q4 versus FY2026 Q3"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "NAND",
+              "Revenue"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron's FY2026 Q4 NAND revenue was approximately $14.1 billion, representing about 26% of total revenue.",
+            "subject_time": "FY2026 Q4"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "NAND",
+              "Bit shipments"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron's NAND bit shipments increased by approximately 10% sequentially in FY2026 Q4.",
+            "subject_time": "FY2026 Q4 versus FY2026 Q3"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "NAND",
+              "Average selling price"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron's NAND average selling price increased by approximately 30% sequentially in FY2026 Q4.",
+            "subject_time": "FY2026 Q4 versus FY2026 Q3"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "Core Data Center Business Unit",
+              "CDBU",
+              "Revenue"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron's Core Data Center Business Unit revenue increased approximately 56% sequentially to about $18 billion in FY2026 Q4.",
+            "subject_time": "FY2026 Q4 versus FY2026 Q3"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "HBM",
+              "Revenue"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron's HBM revenue growth exceeded the company's total revenue growth in FY2026 Q4.",
+            "subject_time": "FY2026 Q4"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "HBM",
+              "Supply agreements"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron reached agreements covering most of its HBM chip supply planned for 2027.",
+            "subject_time": "Calendar 2027 HBM supply"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "Data-center SSD",
+              "NAND",
+              "Revenue"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron's data-center SSD revenue approached $10 billion in FY2026 Q4, exceeded ten times the prior-year level, and represented more than two-thirds of NAND revenue.",
+            "subject_time": "FY2026 Q4"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "The new detail increases confidence that growth is supported by high-value mix and quantity as well as headline pricing: DRAM represented about 73% of quarterly revenue, NAND ASP rose about 30% with bit shipments up about 10%, CDBU revenue rose about 56%, and data-center SSD revenue approached $10 billion and exceeded ten times the prior-year level. Agreements covering most 2027 HBM supply further improve volume visibility. DRAM ASP growth of roughly 10% is slower than the prior-quarter surge, but the quantity and data-center mix offset makes the revenue-quality signal net positive.",
+          "prior_expectation": "Before this report, the baseline already reflected a strong FY2026 Q4 aggregate result, approximately 87% gross margin, FY2027 Q1 revenue guidance near $61.5 billion, tight FY2027-FY2028 supply, and elevated data-center and contract visibility. It did not yet quantify the product-level ASP, bit, DRAM/NAND mix, and data-center SSD contribution behind the result.",
+          "reason": "The observations directly affect MU's realizable ASP, bit shipments, data-center mix, and margin durability. They reduce the risk that the Q4 beat was only a transient aggregate price spike and provide a clearer path from AI demand to MU revenue and earnings. The source is secondary and the evidence is still one quarter, so conviction is moderated, but the incremental positive surprise is material enough for a LONG trade.",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "Reference View already covers Micron's aggregate FY2026 Q4 results, CDBU revenue, FY2027 Q1 guidance, SCA expansion, tighter FY2027-FY2028 supply, the more-than-75% FY2027 shipment commitment, and HBM pricing increase. This article adds previously unrecorded product-level facts: DRAM revenue and share, DRAM ASP, NAND revenue, NAND ASP and bit growth, CDBU sequential growth, annual DRAM revenue exceeding $100 billion, HBM allocation coverage, and data-center SSD revenue and mix.",
+          "reference_ids": [
+            "E356",
+            "E363",
+            "E367",
+            "E450",
+            "E458",
+            "E459",
+            "E463",
+            "E467"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No Policy is satisfied. The new ASP, bit-shipment, and mix observations cover only one quarter and do not establish the consecutive-window conditions for ASP or margin policies. Existing SCA and FY2027 guidance facts are already covered, and the report does not confirm 2029-plus deliverable server/HBM supply, a HBM4E delay, contract-price deterioration, or an AI policy change."
+        },
+        "w3_case_id": "w3_cfb631f22b82423d94468c231ff30381"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_c4aac6c4a449459bbccfc631526b734b",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-10-01T05:36:46.927946Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 724.05052
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-10-01T05:24:42.877426Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2687315,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-30",
+        "source": {
+          "binding_id": "MU:trendforce_news",
+          "kind": "crawler",
+          "name": "TrendForce News",
+          "source_id": "trendforce_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_3678301be91948e88c9f2f618a917fbf",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "[News] Micron FY2026 Revenue Surges 256% to $133.2B, Locks In 35%+ of Revenue Through 2030"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "PORTFOLIO_CAPACITY_EXHAUSTED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-10-01T05:24:42.877426Z",
+        "completed_at": "2026-10-01T05:36:46.927946Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E2",
+            "E439",
+            "E9",
+            "E356",
+            "E363"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [
+            {
+              "event_id": "E9",
+              "fact_ids": [
+                "F239",
+                "F238",
+                "F478"
+              ]
+            }
+          ],
+          "reason": "当前消息包含多项核心新进展：(1) SCA数量从已知的16项(E9/F239)扩展至26项；(2) 客户财务承诺从$22B(E9/F238,F254)增至$32B；(3) SCA覆盖范围从DRAM~20%/NAND~33%(E9/F478)变为到2030年覆盖>35%总收入、部分延至2031年；(4) FY2027 Q1营收指引$61.5B±$1.5B为全新前瞻信息；(5) 分部毛利率、DRAM/NAND/CDBU/SSD具体营收拆分在已知事实中均未出现。Provisional事件(E356/E363/E439)仅覆盖headline营收与净利数字，未涵盖上述任何新核心事实。",
+          "reference_ids": [
+            "E9"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [
+            "pol_12b2c75c2f311063e913",
+            "pol_b123dd2735c71047d828",
+            "pol_ecede39f670a0882b1f4"
+          ],
+          "reason": "消息报告Micron FY26 Q4业绩创历史新高：CDBU季增56%至180亿美元、HBM营收增速超公司整体、DRAM ASP季增约10%、NAND ASP季增约30%、NAND位出货增约10%；同时明确预计2027-2028年内存供需将比2026年显著趋紧，HBM出货量2028年将超传统DRAM；已签26项SCA覆盖至2030年超35%收入，客户财务承诺增至320亿美元且绝大部分为现金预付款。这些具体事实分别触及：(1)供给约束延续与AI/HBM价格及数据中心组合基线的正向确认；(2)DRAM/NAND实现ASP与位出货的季度比较，需完整判定Q4涨幅是否不再达到Q3水平；(3)收入增长伴随大额客户现金预付款的连续现金桥要素。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "三个Candidate均未命中。pol_12b2c75c2f311063e913 C2：消息披露26份SCA覆盖至2030/2031年>35%收入、$320亿现金承诺及2027年大部分HBM供应协议，但SCA属收入覆盖与价格可见性承诺，Policy明确声明其不等同于'服务器/HBM实际可交付供给锁定至2029或更晚'；HBM协议仅覆盖2027年，2027-2028供需趋紧为预期而非2029+正式确认；数据中心组合亦未明确≥61%。C3：消息无任何AI政策峰会公报或行政决定。pol_b123dd2735c71047d828：仅有FY26 Q4单季数据（DRAM ASP +10%低于Q3预期13-18%，但NAND ASP +30%高于Q3预期10-15%），不满足'连续两个季度'ASP放缓要求。pol_ecede39f670a0882b1f4：单季财报，无连续两期现金桥、应收/DSO改善或PPE支付明细，且Policy明确排除仅凭单季利润增长。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "Operating income",
+                "Operating margin"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron's FY2026 Q4 operating income was approximately $44.6 billion and operating margin was approximately 82%.",
+              "subject_time": "FY2026 Q4"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "DRAM",
+                "Revenue"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron's annual DRAM revenue exceeded $100 billion for the first time in fiscal 2026.",
+              "subject_time": "Fiscal 2026 full year"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "DRAM",
+                "Revenue"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron's FY2026 Q4 DRAM revenue was approximately $39.8 billion, representing about 73% of total revenue.",
+              "subject_time": "FY2026 Q4"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "DRAM",
+                "Average selling price"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron's DRAM average selling price increased by nearly 10% sequentially in FY2026 Q4.",
+              "subject_time": "FY2026 Q4 versus FY2026 Q3"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "NAND",
+                "Revenue"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron's FY2026 Q4 NAND revenue was approximately $14.1 billion, representing about 26% of total revenue.",
+              "subject_time": "FY2026 Q4"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "NAND",
+                "Bit shipments"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron's NAND bit shipments increased by approximately 10% sequentially in FY2026 Q4.",
+              "subject_time": "FY2026 Q4 versus FY2026 Q3"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "NAND",
+                "Average selling price"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron's NAND average selling price increased by approximately 30% sequentially in FY2026 Q4.",
+              "subject_time": "FY2026 Q4 versus FY2026 Q3"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "Core Data Center Business Unit",
+                "CDBU",
+                "Revenue"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron's Core Data Center Business Unit revenue increased approximately 56% sequentially to about $18 billion in FY2026 Q4.",
+              "subject_time": "FY2026 Q4 versus FY2026 Q3"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "HBM",
+                "Revenue"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron's HBM revenue growth exceeded the company's total revenue growth in FY2026 Q4.",
+              "subject_time": "FY2026 Q4"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "HBM",
+                "Supply agreements"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron reached agreements covering most of its HBM chip supply planned for 2027.",
+              "subject_time": "Calendar 2027 HBM supply"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "Data-center SSD",
+                "NAND",
+                "Revenue"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron's data-center SSD revenue approached $10 billion in FY2026 Q4, exceeded ten times the prior-year level, and represented more than two-thirds of NAND revenue.",
+              "subject_time": "FY2026 Q4"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "The new detail increases confidence that growth is supported by high-value mix and quantity as well as headline pricing: DRAM represented about 73% of quarterly revenue, NAND ASP rose about 30% with bit shipments up about 10%, CDBU revenue rose about 56%, and data-center SSD revenue approached $10 billion and exceeded ten times the prior-year level. Agreements covering most 2027 HBM supply further improve volume visibility. DRAM ASP growth of roughly 10% is slower than the prior-quarter surge, but the quantity and data-center mix offset makes the revenue-quality signal net positive.",
+            "prior_expectation": "Before this report, the baseline already reflected a strong FY2026 Q4 aggregate result, approximately 87% gross margin, FY2027 Q1 revenue guidance near $61.5 billion, tight FY2027-FY2028 supply, and elevated data-center and contract visibility. It did not yet quantify the product-level ASP, bit, DRAM/NAND mix, and data-center SSD contribution behind the result.",
+            "reason": "The observations directly affect MU's realizable ASP, bit shipments, data-center mix, and margin durability. They reduce the risk that the Q4 beat was only a transient aggregate price spike and provide a clearer path from AI demand to MU revenue and earnings. The source is secondary and the evidence is still one quarter, so conviction is moderated, but the incremental positive surprise is material enough for a LONG trade.",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "Reference View already covers Micron's aggregate FY2026 Q4 results, CDBU revenue, FY2027 Q1 guidance, SCA expansion, tighter FY2027-FY2028 supply, the more-than-75% FY2027 shipment commitment, and HBM pricing increase. This article adds previously unrecorded product-level facts: DRAM revenue and share, DRAM ASP, NAND revenue, NAND ASP and bit growth, CDBU sequential growth, annual DRAM revenue exceeding $100 billion, HBM allocation coverage, and data-center SSD revenue and mix.",
+            "reference_ids": [
+              "E356",
+              "E363",
+              "E367",
+              "E450",
+              "E458",
+              "E459",
+              "E463",
+              "E467"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "No Policy is satisfied. The new ASP, bit-shipment, and mix observations cover only one quarter and do not establish the consecutive-window conditions for ASP or margin policies. Existing SCA and FY2027 guidance facts are already covered, and the report does not confirm 2029-plus deliverable server/HBM supply, a HBM4E delay, contract-price deterioration, or an AI policy change."
+          },
+          "w3_case_id": "w3_cfb631f22b82423d94468c231ff30381"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "e2e212ca53146630e5118c7658079b167d6cbfd6fa6e0d6b30955239db397709",
+            "content_type": "text/plain",
+            "sha256": "d7031e5639d49e9672479dc777331e58500ec109734ddff424edc7fa8e4fd4de",
+            "size_bytes": 3092
+          },
+          "case": {
+            "case_id": "case_c4aac6c4a449459bbccfc631526b734b",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-10-01T05:24:41.045280Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-10-01T05:24:41.063726Z",
+          "revision": 1,
+          "row_revision": 2687284,
+          "source": {
+            "binding_id": "MU:trendforce_news",
+            "kind": "crawler",
+            "name": "TrendForce News",
+            "source_id": "trendforce_news"
+          },
+          "source_published_at": "2026-10-01T04:00:00Z",
+          "standard_message_id": "std_f110318d86864feabc664f0685074d07",
+          "stream_item_id": "stream_3678301be91948e88c9f2f618a917fbf",
+          "stream_offset": 2554,
+          "stream_published_at": "2026-10-01T05:24:41.067095Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "[News] Micron FY2026 Revenue Surges 256% to $133.2B, Locks In 35%+ of Revenue Through 2030"
+          },
+          "url": "https://www.trendforce.com/news/2026/10/01/news-micron-fy2026-revenue-surges-256-to-133-2b-locks-in-35-of-revenue-through-2030/",
+          "body_text": "美光科技2026財年業績創歷史新高，主要得益於強勁的記憶體價格和人工智慧驅動的資料中心需求激增。根據Investing.com報道，該公司第四財季營收達542億美元，季增31%，年增379%。全年營收達1,332億美元，年增256%。這項業績也標誌著美光DRAM年度營收首次突破1,000億美元大關。\n\n隨著營收成長，獲利能力也隨之增強。第四季毛利率達 87%，季增 210 個基點；營業收入總計 446 億美元，營業利益率為 82%。\n\n第四季DRAM營收達398億美元，佔總營收的73%，平均售價較上季成長近10%。 NAND快閃記憶體營收總計141億美元，佔總營收的26%，其中位出貨量較上季成長約10%，平均售價較上季上漲約30%。\n\n核心資料中心業務部 (CDBU) 引領了成長，營收季增 56% 至 180 億美元，這得益於人工智慧工作負載中使用的資料中心 DRAM 和 SSD 的強勁需求。\n\n報告顯示，HBM業務的成長速度持續超過美光整體業務的成長速度，本季HBM業務的營收成長速度超過了公司總營收的成長速度。美光目前已達成協議，涵蓋其2027年大部分HBM晶片的供應，價格遠高於去年同期。\n\n報告重點指出，資料中心 SSD 帶來了另一項重大成長，第四財季營收接近 100 億美元，是去年同期水準的 10 倍多，佔 NAND 總營收的三分之二以上。\n\n長期協議擴大收入可見性\n\n美光科技也透過策略客戶協議 (SCA) 鎖定更多未來業務，這些協議既能為客戶提供供貨保障，也能提升公司財務透明度。報告指出，美光科技目前已簽署 26 項 SCA，預計這些協議將涵蓋其到 2030 年超過 35% 的收入，其中幾項協議的有效期將延長至 2031 年。根據這些協議，客戶的財務承諾已增至 320 億美元，其中絕大部分為現金預付款。\n\n美光預計2028年內存供應將更加緊張\n\n美光科技預計這一成長動能將推遲至2027財年。路透社通報，該公司預計2027財年第一季營收將達615億美元，上下浮動15億美元，遠高於分析師平均預期的570.2億美元。美光科技也預計2027財年將再創佳績，每季的營收將營收成長。\n\n展望未來，根據 Investing.com 報導，美光預計 2027 年和 2028 年記憶體和儲存的供需狀況將比 2026 年顯著趨緊。對於 DRAM，預計 2027 年和 2028 年的行業位出貨量成長率將保持在 20% 左右，而市場供應預計將在這兩年持續受限。值得注意的是，根據MTN報導，美光預計 HBM 的出貨量成長將在 2028 年繼續超過傳統 DRAM。\n\nInvesting.com 指出，對於 NAND 閃存，預計 2027 年和 2028 年的行業比特出貨量將增長 20% 左右，而供應狀況同樣會受到限制。\n\n閱讀更多\n\n【新聞】據報道，美光將停止生產 2GB GDDR7 顯存，這將縮小英偉達 RTX 50 系列顯示卡的供應選擇。\n\n【新聞】美光財報前瞻：利潤率飆升能否持續？ HBM4產能爬坡及長期合約備受關注\n\n（圖片來源：美光科技）"
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_f110318d86864feabc664f0685074d07:0\"]",
+          "created_at": "2026-10-01T05:36:46.579966Z",
+          "dedupe_key": "98ee85db0fc585857b13caf11aa75e4402d1d9307ab832a4f800e581dc2c727b",
+          "entities": [
+            "Micron Technology",
+            "Operating income",
+            "Operating margin"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron's FY2026 Q4 operating income was approximately $44.6 billion and operating margin was approximately 82%.",
+          "provisional_event_id": "E436",
+          "subject_time": "FY2026 Q4"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_f110318d86864feabc664f0685074d07:1\"]",
+          "created_at": "2026-10-01T05:36:46.597010Z",
+          "dedupe_key": "8338ed81f14b50dc54bf72a8735a6830d77b90c3f6d95c307ba39eadbba2a3e7",
+          "entities": [
+            "Micron Technology",
+            "DRAM",
+            "Revenue"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron's annual DRAM revenue exceeded $100 billion for the first time in fiscal 2026.",
+          "provisional_event_id": "E437",
+          "subject_time": "Fiscal 2026 full year"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_f110318d86864feabc664f0685074d07:10\"]",
+          "created_at": "2026-10-01T05:36:46.762315Z",
+          "dedupe_key": "3fff3374cb8e270e09730614dc181015974811f582004c58c646c25748ace964",
+          "entities": [
+            "Micron Technology",
+            "Data-center SSD",
+            "NAND",
+            "Revenue"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron's data-center SSD revenue approached $10 billion in FY2026 Q4, exceeded ten times the prior-year level, and represented more than two-thirds of NAND revenue.",
+          "provisional_event_id": "E446",
+          "subject_time": "FY2026 Q4"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_f110318d86864feabc664f0685074d07:2\"]",
+          "created_at": "2026-10-01T05:36:46.627447Z",
+          "dedupe_key": "b11686b7a4a998b30cef0c45cbdfa0b038c4dd7f234c6b063ccb2d7953d30f34",
+          "entities": [
+            "Micron Technology",
+            "DRAM",
+            "Revenue"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron's FY2026 Q4 DRAM revenue was approximately $39.8 billion, representing about 73% of total revenue.",
+          "provisional_event_id": "E438",
+          "subject_time": "FY2026 Q4"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_f110318d86864feabc664f0685074d07:3\"]",
+          "created_at": "2026-10-01T05:36:46.650295Z",
+          "dedupe_key": "11f4b9be4316c78550ba3dfe512cab287be2ea9f82314c7ee60ad9e248c0e8fd",
+          "entities": [
+            "Micron Technology",
+            "DRAM",
+            "Average selling price"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron's DRAM average selling price increased by nearly 10% sequentially in FY2026 Q4.",
+          "provisional_event_id": "E439",
+          "subject_time": "FY2026 Q4 versus FY2026 Q3"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_f110318d86864feabc664f0685074d07:4\"]",
+          "created_at": "2026-10-01T05:36:46.675001Z",
+          "dedupe_key": "c49a4a8455bf5932a48fc94337b4b17c34f7ef82a06c848ab6558ca76169de57",
+          "entities": [
+            "Micron Technology",
+            "NAND",
+            "Revenue"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron's FY2026 Q4 NAND revenue was approximately $14.1 billion, representing about 26% of total revenue.",
+          "provisional_event_id": "E440",
+          "subject_time": "FY2026 Q4"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_f110318d86864feabc664f0685074d07:5\"]",
+          "created_at": "2026-10-01T05:36:46.697906Z",
+          "dedupe_key": "0c42f9dc6a8dcdbb708925575776371f161e9174cdc614f8688f6d97867540be",
+          "entities": [
+            "Micron Technology",
+            "NAND",
+            "Bit shipments"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron's NAND bit shipments increased by approximately 10% sequentially in FY2026 Q4.",
+          "provisional_event_id": "E441",
+          "subject_time": "FY2026 Q4 versus FY2026 Q3"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_f110318d86864feabc664f0685074d07:6\"]",
+          "created_at": "2026-10-01T05:36:46.715947Z",
+          "dedupe_key": "041c0344034150571d86075d27a4103d2655613099b03ea9956455876cd00ab7",
+          "entities": [
+            "Micron Technology",
+            "NAND",
+            "Average selling price"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron's NAND average selling price increased by approximately 30% sequentially in FY2026 Q4.",
+          "provisional_event_id": "E442",
+          "subject_time": "FY2026 Q4 versus FY2026 Q3"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_f110318d86864feabc664f0685074d07:7\"]",
+          "created_at": "2026-10-01T05:36:46.739141Z",
+          "dedupe_key": "354c3a2b7f449972b48f2f7df2d200be18c32ae8dd6b02da3e55c479c4908192",
+          "entities": [
+            "Micron Technology",
+            "Core Data Center Business Unit",
+            "CDBU",
+            "Revenue"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron's Core Data Center Business Unit revenue increased approximately 56% sequentially to about $18 billion in FY2026 Q4.",
+          "provisional_event_id": "E443",
+          "subject_time": "FY2026 Q4 versus FY2026 Q3"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_f110318d86864feabc664f0685074d07:8\"]",
+          "created_at": "2026-10-01T05:36:46.748712Z",
+          "dedupe_key": "81862eb094297ff8fe95aaa848592652f377f2ed3aaed5717f71fe47989424ef",
+          "entities": [
+            "Micron Technology",
+            "HBM",
+            "Revenue"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron's HBM revenue growth exceeded the company's total revenue growth in FY2026 Q4.",
+          "provisional_event_id": "E444",
+          "subject_time": "FY2026 Q4"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_f110318d86864feabc664f0685074d07:9\"]",
+          "created_at": "2026-10-01T05:36:46.755935Z",
+          "dedupe_key": "90f4021f91d1a8b46269f3ab04009b1216af5a9d3c590a635631f1d102c3d035",
+          "entities": [
+            "Micron Technology",
+            "HBM",
+            "Supply agreements"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron reached agreements covering most of its HBM chip supply planned for 2027.",
+          "provisional_event_id": "E445",
+          "subject_time": "Calendar 2027 HBM supply"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_c4aac6c4a449459bbccfc631526b734b",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-10-01T05:36:46.779959+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-30",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_cfb631f22b82423d94468c231ff30381",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-01T05:36:47.519524Z"
+              },
+              "case_id": "case_c4aac6c4a449459bbccfc631526b734b",
+              "direction": "LONG",
+              "entry_reason": "PORTFOLIO_CAPACITY_EXHAUSTED",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_c4aac6c4a449459bbccfc631526b734b",
+              "execution_reason_codes": [
+                "PORTFOLIO_CAPACITY_EXHAUSTED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_c4aac6c4a449459bbccfc631526b734b",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-01T05:36:46.779959Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "PORTFOLIO_CAPACITY_EXHAUSTED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_d5b51cd84fad41b8a14a3253387dfe4d",
+      "ticker": "MU",
+      "case_id": "case_d5b51cd84fad41b8a14a3253387dfe4d",
+      "intent_released_at_utc": "2026-10-01T09:34:24.981867+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_66bab382f00c491f8e6e2e900571e58b",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "NVIDIA",
+              "HBM4E",
+              "NVHBM"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron disclosed that its custom NVHBM and JEDEC-standard HBM4E products use foundry-process base dies rather than Micron's internally produced base die used in HBM4.",
+            "subject_time": "HBM4E and NVHBM development and future production"
+          },
+          {
+            "assertion_state": "RUMOR",
+            "entities": [
+              "Micron Technology",
+              "TSMC",
+              "HBM4E",
+              "NVHBM"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "The report attributed Micron's HBM4E and NVHBM external base-die production to TSMC and estimated an approximately 3nm-class process.",
+            "subject_time": "HBM4E and NVHBM future production"
+          },
+          {
+            "assertion_state": "EXPECTED",
+            "entities": [
+              "Micron Technology",
+              "NVIDIA",
+              "NVHBM",
+              "HBM"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron management expected NVHBM's custom functionality to produce higher ASP and margin than standard HBM, with successful commercialization expected to generate strong ROI.",
+            "subject_time": "NVHBM commercialization"
+          },
+          {
+            "assertion_state": "EXPECTED",
+            "entities": [
+              "Micron Technology",
+              "NVIDIA",
+              "NVHBM",
+              "HBM4E"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "The reported NVHBM design targets up to 15% lower power consumption, 30% higher memory bandwidth, and 67% smaller I/O PHY package area.",
+            "subject_time": "NVHBM product design"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "The disclosed foundry-base-die architecture and management's expected improvement in NVHBM ASP, margin, and ROI raise the expected value capture of HBM4E versus a generic roadmap. The reported PPA benefits strengthen the case for a premium custom product, although qualification, volume, and timing remain future-dependent.",
+          "prior_expectation": "The pre-message baseline included Micron-NVIDIA HBM4E NVHBM co-development and a 2027 HBM4E roadmap, with HBM4 already in high-volume production, but base-die economics, custom-product pricing, and recurring multi-platform delivery remained unconfirmed.",
+          "reason": "LONG. HBM is a material high-value driver for Micron, and a custom NVIDIA product that combines improved power, bandwidth, and package efficiency with higher expected ASP and margin has a direct transmission to HBM profitability and competitive positioning. The lack of two-platform commercial delivery prevents Policy activation but does not remove the positive directional expectation delta; execution and TSMC-dependency risks limit certainty rather than reverse the direction.",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "E207 covers Micron's co-development of HBM4E NVHBM with NVIDIA, but not the disclosed foundry-produced base-die architecture, reported TSMC sourcing, or the expected ASP and margin improvement despite outsourcing the base die.",
+          "reference_ids": [
+            "E207"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No Policy matches. The message names only NVIDIA as a platform partner and describes a design-stage product with expected economics; it does not confirm two named platforms or two consecutive commercial delivery windows, nor any negative trigger condition."
+        },
+        "w3_case_id": "w3_66bab382f00c491f8e6e2e900571e58b"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_d5b51cd84fad41b8a14a3253387dfe4d",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-10-01T09:34:25.048382Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 434.320546
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-10-01T09:27:10.727836Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2699844,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-10-01",
+        "source": {
+          "binding_id": "MU:thelec_semiconductors_rss",
+          "kind": "api",
+          "name": "The Elec Semiconductor RSS",
+          "source_id": "thelec_semiconductors_rss"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_ce10d908e98841bbb264f28d693f1747",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "마이크론 \"NVHBM, 자체 베이스다이 빠져도 수익성↑\""
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "PORTFOLIO_CAPACITY_EXHAUSTED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-10-01T09:27:10.727836Z",
+        "completed_at": "2026-10-01T09:34:25.048382Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E207",
+            "E222",
+            "E221",
+            "E214",
+            "E220"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [
+            {
+              "event_id": "E207",
+              "fact_ids": [
+                "F968"
+              ]
+            }
+          ],
+          "reason": "现有事实 F968 仅泛述\"Micron 与 NVIDIA 共同开发 HBM4E NVHBM\"，未涉及本消息核心事实：NVHBM/HBM4E 将采用 TSMC 代工（约 3nm 级）外部基片替代 Micron 自研基片，以及尽管外供基片 ASP 与利润率仍预期改善。这一具体制造/供应链策略细节未被任何已加载 Fact 覆盖。",
+          "reference_ids": [
+            "E207"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [
+            "pol_9bfb2935492d5fb70db6"
+          ],
+          "reason": "FY2026 Q4财报电话会上Micron CTPO和COO确认：Nvidia（命名AI平台）与Micron共同设计NVHBM（基于JEDEC HBM4E标准、使用1γ核心die与TSMC 3nm级定制base die），且明确表述'成功商业化'与'极高ROI'预期。该事实直接触及pol_9bfb2935492d5fb70db6 criterion中'命名AI平台公开确认Micron HBM4E/同类新容量产品资格或设计定点'这一触发要素。当前消息仅覆盖一个命名平台（Nvidia），criterion要求'至少两个'且需'随后两个交付窗口可重复商业序列出货'，精简信息无法确认最终边界是否已达到，构成合理潜在命中可能，应进入完整判定。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息仅点名NVIDIA为NVHBM的共同开发对象，并提及JEDEC标准HBM4E产品线，但未出现第二个命名客户/AI平台的资格或设计定点公开确认；商业出货仅以'成功商业化将带来优秀ROI'的预期语气提及，未描述任何两个连续交付窗口的实际商业序列出货。C1的trigger_boundary（至少两个平台确认+两个连续窗口商业出货）均未达到。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "NVIDIA",
+                "HBM4E",
+                "NVHBM"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron disclosed that its custom NVHBM and JEDEC-standard HBM4E products use foundry-process base dies rather than Micron's internally produced base die used in HBM4.",
+              "subject_time": "HBM4E and NVHBM development and future production"
+            },
+            {
+              "assertion_state": "RUMOR",
+              "entities": [
+                "Micron Technology",
+                "TSMC",
+                "HBM4E",
+                "NVHBM"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "The report attributed Micron's HBM4E and NVHBM external base-die production to TSMC and estimated an approximately 3nm-class process.",
+              "subject_time": "HBM4E and NVHBM future production"
+            },
+            {
+              "assertion_state": "EXPECTED",
+              "entities": [
+                "Micron Technology",
+                "NVIDIA",
+                "NVHBM",
+                "HBM"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron management expected NVHBM's custom functionality to produce higher ASP and margin than standard HBM, with successful commercialization expected to generate strong ROI.",
+              "subject_time": "NVHBM commercialization"
+            },
+            {
+              "assertion_state": "EXPECTED",
+              "entities": [
+                "Micron Technology",
+                "NVIDIA",
+                "NVHBM",
+                "HBM4E"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "The reported NVHBM design targets up to 15% lower power consumption, 30% higher memory bandwidth, and 67% smaller I/O PHY package area.",
+              "subject_time": "NVHBM product design"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "The disclosed foundry-base-die architecture and management's expected improvement in NVHBM ASP, margin, and ROI raise the expected value capture of HBM4E versus a generic roadmap. The reported PPA benefits strengthen the case for a premium custom product, although qualification, volume, and timing remain future-dependent.",
+            "prior_expectation": "The pre-message baseline included Micron-NVIDIA HBM4E NVHBM co-development and a 2027 HBM4E roadmap, with HBM4 already in high-volume production, but base-die economics, custom-product pricing, and recurring multi-platform delivery remained unconfirmed.",
+            "reason": "LONG. HBM is a material high-value driver for Micron, and a custom NVIDIA product that combines improved power, bandwidth, and package efficiency with higher expected ASP and margin has a direct transmission to HBM profitability and competitive positioning. The lack of two-platform commercial delivery prevents Policy activation but does not remove the positive directional expectation delta; execution and TSMC-dependency risks limit certainty rather than reverse the direction.",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "E207 covers Micron's co-development of HBM4E NVHBM with NVIDIA, but not the disclosed foundry-produced base-die architecture, reported TSMC sourcing, or the expected ASP and margin improvement despite outsourcing the base die.",
+            "reference_ids": [
+              "E207"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "No Policy matches. The message names only NVIDIA as a platform partner and describes a design-stage product with expected economics; it does not confirm two named platforms or two consecutive commercial delivery windows, nor any negative trigger condition."
+          },
+          "w3_case_id": "w3_66bab382f00c491f8e6e2e900571e58b"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "027662d159f8c102513b7b4daf8d078eca6b861ee98669c7e235e3aaee99e363",
+            "content_type": "text/plain",
+            "sha256": "d71b49a856ce9fd4be9c0d888b1b03fbed1d538356651c854589b6a1f95ee632",
+            "size_bytes": 4113
+          },
+          "case": {
+            "case_id": "case_d5b51cd84fad41b8a14a3253387dfe4d",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-10-01T09:27:08.727911Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-10-01T09:27:08.745959Z",
+          "revision": 1,
+          "row_revision": 2699814,
+          "source": {
+            "binding_id": "MU:thelec_semiconductors_rss",
+            "kind": "api",
+            "name": "The Elec Semiconductor RSS",
+            "source_id": "thelec_semiconductors_rss"
+          },
+          "source_published_at": "2026-10-01T09:25:11Z",
+          "standard_message_id": "std_c323391f6f584172bf2954bd2adb524a",
+          "stream_item_id": "stream_ce10d908e98841bbb264f28d693f1747",
+          "stream_offset": 2561,
+          "stream_published_at": "2026-10-01T09:27:08.749499Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "마이크론 \"NVHBM, 자체 베이스다이 빠져도 수익성↑\""
+          },
+          "url": "https://www.thelec.kr/news/articleView.html?idxno=63114",
+          "body_text": "마이크론이 엔비디아용 맞춤형(커스텀) 고대역폭메모리(HBM) 'NVHBM'에 외부에서 생산한 베이스다이를 사용한다. 외주 생산에도 수익성은 더 좋아질 예정이다.\n\n스캇 디보어 마이크론 최고기술·제품책임자(CTPO)는 30일(현지시간) 2026회계연도 4분기 실적발표 행사에서 \"엔비디아와 공동 설계한 커스텀 NVHBM과 국제반도체표준협의기구(JEDEC) 표준 HBM4E 제품군 모두 파운드리 공정의 베이스다이로 개발된다\"며 \"마이크론 자체 베이스다이를 활용했던 HBM4 공정과 다르다\"고 밝혔다.\n\n베이스다이는 HBM 최하단의 제어 영역이다. 메모리의 성능과 안정성을 좌우한다. 상단에 적층된 여러 코어 다이(D램 칩)의 데이터 읽기와 쓰기, 오류 정정 등을 수행한다. 외부 중앙처리장치(CPU)나 그래픽처리장치(GPU) 등 연산 시스템과 메모리를 이어준다.\n\n마이크론은 HBM4의 코어 다이(D램 칩)를 10나노급 5세대 1-베타(1β) 공정과 자체 제작 베이스다이로 제조한다. 7세대 HBM4E 제품군부터는 10나노급 6세대 1-감마(1γ) 공정으로 생산한 코어 다이를 쓴다. 1γ는 삼성전자와 SK하이닉스의 10나노급 6세대 1c 공정과 동일한 세대다.\n\nHBM4E 베이스다이는 반도체 위탁생산(파운드리) 업체 TSMC에 맡긴다. 3나노급 공정 기반으로 추정된다. 기존 마이크론이 자체 베이스다이를 만들던 레거시 공정 대비 선단 공정이다. 칩의 전력·성능·면적(PPA) 개선에 이점이 있다. HBM4E 기반 NVHBM의 베이스다이도 마찬가지다.\n\n베이스다이 외주 생산에도 NVHBM의 평균판매단가(ASP)와 마진율은 개선될 전망이다. 마니시 바티아 마이크론 최고운영책임자(COO)는 \"HBM은 본래 프리미엄 제품군이지만, 커스텀 기능이 추가된 NVHBM은 그 이상으로 높은 부가가치를 창출한다\"며 \"NVHBM의 성공적인 상용화가 이뤄지면 매우 우수한 투자수익률(ROI)을 가져다 줄 것\"이라고 확신했다.\n\nNVHBM은 엔비디아가 메모리 제조사, 파운드리와 협력해 설계 단계부터 인공지능(AI) 가속기(GPU)에 최적화한 제품이다. 엔비디아의 개방형 상호연결(인터커넥트) 규격 NV링크 퓨전을 사용한다. JEDEC의 HBM4E 표준 규격을 일부 따르면서 맞춤형 베이스다이로 성능을 높였다.\n\nNVHBM은 기존 주 연산 장치 내부에 있던 메모리 컨트롤러를 베이스다이에 내장한다. 덕분에 전력 소비량은 15% 줄고, 메모리 대역폭은 최대 30% 높아진다. 입출력(I·O)을 담당하는 물리계층(PHY)도 맞춤형으로 통합하며 I·O PHY의 패키지 면적을 최대 67% 줄인다.\n\n해당 성능을 동일하게 구현하고자 엔비디아가 TSMC 제조 베이스다이를 요구했을 가능성이 있다.\n\n디보어 CTPO는 \"(외부)파운드리 베이스다이를 사용하더라도 이전 HBM과 마찬가지로 전력 효율, 최적 속도 성능, 동작 마진 측면에서 마이크론만의 우위가 발휘될 것\"이라며 \"고객사와 협력해 시스템 수준에서 더 큰 가치를 만들겠다\"고 말했다.\n\n휴머노이드를 움직이는 반도체\n\nInside the Humanoid: From AI Brain to Motion\n\n10월 16일 코엑스 3층 C홀 개최!\n\n》》 사전등록 페이지 바로가기\n\n◈ 행사 개요\n\n일          시  : 2026년 10월 16일(금) 10:00 ~16:00\n\n장          소  : 코엑스 3층 전시장 C홀 Main Stage\n\n주최/주관  : 한국반도체산업협회.한국반도체연구조합.유니퀘스트.디일렉 / 와이일렉\n\n규         모   :  선착순 150명\n\n참 가 비 용 :  무료 (사전등록자에 한해서 수강 가능합니다)\n\n등 록 마 감 : 10월13일(화) 12시  사전등록 마감 시 현장등록 불가\n\n행 사 문 의 :  디일렉 김상수 국장  kss@thelec.kr  010 5278 5958\n\n* 발표주제 및 연사자는 변경 될 수 있습니다\n\n◈ 프로그램"
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_c323391f6f584172bf2954bd2adb524a:0\"]",
+          "created_at": "2026-10-01T09:34:24.942676Z",
+          "dedupe_key": "3d76d38fd116635278b3db792451bc9d08b2d6a82abe66cd7dcf3f78924201d3",
+          "entities": [
+            "Micron Technology",
+            "NVIDIA",
+            "HBM4E",
+            "NVHBM"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron disclosed that its custom NVHBM and JEDEC-standard HBM4E products use foundry-process base dies rather than Micron's internally produced base die used in HBM4.",
+          "provisional_event_id": "E222",
+          "subject_time": "HBM4E and NVHBM development and future production"
+        },
+        {
+          "assertion_state": "RUMOR",
+          "candidate_id": "[\"runtime-v2-msg:std_c323391f6f584172bf2954bd2adb524a:1\"]",
+          "created_at": "2026-10-01T09:34:24.949071Z",
+          "dedupe_key": "3dcb6fa2b1cd9b315e34746a069f379242649d67f5b985771affb2808073edb2",
+          "entities": [
+            "Micron Technology",
+            "TSMC",
+            "HBM4E",
+            "NVHBM"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "The report attributed Micron's HBM4E and NVHBM external base-die production to TSMC and estimated an approximately 3nm-class process.",
+          "provisional_event_id": "E223",
+          "subject_time": "HBM4E and NVHBM future production"
+        },
+        {
+          "assertion_state": "EXPECTED",
+          "candidate_id": "[\"runtime-v2-msg:std_c323391f6f584172bf2954bd2adb524a:2\"]",
+          "created_at": "2026-10-01T09:34:24.955301Z",
+          "dedupe_key": "cc1be015658b25b8022ed914bb2f6cf8f63a7abd2d40b121e8fda671a1131b5a",
+          "entities": [
+            "Micron Technology",
+            "NVIDIA",
+            "NVHBM",
+            "HBM"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron management expected NVHBM's custom functionality to produce higher ASP and margin than standard HBM, with successful commercialization expected to generate strong ROI.",
+          "provisional_event_id": "E224",
+          "subject_time": "NVHBM commercialization"
+        },
+        {
+          "assertion_state": "EXPECTED",
+          "candidate_id": "[\"runtime-v2-msg:std_c323391f6f584172bf2954bd2adb524a:3\"]",
+          "created_at": "2026-10-01T09:34:24.962718Z",
+          "dedupe_key": "03c4c1024ec4bf0ab19f49b20aff7020ce31439d41a24106e60eba7cd25d911c",
+          "entities": [
+            "Micron Technology",
+            "NVIDIA",
+            "NVHBM",
+            "HBM4E"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "The reported NVHBM design targets up to 15% lower power consumption, 30% higher memory bandwidth, and 67% smaller I/O PHY package area.",
+          "provisional_event_id": "E225",
+          "subject_time": "NVHBM product design"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_d5b51cd84fad41b8a14a3253387dfe4d",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-10-01T09:34:24.981867+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-10-01",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_66bab382f00c491f8e6e2e900571e58b",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-01T09:34:25.316925Z"
+              },
+              "case_id": "case_d5b51cd84fad41b8a14a3253387dfe4d",
+              "direction": "LONG",
+              "entry_reason": "PORTFOLIO_CAPACITY_EXHAUSTED",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_d5b51cd84fad41b8a14a3253387dfe4d",
+              "execution_reason_codes": [
+                "PORTFOLIO_CAPACITY_EXHAUSTED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_d5b51cd84fad41b8a14a3253387dfe4d",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-01T09:34:24.981867Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "PORTFOLIO_CAPACITY_EXHAUSTED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_b4052481d40b4d78862e0f460ceafacf",
+      "ticker": "MU",
+      "case_id": "case_b4052481d40b4d78862e0f460ceafacf",
+      "intent_released_at_utc": "2026-10-01T14:02:23.035571+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_7678d22761454347ad21e88a418f6441",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "GUIDANCE",
+            "entities": [
+              "Micron Technology",
+              "Gross margin"
+            ],
+            "occurrence_date": "2026-10-01",
+            "proposition": "Micron executives said gross margin was expected to rise again after FY2027 Q1.",
+            "subject_time": "After FY2027 Q1"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "Employee compensation",
+              "Gross margin"
+            ],
+            "occurrence_date": "2026-10-01",
+            "proposition": "Micron's FY2027 Q1 gross-margin decline was attributed to a temporary effect from employee compensation.",
+            "subject_time": "FY2027 Q1 gross-margin guidance"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "Memory supply",
+              "Memory demand",
+              "Sanjay Mehrotra"
+            ],
+            "occurrence_date": "2026-10-01",
+            "proposition": "Micron's CEO said the industry had no line of sight to when memory supply and demand would return to balance.",
+            "subject_time": "Future memory supply-demand balance"
+          },
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "UBS",
+              "Timothy Arcuri",
+              "Micron Technology",
+              "Strategic customer agreements"
+            ],
+            "occurrence_date": "2026-10-01",
+            "proposition": "UBS analyst Timothy Arcuri wrote that Micron customers would likely consider leaving most long-term supply agreements only after prices fell by more than approximately 70%.",
+            "subject_time": "Multi-year supply agreements through 2031"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "管理层将Q1回落定位为临时性员工薪酬影响，并预计Q1后毛利率回升；同时供需仍无明确再平衡时点，分析师认为合同价格需大幅下跌后客户才会考虑退出。这提高了高毛利持续性、收入可见性和FY2027盈利兑现的确定性。",
+          "prior_expectation": "市场已知Q1非GAAP毛利率将由Q4约87%降至约86.25%，并担心高峰周期和利润率下行；但此前缺少对回落原因及恢复时间的明确确认。",
+          "reason": "LONG：新增信息直接改善毛利率路径和长期订单韧性的预期，传导至毛利、EPS和估值重估；虽然70%价格阈值来自分析师而非正式合同披露，但管理层对回升和供需持续紧张的表述提供了足够的公司级支持。",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "财报基础数据、Q1毛利率指引、75% FY2027供给锁定和2031年协议期限已在Reference View覆盖；新增现实是管理层将Q1毛利率回落归因于临时性员工薪酬并预期随后回升，以及分析师对合同价格韧性的具体判断。",
+          "reference_ids": [
+            "E207",
+            "E208",
+            "E10"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息未满足任何现行Policy的触发边界；没有出现连续季度毛利率和营业利润率恶化、合同取消、供给交付失败、竞争份额转移或正式政策变化。"
+        },
+        "w3_case_id": "w3_7678d22761454347ad21e88a418f6441"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_b4052481d40b4d78862e0f460ceafacf",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-10-01T14:02:23.158423Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 197.564351
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-10-01T13:59:05.594072Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2725890,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-10-01",
+        "source": {
+          "binding_id": "MU:ibkr_news",
+          "kind": "api",
+          "name": "IBKR News API",
+          "source_id": "ibkr_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_19e60f11f6fa4fd18806e72da1d26a8b",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Why Micron's 87% Gross Margin Is a Problem -- Barrons.com"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "PORTFOLIO_CAPACITY_EXHAUSTED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-10-01T13:59:05.594072Z",
+        "completed_at": "2026-10-01T14:02:23.158423Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E207",
+            "E208",
+            "E330",
+            "E316",
+            "E317"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [
+            {
+              "event_id": "E207",
+              "fact_ids": [
+                "F930",
+                "F931",
+                "F976",
+                "F961",
+                "F941",
+                "F935"
+              ]
+            }
+          ],
+          "reason": "已加载Event覆盖了Q4业绩、86.25% Q1毛利率指引(F930/F931/F976)、75%出货已锁定(F961)、协议延至2031(F941)、需求趋紧(F935)及股价小幅下跌(E330)。但以下核心事实未被覆盖：管理层明确表示毛利率在FY2027 Q1后将回升；毛利率下滑归因于工人补偿的一次性影响；CEO称行业对供需再平衡\"没有可预见的时点\"（比F935\"趋紧\"更具体）；UBS指出协议需降价超70%客户才会考虑退出；以及William Blair/UBS的具体分析师观点（含CHIPS Act 12月限制解除时间表）。这些构成新的管理指引与事实细节。",
+          "reference_ids": [
+            "E207"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [
+            "pol_12b2c75c2f311063e913"
+          ],
+          "reason": "Micron CEO Mehrotra正式披露行业对内存芯片供需再平衡没有'line of sight'，2027年75%供给已锁定买家，客户将供应协议延伸至2031年，且UBS确认合同需定价下跌超70%才会被放弃——这些事实直接触及C2路径关于'服务器/HBM优先分配和实际供给约束继续至2029或更晚'及'合同价未结构性下跌'的触发条件。同时收入、利润和FCF全面增长，数据中心组合未见下降迹象。当前精简信息无法排除该Policy最终命中可能。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息中CEO表示行业供需再平衡无可见路径、FY27约75%已有买家，与reference_state已吸收的基线一致；'Customers extending agreements into 2031'出自UBS分析师research note，属外部评论而非Micron或AI/服务器客户的新正式披露，且2031年条款已纳入基线。未出现对服务器/HBM优先分配继续至2029年或更晚的正式确认，也未同时确认消费供给受限、合同价未结构性下跌及数据中心组合比例。C2未达trigger_boundary。C3方面，消息仅引述分析师提及CHIPS Act限制12月解除，非任何政策主体的正式公报或行政决定，不满足C3。两个Condition均未成立。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "GUIDANCE",
+              "entities": [
+                "Micron Technology",
+                "Gross margin"
+              ],
+              "occurrence_date": "2026-10-01",
+              "proposition": "Micron executives said gross margin was expected to rise again after FY2027 Q1.",
+              "subject_time": "After FY2027 Q1"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "Employee compensation",
+                "Gross margin"
+              ],
+              "occurrence_date": "2026-10-01",
+              "proposition": "Micron's FY2027 Q1 gross-margin decline was attributed to a temporary effect from employee compensation.",
+              "subject_time": "FY2027 Q1 gross-margin guidance"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "Memory supply",
+                "Memory demand",
+                "Sanjay Mehrotra"
+              ],
+              "occurrence_date": "2026-10-01",
+              "proposition": "Micron's CEO said the industry had no line of sight to when memory supply and demand would return to balance.",
+              "subject_time": "Future memory supply-demand balance"
+            },
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "UBS",
+                "Timothy Arcuri",
+                "Micron Technology",
+                "Strategic customer agreements"
+              ],
+              "occurrence_date": "2026-10-01",
+              "proposition": "UBS analyst Timothy Arcuri wrote that Micron customers would likely consider leaving most long-term supply agreements only after prices fell by more than approximately 70%.",
+              "subject_time": "Multi-year supply agreements through 2031"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "管理层将Q1回落定位为临时性员工薪酬影响，并预计Q1后毛利率回升；同时供需仍无明确再平衡时点，分析师认为合同价格需大幅下跌后客户才会考虑退出。这提高了高毛利持续性、收入可见性和FY2027盈利兑现的确定性。",
+            "prior_expectation": "市场已知Q1非GAAP毛利率将由Q4约87%降至约86.25%，并担心高峰周期和利润率下行；但此前缺少对回落原因及恢复时间的明确确认。",
+            "reason": "LONG：新增信息直接改善毛利率路径和长期订单韧性的预期，传导至毛利、EPS和估值重估；虽然70%价格阈值来自分析师而非正式合同披露，但管理层对回升和供需持续紧张的表述提供了足够的公司级支持。",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "财报基础数据、Q1毛利率指引、75% FY2027供给锁定和2031年协议期限已在Reference View覆盖；新增现实是管理层将Q1毛利率回落归因于临时性员工薪酬并预期随后回升，以及分析师对合同价格韧性的具体判断。",
+            "reference_ids": [
+              "E207",
+              "E208",
+              "E10"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "消息未满足任何现行Policy的触发边界；没有出现连续季度毛利率和营业利润率恶化、合同取消、供给交付失败、竞争份额转移或正式政策变化。"
+          },
+          "w3_case_id": "w3_7678d22761454347ad21e88a418f6441"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "26f4a235913a8e89a6dd8511da532fb2c330876b0f7c2be45881c7232b3269f3",
+            "content_type": "text/plain",
+            "sha256": "148c3d6cb6d18b2e888c8ca73bb1d949a3291ad90694fdb10dcf51ce2be525b8",
+            "size_bytes": 2976
+          },
+          "case": {
+            "case_id": "case_b4052481d40b4d78862e0f460ceafacf",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-10-01T13:59:00.025061Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-10-01T13:59:03.699794Z",
+          "revision": 1,
+          "row_revision": 2725856,
+          "source": {
+            "binding_id": "MU:ibkr_news",
+            "kind": "api",
+            "name": "IBKR News API",
+            "source_id": "ibkr_news"
+          },
+          "source_published_at": "2026-10-01T13:58:00Z",
+          "standard_message_id": "std_0e78e9b137e242bd9a7039f65adf99f5",
+          "stream_item_id": "stream_19e60f11f6fa4fd18806e72da1d26a8b",
+          "stream_offset": 2615,
+          "stream_published_at": "2026-10-01T13:59:03.709004Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Why Micron's 87% Gross Margin Is a Problem -- Barrons.com"
+          },
+          "url": "https://www.interactivebrokers.com/en/trading/providers.php",
+          "body_text": "By Adam Clark Micron Technology is enjoying incredible margins amid the memory-chip boom. But the problem is any indication of a peak is taken as a sign to rush to the exit, and that looks to be holding the stock back. Micron shares were down 1.5% at $1,049.46 in early trading Thursday after the company reported better-than-expected earnings late Wednesday. Almost every number in Micron's report was great-revenue, profit, and free cash flow all soared, and the company has locked in a raft of new long-term supply agreements. The only real concern was guidance for its gross margin to drop from 87% in its fiscal fourth quarter to 86.25% in the current quarter. It's hardly a crisis. The margin is still sky high; even Nvidia only manages 75% and a big manufacturer like Ford hovers at around 8%. Micron executives said on the earnings call that they expect the gross margin to head upward again after the fiscal first quarter. The dip was put down to a temporary effect from compensation for workers. But after a nearly sixfold gain in the past 12 months, anything that even hints of a peak is cause for concern and Micron is a victim of its own success in that regard. \"Investors will likely scrutinize the softer gross margin guidance and limited updates on capital allocation, with further details deferred until CHIPS Act restrictions are lifted in December,\" wrote William Blair analyst Sebastien Naji in a research note. But the bigger picture is still rosy for Micron. Most importantly, Micron CEO Sanjay Mehrotra told analysts the industry has no \"line of sight\" to when supply and demand for memory chips will be balanced again, with the company having already found buyers for 75% of its 2027 supply. \"Customers are now extending supply agreements into 2031 and we think these agreements will prove more durable than many investors fear because most are set in a way that would require pricing to go down well over 70% for customers to consider walking away,\" wrote UBS analyst Timothy Arcuri in a research note. Arcuri reiterated his price target of $1,625 on the stock. Barron's previously argued Micron could double in price, when it was trading around $1,100. So long as the memory-chip shortage continues, the company is still on track for gains. Write to Adam Clark at adam.clark@barrons.com This content was created by Barron's, which is operated by Dow Jones & Co. Barron's is published independently from Dow Jones Newswires and The Wall Street Journal. (END) Dow Jones Newswires October 01, 2026 09:58 ET (13:58 GMT) Copyright (c) 2026 Dow Jones & Company, Inc. The statements in this document shall not be considered as an objective or independent explanation of the matters. Please note that this document (a) has not been prepared in accordance with legal requirements designed to promote the independence of investment research, and (b) is not subject to any prohibition on dealing ahead of the dissemination or publication of investment research."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "GUIDANCE",
+          "candidate_id": "[\"runtime-v2-msg:std_0e78e9b137e242bd9a7039f65adf99f5:0\"]",
+          "created_at": "2026-10-01T14:02:22.959382Z",
+          "dedupe_key": "92909bdb4f4bd8001a5369d00ac90502b32a50689e61eab69f07837c5d936c89",
+          "entities": [
+            "Micron Technology",
+            "Gross margin"
+          ],
+          "occurrence_date": "2026-10-01",
+          "originating_node": "W3",
+          "proposition": "Micron executives said gross margin was expected to rise again after FY2027 Q1.",
+          "provisional_event_id": "E300",
+          "subject_time": "After FY2027 Q1"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_0e78e9b137e242bd9a7039f65adf99f5:1\"]",
+          "created_at": "2026-10-01T14:02:22.973923Z",
+          "dedupe_key": "90e2e77e46c360b65b0bb7ad445ae48bd9427142be8ada1ece85bf4ddda6bed9",
+          "entities": [
+            "Micron Technology",
+            "Employee compensation",
+            "Gross margin"
+          ],
+          "occurrence_date": "2026-10-01",
+          "originating_node": "W3",
+          "proposition": "Micron's FY2027 Q1 gross-margin decline was attributed to a temporary effect from employee compensation.",
+          "provisional_event_id": "E301",
+          "subject_time": "FY2027 Q1 gross-margin guidance"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_0e78e9b137e242bd9a7039f65adf99f5:2\"]",
+          "created_at": "2026-10-01T14:02:22.992150Z",
+          "dedupe_key": "49640523b4ce2998572d656b88e0fdc0ebf78e0994b0df36de940da1550d60bd",
+          "entities": [
+            "Micron Technology",
+            "Memory supply",
+            "Memory demand",
+            "Sanjay Mehrotra"
+          ],
+          "occurrence_date": "2026-10-01",
+          "originating_node": "W3",
+          "proposition": "Micron's CEO said the industry had no line of sight to when memory supply and demand would return to balance.",
+          "provisional_event_id": "E302",
+          "subject_time": "Future memory supply-demand balance"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_0e78e9b137e242bd9a7039f65adf99f5:3\"]",
+          "created_at": "2026-10-01T14:02:23.006067Z",
+          "dedupe_key": "ab09b95d66a450d7ffa86088e7f266d181ca33bfb4bf8ad8feb7263cfe0d051b",
+          "entities": [
+            "UBS",
+            "Timothy Arcuri",
+            "Micron Technology",
+            "Strategic customer agreements"
+          ],
+          "occurrence_date": "2026-10-01",
+          "originating_node": "W3",
+          "proposition": "UBS analyst Timothy Arcuri wrote that Micron customers would likely consider leaving most long-term supply agreements only after prices fell by more than approximately 70%.",
+          "provisional_event_id": "E303",
+          "subject_time": "Multi-year supply agreements through 2031"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_b4052481d40b4d78862e0f460ceafacf",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-10-01T14:02:23.035571+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-10-01",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_7678d22761454347ad21e88a418f6441",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-01T14:02:23.590000Z"
+              },
+              "case_id": "case_b4052481d40b4d78862e0f460ceafacf",
+              "direction": "LONG",
+              "entry_reason": "PORTFOLIO_CAPACITY_EXHAUSTED",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_b4052481d40b4d78862e0f460ceafacf",
+              "execution_reason_codes": [
+                "PORTFOLIO_CAPACITY_EXHAUSTED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_b4052481d40b4d78862e0f460ceafacf",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-01T14:02:23.035571Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "PORTFOLIO_CAPACITY_EXHAUSTED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_4be7a686d63943aba06c2d337561135e",
+      "ticker": "MU",
+      "case_id": "case_4be7a686d63943aba06c2d337561135e",
+      "intent_released_at_utc": "2026-10-05T14:01:27.826342+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_439a0719d23f4eb2887c7ff39a210749",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "WSTS",
+              "memory",
+              "DRAM",
+              "NAND"
+            ],
+            "occurrence_date": null,
+            "proposition": "WSTS公布的2026年8月数据表明，memory销售额增长36%，DRAM价格上涨8%，NAND价格上涨5%。",
+            "subject_time": "2026年8月"
+          },
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Brad Gastwirth",
+              "Circular Technologies",
+              "DRAM",
+              "NAND"
+            ],
+            "occurrence_date": "2026-10-02",
+            "proposition": "Circular Technologies的Brad Gastwirth预测2026年第四季度DRAM价格上涨15%–20%、NAND价格上涨12%–20%。",
+            "subject_time": "2026年第四季度"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "新增的8月价格与销售数据支持涨势仍在延续；Gastwirth对Q4 DRAM价格的预测为上涨15%–20%，相较E217的10%–15%区间整体高5个百分点。NAND预测为12%–20%，并未较原区间整体上修。由此带来的正向修订主要集中于DRAM价格预期。",
+          "prior_expectation": "截至E217（2026-09-30），行业预期FY2026 Q4 DRAM合同价上涨约10%–15%、NAND上涨约15%–20%，并已预期服务器DRAM短缺及AI驱动的持续紧张。Micron近期实现的高ASP和盈利强劲，但持续性仍待验证。",
+          "reason": "Surprise为中等：供应紧张和涨价方向已在基线中，但WSTS最新实际数据及更高的DRAM预测强化了近端价格路径。Materiality较高，因为DRAM约占Micron收入四分之三，且价格变化可经实现ASP传至收入和利润。单一分析师预测并非共识，也未量化Micron自身价格实现，限制确信度；但方向性传导清楚，足以支持LONG。",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "Reference View的E217记录了FY2026 Q4 DRAM合同价涨10%–15%、NAND涨15%–20%的预期，但未覆盖WSTS报告的2026年8月memory销售增长36%、DRAM/NAND价格分别上涨8%/5%的数据，也未覆盖Gastwirth提出的不同Q4价格区间，故为NEW。",
+          "reference_ids": [
+            "E217"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "现行Policy无适用于该行业月度数据或DRAM/NAND价格上涨预测的命中条件；消息未披露Micron特定经营变化，也未提供符合FY2027调整后EPS上修Policy要求的可比新旧数值。"
+        },
+        "w3_case_id": "w3_439a0719d23f4eb2887c7ff39a210749"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_4be7a686d63943aba06c2d337561135e",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-10-05T14:01:28.161339Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 618.565291
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-10-05T13:51:09.596048Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_EXECUTION",
+          "TRADE_INTENT"
+        ],
+        "revision": 3239695,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-10-05",
+        "source": {
+          "binding_id": "MU:ibkr_news",
+          "kind": "api",
+          "name": "IBKR News API",
+          "source_id": "ibkr_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_be0d68e39cf04b128211bbf57f17df52",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Micron Stock Drops Amid Fears of Memory-Price Peak. The Data Tell a Different Story. -- Barrons.com"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "ORDER_FILLED"
+          ],
+          "state": "EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-10-05T13:51:09.596048Z",
+        "completed_at": "2026-10-05T14:01:28.161339Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E208",
+            "E4",
+            "E217",
+            "E10",
+            "E207"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [
+            {
+              "event_id": "E217",
+              "fact_ids": [
+                "F1029",
+                "F1030"
+              ]
+            }
+          ],
+          "reason": "消息包含两个尚未被覆盖的核心事实：(1) WSTS 八月数据显示 memory 销售增长 36%、DRAM 价格升 8%、NAND 价格升 5%，这一月度聚合数据点不在任何已加载 Fact 中；(2) Circular Technologies 分析师 Brad Gastwirth 给出的 Q4 预测为 DRAM 15%-20%、NAND 12%-20%，与 E217 中 F1029（DRAM 10%-15%）和 F1030（NAND 15%-20%）存在明确数值差异，且来源和发布时间不同。",
+          "reference_ids": [
+            "E217"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "当前消息为Barron's股价评论，核心事实包括：Micron股价周一微跌1.2%、上周公布强劲财报但投资者对持续性存疑、WSTS数据确认8月DRAM/NAND价格分别上涨8%/5%、分析师预测Q4 DRAM涨15-20%/NAND涨12-20%、\"定价持续走高即使消费端走弱\"、长期供货协议仍是客户沟通重点。所有criterion关注的触发路径（如高价值组合份额下降、ASP环比转跌、产能/交付瓶颈、合同延期/退款、库存增速超收入、产品召回/资格重置、汽车项目节点、竞争供应商HBM份额上升、FY27指引偏差、卖方EPS上调含新旧值等）在本消息中均无对应具体事实；消息实际呈现的价格与需求状态与多数触发条件方向相反。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "当前消息为Barron's股价评论，核心事实包括：Micron股价周一微跌1.2%、上周公布强劲财报但投资者对持续性存疑、WSTS数据确认8月DRAM/NAND价格分别上涨8%/5%、分析师预测Q4 DRAM涨15-20%/NAND涨12-20%、\"定价持续走高即使消费端走弱\"、长期供货协议仍是客户沟通重点。所有criterion关注的触发路径（如高价值组合份额下降、ASP环比转跌、产能/交付瓶颈、合同延期/退款、库存增速超收入、产品召回/资格重置、汽车项目节点、竞争供应商HBM份额上升、FY27指引偏差、卖方EPS上调含新旧值等）在本消息中均无对应具体事实；消息实际呈现的价格与需求状态与多数触发条件方向相反。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "WSTS",
+                "memory",
+                "DRAM",
+                "NAND"
+              ],
+              "occurrence_date": null,
+              "proposition": "WSTS公布的2026年8月数据表明，memory销售额增长36%，DRAM价格上涨8%，NAND价格上涨5%。",
+              "subject_time": "2026年8月"
+            },
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "Brad Gastwirth",
+                "Circular Technologies",
+                "DRAM",
+                "NAND"
+              ],
+              "occurrence_date": "2026-10-02",
+              "proposition": "Circular Technologies的Brad Gastwirth预测2026年第四季度DRAM价格上涨15%–20%、NAND价格上涨12%–20%。",
+              "subject_time": "2026年第四季度"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "新增的8月价格与销售数据支持涨势仍在延续；Gastwirth对Q4 DRAM价格的预测为上涨15%–20%，相较E217的10%–15%区间整体高5个百分点。NAND预测为12%–20%，并未较原区间整体上修。由此带来的正向修订主要集中于DRAM价格预期。",
+            "prior_expectation": "截至E217（2026-09-30），行业预期FY2026 Q4 DRAM合同价上涨约10%–15%、NAND上涨约15%–20%，并已预期服务器DRAM短缺及AI驱动的持续紧张。Micron近期实现的高ASP和盈利强劲，但持续性仍待验证。",
+            "reason": "Surprise为中等：供应紧张和涨价方向已在基线中，但WSTS最新实际数据及更高的DRAM预测强化了近端价格路径。Materiality较高，因为DRAM约占Micron收入四分之三，且价格变化可经实现ASP传至收入和利润。单一分析师预测并非共识，也未量化Micron自身价格实现，限制确信度；但方向性传导清楚，足以支持LONG。",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "Reference View的E217记录了FY2026 Q4 DRAM合同价涨10%–15%、NAND涨15%–20%的预期，但未覆盖WSTS报告的2026年8月memory销售增长36%、DRAM/NAND价格分别上涨8%/5%的数据，也未覆盖Gastwirth提出的不同Q4价格区间，故为NEW。",
+            "reference_ids": [
+              "E217"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "现行Policy无适用于该行业月度数据或DRAM/NAND价格上涨预测的命中条件；消息未披露Micron特定经营变化，也未提供符合FY2027调整后EPS上修Policy要求的可比新旧数值。"
+          },
+          "w3_case_id": "w3_439a0719d23f4eb2887c7ff39a210749"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "b24e489904f86f26bc67a000c51cdf023a3036bbb9659b9b34a8b5f8c555d245",
+            "content_type": "text/plain",
+            "sha256": "e26255fe7c40d6d5f0be8a0c60467e3736df6167e4d548b494ca1e73ac343b72",
+            "size_bytes": 2343
+          },
+          "case": {
+            "case_id": "case_4be7a686d63943aba06c2d337561135e",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-10-05T13:51:00.514904Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-10-05T13:51:08.261104Z",
+          "revision": 1,
+          "row_revision": 3239535,
+          "source": {
+            "binding_id": "MU:ibkr_news",
+            "kind": "api",
+            "name": "IBKR News API",
+            "source_id": "ibkr_news"
+          },
+          "source_published_at": "2026-10-05T13:49:00Z",
+          "standard_message_id": "std_5f1a197ec1d449309913642ca55f7680",
+          "stream_item_id": "stream_be0d68e39cf04b128211bbf57f17df52",
+          "stream_offset": 2895,
+          "stream_published_at": "2026-10-05T13:51:08.266737Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Micron Stock Drops Amid Fears of Memory-Price Peak. The Data Tell a Different Story. -- Barrons.com"
+          },
+          "url": "https://www.interactivebrokers.com/en/trading/providers.php",
+          "body_text": "By Adam Clark Micron Technology stock was flatlining early Monday. The memory-chip maker is still contending with fears of a cyclical peak in its earnings but prices tell a different story. Micron shares were down 1.2% at $1,061.81 in early trading. The stock didn't get much of a lift from blowout earnings last week, with investors seemingly still skeptical about the sustainability of soaring profits. But the numbers suggest memory prices will only keep rising. The latest set of figures from World Semiconductor Trade Statistics showed memory sales increasing 36% in August, driven by both stronger shipment volumes and pricing. The prices of DRAM and NAND rose 8% and 5%, respectively. DRAM is short-term working memory that computers and AI hardware use to manage active data and running processes. It makes up about three quarters of Micron's revenue. NAND flash memory is used for longer-term storage. Backward-looking numbers might not be much comfort for nervous investors, but analysts expect the memory-chip boom to keep going. DRAM prices are set to rise between 15% and 20% in the fourth quarter, with NAND prices poised to rise between 12% and 20%, according to Brad Gastwirth, global head of research and market intelligence at Circular Technologies. \"Memory remains the clearest quantitative signal in our October work. Pricing continues to move higher even as consumer end markets weaken, while long term supply agreements remain a major part of customer conversations,\" Gastwirth wrote in a research note Friday. As memory prices keep going up, Micron stock only looks cheaper-even if the market remains doubtful. Write to Adam Clark at adam.clark@barrons.com This content was created by Barron's, which is operated by Dow Jones & Co. Barron's is published independently from Dow Jones Newswires and The Wall Street Journal. (END) Dow Jones Newswires October 05, 2026 09:49 ET (13:49 GMT) Copyright (c) 2026 Dow Jones & Company, Inc. The statements in this document shall not be considered as an objective or independent explanation of the matters. Please note that this document (a) has not been prepared in accordance with legal requirements designed to promote the independence of investment research, and (b) is not subject to any prohibition on dealing ahead of the dissemination or publication of investment research."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_5f1a197ec1d449309913642ca55f7680:0\"]",
+          "created_at": "2026-10-05T14:01:27.793591Z",
+          "dedupe_key": "7121716a57dcf14121e4a48860e8199750869da8f713ffc49e1aa95bb065dd97",
+          "entities": [
+            "WSTS",
+            "memory",
+            "DRAM",
+            "NAND"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W3",
+          "proposition": "WSTS公布的2026年8月数据表明，memory销售额增长36%，DRAM价格上涨8%，NAND价格上涨5%。",
+          "provisional_event_id": "E337",
+          "subject_time": "2026年8月"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_5f1a197ec1d449309913642ca55f7680:1\"]",
+          "created_at": "2026-10-05T14:01:27.802320Z",
+          "dedupe_key": "21d18f3048c4922bce8b112674a90abb66134851945ed929c6d6086c93056278",
+          "entities": [
+            "Brad Gastwirth",
+            "Circular Technologies",
+            "DRAM",
+            "NAND"
+          ],
+          "occurrence_date": "2026-10-02",
+          "originating_node": "W3",
+          "proposition": "Circular Technologies的Brad Gastwirth预测2026年第四季度DRAM价格上涨15%–20%、NAND价格上涨12%–20%。",
+          "provisional_event_id": "E338",
+          "subject_time": "2026年第四季度"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_4be7a686d63943aba06c2d337561135e",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-10-05T14:01:27.826342+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-10-05",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_439a0719d23f4eb2887c7ff39a210749",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-05T14:01:28.845406Z"
+              },
+              "case_id": "case_4be7a686d63943aba06c2d337561135e",
+              "direction": "LONG",
+              "entry_reason": "ORDER_FILLED",
+              "entry_result": "FILLED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_4be7a686d63943aba06c2d337561135e",
+              "execution_reason_codes": [
+                "ORDER_FILLED"
+              ],
+              "execution_state": "EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "7407.61"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "7"
+              },
+              "first_fill_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-05T14:01:33Z"
+              },
+              "has_actual_fill": true,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_4be7a686d63943aba06c2d337561135e",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-05T14:01:27.826342Z"
+              }
+            },
+            "entry": {
+              "side": "BUY",
+              "quantity": "7",
+              "average_price_usd": "1058.23",
+              "first_fill_at": "2026-10-05T14:01:33+00:00",
+              "last_fill_at": "2026-10-05T14:01:33+00:00"
+            },
+            "exit": {
+              "side": "SELL",
+              "quantity": "7",
+              "average_price_usd": "1062.08",
+              "first_fill_at": "2026-10-05T19:30:02+00:00",
+              "last_fill_at": "2026-10-05T19:30:02+00:00"
+            },
+            "fills": [
+              {
+                "kind": "ENTRY",
+                "side": "BUY",
+                "quantity": "7",
+                "price_usd": "1058.23",
+                "filled_at": "2026-10-05T14:01:33+00:00",
+                "broker_fill_id": "0000dc8f.6bcfe4c5.01.01"
+              },
+              {
+                "kind": "EXIT",
+                "side": "SELL",
+                "quantity": "7",
+                "price_usd": "1062.08",
+                "filled_at": "2026-10-05T19:30:02+00:00",
+                "broker_fill_id": "0000dc8f.6bd365ad.01.01"
+              }
+            ],
+            "lot_remaining_quantity": 0,
+            "realized_pnl_usd": "24.79680600000000000000000000",
+            "realized_pnl_records": [
+              {
+                "amount": "24.79680600000000000000000000",
+                "day": "2026-10-05",
+                "environment": "PAPER",
+                "provisional": false,
+                "reason": null
+              }
+            ],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "EXECUTED",
+        "read_execution_reason_codes": [
+          "ORDER_FILLED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": {
+          "side": "BUY",
+          "quantity": "7",
+          "average_price_usd": "1058.23",
+          "first_fill_at": "2026-10-05T14:01:33+00:00",
+          "last_fill_at": "2026-10-05T14:01:33+00:00"
+        },
+        "exit": {
+          "side": "SELL",
+          "quantity": "7",
+          "average_price_usd": "1062.08",
+          "first_fill_at": "2026-10-05T19:30:02+00:00",
+          "last_fill_at": "2026-10-05T19:30:02+00:00"
+        },
+        "realized_pnl_usd": "24.79680600000000000000000000",
+        "pnl_state": "REALIZED",
+        "read_projection_gap": false
+      }
+    }
+  ]
+}

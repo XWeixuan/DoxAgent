@@ -1,0 +1,9 @@
+{
+  "alias": "O260",
+  "title": "text paragraphs 6",
+  "content": "- Chinese Translation 中文翻譯\n\n- French Translation Traduction en français\n\n- Haitian-Creole Translation Tradiksyon kreyòl ayisyen\n\n- Italian Translation Traduzione italiana\n\n- Korean Translation 한국어 번역\n\n- Polish Translation Polskie tłumaczenie\n\n- Russian Translation Перевод на русский язык\n\n- Spanish Translation Traducción al español",
+  "source": {
+    "provider": "Public web source",
+    "locator": "https://www.governor.ny.gov/news/governor-hochul-marks-progress-microns-100-billion-investment-new-york-approval-critical"
+  }
+}

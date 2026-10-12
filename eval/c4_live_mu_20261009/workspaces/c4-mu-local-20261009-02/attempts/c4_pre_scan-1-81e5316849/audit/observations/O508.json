@@ -1,0 +1,18 @@
+{
+  "alias": "O508",
+  "title": "sections 1 — metadata",
+  "content": {
+    "section": "Tongluo",
+    "heading_match": "Tongluo",
+    "start_offset": 305650,
+    "end_offset": 385657,
+    "full_text_chars": 80000,
+    "returned_chars": 40000,
+    "truncated": true,
+    "match_quality": "substantive_body"
+  },
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

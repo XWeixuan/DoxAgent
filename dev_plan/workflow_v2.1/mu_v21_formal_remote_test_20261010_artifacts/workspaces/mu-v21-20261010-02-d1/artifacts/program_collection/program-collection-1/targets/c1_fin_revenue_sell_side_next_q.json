@@ -1,0 +1,25 @@
+{
+  "schema_version": "d1-horizontal-target-result-v1",
+  "result": {
+    "collection_target_id": "c1_fin_revenue_sell_side_next_q",
+    "status": "FAILED",
+    "requested_items": 1,
+    "succeeded_items": 0,
+    "unavailable_items": 0,
+    "failed_items": 1,
+    "provider_attempts": [
+      {
+        "provider": "FMP",
+        "tool_name": "fmp.sell_side_estimates",
+        "status": "FAILED",
+        "started_at": "2026-10-09T18:11:43.432229Z",
+        "finished_at": "2026-10-09T18:11:44.172941Z",
+        "error_code": "upstream_provider_error",
+        "message": "FMP returned no usable data."
+      }
+    ],
+    "output_refs": [],
+    "reason": "FMP returned no usable data."
+  },
+  "observations": []
+}

@@ -1,0 +1,1296 @@
+{
+  "run_id": "mu-v21-20261010-02-d3-resume1",
+  "phase": "STAGED",
+  "status": "PARTIAL",
+  "commit": {
+    "coverage_hash": "82c9fd066059a6faf128c40851f5d7b9063bc04da9722506212f410892418d77",
+    "final_hash": "6073d2066d95b8edd329baf6dadbe1a1078bea6c480b578b313a07db6362c0c6",
+    "publish_empty": false,
+    "published_at": "2026-10-10T17:44:57.757333+00:00",
+    "version": 22
+  },
+  "missing": [
+    "remaining research gaps",
+    "unresearched late lead:output/work/v21/late/d271037bfe679bce695f459b.jsonl#L1",
+    "unresearched late lead:output/work/v21/late/7891999c6615df10fae1cda8.jsonl#L1"
+  ],
+  "policy_count": 262,
+  "coverage_count": 143,
+  "remaining_gaps": [
+    {
+      "name": "较早代嵌入式DRAM与NAND MCP最后采购窗口和客户改版",
+      "reason": "PCN 36461候选已给出精确条件，但现有可读材料没有Micron原始PCN逐料号/版本表，也没有可连接到受影响MPN的客户BOM、平台暴露或实际供货路径；Alliance Memory渠道转述及库存/last-buy信息不足以确认哪些仍在产客户会续用、改版或转向。候选因此只在精确MPN及具名平台事实确认后成立，不能把全体DDR2/DDR3/L、LPDDR2/3或NAND MCP客户当作已暴露。"
+    },
+    {
+      "name": "SSD盘内映射DRAM与主机内存配置的企业生产边界",
+      "reason": "截至cutoff没有同一企业生产负载、同等有效容量/冗余与性能下可比较盘内DRAM、host/DPU RAM、缓存SSD、主SSD和总NAND位元的公开配置/量产结果。IU节省、HMB位置迁移和实验缓存安排都不能确定系统净RAM/NAND方向，故保留具体系统级比较缺口，不造阈值。"
+    },
+    {
+      "name": "高端手机需求韧性与可比较的前向销量、容量分布",
+      "reason": "已有高端手机已实现销量和付费预测摘要的定义/期间，与IDC整体出货或不同价格分段不一致；未建立同期间、价格/地区/渠道一致的前瞻sell-through及品牌/OEM暴露、DRAM/NAND加权容量配置比较面。既有手机配置与融资Policy仅覆盖更窄对象，不能替代该前瞻边界。"
+    },
+    {
+      "name": "企业PC设备年龄、角色分层与其他OEM的更新窗口",
+      "reason": "没有可复用公开机群数据同时识别规模、设备年龄/岗位、Windows兼容状态、更新/延后/翻新节奏、OEM/型号及加权DRAM/SSD配置。匿名企业延长周期案例与IDC/Omdia季度出货不能形成其他OEM企业安装基数或集中换新分母；不以旧Windows到期或AI PC标签作统一门槛。"
+    },
+    {
+      "name": "NAND高性能/耐久产品占用共享晶圆资源与普通bit分配",
+      "reason": "公开资料证明XL-FLASH/GP1可调用整体NAND资源，但截至cutoff没有实际GP1/XL-FLASH资源分配、与普通TLC/QLC相邻期间供给/可售bit的可比桥接或净影响方向。样品、技术指标和整体产能弹性不证明普通bit被挤出；现有节点/设备/资格Policy仅作相邻背景。"
+    },
+    {
+      "name": "图形显存代际切换、颗粒退出与板卡供货接续",
+      "reason": "未取得可核验的Micron原始GDDR PCN/EOL或最后采购/出货通知，也未将其与当前量产商业板卡系列、Micron实际供货基线及后继替换连接。单一板卡拆解只能证明样本映射，现有卡级Policy覆盖已证实的选择/配置变化但不证明传闻生命周期影响。"
+    },
+    {
+      "name": "具名AI-RAN生产平台的外部内存配置与美光供货准入",
+      "reason": "截至cutoff没有具名商业生产AI-RAN平台公开外部内存SKU/BOM、实际配置容量及Micron资格/采购位置。试点、验证机、OEM最高支持规格和专用SoC路线均不足以确立Micron捕获；OPEN_RESEARCH/0102仍承接运营商现网新增加速节点采购，但未补上这一平台级缺口。"
+    },
+    {
+      "name": "外部晶圆厂与封装生态重订中介层来源及产能承诺",
+      "reason": "覆盖回看发现，已有整机验收和美光HBM键合工艺线索没有单独研究共同系统封装资源由谁制造、如何取得。GF于10月8日宣布与TSMC签订初期五年、20亿美元协议，在纽约Malta增加硅中介层制造能力，服务CoWoS生态；量产爬坡预期为2028年上半年，不是已释放可用封装产能。未来外部晶圆厂、封装方或平台客户可能确定新来源的产品资格、保留容量、跨代适用范围和责任分工，或修改原有安排。这类外部—外部关系可改变GPU加HBM的可组装能力与客户采购选择，不等同于美光自产基础die或HBM厂房扩张。需研究硅中介层、后续集成及测试各自的真实约束，新增来源是净扩张还是工序转移、供给权益由谁控制，以及同一资源改善如何同时作用于美光和竞争者。公开协议尚未证明美光直接采购、具体平台通过认证或客户追加HBM，不能把全部合同金额当美光需求，也不能预定瓶颈解除就提高美光议价。"
+    },
+    {
+      "name": "大型PC OEM统一普通机型内存采购，合格供应列表与份额重排",
+      "reason": "普通PC DRAM具有不同于AI工作站、Arm迁移和LPCAMM2的集中采购机会。未来Lenovo等大型OEM可能统一多条主流产品线的DDR5/LPDDR配置与采购，首次纳入或扩大美光合格产品，也可能以新增备选源压价、因质量和供应连续性重分配既有平台。此类设计/采购公告可以在PC总台数不变时改变美光可服务范围与份额，普通大平台也可能比小众高配更有分量。需研究受影响机型与客户集中度、资格是备份还是实际供货安排、跨平台统一对料号需求的影响，以及份额与价格的取舍；客户品牌市场份额不等于美光份额，不要求新闻同时披露全行业复苏。"
+    }
+  ],
+  "task_counts": {
+    "discovery": {
+      "COMPLETED": 14
+    },
+    "planning": {
+      "COMPLETED": 13
+    },
+    "research": {
+      "COMPLETED": 105
+    },
+    "supplement": {
+      "COMPLETED": 8
+    },
+    "integration": {
+      "COMPLETED": 26
+    }
+  },
+  "model_counts": {
+    "('gpt-6-luna', 'max')": 108
+  },
+  "timing": {
+    "research": {
+      "requests": 74,
+      "first_started": "2026-10-10T08:45:24.178142+00:00",
+      "last_finished": "2026-10-10T13:19:53.461608+00:00",
+      "wall_seconds": 16469.283466,
+      "summed_worker_seconds": 51489.413977000004
+    },
+    "integration:main": {
+      "requests": 21,
+      "first_started": "2026-10-10T13:21:59.916056+00:00",
+      "last_finished": "2026-10-10T16:47:10.290522+00:00",
+      "wall_seconds": 12310.374466,
+      "summed_worker_seconds": 12075.841626
+    },
+    "supplement": {
+      "requests": 8,
+      "first_started": "2026-10-10T16:47:52.904277+00:00",
+      "last_finished": "2026-10-10T17:14:59.639786+00:00",
+      "wall_seconds": 1626.735509,
+      "summed_worker_seconds": 4736.220947
+    },
+    "integration:supplement": {
+      "requests": 1,
+      "first_started": "2026-10-10T17:15:20.143745+00:00",
+      "last_finished": "2026-10-10T17:20:43.797314+00:00",
+      "wall_seconds": 323.653569,
+      "summed_worker_seconds": 323.653569
+    },
+    "integration:final": {
+      "requests": 3,
+      "first_started": "2026-10-10T17:20:57.754277+00:00",
+      "last_finished": "2026-10-10T17:33:54.583611+00:00",
+      "wall_seconds": 776.829334,
+      "summed_worker_seconds": 751.283604
+    },
+    "integration:consolidation": {
+      "requests": 1,
+      "first_started": "2026-10-10T17:34:09.115630+00:00",
+      "last_finished": "2026-10-10T17:44:50.197534+00:00",
+      "wall_seconds": 641.081904,
+      "summed_worker_seconds": 641.081904
+    }
+  },
+  "jobs": [
+    {
+      "sequence": 2942,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0001:3",
+      "started_at": "2026-10-10T08:45:24.178142Z",
+      "finished_at": "2026-10-10T08:54:53.312390Z"
+    },
+    {
+      "sequence": 2952,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0003:9",
+      "started_at": "2026-10-10T08:57:35.951976Z",
+      "finished_at": "2026-10-10T09:04:53.180201Z"
+    },
+    {
+      "sequence": 2962,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0009:72",
+      "started_at": "2026-10-10T09:07:04.582381Z",
+      "finished_at": "2026-10-10T09:14:45.960134Z"
+    },
+    {
+      "sequence": 2966,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0004:13",
+      "started_at": "2026-10-10T09:07:06.639441Z",
+      "finished_at": "2026-10-10T09:19:23.827924Z"
+    },
+    {
+      "sequence": 2967,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0006:46",
+      "started_at": "2026-10-10T09:07:06.616429Z",
+      "finished_at": "2026-10-10T09:16:02.618743Z"
+    },
+    {
+      "sequence": 2974,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0008:65",
+      "started_at": "2026-10-10T09:07:32.021156Z",
+      "finished_at": "2026-10-10T09:14:31.969606Z"
+    },
+    {
+      "sequence": 3000,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0005:37",
+      "started_at": "2026-10-10T09:16:24.367621Z",
+      "finished_at": "2026-10-10T09:34:07.367553Z"
+    },
+    {
+      "sequence": 3008,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0002:19",
+      "started_at": "2026-10-10T09:16:52.149360Z",
+      "finished_at": "2026-10-10T09:25:26.264958Z"
+    },
+    {
+      "sequence": 3016,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0011:84",
+      "started_at": "2026-10-10T09:17:46.565449Z",
+      "finished_at": "2026-10-10T09:38:54.108600Z"
+    },
+    {
+      "sequence": 3026,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0012:90",
+      "started_at": "2026-10-10T09:20:35.314146Z",
+      "finished_at": "2026-10-10T09:42:10.762232Z"
+    },
+    {
+      "sequence": 3036,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0010:76",
+      "started_at": "2026-10-10T09:26:41.672481Z",
+      "finished_at": "2026-10-10T09:35:44.402079Z"
+    },
+    {
+      "sequence": 3046,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0007:57",
+      "started_at": "2026-10-10T09:35:20.233932Z",
+      "finished_at": "2026-10-10T09:54:28.236487Z"
+    },
+    {
+      "sequence": 3056,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0008:66",
+      "started_at": "2026-10-10T09:36:16.539408Z",
+      "finished_at": "2026-10-10T09:55:12.653529Z"
+    },
+    {
+      "sequence": 3066,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0006:47",
+      "started_at": "2026-10-10T09:39:12.944909Z",
+      "finished_at": "2026-10-10T09:49:14.501365Z"
+    },
+    {
+      "sequence": 3076,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0004:21",
+      "started_at": "2026-10-10T09:42:28.234424Z",
+      "finished_at": "2026-10-10T09:53:35.093942Z"
+    },
+    {
+      "sequence": 3086,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0002:20",
+      "started_at": "2026-10-10T09:49:28.045003Z",
+      "finished_at": "2026-10-10T10:08:01.616824Z"
+    },
+    {
+      "sequence": 3096,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0005:38",
+      "started_at": "2026-10-10T09:53:46.682249Z",
+      "finished_at": "2026-10-10T10:03:28.149964Z"
+    },
+    {
+      "sequence": 3106,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0010:77",
+      "started_at": "2026-10-10T09:54:42.842546Z",
+      "finished_at": "2026-10-10T10:14:07.957002Z"
+    },
+    {
+      "sequence": 3116,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0003:10",
+      "started_at": "2026-10-10T09:55:26.260674Z",
+      "finished_at": "2026-10-10T10:10:34.754535Z"
+    },
+    {
+      "sequence": 3126,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0011:85",
+      "started_at": "2026-10-10T10:03:45.125780Z",
+      "finished_at": "2026-10-10T10:12:34.498559Z"
+    },
+    {
+      "sequence": 3136,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0012:91",
+      "started_at": "2026-10-10T10:08:19.579192Z",
+      "finished_at": "2026-10-10T10:13:06.778640Z"
+    },
+    {
+      "sequence": 3146,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0006:48",
+      "started_at": "2026-10-10T10:10:52.286312Z",
+      "finished_at": "2026-10-10T10:20:28.831435Z"
+    },
+    {
+      "sequence": 3156,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0004:31",
+      "started_at": "2026-10-10T10:12:51.898472Z",
+      "finished_at": "2026-10-10T10:30:57.140032Z"
+    },
+    {
+      "sequence": 3166,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0007:58",
+      "started_at": "2026-10-10T10:13:24.543596Z",
+      "finished_at": "2026-10-10T10:21:21.645656Z"
+    },
+    {
+      "sequence": 3176,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0008:67",
+      "started_at": "2026-10-10T10:14:26.990505Z",
+      "finished_at": "2026-10-10T10:23:32.879217Z"
+    },
+    {
+      "sequence": 3186,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0005:39",
+      "started_at": "2026-10-10T10:20:47.295980Z",
+      "finished_at": "2026-10-10T10:41:12.238755Z"
+    },
+    {
+      "sequence": 3196,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0003:22",
+      "started_at": "2026-10-10T10:21:40.663757Z",
+      "finished_at": "2026-10-10T10:40:07.715552Z"
+    },
+    {
+      "sequence": 3206,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0011:86",
+      "started_at": "2026-10-10T10:23:51.069688Z",
+      "finished_at": "2026-10-10T10:37:42.070464Z"
+    },
+    {
+      "sequence": 3216,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0012:92",
+      "started_at": "2026-10-10T10:31:15.640243Z",
+      "finished_at": "2026-10-10T10:40:43.754816Z"
+    },
+    {
+      "sequence": 3226,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0010:78",
+      "started_at": "2026-10-10T10:37:59.821231Z",
+      "finished_at": "2026-10-10T10:49:29.502388Z"
+    },
+    {
+      "sequence": 3236,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0006:49",
+      "started_at": "2026-10-10T10:40:25.318877Z",
+      "finished_at": "2026-10-10T10:47:14.889581Z"
+    },
+    {
+      "sequence": 3246,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0007:59",
+      "started_at": "2026-10-10T10:40:56.842240Z",
+      "finished_at": "2026-10-10T10:56:48.128199Z"
+    },
+    {
+      "sequence": 3256,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0008:68",
+      "started_at": "2026-10-10T10:41:29.300242Z",
+      "finished_at": "2026-10-10T10:58:25.293478Z"
+    },
+    {
+      "sequence": 3266,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0004:32",
+      "started_at": "2026-10-10T10:47:24.936750Z",
+      "finished_at": "2026-10-10T10:55:00.760404Z"
+    },
+    {
+      "sequence": 3276,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0011:87",
+      "started_at": "2026-10-10T10:49:39.268141Z",
+      "finished_at": "2026-10-10T10:56:29.000804Z"
+    },
+    {
+      "sequence": 3286,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0003:23",
+      "started_at": "2026-10-10T10:55:09.981115Z",
+      "finished_at": "2026-10-10T11:08:25.890206Z"
+    },
+    {
+      "sequence": 3296,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0012:93",
+      "started_at": "2026-10-10T10:56:37.564721Z",
+      "finished_at": "2026-10-10T11:03:15.385665Z"
+    },
+    {
+      "sequence": 3306,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0005:40",
+      "started_at": "2026-10-10T10:56:58.931005Z",
+      "finished_at": "2026-10-10T11:10:28.945990Z"
+    },
+    {
+      "sequence": 3316,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0006:50",
+      "started_at": "2026-10-10T10:58:35.814619Z",
+      "finished_at": "2026-10-10T11:19:36.613767Z"
+    },
+    {
+      "sequence": 3326,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0010:79",
+      "started_at": "2026-10-10T11:03:29.305563Z",
+      "finished_at": "2026-10-10T11:12:57.761280Z"
+    },
+    {
+      "sequence": 3336,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0004:33",
+      "started_at": "2026-10-10T11:08:42.883625Z",
+      "finished_at": "2026-10-10T11:19:46.604031Z"
+    },
+    {
+      "sequence": 3346,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0007:60",
+      "started_at": "2026-10-10T11:10:45.721533Z",
+      "finished_at": "2026-10-10T11:17:15.183860Z"
+    },
+    {
+      "sequence": 3356,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0008:69",
+      "started_at": "2026-10-10T11:13:15.121401Z",
+      "finished_at": "2026-10-10T11:19:21.864189Z"
+    },
+    {
+      "sequence": 3366,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0012:94",
+      "started_at": "2026-10-10T11:17:30.066374Z",
+      "finished_at": "2026-10-10T11:28:04.737969Z"
+    },
+    {
+      "sequence": 3378,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0003:24",
+      "started_at": "2026-10-10T11:19:38.757229Z",
+      "finished_at": "2026-10-10T11:26:40.423742Z"
+    },
+    {
+      "sequence": 3388,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0005:41",
+      "started_at": "2026-10-10T11:20:07.417157Z",
+      "finished_at": "2026-10-10T11:37:16.353669Z"
+    },
+    {
+      "sequence": 3392,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0010:80",
+      "started_at": "2026-10-10T11:20:18.724638Z",
+      "finished_at": "2026-10-10T11:31:43.442494Z"
+    },
+    {
+      "sequence": 3406,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0007:61",
+      "started_at": "2026-10-10T11:26:57.085540Z",
+      "finished_at": "2026-10-10T11:33:52.042625Z"
+    },
+    {
+      "sequence": 3416,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0008:70",
+      "started_at": "2026-10-10T11:28:21.811628Z",
+      "finished_at": "2026-10-10T11:36:45.942371Z"
+    },
+    {
+      "sequence": 3426,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0006:51",
+      "started_at": "2026-10-10T11:32:00.550771Z",
+      "finished_at": "2026-10-10T11:39:36.536857Z"
+    },
+    {
+      "sequence": 3436,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0004:34",
+      "started_at": "2026-10-10T11:34:08.886309Z",
+      "finished_at": "2026-10-10T11:44:12.861096Z"
+    },
+    {
+      "sequence": 3446,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0003:25",
+      "started_at": "2026-10-10T11:37:02.687651Z",
+      "finished_at": "2026-10-10T11:45:20.761733Z"
+    },
+    {
+      "sequence": 3456,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0012:95",
+      "started_at": "2026-10-10T11:37:33.351804Z",
+      "finished_at": "2026-10-10T11:47:51.555339Z"
+    },
+    {
+      "sequence": 3466,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0010:81",
+      "started_at": "2026-10-10T11:39:52.931549Z",
+      "finished_at": "2026-10-10T11:48:53.266703Z"
+    },
+    {
+      "sequence": 3476,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0007:62",
+      "started_at": "2026-10-10T11:44:29.122020Z",
+      "finished_at": "2026-10-10T11:54:26.840294Z"
+    },
+    {
+      "sequence": 3486,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0005:42",
+      "started_at": "2026-10-10T11:45:37.720652Z",
+      "finished_at": "2026-10-10T11:55:42.911960Z"
+    },
+    {
+      "sequence": 3496,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0006:52",
+      "started_at": "2026-10-10T11:48:07.956878Z",
+      "finished_at": "2026-10-10T12:03:50.890350Z"
+    },
+    {
+      "sequence": 3506,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0004:35",
+      "started_at": "2026-10-10T11:49:07.225085Z",
+      "finished_at": "2026-10-10T11:54:49.502777Z"
+    },
+    {
+      "sequence": 3516,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0003:26",
+      "started_at": "2026-10-10T11:54:40.892723Z",
+      "finished_at": "2026-10-10T12:03:27.353147Z"
+    },
+    {
+      "sequence": 3526,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0012:96",
+      "started_at": "2026-10-10T11:55:03.219223Z",
+      "finished_at": "2026-10-10T12:16:54.623801Z"
+    },
+    {
+      "sequence": 3536,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0010:82",
+      "started_at": "2026-10-10T11:55:59.880213Z",
+      "finished_at": "2026-10-10T12:05:00.779489Z"
+    },
+    {
+      "sequence": 3546,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0005:43",
+      "started_at": "2026-10-10T12:03:44.432157Z",
+      "finished_at": "2026-10-10T12:19:06.191258Z"
+    },
+    {
+      "sequence": 3556,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0003:27",
+      "started_at": "2026-10-10T12:04:07.472191Z",
+      "finished_at": "2026-10-10T12:20:04.051744Z"
+    },
+    {
+      "sequence": 3566,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0006:53",
+      "started_at": "2026-10-10T12:05:17.668889Z",
+      "finished_at": "2026-10-10T12:10:23.660853Z"
+    },
+    {
+      "sequence": 3576,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0006:54",
+      "started_at": "2026-10-10T12:10:35.232696Z",
+      "finished_at": "2026-10-10T12:20:10.061190Z"
+    },
+    {
+      "sequence": 3586,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0012:97",
+      "started_at": "2026-10-10T12:17:07.531963Z",
+      "finished_at": "2026-10-10T12:24:44.552493Z"
+    },
+    {
+      "sequence": 3596,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0005:44",
+      "started_at": "2026-10-10T12:19:20.781883Z",
+      "finished_at": "2026-10-10T12:29:28.594630Z"
+    },
+    {
+      "sequence": 3608,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0003:29",
+      "started_at": "2026-10-10T12:20:25.283698Z",
+      "finished_at": "2026-10-10T12:31:21.688826Z"
+    },
+    {
+      "sequence": 3612,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0006:55",
+      "started_at": "2026-10-10T12:20:30.204425Z",
+      "finished_at": "2026-10-10T12:33:57.351082Z"
+    },
+    {
+      "sequence": 3628,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0005:101",
+      "started_at": "2026-10-10T12:29:37.473646Z",
+      "finished_at": "2026-10-10T12:37:35.621324Z"
+    },
+    {
+      "sequence": 3638,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0003:30",
+      "started_at": "2026-10-10T12:31:36.287056Z",
+      "finished_at": "2026-10-10T12:48:20.066411Z"
+    },
+    {
+      "sequence": 3652,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0003:73",
+      "started_at": "2026-10-10T12:48:29.712260Z",
+      "finished_at": "2026-10-10T13:04:16.115908Z"
+    },
+    {
+      "sequence": 3662,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0003:103",
+      "started_at": "2026-10-10T13:04:25.580661Z",
+      "finished_at": "2026-10-10T13:13:23.940385Z"
+    },
+    {
+      "sequence": 3672,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "research:S0003:104",
+      "started_at": "2026-10-10T13:13:33.189903Z",
+      "finished_at": "2026-10-10T13:19:53.461608Z"
+    },
+    {
+      "sequence": 3682,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "integration:main:0",
+      "started_at": "2026-10-10T13:21:59.916056Z",
+      "finished_at": "2026-10-10T13:40:50.092211Z"
+    },
+    {
+      "sequence": 3692,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "integration:main:1",
+      "started_at": "2026-10-10T13:41:01.442324Z",
+      "finished_at": "2026-10-10T13:54:15.891998Z"
+    },
+    {
+      "sequence": 3702,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "integration:main:2",
+      "started_at": "2026-10-10T13:54:27.401792Z",
+      "finished_at": "2026-10-10T14:19:19.894027Z"
+    },
+    {
+      "sequence": 3712,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "integration:main:3",
+      "started_at": "2026-10-10T14:19:31.064073Z",
+      "finished_at": "2026-10-10T14:32:56.289720Z"
+    },
+    {
+      "sequence": 3722,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "integration:main:4",
+      "started_at": "2026-10-10T14:33:07.686089Z",
+      "finished_at": "2026-10-10T14:43:18.396920Z"
+    },
+    {
+      "sequence": 3732,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "integration:main:5",
+      "started_at": "2026-10-10T14:43:29.671886Z",
+      "finished_at": "2026-10-10T14:52:17.206150Z"
+    },
+    {
+      "sequence": 3742,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "integration:main:6",
+      "started_at": "2026-10-10T14:52:28.804299Z",
+      "finished_at": "2026-10-10T14:56:29.980858Z"
+    },
+    {
+      "sequence": 3752,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "integration:main:7",
+      "started_at": "2026-10-10T14:56:41.607535Z",
+      "finished_at": "2026-10-10T15:06:08.658221Z"
+    },
+    {
+      "sequence": 3762,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "integration:main:8",
+      "started_at": "2026-10-10T15:06:20.161974Z",
+      "finished_at": "2026-10-10T15:10:46.484701Z"
+    },
+    {
+      "sequence": 3772,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "integration:main:9",
+      "started_at": "2026-10-10T15:10:58.451340Z",
+      "finished_at": "2026-10-10T15:18:09.839341Z"
+    },
+    {
+      "sequence": 3782,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "integration:main:10",
+      "started_at": "2026-10-10T15:18:21.315255Z",
+      "finished_at": "2026-10-10T15:29:29.276966Z"
+    },
+    {
+      "sequence": 3792,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "integration:main:11",
+      "started_at": "2026-10-10T15:29:40.939648Z",
+      "finished_at": "2026-10-10T15:35:04.448221Z"
+    },
+    {
+      "sequence": 3802,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "integration:main:12",
+      "started_at": "2026-10-10T15:35:16.304592Z",
+      "finished_at": "2026-10-10T15:42:53.311004Z"
+    },
+    {
+      "sequence": 3812,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "integration:main:13",
+      "started_at": "2026-10-10T15:43:05.089249Z",
+      "finished_at": "2026-10-10T15:51:36.279540Z"
+    },
+    {
+      "sequence": 3822,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "integration:main:14",
+      "started_at": "2026-10-10T15:51:48.336922Z",
+      "finished_at": "2026-10-10T16:00:40.161795Z"
+    },
+    {
+      "sequence": 3832,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "integration:main:15",
+      "started_at": "2026-10-10T16:00:51.848619Z",
+      "finished_at": "2026-10-10T16:11:49.930902Z"
+    },
+    {
+      "sequence": 3842,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "integration:main:16",
+      "started_at": "2026-10-10T16:12:01.955577Z",
+      "finished_at": "2026-10-10T16:20:56.960024Z"
+    },
+    {
+      "sequence": 3852,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "integration:main:17",
+      "started_at": "2026-10-10T16:21:09.166006Z",
+      "finished_at": "2026-10-10T16:26:49.815535Z"
+    },
+    {
+      "sequence": 3862,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "integration:main:18",
+      "started_at": "2026-10-10T16:27:02.108330Z",
+      "finished_at": "2026-10-10T16:32:13.110760Z"
+    },
+    {
+      "sequence": 3872,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "integration:main:19",
+      "started_at": "2026-10-10T16:32:25.019794Z",
+      "finished_at": "2026-10-10T16:39:53.251394Z"
+    },
+    {
+      "sequence": 3882,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "integration:main:20",
+      "started_at": "2026-10-10T16:40:05.437824Z",
+      "finished_at": "2026-10-10T16:47:10.290522Z"
+    },
+    {
+      "sequence": 3892,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "supplement:S0006:0",
+      "started_at": "2026-10-10T16:47:52.904277Z",
+      "finished_at": "2026-10-10T16:55:01.840205Z"
+    },
+    {
+      "sequence": 3900,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "supplement:S0001:1",
+      "started_at": "2026-10-10T16:48:20.094923Z",
+      "finished_at": "2026-10-10T16:57:06.679959Z"
+    },
+    {
+      "sequence": 3908,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "supplement:S0005:3",
+      "started_at": "2026-10-10T16:48:38.632315Z",
+      "finished_at": "2026-10-10T16:56:37.898718Z"
+    },
+    {
+      "sequence": 3916,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "supplement:OPEN_RESEARCH:2",
+      "started_at": "2026-10-10T16:49:36.146552Z",
+      "finished_at": "2026-10-10T16:59:27.426900Z"
+    },
+    {
+      "sequence": 3926,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "supplement:S0002:4",
+      "started_at": "2026-10-10T16:55:37.358397Z",
+      "finished_at": "2026-10-10T17:00:40.037652Z"
+    },
+    {
+      "sequence": 3936,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "supplement:S0006:5",
+      "started_at": "2026-10-10T16:56:58.855883Z",
+      "finished_at": "2026-10-10T17:14:59.639786Z"
+    },
+    {
+      "sequence": 3946,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "supplement:S0005:6",
+      "started_at": "2026-10-10T16:57:30.036815Z",
+      "finished_at": "2026-10-10T17:04:37.270056Z"
+    },
+    {
+      "sequence": 3956,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "supplement:OPEN_RESEARCH:7",
+      "started_at": "2026-10-10T16:59:43.053471Z",
+      "finished_at": "2026-10-10T17:14:42.510304Z"
+    },
+    {
+      "sequence": 3972,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "integration:supplement:0",
+      "started_at": "2026-10-10T17:15:20.143745Z",
+      "finished_at": "2026-10-10T17:20:43.797314Z"
+    },
+    {
+      "sequence": 3982,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "integration:final:0",
+      "started_at": "2026-10-10T17:20:57.754277Z",
+      "finished_at": "2026-10-10T17:25:14.365666Z"
+    },
+    {
+      "sequence": 3992,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "integration:final:1",
+      "started_at": "2026-10-10T17:25:27.082054Z",
+      "finished_at": "2026-10-10T17:29:19.705760Z"
+    },
+    {
+      "sequence": 4002,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "integration:final:2",
+      "started_at": "2026-10-10T17:29:32.535102Z",
+      "finished_at": "2026-10-10T17:33:54.583611Z"
+    },
+    {
+      "sequence": 4012,
+      "status": "succeeded",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "task": "integration:consolidation",
+      "started_at": "2026-10-10T17:34:09.115630Z",
+      "finished_at": "2026-10-10T17:44:50.197534Z"
+    }
+  ],
+  "release_files": {
+    "runtime_projection.json": {
+      "bytes": 1527514,
+      "sha256": "f0f616dfa1c30f8359c5ce56c1483401d9e4824e0619ce21f9314c4e15749275",
+      "verified": true
+    },
+    "document3.md": {
+      "bytes": 1353891,
+      "sha256": "1e9ad17127d940d40d48941ec4b9205eb25f0d092d5c679d73f1ef45a7c14db4",
+      "verified": true
+    },
+    "coverage_map.json": {
+      "bytes": 268792,
+      "sha256": "ebd5d9a513f726e3b8ce478bf6c91ab2f115553f35868f9f24dd43d476dab760",
+      "verified": true
+    },
+    "document3.json": {
+      "bytes": 1583532,
+      "sha256": "7b55edcda0dd2d354543544845d6ec973f80bd7be591df021fe642c56b38213a",
+      "verified": true
+    }
+  },
+  "published_copies_verified": {
+    "runtime_projection.json": true,
+    "document3.md": true,
+    "coverage_map.json": true,
+    "document3.json": true
+  },
+  "upstream": {
+    "d1": {
+      "run_id": "mu-v21-20261010-02-d1",
+      "status": "published",
+      "created_at": "2026-10-09T18:44:43.976095Z",
+      "published_at": "2026-10-09T18:44:43.873102Z",
+      "c4_product_status": {
+        "future_nodes": "available",
+        "entity_relations": "available",
+        "entity_network_report": "available"
+      },
+      "handoff": {
+        "schema_version": "global-research-handoff-v1",
+        "run_id": "mu-v21-20261010-02-d1",
+        "ticker": "MU",
+        "document_artifact_id": "2256f2aa27454f3faec6f7ae23cca9bc",
+        "citation_manifest_artifact_id": "b5e10adf280649cc95e58806aed19d5f",
+        "published_at": "2026-10-09T18:44:43.873102Z"
+      },
+      "reports": {
+        "c4_pre_scan": {
+          "workflow_version": "codex_global_research_v1",
+          "research_lane": "global_research",
+          "artifact_id": "00c27cf8da4e464593d978108fb623e3",
+          "run_id": "mu-v21-20261010-02-d1",
+          "node": "c4_pre_scan",
+          "attempt_id": "c4_pre_scan-1-916980c64c",
+          "kind": "report",
+          "relative_path": "artifacts/c4_pre_scan/c4_pre_scan-1-916980c64c/report.md",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "size_bytes": 0,
+          "content_type": "text/markdown",
+          "published": true,
+          "created_at": "2026-10-09T18:17:05.020115Z"
+        },
+        "c1": {
+          "workflow_version": "codex_global_research_v1",
+          "research_lane": "global_research",
+          "artifact_id": "ecd2783c508b4da5b227bfc0d7bd3181",
+          "run_id": "mu-v21-20261010-02-d1",
+          "node": "c1",
+          "attempt_id": "c1-1-3dfd31b5c2",
+          "kind": "report",
+          "relative_path": "artifacts/c1/c1-1-3dfd31b5c2/report.md",
+          "sha256": "63957e09ac8951fe8fcfdd1e111fc9706ad98aa7512ef0a9f946375c21922304",
+          "size_bytes": 32646,
+          "content_type": "text/markdown",
+          "published": true,
+          "created_at": "2026-10-09T18:30:02.094437Z"
+        },
+        "c3": {
+          "workflow_version": "codex_global_research_v1",
+          "research_lane": "global_research",
+          "artifact_id": "99b923a71b9740ec879921f032d95bc3",
+          "run_id": "mu-v21-20261010-02-d1",
+          "node": "c3",
+          "attempt_id": "c3-1-ea41a899d1",
+          "kind": "report",
+          "relative_path": "artifacts/c3/c3-1-ea41a899d1/report.md",
+          "sha256": "cc73613be593b1f71cfd2f290dbd7e18bead6903cf24a1bf20f166bca0cc400f",
+          "size_bytes": 35338,
+          "content_type": "text/markdown",
+          "published": true,
+          "created_at": "2026-10-09T18:34:07.795121Z"
+        },
+        "c5": {
+          "workflow_version": "codex_global_research_v1",
+          "research_lane": "global_research",
+          "artifact_id": "c37127e4ab0447cda64514bac81e0ff9",
+          "run_id": "mu-v21-20261010-02-d1",
+          "node": "c5",
+          "attempt_id": "c5-1-fd7de86db6",
+          "kind": "report",
+          "relative_path": "artifacts/c5/c5-1-fd7de86db6/report.md",
+          "sha256": "48b2010804bf3b4d76df48d14971358bf30ea6a2a7a9f547a13d10928f57730c",
+          "size_bytes": 14665,
+          "content_type": "text/markdown",
+          "published": true,
+          "created_at": "2026-10-09T18:44:39.137027Z"
+        },
+        "global_research": {
+          "workflow_version": "codex_global_research_v1",
+          "research_lane": "global_research",
+          "artifact_id": "2256f2aa27454f3faec6f7ae23cca9bc",
+          "run_id": "mu-v21-20261010-02-d1",
+          "node": "assemble",
+          "attempt_id": "assemble-1-56bad2a62a",
+          "kind": "bundle",
+          "relative_path": "artifacts/global_research/global_research_v1.md",
+          "sha256": "683cc7c97cefd55983fb7a1a88b4fb10f2f65e4853e39de2876c520d971d3bc7",
+          "size_bytes": 82612,
+          "content_type": "text/markdown",
+          "published": true,
+          "created_at": "2026-10-09T18:44:42.300764Z"
+        },
+        "c4f_future_nodes": {
+          "workflow_version": "codex_global_research_v1",
+          "research_lane": "global_research",
+          "artifact_id": "310cbba937cf42b3931a87ae7d22671b",
+          "run_id": "mu-v21-20261010-02-d1",
+          "node": "c4f_future_nodes",
+          "attempt_id": "c4f_future_nodes-3-cf6cf21a52",
+          "kind": "report",
+          "relative_path": "artifacts/c4f_future_nodes/c4f_future_nodes-3-cf6cf21a52/report.md",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "size_bytes": 0,
+          "content_type": "text/markdown",
+          "published": true,
+          "created_at": "2026-10-09T19:37:29.454027Z"
+        },
+        "c4e_formal_scan": {
+          "workflow_version": "codex_global_research_v1",
+          "research_lane": "global_research",
+          "artifact_id": "55423d635b04456d863298c30cd38321",
+          "run_id": "mu-v21-20261010-02-d1",
+          "node": "c4e_formal_scan",
+          "attempt_id": "c4e_formal_scan-1-cd75c50f17",
+          "kind": "report",
+          "relative_path": "artifacts/c4e_formal_scan/c4e_formal_scan-1-cd75c50f17/report.md",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "size_bytes": 0,
+          "content_type": "text/markdown",
+          "published": true,
+          "created_at": "2026-10-09T20:00:40.640674Z"
+        },
+        "c4e_network_build": {
+          "workflow_version": "codex_global_research_v1",
+          "research_lane": "global_research",
+          "artifact_id": "643f4c4629ff40bf94b63cd91da07ce9",
+          "run_id": "mu-v21-20261010-02-d1",
+          "node": "c4e_network_build",
+          "attempt_id": "c4e_network_build-1-41596b0415",
+          "kind": "report",
+          "relative_path": "artifacts/c4e_network_build/c4e_network_build-1-41596b0415/report.md",
+          "sha256": "beda8cc3fb96611a04896a6a5476b7c9d51c1884c7be739ffe5dc974a2a03df0",
+          "size_bytes": 27513,
+          "content_type": "text/markdown",
+          "published": true,
+          "created_at": "2026-10-09T20:14:06.469045Z"
+        }
+      }
+    },
+    "d2": {
+      "run_id": "mu-v21-20261010-02-d2",
+      "status": "published",
+      "publication_state": "PARTIAL",
+      "created_at": "2026-10-09T20:20:42.572135Z",
+      "published_at": "2026-10-09T22:25:52.010059Z",
+      "handoff": {
+        "schema_version": "document2-handoff-v1",
+        "run_id": "mu-v21-20261010-02-d2",
+        "ticker": "MU",
+        "source_global_run_id": "mu-v21-20261010-02-d1",
+        "document2_artifact_id": "2a1c5512eb11497e91f743c67ebbf351",
+        "citation_manifest_artifact_id": "83705dc81222463995c5d7090035b0f1",
+        "publication_state": "PARTIAL",
+        "citation_status": "PARTIAL",
+        "published_at": "2026-10-09T22:25:52.010059Z"
+      },
+      "shell_outcome_count": 12
+    }
+  },
+  "original_d3": {
+    "phase": "STAGED",
+    "status": "PARTIAL",
+    "commit": {
+      "coverage_hash": "bb9e3ffff10125ac3858bd9de2ec31ce42437402787400bb3479a7af7893ae9d",
+      "final_hash": "fcd4849c613bbd76ad1ea10a5d6f04d40dbb2da7d5b716806072354bcb78a90c",
+      "publish_empty": false,
+      "published_at": "2026-10-10T03:36:35.030563+00:00",
+      "version": 21
+    }
+  }
+}

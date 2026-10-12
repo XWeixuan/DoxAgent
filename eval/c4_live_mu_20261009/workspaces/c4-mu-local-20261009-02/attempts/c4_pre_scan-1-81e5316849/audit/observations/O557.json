@@ -1,0 +1,18 @@
+{
+  "alias": "O557",
+  "title": "sections 1 — metadata",
+  "content": {
+    "section": "second half of calendar 2028",
+    "heading_match": "second half of calendar 2028",
+    "start_offset": 259536,
+    "end_offset": 339564,
+    "full_text_chars": 80000,
+    "returned_chars": 40000,
+    "truncated": true,
+    "match_quality": "substantive_body"
+  },
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

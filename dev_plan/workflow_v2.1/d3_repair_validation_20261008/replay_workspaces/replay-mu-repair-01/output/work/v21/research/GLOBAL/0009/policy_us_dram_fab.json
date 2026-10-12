@@ -1,0 +1,36 @@
+{
+  "policy_id": "pol_351f8d7bbc194d278d999030020ef47d",
+  "title": "美国DRAM新厂从施工到可销售产出的时窗",
+  "ref": [
+    "context/document3/v21/shared/global/0002.txt",
+    "context/document3/v21/shared/global/0003.txt",
+    "context/document3/v21/shared/global/0004.txt",
+    "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+    "https://investors.micron.com/news/press-release/2026/Micron-Accelerates-U-S--Investments-Pours-First-Concrete-at-New-York-Fab/default.aspx",
+    "https://investors.micron.com/news/press-release/2026/Micron-Advances-Made-in-America-Memory-With-Manufacturing-Expansion-in-Virginia/default.aspx"
+  ],
+  "transmission": "美光计划2035年前在美国生产其DRAM的40%，但这仍是长期目标，不是现有产能。爱达荷ID1、ID2和纽约首厂分别计划在2027年中、2028年末和2030年首次晶圆产出；新厂初产后还需数个季度爬坡才更有分量。最近的ID1决定美国先进DRAM供给能否赶上管理层预期2027—2028年更紧的内存市场，纽约则主要影响更远期地域韧性。真实可售供给需要合格晶圆及后续制造链，混凝土浇筑、设备采购和净激励后资本开支只改变项目执行概率或资金占用，不能冒充当期产出；大幅提前合格产出或推迟首片时窗可在收入披露之前改变供给持续期判断。",
+  "match_scope": "召回美光、建设承包方或政府披露爱达荷ID1/ID2、纽约Clay及Manassas的施工、审批、设备安装、晶圆首产、合格生产、客户供货和项目重排消息。纽约已完成首轮混凝土浇筑，Manassas已开始1α制造；这些旧阶段的重复报道与美国投资总额上调仍可关联，但不自动命中。举例仅作非穷举召回，触发以具体条件为准；其他厂的时窗不能套用ID1比较锚。",
+  "activation_conditions": [
+    {
+      "condition_id": "C1",
+      "decision": "LONG",
+      "trigger_layer": "MIDDLE",
+      "criterion": "美光确认爱达荷ID1在原定首次晶圆产出窗口内已开始客户可用的合格DRAM晶圆商业产出，而非仅完成首片试产。",
+      "calibration": {
+        "reference_state": "截至2026-09-30，美光仍预计ID1于2027年中首次晶圆产出，ID2于2028年末、纽约首厂于2030年首次产出；公司明确新DRAM/NAND厂初产后通常需数个季度爬坡才逐渐有意义。ID1尚未披露合格商业晶圆。按计划在2027年中首片试产属于普通进展，不等于同一窗口客户可用。",
+        "trigger_boundary": "ID1在原本只预计首片的2027年中窗口已交出客户可用合格DRAM晶圆，才使美国新厂的商业供给阶段明显早于通常爬坡路径；无须再等季度收入或连续数季财报确认。设备到位、试验晶圆和仅重申原首片日期不足以命中。"
+      }
+    },
+    {
+      "condition_id": "C2",
+      "decision": "SHORT",
+      "trigger_layer": "MIDDLE",
+      "criterion": "美光正式把爱达荷ID1的首次晶圆产出时间由原定2027年中推迟至2028年或更晚。",
+      "calibration": {
+        "reference_state": "截至2026-09-30，ID1首次晶圆产出计划仍为2027年中；管理层预计2027—2028年DRAM供需紧张，且新厂首产之后产能尚需数季爬坡。ID2原定2028年末、纽约原定2030年，不能把它们的正常进度当作ID1延误。",
+        "trigger_boundary": "把ID1首片窗口整体移出2027年，意味着后续合格供给也随之远离2027年需求窗口，并增加提前支出而商业产出滞后的风险。公司明确修订日程时即足够，不等到2028年实际停工、缺货或收入落空；仅小幅施工浮动而不改首片年期不足以命中。"
+      }
+    }
+  ]
+}

@@ -1,0 +1,236 @@
+{
+  "external_instances": {
+    "digitimes-1": "b62de727ea1c4585b40b843130326472",
+    "digitimes-de-1": "8db251dfc0ce485fb70f3f0690e18a29",
+    "digitimes-nl-1": "03259f271d684527b235137c3e6acc33",
+    "dowjones-main": "0854db06758b49a68cdce663ce78e922",
+    "investorshub-external-1": "0a3135b95943409da1323795f4192a04",
+    "public-markets-nl": "2e256ab3aa5a4bc18c20fd370ff585ff",
+    "seeking-alpha-main": "0f6fb958d3ef41ed9e94296a007ef047",
+    "yahoo-backup": "55de2b8cbd0b4d62911777c232775497",
+    "yahoo-main": "c19bf9032f274015aa1b4a901ba4c104"
+  },
+  "maintenance_profiles": [],
+  "site_strategies": {
+    "reuters": {
+      "site_id": "reuters",
+      "default_content_language": null,
+      "revision": 4,
+      "display_name": null,
+      "domains": [
+        {
+          "match": "exact",
+          "host": "reuters.com",
+          "role": "publisher",
+          "exclude": false
+        },
+        {
+          "match": "exact",
+          "host": "www.reuters.com",
+          "role": "publisher",
+          "exclude": false
+        }
+      ],
+      "support_hosts": [
+        {
+          "match": "exact",
+          "host": "dd.reuters.com",
+          "role": "asset",
+          "exclude": false
+        },
+        {
+          "match": "exact",
+          "host": "api.reuters.com",
+          "role": "asset",
+          "exclude": false
+        },
+        {
+          "match": "exact",
+          "host": "auth.reuters.com",
+          "role": "asset",
+          "exclude": false
+        },
+        {
+          "match": "suffix",
+          "host": "reutersmedia.net",
+          "role": "asset",
+          "exclude": false
+        }
+      ],
+      "access": {
+        "combinations": [
+          {
+            "combination_id": "reuters-1",
+            "identity_id": null,
+            "profile_id": "reuters-1",
+            "egress_id": "nl-standard-2",
+            "priority": 10,
+            "enabled": true
+          },
+          {
+            "combination_id": "reuters-2",
+            "identity_id": null,
+            "profile_id": "reuters-2",
+            "egress_id": "de-standard-1",
+            "priority": 20,
+            "enabled": true
+          },
+          {
+            "combination_id": "reuters-direct-1",
+            "identity_id": null,
+            "profile_id": "reuters-direct-1",
+            "egress_id": "server-direct",
+            "priority": 900,
+            "enabled": true
+          }
+        ],
+        "overrides": {},
+        "probe_url": "https://reuters.com/",
+        "max_concurrency": 1,
+        "min_interval_ms": 3000,
+        "body_queue_timeout_ms": 30000,
+        "crawler_queue_timeout_ms": 10000
+      },
+      "crawler": {
+        "ref": "builtin:reuters_search@1",
+        "parameters": {}
+      },
+      "body": {
+        "ref": "builtin:reuters@1",
+        "parameters": {
+          "body_xpath": [
+            "//*[@data-testid=\"ArticleBody\"]"
+          ]
+        },
+        "access_order": [
+          "browser",
+          "http_public",
+          "reader"
+        ]
+      },
+      "auth": {
+        "requirement": "optional",
+        "crawler_requirement": "inherit",
+        "body_requirement": "inherit",
+        "login_url": "https://www.reuters.com/",
+        "maintenance_url": "https://www.reuters.com/site-search/?query=markets",
+        "verification_url": "https://www.reuters.com/world/",
+        "verification_kind": "public_access"
+      }
+    },
+    "investing": {
+      "site_id": "investing",
+      "default_content_language": "en",
+      "revision": 11,
+      "display_name": null,
+      "domains": [
+        {
+          "match": "exact",
+          "host": "www.investing.com",
+          "role": "publisher",
+          "exclude": false
+        },
+        {
+          "match": "exact",
+          "host": "investing.com",
+          "role": "publisher",
+          "exclude": false
+        }
+      ],
+      "support_hosts": [
+        {
+          "match": "exact",
+          "host": "api.investing.com",
+          "role": "asset",
+          "exclude": false
+        },
+        {
+          "match": "exact",
+          "host": "endpoints.investing.com",
+          "role": "asset",
+          "exclude": false
+        },
+        {
+          "match": "exact",
+          "host": "cdn.investing.com",
+          "role": "asset",
+          "exclude": false
+        },
+        {
+          "match": "exact",
+          "host": "content-media.investing.com",
+          "role": "asset",
+          "exclude": false
+        }
+      ],
+      "access": {
+        "combinations": [
+          {
+            "combination_id": "investing-external-nl",
+            "identity_id": "public-markets-nl",
+            "profile_id": null,
+            "egress_id": null,
+            "priority": 0,
+            "enabled": true
+          },
+          {
+            "combination_id": "investing-2",
+            "identity_id": "investing-2",
+            "profile_id": null,
+            "egress_id": null,
+            "priority": 1,
+            "enabled": true
+          },
+          {
+            "combination_id": "investing-1",
+            "identity_id": "investing-1",
+            "profile_id": null,
+            "egress_id": null,
+            "priority": 100,
+            "enabled": true
+          }
+        ],
+        "overrides": {
+          "body": [
+            "investing-external-nl"
+          ],
+          "crawler": [
+            "investing-external-nl"
+          ]
+        },
+        "probe_url": "https://www.investing.com/equities/intel-corp-news",
+        "max_concurrency": 1,
+        "min_interval_ms": 3000,
+        "body_queue_timeout_ms": 30000,
+        "crawler_queue_timeout_ms": 10000
+      },
+      "crawler": {
+        "ref": "builtin:investing_ticker@1",
+        "parameters": {}
+      },
+      "body": {
+        "ref": "builtin:generic@1",
+        "parameters": {
+          "body_xpath": [
+            "//*[@id=\"article\"]",
+            "//*[@data-test=\"article-content\"]",
+            "//*[@itemprop=\"articleBody\"]",
+            "//*[@id=\"articleTitle\"]/../.."
+          ]
+        },
+        "access_order": [
+          "browser"
+        ]
+      },
+      "auth": {
+        "requirement": "optional",
+        "crawler_requirement": "inherit",
+        "body_requirement": "inherit",
+        "login_url": "https://www.investing.com/",
+        "maintenance_url": "https://www.investing.com/equities/intel-corp-news",
+        "verification_url": "https://www.investing.com/equities/intel-corp-news",
+        "verification_kind": "public_access"
+      }
+    }
+  }
+}

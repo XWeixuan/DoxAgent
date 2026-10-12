@@ -1,0 +1,18 @@
+{
+  "alias": "O109",
+  "title": "sections 1 — metadata",
+  "content": {
+    "section": "Core Data Center Business Unit",
+    "heading_match": "Core Data Center Business Unit",
+    "start_offset": 44968,
+    "end_offset": 124999,
+    "full_text_chars": 79999,
+    "returned_chars": 40000,
+    "truncated": true,
+    "match_quality": "substantive_body"
+  },
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

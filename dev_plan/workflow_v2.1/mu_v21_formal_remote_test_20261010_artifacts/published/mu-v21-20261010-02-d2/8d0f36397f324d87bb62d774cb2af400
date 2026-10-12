@@ -1,0 +1,3771 @@
+{
+  "name": "数据中心计算平台与内存",
+  "scope": "AI训练、推理及相关数据管理的投资和部署需求基础，以及美光HBM和非HBM服务器内存业务。共同背景为云、企业、NeoCloud、模型服务商及计算平台的工作负载、系统配置、采购网络、软件适配和基础设施资源，覆盖GPU、CPU及自研加速器路线和一般企业计算用途。",
+  "boundary": "客户计算投资、平台部署、内存配置及美光内存产品地位由本域深化；SSD、组件NAND和存储系统分层的产品与工作负载深度归数据中心闪存与存储系统。行业DRAM供需及价格归DRAM行业市场，自身晶圆和器件封装测试归DRAM与HBM制造体系。客户加速器系统封装与软件兼容属于本域的平台背景；跨产品多年合同及资金保障归战略客户供给与资金保障关系。客户电力、机房和融资在此研究，美光工厂资源关系归制造域。",
+  "ref": [
+    "D1-O130",
+    "D1-O74",
+    "D1-O103",
+    "D1-O139",
+    "D1-O127",
+    "D1-O121",
+    "D1-O91",
+    "D1-O104",
+    "D1-O118",
+    "D1-O18",
+    "D1-O23",
+    "D1-O3",
+    "https://www.crusoe.ai/resources/newsroom/crusoe-announces-new-900-mw-ai-factory-campus-in-abilene-texas-to-support-microsoft-ai-infrastructure",
+    "D1-O205",
+    "D1-O112",
+    "D1-O88",
+    "D1-O44",
+    "D1-O19",
+    "D1-O52",
+    "D1-O186",
+    "D1-O31",
+    "https://blog.google/products-and-platforms/products/search/search-io-2026/",
+    "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000066/googexhibit991q22026.htm",
+    "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+    "https://www.anthropic.com/research/economic-index-march-2026-report",
+    "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Second-Quarter-Results/default.aspx",
+    "https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-Second-Quarter-2026-Results/",
+    "https://www.anthropic.com/news/google-broadcom-partnership-compute",
+    "https://developer.nvidia.com/blog/inside-nvidia-groq-3-lpx-the-low-latency-inference-accelerator-for-the-nvidia-vera-rubin-platform",
+    "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Groq-3-LPX-Now-in-Full-Production-With-World-Class-Speed-for-Agentic-AI/default.aspx",
+    "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000366/crwv-20260630.htm",
+    "https://developer.nvidia.com/blog/?p=111143",
+    "https://www.usenix.org/conference/osdi26/presentation/luo",
+    "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/",
+    "https://www.amd.com/en/blogs/2026/agentic-ai-amd-epyc-9005-cpus-wins-today-epyc-9006.html",
+    "https://aws.amazon.com/about-aws/whats-new/2025/12/amazon-ec2-trn3-ultraservers/",
+    "https://blog.google/innovation-and-ai/infrastructure-and-cloud/google-cloud/eighth-generation-tpu-agentic-era/",
+    "https://ferc.gov/news-events/news/ferc-launches-aggressive-targeted-action-speed-large-load-integration",
+    "https://insidelines.pjm.com/pjm-dominion-review-large-load-transfer-event/",
+    "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf",
+    "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html",
+    "https://www.consilium.europa.eu/en/press/press-releases/2026/01/16/artificial-intelligence-council-paves-the-way-for-the-creation-of-ai-gigafactories/",
+    "https://machinelearning.apple.com/research/introducing-third-generation-of-apple-foundation-models",
+    "https://nvidianews.nvidia.com/news/nvidia-announces-open-physical-ai-data-factory-blueprint-to-accelerate-robotics-vision-ai-agents-and-autonomous-vehicle-development",
+    "https://deepmind.google/blog/genie-3-a-new-frontier-for-world-models/",
+    "https://www.bis.gov/press-release/department-commerce-revises-license-review-policy-semiconductors-exported-china",
+    "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q3/Q3-FY26-Prepared-Remarks.pdf",
+    "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+    "https://jp.micron.com/about/press/news/micron-in-high-volume-production-of-hbm4-designed-for-nvidia-vera-rubin-pcie-gen6-ssd-and-socamm2",
+    "https://micron.gcs-web.com/news-releases/news-release-details/micron-hbm-designed-leading-amd-ai-platform",
+    "https://news.samsung.com/global/samsung-ships-industry-first-commercial-hbm4-with-ultimate-performance-for-ai-computing",
+    "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+    "D1-O85",
+    "https://markets.financialcontent.com/bpas/article/bizwire-2026-7-13-new-jedec-sphbm4-standard-enables-hbm4-class-bandwidth-on-organic-substrates",
+    "https://micron.gcs-web.com/news-releases/news-release-details/micron-sets-new-benchmark-worlds-first-high-capacity-256gb",
+    "https://news.skhynix.com/en/mass-production-socamm2-192gb/",
+    "D1-O57",
+    "https://sg.micron.com/about/press/news/micron-first-to-achieve-qualification-sample-milestone",
+    "https://github.com/microncxl/cxl-reskit",
+    "https://arxiv.org/abs/2606.29986v1",
+    "https://www.amd.com/content/dam/amd/en/documents/epyc-business-docs/other/three-ways-to-keep-your-data-center-refresh-on-track-in-a-memory-constrained-market.pdf",
+    "https://memverge.ai/product/gtc2024",
+    "https://www.anthropic.com/research/anthropic-economic-index-january-2026-report",
+    "https://www.anthropic.com/engineering/managed-agents",
+    "https://developer.nvidia.com/blog/co-designing-ai-model-attention-for-fast-interactive-long-context-inference/",
+    "D1-O147",
+    "D1-O148",
+    "https://www.sec.gov/Archives/edgar/data/1944366/000194436626000020/exhibit993-2025abelinedc1l.htm",
+    "D1-O165",
+    "D1-O67",
+    "D1-O80",
+    "D1-O81",
+    "D1-O83",
+    "D1-O108",
+    "D1-O109",
+    "https://www.eurohpc-ju.europa.eu/eurohpc-joint-undertaking-launches-ai-gigafactories-call-2026-07-30_en",
+    "https://news.skhynix.com/en/sk-hynix-partners-with-tsmc-to-strengthen-hbm-technological-leadership/",
+    "https://arxiv.org/abs/2203.00241v4",
+    "https://www.anthropic.com/research/trustworthy-agents",
+    "https://digital-strategy.ec.europa.eu/en/news/ai-omnibus-enters-force",
+    "https://www.anthropic.com/research/economic-index-june-2026-report",
+    "https://blog.google/innovation-and-ai/models-and-research/google-deepmind/project-genie-expands/",
+    "https://www.anthropic.com/news/higher-limits-spacex",
+    "https://x.ai/news/anthropic-compute-partnership",
+    "https://nvidianews.nvidia.com/news/spectrum-x-ethernet-networking-xai-colossus/",
+    "D1-O53",
+    "D1-O54"
+  ],
+  "units": [
+    {
+      "name": "AI数据中心需求",
+      "scope": "AI训练、推理、模型服务及相关数据管理的工作负载需求、客户计算投资、平台选择、部署规模、内存与存储配置，及云客户和模型服务商的采购网络、商业需求、融资、电力、机房与资源使用。",
+      "horizon": "季度投资与采购周期，延伸至产品平台和多年基础设施部署周期。",
+      "ref": [
+        "D1-O130",
+        "D1-O74",
+        "D1-O103",
+        "D1-O18",
+        "D1-O23",
+        "D1-O3",
+        "https://www.crusoe.ai/resources/newsroom/crusoe-announces-new-900-mw-ai-factory-campus-in-abilene-texas-to-support-microsoft-ai-infrastructure",
+        "D1-O91",
+        "D1-O104",
+        "D1-O118",
+        "https://blog.google/products-and-platforms/products/search/search-io-2026/",
+        "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000066/googexhibit991q22026.htm",
+        "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+        "https://www.anthropic.com/research/economic-index-march-2026-report",
+        "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Second-Quarter-Results/default.aspx",
+        "https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-Second-Quarter-2026-Results/",
+        "https://www.anthropic.com/news/google-broadcom-partnership-compute",
+        "https://developer.nvidia.com/blog/inside-nvidia-groq-3-lpx-the-low-latency-inference-accelerator-for-the-nvidia-vera-rubin-platform",
+        "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Groq-3-LPX-Now-in-Full-Production-With-World-Class-Speed-for-Agentic-AI/default.aspx",
+        "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000366/crwv-20260630.htm",
+        "D1-O139",
+        "https://developer.nvidia.com/blog/?p=111143",
+        "https://www.usenix.org/conference/osdi26/presentation/luo",
+        "D1-O44",
+        "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/",
+        "https://www.amd.com/en/blogs/2026/agentic-ai-amd-epyc-9005-cpus-wins-today-epyc-9006.html",
+        "https://aws.amazon.com/about-aws/whats-new/2025/12/amazon-ec2-trn3-ultraservers/",
+        "https://blog.google/innovation-and-ai/infrastructure-and-cloud/google-cloud/eighth-generation-tpu-agentic-era/",
+        "https://ferc.gov/news-events/news/ferc-launches-aggressive-targeted-action-speed-large-load-integration",
+        "https://insidelines.pjm.com/pjm-dominion-review-large-load-transfer-event/",
+        "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf",
+        "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html",
+        "https://www.consilium.europa.eu/en/press/press-releases/2026/01/16/artificial-intelligence-council-paves-the-way-for-the-creation-of-ai-gigafactories/",
+        "https://machinelearning.apple.com/research/introducing-third-generation-of-apple-foundation-models",
+        "https://nvidianews.nvidia.com/news/nvidia-announces-open-physical-ai-data-factory-blueprint-to-accelerate-robotics-vision-ai-agents-and-autonomous-vehicle-development",
+        "https://deepmind.google/blog/genie-3-a-new-frontier-for-world-models/",
+        "https://www.bis.gov/press-release/department-commerce-revises-license-review-policy-semiconductors-exported-china",
+        "D1-O31",
+        "https://www.anthropic.com/research/anthropic-economic-index-january-2026-report",
+        "https://www.anthropic.com/engineering/managed-agents",
+        "https://developer.nvidia.com/blog/co-designing-ai-model-attention-for-fast-interactive-long-context-inference/",
+        "D1-O147",
+        "D1-O148",
+        "https://www.sec.gov/Archives/edgar/data/1944366/000194436626000020/exhibit993-2025abelinedc1l.htm",
+        "D1-O165",
+        "D1-O67",
+        "D1-O80",
+        "D1-O81",
+        "D1-O83",
+        "D1-O108",
+        "D1-O109",
+        "D1-O127",
+        "D1-O121",
+        "https://www.eurohpc-ju.europa.eu/eurohpc-joint-undertaking-launches-ai-gigafactories-call-2026-07-30_en",
+        "https://www.anthropic.com/research/trustworthy-agents",
+        "https://digital-strategy.ec.europa.eu/en/news/ai-omnibus-enters-force",
+        "https://www.anthropic.com/research/economic-index-june-2026-report",
+        "https://blog.google/innovation-and-ai/models-and-research/google-deepmind/project-genie-expands/",
+        "https://www.anthropic.com/news/higher-limits-spacex",
+        "https://x.ai/news/anthropic-compute-partnership",
+        "https://nvidianews.nvidia.com/news/spectrum-x-ethernet-networking-xai-colossus/"
+      ],
+      "state": {
+        "parameters": [
+          {
+            "name": "大众AI搜索覆盖规模",
+            "definition": "Google AI Mode的月度用户规模状态；衡量已经触及的推理服务人群，用户不是付费请求或新增服务器。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://blog.google/products-and-platforms/products/search/search-io-2026/"
+            ]
+          },
+          {
+            "name": "AI搜索请求增长",
+            "definition": "Google AI Mode查询活动的变化；与推理工作负载直接相关，但不等于净新增搜索或固定算力系数。",
+            "value_type": "DIRECTION",
+            "ref": [
+              "https://blog.google/products-and-platforms/products/search/search-io-2026/"
+            ]
+          },
+          {
+            "name": "Gemini模型API处理速率",
+            "definition": "Google披露的Gemini模型API token处理速率；作为模型服务活动强度锚点，不跨模型等同计算量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000066/googexhibit991q22026.htm"
+            ]
+          },
+          {
+            "name": "消费模型应用月活跃用户",
+            "definition": "Gemini App月活跃用户数量；反映消费端使用覆盖，不与AI Mode相加去重或假定全部付费。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000066/googexhibit991q22026.htm"
+            ]
+          },
+          {
+            "name": "企业AI助手付费席位规模",
+            "definition": "M365 Copilot已付费席位的规模状态，直接定位企业愿意购买服务的范围；席位不等于活跃任务量。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4"
+            ]
+          },
+          {
+            "name": "企业代理持续执行商业化",
+            "definition": "企业代理从席位授权进入按使用计费与后台执行的经营状态；改变计费消耗、并发与常驻任务的来源。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+              "https://www.anthropic.com/research/economic-index-march-2026-report"
+            ]
+          },
+          {
+            "name": "AWS AI服务收入运行规模",
+            "definition": "AWS单独披露的AI业务年化收入运行规模；比云总收入更贴近可收费AI需求，但不是全年已实现收入。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Second-Quarter-Results/default.aspx"
+            ]
+          },
+          {
+            "name": "云客户资本投入",
+            "definition": "分别记录主要云客户用于整体基础设施的资本投入；包括非AI、建设及设备，不能求和成AI芯片采购。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+              "https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-Second-Quarter-2026-Results/",
+              "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000066/googexhibit991q22026.htm"
+            ]
+          },
+          {
+            "name": "云客户年度投资预算",
+            "definition": "Meta对2026年资本开支的区间预期；同一预算目标的修订反映扩建承诺，不是已购AI设备。",
+            "value_type": "RANGE",
+            "ref": [
+              "https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-Second-Quarter-2026-Results/"
+            ]
+          },
+          {
+            "name": "设备类资本投入比重",
+            "definition": "Microsoft季度资本投入中CPU/GPU等短寿命资产的比重；比总资本开支更接近计算设备投入，但仍非纯AI或美光份额。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4"
+            ]
+          },
+          {
+            "name": "主要云业务经营利润",
+            "definition": "分别记录AWS与Google Cloud分部经营利润，反映持续建设的内部经营支持；含传统云业务，不能当AI服务单独利润。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Second-Quarter-Results/default.aspx",
+              "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000066/googexhibit991q22026.htm"
+            ]
+          },
+          {
+            "name": "投运计算基础设施增量",
+            "definition": "Microsoft已增加的整体数据中心功率能力，作为可承接设备部署的容量接口；不将GW解释为GPU数量或全部AI负载。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4"
+            ]
+          },
+          {
+            "name": "特定模型服务吞吐效率",
+            "definition": "Microsoft Copilot工作负载在其生产优化下的吞吐倍数；用于识别使用量到设备需求的非线性，不外推整个行业。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4"
+            ]
+          },
+          {
+            "name": "GPU平台商业交付位置",
+            "definition": "主要GPU平台已进入的商业交付阶段及旧新平台并行状态；连接芯片采购与可部署系统供给。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O130",
+              "D1-O23"
+            ]
+          },
+          {
+            "name": "模型厂商计算平台采购安排",
+            "definition": "模型服务商已形成的多云、GPU与自研加速器购买、租用及存量集群接入关系；安排的签署、服务交付和新硬件装机是不同状态，影响工作负载与组件采购分配。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O91",
+              "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Second-Quarter-Results/default.aspx",
+              "https://www.anthropic.com/news/google-broadcom-partnership-compute",
+              "https://www.anthropic.com/news/higher-limits-spacex",
+              "https://x.ai/news/anthropic-compute-partnership",
+              "https://nvidianews.nvidia.com/news/spectrum-x-ethernet-networking-xai-colossus/"
+            ]
+          },
+          {
+            "name": "低延迟异构推理平台供给",
+            "definition": "将SRAM LPU与HBM GPU分工的系统是否成为可商业供应的平台；影响单位任务设备、主机内存和HBM配置。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://developer.nvidia.com/blog/inside-nvidia-groq-3-lpx-the-low-latency-inference-accelerator-for-the-nvidia-vera-rubin-platform",
+              "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Groq-3-LPX-Now-in-Full-Production-With-World-Class-Speed-for-Agentic-AI/default.aspx"
+            ]
+          },
+          {
+            "name": "NeoCloud未交付电力容量",
+            "definition": "CoreWeave已订租赁项目中尚未交付的电力规模，分项目组记录；直接定位计划到可部署能力的时滞，不能视为取消需求。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000366/crwv-20260630.htm"
+            ]
+          },
+          {
+            "name": "NeoCloud最大客户收入集中度",
+            "definition": "CoreWeave最大单客户季度收入份额；比较集中度而非同一客户跨期份额，披露代号未保证跨期为同一主体。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000366/crwv-20260630.htm"
+            ]
+          },
+          {
+            "name": "NeoCloud第二大客户收入集中度",
+            "definition": "CoreWeave第二大客户季度收入份额，定位当前少数大客户敞口；不由跨期代号推断客户身份。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000366/crwv-20260630.htm"
+            ]
+          },
+          {
+            "name": "NeoCloud可用资金与授信总量",
+            "definition": "CoreWeave披露现金、证券和已有融资设施可用额度的总流动性；设施提取有条件，不等同无约束现金，连接扩建支付能力。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000366/crwv-20260630.htm"
+            ]
+          },
+          {
+            "name": "NeoCloud未履约服务合同金额",
+            "definition": "CoreWeave已签客户服务安排的未满足履约义务RPO；锚定合同需求而非使用量、终端收入或芯片订单。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000366/crwv-20260630.htm"
+            ]
+          },
+          {
+            "name": "Microsoft Abilene新增园区IT负荷设计",
+            "definition": "Crusoe为Microsoft新增园区每栋建筑的设计关键IT负荷；两栋建筑的设计不是已上线利用率，也不是发电量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.crusoe.ai/resources/newsroom/crusoe-announces-new-900-mw-ai-factory-campus-in-abilene-texas-to-support-microsoft-ai-infrastructure"
+            ]
+          },
+          {
+            "name": "Microsoft Abilene新增园区自备发电规划",
+            "definition": "新园区现场发电方案的装机功率；用于识别接电路径变化，不与关键IT负荷混为同一量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.crusoe.ai/resources/newsroom/crusoe-announces-new-900-mw-ai-factory-campus-in-abilene-texas-to-support-microsoft-ai-infrastructure"
+            ]
+          },
+          {
+            "name": "Microsoft Abilene首栋通电计划",
+            "definition": "新增园区首栋建筑预计通电的时点；定位基础设施到设备部署的窗口，通电不是服务器验收。",
+            "value_type": "TIME",
+            "ref": [
+              "https://www.crusoe.ai/resources/newsroom/crusoe-announces-new-900-mw-ai-factory-campus-in-abilene-texas-to-support-microsoft-ai-infrastructure"
+            ]
+          },
+          {
+            "name": "推理上下文分层运行架构",
+            "definition": "GPU、CPU主机内存及闪存对KV上下文的分工位置；决定服务扩张的内存层级需求，而不是笼统存储增长。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O103",
+              "D1-O139",
+              "https://developer.nvidia.com/blog/?p=111143"
+            ]
+          },
+          {
+            "name": "AI系统实际部署数量",
+            "definition": "已验收、可使用的AI加速器服务器节点数量，按客户和平台保留口径；不把公告机架数、芯片出货量或计划容量混入节点数。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O130",
+              "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000366/crwv-20260630.htm"
+            ]
+          },
+          {
+            "name": "生产工作负载单位任务资源消耗",
+            "definition": "在固定成功任务、服务质量和模型下的计算与驻留内存运行位置；反映缓存、量化、批量和路由的资源组合，不用原始token或峰值性能代替。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+              "https://developer.nvidia.com/blog/inside-nvidia-groq-3-lpx-the-low-latency-inference-accelerator-for-the-nvidia-vera-rubin-platform",
+              "https://www.usenix.org/conference/osdi26/presentation/luo"
+            ]
+          },
+          {
+            "name": "客户未上线设备消化位置",
+            "definition": "设备库存、待安装机架与上线批次的经营状态；区分提前购买、终端消耗及复购节奏。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O130",
+              "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000366/crwv-20260630.htm"
+            ]
+          },
+          {
+            "name": "模型服务采购履约与融资支撑",
+            "definition": "模型厂商的付费增长、计算承诺及外部融资能否支持已承诺的分期采购的经营位置；不以投资方之间资金流重复计终端需求。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O91",
+              "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Second-Quarter-Results/default.aspx",
+              "https://www.anthropic.com/news/google-broadcom-partnership-compute"
+            ]
+          },
+          {
+            "name": "公共锚定计算时间采购阶段",
+            "definition": "EuroHPC/参与国以计算访问时间采购支持AI Gigafactories的正式程序与交付阶段；锚定买方安排不等于已授标、已付款或已装机。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.eurohpc-ju.europa.eu/eurohpc-joint-undertaking-launches-ai-gigafactories-call-2026-07-30_en"
+            ]
+          }
+        ],
+        "values": [
+          {
+            "name": "Google AI Mode超过十亿月度用户",
+            "parameter": "大众AI搜索覆盖规模",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "Google报告AI Mode月度用户超过10亿；此为AI Mode口径，不是全部Search用户均改用生成式答案。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-05产品披露时的月度用户规模",
+            "as_of": "2026-05-19",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://blog.google/products-and-platforms/products/search/search-io-2026/"
+            ]
+          },
+          {
+            "name": "Google AI Mode查询持续倍增",
+            "parameter": "AI搜索请求增长",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "direction": "自推出以来每个季度查询量均超过翻倍"
+            },
+            "previous_value": null,
+            "time_scope": "截至2026-05-19，推出以来各季度",
+            "as_of": "2026-05-19",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://blog.google/products-and-platforms/products/search/search-io-2026/"
+            ]
+          },
+          {
+            "name": "Gemini API每分钟处理220亿token",
+            "parameter": "Gemini模型API处理速率",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 22000000000.0,
+              "unit": "token/分钟"
+            },
+            "previous_value": null,
+            "time_scope": "Alphabet Q2 2026披露时运行速率；不是季度token总量",
+            "as_of": "2026-07-22",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000066/googexhibit991q22026.htm"
+            ]
+          },
+          {
+            "name": "Gemini App月活9.5亿",
+            "parameter": "消费模型应用月活跃用户",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 950.0,
+              "unit": "百万人/月活"
+            },
+            "previous_value": null,
+            "time_scope": "Alphabet Q2 2026披露时的月活规模",
+            "as_of": "2026-07-22",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000066/googexhibit991q22026.htm"
+            ]
+          },
+          {
+            "name": "M365 Copilot付费席位超过三千万",
+            "parameter": "企业AI助手付费席位规模",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "Microsoft报告M365 Copilot付费席位超过3,000万。"
+            },
+            "previous_value": null,
+            "time_scope": "Microsoft FY2026 Q4，截至2026-06-30",
+            "as_of": "2026-07-29",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4"
+            ]
+          },
+          {
+            "name": "Microsoft席位加消耗模式已有付费使用",
+            "parameter": "企业代理持续执行商业化",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "Microsoft采用席位加使用量的商业模式；Cowork已有数千客户付费使用，Autopilots提供长时间运行代理。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-07-29经营及产品快照",
+            "as_of": "2026-07-29",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4"
+            ]
+          },
+          {
+            "name": "AWS AI业务运行收入超过二百五十亿美元",
+            "parameter": "AWS AI服务收入运行规模",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "AWS AI业务年化收入运行速率超过250亿美元；公司称同比为三位数百分比增长。"
+            },
+            "previous_value": null,
+            "time_scope": "2026 Q2披露时的年化run rate",
+            "as_of": "2026-07-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Second-Quarter-Results/default.aspx"
+            ]
+          },
+          {
+            "name": "Microsoft季度资本投入含租赁",
+            "parameter": "云客户资本投入",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 41.0,
+              "unit": "十亿美元"
+            },
+            "previous_value": null,
+            "time_scope": "Microsoft FY2026 Q4截至2026-06-30；含融资租赁",
+            "as_of": "2026-07-29",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4"
+            ]
+          },
+          {
+            "name": "Meta季度资本投入",
+            "parameter": "云客户资本投入",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 31.08,
+              "unit": "十亿美元"
+            },
+            "previous_value": null,
+            "time_scope": "Meta 2026 Q2；含融资租赁本金支付",
+            "as_of": "2026-07-29",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-Second-Quarter-2026-Results/"
+            ]
+          },
+          {
+            "name": "Alphabet季度PP&E现金购置",
+            "parameter": "云客户资本投入",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 44924.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 22446.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "2026 Q2；前值2025 Q2同口径PP&E现金购置",
+            "as_of": "2026-07-22",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000066/googexhibit991q22026.htm"
+            ]
+          },
+          {
+            "name": "Meta提高2026预算下限",
+            "parameter": "云客户年度投资预算",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "lower": 130.0,
+              "upper": 145.0,
+              "unit": "十亿美元"
+            },
+            "previous_value": {
+              "lower": 125.0,
+              "upper": 145.0,
+              "unit": "十亿美元"
+            },
+            "time_scope": "2026日历年资本开支预期，含融资租赁本金；前值为同一年度125—145十亿美元指引",
+            "as_of": "2026-07-29",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-Second-Quarter-2026-Results/"
+            ]
+          },
+          {
+            "name": "Microsoft约三分之二用于短寿命资产",
+            "parameter": "设备类资本投入比重",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 66.7,
+              "unit": "百分比（约；公司表述为三分之二）"
+            },
+            "previous_value": null,
+            "time_scope": "Microsoft FY2026 Q4资本投入组合",
+            "as_of": "2026-07-29",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4"
+            ]
+          },
+          {
+            "name": "AWS季度经营利润",
+            "parameter": "主要云业务经营利润",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 16600.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 10200.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "2026 Q2；前值2025 Q2同一分部",
+            "as_of": "2026-07-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Second-Quarter-Results/default.aspx"
+            ]
+          },
+          {
+            "name": "Google Cloud季度经营利润",
+            "parameter": "主要云业务经营利润",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 8814.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 2826.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "2026 Q2；前值2025 Q2同一分部",
+            "as_of": "2026-07-22",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000066/googexhibit991q22026.htm"
+            ]
+          },
+          {
+            "name": "Microsoft季度新增一GW能力",
+            "parameter": "投运计算基础设施增量",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 1.0,
+              "unit": "GW"
+            },
+            "previous_value": null,
+            "time_scope": "Microsoft FY2026 Q4；整体容量新增而非年度累计",
+            "as_of": "2026-07-29",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4"
+            ]
+          },
+          {
+            "name": "Copilot吞吐达到年初四倍",
+            "parameter": "特定模型服务吞吐效率",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 4.0,
+              "unit": "倍（相对2026年初）"
+            },
+            "previous_value": null,
+            "time_scope": "2026年初至FY2026 Q4经营披露，特定Copilot工作负载",
+            "as_of": "2026-07-29",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4"
+            ]
+          },
+          {
+            "name": "NVIDIA Rubin开始生产出货且与Blackwell并行",
+            "parameter": "GPU平台商业交付位置",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "NVIDIA披露Vera Rubin在其FY2027 Q3开始生产出货，Blackwell与Rubin并行；仍存在供应约束。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-08-26 10-Q所述当季进展；不倒记为2026-07-26全部已交付",
+            "as_of": "2026-08-26",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O130",
+              "D1-O23"
+            ]
+          },
+          {
+            "name": "AWS自研计算获得模型客户多年承诺",
+            "parameter": "模型厂商计算平台采购安排",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "Amazon披露Anthropic及OpenAI已对Trainium作多年、多GW承诺；承诺不等于这些GW均已投运。"
+            },
+            "previous_value": null,
+            "time_scope": "2026 Q2披露，涉及多年后续计算能力",
+            "as_of": "2026-07-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Second-Quarter-Results/default.aspx"
+            ]
+          },
+          {
+            "name": "NVIDIA Groq 3 LPX进入全面生产",
+            "parameter": "低延迟异构推理平台供给",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "NVIDIA宣布Groq 3 LPX全面生产；平台由LPU执行特定FFN/MoE部分，HBM GPU仍承担prefill及decode attention。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-08平台供给状态",
+            "as_of": "2026-08-24",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Groq-3-LPX-Now-in-Full-Production-With-World-Class-Speed-for-Agentic-AI/default.aspx",
+              "https://developer.nvidia.com/blog/inside-nvidia-groq-3-lpx-the-low-latency-inference-accelerator-for-the-nvidia-vera-rubin-platform"
+            ]
+          },
+          {
+            "name": "CoreWeave单一租赁站点尚未交付393MW",
+            "parameter": "NeoCloud未交付电力容量",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 393.0,
+              "unit": "MW"
+            },
+            "previous_value": null,
+            "time_scope": "2026-06-30余额；该单一站点预计2026及2028分期交付",
+            "as_of": "2026-08-11",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000366/crwv-20260630.htm"
+            ]
+          },
+          {
+            "name": "CoreWeave其他建设成本租赁站点尚未交付355MW",
+            "parameter": "NeoCloud未交付电力容量",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 355.0,
+              "unit": "MW"
+            },
+            "previous_value": null,
+            "time_scope": "2026-06-30余额；另一租赁项目组预计2026—2028分期交付，不等同全公司缺口",
+            "as_of": "2026-08-11",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000366/crwv-20260630.htm"
+            ]
+          },
+          {
+            "name": "CoreWeave最大客户占36%（上年最大客户71%）",
+            "parameter": "NeoCloud最大客户收入集中度",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 36.0,
+              "unit": "百分比"
+            },
+            "previous_value": {
+              "number": 71.0,
+              "unit": "百分比"
+            },
+            "time_scope": "2026 Q2；前值2025 Q2最大单客户份额，比较同口径集中度而非同一客户变化",
+            "as_of": "2026-08-11",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000366/crwv-20260630.htm"
+            ]
+          },
+          {
+            "name": "CoreWeave当前第二大客户B占26%",
+            "parameter": "NeoCloud第二大客户收入集中度",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 26.0,
+              "unit": "百分比"
+            },
+            "previous_value": null,
+            "time_scope": "2026 Q2客户B收入占比；未将上年低于10%填为点数",
+            "as_of": "2026-08-11",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000366/crwv-20260630.htm"
+            ]
+          },
+          {
+            "name": "CoreWeave流动性含未提取设施",
+            "parameter": "NeoCloud可用资金与授信总量",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 15553.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 6862.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "2026-06-30余额；前值2025-12-31同口径；包含现有融资设施可用额度",
+            "as_of": "2026-08-11",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000366/crwv-20260630.htm"
+            ]
+          },
+          {
+            "name": "CoreWeave未履约RPO1037亿美元",
+            "parameter": "NeoCloud未履约服务合同金额",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 103700.0,
+              "unit": "百万美元"
+            },
+            "previous_value": null,
+            "time_scope": "2026-06-30未满足RPO，含未来多年服务；合同仍受服务可用性、交付及计量条款影响",
+            "as_of": "2026-08-11",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000366/crwv-20260630.htm"
+            ]
+          },
+          {
+            "name": "两栋新增建筑各设计336MW IT负荷",
+            "parameter": "Microsoft Abilene新增园区IT负荷设计",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 336.0,
+              "unit": "MW/栋（共两栋设计）"
+            },
+            "previous_value": null,
+            "time_scope": "2026-03-27项目方案，未来建设能力",
+            "as_of": "2026-03-27",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.crusoe.ai/resources/newsroom/crusoe-announces-new-900-mw-ai-factory-campus-in-abilene-texas-to-support-microsoft-ai-infrastructure"
+            ]
+          },
+          {
+            "name": "Crusoe规划900MW现场发电",
+            "parameter": "Microsoft Abilene新增园区自备发电规划",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 900.0,
+              "unit": "MW"
+            },
+            "previous_value": null,
+            "time_scope": "新增Microsoft Abilene园区现场电站设计，非已发电能力",
+            "as_of": "2026-03-27",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.crusoe.ai/resources/newsroom/crusoe-announces-new-900-mw-ai-factory-campus-in-abilene-texas-to-support-microsoft-ai-infrastructure"
+            ]
+          },
+          {
+            "name": "首栋计划2027年中通电",
+            "parameter": "Microsoft Abilene首栋通电计划",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "point": "2027年中",
+              "start": null,
+              "end": null,
+              "precision": "约年中"
+            },
+            "previous_value": null,
+            "time_scope": "2026-03-27公布的2027建设计划",
+            "as_of": "2026-03-27",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.crusoe.ai/resources/newsroom/crusoe-announces-new-900-mw-ai-factory-campus-in-abilene-texas-to-support-microsoft-ai-infrastructure"
+            ]
+          },
+          {
+            "name": "美光KV缓存产品已向客户交付",
+            "parameter": "推理上下文分层运行架构",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "美光7600/9650已向领先客户用于KV-cache的应用出货；CMX/Dynamo类路径将热KV留在GPU并协调主机及闪存层。此处只锚定客户分层部署接口，不展开SSD业务。"
+            },
+            "previous_value": null,
+            "time_scope": "美光FY2026 Q4披露的客户交付状态",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O103",
+              "D1-O139",
+              "D1-O44",
+              "https://developer.nvidia.com/blog/?p=111143",
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/"
+            ]
+          },
+          {
+            "name": "EuroHPC正式招标并采用公共锚定买方安排",
+            "parameter": "公共锚定计算时间采购阶段",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "2026-07-30启动正式招标，欧盟与参与国拟共同采购计算访问时间；投标截止2026-11-12，预期2027年初遴选、遴选后18个月内投运；主要资金来自2028—2035预算，非截点已授标采购。"
+            },
+            "previous_value": null,
+            "time_scope": "截至截点已经发布的2026招标与其2027及以后部署计划",
+            "as_of": "2026-07-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.eurohpc-ju.europa.eu/eurohpc-joint-undertaking-launches-ai-gigafactories-call-2026-07-30_en"
+            ]
+          },
+          {
+            "name": "Anthropic已签Colossus 1存量算力接入安排",
+            "parameter": "模型厂商计算平台采购安排",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "Anthropic与SpaceXAI于2026-05-06宣布已签使用Colossus 1全部计算容量的协议，公告范围超过300MW、超过22万NVIDIA GPU，并宣布提高Claude服务限额。一个月内提供全部容量是当时计划，不作为已核实完成；接入既有集群不等于同量新GPU或新内存采购，也不等于资产所有权出售。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-05-06已签安排及随后一个月的公告交付计划；集群2024年已有早期训练能力，跨年份配置不是同口径新增采购序列。",
+            "as_of": "2026-05-06",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.anthropic.com/news/higher-limits-spacex",
+              "https://x.ai/news/anthropic-compute-partnership",
+              "https://nvidianews.nvidia.com/news/spectrum-x-ethernet-networking-xai-colossus/"
+            ]
+          }
+        ]
+      },
+      "expectation_baseline": [
+        {
+          "name": "使用扩散与持续付费执行支持继续扩容",
+          "baseline": "未来数季的默认路径是模型服务活动和付费执行继续增长，而非停留在试用或只有训练。大众入口、企业席位和AWS AI可收费业务已有不同口径的实际规模，Gemini API处理量也显示运行活动；这是本研究的经营证据推断，不能当作AI设备增速共识。广告、席位和按消耗付费让投资支持来源多样化，代理工具执行还带来独立CPU和数据服务需求。",
+          "ordinary_progress": "现有服务扩大活跃使用，更多企业把代理接入生产工作流，按已公布预算增加容量。",
+          "open_frontier": "增长是新任务还是替代旧搜索/软件活动；成功任务频率、付费留存及每任务资源消耗，决定净新增设备而非仅提高既有利用率。",
+          "time_scope": "2026 Q4—2027；使用与采购季度周期",
+          "ref": [
+            "https://blog.google/products-and-platforms/products/search/search-io-2026/",
+            "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000066/googexhibit991q22026.htm",
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Second-Quarter-Results/default.aspx",
+            "https://www.anthropic.com/research/economic-index-march-2026-report",
+            "https://www.amd.com/en/blogs/2026/agentic-ai-amd-epyc-9005-cpus-wins-today-epyc-9006.html"
+          ]
+        },
+        {
+          "name": "投资扩张有经营支持但不能用支出增速推芯片数量",
+          "baseline": "未来几个季度仍以扩建为工作基线。多家客户的实际资本支付、Meta年度预算上调及AWS/Google Cloud经营利润增长，使立即普遍削减比继续投入更不符合目前行动。资本投入同时含土地机房、CPU/GPU、价格上涨及租赁；Microsoft表观预算变化有租赁分类原因，不等于实际投资削减。各公司不同计量口径不合成纯AI资本总数。",
+          "ordinary_progress": "预算内设备与园区付款继续，短寿命设备和建筑投资各按各自节奏交付。",
+          "open_frontier": "AI服务自身的盈利与资本回报、融资成本和设备价格会改变可持续投资强度；传统云利润不能证明每项AI项目已赚钱。",
+          "time_scope": "2026年剩余季度至2027预算与交付周期",
+          "ref": [
+            "https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-Second-Quarter-2026-Results/",
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000066/googexhibit991q22026.htm",
+            "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Second-Quarter-Results/default.aspx"
+          ]
+        },
+        {
+          "name": "平台多元化与效率提升重写设备转换率",
+          "baseline": "默认路径是GPU、云自研ASIC、CPU及SRAM专用执行并存，服务扩张不按token等比例转成GPU购买。Trainium的多年采购承诺、Rubin商业交付和LPX生产供给说明多条路线均有现实接口；Copilot吞吐改善则说明同一工作负载可减少单位服务资源。效率先扩展同一电力下的服务能力，是否随后增加设备取决于需求反弹，这是本研究采用的条件性默认解释。",
+          "ordinary_progress": "旧新GPU平台并行，已承诺自研路线逐步接入；模型、批处理和调度继续优化。",
+          "open_frontier": "反弹大于还是小于单位任务节约，以及模型适配、时延和可靠性是否改变平台份额；不能由ASIC迁移推断总HBM消失。",
+          "time_scope": "2026—2028平台周期",
+          "ref": [
+            "D1-O130",
+            "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Second-Quarter-Results/default.aspx",
+            "https://aws.amazon.com/about-aws/whats-new/2025/12/amazon-ec2-trn3-ultraservers/",
+            "https://blog.google/innovation-and-ai/infrastructure-and-cloud/google-cloud/eighth-generation-tpu-agentic-era/",
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "https://developer.nvidia.com/blog/inside-nvidia-groq-3-lpx-the-low-latency-inference-accelerator-for-the-nvidia-vera-rubin-platform",
+            "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Groq-3-LPX-Now-in-Full-Production-With-World-Class-Speed-for-Agentic-AI/default.aspx"
+          ]
+        },
+        {
+          "name": "承诺容量分期上线而非预算立即变成消耗",
+          "baseline": "可投运能力继续增加但项目跨季度分期兑现，是比全额预算即刻上线更有依据的路径。CoreWeave的合同RPO和含授信流动性支持继续建设，两组未交付电力及Crusoe首栋通电计划同时定位了时间差；已交付项目与新增项目不可混同。客户对手方集中、项目借款和长期租约使需求意愿与融资可行性相互连接，但当前证据不支持宣布美光订单已被取消。 模型服务容量增长也可来自存量集群接入，Colossus协议提供了这条商业路径的事实基础；接入容量不重复计作既装GPU/HBM的新采购。",
+          "ordinary_progress": "已建建筑通电、设备安装、软件适配、验收逐步推进；不同节点可领先或落后于芯片采购。 已签存量接入的迁移和适配可与新建并行，其交付进展不同于新园区装机。",
+          "open_frontier": "关键电力/融资或整机系统瓶颈是否让提前采购变成延迟复购；自备电是否缩短排队同时提高运营成本，电网扰动是否新增可靠性负担。 存量余量回收、原经营者另建以及接手者升级或换代，会把同一服务扩张转换为不同新增硬件净额。",
+          "time_scope": "2026—2028项目分期与季度采购",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000366/crwv-20260630.htm",
+            "https://www.crusoe.ai/resources/newsroom/crusoe-announces-new-900-mw-ai-factory-campus-in-abilene-texas-to-support-microsoft-ai-infrastructure",
+            "D1-O130",
+            "https://ferc.gov/news-events/news/ferc-launches-aggressive-targeted-action-speed-large-load-integration",
+            "https://insidelines.pjm.com/pjm-dominion-review-large-load-transfer-event/",
+            "https://www.anthropic.com/news/higher-limits-spacex",
+            "https://x.ai/news/anthropic-compute-partnership",
+            "https://nvidianews.nvidia.com/news/spectrum-x-ethernet-networking-xai-colossus/"
+          ]
+        },
+        {
+          "name": "内存分层增加有效上下文但不是所有存储层同步扩张",
+          "baseline": "默认路径是热计算驻留HBM，CPU内存承担主机工作集，闪存/共享存储承接可迁移上下文；KV应用交付和已有平台软件路径支持这种逐步采用。系统减少重算或降低驻留成本后更容易提供长上下文和高并发，但不能把各层迁移量都算成独立新增需求。",
+          "ordinary_progress": "已支持工作负载扩大缓存复用、预取和分层，生产部署优先选择兼容且满足尾延迟的组合。",
+          "open_frontier": "迁移的热点比例、软件命中率和服务成本下降后的需求弹性；新HBF/GPU-direct方案尚不足以成为普遍替代HBM的默认路径。",
+          "time_scope": "2026—2027部署与应用优化周期",
+          "ref": [
+            "D1-O103",
+            "https://developer.nvidia.com/blog/?p=111143",
+            "https://www.usenix.org/conference/osdi26/presentation/luo",
+            "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf",
+            "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html"
+          ]
+        },
+        {
+          "name": "公共与私有路线补充云需求并改变请求归属",
+          "baseline": "未来需求保持多渠道。欧盟7月正式招标已从制度框架走向公共计算时间锚定采购，增强中期本地建设的可融资性；但授标、共同融资与主要后续预算仍在未来，不把最多7座计划视为当季内存订单。端侧与隐私服务器继续改变请求位置和采购平台，多模态/仿真拓宽开发用途；当前商业云扩建仍是近端主干，新公共路径的可信度高于仅有法规时的判断，尚不足以形成已建全球新增GW基线。",
+          "ordinary_progress": "公共招标和本地资格程序推进，按已宣布时点准备2027及以后部署；本地/私有负载与商业云并存，多模态开发工具继续使用。",
+          "open_frontier": "公共锚定计算时间的授标规模、支付覆盖、共同融资及交付进度；端侧是否替代或诱发云请求；仿真能否进入持续经营预算；出口许可如何重排可服务平台。",
+          "time_scope": "2026—2028采购与平台周期",
+          "ref": [
+            "https://www.consilium.europa.eu/en/press/press-releases/2026/01/16/artificial-intelligence-council-paves-the-way-for-the-creation-of-ai-gigafactories/",
+            "https://machinelearning.apple.com/research/introducing-third-generation-of-apple-foundation-models",
+            "https://nvidianews.nvidia.com/news/nvidia-announces-open-physical-ai-data-factory-blueprint-to-accelerate-robotics-vision-ai-agents-and-autonomous-vehicle-development",
+            "https://deepmind.google/blog/genie-3-a-new-frontier-for-world-models/",
+            "https://www.bis.gov/press-release/department-commerce-revises-license-review-policy-semiconductors-exported-china",
+            "D1-O31",
+            "https://www.eurohpc-ju.europa.eu/eurohpc-joint-undertaking-launches-ai-gigafactories-call-2026-07-30_en"
+          ]
+        }
+      ],
+      "realization_factors": [
+        {
+          "name": "有用性、分发与付费留存创造重复需求",
+          "mechanism": "平台将AI嵌入搜索和助手默认入口，触达用户；准确性、任务完成质量、交互延迟与数据权限决定用户是否实际使用及企业是否授权。使用频率与持续留存把一次试用变为重复请求；席位、按量收费或广告转化提供付款来源。成功节省的时间和改善的经营结果提高客户支付意愿，价格及免费限额反过来约束调用。失败重试可以增加token却降低客户净收益，因此资源消耗与有价值需求不是同一个变量。 对能写入真实业务系统的自主应用，安全控制、可追责记录、应用合规及机构信任进一步决定可授权的任务集合与处理地点；人工批准和隔离既改变持续执行强度，也增加监督与主机资源成本。",
+          "current_status": "截至2026-10-09 17:42 UTC，需求不再只有模型开发：AI Mode已触及超过十亿月用户，Copilot超过三千万付费席位，AWS披露AI收入运行规模超过250亿美元。入口、付款和活动已有不同层面的实证；Anthropic使用研究说明能力与可委托任务仍有边界。当前最合理解释是大众使用与企业授权扩大持续服务，而不是所有用户都已转成高强度、可盈利请求。 Anthropic 4月安全研究把模型、执行框架、工具和环境列为共同防线，仍不保证消除提示注入；欧盟7月应用监管时点及监督安排显示制度准备影响授权。它们支持有条件的持续采用，不构成已发生行业性停用或所有用途获准的证据。",
+          "materiality_context": "触达人群设置机会规模，默认分发能短期放大入口，但已有十亿级覆盖后，频率、活跃留存和付费转换的变化比重复报告注册人数更能改变增量。任务质量、权限和延迟影响可委托范围：提高成功率会减少无效重试，同时提高留存，净算力方向不能只看token节约。若每活跃用户频率提高10%，初始请求增加10%，但免费限额、价格和服务器效率会缓冲设备增量。席位及广告/按量收益决定哪些调用有持续预算，企业ROI与价格是多年机会的重要约束；当前真实付款使其权重高于未商业化的展示，但云总利润不能替代这些应用的净回报。 对原本不获授权的任务，制度许可与信任决定市场能否存在，影响可大于同一任务的效率改善；在已允许用途，控制/监督成本改变净客户回报。事故或合规迁区既可能缩小自动化范围，也可能把工作转到隔离主机，故要同时保留总量与资源结构后果。",
+          "scope_boundary": "解释AI服务需求的生成与持续性，资源转换及投资预算分别由效率和回报Factor深化；广告收益并非全部来自AI，也不把消费用户与企业席位相加。",
+          "ref": [
+            "https://blog.google/products-and-platforms/products/search/search-io-2026/",
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Second-Quarter-Results/default.aspx",
+            "https://www.anthropic.com/research/anthropic-economic-index-january-2026-report",
+            "https://www.anthropic.com/research/economic-index-march-2026-report",
+            "https://www.anthropic.com/research/trustworthy-agents",
+            "https://digital-strategy.ec.europa.eu/en/news/ai-omnibus-enters-force"
+          ]
+        },
+        {
+          "name": "代理执行循环重分配计算和常驻状态",
+          "mechanism": "企业授权任务后，代理在模型推理、工具调用、代码/数据库执行和等待之间循环。任务数、每任务模型调用与上下文决定加速器工作；工具复杂度及重试决定CPU执行；任务持续时间、峰值并发和隔离环境的内存占用决定主机资源。会话日志可外置，沙箱按需启动，推理与工具环境可独立调度，因此墙钟持续时间不等于GPU占用时间。更可靠的权限控制和恢复降低失败成本，促使企业扩展自动执行。",
+          "current_status": "付费后台执行已经进入产品组合，需求由偶发对话向长流程发展。Anthropic 4月Managed Agents把会话、推理编排和执行环境拆分，并按需创建容器，提供了可操作的资源解耦实例。当前代理既增加模型往返，也扩大CPU、数据服务和状态管理；未观察到所有长任务必须整段独占GPU的部署事实。",
+          "materiality_context": "任务数和授权范围决定可服务活动，成功率与恢复/权限控制决定反复采购服务的可持续性；当前商业采用比单纯模型榜单更接近增量来源。模型调用/上下文提高每任务推理强度，工具复杂度和重试提高CPU强度，两者可独立变化。若同样任务数的等待时间翻倍而推理调用不变，GPU工作不必翻倍；若保持沙箱常驻，并发约等于到达率乘持续时间，主机内存占用却可能翻倍。这是排队模型而非行业测量。峰值并发和隔离内存决定容量，外置日志、按需沙箱与独立调度压低空闲占用；其节约能促成更长任务再放大需求。近端CPU及调度变化的解释力大于把所有代理时长直接乘HBM设备。",
+          "scope_boundary": "共同解释AI活动结构；纯非HBM内存捕获在服务器Unit展开，日志/SSD产品深度在存储Shell；不把一个供应商工程案例当全行业资源平均值。",
+          "ref": [
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "https://www.anthropic.com/engineering/managed-agents",
+            "https://www.anthropic.com/research/anthropic-economic-index-january-2026-report"
+          ]
+        },
+        {
+          "name": "前沿训练、后训练与世界模型的预算选择",
+          "mechanism": "模型开发者为提高可靠性、推理能力和多模态/物理任务效果，选择模型规模、训练数据/合成轨迹量、实验次数及后训练投入；这些选择创造集群工作，而非被动承接用户token。研发效果相对成本决定是否继续扩大训练或转向更小模型、推理时计算和数据筛选。仿真准确度与sim-to-real收益决定机器人/视频业务是否支付持续开发预算。训练要求同步通信和数据供给，运行时长及集群可用窗口决定完成周期；同一集群训练与在线推理竞争资源。",
+          "current_status": "多平台多年容量安排支持前沿开发仍有强投资意愿，Genie 3和Physical AI数据工厂把交互世界与合成数据带入可用工具。2026年5月Project Genie又宣布向全球合资格成年Ultra订阅用户逐步开放，并加入Street View现实锚定，已超出单纯能力展示，但仍是实验研究原型，没有可据以估计独立世界模型服务收入或规模算力的披露。当前已有训练研发路线，新增消费者和产业付费池仍偏早期；不能用机器人实际出货推算云研发计算，也不能把原型接入当确定规模订单。",
+          "materiality_context": "模型/数据规模和实验频率设置资源工作量；相同规模增加实验次数首先按比例增加训练时间，后来数据筛选和效果递减会调整预算。研发效果和成本控制训练、后训练与推理的份额，能在用户使用不变时改写设备配置；这是比某次benchmark更广的长期机会变量。sim-to-real收益决定新用途范围，目前经济实证弱于搜索/企业服务，故对近端采购权重较低，但可打开并非旧聊天用户乘数的新市场。同步网络、数据供给与可用窗口决定时点和有效利用：窗口减半会推迟完成或要求更多并行节点，不必意味着总研究工作翻倍。与推理竞争资源会令紧张容量下新增研发先改变分配和报价，再推动扩建。",
+          "scope_boundary": "保留研发需求独立性，并覆盖视频、机器人仿真、数据管理对计算系统的作用；不深入终端机器人器件或存储产品经济。",
+          "ref": [
+            "https://deepmind.google/blog/genie-3-a-new-frontier-for-world-models/",
+            "https://nvidianews.nvidia.com/news/nvidia-announces-open-physical-ai-data-factory-blueprint-to-accelerate-robotics-vision-ai-agents-and-autonomous-vehicle-development",
+            "https://www.anthropic.com/news/google-broadcom-partnership-compute",
+            "D1-O104",
+            "D1-O118",
+            "https://blog.google/innovation-and-ai/models-and-research/google-deepmind/project-genie-expands/"
+          ]
+        },
+        {
+          "name": "成功任务效率、有效利用和扩容余量",
+          "mechanism": "任务活动通过每个成功结果所需的模型调用、精度/路由、缓存复用和调度，转换为GPU秒、内存容量及带宽。批处理可提高吞吐却损害交互延迟，服务商在SLA下最大化有效完成量而非峰值利用率。既有兼容容量的余量先吸收增长；接近上限后，新增需求要求扩容。效率降低服务成本和价格，可能增加付费活动及更长上下文，形成反弹；训练、prefill和decode不能用同一token系数。",
+          "current_status": "微软在特定Copilot服务披露吞吐达到年初四倍，同时Azure需求仍超过可用容量。这支持效率改善与扩容并存，不支持全行业资源强度降至四分之一。NVIDIA 7月技术分析说明长上下文及缓存架构会改变不同推理阶段的计算/内存瓶颈。当前工作判断是大云局部约束显著，节约更多增加可服务量，而不是立刻取消全部设备预算。",
+          "materiality_context": "活动规模是机会广度；成功率、调用/精度和缓存决定单位强度；批处理与SLA共同决定有效利用。若同服务效率翻倍且活动不变，所需GPU工作可减半；若成本下降使活动超过翻倍，资源仍上升，这一弹性并未量化。余量决定近端采购敏感度：已有Azure供不应求说明其边际需求较易影响扩建，但未上线园区不是可立即复用的空闲GPU。上下文与prefill/decode构成决定HBM/CPU/网络配置，当前比统一token增长率更重要；软件兼容决定哪些旧设备能吸收工作，不能将一处吞吐改进自动外推跨平台。价格下降、质量提升与任务增加的反馈决定长期净机会，不能将节约和反弹分别当两份需求相加。",
+          "scope_boundary": "给需求到设备之间的通用转换关系；各产品Unit解释内存强度和份额，不把实验kernel效率当业务总成本下降。",
+          "ref": [
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "https://developer.nvidia.com/blog/co-designing-ai-model-attention-for-fast-interactive-long-context-inference/",
+            "https://www.usenix.org/conference/osdi26/presentation/luo",
+            "D1-O147",
+            "D1-O148"
+          ]
+        },
+        {
+          "name": "服务回报与资本预算改变设备数量和配置",
+          "mechanism": "云、广告和模型服务经营收益形成可再投入现金；客户比较新增能力的收入、单位推理成本、能耗、折旧及更新风险，分配训练和推理预算。战略竞争可允许短期低回报，但预算持续性仍受现金生成和可融资性约束。资本预算按土地/电力、建筑、网络和CPU/GPU划分，设备价格与平台效率决定购买数量；内存配置和供给报价可令同样美元买到不同资源。租赁分类及会计资本开支改变报告数但未必改变物理计划。",
+          "current_status": "Amazon和Google Cloud利润增长、Meta广告经营与预算上调提供经营支撑；微软云毛利受AI投入影响，显示扩张并非无成本。微软2026资本开支报告口径由1900亿变1750亿美元而物理计划未变，是不能把名义变化当撤单的具体例子。当前高投入持续，价格、租赁和基础设施占比使支出增长不能一比一推设备量。",
+          "materiality_context": "现金生成与服务净回报控制多年预算上限；当前云经营盈利比仅靠股权续筹的买方更有承受力，但混合云利润不是AI单项ROI。能耗、折旧、更新风险和单位推理成本决定回报，效率改善可减少单位设备也增强扩建意愿。设备预算份额控制采购范围：微软称季度约三分之二为CPU/GPU短寿命资产，剩余投入不能乘内存配置。固定设备预算下，设备价格涨10%初始数量约少9.1%，随后采购规格、融资和预算可调整。训练/推理分配及内存配置决定平台类型和内容，不必随支出同向；会计租赁分类主要影响观察口径，不能和经营预算变化赋予同样物理重要性。",
+          "scope_boundary": "研究客户的经营承受力与采购经济，不研究MU融资或估值；美元投入、GW和设备数始终分开，跨产品合同治理在战略客户Shell。",
+          "ref": [
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-Second-Quarter-2026-Results/",
+            "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Second-Quarter-Results/default.aspx",
+            "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000066/googexhibit991q22026.htm",
+            "D1-O130"
+          ]
+        },
+        {
+          "name": "租户信用、抵押和资本循环控制可建设容量",
+          "mechanism": "NeoCloud、开发商和资本方以服务/租约承诺支持工程融资，以设备或园区抵押获取提款；租户信用、收入集中、担保与履约条件影响利率、可提额度和融资成本。建设支出先于回款，投运及验收延迟会消耗现金并限制下一阶段采购。长期租约与短贷款到期形成再融资需求；资产出售或长期资本接续回收建设资金。模型服务商、云和芯片公司的投资及采购承诺相关，资本循环不是相互独立的终端消费。设备代际折旧与利用率又影响抵押价值和续贷。",
+          "current_status": "CoreWeave有1037亿美元RPO及含未提取额度的155.53亿美元流动性，但仍有待交付电力，最大客户占36%、前三占72%，存在需求和信用集中。Crusoe既有Abilene资产15年单租户安排与2028年建设贷款到期并存；新Microsoft园区是另一资产。当前信用支持扩建，而不是已证明融资链断裂；兑现仍由提款、交付和接续资本决定。",
+          "materiality_context": "租户信用、集中和履约条件决定可融资需求的质量；RPO大于未来一年收入并不等于同额可立即买芯片。利率与额度控制边际项目经济及短期现金：155.53亿美元中100.14亿是可用设施而非现金，提款条件比合计数更接近施工约束。验收时点、建设支出和回款缺口控制采购节奏，延迟一季可扩大资金占用而不改变最终负载。贷款到期/接续资本决定多年连续性，15年租期与2028到期的错配需资本承接，不能自动判违约。设备折旧、利用率影响抵押折扣；强租户和资产出售缓冲风险，但几条供应商投资—模型支出链不能相加成独立机会。相较大云经营现金，这条路线对资金和交付事件更敏感。",
+          "scope_boundary": "关注客户/开发商融资对计算部署的作用，物业资产与新园区不混用；MU自身现金、工厂融资及战略合同条款留相邻Shell。",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000366/crwv-20260630.htm",
+            "https://www.sec.gov/Archives/edgar/data/1944366/000194436626000020/exhibit993-2025abelinedc1l.htm",
+            "https://www.crusoe.ai/resources/newsroom/crusoe-announces-new-900-mw-ai-factory-campus-in-abilene-texas-to-support-microsoft-ai-infrastructure",
+            "D1-O165",
+            "D1-O67",
+            "D1-O80",
+            "D1-O81",
+            "D1-O83"
+          ]
+        },
+        {
+          "name": "可靠供电、机房工程和负荷弹性约束上线",
+          "mechanism": "可运行计算负载由电源/电网接入、变电输配、冷却、机房和完整系统可用能力的共同最小值决定，须按可用IT功率而非发电铭牌比较。接入审批与成本分担影响建设时间和投资回报；自备电源绕开部分排队却增加能源工程、燃料和维护要求。可中断/迁移训练能以较低可靠供电获取容量，但在线低延迟服务SLA需要更高穿越和备用能力。负荷中断降低有效利用并改变地域和工作负载配置。",
+          "current_status": "FERC在6月要求六个区域市场回应大负荷规则，PJM相关申请在截点仍待批准；7月约4GW负荷意外脱网表明接电之外仍有可靠性问题。Crusoe新增园区设计2栋各336MW IT负荷、900MW自备发电，首栋计划2027年中通电。当前最合理解释是部分瓶颈可被工程方案迁移，但设计能力尚未变成同期可用容量。",
+          "materiality_context": "电力、输配、冷却、机房/系统能力每一项均决定交付时点，短板未变时改善非短板不能增加上线量。2×336=672MW IT设计与900MW电站铭牌不是相同口径，更不能直接算GPU或内存采购。接入审批和成本承担影响项目排序，多年影响高于短期宣传GW；自备能源时点、燃料和维护成本决定是否真正缩短排队。负荷弹性对可暂停训练更有用，对严格SLA推理可能减少可售服务小时；若有效运行小时下降10%而工作不变，先需约11.1%更多可用资源或迁移，而非需求消失。穿越和备用决定可靠服务价值，4GW事件说明系统尺度，但未把事件归到MU客户。当前交付约束比新增审批框架本身更能解释季度时滞。",
+          "scope_boundary": "研究客户能源及机房，不展开MU工厂资源；能源监管不是内存直接许可，未批准申请及未来通电计划保持其时间身份。",
+          "ref": [
+            "https://ferc.gov/news-events/news/ferc-launches-aggressive-targeted-action-speed-large-load-integration",
+            "https://insidelines.pjm.com/pjm-dominion-review-large-load-transfer-event/",
+            "https://www.crusoe.ai/resources/newsroom/crusoe-announces-new-900-mw-ai-factory-campus-in-abilene-texas-to-support-microsoft-ai-infrastructure",
+            "D1-O108",
+            "D1-O109",
+            "D1-O91"
+          ]
+        },
+        {
+          "name": "完整系统交付和库存消化错开采购与活动",
+          "mechanism": "客户先订加速器和内存，随后完成xPU系统封装、网络/液冷集成、安装和软件验收；链条中最慢环节控制可上线量。采购提前期及保供安排使未安装设备或在途库存增加；统一范围下采购=运行消耗/新增装机所需器件+库存变化。解除瓶颈既提高服务能力，也可能先消化既有库存而减少新采购。平台代际切换、兼容性和交付节拍决定旧设备能否用于新任务，dock-to-live时间决定已付资本何时变收入。",
+          "current_status": "Rubin已经开始生产出货且与Blackwell并行，不能把出货当尚未来临首发，也不能当所有客户已经上线。微软改善dock-to-live，CoreWeave仍有未交付站点，说明链条进度不一致。当前不存在可量化的普遍MU相关过量库存证据；工作模型是供给保障与系统交付差导致时滞，而不是默认终端需求已逆转。",
+          "materiality_context": "系统封装、网络/冷却、安装和软件验收各决定季度可部署量，改善短板会释放已有资本，不必同时增加器件订单。提前期、保供和库存变化控制采购时点；固定装机需求下库存多10单位，采购可多10单位，之后去库存则相反，不能误读为两次需求增长。dock-to-live缩短影响回款与有效利用，当前具直接经营意义；代际兼容和交付节拍影响能否复用库存及更新需求。长期活动与预算决定机会，短期库存及链条约束决定其露出时间；未测量库存的前提不能变成已发生囤积结论。",
+          "scope_boundary": "覆盖客户系统封装和部署，不混同MU器件堆叠产能；下游HBM/主机内存分别解释自己的订单与库存周期。",
+          "ref": [
+            "D1-O130",
+            "D1-O23",
+            "D1-O127",
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000366/crwv-20260630.htm",
+            "D1-O31"
+          ]
+        },
+        {
+          "name": "平台竞争与内存分层重写采购受益路线",
+          "mechanism": "模型商按成功任务成本、可用能力和软件迁移成本在GPU、TPU、Trainium等多云平台间分配训练/推理。HBM、SRAM、主机DRAM和闪存分别容纳不同热度/延迟的数据；异构设备可分担FFN/MoE与注意力，缓存命中、传输带宽和编排决定有效性能。降低一条GPU路线成本可增加另一条路线，低延迟也可诱发新交互。平台销量、每平台内存配置和供应资格一起决定内存采购，不能用总云预算识别受益厂商。",
+          "current_status": "模型商已拥有多云安排，Trainium3单芯片144GB HBM3e、TPU 8i计划288GB HBM；非NVIDIA并非无HBM。LPX全面生产却仍与GPU注意力/prefill协作；CMX/DirectKV提供主机和闪存层。当前变化主要是任务分配和容量层次，而非HBM统一退出，MU新增参与路径要按具体资格判断。",
+          "materiality_context": "平台分配和软件迁移成本决定机会属于谁，多年容量安排比单个性能宣称更接近采购路线；可用能力在紧张环境中可胜过最低理论成本。每平台容量决定强度，但144与288GB不能当同一任务效率对照。SRAM/DRAM/闪存热度分工、缓存命中和传输带宽决定替代幅度，慢层不能承受热数据延迟时仍需HBM；改善编排能减少重复计算并增加并发。低延迟与成本反馈影响总机会，方向可抵消单机HBM节约。平台销量与MU资格决定捕获，新增架构尚无MU BOM时对当前收入小，但若成为主流可能重写未来可参与市场，不能因早期阶段抹去其经济重要性。",
+          "scope_boundary": "建立平台和内存共同模型；HBM及非HBM产品Unit各自解释内容、份额和经济，SSD/NAND产品深度在存储Shell。",
+          "ref": [
+            "https://aws.amazon.com/about-aws/whats-new/2025/12/amazon-ec2-trn3-ultraservers/",
+            "https://blog.google/innovation-and-ai/infrastructure-and-cloud/google-cloud/eighth-generation-tpu-agentic-era/",
+            "https://www.anthropic.com/news/google-broadcom-partnership-compute",
+            "https://developer.nvidia.com/blog/inside-nvidia-groq-3-lpx-the-low-latency-inference-accelerator-for-the-nvidia-vera-rubin-platform",
+            "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Groq-3-LPX-Now-in-Full-Production-With-World-Class-Speed-for-Agentic-AI/default.aspx",
+            "https://developer.nvidia.com/blog/?p=111143",
+            "https://www.usenix.org/conference/osdi26/presentation/luo",
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "D1-O118",
+            "D1-O121"
+          ]
+        },
+        {
+          "name": "公共锚定采购、主权资格与市场准入重新分配投资",
+          "mechanism": "政府以主权/公共服务需求和计算时间采购成为锚定买方，降低SPV预期收入风险并吸引私营融资；招标遴选、预算支付、共同出资和工程周期决定容量何时形成。数据驻留及本地服务资格改变选址、云/OEM渠道与平台。出口许可按产品/买方条件限制可采购集合，需求可延后、迁往别处或使用替代平台。公共投入可能新增研发/企业机会，也可能替代原有云预算，净需求须区分。",
+          "current_status": "7月30日EuroHPC已正式招标，不再只是1月法规框架：欧盟和参与国拟共同购买计算时间，11月12日截止投标、2027年初遴选、其后18个月内预期投运，主要资金属2028—2035预算。BIS年初对特定芯片附条件逐案审核，不能当所有许可已获准。当前商业云仍是近端主干，公共锚定安排则增加中期本地采购的可信路线。",
+          "materiality_context": "公共计算时间承诺决定可融资机会质量，和一般补贴/宣言相比更靠近最终买方；尚未授标的覆盖比例及私营出资决定实际可建规模。遴选、财政支付和工程周期控制时点，预期最多7座不是当季订单；主要后续预算使其更影响2027以后机会。驻留/资格和渠道决定本地平台与供应商捕获，即使全球投资不变也能重分份额。出口许可条件控制可服务市场，放松未必增加全球总量：若只是迁回同一需求，则主要改变受益路线。公共预算替代既有云支出会抵消净新增；既有商业采购当前量级更大，但锚定采购可打开商业ROI不足以单独支持的市场。",
+          "scope_boundary": "解释客户市场及采购组织，不以计算系统出口许可替代MU自身市场准入规则；本地渠道的内存后果在产品Unit深化。",
+          "ref": [
+            "https://www.eurohpc-ju.europa.eu/eurohpc-joint-undertaking-launches-ai-gigafactories-call-2026-07-30_en",
+            "https://www.bis.gov/press-release/department-commerce-revises-license-review-policy-semiconductors-exported-china",
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "D1-O74",
+            "D1-O130"
+          ]
+        },
+        {
+          "name": "端侧与私有云路由改变云请求的净增量",
+          "mechanism": "设备商在本地模型和专用私有云间路由任务。端侧能力、能耗与隐私要求决定可本地完成比例，复杂性和质量要求决定升级到云的请求；交互成本下降会增加使用频率，云请求约等于任务量乘云路由比例。专用云的芯片/软件和安全隔离决定配置及利用率，企业断网/私有环境则把部分需求转向自建或本地OEM，而不是公共云订单。",
+          "current_status": "Apple第三代AFM已明确端侧和Private Cloud Compute分工，全部PCC服务器模型运行Apple Silicon；微软主权/隔离服务也扩展部署选择。当前已有真实路由机制，但路由比例和MU BOM不公开。最合理解释是云需求的归属和强度变得更分散，不是终端AI增长必然令HBM云同步增长或收缩。",
+          "materiality_context": "任务量决定采用机会，云比例决定云资源强度：固定任务量，比例从条件性40%降到20%会使请求减半；这是透明示例，不是Apple测量。端侧能力、能耗、隐私及质量要求决定该比例，更多复杂任务可抵消本地替代；交互频率上升又能令云总请求恢复增长。专用芯片/软件和隔离利用率决定每请求设备及受益供应商，不能用全Apple端侧安装量推MU HBM。私有/断网部署转移渠道的影响可在总体活动不变时发生；当前未量化规模，对近端采购判断权重低于已有大云扩建，但对可服务平台集合的未来修订有独立价值。",
+          "scope_boundary": "只解释数据中心净需求、平台及采购归属；终端LPDDR供货在移动/客户端Shell，不假定Apple服务器具有MU资格。",
+          "ref": [
+            "https://machinelearning.apple.com/research/introducing-third-generation-of-apple-foundation-models",
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4"
+          ]
+        },
+        {
+          "name": "存量算力使用权与更新选择改变扩建净额",
+          "mechanism": "模型服务商可通过租用、整批接管或经营权安排获得已装集群，而非每次扩容都新建。可用余量、GPU与软件兼容、迁移整合和服务质量决定存量能力能接多少新工作；合同租金、融资信用与原经营者的替代需求决定这条路径的经济性。回收闲置首先提高既有设备利用率；若转出者另购设备、接手者更新GPU，或服务反弹用尽余量，才形成相应新增装机。主机容量、网络及分层更新也可在不更换GPU及其既装HBM时创造非HBM采购，资产使用权金额本身不是硬件需求。",
+          "current_status": "Anthropic与SpaceXAI 2026年5月已签Colossus 1全部容量接入安排，公告范围超过22万GPU并伴随Claude限额提高；NVIDIA 2024年已披露该集群早期Hopper训练能力。两年间配置变化不能逐项追溯为本次交易新买芯片，一个月内全部容量可用仍是5月公告计划而非核实完成。可确认的商业变化是模型商获得已有集群的使用安排，不是证明全量设备闲置、所有权出售或转出方停止训练。",
+          "materiality_context": "存量可用容量决定能免去多少近期新建，实际闲置率比接入协议GPU总数更重要；同口径回收10单位闲置可先承接10单位新工作而不重购这些设备，但不能把全部已装容量当闲置。平台兼容、迁移时间和质量决定可部署范围及上线速度；租金/信用和原经营者另建意愿影响是否仅转移需求或引出他处新采购。满载后的服务反弹决定后续扩建持续期，主机更新范围与SKU资格决定非HBM的增量。该机制对签约模型商近期采购可很重要，但现有个案不足以量化全行业或MU净位元减少；其核心意义是避免把买方增长和全球设备净增混为一谈。",
+          "scope_boundary": "研究客户算力使用与投资选择，不认定具体MU份额或未披露的集群闲置率。已装HBM复购和非HBM主机升级分别在对应Unit；MU器件制造及跨产品融资仍归相邻Shell。",
+          "ref": [
+            "https://www.anthropic.com/news/higher-limits-spacex",
+            "https://x.ai/news/anthropic-compute-partnership",
+            "https://nvidianews.nvidia.com/news/spectrum-x-ethernet-networking-xai-colossus/"
+          ]
+        }
+      ],
+      "potential_gaps": [
+        {
+          "name": "分发、付款与真实工作替代重设持续需求规模",
+          "why_live": "大众搜索入口、企业付费席位和可收费模型服务已具规模，但基线的继续扩容仍依赖用户从试用转为有价值的重复任务。免费入口、广告、席位和按量计费承担成本的方式不同，覆盖人数不能代替持续付款。",
+          "revision_logic": "相对「使用扩散与持续付费执行」基线，修订的是采用范围、使用频率和付款来源，而非单个用户指标。新增任务遇上紧张容量更容易拉动扩建；替代既有调用或被预算限额压住，则主要改善利用或迁移收入。",
+          "possibility_space": [
+            {
+              "name": "平台把后台个人代理捆绑进搜索或已有订阅",
+              "implication": "不再需要用户单独购买代理，开启更广持续调用；如果自动任务有保留价值，重复使用可使设备机会大于现有聊天用户外推。免费服务仍需广告或订阅回报支撑，限额会压缩资源增量。"
+            },
+            {
+              "name": "企业把助手升级为跨部门生产流程并授权按用量支出",
+              "implication": "调用从少量席位试用转为可重复工作预算，扩大任务范围和独立CPU执行；相同席位数也可形成更大活动，不应把席位增长当需求天花板。"
+            },
+            {
+              "name": "买方续约时只保留高回报岗位，消费者改用免费替代",
+              "implication": "付费渗透和活跃范围分化：低价值调用减少，高价值任务可继续加深。云活动仍可能增长，但原先广泛企业铺开的持续期和投资回报需要下修，平台受益者也会迁移。"
+            },
+            {
+              "name": "AI回答大幅替代旧搜索和人工软件步骤而未新增使用时长",
+              "implication": "每次查询资源可能更重，但净机会来自新增资源强度而非全部查询都是新需求；广告转化或软件付费权迁移会改变谁为计算买单，不能重复计入新旧服务预算。"
+            }
+          ],
+          "ref": [
+            "https://blog.google/products-and-platforms/products/search/search-io-2026/",
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Second-Quarter-Results/default.aspx",
+            "https://www.anthropic.com/research/anthropic-economic-index-january-2026-report",
+            "https://www.anthropic.com/research/economic-index-march-2026-report",
+            "https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-Second-Quarter-2026-Results/",
+            "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000066/googexhibit991q22026.htm",
+            "D1-O130"
+          ]
+        },
+        {
+          "name": "自主应用的安全信任与制度许可改变部署边界",
+          "why_live": "代理可以操作真实文件与企业系统，Anthropic 4月说明提示注入、意图误判及多层防护仍有局限。欧盟7月公布应用监管时点延展及监督安排，显示能力提高并非唯一部署条件；这里没有声称已发生全行业停用事故。",
+          "revision_logic": "基线把企业授权持续扩大作为工作路径；制度与信任变化可改变可委托任务集合、人工监督成本和处理地点，即使模型质量/硬件价格不变。许可明朗可释放受限行业，事故也可能把公共云需求迁为隔离环境，非只削减总量。",
+          "possibility_space": [
+            {
+              "name": "重大代理误操作或数据外泄促使企业暂停自主写入",
+              "implication": "复杂长任务会先退回人工批准、只读助手或短流程，减少持续执行强度并拉长采购周期。安全隔离和审计支出可能增加CPU/状态资源，但不能机械抵消被取消的任务量。"
+            },
+            {
+              "name": "独立安全评测与可追责的操作记录成为采购标准",
+              "implication": "更可信的授权可打开金融、医疗和公共服务的长期任务，减少每步人工摩擦；受益平台是能提供控制/审计的经营者，安全开销与自动化收益共同决定净需求。"
+            },
+            {
+              "name": "监管实施更清晰或给受约束应用更长准备窗口",
+              "implication": "减少法律不确定性可加快合规试点及预算批准，但延期不代表取消义务或所有用途无约束；原本因制度而推迟的机会比一般聊天更受影响。"
+            },
+            {
+              "name": "企业在合规要求下把敏感代理迁往本地或区域隔离服务",
+              "implication": "全球任务未必减少，采购地点、运营者、平台和利用率改变；容量碎片化可增加主机需求，也可能削弱大云集中调度优势，MU捕获需沿新的合格渠道解释。"
+            }
+          ],
+          "ref": [
+            "https://blog.google/products-and-platforms/products/search/search-io-2026/",
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Second-Quarter-Results/default.aspx",
+            "https://www.anthropic.com/research/anthropic-economic-index-january-2026-report",
+            "https://www.anthropic.com/research/economic-index-march-2026-report",
+            "https://www.anthropic.com/engineering/managed-agents",
+            "https://machinelearning.apple.com/research/introducing-third-generation-of-apple-foundation-models",
+            "https://www.anthropic.com/research/trustworthy-agents",
+            "https://digital-strategy.ec.europa.eu/en/news/ai-omnibus-enters-force"
+          ]
+        },
+        {
+          "name": "代理组织方式改变任务时长与资源结构",
+          "why_live": "付费后台执行已成立，Managed Agents将推理、工具和会话解耦；6月使用研究还显示工作时段和任务类型的明显节律。长任务、常驻容器与连续GPU占用不是等价概念。",
+          "revision_logic": "修订的是「持续执行带动扩容」中的任务到资源中层关系。同一企业预算可从交互辅助变为并行代理，或转为异步编排；模型调用、工具CPU、状态并发和峰值不再同向，影响计算系统配置及扩容速度。",
+          "possibility_space": [
+            {
+              "name": "企业把一个员工请求拆为并行研究、编码与审核代理",
+              "implication": "同时推理及沙箱增多，峰值/状态强度可能高于单线程任务；若有效成果增加，任务市场也扩大。重复协作开销却可能损害ROI，不能将代理数量本身视为独立终端付款。"
+            },
+            {
+              "name": "运营者把非紧急代理批量安排在夜间并按需唤醒沙箱",
+              "implication": "既有机器可覆盖更多工作，峰值采购敏感度下降，任务墙钟时间增加却不要求GPU全天占用；企业数据权限或地域限制会决定能否实现跨时段复用。"
+            },
+            {
+              "name": "代理获得更复杂数据库和仿真工具而推理往返未明显增加",
+              "implication": "CPU、工具执行及主机活跃集先扩大，非HBM可获得独立增量，GPU/HBM不必等比例增加；服务商可以通过高密度主机而非单纯更多加速器满足需求。"
+            }
+          ],
+          "ref": [
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "https://www.anthropic.com/engineering/managed-agents",
+            "https://www.anthropic.com/research/anthropic-economic-index-january-2026-report",
+            "https://developer.nvidia.com/blog/co-designing-ai-model-attention-for-fast-interactive-long-context-inference/",
+            "https://www.usenix.org/conference/osdi26/presentation/luo",
+            "D1-O147",
+            "D1-O148",
+            "https://www.anthropic.com/research/economic-index-june-2026-report"
+          ]
+        },
+        {
+          "name": "前沿研发与生成世界从能力工具走向不同付费用途",
+          "why_live": "既有多云安排仍支持模型研发。5月Project Genie已宣布向全球合资格Ultra订阅用户逐步开放，并有Street View现实锚定，超出单纯2025演示但仍是研究原型；机器人合成数据也有具体工具路线。",
+          "revision_logic": "当前近端主干是搜索/企业服务，世界模型独立规模偏早期。新的消费者或产业用途可增加视频生成、仿真、后训练等不同工作量；也可能让研发预算在大模型训练与高效数据/推理之间重新分配，而非沿旧训练规模直线增长。",
+          "possibility_space": [
+            {
+              "name": "平台把可交互生成世界变为高频娱乐或创作服务",
+              "implication": "计算由开发者试验进入重复用户体验，交互时长、实时生成及并发可能创造文字聊天之外的容量池；原型访问不等于该未来规模已经发生，价格和体验限制将决定可持续性。"
+            },
+            {
+              "name": "机器人/自动驾驶企业常态化采购大批合成场景与训练评估",
+              "implication": "数据工厂和仿真预算可在机器人销量之前扩大云工作量。若仿真迁移效果可靠，收益来自缩短开发和减少实测成本；云训练/数据服务配置而非终端BOM首先变化。"
+            },
+            {
+              "name": "前沿开发者发现扩大参数收益变弱，改投筛选数据与推理时计算",
+              "implication": "大同步训练集群增长可能放缓，后训练、检索、工具和长期推理变重要；总支出不必缩小，但内存/网络和CPU比例会改变，不能只减一个训练需求乘数。"
+            },
+            {
+              "name": "企业发现生成场景难以控制或无法替代真实验证",
+              "implication": "用途继续停留研发、小规模创作或辅助，不建立新的大规模独立运营预算；保留基础训练需求，但应缩小世界模型向近期设备扩张的额外贡献。"
+            }
+          ],
+          "ref": [
+            "https://deepmind.google/blog/genie-3-a-new-frontier-for-world-models/",
+            "https://nvidianews.nvidia.com/news/nvidia-announces-open-physical-ai-data-factory-blueprint-to-accelerate-robotics-vision-ai-agents-and-autonomous-vehicle-development",
+            "https://www.anthropic.com/news/google-broadcom-partnership-compute",
+            "D1-O104",
+            "D1-O118",
+            "https://blog.google/innovation-and-ai/models-and-research/google-deepmind/project-genie-expands/"
+          ]
+        },
+        {
+          "name": "跨平台分工和端云路由重画计算投资归属",
+          "why_live": "GPU、自研ASIC、LPX以及主机/闪存层已有不同现实接口，Apple也有端侧与PCC分工。基线支持并存而非统一架构，每个模型任务的成本、适配和可用容量都能改变路线。",
+          "revision_logic": "修订的是设备机会由哪些平台承接及每任务资源构成。同样终端活动能沿GPU、带HBM的ASIC、SRAM协作或私有芯片实现；低时延和成本改善还会放大任务，单位HBM下降不等于总计算投资下降。",
+          "possibility_space": [
+            {
+              "name": "模型商把更多生产推理迁到成熟自研ASIC并降低切换成本",
+              "implication": "云预算从一类GPU移往另一平台，HBM/主机配置和采购责任人改变；ASIC仍可大量用HBM，MU的后果取决于该平台资格，不能把非NVIDIA投资全部扣除。"
+            },
+            {
+              "name": "低延迟SRAM设备成为GPU注意力的常规协作层",
+              "implication": "预算转向异构系统及fabric/host DRAM，GPU承担不同工作而非全被替代；若交互改善带来更多任务，总设备与HBM量可能继续扩张。"
+            },
+            {
+              "name": "关键模型或工具不能跨平台稳定运行，客户重新集中GPU",
+              "implication": "兼容和可靠性压过最低理论成本，ASIC增量路径缩小、GPU资源紧张延续；已有投资可能成为转换成本，改变后续平台配额而不需用户数下降。"
+            },
+            {
+              "name": "终端能力进步使更多简单任务本地完成，同时复杂代理上云",
+              "implication": "轻量云请求减少但复杂云任务变重，云比例和强度相抵。专用私有云也可增长，不能从端侧用户增长或一条GPU路线变化推总MU业务。"
+            }
+          ],
+          "ref": [
+            "https://aws.amazon.com/about-aws/whats-new/2025/12/amazon-ec2-trn3-ultraservers/",
+            "https://blog.google/innovation-and-ai/infrastructure-and-cloud/google-cloud/eighth-generation-tpu-agentic-era/",
+            "https://www.anthropic.com/news/google-broadcom-partnership-compute",
+            "https://developer.nvidia.com/blog/inside-nvidia-groq-3-lpx-the-low-latency-inference-accelerator-for-the-nvidia-vera-rubin-platform",
+            "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Groq-3-LPX-Now-in-Full-Production-With-World-Class-Speed-for-Agentic-AI/default.aspx",
+            "https://developer.nvidia.com/blog/?p=111143",
+            "https://www.usenix.org/conference/osdi26/presentation/luo",
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "D1-O118",
+            "D1-O121",
+            "https://machinelearning.apple.com/research/introducing-third-generation-of-apple-foundation-models"
+          ]
+        },
+        {
+          "name": "效率、服务限额和需求反弹改变扩容弹性",
+          "why_live": "Copilot的局部吞吐改善与Azure容量紧张并存；Anthropic 5月把新增算力接入与提高使用限额联系。已观察到效率和可访问能力可以改变实际使用，而不是活动只能按固定token系数转采购。",
+          "revision_logic": "基线认为效率先增加同一电力下的服务能力；不同商业反应决定它延后采购还是放大机会。时段峰值、缓存/模型路由、限额和收费能改变增长被现有容量吸收的程度，不能把一处节约率套整个行业。",
+          "possibility_space": [
+            {
+              "name": "服务商将量化、缓存和小模型路由的节省用于降价和放宽限额",
+              "implication": "成功任务资源下降，但被价格/限额压住的用途可以释放；容量已紧张时反弹更易变扩建。若新增使用价值弱、付费不跟进，资源增长会损害回报而非无限持续。"
+            },
+            {
+              "name": "企业在效率提高后维持原任务范围并锁住预算",
+              "implication": "成本下降主要变客户节省和服务商利润，旧机吸收增长，设备采购强度下修；这与服务用户继续增长并不冲突，不必等到整体云收入转负才改变未来资源机会。"
+            },
+            {
+              "name": "跨时区批处理与闲时优惠平滑工作日高峰",
+              "implication": "有效利用提高，固定活动需要的峰值设备减少；时延敏感、地域隔离的服务不能完全平滑，节约集中在可延期任务，资源约束可能转到主机/网络。"
+            }
+          ],
+          "ref": [
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "https://developer.nvidia.com/blog/co-designing-ai-model-attention-for-fast-interactive-long-context-inference/",
+            "https://www.usenix.org/conference/osdi26/presentation/luo",
+            "D1-O147",
+            "D1-O148",
+            "https://www.anthropic.com/news/higher-limits-spacex",
+            "https://www.anthropic.com/research/economic-index-june-2026-report"
+          ]
+        },
+        {
+          "name": "经营回报与商业收费重定资本投入持续期",
+          "why_live": "云/广告经营现金支持当前扩建，但混合云利润不是AI单项ROI，云毛利也已承受基础设施投入。免费服务、席位和消耗计费对单位任务成本的反应不同，名义capex还含价格与租赁分类。",
+          "revision_logic": "相对继续投入基线，修订的是可持续预算和设备/建筑分配，不只是当季数字。价格、折旧和更新成本可令服务增长却预算收缩；稳定付款也可让扩建持续更久，资金可得性与项目融资主题分开。",
+          "possibility_space": [
+            {
+              "name": "企业证明代理节省超过按量账单，服务商扩大结果/用量收费",
+              "implication": "可收费工作加深，付款与资源更同步，增强多年投资承受力；但收费方式变化可能同时减少无效重试，收入增长不需设备同幅增长。"
+            },
+            {
+              "name": "订阅重度使用拉高成本，平台收紧免费层和自主执行额度",
+              "implication": "使用上限重设会压低活动及峰值，原来把广泛分发等同持续扩容的判断要收窄；同一平台利润却可能改善，内存需求方向和服务股盈利并非一致。"
+            },
+            {
+              "name": "大客户因低回报和快速折旧延缓GPU更新而保留基础设施建设",
+              "implication": "美元投资仍高却短寿命设备购买减少，HBM平台数量及高端配置受影响；土地/机房投入不能抵补当期产品订单，已有机器利用可继续上升。"
+            },
+            {
+              "name": "广告或传统云现金生成转弱，战略竞争仍要求大额AI投入",
+              "implication": "可再投资现金和回报耐心下降，项目排序、融资依赖上升；优先级高的训练/推理可以继续，风险先表现为边际项目和配置调整而非所有需求归零。"
+            }
+          ],
+          "ref": [
+            "https://blog.google/products-and-platforms/products/search/search-io-2026/",
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Second-Quarter-Results/default.aspx",
+            "https://www.anthropic.com/research/anthropic-economic-index-january-2026-report",
+            "https://www.anthropic.com/research/economic-index-march-2026-report",
+            "https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-Second-Quarter-2026-Results/",
+            "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000066/googexhibit991q22026.htm",
+            "D1-O130"
+          ]
+        },
+        {
+          "name": "租户信用和接续资本改变建设的可融资性",
+          "why_live": "CoreWeave存在较大承诺、条件授信、设备抵押与客户集中，园区长期租约和建设贷款有期限错配。当前融资支撑扩建，没有已确认MU订单取消，但资金链与终端任务并非独立。",
+          "revision_logic": "修订的是「承诺容量分期上线」的规模和节奏。相同客户兴趣可因提款/抵押/租户信用而变不可建设，也可由更长期资本接续；风险向别的经营者迁移与全球需求下降须分开。",
+          "possibility_space": [
+            {
+              "name": "贷款方因GPU折旧或租户集中提高抵押折扣、收紧提款",
+              "implication": "运营者需要更多股权或降低设备采购，未完工程更易延期；服务需求可继续强但无法按原节奏实现，信用支持而非用户增长成为边际扩建主导。"
+            },
+            {
+              "name": "强信用租户提供预付款或长期资本接手已建资产",
+              "implication": "工程现金缺口与再融资压力减轻，既有合同更容易交付；这是资金时点和风险归属改善，不把预付款/资产转让额加成新增终端需求。"
+            },
+            {
+              "name": "大型模型买方重排长期算力承诺，弱运营者失去锚定租户",
+              "implication": "收入、融资和建设一起受影响，项目可能转卖、延期或取消；强平台也可接回负载，整体需求与某个供应路径的采购变化可能不同。"
+            },
+            {
+              "name": "多个融资伙伴退出但大云以自有现金承接优质项目",
+              "implication": "集中化改变采购责任人和平台选择，NeoCloud收缩不必等于总计算收缩；MU相关订单时点、内存资格和份额会随接手方案重分。"
+            }
+          ],
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000366/crwv-20260630.htm",
+            "https://www.sec.gov/Archives/edgar/data/1944366/000194436626000020/exhibit993-2025abelinedc1l.htm",
+            "https://www.crusoe.ai/resources/newsroom/crusoe-announces-new-900-mw-ai-factory-campus-in-abilene-texas-to-support-microsoft-ai-infrastructure",
+            "D1-O165",
+            "D1-O67",
+            "D1-O80",
+            "D1-O81",
+            "D1-O83",
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-Second-Quarter-2026-Results/",
+            "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Second-Quarter-Results/default.aspx",
+            "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000066/googexhibit991q22026.htm",
+            "D1-O130"
+          ]
+        },
+        {
+          "name": "接入政策、能源工程与可靠性重设可用容量",
+          "why_live": "FERC大负荷行动、PJM仍待批准申请和已发生大规模脱网事件提供不同政策/运行窗口。自备发电园区有具体工程计划，但900MW铭牌与672MW IT设计不是同一容量。",
+          "revision_logic": "修订的是瓶颈在哪里及何时放松，非把所有GW计划视为消耗。接入、输配、冷却和设备需共同支持；灵活服务可能缩短排队也减少高SLA可售小时，解除一个约束后资本/系统可能接替。",
+          "possibility_space": [
+            {
+              "name": "区域市场批准灵活接入，客户把可延期训练设计为可中断负荷",
+              "implication": "建设可提前但可用小时/可靠等级改变，训练更受益于低成本接入，在线推理仍需备用或迁移；同样铭牌对服务的价值不相同。"
+            },
+            {
+              "name": "自备电站如期完成，电网排队不再控制一批园区",
+              "implication": "可部署空间扩大，短板转向冷却、完整系统和软件验收；若设备已前置采购，先释放库存上线，而非立即同规模复购。燃料/维护成本仍影响后续投资。"
+            },
+            {
+              "name": "监管强化穿越、费用承担或邻近居民保护要求",
+              "implication": "增加配电/备用工程和运营成本，部分园区排序或规模下调；硬件需求可迁到更有条件地域，已有接电协议不再足以保证全天服务能力。"
+            },
+            {
+              "name": "能源工程或燃料保障延迟，客户在别区租用已通电能力",
+              "implication": "原项目采购时间后移，同时其他经营者获利用/升级机会；全球活动不必下降，不能把规划电源延误直接当所有MU客户撤单。"
+            }
+          ],
+          "ref": [
+            "https://ferc.gov/news-events/news/ferc-launches-aggressive-targeted-action-speed-large-load-integration",
+            "https://insidelines.pjm.com/pjm-dominion-review-large-load-transfer-event/",
+            "https://www.crusoe.ai/resources/newsroom/crusoe-announces-new-900-mw-ai-factory-campus-in-abilene-texas-to-support-microsoft-ai-infrastructure",
+            "D1-O108",
+            "D1-O109",
+            "D1-O91",
+            "D1-O130",
+            "D1-O23",
+            "D1-O127",
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000366/crwv-20260630.htm",
+            "D1-O31"
+          ]
+        },
+        {
+          "name": "系统解瓶颈、前置库存与代际切换改写复购",
+          "why_live": "加速器商业出货、器件量产和园区上线不同步，dock-to-live已有改善，但未测得MU相关普遍过量库存。保供安排可以使采购领先运行，Blackwell/Rubin也有并行路径。",
+          "revision_logic": "修订的是活动与季度设备购买的对应。瓶颈解除既可推动持续追加，也可先消化已买设备；反过来系统迟滞可维持合同交付却压低后续订单，代际兼容决定库存可复用程度。",
+          "possibility_space": [
+            {
+              "name": "网络、液冷和系统封装交付改善使待安装设备快速上线",
+              "implication": "服务能力明显增加，现金回收改善；若大批设备已购，新增采购暂时平缓并非终端需求弱，之后才随新增负载决定复购。"
+            },
+            {
+              "name": "关键系统组件缺口延续，保供设备继续进入客户库存",
+              "implication": "采购和服务使用更脱节，未来订单可能延后或重谈，即使目前take-or-pay量仍交付。应改写采购节拍而不是把合同全部当长期实际消耗。"
+            },
+            {
+              "name": "平台换代加快但旧设备难承接新任务",
+              "implication": "兼容库存价值降低，更新采购可能增加，旧资产/融资回报却恶化；不是所有设备退役都对应等量新增服务，客户可能降低更新频率反制。"
+            }
+          ],
+          "ref": [
+            "D1-O130",
+            "D1-O23",
+            "D1-O127",
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000366/crwv-20260630.htm",
+            "D1-O31",
+            "https://www.sec.gov/Archives/edgar/data/1944366/000194436626000020/exhibit993-2025abelinedc1l.htm",
+            "https://www.crusoe.ai/resources/newsroom/crusoe-announces-new-900-mw-ai-factory-campus-in-abilene-texas-to-support-microsoft-ai-infrastructure",
+            "D1-O165",
+            "D1-O67",
+            "D1-O80",
+            "D1-O81",
+            "D1-O83"
+          ]
+        },
+        {
+          "name": "既有集群接管和算力经营权交易改变新增设备净额",
+          "why_live": "Anthropic与SpaceXAI 5月签Colossus 1接入安排，公告涉及超过22万GPU并提高服务限额；NVIDIA 2024已披露该集群的早期训练能力。新客户取得能力不等于全部新装芯片，公告月份交付计划也不自动算完成。",
+          "revision_logic": "当前基线已包含分期新建和存量接入，但没有假设模型商扩容必定等量增加全球设备。更大范围的集群经营/使用权迁移可以同时扩大一模型商服务、推迟其新采购并改善运营者现金；原经营者另建、接手者升级/换代或服务反弹填满余量又会增加新采购，修订的是新建净额、产品组合及持续期。",
+          "possibility_space": [
+            {
+              "name": "更多模型商整批租用或接管另一运营者的现成集群",
+              "implication": "需求强可迅速变服务能力，却先使用已装HBM和主机内存，新增器件采购小于接入GPU数量；服务限额放宽可能在以后引出新建，当前与后续效应不同。"
+            },
+            {
+              "name": "接手者升级存量系统的主机、网络或内存分层而暂不换GPU",
+              "implication": "新增机会偏非HBM主机与配套，HBM装机不必重购；旧平台兼容限制升级范围，MU捕获依旧需要对应SKU资格，而非按整批GPU重复算。"
+            },
+            {
+              "name": "原经营者为腾出租用资源把自有训练搬到新集群",
+              "implication": "交易并非纯闲置回收，移出工作推动另一个地点新建；若双方声明容量简单相加会双算，净增来自最终新增设备而非签约两次。"
+            },
+            {
+              "name": "云/金融机构收购现金紧张的运营资产并重新配售服务",
+              "implication": "经营者更替可以保住运行能力、改变抵押和采购渠道，缓解资金断点但重写MU客户/平台分配；不是必然新增或消灭终端活动。"
+            }
+          ],
+          "ref": [
+            "D1-O130",
+            "D1-O23",
+            "D1-O127",
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000366/crwv-20260630.htm",
+            "D1-O31",
+            "https://aws.amazon.com/about-aws/whats-new/2025/12/amazon-ec2-trn3-ultraservers/",
+            "https://blog.google/innovation-and-ai/infrastructure-and-cloud/google-cloud/eighth-generation-tpu-agentic-era/",
+            "https://www.anthropic.com/news/google-broadcom-partnership-compute",
+            "https://developer.nvidia.com/blog/inside-nvidia-groq-3-lpx-the-low-latency-inference-accelerator-for-the-nvidia-vera-rubin-platform",
+            "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Groq-3-LPX-Now-in-Full-Production-With-World-Class-Speed-for-Agentic-AI/default.aspx",
+            "https://developer.nvidia.com/blog/?p=111143",
+            "https://www.usenix.org/conference/osdi26/presentation/luo",
+            "D1-O118",
+            "D1-O121",
+            "https://www.sec.gov/Archives/edgar/data/1944366/000194436626000020/exhibit993-2025abelinedc1l.htm",
+            "https://www.crusoe.ai/resources/newsroom/crusoe-announces-new-900-mw-ai-factory-campus-in-abilene-texas-to-support-microsoft-ai-infrastructure",
+            "D1-O165",
+            "D1-O67",
+            "D1-O80",
+            "D1-O81",
+            "D1-O83",
+            "https://www.anthropic.com/news/higher-limits-spacex",
+            "https://x.ai/news/anthropic-compute-partnership",
+            "https://nvidianews.nvidia.com/news/spectrum-x-ethernet-networking-xai-colossus/"
+          ]
+        },
+        {
+          "name": "公共锚定采购、主权资格与准入重排需求池",
+          "why_live": "EuroHPC已进入正式招标，公共计算时间可成为锚定收入，授标和后续财政仍在未来。私有/主权部署存在真实软件路径；先进系统许可则按产品和买方附条件审核。",
+          "revision_logic": "修订的是客户预算来源、可服务地域和采购控制权。公共资金可能创造原本商业回报不足的新用途，也可能仅迁移旧云预算；准入可延后需求或转平台，不能用公共总额或许可政策直接推MU份额。",
+          "possibility_space": [
+            {
+              "name": "公共锚定访问时间带动本地联盟真正授标并获得共同出资",
+              "implication": "形成不同于美国大云的多年服务买方，提高建设可融资性；只有新用途或扩大可用服务才净增全球机会，授标阶段已能修订未来渠道而无需等待器件收入。"
+            },
+            {
+              "name": "财政支付或共同出资推迟，项目继续有资格但不能施工",
+              "implication": "公共机会时间后移，近端商业云主干权重提高；法规存在不等于现金能力，仍可保留较长期本地市场而非永久取消。"
+            },
+            {
+              "name": "政府将既有公共云预算改为本地私有系统",
+              "implication": "整体任务未必增长，容量碎片化、OEM采购与平台选择改变；有本地资格的内存供应商可获份额，全球总capex不必提供同方向信号。"
+            },
+            {
+              "name": "先进系统准入放宽或进一步受限，客户迁区/改用本土平台",
+              "implication": "合法可部署集合改变，原有需求可重新出现或换路线；特定GPU/HBM路径得失不等于全球需求同幅变化，MU自身销售准入须另行区分。"
+            }
+          ],
+          "ref": [
+            "https://www.eurohpc-ju.europa.eu/eurohpc-joint-undertaking-launches-ai-gigafactories-call-2026-07-30_en",
+            "https://www.bis.gov/press-release/department-commerce-revises-license-review-policy-semiconductors-exported-china",
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "D1-O74",
+            "D1-O130",
+            "https://machinelearning.apple.com/research/introducing-third-generation-of-apple-foundation-models"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "美光HBM业务",
+      "scope": "美光HBM在不同AI加速器和数据中心计算平台中的产品代际、容量及堆叠规格、客户采用、供应资格、采购分配、竞争地位、出货、定价与产品经济性。",
+      "horizon": "季度业务变化及跨代际产品平台周期。",
+      "ref": [
+        "D1-O74",
+        "D1-O130",
+        "D1-O205",
+        "D1-O112",
+        "D1-O88",
+        "D1-O44",
+        "D1-O139",
+        "D1-O127",
+        "D1-O19",
+        "D1-O23",
+        "D1-O3",
+        "D1-O52",
+        "D1-O186",
+        "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q3/Q3-FY26-Prepared-Remarks.pdf",
+        "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+        "https://jp.micron.com/about/press/news/micron-in-high-volume-production-of-hbm4-designed-for-nvidia-vera-rubin-pcie-gen6-ssd-and-socamm2",
+        "https://micron.gcs-web.com/news-releases/news-release-details/micron-hbm-designed-leading-amd-ai-platform",
+        "D1-O31",
+        "https://news.samsung.com/global/samsung-ships-industry-first-commercial-hbm4-with-ultimate-performance-for-ai-computing",
+        "https://aws.amazon.com/about-aws/whats-new/2025/12/amazon-ec2-trn3-ultraservers/",
+        "https://blog.google/innovation-and-ai/infrastructure-and-cloud/google-cloud/eighth-generation-tpu-agentic-era/",
+        "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000366/crwv-20260630.htm",
+        "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+        "D1-O85",
+        "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/",
+        "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Second-Quarter-Results/default.aspx",
+        "https://developer.nvidia.com/blog/inside-nvidia-groq-3-lpx-the-low-latency-inference-accelerator-for-the-nvidia-vera-rubin-platform",
+        "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Groq-3-LPX-Now-in-Full-Production-With-World-Class-Speed-for-Agentic-AI/default.aspx",
+        "https://developer.nvidia.com/blog/?p=111143",
+        "https://www.usenix.org/conference/osdi26/presentation/luo",
+        "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf",
+        "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html",
+        "https://markets.financialcontent.com/bpas/article/bizwire-2026-7-13-new-jedec-sphbm4-standard-enables-hbm4-class-bandwidth-on-organic-substrates",
+        "D1-O91",
+        "https://news.skhynix.com/en/sk-hynix-partners-with-tsmc-to-strengthen-hbm-technological-leadership/",
+        "https://developer.nvidia.com/blog/co-designing-ai-model-attention-for-fast-interactive-long-context-inference/",
+        "D1-O147",
+        "D1-O148",
+        "D1-O57",
+        "https://www.crusoe.ai/resources/newsroom/crusoe-announces-new-900-mw-ai-factory-campus-in-abilene-texas-to-support-microsoft-ai-infrastructure",
+        "D1-O53",
+        "D1-O54",
+        "https://www.anthropic.com/news/higher-limits-spacex",
+        "https://nvidianews.nvidia.com/news/spectrum-x-ethernet-networking-xai-colossus/"
+      ],
+      "state": {
+        "parameters": [
+          {
+            "name": "HBM代际商业供货阶段",
+            "definition": "美光各代际/堆叠规格的商业供货位置及年度出货主力；产品开发、送样、资格与量产分开。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O88",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "HBM4每堆叠规格容量",
+            "definition": "美光HBM4 SKU的单堆叠设计容量；不同层数分别保留，不作为相同吞吐任务的用量比较。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O88"
+            ]
+          },
+          {
+            "name": "HBM4已交付收入规模状态",
+            "definition": "公司直接披露的HBM4累计交付收入规模下界；区别于全HBM收入和季度HBM4销售额。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q3/Q3-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "HBM销售增长",
+            "definition": "美光直接披露的HBM收入变化；没有披露绝对数时保留其与总体增长的关系，不用CMBU代替。",
+            "value_type": "DIRECTION",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "HBM客户覆盖发展",
+            "definition": "美光HBM交付客户范围的经营位置，覆盖增加不等于单客户份额增加。",
+            "value_type": "DIRECTION",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "已公布GPU平台采用资格",
+            "definition": "美光HBM与具体GPU平台之间已有采用/供应关系；不能从某代平台扩展成未来所有平台独供。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O74",
+              "D1-O130",
+              "https://jp.micron.com/about/press/news/micron-in-high-volume-production-of-hbm4-designed-for-nvidia-vera-rubin-pcie-gen6-ssd-and-socamm2",
+              "https://micron.gcs-web.com/news-releases/news-release-details/micron-hbm-designed-leading-amd-ai-platform"
+            ]
+          },
+          {
+            "name": "2027 HBM供给协议覆盖位置",
+            "definition": "已完成HBM协议覆盖的未来bit供给范围及约定价格方向；记录签订状态，不视为未来已实现ASP。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "HBM相对常规DRAM产品经济性",
+            "definition": "HBM与常规DRAM毛利差的经营/预期位置；不能预设HBM毛利率总高于DDR，亦不能由业务单元毛利算产品毛利。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "HBM4基础die设计供给路线",
+            "definition": "美光HBM4基础逻辑die与DRAM核心die的设计制造安排，界定产品成本与外部工艺依赖接口；不开展工厂产量模型。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O88",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "定制HBM共同设计位置",
+            "definition": "美光从标准堆叠转向客户定制基础功能及共同平台设计的业务状态；有联合开发不等于已量产收入。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "HBM4E量产计划",
+            "definition": "美光HBM4E预期进入量产爬坡的时间；与HBM4及其16层样品分开。",
+            "value_type": "TIME",
+            "ref": [
+              "D1-O88",
+              "D1-O31"
+            ]
+          },
+          {
+            "name": "竞争者HBM4商业供给位置",
+            "definition": "其他供应者是否形成商业HBM4供给；影响客户多来源分配，不由送样/计划标签推断量产。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://news.samsung.com/global/samsung-ships-industry-first-commercial-hbm4-with-ultimate-performance-for-ai-computing",
+              "D1-O205"
+            ]
+          },
+          {
+            "name": "自研加速器HBM规格需求",
+            "definition": "非GPU加速器已公布的HBM单芯片容量，定位另一可服务产品路线；并非美光已取得采购资格或份额。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://aws.amazon.com/about-aws/whats-new/2025/12/amazon-ec2-trn3-ultraservers/",
+              "https://blog.google/innovation-and-ai/infrastructure-and-cloud/google-cloud/eighth-generation-tpu-agentic-era/"
+            ]
+          },
+          {
+            "name": "HBM收入所在CMBU规模",
+            "definition": "CMBU收入，含所有HBM和大型云客户非HBM内存，仅为目标组合经营外框；不是HBM收入。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "HBM收入所在CMBU毛利率",
+            "definition": "CMBU披露毛利率，包含HBM/非HBM混合组合；不映射单品成本、HBM利润或较常规DRAM的溢价。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "美光全HBM销售收入",
+            "definition": "美光所有HBM代际的季度已实现收入，需独立产品披露；CMBU及HBM4累计下界不替代本量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "美光HBM bit出货量",
+            "definition": "美光HBM季度已交付合格bit数量，代际和期间口径需一致；供给协议覆盖不是出货。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+              "D1-O88"
+            ]
+          },
+          {
+            "name": "美光HBM实现单价",
+            "definition": "美光已交付HBM的可比每bit实现价，明确代际组合；未来协议涨价不填成现期ASP。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "美光HBM产品毛利率",
+            "definition": "美光HBM直接产品毛利率；常规DRAM相对经济性和CMBU混合毛利不提供其绝对水平。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "美光HBM采购份额",
+            "definition": "按平台/代际/客户分母定义的美光实际采购分配比例；不用认证、三家供应者名单或旧混合份额填点值。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O112",
+              "D1-O130"
+            ]
+          },
+          {
+            "name": "客户HBM库存消化位置",
+            "definition": "客户已收HBM及待上线平台的库存/复购状态，区分器件出货与系统生产使用。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O130",
+              "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000366/crwv-20260630.htm"
+            ]
+          }
+        ],
+        "values": [
+          {
+            "name": "FY2026主力仍为HBM3E 12层",
+            "parameter": "HBM代际商业供货阶段",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "FY2026 HBM出货多数为HBM3E 12-high。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026截至2026-09-03的年度出货组合",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O88",
+              "D1-O74",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "HBM4 12层量产而16层仍送样",
+            "parameter": "HBM代际商业供货阶段",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "HBM4 36GB 12-high已高量产；48GB 16-high仍送样。"
+            },
+            "previous_value": null,
+            "time_scope": "截至FY2026年度产品披露的阶段，不视为10月新增出货",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O88",
+              "D1-O74",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "量产12层HBM4容量",
+            "parameter": "HBM4每堆叠规格容量",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 36.0,
+              "unit": "GB/堆叠"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026年度披露的12-high量产SKU",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O88",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "送样16层HBM4容量",
+            "parameter": "HBM4每堆叠规格容量",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 48.0,
+              "unit": "GB/堆叠"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026年度披露的16-high样品SKU；不是量产出货容量",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O88",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "六月披露HBM4累计交付收入超过十亿美元",
+            "parameter": "HBM4已交付收入规模状态",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "美光截至6月24日已交付HBM4收入超过10亿美元；公司未提供本句累计区间的完整起点。"
+            },
+            "previous_value": null,
+            "time_scope": "截至2026-06-24披露的累计交付；保留历史规模锚点，非Q4现期销售额",
+            "as_of": "2026-06-24",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q3/Q3-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "HBM季度收入增速超过公司整体",
+            "parameter": "HBM销售增长",
+            "source_role": "ACTUAL",
+            "value": {
+              "direction": "FY2026 Q4收入增长快于公司总体当季增长"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026 Q4；公司整体环比增长约31%，HBM确切增幅未给出",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "HBM交付客户范围扩大",
+            "parameter": "HBM客户覆盖发展",
+            "source_role": "ACTUAL",
+            "value": {
+              "direction": "公司称向越来越多客户爬坡HBM出货"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026 Q4经营披露",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "Rubin对应HBM4商业供货接口",
+            "parameter": "已公布GPU平台采用资格",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "美光HBM4 36GB 12-high面向NVIDIA Vera Rubin；器件量产与NVIDIA平台生产出货分别有披露。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026年度产品采用披露；平台出货依据2026-08-26 NVIDIA材料",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O74",
+              "D1-O130",
+              "https://jp.micron.com/about/press/news/micron-in-high-volume-production-of-hbm4-designed-for-nvidia-vera-rubin-pcie-gen6-ssd-and-socamm2",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "AMD MI350已公布采用美光HBM3E",
+            "parameter": "已公布GPU平台采用资格",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "AMD MI350系列已有美光36GB 12-high HBM3E设计采用关系；不扩展为全AMD或后续平台份额。"
+            },
+            "previous_value": null,
+            "time_scope": "2025-06-12公布的MI350特定平台设计采用；沿用历史资格，不视为2026年10月新增采购",
+            "as_of": "2025-06-12",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O85",
+              "https://micron.gcs-web.com/news-releases/news-release-details/micron-hbm-designed-leading-amd-ai-platform"
+            ]
+          },
+          {
+            "name": "2027大多数HBM bit已完成协议",
+            "parameter": "2027 HBM供给协议覆盖位置",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "美光已为2027日历年绝大多数HBM bit供给完成协议，约定价格较上年显著提高；未给覆盖百分比和价幅。"
+            },
+            "previous_value": null,
+            "time_scope": "截至2026-09-30已签安排，目标交付期为2027日历年",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "2027重定价预期缩小毛利差",
+            "parameter": "HBM相对常规DRAM产品经济性",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "stage": "美光预计2027 HBM协议显著涨价将收窄与常规DRAM的毛利差；未给产品绝对毛利率。"
+            },
+            "previous_value": null,
+            "time_scope": "2027协议价格生效及产品经济性预期",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "HBM4基础及核心die内部实现",
+            "parameter": "HBM4基础die设计供给路线",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "HBM4基础die与核心die由美光内部设计制造；客户加速器系统封装仍是另一个环节。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026年度披露的HBM4产品路线",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O88",
+              "D1-O74",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "美光参与NVIDIA NVHBM定制实现",
+            "parameter": "定制HBM共同设计位置",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "美光正与NVIDIA共同开展首个定制HBM4E实现NVHBM，面向下一代GPU与NVLink Fusion；尚不记为商业量产。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-30已开展的合作；采用目标为后续平台",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "HBM4E计划2027年放量",
+            "parameter": "HBM4E量产计划",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "point": null,
+              "start": "2027-01",
+              "end": "2027-12",
+              "precision": "日历年"
+            },
+            "previous_value": null,
+            "time_scope": "2027日历年产品计划，未给季度量产起点",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O88",
+              "D1-O31",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "三星HBM4已有商业出货",
+            "parameter": "竞争者HBM4商业供给位置",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "Samsung宣布HBM4开始商业出货和量产；12层24—36GB为所述商业规格，16层48GB仍是后续扩展，不确认为当时量产。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-02-12竞争者供货快照；非截点最新配额",
+            "as_of": "2026-02-12",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://news.samsung.com/global/samsung-ships-industry-first-commercial-hbm4-with-ultimate-performance-for-ai-computing",
+              "D1-O205"
+            ]
+          },
+          {
+            "name": "Trainium3单芯片HBM容量",
+            "parameter": "自研加速器HBM规格需求",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 144.0,
+              "unit": "GB/芯片"
+            },
+            "previous_value": null,
+            "time_scope": "2025-12-02已普遍可用的Trn3平台设计：HBM3e；不等同Anthropic后续全部配置",
+            "as_of": "2025-12-02",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://aws.amazon.com/about-aws/whats-new/2025/12/amazon-ec2-trn3-ultraservers/"
+            ]
+          },
+          {
+            "name": "CMBU季度收入",
+            "parameter": "HBM收入所在CMBU规模",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 16283.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 13769.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "美光FY2026 Q4截至2026-09-03（14周）；前值为FY2026 Q3截至2026-05-28（13周），未作周数标准化",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O44",
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/"
+            ]
+          },
+          {
+            "name": "CMBU毛利率持平83%",
+            "parameter": "HBM收入所在CMBU毛利率",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 83.0,
+              "unit": "百分比"
+            },
+            "previous_value": {
+              "number": 83.0,
+              "unit": "百分比"
+            },
+            "time_scope": "美光FY2026 Q4截至2026-09-03（14周）；前值为FY2026 Q3截至2026-05-28（13周），未作周数标准化",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O44",
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/"
+            ]
+          }
+        ]
+      },
+      "expectation_baseline": [
+        {
+          "name": "HBM4渐增但16层和HBM4E仍跨不同门槛",
+          "baseline": "默认路径是HBM4逐步增加商业组合，HBM3E在并行平台中仍有交付，不能把FY2026多数3E提前改写为全部4。器件量产、已公布Rubin供货连接和平台生产出货支持跨代推进；16层送样仍是独立资格位置，HBM4E日历2027放量是管理层计划而非当前收入。本研究采用渐进切换，不采用一次性替代旧平台。",
+          "ordinary_progress": "12层HBM4交付扩大，16层继续验证，HBM4E按路线开展联合设计及准备。",
+          "open_frontier": "客户最终层数/容量规格、量产资格与平台交付比例决定组合，较低堆叠或多配置不必等于平台数量减少。",
+          "time_scope": "2026 Q4—2027平台换代",
+          "ref": [
+            "D1-O88",
+            "D1-O74",
+            "D1-O130",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q3/Q3-FY26-Prepared-Remarks.pdf"
+          ]
+        },
+        {
+          "name": "2027采购可见性提升与价格重设是近端经济主线",
+          "baseline": "默认路径是已覆盖的大部分2027供给按协议兑现、重定价改善HBM相对产品经济性，而不是继续机械外推既有HBM收入增速。HBM专属协议比跨产品SCA更接近本业务；相对经济性改善仍为公司预期，本研究把它作为工作基线而非已实现利润。",
+          "ordinary_progress": "协议内批次交付、代际组合推进，约定价格按交付期反映。",
+          "open_frontier": "确切量、价幅、成本及履约决定改善程度；CMBU83%不能确定HBM毛利，跨产品保证金也不能保证HBM收入。",
+          "time_scope": "2027日历年及跨代履约",
+          "ref": [
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "D1-O31",
+            "D1-O44"
+          ]
+        },
+        {
+          "name": "需求路线扩大但多供应者配额竞争持续",
+          "baseline": "未来HBM需求不只由NVIDIA一条路线构成，默认是GPU与带HBM的自研加速器共同扩张，同时商业化供应者竞争客户配额。Trainium已可用与多年度计算承诺支持ASIC路径；美光已公布GPU采用和交付客户扩大支持自身参与，Samsung商业HBM4供给则反对独占假设。不能由新增云/模型客户关系直接算美光ASIC份额。",
+          "ordinary_progress": "已采用平台继续采购，新增客户和代际分别完成资格与供给安排。",
+          "open_frontier": "分平台采购授予、竞争者交期/可靠性和规格匹配能使行业增长与美光份额背离；故没有采用旧市场份额作当前点值。",
+          "time_scope": "2026—2028采购与平台周期",
+          "ref": [
+            "https://aws.amazon.com/about-aws/whats-new/2025/12/amazon-ec2-trn3-ultraservers/",
+            "https://blog.google/innovation-and-ai/infrastructure-and-cloud/google-cloud/eighth-generation-tpu-agentic-era/",
+            "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Second-Quarter-Results/default.aspx",
+            "D1-O85",
+            "D1-O130",
+            "https://news.samsung.com/global/samsung-ships-industry-first-commercial-hbm4-with-ultimate-performance-for-ai-computing",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+          ]
+        },
+        {
+          "name": "异构与分层先重分配工作集而非普遍取消HBM",
+          "baseline": "默认路径仍保留HBM承担高带宽热计算，SRAM专用执行及主机/闪存分层改变每任务驻留内容和配置。LPX已生产但平台分工保留GPU，CMX的预取/缓存管理也不是将活跃decode随意移至闪存；因此当前更支持工作集分工与总服务扩张并存，而非全面HBM替代。本研究不对需求反弹系数作点估。",
+          "ordinary_progress": "特定长上下文和低延迟工作负载继续优化分层，现有HBM平台与异构方案并行。",
+          "open_frontier": "同任务HBM下降能否被并发/模型规模/服务量增加抵消；HBF等新接口通过商业时延与软件适配后才改变默认权重。",
+          "time_scope": "2026—2028架构周期",
+          "ref": [
+            "https://developer.nvidia.com/blog/inside-nvidia-groq-3-lpx-the-low-latency-inference-accelerator-for-the-nvidia-vera-rubin-platform",
+            "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Groq-3-LPX-Now-in-Full-Production-With-World-Class-Speed-for-Agentic-AI/default.aspx",
+            "https://developer.nvidia.com/blog/?p=111143",
+            "https://www.usenix.org/conference/osdi26/presentation/luo",
+            "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf",
+            "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html"
+          ]
+        },
+        {
+          "name": "共同设计增强产品接口但价值与交付仍按资格兑现",
+          "baseline": "默认是定制基础die与客户共同设计的重要性上升，美光内部HBM4路线和已开展NVHBM合作提供自身业务入口；不采用合作即独供、定制即高利润的推断。SPHBM4已有标准但没有目标量产采用证据，近端仍以当前合格平台封装路径为主。自身封装能力计划在2027改善是交付接口，不在本域重复展开晶圆和后段产能模型。",
+          "ordinary_progress": "NVHBM与后续平台持续共同设计，现有器件按规格交付，新标准进行系统适配。",
+          "open_frontier": "定制非重复性研发、基础die成本和客户议价怎样分配收益；有机基板路线若获平台采用是否放松系统封装而加强竞争。",
+          "time_scope": "2027及后续平台周期",
+          "ref": [
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "D1-O88",
+            "D1-O31",
+            "https://markets.financialcontent.com/bpas/article/bizwire-2026-7-13-new-jedec-sphbm4-standard-enables-hbm4-class-bandwidth-on-organic-substrates",
+            "D1-O91"
+          ]
+        },
+        {
+          "name": "系统部署有时滞但没有已证实的目标采购收缩",
+          "baseline": "当前默认是按已签安排供货并存在客户上线时滞，而不是因电力/资金风险就推定HBM取消订单。器件与平台商业交付已经成立；CoreWeave分期电力和NVIDIA部署约束说明最终消耗可能落后采购，从而影响后续复购窗口。",
+          "ordinary_progress": "现有订单交付、客户机架安装与上线分批进行。",
+          "open_frontier": "客户待安装设备或HBM库存若累积到改变下一批采购，会区分提前锁供与持续终端消耗；当前无可比库存数值。",
+          "time_scope": "未来数季至2027部署周期",
+          "ref": [
+            "D1-O130",
+            "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000366/crwv-20260630.htm",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+          ]
+        }
+      ],
+      "realization_factors": [
+        {
+          "name": "平台数量、堆叠配置与采购份额决定可售位元",
+          "mechanism": "按兼容平台/代际分组，美光机会位元=平台数量×每平台堆叠数×每堆叠容量×美光采购份额；实际交付还受合格可交付供给限制。GPU/xPU数量、层数及容量由模型性能、系统功率和预算选择共同决定，配置可分档而非统一升级。客户选择GPU、自研加速器及多云重分平台组合；各平台资格与采购关系决定美光能进入哪些项。供给约束下提高单栈容量可能减少可完成平台数量，不宜同时假设所有乘数不变。",
+          "current_status": "当前量产接口是HBM4 36GB 12层，48GB 16层仍送样；年度主力仍含HBM3E 12层，产品转换在进行而非已经全部完成。Rubin和AMD采用证明具体路径，多平台HBM规格拓展机会，但不能填美光在Trainium/TPU的最新份额。近端已合格平台的交付与份额比未定下一代最高容量更直接；未来规格分岔仍能改变大规模机会。",
+          "materiality_context": "平台数量决定市场规模，堆叠数/容量决定内容，采购份额决定捕获：固定其他项，数量或份额相对提高10%均令潜在位元增加10%；份额提高1个百分点带来该平台总位元的1%，不是美光收入固定增长1%。36到48GB在同堆叠位置下是33.3%容量增加，但当前16层未量产，不能当当季实际增量。预算/功率及供给改变可建平台数，可能抵消单机升级；兼容平台组合和资格控制参与范围，自研平台可以新增也可替代GPU路径。合格供给在当前紧张环境控制近端量，更多需求先影响价格、配额及未来槽位。较早的下一代规格/新客户信息虽未变收入，仍可修订未来机会幅度，不因当前贡献较小而视为不重要。",
+          "scope_boundary": "解释本Unit数量及配置，不用全行业位元或CMBU收入替代全HBM目标量；需求、系统上线在AI Unit，器件制造投入在制造Shell。",
+          "ref": [
+            "https://jp.micron.com/about/press/news/micron-in-high-volume-production-of-hbm4-designed-for-nvidia-vera-rubin-pcie-gen6-ssd-and-socamm2",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q3/Q3-FY26-Prepared-Remarks.pdf",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://micron.gcs-web.com/news-releases/news-release-details/micron-hbm-designed-leading-amd-ai-platform",
+            "https://aws.amazon.com/about-aws/whats-new/2025/12/amazon-ec2-trn3-ultraservers/",
+            "https://blog.google/innovation-and-ai/infrastructure-and-cloud/google-cloud/eighth-generation-tpu-agentic-era/",
+            "D1-O52",
+            "D1-O186",
+            "D1-O130"
+          ]
+        },
+        {
+          "name": "系统价值、可靠性和多源采购分配供应商收益",
+          "mechanism": "加速器客户按带宽、功耗、容量、温度与可靠性评价整机有效吞吐和运行成本，并通过电气/热/长期运行测试认证供应商。合格不等于采购：交付确定性、价格、第二来源政策及版本匹配决定最终份额。更可靠/低功耗的内存可降低昂贵系统停机和功率约束，支持溢价；竞争者达到需求后，多源化提高买方议价与替换能力。现场问题可触发降低配额或返修，但跨代接口和再认证时间限制立即替代。",
+          "current_status": "美光有已公布的平台采用及更多客户交付，Samsung 2月已有HBM4商业出货，多供应者竞争不是只等未来概念。现有材料未证明某个MU平台发生系统可靠性事故或因此丢单。当前工作解释是合格产品与交付能力支持参与，客户仍可通过竞争者商业化重分配额；公司性能宣称不是独供或最新份额事实。",
+          "materiality_context": "带宽、容量和功耗决定是否满足平台价值，性能超过必需门槛后，交付/价格的重要性会上升；整机功率限额下节约内存功率可留给计算，但不能将内存效率百分比当整机节约。温度/可靠性决定可运行时间和失效成本，对高价系统价值捕获重要；无事故证据不等于未来无风险。测试与再认证时间控制进入/替换速度，版本匹配控制可服务范围。交付确定性在短缺期支持份额，多源政策和竞争价格控制份额及ASP，可能在需求不变时改变目标经济；例如竞争者赢走该平台总采购5个百分点，MU损失的是平台位元×5%，非全公司5%。现阶段竞争者商业供给比未测量的可靠性传闻更能改变分配，但下一代认证结果可先修订未来地位。",
+          "scope_boundary": "保留客户系统可靠性与产品竞争，不展开制造良率工序，也不把竞争者TSMC合作当MU合同；具体市场份额仍保留无值参数。",
+          "ref": [
+            "https://jp.micron.com/about/press/news/micron-in-high-volume-production-of-hbm4-designed-for-nvidia-vera-rubin-pcie-gen6-ssd-and-socamm2",
+            "https://micron.gcs-web.com/news-releases/news-release-details/micron-hbm-designed-leading-amd-ai-platform",
+            "https://news.samsung.com/global/samsung-ships-industry-first-commercial-hbm4-with-ultimate-performance-for-ai-computing",
+            "https://news.skhynix.com/en/sk-hynix-partners-with-tsmc-to-strengthen-hbm-technological-leadership/",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "D1-O205",
+            "D1-O127"
+          ]
+        },
+        {
+          "name": "热工作集、带宽与异构分工决定每任务HBM强度",
+          "mechanism": "模型权重、KV状态、精度和并发形成驻留容量；上下文长度和访问频率形成读写带宽需求，满足延迟目标的有效带宽可在容量未满时就要求更多堆叠/设备。压缩、缓存复用、主机/闪存层和SRAM分工减少部分HBM驻留或流量，但数据传输、缓存未命中和编排增加代价。LPX可接FFN/MoE，GPU继续承担注意力/prefill；热层不能用慢层容量等价替代。效率提升也能扩大可服务并发和使用，令单位任务节约与HBM总量变化分离。",
+          "current_status": "HBM仍承担高频注意力和模型访问，异构及分层正重新安排工作集。NVIDIA 7月分析展示prefill与decode约束不同；DirectKV在特定GH200/GB200系统从CPU直接读KV，实验GH200 GPU内存用量降低43%，不是全行业HBM订单降43%。CMX已形成分层接口，HBF/GP1仍属标准/样品路线，LPX生产不意味着所有推理份额迁移。",
+          "materiality_context": "权重/KV、精度和并发决定容量强度，上下文与访问频率决定带宽强度，SLA决定可容忍的慢层；其重要性大于单纯比较GB，因为HBM既卖容量也支撑带宽。相同模型和每序列KV，峰值并发翻倍初始KV容量翻倍，但调度/压缩可抵消；更长上下文又可能增加prefill计算而不按同系数增容量。精度/压缩和缓存命中决定可节约份额，传输与编排决定节约是否换成有效吞吐。43%实验仅作用特定GPU内存使用，不含整机平台数及MU份额；冷数据外移更可能增加可承载上下文，非所有热数据消失。SRAM分工影响未来采购构成，当前完整商业GPU/HBM暴露高于样品闪存路线；活动反弹可抵消单任务下降，长期比一份静态内存BOM更重要。",
+          "scope_boundary": "只核算HBM工作层和目标产品需求；主机位元的独立后果在服务器Unit，闪存技术/收益在存储Shell。",
+          "ref": [
+            "https://developer.nvidia.com/blog/co-designing-ai-model-attention-for-fast-interactive-long-context-inference/",
+            "https://developer.nvidia.com/blog/inside-nvidia-groq-3-lpx-the-low-latency-inference-accelerator-for-the-nvidia-vera-rubin-platform",
+            "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Groq-3-LPX-Now-in-Full-Production-With-World-Class-Speed-for-Agentic-AI/default.aspx",
+            "https://developer.nvidia.com/blog/?p=111143",
+            "https://www.usenix.org/conference/osdi26/presentation/luo",
+            "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf",
+            "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html",
+            "D1-O147",
+            "D1-O148"
+          ]
+        },
+        {
+          "name": "代际爬坡和可交付供给决定产品组合与单位成本",
+          "mechanism": "美光选择HBM代际/堆叠规格、投入资源和爬坡节奏；单位良品所需die面积、堆叠数量、测试/封装投入及成熟良率决定合格位元和单位成本。新代际性能/功耗增加客户价值，也增加早期设计和生产难度。认证与客户平台节拍决定合格产出能否售出；产能在HBM与普通DRAM间有机会成本。资源扩张、良率成熟和组合升级共同影响可售量与毛利，首次出片/封装启动不是同日完整供货能力。",
+          "current_status": "HBM4已高量产且六月累计交付收入超过10亿美元，16层与HBM4E仍在不同阶段。公司称12层HBM4爬坡较前代快，属于管理层执行表述；未披露全HBM单位成本。新加坡封装和新晶圆资源在2027先后起步，当前数量首先受既有合格供给和客户节拍支配，不宜把未来厂房规划直接当当季位元。",
+          "materiality_context": "资源规模、die面积和堆叠数设置供给/成本边界，成熟良率直接改变良品：条件性同投入良率从80%到88%，良品增加10%、固定投入摊到每良品约少9.1%，是敏感性示例而非MU实际良率。测试/封装投入与爬坡时间影响成本和交付，当前12层执行比未成熟16层最高容量更接近近端经济。认证和客户平台节拍决定可售组合，即使生产可做也可能暂时不能收入；新代际溢价能补成本，但并不保证HBM毛利最高。HBM/普通DRAM机会成本决定资源选择，普通DRAM高回报时会抬高HBM所需价格；扩张改变未来可交付空间，首片与成熟产出的间隔比建筑面积更有解释力。",
+          "scope_boundary": "从制造Shell引入合格供给和成本接口，不接管工艺/设备/工厂资源细节；该Unit保留产出到客户组合、售价和利润的关系。",
+          "ref": [
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q3/Q3-FY26-Prepared-Remarks.pdf",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://jp.micron.com/about/press/news/micron-in-high-volume-production-of-hbm4-designed-for-nvidia-vera-rubin-pcie-gen6-ssd-and-socamm2",
+            "D1-O88",
+            "D1-O74",
+            "D1-O91",
+            "D1-O127"
+          ]
+        },
+        {
+          "name": "价格重设、供给覆盖与成本把位元转换为产品收益",
+          "mechanism": "在产品/期间一致范围内，HBM收入是交付位元乘实现每位元售价；毛利是该收入减对应良品成本，毛利率是其比例而非独立需求。代际/规格组合、竞争和客户系统价值影响售价，供需紧张及普通DRAM资源机会成本影响谈判。数量覆盖、交付期和固定/公式/协商定价分开决定可见性；未覆盖部分随新订单和重谈调整。保底采购或资金保障提高履约可信度，但押金不是销售、合同额度不是全部当期交付，不能重复计入收入。",
+          "current_status": "公司称2027绝大多数HBM位元供给已有协议且价格明显上调，并预计缩小对普通DRAM的毛利差。当前最强近端经济链是已覆盖数量与重定价，而非默认HBM始终毛利最高。Q4全HBM收入增长快于全公司但无绝对值；CMBU含云非HBM，其83%毛利不能充当HBM产品毛利。多年SCA提供额外背景，未按全部HBM或按客户拆分。",
+          "materiality_context": "交付量控制经营规模，实现价格及成本控制价值捕获，三者可独立改变：固定量/成本，价格增加10%的毛利增量为原收入10%；固定价/成本，数量增加10%的毛利增量约为原毛利10%，不是同等效果。初始小变动Δ毛利≈qΔp+(p−c)Δq−qΔc，组合变化另按产品分组，不重复叠加。当前供给紧张、2027覆盖和重定价使价格/履约时点对近端预期有高杠杆；竞争、系统价值、普通DRAM机会成本决定价格可持续性。单位成本与新旧代际组合可抵消溢价，毛利差收窄不等于超过。数量/期限/价格覆盖分别约束不同变量，跨产品押金和信用支持降低履约风险却不创造终端消耗；保证金现金不是利润变量。",
+          "scope_boundary": "保留本Unit量价成本和产品利润，不把混合分部当纯HBM；行业价格深度及SCA治理分别在DRAM市场、战略客户Shell，但它们对目标收益的作用不被边界删除。",
+          "ref": [
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q3/Q3-FY26-Prepared-Remarks.pdf",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O31",
+            "D1-O44",
+            "D1-O57",
+            "D1-O19"
+          ]
+        },
+        {
+          "name": "接口与定制基础die重划系统门槛和价值分工",
+          "mechanism": "平台商与HBM供应商通过基础die逻辑、接口、互连及功耗共同设计匹配系统；定制设计费、持续性能溢价和采购黏性可增加供应商价值，但客户集中、设计迭代和可复用范围决定开发成本摊销。基础die制造/系统封装伙伴控制交付依赖。SPHBM序列化接口允许HBM4核心在有机基板路线提供高带宽，可能降低部分系统封装门槛并改变接口成本/功耗，仍需整机验证与软件性能兑现；不同路线不必夺走同样容量市场。",
+          "current_status": "美光HBM4基础和核心die内部实现，HBM4E/NVHBM共同设计已进入具体客户路线但非当前大规模定制收入。SK hynix采用不同基础die/系统封装协作，不能由此断定MU没有外部系统依赖。7月SPHBM标准说明替代接口可行方向，当前未显示MU相关SPHBM量产份额。工作判断是现有高带宽平台仍主导交付，定制与接口变化更能修订下一代参与和利润结构。",
+          "materiality_context": "基础die性能、接口和功耗决定系统价值与可参与范围；定制溢价/设计费决定捕获，开发成本、迭代和可复用范围决定净回报。固定开发成本若只分摊一客户小批量，单位负担高；规模或跨平台复用增加则下降，因此黏性不等于无限毛利。客户集中与认证时间决定议价和切换速度，既保护供应商也增加项目取消损失。制造/封装伙伴决定交付时点，内部基础die只减少一个依赖。SPHBM降低系统封装门槛可扩大平台机会，也可能把价值移向接口控制器并增加功耗；目前标准阶段当前收入贡献小，但若可部署平台范围明显扩大，未来机会修订可以大于当前基数。",
+          "scope_boundary": "研究产品接口和共同设计的经济，不深挖MU工艺；系统封装在本Shell平台背景，伙伴关系不等同采购订单。",
+          "ref": [
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://news.skhynix.com/en/sk-hynix-partners-with-tsmc-to-strengthen-hbm-technological-leadership/",
+            "https://markets.financialcontent.com/bpas/article/bizwire-2026-7-13-new-jedec-sphbm4-standard-enables-hbm4-class-bandwidth-on-organic-substrates",
+            "D1-O127",
+            "D1-O88"
+          ]
+        },
+        {
+          "name": "平台交付与库存周期改变订单时点和违约暴露",
+          "mechanism": "客户按加速器生产计划订HBM，已购HBM在系统封装、服务器安装与通电之前可能成为在途或库存。统一产品范围下采购=装机所需位元+库存增减；设备提前期、供给覆盖和库存目标决定季度采购节奏。部署滞后可先提高库存，随后消化库存减少追加；代际切换决定库存能否转用于新平台。融资和终端服务回报影响客户完成建设及履约能力，数量合同可维持MU交付但无法替代客户长期消耗。 已投入运行的GPU集群转给另一模型商使用，首先延续其中已装HBM，不重复形成装机位元；原经营者另建、接手者换代及新增工作填满余量决定随后复购，而主机单独更新不等于HBM更新。",
+          "current_status": "Rubin出货与不同园区上线存在时差，长期供给保障与客户容量融资并行。没有已确认的MU HBM广泛库存过剩或采购收缩测量。当前解释是合同和平台需求支撑近端交付，但订单领先服务消耗的正常时滞使终端使用不能用当季内存采购反推；若平台节拍改变，追加订单与利润显示时间可变化。 5月Colossus接入安排提供存量使用权变化的具体例子，但未披露其中MU供货量或净新增HBM，也不能把2024早期配置与2026公告容量作同口径订单增量。",
+          "materiality_context": "装机数量/内容决定最终需求，库存目标、提前期和供给覆盖控制其季度时点；固定装机位元而库存增加同样10单位会额外采购10，之后去库存又少10，不创造永久机会。系统交付与通电、融资和服务回报控制消化及信用风险，目前可见部分站点未交付电力使时滞具有实际基础，但不足以量化MU库存。代际兼容决定库存可用范围，失配可带来返工/过时成本而非简单需求减少。合同数量维持近期量的确定性，履约风险和终端回报决定后续周期；这些时间变量能在使用人数不变时改变订单，重要性独立于平台规格/竞争份额。 存量兼容性和可用余量影响新模型商近期HBM采购，转出者替代投资决定全球净额；这些变量能让服务增速领先新bit，同时保留满载后再扩建的后续机会。",
+          "scope_boundary": "只解释HBM客户采购与库存，不推测未披露库存值；客户融资/上线在AI Unit，多年资金条款在战略客户Shell。",
+          "ref": [
+            "D1-O130",
+            "D1-O23",
+            "D1-O31",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000366/crwv-20260630.htm",
+            "https://www.crusoe.ai/resources/newsroom/crusoe-announces-new-900-mw-ai-factory-campus-in-abilene-texas-to-support-microsoft-ai-infrastructure",
+            "https://www.anthropic.com/news/higher-limits-spacex",
+            "https://x.ai/news/anthropic-compute-partnership",
+            "https://nvidianews.nvidia.com/news/spectrum-x-ethernet-networking-xai-colossus/"
+          ]
+        }
+      ],
+      "potential_gaps": [
+        {
+          "name": "平台换代、规格分档与自研路线重设可参与位元",
+          "why_live": "HBM4 36GB 12层已量产、48GB 16层仍送样，HBM4E在2027计划窗口；下一代平台存在不同配置评估。GPU与带HBM自研平台并行，规格和MU资格都不是统一固定值。",
+          "revision_logic": "相对渐进换代基线，平台数量、栈数/容量与MU可参与集合可各自变化。规格降档可能降低单机内容却扩大可供平台数；新ASIC可增加机会也可迁移已有GPU需求，不能只看最高GB。",
+          "possibility_space": [
+            {
+              "name": "平台商为成本和供给把下一代分成较低容量与高容量版本",
+              "implication": "平均每平台位元可能低于最高规格外推，较少die也可释放更多平台交付；MU量和收入净效应取决于数量及其合格版本，不能把降层数自动当总需求下降。"
+            },
+            {
+              "name": "高并发长上下文推动高容量16层在多个平台成为主要选项",
+              "implication": "同平台数量下可售内容上升，能及时合格交付者得到更大机会；更多堆叠成本和资源消耗也可能限制平台数或压利润，高容量不是只增加收入的变量。"
+            },
+            {
+              "name": "GPU客户延长旧代际供货而推迟HBM4E主导配置",
+              "implication": "HBM3E/4收入持续期较长，新代际价值兑现后移；若MU既有供货强，延长可支撑近端量，若资源已转新产品则组合/成本受压。"
+            },
+            {
+              "name": "模型商把新增工作迁到HBM自研加速器并形成独立供应采购",
+              "implication": "改变可参与平台和买方接口，不把Trainium/TPU规格当MU既有份额。获得资格即可先扩大未来机会判断，即使当前GPU采购未缩；未获资格则行业增量可能绕过MU。"
+            }
+          ],
+          "ref": [
+            "https://jp.micron.com/about/press/news/micron-in-high-volume-production-of-hbm4-designed-for-nvidia-vera-rubin-pcie-gen6-ssd-and-socamm2",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q3/Q3-FY26-Prepared-Remarks.pdf",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://micron.gcs-web.com/news-releases/news-release-details/micron-hbm-designed-leading-amd-ai-platform",
+            "https://aws.amazon.com/about-aws/whats-new/2025/12/amazon-ec2-trn3-ultraservers/",
+            "https://blog.google/innovation-and-ai/infrastructure-and-cloud/google-cloud/eighth-generation-tpu-agentic-era/",
+            "D1-O52",
+            "D1-O186",
+            "D1-O130",
+            "D1-O88",
+            "D1-O74",
+            "D1-O91",
+            "D1-O127"
+          ]
+        },
+        {
+          "name": "多源商业化与系统失效重分平台配额",
+          "why_live": "MU有已公布GPU采用和更多客户交付，竞争者HBM4已商业化，认证不保证最新分配。整机停机代价高，可靠性、功率、交付和多源议价都可能在需求不变时改变份额。",
+          "revision_logic": "基线是多供应者竞争持续而非独供。修订的是MU捕获及系统价值的可持续性，某个平台配额变化可先影响下一代机会、随后改变交付；客户再认证时间决定替换速度，不以传闻当已发生失效。",
+          "possibility_space": [
+            {
+              "name": "客户因更成熟交付或更低系统功耗扩大MU采购份额",
+              "implication": "固定平台市场内MU潜在位元增加，低功耗/可交付性还能支持报价；若总供给受限，先体现更好资源分配或未来覆盖，未必当季位元立刻增加。"
+            },
+            {
+              "name": "竞争者合格供给扩大，客户强化第二来源并压低议价",
+              "implication": "MU行业机会可以增长而份额/溢价下降，2027覆盖不意味着所有下一代槽位不可重分；同等性能下交期和价格的重要性提高。"
+            },
+            {
+              "name": "某供应者出现平台级可靠性问题导致返修和采购重排",
+              "implication": "若MU获替补，机会来自替换而非终端AI加速；若问题涉及MU，则失效成本和信任影响跨代配额。重新认证与系统兼容阻止即时全量替换，前景可先变而交付滞后。"
+            },
+            {
+              "name": "平台改版后原资格不能直接沿用，领先供应者次序重置",
+              "implication": "新接口/热条件可让现有份额保护弱化，开发与认证能力决定未来捕获；原平台当前收入仍可继续，因此近端经营与未来竞争地位需分开。"
+            }
+          ],
+          "ref": [
+            "https://jp.micron.com/about/press/news/micron-in-high-volume-production-of-hbm4-designed-for-nvidia-vera-rubin-pcie-gen6-ssd-and-socamm2",
+            "https://micron.gcs-web.com/news-releases/news-release-details/micron-hbm-designed-leading-amd-ai-platform",
+            "https://news.samsung.com/global/samsung-ships-industry-first-commercial-hbm4-with-ultimate-performance-for-ai-computing",
+            "https://news.skhynix.com/en/sk-hynix-partners-with-tsmc-to-strengthen-hbm-technological-leadership/",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "D1-O205",
+            "D1-O127",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://markets.financialcontent.com/bpas/article/bizwire-2026-7-13-new-jedec-sphbm4-standard-enables-hbm4-class-bandwidth-on-organic-substrates",
+            "D1-O88"
+          ]
+        },
+        {
+          "name": "模型工作集与异构记忆层改变HBM资源强度",
+          "why_live": "HBM仍承接高频热访问，LPX、CMX和DirectKV已说明可分工路径，HBF/GPU-direct闪存处于不同早期阶段。模型注意力、KV精度、上下文和有效带宽影响内容，不是所有外移都取消HBM。",
+          "revision_logic": "修订的是同一成功任务需要多少HBM及节约后活动是否反弹。单位强度下降可放缓位元需求，也可扩大每节点并发并促成更复杂服务；少买某种GPU与总HBM位元变化不是同一判断。",
+          "possibility_space": [
+            {
+              "name": "模型采用更少KV头、稀疏/压缩注意力并达到客户质量要求",
+              "implication": "有效热状态和带宽需求下降，原配置可处理更多任务；固定活动时新增HBM减少，若开发者用余量扩大上下文/并发，总量可能恢复增长，不套用实验节约率。"
+            },
+            {
+              "name": "代理记忆与超长上下文成为客户愿付费的标准服务",
+              "implication": "新工作集和频繁访问提高容量/带宽价值，缓存可减重算但未必压低热层需求；HBM配置升级与更多设备都可能承接，付费范围而非上下文最大值决定规模。"
+            },
+            {
+              "name": "SRAM协作广泛承接FFN/MoE或草稿执行",
+              "implication": "HBM GPU的任务分工收窄，单任务内容/设备可能减，但热注意力仍保留。若交互成本下降令使用明显扩大，HBM可继续增长，同时外部DRAM成为不同受益层。"
+            },
+            {
+              "name": "主机或近GPU闪存获得满足尾延迟的直接访问与成熟软件",
+              "implication": "可外移部分状态压低HBM容量强度，核心热带宽仍重要；同容量GPU可提供更大服务。若未命中和传输开销高，应用会保留热数据HBM，替代范围比宣传容量小。"
+            }
+          ],
+          "ref": [
+            "https://developer.nvidia.com/blog/co-designing-ai-model-attention-for-fast-interactive-long-context-inference/",
+            "https://developer.nvidia.com/blog/inside-nvidia-groq-3-lpx-the-low-latency-inference-accelerator-for-the-nvidia-vera-rubin-platform",
+            "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Groq-3-LPX-Now-in-Full-Production-With-World-Class-Speed-for-Agentic-AI/default.aspx",
+            "https://developer.nvidia.com/blog/?p=111143",
+            "https://www.usenix.org/conference/osdi26/presentation/luo",
+            "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf",
+            "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html",
+            "D1-O147",
+            "D1-O148",
+            "https://jp.micron.com/about/press/news/micron-in-high-volume-production-of-hbm4-designed-for-nvidia-vera-rubin-pcie-gen6-ssd-and-socamm2",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q3/Q3-FY26-Prepared-Remarks.pdf",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://micron.gcs-web.com/news-releases/news-release-details/micron-hbm-designed-leading-amd-ai-platform",
+            "https://aws.amazon.com/about-aws/whats-new/2025/12/amazon-ec2-trn3-ultraservers/",
+            "https://blog.google/innovation-and-ai/infrastructure-and-cloud/google-cloud/eighth-generation-tpu-agentic-era/",
+            "D1-O52",
+            "D1-O186",
+            "D1-O130"
+          ]
+        },
+        {
+          "name": "供给覆盖与价格重设改变产品利润持续性",
+          "why_live": "公司称2027大部分HBM位元已有协议且重定价将缩小对普通DRAM的毛利差，这是当前工作基线而非已实现产品毛利。全HBM绝对收入、ASP与成本仍未披露，跨产品保证金也不是HBM销售额。",
+          "revision_logic": "修订的是HBM量价可见性和净价值，而非把所有涨价都认作数量增长。固定数量下价格/成本对毛利有独立杠杆；覆盖限制短期分配但代际、竞争、重谈和终端履约仍影响后续持续期。",
+          "possibility_space": [
+            {
+              "name": "客户接受高系统价值的代际溢价并按新价格持续提货",
+              "implication": "提高每bit收益和毛利覆盖，即使位元增量不大也可改善产品经济；资源和爬坡成本若未同幅上升，价格差的收益更直接，不能据混合CMBU倒算幅度。"
+            },
+            {
+              "name": "竞品供给和客户降配使后续重谈更重视成本而非带宽峰值",
+              "implication": "新增/未覆盖订单溢价下降，下一轮定价基线转弱；已覆盖短期量可维持，故不是所有合同立即失效或当前收入同步下降。"
+            },
+            {
+              "name": "协议通过价格上下限或产品升级调整在供需变化时分配收益",
+              "implication": "有效下限可缓冲市场回落，但上限也可能限制短缺期捕获；规格/成本变化若需重谈，名义多年期限不能代替逐代净利润判断。跨产品条款深度在战略客户域。"
+            },
+            {
+              "name": "合同按期交付而客户实际使用未跟上",
+              "implication": "近端量价仍可兑现，后续新约和追加采购却可能弱于当前合同外推；保证金和信用支持降低部分履约风险，不把采购承诺当永续终端消耗。"
+            }
+          ],
+          "ref": [
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q3/Q3-FY26-Prepared-Remarks.pdf",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O31",
+            "D1-O44",
+            "D1-O57",
+            "D1-O19",
+            "D1-O130",
+            "D1-O23",
+            "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000366/crwv-20260630.htm",
+            "https://www.crusoe.ai/resources/newsroom/crusoe-announces-new-900-mw-ai-factory-campus-in-abilene-texas-to-support-microsoft-ai-infrastructure"
+          ]
+        },
+        {
+          "name": "合格供给爬坡与跨产品资源回报改变可售组合",
+          "why_live": "当前12层交付已成立，16层和HBM4E处不同爬坡位置，新增封装/晶圆资源在2027先后起步。普通DRAM高回报及竞品扩张能改变HBM资源机会成本，不能只用开工日期推数量。",
+          "revision_logic": "修订的是MU能够卖的产品、成本和交付时点。即使外部AI需求不变，良品、测试/封装、平台资格或资源优先级也可改变目标量；全行业供给增加又可能压价，使降本和增长不等于利润同幅增加。",
+          "possibility_space": [
+            {
+              "name": "新封装能力与成熟良率让现有客户订单更快交付",
+              "implication": "扩大合格可售量、降低单位摊销，最初释放已紧张订单；若前段或客户系统仍短缺，效果转为交期/配额而非立即全量出货，制造细节由制造域深化。"
+            },
+            {
+              "name": "高堆叠或定制产品爬坡成本高于原先成熟速度",
+              "implication": "新产品售价可能高而净回报低，MU保留旧代际或延后转配；客户资格窗口错过会影响下一代份额，不只是短期制造费用变化。"
+            },
+            {
+              "name": "普通DRAM边际回报更高，MU重新分配资源与客户槽位",
+              "implication": "HBM可售增量受限，但全公司收益不必恶化；需要更高HBM价格或战略客户价值才能吸引资源，目标业务量与公司毛利方向可以不同。"
+            },
+            {
+              "name": "竞争者有效供给更快成熟，行业短缺先缓解",
+              "implication": "MU自身量/成本改善仍可发生，但ASP和配额竞争加大，盈利持续期比产能增量推算更短；设施开放本身不当竞争供给已完成。"
+            }
+          ],
+          "ref": [
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q3/Q3-FY26-Prepared-Remarks.pdf",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://jp.micron.com/about/press/news/micron-in-high-volume-production-of-hbm4-designed-for-nvidia-vera-rubin-pcie-gen6-ssd-and-socamm2",
+            "D1-O88",
+            "D1-O74",
+            "D1-O91",
+            "D1-O127",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O31",
+            "D1-O44",
+            "D1-O57",
+            "D1-O19",
+            "D1-O53",
+            "D1-O54"
+          ]
+        },
+        {
+          "name": "定制基础die与新接口重分价值和可部署市场",
+          "why_live": "MU有内部HBM4基础die及NVHBM共同设计路线，SPHBM有机基板接口已有标准。现有交付仍以合格平台为主，定制研发、伙伴依赖和客户议价使共同设计不必等于独供高利润。",
+          "revision_logic": "修订的是产品参与范围和价值分工。定制可把供应从通用bit移向系统能力，也可能成为单一客户成本；新接口可降低封装门槛、增加平台数量，却改变利润由谁获得，与普通份额竞争不同。",
+          "possibility_space": [
+            {
+              "name": "定制HBM被多个客户/版本复用，基础die功能成为关键系统资产",
+              "implication": "开发成本摊销改善、切换成本和性能溢价增强，可扩大可参与市场；更多复用不等于零迭代成本，交付依赖与采购仍按平台分别存在。"
+            },
+            {
+              "name": "客户主导定制设计并要求低价或自行控制关键接口",
+              "implication": "MU更接近执行制造/交付角色，独特性能不必带来同幅利润；专用研发若难转用，客户集中提高取消与版本变动的经济损失。"
+            },
+            {
+              "name": "SPHBM有机基板路线被成本敏感平台实际采用",
+              "implication": "系统封装门槛放松可打开新平台并增加需求，价值也可能转向序列化接口/控制器；MU参与要看可供产品和资格，不认为标准自动消灭既有HBM路线。"
+            },
+            {
+              "name": "新接口的功耗或软件性能不适合主流低延迟负载",
+              "implication": "替代路线维持局部用途，现有先进封装/HBM价值更稳；共同设计继续重要，但预期新增可服务平台集合应比标准发布时的想象收窄。"
+            }
+          ],
+          "ref": [
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://news.skhynix.com/en/sk-hynix-partners-with-tsmc-to-strengthen-hbm-technological-leadership/",
+            "https://markets.financialcontent.com/bpas/article/bizwire-2026-7-13-new-jedec-sphbm4-standard-enables-hbm4-class-bandwidth-on-organic-substrates",
+            "D1-O127",
+            "D1-O88",
+            "https://jp.micron.com/about/press/news/micron-in-high-volume-production-of-hbm4-designed-for-nvidia-vera-rubin-pcie-gen6-ssd-and-socamm2",
+            "https://micron.gcs-web.com/news-releases/news-release-details/micron-hbm-designed-leading-amd-ai-platform",
+            "https://news.samsung.com/global/samsung-ships-industry-first-commercial-hbm4-with-ultimate-performance-for-ai-computing",
+            "D1-O205"
+          ]
+        },
+        {
+          "name": "部署时滞、存量接管与代际库存改变HBM复购",
+          "why_live": "客户采购可能领先园区和完整系统上线，当前没有MU相关普遍过量库存量化。Colossus接入案例还说明新模型商取得大量GPU能力可以来自已有集群，而不都是新HBM装机。",
+          "revision_logic": "修订的是基线「按协议供货并逐步消耗」的季度及后续采购对应。库存和存量设备能让服务增长与HBM复购暂时背离；兼容、融资和平台升级决定这只是时间搬移还是总采购机会改变。",
+          "possibility_space": [
+            {
+              "name": "已买系统快速上线，客户先消化HBM库存再恢复追加",
+              "implication": "最终服务能力增加而器件新单可能暂缓，后续取决于新增工作是否填满余量；不把短期采购平缓直接解释为AI需求失败。"
+            },
+            {
+              "name": "接电/融资延误导致平台设备长期待安装",
+              "implication": "合同可能先维持交付，但库存及客户资金占用累积，追加订单延后或下一代分配重排；这是供给承诺与实际消耗的持续期分离。"
+            },
+            {
+              "name": "模型商大规模租用兼容存量GPU，推迟自购新平台",
+              "implication": "新服务扩容先用已安装HBM，对MU近期新bit小于模型商接入能力的表观增量；转出者若另购新平台会部分抵消，净量不能从两方公告相加。"
+            },
+            {
+              "name": "旧代际库存不能满足新平台，客户提前更新或放慢换代",
+              "implication": "前者增加新代际采购却降低旧库存价值，后者延长旧HBM销售而延迟新产品；同一库存失配可有不同客户响应，不固定假设所有设备都一对一更新。"
+            }
+          ],
+          "ref": [
+            "D1-O130",
+            "D1-O23",
+            "D1-O31",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000366/crwv-20260630.htm",
+            "https://www.crusoe.ai/resources/newsroom/crusoe-announces-new-900-mw-ai-factory-campus-in-abilene-texas-to-support-microsoft-ai-infrastructure",
+            "https://jp.micron.com/about/press/news/micron-in-high-volume-production-of-hbm4-designed-for-nvidia-vera-rubin-pcie-gen6-ssd-and-socamm2",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q3/Q3-FY26-Prepared-Remarks.pdf",
+            "https://micron.gcs-web.com/news-releases/news-release-details/micron-hbm-designed-leading-amd-ai-platform",
+            "https://aws.amazon.com/about-aws/whats-new/2025/12/amazon-ec2-trn3-ultraservers/",
+            "https://blog.google/innovation-and-ai/infrastructure-and-cloud/google-cloud/eighth-generation-tpu-agentic-era/",
+            "D1-O52",
+            "D1-O186",
+            "https://www.anthropic.com/news/higher-limits-spacex",
+            "https://nvidianews.nvidia.com/news/spectrum-x-ethernet-networking-xai-colossus/"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "美光数据中心服务器内存业务",
+      "scope": "美光面向超大规模云、数据中心OEM、企业及NeoCloud的DDR、LPDDR、GDDR、内存模组和CXL等非HBM内存业务，涵盖一般计算与AI工作负载、容量和接口配置、硬件及软件适配、客户资格与采用、采购份额、供给分配、出货、定价和商业组合。",
+      "horizon": "季度业务变化及服务器、模组和接口的产品平台周期。",
+      "ref": [
+        "D1-O44",
+        "D1-O88",
+        "D1-O3",
+        "D1-O139",
+        "D1-O121",
+        "D1-O103",
+        "D1-O31",
+        "D1-O74",
+        "D1-O18",
+        "https://micron.gcs-web.com/news-releases/news-release-details/micron-sets-new-benchmark-worlds-first-high-capacity-256gb",
+        "https://news.skhynix.com/en/mass-production-socamm2-192gb/",
+        "https://www.amd.com/en/blogs/2026/agentic-ai-amd-epyc-9005-cpus-wins-today-epyc-9006.html",
+        "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+        "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q3/Q3-FY26-Prepared-Remarks.pdf",
+        "D1-O57",
+        "https://sg.micron.com/about/press/news/micron-first-to-achieve-qualification-sample-milestone",
+        "https://github.com/microncxl/cxl-reskit",
+        "https://www.usenix.org/conference/osdi26/presentation/luo",
+        "https://developer.nvidia.com/blog/?p=111143",
+        "https://developer.nvidia.com/blog/inside-nvidia-groq-3-lpx-the-low-latency-inference-accelerator-for-the-nvidia-vera-rubin-platform",
+        "https://arxiv.org/abs/2606.29986v1",
+        "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/",
+        "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+        "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+        "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Second-Quarter-Results/default.aspx",
+        "https://www.amd.com/content/dam/amd/en/documents/epyc-business-docs/other/three-ways-to-keep-your-data-center-refresh-on-track-in-a-memory-constrained-market.pdf",
+        "https://memverge.ai/product/gtc2024",
+        "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Groq-3-LPX-Now-in-Full-Production-With-World-Class-Speed-for-Agentic-AI/default.aspx",
+        "https://www.consilium.europa.eu/en/press/press-releases/2026/01/16/artificial-intelligence-council-paves-the-way-for-the-creation-of-ai-gigafactories/",
+        "https://machinelearning.apple.com/research/introducing-third-generation-of-apple-foundation-models",
+        "https://www.anthropic.com/engineering/managed-agents",
+        "https://www.anthropic.com/research/economic-index-march-2026-report",
+        "https://jp.micron.com/about/press/news/micron-in-high-volume-production-of-hbm4-designed-for-nvidia-vera-rubin-pcie-gen6-ssd-and-socamm2",
+        "https://arxiv.org/abs/2203.00241v4",
+        "https://www.eurohpc-ju.europa.eu/eurohpc-joint-undertaking-launches-ai-gigafactories-call-2026-07-30_en",
+        "https://www.anthropic.com/research/trustworthy-agents",
+        "https://digital-strategy.ec.europa.eu/en/news/ai-omnibus-enters-force",
+        "https://www.anthropic.com/news/higher-limits-spacex",
+        "https://x.ai/news/anthropic-compute-partnership"
+      ],
+      "state": {
+        "parameters": [
+          {
+            "name": "高速DDR5服务器模组客户资格",
+            "definition": "美光不同高速RDIMM型号已经跨过的客户认证位置，区别于已获订单和更高规格送样。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O103",
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "新高密度RDIMM商业位置",
+            "definition": "美光最高容量新RDIMM由样品到合格可采购产品的位置。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O103"
+            ]
+          },
+          {
+            "name": "最高容量新RDIMM单模组容量",
+            "definition": "美光当前已送样高密度DDR5 RDIMM的单模组容量，定位单槽配置能力而非已装机平均容量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O103"
+            ]
+          },
+          {
+            "name": "已认证RDIMM数据传输速率",
+            "definition": "美光已多客户认证的1γ RDIMM型号数据率，不将更高速样品算为已认证替代。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O103"
+            ]
+          },
+          {
+            "name": "高密度新RDIMM设计最高速率",
+            "definition": "512GB送样RDIMM的公布最高数据率；设计上限不是实际客户运行速度。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O103"
+            ]
+          },
+          {
+            "name": "服务器LPDDR商业销售增长",
+            "definition": "美光SOCAMM产品组合已实现收入变化；不将收入倍增改写为bit出货倍增。",
+            "value_type": "DIRECTION",
+            "ref": [
+              "D1-O103",
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "高容量SOCAMM2产品采用位置",
+            "definition": "美光256GB LPDDR SOCAMM2的产品验证位置；组合有销售不等于该容量SKU已量产销售。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://micron.gcs-web.com/news-releases/news-release-details/micron-sets-new-benchmark-worlds-first-high-capacity-256gb"
+            ]
+          },
+          {
+            "name": "高容量SOCAMM2单模组容量",
+            "definition": "美光SOCAMM2最高容量样品的单模组容量，影响低功耗CPU附着内存配置。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://micron.gcs-web.com/news-releases/news-release-details/micron-sets-new-benchmark-worlds-first-high-capacity-256gb"
+            ]
+          },
+          {
+            "name": "SOCAMM2同容量功耗比",
+            "definition": "美光功耗比较计算中一根128GB SOCAMM2相对两根64GB DDR5 RDIMM的功耗比，限定容量和总线匹配条件，不外推全服务器节能。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://micron.gcs-web.com/news-releases/news-release-details/micron-sets-new-benchmark-worlds-first-high-capacity-256gb"
+            ]
+          },
+          {
+            "name": "SOCAMM竞争供给位置",
+            "definition": "其他供应者已商业制造的服务器LPDDR模组；反映目标新模组市场也存在配额竞争。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://news.skhynix.com/en/mass-production-socamm2-192gb/"
+            ]
+          },
+          {
+            "name": "新服务器CPU最大内存通道规格",
+            "definition": "AMD EPYC 9006公布的每插槽DDR5最大支持通道数；为单机内存配置和带宽潜力提供接口，不代表实际全插槽装满。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.amd.com/en/blogs/2026/agentic-ai-amd-epyc-9005-cpus-wins-today-epyc-9006.html"
+            ]
+          },
+          {
+            "name": "新CPU平台MRDIMM最高支持速率",
+            "definition": "AMD EPYC 9006公布的MRDIMM最高支持数据率，区分平台接口能力和美光对应产品资格。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.amd.com/en/blogs/2026/agentic-ai-amd-epyc-9005-cpus-wins-today-epyc-9006.html"
+            ]
+          },
+          {
+            "name": "全服务器单位需求增长预期",
+            "definition": "美光对传统与AI服务器合计单位增长的预测规模状态；不以行业server units代替目标内存bit需求。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "传统服务器单位需求增长预期",
+            "definition": "美光对不带AI加速器传统服务器的单位增长预测，定位非AI基础需求而非只作为GPU附属。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q3/Q3-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "平均服务器DRAM内容增长预期修订",
+            "definition": "客户在紧张供给下平均每台DRAM内容增长的预期变化；内容增长下修不等于平均容量绝对下降。",
+            "value_type": "DIRECTION",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q3/Q3-FY26-Prepared-Remarks.pdf",
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "跨业务内存供给改配",
+            "definition": "美光共享DRAM资源在服务器/其他业务之间的实际分配位置；定位目标可交付供给而非只看终端需求。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O31",
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "CMBU服务器内存所在组合收入",
+            "definition": "CMBU包括大型云客户非HBM内存及全部HBM；作为云内存经营外框，不是纯服务器收入。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "CDBU服务器内存所在组合收入",
+            "definition": "CDBU包括其他数据中心非HBM内存及全部数据中心SSD/NAND；不得把存储收入算成服务器DRAM。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "CMBU混合组合毛利率",
+            "definition": "CMBU含HBM和大型云客户非HBM内存；不作为服务器DRAM单品毛利。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "CDBU混合组合毛利率",
+            "definition": "CDBU含非HBM服务器内存和全部数据中心存储；不拆分各产品利润贡献。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "美光非HBM服务器内存收入",
+            "definition": "仅美光数据中心非HBM内存产品的季度收入；独立于CMBU/CDBU混合外框和SOCAMM增长。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O44",
+              "D1-O103"
+            ]
+          },
+          {
+            "name": "美光非HBM服务器内存bit出货",
+            "definition": "目标数据中心非HBM内存已交付bit数量；DDR、LPDDR、GDDR等品类分别保留交付周期和客户范围，数量单位统一为bit。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O31",
+              "D1-O103"
+            ]
+          },
+          {
+            "name": "美光服务器内存实现单价",
+            "definition": "美光可比服务器非HBM内存每bit实现价；全DRAM ASP含其他产品，行业报价也不等价。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O57"
+            ]
+          },
+          {
+            "name": "美光服务器内存产品毛利率",
+            "definition": "目标非HBM服务器内存产品直接毛利；不得把业务单元毛利和全DRAM涨价归为本量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O44"
+            ]
+          },
+          {
+            "name": "美光服务器内存采购份额",
+            "definition": "按OEM/云客户与平台定义的目标非HBM内存实际采购分配比例；已认证和设计容量不等于份额。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O103"
+            ]
+          },
+          {
+            "name": "CXL模块商业采用与有效利用位置",
+            "definition": "目标CZ120等CXL模块的资格、OEM供应渠道以及应用有效使用的经营状态；已有历史平台验证，但缺截点可比采用/使用快照。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O121",
+              "https://sg.micron.com/about/press/news/micron-first-to-achieve-qualification-sample-milestone",
+              "https://github.com/microncxl/cxl-reskit"
+            ]
+          },
+          {
+            "name": "生产推理主机内存内容",
+            "definition": "在明确模型、上下文、并发及加速器平台下实际CPU附着DRAM容量；KV实验或模块设计上限不代表平均装机。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://micron.gcs-web.com/news-releases/news-release-details/micron-sets-new-benchmark-worlds-first-high-capacity-256gb",
+              "https://www.usenix.org/conference/osdi26/presentation/luo",
+              "https://developer.nvidia.com/blog/?p=111143"
+            ]
+          },
+          {
+            "name": "低HBM异构系统非HBM采购资格",
+            "definition": "美光DDR/LPDDR/GDDR进入LPU或其他低HBM系统的具体产品资格与采购位置；平台DRAM设计容量不能替代目标供货关系。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://developer.nvidia.com/blog/inside-nvidia-groq-3-lpx-the-low-latency-inference-accelerator-for-the-nvidia-vera-rubin-platform",
+              "https://arxiv.org/abs/2606.29986v1"
+            ]
+          }
+        ],
+        "values": [
+          {
+            "name": "1gamma 8800 RDIMM多客户认证完成",
+            "parameter": "高速DDR5服务器模组客户资格",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "美光1γ、8,800 MT/s RDIMM已完成多个客户资格认证。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026 Q4产品披露",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O103",
+              "D1-O44",
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/"
+            ]
+          },
+          {
+            "name": "512GB RDIMM开始送样",
+            "parameter": "新高密度RDIMM商业位置",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "512GB、最高9,200 MT/s DDR5 RDIMM已开始送样；尚未在该披露中确认为多客户认证或量产采购。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026 Q4产品披露",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O103",
+              "D1-O44",
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/"
+            ]
+          },
+          {
+            "name": "512GB高密度RDIMM容量",
+            "parameter": "最高容量新RDIMM单模组容量",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 512.0,
+              "unit": "GB/模组"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026 Q4新品样品规格",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O103",
+              "D1-O44",
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/"
+            ]
+          },
+          {
+            "name": "已多客户认证型号8800MT/s",
+            "parameter": "已认证RDIMM数据传输速率",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 8800.0,
+              "unit": "MT/s"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026 Q4已认证型号规格",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O103",
+              "D1-O44",
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/"
+            ]
+          },
+          {
+            "name": "送样型号最高9200MT/s",
+            "parameter": "高密度新RDIMM设计最高速率",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 9200.0,
+              "unit": "MT/s（公布最高规格）"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026 Q4 512GB样品设计规格",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O103",
+              "D1-O44",
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/"
+            ]
+          },
+          {
+            "name": "SOCAMM收入环比超过翻倍",
+            "parameter": "服务器LPDDR商业销售增长",
+            "source_role": "ACTUAL",
+            "value": {
+              "direction": "季度收入环比超过翻倍"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026 Q4相对Q3；Q4为14周，Q3为13周，未作周数标准化",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O103",
+              "D1-O44",
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/"
+            ]
+          },
+          {
+            "name": "256GB SOCAMM2客户样品已交付",
+            "parameter": "高容量SOCAMM2产品采用位置",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "美光已向客户发送256GB SOCAMM2样品；为32Gb单片LPDDR5X实现。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-03-03具体SKU样品状态；不由Q4组合收入反推该SKU量产",
+            "as_of": "2026-03-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://micron.gcs-web.com/news-releases/news-release-details/micron-sets-new-benchmark-worlds-first-high-capacity-256gb"
+            ]
+          },
+          {
+            "name": "SOCAMM2最高容量样品256GB",
+            "parameter": "高容量SOCAMM2单模组容量",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 256.0,
+              "unit": "GB/模组"
+            },
+            "previous_value": null,
+            "time_scope": "2026-03-03样品规格；公告比较的此前最高容量SOCAMM2为192GB，未按美光同一SKU时间序列建前值",
+            "as_of": "2026-03-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://micron.gcs-web.com/news-releases/news-release-details/micron-sets-new-benchmark-worlds-first-high-capacity-256gb"
+            ]
+          },
+          {
+            "name": "SOCAMM2功耗约为等容量RDIMM三分之一",
+            "parameter": "SOCAMM2同容量功耗比",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 0.3333333333333333,
+              "unit": "倍（公司规格功耗比较计算；相对等容量RDIMM）"
+            },
+            "previous_value": null,
+            "time_scope": "2026-03-03披露：一根128GB/128bit SOCAMM2与两根64GB/64bit RDIMM比较",
+            "as_of": "2026-03-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://micron.gcs-web.com/news-releases/news-release-details/micron-sets-new-benchmark-worlds-first-high-capacity-256gb"
+            ]
+          },
+          {
+            "name": "SK hynix 192GB SOCAMM2量产",
+            "parameter": "SOCAMM竞争供给位置",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "SK hynix宣布192GB SOCAMM2已量产，采用1c LPDDR5X并面向Vera Rubin。"
+            },
+            "previous_value": null,
+            "time_scope": "竞争者2026-04-20商业供给声明",
+            "as_of": "2026-04-20",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://news.skhynix.com/en/mass-production-socamm2-192gb/"
+            ]
+          },
+          {
+            "name": "EPYC 9006最高16个DDR5通道",
+            "parameter": "新服务器CPU最大内存通道规格",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 16.0,
+              "unit": "通道/插槽（最大支持）"
+            },
+            "previous_value": null,
+            "time_scope": "2026-07-23公布平台规格",
+            "as_of": "2026-07-23",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.amd.com/en/blogs/2026/agentic-ai-amd-epyc-9005-cpus-wins-today-epyc-9006.html"
+            ]
+          },
+          {
+            "name": "EPYC 9006 MRDIMM最高12800MT/s",
+            "parameter": "新CPU平台MRDIMM最高支持速率",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 12800.0,
+              "unit": "MT/s（平台最大支持）"
+            },
+            "previous_value": null,
+            "time_scope": "2026-07-23公布的JEDEC MRDIMM支持规格；不是美光模组已认证速度",
+            "as_of": "2026-07-23",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.amd.com/en/blogs/2026/agentic-ai-amd-epyc-9005-cpus-wins-today-epyc-9006.html"
+            ]
+          },
+          {
+            "name": "2026和2027服务器单位预计高十几百分比增长",
+            "parameter": "全服务器单位需求增长预期",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "stage": "美光预计2026及2027日历年服务器单位均增长高十几百分比。"
+            },
+            "previous_value": null,
+            "time_scope": "2026和2027日历年行业服务器单位增长预测",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "传统服务器预计2026增长十几百分比中段",
+            "parameter": "传统服务器单位需求增长预期",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "stage": "美光6月预测2026传统服务器单位增长为十几百分比中段；带AI加速器服务器增长更强。"
+            },
+            "previous_value": null,
+            "time_scope": "2026日历年预测的2026-06-24版本；Q4未单独更新传统服务器增幅",
+            "as_of": "2026-06-24",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q3/Q3-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "内存紧张降低内容增长预期",
+            "parameter": "平均服务器DRAM内容增长预期修订",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "direction": "平均每台服务器DRAM内容增长预期较此前温和降低，以支持更多服务器单位交付"
+            },
+            "previous_value": null,
+            "time_scope": "2026服务器配置/内容增长预期，2026-09-30延续该解释",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q3/Q3-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "其他业务供给转配已造成MCBU数量下降",
+            "parameter": "跨业务内存供给改配",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "FY2026 MCBU bit出货下降，部分产品供给转向其他业务单元；支持存在资源改配，不给服务器获配bit数量。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026全年截至2026-09-03；非Q4单独bit序列",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O31",
+              "D1-O57",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "CMBU服务器内存所在组合收入季度值",
+            "parameter": "CMBU服务器内存所在组合收入",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 16283.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 13769.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "美光FY2026 Q4截至2026-09-03（14周）；前值为FY2026 Q3截至2026-05-28（13周），未作周数标准化",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O44",
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/"
+            ]
+          },
+          {
+            "name": "CDBU服务器内存所在组合收入季度值",
+            "parameter": "CDBU服务器内存所在组合收入",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 18002.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 11524.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "美光FY2026 Q4截至2026-09-03（14周）；前值为FY2026 Q3截至2026-05-28（13周），未作周数标准化",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O44",
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/"
+            ]
+          },
+          {
+            "name": "CMBU混合组合毛利率季度值",
+            "parameter": "CMBU混合组合毛利率",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 83.0,
+              "unit": "百分比"
+            },
+            "previous_value": {
+              "number": 83.0,
+              "unit": "百分比"
+            },
+            "time_scope": "美光FY2026 Q4截至2026-09-03（14周）；前值为FY2026 Q3截至2026-05-28（13周），未作周数标准化",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O44",
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/"
+            ]
+          },
+          {
+            "name": "CDBU混合组合毛利率季度值",
+            "parameter": "CDBU混合组合毛利率",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 90.0,
+              "unit": "百分比"
+            },
+            "previous_value": {
+              "number": 87.0,
+              "unit": "百分比"
+            },
+            "time_scope": "美光FY2026 Q4截至2026-09-03（14周）；前值为FY2026 Q3截至2026-05-28（13周），未作周数标准化",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O44",
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/"
+            ]
+          }
+        ]
+      },
+      "expectation_baseline": [
+        {
+          "name": "DDR刷新、传统计算与代理CPU共同构成需求",
+          "baseline": "未来数季非HBM服务器内存需求继续扩展，且不是只随GPU伴随内存同比例变化。传统服务器单位增长预期、CPU平台更多DDR5通道及高速内存接口，加上代理检索/工具执行/数据库工作集，使CPU和主机内存有独立用途；美光高速RDIMM多客户认证提供自身可采购入口。这是经营证据推断，行业单位增长仍为公司预测。",
+          "ordinary_progress": "已认证DDR5产品进入正常采购，高核心CPU及传统企业/云刷新延续，代理数据服务增加主机工作集。",
+          "open_frontier": "服务器整合可减少台数，配置降配可抵消部分单机内容提升；平台最大通道数不等于平均装满，美光资格是否转成份额是独立边界。",
+          "time_scope": "2026—2027季度采购与CPU平台周期",
+          "ref": [
+            "D1-O103",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q3/Q3-FY26-Prepared-Remarks.pdf",
+            "https://www.amd.com/en/blogs/2026/agentic-ai-amd-epyc-9005-cpus-wins-today-epyc-9006.html",
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Second-Quarter-Results/default.aspx"
+          ]
+        },
+        {
+          "name": "LPDDR SOCAMM从新品进入收入组合但并非全面替代DDR",
+          "baseline": "默认路径是低功耗服务器LPDDR继续扩大商业组合、DDR与SOCAMM按平台并存。SOCAMM实际收入环比超过翻倍，比纯样品愿景更有力；256GB样品、功耗比较及竞争者量产支持客户有动机和多来源选择。组合增速不证明所有SKU量产，更不证明普通企业服务器已全面改用SOCAMM。",
+          "ordinary_progress": "现有SOCAMM交付扩展，256GB及后续规格分SKU跨越资格门槛，适合能耗/密度约束的平台继续选择LPDDR。",
+          "open_frontier": "采用从AI伴随内存进入独立CPU/HPC的规模、价格/供货份额，以及低功耗节省是否足以补偿平台改造成本。",
+          "time_scope": "2026 Q4—2028模组平台周期",
+          "ref": [
+            "D1-O103",
+            "D1-O44",
+            "https://micron.gcs-web.com/news-releases/news-release-details/micron-sets-new-benchmark-worlds-first-high-capacity-256gb",
+            "https://news.skhynix.com/en/mass-production-socamm2-192gb/"
+          ]
+        },
+        {
+          "name": "主机内存成为上下文工作层但迁移并不单向增加DRAM",
+          "baseline": "未来长上下文部署更常把CPU附着内存作为GPU之外的工作层，默认采用路径是兼容平台上的逐步外卸。美光LPDDR测试和KV应用相关交付、CMX的软件分层说明技术及商业接口已出现；OSDI DirectKV为特定GH200/GB200路径提供实验解释，而不是市场装机。增加主机容量可能节省HBM/GPU或重算，需求净效果取决于服务吸收。",
+          "ordinary_progress": "已支持NVLink-C2C/统一内存的系统优化KV复用、预取和CPU内存布局。",
+          "open_frontier": "CPU到GPU数据访问尾延迟、带宽和应用适配是否让外卸真正可用；闪存/CXL分流及并发增长改变CPU内存净内容。",
+          "time_scope": "2026—2027软件与系统部署周期",
+          "ref": [
+            "https://micron.gcs-web.com/news-releases/news-release-details/micron-sets-new-benchmark-worlds-first-high-capacity-256gb",
+            "https://developer.nvidia.com/blog/?p=111143",
+            "https://www.usenix.org/conference/osdi26/presentation/luo",
+            "D1-O103"
+          ]
+        },
+        {
+          "name": "供给紧张促进高价值配置同时压低单机内容增长",
+          "baseline": "未来数季更符合证据的是可售供给按客户/产品优先级配置、价格和高性能组合支持收入，而非所有服务器都无限加内存。跨业务改配已经影响MCBU数量，且公司明确下调平均服务器内容增长预期以提高单位交付。AMD客户配置建议显示降配/整合有具体工具，但不是已经测得的行业降配幅度。CMBU/CDBU增长只能作混合组合外框。",
+          "ordinary_progress": "已有供给支持合格产品交付，客户审视实际内存使用和配置，更多台数与单机内容在配额内折衷。",
+          "open_frontier": "内容增长、供给优先级和可比服务器ASP各自怎样变化；价格上涨可能使bit增量落后收入，过度降配可能损伤数据库等内存敏感负载。",
+          "time_scope": "未来数季及2027供给配置",
+          "ref": [
+            "D1-O31",
+            "D1-O57",
+            "D1-O44",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q3/Q3-FY26-Prepared-Remarks.pdf",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.amd.com/content/dam/amd/en/documents/epyc-business-docs/other/three-ways-to-keep-your-data-center-refresh-on-track-in-a-memory-constrained-market.pdf"
+          ]
+        },
+        {
+          "name": "CXL补充扩容而非近端统一池化替代",
+          "baseline": "默认路径是CXL在已支持的平台和可适配工作负载上渐进扩容，近期仍以本地DDR/LPDDR为主。CZ120已有Supermicro X13/H13资格及OEM渠道基础，Red Hat测试向认证推进；这些历史资格与DAX/NUMA软件条件说明可部署不等于应用有效利用。当前没有足够生产装机规模支持全行业统一内存池化作为近端基线。",
+          "ordinary_progress": "现有支持矩阵扩大，应用按延迟和分配策略逐步使用扩展内存。",
+          "open_frontier": "有效利用率改善可能少买本地DIMM或少添服务器，也可能打开原先容量不足的工作负载；需要区分接口采用和总DRAM新增量。",
+          "time_scope": "2026—2028接口及软件周期",
+          "ref": [
+            "https://sg.micron.com/about/press/news/micron-first-to-achieve-qualification-sample-milestone",
+            "https://github.com/microncxl/cxl-reskit",
+            "D1-O121",
+            "https://memverge.ai/product/gtc2024"
+          ]
+        },
+        {
+          "name": "异构及私有采购拓宽接口但目标捕获按产品资格分开",
+          "baseline": "默认是更多主机、fabric逻辑DRAM以及私有/主权系统形成非HBM内存选型接口，尚不是美光已取得各接口份额。LPX分工仍使用外部DRAM，GDDR-prefill研究也显示另一种配置可能；它们不能合并为目标销售。公共项目、本地隐私负载与OEM采购渠道使客户组合比hyperscaler更宽，但近端可量化收入支持仍主要来自已有云/OEM业务和实际模组销售。",
+          "ordinary_progress": "已兼容系统按规格选择DDR/LPDDR，私有项目继续经OEM、认证和实际采购交付。",
+          "open_frontier": "美光能否进入新的fabric/GDDR资格、每个平台的容量及采购责任人；私有部署是净新增还是迁移云负载，决定总量与份额不同结果。",
+          "time_scope": "2026—2028平台与采购周期",
+          "ref": [
+            "https://developer.nvidia.com/blog/inside-nvidia-groq-3-lpx-the-low-latency-inference-accelerator-for-the-nvidia-vera-rubin-platform",
+            "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Groq-3-LPX-Now-in-Full-Production-With-World-Class-Speed-for-Agentic-AI/default.aspx",
+            "https://arxiv.org/abs/2606.29986v1",
+            "https://www.consilium.europa.eu/en/press/press-releases/2026/01/16/artificial-intelligence-council-paves-the-way-for-the-creation-of-ai-gigafactories/",
+            "https://machinelearning.apple.com/research/introducing-third-generation-of-apple-foundation-models",
+            "D1-O103",
+            "D1-O44"
+          ]
+        }
+      ],
+      "realization_factors": [
+        {
+          "name": "传统负载、CPU刷新和整合共同决定DDR内容",
+          "mechanism": "企业数据库、虚拟机、Web/数据服务和云一般计算的活动量及活跃工作集创造非HBM需求。客户依据核心数、每核心容量、内存带宽、通道/插槽和软件瓶颈选择DIMM；高核心CPU可需要更多带宽，也可把旧服务器整合为较少新节点。服务器数量×实际每节点内容决定行业位元，刷新节奏、旧机退役与价格决定净新增装机；最高规格只是可选上限，不是默认出货配置。",
+          "current_status": "传统服务器与AI加速器服务器增长并存，公司对2026/2027单位增长保持高十几百分比判断，同时内存紧张压低内容增长预期。EPYC 9006的最高16通道及12800MT/s MRDIMM提高带宽选项，不能自动填满全部通道或给MU资格。当前DDR刷新与工作集增长是成熟量的主干，CPU核心升级和整合使单机GB上升与系统台数下降可同时发生。",
+          "materiality_context": "一般负载量和活跃工作集决定经济需求，当前成熟服务器范围大于新接口演示；核心数/每核心容量决定容量强度，带宽和通道/插槽决定配置及高性能产品机会。若核心翻倍而工作集/吞吐不变，DRAM并非必翻倍；若合并两旧节点到一新节点且新内容只有旧单节点1.5倍，替换采购节点减少且总内容低25%，这是条件示例。刷新/退役节奏决定季度数量，企业投资和价格决定是否延期；因此管理层服务器单位预测不是位元预测。软件内存瓶颈决定高带宽溢价，实际配置比16通道最高值更有近端解释力；MU分配与资格决定捕获，在采购Factor展开。",
+          "scope_boundary": "覆盖非AI企业和云传统CPU需求，避免只把非HBM视为GPU配套；处理器产品规格不是MU产品认证，行业DRAM价格深度在相邻Shell。",
+          "ref": [
+            "https://www.amd.com/en/blogs/2026/agentic-ai-amd-epyc-9005-cpus-wins-today-epyc-9006.html",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q3/Q3-FY26-Prepared-Remarks.pdf",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Second-Quarter-Results/default.aspx",
+            "https://www.amd.com/content/dam/amd/en/documents/epyc-business-docs/other/three-ways-to-keep-your-data-center-refresh-on-track-in-a-memory-constrained-market.pdf",
+            "D1-O44"
+          ]
+        },
+        {
+          "name": "代理工具、容器与数据服务创造独立主机工作集",
+          "mechanism": "代理的工具调用、检索、代码执行和数据库任务运行在CPU/容器/数据服务，独立于模型推理GPU。任务到达率×平均存活时间形成并发，峰值并发×每隔离环境活跃内存形成主机内容要求；数据服务工作集、缓存和恢复/安全隔离增加内存。按需沙箱、共享只读数据、状态外置和回收调度降低闲置，工具重试和更复杂执行提高工作量。客户可为更高利用率改用高密度服务器而非简单一代理一台机器。",
+          "current_status": "企业持续代理已收费，Managed Agents工程结构证明推理、执行环境及会话可解耦。当前代理增长同时推动主机计算与状态资源，等待和长流程更能解释CPU内存需求而非整段GPU独占。尚无行业生产代理每任务主机GB披露；本Unit保留这一参数无值，但已有可解释的独立需求来源。",
+          "materiality_context": "任务到达/授权范围决定机会，执行复杂度和数据服务工作集决定强度，存活时间与峰值并发决定容量，隔离/恢复要求控制每环境开销。固定到达率而任务常驻时间翻倍，若仍保持常驻内存则并发及内存占用可翻倍；若状态外置/容器释放，增量较低。这是系统关系，不是已观察采购系数。按需创建、共享和回收提高利用率，现有节点余量可先吸收增长；峰值达到容量后高密度模组和新增节点更敏感。重试可增加CPU开销却损害经济回报，可靠性改善可能节约一次任务并扩大授权。相比仿真概念，已有付费执行更接近近端需求，但真实主机内容与MU资格仍决定捕获规模，不从GPU台数机械推算。",
+          "scope_boundary": "解释非HBM工作集及主机部署；代理采用在AI Unit、持久日志/SSD产品经济在存储Shell，不把外置会话全部当DRAM驻留。",
+          "ref": [
+            "https://www.anthropic.com/engineering/managed-agents",
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "https://www.anthropic.com/research/economic-index-march-2026-report",
+            "https://www.amd.com/en/blogs/2026/agentic-ai-amd-epyc-9005-cpus-wins-today-epyc-9006.html"
+          ]
+        },
+        {
+          "name": "LPDDR与SOCAMM以功率和形态交换系统经济",
+          "mechanism": "平台商在DDR RDIMM与LPDDR/SOCAMM之间比较容量、带宽、内存功耗、冷却、模块形态和服务更换成本；内存控制器、主板布线/固件与软件兼容限制可选路线。低功耗释放机柜电力/热预算，功率受限场景可支持更多计算或降低运营费；模块化和高密度扩大主机工作集。系统价值与可交付资格决定MU价格和份额，竞争者模块及平台标准化可降低客户锁定。",
+          "current_status": "SOCAMM已经进入收入组合并快速增长，256GB MU型号仍属送样，不能用组合收入翻倍证明该SKU批量供货。SK hynix 192GB SOCAMM2已量产，存在多源竞争。美光给出的等容量SOCAMM内存功耗约为RDIMM三分之一是内存模块比较；当前最直接路线是匹配AI平台和功率约束，不是所有一般服务器已替换DDR。",
+          "materiality_context": "容量/带宽控制性能和内容，功耗/冷却控制可运行的机柜密度和TCO；内存占整机功耗比例为f时，模块功耗减少三分之二对应整机节约约2f/3，f未测量，不能声称整机节能67%。功率已约束的平台价值较高，非受限且DDR适配成熟的服务器转换激励较低。控制器、布线/固件和软件兼容决定参与范围与切换时间，形态/维护成本决定可维护性回报；这些成本可能抵消电费节省。高密度与模块化提高工作集上限，规格升级不等于实际单机采用。资格和竞争决定MU捕获/溢价，组合收入增长说明商业接口已生效，但收入增速含价格/组合且Q4为14周、Q3为13周，不是位元倍增。",
+          "scope_boundary": "解释数据中心LPDDR/SOCAMM，不混入终端LPDDR业务；保留DDR替代与增量的不同经济，平台功率在AI Unit。",
+          "ref": [
+            "https://micron.gcs-web.com/news-releases/news-release-details/micron-sets-new-benchmark-worlds-first-high-capacity-256gb",
+            "https://news.skhynix.com/en/mass-production-socamm2-192gb/",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://jp.micron.com/about/press/news/micron-in-high-volume-production-of-hbm4-designed-for-nvidia-vera-rubin-pcie-gen6-ssd-and-socamm2",
+            "D1-O88"
+          ]
+        },
+        {
+          "name": "上下文外卸把主机DRAM变成可变大小的推理工作层",
+          "mechanism": "模型服务将KV按热度放在HBM、主机DRAM和闪存；序列上下文、并发及KV精度决定候选工作集，复用/失效策略决定保存比例。主机可用容量、CPU-GPU互连及有效传输带宽/延迟决定哪些状态可及时供GPU读取，预取与放置软件决定命中及排队。增加主机容量可减少重算和扩大并发，但冷状态直达闪存、压缩或更少重传也可减少主机GB；系统会选择SLA内最低成本层，而非所有HBM外移量都进入DRAM。",
+          "current_status": "CMX分层与DirectKV明确主机工作层的作用，MU也已有KV应用相关产品交付背景。DirectKV实验展示特定CPU-GPU直接访问路径的收益，未给行业生产单机DRAM量。当前长上下文/并发提供内容上升的合理方向，但带宽和软件放置约束比总缓存数据规模更能决定有效可售主机容量。",
+          "materiality_context": "上下文/并发/精度决定容量机会，保存比例和复用/失效决定真正活跃集；固定其他项并发增加10%先增KV约10%，压缩/共享会减弱，不能直接等于节点DRAM采购增10%。主机容量及价格控制外卸经济，互连带宽/延迟和预取/命中决定能否满足SLA，带宽不足时继续加GB不会增有效吞吐，还可能增加HBM写入或等待。当前有可部署分层接口，故这条路线的重要性高于只停留标准的替代层；但DirectKV约1.2倍端到端实验改善不是服务器位元倍数。冷数据直达闪存与更少重算可能减少主机驻留，扩大上下文及用户活动可能增加它，目标捕获须看净活跃集及MU合格SKU，不把SSD增加重复记成DRAM。",
+          "scope_boundary": "主机DRAM的独立配置和采购关系；HBM节约在HBM Unit，闪存性能/SSD销量由存储Shell深化，实验收益不当行业平均。",
+          "ref": [
+            "https://developer.nvidia.com/blog/?p=111143",
+            "https://www.usenix.org/conference/osdi26/presentation/luo",
+            "https://micron.gcs-web.com/news-releases/news-release-details/micron-sets-new-benchmark-worlds-first-high-capacity-256gb",
+            "D1-O103",
+            "D1-O139"
+          ]
+        },
+        {
+          "name": "CXL扩容和池化在容量约束与闲置回收之间取舍",
+          "mechanism": "CXL模块给插槽/通道受限服务器增加可寻址内存，亦可通过小池在不同CPU/VM间复用原本闲置容量。远端访问延迟、链路带宽、控制器/交换成本和应用热点分布决定应保留多少本地DRAM；BIOS、NUMA/DAX分配及预测/迁移软件决定有效利用。扩容在受限工作负载可新增DRAM销售，池化在工作量不变时可减少总DRAM预算；服务成本下降也可诱发更多VM。MU模块资格和渠道决定谁获得接口机会。",
+          "current_status": "美光已有历史OEM资格与DAX/NUMA工具，但截至2026-10-09 17:42 UTC的可用资料没有2026主流池化装机量。Pond 2022/2023研究以小池及VM本地/远端分配，在158工作负载中节约7% DRAM成本、性能与同NUMA分配差1—5%；这是机制基准不是当前MU商业采用。当前CXL更合理的定位是选择性扩容和利用率改善，而非近端全部DIMM市场重写。",
+          "materiality_context": "插槽/通道容量约束决定新增机会，闲置比例和多VM互补决定池化节约；前者对数据库大工作集更直接，后者对动态云分配更有价值。延迟/带宽和热点决定可远放比例，控制器/交换成本决定净节约，软件/BIOS分配决定能否实现，不是插上模块就达到池化收益。Pond的7%是成本而非位元/行业需求降7%，其8—16 socket小池说明可局部实施，不需先建全数据中心共享池。固定工作量提高利用率可减少采购，更多VM反弹可增加需求。OEM资格和MU渠道控制捕获，目前主流DDR贡献较大，但在确实受插槽约束的新市场，CXL可扩大目标机会，不能因总装机未知抹去其用途。",
+          "scope_boundary": "聚焦本Unit扩容/池化的位元与经济，历史资格不是2026新增发布；软件工作方式用于解释，不造当前采用数。",
+          "ref": [
+            "https://sg.micron.com/about/press/news/micron-first-to-achieve-qualification-sample-milestone",
+            "https://github.com/microncxl/cxl-reskit",
+            "https://arxiv.org/abs/2203.00241v4",
+            "D1-O139"
+          ]
+        },
+        {
+          "name": "客户资格、渠道和地域决定非HBM采购捕获",
+          "mechanism": "云、OEM/ODM、企业和私有部署把主机配置转成合格SKU采购。密度、速度、可靠性、电气/热/固件兼容测试及实际平台BOM决定可用型号；采购份额还由价格、交付、第二来源和生命周期支持决定。主权/私有要求改变本地渠道、服务和资格，出口/市场准入限制改变可销售客户集合。平台或产品认证可以打开市场但不保证采购量；已有认证的资源分配也可让份额改变。",
+          "current_status": "1gamma 8800 RDIMM完成多客户资格，512GB 9200 RDIMM送样；高密度和高速有清楚商业阶段。公共锚定采购与私有/断网环境拓展渠道，但没有全目标最新采购份额或公共项目MU指定。当前已合格DDR及SOCAMM商业增长是捕获主干，新渠道与下一代样品提高未来可参与范围，不能拿CMBU/CDBU全部收入作这一Unit份额。",
+          "materiality_context": "密度/速度与兼容、可靠性决定可服务范围，测试阶段决定进入时点；已合格8800比512GB样品更直接影响近端量，样品却可修订未来高内容市场。价格、交付、第二来源及生命周期支持决定份额和收益：固定客户总位元，MU份额相对增10%则潜在量增10%，供给不足时先变配额/订单而非出货。主权/私有服务与渠道资格决定新增机会属于谁，即使全球需求不变也可重分采购；公共授标时点、当地系统选择影响未来暴露。出口/准入决定客户集合，MU市场规则与xPU规则不同，不可互相代替。当前成熟资格和可交付性比单一最高速度参数更有经济杠杆。",
+          "scope_boundary": "解释本Unit全部云/OEM/企业/NeoCloud资格与采购，历史或外部CPU资格不冒充MU份额；客户公共预算在AI Unit，CAC等MU准入与计算系统出口规则分开。",
+          "ref": [
+            "D1-O44",
+            "D1-O88",
+            "D1-O74",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.eurohpc-ju.europa.eu/eurohpc-joint-undertaking-launches-ai-gigafactories-call-2026-07-30_en",
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "https://www.amd.com/en/blogs/2026/agentic-ai-amd-epyc-9005-cpus-wins-today-epyc-9006.html"
+          ]
+        },
+        {
+          "name": "可售供给、产品组合与实现价格决定服务器内存收益",
+          "mechanism": "按DDR/LPDDR/GDDR/模块与客户分组，目标收入=交付位元×实现每位元售价，毛利扣对应器件/模组成本；配置/高密度高速度组合影响平均价格与成本。MU将有限晶圆、合格器件和封装/测试资源在客户端、服务器和HBM间分配，比较合格需求、合同、客户战略价值及边际回报。良率/技术迁移降低单位成本或扩大可售量，认证与OEM交付决定资源能否转成目标收入；行业紧张及竞争影响ASP，承诺数量/定价安排影响可见性。",
+          "current_status": "公司已把资源从其他业务转出，普通DRAM价格显著上涨且目标高密度/高速资格推进。FY26全DRAM收入增长主要由ASP推动，不能说全部是服务器位元扩张。CMBU包含全部HBM、CDBU包含DCSSD/NAND，83%和90%混合毛利不提供纯非HBM产品毛利。当前业务方向是紧张供给下的高价值产品配置与价格捕获，纯目标量价成本仍以产品关系而非分部代数解释。",
+          "materiality_context": "客户合格需求决定机会，资源分配/良率与认证决定近端可交付量；既有MCBU位元下降说明改配有实际作用，但无法分出转到本Unit多少。ASP、单位成本和交付量分别决定价值：固定量成本，价格增加10%带来原收入10%的毛利增量；良品成本下降10%带来原成本10%的增量，不能同毛利率或数量增幅混用。密度/速度/DDR与LPDDR组合决定价格和成本层次，不能把高单件售价当更高每bit利润。技术迁移、器件/模组成本、封装测试和良率决定成本与供给，短缺期其增量可用于数量或高回报产品；合同/客户战略与HBM机会成本决定如何分配。当前定价和分配杠杆高于未量化的目标单机内容，但后来供给增加可能同时扩大销量并压低ASP。",
+          "scope_boundary": "保留本Unit量价成本/份额独立性；行业DRAM价格及制造资源由邻域深化，多年合同在战略客户Shell，不把全公司ASP+180%直接赋给服务器内存。",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q3/Q3-FY26-Prepared-Remarks.pdf",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "D1-O57",
+            "D1-O31",
+            "D1-O44",
+            "D1-O88"
+          ]
+        },
+        {
+          "name": "高内存成本触发降配、整合与销量内容折衷",
+          "mechanism": "服务器客户在总预算下比较内存报价、实际活跃工作集、吞吐/SLA和节点数量，选择减低GB、升级更快CPU、整合旧节点、延期或增添CXL容量。内存敏感负载减配会损害性能并需要更多节点，非敏感负载则可释放资金购买更多服务器。云为支持单位增长可降低内容增长，MU据需求弹性和单位回报调整组合/报价；因此ASP上升既改善收入也可能压低位元量。",
+          "current_status": "公司明确内存紧张降低内容增长预期，表明价格和配额反馈正在工作。AMD配置测试在一组Memcached/NGINX/FFmpeg/Python负载将内存配置减半约只损1%几何平均性能，SQL负载却约损27%；这是负载依赖的示例，不是客户普遍减半。当前合理判断是高价先改变配置和单位/内容折衷，不是服务器增长自动全部取消。",
+          "materiality_context": "内存价格和总预算控制承受力，工作集/吞吐/SLA决定减配弹性，CPU效率及整合决定节点变化，延期/CXL决定时点和替代。上述50%配置示例的1%与27%差异说明负载类别比统一价格弹性更重要；减配若使SQL需要更多节点，系统成本可能反而上升。固定预算报价涨10%会压缩可买GB约9.1%，客户反应可改规格或预算而非照搬比例。单位增长与内容是两个乘数，条件性服务器增15%而每台内容降10%，总位元仅增3.5%，不是15%；管理层实际内容没有披露此下降率。MU回报/组合与报价影响捕获，当前紧张供应令部分节约用于保单位出货，既支撑高价也约束长期量。",
+          "scope_boundary": "解释本Unit需求弹性与配置，不把AMD内部benchmark当行业降配事实；价格供需在DRAM市场，目标产品经济在上一Factor。",
+          "ref": [
+            "https://www.amd.com/content/dam/amd/en/documents/epyc-business-docs/other/three-ways-to-keep-your-data-center-refresh-on-track-in-a-memory-constrained-market.pdf",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q3/Q3-FY26-Prepared-Remarks.pdf",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.amd.com/en/blogs/2026/agentic-ai-amd-epyc-9005-cpus-wins-today-epyc-9006.html",
+            "D1-O57"
+          ]
+        },
+        {
+          "name": "异构推理为GDDR和fabric/host DRAM打开不同接口",
+          "mechanism": "异构平台按prefill、decode、FFN/MoE和草稿生成的计算/带宽特征配置HBM、SRAM、GDDR及fabric/host DRAM。GDDR可承接成本敏感或算术强度较高环节，外部DRAM承接权重/工作集与主机管理；系统互连、编排和延迟决定是否优于同构方案。平台销量、实际每设备外部DRAM、可供SKU及客户资格决定MU新增非HBM机会，某些传统DDR配置也可被替代。",
+          "current_status": "LPX明确外部fabric-logic及host DRAM接口，不是只含片上SRAM；全面生产说明供应路线不再纯概念，未公开MU相应DRAM资格。GDDR prefill/HBM decode的MemHA仍为研究，其效果不能当商业部署。当前非HBM新增机会的存在比其MU收入份额更确定，成熟DDR/SOCAMM贡献仍高于尚未取得目标资格的异构SKU。",
+          "materiality_context": "阶段分工和计算/带宽特征决定产品机会范围，互连/编排/延迟决定替代是否经济，不能只比每GB报价。LPX一托盘16 LPU可带最高512GB fabric与256GB host DRAM，128GB SRAM是256 LPU全机架规格，必须分母一致；容量上限并非实际装机或MU内容。平台数量与每设备实际内容决定市场规模，MU可供SKU/资格决定捕获，固定其他项增加平台10%才增加潜在接口位元10%，对未获资格MU不等于当季增长。研究级GDDR路线当前贡献低，却可能迁移未来资源预算；外部DRAM增加与旧DDR替代共同决定净目标机会，不能把所有新增接口累加成净新增。",
+          "scope_boundary": "保留非HBM GDDR及fabric/host DRAM路径，不把SRAM算MU DRAM；HBM节约在HBM Unit，实验架构不当具体客户BOM。",
+          "ref": [
+            "https://developer.nvidia.com/blog/inside-nvidia-groq-3-lpx-the-low-latency-inference-accelerator-for-the-nvidia-vera-rubin-platform",
+            "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Groq-3-LPX-Now-in-Full-Production-With-World-Class-Speed-for-Agentic-AI/default.aspx",
+            "https://arxiv.org/abs/2606.29986v1",
+            "D1-O139"
+          ]
+        }
+      ],
+      "potential_gaps": [
+        {
+          "name": "一般计算刷新、整合和内存敏感度重设DDR总量",
+          "why_live": "传统服务器、云CPU和高核心刷新仍是成熟需求主干，管理层预计单位增长但下调内容增长。AMD配置实验说明非敏感与SQL类负载的降配性能损失不同，最大通道数不是实际装满。",
+          "revision_logic": "修订的是服务器数量×实际内容的组合，而非只升级最高密度。活动和工作集即使不变，整合、退役、延迟采购或每核心带宽选择仍可改变MU可售量及高性能组合。",
+          "possibility_space": [
+            {
+              "name": "企业在迁移数据库/虚拟机时选择更高带宽与更大工作集配置",
+              "implication": "高密度/高速DDR机会扩大，系统瓶颈得到改善后同节点可承载更多活动；旧机整合会部分抵消台数，净位元须按实际部署而非核心数外推。"
+            },
+            {
+              "name": "客户用新CPU整合旧服务器并削减低利用容量",
+              "implication": "更新存在但节点和总内容可能下降，单机GB上升不能代表行业位元同增；非内存敏感负载更容易节约，MU收入可能更多依赖ASP/份额。"
+            },
+            {
+              "name": "高内存报价使企业只更新关键服务器，其余延后或降配",
+              "implication": "成熟需求兑现时间后移，内存敏感任务难降配而转延期，非敏感任务则可保单位出货；需求弹性因用途而分化，不是假定统一砍半。"
+            },
+            {
+              "name": "一般云数据服务需求增加而AI GPU采购放缓",
+              "implication": "CPU/数据库活跃集可独立扩大，非HBM不必跟随HBM同方向；MU既有云/OEM资格决定捕获，混合业务收入不能给纯目标bit增幅。"
+            }
+          ],
+          "ref": [
+            "https://www.amd.com/en/blogs/2026/agentic-ai-amd-epyc-9005-cpus-wins-today-epyc-9006.html",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q3/Q3-FY26-Prepared-Remarks.pdf",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Second-Quarter-Results/default.aspx",
+            "https://www.amd.com/content/dam/amd/en/documents/epyc-business-docs/other/three-ways-to-keep-your-data-center-refresh-on-track-in-a-memory-constrained-market.pdf",
+            "D1-O44",
+            "D1-O57"
+          ]
+        },
+        {
+          "name": "代理执行和安全隔离改变独立主机需求",
+          "why_live": "代理工具、数据库和容器有独立CPU工作集，按需沙箱可降低闲置；自主操作风险也使企业考虑权限和隔离。持续任务未必长时间占GPU，但可延长主机状态存活。",
+          "revision_logic": "相对「传统计算与代理CPU共同构成需求」基线，修订的是任务组织及可委托范围如何转为主机容量。资源使用可由常驻环境转向外置状态，安全响应也可使公共云需求迁移而不全部消失。",
+          "possibility_space": [
+            {
+              "name": "企业普及长期后台代理，工具链与每任务数据集变复杂",
+              "implication": "主机并发、检索/数据库缓存及隔离环境增加，可提升高密度DDR/LPDDR内容；GPU调用未同增也有非HBM独立机会，不能只按GPU配套率计。"
+            },
+            {
+              "name": "云把代理改为短寿命无状态执行并共享只读数据",
+              "implication": "同样任务数的驻留/闲置内存下降，生产主机采购强度减弱；更低成本可扩大代理授权，后续反弹而非单次节约率决定总内容。"
+            },
+            {
+              "name": "安全事故促使买方改用专有容器、区域私有主机或人工批准",
+              "implication": "隔离可能增加每任务内存与本地节点，人工批准/停用却压低自主任务量。净后果取决于保留的任务和隔离开销，采购渠道比只看全行业采用更重要。"
+            }
+          ],
+          "ref": [
+            "https://www.anthropic.com/engineering/managed-agents",
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "https://www.anthropic.com/research/economic-index-march-2026-report",
+            "https://www.amd.com/en/blogs/2026/agentic-ai-amd-epyc-9005-cpus-wins-today-epyc-9006.html",
+            "D1-O44",
+            "D1-O88",
+            "D1-O74",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.eurohpc-ju.europa.eu/eurohpc-joint-undertaking-launches-ai-gigafactories-call-2026-07-30_en",
+            "https://www.anthropic.com/research/trustworthy-agents"
+          ]
+        },
+        {
+          "name": "低功耗模组跨用途采用改变DDR与LPDDR组合",
+          "why_live": "SOCAMM已有实际收入增长，256GB样品与竞争者量产显示技术及多源接口。内存功耗约三分之一是模块级比较，当前主要匹配AI平台，并非所有企业服务器已替换DDR。",
+          "revision_logic": "修订的是LPDDR可服务范围和MU价值捕获。电力受限可使低功耗释放机柜计算空间；控制器/主板、维护与价格成本也可限制扩散，组合变化不能只看平均单件ASP。",
+          "possibility_space": [
+            {
+              "name": "OEM把SOCAMM/LPDDR从AI配套推广到独立CPU或HPC",
+              "implication": "扩大当前平台之外的市场，低功耗与密度可支持更多计算；新控制器/板型及服务成本决定是否经济，MU的增长不必由更多GPU台数解释。"
+            },
+            {
+              "name": "平台升级采用更高容量模块并扩大并发工作集",
+              "implication": "内容和高价值组合上升，但256GB送样不当批量现状；若高密度减少需要的模块/节点，单位售价增长与总bit增长不同。"
+            },
+            {
+              "name": "多供应者和接口标准化令客户更容易切换模组",
+              "implication": "采用总量可以扩大而MU份额/溢价受压，能交付和系统适配决定捕获；低功耗优势不是单一供应者永久租金。"
+            },
+            {
+              "name": "一般服务器改造和维护成本超过电费/热预算收益",
+              "implication": "LPDDR局限于强功率约束用途，DDR继续主导广泛企业刷新；缩小全面替代预期但不否定已商业AI模组路线，整机节能需按模块功耗占比衡量。"
+            }
+          ],
+          "ref": [
+            "https://micron.gcs-web.com/news-releases/news-release-details/micron-sets-new-benchmark-worlds-first-high-capacity-256gb",
+            "https://news.skhynix.com/en/mass-production-socamm2-192gb/",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://jp.micron.com/about/press/news/micron-in-high-volume-production-of-hbm4-designed-for-nvidia-vera-rubin-pcie-gen6-ssd-and-socamm2",
+            "D1-O88",
+            "D1-O44",
+            "D1-O74",
+            "https://www.eurohpc-ju.europa.eu/eurohpc-joint-undertaking-launches-ai-gigafactories-call-2026-07-30_en",
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "https://www.amd.com/en/blogs/2026/agentic-ai-amd-epyc-9005-cpus-wins-today-epyc-9006.html"
+          ]
+        },
+        {
+          "name": "上下文分层改变主机活跃集而非单向增加容量",
+          "why_live": "CMX及DirectKV说明主机DRAM可成为推理工作层，互连与预取决定可用性；闪存、压缩和缓存共享也可能绕开部分主机容量。当前没有生产行业平均单机GB。",
+          "revision_logic": "修订的是KV外卸到非HBM目标位元的净映射。更多上下文/并发可扩大工作集，也可被更小热点和慢层直达吸收；带宽不足会让额外GB没有服务价值，关系变化比单个容量规格更重要。",
+          "possibility_space": [
+            {
+              "name": "平台把CPU-GPU直接访问和预取集成为可重复生产路径",
+              "implication": "更多可外移状态成为有效主机需求，客户可增加DDR/LPDDR而少用HBM或重算；收益来自软件与互连，不把实验43%GPU内存降低变成目标DRAM增43%。"
+            },
+            {
+              "name": "企业提供长期记忆和多会话长上下文，扩大常用状态",
+              "implication": "主机活跃集和峰值并发增长，可能带动高密度模组；若持久记忆主要冷存于闪存，只有被反复使用的部分构成主机容量机会。"
+            },
+            {
+              "name": "冷KV直接从闪存或共享层供给GPU，压缩/共享缩小中间缓存",
+              "implication": "主机层不再容纳全部外移数据，原来按上下文总量推DDR的强度需要下修；SSD机会增加不等于本Unit增加，低成本可在以后刺激更多服务。"
+            },
+            {
+              "name": "带宽/尾延迟约束促使客户把热点重新放回HBM",
+              "implication": "主机GB需求低于容量性方案，HBM更受益；保留一定CPU状态/管理内存，但不能把便宜的大容量当可以等价替换热层。"
+            }
+          ],
+          "ref": [
+            "https://developer.nvidia.com/blog/?p=111143",
+            "https://www.usenix.org/conference/osdi26/presentation/luo",
+            "https://micron.gcs-web.com/news-releases/news-release-details/micron-sets-new-benchmark-worlds-first-high-capacity-256gb",
+            "D1-O103",
+            "D1-O139",
+            "https://news.skhynix.com/en/mass-production-socamm2-192gb/",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://jp.micron.com/about/press/news/micron-in-high-volume-production-of-hbm4-designed-for-nvidia-vera-rubin-pcie-gen6-ssd-and-socamm2",
+            "D1-O88",
+            "https://sg.micron.com/about/press/news/micron-first-to-achieve-qualification-sample-milestone",
+            "https://github.com/microncxl/cxl-reskit",
+            "https://arxiv.org/abs/2203.00241v4"
+          ]
+        },
+        {
+          "name": "CXL的软件分配与池化商业模式重设采购分母",
+          "why_live": "CXL已有OEM资格和软件工具，Pond小池研究说明可提高利用而非必须全数据中心池化。基线是选择性扩容，控制器成本、NUMA/DAX应用和远端时延仍限制用途。",
+          "revision_logic": "修订的是新接口究竟增加可寻址容量还是节约既有闲置。两者可能同时存在于不同负载；VM分配和软件模式改变，即使总任务不变也会改变DIMM/模块/节点采购分母及MU受益产品。",
+          "possibility_space": [
+            {
+              "name": "云把远端内存分配纳入常规VM管理，跨节点回收闲置",
+              "implication": "同样工作量需更少总DRAM或少添节点，CXL模块可增长而传统DIMM下降；成本节省可提高VM销售，后续反弹需区分，实验7%成本不是行业bit变化。"
+            },
+            {
+              "name": "大数据库利用CXL扩容突破插槽/本地通道上限",
+              "implication": "打开原来不能在单节点承载的工作集，可新增模块位元并减少整机复制；对MU是新配置机会，不是要求先建统一共享池。"
+            },
+            {
+              "name": "控制器/交换价格或应用迁移摩擦让池化停留局部",
+              "implication": "成熟DDR继续主导，本Unit统一池化替代的未来权重下降；仍可在容量受限的少数客户扩容，两条用途不因池化失败同时消失。"
+            }
+          ],
+          "ref": [
+            "https://sg.micron.com/about/press/news/micron-first-to-achieve-qualification-sample-milestone",
+            "https://github.com/microncxl/cxl-reskit",
+            "https://arxiv.org/abs/2203.00241v4",
+            "D1-O139",
+            "https://www.amd.com/en/blogs/2026/agentic-ai-amd-epyc-9005-cpus-wins-today-epyc-9006.html",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q3/Q3-FY26-Prepared-Remarks.pdf",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Second-Quarter-Results/default.aspx",
+            "https://www.amd.com/content/dam/amd/en/documents/epyc-business-docs/other/three-ways-to-keep-your-data-center-refresh-on-track-in-a-memory-constrained-market.pdf",
+            "D1-O44",
+            "D1-O88",
+            "D1-O74",
+            "https://www.eurohpc-ju.europa.eu/eurohpc-joint-undertaking-launches-ai-gigafactories-call-2026-07-30_en",
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4"
+          ]
+        },
+        {
+          "name": "高性能资格与主权渠道重分非HBM采购收益",
+          "why_live": "8800 RDIMM已有多客户资格，512GB高速型号仍送样，认证与实际份额分开。主权/私有采购可能增加OEM、本地服务和平台选择，MU自身准入不同于加速器许可。",
+          "revision_logic": "修订的是可供产品、采购责任人及MU份额，而非只研究行业服务器量。既有需求不变时，云直采转OEM、竞争者资格或本地要求即可重分捕获；高规格先扩大未来可参与范围，不必等收入变化才有意义。",
+          "possibility_space": [
+            {
+              "name": "高密度高速型号在多个工作负载获实际BOM采用",
+              "implication": "MU可参与高内容/带宽配置并提高采购机会，当前8800资格可更快兑现、512GB路线影响较后周期；最高速度不等于所有配置都按此出货。"
+            },
+            {
+              "name": "竞争者交期或总拥有成本更有优势，客户分给更多第二来源",
+              "implication": "行业位元继续增长而MU份额/售价走弱，认证不能保护全部配额；有限MU供给还可能只服务最优客户，量与回报不必同向。"
+            },
+            {
+              "name": "公共/私有系统通过本地OEM和长期支持采购而非大云直采",
+              "implication": "客户集合及生命周期、渠道资格重写，净全球需求可能不变；MU可凭本地合格产品获新增采购接口，也可能因渠道/准入受限错过。"
+            },
+            {
+              "name": "区域市场准入或数据驻留调整迫使买方改地点/供应链",
+              "implication": "可销售集合和平台配置改变，订单迁移不等于全球CPU需求消失；该Unit须按新买方及合格SKU捕获，不能由xPU获许可推MU所有产品开放。"
+            }
+          ],
+          "ref": [
+            "D1-O44",
+            "D1-O88",
+            "D1-O74",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.eurohpc-ju.europa.eu/eurohpc-joint-undertaking-launches-ai-gigafactories-call-2026-07-30_en",
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "https://www.amd.com/en/blogs/2026/agentic-ai-amd-epyc-9005-cpus-wins-today-epyc-9006.html",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q3/Q3-FY26-Prepared-Remarks.pdf",
+            "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Second-Quarter-Results/default.aspx",
+            "https://www.amd.com/content/dam/amd/en/documents/epyc-business-docs/other/three-ways-to-keep-your-data-center-refresh-on-track-in-a-memory-constrained-market.pdf",
+            "https://digital-strategy.ec.europa.eu/en/news/ai-omnibus-enters-force"
+          ]
+        },
+        {
+          "name": "供给优先级、价格弹性与成本重设目标收益",
+          "why_live": "资源从其他业务改配已发生，普通DRAM ASP主导FY26增长且内存紧张压低内容增长。纯非HBM量价成本未单列，CMBU/CDBU包含HBM或SSD/NAND，不能充当目标利润。",
+          "revision_logic": "修订的是目标可售位元、实现ASP、组合和单位成本的联合作用。即使客户活动不变，改配或降本可扩大交付；涨价可改善毛利却触发降配/整合，供给释放又会令量与价反向。",
+          "possibility_space": [
+            {
+              "name": "MU把更高良品和资源优先级投向已合格服务器产品",
+              "implication": "扩大可售量、改善交期和客户份额，且可减低成本；若主要挤出HBM/客户端，不等于公司净bit同增，资源机会成本决定最优组合。"
+            },
+            {
+              "name": "高内存报价使客户减GB保服务器单位数或加快整合",
+              "implication": "目标位元增长低于服务器台数，收入仍可因ASP提高；数据库难降配则可能延迟采购，负载差异让统一需求弹性失真。"
+            },
+            {
+              "name": "有效供给增加，交期正常化而服务器报价回落",
+              "implication": "可交付量及配置回升，但价格对毛利的影响可超过数量；降本能否抵消取决于实际产品成本，不能靠混合分部高毛利假设净收益不变。"
+            },
+            {
+              "name": "MU把组合转向高密度/速度或LPDDR而普通DDR获配减少",
+              "implication": "目标平均收入/单位成本都改变，单件售价高不保证每bit毛利高；客户若接受系统价值，收益可增加，否则份额转移或配置调整抵消溢价。"
+            }
+          ],
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q3/Q3-FY26-Prepared-Remarks.pdf",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "D1-O57",
+            "D1-O31",
+            "D1-O44",
+            "D1-O88",
+            "https://www.amd.com/content/dam/amd/en/documents/epyc-business-docs/other/three-ways-to-keep-your-data-center-refresh-on-track-in-a-memory-constrained-market.pdf",
+            "https://www.amd.com/en/blogs/2026/agentic-ai-amd-epyc-9005-cpus-wins-today-epyc-9006.html",
+            "https://micron.gcs-web.com/news-releases/news-release-details/micron-sets-new-benchmark-worlds-first-high-capacity-256gb",
+            "https://news.skhynix.com/en/mass-production-socamm2-192gb/",
+            "https://jp.micron.com/about/press/news/micron-in-high-volume-production-of-hbm4-designed-for-nvidia-vera-rubin-pcie-gen6-ssd-and-socamm2"
+          ]
+        },
+        {
+          "name": "异构与存量系统升级打开新的非HBM供货接口",
+          "why_live": "LPX已生产且有fabric/host DRAM接口，GDDR分担prefill仍为研究。模型商接管存量GPU也可更新主机/内存层，不需要同时重购全部HBM；MU各新接口资格尚未公开。",
+          "revision_logic": "修订的是非HBM需求与新GPU装机的关系。新异构平台及旧系统升级均可增加GDDR/fabric/host机会，也可替代旧DDR；平台销量、实际内容和MU资格决定捕获，不能把所有外部DRAM上限加成净需求。",
+          "possibility_space": [
+            {
+              "name": "异构执行平台扩大部署，并为外部fabric/host DRAM单独采购",
+              "implication": "非HBM机会来自新BOM而非传统每GPU DDR配套率；MU若获特定SKU资格可扩大未来市场，未获资格则规模属于他人，SRAM本身不算MU DRAM。"
+            },
+            {
+              "name": "GDDR与HBM分工从研究进入成本敏感生产服务",
+              "implication": "部分资源预算转向GDDR，DDR/LPDDR/HBM的组合重排；互连、时延与质量决定可行用途，不能用论文goodput推当前MU收入。"
+            },
+            {
+              "name": "接手存量集群的模型商增加主机容量与分层但延缓GPU换代",
+              "implication": "非HBM可出现维护升级采购，HBM则更多靠既有装机；升级范围受旧控制器/板型限制，集群经营权交易额不能直接换算目标内存量。"
+            },
+            {
+              "name": "异构系统缺乏成熟编排而买方回到同构GPU加标准主机",
+              "implication": "fabric/GDDR新机会收窄但DDR/LPDDR成熟配置可保留，终端任务仍扩展；替代路线失利不意味着整个非HBM需求消失。"
+            }
+          ],
+          "ref": [
+            "https://developer.nvidia.com/blog/inside-nvidia-groq-3-lpx-the-low-latency-inference-accelerator-for-the-nvidia-vera-rubin-platform",
+            "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Groq-3-LPX-Now-in-Full-Production-With-World-Class-Speed-for-Agentic-AI/default.aspx",
+            "https://arxiv.org/abs/2606.29986v1",
+            "D1-O139",
+            "https://developer.nvidia.com/blog/?p=111143",
+            "https://www.usenix.org/conference/osdi26/presentation/luo",
+            "https://micron.gcs-web.com/news-releases/news-release-details/micron-sets-new-benchmark-worlds-first-high-capacity-256gb",
+            "D1-O103",
+            "D1-O44",
+            "D1-O88",
+            "D1-O74",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.eurohpc-ju.europa.eu/eurohpc-joint-undertaking-launches-ai-gigafactories-call-2026-07-30_en",
+            "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+            "https://www.amd.com/en/blogs/2026/agentic-ai-amd-epyc-9005-cpus-wins-today-epyc-9006.html",
+            "https://www.anthropic.com/news/higher-limits-spacex",
+            "https://x.ai/news/anthropic-compute-partnership"
+          ]
+        }
+      ]
+    }
+  ]
+}

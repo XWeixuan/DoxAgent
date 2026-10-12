@@ -1,0 +1,92 @@
+[
+  {
+    "path": "dev_plan/workflow_v2.1/document3_v2.1_contracts.schema.json",
+    "added": 29,
+    "removed": 1
+  },
+  {
+    "path": "src/doxagent/codex_runtime/client.py",
+    "added": 8,
+    "removed": 4
+  },
+  {
+    "path": "src/doxagent/codex_worker/app.py",
+    "added": 3,
+    "removed": 1
+  },
+  {
+    "path": "src/doxagent/codex_worker/local_client.py",
+    "added": 2,
+    "removed": 2
+  },
+  {
+    "path": "src/doxagent/codex_worker/sdk_runtime.py",
+    "added": 4,
+    "removed": 3
+  },
+  {
+    "path": "src/doxagent/codex_worker/workspace_store.py",
+    "added": 14,
+    "removed": 4
+  },
+  {
+    "path": "src/doxagent/pilot/document3_driver.py",
+    "added": 64,
+    "removed": 18
+  },
+  {
+    "path": "src/doxagent/pilot/document3_sdk.py",
+    "added": 45,
+    "removed": 14
+  },
+  {
+    "path": "src/doxagent/workflows/codex_document3/inputs_v21.py",
+    "added": 48,
+    "removed": 11
+  },
+  {
+    "path": "src/doxagent/workflows/codex_document3/orchestrator_v21.py",
+    "added": 399,
+    "removed": 188
+  },
+  {
+    "path": "src/doxagent/workflows/codex_document3/runner_v21.py",
+    "added": 92,
+    "removed": 28
+  },
+  {
+    "path": "src/doxagent/workflows/codex_document3/schema_v21.py",
+    "added": 6,
+    "removed": 0
+  },
+  {
+    "path": "src/doxagent/workflows/codex_document3/state_v21.py",
+    "added": 15,
+    "removed": 7
+  },
+  {
+    "path": "src/doxagent/workflows/codex_document3/validation_v21.py",
+    "added": 5,
+    "removed": 2
+  },
+  {
+    "path": "tests/test_codex_document3_v21_maintenance.py",
+    "added": 2,
+    "removed": 1
+  },
+  {
+    "path": "tests/test_codex_document3_v21_orchestration.py",
+    "added": 47,
+    "removed": 21
+  },
+  {
+    "path": "tests/test_document3_sdk_pilot.py",
+    "added": 2,
+    "removed": 2
+  },
+  {
+    "path": "tests/fixtures/codex_document3.py",
+    "added": 2,
+    "removed": 2
+  }
+]

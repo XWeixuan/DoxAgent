@@ -1,0 +1,36 @@
+{
+  "schema_version": "codex-d1-turn-summary-v1",
+  "run_id": "c4-mu-local-20261009-01",
+  "attempt_id": "c4_pre_scan-1-965d2227b6",
+  "node": "c4_pre_scan",
+  "model": "gpt-6-sol",
+  "model_provider": null,
+  "job_status": "failed",
+  "thread_id": null,
+  "turn_id": null,
+  "usage": {
+    "input_tokens": 0,
+    "cached_input_tokens": 0,
+    "output_tokens": 0,
+    "reasoning_output_tokens": 0,
+    "total_tokens": 0
+  },
+  "observed_usage": null,
+  "sdk_duration_ms": null,
+  "worker_wall_time_ms": 4297,
+  "mcp_call_count": 0,
+  "command_call_count": 0,
+  "subagent_call_count": 0,
+  "file_change_count": 0,
+  "slowest_steps": [],
+  "failures": [
+    "WorkerJobManager._capture_identity() missing 1 required positional argument: 'turn'"
+  ],
+  "validation": {
+    "schema": "failed",
+    "progressive": "failed",
+    "citation": "not_run",
+    "citation_warnings": [],
+    "error": "START_THREAD: WorkerJobManager._capture_identity() missing 1 required positional argument: 'turn'"
+  }
+}

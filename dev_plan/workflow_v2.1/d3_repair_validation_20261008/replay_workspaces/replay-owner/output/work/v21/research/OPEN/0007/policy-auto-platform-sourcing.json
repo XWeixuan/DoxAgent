@@ -1,0 +1,41 @@
+{
+  "policy_id": "pol_5e4073c7cbd64cb0ad0e6812d304c350",
+  "title": "汽车共用计算平台的美光内存与存储生产选型",
+  "ref": [
+    "output/work/v21/discovery/OPEN.jsonl#L6",
+    "context/document3/v21/shared/global/0003.txt",
+    "context/document3/v21/shared/global/structure.json",
+    "https://investors.micron.com/news/press-release/2026/Micron-and-General-Motors-Sign-Strategic-Agreement-to-Secure-Supply-and-Accelerate-Innovation/default.aspx",
+    "https://investors.micron.com/news/press-release/2026/Micron-and-Ford-Sign-Strategic-Agreement-to-Strengthen-Long-Term-Memory-Supply-and-Industry-Resilience/default.aspx",
+    "https://investors.micron.com/news/press-release/2026/Micron-Strengthens-Automotive-Ecosystem-Supply-Through-Strategic-Customer-Agreements/default.aspx",
+    "https://news.gm.com/home.detail.html/Pages/news/us/en/2025/oct/1022-SDV-GM-centralized-vehicle-computer-platform-electric-gas-vehicles.html",
+    "https://www.fromtheroad.ford.com/us/en/articles/2026/ford-universal-ev-truck-name-reveal",
+    "https://www.fromtheroad.ford.com/us/en/articles/2026/ford-establishes-product-creation-industrialization-organization",
+    "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx",
+    "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+  ],
+  "transmission": "GM、Ford及与美光签约的汽车Tier 1/生态伙伴已提供长期供给与协同开发入口，但协议和车规产品送样尚未锁定任何车型的生产物料。客户对跨车型共用的中央计算、ADAS或座舱核心作出内存/存储生产选型，会把美光的汽车机会从可参与的管线改变为多年车型生命周期内的实际器件位置；反向将其排除则削弱该位置的可实现性。美光FY26 Q4汽车与嵌入式业务收入约68亿美元、占公司13%，但还含工业及消费嵌入式，不能把这一规模全算作汽车。公司称L4及以上车辆通常需超过200GB内存和数TB存储，显示高级自动驾驶的单车内容潜力，并不表示GM或Ford既定平台已采用这种容量。跨车型核心位置比单一外围器件样品有更大供货范围；获配本身已改变参与概率，不必等实际车辆出厂或收入确认，具体份额、价格和爬坡仍未知。",
+  "match_scope": "召回GM、Ford及已签汽车SCA的Qualcomm、Visteon、HARMAN、JOYNEXT、DENSO、Astemo、Hyundai Mobis等Tier 1/生态伙伴有关具体量产车型系列或共用计算平台的车规DRAM、LPDDR、UFS/托管NAND选型、生产定点、资格失败、替换、供货范围及平台量产时点的消息；可来自OEM、Tier 1/生态伙伴、美光或有明确出处的供应链报道。例如GM计划2028年从ESCALADE IQ开始使用、拟横跨燃油与电动车的中央计算架构，或Ford计划2027年从Fathom开始的Universal EV车型家族，若披露核心内存/存储生产来源，属于相关消息。仅重述这些平台计划、与美光的SCA、处理器厂商获选或某器件完成送样仍可匹配但不自动命中；例子非穷举，命中以下列条件为准。",
+  "activation_conditions": [
+    {
+      "condition_id": "C1",
+      "decision": "LONG",
+      "trigger_layer": "MIDDLE",
+      "criterion": "GM、Ford或与美光签汽车SCA的Tier 1/生态伙伴确认：在一个已指明OEM量产车型系列、并由该系列共用的中央计算、ADAS或数字座舱平台上，美光车规DRAM/LPDDR或UFS/托管NAND被选为核心模块的生产供货来源；可为非独家定点。",
+      "calibration": {
+        "reference_state": "截至2026-10-06的已核实资料中，美光与GM、Ford及多家Tier 1/生态伙伴有汽车长期SCA，合作涉及供货可见性、未来产品定义与资格；1-gamma汽车LPDDR5处于就绪/送样、robotaxi DDR5处于样品、G9 UFS 4.1有首批量出货。GM已计划2028年将中央计算架构从ESCALADE IQ推广至燃油及电动车；Ford已计划2027年推出以Fathom为首款的Universal EV家族。上述资料未给出美光在这些具名车型共用核心模块的生产定点、供货份额或单车配置。",
+        "trigger_boundary": "客户把美光列入一个具名量产车型家族所共用的中央计算/ADAS/座舱核心模块的实际生产BOM或等价生产定点，就从一般合作跨到可服务多年车型需求，足以提高汽车业务参与预期；不要求独供、确切芯片颗数、SOP后重复出货或美光收入数字。仅样品、合格供应商名单、处理器平台采用、没有对应车型的通用参考设计或单一试验车不越界。"
+      }
+    },
+    {
+      "condition_id": "C2",
+      "decision": "SHORT",
+      "trigger_layer": "MIDDLE",
+      "criterion": "GM、Ford或与美光签汽车SCA的Tier 1/生态伙伴确认：一个具名量产车型系列共用的计算/ADAS平台，其核心车规内存或存储生产位置由竞争厂商独家承接，或美光被明确排除、被撤销该平台生产资格。",
+      "calibration": {
+        "reference_state": "GM、Ford和多家Tier 1/生态伙伴的SCA及美光汽车器件送样/首批出货，使其参与下一代车辆供货具有现实基础，但并非任何具名平台的已获定点；GM 2028中央计算架构与Ford 2027 Universal EV家族已在规划，核心存储/内存供应商尚未由本次资料确认。协议也未披露独供、保量或平台级份额。",
+        "trigger_boundary": "客户明确将美光排除在一个具名、可复用于车型家族的核心内存/存储生产位置之外，或将这一位置独家交给竞争厂商，即可下修该SCA转化为车型生命周期供货的机会，不须再等美光确认收入损失。竞争厂商拿到一个可并行的第二来源、单一外围器件被替换、一般资格测试未结束或平台处理器更换而未说明美光器件去向，均不足以证明该位置失单。"
+      }
+    }
+  ]
+}

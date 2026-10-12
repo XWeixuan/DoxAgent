@@ -1,0 +1,163 @@
+[
+  {
+    "关系主体": "Intel",
+    "关系对象": "Client Computing and Physical AI Group（CCPG，前身CCG）",
+    "关系类型": "业务分部",
+    "关系说明": "负责PC与边缘计算平台及处理器，覆盖Core/Core Ultra等产品，直接客户包括经销商和OEM。【cite:O2】",
+    "关联业务或产品": "PC、边缘计算、Core/Core Ultra、客户端平台"
+  },
+  {
+    "关系主体": "Intel",
+    "关系对象": "Data Center and AI（DCAI）",
+    "关系类型": "业务分部",
+    "关系说明": "面向云、企业、电信和高性能计算客户提供Xeon处理器、AI加速器、网络控制器、IPU及定制ASIC。【cite:O2】【cite:O3】",
+    "关联业务或产品": "Xeon、AI加速器、IPU、网络产品、定制ASIC"
+  },
+  {
+    "关系主体": "Intel",
+    "关系对象": "Intel Foundry",
+    "关系类型": "业务分部与制造平台",
+    "关系说明": "提供工艺开发、晶圆制造、先进封装、组装测试和设计使能，服务内部产品并拓展外部客户。【cite:O4】【cite:O5】",
+    "关联业务或产品": "18A、14A、先进封装、晶圆制造、设计使能"
+  },
+  {
+    "关系主体": "Intel",
+    "关系对象": "OEM、ODM、云服务商及分销渠道",
+    "关系类型": "客户与销售渠道",
+    "关系说明": "Intel通过经销商、OEM/ODM和云服务商将客户端、服务器及AI产品导入终端设备、数据中心和边缘场景。【cite:O2】【cite:O6】【cite:O7】",
+    "关联业务或产品": "PC平台、Xeon平台、云基础设施、边缘计算"
+  },
+  {
+    "关系主体": "Intel Foundry",
+    "关系对象": "ASML",
+    "关系类型": "设备与技术合作",
+    "关系说明": "双方围绕High-NA EUV在量产中的应用及后续掩模尺寸转换持续协作。【cite:O8】",
+    "关联业务或产品": "High-NA EUV、先进制程光刻"
+  },
+  {
+    "关系主体": "Intel",
+    "关系对象": "AMD、Qualcomm、NVIDIA、ARM/RISC-V生态及云厂商自研芯片",
+    "关系类型": "竞争关系",
+    "关系说明": "Intel在客户端、数据中心、AI加速及处理器架构等市场面对上述厂商或替代架构竞争。【cite:O9】",
+    "关联业务或产品": "x86处理器、AI加速器、客户端芯片、服务器芯片"
+  },
+  {
+    "关系主体": "Intel",
+    "关系对象": "NVIDIA",
+    "关系类型": "联合开发与产品合作",
+    "关系说明": "双方计划开发多代数据中心和PC定制产品，包括采用NVLink的定制x86 CPU及x86 RTX SoC方向。【cite:O10】【cite:O11】",
+    "关联业务或产品": "定制x86 CPU、NVLink、RTX SoC、AI基础设施"
+  },
+  {
+    "关系主体": "Intel",
+    "关系对象": "Google",
+    "关系类型": "云客户与联合开发",
+    "关系说明": "双方推进多代Xeon在Google Cloud中的部署，并共同开发多代定制IPU。【cite:O6】",
+    "关联业务或产品": "Xeon、Google Cloud C4/N4、定制IPU"
+  },
+  {
+    "关系主体": "Intel",
+    "关系对象": "Amazon Web Services（AWS）",
+    "关系类型": "云客户与定制芯片合作",
+    "关系说明": "合作框架涵盖在Intel 18A上生产AI fabric chip、在Intel 3上生产定制Xeon 6，并探索18AP与14A。【cite:O7】",
+    "关联业务或产品": "Intel 18A、18AP、14A、Intel 3、AI fabric chip、Xeon 6"
+  },
+  {
+    "关系主体": "Intel",
+    "关系对象": "SambaNova",
+    "关系类型": "AI系统合作",
+    "关系说明": "双方规划多年期Xeon与SambaNova推理加速方案合作，面向AI推理基础设施。【cite:O12】",
+    "关联业务或产品": "Xeon、AI推理、SambaNova RDU"
+  },
+  {
+    "关系主体": "Intel",
+    "关系对象": "Foxconn",
+    "关系类型": "系统集成合作",
+    "关系说明": "围绕机架级AI基础设施推进系统集成，并探索CPU密集型方案。【cite:O13】",
+    "关联业务或产品": "机架级AI、服务器系统、CPU密集型基础设施"
+  },
+  {
+    "关系主体": "Intel",
+    "关系对象": "Fortinet",
+    "关系类型": "芯片与制造合作",
+    "关系说明": "双方合作开发Fortinet Security Processor 6，结合Fortinet的ASIC能力与Intel的设计、封装和制造能力。【cite:O14】",
+    "关联业务或产品": "Fortinet Security Processor 6、网络安全芯片、先进封装"
+  },
+  {
+    "关系主体": "Intel Foundry",
+    "关系对象": "Synopsys、Cadence、Siemens EDA、PDF Solutions",
+    "关系类型": "EDA与设计生态合作",
+    "关系说明": "这些合作伙伴为Intel Foundry客户提供EDA、IP、验证或制造数据分析支持，构成外部客户导入生态。【cite:O5】",
+    "关联业务或产品": "EDA工具、IP、设计使能、制造分析"
+  },
+  {
+    "关系主体": "Intel Foundry",
+    "关系对象": "Amkor",
+    "关系类型": "先进封装合作",
+    "关系说明": "Intel Foundry与Amkor存在先进封装合作安排，用于扩展外部客户的封装与制造选择。【cite:O5】",
+    "关联业务或产品": "先进封装、组装测试、外部代工"
+  },
+  {
+    "关系主体": "Intel Foundry",
+    "关系对象": "United Microelectronics Corporation（UMC）",
+    "关系类型": "制程技术合作",
+    "关系说明": "双方推进12nm及其衍生节点的技术合作，扩大Intel Foundry的制程与客户覆盖范围。【cite:O5】",
+    "关联业务或产品": "12nm、衍生制程、晶圆代工"
+  },
+  {
+    "关系主体": "Intel",
+    "关系对象": "美国国防部、美国政府及国防工业基地（DIB）客户",
+    "关系类型": "政府项目与安全制造合作",
+    "关系说明": "RAMP-C项目完成后，Intel与美国国防体系推动DIB客户利用Secure Enclave开展安全的高量制造。【cite:O15】【cite:O16】",
+    "关联业务或产品": "RAMP-C、Secure Enclave、安全制造、国防供应链"
+  },
+  {
+    "关系主体": "Intel",
+    "关系对象": "SpaceX、xAI、Tesla",
+    "关系类型": "战略制造合作",
+    "关系说明": "Intel在2026年第一季度业绩电话会材料中披露加入Terafab战略合作，面向硅片工艺与制造协同。【cite:O3】",
+    "关联业务或产品": "Terafab、先进制程、晶圆制造"
+  },
+  {
+    "关系主体": "Intel Foundry",
+    "关系对象": "Intel 18A、18A-P及14A制程路线",
+    "关系类型": "制程路线与客户导入",
+    "关系说明": "18A已进入内部产品高量生产，18A-P进入风险生产，14A处于开发及潜在外部客户设计承诺阶段，三者分别对应不同的制造和客户资格阶段。【cite:O24】【cite:O92】【cite:O3】",
+    "关联业务或产品": "18A、18A-P、14A、PDK、晶圆制造"
+  },
+  {
+    "关系主体": "Intel",
+    "关系对象": "Intel Core Series 3（Panther Lake）",
+    "关系类型": "产品平台",
+    "关系说明": "Core Series 3基于Intel 18A，覆盖消费、商用和边缘设备，并通过OEM合作伙伴推进系统上市。【cite:O136】",
+    "关联业务或产品": "Core Series 3、18A、AI PC、边缘计算"
+  },
+  {
+    "关系主体": "Intel",
+    "关系对象": "Acer、ASUS、Dell、HP、Lenovo、Samsung等OEM伙伴",
+    "关系类型": "产品上市合作",
+    "关系说明": "这些OEM伙伴被列为Core Series 3系统的上市或后续上市合作方，覆盖消费、商用及边缘设备。【cite:O136】",
+    "关联业务或产品": "Core Series 3系统、AI PC、边缘设备"
+  },
+  {
+    "关系主体": "Intel Foundry",
+    "关系对象": "Foveros-B、Foveros-R、Foveros Direct及EMIB-T",
+    "关系类型": "先进封装技术平台",
+    "关系说明": "Intel持续开发EMIB-T与Foveros系列；Foveros-B/R面向2027年高量制造，Foveros Direct混合键合支持计划用于18A-PT的2028年路线。【cite:O92】",
+    "关联业务或产品": "2.5D/3D封装、EMIB-T、Foveros、AI与数据中心封装"
+  },
+  {
+    "关系主体": "Intel Foundry",
+    "关系对象": "Lens Technology",
+    "关系类型": "材料与先进封装合作",
+    "关系说明": "双方探索玻璃基板封装、精密玻璃加工和相关制造流程，以支持AI、数据中心、机器人及边缘计算平台。【cite:O83】",
+    "关联业务或产品": "玻璃基板、先进封装、AI基础设施、边缘计算"
+  },
+  {
+    "关系主体": "Intel",
+    "关系对象": "Altera",
+    "关系类型": "股权与分部口径关系",
+    "关系说明": "Intel于2025-09-12出售Altera 51%股权并停止合并；Altera之后的客户口径变化会影响Intel Foundry外部收入的解读。【cite:O24】",
+    "关联业务或产品": "FPGA、Intel Foundry外部收入、股权法投资"
+  }
+]

@@ -215,10 +215,15 @@ class SiteAccessError(RuntimeError):
             if result.retry_not_before
             else 0.0
         )
-        self.site_access_deferred = (
-            result.disposition.value == "BUDGET_DEFERRED"
-            or (result.disposition.value == "SERVICE_UNAVAILABLE"
-                and result.reason_code == "storage_unavailable")
+        self.site_access_deferred = result.disposition.value == "BUDGET_DEFERRED" or (
+            result.disposition.value == "SERVICE_UNAVAILABLE"
+            and (
+                result.reason_code == "storage_unavailable"
+                or (
+                    result.reason_code == "egress_unavailable"
+                    and result.retry_not_before is not None
+                )
+            )
         )
 
 

@@ -1,0 +1,2090 @@
+{
+  "format": "doxagent.w3-trade-intent-review.v1",
+  "ticker": "MU",
+  "window": {
+    "since_utc": "2026-09-19T12:53:20.738930+00:00",
+    "as_of_utc": "2026-10-10T12:53:20.738930+00:00"
+  },
+  "part": 3,
+  "record_count": 5,
+  "records": [
+    {
+      "intent_id": "trade:case_263bdf4e7658437f917b5fd78fc4d57d",
+      "ticker": "MU",
+      "case_id": "case_263bdf4e7658437f917b5fd78fc4d57d",
+      "intent_released_at_utc": "2026-09-30T08:00:25.017425+00:00",
+      "intent_status": "DELIVERY_FAILED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_6839c85564324eec9659d767c98da6d1",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "TrendForce",
+              "Conventional DRAM",
+              "DRAM contract prices"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "TrendForce预计常规DRAM合同价格在4Q26环比上涨10%-15%。",
+            "subject_time": "4Q26"
+          },
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "TrendForce",
+              "NAND Flash",
+              "NAND contract prices"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "TrendForce预计NAND Flash合同价格在4Q26环比上涨15%-20%。",
+            "subject_time": "4Q26"
+          },
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Enterprise SSDs",
+              "Cloud service providers",
+              "AI inference infrastructure"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "企业级SSD预计是4Q26唯一价格涨幅加速的内存产品类别，受云服务商AI推理基础设施扩张推动。",
+            "subject_time": "4Q26"
+          },
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Enterprise SSDs",
+              "CSPs",
+              "AI inference",
+              "Agentic AI"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "企业级SSD位需求预计在2026年同比增长超过80%，需求从大语言模型训练进一步转向实际AI部署和agentic AI。",
+            "subject_time": "Calendar year 2026"
+          },
+          {
+            "assertion_state": "EXPECTED",
+            "entities": [
+              "Server DRAM",
+              "CSPs",
+              "Server OEMs",
+              "Packaging and testing capacity"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "TrendForce预计4Q26服务器DRAM仍将供不应求，CSP和服务器OEM的位采购增加，但组件、封装测试和前端DRAM产能约束仍限制供给匹配。",
+            "subject_time": "4Q26"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "4Q26行业更新显示NAND合同价涨幅上调至15%-20%，企业级SSD成为唯一价格加速品类，CSP推理基础设施使企业级SSD位需求预计同比增长逾80%；同时服务器DRAM仍供不应求。虽然常规DRAM涨幅放缓至10%-15%、消费端承压，但数据中心和SSD的价格与供给持续性较此前基线更强。",
+          "prior_expectation": "事件前基线是AI服务器需求支持内存价格，但4Q26价格涨幅将较3Q26放缓；TrendForce此前预计3Q26常规DRAM和NAND合同价分别环比上涨13%-18%和10%-15%，Micron公开FY26 Q4收入指引约500亿美元、市场公开收入基线约521亿美元。",
+          "reason": "这是对Micron高价值数据中心内存和SSD近期价格/组合预期的中等正向修订。TrendForce的行业价格与供需判断可通过Micron已处于高量生产或出货的服务器DRAM、SOCAMM2、PCIe Gen6及大容量QLC SSD传导至CDBU/CMBU收入和毛利；消费端压力、长期协议价格机制和DRAM涨幅放缓构成抵消，但不足以消除整体正向方向。",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "E4覆盖的是3Q26行业合同价预测；当前消息首次给出4Q26具体价格区间、企业级SSD价格加速及服务器DRAM持续供不应求判断。",
+          "reference_ids": [
+            "E4"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息是TrendForce的单期行业预测，未确认Micron连续报告窗口的组合、ASP、bit shipments、份额或财务变化，不满足任何Policy条件。"
+        },
+        "w3_case_id": "w3_6839c85564324eec9659d767c98da6d1"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_263bdf4e7658437f917b5fd78fc4d57d",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-30T08:00:25.163162Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 397.999676
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-30T07:53:47.163486Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2609067,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-30",
+        "source": {
+          "binding_id": "MU:trendforce_press_releases",
+          "kind": "crawler",
+          "name": "TrendForce Press Releases",
+          "source_id": "trendforce_press_releases"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_6fee6c91368742058addc7a008de5ed1",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "AI Server Demand Sustains Memory Contract Price Increases in 4Q26, While Consumer-Side Pressure Persists, Says TrendForce"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "DELIVERY_FAILED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "READY",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-30T07:53:47.163486Z",
+        "completed_at": "2026-09-30T08:00:25.163162Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E198",
+            "E4",
+            "E11"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [
+            {
+              "event_id": "E4",
+              "fact_ids": [
+                "F397",
+                "F398"
+              ]
+            }
+          ],
+          "reason": "当前消息的核心事实是TrendForce对4Q26的具体季度预测：常规DRAM合约价环比涨10%-15%、NAND合约价环比涨15%-20%、企业级SSD为唯一价格涨幅加速品类。已加载事实中F397和F398仅覆盖3Q26（DRAM 13%-18%、NAND 10%-15%），4Q26的量化预测及企业级SSD加速叙事尚未出现，属于新季度的具体数值进展。",
+          "reference_ids": [
+            "E4"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [
+            "pol_b123dd2735c71047d828",
+            "pol_000c7e1917b14969a458"
+          ],
+          "reason": "TrendForce确认4Q26 DRAM合同价涨幅moderate至10–15% QoQ、NAND至15–20%，同时server DRAM bit procurement增长、供应商增加低容量RDIMM在产品组合中的份额。前者直接触及'ASP涨幅不再达到FY26 Q3水平但bit shipments仍增长、销售额环比仍增长'的触发路径；后者在AI/服务器需求与价格仍强的前提下，暗示行业供应商（含Micron）高价值服务器内存组合占比可能下降，触及'高价值组合指标相对基线下降'路径。本轮无法确认是否已连续两个季度及Micron具体数据，存在合理命中可能。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "当前消息为TrendForce单期行业价格与供需预测（4Q26），非Micron财报或正式披露。两个Candidate Policy的核心触发均要求\"连续两期财报确认\"或\"连续两个报告窗口\"的Micron自身指标（CMBU/CDBU占比、HBM份额、产品线销售额、bit shipments等），而消息仅给出行业层面的价格涨幅放缓预期（DRAM 10–15%、NAND 15–20%），未提供任何Micron具体财务数据或市场份额变动。行业需求仍强、产能向服务器倾斜、封装测试约束等描述均为行业整体观察，未转化为Micron可核验的连续窗口指标变化。所有Activation Conditions均未达到trigger_boundary。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "TrendForce",
+                "Conventional DRAM",
+                "DRAM contract prices"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "TrendForce预计常规DRAM合同价格在4Q26环比上涨10%-15%。",
+              "subject_time": "4Q26"
+            },
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "TrendForce",
+                "NAND Flash",
+                "NAND contract prices"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "TrendForce预计NAND Flash合同价格在4Q26环比上涨15%-20%。",
+              "subject_time": "4Q26"
+            },
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "Enterprise SSDs",
+                "Cloud service providers",
+                "AI inference infrastructure"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "企业级SSD预计是4Q26唯一价格涨幅加速的内存产品类别，受云服务商AI推理基础设施扩张推动。",
+              "subject_time": "4Q26"
+            },
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "Enterprise SSDs",
+                "CSPs",
+                "AI inference",
+                "Agentic AI"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "企业级SSD位需求预计在2026年同比增长超过80%，需求从大语言模型训练进一步转向实际AI部署和agentic AI。",
+              "subject_time": "Calendar year 2026"
+            },
+            {
+              "assertion_state": "EXPECTED",
+              "entities": [
+                "Server DRAM",
+                "CSPs",
+                "Server OEMs",
+                "Packaging and testing capacity"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "TrendForce预计4Q26服务器DRAM仍将供不应求，CSP和服务器OEM的位采购增加，但组件、封装测试和前端DRAM产能约束仍限制供给匹配。",
+              "subject_time": "4Q26"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "4Q26行业更新显示NAND合同价涨幅上调至15%-20%，企业级SSD成为唯一价格加速品类，CSP推理基础设施使企业级SSD位需求预计同比增长逾80%；同时服务器DRAM仍供不应求。虽然常规DRAM涨幅放缓至10%-15%、消费端承压，但数据中心和SSD的价格与供给持续性较此前基线更强。",
+            "prior_expectation": "事件前基线是AI服务器需求支持内存价格，但4Q26价格涨幅将较3Q26放缓；TrendForce此前预计3Q26常规DRAM和NAND合同价分别环比上涨13%-18%和10%-15%，Micron公开FY26 Q4收入指引约500亿美元、市场公开收入基线约521亿美元。",
+            "reason": "这是对Micron高价值数据中心内存和SSD近期价格/组合预期的中等正向修订。TrendForce的行业价格与供需判断可通过Micron已处于高量生产或出货的服务器DRAM、SOCAMM2、PCIe Gen6及大容量QLC SSD传导至CDBU/CMBU收入和毛利；消费端压力、长期协议价格机制和DRAM涨幅放缓构成抵消，但不足以消除整体正向方向。",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "E4覆盖的是3Q26行业合同价预测；当前消息首次给出4Q26具体价格区间、企业级SSD价格加速及服务器DRAM持续供不应求判断。",
+            "reference_ids": [
+              "E4"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "消息是TrendForce的单期行业预测，未确认Micron连续报告窗口的组合、ASP、bit shipments、份额或财务变化，不满足任何Policy条件。"
+          },
+          "w3_case_id": "w3_6839c85564324eec9659d767c98da6d1"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "c47bafe301fc2ea9c36da6cf5985337c2ef5d2e31562346b22ad7578e8c2c016",
+            "content_type": "text/plain",
+            "sha256": "2035ab31f60b0d916d2357c06a2a2ad6c4d6ca823c36662aca5a19b51cff3d2a",
+            "size_bytes": 6316
+          },
+          "case": {
+            "case_id": "case_263bdf4e7658437f917b5fd78fc4d57d",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-30T07:53:45.863275Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-30T07:53:45.895086Z",
+          "revision": 1,
+          "row_revision": 2554967,
+          "source": {
+            "binding_id": "MU:trendforce_press_releases",
+            "kind": "crawler",
+            "name": "TrendForce Press Releases",
+            "source_id": "trendforce_press_releases"
+          },
+          "source_published_at": "2026-09-30T04:00:00Z",
+          "standard_message_id": "std_a5ebc5e8f331496399aae3ac64fa5884",
+          "stream_item_id": "stream_6fee6c91368742058addc7a008de5ed1",
+          "stream_offset": 2385,
+          "stream_published_at": "2026-09-30T07:53:45.900300Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "AI Server Demand Sustains Memory Contract Price Increases in 4Q26, While Consumer-Side Pressure Persists, Says TrendForce"
+          },
+          "url": "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+          "body_text": "Conventional DRAM contract prices are projected to grow 10–15% QoQ in 4Q26, while NAND Flash contract prices are expected to increase 15–20%\n\nEnterprise SSDs are the only category expected to see price growth accelerate due to strong demand from CSPs\n\nTrendForce’s latest memory industry research reveals that DRAM suppliers continue to prioritize advanced-process capacity for high-performance server products in 4Q26, keeping the overall market undersupplied. However, the pace of contract price increases is expected to moderate, with conventional DRAM prices projected to rise 10–15% QoQ.\n\nMeanwhile, the NAND Flash market is seeing a divergence between accelerating AI demand and weak consumer demand, although prices are still rising across segments. Overall NAND Flash contract prices are projected to increase 15–20% QoQ.\n\nFor PC DRAM, notebook inventories are increasingly reflecting higher component costs in the fourth quarter, weighing on end-market sales. Nevertheless, PC OEMs continue to procure aggressively amid expectations that DRAM supply will remain tight in 2027, providing continued support for prices. On the supply side, DRAM suppliers have been fulfilling agreed volumes to PC OEMs and module makers every quarter throughout 2026. However, the PC DRAM supply could decline in 2027 as more capacity shifts to server applications.\n\nIn the server DRAM market, improving server CPU availability has prompted CSPs and server OEMs to increase bit procurement from suppliers to meet growing RDIMM demand for general servers supporting agentic AI workloads. Memory suppliers have increased the share of lower-capacity RDIMMs in their product mix to better address customer demand. However, constraints in component supply, packaging and testing capacity, and front-end DRAM production flexibility continue to prevent supply from fully aligning with demand. Server DRAM is therefore expected to remain undersupplied in 4Q26. On the pricing front, increases for some suppliers are expected to lag the market average due to pricing mechanisms stipulated in long-term agreements (LTAs).\n\nFor mobile DRAM, rising costs and the depletion of low-cost inventories continue to weigh on smartphone production, suppressing overall bit demand. At the same time, strong demand and higher margins in AI-related applications are prompting suppliers to continue shifting capacity toward server products, leaving mobile DRAM allocations tight. Consequently, the upward price trend remains firmly in place. However, because substantial increases were already priced in during previous quarters, growth is expected to moderate in 4Q26.\n\nIn graphics DRAM, some PC brands are reconsidering GDDR6 as a means of reducing overall BOM costs. GDDR7 demand, meanwhile, continues to be driven primarily by AI chips, with procurement momentum outperforming the PC market.\n \nOn the supply side, suppliers continue to scale back GDDR6 production while gradually exiting the market. GDDR7 output also remains limited as advanced-process capacity is increasingly allocated to applications such as server DRAM. These constraints are expected to keep graphics DRAM prices on an upward trajectory.\n\nFor consumer DRAM, recent incremental demand has come primarily from SSD customers, supplementing existing demand from consumer networking and TV applications. In particular, the improved outlook for QLC SSD demand has increased corresponding demand for DRAM components. However, major suppliers remain committed to production cuts, leaving the market heavily reliant on Taiwanese suppliers. Prices are therefore expected to continue rising—albeit at a slower pace.\n\nTurning to client SSDs, PC OEMs can rely on finished-goods inventories and channel stock built during the first half of the year to support fourth-quarter shipments, limiting procurement largely to components in short supply. PC brands are also reducing SSD capacities in mainstream models to lower BOM costs, resulting in declines in both procurement volumes and average capacity per device. With buyers holding sufficient inventories and purchasing requirements remaining limited, NAND Flash suppliers have adopted a more flexible pricing stance, restraining the magnitude of price increases.\n\nThe enterprise SSD market presents a markedly different picture. Bit demand for enterprise SSDs is projected to grow by more than 80% YoY in 2026 as CSPs continue to expand AI inference infrastructure. Demand is also shifting from LLM training toward actual AI deployment. Additionally, the large-scale rollout of agentic AI is driving exponential growth in data volumes for real-time retrieval and caching, while QLC penetration in vector databases continues to rise.\n\nIn response, suppliers are expanding QLC capacity and the availability of high-capacity products, while PCIe 6.0 adoption is ramping alongside next-generation AI server platforms. However, most incremental supply has already been committed, leaving little available on the open market. Enterprise SSD price growth is therefore expected to accelerate in 4Q26, making it the only memory product category to see a larger increase than in the previous quarter.\n\nFor eMMC/UFS, smartphone brands—the primary source of demand—are largely relying on existing inventories to support fourth-quarter production, resulting in very limited incremental procurement from suppliers. Lower-margin products such as TVs, set-top boxes, and wearables have even less room to absorb higher prices.\n\nAlthough suppliers are seeking broader price increases on the back of strong AI-driven pricing momentum, OEMs are responding with only the minimum purchase volumes needed to maintain supplier relationships. As a result, negotiations have effectively narrowed to price confirmation for relatively small order volumes.\n\nIn the NAND Flash wafer market, prices have reached historical highs that downstream retail channels are increasingly unable to absorb. This has prompted module makers—the primary buyers—to adopt a more cautious procurement stance.\n\nOn the supply side, suppliers continue to prioritize capacity based on profitability, keeping overall wafer availability constrained. However, weak purchasing momentum among module makers is expected to limit overall price growth to a modest increase."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_a5ebc5e8f331496399aae3ac64fa5884:0\"]",
+          "created_at": "2026-09-30T08:00:24.874908Z",
+          "dedupe_key": "d2e785e73a562fcc328b19366e8db7929d0c73837343780dfc244ee167475e05",
+          "entities": [
+            "TrendForce",
+            "Conventional DRAM",
+            "DRAM contract prices"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "TrendForce预计常规DRAM合同价格在4Q26环比上涨10%-15%。",
+          "provisional_event_id": "E174",
+          "subject_time": "4Q26"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_a5ebc5e8f331496399aae3ac64fa5884:1\"]",
+          "created_at": "2026-09-30T08:00:24.889762Z",
+          "dedupe_key": "1e4134952df8ffef2baadc0cc3b0e8e227298b9afcdc0407d330f1167e50301d",
+          "entities": [
+            "TrendForce",
+            "NAND Flash",
+            "NAND contract prices"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "TrendForce预计NAND Flash合同价格在4Q26环比上涨15%-20%。",
+          "provisional_event_id": "E175",
+          "subject_time": "4Q26"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_a5ebc5e8f331496399aae3ac64fa5884:2\"]",
+          "created_at": "2026-09-30T08:00:24.911421Z",
+          "dedupe_key": "141faed04c1be85635ca14b761576eeef51b2b1c44363198f5b0f5a1554cd945",
+          "entities": [
+            "Enterprise SSDs",
+            "Cloud service providers",
+            "AI inference infrastructure"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "企业级SSD预计是4Q26唯一价格涨幅加速的内存产品类别，受云服务商AI推理基础设施扩张推动。",
+          "provisional_event_id": "E176",
+          "subject_time": "4Q26"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_a5ebc5e8f331496399aae3ac64fa5884:3\"]",
+          "created_at": "2026-09-30T08:00:24.932144Z",
+          "dedupe_key": "393d994d736cc875635565b579e05db2713c3916b637d9457db470574dce78cc",
+          "entities": [
+            "Enterprise SSDs",
+            "CSPs",
+            "AI inference",
+            "Agentic AI"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "企业级SSD位需求预计在2026年同比增长超过80%，需求从大语言模型训练进一步转向实际AI部署和agentic AI。",
+          "provisional_event_id": "E177",
+          "subject_time": "Calendar year 2026"
+        },
+        {
+          "assertion_state": "EXPECTED",
+          "candidate_id": "[\"runtime-v2-msg:std_a5ebc5e8f331496399aae3ac64fa5884:4\"]",
+          "created_at": "2026-09-30T08:00:24.953792Z",
+          "dedupe_key": "a0139f8174ac6612f78192df6c23d9048a22e22d012b175813d0f2384e715ed7",
+          "entities": [
+            "Server DRAM",
+            "CSPs",
+            "Server OEMs",
+            "Packaging and testing capacity"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "TrendForce预计4Q26服务器DRAM仍将供不应求，CSP和服务器OEM的位采购增加，但组件、封装测试和前端DRAM产能约束仍限制供给匹配。",
+          "provisional_event_id": "E178",
+          "subject_time": "4Q26"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_263bdf4e7658437f917b5fd78fc4d57d",
+            "status": "DELIVERY_FAILED",
+            "released_at": "2026-09-30T08:00:25.017425+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-30",
+            "delivery_failure": {
+              "code": "PROFILE_VALIDATION_FAILED",
+              "detail": "旧版 v2-delivery 的 ExecutionProfile 不支持冻结的 SHARED_CYCLE Profile：仍要求 target_notional_usd，且拒绝新增仓位参数。",
+              "status": "FAILED"
+            },
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_6839c85564324eec9659d767c98da6d1",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "case_id": "case_263bdf4e7658437f917b5fd78fc4d57d",
+              "direction": "LONG",
+              "entry_reason": "PROFILE_VALIDATION_FAILED: 旧版 v2-delivery 的 ExecutionProfile 不支持冻结的 SHARED_CYCLE Profile：仍要求 target_notional_usd，且拒绝新增仓位参数。",
+              "entry_result": null,
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_263bdf4e7658437f917b5fd78fc4d57d",
+              "execution_reason_codes": [
+                "DELIVERY_FAILED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "REJECTED",
+              "intent_id": "trade:case_263bdf4e7658437f917b5fd78fc4d57d",
+              "intent_status": "DELIVERY_FAILED",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T08:00:25.017425Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "DELIVERY_FAILED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "DELIVERY_FAILED"
+        ],
+        "executor_execution_record_exists": false,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_64e48b767f89452fa2ea9748616acbb3",
+      "ticker": "MU",
+      "case_id": "case_64e48b767f89452fa2ea9748616acbb3",
+      "intent_released_at_utc": "2026-09-30T19:44:49.820087+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_9abc8cbdc1b449dca712004da2d16e93",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Bank of America",
+              "Vivek Arya",
+              "AI data-center systems"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "BofA semiconductor analyst Vivek Arya raised the estimated CY2026-2030 AI data-center systems addressable market to approximately $2.2 trillion with 40% annual growth, from $1.8 trillion with 33% annual growth.",
+            "subject_time": "Calendar 2026-2030"
+          },
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Vivek Arya",
+              "AI infrastructure",
+              "Agentic AI",
+              "AI inference"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Vivek Arya forecast that agentic AI adoption, competition among AI labs, and limited chip supply would keep AI spending robust for the next several years, with inference demand growing faster than training demand.",
+            "subject_time": "Next several years"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Vivek Arya",
+              "Micron Technology"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Vivek Arya identified Micron Technology as one of his top AI semiconductor stock picks with a near-term catalyst.",
+            "subject_time": "Near term"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "Arya's revision adds $400 billion to the CY2026-2030 AI data-center systems market estimate and raises the implied annual growth rate by 7 percentage points, strengthening the expected duration and probability of server, HBM, and DRAM demand and Micron's earnings and capital-return path.",
+          "prior_expectation": "The pre-event baseline already assumed strong AI and server-memory demand, tight supply, and support for Micron's FY26 Q4-to-FY27 high-value memory earnings, but the duration and scale of AI data-center spending remained uncertain.",
+          "reason": "The revision is material relative to the existing demand-duration uncertainty and has a clear transmission from higher AI infrastructure spending and constrained chip supply to Micron's server-memory volumes, pricing, and earnings. Although it is a single analyst forecast rather than company guidance, the magnitude of the revision and explicit MU top-pick call support a LONG trade.",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "BofA analyst Vivek Arya's increase of the CY2026-2030 AI data-center systems TAM estimate from $1.8 trillion at 33% annual growth to $2.2 trillion at 40% is a new forecast revision, as is his identification of Micron as a top AI-chip pick.",
+          "reference_ids": [
+            "E115"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "The message contains analyst forecasts and a recommendation, but no confirmed Micron operating change in high-value mix, shipments, ASP, margins, contracts, capacity, qualification, delivery, or financial results matching any Policy condition."
+        },
+        "w3_case_id": "w3_9abc8cbdc1b449dca712004da2d16e93"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_64e48b767f89452fa2ea9748616acbb3",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-30T19:44:49.992383Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 183.954814
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-30T19:41:46.037569Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_EXECUTION",
+          "TRADE_INTENT"
+        ],
+        "revision": 2628428,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-30",
+        "source": {
+          "binding_id": "MU:yahoo_finance_news",
+          "kind": "api",
+          "name": "Yahoo Finance News",
+          "source_id": "yahoo_finance_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_b2c702d19e2a4931aa87c8c7011eeb26",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "AI spending will fuel wins for Micron, Nvidia, Intel, and other chip stocks: BofA analyst"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "ORDER_FILLED"
+          ],
+          "state": "EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-30T19:41:46.037569Z",
+        "completed_at": "2026-09-30T19:44:49.992383Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E115",
+            "E31",
+            "E185",
+            "E103",
+            "E4"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [
+            {
+              "event_id": "E115",
+              "fact_ids": [
+                "F554"
+              ]
+            }
+          ],
+          "reason": "BofA分析师Vivek Arya将CY26-30 AI数据中心系统可寻址市场规模上调至2.2万亿美元（年增40%，此前为1.8万亿/33%），并将Micron列为AI芯片股首选之一。该$2.2T TAM及Arya的行业级AI capex超额预测为新增核心事实，现有Event中无覆盖。Micron 12月9日起回购日期已被F554覆盖，不构成新信息。",
+          "reference_ids": [
+            "E115"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "当前消息为BofA分析师Vivek Arya的年度前瞻预测，核心事实包括上调CY26-30 AI数据中心TAM至2.2万亿美元、确认AI支出因芯片供给有限将持续旺盛、将Micron列为推荐标的并提及12月9日启动回购。消息不涉及Micron任何CMBU/CDBU/HBM收入份额、bit shipments、ASP、毛利率、合同价格、扩产项目进度、战略客户交付、产品资格或汽车平台的实际数据或公司/客户正式披露。与AI需求强势仅为主题性背景关联，未提供与任何criterion触发路径存在具体事实对应关系的observation。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "当前消息为BofA分析师Vivek Arya的年度前瞻预测，核心事实包括上调CY26-30 AI数据中心TAM至2.2万亿美元、确认AI支出因芯片供给有限将持续旺盛、将Micron列为推荐标的并提及12月9日启动回购。消息不涉及Micron任何CMBU/CDBU/HBM收入份额、bit shipments、ASP、毛利率、合同价格、扩产项目进度、战略客户交付、产品资格或汽车平台的实际数据或公司/客户正式披露。与AI需求强势仅为主题性背景关联，未提供与任何criterion触发路径存在具体事实对应关系的observation。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "Bank of America",
+                "Vivek Arya",
+                "AI data-center systems"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "BofA semiconductor analyst Vivek Arya raised the estimated CY2026-2030 AI data-center systems addressable market to approximately $2.2 trillion with 40% annual growth, from $1.8 trillion with 33% annual growth.",
+              "subject_time": "Calendar 2026-2030"
+            },
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "Vivek Arya",
+                "AI infrastructure",
+                "Agentic AI",
+                "AI inference"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Vivek Arya forecast that agentic AI adoption, competition among AI labs, and limited chip supply would keep AI spending robust for the next several years, with inference demand growing faster than training demand.",
+              "subject_time": "Next several years"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Vivek Arya",
+                "Micron Technology"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Vivek Arya identified Micron Technology as one of his top AI semiconductor stock picks with a near-term catalyst.",
+              "subject_time": "Near term"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "Arya's revision adds $400 billion to the CY2026-2030 AI data-center systems market estimate and raises the implied annual growth rate by 7 percentage points, strengthening the expected duration and probability of server, HBM, and DRAM demand and Micron's earnings and capital-return path.",
+            "prior_expectation": "The pre-event baseline already assumed strong AI and server-memory demand, tight supply, and support for Micron's FY26 Q4-to-FY27 high-value memory earnings, but the duration and scale of AI data-center spending remained uncertain.",
+            "reason": "The revision is material relative to the existing demand-duration uncertainty and has a clear transmission from higher AI infrastructure spending and constrained chip supply to Micron's server-memory volumes, pricing, and earnings. Although it is a single analyst forecast rather than company guidance, the magnitude of the revision and explicit MU top-pick call support a LONG trade.",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "BofA analyst Vivek Arya's increase of the CY2026-2030 AI data-center systems TAM estimate from $1.8 trillion at 33% annual growth to $2.2 trillion at 40% is a new forecast revision, as is his identification of Micron as a top AI-chip pick.",
+            "reference_ids": [
+              "E115"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "The message contains analyst forecasts and a recommendation, but no confirmed Micron operating change in high-value mix, shipments, ASP, margins, contracts, capacity, qualification, delivery, or financial results matching any Policy condition."
+          },
+          "w3_case_id": "w3_9abc8cbdc1b449dca712004da2d16e93"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "522e5edd620e5783d8312d4d3dad6a82e94297c2c364a1d093a4dfa31483e6fe",
+            "content_type": "text/plain",
+            "sha256": "3df6e42ac4c07c2735790bd2ac8615688897f62e5b9d064e2314b7408da19c66",
+            "size_bytes": 2802
+          },
+          "case": {
+            "case_id": "case_64e48b767f89452fa2ea9748616acbb3",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-30T19:40:07.493084Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-30T19:41:45.208089Z",
+          "revision": 1,
+          "row_revision": 2628314,
+          "source": {
+            "binding_id": "MU:yahoo_finance_news",
+            "kind": "api",
+            "name": "Yahoo Finance News",
+            "source_id": "yahoo_finance_news"
+          },
+          "source_published_at": "2026-09-30T19:39:25Z",
+          "standard_message_id": "std_c56d67802902465aafbb4544cd8cc476",
+          "stream_item_id": "stream_b2c702d19e2a4931aa87c8c7011eeb26",
+          "stream_offset": 2469,
+          "stream_published_at": "2026-09-30T19:41:45.213436Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "AI spending will fuel wins for Micron, Nvidia, Intel, and other chip stocks: BofA analyst"
+          },
+          "url": "https://finance.yahoo.com/markets/stocks/article/ai-spending-will-fuel-wins-for-micron-nvidia-intel-and-other-chip-stocks-bofa-analyst-193925832.html?.tsrc=rss",
+          "body_text": "We are down to three months left in the year, and on Wall Street, that means the start of year-ahead predictions for the economy, stocks, and sectors.\n\nIt's not unusual for analysts' big calls to drive the stocks they call out, especially if the calls are assigned to price targets and earnings estimate lifts.\n\nHere's one of the first worthwhile look-ahead calls to hit our inbox, from BofA semiconductor analyst Vivek Arya on momentum tech stocks of companies at the center of the AI boom.\n\nArya pointed out the strong potential for AI capital expenditures to come in ahead of many estimates and be a better-than-expected tailwind for a host of stocks.\n\nThe call\n\nOn the outlook for AI infrastructure, Arya said, \"We raise our CY26-30 estimate AI data center systems addressable market to $2.2 trillion at a +40% annual pace from $1.8 trillion/+33% prior. The virtuous flywheel of agentic tool adoption by consumers and enterprises, competition between public and private AI labs, and limited chip supply will likely keep AI spending robust for the next several years. Any pacing or addition of safety guardrails to frontier models is likely to increase not reduce compute requirements and shift more demand to faster growing inference from training. Meanwhile, valuations for top chip stocks remain compelling relative to their projected EPS growth, with SOX trading at a 21x forward PE, 12% below its 24x median multiple since the onset of ChatGPT and well below 40%+ projected EPS growth potential.\"\n\nThe stock winners\n\nA host of stocks have bullish setups within Arya's revised AI thesis.\n\n\"Historically, CQ4 (and CQ1) have been the two best seasonal quarters to own chip stocks, with 300-500 basis of median outperformance vs. SPX from 2010-25,\" Arya wrote. \"Our top picks with near-term catalysts include: 1) Nvidia (NVDA) (enhanced buybacks, multiple GTC tradeshow events), 2) Intel (INTC) (agentic CPU strength, foundry win anticipation), 3) Micron (MU) (start of buybacks from Dec-9), 4) Marvell (MRVL) (Analyst Day on Oct 6, XPU ramp) and 5) Lam Research (LRCX) (share gain potential across memory, logic). We also continue to like AMD (AMD), Applied Materials (AMAT), Analog Devices (ADI) and On Semiconductor (ON). Staying watchful on Broadcom (AVGO) where we are Buy-rated on compelling valuation with potential for enhanced buybacks when the company reports FQ4 in December.\"\n\n(MU )\n\nBrian Sozzi is Yahoo Finance's Executive Editor, host of the Sozzi Unleashed morning show and the Power Players with Brian Sozzi podcast, and a member of Yahoo Finance's editorial leadership team. Follow Sozzi on X @BrianSozzi, Instagram, and LinkedIn. Tips on stories? Email brian.sozzi@yahoofinance.com.\n\nClick here for in-depth analysis of the latest stock market news and events moving stock prices"
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_c56d67802902465aafbb4544cd8cc476:0\"]",
+          "created_at": "2026-09-30T19:44:49.774543Z",
+          "dedupe_key": "c3e39e630ba3f599c453bfacc9a981f25f919642f54ea5f95f607962203c9eb7",
+          "entities": [
+            "Bank of America",
+            "Vivek Arya",
+            "AI data-center systems"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "BofA semiconductor analyst Vivek Arya raised the estimated CY2026-2030 AI data-center systems addressable market to approximately $2.2 trillion with 40% annual growth, from $1.8 trillion with 33% annual growth.",
+          "provisional_event_id": "E304",
+          "subject_time": "Calendar 2026-2030"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_c56d67802902465aafbb4544cd8cc476:1\"]",
+          "created_at": "2026-09-30T19:44:49.785575Z",
+          "dedupe_key": "a01becf0a7fdbf02abd7612805d8bef6929bc7259b9697e444b26fce1cd1f6c5",
+          "entities": [
+            "Vivek Arya",
+            "AI infrastructure",
+            "Agentic AI",
+            "AI inference"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Vivek Arya forecast that agentic AI adoption, competition among AI labs, and limited chip supply would keep AI spending robust for the next several years, with inference demand growing faster than training demand.",
+          "provisional_event_id": "E305",
+          "subject_time": "Next several years"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_c56d67802902465aafbb4544cd8cc476:2\"]",
+          "created_at": "2026-09-30T19:44:49.792824Z",
+          "dedupe_key": "3c803227e21e8eaad0968041e0da84a24f476e6e359f1b0fe14136ba2b815cca",
+          "entities": [
+            "Vivek Arya",
+            "Micron Technology"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Vivek Arya identified Micron Technology as one of his top AI semiconductor stock picks with a near-term catalyst.",
+          "provisional_event_id": "E306",
+          "subject_time": "Near term"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_64e48b767f89452fa2ea9748616acbb3",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-09-30T19:44:49.820087+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-30",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_9abc8cbdc1b449dca712004da2d16e93",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T19:44:50.451398Z"
+              },
+              "case_id": "case_64e48b767f89452fa2ea9748616acbb3",
+              "direction": "LONG",
+              "entry_reason": "ORDER_FILLED",
+              "entry_result": "FILLED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_64e48b767f89452fa2ea9748616acbb3",
+              "execution_reason_codes": [
+                "ORDER_FILLED"
+              ],
+              "execution_state": "EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "17102.72"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "16"
+              },
+              "first_fill_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T19:44:55Z"
+              },
+              "has_actual_fill": true,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_64e48b767f89452fa2ea9748616acbb3",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T19:44:49.820087Z"
+              }
+            },
+            "entry": {
+              "side": "BUY",
+              "quantity": "16",
+              "average_price_usd": "1068.92",
+              "first_fill_at": "2026-09-30T19:44:55+00:00",
+              "last_fill_at": "2026-09-30T19:44:55+00:00"
+            },
+            "exit": {
+              "side": "SELL",
+              "quantity": "16",
+              "average_price_usd": "1090.4",
+              "first_fill_at": "2026-10-01T19:30:01+00:00",
+              "last_fill_at": "2026-10-01T19:30:01+00:00"
+            },
+            "fills": [
+              {
+                "kind": "ENTRY",
+                "side": "BUY",
+                "quantity": "16",
+                "price_usd": "1068.92",
+                "filled_at": "2026-09-30T19:44:55+00:00",
+                "broker_fill_id": "00025b45.6abeecba.01.01"
+              },
+              {
+                "kind": "EXIT",
+                "side": "SELL",
+                "quantity": "16",
+                "price_usd": "1090.4",
+                "filled_at": "2026-10-01T19:30:01+00:00",
+                "broker_fill_id": "0000dc8f.6bca8d4c.01.01"
+              }
+            ],
+            "lot_remaining_quantity": 0,
+            "realized_pnl_usd": "341.32050800",
+            "realized_pnl_records": [
+              {
+                "amount": "341.32050800",
+                "day": "2026-10-01",
+                "environment": "PAPER",
+                "provisional": false,
+                "reason": null
+              }
+            ],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "EXECUTED",
+        "read_execution_reason_codes": [
+          "ORDER_FILLED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": {
+          "side": "BUY",
+          "quantity": "16",
+          "average_price_usd": "1068.92",
+          "first_fill_at": "2026-09-30T19:44:55+00:00",
+          "last_fill_at": "2026-09-30T19:44:55+00:00"
+        },
+        "exit": {
+          "side": "SELL",
+          "quantity": "16",
+          "average_price_usd": "1090.4",
+          "first_fill_at": "2026-10-01T19:30:01+00:00",
+          "last_fill_at": "2026-10-01T19:30:01+00:00"
+        },
+        "realized_pnl_usd": "341.32050800",
+        "pnl_state": "REALIZED",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_76daab2721144507adea0864992665e6",
+      "ticker": "MU",
+      "case_id": "case_76daab2721144507adea0864992665e6",
+      "intent_released_at_utc": "2026-09-30T20:05:00.660561+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_4cb48b4db9fb433db522af5416d783a6",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron Technology reported fiscal 2026 fourth-quarter EPS of $32.87.",
+            "subject_time": "FY2026 Q4"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "Reported EPS of $32.87 exceeded the top of management guidance and prevailing analyst expectations, raising the near-term earnings and margin outlook; persistence beyond Q4 remains unconfirmed because revenue, mix, margins, and guidance are not yet reported.",
+          "prior_expectation": "Micron's FY2026 Q4 EPS was expected within management's $30-$32 guidance range, with analyst expectations around $31.45-$31.72.",
+          "reason": "The EPS beat is a direct, material positive surprise for Micron's current-quarter earnings and has a clear transmission to near-term valuation and sentiment. Although the headline is incomplete, the magnitude above the guidance ceiling supports a LONG trade pending the full release.",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "Micron's reported FY2026 Q4 EPS of $32.87 is new; the reference view contains only the prior $30-$32 management guidance and analyst forecasts, not the actual result.",
+          "reference_ids": [
+            "E1"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No Policy condition is matched. The actual EPS is above prior guidance rather than below a trigger boundary, and the incomplete headline provides no additional negative operating, pricing, capacity, contract, or delivery condition."
+        },
+        "w3_case_id": "w3_4cb48b4db9fb433db522af5416d783a6"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_76daab2721144507adea0864992665e6",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-30T20:05:00.755932Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 165.327918
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-30T20:02:15.428014Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2630535,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-30",
+        "source": {
+          "binding_id": "MU:ibkr_news",
+          "kind": "api",
+          "name": "IBKR News API",
+          "source_id": "ibkr_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_abaa96db50044f148f34724f8946f08a",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "* Micron Technology 4Q EPS $32.87 >MU"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "PORTFOLIO_CAPACITY_EXHAUSTED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-30T20:02:15.428014Z",
+        "completed_at": "2026-09-30T20:05:00.755932Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E2",
+            "E1",
+            "E115",
+            "E10",
+            "E206"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "当前消息核心事实为 Micron 实际报告 FY2026 Q4 EPS 为 $32.87。已加载事实中，E1 仅含 Q4 EPS 指引（F17: $30-$32），E115 仅含分析师对 Q4 EPS 的预测（F546 $31.49、F557 $31.45 等），均为 GUIDANCE 或 FORECAST 状态，无一为 Q4 实际结果。$32.87 的实际报告值尚未被任何已知 Fact 覆盖。",
+          "reference_ids": [
+            "E1"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "当前消息仅为Dow Jones新闻社的公司标识（MU Micron Technology Inc）及免责声明，并以(MORE TO FOLLOW)标明实质内容尚未发布。消息中不包含任何关于收入、ASP、HBM/CMBU/CDBU表现、合同价格、产能、客户公告或其他可对应任何Policy criterion的具体事实，无法识别Candidate。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "当前消息仅为Dow Jones新闻社的公司标识（MU Micron Technology Inc）及免责声明，并以(MORE TO FOLLOW)标明实质内容尚未发布。消息中不包含任何关于收入、ASP、HBM/CMBU/CDBU表现、合同价格、产能、客户公告或其他可对应任何Policy criterion的具体事实，无法识别Candidate。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron Technology reported fiscal 2026 fourth-quarter EPS of $32.87.",
+              "subject_time": "FY2026 Q4"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "Reported EPS of $32.87 exceeded the top of management guidance and prevailing analyst expectations, raising the near-term earnings and margin outlook; persistence beyond Q4 remains unconfirmed because revenue, mix, margins, and guidance are not yet reported.",
+            "prior_expectation": "Micron's FY2026 Q4 EPS was expected within management's $30-$32 guidance range, with analyst expectations around $31.45-$31.72.",
+            "reason": "The EPS beat is a direct, material positive surprise for Micron's current-quarter earnings and has a clear transmission to near-term valuation and sentiment. Although the headline is incomplete, the magnitude above the guidance ceiling supports a LONG trade pending the full release.",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "Micron's reported FY2026 Q4 EPS of $32.87 is new; the reference view contains only the prior $30-$32 management guidance and analyst forecasts, not the actual result.",
+            "reference_ids": [
+              "E1"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "No Policy condition is matched. The actual EPS is above prior guidance rather than below a trigger boundary, and the incomplete headline provides no additional negative operating, pricing, capacity, contract, or delivery condition."
+          },
+          "w3_case_id": "w3_4cb48b4db9fb433db522af5416d783a6"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "63392cc04f4c803ac96ee2f22b04ca9859a44d9cb23ab18d1359c1bce296cbd5",
+            "content_type": "text/plain",
+            "sha256": "723432634f58dc0ebcb52a61c5a40cef3cf6ebe84b3ff1cd2bb5e32f27c7e36f",
+            "size_bytes": 511
+          },
+          "case": {
+            "case_id": "case_76daab2721144507adea0864992665e6",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-30T20:02:05.035640Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-30T20:02:14.541380Z",
+          "revision": 1,
+          "row_revision": 2630505,
+          "source": {
+            "binding_id": "MU:ibkr_news",
+            "kind": "api",
+            "name": "IBKR News API",
+            "source_id": "ibkr_news"
+          },
+          "source_published_at": "2026-09-30T20:01:00Z",
+          "standard_message_id": "std_aee84006c44d4a2c9f2db2ca4330d606",
+          "stream_item_id": "stream_abaa96db50044f148f34724f8946f08a",
+          "stream_offset": 2472,
+          "stream_published_at": "2026-09-30T20:02:14.545993Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "* Micron Technology 4Q EPS $32.87 >MU"
+          },
+          "url": "https://www.interactivebrokers.com/en/trading/providers.php",
+          "body_text": "(MORE TO FOLLOW) Dow Jones Newswires September 30, 2026 16:01 ET (20:01 GMT) Copyright (c) 2026 Dow Jones & Company, Inc. The statements in this document shall not be considered as an objective or independent explanation of the matters. Please note that this document (a) has not been prepared in accordance with legal requirements designed to promote the independence of investment research, and (b) is not subject to any prohibition on dealing ahead of the dissemination or publication of investment research."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_aee84006c44d4a2c9f2db2ca4330d606:0\"]",
+          "created_at": "2026-09-30T20:05:00.642476Z",
+          "dedupe_key": "c945dea769222482964965799a871d7a1c5d0f65f29e59d5b2c97ca044123925",
+          "entities": [
+            "Micron Technology"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron Technology reported fiscal 2026 fourth-quarter EPS of $32.87.",
+          "provisional_event_id": "E307",
+          "subject_time": "FY2026 Q4"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_76daab2721144507adea0864992665e6",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-09-30T20:05:00.660561+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-30",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_4cb48b4db9fb433db522af5416d783a6",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T20:05:01.699592Z"
+              },
+              "case_id": "case_76daab2721144507adea0864992665e6",
+              "direction": "LONG",
+              "entry_reason": "PORTFOLIO_CAPACITY_EXHAUSTED",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_76daab2721144507adea0864992665e6",
+              "execution_reason_codes": [
+                "PORTFOLIO_CAPACITY_EXHAUSTED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_76daab2721144507adea0864992665e6",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T20:05:00.660561Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "PORTFOLIO_CAPACITY_EXHAUSTED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_1487b1a263604dc48a012ee36208649d",
+      "ticker": "MU",
+      "case_id": "case_1487b1a263604dc48a012ee36208649d",
+      "intent_released_at_utc": "2026-09-30T20:05:31.500464+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_7fa977d1d8e94faab6d422a26d5f4c85",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron Technology reported fiscal 2026 fourth-quarter EPS of $32.87.",
+            "subject_time": "FY2026 Q4"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "Reported EPS of $32.87 exceeded the guidance ceiling and analyst expectations, raising the near-term earnings and valuation outlook; full-quarter revenue, margin, mix, and forward guidance remain pending.",
+          "prior_expectation": "Micron's FY2026 Q4 EPS was expected within management's $30-$32 guidance range, with analyst expectations around the low-$31 range.",
+          "reason": "The reported EPS beat is a direct and material positive surprise with a clear transmission to Micron's near-term earnings and market valuation. Although the alert is incomplete, the result supports a LONG trade pending the full release.",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "Micron's reported FY2026 Q4 EPS of $32.87 is new; prior coverage contained only the scheduled release, management guidance, and analyst forecasts, not the actual result.",
+          "reference_ids": [
+            "E2"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No Policy condition is matched. The headline reports EPS above the prior guidance range but provides no additional revenue, margin, product, contract, supply, capacity, or delivery condition."
+        },
+        "w3_case_id": "w3_7fa977d1d8e94faab6d422a26d5f4c85"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_1487b1a263604dc48a012ee36208649d",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-30T20:05:31.596839Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 196.343751
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-30T20:02:15.253088Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2630648,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-30",
+        "source": {
+          "binding_id": "MU:ibkr_news",
+          "kind": "api",
+          "name": "IBKR News API",
+          "source_id": "ibkr_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_b754a929735b4889a6689bfb90927104",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "* Micron Technology 4Q EPS $32.87 >MU"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "PORTFOLIO_CAPACITY_EXHAUSTED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-30T20:02:15.253088Z",
+        "completed_at": "2026-09-30T20:05:31.596839Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E1",
+            "E2",
+            "E115",
+            "E331",
+            "E319"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "当前消息报告Micron FY2026 Q4实际业绩，而已加载事实中Q4相关内容仅为E1的GUIDANCE（收入约$50B、EPS $30-32、毛利率~86%）、E2的SCHEDULED（2026-09-30发布）及E115中各分析师FORECAST；从计划/预期到实际发生属于状态变化，Q4实际数值尚未被任何已有Fact覆盖。",
+          "reference_ids": [
+            "E2"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "该消息为 Dow Jones Newswires 的占位符（\"MORE TO FOLLOW\"），未包含任何实质性业务事实——无收入、无指引、无产品/合同/供给/价格/费用/客户/扩产/政策等具体信息。无法与任何 Policy criterion 建立直接事实对应，不存在合理的 Candidate 召回依据。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "该消息为 Dow Jones Newswires 的占位符（\"MORE TO FOLLOW\"），未包含任何实质性业务事实——无收入、无指引、无产品/合同/供给/价格/费用/客户/扩产/政策等具体信息。无法与任何 Policy criterion 建立直接事实对应，不存在合理的 Candidate 召回依据。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron Technology reported fiscal 2026 fourth-quarter EPS of $32.87.",
+              "subject_time": "FY2026 Q4"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "Reported EPS of $32.87 exceeded the guidance ceiling and analyst expectations, raising the near-term earnings and valuation outlook; full-quarter revenue, margin, mix, and forward guidance remain pending.",
+            "prior_expectation": "Micron's FY2026 Q4 EPS was expected within management's $30-$32 guidance range, with analyst expectations around the low-$31 range.",
+            "reason": "The reported EPS beat is a direct and material positive surprise with a clear transmission to Micron's near-term earnings and market valuation. Although the alert is incomplete, the result supports a LONG trade pending the full release.",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "Micron's reported FY2026 Q4 EPS of $32.87 is new; prior coverage contained only the scheduled release, management guidance, and analyst forecasts, not the actual result.",
+            "reference_ids": [
+              "E2"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "No Policy condition is matched. The headline reports EPS above the prior guidance range but provides no additional revenue, margin, product, contract, supply, capacity, or delivery condition."
+          },
+          "w3_case_id": "w3_7fa977d1d8e94faab6d422a26d5f4c85"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "63392cc04f4c803ac96ee2f22b04ca9859a44d9cb23ab18d1359c1bce296cbd5",
+            "content_type": "text/plain",
+            "sha256": "723432634f58dc0ebcb52a61c5a40cef3cf6ebe84b3ff1cd2bb5e32f27c7e36f",
+            "size_bytes": 511
+          },
+          "case": {
+            "case_id": "case_1487b1a263604dc48a012ee36208649d",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-30T20:02:05.035640Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-30T20:02:14.479477Z",
+          "revision": 1,
+          "row_revision": 2630610,
+          "source": {
+            "binding_id": "MU:ibkr_news",
+            "kind": "api",
+            "name": "IBKR News API",
+            "source_id": "ibkr_news"
+          },
+          "source_published_at": "2026-09-30T20:01:00Z",
+          "standard_message_id": "std_72abfb8bbde44ad6a32e54a64cfcc70f",
+          "stream_item_id": "stream_b754a929735b4889a6689bfb90927104",
+          "stream_offset": 2471,
+          "stream_published_at": "2026-09-30T20:02:14.485726Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "* Micron Technology 4Q EPS $32.87 >MU"
+          },
+          "url": "https://www.interactivebrokers.com/en/trading/providers.php",
+          "body_text": "(MORE TO FOLLOW) Dow Jones Newswires September 30, 2026 16:01 ET (20:01 GMT) Copyright (c) 2026 Dow Jones & Company, Inc. The statements in this document shall not be considered as an objective or independent explanation of the matters. Please note that this document (a) has not been prepared in accordance with legal requirements designed to promote the independence of investment research, and (b) is not subject to any prohibition on dealing ahead of the dissemination or publication of investment research."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_72abfb8bbde44ad6a32e54a64cfcc70f:0\"]",
+          "created_at": "2026-09-30T20:05:31.487108Z",
+          "dedupe_key": "c945dea769222482964965799a871d7a1c5d0f65f29e59d5b2c97ca044123925",
+          "entities": [
+            "Micron Technology"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron Technology reported fiscal 2026 fourth-quarter EPS of $32.87.",
+          "provisional_event_id": "E308",
+          "subject_time": "FY2026 Q4"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_1487b1a263604dc48a012ee36208649d",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-09-30T20:05:31.500464+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-30",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_7fa977d1d8e94faab6d422a26d5f4c85",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T20:05:32.321643Z"
+              },
+              "case_id": "case_1487b1a263604dc48a012ee36208649d",
+              "direction": "LONG",
+              "entry_reason": "PORTFOLIO_CAPACITY_EXHAUSTED",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_1487b1a263604dc48a012ee36208649d",
+              "execution_reason_codes": [
+                "PORTFOLIO_CAPACITY_EXHAUSTED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_1487b1a263604dc48a012ee36208649d",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T20:05:31.500464Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "PORTFOLIO_CAPACITY_EXHAUSTED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_97556cf8a95f48a894e069e51abe3003",
+      "ticker": "MU",
+      "case_id": "case_97556cf8a95f48a894e069e51abe3003",
+      "intent_released_at_utc": "2026-09-30T20:06:52.404807+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_e32bf2a0628941c29dac324377a77288",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron Technology reported fiscal 2026 fourth-quarter adjusted EPS of $32.87.",
+            "subject_time": "FY2026 Q4"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "Reported adjusted EPS of $32.87 exceeded management's guidance ceiling and available analyst forecasts, raising the near-term earnings and valuation outlook; revenue, margin, mix, and forward guidance remain pending.",
+          "prior_expectation": "Micron's FY2026 Q4 adjusted EPS was expected near the low-$31 range, with management guidance of $30-$32 and an upper-end analyst forecast around $32.50.",
+          "reason": "The actual EPS beat is a direct positive surprise with material transmission to Micron's current-quarter earnings and market valuation. Despite the incomplete alert, the result supports a LONG trade pending the full release.",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "Micron's reported FY2026 Q4 adjusted EPS of $32.87 is new; prior coverage contained only analyst forecasts, probabilities, guidance, and the scheduled release, not the actual result.",
+          "reference_ids": [
+            "E115",
+            "E2"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No Policy condition is matched. EPS of $32.87 is above the guidance floor and does not satisfy the negative EPS trigger; the headline provides no revenue or margin result needed for the other financial trigger."
+        },
+        "w3_case_id": "w3_e32bf2a0628941c29dac324377a77288"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_97556cf8a95f48a894e069e51abe3003",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-30T20:06:52.698610Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 277.127225
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-30T20:02:15.571385Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2630919,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-30",
+        "source": {
+          "binding_id": "MU:ibkr_news",
+          "kind": "api",
+          "name": "IBKR News API",
+          "source_id": "ibkr_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_923181dd9bc94db195b5d41e69323094",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "* Micron Technology 4Q EPS $32.87 >MU"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "PORTFOLIO_CAPACITY_EXHAUSTED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-30T20:02:15.571385Z",
+        "completed_at": "2026-09-30T20:06:52.698610Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E1",
+            "E2",
+            "E115",
+            "E319",
+            "E317"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [
+            {
+              "event_id": "E115",
+              "fact_ids": [
+                "F546",
+                "F787"
+              ]
+            }
+          ],
+          "reason": "当前消息报道的是Micron FY2026 Q4实际调整EPS为$32.87（Dow Jones beat信号），属于已公布的实际业绩数据。已加载事实中仅包含分析师对Q4 EPS的预测（如F546共识约$31.49、F553 UBS约$32.50、F787 JPMorgan约$31.73）及Polymarket概率预测，均非实际公布结果。实际EPS数字尚未被任何已知Fact覆盖。",
+          "reference_ids": [
+            "E115",
+            "E2"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [
+            "pol_6a823a72b3e33190bb83"
+          ],
+          "reason": "消息直接报告Micron 4Q EPS $32.87（Dow Jones Newswires 2026年9月30日），与FY26 Q4正式财报时间吻合，构成pol_6a823a72b3e33190bb83 criterion中GAAP摊薄EPS指引兑现判断的具体数据点；但消息未披露指引区间、收入及毛利率，无法在本轮确定是否达到指引下限，值得进入完整判定。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息仅报告Micron 4Q EPS为$32.87，高于$29.73指引下限，C2的EPS条件明确不满足；消息未提供收入或毛利率数据，C1亦无法成立。同时，该标题不构成对收入低于490亿美元的正式财报确认。所有Conditions均未达到trigger_boundary。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron Technology reported fiscal 2026 fourth-quarter adjusted EPS of $32.87.",
+              "subject_time": "FY2026 Q4"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "Reported adjusted EPS of $32.87 exceeded management's guidance ceiling and available analyst forecasts, raising the near-term earnings and valuation outlook; revenue, margin, mix, and forward guidance remain pending.",
+            "prior_expectation": "Micron's FY2026 Q4 adjusted EPS was expected near the low-$31 range, with management guidance of $30-$32 and an upper-end analyst forecast around $32.50.",
+            "reason": "The actual EPS beat is a direct positive surprise with material transmission to Micron's current-quarter earnings and market valuation. Despite the incomplete alert, the result supports a LONG trade pending the full release.",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "Micron's reported FY2026 Q4 adjusted EPS of $32.87 is new; prior coverage contained only analyst forecasts, probabilities, guidance, and the scheduled release, not the actual result.",
+            "reference_ids": [
+              "E115",
+              "E2"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "No Policy condition is matched. EPS of $32.87 is above the guidance floor and does not satisfy the negative EPS trigger; the headline provides no revenue or margin result needed for the other financial trigger."
+          },
+          "w3_case_id": "w3_e32bf2a0628941c29dac324377a77288"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "63392cc04f4c803ac96ee2f22b04ca9859a44d9cb23ab18d1359c1bce296cbd5",
+            "content_type": "text/plain",
+            "sha256": "723432634f58dc0ebcb52a61c5a40cef3cf6ebe84b3ff1cd2bb5e32f27c7e36f",
+            "size_bytes": 511
+          },
+          "case": {
+            "case_id": "case_97556cf8a95f48a894e069e51abe3003",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-30T20:02:05.035640Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-30T20:02:14.584887Z",
+          "revision": 1,
+          "row_revision": 2630885,
+          "source": {
+            "binding_id": "MU:ibkr_news",
+            "kind": "api",
+            "name": "IBKR News API",
+            "source_id": "ibkr_news"
+          },
+          "source_published_at": "2026-09-30T20:01:00Z",
+          "standard_message_id": "std_7171f3072eb440ef84a5f0c08bb3719c",
+          "stream_item_id": "stream_923181dd9bc94db195b5d41e69323094",
+          "stream_offset": 2473,
+          "stream_published_at": "2026-09-30T20:02:14.596089Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "* Micron Technology 4Q EPS $32.87 >MU"
+          },
+          "url": "https://www.interactivebrokers.com/en/trading/providers.php",
+          "body_text": "(MORE TO FOLLOW) Dow Jones Newswires September 30, 2026 16:01 ET (20:01 GMT) Copyright (c) 2026 Dow Jones & Company, Inc. The statements in this document shall not be considered as an objective or independent explanation of the matters. Please note that this document (a) has not been prepared in accordance with legal requirements designed to promote the independence of investment research, and (b) is not subject to any prohibition on dealing ahead of the dissemination or publication of investment research."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_7171f3072eb440ef84a5f0c08bb3719c:0\"]",
+          "created_at": "2026-09-30T20:06:52.344411Z",
+          "dedupe_key": "4f9781d9e8a459bc2800a5175e4caaf16760520cb44e4fc905dff2dd4c17ce63",
+          "entities": [
+            "Micron Technology"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron Technology reported fiscal 2026 fourth-quarter adjusted EPS of $32.87.",
+          "provisional_event_id": "E309",
+          "subject_time": "FY2026 Q4"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_97556cf8a95f48a894e069e51abe3003",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-09-30T20:06:52.404807+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-30",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_e32bf2a0628941c29dac324377a77288",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T20:06:52.954457Z"
+              },
+              "case_id": "case_97556cf8a95f48a894e069e51abe3003",
+              "direction": "LONG",
+              "entry_reason": "PORTFOLIO_CAPACITY_EXHAUSTED",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_97556cf8a95f48a894e069e51abe3003",
+              "execution_reason_codes": [
+                "PORTFOLIO_CAPACITY_EXHAUSTED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_97556cf8a95f48a894e069e51abe3003",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T20:06:52.404807Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "PORTFOLIO_CAPACITY_EXHAUSTED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    }
+  ]
+}

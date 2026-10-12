@@ -1,0 +1,10 @@
+{
+  "source": "file",
+  "canonical_shell_unchanged": true,
+  "provenance": [
+    "STATE"
+  ],
+  "diagnostics": [],
+  "context_sha256": "e64f44b76f33485d8f6388f85f1a834405a897a5b293367a586f19df303e2246",
+  "completion_sha256": "04041f122b5b994d69ca1587a9e5e4f24e2a1f972baf3185f40b2fca1ac821b9"
+}

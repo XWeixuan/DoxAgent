@@ -1,0 +1,9 @@
+{
+  "alias": "O251",
+  "title": "text paragraphs 163",
+  "content": "| Commercial |  | 1,035 |  |  | 1,036 |  |  | 2,088 |  |  | 2,111 |  |\n\n| Industrial |  | 968 |  |  | 898 |  |  | 1,954 |  |  | 1,832 |  |\n\n| Irrigation |  | 950 |  |  | 895 |  |  | 976 |  |  | 907 |  |\n\n| Total retail MWh sales |  | 4,227 |  |  | 4,099 |  |  | 7,852 |  |  | 7,822 |  |\n\n| Number of retail customers at period end |  |  |  |  |  |  |  |  |\n\n| Residential |  | 567,106 |  |  | 553,665 |  |  |  |  |  |\n\n| Commercial |  | 81,704 |  |  | 80,363 |  |  |  |  |  |\n\n| Industrial |  | 151 |  |  | 148 |  |  |  |  |  |",
+  "source": {
+    "provider": "Public web source",
+    "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+  }
+}

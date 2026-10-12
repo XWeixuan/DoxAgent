@@ -1,0 +1,19 @@
+{
+  "alias": "O119",
+  "title": "section_previews 1",
+  "content": {
+    "section": "Mobile and Client Business Unit",
+    "heading_match": "Mobile and Client Business Unit",
+    "start_offset": 46606,
+    "end_offset": 126638,
+    "full_text_chars": 80000,
+    "returned_chars": 40000,
+    "truncated": true,
+    "match_quality": "substantive_body",
+    "text_preview": "(\"MCBU\") MCBU is focused on memory and storage solutions for the mobile and client segments. Additionally, MCBU sales include DRAM sold to the consumer market and component DRAM and NAND (TLC and QLC). The proliferation of AI-ready devices, from smartphones, tablets, AI PCs, and personal AI workstations, continues to increase demand for higher-capacity, higher-bandwidth, and lower-power memory and storage. On-device AI requires data and models to be processed locally, increasing DRAM and storage content needs and making power efficiency, thermal efficiency, battery life, and responsiveness key market requirements. Our LPDDR portfolio, enabled by our advanced technology process nodes, are a critical enabler of AI at the edge across mobile and client devices. Mobile: Consists of memory products sold into the smartphone and other mobile-device markets, specifically LPDDR. MCBU offers a portfolio of LPDDR solutions designed for next-generation smartphones to accelerate AI applications in the mobile market. Our focus is providing memory solutions to the flagship and high-end smartphone segments, leveraging our 1ß and 1γ technology process nodes. In 2026, we began volume shipments of our 1γ 16Gb LPDDR5X product to leading smartphone OEMs and sampled our 1γ 24Gb LPDDR5X product to multiple smartphone customers. We also began shipping qualification samples of our 1γ 16Gb LPDDR6 product, marking a milestone in next-generation memory technology. Client : Our memory and storage solutions sold into the client PC market support both commercial and consumer PC unit growth. These products primarily consist of DRAM modules, SSDs, packaged DRAM, and packaged NAND. Next-generation PCs include high-performance neural processing chipsets and AI capabilities, which increase memory and storage requirements. Personal AI workstations are also emerging as a new client category, often leveraging 128GB+ of DRAM to provide powerful on-device AI capabilities. Memory is a critical factor in enabling these systems to run larger models and process data locally, resulting in more responsive AI experiences. We are focused on providing solutions to the high-end and mainstream client PC segments for both personal and enterprise use. Our memory and storage products are critical to enabling AI, as data is the foundation for training, retrieval, inference, and enabling exceptional user experiences at the edge. Our client SSDs deliver the speed, power efficiency, security features, and capacity required for AI-enabled PCs and workstations. In 2026, we successfully completed qualification with lead customers on our G9 Gen5 QLC-based NAND client SSD, which is designed to expand capacity and improve responsiveness for mainstream PCs and ultra-thin laptops. Consumer and Components : Our consumer products were sold under the brand name Crucial until an exit of that portion of our business was announced in December 2025. The portfolio consisted of DRAM modules and SSDs that were sold through"
+  },
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

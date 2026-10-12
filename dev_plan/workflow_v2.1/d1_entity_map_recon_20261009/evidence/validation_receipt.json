@@ -1,0 +1,11 @@
+{
+  "warnings": [
+    "Existing opentelemetry/importlib-metadata DeprecationWarning"
+  ],
+  "exit_code": 0,
+  "passed": 35,
+  "scope": "Existing offline tests; no real-model or production behavior replay",
+  "command": "uv run --offline pytest --offline -q tests/test_codex_document1_workflow.py tests/test_codex_research_lanes.py tests/test_codex_d1_attempt_protocol.py",
+  "verified_at": "2026-10-09T02:40:24.3975505+08:00",
+  "elapsed_seconds": 29.46
+}

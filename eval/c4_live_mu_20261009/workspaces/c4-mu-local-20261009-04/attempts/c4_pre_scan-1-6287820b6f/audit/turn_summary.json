@@ -1,0 +1,90 @@
+{
+  "schema_version": "codex-d1-turn-summary-v1",
+  "run_id": "c4-mu-local-20261009-04",
+  "attempt_id": "c4_pre_scan-1-6287820b6f",
+  "node": "c4_pre_scan",
+  "model": "gpt-6-sol",
+  "model_provider": null,
+  "job_status": "succeeded",
+  "thread_id": "01a1210f-f512-71d2-861b-5905165488ad",
+  "turn_id": "01a12110-03d0-7451-9800-33d45385ad0c",
+  "usage": {
+    "input_tokens": 94648,
+    "cached_input_tokens": 94208,
+    "output_tokens": 2548,
+    "reasoning_output_tokens": 103,
+    "total_tokens": 97196
+  },
+  "observed_usage": {
+    "input_tokens": 94648,
+    "cached_input_tokens": 94208,
+    "output_tokens": 2548,
+    "reasoning_output_tokens": 103,
+    "total_tokens": 97196
+  },
+  "sdk_duration_ms": 231256,
+  "worker_wall_time_ms": 238875,
+  "mcp_call_count": 58,
+  "command_call_count": 5,
+  "subagent_call_count": 0,
+  "file_change_count": 1,
+  "slowest_steps": [
+    {
+      "sequence": 47,
+      "event": "item.completed",
+      "item_type": "mcp_tool_call",
+      "name": "source_capture.capture_source",
+      "status": "completed",
+      "duration_ms": 8656,
+      "summary": "completed"
+    },
+    {
+      "sequence": 57,
+      "event": "item.completed",
+      "item_type": "mcp_tool_call",
+      "name": "source_capture.capture_source",
+      "status": "completed",
+      "duration_ms": 4285,
+      "summary": "completed"
+    },
+    {
+      "sequence": 9,
+      "event": "item.completed",
+      "item_type": "mcp_tool_call",
+      "name": "source_capture.capture_source",
+      "status": "completed",
+      "duration_ms": 3843,
+      "summary": "completed"
+    },
+    {
+      "sequence": 8,
+      "event": "item.completed",
+      "item_type": "mcp_tool_call",
+      "name": "source_capture.capture_source",
+      "status": "completed",
+      "duration_ms": 2346,
+      "summary": "completed"
+    },
+    {
+      "sequence": 3,
+      "event": "item.completed",
+      "item_type": "mcp_tool_call",
+      "name": "data.sec_issuer_filings",
+      "status": "completed",
+      "duration_ms": 2000,
+      "summary": "completed"
+    }
+  ],
+  "failures": [
+    "command:shell:failed",
+    "mcp_tool_call:data.data_read_observation:failed",
+    "mcp_tool_call:data.data_read_observation:failed"
+  ],
+  "validation": {
+    "schema": "passed",
+    "progressive": "passed",
+    "citation": "passed",
+    "citation_warnings": [],
+    "error": null
+  }
+}

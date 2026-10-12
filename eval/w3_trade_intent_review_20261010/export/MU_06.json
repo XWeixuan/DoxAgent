@@ -1,0 +1,3130 @@
+{
+  "format": "doxagent.w3-trade-intent-review.v1",
+  "ticker": "MU",
+  "window": {
+    "since_utc": "2026-09-19T12:53:20.738930+00:00",
+    "as_of_utc": "2026-10-10T12:53:20.738930+00:00"
+  },
+  "part": 6,
+  "record_count": 5,
+  "records": [
+    {
+      "intent_id": "trade:case_e7748b15cb774bbb995ec088f911d947",
+      "ticker": "MU",
+      "case_id": "case_e7748b15cb774bbb995ec088f911d947",
+      "intent_released_at_utc": "2026-09-30T20:20:19.284033+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_c18ecea2d2c44657a3534b26c64676d5",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron Technology reported fiscal 2026 fourth-quarter revenue of approximately $54.23 billion.",
+            "subject_time": "FY2026 Q4"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "Reported revenue of approximately $54.23 billion exceeded management's guidance ceiling and cited analyst forecasts, materially raising the current-quarter earnings and demand outlook; margins, mix, and forward guidance remain pending.",
+          "prior_expectation": "Micron's FY2026 Q4 revenue was guided near $49-$51 billion, with analyst forecasts roughly $50.9-$52.4 billion.",
+          "reason": "The revenue beat is a direct and material positive surprise with clear transmission to Micron's sales, earnings power, and valuation. Despite the incomplete flash headline, the magnitude supports a LONG trade pending the full release.",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "Micron's reported FY2026 Q4 revenue of approximately $54.23 billion is new; prior coverage contained only management guidance near $49-$51 billion and analyst forecasts, not the actual result.",
+          "reference_ids": [
+            "E1"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No Policy condition is matched. Revenue of approximately $54.23 billion is above the guidance range rather than below the negative trigger boundary, and no adverse operating condition is reported."
+        },
+        "w3_case_id": "w3_c18ecea2d2c44657a3534b26c64676d5"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_e7748b15cb774bbb995ec088f911d947",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-30T20:20:19.528602Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 1077.297834
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-30T20:02:22.230768Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2632960,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-30",
+        "source": {
+          "binding_id": "MU:ibkr_news",
+          "kind": "api",
+          "name": "IBKR News API",
+          "source_id": "ibkr_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_3e678d21e25648fdbda2a522f12b8438",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "* Micron Technology 4Q Rev $54.23B >MU"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "PORTFOLIO_CAPACITY_EXHAUSTED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-30T20:02:22.230768Z",
+        "completed_at": "2026-09-30T20:20:19.528602Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E2",
+            "E1",
+            "E115",
+            "E10",
+            "E353"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [
+            {
+              "event_id": "E1",
+              "fact_ids": [
+                "F4"
+              ]
+            }
+          ],
+          "reason": "当前消息报告Micron FY2026 Q4实际营收为$54.23 billion，这是已确认的实际结果。现有已知事实中F4仅为公司指引（约$50 billion，范围$49-$51 billion），分析师预测为$50.9B–$52.4B，均非实际报告数据。实际营收$54.23 billion明显超出指引上限，构成尚未被覆盖的新核心事实。",
+          "reference_ids": [
+            "E1"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [
+            "pol_6a823a72b3e33190bb83"
+          ],
+          "reason": "消息为Dow Jones即时快讯，报告Micron FY26 Q4合并收入$54.23B。该数据点直接进入pol_6a823a72b3e33190bb83的match_scope（FY26 Q4正式业绩、收入/毛利率/EPS指引兑现），并提供criterion中'合并收入低于管理层指引下限'所需的核心事实输入。但消息仅含总营收数字，未附带管理层指引下限对比、毛利率或EPS，无法在当前信息下确认或排除该criterion是否命中，因此保留为Candidate。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息陈述Micron 4Q收入为542.3亿美元，高于C1/C2触发边界要求的490亿美元指引下限。两项Condition均以'收入低于490亿美元'为前提，当前事实明确相反，故该Policy未命中。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron Technology reported fiscal 2026 fourth-quarter revenue of approximately $54.23 billion.",
+              "subject_time": "FY2026 Q4"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "Reported revenue of approximately $54.23 billion exceeded management's guidance ceiling and cited analyst forecasts, materially raising the current-quarter earnings and demand outlook; margins, mix, and forward guidance remain pending.",
+            "prior_expectation": "Micron's FY2026 Q4 revenue was guided near $49-$51 billion, with analyst forecasts roughly $50.9-$52.4 billion.",
+            "reason": "The revenue beat is a direct and material positive surprise with clear transmission to Micron's sales, earnings power, and valuation. Despite the incomplete flash headline, the magnitude supports a LONG trade pending the full release.",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "Micron's reported FY2026 Q4 revenue of approximately $54.23 billion is new; prior coverage contained only management guidance near $49-$51 billion and analyst forecasts, not the actual result.",
+            "reference_ids": [
+              "E1"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "No Policy condition is matched. Revenue of approximately $54.23 billion is above the guidance range rather than below the negative trigger boundary, and no adverse operating condition is reported."
+          },
+          "w3_case_id": "w3_c18ecea2d2c44657a3534b26c64676d5"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "63392cc04f4c803ac96ee2f22b04ca9859a44d9cb23ab18d1359c1bce296cbd5",
+            "content_type": "text/plain",
+            "sha256": "723432634f58dc0ebcb52a61c5a40cef3cf6ebe84b3ff1cd2bb5e32f27c7e36f",
+            "size_bytes": 511
+          },
+          "case": {
+            "case_id": "case_e7748b15cb774bbb995ec088f911d947",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-30T20:02:05.035640Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-30T20:02:15.472353Z",
+          "revision": 1,
+          "row_revision": 2632925,
+          "source": {
+            "binding_id": "MU:ibkr_news",
+            "kind": "api",
+            "name": "IBKR News API",
+            "source_id": "ibkr_news"
+          },
+          "source_published_at": "2026-09-30T20:01:00Z",
+          "standard_message_id": "std_37857a556dfa48e29426509bb584a1d5",
+          "stream_item_id": "stream_3e678d21e25648fdbda2a522f12b8438",
+          "stream_offset": 2487,
+          "stream_published_at": "2026-09-30T20:02:15.477394Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "* Micron Technology 4Q Rev $54.23B >MU"
+          },
+          "url": "https://www.interactivebrokers.com/en/trading/providers.php",
+          "body_text": "(MORE TO FOLLOW) Dow Jones Newswires September 30, 2026 16:01 ET (20:01 GMT) Copyright (c) 2026 Dow Jones & Company, Inc. The statements in this document shall not be considered as an objective or independent explanation of the matters. Please note that this document (a) has not been prepared in accordance with legal requirements designed to promote the independence of investment research, and (b) is not subject to any prohibition on dealing ahead of the dissemination or publication of investment research."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_37857a556dfa48e29426509bb584a1d5:0\"]",
+          "created_at": "2026-09-30T20:20:19.246642Z",
+          "dedupe_key": "e15e675560520b9448c28ac3a0499b23c0a8bfce3d93cf6c12bb38caa48af0a3",
+          "entities": [
+            "Micron Technology"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron Technology reported fiscal 2026 fourth-quarter revenue of approximately $54.23 billion.",
+          "provisional_event_id": "E321",
+          "subject_time": "FY2026 Q4"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_e7748b15cb774bbb995ec088f911d947",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-09-30T20:20:19.284033+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-30",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_c18ecea2d2c44657a3534b26c64676d5",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T20:20:20.067203Z"
+              },
+              "case_id": "case_e7748b15cb774bbb995ec088f911d947",
+              "direction": "LONG",
+              "entry_reason": "PORTFOLIO_CAPACITY_EXHAUSTED",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_e7748b15cb774bbb995ec088f911d947",
+              "execution_reason_codes": [
+                "PORTFOLIO_CAPACITY_EXHAUSTED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_e7748b15cb774bbb995ec088f911d947",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T20:20:19.284033Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "PORTFOLIO_CAPACITY_EXHAUSTED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_b1fee01319f849f0b843ff5bbcc50bd4",
+      "ticker": "MU",
+      "case_id": "case_b1fee01319f849f0b843ff5bbcc50bd4",
+      "intent_released_at_utc": "2026-09-30T20:26:46.923918+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_3f7110022bc545fb8aabb73ad3e460a7",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "Operating cash flow",
+              "Adjusted free cash flow"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron reported FY2026 Q4 operating cash flow of $43.97 billion and adjusted free cash flow of $33.20 billion.",
+            "subject_time": "FY2026 Q4"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "FY2026",
+              "Revenue",
+              "Net income"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron reported FY2026 full-year revenue of $133.188 billion, GAAP net income of $84.969 billion, and non-GAAP net income of $86.758 billion.",
+            "subject_time": "FY2026 full year"
+          },
+          {
+            "assertion_state": "GUIDANCE",
+            "entities": [
+              "Micron Technology",
+              "FY2027 Q1 revenue"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron guided FY2027 Q1 revenue to $61.5 billion plus or minus $1.5 billion.",
+            "subject_time": "FY2027 Q1"
+          },
+          {
+            "assertion_state": "GUIDANCE",
+            "entities": [
+              "Micron Technology",
+              "FY2027 Q1",
+              "Gross margin",
+              "Non-GAAP EPS"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron guided FY2027 Q1 non-GAAP gross margin to approximately 86.25% and non-GAAP diluted EPS to $38.15 plus or minus $1.00.",
+            "subject_time": "FY2027 Q1"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "Cloud Memory Business Unit",
+              "CMBU"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron's Cloud Memory Business Unit generated FY2026 Q4 revenue of $16.283 billion with 83% gross margin and 76% operating margin.",
+            "subject_time": "FY2026 Q4"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "Core Data Center Business Unit",
+              "CDBU"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron's Core Data Center Business Unit generated FY2026 Q4 revenue of $18.002 billion with 90% gross margin and 85% operating margin.",
+            "subject_time": "FY2026 Q4"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "SOCAMM",
+              "PCIe Gen 6 SSD",
+              "KV-cache"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron's server LPDDR SOCAMM portfolio revenue more than doubled sequentially in FY2026 Q4, and its 9650 PCIe Gen 6 SSD began shipping to market-leading customers for KV-cache applications.",
+            "subject_time": "FY2026 Q4"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "1-gamma",
+              "Server RDIMM",
+              "DDR5"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron completed multiple customer qualifications for 1-gamma 8,800 MT/s server RDIMM modules and began sampling 512GB DDR5 RDIMM modules capable of speeds up to 9,200 MT/s.",
+            "subject_time": "FY2026 Q4 product milestones"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "AI workstation",
+              "Tier 1 OEM customers"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron secured AI-workstation design wins with every Tier 1 OEM customer.",
+            "subject_time": "FY2026 Q4 product milestones"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "LPDDR6",
+              "Physical AI"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron began sampling 1-gamma-based LPDDR6 products to multiple physical-AI markets.",
+            "subject_time": "FY2026 Q4 product milestones"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "The formal release confirms Q4 profitability and cash generation above the prior baseline, while FY2027 Q1 guidance of $61.5 billion revenue, approximately 86.25% non-GAAP gross margin, and $38.15 non-GAAP EPS exceeds the prior consensus. Data-center businesses generated high-margin revenue, server-memory qualifications and SSD shipments advanced, and cash flow materially supports continued investment.",
+          "prior_expectation": "The pre-release baseline expected FY2026 Q4 revenue near $49-$51 billion, approximately 86% gross margin, and EPS near the low-$31 range; FY2027 Q1 consensus was roughly $56.6 billion revenue and $35.07 EPS. AI-memory earnings were expected to remain strong, but forward duration, cash conversion, segment mix, and product-scale execution remained uncertain.",
+          "reason": "This is a material positive earnings and guidance surprise with direct transmission through higher revenue, margins, high-value data-center mix, product commercialization, and cash generation. It also reduces uncertainty around the durability and execution of Micron's AI-memory earnings platform, supporting a LONG trade.",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "The formal Micron FY2026 Q4 and full-year release adds previously uncovered cash-flow results, FY2027 Q1 guidance, business-unit economics, full-year results, and product qualification and shipment milestones beyond the already recorded Q4 revenue and GAAP EPS headlines.",
+          "reference_ids": [
+            "E346",
+            "E356"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No Policy condition is matched. The release confirms strong or improving financial, product, and demand indicators and contains no qualifying deterioration in high-value mix, ASP, shipments, contracts, capacity, delivery, or margins."
+        },
+        "w3_case_id": "w3_3f7110022bc545fb8aabb73ad3e460a7"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_b1fee01319f849f0b843ff5bbcc50bd4",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-30T20:26:47.085521Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 1413.02104
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-30T20:03:14.064481Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2633768,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-30",
+        "source": {
+          "binding_id": "MU:ibkr_news",
+          "kind": "api",
+          "name": "IBKR News API",
+          "source_id": "ibkr_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_722237ba515b44dc90f701e81e968913",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Micron Technology, Inc. Reports Record Fiscal Fourth-Quarter and Full-Year 2026 Results"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "PORTFOLIO_CAPACITY_EXHAUSTED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-30T20:03:14.064481Z",
+        "completed_at": "2026-09-30T20:26:47.085521Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E2",
+            "E1",
+            "E346",
+            "E356",
+            "E115"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "已知provisional仅覆盖Q4收入$54.23B和GAAP EPS $32.87两个数据点。当前消息包含大量未被覆盖的核心事实：非GAAP EPS $33.42、全年收入$133.19B、全年净利润$84.97B/$86.76B、FQ1-27前瞻指引（收入$61.5B±$1.5B、EPS~$38）、四个业务单元Q4营收与利润率明细、资本支出$27.37B、调整后自由现金流$62.31B、$73.48B现金余额、$0.15股息公告、多项产品里程碑（512GB DDR5 RDIMM送样、SOCAMM收入翻倍、PCIe Gen6 SSD出货、LPDDR6送样、AI工作站全部Tier 1设计导入等）。",
+          "reference_ids": [
+            "E346",
+            "E356"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "该消息为Micron FY26 Q4正式财报，所有核心财务与业务单元指标均呈现创纪录增长：Q4收入$54.23B环比+31%，CMBU与CDBU收入及占比均大幅上升，毛利率86.8%环比改善，营业利润与EPS同步走高，经营现金流$43.97B覆盖CapEx后FCF达$33.20B，现金储备$73.48B。产品亮点显示新容量RDIMM、SOCAMM、SSD及LPDDR5X/6持续放量或完成客户资格。消息中不存在任何高价值组合份额下降、ASP回落、合同价转跌、扩产推迟、交付瓶颈、竞争者份额上升、库存异常增长或汽车平台资格/发货问题等具体事实，无法为任何Policy的criterion提供实质性触发观察。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "该消息为Micron FY26 Q4正式财报，所有核心财务与业务单元指标均呈现创纪录增长：Q4收入$54.23B环比+31%，CMBU与CDBU收入及占比均大幅上升，毛利率86.8%环比改善，营业利润与EPS同步走高，经营现金流$43.97B覆盖CapEx后FCF达$33.20B，现金储备$73.48B。产品亮点显示新容量RDIMM、SOCAMM、SSD及LPDDR5X/6持续放量或完成客户资格。消息中不存在任何高价值组合份额下降、ASP回落、合同价转跌、扩产推迟、交付瓶颈、竞争者份额上升、库存异常增长或汽车平台资格/发货问题等具体事实，无法为任何Policy的criterion提供实质性触发观察。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "Operating cash flow",
+                "Adjusted free cash flow"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron reported FY2026 Q4 operating cash flow of $43.97 billion and adjusted free cash flow of $33.20 billion.",
+              "subject_time": "FY2026 Q4"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "FY2026",
+                "Revenue",
+                "Net income"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron reported FY2026 full-year revenue of $133.188 billion, GAAP net income of $84.969 billion, and non-GAAP net income of $86.758 billion.",
+              "subject_time": "FY2026 full year"
+            },
+            {
+              "assertion_state": "GUIDANCE",
+              "entities": [
+                "Micron Technology",
+                "FY2027 Q1 revenue"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron guided FY2027 Q1 revenue to $61.5 billion plus or minus $1.5 billion.",
+              "subject_time": "FY2027 Q1"
+            },
+            {
+              "assertion_state": "GUIDANCE",
+              "entities": [
+                "Micron Technology",
+                "FY2027 Q1",
+                "Gross margin",
+                "Non-GAAP EPS"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron guided FY2027 Q1 non-GAAP gross margin to approximately 86.25% and non-GAAP diluted EPS to $38.15 plus or minus $1.00.",
+              "subject_time": "FY2027 Q1"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "Cloud Memory Business Unit",
+                "CMBU"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron's Cloud Memory Business Unit generated FY2026 Q4 revenue of $16.283 billion with 83% gross margin and 76% operating margin.",
+              "subject_time": "FY2026 Q4"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "Core Data Center Business Unit",
+                "CDBU"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron's Core Data Center Business Unit generated FY2026 Q4 revenue of $18.002 billion with 90% gross margin and 85% operating margin.",
+              "subject_time": "FY2026 Q4"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "SOCAMM",
+                "PCIe Gen 6 SSD",
+                "KV-cache"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron's server LPDDR SOCAMM portfolio revenue more than doubled sequentially in FY2026 Q4, and its 9650 PCIe Gen 6 SSD began shipping to market-leading customers for KV-cache applications.",
+              "subject_time": "FY2026 Q4"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "1-gamma",
+                "Server RDIMM",
+                "DDR5"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron completed multiple customer qualifications for 1-gamma 8,800 MT/s server RDIMM modules and began sampling 512GB DDR5 RDIMM modules capable of speeds up to 9,200 MT/s.",
+              "subject_time": "FY2026 Q4 product milestones"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "AI workstation",
+                "Tier 1 OEM customers"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron secured AI-workstation design wins with every Tier 1 OEM customer.",
+              "subject_time": "FY2026 Q4 product milestones"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "LPDDR6",
+                "Physical AI"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron began sampling 1-gamma-based LPDDR6 products to multiple physical-AI markets.",
+              "subject_time": "FY2026 Q4 product milestones"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "The formal release confirms Q4 profitability and cash generation above the prior baseline, while FY2027 Q1 guidance of $61.5 billion revenue, approximately 86.25% non-GAAP gross margin, and $38.15 non-GAAP EPS exceeds the prior consensus. Data-center businesses generated high-margin revenue, server-memory qualifications and SSD shipments advanced, and cash flow materially supports continued investment.",
+            "prior_expectation": "The pre-release baseline expected FY2026 Q4 revenue near $49-$51 billion, approximately 86% gross margin, and EPS near the low-$31 range; FY2027 Q1 consensus was roughly $56.6 billion revenue and $35.07 EPS. AI-memory earnings were expected to remain strong, but forward duration, cash conversion, segment mix, and product-scale execution remained uncertain.",
+            "reason": "This is a material positive earnings and guidance surprise with direct transmission through higher revenue, margins, high-value data-center mix, product commercialization, and cash generation. It also reduces uncertainty around the durability and execution of Micron's AI-memory earnings platform, supporting a LONG trade.",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "The formal Micron FY2026 Q4 and full-year release adds previously uncovered cash-flow results, FY2027 Q1 guidance, business-unit economics, full-year results, and product qualification and shipment milestones beyond the already recorded Q4 revenue and GAAP EPS headlines.",
+            "reference_ids": [
+              "E346",
+              "E356"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "No Policy condition is matched. The release confirms strong or improving financial, product, and demand indicators and contains no qualifying deterioration in high-value mix, ASP, shipments, contracts, capacity, delivery, or margins."
+          },
+          "w3_case_id": "w3_3f7110022bc545fb8aabb73ad3e460a7"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "29d7f84cbeb65208f8f28a68734568742dd31e1e40d6f42d2eea3af9d50301ef",
+            "content_type": "text/plain",
+            "sha256": "6501b4a258fd74a40ce5c5ccc9bfe14a947c17328417013877c4f766fd58ac67",
+            "size_bytes": 8611
+          },
+          "case": {
+            "case_id": "case_b1fee01319f849f0b843ff5bbcc50bd4",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-30T20:03:02.813229Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-30T20:03:13.370969Z",
+          "revision": 1,
+          "row_revision": 2633730,
+          "source": {
+            "binding_id": "MU:ibkr_news",
+            "kind": "api",
+            "name": "IBKR News API",
+            "source_id": "ibkr_news"
+          },
+          "source_published_at": "2026-09-30T20:01:00Z",
+          "standard_message_id": "std_922adaba5c8a420392c01a6de4e9883d",
+          "stream_item_id": "stream_722237ba515b44dc90f701e81e968913",
+          "stream_offset": 2492,
+          "stream_published_at": "2026-09-30T20:03:13.378854Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Micron Technology, Inc. Reports Record Fiscal Fourth-Quarter and Full-Year 2026 Results"
+          },
+          "url": "https://www.interactivebrokers.com/en/trading/providers.php",
+          "body_text": "BOISE, Idaho, Sept. 30, 2026 (GLOBE NEWSWIRE) -- Micron Technology, Inc. (Nasdaq: MU) today announced results for its fourth quarter and full year of fiscal 2026, which ended September 3, 2026. Fiscal Q4 2026 Highlights -- Revenue of $54.23 billion versus $41.46 billion for the prior quarter and $11.32 billion for the same period last year -- GAAP net income of $37.70 billion, or $32.87 per diluted share -- Non-GAAP net income of $38.40 billion, or $33.42 per diluted share -- Operating cash flow of $43.97 billion versus $25.39 billion for the prior quarter and $5.73 billion for the same period last year Fiscal 2026 Highlights -- Revenue of $133.19 billion versus $37.38 billion for the prior year -- GAAP net income of $84.97 billion, or $74.33 per diluted share -- Non-GAAP net income of $86.76 billion, or $75.52 per diluted share -- Operating cash flow of $89.68 billion versus $17.53 billion for the prior year \"Micron delivered record fiscal 2026 results, and we expect an even stronger fiscal 2027,\" said Sanjay Mehrotra, Chairman and CEO of Micron Technology. \"AI is becoming Super Intelligence (SI), and memory enhances this intelligence and the competitiveness of our customers' platforms. We are increasing our investments in technology, products and manufacturing to help drive SI forward with our customers, and our Strategic Customer Agreements provide added confidence in the durability of Micron's financial performance.\" Quarterly Financial Results GAAP(1) Non-GAAP(2) -------------- ------------------------------------- ------------------------------------- (in millions, except per share amounts) FQ4-26 FQ3-26 FQ4-25 FQ4-26 FQ3-26 FQ4-25 -------------- ----------- ----------- ----------- ----------- ----------- ----------- Revenue $54,229 $41,456 $11,315 $54,229 $41,456 $11,315 Gross margin 47,047 35,056 5,054 47,204 35,199 5,169 Percent of revenue 86.8% 84.6% 44.7% 87.0% 84.9% 45.7% Operating expenses 3,296 1,738 1,400 2,568 1,518 1,214 Operating income 43,751 33,318 3,654 44,636 33,681 3,955 Percent of revenue 80.7% 80.4% 32.3% 82.3% 81.2% 35.0% Net income 37,701 28,243 3,201 38,398 28,857 3,469 Diluted earnings per share 32.87 24.67 2.83 33.42 25.11 3.03 Annual Financial Results GAAP(1) Non-GAAP(2) -------------- ------------------------- ------------------------- (in millions, except per share amounts) FY-26 FY-25 FY-26 FY-25 -------------- ------------ ----------- ------------ ----------- Revenue $133,188 $37,378 $133,188 $37,378 Gross margin 107,504 14,873 108,032 15,286 Percent of revenue 80.7% 39.8% 81.1% 40.9% Operating expenses 8,164 5,103 6,841 4,440 Operating income 99,340 9,770 101,191 10,846 Percent of revenue 74.6% 26.1% 76.0% 29.0% Net income 84,969 8,539 86,758 9,470 Diluted earnings per share 74.33 7.59 75.52 8.29 Investments in capital expenditures, net(2) were $10.77 billion for the fourth quarter of 2026 and $27.37 billion for the full year of 2026. Adjusted free cash flow(2) was $33.20 billion for the fourth quarter of 2026 and $62.31 billion for the full year of 2026. Micron ended the year with cash, marketable investments, and restricted cash of $73.48 billion. On September 30, 2026, Micron's Board of Directors declared a quarterly dividend of $0.15 per share, payable in cash on October 29, 2026, to shareholders of record as of the close of business on October 14, 2026. Quarterly Business Unit Financial Results FQ4-26 FQ3-26 FQ4-25 ---------------------------------- ----------- ----------- ---------- Cloud Memory Business Unit Revenue $16,283 $13,769 $4,543 Gross margin 83% 83% 59% Operating margin 76% 78% 48% Core Data Center Business Unit Revenue $18,002 $11,524 $1,577 Gross margin 90% 87% 41% Operating margin 85% 83% 25% Mobile and Client Business Unit Revenue $13,114 $11,521 $3,760 Gross margin 90% 87% 36% Operating margin 88% 86% 29% Automotive and Embedded Business Unit Revenue $ 6,824 $ 4,634 $1,434 Gross margin 84% 79% 31% Operating margin 79% 75% 20% Business Outlook The following table presents Micron's guidance for the first quarter of 2027: FQ1-27 GAAP(1) Outlook Non-GAAP(2) Outlook Revenue $61.5 billion +/- $1.5 $61.5 billion +/- $1.5 billion billion Gross margin Approximately 85.95% Approximately 86.25% Operating expenses Approximately $2.31 Approximately $2.06 billion billion Diluted earnings per $37.84 +/- $1.00 $38.15 +/- $1.00 share Further information regarding Micron's business outlook is included in the prepared remarks and slides, which have been posted at investors.micron.com. Product Highlights -- We began sampling the industry's first 512GB ultra dense high-capacity DDR5 RDIMM modules capable of speeds up to 9,200 MT/s. -- We have completed multiple customer qualifications of our 1-gamma based, 8,800 MT/s high-speed server RDIMM modules. -- Our industry leading server LPDDR SOCAMM portfolio revenue more than doubled sequentially in the fourth quarter of 2026. -- Our 7600 PCIe Gen 5 and 9650 PCIe Gen 6 SSD high-performance products are now shipping to market-leading customers for KV-cache applications. -- Our 6600 ION SSD achieved a strong volume ramp in the fourth quarter of 2026. -- We are now shipping 6-channel 1-gamma LPDDR5X for flagship mobile devices. -- We have secured design wins with every Tier 1 OEM customer for AI workstation product. -- Our 4600 SSD secured additional qualifications with leading PC OEMs. -- We began sampling 1-gamma based LPDDR6 products to multiple physical AI markets. Investor Webcast Micron will host a conference call on Wednesday, September 30, 2026 at 2:30 p.m. Mountain Time to discuss its fourth-quarter and full-year financial results and provide forward-looking guidance for its first quarter. A live webcast of the call will be available online at investors.micron.com. A webcast replay will be available for one year after the call. We encourage you to visit our website at micron.com throughout the quarter for the most current information on the company, including information on financial conferences that we may be attending. You can also follow us on LinkedIn, X (@MicronTech) and YouTube (@MicronTechnology). About Micron Technology, Inc. Micron Technology, Inc. is a global leader in semiconductor memory and storage, powering AI and compute-intensive applications from cloud to edge. With a relentless focus on our customers, technology and product leadership, and manufacturing and operational excellence, Micron's comprehensive portfolio of high-performance DRAM, NAND and NOR solutions deliver the speed, efficiency, and scale today's workloads demand, accelerating intelligence to enrich life for all. To learn more about Micron Technology, Inc. (Nasdaq: MU), visit micron.com. (c) 2026 Micron Technology, Inc. All rights reserved. Micron, the Micron logo, and all other Micron trademarks are the property of Micron Technology, Inc. All other trademarks are the property of their respective owners. Forward-Looking Statements This press release contains forward-looking statements regarding our industry, our strategic position, our customers, including customer demand, our investments and the goals for such investments, our business opportunity, our products and technology, and our financial and operating performance, including our guidance for the first quarter. These forward-looking statements are subject to a number of risks and uncertainties that could cause actual results to differ materially. Please refer to the documents we file with the Securities and Exchange Commission, including our most recent Form 10-K and Form 10-Q. These documents contain and identify important factors that could cause our actual results to differ materially from those contained in these forward-looking statements. These certain factors can be found at investors.micron.com/risk-factor. Although we believe that the expectations reflected in the forward-looking statements are reasonable, we cannot guarantee future results, levels of activity, performance, or achievements. We are under no duty to update any of the forward-looking statements to conform these statements to actual results. (1) GAAP represents U.S. Generally Accepted Accounting (MORE TO FOLLOW) Dow Jones Newswires September 30, 2026 16:01 ET (20:01 GMT) The statements in this document shall not be considered as an objective or independent explanation of the matters. Please note that this document (a) has not been prepared in accordance with legal requirements designed to promote the independence of investment research, and (b) is not subject to any prohibition on dealing ahead of the dissemination or publication of investment research."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_922adaba5c8a420392c01a6de4e9883d:0\"]",
+          "created_at": "2026-09-30T20:26:46.737521Z",
+          "dedupe_key": "348c8a9c36a946aa13ea5aa95e6c7dead448172aef79a5e97f35c6bae744280b",
+          "entities": [
+            "Micron Technology",
+            "Operating cash flow",
+            "Adjusted free cash flow"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron reported FY2026 Q4 operating cash flow of $43.97 billion and adjusted free cash flow of $33.20 billion.",
+          "provisional_event_id": "E323",
+          "subject_time": "FY2026 Q4"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_922adaba5c8a420392c01a6de4e9883d:1\"]",
+          "created_at": "2026-09-30T20:26:46.757071Z",
+          "dedupe_key": "d8cef43d0ea7249a8f946bfcb39dea52a05c9790eb795064880e930871b3813e",
+          "entities": [
+            "Micron Technology",
+            "FY2026",
+            "Revenue",
+            "Net income"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron reported FY2026 full-year revenue of $133.188 billion, GAAP net income of $84.969 billion, and non-GAAP net income of $86.758 billion.",
+          "provisional_event_id": "E324",
+          "subject_time": "FY2026 full year"
+        },
+        {
+          "assertion_state": "GUIDANCE",
+          "candidate_id": "[\"runtime-v2-msg:std_922adaba5c8a420392c01a6de4e9883d:2\"]",
+          "created_at": "2026-09-30T20:26:46.787798Z",
+          "dedupe_key": "ae1d59b4b4896ebadf45a4d9fda761aa753cdc1474e535e84f67ff5f4df0e27d",
+          "entities": [
+            "Micron Technology",
+            "FY2027 Q1 revenue"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron guided FY2027 Q1 revenue to $61.5 billion plus or minus $1.5 billion.",
+          "provisional_event_id": "E325",
+          "subject_time": "FY2027 Q1"
+        },
+        {
+          "assertion_state": "GUIDANCE",
+          "candidate_id": "[\"runtime-v2-msg:std_922adaba5c8a420392c01a6de4e9883d:3\"]",
+          "created_at": "2026-09-30T20:26:46.804228Z",
+          "dedupe_key": "663365e5cbb27eabc931257ece7f5b6826fbd9c1874e96709cb021e362214966",
+          "entities": [
+            "Micron Technology",
+            "FY2027 Q1",
+            "Gross margin",
+            "Non-GAAP EPS"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron guided FY2027 Q1 non-GAAP gross margin to approximately 86.25% and non-GAAP diluted EPS to $38.15 plus or minus $1.00.",
+          "provisional_event_id": "E326",
+          "subject_time": "FY2027 Q1"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_922adaba5c8a420392c01a6de4e9883d:4\"]",
+          "created_at": "2026-09-30T20:26:46.823536Z",
+          "dedupe_key": "ef6bff6a0a80d649573b1e68e4594aa33b3432614976def799dd21ea01700324",
+          "entities": [
+            "Micron Technology",
+            "Cloud Memory Business Unit",
+            "CMBU"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron's Cloud Memory Business Unit generated FY2026 Q4 revenue of $16.283 billion with 83% gross margin and 76% operating margin.",
+          "provisional_event_id": "E327",
+          "subject_time": "FY2026 Q4"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_922adaba5c8a420392c01a6de4e9883d:5\"]",
+          "created_at": "2026-09-30T20:26:46.845916Z",
+          "dedupe_key": "1a00f36bff85722936232a8f9aed1596feb5452852b53185a0e75bb708ca4c8b",
+          "entities": [
+            "Micron Technology",
+            "Core Data Center Business Unit",
+            "CDBU"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron's Core Data Center Business Unit generated FY2026 Q4 revenue of $18.002 billion with 90% gross margin and 85% operating margin.",
+          "provisional_event_id": "E328",
+          "subject_time": "FY2026 Q4"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_922adaba5c8a420392c01a6de4e9883d:6\"]",
+          "created_at": "2026-09-30T20:26:46.864829Z",
+          "dedupe_key": "f9b6956170ef8e8364ddff5d82655b5b5247c50089232b1a122b6d5886cd49e2",
+          "entities": [
+            "Micron Technology",
+            "SOCAMM",
+            "PCIe Gen 6 SSD",
+            "KV-cache"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron's server LPDDR SOCAMM portfolio revenue more than doubled sequentially in FY2026 Q4, and its 9650 PCIe Gen 6 SSD began shipping to market-leading customers for KV-cache applications.",
+          "provisional_event_id": "E329",
+          "subject_time": "FY2026 Q4"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_922adaba5c8a420392c01a6de4e9883d:7\"]",
+          "created_at": "2026-09-30T20:26:46.882631Z",
+          "dedupe_key": "63f450d9f82e69e3838c0d07d76c4f59c76f7e305b3ab5498104f5f8e548a6f2",
+          "entities": [
+            "Micron Technology",
+            "1-gamma",
+            "Server RDIMM",
+            "DDR5"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron completed multiple customer qualifications for 1-gamma 8,800 MT/s server RDIMM modules and began sampling 512GB DDR5 RDIMM modules capable of speeds up to 9,200 MT/s.",
+          "provisional_event_id": "E330",
+          "subject_time": "FY2026 Q4 product milestones"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_922adaba5c8a420392c01a6de4e9883d:8\"]",
+          "created_at": "2026-09-30T20:26:46.890096Z",
+          "dedupe_key": "724ccb473bac5a04a633a461984a7cdc6767aa80e53b8492dd1189a4bf5942c4",
+          "entities": [
+            "Micron Technology",
+            "AI workstation",
+            "Tier 1 OEM customers"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron secured AI-workstation design wins with every Tier 1 OEM customer.",
+          "provisional_event_id": "E331",
+          "subject_time": "FY2026 Q4 product milestones"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_922adaba5c8a420392c01a6de4e9883d:9\"]",
+          "created_at": "2026-09-30T20:26:46.900045Z",
+          "dedupe_key": "c9876e851c15340b94b09ef14b02342099169c71fe8126565acc0af0483cc7a2",
+          "entities": [
+            "Micron Technology",
+            "LPDDR6",
+            "Physical AI"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron began sampling 1-gamma-based LPDDR6 products to multiple physical-AI markets.",
+          "provisional_event_id": "E332",
+          "subject_time": "FY2026 Q4 product milestones"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_b1fee01319f849f0b843ff5bbcc50bd4",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-09-30T20:26:46.923918+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-30",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_3f7110022bc545fb8aabb73ad3e460a7",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T20:26:47.732130Z"
+              },
+              "case_id": "case_b1fee01319f849f0b843ff5bbcc50bd4",
+              "direction": "LONG",
+              "entry_reason": "PORTFOLIO_CAPACITY_EXHAUSTED",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_b1fee01319f849f0b843ff5bbcc50bd4",
+              "execution_reason_codes": [
+                "PORTFOLIO_CAPACITY_EXHAUSTED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_b1fee01319f849f0b843ff5bbcc50bd4",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T20:26:46.923918Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "PORTFOLIO_CAPACITY_EXHAUSTED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_e08f25fa32e346ffa7409ff88d5f08a1",
+      "ticker": "MU",
+      "case_id": "case_e08f25fa32e346ffa7409ff88d5f08a1",
+      "intent_released_at_utc": "2026-09-30T20:33:49.186403+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_589a4b640a9545ebbed452d86e0b0da2",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "MU",
+              "FY2026 Q4",
+              "GAAP gross margin"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron reported FY2026 fourth-quarter GAAP gross margin of 86.8%.",
+            "subject_time": "FY2026 Q4"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "MU",
+              "FY2026 Q4",
+              "Non-GAAP gross margin"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron reported FY2026 fourth-quarter non-GAAP gross margin of 87.0%.",
+            "subject_time": "FY2026 Q4"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "MU",
+              "Operating cash flow"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron reported FY2026 fourth-quarter operating cash flow of $43.973 billion.",
+            "subject_time": "FY2026 Q4"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "MU",
+              "Adjusted free cash flow"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron reported FY2026 fourth-quarter adjusted free cash flow of $33.199 billion.",
+            "subject_time": "FY2026 Q4"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "MU",
+              "FY2026",
+              "GAAP net income"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron reported FY2026 full-year GAAP net income of $84.969 billion.",
+            "subject_time": "FY2026 full year"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "MU",
+              "FY2026",
+              "Adjusted free cash flow"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron reported FY2026 full-year adjusted free cash flow of $62.308 billion.",
+            "subject_time": "FY2026 full year"
+          },
+          {
+            "assertion_state": "GUIDANCE",
+            "entities": [
+              "Micron Technology",
+              "MU",
+              "FY2027 Q1",
+              "Revenue guidance"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron guided FY2027 first-quarter revenue to $61.5 billion plus or minus $1.5 billion.",
+            "subject_time": "FY2027 Q1"
+          },
+          {
+            "assertion_state": "GUIDANCE",
+            "entities": [
+              "Micron Technology",
+              "MU",
+              "FY2027 Q1",
+              "GAAP gross margin guidance"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron guided FY2027 first-quarter GAAP gross margin to approximately 85.95%.",
+            "subject_time": "FY2027 Q1"
+          },
+          {
+            "assertion_state": "GUIDANCE",
+            "entities": [
+              "Micron Technology",
+              "MU",
+              "FY2027 Q1",
+              "Non-GAAP gross margin guidance"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron guided FY2027 first-quarter non-GAAP gross margin to approximately 86.25%.",
+            "subject_time": "FY2027 Q1"
+          },
+          {
+            "assertion_state": "GUIDANCE",
+            "entities": [
+              "Micron Technology",
+              "MU",
+              "FY2027 Q1",
+              "GAAP diluted EPS guidance"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron guided FY2027 first-quarter GAAP diluted EPS to $37.84 plus or minus $1.00.",
+            "subject_time": "FY2027 Q1"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "The reconciliation confirms FY2026 Q4 GAAP gross margin of 86.8% and strong cash generation, including $43.973 billion of operating cash flow and $33.199 billion of adjusted free cash flow. FY2027 Q1 guidance of $61.5 billion revenue plus or minus $1.5 billion, approximately 85.95% GAAP gross margin, and $37.84 GAAP EPS plus or minus $1.00 is materially above prior consensus, while non-GAAP gross margin is guided at approximately 86.25%.",
+          "prior_expectation": "Before the release, Micron's FY2026 Q4 baseline was management revenue of $49-$51 billion, approximately 86% GAAP gross margin, and GAAP EPS of $29.73-$31.73, with consensus near $50.9 billion revenue and $31.49 EPS. FY2027 Q1 consensus was approximately $56.6 billion revenue and $35.07 EPS, while the durability of Q3's price-driven margins and cash conversion remained uncertain.",
+          "reason": "This is a material positive earnings-quality and forward-guidance surprise. The margin and cash-flow confirmation improves confidence that high pricing and data-center demand are converting into earnings and cash, while the above-consensus FY2027 Q1 outlook raises the near-term revenue and EPS path, supporting a LONG trade in MU.",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "The reference view already contains the Q4 revenue, EPS, net-income headlines and FY2027 Q1 non-GAAP EPS guidance, but this reconciliation segment newly establishes Q4 gross margins and cash conversion, full-year cash results, and additional FY2027 Q1 revenue, margin, and GAAP EPS guidance.",
+          "reference_ids": [
+            "E1",
+            "E115",
+            "E346",
+            "E350",
+            "E353",
+            "E356",
+            "E358"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No Policy condition is matched. The newly reported results and guidance are positive versus the prior baseline and do not establish any qualifying deterioration in revenue, margins, mix, ASP, shipments, contracts, capacity, delivery, or cash conversion."
+        },
+        "w3_case_id": "w3_589a4b640a9545ebbed452d86e0b0da2"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_e08f25fa32e346ffa7409ff88d5f08a1",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-30T20:33:49.337064Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 1835.002279
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-30T20:03:14.334785Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2634659,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-30",
+        "source": {
+          "binding_id": "MU:ibkr_news",
+          "kind": "api",
+          "name": "IBKR News API",
+          "source_id": "ibkr_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_7f4fa68e3b2243749b33e2786f148a7f",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Micron Technology, Inc. Reports Record Fiscal -3-"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "PORTFOLIO_CAPACITY_EXHAUSTED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-30T20:03:14.334785Z",
+        "completed_at": "2026-09-30T20:33:49.337064Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E2",
+            "E1",
+            "E115"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [
+            {
+              "event_id": "E1",
+              "fact_ids": [
+                "F4",
+                "F10",
+                "F17"
+              ]
+            }
+          ],
+          "reason": "当前消息是Micron FY2026 Q4实际业绩发布（GAAP/Non-GAAP对账表）及FY2027 Q1指引。已加载事实仅包含Q4的guidance（E1的F4/F10/F17：收入~$50B、毛利率~86%、EPS $30-$32）及分析师预测，不含任何Q4实际报告数据（如Non-GAAP EPS $33.42、调整后自由现金流$33,199M）或FY2027 Q1指引（收入$61.5B、EPS $38.15）。核心实际结果和下一季度指引均为新事实。",
+          "reference_ids": [
+            "E1"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "该消息为Micron FY26 Q4的GAAP到Non-GAAP对账表及FY27 Q1指引，核心事实为：毛利率、营业利润、摊薄EPS均大幅环比及同比增长，经营现金流充裕且覆盖CapEx，整体呈'创纪录'状态。消息中不存在任何与具体Policy criterion对应的恶化、偏离、瓶颈、份额转移、合同违约或产品级ASP/出货数据。各criterion所要求的连续两季度下降、指引未达标、组合转弱、竞争份额上升等触发事实在本消息中均未出现，也无合理推断空间。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "该消息为Micron FY26 Q4的GAAP到Non-GAAP对账表及FY27 Q1指引，核心事实为：毛利率、营业利润、摊薄EPS均大幅环比及同比增长，经营现金流充裕且覆盖CapEx，整体呈'创纪录'状态。消息中不存在任何与具体Policy criterion对应的恶化、偏离、瓶颈、份额转移、合同违约或产品级ASP/出货数据。各criterion所要求的连续两季度下降、指引未达标、组合转弱、竞争份额上升等触发事实在本消息中均未出现，也无合理推断空间。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "MU",
+                "FY2026 Q4",
+                "GAAP gross margin"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron reported FY2026 fourth-quarter GAAP gross margin of 86.8%.",
+              "subject_time": "FY2026 Q4"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "MU",
+                "FY2026 Q4",
+                "Non-GAAP gross margin"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron reported FY2026 fourth-quarter non-GAAP gross margin of 87.0%.",
+              "subject_time": "FY2026 Q4"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "MU",
+                "Operating cash flow"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron reported FY2026 fourth-quarter operating cash flow of $43.973 billion.",
+              "subject_time": "FY2026 Q4"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "MU",
+                "Adjusted free cash flow"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron reported FY2026 fourth-quarter adjusted free cash flow of $33.199 billion.",
+              "subject_time": "FY2026 Q4"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "MU",
+                "FY2026",
+                "GAAP net income"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron reported FY2026 full-year GAAP net income of $84.969 billion.",
+              "subject_time": "FY2026 full year"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "MU",
+                "FY2026",
+                "Adjusted free cash flow"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron reported FY2026 full-year adjusted free cash flow of $62.308 billion.",
+              "subject_time": "FY2026 full year"
+            },
+            {
+              "assertion_state": "GUIDANCE",
+              "entities": [
+                "Micron Technology",
+                "MU",
+                "FY2027 Q1",
+                "Revenue guidance"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron guided FY2027 first-quarter revenue to $61.5 billion plus or minus $1.5 billion.",
+              "subject_time": "FY2027 Q1"
+            },
+            {
+              "assertion_state": "GUIDANCE",
+              "entities": [
+                "Micron Technology",
+                "MU",
+                "FY2027 Q1",
+                "GAAP gross margin guidance"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron guided FY2027 first-quarter GAAP gross margin to approximately 85.95%.",
+              "subject_time": "FY2027 Q1"
+            },
+            {
+              "assertion_state": "GUIDANCE",
+              "entities": [
+                "Micron Technology",
+                "MU",
+                "FY2027 Q1",
+                "Non-GAAP gross margin guidance"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron guided FY2027 first-quarter non-GAAP gross margin to approximately 86.25%.",
+              "subject_time": "FY2027 Q1"
+            },
+            {
+              "assertion_state": "GUIDANCE",
+              "entities": [
+                "Micron Technology",
+                "MU",
+                "FY2027 Q1",
+                "GAAP diluted EPS guidance"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron guided FY2027 first-quarter GAAP diluted EPS to $37.84 plus or minus $1.00.",
+              "subject_time": "FY2027 Q1"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "The reconciliation confirms FY2026 Q4 GAAP gross margin of 86.8% and strong cash generation, including $43.973 billion of operating cash flow and $33.199 billion of adjusted free cash flow. FY2027 Q1 guidance of $61.5 billion revenue plus or minus $1.5 billion, approximately 85.95% GAAP gross margin, and $37.84 GAAP EPS plus or minus $1.00 is materially above prior consensus, while non-GAAP gross margin is guided at approximately 86.25%.",
+            "prior_expectation": "Before the release, Micron's FY2026 Q4 baseline was management revenue of $49-$51 billion, approximately 86% GAAP gross margin, and GAAP EPS of $29.73-$31.73, with consensus near $50.9 billion revenue and $31.49 EPS. FY2027 Q1 consensus was approximately $56.6 billion revenue and $35.07 EPS, while the durability of Q3's price-driven margins and cash conversion remained uncertain.",
+            "reason": "This is a material positive earnings-quality and forward-guidance surprise. The margin and cash-flow confirmation improves confidence that high pricing and data-center demand are converting into earnings and cash, while the above-consensus FY2027 Q1 outlook raises the near-term revenue and EPS path, supporting a LONG trade in MU.",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "The reference view already contains the Q4 revenue, EPS, net-income headlines and FY2027 Q1 non-GAAP EPS guidance, but this reconciliation segment newly establishes Q4 gross margins and cash conversion, full-year cash results, and additional FY2027 Q1 revenue, margin, and GAAP EPS guidance.",
+            "reference_ids": [
+              "E1",
+              "E115",
+              "E346",
+              "E350",
+              "E353",
+              "E356",
+              "E358"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "No Policy condition is matched. The newly reported results and guidance are positive versus the prior baseline and do not establish any qualifying deterioration in revenue, margins, mix, ASP, shipments, contracts, capacity, delivery, or cash conversion."
+          },
+          "w3_case_id": "w3_589a4b640a9545ebbed452d86e0b0da2"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "db55e3260800ca3044cf486354483818d49290d89d11d77db5aecf4afb4abf94",
+            "content_type": "text/plain",
+            "sha256": "b543bcd7fe34d4ea66051b6f34412a6bcad71f184138afb52e9120d976fc2ff5",
+            "size_bytes": 7130
+          },
+          "case": {
+            "case_id": "case_e08f25fa32e346ffa7409ff88d5f08a1",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-30T20:03:02.813229Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-30T20:03:13.667582Z",
+          "revision": 1,
+          "row_revision": 2634616,
+          "source": {
+            "binding_id": "MU:ibkr_news",
+            "kind": "api",
+            "name": "IBKR News API",
+            "source_id": "ibkr_news"
+          },
+          "source_published_at": "2026-09-30T20:01:00Z",
+          "standard_message_id": "std_b81eed7cf3fd48558c560d1a0479caa8",
+          "stream_item_id": "stream_7f4fa68e3b2243749b33e2786f148a7f",
+          "stream_offset": 2494,
+          "stream_published_at": "2026-09-30T20:03:13.675710Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Micron Technology, Inc. Reports Record Fiscal -3-"
+          },
+          "url": "https://www.interactivebrokers.com/en/trading/providers.php",
+          "body_text": "========= ======= MICRON TECHNOLOGY, INC. RECONCILIATION OF GAAP TO NON-GAAP MEASURES (In millions, except per share amounts) 4th 4th Qtr. 3rd Qtr. Qtr. Year Ended August September May 28, 28, September August 28, 3, 2026 2026 2025 3, 2026 2025 ----------------- ----------- -------- ------- --------- ---------- GAAP gross margin $ 47,047 $35,056 $5,054 $107,504 $14,873 Stock-based compensation 157 143 115 528 409 Other -- -- -- -- 4 ------ ------ ----- ------- ------ Non-GAAP gross margin $ 47,204 $35,199 $5,169 $108,032 $15,286 ====== ====== ===== ======= ====== GAAP operating expenses $ 3,296 $ 1,738 $1,400 $ 8,164 $ 5,103 Stock-based compensation (207) (198) (147) (754) (566) Patent license charges (500) -- -- (500) (57) Other (21) (22) (39) (69) (40) ------ ------ ----- ------- ------ Non-GAAP operating expenses $ 2,568 $ 1,518 $1,214 $ 6,841 $ 4,440 ====== ====== ===== ======= ====== GAAP operating income $ 43,751 $33,318 $3,654 $ 99,340 $ 9,770 Stock-based compensation 364 341 262 1,282 975 Patent license charges 500 -- -- 500 57 Other 21 22 39 69 44 ------ ------ ----- ------- ------ Non-GAAP operating income $ 44,636 $33,681 $3,955 $101,191 $10,846 ====== ====== ===== ======= ====== GAAP net income $ 37,701 $28,243 $3,201 $ 84,969 $ 8,539 Stock-based compensation 364 341 262 1,282 975 Patent license charges 500 -- -- 500 57 Loss on debt prepayments 9 325 9 511 59 Other 22 23 39 50 40 Estimated tax effects of above and other tax adjustments (198) (75) (42) (554) (200) ------ ------ ----- ------- ------ Non-GAAP net income $ 38,398 $28,857 $3,469 $ 86,758 $ 9,470 ====== ====== ===== ======= ====== GAAP weighted-average common shares outstanding - Diluted 1,147 1,145 1,131 1,143 1,125 Adjustment for stock-based compensation 2 4 14 6 18 ------ ------ ----- ------- ------ Non-GAAP weighted-average common shares outstanding - Diluted 1,149 1,149 1,145 1,149 1,143 ====== ====== ===== ======= ====== GAAP diluted earnings per share $ 32.87 $ 24.67 $ 2.83 $ 74.33 $ 7.59 Effects of the above adjustments 0.55 0.44 0.20 1.19 0.70 ------ ------ ----- ------- ------ Non-GAAP diluted earnings per share $ 33.42 $ 25.11 $ 3.03 $ 75.52 $ 8.29 ====== ====== ===== ======= ====== RECONCILIATION OF GAAP TO NON-GAAP MEASURES, Continued 4th Qtr. 3rd Qtr. 4th Qtr. Year Ended August September May 28, 28, September August 28, 3, 2026 2026 2025 3, 2026 2025 ----------------- --------- -------- -------- --------- ----------- GAAP net cash provided by operating activities $ 43,973 $25,388 $ 5,730 $ 89,675 $ 17,525 Expenditures for property, plant, and equipment (11,110) (7,826) (5,658) (30,712) (15,857) Proceeds from sales of property, plant, and equipment 9 9 20 29 48 Proceeds from government incentives 327 733 711 3,316 2,005 ------- ------ ------ ------- ------- Investments in capital expenditures, net (10,774) (7,084) (4,927) (27,367) (13,804) ------- ------ ------ ------- ------- Adjusted free cash flow $ 33,199 $18,304 $ 803 $ 62,308 $ 3,721 ======= ====== ====== ======= ======= The tables above reconcile GAAP to non-GAAP measures of gross margin, operating expenses, operating income, net income, diluted shares, diluted earnings per share, and adjusted free cash flow. The non-GAAP adjustments above may or may not be infrequent or nonrecurring in nature, but are a result of periodic or non-core operating activities. We believe this non-GAAP information is helpful in understanding trends and in analyzing our operating results and earnings. We are providing this information to investors to assist in performing analysis of our operating results. When evaluating performance and making decisions on how to allocate our resources, management uses this non-GAAP information and believes investors should have access to similar data when making their investment decisions. We believe these non-GAAP financial measures increase transparency by providing investors with useful supplemental information about the financial performance of our business, enabling enhanced comparison of our operating results between periods and with peer companies. The presentation of these adjusted amounts varies from amounts presented in accordance with U.S. GAAP and therefore may not be comparable to amounts reported by other companies. Our management excludes the following items as applicable in analyzing our operating results and understanding trends in our earnings: -- Stock-based compensation; -- Gains and losses from settlements; -- Gains and losses from debt prepayments; -- Restructure and asset impairments; and -- The estimated tax effects of above, non-cash changes in net deferred income taxes, assessments of tax exposures, certain tax matters related to prior fiscal periods, and significant changes in tax law. The divergence between our GAAP and non-GAAP income tax (provision) benefit relates to the difference in our GAAP and non-GAAP estimated annual effective tax rates, which are computed separately. Non-GAAP diluted shares are adjusted for the impact of additional shares resulting from the exclusion of stock-based compensation from non-GAAP income. MICRON TECHNOLOGY, INC. RECONCILIATION OF GAAP TO NON-GAAP OUTLOOK FQ1-27 GAAP Outlook Adjustments Non-GAAP Outlook ---------- -------------------- ----------------------- ------------------- $61.5 billion +/- $61.5 billion +/- Revenue $1.5 billion -- $1.5 billion Gross Approximately margin Approximately 85.95% 0.30% A 86.25% Operating Approximately $2.31 $253 million B Approximately $2.06 expenses billion billion Diluted $37.84 +/- $1.00 $0.31 A, B, C $38.15 +/- $1.00 earnings per share(1) Non-GAAP Adjustments (in millions) ------------------------------------------------------------- ------- A Stock-based compensation -- cost of goods sold $174 B Stock-based compensation -- research and development 166 Stock-based compensation -- selling, general, and B administrative 87 C Tax effects of the above items and other tax adjustments (65) --- $362 === (1) GAAP earnings per share and non-GAAP earnings per share based on approximately 1.15 billion diluted shares. The tables above reconcile our GAAP to non-GAAP guidance based on the current outlook. The guidance does not incorporate the impact of any potential business combinations, divestitures, additional restructuring activities, balance sheet valuation adjustments, strategic investments, financing transactions, and other significant transactions. The timing and impact of such items are dependent on future events that may be uncertain or outside of our control. Contacts: Satya Kumar Investor Relations satyakumar@micron.com (408) 450-6199 Mark Plungy Media Relations mplungy@micron.com (408) 203-2910 (END) Dow Jones Newswires September 30, 2026 16:01 ET (20:01 GMT) The statements in this document shall not be considered as an objective or independent explanation of the matters. Please note that this document (a) has not been prepared in accordance with legal requirements designed to promote the independence of investment research, and (b) is not subject to any prohibition on dealing ahead of the dissemination or publication of investment research."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_b81eed7cf3fd48558c560d1a0479caa8:0\"]",
+          "created_at": "2026-09-30T20:33:48.990157Z",
+          "dedupe_key": "010b7cb820bba01aa31ad4f3699e29ca787ef748ea559786a72d8bbf06bc2912",
+          "entities": [
+            "Micron Technology",
+            "MU",
+            "FY2026 Q4",
+            "GAAP gross margin"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron reported FY2026 fourth-quarter GAAP gross margin of 86.8%.",
+          "provisional_event_id": "E337",
+          "subject_time": "FY2026 Q4"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_b81eed7cf3fd48558c560d1a0479caa8:1\"]",
+          "created_at": "2026-09-30T20:33:49.001849Z",
+          "dedupe_key": "360b22c86fb661c19bfc0d2ef997fe918b15a6a66fb960e16cc6f9986443cf7a",
+          "entities": [
+            "Micron Technology",
+            "MU",
+            "FY2026 Q4",
+            "Non-GAAP gross margin"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron reported FY2026 fourth-quarter non-GAAP gross margin of 87.0%.",
+          "provisional_event_id": "E338",
+          "subject_time": "FY2026 Q4"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_b81eed7cf3fd48558c560d1a0479caa8:2\"]",
+          "created_at": "2026-09-30T20:33:49.023693Z",
+          "dedupe_key": "2ba879264df1940f8608b41f8b5923d209b5d940ef6cfcb897eeca7a5fe55ff1",
+          "entities": [
+            "Micron Technology",
+            "MU",
+            "Operating cash flow"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron reported FY2026 fourth-quarter operating cash flow of $43.973 billion.",
+          "provisional_event_id": "E339",
+          "subject_time": "FY2026 Q4"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_b81eed7cf3fd48558c560d1a0479caa8:3\"]",
+          "created_at": "2026-09-30T20:33:49.044751Z",
+          "dedupe_key": "0d67b5cfc0792a1262bc8007489062776463fe9d97d2133206b3b953e1c4a96d",
+          "entities": [
+            "Micron Technology",
+            "MU",
+            "Adjusted free cash flow"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron reported FY2026 fourth-quarter adjusted free cash flow of $33.199 billion.",
+          "provisional_event_id": "E340",
+          "subject_time": "FY2026 Q4"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_b81eed7cf3fd48558c560d1a0479caa8:4\"]",
+          "created_at": "2026-09-30T20:33:49.055977Z",
+          "dedupe_key": "bd606ca2706ed951b9264a75e1d077cfd2e490b38bc31356cc23bec81fd39228",
+          "entities": [
+            "Micron Technology",
+            "MU",
+            "FY2026",
+            "GAAP net income"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron reported FY2026 full-year GAAP net income of $84.969 billion.",
+          "provisional_event_id": "E341",
+          "subject_time": "FY2026 full year"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_b81eed7cf3fd48558c560d1a0479caa8:5\"]",
+          "created_at": "2026-09-30T20:33:49.083296Z",
+          "dedupe_key": "e09d62ced2e93bd4980ae2662091f9f6132f01c9a89828c7d0daef70cbf64f13",
+          "entities": [
+            "Micron Technology",
+            "MU",
+            "FY2026",
+            "Adjusted free cash flow"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron reported FY2026 full-year adjusted free cash flow of $62.308 billion.",
+          "provisional_event_id": "E342",
+          "subject_time": "FY2026 full year"
+        },
+        {
+          "assertion_state": "GUIDANCE",
+          "candidate_id": "[\"runtime-v2-msg:std_b81eed7cf3fd48558c560d1a0479caa8:6\"]",
+          "created_at": "2026-09-30T20:33:49.105098Z",
+          "dedupe_key": "8796a1d66ca609bdf8a885d4cce4ffcbf6750143f699c8670c0ee05676873780",
+          "entities": [
+            "Micron Technology",
+            "MU",
+            "FY2027 Q1",
+            "Revenue guidance"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron guided FY2027 first-quarter revenue to $61.5 billion plus or minus $1.5 billion.",
+          "provisional_event_id": "E343",
+          "subject_time": "FY2027 Q1"
+        },
+        {
+          "assertion_state": "GUIDANCE",
+          "candidate_id": "[\"runtime-v2-msg:std_b81eed7cf3fd48558c560d1a0479caa8:7\"]",
+          "created_at": "2026-09-30T20:33:49.126997Z",
+          "dedupe_key": "e19b330f1c9abbd2549c0ced5be7d2a36c36acd26201e25e61456e1c8edd6d27",
+          "entities": [
+            "Micron Technology",
+            "MU",
+            "FY2027 Q1",
+            "GAAP gross margin guidance"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron guided FY2027 first-quarter GAAP gross margin to approximately 85.95%.",
+          "provisional_event_id": "E344",
+          "subject_time": "FY2027 Q1"
+        },
+        {
+          "assertion_state": "GUIDANCE",
+          "candidate_id": "[\"runtime-v2-msg:std_b81eed7cf3fd48558c560d1a0479caa8:8\"]",
+          "created_at": "2026-09-30T20:33:49.137405Z",
+          "dedupe_key": "48c22d47905ec3cef677cd3a1a2bdbf6c0ca8e658a22671691532976d079c76b",
+          "entities": [
+            "Micron Technology",
+            "MU",
+            "FY2027 Q1",
+            "Non-GAAP gross margin guidance"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron guided FY2027 first-quarter non-GAAP gross margin to approximately 86.25%.",
+          "provisional_event_id": "E345",
+          "subject_time": "FY2027 Q1"
+        },
+        {
+          "assertion_state": "GUIDANCE",
+          "candidate_id": "[\"runtime-v2-msg:std_b81eed7cf3fd48558c560d1a0479caa8:9\"]",
+          "created_at": "2026-09-30T20:33:49.154929Z",
+          "dedupe_key": "8224b3d51ca1bea1db4f064164fc027204a4dd53a95bce484d55c42115d5b528",
+          "entities": [
+            "Micron Technology",
+            "MU",
+            "FY2027 Q1",
+            "GAAP diluted EPS guidance"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron guided FY2027 first-quarter GAAP diluted EPS to $37.84 plus or minus $1.00.",
+          "provisional_event_id": "E346",
+          "subject_time": "FY2027 Q1"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_e08f25fa32e346ffa7409ff88d5f08a1",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-09-30T20:33:49.186403+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-30",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_589a4b640a9545ebbed452d86e0b0da2",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T20:33:49.846544Z"
+              },
+              "case_id": "case_e08f25fa32e346ffa7409ff88d5f08a1",
+              "direction": "LONG",
+              "entry_reason": "PORTFOLIO_CAPACITY_EXHAUSTED",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_e08f25fa32e346ffa7409ff88d5f08a1",
+              "execution_reason_codes": [
+                "PORTFOLIO_CAPACITY_EXHAUSTED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_e08f25fa32e346ffa7409ff88d5f08a1",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T20:33:49.186403Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "PORTFOLIO_CAPACITY_EXHAUSTED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_c8dd5fc9989f485f894f86d895f9f13e",
+      "ticker": "MU",
+      "case_id": "case_c8dd5fc9989f485f894f86d895f9f13e",
+      "intent_released_at_utc": "2026-09-30T20:38:32.691076+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_9b642ab0fa674370a9f44d890c6658d8",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "MU",
+              "Revenue"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron Technology reported FY2026 Q4 revenue of $54.229 billion.",
+            "subject_time": "FY2026 Q4"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "MU",
+              "GAAP gross margin"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron Technology reported FY2026 Q4 GAAP gross margin of 86.8%.",
+            "subject_time": "FY2026 Q4"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "MU",
+              "GAAP diluted EPS"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron Technology reported FY2026 Q4 GAAP diluted earnings per share of $32.87.",
+            "subject_time": "FY2026 Q4"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "MU",
+              "Non-GAAP diluted EPS"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron Technology reported FY2026 Q4 non-GAAP diluted earnings per share of $33.42.",
+            "subject_time": "FY2026 Q4"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "MU",
+              "Revenue"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron Technology reported FY2026 full-year revenue of $133.188 billion.",
+            "subject_time": "FY2026 full year"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "MU",
+              "Operating cash flow"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron Technology reported FY2026 Q4 operating cash flow of $43.973 billion.",
+            "subject_time": "FY2026 Q4"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "MU",
+              "Adjusted free cash flow"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron Technology reported FY2026 Q4 adjusted free cash flow of $33.199 billion.",
+            "subject_time": "FY2026 Q4"
+          },
+          {
+            "assertion_state": "GUIDANCE",
+            "entities": [
+              "Micron Technology",
+              "MU",
+              "Revenue guidance"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron Technology guided FY2027 Q1 revenue to $61.5 billion plus or minus $1.5 billion.",
+            "subject_time": "FY2027 Q1"
+          },
+          {
+            "assertion_state": "GUIDANCE",
+            "entities": [
+              "Micron Technology",
+              "MU",
+              "Non-GAAP EPS guidance"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron Technology guided FY2027 Q1 non-GAAP diluted EPS to $38.15 plus or minus $1.00.",
+            "subject_time": "FY2027 Q1"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "Actual FY2026 Q4 revenue was $54.229 billion, GAAP gross margin 86.8%, GAAP diluted EPS $32.87, and non-GAAP diluted EPS $33.42, exceeding both company guidance and the pre-release public baseline. FY2027 Q1 guidance of $61.5 billion plus or minus $1.5 billion revenue and $38.15 plus or minus $1.00 non-GAAP EPS also raised the forward level and duration of high-end earnings expectations.",
+          "prior_expectation": "Immediately before the release, the FY2026 Q4 baseline was management guidance of $49-$51 billion revenue, approximately 86% GAAP gross margin, $29.73-$31.73 GAAP diluted EPS and $30-$32 non-GAAP EPS, with public expectations around $51.1-$52.1 billion revenue and approximately $31.5-$32.2 adjusted EPS. FY2027 Q1 public expectations were about $56.6 billion revenue and $35.07 EPS.",
+          "reason": "TRADE/LONG. The surprise is material: revenue was roughly 4% above the approximately $52.1 billion public baseline and adjusted EPS roughly 4% above approximately $32.21. The report also delivered $43.973 billion of operating cash flow and $33.199 billion of adjusted free cash flow. The change is material to MU revenue, margin, EPS and cash conversion, with direct transmission from AI/server demand, pricing and data-center mix to earnings and the FY2027 outlook; remaining valuation and memory-cycle risk is ordinary uncertainty, not a missing transmission link.",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "Reference View E2 only records that Micron's FY2026 Q4 earnings release was scheduled for 2026-09-30. The current Form 8-K and Exhibit 99.1 establish the actual FY2026 Q4 and full-year results and new FY2027 Q1 guidance, so the case is a SCHEDULED-to-ACTUAL transition with new result facts.",
+          "reference_ids": [
+            "E2"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No policy condition is met. The FY26 Q4 downside policy requires revenue below the $49 billion guidance floor together with GAAP gross margin below about 86% or GAAP diluted EPS below $29.73; the filing reports $54.229 billion revenue, 86.8% GAAP gross margin, and $32.87 GAAP diluted EPS. Other positive policies require multi-quarter evidence, so this above-baseline single-quarter result remains uncovered."
+        },
+        "w3_case_id": "w3_9b642ab0fa674370a9f44d890c6658d8"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_c8dd5fc9989f485f894f86d895f9f13e",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-30T20:38:32.829667Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 2054.737423
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-30T20:04:18.092244Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2635330,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-30",
+        "source": {
+          "binding_id": "MU:ibkr_news",
+          "kind": "api",
+          "name": "IBKR News API",
+          "source_id": "ibkr_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_b043b52c1e0b4b1cb706754d4a093610",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Micron Technology Files 8K - Operations And Financial Condition >MU"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "PORTFOLIO_CAPACITY_EXHAUSTED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-30T20:04:18.092244Z",
+        "completed_at": "2026-09-30T20:38:32.829667Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E2",
+            "E1",
+            "E115"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [
+            {
+              "event_id": "E2",
+              "fact_ids": [
+                "F34"
+              ]
+            }
+          ],
+          "reason": "E2/F34 仅记录了 FY2026 Q4 财报被「SCHEDULED」于 2026-09-30 发布；当前消息确认 Micron 已于 2026-09-30 实际向 SEC 提交 Form 8-K 并正式公告 FY2026 Q4 及全年业绩，属于 SCHEDULED→ACTUAL 的状态变化，且 Q4/全年实际结果的公告本身是现有 Detail 未覆盖的新核心事实。",
+          "reference_ids": [
+            "E2"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [
+            "pol_6a823a72b3e33190bb83"
+          ],
+          "reason": "消息确认Micron已于2026年9月30日正式向SEC提交8-K公告FY26 Q4及全年财报结果（Exhibit 99.1）。该事件直接对应pol_6a823a72b3e33190bb83的match_scope（Micron FY26 Q4正式业绩、收入/毛利率/EPS指引兑现）及criterion前提（\"Micron正式FY26 Q4财报显示……\"）。消息本身未包含收入、毛利率、EPS等具体数值，仅指向可检索的SEC附件，因此无法从当前信息明确排除指引未达标的命中可能，值得进入完整判定以核实实际数字与指引下限的比较。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息仅陈述Micron于2026年9月30日提交Form 8-K并宣布FY26 Q4及全年财务结果，未包含任何实际收入、GAAP毛利率或GAAP摊薄EPS的具体数值，也未提及这些指标是否低于管理层指引下限（490亿美元收入、86%毛利率、29.73美元EPS）。C1和C2均要求正式财报确认具体数字低于指引，当前消息缺少该事实，无法判定任何条件成立。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "MU",
+                "Revenue"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron Technology reported FY2026 Q4 revenue of $54.229 billion.",
+              "subject_time": "FY2026 Q4"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "MU",
+                "GAAP gross margin"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron Technology reported FY2026 Q4 GAAP gross margin of 86.8%.",
+              "subject_time": "FY2026 Q4"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "MU",
+                "GAAP diluted EPS"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron Technology reported FY2026 Q4 GAAP diluted earnings per share of $32.87.",
+              "subject_time": "FY2026 Q4"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "MU",
+                "Non-GAAP diluted EPS"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron Technology reported FY2026 Q4 non-GAAP diluted earnings per share of $33.42.",
+              "subject_time": "FY2026 Q4"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "MU",
+                "Revenue"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron Technology reported FY2026 full-year revenue of $133.188 billion.",
+              "subject_time": "FY2026 full year"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "MU",
+                "Operating cash flow"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron Technology reported FY2026 Q4 operating cash flow of $43.973 billion.",
+              "subject_time": "FY2026 Q4"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "MU",
+                "Adjusted free cash flow"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron Technology reported FY2026 Q4 adjusted free cash flow of $33.199 billion.",
+              "subject_time": "FY2026 Q4"
+            },
+            {
+              "assertion_state": "GUIDANCE",
+              "entities": [
+                "Micron Technology",
+                "MU",
+                "Revenue guidance"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron Technology guided FY2027 Q1 revenue to $61.5 billion plus or minus $1.5 billion.",
+              "subject_time": "FY2027 Q1"
+            },
+            {
+              "assertion_state": "GUIDANCE",
+              "entities": [
+                "Micron Technology",
+                "MU",
+                "Non-GAAP EPS guidance"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron Technology guided FY2027 Q1 non-GAAP diluted EPS to $38.15 plus or minus $1.00.",
+              "subject_time": "FY2027 Q1"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "Actual FY2026 Q4 revenue was $54.229 billion, GAAP gross margin 86.8%, GAAP diluted EPS $32.87, and non-GAAP diluted EPS $33.42, exceeding both company guidance and the pre-release public baseline. FY2027 Q1 guidance of $61.5 billion plus or minus $1.5 billion revenue and $38.15 plus or minus $1.00 non-GAAP EPS also raised the forward level and duration of high-end earnings expectations.",
+            "prior_expectation": "Immediately before the release, the FY2026 Q4 baseline was management guidance of $49-$51 billion revenue, approximately 86% GAAP gross margin, $29.73-$31.73 GAAP diluted EPS and $30-$32 non-GAAP EPS, with public expectations around $51.1-$52.1 billion revenue and approximately $31.5-$32.2 adjusted EPS. FY2027 Q1 public expectations were about $56.6 billion revenue and $35.07 EPS.",
+            "reason": "TRADE/LONG. The surprise is material: revenue was roughly 4% above the approximately $52.1 billion public baseline and adjusted EPS roughly 4% above approximately $32.21. The report also delivered $43.973 billion of operating cash flow and $33.199 billion of adjusted free cash flow. The change is material to MU revenue, margin, EPS and cash conversion, with direct transmission from AI/server demand, pricing and data-center mix to earnings and the FY2027 outlook; remaining valuation and memory-cycle risk is ordinary uncertainty, not a missing transmission link.",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "Reference View E2 only records that Micron's FY2026 Q4 earnings release was scheduled for 2026-09-30. The current Form 8-K and Exhibit 99.1 establish the actual FY2026 Q4 and full-year results and new FY2027 Q1 guidance, so the case is a SCHEDULED-to-ACTUAL transition with new result facts.",
+            "reference_ids": [
+              "E2"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "No policy condition is met. The FY26 Q4 downside policy requires revenue below the $49 billion guidance floor together with GAAP gross margin below about 86% or GAAP diluted EPS below $29.73; the filing reports $54.229 billion revenue, 86.8% GAAP gross margin, and $32.87 GAAP diluted EPS. Other positive policies require multi-quarter evidence, so this above-baseline single-quarter result remains uncovered."
+          },
+          "w3_case_id": "w3_9b642ab0fa674370a9f44d890c6658d8"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "d9dc097b6af6e2664ad36db96ba94fc05cc06c28a7d69823d58e6ddf63b57e76",
+            "content_type": "text/plain",
+            "sha256": "2d261504f603bae220cf6fd78191a86360e32edba7cf3e714dd731cb8931564f",
+            "size_bytes": 2080
+          },
+          "case": {
+            "case_id": "case_c8dd5fc9989f485f894f86d895f9f13e",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-30T20:04:04.987401Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-30T20:04:17.158055Z",
+          "revision": 1,
+          "row_revision": 2635290,
+          "source": {
+            "binding_id": "MU:ibkr_news",
+            "kind": "api",
+            "name": "IBKR News API",
+            "source_id": "ibkr_news"
+          },
+          "source_published_at": "2026-09-30T20:02:00Z",
+          "standard_message_id": "std_010b98f1602d4317b5213d5f5d30f8cf",
+          "stream_item_id": "stream_b043b52c1e0b4b1cb706754d4a093610",
+          "stream_offset": 2496,
+          "stream_published_at": "2026-09-30T20:04:17.171437Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Micron Technology Files 8K - Operations And Financial Condition >MU"
+          },
+          "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000018/mu-20260930.htm",
+          "body_text": "Micron Technology Inc. (MU) filed a Form 8K - Operations and Financial Condition - with the U.S Securities and Exchange Commission on September 30, 2026. On September 30, 2026, Micron Technology, Inc. (the \"Company\", \"we\" or \"our\") announced the financial results for our fourth quarter and full year of fiscal 2026 ended September 3, 2026. The full text of the press release issued in connection with the announcement is attached as Exhibit 99.1 to this Current Report on Form 8-K. The information in Item 2.02 and Exhibit 99.1 of this Current Report on Form 8-K shall not be deemed \"filed\" for the purposes of Section 18 of the Securities Exchange Act of 1934, as amended (the \"Exchange Act\"), or otherwise subject to the liabilities of that section. The information in Item 2.02 and Exhibit 99.1 of this Current Report on Form 8-K shall not be incorporated by reference into any filing or other document pursuant to the Securities Act of 1933, as amended, or the Exchange Act, except as shall be expressly set forth by specific reference in such filing or document. The full text of this SEC filing can be retrieved at: https://www.sec.gov/Archives/edgar/data/723125/000072312526000018/mu-20260930.htm Any exhibits and associated documents for this SEC filing can be retrieved at: https://www.sec.gov/Archives/edgar/data/723125/000072312526000018/0000723125-26-000018-index.htm Public companies must file a Form 8-K, or current report, with the SEC generally within four days of any event that could materially affect a company's financial position or the value of its shares. (END) Dow Jones Newswires September 30, 2026 16:02 ET (20:02 GMT) Copyright (c) 2026 Dow Jones & Company, Inc. The statements in this document shall not be considered as an objective or independent explanation of the matters. Please note that this document (a) has not been prepared in accordance with legal requirements designed to promote the independence of investment research, and (b) is not subject to any prohibition on dealing ahead of the dissemination or publication of investment research."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_010b98f1602d4317b5213d5f5d30f8cf:0\"]",
+          "created_at": "2026-09-30T20:38:32.581441Z",
+          "dedupe_key": "f96166f7a5d1ea3d6d2c705cc1f9498d12d59f8efdd6005bd6b76c910d8eafc8",
+          "entities": [
+            "Micron Technology",
+            "MU",
+            "Revenue"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron Technology reported FY2026 Q4 revenue of $54.229 billion.",
+          "provisional_event_id": "E349",
+          "subject_time": "FY2026 Q4"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_010b98f1602d4317b5213d5f5d30f8cf:1\"]",
+          "created_at": "2026-09-30T20:38:32.597420Z",
+          "dedupe_key": "7a3fc938d5d735b208d0afc90961937b3a9400a62a0b0aad6449d28b4fa662e2",
+          "entities": [
+            "Micron Technology",
+            "MU",
+            "GAAP gross margin"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron Technology reported FY2026 Q4 GAAP gross margin of 86.8%.",
+          "provisional_event_id": "E350",
+          "subject_time": "FY2026 Q4"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_010b98f1602d4317b5213d5f5d30f8cf:2\"]",
+          "created_at": "2026-09-30T20:38:32.612380Z",
+          "dedupe_key": "a4925c518c027b1990fc0bcc1d98cbc26b12c78fd81da63a5d8c34a8eb25e1b4",
+          "entities": [
+            "Micron Technology",
+            "MU",
+            "GAAP diluted EPS"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron Technology reported FY2026 Q4 GAAP diluted earnings per share of $32.87.",
+          "provisional_event_id": "E351",
+          "subject_time": "FY2026 Q4"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_010b98f1602d4317b5213d5f5d30f8cf:3\"]",
+          "created_at": "2026-09-30T20:38:32.622012Z",
+          "dedupe_key": "f299d812f77a371f7a50ca456adfc262129c06834790789f498edf0c77d67202",
+          "entities": [
+            "Micron Technology",
+            "MU",
+            "Non-GAAP diluted EPS"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron Technology reported FY2026 Q4 non-GAAP diluted earnings per share of $33.42.",
+          "provisional_event_id": "E352",
+          "subject_time": "FY2026 Q4"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_010b98f1602d4317b5213d5f5d30f8cf:4\"]",
+          "created_at": "2026-09-30T20:38:32.631656Z",
+          "dedupe_key": "2e9ed827f4227f3f251d959646483292b7fc85a830eac1b3e0ed530107946619",
+          "entities": [
+            "Micron Technology",
+            "MU",
+            "Revenue"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron Technology reported FY2026 full-year revenue of $133.188 billion.",
+          "provisional_event_id": "E353",
+          "subject_time": "FY2026 full year"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_010b98f1602d4317b5213d5f5d30f8cf:5\"]",
+          "created_at": "2026-09-30T20:38:32.640973Z",
+          "dedupe_key": "54a317ee38598d2d563e115e4fbc8fc8ac9291be5eafb390e94efd9251b5aaf1",
+          "entities": [
+            "Micron Technology",
+            "MU",
+            "Operating cash flow"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron Technology reported FY2026 Q4 operating cash flow of $43.973 billion.",
+          "provisional_event_id": "E354",
+          "subject_time": "FY2026 Q4"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_010b98f1602d4317b5213d5f5d30f8cf:6\"]",
+          "created_at": "2026-09-30T20:38:32.651069Z",
+          "dedupe_key": "5559e156a8b652a607b65f9dc40b3f52ddad31484da7c1f9fd75b30ac1ef288a",
+          "entities": [
+            "Micron Technology",
+            "MU",
+            "Adjusted free cash flow"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron Technology reported FY2026 Q4 adjusted free cash flow of $33.199 billion.",
+          "provisional_event_id": "E355",
+          "subject_time": "FY2026 Q4"
+        },
+        {
+          "assertion_state": "GUIDANCE",
+          "candidate_id": "[\"runtime-v2-msg:std_010b98f1602d4317b5213d5f5d30f8cf:7\"]",
+          "created_at": "2026-09-30T20:38:32.663774Z",
+          "dedupe_key": "76d3365facb500b9021d94e2f85ca2d53fae4b3becec25ee0c5ce3678fab325f",
+          "entities": [
+            "Micron Technology",
+            "MU",
+            "Revenue guidance"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron Technology guided FY2027 Q1 revenue to $61.5 billion plus or minus $1.5 billion.",
+          "provisional_event_id": "E356",
+          "subject_time": "FY2027 Q1"
+        },
+        {
+          "assertion_state": "GUIDANCE",
+          "candidate_id": "[\"runtime-v2-msg:std_010b98f1602d4317b5213d5f5d30f8cf:8\"]",
+          "created_at": "2026-09-30T20:38:32.673377Z",
+          "dedupe_key": "d0bbb73bd6eaa2446eaea3826f40868caf8f185afbab39a0d6cf94dbed0d5a63",
+          "entities": [
+            "Micron Technology",
+            "MU",
+            "Non-GAAP EPS guidance"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron Technology guided FY2027 Q1 non-GAAP diluted EPS to $38.15 plus or minus $1.00.",
+          "provisional_event_id": "E357",
+          "subject_time": "FY2027 Q1"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_c8dd5fc9989f485f894f86d895f9f13e",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-09-30T20:38:32.691076+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-30",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_9b642ab0fa674370a9f44d890c6658d8",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T20:38:33.368445Z"
+              },
+              "case_id": "case_c8dd5fc9989f485f894f86d895f9f13e",
+              "direction": "LONG",
+              "entry_reason": "PORTFOLIO_CAPACITY_EXHAUSTED",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_c8dd5fc9989f485f894f86d895f9f13e",
+              "execution_reason_codes": [
+                "PORTFOLIO_CAPACITY_EXHAUSTED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_c8dd5fc9989f485f894f86d895f9f13e",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T20:38:32.691076Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "PORTFOLIO_CAPACITY_EXHAUSTED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_3579f7c17dd74fa5884057e630a03f18",
+      "ticker": "MU",
+      "case_id": "case_3579f7c17dd74fa5884057e630a03f18",
+      "intent_released_at_utc": "2026-09-30T20:44:55.777611+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_a5bf7f0ea0354f2b95cc46209f1baf5a",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "MU"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron Technology reported fiscal 2026 fourth-quarter GAAP diluted EPS of $32.87.",
+            "subject_time": "FY2026 Q4"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "MU"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron Technology reported fiscal 2026 fourth-quarter adjusted net income of approximately $38.4 billion.",
+            "subject_time": "FY2026 Q4"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "MU"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron Technology reported fiscal 2026 fourth-quarter net income of approximately $37.7 billion.",
+            "subject_time": "FY2026 Q4"
+          },
+          {
+            "assertion_state": "GUIDANCE",
+            "entities": [
+              "Micron Technology",
+              "MU"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron Technology guided fiscal 2027 first-quarter revenue to $60 billion-$63 billion.",
+            "subject_time": "FY2027 Q1"
+          },
+          {
+            "assertion_state": "GUIDANCE",
+            "entities": [
+              "Micron Technology",
+              "MU"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron Technology guided fiscal 2027 first-quarter GAAP diluted EPS to $36.84-$38.84.",
+            "subject_time": "FY2027 Q1"
+          },
+          {
+            "assertion_state": "GUIDANCE",
+            "entities": [
+              "Micron Technology",
+              "MU"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron Technology guided fiscal 2027 first-quarter gross margin to 85.95%.",
+            "subject_time": "FY2027 Q1"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "Sanjay Mehrotra"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron CEO Sanjay Mehrotra stated that Micron delivered record fiscal 2026 results.",
+            "subject_time": "September 30, 2026 earnings release"
+          },
+          {
+            "assertion_state": "EXPECTED",
+            "entities": [
+              "Micron Technology",
+              "Sanjay Mehrotra"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron CEO Sanjay Mehrotra said Micron expected fiscal 2027 to be stronger than fiscal 2026.",
+            "subject_time": "FY2027"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "Sanjay Mehrotra",
+              "AI",
+              "Memory"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron CEO Sanjay Mehrotra said AI was becoming Super Intelligence and that memory enhanced the intelligence and competitiveness of customers' platforms.",
+            "subject_time": "September 30, 2026 earnings release"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "FY2026 Q4 actual revenue of $54.2 billion and adjusted EPS of $33.42 exceeded consensus of $51.3 billion and $31.72; FY2027 Q1 guidance of $60-$63 billion revenue and $37.15-$39.15 adjusted EPS also exceeded consensus of $57.4 billion and $35.47, while the 85.95% gross-margin outlook reinforced higher FY2027 earnings durability.",
+          "prior_expectation": "Immediately before the release, the public baseline was approximately $51.3 billion FY2026 Q4 revenue and $31.72 adjusted EPS, followed by $57.4 billion FY2027 Q1 revenue and $35.47 adjusted EPS, with high-Q4 margins and continued FY2027 earnings already expected but not fully validated.",
+          "reason": "The reported beat and forward guide are explicit, non-trivial revisions versus contemporaneous consensus. Their materiality is high because revenue, margin and EPS directly determine MU earnings, and the Q1 guide extends the positive surprise beyond one quarter. AI/server-memory pricing, mix and supply-constrained value capture provide a clear transmission path to MU, supporting a LONG despite normal memory-cycle and competitive risks.",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "Reference View entries E350, E356 and E358 cover FY2026 Q4 adjusted EPS, FY2026 Q4 revenue and FY2027 Q1 adjusted EPS guidance. This message additionally establishes FY2027 Q1 revenue and gross-margin guidance, FY2026 Q4 GAAP EPS and net income, and new management outlook statements, so the core reality remains NEW.",
+          "reference_ids": [
+            "E350",
+            "E356",
+            "E358"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "The message reports strong quarterly results and forward guidance but does not satisfy any existing policy activation boundary, which requires specific repeated ASP or mix changes, contractual fulfillment, production milestones, expense erosion, or other defined operational conditions. Therefore the case remains uncovered."
+        },
+        "w3_case_id": "w3_a5bf7f0ea0354f2b95cc46209f1baf5a"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_3579f7c17dd74fa5884057e630a03f18",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-30T20:44:56.254853Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 2498.559427
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-30T20:03:17.695426Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2636212,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-30",
+        "source": {
+          "binding_id": "MU:ibkr_news",
+          "kind": "api",
+          "name": "IBKR News API",
+          "source_id": "ibkr_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_3b5801016b7d4d1f86e8e1a09bd4aa27",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Micron Technology 1Q Outlook Above Consensus; 4Q Adj EPS Beats Estimates"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "PORTFOLIO_CAPACITY_EXHAUSTED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-30T20:03:17.695426Z",
+        "completed_at": "2026-09-30T20:44:56.254853Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E2",
+            "E350",
+            "E358",
+            "E356",
+            "E1"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "当前消息为 Micron FY2026 Q4 业绩实际发布及 FY2027 Q1 前瞻指引。Provisional E350/E356/E358 仅覆盖 Q4 adj EPS、Q4 营收和 Q1 adj EPS 指引三个数据点；消息中 Q1 营收指引 $60–$63B、Q4 GAAP EPS $32.87、Q4 净利润、Q1 毛利率 85.95%、CEO \"Super Intelligence\" 表述等多条核心事实均未被任何 canonical fact 或 provisional fact 覆盖，构成新的现实进展。",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "当前消息为Micron FY26 Q4正面财报及FY27 Q1超预期指引：收入$54.2B大幅超共识、adj EPS $33.42超共识、1Q收入指引$60-63B、GM指引85.95%、CEO确认record FY26并展望更强FY27。所有Policy的criterion均指向高价值组合下降、合同违约、扩产延迟、竞争替代、价格/库存转弱、费用侵蚀利润等负面或特定状态变化，本消息未提供触及任何一条具体触发路径的事实（如CMBU/CDBU占比下降、ASP环比走低、项目推迟、客户资格失败、合同价格重置、HBM份额被替代等），不满足Candidate召回标准。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "当前消息为Micron FY26 Q4正面财报及FY27 Q1超预期指引：收入$54.2B大幅超共识、adj EPS $33.42超共识、1Q收入指引$60-63B、GM指引85.95%、CEO确认record FY26并展望更强FY27。所有Policy的criterion均指向高价值组合下降、合同违约、扩产延迟、竞争替代、价格/库存转弱、费用侵蚀利润等负面或特定状态变化，本消息未提供触及任何一条具体触发路径的事实（如CMBU/CDBU占比下降、ASP环比走低、项目推迟、客户资格失败、合同价格重置、HBM份额被替代等），不满足Candidate召回标准。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "MU"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron Technology reported fiscal 2026 fourth-quarter GAAP diluted EPS of $32.87.",
+              "subject_time": "FY2026 Q4"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "MU"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron Technology reported fiscal 2026 fourth-quarter adjusted net income of approximately $38.4 billion.",
+              "subject_time": "FY2026 Q4"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "MU"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron Technology reported fiscal 2026 fourth-quarter net income of approximately $37.7 billion.",
+              "subject_time": "FY2026 Q4"
+            },
+            {
+              "assertion_state": "GUIDANCE",
+              "entities": [
+                "Micron Technology",
+                "MU"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron Technology guided fiscal 2027 first-quarter revenue to $60 billion-$63 billion.",
+              "subject_time": "FY2027 Q1"
+            },
+            {
+              "assertion_state": "GUIDANCE",
+              "entities": [
+                "Micron Technology",
+                "MU"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron Technology guided fiscal 2027 first-quarter GAAP diluted EPS to $36.84-$38.84.",
+              "subject_time": "FY2027 Q1"
+            },
+            {
+              "assertion_state": "GUIDANCE",
+              "entities": [
+                "Micron Technology",
+                "MU"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron Technology guided fiscal 2027 first-quarter gross margin to 85.95%.",
+              "subject_time": "FY2027 Q1"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "Sanjay Mehrotra"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron CEO Sanjay Mehrotra stated that Micron delivered record fiscal 2026 results.",
+              "subject_time": "September 30, 2026 earnings release"
+            },
+            {
+              "assertion_state": "EXPECTED",
+              "entities": [
+                "Micron Technology",
+                "Sanjay Mehrotra"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron CEO Sanjay Mehrotra said Micron expected fiscal 2027 to be stronger than fiscal 2026.",
+              "subject_time": "FY2027"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "Sanjay Mehrotra",
+                "AI",
+                "Memory"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron CEO Sanjay Mehrotra said AI was becoming Super Intelligence and that memory enhanced the intelligence and competitiveness of customers' platforms.",
+              "subject_time": "September 30, 2026 earnings release"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "FY2026 Q4 actual revenue of $54.2 billion and adjusted EPS of $33.42 exceeded consensus of $51.3 billion and $31.72; FY2027 Q1 guidance of $60-$63 billion revenue and $37.15-$39.15 adjusted EPS also exceeded consensus of $57.4 billion and $35.47, while the 85.95% gross-margin outlook reinforced higher FY2027 earnings durability.",
+            "prior_expectation": "Immediately before the release, the public baseline was approximately $51.3 billion FY2026 Q4 revenue and $31.72 adjusted EPS, followed by $57.4 billion FY2027 Q1 revenue and $35.47 adjusted EPS, with high-Q4 margins and continued FY2027 earnings already expected but not fully validated.",
+            "reason": "The reported beat and forward guide are explicit, non-trivial revisions versus contemporaneous consensus. Their materiality is high because revenue, margin and EPS directly determine MU earnings, and the Q1 guide extends the positive surprise beyond one quarter. AI/server-memory pricing, mix and supply-constrained value capture provide a clear transmission path to MU, supporting a LONG despite normal memory-cycle and competitive risks.",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "Reference View entries E350, E356 and E358 cover FY2026 Q4 adjusted EPS, FY2026 Q4 revenue and FY2027 Q1 adjusted EPS guidance. This message additionally establishes FY2027 Q1 revenue and gross-margin guidance, FY2026 Q4 GAAP EPS and net income, and new management outlook statements, so the core reality remains NEW.",
+            "reference_ids": [
+              "E350",
+              "E356",
+              "E358"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "The message reports strong quarterly results and forward guidance but does not satisfy any existing policy activation boundary, which requires specific repeated ASP or mix changes, contractual fulfillment, production milestones, expense erosion, or other defined operational conditions. Therefore the case remains uncovered."
+          },
+          "w3_case_id": "w3_a5bf7f0ea0354f2b95cc46209f1baf5a"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "e7cb6e0d6b583f8e1800b7537368f35680e6b0038d193043079100d3ba859b71",
+            "content_type": "text/plain",
+            "sha256": "1908dbbf74c154d407583085b3d55b8356950073e6e751bd9429d003a826f13a",
+            "size_bytes": 1469
+          },
+          "case": {
+            "case_id": "case_3579f7c17dd74fa5884057e630a03f18",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-30T20:03:02.813229Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-30T20:03:14.852829Z",
+          "revision": 1,
+          "row_revision": 2636170,
+          "source": {
+            "binding_id": "MU:ibkr_news",
+            "kind": "api",
+            "name": "IBKR News API",
+            "source_id": "ibkr_news"
+          },
+          "source_published_at": "2026-09-30T20:01:00Z",
+          "standard_message_id": "std_614e231c8fb34793815427bd1b7daa59",
+          "stream_item_id": "stream_3b5801016b7d4d1f86e8e1a09bd4aa27",
+          "stream_offset": 2495,
+          "stream_published_at": "2026-09-30T20:03:14.863869Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Micron Technology 1Q Outlook Above Consensus; 4Q Adj EPS Beats Estimates"
+          },
+          "url": "https://www.financialnewssystems.com/",
+          "body_text": "Sept. 30 (Financial News Systems) - Micron Technology reports 4Q adj EPS of $33.42, which beats FactSet consensus estimates of $31.72. -- 4Q revenue of $54.2 billion, which beats FactSet consensus estimates of $51.3 billion -- 4Q EPS of $32.87 -- Sees 1Q outlook for adj EPS of $37.15 - 39.15, which beats FactSet consensus of $35.47 -- Sees 1Q outlook for revenue of $60 - 63 billion, which beats FactSet consensus estimates of $57.4 billion -- Sees 1Q outlook for EPS of $36.84 - 38.84 -- Sees 1Q outlook for gross margin of 85.95% -- 4Q adj net income of $38.4 billion -- 4Q net income of $37.7 billion Sanjay Mehrotra (CEO) says: \"Micron delivered record fiscal 2026 results, and we expect an even stronger fiscal 2027. AI is becoming Super Intelligence (SI), and memory enhances this intelligence and the competitiveness of our customers' platforms.\" Source: FNS - Financial News Systems: https://www.financialnewssystems.com/ This article was automatically generated for Dow Jones by Financial News Systems. (END) Dow Jones Newswires September 30, 2026 16:01 ET (20:01 GMT) The statements in this document shall not be considered as an objective or independent explanation of the matters. Please note that this document (a) has not been prepared in accordance with legal requirements designed to promote the independence of investment research, and (b) is not subject to any prohibition on dealing ahead of the dissemination or publication of investment research."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_614e231c8fb34793815427bd1b7daa59:0\"]",
+          "created_at": "2026-09-30T20:44:55.468527Z",
+          "dedupe_key": "57445a6775364e3ef12188e27fadf597dbad3a08353d9bd11ab1972f5592cec1",
+          "entities": [
+            "Micron Technology",
+            "MU"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron Technology reported fiscal 2026 fourth-quarter GAAP diluted EPS of $32.87.",
+          "provisional_event_id": "E361",
+          "subject_time": "FY2026 Q4"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_614e231c8fb34793815427bd1b7daa59:1\"]",
+          "created_at": "2026-09-30T20:44:55.511356Z",
+          "dedupe_key": "97e3803b0d3296732359c55cef754798f3fd71104c6506ddf74f542cc22865f8",
+          "entities": [
+            "Micron Technology",
+            "MU"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron Technology reported fiscal 2026 fourth-quarter adjusted net income of approximately $38.4 billion.",
+          "provisional_event_id": "E362",
+          "subject_time": "FY2026 Q4"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_614e231c8fb34793815427bd1b7daa59:2\"]",
+          "created_at": "2026-09-30T20:44:55.546679Z",
+          "dedupe_key": "2a7b7f573be36e8e0a63b7b0a0e36edb8f6d20c7da2d48c0f83a35fa73c632fa",
+          "entities": [
+            "Micron Technology",
+            "MU"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron Technology reported fiscal 2026 fourth-quarter net income of approximately $37.7 billion.",
+          "provisional_event_id": "E363",
+          "subject_time": "FY2026 Q4"
+        },
+        {
+          "assertion_state": "GUIDANCE",
+          "candidate_id": "[\"runtime-v2-msg:std_614e231c8fb34793815427bd1b7daa59:3\"]",
+          "created_at": "2026-09-30T20:44:55.588280Z",
+          "dedupe_key": "0d4d763b5f6e9da59a2e26eaf368a58a01ad47df12fce9576d1a2ea94f0860a7",
+          "entities": [
+            "Micron Technology",
+            "MU"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron Technology guided fiscal 2027 first-quarter revenue to $60 billion-$63 billion.",
+          "provisional_event_id": "E364",
+          "subject_time": "FY2027 Q1"
+        },
+        {
+          "assertion_state": "GUIDANCE",
+          "candidate_id": "[\"runtime-v2-msg:std_614e231c8fb34793815427bd1b7daa59:4\"]",
+          "created_at": "2026-09-30T20:44:55.609111Z",
+          "dedupe_key": "6d1e755b44ecd73a23d316e65d721f5a31e4c9d6de59fef844b088c75491b115",
+          "entities": [
+            "Micron Technology",
+            "MU"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron Technology guided fiscal 2027 first-quarter GAAP diluted EPS to $36.84-$38.84.",
+          "provisional_event_id": "E365",
+          "subject_time": "FY2027 Q1"
+        },
+        {
+          "assertion_state": "GUIDANCE",
+          "candidate_id": "[\"runtime-v2-msg:std_614e231c8fb34793815427bd1b7daa59:5\"]",
+          "created_at": "2026-09-30T20:44:55.628078Z",
+          "dedupe_key": "4f1d39d05ed771924661522fa6e19ff80d4c41c0958a9f8b25484a7b19ac9da3",
+          "entities": [
+            "Micron Technology",
+            "MU"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron Technology guided fiscal 2027 first-quarter gross margin to 85.95%.",
+          "provisional_event_id": "E366",
+          "subject_time": "FY2027 Q1"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_614e231c8fb34793815427bd1b7daa59:6\"]",
+          "created_at": "2026-09-30T20:44:55.657548Z",
+          "dedupe_key": "beb76c1ccde8f871110156a73fe2155cad789befc91a770b0f2c733d4e43f8c4",
+          "entities": [
+            "Micron Technology",
+            "Sanjay Mehrotra"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron CEO Sanjay Mehrotra stated that Micron delivered record fiscal 2026 results.",
+          "provisional_event_id": "E367",
+          "subject_time": "September 30, 2026 earnings release"
+        },
+        {
+          "assertion_state": "EXPECTED",
+          "candidate_id": "[\"runtime-v2-msg:std_614e231c8fb34793815427bd1b7daa59:7\"]",
+          "created_at": "2026-09-30T20:44:55.679631Z",
+          "dedupe_key": "1a6a28a6102430168c94d8963871e8e9f83f53cf153b2edc3805428cd4e4cfec",
+          "entities": [
+            "Micron Technology",
+            "Sanjay Mehrotra"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron CEO Sanjay Mehrotra said Micron expected fiscal 2027 to be stronger than fiscal 2026.",
+          "provisional_event_id": "E368",
+          "subject_time": "FY2027"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_614e231c8fb34793815427bd1b7daa59:8\"]",
+          "created_at": "2026-09-30T20:44:55.705467Z",
+          "dedupe_key": "3df9ba383704dd6b0d5f5bf59290dda015a356ab9ae32faff5af00459b8ea459",
+          "entities": [
+            "Micron Technology",
+            "Sanjay Mehrotra",
+            "AI",
+            "Memory"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron CEO Sanjay Mehrotra said AI was becoming Super Intelligence and that memory enhanced the intelligence and competitiveness of customers' platforms.",
+          "provisional_event_id": "E369",
+          "subject_time": "September 30, 2026 earnings release"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_3579f7c17dd74fa5884057e630a03f18",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-09-30T20:44:55.777611+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-30",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_a5bf7f0ea0354f2b95cc46209f1baf5a",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T20:44:56.767674Z"
+              },
+              "case_id": "case_3579f7c17dd74fa5884057e630a03f18",
+              "direction": "LONG",
+              "entry_reason": "PORTFOLIO_CAPACITY_EXHAUSTED",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_3579f7c17dd74fa5884057e630a03f18",
+              "execution_reason_codes": [
+                "PORTFOLIO_CAPACITY_EXHAUSTED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_3579f7c17dd74fa5884057e630a03f18",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T20:44:55.777611Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "PORTFOLIO_CAPACITY_EXHAUSTED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    }
+  ]
+}

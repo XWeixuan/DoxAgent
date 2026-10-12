@@ -1,0 +1,9 @@
+{
+  "alias": "O577",
+  "title": "default_sections_for_form",
+  "content": false,
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

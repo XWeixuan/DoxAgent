@@ -1,0 +1,62 @@
+[
+  {
+    "alias": "O1",
+    "title": "MICRON TECHNOLOGY INC",
+    "block_type": "json",
+    "path": "blocks/O1.json",
+    "source": {
+      "provider": "SEC EDGAR",
+      "locator": "sec:issuer:0000723125"
+    },
+    "content_chars": 202,
+    "selected": true
+  },
+  {
+    "alias": "O2",
+    "title": "filings 1-12",
+    "block_type": "table",
+    "path": "blocks/O2.json",
+    "source": {
+      "provider": "SEC EDGAR",
+      "locator": "sec:issuer:0000723125"
+    },
+    "content_chars": 34285,
+    "selected": false
+  },
+  {
+    "alias": "O3",
+    "title": "published_at",
+    "block_type": "text",
+    "path": "blocks/O3.md",
+    "source": {
+      "provider": "SEC EDGAR",
+      "locator": "sec:issuer:0000723125"
+    },
+    "content_chars": 12,
+    "selected": true
+  },
+  {
+    "alias": "O4",
+    "title": "applied_cutoff",
+    "block_type": "text",
+    "path": "blocks/O4.md",
+    "source": {
+      "provider": "SEC EDGAR",
+      "locator": "sec:issuer:0000723125"
+    },
+    "content_chars": 12,
+    "selected": true
+  },
+  {
+    "alias": "O5",
+    "title": "limit_semantics",
+    "block_type": "text",
+    "path": "blocks/O5.md",
+    "source": {
+      "provider": "SEC EDGAR",
+      "locator": "sec:issuer:0000723125"
+    },
+    "content_chars": 10,
+    "selected": true
+  }
+]

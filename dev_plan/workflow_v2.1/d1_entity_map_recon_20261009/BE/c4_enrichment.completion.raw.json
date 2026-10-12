@@ -1,0 +1,457 @@
+{
+  "status": "completed",
+  "summary": "截至2026-09-21，已将Bloom Energy的C4预扫描与C1/C3/C5研究方向及本轮开放式发现合并为完整实体关系图和未来事项快照；新增800V DC与NVIDIA生态、海事SOFC、FERC燃气管道、NERC/FERC计算负荷标准、Project Jupiter后续许可、CCS/环境透明度计划及后续活动、扩产和交付节点。",
+  "report_markdown": "",
+  "warnings": [
+    "当前尝试的SEC发行人索引截至2026-09-21最新记录为2026-07-28；未发现更晚的Bloom 8-K、10-Q或10-K，因此未编造Q3业绩发布日期。【cite:O54】【cite:O56】",
+    "Bloom Energy与Oracle部分网页的Source Capture请求返回403；相关事实使用可直接访问的官方网页、法院、NERC、NVIDIA、MOL及Federal Register直链，未把抓取失败当作事实证据。",
+    "Project Jupiter空气许可节点已按2026-09-17新墨西哥州最高法院解除暂停后的状态修订；新的听证官和听证日期截至截止日仍未公布。"
+  ],
+  "observation_candidates": [],
+  "entity_relations": [
+    {
+      "关系主体": "Bloom Energy",
+      "关系对象": "数据中心生态（超大规模云、托管/共址、neocloud、开发商及基础设施投资者）",
+      "关系类型": "终端市场/客户",
+      "关系说明": "Bloom的2025年Form 10-K将数据中心列为Energy Server的三类主要电力市场之一，并将上述主体列为覆盖的数据中心生态参与者。[SEC 10-K](https://www.sec.gov/Archives/edgar/data/1664703/000162828026006516/be-20251231.htm)",
+      "关联业务或产品": "Bloom Energy Server、现场电力、微电网"
+    },
+    {
+      "关系主体": "Bloom Energy",
+      "关系对象": "商业与工业终端客户（先进制造、医疗、零售、教育、电信及其他关键基础设施）",
+      "关系类型": "终端市场/客户",
+      "关系说明": "Bloom的2025年Form 10-K将商业与工业（C&I）列为主要市场，客户场景包括先进制造、医疗、零售、教育、电信和关键基础设施。[SEC 10-K](https://www.sec.gov/Archives/edgar/data/1664703/000162828026006516/be-20251231.htm)",
+      "关联业务或产品": "Energy Server、CHP、微电网"
+    },
+    {
+      "关系主体": "Bloom Energy",
+      "关系对象": "投资者所有公用事业、公共/合作社公用事业及天然气生产商",
+      "关系类型": "客户/渠道",
+      "关系说明": "Energy Server可部署在公用事业配电点或客户现场；Bloom披露公用事业和天然气生产商均为潜在客户或合作渠道。[SEC 10-K](https://www.sec.gov/Archives/edgar/data/1664703/000162828026006516/be-20251231.htm)",
+      "关联业务或产品": "Energy Server、现场发电"
+    },
+    {
+      "关系主体": "Bloom Energy",
+      "关系对象": "Bloom Energy Server",
+      "关系类型": "核心产品/技术平台",
+      "关系说明": "Bloom设计、制造并销售基于固体氧化物燃料电池的Energy Server，为企业和社区提供现场、持续供电；系统可使用天然气、生物气、氢气或混合燃料。[SEC 10-K](https://www.sec.gov/Archives/edgar/data/1664703/000162828026006516/be-20251231.htm)",
+      "关联业务或产品": "Energy Server、微电网、CHP、CCUS、生物气发电"
+    },
+    {
+      "关系主体": "Bloom Energy",
+      "关系对象": "Bloom Electrolyzer",
+      "关系类型": "核心产品/技术平台",
+      "关系说明": "Bloom Electrolyzer与Energy Server共享固体氧化物平台、供应链和制造流程，用于以电力和蒸汽等输入制氢，并面向工业、交通和电力用户。[SEC 10-K](https://www.sec.gov/Archives/edgar/data/1664703/000162828026006516/be-20251231.htm)",
+      "关联业务或产品": "Bloom Electrolyzer、氢能"
+    },
+    {
+      "关系主体": "Bloom Energy",
+      "关系对象": "Power Connect",
+      "关系类型": "产品/部署系统",
+      "关系说明": "Bloom于2026-08-19发布Power Connect，将关键电气集成从现场转移到工厂，以预连接、预布线和测试后的方式支持现场电力安装。[Bloom公告](https://www.bloomenergy.com/news/bloom-energy-introduces-power-connect/)",
+      "关联业务或产品": "Energy Server安装与现场部署"
+    },
+    {
+      "关系主体": "Bloom Energy",
+      "关系对象": "SK ecoplant",
+      "关系类型": "分销/投资/制造合作",
+      "关系说明": "SK ecoplant是Bloom在韩国的Energy Server战略分销伙伴，并通过韩国合资安排参与Energy Server组装；Bloom的10-K亦披露其股权投资关系。[SK公告](https://www.bloomenergy.com/news/bloom-energy-and-sk-ecoplant-announce-500-mw-sales-agreement-strengthening-existing-partnership/)",
+      "关联业务或产品": "Energy Server、Bloom Electrolyzer、韩国市场"
+    },
+    {
+      "关系主体": "Bloom Energy",
+      "关系对象": "SK eternix",
+      "关系类型": "区域分销合作",
+      "关系说明": "Bloom披露其在韩国的约682MW部署由SK ecoplant和SK eternix的分销合作支持。[SEC 10-K](https://www.sec.gov/Archives/edgar/data/1664703/000162828026006516/be-20251231.htm)",
+      "关联业务或产品": "Energy Server、韩国市场"
+    },
+    {
+      "关系主体": "Bloom Energy",
+      "关系对象": "American Electric Power（AEP）",
+      "关系类型": "公用事业渠道/融资合作",
+      "关系说明": "Bloom与AEP的供应协议覆盖最多1GW固体氧化物燃料电池，初始订单为100MW，用于满足包括AI数据中心在内的高需求商业应用；Bloom披露AEP同时承担渠道和融资伙伴角色。[AEP合作公告](https://www.bloomenergy.com/news/bloom-energy-announces-gigawatt-fuel-cell-procurement-agreement-with-aep-to-power-ai-data-centers/)",
+      "关联业务或产品": "Energy Server、AI数据中心现场电力"
+    },
+    {
+      "关系主体": "Bloom Energy",
+      "关系对象": "Brookfield Asset Management",
+      "关系类型": "资本与AI基础设施合作",
+      "关系说明": "Brookfield与Bloom的合作以AI基础设施项目融资和现场电力部署为核心；2026-06-30公告将融资框架扩大至250亿美元。[Bloom公告](https://www.bloomenergy.com/news/brookfield-and-bloom-energy-expand-ai-infrastructure-partnership/)",
+      "关联业务或产品": "Energy Server、AI基础设施项目融资"
+    },
+    {
+      "关系主体": "Bloom Energy",
+      "关系对象": "Oracle / Oracle Cloud Infrastructure",
+      "关系类型": "超大规模云客户/项目合作",
+      "关系说明": "Bloom与Oracle已宣布扩大合作，计划在AI和云基础设施中部署最多2.8GW Bloom燃料电池；Project Jupiter由Oracle、BorderPlex与Bloom共同公布。[Bloom公告](https://www.bloomenergy.com/news/bloom-energy-and-oracle-expand-strategic-partnership-to-deploy-up-to-2-8-gw-to-accelerate-ai-infrastructure-build-out/)",
+      "关联业务或产品": "Energy Server、AI数据中心微电网"
+    },
+    {
+      "关系主体": "Bloom Energy",
+      "关系对象": "Equinix",
+      "关系类型": "数据中心客户/长期部署合作",
+      "关系说明": "Bloom披露与Equinix的十年合作已覆盖美国19个IBX数据中心，现场燃料电池容量超过100MW。[Bloom公告](https://www.bloomenergy.com/news/bloom-energy-expands-data-center-power-agreement-with-equinix-surpassing-100mw/)",
+      "关联业务或产品": "Energy Server、数据中心现场电力"
+    },
+    {
+      "关系主体": "Bloom Energy",
+      "关系对象": "Quanta Computer",
+      "关系类型": "AI硬件制造客户/现场电力合作",
+      "关系说明": "Bloom与Quanta Computer扩大合作，为其AI硬件生产设施增加固体氧化物燃料电池容量，以应对公用事业并网延迟。[Bloom公告](https://www.bloomenergy.com/news/bloom-energy-and-quanta-computer-expand-partnership-to-power-ai-revolution/)",
+      "关联业务或产品": "Energy Server、岛式微电网、AI硬件制造"
+    },
+    {
+      "关系主体": "Bloom Energy",
+      "关系对象": "MiTAC Computing Technology",
+      "关系类型": "AI服务器制造客户/现场电力合作",
+      "关系说明": "2026-08-06公告称Bloom将在MiTAC位于Fremont的AI服务器制造园区部署燃料电池孤岛微电网，并扩展既有San Jose安装；公告同时称Bloom服务近两打AI基础设施客户、约250MW容量。[Bloom公告](https://www.bloomenergy.com/news/bloom-energy-continues-to-set-the-standard-for-ai-onsite-power-with-expanded-mitac-partnership/)",
+      "关联业务或产品": "Energy Server、岛式微电网、AI服务器制造"
+    },
+    {
+      "关系主体": "Bloom Energy",
+      "关系对象": "Conagra Brands",
+      "关系类型": "商业与工业客户/PPA",
+      "关系说明": "Conagra与Bloom宣布在俄亥俄州两处生产设施采用约6MW燃料电池，并签订15年购电协议。[Bloom公告](https://www.bloomenergy.com/news/conagra-brands-collaborates-with-bloom-energy-to-utilize-fuel-cell-technology-at-its-ohio-production-facilities/)",
+      "关联业务或产品": "Energy Server、生产设施现场电力"
+    },
+    {
+      "关系主体": "Bloom Energy",
+      "关系对象": "CoreWeave / Chirisa Technology Parks",
+      "关系类型": "AI云客户/数据中心项目合作",
+      "关系说明": "Bloom宣布在Chirisa位于伊利诺伊州Volo的数据中心为CoreWeave部署燃料电池，以支持其云端AI计算模型。[Bloom公告](https://www.bloomenergy.com/news/bloom-energy-and-coreweave-partner-to-revolutionize-ai-data-center-power-solutions/)",
+      "关联业务或产品": "Energy Server、AI数据中心现场电力"
+    },
+    {
+      "关系主体": "Bloom Energy",
+      "关系对象": "Chart Industries",
+      "关系类型": "碳捕集技术合作",
+      "关系说明": "Bloom与Chart宣布合作，将Bloom燃料电池产生的相对高浓度二氧化碳流与Chart的碳捕集能力结合，面向数据中心和制造客户。[Bloom公告](https://www.bloomenergy.com/news/bloom-energy-and-chart-industries-announce-groundbreaking-carbon-capture-partnership/)",
+      "关联业务或产品": "Energy Server、CCUS"
+    },
+    {
+      "关系主体": "Bloom Energy",
+      "关系对象": "Nebius、Industrial Development Funding（IDF）与Oaktree Capital Management",
+      "关系类型": "AI基础设施项目生态/融资",
+      "关系说明": "Bloom披露Nebius AI基础设施项目由IDF牵头开发、Oaktree提供基础设施资本，Bloom提供现场燃料电池技术，项目投资额为17亿美元。[Bloom博客](https://www.bloomenergy.com/blog/building-ai-infrastructure-takes-a-village/)",
+      "关联业务或产品": "Energy Server、AI基础设施项目融资"
+    },
+    {
+      "关系主体": "Bloom Energy",
+      "关系对象": "FPM Development",
+      "关系类型": "项目开发/公用事业电力合作",
+      "关系说明": "Bloom与FPM Development宣布在洛杉矶两个地点部署合计20MW的固体氧化物燃料电池，以支持当地电网韧性。[Bloom公告](https://www.bloomenergy.com/news/bloom-energy-secures-20-mw-utility-deal-with-fpm-development-to-rapidly-fortify-grid-resilience-in-california/)",
+      "关联业务或产品": "Energy Server、公用事业现场电力"
+    },
+    {
+      "关系主体": "Bloom Energy",
+      "关系对象": "全球原材料与制造服务供应商网络（未逐名披露）",
+      "关系类型": "供应链",
+      "关系说明": "Bloom披露燃料电池生产需要稀土元素、特种合金和工业商品，其供应基础覆盖北美、亚洲、欧洲和印度，并在多数原材料和服务上维持多来源。[SEC 10-K](https://www.sec.gov/Archives/edgar/data/1664703/000162828026006516/be-20251231.htm)",
+      "关联业务或产品": "Energy Server、Bloom Electrolyzer、固体氧化物平台"
+    },
+    {
+      "关系主体": "Bloom Energy",
+      "关系对象": "Fremont（加州）与Newark（特拉华州）制造设施",
+      "关系类型": "制造/产能基础",
+      "关系说明": "Bloom的主要制造设施位于Fremont和Newark，固体氧化物平台的电池打印、组装及相关流程在两地开展；10-K披露Fremont年产能计划在2026年末由约1GW提高至约2GW，Q2 10-Q另披露Fremont与Delmarva的持续扩产投入。[SEC 10-K](https://www.sec.gov/Archives/edgar/data/1664703/000162828026006516/be-20251231.htm)【cite:O69】",
+      "关联业务或产品": "Energy Server、Bloom Electrolyzer、Power Connect"
+    },
+    {
+      "关系主体": "Bloom Energy",
+      "关系对象": "第三方资本提供者与融资方",
+      "关系类型": "客户融资/商业模式",
+      "关系说明": "Bloom通过购电协议、容量协议和租赁等安排向终端用户提供Energy Server，相关交易依赖第三方融资；Bloom披露其正建立面向数据中心和工业客户的长期资本合作。[SEC 10-K](https://www.sec.gov/Archives/edgar/data/1664703/000162828026006516/be-20251231.htm)",
+      "关联业务或产品": "Energy Server、PPA、容量协议、租赁"
+    },
+    {
+      "关系主体": "Bloom Energy",
+      "关系对象": "集中式电网、燃气往复式发动机、小型燃气轮机、联合循环电厂、太阳能加储能、柴油备用设备及其他燃料电池",
+      "关系类型": "竞争/替代",
+      "关系说明": "Bloom的10-K将上述电力来源和设备列为Energy Server的竞争或替代方案，并另行讨论PEM、MCFC和PAFC等燃料电池技术。[SEC 10-K](https://www.sec.gov/Archives/edgar/data/1664703/000162828026006516/be-20251231.htm)",
+      "关联业务或产品": "Energy Server、现场持续电力"
+    },
+    {
+      "关系主体": "Bloom Energy",
+      "关系对象": "联邦、州、国际及地方许可和环境监管机构",
+      "关系类型": "监管/许可暴露",
+      "关系说明": "Energy Server和Electrolyzer项目须遵守适用的联邦、州、国际和地方法规、标准并取得相应许可；Bloom披露许可和审批是安装项目的外部条件。[SEC 10-K](https://www.sec.gov/Archives/edgar/data/1664703/000162828026006516/be-20251231.htm)",
+      "关联业务或产品": "Energy Server、Bloom Electrolyzer、微电网"
+    },
+    {
+      "关系主体": "Bloom Energy",
+      "关系对象": "New Mexico Environment Department（NMED）及Doña Ana County地方机构",
+      "关系类型": "项目许可/地方监管",
+      "关系说明": "Project Jupiter拟采用Bloom燃料电池微电网；2026-09-17新墨西哥州最高法院解除此前对空气许可程序的暂停，许可程序将继续，但新的听证官和排期需由NMED重新安排。[法院命令](https://nmcourts.gov/wp-content/uploads/2026/09/Orders-in-Project-Jupiter-air-quality-permit-and-water-cases.pdf)",
+      "关联业务或产品": "Project Jupiter、Energy Server燃料电池微电网"
+    },
+    {
+      "关系主体": "Bloom Energy",
+      "关系对象": "800V DC-native AI工厂电力架构",
+      "关系类型": "核心产品/技术平台",
+      "关系说明": "Bloom于2026-09-16发布的AI电力报告将其固体氧化物燃料电池定位为可原生生成连续800V DC的现场电源，并面向高密度AI数据中心减少交流转换与电气集成环节。[Bloom报告](https://www.bloomenergy.com/news/the-new-rules-of-ai-power-report/)",
+      "关联业务或产品": "Energy Server、800V DC-native power、AI数据中心现场电力"
+    },
+    {
+      "关系主体": "Bloom Energy",
+      "关系对象": "NVIDIA Rubin Ultra / Kyber 800V DC生态",
+      "关系类型": "技术生态/应用适配",
+      "关系说明": "Bloom报告讨论NVIDIA自2027年起面向Rubin Ultra与Kyber机架采用800V DC架构，并将Bloom原生800V DC输出置于该AI工厂电力生态中；未声称与NVIDIA形成商业合作。[Bloom报告](https://www.bloomenergy.com/news/the-new-rules-of-ai-power-report/)；[NVIDIA技术博客](https://developer.nvidia.com/blog/?p=100571)",
+      "关联业务或产品": "800V DC-native power、Energy Server"
+    },
+    {
+      "关系主体": "Bloom Energy",
+      "关系对象": "Mitsui O.S.K. Lines（MOL）与Samsung Heavy Industries",
+      "关系类型": "海事技术/设备合作",
+      "关系说明": "MOL公告称一艘174,000立方米LNG运输船将安装由Bloom供应的300kW SOFC，船舶计划于2027年交付并在2027年初开始联合设备验证。[MOL公告](https://www.mol.co.jp/en/pr/2025/25053.html)",
+      "关联业务或产品": "Marine Power Module、SOFC、海事辅助电力"
+    },
+    {
+      "关系主体": "Bloom Energy",
+      "关系对象": "Transwestern Pipeline、Green Chile Project与Federal Energy Regulatory Commission（FERC）",
+      "关系类型": "燃气供应/联邦监管暴露",
+      "关系说明": "FERC的Green Chile Project环境评估涉及Doña Ana County一条约17.77英里的天然气管道；该管道拟服务AI数据中心发电，是Project Jupiter中Bloom燃料电池微电网的上游燃料供应与许可路径。[Federal Register](https://public-inspection.federalregister.gov/2026-18455.pdf)【cite:O72】",
+      "关联业务或产品": "Project Jupiter、Energy Server燃料电池微电网"
+    },
+    {
+      "关系主体": "Bloom Energy",
+      "关系对象": "NERC / FERC计算负荷可靠性标准框架",
+      "关系类型": "电力可靠性监管/外部暴露",
+      "关系说明": "NERC正为数据中心、AI计算集群等计算负荷推进可靠性标准与注册规则；该框架影响Bloom所服务的AI数据中心和大型负荷项目，但Bloom不是标准制定主体。[NERC公告](https://www.nerc.com/newsroom/computational-loads-standards-advance-following-initial-ballot)",
+      "关联业务或产品": "Energy Server、AI数据中心现场电力"
+    }
+  ],
+  "future_nodes": [
+    {
+      "时间": "2026-09-22",
+      "未来事项": "Bloom Energy可持续发展负责人Stephen Lamm参加Climate Week NYC的HBSC Roundtables，讨论AI与能源融资。",
+      "与目标公司的关系": "公司公开会议，面向AI数据中心和能源基础设施议题。",
+      "来源": "[Bloom Energy Events](https://www.bloomenergy.com/events/)",
+      "来源发布日期": "未注明（活动页截至2026-09-21）"
+    },
+    {
+      "时间": "2026-09-28—2026-09-30",
+      "未来事项": "Bloom赞助并参加Yotta 2026；9月29日安排Bloom领导层和行业专家议程，并设#801展位。",
+      "与目标公司的关系": "AI与数字基础设施会议，展示现场电力解决方案。",
+      "来源": "[Bloom Energy Events](https://www.bloomenergy.com/events/)",
+      "来源发布日期": "未注明（活动页截至2026-09-21）"
+    },
+    {
+      "时间": "2026-09-29—2026-09-30",
+      "未来事项": "Bloom参加新加坡Data Centre World Asia，在P85展位展示面向数据中心的现场电力方案。",
+      "与目标公司的关系": "数据中心客户和运营商相关的商业活动。",
+      "来源": "[Bloom Energy Events](https://www.bloomenergy.com/events/)",
+      "来源发布日期": "未注明（活动页截至2026-09-21）"
+    },
+    {
+      "时间": "2026-09-30",
+      "未来事项": "Bloom参加Toledo Regional Chamber of Commerce的Pizza and Politics Lunch & Learn圆桌，讨论俄亥俄州能源、可靠性与基础设施。",
+      "与目标公司的关系": "面向Bloom商业与工业客户场景的区域现场电力与可靠性公开活动。",
+      "来源": "[Bloom Energy Events](https://www.bloomenergy.com/events/)",
+      "来源发布日期": "未注明（活动页截至2026-09-21）"
+    },
+    {
+      "时间": "2026-09-26、2026-10-10、2026-10-17、2026-11-07、2026-11-14、2026-11-21",
+      "未来事项": "Bloom继续参加ESPN Radio College Football Campus Tour，已确认的后续站点包括State College、Gainesville、Austin、Oxford、Baton Rouge和Lincoln。",
+      "与目标公司的关系": "公司在美国社区开展电力可靠性与现场能源的公开交流和社区活动。",
+      "来源": "[Bloom Energy Louisville公告](https://www.bloomenergy.com/news/bloom-energy-honors-louisville-first-responders-during-espn-college-football-campus-tour/)",
+      "来源发布日期": "2026-09-18"
+    },
+    {
+      "时间": "2026-10-06—2026-10-08",
+      "未来事项": "Bloom参加CPHI Milan 2026，面向全球制药社区展示可靠、韧性的现场电力方案。",
+      "与目标公司的关系": "对应Bloom披露的制药及关键设施C&I终端市场。",
+      "来源": "[Bloom Energy Events](https://www.bloomenergy.com/events/)",
+      "来源发布日期": "未注明（活动页截至2026-09-21）"
+    },
+    {
+      "时间": "2026-10-13—2026-10-15",
+      "未来事项": "Bloom数据中心运营负责人参加TechCrunch Disrupt 2026的“AI's Power Problem”小组讨论（10月13日）。",
+      "与目标公司的关系": "公司围绕AI基础设施电力需求的公开议程。",
+      "来源": "[Bloom Energy Events](https://www.bloomenergy.com/events/)",
+      "来源发布日期": "未注明（活动页截至2026-09-21）"
+    },
+    {
+      "时间": "2026-10-13—2026-10-15",
+      "未来事项": "Bloom参加SEMICON West 2026，并于10月15日在可持续智能制造馆讨论可岛式、高可靠分布式电力微电网。",
+      "与目标公司的关系": "面向半导体制造客户的产品和应用展示。",
+      "来源": "[Bloom Energy Events](https://www.bloomenergy.com/events/)",
+      "来源发布日期": "未注明（活动页截至2026-09-21）"
+    },
+    {
+      "时间": "2026-10-14—2026-10-16",
+      "未来事项": "Bloom参加Energy Taiwan 2026，在M0235A展位展示现场发电和燃料电池技术。",
+      "与目标公司的关系": "亚太能源转型和潜在客户/伙伴活动。",
+      "来源": "[Bloom Energy Events](https://www.bloomenergy.com/events/)",
+      "来源发布日期": "未注明（活动页截至2026-09-21）"
+    },
+    {
+      "时间": "2026-10-27—2026-10-29",
+      "未来事项": "Bloom参加PowerUp Data Center Investment；其结构化融资负责人于10月27日参加“从并网到离网”数据中心电力与融资小组。",
+      "与目标公司的关系": "公司围绕数据中心项目融资和现场电力部署的公开活动。",
+      "来源": "[Bloom Energy Events](https://www.bloomenergy.com/events/)",
+      "来源发布日期": "未注明（活动页截至2026-09-21）"
+    },
+    {
+      "时间": "2026-10-29",
+      "未来事项": "Bloom支持由Delaware BioScience Association与University of Delaware主办的Women in STEM Conference，Rebecca Stamps分享领导力、创新和STEM职业经验。",
+      "与目标公司的关系": "与Bloom在Delaware的制造、工程和人才生态相关的公开活动。",
+      "来源": "[Bloom Energy Events](https://www.bloomenergy.com/events/)",
+      "来源发布日期": "未注明（活动页截至2026-09-21）"
+    },
+    {
+      "时间": "2026-11-02—2026-11-03",
+      "未来事项": "Bloom参加American Food Manufacturing Summit，面向食品和饮料制造商讨论现场电力、连续生产和能源韧性。",
+      "与目标公司的关系": "对应Bloom的食品制造及C&I客户场景。",
+      "来源": "[Bloom Energy Events](https://www.bloomenergy.com/events/)",
+      "来源发布日期": "未注明（活动页截至2026-09-21）"
+    },
+    {
+      "时间": "2026-11-03—2026-11-04",
+      "未来事项": "Bloom参加DCD Virginia 2026，并于11月3日参与AI基础设施与能源投资主题辩论。",
+      "与目标公司的关系": "数据中心和AI电力基础设施行业会议。",
+      "来源": "[Bloom Energy Events](https://www.bloomenergy.com/events/)",
+      "来源发布日期": "未注明（活动页截至2026-09-21）"
+    },
+    {
+      "时间": "2026-12-01—2026-12-03",
+      "未来事项": "Bloom赞助DICE West 2026，面向数据中心运营商展示现场电力方案。",
+      "与目标公司的关系": "数据中心客户和开发商相关的公开商业活动。",
+      "来源": "[Bloom Energy Events](https://www.bloomenergy.com/events/)",
+      "来源发布日期": "未注明（活动页截至2026-09-21）"
+    },
+    {
+      "时间": "2026年末前",
+      "未来事项": "Bloom计划通过对Fremont制造设施的资本投入，将生产能力提升至约2GW。",
+      "与目标公司的关系": "目标公司的制造产能扩张里程碑，直接服务Energy Server和固体氧化物平台需求。",
+      "来源": "[Bloom Energy 2025 Form 10-K（SEC）](https://www.sec.gov/Archives/edgar/data/1664703/000162828026006516/be-20251231.htm)【cite:O82】",
+      "来源发布日期": "2026-02-09"
+    },
+    {
+      "时间": "至2027年",
+      "未来事项": "SK ecoplant已承诺在协议期内、截至2027年从Bloom购买500MW Energy Servers；相关采购和交付仍是可观察的合作里程碑。",
+      "与目标公司的关系": "韩国分销、组装及Energy Server销售合作的履约节点。",
+      "来源": "[Bloom Energy与SK ecoplant公告](https://www.bloomenergy.com/news/bloom-energy-and-sk-ecoplant-announce-500-mw-sales-agreement-strengthening-existing-partnership/)",
+      "来源发布日期": "2023-12-26"
+    },
+    {
+      "时间": "待定未来事项",
+      "未来事项": "Bloom与Oracle将在扩大的战略合作框架下，为AI基础设施部署最多2.8GW的Bloom燃料电池。",
+      "与目标公司的关系": "直接关联Oracle云和AI数据中心客户部署，具体项目时间表未在公告中给出。",
+      "来源": "[Bloom Energy与Oracle公告](https://www.bloomenergy.com/news/bloom-energy-and-oracle-expand-strategic-partnership-to-deploy-up-to-2-8-gw-to-accelerate-ai-infrastructure-build-out/)",
+      "来源发布日期": "2026-04-13"
+    },
+    {
+      "时间": "待定未来事项",
+      "未来事项": "Oracle、BorderPlex与Bloom继续推进Project Jupiter；公告称建设按计划进行，并将采用Bloom燃料电池微电网，项目最多配置2.45GW燃料电池容量。",
+      "与目标公司的关系": "Bloom为Project Jupiter AI数据中心提供核心现场发电与微电网技术，完成时间未在公告中给出。",
+      "来源": "[Oracle Project Jupiter公告](https://www.oracle.com/news/announcement/oracle-borderplex-and-bloom-energy-to-power-project-jupiter-with-fuel-cell-technology-2026-04-27/)",
+      "来源发布日期": "2026-04-27"
+    },
+    {
+      "时间": "待定未来事项（2026-09-17解除暂停后）",
+      "未来事项": "Project Jupiter空气质量许可程序将恢复推进；此前拟于2026-09-14举行的听证未举行，NMED需重新指定听证官并公布新的排期。",
+      "与目标公司的关系": "许可结果直接决定Bloom燃料电池微电网项目的监管推进。",
+      "来源": "[New Mexico Supreme Court Order](https://nmcourts.gov/wp-content/uploads/2026/09/Orders-in-Project-Jupiter-air-quality-permit-and-water-cases.pdf); [Source New Mexico](https://sourcenm.com/2026/09/17/new-mexico-supreme-court-rejects-2-project-jupiter-challenges-allows-permitting-process-to-resume/)",
+      "来源发布日期": "2026-09-17"
+    },
+    {
+      "时间": "待定未来事项",
+      "未来事项": "Brookfield将按扩大的最高250亿美元融资框架，为符合投资和合同条件的AI基础设施电力项目提供资本，Bloom继续提供现场电力平台。",
+      "与目标公司的关系": "直接关联Bloom的AI基础设施融资和燃料电池项目部署；公告未给出单个项目的时间表。",
+      "来源": "[Bloom Energy与Brookfield公告](https://www.bloomenergy.com/news/brookfield-and-bloom-energy-expand-ai-infrastructure-partnership/)",
+      "来源发布日期": "2026-06-30"
+    },
+    {
+      "时间": "待定未来事项",
+      "未来事项": "Bloom将在MiTAC位于Fremont的AI服务器制造园区部署燃料电池孤岛微电网，并扩展其既有San Jose安装。",
+      "与目标公司的关系": "直接关联Bloom的AI基础设施供应链客户和现场电力部署；公告未给出投运日期。",
+      "来源": "[Bloom Energy与MiTAC公告](https://www.bloomenergy.com/news/bloom-energy-continues-to-set-the-standard-for-ai-onsite-power-with-expanded-mitac-partnership/)",
+      "来源发布日期": "2026-08-06"
+    },
+    {
+      "时间": "待定未来事项",
+      "未来事项": "由IDF牵头、Oaktree提供基础设施资本的Nebius AI基础设施项目将推进Bloom燃料电池部署；Bloom披露项目投资额为17亿美元。",
+      "与目标公司的关系": "直接关联Bloom为Nebius AI云基础设施提供现场电力，公告未给出具体投运日期。",
+      "来源": "[Bloom Energy项目说明](https://www.bloomenergy.com/blog/building-ai-infrastructure-takes-a-village/)",
+      "来源发布日期": "2026-07-20（2026-08-06更新）"
+    },
+    {
+      "时间": "待定未来事项（研究期未公布）",
+      "未来事项": "Oracle将资助最高100万美元，在Project Jupiter及新墨西哥州开展与Bloom燃料电池相关的碳捕集与封存研究，研究结果用于未来CCS部署决策。",
+      "与目标公司的关系": "直接关联Bloom燃料电池的排放管理与Project Jupiter项目路径。",
+      "来源": "[Oracle CCS研究公告](https://www.oracle.com/news/announcement/oracle-announces-research-into-carbon-capture-2026-09-08/)",
+      "来源发布日期": "2026-09-08"
+    },
+    {
+      "时间": "2031年",
+      "未来事项": "Oracle目标在2031年前为Project Jupiter实现100%碳无能源匹配（carbon-free energy matching）。",
+      "与目标公司的关系": "目标直接针对采用Bloom燃料电池的Project Jupiter，但公告未将目标拆分为Bloom供货量。",
+      "来源": "[Oracle CCS研究公告](https://www.oracle.com/news/announcement/oracle-announces-research-into-carbon-capture-2026-09-08/)",
+      "来源发布日期": "2026-09-08"
+    },
+    {
+      "时间": "Project Jupiter数据中心投运后（具体日期未公布）",
+      "未来事项": "Oracle将上线Project Jupiter环境数据公共仪表盘，并委托独立第三方每年两次评估空气、噪声、热、光、水及燃料电池排放等运营指标。",
+      "与目标公司的关系": "直接关联Bloom燃料电池微电网投运后的环境数据披露与社区监测。",
+      "来源": "[Oracle Project Jupiter环境数据公告](https://www.oracle.com/news/announcement/project-jupiter-to-provide-environmental-data-to-the-public-2026-09-08/)",
+      "来源发布日期": "2026-09-08"
+    },
+    {
+      "时间": "2026-10-05 17:00（美国东部时间）",
+      "未来事项": "FERC就Green Chile Project（CP26-80-000）环境评估征求意见；Transwestern拟建约17.77英里天然气管道，评论截止至该时间。",
+      "与目标公司的关系": "该管道拟为Doña Ana County AI数据中心电力生成提供天然气，是Project Jupiter Bloom燃料电池微电网的上游燃料供应与许可路径；环境评估不是最终授权。",
+      "来源": "[Federal Register Notice 2026-18455](https://public-inspection.federalregister.gov/2026-18455.pdf)【cite:O72】",
+      "来源发布日期": "2026-09-10"
+    },
+    {
+      "时间": "2026年9月下旬（NERC公告称下周）",
+      "未来事项": "NERC将核验计算负荷可靠性标准初步投票结果并发布意见报告。",
+      "与目标公司的关系": "AI/数据中心等计算负荷是Bloom客户现场电力场景的外部可靠性与注册标准环境；Bloom不是制定主体。",
+      "来源": "[NERC公告](https://www.nerc.com/newsroom/computational-loads-standards-advance-following-initial-ballot)",
+      "来源发布日期": "2026-09-19"
+    },
+    {
+      "时间": "2026年第四季度",
+      "未来事项": "NERC计划在继续意见审查后推进计算负荷可靠性标准的提交。",
+      "与目标公司的关系": "标准化进程直接影响Bloom所服务的AI数据中心和大型计算负荷的并网、注册及运行要求。",
+      "来源": "[NERC公告](https://www.nerc.com/newsroom/computational-loads-standards-advance-following-initial-ballot)",
+      "来源发布日期": "2026-09-19"
+    },
+    {
+      "时间": "2026-12-31",
+      "未来事项": "FERC在RD26-7-000命令中要求NERC提交与计算负荷整合相关的新/修订可靠性标准并修订注册规则。",
+      "与目标公司的关系": "Bloom的AI数据中心客户及现场电力项目可能处于该计算负荷可靠性框架的外部适用环境中；不代表Bloom已获得任何订单。",
+      "来源": "[NERC 2026 FERC Orders and Rules](https://www.nerc.com/who-we-are/regulatory/ferc-orders-and-rules/2026)",
+      "来源发布日期": "2026-07-16"
+    },
+    {
+      "时间": "2027年（预计2027年初开始联合设备验证；船舶计划于2027年交付）",
+      "未来事项": "MOL与Samsung Heavy Industries计划在一艘174,000立方米LNG运输船上安装Bloom供应的300kW SOFC，并开展联合设备验证。",
+      "与目标公司的关系": "直接关联Bloom Marine Power Module/SOFC的海事商业化和客户交付。",
+      "来源": "[MOL公告](https://www.mol.co.jp/en/pr/2025/25053.html)",
+      "来源发布日期": "2025-06-04"
+    },
+    {
+      "时间": "2027年起",
+      "未来事项": "NVIDIA计划随Kyber机架规模系统启动800VDC数据中心基础设施的大规模生产/部署；Bloom已将其原生800V DC燃料电池定位为该AI基础设施架构的供电方案。",
+      "与目标公司的关系": "Bloom的Energy Server/固体氧化物平台暴露于800V AI机架的应用适配与客户采购；Bloom未声称与NVIDIA形成商业合作。",
+      "来源": "[NVIDIA Technical Blog](https://developer.nvidia.com/blog/?p=100571); [Bloom Energy报告](https://www.bloomenergy.com/news/the-new-rules-of-ai-power-report/)",
+      "来源发布日期": "2025-05-20；2026-09-16"
+    },
+    {
+      "时间": "后续大负荷项目（具体日期未公布）",
+      "未来事项": "Bloom将对大型负荷项目更多采用认证第三方安装商施工、Bloom提供consult-only咨询的交付模式。",
+      "与目标公司的关系": "直接关联Energy Server大型AI/数据中心项目的安装责任、验收与交付节奏。",
+      "来源": "[Bloom 2026 Q2 Form 10-Q](https://www.sec.gov/Archives/edgar/data/1664703/000162828026050247/be-20260630.htm)【cite:O69】",
+      "来源发布日期": "2026-07-28"
+    },
+    {
+      "时间": "后续建设阶段（具体时点取决于实施里程碑、供应商交期和客户需求）",
+      "未来事项": "Bloom将继续在Fremont和Delmarva制造设施进行资本投入以扩大生产能力。",
+      "与目标公司的关系": "服务Energy Server和固体氧化物平台的扩产执行里程碑；10-Q明确时间和金额取决于实施里程碑、供应商交期和客户需求。",
+      "来源": "[Bloom 2026 Q2 Form 10-Q](https://www.sec.gov/Archives/edgar/data/1664703/000162828026050247/be-20260630.htm)【cite:O69】",
+      "来源发布日期": "2026-07-28"
+    }
+  ],
+  "metadata": {}
+}

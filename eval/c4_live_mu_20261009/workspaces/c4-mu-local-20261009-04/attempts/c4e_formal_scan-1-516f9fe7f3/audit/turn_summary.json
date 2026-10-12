@@ -1,0 +1,86 @@
+{
+  "schema_version": "codex-d1-turn-summary-v1",
+  "run_id": "c4-mu-local-20261009-04",
+  "attempt_id": "c4e_formal_scan-1-516f9fe7f3",
+  "node": "c4e_formal_scan",
+  "model": "gpt-6-sol",
+  "model_provider": null,
+  "job_status": "succeeded",
+  "thread_id": "01a1210f-f512-71d2-861b-5905165488ad",
+  "turn_id": "01a1211d-4191-7012-acfe-45e2b304c82c",
+  "usage": {
+    "input_tokens": 181755,
+    "cached_input_tokens": 175488,
+    "output_tokens": 5984,
+    "reasoning_output_tokens": 118,
+    "total_tokens": 187739
+  },
+  "observed_usage": {
+    "input_tokens": 181755,
+    "cached_input_tokens": 175488,
+    "output_tokens": 5984,
+    "reasoning_output_tokens": 118,
+    "total_tokens": 187739
+  },
+  "sdk_duration_ms": 449460,
+  "worker_wall_time_ms": 455234,
+  "mcp_call_count": 53,
+  "command_call_count": 9,
+  "subagent_call_count": 0,
+  "file_change_count": 0,
+  "slowest_steps": [
+    {
+      "sequence": 27,
+      "event": "item.completed",
+      "item_type": "mcp_tool_call",
+      "name": "source_capture.capture_source",
+      "status": "completed",
+      "duration_ms": 26301,
+      "summary": "completed"
+    },
+    {
+      "sequence": 15,
+      "event": "item.completed",
+      "item_type": "mcp_tool_call",
+      "name": "source_capture.capture_source",
+      "status": "completed",
+      "duration_ms": 12214,
+      "summary": "completed"
+    },
+    {
+      "sequence": 20,
+      "event": "item.completed",
+      "item_type": "mcp_tool_call",
+      "name": "source_capture.capture_source",
+      "status": "completed",
+      "duration_ms": 6066,
+      "summary": "completed"
+    },
+    {
+      "sequence": 17,
+      "event": "item.completed",
+      "item_type": "mcp_tool_call",
+      "name": "source_capture.capture_source",
+      "status": "completed",
+      "duration_ms": 5883,
+      "summary": "completed"
+    },
+    {
+      "sequence": 50,
+      "event": "item.completed",
+      "item_type": "mcp_tool_call",
+      "name": "source_capture.capture_source",
+      "status": "completed",
+      "duration_ms": 2999,
+      "summary": "completed"
+    }
+  ],
+  "failures": [],
+  "validation": {
+    "schema": "passed",
+    "progressive": "passed",
+    "citation": "passed",
+    "citation_warnings": [],
+    "error": null
+  }
+}

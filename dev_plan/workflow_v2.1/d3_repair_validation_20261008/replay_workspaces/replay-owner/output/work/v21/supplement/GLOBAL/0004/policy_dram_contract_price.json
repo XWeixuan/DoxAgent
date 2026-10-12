@@ -1,0 +1,41 @@
+{
+  "policy_id": "pol_b1258b4c4b234de5aa70db5792884103",
+  "title": "DRAM跨终端供给分配下的合约价格路径",
+  "ref": [
+    "output/work/v21/discovery/GLOBAL.jsonl#L7",
+    "output/work/v21/discovery/OPEN.jsonl#L4",
+    "output/work/v21/research/GLOBAL/0005/policy_dram_contract_price.json",
+    "context/document3/v21/shared/global/0002.txt",
+    "context/document3/v21/shared/global/0003.txt",
+    "context/document3/v21/shared/document2.json#/shells/0/units/1",
+    "context/document3/v21/shared/document2.json#/shells/0/units/2",
+    "https://www.trendforce.com/presscenter/news/20260703-13134.html",
+    "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+    "https://www.trendforce.com/presscenter/news/20251029-12758.html",
+    "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+  ],
+  "transmission": "美光FY26 Q4的DRAM收入为398亿美元、占总收入73%，该季DRAM收入环比增长主要由售价上升高十几百分点而非同幅位增长驱动。TrendForce截至2026年9月30日仍预计4Q26常规DRAM整体合约价上涨10%–15%，但较其3Q26的13%–18%预期放缓；服务器优先和消费端成本压力已知。若同口径的本季度广泛合约价路径比这一预测进一步上移或下移一个有分量的档位，会改变美光可重定价DRAM的价格持续期判断；行业合约价不等于美光实现ASP，HBM及部分长期客户协议的既定价格会缓冲即时传导。HBM、服务器和消费端晶圆分配也影响位数与组合，不能只凭配额消息直接确定美光净利润方向。",
+  "match_scope": "召回TrendForce等有连续口径的行业机构对4Q26整体常规DRAM合约价的更新预测、季度成交价调查，以及主要内存厂商在HBM、服务器RDIMM、PC和手机DRAM间调整供给、客户库存和交期的有出处消息。未来可见情景包括原预计放缓的全市场合约价重新加速，或消费端承受力减弱令其大幅放缓；同一机构发布覆盖整季的实际调查也可用于比较。配额调整、某一PC/服务器型号报价、现货价、HBM合同价及美光ASP消息均相关但不自动命中；例子非穷举，具体越界依下列同口径Conditions。",
+  "activation_conditions": [
+    {
+      "condition_id": "C1",
+      "decision": "LONG",
+      "trigger_layer": "MIDDLE",
+      "criterion": "此前给出4Q26常规DRAM整体合约价预测的同一行业机构，发布该季度同口径的更新预测或覆盖整季的合约成交价调查，确认总体环比涨幅从原预计放缓转为广泛再加速。",
+      "calibration": {
+        "reference_state": "TrendForce 2026-09-30对4Q26整体常规DRAM合约价预测为环比+10%–15%（中点12.5%），低于其2026-07-03对3Q26的+13%–18%预测；服务器DRAM仍偏紧，PC/手机价格承受力和长期协议抑制部分即时重订已经在基线中。美光FY26 Q4 DRAM实现价环比上升高十几百分点，与行业合约价并非同一口径。",
+        "trigger_boundary": "同一机构对整个4Q26常规DRAM合约价的新版区间下沿达到或超过原上沿15%，且中点至少17.5%环比（例如由+10%–15%升为+15%–20%）；若发布的是同口径整季单点调查值，则至少17.5%。这比旧中点高约5个百分点，使原预计的放缓至少不再成立，并触及占美光收入大头、受价格驱动的DRAM业务；无需等中点越过上一季度预测上沿18%，也不等美光下一次财报。仅上沿扩宽、单一型号涨价或现货/HBM价格变化不足。"
+      }
+    },
+    {
+      "condition_id": "C2",
+      "decision": "SHORT",
+      "trigger_layer": "MIDDLE",
+      "criterion": "此前给出4Q26常规DRAM整体合约价预测的同一行业机构，发布该季度同口径的更新预测或覆盖整季的合约成交价调查，确认总体环比涨幅较原预期大幅收窄。",
+      "calibration": {
+        "reference_state": "TrendForce 2026-09-30对4Q26整体常规DRAM合约价的基线为环比+10%–15%（中点12.5%）：价格仍涨但增速较3Q26原预计+13%–18%放缓。服务器优先、消费需求承压与美光部分长期协议缓冲均已知；美光FY26 Q4自身实现价高十几百分点增长不等于该行业合约价。",
+        "trigger_boundary": "同一机构对整个4Q26常规DRAM合约价的新版区间上沿不高于旧下沿10%，且中点不高于7.5%环比（例如由+10%–15%降为+5%–10%）；若发布同口径整季单点调查值，则不高于7.5%。这是从旧中点至少下移约5个百分点、预期季度涨幅损失约四成的行业级再定价，足以削弱可重定价DRAM的高价持续期，即使价格仍为正也无需等到涨幅归零或公司ASP下跌。单一消费型号折价、仅上沿下移但中点未越界及现货/公司不同口径不算。"
+      }
+    }
+  ]
+}

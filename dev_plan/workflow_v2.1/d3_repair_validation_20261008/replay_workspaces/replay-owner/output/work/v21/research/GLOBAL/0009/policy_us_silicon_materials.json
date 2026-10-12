@@ -1,0 +1,33 @@
+{
+  "policy_id": "pol_dc0e3529a2c84cbebc792f8fcbc43121",
+  "title": "美国300毫米原生硅晶圆的长期供货落实",
+  "ref": [
+    "context/document3/v21/shared/global/0003.txt",
+    "context/document3/v21/shared/global/structure.json",
+    "https://investors.micron.com/news/press-release/2026/Micron-Announces-Up-to-3-Billion-Strategic-Investment-to-Strengthen-U-S--Semiconductor-Ecosystem/default.aspx"
+  ],
+  "transmission": "原生硅晶圆是美光新DRAM晶圆厂必须持续采购的前端材料。美光2026年7月宣布拟向GlobalWafers的得州Sherman 300毫米晶圆设施提供5亿美元战略融资并建立十年供货关系，但公司明确交易仍待最终协议、审批和交割；GlobalWafers被双方公告描述为可在美国本地生产先进300毫米晶圆的关键供应方。对计划长期提高美国DRAM生产比重的美光，拟议安排转为有约束的本土材料渠道，可降低区域集中和输入中断风险；相反交易失败削弱该本土化路径。融资承诺与供货权不等于硅晶圆已经合格交付，也不能直接记为新增DRAM位数。",
+  "match_scope": "召回美光、GlobalWafers及项目审批方关于Sherman设施的十年协议、融资交割、保留产能、材料认证、合格晶圆交付、合作缩减或失败的消息。最终合同成立、工厂试产和向美光实物交货属不同阶段；其他美国材料供应商若形成同类保障也应关注。示例非穷举，不因单纯宣称合作或完成建设就自动命中。",
+  "activation_conditions": [
+    {
+      "condition_id": "C1",
+      "decision": "LONG",
+      "trigger_layer": "MIDDLE",
+      "criterion": "美光与GlobalWafers确认，面向Sherman美国300毫米原生硅晶圆产能的十年供货协议已成为有约束力的最终合同，明确美光取得该厂长期供货权。",
+      "calibration": {
+        "reference_state": "2026-07-09美光称将提供5亿美元融资并拟进入十年供货协议，但明确仍受最终合同、惯常审批和交割条件约束；截至2026-09-30本次可核验的公司材料未确认交易最终交割或向美光合格交货。拟议关系已经进入当前预期，不可把旧公告重复当新签约。",
+        "trigger_boundary": "原先可撤回、待审批的供货意向转为有约束力的十年美国材料供应权，就已消除材料渠道能否签成的关键风险；无需同时等待融资现金交割或首次晶圆交货。仅双方继续谈判、一般意向文本或单独工厂开机仍未越界。"
+      }
+    },
+    {
+      "condition_id": "C2",
+      "decision": "SHORT",
+      "trigger_layer": "MIDDLE",
+      "criterion": "美光或GlobalWafers确认原定5亿美元融资及对应十年美国300毫米硅晶圆供货交易已经终止，且不再推进同一美国供货安排。",
+      "calibration": {
+        "reference_state": "现有安排为2026-07提出但待最终协议和审批的供货及融资交易；美光计划扩大美国DRAM制造，尚不能把意向安排计为已经受保障的本地材料供给。公司有全球供应链，交易失败也不等于所有硅晶圆断供。",
+        "trigger_boundary": "双方明确放弃该项美国本地供货渠道，而非交割时间尚未公布、文件谈判延期或改用等效本土供货协议，才使原先纳入扩产规划的一条关键区域韧性路径消失。协议终止事实本身足够，不要求等到ID1/ID2停产或公司财务损失。"
+      }
+    }
+  ]
+}

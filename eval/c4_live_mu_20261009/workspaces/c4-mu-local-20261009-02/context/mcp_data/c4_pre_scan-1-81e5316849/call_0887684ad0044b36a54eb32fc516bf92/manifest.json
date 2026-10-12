@@ -1,0 +1,122 @@
+{
+  "selected_aliases": [
+    "O20",
+    "O23",
+    "O24",
+    "O25",
+    "O26",
+    "O40",
+    "O28",
+    "O29",
+    "O21",
+    "O22",
+    "O27",
+    "O34",
+    "O36",
+    "O38",
+    "O41",
+    "O43"
+  ],
+  "blocks": [
+    {
+      "alias": "O20",
+      "path": "blocks/O20.md"
+    },
+    {
+      "alias": "O21",
+      "path": "blocks/O21.md"
+    },
+    {
+      "alias": "O22",
+      "path": "blocks/O22.md"
+    },
+    {
+      "alias": "O23",
+      "path": "blocks/O23.md"
+    },
+    {
+      "alias": "O24",
+      "path": "blocks/O24.md"
+    },
+    {
+      "alias": "O25",
+      "path": "blocks/O25.md"
+    },
+    {
+      "alias": "O26",
+      "path": "blocks/O26.md"
+    },
+    {
+      "alias": "O27",
+      "path": "blocks/O27.json"
+    },
+    {
+      "alias": "O28",
+      "path": "blocks/O28.json"
+    },
+    {
+      "alias": "O29",
+      "path": "blocks/O29.json"
+    },
+    {
+      "alias": "O30",
+      "path": "blocks/O30.json"
+    },
+    {
+      "alias": "O31",
+      "path": "blocks/O31.json"
+    },
+    {
+      "alias": "O32",
+      "path": "blocks/O32.json"
+    },
+    {
+      "alias": "O33",
+      "path": "blocks/O33.json"
+    },
+    {
+      "alias": "O34",
+      "path": "blocks/O34.json"
+    },
+    {
+      "alias": "O35",
+      "path": "blocks/O35.md"
+    },
+    {
+      "alias": "O36",
+      "path": "blocks/O36.json"
+    },
+    {
+      "alias": "O37",
+      "path": "blocks/O37.md"
+    },
+    {
+      "alias": "O38",
+      "path": "blocks/O38.json"
+    },
+    {
+      "alias": "O39",
+      "path": "blocks/O39.md"
+    },
+    {
+      "alias": "O40",
+      "path": "blocks/O40.json"
+    },
+    {
+      "alias": "O41",
+      "path": "blocks/O41.json"
+    },
+    {
+      "alias": "O42",
+      "path": "blocks/O42.md"
+    },
+    {
+      "alias": "O43",
+      "path": "blocks/O43.json"
+    },
+    {
+      "alias": "O44",
+      "path": "blocks/O44.md"
+    }
+  ]
+}

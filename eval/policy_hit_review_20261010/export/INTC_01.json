@@ -1,0 +1,754 @@
+{
+  "format": "doxagent.policy-hit-review.v1",
+  "ticker": "INTC",
+  "window": {
+    "since_utc": "2026-09-18T18:59:35.983285+00:00",
+    "as_of_utc": "2026-10-09T18:59:35.983285+00:00"
+  },
+  "part": 1,
+  "record_count": 2,
+  "records": [
+    {
+      "policy_hit_id": "case_1c3c8ce3cd5b401abd6a16176f33f579:pol_05fe8d54fb3f72681720",
+      "ticker": "INTC",
+      "case_id": "case_1c3c8ce3cd5b401abd6a16176f33f579",
+      "hit_observed_at_utc": "2026-10-04T08:01:57.023Z",
+      "hit_current": true,
+      "policy_id": "pol_05fe8d54fb3f72681720",
+      "activation_revision": "ar_44c71a913953384ab28d2dc9",
+      "policy": {
+        "frozen_match": {
+          "activation_revision": "ar_44c71a913953384ab28d2dc9",
+          "condition_ids": [
+            "C1"
+          ],
+          "criterion": [
+            "Intel后续单季重组及其他费用或新减值超过10亿美元，并在GAAP营业利润或EPS桥中形成可识别拖累。"
+          ],
+          "match_scope": "召回Intel重组及其他费用、减值、股权薪酬、GAAP/非GAAP对账、营业利润和EPS影响。",
+          "policy_id": "pol_05fe8d54fb3f72681720"
+        },
+        "pinned_detail": {
+          "activation_semantics": "OR",
+          "policy": {
+            "activation_conditions": [
+              {
+                "calibration": {
+                  "reference_state": "Q2 FY2026重组及其他费用仅1.70亿美元，较Q1的40.7亿美元显著下降。",
+                  "trigger_boundary": "费用须超过10亿美元并明确影响GAAP利润/EPS；相对1.70亿美元基数的较小波动不触发。"
+                },
+                "condition_id": "C1",
+                "criterion": "Intel后续单季重组及其他费用或新减值超过10亿美元，并在GAAP营业利润或EPS桥中形成可识别拖累。"
+              }
+            ],
+            "decision": "SHORT",
+            "match_scope": "召回Intel重组及其他费用、减值、股权薪酬、GAAP/非GAAP对账、营业利润和EPS影响。",
+            "policy_id": "pol_05fe8d54fb3f72681720",
+            "source_refs": [
+              {
+                "expectation_id": "Intel多季度经营盈利改善持续性",
+                "gap_id": "重组及其他费用低基数重新出现",
+                "shell_id": "Intel经营盈利与指引持续性"
+              }
+            ],
+            "title": "重组与减值费用重新抬头"
+          },
+          "source_document2": {
+            "artifact_id": "90ebb7e65c874d42b9bbc75bcdb4becf",
+            "content_sha256": "9a3c9991f72c8d0d0e0dbc6269cf3f5bd9f15cf06a3e3e60d8d0883b814c669c",
+            "published_at": "2026-09-22T04:41:07.041613Z",
+            "run_id": "init-intc-738849dbdbb04ae1a39efa0aec69c071-d2",
+            "schema_version": "document2.v2"
+          },
+          "summary": {
+            "consumed": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "consumed_at": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "decision": "SHORT",
+            "effective": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "lifecycle": "ACTIVE",
+            "matched_filters": [
+              "ACTIVE"
+            ],
+            "policy_activation_revision": "ar_44c71a913953384ab28d2dc9",
+            "policy_id": "pol_05fe8d54fb3f72681720",
+            "policy_revision_id": "8390abdc9dc78795a7bcf0be63dbccb19ec1507ac9f538a7d60a8424c0302b6d",
+            "policy_set_version": 9,
+            "shell_ids": [
+              "Intel经营盈利与指引持续性"
+            ],
+            "title": "重组与减值费用重新抬头",
+            "unresolved_shell_ids": []
+          }
+        },
+        "policy_set_version": 9,
+        "activation_revision_id": "runtime-maintain-6dde6ad3293207165836e286-activation"
+      },
+      "hit_policy_released_for_trade": false,
+      "case_summary": {
+        "case_id": "case_1c3c8ce3cd5b401abd6a16176f33f579",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-10-04T08:01:58.007666Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 4966.367991
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": true
+        },
+        "first_round_shape": "SEQUENTIAL",
+        "initial_route": "TRADE",
+        "member_count": 1,
+        "received_at": "2026-10-04T06:39:11.639675Z",
+        "resolved_route": null,
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY"
+        ],
+        "revision": 3037000,
+        "runtime_mode": "CLOSED",
+        "semantic_day": "2026-10-04",
+        "source": {
+          "binding_id": "INTC:google_news_search_rss",
+          "kind": "api",
+          "name": "Google News Search RSS",
+          "source_id": "google_news_search_rss"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_c63cb90a1cab41c391d1f621fd83cf8d",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Why Is Intel (INTC) Stock Volatile After Earnings? Revenue Beat Overshadowed by $11 Billion Loss - TradingKey"
+        },
+        "trade": {
+          "intent_count": 0,
+          "reason_codes": [],
+          "state": "NOT_APPLICABLE"
+        },
+        "trade_disposition": "CANDIDATE",
+        "w3_status": null
+      },
+      "case_process": {
+        "created_at": "2026-10-04T06:39:11.639675Z",
+        "completed_at": "2026-10-04T08:01:58.007666Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "CLOSED",
+        "route": {
+          "primary_route": "TRADE",
+          "reason": "w1=NEW/normal;policy_hit=true;w2=normal",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "resolved_route": null,
+        "closed_cycle_id": "2026-10-03",
+        "sweep_id": "sweep:INTC:2026-10-04",
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E16",
+            "E55"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [
+            {
+              "event_id": "E16",
+              "fact_ids": [
+                "F99",
+                "F98",
+                "F119",
+                "F109"
+              ]
+            }
+          ],
+          "reason": "消息中18A良率从约65%提升至约85%、开始高NA EUV量产Core Ultra Series 3、18A-P进入风险试产、与SambaNova/Foxconn建立AI基础设施合作、超130家客户测试Edge AI/机器人芯片等制造与商业进展事实，未被E16中已记录的earnings数据（营收、EPS、净亏损、Q3收入指引）所覆盖，属于同一Intel运营过程下的新核心进展。",
+          "reference_ids": [
+            "E16"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [
+            "pol_05fe8d54fb3f72681720"
+          ],
+          "reason": "消息明确报告Intel Q2因重组产生约110亿美元净亏损（GAAP每股亏损2.16美元 vs 调整后每股盈利0.42美元），远超10亿美元阈值，且GAAP与non-GAAP EPS桥中重组构成可识别拖累，直接触及该Policy的重组费用超限及EPS影响触发条件。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [
+            {
+              "condition_ids": [
+                "C1"
+              ],
+              "policy_id": "pol_05fe8d54fb3f72681720"
+            }
+          ],
+          "policy_ids": [
+            "pol_05fe8d54fb3f72681720"
+          ],
+          "reason": "消息明确陈述Intel Q2净亏损约110亿美元，且直接与restructuring costs挂钩（'net loss of about $11 billion...linked to restructuring'）。GAAP EPS为-$2.16 vs 调整EPS $0.42，重组费用在GAAP EPS桥中形成清晰可识别拖累，远超10亿美元触发阈值，也远超参考基线1.70亿美元。C1完整成立。"
+        },
+        "w2_skipped": false,
+        "w3_result": null
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "42869c44b2701dad31858d1592c127db506c03a57e925f1c77bd29b857ab4a50",
+            "content_type": "text/plain",
+            "sha256": "eb03dcfaea343409bb7dbf64d1f104ef3e1a9181f6b70c1f23f48520b90b4d8c",
+            "size_bytes": 8094
+          },
+          "case": {
+            "case_id": "case_1c3c8ce3cd5b401abd6a16176f33f579",
+            "initial_route": "TRADE",
+            "resolved_route": null,
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": null
+          },
+          "collected_at": "2026-10-04T06:30:05.467123Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-10-04T06:39:08.969711Z",
+          "revision": 1,
+          "row_revision": 3037000,
+          "source": {
+            "binding_id": "INTC:google_news_search_rss",
+            "kind": "api",
+            "name": "Google News Search RSS",
+            "source_id": "google_news_search_rss"
+          },
+          "source_published_at": "2026-10-03T11:52:09Z",
+          "standard_message_id": "std_e01b365aebf945ea80acb032d36ace5b",
+          "stream_item_id": "stream_c63cb90a1cab41c391d1f621fd83cf8d",
+          "stream_offset": 915,
+          "stream_published_at": "2026-10-04T06:39:08.976050Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Why Is Intel (INTC) Stock Volatile After Earnings? Revenue Beat Overshadowed by $11 Billion Loss - TradingKey"
+          },
+          "url": "https://www.tradingkey.com/analysis/stocks/us-stocks/262052631-why-is-intel-intc-stock-volatile-after-q2-2026-earnings-tradingkey",
+          "body_text": "Why Is Intel (INTC) Stock Volatile After Earnings? Revenue Beat Overshadowed by $11 Billion Loss\nIntel reported Q2 revenue of $16.1 billion, beating estimates, with margins rising to 40.4%. Despite a positive Q3 outlook and improved 18A manufacturing yields, shares retreated due to a $11 billion net loss linked to restructuring. While demand for server processors and AI infrastructure remains robust, persistent competitive pressure from AMD and uncertainty surrounding restructuring costs fuel analyst divergence. Technically, the stock remains in a descending channel; a sustained recovery requires breaking resistance at $108.03, while holding $96.74 support is critical to prevent further downside as investors weigh operational progress against significant transition costs.\nTradingKey - Even though the chipmaker's second-quarter revenue surpassed Wall Street estimates, along with an increase in gross margins and a more upbeat third-quarter forecast, the stock was unable to keep pace with its initial gain after reports.\nTrading nearly 10% higher in after-hours trading initially, shares of Intel (NASDAQ: INTC) retreated following investors weighing in on its $11 billion net loss in relation to restructuring costs. It remains to be seen if the stronger demand, increasing 18A ramp-up progress, and better profitability will make up for the losses associated with restructuring the company's business.\nRevenue Beat Expectations, But Losses Grew\nIntel generated revenues of $16.1 billion in Q2, 25% higher than one year ago and above Wall Street's estimate of about $14.4 billion. Gross margin also jumped dramatically to 40.4% on a GAAP basis, and adjusted earnings placed at $0.42 per share, contrasting with a loss of $0.10 in the previous year's period.\nHowever, the biggest talking point was the bottom line. Intel, meanwhile, reported a net loss of about $11 billion, or $2.16 per share, compared with a $2.9 billion loss a year ago. The stock's early rally was driven in part by that huge loss, which blunted the rest of the stock's operating performance.\nQ3 Outlook Suggests Recovery Is Continuing\nFor the future, Intel is projecting revenue of $15.8 billion to $16.8 billion and reported EPS of $0.31 and adjusted EPS of $0.38 for the third quarter.\nManagement's guidance implies demand will be sustained, especially for its server processors, over the next couple months. Investors will be waiting to gauge if this quarter is a harbinger of a sustained recovery, or just a good quarter.\nPrior to the earnings report, options traders were anticipating a swing of around 12% to 15% on Thursday, and it was clear how split the market was, as it swung wildly in the after-hours session.\nIntel's 18A Manufacturing Progress Is Driving Optimism\nIn addition to the financial performance, much of Wall Street is still focused on Intel's manufacturing turnaround.\nThe company's 18A process technology is also a key component of the company's foundry approach and was reportedly able to upgrade manufacturing yields to approximately 85% from around 65% 3 months ago.\nIntel has also begun high-volume production of the selected Core Ultra Series 3 processors with ASML's High-NA EUV technology, while the improved 18A-P process is in risk production. In the quarter, Intel unveiled its first server processor using 18A nodes, Xeon 6+, and announced new partnerships for AI infrastructure with SambaNova and Foxconn.\nHowever, over 130 customers are reportedly testing Intel's new Core Ultra and Core Series 3 chips for use in edge AI and robotics applications, indicating that the company's manufacturing approach is starting to show signs of commercial traction.\nAnalysts Became More Bullish Before Earnings\nThe overall analyst consensus is Hold but Wall Street had begun to increase price targets in advance of the report.\nKeyBanc raised its target to $155, UBS its target to $121, and TD Cowen and Susquehanna both upped theirs to $115. Citi has kept its Buy rating and set a $130 price goal for Intel, projecting that the company could gain almost half of the CPU market by 2030.\nHSBC is still one of the most bullish names with a price target of $200, while Rosenblatt's team is the most bearish, stuck with a Sell rating and a price target of $65, given manufacturing concerns that could continue to hamper Intel's recovery.\nThe wide spread of price targets reflects the uncertainty among analysts about the company's future.\nAMD Still Poses the Biggest Competitive Threat\nWhile progress has been made, Intel is still facing competition from AMD, especially in the data center market, which Intel had long ruled.\nSome analysts also have raised concerns that the memory shortage will hinder PC sales in the second half of 2026, adding further pressure on margins even as Intel's foundry operation improves.\nKey Levels to Watch\nThe average analyst price target is now approximately $113.72, which suggests some downside from current prices. The stock is rated a consensus 8 buys, 20 holds, and 2 sells among 30 analysts.\nImage Source: tipranks\nFrom a technical perspective, $109 has become an important resistance level, while $100 continues to act as key psychological support. Any move above $109 could help sustain the bulls' momentum while a pullback below $100 could bring the shares back to the $82-$89 range.\nThe results delivered by Intel were above expectations and helped drive up margins, while the progress around its 18A manufacturing roadmap continued as well. But the drastic $11 billion loss, which caught investors' eyes, reminds them that the restructuring is far from over.\nThe third quarter results will be the next big catalyst. Intel would have to keep improving manufacturing yields, and still have robust demand for servers to build confidence in the recovery. In the meantime, investors will keep weighing Intel's exciting progress at the office with the heavy price tag of its transition.\nIntel (NASDAQ: INTC) Technical Analysis: Descending Channel Caps Recovery as Resistance Holds\nIntel (NASDAQ: INTC), currently trading near $103.30, appears to be contained inside a clearly visible descending channel that continues to favor the bears. The rally from the recent lows is facing resistance near the channel top, just under the 50-period EMA at $105.68 and the 200-period EMA at $108.03, confirming that these levels have become a key resistance.\nIntel (INTC) Stock Price Chart - Source: Tradingview\nThe lower trend, characterized by lower highs and lower lows, still dominates the stock. Nevertheless, RSI has moved higher towards 50.9, which indicates that the selling momentum has decreased and we are currently in a neutral range, not an oversold one.\nA break of $105.68 and the descending trendline would be the first bullish sign, paving the way towards $106.72 and $108.03. Until that occurs, the price may go lower. A failure to stay above $96.74 will result in a drop down towards $89.45 as the longer-term downtrend persists.\nIn the meantime, Intel is at a technical turning point. Though the RSI has moved up, a break and close above the channel top is still required for sustained buying in the coming period.\nConclusion\nIntel's second quarter offered evidence of tangible operational improvement. Revenue came in above forecast, margins came back, and management issued a forward-looking 3Q outlook that suggests demand for data-centre processors and AI products is still good. The $11 billion net loss, however, reminded investors that Intel's turnaround is costly and has a long way to go.\nTo maintain confidence in the recovery from here, 18A progress, foundry execution, enterprise AI, and evidence of sustainable profitability will matter as much as beat rates. Reclaiming $105.68, and more importantly $108.03, is bullish; $96.74 is the key level of support to hold. The next few quarters will decide whether Intel can deliver sustainable growth in earnings, or whether restructuring will continue to mask better operational results.\nComments (0)\nClick the $ button, enter the symbol, and select to link a stock, ETF, or other ticker."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_e01b365aebf945ea80acb032d36ace5b:0\"]",
+          "created_at": "2026-10-04T07:29:49.024589Z",
+          "dedupe_key": "2b84334285419c427634d86d8dedf6760b6b86c1b696a79fc4eb8d0476935fbf",
+          "entities": [
+            "Intel",
+            "18A"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "Intel的18A制造工艺良率从约3个月前的约65%提升至约85%",
+          "provisional_event_id": "E340",
+          "subject_time": "Q2"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_e01b365aebf945ea80acb032d36ace5b:1\"]",
+          "created_at": "2026-10-04T07:29:49.063082Z",
+          "dedupe_key": "29821f045798af6e3df5fa2ad9647d4e2b952dff26c87c80732dc65b94bac9c4",
+          "entities": [
+            "Intel",
+            "Core Ultra Series 3",
+            "ASML"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "Intel已开始使用ASML High-NA EUV技术对选定的Core Ultra Series 3处理器进行高产量生产",
+          "provisional_event_id": "E341",
+          "subject_time": "Q2"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_e01b365aebf945ea80acb032d36ace5b:2\"]",
+          "created_at": "2026-10-04T07:29:49.081892Z",
+          "dedupe_key": "03314af59bc0dea042819199401280229e3cda81a2ecacd0d26f17a488f87ca1",
+          "entities": [
+            "Intel",
+            "18A-P"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "Intel改进的18A-P工艺已进入风险试产阶段",
+          "provisional_event_id": "E342",
+          "subject_time": "Q2"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_e01b365aebf945ea80acb032d36ace5b:3\"]",
+          "created_at": "2026-10-04T07:29:49.098117Z",
+          "dedupe_key": "22ef6eaf86c156129db9e7ff7b9c1f73c7dc3aec491ed4e1129b25d42114671b",
+          "entities": [
+            "Intel",
+            "Xeon 6+",
+            "18A"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "Intel发布首款采用18A节点的服务器处理器Xeon 6+",
+          "provisional_event_id": "E343",
+          "subject_time": "Q2"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_e01b365aebf945ea80acb032d36ace5b:4\"]",
+          "created_at": "2026-10-04T07:29:49.122421Z",
+          "dedupe_key": "4c4265eeb74d9f507d58581bd12d4f1060264a6e7cf48290d0b319d9634c1b56",
+          "entities": [
+            "Intel",
+            "SambaNova",
+            "Foxconn"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "Intel宣布与SambaNova和Foxconn建立AI基础设施新合作伙伴关系",
+          "provisional_event_id": "E344",
+          "subject_time": "Q2"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_e01b365aebf945ea80acb032d36ace5b:5\"]",
+          "created_at": "2026-10-04T07:29:49.144204Z",
+          "dedupe_key": "f275366ca8f32e6d6a5c363918b2e571e44baa7d1f2890c8a9f145e3a5c0c4a0",
+          "entities": [
+            "Intel",
+            "Core Ultra",
+            "Core Series 3"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "超过130家客户正在测试Intel新款Core Ultra和Core Series 3芯片用于边缘AI和机器人应用",
+          "provisional_event_id": "E345",
+          "subject_time": "Q2"
+        }
+      ],
+      "trade": {
+        "intents": [],
+        "closed_candidates": [
+          {
+            "candidate_id": "candidate:case_1c3c8ce3cd5b401abd6a16176f33f579",
+            "status": "NOT_SELECTED",
+            "created_at": "2026-10-04T08:01:57.156946+00:00",
+            "closed_cycle_id": "2026-10-03",
+            "origin_trade_eligible": true,
+            "trade_disposition": null,
+            "trade": {
+              "decision": "SHORT",
+              "executed_policy_id": "pol_05fe8d54fb3f72681720",
+              "candidate_policy_ids": [
+                "pol_05fe8d54fb3f72681720"
+              ],
+              "matched_condition_ids": [
+                "C1"
+              ]
+            }
+          }
+        ],
+        "executions": []
+      }
+    },
+    {
+      "policy_hit_id": "case_e0b6c79ef0de469abde2ecaa856417f9:pol_e01e85c26b3941995263",
+      "ticker": "INTC",
+      "case_id": "case_e0b6c79ef0de469abde2ecaa856417f9",
+      "hit_observed_at_utc": "2026-10-04T08:47:57.113Z",
+      "hit_current": true,
+      "policy_id": "pol_e01e85c26b3941995263",
+      "activation_revision": "ar_1c59cdb17af38325416ce8f3",
+      "policy": {
+        "frozen_match": {
+          "activation_revision": "ar_1c59cdb17af38325416ce8f3",
+          "condition_ids": [
+            "C1"
+          ],
+          "criterion": [
+            "Intel完成2026年8月已定价普通股发行的基础交割，按每股95美元发行210,526,315股，披露实际净募集并确认现金到账；超额配售按最终行使情况另行计入。"
+          ],
+          "match_scope": "召回Intel 2026年8月普通股发行的交割日、实际净募集、最终股数、超额配售、现金到账及结算失败。",
+          "policy_id": "pol_e01e85c26b3941995263"
+        },
+        "pinned_detail": {
+          "activation_semantics": "OR",
+          "policy": {
+            "activation_conditions": [
+              {
+                "calibration": {
+                  "reference_state": "发行已按每股95美元定价，毛融资200亿美元、预计净募集197亿美元，但截至cutoff尚未确认交割、到账或最终股数。",
+                  "trigger_boundary": "最低边界是完成已定价基础发行交割、确认210,526,315股及实际净募集到账；仅定价、预计交割或未结算配售不触发。"
+                },
+                "condition_id": "C1",
+                "criterion": "Intel完成2026年8月已定价普通股发行的基础交割，按每股95美元发行210,526,315股，披露实际净募集并确认现金到账；超额配售按最终行使情况另行计入。"
+              }
+            ],
+            "decision": "LONG",
+            "match_scope": "召回Intel 2026年8月普通股发行的交割日、实际净募集、最终股数、超额配售、现金到账及结算失败。",
+            "policy_id": "pol_e01e85c26b3941995263",
+            "source_refs": [
+              {
+                "expectation_id": "Intel股权融资与资本计划充足性",
+                "gap_id": "股权发行交割并完成资金到账",
+                "shell_id": "Intel现金转换与资本融资"
+              }
+            ],
+            "title": "已定价股权发行完成现金交割"
+          },
+          "source_document2": {
+            "artifact_id": "90ebb7e65c874d42b9bbc75bcdb4becf",
+            "content_sha256": "9a3c9991f72c8d0d0e0dbc6269cf3f5bd9f15cf06a3e3e60d8d0883b814c669c",
+            "published_at": "2026-09-22T04:41:07.041613Z",
+            "run_id": "init-intc-738849dbdbb04ae1a39efa0aec69c071-d2",
+            "schema_version": "document2.v2"
+          },
+          "summary": {
+            "consumed": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "consumed_at": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "decision": "LONG",
+            "effective": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "lifecycle": "ACTIVE",
+            "matched_filters": [
+              "ACTIVE"
+            ],
+            "policy_activation_revision": "ar_1c59cdb17af38325416ce8f3",
+            "policy_id": "pol_e01e85c26b3941995263",
+            "policy_revision_id": "a4120e3f73ffa87d6f63ec86a5b14b079b15fef0c48d277f80994484936337f9",
+            "policy_set_version": 9,
+            "shell_ids": [
+              "Intel现金转换与资本融资"
+            ],
+            "title": "已定价股权发行完成现金交割",
+            "unresolved_shell_ids": []
+          }
+        },
+        "policy_set_version": 9,
+        "activation_revision_id": "runtime-maintain-6dde6ad3293207165836e286-activation"
+      },
+      "hit_policy_released_for_trade": false,
+      "case_summary": {
+        "case_id": "case_e0b6c79ef0de469abde2ecaa856417f9",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-10-04T08:47:59.425565Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 7797.123992
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": true
+        },
+        "first_round_shape": "SEQUENTIAL",
+        "initial_route": "TRADE",
+        "member_count": 1,
+        "received_at": "2026-10-04T06:38:02.301573Z",
+        "resolved_route": null,
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY"
+        ],
+        "revision": 3060567,
+        "runtime_mode": "CLOSED",
+        "semantic_day": "2026-10-04",
+        "source": {
+          "binding_id": "INTC:google_news_search_rss",
+          "kind": "api",
+          "name": "Google News Search RSS",
+          "source_id": "google_news_search_rss"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_868ad055da5244f19898cb000bd42269",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Intel Stock Forecast: $20 Billion Offering, AI Growth and Foundry Risks - TradingKey"
+        },
+        "trade": {
+          "intent_count": 0,
+          "reason_codes": [],
+          "state": "NOT_APPLICABLE"
+        },
+        "trade_disposition": "CANDIDATE",
+        "w3_status": null
+      },
+      "case_process": {
+        "created_at": "2026-10-04T06:38:02.301573Z",
+        "completed_at": "2026-10-04T08:47:59.425565Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "CLOSED",
+        "route": {
+          "primary_route": "TRADE",
+          "reason": "w1=NEW/normal;policy_hit=true;w2=normal",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "resolved_route": null,
+        "closed_cycle_id": "2026-10-03",
+        "sweep_id": "sweep:INTC:2026-10-04",
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E13",
+            "E16"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "消息中包含多项现有 Event 未覆盖的具体事实命题：Nvidia 50亿美元联合开发定制 x86 CPU 协议、参与 Elon Musk Terafab 项目、Intel 在爱尔兰追加 50亿欧元产能投资、美国政府对 Intel 约10%/89亿美元持股的具体规模披露、CEO Lip-Bu Tan 暗示重返存储市场、以及 Q2 经营现金流增长超三倍至70亿美元。这些属于\"某协议或客户关系取得新进展\"和\"重要数值出现新实际变化\"，构成独立于已覆盖的发行完成与财报数据的新核心事实。",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [
+            "pol_e01e85c26b3941995263",
+            "pol_3af29d91f015dd6ae6fd",
+            "pol_4d3c102787544f4251fb"
+          ],
+          "reason": "消息明确陈述Intel已完成2026年8月$20B普通股发行，210.5M股、每股$95，与pol_e01e85c26b3941995263的交割确认条件直接对应；Q2 Foundry收入同比增长31%至$5.8B、经营亏损约$2.1B（超过$2.089B阈值）且'缺乏外部客户收入'，与pol_3af29d91f015dd6ae6fd的Foundry收入上升但外部收入及亏损条件有具体事实对应；发行确认210.5M股稀释（约4.2%）与pol_4d3c102787544f4251fb要求的发行后稀释股数≥2.105亿股直接相关，完整判定需确认同口径每股指标。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [
+            {
+              "condition_ids": [
+                "C1"
+              ],
+              "policy_id": "pol_e01e85c26b3941995263"
+            }
+          ],
+          "policy_ids": [
+            "pol_e01e85c26b3941995263"
+          ],
+          "reason": "Policy pol_e01e85c26b3941995263命中：消息明确声明\"The $20 Billion Offering Is Now Complete\"及\"completed $20 billion stock offering\"，确认210.5 million shares按$95定价的发行已交割完成，满足trigger_boundary最低要求（完成交割、确认股数、到账），超出\"仅定价/预计交割/未结算\"阶段。Policy pol_3af29d91f015dd6ae6fd未命中：criterion要求\"后续季度\"Foundry收入增长，而消息报道的正是Q2 Foundry收入$5.8B（≈57.65亿），即reference_state所指的同一基准季度，非后续季度。Policy pol_4d3c102787544f4251fb未命中：criterion要求\"发行后的完整报告期\"给出稀释股数及同口径每股经营指标，消息仅含Q2（发行完成前的报告）总收入/利润增长数据，未提供发行后期间的每股现金流或每股利润可比值。"
+        },
+        "w2_skipped": false,
+        "w3_result": null
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "d67c9a0d0a01e710a5e5298c486482e9e3df4cfcb3d81f86e48a425cfe5b89a7",
+            "content_type": "text/plain",
+            "sha256": "3fba50cb47a745aec22531602e222f4b9ed94f3f82a12d27f3ae51948c5d10a4",
+            "size_bytes": 8260
+          },
+          "case": {
+            "case_id": "case_e0b6c79ef0de469abde2ecaa856417f9",
+            "initial_route": "TRADE",
+            "resolved_route": null,
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": null
+          },
+          "collected_at": "2026-10-04T06:30:05.467123Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-10-04T06:37:58.215792Z",
+          "revision": 1,
+          "row_revision": 3060567,
+          "source": {
+            "binding_id": "INTC:google_news_search_rss",
+            "kind": "api",
+            "name": "Google News Search RSS",
+            "source_id": "google_news_search_rss"
+          },
+          "source_published_at": "2026-10-03T14:37:34Z",
+          "standard_message_id": "std_209f5fb30fac4addac30a405f54f715a",
+          "stream_item_id": "stream_868ad055da5244f19898cb000bd42269",
+          "stream_offset": 868,
+          "stream_published_at": "2026-10-04T06:37:58.222948Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Intel Stock Forecast: $20 Billion Offering, AI Growth and Foundry Risks - TradingKey"
+          },
+          "url": "https://www.tradingkey.com/analysis/stocks/us-stocks/262103780-intel-stock-forecast-ai-foundry-tradingkey",
+          "body_text": "Intel Stock Forecast: $20 Billion Offering, AI Growth and Foundry Risks\nIntel shares rose following a completed $20 billion stock offering funding its turnaround and capital expenditures. While second-quarter revenue grew 25% year-over-year to $16.1 billion and margins improved, Wall Street remains divided over equity dilution and valuation multiples. Major challenges persist, including heavy losses in the foundry business, CPU market share losses to AMD, and high capital spending requirements. Although AI-driven demand and potential re-entry into the memory market offer growth catalysts, Intel must successfully attract external foundry customers and execute its manufacturing strategy to ensure long-term recovery.\nTradingKey - Intel (NASDAQ: INTC) rose by 4.41% on August 13 after a 3.3% increase on Wednesday, settling at $100.95. The move came as investors continued to digest the chipmaker’s newly completed $20 billion stock offering.\nThe move marks a significant reversal from a stock that's up more than 150% this year. Intel, though, is far from its June levels and still has a big issue to address: is AI-based demand strong enough to warrant the massive capital investment that the company is throwing at its turnaround?\nThe $20 Billion Offering Is Now Complete\nThe company had originally planned to sell $15 billion in shares, but the institutional demand amounted to $100 billion, so it expanded the offering to 210.5 million shares valued at $95 apiece.\nThe new shares represent about 4.2% of Intel's pre-offering sharecount of approximately 5.04 billion. The gross proceeds match the company's total capital expenditure guidance for 2026, which was increased by 21% from previous year to over $20 billion.\nInvestors so far seem to have been viewing the offering as a means to help Intel's turnaround, rather than as evidence of financial stress. Shares also closed well above the $95 offer price.\nWall Street Is Split Over Dilution and Long-Term Potential\nBut analysts have mixed views on Intel's next steps.\nBank of America maintained an \"outperform\" rating on the stock, but reduced its price estimate from $160 to $145, citing dilution due to the offering and lower valuation multiples for chip stocks that focus on AI.\nBoth UBS analyst Timothy Arcuri and J.P. Morgan's Harlan Sur have $112 and $85 targets, respectively, and both have Sell ratings, indicating significant downside risk from current levels.\nSeven of 32 analysts covered are Buys, 23 Hold and 2 are Sells. The average price expectation is about $118.93, implying a potential upside of about 18% from Wednesday's closing price.\nCiti's Atif Malik has been more bullish, boosting his price target to $130 from $95 earlier in the cycle.\nImage Source: tipranks\nIntel’s Operating Numbers Are Finally Improving\nThe stock’s rally is not based on the offering alone. Intel's core business has also seen some positive signs of improvement.\nSecond-quarter revenue rose by 25% year over year to $16.1 billion, the company's best performance since 2011. GAAP gross margin was up to 40.4% from 27.5%, and operating margin was positive at 11.1% versus a loss of 24.7% last year.\nCash flow from operations also increased more than tripled to $7 billion.\nServer chip prices have also seen an improvement. During the quarter, the average selling price stood at about $1,200, an increase of 43% from the same period a year ago. Growing demand for AI workloads is returning to CPUs in addition to GPUs, particularly in agentic AI applications.\nFoundry Is Still the Expensive Part of the Story\nOne of the largest hurdles in the turnaround is Intel's foundry business.\nFoundry revenue grew 31% to $5.8 billion in the quarter, but the unit still posted an operating loss of approximately $2.1 billion. There is also a lack of external revenue from customers outside Intel.\nThe company has invested a further €5 billion in Ireland to increase production capacity. The larger question is if Intel will attract enough outside customers to make the foundry viable in competition with TSMC.\nIntel is working to bolster that claim by a number of high-profile partnerships. These include Nvidia's $5 billion investment to co-develop custom x86 CPUs, involvement with Elon Musk's Terafab project and nearly 10% U.S. government equity stake with an estimated $8.9 billion investment.\nIntel May Be Eyeing a Return to Memory\nOne area that investors are keeping an eye on is the prospect of Intel getting into the memory market again.\nCEO Lip-Bu Tan has hinted that Intel could eventually move back into memory after leaving the market years ago. One of his personal projects is the description of new memory architectures, including possible designs to combine memory with CPUs in a stack.\nThe idea was enough to send Intel shares more than 4.5% higher in one session.\nIt is interesting that the global memory market is tight at the moment. Omdia data indicated that the PC market fell 3.6% year-over-year in the second quarter, stemming from the shortage of memory and rising prices.\nMemory is a critical component of the AI and computing supply chain, and Intel is currently dependent on suppliers including Micron and SK Hynix, so the return to the space could give the company greater control.\nWhile the new revenues are welcome, the financial success is no guarantee that Intel has solved all its problems.\nLosing Ground in CPUs Even While Winning the Narrative\nThe latest data from the Mercury Research is further evidence of Intel losing CPU market share to AMD. The PC market is also under cyclical pressure, and the company is investing heavily in new technology and manufacturing.\nMacroeconomic and geopolitical risks are contributing to the uncertainty. On-going technology trade bans and potential disturbances in the Strait of Hormuz may further complicate the recovery of Intel.\nIt leaves Intel with little room when it comes to execution blunders as it attempts to reconstruct its manufacturing operation, protect its CPU market share and carry out a much bigger capital spending initiative.\nAnalyst Targets and What to Watch Next\nTechnically, Intel's rally is nearing a resistance level at the 38.2% Fibonacci retracement level from its June high. The 200 day EMA is also a significant support level.\nIf a rejection occurs at current resistance, then it could push shares back to the moving average and trigger a further decline. But a hold higher would maintain the overall bullish trend and give the chance for a further run toward the June tops.\nIntel Stock Price Chart - Source: Tradingview\nVolume around the stock offering was approximately 42% higher than the average level, suggesting increased investor interest in Intel’s future moves.\nOther catalysts are expected to be third-quarter guidance for $15.8 billion to $16.8 billion in revenue and non-GAAP EPS of $0.38. Investors will also be waiting for further clues on the return of Intel to the memory industry and the emergence of sufficiently important outside customers for the company's foundry.\nUntil now, Intel's turnaround narrative is gaining traction, but it has yet to demonstrate that its improving performance can match the scale of the challenge of rebuilding the company's semiconductor dominance.\nFAQs\nIs Intel stock a good investment?\nIntel’s improving revenue, margins and AI-related opportunities support the bullish case, but heavy capital spending, dilution and foundry losses remain major risks.\nWhat is the Intel stock forecast?\nAnalyst targets remain divided, with the average target near $119. Continued revenue growth, foundry progress and AI demand will be key to Intel’s next move.\nThe Bottom Line\nIntel’s turnaround is gaining momentum as revenue growth, margins and server chip pricing improve. The $20 billion stock offering gives the company additional funding for its expensive AI and foundry ambitions, but also creates dilution for shareholders. A possible return to the memory market adds another potential growth avenue as shortages persist. Still, Intel must prove it can win external foundry customers while defending its CPU market share and delivering stronger results.\nComments (0)\nClick the $ button, enter the symbol, and select to link a stock, ETF, or other ticker."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_209f5fb30fac4addac30a405f54f715a:0\"]",
+          "created_at": "2026-10-04T08:13:51.705330Z",
+          "dedupe_key": "0bc869cfa030903dc550e32d319002bb13c3f63ac9bbaf15fd7dcfb133570517",
+          "entities": [
+            "Intel",
+            "Nvidia"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "Nvidia向Intel投入50亿美元，联合开发定制x86 CPU",
+          "provisional_event_id": "E373",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_209f5fb30fac4addac30a405f54f715a:1\"]",
+          "created_at": "2026-10-04T08:13:51.726428Z",
+          "dedupe_key": "1c64472307c1b9e37951be75271451a9af5873a228f19dd202487628abd4f293",
+          "entities": [
+            "Intel",
+            "Elon Musk",
+            "Terafab"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "Intel参与Elon Musk旗下的Terafab项目",
+          "provisional_event_id": "E374",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_209f5fb30fac4addac30a405f54f715a:2\"]",
+          "created_at": "2026-10-04T08:13:51.743421Z",
+          "dedupe_key": "2ebfd738751baad418329a9d670b7c74077f610b5da5f87d594bb152195431ad",
+          "entities": [
+            "Intel",
+            "Ireland"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "Intel在爱尔兰追加投入50亿欧元以扩大晶圆代工产能",
+          "provisional_event_id": "E375",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_209f5fb30fac4addac30a405f54f715a:3\"]",
+          "created_at": "2026-10-04T08:13:51.759384Z",
+          "dedupe_key": "d08edcd18a4530ad45f4e2ca242e48532c57366a8e81b5478ccba17d0276ee22",
+          "entities": [
+            "Intel",
+            "US Government"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "美国政府持有Intel近10%股权，对应约89亿美元投资规模",
+          "provisional_event_id": "E376",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_209f5fb30fac4addac30a405f54f715a:4\"]",
+          "created_at": "2026-10-04T08:13:51.773311Z",
+          "dedupe_key": "82c1cef922a228d654689131dcadcd3aaefd792c3859f176ab4386fd307b7e32",
+          "entities": [
+            "Intel",
+            "Lip-Bu Tan"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "CEO Lip-Bu Tan暗示Intel可能未来重返存储市场，其个人项目涉及将存储与CPU整合堆叠的新架构设计",
+          "provisional_event_id": "E377",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_209f5fb30fac4addac30a405f54f715a:5\"]",
+          "created_at": "2026-10-04T08:13:51.789663Z",
+          "dedupe_key": "5a65be951e4852543c94fbc289dcbf3052adbd2b04793851964cde0fdd527c40",
+          "entities": [
+            "Intel"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "Intel第二季度经营性现金流同比增长逾三倍至70亿美元",
+          "provisional_event_id": "E378",
+          "subject_time": "Q2 2026"
+        }
+      ],
+      "trade": {
+        "intents": [],
+        "closed_candidates": [
+          {
+            "candidate_id": "candidate:case_e0b6c79ef0de469abde2ecaa856417f9",
+            "status": "NOT_SELECTED",
+            "created_at": "2026-10-04T08:47:58.286050+00:00",
+            "closed_cycle_id": "2026-10-03",
+            "origin_trade_eligible": true,
+            "trade_disposition": null,
+            "trade": {
+              "decision": "LONG",
+              "executed_policy_id": "pol_e01e85c26b3941995263",
+              "candidate_policy_ids": [
+                "pol_e01e85c26b3941995263"
+              ],
+              "matched_condition_ids": [
+                "C1"
+              ]
+            }
+          }
+        ],
+        "executions": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "alias": "O636",
+  "title": "section_previews 3",
+  "content": {
+    "section": "Core Data Center Business Unit",
+    "heading_match": "Core Data Center Business Unit",
+    "start_offset": 44968,
+    "end_offset": 124999,
+    "full_text_chars": 79999,
+    "returned_chars": 40000,
+    "truncated": true,
+    "match_quality": "substantive_body",
+    "text_preview": "(\"CDBU\") CDBU is focused on storage solutions for all data center customers, including data center SSDs and NAND components, and memory solutions for OEM data center, enterprise, and NeoCloud customers. NeoCloud customers are AI-focused cloud service providers that are distinct from traditional hyperscale cloud providers. Data Center SSDs and NAND : The rapid proliferation of AI, cloud computing, and big data are fueling demand for high-performance and high-capacity storage in data centers. In 2026, we began volume production of our G9 NAND-based PCIe Gen6 high-performance data center SSDs, which accelerate AI training and inference workloads with faster data transfers and improve energy efficiency. In 2026, we also began shipping our 245TB 6600 ION SSD, built with G9 QLC NAND, with improved rack-scale storage density for data centers and designed to support AI, cloud, enterprise and hyperscale workloads, including next-generation AI data lakes and cloud-scale file and object storage. Data Center DRAM : CDBU sales to OEM data center customers are driven by server and storage demand to support enterprise and NeoCloud customers, and our sales consisted primarily of DDR5 and DDR4. 9 | 2026 10-K Table of Contents Total reported CDBU revenue was $37.59 billion in 2026, $7.23 billion in 2025, and $4.98 billion in 2024. CDBU sales primarily included sales of our DDR5 and DDR4 RDIMMs, data center SSDs, as well as component NAND sales of QLC. Sales to the data center SSD market in 2026 consisted primarily of our 5400, 6550 ION, 6600 ION, 7450, 7500, 7550, 7600, 9550, and 9650 series SSDs. Mobile and Client Business Unit (\"MCBU\") MCBU is focused on memory and storage solutions for the mobile and client segments. Additionally, MCBU sales include DRAM sold to the consumer market and component DRAM and NAND (TLC and QLC). The proliferation of AI-ready devices, from smartphones, tablets, AI PCs, and personal AI workstations, continues to increase demand for higher-capacity, higher-bandwidth, and lower-power memory and storage. On-device AI requires data and models to be processed locally, increasing DRAM and storage content needs and making power efficiency, thermal efficiency, battery life, and responsiveness key market requirements. Our LPDDR portfolio, enabled by our advanced technology process nodes, are a critical enabler of AI at the edge across mobile and client devices. Mobile: Consists of memory products sold into the smartphone and other mobile-device markets, specifically LPDDR. MCBU offers a portfolio of LPDDR solutions designed for next-generation smartphones to accelerate AI applications in the mobile market. Our focus is providing memory solutions to the flagship and high-end smartphone segments, leveraging our 1ß and 1γ technology process nodes. In 2026, we began volume shipments of our 1γ 16Gb LPDDR5X product to leading smartphone OEMs and sampled our 1γ 24Gb LPDDR5X product to multiple smartphone customers. We also began shipping qualificatio"
+  },
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

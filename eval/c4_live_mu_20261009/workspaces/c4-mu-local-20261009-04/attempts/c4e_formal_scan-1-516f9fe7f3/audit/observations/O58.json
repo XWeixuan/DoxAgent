@@ -1,0 +1,9 @@
+{
+  "alias": "O58",
+  "title": "text paragraphs 4",
+  "content": "- GPU-accelerated data processing and vector indexing — As data volumes grow, workloads such as feature engineering, large-scale ETL and real-time analytics require increasingly faster processing. AWS and NVIDIA are collaborating to deliver GPU-accelerated data processing on Amazon EMR using Amazon EC2 G7 instances and the NVIDIA cuDF library, delivering up to 3.7x faster processing speeds and a 30% better price performance compared to CPU-based configurations. Separately, as AI applications, retrieval-augmented generation pipelines and semantic search push vector databases to billions of records, index building and tuning becomes a bottleneck. GPU-accelerated vector indexing on Amazon OpenSearch Service offloads index construction onto dedicated GPUs, delivering up to 9x faster vector indexing at a quarter of the cost — available across both managed clusters and Amazon OpenSearch Serverless.\n\n- Physical AI for robotics — Amazon Robotics is collaborating with NVIDIA to accelerate the development of next-generation robots integrating NVIDIA’s full-stack physical AI platform, including the NVIDIA Jetson™ platform, NVIDIA Omniverse™ libraries and the NVIDIA Isaac™ open robotics development platform. The collaboration spans simulation, synthetic data generation, robot training, route optimization, functional safety and real-to-sim validation — all running on GPU-accelerated Amazon EC2 instances. Together, AWS and NVIDIA are helping advance the capabilities that robotics workloads require at scale: massive simulation, diverse training data and continuous real-world validation.",
+  "source": {
+    "provider": "Public web source",
+    "locator": "https://nvidianews.nvidia.com/news/aws-and-nvidia-to-deliver-2-million-additional-gpus-and-next-generation-infrastructure-for-agentic-and-physical-ai"
+  }
+}

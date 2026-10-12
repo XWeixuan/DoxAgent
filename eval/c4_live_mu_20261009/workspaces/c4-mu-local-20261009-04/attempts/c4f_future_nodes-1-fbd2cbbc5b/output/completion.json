@@ -1,0 +1,109 @@
+{
+  "status": "COMPLETE",
+  "summary": "截至2026-10-09，整理美光自身业绩、技术与产能里程碑，以及劳资程序、行业定价、先进封装、竞争者和客户部署等外部未来观察点；不将已发布的FY26 Q4业绩重复列为未来事项。",
+  "report_markdown": "",
+  "warnings": [
+    "以下企业产能、产品和客户部署日期均按原来源的计划或预期表述；初始产出、送样或平台上线不等于美光已获得相应销售、完成客户认证或实现收入。",
+    "FY27 Q1业绩披露的具体发布日期截至cutoff未核实到正式公告，故仅保留财季口径，不补造日历日期。"
+  ],
+  "future_nodes": [
+    {
+      "时间": "2026-10-22（已安排的第二次调解）",
+      "未来事项": "台湾美光台中厂工会与公司进行第二次劳资调解；工会称随后决定下一步行动。调解结果和是否发生罢工均未确定。",
+      "与目标公司的关系": "台中是美光台湾制造链一环；调解及后续决定可更新生产连续性与劳资成本风险，但桃园工会已获罢工授权不等于台中已决定罢工。",
+      "来源": "Focus Taiwan/CNA《Micron Taoyuan union secures strike authorization, weighs 'surprise strike'》https://focustaiwan.tw/business/202610070021 【cite:O103】【cite:O104】",
+      "来源发布日期": "2026-10-07"
+    },
+    {
+      "时间": "2026年第四季度余下合约议价与结算期（具体公布日未定）",
+      "未来事项": "DRAM与NAND买卖双方形成并逐步兑现2026年第四季度合约价；TrendForce在9月30日预估传统DRAM季涨10%–15%、NAND季涨15%–20%，实际成交价与数量仍待观察。",
+      "与目标公司的关系": "美光DRAM、NAND实现价格和产品组合决定收入与毛利的持续性；服务器需求优先配置可能挤压PC/手机供给，但行业报价预测不能直接当作美光成交价。",
+      "来源": "TrendForce《AI Server Demand Sustains Memory Contract Price Increases in 4Q26, While Consumer-Side Pressure Persists》https://www.trendforce.com/presscenter/news/20260930-13258.html 【cite:O107】【cite:O108】",
+      "来源发布日期": "2026-09-30"
+    },
+    {
+      "时间": "截至2026年末（公司目标）",
+      "未来事项": "美光Manassas工厂完成1α DRAM合格生产目标；需区分此前已开始制造与后续产品资格达成。",
+      "与目标公司的关系": "资格节点决定该厂能否更稳地提供汽车、工业、防务等长生命周期DRAM，并检验DDR4供给扩张计划；不代表产能会立即全部转为交付。",
+      "来源": "Micron《Micron Advances Made-in-America Memory With Manufacturing Expansion in Virginia》https://investors.micron.com/news/press-release/2026/Micron-Advances-Made-in-America-Memory-With-Manufacturing-Expansion-in-Virginia/default.aspx 【cite:O113】【cite:O114】",
+      "来源发布日期": "2026-05-22"
+    },
+    {
+      "时间": "美光FY27 Q1业绩披露时；具体公告日期待公司公布",
+      "未来事项": "美光披露FY27 Q1实际收入、毛利率、EPS、现金流和资本开支，并与9月30日给出的收入615亿美元±15亿美元、非GAAP毛利率约86.25%及资本开支约115亿美元展望比较。",
+      "与目标公司的关系": "这是检验存储器涨价、HBM/服务器产品组合、SCA履约及投入强度能否转化为实现利润和现金流的下一次公司级披露；展望并非已实现业绩。",
+      "来源": "Micron《Reports Record Fiscal Fourth Quarter and Full Year 2026 Results》https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx 【cite:O30】；《Q4 FY26 Prepared Remarks》https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf 【cite:O98】【cite:O100】",
+      "来源发布日期": "2026-09-30"
+    },
+    {
+      "时间": "2027年初（公司预期）",
+      "未来事项": "美光新加坡HBM先进封装设施开始初始产出；后续良率和量产爬坡仍须分别观察。",
+      "与目标公司的关系": "封装吞吐与良率影响HBM位元供给、客户交货能力及产品组合；初始产出不是客户验收或商业规模出货。",
+      "来源": "Micron《Q4 FY26 Prepared Remarks》https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf 【cite:O71】",
+      "来源发布日期": "2026-09-30"
+    },
+    {
+      "时间": "2027年（台积电计划；未给具体季度）",
+      "未来事项": "台积电计划将9.5倍光罩尺寸CoWoS推进至量产，使单封装可集成至少12组HBM堆栈；观察量产及客户采用情况。",
+      "与目标公司的关系": "AI加速器先进封装容量和每封装HBM堆栈数可改变整体HBM需求上限与系统集成瓶颈，但台积电技术量产并不指定美光的HBM份额。",
+      "来源": "TSMC《Customer Newsletter: TSMC Unveils Next-Generation A14 Process at North America Technology Symposium》https://pr.tsmc.com/static/campaign/2025august/tsmc_na/quarter.html 【cite:O222】",
+      "来源发布日期": "2025-08（月度页面，未列具体日）"
+    },
+    {
+      "时间": "2027年（公司计划；未给具体季度）",
+      "未来事项": "三星电子计划开始按客户要求逐步提供Custom HBM样品；观察样品规格、客户验证及后续供应资格，而非预设量产胜出。",
+      "与目标公司的关系": "客户定制HBM候选方案增加，将检验美光HBM4E及其与NVIDIA合作定制方案的性能、认证、产能和价格竞争条件；三星送样不等于客户最终转单。",
+      "来源": "Samsung Semiconductor《Samsung Ships Industry-First Commercial HBM4 with Ultimate Performance for AI Computing》https://news.samsungsemiconductor.com/global/samsung-ships-industry-first-commercial-hbm4-with-ultimate-performance-for-ai-computing/ 【cite:O148】；Micron《Q4 FY26 Prepared Remarks》【cite:O75】【cite:O76】",
+      "来源发布日期": "2026-02-12；美光补充材料2026-09-30"
+    },
+    {
+      "时间": "2027年（合作方计划）",
+      "未来事项": "SK Telecom与NVIDIA计划让首个韩国Vera Rubin DSX AI工厂上线；已公布方案采用SK hynix HBM4。",
+      "与目标公司的关系": "该项目是Rubin基础设施需求与竞争对手HBM4设计导入的外部实证；可更新AI服务器内存需求与美光相对份额判断，但不能推定美光为该项目供货。",
+      "来源": "NVIDIA《SK Group and NVIDIA Expand Strategic Partnership Across AI Factories and Next-Generation Memory》https://nvidianews.nvidia.com/news/sk-group-and-nvidia-expand-strategic-partnership-across-ai-factories-and-next-generation-memory 【cite:O110】",
+      "来源发布日期": "2026-07-24"
+    },
+    {
+      "时间": "2027年中（公司预期）",
+      "未来事项": "美光台湾Tongluo设施开始有意义的产品出货；观察接管后工艺转移、合格产出与交付爬坡。",
+      "与目标公司的关系": "此为美光台湾新增DRAM供给兑现节点，与HBM/服务器及其他DRAM产能配置相关；出货规模和产品结构尚未确定。",
+      "来源": "Micron《Q4 FY26 Prepared Remarks》https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf 【cite:O71】",
+      "来源发布日期": "2026-09-30"
+    },
+    {
+      "时间": "2027年中（公司预期）",
+      "未来事项": "美光爱达荷州ID1工厂开始初始晶圆产出；观察设备导入、良率及后续爬坡，而非将初始晶圆等同可销售成品。",
+      "与目标公司的关系": "ID1进度影响美国本土先进DRAM供给、长期资本开支回报和客户供货韧性。",
+      "来源": "Micron《Q4 FY26 Prepared Remarks》https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf 【cite:O70】",
+      "来源发布日期": "2026-09-30"
+    },
+    {
+      "时间": "2027年内（公司预计）",
+      "未来事项": "美光以1γ工艺制造的HBM4E进入产量爬坡；后续客户认证和量产供应仍待验证。",
+      "与目标公司的关系": "HBM4E是下一代AI加速器高带宽内存竞争节点，决定美光能否维持高价值HBM产品组合及客户设计导入；工艺爬坡不自动等于取得平台份额。",
+      "来源": "Micron《2026 Form 10-K》https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm 【cite:O161】【cite:O18】",
+      "来源发布日期": "2026-10-09"
+    },
+    {
+      "时间": "2027年下半年（公司预计）",
+      "未来事项": "美光下一代DRAM与NAND工艺节点开始量产；观察良率、位元成本和转产对既有产品供给的影响。",
+      "与目标公司的关系": "工艺转换速度决定DRAM/NAND位元增长和单位成本，可改变涨价周期中美光的供给弹性与毛利，而不保证即时产量。",
+      "来源": "Micron《Q4 FY26 Prepared Remarks》https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf 【cite:O68】",
+      "来源发布日期": "2026-09-30"
+    },
+    {
+      "时间": "2028年（GM计划）",
+      "未来事项": "通用汽车计划在Cadillac ESCALADE IQ首先推出集中式电气架构与计算平台，此后才逐步扩展至其他燃油及电动车型；观察首发、物料资格与扩大部署。",
+      "与目标公司的关系": "美光与GM已有汽车LPDRAM、NOR、UFS NAND供货SCA及后续技术资格合作；新架构可检验每车内存/存储含量和资格进度，但不能将整个平台内存需求预先归为美光订单。",
+      "来源": "TechCrunch《GM’s under-the-hood overhaul puts AI and automated driving at the center》https://techcrunch.com/2025/10/22/gms-under-the-hood-overhaul-puts-ai-and-automated-driving-at-the-center/ 【cite:O220】；Micron《Micron and General Motors Sign Strategic Agreement》https://investors.micron.com/news/press-release/2026/Micron-and-General-Motors-Sign-Strategic-Agreement-to-Secure-Supply-and-Accelerate-Innovation/default.aspx 【cite:O216】",
+      "来源发布日期": "2025-10-22；美光补充材料2026-07-01"
+    },
+    {
+      "时间": "2028年中（CoreWeave预期）",
+      "未来事项": "CoreWeave与AdaniConneX在印度Navi Mumbai建设的Vera Rubin AI云园区首期预计可用；后续两期仍待推进。",
+      "与目标公司的关系": "独立云服务商新算力上线是AI服务器及HBM需求的可观察外部入口，但该公告没有指明美光供货，内存采购与平台份额仍取决于具体部署。",
+      "来源": "CoreWeave《CoreWeave Enters India, Expanding AI Cloud Platform with AdaniConneX》https://wf.coreweave.com/news/coreweave-enters-india-expanding-ai-cloud-platform-with-adaniconnex 【cite:O111】【cite:O112】",
+      "来源发布日期": "2026-10-06"
+    }
+  ]
+}

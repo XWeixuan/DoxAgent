@@ -1,0 +1,15 @@
+{
+  "schema_version": "d1-horizontal-target-result-v1",
+  "result": {
+    "collection_target_id": "c5_put_skew_30d",
+    "status": "UNAVAILABLE",
+    "requested_items": 1,
+    "succeeded_items": 0,
+    "unavailable_items": 1,
+    "failed_items": 0,
+    "provider_attempts": [],
+    "output_refs": [],
+    "reason": "provider capability is IMPLEMENTED"
+  },
+  "observations": []
+}

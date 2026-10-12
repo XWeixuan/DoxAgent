@@ -1,0 +1,195 @@
+{
+  "ticker": "RKLB",
+  "part": 1,
+  "record_count": 4,
+  "records": [
+    {
+      "intent_id": "trade:case_9ac52592e7744107bd0cb7c6cd015c38",
+      "ticker": "RKLB",
+      "case_id": "case_9ac52592e7744107bd0cb7c6cd015c38",
+      "direction": "LONG",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "intent_released_at_utc": "2026-09-22T17:09:54.368526+00:00",
+      "intent_released_at_et": "2026-09-22T13:09:54.368526-04:00",
+      "entry_basis": "hypothetical_trade_tick",
+      "entry_at_utc": "2026-09-22T17:09:54.368526+00:00",
+      "cycle_end_utc": "2026-09-22T19:30:00+00:00",
+      "cycle_end_et": "2026-09-22T15:30:00-04:00",
+      "actual_entry": false,
+      "actual_exit": false,
+      "entry_evidence": {
+        "query_key": "RKLB|2026-09-22T17:09:54.368526+00:00|entry",
+        "status": "ok",
+        "selected": {
+          "exchange": "FINRA",
+          "offset_seconds": 1.631474,
+          "price_usd": 72.0563,
+          "special_conditions": null,
+          "timestamp_utc": "2026-09-22T17:09:56+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-09-22T17:09:55+00:00",
+        "error": null
+      },
+      "entry_price_usd": "72.0563",
+      "exit_evidence": {
+        "query_key": "RKLB|2026-09-22T19:30:00+00:00|exit",
+        "status": "ok",
+        "selected": {
+          "exchange": "FINRA",
+          "offset_seconds": 0.0,
+          "price_usd": 72.004,
+          "special_conditions": null,
+          "timestamp_utc": "2026-09-22T19:30:00+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-09-22T19:30:00+00:00",
+        "error": null
+      },
+      "exit_price_usd": "72.004",
+      "return_pct": "-0.0726",
+      "classification": "flat"
+    },
+    {
+      "intent_id": "trade:case_193e9c52c1204471aac4e1b597a9bd3c",
+      "ticker": "RKLB",
+      "case_id": "case_193e9c52c1204471aac4e1b597a9bd3c",
+      "direction": "LONG",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "intent_released_at_utc": "2026-09-24T20:35:51.521509+00:00",
+      "intent_released_at_et": "2026-09-24T16:35:51.521509-04:00",
+      "entry_basis": "hypothetical_trade_tick",
+      "entry_at_utc": "2026-09-24T20:35:51.521509+00:00",
+      "cycle_end_utc": "2026-09-25T19:30:00+00:00",
+      "cycle_end_et": "2026-09-25T15:30:00-04:00",
+      "actual_entry": false,
+      "actual_exit": false,
+      "entry_evidence": {
+        "query_key": "RKLB|2026-09-24T20:35:51.521509+00:00|entry",
+        "status": "ok",
+        "selected": {
+          "exchange": "ARCA",
+          "offset_seconds": 1.478491,
+          "price_usd": 73.88,
+          "special_conditions": " FT ",
+          "timestamp_utc": "2026-09-24T20:35:53+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-09-24T20:35:53+00:00",
+        "error": null
+      },
+      "entry_price_usd": "73.88",
+      "exit_evidence": {
+        "query_key": "RKLB|2026-09-25T19:30:00+00:00|exit",
+        "status": "ok",
+        "selected": {
+          "exchange": "NASDAQ",
+          "offset_seconds": 1.0,
+          "price_usd": 73.99,
+          "special_conditions": null,
+          "timestamp_utc": "2026-09-25T19:30:01+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-09-25T19:30:00+00:00",
+        "error": null
+      },
+      "exit_price_usd": "73.99",
+      "return_pct": "0.1489",
+      "classification": "flat"
+    },
+    {
+      "intent_id": "trade:case_a62010dd77c5428486b77e527ecbadf6",
+      "ticker": "RKLB",
+      "case_id": "case_a62010dd77c5428486b77e527ecbadf6",
+      "direction": "LONG",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "intent_released_at_utc": "2026-09-24T20:37:56.983624+00:00",
+      "intent_released_at_et": "2026-09-24T16:37:56.983624-04:00",
+      "entry_basis": "hypothetical_trade_tick",
+      "entry_at_utc": "2026-09-24T20:37:56.983624+00:00",
+      "cycle_end_utc": "2026-09-25T19:30:00+00:00",
+      "cycle_end_et": "2026-09-25T15:30:00-04:00",
+      "actual_entry": false,
+      "actual_exit": false,
+      "entry_evidence": {
+        "query_key": "RKLB|2026-09-24T20:37:56.983624+00:00|entry",
+        "status": "ok",
+        "selected": {
+          "exchange": "FINRA",
+          "offset_seconds": 5.016376,
+          "price_usd": 73.98,
+          "special_conditions": "  T ",
+          "timestamp_utc": "2026-09-24T20:38:02+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-09-24T20:37:57+00:00",
+        "error": null
+      },
+      "entry_price_usd": "73.98",
+      "exit_evidence": {
+        "query_key": "RKLB|2026-09-25T19:30:00+00:00|exit",
+        "status": "ok",
+        "selected": {
+          "exchange": "NASDAQ",
+          "offset_seconds": 1.0,
+          "price_usd": 73.99,
+          "special_conditions": null,
+          "timestamp_utc": "2026-09-25T19:30:01+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-09-25T19:30:00+00:00",
+        "error": null
+      },
+      "exit_price_usd": "73.99",
+      "return_pct": "0.0135",
+      "classification": "flat"
+    },
+    {
+      "intent_id": "trade:case_91adbdf5ecaa4827b0ca5262574fb9dc",
+      "ticker": "RKLB",
+      "case_id": "case_91adbdf5ecaa4827b0ca5262574fb9dc",
+      "direction": "LONG",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "intent_released_at_utc": "2026-09-24T20:38:48.425408+00:00",
+      "intent_released_at_et": "2026-09-24T16:38:48.425408-04:00",
+      "entry_basis": "hypothetical_trade_tick",
+      "entry_at_utc": "2026-09-24T20:38:48.425408+00:00",
+      "cycle_end_utc": "2026-09-25T19:30:00+00:00",
+      "cycle_end_et": "2026-09-25T15:30:00-04:00",
+      "actual_entry": false,
+      "actual_exit": false,
+      "entry_evidence": {
+        "query_key": "RKLB|2026-09-24T20:38:48.425408+00:00|entry",
+        "status": "ok",
+        "selected": {
+          "exchange": "ARCA",
+          "offset_seconds": 2.574592,
+          "price_usd": 73.95,
+          "special_conditions": " FT ",
+          "timestamp_utc": "2026-09-24T20:38:51+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-09-24T20:38:49+00:00",
+        "error": null
+      },
+      "entry_price_usd": "73.95",
+      "exit_evidence": {
+        "query_key": "RKLB|2026-09-25T19:30:00+00:00|exit",
+        "status": "ok",
+        "selected": {
+          "exchange": "NASDAQ",
+          "offset_seconds": 1.0,
+          "price_usd": 73.99,
+          "special_conditions": null,
+          "timestamp_utc": "2026-09-25T19:30:01+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-09-25T19:30:00+00:00",
+        "error": null
+      },
+      "exit_price_usd": "73.99",
+      "return_pct": "0.0541",
+      "classification": "flat"
+    }
+  ]
+}

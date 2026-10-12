@@ -1,0 +1,86 @@
+{
+  "schema_version": "codex-d1-turn-summary-v1",
+  "run_id": "c4-mu-local-20261009-03",
+  "attempt_id": "c4e_network_build-1-8d7a228e46",
+  "node": "c4e_network_build",
+  "model": "gpt-6-sol",
+  "model_provider": null,
+  "job_status": "succeeded",
+  "thread_id": "01a120f3-e144-7e93-b37f-a4bf1e385a0c",
+  "turn_id": "01a12102-c194-7b70-87dd-2b76ab913878",
+  "usage": {
+    "input_tokens": 180467,
+    "cached_input_tokens": 175360,
+    "output_tokens": 4892,
+    "reasoning_output_tokens": 46,
+    "total_tokens": 185359
+  },
+  "observed_usage": {
+    "input_tokens": 180467,
+    "cached_input_tokens": 175360,
+    "output_tokens": 4892,
+    "reasoning_output_tokens": 46,
+    "total_tokens": 185359
+  },
+  "sdk_duration_ms": 259402,
+  "worker_wall_time_ms": 259530,
+  "mcp_call_count": 0,
+  "command_call_count": 5,
+  "subagent_call_count": 0,
+  "file_change_count": 1,
+  "slowest_steps": [
+    {
+      "sequence": 1,
+      "event": "item.completed",
+      "item_type": "command",
+      "name": "shell",
+      "status": "completed",
+      "duration_ms": 182,
+      "summary": "\"C:\\\\Users\\\\WEIXUANXIE\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\native\\\\powershell\\\\pwsh.exe\" -Command '$base='\"'attempts/c4e_network_build-1-8d7a228e46/input'; Get-Content -Raw \\\"\"'$base/task.md\"; Get-Content -Raw \"..."
+    },
+    {
+      "sequence": 0,
+      "event": "item.completed",
+      "item_type": "command",
+      "name": "shell",
+      "status": "completed",
+      "duration_ms": 169,
+      "summary": "\"C:\\\\Users\\\\WEIXUANXIE\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\native\\\\powershell\\\\pwsh.exe\" -Command \"Get-Location; Get-Content -Raw 'attempts/c4e_network_build-1-8d7a228e46/input/AGENTS.md'; Get-Content -Raw 'atte..."
+    },
+    {
+      "sequence": 2,
+      "event": "item.completed",
+      "item_type": "command",
+      "name": "shell",
+      "status": "completed",
+      "duration_ms": 160,
+      "summary": "\"C:\\\\Users\\\\WEIXUANXIE\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\native\\\\powershell\\\\pwsh.exe\" -Command '$j=Get-Content -Raw '\"'attempts/c4e_network_build-1-8d7a228e46/input/context.json'|ConvertFrom-Json; Write-Outpu..."
+    },
+    {
+      "sequence": 3,
+      "event": "item.completed",
+      "item_type": "command",
+      "name": "shell",
+      "status": "completed",
+      "duration_ms": 145,
+      "summary": "\"C:\\\\Users\\\\WEIXUANXIE\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\native\\\\powershell\\\\pwsh.exe\" -Command '$j=Get-Content -Raw '\"'attempts/c4e_network_build-1-8d7a228e46/input/context.json'|ConvertFrom-Json; \"'$j.payloa..."
+    },
+    {
+      "sequence": 11,
+      "event": "item.completed",
+      "item_type": "command",
+      "name": "shell",
+      "status": "completed",
+      "duration_ms": 144,
+      "summary": "\"C:\\\\Users\\\\WEIXUANXIE\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\native\\\\powershell\\\\pwsh.exe\" -Command '$p='\"'attempts/c4e_network_build-1-8d7a228e46/output/entity_network_report.md'; \"'$s=Get-Content -Raw $p; Write-..."
+    }
+  ],
+  "failures": [],
+  "validation": {
+    "schema": "passed",
+    "progressive": "passed",
+    "citation": "passed",
+    "citation_warnings": [],
+    "error": null
+  }
+}

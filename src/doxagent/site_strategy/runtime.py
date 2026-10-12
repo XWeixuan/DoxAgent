@@ -220,6 +220,8 @@ class _RawBrowserCDP:
             await asyncio.gather(self._reader, return_exceptions=True)
             self._reader = None
         if self._tasks:
+            for task in tuple(self._tasks):
+                task.cancel()
             await asyncio.gather(*tuple(self._tasks), return_exceptions=True)
         for future in self._pending.values():
             if not future.done():
@@ -254,7 +256,17 @@ class _RawBrowserCDP:
     def _track(self, coroutine: Any) -> None:
         task = asyncio.create_task(coroutine)
         self._tasks.add(task)
-        task.add_done_callback(self._tasks.discard)
+        task.add_done_callback(self._task_done)
+
+    def _task_done(self, task: asyncio.Task[None]) -> None:
+        self._tasks.discard(task)
+        if not task.cancelled() and (error := task.exception()) is not None:
+            count = getattr(self, "_task_errors", 0) + 1
+            self._task_errors = count
+            if count <= 3 or count % 100 == 0:
+                logger.warning(
+                    "raw CDP task failure count=%s error=%s", count, type(error).__name__
+                )
 
     async def _attached(self, event: dict[str, Any]) -> None:
         session_id = str(event.get("sessionId") or "")
@@ -265,7 +277,17 @@ class _RawBrowserCDP:
         if not session_id:
             return
         if target.get("type") != "page" or policy is None:
-            await self.send("Runtime.runIfWaitingForDebugger", session_id=session_id)
+            for attempt in range(2):
+                try:
+                    await self.send("Runtime.runIfWaitingForDebugger", session_id=session_id)
+                    break
+                except Exception:
+                    if attempt:
+                        logger.warning(
+                            "raw CDP unmanaged target resume failed target=%s session=%s",
+                            target_id,
+                            session_id,
+                        )
             return
         try:
             await self.send(

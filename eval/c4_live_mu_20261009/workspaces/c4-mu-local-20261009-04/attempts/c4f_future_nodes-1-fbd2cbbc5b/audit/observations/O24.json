@@ -1,0 +1,9 @@
+{
+  "alias": "O24",
+  "title": "text paragraphs 3",
+  "content": "| FQ4-26 | FQ3-26 | FQ4-25 |  | FQ4-26 | FQ3-26 | FQ4-25 |\n\n|  |  |  |  |  |  |  |  |\n\n| Revenue | $ | 54,229 |  | $ | 41,456 |  | $ | 11,315 |  |  | $ | 54,229 |  | $ | 41,456 |  | $ | 11,315 |  |\n\n| Gross margin |  | 47,047 |  |  | 35,056 |  |  | 5,054 |  |  |  | 47,204 |  |  | 35,199 |  |  | 5,169 |  |\n\n| Percent of revenue |  | 86.8 | % |  | 84.6 | % |  | 44.7 | % |  |  | 87.0 | % |  | 84.9 | % |  | 45.7 | % |\n\n| Operating expenses |  | 3,296 |  |  | 1,738 |  |  | 1,400 |  |  |  | 2,568 |  |  | 1,518 |  |  | 1,214 |  |\n\n| Operating income |  | 43,751 |  |  | 33,318 |  |  | 3,654 |  |  |  | 44,636 |  |  | 33,681 |  |  | 3,955 |  |\n\n| Percent of revenue |  | 80.7 | % |  | 80.4 | % |  | 32.3 | % |  |  | 82.3 | % |  | 81.2 | % |  | 35.0 | % |",
+  "source": {
+    "provider": "Public web source",
+    "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+  }
+}

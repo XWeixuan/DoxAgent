@@ -1,0 +1,18 @@
+{
+  "alias": "O364",
+  "title": "sections 1 — metadata",
+  "content": {
+    "section": "equipment suppliers",
+    "heading_match": "equipment suppliers.",
+    "start_offset": 102950,
+    "end_offset": 182971,
+    "full_text_chars": 79999,
+    "returned_chars": 40000,
+    "truncated": true,
+    "match_quality": "substantive_body"
+  },
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

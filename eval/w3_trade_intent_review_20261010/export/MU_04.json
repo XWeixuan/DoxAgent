@@ -1,0 +1,1713 @@
+{
+  "format": "doxagent.w3-trade-intent-review.v1",
+  "ticker": "MU",
+  "window": {
+    "since_utc": "2026-09-19T12:53:20.738930+00:00",
+    "as_of_utc": "2026-10-10T12:53:20.738930+00:00"
+  },
+  "part": 4,
+  "record_count": 5,
+  "records": [
+    {
+      "intent_id": "trade:case_c7ff51b1caf2466b9da87dddbfa0a9b3",
+      "ticker": "MU",
+      "case_id": "case_c7ff51b1caf2466b9da87dddbfa0a9b3",
+      "intent_released_at_utc": "2026-09-30T20:08:51.264004+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_4b402edc827e41aeba565cacd7adacb0",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron Technology reported fiscal 2026 fourth-quarter EPS of $32.87.",
+            "subject_time": "FY2026 Q4"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "Reported EPS of $32.87 exceeded the guidance ceiling and available analyst forecasts, raising the near-term earnings and valuation outlook; full-quarter revenue, margins, mix, and forward guidance remain pending.",
+          "prior_expectation": "Micron's FY2026 Q4 EPS was expected within management's $30-$32 guidance range and near analyst forecasts around the low-$31 to $32.50 range.",
+          "reason": "The reported EPS beat is a direct positive surprise with material transmission to Micron's current-quarter earnings and valuation. Although the alert is incomplete, the result supports a LONG trade pending the full release.",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "Micron's reported FY2026 Q4 EPS of $32.87 is a new actual result; prior coverage contained only the scheduled release, guidance, and analyst forecasts.",
+          "reference_ids": [
+            "E2"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No Policy condition is matched. The headline reports a positive EPS result but provides no additional revenue, margin, product, contract, supply, capacity, or delivery condition."
+        },
+        "w3_case_id": "w3_4b402edc827e41aeba565cacd7adacb0"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_c7ff51b1caf2466b9da87dddbfa0a9b3",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-30T20:08:51.414414Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 395.592563
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-30T20:02:15.821851Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2631264,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-30",
+        "source": {
+          "binding_id": "MU:ibkr_news",
+          "kind": "api",
+          "name": "IBKR News API",
+          "source_id": "ibkr_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_16f6988b2b614444b9d6b48a1ce8c950",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "* Micron Technology 4Q EPS $32.87 >MU"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "PORTFOLIO_CAPACITY_EXHAUSTED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-30T20:02:15.821851Z",
+        "completed_at": "2026-09-30T20:08:51.414414Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E2",
+            "E10",
+            "E115",
+            "E1"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [
+            {
+              "event_id": "E2",
+              "fact_ids": [
+                "F34"
+              ]
+            }
+          ],
+          "reason": "消息报道 Micron FY2026 Q4 实际 EPS 为 $32.87（超出预期），这是 ACTUAL 结果。已加载事实仅包含 E2 的排期（F34）、E1 的 Q4 指引区间 $30–$32（F17）以及 E115 中各分析师预测（约 $31.45–$32.50），均为 FORECAST/GUIDANCE 状态，没有任何事实覆盖实际发布的 EPS 数字。",
+          "reference_ids": [
+            "E2"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "当前消息为Dow Jones新swire的未完成头部（标注MORE TO FOLLOW），仅含标准法律免责声明与发布时间戳，未陈述任何关于Micron财务、AI/DRAM/NAND价格、HBM、供给约束、合同、扩产或汽车业务的具体事实，无法与任何Policy criterion建立直接触发关系。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "当前消息为Dow Jones新swire的未完成头部（标注MORE TO FOLLOW），仅含标准法律免责声明与发布时间戳，未陈述任何关于Micron财务、AI/DRAM/NAND价格、HBM、供给约束、合同、扩产或汽车业务的具体事实，无法与任何Policy criterion建立直接触发关系。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron Technology reported fiscal 2026 fourth-quarter EPS of $32.87.",
+              "subject_time": "FY2026 Q4"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "Reported EPS of $32.87 exceeded the guidance ceiling and available analyst forecasts, raising the near-term earnings and valuation outlook; full-quarter revenue, margins, mix, and forward guidance remain pending.",
+            "prior_expectation": "Micron's FY2026 Q4 EPS was expected within management's $30-$32 guidance range and near analyst forecasts around the low-$31 to $32.50 range.",
+            "reason": "The reported EPS beat is a direct positive surprise with material transmission to Micron's current-quarter earnings and valuation. Although the alert is incomplete, the result supports a LONG trade pending the full release.",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "Micron's reported FY2026 Q4 EPS of $32.87 is a new actual result; prior coverage contained only the scheduled release, guidance, and analyst forecasts.",
+            "reference_ids": [
+              "E2"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "No Policy condition is matched. The headline reports a positive EPS result but provides no additional revenue, margin, product, contract, supply, capacity, or delivery condition."
+          },
+          "w3_case_id": "w3_4b402edc827e41aeba565cacd7adacb0"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "63392cc04f4c803ac96ee2f22b04ca9859a44d9cb23ab18d1359c1bce296cbd5",
+            "content_type": "text/plain",
+            "sha256": "723432634f58dc0ebcb52a61c5a40cef3cf6ebe84b3ff1cd2bb5e32f27c7e36f",
+            "size_bytes": 511
+          },
+          "case": {
+            "case_id": "case_c7ff51b1caf2466b9da87dddbfa0a9b3",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-30T20:02:05.035640Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-30T20:02:14.706760Z",
+          "revision": 1,
+          "row_revision": 2631234,
+          "source": {
+            "binding_id": "MU:ibkr_news",
+            "kind": "api",
+            "name": "IBKR News API",
+            "source_id": "ibkr_news"
+          },
+          "source_published_at": "2026-09-30T20:01:00Z",
+          "standard_message_id": "std_ae389d7a2a384710821d71f8b9362822",
+          "stream_item_id": "stream_16f6988b2b614444b9d6b48a1ce8c950",
+          "stream_offset": 2475,
+          "stream_published_at": "2026-09-30T20:02:14.712764Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "* Micron Technology 4Q EPS $32.87 >MU"
+          },
+          "url": "https://www.interactivebrokers.com/en/trading/providers.php",
+          "body_text": "(MORE TO FOLLOW) Dow Jones Newswires September 30, 2026 16:01 ET (20:01 GMT) Copyright (c) 2026 Dow Jones & Company, Inc. The statements in this document shall not be considered as an objective or independent explanation of the matters. Please note that this document (a) has not been prepared in accordance with legal requirements designed to promote the independence of investment research, and (b) is not subject to any prohibition on dealing ahead of the dissemination or publication of investment research."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_ae389d7a2a384710821d71f8b9362822:0\"]",
+          "created_at": "2026-09-30T20:08:51.231739Z",
+          "dedupe_key": "c945dea769222482964965799a871d7a1c5d0f65f29e59d5b2c97ca044123925",
+          "entities": [
+            "Micron Technology"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron Technology reported fiscal 2026 fourth-quarter EPS of $32.87.",
+          "provisional_event_id": "E310",
+          "subject_time": "FY2026 Q4"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_c7ff51b1caf2466b9da87dddbfa0a9b3",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-09-30T20:08:51.264004+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-30",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_4b402edc827e41aeba565cacd7adacb0",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T20:08:51.725933Z"
+              },
+              "case_id": "case_c7ff51b1caf2466b9da87dddbfa0a9b3",
+              "direction": "LONG",
+              "entry_reason": "PORTFOLIO_CAPACITY_EXHAUSTED",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_c7ff51b1caf2466b9da87dddbfa0a9b3",
+              "execution_reason_codes": [
+                "PORTFOLIO_CAPACITY_EXHAUSTED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_c7ff51b1caf2466b9da87dddbfa0a9b3",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T20:08:51.264004Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "PORTFOLIO_CAPACITY_EXHAUSTED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_b93e4a1e9acf4fc39398b8538bd33bbc",
+      "ticker": "MU",
+      "case_id": "case_b93e4a1e9acf4fc39398b8538bd33bbc",
+      "intent_released_at_utc": "2026-09-30T20:10:46.753592+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_9965aead16224d69a9aa2cc53770df00",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron Technology reported fiscal 2026 fourth-quarter adjusted EPS of $33.42.",
+            "subject_time": "FY2026 Q4"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "Adjusted EPS of $33.42 is above management's guidance ceiling and prior forecasts, and modestly above the earlier reported EPS headline, improving the near-term earnings and valuation outlook; full revenue, margin, mix, and forward guidance remain pending.",
+          "prior_expectation": "Micron's FY2026 Q4 EPS was expected near the low-$31 to $32.50 range, with management guidance of $30-$32; an earlier headline had reported EPS of $32.87.",
+          "reason": "The adjusted EPS result is a positive earnings surprise with direct transmission to Micron's near-term earnings and valuation. Although the alert is incomplete and the incremental surprise versus $32.87 is limited, it supports a LONG trade.",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "Micron's reported FY2026 Q4 adjusted EPS of $33.42 is a new actual result. Prior coverage contained EPS expectations and an earlier $32.87 headline, but not this adjusted EPS figure.",
+          "reference_ids": [
+            "E319",
+            "E346"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No Policy condition is matched. Adjusted EPS is positive relative to guidance and expectations, while the message provides no negative revenue, margin, product, contract, supply, capacity, or delivery condition."
+        },
+        "w3_case_id": "w3_9965aead16224d69a9aa2cc53770df00"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_b93e4a1e9acf4fc39398b8538bd33bbc",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-30T20:10:46.827337Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 510.896627
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-30T20:02:15.930710Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2631538,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-30",
+        "source": {
+          "binding_id": "MU:ibkr_news",
+          "kind": "api",
+          "name": "IBKR News API",
+          "source_id": "ibkr_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_54169405cf754445a8a10b07891b5989",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "* Micron Technology 4Q Adj EPS $33.42 >MU"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "PORTFOLIO_CAPACITY_EXHAUSTED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-30T20:02:15.930710Z",
+        "completed_at": "2026-09-30T20:10:46.827337Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E346",
+            "E2",
+            "E319",
+            "E115",
+            "E1"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "E319已记录Micron FY2026 Q4 EPS为$32.8，但实际财报发布的核心进展——包含的FY2026 Q4实际收入、毛利率、分部业绩数据以及首次发布的FY2027 Q1前瞻指引——均为现有canonical facts和provisional facts尚未覆盖的新核心事实。",
+          "reference_ids": [
+            "E319"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "消息仅包含一个事实数据点：Micron 4Q Adj EPS $33.42 且 >MU（高于一致预期）。这是调整后EPS而非GAAP摊薄EPS，方向为正向惊喜，与所有Policy criterion所要求的收入/EPS/毛利率低于指引下限、连续下降、份额丢失、交付延迟等负面触发条件方向相反。消息未提供GAAP指标、合并收入、毛利率、产品组合、bit shipments或任何指引对比数据，无法与任一criterion形成直接、实质性的触发关系。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息仅包含一个事实数据点：Micron 4Q Adj EPS $33.42 且 >MU（高于一致预期）。这是调整后EPS而非GAAP摊薄EPS，方向为正向惊喜，与所有Policy criterion所要求的收入/EPS/毛利率低于指引下限、连续下降、份额丢失、交付延迟等负面触发条件方向相反。消息未提供GAAP指标、合并收入、毛利率、产品组合、bit shipments或任何指引对比数据，无法与任一criterion形成直接、实质性的触发关系。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron Technology reported fiscal 2026 fourth-quarter adjusted EPS of $33.42.",
+              "subject_time": "FY2026 Q4"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "Adjusted EPS of $33.42 is above management's guidance ceiling and prior forecasts, and modestly above the earlier reported EPS headline, improving the near-term earnings and valuation outlook; full revenue, margin, mix, and forward guidance remain pending.",
+            "prior_expectation": "Micron's FY2026 Q4 EPS was expected near the low-$31 to $32.50 range, with management guidance of $30-$32; an earlier headline had reported EPS of $32.87.",
+            "reason": "The adjusted EPS result is a positive earnings surprise with direct transmission to Micron's near-term earnings and valuation. Although the alert is incomplete and the incremental surprise versus $32.87 is limited, it supports a LONG trade.",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "Micron's reported FY2026 Q4 adjusted EPS of $33.42 is a new actual result. Prior coverage contained EPS expectations and an earlier $32.87 headline, but not this adjusted EPS figure.",
+            "reference_ids": [
+              "E319",
+              "E346"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "No Policy condition is matched. Adjusted EPS is positive relative to guidance and expectations, while the message provides no negative revenue, margin, product, contract, supply, capacity, or delivery condition."
+          },
+          "w3_case_id": "w3_9965aead16224d69a9aa2cc53770df00"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "63392cc04f4c803ac96ee2f22b04ca9859a44d9cb23ab18d1359c1bce296cbd5",
+            "content_type": "text/plain",
+            "sha256": "723432634f58dc0ebcb52a61c5a40cef3cf6ebe84b3ff1cd2bb5e32f27c7e36f",
+            "size_bytes": 511
+          },
+          "case": {
+            "case_id": "case_b93e4a1e9acf4fc39398b8538bd33bbc",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-30T20:02:05.035640Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-30T20:02:14.788747Z",
+          "revision": 1,
+          "row_revision": 2631497,
+          "source": {
+            "binding_id": "MU:ibkr_news",
+            "kind": "api",
+            "name": "IBKR News API",
+            "source_id": "ibkr_news"
+          },
+          "source_published_at": "2026-09-30T20:01:00Z",
+          "standard_message_id": "std_ff1d4871956347f0a9b4edce02cbba3e",
+          "stream_item_id": "stream_54169405cf754445a8a10b07891b5989",
+          "stream_offset": 2476,
+          "stream_published_at": "2026-09-30T20:02:14.798088Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "* Micron Technology 4Q Adj EPS $33.42 >MU"
+          },
+          "url": "https://www.interactivebrokers.com/en/trading/providers.php",
+          "body_text": "(MORE TO FOLLOW) Dow Jones Newswires September 30, 2026 16:01 ET (20:01 GMT) Copyright (c) 2026 Dow Jones & Company, Inc. The statements in this document shall not be considered as an objective or independent explanation of the matters. Please note that this document (a) has not been prepared in accordance with legal requirements designed to promote the independence of investment research, and (b) is not subject to any prohibition on dealing ahead of the dissemination or publication of investment research."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_ff1d4871956347f0a9b4edce02cbba3e:0\"]",
+          "created_at": "2026-09-30T20:10:46.736932Z",
+          "dedupe_key": "73fe26488e9a41e558b2931fa7cde5a5e180f3dae2c87936dab45d7a30b15a00",
+          "entities": [
+            "Micron Technology"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron Technology reported fiscal 2026 fourth-quarter adjusted EPS of $33.42.",
+          "provisional_event_id": "E311",
+          "subject_time": "FY2026 Q4"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_b93e4a1e9acf4fc39398b8538bd33bbc",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-09-30T20:10:46.753592+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-30",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_9965aead16224d69a9aa2cc53770df00",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T20:10:47.179961Z"
+              },
+              "case_id": "case_b93e4a1e9acf4fc39398b8538bd33bbc",
+              "direction": "LONG",
+              "entry_reason": "PORTFOLIO_CAPACITY_EXHAUSTED",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_b93e4a1e9acf4fc39398b8538bd33bbc",
+              "execution_reason_codes": [
+                "PORTFOLIO_CAPACITY_EXHAUSTED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_b93e4a1e9acf4fc39398b8538bd33bbc",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T20:10:46.753592Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "PORTFOLIO_CAPACITY_EXHAUSTED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_d932a7af4c8c479eb848ced3fe153a60",
+      "ticker": "MU",
+      "case_id": "case_d932a7af4c8c479eb848ced3fe153a60",
+      "intent_released_at_utc": "2026-09-30T20:14:20.463428+00:00",
+      "intent_status": "DUPLICATE_EVENT_TRADE",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_735cad831e6542cabef2a66923a698ef",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "FY2026 Q4",
+              "调整后每股收益"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron Technology报告FY2026 Q4调整后每股收益为33.42美元。",
+            "subject_time": "FY2026 Q4"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "实际调整后EPS为33.42美元，较事件前约31.49–32.21美元基线高约4%–6%，并超过管理层非GAAP指引上限32美元；近期Q4盈利兑现预期应上修为更强的正向超预期。",
+          "prior_expectation": "事件前合理的FY26 Q4调整后/非GAAP EPS基线约为31.49–32.21美元，管理层非GAAP指引区间约为30–32美元；市场已预期高位盈利并可能小幅超指引。",
+          "reason": "Surprise为调整后EPS相对公开基线的约4%–6%正偏差，且突破管理层非GAAP指引上限；EPS直接影响MU的当期盈利和估值分母，经济传导清晰且重要，足以形成立即可行动的LONG。由于当前headline尚未确认收入、GAAP毛利率或FY27指引，不把该判断扩展为长期盈利平台已被完全确认。",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "完整的Micron FY2026 Q4实际业绩在本事件边界后首次出现；Reference View中的E1仅为FY26 Q3结果，E2仅为Q4排期，E115为事件前分析师预期，临时E346仅记录单一EPS点，均未覆盖当前完整Q4现实。当前消息明确报告调整后EPS为33.42美元。",
+          "reference_ids": [
+            "E1",
+            "E2",
+            "E115",
+            "E346"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "当前仍是uncovered状态。相关pol_6a823a72b3e33190bb83的C1/C2都要求正式Q4收入低于490亿美元，并分别叠加GAAP毛利率低于约86%或GAAP摊薄EPS低于29.73美元；当前headline只确认调整后EPS为33.42美元，未满足或确认这些触发条件，且没有其他Policy命中。"
+        },
+        "w3_case_id": "w3_735cad831e6542cabef2a66923a698ef"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_d932a7af4c8c479eb848ced3fe153a60",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-30T20:14:20.646779Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 724.607988
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-30T20:02:16.038791Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY"
+        ],
+        "revision": 2631963,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-30",
+        "source": {
+          "binding_id": "MU:ibkr_news",
+          "kind": "api",
+          "name": "IBKR News API",
+          "source_id": "ibkr_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_1def0f8850c24227bdf774e6a80bc074",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "* Micron Technology 4Q Adj EPS $33.42 >MU"
+        },
+        "trade": {
+          "intent_count": 0,
+          "reason_codes": [],
+          "state": "NOT_APPLICABLE"
+        },
+        "trade_disposition": "NOT_EVALUATED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-30T20:02:16.038791Z",
+        "completed_at": "2026-09-30T20:14:20.646779Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E346",
+            "E347",
+            "E1",
+            "E2",
+            "E115"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [
+            {
+              "event_id": "E2",
+              "fact_ids": [
+                "F34"
+              ]
+            }
+          ],
+          "reason": "当前消息核心事实为 Micron FY2026 Q4 实际业绩发布（含收入、利润率、分部数据、FY2027 Q1 前瞻指引等）。已加载 canonical events 中：E1 仅含 Q3 实际结果，E2/F34 仅为 Q4 排期，E115 仅为分析师对 Q4 的预测，均未覆盖 Q4 实际报告结果。provisional E346 仅记录了单一 EPS 数据点，不构成对完整 earnings release 核心事实的覆盖。",
+          "reference_ids": [
+            "E2"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [
+            "pol_6a823a72b3e33190bb83"
+          ],
+          "reason": "消息为Micron FY26 Q4财报初步快讯，直接给出Adj EPS $33.42并标注>（超预期），且注明MORE TO FOLLOW。该数据点与pol_6a823a72b3e33190bb83关注的FY26 Q4正式业绩、EPS指引兑现及偏差直接相关。当前仅有调整后EPS一项数字，尚无GAAP摊薄EPS、合并收入、管理层指引区间及毛利率等完整信息，无法排除最终报告中出现GAAP EPS低于指引下限等触发情形，应进入完整判定。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息仅报告Micron 4Q调整EPS为$33.42，未提供合并收入、GAAP毛利率或GAAP摊薄EPS数据。C1需要收入低于490亿且GAAP毛利率低于86%，C2需要收入低于490亿且GAAP摊薄EPS低于29.73美元，两项关键事实均缺失，任何Condition均未达到触发边界。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology",
+                "FY2026 Q4",
+                "调整后每股收益"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron Technology报告FY2026 Q4调整后每股收益为33.42美元。",
+              "subject_time": "FY2026 Q4"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "实际调整后EPS为33.42美元，较事件前约31.49–32.21美元基线高约4%–6%，并超过管理层非GAAP指引上限32美元；近期Q4盈利兑现预期应上修为更强的正向超预期。",
+            "prior_expectation": "事件前合理的FY26 Q4调整后/非GAAP EPS基线约为31.49–32.21美元，管理层非GAAP指引区间约为30–32美元；市场已预期高位盈利并可能小幅超指引。",
+            "reason": "Surprise为调整后EPS相对公开基线的约4%–6%正偏差，且突破管理层非GAAP指引上限；EPS直接影响MU的当期盈利和估值分母，经济传导清晰且重要，足以形成立即可行动的LONG。由于当前headline尚未确认收入、GAAP毛利率或FY27指引，不把该判断扩展为长期盈利平台已被完全确认。",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "完整的Micron FY2026 Q4实际业绩在本事件边界后首次出现；Reference View中的E1仅为FY26 Q3结果，E2仅为Q4排期，E115为事件前分析师预期，临时E346仅记录单一EPS点，均未覆盖当前完整Q4现实。当前消息明确报告调整后EPS为33.42美元。",
+            "reference_ids": [
+              "E1",
+              "E2",
+              "E115",
+              "E346"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "当前仍是uncovered状态。相关pol_6a823a72b3e33190bb83的C1/C2都要求正式Q4收入低于490亿美元，并分别叠加GAAP毛利率低于约86%或GAAP摊薄EPS低于29.73美元；当前headline只确认调整后EPS为33.42美元，未满足或确认这些触发条件，且没有其他Policy命中。"
+          },
+          "w3_case_id": "w3_735cad831e6542cabef2a66923a698ef"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "63392cc04f4c803ac96ee2f22b04ca9859a44d9cb23ab18d1359c1bce296cbd5",
+            "content_type": "text/plain",
+            "sha256": "723432634f58dc0ebcb52a61c5a40cef3cf6ebe84b3ff1cd2bb5e32f27c7e36f",
+            "size_bytes": 511
+          },
+          "case": {
+            "case_id": "case_d932a7af4c8c479eb848ced3fe153a60",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-30T20:02:05.035640Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-30T20:02:14.870072Z",
+          "revision": 1,
+          "row_revision": 2631963,
+          "source": {
+            "binding_id": "MU:ibkr_news",
+            "kind": "api",
+            "name": "IBKR News API",
+            "source_id": "ibkr_news"
+          },
+          "source_published_at": "2026-09-30T20:01:00Z",
+          "standard_message_id": "std_86e299f594384871afd7c7b7c6789263",
+          "stream_item_id": "stream_1def0f8850c24227bdf774e6a80bc074",
+          "stream_offset": 2477,
+          "stream_published_at": "2026-09-30T20:02:14.881481Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "* Micron Technology 4Q Adj EPS $33.42 >MU"
+          },
+          "url": "https://www.interactivebrokers.com/en/trading/providers.php",
+          "body_text": "(MORE TO FOLLOW) Dow Jones Newswires September 30, 2026 16:01 ET (20:01 GMT) Copyright (c) 2026 Dow Jones & Company, Inc. The statements in this document shall not be considered as an objective or independent explanation of the matters. Please note that this document (a) has not been prepared in accordance with legal requirements designed to promote the independence of investment research, and (b) is not subject to any prohibition on dealing ahead of the dissemination or publication of investment research."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_86e299f594384871afd7c7b7c6789263:0\"]",
+          "created_at": "2026-09-30T20:14:20.417734Z",
+          "dedupe_key": "b15903aaf12e8ed4f5df2f1ed3e9aac4e71c4efd6eeeaab16dc1c9b0fe39530a",
+          "entities": [
+            "Micron Technology",
+            "FY2026 Q4",
+            "调整后每股收益"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron Technology报告FY2026 Q4调整后每股收益为33.42美元。",
+          "provisional_event_id": "E313",
+          "subject_time": "FY2026 Q4"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_d932a7af4c8c479eb848ced3fe153a60",
+            "status": "DUPLICATE_EVENT_TRADE",
+            "released_at": "2026-09-30T20:14:20.463428+00:00",
+            "selection_id": null,
+            "submitted": false,
+            "release_semantic_day": "2026-09-30",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_735cad831e6542cabef2a66923a698ef",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": []
+      },
+      "trade_result": {
+        "formal_intent_status": "DUPLICATE_EVENT_TRADE",
+        "case_read_trade_state": "NOT_APPLICABLE",
+        "case_read_intent_count": 0,
+        "read_execution_state": null,
+        "read_execution_reason_codes": [],
+        "executor_execution_record_exists": false,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": true
+      }
+    },
+    {
+      "intent_id": "trade:case_969d4bfbe2be46d1a67f334860731dd2",
+      "ticker": "MU",
+      "case_id": "case_969d4bfbe2be46d1a67f334860731dd2",
+      "intent_released_at_utc": "2026-09-30T20:15:32.383672+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_9a9890cd0c854b0186c133a03922f860",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron Technology reported fiscal 2026 fourth-quarter net income of approximately $37.7 billion.",
+            "subject_time": "FY2026 Q4"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "Reported FY2026 Q4 net income of approximately $37.7 billion, marked as above expectations, raises the current-quarter earnings baseline and reinforces the continuation of the high-margin AI-memory cycle; persistence and forward guidance remain pending.",
+          "prior_expectation": "Micron's FY2026 Q4 profitability was expected to remain strong, with management EPS guidance of $30-$32 and analyst forecasts in the low-$31 to low-$32 range, but the actual net-income result was not yet known.",
+          "reason": "The actual net-income beat is a material positive earnings surprise with direct transmission to Micron's valuation and near-term earnings expectations. Although the alert is incomplete, the direction supports a LONG trade pending the full release.",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "Micron's reported FY2026 Q4 net income of approximately $37.7 billion is a new actual financial result; existing coverage contained prior-quarter results and Q4 EPS guidance or forecasts, not this Q4 net income figure.",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No Policy condition is matched. The headline signals a positive result but provides no negative revenue, margin, product, contract, supply, capacity, qualification, or delivery condition."
+        },
+        "w3_case_id": "w3_9a9890cd0c854b0186c133a03922f860"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_969d4bfbe2be46d1a67f334860731dd2",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-30T20:15:32.581909Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 790.917862
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-30T20:02:21.664047Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2632139,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-30",
+        "source": {
+          "binding_id": "MU:ibkr_news",
+          "kind": "api",
+          "name": "IBKR News API",
+          "source_id": "ibkr_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_be4b546908024c90a572a961ee997c94",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "* Micron Technology 4Q Net $37.7B >MU"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "PORTFOLIO_CAPACITY_EXHAUSTED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-30T20:02:21.664047Z",
+        "completed_at": "2026-09-30T20:15:32.581909Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E2",
+            "E115",
+            "E1",
+            "E346",
+            "E10"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "核心事实为美光FY2026 Q4净利润约$37.7B（实际报告数据）。已加载canonical Facts仅含Q3净利$28.2B（不同季度）、Q4 EPS指引$30-$32（不同指标、仅为指引）及分析师Q4 EPS预测（forecast非actual）。provisional事实E346记录的是Q4 EPS $32.87，属于同一财报但不同财务指标，未覆盖净利数字。",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "该消息仅为道琼斯快讯标题，内容为Micron 4Q Net $37.7B并以\">\"标记（通常表示高于市场预期），且注明\"MORE TO FOLLOW\"表明尚无详细正文。消息未提供任何具体产品组合（CMBU/CDBU/HBM）、ASP、毛利率、EPS、指引对比、费用桥、合同价、出货量、客户资格或交付状态等细节，无法与任何Policy criterion形成直接、实质性的触发事实对应。\"＞\"的方向信号甚至与多数Policy要求的下行/恶化条件方向相反。本轮无Candidate可召回。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "该消息仅为道琼斯快讯标题，内容为Micron 4Q Net $37.7B并以\">\"标记（通常表示高于市场预期），且注明\"MORE TO FOLLOW\"表明尚无详细正文。消息未提供任何具体产品组合（CMBU/CDBU/HBM）、ASP、毛利率、EPS、指引对比、费用桥、合同价、出货量、客户资格或交付状态等细节，无法与任何Policy criterion形成直接、实质性的触发事实对应。\"＞\"的方向信号甚至与多数Policy要求的下行/恶化条件方向相反。本轮无Candidate可召回。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron Technology reported fiscal 2026 fourth-quarter net income of approximately $37.7 billion.",
+              "subject_time": "FY2026 Q4"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "Reported FY2026 Q4 net income of approximately $37.7 billion, marked as above expectations, raises the current-quarter earnings baseline and reinforces the continuation of the high-margin AI-memory cycle; persistence and forward guidance remain pending.",
+            "prior_expectation": "Micron's FY2026 Q4 profitability was expected to remain strong, with management EPS guidance of $30-$32 and analyst forecasts in the low-$31 to low-$32 range, but the actual net-income result was not yet known.",
+            "reason": "The actual net-income beat is a material positive earnings surprise with direct transmission to Micron's valuation and near-term earnings expectations. Although the alert is incomplete, the direction supports a LONG trade pending the full release.",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "Micron's reported FY2026 Q4 net income of approximately $37.7 billion is a new actual financial result; existing coverage contained prior-quarter results and Q4 EPS guidance or forecasts, not this Q4 net income figure.",
+            "reference_ids": [],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "No Policy condition is matched. The headline signals a positive result but provides no negative revenue, margin, product, contract, supply, capacity, qualification, or delivery condition."
+          },
+          "w3_case_id": "w3_9a9890cd0c854b0186c133a03922f860"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "63392cc04f4c803ac96ee2f22b04ca9859a44d9cb23ab18d1359c1bce296cbd5",
+            "content_type": "text/plain",
+            "sha256": "723432634f58dc0ebcb52a61c5a40cef3cf6ebe84b3ff1cd2bb5e32f27c7e36f",
+            "size_bytes": 511
+          },
+          "case": {
+            "case_id": "case_969d4bfbe2be46d1a67f334860731dd2",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-30T20:02:05.035640Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-30T20:02:15.174765Z",
+          "revision": 1,
+          "row_revision": 2632116,
+          "source": {
+            "binding_id": "MU:ibkr_news",
+            "kind": "api",
+            "name": "IBKR News API",
+            "source_id": "ibkr_news"
+          },
+          "source_published_at": "2026-09-30T20:01:00Z",
+          "standard_message_id": "std_b5eeb9ebefeb40a5aaddead343018f3a",
+          "stream_item_id": "stream_be4b546908024c90a572a961ee997c94",
+          "stream_offset": 2481,
+          "stream_published_at": "2026-09-30T20:02:15.181804Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "* Micron Technology 4Q Net $37.7B >MU"
+          },
+          "url": "https://www.interactivebrokers.com/en/trading/providers.php",
+          "body_text": "(MORE TO FOLLOW) Dow Jones Newswires September 30, 2026 16:01 ET (20:01 GMT) Copyright (c) 2026 Dow Jones & Company, Inc. The statements in this document shall not be considered as an objective or independent explanation of the matters. Please note that this document (a) has not been prepared in accordance with legal requirements designed to promote the independence of investment research, and (b) is not subject to any prohibition on dealing ahead of the dissemination or publication of investment research."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_b5eeb9ebefeb40a5aaddead343018f3a:0\"]",
+          "created_at": "2026-09-30T20:15:32.324805Z",
+          "dedupe_key": "2e9a2065ef08c68287cfee0ba1046ec417adaefa3820e8953d14ea114557b84e",
+          "entities": [
+            "Micron Technology"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron Technology reported fiscal 2026 fourth-quarter net income of approximately $37.7 billion.",
+          "provisional_event_id": "E314",
+          "subject_time": "FY2026 Q4"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_969d4bfbe2be46d1a67f334860731dd2",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-09-30T20:15:32.383672+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-30",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_9a9890cd0c854b0186c133a03922f860",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T20:15:32.558880Z"
+              },
+              "case_id": "case_969d4bfbe2be46d1a67f334860731dd2",
+              "direction": "LONG",
+              "entry_reason": "PORTFOLIO_CAPACITY_EXHAUSTED",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_969d4bfbe2be46d1a67f334860731dd2",
+              "execution_reason_codes": [
+                "PORTFOLIO_CAPACITY_EXHAUSTED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_969d4bfbe2be46d1a67f334860731dd2",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T20:15:32.383672Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "PORTFOLIO_CAPACITY_EXHAUSTED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_dae80fcc0e85433a974a1be38d9aa7c9",
+      "ticker": "MU",
+      "case_id": "case_dae80fcc0e85433a974a1be38d9aa7c9",
+      "intent_released_at_utc": "2026-09-30T20:16:06.927487+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_f34dbd748e794ce4bdc0c645a2cf9759",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Micron Technology reported fiscal 2026 fourth-quarter net income of approximately $37.7 billion.",
+            "subject_time": "FY2026 Q4"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "Reported FY2026 Q4 net income of approximately $37.7 billion, marked as above expectations, raises the current-quarter earnings baseline and reinforces the high-margin AI-memory cycle; forward guidance and detailed margin and mix data remain pending.",
+          "prior_expectation": "Micron's FY2026 Q4 profitability was expected to remain strong based on $30-$32 EPS guidance and low-$31 to low-$32 analyst forecasts, but the actual net-income result was not yet known.",
+          "reason": "The actual net-income result is a material positive earnings surprise with direct transmission to Micron's near-term earnings and valuation. Although the alert is incomplete, the available evidence supports a LONG trade pending the full release.",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "Micron's reported FY2026 Q4 net income of approximately $37.7 billion is a new actual financial result; existing coverage contained forecasts and an EPS result, not this net-income figure.",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No Policy condition is matched. The headline provides a positive net-income result but no negative revenue, margin, product, contract, supply, capacity, qualification, or delivery condition."
+        },
+        "w3_case_id": "w3_f34dbd748e794ce4bdc0c645a2cf9759"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_dae80fcc0e85433a974a1be38d9aa7c9",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-30T20:16:07.179059Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 825.398091
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-30T20:02:21.780968Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2632251,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-30",
+        "source": {
+          "binding_id": "MU:ibkr_news",
+          "kind": "api",
+          "name": "IBKR News API",
+          "source_id": "ibkr_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_aea9e62c53e844caa98de06d5bad569b",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "* Micron Technology 4Q Net $37.7B >MU"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "PORTFOLIO_CAPACITY_EXHAUSTED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-30T20:02:21.780968Z",
+        "completed_at": "2026-09-30T20:16:07.179059Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E346",
+            "E115",
+            "E2",
+            "E1",
+            "E319"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "当前消息核心事实为Micron FY2026 Q4实际净利润$37.7B。已加载canonical facts中仅有分析师对Q4收入、毛利率和EPS的预测（如F787、F696），无任何事实记录$37.7B这一实际净利润数字。provisional fact E346仅报告了EPS $32.87，与Net Income总额是不同维度的事实。该实际净利润为尚未被覆盖的新进展。",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "消息仅为Dow Jones Newswires的占位标题(MORE TO FOLLOW)，未包含任何具体业务事实、财务数据、产品信息或市场状态描述，无法与任何Policy criterion建立具体触发关系。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息仅为Dow Jones Newswires的占位标题(MORE TO FOLLOW)，未包含任何具体业务事实、财务数据、产品信息或市场状态描述，无法与任何Policy criterion建立具体触发关系。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Micron Technology"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "Micron Technology reported fiscal 2026 fourth-quarter net income of approximately $37.7 billion.",
+              "subject_time": "FY2026 Q4"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "Reported FY2026 Q4 net income of approximately $37.7 billion, marked as above expectations, raises the current-quarter earnings baseline and reinforces the high-margin AI-memory cycle; forward guidance and detailed margin and mix data remain pending.",
+            "prior_expectation": "Micron's FY2026 Q4 profitability was expected to remain strong based on $30-$32 EPS guidance and low-$31 to low-$32 analyst forecasts, but the actual net-income result was not yet known.",
+            "reason": "The actual net-income result is a material positive earnings surprise with direct transmission to Micron's near-term earnings and valuation. Although the alert is incomplete, the available evidence supports a LONG trade pending the full release.",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "Micron's reported FY2026 Q4 net income of approximately $37.7 billion is a new actual financial result; existing coverage contained forecasts and an EPS result, not this net-income figure.",
+            "reference_ids": [],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "No Policy condition is matched. The headline provides a positive net-income result but no negative revenue, margin, product, contract, supply, capacity, qualification, or delivery condition."
+          },
+          "w3_case_id": "w3_f34dbd748e794ce4bdc0c645a2cf9759"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "63392cc04f4c803ac96ee2f22b04ca9859a44d9cb23ab18d1359c1bce296cbd5",
+            "content_type": "text/plain",
+            "sha256": "723432634f58dc0ebcb52a61c5a40cef3cf6ebe84b3ff1cd2bb5e32f27c7e36f",
+            "size_bytes": 511
+          },
+          "case": {
+            "case_id": "case_dae80fcc0e85433a974a1be38d9aa7c9",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-30T20:02:05.035640Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-30T20:02:15.229618Z",
+          "revision": 1,
+          "row_revision": 2632212,
+          "source": {
+            "binding_id": "MU:ibkr_news",
+            "kind": "api",
+            "name": "IBKR News API",
+            "source_id": "ibkr_news"
+          },
+          "source_published_at": "2026-09-30T20:01:00Z",
+          "standard_message_id": "std_2dd5393c014d4f519d1f9c200135880d",
+          "stream_item_id": "stream_aea9e62c53e844caa98de06d5bad569b",
+          "stream_offset": 2482,
+          "stream_published_at": "2026-09-30T20:02:15.239205Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "* Micron Technology 4Q Net $37.7B >MU"
+          },
+          "url": "https://www.interactivebrokers.com/en/trading/providers.php",
+          "body_text": "(MORE TO FOLLOW) Dow Jones Newswires September 30, 2026 16:01 ET (20:01 GMT) Copyright (c) 2026 Dow Jones & Company, Inc. The statements in this document shall not be considered as an objective or independent explanation of the matters. Please note that this document (a) has not been prepared in accordance with legal requirements designed to promote the independence of investment research, and (b) is not subject to any prohibition on dealing ahead of the dissemination or publication of investment research."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_2dd5393c014d4f519d1f9c200135880d:0\"]",
+          "created_at": "2026-09-30T20:16:06.883331Z",
+          "dedupe_key": "2e9a2065ef08c68287cfee0ba1046ec417adaefa3820e8953d14ea114557b84e",
+          "entities": [
+            "Micron Technology"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "Micron Technology reported fiscal 2026 fourth-quarter net income of approximately $37.7 billion.",
+          "provisional_event_id": "E315",
+          "subject_time": "FY2026 Q4"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_dae80fcc0e85433a974a1be38d9aa7c9",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-09-30T20:16:06.927487+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-30",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_f34dbd748e794ce4bdc0c645a2cf9759",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T20:16:07.458560Z"
+              },
+              "case_id": "case_dae80fcc0e85433a974a1be38d9aa7c9",
+              "direction": "LONG",
+              "entry_reason": "PORTFOLIO_CAPACITY_EXHAUSTED",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_dae80fcc0e85433a974a1be38d9aa7c9",
+              "execution_reason_codes": [
+                "PORTFOLIO_CAPACITY_EXHAUSTED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_dae80fcc0e85433a974a1be38d9aa7c9",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T20:16:06.927487Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "PORTFOLIO_CAPACITY_EXHAUSTED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    }
+  ]
+}

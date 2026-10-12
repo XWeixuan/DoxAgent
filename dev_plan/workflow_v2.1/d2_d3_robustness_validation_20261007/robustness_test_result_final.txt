@@ -1,0 +1,95 @@
+.........................................F...FFF..F..................... [ 58%]
+.........FF...FF....................................                     [100%]
+================================== FAILURES ===================================
+__________ test_five_stages_freeze_retry_publish_and_version_binding __________
+tests\test_codex_document2_v21_orchestration.py:519: in test_five_stages_freeze_retry_publish_and_version_binding
+    assert len(additions) == 1 and additions[0]["discovered_during"] == "REALIZATION"
+E   AssertionError: assert (1 == 1 and 'STATE' == 'REALIZATION'
+E    +  where 1 = len([{'change_hypothesis': 'more demand', 'discovered_during': 'STATE', 'name': 'new channel', 'reason': 'new evidence', ...}])
+E     
+E     - REALIZATION
+E     + STATE)
+____________ test_parallel_shell_failure_keeps_healthy_five_stages ____________
+tests\test_codex_document2_v21_orchestration.py:672: in test_parallel_shell_failure_keeps_healthy_five_stages
+    assert Counter(r.node for r in worker.requests)[CodexD2Node.O1_FINALIZATION] == 1
+E   assert 2 == 1
+______________ test_pilot_bootstrap_envelope_and_event_freezing _______________
+tests\test_codex_document2_v21_orchestration.py:746: in test_pilot_bootstrap_envelope_and_event_freezing
+    assert builder._event_library_provider.calls == 1
+E   assert 2 == 1
+E    +  where 2 = <tests.test_codex_document2_v21_orchestration.Events object at 0x000001D814E92D10>.calls
+E    +    where <tests.test_codex_document2_v21_orchestration.Events object at 0x000001D814E92D10> = <doxagent.pilot.document2_case_builder.Document2PilotCaseBuilder object at 0x000001D87FB65850>._event_library_provider
+_ test_source_attempt_pilot_preserves_frozen_inputs_and_never_loads_provider __
+tests\test_codex_document2_v21_orchestration.py:788: in test_source_attempt_pilot_preserves_frozen_inputs_and_never_loads_provider
+    assert original == {
+E   assert {'AGENTS.md':... b'NVDA', ...} == {'AGENTS.md':... b'NVDA', ...}
+E     
+E     Omitting 26 identical items, use -vv to show
+E     Differing items:
+E     {'context_index\\pages\\4de97267e232401c76d3\\1.txt': b'{\n  "finalization_note": [],\n  "shells": [\n    {\n      "bo...  "D1-O1"\n          ],\n          "scope": "customer orders"\n        }\n      ]\n    }\n  ],\n  "warnings": []\n}\n'} != {'context_index\\pages\\4de97267e232401c76d3\\1.txt': b'{\r\n  "finalization_note": [],\r\n  "shells": [\r\n    {\r\n ...     ],\r\n          "scope": "customer orders"\r\n        }\r\n      ]\r\n    }\r\n  ],\r\n  "warnings": []\r\n}\r\n'}
+E     {'context_index\\entries\\b5a93d...
+E     
+E     ...Full output truncated (119 lines hidden), use '-vv' to show
+_______ test_final_contract_failure_retries_only_finalization[closure] ________
+tests\test_codex_document2_v21_orchestration.py:886: in test_final_contract_failure_retries_only_finalization
+    assert bundle.publication_state == ("COMPLETE" if fault == "closure" else "PARTIAL")
+E   AssertionError: assert 'PARTIAL' == 'COMPLETE'
+E     
+E     - COMPLETE
+E     + PARTIAL
+________ test_source_pilot_export_retains_scan_origin_and_input_bytes _________
+tests\test_d2_discovery_checkpoint.py:446: in test_source_pilot_export_retains_scan_origin_and_input_bytes
+    assert {
+E   assert {'AGENTS.md':... b'NVDA', ...} == {'AGENTS.md':... b'NVDA', ...}
+E     
+E     Omitting 9 identical items, use -vv to show
+E     Differing items:
+E     {'context_index\\entries\\111442f5db642c23e397.json': b'{\r\n  "characters": 4,\r\n  "content_sha256": "426219f2bc1982...n  "pointer": "/ticker",\r\n  "role": "ticker",\r\n  "sections": [],\r\n  "source": null,\r\n  "type": "str"\r\n}\r\n'} != {'context_index\\entries\\111442f5db642c23e397.json': b'{\n  "characters": 4,\n  "content_sha256": "426219f2bc19829619...3e397.txt",\n  "pointer": "/ticker",\n  "role": "ticker",\n  "sections": [],\n  "source": null,\n  "type": "str"\n}\n'}
+E     Left contains 100 more items:
+E     {'co...
+E     
+E     ...Full output truncated (1627 lines hidden), use '-vv' to show
+____________ test_coordinator_does_not_advance_without_checkpoint _____________
+tests\test_d2_discovery_checkpoint.py:482: in test_coordinator_does_not_advance_without_checkpoint
+    (root / "coordinator_state.json").write_text(json.dumps(state))
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src\doxagent\pilot\document2_coordinator.py:152: in advance
+    return _event("waiting", root, active)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src\doxagent\pilot\document2_coordinator.py:648: in _event
+    task_path=Path(str(stage["task_path"])),
+                       ^^^^^^^^^^^^^^^^^^
+E   KeyError: 'task_path'
+______ test_full_pilot_uses_one_discovery_case_and_five_o1_cases[False] _______
+tests\test_d2_discovery_checkpoint.py:697: in test_full_pilot_uses_one_discovery_case_and_five_o1_cases
+    from doxagent.pilot.sdk_runner import PilotSdkRunner
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AssertionError: assert 'waiting' == 'completed'
+E     
+E     - completed
+E     + waiting
+_______ test_full_pilot_uses_one_discovery_case_and_five_o1_cases[True] _______
+tests\test_d2_discovery_checkpoint.py:697: in test_full_pilot_uses_one_discovery_case_and_five_o1_cases
+    from doxagent.pilot.sdk_runner import PilotSdkRunner
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AssertionError: assert 'waiting' == 'completed'
+E     
+E     - completed
+E     + waiting
+============================== warnings summary ===============================
+.venv\Lib\site-packages\opentelemetry\util\_importlib_metadata.py:32
+  C:\Users\WEIXUANXIE\Desktop\DoxAgent\.venv\Lib\site-packages\opentelemetry\util\_importlib_metadata.py:32: DeprecationWarning: SelectableGroups dict interface is deprecated. Use select.
+    return EntryPoints(ep for group_eps in eps.values() for ep in group_eps)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_codex_document2_v21_orchestration.py::test_five_stages_freeze_retry_publish_and_version_binding
+FAILED tests/test_codex_document2_v21_orchestration.py::test_parallel_shell_failure_keeps_healthy_five_stages
+FAILED tests/test_codex_document2_v21_orchestration.py::test_pilot_bootstrap_envelope_and_event_freezing
+FAILED tests/test_codex_document2_v21_orchestration.py::test_source_attempt_pilot_preserves_frozen_inputs_and_never_loads_provider
+FAILED tests/test_codex_document2_v21_orchestration.py::test_final_contract_failure_retries_only_finalization[closure]
+FAILED tests/test_d2_discovery_checkpoint.py::test_source_pilot_export_retains_scan_origin_and_input_bytes
+FAILED tests/test_d2_discovery_checkpoint.py::test_coordinator_does_not_advance_without_checkpoint
+FAILED tests/test_d2_discovery_checkpoint.py::test_full_pilot_uses_one_discovery_case_and_five_o1_cases[False]
+FAILED tests/test_d2_discovery_checkpoint.py::test_full_pilot_uses_one_discovery_case_and_five_o1_cases[True]
+9 failed, 115 passed, 1 warning in 530.20s (0:08:50)

@@ -1,0 +1,86 @@
+# Selected Data MCP observations
+
+## O142 — form
+
+10-K
+
+Source: SEC EDGAR · 0000723125-26-000023
+
+## O145 — filing_date
+
+2026-10-09
+
+Source: SEC EDGAR · 0000723125-26-000023
+
+## O146 — report_date
+
+2026-09-03
+
+Source: SEC EDGAR · 0000723125-26-000023
+
+## O147 — published_at
+
+2026-10-09
+
+Source: SEC EDGAR · 0000723125-26-000023
+
+## O148 — applied_cutoff
+
+2026-10-09
+
+Source: SEC EDGAR · 0000723125-26-000023
+
+## O150 — section_previews 1
+
+```json
+{
+  "section": "Our competitors",
+  "heading_match": "Our competitors",
+  "start_offset": 168427,
+  "end_offset": 248443,
+  "full_text_chars": 80000,
+  "returned_chars": 40000,
+  "truncated": true,
+  "match_quality": "substantive_body",
+  "text_preview": "and other companies seeking similar talent may target individuals within our organization who possess desired skills and experience, which could make it more difficult to attract, retain, and motivate key employees. If our total compensation programs, benefits, and workplace culture are not seen as competitive and inclusive, our ability to attract and retain talent could be compromised. Intense competition for talent can lead to increased compensation costs. Significant attrition and delays in replacing employees can result in a loss of critical skills, reduced morale, business disruptions, inefficiencies during transitions, and increased expenses. Additionally, changes to immigration policies and travel restrictions due to public health crises or other causes may limit our ability to hire, retain, or transfer talent to specific locations. Our business success depends on our ability to attract, retain, and motivate key talent. Failure to do so could inhibit our ability to maintain or expand operations and adversely impact our operating results. 37 | 2026 10-K Table of Contents Labor disputes, union activity, work stoppages, or other disruptions at our manufacturing facilities could cause significant business interruption and materially adversely affect our business, results of operations, or financial condition. We rely on a large, skilled workforce to operate our semiconductor manufacturing facilities worldwide. A substantial portion of our global production capacity is concentrated in several of our manufacturing facilities, and our wafer fabrication output depends on their continued, uninterrupted operation. Certain of our employees have formed or joined labor unions, and additional unionization efforts may occur in the future. Labor unions representing a portion of our workforce have been engaged in union organizing and collective bargaining activities, including formal mediations (which, if not successful, could permit strike actions), and public demands for revised incentive structures. Such disputes could escalate rapidly and affect manufacturing output across the industry. A strike, work stoppage, slowdown, or other labor action at any of our manufacturing facilities could cause significant business interruption, including the temporary or prolonged cessation of production at one or more fabrication lines. Even a brief disruption could result in substantial losses of production volume, reduced manufacturing yields, damage to work-in-process inventory, and delays in fulfilling customer orders. Such disruptions could also impair our ability to meet delivery schedules under strategic customer agreements, which could result in contractual liability, loss of customer confidence, or diversion of customer demand to competing suppliers. The resolution of labor disputes may require us to increase wages, benefits, or incentive compensation, implement new profit-sharing or bonus programs, or make other concessions, any of which could significantly i"
+}
+```
+
+Source: SEC EDGAR · 0000723125-26-000023
+
+## O143 — accession
+
+0000723125-26-000023
+
+Source: SEC EDGAR · 0000723125-26-000023
+
+## O144 — primary_document
+
+mu-20260903.htm
+
+Source: SEC EDGAR · 0000723125-26-000023
+
+## O149 — default_sections_for_form
+
+```json
+false
+```
+
+Source: SEC EDGAR · 0000723125-26-000023
+
+## O151 — sections 1 — metadata
+
+```json
+{
+  "section": "Our competitors",
+  "heading_match": "Our competitors",
+  "start_offset": 168427,
+  "end_offset": 248443,
+  "full_text_chars": 80000,
+  "returned_chars": 40000,
+  "truncated": true,
+  "match_quality": "substantive_body"
+}
+```
+
+Source: SEC EDGAR · 0000723125-26-000023

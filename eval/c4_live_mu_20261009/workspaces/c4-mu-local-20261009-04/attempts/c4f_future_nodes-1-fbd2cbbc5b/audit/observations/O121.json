@@ -1,0 +1,9 @@
+{
+  "alias": "O121",
+  "title": "text paragraphs 1",
+  "content": "| Akamai | 176-34-86-175_s-23-203-249-81_ts-1604430438-clienttons-s.akamaihd.net,\n\n176-34-86-175_s-23-203-249-81_ts-1604432488-clienttons-s.akamaihd.net,\n\n176-34-86-175_s-23-203-249-90_ts-1604428164-clienttons-s.akamaihd.net,\n\n176-34-86-175_s-95-101-143-18_ts-1604428258-clienttons-s.akamaihd.net,\n\n176-34-86-175_s-95-101-143-24_ts-1604428321-clienttons-s.akamaihd.net,\n\n34-242-207-243_s-23-203-249-81_ts-1604425495-clienttons-s.akamaihd.net,\n\n34-242-207-243_s-23-203-249-81_ts-1604425563-clienttons-s.akamaihd.net,\n\n34-242-207-243_s-23-203-249-81_ts-1604425669-clienttons-s.akamaihd.net,",
+  "source": {
+    "provider": "Public web source",
+    "locator": "https://semiconductor.samsung.com/news-events/news/samsung-electronics-begins-shipment-of-industry-first-hbm4e-samples/"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "alias": "O36",
+  "title": "sections 2 — metadata",
+  "content": {
+    "section": "Item 1A",
+    "heading_match": "Item 1A.",
+    "start_offset": 227805,
+    "end_offset": 307814,
+    "full_text_chars": 80000,
+    "returned_chars": 40000,
+    "truncated": true,
+    "match_quality": "substantive_body"
+  },
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

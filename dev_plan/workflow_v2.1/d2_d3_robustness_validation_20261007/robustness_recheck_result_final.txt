@@ -1,0 +1,32 @@
+..............................................................FF         [100%]
+================================== FAILURES ===================================
+______ test_full_pilot_uses_one_discovery_case_and_five_o1_cases[False] _______
+tests\test_d2_discovery_checkpoint.py:711: in test_full_pilot_uses_one_discovery_case_and_five_o1_cases
+    assert builder._event_library_provider.calls == 1
+E   assert 14 == 1
+E    +  where 14 = <tests.test_codex_document2_v21_orchestration.Events object at 0x000002129709D410>.calls
+E    +    where <tests.test_codex_document2_v21_orchestration.Events object at 0x000002129709D410> = <doxagent.pilot.document2_case_builder.Document2PilotCaseBuilder object at 0x0000021298175450>._event_library_provider
+_______ test_full_pilot_uses_one_discovery_case_and_five_o1_cases[True] _______
+tests\test_d2_discovery_checkpoint.py:699: in test_full_pilot_uses_one_discovery_case_and_five_o1_cases
+    PilotSdkRunner._validate_completion(root, manifest)
+src\doxagent\pilot\sdk_runner.py:644: in _validate_completion
+    write_json(local / "output/orchestration_diagnostics.json", accepted.diagnostics)
+src\doxagent\pilot\sdk_runner.py:92: in write_json
+    temporary.write_text(json.dumps(value, ensure_ascii=False, indent=2), encoding="utf-8")
+.uv-python\cpython-3.11-windows-x86_64-none\Lib\pathlib.py:1078: in write_text
+    with self.open(mode='w', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.uv-python\cpython-3.11-windows-x86_64-none\Lib\pathlib.py:1044: in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\WEIXUANXIE\\AppData\\Local\\Temp\\pytest-of-WEIXUANXIE\\pytest-1660\\p1\\document2\\d2_o0_candidate_narrative\\full-04-o0_candidate_narrative\\attempts\\d2-pilot-o0_candidate_narrative-04f89d0882\\output\\.orchestration_diagnostics.json.22a76c3aa2ea4e93943af75faf75b06f.tmp'
+============================== warnings summary ===============================
+.venv\Lib\site-packages\opentelemetry\util\_importlib_metadata.py:32
+  C:\Users\WEIXUANXIE\Desktop\DoxAgent\.venv\Lib\site-packages\opentelemetry\util\_importlib_metadata.py:32: DeprecationWarning: SelectableGroups dict interface is deprecated. Use select.
+    return EntryPoints(ep for group_eps in eps.values() for ep in group_eps)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_d2_discovery_checkpoint.py::test_full_pilot_uses_one_discovery_case_and_five_o1_cases[False]
+FAILED tests/test_d2_discovery_checkpoint.py::test_full_pilot_uses_one_discovery_case_and_five_o1_cases[True]
+2 failed, 62 passed, 1 warning in 374.59s (0:06:14)

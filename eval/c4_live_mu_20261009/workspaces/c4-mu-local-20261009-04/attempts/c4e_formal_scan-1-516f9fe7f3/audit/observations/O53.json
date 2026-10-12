@@ -1,0 +1,9 @@
+{
+  "alias": "O53",
+  "title": "text paragraphs 7",
+  "content": "Rubin Readiness\n\nNVIDIA Rubin is in full production, and Rubin-based products will be available from partners the second half of 2026.\n\nAmong the first cloud providers to deploy Vera Rubin-based instances in 2026 will be AWS, Google Cloud, Microsoft and OCI, as well as NVIDIA Cloud Partners CoreWeave, Lambda, Nebius and Nscale.\n\nMicrosoft will deploy NVIDIA Vera Rubin NVL72 rack-scale systems as part of next-generation AI data centers, including future Fairwater AI superfactory sites.\n\nDesigned to deliver unprecedented efficiency and performance for training and inference workloads, the Rubin platform will provide the foundation for Microsoft’s next-generation cloud AI capabilities. Microsoft Azure will offer a tightly optimized platform enabling customers to accelerate innovation across enterprise, research and consumer applications.\n\nCoreWeave will integrate NVIDIA Rubin-based systems into its AI cloud platform beginning in the second half of 2026. CoreWeave is built to operate multiple architectures side by side, enabling customers to bring Rubin into their environments, where it will deliver the greatest impact across training, inference and agentic workloads.\n\nTogether with NVIDIA, CoreWeave will help AI pioneers take advantage of Rubin’s advancements in reasoning and MoE models, while continuing to deliver the performance, operational reliability and scale required for production AI across the full lifecycle with CoreWeave Mission Control.\n\nIn addition, Cisco, Dell, HPE, Lenovo and Supermicro are expected to deliver a wide range of servers based on Rubin products.",
+  "source": {
+    "provider": "Public web source",
+    "locator": "https://nvidianews.nvidia.com/news/rubin-platform-ai-supercomputer"
+  }
+}

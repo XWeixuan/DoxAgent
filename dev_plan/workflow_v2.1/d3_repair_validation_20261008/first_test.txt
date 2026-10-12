@@ -1,0 +1,232 @@
+.F...FF.........FF
+================================== FAILURES ===================================
+___________ test_open_global_four_files_staged_replay_and_contract ____________
+
+rig = namespace(orchestrator=<doxagent.workflows.codex_document3.orchestrator_v21.Document3OrchestratorV21 object at 0x00000...s\\WEIXUANXIE\\AppData\\Local\\Temp\\pytest-of-WEIXUANXIE\\pytest-1704\\test_open_global_four_files_st0\\maintain.md'})
+
+    @pytest.mark.asyncio
+    async def test_open_global_four_files_staged_replay_and_contract(rig):
+        result = await rig.orchestrator.initialize(ticker="MU", as_of=NOW, run_id="d3v21-test")
+        assert result.status == "COMPLETE"
+        assert result.handoff.policy_set_version == 2
+        assert rig.policy.get_current_version("MU") == 1
+        assert [v.policy_set_version for v in rig.policy.list_version_metadata("MU")] == [1]
+        policy_set = rig.state.get_staged_v3("MU", 2)
+        assert len(policy_set.policies) == 1
+        assert policy_set.policies[0].activation_conditions[0].condition_id == "C1"
+        contract = json.loads(
+            __import__("pathlib")
+            .Path("dev_plan/workflow_v2.1/document3_v2.1_contracts.schema.json")
+            .read_text(encoding="utf8")
+        )
+        Draft202012Validator(contract).validate(policy_set.model_dump(mode="json"))
+        calls = len(rig.worker.requests)
+        again = await resume_v21(rig.orchestrator, result.run_id)
+        assert again == result and len(rig.worker.requests) == calls
+        for name, path in result.handoff.files.items():
+            text = (await rig.workspace.read_text(result.run_id, path)).content
+            assert digest(text) == result.handoff.hashes[name]
+        assert all(r.run_id != result.run_id for r in rig.worker.requests)
+        planning = next(r for r in rig.worker.requests if r.node == CodexD3Node.O3_PLANNING)
+        integration = next(r for r in rig.worker.requests if r.node == CodexD3Node.O3_INTEGRATION)
+>       assert planning.thread_id == integration.thread_id == "thread-d3v21-test-global"
+E       AssertionError: assert None == 'thread-d3v21-test-global'
+E        +  where None = WorkerRunRequest(workflow_version='codex_document3_v1', research_lane=<ResearchLane.DOCUMENT3: 'document3'>, run_id='d...est:planning:0:1', allow_subagents=False, max_subagents=0, timeout_seconds=1800, execution_lane=None, deadline_at=None).thread_id
+E        +  and   'thread-d3v21-test-global' = WorkerRunRequest(workflow_version='codex_document3_v1', research_lane=<ResearchLane.DOCUMENT3: 'document3'>, run_id='d...gration:main:0:1', allow_subagents=False, max_subagents=0, timeout_seconds=1800, execution_lane=None, deadline_at=None).thread_id
+
+tests\test_codex_document3_v21_orchestration.py:280: AssertionError
+___________ test_supplement_crash_persists_budget_and_dispatch_flag ___________
+
+rig = namespace(orchestrator=<doxagent.workflows.codex_document3.orchestrator_v21.Document3OrchestratorV21 object at 0x00000...s\\WEIXUANXIE\\AppData\\Local\\Temp\\pytest-of-WEIXUANXIE\\pytest-1704\\test_supplement_crash_persists0\\maintain.md'})
+
+    @pytest.mark.asyncio
+    async def test_supplement_crash_persists_budget_and_dispatch_flag(rig):
+        rig.worker.supplement = rig.worker.interrupt_supplement = True
+>       with pytest.raises(asyncio.CancelledError):
+E       Failed: DID NOT RAISE <class 'asyncio.exceptions.CancelledError'>
+
+tests\test_codex_document3_v21_orchestration.py:340: Failed
+___________ test_final_write_inherits_accepted_supplement_identity ____________
+
+rig = namespace(orchestrator=<doxagent.workflows.codex_document3.orchestrator_v21.Document3OrchestratorV21 object at 0x00000...s\\WEIXUANXIE\\AppData\\Local\\Temp\\pytest-of-WEIXUANXIE\\pytest-1704\\test_final_write_inherits_acce0\\maintain.md'})
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001FD7A3F7050>
+
+    @pytest.mark.asyncio
+    async def test_final_write_inherits_accepted_supplement_identity(rig, monkeypatch):
+        rig.worker.supplement = True
+        original = rig.worker.run
+    
+        async def write_supplement_candidate(request):
+            task_path = re.search(r"Read task file (\S+),", request.prompt)[1]
+            task = json.loads((await rig.workspace.read_text(request.run_id, task_path)).content)
+            if request.node == CodexD3Node.O3_INTEGRATION and task.get("stage") == "final_write":
+                source = next(path for path in task["batch"] if "/supplement/" in path)
+                mapped = next(
+                    item["local_path"] for item in task["read_mapping"] if item["ref"] == source
+                )
+                policy = (await rig.workspace.read_text(request.run_id, mapped)).content
+                await rig.workspace.write_text(
+                    request.run_id, task["output_paths"][0] + "one.json", policy
+                )
+            return await original(request)
+    
+        monkeypatch.setattr(rig.worker, "run", write_supplement_candidate)
+        result = await rig.orchestrator.initialize(ticker="MU", as_of=NOW, run_id="supplement-final-id")
+        run = rig.state.run(result.run_id)
+>       source = rig.state.drafts(result.run_id)[run["supplement_paths"][0]]["policy"]
+                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       IndexError: list index out of range
+
+tests\test_codex_document3_v21_orchestration.py:378: IndexError
+____ test_cutoff_nullable_event_and_all_additional_files_frozen_on_resume _____
+
+rig = namespace(orchestrator=<doxagent.workflows.codex_document3.orchestrator_v21.Document3OrchestratorV21 object at 0x00000...s\\WEIXUANXIE\\AppData\\Local\\Temp\\pytest-of-WEIXUANXIE\\pytest-1704\\test_cutoff_nullable_event_and0\\maintain.md'})
+tmp_path = WindowsPath('C:/Users/WEIXUANXIE/AppData/Local/Temp/pytest-of-WEIXUANXIE/pytest-1704/test_cutoff_nullable_event_and0')
+
+    @pytest.mark.asyncio
+    async def test_cutoff_nullable_event_and_all_additional_files_frozen_on_resume(rig, tmp_path):
+        newer = NOW.replace(day=5)
+        snapshot = SimpleNamespace(
+            published_at=newer,
+            as_of=None,
+            contract_version="event-library-reference-view-v1",
+            ticker="MU",
+            version=9,
+            sha256="a" * 64,
+            reference_view="complete view",
+        )
+        rig.orchestrator.preparer.legacy._event_library_reader = SimpleNamespace(
+            reference_view=lambda *_, **__: snapshot
+        )
+        prepared = await rig.orchestrator.preparer.prepare(ticker="MU", as_of=NOW)
+        assert prepared["event_library_ref"] is None
+        pinned = await rig.orchestrator.preparer.prepare(
+            ticker="MU", as_of=NOW, event_library_version=9
+        )
+>       assert pinned["event_library_ref"]["version"] == 9 and pinned["as_of"] == NOW.isoformat()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: 'NoneType' object is not subscriptable
+
+tests\test_codex_document3_v21_orchestration.py:673: TypeError
+_______ test_owner_concurrency_no_global_wave_barrier_and_session_reuse _______
+
+rig = namespace(orchestrator=<doxagent.workflows.codex_document3.orchestrator_v21.Document3OrchestratorV21 object at 0x00000...s\\WEIXUANXIE\\AppData\\Local\\Temp\\pytest-of-WEIXUANXIE\\pytest-1704\\test_owner_concurrency_no_glob0\\maintain.md'})
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001FD7A589AD0>
+
+    @pytest.mark.asyncio
+    async def test_owner_concurrency_no_global_wave_barrier_and_session_reuse(rig, monkeypatch):
+        async def prepare(**_):
+            return {
+                "files": {},
+                "manifest": [],
+                "topology": {"shells": [], "owners": {"OPEN": "OPEN", "GLOBAL": "GLOBAL"}},
+                "document2_ref": None,
+                "event_library_ref": None,
+                "warnings": [],
+                "as_of": NOW.isoformat(),
+            }
+    
+        monkeypatch.setattr(rig.orchestrator.preparer, "prepare", prepare)
+        rig.worker.agenda = {
+            "topics": [
+                {"name": "T1", "owner": "OPEN", "brief": "first"},
+                {"name": "T2", "owner": "OPEN", "brief": "second"},
+                {"name": "G1", "owner": "GLOBAL", "brief": "slow"},
+            ],
+            "waves": [["T1"], ["G1"], ["T2"]],
+        }
+        original = rig.worker.run
+        second_wave = asyncio.Event()
+        global_started = asyncio.Event()
+        active, maximum, events = set(), 0, []
+    
+        async def tracked(request):
+            nonlocal maximum
+            if request.node == CodexD3Node.O3_BUILD:
+                assert request.run_id not in active
+                active.add(request.run_id)
+                maximum = max(maximum, len(active))
+                key = request.idempotency_key
+                if ":GLOBAL:" in key:
+                    global_started.set()
+                    await asyncio.wait_for(second_wave.wait(), timeout=5)
+                if ":OPEN:0:" in key:
+                    await asyncio.wait_for(global_started.wait(), timeout=5)
+                if ":OPEN:2:" in key:
+                    second_wave.set()
+            result = await original(request)
+            events.append(request.node)
+            active.discard(request.run_id)
+            return result
+    
+        monkeypatch.setattr(rig.worker, "run", tracked)
+>       result = await rig.orchestrator.initialize(ticker="MU", as_of=NOW, run_id="d3v21-parallel")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_codex_document3_v21_orchestration.py:743: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <doxagent.workflows.codex_document3.orchestrator_v21.Document3OrchestratorV21 object at 0x000001FD7A5899D0>
+
+    async def initialize(
+        self,
+        *,
+        ticker,
+        as_of=None,
+        cutoff_at=None,
+        document2_run_id=None,
+        source_global_run_id=None,
+        event_library_version=None,
+        additional_materials=(),
+        run_id=None,
+    ):
+        ticker = ticker.upper()
+        as_of = utc(as_of or cutoff_at or datetime.now().astimezone())
+        run_id = run_id or f"d3v21-{ticker.lower()}-{uuid4().hex[:24]}"
+        identity = {
+            "ticker": ticker,
+            "mode": "initialize",
+            "version": "v2.1",
+            "schema": "document3.v3",
+            "as_of": as_of.isoformat(),
+            "document2_run_id": document2_run_id,
+            "source_global_run_id": source_global_run_id,
+            "event_library_version": event_library_version,
+            "additional_materials": [
+                str(x) if not isinstance(x, dict) else x for x in additional_materials
+            ],
+        }
+        run = await self._freeze(
+            run_id,
+            identity,
+            "initialize",
+            lambda: self.preparer.prepare(
+                ticker=ticker,
+                as_of=as_of,
+                document2_run_id=document2_run_id,
+                source_global_run_id=source_global_run_id,
+                event_library_version=event_library_version,
+                additional_materials=additional_materials,
+            ),
+        )
+        if run.get("commit"):
+            return await self._publish(run_id)
+>       owners = run["prepared"]["topology"]["research_owners"]
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'research_owners'
+
+src\doxagent\workflows\codex_document3\orchestrator_v21.py:526: KeyError
+============================== warnings summary ===============================
+.venv\Lib\site-packages\opentelemetry\util\_importlib_metadata.py:32
+  C:\Users\WEIXUANXIE\Desktop\DoxAgent\.venv\Lib\site-packages\opentelemetry\util\_importlib_metadata.py:32: DeprecationWarning: SelectableGroups dict interface is deprecated. Use select.
+    return EntryPoints(ep for group_eps in eps.values() for ep in group_eps)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_codex_document3_v21_orchestration.py::test_open_global_four_files_staged_replay_and_contract
+FAILED tests/test_codex_document3_v21_orchestration.py::test_supplement_crash_persists_budget_and_dispatch_flag
+FAILED tests/test_codex_document3_v21_orchestration.py::test_final_write_inherits_accepted_supplement_identity
+FAILED tests/test_codex_document3_v21_orchestration.py::test_cutoff_nullable_event_and_all_additional_files_frozen_on_resume
+FAILED tests/test_codex_document3_v21_orchestration.py::test_owner_concurrency_no_global_wave_barrier_and_session_reuse
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 5 failures !!!!!!!!!!!!!!!!!!!!!!!!!!
+5 failed, 13 passed, 1 warning in 79.83s (0:01:19)

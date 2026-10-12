@@ -1,0 +1,38 @@
+{
+  "policy_id": "pol_a09d4af1bad040a09228bccbeec49293",
+  "title": "Vera Rubin 系列的 HBM 配置与美光供货位置",
+  "ref": [
+    "context/document3/v21/d2/shell-0001.json#/units/0",
+    "context/document3/v21/d2/shell-0001.json#/units/1",
+    "output/work/v21/discovery/S0001.jsonl#L3",
+    "https://investors.micron.com/news/press-release/2026/Micron-in-High-Volume-Production-of-HBM4-Designed-for-NVIDIA-Vera-Rubin-PCIe-Gen6-SSD-and-SOCAMM2-03-16-2026/default.aspx",
+    "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx",
+    "https://investors.micron.com/static-files/50c2f087-b033-4fa1-a418-8b79eb356c53",
+    "https://developer.nvidia.com/blog/inside-the-nvidia-rubin-platform-six-new-chips-one-ai-supercomputer/",
+    "https://cloud.google.com/blog/products/compute/tpu-8t-and-tpu-8i-technical-deep-dive"
+  ],
+  "transmission": "美光已开始高量出货明确为Vera Rubin设计的36GB 12H HBM4，Rubin又有公开288GB/GPU最高设计；该平台的标准配置和HBM定点会同时改变单GPU可售位数及美光可参与的生产平台集合。美光48GB 16H仍处客户送样，若同等堆叠位置进入主流生产设计，每位置位数比36GB高约三分之一；反向被明确排除于其已为之供货准备的主流平台，则削弱目前最明确的HBM商业机会。两者均比笼统的GPU或ASIC热度更贴近美光，但平台出货台数、其他供货商及利润率仍会影响最终幅度，不能由最高规格推成当前平均装机。",
+  "match_scope": "召回 NVIDIA、Rubin 系列系统客户、美光及可信供应链报道中关于生产版 Rubin GPU 的 HBM容量、48GB 16H 采用、HBM4供应商资格和主平台分配的变化；也留意片上缓存、CPU主存或CMX卸载造成的配置改版。可能报道高容量版本成为标准、竞争者替换美光或仅有实验规格；这些是非穷举召回示例，命中仍以 Conditions 为准。Google TPU 8i 的288GB设计和其他ASIC路由可供比较，但不能直接套用 Rubin 的供应商基线。",
+  "activation_conditions": [
+    {
+      "condition_id": "C1",
+      "decision": "LONG",
+      "trigger_layer": "MIDDLE",
+      "criterion": "NVIDIA 或其核心 Rubin 系列生产客户确认，采用美光48GB 16H HBM4作为该系列主流生产配置的堆叠，并使每GPU HBM设计总容量高于此前公布的288GB最高配置，而非仅推出可选样机。",
+      "calibration": {
+        "reference_state": "截至2026-10-06，美光36GB 12H HBM4已高量生产并面向主客户的Vera Rubin平台出货；美光48GB 16H仅为送样。NVIDIA公布Rubin GPU最高288GB HBM4；美光材料将此表述为八个36GB堆叠位置的设计。这个288GB是公开设计上限，不是客户平均装机或已购数量。",
+        "trigger_boundary": "主流生产设计选择美光已送样的48GB堆叠，并把同一GPU的设计容量推过现有288GB上限，就同时跨过样品到平台定点与更高单机内容两个边界；每相同堆叠位置增加约三分之一位数，足以改变美光在关键平台的产品组合机会。无需等到季度收入或重复出货；单独的48GB样品、实验配置或把288GB既有上限称作新品不够。"
+      }
+    },
+    {
+      "condition_id": "C2",
+      "decision": "SHORT",
+      "trigger_layer": "MIDDLE",
+      "criterion": "NVIDIA 或其核心 Rubin 系列生产客户确认，美光HBM4不获该系列主流生产配置的供货资格或量产分配，该位置改由其他供应商承担。",
+      "calibration": {
+        "reference_state": "截至2026-10-06，美光已披露36GB 12H HBM4面向Vera Rubin设计并开始高量出货，对主客户平台亦有高量交付；这些披露不提供Rubin所有生产配置的供应商份额。Samsung HBM4已有商业发货，SK hynix推进后续代际。D2默认美光继续服务既有主客户，同时推进其他平台资格。",
+        "trigger_boundary": "主流平台明确不选用其已高量出货且为此设计的HBM4，是从公开的可参与机会转为该平台不可售的离散变化，已足以降低美光HBM规模预期；不必等到事后财务结果。竞争者送样、新的双供讨论或某一非主流变体采用竞品，不等于美光被排除出主流配置。"
+      }
+    }
+  ]
+}

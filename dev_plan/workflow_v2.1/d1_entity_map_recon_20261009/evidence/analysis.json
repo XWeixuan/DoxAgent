@@ -1,0 +1,457 @@
+{
+  "captured_at": "2026-10-09T02:29:24.329597+08:00",
+  "verified_files": 70,
+  "runtime_source_comparison": [
+    {
+      "path": "src/doxagent/workflows/codex_global_research/orchestrator.py",
+      "normalized_equal": true,
+      "remote_sha256": "71baff6b19360b9a5a214b252a582d073076fc9bb5d9dcf62b4385455c8990f0",
+      "local_sha256": "59d1fe1c583b5f1588552bde78517328a3609c9bdbcf061683c72ca1582b476e"
+    },
+    {
+      "path": "src/doxagent/workflows/codex_document1/node_runner.py",
+      "normalized_equal": true,
+      "remote_sha256": "0f581f29df967f5b15279f89da702a5b55a668d4ba4c847405d1691664a7ca24",
+      "local_sha256": "e5956f15226a3f71f1d73e155b4b50442ba1c7066a3960cc433b17ef73cce654"
+    },
+    {
+      "path": "src/doxagent/workflows/codex_document1/orchestrator.py",
+      "normalized_equal": true,
+      "remote_sha256": "92480b28038b5ddde8f6466eb838be41c1101b719d52758f69f30b5e6bddc72a",
+      "local_sha256": "6b42a585468193300c61578ebac0aaab6e3f743bdb82712a06f6cb6a652b99ef"
+    },
+    {
+      "path": "src/doxagent/workflows/codex_document1/schema.py",
+      "normalized_equal": true,
+      "remote_sha256": "c5a1cb73595de312588b0ef73e83a9a2ab7e515537a319e02bc6b129f0bf07a5",
+      "local_sha256": "02aefeb43ae77481b344f7518c85533b0f24a1854428961db377f48a2e4801ed"
+    },
+    {
+      "path": "src/doxagent/workflows/codex_document1/attempt_bundle.py",
+      "normalized_equal": true,
+      "remote_sha256": "713836434ece5b07f63783226ba08b3a98f66e7192dca1d28a2ad9e0b9e406eb",
+      "local_sha256": "70f6f50b80852cd9de5196909a2e68a4ff4978818127ef04a9b46090c6bdf851"
+    },
+    {
+      "path": "src/doxagent/workflows/codex_document1/recovery.py",
+      "normalized_equal": true,
+      "remote_sha256": "616c03aa17aea334c939bfe9cc3ae02db4484ac07e4929b3590235df2e43487b",
+      "local_sha256": "616c03aa17aea334c939bfe9cc3ae02db4484ac07e4929b3590235df2e43487b"
+    },
+    {
+      "path": "src/doxagent/codex_runtime/schema.py",
+      "normalized_equal": false,
+      "remote_sha256": "c1939e233a25ae08093fc460717d3d7bb062e61b2d16bcdbc139b0abbebf4b11",
+      "local_sha256": "0db0979eaaf6075f94cb34b632038a33ca776a6713fc6fb1e22f1bc8d64c68fc"
+    },
+    {
+      "path": "src/doxagent/ticker_initialization/research_adapter.py",
+      "normalized_equal": true,
+      "remote_sha256": "3bbbe3b6e04eb881415b243b03d9ae93fcd69af536eebd8c90a287094254ac02",
+      "local_sha256": "3bbbe3b6e04eb881415b243b03d9ae93fcd69af536eebd8c90a287094254ac02"
+    },
+    {
+      "path": "prompts/codex_v2/document1/agents/c4.md",
+      "normalized_equal": true,
+      "remote_sha256": "745b6bfd857cf8a72a5d9a2c1f2790dfebe6cb7b896320d94ef99489b06ec610",
+      "local_sha256": "e26731395faa9c90a49b557f17ea16868cdf848e854ee125e33b7ae948c5432a"
+    },
+    {
+      "path": "prompts/codex_v2/document1/skills/entity-map-and-future-nodes.md",
+      "normalized_equal": true,
+      "remote_sha256": "bc44b2daca7c9a676cdb6e843d14719d47d6785cfba3a507000773e2fb2b4084",
+      "local_sha256": "d64a30cb8858a2ac6fae510be706f89d3dd403ffa97d71377df5a3d24a284d32"
+    },
+    {
+      "path": "prompts/codex_v2/document1/global_research/bundle_manifest.json",
+      "normalized_equal": true,
+      "remote_sha256": "505f29f93fc68ac39bee6ec78e6d3e7a5c7aa9845e0dd4dac728aca74da874ee",
+      "local_sha256": "83339f62ffe0fd805f2e35c763ca91fd05e5b2e53ffa3d836f3c4a97c9549600"
+    },
+    {
+      "path": "prompts/codex_v2/document1/schemas/node_output.schema.json",
+      "normalized_equal": true,
+      "remote_sha256": "fa9ebc8b806afdc76e0d992dec41b5178c8dbb602ed5c425dbd6d011099e7554",
+      "local_sha256": "4a7cc8f1f2649989a903c91fde97c223466fdd78cad7df8caa79617124b2dbdd"
+    }
+  ],
+  "tickers": {
+    "INTC": {
+      "run_id": "init-intc-738849dbdbb04ae1a39efa0aec69c071-d1",
+      "pre_scan_relations": 17,
+      "published_relations": 23,
+      "pre_scan_futures": 11,
+      "published_futures": 20,
+      "active_d1_matches": true,
+      "unique_relation_types": {
+        "业务分部": 2,
+        "业务分部与制造平台": 1,
+        "客户与销售渠道": 1,
+        "设备与技术合作": 1,
+        "竞争关系": 1,
+        "联合开发与产品合作": 1,
+        "云客户与联合开发": 1,
+        "云客户与定制芯片合作": 1,
+        "AI系统合作": 1,
+        "系统集成合作": 1,
+        "芯片与制造合作": 1,
+        "EDA与设计生态合作": 1,
+        "先进封装合作": 1,
+        "制程技术合作": 1,
+        "政府项目与安全制造合作": 1,
+        "战略制造合作": 1,
+        "制程路线与客户导入": 1,
+        "产品平台": 1,
+        "产品上市合作": 1,
+        "先进封装技术平台": 1,
+        "材料与先进封装合作": 1,
+        "股权与分部口径关系": 1
+      },
+      "empty_fields": 0,
+      "exact_duplicate_rows": 0,
+      "duplicate_subject_object_pairs": [],
+      "pre_pairs_absent_in_final": [],
+      "new_pairs": [
+        [
+          "Intel Foundry",
+          "Intel 18A、18A-P及14A制程路线"
+        ],
+        [
+          "Intel",
+          "Intel Core Series 3（Panther Lake）"
+        ],
+        [
+          "Intel",
+          "Acer、ASUS、Dell、HP、Lenovo、Samsung等OEM伙伴"
+        ],
+        [
+          "Intel Foundry",
+          "Foveros-B、Foveros-R、Foveros Direct及EMIB-T"
+        ],
+        [
+          "Intel Foundry",
+          "Lens Technology"
+        ],
+        [
+          "Intel",
+          "Altera"
+        ]
+      ],
+      "citation_styles": {
+        "formal_alias_rows": 23,
+        "direct_url_rows": 0,
+        "upstream_unavailable_rows": 0
+      },
+      "nodes": {
+        "c4_pre_scan": {
+          "attempt_id": "init-614a1371163047479058eae3179070af",
+          "duration_seconds": 1018.593002,
+          "manifest_entries_total_output": 17,
+          "unresolved_total_output": 0,
+          "relation_aliases": [
+            "O15",
+            "O271",
+            "O277",
+            "O278",
+            "O280",
+            "O283",
+            "O288",
+            "O289",
+            "O298",
+            "O327",
+            "O348",
+            "O360",
+            "O363",
+            "O371",
+            "O57"
+          ],
+          "relation_unresolved_aliases": [],
+          "quarantined_count": 0
+        },
+        "c4_enrichment": {
+          "attempt_id": "init-779e6ae62c4a4337ae79c2940b874cc9",
+          "duration_seconds": 929.890495,
+          "manifest_entries_total_output": 25,
+          "unresolved_total_output": 0,
+          "relation_aliases": [
+            "O10",
+            "O11",
+            "O12",
+            "O13",
+            "O136",
+            "O14",
+            "O15",
+            "O16",
+            "O2",
+            "O24",
+            "O3",
+            "O4",
+            "O5",
+            "O6",
+            "O7",
+            "O8",
+            "O83",
+            "O9",
+            "O92"
+          ],
+          "relation_unresolved_aliases": [],
+          "quarantined_count": 0
+        }
+      },
+      "c4_vs_aggregate_alias_url_conflicts": [
+        {
+          "alias": "O10",
+          "c4_url": "https://www.intc.com/news-events/press-releases/detail/1750/nvidia-and-intel-to-develop-ai-infrastructure-and-personal",
+          "aggregate_url": "https://www.intc.com/news-events/press-releases/detail/1781/intel-foundry-and-asml-collaborate-to-accelerate-industry",
+          "c4_attempt_id": "init-779e6ae62c4a4337ae79c2940b874cc9",
+          "aggregate_attempt_id": "init-d33ce0ea3662450bbd39829db489cf61"
+        },
+        {
+          "alias": "O11",
+          "c4_url": "https://www.intel.com/content/www/us/en/newsroom/news/artificial-intelligence/intel-and-nvidia-to-jointly-develop-ai-infrastructure-and-personal-computing-products.html",
+          "aggregate_url": "https://www.intel.com/content/www/us/en/newsroom/news/intel-strategic-collaboration.html",
+          "c4_attempt_id": "init-779e6ae62c4a4337ae79c2940b874cc9",
+          "aggregate_attempt_id": "init-d33ce0ea3662450bbd39829db489cf61"
+        },
+        {
+          "alias": "O12",
+          "c4_url": "https://www.intel.com/content/www/us/en/newsroom/home.html",
+          "aggregate_url": "https://www.intc.com/news-events/press-releases/detail/1775/intel-and-fortinet-collaborate-to-advance-cybersecurity",
+          "c4_attempt_id": "init-779e6ae62c4a4337ae79c2940b874cc9",
+          "aggregate_attempt_id": "init-d33ce0ea3662450bbd39829db489cf61"
+        },
+        {
+          "alias": "O13",
+          "c4_url": "https://www.intel.com/content/www/us/en/newsroom/news/artificial-intelligence/intel-announces-new-ai-innovations-at-computex.html",
+          "aggregate_url": "https://www.intel.com/content/www/us/en/newsroom/news/intel-foundry/intel-completes-ramp-c-program-accelerating-momentum-for-secure-enclave.html",
+          "c4_attempt_id": "init-779e6ae62c4a4337ae79c2940b874cc9",
+          "aggregate_attempt_id": "init-d33ce0ea3662450bbd39829db489cf61"
+        },
+        {
+          "alias": "O14",
+          "c4_url": "https://www.intc.com/news-events/press-releases/detail/1775/intel-and-fortinet-collaborate-to-advance-cybersecurity",
+          "aggregate_url": "https://www.sec.gov/Archives/edgar/data/50863/000005086326000011/intc-20251227.htm",
+          "c4_attempt_id": "init-779e6ae62c4a4337ae79c2940b874cc9",
+          "aggregate_attempt_id": "init-d33ce0ea3662450bbd39829db489cf61"
+        },
+        {
+          "alias": "O15",
+          "c4_url": "https://www.intel.com/content/www/us/en/newsroom/news/intel-foundry/intel-completes-ramp-c-program-accelerating-momentum-for-secure-enclave.html",
+          "aggregate_url": "https://www.intel.com/content/www/us/en/newsroom/news/artificial-intelligence/intel-google-deepen-collaboration-to-advance-ai-infrastructure.html",
+          "c4_attempt_id": "init-779e6ae62c4a4337ae79c2940b874cc9",
+          "aggregate_attempt_id": "init-d33ce0ea3662450bbd39829db489cf61"
+        },
+        {
+          "alias": "O16",
+          "c4_url": "https://www.sec.gov/Archives/edgar/data/50863/000005086326000011/intc-20251227.htm",
+          "aggregate_url": "https://www.intel.com/content/www/us/en/newsroom/home.html",
+          "c4_attempt_id": "init-779e6ae62c4a4337ae79c2940b874cc9",
+          "aggregate_attempt_id": "init-d33ce0ea3662450bbd39829db489cf61"
+        },
+        {
+          "alias": "O2",
+          "c4_url": "https://www.intc.com/news-events/press-releases/detail/1776/intel-reports-second-quarter-2026-financial-results",
+          "aggregate_url": "https://www.sec.gov/Archives/edgar/data/50863/000005086326000077/q126earningsrelease.htm",
+          "c4_attempt_id": "init-779e6ae62c4a4337ae79c2940b874cc9",
+          "aggregate_attempt_id": "init-609e79a4023544e29f5e06f67b1938ff"
+        },
+        {
+          "alias": "O24",
+          "c4_url": "https://www.sec.gov/Archives/edgar/data/50863/000005086326000157/intc-20260627.htm",
+          "aggregate_url": "https://www.sec.gov/Archives/edgar/data/50863/000005086326000155/intc-20260723.htm",
+          "c4_attempt_id": "init-779e6ae62c4a4337ae79c2940b874cc9",
+          "aggregate_attempt_id": "init-8db0a220709e49d1b711038a3faa9e20"
+        },
+        {
+          "alias": "O3",
+          "c4_url": "https://download.intel.com/newsroom/2026/earnings/1Q2026-Earnings-Call.pdf",
+          "aggregate_url": "https://www.sec.gov/Archives/edgar/data/50863/000119312526346806/d117670dex992.htm",
+          "c4_attempt_id": "init-779e6ae62c4a4337ae79c2940b874cc9",
+          "aggregate_attempt_id": "init-609e79a4023544e29f5e06f67b1938ff"
+        },
+        {
+          "alias": "O4",
+          "c4_url": "https://www.intel.com/content/www/us/en/newsroom/news/corporate/intel-foundry-details-process-milestones-future-innovation-at-vlsi-symposium.html",
+          "aggregate_url": null,
+          "c4_attempt_id": "init-779e6ae62c4a4337ae79c2940b874cc9",
+          "aggregate_attempt_id": "init-609e79a4023544e29f5e06f67b1938ff"
+        },
+        {
+          "alias": "O5",
+          "c4_url": "https://www.intel.com/content/www/us/en/newsroom/news/corporate/intel-foundry-gathers-customers-partners-outlines-priorities.html",
+          "aggregate_url": null,
+          "c4_attempt_id": "init-779e6ae62c4a4337ae79c2940b874cc9",
+          "aggregate_attempt_id": "init-609e79a4023544e29f5e06f67b1938ff"
+        },
+        {
+          "alias": "O6",
+          "c4_url": "https://www.intel.com/content/www/us/en/newsroom/news/artificial-intelligence/intel-google-deepen-collaboration-to-advance-ai-infrastructure.html",
+          "aggregate_url": "https://www.intc.com/news-events/press-releases/detail/1781/intel-foundry-and-asml-collaborate-to-accelerate-industry",
+          "c4_attempt_id": "init-779e6ae62c4a4337ae79c2940b874cc9",
+          "aggregate_attempt_id": "init-609e79a4023544e29f5e06f67b1938ff"
+        },
+        {
+          "alias": "O7",
+          "c4_url": "https://www.intel.com/content/www/us/en/newsroom/news/intel-strategic-collaboration.html",
+          "aggregate_url": "https://www.sec.gov/Archives/edgar/data/50863/000005086326000157/intc-20260627.htm",
+          "c4_attempt_id": "init-779e6ae62c4a4337ae79c2940b874cc9",
+          "aggregate_attempt_id": "init-d33ce0ea3662450bbd39829db489cf61"
+        },
+        {
+          "alias": "O8",
+          "c4_url": "https://www.intc.com/news-events/press-releases/detail/1781/intel-foundry-and-asml-collaborate-to-accelerate-industry",
+          "aggregate_url": "https://www.sec.gov/Archives/edgar/data/50863/000005086326000155/intc-20260723.htm",
+          "c4_attempt_id": "init-779e6ae62c4a4337ae79c2940b874cc9",
+          "aggregate_attempt_id": "init-d33ce0ea3662450bbd39829db489cf61"
+        },
+        {
+          "alias": "O9",
+          "c4_url": "https://www.sec.gov/Archives/edgar/data/50863/000005086326000011/intc-20251227.htm",
+          "aggregate_url": "https://www.intc.com/news-events/press-releases/rss",
+          "c4_attempt_id": "init-779e6ae62c4a4337ae79c2940b874cc9",
+          "aggregate_attempt_id": "init-d33ce0ea3662450bbd39829db489cf61"
+        }
+      ],
+      "c4_aliases_absent_in_aggregate": [
+        "O136",
+        "O83",
+        "O92"
+      ],
+      "frozen_prompt_comparison": {
+        "c4_pre_scan/task.md": true,
+        "c4_pre_scan/skills/entity-map-and-future-nodes.md": true,
+        "c4_pre_scan/schemas/node_output.schema.json": true,
+        "c4_enrichment/task.md": true,
+        "c4_enrichment/skills/entity-map-and-future-nodes.md": true,
+        "c4_enrichment/schemas/node_output.schema.json": true
+      }
+    },
+    "BE": {
+      "run_id": "init-be-788adefdd31844d98a907468b883176d-d1",
+      "pre_scan_relations": 25,
+      "published_relations": 30,
+      "pre_scan_futures": 19,
+      "published_futures": 33,
+      "active_d1_matches": true,
+      "unique_relation_types": {
+        "终端市场/客户": 2,
+        "客户/渠道": 1,
+        "核心产品/技术平台": 3,
+        "产品/部署系统": 1,
+        "分销/投资/制造合作": 1,
+        "区域分销合作": 1,
+        "公用事业渠道/融资合作": 1,
+        "资本与AI基础设施合作": 1,
+        "超大规模云客户/项目合作": 1,
+        "数据中心客户/长期部署合作": 1,
+        "AI硬件制造客户/现场电力合作": 1,
+        "AI服务器制造客户/现场电力合作": 1,
+        "商业与工业客户/PPA": 1,
+        "AI云客户/数据中心项目合作": 1,
+        "碳捕集技术合作": 1,
+        "AI基础设施项目生态/融资": 1,
+        "项目开发/公用事业电力合作": 1,
+        "供应链": 1,
+        "制造/产能基础": 1,
+        "客户融资/商业模式": 1,
+        "竞争/替代": 1,
+        "监管/许可暴露": 1,
+        "项目许可/地方监管": 1,
+        "技术生态/应用适配": 1,
+        "海事技术/设备合作": 1,
+        "燃气供应/联邦监管暴露": 1,
+        "电力可靠性监管/外部暴露": 1
+      },
+      "empty_fields": 0,
+      "exact_duplicate_rows": 0,
+      "duplicate_subject_object_pairs": [],
+      "pre_pairs_absent_in_final": [],
+      "new_pairs": [
+        [
+          "Bloom Energy",
+          "800V DC-native AI工厂电力架构"
+        ],
+        [
+          "Bloom Energy",
+          "NVIDIA Rubin Ultra / Kyber 800V DC生态"
+        ],
+        [
+          "Bloom Energy",
+          "Mitsui O.S.K. Lines（MOL）与Samsung Heavy Industries"
+        ],
+        [
+          "Bloom Energy",
+          "Transwestern Pipeline、Green Chile Project与Federal Energy Regulatory Commission（FERC）"
+        ],
+        [
+          "Bloom Energy",
+          "NERC / FERC计算负荷可靠性标准框架"
+        ]
+      ],
+      "citation_styles": {
+        "formal_alias_rows": 2,
+        "direct_url_rows": 30,
+        "upstream_unavailable_rows": 0
+      },
+      "nodes": {
+        "c4_pre_scan": {
+          "attempt_id": "init-ab45452eaec346f19fd80c0428d01e83",
+          "duration_seconds": 765.612375,
+          "manifest_entries_total_output": 5,
+          "unresolved_total_output": 0,
+          "relation_aliases": [
+            "O40",
+            "O45",
+            "O49"
+          ],
+          "relation_unresolved_aliases": [],
+          "quarantined_count": 0
+        },
+        "c4_enrichment": {
+          "attempt_id": "init-cd775de7cafc494d8d910d588b6bb971",
+          "duration_seconds": 1141.739573,
+          "manifest_entries_total_output": 5,
+          "unresolved_total_output": 0,
+          "relation_aliases": [
+            "O69",
+            "O72"
+          ],
+          "relation_unresolved_aliases": [],
+          "quarantined_count": 0
+        }
+      },
+      "c4_vs_aggregate_alias_url_conflicts": [],
+      "c4_aliases_absent_in_aggregate": [
+        "O69",
+        "O72"
+      ],
+      "frozen_prompt_comparison": {
+        "c4_pre_scan/task.md": true,
+        "c4_pre_scan/skills/entity-map-and-future-nodes.md": true,
+        "c4_pre_scan/schemas/node_output.schema.json": true,
+        "c4_enrichment/task.md": true,
+        "c4_enrichment/skills/entity-map-and-future-nodes.md": true,
+        "c4_enrichment/schemas/node_output.schema.json": true
+      }
+    }
+  },
+  "acceptance_probes": {
+    "empty_strings_accepted": true,
+    "duplicate_rows_accepted": true,
+    "arbitrary_status_accepted": true,
+    "nonempty_c4_report_accepted": true,
+    "future_only_satisfies_complete_flag": true,
+    "extra_relation_field_stripped": true,
+    "extra_relation_field_quarantine_count": 0,
+    "wire_schema_required": [
+      "status",
+      "summary",
+      "report_markdown",
+      "warnings",
+      "observation_candidates",
+      "entity_relations",
+      "future_nodes",
+      "metadata"
+    ]
+  }
+}

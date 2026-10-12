@@ -1,0 +1,25 @@
+{
+  "policy_id": "pol_1997e76823cf47b295efd3d6a820df92",
+  "title": "受监管政务AI从试用转入隔离设施的常态运行",
+  "ref": [
+    "context/document3/v21/d2/shell-0001.json#/units/0",
+    "output/work/v21/discovery/S0001.jsonl#L10",
+    "https://cloud.google.com/blog/topics/hybrid-cloud/gemini-is-now-available-anywhere",
+    "https://cloud.google.com/blog/topics/hybrid-cloud/google-distributed-cloud-at-next26",
+    "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4"
+  ],
+  "transmission": "受数据控制或隔离要求约束的政务任务若从评估转为跨机构常态运行，需要位于客户或可信运营方边界内的加速器、CPU主存和本地存储；这可能把此前未能上云的工作量带入新设备采购渠道，而不是简单把原公有云用量搬家。美光可通过GPU HBM、服务器DRAM和SSD及OEM/集成商接触这些系统，但具体获配未建立。本规则关注大型受监管客户的可服务市场和采购决策权扩展，不把GDC方案可用、单个示范项目或政府意向当作美光订单。",
+  "match_scope": "召回政府、公共部门平台运营方、云商或系统集成商披露的隔离/本地AI服务、GDC air-gapped、同类断网部署与跨机构运行安排。可能报道机构试点、生产服务范围扩大、专用硬件平台选择或因成本放弃本地方案；这些仅为非穷举召回示例，命中仍以 Condition 为准。一般数据驻留于公有云区域、软件获认证或既有GDC产品再次上市，不属于本条所说的专用隔离设备部署。",
+  "activation_conditions": [
+    {
+      "condition_id": "C1",
+      "decision": "LONG",
+      "trigger_layer": "OUTER",
+      "criterion": "国家级公共部门采购主体正式决定把原由隔离要求限制在试验或未上线状态的敏感AI工作流，转为覆盖多个机构的常态生产服务，并选定在本地或完全隔离的数据中心以专用AI服务器和存储承载。",
+      "calibration": {
+        "reference_state": "Gemini on Google Distributed Cloud air-gapped已于2025-08普遍可用，Google在2026-04公布GDC connected/air-gapped的推理、GPU和存储组合；这些是供应方案与部分客户使用案例，不等于所有政务合作方已跨机构生产部署。此前公开的CSIT、GovTech、HTX等表态体现合作或采用意向，D2尚无此类项目在多个机构持续运行所需设备规模或美光分配。",
+        "trigger_boundary": "由国家级采购方把此前未形成生产服务的敏感任务纳入跨机构常态运行，并指定专用本地/隔离硬件，是从技术可用及局部验证跨到一个可持续采购渠道的选择；无需再等美光具名获配或季度收入。仅发表主权AI战略、采购软件许可、单机构有限试点，或把既有公有云服务改称主权云而不部署专用硬件，不足以改变这项基线。"
+      }
+    }
+  ]
+}

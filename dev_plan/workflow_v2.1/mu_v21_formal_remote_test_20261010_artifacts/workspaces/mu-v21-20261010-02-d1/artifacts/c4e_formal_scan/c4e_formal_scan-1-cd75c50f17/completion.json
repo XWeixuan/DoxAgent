@@ -1,0 +1,436 @@
+{
+  "status": "completed",
+  "summary": "截至 2026-10-09，保留并修正全部 24 条预扫描关系，形成 60 条完整五字段快照。新增具名平台和供给关系，并从 Anthropic 的平台/融资选择、竞争者共享制造、标准与软件适配及电力成本安排继续向外发现；不把计划、验证或承诺升级为出货与订单。",
+  "report_markdown": "",
+  "warnings": [
+    "供给协议、平台集成、股权投资及云算力采购是不同联系；未披露的客户名单、存储 BOM、份额和数量保持未知，不将 Anthropic 协议套用为全部战略客户协议。",
+    "部分官方 IR/PDF 请求返回 403、重定向或超时；ASML 协议及 Idaho 电力监管关系保留已核实原始链接并明确未取得 O 引用。其余引用均使用本轮实际可用观察；失败不代表关系不存在。",
+    "Lenovo、Orin、MI350、CXL 与软件演示按原公告年份及状态保留，不自动升级为 2026 年新增订单、全部版本认证或后续平台采用。",
+    "扩建投资、政府支持条件、产品标准、采用计划和功能送样均不等于合格产能或实际部署；投资额、发电容量、IT 负载和存储销量不混用。"
+  ],
+  "observation_candidates": [],
+  "entity_relations": [
+    {
+      "关系主体": "美光科技（Micron Technology，MU）",
+      "关系对象": "大型超大规模云客户（类别关系；不推定完整名单）",
+      "关系类型": "存储器供应与产品协作",
+      "关系说明": "CMBU 向大型超大规模云客户提供 DDR、LPDDR、GDDR，并负责所有数据中心客户的 HBM。HBM4 36GB 12-high 已量产，48GB 16-high 为送样；本轮另核实 NVIDIA 平台合作及 Anthropic 供给协议，但不能由此填满此类别或分配全部多年合同。【cite:O3】【cite:O104】【cite:O139】",
+      "关联业务或产品": "CMBU；HBM、DDR5、高容量 DIMM、低功耗服务器 DRAM"
+    },
+    {
+      "关系主体": "美光科技（Micron Technology，MU）",
+      "关系对象": "数据中心 OEM、企业及 NeoCloud 客户（类别关系；完整名单未披露）",
+      "关系类型": "数据中心内存与存储供应",
+      "关系说明": "CDBU 向数据中心 OEM、企业及 AI 导向的 NeoCloud 客户供应内存，并向所有数据中心客户提供 SSD 与 NAND 组件；不能将终端工作负载自动等同于具名直接客户。【cite:O3】",
+      "关联业务或产品": "CDBU；DDR5/DDR4 RDIMM、数据中心 SSD、组件 NAND"
+    },
+    {
+      "关系主体": "美光科技（Micron Technology，MU）",
+      "关系对象": "智能手机及其他移动设备 OEM（具体名称未确认）",
+      "关系类型": "移动存储器供应与认证",
+      "关系说明": "MCBU 面向移动市场销售 LPDDR 和托管 NAND；2026 财年已向领先智能手机 OEM 批量交付 1γ 16Gb LPDDR5X，24Gb LPDDR5X 和 16Gb LPDDR6 则处于送样或认证送样状态。【cite:O3】",
+      "关联业务或产品": "MCBU；LPDDR5X、LPDDR4X、LPDDR6、托管 NAND"
+    },
+    {
+      "关系主体": "美光科技（Micron Technology，MU）",
+      "关系对象": "客户端 PC 客户及组件渠道伙伴（具体名称未确认）",
+      "关系类型": "客户端产品与组件供应",
+      "关系说明": "MCBU 提供 DRAM 模组、SSD、封装 DRAM 和 NAND；组件渠道伙伴另将芯片封装为模组及 SSD 后销售。公司于 2025 年 12 月宣布退出 Crucial 消费者业务，不能把历史零售品牌业务视作持续扩张的当前渠道。【cite:O3】",
+      "关联业务或产品": "MCBU；客户端 SSD、DRAM 模组、TLC/QLC NAND 组件"
+    },
+    {
+      "关系主体": "美光科技（Micron Technology，MU）",
+      "关系对象": "汽车电子客户（具体名称未确认）",
+      "关系类型": "车规内存与存储供应",
+      "关系说明": "AEBU 产品用于 ADAS、自动驾驶及信息娱乐；FY2026 汽车 G9 UFS 4.1 已批量出货，车规 1γ LPDDR5 生产就绪并交付关键客户。另有 NVIDIA DRIVE AGX Orin 的 LPDDR5X 集成实例，不据此推定具体整车厂、一级供应商或 Thor 项目订单。【cite:O3】【cite:O135】",
+      "关联业务或产品": "AEBU；车规 LPDDR、UFS、DRAM、NAND"
+    },
+    {
+      "关系主体": "美光科技（Micron Technology，MU）",
+      "关系对象": "工业、物联网及消费嵌入式设备客户（具体名称未确认）",
+      "关系类型": "嵌入式内存与存储供应",
+      "关系说明": "AEBU 覆盖工业自动化、机器间通信和消费智能边缘应用，供应离散及模组 DRAM、NAND、托管 NAND、SSD 和 NOR；机器人及 AR 等应用机会不等同于已确认具名客户订单。【cite:O3】",
+      "关联业务或产品": "AEBU；工业与消费嵌入式 DRAM、NAND、NOR、SSD"
+    },
+    {
+      "关系主体": "美光科技（Micron Technology，MU）",
+      "关系对象": "Samsung Electronics",
+      "关系类型": "存储器竞争",
+      "关系说明": "三星是 DRAM/NAND 竞争者；其 2026-02-12 官方公告摘要确认 HBM4 量产及商业出货，使竞争不再只是研发计划。最新平台配额、16-high 量产完成度及份额未确认，不能把跟踪器标签当成实物供应。【cite:O3】【cite:O29】",
+      "关联业务或产品": "DRAM 与 NAND 内存、存储产品"
+    },
+    {
+      "关系主体": "美光科技（Micron Technology，MU）",
+      "关系对象": "SK hynix",
+      "关系类型": "存储器竞争",
+      "关系说明": "SK hynix 是 DRAM/NAND 竞争者；其 HBM4 基础 die 使用 TSMC 逻辑工艺，与美光 HBM4 内部设计制造基础及核心 die 的路线不同。扩建洁净室和封装项目不等于已增加合格出货；竞争份额未量化。【cite:O3】【cite:O66】【cite:O125】",
+      "关联业务或产品": "DRAM 与 NAND 内存、存储产品"
+    },
+    {
+      "关系主体": "美光科技（Micron Technology，MU）",
+      "关系对象": "Kioxia Holdings",
+      "关系类型": "存储竞争",
+      "关系说明": "Kioxia 是 NAND/SSD 竞争者，且与 Sandisk 共用研发制造合资安排；不能将两者商业销量视作两套完全独立晶圆供给。其 GP1 GPU-direct 闪存扩展产品仍是公告及预计功能评估送样，不是已经替代美光出货。【cite:O3】【cite:O106】【cite:O56】",
+      "关联业务或产品": "NAND 与闪存存储产品"
+    },
+    {
+      "关系主体": "美光科技（Micron Technology，MU）",
+      "关系对象": "Sandisk Corporation",
+      "关系类型": "存储竞争",
+      "关系说明": "Sandisk 是当前披露的 NAND/SSD 竞争主体，不以 Western Digital 历史母公司名称替代。其数据中心容量销售已有增长及长期客户现金保障；制造侧与 Kioxia 合资，技术侧与 SK hynix 推进 HBF 标准，分别记录而不混作同一关系。【cite:O3】【cite:O25】【cite:O106】【cite:O88】",
+      "关联业务或产品": "NAND 与闪存存储产品"
+    },
+    {
+      "关系主体": "美光科技（Micron Technology，MU）",
+      "关系对象": "ChangXin Memory Technologies（CXMT，长鑫存储）",
+      "关系类型": "内存竞争与新增供给",
+      "关系说明": "2026 年 10-K 将 CXMT 列为竞争者，并指出包括中国政府及国有或关联实体投资在内的行业投资可加大竞争和供给压力；不将该风险表述为已经发生的过剩。【cite:O3】",
+      "关联业务或产品": "DRAM"
+    },
+    {
+      "关系主体": "美光科技（Micron Technology，MU）",
+      "关系对象": "Yangtze Memory Technologies（YMTC，长江存储）",
+      "关系类型": "存储竞争与新增供给",
+      "关系说明": "2026 年 10-K 将 YMTC 列为竞争者，并将其纳入中国投资支持可能扩大行业供给的讨论；具体产能、补助和技术性能未在本轮量化。【cite:O3】",
+      "关联业务或产品": "NAND"
+    },
+    {
+      "关系主体": "美光科技（Micron Technology，MU）",
+      "关系对象": "高纯材料及组件供应商（具体名称未确认）",
+      "关系类型": "关键材料采购依赖",
+      "关系说明": "生产依赖硅晶圆、化学品、气体、光刻胶、基板和掩模相关材料；部分合格来源有限甚至为单一来源。部分稀土、矿物和金属供应还受中国生产集中及出口限制影响，未确认具体材料用量或直接供应商。【cite:O3】",
+      "关联业务或产品": "DRAM、NAND、NOR 晶圆制造与封装"
+    },
+    {
+      "关系主体": "美光科技（Micron Technology，MU）",
+      "关系对象": "第三方控制器、模拟芯片制造商及外包晶圆代工厂（具体名称未确认）",
+      "关系类型": "组件采购与制造服务依赖",
+      "关系说明": "部分产品依赖外部控制器、模拟 IC、其他半导体组件及代工服务。不能据此把 HBM4 基础逻辑 die 归为外购：公司披露其 HBM4 基础逻辑 die 与 DRAM 核心 die 在内部设计并制造。【cite:O3】",
+      "关联业务或产品": "SSD、托管 NAND 等系统级产品；第三方半导体组件"
+    },
+    {
+      "关系主体": "美光科技（Micron Technology，MU）",
+      "关系对象": "外包封装测试及合同制造商（具体名称未确认）",
+      "关系类型": "部分制造工序外包",
+      "关系说明": "美光主要在自有设施制造，同时将部分封装 die、模组、SSD 和 MCP 的组装交给外部服务商；该联系不代表全部生产采用外包模式。【cite:O3】",
+      "关联业务或产品": "封装芯片、内存模组、SSD、多芯片封装"
+    },
+    {
+      "关系主体": "美光科技（Micron Technology，MU）",
+      "关系对象": "其他制造设备、维护供应商及专业建厂承包商（未具名部分）",
+      "关系类型": "设备及工程能力依赖",
+      "关系说明": "制造和扩产依赖精密设备、维护、专业承包商及熟练施工人员，1γ 为首个引入 EUV 的 DRAM 节点。本轮另核实 ASML 多年 EUV 协议，但其他设备、维护及工程主体仍未确认，不能据此全部具名或量化采购。【cite:O3】",
+      "关联业务或产品": "1γ DRAM、EUV 工艺、晶圆厂建设与运营"
+    },
+    {
+      "关系主体": "美光科技（Micron Technology，MU）",
+      "关系对象": "全球基地电力、气体及供水服务商（除另列 Idaho Power 外未具名）",
+      "关系类型": "连续公用事业供给依赖",
+      "关系说明": "生产依赖可靠且不中断的电力、气体和水；工厂与 AI 数据中心扩张可能争夺资源。本轮具名核实 Idaho 新厂电力安排，但不能外推至所有基地，也不证明全球已发生资源短缺。【cite:O3】",
+      "关联业务或产品": "全球晶圆制造、封装与测试"
+    },
+    {
+      "关系主体": "美光科技（Micron Technology，MU）",
+      "关系对象": "中国国家互联网信息办公室（CAC）及中国关键信息基础设施运营者",
+      "关系类型": "采购限制与市场准入约束",
+      "关系说明": "10-K 披露 CAC 于 2023 年 5 月决定中国关键信息基础设施运营者不得采购美光产品，并称该决定影响其在中国及其他地区的竞争。适用对象为该类运营者，不扩大表述为中国所有客户全面禁购。【cite:O3】",
+      "关联业务或产品": "面向中国市场的内存与存储销售"
+    },
+    {
+      "关系主体": "美光科技（Micron Technology，MU）",
+      "关系对象": "美国商务部及 CHIPS Act 直接资助安排",
+      "关系类型": "附条件制造投资资助",
+      "关系说明": "公司与美国商务部签订直接资助协议，支持 Idaho、New York 扩产及 Virginia 工厂现代化；总资助上限约 64 亿美元。协议及相关投资税收抵免支持美国制造，资助上限不是实际到账金额，新厂也不等于已形成产出。【cite:O4】",
+      "关联业务或产品": "美国 DRAM 晶圆厂扩产与现代化；拟建设的美国 HBM 先进封装"
+    },
+    {
+      "关系主体": "美光科技（Micron Technology，MU）",
+      "关系对象": "纽约州及 Clay 四厂建设安排",
+      "关系类型": "非约束性投资激励安排",
+      "关系说明": "公司披露与纽约州签署非约束性条款清单，拟通过合格资本投资税收抵免和合格新增岗位工资激励，支持超过 20 年的四厂计划，金额上限 55 亿美元；首厂处于建设中，预计 2030 日历年开始晶圆产出。【cite:O4】",
+      "关联业务或产品": "New York Clay 先进 DRAM 制造园区"
+    },
+    {
+      "关系主体": "美光科技（Micron Technology，MU）",
+      "关系对象": "Powerchip Semiconductor Manufacturing Corporation（PSMC，力积电）",
+      "关系类型": "晶圆厂资产收购",
+      "关系说明": "公司披露于 2026 年 3 月以 18 亿美元现金完成向 PSMC 收购台湾苗栗铜锣晶圆厂；预计现有厂房于 2027 日历年年中开始有规模的产品出货，并建设第二座洁净室。完成收购与未来出货须区分，该交易不自动构成长期代工合作。【cite:O4】",
+      "关联业务或产品": "台湾 DRAM/HBM 扩产相关制造资产"
+    },
+    {
+      "关系主体": "美光科技（Micron Technology，MU）",
+      "关系对象": "新加坡 NAND 制造基地及 HBM 先进封装扩建项目",
+      "关系类型": "制造地域暴露与在建产能",
+      "关系说明": "新加坡现有基地涵盖研发、晶圆制造及封装测试；HBM 先进封装扩建于 2025 年 1 月动工，预计自 2027 日历年初显著增加容量。新增 NAND 晶圆厂于 2026 年 1 月动工，计划 2028 日历年下半年投入运营；均不计作现成增量产能。【cite:O4】",
+      "关联业务或产品": "NAND 晶圆制造、HBM 先进封装"
+    },
+    {
+      "关系主体": "美光科技（Micron Technology，MU）",
+      "关系对象": "日本广岛制造基地及新洁净室项目",
+      "关系类型": "制造地域暴露与技术升级",
+      "关系说明": "日本基地承担研发和晶圆制造；广岛新洁净室项目于 2026 年 7 月动工，服务 DRAM 技术转换、HBM 及其他 AI 内存产品，预计 2028 日历年末初始产出。项目建设状态与当前制造能力分别看待。【cite:O4】",
+      "关联业务或产品": "DRAM、HBM 相关晶圆制造与技术转换"
+    },
+    {
+      "关系主体": "美光科技（Micron Technology，MU）",
+      "关系对象": "印度 Gujarat 封装测试基地",
+      "关系类型": "生产地域暴露与商业爬坡",
+      "关系说明": "公司披露 Gujarat 封装测试设施于 2026 财年开始商业出货并爬坡；印度已列入截至 2026-09-03 的主要封装及测试设施所在地，不再仅作为宣布中的项目表述。【cite:O4】",
+      "关联业务或产品": "内存与存储组件及模组封装、测试"
+    },
+    {
+      "关系主体": "美光科技（Micron Technology，MU）",
+      "关系对象": "战略客户协议客户（完整名单及产品覆盖未披露）",
+      "关系类型": "多年采购与履约保障",
+      "关系说明": "FY2026 Q3/Q4 已签多年 take-or-pay，含可执行数量、固定或定期协商价格，多数含上下限。客户保证金已到账但列融资现金流，几乎全部安排于 2029—2031 年返还；不视作收入，也不认定均为 HBM 或 Anthropic 合同。【cite:O5】【cite:O10】",
+      "关联业务或产品": "跨年内存与存储供给、产能承诺与现金安排"
+    },
+    {
+      "关系主体": "战略客户协议客户（未具名）",
+      "关系对象": "信用证签发金融机构（未具名）",
+      "关系类型": "第三方信用支持",
+      "关系说明": "部分协议要求客户维持第三方信用证；截至 2026-09-03 已签发或承诺金额合计 70 亿美元。美光取用依赖指定违约事件，不是无条件到账资金或已实现收入；银行名称及逐项敞口未披露。【cite:O10】",
+      "关联业务或产品": "战略客户供给合同的违约保障"
+    },
+    {
+      "关系主体": "美光科技（Micron Technology，MU）",
+      "关系对象": "Anthropic",
+      "关系类型": "供给协议与架构联合优化",
+      "关系说明": "2026 年 6 月官方公告确认双方达成覆盖数据中心产品组合的内存与存储供给协议，并协同优化 Claude 工作负载的子系统性能、能效与成本。涉及 HBM、DRAM、SSD；数量、价格及采购路径未披露，不能据此给各云平台分配美光份额。【cite:O104】 [原始披露](https://jp.micron.com/about/press/news/micron-and-anthropic-announce-strategic-agreement-to-scale-next-generation-ai-infrastructure)",
+      "关联业务或产品": "CMBU/CDBU；AI 训练、推理的 HBM、DRAM、SSD"
+    },
+    {
+      "关系主体": "美光科技（Micron Technology，MU）",
+      "关系对象": "Anthropic Series H 融资",
+      "关系类型": "战略股权投资",
+      "关系说明": "同一公告明确美光已实施 Series H 战略投资。此为资本联系，区别于产品销售、客户保证金和 AWS/Microsoft 的算力采购；投资金额、估值及收益未披露，不证明商业供给已全部兑现。【cite:O104】 [原始披露](https://jp.micron.com/about/press/news/micron-and-anthropic-announce-strategic-agreement-to-scale-next-generation-ai-infrastructure)",
+      "关联业务或产品": "AI 基础设施合作的资本安排"
+    },
+    {
+      "关系主体": "Anthropic Claude",
+      "关系对象": "美光科技（Micron Technology，MU）",
+      "关系类型": "企业 AI 工具采用",
+      "关系说明": "美光已导入 Claude，应用于编码、工程、制造及企业业务。公告称其有助生产力和创新，但没有可核算节约额或良率提升；属于美光作为 AI 使用者的关系，不能与向 Anthropic 销售存储器混算。【cite:O104】 [原始披露](https://jp.micron.com/about/press/news/micron-and-anthropic-announce-strategic-agreement-to-scale-next-generation-ai-infrastructure)",
+      "关联业务或产品": "制造、研发及企业运营的 AI 应用"
+    },
+    {
+      "关系主体": "Anthropic",
+      "关系对象": "Amazon Web Services（AWS）",
+      "关系类型": "算力采购与自研芯片选择",
+      "关系说明": "2026 年 4 月新协议锁定最高 5GW 新能力并作出十年 AWS 技术采购承诺；当时已用超过百万颗 Trainium2，新增代际仍分期上线。AWS 仍是主要训练/云伙伴；这证明 NVIDIA GPU 之外的路线，不披露美光供货量或 Trainium 的具体存储 BOM。【cite:O91】 [原始披露](https://www.anthropic.com/news/anthropic-amazon-compute)",
+      "关联业务或产品": "Claude 训练/推理；Trainium、Graviton 及云部署"
+    },
+    {
+      "关系主体": "Amazon",
+      "关系对象": "Anthropic",
+      "关系类型": "股权融资与平台采购耦合",
+      "关系说明": "4 月公告披露当期新增 50 亿美元投资及未来最高另 200 亿美元安排，延续既有投资。资金与 Anthropic 对 AWS 的长期采购联系须分别识别；未来额度不等于全部到账，也不等于独立于平台融资的新增终端需求。【cite:O91】 [原始披露](https://www.anthropic.com/news/anthropic-amazon-compute)",
+      "关联业务或产品": "Claude 扩张的资本来源与 AWS 采购"
+    },
+    {
+      "关系主体": "Anthropic",
+      "关系对象": "Google 与 Broadcom",
+      "关系类型": "TPU 算力接入安排",
+      "关系说明": "4 月协议扩展下一代 TPU 算力，预计 2027 年起上线；Broadcom 8-K 披露约 3.5GW 经其接入，实际消费依赖 Anthropic 持续商业成功，运营及融资伙伴仍在讨论。与 AWS/NVIDIA 路线并存；未确认此安排的内存供应者。【cite:O118】【cite:O105】 [原始披露](https://www.sec.gov/Archives/edgar/data/1730168/000119312526144028/d87999d8k.htm)",
+      "关联业务或产品": "Claude；Google TPU 训练/推理基础设施"
+    },
+    {
+      "关系主体": "Broadcom",
+      "关系对象": "Google",
+      "关系类型": "定制芯片开发供货与供应保障",
+      "关系说明": "已签长期协议开发及供应后续 TPU，并签网络及其他 AI 机架组件保障协议，期限最长至 2031 年。芯片设计/组件供应角色不同于云算力运营；不能把 Broadcom 认作已确认的美光直接采购方或给 TPU 内存份额。【cite:O118】 [原始披露](https://www.sec.gov/Archives/edgar/data/1730168/000119312526144028/d87999d8k.htm)",
+      "关联业务或产品": "定制 TPU、AI 机架网络与组件"
+    },
+    {
+      "关系主体": "Anthropic",
+      "关系对象": "Microsoft Azure",
+      "关系类型": "云算力采购承诺",
+      "关系说明": "2025-11-18 联合公告确认 300 亿美元 Azure 算力采购承诺及另最高 1GW 合同能力，初期采用 Grace Blackwell/Vera Rubin。是平台采购承诺而非已安装数量，亦不证明与 Crusoe 任一园区逐项对应。【cite:O94】 [原始披露](https://blogs.microsoft.com/blog/2025/11/18/microsoft-nvidia-and-anthropic-announce-strategic-partnerships/)",
+      "关联业务或产品": "Claude；Azure 上的 NVIDIA 计算平台"
+    },
+    {
+      "关系主体": "Anthropic",
+      "关系对象": "NVIDIA",
+      "关系类型": "模型与未来硬件协同设计",
+      "关系说明": "同一公告建立设计及工程合作，以优化模型性能、能效、TCO 及未来 NVIDIA 架构对 Anthropic 工作负载的适配。这是平台选择和内存配置的研究入口；具体内存 BOM、采购份额和最终商业结果未披露。【cite:O94】 [原始披露](https://blogs.microsoft.com/blog/2025/11/18/microsoft-nvidia-and-anthropic-announce-strategic-partnerships/)",
+      "关联业务或产品": "Claude 工作负载；Grace Blackwell、Vera Rubin 及后续架构"
+    },
+    {
+      "关系主体": "NVIDIA 与 Microsoft",
+      "关系对象": "Anthropic",
+      "关系类型": "战略投资承诺",
+      "关系说明": "2025 年联合公告分别承诺最高 100 亿、50 亿美元投资。与 Anthropic 对 Azure 的计算采购并存；承诺上限不是全额实收，也不重复计为美光的产品订单。【cite:O94】 [原始披露](https://blogs.microsoft.com/blog/2025/11/18/microsoft-nvidia-and-anthropic-announce-strategic-partnerships/)",
+      "关联业务或产品": "AI 模型扩张的股权资本及平台风险安排"
+    },
+    {
+      "关系主体": "美光科技（Micron Technology，MU）",
+      "关系对象": "NVIDIA 数据中心平台",
+      "关系类型": "已量产产品供给与联合工程",
+      "关系说明": "2026-03-16 公告确认 面向 Rubin GPU 的 HBM4 36GB 12-high 在日历 Q1 已量产出货，SOCAMM2 为 Rubin NVL72/Vera CPU 设计，9650 Gen6 SSD 服务 CMX 等负载。此前 HBM3E/SOCAMM 已用于 Blackwell。平台采用不代表独供或份额，48GB 16-high 仍仅送样。【cite:O139】【cite:O131】 [原始披露](https://jp.micron.com/about/press/news/micron-in-high-volume-production-of-hbm4-designed-for-nvidia-vera-rubin-pcie-gen6-ssd-and-socamm2)",
+      "关联业务或产品": "CMBU/CDBU；HBM、服务器 LPDDR 模组、AI SSD"
+    },
+    {
+      "关系主体": "美光科技（Micron Technology，MU）",
+      "关系对象": "NVIDIA DRIVE AGX Orin",
+      "关系类型": "车载平台产品集成",
+      "关系说明": "2025 年公告确认 Micron LPDDR5X 集成 DRIVE AGX Orin，为 AEBU 提供具名平台采用实例。不得沿用为 DRIVE Thor、Hyperion 所有系统或 Uber 无人车均采用美光的证明；终端整车厂订单及数量仍未知。【cite:O135】 [原始披露](https://prtimes.jp/main/html/rd/p/000000052.000055229.html)",
+      "关联业务或产品": "AEBU；汽车/工业 LPDDR5X"
+    },
+    {
+      "关系主体": "美光科技（Micron Technology，MU）",
+      "关系对象": "AMD Instinct MI350 系列",
+      "关系类型": "HBM 平台采用与工程适配",
+      "关系说明": "Micron Japan 发布的 2025 年公告确认 HBM3E 36GB 12-high 用于 MI350 系列方案，并有协作适配表述。这提供 NVIDIA 以外的具名 GPU 入口；不证明 MI400 后续份额、独家供货或所有系列产品的最新采购量。【cite:O127】 [原始披露](https://prtimes.jp/main/html/rd/p/000000055.000055229.html)",
+      "关联业务或产品": "CMBU；AMD AI 加速器 HBM3E"
+    },
+    {
+      "关系主体": "美光科技（Micron Technology，MU）",
+      "关系对象": "Lenovo ThinkPad P1 Gen 7",
+      "关系类型": "客户端模组协作与历史平台采用",
+      "关系说明": "Lenovo 2024 年官方公告确认共同推出 LPDDR5X LPCAMM2、用于 P1 Gen 7，最高 64GB。保留为已公布的平台采用实例，而非 2026 年新增订单；不外推全部 Lenovo 机型、当前销量或 Crucial 零售业务持续扩张。【cite:O79】 [原始披露](https://news.lenovo.com/pressroom/press-releases/lenovo-unveils-its-new-ai-ready-thinkpad-p1-gen-7-mobile-workstation/)",
+      "关联业务或产品": "MCBU；LPCAMM2、AI 工作站内存"
+    },
+    {
+      "关系主体": "美光科技（Micron Technology，MU）",
+      "关系对象": "Supermicro Petascale X13/H13 平台",
+      "关系类型": "CXL 模组验证与 OEM 商业渠道",
+      "关系说明": "CZ120 公告确认 X13/H13 支持该模块，且可经 OEM 渠道购买生产量产品。这是硬件验证与供货渠道，不只是概念演示；客户装机量和新增渠道份额未披露，也不等于 CXL 已普遍替代本地 DRAM。【cite:O121】 [原始披露](https://sg.micron.com/about/press/news/micron-first-to-achieve-qualification-sample-milestone)",
+      "关联业务或产品": "数据中心 CZ120 CXL 内存扩展模块"
+    },
+    {
+      "关系主体": "美光科技（Micron Technology，MU）",
+      "关系对象": "Red Hat Enterprise Linux",
+      "关系类型": "操作系统兼容测试与认证协作",
+      "关系说明": "双方已广泛测试验证 RHEL 与 CZ120 的集成；公告措辞为朝认证推进，不把合作测试自动写成全部版本认证完成。操作系统适配决定 CXL 产品可用范围，但非 Red Hat 采购内存的证明。【cite:O121】 [原始披露](https://sg.micron.com/about/press/news/micron-first-to-achieve-qualification-sample-milestone)",
+      "关联业务或产品": "CZ120、CXL 内存及内存密集型工作负载"
+    },
+    {
+      "关系主体": "美光科技（Micron Technology，MU）",
+      "关系对象": "XConn Technologies Apollo CXL 交换芯片",
+      "关系类型": "互操作性验证",
+      "关系说明": "Micron 公告确认与 XConn 联合确保 Apollo 低延迟 CXL switch 与 CZ120 兼容。连接/交换能力为内存扩展和池化提供具体技术依赖；未披露商业装机规模，也不推定 XConn 为美光内部 SSD 控制器供应商。【cite:O121】 [原始披露](https://sg.micron.com/about/press/news/micron-first-to-achieve-qualification-sample-milestone)",
+      "关联业务或产品": "CXL 内存扩展、交换和池化接口"
+    },
+    {
+      "关系主体": "MemVerge",
+      "关系对象": "Micron 与 Supermicro",
+      "关系类型": "分层内存软件集成与联合演示",
+      "关系说明": "2024 年联合演示以 Supermicro 服务器、AMD Genoa/NVIDIA A10、Micron DDR5/CZ120 和 Memory Machine X 做 GPU/CPU/CXL 分层。保留软件如何释放容量的技术入口；特定 OPT-66B/FlexGen 测试成绩不能外推所有推理负载或量产订单。【cite:O128】 [原始披露](https://memverge.ai/product/gtc2024)",
+      "关联业务或产品": "AI 推理；DDR5、CXL 与 GPU 内存分层"
+    },
+    {
+      "关系主体": "NVIDIA",
+      "关系对象": "Cloudian、DDN、Dell、Everpure、HPE、Hitachi Vantara、IBM、MinIO、NetApp、Nutanix、VAST Data、WEKA",
+      "关系类型": "存储架构联合设计",
+      "关系说明": "STX 公告将这些公司列为共同设计方；CMX 为首个机架级上下文存储实现。与美光 Gen6 SSD 的 CMX 应用有关，但名单不等于各方已认证或采购美光 SSD，也不是所有传统存储均被替代。【cite:O72】【cite:O139】 [原始披露](https://nvidianews.nvidia.com/news/nvidia-launches-bluefield-4-stx-storage-architecture-with-broad-industry-adoption)",
+      "关联业务或产品": "STX/CMX；AI 上下文、训练及推理存储系统"
+    },
+    {
+      "关系主体": "NVIDIA",
+      "关系对象": "AIC、Supermicro、Quanta Cloud Technology（QCT）",
+      "关系类型": "STX 系统制造",
+      "关系说明": "STX 公告分别将三者列为制造合作方，区别于存储软件/系统共同设计方。伙伴产品预计 2026 下半年可供，不能写成三者所有机型已交付或使用同一 NAND 供应者。【cite:O72】 [原始披露](https://nvidianews.nvidia.com/news/nvidia-launches-bluefield-4-stx-storage-architecture-with-broad-industry-adoption)",
+      "关联业务或产品": "BlueField-4 STX 参考设计及存储系统制造"
+    },
+    {
+      "关系主体": "CoreWeave、Crusoe、IREN、Lambda、Mistral AI、Nebius、OCI、Vultr",
+      "关系对象": "NVIDIA STX",
+      "关系类型": "上下文存储采用计划",
+      "关系说明": "公告列这些 AI/云主体计划采用 STX；其角色为部署使用者，而非制造者。计划为数据中心 SSD 的可研究需求入口，尚未确认逐客户上线量、供应 BOM 或美光直接销售关系。【cite:O72】 [原始披露](https://nvidianews.nvidia.com/news/nvidia-launches-bluefield-4-stx-storage-architecture-with-broad-industry-adoption)",
+      "关联业务或产品": "AI 云上下文存储；CMX/KV-cache 系统"
+    },
+    {
+      "关系主体": "SK hynix",
+      "关系对象": "TSMC",
+      "关系类型": "HBM 基础 die 工艺及封装协作",
+      "关系说明": "2024 年 MOU 涉及 HBM4 基础 die 使用 TSMC 先进逻辑工艺，并优化 HBM 与 CoWoS 集成；2026 年 7 月官方说明已从 HBM4 开始应用该路线。制造及共同客户资格依赖值得区分；不可移植为美光 HBM4 外包关系，供货量未知。【cite:O66】【cite:O125】 [原始披露](https://news.skhynix.com/en/hbm-to-essd/)",
+      "关联业务或产品": "HBM4 基础 die、定制 HBM、CoWoS 封装"
+    },
+    {
+      "关系主体": "Sandisk",
+      "关系对象": "Kioxia",
+      "关系类型": "NAND 合资制造及供给保障付款",
+      "关系说明": "2026 年 1 月续约将四日市及北上合资安排对齐至 2034 年底，Sandisk 将于 2026—2029 年分期付 11.65 亿美元以获得制造服务和持续供应。两者商业竞争主体仍不同，晶圆研发制造却共享；付款不是新增产能或两套独立供给。【cite:O106】 [原始披露](https://apac.kioxia.com/en-apac/about/news/2026/20260130-1.html)",
+      "关联业务或产品": "3D NAND 共同研发、四日市/北上制造"
+    },
+    {
+      "关系主体": "Kioxia 与 Sandisk",
+      "关系对象": "日本政府支持及四日市/北上扩建安排",
+      "关系类型": "附条件联合投资",
+      "关系说明": "2026-08-27 宣布到 2032 年计划共同投资超过 310 亿美元，实施取决于政府支持，用于设施和技术扩展。项目及支持条件已公布，具体拨款及已形成的合格产出未确认；不能将总投资当作本年度新增供应。【cite:O129】 [原始披露](https://www.kioxia.com.cn/zh-cn/about/news/2026/20260827-3.html)",
+      "关联业务或产品": "NAND 扩产、制程及基础设施"
+    },
+    {
+      "关系主体": "Sandisk 与 SK hynix",
+      "关系对象": "Open Compute Project（OCP）HBF 工作流",
+      "关系类型": "联合标准制定",
+      "关系说明": "2026-08-03 发布首个 HBF 技术规范，两者为主要贡献者；规范涉及 xPU 接口、电气、封装可靠性及读写软件。目标为 AI 推理近计算高容量并可与 HBM 共存；标准发布不是量产或已替代 HBM 的事实。【cite:O88】 [原始披露](https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf)",
+      "关联业务或产品": "High Bandwidth Flash；AI 推理内存/存储分层"
+    },
+    {
+      "关系主体": "Google 与 Tenstorrent",
+      "关系对象": "OCP HBF 标准联盟",
+      "关系类型": "技术验证及标准参与",
+      "关系说明": "Sandisk 官方公告确认两者加入联盟并参与技术验证及标准建立。外部计算平台开发者参与是比泛称“生态”更具体的入口；成员身份不等于订单、芯片已设计导入或美光受损份额。【cite:O88】 [原始披露](https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf)",
+      "关联业务或产品": "AI 加速器对 HBF 的接口与系统选择"
+    },
+    {
+      "关系主体": "JEDEC",
+      "关系对象": "JESD330-4 SPHBM4 技术标准",
+      "关系类型": "封装接口标准与技术可选路径",
+      "关系说明": "7 月发布标准，以 HBM4 DRAM 核心 die 配合新接口基础 die，可在有机而非硅基板连接，借串行化减少数据引脚并维持设计聚合带宽。保留封装成本/资源选择入口；不证明美光采用、量产或消除 DRAM die 的供给约束。【cite:O130】 [原始披露](https://markets.financialcontent.com/bpas/article/bizwire-2026-7-13-new-jedec-sphbm4-standard-enables-hbm4-class-bandwidth-on-organic-substrates)",
+      "关联业务或产品": "HBM4 核心 die、SPHBM4 基础 die 与封装接口"
+    },
+    {
+      "关系主体": "Kioxia GP1/XL-FLASH",
+      "关系对象": "GPU-direct 闪存内存扩展架构",
+      "关系类型": "已公告的技术可选方案",
+      "关系说明": "2026-08-04 公告以 XL-FLASH Gen2/PCIe6 实现高 IOPS 闪存扩展层，计划年底向精选客户提供功能评估样品。可研究其与 HBM及美光 AI SSD 的分层竞争/互补；样品规格可变，未确认具名 GPU 客户商业采用。【cite:O56】 [原始披露](https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html)",
+      "关联业务或产品": "AI 存储；HBM 扩展、GPU 发起访问、低延迟闪存"
+    },
+    {
+      "关系主体": "Western Digital（WD，WDC）",
+      "关系对象": "超大规模云容量存储客户（未具名）",
+      "关系类型": "HDD 长期采购与产品资格",
+      "关系说明": "WD 已转向多年客户承诺，容量 HDD 仍有云端实物销量增长；两家 hyperscaler 的 HAMR 资格推进及 2027 爬坡为计划。是大容量/成本敏感数据的替代或互补路径，不等同 Sandisk NAND，也不证明 HDD 可替代高性能 KV-cache SSD。【cite:O64】【cite:O26】 [原始披露](https://www.westerndigital.com/in-id/company/newsroom/press-releases/2026/2026-02-03-western-digital-accelerates-storage-innovation-for-ai-era)",
+      "关联业务或产品": "云容量 HDD、ePMR/HAMR；与 NAND/SSD 的工作负载分流"
+    },
+    {
+      "关系主体": "Crusoe",
+      "关系对象": "Microsoft",
+      "关系类型": "专用 AI 园区开发安排",
+      "关系说明": "2026-03-27 公告支持 Microsoft 的新 Abilene 900MW 园区，清理及准备已开展，首楼预计 2027 年中通电。与原有八栋园区区别，不把旧 OpenAI/Oracle 项目关系直接移植；场地推进不证明客户已装机或美光已有订单。【cite:O61】 [原始披露](https://www.crusoe.ai/resources/newsroom/crusoe-announces-new-900-mw-ai-factory-campus-in-abilene-texas-to-support-microsoft-ai-infrastructure)",
+      "关联业务或产品": "AI 计算容量及服务器内存/SSD 的部署前提"
+    },
+    {
+      "关系主体": "Crusoe 新 Abilene 园区",
+      "关系对象": "专用现场电源、储能及闭式液冷系统",
+      "关系类型": "供电和热管理依赖",
+      "关系说明": "方案配置 900MW 现场发电、储能与非蒸发闭式液冷，两个新楼各设计 336MW 关键 IT 负载。发电规模与 IT 负载口径不同，均非目前上线量；说明 AI 云主体选择自备资源路线，而非所有需求只依赖同一公共电网。【cite:O62】 [原始披露](https://www.crusoe.ai/resources/newsroom/crusoe-announces-new-900-mw-ai-factory-campus-in-abilene-texas-to-support-microsoft-ai-infrastructure)",
+      "关联业务或产品": "AI 数据中心可部署容量、功率密度与冷却"
+    },
+    {
+      "关系主体": "美光科技（Micron Technology，MU）",
+      "关系对象": "ASML",
+      "关系类型": "多年 EUV 设备供应协议",
+      "关系说明": "美光 2026-06-24 官方演示第 17 页披露已签多年 EUV 供应协议，支持 1δ 及后续节点更高采用率。已签协议与工具交付、安装及良率爬坡不同；金额与排期未披露。原始 PDF 已检索核实，但 Capture 未取得 O 引用，不借其他观察冒充合同依据。 [原始披露](https://micron.gcs-web.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356)",
+      "关联业务或产品": "先进 DRAM EUV 工艺与扩产工具获取"
+    },
+    {
+      "关系主体": "Micron Idaho Semiconductor Manufacturing（Triton）LLC",
+      "关系对象": "Idaho Power",
+      "关系类型": "新晶圆厂电力服务及风险分配",
+      "关系说明": "新厂 ESA 约定 Idaho Power 提供电力服务，美光承担连接设施及约定的容量、最低需求付款和信用支持。IPUC 2026-05-08 命令附修改批准；这些是供电和成本承诺，不证明新厂已形成晶圆产出。原始命令可读，Capture 未取得 O 引用。 [原始披露](https://puc.idaho.gov/Fileroom/PublicFiles/ELEC/IPC/IPCE2444/OrdNotc/20260508Final_Order_No_37039.pdf)",
+      "关联业务或产品": "Idaho DRAM 新厂；连接设施、容量及电力成本"
+    },
+    {
+      "关系主体": "Idaho Public Utilities Commission（IPUC）",
+      "关系对象": "Idaho Power 的 Micron 新厂 ESA/费率安排",
+      "关系类型": "监管审批与成本回收约束",
+      "关系说明": "Order 37039 于 2026-05-08 附修改批准 ESA，要求修改能源/需求费率及最低月计费需求等条款并提交合规文件。可研究公用事业如何回收新负载资源成本及隔离其他客户风险；不是政府免费供电或全部美国新厂已获批。Capture 无 O 引用。 [原始披露](https://puc.idaho.gov/Fileroom/PublicFiles/ELEC/IPC/IPCE2444/OrdNotc/20260508Final_Order_No_37039.pdf)",
+      "关联业务或产品": "Micron Idaho 新厂电价、供电合同及扩产经济性"
+    }
+  ],
+  "future_nodes": [],
+  "metadata": {}
+}

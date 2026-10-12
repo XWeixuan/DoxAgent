@@ -1,0 +1,2565 @@
+{
+  "format": "doxagent.w3-trade-intent-review.v1",
+  "ticker": "MU",
+  "window": {
+    "since_utc": "2026-09-19T12:53:20.738930+00:00",
+    "as_of_utc": "2026-10-10T12:53:20.738930+00:00"
+  },
+  "part": 1,
+  "record_count": 5,
+  "records": [
+    {
+      "intent_id": "trade:case_5a7956936b8745c7b1c49d3d8abaec16",
+      "ticker": "MU",
+      "case_id": "case_5a7956936b8745c7b1c49d3d8abaec16",
+      "intent_released_at_utc": "2026-09-22T09:13:50.716883+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_bac64869edc549648547f26784eb2754",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "Samsung Electronics",
+              "HBM4",
+              "4nm foundry",
+              "HBM4 base die"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Samsung reportedly allocated more than half of its existing 4nm foundry capacity to HBM4 base-die production.",
+            "subject_time": "Current 4nm capacity allocation as of September 2026"
+          },
+          {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "Samsung Electronics",
+              "HBM4",
+              "4nm foundry"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Samsung was reportedly considering an expansion of its 4nm foundry capacity to support HBM4 base-die production.",
+            "subject_time": "Future HBM4 capacity expansion"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Samsung Electronics",
+              "HBM market",
+              "Counterpoint"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Counterpoint data reported Samsung's HBM revenue share rose from approximately 21% in Q1 2026 to 33% in Q2 2026.",
+            "subject_time": "FY2026 Q1 to FY2026 Q2"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "SK hynix",
+              "Micron Technology",
+              "HBM market",
+              "Counterpoint"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Counterpoint data reported Q2 2026 HBM revenue shares of approximately 50% for SK hynix and 18% for Micron.",
+            "subject_time": "FY2026 Q2"
+          },
+          {
+            "assertion_state": "GUIDANCE",
+            "entities": [
+              "Samsung Electronics",
+              "HBM4"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Samsung expected HBM4 revenue to more than triple sequentially in the third quarter and HBM4 to represent more than 60% of its total HBM revenue in the second half of 2026.",
+            "subject_time": "FY2026 Q3 and FY2026 second half"
+          },
+          {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "Samsung Electronics",
+              "HBM5",
+              "2nm process"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Samsung was reportedly considering a new 2nm production line for HBM5 base dies.",
+            "subject_time": "Future HBM5 production"
+          },
+          {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "Samsung Electronics",
+              "SK hynix",
+              "Micron Technology",
+              "HBM4",
+              "HBM3E",
+              "TrendForce"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "TrendForce reported that Samsung was the first supplier to complete HBM4 validation and begin shipments, while SK hynix faced qualification delays and Micron remained more focused on HBM3E.",
+            "subject_time": "HBM4 market status reported in June 2026"
+          },
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Citi",
+              "Global HBM market"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Citi expected global HBM bit demand to rise approximately 62% in the following year.",
+            "subject_time": "2027"
+          }
+        ],
+        "expert_trade": {
+          "direction": "SHORT",
+          "evaluated": true,
+          "expectation_delta": "New Q2 market-share data places Micron at approximately 18% while Samsung rose from 21% to 33%, and Samsung is allocating more than half of its existing 4nm capacity to HBM4 base dies with additional ramp plans. This lowers the expected share and relative pricing/mix capture available to Micron, even though aggregate HBM demand may remain undersupplied and Micron's absolute HBM revenue can still grow.",
+          "prior_expectation": "Micron's baseline was that HBM4 high-volume shipments and severe AI-memory undersupply would support continued high-value data-center mix, pricing, and HBM share capture; Micron held approximately 21% of global HBM revenue in Q1 2026.",
+          "reason": "TRADE SHORT: The competitor's capacity commitment, HBM4 commercial progress, and Micron's relative share decline create a non-trivial negative surprise in the HBM value-capture path. HBM and data-center mix are material to Micron's ASP and margin outlook, and the transmission is competitor capacity and share gain -> lower Micron HBM share/pricing power -> weaker relative revenue and mix capture. The single-quarter, third-party share data and strong market growth limit certainty but do not remove the directional edge.",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "The reference view contains Q1 HBM shares and general Samsung, SK hynix, and Micron HBM competition, as well as Micron's HBM4 shipment milestones. This message adds Samsung's reported allocation of more than half of existing 4nm capacity to HBM4 base dies, the Q2 share shift to Samsung 33% and Micron 18%, and Samsung's further HBM4/HBM5 capacity plans.",
+          "reference_ids": [
+            "E6",
+            "E11",
+            "E19",
+            "E75"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "The message does not satisfy any existing Policy condition. It reports competitor capacity and market-share changes but not the required consecutive Micron internal combination, ASP, bit-shipment, or company-confirmed qualification and delivery deterioration."
+        },
+        "w3_case_id": "w3_bac64869edc549648547f26784eb2754"
+      },
+      "trade_direction": "SHORT",
+      "case_summary": {
+        "case_id": "case_5a7956936b8745c7b1c49d3d8abaec16",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-22T09:13:50.802254Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 284.597655
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-22T09:09:06.204599Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_EXECUTION",
+          "TRADE_INTENT"
+        ],
+        "revision": 2605403,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-22",
+        "source": {
+          "binding_id": "MU:yahoo_finance_news",
+          "kind": "api",
+          "name": "Yahoo Finance News",
+          "source_id": "yahoo_finance_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_baa7e069afed4b649e02cad4286d0b3e",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Samsung Reportedly Ramps 4nm Capacity For Memory Chips, Stepping Up Competition With SK Hynix, Micron"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "ORDER_FILLED"
+          ],
+          "state": "EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-22T09:09:06.204599Z",
+        "completed_at": "2026-09-22T09:13:50.802254Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E11",
+            "E6",
+            "E4",
+            "E19",
+            "E63"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [
+            {
+              "event_id": "E6",
+              "fact_ids": [
+                "F210",
+                "F211"
+              ]
+            }
+          ],
+          "reason": "Samsung's specific allocation of >50% of 4nm capacity to HBM4 base-die production, and the Q2 HBM revenue share update (Samsung 33% vs 21% in Q1; SK Hynix 50%; Micron 18%) are new facts. Existing E6 only covers Q1 HBM shares (F210: Samsung 21%, F211: SK Hynix 58%), and E11 F278 only notes a general tilt toward HBM without specifying 4nm base-die allocation.",
+          "reference_ids": [
+            "E6"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [
+            "pol_000c7e1917b14969a458"
+          ],
+          "reason": "消息提供具体事实：Counterpoint数据显示Q2 Micron HBM收入份额为18%，而Samsung从21%跃升至33%、SK Hynix持50%；TrendForce确认Samsung最先完成HBM4验证并开始出货，Micron仍聚焦HBM3E；同时Citi预期HBM bit需求增长62%、行业可能供不应求，即AI/服务器需求和价格保持强势。这些具体份额变化、竞争资格动态与行业需求强势的组合直接触及pol_000c7e1917b14969a458关于高价值AI/服务器组合指标在需求强劲环境下可能下降、以及资格/封装瓶颈的触发路径。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息描述Samsung HBM4产能扩张和份额提升（Q2达33%），并提及Micron HBM市场份额18%及仍聚焦HBM3E。但三个Condition均要求Micron内部CMBU+CDBU占比或高价值bit出货/ASP在连续两个报告窗口中相对FY26 Q3基线下降，且增量由消费/传统产品承担，或Micron正式披露资格/封装/交付瓶颈。消息未提供Micron任何内部组合份额趋势、ASP数据、消费产品占比变化或自身瓶颈归因，也未满足'两个连续窗口'条件。竞争压力描述不等于Micron高价值组合指标实际转弱的披露。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "RUMORED",
+              "entities": [
+                "Samsung Electronics",
+                "HBM4",
+                "4nm foundry",
+                "HBM4 base die"
+              ],
+              "occurrence_date": "2026-09-22",
+              "proposition": "Samsung reportedly allocated more than half of its existing 4nm foundry capacity to HBM4 base-die production.",
+              "subject_time": "Current 4nm capacity allocation as of September 2026"
+            },
+            {
+              "assertion_state": "RUMORED",
+              "entities": [
+                "Samsung Electronics",
+                "HBM4",
+                "4nm foundry"
+              ],
+              "occurrence_date": "2026-09-22",
+              "proposition": "Samsung was reportedly considering an expansion of its 4nm foundry capacity to support HBM4 base-die production.",
+              "subject_time": "Future HBM4 capacity expansion"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Samsung Electronics",
+                "HBM market",
+                "Counterpoint"
+              ],
+              "occurrence_date": "2026-09-22",
+              "proposition": "Counterpoint data reported Samsung's HBM revenue share rose from approximately 21% in Q1 2026 to 33% in Q2 2026.",
+              "subject_time": "FY2026 Q1 to FY2026 Q2"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "SK hynix",
+                "Micron Technology",
+                "HBM market",
+                "Counterpoint"
+              ],
+              "occurrence_date": "2026-09-22",
+              "proposition": "Counterpoint data reported Q2 2026 HBM revenue shares of approximately 50% for SK hynix and 18% for Micron.",
+              "subject_time": "FY2026 Q2"
+            },
+            {
+              "assertion_state": "GUIDANCE",
+              "entities": [
+                "Samsung Electronics",
+                "HBM4"
+              ],
+              "occurrence_date": "2026-09-22",
+              "proposition": "Samsung expected HBM4 revenue to more than triple sequentially in the third quarter and HBM4 to represent more than 60% of its total HBM revenue in the second half of 2026.",
+              "subject_time": "FY2026 Q3 and FY2026 second half"
+            },
+            {
+              "assertion_state": "RUMORED",
+              "entities": [
+                "Samsung Electronics",
+                "HBM5",
+                "2nm process"
+              ],
+              "occurrence_date": "2026-09-22",
+              "proposition": "Samsung was reportedly considering a new 2nm production line for HBM5 base dies.",
+              "subject_time": "Future HBM5 production"
+            },
+            {
+              "assertion_state": "RUMORED",
+              "entities": [
+                "Samsung Electronics",
+                "SK hynix",
+                "Micron Technology",
+                "HBM4",
+                "HBM3E",
+                "TrendForce"
+              ],
+              "occurrence_date": "2026-09-22",
+              "proposition": "TrendForce reported that Samsung was the first supplier to complete HBM4 validation and begin shipments, while SK hynix faced qualification delays and Micron remained more focused on HBM3E.",
+              "subject_time": "HBM4 market status reported in June 2026"
+            },
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "Citi",
+                "Global HBM market"
+              ],
+              "occurrence_date": "2026-09-22",
+              "proposition": "Citi expected global HBM bit demand to rise approximately 62% in the following year.",
+              "subject_time": "2027"
+            }
+          ],
+          "expert_trade": {
+            "direction": "SHORT",
+            "evaluated": true,
+            "expectation_delta": "New Q2 market-share data places Micron at approximately 18% while Samsung rose from 21% to 33%, and Samsung is allocating more than half of its existing 4nm capacity to HBM4 base dies with additional ramp plans. This lowers the expected share and relative pricing/mix capture available to Micron, even though aggregate HBM demand may remain undersupplied and Micron's absolute HBM revenue can still grow.",
+            "prior_expectation": "Micron's baseline was that HBM4 high-volume shipments and severe AI-memory undersupply would support continued high-value data-center mix, pricing, and HBM share capture; Micron held approximately 21% of global HBM revenue in Q1 2026.",
+            "reason": "TRADE SHORT: The competitor's capacity commitment, HBM4 commercial progress, and Micron's relative share decline create a non-trivial negative surprise in the HBM value-capture path. HBM and data-center mix are material to Micron's ASP and margin outlook, and the transmission is competitor capacity and share gain -> lower Micron HBM share/pricing power -> weaker relative revenue and mix capture. The single-quarter, third-party share data and strong market growth limit certainty but do not remove the directional edge.",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "The reference view contains Q1 HBM shares and general Samsung, SK hynix, and Micron HBM competition, as well as Micron's HBM4 shipment milestones. This message adds Samsung's reported allocation of more than half of existing 4nm capacity to HBM4 base dies, the Q2 share shift to Samsung 33% and Micron 18%, and Samsung's further HBM4/HBM5 capacity plans.",
+            "reference_ids": [
+              "E6",
+              "E11",
+              "E19",
+              "E75"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "The message does not satisfy any existing Policy condition. It reports competitor capacity and market-share changes but not the required consecutive Micron internal combination, ASP, bit-shipment, or company-confirmed qualification and delivery deterioration."
+          },
+          "w3_case_id": "w3_bac64869edc549648547f26784eb2754"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "6549a33b9c70ec2cb8e2e2f985d59da2e09c9ba3413a6f8a1432e700eb7a8506",
+            "content_type": "text/plain",
+            "sha256": "f4c8ad89683d36534997be17079fa0ff5f91b0b9f9b54da3757913df829f59f9",
+            "size_bytes": 2939
+          },
+          "case": {
+            "case_id": "case_5a7956936b8745c7b1c49d3d8abaec16",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-22T09:09:01.071198Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-22T09:09:05.268660Z",
+          "revision": 1,
+          "row_revision": 1381784,
+          "source": {
+            "binding_id": "MU:yahoo_finance_news",
+            "kind": "api",
+            "name": "Yahoo Finance News",
+            "source_id": "yahoo_finance_news"
+          },
+          "source_published_at": "2026-09-22T09:00:04Z",
+          "standard_message_id": "std_7bfdb44e27a14f4981a391274e9cf46f",
+          "stream_item_id": "stream_baa7e069afed4b649e02cad4286d0b3e",
+          "stream_offset": 1609,
+          "stream_published_at": "2026-09-22T09:09:05.272541Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Samsung Reportedly Ramps 4nm Capacity For Memory Chips, Stepping Up Competition With SK Hynix, Micron"
+          },
+          "url": "https://stocktwits.com/news-articles/markets/equity/samsung-reportedly-ramps-4nm-capacity-for-memory-chips-stepping-up-competition-with-sk-hynix-micron/cZMP1yjRBeg",
+          "body_text": "Samsung has allocated more than half of its existing 4nm capacity to HBM4 base-die production, according to South Korean outlet MoneyTodayThe company’s HBM revenue share climbed to 33% in Q2 from 21% in Q1, narrowing the gap with SK Hynix.Rising AI infrastructure spending could leave the HBM market undersupplied next year, creating room for Samsung to gain further share.Samsung Electronics is preparing to expand its advanced foundry capacity as surging demand for next-generation memory chips pushes its 4-nanometer production lines toward full utilization, according to South Korean business outlet MoneyToday. The move could intensify competition with SK Hynix and Micron as the three memory giants battle for share of the booming AI-chip market.  On Stocktwits, the retail sentiment for MU and SKHY was ‘neutral’ as of early Tuesday.Samsung Expands Memory CapacitySamsung is considering expanding its 4nm foundry capacity to support production of HBM4 base dies, the logic layer that sits underneath the DRAM stack and connects the memory to AI accelerators, according to the report.Unlike SK Hynix, which uses TSMC’s 12nm process for its HBM4 base die, Samsung is manufacturing the component in-house using its 4nm process.Samsung has already allocated more than half of its current 4nm capacity to HBM4 base-die production, according to MoneyToday. Demand is also coming from other customers, including Nvidia’s Groq 3 LPU, prompting Samsung to raise prices for new 4nm orders.  HBM Race Gets More CompetitiveThe capacity push comes as Samsung accelerates its HBM4 ramp. The company expects HBM4 revenue to more than triple sequentially in the third quarter and for HBM4 to account for more than 60% of its total HBM revenue in the second half.Samsung’s gains are already reshaping the competitive landscape. Counterpoint data showed Samsung’s HBM revenue share rose to 33% in the second quarter from 21% in the first, while SK hynix held 50% and Micron 18%.  The company is also considering a new 2nm production line for HBM5, whose base die is expected to use a 2nm process. That could further strengthen Samsung’s vertically integrated approach, combining memory, logic manufacturing and advanced packaging.Pressure On SK Hynix, MicronFor SK Hynix and Micron, Samsung’s faster HBM4 ramp creates another competitive challenge just as AI infrastructure spending drives unprecedented demand for high-bandwidth memory.TrendForce reported in June that Samsung was the first supplier to complete HBM4 validation and begin shipments, while SK hynix faced qualification delays and Micron remained more focused on HBM3E.  Citi expects global HBM bit demand to rise 62% next year, potentially leaving the industry undersupplied. That means Samsung’s capacity expansion could allow it to capture a larger slice of a rapidly growing market. For updates and corrections, email newsroom[at]stocktwits[dot]com."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "RUMORED",
+          "candidate_id": "[\"runtime-v2-msg:std_7bfdb44e27a14f4981a391274e9cf46f:0\"]",
+          "created_at": "2026-09-22T09:13:50.627821Z",
+          "dedupe_key": "c2e72edf41fd652f3b6ae286ffa8a90e728d7ad0352a6af88dbf42c621612698",
+          "entities": [
+            "Samsung Electronics",
+            "HBM4",
+            "4nm foundry",
+            "HBM4 base die"
+          ],
+          "occurrence_date": "2026-09-22",
+          "originating_node": "W3",
+          "proposition": "Samsung reportedly allocated more than half of its existing 4nm foundry capacity to HBM4 base-die production.",
+          "provisional_event_id": "E102",
+          "subject_time": "Current 4nm capacity allocation as of September 2026"
+        },
+        {
+          "assertion_state": "RUMORED",
+          "candidate_id": "[\"runtime-v2-msg:std_7bfdb44e27a14f4981a391274e9cf46f:1\"]",
+          "created_at": "2026-09-22T09:13:50.637029Z",
+          "dedupe_key": "b6e16a62c8cf400e106b4bfd10cbe6a68815dd91dfc4e09390299e87c66f92db",
+          "entities": [
+            "Samsung Electronics",
+            "HBM4",
+            "4nm foundry"
+          ],
+          "occurrence_date": "2026-09-22",
+          "originating_node": "W3",
+          "proposition": "Samsung was reportedly considering an expansion of its 4nm foundry capacity to support HBM4 base-die production.",
+          "provisional_event_id": "E103",
+          "subject_time": "Future HBM4 capacity expansion"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_7bfdb44e27a14f4981a391274e9cf46f:2\"]",
+          "created_at": "2026-09-22T09:13:50.645500Z",
+          "dedupe_key": "9ba8b433fd235095f97b2a851b3dadc583ba918e1779783d991d448cbc7063a0",
+          "entities": [
+            "Samsung Electronics",
+            "HBM market",
+            "Counterpoint"
+          ],
+          "occurrence_date": "2026-09-22",
+          "originating_node": "W3",
+          "proposition": "Counterpoint data reported Samsung's HBM revenue share rose from approximately 21% in Q1 2026 to 33% in Q2 2026.",
+          "provisional_event_id": "E104",
+          "subject_time": "FY2026 Q1 to FY2026 Q2"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_7bfdb44e27a14f4981a391274e9cf46f:3\"]",
+          "created_at": "2026-09-22T09:13:50.657299Z",
+          "dedupe_key": "c0b9b6803a0036772787bf24911ef5d2a74224a71f38d3cbcaa0ef0ec4808ef3",
+          "entities": [
+            "SK hynix",
+            "Micron Technology",
+            "HBM market",
+            "Counterpoint"
+          ],
+          "occurrence_date": "2026-09-22",
+          "originating_node": "W3",
+          "proposition": "Counterpoint data reported Q2 2026 HBM revenue shares of approximately 50% for SK hynix and 18% for Micron.",
+          "provisional_event_id": "E105",
+          "subject_time": "FY2026 Q2"
+        },
+        {
+          "assertion_state": "GUIDANCE",
+          "candidate_id": "[\"runtime-v2-msg:std_7bfdb44e27a14f4981a391274e9cf46f:4\"]",
+          "created_at": "2026-09-22T09:13:50.666235Z",
+          "dedupe_key": "578ec298115d12e7a4ebfc06ed00e7873ed079c83c722a877c05f39fa206a6d3",
+          "entities": [
+            "Samsung Electronics",
+            "HBM4"
+          ],
+          "occurrence_date": "2026-09-22",
+          "originating_node": "W3",
+          "proposition": "Samsung expected HBM4 revenue to more than triple sequentially in the third quarter and HBM4 to represent more than 60% of its total HBM revenue in the second half of 2026.",
+          "provisional_event_id": "E106",
+          "subject_time": "FY2026 Q3 and FY2026 second half"
+        },
+        {
+          "assertion_state": "RUMORED",
+          "candidate_id": "[\"runtime-v2-msg:std_7bfdb44e27a14f4981a391274e9cf46f:5\"]",
+          "created_at": "2026-09-22T09:13:50.675511Z",
+          "dedupe_key": "18150d489d924bc1cf0e6feda21403a858aed091e40a8c1baa606b5de52b3140",
+          "entities": [
+            "Samsung Electronics",
+            "HBM5",
+            "2nm process"
+          ],
+          "occurrence_date": "2026-09-22",
+          "originating_node": "W3",
+          "proposition": "Samsung was reportedly considering a new 2nm production line for HBM5 base dies.",
+          "provisional_event_id": "E107",
+          "subject_time": "Future HBM5 production"
+        },
+        {
+          "assertion_state": "RUMORED",
+          "candidate_id": "[\"runtime-v2-msg:std_7bfdb44e27a14f4981a391274e9cf46f:6\"]",
+          "created_at": "2026-09-22T09:13:50.684157Z",
+          "dedupe_key": "d81fbb0dd8cc55da2c0aeb08ad981b2f45ca74b99bd1f335a67cd798ca910099",
+          "entities": [
+            "Samsung Electronics",
+            "SK hynix",
+            "Micron Technology",
+            "HBM4",
+            "HBM3E",
+            "TrendForce"
+          ],
+          "occurrence_date": "2026-09-22",
+          "originating_node": "W3",
+          "proposition": "TrendForce reported that Samsung was the first supplier to complete HBM4 validation and begin shipments, while SK hynix faced qualification delays and Micron remained more focused on HBM3E.",
+          "provisional_event_id": "E108",
+          "subject_time": "HBM4 market status reported in June 2026"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_7bfdb44e27a14f4981a391274e9cf46f:7\"]",
+          "created_at": "2026-09-22T09:13:50.694049Z",
+          "dedupe_key": "65b0f7535fb2d918a8c6ab0e7619d3901c1b1b09345a8f94dfb2e1c4e4c12273",
+          "entities": [
+            "Citi",
+            "Global HBM market"
+          ],
+          "occurrence_date": "2026-09-22",
+          "originating_node": "W3",
+          "proposition": "Citi expected global HBM bit demand to rise approximately 62% in the following year.",
+          "provisional_event_id": "E109",
+          "subject_time": "2027"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_5a7956936b8745c7b1c49d3d8abaec16",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-09-22T09:13:50.716883+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-22",
+            "delivery_failure": null,
+            "direction": "SHORT",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_bac64869edc549648547f26784eb2754",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-22T09:13:51.198415Z"
+              },
+              "case_id": "case_5a7956936b8745c7b1c49d3d8abaec16",
+              "direction": "SHORT",
+              "entry_reason": "ORDER_FILLED",
+              "entry_result": "FILLED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_5a7956936b8745c7b1c49d3d8abaec16",
+              "execution_reason_codes": [
+                "ORDER_FILLED"
+              ],
+              "execution_state": "EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "19600.4"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "19"
+              },
+              "first_fill_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-22T09:14:01Z"
+              },
+              "has_actual_fill": true,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_5a7956936b8745c7b1c49d3d8abaec16",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_e1d7c65e0656af2e6c4923b1"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-22T09:13:50.716883Z"
+              }
+            },
+            "entry": {
+              "side": "SELL",
+              "quantity": "19",
+              "average_price_usd": "1031.6",
+              "first_fill_at": "2026-09-22T09:14:01+00:00",
+              "last_fill_at": "2026-09-22T09:14:01+00:00"
+            },
+            "exit": {
+              "side": "BUY",
+              "quantity": "19",
+              "average_price_usd": "1092.34",
+              "first_fill_at": "2026-09-22T19:30:04+00:00",
+              "last_fill_at": "2026-09-22T19:30:04+00:00"
+            },
+            "fills": [
+              {
+                "kind": "ENTRY",
+                "side": "SELL",
+                "quantity": "19",
+                "price_usd": "1031.6",
+                "filled_at": "2026-09-22T09:14:01+00:00",
+                "broker_fill_id": "00025b45.6ab24147.01.01"
+              },
+              {
+                "kind": "EXIT",
+                "side": "BUY",
+                "quantity": "19",
+                "price_usd": "1092.34",
+                "filled_at": "2026-09-22T19:30:04+00:00",
+                "broker_fill_id": "0000dc8f.6bb0c0c3.01.01"
+              }
+            ],
+            "lot_remaining_quantity": 0,
+            "realized_pnl_usd": "-1156.467587000000000000000000",
+            "realized_pnl_records": [
+              {
+                "amount": "-1156.467587000000000000000000",
+                "day": "2026-09-22",
+                "environment": "PAPER",
+                "provisional": false,
+                "reason": null
+              }
+            ],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "EXECUTED",
+        "read_execution_reason_codes": [
+          "ORDER_FILLED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": {
+          "side": "SELL",
+          "quantity": "19",
+          "average_price_usd": "1031.6",
+          "first_fill_at": "2026-09-22T09:14:01+00:00",
+          "last_fill_at": "2026-09-22T09:14:01+00:00"
+        },
+        "exit": {
+          "side": "BUY",
+          "quantity": "19",
+          "average_price_usd": "1092.34",
+          "first_fill_at": "2026-09-22T19:30:04+00:00",
+          "last_fill_at": "2026-09-22T19:30:04+00:00"
+        },
+        "realized_pnl_usd": "-1156.467587000000000000000000",
+        "pnl_state": "REALIZED",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_8b8bc2ed291848838b96309a3ad5d5f5",
+      "ticker": "MU",
+      "case_id": "case_8b8bc2ed291848838b96309a3ad5d5f5",
+      "intent_released_at_utc": "2026-09-24T17:06:05.357799+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_2d23a5ed7e934320a5ce03f7c7d93da2",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "United States",
+              "China",
+              "Donald Trump",
+              "Xi Jinping",
+              "superintelligence"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "Following the September 24, 2026 summit, the United States and China decided to avoid imposing new limits on superintelligence.",
+            "subject_time": "September 24, 2026 U.S.-China summit"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Donald Trump",
+              "Xi Jinping",
+              "U.S. Department of Justice",
+              "AI"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "Donald Trump said he and Xi Jinping wanted to leave the technology's status exactly where it is and designated the U.S. Department of Justice as the primary regulatory guardrail for the AI industry.",
+            "subject_time": "Post-summit AI regulatory stance"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "United States",
+              "China",
+              "AI incident-alert channel"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "Officials from the United States and China discussed creating an AI incident-alert channel to coordinate on systemic risks.",
+            "subject_time": "Post-summit coordination discussion"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Xi Jinping",
+              "United States",
+              "China",
+              "AI"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "Xi Jinping characterized the United States and China as AI powers with shared responsibility to keep the technology under human control.",
+            "subject_time": "September 24, 2026 summit remarks"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "The reported U.S.-China rejection of new superintelligence limits lowers the near-term probability of policy-driven AI-development restraint and raises confidence that model deployment and data-center buildout will continue, supporting the duration of HBM/DRAM/NAND server demand and pricing into FY27. The incident-alert channel adds monitoring but not a development slowdown.",
+          "prior_expectation": "MU's baseline assumed strong AI-server demand and server-priority memory allocation, but retained a live risk that AI-slowdown concerns or new safety regulation could restrain deployment and shorten the FY27 memory-demand duration.",
+          "reason": "This is a positive resolution of a live AI-slowdown risk rather than mere sector commentary. Continued AI deployment can transmit through server-priority allocation and Micron's data-center businesses, which are material to earnings. Although no memory-specific order is disclosed, the expectation change and transmission are sufficient for a moderate LONG.",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "The Trump-Xi meeting was previously scheduled and prior AI-slowdown concerns were already recorded, but the reported summit outcome rejecting new superintelligence limits, the DOJ guardrail stance, and bilateral incident-alert discussion are new facts.",
+          "reference_ids": [
+            "E43",
+            "E54",
+            "E80",
+            "E904"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "The message reports a macro AI-governance outcome without Micron-specific observations on memory products, pricing, shipments, capacity, contracts, qualifications, or financial results; no existing Policy criterion is triggered."
+        },
+        "w3_case_id": "w3_2d23a5ed7e934320a5ce03f7c7d93da2"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_8b8bc2ed291848838b96309a3ad5d5f5",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-24T17:06:05.625147Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 592.127007
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-24T16:56:13.498140Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2607946,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-24",
+        "source": {
+          "binding_id": "MU:huggingnews_rss",
+          "kind": "api",
+          "name": "HuggingNews Atom",
+          "source_id": "huggingnews_rss"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_ff1c925478f74d1bbdca526ccfd1cc4d",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Trump and Xi Reject AI Slowdowns to Preserve Development Pace"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "RETRY_BUDGET_EXHAUSTED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-24T16:56:13.498140Z",
+        "completed_at": "2026-09-24T17:06:05.625147Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E904",
+            "E740",
+            "E69",
+            "E145",
+            "E54"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "当前消息的核心事实——Trump与Xi在9月24日峰会上决定不对超级智能施加新限制、Trump通过Truth Social表态\"exactly where it is\"、将DOJ指定为AI行业主要监管护栏、讨论建立AI事件预警通道、Xi将两国定位为共同AI强国并强调人类控制责任——均为已加载Event Detail中尚未覆盖的全新双边峰会成果。E904仅记录该峰会为计划中事件，未包含任何实质成果。",
+          "reference_ids": [
+            "E904"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "消息核心事实为中美峰会后决定不对超级智能施加新限制、保留AI发展节奏，属于宏观AI监管政策表态。未涉及Micron具体产品指标（HBM/CMBU/CDBU收入、份额、ASP）、DRAM/NAND价格与出货、扩产项目进度、客户合同与交付、汽车内存、竞争供应商份额或任何财务/运营数据，与所有Policy的criterion均无直接、实质性的触发关系。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息核心事实为中美峰会后决定不对超级智能施加新限制、保留AI发展节奏，属于宏观AI监管政策表态。未涉及Micron具体产品指标（HBM/CMBU/CDBU收入、份额、ASP）、DRAM/NAND价格与出货、扩产项目进度、客户合同与交付、汽车内存、竞争供应商份额或任何财务/运营数据，与所有Policy的criterion均无直接、实质性的触发关系。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "United States",
+                "China",
+                "Donald Trump",
+                "Xi Jinping",
+                "superintelligence"
+              ],
+              "occurrence_date": "2026-09-24",
+              "proposition": "Following the September 24, 2026 summit, the United States and China decided to avoid imposing new limits on superintelligence.",
+              "subject_time": "September 24, 2026 U.S.-China summit"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Donald Trump",
+                "Xi Jinping",
+                "U.S. Department of Justice",
+                "AI"
+              ],
+              "occurrence_date": "2026-09-24",
+              "proposition": "Donald Trump said he and Xi Jinping wanted to leave the technology's status exactly where it is and designated the U.S. Department of Justice as the primary regulatory guardrail for the AI industry.",
+              "subject_time": "Post-summit AI regulatory stance"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "United States",
+                "China",
+                "AI incident-alert channel"
+              ],
+              "occurrence_date": "2026-09-24",
+              "proposition": "Officials from the United States and China discussed creating an AI incident-alert channel to coordinate on systemic risks.",
+              "subject_time": "Post-summit coordination discussion"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Xi Jinping",
+                "United States",
+                "China",
+                "AI"
+              ],
+              "occurrence_date": "2026-09-24",
+              "proposition": "Xi Jinping characterized the United States and China as AI powers with shared responsibility to keep the technology under human control.",
+              "subject_time": "September 24, 2026 summit remarks"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "The reported U.S.-China rejection of new superintelligence limits lowers the near-term probability of policy-driven AI-development restraint and raises confidence that model deployment and data-center buildout will continue, supporting the duration of HBM/DRAM/NAND server demand and pricing into FY27. The incident-alert channel adds monitoring but not a development slowdown.",
+            "prior_expectation": "MU's baseline assumed strong AI-server demand and server-priority memory allocation, but retained a live risk that AI-slowdown concerns or new safety regulation could restrain deployment and shorten the FY27 memory-demand duration.",
+            "reason": "This is a positive resolution of a live AI-slowdown risk rather than mere sector commentary. Continued AI deployment can transmit through server-priority allocation and Micron's data-center businesses, which are material to earnings. Although no memory-specific order is disclosed, the expectation change and transmission are sufficient for a moderate LONG.",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "The Trump-Xi meeting was previously scheduled and prior AI-slowdown concerns were already recorded, but the reported summit outcome rejecting new superintelligence limits, the DOJ guardrail stance, and bilateral incident-alert discussion are new facts.",
+            "reference_ids": [
+              "E43",
+              "E54",
+              "E80",
+              "E904"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "The message reports a macro AI-governance outcome without Micron-specific observations on memory products, pricing, shipments, capacity, contracts, qualifications, or financial results; no existing Policy criterion is triggered."
+          },
+          "w3_case_id": "w3_2d23a5ed7e934320a5ce03f7c7d93da2"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "79fb63d04955a066dcf2d5e07cc85cb6ab300fcd13fcbab0c971210923262f90",
+            "content_type": "text/plain",
+            "sha256": "c8161def8872ff52f25c24cfff1a455b6eacb6813a8bc5e827b341a483a0806f",
+            "size_bytes": 1277
+          },
+          "case": {
+            "case_id": "case_8b8bc2ed291848838b96309a3ad5d5f5",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-24T16:56:12.052919Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-24T16:56:12.081631Z",
+          "revision": 1,
+          "row_revision": 1560323,
+          "source": {
+            "binding_id": "MU:huggingnews_rss",
+            "kind": "api",
+            "name": "HuggingNews Atom",
+            "source_id": "huggingnews_rss"
+          },
+          "source_published_at": "2026-09-24T16:40:30.813000Z",
+          "standard_message_id": "std_a362131f2a5e4651a35954668c8d6877",
+          "stream_item_id": "stream_ff1c925478f74d1bbdca526ccfd1cc4d",
+          "stream_offset": 1786,
+          "stream_published_at": "2026-09-24T16:56:12.085157Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Trump and Xi Reject AI Slowdowns to Preserve Development Pace"
+          },
+          "url": "https://huggingnews.com/ai/trump-and-xi-reject-ai-slowdowns-to-preserve-development-pace-c7dbb134",
+          "body_text": "← Back to live feed · 1 stories across 1 day\nThursday, Sep 24, 2026\n1 story1 Trump and Xi Reject AI Slowdowns to Preserve Development Pace AI Sep 24, 7:26 AM EDT 58/32 \n The U.S. and China have decided to avoid new limits on super intelligence after a summit between Donald Trump and Xi Jinping in Washington on Sept 24. Trump stated on Truth Social that he and Xi wish to leave the technology's status \"exactly where it is,\" effectively ending active debate regarding a potential slowdown in progress. Trump designated the U.S. Department of Justice as the primary regulatory guardrail for the industry, while officials from both nations discussed the creation of an AI incident-alert channel to coordinate on systemic risks.\nPresident Xi characterized both countries as AI powers with the shared capability and responsibility to ensure the technology remains under human control. This bilateral alignment contrasts with pleas for international coordination from OpenAI CEO Sam Altman and Anthropic CEO Dario Amodei at a UN Security Council meeting on Sept 23. At that event, White House Science and Technology Policy Director Michael Kratsios rejected any \"globalist scheme\" of control, asserting that rapid advancement should not lead to new global governance structures."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_a362131f2a5e4651a35954668c8d6877:0\"]",
+          "created_at": "2026-09-24T17:06:05.263418Z",
+          "dedupe_key": "cbb0a44692365fd41c9601bfd3a7b15b5f61939f32efba095f8a005bab3cc3e3",
+          "entities": [
+            "United States",
+            "China",
+            "Donald Trump",
+            "Xi Jinping",
+            "superintelligence"
+          ],
+          "occurrence_date": "2026-09-24",
+          "originating_node": "W3",
+          "proposition": "Following the September 24, 2026 summit, the United States and China decided to avoid imposing new limits on superintelligence.",
+          "provisional_event_id": "E222",
+          "subject_time": "September 24, 2026 U.S.-China summit"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_a362131f2a5e4651a35954668c8d6877:1\"]",
+          "created_at": "2026-09-24T17:06:05.279631Z",
+          "dedupe_key": "98539009245c140a5fbffea72c27776f986e4370e20d605dee331febaebdae0d",
+          "entities": [
+            "Donald Trump",
+            "Xi Jinping",
+            "U.S. Department of Justice",
+            "AI"
+          ],
+          "occurrence_date": "2026-09-24",
+          "originating_node": "W3",
+          "proposition": "Donald Trump said he and Xi Jinping wanted to leave the technology's status exactly where it is and designated the U.S. Department of Justice as the primary regulatory guardrail for the AI industry.",
+          "provisional_event_id": "E223",
+          "subject_time": "Post-summit AI regulatory stance"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_a362131f2a5e4651a35954668c8d6877:2\"]",
+          "created_at": "2026-09-24T17:06:05.298673Z",
+          "dedupe_key": "8acd9d257c7e4a1c885bdb674edc5868a1c0243ac485d5e3c5043c32056fbaa1",
+          "entities": [
+            "United States",
+            "China",
+            "AI incident-alert channel"
+          ],
+          "occurrence_date": "2026-09-24",
+          "originating_node": "W3",
+          "proposition": "Officials from the United States and China discussed creating an AI incident-alert channel to coordinate on systemic risks.",
+          "provisional_event_id": "E224",
+          "subject_time": "Post-summit coordination discussion"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_a362131f2a5e4651a35954668c8d6877:3\"]",
+          "created_at": "2026-09-24T17:06:05.317555Z",
+          "dedupe_key": "55c78f136d877d55638e8a06a7349c965e4415d96964d226f6a1f30230ce3a73",
+          "entities": [
+            "Xi Jinping",
+            "United States",
+            "China",
+            "AI"
+          ],
+          "occurrence_date": "2026-09-24",
+          "originating_node": "W3",
+          "proposition": "Xi Jinping characterized the United States and China as AI powers with shared responsibility to keep the technology under human control.",
+          "provisional_event_id": "E225",
+          "subject_time": "September 24, 2026 summit remarks"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_8b8bc2ed291848838b96309a3ad5d5f5",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-09-24T17:06:05.357799+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-24",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_2d23a5ed7e934320a5ce03f7c7d93da2",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-24T17:06:06.444644Z"
+              },
+              "case_id": "case_8b8bc2ed291848838b96309a3ad5d5f5",
+              "direction": "LONG",
+              "entry_reason": "RETRY_BUDGET_EXHAUSTED",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_8b8bc2ed291848838b96309a3ad5d5f5",
+              "execution_reason_codes": [
+                "RETRY_BUDGET_EXHAUSTED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_8b8bc2ed291848838b96309a3ad5d5f5",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_e1d7c65e0656af2e6c4923b1"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-24T17:06:05.357799Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "RETRY_BUDGET_EXHAUSTED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_32cf1d11b688492ebbe870f62b1e0be4",
+      "ticker": "MU",
+      "case_id": "case_32cf1d11b688492ebbe870f62b1e0be4",
+      "intent_released_at_utc": "2026-09-24T19:41:53.786553+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_c53522b096ff4e5e88e9a667868fd529",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "UBS",
+              "Timothy Arcuri",
+              "Micron Technology",
+              "MU"
+            ],
+            "occurrence_date": "2026-09-23",
+            "proposition": "UBS analyst Timothy Arcuri forecast that Micron will report fiscal 2026 fourth-quarter revenue of approximately $52.4 billion and EPS of approximately $32.50, above the company's guidance range.",
+            "subject_time": "Micron FY2026 Q4"
+          },
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "UBS",
+              "Timothy Arcuri",
+              "Micron Technology",
+              "MU",
+              "Share buybacks"
+            ],
+            "occurrence_date": "2026-09-23",
+            "proposition": "UBS analyst Timothy Arcuri forecast that Micron could begin repurchasing approximately $20 billion of shares per quarter after December 9, 2026, increasing toward approximately $50 billion per quarter by the end of fiscal 2027, conditional on buyback restrictions expiring and cash generation supporting the plan.",
+            "subject_time": "December 2026 through fiscal 2027"
+          },
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "UBS",
+              "Timothy Arcuri",
+              "Micron Technology",
+              "DRAM",
+              "NAND",
+              "Memory market"
+            ],
+            "occurrence_date": "2026-09-23",
+            "proposition": "UBS analyst Timothy Arcuri wrote that his latest checks indicated Micron's memory supply-demand gap was continuing to widen.",
+            "subject_time": "Current memory supply-demand outlook"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "UBS now forecasts FY26 Q4 revenue of $52.4 billion and EPS of $32.50, above the top of company guidance and consensus. It also describes a potential buyback path starting around $20 billion per quarter after December 9 and rising toward $50 billion quarterly by FY27 end, while its checks indicate the memory supply-demand gap is widening. This raises near-term beat and FY27 per-share earnings expectations.",
+          "prior_expectation": "MU's FY26 Q4 baseline was approximately $49-51 billion of revenue and $29.73-31.73 GAAP EPS, with consensus near $50.9 billion and $31.49. Buyback timing after December 9 was known, but no specific repurchase scale had been established.",
+          "reason": "The report provides a target-specific, positive earnings surprise with a clear revenue-to-EPS and share-count transmission. The buyback path is conditional and analyst-generated rather than management guidance, but the above-guidance Q4 forecast and potential capital-return scale are material enough to support a moderate LONG.",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "Existing references covered Arcuri's $1,625 target and Buy rating, prior Q4 estimates, the December 9 buyback restriction date, generic buyback potential, and the 80% memory-price resilience scenario. This report adds Arcuri's specific above-guidance Q4 forecast, large conditional quarterly buyback path, and widening supply-demand assessment.",
+          "reference_ids": [
+            "E844",
+            "E846",
+            "E65",
+            "E812",
+            "E815",
+            "E816"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "The message contains forward-looking analyst estimates rather than an actual financial result, product, shipment, capacity, qualification, contract, or inventory observation satisfying any existing Policy criterion."
+        },
+        "w3_case_id": "w3_c53522b096ff4e5e88e9a667868fd529"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_32cf1d11b688492ebbe870f62b1e0be4",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-24T19:41:54.102485Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 222.250758
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-24T19:38:11.851727Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_EXECUTION",
+          "TRADE_INTENT"
+        ],
+        "revision": 2462413,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-24",
+        "source": {
+          "binding_id": "MU:ibkr_news",
+          "kind": "api",
+          "name": "IBKR News API",
+          "source_id": "ibkr_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_cbe5afc78c364c15805ba1534d3be1de",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "How Micron Stock Could Rise Another 50% -- Barrons.com"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "ORDER_FILLED"
+          ],
+          "state": "EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-24T19:38:11.851727Z",
+        "completed_at": "2026-09-24T19:41:54.102485Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E844",
+            "E65",
+            "E1",
+            "E4",
+            "E10"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "E844（provisional）已覆盖Arcuri重申$1,625目标价和Buy评级这一基本事实，但消息包含多项尚未被覆盖的核心新事实：Arcuri具体预测FY2026 Q4营收$52.4B、EPS $32.50（高于公司E1/F4的~$50B和F17的$30-$32指引）；Dec 9限制解除后$20B/季起步、FY2027末升至$50B/季的回购情景；以及若存储价格下跌80%、H2 2028周期见顶后Micron盈利仍高于当前水平的下行韧性论证。这些具体分析师预测和情景构成消息的主要新闻进展，未被任何现有Fact覆盖。",
+          "reference_ids": [
+            "E844"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "本条消息为UBS分析师Arcuri在Micron FY26 Q4财报发布前（9月30日）的看多观点与盈利预测，核心事实包括：股价回顾、目标价重申、供应链/需求缺口继续扩大的市场判断、预测营收$52.4B及EPS $32.50（高于公司指引）、Chips Act回购限制12月9日到期、以及即使AI周期结束价格下跌80%仍可获利的长期情景假设。消息中不存在与任何Policy criterion直接对应的具体运营或财务观察：无实际财报结果、无高价值组合份额或ASP变化的具体数据、无竞争供应商HBM份额变动、无产品资格/交付/合同事件、无库存或现金流细节、无扩产或项目状态更新。所有关键数据均为分析师前瞻预测而非已发生事实，且预测方向（收入超预期、价格上涨）与多数Policy的触发条件相反。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "本条消息为UBS分析师Arcuri在Micron FY26 Q4财报发布前（9月30日）的看多观点与盈利预测，核心事实包括：股价回顾、目标价重申、供应链/需求缺口继续扩大的市场判断、预测营收$52.4B及EPS $32.50（高于公司指引）、Chips Act回购限制12月9日到期、以及即使AI周期结束价格下跌80%仍可获利的长期情景假设。消息中不存在与任何Policy criterion直接对应的具体运营或财务观察：无实际财报结果、无高价值组合份额或ASP变化的具体数据、无竞争供应商HBM份额变动、无产品资格/交付/合同事件、无库存或现金流细节、无扩产或项目状态更新。所有关键数据均为分析师前瞻预测而非已发生事实，且预测方向（收入超预期、价格上涨）与多数Policy的触发条件相反。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "UBS",
+                "Timothy Arcuri",
+                "Micron Technology",
+                "MU"
+              ],
+              "occurrence_date": "2026-09-23",
+              "proposition": "UBS analyst Timothy Arcuri forecast that Micron will report fiscal 2026 fourth-quarter revenue of approximately $52.4 billion and EPS of approximately $32.50, above the company's guidance range.",
+              "subject_time": "Micron FY2026 Q4"
+            },
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "UBS",
+                "Timothy Arcuri",
+                "Micron Technology",
+                "MU",
+                "Share buybacks"
+              ],
+              "occurrence_date": "2026-09-23",
+              "proposition": "UBS analyst Timothy Arcuri forecast that Micron could begin repurchasing approximately $20 billion of shares per quarter after December 9, 2026, increasing toward approximately $50 billion per quarter by the end of fiscal 2027, conditional on buyback restrictions expiring and cash generation supporting the plan.",
+              "subject_time": "December 2026 through fiscal 2027"
+            },
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "UBS",
+                "Timothy Arcuri",
+                "Micron Technology",
+                "DRAM",
+                "NAND",
+                "Memory market"
+              ],
+              "occurrence_date": "2026-09-23",
+              "proposition": "UBS analyst Timothy Arcuri wrote that his latest checks indicated Micron's memory supply-demand gap was continuing to widen.",
+              "subject_time": "Current memory supply-demand outlook"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "UBS now forecasts FY26 Q4 revenue of $52.4 billion and EPS of $32.50, above the top of company guidance and consensus. It also describes a potential buyback path starting around $20 billion per quarter after December 9 and rising toward $50 billion quarterly by FY27 end, while its checks indicate the memory supply-demand gap is widening. This raises near-term beat and FY27 per-share earnings expectations.",
+            "prior_expectation": "MU's FY26 Q4 baseline was approximately $49-51 billion of revenue and $29.73-31.73 GAAP EPS, with consensus near $50.9 billion and $31.49. Buyback timing after December 9 was known, but no specific repurchase scale had been established.",
+            "reason": "The report provides a target-specific, positive earnings surprise with a clear revenue-to-EPS and share-count transmission. The buyback path is conditional and analyst-generated rather than management guidance, but the above-guidance Q4 forecast and potential capital-return scale are material enough to support a moderate LONG.",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "Existing references covered Arcuri's $1,625 target and Buy rating, prior Q4 estimates, the December 9 buyback restriction date, generic buyback potential, and the 80% memory-price resilience scenario. This report adds Arcuri's specific above-guidance Q4 forecast, large conditional quarterly buyback path, and widening supply-demand assessment.",
+            "reference_ids": [
+              "E844",
+              "E846",
+              "E65",
+              "E812",
+              "E815",
+              "E816"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "The message contains forward-looking analyst estimates rather than an actual financial result, product, shipment, capacity, qualification, contract, or inventory observation satisfying any existing Policy criterion."
+          },
+          "w3_case_id": "w3_c53522b096ff4e5e88e9a667868fd529"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "3f5699bf6f6b72af0e477cfde47f8e516c310c65b5ea7723cf2c0a728d8a320e",
+            "content_type": "text/plain",
+            "sha256": "f626bfe16e77d490ed75621483f10f2dddbd9610cc705cbf1b18f692887c7a66",
+            "size_bytes": 2866
+          },
+          "case": {
+            "case_id": "case_32cf1d11b688492ebbe870f62b1e0be4",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-24T19:38:02.850192Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-24T19:38:09.907988Z",
+          "revision": 1,
+          "row_revision": 1570044,
+          "source": {
+            "binding_id": "MU:ibkr_news",
+            "kind": "api",
+            "name": "IBKR News API",
+            "source_id": "ibkr_news"
+          },
+          "source_published_at": "2026-09-24T19:37:00Z",
+          "standard_message_id": "std_4534d1f5124a4c11a7dbb577fabed0fc",
+          "stream_item_id": "stream_cbe5afc78c364c15805ba1534d3be1de",
+          "stream_offset": 1810,
+          "stream_published_at": "2026-09-24T19:38:09.919269Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "How Micron Stock Could Rise Another 50% -- Barrons.com"
+          },
+          "url": "https://www.interactivebrokers.com/en/trading/providers.php",
+          "body_text": "By Adam Clark Micron Technology stock has plenty left in the tank after rising nearly 600% in the past 12 months. That's the view from UBS analyst Timothy Arcuri as he looks ahead to the memory-chip company's earnings next week. Micron shares rose 0.5%to $1,077.29 Thursday. However, shares have risen more than sixfold in the past year on booming memory demand amid the artificial-intelligence race. UBS's Arcuri reiterated his target price of $1,625 and a Buy rating on the stock in a research note Wednesday. The target is based on a forward price-to-earnings multiple of eight times applied to his forecast of the company's 2029 earnings. \"While the stock remains a battleground between momentum and duration, fundamentals continue to improve with our latest round of checks pointing to a gap between supply and demand that continues to widen,\" Arcuri wrote. The immediate drivers are well-known-the need for memory in AI servers is pushing prices higher every quarter. Arcuri forecasts Micron will report fiscal fourth-quarter revenue of $52.4 billion on Sept. 30, and earnings per share of $32.50, beating the company's guidance. Looking further ahead, the UBS analyst argued Micron's earnings per share will be supported by share buybacks. Micron is currently restricted from carrying out big share buybacks or special dividends due to conditions of the Chips Act funding it received from the U.S. government back in 2024. However, the restrictions on share buybacks should expire on Dec. 9 of this year. Arcuri said Micron could start by buying back about $20 billion worth of shares a quarter, rising to around $50 billion quarterly toward the end of its fiscal year 2027, which would be September next year. Notably, Arcuri argued that even were open-market prices of memory chips to fall 80% when the current AI-driven cycle ends-which the UBS analyst argues will begin in the second half of 2028-then Micron is still set to be reporting annualized earnings higher than its current level. That's due to stock buybacks and long-term pricing agreements. Barron's previously argued Micron could double in price, when it was trading around $1,100. Write to Adam Clark at adam.clark@barrons.com This content was created by Barron's, which is operated by Dow Jones & Co. Barron's is published independently from Dow Jones Newswires and The Wall Street Journal. (END) Dow Jones Newswires September 24, 2026 15:37 ET (19:37 GMT) Copyright (c) 2026 Dow Jones & Company, Inc. The statements in this document shall not be considered as an objective or independent explanation of the matters. Please note that this document (a) has not been prepared in accordance with legal requirements designed to promote the independence of investment research, and (b) is not subject to any prohibition on dealing ahead of the dissemination or publication of investment research."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_4534d1f5124a4c11a7dbb577fabed0fc:0\"]",
+          "created_at": "2026-09-24T19:41:53.704342Z",
+          "dedupe_key": "6ce9cce122ec5422b7cf29e1144f611ca12813752c9cb877608d00ee88e3ea28",
+          "entities": [
+            "UBS",
+            "Timothy Arcuri",
+            "Micron Technology",
+            "MU"
+          ],
+          "occurrence_date": "2026-09-23",
+          "originating_node": "W3",
+          "proposition": "UBS analyst Timothy Arcuri forecast that Micron will report fiscal 2026 fourth-quarter revenue of approximately $52.4 billion and EPS of approximately $32.50, above the company's guidance range.",
+          "provisional_event_id": "E262",
+          "subject_time": "Micron FY2026 Q4"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_4534d1f5124a4c11a7dbb577fabed0fc:1\"]",
+          "created_at": "2026-09-24T19:41:53.723529Z",
+          "dedupe_key": "96765af5eb8602aea08629cf70a3a85b8542b4e641352dafb0c6201d116e3cce",
+          "entities": [
+            "UBS",
+            "Timothy Arcuri",
+            "Micron Technology",
+            "MU",
+            "Share buybacks"
+          ],
+          "occurrence_date": "2026-09-23",
+          "originating_node": "W3",
+          "proposition": "UBS analyst Timothy Arcuri forecast that Micron could begin repurchasing approximately $20 billion of shares per quarter after December 9, 2026, increasing toward approximately $50 billion per quarter by the end of fiscal 2027, conditional on buyback restrictions expiring and cash generation supporting the plan.",
+          "provisional_event_id": "E263",
+          "subject_time": "December 2026 through fiscal 2027"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_4534d1f5124a4c11a7dbb577fabed0fc:2\"]",
+          "created_at": "2026-09-24T19:41:53.745269Z",
+          "dedupe_key": "f1ec89f44b6f0a2b677c3f5146bc7c4d71b128acd96d863f5f4a389c2287407a",
+          "entities": [
+            "UBS",
+            "Timothy Arcuri",
+            "Micron Technology",
+            "DRAM",
+            "NAND",
+            "Memory market"
+          ],
+          "occurrence_date": "2026-09-23",
+          "originating_node": "W3",
+          "proposition": "UBS analyst Timothy Arcuri wrote that his latest checks indicated Micron's memory supply-demand gap was continuing to widen.",
+          "provisional_event_id": "E264",
+          "subject_time": "Current memory supply-demand outlook"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_32cf1d11b688492ebbe870f62b1e0be4",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-09-24T19:41:53.786553+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-24",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_c53522b096ff4e5e88e9a667868fd529",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-24T19:41:54.131456Z"
+              },
+              "case_id": "case_32cf1d11b688492ebbe870f62b1e0be4",
+              "direction": "LONG",
+              "entry_reason": "ORDER_FILLED",
+              "entry_result": "FILLED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_32cf1d11b688492ebbe870f62b1e0be4",
+              "execution_reason_codes": [
+                "ORDER_FILLED"
+              ],
+              "execution_state": "EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "19390.14"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "18"
+              },
+              "first_fill_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-24T19:41:55Z"
+              },
+              "has_actual_fill": true,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_32cf1d11b688492ebbe870f62b1e0be4",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_e1d7c65e0656af2e6c4923b1"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-24T19:41:53.786553Z"
+              }
+            },
+            "entry": {
+              "side": "BUY",
+              "quantity": "18",
+              "average_price_usd": "1077.23",
+              "first_fill_at": "2026-09-24T19:41:55+00:00",
+              "last_fill_at": "2026-09-24T19:41:55+00:00"
+            },
+            "exit": {
+              "side": "SELL",
+              "quantity": "18",
+              "average_price_usd": "1084.03",
+              "first_fill_at": "2026-09-25T19:30:03+00:00",
+              "last_fill_at": "2026-09-25T19:30:03+00:00"
+            },
+            "fills": [
+              {
+                "kind": "ENTRY",
+                "side": "BUY",
+                "quantity": "18",
+                "price_usd": "1077.23",
+                "filled_at": "2026-09-24T19:41:55+00:00",
+                "broker_fill_id": "00025b45.6ab6eba8.01.01"
+              },
+              {
+                "kind": "EXIT",
+                "side": "SELL",
+                "quantity": "18",
+                "price_usd": "1084.03",
+                "filled_at": "2026-09-25T19:30:03+00:00",
+                "broker_fill_id": "00025b45.6ab89b56.01.01"
+              }
+            ],
+            "lot_remaining_quantity": 0,
+            "realized_pnl_usd": "119.9944240000000000000000000",
+            "realized_pnl_records": [
+              {
+                "amount": "119.9944240000000000000000000",
+                "day": "2026-09-25",
+                "environment": "PAPER",
+                "provisional": false,
+                "reason": null
+              }
+            ],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "EXECUTED",
+        "read_execution_reason_codes": [
+          "ORDER_FILLED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": {
+          "side": "BUY",
+          "quantity": "18",
+          "average_price_usd": "1077.23",
+          "first_fill_at": "2026-09-24T19:41:55+00:00",
+          "last_fill_at": "2026-09-24T19:41:55+00:00"
+        },
+        "exit": {
+          "side": "SELL",
+          "quantity": "18",
+          "average_price_usd": "1084.03",
+          "first_fill_at": "2026-09-25T19:30:03+00:00",
+          "last_fill_at": "2026-09-25T19:30:03+00:00"
+        },
+        "realized_pnl_usd": "119.9944240000000000000000000",
+        "pnl_state": "REALIZED",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_ec8be0fbcbab4a8c94ce970700b962b1",
+      "ticker": "MU",
+      "case_id": "case_ec8be0fbcbab4a8c94ce970700b962b1",
+      "intent_released_at_utc": "2026-09-25T05:54:57.101642+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_05804e6a23d749af9036021d233f8e8e",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "PLAN",
+            "entities": [
+              "SpaceX",
+              "Colossus",
+              "Minihard",
+              "NVIDIA",
+              "GB300"
+            ],
+            "occurrence_date": "2026-09-25",
+            "proposition": "SpaceX plans to activate up to 660,000 Nvidia GB300 GPUs for its Colossus computing clusters during the fourth quarter of 2026 in three installments of approximately 220,000 GPUs each, with the final installment described as potential.",
+            "subject_time": "Fourth quarter of calendar 2026"
+          },
+          {
+            "assertion_state": "PLAN",
+            "entities": [
+              "SpaceX",
+              "Colossus",
+              "NVIDIA",
+              "GB300"
+            ],
+            "occurrence_date": "2026-09-25",
+            "proposition": "The planned fourth-quarter Colossus GPU expansion is estimated to cost approximately $50 billion, with each 220,000-GPU installment valued at more than $15 billion.",
+            "subject_time": "Fourth quarter of calendar 2026"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "SpaceX",
+              "Colossus",
+              "NVIDIA",
+              "GPU infrastructure"
+            ],
+            "occurrence_date": "2026-09-25",
+            "proposition": "SpaceX stated that its combined Colossus 1 and Colossus 2 GPU infrastructure exceeds $100 billion in value and delivers more than 2 gigawatts of compute power.",
+            "subject_time": "Current Colossus infrastructure as of September 2026"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "SpaceX's planned Q4 activation of up to 660,000 GB300 GPUs and approximately $50 billion of Colossus expansion materially increases the visibility and near-term scale of AI compute deployment. It raises expected consumption of HBM and associated server memory, supporting a longer and tighter high-value memory-demand path, although supplier allocation remains uncertain.",
+          "prior_expectation": "Before this report, the baseline expected strong AI and server-memory demand through FY26 and FY27, supported by aggregate AI infrastructure spending, Micron's high-volume HBM4 activity and data-center businesses representing roughly 61% of recent revenue. However, a deployment of this specific scale and near-term timing was not established, and Micron's share of the new GPU buildout was unconfirmed.",
+          "reason": "TRADE/LONG: this is a large, near-term, concrete AI infrastructure deployment rather than a generic model or capex announcement. Micron already has high-volume HBM4 and major data-center exposure, creating a clear demand-to-memory-to-MU transmission; the absence of a disclosed Micron contract limits conviction but does not eliminate the positive demand surprise.",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "The specific SpaceX Colossus deployment of up to 660,000 Nvidia GB300 GPUs, its Q4 tranche schedule, approximately $50 billion cost and stated power scale are not covered by the reference view. E96 and E105 cover aggregate AI infrastructure spending and other GPU deployment plans, while E3 and E110 provide the broader GPU-demand and HBM context.",
+          "reference_ids": [
+            "E96",
+            "E105",
+            "E3",
+            "E110"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No policy is triggered because the message does not identify Micron as a supplier or provide Micron-specific HBM share, memory allocation, pricing, shipments, customer contract, capacity or financial data."
+        },
+        "w3_case_id": "w3_05804e6a23d749af9036021d233f8e8e"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_ec8be0fbcbab4a8c94ce970700b962b1",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-25T05:54:57.271280Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 614.619626
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-25T05:44:42.651654Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2608735,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-24",
+        "source": {
+          "binding_id": "MU:huggingnews_rss",
+          "kind": "api",
+          "name": "HuggingNews Atom",
+          "source_id": "huggingnews_rss"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_4872a3811e124ee59ba64be05c71a9f6",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Elon Musk Deploys 660,000 Nvidia GB300 GPUs for Colossus in Q4"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "BROKER_REJECTED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-25T05:44:42.651654Z",
+        "completed_at": "2026-09-25T05:54:57.271280Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E96",
+            "E4",
+            "E105",
+            "E97"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "当前消息核心事实为SpaceX在Q4部署660,000颗Nvidia GB300 GPU（分三批各220,000颗，分别于下周、11月、12月下旬），在新建Minihard设施启动，总成本约$50B。现有Event中E96仅涵盖科技巨头>$700B的AI基础设施总承诺，E4为通用供需与定价，E105为AMD数据中心收入及OpenAI/Meta部署计划，均未涉及SpaceX Colossus具体GPU部署数量、设施、时间节点和成本。",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "消息核心事实为SpaceX在Colossus平台部署660万颗Nvidia GB300 GPU，确认AI/服务器算力需求保持强劲。但该消息未提供任何与Micron产品份额、HBM/数据中心组合、内存定价、客户合同、良率、扩产或财务指标相关的具体事实，也未涉及内存供给约束、竞争供应商HBM份额变化或产品资格等任何Policy criterion所关注的实体信息。仅凭AI算力扩容的宽泛行业信号，不构成与任何Memory具体触发路径的直接事实对应。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息核心事实为SpaceX在Colossus平台部署660万颗Nvidia GB300 GPU，确认AI/服务器算力需求保持强劲。但该消息未提供任何与Micron产品份额、HBM/数据中心组合、内存定价、客户合同、良率、扩产或财务指标相关的具体事实，也未涉及内存供给约束、竞争供应商HBM份额变化或产品资格等任何Policy criterion所关注的实体信息。仅凭AI算力扩容的宽泛行业信号，不构成与任何Memory具体触发路径的直接事实对应。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "PLAN",
+              "entities": [
+                "SpaceX",
+                "Colossus",
+                "Minihard",
+                "NVIDIA",
+                "GB300"
+              ],
+              "occurrence_date": "2026-09-25",
+              "proposition": "SpaceX plans to activate up to 660,000 Nvidia GB300 GPUs for its Colossus computing clusters during the fourth quarter of 2026 in three installments of approximately 220,000 GPUs each, with the final installment described as potential.",
+              "subject_time": "Fourth quarter of calendar 2026"
+            },
+            {
+              "assertion_state": "PLAN",
+              "entities": [
+                "SpaceX",
+                "Colossus",
+                "NVIDIA",
+                "GB300"
+              ],
+              "occurrence_date": "2026-09-25",
+              "proposition": "The planned fourth-quarter Colossus GPU expansion is estimated to cost approximately $50 billion, with each 220,000-GPU installment valued at more than $15 billion.",
+              "subject_time": "Fourth quarter of calendar 2026"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "SpaceX",
+                "Colossus",
+                "NVIDIA",
+                "GPU infrastructure"
+              ],
+              "occurrence_date": "2026-09-25",
+              "proposition": "SpaceX stated that its combined Colossus 1 and Colossus 2 GPU infrastructure exceeds $100 billion in value and delivers more than 2 gigawatts of compute power.",
+              "subject_time": "Current Colossus infrastructure as of September 2026"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "SpaceX's planned Q4 activation of up to 660,000 GB300 GPUs and approximately $50 billion of Colossus expansion materially increases the visibility and near-term scale of AI compute deployment. It raises expected consumption of HBM and associated server memory, supporting a longer and tighter high-value memory-demand path, although supplier allocation remains uncertain.",
+            "prior_expectation": "Before this report, the baseline expected strong AI and server-memory demand through FY26 and FY27, supported by aggregate AI infrastructure spending, Micron's high-volume HBM4 activity and data-center businesses representing roughly 61% of recent revenue. However, a deployment of this specific scale and near-term timing was not established, and Micron's share of the new GPU buildout was unconfirmed.",
+            "reason": "TRADE/LONG: this is a large, near-term, concrete AI infrastructure deployment rather than a generic model or capex announcement. Micron already has high-volume HBM4 and major data-center exposure, creating a clear demand-to-memory-to-MU transmission; the absence of a disclosed Micron contract limits conviction but does not eliminate the positive demand surprise.",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "The specific SpaceX Colossus deployment of up to 660,000 Nvidia GB300 GPUs, its Q4 tranche schedule, approximately $50 billion cost and stated power scale are not covered by the reference view. E96 and E105 cover aggregate AI infrastructure spending and other GPU deployment plans, while E3 and E110 provide the broader GPU-demand and HBM context.",
+            "reference_ids": [
+              "E96",
+              "E105",
+              "E3",
+              "E110"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "No policy is triggered because the message does not identify Micron as a supplier or provide Micron-specific HBM share, memory allocation, pricing, shipments, customer contract, capacity or financial data."
+          },
+          "w3_case_id": "w3_05804e6a23d749af9036021d233f8e8e"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "5d752a5f4797666315572b4899d8e3c85e0d8ce5ad3510d2300be4e28bab919a",
+            "content_type": "text/plain",
+            "sha256": "844483853511813c9df2d06fc71dc4f652003b6c0df7e52623f9d287692cd8d1",
+            "size_bytes": 918
+          },
+          "case": {
+            "case_id": "case_ec8be0fbcbab4a8c94ce970700b962b1",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-25T05:44:41.414484Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-25T05:44:41.441881Z",
+          "revision": 1,
+          "row_revision": 1654468,
+          "source": {
+            "binding_id": "MU:huggingnews_rss",
+            "kind": "api",
+            "name": "HuggingNews Atom",
+            "source_id": "huggingnews_rss"
+          },
+          "source_published_at": "2026-09-25T05:31:42.919000Z",
+          "standard_message_id": "std_d0b1aa4175884a9c9c098fd894cdc657",
+          "stream_item_id": "stream_4872a3811e124ee59ba64be05c71a9f6",
+          "stream_offset": 1841,
+          "stream_published_at": "2026-09-25T05:44:41.445354Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Elon Musk Deploys 660,000 Nvidia GB300 GPUs for Colossus in Q4"
+          },
+          "url": "https://huggingnews.com/ai/elon-musk-deploys-660000-nvidia-gb300-gpus-for-colossus-in-q4-d98b7ec6",
+          "body_text": "← Back to live feed · 1 stories across 1 day\nFriday, Sep 25, 2026\n1 story1 NEWElon Musk Deploys 660,000 Nvidia GB300 GPUs for Colossus in Q4 AI Sep 24, 11:44 PM EDT 4/3 \n SpaceX will activate 220,000 Nvidia GB300 chips next week at its Minihard GPU facility to begin a quarterly expansion. This rollout includes another 220,000 units in November and a potential addition of 220,000 in late December, totaling 660,000 chips in the fourth quarter. Each installment is valued at more than $15 billion, bringing the total cost of the Q4 expansion to approximately $50 billion for the Colossus computing clusters.\nThe overall Colossus infrastructure includes Colossus 1, which consists of 150,000 H100, 50,000 H200, and 30,000 GB200 GPUs, and Colossus 2, which houses 110,000 GB200 and 440,000 GB300 GPUs. Elon Musk stated the total combined value of the GPUs exceeds $100 billion, delivering over 2 GW of compute power."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "PLAN",
+          "candidate_id": "[\"runtime-v2-msg:std_d0b1aa4175884a9c9c098fd894cdc657:0\"]",
+          "created_at": "2026-09-25T05:54:57.072968Z",
+          "dedupe_key": "85f68322b9a67ac886d6fd79ff1cec6d320f63d1c56ee1a6fb7ba2d4345b702e",
+          "entities": [
+            "SpaceX",
+            "Colossus",
+            "Minihard",
+            "NVIDIA",
+            "GB300"
+          ],
+          "occurrence_date": "2026-09-25",
+          "originating_node": "W3",
+          "proposition": "SpaceX plans to activate up to 660,000 Nvidia GB300 GPUs for its Colossus computing clusters during the fourth quarter of 2026 in three installments of approximately 220,000 GPUs each, with the final installment described as potential.",
+          "provisional_event_id": "E310",
+          "subject_time": "Fourth quarter of calendar 2026"
+        },
+        {
+          "assertion_state": "PLAN",
+          "candidate_id": "[\"runtime-v2-msg:std_d0b1aa4175884a9c9c098fd894cdc657:1\"]",
+          "created_at": "2026-09-25T05:54:57.081262Z",
+          "dedupe_key": "0d3a7030417ac4d6250f1d034332c2c31ef129adc5d1c7cf2d460f5d468a8b89",
+          "entities": [
+            "SpaceX",
+            "Colossus",
+            "NVIDIA",
+            "GB300"
+          ],
+          "occurrence_date": "2026-09-25",
+          "originating_node": "W3",
+          "proposition": "The planned fourth-quarter Colossus GPU expansion is estimated to cost approximately $50 billion, with each 220,000-GPU installment valued at more than $15 billion.",
+          "provisional_event_id": "E311",
+          "subject_time": "Fourth quarter of calendar 2026"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_d0b1aa4175884a9c9c098fd894cdc657:2\"]",
+          "created_at": "2026-09-25T05:54:57.087920Z",
+          "dedupe_key": "c25231b2625e2dc1d47fd8af57187ee6a93a8f9bf1cef1457698825650534993",
+          "entities": [
+            "SpaceX",
+            "Colossus",
+            "NVIDIA",
+            "GPU infrastructure"
+          ],
+          "occurrence_date": "2026-09-25",
+          "originating_node": "W3",
+          "proposition": "SpaceX stated that its combined Colossus 1 and Colossus 2 GPU infrastructure exceeds $100 billion in value and delivers more than 2 gigawatts of compute power.",
+          "provisional_event_id": "E312",
+          "subject_time": "Current Colossus infrastructure as of September 2026"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_ec8be0fbcbab4a8c94ce970700b962b1",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-09-25T05:54:57.101642+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-24",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_05804e6a23d749af9036021d233f8e8e",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-25T05:54:58.134455Z"
+              },
+              "case_id": "case_ec8be0fbcbab4a8c94ce970700b962b1",
+              "direction": "LONG",
+              "entry_reason": "BROKER_REJECTED",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_ec8be0fbcbab4a8c94ce970700b962b1",
+              "execution_reason_codes": [
+                "BROKER_REJECTED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_ec8be0fbcbab4a8c94ce970700b962b1",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_e1d7c65e0656af2e6c4923b1"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-25T05:54:57.101642Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "BROKER_REJECTED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      }
+    },
+    {
+      "intent_id": "trade:case_49f2fa8f59314e6080f2f6146f1caa11",
+      "ticker": "MU",
+      "case_id": "case_49f2fa8f59314e6080f2f6146f1caa11",
+      "intent_released_at_utc": "2026-09-28T12:02:21.353889+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_c30307d4f2264e5483854066d3d314ab",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "RUMOR",
+            "entities": [
+              "NVIDIA",
+              "Anthropic",
+              "AI infrastructure",
+              "Computing capacity",
+              "Generative AI"
+            ],
+            "occurrence_date": "2026-09-28",
+            "proposition": "Multiple market reports, citing data attributed to Nvidia, said that Anthropic's contracted value for AI infrastructure and computing capacity exceeded $180 billion.",
+            "subject_time": "Anthropic's contracted AI infrastructure and computing capacity"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "据报道的超过1800亿美元Nvidia-Anthropic合同价值显著上调了Anthropic计算部署的规模和持续时间预期，提升AI服务器机群扩张以及HBM、服务器DRAM和数据中心SSD需求超过一般AI增长基线的概率。由于Anthropic已与Micron开展内存/存储协作，该需求增量也提高了Micron获得部分价值的概率，尽管不会立即改变FY26 Q4已锁定的收入预期。",
+          "prior_expectation": "事件前基线已预期Anthropic和其他基础模型公司的增长将支持AI数据中心、HBM、服务器DRAM和SSD需求；Micron与Anthropic已有AI内存/存储架构及供需协作，但客户数量、价格和采购规模未公开。市场没有一个已量化的、超过1800亿美元的Anthropic计算承诺作为需求锚点。",
+          "reason": "这是规模极大的命名AI客户计算承诺，具备从Anthropic合同到Nvidia计算硬件部署、再到AI内存需求和Micron既有客户协作的清晰传导，且潜在持续期和Materiality显著。合同的确切时间、内存BOM及Micron份额仍未披露，来源也属于据报道，但这些不确定性降低强度而不消除方向性；未覆盖Policy不妨碍该未覆盖需求信号支持LONG。",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "消息新增了据Nvidia数据披露的Anthropic合同价值超过1800亿美元这一量化、命名客户的AI计算基础设施承诺。Reference View已覆盖Anthropic收入增长、广义AI基础设施承诺和Akamai向Anthropic提供约116亿美元云容量的协议，但没有该Nvidia-Anthropic合同规模。",
+          "reference_ids": [
+            "E52",
+            "E96",
+            "E1181"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息没有披露Micron自身的HBM/DRAM/NAND合同、产品规格、份额、价格、交付、资格或财务数据，因此未满足现行Policy的具体触发条件。"
+        },
+        "w3_case_id": "w3_c30307d4f2264e5483854066d3d314ab"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_49f2fa8f59314e6080f2f6146f1caa11",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-28T12:02:21.933867Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 282.804227
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-28T11:57:39.129640Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_EXECUTION",
+          "TRADE_INTENT"
+        ],
+        "revision": 2435364,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-28",
+        "source": {
+          "binding_id": "MU:huggingnews_rss",
+          "kind": "api",
+          "name": "HuggingNews Atom",
+          "source_id": "huggingnews_rss"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_6c16f43c8c6943bf8072951af9ea20ec",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Nvidia Discloses Anthropic Contract Value Above $180B"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "ORDER_FILLED"
+          ],
+          "state": "EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-28T11:57:39.129640Z",
+        "completed_at": "2026-09-28T12:02:21.933867Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E102",
+            "E52",
+            "E55",
+            "E96",
+            "E1000"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "当前消息的核心事实是：Nvidia披露Anthropic合同价值超过1800亿美元。现有Facts中，E52记录的是Anthropic自身季度营收（~$11.5B），E55是Nvidia与资产管理公司的$500B融资交易，E96是科技公司整体>7000亿美元AI基建承诺，均不包含Nvidia披露的Anthropic具体合同金额$180B这一事实命题。",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "消息核心事实为Nvidia披露与Anthropic的合同价值超1800亿美元，属于AI基础设施行业宏观订单规模的公开信息。该消息未涉及Micron的HBM/数据中心组合指标、竞争供应商HBM份额、DRAM/NAND价格、产品资格、产能、合同交付、汽车平台或任何具体Policy criterion所关注的Micron相关财务或运营事实。仅存在AI行业的宽泛主题关联，不构成任何Policy的trigger path。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息核心事实为Nvidia披露与Anthropic的合同价值超1800亿美元，属于AI基础设施行业宏观订单规模的公开信息。该消息未涉及Micron的HBM/数据中心组合指标、竞争供应商HBM份额、DRAM/NAND价格、产品资格、产能、合同交付、汽车平台或任何具体Policy criterion所关注的Micron相关财务或运营事实。仅存在AI行业的宽泛主题关联，不构成任何Policy的trigger path。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "RUMOR",
+              "entities": [
+                "NVIDIA",
+                "Anthropic",
+                "AI infrastructure",
+                "Computing capacity",
+                "Generative AI"
+              ],
+              "occurrence_date": "2026-09-28",
+              "proposition": "Multiple market reports, citing data attributed to Nvidia, said that Anthropic's contracted value for AI infrastructure and computing capacity exceeded $180 billion.",
+              "subject_time": "Anthropic's contracted AI infrastructure and computing capacity"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "据报道的超过1800亿美元Nvidia-Anthropic合同价值显著上调了Anthropic计算部署的规模和持续时间预期，提升AI服务器机群扩张以及HBM、服务器DRAM和数据中心SSD需求超过一般AI增长基线的概率。由于Anthropic已与Micron开展内存/存储协作，该需求增量也提高了Micron获得部分价值的概率，尽管不会立即改变FY26 Q4已锁定的收入预期。",
+            "prior_expectation": "事件前基线已预期Anthropic和其他基础模型公司的增长将支持AI数据中心、HBM、服务器DRAM和SSD需求；Micron与Anthropic已有AI内存/存储架构及供需协作，但客户数量、价格和采购规模未公开。市场没有一个已量化的、超过1800亿美元的Anthropic计算承诺作为需求锚点。",
+            "reason": "这是规模极大的命名AI客户计算承诺，具备从Anthropic合同到Nvidia计算硬件部署、再到AI内存需求和Micron既有客户协作的清晰传导，且潜在持续期和Materiality显著。合同的确切时间、内存BOM及Micron份额仍未披露，来源也属于据报道，但这些不确定性降低强度而不消除方向性；未覆盖Policy不妨碍该未覆盖需求信号支持LONG。",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "消息新增了据Nvidia数据披露的Anthropic合同价值超过1800亿美元这一量化、命名客户的AI计算基础设施承诺。Reference View已覆盖Anthropic收入增长、广义AI基础设施承诺和Akamai向Anthropic提供约116亿美元云容量的协议，但没有该Nvidia-Anthropic合同规模。",
+            "reference_ids": [
+              "E52",
+              "E96",
+              "E1181"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "消息没有披露Micron自身的HBM/DRAM/NAND合同、产品规格、份额、价格、交付、资格或财务数据，因此未满足现行Policy的具体触发条件。"
+          },
+          "w3_case_id": "w3_c30307d4f2264e5483854066d3d314ab"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "229d731e98f50eae457e4a33a2cd1edddcb9124804449fc2f0ea10519161843f",
+            "content_type": "text/plain",
+            "sha256": "6b84b348f50b17931616b19a8a61916c3cff6c6b902c81881474587607ae819a",
+            "size_bytes": 823
+          },
+          "case": {
+            "case_id": "case_49f2fa8f59314e6080f2f6146f1caa11",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-28T11:57:34.560513Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-28T11:57:34.577322Z",
+          "revision": 1,
+          "row_revision": 2213492,
+          "source": {
+            "binding_id": "MU:huggingnews_rss",
+            "kind": "api",
+            "name": "HuggingNews Atom",
+            "source_id": "huggingnews_rss"
+          },
+          "source_published_at": "2026-09-28T11:52:08.852000Z",
+          "standard_message_id": "std_6a26a46b822b4230a5589eb41dde9f86",
+          "stream_item_id": "stream_6c16f43c8c6943bf8072951af9ea20ec",
+          "stream_offset": 2083,
+          "stream_published_at": "2026-09-28T11:57:34.580554Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Nvidia Discloses Anthropic Contract Value Above $180B"
+          },
+          "url": "https://huggingnews.com/ai/nvidia-discloses-anthropic-contract-value-above-180b-4b98c0dc",
+          "body_text": "Trending \n ← Back to live feed · 1 stories across 1 day\nMonday, Sep 28, 2026\n1 story1 NEWNvidia Discloses Anthropic Contract Value Above $180B AI Sep 28, 7:42 AM EDT 5/5 \n 1\n NEWNvidia Discloses Anthropic Contract Value Above $180B\n AI Sep 28, 7:42 AM EDT 5/5\n Infrastructure commitments for generative AI have reached a new order of magnitude in recent commercial disclosures. The reported contracted value for AI lab Anthropic exceeds $180 billion, according to data attributed to Nvidia, signaling a massive allocation of computing power for the startup.\nThe figures emerged on Sept. 28 via multiple market news sources. This disclosure highlights the scale of the relationship between the primary provider of AI chips and the developers of foundational models who require vast hardware fleets to train their systems."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "RUMOR",
+          "candidate_id": "[\"runtime-v2-msg:std_6a26a46b822b4230a5589eb41dde9f86:0\"]",
+          "created_at": "2026-09-28T12:02:21.326744Z",
+          "dedupe_key": "9ed4cfcae6094d922205bed7359736de1f71417aba8dd573cd5de9063bb564ad",
+          "entities": [
+            "NVIDIA",
+            "Anthropic",
+            "AI infrastructure",
+            "Computing capacity",
+            "Generative AI"
+          ],
+          "occurrence_date": "2026-09-28",
+          "originating_node": "W3",
+          "proposition": "Multiple market reports, citing data attributed to Nvidia, said that Anthropic's contracted value for AI infrastructure and computing capacity exceeded $180 billion.",
+          "provisional_event_id": "E246",
+          "subject_time": "Anthropic's contracted AI infrastructure and computing capacity"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_49f2fa8f59314e6080f2f6146f1caa11",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-09-28T12:02:21.353889+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-28",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_c30307d4f2264e5483854066d3d314ab",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-28T12:02:22.115922Z"
+              },
+              "case_id": "case_49f2fa8f59314e6080f2f6146f1caa11",
+              "direction": "LONG",
+              "entry_reason": "ORDER_FILLED",
+              "entry_result": "FILLED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_49f2fa8f59314e6080f2f6146f1caa11",
+              "execution_reason_codes": [
+                "ORDER_FILLED"
+              ],
+              "execution_state": "EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "19139.76"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "18"
+              },
+              "first_fill_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-28T12:02:25Z"
+              },
+              "has_actual_fill": true,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_49f2fa8f59314e6080f2f6146f1caa11",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_e1d7c65e0656af2e6c4923b1"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-28T12:02:21.353889Z"
+              }
+            },
+            "entry": {
+              "side": "BUY",
+              "quantity": "18",
+              "average_price_usd": "1063.32",
+              "first_fill_at": "2026-09-28T12:02:25+00:00",
+              "last_fill_at": "2026-09-28T12:02:25+00:00"
+            },
+            "exit": {
+              "side": "SELL",
+              "quantity": "18",
+              "average_price_usd": "1055.41",
+              "first_fill_at": "2026-09-28T19:30:03+00:00",
+              "last_fill_at": "2026-09-28T19:30:03+00:00"
+            },
+            "fills": [
+              {
+                "kind": "ENTRY",
+                "side": "BUY",
+                "quantity": "18",
+                "price_usd": "1063.32",
+                "filled_at": "2026-09-28T12:02:25+00:00",
+                "broker_fill_id": "00025b45.6aba114f.01.01"
+              },
+              {
+                "kind": "EXIT",
+                "side": "SELL",
+                "quantity": "18",
+                "price_usd": "1055.41",
+                "filled_at": "2026-09-28T19:30:03+00:00",
+                "broker_fill_id": "0000dc8f.6bbfcfe1.01.01"
+              }
+            ],
+            "lot_remaining_quantity": 0,
+            "realized_pnl_usd": "-144.7749640000000000000000000",
+            "realized_pnl_records": [
+              {
+                "amount": "-144.7749640000000000000000000",
+                "day": "2026-09-28",
+                "environment": "PAPER",
+                "provisional": false,
+                "reason": null
+              }
+            ],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "EXECUTED",
+        "read_execution_reason_codes": [
+          "ORDER_FILLED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": {
+          "side": "BUY",
+          "quantity": "18",
+          "average_price_usd": "1063.32",
+          "first_fill_at": "2026-09-28T12:02:25+00:00",
+          "last_fill_at": "2026-09-28T12:02:25+00:00"
+        },
+        "exit": {
+          "side": "SELL",
+          "quantity": "18",
+          "average_price_usd": "1055.41",
+          "first_fill_at": "2026-09-28T19:30:03+00:00",
+          "last_fill_at": "2026-09-28T19:30:03+00:00"
+        },
+        "realized_pnl_usd": "-144.7749640000000000000000000",
+        "pnl_state": "REALIZED",
+        "read_projection_gap": false
+      }
+    }
+  ]
+}

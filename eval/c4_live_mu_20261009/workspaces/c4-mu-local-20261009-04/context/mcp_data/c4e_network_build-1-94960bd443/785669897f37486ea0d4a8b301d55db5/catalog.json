@@ -1,0 +1,86 @@
+[
+  {
+    "alias": "O269",
+    "title": "text paragraphs 1",
+    "block_type": "text",
+    "path": "blocks/O269.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Accelerates-U-S--Investments-Pours-First-Concrete-at-New-York-Fab/default.aspx"
+    },
+    "content_chars": 3155,
+    "selected": true
+  },
+  {
+    "alias": "O270",
+    "title": "text paragraphs 2",
+    "block_type": "text",
+    "path": "blocks/O270.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Accelerates-U-S--Investments-Pours-First-Concrete-at-New-York-Fab/default.aspx"
+    },
+    "content_chars": 2744,
+    "selected": true
+  },
+  {
+    "alias": "O271",
+    "title": "text paragraphs 3",
+    "block_type": "text",
+    "path": "blocks/O271.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Accelerates-U-S--Investments-Pours-First-Concrete-at-New-York-Fab/default.aspx"
+    },
+    "content_chars": 2603,
+    "selected": true
+  },
+  {
+    "alias": "O272",
+    "title": "text paragraphs 4",
+    "block_type": "text",
+    "path": "blocks/O272.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Accelerates-U-S--Investments-Pours-First-Concrete-at-New-York-Fab/default.aspx"
+    },
+    "content_chars": 2942,
+    "selected": true
+  },
+  {
+    "alias": "O273",
+    "title": "text paragraphs 5",
+    "block_type": "text",
+    "path": "blocks/O273.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Accelerates-U-S--Investments-Pours-First-Concrete-at-New-York-Fab/default.aspx"
+    },
+    "content_chars": 2229,
+    "selected": false
+  },
+  {
+    "alias": "O274",
+    "title": "text paragraphs 6",
+    "block_type": "text",
+    "path": "blocks/O274.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Accelerates-U-S--Investments-Pours-First-Concrete-at-New-York-Fab/default.aspx"
+    },
+    "content_chars": 2451,
+    "selected": false
+  },
+  {
+    "alias": "O275",
+    "title": "text paragraphs 7",
+    "block_type": "text",
+    "path": "blocks/O275.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://investors.micron.com/news/press-release/2026/Micron-Accelerates-U-S--Investments-Pours-First-Concrete-at-New-York-Fab/default.aspx"
+    },
+    "content_chars": 155,
+    "selected": true
+  }
+]

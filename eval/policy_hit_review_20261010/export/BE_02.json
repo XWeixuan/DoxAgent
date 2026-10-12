@@ -1,0 +1,848 @@
+{
+  "format": "doxagent.policy-hit-review.v1",
+  "ticker": "BE",
+  "window": {
+    "since_utc": "2026-09-18T18:59:35.983285+00:00",
+    "as_of_utc": "2026-10-09T18:59:35.983285+00:00"
+  },
+  "part": 2,
+  "record_count": 2,
+  "records": [
+    {
+      "policy_hit_id": "case_c35b297c6dec48f88f44c00f96128821:pol_f7cde392e3eb2e1ef3d3",
+      "ticker": "BE",
+      "case_id": "case_c35b297c6dec48f88f44c00f96128821",
+      "hit_observed_at_utc": "2026-10-05T21:40:34.428Z",
+      "hit_current": true,
+      "policy_id": "pol_f7cde392e3eb2e1ef3d3",
+      "activation_revision": "ar_75129a8035ae282f316dbdf4",
+      "policy": {
+        "frozen_match": {
+          "activation_revision": "ar_75129a8035ae282f316dbdf4",
+          "condition_ids": [
+            "C1"
+          ],
+          "criterion": [
+            "具名大型负荷项目的燃机或发动机预留被取消，或交付日期被推迟到该项目公开需求日之后。"
+          ],
+          "match_scope": "燃机或发动机预留、设备交付日期与具名大型负荷项目需求窗口的确认、否定和接近边界的项目级消息。",
+          "policy_id": "pol_f7cde392e3eb2e1ef3d3"
+        },
+        "pinned_detail": {
+          "activation_semantics": "OR",
+          "policy": {
+            "activation_conditions": [
+              {
+                "calibration": {
+                  "reference_state": "燃机供应被描述为售罄三至四年且预留积压高；一般延误风险已在预期内，项目级失败尚未被吸收。",
+                  "trigger_boundary": "消息须给出取消状态，或同一项目的原/新设备交付日与需求日并显示越窗；积压上升不足。"
+                },
+                "condition_id": "C1",
+                "criterion": "具名大型负荷项目的燃机或发动机预留被取消，或交付日期被推迟到该项目公开需求日之后。"
+              }
+            ],
+            "decision": "LONG",
+            "match_scope": "燃机或发动机预留、设备交付日期与具名大型负荷项目需求窗口的确认、否定和接近边界的项目级消息。",
+            "policy_id": "pol_f7cde392e3eb2e1ef3d3",
+            "source_refs": [
+              {
+                "expectation_id": "Alternative firm-power supply window",
+                "gap_id": "Gas-power reservations fail to become timely delivery",
+                "shell_id": "Large-load Energy Server adoption and share"
+              }
+            ],
+            "title": "燃机预留取消或越窗交付延长Bloom机会窗口"
+          },
+          "source_document2": {
+            "artifact_id": "5830b9e9b2d84fa4acc0eb2e711751a0",
+            "content_sha256": "e4e7ef2733ce4cb52fdaf6638bd620878afec466a9f75119cd1f257d7e9237de",
+            "published_at": "2026-09-21T18:47:06.964292Z",
+            "run_id": "init-be-788adefdd31844d98a907468b883176d-d2",
+            "schema_version": "document2.v2"
+          },
+          "summary": {
+            "consumed": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "consumed_at": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "decision": "LONG",
+            "effective": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "lifecycle": "ACTIVE",
+            "matched_filters": [
+              "ACTIVE"
+            ],
+            "policy_activation_revision": "ar_75129a8035ae282f316dbdf4",
+            "policy_id": "pol_f7cde392e3eb2e1ef3d3",
+            "policy_revision_id": "8879534e7b9f71c4b1daa20046d949943aa13c5583779be0bbb7e6ddce4c9144",
+            "policy_set_version": 9,
+            "shell_ids": [
+              "Large-load Energy Server adoption and share"
+            ],
+            "title": "燃机预留取消或越窗交付延长Bloom机会窗口",
+            "unresolved_shell_ids": []
+          }
+        },
+        "policy_set_version": 9,
+        "activation_revision_id": "runtime-maintain-c64da538d4100fad0d10eaab-activation"
+      },
+      "hit_policy_released_for_trade": false,
+      "case_summary": {
+        "case_id": "case_c35b297c6dec48f88f44c00f96128821",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-10-05T21:40:36.552660Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 55961.751159
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": true
+        },
+        "first_round_shape": "SEQUENTIAL",
+        "initial_route": "TRADE",
+        "member_count": 1,
+        "received_at": "2026-10-05T06:07:54.801501Z",
+        "resolved_route": null,
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY"
+        ],
+        "revision": 3329291,
+        "runtime_mode": "CLOSED",
+        "semantic_day": "2026-10-05",
+        "source": {
+          "binding_id": "BE:google_news_search_rss",
+          "kind": "api",
+          "name": "Google News Search RSS",
+          "source_id": "google_news_search_rss"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_bccbab5fb97748e0a9e76bed40cee888",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Up 228% in the Past Year, Bloom Energy Expands Manufacturing Capacity - Yahoo Finance"
+        },
+        "trade": {
+          "intent_count": 0,
+          "reason_codes": [],
+          "state": "NOT_APPLICABLE"
+        },
+        "trade_disposition": "CANDIDATE",
+        "w3_status": null
+      },
+      "case_process": {
+        "created_at": "2026-10-05T06:07:54.801501Z",
+        "completed_at": "2026-10-05T21:40:36.552660Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "CLOSED",
+        "route": {
+          "primary_route": "TRADE",
+          "reason": "w1=NEW/normal;policy_hit=true;w2=normal",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "resolved_route": null,
+        "closed_cycle_id": "2026-10-03",
+        "sweep_id": "sweep:BE:2026-10-05",
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E47",
+            "E6",
+            "E52",
+            "E3",
+            "E4"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "消息包含尚未被覆盖的核心事实：Bloom Energy 发布了关于800V直流电重塑AI数据中心的行业报告，包含具体建模数据（1GW站点$36亿节省、27%削减、5年TCO降低$55亿/9%），并提及Nvidia计划为Rubin Ultra和Kyber机架指定800V DC。此外，CEO声称所有主要美国超大规模云厂商及十余家neocloud、AI实验室和托管运营商已批准Bloom系统的客户审批广度状态，亦不在已加载Fact中。",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [
+            "pol_a0833a0dc2ee614eda49",
+            "pol_918e9ee408c338cf70f7",
+            "pol_f7cde392e3eb2e1ef3d3"
+          ],
+          "reason": "消息包含三项与Policy trigger直接相关的具体事实：(1) Brookfield将融资承诺从$5B五倍扩大至$25B为Bloom电力项目提供资金，Industrial Development Funding联合Oaktree、MUFG、Morgan Stanley另带来$2.6B，直接对应基础设施伙伴项目融资闭合与承诺分配；(2) Q2收入同比+166%而运营费用仅+48%，CFO称该杠杆为\"结构性\"，全年运营利润指引从$425-450M上调至$800-900M，触及多周期收入增长快于费用扩张的判定路径；(3) Nebius今年取消燃气轮机及发动机订单并选择Bloom，直接对应具名项目燃机/发动机预留被取消的事实。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [
+            {
+              "condition_ids": [
+                "C1"
+              ],
+              "policy_id": "pol_f7cde392e3eb2e1ef3d3"
+            }
+          ],
+          "policy_ids": [
+            "pol_f7cde392e3eb2e1ef3d3"
+          ],
+          "reason": "政策pol_f7cde392e3eb2e1ef3d3命中：CEO K.R. Sridhar明确陈述Nebius(NBIS)今年取消了对燃机与发动机的订单并转选Bloom，该取消状态直接满足C1\"具名大型负荷项目的燃机或发动机预留被取消\"；在燃机售罄三至四年的市场背景下，已下订单即为预留，Nebius作为neocloud属于具名大型电力负荷方。政策pol_a0833a0dc2ee614eda49未命中：Brookfield将融资承诺从$5B扩至$25B、IDF联合Oaktree/MUFG/MS合计$2.6B均为组合层面承诺扩容与伙伴关系组建，消息未给出任何单项目融资close、已部署资金或已接受MW。政策pol_918e9ee408c338cf70f7未命中：trigger_boundary要求至少三个连续报告期，消息仅提供Q2单季数据（收入+166%、opex+48%），reference_state亦明确指出\"仅一个盈利季度不足以证明durability\"。"
+        },
+        "w2_skipped": false,
+        "w3_result": null
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "07306a494ac37cd9994f40909352b48e1c5171bbb6d86fa9a4eb6f8df919bd56",
+            "content_type": "text/plain",
+            "sha256": "d3de3751ff8abaf46fd6ff5443ec2e7b58301610f6508ee406c753bc5820a3fa",
+            "size_bytes": 6049
+          },
+          "case": {
+            "case_id": "case_c35b297c6dec48f88f44c00f96128821",
+            "initial_route": "TRADE",
+            "resolved_route": null,
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": null
+          },
+          "collected_at": "2026-10-05T06:00:04.240575Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-10-05T06:07:49.132419Z",
+          "revision": 1,
+          "row_revision": 3329291,
+          "source": {
+            "binding_id": "BE:google_news_search_rss",
+            "kind": "api",
+            "name": "Google News Search RSS",
+            "source_id": "google_news_search_rss"
+          },
+          "source_published_at": "2026-10-04T22:17:57Z",
+          "standard_message_id": "std_2a0fbd2fee844bbdaf880c882b2994ba",
+          "stream_item_id": "stream_bccbab5fb97748e0a9e76bed40cee888",
+          "stream_offset": 501,
+          "stream_published_at": "2026-10-05T06:07:49.156352Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Up 228% in the Past Year, Bloom Energy Expands Manufacturing Capacity - Yahoo Finance"
+          },
+          "url": "https://finance.yahoo.com/energy/articles/228-past-bloom-energy-expands-221757780.html",
+          "body_text": "It took Bloom Energy (BE) 21 years to reach its first $1 billion year, a milestone that the company hit in 2022. Over the last three years, Bloom Energy has doubled its revenue and is on track to surpass $4 billion in sales this year. Valued at a market capitalization of roughly $85 billion, BE stock has climbed 232% year-to-date (YTD), 228% in the last 12 months, and has returned a monstrous 2,500% in the last three years.\n\nBloom Energy designs, manufactures, sells, and installs solid-oxide fuel-cell systems for on-site power generation. Called the Bloom Energy Server, the company's energy server platform converts fuel like natural gas, biogas, and hydrogen into electricity through a non-combustion electrochemical process. The company also offers the Bloom Electrolyzer to produce clean hydrogen. Bloom Energy sells its products through direct and indirect sales channels to utilities, data centers, retail, healthcare, education, telecom, manufacturing, and other industries.\n\nMore News from Barchart\n\nWhat a 20-Year Deal With Amazon Means for Constellation Energy Stock\n\nHow to Play DJT Stock as Trump Media Finally Files for TAE Merger\n\nOur exclusive Barchart Brief newsletter is your FREE midday guide to what's moving stocks, sectors, and investor sentiment - delivered right when you need the info most. Subscribe today!\n\nBloom Energy Stock Rides the AI Power Crunch\n\nFor decades, Bloom Energy's customers were hospitals, factories, telecom providers, and retail stores. Then artificial intelligence (AI) changed the math.\n\nAI data centers need staggering amounts of power. CEO K.R. Sridhar said on the company's July 28 earnings call that spare grid capacity is no longer available, and grid operators quote timelines measured in years. \"Chips without power are inventory, not intelligence,\" Sridhar said.\n\nThe CEO put a price on waiting. By his estimate, a 1 gigawatt AI data center can generate $12 billion to $24 billion in revenue a year. Getting power just one month sooner could mean $1 billion to $2 billion in extra revenue for the operator.\n\nSridhar noted that Nebius (NBIS) canceled orders for combustion turbines and engines this year and chose Bloom. According to the CEO, all the major U.S. hyperscalers, plus more than a dozen neoclouds, AI labs, and colocation operators have now approved Bloom's systems.\n\nBloom recently acquired a 158,000-square-foot facility on Encyclopedia Circle in Fremont, California, according to a company statement. The site expands Bloom's Fremont operations and supports hundreds of new advanced manufacturing jobs. The company tied the move directly to the tech sector's appetite for faster, cleaner onsite power.\n\nBloom is not alone in betting on Fremont. Wislab recently paid $120 million for three industrial buildings in the area. Fremont also captured roughly three-quarters of Silicon Valley's commercial real estate leasing activity last year.\n\nThe purchase fits a strategy Sridhar laid out on the second-quarter earnings call. Bloom has been adding U.S. factory capacity since the start of the year in \"copy exact increments,\" ahead of committed orders. \"Capacity is not going to be our constraint,\" he told analysts.\n\nBE Stock Price Gets Fuel From Record Results\n\nThe numbers behind that confidence are striking. Bloom reported Q2 revenue of $1.065 billion, up 166% from a year earlier. Gross margin was 33.4%, while operating margin was 22.5%, meaning roughly $22.50 of every $100 became operating profit. The company had about $2.7 billion in cash on hand at quarter's end.\n\nRevenue jumped 166%, yet operating expenses rose \"just\" 48%, which indicates significant operating leverage. CFO Simon Edwards called that leverage \"structural.\"\n\nManagement also raised its full-year targets. The company now expects operating income of $800 million to $900 million in fiscal 2026. In January, that guidance was much lower at $425 million to $450 million.\n\nIn June 2026, Brookfield (BN) expanded its financing commitment fivefold — from $5 billion to $25 billion — to fund Bloom power projects. In July, Industrial Development Funding also teamed up with Oaktree, MUFG Bank (MUFG), and Morgan Stanley (MS) to bring its own total to $2.6 billion.\n\nWhat Could Move BE Stock Next?\n\nBloom is also pushing a bigger idea. In a new industry report, the company projects that 800V DC power will reshape AI data centers.\n\nIts model for a 1 GW site shows $3.6 billion in savings on spending outside the computing gear, a 27% cut. Over five years, total ownership costs drop by $5.5 billion, or 9%, compared with traditional AC systems. The report also notes that Nvidia (NVDA) plans to specify 800V DC for its Rubin Ultra and Kyber racks starting in 2027.\n\nHowever, revenue can be lumpy, since one or two customers may dominate any given quarter. On the Q2 call, analysts also pressed management on project delays and on access to scandium, a key material. Bloom said it has visibility for 25 GW of deployments and does not depend on China.\n\nOverall, Bloom Energy stock has a consensus \"Moderate Buy\" rating on Wall Street. Out of the 26 analysts covering BE stock, 12 recommend a \"Strong Buy\" rating, two recommend a \"Moderate Buy,\" 11 recommend a \"Hold,\" and one analyst recommends a \"Strong Sell\" rating. The average price target of $285.82 has already been surpassed, while the high price target of $354 suggests potential upside of 22% from current levels.\n\nSridhar was candid about the biggest unknown. When asked whether AI spending will keep growing this fast, he said that customer talks suggest it will accelerate. \"However, I do not know for sure, and I will not insult you by pretending to,\" he said.\n\nSo, Bloom is doing what it can control. It is building factories before the orders arrive.\n\nOn the date of publication, Aditya Raghunath did not have (either directly or indirectly) positions in any of the securities mentioned in this article. All information and data in this article is solely for informational purposes. This article was originally published on Barchart.com"
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_2a0fbd2fee844bbdaf880c882b2994ba:0\"]",
+          "created_at": "2026-10-05T21:24:52.457327Z",
+          "dedupe_key": "153749608db27fa3a49466bb57e095b16f8a97ec764aba397d5d108f626852d4",
+          "entities": [
+            "Bloom Energy"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "Bloom Energy发布行业报告，预测800V直流电将重塑AI数据中心；报告建模显示1GW站点非计算设备支出可节省36亿美元（削减27%），5年总拥有成本较传统AC系统降低55亿美元（9%）",
+          "provisional_event_id": "E146",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "PLAN",
+          "candidate_id": "[\"runtime-v2-msg:std_2a0fbd2fee844bbdaf880c882b2994ba:1\"]",
+          "created_at": "2026-10-05T21:24:52.484935Z",
+          "dedupe_key": "fa3bb310a5a3321d3839e5052add7ff1722506151f79f1c285e8a45fb327d632",
+          "entities": [
+            "Nvidia",
+            "Bloom Energy"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "Nvidia计划从2027年起为Rubin Ultra和Kyber机架指定800V直流电标准",
+          "provisional_event_id": "E147",
+          "subject_time": "2027"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_2a0fbd2fee844bbdaf880c882b2994ba:2\"]",
+          "created_at": "2026-10-05T21:24:52.519777Z",
+          "dedupe_key": "638f9da2b439ef1ad0dca5b7d6b778724fdcd2cf4120eda02263290dad21b751",
+          "entities": [
+            "Bloom Energy"
+          ],
+          "occurrence_date": "2026-07-28",
+          "originating_node": "W1_R3",
+          "proposition": "所有主要美国超大规模云厂商及十余家neocloud、AI实验室和托管运营商已批准Bloom Energy的能源服务器系统",
+          "provisional_event_id": "E148",
+          "subject_time": null
+        }
+      ],
+      "trade": {
+        "intents": [],
+        "closed_candidates": [
+          {
+            "candidate_id": "candidate:case_c35b297c6dec48f88f44c00f96128821",
+            "status": "PENDING",
+            "created_at": "2026-10-05T21:40:35.721262+00:00",
+            "closed_cycle_id": "2026-10-03",
+            "origin_trade_eligible": true,
+            "trade_disposition": null,
+            "trade": {
+              "decision": "LONG",
+              "executed_policy_id": "pol_f7cde392e3eb2e1ef3d3",
+              "candidate_policy_ids": [
+                "pol_f7cde392e3eb2e1ef3d3"
+              ],
+              "matched_condition_ids": [
+                "C1"
+              ]
+            }
+          }
+        ],
+        "executions": []
+      }
+    },
+    {
+      "policy_hit_id": "case_7b76ce24051a44c990d602d5db7b8027:pol_b6eb54be9d4d509c8c80",
+      "ticker": "BE",
+      "case_id": "case_7b76ce24051a44c990d602d5db7b8027",
+      "hit_observed_at_utc": "2026-10-07T08:01:51.648Z",
+      "hit_current": true,
+      "policy_id": "pol_b6eb54be9d4d509c8c80",
+      "activation_revision": "ar_449d0c7d6cd82b81fd3eecb8",
+      "policy": {
+        "frozen_match": {
+          "activation_revision": "ar_449d0c7d6cd82b81fd3eecb8",
+          "condition_ids": [
+            "C1",
+            "C2",
+            "C3"
+          ],
+          "criterion": [
+            "主要超大规模云厂商把目标年度合计AI资本开支上调至显著高于当前共识的水平，并明确该上修对应新增或加速的数据中心建设与现场firm-power需求。",
+            "大型AI计算运营方把未来云、计算与基础设施承诺的总额或不可取消比例上调至显著高于当前基线，并明确这些承诺对应新增或加速的数据中心与现场firm-power需求。",
+            "AI服务器或加速器部署的同口径rack-level power requirement被上调至高于当前基线，并明确会扩大数据中心现场firm-power需求。"
+          ],
+          "match_scope": "主要超大规模云厂商和AI计算运营方的AI资本开支预测、不可取消计算承诺、服务器机架功耗、公司guidance及其对数据中心建设和现场firm-power需求的修订消息。",
+          "policy_id": "pol_b6eb54be9d4d509c8c80"
+        },
+        "pinned_detail": {
+          "activation_semantics": "OR",
+          "policy": {
+            "activation_conditions": [
+              {
+                "calibration": {
+                  "reference_state": "当前基线已吸收2026-09-25高盛对Amazon、Alphabet、Microsoft、Oracle和Meta的2026-2027年合计AI资本开支约$1.89T预测（较年初高约66%），以及当前AI收入约$183B相对约$308B盈亏平衡收入的缺口和2028年折旧压力。上述宏观信号尚未形成Bloom新增订单或客户容量。",
+                  "trigger_boundary": "未来消息须以同一目标年度和可比超大规模云厂商范围给出高于约$1.89T基线或明显扩大的正向共识差，并把上修与新增数据中心建设、供电缺口或现场firm-power需求直接相连；重复当前高盛预测、泛化AI乐观、单一公司分析师目标价或没有电力需求传导不足。"
+                },
+                "condition_id": "C1",
+                "criterion": "主要超大规模云厂商把目标年度合计AI资本开支上调至显著高于当前共识的水平，并明确该上修对应新增或加速的数据中心建设与现场firm-power需求。"
+              },
+              {
+                "calibration": {
+                  "reference_state": "Anthropic已披露超过$518B的十年云、计算与基础设施义务，其中约80%不可取消或无论使用量均应支付；约$252B来自Microsoft、Google和Amazon的不可取消计算义务，另有约$161.2B Broadcom TPU租约。该承诺尚未分配Bloom MW或收入。",
+                  "trigger_boundary": "未来消息须对同一运营方或可比AI计算运营方提供总额与不可取消比例的old→new比较，并把新增义务与具名数据中心容量、建设期或现场firm-power需求直接相连；重复上述$518B/80%基线、仅有估值/亏损或无物理电力传导不足。"
+                },
+                "condition_id": "C2",
+                "criterion": "大型AI计算运营方把未来云、计算与基础设施承诺的总额或不可取消比例上调至显著高于当前基线，并明确这些承诺对应新增或加速的数据中心与现场firm-power需求。"
+              },
+              {
+                "calibration": {
+                  "reference_state": "onsemi当前基线为AI加速器机架约100-120kW，并预计至2030年达到megawatt级；该供应商预测没有给出Bloom客户、具名站点或已签约MW。",
+                  "trigger_boundary": "未来消息须以同一机架功率口径提供新的数值/时点或具名客户建设，并将其与现场firm-power缺口或采用需求相连；芯片收入目标、泛化AI增长、单纯能效改进或重复onsemi预测不足。"
+                },
+                "condition_id": "C3",
+                "criterion": "AI服务器或加速器部署的同口径rack-level power requirement被上调至高于当前基线，并明确会扩大数据中心现场firm-power需求。"
+              }
+            ],
+            "decision": "LONG",
+            "match_scope": "主要超大规模云厂商和AI计算运营方的AI资本开支预测、不可取消计算承诺、服务器机架功耗、公司guidance及其对数据中心建设和现场firm-power需求的修订消息。",
+            "policy_id": "pol_b6eb54be9d4d509c8c80",
+            "source_refs": [
+              {
+                "expectation_id": "Qualified large-load customer adoption",
+                "gap_id": "Diversified new customer cohort converts",
+                "shell_id": "Large-load Energy Server adoption and share"
+              }
+            ],
+            "title": "AI资本开支与计算强度上修扩大现场电力机会"
+          },
+          "source_document2": {
+            "artifact_id": "5830b9e9b2d84fa4acc0eb2e711751a0",
+            "content_sha256": "e4e7ef2733ce4cb52fdaf6638bd620878afec466a9f75119cd1f257d7e9237de",
+            "published_at": "2026-09-21T18:47:06.964292Z",
+            "run_id": "init-be-788adefdd31844d98a907468b883176d-d2",
+            "schema_version": "document2.v2"
+          },
+          "summary": {
+            "consumed": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "consumed_at": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "decision": "LONG",
+            "effective": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "lifecycle": "ACTIVE",
+            "matched_filters": [
+              "ACTIVE"
+            ],
+            "policy_activation_revision": "ar_449d0c7d6cd82b81fd3eecb8",
+            "policy_id": "pol_b6eb54be9d4d509c8c80",
+            "policy_revision_id": "3a6920ef51e2dab9d2624338f16525ea568cc6658eb748fde7aa47d0f198d42e",
+            "policy_set_version": 13,
+            "shell_ids": [
+              "Large-load Energy Server adoption and share"
+            ],
+            "title": "AI资本开支与计算强度上修扩大现场电力机会",
+            "unresolved_shell_ids": []
+          }
+        },
+        "policy_set_version": 13,
+        "activation_revision_id": "runtime-maintain-2cd027a558a1c790e88f35ed-activation"
+      },
+      "hit_policy_released_for_trade": true,
+      "case_summary": {
+        "case_id": "case_7b76ce24051a44c990d602d5db7b8027",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-10-07T08:05:25.426365Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 373.524695
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": true
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "TRADE",
+        "member_count": 1,
+        "received_at": "2026-10-07T07:59:11.901670Z",
+        "resolved_route": null,
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_EXECUTION",
+          "TRADE_INTENT"
+        ],
+        "revision": 3575513,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-10-07",
+        "source": {
+          "binding_id": "BE:google_news_search_rss",
+          "kind": "api",
+          "name": "Google News Search RSS",
+          "source_id": "google_news_search_rss"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_4d699e748483480686d863ca13cfa956",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "U.S. Data Center Power Crunch Poses Greater Risk to Memory and Optical Networking Than Nvidia - BigGo Finance"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "ORDER_FILLED"
+          ],
+          "state": "EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": null
+      },
+      "case_process": {
+        "created_at": "2026-10-07T07:59:11.901670Z",
+        "completed_at": "2026-10-07T08:05:25.426365Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "TRADE",
+          "reason": "w1=NEW/normal;policy_hit=true;w2=normal",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "resolved_route": null,
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E78",
+            "E33",
+            "E84",
+            "E62",
+            "E49"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "当前消息的核心事实为 Morgan Stanley 发布的详细电力短缺分析：~32 GW 净电力缺口（占需求 34%）、97 GW 新增需求（较此前 68 GW 上调 43%）、57 GW 调整后缺口、Nvidia/Broadcom 与 memory/optical/ASIC 的差异化影响、Bloom Energy 贡献 ~6 GW 燃料电池、19 GW 2026-2028 燃气机组、U.S. 全球算力份额从 60% 降至 55% 等。这些具体数据和分析框架在已加载 Facts 中均未出现。Texas 许可暂停（E78/F187）和 Goldman 需求预测（E84/F193-194）仅作为背景引用，不构成消息的核心新闻进展。",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [
+            "pol_b6eb54be9d4d509c8c80",
+            "pol_af4c18c9797e6d5a513f"
+          ],
+          "reason": "消息明确披露Nvidia Vera Rubin机架功耗从149kW上调至234kW、Rubin Ultra从415kW上调至600kW，并将此与数据中心现场firm-power需求扩大直接关联，触及pol_b6eb54be9d4d509c8c80的C3路径（同口径rack-level功耗上调）。此外，消息具名披露Oracle在威斯康星的1.3GW Project Lighthouse送电日期可能推迟至2028年10月甚至2029年春季（即使输电审批恢复后），Oracle为已确认的Bloom锚定客户，该能源化/送电推迟存在影响Bloom相关验收窗口的合理可能，触及pol_af4c18c9797e6d5a513f的锚定项目送电/commissioning推迟路径。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [
+            {
+              "condition_ids": [
+                "C3"
+              ],
+              "policy_id": "pol_b6eb54be9d4d509c8c80"
+            }
+          ],
+          "policy_ids": [
+            "pol_b6eb54be9d4d509c8c80"
+          ],
+          "reason": "Morgan Stanley报告给出Nvidia Vera Rubin机架功率从149kW上调至234kW、Rubin Ultra从415kW上调至600kW，均显著高于onsemi 100-120kW基线，属同口径rack-level power新数值且为实际向上修订；报告同时明确将机架功耗上修与现场firm-power缺口相连（2028年32GW净电力短缺、behind-the-meter燃气轮机/发动机19GW、Bloom燃料电池约6GW），满足C3触发边界。Oracle Project Lighthouse功率交付延迟（\"could see\"）为分析师条件性估计，非公司正式公告新/旧窗口，且未识别Bloom特定验收/部署后果，不满足pol_af4c18c9797e6d5a513f的C2 trigger boundary。"
+        },
+        "w2_skipped": false,
+        "w3_result": null
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "09bd3afcd2479e9797e2aa2a34dfec8d5b6667d5c0dc6645e503d86569684429",
+            "content_type": "text/plain",
+            "sha256": "a0b2ec2b3c337fb27eb37ec0c97244275b1274229f1637a464a216643e1fee63",
+            "size_bytes": 6615
+          },
+          "case": {
+            "case_id": "case_7b76ce24051a44c990d602d5db7b8027",
+            "initial_route": "TRADE",
+            "resolved_route": null,
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": null
+          },
+          "collected_at": "2026-10-07T07:58:31.456266Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-10-07T07:59:10.314941Z",
+          "revision": 1,
+          "row_revision": 3575513,
+          "source": {
+            "binding_id": "BE:google_news_search_rss",
+            "kind": "api",
+            "name": "Google News Search RSS",
+            "source_id": "google_news_search_rss"
+          },
+          "source_published_at": "2026-10-07T07:35:00Z",
+          "standard_message_id": "std_05ca32d56bfd41b5ae6ba25a8670ad66",
+          "stream_item_id": "stream_4d699e748483480686d863ca13cfa956",
+          "stream_offset": 652,
+          "stream_published_at": "2026-10-07T07:59:10.322784Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "U.S. Data Center Power Crunch Poses Greater Risk to Memory and Optical Networking Than Nvidia - BigGo Finance"
+          },
+          "url": "https://finance.biggo.com/news/a096df9e-42fc-4b42-b960-092d77e67420",
+          "body_text": "U.S. Data Center Power Crunch Poses Greater Risk to Memory and Optical Networking Than Nvidia\nThe bottleneck in U.S. artificial intelligence (AI) infrastructure is shifting from chip shortages to power shortages. Even if servers are installed in data centers, without electricity they cannot be converted into actual computing capacity—raising concerns that AI supply chain risk may concentrate in specific component categories.\nMorgan Stanley, in a report released on the 5th (local time), estimated that U.S. data center developers will face a net power shortfall of approximately 32 gigawatts (GW) by 2028. That represents roughly 34% of required power, and the figure already accounts for additional power procurement measures including on-site generation and fuel cells.\nThe core insight of the analysis is that power shortages will not affect all AI semiconductor companies equally. Nvidia and Broadcom are relatively safe, while suppliers of peripheral components—ASICs, memory, optical networking, and power management semiconductors—could take a bigger hit.\nDiverging Impact Across Chipmakers\nMorgan Stanley assessed that the power bottleneck does not yet threaten Nvidia's and Broadcom's 2027 earnings outlooks. The two companies have relatively high visibility into which data centers their semiconductors will actually be deployed in, and they have room to respond to power shortages through regional business expansion and coordination among data center operators, semiconductor companies, and power supply chains.\nProduct efficiency also makes a difference. Nvidia GPUs can produce more tokens per gigawatt of power, giving them higher deployment priority in power-constrained environments. ASICs, by contrast, have lower output per unit of power and require securing more power resources, making them more sensitive to bottlenecks.\nBroadcom's guidance revisions also show that market expectations are converging. In March, the company said AI revenue for fiscal 2027 would \"significantly exceed\" $100 billion, but by September it had specified the figure at $115 billion. The absolute scale remains large, but the room for further upward revision appears limited.\nNvidia CEO Jensen Huang and Broadcom CEO Hock Tan have both recently emphasized that power resources have become a harder constraint to coordinate than chips or memory in AI infrastructure deployment.\nInventory Risk in the Component Supply Chain\nIf power constraints translate into actual deployment delays, customers may postpone product deliveries or cancel orders. Morgan Stanley noted that in this scenario, memory, optical networking, power management, and analog semiconductors face the greatest exposure to inventory disruptions.\nThese component categories have benefited from AI infrastructure expansion and tightening supply-demand dynamics. However, if final projects are delayed, customers are likely to draw down existing inventory first and then reduce follow-on orders. The implication is that expanded AI investment does not automatically translate into revenue growth for all semiconductor companies.\nOracle's case illustrates this risk concretely. \"Project Lighthouse,\" a 1.3 GW facility under construction in Wisconsin, could see power delivery delayed until October 2028 at the earliest—or spring 2029 in a pessimistic scenario—even after transmission approval procedures resumed. Even if AI servers are already mounted in racks, without electricity they cannot be converted into actual computing capacity or revenue.\nEfforts to Expand Power Supply—and Their Limits\nMorgan Stanley expects new behind-the-meter gas turbine and engine capacity to reach approximately 19 GW from 2026 through 2028 under its base case. Bloom Energy's fuel cells could contribute about 6 GW, while nuclear power and repurposed cryptocurrency mining facilities are also cited as supplementary options. Yet even combined, all these measures fall short of closing the gap.\nOverseas expansion offers only a partial solution. Morgan Stanley lowered its forecast for the U.S. share of global computing capacity from 60% to 55%. Slow approval processes in Europe and geopolitical risks in the Middle East are factors limiting demand relocation.\nLabor shortages also act as a structural constraint. According to estimates from the Center for Strategic and International Studies (CSIS), the U.S. will need more than 140,000 additional skilled technical workers by 2030. The current workforce can only support roughly 10–20 GW of new natural gas capacity per year.\nPower demand forecasts continue to be revised upward. Morgan Stanley projects additional power demand of 97 GW by 2028—about 43% higher than its previous estimate of 68 GW. After excluding 21 GW of data centers under construction and 19 GW of available or contractable grid capacity, the shortfall reaches 57 GW.\nDrivers of demand growth include upward revisions to chip shipment forecasts and changes in server architecture. The transition from traditional servers with 8 GPUs to rack-scale integrated systems has caused power consumption to surge. Nvidia's next-generation \"Vera Rubin\" rack power assumptions have risen from 149 kW to 234 kW, while \"Rubin Ultra\" has increased from 415 kW to 600 kW. These figures include not just GPUs but also memory, networking, power delivery, and liquid cooling.\nEfficiency improvements are also unlikely to prevent overall power consumption from rising. Morgan Stanley expects token production per watt to increase roughly 6x and per-chip output to increase roughly 15x between 2025 and 2028. However, the analysis suggests that as unit costs fall, AI usage will expand—driving total power consumption even higher.\nPolitical backlash has also emerged as a variable. The state of Texas suspended new data center permit issuance pending completion of an audit. With midterm elections approaching next month, data centers have become a political flashpoint, prompting Big Tech companies to roll out community support measures.\nGoldman Sachs expects the near-term impact of political backlash to be limited, while Morgan Stanley identified labor, power, and political issues as the primary obstacles to data center expansion. In the AI industry, whether chips can be produced is no longer the only constraint—securing power and achieving actual operational status have become the next gate determining order fulfillment speed and supply chain profitability.\nOnce added, BigGo Finance appears first in Google Search Top Stories, so you get the broadest, most up-to-the-minute, and most comprehensive global financial news first."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_05ca32d56bfd41b5ae6ba25a8670ad66:0\"]",
+          "created_at": "2026-10-07T08:05:25.308141Z",
+          "dedupe_key": "dcd63cc328700d5c5b70da20ee4d155f4a5de418af8b97e1090ae8adde79b615",
+          "entities": [
+            "Morgan Stanley",
+            "U.S. data centers"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "Morgan Stanley 估算美国数据中心开发者到 2028 年将面临约 32 GW 的净电力缺口，约占所需电力的 34%，该数字已计入现场发电和燃料电池等额外采购措施；在扣除 21 GW 在建数据中心和 19 GW 可用或可签约电网容量后，缺口为 57 GW。",
+          "provisional_event_id": "E101",
+          "subject_time": "by 2028"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_05ca32d56bfd41b5ae6ba25a8670ad66:1\"]",
+          "created_at": "2026-10-07T08:05:25.320834Z",
+          "dedupe_key": "50fdaa873fa566efed183d4ae8a0dcf5ce8b10b258e2f62bbc5c122f996bdadd",
+          "entities": [
+            "Morgan Stanley"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "Morgan Stanley 将 2028 年美国数据中心新增电力需求预测从此前的 68 GW 上调至约 97 GW，增幅约 43%，驱动因素包括芯片出货量预测上调及服务器架构从 8 GPU 传统服务器向机架级一体化系统转变。",
+          "provisional_event_id": "E102",
+          "subject_time": "by 2028"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_05ca32d56bfd41b5ae6ba25a8670ad66:2\"]",
+          "created_at": "2026-10-07T08:05:25.330764Z",
+          "dedupe_key": "5cbeb93d8b28e45233c8175fb4b21931252a81b12291aa5d4d18b1e09fe65491",
+          "entities": [
+            "Morgan Stanley",
+            "Nvidia",
+            "Broadcom",
+            "ASIC",
+            "memory",
+            "optical networking",
+            "power management semiconductors"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "Morgan Stanley 评估电力瓶颈对 AI 芯片公司的影响存在分化：Nvidia 和 Broadcom 因部署可见性和区域调配空间较大而相对安全，ASIC、内存、光网络和电源管理半导体供应商面临更大冲击。",
+          "provisional_event_id": "E103",
+          "subject_time": "2027"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_05ca32d56bfd41b5ae6ba25a8670ad66:3\"]",
+          "created_at": "2026-10-07T08:05:25.340502Z",
+          "dedupe_key": "d196343fdfadec67f8264cffd6875a3451fb64eaf0c3181b156992244a9a32d3",
+          "entities": [
+            "Morgan Stanley"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "Morgan Stanley 预期 2026 至 2028 年间美国新增现场燃气轮机和发动机发电能力约 19 GW。",
+          "provisional_event_id": "E104",
+          "subject_time": "2026-2028"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_05ca32d56bfd41b5ae6ba25a8670ad66:4\"]",
+          "created_at": "2026-10-07T08:05:25.349258Z",
+          "dedupe_key": "b8e876776e84766f1c911928c84a669227dfead7b1a521c1c7360fd1478954ab",
+          "entities": [
+            "Morgan Stanley",
+            "Bloom Energy"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "Morgan Stanley 预期 Bloom Energy 燃料电池可贡献约 6 GW 的新增电力供应。",
+          "provisional_event_id": "E105",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "GUIDANCE",
+          "candidate_id": "[\"runtime-v2-msg:std_05ca32d56bfd41b5ae6ba25a8670ad66:5\"]",
+          "created_at": "2026-10-07T08:05:25.357051Z",
+          "dedupe_key": "1be914dde95e2c7763a0711de78621873e5d6da6f5a61abbfa1e67cc76bf23ef",
+          "entities": [
+            "Morgan Stanley"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "Morgan Stanley 将美国占全球算力份额的预测从 60% 下调至 55%，原因包括欧洲审批缓慢和中东地缘政治风险限制需求外迁。",
+          "provisional_event_id": "E106",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_05ca32d56bfd41b5ae6ba25a8670ad66:6\"]",
+          "created_at": "2026-10-07T08:05:25.367522Z",
+          "dedupe_key": "703022b2f683d3e9a39b61d03e460ef20aa8eaecf900fb8ccff881730ed49325",
+          "entities": [
+            "Nvidia",
+            "Vera Rubin",
+            "Rubin Ultra"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "Nvidia 下一代 Vera Rubin 机架功率假设从 149 kW 升至 234 kW，Rubin Ultra 从 415 kW 升至 600 kW，涵盖 GPU、内存、网络、供电和液冷。",
+          "provisional_event_id": "E107",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_05ca32d56bfd41b5ae6ba25a8670ad66:7\"]",
+          "created_at": "2026-10-07T08:05:25.375620Z",
+          "dedupe_key": "edf76cf94b40e86e1aa46d577c41b2eea534bb75a08ce1f31aa641f1aae255ec",
+          "entities": [
+            "Morgan Stanley"
+          ],
+          "occurrence_date": null,
+          "originating_node": "W1_R3",
+          "proposition": "Morgan Stanley 预期 2025 至 2028 年每瓦 token 产出提升约 6 倍、单芯片产出提升约 15 倍，但单位成本下降将扩大 AI 使用量，总电力消耗仍将上升。",
+          "provisional_event_id": "E108",
+          "subject_time": "2025-2028"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_7b76ce24051a44c990d602d5db7b8027",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-10-07T08:01:51.930572+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "direction": "LONG",
+            "executed_policy_id": "pol_b6eb54be9d4d509c8c80",
+            "candidate_policy_ids": [
+              "pol_b6eb54be9d4d509c8c80"
+            ],
+            "matched_condition_ids": [
+              "C3"
+            ]
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-07T08:01:53.201470Z"
+              },
+              "case_id": "case_7b76ce24051a44c990d602d5db7b8027",
+              "direction": "LONG",
+              "entry_reason": "ORDER_FILLED",
+              "entry_result": "FILLED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_7b76ce24051a44c990d602d5db7b8027",
+              "execution_reason_codes": [
+                "ORDER_FILLED"
+              ],
+              "execution_state": "EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "16695.3"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "57"
+              },
+              "first_fill_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-07T08:01:57Z"
+              },
+              "has_actual_fill": true,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_7b76ce24051a44c990d602d5db7b8027",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-10-07T08:01:51.930572Z"
+              }
+            },
+            "entry": {
+              "side": "BUY",
+              "quantity": "57",
+              "average_price_usd": "292.9",
+              "first_fill_at": "2026-10-07T08:01:57+00:00",
+              "last_fill_at": "2026-10-07T08:01:57+00:00"
+            },
+            "exit": {
+              "side": "SELL",
+              "quantity": "57",
+              "average_price_usd": "287.5",
+              "first_fill_at": "2026-10-07T19:30:05+00:00",
+              "last_fill_at": "2026-10-07T19:30:05+00:00"
+            },
+            "fills": [
+              {
+                "kind": "ENTRY",
+                "side": "BUY",
+                "quantity": "57",
+                "price_usd": "292.9",
+                "filled_at": "2026-10-07T08:01:57+00:00",
+                "broker_fill_id": "0000e0d5.6ac5f4c8.01.01"
+              },
+              {
+                "kind": "EXIT",
+                "side": "SELL",
+                "quantity": "57",
+                "price_usd": "287.5",
+                "filled_at": "2026-10-07T19:30:05+00:00",
+                "broker_fill_id": "0000e0d5.6ac7c1ad.01.01"
+              }
+            ],
+            "lot_remaining_quantity": 0,
+            "realized_pnl_usd": "-310.1379250000000000000000000",
+            "realized_pnl_records": [
+              {
+                "amount": "-310.1379250000000000000000000",
+                "day": "2026-10-07",
+                "environment": "PAPER",
+                "provisional": false,
+                "reason": null
+              }
+            ],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      }
+    }
+  ]
+}

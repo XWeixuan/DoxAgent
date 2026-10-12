@@ -1,0 +1,9 @@
+{
+  "alias": "O104",
+  "title": "text paragraphs 16",
+  "content": "| CPCN | - | Certificate of Public Convenience and Necessity |  | O&M | - | Operations and Maintenance |  |  |\n\n| CWA | - | Clean Water Act |  | OATT | - | Open Access Transmission Tariff |  |  |\n\n| EIS | - | Environmental Impact Statement |  | OPUC | - | Public Utility Commission of Oregon |  |  |\n\n| EPA | - | U.S. Environmental Protection Agency |  | Oregon Sale | - | The sale of Idaho Power's Oregon electric distribution business and certain Oregon transmission assets to OTEC |  |  |\n\n| ESA | - | Endangered Species Act |  | OTEC | - | Oregon Trail Electric Consumers Cooperative, Inc. |  |  |\n\n| Exchange Act | - | U.S. Securities Exchange Act of 1934, as amended |  | PCA | - | Idaho-jurisdiction Power Cost Adjustment |  |  |\n\n| FCA | - | Idaho Fixed Cost Adjustment |  | PPA | - | Power purchase agreement |  |  |\n\n| FERC | - | Federal Energy Regulatory Commission |  | PURPA | - | Public Utility Regulatory Policies Act of 1978, as amended |  |  |",
+  "source": {
+    "provider": "Public web source",
+    "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+  }
+}

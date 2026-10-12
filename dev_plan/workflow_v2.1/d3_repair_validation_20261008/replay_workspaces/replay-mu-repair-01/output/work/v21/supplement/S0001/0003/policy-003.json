@@ -1,0 +1,36 @@
+{
+  "policy_id": "pol_0221856d49f54ae5b1104ffd97bc4de3",
+  "title": "云温数据池在高容量QLC SSD与HAMR硬盘间的选型",
+  "ref": [
+    "output/work/v21/research/S0001/0004/policy-002.json",
+    "context/document3/v21/d2/shell-0001.json#/units/3",
+    "https://investors.micron.com/news/press-release/2026/Industry-Leading-245TB-Micron-6600-ION-Data-Center-SSD-Now-Shipping/default.aspx",
+    "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx",
+    "https://investors.seagate.com/news/news-details/2026/Seagate-Delivers-Industrys-Highest-Capacity-Hard-Drives-with-Next-Generation-Mozaic-4/default.aspx",
+    "https://www.seagate.com/sg/en/blog/powering-ai-at-scale/"
+  ],
+  "transmission": "云对象存储与数据湖并非一律属于SSD或HDD：读取重用、吞吐与延迟、写入耐久、每TB介质成本及机架电力共同划分温池。美光245TB QLC SSD已出货并放量，厂商展示的机架/电力优势仍基于特定假设；Seagate 44TB HAMR已向两家超大云客户量产交付。Dropbox在2025年说明其HAMR/HDD承接间歇访问的温冷数据、SSD承接低延迟热层，因此普通冷池继续采购HAMR并不否定美光。真正改变美光容量型SSD可竞争范围的是主要客户把周期性重读、通常可能使用QLC的生产温池标准扩容选为某一介质：QLC进入可扩大容量机会；HAMR在这种较活跃的池中成为标准，则表明QLC可服务边界比单盘密度叙事所暗示的窄。客户选择不等于美光已获配。",
+  "match_scope": "召回大型云和企业存储运营者关于温对象池、反复读取的AI数据湖、近线分析池的生产媒体标准、机架/电力限制、每TB总成本及耐久/读取服务水平的决策。可见情景包括原HDD温池转为高容量QLC常规层，或一项需要周期性重读的新温池扩容选择HAMR并证明可满足读取服务目标；均为非穷举召回示例，命中只看Conditions。单盘容量、厂商实验TCO、纯冷归档延续和未说明工作负载的HAMR批量出货不自动触发。",
+  "activation_conditions": [
+    {
+      "condition_id": "C1",
+      "decision": "LONG",
+      "trigger_layer": "MIDDLE",
+      "criterion": "主要云或企业存储运营者决定将此前以HDD承载、需要周期性读取的温对象存储或数据湖池，改为高容量QLC SSD的常规生产媒体层，用于该池的新容量或更新，而非仅为个别高性能任务采购SSD；若同一决策明确排除美光为供应商，则不按此LONG条件判断。",
+      "calibration": {
+        "reference_state": "截至2026-10-06，美光245TB 6600 ION已出货并在FY26 Q4放量，Seagate 44TB HAMR已向两家超大云客户批量交付。Dropbox更早明确以HDD承接间歇访问的温冷数据、SSD承接热层；D2的工作基线是QLC可竞争较活跃温池、HDD保住冷成本池，而不是温池已普遍改用QLC。产品出货与厂商TCO比较不能证明客户媒体切换。",
+        "trigger_boundary": "对一个实际生产温池把新容量或更新的常规媒体由HDD转为QLC，已把较大容量支出移入美光已商业化SSD可竞争范围，不必等美光订单或全池迁完。单纯245TB产品发布、SSD仅承接热缓存小层、或冷归档继续使用HDD均不足。"
+      }
+    },
+    {
+      "condition_id": "C2",
+      "decision": "SHORT",
+      "trigger_layer": "MIDDLE",
+      "criterion": "主要云或企业存储运营者为一项需要周期性重读、供训练/分析反复使用而非只作冷归档的主力温对象或数据湖池，首次将HAMR HDD定为新增生产容量的标准媒体，并说明其读取服务目标可达且每TB总成本、耐久或系统约束使其在该工作负载上优于高容量闪存层；不要求该客户曾公布拟购买QLC的旧方案。",
+      "calibration": {
+        "reference_state": "美光245TB QLC已商业出货并以AI数据湖、云对象池为目标；Seagate 44TB HAMR已在两家超大云客户量产，但公告未给具体温池工作负载。Dropbox于2025年已说明HAMR/HDD锚定间歇访问的温冷数据、SSD服务低延迟热层，因此又一家客户仅在冷归档或类似低访问池使用HAMR属于已知分层延续。D2尚未建立周期性重读、对SSD构成可信容量替代的主力温池会普遍由HAMR承担。",
+        "trigger_boundary": "首次把有持续重读/分析用途的主力温池新增容量标准定为HAMR，并给出可满足该负载的读取服务及系统经济依据，已将一个原本有QLC竞争可能的生产容量范围划给HDD；不必追查从未公开的QLC旧采购提案，也不等美光销量下降。纯冷池的例行HAMR更新、仅有两家云客户未分负载的HAMR出货、试验TCO或只在热层之外保留HDD均不足。"
+      }
+    }
+  ]
+}

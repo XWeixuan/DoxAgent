@@ -1,0 +1,40 @@
+{
+  "schema_version": "codex-d1-turn-summary-v1",
+  "run_id": "c4-mu-local-20261009-02",
+  "attempt_id": "c4e_network_build-1-e04563ecf2",
+  "node": "c4e_network_build",
+  "model": "gpt-6-sol",
+  "model_provider": null,
+  "job_status": "failed",
+  "thread_id": "01a120df-434e-7841-8912-80dd270841f3",
+  "turn_id": "01a120ed-a348-74c2-8572-269ecc55066f",
+  "usage": {
+    "input_tokens": 101887,
+    "cached_input_tokens": 101376,
+    "output_tokens": 4875,
+    "reasoning_output_tokens": 595,
+    "total_tokens": 106762
+  },
+  "observed_usage": {
+    "input_tokens": 101887,
+    "cached_input_tokens": 101376,
+    "output_tokens": 4875,
+    "reasoning_output_tokens": 595,
+    "total_tokens": 106762
+  },
+  "sdk_duration_ms": 836,
+  "worker_wall_time_ms": 984,
+  "mcp_call_count": 0,
+  "command_call_count": 0,
+  "subagent_call_count": 0,
+  "file_change_count": 0,
+  "slowest_steps": [],
+  "failures": [],
+  "validation": {
+    "schema": "failed",
+    "progressive": "failed",
+    "citation": "not_run",
+    "citation_warnings": [],
+    "error": "additional_details=None codex_error_info=CodexErrorInfo(root=<CodexErrorInfoValue.other: 'other'>) message='{\"type\":\"error\",\"error\":{\"message\":\"Invalid schema for response_format \\'codex_output_schema\\': schema must be a JSON Schema of \\'type: \\\\\"object\\\\\"\\', got \\'type: \\\\\"string\\\\\"\\'.\",\"type\":\"invalid_request_error\",\"param\":\"text.format.schema\",\"code\":\"invalid_json_schema\"},\"status\":400}' misalignment=None"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "alias": "O4",
+  "title": "period_code_legend",
+  "content": {
+    "0q": "current fiscal quarter",
+    "+1q": "next fiscal quarter",
+    "0y": "current fiscal year",
+    "+1y": "next fiscal year"
+  },
+  "source": {
+    "provider": "Yahoo Finance via yfinance",
+    "locator": "yfinance:sell_side_consensus:MU"
+  }
+}

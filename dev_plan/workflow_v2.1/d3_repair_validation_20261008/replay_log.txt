@@ -1,0 +1,1 @@
+{"research": {"policies": 23, "results": 16, "directory_batches": 3}, "supplement": {"policies": 15, "results": 15, "directory_batches": 2}, "final_candidates": 18, "full_policy_references": 56, "identity_checks": 56, "old_artifacts_unchanged": 326, "new_model_calls": 0, "old_review_edit_requests_inferred": false}

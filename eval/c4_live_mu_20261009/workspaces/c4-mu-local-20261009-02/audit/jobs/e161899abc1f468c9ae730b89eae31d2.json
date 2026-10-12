@@ -1,0 +1,54 @@
+{
+  "resource_receipt": {
+    "capsule_id": null,
+    "pid": null,
+    "cold_start_ms": 93,
+    "queue_wait_ms": 235,
+    "cleanup_ms": 47
+  },
+  "execution_phase": "SETTLED",
+  "wait_reason": null,
+  "infra_recovery_count": 0,
+  "next_retry_at": 0.0,
+  "worker_generation": "9cf113ad38af4c8192c45ecb073ae7a3",
+  "cleanup_error": null,
+  "started_at": "2026-10-09T13:50:12.546671Z",
+  "finished_at": "2026-10-09T13:50:14.611529Z",
+  "job_id": "e161899abc1f468c9ae730b89eae31d2",
+  "run_id": "c4-mu-local-20261009-02",
+  "attempt_id": "c4e_network_build-2-a4ff9cedf4",
+  "request_sha256": "ba1a95e5be75a17dbe6c3c374922b06b632212e09390170582776f4494098ef3",
+  "status": "failed",
+  "thread_id": "01a120df-434e-7841-8912-80dd270841f3",
+  "turn_id": "01a120ed-b8a5-7ab0-9830-c5d66d6bfcef",
+  "final_response": null,
+  "error_code": "CODEX_TURN_FAILED",
+  "error_message": "additional_details=None codex_error_info=CodexErrorInfo(root=<CodexErrorInfoValue.other: 'other'>) message='{\"type\":\"error\",\"error\":{\"message\":\"Invalid schema for response_format \\'codex_output_schema\\': schema must be a JSON Schema of \\'type: \\\\\"object\\\\\"\\', got \\'type: \\\\\"string\\\\\"\\'.\",\"type\":\"invalid_request_error\",\"param\":\"text.format.schema\",\"code\":\"invalid_json_schema\"},\"status\":400}' misalignment=None",
+  "telemetry": {
+    "usage": {
+      "input_tokens": 101887,
+      "cached_input_tokens": 101376,
+      "output_tokens": 4875,
+      "reasoning_output_tokens": 595,
+      "total_tokens": 106762
+    },
+    "observed_usage": {
+      "input_tokens": 101887,
+      "cached_input_tokens": 101376,
+      "output_tokens": 4875,
+      "reasoning_output_tokens": 595,
+      "total_tokens": 106762
+    },
+    "sdk_duration_ms": 1870,
+    "worker_wall_time_ms": 2032,
+    "mcp_call_count": 0,
+    "command_call_count": 0,
+    "subagent_call_count": 0,
+    "file_change_count": 0,
+    "slowest_steps": [],
+    "failures": [],
+    "events": []
+  },
+  "created_at": "2026-10-09T13:50:12.447250Z",
+  "updated_at": "2026-10-09T13:50:14.614530Z"
+}

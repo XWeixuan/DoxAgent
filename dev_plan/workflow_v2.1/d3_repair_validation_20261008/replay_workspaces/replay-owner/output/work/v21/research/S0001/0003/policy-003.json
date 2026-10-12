@@ -1,0 +1,35 @@
+{
+  "policy_id": "pol_3e9ba5ea24604fdd88cc89ce815e8569",
+  "title": "CXL 共享内存池对生产服务器物理主存的增减",
+  "ref": [
+    "context/document3/v21/d2/shell-0001.json#/units/2",
+    "https://www.opencompute.org/documents/final-2024-ocp-cma-cfm-base-specification-rev1-1-pdf",
+    "https://www.opencompute.org/documents/ocp-cms-memory-fabric-orchestration-architecture-white-paper-12192025-pdf",
+    "https://www.opencompute.org/news/explore-the-innovation-village-at-the-2025-ocp-global-summit/",
+    "https://www.opencompute.org/projects/server/composable-memory-system/"
+  ],
+  "transmission": "CXL 池化把 DRAM 从每台 CPU 服务器按峰值预留的 DIMM 转为可由多主机调度的机架级容量。峰值错开时，生产集群可用较少的物理 DRAM 承载原有任务；若原先受内存容量约束的应用因此正式上线，也可能形成新增池设备采购。两种路径都能发生，规范、软件参考实现与展会演示只证明技术推进，不说明哪一条已改变美光可服务的服务器 DRAM 位数。美光曾演示共享 CXL 内存，现有研究仍以本地主存和逐步试验为基线；同一客户实际生产机群的物理 DRAM 净变化和供货选择才决定对其非 HBM 业务的意义。",
+  "match_scope": "召回云商、企业数据中心、服务器和内存平台关于 CXL 共享池的生产部署、从本地 RDIMM 迁移、既有模块复用、新 DRAM 池扩充、工作负载准入以及因延迟/运维问题退回本地主存的报道。可见的情景包括客户用较小共享池替代多台主机的峰值预留，或为原本无法上线的内存密集服务增加新池；均为非穷举召回示例，命中仍看 Conditions，OCP 规范、原型和单机 CXL 扩容不自动触发。",
+  "activation_conditions": [
+    {
+      "condition_id": "C1",
+      "decision": "SHORT",
+      "trigger_layer": "MIDDLE",
+      "criterion": "一家大型云商或企业数据中心将 CXL 多主机共享内存池用于其正式 CPU 生产机群，代替原定的逐机峰值 RDIMM 预装，并披露对同一批既有工作负载采用池化后所需新装物理 DRAM 容量低于原本逐机方案。",
+      "calibration": {
+        "reference_state": "截至 2026-10-06，OCP 已有可组合内存设备规范和编排参考实现，美光等厂商做过共享池演示；D2 默认主流服务器仍按本地主存/RDIMM 更新，池化为渐进试验。规范所称减少闲置和重复预留是设计目标，不是已证实的生产机群净 DRAM 采购下降。",
+        "trigger_boundary": "同一既有工作负载的正式机群从逐机预装转为共享池，并确认新装物理 DRAM 需求减少，即把技术上的节省可能性变成商业采购压缩；不需要等待美光季度收入。实验演示、单主机扩容、仅公布逻辑可用容量或未比较物理装机的池化部署都不足。"
+      }
+    },
+    {
+      "condition_id": "C2",
+      "decision": "LONG",
+      "trigger_layer": "MIDDLE",
+      "criterion": "一家大型云商或企业数据中心将 CXL 多主机共享内存池投入正式 CPU 生产服务，为此前因主存容量限制未能运行的内存密集工作负载采购并安装新的 DRAM 池容量，且该容量是对现有本地主存机群的增量而非把原有 DIMM 搬入共享柜。",
+      "calibration": {
+        "reference_state": "截至 2026-10-06，OCP 规范、参考实现和厂商演示已说明池化可被设计和调度；D2 仍把生产采用规模、复用旧模块与新增需求的关系留为开放问题。主流 x86/RDIMM 更新已有扩张基线，但未包含因 CXL 才可运行的新内存密集服务的已确认物理 DRAM 池采购。",
+        "trigger_boundary": "正式服务与新增物理 DRAM 池采购同时体现在一次部署决定中，已经把容量受限应用转为新的服务器主存机会；无需披露精确位数或美光订单。规范发布、演示、把本地 DIMM 移到机架池、或只承诺逻辑容量而未增加物理 DRAM，均未越过此边界。"
+      }
+    }
+  ]
+}

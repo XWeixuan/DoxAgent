@@ -1,0 +1,7 @@
+services:
+  v2-site-access:
+    image: doxagent-site-access:source-storage-20261009-r1
+  v2-message-bus:
+    image: doxagent-v2:source-storage-bus-20261009-r1
+  v2-content-enrichment:
+    image: doxagent-v2:source-storage-enrich-20261009-r1

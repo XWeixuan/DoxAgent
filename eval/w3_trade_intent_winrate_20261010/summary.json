@@ -1,0 +1,37 @@
+{
+  "cohort_size": 77,
+  "totals": {
+    "loss": 12,
+    "win": 13,
+    "flat": 47,
+    "unpriceable": 5
+  },
+  "by_ticker": {
+    "BE": {
+      "loss": 10,
+      "win": 1,
+      "flat": 3,
+      "unpriceable": 1
+    },
+    "INTC": {
+      "flat": 7,
+      "loss": 1,
+      "win": 1
+    },
+    "MU": {
+      "loss": 1,
+      "flat": 33,
+      "unpriceable": 4,
+      "win": 11
+    },
+    "RKLB": {
+      "flat": 4
+    }
+  },
+  "priced": 72,
+  "priced_win_rate_pct": 18.06,
+  "all_intent_win_rate_bounds_pct": [
+    16.88,
+    23.38
+  ]
+}

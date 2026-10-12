@@ -1,0 +1,41 @@
+{
+  "ticker": "MU",
+  "source_policy_set_version": 22,
+  "source_sha256": "7b55edcda0dd2d354543544845d6ec973f80bd7be591df021fe642c56b38213a",
+  "source_thread_owners": [
+    "OPEN_RESEARCH"
+  ],
+  "classification": "Owner of final accepted Build/supplement research draft; title and criteria preserved from final release 22",
+  "policy_count": 2,
+  "condition_count": 4,
+  "policies": [
+    {
+      "policy_id": "pol_1af45d7fb4134e41b180b934072310c1",
+      "title": "独立研究对美光周期拐点与正常化盈利的重估",
+      "conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "持续覆盖MU的研究机构在非财报独立研究中，以可核查的新调查或新的估值拆解，撤回其扩产后深幅盈利下行的基准论点，把更高的正常化利润或再投资后现金路径纳入基准，并据此上调MU基本价值判断。"
+        },
+        {
+          "condition_id": "C2",
+          "criterion": "原先主张新增供给仍能被需求吸收、延续MU高利润的研究机构，在非财报独立研究中撤回这一基准论点，将新增有效供给或合同保护不足造成的较低盈利或现金路径纳入同一预测窗口，并据此下调MU基本价值判断。"
+        },
+        {
+          "condition_id": "C3",
+          "criterion": "原本仍看好2027价格及盈利扩张的持续覆盖机构，在非财报独立研究中将价格和盈利向下正常化的基准拐点前移到2027，并据此下修该窗口的盈利或现金路径及MU基本价值判断。"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_8585a5ddda414733942e842d5809b505",
+      "title": "运营商既有无线网络的AI-RAN增购加速资源",
+      "conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "运营商把保留既有基带、增购带外部内存的GPU加速卡或共享加速节点，选为其现有公网宏网持续扩容/现代化计划中的常规硬件配置，并批准该部署采购安排；采购范围不再限定于技术试验或单一企业示范。"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "alias": "O47",
+  "title": "text paragraphs 1",
+  "content": "News Summary:\n\n- The Rubin platform harnesses extreme codesign across hardware and software to deliver up to 10x reduction in inference token cost and 4x reduction in number of GPUs to train MoE models, compared with the NVIDIA Blackwell platform.\n\n- NVIDIA Spectrum-X Ethernet Photonics switch systems deliver 5x improved power efficiency and uptime.\n\n- New NVIDIA Inference Context Memory Storage Platform with NVIDIA BlueField-4 storage processor to accelerate agentic AI reasoning.\n\n- Microsoft’s next-generation Fairwater AI superfactories — featuring NVIDIA Vera Rubin NVL72 rack-scale systems — will scale to hundreds of thousands of NVIDIA Vera Rubin Superchips.\n\n- CoreWeave among first to offer NVIDIA Rubin, operated through CoreWeave Mission Control for flexibility and performance.\n\n- Expanded collaboration with Red Hat to deliver a complete AI stack optimized for the Rubin platform with Red Hat Enterprise Linux, Red Hat OpenShift and Red Hat AI.\n\nCES—NVIDIA today kickstarted the next generation of AI with the launch of the NVIDIA Rubin platform, comprising six new chips designed to deliver one incredible AI supercomputer. NVIDIA Rubin sets a new standard for building, deploying and securing the world’s largest and most advanced AI systems at the lowest cost to accelerate mainstream AI adoption.",
+  "source": {
+    "provider": "Public web source",
+    "locator": "https://nvidianews.nvidia.com/news/rubin-platform-ai-supercomputer"
+  }
+}

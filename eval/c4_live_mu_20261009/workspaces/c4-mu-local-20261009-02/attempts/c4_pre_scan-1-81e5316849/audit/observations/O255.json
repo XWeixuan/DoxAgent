@@ -1,0 +1,18 @@
+{
+  "alias": "O255",
+  "title": "sections 1 — metadata",
+  "content": {
+    "section": "China's Cyberspace Administration",
+    "heading_match": "China's Cyberspace Administration",
+    "start_offset": 58335,
+    "end_offset": 138369,
+    "full_text_chars": 80000,
+    "returned_chars": 40000,
+    "truncated": true,
+    "match_quality": "substantive_body"
+  },
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

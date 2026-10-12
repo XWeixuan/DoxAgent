@@ -1,0 +1,9 @@
+{
+  "alias": "O199",
+  "title": "text paragraphs 111",
+  "content": "|  |\n\n| The table below shows the components of net periodic benefit costs for the pension, SMSP, and postretirement benefits plans for the six months ended June 30, 2026 and 2025 (in thousands of dollars). |\n\n|  |  | Pension Plan |  | SMSP |  | Postretirement Benefits\n\n|  | Total |\n\n|  |  | 2026 |  | 2025 |  | 2026 |  | 2025 |  | 2026 |  | 2025 |  | 2026 |  | 2025 |\n\n| Service cost |  | $ | 16,337 |  |  | $ | 15,715 |  |  | $ | 480 |  |  | $ | 586 |  |  | $ | 331 |  |  | $ | 336 |  |  | $ | 17,148 |  |  | $ | 16,637 |  |\n\n| Interest cost |  | 29,078 |  |  | 27,734 |  |  | 2,861 |  |  | 2,820 |  |  | 1,472 |  |  | 1,487 |  |  | 33,411 |  |  | 32,041 |  |\n\n| Expected return on plan assets |  | (37,078) |  |  | (34,469) |  |  | — |  |  | — |  |  | (907) |  |  | (893) |  |  | (37,985) |  |  | (35,362) |  |",
+  "source": {
+    "provider": "Public web source",
+    "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+  }
+}

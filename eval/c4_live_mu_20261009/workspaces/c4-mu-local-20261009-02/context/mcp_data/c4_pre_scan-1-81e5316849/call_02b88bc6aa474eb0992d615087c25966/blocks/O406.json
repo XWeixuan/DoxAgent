@@ -1,0 +1,18 @@
+{
+  "alias": "O406",
+  "title": "sections 1 — metadata",
+  "content": {
+    "section": "CHIPS Act funding",
+    "heading_match": "CHIPS Act Funding",
+    "start_offset": 338359,
+    "end_offset": 389172,
+    "full_text_chars": 50794,
+    "returned_chars": 40000,
+    "truncated": true,
+    "match_quality": "substantive_body"
+  },
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

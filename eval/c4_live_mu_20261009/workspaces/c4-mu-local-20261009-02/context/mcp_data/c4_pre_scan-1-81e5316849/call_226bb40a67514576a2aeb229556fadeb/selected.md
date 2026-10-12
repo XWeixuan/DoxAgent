@@ -1,0 +1,86 @@
+# Selected Data MCP observations
+
+## O295 — form
+
+10-K
+
+Source: SEC EDGAR · 0000723125-26-000023
+
+## O298 — filing_date
+
+2026-10-09
+
+Source: SEC EDGAR · 0000723125-26-000023
+
+## O299 — report_date
+
+2026-09-03
+
+Source: SEC EDGAR · 0000723125-26-000023
+
+## O300 — published_at
+
+2026-10-09
+
+Source: SEC EDGAR · 0000723125-26-000023
+
+## O301 — applied_cutoff
+
+2026-10-09
+
+Source: SEC EDGAR · 0000723125-26-000023
+
+## O303 — section_previews 1
+
+```json
+{
+  "section": "Singapore",
+  "heading_match": "Singapore",
+  "start_offset": 277100,
+  "end_offset": 357110,
+  "full_text_chars": 80000,
+  "returned_chars": 40000,
+  "truncated": true,
+  "match_quality": "substantive_body",
+  "text_preview": "dollar. We have established currency risk management programs for our monetary assets and liabilities, investments in debt instruments, and forecasted future cash flows denominated in foreign currencies to hedge against fluctuations in the fair value and volatility of future cash flows caused by changes in currency exchange rates. We generally utilize currency forward contracts in these hedging programs, which reduce, but do not always entirely eliminate, the impact of currency exchange rate movements. We do not use derivative financial instruments for trading or speculative purposes. Based on monetary assets and liabilities and investments in debt instruments denominated in foreign currencies, we estimate that a hypothetical 10% adverse change in exchange rates versus the U.S. dollar would result in losses of approximately $2.91 billion as of September 3, 2026, and $572 million as of August 28, 2025. We hedge our exposure to changes in currency exchange rates by utilizing a rolling hedge strategy for our primary currency exposures with currency forward contracts that generally mature within one year. The effectiveness of our hedges is dependent, among other factors, upon our ability to accurately measure exposures on a timely basis. We may also hedge currency risk arising from foreign currency-denominated investments in debt instruments with currency forward contracts that generally mature within one year. To hedge the exposure of changes in cash flows from changes in currency exchange rates for certain capital expenditures and expenses, we may utilize currency forward contracts that generally mature within two years. See Item 8. Financial Statements and Supplementary Data, Notes to Consolidated Financial Statements, Note 13. Derivative Instruments. 65 | 2026 10-K Table of Contents ITEM 8. FINANCIAL STATEMENTS AND SUPPLEMENTARY DATA Index to Consolidated Financial Statements Consolidated Statements of Operations and Comprehensive Income 67 Consolidated Balance Sheets 68 Consolidated Statements of Changes in Equity 69 Consolidated Statements of Cash Flows 70 Notes to Consolidated Financial Statements 71 Report of Independent Registered Public Accounting Firm (PCAOB ID 238 ) 95 66 Table of Contents Micron Technology, Inc. Consolidated Statements of Operations and Comprehensive Income (In millions, except per share amounts) For the year ended September 3, 2026 August 28, 2025 August 29, 2024 Revenue $ 133,188 $ 37,378 $ 25,111 Cost of goods sold 25,684 22,505 19,498 Gross margin 107,504 14,873 5,613 Research and development 5,650 3,798 3,430 Selling, general, and administrative 1,947 1,205 1,129 Other operating (income) expense, net 567 100 ( 250 ) Operating income 99,340 9,770 1,304 Interest income 1,084 496 529 Interest expense ( 106 ) ( 477 ) ( 562 ) Other non-operating income (expense), net ( 647 ) ( 135 ) ( 31 ) 99,671 9,654 1,240 Income tax (provision) benefit ( 14,761 ) ( 1,124 ) ( 451 ) Equity in net income (loss) of equity method investees"
+}
+```
+
+Source: SEC EDGAR · 0000723125-26-000023
+
+## O296 — accession
+
+0000723125-26-000023
+
+Source: SEC EDGAR · 0000723125-26-000023
+
+## O297 — primary_document
+
+mu-20260903.htm
+
+Source: SEC EDGAR · 0000723125-26-000023
+
+## O302 — default_sections_for_form
+
+```json
+false
+```
+
+Source: SEC EDGAR · 0000723125-26-000023
+
+## O304 — sections 1 — metadata
+
+```json
+{
+  "section": "Singapore",
+  "heading_match": "Singapore",
+  "start_offset": 277100,
+  "end_offset": 357110,
+  "full_text_chars": 80000,
+  "returned_chars": 40000,
+  "truncated": true,
+  "match_quality": "substantive_body"
+}
+```
+
+Source: SEC EDGAR · 0000723125-26-000023

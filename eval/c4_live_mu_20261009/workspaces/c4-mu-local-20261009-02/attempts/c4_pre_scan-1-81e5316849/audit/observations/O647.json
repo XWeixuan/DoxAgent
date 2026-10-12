@@ -1,0 +1,18 @@
+{
+  "alias": "O647",
+  "title": "sections 2 — metadata",
+  "content": {
+    "section": "Cloud Memory Business Unit",
+    "heading_match": "Cloud Memory Business Unit",
+    "start_offset": 42177,
+    "end_offset": 122204,
+    "full_text_chars": 80000,
+    "returned_chars": 40000,
+    "truncated": true,
+    "match_quality": "substantive_body"
+  },
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

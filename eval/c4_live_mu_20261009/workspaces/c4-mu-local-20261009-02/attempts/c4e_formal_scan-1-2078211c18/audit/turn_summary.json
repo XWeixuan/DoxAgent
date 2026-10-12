@@ -1,0 +1,88 @@
+{
+  "schema_version": "codex-d1-turn-summary-v1",
+  "run_id": "c4-mu-local-20261009-02",
+  "attempt_id": "c4e_formal_scan-1-2078211c18",
+  "node": "c4e_formal_scan",
+  "model": "gpt-6-sol",
+  "model_provider": null,
+  "job_status": "succeeded",
+  "thread_id": "01a120df-434e-7841-8912-80dd270841f3",
+  "turn_id": "01a120e8-8731-7882-89b3-270548fa356d",
+  "usage": {
+    "input_tokens": 101887,
+    "cached_input_tokens": 101376,
+    "output_tokens": 4875,
+    "reasoning_output_tokens": 595,
+    "total_tokens": 106762
+  },
+  "observed_usage": {
+    "input_tokens": 101887,
+    "cached_input_tokens": 101376,
+    "output_tokens": 4875,
+    "reasoning_output_tokens": 595,
+    "total_tokens": 106762
+  },
+  "sdk_duration_ms": 326740,
+  "worker_wall_time_ms": 326875,
+  "mcp_call_count": 1,
+  "command_call_count": 7,
+  "subagent_call_count": 0,
+  "file_change_count": 1,
+  "slowest_steps": [
+    {
+      "sequence": 3,
+      "event": "item.completed",
+      "item_type": "mcp_tool_call",
+      "name": "data.sec_filing_content",
+      "status": "completed",
+      "duration_ms": 1121,
+      "summary": "completed"
+    },
+    {
+      "sequence": 15,
+      "event": "item.completed",
+      "item_type": "command",
+      "name": "shell",
+      "status": "completed",
+      "duration_ms": 322,
+      "summary": "\"C:\\\\Users\\\\WEIXUANXIE\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\native\\\\powershell\\\\pwsh.exe\" -Command '$p='\"'attempts/c4e_formal_scan-1-2078211c18/output/completion.json'; \"'$x=Get-Content -LiteralPath $p -Raw -Enco..."
+    },
+    {
+      "sequence": 2,
+      "event": "item.completed",
+      "item_type": "command",
+      "name": "shell",
+      "status": "failed",
+      "duration_ms": 202,
+      "summary": "\"C:\\\\Users\\\\WEIXUANXIE\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\native\\\\powershell\\\\pwsh.exe\" -Command \"Get-Content -LiteralPath 'context/data_tool_catalog/c4e_formal_scan-1-2078211c18.md' -Raw | Select-Object -First..."
+    },
+    {
+      "sequence": 16,
+      "event": "item.completed",
+      "item_type": "command",
+      "name": "shell",
+      "status": "completed",
+      "duration_ms": 135,
+      "summary": "\"C:\\\\Users\\\\WEIXUANXIE\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\native\\\\powershell\\\\pwsh.exe\" -Command '$ErrorActionPreference='\"'Stop'; \"'$p='\"'attempts/c4e_formal_scan-1-2078211c18/output/completion.json'; \"'$x=Get..."
+    },
+    {
+      "sequence": 0,
+      "event": "item.completed",
+      "item_type": "command",
+      "name": "shell",
+      "status": "completed",
+      "duration_ms": 121,
+      "summary": "\"C:\\\\Users\\\\WEIXUANXIE\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\native\\\\powershell\\\\pwsh.exe\" -Command \"Get-Location; Get-Content -LiteralPath 'attempts/c4e_formal_scan-1-2078211c18/input/AGENTS.md' -Raw; Get-Content..."
+    }
+  ],
+  "failures": [
+    "command:shell:failed"
+  ],
+  "validation": {
+    "schema": "passed",
+    "progressive": "passed",
+    "citation": "passed",
+    "citation_warnings": [],
+    "error": null
+  }
+}

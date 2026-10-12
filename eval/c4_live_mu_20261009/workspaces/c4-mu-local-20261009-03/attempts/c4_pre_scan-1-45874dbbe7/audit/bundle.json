@@ -1,0 +1,14 @@
+{
+  "schema_version": "codex-d1-attempt-bundle-audit-v1",
+  "bundle_version": "codex-global-research-agent-bundle-v2",
+  "input_sha256": "8d9f62d913dd00678f33db1d01ae3ba8daf046f05aaef3ba02a7de8150f8f2ec",
+  "files": {
+    "attempts/c4_pre_scan-1-45874dbbe7/input/AGENTS.md": "d90ca13c7f624ee2ad0d8d6d22d8edd8a1ecfbe5559f2f663e3f4357c809b8ed",
+    "attempts/c4_pre_scan-1-45874dbbe7/input/bundle_manifest.json": "d191ea1261f8fabcdd843cb97d5b92a7847687e904a1e77c0f86f5aa392b30f6",
+    "attempts/c4_pre_scan-1-45874dbbe7/input/context.json": "2a42dbb2ad45a3bb5c3ea6dd2a6751ac82047bedcae6e5b904e6d05e9407cf01",
+    "attempts/c4_pre_scan-1-45874dbbe7/input/schemas/c4e_relations.schema.json": "7e7d88c12e8aaf60b4b66af573486f735c344c0510bdf9932b780db8a1cd6b53",
+    "attempts/c4_pre_scan-1-45874dbbe7/input/skills/c4/c4e_pre_scan.md": "1c9debf4200e92a6ed197472d4f042917f78077be31bdb0d1e6432be417b77f8",
+    "attempts/c4_pre_scan-1-45874dbbe7/input/task.json": "df7a9984c78d9096e9a7285fba883b8b9eaa09c250ccfab8227341569a27dd3f",
+    "attempts/c4_pre_scan-1-45874dbbe7/input/task.md": "b798eaf26c35c30191c620c36eea930691d6acdb7deda4e31a79d87ae179f9f1"
+  }
+}

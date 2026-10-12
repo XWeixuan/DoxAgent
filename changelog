@@ -1452,3 +1452,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-10-12 D3 v2.1: 按 workspace I/O 与 inventory 修复方案完成本地实现。增加独立 900 秒持久通信恢复窗口、同值写确认与同路径锁、COLLECT/COMMIT 断点，成功研究恢复不增加 Job/attempt；正式 durable 不再放大 D3 预算，Maintain 前置读取归属本次 run。增加 Worker 精确 inventory-query、D3 新任务 source 索引及 release_only 发布，保留共享默认和旧冻结请求。42 项新增故障测试及既有编排/维护/共享回归通过；离线规模派生文件 11,354→257（-97.74%）。详见 dev_plan/workflow_v2.1/d3_workspace_io_inventory_implementation_acceptance_20261012.md；未部署、未运行模型或操作远端，模型/并发/prompt/skill 不变。
 2026-10-12: Add isolated RKLB formal v2.1 D1/D2-O0 gate/D2/D3 entrypoint; retain 3-6 shell gate and same-run resume, skip CDECR/O2/O4 without production migration.
+
+2026-10-12: 完成消息源反复失败只读诊断并输出新修复方案：核实两个荷兰固定出口失效、候选 override/人工门控缺口、Yahoo recipe 404 与独立全局代理超时、Runtime SQLite 锁异常逃出 Bus 主循环，以及列表/订阅正文验收分离。保存脱敏主机、Registry、轮询、正文和有限 HTTPS 对照证据；明确上一轮未恢复项、控制层待验证风险及容量边界。未修改生产配置、重启服务、删除数据或启用维护 Worker；详见 dev_plan/workflow_v2/message_source_recurring_failure_root_cause_and_repair_plan_20261012.md。

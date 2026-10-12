@@ -1,0 +1,630 @@
+[
+  {
+    "case_id": "case_d92564598f294e6c91d3cee128cbe800",
+    "ticker": "MU",
+    "title": "Wall St futures up as oil slips; telecoms pressured by SpaceX spectrum deal",
+    "created_at": "2026-10-09T12:09:11.299706Z",
+    "mode": "UNCOVERED_NEW",
+    "thread_kind": "FALLBACK",
+    "has_intent": true,
+    "worker_seconds": 261.893,
+    "sdk_seconds": 246.129,
+    "file": "case_01_MU.json",
+    "commands": 8,
+    "web_calls": 6,
+    "compactions": 0,
+    "result": {
+      "delta_candidates": [
+        {
+          "assertion_state": "RUMORED",
+          "entities": [
+            "Apple",
+            "Nikkei Asia",
+            "Reuters",
+            "iPhone 18 Pro",
+            "iPhone 18 Pro Max",
+            "component suppliers"
+          ],
+          "occurrence_date": "2026-10-09",
+          "proposition": "Nikkei Asia据报Apple将2026年10月iPhone 18 Pro和iPhone 18 Pro Max组件订单较原计划至少削减15%；Reuters称无法立即独立核实该报道。",
+          "subject_time": "2026年10月的iPhone 18 Pro和iPhone 18 Pro Max组件订单"
+        }
+      ],
+      "expert_trade": {
+        "direction": "SHORT",
+        "evaluated": true,
+        "expectation_delta": "Nikkei据报Apple将10月iPhone 18 Pro/Pro Max组件订单较原计划至少削减15%，使风险从行业层面的消费端压力推进到Apple旗舰机型的具体订单下修；下调近期旗舰手机及其移动内存需求预期，但尚无Micron实际订单或ASP变化数据。[Reuters转述](https://ca.investing.com/news/stock-market-news/apple-cuts-iphone-18-pro-orders-due-to-soft-demand-nikkei-asia-reports-4872803)",
+        "prior_expectation": "事件前已预期高内存成本会压制手机需求，但移动DRAM供给仍紧、价格仍可能上涨；Apple高端机此前的基线更偏向通过提价或吸收部分成本来维持出货。[TrendForce 9月30日](https://www.trendforce.com/presscenter/news/20260930-13258.html)；[TrendForce 8月10日](https://www.trendforce.com/presscenter/news/20260810-13172.html)",
+        "reason": "给出适度、战术性SHORT：报道中的订单下修早于完整财务兑现，手机产量下降会减少单机内存需求，压低Micron移动/客户端业务的位出货预期；该业务在Micron最新FY26 Q3收入中约占28%。一项事件前供应链报道还称Apple较依赖Micron内存，但具体受影响的Micron订单未披露。[供应链报道](https://www.macrumors.com/2026/08/06/apple-scrambling-to-secure-memory/) 报道未经Reuters独立证实，削减的是组件订单且可能混有排产因素；4Q移动DRAM供给仍紧、价格仍预期上行，AI/服务器业务亦提供缓冲。因此该信号支持短期负向预期差，不足以判断全行业周期反转。",
+        "trade": true
+      },
+      "novelty": {
+        "reason": "新现实是Apple据报下调iPhone 18 Pro/Pro Max组件订单；E4已记录内存紧缺、价格压力及Apple面临内存约束，但未记录这次新品订单下修。",
+        "reference_ids": [
+          "E4"
+        ],
+        "result": "NEW"
+      },
+      "policy": {
+        "matched_condition_ids": [],
+        "policy_ids": [],
+        "reason": "现行PolicySet没有覆盖此Apple手机端需求变化并明确连接Micron实际供货或财务影响的触发条件；维持无Policy覆盖。"
+      },
+      "w3_case_id": "w3_b32fbb895d7d4709b2d1dd2c6d30acc5"
+    }
+  },
+  {
+    "case_id": "case_c24add34b3594b8aa8c356869a18f222",
+    "ticker": "INTC",
+    "title": "Boosting Agentic AI Throughput with Intel® Xeon® CPUs - Intel",
+    "created_at": "2026-10-06T17:10:09.981376Z",
+    "mode": "UNCOVERED_NEW",
+    "thread_kind": "MAIN",
+    "has_intent": true,
+    "worker_seconds": 206.179,
+    "sdk_seconds": 189.599,
+    "file": "case_02_INTC.json",
+    "commands": 5,
+    "web_calls": 0,
+    "compactions": 0,
+    "result": {
+      "delta_candidates": [
+        {
+          "assertion_state": "ACTUAL",
+          "entities": [
+            "Intel",
+            "Intel Xeon 6",
+            "AMD第五代EPYC",
+            "Arm v9.2A",
+            "Terminal-Bench 2.0"
+          ],
+          "occurrence_date": "2026-10-06",
+          "proposition": "Intel报告称，其截至2026年9月进行的Terminal-Bench 2.0确定性回放测试显示，Xeon 6实例在医疗、银行金融及制造代理工作流中的归一化吞吐分别约为第五代AMD EPYC实例的1.66、1.64及1.58倍，以及Arm v9.2A实例的4.5、4.57及4.24倍；测试使用24路并发、60分钟评估窗口，且不运行模型推理或网络调用。",
+          "subject_time": "截至2026年9月的Terminal-Bench 2.0测试"
+        }
+      ],
+      "expert_trade": {
+        "direction": "LONG",
+        "evaluated": true,
+        "expectation_delta": "Intel报告的Terminal-Bench 2.0测试显示Xeon 6在医疗、银行金融及制造代理任务中的归一化吞吐均显著领先第五代AMD EPYC和Arm v9.2A，提升了Intel在Agentic AI服务器CPU工作负载中赢得分配的预期。",
+        "prior_expectation": "Agentic AI扩大CPU需求的预期已存在（E388）；Intel服务器需求改善且Xeon 6快速爬坡，但D2指出相对性能优势和客户级分配尚未确立。",
+        "reason": "测试是在相同工作轨迹与实例资源下进行，跨三个垂直领域结果方向一致且差距显著；在Agentic AI需求扩张背景下，这改善了Xeon的竞争力预期，并可经客户工作负载分配影响DCAI需求。数据由Intel自测，且没有客户采用、价格/功耗比较或订单确认，限制了结论强度；但该测试为D2尚缺的相关性能证据，提供了足够明确的正向边际信号，故作LONG。",
+        "trade": true
+      },
+      "novelty": {
+        "reason": "E388已记录Agentic AI带动服务器CPU需求的市场预测，但未覆盖Intel披露的Xeon 6跨行业代理工作负载吞吐测试及其对比结果。",
+        "reference_ids": [
+          "E388"
+        ],
+        "result": "NEW"
+      },
+      "policy": {
+        "matched_condition_ids": [],
+        "policy_ids": [],
+        "reason": "此为Intel自述的性能基准测试结果，未确认客户选型、绑定订单、部署、出货或新增供给；不满足现行Policy的触发条件。"
+      },
+      "w3_case_id": "w3_e5f539f1f1244acc88df801c4d1c5686"
+    }
+  },
+  {
+    "case_id": "case_4a89a6a48f1b42c0893797c8847928a1",
+    "ticker": "BE",
+    "title": "FERC asks grid operator PJM to revise plan to shield homes from data center costs",
+    "created_at": "2026-09-30T18:52:41.823618Z",
+    "mode": "UNCOVERED_NEW",
+    "thread_kind": "MAIN",
+    "has_intent": true,
+    "worker_seconds": 123.045,
+    "sdk_seconds": 107.252,
+    "file": "case_03_BE.json",
+    "commands": 2,
+    "web_calls": 0,
+    "compactions": 0,
+    "result": {
+      "delta_candidates": [
+        {
+          "assertion_state": "ACTUAL",
+          "entities": [
+            "Federal Energy Regulatory Commission",
+            "PJM Interconnection",
+            "Backstop procurement"
+          ],
+          "occurrence_date": "2026-09-30",
+          "proposition": "FERC directed PJM Interconnection to postpone and revise its backstop electricity procurement proposal, suspending its start for five months while further proceedings continue.",
+          "subject_time": "Five-month suspension beginning September 30, 2026"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "entities": [
+            "Federal Energy Regulatory Commission",
+            "PJM Interconnection",
+            "Data centers",
+            "Existing electricity customers"
+          ],
+          "occurrence_date": "2026-09-30",
+          "proposition": "FERC directed PJM to make large energy users such as data centers bear the costs associated with securing power through the backstop program rather than leaving existing customers to pay those costs.",
+          "subject_time": "Revised PJM backstop cost-allocation proposal"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "entities": [
+            "PJM Interconnection",
+            "Data centers",
+            "Electricity supply"
+          ],
+          "occurrence_date": "2026-09-30",
+          "proposition": "The PJM region was reported to have a power-supply shortfall of more than 6,800 megawatts as data-center electricity demand expanded faster than new supplies were connected.",
+          "subject_time": "Current PJM regional power-supply conditions"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "entities": [
+            "Federal Energy Regulatory Commission",
+            "PJM Interconnection",
+            "Data-center load forecasts"
+          ],
+          "occurrence_date": "2026-09-30",
+          "proposition": "FERC asked PJM to improve its data-center electricity-demand forecasts and use more up-to-date load forecasts in determining cost allocations.",
+          "subject_time": "Subsequent PJM planning and cost-allocation proceedings"
+        }
+      ],
+      "expert_trade": {
+        "direction": "LONG",
+        "evaluated": true,
+        "expectation_delta": "The five-month suspension of PJM's backstop procurement, amid a reported 6.8 GW shortfall, extends the near-term grid-delivery gap. Requiring large energy users to bear associated costs may further improve the relative attractiveness of fast onsite firm power, modestly raising BE's accessible opportunity and share potential.",
+        "prior_expectation": "BE's opportunity is supported by data-center load growth and grid/interconnection constraints, but the baseline assumed the PJM backstop process could begin addressing the region's supply gap while Bloom's share still required customer selection.",
+        "reason": "TRADE LONG: the regulatory action directly worsens the timing and cost certainty of a competing grid-supply route in a major data-center region, while BE's value proposition is time-to-power onsite generation. The signal is indirect and offset by possible data-center demand destruction and the lack of named Bloom awards, but the surprise, materiality, and transmission are sufficient for a directional uncovered edge.",
+        "trade": true
+      },
+      "novelty": {
+        "reason": "FERC's order delaying and revising PJM's backstop procurement process, including its five-month suspension and cost-allocation directives, is not covered by the pinned Reference View.",
+        "reference_ids": [],
+        "result": "NEW"
+      },
+      "policy": {
+        "matched_condition_ids": [],
+        "policy_ids": [],
+        "reason": "The action is a regional regulatory and procurement change, not a final project-specific rule producing Bloom firm-MW commitments or a named Bloom project delay; no policy condition is satisfied."
+      },
+      "w3_case_id": "w3_d418dd6ac78e4a2997e345f5071e7d59"
+    }
+  },
+  {
+    "case_id": "case_91adbdf5ecaa4827b0ca5262574fb9dc",
+    "ticker": "RKLB",
+    "title": "Press Release: Iridium Stockholders Approve -2-",
+    "created_at": "2026-09-24T20:35:06.662775Z",
+    "mode": "UNCOVERED_NEW",
+    "thread_kind": "FALLBACK",
+    "has_intent": true,
+    "worker_seconds": 220.919,
+    "sdk_seconds": 203.647,
+    "file": "case_04_RKLB.json",
+    "commands": 12,
+    "web_calls": 0,
+    "compactions": 0,
+    "result": {
+      "delta_candidates": [
+        {
+          "assertion_state": "ACTUAL",
+          "entities": [
+            "Iridium",
+            "Rocket Lab"
+          ],
+          "occurrence_date": "2026-09-24",
+          "proposition": "Iridium 股东已批准 Rocket Lab 拟议收购 Iridium 的交易。",
+          "subject_time": null
+        }
+      ],
+      "expert_trade": {
+        "direction": "LONG",
+        "evaluated": true,
+        "expectation_delta": "股东批准移除了一个明确的交割前置条件，使交易完成的概率和确定性上升、交易终止尾部风险下降；但它未改变交割日期，也未解决监管批准、最终融资/稀释或协同兑现。",
+        "prior_expectation": "事件前，Rocket Lab 与 Iridium 已签署收购协议，股东表决排定于 2026-09-24，但股东批准、监管/注册及其他交割条件仍未完成；管理层预期约 2027 年中完成，融资结构与备考每股结果仍未锁定。",
+        "reason": "这是大型交易的实质性二元里程碑：股东批准降低了交易失败风险，并通过“批准→交割概率上升→Iridium现金流及其与 Rocket Lab 发射/Space Systems 能力的潜在协同更可能实现→RKLB长期价值预期上升”形成清晰传导，故为 LONG。监管、融资和整合仍有风险，但不否定当前方向。",
+        "trade": true
+      },
+      "novelty": {
+        "reason": "Reference View 的 E86 只记录 2026-09-24 股东投票处于 SCHEDULED；当前正式公告确认 Iridium 股东已批准 Rocket Lab 拟议收购，核心状态由待表决转为已批准，故为 NEW。",
+        "reference_ids": [
+          "E86"
+        ],
+        "result": "NEW"
+      },
+      "policy": {
+        "matched_condition_ids": [],
+        "policy_ids": [],
+        "reason": "消息不满足现行 PolicySet 关于交易终止或股东未批准的负面触发条件；PolicySet 未覆盖股东批准这一正向里程碑，因此仍是 uncovered。"
+      },
+      "w3_case_id": "w3_f55691d209a94733bf4ca14e96487b43"
+    }
+  },
+  {
+    "case_id": "case_5e7ae91538234d3dac6b6378e599b71e",
+    "ticker": "MU",
+    "title": "Netlist and Micron reach $600M patent license and settlement deal",
+    "created_at": "2026-10-06T12:14:05.765492Z",
+    "mode": "UNCOVERED_NEW",
+    "thread_kind": "FALLBACK",
+    "has_intent": true,
+    "worker_seconds": 336.88,
+    "sdk_seconds": 318.385,
+    "file": "case_05_MU.json",
+    "commands": 4,
+    "web_calls": 4,
+    "compactions": 0,
+    "result": {
+      "delta_candidates": [
+        {
+          "assertion_state": "ACTUAL",
+          "entities": [
+            "Micron Technology, Inc.",
+            "Netlist, Inc."
+          ],
+          "occurrence_date": "2026-10-06",
+          "proposition": "Micron与Netlist达成专利许可协议，协议授予Micron为期五年的Netlist专利组合许可，涵盖服务器DIMM与HBM技术。",
+          "subject_time": "五年许可期（2026年至2031年）"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "entities": [
+            "Micron Technology, Inc.",
+            "Netlist, Inc."
+          ],
+          "occurrence_date": "2026-10-06",
+          "proposition": "Micron与Netlist的协议约定，双方之间所有未决法律程序将予以和解并相互解除。",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "entities": [
+            "Micron Technology, Inc.",
+            "Netlist, Inc."
+          ],
+          "occurrence_date": "2026-10-06",
+          "proposition": "协议约定Micron从2026年第四季度至2031年第三季度每季度向Netlist支付3000万美元，许可期内合计支付6亿美元。",
+          "subject_time": "2026年第四季度至2031年第三季度"
+        }
+      ],
+      "expert_trade": {
+        "direction": "LONG",
+        "evaluated": true,
+        "expectation_delta": "法律状态从未决诉讼、赔偿与潜在排除风险，转为Micron获得覆盖服务器DIMM及HBM的五年许可、双方约定解决所有未决诉讼；相应代价是2026年Q4至2031年Q3每季度3000万美元、总计6亿美元。需要上修法律确定性及产品供货连续性预期，并将成本风险收敛为明确的许可费；这不是内存需求、销量或ASP上修。",
+        "prior_expectation": "事件前的基线是内存业务继续运营，但Netlist相关的损害赔偿与排除救济风险仍未解决，并非已有许可或和解。Reference View记录了Netlist针对HBM的ITC行动（E176）、先前ITC行动（E21）、专利上诉状态（E22）及既有4.45亿美元赔偿判决（E23）；Micron公开申报亦记载该判决及上诉。[Micron申报](https://www.sec.gov/Archives/edgar/data/723125/000072312526000006/mu-20260226.htm) Netlist于9月29日宣布新的HBM专利ITC行动并寻求排除及停止令。[Netlist公告](https://www.prnewswire.com/news-releases/netlist-files-new-itc-action-against-micron-technology-inc-involving-hbm-patents-for-ai-computing-302892194.html) 合理预期是继续出货与未决法律尾部风险并存，结果不确定，而非禁售必然。",
+        "reason": "和解及许可条款此前未公开，且Netlist在9月29日刚针对HBM寻求ITC排除救济，故相对事件前未决基线有明显惊喜。HBM和服务器内存是Micron重要业务；许可及诉讼和解降低产品销售受法律救济干扰的尾部风险，传导路径清晰。每季度3000万美元虽为新增成本，但约为FY26 Q4约500亿美元收入指引中点的0.06%；净预期变化偏正，支持LONG。[协议报道](https://www.investing.com/news/assorted/netlist-and-micron-reach-600m-patent-license-and-settlement-deal-432SI-4934250)",
+        "trade": true
+      },
+      "novelty": {
+        "reason": "新现实是Micron与Netlist达成五年专利许可及和解，涵盖服务器DIMM与HBM，并约定每季度支付3000万美元、合计6亿美元。Reference View中的E176、E21、E22和E23只记录未决诉讼、ITC救济请求及既有赔偿判决，未记录许可或和解。 [当日消息](https://www.investing.com/news/assorted/netlist-and-micron-reach-600m-patent-license-and-settlement-deal-432SI-4934250)",
+        "reference_ids": [
+          "E176",
+          "E21",
+          "E22",
+          "E23"
+        ],
+        "result": "NEW"
+      },
+      "policy": {
+        "matched_condition_ids": [],
+        "policy_ids": [],
+        "reason": "PolicySet v17没有针对Netlist诉讼、专利许可或法律风险解除的触发条件；现有经营与产品相关条件均未被该和解事实满足，因此此案仍属uncovered。"
+      },
+      "w3_case_id": "w3_24095f613d3f4bef8e0b97e3ec127748"
+    }
+  },
+  {
+    "case_id": "case_da7b9c59f20f409dbc342ce81a9e351f",
+    "ticker": "MU",
+    "title": "Micron's Monster Rally Faces New Threat As Traders Pile Into Bearish Bets",
+    "created_at": "2026-10-12T11:03:38.877386Z",
+    "mode": "UNCOVERED_NEW",
+    "thread_kind": "MAIN",
+    "has_intent": false,
+    "worker_seconds": 142.455,
+    "sdk_seconds": 109.091,
+    "file": "case_06_MU.json",
+    "commands": 4,
+    "web_calls": 1,
+    "compactions": 1,
+    "result": {
+      "delta_candidates": [
+        {
+          "assertion_state": "ACTUAL",
+          "entities": [
+            "VanEck Semiconductor ETF",
+            "ThinkOrSwim",
+            "SpotGamma",
+            "CNBC"
+          ],
+          "occurrence_date": "2026-10-09",
+          "proposition": "据报道，周五截至午间，VanEck Semiconductor ETF有超过180,000份看跌期权成交、约50,000份看涨期权成交；相关看跌期权溢价约4,600万美元，看涨期权溢价约2,600万美元。",
+          "subject_time": "2026-10-09截至午间"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "entities": [
+            "Micron Technology",
+            "SpotGamma",
+            "Volland"
+          ],
+          "occurrence_date": "2026-10-09",
+          "proposition": "SpotGamma数据显示，周五约2.7亿美元期权溢价与可能的Micron看跌期权买入相关，包括2028年6月到期的深度价内合约；一组行权价为2,250至2,500美元的看跌期权交易被报道为可能构成约1,450万美元的看跌价差，但其净方向无法仅凭买卖报价确定。",
+          "subject_time": "2026-10-09交易；部分合约于2028年6月到期"
+        }
+      ],
+      "expert_trade": {
+        "direction": null,
+        "evaluated": true,
+        "expectation_delta": "新增的是周五看跌期权活跃及与MU看跌期权相关溢价的报道，短期情绪信号偏谨慎；但不能据成交量或溢价确认净空头，也没有新的Micron经营、需求、价格或客户履约事实迫使修订基本面预期。",
+        "prior_expectation": "事件前基线显示AI/服务器内存需求及FY26 Q4经营展望强劲、HBM商业化推进，但FY27盈利持续性与内存周期风险仍未完全确定；没有可靠的期权净仓位共识基线。",
+        "reason": "期权数据虽新且金额显著，但报道明确存在价差交易及买卖价差分类不确定性，所列合约也可能是对冲，不能据此确认方向性净空头或持续卖压。没有基本面恶化或可靠的ticker级传导，故不足以形成可辩护的直接LONG或SHORT交易。",
+        "trade": false
+      },
+      "novelty": {
+        "reason": "周五半导体ETF及Micron期权交易的具体成交量、溢价和合约信息未被Reference View覆盖。D.A. Davidson目标价等分析师观点已有记录，但不覆盖这些新期权流数据。",
+        "reference_ids": [],
+        "result": "NEW"
+      },
+      "policy": {
+        "matched_condition_ids": [],
+        "policy_ids": [],
+        "reason": "期权流和短期股价变动不满足现行Policy要求的Micron经营、产品价格、出货、合同履约、产能或财务触发条件；未形成Policy覆盖。"
+      },
+      "w3_case_id": "w3_cecf751e9f5a4c038ae3cba154af3e05"
+    }
+  },
+  {
+    "case_id": "case_7fc7e5f848f84a789b8043b8c158115d",
+    "ticker": "INTC",
+    "title": "Michael and Susan Dell, Intel co-founder’s Gordon and Betty Moore fund and 8 largest single donations in - The Times of India",
+    "created_at": "2026-10-12T11:06:10.323745Z",
+    "mode": "UNCOVERED_NEW",
+    "thread_kind": "MAIN",
+    "has_intent": false,
+    "worker_seconds": 54.915,
+    "sdk_seconds": 51.785,
+    "file": "case_07_INTC.json",
+    "commands": 1,
+    "web_calls": 2,
+    "compactions": 0,
+    "result": {
+      "delta_candidates": [
+        {
+          "assertion_state": "ACTUAL",
+          "entities": [
+            "The Times of India",
+            "Michael Dell",
+            "Susan Dell",
+            "Gordon and Betty Moore Foundation"
+          ],
+          "occurrence_date": "2026-10-12",
+          "proposition": "The Times of India published a roundup of eight large university donations that includes donations associated with Michael and Susan Dell and the Gordon and Betty Moore Foundation.",
+          "subject_time": "Historical university donations"
+        }
+      ],
+      "expert_trade": {
+        "direction": null,
+        "evaluated": true,
+        "expectation_delta": "The article changes no identified Intel revenue, cost, product, customer, supply, or financial expectation; it reports philanthropy rather than a new Intel event.",
+        "prior_expectation": "Intel’s pre-event business baseline contains no identified exposure to charitable donations made by the Dell family or the Gordon and Betty Moore Foundation.",
+        "reason": "The connection to Intel is Gordon Moore’s historical role as a co-founder. No direct economic or operational transmission to Intel is established, so no INTC trade is warranted.",
+        "trade": false
+      },
+      "novelty": {
+        "reason": "The Times of India published a roundup of eight large university donations, including donations associated with Michael and Susan Dell and the Gordon and Betty Moore Foundation. No matching article or fact appears in the Reference View. [Source article](https://timesofindia.indiatimes.com/technology/tech-news/michael-and-susan-dell-intel-co-founders-gordon-and-betty-moore-fund-and-8-largest-single-donations-in-university-education-history/articleshow/134890541.cms)",
+        "reference_ids": [],
+        "result": "NEW"
+      },
+      "policy": {
+        "matched_condition_ids": [],
+        "policy_ids": [],
+        "reason": "This is a roundup of philanthropy and historical university donations, not an Intel corporate action. It contains no Intel business fact matching a Policy condition."
+      },
+      "w3_case_id": "w3_9d15da5eddc04a248de61e34f5e40883"
+    }
+  },
+  {
+    "case_id": "case_f05bd9da3c9b41889dd2e29d54e1b4aa",
+    "ticker": "BE",
+    "title": "Bloom Energy vs. Vertiv: Which AI Infrastructure Stock Is the Better Buy After the Pullback? - The Motley Fool",
+    "created_at": "2026-10-12T10:38:53.395615Z",
+    "mode": "UNCOVERED_NEW",
+    "thread_kind": "MAIN",
+    "has_intent": false,
+    "worker_seconds": 180.415,
+    "sdk_seconds": 136.988,
+    "file": "case_08_BE.json",
+    "commands": 9,
+    "web_calls": 3,
+    "compactions": 0,
+    "result": {
+      "delta_candidates": [
+        {
+          "assertion_state": "PLANNED",
+          "entities": [
+            "Vertiv",
+            "UtilityInnovation Group"
+          ],
+          "occurrence_date": "2026-09-02",
+          "proposition": "Vertiv announced an agreement to acquire UtilityInnovation Group, adding microgrid controls, onsite-generation orchestration and behind-the-meter power architecture to its portfolio; the acquisition was pending closing.",
+          "subject_time": "Closing expected in 2026 Q4"
+        },
+        {
+          "assertion_state": "PLAN",
+          "entities": [
+            "Vertiv",
+            "Ironton, Ohio"
+          ],
+          "occurrence_date": "2026-03-30",
+          "proposition": "Vertiv announced an approximately $50 million Ohio manufacturing expansion intended to increase production capacity for liquid-cooling and chilled-water systems; the Ironton expansion was expected to become operational in Q2 2027.",
+          "subject_time": "Expected operation in Q2 2027"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "entities": [
+            "Vertiv",
+            "NVIDIA"
+          ],
+          "occurrence_date": "2026-09-21",
+          "proposition": "Vertiv's 2.3 MW CoolChip coolant distribution unit qualified as NVIDIA DSX Ready.",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "PLAN",
+          "entities": [
+            "Vertiv",
+            "NVIDIA"
+          ],
+          "occurrence_date": "2025-10-13",
+          "proposition": "Vertiv announced design maturity for 800 VDC power architectures in collaboration with NVIDIA for next-generation AI factories, with its 800 VDC portfolio planned for release in the second half of 2026.",
+          "subject_time": "Planned portfolio release in 2026 H2"
+        }
+      ],
+      "expert_trade": {
+        "direction": null,
+        "evaluated": true,
+        "expectation_delta": "No material new revision to Bloom's expected orders, share, deployment timing or economics. The article packages previously public Vertiv announcements; it reports no customer switching from Bloom, lost award or quantified displacement. Vertiv's cooling and power-integration offerings may be adjacent or complementary and are not proof of substitute generation.",
+        "prior_expectation": "The baseline recognizes Bloom's substantial AI-power opportunity and existing Oracle and Brookfield arrangements, but does not establish durable market share; competing routes remain active. Before this article, Vertiv had already announced its UIG acquisition agreement, Ohio expansion, NVIDIA 800VDC work and CoolChip qualification.",
+        "reason": "No trade: the coverage is a comparative investment opinion, not a new competitive event on its publication date. Vertiv's UIG deal remains an announced agreement subject to closing, its Ohio expansion is planned, and the CoolChip qualification is product-level—not evidence of customer adoption or Bloom displacement. These developments were public before the article ([UIG agreement](https://investors.vertiv.com/news/news-details/2026/Vertiv-Announces-Agreement-to-Acquire-UtilityInnovation-Group-to-Accelerate-Time-to-Power-for-AI-Data-Centers/default.aspx), [Ohio expansion](https://www.vertiv.com/en-ca/about/news-and-events/corporate-news/2026/vertiv-to-expand-ohio-manufacturing-to-boost-u.s.-production-of-critical-thermal-management-technologies-for-ai-data-centers/), [CoolChip qualification](https://www.vertiv.com/en-us/about/news-and-events/corporate-news/2026/vertiv-coolant-distribution-unit-qualified-as-nvidia-dsx-ready-for-ai-factory-infrastructure/), [800VDC collaboration](https://investors.vertiv.com/news/news-details/2025/From-Vision-to-Readiness-Vertiv-Collaborates-with-NVIDIA-to-Advance-800-VDC-Platform-Designs-to-Power-the-Next-Generation-of-AI-Factories/default.aspx)). There is no demonstrated surprise or sufficiently direct transmission to Bloom's earnings.",
+        "trade": false
+      },
+      "novelty": {
+        "reason": "The article's Bloom references—Oracle capacity, Brookfield financing and Power Connect—are already covered by E2, E3, E8, E16 and E22. Its Vertiv-specific details (UIG acquisition agreement, Ohio expansion, NVIDIA 800VDC collaboration and CoolChip qualification) are not in the Reference View; E87 only records broad 800VDC ecosystem activity, not these Vertiv developments.",
+        "reference_ids": [
+          "E2",
+          "E3",
+          "E8",
+          "E16",
+          "E22",
+          "E87"
+        ],
+        "result": "NEW"
+      },
+      "policy": {
+        "matched_condition_ids": [],
+        "policy_ids": [],
+        "reason": "No Policy trigger is met. The article reports no named Bloom customer choosing Vertiv or another route, no Bloom capacity reduction, and no project-level substitution, award or acceptance outcome."
+      },
+      "w3_case_id": "w3_c6e07f93f96449b192511b668b2c6f1d"
+    }
+  },
+  {
+    "case_id": "case_a9e54dfcdd0e4e52883d1a259c602445",
+    "ticker": "RKLB",
+    "title": "TD Cowen Cut Its Rocket Lab Target. It Still Sees 32% Upside",
+    "created_at": "2026-10-12T06:16:07.546081Z",
+    "mode": "UNCOVERED_NEW",
+    "thread_kind": "FALLBACK",
+    "has_intent": false,
+    "worker_seconds": 218.205,
+    "sdk_seconds": 192.464,
+    "file": "case_09_RKLB.json",
+    "commands": 5,
+    "web_calls": 1,
+    "compactions": 0,
+    "result": {
+      "delta_candidates": [
+        {
+          "assertion_state": "ACTUAL",
+          "entities": [
+            "TD Cowen",
+            "Gautam Khanna",
+            "Rocket Lab (RKLB)"
+          ],
+          "occurrence_date": "2026-10-09",
+          "proposition": "TD Cowen分析师Gautam Khanna于2026-10-09将Rocket Lab（RKLB）目标价从$120下调至$90，并维持Buy评级。",
+          "subject_time": null
+        }
+      ],
+      "expert_trade": {
+        "direction": null,
+        "evaluated": true,
+        "expectation_delta": "TD Cowen自身目标价下调$30（25%）至$90，但维持Buy；按报道引用的$68.44股价仍约有32%上涨空间。这修订了单家机构的估值判断，不证明市场整体盈利预期或Rocket Lab经营预期同步下修。",
+        "prior_expectation": "调整前，TD Cowen自身的RKLB目标价为$120且评级为Buy。更广泛的事件前基线是公司增长、利润率和现金转换仍需多季度兑现；Document1指出缺乏可靠的同口径季度卖方共识，不能把单家目标价视为市场共识。",
+        "reason": "目标价下调幅度对该分析师估值有意义，但消息未披露公司经营、订单、现金流或项目状态的新变化，也不足以证明市场整体预期发生重大修订。对RKLB的路径主要是间接的情绪或估值倍数传导，缺少足够的市场广度与基本面连接，不能据此形成直接方向性交易。",
+        "trade": false
+      },
+      "novelty": {
+        "reason": "TD Cowen于2026-10-09将Rocket Lab目标价从$120下调至$90，同时维持Buy评级；该具体分析师操作未见于Reference View。[The Fly via TipRanks](https://www.tipranks.com/news/the-fly/rocket-lab-price-target-lowered-to-90-from-120-at-td-cowen-thefly-news)",
+        "reference_ids": [],
+        "result": "NEW"
+      },
+      "policy": {
+        "matched_condition_ids": [],
+        "policy_ids": [],
+        "reason": "这是单家卖方目标价与估值观点调整，不满足PolicySet中针对公司运营、合同、融资、监管等现实变化的触发条件；无现行Policy覆盖。"
+      },
+      "w3_case_id": "w3_3a330a2b8b0547c2831121706b75d195"
+    }
+  },
+  {
+    "case_id": "case_45c4a404ac7f44e7a74bb532a24ad7dc",
+    "ticker": "INTC",
+    "title": "Intel’s Biggest Opportunity May Be Its Comeback",
+    "created_at": "2026-10-06T13:05:54.819291Z",
+    "mode": "REVALIDATE_THEN_EVALUATE",
+    "thread_kind": "FALLBACK",
+    "has_intent": false,
+    "worker_seconds": 555.84,
+    "sdk_seconds": 534.739,
+    "file": "case_10_INTC.json",
+    "commands": 14,
+    "web_calls": 1,
+    "compactions": 0,
+    "result": {
+      "delta_candidates": [
+        {
+          "assertion_state": "ACTUAL",
+          "entities": [
+            "24/7 Wall St.",
+            "Intel Corporation"
+          ],
+          "occurrence_date": "2026-10-06",
+          "proposition": "24/7 Wall St.于2026-10-06发布对Intel的Buy评级，模型置信度为70%。",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "FORECAST",
+          "entities": [
+            "24/7 Wall St.",
+            "Intel Corporation"
+          ],
+          "occurrence_date": "2026-10-06",
+          "proposition": "24/7 Wall St.将Intel未来12个月目标价设为$127.72；以$120参考价计算，上涨空间为6.43%。",
+          "subject_time": "自2026-10-06发布日起未来12个月"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "entities": [
+            "24/7 Wall St.",
+            "Intel Corporation"
+          ],
+          "occurrence_date": "2026-10-06",
+          "proposition": "24/7 Wall St.列出Intel年度目标价预测：2026年$127.72、2027年$134.95、2028年$142.59、2029年$150.66、2030年$159.18。",
+          "subject_time": "2026年至2030年"
+        }
+      ],
+      "expert_trade": {
+        "direction": null,
+        "evaluated": true,
+        "expectation_delta": "该出版者将评级标签从Hold改为Buy，但12个月目标价从$129.14降至$127.72，置信度仍为70%；这不足以证明市场整体预期或Intel经营预期发生实质上修。",
+        "prior_expectation": "最近的同源可比基线是E55中的24/7 Wall St.于9月30日维持Hold、12个月目标价$129.14、置信度70%。Document1未获得可验证的最新卖方收入/EPS一致预期或修订序列，因此不能把该单一出版者观点视为市场共识。",
+        "reason": "未发现足以支持直接交易的非琐碎经营预期差。评级变化属于单一出版者的主观看法，核心经营论据主要是已知Q2结果、服务器CPU供需状态及既有18A进展。目标价下调且置信度不变，缺乏市场范围内的预期修订证据；其对收入、利润、现金流或Intel价值获取的新增传导也不明确。因此缺少可辩护的Materiality与ticker-level Transmission，NO_TRADE。",
+        "trade": false
+      },
+      "novelty": {
+        "reason": "E55记录24/7 Wall St.截至2026-09-30仍维持Hold、12个月目标价为$129.14，及当时的年度目标价表；当前消息于2026-10-06给出Buy评级、$127.72的12个月目标价和更新后的年度目标价表，未被该Reference覆盖。新事实是该出版者的评级与预测更新，而非Intel新披露的经营事件。",
+        "reference_ids": [
+          "E55"
+        ],
+        "result": "NEW"
+      },
+      "policy": {
+        "matched_condition_ids": [],
+        "policy_ids": [],
+        "reason": "没有现行Policy的完整激活条件被本消息确认。候选pol_05fe8d54fb3f72681720的C1要求后续单季重组及其他费用或新减值超过$10亿并明确拖累GAAP利润；文中$12.53B是已知Q2 CHIPS托管股份按市值调整，不是新季度重组费用或新减值（E16）。Foundry亏损及外部收入同样是已知Q2数据，未满足后续季度条件；消息也未披露新的Q3实际结果或指引修订。"
+      },
+      "w3_case_id": "w3_2b30697abfb247a0ba94c799f26edd60"
+    }
+  }
+]

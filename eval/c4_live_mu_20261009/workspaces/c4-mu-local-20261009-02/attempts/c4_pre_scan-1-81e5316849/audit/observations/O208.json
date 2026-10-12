@@ -1,0 +1,60 @@
+{
+  "alias": "O208",
+  "title": "candidate_urls 1-7",
+  "content": {
+    "columns": [
+      "confidence",
+      "kind",
+      "label",
+      "url"
+    ],
+    "rows": [
+      {
+        "url": "https://www.micron.com/about/press/image-gallery",
+        "label": "Image gallery",
+        "kind": "official_update",
+        "confidence": 0.72
+      },
+      {
+        "url": "https://www.micron.com/about/press/media-relations",
+        "label": "Media relations and resources",
+        "kind": "official_update",
+        "confidence": 0.72
+      },
+      {
+        "url": "https://www.micron.com/about/press/news",
+        "label": "Newsroom",
+        "kind": "official_update",
+        "confidence": 0.72
+      },
+      {
+        "url": "https://www.micron.com/about/press/trademark-usage-guidelines",
+        "label": "Trademark and usage guidelines",
+        "kind": "official_update",
+        "confidence": 0.72
+      },
+      {
+        "url": "https://investors.micron.com/financials/quarterly-results/default.aspx",
+        "label": "Quarterly financial results (opens in new window)",
+        "kind": "official_update",
+        "confidence": 0.72
+      },
+      {
+        "url": "https://investors.micron.com/financials/annual-reports/default.aspx",
+        "label": "Annual meeting materials (opens in new window)",
+        "kind": "official_update",
+        "confidence": 0.72
+      },
+      {
+        "url": "https://investors.micron.com/financials/sec-filings/default.aspx",
+        "label": "SEC filings (opens in new window)",
+        "kind": "official_update",
+        "confidence": 0.72
+      }
+    ]
+  },
+  "source": {
+    "provider": "Official issuer IR",
+    "locator": "https://investors.micron.com/news/press-release/2025/Micron-Announces-Business-Unit-Reorganization-to-Capitalize-on-AI-Growth-Across-All-Market-Segments-04-17-2025/default.aspx"
+  }
+}

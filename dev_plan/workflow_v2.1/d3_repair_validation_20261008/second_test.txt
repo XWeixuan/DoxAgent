@@ -1,0 +1,166 @@
+.................................F..F.............                       [100%]
+================================== FAILURES ===================================
+______ test_noop_requires_no_assets_or_worker_and_patch_missing_degraded ______
+
+rig = namespace(orchestrator=<doxagent.workflows.codex_document3.orchestrator_v21.Document3OrchestratorV21 object at 0x00000...s\\WEIXUANXIE\\AppData\\Local\\Temp\\pytest-of-WEIXUANXIE\\pytest-1705\\test_noop_requires_no_assets_o0\\maintain.md'})
+
+    @pytest.mark.asyncio
+    async def test_noop_requires_no_assets_or_worker_and_patch_missing_degraded(rig):
+        initial = await rig.orchestrator.initialize(ticker="MU", as_of=NOW, run_id="d3v21-base")
+        version = initial.handoff.policy_set_version
+        start = len(rig.worker.requests)
+        rig.orchestrator.runner.assets = {}
+>       noop = await rig.orchestrator.maintain(
+            ticker="MU", base_policy_version=version, as_of=NOW, run_id="d3v21-noop"
+        )
+
+tests\test_codex_document3_v21_maintenance.py:55: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\doxagent\workflows\codex_document3\orchestrator_v21.py:1142: in maintain
+    await self._write_view(run_id)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <doxagent.workflows.codex_document3.orchestrator_v21.Document3OrchestratorV21 object at 0x0000012C53B74990>
+run_id = 'd3v21-noop'
+
+    async def _write_view(self, run_id):
+        run = self.state.run(run_id)
+        tasks = self.state.tasks(run_id)
+        drafts = self.state.drafts(run_id)
+        view = {
+            **{k: v for k, v in run.items() if k not in {"prepared", "assets", "basis", "final_candidates", "scan_inputs"}},
+>           "input_manifest": run["prepared"]["manifest"],
+                              ^^^^^^^^^^^^^^^
+            "material_refs": list(run["prepared"]["files"]),
+            "basis_paths": list(run.get("basis", {})),
+            "candidate_paths": list(run.get("final_candidates", {})),
+            "task_metrics": {
+                "total": len(tasks),
+                "by_status": dict(Counter(t["status"] for t in tasks.values())),
+                "attempts": sum(t["attempt_count"] for t in tasks.values()),
+                "readable_records": sum(len(t.get("files", {})) for t in tasks.values()),
+                "readable_policy_count": len(drafts),
+                "readable_condition_count": sum(
+                    len(d["policy"]["activation_conditions"]) for d in drafts.values()
+                ),
+                "quarantined_policy_count": len(
+                    {
+                        i["path"]
+                        for i in run.get("diagnostics", [])
+                        if isinstance(i, dict)
+                        and i.get("error")
+                        and i.get("path")
+                        and "/policies/" in i["path"]
+                        and i["path"] not in drafts
+                    }
+                ),
+                "quarantined_condition_count": sum(
+                    len(d.get("errors", [])) for d in drafts.values()
+                ),
+                "main_tasks": {
+                    k: t["status"] for k, t in tasks.items() if k.startswith("research:")
+                },
+                "supplement_tasks": {
+                    k: t["status"] for k, t in tasks.items() if k.startswith("supplement:")
+                },
+            },
+        }
+E       KeyError: 'prepared'
+
+src\doxagent\workflows\codex_document3\orchestrator_v21.py:295: KeyError
+_________ test_metadata_only_event_change_and_empty_formal_feed_noop __________
+
+rig = namespace(orchestrator=<doxagent.workflows.codex_document3.orchestrator_v21.Document3OrchestratorV21 object at 0x00000...s\\WEIXUANXIE\\AppData\\Local\\Temp\\pytest-of-WEIXUANXIE\\pytest-1705\\test_metadata_only_event_chang0\\maintain.md'})
+
+    @pytest.mark.asyncio
+    async def test_metadata_only_event_change_and_empty_formal_feed_noop(rig):
+        initial = await rig.orchestrator.initialize(ticker="MU", as_of=NOW, run_id="d3v21-meta-base")
+        version = initial.handoff.policy_set_version
+        feed = {
+            "contract_version": "persistent-runtime.o3-maintenance-feed.v1",
+            "ticker": "MU",
+            "trading_date": "2026-10-04",
+            "reference_view_delta": {
+                "reference_view_delta": "",
+                "removed_event_ids": [],
+                "from_library_version": 9,
+                "to_library_version": 9,
+            },
+            "trade_records": [],
+            "badcase_records": [],
+            "w3_coverage_gaps": [],
+            "trade_candidates": [],
+        }
+        start = len(rig.worker.requests)
+>       empty = await rig.orchestrator.maintain(
+            ticker="MU",
+            base_policy_version=version,
+            as_of=NOW,
+            maintenance_feed=feed,
+            run_id="d3v21-empty-feed",
+        )
+
+tests\test_codex_document3_v21_maintenance.py:163: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\doxagent\workflows\codex_document3\orchestrator_v21.py:1142: in maintain
+    await self._write_view(run_id)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <doxagent.workflows.codex_document3.orchestrator_v21.Document3OrchestratorV21 object at 0x0000012C5ADAFE90>
+run_id = 'd3v21-empty-feed'
+
+    async def _write_view(self, run_id):
+        run = self.state.run(run_id)
+        tasks = self.state.tasks(run_id)
+        drafts = self.state.drafts(run_id)
+        view = {
+            **{k: v for k, v in run.items() if k not in {"prepared", "assets", "basis", "final_candidates", "scan_inputs"}},
+>           "input_manifest": run["prepared"]["manifest"],
+                              ^^^^^^^^^^^^^^^
+            "material_refs": list(run["prepared"]["files"]),
+            "basis_paths": list(run.get("basis", {})),
+            "candidate_paths": list(run.get("final_candidates", {})),
+            "task_metrics": {
+                "total": len(tasks),
+                "by_status": dict(Counter(t["status"] for t in tasks.values())),
+                "attempts": sum(t["attempt_count"] for t in tasks.values()),
+                "readable_records": sum(len(t.get("files", {})) for t in tasks.values()),
+                "readable_policy_count": len(drafts),
+                "readable_condition_count": sum(
+                    len(d["policy"]["activation_conditions"]) for d in drafts.values()
+                ),
+                "quarantined_policy_count": len(
+                    {
+                        i["path"]
+                        for i in run.get("diagnostics", [])
+                        if isinstance(i, dict)
+                        and i.get("error")
+                        and i.get("path")
+                        and "/policies/" in i["path"]
+                        and i["path"] not in drafts
+                    }
+                ),
+                "quarantined_condition_count": sum(
+                    len(d.get("errors", [])) for d in drafts.values()
+                ),
+                "main_tasks": {
+                    k: t["status"] for k, t in tasks.items() if k.startswith("research:")
+                },
+                "supplement_tasks": {
+                    k: t["status"] for k, t in tasks.items() if k.startswith("supplement:")
+                },
+            },
+        }
+E       KeyError: 'prepared'
+
+src\doxagent\workflows\codex_document3\orchestrator_v21.py:295: KeyError
+============================== warnings summary ===============================
+.venv\Lib\site-packages\opentelemetry\util\_importlib_metadata.py:32
+  C:\Users\WEIXUANXIE\Desktop\DoxAgent\.venv\Lib\site-packages\opentelemetry\util\_importlib_metadata.py:32: DeprecationWarning: SelectableGroups dict interface is deprecated. Use select.
+    return EntryPoints(ep for group_eps in eps.values() for ep in group_eps)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_codex_document3_v21_maintenance.py::test_noop_requires_no_assets_or_worker_and_patch_missing_degraded
+FAILED tests/test_codex_document3_v21_maintenance.py::test_metadata_only_event_change_and_empty_formal_feed_noop
+2 failed, 48 passed, 1 warning in 320.41s (0:05:20)

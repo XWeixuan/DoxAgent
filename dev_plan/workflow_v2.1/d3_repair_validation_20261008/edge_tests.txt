@@ -1,0 +1,8 @@
+.............................                                            [100%]
+============================== warnings summary ===============================
+tests/test_d3_v21_repair.py::test_http_scoped_inventory_retains_capability_requirement
+  C:\Users\WEIXUANXIE\Desktop\DoxAgent\.venv\Lib\site-packages\opentelemetry\util\_importlib_metadata.py:32: DeprecationWarning: SelectableGroups dict interface is deprecated. Use select.
+    return EntryPoints(ep for group_eps in eps.values() for ep in group_eps)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+29 passed, 1 warning in 200.71s (0:03:20)

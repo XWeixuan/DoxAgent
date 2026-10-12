@@ -1,0 +1,1442 @@
+{
+  "name": "知识产权与许可关系",
+  "scope": "美光内存与存储产品的专利权利、许可安排、侵权争议、赔偿及销售禁令敞口。共同背景为权利人、许可对手方、专利审查、司法和ITC程序与相关产品权利。",
+  "boundary": "知识产权权利、许可关系及争议的费用、赔偿和产品销售敞口由本域深化；地域产业政策和买方采购资格归地域市场准入，产品竞争及制造技术归相应业务与制造域，公司总量现金结算和资金承受能力归公司资金与股东权益。",
+  "ref": [
+    "D1-O44",
+    "event-library:MU:v1",
+    "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+    "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_8k.htm",
+    "https://www.govinfo.gov/content/pkg/USREPORTS-553/pdf/USREPORTS-553-617.pdf",
+    "https://www.usitc.gov/faq/question/if_commission_finds_violation_section_337_what.htm",
+    "https://www.dpma.de/english/utility_models/utility_model_protection/index.html",
+    "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_ex99-1.htm",
+    "https://www.govinfo.gov/content/pkg/FR-2026-09-25/pdf/2026-19650.pdf",
+    "D1-O57",
+    "https://www.dpma.de/english/utility_models/cancellation_proceedings/index.html",
+    "D1-O31",
+    "D1-O74",
+    "D1-O103",
+    "https://www.cafc.uscourts.gov/10-06-2026-2026-1085-besang-inc-v-micron-technology-inc-audio-uploaded/",
+    "https://www.govinfo.gov/content/pkg/USCODE-2024-title35/html/USCODE-2024-title35-partIII-chap29-sec284.htm",
+    "https://www.cafc.uscourts.gov/opinions-orders/13-1625.opinion.12-2-2014.1.pdf",
+    "https://npe.law.stanford.edu/party/micron-semiconductor-products-inc",
+    "https://www.sec.gov/Archives/edgar/data/1714174/000171417426000007/bur-20251231.htm",
+    "https://www.rpxcorp.com/news_release/rpx-announces-licensing-transaction-with-ip-bridge/",
+    "https://lotnet.com/how-we-protect-members/",
+    "https://www.sec.gov/Archives/edgar/data/917273/000091727325000021/rmbs-ex1029_2024123110k.htm",
+    "https://www.rambus.com/rambus-and-micron-technology-extend-patent-license-agreement/",
+    "https://www.sec.gov/Archives/edgar/data/917273/000119312520238654/d47509d8k.htm",
+    "D1-O88",
+    "D1-O130",
+    "https://www.uspto.gov/patents/ptab/interim-director-discretionary-process",
+    "https://www.uspto.gov/subscription-center/2026/uspto-issues-additional-discretionary-institution-facts",
+    "https://www.uspto.gov/sites/default/files/documents/ipr2025-00098_paper38.pdf",
+    "https://www.uspto.gov/patents/ptab/trial-practice-guide",
+    "https://prod-web-alb-tg.uspto.gov/patents/laws/america-invents-act-aia/america-invents-act-aia-frequently-asked",
+    "https://www.wipo.int/en/web/business/ip-valuation",
+    "https://www.wipo.int/en/web/technology-transfer/agreements",
+    "https://dockets.justia.com/docket/idaho/iddce/1%3A2026cv00604/60724",
+    "https://www.govinfo.gov/content/pkg/USCODE-2024-title18/html/USCODE-2024-title18-partI-chap90-sec1836.htm",
+    "https://www.govinfo.gov/content/pkg/USCODE-2024-title18/html/USCODE-2024-title18-partI-chap90-sec1839.htm",
+    "https://www.marvell.com/company/newsroom/marvell-announces-breakthrough-custom-hbm-compute-architecture.html",
+    "https://news.skhynix.com/sk-hynix-partners-with-tsmc-to-strengthen-hbm-technological-leadership/",
+    "https://www.wipo.int/web-publications/wipo-guide-to-trade-secrets-and-innovation/en/part-vi-trade-secrets-in-collaborative-innovation.html",
+    "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf",
+    "https://www.opencompute.org/documents/ocp-ip-rights-management-policy",
+    "https://www.opencompute.org/documents/modified-owfa10-final-specification-agreement-fsa-as-of-august-16-2021",
+    "https://www.wipo.int/en/web/patents/topics/sep",
+    "https://www.sec.gov/Archives/edgar/data/917273/000091727325000021/rmbs-exx1016x2024123110k.htm",
+    "https://www.govinfo.gov/content/pkg/USREPORTS-547/pdf/USREPORTS-547-388.pdf",
+    "https://www.ftc.gov/news-events/news/press-releases/2016/10/ftc-report-sheds-new-light-how-patent-assertion-entities-operate-recommends-patent-litigation",
+    "D1-O3",
+    "https://www.wipo.int/edocs/mdocs/sme/en/wipo_smes_vte_15/wipo_smes_vte_15_t4.pdf",
+    "D1-O12"
+  ],
+  "units": [
+    {
+      "name": "知识产权许可与诉讼敞口",
+      "scope": "美光内存与存储产品相关的专利权利、许可安排、侵权争议、许可费用、赔偿及禁令所涉现金成本和市场销售经济敞口。",
+      "horizon": "季度许可与财务披露周期，诉讼随各案件的多年程序周期演进。",
+      "ref": [
+        "D1-O44",
+        "event-library:MU:v1",
+        "D1-O57",
+        "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+        "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_8k.htm",
+        "https://www.sec.gov/Archives/edgar/data/917273/000091727325000021/rmbs-ex1029_2024123110k.htm",
+        "https://www.cafc.uscourts.gov/10-06-2026-2026-1085-besang-inc-v-micron-technology-inc-audio-uploaded/",
+        "https://dockets.justia.com/docket/idaho/iddce/1%3A2026cv00604/60724",
+        "https://www.uspto.gov/sites/default/files/documents/ipr2025-00098_paper38.pdf",
+        "https://www.uspto.gov/subscription-center/2026/uspto-issues-additional-discretionary-institution-facts",
+        "https://www.govinfo.gov/content/pkg/USREPORTS-553/pdf/USREPORTS-553-617.pdf",
+        "https://www.govinfo.gov/content/pkg/USREPORTS-547/pdf/USREPORTS-547-388.pdf",
+        "https://www.usitc.gov/faq/question/if_commission_finds_violation_section_337_what.htm",
+        "https://www.dpma.de/english/utility_models/utility_model_protection/index.html",
+        "https://www.dpma.de/english/utility_models/cancellation_proceedings/index.html",
+        "https://www.cafc.uscourts.gov/opinions-orders/13-1625.opinion.12-2-2014.1.pdf",
+        "https://www.govinfo.gov/content/pkg/USCODE-2024-title35/html/USCODE-2024-title35-partIII-chap29-sec284.htm",
+        "https://www.ftc.gov/news-events/news/press-releases/2016/10/ftc-report-sheds-new-light-how-patent-assertion-entities-operate-recommends-patent-litigation",
+        "https://www.wipo.int/en/web/business/ip-valuation",
+        "https://www.govinfo.gov/content/pkg/USCODE-2024-title18/html/USCODE-2024-title18-partI-chap90-sec1836.htm",
+        "https://www.govinfo.gov/content/pkg/USCODE-2024-title18/html/USCODE-2024-title18-partI-chap90-sec1839.htm",
+        "https://www.uspto.gov/patents/ptab/trial-practice-guide",
+        "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_ex99-1.htm",
+        "https://www.govinfo.gov/content/pkg/FR-2026-09-25/pdf/2026-19650.pdf",
+        "D1-O31",
+        "D1-O74",
+        "D1-O103",
+        "https://npe.law.stanford.edu/party/micron-semiconductor-products-inc",
+        "https://www.sec.gov/Archives/edgar/data/1714174/000171417426000007/bur-20251231.htm",
+        "https://www.rpxcorp.com/news_release/rpx-announces-licensing-transaction-with-ip-bridge/",
+        "https://lotnet.com/how-we-protect-members/",
+        "https://www.rambus.com/rambus-and-micron-technology-extend-patent-license-agreement/",
+        "https://www.sec.gov/Archives/edgar/data/917273/000119312520238654/d47509d8k.htm",
+        "D1-O88",
+        "D1-O130",
+        "https://www.uspto.gov/patents/ptab/interim-director-discretionary-process",
+        "https://prod-web-alb-tg.uspto.gov/patents/laws/america-invents-act-aia/america-invents-act-aia-frequently-asked",
+        "https://www.wipo.int/en/web/technology-transfer/agreements",
+        "https://www.marvell.com/company/newsroom/marvell-announces-breakthrough-custom-hbm-compute-architecture.html",
+        "https://news.skhynix.com/sk-hynix-partners-with-tsmc-to-strengthen-hbm-technological-leadership/",
+        "https://www.wipo.int/web-publications/wipo-guide-to-trade-secrets-and-innovation/en/part-vi-trade-secrets-in-collaborative-innovation.html",
+        "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf",
+        "https://www.opencompute.org/documents/ocp-ip-rights-management-policy",
+        "https://www.opencompute.org/documents/modified-owfa10-final-specification-agreement-fsa-as-of-august-16-2021",
+        "https://www.wipo.int/en/web/patents/topics/sep",
+        "https://www.sec.gov/Archives/edgar/data/917273/000091727325000021/rmbs-exx1016x2024123110k.htm",
+        "D1-O3",
+        "https://www.wipo.int/edocs/mdocs/sme/en/wipo_smes_vte_15/wipo_smes_vte_15_t4.pdf",
+        "D1-O12"
+      ],
+      "state": {
+        "parameters": [
+          {
+            "name": "已确认专利许可费用",
+            "definition": "美光合并GAAP其他营业费用中单列的patent license charges，按披露财年或季度计量；不等于全部专利相关成本、诉讼主张金额、合同总价或现金付款。年度比较未经52/53周标准化。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O44",
+              "D1-O57",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "已确认专利许可负债余额",
+            "definition": "美光在给定财报日已入账但尚未结算的专利许可负债，需包含明确的流动/非流动范围并排除未确认未来承诺。现有公开材料没有可与500百万美元费用和Netlist合同逐项对账的独立余额。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O44",
+              "D1-O57",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_8k.htm"
+            ]
+          },
+          {
+            "name": "专利交叉许可会计收益",
+            "definition": "合并其他营业收入费用中单列的patent cross-license agreement gain，收益以正数表示；不等于现金版税收入，也不与许可费用净额化。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "Netlist组合许可权安排",
+            "definition": "美光对Netlist组合取得的地域、排他性、转让与再许可权以及期限性质，定位相关产品销售的权利基础；不替代未公开的法人、具体产品或客户条款。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_8k.htm",
+              "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_ex99-1.htm"
+            ]
+          },
+          {
+            "name": "Netlist签约季度许可费",
+            "definition": "已经签署的许可合同约定的每个日历季度固定支付义务，不是季度GAAP费用或已付现金。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_8k.htm"
+            ]
+          },
+          {
+            "name": "Netlist许可合同总对价",
+            "definition": "已签五年许可的20个日历季度费用合计；不含单独股份购买，不代表当前应付账款或一次性费用。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_8k.htm"
+            ]
+          },
+          {
+            "name": "Netlist固定付款覆盖期",
+            "definition": "合同明确列示的首末收费日历季度；与五年许可的逐日有效期、实际付款日不同。",
+            "value_type": "TIME",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_8k.htm"
+            ]
+          },
+          {
+            "name": "Netlist实际许可付款",
+            "definition": "美光就本次Netlist许可在给定期间已经支付的现金；不含单独股份购买，不用季度应付义务或合同总价替代已付款。截点未取得已付金额披露。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_8k.htm",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "Netlist争议释放与程序终结状态",
+            "definition": "双方争议被协议释放的安排和程序落地程度，影响旧赔偿及进口排除威胁是否仍为独立经济路径。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_8k.htm",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "https://www.govinfo.gov/content/pkg/FR-2026-09-25/pdf/2026-19650.pdf",
+              "event-library:MU:v1"
+            ]
+          },
+          {
+            "name": "Rambus组合许可覆盖安排",
+            "definition": "持续有效的Rambus组合访问及产品许可架构；期限产品许可与原协议的已付清产品安排有不同覆盖和支付关系，不代表全部新产品永久免付费。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.rambus.com/rambus-and-micron-technology-extend-patent-license-agreement/",
+              "https://www.sec.gov/Archives/edgar/data/917273/000091727325000021/rmbs-exx1016x2024123110k.htm",
+              "https://www.sec.gov/Archives/edgar/data/917273/000119312520238654/d47509d8k.htm",
+              "https://www.sec.gov/Archives/edgar/data/917273/000091727325000021/rmbs-ex1029_2024123110k.htm"
+            ]
+          },
+          {
+            "name": "Rambus当前续期截止日",
+            "definition": "修订3明确规定的到期时点；不等于所有已付清产品权利同时消灭。",
+            "value_type": "TIME",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/917273/000091727325000021/rmbs-ex1029_2024123110k.htm",
+              "https://www.rambus.com/rambus-and-micron-technology-extend-patent-license-agreement/"
+            ]
+          },
+          {
+            "name": "Rambus受让专利覆盖条件",
+            "definition": "现有合同对普通专利出售、组合转让及整体控制权或经营业务交易的不同待遇，定位权利变更后的许可连续性。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/917273/000091727325000021/rmbs-ex1029_2024123110k.htm"
+            ]
+          },
+          {
+            "name": "Rambus当前周期许可付款",
+            "definition": "现行续期下美光每个披露季度应付Rambus的许可金额。未获得可直接用于2026的公开数值，不能用旧费率乘当前收入补数。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.rambus.com/rambus-and-micron-technology-extend-patent-license-agreement/",
+              "https://www.sec.gov/Archives/edgar/data/917273/000119312520238654/d47509d8k.htm",
+              "https://www.sec.gov/Archives/edgar/data/917273/000091727325000021/rmbs-ex1029_2024123110k.htm"
+            ]
+          },
+          {
+            "name": "YMTC德国销售限制救济状态",
+            "definition": "慕尼黑针对被控3D NAND作出的救济范围及争议状态；经济对象是受限产品和进入德国的流向，不是所有NAND或欧洲收入。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "YMTC其他法域权利主张覆盖",
+            "definition": "德国已裁决两件实用新型之外，YMTC未决专利主张触及的产品和法域组合；数量不跨国相加，不把请求救济等同已获救济。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "YMTC德国剩余权利审理窗口",
+            "definition": "慕尼黑对另外两件实用新型和一件专利安排的后续程序时间，用于理解现有争议的跨年持续期。",
+            "value_type": "TIME",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "德国受限产品销售敞口",
+            "definition": "在德国销售或经境外客户流入德国、实际落入上述被控权利范围的美光产品期间销售额。不是客户注册地收入，也不是合并NAND收入；当前SKU/流向映射及金额未披露。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "YMTC争议损害赔偿金额",
+            "definition": "在YMTC各独立案件中可归属美光的历史侵权损害赔偿金额；需排除同一销售的跨案件重复。当前未披露可合理估计金额，不填零。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "受限产品非侵权替代完成状态",
+            "definition": "被控产品是否已有可用且满足客户资格的非侵权替代设计，影响限制持续时间和许可谈判选择。未取得具体合格替代方案，不能因新节点或产品代际推进而填为已绕开。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "D1-O88"
+            ]
+          },
+          {
+            "name": "BeSang专利争议实体及上诉状态",
+            "definition": "BeSang针对3D NAND/SSD的独立专利主张是否形成侵权责任，以及不侵权裁判的上诉状态；与另一PTAB上诉分开。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "https://www.cafc.uscourts.gov/10-06-2026-2026-1085-besang-inc-v-micron-technology-inc-audio-uploaded/"
+            ]
+          },
+          {
+            "name": "其他权利人未许可争议组合",
+            "definition": "AMT、Nextech等与Netlist和YMTC不同权利人的当前产品主张和救济敞口，定位剩余组合负担而非以诉讼数量替代金额。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "https://npe.law.stanford.edu/party/micron-semiconductor-products-inc"
+            ]
+          },
+          {
+            "name": "剩余专利争议损失可计量状态",
+            "definition": "除已确认许可费用外，未决专利事项是否已有公司可合理估计的损失或区间；估计不可得不同于无风险。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "客户知识产权防御与赔偿安排",
+            "definition": "美光向客户销售产品所承担的侵权防御、赔偿及权利补救义务，按具体合同及侵权情形触发；独立于芯片自身许可费。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "https://www.govinfo.gov/content/pkg/FR-2026-09-25/pdf/2026-19650.pdf",
+              "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_8k.htm"
+            ]
+          },
+          {
+            "name": "客户侵权赔偿实际付款",
+            "definition": "美光在单一披露期间为客户承担的知识产权防御赔偿现金付款，区别于所有类型赔偿和专利许可费用；当前没有独立量化披露。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "美光活跃美国专利数量",
+            "definition": "期末美光拥有的活跃美国专利近似数量，定位可用于保护、许可与互换的权利资源，不等于累计授权数、专利族数或可变现价值。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "美光活跃外国专利数量",
+            "definition": "期末美光拥有的活跃外国专利近似数量；同族跨国权利可能重复，不与美国数量相加推算技术价值。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "自有权利现金许可收入",
+            "definition": "美光向第三方许可自有知识产权的期间现金收入，区别于资产出售、非现金互换和会计交叉许可收益；现有披露未提供独立总额。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "对YMTC技术秘密与权属救济状态",
+            "definition": "美光基于人员、技术秘密及合同权利对YMTC提出的主动救济当前状态；未裁定主张不构成已追回专利或现金。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://dockets.justia.com/docket/idaho/iddce/1%3A2026cv00604/60724"
+            ]
+          },
+          {
+            "name": "美光自有专利IPR防御状态",
+            "definition": "具体自有专利面对复审挑战时的程序保护状态，区别于实体有效性和侵权裁判；可影响对手取得低成本无效路径的能力。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.uspto.gov/sites/default/files/documents/ipr2025-00098_paper38.pdf"
+            ]
+          },
+          {
+            "name": "美国专利复审准入安排",
+            "definition": "IPR/PGR实体审理之前的裁量与程序准入结构；直接影响本Unit被诉时的无效挑战成本及作为权利人时的保护强度，作用随美光所处角色不同。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.uspto.gov/patents/ptab/interim-director-discretionary-process",
+              "https://www.uspto.gov/subscription-center/2026/uspto-issues-additional-discretionary-institution-facts"
+            ]
+          }
+        ],
+        "values": [
+          {
+            "name": "FY2026许可费用及年度比较",
+            "parameter": "已确认专利许可费用",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 500.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 57.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026，截至2026-09-03；previous_value为截至2025-08-28的FY2025",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O44",
+              "D1-O57",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "FY2025许可费用及此前年度比较",
+            "parameter": "已确认专利许可费用",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 57.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 0.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2025，截至2025-08-28；previous_value为截至2024-08-29的FY2024",
+            "as_of": "2025-08-28",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "FY2026第四季度集中确认",
+            "parameter": "已确认专利许可费用",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 500.0,
+              "unit": "百万美元"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026 Q4，截至2026-09-03；包含在全年500百万美元内，不与全年相加",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O44",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "FY2026交叉许可收益",
+            "parameter": "专利交叉许可会计收益",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 0.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 0.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026；previous_value为FY2025同一报表项目",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "FY2025交叉许可收益及一次性历史尺度",
+            "parameter": "专利交叉许可会计收益",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 0.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 200.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2025；previous_value为FY2024的200百万美元收益",
+            "as_of": "2025-08-28",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "已签五年全球组合许可",
+            "parameter": "Netlist组合许可权安排",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "2026-10-05签署：Netlist授予美光其全部全球专利组合的全球、非独占、不可转让、不可再许可的五年期许可；Netlist公告明确提及服务器DIMM及HBM。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-10-05签约后的五年许可期；公开摘要未给出精确逐日有效区间",
+            "as_of": "2026-10-05",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_8k.htm",
+              "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_ex99-1.htm"
+            ]
+          },
+          {
+            "name": "固定季度义务",
+            "parameter": "Netlist签约季度许可费",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 30.0,
+              "unit": "百万美元"
+            },
+            "previous_value": null,
+            "time_scope": "CY2026 Q4至CY2031 Q3，每个日历季度；不是美光财季",
+            "as_of": "2026-10-05",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_8k.htm"
+            ]
+          },
+          {
+            "name": "五年许可合同总价",
+            "parameter": "Netlist许可合同总对价",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 600.0,
+              "unit": "百万美元"
+            },
+            "previous_value": null,
+            "time_scope": "CY2026 Q4至CY2031 Q3的20个季度总额，与每季30百万美元是同一义务的不同尺度",
+            "as_of": "2026-10-05",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_8k.htm"
+            ]
+          },
+          {
+            "name": "20季度合同收费窗口",
+            "parameter": "Netlist固定付款覆盖期",
+            "source_role": "ACTUAL",
+            "value": {
+              "point": null,
+              "start": "2026-Q4",
+              "end": "2031-Q3",
+              "precision": "日历季度"
+            },
+            "previous_value": null,
+            "time_scope": "Netlist五年许可的收费期",
+            "as_of": "2026-10-05",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_8k.htm"
+            ]
+          },
+          {
+            "name": "互相释放已签，终结不能以签约替代",
+            "parameter": "Netlist争议释放与程序终结状态",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "双方已签和解与释放协议，涵盖协议列明的双方全部未决程序；美光10-K称同意撤销双方所有诉讼主张。337-TA-1523先前已立案，不是已作出排除令。截点未取得逐案撤诉及ITC正式终结文件，不把程序登记残留当新增付款义务。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-10-05和解后的争议状态；既有ITC立案为2026-09-23历史程序锚点",
+            "as_of": "2026-10-05",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_8k.htm",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "https://www.govinfo.gov/content/pkg/FR-2026-09-25/pdf/2026-19650.pdf"
+            ]
+          },
+          {
+            "name": "已续期组合访问",
+            "parameter": "Rambus组合许可覆盖安排",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "Rambus于2024-12-10宣布美光综合专利组合许可延长五年至2029年末，维持当时既有条款。原协议区分期限产品与已付清产品；2020修订曾修改产品定义和费率，不能把2013初始0.6%费率直接用于2026销售。"
+            },
+            "previous_value": null,
+            "time_scope": "已签续期及其覆盖的2024—2029许可期间；最新公开续期摘要观测日2024-12-10",
+            "as_of": "2024-12-10",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.rambus.com/rambus-and-micron-technology-extend-patent-license-agreement/",
+              "https://www.sec.gov/Archives/edgar/data/917273/000091727325000021/rmbs-exx1016x2024123110k.htm",
+              "https://www.sec.gov/Archives/edgar/data/917273/000119312520238654/d47509d8k.htm",
+              "https://www.sec.gov/Archives/edgar/data/917273/000091727325000021/rmbs-ex1029_2024123110k.htm"
+            ]
+          },
+          {
+            "name": "2029年11月末到期",
+            "parameter": "Rambus当前续期截止日",
+            "source_role": "ACTUAL",
+            "value": {
+              "point": "2029-11-30 23:59",
+              "start": null,
+              "end": null,
+              "precision": "分钟；文本未注明时区"
+            },
+            "previous_value": null,
+            "time_scope": "Amendment 3所定义的续期截止",
+            "as_of": "2024-09-01",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/917273/000091727325000021/rmbs-ex1029_2024123110k.htm"
+            ]
+          },
+          {
+            "name": "普通转让与控制权交易区别处理",
+            "parameter": "Rambus受让专利覆盖条件",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "修订3明确处理Transferred Patents，并附续期期间、支付及其他合同条件；整体资产/控制权交易和达到约定规模的经营业务出售不在同一定义内。关键条款被遮盖，文本例外不能直接解释为交易后全部许可自动失效。"
+            },
+            "previous_value": null,
+            "time_scope": "2024-09-01生效的修订3及其续期内适用条件",
+            "as_of": "2024-09-01",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/917273/000091727325000021/rmbs-ex1029_2024123110k.htm"
+            ]
+          },
+          {
+            "name": "两件实用新型产生书面限制，美光已上诉",
+            "parameter": "YMTC德国销售限制救济状态",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "2026-10-06书面裁决要求停止在德国提供、营销、进口及持有被控3D NAND，也限制明知或有明确迹象将流入德国的境外客户交付；要求账目和交出德国境内被控产品，第三方终端已整合产品除外。美光已上诉；未取得实际执行、担保或暂停令状态。"
+            },
+            "previous_value": null,
+            "time_scope": "两件德国实用新型侵权裁决及相关被控产品流向；截至2026-10-06",
+            "as_of": "2026-10-06",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "独立的多法域NAND及部分DRAM主张",
+            "parameter": "YMTC其他法域权利主张覆盖",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "美国、中国、英国、UPC及慕尼黑其余案件仍涉及3D NAND/SSD及部分DDR5、LPDRAM等产品；请求包括禁令及损害赔偿。德国两件裁决没有终结这些独立权利与法域。"
+            },
+            "previous_value": null,
+            "time_scope": "10-K截至发布时披露的未决组合；2026-10-09截点",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "剩余三项权利排期",
+            "parameter": "YMTC德国剩余权利审理窗口",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "point": null,
+              "start": "2027-06",
+              "end": "2027-09",
+              "precision": "月；分别安排在6月和9月，并非连续审理"
+            },
+            "previous_value": null,
+            "time_scope": "另外两件实用新型及一件专利的未来程序；公司转述法院所示排期",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "不侵权判决处于已辩论上诉阶段",
+            "parameter": "BeSang专利争议实体及上诉状态",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "地区法院2025-09-17判定不侵权，BeSang于2025-10-17上诉；联邦巡回法院案2026-1085于2026-10-06公布口头辩论音频。截点未找到推翻该判决的终局裁决。"
+            },
+            "previous_value": {
+              "stage": "2025-09-17地区法院不侵权判决；2025-10-17提起上诉"
+            },
+            "time_scope": "3D NAND/SSD所涉地区法院实体案上诉2026-1085；不代表PTAB案2025-1320的结论",
+            "as_of": "2026-10-06",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "https://www.cafc.uscourts.gov/10-06-2026-2026-1085-besang-inc-v-micron-technology-inc-audio-uploaded/"
+            ]
+          },
+          {
+            "name": "AMT与Nextech组合仍为主张阶段",
+            "parameter": "其他权利人未许可争议组合",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "AMT在爱达荷州主张五项美国专利，覆盖部分DRAM/NAND；Nextech在得州主张六项美国专利，覆盖部分DRAM/NAND/SSD。两者寻求禁令及赔偿，未披露已确定许可费或损害金额；Stanford NPE数据库将Nextech相关案归为取得专利型权利人。"
+            },
+            "previous_value": null,
+            "time_scope": "10-K披露的未决产品主张组合；截至2026-10-09，Nextech归类仅表示权利人类型",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "https://npe.law.stanford.edu/party/micron-semiconductor-products-inc"
+            ]
+          },
+          {
+            "name": "损失区间仍未能合理估计",
+            "parameter": "剩余专利争议损失可计量状态",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "美光在10-K的或有事项评估中，除FY2026 Q4确认的专利许可费用外，不能合理估计所列事项潜在损失或区间。诉讼涉及广泛产品的表述不提供概率加权损失率或销售损失基数。"
+            },
+            "previous_value": null,
+            "time_scope": "10-K所列专利争议的剩余或有事项；截至2026-10-09",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "条件性侵权防御义务，未见统一增强条款",
+            "parameter": "客户知识产权防御与赔偿安排",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "美光披露在特定情形下须为客户应对产品侵权诉讼并承担相关责任。协议义务具有条件性，无法预测最大未来支付；历史各类赔偿付款未产生重大不利影响，不等于IP赔偿为零。DDR5的ITC程序曾同时列HPE、Lenovo、Supermicro等系统方为被申请人；未找到截点客户统一提高保障上限的合同证据。"
+            },
+            "previous_value": null,
+            "time_scope": "现有客户合同义务及FY2026披露；ITC共被申请人信息来自2026-09-23立案",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "https://www.govinfo.gov/content/pkg/FR-2026-09-25/pdf/2026-19650.pdf"
+            ]
+          },
+          {
+            "name": "活跃美国专利库存",
+            "parameter": "美光活跃美国专利数量",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 15500.0,
+              "unit": "项；约数"
+            },
+            "previous_value": null,
+            "time_scope": "截至2026-09-03的活跃美国权利库存",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "活跃外国专利库存",
+            "parameter": "美光活跃外国专利数量",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 8000.0,
+              "unit": "项；约数"
+            },
+            "previous_value": null,
+            "time_scope": "截至2026-09-03的活跃外国权利库存",
+            "as_of": "2026-09-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "主动权利救济已进入诉讼",
+            "parameter": "对YMTC技术秘密与权属救济状态",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "爱达荷州案1:2026cv00604：美光已诉YMTC及Hongbin Zhu，诉状列技术秘密侵占、确认判决和违约；2026-09-16法院准许未删节诉状继续封存。公开案卷锚点是提出救济，不证明对方侵权或所争权利已归美光。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-15起诉，案卷公开快照截至2026-09-16；不以截点检索冒充更新案卷",
+            "as_of": "2026-09-16",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://dockets.justia.com/docket/idaho/iddce/1%3A2026cv00604/60724"
+            ]
+          },
+          {
+            "name": "两项自有专利的复审准入被拒",
+            "parameter": "美光自有专利IPR防御状态",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "2026-01-15，IPR2025-00098/00099对美光8,945,996与10,872,903专利的立案被撤销并拒绝；依据是YMTC未充分识别全部真实利益方，不是实体确认两项专利有效，也不是仅凭BIS名单作一般身份禁令。"
+            },
+            "previous_value": null,
+            "time_scope": "两个列明专利的复审程序；2026-01-15决定",
+            "as_of": "2026-01-15",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.uspto.gov/sites/default/files/documents/ipr2025-00098_paper38.pdf"
+            ]
+          },
+          {
+            "name": "裁量审查与实体审理分立，增加制造投资因素",
+            "parameter": "美国专利复审准入安排",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "USPTO把裁量准入与实体评估分开；2026-03-11增加美国制造及相关投资、权利人竞争产品在美制造和小企业申请人等裁量事实，适用于权利人裁量书状期限尚未届满的IPR/PGR。并非制造投资即可获得无效胜诉或禁止所有复审。"
+            },
+            "previous_value": null,
+            "time_scope": "截至2026-03-11已公布的准入安排及其适用未决程序",
+            "as_of": "2026-03-11",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.uspto.gov/patents/ptab/interim-director-discretionary-process",
+              "https://www.uspto.gov/subscription-center/2026/uspto-issues-additional-discretionary-institution-facts"
+            ]
+          }
+        ]
+      },
+      "expectation_baseline": [
+        {
+          "name": "Netlist从未定诉讼尾部转为有限期固定付费权利",
+          "baseline": "工作基线是美光在五年许可期内按固定季度费获得Netlist组合访问，双方列明争议随和解落地而收束，而不是继续把旧445百万美元裁决当作独立新增付款。依据是已签全球组合许可及互相释放，而非单方谈判意向。每个完整日历年四季费用合计120百万美元为合同算术，不是新增GAAP费用指引；已覆盖销售增长本身不改变披露的每季30百万美元。",
+          "ordinary_progress": "首期及后续合同付款、列明案件撤诉和进口调查终结属于该路径的实施；季度注册状态更新不自动创造另一笔赔偿。",
+          "open_frontier": "协议未公开的主体、产品及第三方释放细节，正式程序终结的覆盖，违约或明确保留义务，以及2031前后的续期条件可能改变权利保护或成本；不可再许可不单独证明客户不能使用授权售出的产品。",
+          "time_scope": "CY2026 Q4—CY2031 Q3收费窗口，近期重点为和解实施",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_8k.htm",
+            "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_ex99-1.htm",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.govinfo.gov/content/pkg/FR-2026-09-25/pdf/2026-19650.pdf",
+            "event-library:MU:v1"
+          ]
+        },
+        {
+          "name": "确认费用、付款承诺与正常化成本不能叠加",
+          "baseline": "工作基线是不将FY2026 Q4的500百万美元费用机械设为以后每季常态，也不把它与600百万美元Netlist合同总额直接相加。前者是已确认费用，后者是20季度的支付义务；截至截点没有公开对账把两者归于同一交易、解释确认时间或剩余负债。500百万美元较上年全年57百万美元明显扩大、并集中于Q4，支持费用具有交易集中性；以Q4收入54,229百万美元比较约为0.92%，说明可见会计冲击的尺度，但不能推算禁令导致的销售损失。",
+          "ordinary_progress": "后续财报按会计政策确认费用、支付现金并解释负债变化；非GAAP加回与GAAP实际负担并存。已付现金和已确认费用不必每季同额。",
+          "open_frontier": "确认费用对应哪项权利、是否还存在独立分期费用，以及未决事项新增许可或判赔决定实际正常化负担。卖方及价格数据没有给出可识别的IP成本预期，不宣称市场已充分计价。",
+          "time_scope": "未来数个季度的许可费用与财报披露周期",
+          "ref": [
+            "D1-O44",
+            "D1-O57",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_8k.htm"
+          ]
+        },
+        {
+          "name": "既有许可提供近期连续性，代际与续期决定长期边际成本",
+          "baseline": "工作基线是Netlist和Rambus现有安排在各自期限内提供连续组合访问，近期不是同时进入无许可状态：Netlist已取得五年组合许可，Rambus已经续至2029-11-30。固定Netlist费意味着所披露覆盖内的增长不同比例增加该合同费用；Rambus不能类推为固定费或永久免费，原协议存在期限产品与已付清产品区分，2020已修改定义和费率，现行数额未公开。技术代际推进本身也不证明所有新实现权利均被覆盖。",
+          "ordinary_progress": "既定支付、在合同定义内使用新产品、管理现有覆盖关系属于普通延续；Rambus常规专利转让应先适用已约定的Transferred Patents处理，而非当然产生第二次收费。",
+          "open_frontier": "新增产品是否进入收费范围、客户或定制实现权利、新权利人的独立主张，以及2029/2031续期定价是真正边界。整体控制权或经营业务出售有不同文本条件，但遮盖部分不足以断言全部权利会消失。 共研的背景权利/新成果归属、跨客户复用及开放规范中的承诺/排除范围，还会改变下一代可控制的资源；现有双边组合许可不替代这些安排。",
+          "time_scope": "近期数季至2029年Rambus续期和2031年Netlist收费期末",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_8k.htm",
+            "https://www.rambus.com/rambus-and-micron-technology-extend-patent-license-agreement/",
+            "https://www.sec.gov/Archives/edgar/data/917273/000091727325000021/rmbs-exx1016x2024123110k.htm",
+            "https://www.sec.gov/Archives/edgar/data/917273/000119312520238654/d47509d8k.htm",
+            "https://www.sec.gov/Archives/edgar/data/917273/000091727325000021/rmbs-ex1029_2024123110k.htm",
+            "D1-O88",
+            "https://www.wipo.int/web-publications/wipo-guide-to-trade-secrets-and-innovation/en/part-vi-trade-secrets-in-collaborative-innovation.html",
+            "https://www.opencompute.org/documents/ocp-ip-rights-management-policy",
+            "https://www.marvell.com/company/newsroom/marvell-announces-breakthrough-custom-hbm-compute-architecture.html"
+          ]
+        },
+        {
+          "name": "YMTC德国已有限制性法律状态，经营影响仍以产品流向为界",
+          "baseline": "工作基线是德国争议进入有书面救济、上诉继续的阶段，美光需要在争议期管理被控产品及流入德国的交付路径，而不是仅等待是否首次获得禁令。相较没有救济的专利主张，10月6日裁决已增加谈判及供货安排压力；不能假定上诉自动解除限制。另一方面，第三方终端已整合产品的交出例外和特定被控3D NAND范围，支持以权利—产品—客户流向衡量敞口，而不是默认欧洲全部NAND停售。",
+          "ordinary_progress": "围绕现有两件实用新型继续上诉、账目及救济程序，另外权利按2027年6月/9月排期推进；这些并不自动使同一裁决覆盖所有法域。",
+          "open_frontier": "实际执行或暂停的条件、具体SKU与德国流向收入、可合格的非侵权替代及其用时，会决定销售中断和可接受许可费；尚未有可量化赔偿或有效替代锚点。其他美国、中国、英国及UPC案件能独立增减保护范围，不与德国裁决结果等同。",
+          "time_scope": "未来数季及2027年后续审理，延伸至多年上诉与许可周期",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O88"
+          ]
+        },
+        {
+          "name": "剩余权利人组合不会因Netlist和解自动清零",
+          "baseline": "工作基线是独立权利人的争议继续带来法律支出和潜在许可谈判，但当前不能给出统一赔偿率或假设全部败诉。BeSang已有不侵权判决且上诉完成口头辩论；AMT和Nextech仍为不同专利及产品主张，这种阶段差异比诉讼数量更能定位新增责任。Nextech被归类为取得专利型权利人，说明权利转移后可由专业主张主体寻求变现，不证明美光已有许可失效或所有销售承担赔偿。",
+          "ordinary_progress": "既有上诉裁判、诉讼审理和单独和解是组合演进；诉状请求禁令或赔偿不能当作已确认责任。",
+          "open_frontier": "能突破当前防线的有效权利、历史损害销售期间及金额、独立和解覆盖，才可能使未计量尾部变成实际成本。BeSang反转与AMT/Nextech新实体结果必须分别解释，不把相同销售基数重复计入。",
+          "time_scope": "未来数季至各独立案件的多年审理周期",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.cafc.uscourts.gov/10-06-2026-2026-1085-besang-inc-v-micron-technology-inc-audio-uploaded/",
+            "https://npe.law.stanford.edu/party/micron-semiconductor-products-inc"
+          ]
+        },
+        {
+          "name": "客户侵权保障是条件性接口，而非已确认系统级赔偿",
+          "baseline": "工作基线是美光继续承担既有客户侵权防御和条件性赔偿责任，Netlist许可及和解减少同一权利争议对供货关系的扰动，但没有证据表明全部系统级风险已清除或所有客户已提高保障额度。ITC曾同时涉及内存供应商和系统方，说明权利风险可沿产品集成传导；美光关于历史各类赔偿未产生重大不利影响的披露支持不能把目前合同义务先计为巨大现付损失。此历史表述也不是IP赔偿的金额上限。",
+          "ordinary_progress": "在原合同内继续供货、按具体侵权事项提供防御和权利补救是普通经营；系统采用与HBM增长不直接给出赔偿计价基数。",
+          "open_frontier": "新系统权利、明确客户保障条款变化、免责与责任上限、替换义务和授权销售的权利边界，可能把客户风险转回美光成本或影响产品选择；全球芯片许可不可直接扩成可再许可的系统专利通行证。",
+          "time_scope": "未来采购/平台更新及数季客户合同周期",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.govinfo.gov/content/pkg/FR-2026-09-25/pdf/2026-19650.pdf",
+            "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_8k.htm",
+            "D1-O88",
+            "D1-O130"
+          ]
+        },
+        {
+          "name": "自有权利是可谈判资源，收益仍按交易而非专利数延续",
+          "baseline": "工作基线是美光继续利用自有组合提供保护、交叉许可和选择性变现，但不按约15,500项美国与8,000项外国活跃专利外推收入，也不把FY2024的200百万美元交叉许可会计收益设为年度或季度经常项。FY2025和FY2026同一收益项目均为零，使交易型而非固定收益流的解释更有依据；现金许可收入未单列，零会计收益不证明没有经济互换。对YMTC主动技术秘密及合同救济增加可争取权利的路径，但仅有公开起诉和封存状态，尚不是资产追回或现金回收。",
+          "ordinary_progress": "维护、申请和个别组合授权、交易型收益以及主动案件推进，均可在不改变该基线下发生。",
+          "open_frontier": "被对手实际需要的可执行权利、可重复的现金授权安排、已裁定的权属或技术秘密救济，以及明确抵减外付费用的交叉许可，才支持提高净变现路径。对方专利不能先记作美光资产。",
+          "time_scope": "数季交易披露及多年权利保护/主动诉讼周期",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://dockets.justia.com/docket/idaho/iddce/1%3A2026cv00604/60724",
+            "https://www.uspto.gov/sites/default/files/documents/ipr2025-00098_paper38.pdf"
+          ]
+        },
+        {
+          "name": "复审渠道更具条件性，不能对美光作单向制度判断",
+          "baseline": "工作基线是专利无效争议更依赖准入程序、双方身份与事实，美光不能把提出IPR等同获得实体审理，也不能把拒绝立案等同专利必然有效。2026年1月YMTC挑战美光两项专利因真实利益方识别不足被拒，显示美光作为权利人可获程序保护；而美光作为侵权被告时同类准入约束会降低替代防御渠道。3月新增美国制造及投资等裁量事实，意味着本土生产背景值得纳入，但官方材料未给美光豁免、保证立案或实体胜诉。",
+          "ordinary_progress": "各方按准入要求提交身份、制造和投资事实，随后分别争论裁量与实体问题；单案拒绝或进入审理不自动修订整个组合的有效性。",
+          "open_frontier": "实际申请的准入结果、司法审查及规则变化是否恢复或压缩某类渠道，决定诉讼时间和和解选择。作用方向必须区分美光为权利人还是挑战者，不能设一个统一提高/降低赔偿概率。",
+          "time_scope": "当前未决IPR/PGR及未来数季申请，延伸至司法审查周期",
+          "ref": [
+            "https://www.uspto.gov/patents/ptab/interim-director-discretionary-process",
+            "https://www.uspto.gov/subscription-center/2026/uspto-issues-additional-discretionary-institution-facts",
+            "https://www.uspto.gov/sites/default/files/documents/ipr2025-00098_paper38.pdf"
+          ]
+        }
+      ],
+      "realization_factors": [
+        {
+          "name": "许可定价形态与覆盖连续性",
+          "mechanism": "权利人与美光协商的许可主体、产品定义、专利范围和地域，先决定哪些制造及销售有授权；固定费、按销售额/数量计费或已付清产品安排，再决定相同销售增长是否增加许可现金成本。已签释放把列明历史争议从逐案尾部转入合同履行，不能把旧裁决与新总价并列收费。期限和新增产品条款决定何时重新谈判；普通专利转让、整体控制权交易和支付条件决定既有保护是否延续。这里的许可价值包括可继续供货及少诉讼，不只取得一项费用。",
+          "current_status": "Netlist五年全球组合许可及释放已签，收费已从未定赔偿转为每季固定义务；正式逐案终结仍是落地环节。Rambus续期提供至2029年11月末的权利窗口，但现行费率和部分转让条款未公开。工作解释是近期连续覆盖强于立即续期冲击，未覆盖的新实现、主体或独立权利人仍能另生负担。",
+          "materiality_context": "收费结构目前比已覆盖销售增速更直接决定Netlist边际成本：每季30百万美元、完整日历年120百万美元，合计600百万美元，三者是同一合同不同时间尺度。即使覆盖内销售翻倍，固定义务不因此翻倍；销售下降却会提高单位销售负担。相对FY2026 Q4收入54,229百万美元，30百万美元约0.055%，仅为规模比较，不是财季费用率预测。产品/主体/地域覆盖变窄则可在销量未变时重开赔偿或停售路径，潜在杠杆大于这一固定费的微小波动。2029/2031期限目前主要影响远期可见性；提前终止、明确未覆盖权利或控制权例外才把压力拉近。转让条件与付款履行决定权利连续性，而不是交易新闻规模；现有遮盖不支持量化任何额外收费。",
+          "scope_boundary": "覆盖本Unit许可成本、权利取得和释放。销售量价及产品组合由业务/行业域深化，此处只解释它们在不同许可结构下的边际费用；支付总量承受能力连接资金域，不另建融资Unit。",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_8k.htm",
+            "https://www.rambus.com/rambus-and-micron-technology-extend-patent-license-agreement/",
+            "https://www.sec.gov/Archives/edgar/data/917273/000091727325000021/rmbs-exx1016x2024123110k.htm",
+            "https://www.sec.gov/Archives/edgar/data/917273/000119312520238654/d47509d8k.htm",
+            "https://www.sec.gov/Archives/edgar/data/917273/000091727325000021/rmbs-ex1029_2024123110k.htm",
+            "D1-O44",
+            "https://www.wipo.int/en/web/technology-transfer/agreements"
+          ]
+        },
+        {
+          "name": "有效权利、标准约束与产品映射确定责任边界",
+          "mechanism": "权利要求范围、有效性和具体产品实施是三个不同变量：有效但未被实施的权利不产生该产品侵权责任；宽且有效、落入多代产品的权利可把同一法律争议扩展至多个SKU。权利人及美光分别通过技术证据、先前技术和产品映射影响这条链。标准兼容要求会压缩部分设计选择，但只有确属必要的权利及适用的RAND/FRAND承诺才改变许可条件；符合标准不是自动许可。德国实用新型登记不预先进行完整实质审查，后续撤销或侵权程序可审查保护条件，不能把登记或不立案当作终局有效性。 标准贡献者还能通过承诺、排除及专有扩展划分免版税实施范围与仍需单独取得的权利；规范公开和专利授权是不同对象，免版税接口不自动许可制造或封装的其他发明。",
+          "current_status": "YMTC德国已裁决的是两件实用新型及被控3D NAND，不是全球所有存储专利。BeSang地区法院不侵权判决仍在上诉程序，显示产品实施抗辩与无效抗辩可以分别改变责任。DDR/HBM标准与自有制造实现并存；未获得当前各争议权利的完整claim chart或全部标准承诺，不将它们统一认定为SEP。 HBF规范经OCP发布并有应用平台参与，说明集体接口治理有实际入口；没有确认美光的采用或贡献承诺，也没有确认HBF全部相关权利免收费。OCP的2024政策与公开2021修订OWFa 1.0模板是不同版本材料，不据模板推定某项规范的已签文本。",
+          "materiality_context": "在目前广泛产品主张下，具体实施范围和少数可执行权利的质量，比诉讼数量、专利总数或层数名称更有杠杆：取消一项能独立支撑救济的权利可收窄多个产品敞口，但取消同族的一项外国权利不自动取消别国权利。若权利要求不覆盖新设计，新代际可使未来责任缩小而不抹去历史期间；若实现沿用，产品代际推进并不减险。标准必要性影响替代空间和谈判约束，承诺内容影响可收费条件，二者均不提供统一费率。有效性证据决定能否维持基础权利，产品映射决定销售范围；在德国已有裁决的场景两者作用可较快进入上诉及议价，在仅有诉状的AMT/Nextech场景仍是较长期尾部。不依据实用新型未预审给出个案撤销概率。 承诺覆盖及被排除权利可在相同技术采用量下改变可收费份额；更广开放可能降低接口成本、促进使用，却同时削弱贡献者在该范围的许可溢价。第三方和使能技术的剩余权利决定还需多少独立授权，不能由开放规范数量推算费用堆叠或自由实施。",
+          "scope_boundary": "解释权利可执行性与产品责任范围，不评价完整技术竞争力或把法域制度差异化为统一胜诉率。标准、工艺和封装细节仅在改变许可必要性或侵权映射时进入本域。",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.cafc.uscourts.gov/10-06-2026-2026-1085-besang-inc-v-micron-technology-inc-audio-uploaded/",
+            "https://www.dpma.de/english/utility_models/utility_model_protection/index.html",
+            "https://www.dpma.de/english/utility_models/cancellation_proceedings/index.html",
+            "https://www.wipo.int/en/web/patents/topics/sep",
+            "https://www.cafc.uscourts.gov/opinions-orders/13-1625.opinion.12-2-2014.1.pdf",
+            "D1-O88",
+            "https://www.opencompute.org/documents/ocp-ip-rights-management-policy",
+            "https://www.opencompute.org/documents/modified-owfa10-final-specification-agreement-fsa-as-of-august-16-2021",
+            "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf"
+          ]
+        },
+        {
+          "name": "救济法域与客户流向将专利争议转为供货杠杆",
+          "mechanism": "在确定相关权利及产品之后，法院/ITC可授予的救济、实际执行及暂停状态决定销售限制是否作用于当期供货；进入受限法域的产品流向和库存位置决定经济覆盖，而非客户注册地收入。美国地区法院永久禁令适用衡平考量，不因侵权成立自动作出；ITC可排除进口并发停止令，不直接判给金钱损害赔偿。多法域权利分别形成压力，不能把一国裁决机械推广全球。若受限销售可合法转往其他需求，供给重新配置会缓冲利润损失；若不能转配，限制持续期、被挤出的贡献利润及客户后续采购变化放大损失。",
+          "current_status": "YMTC德国书面救济已把争议从潜在请求推进到限制性法律状态，包括有明确德国流向的境外交付；美光上诉不等于已知暂停。第三方终端已整合产品的交出例外，不等于所有后续交付免责。Netlist的美国进口压力则已受到新许可和释放的实质缓解，不能继续按原未许可风险基线。公司现有供给紧张及产品资源改配支持部分转配有经济可能性，不证明被控SKU均可无成本转卖。",
+          "materiality_context": "救济类型本身决定压力形态：同一责任若由金钱补偿转为有效进口排除，可威胁对应进口产品的交付而不需要更大损害基数。当前德国的执行/暂停状态具有比一项未决损害估计更近端的杠杆，首先影响可供货权利及议价。销售范围S和真正中断时间t共同决定受影响规模；按固定其他条件的分析，少一月中断可减少约一月未获替代的贡献利润，而不是减少整项全球NAND年收入。SKU/流向范围扩大能同时提高受限销售和客户波及，库存/终端例外只减少对应救济成本。转配比例提高可保留部分毛利，但物流、价格差及既有客户承诺会削弱缓冲；多年合同并不保证受限产品仍能合法交付。客户资格与采购留存决定停售之后是否持续丢失商业机会，可能比短期付款更重要。未测德国收入阻止给出点估计，不妨碍判断边境流向、限制持续期及合法替代目前是主要敏感变量。",
+          "scope_boundary": "覆盖知识产权救济造成的产品销售自由、库存和跨境交付后果；不将其与CAC、关税或产业政策采购资格混为一谈。产品重配及客户采购后果连接产品业务域。",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_8k.htm",
+            "https://www.govinfo.gov/content/pkg/FR-2026-09-25/pdf/2026-19650.pdf",
+            "https://www.usitc.gov/faq/question/if_commission_finds_violation_section_337_what.htm",
+            "https://www.govinfo.gov/content/pkg/USREPORTS-547/pdf/USREPORTS-547-388.pdf",
+            "D1-O31",
+            "D1-O57"
+          ]
+        },
+        {
+          "name": "非侵权替代、客户资格与权利寿命约束谈判成本",
+          "mechanism": "美光能否选择不侵权替代取决于权利要求可绕开的空间、改动所需研发/工艺成本及替代设计性能；客户验证与生产切换时间决定替代何时能保留原订单。受限期间可获得的许可或暂停与替代方案构成竞争路径：低成本且迅速可用的替代削弱权利人要价，难以替代且资格周期长则增强继续付费的价值。权利剩余寿命缩短未来阻断的时间上限，但新权利和多代产品覆盖可延长实际组合约束，且未来绕开不消灭此前损害。",
+          "current_status": "1γ、G9及HBM换代有实际进展，但未获得被控德国3D NAND的已完成非侵权映射和合格替代方案。因此当前不是“已安全绕开”，而是客户资格和结构改动可能限制迅速切换的工作模型。C3中量产、送样、认证分层以及车规长期验证表明技术可用与商业可替换不等价。",
+          "materiality_context": "设计空间决定替代是否存在，是路径选择变量；研发/工艺成本决定一次性或单位成本代价，在持续销售相同的反事实下可改变愿付许可费。客户资格时间决定多少销售月份需要过渡安排，在德国已有书面救济的当下比尚未验证的新节点命名更近端；性能或可靠性让步可能丢失产品位置，使纯研发费用低估绕开代价。若同一替代同时跨多个受限SKU，成本可摊薄；若须逐平台验证，客户数及平台差异提高时间成本。权利剩余期缩短降低未来许可的价值，却不缩小历史损害；德国实用新型最长十年、专利通常可至二十年仅是制度上限，不能据此推定本案精确到期日。在没有合格替代的当前状态，继续争议/许可与资格时间的联合成本比已发生专利申请数量更有议价意义。",
+          "scope_boundary": "解释绕开及到期对许可、停供和历史责任的不同影响。制造性能、良率和OEM验证的技术细节由相邻域深化，本域保留其构成合法可替代路径的成本与时间。",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.dpma.de/english/utility_models/utility_model_protection/index.html",
+            "D1-O88",
+            "D1-O103",
+            "D1-O74"
+          ]
+        },
+        {
+          "name": "历史损害期间与发明价值分配决定赔偿尺度",
+          "mechanism": "对于未被有效许可或释放的权利，落入责任的销售及历史期间决定损害基数，专利对产品的增量贡献、可比许可和适用法律决定合理版税或其他赔偿尺度；适用的加重、利息等另行影响尾部。美国§284将合理版税置于损害补偿框架，不以诉状金额代替裁判。多组件产品要把发明价值与其他功能分开；实际RAND承诺下，还不能把整个标准采用价值全归给一项发明。不同专利/国家可能产生独立责任，但同一期间、同一权利损害和已释放义务不能重复计算；未来持续许可又与过去损害期间不同。",
+          "current_status": "目前已知500百万美元是确认费用，600百万美元是Netlist许可合同对价；旧445百万美元路径受释放取代，不能作为第三笔独立负担。YMTC、AMT、Nextech等未有可合理估计损害区间。系统集成和广泛产品覆盖提供主张范围，不证明用服务器/加速器整机收入直接计价。",
+          "materiality_context": "基数与期间决定暴露大小，发明价值及费率决定其中被转移的份额；独立改变任一项都能改变赔偿，而无须销量变化。条件算术：若经映射的某一累计销售基数为10亿美元，版税率每增加1个百分点对应1000万美元；这是敏感度单位，不是本案基数/费率预测。增加一个损害年度的影响取决于该年相同责任范围的销售，不等于当前年度全公司收入。价值分配与实际许可覆盖可比“权利人数增加”更重要，因为一项窄改进未必拥有整机价值。加重等法定尾部可显著扩大已成立责任，但当前没有依据套用美国最高倍数为任何案件期望损失，亦不跨国套用。重叠和释放是合计负担的减项约束；未来固定费不按相同公式随销售增加，需与本Factor的历史赔偿分开。",
+          "scope_boundary": "解释责任成立后的历史赔偿和价值归属，不提供法律结论、统一全球赔偿率或损害概率；禁令的供货机会成本由救济Factor承接，财务确认由会计Factor承接。",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_8k.htm",
+            "https://www.govinfo.gov/content/pkg/USCODE-2024-title35/html/USCODE-2024-title35-partIII-chap29-sec284.htm",
+            "https://www.cafc.uscourts.gov/opinions-orders/13-1625.opinion.12-2-2014.1.pdf",
+            "event-library:MU:v1"
+          ]
+        },
+        {
+          "name": "复审准入、实体审理与程序时序改变防御选择",
+          "mechanism": "美光及对手能否进入IPR/PGR取决于程序身份、真实利益方、裁量及实体门槛；进入之后的先前技术和权利有效性决定能否撤销相关权利。复审与侵权审理、上诉的相对时间，决定无效路径是在责任形成前降低敞口，还是只在较晚改变谈判；终局复审还可能限制以后重复提出本可提出的无效理由。双方据可用渠道、预计时间及重复防御成本选择继续抗辩或和解。美国制造投资等因素改变裁量事实，但不是实体免诉；美光既为被告也为专利权利人，制度作用不具固定单一方向。",
+          "current_status": "YMTC针对美光两项专利的复审因真实利益方识别不足被拒，保留了美光该程序上的权利地位，不是实体确认有效。3月官方新增美国制造和投资等裁量因素；美光实际制造投资构成可讨论背景，但没有专门获准或免责的观察。BeSang不侵权判决上诉与另一PTAB上诉分开存在，也提示无效与不侵权并非同一路径。",
+          "materiality_context": "准入决定是否有这一防御选项，当前程序性变化可在现金损失出现前改变和解杠杆；先前技术强弱才决定进入后的潜在权利减少，不能以准入概率代替胜诉概率。相对时序决定近期影响：若复审结果晚于供货限制或侵权裁判，防御成本和过渡许可价值先上升；若能提前排除关键权利，可减少后续产品尾部。终局禁反言/可用理由范围改变后续抗辩的选择价值，而非直接产生许可金额。身份披露、裁量书状及制造背景的重要性已上升，但未有美光个案量化系数；在德国实用新型争议中又须适用当地撤销与侵权渠道，不能移植美国程序利益。重复防御成本可以推动低额和解，高供货敞口则使有效权利和及时救济仍更重要。",
+          "scope_boundary": "覆盖程序渠道对权利强度、议价、时间和成本的传导；不把拒绝立案泛化为行政身份禁令或所有外国权利无效，也不将制度本身重复记为收入损失。",
+          "ref": [
+            "https://www.uspto.gov/sites/default/files/documents/ipr2025-00098_paper38.pdf",
+            "https://www.uspto.gov/patents/ptab/interim-director-discretionary-process",
+            "https://www.uspto.gov/subscription-center/2026/uspto-issues-additional-discretionary-institution-facts",
+            "https://www.uspto.gov/patents/ptab/trial-practice-guide",
+            "https://prod-web-alb-tg.uspto.gov/patents/laws/america-invents-act-aia/america-invents-act-aia-frequently-asked",
+            "https://www.dpma.de/english/utility_models/cancellation_proceedings/index.html",
+            "https://www.cafc.uscourts.gov/10-06-2026-2026-1085-besang-inc-v-micron-technology-inc-audio-uploaded/",
+            "D1-O31"
+          ]
+        },
+        {
+          "name": "授权销售、客户风险分担与平台采购相互作用",
+          "mechanism": "客户选型除了性能及交期，还要承担系统被诉、换件和持续供货风险；采购承诺及已部署平台提高中断的商业成本，从而提高完整权利保障的价值。授权销售及专利耗尽可阻断对已实质体现同一专利的下游产品重复主张，但须区分授权范围和独立系统发明，不能仅用“不可再许可”判断客户无使用权。合同防御/赔偿、责任上限、客户自行改动等约定决定剩余风险由美光还是客户承担；保障不足可以改采购分配，保障加宽则可能把法律费用或替换成本传回美光。",
+          "current_status": "DDR5进口程序曾涉及内存供应者和系统方，说明风险沿集成链实际存在。HBM/RDIMM/SSD已处于不同客户采用阶段，战略客户又有多年数量承诺，因而供货自由影响的不只是本季芯片款。Netlist新许可改善同一组合的供货权利，客户统一加强赔偿条款却没有观察；公司披露条件性防御义务及历史各类赔偿未重大不利，而非无上限的系统风险担保。Quanta仅提供美国授权组件销售的法律框架，不直接裁定本次合同或德国耗尽。",
+          "materiality_context": "平台已集成深度和替代资格时间决定客户对短期中断的敏感性；在高带宽平台换代时，即使当季收入未变，权利不完整也可能影响未来采购。授权及耗尽减少的是同一权利的重复主张，独立系统专利范围决定保护之外的剩余暴露，两者比“全球许可”四字更重要。责任上限/免责改变谁负担损失，在客户损失相同的反事实下直接改变美光净成本；不能将客户整机价值一比一记作赔偿。防御协调及替换义务决定现金/执行开销，平台采购承诺则决定关系的持续期。当前没有额外保障收费或实际IP赔偿付款锚点，故较有把握的影响是已有条件性成本与销售保障价值，而不是预测新增系统级巨额负债。",
+          "scope_boundary": "覆盖知识产权保障对客户采用、销售持续性和净责任的影响；平台订单、技术资格及合同履约总量由业务和战略协议域深化。本域不把专利耗尽拓展成所有国家、所有系统权利自动清除。",
+          "ref": [
+            "https://www.govinfo.gov/content/pkg/USREPORTS-553/pdf/USREPORTS-553-617.pdf",
+            "https://www.govinfo.gov/content/pkg/FR-2026-09-25/pdf/2026-19650.pdf",
+            "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_8k.htm",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O88",
+            "D1-O130",
+            "D1-O103",
+            "D1-O31"
+          ]
+        },
+        {
+          "name": "权利人商业模式与执行资源影响组合收费压力",
+          "mechanism": "同一专利价值不变，权利人的商业模式、可诉产品、执行资金及许可组织方式仍会改变其主张强度。经营竞争者可能同时关心市场排除、互相侵权和交叉许可；取得专利后主要寻求变现的主体，可能更重视现金协议且较少受美光对其产品反诉制约。诉讼及取证资源、可承受等待时间与双方重复防御成本影响可执行威胁和和解选择；普通权利转让/组合并购又须受原有许可约束，取得资产并不自动取得无负担主张。 防御方也可改变组织方式：客户、供应者及中介共同取得指定组合许可，把重复防御换为参与成本；附条件授权则可在约定专利转入特定主张主体时形成保护。这些安排不创造专利有效性，只改变已覆盖权利的执行和成本分摊。",
+          "current_status": "YMTC同时是NAND竞争者和权利主张者；Nextech相关案在Stanford数据中归为取得专利型主体。Netlist已把对美光的组合主张转为有限期现金许可。FTC对2009—2014样本的研究显示诉讼驱动与组合许可模式可以不同，这里只用作机制类比，不把旧样本比率当作2026美光案件分布，也未确认Nextech具体融资或分成结构。 Burford的FY2025披露提供非追索/组合融资模式；RPX的2019年半导体共同授权交易与LOT条件许可提供防御组织类比。它们不证明美光相关案件获融资、美光已加入网络或现有尾部已被共同覆盖。",
+          "materiality_context": "可诉经营产品/互相阻断决定交叉许可筹码能否抵消现金要价，是当前YMTC与取得型权利人的重要差异；不是专利质量的替代变量。执行资源与等待能力决定能否持续推进多法域争议，在权利范围相同的反事实下可提前或拖后现金和解，却不扩大合法侵权基数。双方防御成本可使小额争议在未有实体判责时结束；高销售限制场景中，可执行救济和有效权利仍比纯诉讼成本更有杠杆。组合许可组织可一次消除多项不确定性，但新主体的新权利不因Netlist和解自动覆盖。转让后继续受许可保护可把新闻中的资产扩张与美光新增成本分离；被遮盖的控制权例外不能计为已发生收费。当前更可用的排序是辨认对手激励、可执行范围及互相暴露，再看投入资源，不能以案件数给统一损失率。 共同防御的实际覆盖范围及参与者身份，比参与企业数量更能决定节省多少重复诉讼和客户保障成本；参与费可能换取较可见的负担而非零费用。附条件许可的触发转移、成员及存续范围决定受让人是否仍能主张；对未纳入权利和正常经营者相互侵权不能外推保护。执行资金增加可延长主张者等待能力，资金收紧也可能促成出售给新执行者，并不固定对应较低和解价。",
+          "scope_boundary": "解释外部权利人的主张供给、许可行为与美光净负担，不给主体贴未证实的诉讼投资人或滥诉标签，也不把融资信息缺失当作无能力执行。",
+          "ref": [
+            "https://www.ftc.gov/news-events/news/press-releases/2016/10/ftc-report-sheds-new-light-how-patent-assertion-entities-operate-recommends-patent-litigation",
+            "https://npe.law.stanford.edu/party/micron-semiconductor-products-inc",
+            "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_8k.htm",
+            "https://www.sec.gov/Archives/edgar/data/917273/000091727325000021/rmbs-ex1029_2024123110k.htm",
+            "D1-O3",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.sec.gov/Archives/edgar/data/1714174/000171417426000007/bur-20251231.htm",
+            "https://www.rpxcorp.com/news_release/rpx-announces-licensing-transaction-with-ip-bridge/",
+            "https://lotnet.com/how-we-protect-members/"
+          ]
+        },
+        {
+          "name": "可执行且被对手需要的自有权利产生变现及互换价值",
+          "mechanism": "研发产生发明后，美光对申请、地域覆盖、维护及保留/出售作选择，形成可执行的权利组合；权利质量、剩余寿命和对手产品实际需要决定许可需求。只有对手需要美光权利且其自身有可交换权利时，交叉许可才可降低净付费或防御压力；不依赖美光技术的取得型权利人未必接受同样抵扣。现金授权、出售权利及非现金互换提供不同收益与未来控制：出售可带来当期收益，却减少未来可交换资源。专利拥有量本身不是自由实施别人专利的许可。 共研时，带入的背景权利和新成果的所有权、申请权及实施/转授权范围先决定美光实际控制什么；共同开发不自动等于共同拥有，也不自动取得向其他客户复用的权利。",
+          "current_status": "美光拥有较大活跃美国/外国权利组合，披露持续寻求许可、出售和合作；FY2024有200百万美元交叉许可会计收益，之后两年同项目为零。工作解释是有真实保护/交易资源，但没有已证实的稳定现金收益率。对YMTC两项复审准入保护有利于保留具体权利，不证明全部组合质量提高。 Marvell已公开与美光等供应者合作开发定制HBM，提供实际共研入口；具体成果归属、排他和跨客户使用条款未公开，不能把合作成果先全部计入美光自有库存。",
+          "materiality_context": "研发及申请投入主要扩大未来权利机会，通常不能在投入同季自动形成现金；若对手技术需求不变，新增申请的边际价值仍取决于能否形成相关可执行权利。权利质量及对手采用范围决定可兑现价值，优于约15,500项美国、8,000项外国权利的简单数量相加；同族重复或对手不采用时，增一项不必带来增收。地域覆盖和剩余期决定在哪些销售、多少未来年份可形成筹码，维护/申请选择则以持续成本换取这种选择权。若相同权利获得独立可重复授权，现金流解释会强于一次性会计收益；若只换取对方权利，可改善销售自由而没有现金收益。对手互相暴露越强，抵扣路径越有意义；对无可诉经营产品的主体则更依赖真正现金/权利交易。出售与保留影响当前所得和远期筹码的分配，不把收益和未来防御价值重复相加。历史200百万美元是交易尺度而非年度跑速；当前新增许可利用率和质量比组合总数小幅变化更具修订意义。 同样研发成果和对手需求下，能跨客户复用且可对外授权的范围直接决定可交易收益；客户排他使用可能以开发费用分担或更稳定器件采购补偿，却减少独立许可机会。合作终止后的持续使用权决定已有平台能否继续实施，保密/派生成果边界则决定控制资源是否延续；这些合同变量可在专利数量未变时改变资产经济性。",
+          "scope_boundary": "覆盖自有组合的保护、许可变现、资产处置及净互换价值；研发技术领先及产品利润由技术/业务域深化，专利出售现金进入资金域但权利控制后果留在本域。",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.uspto.gov/sites/default/files/documents/ipr2025-00098_paper38.pdf",
+            "https://www.wipo.int/en/web/business/ip-valuation",
+            "https://www.wipo.int/en/web/technology-transfer/agreements",
+            "https://www.wipo.int/edocs/mdocs/sme/en/wipo_smes_vte_15/wipo_smes_vte_15_t4.pdf",
+            "D1-O88",
+            "https://www.wipo.int/web-publications/wipo-guide-to-trade-secrets-and-innovation/en/part-vi-trade-secrets-in-collaborative-innovation.html",
+            "https://www.marvell.com/company/newsroom/marvell-announces-breakthrough-custom-hbm-compute-architecture.html"
+          ]
+        },
+        {
+          "name": "技术秘密及权属证据把主动救济转成谈判资源",
+          "mechanism": "美光保密措施、发明/合同权属链与取得或使用技术的证据，决定主动技术秘密、违约或确认权利主张能否转成可执行救济。秘密须有来自非公开性的经济价值及合理保护措施；人员流动、产品相似或同一发明人不能单独证明侵占，合法独立开发和逆向工程需分开。美国技术秘密救济可针对非法使用并提供损失、非重复不当得利或合理许可尺度的金钱救济；若另行确立专利权属，则可能改变对手能够主张的权利。获得范围、实际可执行性及所需时间，再决定可否在和解中交换、降低净负担或保护竞争优势。",
+          "current_status": "美光已在爱达荷州主动诉YMTC及Hongbin Zhu，公开案卷只锚定起诉与未删节材料封存；当前没有确认技术侵占、专利归属或收回资产的裁判。与YMTC既有德国救济并行，新增主动程序提供谈判路径，但尚不能替代对德国限制的即时处理，也不能冲减Netlist已签费用。",
+          "materiality_context": "保密/权属和取得使用证据决定路径能否成立，当前是比索赔金额更关键的瓶颈；诉讼封存有保密作用但不是实体强证据。涉争技术的经济用途决定保护或回收的范围，若只涉及窄结构就不能把对手全部NAND收入视作赔偿。救济是限制使用、现金损害还是权属确认，决定收益在竞争保护、现金和削弱对手主张之间的分布；不同形式不应全额相加。时间和跨境执行决定能否在对方救济造成供货影响之前改变议价，延后胜诉可能有长期价值却不消除期间成本。若权属主张失败，仍可能存在独立技术秘密/合同问题，反之亦然；目前主动诉讼的经济贡献是未定但独立的选择权，而不是已实现抵扣。",
+          "scope_boundary": "覆盖本Unit人员/合同权属、技术秘密保护和主动救济对许可及专利争议的影响；不把所有人才流动定性为盗窃，不直接预测YMTC产能或地域产业政策。",
+          "ref": [
+            "https://dockets.justia.com/docket/idaho/iddce/1%3A2026cv00604/60724",
+            "https://www.govinfo.gov/content/pkg/USCODE-2024-title18/html/USCODE-2024-title18-partI-chap90-sec1839.htm",
+            "https://www.govinfo.gov/content/pkg/USCODE-2024-title18/html/USCODE-2024-title18-partI-chap90-sec1836.htm",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+          ]
+        },
+        {
+          "name": "确认口径与付款时间分离会计冲击和经济负担",
+          "mechanism": "权利取得和可估计责任的确认时点、合同支付期及费用/资产分类，决定许可对当期GAAP利润、负债及现金的不同影响；这三条流不是可相加的三种损失。non-GAAP剔除只改分析展示，不免除义务。税务扣除及股数影响税后和每股表示，不改合同付款面值；经营收益是否增长影响相对费用率，却不改变已签固定义务。财务桥因此需按权利、期间和会计政策连接，而非从总合同金额倒推本季EPS。",
+          "current_status": "FY2026许可费用500百万美元集中于Q4并在调整后口径剔除，Netlist600百万美元则为20季固定义务；未有公开逐项对账确认两者关联。尚未披露独立许可负债及本次已付金额，故没有把总价当作当前现金支付或重复未来费用。现有利润规模很大，使可见许可费用占比有限，但未决停售和其他权利责任仍有不同的尾部。",
+          "materiality_context": "确认时点可以在总经济承诺不变时集中压低单季利润；每有100百万美元新增当期税前营业费用，在FY2026 Q4相同54,229百万美元收入尺度上约相当于0.184个百分点营业利润率，纯条件算术而非费用预测。500百万美元相同尺度约0.922个百分点，不是毛利率影响。支付期决定现金压力落在哪些季度；同一义务分20季支付不等于消失或当季承担总价。分类决定是即时费用还是按适用政策跨期进入利润，目前不能为本合同自定摊销方法。non-GAAP处理对显示利润重要，对经济付款没有减项作用；税务与股数只修正税后/每股系数，现有资料不足以构造本次确定EPS净影响。相对规模目前使固定30百万美元季度义务远小于500百万美元集中费用，但供货损失须另按销售及贡献利润衡量，不能据此判全部IP风险低。",
+          "scope_boundary": "保留许可/争议到GAAP、现金与正常化负担的特定财务桥；公司整体税务、资本分配、偿付及估值由相邻资金和市场研究承担，不宣称已充分定价或设交易阈值。",
+          "ref": [
+            "D1-O44",
+            "D1-O57",
+            "D1-O12",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_8k.htm"
+          ]
+        }
+      ],
+      "potential_gaps": [
+        {
+          "name": "和解保护的完整性与已签负担的财务归属",
+          "why_live": "Netlist已签五年全球组合许可、互相释放及每季30百万美元的20季义务，原逐案赔偿尾部已被合同路径取代。与此同时，FY2026 Q4确认500百万美元许可费用，公开资料尚没有对价、费用、负债和现金的对应桥，也没有完整主体及第三方条款。当前问题不是是否还会签同一和解，而是所得销售保护和正常化负担究竟有多完整。",
+          "revision_logic": "基线为有限期固定费及列明争议收束，普通付款和撤案本身不构成新的成本修订。能改变理解的是同一义务被误当重复费用、确认另有独立权利负担，或保护范围/履约出现实质裂口。会计解释可修订持续盈利而不改变合同现金；权利裂口则可能重开供货成本，影响大于固定费的小幅波动。",
+          "possibility_space": [
+            {
+              "name": "财报将集中确认费用与本次分期许可逐项接通",
+              "implication": "如果桥表说明500百万美元包含该协议相关已确认部分，未来应按具体确认政策和剩余义务解释，而不是再把600百万美元全额添加为新损失；利润恢复可能只是确认时点变化，现金义务并未消失。这里是假设未来解释建立关联，不是当前已认定二者同属一项交易。"
+            },
+            {
+              "name": "披露集中费用对应另一独立许可或持续付费安排",
+              "implication": "若500百万美元的权利对手方及期间独立于Netlist，新披露可把目前交易集中型费用解释改为多组持续成本；增加的是明确不同的经济义务，而非机械将两个数字相加，也不能据一次费用预测以后每季500百万美元。"
+            },
+            {
+              "name": "特定法人或客户使用方式成为许可与释放争议",
+              "implication": "若实际合同边界留下未获授权的制造/交付或独立第三方请求，可能需要补充授权、协调防御或改变交易路径。不可再许可条款本身不证明授权售出的客户产品没有权利；程序登记未更新也不等于旧445百万美元仍要另付。"
+            },
+            {
+              "name": "履约争议导致许可保护被终止或重新谈判",
+              "implication": "实际付款或其他重大合同义务争议若影响保护连续性，原来的固定成本可见性会被重新争议及供货不确定性替代；现金充裕不能保证任何法律履约争议不存在，但当前没有违约观察。"
+            }
+          ],
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_8k.htm",
+            "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_ex99-1.htm",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.govinfo.gov/content/pkg/FR-2026-09-25/pdf/2026-19650.pdf",
+            "https://www.govinfo.gov/content/pkg/USREPORTS-553/pdf/USREPORTS-553-617.pdf",
+            "D1-O44",
+            "D1-O57"
+          ]
+        },
+        {
+          "name": "销售救济与合法替代重绘产品及客户敞口",
+          "why_live": "YMTC德国两件实用新型已有10月6日书面限制，涵盖被控3D NAND及明确流入德国的境外交付；上诉已提出，实际执行/暂停及SKU规模未测。其他法域案件继续，2027年还审理其他德国权利。供给紧张、客户资格和终端整合例外同时存在，故法律范围与真实中断不是同一个量。",
+          "revision_logic": "基线不是等待第一项禁令，而是管理已有救济的争议期。修订取决于法律限制何时作用、哪些流向被切断、替代是否合法且可用，以及客户是否继续采购。技术绕开、到期和合法转配可吸收短期损失；若影响平台后续选型，中断会放大为多年关系成本。这里保留销售自由，历史现金损害另列。",
+          "possibility_space": [
+            {
+              "name": "上诉或撤销程序及时暂停、撤销关键救济基础",
+              "implication": "若及时限制执行或使支撑救济的权利失效，近期交付压力和过渡许可价值可下降；暂停只延后风险，权利撤销也仅作用于相应权利/法域，均不能直接抹去所有其他争议。"
+            },
+            {
+              "name": "执行触及境外系统方的德国交付链",
+              "implication": "客户所在地之外的产品流向可使直接德国收入低估暴露；暂停不了或无法合法重配时，库存处理、停供和留客成本上升。第三方终端已整合产品的交出例外减轻对应救济，却不豁免所有新供货。"
+            },
+            {
+              "name": "其他法域分别授予更宽产品或市场救济",
+              "implication": "UPC、英国、中国或美国各自的权利结果若覆盖不同销售，可能扩大合法供货约束及组合谈判价值。须以各自可获救济区分进口排除、停售与金钱补偿，不能从德国裁决直接推导全球全部NAND或DRAM禁售。"
+            },
+            {
+              "name": "美光通过客户资格的非侵权设计替换受限器件",
+              "implication": "实际替代可降低未来停售持续期及愿付许可费；研发、工艺和重认证代价仍可能侵蚀利润。新节点名称不是非侵权证明，未来绕开不消除此前责任；若多平台都要重审资格，节省的法律成本可能晚于销售中断。"
+            },
+            {
+              "name": "客户转向替代供应者而美光转配至不受限用途",
+              "implication": "两种响应可同时发生。供给紧张且存在合法替代买方时可保留部分销售利润，但原客户平台位置可能永久转移；若其他买方价格/用途不等价，转配也有成本。不能把资源紧张当作停售完全无经济损失。"
+            },
+            {
+              "name": "关键权利到期促成短期过渡许可而非长期组合付费",
+              "implication": "剩余保护期短且替代资格较慢时，双方可能用过渡安排承接现有产品，降低未来长期收费价值；这不减少历史损害，亦不假定本案已临近制度最长年限。"
+            }
+          ],
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.dpma.de/english/utility_models/cancellation_proceedings/index.html",
+            "https://www.dpma.de/english/utility_models/utility_model_protection/index.html",
+            "https://www.usitc.gov/faq/question/if_commission_finds_violation_section_337_what.htm",
+            "D1-O31",
+            "D1-O74",
+            "D1-O103"
+          ]
+        },
+        {
+          "name": "未覆盖有效权利把潜在尾部转成历史赔偿与新许可",
+          "why_live": "Netlist释放不覆盖YMTC、AMT、Nextech或BeSang的独立权利。BeSang仍在不侵权判决上诉阶段，AMT/Nextech为其他产品和专利主张；目前除已确认费用外没有可合理估计损失区间。器件、接口与系统功能涉及不同发明价值，宽产品指控不足以把整机收入当损害基数。",
+          "revision_logic": "基线是继续防御和个案谈判，而不是合并尾部为零或所有案件败诉。少数能覆盖高销售期间的有效权利、责任解释和损害价值分配，可把不可计量尾部转为现金义务；不侵权、无效或释放则可移除相应路径。未来持续许可与历史赔偿分开，同一销售/同一损害不得重复累积。",
+          "possibility_space": [
+            {
+              "name": "BeSang上诉改变产品映射或要求重新审理责任",
+              "implication": "现有不侵权防线若被推翻或发回，会恢复潜在责任和谈判成本，但发回不等于已经判赔。若责任最终只覆盖窄实现，经济增量也可能主要是过去期间，而非未来全部NAND销售。"
+            },
+            {
+              "name": "AMT、Nextech或新权利人获得覆盖多代产品的实体支持",
+              "implication": "宽且有效的权利若被实际实施，可同时影响过去销售及以后产品许可；只有诉状数量增加则不具同样含义。对一个已覆盖产品的新代际沿用核心实现，尾部可能持续而非随换代自然消失。"
+            },
+            {
+              "name": "技术证据或先前技术排除关键权利及实施范围",
+              "implication": "对能独立支撑责任的权利形成无效或不侵权结果，可使多SKU的现金尾部收窄，即使其他案件仍在。一个同族外国权利的失效不自动消除其他国家权利。"
+            },
+            {
+              "name": "法院采用较窄发明贡献而非整机价值计算损害",
+              "implication": "历史责任可成立而赔偿远低于以整机或全公司销售推算的尺度；相反，较长未授权期间、宽责任销售或依法加重可放大现金尾部。标准必要性和实际RAND承诺才带来相应定价约束，不能给所有存储专利统一费率或最高倍数。"
+            },
+            {
+              "name": "独立权利人以历史释放加持续组合授权取代逐案争议",
+              "implication": "一次支付或分期费用可换取多代产品的连续供货权利，降低未定尾部但形成新的成本层。净负担应按不同权利、期间和新增授权计算，不能重算已被Netlist释放的同一义务。"
+            }
+          ],
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.cafc.uscourts.gov/10-06-2026-2026-1085-besang-inc-v-micron-technology-inc-audio-uploaded/",
+            "https://www.govinfo.gov/content/pkg/USCODE-2024-title35/html/USCODE-2024-title35-partIII-chap29-sec284.htm",
+            "https://www.cafc.uscourts.gov/opinions-orders/13-1625.opinion.12-2-2014.1.pdf",
+            "https://npe.law.stanford.edu/party/micron-semiconductor-products-inc"
+          ]
+        },
+        {
+          "name": "主张资本与联合防御改变专利交易的组织方式",
+          "why_live": "权利人不只有经营竞争者，也有取得专利型主体；这使美光自身可反诉产品的互换能力不同。外部世界已有专利诉讼及组合融资、共同防御买权的制度：Burford FY2025披露非追索及组合结构；RPX在2019年曾为10家公司取得595项半导体相关权利许可；LOT公开的条件许可针对成员专利转入PAE。它们是可用商业模式及历史类比，不证明本案融资、美光会员身份或当前新交易。",
+          "revision_logic": "当前没有美光采用上述集体安排的观察，工作参照仍为逐权利人防御与双边许可。若融资把闲置权利变成可持续多案主张，或客户/供应者共同购买与附条件授权把风险提前分摊，诉讼供给、等待能力和支付方式会改变，即使权利要求本身不变。组织方式不创造侵权基数，但能改变美光付费时间、防御成本及对现金/互换路径的选择。",
+          "possibility_space": [
+            {
+              "name": "经营企业将非核心存储专利交给有融资的执行平台",
+              "implication": "长期资金和组合化成本分担可使更多原来闲置权利被主张，减少美光以对方经营产品反诉的抵扣能力。效应来自实际相关可执行权利及执行投入，不是交易金额大就等于赔偿大；原许可负担仍可能随权利转移。"
+            },
+            {
+              "name": "资金提供者收紧承保或权利人接受更早现金许可",
+              "implication": "若长期诉讼资源变贵或无法持续，多案等待价值降低，可能推动较早、较有限范围和解；也可能迫使出售给更积极的新持有人。资金退出既不能使专利自动无效，也未必必然降低最终要价。"
+            },
+            {
+              "name": "系统客户与供应者共同取得问题组合的防御许可",
+              "implication": "RPX式组织可以用共同采购替代多方重复诉讼，美光付出可见参与费换取指定权利覆盖和减少客户风险。收益取决于纳入的专利、主体及既有争议释放，非参与方/未纳入权利不自动清零，亦不能假定联合采购一定获得低费率。"
+            },
+            {
+              "name": "权利持有人扩大专利转入PAE时生效的条件授权网络",
+              "implication": "若美光相关链条实际获得这种合同保护，普通产业专利出售给特定主张主体可能不再重新产生同等尾部；它只针对约定转移与成员覆盖，并不限制所有经营竞争者间的侵权诉讼，也不替代已签Netlist付款。"
+            }
+          ],
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://npe.law.stanford.edu/party/micron-semiconductor-products-inc",
+            "https://www.sec.gov/Archives/edgar/data/1714174/000171417426000007/bur-20251231.htm",
+            "https://www.rpxcorp.com/news_release/rpx-announces-licensing-transaction-with-ip-bridge/",
+            "https://lotnet.com/how-we-protect-members/",
+            "https://www.sec.gov/Archives/edgar/data/917273/000091727325000021/rmbs-ex1029_2024123110k.htm"
+          ]
+        },
+        {
+          "name": "许可续期与产品定义重定边际成本",
+          "why_live": "Netlist提供五年固定费窗口，Rambus已续至2029年11月末且存在期限/已付清产品架构；2020曾修改定义和费率，当前不能应用2013费率。HBM、接口及制造实现演进使覆盖、寿命与续期资源会变化，普通专利转让和控制权/经营业务交易的合同待遇又不同。",
+          "revision_logic": "近期连续性不等于远期价格永久锁定。权利人与美光可在新增产品、剩余寿命或续期窗口改变固定、销售挂钩及已付清结构，从而修订每单位增长的权利成本。需求及售价变化在固定费下改变相对负担，在可变费下改变付款，两者不能套用同一利润敏感度。",
+          "possibility_space": [
+            {
+              "name": "续期双方用长期固定价扩大新代际组合覆盖",
+              "implication": "可减少以后逐代重谈和高增长时的边际费用，但提前锁定付款也保留低销售时负担；收益以实际新增权利及有效期限为限，不能把固定价视为永久无尾部。"
+            },
+            {
+              "name": "权利人把新实现或定制器件纳入新的计费产品定义",
+              "implication": "如果新增实现不在当前覆盖而需另购权利，增长可增加净许可层；若只是在现有定义内使用，则普通产品换代无此增量。费率、数量或销售计价的基数差别决定增长如何转换成本，不套用Rambus旧0.6%。"
+            },
+            {
+              "name": "许可双方在续期时转为销售挂钩或混合最低保底",
+              "implication": "成本随业务扩大而提高，反过来在低销量时可能低于纯固定费；最低保底又限制这种缓冲。定价变化修订的是权利成本结构，不需首先发生新的侵权裁决。"
+            },
+            {
+              "name": "旧权利到期与新权利替代错位削弱续期要价",
+              "implication": "较多相关权利消失且美光新设计不再实施它们时，可选择较窄授权或不续部分产品，减少净付费；若仍被新的必要权利覆盖，旧权利到期只改变组合构成而非免付费。"
+            },
+            {
+              "name": "组合控制权或业务出售引发覆盖连续性重新解释",
+              "implication": "新持有人若受原许可约束，交易可能只是收款方改变；若实际适用合同例外且留下未覆盖权利，则可能重新谈授权。遮盖条款不支持预先宣告全部许可失效，普通转让与整体交易不可混同。"
+            }
+          ],
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_8k.htm",
+            "https://www.rambus.com/rambus-and-micron-technology-extend-patent-license-agreement/",
+            "https://www.sec.gov/Archives/edgar/data/917273/000091727325000021/rmbs-ex1029_2024123110k.htm",
+            "https://www.sec.gov/Archives/edgar/data/917273/000119312520238654/d47509d8k.htm",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O88"
+          ]
+        },
+        {
+          "name": "客户把供货权利风险转成采购与保障合同选择",
+          "why_live": "公司已有条件性IP防御赔偿义务，先前ITC程序包含系统客户，HBM/RDIMM/SSD各平台又有集成和资格成本；多年数量承诺使供货连续性有价值。Netlist许可减少同一组合风险，但没有观察到客户统一扩大赔偿要求，也没有单列IP实际赔付金额。",
+          "revision_logic": "既有保障接口可以在美光自身案件未新增判责时被客户重新定价。客户把权利完整性纳入采购、扩大替换/防御责任或自行取得系统许可，会改变美光净费用与长期采用。授权组件销售的耗尽只能覆盖相应权利，不是所有独立系统发明；保障增强也不能自动按整机价格计算损失。",
+          "possibility_space": [
+            {
+              "name": "大型系统客户要求更宽责任上限与权利补救",
+              "implication": "美光可能承担更多联合防御、换件和合同损失，或用价格/期限补偿新增风险；即使未被直接判赔，净单位利润和客户关系也可改变。影响以具体承担责任和实际可用替代为界，不把客户全部系统价值搬进负债。"
+            },
+            {
+              "name": "客户为避免平台中断将采购分散至其他合格供应者",
+              "implication": "早期选型即可降低未来美光平台份额，经济影响可能晚于当季法律费用却持续更久；若替换资格慢且已获充分授权，分散动机可被性能、供给或切换成本吸收，数量承诺也不保证所有法律情形下维持原分配。"
+            },
+            {
+              "name": "平台方直接取得系统层许可并与组件方分工防御",
+              "implication": "若独立系统权利由客户控制和支付，可限制向美光传递的额外赔偿，同时使采购更多取决于授权接口兼容。客户授权不当然许可美光自己的制造实现；须把新增系统权利与已耗尽的组件权利分开。"
+            },
+            {
+              "name": "授权边界解释消除同一专利的重复下游收费",
+              "implication": "对应授权销售和实质体现同一发明的情形若成立，可减少重复索赔和保障成本，不必提高美光付费总价。若争议涉及独立组合发明或不同法域规则，原有芯片许可仍未必提供相同结果。"
+            }
+          ],
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_8k.htm",
+            "https://www.govinfo.gov/content/pkg/FR-2026-09-25/pdf/2026-19650.pdf",
+            "https://www.govinfo.gov/content/pkg/USREPORTS-553/pdf/USREPORTS-553-617.pdf",
+            "D1-O31",
+            "D1-O103",
+            "D1-O130"
+          ]
+        },
+        {
+          "name": "无效挑战渠道与救济时序重排双边议价",
+          "why_live": "2026年美国准入仍包含身份和裁量程序，新增本土制造/投资等考虑；YMTC挑战美光两项专利因真实利益方不足被拒而非实体有效性裁决。德国实用新型还有后续撤销渠道。多地审理与产品限制的时间差，使同样技术证据在不同阶段有不同商业价值。",
+          "revision_logic": "基线是有条件渠道，不是专利一经申请复审就会无效。制度或程序行为若改变渠道可得性、相对时序及以后理由限制，就会修订抗辩成本和过渡许可价值。美光既被主张又持有权利，不能用单一制度方向统一调整整个组合损失。",
+          "possibility_space": [
+            {
+              "name": "行政或司法变化使更多挑战进入及时实体审理",
+              "implication": "作为被告，美光可更早争取撤销关键权利并降低过渡付费压力；作为权利人，其对手也可能获得同样渠道，削弱反向筹码。更容易进入并不等于实体先前技术已足以胜出。"
+            },
+            {
+              "name": "准入进一步强调裁量、身份或制造事实",
+              "implication": "部分挑战者需转向较慢较贵的诉讼防御，权利人的近期议价可增强；美光的美国制造背景可能在具体事实中有用，不构成所有案件专门豁免。对手纠正身份披露后重新尝试，也不同于制度全面放松。"
+            },
+            {
+              "name": "关键无效结果赶在销售救济前形成",
+              "implication": "及时缩小相关权利可减少近期中断或迫于时限的许可；若无效结果在救济之后，期间仍可能承担换件、停供或过渡费，最终赢得权利争议不等于全程无经济成本。"
+            },
+            {
+              "name": "当事人选择复审后承受终局理由限制",
+              "implication": "进入复审可能换来有效权利削减，也可能限制后续重复抗辩，改变多程序组合策略；拒绝立案本身不等价于这种实体终局后果，不能把所有失败均当作专利被确认有效。"
+            }
+          ],
+          "ref": [
+            "https://www.uspto.gov/patents/ptab/interim-director-discretionary-process",
+            "https://www.uspto.gov/subscription-center/2026/uspto-issues-additional-discretionary-institution-facts",
+            "https://www.uspto.gov/sites/default/files/documents/ipr2025-00098_paper38.pdf",
+            "https://www.dpma.de/english/utility_models/cancellation_proceedings/index.html",
+            "https://www.uspto.gov/patents/ptab/trial-practice-guide",
+            "https://prod-web-alb-tg.uspto.gov/patents/laws/america-invents-act-aia/america-invents-act-aia-frequently-asked"
+          ]
+        },
+        {
+          "name": "自有专利从防御库存转为可重复授权或权利处置",
+          "why_live": "美光拥有较大活跃组合并披露许可、出售及合作活动，但FY2024的200百万美元交叉许可收益之后两年未重复，现金许可收入未单列。组合数量说明资源存在，实际实施、寿命、地域和对手可交换权利才决定能兑现什么。",
+          "revision_logic": "基线为交易型保护资源而非固定收益流。若被多个对手需要的权利形成长期现金许可，可提高持续收入；互换可减少净外付而不产生同量现金，出售则交换当期所得与远期控制。不同安排不能把现金、会计收益及防御价值同时全额相加。",
+          "possibility_space": [
+            {
+              "name": "美光把同一技术组合授权给多个独立使用者",
+              "implication": "能在不出售权利下增加可重复收益，并扩展许可组织能力；实际对手采用及权利寿命决定跑速，不能按每项专利乘固定收益或把一次大额签约年化。"
+            },
+            {
+              "name": "经营竞争者接受互相许可抵减外付成本",
+              "implication": "双方均需要对方技术时，净负担和供货自由可改善，即使交叉许可会计收益或现金收入为零。对没有可诉经营产品的主张者，同一库存未必提供这种抵扣。"
+            },
+            {
+              "name": "美光出售非核心权利并保留实施许可",
+              "implication": "出售带来当期所得并可能减维护成本，保留授权可保护自身实施；但未来独占、对手收费及互换机会转移给受让人。净价值取决于保留权利和相关新主张约束，不把售出专利仍当完整防御库存。"
+            },
+            {
+              "name": "新接口或工艺路线绕过美光关键组合",
+              "implication": "对手可以在产品增长时降低对美光权利的依赖，专利库存不变但商业可授权价值下降；相反，仅专利数下降而核心需求仍在，不一定等比例减少净变现能力。"
+            }
+          ],
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.uspto.gov/sites/default/files/documents/ipr2025-00098_paper38.pdf",
+            "https://www.wipo.int/en/web/business/ip-valuation",
+            "https://www.wipo.int/en/web/technology-transfer/agreements",
+            "D1-O88"
+          ]
+        },
+        {
+          "name": "技术秘密与权属救济改变可控制的技术资源",
+          "why_live": "美光已主动诉YMTC及Hongbin Zhu，公开案卷只锚定起诉与封存，不能先认定侵占或追回专利。现有主动请求与德国对美光的限制并行，权属/保密证据、救济形态及跨境执行时间会影响能否转成反向资源。",
+          "revision_logic": "基线保留主动救济选择权而不先抵扣现金负担。确立权属可以改变谁有权主张专利；仅限制非法使用或取得金钱赔偿又有不同作用。即使有较晚回收，也不自动解除当前国外供货限制；合法独立开发和未成立指控必须与侵占分开。",
+          "possibility_space": [
+            {
+              "name": "权属裁判或和解将具体专利权转回美光",
+              "implication": "若确立对应权属，可削弱对手就这些权利的主张并增加美光保护/许可资源；范围以具体权利为限，不推定对手整个NAND组合归属改变，也不自动推翻其他法域既有裁判。"
+            },
+            {
+              "name": "对特定秘密的非法使用形成可执行限制或赔偿",
+              "implication": "限制使用侧重技术控制及竞争保护，现金补偿侧重历史损失或不重复不当得利；两者对净许可谈判可有价值，但不能把对手全部经营收入认定为赔偿或全额叠加不同救济。"
+            },
+            {
+              "name": "双方把主动请求与侵权争议合并为互相授权",
+              "implication": "美光可用可执行反向权利换取供货许可及降低净现金，未必出现独立现金回收；能否及时替代德国过渡处理很关键。它是未来谈判配置，不是当前已实现抵扣。"
+            },
+            {
+              "name": "权属或保密证据不足使主动路径缩窄",
+              "implication": "若指控不能证明，或属于独立开发/合法取得，美光仍需通过侵权抗辩、许可或替代处理外部主张，并承担相关法律成本。某项权属失败不必同时排除全部合同/秘密请求，但谈判资源不能继续按最大主张计价。"
+            }
+          ],
+          "ref": [
+            "https://dockets.justia.com/docket/idaho/iddce/1%3A2026cv00604/60724",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.govinfo.gov/content/pkg/USCODE-2024-title18/html/USCODE-2024-title18-partI-chap90-sec1836.htm",
+            "https://www.govinfo.gov/content/pkg/USCODE-2024-title18/html/USCODE-2024-title18-partI-chap90-sec1839.htm"
+          ]
+        },
+        {
+          "name": "定制平台共研重分知识产权控制与跨客户使用权",
+          "why_live": "外部参与者正在改变研发分工：Marvell于2024年12月宣布与美光、三星和SK hynix合作定制HBM，将接口、基础die、控制逻辑及封装联合优化；SK hynix与TSMC也公开三方协作路线。美光HBM4已有量产，HBM4E仍为后续计划。WIPO协作框架区分带入的背景权利、新成果、商业化及合作结束后的权利；公告证明共研入口，不公开各方具体权属或排他安排。",
+          "revision_logic": "双边既有许可解释器件实施权，但不决定共研成果归属及跨客户复用权。客户、设计服务者和制造伙伴若控制不同层的IP，可能在同样产品销量下改变美光可复用技术、第三方许可付款及自有组合变现。权利分配可先于量产改变远期议价；这里只深化IP后果，不将合作公告当作已量产、独占或市场份额。",
+          "possibility_space": [
+            {
+              "name": "云客户出资并取得定制成果的排他使用或授权控制",
+              "implication": "客户可能承担部分开发或许可成本，增强合作稳定性；美光则可能无法把成果复用于其他客户或单独对外收费。产品利润改善与独立许可资产价值下降可以共存，不能把客户出资当作美光保留全部权利。"
+            },
+            {
+              "name": "伙伴划清背景权利并让美光保留可跨客户复用的基础设计",
+              "implication": "限定接口定制许可可在降低合作方重复付费的同时保留通用工艺/存储权利，形成后续产品和授权资源；需要的是实际保留及使用权，不是全称共同研发即共同拥有所有成果。"
+            },
+            {
+              "name": "平台或设计服务方把自有控制逻辑作为单独授权模块",
+              "implication": "控制权从纯器件供应延伸到模块许可，美光可能须取得制造/集成权，或由客户直接提供已授权模块并承担该层许可。费用与保障归属不同，会改变净成本及对该平台的依赖，而不等于逻辑方当然拥有DRAM核心权利。"
+            },
+            {
+              "name": "合作结束或供应者切换时发生派生成果及保密争议",
+              "implication": "继续生产、修改或向新客户提供同一设计的权利可能被限制，拖延资格和重新授权；若合同预先保留持续使用权，则同样退出可只带来正常切换成本。秘密外泄还能削弱控制资源，但不先假定已发生泄露或任何成员侵占。"
+            }
+          ],
+          "ref": [
+            "https://www.marvell.com/company/newsroom/marvell-announces-breakthrough-custom-hbm-compute-architecture.html",
+            "https://news.skhynix.com/sk-hynix-partners-with-tsmc-to-strengthen-hbm-technological-leadership/",
+            "https://www.wipo.int/web-publications/wipo-guide-to-trade-secrets-and-innovation/en/part-vi-trade-secrets-in-collaborative-innovation.html",
+            "https://www.wipo.int/en/web/technology-transfer/agreements",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O74",
+            "D1-O88"
+          ]
+        },
+        {
+          "name": "开放接口治理改变可收费权利与行业准入方式",
+          "why_live": "2026年8月Sandisk与SK hynix通过OCP发布HBF规范，Google和Tenstorrent参与技术验证及标准建立，说明应用方可联合推动接口安排。OCP的2024政策规定贡献、授权及排除程序并引用OWFa 0.9；另行公开的2021修订OWFa 1.0模板展示有限规范实施的免版税承诺与使能技术等范围限制。两者作为治理和授权范围的框架，不等同已确认的HBF签署文本。规范公开不证明全部相关专利免收费，更不证明美光已采用或承诺全部组合。",
+          "revision_logic": "通常按双边组合许可理解权利成本，但买方和标准贡献者能选择将必要接口权利预先开放、保留专有实现或排除特定权利。治理改变谁能收费、技术可替代性及美光自有权利的变现机会，不只是新代际费率多一点少一点。低接口收费可促进使用并扩大器件销售，亦可弱化接口控制溢价；产品替代及行业需求归相邻域，本域保留权利经济性。",
+          "possibility_space": [
+            {
+              "name": "大买方围绕开放规范要求贡献者作有限免版税承诺",
+              "implication": "若相关权利和美光实际产品纳入承诺，可减少重复接口付费及标准迁移摩擦；美光作为权利人可能让渡该范围版税以换取更广使用。免的是明确已承诺权利，不是制造、封装及第三方全部专利。"
+            },
+            {
+              "name": "关键贡献者排除某些权利或保留专有扩展",
+              "implication": "接口公开仍可能存在需单独购买的实现或扩展授权，形成开放核心加付费模块；客户可能选不同路线绕开，也可能为性能接受付费。排除与范围澄清能改变准入及议价，不自动使规范无效或美光侵权。"
+            },
+            {
+              "name": "应用平台将参考设计与互操作采购绑定",
+              "implication": "如果客户倾向已获接口权利的实现，美光需选择授权进入、贡献自身权利或保留专有路线；新进入者可能更易取得接口权，权利人数量不再直接代表费用堆叠。更易准入会放大使用还是削弱现有许可溢价，取决于美光在器件能力和被采用权利中的角色。"
+            }
+          ],
+          "ref": [
+            "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf",
+            "https://www.opencompute.org/documents/ocp-ip-rights-management-policy",
+            "https://www.opencompute.org/documents/modified-owfa10-final-specification-agreement-fsa-as-of-august-16-2021",
+            "https://www.wipo.int/en/web/patents/topics/sep",
+            "D1-O88",
+            "D1-O130"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+....................F.............                                       [100%]
+================================== FAILURES ===================================
+_________ test_metadata_only_event_change_and_empty_formal_feed_noop __________
+
+rig = namespace(orchestrator=<doxagent.workflows.codex_document3.orchestrator_v21.Document3OrchestratorV21 object at 0x00000...s\\WEIXUANXIE\\AppData\\Local\\Temp\\pytest-of-WEIXUANXIE\\pytest-1707\\test_metadata_only_event_chang0\\maintain.md'})
+
+    @pytest.mark.asyncio
+    async def test_metadata_only_event_change_and_empty_formal_feed_noop(rig):
+        initial = await rig.orchestrator.initialize(ticker="MU", as_of=NOW, run_id="d3v21-meta-base")
+        version = initial.handoff.policy_set_version
+        feed = {
+            "contract_version": "persistent-runtime.o3-maintenance-feed.v1",
+            "ticker": "MU",
+            "trading_date": "2026-10-04",
+            "reference_view_delta": {
+                "reference_view_delta": "",
+                "removed_event_ids": [],
+                "from_library_version": 9,
+                "to_library_version": 9,
+            },
+            "trade_records": [],
+            "badcase_records": [],
+            "w3_coverage_gaps": [],
+            "trade_candidates": [],
+        }
+        start = len(rig.worker.requests)
+        empty = await rig.orchestrator.maintain(
+            ticker="MU",
+            base_policy_version=version,
+            as_of=NOW,
+            maintenance_feed=feed,
+            run_id="d3v21-empty-feed",
+        )
+        assert empty.status == "NOOP" and len(rig.worker.requests) == start
+        snapshot = SimpleNamespace(
+            published_at=NOW,
+            as_of=None,
+            contract_version="event-library-reference-view-v1",
+            ticker="MU",
+            version=9,
+            sha256="a" * 64,
+            reference_view="full Event view",
+        )
+        rig.orchestrator.preparer.legacy._event_library_reader = SimpleNamespace(
+            reference_view=lambda *_, **__: snapshot
+        )
+        rig.worker.patch = {
+            "base_policy_set_version": version,
+            "upsert_policies": [],
+            "retire_policy_ids": [],
+        }
+        changed = await rig.orchestrator.maintain(
+            ticker="MU",
+            base_policy_version=version,
+            as_of=NOW,
+            event_library_version=9,
+            run_id="d3v21-meta-change",
+        )
+>       assert changed.status == "COMPLETE" and changed.handoff.policy_set_version > version
+E       AssertionError: assert ('NOOP' == 'COMPLETE'
+E         
+E         - COMPLETE
+E         + NOOP)
+
+tests\test_codex_document3_v21_maintenance.py:195: AssertionError
+============================== warnings summary ===============================
+.venv\Lib\site-packages\opentelemetry\util\_importlib_metadata.py:32
+  C:\Users\WEIXUANXIE\Desktop\DoxAgent\.venv\Lib\site-packages\opentelemetry\util\_importlib_metadata.py:32: DeprecationWarning: SelectableGroups dict interface is deprecated. Use select.
+    return EntryPoints(ep for group_eps in eps.values() for ep in group_eps)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_codex_document3_v21_maintenance.py::test_metadata_only_event_change_and_empty_formal_feed_noop
+1 failed, 33 passed, 1 warning in 187.02s (0:03:07)

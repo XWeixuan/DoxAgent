@@ -1,0 +1,9 @@
+{
+  "alias": "O54",
+  "title": "text paragraphs 8",
+  "content": "AI labs including Anthropic, Black Forest, Cohere, Cursor, Harvey, Meta, Mistral AI, OpenAI, OpenEvidence, Perplexity, Runway, Thinking Machines Lab and xAI are looking to the NVIDIA Rubin platform to train larger, more capable models and to serve long-context, multimodal systems at lower latency and cost than with prior GPU generations.\n\nInfrastructure software and storage partners AIC, Canonical, Cloudian, DDN, Dell, HPE, Hitachi Vantara, IBM, NetApp, Nutanix, Pure Storage, Supermicro, SUSE, VAST Data and WEKA are working with NVIDIA to design next-generation platforms for Rubin infrastructure.\n\nThe Rubin platform marks NVIDIA’s third-generation rack-scale architecture, with more than 80 NVIDIA MGX™ ecosystem partners.\n\nTo unlock this density, Red Hat today announced an expanded collaboration with NVIDIA to deliver a complete AI stack optimized for the NVIDIA Rubin platform with Red Hat’s hybrid cloud portfolio, including Red Hat Enterprise Linux, Red Hat OpenShift and Red Hat AI. These solutions are used by the vast majority of Fortune Global 500 companies.\n\nLearn more by watching NVIDIA Live at CES and reading the “Inside Vera Rubin” technical blog.",
+  "source": {
+    "provider": "Public web source",
+    "locator": "https://nvidianews.nvidia.com/news/rubin-platform-ai-supercomputer"
+  }
+}

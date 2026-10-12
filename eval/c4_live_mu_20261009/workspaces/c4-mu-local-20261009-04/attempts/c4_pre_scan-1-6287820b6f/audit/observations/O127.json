@@ -1,0 +1,9 @@
+{
+  "alias": "O127",
+  "title": "text paragraphs 4",
+  "content": "_____________________________________\n\n1 Comparing the bandwidth of HBM4 to the previous generation HBM3E with the same capacity and stack height (36GB 12H).\n\n2 Comparison of HBM power efficiency: (HBM4 12H vs. HBM3E 12H at 9.2 Gbps; workload pattern 60/30/10/75) [Internal power calculator tool].\n\n3 On February 12, 2026, Micron announced mass production of the 9650 SSD. At the time of blog publication, no other Gen6 SSDs from the top five OEM data center SSDs suppliers by revenue had announced mass production, according to the Forward Insights analyst report SSD Supplier Status Q4/25 (Nov 2025).\n\n4 For the Micron 9650 SSD performance results, see table 1 in the Micron 9650 SSD Product Brief.\n\n5 Based on internal Micron testing and confidential customer test vehicle validation.\n\n6 The 48GB cube provides a 33% increase in capacity per HBM placement when comparing the capacity of HBM4 36GB 12H to HBM4 48GB 16H.",
+  "source": {
+    "provider": "Public web source",
+    "locator": "https://stage-investors.micron.com/news/press-release/2026/Micron-in-High-Volume-Production-of-HBM4-Designed-for-NVIDIA-Vera-Rubin-PCIe-Gen6-SSD-and-SOCAMM2-03-16-2026/default.aspx"
+  }
+}

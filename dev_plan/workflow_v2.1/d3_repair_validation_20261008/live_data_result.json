@@ -1,0 +1,229 @@
+{
+  "meta": null,
+  "content": [
+    {
+      "type": "text",
+      "text": "{\"execution_status\":\"partial\",\"availability\":\"degraded\",\"summary\":\"Retrieved current Yahoo Finance consensus with explicit vintage limits.\",\"delivery\":{\"mode\":\"inline\",\"observations\":[{\"alias\":\"O1\",\"title\":\"retrieved_at\",\"content\":\"2026-10-07T21:48:08.539414+00:00\",\"source\":{\"provider\":\"Yahoo Finance via yfinance\",\"locator\":\"yfinance:sell_side_consensus:MU\"}},{\"alias\":\"O2\",\"title\":\"periods 1-4\",\"content\":{\"columns\":[\"earnings_estimate\",\"eps_revisions\",\"eps_trend\",\"period_code\",\"revenue_estimate\"],\"rows\":[{\"period_code\":\"0q\",\"earnings_estimate\":{\"avg\":38.21061,\"low\":30.2,\"high\":40.47,\"yearAgoEps\":3.03,\"numberOfAnalysts\":33,\"growth\":11.6108},\"revenue_estimate\":{\"avg\":61670130780,\"low\":58065000000,\"high\":65610000000,\"numberOfAnalysts\":33,\"yearAgoRevenue\":13643000000,\"growth\":3.5203},\"eps_trend\":{\"current\":38.21061,\"7daysAgo\":35.66414,\"30daysAgo\":34.89147,\"60daysAgo\":34.87982,\"90daysAgo\":34.81046},\"eps_revisions\":{\"upLast7days\":4,\"upLast30days\":6,\"downLast30days\":1,\"downLast7Days\":1}},{\"period_code\":\"+1q\",\"earnings_estimate\":{\"avg\":42.12014,\"low\":39.71,\"high\":46.85,\"yearAgoEps\":4.78,\"numberOfAnalysts\":30,\"growth\":7.8117},\"revenue_estimate\":{\"avg\":66970314159,\"low\":58853000000,\"high\":74381000000,\"numberOfAnalysts\":31,\"yearAgoRevenue\":23860000000,\"growth\":1.8067999},\"eps_trend\":{\"current\":42.12014,\"7daysAgo\":38.46609,\"30daysAgo\":37.76854,\"60daysAgo\":37.71849,\"90daysAgo\":37.48482},\"eps_revisions\":{\"upLast7days\":3,\"upLast30days\":6,\"downLast30days\":1,\"downLast7Days\":1}},{\"period_code\":\"0y\",\"earnings_estimate\":{\"avg\":176.15115,\"low\":72.29,\"high\":214.7,\"yearAgoEps\":73.88294,\"numberOfAnalysts\":36,\"growth\":1.3842},\"revenue_estimate\":{\"avg\":275010403860,\"low\":212417000000,\"high\":307231000000,\"numberOfAnalysts\":39,\"yearAgoRevenue\":133188000000,\"growth\":1.0648},\"eps_trend\":{\"current\":176.15115,\"7daysAgo\":161.69012,\"30daysAgo\":156.24937,\"60daysAgo\":155.79457,\"90daysAgo\":150.00752},\"eps_revisions\":{\"upLast7days\":3,\"upLast30days\":5,\"downLast30days\":1,\"downLast7Days\":1}},{\"period_code\":\"+1y\",\"earnings_estimate\":{\"avg\":206.33243,\"low\":161,\"high\":335.5,\"yearAgoEps\":176.15115,\"numberOfAnalysts\":36,\"growth\":0.1713},\"revenue_estimate\":{\"avg\":319096927750,\"low\":224163000000,\"high\":396620000000,\"numberOfAnalysts\":42,\"yearAgoRevenue\":275010403860,\"growth\":0.1603},\"eps_trend\":{\"current\":206.33243,\"7daysAgo\":180.93925,\"30daysAgo\":171.02492,\"60daysAgo\":166.8887,\"90daysAgo\":163.34702},\"eps_revisions\":{\"upLast7days\":3,\"upLast30days\":4,\"downLast30days\":1,\"downLast7Days\":0}}]},\"source\":{\"provider\":\"Yahoo Finance via yfinance\",\"locator\":\"yfinance:sell_side_consensus:MU\"}},{\"alias\":\"O3\",\"title\":\"accounting_basis\",\"content\":\"provider analyst consensus; EPS GAAP/non-GAAP basis is unspecified and must not be labeled SEC GAAP without reconciliation\",\"source\":{\"provider\":\"Yahoo Finance via yfinance\",\"locator\":\"yfinance:sell_side_consensus:MU\"}},{\"alias\":\"O4\",\"title\":\"period_code_legend\",\"content\":{\"0q\":\"current fiscal quarter\",\"+1q\":\"next fiscal quarter\",\"0y\":\"current fiscal year\",\"+1y\":\"next fiscal year\"},\"source\":{\"provider\":\"Yahoo Finance via yfinance\",\"locator\":\"yfinance:sell_side_consensus:MU\"}},{\"alias\":\"O5\",\"title\":\"requested_cutoff_at\",\"content\":\"2026-10-07T21:48:02.025487+00:00\",\"source\":{\"provider\":\"Yahoo Finance via yfinance\",\"locator\":\"yfinance:sell_side_consensus:MU\"}},{\"alias\":\"O6\",\"title\":\"vintage_policy\",\"content\":\"retrieval-time current consensus only; the provider does not expose a historical point-in-time vintage\",\"source\":{\"provider\":\"Yahoo Finance via yfinance\",\"locator\":\"yfinance:sell_side_consensus:MU\"}}]},\"source\":{\"provider\":\"Yahoo Finance via yfinance\",\"as_of\":\"2026-10-07T21:48:08.539414+00:00\"},\"error\":{\"code\":\"current_consensus_not_historical_vintage\",\"message\":\"Current consensus cannot establish the requested historical vintage.\",\"retryable\":false}}",
+      "annotations": null,
+      "meta": null
+    }
+  ],
+  "structured_content": {
+    "execution_status": "partial",
+    "availability": "degraded",
+    "summary": "Retrieved current Yahoo Finance consensus with explicit vintage limits.",
+    "delivery": {
+      "mode": "inline",
+      "observations": [
+        {
+          "alias": "O1",
+          "title": "retrieved_at",
+          "content": "2026-10-07T21:48:08.539414+00:00",
+          "source": {
+            "provider": "Yahoo Finance via yfinance",
+            "locator": "yfinance:sell_side_consensus:MU"
+          }
+        },
+        {
+          "alias": "O2",
+          "title": "periods 1-4",
+          "content": {
+            "columns": [
+              "earnings_estimate",
+              "eps_revisions",
+              "eps_trend",
+              "period_code",
+              "revenue_estimate"
+            ],
+            "rows": [
+              {
+                "period_code": "0q",
+                "earnings_estimate": {
+                  "avg": 38.21061,
+                  "low": 30.2,
+                  "high": 40.47,
+                  "yearAgoEps": 3.03,
+                  "numberOfAnalysts": 33,
+                  "growth": 11.6108
+                },
+                "revenue_estimate": {
+                  "avg": 61670130780,
+                  "low": 58065000000,
+                  "high": 65610000000,
+                  "numberOfAnalysts": 33,
+                  "yearAgoRevenue": 13643000000,
+                  "growth": 3.5203
+                },
+                "eps_trend": {
+                  "current": 38.21061,
+                  "7daysAgo": 35.66414,
+                  "30daysAgo": 34.89147,
+                  "60daysAgo": 34.87982,
+                  "90daysAgo": 34.81046
+                },
+                "eps_revisions": {
+                  "upLast7days": 4,
+                  "upLast30days": 6,
+                  "downLast30days": 1,
+                  "downLast7Days": 1
+                }
+              },
+              {
+                "period_code": "+1q",
+                "earnings_estimate": {
+                  "avg": 42.12014,
+                  "low": 39.71,
+                  "high": 46.85,
+                  "yearAgoEps": 4.78,
+                  "numberOfAnalysts": 30,
+                  "growth": 7.8117
+                },
+                "revenue_estimate": {
+                  "avg": 66970314159,
+                  "low": 58853000000,
+                  "high": 74381000000,
+                  "numberOfAnalysts": 31,
+                  "yearAgoRevenue": 23860000000,
+                  "growth": 1.8067999
+                },
+                "eps_trend": {
+                  "current": 42.12014,
+                  "7daysAgo": 38.46609,
+                  "30daysAgo": 37.76854,
+                  "60daysAgo": 37.71849,
+                  "90daysAgo": 37.48482
+                },
+                "eps_revisions": {
+                  "upLast7days": 3,
+                  "upLast30days": 6,
+                  "downLast30days": 1,
+                  "downLast7Days": 1
+                }
+              },
+              {
+                "period_code": "0y",
+                "earnings_estimate": {
+                  "avg": 176.15115,
+                  "low": 72.29,
+                  "high": 214.7,
+                  "yearAgoEps": 73.88294,
+                  "numberOfAnalysts": 36,
+                  "growth": 1.3842
+                },
+                "revenue_estimate": {
+                  "avg": 275010403860,
+                  "low": 212417000000,
+                  "high": 307231000000,
+                  "numberOfAnalysts": 39,
+                  "yearAgoRevenue": 133188000000,
+                  "growth": 1.0648
+                },
+                "eps_trend": {
+                  "current": 176.15115,
+                  "7daysAgo": 161.69012,
+                  "30daysAgo": 156.24937,
+                  "60daysAgo": 155.79457,
+                  "90daysAgo": 150.00752
+                },
+                "eps_revisions": {
+                  "upLast7days": 3,
+                  "upLast30days": 5,
+                  "downLast30days": 1,
+                  "downLast7Days": 1
+                }
+              },
+              {
+                "period_code": "+1y",
+                "earnings_estimate": {
+                  "avg": 206.33243,
+                  "low": 161,
+                  "high": 335.5,
+                  "yearAgoEps": 176.15115,
+                  "numberOfAnalysts": 36,
+                  "growth": 0.1713
+                },
+                "revenue_estimate": {
+                  "avg": 319096927750,
+                  "low": 224163000000,
+                  "high": 396620000000,
+                  "numberOfAnalysts": 42,
+                  "yearAgoRevenue": 275010403860,
+                  "growth": 0.1603
+                },
+                "eps_trend": {
+                  "current": 206.33243,
+                  "7daysAgo": 180.93925,
+                  "30daysAgo": 171.02492,
+                  "60daysAgo": 166.8887,
+                  "90daysAgo": 163.34702
+                },
+                "eps_revisions": {
+                  "upLast7days": 3,
+                  "upLast30days": 4,
+                  "downLast30days": 1,
+                  "downLast7Days": 0
+                }
+              }
+            ]
+          },
+          "source": {
+            "provider": "Yahoo Finance via yfinance",
+            "locator": "yfinance:sell_side_consensus:MU"
+          }
+        },
+        {
+          "alias": "O3",
+          "title": "accounting_basis",
+          "content": "provider analyst consensus; EPS GAAP/non-GAAP basis is unspecified and must not be labeled SEC GAAP without reconciliation",
+          "source": {
+            "provider": "Yahoo Finance via yfinance",
+            "locator": "yfinance:sell_side_consensus:MU"
+          }
+        },
+        {
+          "alias": "O4",
+          "title": "period_code_legend",
+          "content": {
+            "0q": "current fiscal quarter",
+            "+1q": "next fiscal quarter",
+            "0y": "current fiscal year",
+            "+1y": "next fiscal year"
+          },
+          "source": {
+            "provider": "Yahoo Finance via yfinance",
+            "locator": "yfinance:sell_side_consensus:MU"
+          }
+        },
+        {
+          "alias": "O5",
+          "title": "requested_cutoff_at",
+          "content": "2026-10-07T21:48:02.025487+00:00",
+          "source": {
+            "provider": "Yahoo Finance via yfinance",
+            "locator": "yfinance:sell_side_consensus:MU"
+          }
+        },
+        {
+          "alias": "O6",
+          "title": "vintage_policy",
+          "content": "retrieval-time current consensus only; the provider does not expose a historical point-in-time vintage",
+          "source": {
+            "provider": "Yahoo Finance via yfinance",
+            "locator": "yfinance:sell_side_consensus:MU"
+          }
+        }
+      ]
+    },
+    "source": {
+      "provider": "Yahoo Finance via yfinance",
+      "as_of": "2026-10-07T21:48:08.539414+00:00"
+    },
+    "error": {
+      "code": "current_consensus_not_historical_vintage",
+      "message": "Current consensus cannot establish the requested historical vintage.",
+      "retryable": false
+    }
+  },
+  "is_error": false,
+  "result_type": "complete"
+}

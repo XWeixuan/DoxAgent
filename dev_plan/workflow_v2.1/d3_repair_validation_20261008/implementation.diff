@@ -1,0 +1,1986 @@
+--- before/changelog
++++ changelog
+@@ -1377,3 +1377,11 @@
+ 2026-10-07 · 按用户反馈重写 MU D3 O3 SDK Pilot 详细分析：只读恢复 7 个既有 SDK thread 的 82 次公开研究过程，补齐真实查询/页面操作/完整命令/文件映射；逐节点和 wave 解释任务处理、阶段耗时、252 条观察的根因与最终处置，新增逐条 issue 索引和公开工具附录。独立指出目录分批割裂业务关联、补研近全量/affected 全池、重复确认型 final 调用、后期宿主搬运开销及平台机会到 MU 净方向等问题，并区分编排代码与 prompt/skill 优化。仅改衍生文档和 ZIP；原研究产物、审计、D2 输入不改，无新模型研究/业务代码/提示词改动。详细交付见 D:/DoxAgentPilot/cases/document3/mu-d3-v21-sdkpilot-20261007-02/PILOT_ANALYSIS.md。
+ 2026-10-08 · 严格按用户提供的 D2 O0 v2.1 Pilot 后局部调整方案完成 6 处补丁：Synthesis 区分代表记录处置与重要研究责任承接，将对象身份/独立维护价值与当前可测量精度分开，补轻量语义交接自检并明确 topology 与证据/确认/建模规则的边界；Domain Review 仅补反馈 reasoning 的规则归属说明，同步替换 o0.md 指定全局原则段。三份文件与方案替换结果精确一致，其他文字/换行、Discovery/Finalization/AGENTS、legacy、Schema 和业务代码保持本轮前原样；未增字段、账本、枚举或审查清单。2 项既有离线合同检查及 diff check 通过（1 项既有依赖 warning），未重跑真实模型 Pilot 或部署。
+ 2026-10-08 · 完成 D3 v2.1 Pilot 后编排问题 2–6 细查及既有修复二次审查，交付 dev_plan/workflow_v2.1/d3_v2.1_orchestration_repair_plan_20261008.md 与 o3_v2.1_prompt_skill_orchestration_repair_handoff_20261008.md：确认 GLOBAL 研究职责偏差、跨批/跨 owner 全文供材不足、relations/ref 扩张处理范围、重复 final 调用、Consolidation 误用旧 Review，并复现 Result/文件名接纳残余缺口及审查 Planning 恢复有限性。方案明确三类对象、最小 edit_requests、5 目录分批、全池只读 JSON、正式 Event Reader 绑定、单次接纳/增量物化/计时、兼容与验证边界；同步需由 prompt/skill 会话调整的角色和交付认知。当前离线基线 135 passed / 1 既有依赖 warning，另有四项只读行为探针；本轮仅方案、同步说明和留痕，未实施业务代码、修改 prompt/skill、重跑真实模型或部署。
++
++- 2026-10-08: 按 D3 v2.1 编排修复方案本地实施：GLOBAL 限 Planning/Integration，Shell/OPEN 承担 Discovery/Build；Review 最小 edit_requests 与研究请求/只读参考分离，Integration 五目录批处理、全已接纳 Policy 只读映射、唯一补研与最新 Review 收束、按请求 final 和显式集合交易。统一 Result 别名/声明路径的一次波次接纳，保留完整历史及多版本 Condition 身份；修复规范正文恢复和候选 catalog 字节一致性。新增稳定材料索引、定点 ledger/scoped inventory（HTTP/local 默认兼容）、轻量状态与耗时/复用指标；Pilot audit SHA+磁盘恢复、副本保留完整保护、MAINTAIN 逐请求权限、有限单调 Planning 恢复及失败上下文 SHA 留证。158 项完整回归及 74/35 项定向组合通过，旧 MU 56 份身份/326 文件 SHA 只读回放通过；新 gpt-6-sol/high MU Pilot 正在逐节点验收。正式 Event MU v1 Reader 实读成功，O3 共识 MCP 真实返回但历史 vintage 仍 degraded。未修改 prompt/skill、未部署或切换正式 v2 默认；同步说明与独立验收记录已更新。
++
++- 2026-10-08: D3 编排修复末轮复核补齐主/补 Build 的继承旧稿 fallback 接纳收据核对，防止新路径无 ledger 却进入产物集合；并让阶段结束后的待编辑/待补研视图只保留技术未完成目标/最终 gaps。对应新坏例及交接回归通过；不改变经济判断或默认 retain，prompt/skill 未动。
++
++- 2026-10-08: 新 MU 实模暴露逐 Topic result_*.json 被固定四别名漏读；扩展同 wave 顶层明确 Result 命名的结构接纳，缓存 parser revision 更新只重解析 Result、不二次接纳 Policy。隔离留证后回放恢复 17 个 Result，23 份 Policy ledger SHA 不变、无新增 SDK 研究调用；三项边界回归通过，handoff 已同步此方案落地差异。
++
++- 2026-10-08: D3 修复新 MU SDK Pilot 验收完成：22 次 gpt-6-sol/high 业务调用及独立复盘成功；17 主 Topic/23 B、6 补研 Topic/10 稿，主 Review 2 批、post 1 批、三项显式编辑在 final 1 批产出四候选，32 稿 staged v3 终态 PARTIAL 仅因三个研究 gaps。241 条全文映射 SHA、最新 Review、身份唯一性及四发布文件通过；77 条逐调用 issue 全量留证，旧 false 快照不作最终遗留计数。补充明确 result_delivery 与 final batch/related_targets 的技术任务合同，指定 handoff 与验收记录同步；无 prompt/skill 修改、无正式切换/部署。
+--- before/dev_plan/workflow_v2.1/document3_v2.1_contracts.schema.json
++++ dev_plan/workflow_v2.1/document3_v2.1_contracts.schema.json
+@@ -172,6 +172,13 @@
+         },
+         "coverage_notes": {
+           "type": "string"
++        },
++        "edit_requests": {
++          "type": "array",
++          "items": {
++            "$ref": "#/$defs/EditRequest"
++          },
++          "default": []
+         }
+       },
+       "required": [
+@@ -513,6 +520,27 @@
+         "policies",
+         "published_at"
+       ]
++    },
++    "EditRequest": {
++      "type": "object",
++      "properties": {
++        "policies": {
++          "type": "array",
++          "items": {
++            "type": "string",
++            "minLength": 1
++          },
++          "minItems": 1
++        },
++        "instruction": {
++          "type": "string",
++          "minLength": 1
++        }
++      },
++      "required": [
++        "policies",
++        "instruction"
++      ]
+     }
+   }
+-}+}
+--- before/src/doxagent/codex_runtime/client.py
++++ src/doxagent/codex_runtime/client.py
+@@ -32,7 +32,7 @@
+         self, run_id: str, relative_path: str, content: str
+     ) -> WorkspaceFileResponse: ...
+     async def read_text(self, run_id: str, relative_path: str) -> WorkspaceFileResponse: ...
+-    async def inventory(self, run_id: str) -> WorkspaceInventory: ...
++    async def inventory(self, run_id: str, *, prefixes=None) -> WorkspaceInventory: ...
+     async def read_attempt_observations(
+         self, run_id: str, attempt_id: str
+     ) -> list[PersistedObservation]: ...
+@@ -151,9 +151,13 @@
+         )
+         return WorkspaceFileResponse.model_validate(response.json())
+ 
+-    async def inventory(self, run_id: str) -> WorkspaceInventory:
+-        response = await self._request(
+-            "GET", f"/v1/workspaces/{run_id}", run_id=run_id, operation="inventory"
++    async def inventory(self, run_id: str, *, prefixes=None) -> WorkspaceInventory:
++        response = await self._request(
++            "GET",
++            f"/v1/workspaces/{run_id}",
++            run_id=run_id,
++            operation="inventory",
++            params=[("prefixes", p) for p in prefixes] if prefixes is not None else None,
+         )
+         return WorkspaceInventory.model_validate(response.json())
+ 
+--- before/src/doxagent/codex_worker/app.py
++++ src/doxagent/codex_worker/app.py
+@@ -8,6 +8,7 @@
+ from collections.abc import AsyncIterator
+ from contextlib import asynccontextmanager
+ from pathlib import Path
++from typing import Annotated
+ 
+ from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
+ from fastapi.responses import JSONResponse, StreamingResponse
+@@ -288,10 +289,11 @@
+     )
+     async def inventory(
+         run_id: str,
++        prefixes: Annotated[list[str] | None, Query()] = None,
+         x_workspace_capability: str | None = Header(default=None),
+     ) -> WorkspaceInventory:
+         require_capability(run_id, "inventory", x_workspace_capability)
+-        return await disk.run(workspaces.inventory, run_id)
++        return await disk.run(workspaces.inventory, run_id, prefixes=prefixes)
+ 
+     @app.get(
+         "/v1/workspaces/{run_id}/attempts/{attempt_id}/observations",
+--- before/src/doxagent/codex_worker/local_client.py
++++ src/doxagent/codex_worker/local_client.py
+@@ -27,8 +27,8 @@
+     async def read_text(self, run_id: str, relative_path: str) -> WorkspaceFileResponse:
+         return self.store.read_text(run_id, relative_path)
+ 
+-    async def inventory(self, run_id: str) -> WorkspaceInventory:
+-        return self.store.inventory(run_id)
++    async def inventory(self, run_id: str, *, prefixes=None) -> WorkspaceInventory:
++        return self.store.inventory(run_id, prefixes=prefixes)
+ 
+     async def snapshot(self, run_id: str, snapshot_id: str) -> None:
+         self.store.snapshot(run_id, snapshot_id)
+--- before/src/doxagent/codex_worker/sdk_runtime.py
++++ src/doxagent/codex_worker/sdk_runtime.py
+@@ -278,10 +278,11 @@
+             CodexD3Node.O3_PLANNING,
+             CodexD3Node.O3_BUILD,
+             CodexD3Node.O3_INTEGRATION,
++            CodexD3Node.O3_MAINTAIN,
+         }:
+-            # GLOBAL resumes the same session across phases. Explicitly replace
+-            # this switch so Planning cannot inherit Discovery's provider grant,
+-            # and subsequent Build/Integration can re-enable their own capability.
++            # Refresh each D3 request, including maintenance and read-only audits.
++            # GLOBAL coordinates Planning/Integration; research owners keep their
++            # own grants, and an audit must never inherit a preceding grant.
+             sdk_config.update(
+                 {
+                     "mcp_servers.data.command": sys.executable,
+--- before/src/doxagent/codex_worker/workspace_store.py
++++ src/doxagent/codex_worker/workspace_store.py
+@@ -143,12 +143,22 @@
+         # would otherwise make a valid CRLF source disagree with its frozen content.
+         return result.model_copy(update={"content": target.read_bytes().decode("utf-8")})
+ 
+-    def inventory(self, run_id: str) -> WorkspaceInventory:
++    def inventory(self, run_id: str, *, prefixes=None) -> WorkspaceInventory:
+         run_root = self.ensure_run(run_id)
++        if prefixes is None:
++            targets = [run_root]
++        else:
++            targets = [self._resolve(run_id, p.rstrip("/")) for p in prefixes]
++        paths = set()
++        for target in targets:
++            if target.is_file():
++                paths.add(target)
++            elif target.is_dir():
++                paths.update(p for p in target.rglob("*") if p.is_file())
+         files = [
+-            self._metadata(run_id, path, include_content=False)
+-            for path in sorted(run_root.rglob("*"))
+-            if path.is_file() and self._is_contained(path, run_root)
++            self._metadata(run_id, p, include_content=False)
++            for p in sorted(paths)
++            if self._is_contained(p, run_root)
+         ]
+         return WorkspaceInventory(run_id=run_id, files=files)
+ 
+--- before/src/doxagent/pilot/document3_driver.py
++++ src/doxagent/pilot/document3_driver.py
+@@ -7,6 +7,7 @@
+ import hashlib
+ import json
+ import secrets
++import shutil
+ import sqlite3
+ from datetime import datetime
+ from pathlib import Path
+@@ -184,24 +185,68 @@
+         for item in failed.values()
+     ):
+         raise ValueError("Planning retry requires a verified admission or stale-context error")
++    if any(
++        item.get("planning_recovery_used") or item["attempt_count"] >= 4 for item in failed.values()
++    ):
++        raise ValueError("Planning recovery budget already used")
+     recovery_root = root / "pilot_recovery"
+     next_number = len(list(recovery_root.glob("planning_retry_*.json"))) + 1
+-    write_json(
+-        recovery_root / f"planning_retry_{next_number}.json",
+-        {
+-            "run_id": run_id,
+-            "checkpoint_sha256": digest(run),
+-            "phase": run["phase"],
+-            "failed_tasks": {
+-                key: {
+-                    "status": item["status"],
+-                    "attempt_count": item["attempt_count"],
+-                    "error": item.get("error"),
+-                }
+-                for key, item in failed.items()
+-            },
++    recovery_receipt = {
++        "run_id": run_id,
++        "checkpoint_sha256": digest(run),
++        "phase": run["phase"],
++        "failed_tasks": {
++            key: {
++                "status": item["status"],
++                "attempt_count": item["attempt_count"],
++                "error": item.get("error"),
++            }
++            for key, item in failed.items()
+         },
+-    )
++        "isolated_files": [],
++    }
++    # Only failed task-local derived namespaces may be isolated; immutable shared
++    # source and accepted outputs are retained. New contexts use a new generation.
++    moves = []
++    for key, item in failed.items():
++        workspace = (
++            root / "workspaces" / item.get("workspace_run_id", f"{run_id}-global")
++        ).resolve()
++        allowed_root = (root / "workspaces").resolve()
++        if not workspace.is_relative_to(allowed_root):
++            raise ValueError("Planning recovery workspace escapes pilot root")
++        task_hash = digest(key)[:24]
++        task_path = item.get("task_path", f"context/document3/v21/tasks/{task_hash}.json")
++        for relative in (
++            task_path,
++            f"context/document3/v21/borrowed/{task_hash}",
++            f"context/document3/v21/context_index/{task_hash}",
++            f"context/document3/v21/context_index/tasks/{Path(task_path).stem}",
++        ):
++            target = (workspace / relative).resolve()
++            if not target.is_relative_to(workspace):
++                raise ValueError("Planning recovery path escapes workspace")
++            if target.exists():
++                files = sorted(target.rglob("*")) if target.is_dir() else [target]
++                recovery_receipt["isolated_files"].extend(
++                    {
++                        "workspace": workspace.name,
++                        "path": p.relative_to(workspace).as_posix(),
++                        "sha256": hashlib.sha256(p.read_bytes()).hexdigest(),
++                    }
++                    for p in files
++                    if p.is_file()
++                )
++                destination = (
++                    recovery_root / f"planning_context_{next_number}" / task_hash / relative
++                )
++                moves.append((target, destination))
++    write_json(recovery_root / f"planning_retry_{next_number}.json", recovery_receipt)
++    for target, destination in moves:
++        destination.parent.mkdir(parents=True, exist_ok=True)
++        shutil.move(str(target), str(destination))
++    recovery_receipt["isolation_complete"] = True
++    write_json(recovery_root / f"planning_retry_{next_number}.json", recovery_receipt)
+     run = dict(run)
+     run.pop("agenda", None)
+     run["phase"] = "PLANNING"
+@@ -214,7 +259,15 @@
+         )
+         for key, old in failed.items():
+             item = dict(old)
+-            item.update(status="PENDING", attempt_count=2, error="", files={}, snapshots={})
++            item.update(
++                status="PENDING",
++                max_attempts=4,
++                planning_recovery_used=True,
++                context_generation=max(old["attempt_count"], old.get("context_generation", 0)) + 1,
++                error="",
++                files={},
++                snapshots={},
++            )
+             item.pop("request", None)
+             item.pop("job", None)
+             db.execute(
+@@ -358,8 +411,6 @@
+                 and request.get("orchestration_version", "v2.1") == "v2.1"
+             ):
+                 orchestrator.pilot_stop_after_phase = args.stop_after
+-            if getattr(args, "retry_failed_planning", False):
+-                orchestrator.runner.pilot_max_attempts = 4
+             if options.get("source_workspaces") and not (root / ".sources-imported").exists():
+                 source_root = Path(options["source_workspaces"])
+                 if source_root.resolve() == (root / "workspaces").resolve():
+--- before/src/doxagent/pilot/document3_sdk.py
++++ src/doxagent/pilot/document3_sdk.py
+@@ -6,6 +6,7 @@
+ import hashlib
+ import json
+ import os
++import shutil
+ import time
+ import zipfile
+ from datetime import UTC, datetime
+@@ -16,6 +17,7 @@
+ from doxagent.codex_worker.schema import WorkerJob
+ from doxagent.codex_worker.telemetry import project_turn_telemetry
+ from doxagent.pilot.sdk_runner import ISSUE_SCHEMA, _review_markdown, read_json, write_json
++from doxagent.workflows.codex_document3.timing_v21 import HostTiming
+ 
+ 
+ class LocalPilotWorkspace:
+@@ -37,15 +39,21 @@
+         return self.local.publish(*args, **kwargs)
+ 
+ 
+-def _protected(root):
+-    return {
+-        p.relative_to(root).as_posix(): p.read_bytes()
+-        for p in root.rglob("*")
+-        if p.is_file()
+-        and not (
+-            p.relative_to(root).parts[0] == "attempts" and "audit" in p.relative_to(root).parts
+-        )
+-    }
++def _protected(root, backup=None):
++    manifest = {}
++    for path in root.rglob("*"):
++        relative = path.relative_to(root)
++        if not path.is_file() or (relative.parts[0] == "attempts" and "audit" in relative.parts):
++            continue
++        with path.open("rb") as stream:
++            identity = hashlib.file_digest(stream, "sha256").hexdigest()
++        manifest[relative.as_posix()] = identity
++        if backup is not None:
++            target = backup / identity
++            if not target.exists():
++                target.parent.mkdir(parents=True, exist_ok=True)
++                shutil.copyfile(path, target)
++    return manifest
+ 
+ 
+ def _redact(text):
+@@ -359,8 +367,16 @@
+             record.update(phase="review", job=job.model_dump(mode="json"))
+             write_json(receipt, record)
+         job = WorkerJob.model_validate(record["job"])
+-        protected = _protected(cwd)
++        audit_timing = HostTiming()
++        audit_timing.step("audit_prepare")
++        audit_started = time.monotonic()
++        backup = cwd.parent / ".audit_recovery"
++        protected = _protected(cwd, backup)
++        record.setdefault("host_metrics", {})["audit_prepare_ms"] = (
++            time.monotonic() - audit_started
++        ) * 1000
+         review = None
++        audit_timing.step("audit_sdk")
+         try:
+             result = await self._execute(
+                 request.model_copy(
+@@ -398,22 +414,37 @@
+             record["review_error"] = str(exc)
+             self.pilot_failed = True
+         finally:
++            audit_timing.step("audit_restore")
++            restore_started = time.monotonic()
+             after = _protected(cwd)
+             if after != protected:
+                 for path in after.keys() - protected.keys():
+                     (cwd / path).unlink()
+-                for path, content in protected.items():
+-                    if after.get(path) != content:
+-                        (cwd / path).parent.mkdir(parents=True, exist_ok=True)
+-                        (cwd / path).write_bytes(content)
++                for path, identity in protected.items():
++                    if after.get(path) != identity:
++                        source = backup / identity
++                        with source.open("rb") as stream:
++                            if hashlib.file_digest(stream, "sha256").hexdigest() != identity:
++                                raise ValueError("audit recovery copy checksum mismatch")
++                        target = cwd / path
++                        target.parent.mkdir(parents=True, exist_ok=True)
++                        if target.is_symlink():
++                            target.unlink()
++                        shutil.copyfile(source, target)
+                 record["review_error"] = "audit changed protected files; restored"
+                 self.pilot_failed = True
++            record["host_metrics"]["audit_restore_ms"] = (time.monotonic() - restore_started) * 1000
++        audit_timing.step("receipt_write")
++        receipt_started = time.monotonic()
+         write_json(audit / "pilot_review.json", review)
+         with (audit / "pilot_issues.md").open("a", encoding="utf8") as issues:
+             issues.write("\n## 节点完成后的复盘\n\n" + _review_markdown(review))
+             if record.get("review_error"):
+                 issues.write(f"\nHost audit failure: {_redact(record['review_error'])}\n")
+         record["phase"] = "complete"
++        write_json(receipt, record)
++        record["host_metrics"]["receipt_write_ms"] = (time.monotonic() - receipt_started) * 1000
++        record.setdefault("host_spans", []).extend(audit_timing.finish())
+         write_json(receipt, record)
+         return job
+ 
+--- before/src/doxagent/workflows/codex_document3/inputs_v21.py
++++ src/doxagent/workflows/codex_document3/inputs_v21.py
+@@ -3,6 +3,7 @@
+ from __future__ import annotations
+ 
+ import json
++import sqlite3
+ from datetime import UTC, datetime
+ from pathlib import Path
+ 
+@@ -44,6 +45,7 @@
+                     "sha256": digest(content),
+                     "size_bytes": len(content.encode()),
+                     "availability": "available",
++                    "content_state": "empty" if not content else "nonempty",
+                 }
+             )
+ 
+@@ -157,6 +159,14 @@
+                     )
+                 except (ValueError, FileNotFoundError):
+                     warnings.append(f"unavailable Global artifact:{reference.relative_path}")
++                    manifest.append(
++                        {
++                            "path": f"context/document3/v21/shared/global/{len(seen):04d}.txt",
++                            "original_path": reference.relative_path,
++                            "source_run_id": source_global_run_id,
++                            "availability": "ABSENT",
++                        }
++                    )
+             structure = {
+                 key: [
+                     x.model_dump(mode="json") if hasattr(x, "model_dump") else x
+@@ -170,15 +180,23 @@
+                 source_run_id=source_global_run_id,
+             )
+         reader = self.legacy._event_library_reader
++        event_path = "context/document3/v21/shared/event_library.md"
++        event_status = "NOT_CONFIGURED" if not reader else "ABSENT"
+         if reader:
+-            snapshot = reader.reference_view(ticker, version=event_library_version)
++            try:
++                snapshot = reader.reference_view(ticker, version=event_library_version)
++            except (OSError, ValueError, sqlite3.Error) as exc:
++                snapshot = None
++                warnings.append(f"Event reference unavailable:{exc}")
+             if snapshot and snapshot.published_at:
+-                # An unpinned latest snapshot cannot leak post-cutoff material.
+-                economic = getattr(snapshot, "as_of", None)
+-                allowed = (economic is None or utc(economic) <= as_of) and (
+-                    event_library_version is not None or utc(snapshot.published_at) <= as_of
++                identity_ok = (
++                    snapshot.ticker.upper() == ticker
++                    and (event_library_version is None or snapshot.version == event_library_version)
++                    and digest(snapshot.reference_view) == snapshot.sha256
+                 )
+-                if allowed:
++                # A pinned O2 dependency can be published after the common research cutoff.
++                allowed = event_library_version is not None or utc(snapshot.published_at) <= as_of
++                if identity_ok and allowed:
+                     eventref = EventLibraryRef(
+                         contract_version=snapshot.contract_version,
+                         ticker=snapshot.ticker,
+@@ -187,13 +205,32 @@
+                         published_at=snapshot.published_at,
+                     ).model_dump(mode="json")
+                     add(
+-                        "context/document3/v21/shared/event_library.md",
++                        event_path,
+                         snapshot.reference_view,
+                         published_at=snapshot.published_at.isoformat(),
+-                        economic_as_of=economic.isoformat() if economic else None,
+-                    )
++                        requested_version=event_library_version,
++                        actual_version=snapshot.version,
++                        ticker=snapshot.ticker,
++                        source_kind="reference_view",
++                    )
++                    event_status = "available"
+                 else:
+-                    warnings.append("Event snapshot unavailable after cutoff")
++                    event_status = "ABSENT" if not identity_ok else "unavailable_after_cutoff"
++                    warnings.append(
++                        "Event snapshot identity/checksum mismatch"
++                        if not identity_ok
++                        else "Event snapshot unavailable after cutoff"
++                    )
++        if event_status != "available":
++            manifest.append(
++                {
++                    "path": event_path,
++                    "availability": event_status,
++                    "requested_version": event_library_version,
++                    "ticker": ticker,
++                    "source_kind": "reference_view",
++                }
++            )
+         for i, item in enumerate(additional_materials):
+             descriptor = {"path": str(item)} if isinstance(item, (str, Path)) else dict(item)
+             if descriptor.get("run_id"):
+@@ -224,6 +261,7 @@
+             "route_aliases": {
+                 f"{s['name']}::shell-{i:04d}": s["slot"] for i, s in enumerate(shells, 1)
+             },
++            "research_owners": {**{s["slot"]: s["name"] for s in shells}, "OPEN": "OPEN"},
+             "owners": {
+                 **{s["slot"]: s["name"] for s in shells},
+                 "OPEN": "OPEN",
+@@ -243,7 +281,6 @@
+         for kind, available, configured in [
+             ("document2", bool(d2ref), bool(document2_run_id)),
+             ("global", bool(source_global_run_id), bool(source_global_run_id)),
+-            ("event_library", bool(eventref), reader is not None),
+             ("additional", bool(additional_materials), bool(additional_materials)),
+         ]:
+             if not available:
+--- before/src/doxagent/workflows/codex_document3/orchestrator_v21.py
++++ src/doxagent/workflows/codex_document3/orchestrator_v21.py
+@@ -4,12 +4,20 @@
+ 
+ import asyncio
+ import json
++import re
+ from collections import Counter, defaultdict
+ from datetime import datetime
+ from uuid import uuid4
+ 
+ from .inputs_v21 import InputPreparerV21, utc
+-from .runner_v21 import RunnerV21
++from .integration_v21 import (
++    directory_batches,
++    edit_batches,
++    edit_inheritance,
++    parse_review,
++    source_directory,
++)
++from .runner_v21 import RunnerV21, reference_path
+ from .schema_v21 import (
+     Agenda,
+     Consolidation,
+@@ -23,12 +31,14 @@
+     StagedHandoffV21,
+ )
+ from .state_v21 import canonical, digest
++from .timing_v21 import HostTiming
+ from .validation_v21 import (
+     accept_policy,
+     final_identities,
+     normalize_agenda,
+     records,
+     replace_structurally,
++    safe_path,
+     structured,
+ )
+ 
+@@ -47,12 +57,7 @@
+ 
+ 
+ def policy_batches(items):
+-    groups = defaultdict(list)
+-    for item in items:
+-        path = item["path"]
+-        group = path.rsplit("/policies/", 1)[0] if "/policies/" in path else path.rsplit("/", 1)[0]
+-        groups[group].append(item)
+-    return [batch for group in groups.values() for batch in batches(group)] or [[]]
++    return directory_batches(items)
+ 
+ 
+ def build_policy_output(path, prefix):
+@@ -65,22 +70,47 @@
+ 
+ 
+ def build_result_records(files, prefix):
+-    canonical_path = prefix + "results.jsonl"
+-    for name in ("results.jsonl", "result.jsonl", "result.json", "results.json"):
++    parsed, bad, seen, alternatives = [], [], set(), []
++    standard = ("results.jsonl", "result.jsonl", "result.json", "results.json")
++    extra = sorted(
++        path[len(prefix) :]
++        for path in files
++        if path.startswith(prefix)
++        and path[len(prefix) :] not in standard
++        and re.fullmatch(r"results?(?:[_-][^/]+)?\.jsonl?", path[len(prefix) :], re.IGNORECASE)
++    )
++    for name in (*standard, *extra):
+         path = prefix + name
+         if path not in files:
+             continue
++        if name != "results.jsonl":
++            alternatives.append(path)
+         raw = files[path]
+-        if name.endswith(".json"):
++        if name.lower().endswith(".json"):
+             try:
+                 value = json.loads(raw)
+-                items = value if isinstance(value, list) else [value]
+-                raw = "\n".join(canonical(item) for item in items)
++                raw = "\n".join(
++                    canonical(item) for item in (value if isinstance(value, list) else [value])
++                )
+             except (ValueError, TypeError):
+-                return [], [{"line": 1, "error": "invalid result JSON"}], path
+-        parsed, bad = records(raw, ResearchResult)
+-        return parsed, bad, path if path != canonical_path else None
+-    return [], [], None
++                bad.append({"path": path, "line": 1, "error": "invalid result JSON"})
++                continue
++        values, errors = records(raw, ResearchResult)
++        bad.extend({"path": path, **error} for error in errors)
++        for line, result in values:
++            normalized = []
++            for ref in result.policies:
++                try:
++                    ref = safe_path(ref)
++                    normalized.append(ref if ref.startswith("output/") else prefix + ref)
++                except ValueError:
++                    normalized.append(ref)
++            result = result.model_copy(update={"policies": normalized})
++            identity = canonical(result.model_dump(mode="json"))
++            if identity not in seen:
++                parsed.append((line, result))
++                seen.add(identity)
++    return parsed, bad, ";".join(alternatives) or None
+ 
+ 
+ def delta_has_work(value):
+@@ -112,6 +142,7 @@
+ 
+ class Document3OrchestratorV21:
+     orchestration_version = "v2.1"
++    orchestration_revision = 2
+ 
+     def _pilot_boundary(self, phase, run_id):
+         if getattr(self, "pilot_stop_after_phase", None) == phase:
+@@ -128,6 +159,13 @@
+         existing = self.state.run(run_id)
+         if existing:
+             result = self.state.start(run_id, identity, existing)
++            if (
++                not result.get("commit")
++                and result.get("orchestration_revision") != self.orchestration_revision
++            ):
++                raise ValueError(
++                    "Active legacy D3 run requires a new run; frozen old tasks are preserved"
++                )
+             await self._verify_frozen(run_id, result)
+             return result
+         assets = self.runner.frozen_assets(mode)  # fail before providers or Worker dispatch
+@@ -141,6 +179,8 @@
+         )
+         payload = {
+             "mode": mode,
++            "orchestration_revision": self.orchestration_revision,
++            "review_schema_hash": digest(Review.model_json_schema()),
+             "phase": "PREPARE",
+             "prepared": prepared,
+             "assets": assets,
+@@ -198,6 +238,8 @@
+                     raise ValueError(f"accepted task snapshot integrity mismatch:{snapshot}")
+ 
+     async def _turn(self, run_id, owner, phase, key, outputs, task, extra=None):
++        material_timing = HostTiming()
++        material_timing.step("material_resolve")
+         run = self.state.run(run_id)
+         inputs = dict(run["prepared"]["files"])
+         current_shell = next(
+@@ -223,7 +265,22 @@
+                         if path.startswith("output/work/v21/discovery/")
+                     )
+         inputs.update(extra or {})
+-        task = {**task, "input_diagnostics": run["prepared"]["warnings"]}
++        if phase == "integration" or (phase == "build" and task.get("round") == "supplement"):
++            inputs.update(self.policy_reference_context(run_id))
++            task = {**task, "policy_catalog": "context/document3/v21/policy_catalog.json"}
++        task = {
++            **task,
++            "input_diagnostics": run["prepared"]["warnings"],
++            "allowed_research_owners": run["prepared"]["topology"]["research_owners"],
++            "route_aliases": run["prepared"]["topology"].get("route_aliases", {}),
++            "review_contract": {
++                "cumulative": True,
++                "edit_requests": "Explicit pending full-policy edits; [] means no edits",
++                "research_requests": (
++                    "Only source of supplement topics; refs and relations are read-only references"
++                ),
++            },
++        }
+         late_files, late_leads = self._late_materials(run_id)
+         if phase == "integration":
+             inputs.update(late_files)
+@@ -236,7 +293,7 @@
+             task = {**task, "late_leads": late_leads, "research_context": research_context}
+         if phase in {"build", "integration"}:
+             outputs = [*outputs, f"output/work/v21/late/{digest(key)[:24]}.jsonl"]
+-        await self._write_view(run_id)
++        material_spans = material_timing.finish()
+         result = await self.runner.turn(
+             run_id=run_id,
+             ticker=run["identity"]["ticker"],
+@@ -248,7 +305,11 @@
+             outputs=outputs,
+             task=task,
+         )
++        view_timing = HostTiming()
++        view_timing.step("view_write")
+         await self._write_view(run_id)
++        result.setdefault("host_spans", []).extend([*material_spans, *view_timing.finish()])
++        self.state.save_task(run_id, key, result)
+         return result
+ 
+     def _late_materials(self, run_id):
+@@ -269,7 +330,15 @@
+         tasks = self.state.tasks(run_id)
+         drafts = self.state.drafts(run_id)
+         view = {
+-            **run,
++            **{
++                k: v
++                for k, v in run.items()
++                if k not in {"prepared", "assets", "basis", "final_candidates", "scan_inputs"}
++            },
++            "input_manifest": run.get("prepared", {}).get("manifest", []),
++            "material_refs": list(run.get("prepared", {}).get("files", {})),
++            "basis_paths": list(run.get("basis", {})),
++            "candidate_paths": list(run.get("final_candidates", {})),
+             "task_metrics": {
+                 "total": len(tasks),
+                 "by_status": dict(Counter(t["status"] for t in tasks.values())),
+@@ -318,150 +387,259 @@
+         except (ValueError, FileNotFoundError):
+             return None
+ 
++    def policy_reference_context(self, run_id):
++        run = self.state.run(run_id)
++        drafts = self.state.drafts(run_id)
++        policies = dict(run.get("basis", {}))
++        for path in run.get("supplement_paths", []):
++            if path in drafts:
++                policies[path] = drafts[path]["policy"]
++        # Completed final batches are available immediately to subsequent editors.
++        for key, record in self.state.tasks(run_id).items():
++            if key.startswith("integration:final:"):
++                for path in record.get("candidate_paths", []):
++                    if path in drafts:
++                        policies[path] = drafts[path]["policy"]
++        files = {path: canonical(policy) for path, policy in policies.items()}
++        files["context/document3/v21/policy_catalog.json"] = canonical(
++            [
++                {
++                    "ref": path,
++                    "local_path": reference_path(path, files[path]),
++                    "policy_id": policy["policy_id"],
++                    "title": policy["title"],
++                    "sha256": digest(files[path]),
++                    "source_directory": source_directory(path),
++                    "source_round": "main"
++                    if path in run.get("basis", {})
++                    else "supplement"
++                    if path in run.get("supplement_paths", [])
++                    else "final",
++                }
++                for path, policy in policies.items()
++            ]
++        )
++        for name in (
++            "agenda",
++            "main_results",
++            "supplement_agenda",
++            "supplement_results",
++            "review",
++            "post_supplement_review",
++        ):
++            if name in run:
++                files[f"context/document3/v21/research_context/{name}.json"] = canonical(run[name])
++        return files
++
++    def _task_json(self, record, path, model, previous=None):
++        content = record.get("files", {}).get(path)
++        if content is None:
++            return None
++        try:
++            if model is Review:
++                raw = json.loads(content)
++                if not isinstance(raw, dict):
++                    return None
++                edits = raw.get("edit_requests", (previous or {}).get("edit_requests", []))
++                base, diagnostics = structured(canonical({**raw, "edit_requests": []}), Review)
++                parsed, edit_errors = parse_review(
++                    {**base.model_dump(mode="json"), "edit_requests": edits}, previous
++                )
++                diagnostics.extend(edit_errors)
++            else:
++                parsed, diagnostics = structured(content, model)
++            run_id = record.get("persistence_run_id")
++            if run_id:
++                latest = self.state.run(run_id)
++                parse_issues = dict(latest.get("parse_issues", {}))
++                parse_issues[path] = diagnostics
++                updates = {"parse_issues": parse_issues}
++                if diagnostics:
++                    record.setdefault("parse_diagnostics", []).extend(diagnostics)
++                    updates["diagnostics"] = [*latest["diagnostics"], *diagnostics]
++                    if model is Review:
++                        updates["missing"] = [
++                            *latest["missing"],
++                            *[d["error"] for d in diagnostics if d.get("error")],
++                        ]
++                    self.state.save_task(run_id, record["task_key"], record)
++                self.state.update(run_id, **updates)
++            return parsed
++        except (ValueError, TypeError):
++            return None
++
++    def _inheritance(self, run, run_id):
++        policies = {}
++        text = run["prepared"]["files"].get("context/document3/v21/shared/previous_policy_set.json")
++        if text:
++            policies.update((p["policy_id"], p) for p in json.loads(text).get("policies", []))
++        policies.update((p["policy_id"], p) for p in run.get("basis", {}).values())
++        for path in run.get("supplement_paths", []):
++            value = self.state.get_draft(run_id, path)
++            if value:
++                policies[value["policy"]["policy_id"]] = value["policy"]
++        return policies
++
++    async def _accept_build_wave(self, run_id, key, record, prefix, names, inheritance):
++        cached = record.get("acceptance")
++        if cached and cached.get("result_parser_revision") == 2:
++            return record["acceptance"]
++        acceptance_timing = HostTiming()
++        acceptance_timing.step("result_reacceptance" if cached else "policy_acceptance")
++        values, errors, alternative = build_result_records(record.get("files", {}), prefix)
++        results, declared = {}, set()
++        diagnostics = [{"task": key, **error} for error in errors]
++        if alternative:
++            diagnostics.append({"task": key, "warning": f"noncanonical result path:{alternative}"})
++        for line, result in values:
++            if result.topic in names:
++                results.setdefault(result.topic, []).append(result.model_dump(mode="json"))
++                declared.update(result.policies)
++            else:
++                diagnostics.append({"task": key, "line": line, "warning": "unknown topic result"})
++        if cached:
++            # Repair derived Result recognition without accepting Policy bodies twice.
++            combined = {canonical(d): d for d in [*cached["diagnostics"], *diagnostics]}
++            cached.update(
++                results=results, diagnostics=list(combined.values()), result_parser_revision=2
++            )
++            record.setdefault("host_spans", []).extend(acceptance_timing.finish())
++            self.state.save_task(run_id, key, record)
++            return cached
++        paths = []
++        acceptance_calls = 0
++        for path, text in record.get("files", {}).items():
++            try:
++                safe_path(path)
++                if not path.startswith(prefix) or not path.endswith(".json"):
++                    continue
++                if path not in declared and not build_policy_output(path, prefix):
++                    continue
++                raw = json.loads(text)
++                if not isinstance(raw, dict):
++                    raise ValueError("Policy is not an object")
++                inherited = inheritance.get(raw.get("policy_id"))
++                if not inherited:
++                    raw.pop("policy_id", None)
++                acceptance_calls += 1
++                policy, errors = accept_policy(
++                    raw, state=self.state, run_id=run_id, path=path, inherited=inherited
++                )
++                diagnostics.extend({"path": path, "error": e} for e in errors)
++                accepted_draft = self.state.get_draft(run_id, path)
++                if policy and accepted_draft and accepted_draft.get("raw_hash") == digest(raw):
++                    paths.append(path)
++                    await self.workspace.write_text(run_id, path, policy.model_dump_json(indent=2))
++                    await self.workspace.write_text(
++                        record["workspace_run_id"], path, policy.model_dump_json(indent=2)
++                    )
++            except (ValueError, TypeError) as exc:
++                diagnostics.append({"path": path, "error": str(exc)[:300]})
++        accepted = {
++            "results": results,
++            "paths": paths,
++            "diagnostics": diagnostics,
++            "result_parser_revision": 2,
++        }
++        record["acceptance"] = accepted
++        record.setdefault("host_metrics", {}).update(
++            policy_candidates=len(paths),
++            policy_acceptance_calls=acceptance_calls,
++        )
++        record.setdefault("host_spans", []).extend(acceptance_timing.finish())
++        self.state.save_task(run_id, key, record)
++        return accepted
++
+     async def _build(self, run_id, agenda, *, supplement=False):
++        run = self.state.run(run_id)
++        owners = run["prepared"]["topology"]["research_owners"]
++        agenda, route_errors = normalize_agenda(
++            agenda.model_dump(mode="json"), owners, run["prepared"]["topology"].get("route_aliases")
++        )
+         by_name = {t.name: t for t in agenda.topics}
+         queues = defaultdict(list)
+-        owners = self.state.run(run_id)["prepared"]["topology"]["owners"]
+         for ordinal, names in enumerate(agenda.waves):
+             public_owner = by_name[names[0]].owner
+-            targets = [slot for slot, name in owners.items() if name == public_owner]
+-            alias = (
+-                self.state.run(run_id)["prepared"]["topology"]
+-                .get("route_aliases", {})
+-                .get(public_owner)
+-            )
+-            slot = (
++            matching = [slot for slot, name in owners.items() if name == public_owner]
++            alias = run["prepared"]["topology"].get("route_aliases", {}).get(public_owner)
++            owner = (
+                 public_owner
+                 if public_owner in owners
+-                else alias or targets[0]
+-                if len(targets) == 1
+-                else alias or "OPEN"
+-            )
+-            queues[slot].append((ordinal, names))
++                else alias
++                if alias in owners
++                else matching[0]
++                if len(matching) == 1
++                else "OPEN"
++            )
++            queues[owner].append((ordinal, names))
+         phase = "supplement" if supplement else "research"
++        inheritance = self._inheritance(run, run_id)
++        accepted = {}
+ 
+         async def owner_queue(owner, waves):
+             for ordinal, names in waves:
+                 prefix = f"output/work/v21/{phase}/{owner}/{ordinal:04d}/"
+-                task = {
+-                    "topics": [by_name[n].model_dump(mode="json") for n in names],
+-                    "round": phase,
+-                    "ordinal": ordinal,
+-                    "owner_shell": next(
+-                        (
+-                            s
+-                            for s in self.state.run(run_id)["prepared"]["topology"]["shells"]
+-                            if s["slot"] == owner
++                key = f"{phase}:{owner}:{ordinal}"
++                record = await self._turn(
++                    run_id,
++                    owner,
++                    "build",
++                    key,
++                    [prefix],
++                    {
++                        "topics": [by_name[n].model_dump(mode="json") for n in names],
++                        "round": phase,
++                        "ordinal": ordinal,
++                        "result_delivery": {
++                            "preferred_path": prefix + "results.jsonl",
++                            "accepted_names": [
++                                "results.jsonl",
++                                "result.jsonl",
++                                "result.json",
++                                "results.json",
++                                "result_<slug>.json",
++                                "result-<slug>.json",
++                                "results_<slug>.jsonl",
++                                "results-<slug>.jsonl",
++                            ],
++                            "scope": (
++                                "Wave root only; named result/results files accept JSON or JSONL. "
++                                "Use exact task Topic names and actual wave-local Policy paths."
++                            ),
++                        },
++                        "owner_shell": next(
++                            (
++                                s
++                                for s in run["prepared"]["topology"]["shells"]
++                                if s["slot"] == owner
++                            ),
++                            None,
+                         ),
+-                        None,
+-                    ),
+-                }
+-                accepted_task = await self._turn(
+-                    run_id, owner, "build", f"{phase}:{owner}:{ordinal}", [prefix], task
+-                )
+-                for path, text in accepted_task.get("files", {}).items():
+-                    if build_policy_output(path, prefix):
+-                        try:
+-                            raw = json.loads(text)
+-                            basis = self.state.run(run_id).get("basis", {})
+-                            inherited = next(
+-                                (
+-                                    p
+-                                    for p in basis.values()
+-                                    if p["policy_id"] == raw.get("policy_id")
+-                                ),
+-                                None,
+-                            )
+-                            if not inherited and raw.get("policy_id") not in self.state.run(run_id)[
+-                                "prepared"
+-                            ].get("previous_policy_ids", []):
+-                                raw.pop("policy_id", None)
+-                            policy, _ = accept_policy(
+-                                raw, state=self.state, run_id=run_id, path=path, inherited=inherited
+-                            )
+-                            if policy:
+-                                await self.workspace.write_text(
+-                                    run_id, path, policy.model_dump_json(indent=2)
+-                                )
+-                                await self.workspace.write_text(
+-                                    accepted_task["workspace_run_id"],
+-                                    path,
+-                                    policy.model_dump_json(indent=2),
+-                                )
+-                        except (ValueError, TypeError):
+-                            continue
++                    },
++                )
++                accepted[key] = await self._accept_build_wave(
++                    run_id, key, record, prefix, names, inheritance
++                )
+ 
+         await asyncio.gather(*(owner_queue(owner, waves) for owner, waves in queues.items()))
+-        results, candidate_paths, diagnostics = {}, [], []
+-        for owner, waves in queues.items():
+-            for ordinal, names in waves:
+-                key = f"{phase}:{owner}:{ordinal}"
+-                task = self.state.task(run_id, key)
+-                prefix = f"output/work/v21/{phase}/{owner}/{ordinal:04d}/"
+-                parsed, bad, alternate_result = build_result_records(task.get("files", {}), prefix)
+-                diagnostics.extend({"task": key, **b} for b in bad)
+-                if alternate_result:
+-                    diagnostics.append(
+-                        {"task": key, "warning": f"noncanonical result path:{alternate_result}"}
+-                    )
+-                for line, result in parsed:
+-                    if result.topic in names:
+-                        results.setdefault(result.topic, []).append(result.model_dump(mode="json"))
+-                    else:
+-                        diagnostics.append(
+-                            {"task": key, "line": line, "warning": "unknown topic result"}
+-                        )
+-                for path, text in task.get("files", {}).items():
+-                    if build_policy_output(path, prefix):
+-                        if not path.startswith(prefix + "policies/"):
+-                            diagnostics.append(
+-                                {"path": path, "warning": "noncanonical Policy path"}
+-                            )
+-                        try:
+-                            raw_policy = json.loads(text)
+-                            # Only a basis identity is eligible for explicit inheritance.
+-                            basis = self.state.run(run_id).get("basis", {})
+-                            allowed = {p["policy_id"] for p in basis.values()} | set(
+-                                self.state.run(run_id)["prepared"].get("previous_policy_ids", [])
+-                            )
+-                            if raw_policy.get("policy_id") not in allowed:
+-                                raw_policy.pop("policy_id", None)
+-                            inherited = next(
+-                                (
+-                                    p
+-                                    for p in basis.values()
+-                                    if p["policy_id"] == raw_policy.get("policy_id")
+-                                ),
+-                                None,
+-                            )
+-                            policy, errors = accept_policy(
+-                                raw_policy,
+-                                state=self.state,
+-                                run_id=run_id,
+-                                path=path,
+-                                inherited=inherited,
+-                            )
+-                            diagnostics.extend({"path": path, "error": e} for e in errors)
+-                            if policy:
+-                                candidate_paths.append(path)
+-                                await self.workspace.write_text(
+-                                    run_id, path, policy.model_dump_json(indent=2)
+-                                )
+-                                await self.workspace.write_text(
+-                                    task["workspace_run_id"], path, policy.model_dump_json(indent=2)
+-                                )
+-                        except (ValueError, TypeError) as exc:
+-                            diagnostics.append({"path": path, "error": str(exc)[:300]})
++        results, paths, diagnostics = {}, [], list(route_errors)
++        for key in sorted(accepted):
++            value = accepted[key]
++            paths.extend(value["paths"])
++            diagnostics.extend(value["diagnostics"])
++            for topic, entries in value["results"].items():
++                results.setdefault(topic, []).extend(entries)
++        paths = list(dict.fromkeys(paths))
+         missing = []
+         for topic in agenda.topics:
+-            values = results.get(topic.name, [])
+-            if len({canonical(v) for v in values}) != 1:
++            entries = results.get(topic.name, [])
++            if len({canonical(value) for value in entries}) != 1:
+                 missing.append(f"{phase} result missing/conflicting:{topic.name}")
+             else:
+-                for path in values[0]["policies"]:
+-                    if path not in candidate_paths:
++                for path in entries[0]["policies"]:
++                    if path not in paths:
+                         missing.append(f"{phase} result Policy unavailable:{topic.name}:{path}")
+-        return results, list(dict.fromkeys(candidate_paths)), missing, diagnostics
++        return results, paths, missing, diagnostics
+ 
+     async def initialize(
+         self,
+@@ -506,7 +684,7 @@
+         )
+         if run.get("commit"):
+             return await self._publish(run_id)
+-        owners = run["prepared"]["topology"]["owners"]
++        owners = run["prepared"]["topology"]["research_owners"]
+         if "scan" not in run:
+             self.state.update(run_id, phase="DISCOVERY")
+             await asyncio.gather(
+@@ -556,6 +734,7 @@
+                 discovery_missing=discovery_missing,
+                 diagnostics=[*run["diagnostics"], *diagnostics],
+             )
++        await self._write_view(run_id)
+         self._pilot_boundary("discovery", run_id)
+         run = self.state.run(run_id)
+         if "agenda" not in run:
+@@ -571,7 +750,7 @@
+                     extra["context/document3/v21/planning_previous.json"] = canonical(
+                         cumulative.model_dump(mode="json")
+                     )
+-                await self._turn(
++                planning_task = await self._turn(
+                     run_id,
+                     "GLOBAL",
+                     "planning",
+@@ -580,7 +759,7 @@
+                     {"leads": batch, "ordinal": i, "final_batch": i == len(planning_batches) - 1},
+                     extra,
+                 )
+-                candidate = await self._json(run_id, "output/work/v21/agenda.json", Agenda)
++                candidate = self._task_json(planning_task, "output/work/v21/agenda.json", Agenda)
+                 if candidate:
+                     cumulative = candidate
+             agenda, warnings = normalize_agenda(
+@@ -596,6 +775,7 @@
+                 diagnostics=[*diagnostics, *warnings],
+                 phase="BUILD",
+             )
++        await self._write_view(run_id)
+         self._pilot_boundary("planning", run_id)
+         run = self.state.run(run_id)
+         agenda = Agenda.model_validate(run["agenda"])
+@@ -615,11 +795,12 @@
+                 run_id,
+                 basis=basis,
+                 main_results=results,
+-                integration_schedule=schedule,
++                integration_schedule=schedule or [[]],
+                 missing=[*run["missing"], *missing],
+                 diagnostics=[*run["diagnostics"], *diagnostics],
+                 phase="INTEGRATION",
+             )
++        await self._write_view(run_id)
+         self._pilot_boundary("build", run_id)
+         run = self.state.run(run_id)
+         if "review" not in run:
+@@ -647,20 +828,33 @@
+                     {
+                         "stage": "review",
+                         "batch": [x["path"] for x in batch],
++                        "focus_directories": list(
++                            dict.fromkeys(source_directory(x["path"]) for x in batch)
++                        ),
+                         "final_batch": i == len(run["integration_schedule"]) - 1,
+                     },
+                     extra,
+                 )
+-                parsed = await self._json(run_id, "output/work/v21/review.json", Review)
++                parsed = self._task_json(
++                    batch_task,
++                    "output/work/v21/review.json",
++                    Review,
++                    review.model_dump(mode="json") if review else None,
++                )
+                 if parsed:
+                     review = parsed
+                 if parsed is None or batch_task["status"] == "FAILED":
+                     integration_missing.append(f"Integration main batch unavailable:{i}")
+-            supplement = await self._json(run_id, "output/work/v21/supplement_agenda.json", Agenda)
+-            if supplement is None and review:
+-                supplement = Agenda(topics=review.research_requests, waves=[])
++            wave_source = self._task_json(
++                batch_task, "output/work/v21/supplement_agenda.json", Agenda
++            )
+             supplement, diagnostics = normalize_agenda(
+-                supplement.model_dump(mode="json") if supplement else {"topics": [], "waves": []},
++                {
++                    "topics": [t.model_dump(mode="json") for t in review.research_requests]
++                    if review
++                    else [],
++                    "waves": wave_source.waves if wave_source else [],
++                },
+                 owners,
+                 run["prepared"]["topology"].get("route_aliases"),
+             )
+@@ -675,8 +869,8 @@
+                 supplement_agenda=supplement.model_dump(mode="json"),
+                 supplement_hash=digest(frozen),
+                 supplement_dispatched=True,
+-                diagnostics=[*run["diagnostics"], *diagnostics],
+-                missing=[*run["missing"], *integration_missing],
++                diagnostics=[*self.state.run(run_id)["diagnostics"], *diagnostics],
++                missing=[*self.state.run(run_id)["missing"], *integration_missing],
+                 phase="SUPPLEMENT",
+             )
+         run = self.state.run(run_id)
+@@ -695,17 +889,7 @@
+             )
+         run = self.state.run(run_id)
+         if "post_supplement_review" not in run:
+-            affected = set()
+-            for relation in (run.get("review") or {}).get("relations", []):
+-                affected.update(relation["policies"])
+-            for topic in run["supplement_agenda"]["topics"]:
+-                affected.update(topic.get("ref", []))
+-            basis_paths = [
+-                p
+-                for p, policy in run["basis"].items()
+-                if p in affected or policy["policy_id"] in affected
+-            ]
+-            refs = list(dict.fromkeys([*run["supplement_paths"], *basis_paths]))
++            refs = list(run["supplement_paths"])
+             drafts = self.state.drafts(run_id)
+             schedule = run.get("post_supplement_schedule") or policy_batches(
+                 [{"path": p, "policy": drafts[p]["policy"]} for p in refs]
+@@ -729,39 +913,64 @@
+                         "integration",
+                         f"integration:supplement:{i}",
+                         ["output/work/v21/post_supplement_review.json"],
+-                        {"stage": "post_supplement_review", "batch": [x["path"] for x in batch]},
++                        {
++                            "stage": "post_supplement_review",
++                            "batch": [x["path"] for x in batch],
++                            "focus_directories": list(
++                                dict.fromkeys(source_directory(x["path"]) for x in batch)
++                            ),
++                        },
+                         extra,
+                     )
+-                    parsed = await self._json(
+-                        run_id, "output/work/v21/post_supplement_review.json", Review
++                    parsed = self._task_json(
++                        item, "output/work/v21/post_supplement_review.json", Review, review
+                     )
+                     if parsed:
+                         review = parsed.model_dump(mode="json")
+                     if parsed is None or item["status"] == "FAILED":
+                         missing.append(f"Integration supplement batch unavailable:{i}")
+             self.state.update(
+-                run_id, post_supplement_review=review, affected_paths=refs, missing=missing
++                run_id,
++                post_supplement_review=review,
++                affected_paths=refs,
++                post_review_focus=refs,
++                missing=list(dict.fromkeys([*self.state.run(run_id)["missing"], *missing])),
+             )
+             run = self.state.run(run_id)
+         if "final_candidates" not in run:
+             drafts = self.state.drafts(run_id)
+-            refs = run["affected_paths"] if run["supplement_paths"] else list(run["basis"])
+-            # Final writes are finite file batches; only structural application follows.
+-            schedule = run.get("final_schedule") or policy_batches(
+-                [{"path": p, "policy": drafts[p]["policy"]} for p in refs]
+-            )
+-            self.state.update(run_id, final_schedule=schedule)
++            effective_review = run.get("post_supplement_review") or run.get("review")
++            editable = dict(run["basis"])
++            editable.update((p, drafts[p]["policy"]) for p in run["supplement_paths"])
++            schedule, edit_errors = edit_batches(effective_review, editable)
++            schedule = run.get("final_schedule", schedule)
++            self.state.update(
++                run_id,
++                final_schedule=schedule,
++                diagnostics=[*run["diagnostics"], *edit_errors],
++                missing=[*run["missing"], *[e["error"] for e in edit_errors]],
++            )
++            self.state.update(
++                run_id,
++                pending_edit_targets=list(
++                    dict.fromkeys(p for batch in schedule for p in batch["related_targets"])
++                ),
++                reference_count=len(editable),
++                pending_research_topics=[
++                    t["name"] for t in (effective_review or {}).get("research_requests", [])
++                ],
++            )
+             final_candidates = {}
+-            inheritable = {policy["policy_id"]: policy for policy in run["basis"].values()}
++            unfinished_edit_targets = []
++            inheritable = self._inheritance(run, run_id)
+             inheritable.update(
+                 (drafts[path]["policy"]["policy_id"], drafts[path]["policy"])
+                 for path in run["supplement_paths"]
+             )
+             for i, batch in enumerate(schedule):
+-                extra = {x["path"]: canonical(x["policy"]) for x in batch}
+-                extra["context/document3/v21/review_frozen.json"] = canonical(
+-                    run.get("post_supplement_review")
+-                )
++                incomplete = False
++                extra = {}
++                extra["context/document3/v21/review_frozen.json"] = canonical(effective_review)
+                 prefix = f"output/work/v21/final/policies/{i:04d}/"
+                 task = await self._turn(
+                     run_id,
+@@ -769,24 +978,93 @@
+                     "integration",
+                     f"integration:final:{i}",
+                     [prefix],
+-                    {"stage": "final_write", "ordinal": i, "batch": [x["path"] for x in batch]},
++                    {
++                        "stage": "final_write",
++                        "ordinal": i,
++                        **batch,
++                        "edit_task_contract": {
++                            "batch": "Scheduling anchors for the five-directory grouping",
++                            "related_targets": (
++                                "All resolved Policy targets in assigned edit_requests"
++                            ),
++                            "edit_requests": (
++                                "Authoritative instructions and complete explicit target lists"
++                            ),
++                            "policy_catalog": (
++                                "Full read-only reference pool; reading does not expand edit scope"
++                            ),
++                        },
++                    },
+                     extra,
+                 )
+                 for path, text in task.get("files", {}).items():
+                     if path.endswith(".json"):
+                         try:
+                             raw = json.loads(text)
+-                            inherited = inheritable.get(raw.get("policy_id"))
++                            if not isinstance(raw, dict):
++                                raise ValueError("Policy is not an object")
++                            inherited = edit_inheritance(
++                                raw.get("policy_id"),
++                                batch["related_targets"],
++                                editable,
++                                inheritable,
++                            )
+                             if not inherited:
+                                 raw.pop("policy_id", None)
+-                            policy, _ = accept_policy(
++                            policy, errors = accept_policy(
+                                 raw, state=self.state, run_id=run_id, path=path, inherited=inherited
+                             )
+-                            if policy:
++                            if errors:
++                                incomplete = True
++                                latest = self.state.run(run_id)
++                                self.state.update(
++                                    run_id,
++                                    diagnostics=[
++                                        *latest["diagnostics"],
++                                        *[{"path": path, "error": e} for e in errors],
++                                    ],
++                                    missing=[*latest["missing"], f"final edit incomplete:{path}"],
++                                )
++                            accepted_draft = self.state.get_draft(run_id, path)
++                            if (
++                                policy
++                                and accepted_draft
++                                and accepted_draft.get("raw_hash") == digest(raw)
++                            ):
+                                 final_candidates[path] = policy.model_dump(mode="json")
+-                        except (ValueError, TypeError):
+-                            continue
+-            self.state.update(run_id, final_candidates=final_candidates)
++                                await self.workspace.write_text(
++                                    run_id, path, canonical(final_candidates[path])
++                                )
++                                await self.workspace.write_text(
++                                    task["workspace_run_id"],
++                                    path,
++                                    canonical(final_candidates[path]),
++                                )
++                        except (ValueError, TypeError) as exc:
++                            incomplete = True
++                            latest = self.state.run(run_id)
++                            self.state.update(
++                                run_id,
++                                missing=[*latest["missing"], f"final candidate invalid:{path}"],
++                                diagnostics=[
++                                    *latest["diagnostics"],
++                                    {"path": path, "error": str(exc)},
++                                ],
++                            )
++                task["candidate_paths"] = [p for p in final_candidates if p.startswith(prefix)]
++                if not task["candidate_paths"]:
++                    latest = self.state.run(run_id)
++                    self.state.update(
++                        run_id, missing=[*latest["missing"], f"final edit unavailable:{i}"]
++                    )
++                if incomplete or not task["candidate_paths"] or task["status"] != "COMPLETED":
++                    unfinished_edit_targets.extend(batch["related_targets"])
++                self.state.save_task(run_id, f"integration:final:{i}", task)
++            self.state.update(
++                run_id,
++                final_candidates=final_candidates,
++                pending_edit_targets=list(dict.fromkeys(unfinished_edit_targets)),
++            )
+         run = self.state.run(run_id)
+         candidates = {p: PolicyV3.model_validate(v) for p, v in run["final_candidates"].items()}
+         drafts = self.state.drafts(run_id)
+@@ -795,8 +1073,10 @@
+         )
+         extra = {p: policy.model_dump_json(indent=2) for p, policy in candidates.items()}
+         extra["context/document3/v21/basis.json"] = canonical(run["basis"])
+-        extra["context/document3/v21/review_frozen.json"] = canonical(run.get("review"))
+-        await self._turn(
++        extra["context/document3/v21/review_frozen.json"] = canonical(
++            run.get("post_supplement_review") or run.get("review")
++        )
++        consolidation_task = await self._turn(
+             run_id,
+             "GLOBAL",
+             "integration",
+@@ -810,8 +1090,8 @@
+             },
+             extra,
+         )
+-        consolidation = await self._json(
+-            run_id, "output/work/v21/consolidation.json", Consolidation
++        consolidation = self._task_json(
++            consolidation_task, "output/work/v21/consolidation.json", Consolidation
+         )
+         basis = [PolicyV3.model_validate(v) for v in run["basis"].values()]
+         missing = list(run["missing"])
+@@ -910,6 +1190,7 @@
+             final=[p.model_dump(mode="json") for p in final],
+             coverage=coverage,
+             replacement_receipt=replacement_receipt,
++            pending_research_topics=[g["name"] for g in coverage["remaining_gaps"]],
+             missing=list(dict.fromkeys(missing)),
+             status=status,
+         )
+--- before/src/doxagent/workflows/codex_document3/runner_v21.py
++++ src/doxagent/workflows/codex_document3/runner_v21.py
+@@ -18,9 +18,11 @@
+ )
+ from doxagent.codex_worker.schema import WorkerRunRequest
+ 
++from .materials_v21 import attach_material_indexes, reference_path
+ from .schema import strict_json_schema
+ from .schema_v21 import WORK_SCHEMAS, PolicySetV3, TechnicalReceipt
+ from .state_v21 import canonical, digest
++from .timing_v21 import HostTiming
+ from .validation_v21 import safe_path
+ 
+ NODES = {
+@@ -44,6 +46,7 @@
+         self.assets = dict(node_assets or {})
+         self.locks = {}
+         self.semaphore = asyncio.Semaphore(3)
++        self.index_cache = {}
+ 
+     def frozen_assets(self, mode):
+         required = [
+@@ -70,28 +73,47 @@
+     async def turn(self, *, run_id, ticker, owner, phase, key, as_of, inputs, outputs, task):
+         lock = self.locks.setdefault((run_id, owner), asyncio.Lock())
+         async with lock, self.semaphore:
++            timing = HostTiming()
++            timing.step("state_load")
+             record = self.state.task(run_id, key)
++            run = self.state.run(run_id)
++            research_owners = run["prepared"]["topology"].get("research_owners", {})
++            permitted = (
++                (owner == "GLOBAL" and phase in {"planning", "integration"})
++                or (owner in research_owners and phase in {"discovery", "build"})
++                or (owner == "MAINTAIN" and phase == "maintain")
++            )
++            if not permitted:
++                record.update(
++                    status="FAILED",
++                    error=f"owner/phase routing error:{owner}:{phase}",
++                    files={},
++                    snapshots={},
++                )
++                self.state.save_task(run_id, key, record)
++                return record
+             if record["status"] in TERMINAL:
+                 for path, content in record.get("files", {}).items():
+                     snapshot = record["snapshots"][path]
+                     accepted = (await self.workspace.read_text(run_id, snapshot)).content
+                     if accepted != content:
+                         raise ValueError(f"accepted task snapshot integrity error:{key}:{path}")
+-                    await self.workspace.write_text(run_id, path, accepted)
++                    draft = self.state.get_draft(run_id, path)
++                    await self.workspace.write_text(
++                        run_id, path, canonical(draft["policy"]) if draft else accepted
++                    )
+                 return record
+             owner_id = f"{run_id}-{owner.lower()}"
+-            run = self.state.run(run_id)
++            timing.step("material_resolve")
+             frozen = {}
+             mapping = []
+             original = run["prepared"]["files"]
+             for ref, content in inputs.items():
+-                path = (
+-                    ref
+-                    if ref in original
+-                    else f"context/document3/v21/borrowed/{digest(key)[:24]}/{digest(ref)[:24]}.txt"
+-                )
++                path = ref if ref in original else reference_path(ref, content)
+                 frozen[path] = content
+                 mapping.append({"ref": ref, "local_path": path})
++            timing.step("history_restore")
++            drafts = self.state.drafts(run_id)
+             # Rebuild owner history from host authority when a physical session is lost.
+             # Previous accepted outputs are protected unless this turn declares that path.
+             for previous in self.state.tasks(run_id).values():
+@@ -100,7 +122,7 @@
+                 for path, content in previous.get("files", {}).items():
+                     if any(path == p or (p.endswith("/") and path.startswith(p)) for p in outputs):
+                         continue
+-                    accepted = self.state.drafts(run_id).get(path)
++                    accepted = drafts.get(path)
+                     if accepted:
+                         content = canonical(accepted["policy"])
+                     frozen[path] = content
+@@ -120,23 +142,24 @@
+             frozen["context/document3/v21/schemas/receipt.json"] = canonical(
+                 strict_json_schema(TechnicalReceipt.model_json_schema())
+             )
+-            from doxagent.codex_runtime.context_index import attach_index
+-
++            timing.step("context_index")
+             metadata = {entry["path"]: entry for entry in run["prepared"]["manifest"]}
+-            source_info = {
+-                item["local_path"]: {
+-                    **metadata.get(item["ref"], {}),
+-                    "original_ref": item["ref"],
+-                    "local_path": item["local_path"],
+-                }
+-                for item in mapping
+-            }
+-            navigation = attach_index(
++            generation = record.setdefault(
++                "context_generation",
++                record.get("attempt_count", 0) + (record["status"] != "RUNNING"),
++            )
++            task_identity = digest(f"r{run.get('orchestration_revision', 2)}:{key}:{generation}")[
++                :24
++            ]
++            navigation = attach_material_indexes(
+                 frozen,
+-                root=f"context/document3/v21/context_index/{digest(key)[:24]}",
+-                sources=source_info,
+-            )
+-            task_path = f"context/document3/v21/tasks/{digest(key)[:24]}.json"
++                mapping,
++                metadata,
++                task_root=f"context/document3/v21/context_index/tasks/{task_identity}",
++                cache=self.index_cache,
++            )
++            task_path = f"context/document3/v21/tasks/{task_identity}.json"
++            record["task_path"] = task_path
+             frozen[task_path] = canonical(
+                 {
+                     **task,
+@@ -153,13 +176,33 @@
+                     "context_reading": navigation,
+                 }
+             )
+-            known = {
+-                f.relative_path: f.sha256 for f in (await self.workspace.inventory(owner_id)).files
++            timing.step("input_inventory")
++            history_prefixes = list(
++                dict.fromkeys(
++                    path.rsplit("/", 1)[0] + "/" for path in frozen if path.startswith("output/")
++                )
++            )
++            inventory_prefixes = list(
++                dict.fromkeys(["context/", "AGENTS.md", *history_prefixes, *outputs])
++            )
++            inventory = await self.workspace.inventory(owner_id, prefixes=inventory_prefixes)
++            known = {f.relative_path: f.sha256 for f in inventory.files}
++            metrics = {
++                "input_refs": len(mapping),
++                "input_files": len(frozen),
++                "context_index_pages": sum("/context_index/" in p for p in frozen),
++                "draft_ledger_queries": 1,
++                "inventory_files_before": len(inventory.files),
++                "hash_bytes_before": sum(f.size_bytes for f in inventory.files),
++                "materialized_files": 0,
++                "reused_files": 0,
+             }
++            timing.step("materialize")
+             missing_index = []
+             try:
+                 for path, content in frozen.items():
+                     if known.get(path) != digest(content):
++                        metrics["materialized_files"] += 1
+                         try:
+                             await self.workspace.write_text(owner_id, path, content)
+                         except (ValueError, OSError):
+@@ -167,6 +210,8 @@
+                                 raise
+                             record.setdefault("warnings", []).append("context_index_unavailable")
+                             missing_index.append(path)
++                    else:
++                        metrics["reused_files"] += 1
+                 for path in missing_index:
+                     frozen.pop(path, None)
+             except (ValueError, OSError, ImmutableWorkspacePath) as exc:
+@@ -180,7 +225,7 @@
+                 )
+                 self.state.save_task(run_id, key, record)
+                 return record
+-            max_attempts = getattr(self, "pilot_max_attempts", 2)
++            max_attempts = record.get("max_attempts", 2)
+             while record.get("attempt_count", 0) < max_attempts or record["status"] == "RUNNING":
+                 # A crash retries the same durable request, not another task-budget unit.
+                 if record["status"] != "RUNNING":
+@@ -231,6 +276,7 @@
+                     workspace_run_id=owner_id,
+                     persistence_run_id=run_id,
+                     phase=phase,
++                    task_key=key,
+                     round=task.get("round", "main"),
+                     owner_slot=owner,
+                     ordinal=task.get("ordinal", 0),
+@@ -254,6 +300,7 @@
+                     runtime.save_attempt(audit)
+                 error = ""
+                 job = None
++                timing.step("worker_wait")
+                 try:
+                     # V21 owns the budget; avoid outer DurableWorker multiplication.
+                     worker = getattr(self.legacy._worker, "worker", self.legacy._worker)
+@@ -301,11 +348,18 @@
+                             }
+                         )
+                     )
+-                inventory = await self.workspace.inventory(owner_id)
++                timing.step("output_inventory")
++                inventory = await self.workspace.inventory(
++                    owner_id, prefixes=list(dict.fromkeys([*inventory_prefixes, *outputs]))
++                )
++                metrics["inventory_files_after"] = len(inventory.files)
++                metrics["hash_bytes_after"] = sum(f.size_bytes for f in inventory.files)
+                 actual = {f.relative_path: f.sha256 for f in inventory.files}
++                timing.step("protected_check")
+                 protected = all(
+                     actual.get(path) == digest(content) for path, content in frozen.items()
+                 )
++                timing.step("acceptance")
+                 files = {}
+                 if protected:
+                     for item in inventory.files:
+@@ -313,12 +367,19 @@
+                         if any(
+                             path == p or (p.endswith("/") and path.startswith(p)) for p in outputs
+                         ):
++                            if error and known.get(path) == item.sha256:
++                                continue
+                             text = (await self.workspace.read_text(owner_id, path)).content
+                             if text is not None:
+                                 files[path] = text
+                 else:
+                     error = "read-only task input modified"
+-                if files or (job and job.status == "succeeded") or attempt >= 2 or not protected:
++                if (
++                    files
++                    or (job and job.status == "succeeded")
++                    or attempt >= max_attempts
++                    or not protected
++                ):
+                     snapshots = {}
+                     for path, content in files.items():
+                         snapshot = (
+@@ -333,6 +394,9 @@
+                         snapshots=snapshots,
+                         status="PARTIAL" if error and files else "FAILED" if error else "COMPLETED",
+                         error=error,
++                        host_spans=timing.finish(),
++                        host_metrics=metrics,
++                        task_path=task_path,
+                     )
+                     self.state.save_task(run_id, key, record)
+                     return record
+--- before/src/doxagent/workflows/codex_document3/schema_v21.py
++++ src/doxagent/workflows/codex_document3/schema_v21.py
+@@ -52,9 +52,15 @@
+     proposal: Text
+ 
+ 
++class EditRequest(WorkModel):
++    policies: list[Text] = Field(min_length=1)
++    instruction: Text
++
++
+ class Review(WorkModel):
+     relations: list[Relation]
+     research_requests: list[Topic]
++    edit_requests: list[EditRequest] = Field(default_factory=list)
+     coverage_notes: str
+ 
+ 
+--- before/src/doxagent/workflows/codex_document3/state_v21.py
++++ src/doxagent/workflows/codex_document3/state_v21.py
+@@ -153,15 +153,23 @@
+                 (run_id, path, canonical(value)),
+             )
+ 
++    def get_draft(self, run_id, path):
++        with self.connect() as db:
++            row = db.execute(
++                "SELECT payload FROM codex_document3_v21_draft_ids WHERE run_id=? AND path=?",
++                (run_id, path),
++            ).fetchone()
++            return json.loads(row[0]) if row else None
++
+     def maximum_condition(self, policy_id):
+         with self.connect() as db:
+-            values = [
+-                json.loads(row[0])
+-                for row in db.execute("SELECT payload FROM codex_document3_v21_draft_ids")
+-            ]
+-        return max(
+-            [0, *[v["max_condition"] for v in values if v["policy"]["policy_id"] == policy_id]]
+-        )
++            row = db.execute(
++                "SELECT MAX(CAST(json_extract(payload, '$.max_condition') AS INTEGER)) "
++                "FROM codex_document3_v21_draft_ids "
++                "WHERE json_extract(payload, '$.policy.policy_id')=?",
++                (policy_id,),
++            ).fetchone()
++            return row[0] or 0
+ 
+     def reserve(self, run_id, ticker, floor=0):
+         with self.lock, self.connect() as db:
+--- before/src/doxagent/workflows/codex_document3/validation_v21.py
++++ src/doxagent/workflows/codex_document3/validation_v21.py
+@@ -72,6 +72,7 @@
+ 
+ def normalize_agenda(raw, owners, route_aliases=None):
+     """Route ambiguity to OPEN; conflicting names cannot acquire a first winner."""
++    owners = {slot: name for slot, name in owners.items() if slot != "GLOBAL"}
+     agenda = Agenda.model_validate(raw)
+     groups = defaultdict(list)
+     for topic in agenda.topics:
+@@ -92,7 +93,9 @@
+             if route_aliases and topic.owner in route_aliases
+             else aliases[topic.owner]
+         )
+-        slot = targets[0] if len(targets) == 1 else "OPEN"
++        if topic.owner == "GLOBAL":
++            targets = []
++        slot = targets[0] if len(targets) == 1 and targets[0] in owners else "OPEN"
+         if slot == "OPEN" and topic.owner != "OPEN":
+             issues.append(f"owner routed to OPEN:{name}")
+         routes[name] = slot
+@@ -125,7 +128,7 @@
+ def accept_policy(raw, *, state, run_id, path, inherited=None):
+     """IDs come from the accepted path ledger, never economic-content hashes."""
+     path = safe_path(path)
+-    previous = state.drafts(run_id).get(path)
++    previous = state.get_draft(run_id, path)
+     original_hash = digest(raw)
+     if previous and previous.get("raw_hash") == original_hash:
+         return PolicyV3.model_validate(previous["policy"]), previous.get("errors", [])
+--- before/tests/test_codex_document3_v21_maintenance.py
++++ tests/test_codex_document3_v21_maintenance.py
+@@ -6,6 +6,7 @@
+ 
+ from doxagent.codex_runtime.schema import CodexD3Node
+ from doxagent.workflows.codex_document3.recovery import resume_v21
++from doxagent.workflows.codex_document3.state_v21 import digest
+ from tests.test_codex_document3_v21_orchestration import NOW, draft
+ from tests.test_codex_document3_v21_orchestration import rig as v21_rig
+ 
+@@ -174,7 +175,7 @@
+         contract_version="event-library-reference-view-v1",
+         ticker="MU",
+         version=9,
+-        sha256="a" * 64,
++        sha256=digest("full Event view"),
+         reference_view="full Event view",
+     )
+     rig.orchestrator.preparer.legacy._event_library_reader = SimpleNamespace(
+--- before/tests/test_codex_document3_v21_orchestration.py
++++ tests/test_codex_document3_v21_orchestration.py
+@@ -128,7 +128,15 @@
+         elif request.node == CodexD3Node.O3_INTEGRATION:
+             if task["stage"] == "review":
+                 await write(
+-                    outputs[0], {"relations": [], "research_requests": [], "coverage_notes": ""}
++                    outputs[0],
++                    {
++                        "relations": [],
++                        "research_requests": [{"name": "T2", "owner": "OPEN", "brief": "fixture"}]
++                        if self.supplement
++                        else [],
++                        "edit_requests": [],
++                        "coverage_notes": "",
++                    },
+                 )
+                 await write(
+                     outputs[1],
+@@ -277,7 +285,8 @@
+     assert all(r.run_id != result.run_id for r in rig.worker.requests)
+     planning = next(r for r in rig.worker.requests if r.node == CodexD3Node.O3_PLANNING)
+     integration = next(r for r in rig.worker.requests if r.node == CodexD3Node.O3_INTEGRATION)
+-    assert planning.thread_id == integration.thread_id == "thread-d3v21-test-global"
++    assert planning.thread_id is None
++    assert integration.thread_id == "thread-d3v21-test-global"
+     discovery_refs = {
+         path: content
+         for key, record in rig.state.tasks(result.run_id).items()
+@@ -297,15 +306,16 @@
+         task_path = re.search(r"Read task file (\S+),", request.prompt)[1]
+         task = json.loads((await rig.workspace.read_text(request.run_id, task_path)).content)
+         navigation = task["context_reading"]
+-        directory = navigation["index_path"].rsplit("/", 1)[0]
+         index = json.loads(
+             (await rig.workspace.read_text(request.run_id, navigation["index_path"])).content
+         )
+-        assert index["groups"]["fields"]
+-        assert (
+-            await rig.workspace.read_text(request.run_id, directory + "/read_context.py")
+-        ).content
++        assert index["schema_version"] == "context-index-refs-v1"
+         for mapped in task["read_mapping"]:
++            source = next(x for x in index["sources"] if x["ref"] == mapped["ref"])
++            directory = source["index_path"].rsplit("/", 1)[0]
++            assert (
++                await rig.workspace.read_text(request.run_id, directory + "/read_context.py")
++            ).content
+             pointer = "/" + mapped["local_path"].replace("~", "~0").replace("/", "~1")
+             entry_path = directory + "/pointers/" + digest(pointer)[:20] + ".json"
+             entry = json.loads((await rig.workspace.read_text(request.run_id, entry_path)).content)
+@@ -370,7 +380,23 @@
+             await rig.workspace.write_text(
+                 request.run_id, task["output_paths"][0] + "one.json", policy
+             )
+-        return await original(request)
++        result = await original(request)
++        if task.get("stage") == "post_supplement_review":
++            await rig.workspace.write_text(
++                request.run_id,
++                task["output_paths"][0],
++                canonical(
++                    {
++                        "relations": [],
++                        "research_requests": [],
++                        "coverage_notes": "",
++                        "edit_requests": [
++                            {"policies": task["batch"], "instruction": "fixture edit"}
++                        ],
++                    }
++                ),
++            )
++        return result
+ 
+     monkeypatch.setattr(rig.worker, "run", write_supplement_candidate)
+     result = await rig.orchestrator.initialize(ticker="MU", as_of=NOW, run_id="supplement-final-id")
+@@ -433,8 +459,8 @@
+         },
+         {"S1": "same", "S2": "same", "OPEN": "OPEN", "GLOBAL": "GLOBAL"},
+     )
+-    assert a.waves == [["T1"], ["T2"]] and a.topics[0].owner == "OPEN"
+-    assert len(issues) == 2
++    assert a.waves == [["T1", "T2"]] and all(t.owner == "OPEN" for t in a.topics)
++    assert len(issues) == 3
+     valid, bad = records('\n{"name":"x","lead":"y"}\nbad\n', Lead)
+     assert valid[0][0] == 2 and bad[0]["line"] == 3
+ 
+@@ -469,9 +495,7 @@
+     rig.worker.policy = {
+         **draft(),
+         "policy_id": None,
+-        "activation_conditions": [
+-            {**draft()["activation_conditions"][0], "condition_id": None}
+-        ],
++        "activation_conditions": [{**draft()["activation_conditions"][0], "condition_id": None}],
+     }
+     result = await rig.orchestrator.initialize(ticker="MU", as_of=NOW, run_id="null-new-id")
+     run = rig.state.run(result.run_id)
+@@ -659,7 +683,7 @@
+         contract_version="event-library-reference-view-v1",
+         ticker="MU",
+         version=9,
+-        sha256="a" * 64,
++        sha256=digest("complete view"),
+         reference_view="complete view",
+     )
+     rig.orchestrator.preparer.legacy._event_library_reader = SimpleNamespace(
+@@ -699,7 +723,11 @@
+         return {
+             "files": {},
+             "manifest": [],
+-            "topology": {"shells": [], "owners": {"OPEN": "OPEN", "GLOBAL": "GLOBAL"}},
++            "topology": {
++                "shells": [],
++                "research_owners": {"S0001": "Shell A", "OPEN": "OPEN"},
++                "owners": {"S0001": "Shell A", "OPEN": "OPEN", "GLOBAL": "GLOBAL"},
++            },
+             "document2_ref": None,
+             "event_library_ref": None,
+             "warnings": [],
+@@ -711,7 +739,7 @@
+         "topics": [
+             {"name": "T1", "owner": "OPEN", "brief": "first"},
+             {"name": "T2", "owner": "OPEN", "brief": "second"},
+-            {"name": "G1", "owner": "GLOBAL", "brief": "slow"},
++            {"name": "G1", "owner": "S0001", "brief": "slow"},
+         ],
+         "waves": [["T1"], ["G1"], ["T2"]],
+     }
+@@ -727,7 +755,7 @@
+             active.add(request.run_id)
+             maximum = max(maximum, len(active))
+             key = request.idempotency_key
+-            if ":GLOBAL:" in key:
++            if ":S0001:" in key:
+                 global_started.set()
+                 await asyncio.wait_for(second_wave.wait(), timeout=5)
+             if ":OPEN:0:" in key:
+@@ -1069,7 +1097,7 @@
+ 
+ 
+ @pytest.mark.asyncio
+-async def test_sdk_global_resume_planning_disables_then_build_reenables_data(tmp_path, monkeypatch):
++async def test_sdk_global_planning_then_integration_refreshes_data(tmp_path, monkeypatch):
+     from doxagent.codex_runtime.schema import CODEX_DOCUMENT3_WORKFLOW_VERSION, ResearchLane
+     from doxagent.codex_worker.schema import WorkerRunRequest
+     from doxagent.codex_worker.sdk_runtime import OpenAICodexRuntime
+@@ -1080,9 +1108,7 @@
+     runtime = OpenAICodexRuntime(capability_secret="s" * 32, container_isolated=True)
+     root = tmp_path / "owner"
+     root.mkdir()
+-    for ordinal, node in enumerate(
+-        [CodexD3Node.O3_DISCOVERY, CodexD3Node.O3_PLANNING, CodexD3Node.O3_BUILD]
+-    ):
++    for ordinal, node in enumerate([CodexD3Node.O3_PLANNING, CodexD3Node.O3_INTEGRATION]):
+         await runtime.start(
+             WorkerRunRequest(
+                 workflow_version=CODEX_DOCUMENT3_WORKFLOW_VERSION,
+--- before/tests/test_document3_sdk_pilot.py
++++ tests/test_document3_sdk_pilot.py
+@@ -50,7 +50,7 @@
+             "missing": ["Planning agenda unavailable"],
+         },
+     )
+-    state.save_task("pilot-retry", "discovery:GLOBAL", {"status": "COMPLETED", "attempt_count": 1})
++    state.save_task("pilot-retry", "discovery:OPEN", {"status": "COMPLETED", "attempt_count": 1})
+     for key in ("planning:0", "planning:1"):
+         state.save_task(
+             "pilot-retry",
+@@ -65,7 +65,7 @@
+     retry_failed_planning(tmp_path, state, "pilot-retry")
+     assert state.run("pilot-retry")["scan"] == [{"lead": "frozen"}]
+     assert "agenda" not in state.run("pilot-retry")
+-    assert state.task("pilot-retry", "discovery:GLOBAL")["status"] == "COMPLETED"
++    assert state.task("pilot-retry", "discovery:OPEN")["status"] == "COMPLETED"
+     assert state.claim("pilot-retry", "planning:0", max_attempts=4)["attempt_count"] == 3
+     assert (tmp_path / "pilot_recovery/planning_retry_1.json").is_file()
+ 
+--- before/tests/fixtures/codex_document3.py
++++ tests/fixtures/codex_document3.py
+@@ -191,8 +191,8 @@
+     async def read_text(self, run_id: str, relative_path: str):
+         return self.local.read_text(run_id, relative_path)
+ 
+-    async def inventory(self, run_id: str):
+-        return self.local.inventory(run_id)
++    async def inventory(self, run_id: str, *, prefixes=None):
++        return self.local.inventory(run_id, prefixes=prefixes)
+ 
+     async def publish(self, run_id: str, paths: list[str]):
+         return self.local.publish(run_id, paths)

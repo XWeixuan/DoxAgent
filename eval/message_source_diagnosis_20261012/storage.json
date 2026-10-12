@@ -1,0 +1,46 @@
+{
+  "disk": {
+    "total": 189559676928,
+    "used": 166303014912,
+    "free": 15432527872
+  },
+  "databases": {
+    "read/v2.sqlite3-wal": 0,
+    "read/v2.sqlite3.projector.executor.lock": 1,
+    "read/v2.sqlite3": 31118012416,
+    "read/v2.sqlite3-shm": 32768,
+    "bus/bus.sqlite3-wal": 1260752,
+    "bus/bus.sqlite3": 20328837120,
+    "bus/bus.sqlite3-shm": 32768,
+    "runtime/runtime.sqlite3": 4907483136,
+    "runtime/runtime.sqlite3.v2-control.executor.lock": 1,
+    "runtime/runtime.sqlite3-shm": 32768,
+    "runtime/runtime.sqlite3.executor.lock": 1,
+    "runtime/runtime.sqlite3.v2-delivery.executor.lock": 1,
+    "runtime/runtime.sqlite3-wal": 4140632
+  },
+  "backups": [
+    {
+      "path": "/var/lib/docker/volumes/doxagent-v2_v2-data/_data/backups/20260911T064923141964Z-v2-read-fix",
+      "bytes": 11526144,
+      "manifest": false
+    },
+    {
+      "path": "/var/lib/docker/volumes/doxagent-v2_v2-data/_data/backups/20260911T1050Z-o2-authoritative-recovery",
+      "bytes": 17289216,
+      "manifest": false
+    },
+    {
+      "path": "/var/lib/docker/volumes/doxagent-v2_v2-data/_data/backups/event-maintenance-20261006",
+      "bytes": 4082122752,
+      "manifest": false
+    },
+    {
+      "path": "/var/lib/docker/volumes/doxagent-v2_v2-data/_data/backups/trade-delivery-20261001",
+      "bytes": 136819,
+      "manifest": false
+    }
+  ],
+  "warning": true,
+  "critical": false
+}

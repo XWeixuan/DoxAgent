@@ -1,0 +1,93 @@
+{
+  "schema_version": "codex-d1-turn-summary-v1",
+  "run_id": "c4-mu-local-20261009-04",
+  "attempt_id": "c4f_future_nodes-1-fbd2cbbc5b",
+  "node": "c4f_future_nodes",
+  "model": "gpt-6-sol",
+  "model_provider": null,
+  "job_status": "succeeded",
+  "thread_id": "01a1210f-f512-71d2-861b-5905165488ad",
+  "turn_id": "01a12113-b738-7c42-868c-ddf07565883f",
+  "usage": {
+    "input_tokens": 77794,
+    "cached_input_tokens": 74368,
+    "output_tokens": 3173,
+    "reasoning_output_tokens": 72,
+    "total_tokens": 80967
+  },
+  "observed_usage": {
+    "input_tokens": 77794,
+    "cached_input_tokens": 74368,
+    "output_tokens": 3173,
+    "reasoning_output_tokens": 72,
+    "total_tokens": 80967
+  },
+  "sdk_duration_ms": 613506,
+  "worker_wall_time_ms": 620157,
+  "mcp_call_count": 150,
+  "command_call_count": 10,
+  "subagent_call_count": 0,
+  "file_change_count": 2,
+  "slowest_steps": [
+    {
+      "sequence": 96,
+      "event": "item.completed",
+      "item_type": "mcp_tool_call",
+      "name": "source_capture.capture_source",
+      "status": "failed",
+      "duration_ms": 30008,
+      "summary": "message='tool call error: tool call failed for `source_capture/capture_source`\\n\\nCaused by:\\n timed out awaiting tools/call after 30s'"
+    },
+    {
+      "sequence": 172,
+      "event": "item.completed",
+      "item_type": "mcp_tool_call",
+      "name": "source_capture.capture_source",
+      "status": "completed",
+      "duration_ms": 6299,
+      "summary": "completed"
+    },
+    {
+      "sequence": 171,
+      "event": "item.completed",
+      "item_type": "mcp_tool_call",
+      "name": "source_capture.capture_source",
+      "status": "completed",
+      "duration_ms": 2746,
+      "summary": "completed"
+    },
+    {
+      "sequence": 124,
+      "event": "item.completed",
+      "item_type": "mcp_tool_call",
+      "name": "source_capture.capture_source",
+      "status": "completed",
+      "duration_ms": 2564,
+      "summary": "completed"
+    },
+    {
+      "sequence": 119,
+      "event": "item.completed",
+      "item_type": "mcp_tool_call",
+      "name": "source_capture.capture_source",
+      "status": "completed",
+      "duration_ms": 2478,
+      "summary": "completed"
+    }
+  ],
+  "failures": [
+    "mcp_tool_call:data.data_read_observation:failed",
+    "mcp_tool_call:data.data_read_observation:failed",
+    "mcp_tool_call:data.data_read_observation:failed",
+    "mcp_tool_call:source_capture.capture_source:failed",
+    "mcp_tool_call:data.data_read_observation:failed",
+    "command:shell:failed"
+  ],
+  "validation": {
+    "schema": "passed",
+    "progressive": "passed",
+    "citation": "passed",
+    "citation_warnings": [],
+    "error": null
+  }
+}

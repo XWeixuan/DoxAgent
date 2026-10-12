@@ -1,0 +1,5 @@
+{
+  "type": "string",
+  "pattern": "\\S",
+  "description": "C4e network-build 的完整 Markdown 网络研究正文。"
+}

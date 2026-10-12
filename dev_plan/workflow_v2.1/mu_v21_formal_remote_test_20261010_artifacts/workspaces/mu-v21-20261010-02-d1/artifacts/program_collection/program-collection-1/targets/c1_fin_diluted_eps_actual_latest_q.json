@@ -1,0 +1,72 @@
+{
+  "schema_version": "d1-horizontal-target-result-v1",
+  "result": {
+    "collection_target_id": "c1_fin_diluted_eps_actual_latest_q",
+    "status": "FILLED",
+    "requested_items": 1,
+    "succeeded_items": 1,
+    "unavailable_items": 0,
+    "failed_items": 0,
+    "provider_attempts": [
+      {
+        "provider": "SEC",
+        "tool_name": "sec.company_financials",
+        "status": "FILLED",
+        "started_at": "2026-10-09T18:11:41.732234Z",
+        "finished_at": "2026-10-09T18:11:41.783467Z",
+        "error_code": null,
+        "message": null
+      }
+    ],
+    "output_refs": [
+      {
+        "object_type": "METRIC",
+        "provider_specific_id": "0000723125-26-000015",
+        "source_locator": "SEC:sec.company_financials",
+        "canonical_object_id_candidate": "c1_fin_diluted_eps_actual_latest_q:EarningsPerShareDiluted:0000723125-26-000015:2026-05-28",
+        "resolver_status": "CANDIDATE"
+      }
+    ],
+    "reason": null
+  },
+  "observations": [
+    {
+      "collection_target_id": "c1_fin_diluted_eps_actual_latest_q",
+      "item_key": "fin_diluted_eps:EarningsPerShareDiluted:2026-05-28",
+      "value": 24.67,
+      "as_of": "2026-05-28T00:00:00Z",
+      "source_refs": [
+        {
+          "object_type": "METRIC",
+          "provider_specific_id": "0000723125-26-000015",
+          "source_locator": "SEC:sec.company_financials",
+          "canonical_object_id_candidate": "c1_fin_diluted_eps_actual_latest_q:EarningsPerShareDiluted:0000723125-26-000015:2026-05-28",
+          "resolver_status": "CANDIDATE"
+        }
+      ],
+      "unit": "CURRENCY_PER_SHARE",
+      "source_concept": "EarningsPerShareDiluted",
+      "period_start": "2026-02-27T00:00:00Z",
+      "period_end": "2026-05-28T00:00:00Z",
+      "filed_at": "2026-06-25T00:00:00Z",
+      "accession": "0000723125-26-000015",
+      "form": "10-Q",
+      "fiscal_year": "2026",
+      "fiscal_period": "Q3",
+      "frame": "CY2026Q2",
+      "published_at": "2026-06-25T00:00:00Z",
+      "retrieved_at": "2026-10-09T18:11:41.783467Z",
+      "quality_flags": [
+        "program_collected",
+        "sec_period_identity_preserved"
+      ],
+      "observation_metadata": {
+        "taxonomy": "us-gaap",
+        "reported_unit": "USD/shares"
+      },
+      "method_id": null,
+      "method_version": null,
+      "input_refs": []
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "alias": "O29",
+  "title": "sections 1 — metadata",
+  "content": {
+    "section": "Item 1",
+    "heading_match": "ITEM 1.",
+    "start_offset": 34046,
+    "end_offset": 114054,
+    "full_text_chars": 79999,
+    "returned_chars": 40000,
+    "truncated": true,
+    "match_quality": "substantive_body"
+  },
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

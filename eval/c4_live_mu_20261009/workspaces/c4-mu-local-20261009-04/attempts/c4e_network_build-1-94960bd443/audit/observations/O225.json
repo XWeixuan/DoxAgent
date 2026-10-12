@@ -1,0 +1,9 @@
+{
+  "alias": "O225",
+  "title": "text paragraphs 137",
+  "content": "| Amortization of defined benefit pension items(1) |  |  |  |  |  |  |  |  |\n\n| Prior service cost |  | $ | 55 |  |  | $ | 56 |  |  | $ | 111 |  |  | $ | 111 |  |\n\n| Net loss |  | 240 |  |  | 172 |  |  | 480 |  |  | 345 |  |\n\n| Total before tax |  | 295 |  |  | 228 |  |  | 591 |  |  | 456 |  |\n\n| Tax benefit(2) |  | (73) |  |  | (57) |  |  | (148) |  |  | (116) |  |\n\n|  |  |  |  |  |  |  |  |  |\n\n| Total reclassification for the period, net of tax |  | $ | 222 |  |  | $ | 171 |  |  | $ | 443 |  |  | $ | 340 |  |\n\n|  |  |  |  |  |  |  |  |  |",
+  "source": {
+    "provider": "Public web source",
+    "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+  }
+}

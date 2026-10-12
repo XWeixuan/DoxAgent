@@ -1,0 +1,36 @@
+{
+  "policy_id": "pol_d36da092e76c4f9e8eb68f8b7de13142",
+  "title": "旗舰手机系列的基础闪存容量选择",
+  "ref": [
+    "output/work/v21/discovery/OPEN.jsonl#L5",
+    "context/document3/v21/shared/global/0003.txt",
+    "https://www.trendforce.com/presscenter/news/20260323-12983.html",
+    "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+    "https://www.apple.com/newsroom/2026/09/apple-debuts-iphone-18-pro-and-iphone-18-pro-max/",
+    "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx"
+  ],
+  "transmission": "旗舰手机的起步存储容量是全系列购买入口，与可选大容量版本不同；若重要品牌在高NAND成本下仍把基础容量提高一档，会改变每部手机的设计闪存位数和本地AI/数据驻留空间预期，反向缩减则说明成本压力穿透了原本较能承受涨价的高端机。美光MCBU提供移动NAND/UFS等产品，但手机存储规格并不指向某一家供应商；公司获配、各SKU销量和库存可影响兑现幅度，不是公开规格事件本身必须确认的附加事实。",
+  "match_scope": "召回Apple、Samsung等高销量旗舰系列的产品发布、规格表和有明确来源的渠道报道，包括基础存储容量的升降、将大容量变成标配或只作为可选项。Apple 2026年9月已发布的iPhone 18 Pro/Pro Max从256GB起步是比较实例，不当作未来新事件；同类品牌须用自身已公开的上一代基础档比较。例子非穷举，相关消息不自动命中，按条件判断。",
+  "activation_conditions": [
+    {
+      "condition_id": "C1",
+      "decision": "LONG",
+      "trigger_layer": "MIDDLE",
+      "criterion": "高销量旗舰手机品牌公开把下一代核心旗舰系列的全系列起步存储容量由已公布的256GB提高为512GB，而不是只新增512GB可选版本。",
+      "calibration": {
+        "reference_state": "Apple 2026-09-09发布的iPhone 18 Pro和Pro Max均从256GB起步，并另有512GB及更高可选项。TrendForce 2026-03-23仍预计全年智能手机平均存储容量同比增长4.8%，指出高端品牌较能承受价格、但中低端会将大容量保留为选配；该估计不是最新机型销量。其他品牌若纳入本条件，必须以该品牌已公开的同档上一代256GB起步为比较，不借用Apple规格。",
+        "trigger_boundary": "同一重要旗舰系列把最低可售配置从256GB直接提升至512GB，基础NAND设计位数翻倍；原本已经存在的512GB选购选项不是增量。这种标配决定在行业预期仅温和增加平均容量且4Q手机厂依赖库存的背景下已足以更新高端每机闪存内容预期，不等待美光UFS定点或销量证明。"
+      }
+    },
+    {
+      "condition_id": "C2",
+      "decision": "SHORT",
+      "trigger_layer": "MIDDLE",
+      "criterion": "高销量旗舰手机品牌公开把下一代核心旗舰系列的全系列起步存储容量由已公布的256GB降为128GB，作为正式默认配置而非临时促销或单一区域特供。",
+      "calibration": {
+        "reference_state": "iPhone 18 Pro/Pro Max截至2026-09-09已公布256GB起步；TrendForce在2026-03-23的行业判断虽认可高价压力，却仍预期2026年平均手机存储容量增长4.8%，并把高端上配与中低端选配区分。新品牌不能套用Apple的历史档位，须确认其自身相同系列已公布的256GB基础状态。",
+        "trigger_boundary": "若原256GB基础档的核心旗舰系列正式退回128GB，最低每机闪存内容减半，且成本控制不再局限于已知中低端减配，足以反转对高端容量韧性的判断。仅价格提高、512GB高配销量未知或中低端128GB继续存在，不满足这一边界。"
+      }
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "alias": "O223",
+  "title": "text paragraphs 135",
+  "content": "|  |  | Three months ended June 30,\n\n|  | Six months ended June 30,\n\n|\n\n|  |  | 2026 |  | 2025 |  | 2026 |  | 2025 |\n\n| Defined benefit pension items |  |  |  |  |  |  |  |  |\n\n| Balance at beginning of period |  | $ | (14,723) |  |  | $ | (13,652) |  |  | $ | (14,944) |  |  | $ | (13,592) |  |\n\n| Other comprehensive income before reclassification |  | — |  |  | — |  |  | — |  |  | (229) |  |\n\n| Amounts reclassified out of AOCI |  | 222 |  |  | 171 |  |  | 443 |  |  | 340 |  |",
+  "source": {
+    "provider": "Public web source",
+    "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+  }
+}

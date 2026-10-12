@@ -1,0 +1,19 @@
+{
+  "alias": "O97",
+  "title": "section_previews 1",
+  "content": {
+    "section": "Government Incentives",
+    "heading_match": "Government Incentives",
+    "start_offset": 291098,
+    "end_offset": 371120,
+    "full_text_chars": 80000,
+    "returned_chars": 40000,
+    "truncated": true,
+    "match_quality": "substantive_body",
+    "text_preview": "We receive incentives from governmental entities related to capital expenditures, expenses, and other activities. The government incentives we receive may require that we meet or maintain specified spending levels and other operational metrics and may be subject to reimbursement if such conditions are not met or maintained. Government incentives are recognized in the financial statements based on the underlying principal criteria for earning the incentives when there is reasonable assurance that the conditions of the government incentives are met and the incentive will be received. Incentives related to the acquisition or construction of property, plant, and equipment are recognized as a reduction in the carrying amounts of the related assets and as a reduction of subsequent depreciation expense over the useful lives of the assets. Incentives related to specific operating activities are offset against the related expense in the period the expense is incurred. Government incentives received prior to being earned are recognized in current or noncurrent deferred income, whereas government incentives earned prior to being received are recognized in current or noncurrent receivables. Cash received from government incentives related to operating expenses is included as an operating activity in the statement of cash flows, whereas cash received, including by constructive receipt, from incentives related to the acquisition of property, plant, and equipment is included as an investing activity. For each project, we estimate the total expected project costs and recognize a proportionate benefit as qualified project costs are incurred. As the estimated total expected qualified project cost changes, we adjust our estimate of the recognized proportionate benefit. Inventories Inventories are stated at the lower of cost or net realizable value, with cost being determined on a FIFO basis. Cost includes depreciation, labor, material, and overhead costs, including product and process technology costs. Determining net realizable value of finished goods and work in process inventories requires projecting future average selling prices, sales volumes, and costs per part. When net realizable value is below cost, we recognize a charge to cost of goods sold to write down inventories to their estimated net realizable value in advance of when inventories are actually sold. We review the major characteristics of product type and markets in determining the unit of account for which we perform the lower of cost or net realizable value analysis and categorize all inventories (including DRAM, NAND, and other memory) as a single group. 72 Table of Contents Leases We determine if an arrangement is a lease, or contains a lease, at the inception of the arrangement and evaluate whether the lease is an operating lease or a finance lease at the commencement date. We recognize right-of-use assets and lease liabilities for operating and finance leases with terms greater than 12 months. "
+  },
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

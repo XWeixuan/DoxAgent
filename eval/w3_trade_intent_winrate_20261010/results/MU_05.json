@@ -1,0 +1,242 @@
+{
+  "ticker": "MU",
+  "part": 5,
+  "record_count": 5,
+  "records": [
+    {
+      "intent_id": "trade:case_81382a4d64df496c87a4dcd8d02e5327",
+      "ticker": "MU",
+      "case_id": "case_81382a4d64df496c87a4dcd8d02e5327",
+      "direction": "LONG",
+      "intent_status": "DUPLICATE_EVENT_TRADE",
+      "intent_released_at_utc": "2026-09-30T20:16:45.772521+00:00",
+      "intent_released_at_et": "2026-09-30T16:16:45.772521-04:00",
+      "entry_basis": "hypothetical_trade_tick",
+      "entry_at_utc": "2026-09-30T20:16:45.772521+00:00",
+      "cycle_end_utc": "2026-10-01T19:30:00+00:00",
+      "cycle_end_et": "2026-10-01T15:30:00-04:00",
+      "actual_entry": false,
+      "actual_exit": false,
+      "entry_evidence": {
+        "query_key": "MU|2026-09-30T20:16:45.772521+00:00|entry",
+        "status": "ok",
+        "selected": {
+          "exchange": "FINRA",
+          "offset_seconds": 0.227479,
+          "price_usd": 1068.3136,
+          "special_conditions": "  T ",
+          "timestamp_utc": "2026-09-30T20:16:46+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-09-30T20:16:46+00:00",
+        "error": null
+      },
+      "entry_price_usd": "1068.3136",
+      "exit_evidence": {
+        "query_key": "MU|2026-10-01T19:30:00+00:00|exit",
+        "status": "ok",
+        "selected": {
+          "exchange": "FINRA",
+          "offset_seconds": 0.0,
+          "price_usd": 1089.175,
+          "special_conditions": null,
+          "timestamp_utc": "2026-10-01T19:30:00+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-10-01T19:30:00+00:00",
+        "error": null
+      },
+      "exit_price_usd": "1089.175",
+      "return_pct": "1.9527",
+      "classification": "flat"
+    },
+    {
+      "intent_id": "trade:case_c6da7907ff384cc1abe2dfe9c5864674",
+      "ticker": "MU",
+      "case_id": "case_c6da7907ff384cc1abe2dfe9c5864674",
+      "direction": "LONG",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "intent_released_at_utc": "2026-09-30T20:17:43.733700+00:00",
+      "intent_released_at_et": "2026-09-30T16:17:43.733700-04:00",
+      "entry_basis": "hypothetical_trade_tick",
+      "entry_at_utc": "2026-09-30T20:17:43.733700+00:00",
+      "cycle_end_utc": "2026-10-01T19:30:00+00:00",
+      "cycle_end_et": "2026-10-01T15:30:00-04:00",
+      "actual_entry": false,
+      "actual_exit": false,
+      "entry_evidence": {
+        "query_key": "MU|2026-09-30T20:17:43.733700+00:00|entry",
+        "status": "ok",
+        "selected": {
+          "exchange": "FINRA",
+          "offset_seconds": 2.2663,
+          "price_usd": 1069.57,
+          "special_conditions": "  T ",
+          "timestamp_utc": "2026-09-30T20:17:46+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-09-30T20:17:44+00:00",
+        "error": null
+      },
+      "entry_price_usd": "1069.57",
+      "exit_evidence": {
+        "query_key": "MU|2026-10-01T19:30:00+00:00|exit",
+        "status": "ok",
+        "selected": {
+          "exchange": "FINRA",
+          "offset_seconds": 0.0,
+          "price_usd": 1089.175,
+          "special_conditions": null,
+          "timestamp_utc": "2026-10-01T19:30:00+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-10-01T19:30:00+00:00",
+        "error": null
+      },
+      "exit_price_usd": "1089.175",
+      "return_pct": "1.8330",
+      "classification": "flat"
+    },
+    {
+      "intent_id": "trade:case_14623f83899b4c8fbb66425095cb7852",
+      "ticker": "MU",
+      "case_id": "case_14623f83899b4c8fbb66425095cb7852",
+      "direction": "LONG",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "intent_released_at_utc": "2026-09-30T20:18:23.522781+00:00",
+      "intent_released_at_et": "2026-09-30T16:18:23.522781-04:00",
+      "entry_basis": "hypothetical_trade_tick",
+      "entry_at_utc": "2026-09-30T20:18:23.522781+00:00",
+      "cycle_end_utc": "2026-10-01T19:30:00+00:00",
+      "cycle_end_et": "2026-10-01T15:30:00-04:00",
+      "actual_entry": false,
+      "actual_exit": false,
+      "entry_evidence": {
+        "query_key": "MU|2026-09-30T20:18:23.522781+00:00|entry",
+        "status": "ok",
+        "selected": {
+          "exchange": "NASDAQ",
+          "offset_seconds": 0.477219,
+          "price_usd": 1071.47,
+          "special_conditions": " FT ",
+          "timestamp_utc": "2026-09-30T20:18:24+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-09-30T20:18:24+00:00",
+        "error": null
+      },
+      "entry_price_usd": "1071.47",
+      "exit_evidence": {
+        "query_key": "MU|2026-10-01T19:30:00+00:00|exit",
+        "status": "ok",
+        "selected": {
+          "exchange": "FINRA",
+          "offset_seconds": 0.0,
+          "price_usd": 1089.175,
+          "special_conditions": null,
+          "timestamp_utc": "2026-10-01T19:30:00+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-10-01T19:30:00+00:00",
+        "error": null
+      },
+      "exit_price_usd": "1089.175",
+      "return_pct": "1.6524",
+      "classification": "flat"
+    },
+    {
+      "intent_id": "trade:case_fbe49110a00d469ab64e65d48ecb1797",
+      "ticker": "MU",
+      "case_id": "case_fbe49110a00d469ab64e65d48ecb1797",
+      "direction": "LONG",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "intent_released_at_utc": "2026-09-30T20:18:37.315647+00:00",
+      "intent_released_at_et": "2026-09-30T16:18:37.315647-04:00",
+      "entry_basis": "hypothetical_trade_tick",
+      "entry_at_utc": "2026-09-30T20:18:37.315647+00:00",
+      "cycle_end_utc": "2026-10-01T19:30:00+00:00",
+      "cycle_end_et": "2026-10-01T15:30:00-04:00",
+      "actual_entry": false,
+      "actual_exit": false,
+      "entry_evidence": {
+        "query_key": "MU|2026-09-30T20:18:37.315647+00:00|entry",
+        "status": "ok",
+        "selected": {
+          "exchange": "FINRA",
+          "offset_seconds": 0.684353,
+          "price_usd": 1074,
+          "special_conditions": "  T ",
+          "timestamp_utc": "2026-09-30T20:18:38+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-09-30T20:18:38+00:00",
+        "error": null
+      },
+      "entry_price_usd": "1074",
+      "exit_evidence": {
+        "query_key": "MU|2026-10-01T19:30:00+00:00|exit",
+        "status": "ok",
+        "selected": {
+          "exchange": "FINRA",
+          "offset_seconds": 0.0,
+          "price_usd": 1089.175,
+          "special_conditions": null,
+          "timestamp_utc": "2026-10-01T19:30:00+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-10-01T19:30:00+00:00",
+        "error": null
+      },
+      "exit_price_usd": "1089.175",
+      "return_pct": "1.4129",
+      "classification": "flat"
+    },
+    {
+      "intent_id": "trade:case_6fcd239435c1444489abad0b2345a6fa",
+      "ticker": "MU",
+      "case_id": "case_6fcd239435c1444489abad0b2345a6fa",
+      "direction": "LONG",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "intent_released_at_utc": "2026-09-30T20:19:52.224343+00:00",
+      "intent_released_at_et": "2026-09-30T16:19:52.224343-04:00",
+      "entry_basis": "hypothetical_trade_tick",
+      "entry_at_utc": "2026-09-30T20:19:52.224343+00:00",
+      "cycle_end_utc": "2026-10-01T19:30:00+00:00",
+      "cycle_end_et": "2026-10-01T15:30:00-04:00",
+      "actual_entry": false,
+      "actual_exit": false,
+      "entry_evidence": {
+        "query_key": "MU|2026-09-30T20:19:52.224343+00:00|entry",
+        "status": "ok",
+        "selected": {
+          "exchange": "FINRA",
+          "offset_seconds": 0.775657,
+          "price_usd": 1075.3,
+          "special_conditions": "  T ",
+          "timestamp_utc": "2026-09-30T20:19:53+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-09-30T20:19:53+00:00",
+        "error": null
+      },
+      "entry_price_usd": "1075.3",
+      "exit_evidence": {
+        "query_key": "MU|2026-10-01T19:30:00+00:00|exit",
+        "status": "ok",
+        "selected": {
+          "exchange": "FINRA",
+          "offset_seconds": 0.0,
+          "price_usd": 1089.175,
+          "special_conditions": null,
+          "timestamp_utc": "2026-10-01T19:30:00+00:00",
+          "unreported": false
+        },
+        "first_event_utc": "2026-10-01T19:30:00+00:00",
+        "error": null
+      },
+      "exit_price_usd": "1089.175",
+      "return_pct": "1.2903",
+      "classification": "flat"
+    }
+  ]
+}

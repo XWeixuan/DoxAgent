@@ -1,0 +1,1817 @@
+{
+  "format": "doxagent.w3-trade-intent-review.v2",
+  "ticker": "RKLB",
+  "window": {
+    "since_utc": "2026-09-19T12:53:20.738930+00:00",
+    "as_of_utc": "2026-10-10T12:53:20.738930+00:00"
+  },
+  "part": 1,
+  "record_count": 4,
+  "records": [
+    {
+      "intent_id": "trade:case_9ac52592e7744107bd0cb7c6cd015c38",
+      "ticker": "RKLB",
+      "case_id": "case_9ac52592e7744107bd0cb7c6cd015c38",
+      "intent_released_at_utc": "2026-09-22T17:09:54.368526+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_9d465622e2ef4c6c9c9b5a25bf72c597",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Rocket Lab",
+              "RKLB"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Rocket Lab shares rose approximately 2.2% to $71.45 on September 22, 2026.",
+            "subject_time": "current trading session"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Rocket Lab",
+              "RKLB"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Rocket Lab shares bounced from technical support near $60 during the September 22, 2026 trading session.",
+            "subject_time": "current trading session"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Rocket Lab",
+              "RKLB",
+              "50-day moving average"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Rocket Lab shares crossed above their 50-day moving average on September 22, 2026.",
+            "subject_time": "current trading session"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Rocket Lab",
+              "RKLB",
+              "Schaeffer's"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Over the prior 10 years, the same crossover signal occurred eight other times; Rocket Lab shares were higher one month later in 88% of those cases, with an average gain of 16.8%.",
+            "subject_time": "historical 10-year crossover sample"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Rocket Lab",
+              "RKLB",
+              "Schaeffer's Volatility Index"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Rocket Lab's Schaeffer's Volatility Index was 70%, in the low 10th percentile of its annual range.",
+            "subject_time": "annual volatility range as of September 22, 2026"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Rocket Lab",
+              "RKLB",
+              "Schaeffer's Volatility Scorecard"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Rocket Lab's Schaeffer's Volatility Scorecard was 97 out of 100.",
+            "subject_time": "preceding year"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "The move above the 50-day average after a bounce from approximately $60 changes the near-term technical expectation toward bullish momentum. Historical analogs cited in the message were higher one month later 88% of the time with an average gain of 16.8%, while a 70% SVI in the low 10th percentile and a 97/100 volatility score suggest room for an upside volatility repricing.",
+          "prior_expectation": "Before this session, RKLB remained in a post-Q2 repricing pattern and its 50-day moving average had acted as resistance during July and August, leaving the near-term technical posture neutral-to-bearish rather than a confirmed trend reversal.",
+          "reason": "TRADE LONG: the breakout creates a tactical, ticker-specific expectation gap with direct transmission through momentum and quantitative flows, short covering, and options repricing. The eight-signal sample is small and provides no long-term fundamental change, so this is a short-horizon technical trade rather than a valuation thesis.",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "E25 captures the preceding post-Q2 repricing and E88 the prior September 22 quote, but neither records this session's 2.2% move, $60 support bounce, 50-day moving-average crossover, or volatility signals. These technical observations are new.",
+          "reference_ids": [
+            "E25",
+            "E88"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No Policy criterion covers a technical price breakout, moving-average crossover, historical price-pattern statistics, or options-implied volatility measures. The message contains no new operating, contract, launch, financing, regulatory, or merger fact."
+        },
+        "w3_case_id": "w3_9d465622e2ef4c6c9c9b5a25bf72c597"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_9ac52592e7744107bd0cb7c6cd015c38",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-22T17:09:54.428739Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 272.756846
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-22T17:05:21.671893Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2608981,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-22",
+        "source": {
+          "binding_id": "RKLB:yahoo_finance_news",
+          "kind": "api",
+          "name": "Yahoo Finance News",
+          "source_id": "yahoo_finance_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_f4f82d6dab584f6aaf6a014bb756d980",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Rocket Lab Stock Breaks Above Key Trendline"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "RETRY_BUDGET_EXHAUSTED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-22T17:05:21.671893Z",
+        "completed_at": "2026-09-22T17:09:54.428739Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E88",
+            "E78",
+            "E25"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "当前消息的核心事实——9月23日RKLB上涨2.2%至$71.45、突破50日均线、自$60支撑位反弹——在E78（9/18单日下跌）、E25（8/10–9/14持续下跌/回调）及provisional E88（9/22约$71.89报价）中均未出现。已有事实全部追踪下跌或特定下跌日，无任何事实记录方向性反弹或50日均线突破事件。",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "当前消息仅描述Rocket Lab股价技术面变动（+2.2%至$71.45、突破50日均线、测试$60支撑），未涉及任何合并交易进展、发射任务、合同授予或取消、Neutron/Space Systems运营、融资安排、监管事件或财务结果等具体业务事实。所有Policy的criterion均要求特定运营、交易或财务状态变化，股价技术走势与之无直接触发关系。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "当前消息仅描述Rocket Lab股价技术面变动（+2.2%至$71.45、突破50日均线、测试$60支撑），未涉及任何合并交易进展、发射任务、合同授予或取消、Neutron/Space Systems运营、融资安排、监管事件或财务结果等具体业务事实。所有Policy的criterion均要求特定运营、交易或财务状态变化，股价技术走势与之无直接触发关系。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Rocket Lab",
+                "RKLB"
+              ],
+              "occurrence_date": "2026-09-22",
+              "proposition": "Rocket Lab shares rose approximately 2.2% to $71.45 on September 22, 2026.",
+              "subject_time": "current trading session"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Rocket Lab",
+                "RKLB"
+              ],
+              "occurrence_date": "2026-09-22",
+              "proposition": "Rocket Lab shares bounced from technical support near $60 during the September 22, 2026 trading session.",
+              "subject_time": "current trading session"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Rocket Lab",
+                "RKLB",
+                "50-day moving average"
+              ],
+              "occurrence_date": "2026-09-22",
+              "proposition": "Rocket Lab shares crossed above their 50-day moving average on September 22, 2026.",
+              "subject_time": "current trading session"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Rocket Lab",
+                "RKLB",
+                "Schaeffer's"
+              ],
+              "occurrence_date": "2026-09-22",
+              "proposition": "Over the prior 10 years, the same crossover signal occurred eight other times; Rocket Lab shares were higher one month later in 88% of those cases, with an average gain of 16.8%.",
+              "subject_time": "historical 10-year crossover sample"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Rocket Lab",
+                "RKLB",
+                "Schaeffer's Volatility Index"
+              ],
+              "occurrence_date": "2026-09-22",
+              "proposition": "Rocket Lab's Schaeffer's Volatility Index was 70%, in the low 10th percentile of its annual range.",
+              "subject_time": "annual volatility range as of September 22, 2026"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Rocket Lab",
+                "RKLB",
+                "Schaeffer's Volatility Scorecard"
+              ],
+              "occurrence_date": "2026-09-22",
+              "proposition": "Rocket Lab's Schaeffer's Volatility Scorecard was 97 out of 100.",
+              "subject_time": "preceding year"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "The move above the 50-day average after a bounce from approximately $60 changes the near-term technical expectation toward bullish momentum. Historical analogs cited in the message were higher one month later 88% of the time with an average gain of 16.8%, while a 70% SVI in the low 10th percentile and a 97/100 volatility score suggest room for an upside volatility repricing.",
+            "prior_expectation": "Before this session, RKLB remained in a post-Q2 repricing pattern and its 50-day moving average had acted as resistance during July and August, leaving the near-term technical posture neutral-to-bearish rather than a confirmed trend reversal.",
+            "reason": "TRADE LONG: the breakout creates a tactical, ticker-specific expectation gap with direct transmission through momentum and quantitative flows, short covering, and options repricing. The eight-signal sample is small and provides no long-term fundamental change, so this is a short-horizon technical trade rather than a valuation thesis.",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "E25 captures the preceding post-Q2 repricing and E88 the prior September 22 quote, but neither records this session's 2.2% move, $60 support bounce, 50-day moving-average crossover, or volatility signals. These technical observations are new.",
+            "reference_ids": [
+              "E25",
+              "E88"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "No Policy criterion covers a technical price breakout, moving-average crossover, historical price-pattern statistics, or options-implied volatility measures. The message contains no new operating, contract, launch, financing, regulatory, or merger fact."
+          },
+          "w3_case_id": "w3_9d465622e2ef4c6c9c9b5a25bf72c597"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "88c5063128e76b0296cf60713a3f147d7a7f6c075bca4d549e9c4eb6b4653c14",
+            "content_type": "text/plain",
+            "sha256": "84ad225b2a76b40b6f01fe326f8092ea275b83034ea392caba66c10618fc864e",
+            "size_bytes": 894
+          },
+          "case": {
+            "case_id": "case_9ac52592e7744107bd0cb7c6cd015c38",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-22T17:05:15.609826Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-22T17:05:19.653347Z",
+          "revision": 1,
+          "row_revision": 1406177,
+          "source": {
+            "binding_id": "RKLB:yahoo_finance_news",
+            "kind": "api",
+            "name": "Yahoo Finance News",
+            "source_id": "yahoo_finance_news"
+          },
+          "source_published_at": "2026-09-22T16:57:28Z",
+          "standard_message_id": "std_6d11166f7b4c4f4293affb8a37152188",
+          "stream_item_id": "stream_f4f82d6dab584f6aaf6a014bb756d980",
+          "stream_offset": 44,
+          "stream_published_at": "2026-09-22T17:05:19.658598Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Rocket Lab Stock Breaks Above Key Trendline"
+          },
+          "url": "https://finance.yahoo.com/markets/stocks/articles/rocket-lab-stock-breaks-above-165728910.html",
+          "body_text": "Shares of Rocket Lab Corp (NASDAQ:RKLB) are up 2.2% at $71.45 today, extending a bounce off familiar support at the $60 level. Furthermore, today's price action has RKLB crossing above the 50-day moving average, which rejected the stock in July and August.\n\nPer Schaeffer's Senior Quantitative Analyst Rocky White, this \"crossover\" event has happened eight other times over the last 10 years. Rocket Lab stock was higher one month later 88% of the time after these signals, averaging a 16.8% gain. From its current perch, a move of this magnitude would put the shares at $83.45.\n\nRKLB's Schaeffer's Volatility Index (SVI) of 70% stands in the low 10th percentile of its annual range, meaning options traders are pricing in low volatility expectations. The stock has tended to exceed these expectations over the last year as well, per its Schaeffer's Volatility Scorecard (SVS) of 97 out of 100."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_6d11166f7b4c4f4293affb8a37152188:0\"]",
+          "created_at": "2026-09-22T17:09:54.313530Z",
+          "dedupe_key": "18505fbe95740a9bc6f51a621c2b6230cb5d5967ad8bce638b6e24739fcf4366",
+          "entities": [
+            "Rocket Lab",
+            "RKLB"
+          ],
+          "occurrence_date": "2026-09-22",
+          "originating_node": "W3",
+          "proposition": "Rocket Lab shares rose approximately 2.2% to $71.45 on September 22, 2026.",
+          "provisional_event_id": "E95",
+          "subject_time": "current trading session"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_6d11166f7b4c4f4293affb8a37152188:1\"]",
+          "created_at": "2026-09-22T17:09:54.322695Z",
+          "dedupe_key": "0d18a608e04d1e899d49761c16fe78ab67889012ad6c90acd0aa9dc6030e6ab4",
+          "entities": [
+            "Rocket Lab",
+            "RKLB"
+          ],
+          "occurrence_date": "2026-09-22",
+          "originating_node": "W3",
+          "proposition": "Rocket Lab shares bounced from technical support near $60 during the September 22, 2026 trading session.",
+          "provisional_event_id": "E96",
+          "subject_time": "current trading session"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_6d11166f7b4c4f4293affb8a37152188:2\"]",
+          "created_at": "2026-09-22T17:09:54.333291Z",
+          "dedupe_key": "6f0d7d3d32fdd30159f7cff505416af923b69eea56a1b60ab1b5f8a23b0150a7",
+          "entities": [
+            "Rocket Lab",
+            "RKLB",
+            "50-day moving average"
+          ],
+          "occurrence_date": "2026-09-22",
+          "originating_node": "W3",
+          "proposition": "Rocket Lab shares crossed above their 50-day moving average on September 22, 2026.",
+          "provisional_event_id": "E97",
+          "subject_time": "current trading session"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_6d11166f7b4c4f4293affb8a37152188:3\"]",
+          "created_at": "2026-09-22T17:09:54.339398Z",
+          "dedupe_key": "9a5726cbc6e262375c51bf98750e7eb72a1bf607bf793ed96333b64f8e350788",
+          "entities": [
+            "Rocket Lab",
+            "RKLB",
+            "Schaeffer's"
+          ],
+          "occurrence_date": "2026-09-22",
+          "originating_node": "W3",
+          "proposition": "Over the prior 10 years, the same crossover signal occurred eight other times; Rocket Lab shares were higher one month later in 88% of those cases, with an average gain of 16.8%.",
+          "provisional_event_id": "E98",
+          "subject_time": "historical 10-year crossover sample"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_6d11166f7b4c4f4293affb8a37152188:4\"]",
+          "created_at": "2026-09-22T17:09:54.345786Z",
+          "dedupe_key": "d138ee6cc44a03a2066acb1f426d2df476204fc7c3f21a10760c80f27311b82f",
+          "entities": [
+            "Rocket Lab",
+            "RKLB",
+            "Schaeffer's Volatility Index"
+          ],
+          "occurrence_date": "2026-09-22",
+          "originating_node": "W3",
+          "proposition": "Rocket Lab's Schaeffer's Volatility Index was 70%, in the low 10th percentile of its annual range.",
+          "provisional_event_id": "E99",
+          "subject_time": "annual volatility range as of September 22, 2026"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_6d11166f7b4c4f4293affb8a37152188:5\"]",
+          "created_at": "2026-09-22T17:09:54.351703Z",
+          "dedupe_key": "6daa717927ce0efc0a4b1a7eaed6c0fa83b673f82f45a465ff416400cd669cbd",
+          "entities": [
+            "Rocket Lab",
+            "RKLB",
+            "Schaeffer's Volatility Scorecard"
+          ],
+          "occurrence_date": "2026-09-22",
+          "originating_node": "W3",
+          "proposition": "Rocket Lab's Schaeffer's Volatility Scorecard was 97 out of 100.",
+          "provisional_event_id": "E100",
+          "subject_time": "preceding year"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_9ac52592e7744107bd0cb7c6cd015c38",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-09-22T17:09:54.368526+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-22",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_9d465622e2ef4c6c9c9b5a25bf72c597",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-22T17:09:55.392677Z"
+              },
+              "case_id": "case_9ac52592e7744107bd0cb7c6cd015c38",
+              "direction": "LONG",
+              "entry_reason": "RETRY_BUDGET_EXHAUSTED",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_9ac52592e7744107bd0cb7c6cd015c38",
+              "execution_reason_codes": [
+                "RETRY_BUDGET_EXHAUSTED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_9ac52592e7744107bd0cb7c6cd015c38",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_e1d7c65e0656af2e6c4923b1"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-22T17:09:54.368526Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "RETRY_BUDGET_EXHAUSTED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      },
+      "estimated_pnl": {
+        "state": "ESTIMATED",
+        "basis": "saved IBKR historical TRADES ticks; intention-time entry and 15:30 America/New_York cycle exit",
+        "entry_reference_price_usd": "72.0563",
+        "exit_reference_price_usd": "72.004",
+        "entry_target_utc": "2026-09-22T17:09:54.368526+00:00",
+        "cycle_end_utc": "2026-09-22T19:30:00+00:00",
+        "cycle_end_et": "2026-09-22T15:30:00-04:00",
+        "direction": "LONG",
+        "return_pct": "-0.0726",
+        "pnl_usd_per_share": "-0.0523",
+        "classification": "flat",
+        "estimated_total_pnl_usd": null,
+        "total_pnl_unavailable_reason": "No simulated position quantity was specified; use percent return and USD per share.",
+        "entry_evidence": {
+          "query_key": "RKLB|2026-09-22T17:09:54.368526+00:00|entry",
+          "status": "ok",
+          "selected": {
+            "exchange": "FINRA",
+            "offset_seconds": 1.631474,
+            "price_usd": 72.0563,
+            "special_conditions": null,
+            "timestamp_utc": "2026-09-22T17:09:56+00:00",
+            "unreported": false
+          },
+          "first_event_utc": "2026-09-22T17:09:55+00:00",
+          "error": null
+        },
+        "exit_evidence": {
+          "query_key": "RKLB|2026-09-22T19:30:00+00:00|exit",
+          "status": "ok",
+          "selected": {
+            "exchange": "FINRA",
+            "offset_seconds": 0.0,
+            "price_usd": 72.004,
+            "special_conditions": null,
+            "timestamp_utc": "2026-09-22T19:30:00+00:00",
+            "unreported": false
+          },
+          "first_event_utc": "2026-09-22T19:30:00+00:00",
+          "error": null
+        },
+        "pricing_unavailable_reason": null,
+        "cost_assumptions": "No slippage, bid-ask spread, fees or financing costs."
+      }
+    },
+    {
+      "intent_id": "trade:case_193e9c52c1204471aac4e1b597a9bd3c",
+      "ticker": "RKLB",
+      "case_id": "case_193e9c52c1204471aac4e1b597a9bd3c",
+      "intent_released_at_utc": "2026-09-24T20:35:51.521509+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_59c2d462205e4cdc9f44f14f3b258da0",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Iridium Communications Inc.",
+              "IRDM",
+              "Rocket Lab Corporation",
+              "RKLB"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "Iridium stockholders adopted the merger agreement with Rocket Lab at the special meeting held on 2026-09-24; approximately 99.6% of votes cast favored the transaction, representing approximately 81.0% of outstanding shares entitled to vote.",
+            "subject_time": "Iridium special stockholder meeting on 2026-09-24"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "Shareholder status changes from scheduled and pending to completed approval with near-unanimous support, removing the shareholder-vote failure path and increasing the probability and certainty of a mid-2027 closing and the future Iridium network and spectrum value path. The $27 cash-plus-RKLB-share consideration, collar, target timing, and remaining regulatory and customary conditions are unchanged, so this is a de-risking delta rather than proof of closing or realized synergies.",
+          "prior_expectation": "Before publication, RKLB and Iridium had a signed but unclosed transaction; RKLB had announced $1.94 billion of equity financing, but the shareholder vote remained pending and regulatory and other customary closing conditions were unresolved. Mid-2027 closing and the Iridium network, revenue, and cash-flow contribution therefore remained conditional, with failed shareholder approval an explicit termination path.",
+          "reason": "LONG is warranted because the result is a discrete positive surprise against an unresolved transaction gate. The acquisition is financially and strategically material to RKLB, and approval increases the likelihood that Iridium's network, spectrum, revenue, and cash-generating business can ultimately be captured by Rocket Lab. Financing had already been substantially addressed and no adverse terms were introduced. Remaining regulatory, integration, dilution, and execution risks limit the magnitude but do not eliminate the directional edge.",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "Reference E86 recorded only that the Iridium shareholder vote was scheduled for 2026-09-24. The current message records the completed vote and adoption of the merger agreement, with approximately 99.6% of votes cast in favor, representing about 81.0% of outstanding shares entitled to vote.",
+          "reference_ids": [
+            "E86"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "The message reports approval, not shareholder rejection or transaction termination, and does not change consideration, financing, regulatory conditions, closing timing, or operating outcomes. No existing policy criterion is met."
+        },
+        "w3_case_id": "w3_59c2d462205e4cdc9f44f14f3b258da0"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_193e9c52c1204471aac4e1b597a9bd3c",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-24T20:35:51.747142Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 323.299285
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-24T20:30:28.447857Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2608918,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-24",
+        "source": {
+          "binding_id": "RKLB:ibkr_news",
+          "kind": "api",
+          "name": "IBKR News API",
+          "source_id": "ibkr_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_b8ebfb2b690b4ace9130c192ef7a2384",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Press Release: Iridium Stockholders Approve Acquisition by Rocket Lab"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "FRESH_QUOTE_UNAVAILABLE"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-24T20:30:28.447857Z",
+        "completed_at": "2026-09-24T20:35:51.747142Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E86",
+            "E11",
+            "E85",
+            "E72",
+            "E71"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [
+            {
+              "event_id": "E86",
+              "fact_ids": [
+                "F275"
+              ]
+            }
+          ],
+          "reason": "E86/F275仅记录Iridium股东投票于2026-09-24被'安排'(SCHEDULED)；当前消息的核心事实是投票已于9/24实际完成，股东正式通过(ACTUAL)了合并协议（~99.6%赞成），这是对原'安排中'状态的实际结果变化，尚未被任何已知Fact覆盖。",
+          "reference_ids": [
+            "E86"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "消息核心事实为Iridium股东以99.6%赞成票批准了Rocket Lab收购合并协议，确认每股$27.00现金加换股（名义$54）结构未变，预计mid-2027交割。该消息消除了股东投票环节的不确定性，但未提供与任何criterion存在具体触发关系的事实变化：股东已批准（非未批准/终止）、交易结构未修改（无现金对价占比提高）、未涉及融资条件变化、监管审批尚未附加条件、交割未发生、无运营或客户事件。所有Policy的criterion均无法从本消息中的具体observation获得合理命中可能。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息核心事实为Iridium股东以99.6%赞成票批准了Rocket Lab收购合并协议，确认每股$27.00现金加换股（名义$54）结构未变，预计mid-2027交割。该消息消除了股东投票环节的不确定性，但未提供与任何criterion存在具体触发关系的事实变化：股东已批准（非未批准/终止）、交易结构未修改（无现金对价占比提高）、未涉及融资条件变化、监管审批尚未附加条件、交割未发生、无运营或客户事件。所有Policy的criterion均无法从本消息中的具体observation获得合理命中可能。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Iridium Communications Inc.",
+                "IRDM",
+                "Rocket Lab Corporation",
+                "RKLB"
+              ],
+              "occurrence_date": "2026-09-24",
+              "proposition": "Iridium stockholders adopted the merger agreement with Rocket Lab at the special meeting held on 2026-09-24; approximately 99.6% of votes cast favored the transaction, representing approximately 81.0% of outstanding shares entitled to vote.",
+              "subject_time": "Iridium special stockholder meeting on 2026-09-24"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "Shareholder status changes from scheduled and pending to completed approval with near-unanimous support, removing the shareholder-vote failure path and increasing the probability and certainty of a mid-2027 closing and the future Iridium network and spectrum value path. The $27 cash-plus-RKLB-share consideration, collar, target timing, and remaining regulatory and customary conditions are unchanged, so this is a de-risking delta rather than proof of closing or realized synergies.",
+            "prior_expectation": "Before publication, RKLB and Iridium had a signed but unclosed transaction; RKLB had announced $1.94 billion of equity financing, but the shareholder vote remained pending and regulatory and other customary closing conditions were unresolved. Mid-2027 closing and the Iridium network, revenue, and cash-flow contribution therefore remained conditional, with failed shareholder approval an explicit termination path.",
+            "reason": "LONG is warranted because the result is a discrete positive surprise against an unresolved transaction gate. The acquisition is financially and strategically material to RKLB, and approval increases the likelihood that Iridium's network, spectrum, revenue, and cash-generating business can ultimately be captured by Rocket Lab. Financing had already been substantially addressed and no adverse terms were introduced. Remaining regulatory, integration, dilution, and execution risks limit the magnitude but do not eliminate the directional edge.",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "Reference E86 recorded only that the Iridium shareholder vote was scheduled for 2026-09-24. The current message records the completed vote and adoption of the merger agreement, with approximately 99.6% of votes cast in favor, representing about 81.0% of outstanding shares entitled to vote.",
+            "reference_ids": [
+              "E86"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "The message reports approval, not shareholder rejection or transaction termination, and does not change consideration, financing, regulatory conditions, closing timing, or operating outcomes. No existing policy criterion is met."
+          },
+          "w3_case_id": "w3_59c2d462205e4cdc9f44f14f3b258da0"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "9df8d98a40a2d33a2fad95fb2b0850e4089ba3d9baa77c1bd077d2b608809a40",
+            "content_type": "text/plain",
+            "sha256": "a573991d184091067b45b6cbf25b35d2328beb5c5cfd52d0d67df849d4d55a17",
+            "size_bytes": 10532
+          },
+          "case": {
+            "case_id": "case_193e9c52c1204471aac4e1b597a9bd3c",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-24T20:30:17.903812Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-24T20:30:26.770370Z",
+          "revision": 1,
+          "row_revision": 1573367,
+          "source": {
+            "binding_id": "RKLB:ibkr_news",
+            "kind": "api",
+            "name": "IBKR News API",
+            "source_id": "ibkr_news"
+          },
+          "source_published_at": "2026-09-24T20:30:00Z",
+          "standard_message_id": "std_dead2a788bd44fe88a625c4712e13060",
+          "stream_item_id": "stream_b8ebfb2b690b4ace9130c192ef7a2384",
+          "stream_offset": 70,
+          "stream_published_at": "2026-09-24T20:30:26.775274Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Press Release: Iridium Stockholders Approve Acquisition by Rocket Lab"
+          },
+          "url": "https://www.interactivebrokers.com/en/trading/providers.php",
+          "body_text": "Stockholder approval marks important milestone toward completion of transaction MCLEAN, Va. and LONG BEACH, Calif., Sept. 24, 2026 /PRNewswire/ -- Iridium Communications Inc. (Nasdaq: IRDM) (\"Iridium\" or the \"Company\"), a leading provider of global voice, data, aircraft surveillance, and positioning, navigation, and timing (PNT) satellite services, and Rocket Lab Corporation (Nasdaq: RKLB) (\"Rocket Lab\"), a global leader in launch and space systems, today announced that Iridium stockholders have adopted the previously announced Agreement and Plan of Merger under which Rocket Lab will acquire Iridium. Based on the results of the special meeting of Iridium stockholders held today, approximately 99.6% of the votes cast were voted in favor of the transaction, representing approximately 81.0% of Iridium's outstanding shares of common stock entitled to vote. Complete voting results will be reported in a Current Report on Form 8-K to be filed by Iridium with the U.S. Securities and Exchange Commission. \"We appreciate the strong support of our stockholders for this transaction and the bright future we are building with Rocket Lab,\" said Matt Desch, CEO, Iridium. \"Today's vote is an important milestone toward bringing together two companies with complementary capabilities, a shared commitment to innovation, and deep experience supporting some of the world's most critical missions. We look forward to completing the transaction and entering this exciting next chapter with Rocket Lab.\" \"Today's vote is an important milestone in bringing together Rocket Lab and Iridium to create a next generation space powerhouse,\" said Sir Peter Beck, Rocket Lab Founder and CEO. \"We're grateful to have the strong support of Iridium's shareholders in this important step, bringing us closer to combining Iridium's trusted global network, spectrum and decades of operating experience with Rocket Lab's extensive launch and space systems capabilities to unlock a new era of space applications. We're excited about what we can build together for customers, governments and millions of people around the world once the transaction closes.\" Under the terms of the transaction, Iridium stockholders will receive $27.00 in cash and a number of shares of Rocket Lab common stock calculated pursuant to an exchange ratio, subject to a collar, for each share of Iridium common stock outstanding at closing. The transaction has a notional value of $54.00 per share of Iridium common stock. The transaction is expected to be completed by mid-2027, subject to the remaining required regulatory approvals and the satisfaction of other customary closing conditions. For more information about Iridium visit www.iridium.com For more information about Rocket Lab visit www.rocketlabcorp.com About Iridium Communications Inc. Iridium Communications Inc. (Nasdaq: IRDM) operates the world's only truly global mobile satellite network. It serves as a platform for innovation, enabling voice, data, and messaging, positioning, navigation, and timing (PNT), and aircraft surveillance services anywhere on Earth. Through its satellite constellation and integrated capabilities like Aireon, the world's only space-based air traffic surveillance system, Iridium delivers services that support safety-focused operations across aviation, maritime, government, industrial, and consumer markets. The company is a leader in satellite Internet of Things (IoT) connectivity and is advancing direct-to-device (D2D) communications based on open standards to expand access to satellite services. Headquartered in McLean, Virginia, Iridium innovates through an ecosystem of more than 500 technology and distribution partners, serving millions of customers worldwide. For more information visit www.iridium.com. About Rocket Lab Rocket Lab is a leading space company that provides launch services, spacecraft, payloads and satellite components serving commercial, government, and national security markets. Rocket Lab's Electron rocket is the world's most frequently launched orbital small rocket; its HASTE rocket provides hypersonic test launch capability for the U.S. government and allied nations; and its Neutron launch vehicle in development will unlock medium launch for constellation deployment, national security and exploration missions. Rocket Lab's spacecraft and satellite components have enabled more than 1,700 missions spanning commercial, defense and national security missions including GPS, constellations, and exploration missions to the Moon, Mars, and Venus. Rocket Lab is a publicly listed company on the Nasdaq stock exchange (RKLB). Learn more at www.rocketlabcorp.com. Cautionary Note Regarding Forward-Looking Statements This communication contains \"forward-looking statements\" within the meaning of the federal securities laws. These forward-looking statements are based on Rocket Lab's and Iridium's current expectations, estimates and projections about the proposed transaction and the potential benefits thereof, their respective businesses and industries, management's beliefs and certain assumptions made by Rocket Lab and Iridium, all of which are subject to change. In this context, forward-looking statements often address expected future events, including future business and financial performance and financial condition. All forward-looking statements by their nature address matters that involve risks and uncertainties, many of which are beyond our control, and are not guarantees of future results, such as statements about the consummation of the proposed transaction and the anticipated benefits thereof, expectations regarding regulatory approvals, and intentions with respect to financing the transaction. These and other forward-looking statements are not guarantees of future results and are subject to risks, uncertainties and assumptions that could cause actual results to differ materially from those expressed or implied in any forward-looking statements. Accordingly, there are or will be important factors that could cause actual results to differ materially from those indicated in such statements and, therefore, you should not place undue reliance on any such statements and caution must be exercised in relying on forward-looking statements. Important risk factors that may cause such a difference include, but are not limited to: (i) the completion of the proposed transaction on anticipated terms and timing, or at all, including obtaining regulatory approvals and satisfying other conditions to the completion of the transaction; (ii) the occurrence of any event, change or other circumstances that could give rise to the termination of the merger agreement; (iii) failure to realize the anticipated benefits of the proposed transaction on a timely basis or at all, including anticipated tax treatment, unforeseen liabilities, future capital expenditures, revenues, expenses, earnings, the integration of the businesses of Rocket Lab and Iridium, synergies, economic performance, indebtedness, financial condition, losses, future prospects, business and management strategies for the management, expansion and growth of Rocket Lab's and Iridium's businesses; (iv) Rocket Lab's and Iridium's ability to implement their business strategies; (v) potential litigation relating to the proposed transaction that could be instituted against Rocket Lab, Iridium or their respective directors, managers, or officers, including the effects of any outcomes related thereto; (vi) the risk that disruptions from the proposed transaction will harm Rocket Lab's or Iridium's businesses, including current plans and operations, or will otherwise divert management time from ongoing business operations on transaction-related issues; (vii) the ability of Rocket Lab or Iridium to retain and hire key personnel; (viii) potential adverse reactions or changes to business relationships resulting from the announcement or completion of the proposed transaction; (ix) fluctuations in, and uncertainty as to the long-term value of, Rocket Lab or Iridium common stock (including as relating to the risk that any announcements related to the proposed transaction could have adverse effects on the market price of such stock); (x) legislative, regulatory and economic developments affecting Rocket Lab's and Iridium's businesses, including actions by government agencies and third parties; (xi) general economic and market developments and conditions, potential changes to international trade relations, geopolitical conflicts and effects from global pandemics, epidemics, or other public health crises; (xii) the evolving legal, regulatory and tax regimes under which Rocket Lab and Iridium operate; (xiii) restrictions during the pendency of the proposed transaction that may impact Rocket Lab's or Iridium's ability to pursue certain business opportunities or strategic transactions; (xiv) unexpected costs, charges or expenses resulting from the proposed transaction; (xv) risks that any debt or other financing anticipated in connection with the proposed transaction is not obtained or that such financing cannot be obtained on the anticipated timing or terms or unexpected costs or expenses in connection therewith; and (xvi) the other risks and uncertainties, as described in the periodic reports that Rocket Lab and Iridium file with the U.S. Securities and Exchange Commission (\"SEC\"). These risks, as well as other risks associated with the proposed transaction, are more fully discussed in the definitive proxy statement/final prospectus filed with the SEC on August 26, 2026 in connection with the proposed transaction. Neither Rocket Lab nor Iridium assumes any obligation to publicly provide revisions or updates to any forward-looking statements, whether as a result of new information, future developments or otherwise, should circumstances change, except as otherwise required by securities and other applicable laws. Forward-looking statements included in this communication are made as of the date of this communication. Contacts Iridium Rocket Lab (MORE TO FOLLOW) Dow Jones Newswires September 24, 2026 16:30 ET (20:30 GMT) The statements in this document shall not be considered as an objective or independent explanation of the matters. Please note that this document (a) has not been prepared in accordance with legal requirements designed to promote the independence of investment research, and (b) is not subject to any prohibition on dealing ahead of the dissemination or publication of investment research."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_dead2a788bd44fe88a625c4712e13060:0\"]",
+          "created_at": "2026-09-24T20:35:51.465444Z",
+          "dedupe_key": "571921d1dbddcb2fe9708cdd234a1dfa3d31c2cd103c682779de70cd670fe501",
+          "entities": [
+            "Iridium Communications Inc.",
+            "IRDM",
+            "Rocket Lab Corporation",
+            "RKLB"
+          ],
+          "occurrence_date": "2026-09-24",
+          "originating_node": "W3",
+          "proposition": "Iridium stockholders adopted the merger agreement with Rocket Lab at the special meeting held on 2026-09-24; approximately 99.6% of votes cast favored the transaction, representing approximately 81.0% of outstanding shares entitled to vote.",
+          "provisional_event_id": "E93",
+          "subject_time": "Iridium special stockholder meeting on 2026-09-24"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_193e9c52c1204471aac4e1b597a9bd3c",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-09-24T20:35:51.521509+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-24",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_59c2d462205e4cdc9f44f14f3b258da0",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-24T20:35:52.095771Z"
+              },
+              "case_id": "case_193e9c52c1204471aac4e1b597a9bd3c",
+              "direction": "LONG",
+              "entry_reason": "FRESH_QUOTE_UNAVAILABLE",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_193e9c52c1204471aac4e1b597a9bd3c",
+              "execution_reason_codes": [
+                "FRESH_QUOTE_UNAVAILABLE"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_193e9c52c1204471aac4e1b597a9bd3c",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_e1d7c65e0656af2e6c4923b1"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-24T20:35:51.521509Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "FRESH_QUOTE_UNAVAILABLE"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      },
+      "estimated_pnl": {
+        "state": "ESTIMATED",
+        "basis": "saved IBKR historical TRADES ticks; intention-time entry and 15:30 America/New_York cycle exit",
+        "entry_reference_price_usd": "73.88",
+        "exit_reference_price_usd": "73.99",
+        "entry_target_utc": "2026-09-24T20:35:51.521509+00:00",
+        "cycle_end_utc": "2026-09-25T19:30:00+00:00",
+        "cycle_end_et": "2026-09-25T15:30:00-04:00",
+        "direction": "LONG",
+        "return_pct": "0.1489",
+        "pnl_usd_per_share": "0.1100",
+        "classification": "flat",
+        "estimated_total_pnl_usd": null,
+        "total_pnl_unavailable_reason": "No simulated position quantity was specified; use percent return and USD per share.",
+        "entry_evidence": {
+          "query_key": "RKLB|2026-09-24T20:35:51.521509+00:00|entry",
+          "status": "ok",
+          "selected": {
+            "exchange": "ARCA",
+            "offset_seconds": 1.478491,
+            "price_usd": 73.88,
+            "special_conditions": " FT ",
+            "timestamp_utc": "2026-09-24T20:35:53+00:00",
+            "unreported": false
+          },
+          "first_event_utc": "2026-09-24T20:35:53+00:00",
+          "error": null
+        },
+        "exit_evidence": {
+          "query_key": "RKLB|2026-09-25T19:30:00+00:00|exit",
+          "status": "ok",
+          "selected": {
+            "exchange": "NASDAQ",
+            "offset_seconds": 1.0,
+            "price_usd": 73.99,
+            "special_conditions": null,
+            "timestamp_utc": "2026-09-25T19:30:01+00:00",
+            "unreported": false
+          },
+          "first_event_utc": "2026-09-25T19:30:00+00:00",
+          "error": null
+        },
+        "pricing_unavailable_reason": null,
+        "cost_assumptions": "No slippage, bid-ask spread, fees or financing costs."
+      }
+    },
+    {
+      "intent_id": "trade:case_a62010dd77c5428486b77e527ecbadf6",
+      "ticker": "RKLB",
+      "case_id": "case_a62010dd77c5428486b77e527ecbadf6",
+      "intent_released_at_utc": "2026-09-24T20:37:56.983624+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_4489dafd0908420a9332c2aa0dbe654f",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Iridium Communications",
+              "Rocket Lab",
+              "RKLB"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "Iridium股东于2026年9月24日投票批准了Rocket Lab拟议的收购交易。",
+            "subject_time": null
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "股东批准移除一个实质性交割阻断点，将交易从“待股东表决”推进为“股东已批准、监管/注册等条件待完成”，提高按期交割并保留Iridium约8.84亿美元年收入和约2.88亿美元TTM自由现金流纳入合并的概率与时点，但不等同于交割或协同已经实现。",
+          "prior_expectation": "消息前，约80亿美元的Iridium收购已完成主要股权融资并解除bridge，但仍处于签署未交割阶段；市场基线是约2027年中完成仍取决于Iridium股东批准、监管/注册及其他交割条件，交易后协同和每股增厚尚无备考证明。",
+          "reason": "相对事件前仍未完成的关键批准条件，这一结果形成正向预期差；交易规模相对RKLB重大，审批通过通过降低交易失败概率和风险折价，传导至未来并表收入、现金流和长期业务范围，支持LONG。FCC/注册、交割、融资稀释及整合风险仍在，因此这是概率和风险重估而非当期业绩兑现，但仍具非微不足道的直接方向性。",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "消息将Reference View中E86记录的2026-09-24股东投票计划推进为已批准结果；已知事实此前只覆盖计划，未覆盖投票结果。",
+          "reference_ids": [
+            "E86"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "PolicySet仅覆盖交易未获批准或终止、融资结构、监管附加条件及交割后整合等边界；本消息是股东批准这一正向阶段变化，未满足任何现行条件，因此保持uncovered。"
+        },
+        "w3_case_id": "w3_4489dafd0908420a9332c2aa0dbe654f"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_a62010dd77c5428486b77e527ecbadf6",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-24T20:37:57.205592Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 448.19028
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-24T20:30:29.015312Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2608988,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-24",
+        "source": {
+          "binding_id": "RKLB:ibkr_news",
+          "kind": "api",
+          "name": "IBKR News API",
+          "source_id": "ibkr_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_7aeb5ffd47e84debb0b4a605c247a817",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Press Release: Iridium Stockholders Approve -2-"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "FRESH_QUOTE_UNAVAILABLE"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-24T20:30:29.015312Z",
+        "completed_at": "2026-09-24T20:37:57.205592Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E86",
+            "E85",
+            "E11",
+            "E72",
+            "E71"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [
+            {
+              "event_id": "E86",
+              "fact_ids": [
+                "F275"
+              ]
+            }
+          ],
+          "reason": "消息核心事实为：Iridium 股东于 2026-09-24 投票通过了 Rocket Lab 的收购提案。现有 Fact F275 仅记录该投票被安排在 9 月 24 日举行（SCHEDULED），并未包含投票结果。从\"安排投票\"到\"投票通过\"是不同阶段的事实，审批结果尚未被任何已知 Fact 覆盖。",
+          "reference_ids": [
+            "E86"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "消息仅陈述 Iridium 股东批准相关事项（在合并交易背景下最合理解读为批准合并协议），未涉及任何 Policy criterion 关注的状态变化。股东'批准'与 pol_7e1d611efd993fb053ba 要求的'未批准交易或终止协议'条件方向相反，可明确排除命中可能；其余 Iridium 合并 Policy 涉及的融资结构变化、提前交割、监管附加条件、董事会改条款等，以及全部 Rocket Lab 发射服务、Neutron、Space Systems Policy 均未被消息触及，不存在具体触发关联事实。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息仅陈述 Iridium 股东批准相关事项（在合并交易背景下最合理解读为批准合并协议），未涉及任何 Policy criterion 关注的状态变化。股东'批准'与 pol_7e1d611efd993fb053ba 要求的'未批准交易或终止协议'条件方向相反，可明确排除命中可能；其余 Iridium 合并 Policy 涉及的融资结构变化、提前交割、监管附加条件、董事会改条款等，以及全部 Rocket Lab 发射服务、Neutron、Space Systems Policy 均未被消息触及，不存在具体触发关联事实。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Iridium Communications",
+                "Rocket Lab",
+                "RKLB"
+              ],
+              "occurrence_date": "2026-09-24",
+              "proposition": "Iridium股东于2026年9月24日投票批准了Rocket Lab拟议的收购交易。",
+              "subject_time": null
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "股东批准移除一个实质性交割阻断点，将交易从“待股东表决”推进为“股东已批准、监管/注册等条件待完成”，提高按期交割并保留Iridium约8.84亿美元年收入和约2.88亿美元TTM自由现金流纳入合并的概率与时点，但不等同于交割或协同已经实现。",
+            "prior_expectation": "消息前，约80亿美元的Iridium收购已完成主要股权融资并解除bridge，但仍处于签署未交割阶段；市场基线是约2027年中完成仍取决于Iridium股东批准、监管/注册及其他交割条件，交易后协同和每股增厚尚无备考证明。",
+            "reason": "相对事件前仍未完成的关键批准条件，这一结果形成正向预期差；交易规模相对RKLB重大，审批通过通过降低交易失败概率和风险折价，传导至未来并表收入、现金流和长期业务范围，支持LONG。FCC/注册、交割、融资稀释及整合风险仍在，因此这是概率和风险重估而非当期业绩兑现，但仍具非微不足道的直接方向性。",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "消息将Reference View中E86记录的2026-09-24股东投票计划推进为已批准结果；已知事实此前只覆盖计划，未覆盖投票结果。",
+            "reference_ids": [
+              "E86"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "PolicySet仅覆盖交易未获批准或终止、融资结构、监管附加条件及交割后整合等边界；本消息是股东批准这一正向阶段变化，未满足任何现行条件，因此保持uncovered。"
+          },
+          "w3_case_id": "w3_4489dafd0908420a9332c2aa0dbe654f"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "f4327d09783f32a01c7cd808160cf43618c99befe2f8f0fd332fa622f54a968d",
+            "content_type": "text/plain",
+            "sha256": "85d08fbb3b67d2f8998fb45c928cbec8fad3d284aa354b5be571ba805db46eaf",
+            "size_bytes": 722
+          },
+          "case": {
+            "case_id": "case_a62010dd77c5428486b77e527ecbadf6",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-24T20:30:17.903812Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-24T20:30:27.233383Z",
+          "revision": 1,
+          "row_revision": 1573614,
+          "source": {
+            "binding_id": "RKLB:ibkr_news",
+            "kind": "api",
+            "name": "IBKR News API",
+            "source_id": "ibkr_news"
+          },
+          "source_published_at": "2026-09-24T20:30:00Z",
+          "standard_message_id": "std_80c533595db34189a069c89f173a1708",
+          "stream_item_id": "stream_7aeb5ffd47e84debb0b4a605c247a817",
+          "stream_offset": 73,
+          "stream_published_at": "2026-09-24T20:30:27.238130Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Press Release: Iridium Stockholders Approve -2-"
+          },
+          "url": "https://www.interactivebrokers.com/en/trading/providers.php",
+          "body_text": "Contacts Iridium Rocket Lab Media Media Jordan Hassin Morgan Connaughton Media@iridium.com Media@rocketlabusa.com +1 (703) 287-7421 Investor Relations Investor Relations Kenneth Levy Patrick Vorenkamp Ken.Levy@iridium.com Investors@rocketlabusa.com +1 (703) 287-7570 (END) Dow Jones Newswires September 24, 2026 16:30 ET (20:30 GMT) The statements in this document shall not be considered as an objective or independent explanation of the matters. Please note that this document (a) has not been prepared in accordance with legal requirements designed to promote the independence of investment research, and (b) is not subject to any prohibition on dealing ahead of the dissemination or publication of investment research."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_80c533595db34189a069c89f173a1708:0\"]",
+          "created_at": "2026-09-24T20:37:56.951660Z",
+          "dedupe_key": "90620eba69c832a082cad0d6b9314db1d4bfb720d87f98f20ea5baf4dc67cbb3",
+          "entities": [
+            "Iridium Communications",
+            "Rocket Lab",
+            "RKLB"
+          ],
+          "occurrence_date": "2026-09-24",
+          "originating_node": "W3",
+          "proposition": "Iridium股东于2026年9月24日投票批准了Rocket Lab拟议的收购交易。",
+          "provisional_event_id": "E96",
+          "subject_time": null
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_a62010dd77c5428486b77e527ecbadf6",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-09-24T20:37:56.983624+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-24",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_4489dafd0908420a9332c2aa0dbe654f",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-24T20:37:57.607137Z"
+              },
+              "case_id": "case_a62010dd77c5428486b77e527ecbadf6",
+              "direction": "LONG",
+              "entry_reason": "FRESH_QUOTE_UNAVAILABLE",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_a62010dd77c5428486b77e527ecbadf6",
+              "execution_reason_codes": [
+                "FRESH_QUOTE_UNAVAILABLE"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_a62010dd77c5428486b77e527ecbadf6",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_e1d7c65e0656af2e6c4923b1"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-24T20:37:56.983624Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "FRESH_QUOTE_UNAVAILABLE"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      },
+      "estimated_pnl": {
+        "state": "ESTIMATED",
+        "basis": "saved IBKR historical TRADES ticks; intention-time entry and 15:30 America/New_York cycle exit",
+        "entry_reference_price_usd": "73.98",
+        "exit_reference_price_usd": "73.99",
+        "entry_target_utc": "2026-09-24T20:37:56.983624+00:00",
+        "cycle_end_utc": "2026-09-25T19:30:00+00:00",
+        "cycle_end_et": "2026-09-25T15:30:00-04:00",
+        "direction": "LONG",
+        "return_pct": "0.0135",
+        "pnl_usd_per_share": "0.0100",
+        "classification": "flat",
+        "estimated_total_pnl_usd": null,
+        "total_pnl_unavailable_reason": "No simulated position quantity was specified; use percent return and USD per share.",
+        "entry_evidence": {
+          "query_key": "RKLB|2026-09-24T20:37:56.983624+00:00|entry",
+          "status": "ok",
+          "selected": {
+            "exchange": "FINRA",
+            "offset_seconds": 5.016376,
+            "price_usd": 73.98,
+            "special_conditions": "  T ",
+            "timestamp_utc": "2026-09-24T20:38:02+00:00",
+            "unreported": false
+          },
+          "first_event_utc": "2026-09-24T20:37:57+00:00",
+          "error": null
+        },
+        "exit_evidence": {
+          "query_key": "RKLB|2026-09-25T19:30:00+00:00|exit",
+          "status": "ok",
+          "selected": {
+            "exchange": "NASDAQ",
+            "offset_seconds": 1.0,
+            "price_usd": 73.99,
+            "special_conditions": null,
+            "timestamp_utc": "2026-09-25T19:30:01+00:00",
+            "unreported": false
+          },
+          "first_event_utc": "2026-09-25T19:30:00+00:00",
+          "error": null
+        },
+        "pricing_unavailable_reason": null,
+        "cost_assumptions": "No slippage, bid-ask spread, fees or financing costs."
+      }
+    },
+    {
+      "intent_id": "trade:case_91adbdf5ecaa4827b0ca5262574fb9dc",
+      "ticker": "RKLB",
+      "case_id": "case_91adbdf5ecaa4827b0ca5262574fb9dc",
+      "intent_released_at_utc": "2026-09-24T20:38:48.425408+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_f55691d209a94733bf4ca14e96487b43",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Iridium",
+              "Rocket Lab"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "Iridium 股东已批准 Rocket Lab 拟议收购 Iridium 的交易。",
+            "subject_time": null
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "股东批准移除了一个明确的交割前置条件，使交易完成的概率和确定性上升、交易终止尾部风险下降；但它未改变交割日期，也未解决监管批准、最终融资/稀释或协同兑现。",
+          "prior_expectation": "事件前，Rocket Lab 与 Iridium 已签署收购协议，股东表决排定于 2026-09-24，但股东批准、监管/注册及其他交割条件仍未完成；管理层预期约 2027 年中完成，融资结构与备考每股结果仍未锁定。",
+          "reason": "这是大型交易的实质性二元里程碑：股东批准降低了交易失败风险，并通过“批准→交割概率上升→Iridium现金流及其与 Rocket Lab 发射/Space Systems 能力的潜在协同更可能实现→RKLB长期价值预期上升”形成清晰传导，故为 LONG。监管、融资和整合仍有风险，但不否定当前方向。",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "Reference View 的 E86 只记录 2026-09-24 股东投票处于 SCHEDULED；当前正式公告确认 Iridium 股东已批准 Rocket Lab 拟议收购，核心状态由待表决转为已批准，故为 NEW。",
+          "reference_ids": [
+            "E86"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息不满足现行 PolicySet 关于交易终止或股东未批准的负面触发条件；PolicySet 未覆盖股东批准这一正向里程碑，因此仍是 uncovered。"
+        },
+        "w3_case_id": "w3_f55691d209a94733bf4ca14e96487b43"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_91adbdf5ecaa4827b0ca5262574fb9dc",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-24T20:38:48.535694Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 499.382646
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-24T20:30:29.153048Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2608973,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-24",
+        "source": {
+          "binding_id": "RKLB:ibkr_news",
+          "kind": "api",
+          "name": "IBKR News API",
+          "source_id": "ibkr_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_0004c2d9da9c49ab855cb50969630836",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Press Release: Iridium Stockholders Approve -2-"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "FRESH_QUOTE_UNAVAILABLE"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-24T20:30:29.153048Z",
+        "completed_at": "2026-09-24T20:38:48.535694Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E86",
+            "E85",
+            "E11"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [
+            {
+              "event_id": "E86",
+              "fact_ids": [
+                "F275"
+              ]
+            }
+          ],
+          "reason": "F275 仅记录股东投票处于 SCHEDULED 状态（计划于2026-09-24举行）。当前消息为2026-09-24 16:30 ET由Iridium与Rocket Lab联合发布的正式新闻稿，表明该已计划事件已实际发生并进入正式公告阶段，这是从SCHEDULED到OCCURRED的状态变化，未被已有事实覆盖。",
+          "reference_ids": [
+            "E86"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "消息标题为\"Iridium Stockholders Approve\"（Iridium股东批准），属于 pol_7e1d611efd993fb053ba 所关注的股东表决领域，但所述事实为股东批准交易，是该criterion（\"股东未批准交易\"或\"正式终止合并协议\"）的逻辑反面，不存在合理命中可能。正文仅为联系方式及Dow Jones免责声明，未提供其他与任何Policy criterion存在具体触发关系的事实。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息标题为\"Iridium Stockholders Approve\"（Iridium股东批准），属于 pol_7e1d611efd993fb053ba 所关注的股东表决领域，但所述事实为股东批准交易，是该criterion（\"股东未批准交易\"或\"正式终止合并协议\"）的逻辑反面，不存在合理命中可能。正文仅为联系方式及Dow Jones免责声明，未提供其他与任何Policy criterion存在具体触发关系的事实。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Iridium",
+                "Rocket Lab"
+              ],
+              "occurrence_date": "2026-09-24",
+              "proposition": "Iridium 股东已批准 Rocket Lab 拟议收购 Iridium 的交易。",
+              "subject_time": null
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "股东批准移除了一个明确的交割前置条件，使交易完成的概率和确定性上升、交易终止尾部风险下降；但它未改变交割日期，也未解决监管批准、最终融资/稀释或协同兑现。",
+            "prior_expectation": "事件前，Rocket Lab 与 Iridium 已签署收购协议，股东表决排定于 2026-09-24，但股东批准、监管/注册及其他交割条件仍未完成；管理层预期约 2027 年中完成，融资结构与备考每股结果仍未锁定。",
+            "reason": "这是大型交易的实质性二元里程碑：股东批准降低了交易失败风险，并通过“批准→交割概率上升→Iridium现金流及其与 Rocket Lab 发射/Space Systems 能力的潜在协同更可能实现→RKLB长期价值预期上升”形成清晰传导，故为 LONG。监管、融资和整合仍有风险，但不否定当前方向。",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "Reference View 的 E86 只记录 2026-09-24 股东投票处于 SCHEDULED；当前正式公告确认 Iridium 股东已批准 Rocket Lab 拟议收购，核心状态由待表决转为已批准，故为 NEW。",
+            "reference_ids": [
+              "E86"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "消息不满足现行 PolicySet 关于交易终止或股东未批准的负面触发条件；PolicySet 未覆盖股东批准这一正向里程碑，因此仍是 uncovered。"
+          },
+          "w3_case_id": "w3_f55691d209a94733bf4ca14e96487b43"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "f4327d09783f32a01c7cd808160cf43618c99befe2f8f0fd332fa622f54a968d",
+            "content_type": "text/plain",
+            "sha256": "85d08fbb3b67d2f8998fb45c928cbec8fad3d284aa354b5be571ba805db46eaf",
+            "size_bytes": 722
+          },
+          "case": {
+            "case_id": "case_91adbdf5ecaa4827b0ca5262574fb9dc",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-24T20:30:17.903812Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-24T20:30:27.266726Z",
+          "revision": 1,
+          "row_revision": 1573706,
+          "source": {
+            "binding_id": "RKLB:ibkr_news",
+            "kind": "api",
+            "name": "IBKR News API",
+            "source_id": "ibkr_news"
+          },
+          "source_published_at": "2026-09-24T20:30:00Z",
+          "standard_message_id": "std_70ae4c3626e642b88516597a202ef299",
+          "stream_item_id": "stream_0004c2d9da9c49ab855cb50969630836",
+          "stream_offset": 74,
+          "stream_published_at": "2026-09-24T20:30:27.271447Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Press Release: Iridium Stockholders Approve -2-"
+          },
+          "url": "https://www.interactivebrokers.com/en/trading/providers.php",
+          "body_text": "Contacts Iridium Rocket Lab Media Media Jordan Hassin Morgan Connaughton Media@iridium.com Media@rocketlabusa.com +1 (703) 287-7421 Investor Relations Investor Relations Kenneth Levy Patrick Vorenkamp Ken.Levy@iridium.com Investors@rocketlabusa.com +1 (703) 287-7570 (END) Dow Jones Newswires September 24, 2026 16:30 ET (20:30 GMT) The statements in this document shall not be considered as an objective or independent explanation of the matters. Please note that this document (a) has not been prepared in accordance with legal requirements designed to promote the independence of investment research, and (b) is not subject to any prohibition on dealing ahead of the dissemination or publication of investment research."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_70ae4c3626e642b88516597a202ef299:0\"]",
+          "created_at": "2026-09-24T20:38:48.398194Z",
+          "dedupe_key": "77e16711906321804156e282000fa3dd55701be311bdcfaef2f9ff20dd34b348",
+          "entities": [
+            "Iridium",
+            "Rocket Lab"
+          ],
+          "occurrence_date": "2026-09-24",
+          "originating_node": "W3",
+          "proposition": "Iridium 股东已批准 Rocket Lab 拟议收购 Iridium 的交易。",
+          "provisional_event_id": "E97",
+          "subject_time": null
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_91adbdf5ecaa4827b0ca5262574fb9dc",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-09-24T20:38:48.425408+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-24",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_f55691d209a94733bf4ca14e96487b43",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-24T20:38:48.614547Z"
+              },
+              "case_id": "case_91adbdf5ecaa4827b0ca5262574fb9dc",
+              "direction": "LONG",
+              "entry_reason": "FRESH_QUOTE_UNAVAILABLE",
+              "entry_result": "FAILED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_91adbdf5ecaa4827b0ca5262574fb9dc",
+              "execution_reason_codes": [
+                "FRESH_QUOTE_UNAVAILABLE"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_91adbdf5ecaa4827b0ca5262574fb9dc",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_e1d7c65e0656af2e6c4923b1"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-24T20:38:48.425408Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "FRESH_QUOTE_UNAVAILABLE"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      },
+      "estimated_pnl": {
+        "state": "ESTIMATED",
+        "basis": "saved IBKR historical TRADES ticks; intention-time entry and 15:30 America/New_York cycle exit",
+        "entry_reference_price_usd": "73.95",
+        "exit_reference_price_usd": "73.99",
+        "entry_target_utc": "2026-09-24T20:38:48.425408+00:00",
+        "cycle_end_utc": "2026-09-25T19:30:00+00:00",
+        "cycle_end_et": "2026-09-25T15:30:00-04:00",
+        "direction": "LONG",
+        "return_pct": "0.0541",
+        "pnl_usd_per_share": "0.0400",
+        "classification": "flat",
+        "estimated_total_pnl_usd": null,
+        "total_pnl_unavailable_reason": "No simulated position quantity was specified; use percent return and USD per share.",
+        "entry_evidence": {
+          "query_key": "RKLB|2026-09-24T20:38:48.425408+00:00|entry",
+          "status": "ok",
+          "selected": {
+            "exchange": "ARCA",
+            "offset_seconds": 2.574592,
+            "price_usd": 73.95,
+            "special_conditions": " FT ",
+            "timestamp_utc": "2026-09-24T20:38:51+00:00",
+            "unreported": false
+          },
+          "first_event_utc": "2026-09-24T20:38:49+00:00",
+          "error": null
+        },
+        "exit_evidence": {
+          "query_key": "RKLB|2026-09-25T19:30:00+00:00|exit",
+          "status": "ok",
+          "selected": {
+            "exchange": "NASDAQ",
+            "offset_seconds": 1.0,
+            "price_usd": 73.99,
+            "special_conditions": null,
+            "timestamp_utc": "2026-09-25T19:30:01+00:00",
+            "unreported": false
+          },
+          "first_event_utc": "2026-09-25T19:30:00+00:00",
+          "error": null
+        },
+        "pricing_unavailable_reason": null,
+        "cost_assumptions": "No slippage, bid-ask spread, fees or financing costs."
+      }
+    }
+  ]
+}

@@ -1,0 +1,467 @@
+{
+  "artifact_kind": "horizontal_collection_manifest",
+  "schema_version": "1.0",
+  "run_id": "mu-v21-20261010-02-d1",
+  "ticker": "MU",
+  "metric_registry_version": "d1-horizontal-metrics-v1",
+  "target_registry_version": "global-research-horizontal-targets-v1",
+  "created_at": "2026-10-09T18:12:18.510232Z",
+  "target_results": [
+    {
+      "collection_target_id": "c1_fin_capex_actual_ttm",
+      "status": "FILLED",
+      "requested_items": 1,
+      "succeeded_items": 1,
+      "unavailable_items": 0,
+      "failed_items": 0,
+      "provider_attempts": [
+        {
+          "provider": "SEC",
+          "tool_name": "sec.company_financials",
+          "status": "FILLED",
+          "started_at": "2026-10-09T18:11:41.087379Z",
+          "finished_at": "2026-10-09T18:11:41.638761Z",
+          "error_code": null,
+          "message": null
+        }
+      ],
+      "output_refs": [
+        {
+          "object_type": "METRIC",
+          "provider_specific_id": "0000723125-26-000023",
+          "source_locator": "SEC:sec.company_financials",
+          "canonical_object_id_candidate": "c1_fin_capex_actual_ttm:PaymentsToAcquirePropertyPlantAndEquipment:0000723125-26-000023:2026-09-03",
+          "resolver_status": "CANDIDATE"
+        }
+      ],
+      "reason": null
+    },
+    {
+      "collection_target_id": "c1_fin_capex_management_fy",
+      "status": "EMPTY",
+      "requested_items": 1,
+      "succeeded_items": 0,
+      "unavailable_items": 0,
+      "failed_items": 0,
+      "provider_attempts": [],
+      "output_refs": [],
+      "reason": "reserved for post-program agent collection"
+    },
+    {
+      "collection_target_id": "c1_fin_cash_actual",
+      "status": "FILLED",
+      "requested_items": 1,
+      "succeeded_items": 1,
+      "unavailable_items": 0,
+      "failed_items": 0,
+      "provider_attempts": [
+        {
+          "provider": "SEC",
+          "tool_name": "sec.company_financials",
+          "status": "FILLED",
+          "started_at": "2026-10-09T18:11:41.668505Z",
+          "finished_at": "2026-10-09T18:11:41.713515Z",
+          "error_code": null,
+          "message": null
+        }
+      ],
+      "output_refs": [
+        {
+          "object_type": "METRIC",
+          "provider_specific_id": "0000723125-26-000023",
+          "source_locator": "SEC:sec.company_financials",
+          "canonical_object_id_candidate": "c1_fin_cash_actual:CashAndCashEquivalentsAtCarryingValue:0000723125-26-000023:2026-09-03",
+          "resolver_status": "CANDIDATE"
+        }
+      ],
+      "reason": null
+    },
+    {
+      "collection_target_id": "c1_fin_diluted_eps_actual_latest_q",
+      "status": "FILLED",
+      "requested_items": 1,
+      "succeeded_items": 1,
+      "unavailable_items": 0,
+      "failed_items": 0,
+      "provider_attempts": [
+        {
+          "provider": "SEC",
+          "tool_name": "sec.company_financials",
+          "status": "FILLED",
+          "started_at": "2026-10-09T18:11:41.732234Z",
+          "finished_at": "2026-10-09T18:11:41.783467Z",
+          "error_code": null,
+          "message": null
+        }
+      ],
+      "output_refs": [
+        {
+          "object_type": "METRIC",
+          "provider_specific_id": "0000723125-26-000015",
+          "source_locator": "SEC:sec.company_financials",
+          "canonical_object_id_candidate": "c1_fin_diluted_eps_actual_latest_q:EarningsPerShareDiluted:0000723125-26-000015:2026-05-28",
+          "resolver_status": "CANDIDATE"
+        }
+      ],
+      "reason": null
+    },
+    {
+      "collection_target_id": "c1_fin_diluted_eps_management",
+      "status": "EMPTY",
+      "requested_items": 1,
+      "succeeded_items": 0,
+      "unavailable_items": 0,
+      "failed_items": 0,
+      "provider_attempts": [],
+      "output_refs": [],
+      "reason": "reserved for post-program agent collection"
+    },
+    {
+      "collection_target_id": "c1_fin_diluted_eps_sell_side_next_q",
+      "status": "FAILED",
+      "requested_items": 1,
+      "succeeded_items": 0,
+      "unavailable_items": 0,
+      "failed_items": 1,
+      "provider_attempts": [
+        {
+          "provider": "FMP",
+          "tool_name": "fmp.sell_side_estimates",
+          "status": "FAILED",
+          "started_at": "2026-10-09T18:11:41.810012Z",
+          "finished_at": "2026-10-09T18:11:43.270359Z",
+          "error_code": "upstream_provider_error",
+          "message": "FMP returned no usable data."
+        }
+      ],
+      "output_refs": [],
+      "reason": "FMP returned no usable data."
+    },
+    {
+      "collection_target_id": "c1_fin_free_cash_flow_ttm",
+      "status": "UNAVAILABLE",
+      "requested_items": 1,
+      "succeeded_items": 0,
+      "unavailable_items": 1,
+      "failed_items": 0,
+      "provider_attempts": [],
+      "output_refs": [],
+      "reason": "standard_fcf_v1"
+    },
+    {
+      "collection_target_id": "c1_fin_gross_margin_actual_latest_q",
+      "status": "UNAVAILABLE",
+      "requested_items": 1,
+      "succeeded_items": 0,
+      "unavailable_items": 1,
+      "failed_items": 0,
+      "provider_attempts": [],
+      "output_refs": [],
+      "reason": "gaap_gross_margin_v1"
+    },
+    {
+      "collection_target_id": "c1_fin_gross_margin_management",
+      "status": "EMPTY",
+      "requested_items": 1,
+      "succeeded_items": 0,
+      "unavailable_items": 0,
+      "failed_items": 0,
+      "provider_attempts": [],
+      "output_refs": [],
+      "reason": "reserved for post-program agent collection"
+    },
+    {
+      "collection_target_id": "c1_fin_net_debt_actual",
+      "status": "UNAVAILABLE",
+      "requested_items": 1,
+      "succeeded_items": 0,
+      "unavailable_items": 1,
+      "failed_items": 0,
+      "provider_attempts": [],
+      "output_refs": [],
+      "reason": "net_debt_v1"
+    },
+    {
+      "collection_target_id": "c1_fin_operating_margin_actual_latest_q",
+      "status": "UNAVAILABLE",
+      "requested_items": 1,
+      "succeeded_items": 0,
+      "unavailable_items": 1,
+      "failed_items": 0,
+      "provider_attempts": [],
+      "output_refs": [],
+      "reason": "gaap_operating_margin_v1"
+    },
+    {
+      "collection_target_id": "c1_fin_operating_margin_management",
+      "status": "EMPTY",
+      "requested_items": 1,
+      "succeeded_items": 0,
+      "unavailable_items": 0,
+      "failed_items": 0,
+      "provider_attempts": [],
+      "output_refs": [],
+      "reason": "reserved for post-program agent collection"
+    },
+    {
+      "collection_target_id": "c1_fin_revenue_actual_latest_q",
+      "status": "FILLED",
+      "requested_items": 1,
+      "succeeded_items": 1,
+      "unavailable_items": 0,
+      "failed_items": 0,
+      "provider_attempts": [
+        {
+          "provider": "SEC",
+          "tool_name": "sec.company_financials",
+          "status": "FILLED",
+          "started_at": "2026-10-09T18:11:43.363007Z",
+          "finished_at": "2026-10-09T18:11:43.401844Z",
+          "error_code": null,
+          "message": null
+        }
+      ],
+      "output_refs": [
+        {
+          "object_type": "METRIC",
+          "provider_specific_id": "0000723125-26-000015",
+          "source_locator": "SEC:sec.company_financials",
+          "canonical_object_id_candidate": "c1_fin_revenue_actual_latest_q:RevenueFromContractWithCustomerExcludingAssessedTax:0000723125-26-000015:2026-05-28",
+          "resolver_status": "CANDIDATE"
+        }
+      ],
+      "reason": null
+    },
+    {
+      "collection_target_id": "c1_fin_revenue_management_next_q",
+      "status": "EMPTY",
+      "requested_items": 1,
+      "succeeded_items": 0,
+      "unavailable_items": 0,
+      "failed_items": 0,
+      "provider_attempts": [],
+      "output_refs": [],
+      "reason": "reserved for post-program agent collection"
+    },
+    {
+      "collection_target_id": "c1_fin_revenue_sell_side_next_q",
+      "status": "FAILED",
+      "requested_items": 1,
+      "succeeded_items": 0,
+      "unavailable_items": 0,
+      "failed_items": 1,
+      "provider_attempts": [
+        {
+          "provider": "FMP",
+          "tool_name": "fmp.sell_side_estimates",
+          "status": "FAILED",
+          "started_at": "2026-10-09T18:11:43.432229Z",
+          "finished_at": "2026-10-09T18:11:44.172941Z",
+          "error_code": "upstream_provider_error",
+          "message": "FMP returned no usable data."
+        }
+      ],
+      "output_refs": [],
+      "reason": "FMP returned no usable data."
+    },
+    {
+      "collection_target_id": "c1_fin_total_debt_actual",
+      "status": "PARTIAL",
+      "requested_items": 1,
+      "succeeded_items": 1,
+      "unavailable_items": 0,
+      "failed_items": 0,
+      "provider_attempts": [
+        {
+          "provider": "SEC",
+          "tool_name": "sec.company_financials",
+          "status": "PARTIAL",
+          "started_at": "2026-10-09T18:11:44.188233Z",
+          "finished_at": "2026-10-09T18:11:44.234525Z",
+          "error_code": "sec_financials_incomplete",
+          "message": "Some requested or canonical SEC concepts are missing or stale."
+        }
+      ],
+      "output_refs": [
+        {
+          "object_type": "METRIC",
+          "provider_specific_id": "0000723125-26-000023",
+          "source_locator": "SEC:sec.company_financials",
+          "canonical_object_id_candidate": "c1_fin_total_debt_actual:LongTermDebt:0000723125-26-000023:2026-09-03",
+          "resolver_status": "CANDIDATE"
+        }
+      ],
+      "reason": null
+    },
+    {
+      "collection_target_id": "c5_atm_iv_30d",
+      "status": "UNAVAILABLE",
+      "requested_items": 1,
+      "succeeded_items": 0,
+      "unavailable_items": 1,
+      "failed_items": 0,
+      "provider_attempts": [],
+      "output_refs": [],
+      "reason": "provider capability is IMPLEMENTED"
+    },
+    {
+      "collection_target_id": "c5_days_to_cover",
+      "status": "UNAVAILABLE",
+      "requested_items": 1,
+      "succeeded_items": 0,
+      "unavailable_items": 1,
+      "failed_items": 0,
+      "provider_attempts": [],
+      "output_refs": [],
+      "reason": "provider capability is IMPLEMENTED"
+    },
+    {
+      "collection_target_id": "c5_enterprise_value",
+      "status": "FAILED",
+      "requested_items": 1,
+      "succeeded_items": 0,
+      "unavailable_items": 0,
+      "failed_items": 1,
+      "provider_attempts": [
+        {
+          "provider": "Alpha Vantage",
+          "tool_name": "alpha.valuation_snapshot",
+          "status": "FAILED",
+          "started_at": "2026-10-09T18:11:44.278085Z",
+          "finished_at": "2026-10-09T18:11:45.758371Z",
+          "error_code": "entitlement_or_permission_denied",
+          "message": "Thank you for using Alpha Vantage! This is a premium endpoint. You may subscribe to any of the premium plans at https://www.alphavantage.co/premium/ to instantly unlock all premium endpoints"
+        }
+      ],
+      "output_refs": [],
+      "reason": "Thank you for using Alpha Vantage! This is a premium endpoint. You may subscribe to any of the premium plans at https://www.alphavantage.co/premium/ to instantly unlock all premium endpoints"
+    },
+    {
+      "collection_target_id": "c5_market_cap",
+      "status": "FAILED",
+      "requested_items": 1,
+      "succeeded_items": 0,
+      "unavailable_items": 0,
+      "failed_items": 1,
+      "provider_attempts": [
+        {
+          "provider": "Alpha Vantage",
+          "tool_name": "alpha.valuation_snapshot",
+          "status": "FAILED",
+          "started_at": "2026-10-09T18:11:45.772245Z",
+          "finished_at": "2026-10-09T18:11:56.990585Z",
+          "error_code": "entitlement_or_permission_denied",
+          "message": "Thank you for using Alpha Vantage! This is a premium endpoint. You may subscribe to any of the premium plans at https://www.alphavantage.co/premium/ to instantly unlock all premium endpoints"
+        }
+      ],
+      "output_refs": [],
+      "reason": "Thank you for using Alpha Vantage! This is a premium endpoint. You may subscribe to any of the premium plans at https://www.alphavantage.co/premium/ to instantly unlock all premium endpoints"
+    },
+    {
+      "collection_target_id": "c5_next_event_implied_move",
+      "status": "UNAVAILABLE",
+      "requested_items": 1,
+      "succeeded_items": 0,
+      "unavailable_items": 1,
+      "failed_items": 0,
+      "provider_attempts": [],
+      "output_refs": [],
+      "reason": "provider capability is IMPLEMENTED"
+    },
+    {
+      "collection_target_id": "c5_peer_premium",
+      "status": "UNAVAILABLE",
+      "requested_items": 1,
+      "succeeded_items": 0,
+      "unavailable_items": 1,
+      "failed_items": 0,
+      "provider_attempts": [],
+      "output_refs": [],
+      "reason": "provider capability is IMPLEMENTED"
+    },
+    {
+      "collection_target_id": "c5_price_snapshot",
+      "status": "PARTIAL",
+      "requested_items": 1,
+      "succeeded_items": 1,
+      "unavailable_items": 0,
+      "failed_items": 0,
+      "provider_attempts": [
+        {
+          "provider": "IBKR-first market route",
+          "tool_name": "market.quote_snapshot",
+          "status": "PARTIAL",
+          "started_at": "2026-10-09T18:11:57.147829Z",
+          "finished_at": "2026-10-09T18:12:18.311242Z",
+          "error_code": "daily_close_quote_fallback",
+          "message": "A daily close was returned because no point-in-time quote was available; it is not equivalent to bid/ask/last."
+        }
+      ],
+      "output_refs": [
+        {
+          "object_type": "METRIC",
+          "provider_specific_id": null,
+          "source_locator": "twelvedata.daily_ohlcv",
+          "canonical_object_id_candidate": "c5_price_snapshot:daily_close_fallback:2026-10-09T00:00:00+00:00",
+          "resolver_status": "CANDIDATE"
+        }
+      ],
+      "reason": null
+    },
+    {
+      "collection_target_id": "c5_primary_forward_multiple",
+      "status": "UNAVAILABLE",
+      "requested_items": 1,
+      "succeeded_items": 0,
+      "unavailable_items": 1,
+      "failed_items": 0,
+      "provider_attempts": [],
+      "output_refs": [],
+      "reason": "provider capability is IMPLEMENTED"
+    },
+    {
+      "collection_target_id": "c5_primary_multiple_percentile",
+      "status": "UNAVAILABLE",
+      "requested_items": 1,
+      "succeeded_items": 0,
+      "unavailable_items": 1,
+      "failed_items": 0,
+      "provider_attempts": [],
+      "output_refs": [],
+      "reason": "historical_forward_percentile_v1"
+    },
+    {
+      "collection_target_id": "c5_put_skew_30d",
+      "status": "UNAVAILABLE",
+      "requested_items": 1,
+      "succeeded_items": 0,
+      "unavailable_items": 1,
+      "failed_items": 0,
+      "provider_attempts": [],
+      "output_refs": [],
+      "reason": "provider capability is IMPLEMENTED"
+    },
+    {
+      "collection_target_id": "c5_short_interest_change",
+      "status": "UNAVAILABLE",
+      "requested_items": 1,
+      "succeeded_items": 0,
+      "unavailable_items": 1,
+      "failed_items": 0,
+      "provider_attempts": [],
+      "output_refs": [],
+      "reason": "benzinga_short_interest_entitlement_required"
+    },
+    {
+      "collection_target_id": "c5_short_interest_pct_float",
+      "status": "UNAVAILABLE",
+      "requested_items": 1,
+      "succeeded_items": 0,
+      "unavailable_items": 1,
+      "failed_items": 0,
+      "provider_attempts": [],
+      "output_refs": [],
+      "reason": "provider capability is IMPLEMENTED"
+    }
+  ]
+}

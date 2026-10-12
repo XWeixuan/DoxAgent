@@ -1,0 +1,2527 @@
+{
+  "name": "数据中心闪存与存储系统",
+  "scope": "美光面向数据中心的性能与通用SSD、容量型SSD及第三方系统组件NAND供货，以及云、企业、训练、推理和其他工作负载的存储分层、软件与系统集成和采购。共同背景包括云存储客户、存储系统与软件厂商、控制器和固件生态、闪存供应商、近计算闪存路线及容量HDD。",
+  "boundary": "存储工作负载、系统适配、产品采用、组件采购和闪存/HDD路线竞争由本域深化；AI计算投资和基础设施需求基础、HBM与服务器内存产品地位归数据中心计算平台与内存。性能与通用SSD覆盖非容量主导的SSD组合，容量型SSD覆盖容量成本与密度主导的自有SSD，第三方系统NAND供货为独立商业对象。行业NAND供给与价格归NAND行业市场；晶圆、封装测试及SSD生产组装归NAND与存储产品制造体系，系统级控制器、固件与客户选型背景留在本域。跨产品多年合同归战略客户供给与资金保障关系。",
+  "ref": [
+    "D1-O103",
+    "D1-O74",
+    "D1-O156",
+    "D1-O172",
+    "D1-O72",
+    "D1-O139",
+    "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html",
+    "https://www.westerndigital.com/in-id/company/newsroom/press-releases/2026/2026-02-03-western-digital-accelerates-storage-innovation-for-ai-era",
+    "D1-O44",
+    "D1-O88",
+    "D1-O3",
+    "D1-O24",
+    "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+    "https://stage-investors.micron.com/news/press-release/2026/Micron-in-High-Volume-Production-of-HBM4-Designed-for-NVIDIA-Vera-Rubin-PCIe-Gen6-SSD-and-SOCAMM2-03-16-2026/default.aspx",
+    "https://investors.micron.com/news/press-release/2025/Micron-Unveils-Portfolio-of-Industry-First-SSDs-to-Power-the-AI-Revolution-07-29-2025/default.aspx",
+    "https://www.micron.com/content/dam/micron/global/public/products/storage/ssds/data-center/7600/7600-nvme-ssd-product-brief.pdf",
+    "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+    "https://www.trendforce.com/research/download/RP260924PL",
+    "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+    "https://www.trendforce.com/presscenter/news/20260901-13210.html",
+    "https://www.trendforce.com/presscenter/news/20260611-13092.html",
+    "D1-O68",
+    "D1-O142",
+    "https://developer.nvidia.com/blog/?p=111143",
+    "https://research.google/blog/turboquant-redefining-ai-efficiency-with-extreme-compression/",
+    "https://www.everpuredata.com/company/newsroom/press-releases/portworx-by-everpure-is-redefining-modern-virtualization.html",
+    "https://investor.everpuredata.com/news-and-events/press-releases/press-release-details/2026/Everpure-Announces-Second-Quarter-Fiscal-2027-Financial-Results/default.aspx",
+    "D1-O76",
+    "https://investors.micron.com/news/press-release/2026/Industry-Leading-245TB-Micron-6600-ION-Data-Center-SSD-Now-Shipping/default.aspx",
+    "https://apac.kioxia.com/en-apac/business/news/2026/20260515-1.html",
+    "https://www.sec.gov/Archives/edgar/data/2023554/000162828026057406/sndk-20260703.htm",
+    "https://www.sec.gov/Archives/edgar/data/106040/000162828026057139/wdc-20260703.htm",
+    "https://investors.micron.com/news/press-release/2025/Pure-Storage-and-Micron-Collaborate-to-Deliver-Scalable-Energy-Efficient-Solutions-for-Hyperscale-Data-Centers-01-07-2025/default.aspx",
+    "https://www.everpuredata.com/company/newsroom/press-releases/pure-and-sk-hynix-collaborate-to-deliver-performance-and-energy-efficiency-in-data-centers.html",
+    "https://investor.everpuredata.com/news-and-events/press-releases/press-release-details/2026/Everpure-Lands-New-Design-Win-with-Second-Top-Five-Hyperscaler/default.aspx",
+    "https://blog.everpuredata.com/perspectives/qlc-hyperscale-moment-has-arrived/",
+    "https://investors.micron.com/news/press-release/2026/Micron-Breaks-Ground-on-Advanced-Wafer-Fabrication-Facility-in-Singapore-01-26-2026/default.aspx",
+    "https://www.micron.com/content/dam/micron/global/public/products/storage/ssds/data-center/6600/6600-ion-nvme-ssd-product-brief.pdf"
+  ],
+  "units": [
+    {
+      "name": "美光数据中心性能与通用SSD业务",
+      "scope": "美光面向云、企业、训练、推理及其他数据中心用途的性能与通用SSD组合，涵盖低时延、吞吐、耐久性和系统功能相关的工作负载、产品代际、控制器与固件、系统适配、客户资格、采购分配、出货、定价和商业经济性，包括推理缓存、上下文存储及一般企业存储。",
+      "horizon": "季度业务变化及SSD产品、系统适配和客户采购周期。",
+      "ref": [
+        "D1-O103",
+        "D1-O74",
+        "D1-O44",
+        "D1-O88",
+        "D1-O3",
+        "D1-O139",
+        "D1-O72",
+        "D1-O24",
+        "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html",
+        "https://www.westerndigital.com/in-id/company/newsroom/press-releases/2026/2026-02-03-western-digital-accelerates-storage-innovation-for-ai-era",
+        "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+        "https://stage-investors.micron.com/news/press-release/2026/Micron-in-High-Volume-Production-of-HBM4-Designed-for-NVIDIA-Vera-Rubin-PCIe-Gen6-SSD-and-SOCAMM2-03-16-2026/default.aspx",
+        "https://investors.micron.com/news/press-release/2025/Micron-Unveils-Portfolio-of-Industry-First-SSDs-to-Power-the-AI-Revolution-07-29-2025/default.aspx",
+        "https://www.micron.com/content/dam/micron/global/public/products/storage/ssds/data-center/7600/7600-nvme-ssd-product-brief.pdf",
+        "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+        "https://www.trendforce.com/research/download/RP260924PL",
+        "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+        "https://www.trendforce.com/presscenter/news/20260901-13210.html",
+        "https://www.trendforce.com/presscenter/news/20260611-13092.html",
+        "D1-O68",
+        "D1-O142",
+        "https://developer.nvidia.com/blog/?p=111143",
+        "https://research.google/blog/turboquant-redefining-ai-efficiency-with-extreme-compression/",
+        "https://www.everpuredata.com/company/newsroom/press-releases/portworx-by-everpure-is-redefining-modern-virtualization.html",
+        "https://investor.everpuredata.com/news-and-events/press-releases/press-release-details/2026/Everpure-Announces-Second-Quarter-Fiscal-2027-Financial-Results/default.aspx",
+        "D1-O76",
+        "https://www.anthropic.com/news/anthropic-raises-30-billion-series-g-funding-380-billion-post-money-valuation",
+        "https://www.anthropic.com/engineering/managed-agents",
+        "D1-O147",
+        "D1-O148",
+        "D1-O143",
+        "https://blogs.nvidia.com/blog/ai-storage-fms/",
+        "https://arxiv.org/abs/2610.02676v2",
+        "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf",
+        "https://www.crusoe.ai/resources/newsroom/crusoe-and-lancium-announce-1-gigawatt-ai-data-center-campus-in-childress-texas",
+        "https://www.sec.gov/Archives/edgar/data/1944366/000194436626000020/exhibit993-2025abelinedc1l.htm",
+        "D1-O66",
+        "D1-O79",
+        "D1-O77",
+        "https://workspaceupdates.googleblog.com/2025/01/expanding-google-ai-to-more-of-google-workspace.html",
+        "https://www.anthropic.com/news/enterprise-frontier-safeguards",
+        "https://www.everpuredata.com/company/newsroom/press-releases/everpure-redefines-cyber-resilience-with-data-management.html",
+        "https://blogs.vmware.com/cloud-foundation/2026/04/16/converging-vmware-vsphere-to-vmware-cloud-foundation-9-0-the-top-10-questions-answered/",
+        "https://investors.micron.com/news/press-release/2026/Micron-Breaks-Ground-on-Advanced-Wafer-Fabrication-Facility-in-Singapore-01-26-2026/default.aspx"
+      ],
+      "state": {
+        "parameters": [
+          {
+            "name": "在售性能与通用SSD组合",
+            "definition": "该Unit实际面向数据中心的产品代际和接口覆盖；容量型ION组合另属容量Unit。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O74",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "KV-cache客户商业交付",
+            "definition": "7600/9650以KV-cache用途向数据中心客户的商业交付位置。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O103"
+            ]
+          },
+          {
+            "name": "9650合格供给阶段",
+            "definition": "9650产品由样品到批量生产的供给可获得性，不等同客户系统全量投运。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://stage-investors.micron.com/news/press-release/2026/Micron-in-High-Volume-Production-of-HBM4-Designed-for-NVIDIA-Vera-Rubin-PCIe-Gen6-SSD-and-SOCAMM2-03-16-2026/default.aspx"
+            ]
+          },
+          {
+            "name": "9650最大顺序读取吞吐",
+            "definition": "9650厂商公布的峰值顺序读取吞吐，不是客户生产系统持续吞吐。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://stage-investors.micron.com/news/press-release/2026/Micron-in-High-Volume-Production-of-HBM4-Designed-for-NVIDIA-Vera-Rubin-PCIe-Gen6-SSD-and-SOCAMM2-03-16-2026/default.aspx"
+            ]
+          },
+          {
+            "name": "9650最大随机读取能力",
+            "definition": "9650厂商公布随机读IOPS上限；不可与不同块大小的GP1直接比较。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://stage-investors.micron.com/news/press-release/2026/Micron-in-High-Volume-Production-of-HBM4-Designed-for-NVIDIA-Vera-Rubin-PCIe-Gen6-SSD-and-SOCAMM2-03-16-2026/default.aspx"
+            ]
+          },
+          {
+            "name": "7600最大顺序读取吞吐",
+            "definition": "7600厂商规格峰值顺序读速率，适用于主流Gen5定位而非业务出货。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2025/Micron-Unveils-Portfolio-of-Industry-First-SSDs-to-Power-the-AI-Revolution-07-29-2025/default.aspx"
+            ]
+          },
+          {
+            "name": "7600数据库响应能力",
+            "definition": "7600在明确厂商测试工作负载下的延迟位置；不是所有I/O模式的统一SLA。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2025/Micron-Unveils-Portfolio-of-Industry-First-SSDs-to-Power-the-AI-Revolution-07-29-2025/default.aspx"
+            ]
+          },
+          {
+            "name": "7600 PRO额定写入耐久",
+            "definition": "7600 PRO读密集型号规格的每日全盘写入次数；不同型号不串成时间变化。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.micron.com/content/dam/micron/global/public/products/storage/ssds/data-center/7600/7600-nvme-ssd-product-brief.pdf"
+            ]
+          },
+          {
+            "name": "7600 MAX额定写入耐久",
+            "definition": "7600 MAX混合用途型号规格的每日全盘写入次数。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.micron.com/content/dam/micron/global/public/products/storage/ssds/data-center/7600/7600-nvme-ssd-product-brief.pdf"
+            ]
+          },
+          {
+            "name": "7600企业接口与安全选项",
+            "definition": "影响企业平台可选资格的已提供功能，不自动证明所有配置完成客户认证或政府采购。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.micron.com/content/dam/micron/global/public/products/storage/ssds/data-center/7600/7600-nvme-ssd-product-brief.pdf"
+            ]
+          },
+          {
+            "name": "美光数据中心SSD合计收入规模",
+            "definition": "性能/通用与容量自有SSD共同收入池的公司披露近似规模；非本Unit独立收入，也不含可自行推算的组件分摊。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "企业SSD行业合约价格预期",
+            "definition": "TrendForce企业SSD行业合约价环比预测，非美光ASP；公开目录未单列QLC专属数值。",
+            "value_type": "RANGE",
+            "ref": [
+              "https://www.trendforce.com/research/download/RP260924PL"
+            ]
+          },
+          {
+            "name": "企业SSD行业比特需求预期",
+            "definition": "TrendForce企业SSD全年比特需求同比预测，一侧边界保留为规模状态；不是美光实物销售。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260930-13258.html"
+            ]
+          },
+          {
+            "name": "美光企业SSD收入—产业研究口径",
+            "definition": "TrendForce对美光全部企业SSD收入的日历季度估计，含性能与容量；仅做本供应者收入池交叉锚，不等同财季、比特份额或性能Unit收入。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260901-13210.html",
+              "https://www.trendforce.com/presscenter/news/20260611-13092.html"
+            ]
+          },
+          {
+            "name": "竞品高性能闪存供给位置",
+            "definition": "与本Unit推理存储层竞争的已公告具体产品及可采购成熟度。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O74",
+              "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html"
+            ]
+          },
+          {
+            "name": "Kioxia GP1评估样品窗口",
+            "definition": "竞品限定客户功能检查样品的计划时间；量产规格可变。",
+            "value_type": "TIME",
+            "ref": [
+              "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html"
+            ]
+          },
+          {
+            "name": "性能与通用SSD独立收入",
+            "definition": "本Unit独立确认的季度销售收入，美元；不得用CDBU或全部数据中心SSD收入分摊填充。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O44",
+              "D1-O103",
+              "D1-O74",
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "性能与通用SSD独立出货比特",
+            "definition": "本Unit合格成品SSD商业出货的季度容量，按盘标称用户容量折算为十进制EB（1 EB为10^18字节）；与本Unit实现ASP采用相同容量口径，区别于制造端裸NAND位元。单盘最大容量、收入增速及设计胜出都不能代替出货量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O44",
+              "D1-O103",
+              "D1-O74",
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "性能与通用SSD独立实现ASP",
+            "definition": "本Unit产品组合实现售价，美元/标称用户GB，与同口径出货容量配对；与同规格价格、行业报价及组合变化分别理解。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O44",
+              "D1-O103",
+              "D1-O74",
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "性能与通用SSD独立毛利率",
+            "definition": "本Unit销售收入对应毛利率，%；CDBU混合DRAM、SSD及组件NAND，不能代入。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O44",
+              "D1-O103",
+              "D1-O74",
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "性能与通用SSD独立客户采购分配",
+            "definition": "本Unit在已进入的客户平台中的供应份额、重复采购及履约安排；身份、用途、地域与规格限定范围。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O44",
+              "D1-O103",
+              "D1-O74",
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "性能与通用SSD独立交付与库存位置",
+            "definition": "本Unit可交付合格量、订单交期及客户/渠道库存消耗状态；送样与客户生产部署分开。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O44",
+              "D1-O103",
+              "D1-O74",
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          }
+        ],
+        "values": [
+          {
+            "name": "在售性能与通用SSD组合｜2026-10-09",
+            "parameter": "在售性能与通用SSD组合",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "FY2026数据中心SSD销售组合中，非ION系列包括5400、7450、7500、7550、7600、9550、9650；新Gen5/Gen6与既有企业产品并存。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026，截至2026-09-03",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O74",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "KV-cache客户商业交付｜2026-09-30",
+            "parameter": "KV-cache客户商业交付",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "7600 PCIe Gen5及9650 PCIe Gen6已向领先客户出货，用于KV-cache；客户未具名。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026 Q4及2026-09-30披露时点",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O103"
+            ]
+          },
+          {
+            "name": "9650合格供给阶段｜2026-03-16",
+            "parameter": "9650合格供给阶段",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "已进入高量生产；3月材料确认生产状态及BlueField-4 STX参考架构适配。"
+            },
+            "previous_value": null,
+            "time_scope": "2026年初至3月披露时点",
+            "as_of": "2026-03-16",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://stage-investors.micron.com/news/press-release/2026/Micron-in-High-Volume-Production-of-HBM4-Designed-for-NVIDIA-Vera-Rubin-PCIe-Gen6-SSD-and-SOCAMM2-03-16-2026/default.aspx"
+            ]
+          },
+          {
+            "name": "9650最大顺序读取吞吐｜2026-03-16产品规格",
+            "parameter": "9650最大顺序读取吞吐",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 28.0,
+              "unit": "GB/s（厂商上限）"
+            },
+            "previous_value": null,
+            "time_scope": "2026-03-16产品规格",
+            "as_of": "2026-03-16",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://stage-investors.micron.com/news/press-release/2026/Micron-in-High-Volume-Production-of-HBM4-Designed-for-NVIDIA-Vera-Rubin-PCIe-Gen6-SSD-and-SOCAMM2-03-16-2026/default.aspx"
+            ]
+          },
+          {
+            "name": "9650最大随机读取能力｜2026-03-16产品规格",
+            "parameter": "9650最大随机读取能力",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 5.5,
+              "unit": "百万IOPS（厂商上限）"
+            },
+            "previous_value": null,
+            "time_scope": "2026-03-16产品规格",
+            "as_of": "2026-03-16",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://stage-investors.micron.com/news/press-release/2026/Micron-in-High-Volume-Production-of-HBM4-Designed-for-NVIDIA-Vera-Rubin-PCIe-Gen6-SSD-and-SOCAMM2-03-16-2026/default.aspx"
+            ]
+          },
+          {
+            "name": "7600最大顺序读取吞吐｜2025-07-29发布规格",
+            "parameter": "7600最大顺序读取吞吐",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 12.0,
+              "unit": "GB/s（厂商上限）"
+            },
+            "previous_value": null,
+            "time_scope": "2025-07-29发布规格",
+            "as_of": "2025-07-29",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2025/Micron-Unveils-Portfolio-of-Industry-First-SSDs-to-Power-the-AI-Revolution-07-29-2025/default.aspx"
+            ]
+          },
+          {
+            "name": "7600数据库响应能力｜2025-07-29",
+            "parameter": "7600数据库响应能力",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "美光实验室RocksDB测试中可实现低于1ms延迟、队列深度最高QD128；比较对象为当时可用竞品。"
+            },
+            "previous_value": null,
+            "time_scope": "2025-07-29产品发布测试",
+            "as_of": "2025-07-29",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2025/Micron-Unveils-Portfolio-of-Industry-First-SSDs-to-Power-the-AI-Revolution-07-29-2025/default.aspx"
+            ]
+          },
+          {
+            "name": "7600 PRO额定写入耐久｜2025版产品规格",
+            "parameter": "7600 PRO额定写入耐久",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 1.0,
+              "unit": "DWPD"
+            },
+            "previous_value": null,
+            "time_scope": "2025版产品规格",
+            "as_of": "2025-07-29",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.micron.com/content/dam/micron/global/public/products/storage/ssds/data-center/7600/7600-nvme-ssd-product-brief.pdf"
+            ]
+          },
+          {
+            "name": "7600 MAX额定写入耐久｜2025版产品规格",
+            "parameter": "7600 MAX额定写入耐久",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 3.0,
+              "unit": "DWPD"
+            },
+            "previous_value": null,
+            "time_scope": "2025版产品规格",
+            "as_of": "2025-07-29",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.micron.com/content/dam/micron/global/public/products/storage/ssds/data-center/7600/7600-nvme-ssd-product-brief.pdf"
+            ]
+          },
+          {
+            "name": "7600企业接口与安全选项｜2025-07-29",
+            "parameter": "7600企业接口与安全选项",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "支持SPDM 1.2、签名固件、硬件信任根及SED选项；提供FIPS 140-3 Level 2/TAA选项，OCP 2.5为多数而非全部要求支持。"
+            },
+            "previous_value": null,
+            "time_scope": "2025版产品功能",
+            "as_of": "2025-07-29",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.micron.com/content/dam/micron/global/public/products/storage/ssds/data-center/7600/7600-nvme-ssd-product-brief.pdf"
+            ]
+          },
+          {
+            "name": "美光数据中心SSD合计收入规模｜2026-09-30",
+            "parameter": "美光数据中心SSD合计收入规模",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "FY2026 Q4合计收入接近100亿美元，超过上年同季10倍；没有性能/容量拆分。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026 Q4，截至2026-09-03；同比FY2025 Q4；FY2026为53周、FY2025为52周",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "TrendForce 4Q26企业SSD价格预测",
+            "parameter": "企业SSD行业合约价格预期",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "lower": 23.0,
+              "upper": 28.0,
+              "unit": "%环比"
+            },
+            "previous_value": null,
+            "time_scope": "2026日历Q4，相对日历Q3",
+            "as_of": "2026-09-24",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/research/download/RP260924PL"
+            ]
+          },
+          {
+            "name": "企业SSD行业比特需求预期｜2026-09-30",
+            "parameter": "企业SSD行业比特需求预期",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "TrendForce预计2026年企业SSD比特需求同比增长超过80%。"
+            },
+            "previous_value": null,
+            "time_scope": "2026日历年同比2025",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260930-13258.html"
+            ]
+          },
+          {
+            "name": "美光企业SSD收入—产业研究口径｜2026日历Q2；previous_value为2026日历Q1的近似3.09十亿美元",
+            "parameter": "美光企业SSD收入—产业研究口径",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 6.98,
+              "unit": "十亿美元（近似值）"
+            },
+            "previous_value": {
+              "number": 3.09,
+              "unit": "十亿美元（近似值）"
+            },
+            "time_scope": "2026日历Q2；previous_value为2026日历Q1的近似3.09十亿美元",
+            "as_of": "2026-09-01",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260901-13210.html",
+              "https://www.trendforce.com/presscenter/news/20260611-13092.html"
+            ]
+          },
+          {
+            "name": "竞品高性能闪存供给位置｜2026-08-04",
+            "parameter": "竞品高性能闪存供给位置",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "Kioxia GP1为PCIe6/XL-FLASH Gen2 GPU直接访问路线；截至8月公告仍为评估样品计划，非已商业量产。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-08-04披露阶段",
+            "as_of": "2026-08-04",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O74",
+              "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html"
+            ]
+          },
+          {
+            "name": "GP1计划年底前提供评估样品",
+            "parameter": "Kioxia GP1评估样品窗口",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "point": null,
+              "start": null,
+              "end": "2026-12-31",
+              "precision": "截至年底的计划窗口"
+            },
+            "previous_value": null,
+            "time_scope": "2026年底前，Kioxia计划",
+            "as_of": "2026-08-04",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html"
+            ]
+          }
+        ]
+      },
+      "expectation_baseline": [
+        {
+          "name": "从新品领先进入客户交付后的性能SSD扩张",
+          "baseline": "研究综合判断：未来几个季度以7600/9650的客户交付延续、Gen5主流与Gen6高性能组合扩张为默认路径，而不是退回单纯展示阶段。KV-cache用途已有交付，9650已批量生产；同时既有5400/7450/7500/7550/9550产品仍在销售。合计数据中心SSD财季收入接近100亿美元及TrendForce日历Q2美光企业SSD约69.8亿美元的估计支持收入池扩张，但两种期间和性能/容量拆分不同，不能算本Unit增长率。",
+          "ordinary_progress": "已有客户增加批次、相邻平台通过适配、7600与9550继续供给Gen5平台，9650进入更多Gen6配置；这些延伸现有产品与用途。",
+          "open_frontier": "首次交付能转成多平台持续复购的程度，以及新平台内的供应份额和性能/容量收入拆分仍开放；收入的同比十倍以上并非实物比特同比十倍。",
+          "time_scope": "FY2027近端季度及下一轮客户平台采购周期",
+          "ref": [
+            "D1-O103",
+            "D1-O74",
+            "https://stage-investors.micron.com/news/press-release/2026/Micron-in-High-Volume-Production-of-HBM4-Designed-for-NVIDIA-Vera-Rubin-PCIe-Gen6-SSD-and-SOCAMM2-03-16-2026/default.aspx",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.trendforce.com/presscenter/news/20260901-13210.html"
+          ]
+        },
+        {
+          "name": "推理闪存层的扩张是软件调度后的有效缓存需求",
+          "baseline": "研究综合判断：推理上下文会继续从GPU内存之外寻求共享闪存层，但本Unit先受益于可重复使用、可及时预取的缓存，不是每个生成token都永久追加SSD。NVIDIA CMX把Ethernet闪存层接入Dynamo/NIXL调度；目标KV-cache交付使这一路径已有商业入口。更长上下文与并发支持容量和I/O需求，压缩、淘汰及重算则决定每项任务实际占用。",
+          "ordinary_progress": "CMX/STX及开放数据接口集成、缓存命中和预取改进，使已选择的SSD配置提供更稳定响应。",
+          "open_frontier": "客户生产负载中实际缓存容量、尾延迟和重复使用收益能否支持更多SSD采购；Google TurboQuant研究压缩若进入生产，可能降低每任务字节，但服务扩张可抵消该节约。",
+          "time_scope": "2026年末至2027平台部署与软件采用周期",
+          "ref": [
+            "D1-O24",
+            "D1-O68",
+            "D1-O142",
+            "https://developer.nvidia.com/blog/?p=111143",
+            "https://research.google/blog/turboquant-redefining-ai-efficiency-with-extreme-compression/"
+          ]
+        },
+        {
+          "name": "一般企业工作负载仍是独立采购基础",
+          "baseline": "研究综合判断：数据库、虚拟化、内容服务和混合云不会因AI新品出现而退出本Unit的基础需求。7600的低延迟与PRO/MAX耐久定位对应不同读写场景；Portworx已承载十万以上VM卷的迁移说明企业应用重平台化已经发生，存储必须随运行和保护要求适配。默认是刷新和迁移改变部署位置及供应分配，而非把每次逻辑迁移都计为新增硬件容量。",
+          "ordinary_progress": "平台支持矩阵、固件、安全选项及新虚拟化栈的持续适配；既有产品承担不能立即更换接口或验证流程的采购。",
+          "open_frontier": "迁移后买方究竟采购本地标准SSD、云块存储还是系统商服务，及更高整合率是否减少物理盘数；没有把VM卷数当美光客户数或订单。",
+          "time_scope": "季度刷新及企业系统迁移周期",
+          "ref": [
+            "https://www.micron.com/content/dam/micron/global/public/products/storage/ssds/data-center/7600/7600-nvme-ssd-product-brief.pdf",
+            "https://www.everpuredata.com/company/newsroom/press-releases/portworx-by-everpure-is-redefining-modern-virtualization.html",
+            "https://investor.everpuredata.com/news-and-events/press-releases/press-release-details/2026/Everpure-Announces-Second-Quarter-Fiscal-2027-Financial-Results/default.aspx",
+            "D1-O74"
+          ]
+        },
+        {
+          "name": "近端议价环境偏强但不是本Unit利润保证",
+          "baseline": "研究综合判断：近端性能/通用SSD收入更可能同时受合格交付与强议价环境支撑，而非只依靠接口升级。TrendForce预计日历4Q26企业SSD合约价环比上涨23%—28%，且全年企业SSD比特需求超过80%增长；美光Q4整体NAND实现价约环比上涨30%，为广谱涨价背景。这里采用产业与公司经营证据的工作基线，没有产品级卖方模型或股价反推的SSD价格。",
+          "ordinary_progress": "客户按已验证型号接受交付、季度谈价保持偏强，性能和耐久等级影响组合实现价。",
+          "open_frontier": "同规格实现价与组合效果的分离、客户是否提前备货，以及本Unit毛利扣除控制器/固件、爬坡和服务成本后的水平；不能用CDBU 90%毛利率作该Unit毛利。",
+          "time_scope": "2026日历Q4至FY2027前几个季度",
+          "ref": [
+            "https://www.trendforce.com/research/download/RP260924PL",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "D1-O44"
+          ]
+        },
+        {
+          "name": "竞争继续从接口性能转向系统可用性",
+          "baseline": "研究综合判断：美光Gen6批量供给有先行窗口，但未来采购仍会在多个合格路线间分配。Kioxia GP1计划于年末提供的功能评估样品与Storage-Next同时支持多厂商说明竞争正在形成；标准TLC SSD、低延迟XL-FLASH和HBF不能只按峰值带宽互换。默认路径是工作负载分化而非美光占有所有近GPU闪存。",
+          "ordinary_progress": "现有TLC SSD继续供货，竞品送样、软件兼容及客户功能检查推进；GP1的512字节IOPS不能直接对比9650不同测试口径。",
+          "open_frontier": "新介质路线能否在成本、耐久、生产级延迟及软件适配上越过样品阶段，从而改写美光标准SSD的采购位置。",
+          "time_scope": "2026年末评估至2027产品选择周期",
+          "ref": [
+            "https://stage-investors.micron.com/news/press-release/2026/Micron-in-High-Volume-Production-of-HBM4-Designed-for-NVIDIA-Vera-Rubin-PCIe-Gen6-SSD-and-SOCAMM2-03-16-2026/default.aspx",
+            "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html",
+            "D1-O76",
+            "D1-O142"
+          ]
+        }
+      ],
+      "realization_factors": [
+        {
+          "name": "付费应用价值、任务强度与性能存储机会",
+          "mechanism": "企业和开发者根据任务质量与净节省决定付费采用；模型服务商根据付费任务量、单任务持续时间及服务单位成本决定扩展。任务量和时长形成并发工作，单位成本下降既可缩小每任务资源配置，也可扩大可盈利服务范围。需要快速恢复上下文、数据库或工具状态的新增并发才形成性能SSD机会，收费收入本身不是SSD容量。",
+          "current_status": "判断是实际付费用途已给扩展提供经济支点，而非只有训练投资叙事。Anthropic于2026-02-12报告Claude年化收入140亿美元及年消费超过10万美元客户数量一年增7倍，且获得300亿美元融资；这些是当时公司口径，不是10月流量。4月Managed Agents把可恢复会话日志与模型上下文解耦，说明长任务可产生不同于短问答的存储访问。美光7600/9650商业KV交付使其已有参与途径，但普通数据库和企业业务仍独立存在。",
+          "materiality_context": "应用质量与净节省决定采用是否持续，影响多个采购周期的机会总量；付费任务量在任务结构不变时增加10%，活动工作约增10%，不代表当季SSD增10%。时长在相同任务量下延长会提高并发及状态驻留，长任务占比因此可比用户数更有影响。单位成本决定商业吸收与反弹：每任务资源节约20%需任务增长超过25%才提高总资源需求（示意测算）。当前商业采用支持扩张方向，任务结构和成本弹性比融资金额更直接决定性能层机会；已有缓存交付的当前贡献与长任务新用途的远期修订空间应分开。",
+          "scope_boundary": "覆盖AI推理及工具工作对本Unit的需求生成；模型竞争、GPU经济与客户应用利润不在此重建完整估值。性能层分配见缓存因素，资金与交付见预算因素。",
+          "ref": [
+            "https://www.anthropic.com/news/anthropic-raises-30-billion-series-g-funding-380-billion-post-money-valuation",
+            "https://www.anthropic.com/engineering/managed-agents",
+            "D1-O103",
+            "https://developer.nvidia.com/blog/?p=111143"
+          ]
+        },
+        {
+          "name": "工作集、缓存重用与软硬件分层",
+          "mechanism": "服务运营者决定工作集大小和重用概率，调度软件决定缓存命中与预取；压缩改变每份上下文占用。HBM、主机DRAM、局部或共享SSD的性能和成本差异决定落层比例。有效SSD需求随并发工作集、每份压缩后字节及SSD落层比例变化，但命中减少重算、预取避免等待才使该层具有价值。可重算KV不必像业务记录一样永久保存。",
+          "current_status": "当前闪存已从备选架构进入美光客户商业交付，CMX把缓存移动管理纳入网络与软件共同方案，因而对本Unit是可服务用途而非“任意SSD加容量”。Google 3月TurboQuant研究展示压缩可显著缩小KV工作集，属于模型基准而非生产统一系数。工作读取是否及时、层间搬运是否有效，仍决定客户扩容选性能SSD还是更多主机内存。",
+          "materiality_context": "工作集决定容量，重用概率决定保留价值，两者高时共享缓存更值得投入，低重用数据则可能直接重算。压缩率在活动规模不变时把每份字节减半，首先把所需缓存容量减半；SSD落层比例由20%变30%会使该层容量增50%，不是全存储增50%（均为示意）。命中与预取效率决定计算等待成本，改善它们可以不增加字节却扩大采用；反之容量便宜也无法补偿尾部等待。当前商业路径已成立，分层比例和有效命中比“最长上下文规格”更有近端配置杠杆；压缩和重用的反馈使长期位元需求不能按token线性外推。",
+          "scope_boundary": "只解释性能与通用SSD承担的活动缓存；容量SSD的长期数据、组件NAND的第三方采购各另有分母。HBM/DRAM供给在相邻Shell。",
+          "ref": [
+            "D1-O103",
+            "D1-O147",
+            "D1-O148",
+            "https://developer.nvidia.com/blog/?p=111143",
+            "https://research.google/blog/turboquant-redefining-ai-efficiency-with-extreme-compression/"
+          ]
+        },
+        {
+          "name": "企业现代化、事务负载与更换周期",
+          "mechanism": "企业买方依据停机损失、事务响应要求和软硬件支持生命周期安排迁移或更新；虚拟化、数据库及容器化的部署规模决定实际工作负载。容量利用率与存储调度效率决定旧设备还能承载多少业务，更新窗口和系统渠道把需求汇成整机或阵列采购。云迁移可把采购从企业转到云厂商，也可因共享效率减少所需盘数，不消灭服务对性能的要求。",
+          "current_status": "本Unit有5400至9650跨代组合，不是单一AI缓存产品。Portworx于3月报告已迁移逾10万VM卷，证明迁移活动而非10万台服务器新增；Everpure云端服务说明采购可由服务运营者而非终端企业组织。7600面向RocksDB的厂商测试支持数据库定位，但不能代表所有客户SLA。当前普通企业更新提供较成熟需求底盘，新AI用途是叠加而非完整替代。",
+          "materiality_context": "停机损失和响应要求决定性能采购可接受溢价，负载强度不变而要求收紧可增加高性能配置而不是容量。部署规模扩大10%若效率不变会扩大资源工作，但整合/调度使既有设备的有效承载能力提升10%可吸收接近相同增量（示意，不是客户测量）。生命周期/更新窗口主要改变季度时点，渠道可把零散更换集中为批量资格和采购；推迟一季更多是收入时间变动而非永久需求消失。当前成熟负载比新架构有更广运行基础，具体迁移采用比调查意愿更有意义；整合共享能抵销设备数增长，却可能提高每盘性能档次。",
+          "scope_boundary": "覆盖普通云/企业数据库、虚拟化、服务器本地及共享性能存储。未把软件厂商收入、迁移卷数或问卷意愿折成美光SSD订单。",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://investors.micron.com/news/press-release/2025/Micron-Unveils-Portfolio-of-Industry-First-SSDs-to-Power-the-AI-Revolution-07-29-2025/default.aspx",
+            "https://www.everpuredata.com/company/newsroom/press-releases/portworx-by-everpure-is-redefining-modern-virtualization.html",
+            "https://investor.everpuredata.com/news-and-events/press-releases/press-release-details/2026/Everpure-Announces-Second-Quarter-Fiscal-2027-Financial-Results/default.aspx",
+            "https://www.micron.com/content/dam/micron/global/public/products/storage/ssds/data-center/7600/7600-nvme-ssd-product-brief.pdf"
+          ]
+        },
+        {
+          "name": "接口、尾延迟与平台可用性",
+          "mechanism": "SSD厂商控制控制器和固件，服务器与平台方控制PCIe、网络、散热及数据路径，买方控制负载SLA。接口吞吐和IOPS只有在端到端瓶颈、尾延迟与功率约束配合时才能提高有效服务；兼容性、安全功能和稳定性测试决定哪些产品进入可采购配置。集成成本下降扩大采用，同时开放接口也扩大竞争者可进入范围。",
+          "current_status": "9650已高量生产，7600/9650已商业支持KV-cache，性能领先因此具有现实供货基础。9650最高28GB/s读取及550万随机读IOPS仍为规格，不是客户整机结果；7600安全和OCP支持提供企业集成入口。Storage-Next/cuFile等开放方案同时列出Micron与Kioxia，当前共同标准有利市场扩展却不形成排他配置。",
+          "materiality_context": "吞吐/IOPS控制每盘可承载工作，若实际瓶颈是网络，SSD峰值翻倍的短期系统增益可接近零；瓶颈移走后才减少盘数或扩大服务。尾延迟对decode等待及事务SLA的影响可能高于平均吞吐。功率/散热限制可使峰值无法持续，兼容性与稳定/安全资格则决定可服务的客户范围，缺失资格可排除整个配置而非小幅降价。集成成本决定导入速度，开放化降低此成本也削弱锁定。当前高量产品和商业交付使系统有效性比仅发布新规格更有边际杠杆；资格改善可修订可服务机会，即使当季出货未变。",
+          "scope_boundary": "覆盖成品SSD的系统使用条件；芯片制造深度和网络产品盈利属邻接研究，不以平台伙伴名单指定采购份额。",
+          "ref": [
+            "https://stage-investors.micron.com/news/press-release/2026/Micron-in-High-Volume-Production-of-HBM4-Designed-for-NVIDIA-Vera-Rubin-PCIe-Gen6-SSD-and-SOCAMM2-03-16-2026/default.aspx",
+            "https://www.micron.com/content/dam/micron/global/public/products/storage/ssds/data-center/7600/7600-nvme-ssd-product-brief.pdf",
+            "D1-O103",
+            "D1-O142",
+            "D1-O143",
+            "https://blogs.nvidia.com/blog/ai-storage-fms/",
+            "https://developer.nvidia.com/blog/?p=111143"
+          ]
+        },
+        {
+          "name": "写入强度、放大与耐久配置",
+          "mechanism": "应用写入强度与数据寿命分布决定主机写入；文件系统、数据库和SSD固件共同决定写放大。额定耐久、预留空间和垃圾回收策略决定可用容量、持续延迟及更换频率。买方可选更高耐久档、增加盘数或改数据放置；FDP等主机提示通过分离不同寿命数据减少搬迁，因此既提高闪存利用也改变高耐久SKU必要性。",
+          "current_status": "7600 PRO/MAX分别以1/3次全盘写入每日定位，读缓存与高写事务不应配置同一耐久假设。10月2日、5日FDP论文的实验显示MySQL/RocksDB可通过跨层放置减少写放大并改善QoS，说明软件是可操作变量；实验不证明本Unit全部客户已使用FDP。当前已有耐久分档，需求并非仅由最大IOPS或容量决定。",
+          "materiality_context": "写入强度决定每日寿命消耗，写放大在主机量不变时由2降至1.5使介质写入减25%（示意）；数据寿命分离质量控制这种节约能否出现。额定耐久上限影响SKU选择，预留空间则以牺牲可售/可用容量换持续性能与寿命，两者不能当免费改善。更换频率提高会产生替换需求，但故障风险和客户成本也可能阻碍采用。当前MAX相对PRO的额定耐久差有实际配置意义，FDP在软件适配成熟的负载上可降低过度配置与替换、提高采用，其净销量方向取决于新增用途是否抵过节约。",
+          "scope_boundary": "解释性能/通用成品SSD的工作负载经济与可靠运行；不把厂商耐久评级写成实际寿命，不推断不存在的批量故障。容量QLC和组件管理的后果另述。",
+          "ref": [
+            "https://www.micron.com/content/dam/micron/global/public/products/storage/ssds/data-center/7600/7600-nvme-ssd-product-brief.pdf",
+            "https://arxiv.org/abs/2610.02676v2",
+            "https://investors.micron.com/news/press-release/2025/Micron-Unveils-Portfolio-of-Industry-First-SSDs-to-Power-the-AI-Revolution-07-29-2025/default.aspx"
+          ]
+        },
+        {
+          "name": "采购资格、多来源与价值捕获",
+          "mechanism": "买方/OEM比较有效性能每成本、供应保障和导入切换成本，给通过资格的供应商分配采购份额。美光的产品适配与竞争者可供量共同决定该份额；早期进入平台可能形成工程便利，但双来源降低断供风险。HBF、GP1及其他标准SSD改变可选技术，不同负载可能把价值转移至其他闪存形态而非本Unit。 地域采购资格限制特定可服务买方，而非改变全球工作负载；合法供货范围与配置资格共同决定美光入口。",
+          "current_status": "当前美光已有跨代产品与商业KV交付，可竞争现实配置；开放标准和同业产品使领先不等于独占。GP1截至8月仍为年底功能评估计划，HBF为已发布标准及验证参与者，尚不是普遍量产替代。近期主要竞争仍发生在合格成品SSD之间，早期替代路径更影响下一代可服务市场与客户工程投入。 公司沿用CAC自2023年对中国特定关键信息基础设施运营者的采购限制，不能推成所有中国客户禁购。",
+          "materiality_context": "有效性能每成本影响中标与档次，供应保障决定短缺时买方是否扩充第二来源；切换成本对已部署平台形成季度至代际粘性，但新平台更容易重分配。资格先划出可服务范围，份额随后决定美光捕获量：总合格采购不变，份额从20%到25%意味着本Unit相应采购增25%（示意，非美光实测份额）。竞争者可供量增加可能比更高峰值规格更快稀释份额。替代技术当前贡献有限，若在合适访问粒度证明明显经济收益，能修订下代机会，不能因早期阶段而忽略；也不能据样品计划扣减当季销量。 地域采购资格可排除整组指定买方，影响范围取决于实际客户分布；向其他合法市场分流还需合格配置与可供量，无法按中国行业需求比例估本Unit收入。",
+          "scope_boundary": "解释性能成品SSD份额与技术替代；第三方采用美光原始NAND不计入本Unit份额。HBF/HBM完整架构在邻接Shell，不跨负载推导统一替代比例。",
+          "ref": [
+            "D1-O103",
+            "https://blogs.nvidia.com/blog/ai-storage-fms/",
+            "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html",
+            "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf",
+            "https://www.trendforce.com/presscenter/news/20260901-13210.html",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O66"
+          ]
+        },
+        {
+          "name": "客户回报、资金与部署节奏",
+          "mechanism": "客户根据服务收入/节省与运营成本形成投资回报，融资可得性决定可承诺预算；机房通电及服务器交付决定预算何时变成安装。现有性能层的可用余量决定新增活动能否先被吸收，供应协议与客户库存决定美光交付和终端安装是否同步。预付款可支持履约和扩产，但不能制造合格SSD或证明终端消耗。",
+          "current_status": "判断为资金支持已扩张，但预算、建筑和存储采购仍有不同钟表。Anthropic 2月融资是资本获得事实；Crusoe/Lancium 1GW为园区计划，旧Abilene资产2025年已交付且15年租约，均不等于同一批新增服务器。美光公司级多年协议增强需求可见性，未披露本Unit覆盖比例；客户性能层余量没有可比量化，不能由行业紧缺直接断言每个客户满载。",
+          "materiality_context": "投资回报决定预算持续性，资金可得性影响扩张速度而非每任务资源量；仅融资增加可先留为现金。通电/整机交付可把扩容推迟数季，余量有非线性：新增10%工作在15%适配余量中可无需加盘，接近满载则触发采购（示意）。库存与合同使当季出货可领先或滞后终端安装，故园区延后不必导致同比例美光收入下滑。当前已经商业化的性能用途更受合格供应与配置分配影响，仍在建平台更受部署时间影响；公司级合同支持不能作为本Unit保底收入，更不能把租金和AI收费当两份独立存储需求。",
+          "scope_boundary": "只保留客户预算与物理部署对本Unit的传导；AI基础设施资本、物业风险及跨产品战略协议由相邻Shell深入。",
+          "ref": [
+            "https://www.anthropic.com/news/anthropic-raises-30-billion-series-g-funding-380-billion-post-money-valuation",
+            "https://www.crusoe.ai/resources/newsroom/crusoe-and-lancium-announce-1-gigawatt-ai-data-center-campus-in-childress-texas",
+            "https://www.sec.gov/Archives/edgar/data/1944366/000194436626000020/exhibit993-2025abelinedc1l.htm",
+            "D1-O66",
+            "D1-O79",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+          ]
+        },
+        {
+          "name": "合格产出、产品组合与库存分配",
+          "mechanism": "美光把NAND良品、控制器/DRAM、装配测试和客户资格结合为可交付SSD，最紧工序限制有效产出；技术换代改变单位晶圆良品位元与产品成本。性能、容量和第三方组件竞争可用NAND，合同优先级与经济回报决定分配；渠道库存和客户拉货决定合格产出何时形成销售，而非所有产出同时确认收入。",
+          "current_status": "9650高量生产和现有产品组合说明有效供给不是仅样品。美光预计2026自身NAND供给增长低于行业，行业企业SSD需求预测及价格环境偏强，工作判断是近期增量需求部分先表现为分配/价格而非无限增产。G8/G9转换可改善位元经济，新加坡NAND新厂计划在2028日历年下半年开始晶圆产出，爬坡随需求调整；初始产出不等于成熟合格满产，更不是当前产量。尚无独立性能SSD库存或合格产出量，不把披露不足本身称为瓶颈。",
+          "materiality_context": "良品位元及后段资源决定可售上限，任一非瓶颈工序单独增10%未必增交付；客户资格决定这些位元能否用于本Unit。节点效率改变长期成本与上限，近端分配优先级可在总NAND不变时移转供给，直接影响性能业务且对应容量/组件机会成本。库存与拉货主要改变季度收入时点，过量可延后未来订货。当前需求强于可即时扩大的供应时，组合/资格分配比新厂总投资更有当季杠杆；控制器或测试若成为瓶颈，改善晶圆产出仍只形成半成品。",
+          "scope_boundary": "解释本Unit合格可交付供给，不建立全部NAND产能模型；跨Unit分配不是新增总供给，DRAM/HBM工艺产能也不视为可直接转用NAND。",
+          "ref": [
+            "https://stage-investors.micron.com/news/press-release/2026/Micron-in-High-Volume-Production-of-HBM4-Designed-for-NVIDIA-Vera-Rubin-PCIe-Gen6-SSD-and-SOCAMM2-03-16-2026/default.aspx",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+            "D1-O77",
+            "https://investors.micron.com/news/press-release/2026/Micron-Breaks-Ground-on-Advanced-Wafer-Fabrication-Facility-in-Singapore-01-26-2026/default.aspx"
+          ]
+        },
+        {
+          "name": "售价、档次与单位成本的收入利润传导",
+          "mechanism": "本Unit收入由实际交付位元及每位元实现价共同形成，实现价受竞争紧度、规格档次和合同定价影响；节点良率、控制器/固件研发及装配保障成本决定单位成本和毛利。客户预算对涨价作减少容量、延后更新或换档响应；有价格带/承诺的合同改变现货波动和现金时点，不把保证金当销售。",
+          "current_status": "近端判断是议价环境有利，但当前收入上升不能全部归因于性能架构采用。公司报告FY26Q4数据中心SSD合计收入近100亿美元、同比逾10倍，无法分为性能和容量；全部NAND当季ASP环比约30%、位元约10%的提高是公司广谱事实，不是本Unit系数。TrendForce预计日历4Q企业SSD合约价升23–28%，支持紧度而非美光实收预测。",
+          "materiality_context": "交付位元和实现价对收入一阶均重要，但行业当前大幅涨价使价格比新接口参数更能解释近期收入弹性。固定交付且价格升10%时收入升10%；单位成本不变时新增售价大部分进入毛利额，这是敏感性而非已知本Unit利润。档次提高可提高每位元价值，也增加控制器/研发等成本；良率和装配成本改善会在价格平稳时独立提高回报。预算固定且价升25%则可买位元降20%（示意），合同承诺可缓和即时量缩但未消除下一轮节约。公司CDBU利润含DRAM及其他产品，不能分配为本Unit毛利；保证金仅提供融资/保障。",
+          "scope_boundary": "经营经济止于本Unit收入和单位回报逻辑；公司估值、全部NAND供需及跨产品合同深度归邻接Shell。保留FY26周数和自然季度差异，不拼接作份额。",
+          "ref": [
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.trendforce.com/research/download/RP260924PL",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O66",
+            "D1-O103"
+          ]
+        }
+      ],
+      "potential_gaps": [
+        {
+          "name": "应用分发和工作委托改变性能存储需求密度",
+          "why_live": "付费企业AI已有商业基础，美光KV用途已有出货。Google于2025年把AI功能纳入Workspace部分商业/企业套餐，表明分发可由独立工具购买转为既有订阅；Managed Agents已经把长任务会话与执行环境分离。套餐覆盖和实际持续使用不同，给采用规模与任务结构留下修订空间。",
+          "revision_logic": "现有基线是商业缓存用途延续，不是所有席位对应一份新增SSD。应用供应者改变分发、任务授权或收费，会先改变活跃任务及驻留时间，再经缓存复用、余量和平台配置影响本Unit；因而可在收入尚未披露时扩大或收缩可服务机会。",
+          "possibility_space": [
+            {
+              "name": "办公或开发平台把持续代理纳入已有套餐并扩大默认可用范围",
+              "implication": "新用户不必单独采购工具，可扩大任务采用；若开始委托跨时段、多工具工作而不只短问答，活动状态与恢复访问增长更强。已有余量先吸收增量，接近上限后扩容更敏感；覆盖席位本身不等于活动量。"
+            },
+            {
+              "name": "大企业把代码、分析和内部流程从试用转成经常性工作委托",
+              "implication": "任务价值可使投入从试验预算转为运营预算，较稳定的并发与工作集支持更多性能存储。若流程集成消除多次无效调用，每员工任务数反而可下降，净效果取决于新增工作范围而不是招聘或用户数。"
+            },
+            {
+              "name": "服务商削减补贴、限制长任务或改按工作消耗收费",
+              "implication": "低价值长任务首先被压缩或退出，减少高驻留状态的需求，对性能SSD机会可能强于收费收入的下降。高价值客户仍可增长，机会会向能承担成本的负载集中，不是所有AI需求同时消失。"
+            }
+          ],
+          "ref": [
+            "https://workspaceupdates.googleblog.com/2025/01/expanding-google-ai-to-more-of-google-workspace.html",
+            "https://www.anthropic.com/news/anthropic-raises-30-billion-series-g-funding-380-billion-post-money-valuation",
+            "https://www.anthropic.com/engineering/managed-agents",
+            "D1-O103",
+            "https://developer.nvidia.com/blog/?p=111143"
+          ]
+        },
+        {
+          "name": "代理信任与数据控制改变部署范围和落点",
+          "why_live": "9月1日Anthropic公布EFS，拟分阶段让监控活动数据留在客户控制的云环境，体现敏感行业对数据保管和审查的约束；公告的秋季推广不视为全客户已采用。当前模型描述了硬件安全资格，尚不能用它替代企业愿否授权代理处理业务数据的判断。",
+          "revision_logic": "性能SSD机会不只受推理能力决定。信任和权限制度可能开放原先不能运行的业务，也可能使同样的任务转到客户云或私有环境；公共事件还可能令采用意愿突变。改变的是用途范围、配置位置与采购者，不要求先出现美光订单才有修订意义。",
+          "possibility_space": [
+            {
+              "name": "银行、专业服务等买方接受客户自持数据和审查的新架构",
+              "implication": "可扩大敏感业务中代理的使用和恢复状态访问，改变此前被治理限制的机会范围。计算仍可托管，数据仍可在公共云账户，不能把客户控制一律理解为企业自买本地SSD；美光捕获取决于该环境的配置。"
+            },
+            {
+              "name": "发生受关注的代理越权、数据泄漏或不可恢复误操作，企业暂停部分委托",
+              "implication": "这是未来假设而非已报告美光事件。首先削弱采用与长任务授权，即使模型能力和SSD供应未变；之后可能增加隔离日志、保护副本或私有部署，性能需求会由通用代理扩张转向受控工作，不能仅判断总量同向。"
+            },
+            {
+              "name": "平台用更严格访问范围和最少数据处理恢复企业采用",
+              "implication": "每任务持有数据减少，可降低缓存强度；若使更多企业愿意部署，活动规模又可增加。此时应把安全改进的采用收益和数据节约分开，而不是把治理功能简单计为更多SSD。"
+            }
+          ],
+          "ref": [
+            "https://www.anthropic.com/news/enterprise-frontier-safeguards",
+            "https://www.everpuredata.com/company/newsroom/press-releases/everpure-redefines-cyber-resilience-with-data-management.html",
+            "https://www.micron.com/content/dam/micron/global/public/products/storage/ssds/data-center/7600/7600-nvme-ssd-product-brief.pdf",
+            "https://www.anthropic.com/engineering/managed-agents"
+          ]
+        },
+        {
+          "name": "有效缓存架构与单位工作资源强度重写",
+          "why_live": "现有默认路径已包含共享闪存、预取和压缩，不含每个token永久保存。CMX给系统层共享缓存提供技术基础，TurboQuant研究和FDP实验说明上下文字节、写放大与软件路径都可改变；它们还不是全客户生产系数。",
+          "revision_logic": "同样的商业任务可产生不同SSD容量、IO与耐久配置。架构采用不是单纯量增：改变重用、落层或写放大能改每任务资源和使用价值，也能降低服务成本、使活动反弹。修订的是性能SSD强度及其可盈利范围，而非只问技术是否“完成”。",
+          "possibility_space": [
+            {
+              "name": "运营者把KV压缩和淘汰策略普遍接入生产推理",
+              "implication": "固定任务量先减少驻留字节，可能延后容量扩张或削减每服务器配置。更低成本若扩大服务，需求可恢复甚至超过原值；但资源节约需要被活动增长超过，不可把模型最长上下文增幅直接套入采购。"
+            },
+            {
+              "name": "共享缓存和路由改进让跨副本的上下文重用显著更有效",
+              "implication": "减少重复状态也减少重算，使闪存层更有经济价值；可降低总字节同时增加共享层访问和采用范围。收益可能体现为较高规格/价值捕获而非更多盘数，网络与预取是否限制有效性能决定扩展方式。"
+            },
+            {
+              "name": "生产负载表现为低重用或不可容忍闪存尾延迟，平台更多使用主机内存或重算",
+              "implication": "压低闪存可服务落层比例，并可能让已规划的容量回归更小配置，修订KV用途扩展空间。普通事务和其他性能SSD需求仍独立存在；负载重新分配比笼统宣告AI存储需求失败更准确。"
+            },
+            {
+              "name": "数据库或缓存系统推广主机提示/FDP，降低写放大与过度配置",
+              "implication": "在相同写入下减少介质磨损及预留需求，可降低MAX档或替换需求，又能让原来成本过高的工作可用SSD。竞争重点可能从额定耐久转向软硬协同，销量与单位经济不必同向变化。"
+            }
+          ],
+          "ref": [
+            "https://developer.nvidia.com/blog/?p=111143",
+            "https://research.google/blog/turboquant-redefining-ai-efficiency-with-extreme-compression/",
+            "https://arxiv.org/abs/2610.02676v2",
+            "https://www.micron.com/content/dam/micron/global/public/products/storage/ssds/data-center/7600/7600-nvme-ssd-product-brief.pdf",
+            "D1-O103"
+          ]
+        },
+        {
+          "name": "平台标准与替代闪存改变竞争边界",
+          "why_live": "美光Gen6已有高量生产及商业KV交付，具先行窗口；Storage-Next支持多厂商，GP1功能评估与HBF标准/验证路径也在形成。现有基线是负载分化，不是所有近GPU闪存都由标准美光SSD承接。",
+          "revision_logic": "开放兼容可扩大市场并削弱供应商锁定，替代形态可改变本Unit可服务边界而不仅改变现有份额。初步系统选型、软件路径或技术经济进展就能修订下代机会，仍须区分样品、适用负载和商业采购，不能直接扣减当前出货。",
+          "possibility_space": [
+            {
+              "name": "整机和系统软件把标准Gen6 SSD纳入更多可采购配置",
+              "implication": "扩大美光可竞争的平台范围，现有高量能力有助承接；若接口开放同时带来双来源，行业采用增加可伴随单平台份额下降。净效果取决于新增范围与分配，而不只是认证平台数。"
+            },
+            {
+              "name": "竞争标准SSD通过同一平台资格并提高可供量",
+              "implication": "无需改变AI活动就能重分配采购，削弱先行窗口及溢价。美光也可能因市场更易保供而参与更大采购池，长期贡献不应仅以同行新SKU数量判断。"
+            },
+            {
+              "name": "GP1等低延迟/GPU直接闪存证明某些访问模式更具经济性",
+              "implication": "可使部分缓存或扩展层离开本Unit的标准TLC SSD，改变下代产品定位与可服务机会。成本、粒度和耐久相近的工作才相关，不能从功能样品推广成所有通用企业SSD替代。"
+            },
+            {
+              "name": "HBF设备及专用管理软件适配更多权重或上下文工作",
+              "implication": "会把一部分近计算闪存价值转到不同形态和供应者，也可能降低服务成本扩大其他SSD层需求。结果是架构分工重排，不是HBM或标准SSD必然全面消失；当前贡献小不意味着远期修订空间小。"
+            }
+          ],
+          "ref": [
+            "https://stage-investors.micron.com/news/press-release/2026/Micron-in-High-Volume-Production-of-HBM4-Designed-for-NVIDIA-Vera-Rubin-PCIe-Gen6-SSD-and-SOCAMM2-03-16-2026/default.aspx",
+            "https://blogs.nvidia.com/blog/ai-storage-fms/",
+            "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html",
+            "https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf",
+            "D1-O103"
+          ]
+        },
+        {
+          "name": "企业平台整合和采购渠道重组",
+          "why_live": "普通数据库、虚拟化和混合云是本Unit独立需求。Portworx有实际迁移卷记录；VMware 4月VCF说明支持多种主存储配置并可转换/导入既有环境，显示重平台化不必等同全套硬件替换，也可能改变由谁选盘。",
+          "revision_logic": "现有刷新基线可以被迁移位置、存储组织和效率重写。改变虚拟化许可/平台选择或把服务外包，会重排本地盘、共享阵列和云采购；业务工作量不变时也能改美光参与的型号、渠道、份额与时点。",
+          "possibility_space": [
+            {
+              "name": "企业借许可续约或平台更换重建本地/超融合存储",
+              "implication": "可打开新的标准SSD配置和供应选择，若写入/保护要求改变也会改耐久档次。新增迁移期间副本可能短暂增加硬件，但不能将所有搬迁字节视为永久需求。"
+            },
+            {
+              "name": "企业把旧集群原地导入统一私有云并提高整合率",
+              "implication": "先延长存量设备承载期、降低每工作所需盘数，削弱自动刷新量增的理解；随利用率上升可能转而购买更高规格或共享存储，成熟性能需求没有因此被取消。"
+            },
+            {
+              "name": "客户转为云块存储或系统商订阅，终端不再直接选盘",
+              "implication": "采购权集中于运营者或系统商，其资格与多来源决定美光捕获。渠道转换可放大可服务规模，也可让原本标准SSD机会转为组件管理路线，不能把软件服务增长直接算本Unit增长。"
+            }
+          ],
+          "ref": [
+            "https://www.everpuredata.com/company/newsroom/press-releases/portworx-by-everpure-is-redefining-modern-virtualization.html",
+            "https://blogs.vmware.com/cloud-foundation/2026/04/16/converging-vmware-vsphere-to-vmware-cloud-foundation-9-0-the-top-10-questions-answered/",
+            "https://investor.everpuredata.com/news-and-events/press-releases/press-release-details/2026/Everpure-Announces-Second-Quarter-Fiscal-2027-Financial-Results/default.aspx",
+            "https://www.micron.com/content/dam/micron/global/public/products/storage/ssds/data-center/7600/7600-nvme-ssd-product-brief.pdf",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+          ]
+        },
+        {
+          "name": "客户资本和资源约束重排扩容时钟",
+          "why_live": "AI客户已有融资，园区却仍需电力与建筑交付；旧Abilene的长租与债务期限体现开发资金和长期使用承诺不同。当前本Unit有实际商业交付，不能把所有性能存储需求都归为在建项目，亦不能用行业紧缺推断客户缓存全满。",
+          "revision_logic": "商业意愿不变时，资金/通电及存量适配余量能改变扩容时点；合同与库存又使美光交付不同步于终端使用。修订可落在增长时间和持续性，未必落在总工作需求，资源瓶颈缓解也可能扩大原本受限的机会。",
+          "possibility_space": [
+            {
+              "name": "融资方收紧新增园区开发或要求更高租户保障",
+              "implication": "计划部署可延后，性能SSD扩展先集中到既有平台，未来量的时间价值与采购池改变。已有可执行供货合同或备货可让当期美光交付滞后反映这种变化，不能把融资承诺减少当作同比例取消订单。"
+            },
+            {
+              "name": "电网/现场供电和整机交付改善，运营者缩短建设到安装的间隔",
+              "implication": "可让原本计划中的需求更早进入采购，但仍受适配SSD、软件和供应分配约束。若旧设备有充分余量，通电改善可先提高服务供给而非等比例增加存储。"
+            },
+            {
+              "name": "客户通过调度和整合释放已购性能层余量",
+              "implication": "活动仍可增长而近端加盘减少，削弱“服务扩张立即形成硬件采购”的默认敏感性；余量被消耗后同样活动增量的采购杠杆更高，修订重点是时点和资源强度而非付费采用方向。"
+            }
+          ],
+          "ref": [
+            "https://www.anthropic.com/news/anthropic-raises-30-billion-series-g-funding-380-billion-post-money-valuation",
+            "https://www.crusoe.ai/resources/newsroom/crusoe-and-lancium-announce-1-gigawatt-ai-data-center-campus-in-childress-texas",
+            "https://www.sec.gov/Archives/edgar/data/1944366/000194436626000020/exhibit993-2025abelinedc1l.htm",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://developer.nvidia.com/blog/?p=111143"
+          ]
+        },
+        {
+          "name": "合格供给、固件运行和产品配置发生再分配",
+          "why_live": "Gen6高量与跨代销售组合已把供应从展示转为实际产品。公司NAND增长及关键输入仍有约束，客户资格、控制器/测试和产品分配决定有效交付；型号运行风险可独立于终端活动变化。没有当前批量缺陷证据，以下事故/整改是未来可能性。",
+          "revision_logic": "既有需求不变时，有效产出和可靠运行可改交付上限、客户份额及成本。当前一般新品批次增加属普通推进；不同的后段瓶颈、客户运行反馈或跨Unit分配，才改变持续供货与经济性理解。",
+          "possibility_space": [
+            {
+              "name": "控制器、测试或目标规格良品改善，使已验证型号更易交付",
+              "implication": "可把积压机会转为销量并提升规模经济，且客户因保供愿扩大采用。若瓶颈仍是平台资格或其他工序，增量资源先形成库存而不是同幅收入；这是有效供应扩大，不是纯需求增加。"
+            },
+            {
+              "name": "客户运行中出现重大固件、数据完整性或持续性能问题，暂停某配置",
+              "implication": "可能降低对应平台可服务范围、增加保障成本并转移份额，影响可在收入前通过客户选择体现。事故若局限单配置不宜扩成全组合；整改成功可恢复资格，但竞争来源一旦导入会降低原先粘性。"
+            },
+            {
+              "name": "美光按合同和贡献回报把更多合格NAND移向容量或组件业务",
+              "implication": "性能业务可在总NAND未变时受限，短缺时先表现为配置分配与价格而非充分满足量增。其他Unit收益是资源移转，不能作为三条独立行业新增需求；反向优先性能也会改兄弟业务机会。"
+            }
+          ],
+          "ref": [
+            "https://stage-investors.micron.com/news/press-release/2026/Micron-in-High-Volume-Production-of-HBM4-Designed-for-NVIDIA-Vera-Rubin-PCIe-Gen6-SSD-and-SOCAMM2-03-16-2026/default.aspx",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.micron.com/content/dam/micron/global/public/products/storage/ssds/data-center/7600/7600-nvme-ssd-product-brief.pdf",
+            "https://investors.micron.com/news/press-release/2025/Micron-Unveils-Portfolio-of-Industry-First-SSDs-to-Power-the-AI-Revolution-07-29-2025/default.aspx"
+          ]
+        },
+        {
+          "name": "增长组成、合同保护与议价持续期重估",
+          "why_live": "现有强价格基线有产业与公司证据，但近100亿美元是合计SSD收入，价格/实物/性能容量贡献未拆。公司级多年协议覆盖多种产品；它们不自动提供本Unit利润底线，因而新增解释可改变已有增长的含义。",
+          "revision_logic": "收入规模相似可以来自持续部署、涨价或提前备货，这些对未来采购和回报的含义不同。同规格定价、产品组合、实际位元及合同风险分担的改变，会修订近端强议价持续多久及怎样正常化，不是用一个总收入数再证明相同故事。",
+          "possibility_space": [
+            {
+              "name": "后续产品级经营披露显示增长更多来自复购和物理交付",
+              "implication": "把当前收入扩展解释为更大运行底盘，后续需求对单次涨价的依赖下降；仍须区分性能与容量和期间，不以合计池算本Unit份额。成本与档次决定这种量增能保留多少回报。"
+            },
+            {
+              "name": "高收入主要来自实现价和保供备货，随后客户消化库存",
+              "implication": "修订近期量增与持续性的判断，即使终端AI活动未减少也可能有拉货停顿。去库存和行业价弱化可叠加；若合同要求继续交付，冲击可先成为客户库存与下一轮谈价压力。"
+            },
+            {
+              "name": "本Unit客户把订单转为跨代数量/价格框架且保留明确采购弹性",
+              "implication": "可延长可见性或降低短期价格波动，也可能以价格上限和工程支持换保障。覆盖范围及履约成本决定保护多少业务，不能从公司保证金推本Unit利润，更不把现金保障当收入。"
+            },
+            {
+              "name": "竞争供应改善或买方预算压力导致同规格降价，节点降本同时推进",
+              "implication": "收入议价支持减弱，但成本下降可部分保住回报，量增也可补偿。修订方向取决于同范围价量成本，不能把全部NAND价格回落直接等同本Unit利润同比例下滑。"
+            }
+          ],
+          "ref": [
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.trendforce.com/research/download/RP260924PL",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O103",
+            "D1-O66"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "美光数据中心容量型SSD业务",
+      "scope": "美光自有高容量数据中心SSD组合，涵盖QLC及其他容量产品路线、云和企业容量需求、存储层级、容量成本、可靠性、能耗、客户采用与采购、出货、定价，以及与其他闪存和HDD路线的竞争与互补。",
+      "horizon": "季度业务变化及容量产品、客户采购和存储架构周期。",
+      "ref": [
+        "D1-O103",
+        "D1-O156",
+        "D1-O172",
+        "D1-O74",
+        "D1-O44",
+        "D1-O88",
+        "D1-O3",
+        "D1-O139",
+        "D1-O72",
+        "D1-O24",
+        "https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html",
+        "https://www.westerndigital.com/in-id/company/newsroom/press-releases/2026/2026-02-03-western-digital-accelerates-storage-innovation-for-ai-era",
+        "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+        "https://www.trendforce.com/research/download/RP260924PL",
+        "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+        "https://investors.micron.com/news/press-release/2026/Industry-Leading-245TB-Micron-6600-ION-Data-Center-SSD-Now-Shipping/default.aspx",
+        "https://investors.micron.com/news/press-release/2025/Micron-Unveils-Portfolio-of-Industry-First-SSDs-to-Power-the-AI-Revolution-07-29-2025/default.aspx",
+        "https://apac.kioxia.com/en-apac/business/news/2026/20260515-1.html",
+        "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+        "https://www.sec.gov/Archives/edgar/data/2023554/000162828026057406/sndk-20260703.htm",
+        "https://www.sec.gov/Archives/edgar/data/106040/000162828026057139/wdc-20260703.htm",
+        "https://www.everpuredata.com/company/newsroom/press-releases/portworx-by-everpure-is-redefining-modern-virtualization.html",
+        "https://investor.everpuredata.com/news-and-events/press-releases/press-release-details/2026/Everpure-Announces-Second-Quarter-Fiscal-2027-Financial-Results/default.aspx",
+        "https://www.anthropic.com/engineering/managed-agents",
+        "https://aws.amazon.com/about-aws/whats-new/2026/09/agentcore-memory-direct-ingest/",
+        "https://www.everpuredata.com/company/newsroom/press-releases/everpure-redefines-cyber-resilience-with-data-management.html",
+        "https://blog.everpuredata.com/perspectives/qlc-hyperscale-moment-has-arrived/",
+        "https://www.crusoe.ai/resources/newsroom/crusoe-and-lancium-announce-1-gigawatt-ai-data-center-campus-in-childress-texas",
+        "https://www.redbooks.ibm.com/abstracts/redp5725.html",
+        "https://investors.micron.com/news/press-release/2025/Pure-Storage-and-Micron-Collaborate-to-Deliver-Scalable-Energy-Efficient-Solutions-for-Hyperscale-Data-Centers-01-07-2025/default.aspx",
+        "https://newsroom.ibm.com/next-generation-ibm-flashsystem-portfolio",
+        "D1-O66",
+        "https://www.sec.gov/Archives/edgar/data/1944366/000194436626000020/exhibit993-2025abelinedc1l.htm",
+        "D1-O77",
+        "https://apac.kioxia.com/en-apac/about/news/2026/20260130-1.html",
+        "https://www.kioxia.com.cn/zh-cn/about/news/2026/20260827-3.html",
+        "https://www.anthropic.com/news/enterprise-frontier-safeguards",
+        "https://press.siemens.com/global/en/pressrelease/siemens-unveils-technologies-accelerate-industrial-ai-revolution-ces-2026",
+        "https://arxiv.org/abs/2501.03575v1",
+        "https://developer.nvidia.com/blog/?p=111143",
+        "https://investors.micron.com/news/press-release/2026/Micron-Breaks-Ground-on-Advanced-Wafer-Fabrication-Facility-in-Singapore-01-26-2026/default.aspx",
+        "https://www.micron.com/content/dam/micron/global/public/products/storage/ssds/data-center/6600/6600-ion-nvme-ssd-product-brief.pdf"
+      ],
+      "state": {
+        "parameters": [
+          {
+            "name": "美光数据中心SSD合计收入规模",
+            "definition": "性能/通用与容量自有SSD共同收入池的公司披露近似规模；非本Unit独立收入，也不含可自行推算的组件分摊。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "企业SSD行业合约价格预期",
+            "definition": "TrendForce企业SSD行业合约价环比预测，非美光ASP；公开目录未单列QLC专属数值。",
+            "value_type": "RANGE",
+            "ref": [
+              "https://www.trendforce.com/research/download/RP260924PL"
+            ]
+          },
+          {
+            "name": "企业SSD行业比特需求预期",
+            "definition": "TrendForce企业SSD全年比特需求同比预测，一侧边界保留为规模状态；不是美光实物销售。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260930-13258.html"
+            ]
+          },
+          {
+            "name": "6600 ION商业放量",
+            "definition": "6600 ION容量型SSD已经完成的商业交付和爬坡位置。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Industry-Leading-245TB-Micron-6600-ION-Data-Center-SSD-Now-Shipping/default.aspx",
+              "D1-O103"
+            ]
+          },
+          {
+            "name": "6600 ION单盘最大标称容量",
+            "definition": "已出货245TB等级6600 ION的标称用户盘容量；245.76TB不是裸NAND颗粒总容量，也不是系统冗余、格式化及数据缩减后的净有效容量或实际填充量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Industry-Leading-245TB-Micron-6600-ION-Data-Center-SSD-Now-Shipping/default.aspx",
+              "https://www.micron.com/content/dam/micron/global/public/products/storage/ssds/data-center/6600/6600-ion-nvme-ssd-product-brief.pdf"
+            ]
+          },
+          {
+            "name": "6600 ION 245TB峰值功率",
+            "definition": "245TB配置厂商峰值功耗；不是平均负载功耗、系统总功耗或实际电费。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Industry-Leading-245TB-Micron-6600-ION-Data-Center-SSD-Now-Shipping/default.aspx"
+            ]
+          },
+          {
+            "name": "6600 ION系统空间与用电配置",
+            "definition": "厂商明示的按各盘标称容量相加、未扣系统冗余的等容量空间及功率模型，连接容量产品的客户TCO选择，不是通用SSD/HDD成本交叉价格。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Industry-Leading-245TB-Micron-6600-ION-Data-Center-SSD-Now-Shipping/default.aspx"
+            ]
+          },
+          {
+            "name": "容量SSD第三方系统可集成位置",
+            "definition": "系统供应者已公开支持的美光容量产品配置，区分系统支持与最终客户订单。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2025/Micron-Unveils-Portfolio-of-Industry-First-SSDs-to-Power-the-AI-Revolution-07-29-2025/default.aspx"
+            ]
+          },
+          {
+            "name": "Kioxia高容量竞品系统位置",
+            "definition": "同容量等级替代供应者及具体系统方案的可选择位置。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://apac.kioxia.com/en-apac/business/news/2026/20260515-1.html"
+            ]
+          },
+          {
+            "name": "Sandisk数据中心容量销售增幅",
+            "definition": "Sandisk自身数据中心exabyte销售同比增幅的近似状态，覆盖其数据中心闪存组合，不是全行业或美光份额。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O156"
+            ]
+          },
+          {
+            "name": "WD云端HDD容量出货增幅",
+            "definition": "WD云端HDD exabyte实物销售同比增长；体现容量层仍有HDD采购，不与Sandisk分母相加。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O172"
+            ]
+          },
+          {
+            "name": "WD HAMR客户资格位置",
+            "definition": "容量HDD替代路线在客户认证与生产中的实际位置。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.westerndigital.com/in-id/company/newsroom/press-releases/2026/2026-02-03-western-digital-accelerates-storage-innovation-for-ai-era",
+              "D1-O172"
+            ]
+          },
+          {
+            "name": "WD HAMR生产爬坡窗口",
+            "definition": "竞争容量层单位成本路线的供应者生产爬坡计划窗口。",
+            "value_type": "TIME",
+            "ref": [
+              "https://www.westerndigital.com/in-id/company/newsroom/press-releases/2026/2026-02-03-western-digital-accelerates-storage-innovation-for-ai-era"
+            ]
+          },
+          {
+            "name": "容量SSD独立收入",
+            "definition": "本Unit独立确认的季度销售收入，美元；不得用CDBU或全部数据中心SSD收入分摊填充。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O44",
+              "D1-O103",
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "容量SSD独立出货比特",
+            "definition": "本Unit合格成品SSD商业出货的季度容量，按盘标称用户容量折算为十进制EB（1 EB为10^18字节）；与本Unit实现ASP采用相同容量口径，区别于制造端裸NAND位元。单盘最大容量、收入增速及设计胜出都不能代替出货量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O44",
+              "D1-O103",
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "容量SSD独立实现ASP",
+            "definition": "本Unit产品组合实现售价，美元/标称用户GB，与同口径出货容量配对；与同规格价格、行业报价及组合变化分别理解。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O44",
+              "D1-O103",
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "容量SSD独立毛利率",
+            "definition": "本Unit销售收入对应毛利率，%；CDBU混合DRAM、SSD及组件NAND，不能代入。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O44",
+              "D1-O103",
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "容量SSD独立客户采购分配",
+            "definition": "本Unit在已进入的客户平台中的供应份额、重复采购及履约安排；身份、用途、地域与规格限定范围。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O44",
+              "D1-O103",
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "容量SSD独立交付与库存位置",
+            "definition": "本Unit可交付合格量、订单交期及客户/渠道库存消耗状态；送样与客户生产部署分开。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O44",
+              "D1-O103",
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "容量层客户完整TCO",
+            "definition": "具体工作负载、采购价、服务寿命、功率、机架、冗余和运维条件下本Unit相对替代路线的完整每TB成本；厂商峰值功率模型不是客户完整TCO。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Industry-Leading-245TB-Micron-6600-ION-Data-Center-SSD-Now-Shipping/default.aspx",
+              "https://apac.kioxia.com/en-apac/business/news/2026/20260515-1.html",
+              "D1-O172"
+            ]
+          }
+        ],
+        "values": [
+          {
+            "name": "美光数据中心SSD合计收入规模｜2026-09-30",
+            "parameter": "美光数据中心SSD合计收入规模",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "FY2026 Q4合计收入接近100亿美元，超过上年同季10倍；没有性能/容量拆分。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026 Q4，截至2026-09-03；同比FY2025 Q4；FY2026为53周、FY2025为52周",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "TrendForce 4Q26企业SSD价格预测",
+            "parameter": "企业SSD行业合约价格预期",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "lower": 23.0,
+              "upper": 28.0,
+              "unit": "%环比"
+            },
+            "previous_value": null,
+            "time_scope": "2026日历Q4，相对日历Q3",
+            "as_of": "2026-09-24",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/research/download/RP260924PL"
+            ]
+          },
+          {
+            "name": "企业SSD行业比特需求预期｜2026-09-30",
+            "parameter": "企业SSD行业比特需求预期",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "TrendForce预计2026年企业SSD比特需求同比增长超过80%。"
+            },
+            "previous_value": null,
+            "time_scope": "2026日历年同比2025",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/presscenter/news/20260930-13258.html"
+            ]
+          },
+          {
+            "name": "6600 ION商业放量｜2026-09-30",
+            "parameter": "6600 ION商业放量",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "245TB版本自5月起已出货；公司9月披露6600 ION在FY2026 Q4强劲放量。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-05-05出货状态及FY2026 Q4，截至2026-09-03",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Industry-Leading-245TB-Micron-6600-ION-Data-Center-SSD-Now-Shipping/default.aspx",
+              "D1-O103"
+            ]
+          },
+          {
+            "name": "6600 ION单盘最大标称容量｜2026-05-05已出货E3.L容量配置",
+            "parameter": "6600 ION单盘最大标称容量",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 245.76,
+              "unit": "TB/盘"
+            },
+            "previous_value": null,
+            "time_scope": "2026-05-05已出货E3.L标称盘容量配置；系统冗余前，非裸NAND颗粒总容量",
+            "as_of": "2026-05-05",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Industry-Leading-245TB-Micron-6600-ION-Data-Center-SSD-Now-Shipping/default.aspx"
+            ]
+          },
+          {
+            "name": "6600 ION 245TB峰值功率｜2026-05-05规格",
+            "parameter": "6600 ION 245TB峰值功率",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 30.0,
+              "unit": "W/盘（峰值）"
+            },
+            "previous_value": null,
+            "time_scope": "2026-05-05规格",
+            "as_of": "2026-05-05",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Industry-Leading-245TB-Micron-6600-ION-Data-Center-SSD-Now-Shipping/default.aspx"
+            ]
+          },
+          {
+            "name": "6600 ION系统空间与用电配置｜2026-05-05",
+            "parameter": "6600 ION系统空间与用电配置",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "美光模型（各盘标称容量相加，未扣系统冗余或计入数据缩减；不是裸NAND容量）：36U/720盘为176.9PB（245.76TB SSD）对31.7PB（44TB HDD），理论机架减少82%；1EB用4069 SSD对22727 HDD，按30W/10W峰值全年运行估计HDD用电为1.9倍。44TB盘功耗沿用32/36TB盘假设。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-05-05厂商配置模型",
+            "as_of": "2026-05-05",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Industry-Leading-245TB-Micron-6600-ION-Data-Center-SSD-Now-Shipping/default.aspx"
+            ]
+          },
+          {
+            "name": "容量SSD第三方系统可集成位置｜2025-07-29",
+            "parameter": "容量SSD第三方系统可集成位置",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "Supermicro公开36个E3.S盘位方案支持122TB 6600 ION，2U可达4.42PB；WEKA表达其数据密集平台的集成用途。"
+            },
+            "previous_value": null,
+            "time_scope": "2025-07-29合作方案",
+            "as_of": "2025-07-29",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2025/Micron-Unveils-Portfolio-of-Industry-First-SSDs-to-Power-the-AI-Revolution-07-29-2025/default.aspx"
+            ]
+          },
+          {
+            "name": "Kioxia高容量竞品系统位置｜2026-05-15",
+            "parameter": "Kioxia高容量竞品系统位置",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "Kioxia与Dell已发布2U PowerEdge R7725xd方案，40个LC9 245.76TB E3.L盘、约9.8PB；245.76TB仅E3.L，2.5英寸/E3.S最高122.88TB。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-05-15披露配置",
+            "as_of": "2026-05-15",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://apac.kioxia.com/en-apac/business/news/2026/20260515-1.html"
+            ]
+          },
+          {
+            "name": "Sandisk数据中心容量销售增幅｜2026-08-17",
+            "parameter": "Sandisk数据中心容量销售增幅",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "Sandisk FY2026数据中心exabyte销售同比增加接近120%。"
+            },
+            "previous_value": null,
+            "time_scope": "Sandisk截至2026-07-03财年，对自身上财年",
+            "as_of": "2026-08-17",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O156",
+              "https://www.sec.gov/Archives/edgar/data/2023554/000162828026057406/sndk-20260703.htm"
+            ]
+          },
+          {
+            "name": "WD云端HDD容量出货增幅｜WD截至2026-07-03 FY2026，对FY2025；53周对52周，非周数标准化",
+            "parameter": "WD云端HDD容量出货增幅",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 27.0,
+              "unit": "%同比"
+            },
+            "previous_value": null,
+            "time_scope": "WD截至2026-07-03 FY2026，对FY2025；53周对52周，非周数标准化",
+            "as_of": "2026-08-14",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O172",
+              "https://www.sec.gov/Archives/edgar/data/106040/000162828026057139/wdc-20260703.htm"
+            ]
+          },
+          {
+            "name": "WD HAMR客户资格位置｜2026-02-03",
+            "parameter": "WD HAMR客户资格位置",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "WD披露HAMR正在两家hyperscaler资格认证；2027年生产爬坡为计划，不是当前产量。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-02-03路线图快照",
+            "as_of": "2026-02-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.westerndigital.com/in-id/company/newsroom/press-releases/2026/2026-02-03-western-digital-accelerates-storage-innovation-for-ai-era",
+              "D1-O172"
+            ]
+          },
+          {
+            "name": "WD计划2027年HAMR生产爬坡",
+            "parameter": "WD HAMR生产爬坡窗口",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "point": null,
+              "start": "2027-01-01",
+              "end": "2027-12-31",
+              "precision": "日历年计划"
+            },
+            "previous_value": null,
+            "time_scope": "2027日历年",
+            "as_of": "2026-02-03",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.westerndigital.com/in-id/company/newsroom/press-releases/2026/2026-02-03-western-digital-accelerates-storage-innovation-for-ai-era"
+            ]
+          }
+        ]
+      },
+      "expectation_baseline": [
+        {
+          "name": "6600 ION从容量产品可获得性转向持续爬坡",
+          "baseline": "研究综合判断：未来几个季度6600 ION延续放量是比停留在发布/资格阶段更合理的默认路径。245TB版本已经出货、Q4强劲爬坡，并有具体系统生态支持；其需求基础包括数据湖、文件/对象存储及企业容量层，不限于活跃推理缓存。合计SSD收入池扩张提供商业支持，但无法按盘容量或合计收入推算本Unit的比特、ASP和毛利。",
+          "ordinary_progress": "122TB/245TB配置进入更多采购批次、系统商增加支持、已经验证客户扩大容量部署。",
+          "open_frontier": "高容量盘带来的位元增量与盘数整合的净结果、客户重复采购规模，以及6600增长中来自新增工作负载还是HDD/其他SSD替代的部分。",
+          "time_scope": "FY2027近端季度与高容量采购周期",
+          "ref": [
+            "D1-O103",
+            "https://investors.micron.com/news/press-release/2026/Industry-Leading-245TB-Micron-6600-ION-Data-Center-SSD-Now-Shipping/default.aspx",
+            "https://investors.micron.com/news/press-release/2025/Micron-Unveils-Portfolio-of-Industry-First-SSDs-to-Power-the-AI-Revolution-07-29-2025/default.aspx",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+          ]
+        },
+        {
+          "name": "QLC与HDD共存，替换由访问需求和约束决定",
+          "baseline": "研究综合判断：容量层会增加QLC分配，但全盘替代HDD不是当前默认路径。Sandisk数据中心EB近120%的增长和WD云端EB 27%的增长均为各自实物销售，支持数据总量增长下两条路线共存。容量成本主导、很少读取的数据仍可选HDD；更高检索/扫描强度、机架和电力受限的容量层更有理由选择QLC。",
+          "ordinary_progress": "QLC进入数据湖、向量数据与更多温数据任务，同时高容量HDD继续供应冷层；客户逐层调整而不是统一改介质。",
+          "open_frontier": "存量数据的访问强度、读写比例及服务时延何时使更多容量跨过QLC完整TCO门槛；HAMR 2027爬坡若降低HDD每TB成本，会改变边界而非替代低延迟缓存。",
+          "time_scope": "季度采购至2027容量路线竞争周期",
+          "ref": [
+            "D1-O156",
+            "D1-O172",
+            "https://www.westerndigital.com/in-id/company/newsroom/press-releases/2026/2026-02-03-western-digital-accelerates-storage-innovation-for-ai-era",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html"
+          ]
+        },
+        {
+          "name": "密度与峰值能耗优势形成入口，完整TCO仍按配置分化",
+          "baseline": "研究综合判断：高密度6600 ION优先在空间、电力或吞吐约束明显的项目获得采用，不需要假设其盘价每TB已经低于HDD。已披露的176.9PB对31.7PB机架模型及1EB峰值功率模型解释选型动机；这些是厂商配置计算而非客户全年用电实测。竞争者LC9也已有同等级容量系统，密度优势会扩大闪存市场但不独占美光。",
+          "ordinary_progress": "客户在相同容量、冗余和访问任务下做系统整合，降低机架数量、缩短处理时间，系统商完善高密度机箱和运维。",
+          "open_frontier": "采购价、真实负载电费、冗余与故障域、重建时间及寿命成本的组合是否足以改变指定客户选择；单盘更大并不等于可靠性风险更小。",
+          "time_scope": "高容量系统评估与部署周期",
+          "ref": [
+            "https://investors.micron.com/news/press-release/2026/Industry-Leading-245TB-Micron-6600-ION-Data-Center-SSD-Now-Shipping/default.aspx",
+            "https://apac.kioxia.com/en-apac/business/news/2026/20260515-1.html",
+            "D1-O172"
+          ]
+        },
+        {
+          "name": "QLC价格强势与买方容量预算同时作用",
+          "baseline": "研究综合判断：近端容量SSD议价环境偏强，客户更可能优先购买已验证且能降低系统约束的容量，而非因为QLC较便宜就无限追加。TrendForce的企业SSD价格预测与需求扩张支持涨价工作基线；QLC密度使每系统可装更多位元，却不能抵消全部采购预算压力。",
+          "ordinary_progress": "已通过资格的产品持续谈价和交付，高容量组合占比上升；同等任务的系统整合帮助客户吸收部分成本上升。",
+          "open_frontier": "单GB涨价相对新增预算和系统节约的强度，以及买方订单是实际部署、提前备货还是缺货替代；这些决定放量与实现价能否共同延续。",
+          "time_scope": "2026日历Q4及FY2027近端采购",
+          "ref": [
+            "https://www.trendforce.com/research/download/RP260924PL",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+            "D1-O103",
+            "D1-O156"
+          ]
+        },
+        {
+          "name": "企业持久数据和服务渠道维持容量需求，但逻辑量不等于物理位元",
+          "baseline": "研究综合判断：容量需求将继续来自对象/文件、企业业务数据及混合云运行，而不是仅来自AI模型缓存。企业VM重平台化和Everpure Cloud Azure Native的正式服务可获得性说明应用数据继续被管理和付费，但买方可能由企业直接买盘转成云/系统商采购。默认是物理配置和渠道重新分配，不按每份快照、备份或迁移复制全量容量。",
+          "ordinary_progress": "企业运行、备份恢复和混合云服务持续扩展，容量由实际持久数据与保护策略承载；系统管理减少冗余复制或提高整合率。",
+          "open_frontier": "新生成及更久保留数据能否超过压缩、去重、精简配置和合并带来的位元节约，以及采购转向哪家云、SSD或组件系统。",
+          "time_scope": "季度企业需求及架构迁移周期",
+          "ref": [
+            "https://www.everpuredata.com/company/newsroom/press-releases/portworx-by-everpure-is-redefining-modern-virtualization.html",
+            "https://investor.everpuredata.com/news-and-events/press-releases/press-release-details/2026/Everpure-Announces-Second-Quarter-Fiscal-2027-Financial-Results/default.aspx",
+            "https://investors.micron.com/news/press-release/2026/Industry-Leading-245TB-Micron-6600-ION-Data-Center-SSD-Now-Shipping/default.aspx",
+            "D1-O74"
+          ]
+        }
+      ],
+      "realization_factors": [
+        {
+          "name": "数据用途、保留策略与净物理容量",
+          "mechanism": "企业交易、内容、科研和AI工具产生记录；可检索/恢复数据的业务价值与存储服务价格共同决定采用量和保留期限。数据治理决定删除及地域放置，备份/副本策略和压缩去重决定逻辑数据映射到多少净物理字节。容量采购随净新增物理存量和使用率变化，不随token总量、快照数或逻辑卷数等比例变化。",
+          "current_status": "判断是持久业务数据与新AI记录共同支撑容量增长，但保存全部推理中间状态不是必要前提。4月Managed Agents用可恢复日志保存任务历史；AWS 9月8日推出不先保存短期事件即可抽取长期记忆，展示不同保留策略。Everpure 5月不可变快照和治理功能说明恢复价值支持存储投入，却不证明每个快照占一份完整副本。当前容量SSD有实际爬坡，与纯概念持久记忆不同。",
+          "materiality_context": "数据业务价值与服务价格决定采用和保存意愿，其增长影响可服务总量；采用量同结构增10%先使新增数据约增10%，不是已存数据全部增10%。保留期限在稳态且删除相应时由12变18月可使该类存量约增50%（示意），删旧策略会抵销新增。副本/备份开销直接增加物理量，压缩去重的有效容量/物理容量倍率翻倍，则该可缩减数据的物理需求减半；加密或已压缩数据未必受益。地域放置可能分割池和增加必要副本，也可能仅迁移地点。当前数据使用与可靠恢复提供较宽成熟基础，实际保留/缩减政策比“AI记忆”标签更能修订容量强度；使用率高才更快转为采购。",
+          "scope_boundary": "覆盖本Unit容量需求的业务来源和物理转换；性能KV的短期缓存另计。治理规则作为买方决策变量，不从供应商调查推定新法律或统一强制保留期。",
+          "ref": [
+            "https://www.anthropic.com/engineering/managed-agents",
+            "https://aws.amazon.com/about-aws/whats-new/2026/09/agentcore-memory-direct-ingest/",
+            "https://www.everpuredata.com/company/newsroom/press-releases/everpure-redefines-cyber-resilience-with-data-management.html",
+            "D1-O103",
+            "https://investors.micron.com/news/press-release/2026/Industry-Leading-245TB-Micron-6600-ION-Data-Center-SSD-Now-Shipping/default.aspx"
+          ]
+        },
+        {
+          "name": "访问强度、层级分配与HDD共存",
+          "mechanism": "应用的访问频率、随机/顺序模式及响应要求决定每TB所需IO能力，软件索引/缓存改变后端访问强度。HDD与QLC的性能密度和容量成本决定热温冷数据的落层比例；云运营者可购买QLC、扩大HDD并保留前端缓存，或改变数据路径。需求因访问升温转向闪存时，可在总字节不增的情况下扩大容量SSD机会。",
+          "current_status": "当前不是所有容量数据统一闪存化。6600 ION已经商业放量，Sandisk FY26数据中心EB与WD云HDD EB各自实际增长说明多层同时扩张，不是共同分母份额。Everpure的主机管理路线针对越来越需要性能的容量负载；WD HAMR仍是2027爬坡计划，尚不能当作当前更低价替代。冷归档与需要频繁检索的RAG/分析数据有不同经济选择。",
+          "materiality_context": "访问频率和随机性决定HDD是否需要为IO而多配盘，响应要求使部分工作即使字节很少也转向闪存；索引/缓存降低后端访问可推迟这种转换。性能密度决定现有层还能承载多少工作，容量成本保留HDD对冷数据的优势。总存量不变而QLC落层比例从10%升至15%，该层需求增50%（示意），对本Unit可比总数据增10%更有杠杆。当前温热容量层更偏向QLC，而冷层仍有HDD量增证据；未来HAMR主要改变冷温层经济阈值，非直接替代低延迟缓存。容量密度上升若IO未同步增长，会加强该分层压力。",
+          "scope_boundary": "解释容量成品SSD与HDD及软件路径的竞争；不把两厂各自EB增长率拼成市占，不将所有RAG访问归入性能或容量同一层重复计量。",
+          "ref": [
+            "D1-O103",
+            "https://blog.everpuredata.com/perspectives/qlc-hyperscale-moment-has-arrived/",
+            "https://www.sec.gov/Archives/edgar/data/2023554/000162828026057406/sndk-20260703.htm",
+            "https://www.sec.gov/Archives/edgar/data/106040/000162828026057139/wdc-20260703.htm",
+            "https://www.westerndigital.com/in-id/company/newsroom/press-releases/2026/2026-02-03-western-digital-accelerates-storage-innovation-for-ai-era",
+            "https://investors.micron.com/news/press-release/2026/Industry-Leading-245TB-Micron-6600-ION-Data-Center-SSD-Now-Shipping/default.aspx"
+          ]
+        },
+        {
+          "name": "密度、约束资源与全寿命TCO",
+          "mechanism": "买方比较每可用TB的购置成本、设备密度、实际功率/冷却、维护运维及机架约束。高单盘容量降低同容量设备数，电力/空间紧缺提高节约的影子价值；若节约资源可转给计算或避免建新机房，QLC可接受更高采购价。闲置机架和电力富余时，这种价值下降，盘价和服务寿命的权重上升。",
+          "current_status": "当前6600 ION的245.76TB与30W峰值为真实规格，超高密度能够改变系统设计。美光1EB示例以4069块SSD对22727块44TB HDD，及同架82%空间节约，是规定配置下的模型，不是客户完整TCO。已有Supermicro/WEKA系统入口说明可集成。工作判断是空间或功率紧约束买方最易实现价值，预算敏感冷存储不一定有同样优势。",
+          "materiality_context": "购置成本影响即时预算，密度主要减少盘数、机架及部分维护，不会在总有效容量固定时自动增加NAND位元。功率/冷却依实际负载和电价贡献多年运营节约，30W峰值不能替代平均功率；维护/寿命改变故障更换与人力成本。机架和电力约束可使很小的节约跨过项目可行阈值，远比单独数个百分点盘价差有影响；约束富余时这种额外价值接近零。美光示例HDD用电1.9倍依全年峰值等假设，不能写成已实现客户账单。当前密度形成强入口，采购溢价能否被回收仍按利用率、寿命与资源紧度分化。",
+          "scope_boundary": "覆盖容量SSD对客户的经济适配，不将省电换算为固定GPU数量或美光订单；与基础设施Shell相连但不重建机房财务。",
+          "ref": [
+            "https://investors.micron.com/news/press-release/2026/Industry-Leading-245TB-Micron-6600-ION-Data-Center-SSD-Now-Shipping/default.aspx",
+            "https://investors.micron.com/news/press-release/2025/Micron-Unveils-Portfolio-of-Industry-First-SSDs-to-Power-the-AI-Revolution-07-29-2025/default.aspx",
+            "https://www.crusoe.ai/resources/newsroom/crusoe-and-lancium-announce-1-gigawatt-ai-data-center-campus-in-childress-texas",
+            "D1-O24"
+          ]
+        },
+        {
+          "name": "大盘可靠性、重建与可用容量",
+          "mechanism": "单盘容量和访问强度决定一个故障域内的数据及工作量，介质耐久/数据保留能力、控制器固件和供电保护共同影响可靠运行。系统冗余、备用空间和重建带宽决定各盘标称容量合计能转为多少系统净可用容量，以及故障后服务能否继续。客户据这些条件进行系统资格，可选择较小盘、更多冗余或其他介质，容量规格不是唯一采购依据。",
+          "current_status": "6600 ION已发货和爬坡，说明至少存在适配场景；LC9在Dell的同量级配置说明高密度不是美光唯一系统选择。超大盘把故障恢复作为系统设计问题，不能据245TB规格推断更低故障率或相同重建时间。当前没有本Unit批量故障或客户重建结果，工作模型以商业可用的大容量产品、按负载选择冗余为基础，不把信息缺口当实际可靠性恶化。",
+          "materiality_context": "容量扩大在同重建带宽下会延长全盘恢复时间；单盘标称容量翻倍且有效带宽不变，理想串行恢复时间约翻倍（示意，实际按使用字节/并行度）。访问强度占用带宽，介质耐久/保留能力影响能否承担目标负载，控制器/供电保护影响异常写入完整性。冗余和备用空间降低可用率：可用率由80%降70%，相同系统净可用容量需采购的标称盘容量约增14.3%（示意），但增加成本可能阻碍采用。系统资格影响可服务客户整块范围，当前有真实放量使密度收益可用，重建/持续SLA对下一批买方扩展可能比额外提高标称TB更重要。",
+          "scope_boundary": "解释容量成品SSD的系统安全与净可用量；裸NAND容量、标称用户盘容量、系统净可用容量和数据缩减后有效容量分开。不把产品固件更新推断为缺陷，也不把实验QLC局限泛化到本产品。",
+          "ref": [
+            "https://investors.micron.com/news/press-release/2026/Industry-Leading-245TB-Micron-6600-ION-Data-Center-SSD-Now-Shipping/default.aspx",
+            "https://apac.kioxia.com/en-apac/business/news/2026/20260515-1.html",
+            "https://investors.micron.com/news/press-release/2025/Micron-Unveils-Portfolio-of-Industry-First-SSDs-to-Power-the-AI-Revolution-07-29-2025/default.aspx",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.redbooks.ibm.com/abstracts/redp5725.html",
+            "https://www.micron.com/content/dam/micron/global/public/products/storage/ssds/data-center/6600/6600-ion-nvme-ssd-product-brief.pdf"
+          ]
+        },
+        {
+          "name": "系统渠道、采购模式与美光份额",
+          "mechanism": "终端买方选择标准成品SSD、存储阵列/云服务或主机管理闪存；OEM、软件系统方和云运营者据兼容性、价格/服务及供应保障分配合格采购。美光的系统适配和导入成本决定能进入哪些配置，多来源与竞争产品决定其中份额；地域采购资格限制特定买方范围。第三方原始NAND路线可满足同一容量用途，却把收益移出本Unit。",
+          "current_status": "美光容量盘已拥有系统集成入口，Kioxia LC9也可进入Dell高容量配置，因此当前密度竞争并非单厂商独占。Everpure DirectFlash及IBM FlashCore代表系统层控制数据管理的替代采购模式，云服务使终端客户不直接选盘。CAC对特定中国关键信息基础设施运营者的美光采购限制沿用公司披露，不扩成所有中国买方禁购。",
+          "materiality_context": "采购模式决定美光捕获成品SSD价还是由组件渠道参与，甚至由竞争NAND供应者受益；这可在总容量不变时改变本Unit份额。适配/导入成本决定可服务配置与导入速度，价格/服务和供应保障决定合格供应商之间分量，多来源降低集中份额也可扩大可靠可买的总市场。相同系统采购下份额减少5个百分点的影响取决于原份额，而非固定5%收入。地域资格可排除指定采购群体，其他合法市场分流取决于资格与可供能力；没有客户地区比例不能量化。当前真实竞品和主机管理路线使系统采购选择比伙伴名单更有边际杠杆。",
+          "scope_boundary": "只归属容量成品SSD的系统市场与份额，组件采购在第三Unit；不把Everpure/IBM采用视为必然含美光NAND，也不从区域政策推导行业总体需求消失。",
+          "ref": [
+            "https://investors.micron.com/news/press-release/2025/Micron-Unveils-Portfolio-of-Industry-First-SSDs-to-Power-the-AI-Revolution-07-29-2025/default.aspx",
+            "https://apac.kioxia.com/en-apac/business/news/2026/20260515-1.html",
+            "https://investors.micron.com/news/press-release/2025/Pure-Storage-and-Micron-Collaborate-to-Deliver-Scalable-Energy-Efficient-Solutions-for-Hyperscale-Data-Centers-01-07-2025/default.aspx",
+            "https://blog.everpuredata.com/perspectives/qlc-hyperscale-moment-has-arrived/",
+            "https://newsroom.ibm.com/next-generation-ibm-flashsystem-portfolio",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O66"
+          ]
+        },
+        {
+          "name": "容量预算、库存与扩容时间",
+          "mechanism": "客户依据数据服务回报、保存成本与资金约束设定容量预算；已有可用空间和设备利用率决定何时加购。价格上涨会触发压缩删旧、降低复制或延后扩容，容量合同/预付款和渠道库存使采购、出货与终端使用存在时差。平台安装及机房资源决定采购物理执行，多年承诺可将终端短期波动先转成库存而非立即取消订单。",
+          "current_status": "当前QLC放量与企业SSD价格上涨同时存在，工作判断是买方一面保供、一面强化每位元效率，不能把涨价视为无限可吸收。Sandisk和WD披露不同的长期客户安排，说明容量供给风险推动更早采购，但并非美光本Unit合同覆盖证据。已有容量盘商业爬坡可贡献当前季度；在建机房和长期系统项目主要影响后续扩容，客户空间余量没有统一可比数。",
+          "materiality_context": "数据回报决定预算韧性，资金决定能否提前采购；可用空间/利用率决定当季敏感性：新增数据仍落在闲置空间时采购可以不动，接近阈值则批量扩容。价格改变固定预算能买的位元，若价增25%而预算不变先少买20%，随后删旧/压缩可能延长余量（示意）。合同与库存决定冲击先落在终端使用还是美光当期交付，平台安装/机房资源决定交付后是否能用。当前强价格与保供安排使预算和库存的反向反馈重要，不能仅用需求增长率推当季销量；新长约改善可见性但仍有跨年度履约风险。",
+          "scope_boundary": "覆盖容量采购的财务和时间反馈；公司跨产品SCA、园区融资由邻接Shell深入。未把订金、承诺额和未来订单重复相加。",
+          "ref": [
+            "https://www.trendforce.com/research/download/RP260924PL",
+            "https://www.sec.gov/Archives/edgar/data/2023554/000162828026057406/sndk-20260703.htm",
+            "https://www.sec.gov/Archives/edgar/data/106040/000162828026057139/wdc-20260703.htm",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.crusoe.ai/resources/newsroom/crusoe-and-lancium-announce-1-gigawatt-ai-data-center-campus-in-childress-texas",
+            "https://www.sec.gov/Archives/edgar/data/1944366/000194436626000020/exhibit993-2025abelinedc1l.htm",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+          ]
+        },
+        {
+          "name": "QLC合格供给与跨产品分配",
+          "mechanism": "QLC每晶圆良品位元由密度、良率和节点成熟度形成，封装测试/控制器及客户认可决定能交付的容量SSD。美光把合格NAND分给容量成品、性能成品和组件渠道，按合同与预期回报取舍；竞争者合格QLC可供量影响客户选择和行业紧度。规模扩产只有形成目标规格良品并完成后段匹配才改变本Unit上限。",
+          "current_status": "当前6600 ION的G9 QLC实际出货将节点优势转为商业入口，市场需求和价格信号支持近期合格供给偏紧的判断。公司2026 NAND供给增长预计低于行业；Kioxia/Sandisk共同制造和到2032年附条件投资影响未来竞争供给，不能当作当前已增加位元。美光新加坡新NAND厂计划于2028日历年下半年开始晶圆产出，爬坡随需求调整；初始产出不等于成熟合格满产，也不缓解当季所有规格紧度。",
+          "materiality_context": "密度/良率提高在同晶圆投入下增加良品并降单位成本，但后段或客户认可受限时增量不能全交付。节点成熟度决定过渡期间质量/成本而非仅层数；控制器测试决定可发盘数。分配在总NAND不变时直接移转本Unit供给，与组件/性能业务有机会成本；竞争合格QLC增加可扩大买方总采用并稀释美光份额/价格。当前真实G9爬坡与需求强劲使合格供给、后段匹配和分配比远期厂房投资更具季度杠杆；新厂及合资投入则能修订中期供应和议价持续性，不能因未投产而没有预期价值。",
+          "scope_boundary": "解释容量SSD的有效供给，全部NAND行业供需/工厂良率在相邻Shell。共同制造不视为两套独立新增产能，跨产品分配不等于新增总产量。",
+          "ref": [
+            "https://investors.micron.com/news/press-release/2026/Industry-Leading-245TB-Micron-6600-ION-Data-Center-SSD-Now-Shipping/default.aspx",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O77",
+            "https://apac.kioxia.com/en-apac/about/news/2026/20260130-1.html",
+            "https://www.kioxia.com.cn/zh-cn/about/news/2026/20260827-3.html",
+            "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+            "https://investors.micron.com/news/press-release/2026/Micron-Breaks-Ground-on-Advanced-Wafer-Fabrication-Facility-in-Singapore-01-26-2026/default.aspx"
+          ]
+        },
+        {
+          "name": "位元、价格与净容量经济回报",
+          "mechanism": "本Unit收入由交付的标称用户盘容量、同口径每GB实现价和产品组合形成，单盘容量决定盘数而非同量交付容量的新增需求。制造良率/节点、控制器装配及售后保障决定单位成本；客户可用容量效率和总拥有成本影响接受的价格溢价。价格与数量共同响应预算及供应限制，合同价格安排改变传导速度。",
+          "current_status": "6600 ION强劲爬坡支持产品贡献正在扩大，但近100亿美元FY26Q4数据中心SSD收入是性能与容量合计，无法独立归到此Unit。当前企业SSD价格预期强，容量密度提高与涨价共同改变客户成本，不能只认省盘收益。现有披露未给独立容量SSD位元、ASP或毛利，因而解释应以方向和可比敏感性而非虚构规模完成。",
+          "materiality_context": "交付标称盘容量决定实物销售规模，同口径每GB实现价决定同量收入；容量翻倍、盘数减半且同口径每GB价格相同，收入可不变（示意）。产品组合可提高每位元价值，也改变成本；节点/良率、控制器装配和售后改善在价格不变时独立增利润。可用率和全寿命成本决定溢价吸收，标称盘容量低价不保证有效TB便宜。若实现价升25%、交付容量少20%，收入恰好不变但单位成本和总利润未必不变（示意）。当前行业紧度使价格有较大近端影响，产品密度/客户经济则决定长期扩张边界；公司或CDBU毛利不能作为本Unit利润。",
+          "scope_boundary": "本Unit收入/成本机制，不把裸NAND TB、标称盘TB、系统净可用TB、数据缩减后有效PB和盘数混用；模型价量以标称盘容量配对；与性能Unit共同收入引用不是两份相加的收入。",
+          "ref": [
+            "D1-O103",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://investors.micron.com/news/press-release/2026/Industry-Leading-245TB-Micron-6600-ION-Data-Center-SSD-Now-Shipping/default.aspx",
+            "https://www.trendforce.com/research/download/RP260924PL",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.micron.com/content/dam/micron/global/public/products/storage/ssds/data-center/6600/6600-ion-nvme-ssd-product-brief.pdf"
+          ]
+        }
+      ],
+      "potential_gaps": [
+        {
+          "name": "持久数据价值与保留治理重写净容量",
+          "why_live": "企业数据、恢复和AI任务记录已有可用服务，但会话日志、抽取记忆及短期事件有不同保留方式。AWS 9月允许不先保存短期事件而抽取长期记忆，EFS拟把活动数据保管交给客户云；这使数据为何保留、谁付容量费具有不同选择，而非“零保留”必然没有任何存储。",
+          "revision_logic": "当前基线承认数据用途增长与缩减并存。保留、压缩和保护改变每项活动的净物理字节，也能改变采购位置；因此总逻辑数据相同仍可修订容量强度。真正重要的是有业务价值的长期存量，而不是token、快照或记忆条目数量。",
+          "possibility_space": [
+            {
+              "name": "企业把代理日志、证据和业务知识纳入可恢复的长期资产",
+              "implication": "更多活动记录被留存，可提高对象/文件容量层机会；保护要求可能增加物理副本，但不可变快照不必全量复制。若保存主要在客户已有云空间，先提高利用率，后续才形成新容量采购。"
+            },
+            {
+              "name": "服务商和客户推广摘要记忆、选择性事件保存及自动删旧",
+              "implication": "在活动规模不变时减少长期原始记录和重复副本，延后扩容；若更便宜/更私密让应用普及，则新增存量可能抵消节约。修订的是保存强度与反弹，而非直接认定长期记忆一定促增。"
+            },
+            {
+              "name": "数据控制从模型平台转到多个客户云账户或受控私有环境",
+              "implication": "可改变谁选存储和汇聚效率，分割池可能增加必要余量/复制，也可能只迁移同一份数据。美光容量盘机会取决于运营者介质路线，客户自持账户不证明企业直接购买SSD。"
+            },
+            {
+              "name": "企业因公开数据损失或攻击提高独立恢复要求",
+              "implication": "可能扩大保留窗口和隔离副本，或使容量投入转向有可靠恢复服务的系统商。该未来假设既可提高物理存储需求，也可分流成品SSD采购，恢复价值与新增副本数不能简单等同。"
+            }
+          ],
+          "ref": [
+            "https://www.anthropic.com/engineering/managed-agents",
+            "https://aws.amazon.com/about-aws/whats-new/2026/09/agentcore-memory-direct-ingest/",
+            "https://www.anthropic.com/news/enterprise-frontier-safeguards",
+            "https://www.everpuredata.com/company/newsroom/press-releases/everpure-redefines-cyber-resilience-with-data-management.html",
+            "https://investors.micron.com/news/press-release/2026/Industry-Leading-245TB-Micron-6600-ION-Data-Center-SSD-Now-Shipping/default.aspx"
+          ]
+        },
+        {
+          "name": "工业仿真和多模态工作打开新的容量使用方式",
+          "why_live": "Siemens于CES 2026宣布将仿真、实时物理数据和数字孪生结合的工业AI方案；Cosmos论文提供世界模型及合成数据平台的技术基础。它们形成不同于聊天缓存的活动窗口，尚不是美光订单，也没有可按模型token数推导的容量系数。",
+          "revision_logic": "工业用户可能把场景、实验、视频和版本当作可复用资产，也可能选择按需生成、只留种子及结果。这可改变容量存储的需求来源、访问热度与强度，扩展现有企业/数据湖基线，而不是把车端NAND装机归入数据中心。",
+          "possibility_space": [
+            {
+              "name": "工业软件供应者把数字孪生扩成长期运行的工厂/科研数据服务",
+              "implication": "实时记录、版本和验证证据形成经常性存量；反复回放/比较可让原本冷数据变温，增强容量SSD机会。工业回报和数据治理决定保存规模，不能从部署一个数字孪生计一套固定硬件。"
+            },
+            {
+              "name": "机器人和视觉开发者集中保留视频/合成场景并进行多轮训练回放",
+              "implication": "可能增加持久容量和读带宽，需要把大数据集置于能持续供应计算的层。高容量闪存可参与，但HDD、前端缓存和第三方模块仍可分工，增长不能全部归美光成品盘。"
+            },
+            {
+              "name": "仿真平台转向按需重生成，主要保存参数、种子及少量有效样本",
+              "implication": "即使仿真活动快速增长，持久容量强度也可下降，需求更多转到生成/处理期间的性能层。重生成成本高或审计需可重复时仍须保存部分结果，因此该路线和前两条可按数据类别共存。"
+            }
+          ],
+          "ref": [
+            "https://press.siemens.com/global/en/pressrelease/siemens-unveils-technologies-accelerate-industrial-ai-revolution-ces-2026",
+            "https://arxiv.org/abs/2501.03575v1",
+            "https://investors.micron.com/news/press-release/2026/Industry-Leading-245TB-Micron-6600-ION-Data-Center-SSD-Now-Shipping/default.aspx",
+            "https://www.westerndigital.com/in-id/company/newsroom/press-releases/2026/2026-02-03-western-digital-accelerates-storage-innovation-for-ai-era"
+          ]
+        },
+        {
+          "name": "数据访问升温与HDD技术改变介质分界",
+          "why_live": "当前QLC和云HDD实物增长支持多层共存，6600 ION已爬坡；HAMR仍是2027生产计划。容量存量是否频繁检索、扫描或回放，决定需要性能还是仅低价字节，不能用数据总量替代落层选择。",
+          "revision_logic": "基线是更多温层QLC而非全面替换HDD。应用访问和软件组织可在数据量不变时改变SSD分配；HDD密度/成本进步又可提高冷层的竞争力。修订应区分容量市场扩张与介质份额变化，且不同数据类别可同时向相反方向调整。",
+          "possibility_space": [
+            {
+              "name": "企业把旧数据湖反复用于检索、推理辅助和分析服务",
+              "implication": "访问升温可使HDD需要过多盘来提供IO，促温数据转向容量SSD，在总字节不增时扩大本Unit机会。若只有小部分热点，运营者可保留HDD并加前端缓存，替换范围取决于实际访问分布。"
+            },
+            {
+              "name": "HAMR按计划形成可靠量产并降低客户全寿命每TB成本",
+              "implication": "冷归档和低频读取层可能继续选择HDD，压低由盘价主导的QLC替代速度。HAMR更高容量若IO密度未同步改善，温层仍有闪存动机，不能延伸为对性能缓存的全面替代。"
+            },
+            {
+              "name": "软件把扫描、索引和预取组织得更适合混合层",
+              "implication": "可降低后端随机访问并延长HDD或既有SSD承载，减少立即全闪采购；也可提高闪存与计算利用，使更多服务可盈利。修订来自工作组织而非新介质，不能将性能效率改善一律认作容量量增。"
+            }
+          ],
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/2023554/000162828026057406/sndk-20260703.htm",
+            "https://www.sec.gov/Archives/edgar/data/106040/000162828026057139/wdc-20260703.htm",
+            "https://www.westerndigital.com/in-id/company/newsroom/press-releases/2026/2026-02-03-western-digital-accelerates-storage-innovation-for-ai-era",
+            "https://blog.everpuredata.com/perspectives/qlc-hyperscale-moment-has-arrived/",
+            "https://investors.micron.com/news/press-release/2026/Industry-Leading-245TB-Micron-6600-ION-Data-Center-SSD-Now-Shipping/default.aspx",
+            "https://developer.nvidia.com/blog/?p=111143"
+          ]
+        },
+        {
+          "name": "客户全寿命成本与大盘风险改变采用范围",
+          "why_live": "245.76TB/30W规格与厂商机架模型解释密度价值，仍不是客户全年TCO；LC9等产品证明高容量竞争存在。大故障域的恢复、预留及冗余会改变净可用量，当前没有美光批量故障事实可据此降级。",
+          "revision_logic": "现有判断是资源紧缺客户更容易接受容量SSD，并以系统可靠性实现密度收益。电力、空间和恢复要求的不同组合可扩大或缩小这类客户，改变采购溢价及位元强度，不能以单盘TB或峰值功率宣称统一经济门槛。",
+          "possibility_space": [
+            {
+              "name": "电力/机架成为客户扩展约束，系统商把密度节约转成可用业务资源",
+              "implication": "避免新建机房或释放资源的价值可提高可接受SSD溢价，扩大原本预算不够的采用范围。闲置资源无法变现的客户收益较小；省盘数是整合，未必减少或增加系统冗余前的总标称盘容量。"
+            },
+            {
+              "name": "客户实测发现空闲功率、采购溢价和运维使峰值模型高估节约",
+              "implication": "扩大“已有技术优势但经济适用范围有限”的判断，促部分客户保留HDD或较小盘；不否认紧约束客户仍能获益。全寿命比较按同样有效容量和任务，不能拿厂商峰值电力比当客户实际账单。"
+            },
+            {
+              "name": "大盘故障恢复、持续写入或固件运行出现重要问题，客户提高冗余或限制盘尺寸",
+              "implication": "未来可能的系统反馈会压缩高密度的可用优势，增加每系统净可用TB所需标称盘容量及保障成本，却可能降低采用和份额。整改/并行恢复设计改善可恢复经济性；更多冗余不是无成本的美光需求利好。"
+            }
+          ],
+          "ref": [
+            "https://investors.micron.com/news/press-release/2026/Industry-Leading-245TB-Micron-6600-ION-Data-Center-SSD-Now-Shipping/default.aspx",
+            "https://apac.kioxia.com/en-apac/business/news/2026/20260515-1.html",
+            "https://investors.micron.com/news/press-release/2025/Micron-Unveils-Portfolio-of-Industry-First-SSDs-to-Power-the-AI-Revolution-07-29-2025/default.aspx",
+            "https://www.redbooks.ibm.com/abstracts/redp5725.html",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+          ]
+        },
+        {
+          "name": "成品、系统服务与组件路线重分采购权",
+          "why_live": "当前已有美光系统集成入口，也有LC9、DirectFlash和FlashCore等不同路线。混合云服务让终端不一定直接选盘；美光的区域采购资格针对特定买方范围，不是全球容量需求约束。",
+          "revision_logic": "容量用途增长不保证成品SSD同比例增长。系统方的买建决策、云服务和合格来源会改变本Unit捕获的产品价值及份额；相同物理数据可能转到兄弟组件Unit或竞争者。伙伴、客户或区域名单变化的意义是采购组织，而非简单新增客户数。",
+          "possibility_space": [
+            {
+              "name": "OEM/系统商扩大标准容量SSD支持并纳入多家合格盘",
+              "implication": "本Unit可服务范围扩展，已有商业产品可竞争新平台；多来源又可能降低每个平台份额和溢价，市场量增与美光捕获必须分开。"
+            },
+            {
+              "name": "大型云或阵列买方更多采用主机管理原始NAND",
+              "implication": "可使容量闪存继续增长但本Unit成品机会收窄，美光可能改由组件供货参与。系统效率提高同时减少每有效TB的原始需求，不能把成品损失和组件增量当作两套部署重复计算。"
+            },
+            {
+              "name": "终端企业把容量改买订阅/云服务，运营者集中配置和去重",
+              "implication": "可提高汇聚效率并改变型号/采购批次，成熟企业用途仍存在但采购权集中。美光是否受益取决于运营者的合格来源，不是该服务营收增幅。"
+            },
+            {
+              "name": "公共采购或地域资格的执行范围变化，买方重选合法供应来源",
+              "implication": "会改变可服务买方和份额，而不要求其数据活动增减；美光只有在有资格及合格可供量时才承接分流。此处探索未来变化，不推定现有限制被解除、扩大或通过渠道规避。"
+            }
+          ],
+          "ref": [
+            "https://investors.micron.com/news/press-release/2025/Micron-Unveils-Portfolio-of-Industry-First-SSDs-to-Power-the-AI-Revolution-07-29-2025/default.aspx",
+            "https://apac.kioxia.com/en-apac/business/news/2026/20260515-1.html",
+            "https://investors.micron.com/news/press-release/2025/Pure-Storage-and-Micron-Collaborate-to-Deliver-Scalable-Energy-Efficient-Solutions-for-Hyperscale-Data-Centers-01-07-2025/default.aspx",
+            "https://blog.everpuredata.com/perspectives/qlc-hyperscale-moment-has-arrived/",
+            "https://newsroom.ibm.com/next-generation-ibm-flashsystem-portfolio",
+            "https://investor.everpuredata.com/news-and-events/press-releases/press-release-details/2026/Everpure-Announces-Second-Quarter-Fiscal-2027-Financial-Results/default.aspx",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O66"
+          ]
+        },
+        {
+          "name": "预算反馈和库存周期改变容量放量的节奏",
+          "why_live": "强价格与6600实际爬坡并存，供给保障安排推动客户更早组织采购。客户可用空间、真实预算与本Unit库存未单列，因而当前收入不能唯一解释为持续新增部署，厂商密度节约也不消除买方预算。",
+          "revision_logic": "现有偏强议价和连续爬坡基线可被价格吸收、效率响应及预购时间改变。判断需要分开工作需求与拉货：在闲置空间里增长不会立即加盘，涨价也能提高收入同时缩小位元；合同又可能延迟这一反馈。",
+          "possibility_space": [
+            {
+              "name": "客户接受更高每GB成本并把容量服务收入/节省用于扩大预算",
+              "implication": "若数据回报足够，价与量可共同延续，修订为更强需求韧性；资源紧约束的系统节约有帮助，但不是所有冷存储买方都能传递涨价。"
+            },
+            {
+              "name": "云/企业买方冻结容量支出并加强压缩、去重和删旧",
+              "implication": "可减少净物理需求及延后扩容，即使业务数据活动未减少。若预算不变，价升25%使可买位元先降20%的示意说明量价可能反向；这里不是预测或交易阈值，合同和必要保护限制节约程度。"
+            },
+            {
+              "name": "保供预购随后进入消化期，系统安装又发生延期",
+              "implication": "可能使季度交付减弱而长期用途不变；合同仍要求交付时，下游库存先增加，压力后移到下一轮采购。不能将公司保证金、备货和安装规模当作独立三份需求。"
+            }
+          ],
+          "ref": [
+            "https://www.trendforce.com/research/download/RP260924PL",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://investors.micron.com/news/press-release/2026/Industry-Leading-245TB-Micron-6600-ION-Data-Center-SSD-Now-Shipping/default.aspx",
+            "https://www.sec.gov/Archives/edgar/data/2023554/000162828026057406/sndk-20260703.htm",
+            "https://www.sec.gov/Archives/edgar/data/106040/000162828026057139/wdc-20260703.htm",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.crusoe.ai/resources/newsroom/crusoe-and-lancium-announce-1-gigawatt-ai-data-center-campus-in-childress-texas"
+          ]
+        },
+        {
+          "name": "QLC有效供给、密度和回报出现结构变化",
+          "why_live": "当前G9 QLC已进入美光容量产品，新增厂房与竞争合资投资多属较远计划。合格良品、控制器/测试及客户认可决定可交付量，密度和成本改善能够在终端活动不变时独立改变本Unit经营。",
+          "revision_logic": "近端连续爬坡和强价格可能因供给扩大、分配改变或代际成本被修订。供给不是开工面积，密度不是销量，位元和实现价也不自动同向；需将近期可交量、长期竞争紧度和单位成本回报区分。",
+          "possibility_space": [
+            {
+              "name": "节点良品和后段匹配改善，客户认可使更多QLC可发货",
+              "implication": "可扩大本Unit交付并降成本，客户保供顾虑下降也支持采用。若需求能吸收，量增不必立刻跌价；若其他工序仍受限，额外良品先留在中间库存而非全部变收入。"
+            },
+            {
+              "name": "同业共享制造或新投入形成广泛合格QLC增量",
+              "implication": "可降低长期紧度与采购溢价，同时更低成本扩大闪存替换范围。美光份额和利润未必随市场位元增长；附条件投资兑现的预期影响可早于产出，但不能把投资金额折算当年合格量。"
+            },
+            {
+              "name": "更高容量产品减少盘数，但每有效TB预留/成本或客户配置不同",
+              "implication": "同样系统净可用容量下，交付标称盘容量及同价收入可基本不变，也可能因更高系统可用率减少；更高规格带来组合价而非纯量增。新披露若把合计增长拆成密度整合、价格和实物，可修订此前高增长的持续性解释。"
+            },
+            {
+              "name": "公司调整容量盘、性能盘和组件的合格量配置",
+              "implication": "本Unit量与客户份额可在总NAND不变时变动，长期关系/合同优先级可能压过当季最高售价。增配有利交付但也有兄弟业务机会成本，不将三Unit变化相加作总供给增加。"
+            }
+          ],
+          "ref": [
+            "https://investors.micron.com/news/press-release/2026/Industry-Leading-245TB-Micron-6600-ION-Data-Center-SSD-Now-Shipping/default.aspx",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://apac.kioxia.com/en-apac/about/news/2026/20260130-1.html",
+            "https://www.kioxia.com.cn/zh-cn/about/news/2026/20260827-3.html",
+            "D1-O77",
+            "https://www.trendforce.com/research/download/RP260924PL"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "美光数据中心组件NAND供货业务",
+      "scope": "美光面向第三方数据中心SSD、存储系统及相关客户渠道的组件NAND供货，涵盖不同NAND规格与技术组合、系统厂商选型、客户资格、供应来源与份额、采购数量、出货、定价及组合经济性，覆盖性能、容量和一般数据中心用途。",
+      "horizon": "季度供货与采购周期，延伸至第三方产品设计和供应商选择周期。",
+      "ref": [
+        "D1-O103",
+        "D1-O156",
+        "D1-O172",
+        "D1-O74",
+        "D1-O44",
+        "D1-O88",
+        "D1-O3",
+        "D1-O139",
+        "D1-O72",
+        "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+        "https://investors.micron.com/news/press-release/2025/Pure-Storage-and-Micron-Collaborate-to-Deliver-Scalable-Energy-Efficient-Solutions-for-Hyperscale-Data-Centers-01-07-2025/default.aspx",
+        "https://www.everpuredata.com/company/newsroom/press-releases/pure-and-sk-hynix-collaborate-to-deliver-performance-and-energy-efficiency-in-data-centers.html",
+        "https://investor.everpuredata.com/news-and-events/press-releases/press-release-details/2026/Everpure-Lands-New-Design-Win-with-Second-Top-Five-Hyperscaler/default.aspx",
+        "https://blog.everpuredata.com/perspectives/qlc-hyperscale-moment-has-arrived/",
+        "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+        "https://www.trendforce.com/research/download/RP260924PL",
+        "https://newsroom.ibm.com/next-generation-ibm-flashsystem-portfolio",
+        "https://aws.amazon.com/about-aws/whats-new/2026/09/agentcore-memory-direct-ingest/",
+        "https://www.everpuredata.com/company/newsroom/press-releases/everpure-redefines-cyber-resilience-with-data-management.html",
+        "https://www.micron.com/products/storage/nand-flash/choosing-the-right-nand",
+        "https://onfi.org/files/onfi_2_3a_gold.pdf",
+        "https://arxiv.org/abs/1706.08642",
+        "D1-O66",
+        "https://investor.everpuredata.com/news-and-events/press-releases/press-release-details/2026/Everpure-Announces-Second-Quarter-Fiscal-2027-Financial-Results/default.aspx",
+        "https://www.anthropic.com/news/anthropic-raises-30-billion-series-g-funding-380-billion-post-money-valuation",
+        "https://www.crusoe.ai/resources/newsroom/crusoe-and-lancium-announce-1-gigawatt-ai-data-center-campus-in-childress-texas",
+        "https://www.sec.gov/Archives/edgar/data/1944366/000194436626000020/exhibit993-2025abelinedc1l.htm",
+        "D1-O79",
+        "D1-O77",
+        "https://apac.kioxia.com/en-apac/about/news/2026/20260130-1.html",
+        "https://www.kioxia.com.cn/zh-cn/about/news/2026/20260827-3.html",
+        "https://press.siemens.com/global/en/pressrelease/siemens-unveils-technologies-accelerate-industrial-ai-revolution-ces-2026",
+        "https://arxiv.org/abs/2501.03575v1"
+      ],
+      "state": {
+        "parameters": [
+          {
+            "name": "数据中心组件NAND在售位置",
+            "definition": "面向第三方数据中心渠道的组件销售存在性与已披露组合，排除自有SSD和客户端组件。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O74",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "Micron在DirectFlash的产品资格",
+            "definition": "美光组件在Pure Storage（现Everpure）第三方模块中的已完成资格；不能由模块容量推出组件采购量。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2025/Pure-Storage-and-Micron-Collaborate-to-Deliver-Scalable-Energy-Efficient-Solutions-for-Hyperscale-Data-Centers-01-07-2025/default.aspx"
+            ]
+          },
+          {
+            "name": "Micron G9 DirectFlash换代计划",
+            "definition": "美光组件在同一系统客户下一代模块中的公司前瞻产品安排，与已合格G8分别保留。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2025/Pure-Storage-and-Micron-Collaborate-to-Deliver-Scalable-Energy-Efficient-Solutions-for-Hyperscale-Data-Centers-01-07-2025/default.aspx"
+            ]
+          },
+          {
+            "name": "DirectFlash竞争性组件采购位置",
+            "definition": "该已知组件客户的多厂商合作与选择结构；合作不等于各供应者当前出货份额相同。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.everpuredata.com/company/newsroom/press-releases/pure-and-sk-hynix-collaborate-to-deliver-performance-and-energy-efficiency-in-data-centers.html",
+              "https://investors.micron.com/news/press-release/2025/Pure-Storage-and-Micron-Collaborate-to-Deliver-Scalable-Energy-Efficient-Solutions-for-Hyperscale-Data-Centers-01-07-2025/default.aspx"
+            ]
+          },
+          {
+            "name": "Everpure hyperscale客户项目储备",
+            "definition": "已知组件系统客户取得的具供货协议的下游设计位置；不是美光获得第二客户订单。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://investor.everpuredata.com/news-and-events/press-releases/press-release-details/2026/Everpure-Lands-New-Design-Win-with-Second-Top-Five-Hyperscaler/default.aspx"
+            ]
+          },
+          {
+            "name": "Everpure第二hyperscaler项目收入窗口",
+            "definition": "已知组件客户对新项目重大收入贡献的前瞻起点，非美光收入指引。",
+            "value_type": "TIME",
+            "ref": [
+              "https://investor.everpuredata.com/news-and-events/press-releases/press-release-details/2026/Everpure-Lands-New-Design-Win-with-Second-Top-Five-Hyperscaler/default.aspx"
+            ]
+          },
+          {
+            "name": "DirectFlash客户主机管理采购模式",
+            "definition": "影响组件规格和资格门槛的下游系统商NAND使用/管理安排。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://blog.everpuredata.com/perspectives/qlc-hyperscale-moment-has-arrived/",
+              "https://www.everpuredata.com/company/newsroom/press-releases/pure-and-sk-hynix-collaborate-to-deliver-performance-and-energy-efficiency-in-data-centers.html"
+            ]
+          },
+          {
+            "name": "美光全部NAND实现价环比",
+            "definition": "美光全公司NAND季度实现价变化，含组件、SSD及其他用途/组合；只作组件实现价环境交叉锚，不能替代本Unit同规格ASP。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "行业NAND合约价预期",
+            "definition": "TrendForce全行业NAND合约价季度预测，连接组件议价环境；不是数据中心组件分品类价格。",
+            "value_type": "RANGE",
+            "ref": [
+              "https://www.trendforce.com/research/download/RP260924PL"
+            ]
+          },
+          {
+            "name": "数据中心组件NAND独立收入",
+            "definition": "本Unit独立确认的季度销售收入，美元；不得用CDBU或全部数据中心SSD收入分摊填充。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O74",
+              "D1-O44",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "https://investors.micron.com/news/press-release/2025/Pure-Storage-and-Micron-Collaborate-to-Deliver-Scalable-Energy-Efficient-Solutions-for-Hyperscale-Data-Centers-01-07-2025/default.aspx"
+            ]
+          },
+          {
+            "name": "数据中心组件NAND独立出货比特",
+            "definition": "本Unit合格商业出货NAND组件的季度位元量，以十进制EB折算（1 EB为8×10^18位元）；与组件实现ASP采用相同原始NAND容量口径。第三方盘或模块容量、收入增速和设计胜出不能代替组件出货量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O74",
+              "D1-O44",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "https://investors.micron.com/news/press-release/2025/Pure-Storage-and-Micron-Collaborate-to-Deliver-Scalable-Energy-Efficient-Solutions-for-Hyperscale-Data-Centers-01-07-2025/default.aspx"
+            ]
+          },
+          {
+            "name": "数据中心组件NAND独立实现ASP",
+            "definition": "本Unit产品组合实现售价，美元/原始NAND GB，与同口径组件出货量配对；与同规格价格、行业报价及组合变化分别理解。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O74",
+              "D1-O44",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "https://investors.micron.com/news/press-release/2025/Pure-Storage-and-Micron-Collaborate-to-Deliver-Scalable-Energy-Efficient-Solutions-for-Hyperscale-Data-Centers-01-07-2025/default.aspx"
+            ]
+          },
+          {
+            "name": "数据中心组件NAND独立毛利率",
+            "definition": "本Unit销售收入对应毛利率，%；CDBU混合DRAM、SSD及组件NAND，不能代入。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O74",
+              "D1-O44",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "https://investors.micron.com/news/press-release/2025/Pure-Storage-and-Micron-Collaborate-to-Deliver-Scalable-Energy-Efficient-Solutions-for-Hyperscale-Data-Centers-01-07-2025/default.aspx"
+            ]
+          },
+          {
+            "name": "数据中心组件NAND独立客户采购分配",
+            "definition": "本Unit在已进入的客户平台中的供应份额、重复采购及履约安排；身份、用途、地域与规格限定范围。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O74",
+              "D1-O44",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "https://investors.micron.com/news/press-release/2025/Pure-Storage-and-Micron-Collaborate-to-Deliver-Scalable-Energy-Efficient-Solutions-for-Hyperscale-Data-Centers-01-07-2025/default.aspx"
+            ]
+          },
+          {
+            "name": "数据中心组件NAND独立交付与库存位置",
+            "definition": "本Unit可交付合格量、订单交期及客户/渠道库存消耗状态；送样与客户生产部署分开。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O74",
+              "D1-O44",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "https://investors.micron.com/news/press-release/2025/Pure-Storage-and-Micron-Collaborate-to-Deliver-Scalable-Energy-Efficient-Solutions-for-Hyperscale-Data-Centers-01-07-2025/default.aspx"
+            ]
+          },
+          {
+            "name": "第三方产品合格组件份额",
+            "definition": "美光在特定第三方SSD/系统型号和代际中的NAND比特采购份额；成品SSD市占、客户整体销售增长和合作关系都不是此分母。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2025/Pure-Storage-and-Micron-Collaborate-to-Deliver-Scalable-Energy-Efficient-Solutions-for-Hyperscale-Data-Centers-01-07-2025/default.aspx",
+              "https://www.everpuredata.com/company/newsroom/press-releases/pure-and-sk-hynix-collaborate-to-deliver-performance-and-energy-efficiency-in-data-centers.html",
+              "https://investor.everpuredata.com/news-and-events/press-releases/press-release-details/2026/Everpure-Lands-New-Design-Win-with-Second-Top-Five-Hyperscaler/default.aspx"
+            ]
+          }
+        ],
+        "values": [
+          {
+            "name": "数据中心组件NAND在售位置｜2026-10-09",
+            "parameter": "数据中心组件NAND在售位置",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "FY2026 CDBU实际销售包含QLC组件NAND；该分部同时销售DRAM和自有SSD，未单列组件业务收入。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026，截至2026-09-03",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O74",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "Micron在DirectFlash的产品资格｜2025-01-07",
+            "parameter": "Micron在DirectFlash的产品资格",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "Micron G8 QLC已获150TB DirectFlash Module生产资格；双方此前跨七代合作。"
+            },
+            "previous_value": null,
+            "time_scope": "2025-01-07已披露资格状态",
+            "as_of": "2025-01-07",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2025/Pure-Storage-and-Micron-Collaborate-to-Deliver-Scalable-Energy-Efficient-Solutions-for-Hyperscale-Data-Centers-01-07-2025/default.aspx"
+            ]
+          },
+          {
+            "name": "Micron G9 DirectFlash换代计划｜2025-01-07",
+            "parameter": "Micron G9 DirectFlash换代计划",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "stage": "美光与Pure公布拟将G9 QLC用于未来DirectFlash模块的合作安排；这是前瞻产品计划。"
+            },
+            "previous_value": null,
+            "time_scope": "2025-01-07公布的未来模块计划，截止2026-10-09未见可替代完成记录",
+            "as_of": "2025-01-07",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2025/Pure-Storage-and-Micron-Collaborate-to-Deliver-Scalable-Energy-Efficient-Solutions-for-Hyperscale-Data-Centers-01-07-2025/default.aspx"
+            ]
+          },
+          {
+            "name": "DirectFlash竞争性组件采购位置｜2025-05-27",
+            "parameter": "DirectFlash竞争性组件采购位置",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "Pure于2025-05-27另与SK hynix合作开发未来QLC DirectFlash模块；美光并非公开合作名单中的唯一来源。"
+            },
+            "previous_value": null,
+            "time_scope": "2025-05-27供应来源安排",
+            "as_of": "2025-05-27",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.everpuredata.com/company/newsroom/press-releases/pure-and-sk-hynix-collaborate-to-deliver-performance-and-energy-efficiency-in-data-centers.html",
+              "https://investors.micron.com/news/press-release/2025/Pure-Storage-and-Micron-Collaborate-to-Deliver-Scalable-Energy-Efficient-Solutions-for-Hyperscale-Data-Centers-01-07-2025/default.aspx"
+            ]
+          },
+          {
+            "name": "Everpure hyperscale客户项目储备｜2026-08-10",
+            "parameter": "Everpure hyperscale客户项目储备",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "Everpure于8月10日宣布第二家top-five hyperscaler设计胜出和供货协议，客户未具名；这是其DirectFlash路线新增项目。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-08-10已签项目状态",
+            "as_of": "2026-08-10",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investor.everpuredata.com/news-and-events/press-releases/press-release-details/2026/Everpure-Lands-New-Design-Win-with-Second-Top-Five-Hyperscaler/default.aspx"
+            ]
+          },
+          {
+            "name": "Everpure预计自FY2028起形成重要贡献",
+            "parameter": "Everpure第二hyperscaler项目收入窗口",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "point": null,
+              "start": "Everpure FY2028",
+              "end": null,
+              "precision": "外部企业财年起点"
+            },
+            "previous_value": null,
+            "time_scope": "Everpure FY2028及以后",
+            "as_of": "2026-08-10",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investor.everpuredata.com/news-and-events/press-releases/press-release-details/2026/Everpure-Lands-New-Design-Win-with-Second-Top-Five-Hyperscaler/default.aspx"
+            ]
+          },
+          {
+            "name": "DirectFlash客户主机管理采购模式｜2026-09-23",
+            "parameter": "DirectFlash客户主机管理采购模式",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "Everpure与hyperscaler共同设计NAND管理策略，由系统软件管理闪存，而非只采购标准成品SSD；QLC密度、耐久和跨代验证进入系统选型。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-23系统商经营说明",
+            "as_of": "2026-09-23",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://blog.everpuredata.com/perspectives/qlc-hyperscale-moment-has-arrived/",
+              "https://www.everpuredata.com/company/newsroom/press-releases/pure-and-sk-hynix-collaborate-to-deliver-performance-and-energy-efficiency-in-data-centers.html"
+            ]
+          },
+          {
+            "name": "美光全部NAND实现价环比｜FY2026 Q4相对Q3",
+            "parameter": "美光全部NAND实现价环比",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 30.0,
+              "unit": "%环比（公司约值）"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026 Q4相对Q3",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "TrendForce 4Q26 NAND合约价预测",
+            "parameter": "行业NAND合约价预期",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "lower": 15.0,
+              "upper": 20.0,
+              "unit": "%环比"
+            },
+            "previous_value": null,
+            "time_scope": "2026日历Q4相对Q3",
+            "as_of": "2026-09-24",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.trendforce.com/research/download/RP260924PL"
+            ]
+          }
+        ]
+      },
+      "expectation_baseline": [
+        {
+          "name": "组件渠道继续参与数据中心扩张，换代以系统客户资格为单位",
+          "baseline": "研究综合判断：美光组件NAND将继续通过第三方系统而非只有自有SSD分享存储扩张。FY2026实际组件QLC销售、G8在150TB DirectFlash的生产资格和G9合作支持这条独立商业路线。默认是既有合格组件继续供货、下一代逐步进入系统验证；G9在自有SSD已出货并不证明第三方模块自动完成换代。",
+          "ordinary_progress": "已合格代际持续交付，客户为密度、读写与耐久要求调整模块设计，并分别进行G9及其他规格验证。",
+          "open_frontier": "G9第三方量产资格、实际组件量和价格，以及TLC/性能用途进入其他第三方产品的程度；CDBU未分拆组件收入，不能用SSD合计池补齐。",
+          "time_scope": "季度供货及第三方设计/换代周期",
+          "ref": [
+            "D1-O74",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://investors.micron.com/news/press-release/2025/Pure-Storage-and-Micron-Collaborate-to-Deliver-Scalable-Energy-Efficient-Solutions-for-Hyperscale-Data-Centers-01-07-2025/default.aspx"
+          ]
+        },
+        {
+          "name": "DirectFlash下游项目扩张提供中期组件入口而非立即的美光配额",
+          "baseline": "研究综合判断：Everpure新增第二家top-five hyperscaler设计与供货协议，使第三方模块路线中期扩展比只靠合作意向更可信；其预期自FY2028起的重要收入贡献给出有区别的时间锚。该客户是美光已有资格关系的系统商，因而下游量产扩大可增加组件采购机会；不是直接证明新hyperscaler向美光下单。",
+          "ordinary_progress": "系统商执行已签项目、准备产品和NAND管理策略，组件商参与规格及供应验证。",
+          "open_frontier": "项目从设计获选到实际部署的速度、最终模块BOM与美光合格配额；新客户身份未披露，不能指定为Google或把全部增量分配美光。",
+          "time_scope": "Everpure FY2028及前置设计/采购窗口",
+          "ref": [
+            "https://investor.everpuredata.com/news-and-events/press-releases/press-release-details/2026/Everpure-Lands-New-Design-Win-with-Second-Top-Five-Hyperscaler/default.aspx",
+            "https://investors.micron.com/news/press-release/2025/Pure-Storage-and-Micron-Collaborate-to-Deliver-Scalable-Energy-Efficient-Solutions-for-Hyperscale-Data-Centers-01-07-2025/default.aspx",
+            "https://blog.everpuredata.com/perspectives/qlc-hyperscale-moment-has-arrived/"
+          ]
+        },
+        {
+          "name": "多来源和主机管理使竞争焦点不同于成品SSD",
+          "baseline": "研究综合判断：本Unit采购默认是系统厂商在多个合格NAND来源间配置，而不是独家锁定。Everpure与Micron和SK hynix分别合作，并与hyperscaler共同设计主机NAND管理；密度与原始位元价格之外，耐久、跨代兼容和系统软件表现决定采用。第三方主机管理可扩大组件路线，同时分流美光成品SSD市场，两种收入不能相加为同一套部署的两次增量。",
+          "ordinary_progress": "客户维护多来源、验证新代际，并按规格、交期和系统成本分配；美光既有资格仍有连续供货价值。",
+          "open_frontier": "多来源是否实际落到各代际BOM、是否改变美光份额或议价，以及客户从标准SSD转为原始NAND管理的渗透幅度。",
+          "time_scope": "第三方产品设计、资格与采购周期",
+          "ref": [
+            "https://investors.micron.com/news/press-release/2025/Pure-Storage-and-Micron-Collaborate-to-Deliver-Scalable-Energy-Efficient-Solutions-for-Hyperscale-Data-Centers-01-07-2025/default.aspx",
+            "https://www.everpuredata.com/company/newsroom/press-releases/pure-and-sk-hynix-collaborate-to-deliver-performance-and-energy-efficiency-in-data-centers.html",
+            "https://blog.everpuredata.com/perspectives/qlc-hyperscale-moment-has-arrived/",
+            "D1-O74"
+          ]
+        },
+        {
+          "name": "组件价格环境偏强，但稀缺合格量比广谱涨价更决定收入",
+          "baseline": "研究综合判断：近端组件供货在强NAND价格背景下维持偏强议价是可用基线；美光Q4全NAND实现价约环比上涨30%、TrendForce日历Q4全NAND合约价预测15%—20%提供环境锚。第三方客户仍必须获得对应规格和资格的位元；系统客户的增长不能越过组件份额与交付环节变成美光收入。",
+          "ordinary_progress": "既有组件订单履约、周期谈价、系统换代带动组合变化；组件ASP和成品SSD售价分别观察。",
+          "open_frontier": "本Unit的同规格价格、可交付量和毛利，以及自有SSD与外售组件的供给配置；公司多年协议产品分布未披露，不能把合并价格保护推广为该Unit利润底线。",
+          "time_scope": "2026日历Q4至FY2027供货季度",
+          "ref": [
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.trendforce.com/research/download/RP260924PL",
+            "D1-O44",
+            "D1-O74",
+            "https://investors.micron.com/news/press-release/2025/Pure-Storage-and-Micron-Collaborate-to-Deliver-Scalable-Energy-Efficient-Solutions-for-Hyperscale-Data-Centers-01-07-2025/default.aspx"
+          ]
+        }
+      ],
+      "realization_factors": [
+        {
+          "name": "下游用途、物理强度与组件采购规模",
+          "mechanism": "第三方SSD、阵列和云存储系统服务企业事务、分析、数据保护及AI工作；终端用途的价值与服务回报驱动采用和容量/性能需求。系统方的压缩去重、冗余及介质管理决定每单位有效工作所需原始NAND，闪存落层比例决定其中能由NAND承担的部分。下游系统出货/部署和每系统NAND配置形成组件采购池，美光再按合格份额参与，而不是按下游系统收入同比增长自动取得同量收益。",
+          "current_status": "本Unit已有实际QLC组件业务，DirectFlash是清楚的参与实例但不是唯一研究范围。Everpure获得第二家前五hyperscaler设计胜出和供给协议，企业阵列与第三方标准SSD同样可形成采购。IBM新FlashCore系统说明管理/安全功能参与系统价值，未指明美光BOM；AgentCore长期记忆与企业数据保护说明不同用途会采用不同保留强度。工作判断为下游扩张提供机会，软件效率和采购路线决定原始位元强度。",
+          "materiality_context": "用途价值/回报决定采用可持续性，影响多个项目周期；下游系统部署量增10%、配置不变时采购池约增10%，但系统服务价格上涨可只提高其收入。压缩去重与冗余改变原始位元，效率提高20%使同量有效工作需求降约16.7%，更多必要副本则反向增加（效率定义为有效量/原始量，示意）。闪存落层比例决定NAND机会而非HDD容量，单系统配置可在系统数量不变时独立放大订单。美光合格份额决定捕获且与采购池不能重复加总。当前企业现有供货贡献更直接，hyperscale新项目具较大中期修订空间，既不按FY28系统收入立刻确认美光收入，也不因尚在导入而抹去机会。",
+          "scope_boundary": "覆盖组件卖给第三方SSD、系统及相关渠道的全部数据中心用途；不把第三方系统价值、SSD控制器收入计作美光组件价，不仅围绕一个DirectFlash客户。",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://investors.micron.com/news/press-release/2025/Pure-Storage-and-Micron-Collaborate-to-Deliver-Scalable-Energy-Efficient-Solutions-for-Hyperscale-Data-Centers-01-07-2025/default.aspx",
+            "https://investor.everpuredata.com/news-and-events/press-releases/press-release-details/2026/Everpure-Lands-New-Design-Win-with-Second-Top-Five-Hyperscaler/default.aspx",
+            "https://newsroom.ibm.com/next-generation-ibm-flashsystem-portfolio",
+            "https://aws.amazon.com/about-aws/whats-new/2026/09/agentcore-memory-direct-ingest/",
+            "https://www.everpuredata.com/company/newsroom/press-releases/everpure-redefines-cyber-resilience-with-data-management.html",
+            "D1-O103"
+          ]
+        },
+        {
+          "name": "主机管理、买建选择与价值分工",
+          "mechanism": "系统/云买方选择采购标准SSD、自研介质管理或与系统伙伴共建；其工程投入、软件控制需求和单位容量效率决定买建取舍。原始NAND由外部控制器/软件承担ECC、映射和磨损管理，主机管理架构可把部分成品SSD固件/控制器价值转向系统方，并使跨NAND代际管理策略可重用。美光可通过组件供货参与，但自身成品SSD机会及下游工程捕获随路线变化。",
+          "current_status": "当前DirectFlash采用与客户共同设计NAND管理，并有已知美光G8资格及后续G9计划；SK hynix的合作说明此路线可多来源。IBM专有FlashCore提供另一种系统层管理实例，不是美光供应证明。原始NAND需要外部管理是基础技术关系；主机管理并非普遍消除控制器或资格，而是重新分配职责。近期标准SSD仍广泛存在，组件路线已形成实际商业业务且有大型客户拓展。",
+          "materiality_context": "工程投入决定自建的固定成本和时间，软件控制需求决定客户愿否为灵活性承担该成本；单位容量效率决定同量工作要买多少原始位元。若有效容量/原始NAND位元的利用效率提高10%、下游有效容量不变，原始采购约减9.1%（示意），但更低成本可促进采用。架构/买建选择直接改变收入归属：同一工作负载转向组件模式，美光可能少卖成品却多卖组件，不能双计。管理策略复用缩短后续换代工程却仍需介质验证，可降低换供应者成本。当前已合作及资格支持本Unit参与，下一代可复用架构对长期可服务范围的杠杆大于单一盘的峰值规格；下游节约不等于美光同幅毛利提高。",
+          "scope_boundary": "组件经营与成品SSD之间的价值归属，第三方研发盈利只解释激励。不默认所有主机管理、IBM或云自建系统都采用美光，也不把NVMe接口开放等同原始NAND无条件互换。",
+          "ref": [
+            "https://investors.micron.com/news/press-release/2025/Pure-Storage-and-Micron-Collaborate-to-Deliver-Scalable-Energy-Efficient-Solutions-for-Hyperscale-Data-Centers-01-07-2025/default.aspx",
+            "https://www.everpuredata.com/company/newsroom/press-releases/pure-and-sk-hynix-collaborate-to-deliver-performance-and-energy-efficiency-in-data-centers.html",
+            "https://blog.everpuredata.com/perspectives/qlc-hyperscale-moment-has-arrived/",
+            "https://newsroom.ibm.com/next-generation-ibm-flashsystem-portfolio",
+            "https://www.micron.com/products/storage/nand-flash/choosing-the-right-nand",
+            "https://onfi.org/files/onfi_2_3a_gold.pdf"
+          ]
+        },
+        {
+          "name": "介质规格、控制器适配与跨代资格",
+          "mechanism": "组件客户选择TLC/QLC、颗粒密度及封装/接口，依据读写强度、保留期限和耐久要求设计系统。NAND错误特征与时序需要匹配控制器ECC、固件和介质管理；标准化接口减少连接工程却不替代系统验证。美光节点换代的良品和客户资格决定新规格能否进入BOM，系统客户的验证资源和导入窗口决定转换速度。",
+          "current_status": "当前G8 QLC已在150TB DirectFlash获得资格，G9属于计划中的未来产品，二者不能混写为已完成同一验证。基础NAND接口与错误管理资料支持组件适配不同于成品SSD资格；现代系统可通过软件改管理政策，但仍面对新颗粒的可靠性/性能要求。组件业务实际存在，不应因独立出货未量化就降成纯研发；相反也不能以美光自有G9 SSD已出货证明第三方G9设计全已认可。",
+          "materiality_context": "TLC/QLC和密度决定成本/容量潜力，封装/接口决定可连接范围；读写强度、保留和耐久要求决定特定用途能否接受该介质。错误特征与ECC/管理匹配决定可靠运行及可用寿命，不能以平均带宽弥补不达标。良品决定可交数量，资格决定可服务BOM：资格扩大可新增整个平台机会，即使总产量不变；验证资源/窗口主要推迟数季或一个产品周期。当前既有G8资格提供贡献底盘，G9适配完成可改变成本与中期份额，影响比单纯提升峰值I/O更直接；若固件/ECC负担上升，部分密度收益会被工程和预留开销抵销。",
+          "scope_boundary": "只解释数据中心组件进入第三方产品的条件；不借消费NAND或历史P/E数推当前G9具体寿命，不把控制器适配描述为必然技术失败。",
+          "ref": [
+            "https://investors.micron.com/news/press-release/2025/Pure-Storage-and-Micron-Collaborate-to-Deliver-Scalable-Energy-Efficient-Solutions-for-Hyperscale-Data-Centers-01-07-2025/default.aspx",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.micron.com/products/storage/nand-flash/choosing-the-right-nand",
+            "https://onfi.org/files/onfi_2_3a_gold.pdf",
+            "https://arxiv.org/abs/1706.08642"
+          ]
+        },
+        {
+          "name": "多来源、供给保障与客户配额",
+          "mechanism": "第三方客户先建立合格供应池，再依每位元价格、稳定供给、规格一致性和切换成本分配NAND采购；新代际/新系统提供重选窗口，既有管理适配产生粘性。美光的可供量与竞争者资格共同决定分配，地域采购资格可能限制直接或下游可服务买方。系统伙伴赢单不意味着美光自动取得固定配额，标准化和主机管理也可能降低更换来源成本。",
+          "current_status": "当前美光与SK hynix均有公开的DirectFlash合作，这否定排他假设但不提供具体配额。Everpure第二hyperscaler项目是系统级机会，分配给美光的颗粒代际和份额没有披露。公司列示NAND同业和中国市场资格约束；合作多年说明工程积累，但不足以把每个下游平台全部NAND归给美光。工作判断是新增合格来源利于系统扩张而压低任何单一来源的独占程度。",
+          "materiality_context": "价格控制采购经济，稳定供给在紧缺中可压过小幅价差；规格一致性和切换成本决定买方多久能重分配。合格池决定可竞逐范围，份额决定实际捕获：采购池不变且份额从30%到25%，对应美光量减少约16.7%（示意，非实际份额）。美光可供量不足时下游增长先转向其他合格来源，而竞争者受阻也只有美光有量/资格才可接单。地域资格可排除特定买方并改变渠道流向，不能由中国总需求估美光损失。当前新hyperscaler机会使配额与供给保障比合作年限更能修订中期收入，现有适配粘性则保留成熟客户的贡献。",
+          "scope_boundary": "第三方组件采购份额与准入，不推断未公开的BOM、间接渠道规避或区域豁免。成品SSD采购份额属兄弟Unit，全部行业竞争供给属邻接Shell。",
+          "ref": [
+            "https://investors.micron.com/news/press-release/2025/Pure-Storage-and-Micron-Collaborate-to-Deliver-Scalable-Energy-Efficient-Solutions-for-Hyperscale-Data-Centers-01-07-2025/default.aspx",
+            "https://www.everpuredata.com/company/newsroom/press-releases/pure-and-sk-hynix-collaborate-to-deliver-performance-and-energy-efficiency-in-data-centers.html",
+            "https://investor.everpuredata.com/news-and-events/press-releases/press-release-details/2026/Everpure-Lands-New-Design-Win-with-Second-Top-Five-Hyperscaler/default.aspx",
+            "https://blog.everpuredata.com/perspectives/qlc-hyperscale-moment-has-arrived/",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O66"
+          ]
+        },
+        {
+          "name": "项目回报、系统排产与组件拉货",
+          "mechanism": "第三方系统客户的付费采用与投资回报决定系统订单，资金与部署资源决定实施速度；设计胜出进入产品/客户平台，但系统排产才形成分批BOM采购。系统厂商/渠道的组件库存和交期安全量使NAND拉货可领先终端部署，长期协议决定延迟时数量/价格如何分担，不能把未安装等同组件未销售。",
+          "current_status": "当前Everpure预计第二hyperscaler相关显著收入自其FY2028起，表明商业机会跨多个采购周期，不是美光下季同额订单。成熟企业系统与第三方SSD仍有较短更新补货路径。园区融资和通电证据支持客户安装的现实约束，公司级供给承诺支持保供但未披露本Unit覆盖；未取得独立组件库存和订单，采用排产/备货时差的工作解释而不填补数据。",
+          "materiality_context": "付费采用/回报决定项目是否扩大，资金与部署资源决定可执行规模和时点；系统排产是更接近组件采购的变量，同样设计胜出若排产延后一季可使拉货跨季，但未改变远期配置。库存与交期安全量可先增加订单而终端工作未增，之后去库存又抵销增长；长期协议决定调整是否先落入下游库存、协商交货或违约风险。当前新大型项目对中期机会的修订大，已有系统客户排产/补货对当季贡献更直接；不能以尚无终端收入否定前置NAND采购，也不能因签约提前确认所有计划销量。",
+          "scope_boundary": "覆盖所有第三方SSD/系统/相关渠道的时间传导，以Everpure和园区为实例。客户财政年不等同美光财政年，物业租约不是组件供给协议。",
+          "ref": [
+            "https://investor.everpuredata.com/news-and-events/press-releases/press-release-details/2026/Everpure-Lands-New-Design-Win-with-Second-Top-Five-Hyperscaler/default.aspx",
+            "https://investor.everpuredata.com/news-and-events/press-releases/press-release-details/2026/Everpure-Announces-Second-Quarter-Fiscal-2027-Financial-Results/default.aspx",
+            "https://www.anthropic.com/news/anthropic-raises-30-billion-series-g-funding-380-billion-post-money-valuation",
+            "https://www.crusoe.ai/resources/newsroom/crusoe-and-lancium-announce-1-gigawatt-ai-data-center-campus-in-childress-texas",
+            "https://www.sec.gov/Archives/edgar/data/1944366/000194436626000020/exhibit993-2025abelinedc1l.htm",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O79"
+          ]
+        },
+        {
+          "name": "合格位元、后段形态与自供机会成本",
+          "mechanism": "美光的良品位元由节点密度、良率和晶圆投入形成，客户要求的封装/测试及质量等级决定可供组件量；第三方控制器适配进一步划定用途。公司在自有SSD与组件合同之间分配合格量，比较贡献回报、合同优先级及客户战略关系。竞争者合格供给影响客户采购分流，原始产量增加只有匹配客户规格才扩张本Unit收入。",
+          "current_status": "当前美光有实际数据中心QLC组件供货，整体NAND供应增长预计低于行业，组件与自有成品因此具有现实资源分配关系。全部NAND不只服务数据中心，G8/G9和客户资格不同，不能把某颗粒短缺推广成所有渠道无货。Kioxia/Sandisk共同设施与附条件投资改变未来竞争供给；美光远期新厂不等于现有合格组件已增量。",
+          "materiality_context": "晶圆投入、密度/良率控制良品上限与成本，但客户封装测试/质量等级及控制器适配决定其中多少能卖给目标系统；非瓶颈资源增加不能保证同比例收入。贡献回报与合同优先级决定总量固定时给组件还是自有SSD，组件配额增加可提高此Unit销量却让兄弟Unit少量，不能相加作新增供给。客户战略关系可能为长期入口牺牲当季收益；竞争者合格量增可扩大总应用并压价格/份额。当前客户适配和合格量分配比总NAND资本支出更近端，节点/新厂改善则更改多年度供给经济；向组件分配不能仅按成品售价高低决策，需扣除控制器和研发成本。",
+          "scope_boundary": "组件有效供给与跨Unit机会成本；制造细节、行业供给和全公司产品优化由邻接Shell深入。没有披露的良率、组件产能/库存不转成观测值。",
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://investors.micron.com/news/press-release/2025/Pure-Storage-and-Micron-Collaborate-to-Deliver-Scalable-Energy-Efficient-Solutions-for-Hyperscale-Data-Centers-01-07-2025/default.aspx",
+            "D1-O77",
+            "https://apac.kioxia.com/en-apac/about/news/2026/20260130-1.html",
+            "https://www.kioxia.com.cn/zh-cn/about/news/2026/20260827-3.html"
+          ]
+        },
+        {
+          "name": "组件定价、成本与下游预算反馈",
+          "mechanism": "组件收入由交付位元及每位元实现价形成，合同定价/量约束、规格组合与合格供给紧度影响实现价；节点良率、封装测试及支持成本决定贡献回报。下游预算/系统售价决定涨价是否被吸收、压缩系统厂利润或引发少配位元和延后采购。预付或保障条款改变资金和违约风险，不自动形成利润，也不证明组件全面价格底线。",
+          "current_status": "当前全部NAND涨价和4Q合约价预测支持组件议价环境偏强，未披露本Unit独立实现价或合同覆盖。主机管理客户可提高使用效率，对原始位元价更敏感；多来源约束单厂长期加价。公司级SCA提供供给/定价框架的现实背景，但涵盖多种产品，不能把全部保证金、价格带或剩余履约义务归给本Unit。",
+          "materiality_context": "交付位元和实现价共同决定收入，固定量升价10%即收入增10%（示意），但合同定价可能延迟这种传导；规格组合影响平均价与成本，不能把组合改善当纯价格指数。良率及封装/支持成本决定同价利润，高价但高适配成本未必更高回报。下游预算固定、价升20%时可买位元约降16.7%，系统售价能传递则量缩缓和，效率优化又可能进一步减量（示意）。当前紧度使价格有较强近端杠杆，合格配额仍可比广谱价格更决定销量；后续竞争或客户预算反馈削弱持续性。保证金属于融资/保障，不加到收入或毛利，CDBU/全NAND利润不等于组件利润。",
+          "scope_boundary": "本Unit组件收入、回报及买方反馈；行业全部NAND定价、跨产品长约深度在邻接Shell。所有定量敏感性均为同范围假设，不是已披露客户系数。",
+          "ref": [
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.trendforce.com/research/download/RP260924PL",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://blog.everpuredata.com/perspectives/qlc-hyperscale-moment-has-arrived/",
+            "https://www.everpuredata.com/company/newsroom/press-releases/pure-and-sk-hynix-collaborate-to-deliver-performance-and-energy-efficiency-in-data-centers.html",
+            "D1-O66",
+            "D1-O79"
+          ]
+        }
+      ],
+      "potential_gaps": [
+        {
+          "name": "第三方系统用途与原始位元强度扩展",
+          "why_live": "本Unit已有QLC组件业务，企业阵列、标准第三方SSD和DirectFlash是不同下游入口。工业仿真、AI记录和数据保护可扩大存储用途；系统商的缩减/冗余同时改变原始需求，不能把下游软件或系统收入当组件量。",
+          "revision_logic": "现有继续供货基线仍可能被新的下游用途和配置密度重写。系统采用、每系统原始位元与美光合格份额共同改变机会，发展可以来自DirectFlash以外的客户，不需先有具名美光新订单才值得修订可服务市场。",
+          "possibility_space": [
+            {
+              "name": "企业/云第三方SSD与阵列把更多业务、保护和分析用途转为闪存",
+              "implication": "可扩大组件采购池和TLC/QLC用途范围，即使美光自有SSD份额未升。系统层利润含软件/控制器价值，美光捕获仅为合格原始位元的价量，不能按整机价推规模。"
+            },
+            {
+              "name": "工业或视觉平台经系统伙伴建立可反复使用的场景/视频库",
+              "implication": "若更大持久数据和回放采用闪存，第三方系统需增加组件配置；若由HDD与小缓存承载，组件增量较小。工业用途和美光是否进入BOM是两个层次，不归入汽车终端NAND装机。"
+            },
+            {
+              "name": "系统软件推广更高可用率、去重或按需重生成的数据路径",
+              "implication": "可使同样有效工作所需原始NAND下降，削弱将下游部署线性换成组件量的理解。成本下降也可能扩大采用；新增活动超过资源节约才让采购池净增加，两种效应可在不同数据类别并存。"
+            }
+          ],
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://investors.micron.com/news/press-release/2025/Pure-Storage-and-Micron-Collaborate-to-Deliver-Scalable-Energy-Efficient-Solutions-for-Hyperscale-Data-Centers-01-07-2025/default.aspx",
+            "https://newsroom.ibm.com/next-generation-ibm-flashsystem-portfolio",
+            "https://www.everpuredata.com/company/newsroom/press-releases/everpure-redefines-cyber-resilience-with-data-management.html",
+            "https://press.siemens.com/global/en/pressrelease/siemens-unveils-technologies-accelerate-industrial-ai-revolution-ces-2026",
+            "https://arxiv.org/abs/2501.03575v1",
+            "https://www.micron.com/products/storage/nand-flash/choosing-the-right-nand"
+          ]
+        },
+        {
+          "name": "主机管理扩散和买建选择重分组件价值",
+          "why_live": "DirectFlash已与客户共设计NAND管理，多来源合作和IBM专有模块显示系统层可掌握介质管理。原始NAND仍需要控制器/软件，主机管理并不是自动免除研发或验证；既有第三方标准SSD同样可采购美光组件。",
+          "revision_logic": "当前组件路线独立参与的基线，可扩展为更广的云自建/合作管理，或被工程成本限制。改变谁选颗粒、谁承担管理、谁获得软件溢价，会重排本Unit可服务范围和议价，不必等待整体闪存需求改变。",
+          "possibility_space": [
+            {
+              "name": "更多云客户通过系统伙伴把标准SSD换为可编程介质管理模块",
+              "implication": "组件采购比重可提高，美光可用已有关系进入更多配置，且其自有SSD机会可能被分流。系统方获得管理价值，不能把成品SSD溢价全部保留为组件售价；效率改善也会减少单工作原始位元。"
+            },
+            {
+              "name": "大型买方直接组织NAND采购和介质政策，系统伙伴主要提供集成",
+              "implication": "采购权集中到少数更强买方，可能扩大组件量却压缩供应者加价空间或提高保障要求。美光需满足对应规格和合法供货条件，这是假设的商业安排，不是已公布客户直采事实。"
+            },
+            {
+              "name": "工程、可靠性或维护成本使部分客户改回标准SSD",
+              "implication": "组件仍可通过第三方SSD制造商供货，渠道和价格分工改变；原先系统软件管理的扩展空间收窄，成品兄弟Unit可能获益。不能把管理路线收缩误写成全部NAND需求消失。"
+            }
+          ],
+          "ref": [
+            "https://investors.micron.com/news/press-release/2025/Pure-Storage-and-Micron-Collaborate-to-Deliver-Scalable-Energy-Efficient-Solutions-for-Hyperscale-Data-Centers-01-07-2025/default.aspx",
+            "https://www.everpuredata.com/company/newsroom/press-releases/pure-and-sk-hynix-collaborate-to-deliver-performance-and-energy-efficiency-in-data-centers.html",
+            "https://blog.everpuredata.com/perspectives/qlc-hyperscale-moment-has-arrived/",
+            "https://newsroom.ibm.com/next-generation-ibm-flashsystem-portfolio",
+            "https://www.micron.com/products/storage/nand-flash/choosing-the-right-nand"
+          ]
+        },
+        {
+          "name": "跨代资格的可复用性与介质选择改变",
+          "why_live": "G8已有DirectFlash生产资格，G9合作仍为未来产品计划；美光自有G9 SSD不能替代第三方BOM验证。错误管理和NAND接口是可复用技术基础，但实际读写、保留及控制器适配决定系统能用什么颗粒。",
+          "revision_logic": "基线是分客户逐步换代。系统软件若减轻跨代工程，可扩大美光可服务范围并降低锁定；若更高密度增加管理负担，经济优势可被消耗。改变的是导入效率、用途和成本，不是单一“G9通过/没通过”里程碑。",
+          "possibility_space": [
+            {
+              "name": "系统方建立可跨多颗粒/代际复用的验证与管理方法",
+              "implication": "可缩短美光新规格进入产品的时间、降低适配成本，也让竞争来源更易进入。既有工程粘性减弱，资格扩大不等于配额永久锁定；新介质仍需实际可靠性适配。"
+            },
+            {
+              "name": "高密度QLC需要更强ECC、更多预留或特定访问管理才能达标",
+              "implication": "压缩理论成本/容量收益，可能延长客户导入并改变产品选择；同样下游有效容量可能需更多原始位元，但更高系统成本又可阻碍采用。不能借历史错误研究给当前G9填具体寿命或故障率。"
+            },
+            {
+              "name": "下游写密集或低延迟用途改选TLC等不同规格",
+              "implication": "可扩大本Unit在性能类第三方产品的机会，或使现有QLC配置减少；平均价与原始位元随组合而变，不能将每位元收入提高全当同规格涨价。美光收益依该规格资格，不是靠自有SSD峰值自动取得。"
+            }
+          ],
+          "ref": [
+            "https://investors.micron.com/news/press-release/2025/Pure-Storage-and-Micron-Collaborate-to-Deliver-Scalable-Energy-Efficient-Solutions-for-Hyperscale-Data-Centers-01-07-2025/default.aspx",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.micron.com/products/storage/nand-flash/choosing-the-right-nand",
+            "https://arxiv.org/abs/1706.08642",
+            "https://blog.everpuredata.com/perspectives/qlc-hyperscale-moment-has-arrived/"
+          ]
+        },
+        {
+          "name": "合格来源池和采购配额重新分配",
+          "why_live": "美光和SK hynix均有公开DirectFlash合作，既有资格有连续供货价值但不证明排他。系统设计胜出与具体颗粒分配不同，地域准入也影响哪些买方能合法采购，未披露份额不能用年限补齐。",
+          "revision_logic": "总下游工作和系统订单不变时，多来源成熟度、交期、成本及准入可以独立改变本Unit份额。供应池扩大可能让系统项目更易扩张，又压低单来源集中度；竞争者受阻只有美光有资格和量才形成捕获。",
+          "possibility_space": [
+            {
+              "name": "系统客户让第二/第三来源实际进入新代际BOM并分散采购",
+              "implication": "削弱既有粘性与份额，也降低系统供货风险、支持更大项目。净美光量取决于采购池扩大是否抵过分配下降，不能把合作名单增加直接当既有份额下降的实测值。"
+            },
+            {
+              "name": "客户把更多配额转给能稳定交付且成本/可靠性合适的美光规格",
+              "implication": "可在行业需求不变时提高本Unit捕获，影响比新增系统客户数量更直接；若合格量不足，只能改价或交期而非充分加量。既有关系帮助导入但不是自动分配。"
+            },
+            {
+              "name": "地域采购资格或公共买方要求改变供应来源选择",
+              "implication": "可能排除、恢复或重新组织可服务范围，并引发竞争者和其他合法市场分流。这里不预测具体政策，也不假定第三方渠道豁免；最终影响取决于指定买方、颗粒资格和可供量而非地区总需求。"
+            }
+          ],
+          "ref": [
+            "https://investors.micron.com/news/press-release/2025/Pure-Storage-and-Micron-Collaborate-to-Deliver-Scalable-Energy-Efficient-Solutions-for-Hyperscale-Data-Centers-01-07-2025/default.aspx",
+            "https://www.everpuredata.com/company/newsroom/press-releases/pure-and-sk-hynix-collaborate-to-deliver-performance-and-energy-efficiency-in-data-centers.html",
+            "https://investor.everpuredata.com/news-and-events/press-releases/press-release-details/2026/Everpure-Lands-New-Design-Win-with-Second-Top-Five-Hyperscaler/default.aspx",
+            "https://blog.everpuredata.com/perspectives/qlc-hyperscale-moment-has-arrived/",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O66"
+          ]
+        },
+        {
+          "name": "下游项目回报和备货时序重估",
+          "why_live": "Everpure第二hyperscaler设计/供货协议及其FY2028贡献预期提供中期入口，不等于美光当季配额。系统企业/云客户仍要取得资金、部署资源及实际用途，组件库存和长期承诺可让拉货早于安装。",
+          "revision_logic": "现有项目执行基线可以因采用、经济回报和实施方式改变，修订范围既包括未来采购池，也包括时间与库存。大项目的选择或融资变化可早于美光收入产生意义，链条不是要求每一步事实同时出现的确认规则。",
+          "possibility_space": [
+            {
+              "name": "系统客户把设计项目扩大为多地点持续部署并提前保障组件",
+              "implication": "可扩大中期原始采购池，前置备货使美光组件交付可能早于系统厂显著终端收入。仍按合格规格和份额捕获，不能将系统商FY2028计划全部当美光相同期收入。"
+            },
+            {
+              "name": "终端服务回报不及预期，买方缩小或改选系统方案",
+              "implication": "可能减少长期系统部署与组件采购，区别于仅通电延期的时间变化；既有库存和合同可暂时缓冲美光交付，却使后续订单更弱。普通企业/其他第三方SSD路径仍存在。"
+            },
+            {
+              "name": "园区或资金约束延后安装，系统厂调整排产或积累安全库存",
+              "implication": "首先改变季度拉货和库存的位置，未必摧毁用途或远期总配置。价格/数量承诺决定冲击分担，延期后的提前拉货不能再当新的独立需求；若资源恢复，消化库存可先于新增采购。"
+            }
+          ],
+          "ref": [
+            "https://investor.everpuredata.com/news-and-events/press-releases/press-release-details/2026/Everpure-Lands-New-Design-Win-with-Second-Top-Five-Hyperscaler/default.aspx",
+            "https://investor.everpuredata.com/news-and-events/press-releases/press-release-details/2026/Everpure-Announces-Second-Quarter-Fiscal-2027-Financial-Results/default.aspx",
+            "https://www.crusoe.ai/resources/newsroom/crusoe-and-lancium-announce-1-gigawatt-ai-data-center-campus-in-childress-texas",
+            "https://www.sec.gov/Archives/edgar/data/1944366/000194436626000020/exhibit993-2025abelinedc1l.htm",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O79"
+          ]
+        },
+        {
+          "name": "有效供给和自有SSD机会成本改变组件上限",
+          "why_live": "本Unit实际组件供货与自有成品共享部分NAND资源，但规格/封装和第三方资格并不完全互换。节点、新厂及共同制造影响供给时间，合同和回报决定公司如何配置现有良品；全NAND量不能直接作本Unit上限。",
+          "revision_logic": "既有客户活动不变时，合格量和公司分配可改变本Unit交付、成本与份额。外售组件不必总是优于或劣于自有SSD，比较应扣成品控制器/研发和支持成本；长期入口也可使短期最优回报让位。",
+          "possibility_space": [
+            {
+              "name": "美光提高符合第三方规格的良品、封装测试或适配供给",
+              "implication": "可扩大组件可交量并减成本，帮助承接下游扩展或竞争来源缺口。若第三方验证仍限制用途，增产不能同幅进入该客户BOM；首产或厂房开放不等于成熟合格产出。"
+            },
+            {
+              "name": "公司为战略系统关系或合同优先级增加外售组件配额",
+              "implication": "总NAND不变也可扩大本Unit量，并减少成品兄弟Unit可供量。更低销售单价不必代表较差净回报，但长期关系收益是工作假设，不可伪装为已披露组件利润。"
+            },
+            {
+              "name": "成品SSD贡献或承诺更有吸引力，公司反向压缩组件分配",
+              "implication": "本Unit可在下游需求仍强时受量限制，客户可能转向其他合格来源、长期削弱粘性；价格提高能部分补收入但不能替代保供。不是行业需求下滑，而是公司资源选择。"
+            },
+            {
+              "name": "同业有效产出或共同制造效率提高，客户更容易取得合格颗粒",
+              "implication": "组件市场可因可获得性更好而扩大，单供应者议价与份额却可能下降。附条件投资和共享设施不是两份独立增量，美光接单/失单还受自身规格与交期影响。"
+            }
+          ],
+          "ref": [
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://investors.micron.com/news/press-release/2025/Pure-Storage-and-Micron-Collaborate-to-Deliver-Scalable-Energy-Efficient-Solutions-for-Hyperscale-Data-Centers-01-07-2025/default.aspx",
+            "https://apac.kioxia.com/en-apac/about/news/2026/20260130-1.html",
+            "https://www.kioxia.com.cn/zh-cn/about/news/2026/20260827-3.html",
+            "D1-O77"
+          ]
+        },
+        {
+          "name": "组件合同、成本和增长解释发生分化",
+          "why_live": "广谱NAND涨价支持当前议价，但未披露独立组件价格、量和毛利。公司级SCA有不同定价/保障安排，系统客户又可用多来源与效率压缩原始位元成本；同样收入增长可由不同经营过程形成。",
+          "revision_logic": "现有强价及合格量基线可能改成更低波动的合同供货，或更依赖周期市场；也可能被产品/量价披露重新解释。价、量、规格成本与下游传价能力决定回报，不能把合并价带或保证金推广为组件利润下限。",
+          "possibility_space": [
+            {
+              "name": "客户采用明确的跨代数量/价格安排，同时承担部分供应投入保障",
+              "implication": "可提高可见性、支持专用适配，但价格上限或成本分担可能限制盈利上行。覆盖的组件规格及换代条款决定保护范围，预付只是资金/风险安排，不增加已确认收入。"
+            },
+            {
+              "name": "系统客户无法向终端传递组件涨价，改少配、提高效率或延后采购",
+              "implication": "使本Unit量与价格可能反向，即使下游业务活动不降；多来源可加快这种反馈。既有量约束能延后影响而不消除未来调整，不能由行业指数上涨直接断言组件利润同比例增加。"
+            },
+            {
+              "name": "新披露显示组件增长主要来自同规格价格而非位元，或来自组合重选",
+              "implication": "会修订当前增长持续性与下游采用强度，区别于新增生产部署。组合提高单位价也可能增加测试/支持成本，独立量价口径优于用CDBU/自有SSD总收入补齐。"
+            },
+            {
+              "name": "节点/封装成本下降快于实现价正常化，或适配保障成本意外升高",
+              "implication": "前者可在议价减弱时保住回报，后者可在价格仍强时压缩利润；修订来自单位经济而非需求量。低价量增是否有价值取决于同范围成本，不能用公司总毛利认定本Unit同向。"
+            }
+          ],
+          "ref": [
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.trendforce.com/research/download/RP260924PL",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://blog.everpuredata.com/perspectives/qlc-hyperscale-moment-has-arrived/",
+            "https://www.everpuredata.com/company/newsroom/press-releases/pure-and-sk-hynix-collaborate-to-deliver-performance-and-energy-efficiency-in-data-centers.html",
+            "D1-O66",
+            "D1-O79"
+          ]
+        }
+      ]
+    }
+  ]
+}

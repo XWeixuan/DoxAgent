@@ -1,0 +1,9 @@
+{
+  "alias": "O142",
+  "title": "form",
+  "content": "10-K",
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

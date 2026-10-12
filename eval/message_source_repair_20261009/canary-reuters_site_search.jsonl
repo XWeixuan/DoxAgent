@@ -1,0 +1,1 @@
+{"source": "reuters_site_search", "ticker": "MU", "count": 0, "coverage": "PARTIAL", "metadata": {"provider": "reuters", "query_count": 1, "query_attempt_count": 1, "query_success_count": 0, "query_failure_count": 0, "query_deferred_count": 1, "terms_revision": null, "terms_mode": "LEGACY_TERMS", "queries": [{}]}, "failures": [], "samples": []}

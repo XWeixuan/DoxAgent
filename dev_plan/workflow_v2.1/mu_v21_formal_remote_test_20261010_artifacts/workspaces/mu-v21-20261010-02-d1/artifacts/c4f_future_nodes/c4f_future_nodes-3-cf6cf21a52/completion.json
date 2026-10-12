@@ -1,0 +1,127 @@
+{
+  "status": "completed",
+  "summary": "以2026-10-09为截止时点，完成C1/C3/C5阅读与外部主体、反向事件检索，筛选16个未来观察点，覆盖客户规格决策、竞争供给、存储替代路线、电力规则、基础设施交付及Micron资本安排；未改写Entity Map。",
+  "report_markdown": "",
+  "warnings": [
+    "企业计划和行业研究预期不是兑现承诺；送样、洁净室开放、首次晶圆产出、园区通电与合格产品量产分别处理，外部项目不直接等于Micron订单。",
+    "Rubin Ultra规格定案和FERC裁决均无已公布的正式日期；PJM申请2026-10-12生效不等于监管在该日批准。",
+    "Sandisk HBF节点依据2025-08-11原始路线图，本轮未取得更新兑现确认。PJM状态页可读取但未标发布日期，Source Capture解析失败；保留直接链接，并以本轮已捕获的联邦公告核验程序依据。"
+  ],
+  "observation_candidates": [],
+  "entity_relations": [],
+  "future_nodes": [
+    {
+      "时间": "截止后待FERC裁决或公布后续程序；具体日未披露，申请生效日为2026-10-12",
+      "未来事项": "FERC审理PJM的ER26-3515-000申请：建立Interim Resource Adequacy Service（IRAS）及Large Load Registry。PJM状态页仍标示待批准；下一独立观察点是监管接受、修改或拒绝方案及其实施条件，而非已经结束的意见征集。",
+      "与目标公司的关系": "大负荷接入和供电可靠性规则可能改变数据中心投运时间、接电成本及新增自备电源要求，间接影响CMBU的HBM/服务器DRAM与CDBU的企业SSD需求兑现；不是对Micron产品的直接监管或已确认订单变化。",
+      "来源": "[Federal Register：Combined Notice of Filings #2](https://www.govinfo.gov/content/pkg/FR-2026-08-18/pdf/2026-16808.pdf)【cite:O108】【cite:O109】；[PJM：Large Load，待FERC批准状态](https://www.pjm.com/markets-and-operations/large-load)",
+      "来源发布日期": "2026-08-18；PJM状态页未标注发布日期"
+    },
+    {
+      "时间": "2026-10-29 10:00，韩国标准时间（UTC+9）",
+      "未来事项": "Samsung定于发布2026年第三季度财务结果并举行电话会、问答。下一次公开结果可补充竞争者存储业务盈利与供给信息，不能预先保证其披露具体HBM客户或份额。",
+      "与目标公司的关系": "对照竞争者存储盈利、出货/定价及产能表述，有助于区分Micron高利润是行业价格共同上行还是产品组合、成本和份额差异；若披露HBM进展，还可校验CMBU竞争供给假设。",
+      "来源": "[Samsung：Notice of 3Q 2026 Earnings Release Schedule](https://www.samsung.com/global/ir/reports-disclosures/public-disclosure-view.84776/)【cite:O50】",
+      "来源发布日期": "2026-10-08"
+    },
+    {
+      "时间": "截止后Rubin Ultra客户验证与规格定案窗口；正式定案日未披露",
+      "未来事项": "据TrendForce，NVIDIA正并行评估Rubin Ultra的12-Hi/8-Hi HBM4E及HBM4配置；9月2日公开摘要仍指出下一代平台规格未定。下一观察点是验证结果及最终容量、层数与代际选择，不将已有Rubin出货重新列为未来首发。",
+      "与目标公司的关系": "客户最终选择会改变每颗GPU的HBM位元需求、HBM4E认证门槛及供应商晶圆分配，影响Micron的CMBU可售产品组合与量价；降低堆叠层数不必然意味着GPU总出货或Micron收入下降。",
+      "来源": "[TrendForce：DRAM Supply to Remain Tight in 2027, Prompting NVIDIA to Lower HBM Configurations for Rubin Ultra](https://www.trendforce.com/presscenter/news/20260804-13166.html)【cite:O52】；[DRAM Market Bulletin - Sep. 2, 2026，公开摘要](https://www.trendforce.com/research/download/RP260902ZP)【cite:O186】",
+      "来源发布日期": "2026-08-04；2026-09-02"
+    },
+    {
+      "时间": "2026-12-09起；实际回购规模与执行时间不保证",
+      "未来事项": "Micron在10月8日增加授权后，10-K明确回购可从12月9日起依CHIPS直接资助协议进行。下一观察点是这一执行窗口开放后是否实际回购及后续披露，而不是把授权金额视为已花出的现金。",
+      "与目标公司的关系": "回购受自由现金流、补贴扣除、股息及其他资金用途约束，可提供高资本开支下现金生成与资本配置的新证据，并影响稀释与每股收益；授权本身不证明经营利润可持续。",
+      "来源": "[Micron FY2026 Form 10-K](https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm)，Issuer Purchase of Equity Securities【cite:O4】",
+      "来源发布日期": "2026-10-09"
+    },
+    {
+      "时间": "计划于2026年底前",
+      "未来事项": "Kioxia计划向选定客户提供GP1系列PCIe 6.0、XL-FLASH GPU直接访问SSD评估样品。公告明确这些样品仅用于功能检查，量产规格可能不同；下一观察点是样品交付及客户验证，而非量产上市。",
+      "与目标公司的关系": "低延迟闪存作为HBM扩展层可改变推理系统的内存/存储分层，并与Micron CDBU的KV-cache和高性能SSD竞争。经济意义取决于软件集成、实测性能、成本及客户采用，不能由样品指标推出HBM被全面替代。",
+      "来源": "[Kioxia：Kioxia Announces KIOXIA GP1 Series Super High IOPS SSDs for AI Applications](https://apac.kioxia.com/en-apac/business/news/2026/20260804-1.html)【cite:O51】",
+      "来源发布日期": "2026-08-04"
+    },
+    {
+      "时间": "按原始路线图预计2027年初",
+      "未来事项": "Sandisk预计首批搭载High Bandwidth Flash（HBF）的推理设备开始送样。仅记录设备级样品阶段，不把2026年下半年已经进入时间窗口的HBF存储样品计划当作尚未开始的新事件。",
+      "与目标公司的关系": "设备级验证能够提供近GPU闪存容量、带宽、功耗与成本的实际证据，影响HBM和NAND的系统配置边界及Micron CMBU/CDBU竞争选择；仍是样品路线，不等于商业量产或已获客户订单。",
+      "来源": "[Sandisk：Memory-Centric AI: Sandisk’s High Bandwidth Flash Will Redefine AI Infrastructure](https://www.sandisk.com/company/newsroom/blogs/2025/memory-centric-ai)【cite:O67】",
+      "来源发布日期": "2025-08-11"
+    },
+    {
+      "时间": "计划自2027年初开始",
+      "未来事项": "Micron的新加坡HBM先进封装设施预计开始显著扩大公司总先进封装能力。下一观察点是新增设施转为可用封装/测试能力及其爬坡，而非已完成的2025年开工。",
+      "与目标公司的关系": "该节点直接作用于HBM供给的后段瓶颈，可能影响合格交付量、良率和单位成本；必须结合前段晶圆、客户认证及HBM产品组合，不能把建筑或名义能力自动等同于销售量。",
+      "来源": "[Micron FY2026 Form 10-K](https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm)，Item 2 Properties【cite:O4】",
+      "来源发布日期": "2026-10-09"
+    },
+    {
+      "时间": "预计2027年2月",
+      "未来事项": "SK hynix计划开放龙仁首座晶圆厂的第一间洁净室，较此前5月目标提前。此次公布的设施投资不含设备安装费用，洁净室开放与生产设备到位、合格产出不是同一阶段。",
+      "与目标公司的关系": "竞争者物理生产空间进入可用阶段，为DRAM/HBM中期扩产速度提供新证据，关系到Micron位元份额与价格持续性；有效供给压力仍取决于设备、工艺、良率和客户认证。",
+      "来源": "[SK hynix：New Facility Investment for Yongin Semiconductor Cluster](https://news.skhynix.com/en/new-facility-investment-for-yongin-semiconductor-cluster/)【cite:O53】【cite:O54】",
+      "来源发布日期": "2026-02-25"
+    },
+    {
+      "时间": "计划2027年上半年",
+      "未来事项": "NVIDIA与Uber计划先在洛杉矶和旧金山湾区推出搭载全栈NVIDIA DRIVE AV软件的自动驾驶车队；这是后续全球扩展前的首批部署阶段。",
+      "与目标公司的关系": "实际车队部署可检验车载/物理AI从开发转向量产运营的速度，间接关联Micron AEBU的车规DRAM、LPDDR与NAND需求。是否进入Micron收入还取决于车型、BOM选型、认证及供货份额，公告未确认Micron供货。",
+      "来源": "[NVIDIA：BYD, Geely, Isuzu and Nissan Adopt NVIDIA Hyperion for Level 4 Vehicles](https://nvidianews.nvidia.com/news/drive-hyperion-level-4)【cite:O78】",
+      "来源发布日期": "2026-03-16（2026年9月更新平台名称）"
+    },
+    {
+      "时间": "预计2027年中",
+      "未来事项": "Micron Boise首座新DRAM厂预计出现首次晶圆产出。记录初始产出阶段，不提前改写为客户商业出货或满产。",
+      "与目标公司的关系": "首次晶圆是美国新前段产能从建设转向制造的独立节点，可检验资本开支进度、后续折旧和成本爬坡基础；对合格位元供给的贡献还需良率提升与认证。",
+      "来源": "[Micron FY2026 Form 10-K](https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm)，Item 2 Properties【cite:O4】",
+      "来源发布日期": "2026-10-09"
+    },
+    {
+      "时间": "预计2027年中开始",
+      "未来事项": "Micron预计从已收购的台湾铜锣现有晶圆厂实现有意义的产品出货。该商业出货节点与已完成的收购、正在施工但无明确出货日期的第二洁净室分开。",
+      "与目标公司的关系": "这能检验既有厂房整合、DRAM/HBM制造能力转化与有效供给速度，相比新厂首次晶圆更接近收入兑现；仍需确认具体产品、合格量、成本及客户分配，不能按收购资产面积推算收入。",
+      "来源": "[Micron FY2026 Form 10-K](https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm)，Item 2 Properties【cite:O4】",
+      "来源发布日期": "2026-10-09"
+    },
+    {
+      "时间": "预计2027年中",
+      "未来事项": "Crusoe为Microsoft建设的Abilene新增900MW园区，首栋建筑预计通电；这是邻近既有园区的新项目，不与此前已通电建筑混同。",
+      "与目标公司的关系": "首栋通电是AI服务器部署能否跨过基础设施瓶颈的具体证据，间接关联Micron HBM、服务器DRAM与企业SSD需求。通电不等于GPU安装、服务器验收或利用率提升，900MW也不能直接换算为Micron订单。",
+      "来源": "[Crusoe：Crusoe Announces New 900 MW AI Factory Campus in Abilene, Texas to Support Microsoft AI Infrastructure](https://www.crusoe.ai/resources/newsroom/crusoe-announces-new-900-mw-ai-factory-campus-in-abilene-texas-to-support-microsoft-ai-infrastructure)【cite:O74】【cite:O75】",
+      "来源发布日期": "2026-03-27"
+    },
+    {
+      "时间": "计划2027自然年",
+      "未来事项": "Micron预计采用1γ DRAM工艺的HBM4E进入量产爬坡。下一观察点是客户验证向可重复合格量产和商业交付转化，不将已量产的HBM4或HBM4 16层送样当作HBM4E量产。",
+      "与目标公司的关系": "这是CMBU下一代产品组合、HBM竞争份额、制造成本与利润率的直接验证点；实现时间和经济收益依赖良率、客户最终规格、封装能力及采购分配。",
+      "来源": "[Micron FY2026 Form 10-K](https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm)，Item 1 Business【cite:O3】",
+      "来源发布日期": "2026-10-09"
+    },
+    {
+      "时间": "计划2027年",
+      "未来事项": "Western Digital计划将HAMR HDD从两家超大规模客户的认证阶段推进到生产爬坡。记录商业生产阶段，不把已经开展的资格认证列为未来新起点。",
+      "与目标公司的关系": "HAMR容量与单位存储成本的商业兑现会改变云数据湖、温冷数据在HDD和QLC SSD之间的配置选择，关联Micron CDBU/NAND需求与竞争定价；不意味着HDD能替代低延迟推理缓存或全部企业SSD。",
+      "来源": "[Western Digital：Western Digital Accelerates Storage Innovation for AI Era](https://www.westerndigital.com/in-id/company/newsroom/press-releases/2026/2026-02-03-western-digital-accelerates-storage-innovation-for-ai-era)【cite:O70】",
+      "来源发布日期": "2026-02-03"
+    },
+    {
+      "时间": "计划2028年下半年",
+      "未来事项": "Micron新加坡新增NAND晶圆厂设施预计投用并提供更多洁净室空间；这不是已承诺同日增加特定数量的合格NAND位元。",
+      "与目标公司的关系": "新增空间为后续NAND工艺迁移与扩产提供资源，可能影响资本开支、折旧、成本及行业有效供给。其对AI SSD增长的承接或供给过剩的影响，取决于设备投放、良率、需求和竞争者扩产。",
+      "来源": "[Micron FY2026 Form 10-K](https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm)，Item 2 Properties【cite:O4】",
+      "来源发布日期": "2026-10-09"
+    },
+    {
+      "时间": "计划2029年下半年量产；前置洁净室目标为2028年10月前开放",
+      "未来事项": "SK hynix计划在Indiana先进封装基地开始下一代HBM量产：韩国生产晶圆，在美国封装测试后供应客户。保留官方所称下一代HBM，不据此指定尚未明确的产品代际。",
+      "与目标公司的关系": "该重大远期节点可能改变美国客户的本地封装与采购选择，并增加Micron面对的区域化HBM竞争供给；洁净室先行开放不等于2028年已有商业量产，经济影响仍取决于验证、良率及订单分配。",
+      "来源": "[SK hynix：SK hynix Holds Groundbreaking Ceremony for HBM Production Base in Indiana, ‘Beginning a New Future for US-Korea AI’](https://news.skhynix.com/en/groundbreaking-ceremony-in-indiana/)【cite:O81】",
+      "来源发布日期": "2026-08-28"
+    }
+  ],
+  "metadata": {}
+}

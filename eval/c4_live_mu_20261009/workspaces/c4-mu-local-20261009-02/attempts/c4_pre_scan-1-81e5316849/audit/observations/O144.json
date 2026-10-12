@@ -1,0 +1,9 @@
+{
+  "alias": "O144",
+  "title": "primary_document",
+  "content": "mu-20260903.htm",
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

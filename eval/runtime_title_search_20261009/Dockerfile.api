@@ -1,0 +1,3 @@
+FROM doxagent-v2:store-recovery-20261002
+COPY src/doxagent/api_v2/runtime.py /app/src/doxagent/api_v2/runtime.py
+COPY src/doxagent/v2_read/repository.py /app/src/doxagent/v2_read/repository.py

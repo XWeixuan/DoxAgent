@@ -98,6 +98,7 @@ class ExternalChromeRuntime:
         self.driver_state = "STARTING"
         self._driver_started = 0.0
         self._high_rss_samples = 0
+        self._probe_failures = 0
         self._acquiring = 0
         self._retry_at = 0.0
         self._recovery_failures = 0
@@ -226,8 +227,17 @@ class ExternalChromeRuntime:
                 async with asyncio.timeout(5):
                     session = await entry.browser.new_browser_cdp_session()
                     await session.send("Browser.getVersion")
-            except Exception:
-                self.driver_state = "FAILED"
+            except Exception as exc:
+                self._probe_failures += 1
+                logger.warning(
+                    "external control probe degraded failures=%s error=%s",
+                    self._probe_failures,
+                    type(exc).__name__,
+                )
+                if not entry.browser.is_connected() or self._probe_failures >= 2:
+                    self.driver_state = "FAILED"
+            else:
+                self._probe_failures = 0
             finally:
                 if session is not None:
                     try:
@@ -237,6 +247,8 @@ class ExternalChromeRuntime:
                         pass
             if self.driver_state == "FAILED":
                 await self.start()
+                return
+            if self._probe_failures:
                 return
         diagnostic = self.diagnostics()
         self._high_rss_samples = (

@@ -1,0 +1,806 @@
+[
+  {
+    "alias": "O149",
+    "title": "text paragraphs 1",
+    "block_type": "text",
+    "path": "blocks/O149.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 22362,
+    "selected": false
+  },
+  {
+    "alias": "O150",
+    "title": "text paragraphs 2",
+    "block_type": "text",
+    "path": "blocks/O150.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 397,
+    "selected": true
+  },
+  {
+    "alias": "O151",
+    "title": "text paragraphs 3",
+    "block_type": "text",
+    "path": "blocks/O151.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 570,
+    "selected": true
+  },
+  {
+    "alias": "O152",
+    "title": "text paragraphs 4",
+    "block_type": "text",
+    "path": "blocks/O152.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 1085,
+    "selected": true
+  },
+  {
+    "alias": "O153",
+    "title": "text paragraphs 5",
+    "block_type": "text",
+    "path": "blocks/O153.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 1978,
+    "selected": true
+  },
+  {
+    "alias": "O154",
+    "title": "text paragraphs 6",
+    "block_type": "text",
+    "path": "blocks/O154.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 1260,
+    "selected": true
+  },
+  {
+    "alias": "O155",
+    "title": "text paragraphs 7",
+    "block_type": "text",
+    "path": "blocks/O155.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 1057,
+    "selected": true
+  },
+  {
+    "alias": "O156",
+    "title": "text paragraphs 8",
+    "block_type": "text",
+    "path": "blocks/O156.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 861,
+    "selected": true
+  },
+  {
+    "alias": "O157",
+    "title": "text paragraphs 9",
+    "block_type": "text",
+    "path": "blocks/O157.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 2762,
+    "selected": true
+  },
+  {
+    "alias": "O158",
+    "title": "text paragraphs 10",
+    "block_type": "text",
+    "path": "blocks/O158.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 3291,
+    "selected": false
+  },
+  {
+    "alias": "O159",
+    "title": "text paragraphs 11",
+    "block_type": "text",
+    "path": "blocks/O159.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 2955,
+    "selected": false
+  },
+  {
+    "alias": "O160",
+    "title": "text paragraphs 12",
+    "block_type": "text",
+    "path": "blocks/O160.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 1913,
+    "selected": true
+  },
+  {
+    "alias": "O161",
+    "title": "text paragraphs 13",
+    "block_type": "text",
+    "path": "blocks/O161.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 3131,
+    "selected": false
+  },
+  {
+    "alias": "O162",
+    "title": "text paragraphs 14",
+    "block_type": "text",
+    "path": "blocks/O162.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 2763,
+    "selected": false
+  },
+  {
+    "alias": "O163",
+    "title": "text paragraphs 15",
+    "block_type": "text",
+    "path": "blocks/O163.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 4070,
+    "selected": false
+  },
+  {
+    "alias": "O164",
+    "title": "text paragraphs 16",
+    "block_type": "text",
+    "path": "blocks/O164.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 4383,
+    "selected": false
+  },
+  {
+    "alias": "O165",
+    "title": "text paragraphs 17",
+    "block_type": "text",
+    "path": "blocks/O165.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 5180,
+    "selected": false
+  },
+  {
+    "alias": "O166",
+    "title": "text paragraphs 18",
+    "block_type": "text",
+    "path": "blocks/O166.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 5438,
+    "selected": false
+  },
+  {
+    "alias": "O167",
+    "title": "text paragraphs 19",
+    "block_type": "text",
+    "path": "blocks/O167.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 5994,
+    "selected": false
+  },
+  {
+    "alias": "O168",
+    "title": "text paragraphs 20",
+    "block_type": "text",
+    "path": "blocks/O168.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 4688,
+    "selected": false
+  },
+  {
+    "alias": "O169",
+    "title": "text paragraphs 21",
+    "block_type": "text",
+    "path": "blocks/O169.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 2340,
+    "selected": false
+  },
+  {
+    "alias": "O170",
+    "title": "text paragraphs 22",
+    "block_type": "text",
+    "path": "blocks/O170.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 3792,
+    "selected": false
+  },
+  {
+    "alias": "O171",
+    "title": "text paragraphs 23",
+    "block_type": "text",
+    "path": "blocks/O171.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 4355,
+    "selected": false
+  },
+  {
+    "alias": "O172",
+    "title": "text paragraphs 24",
+    "block_type": "text",
+    "path": "blocks/O172.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 667,
+    "selected": false
+  },
+  {
+    "alias": "O173",
+    "title": "text paragraphs 25",
+    "block_type": "text",
+    "path": "blocks/O173.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 1248,
+    "selected": false
+  },
+  {
+    "alias": "O174",
+    "title": "text paragraphs 26",
+    "block_type": "text",
+    "path": "blocks/O174.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 1294,
+    "selected": false
+  },
+  {
+    "alias": "O175",
+    "title": "text paragraphs 27",
+    "block_type": "text",
+    "path": "blocks/O175.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 1060,
+    "selected": false
+  },
+  {
+    "alias": "O176",
+    "title": "text paragraphs 28",
+    "block_type": "text",
+    "path": "blocks/O176.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 906,
+    "selected": false
+  },
+  {
+    "alias": "O177",
+    "title": "text paragraphs 29",
+    "block_type": "text",
+    "path": "blocks/O177.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 2894,
+    "selected": false
+  },
+  {
+    "alias": "O178",
+    "title": "text paragraphs 30",
+    "block_type": "text",
+    "path": "blocks/O178.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 965,
+    "selected": false
+  },
+  {
+    "alias": "O179",
+    "title": "text paragraphs 31",
+    "block_type": "text",
+    "path": "blocks/O179.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 829,
+    "selected": false
+  },
+  {
+    "alias": "O180",
+    "title": "text paragraphs 32",
+    "block_type": "text",
+    "path": "blocks/O180.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 740,
+    "selected": false
+  },
+  {
+    "alias": "O181",
+    "title": "text paragraphs 33",
+    "block_type": "text",
+    "path": "blocks/O181.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 810,
+    "selected": false
+  },
+  {
+    "alias": "O182",
+    "title": "text paragraphs 34",
+    "block_type": "text",
+    "path": "blocks/O182.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 500,
+    "selected": false
+  },
+  {
+    "alias": "O183",
+    "title": "text paragraphs 35",
+    "block_type": "text",
+    "path": "blocks/O183.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 2013,
+    "selected": false
+  },
+  {
+    "alias": "O184",
+    "title": "text paragraphs 36",
+    "block_type": "text",
+    "path": "blocks/O184.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 755,
+    "selected": false
+  },
+  {
+    "alias": "O185",
+    "title": "text paragraphs 37",
+    "block_type": "text",
+    "path": "blocks/O185.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 2036,
+    "selected": false
+  },
+  {
+    "alias": "O186",
+    "title": "text paragraphs 38",
+    "block_type": "text",
+    "path": "blocks/O186.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 4626,
+    "selected": false
+  },
+  {
+    "alias": "O187",
+    "title": "text paragraphs 39",
+    "block_type": "text",
+    "path": "blocks/O187.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 1728,
+    "selected": false
+  },
+  {
+    "alias": "O188",
+    "title": "text paragraphs 40",
+    "block_type": "text",
+    "path": "blocks/O188.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 671,
+    "selected": false
+  },
+  {
+    "alias": "O189",
+    "title": "text paragraphs 41",
+    "block_type": "text",
+    "path": "blocks/O189.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 2577,
+    "selected": false
+  },
+  {
+    "alias": "O190",
+    "title": "text paragraphs 42",
+    "block_type": "text",
+    "path": "blocks/O190.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 5447,
+    "selected": false
+  },
+  {
+    "alias": "O191",
+    "title": "text paragraphs 43",
+    "block_type": "text",
+    "path": "blocks/O191.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 3858,
+    "selected": false
+  },
+  {
+    "alias": "O192",
+    "title": "text paragraphs 44",
+    "block_type": "text",
+    "path": "blocks/O192.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 2323,
+    "selected": false
+  },
+  {
+    "alias": "O193",
+    "title": "text paragraphs 45",
+    "block_type": "text",
+    "path": "blocks/O193.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 944,
+    "selected": false
+  },
+  {
+    "alias": "O194",
+    "title": "text paragraphs 46",
+    "block_type": "text",
+    "path": "blocks/O194.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 2449,
+    "selected": false
+  },
+  {
+    "alias": "O195",
+    "title": "text paragraphs 47",
+    "block_type": "text",
+    "path": "blocks/O195.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 5548,
+    "selected": false
+  },
+  {
+    "alias": "O196",
+    "title": "text paragraphs 48",
+    "block_type": "text",
+    "path": "blocks/O196.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 6014,
+    "selected": false
+  },
+  {
+    "alias": "O197",
+    "title": "text paragraphs 49",
+    "block_type": "text",
+    "path": "blocks/O197.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 3628,
+    "selected": false
+  },
+  {
+    "alias": "O198",
+    "title": "text paragraphs 50",
+    "block_type": "text",
+    "path": "blocks/O198.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 4613,
+    "selected": false
+  },
+  {
+    "alias": "O199",
+    "title": "text paragraphs 51",
+    "block_type": "text",
+    "path": "blocks/O199.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 6020,
+    "selected": false
+  },
+  {
+    "alias": "O200",
+    "title": "text paragraphs 52",
+    "block_type": "text",
+    "path": "blocks/O200.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 2685,
+    "selected": false
+  },
+  {
+    "alias": "O201",
+    "title": "text paragraphs 53",
+    "block_type": "text",
+    "path": "blocks/O201.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 5471,
+    "selected": false
+  },
+  {
+    "alias": "O202",
+    "title": "text paragraphs 54",
+    "block_type": "text",
+    "path": "blocks/O202.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 4943,
+    "selected": false
+  },
+  {
+    "alias": "O203",
+    "title": "text paragraphs 55",
+    "block_type": "text",
+    "path": "blocks/O203.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 3816,
+    "selected": false
+  },
+  {
+    "alias": "O204",
+    "title": "text paragraphs 56",
+    "block_type": "text",
+    "path": "blocks/O204.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 5145,
+    "selected": false
+  },
+  {
+    "alias": "O205",
+    "title": "text paragraphs 57",
+    "block_type": "text",
+    "path": "blocks/O205.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 679,
+    "selected": false
+  },
+  {
+    "alias": "O206",
+    "title": "text paragraphs 58",
+    "block_type": "text",
+    "path": "blocks/O206.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 2063,
+    "selected": false
+  },
+  {
+    "alias": "O207",
+    "title": "text paragraphs 59",
+    "block_type": "text",
+    "path": "blocks/O207.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 845,
+    "selected": false
+  },
+  {
+    "alias": "O208",
+    "title": "text paragraphs 60",
+    "block_type": "text",
+    "path": "blocks/O208.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 1935,
+    "selected": false
+  },
+  {
+    "alias": "O209",
+    "title": "text paragraphs 61",
+    "block_type": "text",
+    "path": "blocks/O209.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 3659,
+    "selected": false
+  },
+  {
+    "alias": "O210",
+    "title": "text paragraphs 62",
+    "block_type": "text",
+    "path": "blocks/O210.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 924,
+    "selected": false
+  },
+  {
+    "alias": "O211",
+    "title": "text paragraphs 63",
+    "block_type": "text",
+    "path": "blocks/O211.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 2780,
+    "selected": false
+  },
+  {
+    "alias": "O212",
+    "title": "text paragraphs 64",
+    "block_type": "text",
+    "path": "blocks/O212.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 6003,
+    "selected": false
+  },
+  {
+    "alias": "O213",
+    "title": "text paragraphs 65",
+    "block_type": "text",
+    "path": "blocks/O213.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 4774,
+    "selected": false
+  },
+  {
+    "alias": "O214",
+    "title": "text paragraphs 66",
+    "block_type": "text",
+    "path": "blocks/O214.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 385,
+    "selected": false
+  },
+  {
+    "alias": "O215",
+    "title": "text paragraphs 67",
+    "block_type": "text",
+    "path": "blocks/O215.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+    },
+    "content_chars": 1318,
+    "selected": false
+  }
+]

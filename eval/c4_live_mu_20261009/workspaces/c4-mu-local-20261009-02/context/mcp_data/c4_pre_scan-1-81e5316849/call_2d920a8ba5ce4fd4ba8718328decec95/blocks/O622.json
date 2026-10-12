@@ -1,0 +1,18 @@
+{
+  "alias": "O622",
+  "title": "sections 5 — metadata",
+  "content": {
+    "section": "Item 8",
+    "heading_match": "ITEM 8.",
+    "start_offset": 278924,
+    "end_offset": 371397,
+    "full_text_chars": 92464,
+    "returned_chars": 40000,
+    "truncated": true,
+    "match_quality": "substantive_body"
+  },
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

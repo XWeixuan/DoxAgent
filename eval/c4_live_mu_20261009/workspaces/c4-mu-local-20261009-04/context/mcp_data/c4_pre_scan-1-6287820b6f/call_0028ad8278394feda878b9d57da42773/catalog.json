@@ -1,0 +1,170 @@
+[
+  {
+    "alias": "O6",
+    "title": "form",
+    "block_type": "text",
+    "path": "blocks/O6.md",
+    "source": {
+      "provider": "SEC EDGAR",
+      "locator": "0000723125-26-000023"
+    },
+    "content_chars": 6,
+    "selected": true
+  },
+  {
+    "alias": "O7",
+    "title": "accession",
+    "block_type": "text",
+    "path": "blocks/O7.md",
+    "source": {
+      "provider": "SEC EDGAR",
+      "locator": "0000723125-26-000023"
+    },
+    "content_chars": 22,
+    "selected": true
+  },
+  {
+    "alias": "O8",
+    "title": "primary_document",
+    "block_type": "text",
+    "path": "blocks/O8.md",
+    "source": {
+      "provider": "SEC EDGAR",
+      "locator": "0000723125-26-000023"
+    },
+    "content_chars": 17,
+    "selected": true
+  },
+  {
+    "alias": "O9",
+    "title": "filing_date",
+    "block_type": "text",
+    "path": "blocks/O9.md",
+    "source": {
+      "provider": "SEC EDGAR",
+      "locator": "0000723125-26-000023"
+    },
+    "content_chars": 12,
+    "selected": true
+  },
+  {
+    "alias": "O10",
+    "title": "report_date",
+    "block_type": "text",
+    "path": "blocks/O10.md",
+    "source": {
+      "provider": "SEC EDGAR",
+      "locator": "0000723125-26-000023"
+    },
+    "content_chars": 12,
+    "selected": true
+  },
+  {
+    "alias": "O11",
+    "title": "published_at",
+    "block_type": "text",
+    "path": "blocks/O11.md",
+    "source": {
+      "provider": "SEC EDGAR",
+      "locator": "0000723125-26-000023"
+    },
+    "content_chars": 12,
+    "selected": true
+  },
+  {
+    "alias": "O12",
+    "title": "applied_cutoff",
+    "block_type": "text",
+    "path": "blocks/O12.md",
+    "source": {
+      "provider": "SEC EDGAR",
+      "locator": "0000723125-26-000023"
+    },
+    "content_chars": 12,
+    "selected": true
+  },
+  {
+    "alias": "O13",
+    "title": "default_sections_for_form",
+    "block_type": "json",
+    "path": "blocks/O13.json",
+    "source": {
+      "provider": "SEC EDGAR",
+      "locator": "0000723125-26-000023"
+    },
+    "content_chars": 5,
+    "selected": true
+  },
+  {
+    "alias": "O14",
+    "title": "section_previews 1",
+    "block_type": "json",
+    "path": "blocks/O14.json",
+    "source": {
+      "provider": "SEC EDGAR",
+      "locator": "0000723125-26-000023"
+    },
+    "content_chars": 3221,
+    "selected": true
+  },
+  {
+    "alias": "O15",
+    "title": "section_previews 2",
+    "block_type": "json",
+    "path": "blocks/O15.json",
+    "source": {
+      "provider": "SEC EDGAR",
+      "locator": "0000723125-26-000023"
+    },
+    "content_chars": 3230,
+    "selected": true
+  },
+  {
+    "alias": "O16",
+    "title": "sections 1 — metadata",
+    "block_type": "json",
+    "path": "blocks/O16.json",
+    "source": {
+      "provider": "SEC EDGAR",
+      "locator": "0000723125-26-000023"
+    },
+    "content_chars": 201,
+    "selected": true
+  },
+  {
+    "alias": "O17",
+    "title": "sections 1",
+    "block_type": "text",
+    "path": "blocks/O17.md",
+    "source": {
+      "provider": "SEC EDGAR",
+      "locator": "0000723125-26-000023"
+    },
+    "content_chars": 40048,
+    "selected": false
+  },
+  {
+    "alias": "O18",
+    "title": "sections 2 — metadata",
+    "block_type": "json",
+    "path": "blocks/O18.json",
+    "source": {
+      "provider": "SEC EDGAR",
+      "locator": "0000723125-26-000023"
+    },
+    "content_chars": 204,
+    "selected": true
+  },
+  {
+    "alias": "O19",
+    "title": "sections 2",
+    "block_type": "text",
+    "path": "blocks/O19.md",
+    "source": {
+      "provider": "SEC EDGAR",
+      "locator": "0000723125-26-000023"
+    },
+    "content_chars": 40016,
+    "selected": false
+  }
+]

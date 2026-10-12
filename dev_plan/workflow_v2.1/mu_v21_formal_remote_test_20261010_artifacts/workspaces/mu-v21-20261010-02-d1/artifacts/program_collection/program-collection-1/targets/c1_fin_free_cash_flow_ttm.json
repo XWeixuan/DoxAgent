@@ -1,0 +1,15 @@
+{
+  "schema_version": "d1-horizontal-target-result-v1",
+  "result": {
+    "collection_target_id": "c1_fin_free_cash_flow_ttm",
+    "status": "UNAVAILABLE",
+    "requested_items": 1,
+    "succeeded_items": 0,
+    "unavailable_items": 1,
+    "failed_items": 0,
+    "provider_attempts": [],
+    "output_refs": [],
+    "reason": "standard_fcf_v1"
+  },
+  "observations": []
+}

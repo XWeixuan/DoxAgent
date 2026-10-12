@@ -1,0 +1,95 @@
+"""Reuse Codex worker idempotency and durable completed receipts for runtime nodes."""
+
+from typing import Any
+
+from doxagent.codex_worker.schema import WorkerJob, WorkerRunRequest
+
+from .journal import RuntimeJournal, digest
+
+
+class ReceiptWorker:
+    def __init__(
+        self,
+        worker: Any,
+        journal: RuntimeJournal,
+        scope: str,
+        *,
+        case_id: str | None = None,
+        control_epoch: int | None = None,
+        replace_failed_model: bool = False,
+    ) -> None:
+        self.worker, self.journal, self.scope = worker, journal, scope
+        self.case_id = case_id
+        self.control_epoch = control_epoch
+        self.replace_failed_model = replace_failed_model
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self.worker, name)
+
+    async def run(self, request: WorkerRunRequest) -> WorkerJob:
+        # O3 has one maintenance turn; its native attempt counter may advance on resume.
+        phase = (
+            "maintain"
+            if str(request.node) == "d3_o3_maintain"
+            else "case"
+            if str(request.node) == "persistent_runtime_w3"
+            else request.attempt_id
+        )
+        identity = f"runtime-worker:{self.scope}:{request.run_id}:{request.node}:{phase}"
+        self.last_identity = identity
+        rejected = self.journal.get("worker_rejected", identity, False)
+        frozen = self.journal.get("worker_requests", identity)
+        if frozen is None:
+            frozen = request.model_copy(update={"idempotency_key": digest(identity)}).model_dump(
+                mode="json"
+            )
+            self.journal.set("worker_requests", identity, frozen)
+        receipt = self.journal.get("worker_receipts", identity)
+        if receipt is not None:
+            job = WorkerJob.model_validate(receipt)
+            if not rejected and str(job.status) in {"SUCCEEDED", "completed", "succeeded"}:
+                return WorkerJob.model_validate(job)
+        if rejected or (receipt is not None and str(job.status) in {"failed", "cancelled"}):
+            # Only a confirmed terminal failure may mint a new remote dispatch key.
+            generation = self.journal.get("worker_generation", identity, 0) + 1
+            self.journal.set("worker_generation", identity, generation)
+            if (
+                self.replace_failed_model
+                and receipt is not None
+                and str(job.status) == "failed"
+                and frozen.get("model") != request.model
+            ):
+                # Explicit recovery may change the dispatch model, not the frozen
+                # Case context, prompt, output schema, or reasoning effort.
+                frozen["model"] = request.model
+                frozen["attempt_id"] = request.attempt_id
+                frozen["thread_id"] = request.thread_id
+            frozen["idempotency_key"] = digest([identity, generation])
+            self.journal.set("worker_requests", identity, frozen)
+            self.journal.set("worker_receipts", identity, None)
+            self.journal.set("worker_rejected", identity, False)
+        from doxagent.v2_control.repository import ControlRepository
+
+        ControlRepository(self.journal).dispatch(frozen["idempotency_key"], request.ticker)
+        dispatched_request = WorkerRunRequest.model_validate(frozen)
+        job = await self.worker.run(dispatched_request)
+        self.journal.set(
+            "worker_invocations",
+            job.job_id,
+            {
+                "job": job.model_dump(mode="json"),
+                "ticker": request.ticker,
+                "node": str(request.node),
+                "model": dispatched_request.model,
+                "provider": dispatched_request.model_provider,
+                "case_id": self.case_id,
+                "control_epoch": self.control_epoch,
+                "run_id": request.run_id,
+                "ordinal": self.journal.get("worker_generation", identity, 0) + 1,
+            },
+        )
+        self.journal.set("worker_receipts", identity, job.model_dump(mode="json"))
+        return WorkerJob.model_validate(job)
+
+    def reject_output(self, reason: str) -> None:
+        self.journal.set("worker_rejected", self.last_identity, reason)

@@ -1,0 +1,9 @@
+{
+  "alias": "O208",
+  "title": "text paragraphs 120",
+  "content": "|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |\n\n| Financial swaps |  | Other liabilities |  | 1,444 |  |  | (1,444) |  |  | — |  |  | 7,479 |  |  | (4,385) |  | (4) | 3,094 |  |\n\n| Forward contracts |  | Other liabilities |  | — |  |  | — |  |  | — |  |  | 10,524 |  |  | — |  |  | 10,524 |  |\n\n| Total |  |  |  | $ | 3,982 |  |  | $ | (3,979) |  |  | $ | 3 |  |  | $ | 53,498 |  |  | $ | (33,779) |  |  | $ | 19,719 |  |\n\n|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |\n\n(1)  Current liability derivative amounts offset include $31.0 million of collateral receivable at June 30, 2026.\n\n(2)  Long-term liability derivative amounts offset include $5.9 million of collateral receivable at June 30, 2026.\n\n(3)  Current liability derivative amounts offset include $26.9 million of collateral receivable at December 31, 2025.",
+  "source": {
+    "provider": "Public web source",
+    "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "alias": "O326",
+  "title": "sections 1 — metadata",
+  "content": {
+    "section": "Our manufacturing facilities",
+    "heading_match": "our manufacturing facilities",
+    "start_offset": 170628,
+    "end_offset": 250657,
+    "full_text_chars": 80000,
+    "returned_chars": 40000,
+    "truncated": true,
+    "match_quality": "substantive_body"
+  },
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

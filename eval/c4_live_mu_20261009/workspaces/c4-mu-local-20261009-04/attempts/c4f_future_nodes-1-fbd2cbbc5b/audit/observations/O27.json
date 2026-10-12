@@ -1,0 +1,9 @@
+{
+  "alias": "O27",
+  "title": "text paragraphs 6",
+  "content": "| Quarterly Business Unit Financial Results |\n\n|  | FQ4-26 | FQ3-26 | FQ4-25 |\n\n|  |  |  |  |\n\n| Cloud Memory Business Unit |  |  |  |\n\n| Revenue | $ | 16,283 |  | $ | 13,769 |  | $ | 4,543 |  |\n\n| Gross margin |  | 83 | % |  | 83 | % |  | 59 | % |\n\n| Operating margin |  | 76 | % |  | 78 | % |  | 48 | % |\n\n|  |  |  |  |",
+  "source": {
+    "provider": "Public web source",
+    "locator": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"
+  }
+}

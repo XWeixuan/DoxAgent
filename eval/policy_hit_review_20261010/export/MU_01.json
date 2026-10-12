@@ -1,0 +1,309 @@
+{
+  "format": "doxagent.policy-hit-review.v1",
+  "ticker": "MU",
+  "window": {
+    "since_utc": "2026-09-18T18:59:35.983285+00:00",
+    "as_of_utc": "2026-10-09T18:59:35.983285+00:00"
+  },
+  "part": 1,
+  "record_count": 1,
+  "records": [
+    {
+      "policy_hit_id": "case_cbd21c76530248ff9f423e50c4dad84b:pol_12b2c75c2f311063e913",
+      "ticker": "MU",
+      "case_id": "case_cbd21c76530248ff9f423e50c4dad84b",
+      "hit_observed_at_utc": "2026-09-21T18:59:38.974Z",
+      "hit_current": true,
+      "policy_id": "pol_12b2c75c2f311063e913",
+      "activation_revision": "ar_7d3c554dd06abfdf5216ce5a",
+      "policy": {
+        "frozen_match": {
+          "activation_revision": "ar_7d3c554dd06abfdf5216ce5a",
+          "condition_ids": [
+            "C2",
+            "C3"
+          ],
+          "criterion": [
+            "Micron或主要AI/服务器客户正式披露确认服务器/HBM优先分配和实际供给约束继续至2029或更晚，同时消费供给仍受限、合同价未结构性下跌，并且Micron数据中心组合不低于当前基线。",
+            "主要半导体公司或AI/服务器供应链参与者在当前已知的高价格和2027年瓶颈恶化基线之上，正式量化内存价格或供给压力进一步上修，并明确该变化将延长服务器/HBM优先分配或Micron可实现的高ASP、高毛利路径。"
+          ],
+          "match_scope": "服务器/HBM优先分配、AI内存价格与供给瓶颈展望、消费供给约束、合同价格和Micron数据中心组合在当前预测之后的延续。",
+          "policy_id": "pol_12b2c75c2f311063e913"
+        },
+        "pinned_detail": {
+          "activation_semantics": "OR",
+          "policy": {
+            "activation_conditions": [
+              {
+                "calibration": {
+                  "reference_state": "截至2026-09-20，AI/服务器内存仍处于高需求、供给约束和优先分配基线；领先科技公司已承诺2026年AI基础设施投入超过7000亿美元，进一步支持AI需求延续，但不等同于Micron平台或供给确认。3Q26传统DRAM与NAND合同价分别预期环比上涨13%至18%和10%至15%，Intel CEO于2026-09-15称内存价格已约为此前的五至七倍并警告2027年瓶颈可能恶化，Dell'Oro、Alphabet和TSMC的新数据进一步支持AI基础设施需求延续至2029。Micron HBM产能已售罄至calendar 2026，管理层仍预期2028逐步改善，数据中心组合约61%，尚无结构性合同价下跌。",
+                  "trigger_boundary": "在上述已包含2026年AI基础设施投入超过7000亿美元、2027年瓶颈恶化和高价格量化判断的最新基线上，仍需Micron或主要AI/服务器客户的正式披露确认服务器/HBM优先分配、绑定订单或实际可交付供给继续至2029或更晚，并同时确认消费供给仍受限、合同价未结构性下跌且Micron数据中心组合不低于约61%；单独的AI基础设施总量投入报道、重复一般性行业紧张、单一外部评论或股价上涨不满足。"
+                },
+                "condition_id": "C2",
+                "criterion": "Micron或主要AI/服务器客户正式披露确认服务器/HBM优先分配和实际供给约束继续至2029或更晚，同时消费供给仍受限、合同价未结构性下跌，并且Micron数据中心组合不低于当前基线。"
+              },
+              {
+                "calibration": {
+                  "reference_state": "当前基线已包含Intel CEO对内存价格约五至七倍及2027年供给瓶颈恶化的公开判断，以及3Q26合同价仍上涨但增速放缓的DRAM/NAND预测；2026年AI基础设施投入超过7000亿美元的外部需求信号也已吸收，但未确认内存价格或供给压力进一步上修、服务器/HBM实际分配或Micron价值获取；这些事实本身不再作为未来触发的重复证据。",
+                  "trigger_boundary": "后续正式披露必须在当前五至七倍价格、2027年恶化基线及超过7000亿美元AI基础设施投入的外部需求基线之上给出新的可量化价格/供给上修，或正式确认服务器/HBM分配和实际可交付约束继续至2029或更晚，并直接连接Micron的高ASP或高毛利路径；一般性紧张、同一评论的转载、重复该AI基础设施投入总量、未量化分析师预测和市场价格波动不满足。"
+                },
+                "condition_id": "C3",
+                "criterion": "主要半导体公司或AI/服务器供应链参与者在当前已知的高价格和2027年瓶颈恶化基线之上，正式量化内存价格或供给压力进一步上修，并明确该变化将延长服务器/HBM优先分配或Micron可实现的高ASP、高毛利路径。"
+              }
+            ],
+            "decision": "LONG",
+            "match_scope": "服务器/HBM优先分配、AI内存价格与供给瓶颈展望、消费供给约束、合同价格和Micron数据中心组合在当前预测之后的延续。",
+            "policy_id": "pol_12b2c75c2f311063e913",
+            "source_refs": [
+              {
+                "expectation_id": "服务器优先分配与内存行业供需",
+                "gap_id": "服务器优先分配进一步强化并延长",
+                "shell_id": "AI与服务器内存商业兑现"
+              }
+            ],
+            "title": "服务器优先分配进一步延长"
+          },
+          "source_document2": {
+            "artifact_id": "f4c9387a22b7489eab231fa7c3a208c3",
+            "content_sha256": "09773d307eb304b6232eb7cba1912b59a2954bb97ced27313c6007a962b57b66",
+            "published_at": "2026-09-10T22:05:37.989363Z",
+            "run_id": "init-mu-ce1a897cebf549f88d93fa485671644b-d2",
+            "schema_version": "document2.v2"
+          },
+          "summary": {
+            "consumed": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "consumed_at": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "decision": "LONG",
+            "effective": {
+              "reason": "NOT_RECORDED",
+              "state": "NOT_RECORDED",
+              "value": null
+            },
+            "lifecycle": "ACTIVE",
+            "matched_filters": [
+              "ACTIVE"
+            ],
+            "policy_activation_revision": "ar_7d3c554dd06abfdf5216ce5a",
+            "policy_id": "pol_12b2c75c2f311063e913",
+            "policy_revision_id": "4a3f051ca633264e1046b34228c27a80b10363391928e8003ee5e3c40838049d",
+            "policy_set_version": 6,
+            "shell_ids": [
+              "AI与服务器内存商业兑现"
+            ],
+            "title": "服务器优先分配进一步延长",
+            "unresolved_shell_ids": []
+          }
+        },
+        "policy_set_version": 6,
+        "activation_revision_id": "runtime-maintain-714f368acb148b0d9909d65a-activation"
+      },
+      "hit_policy_released_for_trade": false,
+      "case_summary": {
+        "case_id": "case_cbd21c76530248ff9f423e50c4dad84b",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-21T18:59:39.220666Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 311.898653
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "OLD"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": true
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "ARCHIVE",
+        "member_count": 1,
+        "received_at": "2026-09-21T18:54:27.322013Z",
+        "resolved_route": null,
+        "result_settled": true,
+        "results": [
+          "ARCHIVE",
+          "BADCASE"
+        ],
+        "revision": 2608459,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-21",
+        "source": {
+          "binding_id": "MU:yahoo_finance_news",
+          "kind": "api",
+          "name": "Yahoo Finance News",
+          "source_id": "yahoo_finance_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_b3802f744ed74457b1f2337fb054a602",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "HBM Sold Out Through 2027. Micron’s Customers Are Begging. Can Anything Go Wrong?"
+        },
+        "trade": {
+          "intent_count": 0,
+          "reason_codes": [],
+          "state": "NOT_APPLICABLE"
+        },
+        "trade_disposition": "NOT_EVALUATED",
+        "w3_status": null
+      },
+      "case_process": {
+        "created_at": "2026-09-21T18:54:27.322013Z",
+        "completed_at": "2026-09-21T18:59:39.220666Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "ARCHIVE",
+          "reason": "w1=OLD/normal;policy_hit=true;w2=normal",
+          "side_effects": [
+            "archive_message",
+            "mark_badcase"
+          ]
+        },
+        "resolved_route": null,
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E4",
+            "E9",
+            "E1",
+            "E70",
+            "E53"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [
+            {
+              "event_id": "E9",
+              "fact_ids": [
+                "F239",
+                "F238",
+                "F244",
+                "F255"
+              ]
+            },
+            {
+              "event_id": "E1",
+              "fact_ids": [
+                "F1",
+                "F4",
+                "F6",
+                "F25"
+              ]
+            },
+            {
+              "event_id": "E4",
+              "fact_ids": [
+                "F84",
+                "F151",
+                "F107"
+              ]
+            }
+          ],
+          "reason": "The message is a bull/bear analysis synthesizing previously reported facts. All core news items are already covered: 16 SCAs with $22B deposits and ~$100B contracts (E9: F239, F238, F255), FY2026 Q3 revenue $41.46B at 84.9% margin and Q4 guidance of $50B (E1: F1, F4, F6), CEO's structural-transformation claim (E1: F25), supply tightness beyond 2027 (E4: F151), inability to fulfill full order book (E9: F244), no line of sight on supply catching up (E4: F107), HBM sold out (E4: F84), CXMT and Korean capacity as bear-case risks (E4: F116, F129, F168), and the $1,015.80 closing price (E70: F465). The WDC comparison and the '20% DRAM / one-third NAND' SCA allocation are peripheral context or refinements that do not change the core news state.",
+          "reference_ids": [
+            "E9",
+            "E1",
+            "E4"
+          ],
+          "result": "OLD"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [
+            "pol_12b2c75c2f311063e913"
+          ],
+          "reason": "消息包含与pol_12b2c75c2f311063e913直接相关的具体事实：CEO确认供给紧张持续超越2027年且'无可见供给追赶时间线'、HBM成为加速器出货的binding constraint、Micron仅能满足最大AI客户50-67%需求、FQ3实现84.9%非GAAP毛利率及$50B下季度指引、$100B合同最低价收入与$22B客户存款。这些事实触及服务器/HBM优先分配和AI内存供给瓶颈展望的核心scope。该消息为第三方新闻报道，是否构成C2所要求的'在当前已知基线之上的正式量化上修'尚需完整判定。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [
+            {
+              "condition_ids": [
+                "C3"
+              ],
+              "policy_id": "pol_12b2c75c2f311063e913"
+            }
+          ],
+          "policy_ids": [
+            "pol_12b2c75c2f311063e913"
+          ],
+          "reason": "Micron正式披露16份五年期take-or-pay SCA（覆盖约20% DRAM和1/3 NAND、累计最低价格收入近1000亿美元、客户预付220亿美元现金及信用证），并公布实际非GAAP毛利率84.9%、下季500亿美元收入指引，CEO将供给紧张时间线从基线的'2028逐步改善'上修为'beyond calendar 2027'且'no line of sight'供给追上，明确将上述变化连接至Micron高ASP/高毛利路径（SCA floor价格带来'well above peak in any past cycle'的毛利率）。这些构成在既有五至七倍价格和2027恶化基线之上的新可量化供给/价格上修，满足C3。C2因消息未显式确认约束持续至2029或更晚（'beyond 2027'与'deciding variable is 2028'存在歧义）、且未给出数据中心组合≥61%的具体数字，不作为matched condition。"
+        },
+        "w2_skipped": false,
+        "w3_result": null
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "6f017a2c42529c80f8c9d400c09f5d88897cf1fcac133b12eb6c7aaf9da9b091",
+            "content_type": "text/plain",
+            "sha256": "4acdab44298cfe04e6170c9b66d87f3b58de17e20363fb610121cb892ca0c2fc",
+            "size_bytes": 3880
+          },
+          "case": {
+            "case_id": "case_cbd21c76530248ff9f423e50c4dad84b",
+            "initial_route": "ARCHIVE",
+            "resolved_route": null,
+            "route_group": "ARCHIVE",
+            "status": "COMPLETED",
+            "w3_status": null
+          },
+          "collected_at": "2026-09-21T18:54:23.298233Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-21T18:54:25.863695Z",
+          "revision": 1,
+          "row_revision": 1320712,
+          "source": {
+            "binding_id": "MU:yahoo_finance_news",
+            "kind": "api",
+            "name": "Yahoo Finance News",
+            "source_id": "yahoo_finance_news"
+          },
+          "source_published_at": "2026-09-21T18:45:56Z",
+          "standard_message_id": "std_7599ae6e5b7f46ba8a960a99a68b3118",
+          "stream_item_id": "stream_b3802f744ed74457b1f2337fb054a602",
+          "stream_offset": 1593,
+          "stream_published_at": "2026-09-21T18:54:25.868730Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "HBM Sold Out Through 2027. Micron’s Customers Are Begging. Can Anything Go Wrong?"
+          },
+          "url": "https://247wallst.com/investing/2026/09/21/hbm-sold-out-through-2027-microns-customers-are-begging-can-anything-go-wrong/",
+          "body_text": "Micron's order book is locked, its customers are desperate, and its margins are breaking records, yet the same forces that made memory a graveyard for investors for four decades have not disappeared.\n\nThis post may contain links from our sponsors and affiliates, and Flywheel Publishing may receive compensation for actions taken through them.\n\nMicron Technology (NASDAQ:MU | MU Price Prediction) has become the most improbable trillion-dollar story of the AI buildout. Shares closed at $1,015.80, up 502.43% over the past year, and the market capitalization now sits near $1.147 trillion.\n\nThat valuation prices in an industry defined by boom and bust for forty years. The question worth asking is whether the AI cycle actually broke that pattern or is simply running the wildest version of it.\n\nManagement insists the answer has changed. CEO Sanjay Mehrotra told investors that “the memory industry has been structurally transformed by the proliferation of AI” and that supply tightness will persist beyond calendar 2027. The order book, contracts, and margins all support him, although history does not.\n\nSold Out, and Paid to Prove It\n\nFiscal third-quarter revenue reached $41.46 billion, up 345.72% year over year at a non-GAAP gross margin of 84.9%, a margin profile that says pricing power, not volume, is doing the work.\n\nManagement guided the September quarter to $50.0 billion in revenue, a single quarter larger than the company’s fiscal 2024 full-year total.\n\nMicron has now signed 16 Strategic Customer Agreements, mostly five-year take-or-pay contracts covering roughly 20% of our DRAM volume and a third of NAND, with cumulative minimum-price revenue near $100 billion.\n\nCustomers are also wiring in $22 billion of cash deposits and letters of credit. Mehrotra was blunt on scarcity: Micron can fill only half to two-thirds of its biggest AI customers’ demand.\n\nWhere the Peers Sit on the Same Trade\n\nNVIDIA (NASDAQ:NVDA) sits on the buy side of the same table. Its shares are up 26.42% over the past year, a fraction of Micron’s move, because HBM scarcity is now the binding constraint on accelerator shipments.\n\nWestern Digital (NASDAQ:WDC) rides the same AI data wave without HBM exposure. Fiscal fourth-quarter revenue grew 43.84% at a 54.4% gross margin, respectable numbers that look pedestrian next to Micron’s.\n\nCEO Irving Tan framed the tailwind plainly: “Virtually every AI workload, from training, inference, agentic AI to physical AI, creates data that is stored persistently and cost-efficiently on HDDs.”\n\nBull and Bear Case for MU Stock\n\nThe bull case rests on the contracts. Mehrotra said the SCA floor prices deliver “a very robust gross margin for Micron, well above our peak quarterly margins in any past cycle.” If that holds, the forward multiple of 7 is absurdly cheap.\n\nThe bear case is Samsung and SK Hynix racing to add HBM capacity, plus new fabs from China’s CXMT that Barron’s flagged as a growing supply overhang. Insider activity is currently selling, and every past commodity supercycle felt permanent at the top. The AI infrastructure trade extends well beyond memory, and we mapped seven suppliers powering the data-center buildout, from electricity to cooling, in a free report you can grab here.\n\nThe deciding variable is calendar 2028. Mehrotra conceded Micron does “not have line of sight as to when memory supply will be able to catch up.” If rival HBM lines slip, the SCAs print money. If they arrive on time, the market will remember what memory used to be.\n\nContact [email protected] for any questions or corrections.\n\nOmor Ibne Ehsan is a writer at 24/7 Wall St. He is a self-taught investor with a focus on growth, cyclical, and dividend equities that have strong fundamentals, value, and long-term potential. He also has an interest in high-risk, high-reward investments such as penny stocks."
+        }
+      ],
+      "discovered_facts": [],
+      "trade": {
+        "intents": [],
+        "closed_candidates": [],
+        "executions": []
+      }
+    }
+  ]
+}

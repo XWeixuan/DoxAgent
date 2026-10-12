@@ -1,0 +1,2474 @@
+{
+  "name": "汽车与工业嵌入式存储市场",
+  "scope": "美光汽车内存存储与工业自动化、物联网、机器间通信及消费智能边缘的嵌入式业务。共同背景为DRAM、LPDDR、托管NAND、NOR与SSD产品、可靠性和安全资格、设备平台生命周期与长期供货；汽车OEM/Tier 1和工业及新型边缘客户保留独立商业基础。",
+  "boundary": "车载及工业嵌入式设备架构、客户采用、资格和项目供货由本域深化；手机与PC归移动与客户端内存存储市场，云端计算归数据中心计算平台与内存。行业DRAM/NAND经济性归对应行业市场，生产资产、工序和供应资源归对应制造域。跨产品战略供给合同归战略客户供给与资金保障关系，知识产权许可及争议归知识产权与许可关系。",
+  "ref": [
+    "D1-O3",
+    "D1-O74",
+    "D1-O103",
+    "D1-O135",
+    "D1-O57",
+    "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+    "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/",
+    "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+    "https://micron.gcs-web.com/static-files/9c0becf5-df56-4eec-bd67-453dda68b273",
+    "https://investors.micron.com/news/press-release/2026/Micron-and-General-Motors-Sign-Strategic-Agreement-to-Secure-Supply-and-Accelerate-Innovation/default.aspx",
+    "https://investors.micron.com/news/press-release/2026/Micron-and-Ford-Sign-Strategic-Agreement-to-Strengthen-Long-Term-Memory-Supply-and-Industry-Resilience/default.aspx",
+    "https://investors.micron.com/news/press-release/2026/Micron-Strengthens-Automotive-Ecosystem-Supply-Through-Strategic-Customer-Agreements/default.aspx",
+    "D1-O69",
+    "D1-O171",
+    "https://sg.micron.com/content/dam/micron/global/public/corporate/quality/certificates/micron-21-03-104-c-r018-y4bm-type-certificate-v2r0.pdf",
+    "https://investors.micron.com/news/press-release/2026/Micron-Advances-Made-in-America-Memory-With-Manufacturing-Expansion-in-Virginia/default.aspx",
+    "https://investor.gm.com/static-files/1294f515-0131-4d38-986e-f4d3160e7a68",
+    "https://www.fromtheroad.ford.com/us/en/articles/2026/ford-2026-third-quarter-sales-results",
+    "https://www.acea.auto/pc-registrations/new-car-registrations-5-3-in-august-2026-year-to-date-battery-electric-21-7-market-share/",
+    "D1-O78",
+    "https://nvidianews.nvidia.com/news/drive-hyperion-level-4",
+    "https://waymo.com/blog/2026/02/waymo-raises-usd16-billion-investment-round/",
+    "https://www.waymo.com/blog/2026/10/waymo-closes-5-billion-debt-financing/",
+    "https://docs.cpuc.ca.gov/PublishedDocs/Published/G000/M455/K694/455694131.PDF",
+    "https://www.euroncap.com/press-media/euro-ncap-announces-2026-protocol-changes-to-tackle-modern-driving-risks/",
+    "https://www.fromtheroad.ford.com/us/en/articles/2023/ford-bluecruise-expands-flexibility-with-complimentary-trial--mo",
+    "https://developer.nvidia.com/blog/introducing-nvidia-jetson-thor-the-ultimate-platform-for-physical-ai/",
+    "https://winbond.com/export/sites/winbond/product-selection-guide/file/2026-Winbond-Customized-Memory-Solution.pdf?__locale=en",
+    "D1-O31",
+    "https://static.nhtsa.gov/odi/rcl/2025/RCLRPT-25E034-2471.PDF",
+    "https://www.transportation.gov/briefing-room/usdot-releases-national-deployment-plan-vehicle-everything-v2x-technologies-reduce",
+    "https://arxiv.org/abs/2207.08930v2",
+    "https://www.rockwellautomation.com/en-us/company/news/press-releases/Rockwell-Automation-Reports-Third-Quarter-2026-Results.html",
+    "https://ifr.org/ifr-press-releases/news/five-million-robots-now-operate-in-factories-globally",
+    "https://ifr.org/ifr-press-releases/news/global-sales-of-professional-service-robots-surge-24-percent",
+    "https://ifr.org/downloads/press_docs/Market_Presentation_WR_Press_Conference_2026.pdf",
+    "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Halos-for-Robotics-the-Industrys-First-Full-Stack-Safety-System-for-Physical-AI/default.aspx",
+    "https://www.nxp.com/docs/en/application-note/AN14700.pdf",
+    "https://www.qualcomm.com/news/onq/2025/06/a-worlds-first-on-glass-gen-ai-demo-qualcomms-vision-for-smart-glasses",
+    "https://www.essilorluxottica.com/api/getCapContent?download=false&id=283158",
+    "https://www.essilorluxottica.com/en/newsroom/press-releases/q2-h1-2026-results/",
+    "https://gxo.com/news_article/gxo-signs-industry-first-multi-year-agreement-with-agility-robotics/",
+    "https://digital-strategy.ec.europa.eu/en/policies/cyber-resilience-act",
+    "https://digital-strategy.ec.europa.eu/en/library/commission-publishes-new-guidance-support-timely-cyber-resilience-act-implementation",
+    "https://new.abb.com/news/detail/64305/remanufacturing-old-robots",
+    "https://www.kuka.com/en-at/company/iimagazine/2024/04/sustainability",
+    "https://about.fb.com/news/2026/07/metas-ai-glasses-your-questions-answered/"
+  ],
+  "units": [
+    {
+      "name": "美光汽车内存与存储业务",
+      "scope": "面向汽车ADAS、自动驾驶、信息娱乐及其他车载用途的车规DRAM、LPDDR、NAND与UFS，涵盖车型与电子架构、单车配置、OEM和Tier 1采用、可靠性与安全资格、项目生命周期、长期供货、采购份额及业务经济性。",
+      "horizon": "季度业务变化，延伸至多年车型与汽车电子平台生命周期。",
+      "ref": [
+        "D1-O74",
+        "D1-O103",
+        "D1-O3",
+        "D1-O135",
+        "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+        "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/",
+        "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+        "D1-O57",
+        "https://micron.gcs-web.com/static-files/9c0becf5-df56-4eec-bd67-453dda68b273",
+        "https://investors.micron.com/news/press-release/2026/Micron-and-General-Motors-Sign-Strategic-Agreement-to-Secure-Supply-and-Accelerate-Innovation/default.aspx",
+        "https://investors.micron.com/news/press-release/2026/Micron-and-Ford-Sign-Strategic-Agreement-to-Strengthen-Long-Term-Memory-Supply-and-Industry-Resilience/default.aspx",
+        "https://investors.micron.com/news/press-release/2026/Micron-Strengthens-Automotive-Ecosystem-Supply-Through-Strategic-Customer-Agreements/default.aspx",
+        "D1-O69",
+        "D1-O171",
+        "https://sg.micron.com/content/dam/micron/global/public/corporate/quality/certificates/micron-21-03-104-c-r018-y4bm-type-certificate-v2r0.pdf",
+        "https://investors.micron.com/news/press-release/2026/Micron-Advances-Made-in-America-Memory-With-Manufacturing-Expansion-in-Virginia/default.aspx",
+        "https://investor.gm.com/static-files/1294f515-0131-4d38-986e-f4d3160e7a68",
+        "https://www.fromtheroad.ford.com/us/en/articles/2026/ford-2026-third-quarter-sales-results",
+        "https://www.acea.auto/pc-registrations/new-car-registrations-5-3-in-august-2026-year-to-date-battery-electric-21-7-market-share/",
+        "D1-O78",
+        "https://nvidianews.nvidia.com/news/drive-hyperion-level-4",
+        "https://waymo.com/blog/2026/02/waymo-raises-usd16-billion-investment-round/",
+        "https://www.waymo.com/blog/2026/10/waymo-closes-5-billion-debt-financing/",
+        "https://docs.cpuc.ca.gov/PublishedDocs/Published/G000/M455/K694/455694131.PDF",
+        "https://www.euroncap.com/press-media/euro-ncap-announces-2026-protocol-changes-to-tackle-modern-driving-risks/",
+        "https://www.fromtheroad.ford.com/us/en/articles/2023/ford-bluecruise-expands-flexibility-with-complimentary-trial--mo",
+        "https://developer.nvidia.com/blog/introducing-nvidia-jetson-thor-the-ultimate-platform-for-physical-ai/",
+        "https://winbond.com/export/sites/winbond/product-selection-guide/file/2026-Winbond-Customized-Memory-Solution.pdf?__locale=en",
+        "D1-O31",
+        "https://static.nhtsa.gov/odi/rcl/2025/RCLRPT-25E034-2471.PDF",
+        "https://www.transportation.gov/briefing-room/usdot-releases-national-deployment-plan-vehicle-everything-v2x-technologies-reduce",
+        "https://arxiv.org/abs/2207.08930v2"
+      ],
+      "state": {
+        "parameters": [
+          {
+            "name": "AEBU合并收入",
+            "definition": "公司汽车、工业及消费嵌入式分部收入；两个Unit共享同一披露，不能相加、分摊或当成本Unit独立收入。金额为百万美元。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O3",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/"
+            ]
+          },
+          {
+            "name": "AEBU合并毛利率",
+            "definition": "公司披露的AEBU分部毛利率（整数百分比）；非单独汽车或工业毛利率，也不是公司整体毛利率。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/"
+            ]
+          },
+          {
+            "name": "AEBU合并营业利润率",
+            "definition": "公司分部口径营业利润率；包含分部费用分配，不代表任一Unit独立净利率或投资回报率。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/"
+            ]
+          },
+          {
+            "name": "AEBU合并营业利润",
+            "definition": "汽车、工业及消费嵌入式共同分部的营业利润，不能归给一个Unit；用于观察产品组合总经济性。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "AEBU合并价格与实物出货贡献",
+            "definition": "合并分部收入和毛利变化中公司明确区分的售价与bit出货作用；不是汽车/工业各自ASP或bits数值。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "汽车业务收入",
+            "definition": "本Unit对外收入；尚无可用独立拆分，不能用AEBU总额代替。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O3",
+              "D1-O57",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "汽车业务毛利率",
+            "definition": "本Unit按一致成本口径的毛利率；尚无独立测量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O3",
+              "D1-O57",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "汽车DRAM bit出货量",
+            "definition": "本Unit交付的DRAM总bits，与单件容量、产品数和收入分开；公开资料未给当前数值。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O3",
+              "D1-O57",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "汽车NAND bit出货量",
+            "definition": "本Unit交付的NAND总bits，包含其托管存储用途；公开资料未给当前数值。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O3",
+              "D1-O57",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "汽车DRAM平均每bit售价",
+            "definition": "本Unit DRAM销售金额除以对应bits；不把全公司ASP涨幅迁移过来。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O3",
+              "D1-O57",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "汽车NAND平均每bit售价",
+            "definition": "本Unit NAND销售金额除以对应bits；不混入NOR或SSD成品单价。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O3",
+              "D1-O57",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "汽车客户库存天数",
+            "definition": "客户/Tier 1/渠道中本Unit相关料号的库存覆盖天数；反映补库与实际消耗之间的差异，当前未测量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O3",
+              "D1-O57",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "汽车供货满足率",
+            "definition": "本Unit已承诺采购需求按期获得合格料号交付的比例；公司总体紧张不能替代本Unit的填单率。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O3",
+              "D1-O57",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "汽车项目采购份额",
+            "definition": "在同一客户已量产项目内，美光同类内存/存储采购份额；未披露，不由合作名单推算。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O3",
+              "D1-O57",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "汽车单车DRAM配置",
+            "definition": "按量产车型和电子架构加权的单车DRAM容量，独立于汽车销量及内存售价；尚无美光客户组合当前均值。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O74",
+              "D1-O103"
+            ]
+          },
+          {
+            "name": "汽车单车NAND配置",
+            "definition": "按量产车型加权的单车NAND容量；既有信息娱乐/日志与高阶自动驾驶分别影响该均值，当前未独立量化。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O74",
+              "D1-O103"
+            ]
+          },
+          {
+            "name": "车规G9 UFS4.1商业供货阶段",
+            "definition": "美光G9 NAND车规UFS4.1从送样/验证到客户批量供货的实际位置；不是全部车规NAND销量。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O74",
+              "D1-O103"
+            ]
+          },
+          {
+            "name": "1γ车规LPDDR5客户供货阶段",
+            "definition": "美光1γ车规LPDDR5生产准备及交付阶段；产品生产就绪不同于所有整车平台完成系统资格。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O74",
+              "D1-O103",
+              "https://micron.gcs-web.com/static-files/9c0becf5-df56-4eec-bd67-453dda68b273"
+            ]
+          },
+          {
+            "name": "Physical AI LPDDR6导入阶段",
+            "definition": "美光下一代LPDDR6对physical AI应用的客户导入位置；披露覆盖多个市场，汽车独立客户数和量产收入未拆分。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O103",
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/"
+            ]
+          },
+          {
+            "name": "具名汽车OEM供给与联合开发关系",
+            "definition": "与OEM形成的供给保障、产品定义及项目资格合作状态；用于定位商业关系，不研究跨产品合同总资金、定价带和财务资产。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-and-General-Motors-Sign-Strategic-Agreement-to-Secure-Supply-and-Accelerate-Innovation/default.aspx",
+              "https://investors.micron.com/news/press-release/2026/Micron-and-Ford-Sign-Strategic-Agreement-to-Strengthen-Long-Term-Memory-Supply-and-Industry-Resilience/default.aspx"
+            ]
+          },
+          {
+            "name": "汽车Tier 1与平台伙伴采用关系",
+            "definition": "美光与汽车系统集成和平台伙伴已形成的商业供给及资格合作覆盖；名单表示关系范围，不表示量产项目数。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-Strengthens-Automotive-Ecosystem-Supply-Through-Strategic-Customer-Agreements/default.aspx"
+            ]
+          },
+          {
+            "name": "DRIVE AGX Orin上的美光LPDDR5X采用",
+            "definition": "具名汽车计算平台对美光LPDDR5X的集成位置；只适用于Orin，不延伸为Thor/Hyperion/运营车队的BOM。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O135",
+              "D1-O69"
+            ]
+          },
+          {
+            "name": "Y4BM LPDDR5功能安全资格",
+            "definition": "exida对Y4BM特定LPDDR5的部件资格及系统使用条件，直接约束安全架构选型；不覆盖所有车规或1γ料号。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O171",
+              "https://sg.micron.com/content/dam/micron/global/public/corporate/quality/certificates/micron-21-03-104-c-r018-y4bm-type-certificate-v2r0.pdf"
+            ]
+          },
+          {
+            "name": "长周期DDR4与LPDDR4供货基础",
+            "definition": "Manassas面向汽车、工业等长期使用DDR4/LP4料号的合格供货安排；仅锚定本Unit的供应连续性，不分配全厂产能。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-Advances-Made-in-America-Memory-With-Manufacturing-Expansion-in-Virginia/default.aspx"
+            ]
+          },
+          {
+            "name": "Manassas长周期新品合格生产目标",
+            "definition": "新增1α DDR4/LP4供给取得qualified production的公司目标时间；不把目标当成已交付或本Unit独占供给。",
+            "value_type": "TIME",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-Advances-Made-in-America-Memory-With-Manufacturing-Expansion-in-Virginia/default.aspx"
+            ]
+          },
+          {
+            "name": "GM美国汽车交付量",
+            "definition": "已形成供给合作的GM美国汽车交付量；代表客户车型活动规模，不是全球产量或美光承接车辆数，零售交付与内存采购存在时滞。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-and-General-Motors-Sign-Strategic-Agreement-to-Secure-Supply-and-Accelerate-Innovation/default.aspx",
+              "https://investor.gm.com/static-files/1294f515-0131-4d38-986e-f4d3160e7a68"
+            ]
+          },
+          {
+            "name": "Ford美国汽车销售量",
+            "definition": "供给伙伴Ford在美国的新车销售规模，含其所报告车种；用于客户需求位置而非推算美光bits或车型份额。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-and-Ford-Sign-Strategic-Agreement-to-Strengthen-Long-Term-Memory-Supply-and-Industry-Resilience/default.aspx",
+              "https://www.fromtheroad.ford.com/us/en/articles/2026/ford-2026-third-quarter-sales-results"
+            ]
+          },
+          {
+            "name": "欧盟新车注册同比增长率",
+            "definition": "ACEA欧盟全动力类型新车注册增长，直接对应汽车终端活动方向；非全球产量，也不以电动车占比替代ADAS渗透率。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.acea.auto/pc-registrations/new-car-registrations-5-3-in-august-2026-year-to-date-battery-electric-21-7-market-share/"
+            ]
+          },
+          {
+            "name": "L4及以上典型车载内存与存储规模",
+            "definition": "美光描述的高阶自动驾驶典型架构配置规模，保留DRAM单侧下界与NAND数量级；不是全车队平均值或美光已售bits。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          }
+        ],
+        "values": [
+          {
+            "name": "AEBU FY2026全年收入",
+            "parameter": "AEBU合并收入",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 15886.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 4753.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026截至2026-09-03（53周）；previous为FY2025截至2025-08-28（52周），非等周增速",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "D1-O3"
+            ]
+          },
+          {
+            "name": "AEBU FY2026第四季收入",
+            "parameter": "AEBU合并收入",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 6824.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 4634.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026 Q4截至2026-09-03；previous为FY2026 Q3截至2026-05-28；未经周数标准化",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/"
+            ]
+          },
+          {
+            "name": "AEBU FY2025第四季收入参照",
+            "parameter": "AEBU合并收入",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 1434.0,
+              "unit": "百万美元"
+            },
+            "previous_value": null,
+            "time_scope": "FY2025 Q4截至2025-08-28；最新报告重列的同季参照，不与FY2026 Q3比较",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/"
+            ]
+          },
+          {
+            "name": "AEBU FY2026第四季毛利率",
+            "parameter": "AEBU合并毛利率",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 84.0,
+              "unit": "%"
+            },
+            "previous_value": {
+              "number": 79.0,
+              "unit": "%"
+            },
+            "time_scope": "FY2026 Q4截至2026-09-03；previous为FY2026 Q3，披露整数舍入",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/"
+            ]
+          },
+          {
+            "name": "AEBU FY2025第四季毛利率参照",
+            "parameter": "AEBU合并毛利率",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 31.0,
+              "unit": "%"
+            },
+            "previous_value": null,
+            "time_scope": "FY2025 Q4截至2025-08-28；最新报告提供的同比参照",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/"
+            ]
+          },
+          {
+            "name": "AEBU FY2026第四季营业利润率",
+            "parameter": "AEBU合并营业利润率",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 79.0,
+              "unit": "%"
+            },
+            "previous_value": {
+              "number": 75.0,
+              "unit": "%"
+            },
+            "time_scope": "FY2026 Q4截至2026-09-03；previous为FY2026 Q3",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/"
+            ]
+          },
+          {
+            "name": "AEBU FY2025第四季营业利润率参照",
+            "parameter": "AEBU合并营业利润率",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 20.0,
+              "unit": "%"
+            },
+            "previous_value": null,
+            "time_scope": "FY2025 Q4截至2025-08-28",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/"
+            ]
+          },
+          {
+            "name": "AEBU FY2026全年营业利润",
+            "parameter": "AEBU合并营业利润",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 11217.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 557.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026截至2026-09-03（53周）；previous为FY2025（52周）",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "AEBU最新增长分解",
+            "parameter": "AEBU合并价格与实物出货贡献",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "FY2026 Q4收入环比增长47%，售价与bit出货均上升；毛利率环比改善470个基点主要来自售价。全年收入增长234%主要来自售价并有bits增长贡献。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026及FY2026 Q4；470基点为电话会精度，不用整数79%至84%计算精确变化",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "G9车规UFS4.1已批量供货",
+            "parameter": "车规G9 UFS4.1商业供货阶段",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "FY2026已进入volume shipments；面向车载存储的商业供货，而非仅发布规格。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026截至2026-09-03",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O103",
+              "D1-O74"
+            ]
+          },
+          {
+            "name": "1γ车规LPDDR5生产就绪并交付关键客户",
+            "parameter": "1γ车规LPDDR5客户供货阶段",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "production ready，已有关键客户交付；不等同所有车型量产或客户份额提升。"
+            },
+            "previous_value": {
+              "stage": "向汽车客户送样"
+            },
+            "time_scope": "FY2026截至2026-09-03；previous为2026-03-18披露的送样阶段",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O103",
+              "D1-O74",
+              "https://micron.gcs-web.com/static-files/9c0becf5-df56-4eec-bd67-453dda68b273"
+            ]
+          },
+          {
+            "name": "LPDDR6仍在Physical AI送样阶段",
+            "parameter": "Physical AI LPDDR6导入阶段",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "1γ LPDDR6开始向多个physical AI市场送样；汽车/机器人分别的量产定点、采购量未披露。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026 Q4及截至2026-09-30的导入状态",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/",
+              "D1-O103"
+            ]
+          },
+          {
+            "name": "GM建立长期LPDRAM NOR UFS供给及联合工程关系",
+            "parameter": "具名汽车OEM供给与联合开发关系",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "已签长期SCA，覆盖LPDRAM、NOR、UFS NAND，并协作未来产品定义、系统优化和资格；支持Manassas本地供给。未披露排他份额或采购金额。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-07-01起的长期汽车项目关系",
+            "as_of": "2026-07-01",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-and-General-Motors-Sign-Strategic-Agreement-to-Secure-Supply-and-Accelerate-Innovation/default.aspx"
+            ]
+          },
+          {
+            "name": "Ford建立下一代车型长期供給关系",
+            "parameter": "具名汽车OEM供给与联合开发关系",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "已签SCA保障长期内存供给，服务下一代Ford汽车生产，并以Manassas供给支持本地采购；不是所有现售车型的独家供货认定。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-07-06起的多年车型关系",
+            "as_of": "2026-07-06",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-and-Ford-Sign-Strategic-Agreement-to-Strengthen-Long-Term-Memory-Supply-and-Industry-Resilience/default.aspx"
+            ]
+          },
+          {
+            "name": "七家汽车生态伙伴具备SCA供給安排",
+            "parameter": "汽车Tier 1与平台伙伴采用关系",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "Qualcomm、Visteon、HARMAN、JOYNEXT、DENSO、Astemo、Hyundai Mobis已完成SCA，覆盖供给/路线图可见性及资格协作。"
+            },
+            "previous_value": null,
+            "time_scope": "截至2026-07-16；后续客户项目生命周期",
+            "as_of": "2026-07-16",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-Strengthens-Automotive-Ecosystem-Supply-Through-Strategic-Customer-Agreements/default.aspx"
+            ]
+          },
+          {
+            "name": "Orin平台已有美光LPDDR5X集成",
+            "parameter": "DRIVE AGX Orin上的美光LPDDR5X采用",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "美光LPDDR5X已集成NVIDIA DRIVE AGX Orin；这是平台采用实例，不是所有整车客户或新一代Thor的供应身份。"
+            },
+            "previous_value": null,
+            "time_scope": "2025年披露的平台采用位置",
+            "as_of": "2025",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O135",
+              "D1-O69"
+            ]
+          },
+          {
+            "name": "Y4BM默认随机硬件指标及更高等级条件",
+            "parameter": "Y4BM LPDDR5功能安全资格",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "2025年8月修订证书：默认随机硬件指标对应ASIL C/SIL2；ASIL D/SIL3需要附加机制、主机错误检测/纠正并满足应用使用假设。"
+            },
+            "previous_value": null,
+            "time_scope": "Y4BM指定部件、证书使用条件持续适用",
+            "as_of": "2025-08",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O171",
+              "https://sg.micron.com/content/dam/micron/global/public/corporate/quality/certificates/micron-21-03-104-c-r018-y4bm-type-certificate-v2r0.pdf"
+            ]
+          },
+          {
+            "name": "长周期产品新增工艺开始制造",
+            "parameter": "长周期DDR4与LPDDR4供货基础",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "Manassas已开始1α制造，以服务汽车、工业、医疗等长周期DDR4/LP4需求；新工艺开始不等于已全部取得客户生产资格。"
+            },
+            "previous_value": null,
+            "time_scope": "截至2026-05-22；长生命周期平台供货",
+            "as_of": "2026-05-22",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-Advances-Made-in-America-Memory-With-Manufacturing-Expansion-in-Virginia/default.aspx"
+            ]
+          },
+          {
+            "name": "公司预计2026年底合格生产",
+            "parameter": "Manassas长周期新品合格生产目标",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "point": "2026年底",
+              "start": null,
+              "end": null,
+              "precision": "年末目标"
+            },
+            "previous_value": null,
+            "time_scope": "2026日历年年底目标",
+            "as_of": "2026-05-22",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-Advances-Made-in-America-Memory-With-Manufacturing-Expansion-in-Virginia/default.aspx"
+            ]
+          },
+          {
+            "name": "GM美国Q3交付及同季比较",
+            "parameter": "GM美国汽车交付量",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 670974.0,
+              "unit": "辆"
+            },
+            "previous_value": {
+              "number": 710347.0,
+              "unit": "辆"
+            },
+            "time_scope": "2026日历Q3；previous为2025日历Q3；均77个销售日，包含停产车型",
+            "as_of": "2026-10-01",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investor.gm.com/static-files/1294f515-0131-4d38-986e-f4d3160e7a68"
+            ]
+          },
+          {
+            "name": "Ford美国Q3销售规模",
+            "parameter": "Ford美国汽车销售量",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 509764.0,
+              "unit": "辆"
+            },
+            "previous_value": null,
+            "time_scope": "2026日历Q3；报告同比下降6.6%，不由舍入增速反推上一年台数",
+            "as_of": "2026-10-02",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.fromtheroad.ford.com/us/en/articles/2026/ford-2026-third-quarter-sales-results"
+            ]
+          },
+          {
+            "name": "欧盟年初至八月汽车注册增长",
+            "parameter": "欧盟新车注册同比增长率",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 5.3,
+              "unit": "%（同比）"
+            },
+            "previous_value": null,
+            "time_scope": "2026年1—8月相对2025年1—8月；欧盟范围",
+            "as_of": "2026-09-24",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.acea.auto/pc-registrations/new-car-registrations-5-3-in-august-2026-year-to-date-battery-electric-21-7-market-share/"
+            ]
+          },
+          {
+            "name": "公司描述L4以上架构的大容量位置",
+            "parameter": "L4及以上典型车载内存与存储规模",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "L4及以上典型内存配置超过200GB，存储达到多TB；公司称两者较现有L2+/L3超过一个数量级。属于架构描述，不是加权市场平均。"
+            },
+            "previous_value": null,
+            "time_scope": "2026-09-30描述的L4及以上架构，不用于跨来源配置减量比较",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          }
+        ]
+      },
+      "expectation_baseline": [
+        {
+          "name": "近期收入以价格上行和已售bits增加为底座，而非汽车总量爆发",
+          "baseline": "工作基线是汽车业务近期受益于存储价格改善与已有项目需求，但增长速度不宜照搬合并AEBU。FY2026 Q4合并收入6,824百万美元、毛利率84%，公司明确售价和bits共同推动收入、售价主导毛利改善；与此同时供给伙伴GM/Ford美国Q3销售分别同比下降5.5%/6.6%。因此采用“价格/配置/供货关系增强，汽车终端量增长分化”的解释，而非把分部跳升解释为整车销量同幅增长。公司对行业2027—2028年更紧的判断支持价格环境延续，是公司侧前瞻，未构成汽车独立季度指引或市场共识。",
+          "ordinary_progress": "合格料号提价、既有项目出货延续、车型组合调整和欧盟温和注册增长，与这一基线相容；AEBU继续改善本身也不能确定汽车和工业分别的增量。",
+          "open_frontier": "汽车客户能否在高价格下维持单位配置和生产计划，以及固定/浮动采购价格覆盖的实际比例，会决定价格利得能保留多少；客户库存消耗若弱于采购，会使bits增长比当前收入路径更脆弱。",
+          "time_scope": "未来1—4个季度",
+          "ref": [
+            "D1-O3",
+            "D1-O57",
+            "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://investor.gm.com/static-files/1294f515-0131-4d38-986e-f4d3160e7a68",
+            "https://www.fromtheroad.ford.com/us/en/articles/2026/ford-2026-third-quarter-sales-results",
+            "https://www.acea.auto/pc-registrations/new-car-registrations-5-3-in-august-2026-year-to-date-battery-electric-21-7-market-share/"
+          ]
+        },
+        {
+          "name": "量产车升级先表现为具体平台导入，不是全车队统一高容量",
+          "baseline": "采用“已供货产品逐步扩展至更多合格车型”的工作路径：G9车规UFS4.1已批量出货、1γ LPDDR5由送样走到生产就绪及关键客户交付，Orin平台已有美光LPDDR5X实例。ADAS、集中计算和座舱需要更高容量/带宽，但不同车型、辅助驾驶等级和本地任务分配使内容提升分层发生。当前产品成熟度比把LPDDR6送样视为即刻收入更能支持近中期判断。",
+          "ordinary_progress": "既有平台通过资格、新车型采用车规LPDDR5/UFS，LPDDR6继续送样及进入系统评估；没有改变标准采购位置的规格刷新仍属于该路径。",
+          "open_frontier": "更高配置能否跨越高端车型进入大销量平台，以及美光能否保持采购份额，是收入弹性边界；模型量化、共享计算与成本压缩也可能令性能提升不等于同幅容量增加。",
+          "time_scope": "未来4—8个季度及多年车型周期",
+          "ref": [
+            "D1-O74",
+            "D1-O103",
+            "D1-O135",
+            "D1-O69",
+            "https://micron.gcs-web.com/static-files/9c0becf5-df56-4eec-bd67-453dda68b273"
+          ]
+        },
+        {
+          "name": "长期供给和联合工程提高项目留存，而非自动形成排他份额",
+          "baseline": "GM、Ford及七家系统/平台伙伴已把长期供给和资格协作写入商业安排，故较合理的多年路径是美光更早参与产品定义，并在已采用平台中持续供货。其基础是已承诺的采购关系和更换安全/可靠性料号的验证成本，不只是技术宣称。跨产品SCA资金及总体定价由邻域研究；本域没有据此假设汽车客户拥有与全公司相同的价格带、保量比例或排他采购。",
+          "ordinary_progress": "协同定义后继料号、按车型项目完成验证、长期供货随OEM/Tier 1生产计划履约，是既有关系的延伸。",
+          "open_frontier": "供应保障转成多少实物采购份额、何时进入哪些量产车型，以及OEM是否保留第二来源或以本地替代供应商分流，仍能显著改变这一留存判断。",
+          "time_scope": "未来1—3年及后继平台生命周期",
+          "ref": [
+            "https://investors.micron.com/news/press-release/2026/Micron-and-General-Motors-Sign-Strategic-Agreement-to-Secure-Supply-and-Accelerate-Innovation/default.aspx",
+            "https://investors.micron.com/news/press-release/2026/Micron-and-Ford-Sign-Strategic-Agreement-to-Strengthen-Long-Term-Memory-Supply-and-Industry-Resilience/default.aspx",
+            "https://investors.micron.com/news/press-release/2026/Micron-Strengthens-Automotive-Ecosystem-Supply-Through-Strategic-Customer-Agreements/default.aspx",
+            "D1-O171"
+          ]
+        },
+        {
+          "name": "长期旧代供给与新制程并行，资格门槛仍由系统端决定",
+          "baseline": "默认路径不是车载立即淘汰DDR4/LPDDR4，而是已在用的平台继续采购旧代合格料号、后继平台逐步换代。Manassas开始1α制造且以2026年底合格生产为目标，提供连续供给准备；Y4BM证书又表明最高安全等级需要主机附加机制，部件认证不能替代整车系统验证。这支持新供给逐步经过客户资格进入多年项目，而非宣布制造开始即填满需求。",
+          "ordinary_progress": "按既定目标取得合格生产、旧料号持续交付及后继料号完成系统安全/可靠性验证，属于正常路径。",
+          "open_frontier": "合格供给时间相对客户停线风险是否足够、旧代料号价格与第二来源竞争如何演化，以及新增供给分给汽车多少，决定连续性优势能否转成经营增量。",
+          "time_scope": "2026年底目标至未来2—3年",
+          "ref": [
+            "https://investors.micron.com/news/press-release/2026/Micron-Advances-Made-in-America-Memory-With-Manufacturing-Expansion-in-Virginia/default.aspx",
+            "D1-O57",
+            "D1-O171",
+            "https://sg.micron.com/content/dam/micron/global/public/corporate/quality/certificates/micron-21-03-104-c-r018-y4bm-type-certificate-v2r0.pdf"
+          ]
+        },
+        {
+          "name": "L4商业车队为中期高容量分支，不是当前全车市场基准",
+          "baseline": "采用“已有付费L4服务在有限地区扩大车队，新进入平台按自身计划逐步部署”的路径，而非把整个行业视为尚未商用。Waymo截至2026-02报告每周超过40万行程，10-08披露已进入第15座美国城市并完成50亿美元贷款，表明运行与融资基础已经存在；它们未证明单位盈利或MU供货。美光对L4典型超过200GB及多TB的描述解释容量差异；NVIDIA/Uber的2027上半年洛杉矶/旧金山首批车队属于另一平台计划，截止日尚不认作已运营，也没有确立美光BOM。现有Orin采用不能跨代推定Hyperion。",
+          "ordinary_progress": "既有运营者在已许可范围提高利用率、扩展地区与按计划购车，新平台按所述时间/地区完成系统验证和初始部署，均属于该分支的正常推进；行程增加若由原车队承接，未必新增初装内存。",
+          "open_frontier": "车队余量、付费利用率与远程支持/维护成本是否允许可持续扩容，以及地区许可、指定BOM和MU份额，是从服务增长到可实现内存收入的关键分界。融资改善购车能力但不等于已下单或经营回报成立。",
+          "time_scope": "从2026-10-09截点既有商业服务延伸至2028—2030年；NVIDIA/Uber新平台初始部署计划为2027年上半年",
+          "ref": [
+            "D1-O78",
+            "D1-O135",
+            "https://nvidianews.nvidia.com/news/drive-hyperion-level-4",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://waymo.com/blog/2026/02/waymo-raises-usd16-billion-investment-round/",
+            "https://www.waymo.com/blog/2026/10/waymo-closes-5-billion-debt-financing/",
+            "https://docs.cpuc.ca.gov/PublishedDocs/Published/G000/M455/K694/455694131.PDF"
+          ]
+        }
+      ],
+      "realization_factors": [
+        {
+          "name": "终端购车、生产排程与库存共同生成汽车实物采购",
+          "mechanism": "工作模型从消费者和车队的用车需要开始：替换需求、购车价格及融资月供影响购买/换车决定；车队使用回报影响批量购车。经销商现车库存决定新增零售需求先消耗库存还是拉动OEM生产，OEM再按车型排程向Tier 1采购。对已定点车型，美光需求约为生产辆数×该车型DRAM/NAND配置×美光采购份额，加上客户元件库存变动；资格和供应不足另约束交付。因此销量、生产、元件采购是三个有时滞的量，而非同一指标。缺货预期会提高安全库存，随后交期改善又可释放库存，造成采购超过或低于终端消耗。",
+          "current_status": "截至截点，供给伙伴GM/Ford美国2026 Q3终端销量分别同比下降5.5%/6.6%，欧盟1—8月注册增长5.3%；这些不同区域指标显示需求分化，而非同步整车扩张。合并AEBU实际bits仍增长，说明配置、客户组合、补库或供应分配可与汽车零售方向不同。当前采用终端量不普遍强劲、存储需求受量以外变量支撑的工作解释；不把未知客户库存写成已观察到的囤货。",
+          "materiality_context": "购车价格/月供与车队回报作用于车型销量的广泛分母，影响常在数月内显现；替换需求降低但不能消除周期性。生产辆数对同平台bits近似一阶比例：仅作敏感度，生产减少5%、配置和份额不变时对应消耗约少5%，不是本Unit预测。经销商库存改变从销售到生产的时滞；元件库存变动可以主导一个季度采购，但不能无限累积。配置和份额决定同样车辆量的存储强度与美光参与，需与量分开；当前价格上行及合并bits增长比“车量全面爆发”解释力更强。供货满足率决定这些采购中本季可实现的部分。",
+          "scope_boundary": "覆盖汽车终端、OEM/Tier 1排程及本Unit实物需求；贷款市场本身不在此建模，手机/PC数量不作代理，区域零售数据不外推全球汽车产量。供给约束衔接本Unit供货Factor。",
+          "ref": [
+            "D1-O3",
+            "D1-O57",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://investor.gm.com/static-files/1294f515-0131-4d38-986e-f4d3160e7a68",
+            "https://www.fromtheroad.ford.com/us/en/articles/2026/ford-2026-third-quarter-sales-results",
+            "https://www.acea.auto/pc-registrations/new-car-registrations-5-3-in-august-2026-year-to-date-battery-electric-21-7-market-share/"
+          ]
+        },
+        {
+          "name": "安全评价、用户体验与功能变现改变装备渗透",
+          "mechanism": "OEM选择ADAS、驾驶员监测和座舱本地交互，既为了安全表现及车型竞争，也为了售价/软件收入；消费者的信任、使用便利和愿付价影响功能留存及后继车型配置。安全评价提高相关装备的商业必要性，却不规定某个内存容量。OEM可把硬件预装到较广车型、通过软件激活收费，也可只在付费配置安装；前者的订阅增长首先改善软件经济性，后者才更直接增加高配置车辆比例。渗透变化再通过平台任务、装车配置和美光已获份额改变DRAM/NAND采购。",
+          "current_status": "Euro NCAP于2025-11公布的2026框架更重视驾驶监测、真实道路表现和辅助系统用户接受度，说明选型动力不仅来自模型性能。Ford在2023年已披露把可用BlueCruise硬件出厂预装、允许车主以后激活的商业模式；这作为有日期的安排实例，不把旧硬件台数或旧价格当成2026现值。最新Ford全部付费软件订阅增加也不等于新增ADAS硬件或新增美光采购。",
+          "materiality_context": "安全评分和用户接受度影响可销售车型范围，是跨大量量产车的平台变量；付费转化和功能收入决定OEM能否回收研发/BOM成本，影响下一代投资而非本季度逐订阅添购内存。预装比例及车型配置结构决定当前存储数量，较使用频率更直接；已安装硬件上的激活翻倍可几乎不增加初装bits。平台任务复杂度影响每车资源强度，但可被优化抵消；美光份额最终分配受益。当前标准化安全/监测装备的规模基础更广，L4能力的潜在单车强度更大，二者不能按功能名称等权处理。",
+          "scope_boundary": "解释辅助驾驶、座舱等车载用途的需求形成；Euro NCAP是消费安全评价而非强制DRAM配额，BlueCruise不等于L4无人驾驶。本域不把软件订阅收入记为美光收入。",
+          "ref": [
+            "https://www.euroncap.com/press-media/euro-ncap-announces-2026-protocol-changes-to-tackle-modern-driving-risks/",
+            "https://www.fromtheroad.ford.com/us/en/articles/2023/ford-bluecruise-expands-flexibility-with-complimentary-trial--mo",
+            "https://www.fromtheroad.ford.com/us/en/articles/2026/ford-2026-third-quarter-sales-results",
+            "D1-O74",
+            "D1-O103"
+          ]
+        },
+        {
+          "name": "车载任务分工和资源效率分别决定DRAM与NAND强度",
+          "mechanism": "OEM/计算平台把感知、规划、座舱和控制放在本机、多个ECU或集中计算平台上。DRAM驻留需求来自模型权重精度、并行任务及中间缓冲；传感器数据流和确定性响应还约束带宽、接口及安全冗余。集中共享可消除重复资源，也可能因更复杂多任务增加总需求。NAND来自模型/地图/固件持久化、日志写入率与保留时间；压缩、上传及覆盖策略减少留存，OTA回滚和写入耐久预留增加所需物理容量。功耗/温度和整车BOM预算约束可实施配置，并使低功耗、耐久和系统固件能力成为产品价值来源。",
+          "current_status": "现有车规UFS批量供货和1γ LPDDR5关键客户交付支持已在推进的架构需求；公司把L4及以上典型配置描述为超过200GB内存、多TB存储，是高阶架构尺度而非全车队均值。LPDDR6仍送样。工作判断是当前量产升级与车型分层并行，不能由更高算力或更多运行里程单独推断同幅bits增加。",
+          "materiality_context": "模型规模、精度、并行任务和缓冲决定DRAM容量，带宽与安全冗余决定哪些料号能使用；仅作算术示例，同样权重从16bit变4bit，权重存储可降至1/4，但激活、缓冲和冗余不同比下降。集中/分布式的复用改变总装机强度及受益料号；当前未测量全车型转换比例。NAND的日志率×本地留存时间控制日志占用：其他条件不变，仅日志率或仅留存时间增加10%，日志占用增加10%；两者同时增加10%时该部分增加21%，不代表整颗UFS容量同幅增加；压缩/上传可以抵消，写入耐久又可能要求更高等级或预留。热、功耗、BOM预算是配置上限与采用筛选，不能被理想容量预测替代。高阶配置变化可大幅改写中期机会，但当前已售平台规模仍决定近端贡献。",
+          "scope_boundary": "覆盖车载DRAM/LPDDR与UFS/NAND的不同任务和配置机制；车外训练、云端日志归数据中心，本域只保留卸载对车载强度的影响。制程密度不等于车载实际配置。",
+          "ref": [
+            "D1-O74",
+            "D1-O103",
+            "D1-O135",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://developer.nvidia.com/blog/introducing-nvidia-jetson-thor-the-ultimate-platform-for-physical-ai/"
+          ]
+        },
+        {
+          "name": "系统资格与多来源采购决定美光捕获的项目份额",
+          "mechanism": "OEM定义车型和安全目标，Tier 1/计算平台验证接口、温度/寿命及主机安全机制，再把采购分给合格供货商。可靠性及功能安全资格决定进入资格池的范围；联合工程和供给协议使后继产品较早适配、提高换料的再验证成本，但采购者仍可用第二来源、价格和交期调整份额。地域采购要求影响可服务项目和本地来源价值。每车内容不变时，料号竞争和项目采购份额本身即可改变美光bits、产品组合和报价，而无需终端需求先变化。",
+          "current_status": "GM、Ford和七家汽车生态伙伴已形成长期供给/资格协作，Orin有美光LPDDR5X集成实例。Y4BM证书对更高安全等级要求附加主机机制，显示部件资格与系统资格的区别。Winbond 2026目录已有车规旧代DRAM量产料号，说明旧代并非没有竞争来源；目录资格也不是任何OEM已接受的直接替换。Manassas支持本地采购，但不能把本地制造当成全球自动胜出的资格。",
+          "materiality_context": "安全/可靠性/接口资格是特定车型机会的准入开关，失败可使该项目份额接近零，影响跨数年的平台生命周期；换代时影响大于单季度测试费用。联合工程与再验证成本提高已采用项目留存，却不锁死份额；第二来源的可用资格、价格及交期决定议价与转单弹性。条件敏感度：原采购份额从20%至30%，同一分母和配置下美光实物机会增50%，这只是份额算术并非当前份额估计。地域资格改变可服务分母，本地供给仅对重视该条件的客户有更高权重。当前具名关系降低完全缺乏客户入口的风险，未使系统资格及竞争分配失去重要性。",
+          "scope_boundary": "只解释汽车客户项目、选型和份额；跨产品合同资金、法律条款及公司合同覆盖由邻域深化。CAC限制不能扩大为中国所有汽车客户禁购；产品目录不证明已从美光转单。",
+          "ref": [
+            "https://investors.micron.com/news/press-release/2026/Micron-and-General-Motors-Sign-Strategic-Agreement-to-Secure-Supply-and-Accelerate-Innovation/default.aspx",
+            "https://investors.micron.com/news/press-release/2026/Micron-and-Ford-Sign-Strategic-Agreement-to-Strengthen-Long-Term-Memory-Supply-and-Industry-Resilience/default.aspx",
+            "https://investors.micron.com/news/press-release/2026/Micron-Strengthens-Automotive-Ecosystem-Supply-Through-Strategic-Customer-Agreements/default.aspx",
+            "https://sg.micron.com/content/dam/micron/global/public/corporate/quality/certificates/micron-21-03-104-c-r018-y4bm-type-certificate-v2r0.pdf",
+            "D1-O171",
+            "D1-O135",
+            "D1-O3",
+            "https://winbond.com/export/sites/winbond/product-selection-guide/file/2026-Winbond-Customized-Memory-Solution.pdf?__locale=en",
+            "https://investors.micron.com/news/press-release/2026/Micron-Advances-Made-in-America-Memory-With-Manufacturing-Expansion-in-Virginia/default.aspx"
+          ]
+        },
+        {
+          "name": "长周期料号供给与跨产品分配约束实际交付",
+          "mechanism": "可供汽车采购的数量由可制造良品bits、指定封装/测试、所需配套组件及客户接受的工艺/料号共同决定。公司在共享资源和既有承诺间配置产品，不能按名义DRAM总产量一比一分配车规供给。旧平台因接口和再验证成本继续使用DDR4/LPDDR4；供应商停产或转换会触发最后采购、备货或替代验证。新增制造只有跨过车规客户资格才提高有效供给，交期与供货稳定性又影响OEM排程、库存缓冲及下一轮采购份额。",
+          "current_status": "公司现有产能总体被使用且部分投入品交期/短缺已披露，但未测量汽车填单率；MCBU有资源改配造成的减量，不能声称汽车已发生同样挤出。Manassas开始1α制造，2026年底合格生产仍为目标；这解释长期DDR4/LP4连续性准备，而非已释放全部新供给。新车规LPDDR5/UFS可交付与仍在用旧代产品同时存在。",
+          "materiality_context": "良品产出及封装/配套组件决定量的物理上限，客户工艺资格决定该供给能否用于特定车型；最小的有效环节可使其他扩容暂不增加本季交付。资源分配决定汽车从总供给中获得多少，有需求而无可用配额时首先反映在交期、价格和未来资格/份额而非本季bits。旧代供给连续性覆盖多年存量平台，近端作用可能大于新品规格升级；停产/工艺转换导致的备货改变季度波动而非永久需求。供应恢复初期交付弹性高，客户库存充足后新增能力更多影响价格和供应选择；当前把已交付产品与尚待资格的新能力分开，是理解2026年底目标的重要条件。",
+          "scope_boundary": "在本域保留汽车可用料号、交期及库存影响；晶圆厂资产、良率工程和扩产资本回报由制造域深化。共享资源约束是传导接口，不假设HBM每多一片晶圆对应固定车规减量。",
+          "ref": [
+            "D1-O57",
+            "D1-O31",
+            "D1-O74",
+            "https://investors.micron.com/news/press-release/2026/Micron-Advances-Made-in-America-Memory-With-Manufacturing-Expansion-in-Virginia/default.aspx"
+          ]
+        },
+        {
+          "name": "实现价、产品成本和组合把汽车出货转换为经济性",
+          "mechanism": "汽车收入来自各料号合格交付数量×实际净售价，需区别每bit价格与容量/封装产品组合；现货或行业报价经采购周期、合同定价及客户议价才传到净售价。毛利由售价与单位成本之差产生，成本包括良品密度、制造/封测、车规筛选、控制器/固件及存货成本；组合改变毛利取决于各SKU售价与成本，不能仅以“高性能”推定。平台研发、资格和销售费用再决定营业利润；账期和备货决定利润转现金。高涨价也会反馈到OEM减配、第二来源和生产预算。",
+          "current_status": "最新合并AEBU Q4收入6,824百万美元、毛利率84%、营业利润率79%，公司认为售价主导毛利改善且bits也支持收入。该总分部包括工业和消费嵌入式，不能识别汽车独立利润率。当前价格是最强已披露近端解释，车规新品交付/组合提供另外的参与路径；不存在把合作名单、现金保证金或部件资格直接计作汽车收入的财务桥。",
+          "materiality_context": "售价和合格量是收入的一阶驱动，合同重定价覆盖与客户议价决定传递幅度/时滞；覆盖比例未量化，固定价部分不会与现货同步。明确仅用84%合并毛利率作算术标尺：收入100、成本16时，量及成本不变而净售价升10%，毛利额由84到94，约增11.9%；成本降10%则毛利额到85.6，约增1.9%，不是汽车预测。说明高毛利平台上价格/可交付量当前比同百分比降本更有绝对利润杠杆。节点密度/良率和封测/组件成本仍决定长期价差及履约；车规筛选、研发资格和组合可使新产品收入与营业利润不同步。账期/库存影响现金时点，不是另一个收入增量；涨价引发的减配/转单会回削数量和份额。",
+          "scope_boundary": "只延伸至本Unit收入、毛利、分部费用及现金周转含义；AEBU共同标尺不分摊到汽车，资本开支、税、股数、保证金返还和公司EPS由对应研究域解释。",
+          "ref": [
+            "D1-O3",
+            "D1-O57",
+            "D1-O31",
+            "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+          ]
+        },
+        {
+          "name": "L4服务回报、许可与融资通过车队扩容形成高容量需求",
+          "mechanism": "无人出行的有用性、乘客信任和票价决定付费行程；可运行地区/任务、事故责任与许可限制可服务分母。运营者用每车有效行程、空驶/停充时间及远程支持、保险维护成本衡量服务回报，结合融资资金和资本成本决定新车队规模。初期提高利用率可在原车队承载更多行程；接近容量上限或进入新地区后才更明显触发购车。新增/替换车辆经所选计算架构、DRAM/NAND配置和供应份额进入美光机会；行程数并不逐次采购内存。",
+          "current_status": "行业并非全部等待2027首批商用：Waymo在2026-02报告每周超过40万次行程、已完成160亿美元股权融资，10-08又完成50亿美元定期贷款并称服务已进入第15座美国城市。这表明付费使用和扩张资金同时存在，不证明每车盈利或美光BOM。NVIDIA/Uber的2027上半年初始车队是另一平台计划，不能与Waymo现有运营混为一个供货项目。CPUC既有部署与测试收费权限的区别说明许可影响变现，不以技术测试直接认定有权收费。",
+          "materiality_context": "付费行程及票价决定服务收入和市场接受范围；利用率/空闲容量决定同样使用增长是“多跑现有车”还是“添新车”，是近期内存采购弹性的核心分界。远程支持、停充、保险维护成本决定去掉司机后是否有可扩张回报，安全/许可变化可直接缩小可运营范围。股权与债务资金降低扩张融资约束，但资本成本和偿债仍要求经营回报，融资金额不是车辆订单。每车高容量给该分支较大的单位强度，车队规模与美光份额决定总量；早期新地区许可、规模投入或BOM选择可在本季收入很小前改变中期机会，不能因尚未向美光采购而忽略其修正意义。",
+          "scope_boundary": "覆盖L4车载需求的运营与资金起点，不测算Waymo估值或把其车辆认作MU供货。云端训练/调度存储归数据中心；引用历史许可制度作为经济结构，不给当前具体城市授权的法律结论。",
+          "ref": [
+            "https://waymo.com/blog/2026/02/waymo-raises-usd16-billion-investment-round/",
+            "https://www.waymo.com/blog/2026/10/waymo-closes-5-billion-debt-financing/",
+            "https://docs.cpuc.ca.gov/PublishedDocs/Published/G000/M455/K694/455694131.PDF",
+            "https://nvidianews.nvidia.com/news/drive-hyperion-level-4",
+            "D1-O78",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+          ]
+        }
+      ],
+      "potential_gaps": [
+        {
+          "name": "购车可负担性与车型重组改变存储需求的车辆分母",
+          "why_live": "当前伙伴GM/Ford美国Q3销量下降，而欧盟年内注册增长，汽车需求不是单一强周期。消费者月供、OEM降价与车队回报可以改变购车及生产；车型组合又决定相同总车量对应哪种内存配置。合并AEBU的价格和bits增长并未揭示汽车独立量，因而终端与采购之间的缓冲仍是重要开放关系。",
+          "revision_logic": "修正“终端量分化、配置和价格支持近期经营”的工作路径。变化可从消费者和车队先发生，再由经销商去库存、OEM排程和Tier 1采购传递；对美光而言关键不是零售本身，而是获供车型的生产量、配置和份额。这里不把零售、生产与元件采购重复计算，也不把单一区域代表全球。",
+          "possibility_space": [
+            {
+              "name": "OEM通过低月供和主力车型换代打开大众购买",
+              "implication": "若融资补贴、降价或租赁提高可负担性，新增销量消耗经销商库存后推动量产；获供平台的初装bits扩大。若补贴主要清理旧车，采购反应会滞后，降价导致低配置车占比上升也可削弱每辆内容。"
+            },
+            {
+              "name": "消费者转向低价车型，OEM取消高配置平台",
+              "implication": "经济压力或高月供可使消费者延长换车周期并购买更便宜版本。总量降幅即使温和，ADAS/座舱丰富车型退出也会双重压低量与内容；被取消的多年项目还削弱资格投入回收，而不是只有一个季度销量波动。"
+            },
+            {
+              "name": "车队替换和商用需求托住伙伴生产",
+              "implication": "出租、物流或企业车队的总拥有成本改善可在家庭购车偏弱时维持特定车型排程。采购更集中、谈价更强，可能形成较稳定但非最高配置的内存需求；有利与否取决于MU在这些平台而非整个品牌的地位。"
+            },
+            {
+              "name": "经销商与Tier 1同步释放安全库存",
+              "implication": "供应恢复或销售落后使两层库存一起下降，元件订单可比终端更弱，修正把当前bits增长看成持续消耗的读法。库存释放结束后生产不再下降时，采购又可能回归消耗，不宜把这一段外推为永久市场萎缩。"
+            }
+          ],
+          "ref": [
+            "https://investor.gm.com/static-files/1294f515-0131-4d38-986e-f4d3160e7a68",
+            "https://www.fromtheroad.ford.com/us/en/articles/2026/ford-2026-third-quarter-sales-results",
+            "https://www.acea.auto/pc-registrations/new-car-registrations-5-3-in-august-2026-year-to-date-battery-electric-21-7-market-share/",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+          ]
+        },
+        {
+          "name": "辅助驾驶与座舱功能由高端选配转向普及或重新收缩",
+          "why_live": "2026 Euro NCAP评价强化现代驾驶风险、安全辅助及人机交互；美光已有车规LPDDR5和UFS量产基础。Ford此前展示可预装硬件、后续激活BlueCruise的商业安排，说明付费使用和初装部件并非一一对应。功能能否成为主力车型标配、消费者是否愿意承担价格与订阅费用，仍可改变渗透速度。",
+          "revision_logic": "修正“具体平台渐进导入、并非全车队统一高容量”的基线。OEM为安全评价、品牌体验或后续变现选择预装资源时，功能渗透先影响初装BOM；软件激活更多利用现有资源。消费者不接受或安全信任受损时，OEM也可能选择更小的功能集合，改变配置路线而非只延后销售。",
+          "possibility_space": [
+            {
+              "name": "OEM把安全辅助及多模态座舱列为大销量平台标配",
+              "implication": "平台共用与规模采购可把高带宽/较大存储从少数豪华版本扩至大量车型，即便总车辆数不增长也扩大地址市场。只有在实际功能需要新增资源时，标配化才转成内容增长；统一预装还能提高以后软件功能的可达性。"
+            },
+            {
+              "name": "订阅和功能套餐扩大使用，但硬件已在车上",
+              "implication": "用户因试用、低价套餐或服务改善增加激活，OEM软件收入与功能使用提升，却不重复购买已装DRAM/UFS。若这一收入资助后继平台更强预装，才形成下一代硬件机会；当前激活率不能直接外推本季bits。"
+            },
+            {
+              "name": "体验争议或事故使OEM降低功能承诺",
+              "implication": "误用、驾驶员监测争议或安全事故可令品牌缩小可用范围、取消高价功能组合。软件限用可能不撤掉现有BOM，但未来平台的高容量选装和研发采购趋弱；相反增加监测/冗余以恢复信任可能提高某些存储需求，净效应取决于改版选择。"
+            },
+            {
+              "name": "用户拒绝持续付费，OEM改为一次性买断或基础套餐",
+              "implication": "功能仍有需求但收费方式改变，OEM会在售价、硬件成本和后续收入间重新平衡。买断标配可放大设备覆盖，也可迫使成本压缩、减少未被使用的容量；这会修正内容和价格组合，而非简单等同渗透率下降。"
+            }
+          ],
+          "ref": [
+            "https://www.euroncap.com/press-media/euro-ncap-announces-2026-protocol-changes-to-tackle-modern-driving-risks/",
+            "https://www.fromtheroad.ford.com/us/en/articles/2023/ford-bluecruise-expands-flexibility-with-complimentary-trial--mo",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "D1-O74",
+            "D1-O103"
+          ]
+        },
+        {
+          "name": "软件定义车的资源共享与本地任务扩张重写单车内容",
+          "why_live": "已供货LPDDR5/UFS支持新平台，LPDDR6仍是送样；集中计算和本地AI需求存在，但汽车平均容量尚未测得。Factor已区分权重/并行缓冲对应DRAM、模型和日志留存对应NAND；系统安全隔离又限制资源共用，不能从芯片算力或一个高端平台得出全车平均bits。",
+          "revision_logic": "修正“高性能平台逐步提高内容”的幅度及DRAM/NAND分配。OEM既可通过合并控制器、量化和数据生命周期管理消除重复资源，也可把效率节省用于新座舱、感知及离线任务。车数不变时架构仍能改变需求；能耗、系统资格和成本决定何种路径进入大销量车，而非技术演示自动决定BOM。",
+          "possibility_space": [
+            {
+              "name": "OEM统一计算池并压缩模型和重复缓存",
+              "implication": "集中控制器与任务调度减少多套独立资源，在固定功能下压低DRAM内容；持久化去重/缩短日志也可压低NAND。若节省的成本换来更广功能标配，单车下降与渗透提高可同时发生，净bits要按平台结构而非单模块容量判断。"
+            },
+            {
+              "name": "离线座舱助手与连续多传感器任务进入主力车型",
+              "implication": "连接不稳定、响应时延或数据控制要求推动模型及更多并行任务常驻车内，扩大DRAM和本地模型存储。手机/云端负责复杂任务的替代方案仍可限制增量；低功耗适配与已完成车规资格决定美光机会。"
+            },
+            {
+              "name": "OEM强化隔离、回滚与行车数据留存",
+              "implication": "系统安全设计保留独立资源、双镜像和可追溯日志，使共享节省不完全兑现，非易失存储/耐久要求可能比DRAM增长更明显。法规或系统责任不是统一容量数字；需按记录频率、保留期和写入寿命解释产品组合。"
+            },
+            {
+              "name": "供应链成本压力迫使高端平台分层设计",
+              "implication": "OEM保留高端性能版本、基础车型采用更小模型/较少传感器和便宜内存。新品能力仍兑现但平均内容提升变慢，成熟LPDDR4/DDR4与先进LPDDR并行更久，价格组合和每bit成本路径随之变化。"
+            }
+          ],
+          "ref": [
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://sg.micron.com/content/dam/micron/global/public/corporate/quality/certificates/micron-21-03-104-c-r018-y4bm-type-certificate-v2r0.pdf",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O69",
+            "D1-O103",
+            "D1-O135"
+          ]
+        },
+        {
+          "name": "供应合作能否转成跨平台采购控制与美光份额",
+          "why_live": "GM、Ford和七家系统/平台伙伴已签供给与工程合作安排；更早参与定义和资格提高留存，但披露未确立排他采购、客户级固定份额或所有代际BOM。部件功能安全证明受具体产品和系统机制约束，后继车型及第二来源仍是可竞争的采购位置。",
+          "revision_logic": "修正“联合工程提高留存”的广度和捕获率。OEM、Tier 1和计算平台的BOM控制权改变时，即使终端车量与平均配置不变，MU份额及产品组合仍可大幅改变。跨产品合同的资金、定价条款归邻域，本主题只研究协议如何影响项目定义、验证和采购分配。",
+          "possibility_space": [
+            {
+              "name": "合作方把共同定义料号复用于多车型和多客户",
+              "implication": "一个平台通过资格后被多个OEM/Tier 1复用，可使项目机会跨出单一车型，减少重复验证并带来多年同系列采购。平台扩散提高MU可捕获范围，但同平台允许替代BOM时仍不等于全份额。"
+            },
+            {
+              "name": "OEM掌握集中采购并推动第二来源互换",
+              "implication": "成本与韧性目标使OEM统一接口、提前验证第二来源，并在Tier 1之间协调采购。既有工程地位可能保留而实物份额被分流；更短转单时间增强买方议价，正常车辆需求也能出现MU收入弱于市场的结果。"
+            },
+            {
+              "name": "区域采购要求使新平台采用本地替代供应者",
+              "implication": "地区安全、产业政策或客户本地化偏好改变合格供应商范围，形成区域项目赢失而非全球车量变化。本地Manassas支持美国连续性，但不能自动保障其他地区资格；政策规则和市场准入由相邻对象深化。"
+            },
+            {
+              "name": "特定料号现场可靠性问题迫使重新验证",
+              "implication": "假设发生部件/系统兼容故障，客户可延后新平台或转给已经合格的供应者，丢失收入并增加工程/质保成本；快速修复且替代成本高则更可能只是交付延迟。这里没有证据称MU当前存在此类缺陷，也不把Y4BM证书套用于所有新品。"
+            }
+          ],
+          "ref": [
+            "https://investors.micron.com/news/press-release/2026/Micron-and-General-Motors-Sign-Strategic-Agreement-to-Secure-Supply-and-Accelerate-Innovation/default.aspx",
+            "https://investors.micron.com/news/press-release/2026/Micron-and-Ford-Sign-Strategic-Agreement-to-Strengthen-Long-Term-Memory-Supply-and-Industry-Resilience/default.aspx",
+            "https://investors.micron.com/news/press-release/2026/Micron-Strengthens-Automotive-Ecosystem-Supply-Through-Strategic-Customer-Agreements/default.aspx",
+            "https://sg.micron.com/content/dam/micron/global/public/corporate/quality/certificates/micron-21-03-104-c-r018-y4bm-type-certificate-v2r0.pdf",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "D1-O171"
+          ]
+        },
+        {
+          "name": "长周期供给的价值在补缺、库存回转与替代之间迁移",
+          "why_live": "Manassas开始1α制造但年底合格生产仍为目标，DDR4/LPDDR4旧平台仍在经营。公司存在共享供给和配套输入约束，同时旧代竞争产品并未消失。汽车独立填单率、库存和SKU缺口未披露；制造开始既不是客户资格完成，也不是汽车获得全部新能力。",
+          "revision_logic": "修正“旧代连续供货与新代并行”的经营含义。合格能力相对待交订单、客户库存及第二来源决定新增资源主要提高交付，还是降低稀缺溢价和预防性备货。供给宽松之后客户反应可以抵消初始增量；反之资源优先级改变也会影响已有项目，不必等待车市变化。",
+          "possibility_space": [
+            {
+              "name": "新增合格料号优先补足被压抑的汽车排程",
+              "implication": "若指定SKU确有未满足订单，供给恢复可提高履约和伙伴生产，并强化连续性口碑。增量受客户真实消耗而非订单表面规模限制；资格仅覆盖部分客户时不能将全厂新能力换算为本Unit销售。"
+            },
+            {
+              "name": "配套器件或客户验证拖慢供给转换",
+              "implication": "晶圆已经制造，但封测、控制器、温度/系统验证之一不足仍使量产料号不可交付。客户可能加大最后采购或验证替代，短期订单高不代表持续需求；长期延迟损害供给保障的商业价值。"
+            },
+            {
+              "name": "旧代多来源恢复，客户撤销安全库存和重复订单",
+              "implication": "交期下降后OEM/Tier 1释放库存，MU出货可短期走弱而整车生产稳定；进一步竞争压低旧料号价格。制造扩张的长期连续性价值仍在，近期稀缺收益和采购前置却回转，两种判断不能混为一谈。"
+            },
+            {
+              "name": "公司重排共享资源与长期客户承诺",
+              "implication": "如果公司提高车规长期项目优先级，可在总能力不变时改善本Unit满足率；若其他产品更有吸引力且合同允许调整，汽车出货受限、客户更积极建设第二来源。并无固定HBM换算或AEBU必然被挤出的假设。"
+            }
+          ],
+          "ref": [
+            "https://investors.micron.com/news/press-release/2026/Micron-Advances-Made-in-America-Memory-With-Manufacturing-Expansion-in-Virginia/default.aspx",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://winbond.com/export/sites/winbond/product-selection-guide/file/2026-Winbond-Customized-Memory-Solution.pdf?__locale=en",
+            "https://investors.micron.com/news/press-release/2026/Micron-and-General-Motors-Sign-Strategic-Agreement-to-Secure-Supply-and-Accelerate-Innovation/default.aspx",
+            "https://investors.micron.com/news/press-release/2026/Micron-and-Ford-Sign-Strategic-Agreement-to-Strengthen-Long-Term-Memory-Supply-and-Industry-Resilience/default.aspx",
+            "D1-O31",
+            "D1-O57"
+          ]
+        },
+        {
+          "name": "价格繁荣的持久性与真实汽车业务质量重新分离",
+          "why_live": "合并AEBU Q4收入和毛利的大幅改善由售价与bits共同驱动、售价主导毛利。公司对供需持续紧张的判断支持近期价格环境，却没有汽车独立净价格、利润率及合同覆盖。因此“汽车经营有利”与“合并高毛利可按原幅度延续”不是同一个判断。",
+          "revision_logic": "修正汽车收入增长来源、利润留存和跨季度持续性，而非给公司估值下结论。客户重谈覆盖、实际内容/份额、车规成本及产品组合决定行业价格怎样传到本Unit；价格下行可能释放客户预算并扩大实物采购，价格上行也可能促使减配。新增拆分披露可改变对已有AEBU表现的归因而不需要终端事件。",
+          "possibility_space": [
+            {
+              "name": "长期安排稳定交付与利润，而现货波动退居次要",
+              "implication": "若汽车已供平台合同对数量/定价提供较强稳定性，行业涨价弹性可能小于现货，却增强收入和项目寿命的可预测性。不能用全公司SCA比例推定这一汽车覆盖；良好的留存与最高周期价格并非总能兼得。"
+            },
+            {
+              "name": "旧代供应和买方议价恢复使净价正常化",
+              "implication": "重谈或竞争使成熟料号净价回落，先压低收入和毛利额；更便宜的BOM若保住主力平台配置与生产，可部分补偿实物量。当前合并高毛利阶段价格敏感度大于同百分比降本的标尺，不能把量的补偿未经测量就视为完全抵消。"
+            },
+            {
+              "name": "新制程与集成产品降本快于客户价格重谈",
+              "implication": "通过资格后的密度、良品和配套成本改善，可在车辆需求平稳时提高单位经济性。若客户很快索取全部降本收益则更多表现为竞争力/份额而非毛利提升；新品初期工程费用和爬坡成本还可先压营业利润。"
+            },
+            {
+              "name": "后续业务拆分显示AEBU跳升主要来自其他终端或涨价",
+              "implication": "若更多披露表明汽车实物增长弱、消费/工业或价格占主要贡献，则需下修由分部高增长外推汽车配置普及的叙事；反之汽车项目量与份额确有提升则增强独立持续性。这是归因可能改变，不声称已知分部内部占比。"
+            }
+          ],
+          "ref": [
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://investors.micron.com/news/press-release/2026/Micron-and-General-Motors-Sign-Strategic-Agreement-to-Secure-Supply-and-Accelerate-Innovation/default.aspx",
+            "https://investors.micron.com/news/press-release/2026/Micron-and-Ford-Sign-Strategic-Agreement-to-Strengthen-Long-Term-Memory-Supply-and-Industry-Resilience/default.aspx",
+            "https://investors.micron.com/news/press-release/2026/Micron-Advances-Made-in-America-Memory-With-Manufacturing-Expansion-in-Virginia/default.aspx"
+          ]
+        },
+        {
+          "name": "L4从有资金和有行程转向可复制车队经济性的路径",
+          "why_live": "Waymo已存在付费服务，并于2026-10-08披露贷款及城市扩张；NVIDIA/Uber另有2027初始平台计划。MU所述L4高容量说明单车潜力，不证明运营单位回报或MU供应商身份。2025-05-12 Waymo召回报告又提供软件问题经已部署软件更新解决的实例，提醒事故、整改与更换硬件必须区分。",
+          "revision_logic": "修正“有限地区扩容的中期高容量分支”能否成为可复制需求。票价、利用率、人工支持和维护、许可及资金共同决定新车采购；行程先由闲置车承接时硬件不增。平台赢家的BOM分配独立决定MU参与。早期融资或运营模式变化即可修改车队规模预期，不要求先看到内存收入。",
+          "possibility_space": [
+            {
+              "name": "机场、通勤与平台分发带来可持续高利用率",
+              "implication": "若运营者通过可靠服务和乘车平台触达建立重复付费客群，并维持扣除维护/远程支持后的回报，满载地区更易新增高容量车辆。网络拓展可以跨多个城市复制，但新增地区的获客和许可成本仍会使扩车非线性。"
+            },
+            {
+              "name": "更低票价增加行程，却主要利用原有车队余量",
+              "implication": "资金支持促销可扩大使用、提升社会接受，但空闲车辆承担需求时没有同幅初装内存。若扣费回报仍弱，低价甚至延缓有自我资金能力的扩容；有行程增长不再足以支持高容量采购加速。"
+            },
+            {
+              "name": "安全事件使许可、保险或公众信任收紧",
+              "implication": "假设重大事故导致运行区域收缩、保险成本抬升或暂停计划，新车采购和融资可在下游出货变化之前转弱。若缺陷像历史实例可软件修复，整改不自动带来更换内存；若要求额外独立感知/冗余，恢复部署后的单车配置反而可能增加。"
+            },
+            {
+              "name": "资本与运营向少数技术平台集中",
+              "implication": "融资退出或并购使弱运营者放弃购车、订单迁往强平台，行业需求未必消失但时间和供应商分配改变。MU在Orin的已有位置不能推定下一代L4 BOM；规模扩张若由其他合格存储供货，MU收入可落后于行业。"
+            }
+          ],
+          "ref": [
+            "https://waymo.com/blog/2026/02/waymo-raises-usd16-billion-investment-round/",
+            "https://www.waymo.com/blog/2026/10/waymo-closes-5-billion-debt-financing/",
+            "https://nvidianews.nvidia.com/news/drive-hyperion-level-4",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://docs.cpuc.ca.gov/PublishedDocs/Published/G000/M455/K694/455694131.PDF",
+            "https://static.nhtsa.gov/odi/rcl/2025/RCLRPT-25E034-2471.PDF",
+            "D1-O69",
+            "D1-O78",
+            "D1-O135"
+          ]
+        },
+        {
+          "name": "车路协同把单车智能变为公共基础设施与车端共同选择",
+          "why_live": "美国交通部2024-08-16发布V2X部署计划并说明相关公共拨款，确立车端与路侧协作的政策及采购主体；这不是截至2026已经全国铺设。2022提出、2024修订的CIP研究展示路侧多传感器融合用于补充车载感知，是技术可行路线而非量产BOM。原模型把车内配置作为主要内容载体，共享道路能力打开另一种关系。",
+          "revision_logic": "探索改变“更多智能主要增加每车本地资源”的架构参照。公共机构/道路运营者投入共享感知，OEM决定是否依赖、只作补充或保留全本地冗余；可靠连接、覆盖与责任划分限制卸载。车端需要的新接口/缓冲与被避免的重复计算可能方向相反；路侧嵌入式收入由另一Unit承接，不能两端都按完整单车BOM计算。",
+          "possibility_space": [
+            {
+              "name": "道路运营者部署协同感知，OEM把它作为安全补充",
+              "implication": "车端保留本地安全能力，同时处理路侧目标信息、记录协同数据，可能增加通信缓冲/日志并改善功能覆盖。共享感知不必降低每辆配置，安全收益还能支持更多车型采用；公共支出不是MU汽车订单本身。"
+            },
+            {
+              "name": "封闭路线或高覆盖走廊允许较轻车端架构",
+              "implication": "在可验证覆盖与失联回退约束下，园区、公交或特定商业路线可能把部分感知/规划移到道路边缘，降低每辆高端本地容量及车辆成本。低成本若带来更多部署可补偿一部分需求，但资源转至路侧/数据中心的部分不属于汽车Unit。"
+            },
+            {
+              "name": "预算、互操作和责任争议阻碍广泛接入",
+              "implication": "各地区建设及维护资金不足或OEM不接受外部依赖，会使V2X停留在消息服务/有限场景，车端本地架构仍是默认。不能由政策公布推导高容量车端被迅速替代；接口标准化若推进，仍可影响后继平台供应商选择。"
+            }
+          ],
+          "ref": [
+            "https://www.transportation.gov/briefing-room/usdot-releases-national-deployment-plan-vehicle-everything-v2x-technologies-reduce",
+            "https://arxiv.org/abs/2207.08930v2",
+            "https://sg.micron.com/content/dam/micron/global/public/corporate/quality/certificates/micron-21-03-104-c-r018-y4bm-type-certificate-v2r0.pdf",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "美光工业与嵌入式内存存储业务",
+      "scope": "面向工业自动化、物联网、机器间通信及消费智能边缘设备的DRAM、NAND、NOR、托管存储和SSD，涵盖既有设备与机器人、AR等新应用的任务和配置需求、客户选型、可靠性资格、平台采用、长期供货、商业采购和业务经济性。",
+      "horizon": "季度业务变化，延伸至多年工业设备和嵌入式平台生命周期。",
+      "ref": [
+        "D1-O3",
+        "D1-O74",
+        "D1-O103",
+        "D1-O57",
+        "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+        "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/",
+        "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+        "https://investors.micron.com/news/press-release/2026/Micron-Advances-Made-in-America-Memory-With-Manufacturing-Expansion-in-Virginia/default.aspx",
+        "https://www.rockwellautomation.com/en-us/company/news/press-releases/Rockwell-Automation-Reports-Third-Quarter-2026-Results.html",
+        "https://ifr.org/ifr-press-releases/news/five-million-robots-now-operate-in-factories-globally",
+        "https://ifr.org/ifr-press-releases/news/global-sales-of-professional-service-robots-surge-24-percent",
+        "https://ifr.org/downloads/press_docs/Market_Presentation_WR_Press_Conference_2026.pdf",
+        "https://developer.nvidia.com/blog/introducing-nvidia-jetson-thor-the-ultimate-platform-for-physical-ai/",
+        "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Halos-for-Robotics-the-Industrys-First-Full-Stack-Safety-System-for-Physical-AI/default.aspx",
+        "https://www.nxp.com/docs/en/application-note/AN14700.pdf",
+        "https://www.qualcomm.com/news/onq/2025/06/a-worlds-first-on-glass-gen-ai-demo-qualcomms-vision-for-smart-glasses",
+        "https://www.essilorluxottica.com/api/getCapContent?download=false&id=283158",
+        "https://www.essilorluxottica.com/en/newsroom/press-releases/q2-h1-2026-results/",
+        "https://gxo.com/news_article/gxo-signs-industry-first-multi-year-agreement-with-agility-robotics/",
+        "https://winbond.com/export/sites/winbond/product-selection-guide/file/2026-Winbond-Customized-Memory-Solution.pdf?__locale=en",
+        "D1-O31",
+        "https://digital-strategy.ec.europa.eu/en/policies/cyber-resilience-act",
+        "https://digital-strategy.ec.europa.eu/en/library/commission-publishes-new-guidance-support-timely-cyber-resilience-act-implementation",
+        "https://new.abb.com/news/detail/64305/remanufacturing-old-robots",
+        "https://www.kuka.com/en-at/company/iimagazine/2024/04/sustainability",
+        "https://about.fb.com/news/2026/07/metas-ai-glasses-your-questions-answered/",
+        "https://www.transportation.gov/briefing-room/usdot-releases-national-deployment-plan-vehicle-everything-v2x-technologies-reduce",
+        "https://arxiv.org/abs/2207.08930v2"
+      ],
+      "state": {
+        "parameters": [
+          {
+            "name": "AEBU合并收入",
+            "definition": "公司汽车、工业及消费嵌入式分部收入；两个Unit共享同一披露，不能相加、分摊或当成本Unit独立收入。金额为百万美元。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O3",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/"
+            ]
+          },
+          {
+            "name": "AEBU合并毛利率",
+            "definition": "公司披露的AEBU分部毛利率（整数百分比）；非单独汽车或工业毛利率，也不是公司整体毛利率。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/"
+            ]
+          },
+          {
+            "name": "AEBU合并营业利润率",
+            "definition": "公司分部口径营业利润率；包含分部费用分配，不代表任一Unit独立净利率或投资回报率。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/"
+            ]
+          },
+          {
+            "name": "AEBU合并营业利润",
+            "definition": "汽车、工业及消费嵌入式共同分部的营业利润，不能归给一个Unit；用于观察产品组合总经济性。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "AEBU合并价格与实物出货贡献",
+            "definition": "合并分部收入和毛利变化中公司明确区分的售价与bit出货作用；不是汽车/工业各自ASP或bits数值。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "工业与消费嵌入式业务收入",
+            "definition": "本Unit对外收入；尚无可用独立拆分，不能用AEBU总额代替。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O3",
+              "D1-O57",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "工业与消费嵌入式业务毛利率",
+            "definition": "本Unit按一致成本口径的毛利率；尚无独立测量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O3",
+              "D1-O57",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "工业与消费嵌入式DRAM bit出货量",
+            "definition": "本Unit交付的DRAM总bits，与单件容量、产品数和收入分开；公开资料未给当前数值。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O3",
+              "D1-O57",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "工业与消费嵌入式NAND bit出货量",
+            "definition": "本Unit交付的NAND总bits，包含其托管存储用途；公开资料未给当前数值。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O3",
+              "D1-O57",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "工业与消费嵌入式DRAM平均每bit售价",
+            "definition": "本Unit DRAM销售金额除以对应bits；不把全公司ASP涨幅迁移过来。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O3",
+              "D1-O57",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "工业与消费嵌入式NAND平均每bit售价",
+            "definition": "本Unit NAND销售金额除以对应bits；不混入NOR或SSD成品单价。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O3",
+              "D1-O57",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "工业与消费嵌入式客户库存天数",
+            "definition": "客户/Tier 1/渠道中本Unit相关料号的库存覆盖天数；反映补库与实际消耗之间的差异，当前未测量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O3",
+              "D1-O57",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "工业与消费嵌入式供货满足率",
+            "definition": "本Unit已承诺采购需求按期获得合格料号交付的比例；公司总体紧张不能替代本Unit的填单率。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O3",
+              "D1-O57",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "工业与消费嵌入式项目采购份额",
+            "definition": "在同一客户已量产项目内，美光同类内存/存储采购份额；未披露，不由合作名单推算。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O3",
+              "D1-O57",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "长周期DDR4与LPDDR4供货基础",
+            "definition": "Manassas面向汽车、工业等长期使用DDR4/LP4料号的合格供货安排；仅锚定本Unit的供应连续性，不分配全厂产能。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-Advances-Made-in-America-Memory-With-Manufacturing-Expansion-in-Virginia/default.aspx"
+            ]
+          },
+          {
+            "name": "Manassas长周期新品合格生产目标",
+            "definition": "新增1α DDR4/LP4供给取得qualified production的公司目标时间；不把目标当成已交付或本Unit独占供给。",
+            "value_type": "TIME",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-Advances-Made-in-America-Memory-With-Manufacturing-Expansion-in-Virginia/default.aspx"
+            ]
+          },
+          {
+            "name": "工业与消费嵌入式产品采用基础",
+            "definition": "AEBU面向工业自动化、IoT、机器间通信及消费嵌入式客户的实际销售产品组合和用途；不以新机器人代替既有业务。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O3",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "工业设备DRAM配置",
+            "definition": "按已量产设备类型及客户出货加权的本地DRAM容量；控制器、机器视觉、机器人分别保留配置，当前无统一可比均值。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O3",
+              "D1-O74",
+              "D1-O103"
+            ]
+          },
+          {
+            "name": "工业设备NAND配置",
+            "definition": "按设备类型及出货加权的本地NAND/托管存储容量；不把云端训练或共享服务器存储算到单设备。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O3",
+              "D1-O74",
+              "D1-O103"
+            ]
+          },
+          {
+            "name": "工业及新型边缘量产定点位置",
+            "definition": "美光具体工业自动化、机器人、AR平台已取得且进入商业采购的项目范围；公开材料尚未提供可用于全域量产采用的具名清单。",
+            "value_type": "STAGE",
+            "ref": [
+              "D1-O3",
+              "D1-O74",
+              "D1-O103"
+            ]
+          },
+          {
+            "name": "消费智能边缘业务收入",
+            "definition": "本Unit的智能眼镜、AR及其他消费嵌入式收入，与手机/PC区分；尚无独立拆分，不能把所有设备增长认作美光收入。",
+            "value_type": "NUMBER",
+            "ref": [
+              "D1-O3",
+              "D1-O74",
+              "D1-O103"
+            ]
+          },
+          {
+            "name": "Physical AI LPDDR6导入阶段",
+            "definition": "美光面向physical AI的LPDDR6客户采用阶段；机器人/其他工业设备单独定点及收入未披露。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/",
+              "D1-O103"
+            ]
+          },
+          {
+            "name": "自动化设备端有机销售增长代理",
+            "definition": "Rockwell Intelligent Devices同口径有机销售增长，观察工业设备活动而非软件订阅；与本Unit的控制、驱动和嵌入式设备需求方向相关，非具名美光订单。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://www.rockwellautomation.com/en-us/company/news/press-releases/Rockwell-Automation-Reports-Third-Quarter-2026-Results.html"
+            ]
+          },
+          {
+            "name": "工业机器人年度新增安装规模",
+            "definition": "IFR年度新增工业机器人部署的规模状态；用显式单侧下界保存原报告，不伪造精确销量；控制、感知和本地计算设备是本Unit下游。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://ifr.org/ifr-press-releases/news/five-million-robots-now-operate-in-factories-globally"
+            ]
+          },
+          {
+            "name": "工业机器人运行存量",
+            "definition": "IFR全球在工厂运行的工业机器人存量；对应长期维护、设备升级基础，不等于当年新增内存采购数量。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://ifr.org/ifr-press-releases/news/five-million-robots-now-operate-in-factories-globally"
+            ]
+          },
+          {
+            "name": "IFR工业机器人安装量预测",
+            "definition": "IFR对同一全球工业机器人年度新增安装量的未来预测；不是美光销量或管理层指引。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://ifr.org/ifr-press-releases/news/five-million-robots-now-operate-in-factories-globally"
+            ]
+          },
+          {
+            "name": "专业服务机器人商业出货规模",
+            "definition": "IFR服务机器人样本的专业设备出货规模状态；238家厂商样本、全球厂商目录1001家，不外推为普查总量，年度样本组成变化影响跨报告比较。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://ifr.org/ifr-press-releases/news/global-sales-of-professional-service-robots-surge-24-percent",
+              "https://ifr.org/downloads/press_docs/Market_Presentation_WR_Press_Conference_2026.pdf"
+            ]
+          },
+          {
+            "name": "运输物流服务机器人销量",
+            "definition": "IFR样本运输/物流机器人销售台数；对应AMR、物料流及配送控制/感知计算，不能直接乘以高端人形机器人内存配置。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://ifr.org/ifr-press-releases/news/global-sales-of-professional-service-robots-surge-24-percent",
+              "https://ifr.org/downloads/press_docs/Market_Presentation_WR_Press_Conference_2026.pdf"
+            ]
+          },
+          {
+            "name": "运输物流机器人的付费部署模式",
+            "definition": "专业运输物流设备通过一次性采购或RaaS投入使用的商业安排，影响客户购机、扩容和资金承担方式；美光仍通过设备供应链销售部件。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://ifr.org/ifr-press-releases/news/global-sales-of-professional-service-robots-surge-24-percent"
+            ]
+          },
+          {
+            "name": "全尺寸人形机器人年度销售量",
+            "definition": "IFR对身高超过140cm人形机器人的全球销售约数；这是不同于工业机械臂和AMR的小规模产品群。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://ifr.org/ifr-press-releases/news/global-sales-of-professional-service-robots-surge-24-percent"
+            ]
+          },
+          {
+            "name": "全尺寸人形机器人商业使用位置",
+            "definition": "人形机器人是否已形成可持续、重复的商业使用；直接定位新型边缘产品量产市场成熟度，非技术演示数量。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://ifr.org/ifr-press-releases/news/global-sales-of-professional-service-robots-surge-24-percent"
+            ]
+          },
+          {
+            "name": "Jetson T5000本地DRAM配置",
+            "definition": "NVIDIA已供货T5000机器人/physical AI计算模块的LPDDR5X容量，直接锚定采用此架构的高端本地计算需求；未证明美光是该模块内存供货商。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://developer.nvidia.com/blog/introducing-nvidia-jetson-thor-the-ultimate-platform-for-physical-ai/"
+            ]
+          },
+          {
+            "name": "Jetson Thor开发套件本地SSD配置",
+            "definition": "NVIDIA Jetson AGX Thor开发套件内置NVMe容量；属于开发套件而非所有生产机器人标准配置，供货商身份未披露。",
+            "value_type": "NUMBER",
+            "ref": [
+              "https://developer.nvidia.com/blog/introducing-nvidia-jetson-thor-the-ultimate-platform-for-physical-ai/"
+            ]
+          },
+          {
+            "name": "管理层人形机器人容量路径",
+            "definition": "美光对未来人形机器人内存/存储配置和需求实现时间的前瞻判断，独立于当前已销售设备的实测BOM。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "EssilorLuxottica AI眼镜年度销售规模",
+            "definition": "EssilorLuxottica实际AI眼镜销量的单侧规模界限；属于本Unit消费智能边缘的终端硬件活动代理，不是全球AR销量或美光出货。",
+            "value_type": "STAGE",
+            "ref": [
+              "https://www.essilorluxottica.com/api/getCapContent?download=false&id=283158"
+            ]
+          }
+        ],
+        "values": [
+          {
+            "name": "AEBU FY2026全年收入",
+            "parameter": "AEBU合并收入",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 15886.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 4753.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026截至2026-09-03（53周）；previous为FY2025截至2025-08-28（52周），非等周增速",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+              "D1-O3"
+            ]
+          },
+          {
+            "name": "AEBU FY2026第四季收入",
+            "parameter": "AEBU合并收入",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 6824.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 4634.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026 Q4截至2026-09-03；previous为FY2026 Q3截至2026-05-28；未经周数标准化",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/"
+            ]
+          },
+          {
+            "name": "AEBU FY2025第四季收入参照",
+            "parameter": "AEBU合并收入",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 1434.0,
+              "unit": "百万美元"
+            },
+            "previous_value": null,
+            "time_scope": "FY2025 Q4截至2025-08-28；最新报告重列的同季参照，不与FY2026 Q3比较",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/"
+            ]
+          },
+          {
+            "name": "AEBU FY2026第四季毛利率",
+            "parameter": "AEBU合并毛利率",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 84.0,
+              "unit": "%"
+            },
+            "previous_value": {
+              "number": 79.0,
+              "unit": "%"
+            },
+            "time_scope": "FY2026 Q4截至2026-09-03；previous为FY2026 Q3，披露整数舍入",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/"
+            ]
+          },
+          {
+            "name": "AEBU FY2025第四季毛利率参照",
+            "parameter": "AEBU合并毛利率",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 31.0,
+              "unit": "%"
+            },
+            "previous_value": null,
+            "time_scope": "FY2025 Q4截至2025-08-28；最新报告提供的同比参照",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/"
+            ]
+          },
+          {
+            "name": "AEBU FY2026第四季营业利润率",
+            "parameter": "AEBU合并营业利润率",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 79.0,
+              "unit": "%"
+            },
+            "previous_value": {
+              "number": 75.0,
+              "unit": "%"
+            },
+            "time_scope": "FY2026 Q4截至2026-09-03；previous为FY2026 Q3",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/"
+            ]
+          },
+          {
+            "name": "AEBU FY2025第四季营业利润率参照",
+            "parameter": "AEBU合并营业利润率",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 20.0,
+              "unit": "%"
+            },
+            "previous_value": null,
+            "time_scope": "FY2025 Q4截至2025-08-28",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/"
+            ]
+          },
+          {
+            "name": "AEBU FY2026全年营业利润",
+            "parameter": "AEBU合并营业利润",
+            "source_role": "ACTUAL",
+            "value": {
+              "number": 11217.0,
+              "unit": "百万美元"
+            },
+            "previous_value": {
+              "number": 557.0,
+              "unit": "百万美元"
+            },
+            "time_scope": "FY2026截至2026-09-03（53周）；previous为FY2025（52周）",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "AEBU最新增长分解",
+            "parameter": "AEBU合并价格与实物出货贡献",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "FY2026 Q4收入环比增长47%，售价与bit出货均上升；毛利率环比改善470个基点主要来自售价。全年收入增长234%主要来自售价并有bits增长贡献。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026及FY2026 Q4；470基点为电话会精度，不用整数79%至84%计算精确变化",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "长周期产品新增工艺开始制造",
+            "parameter": "长周期DDR4与LPDDR4供货基础",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "Manassas已开始1α制造，以服务汽车、工业、医疗等长周期DDR4/LP4需求；新工艺开始不等于已全部取得客户生产资格。"
+            },
+            "previous_value": null,
+            "time_scope": "截至2026-05-22；长生命周期平台供货",
+            "as_of": "2026-05-22",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-Advances-Made-in-America-Memory-With-Manufacturing-Expansion-in-Virginia/default.aspx"
+            ]
+          },
+          {
+            "name": "公司预计2026年底合格生产",
+            "parameter": "Manassas长周期新品合格生产目标",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "point": "2026年底",
+              "start": null,
+              "end": null,
+              "precision": "年末目标"
+            },
+            "previous_value": null,
+            "time_scope": "2026日历年年底目标",
+            "as_of": "2026-05-22",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-Advances-Made-in-America-Memory-With-Manufacturing-Expansion-in-Virginia/default.aspx"
+            ]
+          },
+          {
+            "name": "既有工业嵌入式业务具有多类产品销售基础",
+            "parameter": "工业与消费嵌入式产品采用基础",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "既有产品覆盖DRAM、NAND、托管NAND、NOR和SSD；合并AEBU FY2026主要销售LPDDR5、LPDDR4、托管NAND、DDR4、DDR3、GDDR6。主销组合包含汽车，不能认定全为工业。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026截至2026-09-03",
+            "as_of": "2026-10-09",
+            "validity_state": "CURRENT",
+            "ref": [
+              "D1-O3",
+              "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+            ]
+          },
+          {
+            "name": "LPDDR6面向多Physical AI市场送样",
+            "parameter": "Physical AI LPDDR6导入阶段",
+            "source_role": "ACTUAL",
+            "value": {
+              "stage": "1γ LPDDR6已向多个physical AI市场送样；这是技术/客户导入阶段，不是工业或人形机器人批量采购的证明。"
+            },
+            "previous_value": null,
+            "time_scope": "FY2026 Q4及截至2026-09-30的客户导入",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/",
+              "D1-O103"
+            ]
+          },
+          {
+            "name": "Rockwell智能设备业务有机增长",
+            "parameter": "自动化设备端有机销售增长代理",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 10.0,
+              "unit": "%（同比；有机口径）"
+            },
+            "previous_value": null,
+            "time_scope": "Rockwell FY2026 Q3，2026年4—6月；剔除汇率影响",
+            "as_of": "2026-08-04",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.rockwellautomation.com/en-us/company/news/press-releases/Rockwell-Automation-Reports-Third-Quarter-2026-Results.html"
+            ]
+          },
+          {
+            "name": "2025工业机器人安装超过60万台",
+            "parameter": "工业机器人年度新增安装规模",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "2025年全球新增安装超过600,000台，同比增长11%；中国增长20%，日本下降19%、德国下降8%，增长并不均匀。"
+            },
+            "previous_value": null,
+            "time_scope": "2025日历年，工业机器人而非全尺寸人形机器人",
+            "as_of": "2026-09-24",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://ifr.org/ifr-press-releases/news/five-million-robots-now-operate-in-factories-globally"
+            ]
+          },
+          {
+            "name": "2025年末工业机器人运行存量",
+            "parameter": "工业机器人运行存量",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 5.0,
+              "unit": "百万台（报告舍入值）"
+            },
+            "previous_value": null,
+            "time_scope": "2025年末，报告同比增长9%；不由舍入增速反推精确前值",
+            "as_of": "2026-09-24",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://ifr.org/ifr-press-releases/news/five-million-robots-now-operate-in-factories-globally"
+            ]
+          },
+          {
+            "name": "IFR预测2026年度安装量",
+            "parameter": "IFR工业机器人安装量预测",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 655000.0,
+              "unit": "台"
+            },
+            "previous_value": null,
+            "time_scope": "2026日历年预测；报告预计较2025增长9%",
+            "as_of": "2026-09-24",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://ifr.org/ifr-press-releases/news/five-million-robots-now-operate-in-factories-globally"
+            ]
+          },
+          {
+            "name": "IFR预测2029年度安装量",
+            "parameter": "IFR工业机器人安装量预测",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 806000.0,
+              "unit": "台"
+            },
+            "previous_value": null,
+            "time_scope": "2029日历年预测；与2026不同目标期，previous为空",
+            "as_of": "2026-09-24",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://ifr.org/ifr-press-releases/news/five-million-robots-now-operate-in-factories-globally"
+            ]
+          },
+          {
+            "name": "2025专业服务机器人已有近25万台出货",
+            "parameter": "专业服务机器人商业出货规模",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "IFR样本2025专业服务机器人出货接近250,000台，同比增长24%；已有商业设备采购，不只是实验室演示。"
+            },
+            "previous_value": null,
+            "time_scope": "2025日历年、IFR World Robotics 2026服务机器人样本",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://ifr.org/ifr-press-releases/news/global-sales-of-professional-service-robots-surge-24-percent",
+              "https://ifr.org/downloads/press_docs/Market_Presentation_WR_Press_Conference_2026.pdf"
+            ]
+          },
+          {
+            "name": "2025运输物流机器人销售",
+            "parameter": "运输物流服务机器人销量",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 117500.0,
+              "unit": "台（IFR样本）"
+            },
+            "previous_value": null,
+            "time_scope": "2025日历年；报告同比增长21%，占专业服务机器人样本47%",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://ifr.org/ifr-press-releases/news/global-sales-of-professional-service-robots-surge-24-percent",
+              "https://ifr.org/downloads/press_docs/Market_Presentation_WR_Press_Conference_2026.pdf"
+            ]
+          },
+          {
+            "name": "直接销售与RaaS并行的商业基础",
+            "parameter": "运输物流机器人的付费部署模式",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "IFR称传统销售仍是全球运输物流机器人的主要变现渠道，RaaS继续扩展且在美国已占主导；客户买设备或付使用服务费，不代表美光取得RaaS经常性收入。"
+            },
+            "previous_value": null,
+            "time_scope": "2025市场情况及2026-09-30发表的判断",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://ifr.org/ifr-press-releases/news/global-sales-of-professional-service-robots-surge-24-percent"
+            ]
+          },
+          {
+            "name": "2025全尺寸人形机器人约七千台",
+            "parameter": "全尺寸人形机器人年度销售量",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 7000.0,
+              "unit": "台（约数；身高>140cm）"
+            },
+            "previous_value": null,
+            "time_scope": "2025日历年，IFR所报告全尺寸人形机器人",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://ifr.org/ifr-press-releases/news/global-sales-of-professional-service-robots-surge-24-percent"
+            ]
+          },
+          {
+            "name": "人形应用主要仍是专门任务及试点",
+            "parameter": "全尺寸人形机器人商业使用位置",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "多数当前应用仍专门化，常需人类遥操作；安全、训练维护成本及工业商业回报不足限制广泛采用，尚非通用自主劳动力大规模替换。"
+            },
+            "previous_value": null,
+            "time_scope": "截至2026-09-30的商业采用位置",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://ifr.org/ifr-press-releases/news/global-sales-of-professional-service-robots-surge-24-percent"
+            ]
+          },
+          {
+            "name": "Jetson T5000的128GB LPDDR5X配置",
+            "parameter": "Jetson T5000本地DRAM配置",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 128.0,
+              "unit": "GB LPDDR5X/模块"
+            },
+            "previous_value": null,
+            "time_scope": "2025-08-25发布并一般可供货的T5000配置；不是全部机器人平均容量",
+            "as_of": "2025-08-25",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://developer.nvidia.com/blog/introducing-nvidia-jetson-thor-the-ultimate-platform-for-physical-ai/"
+            ]
+          },
+          {
+            "name": "Thor开发套件内置NVMe容量",
+            "parameter": "Jetson Thor开发套件本地SSD配置",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "number": 1.0,
+              "unit": "TB NVMe/开发套件"
+            },
+            "previous_value": null,
+            "time_scope": "2025-08-25发布的开发套件配置",
+            "as_of": "2025-08-25",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://developer.nvidia.com/blog/introducing-nvidia-jetson-thor-the-ultimate-platform-for-physical-ai/"
+            ]
+          },
+          {
+            "name": "公司把人形机器人容量跃迁定位到十年末",
+            "parameter": "管理层人形机器人容量路径",
+            "source_role": "MANAGEMENT",
+            "value": {
+              "stage": "预期人形机器人所需内存和存储可与高阶自动驾驶相当，physical AI可能在本十年末成为显著需求来源；不是当前每台人形机器人都超过200GB/多TB。"
+            },
+            "previous_value": null,
+            "time_scope": "未来人形机器人配置、2020年代末需求形成",
+            "as_of": "2026-09-30",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+            ]
+          },
+          {
+            "name": "2025年AI眼镜已形成七百万以上销量",
+            "parameter": "EssilorLuxottica AI眼镜年度销售规模",
+            "source_role": "INDUSTRY_CHAIN",
+            "value": {
+              "stage": "2025年该公司AI眼镜销售超过7,000,000副，覆盖多个品牌和区域；保留原文下界，不用7百万点估计替代。"
+            },
+            "previous_value": null,
+            "time_scope": "2025日历年；EssilorLuxottica AI眼镜范围",
+            "as_of": "2026-02-11",
+            "validity_state": "CURRENT",
+            "ref": [
+              "https://www.essilorluxottica.com/api/getCapContent?download=false&id=283158"
+            ]
+          }
+        ]
+      },
+      "expectation_baseline": [
+        {
+          "name": "既有自动化和长尾嵌入式仍是近期经营底座",
+          "baseline": "工作基线是已有工业设备、IoT/M2M和消费嵌入式销售继续构成主要现实基础，近期改善由存储售价、既有出货及自动化活动共同支持，不能归因于新型人形机器人爆量。合并AEBU价格与bits皆增长；Rockwell智能设备有机销售增长10%、IFR工业机器人2025安装超过60万台，提供设备端扩张的独立证据。区域增长分化和设备采购时滞意味着采用温和设备扩张叠加价格周期，而不把客户收入增长机械转成美光bits增速。",
+          "ordinary_progress": "控制、驱动、机器视觉、联网设备订单延续，合格料号采购跟随生产计划，价格改善贡献收入/毛利，均延伸这一判断。",
+          "open_frontier": "嵌入式客户库存与实际设备消耗是否一致、资本开支放缓或内存涨价导致减配，以及工业和消费嵌入式各自贡献多大，会改变近端增长的质量和持续性。",
+          "time_scope": "未来1—4个季度",
+          "ref": [
+            "D1-O3",
+            "D1-O57",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/",
+            "https://www.rockwellautomation.com/en-us/company/news/press-releases/Rockwell-Automation-Reports-Third-Quarter-2026-Results.html",
+            "https://ifr.org/ifr-press-releases/news/five-million-robots-now-operate-in-factories-globally"
+          ]
+        },
+        {
+          "name": "工业和服务机器人扩张以可付费任务为主，人形规模尚小",
+          "baseline": "采用“成熟工业自动化与物流服务机器人继续扩展，通用人形先小规模任务商业化”的工作路径。IFR预计工业机器人2026安装655,000台；物流设备已有销售与RaaS双模式，客户可以购买设备或付使用费。相比之下，全尺寸人形机器人2025销售约7,000台且多数任务专门化、常有遥操作。这使运行成本、可靠性和劳动替代回报比演示数量更能解释短中期部件采购。",
+          "ordinary_progress": "现有工厂机械臂、物流AMR和其他明确任务增量部署，人形扩大有限场景试用、改善单任务回报，均属于原路径。",
+          "open_frontier": "人形能否建立可复制付费任务并显著减少人为介入，或成熟机器人投资转弱，将决定新增高端设备规模是否跨越当前基线；IFR预测并非美光订单承诺。认证旧机跨客户再部署会使使用范围与新机初装进一步脱钩；新控制器升级和可兑现残值对融资的反馈，决定这一渠道是主要替代新机还是扩大可付费自动化市场。",
+          "time_scope": "未来1—3年",
+          "ref": [
+            "https://ifr.org/ifr-press-releases/news/five-million-robots-now-operate-in-factories-globally",
+            "https://ifr.org/ifr-press-releases/news/global-sales-of-professional-service-robots-surge-24-percent",
+            "https://ifr.org/downloads/press_docs/Market_Presentation_WR_Press_Conference_2026.pdf",
+            "https://new.abb.com/news/detail/64305/remanufacturing-old-robots",
+            "https://www.kuka.com/en-at/company/iimagazine/2024/04/sustainability"
+          ]
+        },
+        {
+          "name": "高容量本地AI是可见配置分支，尚不能代表所有嵌入式设备",
+          "baseline": "采用“部分视觉/语言/行动任务进入高容量本地计算，传统控制和小模型仍占大量设备”的分层路径。已可供货T5000的128GB LPDDR5X及开发套件1TB NVMe表明高容量边缘架构存在；美光LPDDR6仍送样，公司把physical AI显著需求定位至十年末。与此同时量化、小模型、共享场地计算和云端分工可提高功能而不同比增加每台内存。故中期高端配置上行比全工业设备统一变成128GB机器更有依据，且平台配置不能证明美光定点。",
+          "ordinary_progress": "指定高端平台进入客户验证、LPDDR6送样转向有限资格项目，以及更便宜的任务型边缘设备持续迭代，均是分层路径的正常进展。",
+          "open_frontier": "本地模型驻留、任务复杂度与安全隔离是否促成更大且持久的配置，以及量化/共享计算如何压低单位容量，是容量弹性边界；真正的美光BOM采用与平台规模必须区分。",
+          "time_scope": "未来4—12个季度及2020年代末",
+          "ref": [
+            "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://developer.nvidia.com/blog/introducing-nvidia-jetson-thor-the-ultimate-platform-for-physical-ai/",
+            "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Halos-for-Robotics-the-Industrys-First-Full-Stack-Safety-System-for-Physical-AI/default.aspx",
+            "https://www.nxp.com/docs/en/application-note/AN14700.pdf"
+          ]
+        },
+        {
+          "name": "生命周期采购重视稳定供货，旧代与新代同时经营",
+          "baseline": "默认路径是工业客户围绕设备寿命和已经验证的料号继续长期采购，性能升级只在部分后继平台先行。现售产品横跨旧代DRAM、托管NAND、NOR及SSD，Manassas长周期DDR4/LP4合格生产目标提供供货连续性准备；工业设备停线或重新验证的代价让同一料号供应价值不同于通用现货最低价。工作判断是连续性可支撑客户留存，但不把供给准备认成所有工业客户已签保量/保价合同。",
+          "ordinary_progress": "既有料号延续、客户对新增工艺完成资格、后继平台小范围转换，以及按计划补充合格供给，属于原路径。",
+          "open_frontier": "客户会否因涨价或供货短缺迁移第二来源、资格完成是否赶得上需求，以及NOR/旧代DRAM竞争者获得多少设计份额，决定长期留存是否抵御价格和分配变化。",
+          "time_scope": "2026年底目标及多年工业设备周期",
+          "ref": [
+            "D1-O3",
+            "D1-O57",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://investors.micron.com/news/press-release/2026/Micron-Advances-Made-in-America-Memory-With-Manufacturing-Expansion-in-Virginia/default.aspx"
+          ]
+        },
+        {
+          "name": "消费智能边缘按独立设备用途演进，不与手机或云端混算",
+          "baseline": "工作基线是已商业化AI眼镜及其他智能设备继续按具体用途扩展，不是整个领域仍处于样机。EssilorLuxottica 2025年AI眼镜销量超过700万副、2026 Q2类别收入接近翻倍，支持商业需求已经存在；品牌收入含价格/组合且不证明MU采用。Qualcomm本地模型演示与MCU小模型路线说明本地功能会分层导入：电池、热预算、用户价值及成本决定本机/手机/云端分工，功能丰富不必同比增加本地容量。采用“设备需求扩展、内存强度和供应份额分层”的判断，不把全部眼镜归为AR或把类别销售映射为AEBU收入。",
+          "ordinary_progress": "成熟品牌/渠道扩展、终端改善功耗/成本与交互，具体设备形成量产选型及复购，同时小模型和卸载优化本地配置，都符合这一分层路径。",
+          "open_frontier": "用户是否持续使用并愿意为独立设备付费、计算究竟留在本机还是配对手机/云端，以及美光能否取得量产BOM份额，决定本Unit而非邻域得到多少新增需求。",
+          "time_scope": "未来1—3年",
+          "ref": [
+            "D1-O3",
+            "D1-O74",
+            "https://www.qualcomm.com/news/onq/2025/06/a-worlds-first-on-glass-gen-ai-demo-qualcomms-vision-for-smart-glasses",
+            "https://www.nxp.com/docs/en/application-note/AN14700.pdf",
+            "https://www.essilorluxottica.com/api/getCapContent?download=false&id=283158",
+            "https://www.essilorluxottica.com/en/newsroom/press-releases/q2-h1-2026-results/"
+          ]
+        }
+      ],
+      "realization_factors": [
+        {
+          "name": "自动化投资回报和现有设备余量决定新增硬件采购",
+          "mechanism": "工业/仓储客户的订单、产能布局和劳动力供给决定需要完成的任务；扩产/搬迁增加新设备需求，缺工、工资和质量损失提高自动化收益。客户比较节省劳动/废品/停机的收益与设备、集成及融资成本，决定投资预算和回收期。既有设备利用率、能力余量和可升级性决定任务增长先由原设备、软件/维修升级还是新设备承担。获批项目再经设备OEM生产、嵌入式配置和内存供货份额进入本Unit采购，资金紧张或长集成周期会推迟硬件而不必否定应用长期价值。",
+          "current_status": "Rockwell FY2026 Q3智能设备有机销售增长10%，并指出仓储、半导体等活动较强、汽车及生命科学改善；IFR工业机器人新增安装增长且国家间差异很大。现售美光工业组合包括传统DRAM/托管NAND/NOR/SSD。因此采用已有自动化设备需求扩张、不同地区和设备类型不均的工作读法，而非所有工业客户同步资本开支高增长。",
+          "materiality_context": "订单/产能布局定义广泛设备需求分母，搬迁可产生新增线体但也可能只是地域重分配；缺工、工资及质量损失改变投资回报，不能与新增产量重复计量。设备/集成成本及融资条件影响获批与采购时点，特别是小客户和非必需升级。利用率/余量是边际开关：有闲置能力时任务增10%可不新增机器，满负荷或缺少必要功能时同等增长更容易触发扩容；这是条件示例而非已测工业利用率。OEM排程/集成时滞分开需求意愿与采购季度，配置和美光份额再决定对应bits。当前成熟设备活动的经营覆盖大于人形机器人试点，但新增应用的可实现回报变化仍可能更大地修正远期机会。",
+          "scope_boundary": "从工业/仓储投资决定延伸到本Unit设备供应链；不把ROK视为已确认MU客户，不将软件ARR增长等同内存出货。产能迁移本身不是存储器全球净需求增量。",
+          "ref": [
+            "https://www.rockwellautomation.com/en-us/company/news/press-releases/Rockwell-Automation-Reports-Third-Quarter-2026-Results.html",
+            "https://ifr.org/ifr-press-releases/news/five-million-robots-now-operate-in-factories-globally",
+            "D1-O3",
+            "https://gxo.com/news_article/gxo-signs-industry-first-multi-year-agreement-with-agility-robotics/"
+          ]
+        },
+        {
+          "name": "可付费任务、系统集成与RaaS融资共同决定机器人部署",
+          "mechanism": "物流/生产客户选择机器人替代或补充具体重复任务，任务成功率、人工介入、节拍和可用工时决定有效产出；与AMR/输送线/工厂流程的集成决定机器是否真正可用。客户购买设备时承担前期资本，RaaS把支出变使用费并把设备资本、维护/闲置风险更多留给服务商；服务商的融资与单位回报又约束设备扩容。部署及重复采购产生初装内存需求，运行小时增加主要先改善设备产出，不能按小时重复计算已安装DRAM。",
+          "current_status": "IFR 2025样本运输物流机器人销量117,500台，全球仍以传统销售为主、美国RaaS占主导；全尺寸人形约7,000台，多数仍专门任务且常有遥操作。GXO/Agility在2024年已披露多年按使用付费的部署安排，在SPANX现场把Digit与AMR/输送线结合，搬运周转箱；它证明付费任务存在，不证明通用人形能力或美光采用。当前更有依据的是任务型物流规模化与有限人形项目并行。",
+          "materiality_context": "任务成功率/节拍与可用工时决定每台替代多少劳动，是回报和复购的主因；人工介入与维护成本能消耗节省额，集成兼容性决定客户范围及部署时滞。仅按台数，117,500物流样本约为7,000全尺寸人形的17倍，分母/类型不同且非收入比例；成熟任务当前量的基础更大，人形单台容量及适用任务扩张可使其远期修正空间更大。RaaS改善终端预算可达性，但把融资/闲置/维护约束集中到服务商，不创造无资本约束的需求。已有设备的小时/利用率上升可先不添购；达到节拍上限、新任务或新地点才提高硬件和本Unit初装采购敏感度。",
+          "scope_boundary": "覆盖工业及专业服务机器人商业采购；GXO项目、IFR行业样本与MU量产定点分别保留。RaaS收入属于设备/服务商，不是美光经常性收入，样本销量不外推全行业普查。",
+          "ref": [
+            "https://ifr.org/ifr-press-releases/news/global-sales-of-professional-service-robots-surge-24-percent",
+            "https://ifr.org/downloads/press_docs/Market_Presentation_WR_Press_Conference_2026.pdf",
+            "https://gxo.com/news_article/gxo-signs-industry-first-multi-year-agreement-with-agility-robotics/",
+            "D1-O103"
+          ]
+        },
+        {
+          "name": "任务计算位置、模型效率与安全隔离决定嵌入式容量分层",
+          "mechanism": "设备制造商按任务实时性、连接可靠性和功耗成本，在MCU内部SRAM/外部闪存、机上LPDDR/SSD、共享场地计算和云端之间分工。权重规模/精度、并行感知/规划任务及中间缓冲决定本地DRAM；模型/固件持久化、日志留存/写入耐久决定NAND/NOR/SSD。小模型和量化减少单任务资源，同时降低售价/能耗、扩大可用任务与设备数量。安全隔离、确定性响应和系统资格决定能否复用共享计算，也可能增加专用资源；它们并不规定所有机器人同一容量。",
+          "current_status": "T5000已供货的128GB LPDDR5X与Thor开发套件1TB NVMe锚定高端本地路线；NXP 2025应用笔记描述的RT700 NPU可访问5.5MB内部RAM、默认256KB tensor arena，外部flash模型数据需移入内部执行，显示另一种真实的小模型路线。Halos Outside-In用外部相机/AI代理扩展机器人感知，仍早期访问及认证准备；共享场地计算和安全集成确实属于架构选择。MU LPDDR6送样不证明占有上述所有BOM。",
+          "materiality_context": "任务类别、计算位置决定本Unit机会落在哪个存储层级，影响大于用“机器人”统一标签。模型规模/精度和并行缓冲决定高端容量，5.5MB内部RAM与128GB模块相差数量级但并非同类性能比较，说明一个加权平均会掩盖需求构成。日志率/保留时间/耐久更多影响非易失存储，不能用DRAM需求替代。功耗成本影响便携设备可用配置和采用范围；量化可压低每台资源又扩大设备数，净bits由两者相乘而定。安全隔离/资格决定共享还是独立资源，能改变可实施配置及部署时间；目前任务型设备经营基础较广，高端本地计算配置与安全架构选择对未来内容强度的修正更大。",
+          "scope_boundary": "覆盖工业/IoT/机器人本地DRAM、NAND、NOR及SSD；云端训练、园区服务器的存储归数据中心，保留卸载对本Unit的分流。开发套件容量不是量产机器人BOM，NXP内部SRAM不是美光DRAM销售。",
+          "ref": [
+            "https://developer.nvidia.com/blog/introducing-nvidia-jetson-thor-the-ultimate-platform-for-physical-ai/",
+            "https://www.nxp.com/docs/en/application-note/AN14700.pdf",
+            "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Halos-for-Robotics-the-Industrys-First-Full-Stack-Safety-System-for-Physical-AI/default.aspx",
+            "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/",
+            "D1-O103"
+          ]
+        },
+        {
+          "name": "设备生命周期、第二来源资格与可靠性共同分配长期采购",
+          "mechanism": "工业设备OEM在首次设计中按接口、温度/寿命、失效及停线风险选择内存；经验证的料号在设备寿命中持续采购，换料需要固件/电气/可靠性再验证。长供承诺与路线图稳定降低客户停线和重设计的预期成本，提高已采用平台留存；同时客户可预先验证第二来源，或在后继设计采用其他DRAM、NOR/托管NAND方案。价格/交期和供应地域影响这些选择，采购份额可在设备活动不变时重新分配。存量大并不代表每年换掉所有原内存。",
+          "current_status": "AEBU现售组合保留旧代DRAM及多类非易失存储；Manassas为长期DDR4/LP4准备新增合格供给。Winbond目录仍提供旧代及专用存储来源，反对“主要厂商转向先进产品即旧代没有竞争”的假设。未取得工业独立SCA客户清单，因此工作模型采用已验证料号留存与后继设计竞争并存，不把汽车协议覆盖自动迁移到工业客户。",
+          "materiality_context": "接口/可靠性资格决定进入客户项目的范围，停线风险和再验证成本使现役平台对小幅价格差不敏感，换代时则更易重新竞争；长供承诺提高连续性价值但不是永远锁定。第二来源的资格、交期/价格及地域可获得性决定转单弹性，在不变设备量下仍能显著改变MU份额。产品生命周期延长平滑采购，也延迟先进节点/高容量切换，效应不能只算正面。IFR五百万工业机器人运行存量是维护/升级基础，不是五百万台每年初装内存；当前存量料号连续性有广泛经营覆盖，后继平台丢失或赢得定点则影响未来多年份额。",
+          "scope_boundary": "工业设备、IoT和消费嵌入式选型分配；不把产品目录当客户已完成第二来源资格。制造基地承诺及公司合同资金在邻域深化，本域解释其客户采购含义。",
+          "ref": [
+            "D1-O3",
+            "D1-O57",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://investors.micron.com/news/press-release/2026/Micron-Advances-Made-in-America-Memory-With-Manufacturing-Expansion-in-Virginia/default.aspx",
+            "https://winbond.com/export/sites/winbond/product-selection-guide/file/2026-Winbond-Customized-Memory-Solution.pdf?__locale=en",
+            "https://ifr.org/ifr-press-releases/news/five-million-robots-now-operate-in-factories-globally"
+          ]
+        },
+        {
+          "name": "料号级有效供给、资源配置与渠道库存改变交付弹性",
+          "mechanism": "本Unit可售量受指定DRAM/闪存工艺、良品、封测及控制器等配套组件约束，已完成客户资格的资源才可用于设备生产。公司按客户承诺、产品经济性和共享能力分配资源；工业小批次/长尾规格不能被名义总bits完全替代。分销商/OEM根据交期和需求备库存，订购可前置；随后去库存使同样设备生产所需新采购下降。合格能力扩张提高填单率，也可降低缺货溢价、减少预防性备货或使客户改选供应者。",
+          "current_status": "公司披露总体使用既有制造能力及部分输入短缺，尚无工业填单率、渠道库存天数或具体SKU短缺量。Manassas年底qualified production目标尚未认作完成；现有旧代和新代工业产品继续共存。当前采用存在共享供给约束、但没有证据将其全部转成工业受挤出结论的读法；MCBU已发生减量只说明该分配机制可真实作用。",
+          "materiality_context": "良品/封测/控制器和料号资格共同给出可交付上限，其中任何一项不足可使终端扩张主要转为交期/价格而非本季出货。资源配置控制工业获得的那部分能力，产品/客户组合和承诺改变分配优先级。长尾料号要求决定工业供给不能以通用DRAM产量替代；渠道/OEM库存变动通常对季度采购比对多年终端需求更有杠杆，前置订单与重复订单也会夸大需求。合格供给恢复先提高未满足需求交付，库存充足后更多影响价格、备货和份额。当前新品资格、旧代连续性及库存假设比未量化的全厂扩产面积更贴近本Unit交付弹性。",
+          "scope_boundary": "覆盖工业可采购料号、交期、分销/OEM库存及配套输入；跨业务资源与制造项目只作为接口，不研究各厂工程或据MCBU变化推算AEBU减量。",
+          "ref": [
+            "D1-O3",
+            "D1-O31",
+            "D1-O57",
+            "https://investors.micron.com/news/press-release/2026/Micron-Advances-Made-in-America-Memory-With-Manufacturing-Expansion-in-Virginia/default.aspx",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+          ]
+        },
+        {
+          "name": "报价传递、产品组合和工程成本决定工业业务的收入质量",
+          "mechanism": "工业收入应逐产品拆成合格数量和实际净价格，再区别容量升级、DRAM/托管NAND/NOR/SSD组合与单纯涨价。直销/渠道折扣、定价重谈时点和客户预算影响行业报价传递；成本由单位良品密度、生产封测、控制器/固件及长尾备货构成。既有设备生命周期长，使新节点降本需经验证并可能滞后；新平台研发/适配费用先发生，出货后才摊薄。账期和库存决定现金回收，软件或RaaS服务收入不进入美光这条硬件经济链。",
+          "current_status": "AEBU合并Q4价格与bits共同增加、售价主导毛利改善，提供当前经营桥而非工业独立ASP/毛利。工业业务产品种类多且包含成熟嵌入式，不能把合并84%毛利率分配给每个产品、把机器人送样计成高毛利收入。工作判断是近端价格贡献强、实际工业出货和SKU组合仍独立影响增长质量；公司总体应收增加也不证明工业客户信用恶化。",
+          "materiality_context": "净价格与数量当前直接决定收入和毛利额，渠道折扣/重谈覆盖影响传递程度；价格上涨可能由客户减配/后移采购抵消。组合决定单位售价与单位成本同时变化，是归因项而非可叠加的第三份bits增长。条件标尺仍仅取合并84%毛利：相同量/成本下价格+10%使毛利额约+11.9%，同百分比单位成本下降约+1.9%；未估计工业实际敏感度。良品密度与封测/控制器/固件成本决定长期价差，旧料号验证及备货使降本不同步。研发/适配费用影响新品早期营业利润，账期/库存决定利润转现金而非新增收入。当前成熟产品价格变化覆盖广，新型边缘的数量/定点变化虽贡献较小却能改写中期组合。",
+          "scope_boundary": "延伸至本Unit收入、毛利、工程费用和周转；无独立数据处不分摊合并分部利润，不计算公司EPS/ROIC；NOR、NAND、SSD成品与每bit价格保持不同口径。",
+          "ref": [
+            "D1-O3",
+            "D1-O57",
+            "D1-O31",
+            "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+          ]
+        },
+        {
+          "name": "消费智能边缘的付费接受和设计取舍生成独立硬件需求",
+          "mechanism": "用户是否持续获得拍摄、通信、导航/交互等价值，结合价格、舒适外观、隐私接受和渠道触达，决定独立智能眼镜/家用设备的购买与复购。品牌/渠道扩张可放大设备数，成本下降或更长续航也扩大可接受人群。OEM按电池/热预算、功能组合和售价决定本地/手机/云端分工及BOM：本地驻留模型和缓存扩大低功耗DRAM/闪存需求，更多卸载则把资源留到邻域。设备数量、配置和已选供应商份额再形成美光采购，不能以终端品牌收入直接确认美光收入。",
+          "current_status": "EssilorLuxottica披露2025年AI眼镜销量超过700万副，2026 Q2该类收入接近翻倍，已是商业硬件市场而非只有样机；其收入含价格/品牌/产品组合，不等于同比设备数翻倍。Qualcomm本地生成式模型演示说明一条功能路线，未证实美光定点；摄像AI眼镜也不能全部归类为有显示的AR。当前采用已商业化设备继续扩展、计算分工仍分层的判断。",
+          "materiality_context": "实用性/价格与佩戴/隐私接受决定采用分母和复购，渠道/品牌扩大触达，是数百万设备市场的需求起点；外观改善不必增加每台bits。电池/热预算限制本地配置，OEM功能及计算位置决定资源落在眼镜、手机还是云端，短期可比单纯模型规模更重要。条件敏感度：设备数+20%而平均本地容量-10%，同份额下bits约+8%，不是当前预测；效率提升可通过价格/续航反馈扩大销量。供应商份额决定MU捕获；700万以上实物销售已大于实验室路线的规模基础，但没有可比BOM时不能与7000台高端人形比较内存收入。",
+          "scope_boundary": "独立智能眼镜、AR及其他消费嵌入式设备；不把所有AI眼镜视为AR或把配对手机/云端存储算给本Unit。EssilorLuxottica销量仅为该厂商产品，不外推全球市场份额或美光客户身份。",
+          "ref": [
+            "https://www.essilorluxottica.com/api/getCapContent?download=false&id=283158",
+            "https://www.essilorluxottica.com/en/newsroom/press-releases/q2-h1-2026-results/",
+            "https://www.qualcomm.com/news/onq/2025/06/a-worlds-first-on-glass-gen-ai-demo-qualcomms-vision-for-smart-glasses",
+            "https://www.nxp.com/docs/en/application-note/AN14700.pdf",
+            "D1-O3",
+            "D1-O74"
+          ]
+        },
+        {
+          "name": "全生命周期安全维护要求影响嵌入式选型与市场可达性",
+          "mechanism": "适用联网工业/消费设备的制造商要安排漏洞处置、更新支持和供应链风险管理，安全/支持责任使可维护固件、稳定料号和可信组件成为选型因素。设备更新架构可用双镜像/回滚、签名验证及日志，提高某些本地闪存预留和写入要求，也会增加适配成本；具体容量由实现而非法规数字决定。供应商资料、接口稳定与维护支持影响客户通过合规/采购评估的速度，未满足要求可使设备市场准入或客户项目受阻。",
+          "current_status": "欧委会2026-07-27指南确认CRA报告义务2026-09-11适用、主要义务2027-12-11适用。截止日已处于报告义务阶段和主要义务准备期，不是全部主要义务已经完成实施。其对象是适用数字产品的全生命周期安全；这里把它作为客户选择和产品维护的机制，不认为法律要求特定DRAM容量或所有产品都使用MU。",
+          "materiality_context": "适用范围/准入要求决定受影响设备的市场分母，资格失败对特定项目可有二元影响，远大于为小固件增加几MB的收入。更新支持与组件/资料可信度提高留存和合规采购权重，同时增加OEM及供应商维护成本；主义务日期决定投资/改版集中在哪些平台周期。回滚镜像、日志和写入要求只影响相应闪存部分，通常不能成为全域DRAM大幅增长的论据。接口/料号稳定性降低验证负担但不排除第二来源；当前近端经营仍以价格/既有设备出货为主，2027前平台改版和供应者资格变化更可能修正中期份额。",
+          "scope_boundary": "仅用于适用工业/消费联网设备的客户采购和存储实现；不把CRA套用于已有独立法规覆盖的所有汽车或医疗设备，不提供产品合规法律意见。法律义务与工程配置推断明确分开。",
+          "ref": [
+            "https://digital-strategy.ec.europa.eu/en/policies/cyber-resilience-act",
+            "https://digital-strategy.ec.europa.eu/en/library/commission-publishes-new-guidance-support-timely-cyber-resilience-act-implementation",
+            "D1-O3",
+            "https://investors.micron.com/news/press-release/2026/Micron-Advances-Made-in-America-Memory-With-Manufacturing-Expansion-in-Virginia/default.aspx"
+          ]
+        },
+        {
+          "name": "设备回购、翻新再部署与控制器升级改变新增内存采购的映射",
+          "mechanism": "设备OEM或二手平台回购闲置/旧机器人，经检查、翻新和集成再售给另一客户；保留机械臂及原控制板时，新增部署利用既有内存而不产生全套新初装。升级控制器、视觉或连接模块时只新增被替换部分。更低购置成本扩大预算受限客户的采用，可靠转售残值又可降低原购机者或RaaS融资方的资本风险，反馈到初次采购。",
+          "current_status": "ABB在2020-07-08已披露回购、认证翻新再售及更新控制器的真实服务，KUKA在2024-05-08说明开发买卖二手机器人的KUKA Circle平台。这些截至截点以前的证据确立跨所有者循环配置路径，不是2026年翻新销量/占比测量，也未确立MU供应商身份。原有长生命周期解释保留，本补充区分原客户继续使用与设备转给新客户。",
+          "materiality_context": "能否保留控制板决定单次再部署接近零新增初装还是产生升级模块采购；机械臂再用不说明电子板也全部再用。仅作条件标尺，同样100次部署若20次为完全保留电子板的旧机、其他配置和份额相同，新初装机会由100套变80套；不是观察到的20%份额。翻新价格/资格和集成成本决定新增客户范围，残值及维修风险影响融资能力；廉价旧机替代新机的近期压制与扩大自动化分母的长期反馈可共存。行业运行存量提供可流转资产基础，但不是每年可供翻新的数量。",
+          "scope_boundary": "工业机器人跨所有者再部署、控制/感知电子升级对本Unit采购的影响；不把二手整机销售额、机械零件、RaaS服务费或翻新旧内存价值计作MU新增收入，不将ABB/KUKA服务认作MU客户关系。",
+          "ref": [
+            "https://new.abb.com/news/detail/64305/remanufacturing-old-robots",
+            "https://www.kuka.com/en-at/company/iimagazine/2024/04/sustainability",
+            "https://ifr.org/ifr-press-releases/news/five-million-robots-now-operate-in-factories-globally",
+            "https://ifr.org/ifr-press-releases/news/global-sales-of-professional-service-robots-surge-24-percent"
+          ]
+        }
+      ],
+      "potential_gaps": [
+        {
+          "name": "投资回报与生产组织重构改变自动化采购基础",
+          "why_live": "ROK智能设备有机销售和IFR安装量支持成熟自动化扩张，但地区/行业不均；运行存量也保留能力余量。生产布局、劳动力、质量和资金成本可以改变企业采用机器的意愿，并不需要人形技术突破；工业内存仍来自设备OEM的具体初装与升级，而不是资本开支总金额。",
+          "revision_logic": "修正“既有自动化为经营底座、不同地区不均”的投资强度。企业组织决定新工厂、新产线、旧线软件改造或搬迁旧设备，分别生成不同硬件需求；设备功能、采购份额与交期再影响美光。贸易/政策作为布局输入保留，全球净需求不能由新增一个地区工厂单独推出。",
+          "possibility_space": [
+            {
+              "name": "企业为韧性和近市场生产建设新的自动化线体",
+              "implication": "若新旧厂阶段性并行且新线采用更多检测/追溯设备，可在全球终端产量平稳时增加初装控制器、视觉计算和本地存储。旧线停产或迁移抵消一部分，净效应取决于新增能力和资源复用而非厂房公告金额。"
+            },
+            {
+              "name": "持续缺工和质量损失推动中小客户自动化",
+              "implication": "工资、招聘不稳定和报废成本使原本回收期过长的项目变得可付费；标准化集成降低部署费用，可能拓宽成熟设备市场。采用廉价MCU/传统控制器的增量不能按高端机器人容量估算，但可形成更广的长尾采购。"
+            },
+            {
+              "name": "订单和资金约束使企业推迟非必要升级",
+              "implication": "终端订单减弱、融资昂贵或预算被其他投资占用时，企业先使用现有余量，设备OEM排程和内存采购走弱。项目长期价值不必被否定，但库存和集成周期可能把经营压力延长数季。"
+            },
+            {
+              "name": "制造商以流程和软件优化替代新线投入",
+              "implication": "更好的排程、预测维护及现有设备调优提高产出，工业活动增长不再同幅拉动新硬件。随后触及节拍/功能极限或需要新传感器时才形成采购；这一路径与新建厂可并存，改变每单位工业活动的内存强度。"
+            }
+          ],
+          "ref": [
+            "https://www.rockwellautomation.com/en-us/company/news/press-releases/Rockwell-Automation-Reports-Third-Quarter-2026-Results.html",
+            "https://ifr.org/ifr-press-releases/news/five-million-robots-now-operate-in-factories-globally",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://gxo.com/news_article/gxo-signs-industry-first-multi-year-agreement-with-agility-robotics/"
+          ]
+        },
+        {
+          "name": "付费机器人能否跨任务复制及谁承担扩容风险",
+          "why_live": "IFR显示物流服务机器人已有规模，而人形多数仍专门任务/遥操作；GXO/Agility的多年付费部署把机器人与现场物流系统结合。直接购机和RaaS并存，终端可少付前期资本却把闲置、维护和融资责任集中在服务商。现有付费实例不是通用劳动力已经成熟。",
+          "revision_logic": "修正任务型商业扩张与小规模人形并行的速度及可服务范围。任务成功、维护/远程介入与集成决定客户复购；融资安排决定谁有能力添购。先改善每台工时也能提高行业收入，但只有新增/改造设备才产生内存采购，且本Unit不取得按任务收费收入。",
+          "possibility_space": [
+            {
+              "name": "物流客户把已跑通的任务模板推广至多仓库",
+              "implication": "稳定搬运、拣选或检测的节拍与低介入成本使项目从单点复用到多个地点，供应商扩大设备生产和重复采购。标准接口可降低集成门槛并有利既定BOM扩散，硬件增量比单一演示更具持续性。"
+            },
+            {
+              "name": "人形获得新任务能力但仍依赖昂贵人工支持",
+              "implication": "演示更广、客户试用增多，可扩大早期工程采购和高容量配置关注；若遥操作/维护抵消劳动节省，长期规模仍受限。不能把试点台数或能力升级直接视作自我资助的多年量产。"
+            },
+            {
+              "name": "RaaS以可靠回报吸引资金并进入预算受限客户",
+              "implication": "服务商若用可复用设备和稳定合同建立回报，使用费模式扩大终端可达性，并把新设备采购集中到少数车队经营者。集中买方可压价且倾向统一BOM，规模增长不必等于MU份额或利润同比增长。"
+            },
+            {
+              "name": "服务商融资退出或大客户终止合同",
+              "implication": "资金方重新定价残值、运营者维护成本过高或客户不给续约，可冻结新机采购并释放闲置设备。部署意愿尚在却没有资本承接时需求滞后；可转售/再部署的旧设备又可能部分服务新客户，降低全新OEM订单。"
+            }
+          ],
+          "ref": [
+            "https://ifr.org/ifr-press-releases/news/global-sales-of-professional-service-robots-surge-24-percent",
+            "https://ifr.org/downloads/press_docs/Market_Presentation_WR_Press_Conference_2026.pdf",
+            "https://gxo.com/news_article/gxo-signs-industry-first-multi-year-agreement-with-agility-robotics/",
+            "https://developer.nvidia.com/blog/introducing-nvidia-jetson-thor-the-ultimate-platform-for-physical-ai/",
+            "https://new.abb.com/news/detail/64305/remanufacturing-old-robots"
+          ]
+        },
+        {
+          "name": "端侧模型效率与场地共享计算改变容量层级和设备数量",
+          "why_live": "高端T5000的128GB LPDDR5X与小模型MCU形成真实不同层级，Halos Outside-In提供外部感知架构；管理层的人形高容量路径是十年末前瞻。电池、连接、时延和安全限制选择，不能以“AI设备”统一容量，也不能把开发套件BOM当所有量产产品。",
+          "revision_logic": "修正“高容量本地AI是一个分支而非全市场平均”的分支权重及新用途。效率在固定任务下减少资源，但低成本/低功耗可扩大设备数；场地共享把一些资源移出每台设备，离线和安全责任又可迫使回到本地。DRAM、模型/日志闪存及邻域服务器应分开归属。",
+          "possibility_space": [
+            {
+              "name": "OEM将可用小模型下沉至大量传感器和传统控制器",
+              "implication": "模型压缩和专用加速使低成本设备获得检测/预测功能，既有高端单台容量叙事被更广而轻量的设备网络补充。内部SRAM部分不属于MU DRAM，外部闪存/托管存储的增量仍可能存在；设备量增长需抵消平均本地容量下降才带来更多bits。"
+            },
+            {
+              "name": "多任务自主机器人采用更大本地工作集",
+              "implication": "离线推理、复杂感知与多任务并行扩大高带宽DRAM及模型存储机会，改变高端产品组合和工程投入回收。量产客户必须选择MU合格BOM，不能从Thor配置或LPDDR6送样直接确认收入。"
+            },
+            {
+              "name": "园区运营者以外部感知和共享计算服务多个设备",
+              "implication": "场地传感器和少数计算节点承接重复工作，低成本终端可增加部署，但每台机上内容减少。嵌入式场地节点仍在本Unit，通用园区服务器/云端则归邻域；共享层并非把原本完整BOM按机器数再算一遍。"
+            },
+            {
+              "name": "连接中断、安全责任和隐私迫使关键任务回到设备",
+              "implication": "假设共享架构在响应或责任上难以被接受，OEM保留独立安全资源及本地模型，抵消原定卸载节省。新增容量可能伴随更高售价/功耗抑制采用，安全设计成功不必令总bits无条件上升。"
+            }
+          ],
+          "ref": [
+            "https://developer.nvidia.com/blog/introducing-nvidia-jetson-thor-the-ultimate-platform-for-physical-ai/",
+            "https://www.nxp.com/docs/en/application-note/AN14700.pdf",
+            "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Halos-for-Robotics-the-Industrys-First-Full-Stack-Safety-System-for-Physical-AI/default.aspx",
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "D1-O103"
+          ]
+        },
+        {
+          "name": "平台化与第二来源改变工业长尾项目的美光捕获",
+          "why_live": "长生命周期和可靠性验证使现役料号留存，但Winbond等仍有成熟存储替代；当前材料未提供本Unit具名SCA客户覆盖，汽车协议不能直接迁移为工业采购保障。MCU、模块和设备OEM控制不同采购入口，故设备市场平稳也不意味着MU份额平稳。",
+          "revision_logic": "修正“稳定供货留存与后继设计竞争并行”的采购分配。标准模块可跨设备放大单次定点；统一接口和第二来源则降低切换成本。长期支持的价值由客户停机成本、厂商控制BOM能力及替代的真实资格决定，而非工业安装量一个分母。",
+          "possibility_space": [
+            {
+              "name": "系统厂把已验证MU存储模块复用于多类设备",
+              "implication": "复用控制/视觉平台使一个设计进入多客户、多应用，降低工程重复费用并提高可捕获份额。若后继平台保持接口和支持，经营可比设备增长更快；平台标准化也可能日后方便其他供应者换入。"
+            },
+            {
+              "name": "客户在新一代平台完成可互换的第二来源",
+              "implication": "预先验证竞争料号或重新设计接口减少单源风险，同样设备量下订单按价格/交期分配，削弱长供承诺的溢价和留存。目录可用并不等于资格完成，但一旦完成采购弹性会实质改变。"
+            },
+            {
+              "name": "大客户集中采购且减少定制SKU",
+              "implication": "OEM/模块整合把长尾规格改为少数标准产品，降低支持和备货成本，却增强买方议价并重分配原料号收入。MU若赢得标准平台可扩大规模，若专用优势被取消则失去份额；终端需求不变也能产生不同经营路径。"
+            },
+            {
+              "name": "地区准入或可信供应偏好重排客户名单",
+              "implication": "买方更强调本地来源、安全资料或供应链可信度，MU可在部分项目胜出、在其他地区失去可服务机会。制造本地化只是条件之一，政策准入及规则由邻域深化，不将中国/其他竞争厂商新增供给本身等同MU订单流失。"
+            }
+          ],
+          "ref": [
+            "https://winbond.com/export/sites/winbond/product-selection-guide/file/2026-Winbond-Customized-Memory-Solution.pdf?__locale=en",
+            "https://investors.micron.com/news/press-release/2026/Micron-Advances-Made-in-America-Memory-With-Manufacturing-Expansion-in-Virginia/default.aspx",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://digital-strategy.ec.europa.eu/en/policies/cyber-resilience-act",
+            "D1-O3",
+            "D1-O74"
+          ]
+        },
+        {
+          "name": "有效供给与渠道行为让设备景气和存储订单脱钩",
+          "why_live": "工业小批次、旧代及长尾SKU需要特定合格能力，Manassas目标尚未全部兑现；公司共享资源和配套输入约束真实存在，却未给出工业短缺量。OEM与分销库存又能前置或延后采购，不能按名义全厂bits或订单表面增幅断定终端景气。",
+          "revision_logic": "修正成熟设备扩张向本季交付的转换率，以及长供价值和库存波动的相对重要性。新增合格能力、公司分配、配套料件和渠道风险承担共同决定交付；能力恢复可一方面补缺，另一方面引发安全库存释放与竞争降价。它与客户份额主题相连但关注采购时点和可交付资源。",
+          "possibility_space": [
+            {
+              "name": "长尾合格供给恢复，设备OEM释放积压项目",
+              "implication": "特定料号成为瓶颈时供货改善可支持工业设备交付及MU满足率，新增能力具有实际经营价值。若客户缺的是控制器/其他器件或需求已取消，单独增加内存供给不会同幅释放订单。"
+            },
+            {
+              "name": "配套短缺或资源优先级变化限制工业SKU",
+              "implication": "客户需要的料号虽有总量但没有相应封测、固件组件或已验证产出，交付滞后；若长期合同不足以保障分配，客户建设替代来源的意愿上升。短期高报价可能伴随失单和更差长期留存，不能只算提价利好。"
+            },
+            {
+              "name": "分销商降低库存风险并回收此前前置订单",
+              "implication": "交期正常化或终端降温使渠道主动减仓，工业设备生产稳定也能出现MU采购骤弱。现金和价格压力先在渠道暴露，去库完成后的补购恢复与终端复苏不是同一事件。"
+            },
+            {
+              "name": "OEM为停产风险大规模最后采购",
+              "implication": "旧料号退出、认证替换慢时客户一次性买足余生用量，短期收入和客户库存增长但以后新采购被透支。能否提供长期替代料号影响该平台留存；最后采购不是可重复年增长，也不需要假设MU已宣布具体料号退出。"
+            }
+          ],
+          "ref": [
+            "https://investors.micron.com/news/press-release/2026/Micron-Advances-Made-in-America-Memory-With-Manufacturing-Expansion-in-Virginia/default.aspx",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://winbond.com/export/sites/winbond/product-selection-guide/file/2026-Winbond-Customized-Memory-Solution.pdf?__locale=en",
+            "D1-O31",
+            "D1-O57"
+          ]
+        },
+        {
+          "name": "价格、客户预算与工业产品组合改变增长质量",
+          "why_live": "合并AEBU当前售价贡献强，但工业包含NOR、托管NAND、DRAM和SSD等不同规格和渠道。独立净价、量、毛利及账期尚不可分摊，机器人/眼镜终端收入也不是MU收入。价格反应、长尾备货及工程摊销可在设备活动不变时改变利润。",
+          "revision_logic": "修正由合并高收入/高毛利外推工业独立持续性的解释。净价传递、SKU组合和成本共同决定收入质量，客户预算又反馈到减配、交货时点与替代选择。量与价格不能只相乘向上外推，合并84%毛利仅保留为Factor条件标尺，不成为本Unit利润预测。",
+          "possibility_space": [
+            {
+              "name": "紧缺报价传至已供工业SKU且客户重视连续性",
+              "implication": "停线成本高、替换验证慢使客户接受较高净价，MU收入可能快于设备量增长。收益的持续性取决于重谈覆盖和竞争供给；客户预购或削减其他设备预算可能令当前利润与未来真实消耗分化。"
+            },
+            {
+              "name": "客户改用低容量及更简单托管方案守住预算",
+              "implication": "高内存费用促使OEM减配、优化日志或采用更便宜集成方案，行业价格利得部分被产品组合和实物需求抵消。预算释放可维持设备销量，不能据此说应用失去价值；MU参与取决于替代方案是否仍为其产品。"
+            },
+            {
+              "name": "高容量量产定点改变组合而非只有提价",
+              "implication": "若机器人、视觉或智能边缘客户把新品从评估变为持续量产，收入可转向高价值LPDDR/SSD及管理存储。工程费用先行、初期良品和销量决定何时摊薄，量产定点提升不保证立刻拥有合并分部毛利。"
+            },
+            {
+              "name": "客户要求降价或更长账期，渠道库存承压",
+              "implication": "净价正常化与回款延长可同时降低利润和资金质量，即便设备生产未减。旧代降本因资格延迟不能立即补偿；如果更多披露显示AEBU增长主要是其他终端或价格，工业实物持续性需单独重估。"
+            }
+          ],
+          "ref": [
+            "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+            "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://www.nxp.com/docs/en/application-note/AN14700.pdf",
+            "https://winbond.com/export/sites/winbond/product-selection-guide/file/2026-Winbond-Customized-Memory-Solution.pdf?__locale=en"
+          ]
+        },
+        {
+          "name": "智能眼镜的分发、日常价值与社会信任改变独立终端规模",
+          "why_live": "EssilorLuxottica已披露2025年AI眼镜七百万以上销量和2026 Q2收入接近翻倍，证明商业市场而非只有样机；收入仍不是单位数。Qualcomm本地生成式演示与Meta 2026年7月关于拍摄提示、LED防篡改和本地照片存储的说明，分别显示功能路线及信任设计的现实约束，未证明MU供货。",
+          "revision_logic": "修正商业化智能边缘延伸的设备分母与本地BOM。品牌/渠道、实用应用和付费方式可扩大采用，旁观者隐私与佩戴场景可缩小使用；电池/热预算让本地模型、配对手机和云端成为不同产品选择。终端用户增长和每台资源可以相反，不能把所有眼镜视为有显示AR。",
+          "possibility_space": [
+            {
+              "name": "品牌渠道把眼镜功能变为日常通信和工作工具",
+              "implication": "眼镜零售、处方适配、企业场景或服务套餐使更多人愿意购买并持续使用，可将新增硬件从科技爱好者扩至广泛人群。若照片、音频和轻量助手足够，销量提升未必需要大模型本地驻留；规模仍给低功耗存储机会，前提是MU赢得BOM。"
+            },
+            {
+              "name": "更强显示与离线助手形成独立高配置系列",
+              "implication": "OEM推出显示交互、更大本地模型和缓存，增加相应DRAM/闪存内容并形成高价组合。功耗、重量和售价可能限制设备量，不能用高端配置替换数百万现有摄像眼镜的平均值。"
+            },
+            {
+              "name": "续航与轻薄优先使手机或云端承担复杂任务",
+              "implication": "设备保留轻量接口、短时缓存和拍摄功能，平均本地内容增长缓慢甚至下降，却可能因舒适和低售价增加销量。转到配对手机/云端的资源由邻域承接；低内容和高销量的净效应按乘积判断。"
+            },
+            {
+              "name": "隐私滥用引发场所限制、退购或可信设计改革",
+              "implication": "假设公众事件使工作/娱乐场所限制拍摄设备或消费者拒买，购买分母与复购会受压，存储性能更强也不能补偿使用受限。品牌若用可信提示、限制采集或本地数据处理恢复接受，可能降低留存数据量或增加本地处理；不能无条件把隐私要求视为NAND增长。"
+            }
+          ],
+          "ref": [
+            "https://www.essilorluxottica.com/api/getCapContent?download=false&id=283158",
+            "https://www.essilorluxottica.com/en/newsroom/press-releases/q2-h1-2026-results/",
+            "https://www.qualcomm.com/news/onq/2025/06/a-worlds-first-on-glass-gen-ai-demo-qualcomms-vision-for-smart-glasses",
+            "https://about.fb.com/news/2026/07/metas-ai-glasses-your-questions-answered/",
+            "https://www.nxp.com/docs/en/application-note/AN14700.pdf"
+          ]
+        },
+        {
+          "name": "安全维护与责任要求重新分配设备可达市场和长期支持价值",
+          "why_live": "CRA报告义务已于2026-09适用、主要义务计划2027-12适用；客户需要维护而不是法规指定某个内存容量。机器人安全架构和现场运行又影响可部署任务及集成费用。稳定接口和资料可信度因此具有项目价值，也可能把更多支持成本留给OEM及部件供应者。",
+          "revision_logic": "修正现有料号稳定供货即可支持多年采购的参照。公共规则、事故和大客户责任标准改变可销售设备范围、资格和维护责任；本地固件/日志配置是其中较小且实现相关的通道，更大的影响可能是某一平台准入、客户信任和供应者留存。汽车及另有专门法规产品不自动套用CRA。",
+          "possibility_space": [
+            {
+              "name": "客户以可维护组件和长期支持筛选后继平台",
+              "implication": "主机厂在改版中优先稳定料号、安全资料和可更新架构，MU若满足这些采购要求可增强多年留存并进入新平台；资格/资料不充分则丢失机会。支持服务与工程成本同时增加，不能把准入优势全部算成高毛利收入。"
+            },
+            {
+              "name": "漏洞或机器人事故导致部署暂停并重新划分责任",
+              "implication": "假设现场安全事件使客户停用/延后设备，近期采购受压且保险、审计和集成成本上升。若只需软件更新不会重复初装内存；若恢复部署需隔离资源或本地日志，后继设备内容与安全用途可能扩大，时间和方向不同。"
+            },
+            {
+              "name": "OEM缩减不易长期维护的型号或市场范围",
+              "implication": "合规维护成本使小批次设备退出部分市场、统一SKU或停止旧平台新销售，减少长尾初装机会，也可能增加最后采购/维修备件。平台减少不能直接推定所有存量报废，维护与新机需求要分别判断。"
+            },
+            {
+              "name": "安全更新集中化降低机上存储，但保留离线恢复",
+              "implication": "OEM把非关键日志和管理任务转到受控外部系统降低每台闪存预留，仍保留可信启动/回滚和关键本地安全资源。组件支持和准入权重提高与本地bits下降可以共存，法规实施不是统一容量跃迁。"
+            }
+          ],
+          "ref": [
+            "https://digital-strategy.ec.europa.eu/en/policies/cyber-resilience-act",
+            "https://digital-strategy.ec.europa.eu/en/library/commission-publishes-new-guidance-support-timely-cyber-resilience-act-implementation",
+            "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Halos-for-Robotics-the-Industrys-First-Full-Stack-Safety-System-for-Physical-AI/default.aspx",
+            "https://www.nxp.com/docs/en/application-note/AN14700.pdf",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm"
+          ]
+        },
+        {
+          "name": "机器人循环市场改变扩张对新机的依赖和融资残值",
+          "why_live": "ABB既有回购及认证翻新服务包含控制器升级，KUKA已提出二手买卖平台，说明设备可在不同所有者间再配置，不只是同一工厂延长寿命。IFR运行存量形成资产基础但没有当前翻新市场份额；RaaS把残值和闲置风险留给经营者，使流转市场可能影响新机融资。",
+          "revision_logic": "修正“新增使用主要经设备OEM新生产进入内存需求”的工作参照。自动化部署与新初装bits可脱钩，控制器升级只采购部分新电子；与此同时更廉价设备扩大采用、可兑现残值降低融资风险，可能反向支持新机购买。它与任务商业化/生命周期相连，但核心变化是跨买方的存量资产再分配。",
+          "possibility_space": [
+            {
+              "name": "工厂退出和平台换代释放旧机给预算受限买家",
+              "implication": "翻新平台把闲置机器人转给新工厂/中小客户，部署和自动化覆盖增加但全新设备OEM订单可能减少。保留原控制板时新增MU初装需求很低；只有维修和升级替换的电子资源属于新采购，不能按每次转售计算完整BOM。"
+            },
+            {
+              "name": "翻新服务把旧机械臂配上新视觉和控制模块",
+              "implication": "既有机械资产与新计算平台结合，可在没有全新机器人生产时形成DRAM/闪存升级需求，产品结构由成熟料号部分转向新模块。每台机会由被替换电子决定，旧臂再利用并不必然意味着内存需求下降。"
+            },
+            {
+              "name": "可靠二手残值吸引RaaS或租赁资金",
+              "implication": "若资产可再部署、认证降低买方风险，融资方更愿意承接车队设备，原用户前期资本负担下降并促进新机扩容。残值假设必须可兑现；廉价旧机对新机的替代可同时发生，不将融资改善单独计成已实现采购。"
+            },
+            {
+              "name": "旧控制器维护或安全兼容性限制二次市场",
+              "implication": "若支持期、可靠性和新任务适配费用高，低二手标价不能带来可用低总成本，旧机只能用于少数任务或报废。新机需求获得支撑、残值融资优势变弱；新控制器若能解除限制则返回升级路径，而不是整个循环市场统一消失。"
+            }
+          ],
+          "ref": [
+            "https://new.abb.com/news/detail/64305/remanufacturing-old-robots",
+            "https://www.kuka.com/en-at/company/iimagazine/2024/04/sustainability",
+            "https://ifr.org/ifr-press-releases/news/five-million-robots-now-operate-in-factories-globally",
+            "https://ifr.org/ifr-press-releases/news/global-sales-of-professional-service-robots-surge-24-percent",
+            "https://digital-strategy.ec.europa.eu/en/policies/cyber-resilience-act"
+          ]
+        },
+        {
+          "name": "公共道路边缘采购打开不同于工厂资本开支的嵌入式市场",
+          "why_live": "2024美国V2X部署计划与公共拨款确立道路机构和地方伙伴作为采购者；CIP研究展示路侧融合感知的可行用途。它们支持路侧IoT/嵌入式计算路径，不证明全国覆盖、2026持续预算或美光定点。道路安全和多车共享价值可以使采购不同于工业企业按设备产出回收投资。",
+          "revision_logic": "探索工业/嵌入式Unit中新的任务与公共买方，而非把所有边缘需求归机器人。道路端信息、传感器融合及本地留存形成设备BOM，由预算、互操作、运维和技术分工决定节点数/容量；车端减少的计算不必一比一移成路侧内存。通用服务器和云端由邻域负责，汽车Unit仅表达车端影响，保持相同协作前提。",
+          "possibility_space": [
+            {
+              "name": "交通机构把示范走廊扩为持续维护的路侧设备网络",
+              "implication": "信号、传感器、消息及嵌入式融合节点形成公共采购和后续更换需求，在工厂设备资本开支平稳时仍可扩展本Unit。户外可靠性、供货寿命和资格决定可捕获料号，拨款总额不能按内存比例无依据换算。"
+            },
+            {
+              "name": "运营者把复杂感知集中在少数共享站点",
+              "implication": "集中融合减少每个路侧终端的高容量需求、扩大轻量通信节点覆盖，机会从高配设备转向数量与专用存储组合。若复杂处理属于服务器，则相关内存留在邻域；公共设备增多不等于每节点拥有高端机器人BOM。"
+            },
+            {
+              "name": "维护责任和地方预算使项目停留在有限示范",
+              "implication": "初次拨款能买设备却未必覆盖长期运维，互操作或责任未解决可使扩建推迟。技术可能存在而持续采购缺乏资金；既有节点维护仍可保留少量长周期需求，这与技术失败或道路安全需求消失不同。"
+            }
+          ],
+          "ref": [
+            "https://www.transportation.gov/briefing-room/usdot-releases-national-deployment-plan-vehicle-everything-v2x-technologies-reduce",
+            "https://arxiv.org/abs/2207.08930v2",
+            "https://www.sec.gov/Archives/edgar/data/723125/000072312526000023/mu-20260903.htm",
+            "https://investors.micron.com/news/press-release/2026/Micron-Advances-Made-in-America-Memory-With-Manufacturing-Expansion-in-Virginia/default.aspx"
+          ]
+        }
+      ]
+    }
+  ]
+}

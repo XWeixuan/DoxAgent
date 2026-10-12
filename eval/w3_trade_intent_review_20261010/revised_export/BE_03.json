@@ -1,0 +1,2641 @@
+{
+  "format": "doxagent.w3-trade-intent-review.v2",
+  "ticker": "BE",
+  "window": {
+    "since_utc": "2026-09-19T12:53:20.738930+00:00",
+    "as_of_utc": "2026-10-10T12:53:20.738930+00:00"
+  },
+  "part": 3,
+  "record_count": 5,
+  "records": [
+    {
+      "intent_id": "trade:case_b9c894cab25d44f9a460b3728e910d48",
+      "ticker": "BE",
+      "case_id": "case_b9c894cab25d44f9a460b3728e910d48",
+      "intent_released_at_utc": "2026-09-29T15:01:50.506090+00:00",
+      "intent_status": "DELIVERY_FAILED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_2741b4f486934318be150e3800a5bec5",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Bloom Energy",
+              "Fremont, California",
+              "158,000-square-foot facility"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Bloom Energy purchased a 158,000-square-foot facility in Fremont, California, to expand its operations.",
+            "subject_time": "September 29, 2026 facility purchase"
+          },
+          {
+            "assertion_state": "PLAN",
+            "entities": [
+              "Ameren",
+              "Missouri regulated electric utility",
+              "Natural-gas fuel cells"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Ameren Corp., through its regulated Missouri electric utility, recommended adding 500 megawatts of natural-gas fuel cells through 2030.",
+            "subject_time": "Through 2030"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "Bloom has moved from a stated expansion plan to an executed purchase of a 158,000-square-foot Fremont facility, increasing the probability and potential timing of additional capacity. Ameren's recommendation to add 500 MW of natural-gas fuel cells through 2030 adds a named utility demand pipeline. Together these improve capacity and demand visibility, although they do not yet establish qualified output, a binding order, or recognized revenue.",
+          "prior_expectation": "Before publication, BE's baseline included management's plan to double factory capacity by year-end 2026 with approximately $100 million of investment, but that plan remained unexecuted and qualified throughput, shipments, and customer acceptance were unproven. AI-data-center demand was strong, yet no specific Ameren 500 MW opportunity was established in the operating baseline. FY2026 guidance remained $3.9-$4.2 billion of revenue with value realization dependent on capacity and project conversion.",
+          "reason": "TRADE—LONG. The facility purchase is a concrete capital commitment that advances the capacity path, while the Ameren recommendation provides a potentially material utility opportunity. The transmission from facility expansion to qualified output and from utility recommendation to future fuel-cell orders is directionally clear. Missing qualification, exact capacity, and binding-contract evidence limit confidence and expected magnitude, but do not remove the positive expectation gap.",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "E21 recorded Bloom Energy's plan to double factory capacity by year-end 2026, but this message adds the executed purchase of a 158,000-square-foot Fremont facility for expansion. It also adds Ameren's recommendation to add 500 MW of natural-gas fuel cells through 2030, a new named utility demand opportunity.",
+          "reference_ids": [
+            "E21"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No current Policy is matched. The facility purchase does not disclose qualified Energy Server units, MW throughput, production run-rate, or shipment availability, and Ameren's recommendation is not a binding order, allocation, or acceptance milestone. The facts therefore do not satisfy the relevant manufacturing or customer-adoption trigger boundaries."
+        },
+        "w3_case_id": "w3_2741b4f486934318be150e3800a5bec5"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_b9c894cab25d44f9a460b3728e910d48",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-29T15:01:50.679289Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 308.231719
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-29T14:56:42.447570Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2609072,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-29",
+        "source": {
+          "binding_id": "BE:ibkr_news",
+          "kind": "api",
+          "name": "IBKR News API",
+          "source_id": "ibkr_news"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_b3c738f193154dcb8559b20836ca7367",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Why Bloom Energy and AI Stocks Rise Even as OpenAI Safety Concerns Persist -- Barrons.com"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "DELIVERY_FAILED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "READY",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-29T14:56:42.447570Z",
+        "completed_at": "2026-09-29T15:01:50.679289Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E69",
+            "E21",
+            "E14"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [
+            {
+              "event_id": "E21",
+              "fact_ids": [
+                "F52"
+              ]
+            }
+          ],
+          "reason": "当前消息存在两个未被覆盖的核心新事实：(1) Bloom Energy 实际购买了 Fremont 158,000平方英尺工厂——E21 仅记录了2026-09-09的扩展产能\"计划\"(PLAN)，不含具体地产采购这一已执行动作(ACTUAL)；(2) Ameren 通过其密苏里受监管电力公司建议到2030年增加500MW天然气燃料电池——现有 Event 中无任何覆盖。股价从盘前约2%到全天涨14%属市场反应幅度变化，不构成独立核心新闻事实。",
+          "reference_ids": [
+            "E21"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [
+            "pol_1ab64bb336f6624cd158",
+            "pol_b2475a5727c6b73f0d18",
+            "pol_a59e4ace72f858b7376f"
+          ],
+          "reason": "消息提供两项具体事实：(1) Bloom Energy 在加州 Fremont（当前制造基地所在地）购入 158,000 平方英尺设施以扩大运营，直接触及 Fremont 扩产里程碑、installed capacity 与 commissioning 相关政策的触发路径，精简信息不足以判定合格释放量或产能达标是否已达最终边界；(2) Ameren 密苏里监管公用事业推荐 2030 年前新增 500 MW 天然气燃料电池，属行业需求信号，但未见与任何具体 criterion 的直接触发对应，未召回。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息核心事实为：(1) Bloom Energy股价因OpenAI相关事件后反弹14%；(2) Fremont市LinkedIn宣布Bloom购入158,000平方英尺设施用于扩建；(3) Morgan Stanley分析师将其解读为需求强劲信号；(4) Ameren建议2030年前增加500MW天然气燃料电池。所有事实均处于扩产投资/备货准备阶段，未披露任何设施级合格units/MW产出、两个可比周期的run-rate、生产计划达成或可供出货状态，也未陈述合格释放量低于计划或人员缺口导致错过窗口。三个Candidate Policy的trigger_boundary均未达到，全部NO HIT。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Bloom Energy",
+                "Fremont, California",
+                "158,000-square-foot facility"
+              ],
+              "occurrence_date": "2026-09-29",
+              "proposition": "Bloom Energy purchased a 158,000-square-foot facility in Fremont, California, to expand its operations.",
+              "subject_time": "September 29, 2026 facility purchase"
+            },
+            {
+              "assertion_state": "PLAN",
+              "entities": [
+                "Ameren",
+                "Missouri regulated electric utility",
+                "Natural-gas fuel cells"
+              ],
+              "occurrence_date": "2026-09-29",
+              "proposition": "Ameren Corp., through its regulated Missouri electric utility, recommended adding 500 megawatts of natural-gas fuel cells through 2030.",
+              "subject_time": "Through 2030"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "Bloom has moved from a stated expansion plan to an executed purchase of a 158,000-square-foot Fremont facility, increasing the probability and potential timing of additional capacity. Ameren's recommendation to add 500 MW of natural-gas fuel cells through 2030 adds a named utility demand pipeline. Together these improve capacity and demand visibility, although they do not yet establish qualified output, a binding order, or recognized revenue.",
+            "prior_expectation": "Before publication, BE's baseline included management's plan to double factory capacity by year-end 2026 with approximately $100 million of investment, but that plan remained unexecuted and qualified throughput, shipments, and customer acceptance were unproven. AI-data-center demand was strong, yet no specific Ameren 500 MW opportunity was established in the operating baseline. FY2026 guidance remained $3.9-$4.2 billion of revenue with value realization dependent on capacity and project conversion.",
+            "reason": "TRADE—LONG. The facility purchase is a concrete capital commitment that advances the capacity path, while the Ameren recommendation provides a potentially material utility opportunity. The transmission from facility expansion to qualified output and from utility recommendation to future fuel-cell orders is directionally clear. Missing qualification, exact capacity, and binding-contract evidence limit confidence and expected magnitude, but do not remove the positive expectation gap.",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "E21 recorded Bloom Energy's plan to double factory capacity by year-end 2026, but this message adds the executed purchase of a 158,000-square-foot Fremont facility for expansion. It also adds Ameren's recommendation to add 500 MW of natural-gas fuel cells through 2030, a new named utility demand opportunity.",
+            "reference_ids": [
+              "E21"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "No current Policy is matched. The facility purchase does not disclose qualified Energy Server units, MW throughput, production run-rate, or shipment availability, and Ameren's recommendation is not a binding order, allocation, or acceptance milestone. The facts therefore do not satisfy the relevant manufacturing or customer-adoption trigger boundaries."
+          },
+          "w3_case_id": "w3_2741b4f486934318be150e3800a5bec5"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "60e0f187d5d5c62586202b8caa49d82c7bc6c12596463353791fd7c0e0506ba4",
+            "content_type": "text/plain",
+            "sha256": "7414cef43ab3c9dcac027ce26ff2b2bebc0725d2e3d07c5993051a0541261b67",
+            "size_bytes": 3840
+          },
+          "case": {
+            "case_id": "case_b9c894cab25d44f9a460b3728e910d48",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-29T14:56:34.627343Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-29T14:56:42.229195Z",
+          "revision": 1,
+          "row_revision": 2457262,
+          "source": {
+            "binding_id": "BE:ibkr_news",
+            "kind": "api",
+            "name": "IBKR News API",
+            "source_id": "ibkr_news"
+          },
+          "source_published_at": "2026-09-29T14:56:00Z",
+          "standard_message_id": "std_95d9448c52a645b1b4104a66e07cfb1a",
+          "stream_item_id": "stream_b3c738f193154dcb8559b20836ca7367",
+          "stream_offset": 306,
+          "stream_published_at": "2026-09-29T14:56:42.234717Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Why Bloom Energy and AI Stocks Rise Even as OpenAI Safety Concerns Persist -- Barrons.com"
+          },
+          "url": "https://www.interactivebrokers.com/en/trading/providers.php",
+          "body_text": "By Callum Keown and Kit Norton The stock market doesn't like to dwell on artificial-intelligence safety fears too long. That's a good thing. After OpenAI's decision to pause the training of its latest AI models sparked a sharp selloff Monday, investors might've expected the worst Tuesday after it scrapped the launch of one altogether. But investors would've been wrong, and pleasantly so with several AI-related stocks booking substantial advances. Bloom Energy, the supplier of power solutions for data centers, rose 14% to $300.13 and was one of the best-performing stocks in the S&P 500 for the trading session. That's quite the reversal in fortunes after Bloom Energy fell nearly 9% and was the S&P 500's worst performer on Monday. One of the reasons for the sharp jump in the stock was that Fremont, Calif., home to Bloom Energy's current manufacturing site, said on LinkedIn that the company has purchased a 158,000-square-foot facility to expand its operations. Morgan Stanley analyst David Arcaro said in a research note it's an indication of \"continued strong demand\" for Bloom Energy. \"Bloom has been very thoughtful about its intention to expand capacity, only committing to do so when demand requires it. We think the purchase of a new facility would represent another signal that the company is seeing strong customer demand and the need to accelerate its expansion plans,\" Arcaro said. The analyst also noted that Ameren Corp., through its regulated electric utility in Missouri, late Monday recommended adding 500 megawatts of natural gas fuel cells through 2030. \"We would expect this to be an opportunity for Bloom, notably fairly near-term and within the baseline recommendation from AEE,\" Arcaro said. Along with Bloom Energy stock, AI infrastructure provider Vertiv Holdings and memory chip maker Micron rose 3.5% and 2.5%, respectively. The tech-heavy Nasdaq Composite was up 0.2%, outperforming S&P 500 and Dow Jones Industrial Average. There isn't much room for nuance when it comes to knee-jerk stock market reactions. Both OpenAI developments are giving off the same signal-a threat to the assumption that the AI boom will continue to grow at a rapid pace. The necessary damage was done Monday in response to that signal. There's also a buzz ahead of OpenAI's developer conference later on Tuesday. A flurry of announcements could boost AI-related stocks. The 2026 DevDay will kick off with a keynote by CEO Sam Altman at 1 p.m. Eastern time. It's also worth noting that the ChatGPT maker said it has other new models coming soon that do meet the safety bar. \"For anything regarding safety and alignment, there's a trade off. You really do need to find what's the right line between staying within scope, but also avoiding laziness in terms of how the model actually pursues tasks even when it hits friction,\" OpenAI's head of safety systems Saachi Jain said in an emailed statement to Barron's. She added that the GPT-6.1 Astra model \"didn't quite meet the bar\" in terms of staying within scope and authorization and how it communicates back to the user. Write to Callum Keown at callum.keown@dowjones.com and Kit Norton at kit.norton@barrons.com This content was created by Barron's, which is operated by Dow Jones & Co. Barron's is published independently from Dow Jones Newswires and The Wall Street Journal. (END) Dow Jones Newswires September 29, 2026 10:56 ET (14:56 GMT) Copyright (c) 2026 Dow Jones & Company, Inc. The statements in this document shall not be considered as an objective or independent explanation of the matters. Please note that this document (a) has not been prepared in accordance with legal requirements designed to promote the independence of investment research, and (b) is not subject to any prohibition on dealing ahead of the dissemination or publication of investment research."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_95d9448c52a645b1b4104a66e07cfb1a:0\"]",
+          "created_at": "2026-09-29T15:01:50.446281Z",
+          "dedupe_key": "bc0ae90175f236daadcb47e9ef6c60d84b7361d3c8899a6590fd82e04f469507",
+          "entities": [
+            "Bloom Energy",
+            "Fremont, California",
+            "158,000-square-foot facility"
+          ],
+          "occurrence_date": "2026-09-29",
+          "originating_node": "W3",
+          "proposition": "Bloom Energy purchased a 158,000-square-foot facility in Fremont, California, to expand its operations.",
+          "provisional_event_id": "E107",
+          "subject_time": "September 29, 2026 facility purchase"
+        },
+        {
+          "assertion_state": "PLAN",
+          "candidate_id": "[\"runtime-v2-msg:std_95d9448c52a645b1b4104a66e07cfb1a:1\"]",
+          "created_at": "2026-09-29T15:01:50.465695Z",
+          "dedupe_key": "976dd943fd0b34c0b618fd09de01c526fb744f7fee3f77a2c5896483410098ed",
+          "entities": [
+            "Ameren",
+            "Missouri regulated electric utility",
+            "Natural-gas fuel cells"
+          ],
+          "occurrence_date": "2026-09-29",
+          "originating_node": "W3",
+          "proposition": "Ameren Corp., through its regulated Missouri electric utility, recommended adding 500 megawatts of natural-gas fuel cells through 2030.",
+          "provisional_event_id": "E108",
+          "subject_time": "Through 2030"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_b9c894cab25d44f9a460b3728e910d48",
+            "status": "DELIVERY_FAILED",
+            "released_at": "2026-09-29T15:01:50.506090+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-29",
+            "delivery_failure": {
+              "code": "PROFILE_VALIDATION_FAILED",
+              "detail": "旧版 v2-delivery 的 ExecutionProfile 不支持冻结的 SHARED_CYCLE Profile：仍要求 target_notional_usd，且拒绝新增仓位参数。",
+              "status": "FAILED"
+            },
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_2741b4f486934318be150e3800a5bec5",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "case_id": "case_b9c894cab25d44f9a460b3728e910d48",
+              "direction": "LONG",
+              "entry_reason": "PROFILE_VALIDATION_FAILED: 旧版 v2-delivery 的 ExecutionProfile 不支持冻结的 SHARED_CYCLE Profile：仍要求 target_notional_usd，且拒绝新增仓位参数。",
+              "entry_result": null,
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_b9c894cab25d44f9a460b3728e910d48",
+              "execution_reason_codes": [
+                "DELIVERY_FAILED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "REJECTED",
+              "intent_id": "trade:case_b9c894cab25d44f9a460b3728e910d48",
+              "intent_status": "DELIVERY_FAILED",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-29T15:01:50.506090Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "DELIVERY_FAILED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "DELIVERY_FAILED"
+        ],
+        "executor_execution_record_exists": false,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      },
+      "estimated_pnl": {
+        "state": "ESTIMATED",
+        "basis": "saved IBKR historical TRADES ticks; intention-time entry and 15:30 America/New_York cycle exit",
+        "entry_reference_price_usd": "297.68",
+        "exit_reference_price_usd": "291.45",
+        "entry_target_utc": "2026-09-29T15:01:50.506090+00:00",
+        "cycle_end_utc": "2026-09-29T19:30:00+00:00",
+        "cycle_end_et": "2026-09-29T15:30:00-04:00",
+        "direction": "LONG",
+        "return_pct": "-2.0929",
+        "pnl_usd_per_share": "-6.2300",
+        "classification": "loss",
+        "estimated_total_pnl_usd": null,
+        "total_pnl_unavailable_reason": "No simulated position quantity was specified; use percent return and USD per share.",
+        "entry_evidence": {
+          "query_key": "BE|2026-09-29T15:01:50.506090+00:00|entry",
+          "status": "ok",
+          "selected": {
+            "exchange": "FINRA",
+            "offset_seconds": 0.49391,
+            "price_usd": 297.68,
+            "special_conditions": "    ",
+            "timestamp_utc": "2026-09-29T15:01:51+00:00",
+            "unreported": false
+          },
+          "first_event_utc": "2026-09-29T15:01:51+00:00",
+          "error": null
+        },
+        "exit_evidence": {
+          "query_key": "BE|2026-09-29T19:30:00+00:00|exit",
+          "status": "ok",
+          "selected": {
+            "exchange": "FINRA",
+            "offset_seconds": 0.0,
+            "price_usd": 291.45,
+            "special_conditions": "    ",
+            "timestamp_utc": "2026-09-29T19:30:00+00:00",
+            "unreported": false
+          },
+          "first_event_utc": "2026-09-29T19:30:00+00:00",
+          "error": null
+        },
+        "pricing_unavailable_reason": null,
+        "cost_assumptions": "No slippage, bid-ask spread, fees or financing costs."
+      }
+    },
+    {
+      "intent_id": "trade:case_bb3f60a12775493baf757cde0e66a1c8",
+      "ticker": "BE",
+      "case_id": "case_bb3f60a12775493baf757cde0e66a1c8",
+      "intent_released_at_utc": "2026-09-29T16:35:41.408788+00:00",
+      "intent_status": "DELIVERY_FAILED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_f6ea367ab3534d3a843174d710dee552",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Alphabet",
+              "Amazon",
+              "Microsoft",
+              "Meta",
+              "Oracle",
+              "Goldman Sachs"
+            ],
+            "occurrence_date": "2026-09-25",
+            "proposition": "Goldman Sachs strategists estimated that the five largest U.S. cloud providers' combined 2026-2027 AI capital-expenditure forecast rose by approximately $750 billion to $1.89 trillion, 66% above the estimate at the start of 2026.",
+            "subject_time": "2026-2027 AI capital-expenditure outlook"
+          },
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "U.S. cloud providers",
+              "Anthropic",
+              "OpenAI",
+              "AI revenue"
+            ],
+            "occurrence_date": "2026-09-25",
+            "proposition": "Analysts estimated that current AI revenue is approximately $183 billion, versus roughly $308 billion of annual AI revenue needed for the major cloud providers to break even on the projected capital expenditure.",
+            "subject_time": "Current AI revenue and annual AI-capex break-even economics"
+          },
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Goldman Sachs",
+              "U.S. cloud providers",
+              "AI investment",
+              "Equipment depreciation"
+            ],
+            "occurrence_date": "2026-09-25",
+            "proposition": "Goldman Sachs warned that AI investment could shift from an earnings tailwind in 2026 to a marginal earnings drag by 2028 as equipment depreciation charges rise.",
+            "subject_time": "2026-2028 AI investment earnings impact"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "AI firms",
+              "Model-serving spend"
+            ],
+            "occurrence_date": "2026-09-25",
+            "proposition": "The top 10% of AI firms account for approximately 99.5% of model-serving spending.",
+            "subject_time": "Current model-serving spending concentration"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "Goldman estimates add approximately $750 billion to the five largest U.S. cloud providers' 2026-2027 AI-capex outlook, reaching $1.89 trillion, a 66% increase from the start of 2026. This raises the expected scale and persistence of power-intensive data-center demand and the opportunity for onsite firm-power deployments, including Bloom's Oracle-linked channel, but does not yet create committed Bloom MW or revenue.",
+          "prior_expectation": "AI and data-center demand was already expected to support Bloom's growth, with FY2026 guidance and approximately 1.2 GW of contracted and deploying capacity providing a baseline. However, there was no quantified new revision of the major cloud providers' spending base, and customer-accepted Bloom MW remained uncertain.",
+          "reason": "TRADE LONG: this is a large quantified upward revision to the spending base of the hyperscalers that drive Bloom's addressable AI-power market, with a clear path from cloud capex to data-center load, time-to-power constraints, onsite generation demand, and potential Bloom deployments. The AI monetization gap, 2028 depreciation risk, competing gas/grid routes, high valuation, and absence of a new Bloom order limit conviction and magnitude but do not negate the positive near- to medium-term expectation delta.",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "No existing Event or Fact covers the reported 66% upward revision in the five largest U.S. cloud providers' 2026-2027 AI capital-expenditure outlook, the $308 billion annual break-even revenue estimate versus $183 billion of current AI revenue, or the associated 2028 depreciation and concentration warnings.",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No Policy applies: the message is a macro cloud-capex and AI-economics update with no Bloom-specific order, project, customer acceptance, permit, interconnection, fuel, manufacturing, service, or financial observation."
+        },
+        "w3_case_id": "w3_f6ea367ab3534d3a843174d710dee552"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_bb3f60a12775493baf757cde0e66a1c8",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-29T16:35:41.606327Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 379.978475
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-29T16:29:21.627852Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2609073,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-29",
+        "source": {
+          "binding_id": "BE:huggingnews_rss",
+          "kind": "api",
+          "name": "HuggingNews Atom",
+          "source_id": "huggingnews_rss"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_f78e5defd13a405f9469a8504aea73cd",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "US Cloud Giants Boost AI Capex Outlook 66% to $1.89 Trillion"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "DELIVERY_FAILED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "READY",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-29T16:29:21.627852Z",
+        "completed_at": "2026-09-29T16:35:41.606327Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": []
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "当前未加载任何候选 Event 或 Fact，消息核心事实（五大云厂商2026-2027合计AI资本开支上调至$1.89万亿、66%增幅、$308B盈亏平衡收入缺口与当前$183B收入对比、Goldman关于2028年从顺风转为逆风的警告、客户集中度99.5%）均无已知覆盖。",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "消息为宏观行业层面：五大美国云厂商（含Oracle）上调2026–2027 AI资本开支合计至1.89万亿美元，并讨论AI收入/折旧平衡问题。全文未涉及Bloom Energy Server具名项目部署、Project Jupiter许可/互联/建设里程碑、客户绑定订单或容量确认、监管/许可状态变化、Fremont/Delmarva产出、服务/财务指标、或任何可作为某条Policy criterion具体触发观察的事实。仅与\"AI/数据中心投资\"主题宽泛相关，不构成任何Policy trigger path的具体事实对应。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息为宏观行业层面：五大美国云厂商（含Oracle）上调2026–2027 AI资本开支合计至1.89万亿美元，并讨论AI收入/折旧平衡问题。全文未涉及Bloom Energy Server具名项目部署、Project Jupiter许可/互联/建设里程碑、客户绑定订单或容量确认、监管/许可状态变化、Fremont/Delmarva产出、服务/财务指标、或任何可作为某条Policy criterion具体触发观察的事实。仅与\"AI/数据中心投资\"主题宽泛相关，不构成任何Policy trigger path的具体事实对应。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "Alphabet",
+                "Amazon",
+                "Microsoft",
+                "Meta",
+                "Oracle",
+                "Goldman Sachs"
+              ],
+              "occurrence_date": "2026-09-25",
+              "proposition": "Goldman Sachs strategists estimated that the five largest U.S. cloud providers' combined 2026-2027 AI capital-expenditure forecast rose by approximately $750 billion to $1.89 trillion, 66% above the estimate at the start of 2026.",
+              "subject_time": "2026-2027 AI capital-expenditure outlook"
+            },
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "U.S. cloud providers",
+                "Anthropic",
+                "OpenAI",
+                "AI revenue"
+              ],
+              "occurrence_date": "2026-09-25",
+              "proposition": "Analysts estimated that current AI revenue is approximately $183 billion, versus roughly $308 billion of annual AI revenue needed for the major cloud providers to break even on the projected capital expenditure.",
+              "subject_time": "Current AI revenue and annual AI-capex break-even economics"
+            },
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "Goldman Sachs",
+                "U.S. cloud providers",
+                "AI investment",
+                "Equipment depreciation"
+              ],
+              "occurrence_date": "2026-09-25",
+              "proposition": "Goldman Sachs warned that AI investment could shift from an earnings tailwind in 2026 to a marginal earnings drag by 2028 as equipment depreciation charges rise.",
+              "subject_time": "2026-2028 AI investment earnings impact"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "AI firms",
+                "Model-serving spend"
+              ],
+              "occurrence_date": "2026-09-25",
+              "proposition": "The top 10% of AI firms account for approximately 99.5% of model-serving spending.",
+              "subject_time": "Current model-serving spending concentration"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "Goldman estimates add approximately $750 billion to the five largest U.S. cloud providers' 2026-2027 AI-capex outlook, reaching $1.89 trillion, a 66% increase from the start of 2026. This raises the expected scale and persistence of power-intensive data-center demand and the opportunity for onsite firm-power deployments, including Bloom's Oracle-linked channel, but does not yet create committed Bloom MW or revenue.",
+            "prior_expectation": "AI and data-center demand was already expected to support Bloom's growth, with FY2026 guidance and approximately 1.2 GW of contracted and deploying capacity providing a baseline. However, there was no quantified new revision of the major cloud providers' spending base, and customer-accepted Bloom MW remained uncertain.",
+            "reason": "TRADE LONG: this is a large quantified upward revision to the spending base of the hyperscalers that drive Bloom's addressable AI-power market, with a clear path from cloud capex to data-center load, time-to-power constraints, onsite generation demand, and potential Bloom deployments. The AI monetization gap, 2028 depreciation risk, competing gas/grid routes, high valuation, and absence of a new Bloom order limit conviction and magnitude but do not negate the positive near- to medium-term expectation delta.",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "No existing Event or Fact covers the reported 66% upward revision in the five largest U.S. cloud providers' 2026-2027 AI capital-expenditure outlook, the $308 billion annual break-even revenue estimate versus $183 billion of current AI revenue, or the associated 2028 depreciation and concentration warnings.",
+            "reference_ids": [],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "No Policy applies: the message is a macro cloud-capex and AI-economics update with no Bloom-specific order, project, customer acceptance, permit, interconnection, fuel, manufacturing, service, or financial observation."
+          },
+          "w3_case_id": "w3_f6ea367ab3534d3a843174d710dee552"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "dfe3a811096f2326f6418a187f8842998587307e69cfe41c687cdec0f9621fa2",
+            "content_type": "text/plain",
+            "sha256": "aee1e7f6b1912e776ade53473fcbfc183cc883fdb821d2e19b5f24e62bffeb88",
+            "size_bytes": 1257
+          },
+          "case": {
+            "case_id": "case_bb3f60a12775493baf757cde0e66a1c8",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-29T16:29:19.762118Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-29T16:29:19.787007Z",
+          "revision": 1,
+          "row_revision": 2467124,
+          "source": {
+            "binding_id": "BE:huggingnews_rss",
+            "kind": "api",
+            "name": "HuggingNews Atom",
+            "source_id": "huggingnews_rss"
+          },
+          "source_published_at": "2026-09-29T16:27:24.496000Z",
+          "standard_message_id": "std_599c09e097e5402e8931a2c36f43d33f",
+          "stream_item_id": "stream_f78e5defd13a405f9469a8504aea73cd",
+          "stream_offset": 317,
+          "stream_published_at": "2026-09-29T16:29:19.791722Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "US Cloud Giants Boost AI Capex Outlook 66% to $1.89 Trillion"
+          },
+          "url": "https://huggingnews.com/ai/update-us-cloud-giants-boost-ai-capex-outlook-66percent-to-189-trillion-bc651306",
+          "body_text": "← Back to live feed · 1 stories across 1 day\nTuesday, Sep 29, 2026\n1 story1 US Cloud Giants Boost AI Capex Outlook 66% to $1.89 Trillion↩︎ AI Sep 25, 8:18 AM EDT 29/15 \n The five largest U.S. cloud providers have accelerated their AI buildout plans, adding roughly $750 billion to their combined investment forecasts for 2026 and 2027. Alphabet and Amazon lead the ramp, with combined projections for the period reaching $507 billion and $505 billion, respectively, according to Goldman Sachs strategists. Estimates for Microsoft, Meta and Oracle also rose to $373 billion, $333 billion and $174 billion, bringing the two-year total to $1.89 trillion, a 66% increase since the start of 2026.\nThis spending surge creates a monetization gap, as the group requires roughly $308 billion in annual AI revenue to break even on the capex. Current AI revenues are estimated at $183 billion, with two-thirds provided by Anthropic and OpenAI, according to analyst Ed Zitron. Goldman warns that AI investment may transition from an earnings tailwind in 2026 to a marginal drag by 2028 as equipment depreciation charges rise. The risk is further compounded by high customer concentration, with the top 10% of AI firms accounting for 99.5% of model-serving spend."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_599c09e097e5402e8931a2c36f43d33f:0\"]",
+          "created_at": "2026-09-29T16:35:41.316746Z",
+          "dedupe_key": "65e98b46ac24b316dfe526a09f2c39bb4b71f2a38abb8d45e8e551d1ef8b61ea",
+          "entities": [
+            "Alphabet",
+            "Amazon",
+            "Microsoft",
+            "Meta",
+            "Oracle",
+            "Goldman Sachs"
+          ],
+          "occurrence_date": "2026-09-25",
+          "originating_node": "W3",
+          "proposition": "Goldman Sachs strategists estimated that the five largest U.S. cloud providers' combined 2026-2027 AI capital-expenditure forecast rose by approximately $750 billion to $1.89 trillion, 66% above the estimate at the start of 2026.",
+          "provisional_event_id": "E130",
+          "subject_time": "2026-2027 AI capital-expenditure outlook"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_599c09e097e5402e8931a2c36f43d33f:1\"]",
+          "created_at": "2026-09-29T16:35:41.331203Z",
+          "dedupe_key": "d589a6417ed490bd389af7a1caacb642c075a528d1980d9b446e3107b5db6c07",
+          "entities": [
+            "U.S. cloud providers",
+            "Anthropic",
+            "OpenAI",
+            "AI revenue"
+          ],
+          "occurrence_date": "2026-09-25",
+          "originating_node": "W3",
+          "proposition": "Analysts estimated that current AI revenue is approximately $183 billion, versus roughly $308 billion of annual AI revenue needed for the major cloud providers to break even on the projected capital expenditure.",
+          "provisional_event_id": "E131",
+          "subject_time": "Current AI revenue and annual AI-capex break-even economics"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_599c09e097e5402e8931a2c36f43d33f:2\"]",
+          "created_at": "2026-09-29T16:35:41.354217Z",
+          "dedupe_key": "feb42c67fa303e3c28523f09f8d545cda29d0ae762d7ff54b23d76be973aa484",
+          "entities": [
+            "Goldman Sachs",
+            "U.S. cloud providers",
+            "AI investment",
+            "Equipment depreciation"
+          ],
+          "occurrence_date": "2026-09-25",
+          "originating_node": "W3",
+          "proposition": "Goldman Sachs warned that AI investment could shift from an earnings tailwind in 2026 to a marginal earnings drag by 2028 as equipment depreciation charges rise.",
+          "provisional_event_id": "E132",
+          "subject_time": "2026-2028 AI investment earnings impact"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_599c09e097e5402e8931a2c36f43d33f:3\"]",
+          "created_at": "2026-09-29T16:35:41.372192Z",
+          "dedupe_key": "5aafac4cad03157f244e669ac0df82bd5ad2c11a0e71ef63969ba5a09c9b05fc",
+          "entities": [
+            "AI firms",
+            "Model-serving spend"
+          ],
+          "occurrence_date": "2026-09-25",
+          "originating_node": "W3",
+          "proposition": "The top 10% of AI firms account for approximately 99.5% of model-serving spending.",
+          "provisional_event_id": "E133",
+          "subject_time": "Current model-serving spending concentration"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_bb3f60a12775493baf757cde0e66a1c8",
+            "status": "DELIVERY_FAILED",
+            "released_at": "2026-09-29T16:35:41.408788+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-29",
+            "delivery_failure": {
+              "code": "PROFILE_VALIDATION_FAILED",
+              "detail": "旧版 v2-delivery 的 ExecutionProfile 不支持冻结的 SHARED_CYCLE Profile：仍要求 target_notional_usd，且拒绝新增仓位参数。",
+              "status": "FAILED"
+            },
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_f6ea367ab3534d3a843174d710dee552",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "case_id": "case_bb3f60a12775493baf757cde0e66a1c8",
+              "direction": "LONG",
+              "entry_reason": "PROFILE_VALIDATION_FAILED: 旧版 v2-delivery 的 ExecutionProfile 不支持冻结的 SHARED_CYCLE Profile：仍要求 target_notional_usd，且拒绝新增仓位参数。",
+              "entry_result": null,
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_bb3f60a12775493baf757cde0e66a1c8",
+              "execution_reason_codes": [
+                "DELIVERY_FAILED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "REJECTED",
+              "intent_id": "trade:case_bb3f60a12775493baf757cde0e66a1c8",
+              "intent_status": "DELIVERY_FAILED",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-29T16:35:41.408788Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "DELIVERY_FAILED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "DELIVERY_FAILED"
+        ],
+        "executor_execution_record_exists": false,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      },
+      "estimated_pnl": {
+        "state": "ESTIMATED",
+        "basis": "saved IBKR historical TRADES ticks; intention-time entry and 15:30 America/New_York cycle exit",
+        "entry_reference_price_usd": "298.45",
+        "exit_reference_price_usd": "291.45",
+        "entry_target_utc": "2026-09-29T16:35:41.408788+00:00",
+        "cycle_end_utc": "2026-09-29T19:30:00+00:00",
+        "cycle_end_et": "2026-09-29T15:30:00-04:00",
+        "direction": "LONG",
+        "return_pct": "-2.3455",
+        "pnl_usd_per_share": "-7.0000",
+        "classification": "loss",
+        "estimated_total_pnl_usd": null,
+        "total_pnl_unavailable_reason": "No simulated position quantity was specified; use percent return and USD per share.",
+        "entry_evidence": {
+          "query_key": "BE|2026-09-29T16:35:41.408788+00:00|entry",
+          "status": "ok",
+          "selected": {
+            "exchange": "IEX",
+            "offset_seconds": 0.591212,
+            "price_usd": 298.45,
+            "special_conditions": "    ",
+            "timestamp_utc": "2026-09-29T16:35:42+00:00",
+            "unreported": false
+          },
+          "first_event_utc": "2026-09-29T16:35:42+00:00",
+          "error": null
+        },
+        "exit_evidence": {
+          "query_key": "BE|2026-09-29T19:30:00+00:00|exit",
+          "status": "ok",
+          "selected": {
+            "exchange": "FINRA",
+            "offset_seconds": 0.0,
+            "price_usd": 291.45,
+            "special_conditions": "    ",
+            "timestamp_utc": "2026-09-29T19:30:00+00:00",
+            "unreported": false
+          },
+          "first_event_utc": "2026-09-29T19:30:00+00:00",
+          "error": null
+        },
+        "pricing_unavailable_reason": null,
+        "cost_assumptions": "No slippage, bid-ask spread, fees or financing costs."
+      }
+    },
+    {
+      "intent_id": "trade:case_a5d78ace5c0d462fb2ae722ff04b234f",
+      "ticker": "BE",
+      "case_id": "case_a5d78ace5c0d462fb2ae722ff04b234f",
+      "intent_released_at_utc": "2026-09-29T18:20:15.533110+00:00",
+      "intent_status": "DELIVERY_FAILED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_8da0a64636b1451fa9f27bf27c275f97",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Anthropic",
+              "Cloud infrastructure",
+              "Compute infrastructure"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Anthropic's IPO filing states that approximately 80% of its more than $518 billion of ten-year cloud, compute, and infrastructure obligations are non-cancelable or payable regardless of usage.",
+            "subject_time": "Anthropic ten-year cloud, compute, and infrastructure commitments"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Anthropic",
+              "Microsoft",
+              "Google",
+              "Amazon",
+              "Broadcom",
+              "TPU"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Anthropic has approximately $252 billion of non-cancelable compute obligations across Microsoft, Google, and Amazon, plus approximately $161.2 billion of largely non-cancelable Broadcom TPU leases.",
+            "subject_time": "Anthropic partner compute commitments"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Anthropic",
+              "SpaceX",
+              "Nvidia",
+              "Compute infrastructure"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Anthropic agreed to pay SpaceX up to approximately $84.5 billion through 2029 for Nvidia-based compute, nearly double the approximately $45 billion cap SpaceX disclosed in May; most of the SpaceX spending can be canceled with 90 days' notice.",
+            "subject_time": "Anthropic-SpaceX Nvidia compute commitment through 2029"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Anthropic",
+              "Cloud infrastructure",
+              "Revenue",
+              "Cash"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Anthropic's more than $518 billion of obligations are over 100 times its FY2025 revenue and approximately 25 times its year-end cash, cash equivalents, and short-term investments.",
+            "subject_time": "Anthropic IPO filing financial comparison"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Anthropic",
+              "Operating loss"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Anthropic reported an FY2025 operating loss of approximately $8.06 billion.",
+            "subject_time": "Anthropic FY2025 operating results"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Anthropic",
+              "Anthropic customers",
+              "Customer concentration"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Anthropic's two largest customers accounted for approximately 24% of revenue, and the company warned that many major customers lack long-term contracts and could reduce or stop spending.",
+            "subject_time": "Anthropic customer concentration and contract risk"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "The filing indicates that approximately 80% of Anthropic's ten-year cloud, compute, and infrastructure commitments are non-cancelable or payable regardless of usage, including large Microsoft, Google, Amazon, and Broadcom commitments, while the SpaceX ceiling has risen to $84.5 billion through 2029. This raises the expected duration and certainty of the AI compute buildout and the associated pool of data-center power demand, although it does not assign any MW or revenue to Bloom.",
+          "prior_expectation": "The aggregate $518 billion Anthropic obligation was already known, but its cancellation status and partner-level duration were not. BE's pre-event AI-demand baseline still required compute growth to convert into durable data-center power demand and customer-accepted Bloom deployments.",
+          "reason": "TRADE LONG: the non-cancelable share is a material certainty and duration upgrade to the AI infrastructure demand variable, with a clear path from committed compute capacity to data-center electricity needs and potential onsite firm-power deployments in BE's qualified market. The absence of a Bloom-specific award, competing power routes, Anthropic's $8.06 billion operating loss, and customer concentration cap conviction but do not erase the positive demand signal.",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "E82 covered Anthropic's approximately $518 billion aggregate cloud, compute, and infrastructure obligations, but not the newly disclosed approximately 80% non-cancelable share, partner-level allocations, expanded SpaceX commitment, or the associated financial and customer-concentration risks.",
+          "reference_ids": [
+            "E82"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No Policy applies: the message concerns Anthropic's compute commitments and IPO financial disclosures, without identifying a Bloom Energy project, power procurement, accepted MW, permit, interconnection, delivery, manufacturing, service, or financial event."
+        },
+        "w3_case_id": "w3_8da0a64636b1451fa9f27bf27c275f97"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_a5d78ace5c0d462fb2ae722ff04b234f",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-29T18:20:15.774577Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 367.844206
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-29T18:14:07.930371Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2609070,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-29",
+        "source": {
+          "binding_id": "BE:huggingnews_rss",
+          "kind": "api",
+          "name": "HuggingNews Atom",
+          "source_id": "huggingnews_rss"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_ae94f279305a481c83ea9b85273d9e22",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "Anthropic Locked Into $518B of Compute Deals, 80% Non-Cancelable"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "DELIVERY_FAILED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "READY",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-29T18:14:07.930371Z",
+        "completed_at": "2026-09-29T18:20:15.774577Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": [
+            "E82",
+            "E85",
+            "E79",
+            "E80",
+            "E81"
+          ]
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "E82 已覆盖 Anthropic IPO 文件中约 $518B 云/计算/基础设施义务总量，但当前消息的核心新进展包括：(1) 约 80% 为非取消性义务（标题本身即以此为核心卖点）；(2) 具体拆分为 Microsoft/Google/Amazon $252B 非取消计算义务 + Broadcom $161.2B TPU 租约；(3) 新增与 SpaceX 最高 $84.5B（至 2029）Nvidia 计算协议，约为 SpaceX 此前披露 $45B 上限的两倍；(4) $8.06B 经营亏损、客户集中度 24%、客户未锁定长期合同警告。这些均未被任何 provisional fact 覆盖，构成尚未记录的核心事实进展。",
+          "reference_ids": [
+            "E82"
+          ],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "消息核心事实为Anthropic IPO文件披露的$518B十年期计算与基础设施支出承诺（涉及Microsoft、Google、Amazon、Broadcom、SpaceX、Nvidia），属于AI行业资本开支规模信息。消息未涉及任何具体数据中心建设时间表、现场firm-power需求、Bloom Energy Server项目、Project Jupiter许可/互联/排期、Bloom客户部署或任何Bloom产品/运营变化。虽被标记为BE ticker，但消息内容与所有Policy criterion之间不存在具体、实质性的触发关系，仅构成AI/数据中心的宽泛主题关联，不构成Candidate召回理由。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息核心事实为Anthropic IPO文件披露的$518B十年期计算与基础设施支出承诺（涉及Microsoft、Google、Amazon、Broadcom、SpaceX、Nvidia），属于AI行业资本开支规模信息。消息未涉及任何具体数据中心建设时间表、现场firm-power需求、Bloom Energy Server项目、Project Jupiter许可/互联/排期、Bloom客户部署或任何Bloom产品/运营变化。虽被标记为BE ticker，但消息内容与所有Policy criterion之间不存在具体、实质性的触发关系，仅构成AI/数据中心的宽泛主题关联，不构成Candidate召回理由。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Anthropic",
+                "Cloud infrastructure",
+                "Compute infrastructure"
+              ],
+              "occurrence_date": "2026-09-29",
+              "proposition": "Anthropic's IPO filing states that approximately 80% of its more than $518 billion of ten-year cloud, compute, and infrastructure obligations are non-cancelable or payable regardless of usage.",
+              "subject_time": "Anthropic ten-year cloud, compute, and infrastructure commitments"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Anthropic",
+                "Microsoft",
+                "Google",
+                "Amazon",
+                "Broadcom",
+                "TPU"
+              ],
+              "occurrence_date": "2026-09-29",
+              "proposition": "Anthropic has approximately $252 billion of non-cancelable compute obligations across Microsoft, Google, and Amazon, plus approximately $161.2 billion of largely non-cancelable Broadcom TPU leases.",
+              "subject_time": "Anthropic partner compute commitments"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Anthropic",
+                "SpaceX",
+                "Nvidia",
+                "Compute infrastructure"
+              ],
+              "occurrence_date": "2026-09-29",
+              "proposition": "Anthropic agreed to pay SpaceX up to approximately $84.5 billion through 2029 for Nvidia-based compute, nearly double the approximately $45 billion cap SpaceX disclosed in May; most of the SpaceX spending can be canceled with 90 days' notice.",
+              "subject_time": "Anthropic-SpaceX Nvidia compute commitment through 2029"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Anthropic",
+                "Cloud infrastructure",
+                "Revenue",
+                "Cash"
+              ],
+              "occurrence_date": "2026-09-29",
+              "proposition": "Anthropic's more than $518 billion of obligations are over 100 times its FY2025 revenue and approximately 25 times its year-end cash, cash equivalents, and short-term investments.",
+              "subject_time": "Anthropic IPO filing financial comparison"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Anthropic",
+                "Operating loss"
+              ],
+              "occurrence_date": "2026-09-29",
+              "proposition": "Anthropic reported an FY2025 operating loss of approximately $8.06 billion.",
+              "subject_time": "Anthropic FY2025 operating results"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Anthropic",
+                "Anthropic customers",
+                "Customer concentration"
+              ],
+              "occurrence_date": "2026-09-29",
+              "proposition": "Anthropic's two largest customers accounted for approximately 24% of revenue, and the company warned that many major customers lack long-term contracts and could reduce or stop spending.",
+              "subject_time": "Anthropic customer concentration and contract risk"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "The filing indicates that approximately 80% of Anthropic's ten-year cloud, compute, and infrastructure commitments are non-cancelable or payable regardless of usage, including large Microsoft, Google, Amazon, and Broadcom commitments, while the SpaceX ceiling has risen to $84.5 billion through 2029. This raises the expected duration and certainty of the AI compute buildout and the associated pool of data-center power demand, although it does not assign any MW or revenue to Bloom.",
+            "prior_expectation": "The aggregate $518 billion Anthropic obligation was already known, but its cancellation status and partner-level duration were not. BE's pre-event AI-demand baseline still required compute growth to convert into durable data-center power demand and customer-accepted Bloom deployments.",
+            "reason": "TRADE LONG: the non-cancelable share is a material certainty and duration upgrade to the AI infrastructure demand variable, with a clear path from committed compute capacity to data-center electricity needs and potential onsite firm-power deployments in BE's qualified market. The absence of a Bloom-specific award, competing power routes, Anthropic's $8.06 billion operating loss, and customer concentration cap conviction but do not erase the positive demand signal.",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "E82 covered Anthropic's approximately $518 billion aggregate cloud, compute, and infrastructure obligations, but not the newly disclosed approximately 80% non-cancelable share, partner-level allocations, expanded SpaceX commitment, or the associated financial and customer-concentration risks.",
+            "reference_ids": [
+              "E82"
+            ],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "No Policy applies: the message concerns Anthropic's compute commitments and IPO financial disclosures, without identifying a Bloom Energy project, power procurement, accepted MW, permit, interconnection, delivery, manufacturing, service, or financial event."
+          },
+          "w3_case_id": "w3_8da0a64636b1451fa9f27bf27c275f97"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "086b72faf04a65efd00c86daec4e3b085b63bc436f8838e2a921d778c0b6f4ca",
+            "content_type": "text/plain",
+            "sha256": "8352fd9b2e0fa03210506c22c90e60a62a05dbea55c9277b49213f1306140965",
+            "size_bytes": 1682
+          },
+          "case": {
+            "case_id": "case_a5d78ace5c0d462fb2ae722ff04b234f",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-29T18:14:04.192426Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-29T18:14:04.232235Z",
+          "revision": 1,
+          "row_revision": 2477656,
+          "source": {
+            "binding_id": "BE:huggingnews_rss",
+            "kind": "api",
+            "name": "HuggingNews Atom",
+            "source_id": "huggingnews_rss"
+          },
+          "source_published_at": "2026-09-29T18:10:19.614000Z",
+          "standard_message_id": "std_9dbd5bbccf5a498a82cf6cea9883b010",
+          "stream_item_id": "stream_ae94f279305a481c83ea9b85273d9e22",
+          "stream_offset": 328,
+          "stream_published_at": "2026-09-29T18:14:04.237229Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Anthropic Locked Into $518B of Compute Deals, 80% Non-Cancelable"
+          },
+          "url": "https://huggingnews.com/ai/update-anthropic-locked-into-518b-of-compute-deals-80percent-non-cancela-df538fe7",
+          "body_text": "← Back to live feed · 1 stories across 1 day\nTuesday, Sep 29, 2026\n1 story1 Anthropic Locked Into $518B of Compute Deals, 80% Non-Cancelable↩︎ AI Sep 28, 7:16 PM EDT 182/87 \n Anthropic is locked into more than $518 billion of cloud, compute and infrastructure spending over 10 years with six partners, and about 80% of the total is non-cancelable or payable regardless of usage, its IPO filing shows. The commitments include $252 billion in non-cancelable compute obligations across Microsoft, Google and Amazon, and $161.2 billion in Broadcom TPU leases that are largely non-cancelable.\nThe company also agreed to pay SpaceX up to $84.5 billion through 2029 for Nvidia-based compute, nearly double the roughly $45 billion cap SpaceX disclosed in May, The Information reported. Most of the SpaceX spending can be canceled with 90 days' notice, unlike the bulk of the buildout.\nThe obligations are more than 100 times Anthropic's 2025 revenue of $4.59 billion and roughly 25 times the $20.28 billion in cash, cash equivalents and short-term investments it held at year-end. The company posted an $8.06 billion operating loss in 2025, and its $41.97 billion net loss included about $34 billion in non-cash charges tied to the rising value of financing that could convert into shares. Its two largest customers accounted for 24% of revenue, and Anthropic warned that many of its largest clients are not locked into long-term contracts and could reduce or stop spending, even as it cannot cancel most of its own compute bill. Google and Amazon, both major investors in Anthropic, supply much of the infrastructure behind Claude. The IPO could value the company above $2 trillion."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_9dbd5bbccf5a498a82cf6cea9883b010:0\"]",
+          "created_at": "2026-09-29T18:20:15.449936Z",
+          "dedupe_key": "1af279cfd726dd008b570fc87ffd770e0fec90cc0793d5e94b36dc587842ecef",
+          "entities": [
+            "Anthropic",
+            "Cloud infrastructure",
+            "Compute infrastructure"
+          ],
+          "occurrence_date": "2026-09-29",
+          "originating_node": "W3",
+          "proposition": "Anthropic's IPO filing states that approximately 80% of its more than $518 billion of ten-year cloud, compute, and infrastructure obligations are non-cancelable or payable regardless of usage.",
+          "provisional_event_id": "E163",
+          "subject_time": "Anthropic ten-year cloud, compute, and infrastructure commitments"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_9dbd5bbccf5a498a82cf6cea9883b010:1\"]",
+          "created_at": "2026-09-29T18:20:15.459907Z",
+          "dedupe_key": "7d3ccaa2931aa70d9bf2d0b40f062562a2ae36ad5d18dd24a5252ba7bb3b9c49",
+          "entities": [
+            "Anthropic",
+            "Microsoft",
+            "Google",
+            "Amazon",
+            "Broadcom",
+            "TPU"
+          ],
+          "occurrence_date": "2026-09-29",
+          "originating_node": "W3",
+          "proposition": "Anthropic has approximately $252 billion of non-cancelable compute obligations across Microsoft, Google, and Amazon, plus approximately $161.2 billion of largely non-cancelable Broadcom TPU leases.",
+          "provisional_event_id": "E164",
+          "subject_time": "Anthropic partner compute commitments"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_9dbd5bbccf5a498a82cf6cea9883b010:2\"]",
+          "created_at": "2026-09-29T18:20:15.469071Z",
+          "dedupe_key": "107b6d63ead980db185873c8938fba998bb9f09b341a5af4143198033fd5e016",
+          "entities": [
+            "Anthropic",
+            "SpaceX",
+            "Nvidia",
+            "Compute infrastructure"
+          ],
+          "occurrence_date": "2026-09-29",
+          "originating_node": "W3",
+          "proposition": "Anthropic agreed to pay SpaceX up to approximately $84.5 billion through 2029 for Nvidia-based compute, nearly double the approximately $45 billion cap SpaceX disclosed in May; most of the SpaceX spending can be canceled with 90 days' notice.",
+          "provisional_event_id": "E165",
+          "subject_time": "Anthropic-SpaceX Nvidia compute commitment through 2029"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_9dbd5bbccf5a498a82cf6cea9883b010:3\"]",
+          "created_at": "2026-09-29T18:20:15.478055Z",
+          "dedupe_key": "7ec736949b646cc290fda244baa0cb084a8102df2abef11011c62c5a93432019",
+          "entities": [
+            "Anthropic",
+            "Cloud infrastructure",
+            "Revenue",
+            "Cash"
+          ],
+          "occurrence_date": "2026-09-29",
+          "originating_node": "W3",
+          "proposition": "Anthropic's more than $518 billion of obligations are over 100 times its FY2025 revenue and approximately 25 times its year-end cash, cash equivalents, and short-term investments.",
+          "provisional_event_id": "E166",
+          "subject_time": "Anthropic IPO filing financial comparison"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_9dbd5bbccf5a498a82cf6cea9883b010:4\"]",
+          "created_at": "2026-09-29T18:20:15.486652Z",
+          "dedupe_key": "5e8173e38f5b82663ab8077c8325f4c948e0dba1b51b1b21b2552d8cb1a198f2",
+          "entities": [
+            "Anthropic",
+            "Operating loss"
+          ],
+          "occurrence_date": "2026-09-29",
+          "originating_node": "W3",
+          "proposition": "Anthropic reported an FY2025 operating loss of approximately $8.06 billion.",
+          "provisional_event_id": "E167",
+          "subject_time": "Anthropic FY2025 operating results"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_9dbd5bbccf5a498a82cf6cea9883b010:5\"]",
+          "created_at": "2026-09-29T18:20:15.498598Z",
+          "dedupe_key": "11edd70855e5534c65a8a1436ae0ac0f1b8b02c740110c82b159ce85f14d1594",
+          "entities": [
+            "Anthropic",
+            "Anthropic customers",
+            "Customer concentration"
+          ],
+          "occurrence_date": "2026-09-29",
+          "originating_node": "W3",
+          "proposition": "Anthropic's two largest customers accounted for approximately 24% of revenue, and the company warned that many major customers lack long-term contracts and could reduce or stop spending.",
+          "provisional_event_id": "E168",
+          "subject_time": "Anthropic customer concentration and contract risk"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_a5d78ace5c0d462fb2ae722ff04b234f",
+            "status": "DELIVERY_FAILED",
+            "released_at": "2026-09-29T18:20:15.533110+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-29",
+            "delivery_failure": {
+              "code": "PROFILE_VALIDATION_FAILED",
+              "detail": "旧版 v2-delivery 的 ExecutionProfile 不支持冻结的 SHARED_CYCLE Profile：仍要求 target_notional_usd，且拒绝新增仓位参数。",
+              "status": "FAILED"
+            },
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_8da0a64636b1451fa9f27bf27c275f97",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "case_id": "case_a5d78ace5c0d462fb2ae722ff04b234f",
+              "direction": "LONG",
+              "entry_reason": "PROFILE_VALIDATION_FAILED: 旧版 v2-delivery 的 ExecutionProfile 不支持冻结的 SHARED_CYCLE Profile：仍要求 target_notional_usd，且拒绝新增仓位参数。",
+              "entry_result": null,
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_a5d78ace5c0d462fb2ae722ff04b234f",
+              "execution_reason_codes": [
+                "DELIVERY_FAILED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "REJECTED",
+              "intent_id": "trade:case_a5d78ace5c0d462fb2ae722ff04b234f",
+              "intent_status": "DELIVERY_FAILED",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-29T18:20:15.533110Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "DELIVERY_FAILED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "DELIVERY_FAILED"
+        ],
+        "executor_execution_record_exists": false,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      },
+      "estimated_pnl": {
+        "state": "ESTIMATED",
+        "basis": "saved IBKR historical TRADES ticks; intention-time entry and 15:30 America/New_York cycle exit",
+        "entry_reference_price_usd": "293.8",
+        "exit_reference_price_usd": "291.45",
+        "entry_target_utc": "2026-09-29T18:20:15.533110+00:00",
+        "cycle_end_utc": "2026-09-29T19:30:00+00:00",
+        "cycle_end_et": "2026-09-29T15:30:00-04:00",
+        "direction": "LONG",
+        "return_pct": "-0.7999",
+        "pnl_usd_per_share": "-2.3500",
+        "classification": "flat",
+        "estimated_total_pnl_usd": null,
+        "total_pnl_unavailable_reason": "No simulated position quantity was specified; use percent return and USD per share.",
+        "entry_evidence": {
+          "query_key": "BE|2026-09-29T18:20:15.533110+00:00|entry",
+          "status": "ok",
+          "selected": {
+            "exchange": "FINRA",
+            "offset_seconds": 8.46689,
+            "price_usd": 293.8,
+            "special_conditions": "    ",
+            "timestamp_utc": "2026-09-29T18:20:24+00:00",
+            "unreported": false
+          },
+          "first_event_utc": "2026-09-29T18:20:16+00:00",
+          "error": null
+        },
+        "exit_evidence": {
+          "query_key": "BE|2026-09-29T19:30:00+00:00|exit",
+          "status": "ok",
+          "selected": {
+            "exchange": "FINRA",
+            "offset_seconds": 0.0,
+            "price_usd": 291.45,
+            "special_conditions": "    ",
+            "timestamp_utc": "2026-09-29T19:30:00+00:00",
+            "unreported": false
+          },
+          "first_event_utc": "2026-09-29T19:30:00+00:00",
+          "error": null
+        },
+        "pricing_unavailable_reason": null,
+        "cost_assumptions": "No slippage, bid-ask spread, fees or financing costs."
+      }
+    },
+    {
+      "intent_id": "trade:case_d2034923c648403b9399ff7084337b98",
+      "ticker": "BE",
+      "case_id": "case_d2034923c648403b9399ff7084337b98",
+      "intent_released_at_utc": "2026-09-30T04:48:39.613547+00:00",
+      "intent_status": "DELIVERY_FAILED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_41af748dfa934f759d53bddc32da4020",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "onsemi",
+              "Semiconductors"
+            ],
+            "occurrence_date": "2030-01-01",
+            "proposition": "Onsemi targeted approximately $11 billion of revenue and a 38% operating margin by 2030, compared with expected 2026 revenue of approximately $6.5 billion and a 21.9% operating margin.",
+            "subject_time": "Onsemi 2030 corporate targets"
+          },
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "onsemi",
+              "AI data centers"
+            ],
+            "occurrence_date": "2030-01-01",
+            "proposition": "Onsemi forecast AI-data-center revenue of more than $500 million in 2026 and at least $2.5 billion by 2030.",
+            "subject_time": "Onsemi AI-data-center business through 2030"
+          },
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "onsemi",
+              "AI accelerators",
+              "Server racks",
+              "Power semiconductors"
+            ],
+            "occurrence_date": "2030-01-01",
+            "proposition": "Onsemi expects AI-accelerator server-rack power consumption to rise from approximately 100–120 kW currently to megawatt-scale levels, increasing the value of onsemi power semiconductors per rack from approximately $15,000 to more than $115,000.",
+            "subject_time": "AI server-rack power and component value through 2030"
+          },
+          {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "onsemi",
+              "Physical AI",
+              "Robots",
+              "Drones"
+            ],
+            "occurrence_date": "2030-01-01",
+            "proposition": "Onsemi expects the non-automotive physical-AI market, including robots and drones, to represent approximately $6 billion of opportunity by 2030.",
+            "subject_time": "Non-automotive physical-AI market through 2030"
+          },
+          {
+            "assertion_state": "EXPECTED",
+            "entities": [
+              "onsemi",
+              "Synaptics",
+              "Physical AI"
+            ],
+            "occurrence_date": "2027-06-30",
+            "proposition": "Onsemi agreed to acquire Synaptics for approximately $7 billion, with the transaction expected to close in mid-2027 to support its physical-AI strategy.",
+            "subject_time": "Expected completion of the onsemi-Synaptics acquisition"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "Onsemi expects AI-data-center revenue to rise from more than $500 million in 2026 to at least $2.5 billion by 2030 and projects server-rack power consumption to rise from roughly 100–120 kW to megawatt scale. This increases confidence in the scale and persistence of physical AI power demand and the addressable need for onsite firm power, although it does not assign share or orders to Bloom.",
+          "prior_expectation": "AI-data-center demand was already a BE growth driver, but the pre-event baseline lacked a new independent supplier forecast quantifying both the rise in rack-level power intensity and the associated value of power components. BE still required customer deployments and accepted MW to convert that market into revenue.",
+          "reason": "TRADE LONG: the forecast is a quantified, physically grounded upgrade to the AI-power demand variable, with a clear path from higher rack loads to data-center electricity constraints and potential Bloom Energy Server deployments. The long horizon, onsemi-specific source, competing power routes, and absence of a BE award limit conviction, but the positive market-size and intensity delta is material.",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "No loaded Event or Fact covers onsemi's newly disclosed 2030 revenue and margin targets, AI-data-center growth forecast, rack-level power-consumption outlook, or physical-AI expansion strategy.",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No Policy applies: the message concerns onsemi's semiconductor strategy and industry forecasts, without a Bloom Energy project, customer commitment, permit, interconnection, delivery, acceptance, manufacturing, service, or financial event."
+        },
+        "w3_case_id": "w3_41af748dfa934f759d53bddc32da4020"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_d2034923c648403b9399ff7084337b98",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-30T04:48:39.777605Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 155.883064
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-30T04:46:03.894541Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_INTENT",
+          "TRADE_NOT_EXECUTED"
+        ],
+        "revision": 2609074,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-29",
+        "source": {
+          "binding_id": "BE:thelec_semiconductors_rss",
+          "kind": "api",
+          "name": "The Elec Semiconductor RSS",
+          "source_id": "thelec_semiconductors_rss"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_19b56273a5eb45b8b6e1558e3b3f0ddf",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "온세미, 2030년 매출 110억달러 목표…자동차 넘어 AI 데이터센터로"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "DELIVERY_FAILED"
+          ],
+          "state": "NOT_EXECUTED"
+        },
+        "trade_disposition": "READY",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-30T04:46:03.894541Z",
+        "completed_at": "2026-09-30T04:48:39.777605Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": []
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "本轮未加载任何canonical或provisional Event Detail，不存在已知事实覆盖。当前消息核心事实为：onsemi于2026年6月16日在纽约'Investor Day 2026'上正式公布2030年营收110亿美元目标、38%营业利润率、AI数据中心及物理AI扩张战略，均为首次呈现的新事实。",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [],
+          "reason": "当前消息为ON Semiconductor在2026 Investor Day公布的中长期营收与产品线增长战略（AI数据中心、汽车、物理AI、传感器等），属于半导体制造商自身业务扩张规划。消息中不存在与任何Bloom Energy Policy criterion直接相关的具体事实——未涉及Project Jupiter许可/互联/设备、Energy Server部署/验收/运营、Electrolyzer项目、超大规模云厂商AI资本开支上修、认证EPC交付、服务经济或资本工具等任何触发路径。仅为宽泛的'AI数据中心'主题关联，不构成Candidate召回依据。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "当前消息为ON Semiconductor在2026 Investor Day公布的中长期营收与产品线增长战略（AI数据中心、汽车、物理AI、传感器等），属于半导体制造商自身业务扩张规划。消息中不存在与任何Bloom Energy Policy criterion直接相关的具体事实——未涉及Project Jupiter许可/互联/设备、Energy Server部署/验收/运营、Electrolyzer项目、超大规模云厂商AI资本开支上修、认证EPC交付、服务经济或资本工具等任何触发路径。仅为宽泛的'AI数据中心'主题关联，不构成Candidate召回依据。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "onsemi",
+                "Semiconductors"
+              ],
+              "occurrence_date": "2030-01-01",
+              "proposition": "Onsemi targeted approximately $11 billion of revenue and a 38% operating margin by 2030, compared with expected 2026 revenue of approximately $6.5 billion and a 21.9% operating margin.",
+              "subject_time": "Onsemi 2030 corporate targets"
+            },
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "onsemi",
+                "AI data centers"
+              ],
+              "occurrence_date": "2030-01-01",
+              "proposition": "Onsemi forecast AI-data-center revenue of more than $500 million in 2026 and at least $2.5 billion by 2030.",
+              "subject_time": "Onsemi AI-data-center business through 2030"
+            },
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "onsemi",
+                "AI accelerators",
+                "Server racks",
+                "Power semiconductors"
+              ],
+              "occurrence_date": "2030-01-01",
+              "proposition": "Onsemi expects AI-accelerator server-rack power consumption to rise from approximately 100–120 kW currently to megawatt-scale levels, increasing the value of onsemi power semiconductors per rack from approximately $15,000 to more than $115,000.",
+              "subject_time": "AI server-rack power and component value through 2030"
+            },
+            {
+              "assertion_state": "FORECAST",
+              "entities": [
+                "onsemi",
+                "Physical AI",
+                "Robots",
+                "Drones"
+              ],
+              "occurrence_date": "2030-01-01",
+              "proposition": "Onsemi expects the non-automotive physical-AI market, including robots and drones, to represent approximately $6 billion of opportunity by 2030.",
+              "subject_time": "Non-automotive physical-AI market through 2030"
+            },
+            {
+              "assertion_state": "EXPECTED",
+              "entities": [
+                "onsemi",
+                "Synaptics",
+                "Physical AI"
+              ],
+              "occurrence_date": "2027-06-30",
+              "proposition": "Onsemi agreed to acquire Synaptics for approximately $7 billion, with the transaction expected to close in mid-2027 to support its physical-AI strategy.",
+              "subject_time": "Expected completion of the onsemi-Synaptics acquisition"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "Onsemi expects AI-data-center revenue to rise from more than $500 million in 2026 to at least $2.5 billion by 2030 and projects server-rack power consumption to rise from roughly 100–120 kW to megawatt scale. This increases confidence in the scale and persistence of physical AI power demand and the addressable need for onsite firm power, although it does not assign share or orders to Bloom.",
+            "prior_expectation": "AI-data-center demand was already a BE growth driver, but the pre-event baseline lacked a new independent supplier forecast quantifying both the rise in rack-level power intensity and the associated value of power components. BE still required customer deployments and accepted MW to convert that market into revenue.",
+            "reason": "TRADE LONG: the forecast is a quantified, physically grounded upgrade to the AI-power demand variable, with a clear path from higher rack loads to data-center electricity constraints and potential Bloom Energy Server deployments. The long horizon, onsemi-specific source, competing power routes, and absence of a BE award limit conviction, but the positive market-size and intensity delta is material.",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "No loaded Event or Fact covers onsemi's newly disclosed 2030 revenue and margin targets, AI-data-center growth forecast, rack-level power-consumption outlook, or physical-AI expansion strategy.",
+            "reference_ids": [],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "No Policy applies: the message concerns onsemi's semiconductor strategy and industry forecasts, without a Bloom Energy project, customer commitment, permit, interconnection, delivery, acceptance, manufacturing, service, or financial event."
+          },
+          "w3_case_id": "w3_41af748dfa934f759d53bddc32da4020"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "df42f83e553e0b30c67196877cb6e9f9639fbbf820d214e5a06b00039a3eded1",
+            "content_type": "text/plain",
+            "sha256": "9e0522a9853d3b40c833ce8f15a462130115a6eec6b493326763821b989263da",
+            "size_bytes": 3664
+          },
+          "case": {
+            "case_id": "case_d2034923c648403b9399ff7084337b98",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-30T04:46:01.925352Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-30T04:46:01.947320Z",
+          "revision": 1,
+          "row_revision": 2538408,
+          "source": {
+            "binding_id": "BE:thelec_semiconductors_rss",
+            "kind": "api",
+            "name": "The Elec Semiconductor RSS",
+            "source_id": "thelec_semiconductors_rss"
+          },
+          "source_published_at": "2026-09-30T04:36:13Z",
+          "standard_message_id": "std_6b40460cb32f46cc93fdb49f128b3445",
+          "stream_item_id": "stream_19b56273a5eb45b8b6e1558e3b3f0ddf",
+          "stream_offset": 368,
+          "stream_published_at": "2026-09-30T04:46:01.950877Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "온세미, 2030년 매출 110억달러 목표…자동차 넘어 AI 데이터센터로"
+          },
+          "url": "https://www.thelec.kr/news/articleView.html?idxno=63014",
+          "body_text": "미국 반도체 기업 온세미가 자동차를 넘어 인공지능(AI) 데이터센터와 피지컬 AI로 사업 영역을 확장해 2030년 매출 110억달러에 도전한다.\n\n자동차용 전력반도체와 센서에서 쌓은 기술을 AI 데이터센터와 로봇 등에 적용해 큰 폭의 성장세를 달성하겠다고 밝혔다.\n\n온세미는 지난 16일(현지시간) 미국 뉴욕에서 열린 '인베스터 데이 2026'에서 이 같은 중장기 성장 전략을 공개했다. 회사는 올해 예상 매출 65억달러를 기준으로 2030년까지 연평균 12~14% 성장을 목표로 제시했다. 이를 적용하면 2030년 매출은 102억~110억달러가 된다.\n\n수익성도 끌어올린다. 2030년 영업이익률 목표는 38%로 제시했다. 올해 예상치는 21.9%다.\n\nAI 데이터센터 사업이 성장을 견인할 것으로 내다봤다. 온세미는 이 분야 매출이 올해 5억달러를 넘고 2030년 25억달러 이상으로 늘어날 것으로 예상했다. AI 가속기 성능이 높아지면서 서버 랙 하나의 전력 소비는 현재 100~120kW 수준에서 메가와트(MW)급으로 커질 것으로 전망했다. 이에 따라 랙 하나에 들어가는 온세미 전력반도체는 금액 기준 약 1만5000달러에서 11만5000달러 이상으로 늘어날 것으로 봤다. 온세미는 실리콘(Si)과 실리콘카바이드(SiC), 질화갈륨(GaN) 전력반도체로 이 시장을 공략한다.\n\n자동차 사업은 2030년까지 연평균 9% 성장을 전망했다. 전동화와 자율주행, 소프트웨어중심차량(SDV) 확산으로 차량 한 대당 온세미 반도체 탑재 금액이 최대 2000달러까지 늘어날 수 있다고 내다봤다. SiC 전력반도체는 세대마다 성능을 약 25%씩 높일 계획이라고 했다. 1000V급 전기차 배터리에 대응해 1400V 제품까지 라인업을 늘린다.\n\n패키징 기술도 강화한다. 임베디드 파워 플랫폼(EPP)은 전력반도체 칩 여러 개를 하나의 구조 안에 묻어 넣는 패키징 기술이다. 온세미는 기존 인버터보다 전력밀도를 최대 4배 높일 수 있다고 설명했다. 일본 스바루가 차세대 전기차 적용을 위해 이 기술을 평가하고 있다.\n\n센서 제품군의 경우 기존 이미지센서와 초음파센서, 유도식 센서에 간접 비행시간측정(iToF) 센서와 단파장적외선(SWIR) 센서를 더한다. 자율주행차에 들어가는 센서의 종류와 수가 늘어나는 데 대응한다.\n\n산업 분야는 2030년까지 연평균 10% 성장을 목표로 제시했다. 로봇과 드론 등 피지컬 AI를 새 성장 분야로 꼽았다. 온세미는 자동차를 제외한 피지컬 AI 시장에서 2030년 60억달러의 사업 기회를 예상했다. 휴머노이드 로봇 한 대에 들어가는 온세미 반도체는 약 900달러 규모로 추산했다. 온세미는 지난 6월 터치 컨트롤러와 엣지 AI 반도체 업체 시냅틱스를 약 70억달러 규모에 인수하기로 합의했다. 시냅틱스 기술을 더해 피지컬 AI 시장을 공략할 계획이다. 거래는 2027년 중반 완료될 예정이다.\n\n수디르 고팔스와미(Sudhir Gopalswamy) 온세미 아날로그 혼합신호 및 지능형 센싱 그룹 사장은 \"피지컬 AI는 여러 측면에서 자율주행차의 자연스러운 확장이라고 볼 수 있다\"며 \"기계의 자율성이 높아질수록 더 많은 센싱과 전력 관리, 구동 기술이 요구된다\"고 말했다.\n\n하산 엘 쿠리(Hassane El-Khoury) 온세미 최고경영자(CEO)는 \"전력은 이들 시장 전반의 공통분모가 됐다\"고 말했다."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_6b40460cb32f46cc93fdb49f128b3445:0\"]",
+          "created_at": "2026-09-30T04:48:39.507419Z",
+          "dedupe_key": "5f43f4f51c67aa7a53d2d9e68e7e439e8ce07b5259746f9c4f7c15d56a3e0b9f",
+          "entities": [
+            "onsemi",
+            "Semiconductors"
+          ],
+          "occurrence_date": "2030-01-01",
+          "originating_node": "W3",
+          "proposition": "Onsemi targeted approximately $11 billion of revenue and a 38% operating margin by 2030, compared with expected 2026 revenue of approximately $6.5 billion and a 21.9% operating margin.",
+          "provisional_event_id": "E208",
+          "subject_time": "Onsemi 2030 corporate targets"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_6b40460cb32f46cc93fdb49f128b3445:1\"]",
+          "created_at": "2026-09-30T04:48:39.537232Z",
+          "dedupe_key": "94fb781b047298c2aa9fe87e12916c7cf19d5434b36a240bcad1400d53feb87e",
+          "entities": [
+            "onsemi",
+            "AI data centers"
+          ],
+          "occurrence_date": "2030-01-01",
+          "originating_node": "W3",
+          "proposition": "Onsemi forecast AI-data-center revenue of more than $500 million in 2026 and at least $2.5 billion by 2030.",
+          "provisional_event_id": "E209",
+          "subject_time": "Onsemi AI-data-center business through 2030"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_6b40460cb32f46cc93fdb49f128b3445:2\"]",
+          "created_at": "2026-09-30T04:48:39.548952Z",
+          "dedupe_key": "a7a1b4a7aea424a64e7970ad940772b7d3dd7986a775c146f6aca230eab926fc",
+          "entities": [
+            "onsemi",
+            "AI accelerators",
+            "Server racks",
+            "Power semiconductors"
+          ],
+          "occurrence_date": "2030-01-01",
+          "originating_node": "W3",
+          "proposition": "Onsemi expects AI-accelerator server-rack power consumption to rise from approximately 100–120 kW currently to megawatt-scale levels, increasing the value of onsemi power semiconductors per rack from approximately $15,000 to more than $115,000.",
+          "provisional_event_id": "E210",
+          "subject_time": "AI server-rack power and component value through 2030"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "candidate_id": "[\"runtime-v2-msg:std_6b40460cb32f46cc93fdb49f128b3445:3\"]",
+          "created_at": "2026-09-30T04:48:39.562074Z",
+          "dedupe_key": "6af325c45c85c54c9b0f975a7fc63ef843b8136201e9fe8f4627a0e595782f04",
+          "entities": [
+            "onsemi",
+            "Physical AI",
+            "Robots",
+            "Drones"
+          ],
+          "occurrence_date": "2030-01-01",
+          "originating_node": "W3",
+          "proposition": "Onsemi expects the non-automotive physical-AI market, including robots and drones, to represent approximately $6 billion of opportunity by 2030.",
+          "provisional_event_id": "E211",
+          "subject_time": "Non-automotive physical-AI market through 2030"
+        },
+        {
+          "assertion_state": "EXPECTED",
+          "candidate_id": "[\"runtime-v2-msg:std_6b40460cb32f46cc93fdb49f128b3445:4\"]",
+          "created_at": "2026-09-30T04:48:39.572719Z",
+          "dedupe_key": "5d9ca079ce4a09bf82c0a16e2a40fd9bca3a8f6bc3787f72b6fae932b5506781",
+          "entities": [
+            "onsemi",
+            "Synaptics",
+            "Physical AI"
+          ],
+          "occurrence_date": "2027-06-30",
+          "originating_node": "W3",
+          "proposition": "Onsemi agreed to acquire Synaptics for approximately $7 billion, with the transaction expected to close in mid-2027 to support its physical-AI strategy.",
+          "provisional_event_id": "E212",
+          "subject_time": "Expected completion of the onsemi-Synaptics acquisition"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_d2034923c648403b9399ff7084337b98",
+            "status": "DELIVERY_FAILED",
+            "released_at": "2026-09-30T04:48:39.613547+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-29",
+            "delivery_failure": {
+              "code": "PROFILE_VALIDATION_FAILED",
+              "detail": "旧版 v2-delivery 的 ExecutionProfile 不支持冻结的 SHARED_CYCLE Profile：仍要求 target_notional_usd，且拒绝新增仓位参数。",
+              "status": "FAILED"
+            },
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_41af748dfa934f759d53bddc32da4020",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "case_id": "case_d2034923c648403b9399ff7084337b98",
+              "direction": "LONG",
+              "entry_reason": "PROFILE_VALIDATION_FAILED: 旧版 v2-delivery 的 ExecutionProfile 不支持冻结的 SHARED_CYCLE Profile：仍要求 target_notional_usd，且拒绝新增仓位参数。",
+              "entry_result": null,
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_d2034923c648403b9399ff7084337b98",
+              "execution_reason_codes": [
+                "DELIVERY_FAILED"
+              ],
+              "execution_state": "NOT_EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "0"
+              },
+              "first_fill_at": {
+                "reason": "NOT_RECORDED",
+                "state": "NOT_RECORDED",
+                "value": null
+              },
+              "has_actual_fill": false,
+              "intake_status": "REJECTED",
+              "intent_id": "trade:case_d2034923c648403b9399ff7084337b98",
+              "intent_status": "DELIVERY_FAILED",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T04:48:39.613547Z"
+              }
+            },
+            "entry": null,
+            "exit": null,
+            "fills": [],
+            "lot_remaining_quantity": null,
+            "realized_pnl_usd": null,
+            "realized_pnl_records": [],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "DELIVERY_FAILED",
+        "case_read_trade_state": "NOT_EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "NOT_EXECUTED",
+        "read_execution_reason_codes": [
+          "DELIVERY_FAILED"
+        ],
+        "executor_execution_record_exists": false,
+        "entry": null,
+        "exit": null,
+        "realized_pnl_usd": null,
+        "pnl_state": "NO_ENTRY_FILL",
+        "read_projection_gap": false
+      },
+      "estimated_pnl": {
+        "state": "UNAVAILABLE",
+        "basis": "saved IBKR historical TRADES ticks; intention-time entry and 15:30 America/New_York cycle exit",
+        "entry_reference_price_usd": null,
+        "exit_reference_price_usd": "277.33",
+        "entry_target_utc": "2026-09-30T04:48:39.613547+00:00",
+        "cycle_end_utc": "2026-09-30T19:30:00+00:00",
+        "cycle_end_et": "2026-09-30T15:30:00-04:00",
+        "direction": "LONG",
+        "return_pct": null,
+        "pnl_usd_per_share": null,
+        "classification": "unpriceable",
+        "estimated_total_pnl_usd": null,
+        "total_pnl_unavailable_reason": "No simulated position quantity was specified; use percent return and USD per share.",
+        "entry_evidence": {
+          "query_key": "BE|2026-09-30T04:48:39.613547+00:00|entry",
+          "status": "no_nearby_trade",
+          "selected": null,
+          "first_event_utc": "2026-09-30T08:00:00+00:00",
+          "error": null
+        },
+        "exit_evidence": {
+          "query_key": "BE|2026-09-30T19:30:00+00:00|exit",
+          "status": "ok",
+          "selected": {
+            "exchange": "BATS",
+            "offset_seconds": 0.0,
+            "price_usd": 277.33,
+            "special_conditions": "    ",
+            "timestamp_utc": "2026-09-30T19:30:00+00:00",
+            "unreported": false
+          },
+          "first_event_utc": "2026-09-30T19:30:00+00:00",
+          "error": null
+        },
+        "pricing_unavailable_reason": "No historical trade within 60 seconds after intention; next returned trade is hours later at 04:00 ET.",
+        "cost_assumptions": "No slippage, bid-ask spread, fees or financing costs."
+      }
+    },
+    {
+      "intent_id": "trade:case_4a89a6a48f1b42c0893797c8847928a1",
+      "ticker": "BE",
+      "case_id": "case_4a89a6a48f1b42c0893797c8847928a1",
+      "intent_released_at_utc": "2026-09-30T18:54:46.077417+00:00",
+      "intent_status": "EXECUTION_ACCEPTED",
+      "decision_origin": "W3",
+      "w3_case_id": "w3_d418dd6ac78e4a2997e345f5071e7d59",
+      "w3_decision": {
+        "delta_candidates": [
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Federal Energy Regulatory Commission",
+              "PJM Interconnection",
+              "Backstop procurement"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "FERC directed PJM Interconnection to postpone and revise its backstop electricity procurement proposal, suspending its start for five months while further proceedings continue.",
+            "subject_time": "Five-month suspension beginning September 30, 2026"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Federal Energy Regulatory Commission",
+              "PJM Interconnection",
+              "Data centers",
+              "Existing electricity customers"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "FERC directed PJM to make large energy users such as data centers bear the costs associated with securing power through the backstop program rather than leaving existing customers to pay those costs.",
+            "subject_time": "Revised PJM backstop cost-allocation proposal"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "PJM Interconnection",
+              "Data centers",
+              "Electricity supply"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "The PJM region was reported to have a power-supply shortfall of more than 6,800 megawatts as data-center electricity demand expanded faster than new supplies were connected.",
+            "subject_time": "Current PJM regional power-supply conditions"
+          },
+          {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Federal Energy Regulatory Commission",
+              "PJM Interconnection",
+              "Data-center load forecasts"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "FERC asked PJM to improve its data-center electricity-demand forecasts and use more up-to-date load forecasts in determining cost allocations.",
+            "subject_time": "Subsequent PJM planning and cost-allocation proceedings"
+          }
+        ],
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "The five-month suspension of PJM's backstop procurement, amid a reported 6.8 GW shortfall, extends the near-term grid-delivery gap. Requiring large energy users to bear associated costs may further improve the relative attractiveness of fast onsite firm power, modestly raising BE's accessible opportunity and share potential.",
+          "prior_expectation": "BE's opportunity is supported by data-center load growth and grid/interconnection constraints, but the baseline assumed the PJM backstop process could begin addressing the region's supply gap while Bloom's share still required customer selection.",
+          "reason": "TRADE LONG: the regulatory action directly worsens the timing and cost certainty of a competing grid-supply route in a major data-center region, while BE's value proposition is time-to-power onsite generation. The signal is indirect and offset by possible data-center demand destruction and the lack of named Bloom awards, but the surprise, materiality, and transmission are sufficient for a directional uncovered edge.",
+          "trade": true
+        },
+        "novelty": {
+          "reason": "FERC's order delaying and revising PJM's backstop procurement process, including its five-month suspension and cost-allocation directives, is not covered by the pinned Reference View.",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "The action is a regional regulatory and procurement change, not a final project-specific rule producing Bloom firm-MW commitments or a named Bloom project delay; no policy condition is satisfied."
+        },
+        "w3_case_id": "w3_d418dd6ac78e4a2997e345f5071e7d59"
+      },
+      "trade_direction": "LONG",
+      "case_summary": {
+        "case_id": "case_4a89a6a48f1b42c0893797c8847928a1",
+        "completed_at": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "2026-09-30T18:54:46.237838Z"
+        },
+        "duration_seconds": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": 271.24118
+        },
+        "final_novelty": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "NEW"
+        },
+        "final_policy_hit": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": false
+        },
+        "first_round_shape": "PARALLEL",
+        "initial_route": "W3",
+        "member_count": 1,
+        "received_at": "2026-09-30T18:50:14.996658Z",
+        "resolved_route": "TRADE",
+        "result_settled": true,
+        "results": [
+          "EVENT_DISCOVERY",
+          "TRADE_EXECUTION",
+          "TRADE_INTENT"
+        ],
+        "revision": 2623810,
+        "runtime_mode": "REALTIME",
+        "semantic_day": "2026-09-30",
+        "source": {
+          "binding_id": "BE:reuters_site_search",
+          "kind": "crawler",
+          "name": "Reuters Site Search",
+          "source_id": "reuters_site_search"
+        },
+        "status": "COMPLETED",
+        "stream_item_id": "stream_2792e9a2359c47608814f0e15741e41d",
+        "technical_status": "OK",
+        "title": {
+          "reason": null,
+          "state": "AVAILABLE",
+          "value": "FERC asks grid operator PJM to revise plan to shield homes from data center costs"
+        },
+        "trade": {
+          "intent_count": 1,
+          "reason_codes": [
+            "ORDER_FILLED"
+          ],
+          "state": "EXECUTED"
+        },
+        "trade_disposition": "EXECUTION_ACCEPTED",
+        "w3_status": "RESOLVED"
+      },
+      "case_process": {
+        "created_at": "2026-09-30T18:50:14.996658Z",
+        "completed_at": "2026-09-30T18:54:46.237838Z",
+        "status": "COMPLETED",
+        "technical_status": "OK",
+        "runtime_mode": "REALTIME",
+        "route": {
+          "primary_route": "W3",
+          "reason": "w1=NEW/normal;policy_hit=false;w2=normal",
+          "side_effects": [
+            "route_to_w3"
+          ]
+        },
+        "resolved_route": {
+          "primary_route": "TRADE",
+          "reason": "w3_novelty=NEW;policy_hit=false;expert_trade=true",
+          "side_effects": [
+            "create_trade_record",
+            "emit_delta"
+          ]
+        },
+        "closed_cycle_id": null,
+        "sweep_id": null,
+        "trade_expired": false,
+        "w1_round1": {
+          "event_ids": []
+        },
+        "w1_final": {
+          "confidence": "normal",
+          "fact_attributions": [],
+          "reason": "本轮未加载任何已知 Event 或 Fact，当前消息报道 FERC 命令 PJM 推迟并修改其 backstop 采购方案、要求数据中心承担相关成本、并将流程暂停五个月，属于尚未被覆盖的具体监管行动进展。",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "w2_round1": {
+          "candidate_policy_ids": [
+            "pol_9b7af3b3194022fbee4f",
+            "pol_358b18ca588879801d4d"
+          ],
+          "reason": "FERC指令将PJM backstop采购程序暂停5个月并要求修改大型负荷（含数据中心）成本分摊条款，构成具约束力的电网市场规则变更，直接影响PJM区域内具名大型负荷项目获取firm grid服务的可用时间窗口（pol_9b7af3b3194022fbee4f）。该6,800MW缺口区的backstop延迟可能使多个已选定的数据中心项目在电网容量/互联路径上经历同步后移（pol_358b18ca588879801d4d）。两条Policy的触发路径均存在具体监管时间表事实支撑，完整判定尚未排除命中可能。"
+        },
+        "w2_final": {
+          "confidence": "normal",
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "两条Candidate均不命中。pol_9b7af3b3194022fbee4f要求\"最终生效的市场规则\"促成具名项目的firm MW合同及服务日/需求日，但消息明确是FERC将PJM backstop提案推迟5个月并要求修订，属于规则尚未生效、进程被中断，且无任何具名项目、firm MW、服务日或需求日。pol_358b18ca588879801d4d要求两个以上重大Bloom项目因permit/interconnection/financing/installation/acceptance同步延误并影响reported shipments或revenue timing，消息仅涉及FERC对PJM区域采购的成本分摊程序性指令，未提及任何Bloom具体项目的执行里程碑延误或财务口径影响。"
+        },
+        "w2_skipped": false,
+        "w3_result": {
+          "delta_candidates": [
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Federal Energy Regulatory Commission",
+                "PJM Interconnection",
+                "Backstop procurement"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "FERC directed PJM Interconnection to postpone and revise its backstop electricity procurement proposal, suspending its start for five months while further proceedings continue.",
+              "subject_time": "Five-month suspension beginning September 30, 2026"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Federal Energy Regulatory Commission",
+                "PJM Interconnection",
+                "Data centers",
+                "Existing electricity customers"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "FERC directed PJM to make large energy users such as data centers bear the costs associated with securing power through the backstop program rather than leaving existing customers to pay those costs.",
+              "subject_time": "Revised PJM backstop cost-allocation proposal"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "PJM Interconnection",
+                "Data centers",
+                "Electricity supply"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "The PJM region was reported to have a power-supply shortfall of more than 6,800 megawatts as data-center electricity demand expanded faster than new supplies were connected.",
+              "subject_time": "Current PJM regional power-supply conditions"
+            },
+            {
+              "assertion_state": "ACTUAL",
+              "entities": [
+                "Federal Energy Regulatory Commission",
+                "PJM Interconnection",
+                "Data-center load forecasts"
+              ],
+              "occurrence_date": "2026-09-30",
+              "proposition": "FERC asked PJM to improve its data-center electricity-demand forecasts and use more up-to-date load forecasts in determining cost allocations.",
+              "subject_time": "Subsequent PJM planning and cost-allocation proceedings"
+            }
+          ],
+          "expert_trade": {
+            "direction": "LONG",
+            "evaluated": true,
+            "expectation_delta": "The five-month suspension of PJM's backstop procurement, amid a reported 6.8 GW shortfall, extends the near-term grid-delivery gap. Requiring large energy users to bear associated costs may further improve the relative attractiveness of fast onsite firm power, modestly raising BE's accessible opportunity and share potential.",
+            "prior_expectation": "BE's opportunity is supported by data-center load growth and grid/interconnection constraints, but the baseline assumed the PJM backstop process could begin addressing the region's supply gap while Bloom's share still required customer selection.",
+            "reason": "TRADE LONG: the regulatory action directly worsens the timing and cost certainty of a competing grid-supply route in a major data-center region, while BE's value proposition is time-to-power onsite generation. The signal is indirect and offset by possible data-center demand destruction and the lack of named Bloom awards, but the surprise, materiality, and transmission are sufficient for a directional uncovered edge.",
+            "trade": true
+          },
+          "novelty": {
+            "reason": "FERC's order delaying and revising PJM's backstop procurement process, including its five-month suspension and cost-allocation directives, is not covered by the pinned Reference View.",
+            "reference_ids": [],
+            "result": "NEW"
+          },
+          "policy": {
+            "matched_condition_ids": [],
+            "policy_ids": [],
+            "reason": "The action is a regional regulatory and procurement change, not a final project-specific rule producing Bloom firm-MW commitments or a named Bloom project delay; no policy condition is satisfied."
+          },
+          "w3_case_id": "w3_d418dd6ac78e4a2997e345f5071e7d59"
+        }
+      },
+      "source_messages": [
+        {
+          "body": {
+            "content_id": "a3edeb709d77b19ef68ed02d1a9600082314c442e556950e724d8f942e64973d",
+            "content_type": "text/plain",
+            "sha256": "439f04d246c1e995d9725b5db4735513768939d30de475d0eaab8ac8f21a0f73",
+            "size_bytes": 2361
+          },
+          "case": {
+            "case_id": "case_4a89a6a48f1b42c0893797c8847928a1",
+            "initial_route": "W3",
+            "resolved_route": "TRADE",
+            "route_group": "TRADE",
+            "status": "COMPLETED",
+            "w3_status": "RESOLVED"
+          },
+          "collected_at": "2026-09-30T18:48:37.959272Z",
+          "exact_duplicate_count": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "member_index": 0,
+          "normalized_at": "2026-09-30T18:50:12.651513Z",
+          "revision": 1,
+          "row_revision": 2623739,
+          "source": {
+            "binding_id": "BE:reuters_site_search",
+            "kind": "crawler",
+            "name": "Reuters Site Search",
+            "source_id": "reuters_site_search"
+          },
+          "source_published_at": "2026-09-30T16:00:00Z",
+          "standard_message_id": "std_b4294ffe827342dfa8248e645514a37f",
+          "stream_item_id": "stream_2792e9a2359c47608814f0e15741e41d",
+          "stream_offset": 381,
+          "stream_published_at": "2026-09-30T18:50:12.661272Z",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "FERC asks grid operator PJM to revise plan to shield homes from data center costs"
+          },
+          "url": "https://www.reuters.com/business/energy/ferc-asks-grid-operator-pjm-revise-plan-shield-homes-data-center-costs-2026-09-30/",
+          "body_text": "NEW YORK, Sept 30 (Reuters) - The Federal Energy Regulatory Commission directed the largest US grid operator, PJM Interconnection, to postpone and revise its \"backstop\" procurement proposal to ensure ​that large energy users like data centers cover the costs associated with the ‌process, according to a filing by the regulator.\n\nEnergy-intensive data centers have rapidly expanded in the 13-state Mid-Atlantic and Midwest region covered by PJM, causing electricity demand to rise much faster than new supplies ​are connected, leaving the region with a more than 6,800 megawatt power ​supply shortfall.\n\nThe backstop process, a one-time electricity procurement designed to bring new ⁠power supplies onto the grid, is aimed at closing that supply gap.\n\nFERC partially ​approved PJM's proposal, but ultimately delayed its start time, which was expected to begin on ​Wednesday.\n\n\"We are prepared to promptly act on a subsequent proposal that addresses the concerns raised ... the region’s reliability hangs in the balance,\" FERC Chairman Laura Swett said in a statement included with the ​order.\n\nThe regulator accepted core elements of the proposal but suspended it for five ​months while opening further proceedings on cost allocation and certain other provisions.\n\nFERC said PJM's proposal needs to ‌do ⁠more to make sure that large energy users like data centers pay for costs associated with securing power through the program.\n\n\"Existing customers should not be left paying costs attributable to new demand,\" Commissioner Lindsay S. See wrote in a concurring statement.\n\nPJM is working ​on incorporating FERC's ​directives, spokesman Jeff Shields ⁠said.\n\n\"We remain focused on advancing solutions that maintain reliability, appropriately allocate costs to the customers driving those costs, and protect consumers ​as the region navigates significant demand growth,\" Shields said in an ​email.\n\nAs part ⁠of its order, the energy regulator also asked PJM to improve its forecasting of data center energy demand, saying it should rely on more up-to-date load forecasts when determining ⁠how costs ​are allocated.\n\nData center electricity requests have overwhelmed US ​grids, but many of those requests are considered speculative, making it harder for grids and utilities to plan ​for the costly infrastructure needed."
+        }
+      ],
+      "discovered_facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_b4294ffe827342dfa8248e645514a37f:0\"]",
+          "created_at": "2026-09-30T18:54:45.960462Z",
+          "dedupe_key": "4cb9645806337708eff68169aaf58223767cbad4cb7d9c8f7b5c414a94827efe",
+          "entities": [
+            "Federal Energy Regulatory Commission",
+            "PJM Interconnection",
+            "Backstop procurement"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "FERC directed PJM Interconnection to postpone and revise its backstop electricity procurement proposal, suspending its start for five months while further proceedings continue.",
+          "provisional_event_id": "E84",
+          "subject_time": "Five-month suspension beginning September 30, 2026"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_b4294ffe827342dfa8248e645514a37f:1\"]",
+          "created_at": "2026-09-30T18:54:45.978345Z",
+          "dedupe_key": "53e45e75cb1744ee1c0390b8d8a9e6bd78da056f9c8ee927618469986b432499",
+          "entities": [
+            "Federal Energy Regulatory Commission",
+            "PJM Interconnection",
+            "Data centers",
+            "Existing electricity customers"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "FERC directed PJM to make large energy users such as data centers bear the costs associated with securing power through the backstop program rather than leaving existing customers to pay those costs.",
+          "provisional_event_id": "E85",
+          "subject_time": "Revised PJM backstop cost-allocation proposal"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_b4294ffe827342dfa8248e645514a37f:2\"]",
+          "created_at": "2026-09-30T18:54:45.993375Z",
+          "dedupe_key": "adc1943fccf3e113e020b919a8e9e7fd5ea5107ba75a2c10a11e1a0f53956279",
+          "entities": [
+            "PJM Interconnection",
+            "Data centers",
+            "Electricity supply"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "The PJM region was reported to have a power-supply shortfall of more than 6,800 megawatts as data-center electricity demand expanded faster than new supplies were connected.",
+          "provisional_event_id": "E86",
+          "subject_time": "Current PJM regional power-supply conditions"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "candidate_id": "[\"runtime-v2-msg:std_b4294ffe827342dfa8248e645514a37f:3\"]",
+          "created_at": "2026-09-30T18:54:46.010420Z",
+          "dedupe_key": "db2fedc090725eff33503489fecaa78ec09f792df00ad8dda3bae8d8abf2e650",
+          "entities": [
+            "Federal Energy Regulatory Commission",
+            "PJM Interconnection",
+            "Data-center load forecasts"
+          ],
+          "occurrence_date": "2026-09-30",
+          "originating_node": "W3",
+          "proposition": "FERC asked PJM to improve its data-center electricity-demand forecasts and use more up-to-date load forecasts in determining cost allocations.",
+          "provisional_event_id": "E87",
+          "subject_time": "Subsequent PJM planning and cost-allocation proceedings"
+        }
+      ],
+      "trade": {
+        "intents": [
+          {
+            "intent_id": "trade:case_4a89a6a48f1b42c0893797c8847928a1",
+            "status": "EXECUTION_ACCEPTED",
+            "released_at": "2026-09-30T18:54:46.077417+00:00",
+            "selection_id": null,
+            "submitted": true,
+            "release_semantic_day": "2026-09-30",
+            "delivery_failure": null,
+            "direction": "LONG",
+            "decision_origin": "W3",
+            "w3_case_id": "w3_d418dd6ac78e4a2997e345f5071e7d59",
+            "executed_policy_id": null,
+            "candidate_policy_ids": [],
+            "matched_condition_ids": []
+          }
+        ],
+        "closed_candidates": [],
+        "executions": [
+          {
+            "execution": {
+              "accepted_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T18:54:47.179789Z"
+              },
+              "case_id": "case_4a89a6a48f1b42c0893797c8847928a1",
+              "direction": "LONG",
+              "entry_reason": "ORDER_FILLED",
+              "entry_result": "FILLED",
+              "environment": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "PAPER"
+              },
+              "execution_id": "trade:case_4a89a6a48f1b42c0893797c8847928a1",
+              "execution_reason_codes": [
+                "ORDER_FILLED"
+              ],
+              "execution_state": "EXECUTED",
+              "filled_notional_usd": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "17008.63"
+              },
+              "filled_quantity": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "61"
+              },
+              "first_fill_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T18:54:52Z"
+              },
+              "has_actual_fill": true,
+              "intake_status": "EXECUTION_ACCEPTED",
+              "intent_id": "trade:case_4a89a6a48f1b42c0893797c8847928a1",
+              "intent_status": "UNKNOWN",
+              "profile_revision": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "ep_a5dfda256b2f7863fc85a605"
+              },
+              "triggered_at": {
+                "reason": null,
+                "state": "AVAILABLE",
+                "value": "2026-09-30T18:54:46.077417Z"
+              }
+            },
+            "entry": {
+              "side": "BUY",
+              "quantity": "61",
+              "average_price_usd": "278.83",
+              "first_fill_at": "2026-09-30T18:54:52+00:00",
+              "last_fill_at": "2026-09-30T18:54:52+00:00"
+            },
+            "exit": {
+              "side": "SELL",
+              "quantity": "61",
+              "average_price_usd": "277.25",
+              "first_fill_at": "2026-09-30T19:30:08+00:00",
+              "last_fill_at": "2026-09-30T19:30:08+00:00"
+            },
+            "fills": [
+              {
+                "kind": "ENTRY",
+                "side": "BUY",
+                "quantity": "61",
+                "price_usd": "278.83",
+                "filled_at": "2026-09-30T18:54:52+00:00",
+                "broker_fill_id": "0000e0d5.6abd4d3c.01.01"
+              },
+              {
+                "kind": "EXIT",
+                "side": "SELL",
+                "quantity": "61",
+                "price_usd": "277.25",
+                "filled_at": "2026-09-30T19:30:08+00:00",
+                "broker_fill_id": "0000e0d5.6abd56ee.01.01"
+              }
+            ],
+            "lot_remaining_quantity": 0,
+            "realized_pnl_usd": "-98.74065300000000000000000000",
+            "realized_pnl_records": [
+              {
+                "amount": "-98.74065300000000000000000000",
+                "day": "2026-09-30",
+                "environment": "PAPER",
+                "provisional": false,
+                "reason": null
+              }
+            ],
+            "pnl_basis": "realized net P&L from owned exit allocations; no mark-to-market estimate"
+          }
+        ]
+      },
+      "trade_result": {
+        "formal_intent_status": "EXECUTION_ACCEPTED",
+        "case_read_trade_state": "EXECUTED",
+        "case_read_intent_count": 1,
+        "read_execution_state": "EXECUTED",
+        "read_execution_reason_codes": [
+          "ORDER_FILLED"
+        ],
+        "executor_execution_record_exists": true,
+        "entry": {
+          "side": "BUY",
+          "quantity": "61",
+          "average_price_usd": "278.83",
+          "first_fill_at": "2026-09-30T18:54:52+00:00",
+          "last_fill_at": "2026-09-30T18:54:52+00:00"
+        },
+        "exit": {
+          "side": "SELL",
+          "quantity": "61",
+          "average_price_usd": "277.25",
+          "first_fill_at": "2026-09-30T19:30:08+00:00",
+          "last_fill_at": "2026-09-30T19:30:08+00:00"
+        },
+        "realized_pnl_usd": "-98.74065300000000000000000000",
+        "pnl_state": "REALIZED",
+        "read_projection_gap": false
+      }
+    }
+  ]
+}

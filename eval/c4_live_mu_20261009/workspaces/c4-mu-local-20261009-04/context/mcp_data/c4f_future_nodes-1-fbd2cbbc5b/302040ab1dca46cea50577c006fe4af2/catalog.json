@@ -1,0 +1,494 @@
+[
+  {
+    "alias": "O62",
+    "title": "text paragraphs 1",
+    "block_type": "text",
+    "path": "blocks/O62.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 631,
+    "selected": true
+  },
+  {
+    "alias": "O63",
+    "title": "text paragraphs 2",
+    "block_type": "text",
+    "path": "blocks/O63.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 723,
+    "selected": true
+  },
+  {
+    "alias": "O64",
+    "title": "text paragraphs 3",
+    "block_type": "text",
+    "path": "blocks/O64.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 559,
+    "selected": true
+  },
+  {
+    "alias": "O65",
+    "title": "text paragraphs 4",
+    "block_type": "text",
+    "path": "blocks/O65.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 772,
+    "selected": true
+  },
+  {
+    "alias": "O66",
+    "title": "text paragraphs 5",
+    "block_type": "text",
+    "path": "blocks/O66.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 569,
+    "selected": true
+  },
+  {
+    "alias": "O67",
+    "title": "text paragraphs 6",
+    "block_type": "text",
+    "path": "blocks/O67.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 843,
+    "selected": true
+  },
+  {
+    "alias": "O68",
+    "title": "text paragraphs 7",
+    "block_type": "text",
+    "path": "blocks/O68.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 731,
+    "selected": true
+  },
+  {
+    "alias": "O69",
+    "title": "text paragraphs 8",
+    "block_type": "text",
+    "path": "blocks/O69.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 651,
+    "selected": true
+  },
+  {
+    "alias": "O70",
+    "title": "text paragraphs 9",
+    "block_type": "text",
+    "path": "blocks/O70.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 577,
+    "selected": true
+  },
+  {
+    "alias": "O71",
+    "title": "text paragraphs 10",
+    "block_type": "text",
+    "path": "blocks/O71.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 735,
+    "selected": true
+  },
+  {
+    "alias": "O72",
+    "title": "text paragraphs 11",
+    "block_type": "text",
+    "path": "blocks/O72.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 769,
+    "selected": true
+  },
+  {
+    "alias": "O73",
+    "title": "text paragraphs 12",
+    "block_type": "text",
+    "path": "blocks/O73.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 743,
+    "selected": true
+  },
+  {
+    "alias": "O74",
+    "title": "text paragraphs 13",
+    "block_type": "text",
+    "path": "blocks/O74.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 630,
+    "selected": true
+  },
+  {
+    "alias": "O75",
+    "title": "text paragraphs 14",
+    "block_type": "text",
+    "path": "blocks/O75.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 525,
+    "selected": true
+  },
+  {
+    "alias": "O76",
+    "title": "text paragraphs 15",
+    "block_type": "text",
+    "path": "blocks/O76.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 742,
+    "selected": true
+  },
+  {
+    "alias": "O77",
+    "title": "text paragraphs 16",
+    "block_type": "text",
+    "path": "blocks/O77.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 685,
+    "selected": true
+  },
+  {
+    "alias": "O78",
+    "title": "text paragraphs 17",
+    "block_type": "text",
+    "path": "blocks/O78.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 558,
+    "selected": true
+  },
+  {
+    "alias": "O79",
+    "title": "text paragraphs 18",
+    "block_type": "text",
+    "path": "blocks/O79.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 654,
+    "selected": true
+  },
+  {
+    "alias": "O80",
+    "title": "text paragraphs 19",
+    "block_type": "text",
+    "path": "blocks/O80.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 571,
+    "selected": false
+  },
+  {
+    "alias": "O81",
+    "title": "text paragraphs 20",
+    "block_type": "text",
+    "path": "blocks/O81.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 657,
+    "selected": false
+  },
+  {
+    "alias": "O82",
+    "title": "text paragraphs 21",
+    "block_type": "text",
+    "path": "blocks/O82.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 782,
+    "selected": false
+  },
+  {
+    "alias": "O83",
+    "title": "text paragraphs 22",
+    "block_type": "text",
+    "path": "blocks/O83.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 743,
+    "selected": false
+  },
+  {
+    "alias": "O84",
+    "title": "text paragraphs 23",
+    "block_type": "text",
+    "path": "blocks/O84.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 512,
+    "selected": false
+  },
+  {
+    "alias": "O85",
+    "title": "text paragraphs 24",
+    "block_type": "text",
+    "path": "blocks/O85.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 764,
+    "selected": false
+  },
+  {
+    "alias": "O86",
+    "title": "text paragraphs 25",
+    "block_type": "text",
+    "path": "blocks/O86.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 549,
+    "selected": false
+  },
+  {
+    "alias": "O87",
+    "title": "text paragraphs 26",
+    "block_type": "text",
+    "path": "blocks/O87.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 726,
+    "selected": false
+  },
+  {
+    "alias": "O88",
+    "title": "text paragraphs 27",
+    "block_type": "text",
+    "path": "blocks/O88.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 344,
+    "selected": false
+  },
+  {
+    "alias": "O89",
+    "title": "text paragraphs 28",
+    "block_type": "text",
+    "path": "blocks/O89.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 616,
+    "selected": false
+  },
+  {
+    "alias": "O90",
+    "title": "text paragraphs 29",
+    "block_type": "text",
+    "path": "blocks/O90.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 629,
+    "selected": false
+  },
+  {
+    "alias": "O91",
+    "title": "text paragraphs 30",
+    "block_type": "text",
+    "path": "blocks/O91.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 672,
+    "selected": false
+  },
+  {
+    "alias": "O92",
+    "title": "text paragraphs 31",
+    "block_type": "text",
+    "path": "blocks/O92.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 555,
+    "selected": false
+  },
+  {
+    "alias": "O93",
+    "title": "text paragraphs 32",
+    "block_type": "text",
+    "path": "blocks/O93.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 484,
+    "selected": false
+  },
+  {
+    "alias": "O94",
+    "title": "text paragraphs 33",
+    "block_type": "text",
+    "path": "blocks/O94.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 574,
+    "selected": false
+  },
+  {
+    "alias": "O95",
+    "title": "text paragraphs 34",
+    "block_type": "text",
+    "path": "blocks/O95.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 689,
+    "selected": false
+  },
+  {
+    "alias": "O96",
+    "title": "text paragraphs 35",
+    "block_type": "text",
+    "path": "blocks/O96.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 574,
+    "selected": false
+  },
+  {
+    "alias": "O97",
+    "title": "text paragraphs 36",
+    "block_type": "text",
+    "path": "blocks/O97.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 588,
+    "selected": false
+  },
+  {
+    "alias": "O98",
+    "title": "text paragraphs 37",
+    "block_type": "text",
+    "path": "blocks/O98.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 779,
+    "selected": false
+  },
+  {
+    "alias": "O99",
+    "title": "text paragraphs 38",
+    "block_type": "text",
+    "path": "blocks/O99.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 782,
+    "selected": false
+  },
+  {
+    "alias": "O100",
+    "title": "text paragraphs 39",
+    "block_type": "text",
+    "path": "blocks/O100.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 625,
+    "selected": false
+  },
+  {
+    "alias": "O101",
+    "title": "text paragraphs 40",
+    "block_type": "text",
+    "path": "blocks/O101.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 434,
+    "selected": false
+  },
+  {
+    "alias": "O102",
+    "title": "text paragraphs 41",
+    "block_type": "text",
+    "path": "blocks/O102.md",
+    "source": {
+      "provider": "Public web source",
+      "locator": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+    },
+    "content_chars": 425,
+    "selected": false
+  }
+]

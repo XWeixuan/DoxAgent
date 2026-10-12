@@ -1,0 +1,9 @@
+{
+  "alias": "O215",
+  "title": "text paragraphs 127",
+  "content": "| Long-term debt (including current portion)(1) |  | 3,794,226 |  |  | 3,585,466 |  |  | 3,447,338 |  |  | 3,270,200 |  |\n\n| Idaho Power |  |  |  |  |  |  |  |  |\n\n| Assets: |  |  |  |  |  |  |  |  |\n\n| Held-to-maturity securities(1)(2) |  | $ | 34,567 |  |  | $ | 32,899 |  |  | $ | 33,822 |  |  | $ | 32,468 |  |\n\n| Liabilities: |  |  |  |  |  |  |  |  |\n\n| Long-term debt (including current portion)(1) |  | 3,794,266 |  |  | 3,585,466 |  |  | 3,447,338 |  |  | 3,270,200 |  |\n\n|  |  |  |  |  |  |  |  |  |\n\n(1)  Notes receivable are categorized as Level 3 and held-to-maturity securities and long-term debt are categorized as Level 2 of the fair value hierarchy, as defined earlier in this Note 12 - \"Fair Value Measurements.\"",
+  "source": {
+    "provider": "Public web source",
+    "locator": "https://www.sec.gov/Archives/edgar/data/49648/000105787726000129/ida-20260630.htm"
+  }
+}

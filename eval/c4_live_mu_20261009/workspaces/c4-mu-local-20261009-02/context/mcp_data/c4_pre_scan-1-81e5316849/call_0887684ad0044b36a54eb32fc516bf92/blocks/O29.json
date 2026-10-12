@@ -1,0 +1,19 @@
+{
+  "alias": "O29",
+  "title": "section_previews 2",
+  "content": {
+    "section": "Item 1A",
+    "heading_match": "Item 1A.",
+    "start_offset": 227805,
+    "end_offset": 307814,
+    "full_text_chars": 80000,
+    "returned_chars": 40000,
+    "truncated": true,
+    "match_quality": "substantive_body",
+    "text_preview": "Risk Factors of this Annual Report on Form 10-K. SEC regulations require disclosure of certain proceedings related to environmental matters unless we reasonably believe that the related monetary sanctions, if any, will be less than a specified threshold. We use a threshold of $1 million for this purpose. ITEM 4. MINE SAFETY DISCLOSURES Not applicable. 51 | 2026 10-K Table of Contents PART II ITEM 5. MARKET FOR REGISTRANT'S COMMON EQUITY, RELATED STOCKHOLDER MATTERS, AND ISSUER PURCHASES OF EQUITY SECURITIES Market Information Our common stock is listed on The Nasdaq Global Select Market under the trading symbol \"MU.\" Holders of Record As of October 2, 2026, there were approximately 1,260 shareholders of record of our common stock. A substantially greater number of holders of our common stock are \"street name\" or beneficial holders, whose shares are held by banks, brokers, and other financial institutions as the holder of record. Dividends On September 30, 2026, our Board of Directors declared a quarterly dividend of $0.15 per share, payable in cash on October 29, 2026, to shareholders of record as of the close of business on October 14, 2026. We currently expect quarterly dividends to continue in future periods and aim to grow our dividend payments over time. However, the declaration and payment of any future cash dividends are at the discretion and subject to the approval of our Board of Directors. Our Board of Directors' decisions regarding the amount and payment of dividends will depend on many factors, such as our financial condition, results of operations, capital requirements, business conditions, debt service obligations, contractual restrictions, industry practice, legal requirements, regulatory constraints, and other factors that our Board of Directors may deem relevant. We cannot guarantee that we will continue to pay a dividend in any future period. Issuer Purchase of Equity Securities Common Stock Repurchase Authorization In 2018, we announced that our Board of Directors authorized a stock repurchase program for the discretionary repurchase of up to $10 billion (the \"2018 authorization\") of our outstanding common stock through open-market purchases, block trades, privately-negotiated transactions, derivative transactions, and/or pursuant to Rule 10b5-1 trading plans. On October 8, 2026, our Board of Directors authorized an increase in the amount authorized under this stock repurchase program for a total authorization of $35.16 billion. Any repurchases under the stock repurchase program will be made from December 9, 2026 in accordance with our CHIPS Act direct funding agreements. Under our CHIPS Act direct funding agreements, stock repurchases are permitted during the first two years of the five-year period following the Idaho and New York award date of December 9, 2024, up to amounts specified in the funding agreements, to help offset the dilutive effects of employee stock compensation or as otherwise permitted by the U.S. Department "
+  },
+  "source": {
+    "provider": "SEC EDGAR",
+    "locator": "0000723125-26-000023"
+  }
+}

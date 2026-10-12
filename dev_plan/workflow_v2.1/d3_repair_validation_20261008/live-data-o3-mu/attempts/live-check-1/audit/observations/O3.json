@@ -1,0 +1,9 @@
+{
+  "alias": "O3",
+  "title": "accounting_basis",
+  "content": "provider analyst consensus; EPS GAAP/non-GAAP basis is unspecified and must not be labeled SEC GAAP without reconciliation",
+  "source": {
+    "provider": "Yahoo Finance via yfinance",
+    "locator": "yfinance:sell_side_consensus:MU"
+  }
+}

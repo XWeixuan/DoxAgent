@@ -1,0 +1,118 @@
+{
+  "ticker": "MU",
+  "source_policy_set_version": 22,
+  "source_sha256": "7b55edcda0dd2d354543544845d6ec973f80bd7be591df021fe642c56b38213a",
+  "source_thread_owners": [
+    "OPEN_RESEARCH",
+    "OPEN_EVENT"
+  ],
+  "classification": "Owner of final accepted Build/supplement research draft; title and criteria preserved from final release 22",
+  "policy_count": 8,
+  "condition_count": 14,
+  "policies": [
+    {
+      "policy_id": "pol_d87ccefd84b64686964f300ee8a86481",
+      "title": "美光指数计入权重与实物跟踪组合的持股重置",
+      "conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "指数方确定对MU生效的成分、计入股数或权重处理，增加实物跟踪组合的MU目标持股；公开参数或有出处的调仓报道能够直接判定本次新增配置量与实施窗口。"
+        },
+        {
+          "condition_id": "C2",
+          "criterion": "指数方确定对MU生效的成分、计入股数或权重处理，减少实物跟踪组合的MU目标持股；公开参数或有出处的调仓报道能够直接判定本次减少配置量与实施窗口。"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_3023dd19eac74a978f66c288a7c9b808",
+      "title": "本轮DRAM横向协议的公开事实依据",
+      "conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "公开的新事实材料识别出美光参加本轮常规DRAM价格或供给横向协议，并说明该安排要求竞争者共同执行价格、产量或产品退出决定。"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_97fa843674f34519b385b68ccd335006",
+      "title": "常规DRAM合谋请求的实质存续",
+      "conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "法院实质裁定，本轮针对美光的常规DRAM限制供给或价格协调协议主张已充分起诉，拒绝以仅有合法平行行为为由驳回，并保留以该协议为根基的集体救济请求。"
+        },
+        {
+          "condition_id": "C2",
+          "criterion": "法院因协议要件不成立而实质排除本轮针对美光的常规DRAM合谋根部请求，使以该协议为基础的广泛集体赔偿及禁令路径在当前案件中不能继续。"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_2ffdb85a1e694381bf32801f1ea56cf8",
+      "title": "反垄断救济对常规DRAM经营选择的约束",
+      "conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "法院命令或已签署具有约束力的竞争和解，限制美光自主调整常规DRAM商业供给的权利，落实为维护/扩充供给能力、保留完整产品规格系列，或强制改写其常规DRAM供给交易条款的义务。"
+        },
+        {
+          "condition_id": "C2",
+          "criterion": "法院实质排除以本轮合谋请求强制美光维护/扩充普通DRAM产能或限制独立产品退出的广泛救济路径，同时相关现金责任争议仍可继续。"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_9a7bd5050b454554ae35f3bba56303aa",
+      "title": "常规DRAM间接购买者的集体赔偿范围",
+      "conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "法院认证针对美光的常规DRAM间接购买者赔偿集体，将跨常规DRAM产品的终端设备购买者纳入，而非只限具体零售模组，并认可共同影响与损害证明路径。"
+        },
+        {
+          "condition_id": "C2",
+          "criterion": "法院因跨产品设备购买者无法共同证明传导或损害，实质拒绝本轮广泛设备购买者的集体赔偿路径，使仍可推进的赔偿限于个别买方或窄模组范围。"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_223478acbb164bb28c178b48aea841a9",
+      "title": "本轮常规DRAM协调的主管执法介入",
+      "conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "有权限的竞争执法机关已实际调查美光与同行的本轮常规DRAM价格或供给协议，机关、公司披露或直接知情报道确认具体调查对象和事项，而非仅收到投诉。"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_1af45d7fb4134e41b180b934072310c1",
+      "title": "独立研究对美光周期拐点与正常化盈利的重估",
+      "conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "持续覆盖MU的研究机构在非财报独立研究中，以可核查的新调查或新的估值拆解，撤回其扩产后深幅盈利下行的基准论点，把更高的正常化利润或再投资后现金路径纳入基准，并据此上调MU基本价值判断。"
+        },
+        {
+          "condition_id": "C2",
+          "criterion": "原先主张新增供给仍能被需求吸收、延续MU高利润的研究机构，在非财报独立研究中撤回这一基准论点，将新增有效供给或合同保护不足造成的较低盈利或现金路径纳入同一预测窗口，并据此下调MU基本价值判断。"
+        },
+        {
+          "condition_id": "C3",
+          "criterion": "原本仍看好2027价格及盈利扩张的持续覆盖机构，在非财报独立研究中将价格和盈利向下正常化的基准拐点前移到2027，并据此下修该窗口的盈利或现金路径及MU基本价值判断。"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_8585a5ddda414733942e842d5809b505",
+      "title": "运营商既有无线网络的AI-RAN增购加速资源",
+      "conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "运营商把保留既有基带、增购带外部内存的GPU加速卡或共享加速节点，选为其现有公网宏网持续扩容/现代化计划中的常规硬件配置，并批准该部署采购安排；采购范围不再限定于技术试验或单一企业示范。"
+        }
+      ]
+    }
+  ]
+}
